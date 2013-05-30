@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 /*
-
-High Performance and Feature-Rich Idiomatic Go Library providing
-encode/decode support for different serialization formats.
+High Performance, Feature-Rich Idiomatic Go encoding library for msgpack and binc .
 
 Supported Serialization formats are:
 
