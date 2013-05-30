@@ -12,6 +12,8 @@ To install:
 
     go get github.com/ugorji/go/codec
 
+Online documentation: [http://godoc.org/github.com/ugorji/go/codec]
+
 The idiomatic Go support is as seen in other encoding packages in
 the standard library (ie json, xml, gob, etc).
 
