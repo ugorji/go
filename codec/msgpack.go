@@ -72,6 +72,9 @@ const (
 	mpXv4Ext32 = 0xd9
 )	
 
+// MsgpackSpecRpc implements Rpc using the communication protocol defined in 
+// the msgpack spec at http://wiki.msgpack.org/display/MSGPACK/RPC+specification
+var MsgpackSpecRpc msgpackSpecRpc
 
 // A MsgpackContainer type specifies the different types of msgpackContainers.
 type msgpackContainerType struct {
@@ -85,9 +88,9 @@ var (
 	msgpackContainerMap = msgpackContainerType{16, mpFixMapMin, mpMap16, mpMap32}
 )
 
-// MsgpackSpecRpc is the implementation of Rpc that uses custom communication protocol 
+// msgpackSpecRpc is the implementation of Rpc that uses custom communication protocol 
 // as defined in the msgpack spec at http://wiki.msgpack.org/display/MSGPACK/RPC+specification
-type MsgpackSpecRpc struct{}
+type msgpackSpecRpc struct{}
 
 type msgpackSpecRpcCodec struct {
 	rpcCodec
@@ -612,11 +615,11 @@ func (d *msgpackDecoder) decodeExt(tag byte) (xbs []byte) {
 
 //--------------------------------------------------
 
-func (MsgpackSpecRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) (rpc.ServerCodec) {
+func (msgpackSpecRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) (rpc.ServerCodec) {
 	return &msgpackSpecRpcCodec{ newRPCCodec(conn, h) }
 }
 
-func (MsgpackSpecRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) (rpc.ClientCodec) {
+func (msgpackSpecRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) (rpc.ClientCodec) {
 	return &msgpackSpecRpcCodec{ newRPCCodec(conn, h) }
 }
 

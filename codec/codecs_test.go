@@ -718,8 +718,8 @@ func TestCodecs(t *testing.T) {
 }
 
 func TestRpcs(t *testing.T) {
-	doTestRpcOne(t, MsgpackSpecRpc{}, testMsgpackH, true, true, true)
-	doTestRpcOne(t, GoRpc{}, testMsgpackH, true, true, true)
-	doTestRpcOne(t, GoRpc{}, testBincH, true, true, true)
+	doTestRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, true, true)
+	doTestRpcOne(t, GoRpc, testMsgpackH, true, true, true)
+	doTestRpcOne(t, GoRpc, testBincH, true, true, true)
 }
 

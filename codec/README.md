@@ -115,11 +115,11 @@ Typical usage model:
     err = enc.Encode(v)
     
     //RPC Server
-    var rpcH codec.GoRpc // or codec.MsgpackSpecRpc  
     go func() {
         for {
             conn, err := listener.Accept()
-            rpcCodec := rpcH.ServerCodec(conn, h)
+            rpcCodec := codec.GoRpc.ServerCodec(conn, h)
+            //OR rpcCodec := codec.MsgpackSpecRpc.ServerCodec(conn, h)
             rpc.ServeCodec(rpcCodec)
         }
     }()

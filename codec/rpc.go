@@ -14,6 +14,9 @@ import (
 	"io"
 )
 
+// GoRpc implements Rpc using the communication protocol defined in net/rpc package.
+var GoRpc goRpc
+
 // Rpc interface provides a rpc Server or Client Codec for rpc communication.
 type Rpc interface {
 	ServerCodec(conn io.ReadWriteCloser, h Handle) (rpc.ServerCodec) 
@@ -30,15 +33,15 @@ type goRpcCodec struct {
 	rpcCodec
 }
 
-// GoRpc is the implementation of Rpc that uses the communication protocol 
+// goRpc is the implementation of Rpc that uses the communication protocol 
 // as defined in net/rpc package.
-type GoRpc struct {}
+type goRpc struct {}
 
-func (x GoRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) (rpc.ServerCodec) {
+func (x goRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) (rpc.ServerCodec) {
 	return goRpcCodec { newRPCCodec(conn, h) }
 }
 
-func (x GoRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) (rpc.ClientCodec) {
+func (x goRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) (rpc.ClientCodec) {
 	return goRpcCodec { newRPCCodec(conn, h) }
 }
 
