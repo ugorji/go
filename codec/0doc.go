@@ -7,7 +7,7 @@ High Performance, Feature-Rich Idiomatic Go encoding library for msgpack and bin
 Supported Serialization formats are:
 
   - msgpack: [http://wiki.msgpack.org/display/MSGPACK/Format+specification]
-  - binc: [http://www.ugorji.net/project/binc]
+  - binc: [http://github.com/ugorji/binc]
 
 To install:
 
@@ -135,28 +135,29 @@ A sample run of benchmark using "go test -bi -bench=.":
     ..............................................
     Benchmark: 
     	Struct recursive Depth:             1
-    	ApproxDeepSize Of benchmark Struct: 4758
+    	ApproxDeepSize Of benchmark Struct: 4786
     Benchmark One-Pass Run:
-    	   msgpack: len: 1504
-    	      binc: len: 1508
-    	       gob: len: 1908
-    	      json: len: 2402
-    	 v-msgpack: len: 1536
-    	      bson: len: 3009
+    	   msgpack: len: 1564
+    	      binc: len: 1191
+    	       gob: len: 1972
+    	      json: len: 2538
+    	 v-msgpack: len: 1600
+    	      bson: len: 3025
     ..............................................
-    Benchmark__Msgpack__Encode	   50000	     60824 ns/op
-    Benchmark__Msgpack__Decode	   10000	    115119 ns/op
-    Benchmark__Binc_____Encode	   50000	     55140 ns/op
-    Benchmark__Binc_____Decode	   10000	    112132 ns/op
-    Benchmark__Gob______Encode	   10000	    143350 ns/op
-    Benchmark__Gob______Decode	    5000	    434248 ns/op
-    Benchmark__Json_____Encode	   10000	    157298 ns/op
-    Benchmark__Json_____Decode	    5000	    303729 ns/op
-    Benchmark__Bson_____Encode	   10000	    174250 ns/op
-    Benchmark__Bson_____Decode	   10000	    223602 ns/op
-    Benchmark__VMsgpack_Encode	   20000	     80438 ns/op
-    Benchmark__VMsgpack_Decode	   10000	    157330 ns/op
-    
+    PASS
+    Benchmark__Msgpack__Encode	   50000	     61731 ns/op
+    Benchmark__Msgpack__Decode	   10000	    115947 ns/op
+    Benchmark__Binc_____Encode	   50000	     64568 ns/op
+    Benchmark__Binc_____Decode	   10000	    113843 ns/op
+    Benchmark__Gob______Encode	   10000	    143956 ns/op
+    Benchmark__Gob______Decode	    5000	    431889 ns/op
+    Benchmark__Json_____Encode	   10000	    158662 ns/op
+    Benchmark__Json_____Decode	    5000	    310744 ns/op
+    Benchmark__Bson_____Encode	   10000	    172905 ns/op
+    Benchmark__Bson_____Decode	   10000	    228564 ns/op
+    Benchmark__VMsgpack_Encode	   20000	     81752 ns/op
+    Benchmark__VMsgpack_Decode	   10000	    160050 ns/op
+
 To run full benchmark suite (including against vmsgpack and bson), 
 see notes in ext_dep_test.go
 

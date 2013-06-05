@@ -227,6 +227,10 @@ func (e *msgpackEncoder) encodeString(c charEncoding, s string) {
 	}
 }
 
+func (e *msgpackEncoder) encodeSymbol(v string) { 
+	e.encodeString(c_UTF8, v)
+}
+
 func (e *msgpackEncoder) encodeStringBytes(c charEncoding, bs []byte) {
 	//ignore charEncoding. 
 	e.writeContainerLen(msgpackContainerRawBytes, len(bs))
@@ -275,36 +279,36 @@ func (d *msgpackDecoder) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx dec
 		v = true
 
 	case mpFloat:
-		v = math.Float32frombits(d.r.readUint32())
+		v = float64(math.Float32frombits(d.r.readUint32()))
 	case mpDouble:
 		v = math.Float64frombits(d.r.readUint64())
 		
 	case mpUint8:
-		v = d.r.readUint8()
+		v = uint64(d.r.readn1())
 	case mpUint16:
-		v = d.r.readUint16()
+		v = uint64(d.r.readUint16())
 	case mpUint32:
-		v = d.r.readUint32()
+		v = uint64(d.r.readUint32())
 	case mpUint64:
-		v = d.r.readUint64()
+		v = uint64(d.r.readUint64())
 		
 	case mpInt8:
-		v = int8(d.r.readUint8())
+		v = int64(int8(d.r.readn1()))
 	case mpInt16:
-		v = int16(d.r.readUint16())
+		v = int64(int16(d.r.readUint16()))
 	case mpInt32:
-		v = int32(d.r.readUint32())
+		v = int64(int32(d.r.readUint32()))
 	case mpInt64:
-		v = int64(d.r.readUint64())
+		v = int64(int64(d.r.readUint64()))
 		
 	default:
 		switch {
 		case bd >= mpPosFixNumMin && bd <= mpPosFixNumMax:
 			// positive fixnum (always signed)
-			v = int8(bd)
+			v = int64(int8(bd))
 		case bd >= mpNegFixNumMin && bd <= mpNegFixNumMax:
 			// negative fixnum
-			v = int8(bd)		
+			v = int64(int8(bd))		
 		case bd == mpRaw16, bd == mpRaw32, bd >= mpFixRawMin && bd <= mpFixRawMax:
 			ctx = dncContainer
 			// v = containerRawBytes
@@ -335,7 +339,7 @@ func (d *msgpackDecoder) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx dec
 			}
 		case bd >= mpXv4Fixext0 && bd <= mpXv4Fixext5, bd >= mpXv4Ext8m && bd <= mpXv4Ext32:
 			//ctx = dncExt
-			xtag := d.r.readUint8()
+			xtag := d.r.readn1()
 			opts := h.(*MsgpackHandle)
 			rt, bfn := opts.getDecodeExtForTag(xtag)
 			if rt == nil {
@@ -366,7 +370,7 @@ func (d *msgpackDecoder) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx dec
 func (d *msgpackDecoder) decodeInt(bitsize uint8) (i int64) {
 	switch d.bd {
 	case mpUint8:
-		i = int64(uint64(d.r.readUint8()))
+		i = int64(uint64(d.r.readn1()))
 	case mpUint16:
 		i = int64(uint64(d.r.readUint16()))
 	case mpUint32:
@@ -374,7 +378,7 @@ func (d *msgpackDecoder) decodeInt(bitsize uint8) (i int64) {
 	case mpUint64:
 		i = int64(d.r.readUint64())
 	case mpInt8:
-		i = int64(int8(d.r.readUint8()))
+		i = int64(int8(d.r.readn1()))
 	case mpInt16:
 		i = int64(int16(d.r.readUint16()))
 	case mpInt32:
@@ -406,7 +410,7 @@ func (d *msgpackDecoder) decodeInt(bitsize uint8) (i int64) {
 func (d *msgpackDecoder) decodeUint(bitsize uint8) (ui uint64) {
 	switch d.bd {
 	case mpUint8:
-		ui = uint64(d.r.readUint8())
+		ui = uint64(d.r.readn1())
 	case mpUint16:
 		ui = uint64(d.r.readUint16())
 	case mpUint32:
@@ -414,7 +418,7 @@ func (d *msgpackDecoder) decodeUint(bitsize uint8) (ui uint64) {
 	case mpUint64:
 		ui = d.r.readUint64()
 	case mpInt8:
-		if i := int64(int8(d.r.readUint8())); i >= 0 {
+		if i := int64(int8(d.r.readn1())); i >= 0 {
 			ui = uint64(i)
 		} else {
 			decErr("Assigning negative signed value: %v, to unsigned type", i)
@@ -505,7 +509,7 @@ func (d *msgpackDecoder) decodeString() (s string) {
 }
 
 // Callers must check if changed=true (to decide whether to replace the one they have)
-func (d *msgpackDecoder) decodeStringBytes(bs []byte) (bsOut []byte, changed bool) {
+func (d *msgpackDecoder) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 	clen := d.readContainerLen(msgpackContainerRawBytes)
 	// if clen < 0 {
 	// 	changed = true
@@ -534,7 +538,7 @@ func (d *msgpackDecoder) initReadNext() {
 	if d.bdRead {
 		return
 	}
-	d.bd = d.r.readUint8()
+	d.bd = d.r.readn1()
 	d.bdRead = true
 }
 
@@ -577,7 +581,7 @@ func (d *msgpackDecoder) readExtLen() (clen int) {
 	case mpNil:
 		clen = -1 // to represent nil
 	case mpXv4Fixext5:
-		clen = int(d.r.readUint8())
+		clen = int(d.r.readn1())
 	case mpXv4Ext16:
 		clen = int(d.r.readUint16())
 	case mpXv4Ext32:
@@ -600,12 +604,12 @@ func (d *msgpackDecoder) decodeExt(tag byte) (xbs []byte) {
 	xbd := d.bd
 	switch {
 	case xbd >= mpXv4Fixext0 && xbd <= mpXv4Fixext5, xbd >= mpXv4Ext8m && xbd <= mpXv4Ext32:
-		if xtag := d.r.readUint8(); xtag != tag {
+		if xtag := d.r.readn1(); xtag != tag {
 			decErr("Wrong extension tag. Got %b. Expecting: %v", xtag, tag)
 		}
 		xbs = d.r.readn(d.readExtLen())
 	case xbd == mpRaw16, xbd == mpRaw32, xbd >= mpFixRawMin && xbd <= mpFixRawMax:
-		xbs, _ = d.decodeStringBytes(nil)
+		xbs, _ = d.decodeBytes(nil)
 	default:
 		decErr("Wrong byte descriptor (Expecting extensions or raw bytes). Got: 0x%x", xbd)
 	}		

@@ -36,7 +36,7 @@ const (
 )
 
 var (
-	binc = binary.BigEndian
+	bigen = binary.BigEndian
 	structInfoFieldName = "_struct"
 	
 	cachedStructFieldInfos = make(map[reflect.Type]structFieldInfos, 4)

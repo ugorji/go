@@ -31,7 +31,7 @@ const (
 type decReader interface {
 	readn(n int) []byte
 	readb([]byte)
-	readUint8() uint8
+	readn1() uint8
 	readUint16() uint16
 	readUint32() uint32
 	readUint64() uint64
@@ -42,13 +42,15 @@ type decoder interface {
 	currentIsNil() bool
 	decodeBuiltinType(rt reflect.Type, rv reflect.Value) bool
 	//decodeNaked should completely handle extensions, builtins, primitives, etc.
+	//Numbers are decoded as int64, uint64, float64 only (no smaller sized number types).
 	decodeNaked(h decodeHandleI) (rv reflect.Value, ctx decodeNakedContext)
 	decodeInt(bitsize uint8) (i int64)
 	decodeUint(bitsize uint8) (ui uint64) 
 	decodeFloat(chkOverflow32 bool) (f float64)
 	decodeBool() (b bool) 
+	// decodeString can also decode symbols
 	decodeString() (s string) 
-	decodeStringBytes(bs []byte) (bsOut []byte, changed bool)
+	decodeBytes(bs []byte) (bsOut []byte, changed bool)
 	decodeExt(tag byte) []byte
 	readMapLen() int
 	readArrayLen() int 
@@ -65,9 +67,8 @@ type Decoder struct {
 
 // ioDecReader is a decReader that reads off an io.Reader
 type ioDecReader struct {
-	x [8]byte        //temp byte array re-used internally for efficiency
-	t01, t02, t04, t08 []byte // use these, so no need to constantly re-slice
 	r io.Reader
+	x [8]byte        //temp byte array re-used internally for efficiency
 }
 
 
@@ -182,7 +183,6 @@ func NewDecoder(r io.Reader, h Handle) (*Decoder) {
 	z := ioDecReader {
 		r: r,
 	}
-	z.t01, z.t02, z.t04, z.t08 = z.x[:1], z.x[:2], z.x[:4], z.x[:8]
 	return &Decoder{ r: &z, d: h.newDecoder(&z), h: h }
 }
 
@@ -427,13 +427,13 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		// In places where the slice got from an array could be, we should guard with CanSet() calls.
 		
 		if rt == byteSliceTyp { // rawbytes 
-			if bs2, changed2 := dd.decodeStringBytes(rv.Bytes()); changed2 {
+			if bs2, changed2 := dd.decodeBytes(rv.Bytes()); changed2 {
 				rv.SetBytes(bs2)
 			}
 			if wasNilIntf && rv.IsNil() {
 				rv.SetBytes([]byte{})
 			}
-			break			
+			break
 		}
 		
 		containerLen := dd.readArrayLen()
@@ -540,24 +540,24 @@ func (z *ioDecReader) readb(bs []byte) {
 	}
 }
 
-func (z *ioDecReader) readUint8() uint8 {
-	z.readb(z.t01)
+func (z *ioDecReader) readn1() uint8 {
+	z.readb(z.x[:1])
 	return z.x[0]
 }
 
 func (z *ioDecReader) readUint16() uint16 {
-	z.readb(z.t02)
-	return binc.Uint16(z.t02)
+	z.readb(z.x[:2])
+	return bigen.Uint16(z.x[:2])
 }
 
 func (z *ioDecReader) readUint32() uint32 {
-	z.readb(z.t04)
-	return binc.Uint32(z.t04)
+	z.readb(z.x[:4])
+	return bigen.Uint32(z.x[:4])
 }
 
 func (z *ioDecReader) readUint64() uint64 {
-	z.readb(z.t08)
-	return binc.Uint64(z.t08)
+	z.readb(z.x[:8])
+	return bigen.Uint64(z.x[:8])
 }
 
 // ------------------------------------
@@ -586,7 +586,7 @@ func (z *bytesDecReader) readb(bs []byte) {
 	copy(bs, z.readn(len(bs)))
 }
 
-func (z *bytesDecReader) readUint8() uint8 {
+func (z *bytesDecReader) readn1() uint8 {
 	c0 := z.consume(1)
 	return z.b[c0]
 }
@@ -602,12 +602,12 @@ func (z *bytesDecReader) readUint16() uint16 {
 
 func (z *bytesDecReader) readUint32() uint32 {
 	c0 := z.consume(4)
-	return binc.Uint32(z.b[c0 : z.c])
+	return bigen.Uint32(z.b[c0 : z.c])
 }
 
 func (z *bytesDecReader) readUint64() uint64 {
 	c0 := z.consume(8)
-	return binc.Uint64(z.b[c0 : z.c])
+	return bigen.Uint64(z.b[c0 : z.c])
 }
 
 // ----------------------------------------
@@ -626,30 +626,30 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 	)
 	switch len(bs) {
 	case 4:		
-		tsec = int64(int32(binc.Uint32(bs)))
+		tsec = int64(int32(bigen.Uint32(bs)))
 	case 6:
-		tsec = int64(int32(binc.Uint32(bs)))
-		tz = (binc.Uint16(bs[4:]))
+		tsec = int64(int32(bigen.Uint32(bs)))
+		tz = (bigen.Uint16(bs[4:]))
 	case 8:
-		tsec = int64(int32(binc.Uint32(bs)))
-		tnsec = int32(binc.Uint32(bs[4:]))
+		tsec = int64(int32(bigen.Uint32(bs)))
+		tnsec = int32(bigen.Uint32(bs[4:]))
 	case 10:
-		tsec = int64(int32(binc.Uint32(bs)))
-		tnsec = int32(binc.Uint32(bs[4:]))
-		tz = (binc.Uint16(bs[8:]))
+		tsec = int64(int32(bigen.Uint32(bs)))
+		tnsec = int32(bigen.Uint32(bs[4:]))
+		tz = (bigen.Uint16(bs[8:]))
 
 	case 9:
-		tsec = int64(binc.Uint64(bs))
+		tsec = int64(bigen.Uint64(bs))
 	case 11:
-		tsec = int64(binc.Uint64(bs))
-		tz = (binc.Uint16(bs[8:]))
+		tsec = int64(bigen.Uint64(bs))
+		tz = (bigen.Uint16(bs[8:]))
 	case 12:
-		tsec = int64(binc.Uint64(bs))
-		tnsec = int32(binc.Uint32(bs[8:]))
+		tsec = int64(bigen.Uint64(bs))
+		tnsec = int32(bigen.Uint32(bs[8:]))
 	case 14:
-		tsec = int64(binc.Uint64(bs))
-		tnsec = int32(binc.Uint32(bs[8:]))
-		tz = (binc.Uint16(bs[12:]))
+		tsec = int64(bigen.Uint64(bs))
+		tnsec = int32(bigen.Uint32(bs[8:]))
+		tz = (bigen.Uint16(bs[12:]))
 	default:
 		err = fmt.Errorf("Error decoding bytes: %v as time.Time. Invalid length: %v", bs, len(bs))
 		return 

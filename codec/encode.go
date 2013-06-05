@@ -9,10 +9,10 @@ import (
 	"reflect"
 	"math"
 	"time"
-	"fmt"
+	//"fmt"
 )
 
-var _ = fmt.Printf
+//var _ = fmt.Printf
 const (
 	// Some tagging information for error messages.
 	msgTagEnc = "codec.encoder"
@@ -30,6 +30,7 @@ type encWriter interface {
 	writen1(byte)
 	writen2(byte, byte)
 	writen3(byte, byte, byte)
+	writen4(byte, byte, byte, byte)
 	flush()
 }
 
@@ -45,6 +46,7 @@ type encoder interface {
 	encodeArrayPreamble(length int)
 	encodeMapPreamble(length int)
 	encodeString(c charEncoding, v string)
+	encodeSymbol(v string)
 	encodeStringBytes(c charEncoding, v []byte)
 	//TODO
 	//encBignum(f *big.Int) 
@@ -79,9 +81,7 @@ type ioEncWriterFlusher interface {
 // ioEncWriter implements encWriter and can write to an io.Writer implementation
 type ioEncWriter struct {
 	w ioEncWriterWriter
-	// temp byte array and slices used to prevent constant re-slicing while writing.
-	x [8]byte        
-	t01, t02, t04, t08 []byte 
+	x [8]byte // temp byte array re-used internally for efficiency
 }
 
 // bytesEncWriter implements encWriter and can write to an byte slice.
@@ -163,7 +163,6 @@ func NewEncoder(w io.Writer, h Handle) (*Encoder) {
 	z := ioEncWriter {
 		w: ww,
 	}
-	z.t01, z.t02, z.t04, z.t08 = z.x[:1], z.x[:2], z.x[:4], z.x[:8]
 	return &Encoder { w: &z, h: h, e: h.newEncoder(&z) }
 }
 
@@ -214,7 +213,11 @@ func NewEncoderBytes(out *[]byte, h Handle) (*Encoder) {
 //          Field4 bool     `codec:"f4,omitempty"` //use key "f4". Omit if empty.
 //          ...
 //      }
-//    
+// 
+// Note: 
+//   - Encode will treat struct field names and keys in map[string]XXX as symbols.
+//     Some formats support symbols (e.g. binc) and will properly encode the string
+//     only once in the stream, and use a tag to refer to it thereafter.
 func (e *Encoder) Encode(v interface{}) (err error) {
 	defer panicToErr(&err) 
 	e.encode(v)
@@ -361,10 +364,15 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 		if l == 0 {
 			break
 		}
+		keyTypeIsString := rt.Key().Kind() == reflect.String 
 		mks := rv.MapKeys()
 		// for j, lmks := 0, len(mks); j < lmks; j++ {
 		for j := range mks {
-			e.encodeValue(mks[j])
+			if keyTypeIsString {
+				ee.encodeSymbol(mks[j].String())
+			} else {
+				e.encodeValue(mks[j])
+			}
 		 	e.encodeValue(rv.MapIndex(mks[j]))
 		}
 	case reflect.Struct:
@@ -419,7 +427,7 @@ func (e *Encoder) encStruct(rt reflect.Type, rv reflect.Value) {
 	ee.encodeMapPreamble(newlen)
 	for j := 0; j < newlen; j++ {
 		//e.encString(sis[sivals[j]].encName)
-		ee.encodeString(c_UTF8, encnames[j])
+		ee.encodeSymbol(encnames[j])
 		e.encodeValue(rvals[j])
 	}
 }
@@ -427,18 +435,18 @@ func (e *Encoder) encStruct(rt reflect.Type, rv reflect.Value) {
 // ----------------------------------------
 
 func (z *ioEncWriter) writeUint16(v uint16) {
-	binc.PutUint16(z.t02, v)
-	z.writeb(z.t02)
+	bigen.PutUint16(z.x[:2], v)
+	z.writeb(z.x[:2])
 }
 
 func (z *ioEncWriter) writeUint32(v uint32) {
-	binc.PutUint32(z.t04, v)
-	z.writeb(z.t04)
+	bigen.PutUint32(z.x[:4], v)
+	z.writeb(z.x[:4])
 }
 
 func (z *ioEncWriter) writeUint64(v uint64) {
-	binc.PutUint64(z.t08, v)
-	z.writeb(z.t08)
+	bigen.PutUint64(z.x[:8], v)
+	z.writeb(z.x[:8])
 }
 
 func (z *ioEncWriter) writeb(bs []byte) {
@@ -472,10 +480,17 @@ func (z *ioEncWriter) writen2(b1 byte, b2 byte) {
 	z.writen1(b2)
 }
 
-func (z *ioEncWriter) writen3(b1 byte, b2 byte, b3 byte) {
+func (z *ioEncWriter) writen3(b1, b2, b3 byte) {
 	z.writen1(b1)
 	z.writen1(b2)
 	z.writen1(b3)
+}
+
+func (z *ioEncWriter) writen4(b1, b2, b3, b4 byte) {
+	z.writen1(b1)
+	z.writen1(b2)
+	z.writen1(b3)
+	z.writen1(b4)
 }
 
 func (z *ioEncWriter) flush() {
@@ -542,6 +557,14 @@ func (z *bytesEncWriter) writen3(b1 byte, b2 byte, b3 byte) {
 	z.b[c + 2] = b3
 }
 
+func (z *bytesEncWriter) writen4(b1 byte, b2 byte, b3 byte, b4 byte) {
+	c := z.grow(4)
+	z.b[c] = b1
+	z.b[c + 1] = b2
+	z.b[c + 2] = b3
+	z.b[c + 3] = b4
+}
+
 func (z *bytesEncWriter) flush() { 
 	*(z.out) = z.b[:z.c]
 }
@@ -581,15 +604,15 @@ func encodeTime(t time.Time) ([]byte) {
 		l = nil
 	}
 	if tsecs > math.MinInt32 && tsecs < math.MaxInt32 {
-		binc.PutUint32(bs[i:], uint32(int32(tsecs)))
+		bigen.PutUint32(bs[i:], uint32(int32(tsecs)))
 		i = i + 4
 	} else {
-		binc.PutUint64(bs[i:], uint64(tsecs))
+		bigen.PutUint64(bs[i:], uint64(tsecs))
 		i = i + 8
 		padzero = (tnsecs == 0)
 	}
 	if tnsecs != 0 {
-		binc.PutUint32(bs[i:], uint32(tnsecs))
+		bigen.PutUint32(bs[i:], uint32(tnsecs))
 		i = i + 4
 	}
 	if l != nil {
@@ -607,7 +630,7 @@ func encodeTime(t time.Time) ([]byte) {
 			z |= 1 << 15 //set sign bit
 		}
 		//fmt.Printf(">>>>>> ENC: z: %b\n", z)
-		binc.PutUint16(bs[i:], z)
+		bigen.PutUint16(bs[i:], z)
 		i = i + 2
 	}
 	if padzero {

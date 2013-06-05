@@ -34,7 +34,15 @@ import (
 	"net"
 	"fmt"
 	"flag"
+	"math"
 	"encoding/gob"
+)
+
+type testVerifyArg int 
+const (
+	testVerifyMapTypeSame testVerifyArg = iota
+	testVerifyMapTypeStrIntf
+	testVerifyMapTypeIntfIntf
 )
 
 var (
@@ -125,6 +133,88 @@ func (r *TestRpcInt) Update(n int, res *int) error { r.i = n; *res = r.i; return
 func (r *TestRpcInt) Square(ignore int, res *int) error { *res = r.i * r.i; return nil }
 func (r *TestRpcInt) Mult(n int, res *int) error { *res = r.i * n; return nil }
 
+func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
+	switch iv := v.(type) {
+	case int8:
+		v2 = int64(iv)
+	case int16:
+		v2 = int64(iv)
+	case int32:
+		v2 = int64(iv)
+	case int64:
+		v2 = int64(iv)
+	case uint8:
+		v2 = uint64(iv)
+	case uint16:
+		v2 = uint64(iv)
+	case uint32:
+		v2 = uint64(iv)
+	case uint64:
+		v2 = uint64(iv)
+	case float32:
+		v2 = float64(iv)
+	case float64:
+		v2 = float64(iv)
+	case []interface{}:
+		m2 := make([]interface{}, len(iv))
+		for j, vj := range iv {
+			m2[j] = testVerifyVal(vj, arg)
+		}
+		v2 = m2
+	case map[string]bool: 
+		switch arg {
+		case testVerifyMapTypeSame:
+			m2 := make(map[string]bool)
+			for kj, kv := range iv {
+				m2[kj] = kv
+			}			
+			v2 = m2
+		case testVerifyMapTypeStrIntf:
+			m2 := make(map[string]interface{})
+			for kj, kv := range iv {
+				m2[kj] = kv
+			}
+			v2 = m2
+		case testVerifyMapTypeIntfIntf:
+			m2 := make(map[interface{}]interface{})
+			for kj, kv := range iv {
+				m2[kj] = kv
+			}
+			v2 = m2
+		}
+	case map[string]interface{}: 
+		switch arg {
+		case testVerifyMapTypeSame:
+			m2 := make(map[string]interface{})
+			for kj, kv := range iv {
+				m2[kj] = testVerifyVal(kv, arg)
+			}
+			v2 = m2
+		case testVerifyMapTypeStrIntf:
+			m2 := make(map[string]interface{})
+			for kj, kv := range iv {
+				m2[kj] = testVerifyVal(kv, arg)
+			}
+			v2 = m2
+		case testVerifyMapTypeIntfIntf:
+			m2 := make(map[interface{}]interface{})
+			for kj, kv := range iv {
+				m2[kj] = testVerifyVal(kv, arg)
+			}
+			v2 = m2
+		}
+	case map[interface{}]interface{}: 
+		m2 := make(map[interface{}]interface{})
+		for kj, kv := range iv {
+			m2[testVerifyVal(kj, arg)] = testVerifyVal(kv, arg)
+		}
+		v2 = m2
+	default:
+		v2 = v
+	}
+	return
+}
+
 func init() {
 	primitives := []interface{} {
 		int8(-8),
@@ -190,54 +280,69 @@ func init() {
 	table = append(table, primitives)       //20 is a list of primitives
 	table = append(table, mapsAndStrucs...) //21-24 are maps. 25 is a *struct
 
-	// we verify against the same table, but skip 23 
-	// because interface{} equality is not defined exact for exact objects or nil.
-	var a, b []interface{}
-	var c map[string]interface{}
-	a = make([]interface{}, len(table))
-	copy(a, table)
-	b = make([]interface{}, len(a[20].([]interface{})))
-	copy(b, a[20].([]interface{}))
-	// b[0], b[4], b[8], b[16], b[19] = int8(-8), int8(8), int8(8), 
-	// 	// []interface {}{int32(1328148122), int16(2000)}, "bytestring"
-	// 	timeToCompare, "bytestring"
-	//b[4], b[8] = int8(8), int8(8)
-	//b[4] = int8(8)
-	a[20] = b
-	a[23] = skipVerifyVal 
-	//a[25] = skipVerifyVal
-	tableVerify = a
+	tableVerify = make([]interface{}, len(table))
+	tableTestNilVerify = make([]interface{}, len(table))
+	tablePythonVerify = make([]interface{}, len(table))
 	
-	//when decoding into nil, for testing, 
-	//we treat each []byte as string, and uint < 127 are decoded as int8.
-	a = make([]interface{}, len(tableVerify))
-	copy(a, tableVerify)
-	//a[0], a[4], a[8], a[16], a[19] = int8(-8), int8(8), int8(8), timeToCompare, "bytestring"
-	a[0], a[16], a[19] = int8(-8), timeToCompare, "bytestring"
-	a[21] = map[string]interface{}{"true":true, "false":false}
-	a[23] = table[23]
-	a[25] = skipVerifyVal
-	tableTestNilVerify = a
-	
-	//python msgpack encodes large positive numbers as unsigned, and all floats as float64
-	a = make([]interface{}, len(tableTestNilVerify)-2)
-	copy(a, tableTestNilVerify)
-	a[23] = table[23]
-	a[9], a[11], a[16] = float64(-3232.0), float64(3232.0), uint64(1328148122000002)
-	b = make([]interface{}, len(a[20].([]interface{})))
-	copy(b, a[20].([]interface{}))
-	//b[4], b[8] = int8(8), int8(8)
-	b[9], b[11], b[16] = float64(-3232.0), float64(3232.0), uint64(1328148122000002)
-	a[20] = b
-	c = make(map[string]interface{})
-	for k, v := range a[23].(map[string]interface{}) { 
-		c[k] = v
+	lp := len(primitives)
+	av := tableVerify
+	for i, v := range table {
+		if i == lp+3 {
+			av[i] = skipVerifyVal
+			continue
+		} 
+		switch v.(type) {
+		case []interface{}:
+			av[i] = testVerifyVal(v, testVerifyMapTypeSame)
+		case map[string]interface{}:
+			av[i] = testVerifyVal(v, testVerifyMapTypeSame)
+		case map[interface{}]interface{}:
+			av[i] = testVerifyVal(v, testVerifyMapTypeSame)
+		default:
+			av[i] = v
+		}				
 	}
-	a[23] = c
-	c["int32"] = uint32(32323232)
-	b = c["list"].([]interface{})
-	b[0], b[1], b[3] = uint16(1616), uint32(32323232), float64(-3232.0)
-	tablePythonVerify = a
+
+	av = tableTestNilVerify
+	for i, v := range table {
+		if i > lp+3 { 
+			av[i] = skipVerifyVal
+			continue
+		}
+		av[i] = testVerifyVal(v, testVerifyMapTypeStrIntf)
+	}
+	
+	av = tablePythonVerify
+	for i, v := range table {
+		if i > lp+3 { 
+			av[i] = skipVerifyVal
+			continue
+		}
+		av[i] = testVerifyVal(v, testVerifyMapTypeStrIntf)
+		//msgpack python encodes large positive numbers as unsigned ints
+		switch i {
+		case 16:
+			av[i] = uint64(1328148122000002)
+		case 20:
+			//msgpack python doesn't understand time. So use number val.
+			m2 := av[i].([]interface{})
+			m3 := make([]interface{}, len(m2))
+			copy(m3, m2)
+			m3[16] = uint64(1328148122000002)
+			av[i] = m3
+		case 23:
+			m2 := make(map[string]interface{})
+			for k2, v2 := range av[i].(map[string]interface{}) { 
+				m2[k2] = v2
+			}
+			m2["int32"] = uint64(32323232)
+			m3 := m2["list"].([]interface{})
+			m3[0], m3[1], m3[3] = uint64(1616), uint64(32323232), float64(-3232.0)
+			av[i] = m2
+		}
+	}
+	
+	tablePythonVerify = tablePythonVerify[:24]
 }
 
 func testUnmarshal(v interface{}, data []byte, h Handle) error {
@@ -263,9 +368,9 @@ func newTestStruc(depth int, bench bool) (ts *TestStruc) {
 	
 	ts = &TestStruc {
 		S: "some string",
-		I64: 64,
+		I64: math.MaxInt64 * 2 / 3, // 64,
 		I16: 16,
-		Ui64: 64,
+		Ui64: uint64(int64(math.MaxInt64 * 2 / 3)), // 64, //don't use MaxUint64, as bson can't write it
 		Ui8: 160,
 		B: true,
 		By: 5,
@@ -278,7 +383,7 @@ func newTestStruc(depth int, bench bool) (ts *TestStruc) {
 		Bslice: []bool{true, false, true, false},
 		Byslice: []byte{13, 14, 15},
 		
-		Islice: []interface{}{"true", true, "no", false, uint8(88), float64(0.4)},
+		Islice: []interface{}{"true", true, "no", false, uint64(88), float64(0.4)},
 		
 		Ms: map[string]interface{}{
 			"true": "true",
@@ -393,7 +498,7 @@ func testCodecTableOne(t *testing.T, h Handle) {
 		v.WriteExt = true
 	}
 	doTestCodecTableOne(t, false, h, table, tableVerify) 
-
+	//if true { panic("") }
 	switch v := h.(type) {
 	case *MsgpackHandle:
 		v.WriteExt = oldWriteExt
@@ -415,7 +520,7 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	}
 	//skip #16 (time.Time), and #20 ([]interface{} containing time.Time)
 	doTestCodecTableOne(t, true, h, table[:16], tableTestNilVerify[:16]) 
-	doTestCodecTableOne(t, true, h, table[17:20], tableTestNilVerify[17:20]) 
+	doTestCodecTableOne(t, true, h, table[17:20], tableTestNilVerify[17:20])
 	doTestCodecTableOne(t, true, h, table[21:24], tableTestNilVerify[21:24]) 
 	
 	switch v := h.(type) {
@@ -466,7 +571,7 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	if err != nil {
 		logT(t, "------- Cannot Unmarshal pointer to struct. Error: %v", err)
 		t.FailNow()
-	} else if ts2.I64 != 64 {
+	} else if ts2.I64 != math.MaxInt64 * 2 / 3 {
 		logT(t, "------- Unmarshal wrong. Expect I64 = 64. Got: %v", ts2.I64)
 		t.FailNow()
 	}
@@ -710,16 +815,30 @@ func doTestMsgpackPythonGenStreams(t *testing.T) {
 	
 }
 
-func TestCodecs(t *testing.T) {
+func TestMsgpackCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testMsgpackH)
+}
+
+func TestMsgpackCodecsMisc(t *testing.T) {
 	testCodecMiscOne(t, testMsgpackH)
+}
+
+func TestBincCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testBincH)
+}
+
+func TestBincCodecsMisc(t *testing.T) {
 	testCodecMiscOne(t, testBincH)	
 }
 
-func TestRpcs(t *testing.T) {
-	doTestRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, true, true)
+func TestMsgpackRpcGo(t *testing.T) {
 	doTestRpcOne(t, GoRpc, testMsgpackH, true, true, true)
+}
+func TestMsgpackRpcSpec(t *testing.T) {
+	doTestRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, true, true)
+}
+
+func TestBincRpcGo(t *testing.T) {
 	doTestRpcOne(t, GoRpc, testBincH, true, true, true)
 }
 
