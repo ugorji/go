@@ -51,7 +51,7 @@ Rich Feature Set includes:
       - RPC Server/Client Codec for msgpack-rpc protocol defined at: 
         http://wiki.msgpack.org/display/MSGPACK/RPC+specification
 
-Extension Support
+## Extension Support
 
 Users can register a function to handle the encoding or decoding of
 their custom types. 
@@ -76,7 +76,7 @@ an inter-operable format. For msgpack, these are Binary and
 time.Time. Library users will have to explicitly configure these as seen
 in the usage below.
 
-Usage
+## Usage
 
 Typical usage model:
 
@@ -129,7 +129,7 @@ Typical usage model:
     rpcCodec := rpcH.ClientCodec(conn, h)  
     client := rpc.NewClientWithCodec(rpcCodec)
 
-Representative Benchmark Results
+## Representative Benchmark Results
 
 A sample run of benchmark using "go test -bi -bench=.":
 
