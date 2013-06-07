@@ -276,7 +276,7 @@ func (e *bincEncoder) encodeSymbol(v string) {
 			// lenprec = 0
 		case l <= math.MaxUint16:
 			lenprec = 1
-		case l <= math.MaxUint32:
+		case int64(l) <= math.MaxUint32:
 			lenprec = 2
 		default:
 			lenprec = 3
