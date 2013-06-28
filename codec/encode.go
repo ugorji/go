@@ -4,23 +4,21 @@
 package codec
 
 import (
-	"io"
 	"bufio"
+	"io"
 	"reflect"
-	"math"
-	"time"
 	//"fmt"
 )
 
 //var _ = fmt.Printf
 const (
 	// Some tagging information for error messages.
-	msgTagEnc = "codec.encoder"
+	msgTagEnc         = "codec.encoder"
 	defEncByteBufSize = 1 << 6 // 4:16, 6:64, 8:256, 10:1024
 	// maxTimeSecs32 = math.MaxInt32 / 60 / 24 / 366
 )
 
-// encWriter abstracting writing to a byte array or to an io.Writer. 
+// encWriter abstracting writing to a byte array or to an io.Writer.
 type encWriter interface {
 	writeUint16(uint16)
 	writeUint32(uint32)
@@ -34,37 +32,34 @@ type encWriter interface {
 	flush()
 }
 
-type encoder interface {
+type encDriver interface {
 	encodeBuiltinType(rt reflect.Type, rv reflect.Value) bool
 	encodeNil()
 	encodeInt(i int64)
 	encodeUint(i uint64)
-	encodeBool(b bool) 
+	encodeBool(b bool)
 	encodeFloat32(f float32)
 	encodeFloat64(f float64)
-	encodeExtPreamble(xtag byte, length int) 
+	encodeExtPreamble(xtag byte, length int)
 	encodeArrayPreamble(length int)
 	encodeMapPreamble(length int)
 	encodeString(c charEncoding, v string)
 	encodeSymbol(v string)
 	encodeStringBytes(c charEncoding, v []byte)
 	//TODO
-	//encBignum(f *big.Int) 
+	//encBignum(f *big.Int)
 	//encStringRunes(c charEncoding, v []rune)
 }
 
-type newEncoderFunc func(w encWriter) encoder
-
 type encodeHandleI interface {
-	getEncodeExt(rt reflect.Type) (tag byte, fn func(reflect.Value) ([]byte, error)) 
-	newEncoder(w encWriter) encoder
+	getEncodeExt(rt reflect.Type) (tag byte, fn func(reflect.Value) ([]byte, error))
 	writeExt() bool
 }
 
 // An Encoder writes an object to an output stream in the codec format.
 type Encoder struct {
 	w encWriter
-	e encoder
+	e encDriver
 	h encodeHandleI
 }
 
@@ -75,9 +70,9 @@ type ioEncWriterWriter interface {
 }
 
 type ioEncWriterFlusher interface {
-	 Flush() error
+	Flush() error
 }
-	
+
 // ioEncWriter implements encWriter and can write to an io.Writer implementation
 type ioEncWriter struct {
 	w ioEncWriterWriter
@@ -87,16 +82,16 @@ type ioEncWriter struct {
 // bytesEncWriter implements encWriter and can write to an byte slice.
 // It is used by Marshal function.
 type bytesEncWriter struct {
-	b []byte
-	c int // cursor
+	b   []byte
+	c   int     // cursor
 	out *[]byte // write out on flush
 }
-	
+
 type encExtTagFn struct {
-	fn func(reflect.Value) ([]byte, error)
+	fn  func(reflect.Value) ([]byte, error)
 	tag byte
 }
- 
+
 type encExtTypeTagFn struct {
 	rt reflect.Type
 	encExtTagFn
@@ -104,20 +99,20 @@ type encExtTypeTagFn struct {
 
 // EncoderOptions contain options for the encoder, e.g. registered extension functions.
 type encHandle struct {
-	extFuncs map[reflect.Type] encExtTagFn
-	exts []encExtTypeTagFn
+	extFuncs map[reflect.Type]encExtTagFn
+	exts     []encExtTypeTagFn
 }
 
-// addEncodeExt registers a function to handle encoding a given type as an extension  
-// with a specific specific tag byte. 
+// addEncodeExt registers a function to handle encoding a given type as an extension
+// with a specific specific tag byte.
 // To remove an extension, pass fn=nil.
 func (o *encHandle) addEncodeExt(rt reflect.Type, tag byte, fn func(reflect.Value) ([]byte, error)) {
 	if o.exts == nil {
 		o.exts = make([]encExtTypeTagFn, 0, 8)
-		o.extFuncs = make(map[reflect.Type] encExtTagFn, 8)
+		o.extFuncs = make(map[reflect.Type]encExtTagFn, 8)
 	}
 	delete(o.extFuncs, rt)
-	
+
 	if fn != nil {
 		o.extFuncs[rt] = encExtTagFn{fn, tag}
 	}
@@ -128,12 +123,12 @@ func (o *encHandle) addEncodeExt(rt reflect.Type, tag byte, fn func(reflect.Valu
 	}
 	var i int
 	for k, v := range o.extFuncs {
-		o.exts[i] = encExtTypeTagFn {k, v}
+		o.exts[i] = encExtTypeTagFn{k, v}
 		i++
 	}
 }
 
-func (o *encHandle) getEncodeExt(rt reflect.Type) (tag byte, fn func(reflect.Value) ([]byte, error)) {	
+func (o *encHandle) getEncodeExt(rt reflect.Type) (tag byte, fn func(reflect.Value) ([]byte, error)) {
 	// For >= 5 elements, map constant cost less than iteration cost.
 	// This is because reflect.Type equality cost is pretty high
 	if l := len(o.exts); l == 0 {
@@ -155,56 +150,56 @@ func (o *encHandle) getEncodeExt(rt reflect.Type) (tag byte, fn func(reflect.Val
 // NewEncoder returns an Encoder for encoding into an io.Writer.
 // For efficiency, Users are encouraged to pass in a memory buffered writer
 // (eg bufio.Writer, bytes.Buffer). This implementation *may* use one internally.
-func NewEncoder(w io.Writer, h Handle) (*Encoder) {
+func NewEncoder(w io.Writer, h Handle) *Encoder {
 	ww, ok := w.(ioEncWriterWriter)
 	if !ok {
 		ww = bufio.NewWriterSize(w, defEncByteBufSize)
 	}
-	z := ioEncWriter {
+	z := ioEncWriter{
 		w: ww,
 	}
-	return &Encoder { w: &z, h: h, e: h.newEncoder(&z) }
+	return &Encoder{w: &z, h: h, e: h.newEncDriver(&z)}
 }
 
-// NewEncoderBytes returns an encoder for encoding directly and efficiently 
+// NewEncoderBytes returns an encoder for encoding directly and efficiently
 // into a byte slice, using zero-copying to temporary slices.
-// 
+//
 // It will potentially replace the output byte slice pointed to.
 // After encoding, the out parameter contains the encoded contents.
-func NewEncoderBytes(out *[]byte, h Handle) (*Encoder) {
+func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 	in := *out
 	if in == nil {
 		in = make([]byte, defEncByteBufSize)
 	}
-	z := bytesEncWriter {
-		b: in,
+	z := bytesEncWriter{
+		b:   in,
 		out: out,
 	}
-	return &Encoder { w: &z, h: h, e: h.newEncoder(&z) }
+	return &Encoder{w: &z, h: h, e: h.newEncDriver(&z)}
 }
 
 // Encode writes an object into a stream in the codec format.
-// 
+//
 // Struct values encode as maps. Each exported struct field is encoded unless:
 //    - the field's tag is "-", or
 //    - the field is empty and its tag specifies the "omitempty" option.
 //
-// The empty values are false, 0, any nil pointer or interface value, 
-// and any array, slice, map, or string of length zero. 
-// 
+// The empty values are false, 0, any nil pointer or interface value,
+// and any array, slice, map, or string of length zero.
+//
 // Anonymous fields are encoded inline if no struct tag is present.
 // Else they are encoded as regular fields.
-// 
-// The object's default key string is the struct field name but can be 
-// specified in the struct field's tag value. 
-// The "codec" key in struct field's tag value is the key name, 
-// followed by an optional comma and options. 
-// 
-// To set an option on all fields (e.g. omitempty on all fields), you 
+//
+// The object's default key string is the struct field name but can be
+// specified in the struct field's tag value.
+// The "codec" key in struct field's tag value is the key name,
+// followed by an optional comma and options.
+//
+// To set an option on all fields (e.g. omitempty on all fields), you
 // can create a field called _struct, and set flags on it.
-// 
+//
 // Examples:
-//    
+//
 //      type MyStruct struct {
 //          _struct bool    `codec:",omitempty"`   //set omitempty for every field
 //          Field1 string   `codec:"-"`            //skip this field
@@ -213,23 +208,23 @@ func NewEncoderBytes(out *[]byte, h Handle) (*Encoder) {
 //          Field4 bool     `codec:"f4,omitempty"` //use key "f4". Omit if empty.
 //          ...
 //      }
-// 
-// Note: 
+//
+// Note:
 //   - Encode will treat struct field names and keys in map[string]XXX as symbols.
 //     Some formats support symbols (e.g. binc) and will properly encode the string
 //     only once in the stream, and use a tag to refer to it thereafter.
 func (e *Encoder) Encode(v interface{}) (err error) {
-	defer panicToErr(&err) 
+	defer panicToErr(&err)
 	e.encode(v)
 	e.w.flush()
-	return 
+	return
 }
 
 func (e *Encoder) encode(iv interface{}) {
 	switch v := iv.(type) {
 	case nil:
 		e.e.encodeNil()
-		
+
 	case reflect.Value:
 		e.encodeValue(v)
 
@@ -294,7 +289,7 @@ func (e *Encoder) encode(iv interface{}) {
 	default:
 		e.encodeValue(reflect.ValueOf(iv))
 	}
-	
+
 }
 
 func (e *Encoder) encodeValue(rv reflect.Value) {
@@ -304,7 +299,7 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 	if ee.encodeBuiltinType(rt, rv) {
 		return
 	}
-	
+
 	//Note: tagFn must handle returning nil if value should be encoded as a nil.
 	if xfTag, xfFn := e.h.getEncodeExt(rt); xfFn != nil {
 		bs, fnerr := xfFn(rv)
@@ -323,7 +318,7 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 		}
 		return
 	}
-	
+
 	// ensure more common cases appear early in switch.
 	rk := rv.Kind()
 	switch rk {
@@ -339,7 +334,7 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 		if rv.IsNil() {
 			ee.encodeNil()
 			break
-		} 
+		}
 		if rt == byteSliceTyp {
 			ee.encodeStringBytes(c_RAW, rv.Bytes())
 			break
@@ -364,7 +359,7 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 		if l == 0 {
 			break
 		}
-		keyTypeIsString := rt.Key().Kind() == reflect.String 
+		keyTypeIsString := rt.Key().Kind() == reflect.String
 		mks := rv.MapKeys()
 		// for j, lmks := 0, len(mks); j < lmks; j++ {
 		for j := range mks {
@@ -373,7 +368,7 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 			} else {
 				e.encodeValue(mks[j])
 			}
-		 	e.encodeValue(rv.MapIndex(mks[j]))
+			e.encodeValue(rv.MapIndex(mks[j]))
 		}
 	case reflect.Struct:
 		e.encStruct(rt, rv)
@@ -456,7 +451,7 @@ func (z *ioEncWriter) writeb(bs []byte) {
 	}
 	if n != len(bs) {
 		doPanic(msgTagEnc, "write: Incorrect num bytes written. Expecting: %v, Wrote: %v", len(bs), n)
-	}	
+	}
 }
 
 func (z *ioEncWriter) writestr(s string) {
@@ -466,7 +461,7 @@ func (z *ioEncWriter) writestr(s string) {
 	}
 	if n != len(s) {
 		doPanic(msgTagEnc, "write: Incorrect num bytes written. Expecting: %v, Wrote: %v", len(s), n)
-	}	
+	}
 }
 
 func (z *ioEncWriter) writen1(b byte) {
@@ -506,27 +501,27 @@ func (z *ioEncWriter) flush() {
 func (z *bytesEncWriter) writeUint16(v uint16) {
 	c := z.grow(2)
 	z.b[c] = byte(v >> 8)
-	z.b[c + 1] = byte(v)
+	z.b[c+1] = byte(v)
 }
 
 func (z *bytesEncWriter) writeUint32(v uint32) {
 	c := z.grow(4)
 	z.b[c] = byte(v >> 24)
-	z.b[c + 1] = byte(v >> 16)
-	z.b[c + 2] = byte(v >> 8)
-	z.b[c + 3] = byte(v)
+	z.b[c+1] = byte(v >> 16)
+	z.b[c+2] = byte(v >> 8)
+	z.b[c+3] = byte(v)
 }
 
 func (z *bytesEncWriter) writeUint64(v uint64) {
 	c := z.grow(8)
 	z.b[c] = byte(v >> 56)
-	z.b[c + 1] = byte(v >> 48)
-	z.b[c + 2] = byte(v >> 40)
-	z.b[c + 3] = byte(v >> 32)
-	z.b[c + 4] = byte(v >> 24)
-	z.b[c + 5] = byte(v >> 16)
-	z.b[c + 6] = byte(v >> 8)
-	z.b[c + 7] = byte(v)
+	z.b[c+1] = byte(v >> 48)
+	z.b[c+2] = byte(v >> 40)
+	z.b[c+3] = byte(v >> 32)
+	z.b[c+4] = byte(v >> 24)
+	z.b[c+5] = byte(v >> 16)
+	z.b[c+6] = byte(v >> 8)
+	z.b[c+7] = byte(v)
 }
 
 func (z *bytesEncWriter) writeb(s []byte) {
@@ -547,25 +542,25 @@ func (z *bytesEncWriter) writen1(b1 byte) {
 func (z *bytesEncWriter) writen2(b1 byte, b2 byte) {
 	c := z.grow(2)
 	z.b[c] = b1
-	z.b[c + 1] = b2
+	z.b[c+1] = b2
 }
 
 func (z *bytesEncWriter) writen3(b1 byte, b2 byte, b3 byte) {
 	c := z.grow(3)
 	z.b[c] = b1
-	z.b[c + 1] = b2
-	z.b[c + 2] = b3
+	z.b[c+1] = b2
+	z.b[c+2] = b3
 }
 
 func (z *bytesEncWriter) writen4(b1 byte, b2 byte, b3 byte, b4 byte) {
 	c := z.grow(4)
 	z.b[c] = b1
-	z.b[c + 1] = b2
-	z.b[c + 2] = b3
-	z.b[c + 3] = b4
+	z.b[c+1] = b2
+	z.b[c+2] = b3
+	z.b[c+3] = b4
 }
 
-func (z *bytesEncWriter) flush() { 
+func (z *bytesEncWriter) flush() {
 	*(z.out) = z.b[:z.c]
 }
 
@@ -574,7 +569,7 @@ func (z *bytesEncWriter) grow(n int) (oldcursor int) {
 	z.c = oldcursor + n
 	if z.c > cap(z.b) {
 		// It tried using appendslice logic: (if cap < 1024, *2, else *1.25).
-		// However, it was too expensive, causing too many iterations of copy. 
+		// However, it was too expensive, causing too many iterations of copy.
 		// Using bytes.Buffer model was much better (2*cap + n)
 		bs := make([]byte, 2*cap(z.b)+n)
 		copy(bs, z.b[:oldcursor])
@@ -590,53 +585,3 @@ func (z *bytesEncWriter) grow(n int) (oldcursor int) {
 func encErr(format string, params ...interface{}) {
 	doPanic(msgTagEnc, format, params...)
 }
-
-// EncodeTimeExt encodes a time.Time as a []byte, including 
-// information on the instant in time and UTC offset.
-func encodeTime(t time.Time) ([]byte) {
-	//t := rv.Interface().(time.Time)
-	tsecs, tnsecs := t.Unix(), t.Nanosecond()
-	var padzero bool
-	var bs [14]byte
-	var i int
-	l := t.Location()
-	if l == time.UTC {
-		l = nil
-	}
-	if tsecs > math.MinInt32 && tsecs < math.MaxInt32 {
-		bigen.PutUint32(bs[i:], uint32(int32(tsecs)))
-		i = i + 4
-	} else {
-		bigen.PutUint64(bs[i:], uint64(tsecs))
-		i = i + 8
-		padzero = (tnsecs == 0)
-	}
-	if tnsecs != 0 {
-		bigen.PutUint32(bs[i:], uint32(tnsecs))
-		i = i + 4
-	}
-	if l != nil {
-		// Note that Go Libs do not give access to dst flag.
-		_, zoneOffset := t.Zone()
-		//zoneName, zoneOffset := t.Zone()
-		//fmt.Printf(">>>>>> ENC: zone: %s, %v\n", zoneName, zoneOffset)
-		zoneOffset /= 60
-		isNeg := zoneOffset < 0
-		if isNeg {
-			zoneOffset = -zoneOffset
-		}
-		var z uint16 = uint16(zoneOffset)
-		if isNeg {
-			z |= 1 << 15 //set sign bit
-		}
-		//fmt.Printf(">>>>>> ENC: z: %b\n", z)
-		bigen.PutUint16(bs[i:], z)
-		i = i + 2
-	}
-	if padzero {
-		i = i + 1
-	}
-	//fmt.Printf(">>>> EncodeTimeExt: t: %v, len: %v, v: %v\n", t, i, bs[0:i])
-	return bs[0:i]
-}
-

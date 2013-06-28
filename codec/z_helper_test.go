@@ -5,18 +5,18 @@ package codec
 
 // All non-std package dependencies related to testing live in this file,
 // so porting to different environment is easy (just update functions).
-// 
+//
 // Also, this file is called z_helper_test, to give a "hint" to compiler
 // that its init() function should be called last. (not guaranteed by spec)
 
 import (
-	"testing"
-	"reflect"
 	"errors"
+	"reflect"
+	"testing"
 )
 
 var (
-	testLogToT = true
+	testLogToT    = true
 	failNowOnFail = true
 )
 
@@ -33,7 +33,7 @@ func checkErrT(t *testing.T, err error) {
 }
 
 func checkEqualT(t *testing.T, v1 interface{}, v2 interface{}) {
-	if err := deepEqual(v1, v2); err != nil { 
+	if err := deepEqual(v1, v2); err != nil {
 		logT(t, "Do not match: %v. v1: %v, v2: %v", err, v1, v2)
 		failT(t)
 	}
@@ -41,7 +41,7 @@ func checkEqualT(t *testing.T, v1 interface{}, v2 interface{}) {
 
 func logT(x interface{}, format string, args ...interface{}) {
 	if t, ok := x.(*testing.T); ok && t != nil && testLogToT {
-		t.Logf(format, args...)	
+		t.Logf(format, args...)
 	} else if b, ok := x.(*testing.B); ok && b != nil && testLogToT {
 		b.Logf(format, args...)
 	} else {
@@ -76,10 +76,10 @@ func approxDataSize(rv reflect.Value) (sum int) {
 			sum += approxDataSize(rv.Index(j))
 		}
 	case reflect.String:
-		sum += int(rv.Type().Size()) 
+		sum += int(rv.Type().Size())
 		sum += rv.Len()
 	case reflect.Map:
-		sum += int(rv.Type().Size()) 
+		sum += int(rv.Type().Size())
 		for _, mk := range rv.MapKeys() {
 			sum += approxDataSize(mk)
 			sum += approxDataSize(rv.MapIndex(mk))
@@ -89,11 +89,10 @@ func approxDataSize(rv reflect.Value) (sum int) {
 		//sum += int(rv.Type().Size())
 		for j := 0; j < rv.NumField(); j++ {
 			sum += approxDataSize(rv.Field(j))
-		}	
+		}
 	default:
 		//pure value types
 		sum += int(rv.Type().Size())
 	}
 	return
 }
-

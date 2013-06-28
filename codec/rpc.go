@@ -5,13 +5,13 @@
 RPC
 
 RPC Client and Server Codecs are implemented, so the codecs can be used
-with the standard net/rpc package. 
+with the standard net/rpc package.
 */
 package codec
 
 import (
-	"net/rpc"
 	"io"
+	"net/rpc"
 )
 
 // GoRpc implements Rpc using the communication protocol defined in net/rpc package.
@@ -19,33 +19,33 @@ var GoRpc goRpc
 
 // Rpc interface provides a rpc Server or Client Codec for rpc communication.
 type Rpc interface {
-	ServerCodec(conn io.ReadWriteCloser, h Handle) (rpc.ServerCodec) 
-	ClientCodec(conn io.ReadWriteCloser, h Handle) (rpc.ClientCodec)
+	ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec
+	ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec
 }
 
 type rpcCodec struct {
-	rwc       io.ReadWriteCloser
-	dec       *Decoder
-	enc       *Encoder
+	rwc io.ReadWriteCloser
+	dec *Decoder
+	enc *Encoder
 }
 
 type goRpcCodec struct {
 	rpcCodec
 }
 
-// goRpc is the implementation of Rpc that uses the communication protocol 
+// goRpc is the implementation of Rpc that uses the communication protocol
 // as defined in net/rpc package.
-type goRpc struct {}
+type goRpc struct{}
 
-func (x goRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) (rpc.ServerCodec) {
-	return goRpcCodec { newRPCCodec(conn, h) }
+func (x goRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec {
+	return goRpcCodec{newRPCCodec(conn, h)}
 }
 
-func (x goRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) (rpc.ClientCodec) {
-	return goRpcCodec { newRPCCodec(conn, h) }
+func (x goRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec {
+	return goRpcCodec{newRPCCodec(conn, h)}
 }
 
-func newRPCCodec(conn io.ReadWriteCloser, h Handle) (rpcCodec) {
+func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
 	return rpcCodec{
 		rwc: conn,
 		dec: NewDecoder(conn, h),
@@ -79,7 +79,7 @@ func (c rpcCodec) read(objs ...interface{}) (err error) {
 }
 
 func (c rpcCodec) Close() error {
-	return c.rwc.Close()	
+	return c.rwc.Close()
 }
 
 func (c rpcCodec) ReadResponseBody(body interface{}) (err error) {
@@ -108,4 +108,3 @@ func (c goRpcCodec) ReadResponseHeader(r *rpc.Response) (err error) {
 func (c goRpcCodec) ReadRequestHeader(r *rpc.Request) error {
 	return c.read(r)
 }
-

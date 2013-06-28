@@ -19,41 +19,41 @@ the standard library (ie json, xml, gob, etc).
 Rich Feature Set includes:
 
   - Simple but extremely powerful and feature-rich API
-  - Very High Performance.   
+  - Very High Performance.
     Our extensive benchmarks show us outperforming Gob, Json and Bson by 2-4X.
     This was achieved by taking extreme care on:
       - managing allocation
-      - stack frame size (important due to Go's use of split stacks), 
+      - stack frame size (important due to Go's use of split stacks),
       - reflection use
       - recursion implications
       - zero-copy mode (encoding/decoding to byte slice without using temp buffers)
-  - Correct.  
-    Care was taken to precisely handle corner cases like: 
+  - Correct.
+    Care was taken to precisely handle corner cases like:
       overflows, nil maps and slices, nil value in stream, etc.
-  - Efficient zero-copying into temporary byte buffers  
+  - Efficient zero-copying into temporary byte buffers
     when encoding into or decoding from a byte slice.
   - Standard field renaming via tags
-  - Encoding from any value  
+  - Encoding from any value
     (struct, slice, map, primitives, pointers, interface{}, etc)
-  - Decoding into pointer to any non-nil typed value  
+  - Decoding into pointer to any non-nil typed value
     (struct, slice, map, int, float32, bool, string, reflect.Value, etc)
   - Supports extension functions to handle the encode/decode of custom types
-  - Schema-less decoding  
-    (decode into a pointer to a nil interface{} as opposed to a typed non-nil value).  
-    Includes Options to configure what specific map or slice type to use 
+  - Schema-less decoding
+    (decode into a pointer to a nil interface{} as opposed to a typed non-nil value).
+    Includes Options to configure what specific map or slice type to use
     when decoding an encoded list or map into a nil interface{}
   - Provides a RPC Server and Client Codec for net/rpc communication protocol.
   - Msgpack Specific:
       - Provides extension functions to handle spec-defined extensions (binary, timestamp)
-      - Options to resolve ambiguities in handling raw bytes (as string or []byte)  
+      - Options to resolve ambiguities in handling raw bytes (as string or []byte)
         during schema-less decoding (decoding into a nil interface{})
-      - RPC Server/Client Codec for msgpack-rpc protocol defined at: 
+      - RPC Server/Client Codec for msgpack-rpc protocol defined at:
         http://wiki.msgpack.org/display/MSGPACK/RPC+specification
 
 Extension Support
 
 Users can register a function to handle the encoding or decoding of
-their custom types. 
+their custom types.
 
 There are no restrictions on what the custom type can be. Extensions can
 be any type: pointers, structs, custom types off arrays/slices, strings,
@@ -84,7 +84,7 @@ Typical usage model:
       sliceByteTyp = reflect.TypeOf([]byte(nil))
       timeTyp = reflect.TypeOf(time.Time{})
     )
-    
+
     // create and configure Handle
     var (
       bh codec.BincHandle
@@ -92,7 +92,7 @@ Typical usage model:
     )
 
     mh.MapType = mapStrIntfTyp
-    
+
     // configure extensions for msgpack, to enable Binary and Time support for tags 0 and 1
     mh.AddExt(sliceByteTyp, 0, mh.BinaryEncodeExt, mh.BinaryDecodeExt)
     mh.AddExt(timeTyp, 1, mh.TimeEncodeExt, mh.TimeDecodeExt)
@@ -104,15 +104,15 @@ Typical usage model:
       b []byte
       h = &bh // or mh to use msgpack
     )
-    
+
     dec = codec.NewDecoder(r, h)
     dec = codec.NewDecoderBytes(b, h)
-    err = dec.Decode(&v) 
-    
+    err = dec.Decode(&v)
+
     enc = codec.NewEncoder(w, h)
     enc = codec.NewEncoderBytes(&b, h)
     err = enc.Encode(v)
-    
+
     //RPC Server
     go func() {
         for {
@@ -122,10 +122,10 @@ Typical usage model:
             rpc.ServeCodec(rpcCodec)
         }
     }()
-    
+
     //RPC Communication (client side)
-    conn, err = net.Dial("tcp", "localhost:5555")  
-    rpcCodec := rpcH.ClientCodec(conn, h)  
+    conn, err = net.Dial("tcp", "localhost:5555")
+    rpcCodec := rpcH.ClientCodec(conn, h)
     client := rpc.NewClientWithCodec(rpcCodec)
 
 Representative Benchmark Results
@@ -133,7 +133,7 @@ Representative Benchmark Results
 A sample run of benchmark using "go test -bi -bench=.":
 
     ..............................................
-    Benchmark: 
+    Benchmark:
     	Struct recursive Depth:             1
     	ApproxDeepSize Of benchmark Struct: 4786
     Benchmark One-Pass Run:
@@ -158,7 +158,7 @@ A sample run of benchmark using "go test -bi -bench=.":
     Benchmark__VMsgpack_Encode	   20000	     81752 ns/op
     Benchmark__VMsgpack_Decode	   10000	    160050 ns/op
 
-To run full benchmark suite (including against vmsgpack and bson), 
+To run full benchmark suite (including against vmsgpack and bson),
 see notes in ext_dep_test.go
 
 */

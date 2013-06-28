@@ -5,9 +5,9 @@
 
 package codec
 
-// This file includes benchmarks which have dependencies on 3rdparty  
+// This file includes benchmarks which have dependencies on 3rdparty
 // packages (bson and vmihailenco/msgpack) which must be installed locally.
-// 
+//
 // To run the benchmarks including these 3rdparty packages, first
 //   - Uncomment first line in this file (put // // in front of it)
 //   - Get those packages:
@@ -23,7 +23,7 @@ import (
 )
 
 func init() {
-	benchCheckers = append(benchCheckers, 
+	benchCheckers = append(benchCheckers,
 		benchChecker{"v-msgpack", fnVMsgpackEncodeFn, fnVMsgpackDecodeFn},
 		benchChecker{"bson", fnBsonEncodeFn, fnBsonDecodeFn},
 	)

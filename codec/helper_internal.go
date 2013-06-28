@@ -7,14 +7,14 @@ package codec
 // so porting to different environment is easy (just update functions).
 
 import (
-	"reflect"
-	"fmt"
 	"errors"
+	"fmt"
+	"reflect"
 )
 
 var (
 	raisePanicAfterRecover = false
-	debugging = true
+	debugging              = true
 )
 
 func panicValToErr(panicVal interface{}, err *error) {
@@ -59,3 +59,26 @@ func debugf(format string, args ...interface{}) {
 	}
 }
 
+func pruneSignExt(v []byte) (n int) {
+	l := len(v)
+	if l < 2 {
+		return
+	}
+	if v[0] == 0 {
+		n2 := n + 1
+		for v[n] == 0 && n2 < l && (v[n2]&(1<<7) == 0) {
+			n++
+			n2++
+		}
+		return
+	}
+	if v[0] == 0xff {
+		n2 := n + 1
+		for v[n] == 0xff && n2 < l && (v[n2]&(1<<7) != 0) {
+			n++
+			n2++
+		}
+		return
+	}
+	return
+}

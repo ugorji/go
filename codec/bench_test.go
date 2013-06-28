@@ -4,41 +4,41 @@
 package codec
 
 import (
-	"encoding/json"
-	"encoding/gob"
-	"testing"
 	"bytes"
-	"reflect"
-	"time"
-	"runtime"
+	"encoding/gob"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"reflect"
+	"runtime"
+	"testing"
+	"time"
 )
 
 // Sample way to run:
 // go test -bi -bv -bd=1 -benchmem -bench Msgpack__Encode
 
 var (
-	_ = fmt.Printf
+	_       = fmt.Printf
 	benchTs *TestStruc
 
 	approxSize int
 
-	benchDoInitBench bool
-	benchVerify bool
+	benchDoInitBench     bool
+	benchVerify          bool
 	benchUnscientificRes bool = false
 	//depth of 0 maps to ~400bytes json-encoded string, 1 maps to ~1400 bytes, etc
 	//For depth>1, we likely trigger stack growth for encoders, making benchmarking unreliable.
-	benchDepth int
+	benchDepth     int
 	benchInitDebug bool
-	benchInitChan = make(chan bool, 1)
-	benchCheckers []benchChecker
+	benchInitChan  = make(chan bool, 1)
+	benchCheckers  []benchChecker
 )
 
 type benchEncFn func(*TestStruc) ([]byte, error)
 type benchDecFn func([]byte, *TestStruc) error
 type benchChecker struct {
-	name string
+	name     string
 	encodefn benchEncFn
 	decodefn benchDecFn
 }
@@ -58,7 +58,7 @@ func init() {
 		bytesLen = approxSize
 	}
 
-	benchCheckers = append(benchCheckers, 
+	benchCheckers = append(benchCheckers,
 		benchChecker{"msgpack", fnMsgpackEncodeFn, fnMsgpackDecodeFn},
 		benchChecker{"binc", fnBincEncodeFn, fnBincDecodeFn},
 		benchChecker{"gob", fnGobEncodeFn, fnGobDecodeFn},
@@ -66,7 +66,7 @@ func init() {
 	)
 	if benchDoInitBench {
 		go func() {
-			<- benchInitChan
+			<-benchInitChan
 			runBenchInit()
 		}()
 	}
@@ -75,12 +75,12 @@ func init() {
 func runBenchInit() {
 	logT(nil, "..............................................")
 	logT(nil, "BENCHMARK INIT: %v", time.Now())
-	logT(nil, "To run full benchmark comparing encodings (MsgPack, Binc, JSON, GOB, etc), " + 
+	logT(nil, "To run full benchmark comparing encodings (MsgPack, Binc, JSON, GOB, etc), "+
 		"use: \"go test -bench=.\"")
 	logT(nil, "Benchmark: ")
 	logT(nil, "\tStruct recursive Depth:             %d", benchDepth)
 	if approxSize > 0 {
-		logT(nil, "\tApproxDeepSize Of benchmark Struct: %d", approxSize)
+		logT(nil, "\tApproxDeepSize Of benchmark Struct: %d bytes", approxSize)
 	}
 	if benchUnscientificRes {
 		logT(nil, "Benchmark One-Pass Run (with Unscientific Encode/Decode times): ")
@@ -102,12 +102,12 @@ func doBenchCheck(name string, encfn benchEncFn, decfn benchDecFn) {
 	buf, err := encfn(benchTs)
 	if err != nil {
 		logT(nil, "\t%10s: **** Error encoding benchTs: %v", name, err)
-	} 
+	}
 	encDur := time.Now().Sub(tnow)
 	encLen := len(buf)
 	runtime.GC()
 	if !benchUnscientificRes {
-		logT(nil, "\t%10s: len: %v\n", name, encLen)
+		logT(nil, "\t%10s: len: %d bytes\n", name, encLen)
 		return
 	}
 	tnow = time.Now()
@@ -115,7 +115,7 @@ func doBenchCheck(name string, encfn benchEncFn, decfn benchDecFn) {
 		logT(nil, "\t%10s: **** Error decoding into new TestStruc: %v", name, err)
 	}
 	decDur := time.Now().Sub(tnow)
-	logT(nil, "\t%10s: len: %v, encode: %v, decode: %v\n", name, encLen, encDur, decDur)
+	logT(nil, "\t%10s: len: %d bytes, encode: %v, decode: %v\n", name, encLen, encDur, decDur)
 }
 
 func fnBenchmarkEncode(b *testing.B, encName string, encfn benchEncFn) {
@@ -139,7 +139,7 @@ func fnBenchmarkDecode(b *testing.B, encName string, encfn benchEncFn, decfn ben
 	runtime.GC()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ts := new(TestStruc)		
+		ts := new(TestStruc)
 		if err = decfn(buf, ts); err != nil {
 			logT(b, "Error decoding into new TestStruc: %s: %v", encName, err)
 			b.FailNow()
@@ -172,17 +172,17 @@ func verifyCheckAndGet(b *testing.B, ts0 *TestStruc) (ts1m *TestStruc, ts1s *Tes
 	// if len(ts1m.Ms) <= 2 {
 	// 	logT(b, "Error: ts1m.Ms len should be > 2. Got: %v", len(ts1m.Ms))
 	// 	b.FailNow()
-	// } 
+	// }
 	if len(ts0.Its) == 0 {
 		logT(b, "Error: ts0.Islice len should be > 0. Got: %v", len(ts0.Its))
 		b.FailNow()
 	}
 	ts1m = ts0.Mtsptr["0"]
 	ts1s = ts0.Its[0]
-	if (ts1m == nil || ts1s == nil) {
+	if ts1m == nil || ts1s == nil {
 		logT(b, "Error: At benchDepth 1, No *TestStruc found")
 		b.FailNow()
-	}		
+	}
 	return
 }
 
@@ -260,4 +260,3 @@ func Benchmark__Json_____Encode(b *testing.B) {
 func Benchmark__Json_____Decode(b *testing.B) {
 	fnBenchmarkDecode(b, "json", fnJsonEncodeFn, fnJsonDecodeFn)
 }
-
