@@ -14,7 +14,7 @@ import (
 //var _ = fmt.Printf
 
 //BincHandle is a Handle for the Binc Schema-Free Encoding Format
-//defined at http://www.ugorji.net/project/binc .
+//defined at https://github.com/ugorji/binc .
 //
 //BincHandle currently supports all Binc features with the following EXCEPTIONS:
 //  - only integers up to 64 bits of precision are supported.
