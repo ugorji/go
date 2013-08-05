@@ -24,11 +24,8 @@ func encodeTime(t time.Time) []byte {
 	}
 	if tsecs != 0 {
 		bd = bd | 0x80
-		bigen.PutUint64(btmp[:], uint64(tsecs))
-		f := pruneSignExt(btmp[:])
-		bd = bd | (byte(7-f) << 2)
-		copy(bs[i:], btmp[f:])
-		i = i + (8 - f)
+		bigen.PutUint64(bs[i:], uint64(tsecs))
+		i += 8
 	}
 	if tnsecs != 0 {
 		bd = bd | 0x40
@@ -68,12 +65,8 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 		n     byte
 	)
 	if bd&(1<<7) != 0 {
-		var btmp [8]byte
-		n = ((bd >> 2) & 0x7) + 1
-		i2 = i + n
-		copy(btmp[8-n:], bs[i:i2])
-		i = i2
-		tsec = int64(bigen.Uint64(btmp[:]))
+		tsec = int64(bigen.Uint64(bs[i:]))
+		i += 8
 	}
 	if bd&(1<<6) != 0 {
 		var btmp [4]byte
