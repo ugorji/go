@@ -437,6 +437,7 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 			rv = reflect.MakeSlice(rt, containerLen, containerLen)
 		}
 		if containerLen == 0 {
+			rv.Set(reflect.MakeSlice(rt, containerLen, containerLen))
 			break
 		}
 
