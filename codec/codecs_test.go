@@ -44,6 +44,7 @@ const (
 	testVerifyMapTypeSame testVerifyArg = iota
 	testVerifyMapTypeStrIntf
 	testVerifyMapTypeIntfIntf
+	testVerifyForPython
 )
 
 var (
@@ -51,10 +52,12 @@ var (
 	testUseIoEncDec bool
 	_                           = fmt.Printf
 	skipVerifyVal   interface{} = &(struct{}{})
-	timeLoc                     = time.FixedZone("UTC-08:00", -8*60*60)         //time.UTC
-	timeToCompare               = time.Date(2012, 2, 2, 2, 2, 2, 2000, timeLoc) //time.Time{}
-	//"2012-02-02T02:02:02.000002000Z" //1328148122000002
-	timeToCompareAs    interface{}   = timeToCompare.UnixNano()
+	timeLoc                     = time.FixedZone("UTC-08:00", -8*60*60)         //time.UTC-8
+	timeToCompare1              = time.Date(2012, 2, 2, 2, 2, 2, 2000, timeLoc) 
+	timeToCompare2              = time.Date(1900, 2, 2, 2, 2, 2, 2000, timeLoc) 
+	timeToCompare3              = time.Unix(0, 0).UTC()
+	timeToCompare4              = time.Time{}.UTC()
+
 	table              []interface{} // main items we encode
 	tableVerify        []interface{} // we verify encoded things against this after decode
 	tableTestNilVerify []interface{} // for nil interface, use this to verify (rules are different)
@@ -135,15 +138,34 @@ func (r *TestRpcInt) Square(ignore int, res *int) error { *res = r.i * r.i; retu
 func (r *TestRpcInt) Mult(n int, res *int) error        { *res = r.i * n; return nil }
 
 func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
+	//for python msgpack, 
+	//  - all positive integers are unsigned 64-bit ints
+	//  - all floats are float64
 	switch iv := v.(type) {
 	case int8:
-		v2 = int64(iv)
+		if arg == testVerifyForPython && iv > 0 {
+			v2 = uint64(iv)
+		} else {
+			v2 = int64(iv)
+		}
 	case int16:
-		v2 = int64(iv)
+		if arg == testVerifyForPython && iv > 0 {
+			v2 = uint64(iv)
+		} else {
+			v2 = int64(iv)
+		}
 	case int32:
-		v2 = int64(iv)
+		if arg == testVerifyForPython && iv > 0 {
+			v2 = uint64(iv)
+		} else {
+			v2 = int64(iv)
+		}
 	case int64:
-		v2 = int64(iv)
+		if arg == testVerifyForPython && iv > 0 {
+			v2 = uint64(iv)
+		} else {
+			v2 = int64(iv)
+		}
 	case uint8:
 		v2 = uint64(iv)
 	case uint16:
@@ -170,7 +192,7 @@ func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
 				m2[kj] = kv
 			}
 			v2 = m2
-		case testVerifyMapTypeStrIntf:
+		case testVerifyMapTypeStrIntf, testVerifyForPython:
 			m2 := make(map[string]interface{})
 			for kj, kv := range iv {
 				m2[kj] = kv
@@ -191,7 +213,7 @@ func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
 				m2[kj] = testVerifyVal(kv, arg)
 			}
 			v2 = m2
-		case testVerifyMapTypeStrIntf:
+		case testVerifyMapTypeStrIntf, testVerifyForPython:
 			m2 := make(map[string]interface{})
 			for kj, kv := range iv {
 				m2[kj] = testVerifyVal(kv, arg)
@@ -210,6 +232,17 @@ func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
 			m2[testVerifyVal(kj, arg)] = testVerifyVal(kv, arg)
 		}
 		v2 = m2
+	case time.Time:
+		switch arg {
+		case testVerifyForPython:
+			if iv2 := iv.UnixNano(); iv2 > 0 {
+				v2 = uint64(iv2)
+			} else {
+				v2 = int64(iv2)
+			}
+		default:
+			v2 = v
+		}
 	default:
 		v2 = v
 	}
@@ -234,10 +267,13 @@ func init() {
 		false,
 		true,
 		nil,
-		timeToCompare,
 		"someday",
 		"",
 		"bytestring",
+		timeToCompare1,
+		timeToCompare2,
+		timeToCompare3,
+		timeToCompare4,
 	}
 	mapsAndStrucs := []interface{}{
 		map[string]bool{
@@ -292,6 +328,7 @@ func init() {
 			av[i] = skipVerifyVal
 			continue
 		}
+		//av[i] = testVerifyVal(v, testVerifyMapTypeSame)
 		switch v.(type) {
 		case []interface{}:
 			av[i] = testVerifyVal(v, testVerifyMapTypeSame)
@@ -319,28 +356,7 @@ func init() {
 			av[i] = skipVerifyVal
 			continue
 		}
-		av[i] = testVerifyVal(v, testVerifyMapTypeStrIntf)
-		//msgpack python encodes large positive numbers as unsigned ints
-		switch i {
-		case 16:
-			av[i] = uint64(1328148122000002)
-		case 20:
-			//msgpack python doesn't understand time. So use number val.
-			m2 := av[i].([]interface{})
-			m3 := make([]interface{}, len(m2))
-			copy(m3, m2)
-			m3[16] = uint64(1328148122000002)
-			av[i] = m3
-		case 23:
-			m2 := make(map[string]interface{})
-			for k2, v2 := range av[i].(map[string]interface{}) {
-				m2[k2] = v2
-			}
-			m2["int32"] = uint64(32323232)
-			m3 := m2["list"].([]interface{})
-			m3[0], m3[1], m3[3] = uint64(1616), uint64(32323232), float64(-3232.0)
-			av[i] = m2
-		}
+		av[i] = testVerifyVal(v, testVerifyForPython)
 	}
 
 	tablePythonVerify = tablePythonVerify[:24]
@@ -394,7 +410,7 @@ func newTestStruc(depth int, bench bool) (ts *TestStruc) {
 			"one": 1,
 			"two": 2,
 		},
-		T: timeToCompare,
+		T: timeToCompare1,
 		AnonInTestStruc: AnonInTestStruc{
 			AS:        "A-String",
 			AI64:      64,
@@ -504,10 +520,12 @@ func testCodecTableOne(t *testing.T, h Handle) {
 		v.WriteExt = oldWriteExt
 	}
 	// func TestMsgpackAll(t *testing.T) {
-
-	doTestCodecTableOne(t, false, h, table[:20], tableVerify[:20])
-	doTestCodecTableOne(t, false, h, table[21:], tableVerify[21:])
-
+	
+	idxTime, numPrim, numMap := 19, 23, 4
+	
+	//skip []interface{} containing time.Time
+	doTestCodecTableOne(t, false, h, table[:numPrim], tableVerify[:numPrim])
+	doTestCodecTableOne(t, false, h, table[numPrim+1:], tableVerify[numPrim+1:])
 	// func TestMsgpackNilStringMap(t *testing.T) {
 	var oldMapType reflect.Type
 	switch v := h.(type) {
@@ -518,10 +536,9 @@ func testCodecTableOne(t *testing.T, h Handle) {
 		oldMapType = v.MapType
 		v.MapType = mapStringIntfTyp
 	}
-	//skip #16 (time.Time), and #20 ([]interface{} containing time.Time)
-	doTestCodecTableOne(t, true, h, table[:16], tableTestNilVerify[:16])
-	doTestCodecTableOne(t, true, h, table[17:20], tableTestNilVerify[17:20])
-	doTestCodecTableOne(t, true, h, table[21:24], tableTestNilVerify[21:24])
+	//skip time.Time, []interface{} containing time.Time, last map, and newStruc
+	doTestCodecTableOne(t, true, h, table[:idxTime], tableTestNilVerify[:idxTime])
+	doTestCodecTableOne(t, true, h, table[numPrim+1:numPrim+numMap], tableTestNilVerify[numPrim+1:numPrim+numMap])
 
 	switch v := h.(type) {
 	case *MsgpackHandle:
@@ -531,9 +548,11 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	}
 
 	// func TestMsgpackNilIntf(t *testing.T) {
-	doTestCodecTableOne(t, true, h, table[24:], tableTestNilVerify[24:])
-
-	doTestCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18])
+	
+	//do newTestStruc and last element of map
+	doTestCodecTableOne(t, true, h, table[numPrim+numMap:], tableTestNilVerify[numPrim+numMap:])
+	//TODO? What is this one? 
+	//doTestCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18])
 }
 
 func testCodecMiscOne(t *testing.T, h Handle) {
@@ -840,3 +859,7 @@ func TestMsgpackRpcSpec(t *testing.T) {
 func TestBincRpcGo(t *testing.T) {
 	doTestRpcOne(t, GoRpc, testBincH, true, true, true)
 }
+
+//TODO: 
+//  - Add test for decoding empty list/map in stream into a nil slice/map
+

@@ -8,7 +8,7 @@ import msgpack, sys, os
 
 def get_test_data_list():
     # get list with all primitive types, and a combo type
-    l = [ 
+    l0 = [ 
         -8,
          -1616,
          -32323232,
@@ -25,43 +25,31 @@ def get_test_data_list():
          False,
          True,
          None,
-         1328148122000002,
          "someday",
          "",
          "bytestring",
-         [ 
-            -8,
-             -1616,
-             -32323232,
-             -6464646464646464,
-             192,
-             1616,
-             32323232,
-             6464646464646464,
-             192,
-             -3232.0,
-             -6464646464.0,
-             3232.0,
-             6464646464.0,
-             False,
-             True,
-             None,
-             1328148122000002,
-             "someday",
-             "",
-             "bytestring" 
-             ],
-         { "true": True,
-           "false": False },
-         { "true": "True",
-           "false": False,
-           "uint16(1616)": 1616 },
-         { "list": [1616, 32323232, True, -3232.0, {"TRUE":True, "FALSE":False}, [True, False] ],
-           "int32":32323232, "bool": True, 
-           "LONG STRING": "123456789012345678901234567890123456789012345678901234567890",
-           "SHORT STRING": "1234567890" },	
-	 { True: "true", 8: False, "false": 0 }
+         1328176922000002000,
+         -2206187877999998000,
+         0,
+         -6795364578871345152
          ]
+    l1 = [
+        { "true": True,
+          "false": False },
+        { "true": "True",
+          "false": False,
+          "uint16(1616)": 1616 },
+        { "list": [1616, 32323232, True, -3232.0, {"TRUE":True, "FALSE":False}, [True, False] ],
+          "int32":32323232, "bool": True, 
+          "LONG STRING": "123456789012345678901234567890123456789012345678901234567890",
+          "SHORT STRING": "1234567890" },	
+        { True: "true", 8: False, "false": 0 }
+        ]
+    
+    l = []
+    l.extend(l0)
+    l.append(l0)
+    l.extend(l1)
     return l
 
 def build_test_data(destdir):

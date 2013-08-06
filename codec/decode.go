@@ -14,7 +14,6 @@ import (
 var (
 	msgTagDec  = "codec.decoder"
 	msgBadDesc = "Unrecognized descriptor byte"
-	digits     = [...]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 )
 
 type decodeNakedContext uint8
@@ -210,6 +209,15 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 //   dec := codec.NewDecoder(r, handle)
 //   err = dec.Decode(&v)
 //
+// There are some special rules when decoding into containers (slice/array/map/struct).
+// Decode will typically use the stream contents to UPDATE the container. 
+//   - This means that for a struct or map, we just update matching fields or keys.
+//   - For a slice/array, we just update the first n elements, where n is length of the stream.
+//   - However, if decoding into a nil map/slice and the length of the stream is 0,
+//     we reset the destination map/slice to be a zero-length non-nil map/slice.
+//   - Also, if the encoded value is Nil in the stream, then we try to set
+//     the container to its "zero" value (e.g. nil for slice/map).
+// 
 func (d *Decoder) Decode(v interface{}) (err error) {
 	defer panicToErr(&err)
 	d.decode(v)
@@ -329,14 +337,7 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		return
 	}
 
-	// Note: In decoding into containers, we just use the stream to UPDATE the container.
-	// This means that for a struct or map, we just update matching fields or keys.
-	// For a slice/array, we just update the first n elements, where n is the length of the
-	// stream.
-	// However, if the encoded value is Nil in the stream, then we try to set
-	// to nil, or a "zero" value.
-	//
-	// Also, we must ensure that, if decoding into a nil interface{}, we return a non-nil
+	// NOTE: if decoding into a nil interface{}, we return a non-nil
 	// value except even if the container registers a length of 0.
 	//
 	// NOTE: Do not make blocks for struct, slice, map, etc individual methods.
@@ -437,14 +438,15 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 			rv = reflect.MakeSlice(rt, containerLen, containerLen)
 		}
 		if containerLen == 0 {
+			if rv.IsNil() {
+				rv.Set(reflect.MakeSlice(rt, containerLen, containerLen))
+			} 
 			break
 		}
 
 		if rv.IsNil() {
 			// wasNilIntf only applies if rv is nil (since that's what we did earlier)
-			if containerLen > 0 {
-				rv.Set(reflect.MakeSlice(rt, containerLen, containerLen))
-			}
+			rv.Set(reflect.MakeSlice(rt, containerLen, containerLen))
 		} else {
 			// if we need to reset rv but it cannot be set, we should err out.
 			// for example, if slice is got from unaddressable array, CanSet = false
@@ -470,13 +472,14 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 	case reflect.Map:
 		containerLen := dd.readMapLen()
 
+		if rv.IsNil() {
+			rv.Set(reflect.MakeMap(rt))
+		}
+		
 		if containerLen == 0 {
 			break
 		}
 
-		if rv.IsNil() {
-			rv.Set(reflect.MakeMap(rt))
-		}
 		ktype, vtype := rt.Key(), rt.Elem()
 		for j := 0; j < containerLen; j++ {
 			rvk := reflect.New(ktype).Elem()
@@ -610,3 +613,4 @@ func (z *bytesDecReader) readUint64() uint64 {
 func decErr(format string, params ...interface{}) {
 	doPanic(msgTagDec, format, params...)
 }
+

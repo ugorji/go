@@ -516,7 +516,7 @@ func (d *msgpackDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 	if clen > 0 {
 		// if no contents in stream, don't update the passed byteslice
 		if len(bs) != clen {
-			// Return changed=true if length of passed slice is different from length of bytes in the stream.
+			// Return changed=true if length of passed slice diff from length of bytes in stream
 			if len(bs) > clen {
 				bs = bs[:clen]
 			} else {
@@ -597,7 +597,8 @@ func (d *msgpackDecDriver) readExtLen() (clen int) {
 }
 
 func (d *msgpackDecDriver) decodeExt(tag byte) (xbs []byte) {
-	// if (d.bd >= mpXv4Fixext0 && d.bd <= mpXv4Fixext5) || (d.bd >= mpXv4Ext8m && d.bd <= mpXv4Ext32) {
+	// if (d.bd >= mpXv4Fixext0 && d.bd <= mpXv4Fixext5) || 
+	// (d.bd >= mpXv4Ext8m && d.bd <= mpXv4Ext32) {
 	xbd := d.bd
 	switch {
 	case xbd >= mpXv4Fixext0 && xbd <= mpXv4Fixext5, xbd >= mpXv4Ext8m && xbd <= mpXv4Ext32:
@@ -688,7 +689,7 @@ func (c msgpackSpecRpcCodec) writeCustomBody(typeByte byte, msgid uint64, method
 
 //--------------------------------------------------
 
-// EncodeBinaryExt returns the underlying bytes of this value AS-IS.
+// BinaryEncodeExt returns the underlying bytes of this value AS-IS.
 // Configure this to support the Binary Extension using tag 0.
 func (_ *MsgpackHandle) BinaryEncodeExt(rv reflect.Value) ([]byte, error) {
 	if rv.IsNil() {
@@ -697,20 +698,22 @@ func (_ *MsgpackHandle) BinaryEncodeExt(rv reflect.Value) ([]byte, error) {
 	return rv.Bytes(), nil
 }
 
-// DecodeBinaryExt sets passed byte array AS-IS into the reflect Value.
+// BinaryDecodeExt sets passed byte slice AS-IS into the reflect Value.
 // Configure this to support the Binary Extension using tag 0.
 func (_ *MsgpackHandle) BinaryDecodeExt(rv reflect.Value, bs []byte) (err error) {
 	rv.SetBytes(bs)
 	return
 }
 
-// EncodeBinaryExt returns the underlying bytes of this value AS-IS.
-// Configure this to support the Binary Extension using tag 0.
+// TimeEncodeExt encodes a time.Time as a byte slice.
+// Configure this to support the Time Extension, e.g. using tag 1.
 func (_ *MsgpackHandle) TimeEncodeExt(rv reflect.Value) (bs []byte, err error) {
 	bs = encodeTime(rv.Interface().(time.Time))
 	return
 }
 
+// TimeDecodeExt decodes a time.Time from the byte slice parameter, and sets it into the reflect value.
+// Configure this to support the Time Extension, e.g. using tag 1.
 func (_ *MsgpackHandle) TimeDecodeExt(rv reflect.Value, bs []byte) (err error) {
 	tt, err := decodeTime(bs)
 	if err == nil {

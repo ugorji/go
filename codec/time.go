@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+var (
+	timeBs0xff = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+	digits = [...]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
+)
+
 // encodeTime encodes a time.Time as a []byte, including
 // information on the instant in time and UTC offset.
 func encodeTime(t time.Time) []byte {
@@ -72,6 +77,11 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 		n = ((bd >> 2) & 0x7) + 1
 		i2 = i + n
 		copy(btmp[8-n:], bs[i:i2])
+		//if first bit of bs[i] is set, then fill btmp[0..8-n] with 0xff (ie sign extend it)
+		if bs[i] & (1 << 7) != 0 {
+			copy(btmp[0:8-n], timeBs0xff)
+			//for j,k := byte(0), 8-n; j < k; j++ {	btmp[j] = 0xff }
+		}
 		i = i2
 		tsec = int64(bigen.Uint64(btmp[:]))
 	}
