@@ -55,6 +55,9 @@ var (
 
 	intBitsize  uint8 = uint8(reflect.TypeOf(int(0)).Bits())
 	uintBitsize uint8 = uint8(reflect.TypeOf(uint(0)).Bits())
+
+	bsAll0x00 = []byte{0, 0, 0, 0, 0, 0, 0, 0}
+	bsAll0xff = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 )
 
 type encdecHandle struct {

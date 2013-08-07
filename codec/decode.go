@@ -6,8 +6,6 @@ package codec
 import (
 	"io"
 	"reflect"
-	//"math"
-	//"fmt"
 )
 
 // Some tagging information for error messages.
@@ -174,6 +172,9 @@ func (o *decHandle) getDecodeExt(rt reflect.Type) (tag byte, fn func(reflect.Val
 }
 
 // NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
+// 
+// For efficiency, Users are encouraged to pass in a memory buffered writer
+// (eg bufio.Reader, bytes.Buffer). 
 func NewDecoder(r io.Reader, h Handle) *Decoder {
 	z := ioDecReader{
 		r: r,

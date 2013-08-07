@@ -11,6 +11,7 @@ package codec
 
 import (
 	"io"
+	"bufio"
 	"net/rpc"
 )
 
@@ -27,6 +28,7 @@ type rpcCodec struct {
 	rwc io.ReadWriteCloser
 	dec *Decoder
 	enc *Encoder
+	encbuf *bufio.Writer 
 }
 
 type goRpcCodec struct {
@@ -46,45 +48,50 @@ func (x goRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec {
 }
 
 func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
+	encbuf := bufio.NewWriter(conn)
 	return rpcCodec{
 		rwc: conn,
-		dec: NewDecoder(conn, h),
-		enc: NewEncoder(conn, h),
+		encbuf: encbuf,
+		enc: NewEncoder(encbuf, h),
+		dec: NewDecoder(bufio.NewReader(conn), h),
+		//enc: NewEncoder(conn, h),
+		//dec: NewDecoder(conn, h),
 	}
 }
 
 // /////////////// RPC Codec Shared Methods ///////////////////
-func (c rpcCodec) write(objs ...interface{}) (err error) {
-	for _, obj := range objs {
-		if err = c.enc.Encode(obj); err != nil {
+func (c rpcCodec) write(obj1, obj2 interface{}, writeObj2, doFlush bool) (err error) {
+	if err = c.enc.Encode(obj1); err != nil {
+		return
+	}
+	if writeObj2 {
+		if err = c.enc.Encode(obj2); err != nil {
 			return
 		}
+	}
+	if doFlush && c.encbuf != nil {
+		//println("rpc flushing")
+		return c.encbuf.Flush()
 	}
 	return
 }
 
-func (c rpcCodec) read(objs ...interface{}) (err error) {
-	for _, obj := range objs {
-		//If nil is passed in, we should still attempt to read content to nowhere.
-		if obj == nil {
-			//obj = &obj //This bombs/uses all memory up. Dunno why (maybe because obj is not addressable???).
-			var n interface{}
-			obj = &n
-		}
-		if err = c.dec.Decode(obj); err != nil {
-			return
-		}
+
+func (c rpcCodec) read(obj interface{}) (err error) {
+	//If nil is passed in, we should still attempt to read content to nowhere.
+	if obj == nil {
+		var obj2 interface{}
+		return c.dec.Decode(&obj2)
 	}
-	return
+	return c.dec.Decode(obj)
 }
 
 func (c rpcCodec) Close() error {
 	return c.rwc.Close()
 }
 
-func (c rpcCodec) ReadResponseBody(body interface{}) (err error) {
-	err = c.read(body)
-	return
+func (c rpcCodec) ReadResponseBody(body interface{}) error {
+	return c.read(body)
 }
 
 func (c rpcCodec) ReadRequestBody(body interface{}) error {
@@ -93,16 +100,15 @@ func (c rpcCodec) ReadRequestBody(body interface{}) error {
 
 // /////////////// Go RPC Codec ///////////////////
 func (c goRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
-	return c.write(r, body)
+	return c.write(r, body, true, true)
 }
 
 func (c goRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
-	return c.write(r, body)
+	return c.write(r, body, true, true)
 }
 
-func (c goRpcCodec) ReadResponseHeader(r *rpc.Response) (err error) {
-	err = c.read(r)
-	return
+func (c goRpcCodec) ReadResponseHeader(r *rpc.Response) error {
+	return c.read(r)
 }
 
 func (c goRpcCodec) ReadRequestHeader(r *rpc.Request) error {

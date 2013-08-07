@@ -4,7 +4,7 @@
 package codec
 
 import (
-	"bufio"
+	//"bufio"
 	"io"
 	"reflect"
 	//"fmt"
@@ -27,9 +27,9 @@ type encWriter interface {
 	writestr(string)
 	writen1(byte)
 	writen2(byte, byte)
-	writen3(byte, byte, byte)
-	writen4(byte, byte, byte, byte)
-	flush()
+	//writen3(byte, byte, byte)
+	//writen4(byte, byte, byte, byte)
+	atEndOfEncode()
 }
 
 type encDriver interface {
@@ -69,8 +69,14 @@ type ioEncWriterWriter interface {
 	Write(p []byte) (n int, err error)
 }
 
-type ioEncWriterFlusher interface {
-	Flush() error
+type ioEncStringWriter interface {
+	WriteString(s string) (n int, err error)
+}
+
+type simpleIoEncWriterWriter struct {
+	w io.Writer 
+	bw io.ByteWriter
+	sw ioEncStringWriter
 }
 
 // ioEncWriter implements encWriter and can write to an io.Writer implementation
@@ -84,7 +90,7 @@ type ioEncWriter struct {
 type bytesEncWriter struct {
 	b   []byte
 	c   int     // cursor
-	out *[]byte // write out on flush
+	out *[]byte // write out on atEndOfEncode
 }
 
 type encExtTagFn struct {
@@ -102,6 +108,26 @@ type encHandle struct {
 	extFuncs map[reflect.Type]encExtTagFn
 	exts     []encExtTypeTagFn
 }
+
+func (o *simpleIoEncWriterWriter) WriteByte(c byte) (err error) {
+	if o.bw != nil {
+		return o.bw.WriteByte(c)
+	}
+	_, err = o.w.Write([]byte{c})
+	return
+}
+
+func (o *simpleIoEncWriterWriter) WriteString(s string) (n int, err error) {
+	if o.sw != nil {
+		return o.sw.WriteString(s)
+	}
+	return o.w.Write([]byte(s))
+}
+
+func (o *simpleIoEncWriterWriter) Write(p []byte) (n int, err error) {
+	return o.w.Write(p)
+}
+
 
 // addEncodeExt registers a function to handle encoding a given type as an extension
 // with a specific specific tag byte.
@@ -148,12 +174,17 @@ func (o *encHandle) getEncodeExt(rt reflect.Type) (tag byte, fn func(reflect.Val
 }
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
+// 
 // For efficiency, Users are encouraged to pass in a memory buffered writer
-// (eg bufio.Writer, bytes.Buffer). This implementation *may* use one internally.
+// (eg bufio.Writer, bytes.Buffer). 
 func NewEncoder(w io.Writer, h Handle) *Encoder {
 	ww, ok := w.(ioEncWriterWriter)
 	if !ok {
-		ww = bufio.NewWriterSize(w, defEncByteBufSize)
+		sww := simpleIoEncWriterWriter{w: w}
+		sww.bw, _ = w.(io.ByteWriter)
+		sww.sw, _ = w.(ioEncStringWriter)
+		ww = &sww
+		//ww = bufio.NewWriterSize(w, defEncByteBufSize)
 	}
 	z := ioEncWriter{
 		w: ww,
@@ -216,7 +247,7 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 func (e *Encoder) Encode(v interface{}) (err error) {
 	defer panicToErr(&err)
 	e.encode(v)
-	e.w.flush()
+	e.w.atEndOfEncode()
 	return
 }
 
@@ -318,7 +349,7 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 		}
 		return
 	}
-
+	
 	// ensure more common cases appear early in switch.
 	rk := rv.Kind()
 	switch rk {
@@ -475,26 +506,7 @@ func (z *ioEncWriter) writen2(b1 byte, b2 byte) {
 	z.writen1(b2)
 }
 
-func (z *ioEncWriter) writen3(b1, b2, b3 byte) {
-	z.writen1(b1)
-	z.writen1(b2)
-	z.writen1(b3)
-}
-
-func (z *ioEncWriter) writen4(b1, b2, b3, b4 byte) {
-	z.writen1(b1)
-	z.writen1(b2)
-	z.writen1(b3)
-	z.writen1(b4)
-}
-
-func (z *ioEncWriter) flush() {
-	if f, ok := z.w.(ioEncWriterFlusher); ok {
-		if err := f.Flush(); err != nil {
-			panic(err)
-		}
-	}
-}
+func (z *ioEncWriter) atEndOfEncode() { }
 
 // ----------------------------------------
 
@@ -545,22 +557,22 @@ func (z *bytesEncWriter) writen2(b1 byte, b2 byte) {
 	z.b[c+1] = b2
 }
 
-func (z *bytesEncWriter) writen3(b1 byte, b2 byte, b3 byte) {
-	c := z.grow(3)
-	z.b[c] = b1
-	z.b[c+1] = b2
-	z.b[c+2] = b3
-}
+// func (z *bytesEncWriter) writen3(b1 byte, b2 byte, b3 byte) {
+// 	c := z.grow(3)
+// 	z.b[c] = b1
+// 	z.b[c+1] = b2
+// 	z.b[c+2] = b3
+// }
 
-func (z *bytesEncWriter) writen4(b1 byte, b2 byte, b3 byte, b4 byte) {
-	c := z.grow(4)
-	z.b[c] = b1
-	z.b[c+1] = b2
-	z.b[c+2] = b3
-	z.b[c+3] = b4
-}
+// func (z *bytesEncWriter) writen4(b1 byte, b2 byte, b3 byte, b4 byte) {
+// 	c := z.grow(4)
+// 	z.b[c] = b1
+// 	z.b[c+1] = b2
+// 	z.b[c+2] = b3
+// 	z.b[c+3] = b4
+// }
 
-func (z *bytesEncWriter) flush() {
+func (z *bytesEncWriter) atEndOfEncode() {
 	*(z.out) = z.b[:z.c]
 }
 
@@ -585,3 +597,4 @@ func (z *bytesEncWriter) grow(n int) (oldcursor int) {
 func encErr(format string, params ...interface{}) {
 	doPanic(msgTagEnc, format, params...)
 }
+

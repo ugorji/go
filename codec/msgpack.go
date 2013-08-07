@@ -200,7 +200,8 @@ func (e *msgpackEncDriver) encodeExtPreamble(xtag byte, l int) {
 	case l <= 8:
 		e.w.writen2(0xc0|byte(l), xtag)
 	case l < 256:
-		e.w.writen3(mpXv4Fixext5, xtag, byte(l))
+		e.w.writen2(mpXv4Fixext5, xtag)
+		e.w.writen1(byte(l))
 	case l < 65536:
 		e.w.writen2(mpXv4Ext16, xtag)
 		e.w.writeUint16(uint16(l))
@@ -662,11 +663,17 @@ func (c msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint6
 		return
 	}
 	var b byte
-	if err = c.read(&b, msgid, methodOrError); err != nil {
+	if err = c.read(&b); err != nil {
 		return
 	}
 	if b != expectTypeByte {
 		err = fmt.Errorf("Unexpected byte descriptor in header. Expecting %v. Received %v", expectTypeByte, b)
+		return
+	}
+	if err = c.read(msgid); err != nil {
+		return
+	}
+	if err = c.read(methodOrError); err != nil {
 		return
 	}
 	return
@@ -684,7 +691,7 @@ func (c msgpackSpecRpcCodec) writeCustomBody(typeByte byte, msgid uint64, method
 		}
 	}
 	r2 := []interface{}{typeByte, uint32(msgid), moe, body}
-	return c.enc.Encode(r2)
+	return c.write(r2, nil, false, true)
 }
 
 //--------------------------------------------------

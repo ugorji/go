@@ -126,6 +126,7 @@ func (e *bincEncDriver) encodeBool(b bool) {
 }
 
 func (e *bincEncDriver) encodeFloat32(f float32) {
+	//println("encodeFloat32")
 	if f == 0 {
 		e.w.writen1(bincVdSpecial<<4 | bincSpZeroFloat)
 		return
@@ -386,14 +387,17 @@ func (d *bincDecDriver) decFloatPre(vs, defaultLen byte) {
 }
 
 func (d *bincDecDriver) decFloat() (f float64) {
+	//println("decFloat")
 	//if true { f = math.Float64frombits(d.r.readUint64()); break; }
 	switch vs := d.vs; vs & 0x7 {
 	case bincFlBin32:
+		//println("decodeFloat32")
 		d.decFloatPre(vs, 4)
 		f = float64(math.Float32frombits(bigen.Uint32(d.b[0:4])))
 	case bincFlBin64:
+		//println("decodeFloat64")
 		d.decFloatPre(vs, 8)
-		f = math.Float64frombits(bigen.Uint64(d.b[:]))
+		f = math.Float64frombits(bigen.Uint64(d.b[0:8]))
 	default:
 		decErr("only float32 and float64 are supported. d.vd: 0x%x, d.vs: 0x%x", d.vd, d.vs)
 	}
@@ -530,19 +534,21 @@ func (d *bincDecDriver) decodeUint(bitsize uint8) (ui uint64) {
 }
 
 func (d *bincDecDriver) decodeFloat(chkOverflow32 bool) (f float64) {
-	if d.vd == bincVdSpecial {
+	switch d.vd {
+	case bincVdSpecial:
+		d.bdRead = false
 		switch d.vs {
 		case bincSpNan:
 			return math.NaN()
 		case bincSpPosInf:
 			return math.Inf(1)
-		case bincSpZeroFloat:
+		case bincSpZeroFloat, bincSpZero:
 			return
 		case bincSpNegInf:
 			return math.Inf(-1)
-		}
-	}
-	switch d.vd {
+		default:
+			decErr("Invalid d.vs decoding float where d.vd=bincVdSpecial: %v", d.vs)
+		}		
 	case bincVdFloat:
 		f = d.decFloat()
 	case bincVdUint:

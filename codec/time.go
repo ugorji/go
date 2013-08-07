@@ -8,8 +8,7 @@ import (
 )
 
 var (
-	timeBs0xff = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
-	digits = [...]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
+	timeDigits = [...]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
 )
 
 // encodeTime encodes a time.Time as a []byte, including
@@ -79,7 +78,7 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 		copy(btmp[8-n:], bs[i:i2])
 		//if first bit of bs[i] is set, then fill btmp[0..8-n] with 0xff (ie sign extend it)
 		if bs[i] & (1 << 7) != 0 {
-			copy(btmp[0:8-n], timeBs0xff)
+			copy(btmp[0:8-n], bsAll0xff)
 			//for j,k := byte(0), 8-n; j < k; j++ {	btmp[j] = 0xff }
 		}
 		i = i2
@@ -122,10 +121,10 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 	} else {
 		tzhr, tzmin = tzint/60, tzint%60
 	}
-	tzname[4] = digits[tzhr/10]
-	tzname[5] = digits[tzhr%10]
-	tzname[7] = digits[tzmin/10]
-	tzname[8] = digits[tzmin%10]
+	tzname[4] = timeDigits[tzhr/10]
+	tzname[5] = timeDigits[tzhr%10]
+	tzname[7] = timeDigits[tzmin/10]
+	tzname[8] = timeDigits[tzmin%10]
 
 	tt = time.Unix(tsec, int64(tnsec)).In(time.FixedZone(string(tzname), int(tzint)*60))
 	return
