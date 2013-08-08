@@ -27,8 +27,6 @@ type encWriter interface {
 	writestr(string)
 	writen1(byte)
 	writen2(byte, byte)
-	//writen3(byte, byte, byte)
-	//writen4(byte, byte, byte, byte)
 	atEndOfEncode()
 }
 
@@ -556,21 +554,6 @@ func (z *bytesEncWriter) writen2(b1 byte, b2 byte) {
 	z.b[c] = b1
 	z.b[c+1] = b2
 }
-
-// func (z *bytesEncWriter) writen3(b1 byte, b2 byte, b3 byte) {
-// 	c := z.grow(3)
-// 	z.b[c] = b1
-// 	z.b[c+1] = b2
-// 	z.b[c+2] = b3
-// }
-
-// func (z *bytesEncWriter) writen4(b1 byte, b2 byte, b3 byte, b4 byte) {
-// 	c := z.grow(4)
-// 	z.b[c] = b1
-// 	z.b[c+1] = b2
-// 	z.b[c+2] = b3
-// 	z.b[c+3] = b4
-// }
 
 func (z *bytesEncWriter) atEndOfEncode() {
 	*(z.out) = z.b[:z.c]

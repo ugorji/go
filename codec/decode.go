@@ -63,6 +63,7 @@ type Decoder struct {
 // ioDecReader is a decReader that reads off an io.Reader
 type ioDecReader struct {
 	r io.Reader
+	br io.ByteReader
 	x [8]byte //temp byte array re-used internally for efficiency
 }
 
@@ -179,6 +180,7 @@ func NewDecoder(r io.Reader, h Handle) *Decoder {
 	z := ioDecReader{
 		r: r,
 	}
+	z.br, _ = r.(io.ByteReader)
 	return &Decoder{r: &z, d: h.newDecDriver(&z), h: h}
 }
 
@@ -527,19 +529,26 @@ func (d *Decoder) chkPtrValue(rv reflect.Value) {
 
 func (z *ioDecReader) readn(n int) (bs []byte) {
 	bs = make([]byte, n)
-	if _, err := io.ReadFull(z.r, bs); err != nil {
+	if _, err := io.ReadAtLeast(z.r, bs, n); err != nil {
 		panic(err)
 	}
 	return
 }
 
-func (z *ioDecReader) readb(bs []byte) {
-	if _, err := io.ReadFull(z.r, bs); err != nil {
+func (z *ioDecReader) readb(bs []byte) {	
+	if _, err := io.ReadAtLeast(z.r, bs, len(bs)); err != nil {
 		panic(err)
 	}
 }
 
 func (z *ioDecReader) readn1() uint8 {
+	if z.br != nil {
+		b, err := z.br.ReadByte()
+		if err != nil {
+			panic(err)
+		}
+		return b
+	}
 	z.readb(z.x[:1])
 	return z.x[0]
 }
