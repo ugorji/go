@@ -87,7 +87,7 @@ type bincDecDriver struct {
 	vd     byte
 	vs     byte
 	b      [8]byte
-	m      map[uint16]string // symbols (TODO: maybe use uint32 as key, as map optimizes for it)
+	m      map[uint32]string // symbols (use uint32 as key, as map optimizes for it)
 }
 
 func (_ *BincHandle) newEncDriver(w encWriter) encDriver {
@@ -102,9 +102,9 @@ func (_ *BincHandle) writeExt() bool {
 	return true
 }
 
-func (e *bincEncDriver) encodeBuiltinType(rt reflect.Type, rv reflect.Value) bool {
+func (e *bincEncDriver) encodeBuiltinType(rt uintptr, rv reflect.Value) bool {
 	switch rt {
-	case timeTyp:
+	case timeTypId:
 		bs := encodeTime(rv.Interface().(time.Time))
 		e.w.writen1(bincVdTimestamp<<4 | uint8(len(bs)))
 		e.w.writeb(bs)
@@ -259,6 +259,8 @@ func (e *bincEncDriver) encodeSymbol(v string) {
 			e.w.writeUint16(ui)
 		}
 	} else {
+		//e.s++
+		//ui = uint16(e.s)
 		ui = uint16(atomic.AddUint32(&e.s, 1))
 		e.m[v] = ui
 		var lenprec uint8
@@ -353,9 +355,9 @@ func (d *bincDecDriver) currentIsNil() bool {
 	return false
 }
 
-func (d *bincDecDriver) decodeBuiltinType(rt reflect.Type, rv reflect.Value) bool {
+func (d *bincDecDriver) decodeBuiltinType(rt uintptr, rv reflect.Value) bool {
 	switch rt {
-	case timeTyp:
+	case timeTypId:
 		if d.vd != bincVdTimestamp {
 			decErr("Invalid d.vd. Expecting 0x%x. Received: 0x%x", bincVdTimestamp, d.vd)
 		}
@@ -617,16 +619,16 @@ func (d *bincDecDriver) decodeString() (s string) {
 		//extract symbol
 		//if containsStringVal, read it and put in map
 		//else look in map for string value
-		var symbol uint16
+		var symbol uint32
 		vs := d.vs
 		//fmt.Printf(">>>> d.vs: 0b%b, & 0x8: %v, & 0x4: %v\n", d.vs, vs & 0x8, vs & 0x4)
 		if vs&0x8 == 0 {
-			symbol = uint16(d.r.readn1())
+			symbol = uint32(d.r.readn1())
 		} else {
-			symbol = d.r.readUint16()
+			symbol = uint32(d.r.readUint16())
 		}
 		if d.m == nil {
-			d.m = make(map[uint16]string, 16)
+			d.m = make(map[uint32]string, 16)
 		}
 
 		if vs&0x4 == 0 {
@@ -751,14 +753,10 @@ func (d *bincDecDriver) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx deco
 		l := d.decLen()
 		xtag := d.r.readn1()
 		opts := h.(*BincHandle)
-		rt, bfn := opts.getDecodeExtForTag(xtag)
-		if rt == nil {
+		var bfn func(reflect.Value, []byte) error
+		rv, bfn = opts.getDecodeExtForTag(xtag)
+		if bfn == nil {
 			decErr("Unable to find type mapped to extension tag: %v", xtag)
-		}
-		if rt.Kind() == reflect.Ptr {
-			rv = reflect.New(rt.Elem())
-		} else {
-			rv = reflect.New(rt).Elem()
 		}
 		if fnerr := bfn(rv, d.r.readn(l)); fnerr != nil {
 			panic(fnerr)

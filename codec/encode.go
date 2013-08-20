@@ -31,7 +31,7 @@ type encWriter interface {
 }
 
 type encDriver interface {
-	encodeBuiltinType(rt reflect.Type, rv reflect.Value) bool
+	encodeBuiltinType(rt uintptr, rv reflect.Value) bool
 	encodeNil()
 	encodeInt(i int64)
 	encodeUint(i uint64)
@@ -50,7 +50,7 @@ type encDriver interface {
 }
 
 type encodeHandleI interface {
-	getEncodeExt(rt reflect.Type) (tag byte, fn func(reflect.Value) ([]byte, error))
+	getEncodeExt(rt uintptr) (tag byte, fn func(reflect.Value) ([]byte, error))
 	writeExt() bool
 }
 
@@ -97,13 +97,13 @@ type encExtTagFn struct {
 }
 
 type encExtTypeTagFn struct {
-	rt reflect.Type
+	rt uintptr
 	encExtTagFn
 }
 
 // EncoderOptions contain options for the encoder, e.g. registered extension functions.
 type encHandle struct {
-	extFuncs map[reflect.Type]encExtTagFn
+	extFuncs map[uintptr]encExtTagFn
 	exts     []encExtTypeTagFn
 }
 
@@ -130,31 +130,28 @@ func (o *simpleIoEncWriterWriter) Write(p []byte) (n int, err error) {
 // addEncodeExt registers a function to handle encoding a given type as an extension
 // with a specific specific tag byte.
 // To remove an extension, pass fn=nil.
-func (o *encHandle) addEncodeExt(rt reflect.Type, tag byte, fn func(reflect.Value) ([]byte, error)) {
+func (o *encHandle) addEncodeExt(rt uintptr, tag byte, fn func(reflect.Value) ([]byte, error)) {
 	if o.exts == nil {
 		o.exts = make([]encExtTypeTagFn, 0, 8)
-		o.extFuncs = make(map[reflect.Type]encExtTagFn, 8)
+		o.extFuncs = make(map[uintptr]encExtTagFn, 8)
+	} else {
+		if _, ok := o.extFuncs[rt]; ok {
+			delete(o.extFuncs, rt)
+			for i := 0; i < len(o.exts); i++ {
+				if o.exts[i].rt == rt {
+					o.exts = append(o.exts[:i], o.exts[i+1:]...)
+					break
+				}
+			}
+		}
 	}
-	delete(o.extFuncs, rt)
-
 	if fn != nil {
 		o.extFuncs[rt] = encExtTagFn{fn, tag}
-	}
-	if leno := len(o.extFuncs); leno > cap(o.exts) {
-		o.exts = make([]encExtTypeTagFn, leno, (leno * 3 / 2))
-	} else {
-		o.exts = o.exts[0:leno]
-	}
-	var i int
-	for k, v := range o.extFuncs {
-		o.exts[i] = encExtTypeTagFn{k, v}
-		i++
+		o.exts = append(o.exts, encExtTypeTagFn{rt, encExtTagFn{fn, tag}})
 	}
 }
 
-func (o *encHandle) getEncodeExt(rt reflect.Type) (tag byte, fn func(reflect.Value) ([]byte, error)) {
-	// For >= 5 elements, map constant cost less than iteration cost.
-	// This is because reflect.Type equality cost is pretty high
+func (o *encHandle) getEncodeExt(rt uintptr) (tag byte, fn func(reflect.Value) ([]byte, error)) {
 	if l := len(o.exts); l == 0 {
 		return
 	} else if l < mapAccessThreshold {
@@ -323,14 +320,16 @@ func (e *Encoder) encode(iv interface{}) {
 
 func (e *Encoder) encodeValue(rv reflect.Value) {
 	rt := rv.Type()
+	rtid := reflect.ValueOf(rt).Pointer()
+	
 	//encode based on type first, since over-rides are based on type.
 	ee := e.e //don't dereference everytime
-	if ee.encodeBuiltinType(rt, rv) {
+	if ee.encodeBuiltinType(rtid, rv) {
 		return
 	}
 
 	//Note: tagFn must handle returning nil if value should be encoded as a nil.
-	if xfTag, xfFn := e.h.getEncodeExt(rt); xfFn != nil {
+	if xfTag, xfFn := e.h.getEncodeExt(rtid); xfFn != nil {
 		bs, fnerr := xfFn(rv)
 		if fnerr != nil {
 			panic(fnerr)
@@ -348,6 +347,9 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 		return
 	}
 	
+	// TODO: Encode if type is an encoding.BinaryMarshaler: MarshalBinary() (data []byte, err error)
+	// There is a cost, as we need to change the rv to an interface{} first.
+
 	// ensure more common cases appear early in switch.
 	rk := rv.Kind()
 	switch rk {
@@ -400,7 +402,8 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 			e.encodeValue(rv.MapIndex(mks[j]))
 		}
 	case reflect.Struct:
-		e.encStruct(rt, rv)
+		sis := getStructFieldInfos(rtid, rt)
+		e.encStruct(sis, rv)
 	case reflect.Ptr:
 		if rv.IsNil() {
 			ee.encodeNil()
@@ -425,8 +428,7 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 	return
 }
 
-func (e *Encoder) encStruct(rt reflect.Type, rv reflect.Value) {
-	sis := getStructFieldInfos(rt)
+func (e *Encoder) encStruct(sis structFieldInfos, rv reflect.Value) {
 	newlen := len(sis)
 	rvals := make([]reflect.Value, newlen)
 	encnames := make([]string, newlen)

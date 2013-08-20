@@ -37,7 +37,7 @@ type decReader interface {
 type decDriver interface {
 	initReadNext()
 	currentIsNil() bool
-	decodeBuiltinType(rt reflect.Type, rv reflect.Value) bool
+	decodeBuiltinType(rt uintptr, rv reflect.Value) bool
 	//decodeNaked should completely handle extensions, builtins, primitives, etc.
 	//Numbers are decoded as int64, uint64, float64 only (no smaller sized number types).
 	decodeNaked(h decodeHandleI) (rv reflect.Value, ctx decodeNakedContext)
@@ -80,19 +80,20 @@ type decExtTagFn struct {
 }
 
 type decExtTypeTagFn struct {
+	rtid uintptr
 	rt reflect.Type
 	decExtTagFn
 }
 
 type decodeHandleI interface {
-	getDecodeExt(rt reflect.Type) (tag byte, fn func(reflect.Value, []byte) error)
+	getDecodeExt(rt uintptr) (tag byte, fn func(reflect.Value, []byte) error)
 	errorIfNoField() bool
 }
 
 type decHandle struct {
 	// put word-aligned fields first (before bools, etc)
 	exts     []decExtTypeTagFn
-	extFuncs map[reflect.Type]decExtTagFn
+	extFuncs map[uintptr]decExtTagFn
 	// if an extension for byte slice is defined, then always decode Raw as strings
 	rawToStringOverride bool
 }
@@ -116,51 +117,54 @@ func (o *DecodeOptions) errorIfNoField() bool {
 // addDecodeExt registers a function to handle decoding into a given type when an
 // extension type and specific tag byte is detected in the codec stream.
 // To remove an extension, pass fn=nil.
-func (o *decHandle) addDecodeExt(rt reflect.Type, tag byte, fn func(reflect.Value, []byte) error) {
+func (o *decHandle) addDecodeExt(rtid uintptr, rt reflect.Type, tag byte, fn func(reflect.Value, []byte) error) {
 	if o.exts == nil {
 		o.exts = make([]decExtTypeTagFn, 0, 2)
-		o.extFuncs = make(map[reflect.Type]decExtTagFn, 2)
-	}
-	if _, ok := o.extFuncs[rt]; ok {
-		delete(o.extFuncs, rt)
-		if rt == byteSliceTyp {
-			o.rawToStringOverride = false
+		o.extFuncs = make(map[uintptr]decExtTagFn, 2)
+	} else {
+		if _, ok := o.extFuncs[rtid]; ok {
+			delete(o.extFuncs, rtid)
+			for i := 0; i < len(o.exts); i++ {
+				if o.exts[i].rtid == rtid {
+					o.exts = append(o.exts[:i], o.exts[i+1:]...)
+					break
+				}
+			}
+			if rtid == byteSliceTypId {
+				o.rawToStringOverride = false
+			}
 		}
 	}
 	if fn != nil {
-		o.extFuncs[rt] = decExtTagFn{fn, tag}
-		if rt == byteSliceTyp {
+		o.extFuncs[rtid] = decExtTagFn{fn, tag}
+		o.exts = append(o.exts, decExtTypeTagFn{rtid, rt, decExtTagFn{fn, tag}})
+		if rtid == byteSliceTypId {
 			o.rawToStringOverride = true
 		}
 	}
-
-	if leno := len(o.extFuncs); leno > cap(o.exts) {
-		o.exts = make([]decExtTypeTagFn, leno, (leno * 3 / 2))
-	} else {
-		o.exts = o.exts[0:leno]
-	}
-	var i int
-	for k, v := range o.extFuncs {
-		o.exts[i] = decExtTypeTagFn{k, v}
-		i++
-	}
 }
 
-func (o *decHandle) getDecodeExtForTag(tag byte) (rt reflect.Type, fn func(reflect.Value, []byte) error) {
+func (o *decHandle) getDecodeExtForTag(tag byte) (rv reflect.Value, fn func(reflect.Value, []byte) error) {
 	for i, l := 0, len(o.exts); i < l; i++ {
 		if o.exts[i].tag == tag {
-			return o.exts[i].rt, o.exts[i].fn
+			if o.exts[i].rt.Kind() == reflect.Ptr {
+				rv = reflect.New(o.exts[i].rt.Elem())
+			} else {
+				rv = reflect.New(o.exts[i].rt).Elem()
+			}
+			fn = o.exts[i].fn
+			return 
 		}
 	}
 	return
 }
 
-func (o *decHandle) getDecodeExt(rt reflect.Type) (tag byte, fn func(reflect.Value, []byte) error) {
+func (o *decHandle) getDecodeExt(rt uintptr) (tag byte, fn func(reflect.Value, []byte) error) {
 	if l := len(o.exts); l == 0 {
 		return
 	} else if l < mapAccessThreshold {
 		for i := 0; i < l; i++ {
-			if o.exts[i].rt == rt {
+			if o.exts[i].rtid == rt {
 				x := o.exts[i].decExtTagFn
 				return x.tag, x.fn
 			}
@@ -320,6 +324,8 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		return
 	}
 
+	rtid := reflect.ValueOf(rt).Pointer()
+	
 	// An extension can be registered for any type, regardless of the Kind
 	// (e.g. type BitSet int64, type MyStruct { / * unexported fields * / }, type X []int, etc.
 	//
@@ -329,10 +335,11 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 	//
 	// If we are checking for builtin or ext type here, it means we didn't go through decodeNaked,
 	// Because decodeNaked would have handled it. It also means wasNilIntf = false.
-	if dd.decodeBuiltinType(rt, rv) {
+	if dd.decodeBuiltinType(rtid, rv) {
 		return
 	}
-	if bfnTag, bfnFn := d.h.getDecodeExt(rt); bfnFn != nil {
+	
+	if bfnTag, bfnFn := d.h.getDecodeExt(rtid); bfnFn != nil {
 		xbs := dd.decodeExt(bfnTag)
 		if fnerr := bfnFn(rv, xbs); fnerr != nil {
 			panic(fnerr)
@@ -340,6 +347,9 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		return
 	}
 
+	// TODO: Decode if type is an encoding.BinaryUnmarshaler: UnmarshalBinary(data []byte) error
+	// There is a cost, as we need to change the rv to an interface{} first.
+	
 	// NOTE: if decoding into a nil interface{}, we return a non-nil
 	// value except even if the container registers a length of 0.
 	//
@@ -396,7 +406,7 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 			break
 		}
 
-		sfi := getStructFieldInfos(rt)
+		sfi := getStructFieldInfos(rtid, rt)
 		for j := 0; j < containerLen; j++ {
 			// var rvkencname string
 			// ddecode(&rvkencname)

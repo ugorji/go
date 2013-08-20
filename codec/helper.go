@@ -18,8 +18,10 @@ import (
 )
 
 const (
-	// For >= 4 elements, map outways cost of linear search (especially for reflect.Type)
-	mapAccessThreshold    = 4
+	// For >= mapAccessThreshold elements, map outways cost of linear search 
+	//   - this was critical for reflect.Type, whose equality cost is pretty high (set to 4)
+	//   - for integers, equality cost is cheap (set to 16, 32 of 64)
+	mapAccessThreshold    = 16 // 4
 	binarySearchThreshold = 16
 	structTagName         = "codec"
 )
@@ -39,7 +41,7 @@ var (
 	bigen               = binary.BigEndian
 	structInfoFieldName = "_struct"
 
-	cachedStructFieldInfos      = make(map[reflect.Type]structFieldInfos, 4)
+	cachedStructFieldInfos      = make(map[uintptr]structFieldInfos, 4)
 	cachedStructFieldInfosMutex sync.RWMutex
 
 	nilIntfSlice     = []interface{}(nil)
@@ -53,6 +55,9 @@ var (
 	ptrTimeTyp       = reflect.TypeOf((*time.Time)(nil))
 	int64SliceTyp    = reflect.TypeOf([]int64(nil))
 
+	timeTypId        = reflect.ValueOf(timeTyp).Pointer()
+	byteSliceTypId   = reflect.ValueOf(byteSliceTyp).Pointer()
+	
 	intBitsize  uint8 = uint8(reflect.TypeOf(int(0)).Bits())
 	uintBitsize uint8 = uint8(reflect.TypeOf(uint(0)).Bits())
 
@@ -71,8 +76,9 @@ func (o *encdecHandle) AddExt(
 	encfn func(reflect.Value) ([]byte, error),
 	decfn func(reflect.Value, []byte) error,
 ) {
-	o.addEncodeExt(rt, tag, encfn)
-	o.addDecodeExt(rt, tag, decfn)
+	rtid := reflect.ValueOf(rt).Pointer()
+	o.addEncodeExt(rtid, tag, encfn)
+	o.addDecodeExt(rtid, rt, tag, decfn)
 }
 
 // Handle is the interface for a specific encoding format.
@@ -142,9 +148,10 @@ func (sis structFieldInfos) indexForEncName(name string) int {
 	return -1
 }
 
-func getStructFieldInfos(rt reflect.Type) (sis structFieldInfos) {
+func getStructFieldInfos(rtid uintptr, rt reflect.Type) (sis structFieldInfos) {
+	var ok bool
 	cachedStructFieldInfosMutex.RLock()
-	sis, ok := cachedStructFieldInfos[rt]
+	sis, ok = cachedStructFieldInfos[rtid]
 	cachedStructFieldInfosMutex.RUnlock()
 	if ok {
 		return
@@ -152,6 +159,9 @@ func getStructFieldInfos(rt reflect.Type) (sis structFieldInfos) {
 
 	cachedStructFieldInfosMutex.Lock()
 	defer cachedStructFieldInfosMutex.Unlock()
+	if sis, ok = cachedStructFieldInfos[rtid]; ok {
+		return
+	}
 
 	var siInfo *structFieldInfo
 	if f, ok := rt.FieldByName(structInfoFieldName); ok {
@@ -167,7 +177,7 @@ func getStructFieldInfos(rt reflect.Type) (sis structFieldInfos) {
 		sis[i] = *sisp[i]
 	}
 	// sis = sisp
-	cachedStructFieldInfos[rt] = sis
+	cachedStructFieldInfos[rtid] = sis
 	return
 }
 
