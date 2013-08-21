@@ -1,7 +1,6 @@
 **MessagePack and [Binc](http://github.com/ugorji/binc) Codec for [Go](http://golang.org) Language.**
 
-A High Performance and Feature-Rich Idiomatic Go Library providing
-encode/decode and rpc support for msgpack, *and [binc](http://github.com/ugorji/binc)* .
+*A High Performance, Feature-Rich, Idiomatic encode/decode and rpc library*.
 
 To install:
 
