@@ -12,12 +12,14 @@ Online documentation: [http://godoc.org/github.com/ugorji/go/codec]
 
 Typical usage:
 
+```go
     // create and use decoder/encoder
     var (
-      r io.Reader
-      w io.Writer
-      b []byte
-      mh codec.MsgpackHandle
+        v interface{} // value to decode/encode into
+        r io.Reader
+        w io.Writer
+        b []byte
+        mh codec.MsgpackHandle
     )
     
     dec = codec.NewDecoder(r, &mh)
@@ -42,3 +44,4 @@ Typical usage:
     conn, err = net.Dial("tcp", "localhost:5555")
     rpcCodec := rpcH.ClientCodec(conn, h)
     client := rpc.NewClientWithCodec(rpcCodec)
+```
