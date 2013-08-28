@@ -77,7 +77,7 @@ type msgpackContainerType struct {
 
 var (
 	msgpackContainerStr  = msgpackContainerType{32, mpFixStrMin, mpStr8, mpStr16, mpStr32, true, true, false}
-	msgpackContainerBin  = msgpackContainerType{32, 0, mpBin8, mpBin16, mpBin32, false, true, true}
+	msgpackContainerBin  = msgpackContainerType{0, 0, mpBin8, mpBin16, mpBin32, false, true, true}
 	msgpackContainerList = msgpackContainerType{16, mpFixArrayMin, 0, mpArray16, mpArray32, true, false, false}
 	msgpackContainerMap  = msgpackContainerType{16, mpFixMapMin, 0, mpMap16, mpMap32, true, false, false}
 )
@@ -333,6 +333,9 @@ func (d *msgpackDecDriver) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx d
 			} else {
 				rv = reflect.New(byteSliceTyp).Elem() // Use New, not Zero, so it's settable
 			}
+		case bd == mpBin8, bd == mpBin16, bd == mpBin32:
+			ctx = dncContainer
+			rv = reflect.New(byteSliceTyp).Elem()
 		case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
 			ctx = dncContainer
 			// v = containerList
@@ -520,7 +523,14 @@ func (d *msgpackDecDriver) decodeString() (s string) {
 
 // Callers must check if changed=true (to decide whether to replace the one they have)
 func (d *msgpackDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
-	clen := d.readContainerLen(msgpackContainerBin)
+	// bytes can be decoded from msgpackContainerStr or msgpackContainerBin
+	var clen int
+	switch d.bd {
+	case mpBin8, mpBin16, mpBin32:
+		clen = d.readContainerLen(msgpackContainerBin)
+	default:
+		clen = d.readContainerLen(msgpackContainerStr)
+	}
 	// if clen < 0 {
 	// 	changed = true
 	// 	panic("length cannot be zero. this cannot be nil.")
@@ -561,19 +571,20 @@ func (d *msgpackDecDriver) currentIsNil() bool {
 }
 
 func (d *msgpackDecDriver) readContainerLen(ct msgpackContainerType) (clen int) {
+	bd := d.bd 
 	switch {
-	case d.bd == mpNil:
+	case bd == mpNil:
 		clen = -1 // to represent nil
-	case d.bd == ct.b8:
+	case bd == ct.b8:
 		clen = int(d.r.readn1())
-	case d.bd == ct.b16:
+	case bd == ct.b16:
 		clen = int(d.r.readUint16())
-	case d.bd == ct.b32:
+	case bd == ct.b32:
 		clen = int(d.r.readUint32())
-	case (ct.bFixMin & d.bd) == ct.bFixMin:
-		clen = int(ct.bFixMin ^ d.bd)
+	case (ct.bFixMin & bd) == ct.bFixMin:
+		clen = int(ct.bFixMin ^ bd)
 	default:
-		decErr("readContainerLen: %s: hex: %x, dec: %d", msgBadDesc, d.bd, d.bd)
+		decErr("readContainerLen: %s: hex: %x, dec: %d", msgBadDesc, bd, bd)
 	}
 	d.bdRead = false
 	return
