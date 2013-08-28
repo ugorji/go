@@ -205,7 +205,7 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 // Note that a pointer to a nil interface is not a nil pointer.
 // If you do not know what type of stream it is, pass in a pointer to a nil interface.
 // We will decode and store a value in that nil interface.
-//
+// 
 // Sample usages:
 //   // Decoding into a non-nil typed value
 //   var f float32
@@ -215,7 +215,12 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 //   var v interface{}
 //   dec := codec.NewDecoder(r, handle)
 //   err = dec.Decode(&v)
-//
+// 
+// When decoding into a nil interface{}, we will decode into an appropriate value based
+// on the contents of the stream. Numbers are decoded as float64, int64 or uint64. Other values
+// are decoded appropriately (e.g. bool), and configurations exist on the Handle to override
+// defaults (e.g. for MapType, SliceType and how to decode raw bytes).
+// 
 // There are some special rules when decoding into containers (slice/array/map/struct).
 // Decode will typically use the stream contents to UPDATE the container. 
 //   - This means that for a struct or map, we just update matching fields or keys.
