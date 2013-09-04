@@ -41,6 +41,7 @@ Typical usage:
     
     //RPC Communication (client side)
     conn, err = net.Dial("tcp", "localhost:5555")
-    rpcCodec := rpcH.ClientCodec(conn, h)
+    rpcCodec := codec.GoRpc.ClientCodec(conn, h)
+    //OR rpcCodec := codec.MsgpackSpecRpc.ClientCodec(conn, h)
     client := rpc.NewClientWithCodec(rpcCodec)
 ```
