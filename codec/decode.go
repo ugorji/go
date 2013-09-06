@@ -14,6 +14,8 @@ var (
 	msgBadDesc = "Unrecognized descriptor byte"
 )
 
+// when decoding without schema, the nakedContext tells us what 
+// we decoded into, or if decoding has been handled.
 type decodeNakedContext uint8
 
 const (
@@ -23,6 +25,24 @@ const (
 	dncContainer
 )
 
+// decodeEncodedType is the current type in the encoded stream
+type decodeEncodedType uint8
+
+const (
+	detUnset decodeEncodedType = iota
+	detNil
+	detInt
+	detUint
+	detFloat
+	detBool
+	detString
+	detBytes
+	detMap
+	detArray
+	detTimestamp
+	detExt
+)
+	
 // decReader abstracts the reading source, allowing implementations that can
 // read from an io.Reader or directly off a byte slice with zero-copying.
 type decReader interface {
@@ -36,11 +56,12 @@ type decReader interface {
 
 type decDriver interface {
 	initReadNext()
-	currentIsNil() bool
+	tryDecodeAsNil() bool
+	currentEncodedType() decodeEncodedType
 	decodeBuiltinType(rt uintptr, rv reflect.Value) bool
 	//decodeNaked should completely handle extensions, builtins, primitives, etc.
 	//Numbers are decoded as int64, uint64, float64 only (no smaller sized number types).
-	decodeNaked(h decodeHandleI) (rv reflect.Value, ctx decodeNakedContext)
+	decodeNaked() (rv reflect.Value, ctx decodeNakedContext)
 	decodeInt(bitsize uint8) (i int64)
 	decodeUint(bitsize uint8) (ui uint64)
 	decodeFloat(chkOverflow32 bool) (f float64)
@@ -229,7 +250,8 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 //     we reset the destination map/slice to be a zero-length non-nil map/slice.
 //   - Also, if the encoded value is Nil in the stream, then we try to set
 //     the container to its "zero" value (e.g. nil for slice/map).
-// 
+//   - Note that a struct can be decoded from an array in the stream,
+//     by updating fields as they occur in the struct.
 func (d *Decoder) Decode(v interface{}) (err error) {
 	defer panicToErr(&err)
 	d.decode(v)
@@ -303,7 +325,7 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 	//if nil interface, use some hieristics to set the nil interface to an
 	//appropriate value based on the first byte read (byte descriptor bd)
 	if wasNilIntf {
-		if dd.currentIsNil() {
+		if dd.tryDecodeAsNil() {
 			return
 		}
 		//Prevent from decoding into e.g. error, io.Reader, etc if it's nil and non-nil value in stream.
@@ -311,14 +333,14 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		if num := rt.NumMethod(); num > 0 {
 			decErr("decodeValue: Cannot decode non-nil codec value into nil %v (%v methods)", rt, num)
 		} else {
-			rv, ndesc = dd.decodeNaked(d.h)
+			rv, ndesc = dd.decodeNaked()
 			if ndesc == dncHandled {
 				rvOrig.Set(rv)
 				return
 			}
 			rt = rv.Type()
 		}
-	} else if dd.currentIsNil() {
+	} else if dd.tryDecodeAsNil() {
 		// Note: if stream is set to nil, we set the dereferenced value to its "zero" value (if settable).
 		for rv.Kind() == reflect.Ptr {
 			rv = rv.Elem()
@@ -405,36 +427,47 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 	case reflect.Interface:
 		d.decodeValue(rv.Elem())
 	case reflect.Struct:
-		containerLen := dd.readMapLen()
-
-		if containerLen == 0 {
-			break
-		}
-
-		sfi := getStructFieldInfos(rtid, rt)
-		for j := 0; j < containerLen; j++ {
-			// var rvkencname string
-			// ddecode(&rvkencname)
-			dd.initReadNext()
-			rvkencname := dd.decodeString()
-			// rvksi := sfi.getForEncName(rvkencname)
-			if k := sfi.indexForEncName(rvkencname); k > -1 {
-				sfik := sfi[k]
-				if sfik.i > -1 {
-					d.decodeValue(rv.Field(int(sfik.i)))
+		if currEncodedType := dd.currentEncodedType(); currEncodedType == detMap {
+			containerLen := dd.readMapLen()
+			if containerLen == 0 {
+				break
+			}
+			sfi := getStructFieldInfos(rtid, rt)
+			for j := 0; j < containerLen; j++ {
+				// var rvkencname string
+				// ddecode(&rvkencname)
+				dd.initReadNext()
+				rvkencname := dd.decodeString()
+				// rvksi := sfi.getForEncName(rvkencname)
+				if k := sfi.indexForEncName(rvkencname); k > -1 {
+					sfik := sfi[k]
+					if sfik.i > -1 {
+						d.decodeValue(rv.Field(int(sfik.i)))
+					} else {
+						d.decodeValue(rv.FieldByIndex(sfik.is))
+					}
+					// d.decodeValue(sfi.field(k, rv))
 				} else {
-					d.decodeValue(rv.FieldByIndex(sfik.is))
-				}
-				// d.decodeValue(sfi.field(k, rv))
-			} else {
-				if d.h.errorIfNoField() {
-					decErr("No matching struct field found when decoding stream map with key: %v", rvkencname)
-				} else {
-					var nilintf0 interface{}
-					d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
+					if d.h.errorIfNoField() {
+						decErr("No matching struct field found when decoding stream map with key: %v", rvkencname)
+					} else {
+						var nilintf0 interface{}
+						d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
+					}
 				}
 			}
+		} else if currEncodedType == detArray {
+			containerLen := dd.readMapLen()
+			if containerLen == 0 {
+				break
+			}
+			for j := 0; j < containerLen; j++ {
+				d.decodeValue(rv.Field(j))
+			}
+		} else {
+			decErr("Only encoded map or array can be decoded into a struct")
 		}
+		
 	case reflect.Slice:
 		// Be more careful calling Set() here, because a reflect.Value from an array
 		// may have come in here (which may not be settable).

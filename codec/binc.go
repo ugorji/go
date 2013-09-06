@@ -82,7 +82,9 @@ type bincEncDriver struct {
 
 type bincDecDriver struct {
 	r      decReader
+	h      *BincHandle
 	bdRead bool
+	bdType decodeEncodedType
 	bd     byte
 	vd     byte
 	vs     byte
@@ -94,8 +96,8 @@ func (_ *BincHandle) newEncDriver(w encWriter) encDriver {
 	return &bincEncDriver{w: w}
 }
 
-func (_ *BincHandle) newDecDriver(r decReader) decDriver {
-	return &bincDecDriver{r: r}
+func (h *BincHandle) newDecDriver(r decReader) decDriver {
+	return &bincDecDriver{r: r, h: h}
 }
 
 func (_ *BincHandle) writeExt() bool {
@@ -345,9 +347,53 @@ func (d *bincDecDriver) initReadNext() {
 	d.vd = d.bd >> 4
 	d.vs = d.bd & 0x0f
 	d.bdRead = true
+	d.bdType = detUnset
 }
 
-func (d *bincDecDriver) currentIsNil() bool {
+func (d *bincDecDriver) currentEncodedType() decodeEncodedType {
+	if d.bdType == detUnset {
+		switch d.vd {
+		case bincVdSpecial:
+			switch d.vs {
+			case bincSpNil:
+				d.bdType = detNil
+			case bincSpFalse, bincSpTrue:
+				d.bdType = detBool
+			case bincSpNan, bincSpNegInf, bincSpPosInf, bincSpZeroFloat:
+				d.bdType = detFloat
+			case bincSpZero, bincSpNegOne:
+				d.bdType = detInt
+			default:
+				decErr("currentEncodedType: Unrecognized special value 0x%x", d.vs)
+			}
+		case bincVdSmallInt:
+			d.bdType = detInt
+		case bincVdUint:
+			d.bdType = detUint
+		case bincVdInt:
+			d.bdType = detInt
+		case bincVdFloat:
+			d.bdType = detFloat
+		case bincVdSymbol, bincVdString:
+			d.bdType = detString
+		case bincVdByteArray:
+			d.bdType = detBytes
+		case bincVdTimestamp:
+			d.bdType = detTimestamp
+		case bincVdCustomExt:
+			d.bdType = detExt
+		case bincVdArray:
+			d.bdType = detArray
+		case bincVdMap:
+			d.bdType = detMap
+		default:
+			decErr("currentEncodedType: Unrecognized d.vd: 0x%x", d.vd)
+		}		
+	}
+	return d.bdType
+}
+
+func (d *bincDecDriver) tryDecodeAsNil() bool {
 	if d.bd == bincVdSpecial<<4|bincSpNil {
 		d.bdRead = false
 		return true
@@ -699,7 +745,7 @@ func (d *bincDecDriver) decodeExt(tag byte) (xbs []byte) {
 	return
 }
 
-func (d *bincDecDriver) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx decodeNakedContext) {
+func (d *bincDecDriver) decodeNaked() (rv reflect.Value, ctx decodeNakedContext) {
 	d.initReadNext()
 	var v interface{}
 
@@ -726,7 +772,7 @@ func (d *bincDecDriver) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx deco
 		case bincSpNegOne:
 			v = int8(-1)
 		default:
-			decErr("Unrecognized special value 0x%x", d.vs)
+			decErr("decodeNaked: Unrecognized special value 0x%x", d.vs)
 		}
 	case bincVdSmallInt:
 		v = int8(d.vs) + 1
@@ -752,33 +798,30 @@ func (d *bincDecDriver) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx deco
 		//ctx = dncExt
 		l := d.decLen()
 		xtag := d.r.readn1()
-		opts := h.(*BincHandle)
 		var bfn func(reflect.Value, []byte) error
-		rv, bfn = opts.getDecodeExtForTag(xtag)
+		rv, bfn = d.h.getDecodeExtForTag(xtag)
 		if bfn == nil {
-			decErr("Unable to find type mapped to extension tag: %v", xtag)
+			decErr("decodeNaked: Unable to find type mapped to extension tag: %v", xtag)
 		}
 		if fnerr := bfn(rv, d.r.readn(l)); fnerr != nil {
 			panic(fnerr)
 		}
 	case bincVdArray:
 		ctx = dncContainer
-		opts := h.(*BincHandle)
-		if opts.SliceType == nil {
+		if d.h.SliceType == nil {
 			rv = reflect.New(intfSliceTyp).Elem()
 		} else {
-			rv = reflect.New(opts.SliceType).Elem()
+			rv = reflect.New(d.h.SliceType).Elem()
 		}
 	case bincVdMap:
 		ctx = dncContainer
-		opts := h.(*BincHandle)
-		if opts.MapType == nil {
+		if d.h.MapType == nil {
 			rv = reflect.MakeMap(mapIntfIntfTyp)
 		} else {
-			rv = reflect.MakeMap(opts.MapType)
+			rv = reflect.MakeMap(d.h.MapType)
 		}
 	default:
-		decErr("Unrecognized d.vd: 0x%x", d.vd)
+		decErr("decodeNaked: Unrecognized d.vd: 0x%x", d.vd)
 	}
 
 	if ctx == dncHandled {
@@ -789,3 +832,7 @@ func (d *bincDecDriver) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx deco
 	}
 	return
 }
+
+
+
+

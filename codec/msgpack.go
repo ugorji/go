@@ -123,6 +123,7 @@ type msgpackDecDriver struct {
 	h      *MsgpackHandle
 	bd     byte
 	bdRead bool
+	bdType decodeEncodedType
 }
 
 func (e *msgpackEncDriver) encodeBuiltinType(rt uintptr, rv reflect.Value) bool {
@@ -277,7 +278,7 @@ func (d *msgpackDecDriver) decodeBuiltinType(rt uintptr, rv reflect.Value) bool 
 // It is called when a nil interface{} is passed, leaving it up to the DecDriver
 // to introspect the stream and decide how best to decode.
 // It deciphers the value by looking at the stream first.
-func (d *msgpackDecDriver) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx decodeNakedContext) {
+func (d *msgpackDecDriver) decodeNaked() (rv reflect.Value, ctx decodeNakedContext) {
 	d.initReadNext()
 	bd := d.bd
 
@@ -326,8 +327,7 @@ func (d *msgpackDecDriver) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx d
 		case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
 			ctx = dncContainer
 			// v = containerRaw
-			opts := h.(*MsgpackHandle)
-			if opts.rawToStringOverride || opts.RawToString {
+			if d.h.rawToStringOverride || d.h.RawToString {
 				var rvm string
 				rv = reflect.ValueOf(&rvm).Elem()
 			} else {
@@ -339,28 +339,25 @@ func (d *msgpackDecDriver) decodeNaked(h decodeHandleI) (rv reflect.Value, ctx d
 		case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
 			ctx = dncContainer
 			// v = containerList
-			opts := h.(*MsgpackHandle)
-			if opts.SliceType == nil {
+			if d.h.SliceType == nil {
 				rv = reflect.New(intfSliceTyp).Elem()
 			} else {
-				rv = reflect.New(opts.SliceType).Elem()
+				rv = reflect.New(d.h.SliceType).Elem()
 			}
 		case bd == mpMap16, bd == mpMap32, bd >= mpFixMapMin && bd <= mpFixMapMax:
 			ctx = dncContainer
 			// v = containerMap
-			opts := h.(*MsgpackHandle)
-			if opts.MapType == nil {
+			if d.h.MapType == nil {
 				rv = reflect.MakeMap(mapIntfIntfTyp)
 			} else {
-				rv = reflect.MakeMap(opts.MapType)
+				rv = reflect.MakeMap(d.h.MapType)
 			}
 		case bd >= mpFixExt1 && bd <= mpFixExt16, bd >= mpExt8 && bd <= mpExt32:
 			//ctx = dncExt
 			clen := d.readExtLen()
 			xtag := d.r.readn1()
-			opts := h.(*MsgpackHandle)
 			var bfn func(reflect.Value, []byte) error
-			rv, bfn = opts.getDecodeExtForTag(xtag)
+			rv, bfn = d.h.getDecodeExtForTag(xtag)
 			if bfn == nil {
 				decErr("Unable to find type mapped to extension tag: %v", xtag)
 			}
@@ -560,9 +557,53 @@ func (d *msgpackDecDriver) initReadNext() {
 	}
 	d.bd = d.r.readn1()
 	d.bdRead = true
+	d.bdType = detUnset
 }
 
-func (d *msgpackDecDriver) currentIsNil() bool {
+func (d *msgpackDecDriver) currentEncodedType() decodeEncodedType {
+	if d.bdType == detUnset {
+	bd := d.bd
+	switch bd {
+	case mpNil:
+		d.bdType = detNil
+	case mpFalse, mpTrue:
+		d.bdType = detBool
+	case mpFloat, mpDouble:
+		d.bdType = detFloat
+	case mpUint8, mpUint16, mpUint32, mpUint64:
+		d.bdType = detUint
+	case mpInt8, mpInt16, mpInt32, mpInt64:
+		d.bdType = detInt
+	default:
+		switch {
+		case bd >= mpPosFixNumMin && bd <= mpPosFixNumMax:
+			d.bdType = detInt
+		case bd >= mpNegFixNumMin && bd <= mpNegFixNumMax:
+			d.bdType = detInt
+		case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
+			if d.h.rawToStringOverride || d.h.RawToString {
+				d.bdType = detString
+			} else {
+				d.bdType = detBytes
+			}
+		case bd == mpBin8, bd == mpBin16, bd == mpBin32:
+			d.bdType = detBytes
+		case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
+			d.bdType = detArray
+		case bd == mpMap16, bd == mpMap32, bd >= mpFixMapMin && bd <= mpFixMapMax:
+			d.bdType = detMap
+		case bd >= mpFixExt1 && bd <= mpFixExt16, bd >= mpExt8 && bd <= mpExt32:
+			d.bdType = detExt
+		default:
+			decErr("currentEncodedType: Undeciphered descriptor: %s: hex: %x, dec: %d", msgBadDesc, bd, bd)
+		}
+	}
+	}
+	return d.bdType
+}
+
+
+func (d *msgpackDecDriver) tryDecodeAsNil() bool {
 	if d.bd == mpNil {
 		d.bdRead = false
 		return true
@@ -767,13 +808,4 @@ func (h *MsgpackHandle) newDecDriver(r decReader) decDriver {
 func (h *MsgpackHandle) writeExt() bool {
 	return h.WriteExt
 }
-
-
-
-
-
-
-
-
-
 
