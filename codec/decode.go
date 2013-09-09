@@ -115,8 +115,6 @@ type decHandle struct {
 	// put word-aligned fields first (before bools, etc)
 	exts     []decExtTypeTagFn
 	extFuncs map[uintptr]decExtTagFn
-	// if an extension for byte slice is defined, then always decode Raw as strings
-	rawToStringOverride bool
 }
 
 type DecodeOptions struct {
@@ -151,17 +149,11 @@ func (o *decHandle) addDecodeExt(rtid uintptr, rt reflect.Type, tag byte, fn fun
 					break
 				}
 			}
-			if rtid == byteSliceTypId {
-				o.rawToStringOverride = false
-			}
 		}
 	}
 	if fn != nil {
 		o.extFuncs[rtid] = decExtTagFn{fn, tag}
 		o.exts = append(o.exts, decExtTypeTagFn{rtid, rt, decExtTagFn{fn, tag}})
-		if rtid == byteSliceTypId {
-			o.rawToStringOverride = true
-		}
 	}
 }
 
@@ -440,7 +432,7 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 				rvkencname := dd.decodeString()
 				// rvksi := sfi.getForEncName(rvkencname)
 				if k := sfi.indexForEncName(rvkencname); k > -1 {
-					sfik := sfi[k]
+					sfik := sfi.sis[k]
 					if sfik.i > -1 {
 						d.decodeValue(rv.Field(int(sfik.i)))
 					} else {

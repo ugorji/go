@@ -98,13 +98,17 @@ type structFieldInfo struct {
 	is        []int
 	i         int16 // field index in struct
 	omitEmpty bool
+	toArray   bool
 	// tag       string   // tag
 	// name      string   // field name
 	// encNameBs []byte   // encoded name as byte stream
 	// ikind     int      // kind of the field as an int i.e. int(reflect.Kind)
 }
 
-type structFieldInfos []structFieldInfo
+type structFieldInfos struct {
+	toArray bool 
+	sis     []structFieldInfo
+}
 
 type sfiSortedByEncName []*structFieldInfo
 
@@ -121,11 +125,11 @@ func (p sfiSortedByEncName) Swap(i, j int) {
 }
 
 func (sis structFieldInfos) indexForEncName(name string) int {
-	sislen := len(sis)
+	sislen := len(sis.sis)
 	if sislen < binarySearchThreshold {
 		// linear search. faster than binary search in my testing up to 16-field structs.
 		for i := 0; i < sislen; i++ {
-			if sis[i].encName == name {
+			if sis.sis[i].encName == name {
 				return i
 			}
 		}
@@ -135,13 +139,13 @@ func (sis structFieldInfos) indexForEncName(name string) int {
 		for i < j {
 			h = i + (j-i)/2
 			// i ≤ h < j
-			if sis[h].encName < name {
+			if sis.sis[h].encName < name {
 				i = h + 1 // preserves f(i-1) == false
 			} else {
 				j = h // preserves f(j) == true
 			}
 		}
-		if i < sislen && sis[i].encName == name {
+		if i < sislen && sis.sis[i].encName == name {
 			return i
 		}
 	}
@@ -166,15 +170,16 @@ func getStructFieldInfos(rtid uintptr, rt reflect.Type) (sis structFieldInfos) {
 	var siInfo *structFieldInfo
 	if f, ok := rt.FieldByName(structInfoFieldName); ok {
 		siInfo = parseStructFieldInfo(structInfoFieldName, f.Tag.Get(structTagName))
+		sis.toArray = siInfo.toArray
 	}
 	sisp := make([]*structFieldInfo, 0, rt.NumField())
 	rgetStructFieldInfos(rt, nil, make(map[string]bool), &sisp, siInfo)
 	sort.Sort(sfiSortedByEncName(sisp))
 
-	lsis := len(sisp)
-	sis = make([]structFieldInfo, lsis)
+	lsis := len(sisp)	
+	sis.sis = make([]structFieldInfo, lsis)
 	for i := 0; i < lsis; i++ {
-		sis[i] = *sisp[i]
+		sis.sis[i] = *sisp[i]
 	}
 	// sis = sisp
 	cachedStructFieldInfos[rtid] = sis
@@ -242,8 +247,11 @@ func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
 					si.encName = s
 				}
 			} else {
-				if s == "omitempty" {
+				switch s {
+				case "omitempty":
 					si.omitEmpty = true
+				case "toarray":
+					si.toArray = true
 				}
 			}
 		}

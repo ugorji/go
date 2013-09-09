@@ -52,6 +52,7 @@ type encDriver interface {
 type encodeHandleI interface {
 	getEncodeExt(rt uintptr) (tag byte, fn func(reflect.Value) ([]byte, error))
 	writeExt() bool
+	structToArray() bool
 }
 
 // An Encoder writes an object to an output stream in the codec format.
@@ -105,6 +106,11 @@ type encExtTypeTagFn struct {
 type encHandle struct {
 	extFuncs map[uintptr]encExtTagFn
 	exts     []encExtTypeTagFn
+}
+
+type EncodeOptions struct {
+	// Encode a struct as an array, and not as a map.
+	StructToArray bool
 }
 
 func (o *simpleIoEncWriterWriter) WriteByte(c byte) (err error) {
@@ -168,6 +174,10 @@ func (o *encHandle) getEncodeExt(rt uintptr) (tag byte, fn func(reflect.Value) (
 	return
 }
 
+func (o *EncodeOptions) structToArray() bool {
+	return o.StructToArray
+}
+
 // NewEncoder returns an Encoder for encoding into an io.Writer.
 // 
 // For efficiency, Users are encouraged to pass in a memory buffered writer
@@ -206,10 +216,14 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 
 // Encode writes an object into a stream in the codec format.
 //
-// Struct values encode as maps. Each exported struct field is encoded unless:
-//    - the field's tag is "-", or
+// Struct values "usually" encode as maps. Each exported struct field is encoded unless:
+//    - the field's tag is "-", OR
 //    - the field is empty and its tag specifies the "omitempty" option.
 //
+// However, struct values may encode as arrays. This happens if:
+//    - StructToArray Encode option is set, OR
+//    - the tag on the _struct field sets the "toarray" option
+// 
 // The empty values are false, 0, any nil pointer or interface value,
 // and any array, slice, map, or string of length zero.
 //
@@ -234,6 +248,11 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 //          Field4 bool     `codec:"f4,omitempty"` //use key "f4". Omit if empty.
 //          ...
 //      }
+//      
+//      type MyStruct struct {
+//          _struct bool    `codec:",omitempty,toarray"`   //set omitempty for every field
+//                                                         //and encode struct as an array
+//      }   
 //
 // Note:
 //   - Encode will treat struct field names and keys in map[string]XXX as symbols.
@@ -429,34 +448,51 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 }
 
 func (e *Encoder) encStruct(sis structFieldInfos, rv reflect.Value) {
-	newlen := len(sis)
+	newlen := len(sis.sis)
 	rvals := make([]reflect.Value, newlen)
-	encnames := make([]string, newlen)
+	var encnames []string
+	toMap := !(sis.toArray || e.h.structToArray())
+	if toMap {
+		encnames = make([]string, newlen)
+	}
 	newlen = 0
 	// var rv0 reflect.Value
 	// for i := 0; i < l; i++ {
 	// 	si := sis[i]
-	for _, si := range sis {
-		if si.i > -1 {
+	for _, si := range sis.sis {
+		if si.i != -1 {
 			rvals[newlen] = rv.Field(int(si.i))
 		} else {
 			rvals[newlen] = rv.FieldByIndex(si.is)
 		}
-		if si.omitEmpty && isEmptyValue(rvals[newlen]) {
-			continue
+		if toMap {
+			if si.omitEmpty && isEmptyValue(rvals[newlen]) {
+				continue
+			}
+			encnames[newlen] = si.encName
+		} else {
+			if si.omitEmpty && isEmptyValue(rvals[newlen]) {
+				rvals[newlen] = reflect.Value{}
+			}
 		}
-		// sivals[newlen] = i
-		encnames[newlen] = si.encName
 		newlen++
 	}
-	ee := e.e //don't dereference everytime
-	ee.encodeMapPreamble(newlen)
-	for j := 0; j < newlen; j++ {
-		//e.encString(sis[sivals[j]].encName)
-		ee.encodeSymbol(encnames[j])
-		e.encodeValue(rvals[j])
+
+	if toMap {
+		ee := e.e //don't dereference everytime
+		ee.encodeMapPreamble(newlen)
+		for j := 0; j < newlen; j++ {
+			ee.encodeSymbol(encnames[j])
+			e.encodeValue(rvals[j])
+		}
+	} else {
+		e.e.encodeArrayPreamble(newlen)
+		for j := 0; j < newlen; j++ {
+			e.encodeValue(rvals[j])
+		}
 	}
 }
+
 
 // ----------------------------------------
 

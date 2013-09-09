@@ -79,7 +79,8 @@ func init() {
 		fmt.Printf("====> depth: %v, ts: %#v\n", 2, ts0)
 	}
 
-	testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
+	testMsgpackH.RawToString = true 
+	//testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
 	testMsgpackH.AddExt(timeTyp, 1, testMsgpackH.TimeEncodeExt, testMsgpackH.TimeDecodeExt)
 }
 
@@ -507,17 +508,17 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 func testCodecTableOne(t *testing.T, h Handle) {
 	// func TestMsgpackAllExperimental(t *testing.T) {
 	// dopts := testDecOpts(nil, nil, false, true, true),
-	var oldWriteExt bool
+	var oldWriteExt, oldRawToString bool
 	switch v := h.(type) {
 	case *MsgpackHandle:
-		oldWriteExt = v.WriteExt
-		v.WriteExt = true
+		oldWriteExt, v.WriteExt = v.WriteExt, true 
+		oldRawToString, v.RawToString = v.RawToString, true 
 	}
 	doTestCodecTableOne(t, false, h, table, tableVerify)
 	//if true { panic("") }
 	switch v := h.(type) {
 	case *MsgpackHandle:
-		v.WriteExt = oldWriteExt
+		v.WriteExt, v.RawToString = oldWriteExt, oldRawToString
 	}
 	// func TestMsgpackAll(t *testing.T) {
 	
@@ -530,11 +531,9 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	var oldMapType reflect.Type
 	switch v := h.(type) {
 	case *MsgpackHandle:
-		oldMapType = v.MapType
-		v.MapType = mapStringIntfTyp
+		oldMapType, v.MapType = v.MapType, mapStringIntfTyp
 	case *BincHandle:
-		oldMapType = v.MapType
-		v.MapType = mapStringIntfTyp
+		oldMapType, v.MapType = v.MapType, mapStringIntfTyp
 	}
 	//skip time.Time, []interface{} containing time.Time, last map, and newStruc
 	doTestCodecTableOne(t, true, h, table[:idxTime], tableTestNilVerify[:idxTime])

@@ -26,6 +26,7 @@ import (
 //Note that these EXCEPTIONS are temporary and full support is possible and may happen soon.
 type BincHandle struct {
 	encdecHandle
+	EncodeOptions
 	DecodeOptions
 }
 

@@ -93,9 +93,6 @@ type msgpackSpecRpcCodec struct {
 //MsgpackHandle is a Handle for the Msgpack Schema-Free Encoding Format.
 type MsgpackHandle struct {
 	// RawToString controls how raw bytes are decoded into a nil interface{}.
-	// Note that setting an extension func for []byte ensures that raw bytes
-	// are decoded as strings, regardless of this setting.
-	// This setting is used only if an extension func isn't defined for []byte.
 	RawToString bool
 	// WriteExt flag supports encoding configured extensions with extension tags.
 	// It also controls whether other elements of the new spec are encoded (ie Str8).
@@ -110,6 +107,7 @@ type MsgpackHandle struct {
 	WriteExt bool
 
 	encdecHandle
+	EncodeOptions
 	DecodeOptions
 }
 
@@ -327,7 +325,7 @@ func (d *msgpackDecDriver) decodeNaked() (rv reflect.Value, ctx decodeNakedConte
 		case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
 			ctx = dncContainer
 			// v = containerRaw
-			if d.h.rawToStringOverride || d.h.RawToString {
+			if d.h.RawToString {
 				var rvm string
 				rv = reflect.ValueOf(&rvm).Elem()
 			} else {
@@ -581,7 +579,7 @@ func (d *msgpackDecDriver) currentEncodedType() decodeEncodedType {
 		case bd >= mpNegFixNumMin && bd <= mpNegFixNumMax:
 			d.bdType = detInt
 		case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
-			if d.h.rawToStringOverride || d.h.RawToString {
+			if d.h.RawToString {
 				d.bdType = detString
 			} else {
 				d.bdType = detBytes
