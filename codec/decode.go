@@ -425,6 +425,7 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 				break
 			}
 			sfi := getStructFieldInfos(rtid, rt)
+			sissis := sfi.sis 
 			for j := 0; j < containerLen; j++ {
 				// var rvkencname string
 				// ddecode(&rvkencname)
@@ -432,8 +433,8 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 				rvkencname := dd.decodeString()
 				// rvksi := sfi.getForEncName(rvkencname)
 				if k := sfi.indexForEncName(rvkencname); k > -1 {
-					sfik := sfi.sis[k]
-					if sfik.i > -1 {
+					sfik := sissis[k]
+					if sfik.i != -1 {
 						d.decodeValue(rv.Field(int(sfik.i)))
 					} else {
 						d.decodeValue(rv.FieldByIndex(sfik.is))
@@ -449,12 +450,17 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 				}
 			}
 		} else if currEncodedType == detArray {
-			containerLen := dd.readMapLen()
+			containerLen := dd.readArrayLen()
 			if containerLen == 0 {
 				break
 			}
-			for j := 0; j < containerLen; j++ {
-				d.decodeValue(rv.Field(j))
+			sfi := getStructFieldInfos(rtid, rt)
+			for _, si := range sfi.sisp {
+				if si.i != -1 {
+					d.decodeValue(rv.Field(int(si.i)))
+				} else {
+					d.decodeValue(rv.FieldByIndex(si.is))
+				}
 			}
 		} else {
 			decErr("Only encoded map or array can be decoded into a struct")

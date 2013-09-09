@@ -48,8 +48,9 @@ const (
 )
 
 var (
-	testInitDebug   bool
-	testUseIoEncDec bool
+	testInitDebug     bool
+	testUseIoEncDec   bool
+	testStructToArray bool
 	_                           = fmt.Printf
 	skipVerifyVal   interface{} = &(struct{}{})
 	timeLoc                     = time.FixedZone("UTC-08:00", -8*60*60)         //time.UTC-8
@@ -68,17 +69,22 @@ var (
 	testBincH    = &BincHandle{}
 )
 
-func init() {
+func testInitFlags() {
 	// delete(testDecOpts.ExtFuncs, timeTyp)
 	flag.BoolVar(&testInitDebug, "tdbg", false, "Test Debug")
 	flag.BoolVar(&testUseIoEncDec, "tio", false, "Use IO Reader/Writer for Marshal/Unmarshal")
-	flag.Parse()
+	flag.BoolVar(&testStructToArray, "ts2a", false, "Set StructToArray option")
+}	
+
+func testInit() {	
 	gob.Register(new(TestStruc))
 	if testInitDebug {
 		ts0 := newTestStruc(2, false)
 		fmt.Printf("====> depth: %v, ts: %#v\n", 2, ts0)
 	}
 
+	testBincH.StructToArray = testStructToArray
+	testMsgpackH.StructToArray = testStructToArray
 	testMsgpackH.RawToString = true 
 	//testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
 	testMsgpackH.AddExt(timeTyp, 1, testMsgpackH.TimeEncodeExt, testMsgpackH.TimeDecodeExt)
@@ -851,6 +857,7 @@ func TestBincCodecsMisc(t *testing.T) {
 func TestMsgpackRpcGo(t *testing.T) {
 	doTestRpcOne(t, GoRpc, testMsgpackH, true, true, true)
 }
+
 func TestMsgpackRpcSpec(t *testing.T) {
 	doTestRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, true, true)
 }

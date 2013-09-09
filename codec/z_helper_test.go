@@ -12,6 +12,7 @@ package codec
 import (
 	"errors"
 	"reflect"
+	"flag"
 	"testing"
 )
 
@@ -20,9 +21,12 @@ var (
 	failNowOnFail = true
 )
 
-// does final initialization
 func init() {
-	close(benchInitChan)
+	testInitFlags()
+	benchInitFlags()
+	flag.Parse()
+	testInit()
+	benchInit()
 }
 
 func checkErrT(t *testing.T, err error) {

@@ -41,7 +41,7 @@ var (
 	bigen               = binary.BigEndian
 	structInfoFieldName = "_struct"
 
-	cachedStructFieldInfos      = make(map[uintptr]structFieldInfos, 4)
+	cachedStructFieldInfos      = make(map[uintptr]*structFieldInfos, 4)
 	cachedStructFieldInfosMutex sync.RWMutex
 
 	nilIntfSlice     = []interface{}(nil)
@@ -107,7 +107,8 @@ type structFieldInfo struct {
 
 type structFieldInfos struct {
 	toArray bool 
-	sis     []structFieldInfo
+	sis     []structFieldInfo // sorted. Used when enc/dec struct to map.
+	sisp    []structFieldInfo // unsorted. Used when enc/dec struct to array.
 }
 
 type sfiSortedByEncName []*structFieldInfo
@@ -124,12 +125,13 @@ func (p sfiSortedByEncName) Swap(i, j int) {
 	p[i], p[j] = p[j], p[i]
 }
 
-func (sis structFieldInfos) indexForEncName(name string) int {
-	sislen := len(sis.sis)
+func (sis *structFieldInfos) indexForEncName(name string) int {
+	sissis := sis.sis 
+	sislen := len(sissis)
 	if sislen < binarySearchThreshold {
 		// linear search. faster than binary search in my testing up to 16-field structs.
 		for i := 0; i < sislen; i++ {
-			if sis.sis[i].encName == name {
+			if sissis[i].encName == name {
 				return i
 			}
 		}
@@ -139,20 +141,20 @@ func (sis structFieldInfos) indexForEncName(name string) int {
 		for i < j {
 			h = i + (j-i)/2
 			// i ≤ h < j
-			if sis.sis[h].encName < name {
+			if sissis[h].encName < name {
 				i = h + 1 // preserves f(i-1) == false
 			} else {
 				j = h // preserves f(j) == true
 			}
 		}
-		if i < sislen && sis.sis[i].encName == name {
+		if i < sislen && sissis[i].encName == name {
 			return i
 		}
 	}
 	return -1
 }
 
-func getStructFieldInfos(rtid uintptr, rt reflect.Type) (sis structFieldInfos) {
+func getStructFieldInfos(rtid uintptr, rt reflect.Type) (sis *structFieldInfos) {
 	var ok bool
 	cachedStructFieldInfosMutex.RLock()
 	sis, ok = cachedStructFieldInfos[rtid]
@@ -167,6 +169,7 @@ func getStructFieldInfos(rtid uintptr, rt reflect.Type) (sis structFieldInfos) {
 		return
 	}
 
+	sis = new(structFieldInfos)
 	var siInfo *structFieldInfo
 	if f, ok := rt.FieldByName(structInfoFieldName); ok {
 		siInfo = parseStructFieldInfo(structInfoFieldName, f.Tag.Get(structTagName))
@@ -174,11 +177,14 @@ func getStructFieldInfos(rtid uintptr, rt reflect.Type) (sis structFieldInfos) {
 	}
 	sisp := make([]*structFieldInfo, 0, rt.NumField())
 	rgetStructFieldInfos(rt, nil, make(map[string]bool), &sisp, siInfo)
+	sis.sisp = make([]structFieldInfo, len(sisp))
+	sis.sis = make([]structFieldInfo, len(sisp))
+	for i := 0; i < len(sisp); i++ {
+		sis.sisp[i] = *sisp[i]
+	}
+	
 	sort.Sort(sfiSortedByEncName(sisp))
-
-	lsis := len(sisp)	
-	sis.sis = make([]structFieldInfo, lsis)
-	for i := 0; i < lsis; i++ {
+	for i := 0; i < len(sisp); i++ {
 		sis.sis[i] = *sisp[i]
 	}
 	// sis = sisp

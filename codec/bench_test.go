@@ -31,7 +31,6 @@ var (
 	//For depth>1, we likely trigger stack growth for encoders, making benchmarking unreliable.
 	benchDepth     int
 	benchInitDebug bool
-	benchInitChan  = make(chan bool, 1)
 	benchCheckers  []benchChecker
 )
 
@@ -43,14 +42,15 @@ type benchChecker struct {
 	decodefn benchDecFn
 }
 
-func init() {
+func benchInitFlags() {
 	flag.BoolVar(&benchInitDebug, "bdbg", false, "Bench Debug")
 	flag.IntVar(&benchDepth, "bd", 1, "Bench Depth: If >1, potential unreliable results due to stack growth")
 	flag.BoolVar(&benchDoInitBench, "bi", false, "Run Bench Init")
 	flag.BoolVar(&benchVerify, "bv", false, "Verify Decoded Value during Benchmark")
 	flag.BoolVar(&benchUnscientificRes, "bu", false, "Show Unscientific Results during Benchmark")
-	flag.Parse()
+}
 
+func benchInit() {	
 	benchTs = newTestStruc(benchDepth, true)
 	approxSize = approxDataSize(reflect.ValueOf(benchTs))
 	bytesLen := 1024 * 4 * (benchDepth + 1) * (benchDepth + 1)
@@ -65,10 +65,7 @@ func init() {
 		benchChecker{"json", fnJsonEncodeFn, fnJsonDecodeFn},
 	)
 	if benchDoInitBench {
-		go func() {
-			<-benchInitChan
-			runBenchInit()
-		}()
+		runBenchInit()
 	}
 }
 

@@ -447,19 +447,19 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 	return
 }
 
-func (e *Encoder) encStruct(sis structFieldInfos, rv reflect.Value) {
+func (e *Encoder) encStruct(sis *structFieldInfos, rv reflect.Value) {
 	newlen := len(sis.sis)
 	rvals := make([]reflect.Value, newlen)
 	var encnames []string
 	toMap := !(sis.toArray || e.h.structToArray())
+	sissis := sis.sisp
+	// if toMap, use the sorted array. If toArray, use unsorted array (to match sequence in struct)
 	if toMap {
+		sissis = sis.sis
 		encnames = make([]string, newlen)
 	}
 	newlen = 0
-	// var rv0 reflect.Value
-	// for i := 0; i < l; i++ {
-	// 	si := sis[i]
-	for _, si := range sis.sis {
+	for _, si := range sissis {
 		if si.i != -1 {
 			rvals[newlen] = rv.Field(int(si.i))
 		} else {
@@ -472,7 +472,7 @@ func (e *Encoder) encStruct(sis structFieldInfos, rv reflect.Value) {
 			encnames[newlen] = si.encName
 		} else {
 			if si.omitEmpty && isEmptyValue(rvals[newlen]) {
-				rvals[newlen] = reflect.Value{}
+				rvals[newlen] = reflect.Value{} //encode as nil
 			}
 		}
 		newlen++
