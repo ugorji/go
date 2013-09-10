@@ -455,11 +455,21 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 				break
 			}
 			sfi := getStructFieldInfos(rtid, rt)
-			for _, si := range sfi.sisp {
+			for j, si := range sfi.sisp {
+				if j == containerLen {
+					break
+				}
 				if si.i != -1 {
 					d.decodeValue(rv.Field(int(si.i)))
 				} else {
 					d.decodeValue(rv.FieldByIndex(si.is))
+				}
+			}
+			if containerLen > len(sfi.sisp) {
+				// read remaining values and throw away
+				for j := len(sfi.sisp); j < containerLen; j++ {
+					var nilintf0 interface{}
+					d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
 				}
 			}
 		} else {

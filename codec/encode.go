@@ -216,28 +216,31 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 
 // Encode writes an object into a stream in the codec format.
 //
-// Struct values "usually" encode as maps. Each exported struct field is encoded unless:
-//    - the field's tag is "-", OR
-//    - the field is empty and its tag specifies the "omitempty" option.
-//
-// However, struct values may encode as arrays. This happens if:
-//    - StructToArray Encode option is set, OR
-//    - the tag on the _struct field sets the "toarray" option
+// Encoding can be configured via the "codec" struct tag for the fields.
 // 
-// The empty values are false, 0, any nil pointer or interface value,
-// and any array, slice, map, or string of length zero.
+// The "codec" key in struct field's tag value is the key name,
+// followed by an optional comma and options.
+// 
+// To set an option on all fields (e.g. omitempty on all fields), you
+// can create a field called _struct, and set flags on it. 
+// 
+// Struct values "usually" encode as maps. Each exported struct field is encoded unless:
+//    - the field's codec tag is "-", OR
+//    - the field is empty and its codec tag specifies the "omitempty" option.
+// 
+// When encoding as a map, the first string in the tag (before the comma)
+// is the map key string to use when encoding.
+// 
+// However, struct values may encode as arrays. This happens when:
+//    - StructToArray Encode option is set, OR
+//    - the codec tag on the _struct field sets the "toarray" option
+// 
+// The empty values (for omitempty option) are false, 0, any nil pointer 
+// or interface value, and any array, slice, map, or string of length zero.
 //
 // Anonymous fields are encoded inline if no struct tag is present.
 // Else they are encoded as regular fields.
-//
-// The object's default key string is the struct field name but can be
-// specified in the struct field's tag value.
-// The "codec" key in struct field's tag value is the key name,
-// followed by an optional comma and options.
-//
-// To set an option on all fields (e.g. omitempty on all fields), you
-// can create a field called _struct, and set flags on it.
-//
+// 
 // Examples:
 //
 //      type MyStruct struct {

@@ -106,9 +106,9 @@ type structFieldInfo struct {
 }
 
 type structFieldInfos struct {
-	toArray bool 
 	sis     []structFieldInfo // sorted. Used when enc/dec struct to map.
 	sisp    []structFieldInfo // unsorted. Used when enc/dec struct to array.
+	toArray bool 
 }
 
 type sfiSortedByEncName []*structFieldInfo
