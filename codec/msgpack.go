@@ -68,6 +68,14 @@ const (
 // the msgpack spec at http://wiki.msgpack.org/display/MSGPACK/RPC+specification
 var MsgpackSpecRpc msgpackSpecRpc
 
+// MsgpackSpecRpcMultiArgs is a special type which signifies to the MsgpackSpecRpcCodec
+// that the backend RPC service takes multiple arguments, which have been arranged 
+// in sequence in the slice. 
+// 
+// The Codec then passes it AS-IS to the rpc service (without wrapping it in an 
+// array of 1 element).
+type MsgpackSpecRpcMultiArgs []interface{}
+
 // A MsgpackContainer type specifies the different types of msgpackContainers.
 type msgpackContainerType struct {
 	fixCutoff             int
@@ -106,7 +114,7 @@ type MsgpackHandle struct {
 	// a []byte or string based on the setting of RawToString.
 	WriteExt bool
 
-	encdecHandle
+	extHandle
 	EncodeOptions
 	DecodeOptions
 }
@@ -124,10 +132,12 @@ type msgpackDecDriver struct {
 	bdType decodeEncodedType
 }
 
-func (e *msgpackEncDriver) encodeBuiltinType(rt uintptr, rv reflect.Value) bool {
+func (e *msgpackEncDriver) isBuiltinType(rt uintptr) bool {
 	//no builtin types. All encodings are based on kinds. Types supported as extensions.
 	return false
 }
+	
+func (e *msgpackEncDriver) encodeBuiltinType(rt uintptr, rv reflect.Value) {}
 
 func (e *msgpackEncDriver) encodeNil() {
 	e.w.writen1(mpNil)
@@ -267,9 +277,12 @@ func (e *msgpackEncDriver) writeContainerLen(ct msgpackContainerType, l int) {
 
 //---------------------------------------------
 
-func (d *msgpackDecDriver) decodeBuiltinType(rt uintptr, rv reflect.Value) bool {
+func (d *msgpackDecDriver) isBuiltinType(rt uintptr) bool {
+	//no builtin types. All encodings are based on kinds. Types supported as extensions.
 	return false
 }
+	
+func (d *msgpackDecDriver) decodeBuiltinType(rt uintptr, rv reflect.Value) {}
 
 // Note: This returns either a primitive (int, bool, etc) for non-containers,
 // or a containerType, or a specific type denoting nil or extension.
@@ -329,11 +342,15 @@ func (d *msgpackDecDriver) decodeNaked() (rv reflect.Value, ctx decodeNakedConte
 				var rvm string
 				rv = reflect.ValueOf(&rvm).Elem()
 			} else {
-				rv = reflect.New(byteSliceTyp).Elem() // Use New, not Zero, so it's settable
+				rvm := []byte{}
+				rv = reflect.ValueOf(&rvm).Elem()
+				//rv = reflect.New(byteSliceTyp).Elem() // Use New, not Zero, so it's settable
 			}
 		case bd == mpBin8, bd == mpBin16, bd == mpBin32:
 			ctx = dncContainer
-			rv = reflect.New(byteSliceTyp).Elem()
+			rvm := []byte{}
+			rv = reflect.ValueOf(&rvm).Elem()
+			// rv = reflect.New(byteSliceTyp).Elem()
 		case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
 			ctx = dncContainer
 			// v = containerList
@@ -684,32 +701,58 @@ func (d *msgpackDecDriver) decodeExt(tag byte) (xbs []byte) {
 
 //--------------------------------------------------
 
-func (msgpackSpecRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec {
+func (x msgpackSpecRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec {
 	return &msgpackSpecRpcCodec{newRPCCodec(conn, h)}
 }
 
-func (msgpackSpecRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec {
+func (x msgpackSpecRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec {
 	return &msgpackSpecRpcCodec{newRPCCodec(conn, h)}
 }
 
 // /////////////// Spec RPC Codec ///////////////////
-func (c msgpackSpecRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
-	return c.writeCustomBody(0, r.Seq, r.ServiceMethod, body)
+func (c *msgpackSpecRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
+	// WriteRequest can write to both a Go service, and other services that do 
+	// not abide by the 1 argument rule of a Go service. 
+	// We discriminate based on if the body is a MsgpackSpecRpcMultiArgs
+	var bodyArr []interface{}
+	if m, ok := body.(MsgpackSpecRpcMultiArgs); ok {
+		bodyArr = ([]interface{})(m)
+	} else {
+		bodyArr = []interface{}{body}
+	}
+	r2 := []interface{}{ 0, uint32(r.Seq), r.ServiceMethod, bodyArr }
+	return c.write(r2, nil, false, true)
 }
 
-func (c msgpackSpecRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
-	return c.writeCustomBody(1, r.Seq, r.Error, body)
+func (c *msgpackSpecRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
+	var moe interface{}
+	if r.Error != "" {
+		moe = r.Error
+	}
+	if moe != nil && body != nil {
+		body = nil
+	}
+	r2 := []interface{}{ 1, uint32(r.Seq), moe, body }
+	return c.write(r2, nil, false, true)
 }
 
-func (c msgpackSpecRpcCodec) ReadResponseHeader(r *rpc.Response) error {
+func (c *msgpackSpecRpcCodec) ReadResponseHeader(r *rpc.Response) error {
 	return c.parseCustomHeader(1, &r.Seq, &r.Error)
 }
 
-func (c msgpackSpecRpcCodec) ReadRequestHeader(r *rpc.Request) error {
+func (c *msgpackSpecRpcCodec) ReadRequestHeader(r *rpc.Request) error {
 	return c.parseCustomHeader(0, &r.Seq, &r.ServiceMethod)
 }
 
-func (c msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint64, methodOrError *string) (err error) {
+func (c *msgpackSpecRpcCodec) ReadRequestBody(body interface{}) error {
+	if body == nil { // read and discard
+		return c.read(nil)
+	}
+	bodyArr := []interface{}{body}
+	return c.read(&bodyArr)
+}
+
+func (c *msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint64, methodOrError *string) (err error) {
 
 	// We read the response header by hand
 	// so that the body can be decoded on its own from the stream at a later time.
@@ -745,43 +788,18 @@ func (c msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint6
 	return
 }
 
-func (c msgpackSpecRpcCodec) writeCustomBody(typeByte byte, msgid uint64, methodOrError string, body interface{}) (err error) {
-	var moe interface{} = methodOrError
-	// response needs nil error (not ""), and only one of error or body can be nil
-	if typeByte == 1 {
-		if methodOrError == "" {
-			moe = nil
-		}
-		if moe != nil && body != nil {
-			body = nil
-		}
-	}
-	r2 := []interface{}{typeByte, uint32(msgid), moe, body}
-	return c.write(r2, nil, false, true)
-}
-
 //--------------------------------------------------
-
-// BinaryEncodeExt returns the underlying bytes of this value AS-IS.
-// Configure this to support the Binary Extension using tag 0.
-func (_ *MsgpackHandle) BinaryEncodeExt(rv reflect.Value) ([]byte, error) {
-	if rv.IsNil() {
-		return nil, nil
-	}
-	return rv.Bytes(), nil
-}
-
-// BinaryDecodeExt sets passed byte slice AS-IS into the reflect Value.
-// Configure this to support the Binary Extension using tag 0.
-func (_ *MsgpackHandle) BinaryDecodeExt(rv reflect.Value, bs []byte) (err error) {
-	rv.SetBytes(bs)
-	return
-}
 
 // TimeEncodeExt encodes a time.Time as a byte slice.
 // Configure this to support the Time Extension, e.g. using tag 1.
 func (_ *MsgpackHandle) TimeEncodeExt(rv reflect.Value) (bs []byte, err error) {
-	bs = encodeTime(rv.Interface().(time.Time))
+	rvi := rv.Interface()
+	switch iv := rvi.(type) {
+	case time.Time:
+		bs = encodeTime(iv)
+	default:
+		err = fmt.Errorf("codec/msgpack: TimeEncodeExt expects a time.Time. Received %T", rvi)
+	}
 	return
 }
 

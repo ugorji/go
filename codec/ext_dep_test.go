@@ -64,3 +64,11 @@ func Benchmark__VMsgpack_Decode(b *testing.B) {
 func TestMsgpackPythonGenStreams(t *testing.T) {
 	doTestMsgpackPythonGenStreams(t)
 }
+
+func TestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
+	doTestMsgpackRpcSpecGoClientToPythonSvc(t)
+}
+
+func TestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
+	doTestMsgpackRpcSpecPythonClientToGoSvc(t)
+}

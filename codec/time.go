@@ -104,19 +104,36 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 	i2 = i + 2
 	tz = bigen.Uint16(bs[i:i2])
 	i = i2
-	var tzname = []byte("UTC+00:00")
 	// sign extend sign bit into top 2 MSB (which were dst bits):
 	if tz&(1<<13) == 0 { // positive
 		tz = tz & 0x3fff //clear 2 MSBs: dst bits
 	} else { // negative
 		tz = tz | 0xc000 //set 2 MSBs: dst bits
-		tzname[3] = '-'
+		//tzname[3] = '-' (TODO: verify. this works here)
 	}
-	tzint := (int16(tz))
+	tzint := int16(tz)
+	if tzint == 0 {
+		tt = time.Unix(tsec, int64(tnsec)).UTC()
+	} else {
+		// For Go Time, do not use a descriptive timezone. 
+		// It's unnecessary, and makes it harder to do a reflect.DeepEqual.
+		// The Offset already tells what the offset should be, if not on UTC and unknown zone name.
+		// var zoneName = timeLocUTCName(tzint)
+		tt = time.Unix(tsec, int64(tnsec)).In(time.FixedZone("", int(tzint)*60))
+	}
+	return
+}
+
+func timeLocUTCName(tzint int16) string {
+	if tzint == 0 {
+		return "UTC"
+	}
+	var tzname = []byte("UTC+00:00")
 	//tzname := fmt.Sprintf("UTC%s%02d:%02d", tzsign, tz/60, tz%60) //perf issue using Sprintf. inline below.
 	//tzhr, tzmin := tz/60, tz%60 //faster if u convert to int first
 	var tzhr, tzmin int16
 	if tzint < 0 {
+		tzname[3] = '-' // (TODO: verify. this works here)
 		tzhr, tzmin = -tzint/60, (-tzint)%60
 	} else {
 		tzhr, tzmin = tzint/60, tzint%60
@@ -125,7 +142,10 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 	tzname[5] = timeDigits[tzhr%10]
 	tzname[7] = timeDigits[tzmin/10]
 	tzname[8] = timeDigits[tzmin%10]
-
-	tt = time.Unix(tsec, int64(tnsec)).In(time.FixedZone(string(tzname), int(tzint)*60))
-	return
+	return string(tzname)
+	//return time.FixedZone(string(tzname), int(tzint)*60)
 }
+
+
+
+

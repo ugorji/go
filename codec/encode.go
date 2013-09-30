@@ -30,8 +30,10 @@ type encWriter interface {
 	atEndOfEncode()
 }
 
+// encDriver abstracts the actual codec (binc vs msgpack, etc)
 type encDriver interface {
-	encodeBuiltinType(rt uintptr, rv reflect.Value) bool
+	isBuiltinType(rt uintptr) bool
+	encodeBuiltinType(rt uintptr, rv reflect.Value)
 	encodeNil()
 	encodeInt(i int64)
 	encodeUint(i uint64)
@@ -49,10 +51,30 @@ type encDriver interface {
 	//encStringRunes(c charEncoding, v []rune)
 }
 
+// encodeHandleI is the interface that the encode functions need.
 type encodeHandleI interface {
 	getEncodeExt(rt uintptr) (tag byte, fn func(reflect.Value) ([]byte, error))
 	writeExt() bool
 	structToArray() bool
+}
+
+type encFnInfo struct {
+	sis   *typeInfo
+	e     *Encoder
+	ee    encDriver
+	rt    reflect.Type
+	rtid  uintptr
+	xfFn  func(reflect.Value) ([]byte, error)
+	xfTag byte 
+}
+
+// encFn encapsulates the captured variables and the encode function.
+// This way, we only do some calculations one times, and pass to the 
+// code block that should be called (encapsulated in a function) 
+// instead of executing the checks every time.
+type encFn struct {
+	i *encFnInfo
+	f func(*encFnInfo, reflect.Value)
 }
 
 // An Encoder writes an object to an output stream in the codec format.
@@ -60,6 +82,7 @@ type Encoder struct {
 	w encWriter
 	e encDriver
 	h encodeHandleI
+	f map[uintptr]encFn
 }
 
 type ioEncWriterWriter interface {
@@ -92,22 +115,6 @@ type bytesEncWriter struct {
 	out *[]byte // write out on atEndOfEncode
 }
 
-type encExtTagFn struct {
-	fn  func(reflect.Value) ([]byte, error)
-	tag byte
-}
-
-type encExtTypeTagFn struct {
-	rt uintptr
-	encExtTagFn
-}
-
-// EncoderOptions contain options for the encoder, e.g. registered extension functions.
-type encHandle struct {
-	extFuncs map[uintptr]encExtTagFn
-	exts     []encExtTypeTagFn
-}
-
 type EncodeOptions struct {
 	// Encode a struct as an array, and not as a map.
 	StructToArray bool
@@ -133,50 +140,209 @@ func (o *simpleIoEncWriterWriter) Write(p []byte) (n int, err error) {
 }
 
 
-// addEncodeExt registers a function to handle encoding a given type as an extension
-// with a specific specific tag byte.
-// To remove an extension, pass fn=nil.
-func (o *encHandle) addEncodeExt(rt uintptr, tag byte, fn func(reflect.Value) ([]byte, error)) {
-	if o.exts == nil {
-		o.exts = make([]encExtTypeTagFn, 0, 8)
-		o.extFuncs = make(map[uintptr]encExtTagFn, 8)
-	} else {
-		if _, ok := o.extFuncs[rt]; ok {
-			delete(o.extFuncs, rt)
-			for i := 0; i < len(o.exts); i++ {
-				if o.exts[i].rt == rt {
-					o.exts = append(o.exts[:i], o.exts[i+1:]...)
-					break
-				}
-			}
-		}
-	}
-	if fn != nil {
-		o.extFuncs[rt] = encExtTagFn{fn, tag}
-		o.exts = append(o.exts, encExtTypeTagFn{rt, encExtTagFn{fn, tag}})
-	}
-}
-
-func (o *encHandle) getEncodeExt(rt uintptr) (tag byte, fn func(reflect.Value) ([]byte, error)) {
-	if l := len(o.exts); l == 0 {
-		return
-	} else if l < mapAccessThreshold {
-		for i := 0; i < l; i++ {
-			if o.exts[i].rt == rt {
-				x := o.exts[i].encExtTagFn
-				return x.tag, x.fn
-			}
-		}
-	} else {
-		x := o.extFuncs[rt]
-		return x.tag, x.fn
-	}
-	return
-}
-
 func (o *EncodeOptions) structToArray() bool {
 	return o.StructToArray
 }
+
+func (f *encFnInfo) builtin(rv reflect.Value) {
+	baseRv := rv
+	for j := int8(0); j < f.sis.baseIndir; j++ {
+		baseRv = baseRv.Elem()
+	}
+	f.ee.encodeBuiltinType(f.sis.baseId, baseRv)
+}
+
+func (f *encFnInfo) ext(rv reflect.Value) {
+	baseRv := rv
+	for j := int8(0); j < f.sis.baseIndir; j++ {
+		baseRv = baseRv.Elem()
+	}
+	bs, fnerr := f.xfFn(baseRv)
+	if fnerr != nil {
+		panic(fnerr)
+	}
+	if bs == nil {
+		f.ee.encodeNil()
+		return
+	}
+	if f.e.h.writeExt() {
+		f.ee.encodeExtPreamble(f.xfTag, len(bs))
+		f.e.w.writeb(bs)
+	} else {
+		f.ee.encodeStringBytes(c_RAW, bs)
+	}
+	
+}
+
+func (f *encFnInfo) binaryMarshal(rv reflect.Value) {
+	var bm binaryMarshaler
+	if f.sis.mIndir == 0 {
+		bm = rv.Interface().(binaryMarshaler)
+	} else if f.sis.mIndir == -1 {
+		bm = rv.Addr().Interface().(binaryMarshaler)
+	} else {
+		rv2 := rv
+		for j := int8(0); j < f.sis.mIndir; j++ {
+			rv2 = rv.Elem()
+		}
+		bm = rv2.Interface().(binaryMarshaler)
+	}
+	// debugf(">>>> binaryMarshaler: %T", rv.Interface())
+	bs, fnerr := bm.MarshalBinary()
+	if fnerr != nil {
+		panic(fnerr)
+	}
+	if bs == nil {
+		f.ee.encodeNil()
+	} else {
+		f.ee.encodeStringBytes(c_RAW, bs)
+	}
+
+}
+
+func (f *encFnInfo) kBool(rv reflect.Value) {
+	f.ee.encodeBool(rv.Bool())
+}
+
+func (f *encFnInfo) kString(rv reflect.Value) {
+	f.ee.encodeString(c_UTF8, rv.String())
+}
+
+func (f *encFnInfo) kFloat64(rv reflect.Value) {
+	f.ee.encodeFloat64(rv.Float())
+}
+
+func (f *encFnInfo) kFloat32(rv reflect.Value) {
+	f.ee.encodeFloat32(float32(rv.Float()))
+}
+
+func (f *encFnInfo) kInt(rv reflect.Value) {
+	f.ee.encodeInt(rv.Int())
+}
+
+func (f *encFnInfo) kUint(rv reflect.Value) {
+	f.ee.encodeUint(rv.Uint())
+}
+
+func (f *encFnInfo) kInvalid(rv reflect.Value) {
+	f.ee.encodeNil()
+}
+
+func (f *encFnInfo) kErr(rv reflect.Value) {
+	encErr("Unsupported kind: %s, for: %#v", rv.Kind(), rv)
+}
+
+func (f *encFnInfo) kSlice(rv reflect.Value) {
+	if rv.IsNil() {
+		f.ee.encodeNil()
+		return
+	}
+	if f.rtid == byteSliceTypId {
+		f.ee.encodeStringBytes(c_RAW, rv.Bytes())
+		return
+	}
+	l := rv.Len()
+	f.ee.encodeArrayPreamble(l)
+	if l == 0 {
+		return
+	}
+	for j := 0; j < l; j++ {
+		f.e.encodeValue(rv.Index(j))
+	}
+}
+
+func (f *encFnInfo) kArray(rv reflect.Value) {
+	f.e.encodeValue(rv.Slice(0, rv.Len()))
+}
+
+func (f *encFnInfo) kStruct(rv reflect.Value) {
+	newlen := len(f.sis.sis)
+	rvals := make([]reflect.Value, newlen)
+	var encnames []string
+	e := f.e
+	sissis := f.sis.sisp
+	toMap := !(f.sis.toArray || e.h.structToArray())
+	// if toMap, use the sorted array. If toArray, use unsorted array (to match sequence in struct)
+	if toMap {
+		sissis = f.sis.sis
+		encnames = make([]string, newlen)
+	}
+	newlen = 0
+	for _, si := range sissis {
+		if si.i != -1 {
+			rvals[newlen] = rv.Field(int(si.i))
+		} else {
+			rvals[newlen] = rv.FieldByIndex(si.is)
+		}
+		if toMap {
+			if si.omitEmpty && isEmptyValue(rvals[newlen]) {
+				continue
+			}
+			encnames[newlen] = si.encName
+		} else {
+			if si.omitEmpty && isEmptyValue(rvals[newlen]) {
+				rvals[newlen] = reflect.Value{} //encode as nil
+			}
+		}
+		newlen++
+	}
+
+	if toMap {
+		ee := f.ee //don't dereference everytime
+		ee.encodeMapPreamble(newlen)
+		for j := 0; j < newlen; j++ {
+			ee.encodeSymbol(encnames[j])
+			e.encodeValue(rvals[j])
+		}
+	} else {
+		f.ee.encodeArrayPreamble(newlen)
+		for j := 0; j < newlen; j++ {
+			e.encodeValue(rvals[j])
+		}
+	}
+}
+
+func (f *encFnInfo) kPtr(rv reflect.Value) {
+	if rv.IsNil() {
+		f.ee.encodeNil()
+		return
+	}
+	f.e.encodeValue(rv.Elem())
+}
+
+func (f *encFnInfo) kInterface(rv reflect.Value) {
+	if rv.IsNil() {
+		f.ee.encodeNil()
+		return
+	}
+	f.e.encodeValue(rv.Elem())
+}
+
+func (f *encFnInfo) kMap(rv reflect.Value) {
+	if rv.IsNil() {
+		f.ee.encodeNil()
+		return
+	}
+	l := rv.Len()
+	f.ee.encodeMapPreamble(l)
+	if l == 0 {
+		return
+	}
+	keyTypeIsString := f.rt.Key().Kind() == reflect.String
+	mks := rv.MapKeys()
+	// for j, lmks := 0, len(mks); j < lmks; j++ {
+	for j := range mks {
+		if keyTypeIsString {
+			f.ee.encodeSymbol(mks[j].String())
+		} else {
+			f.e.encodeValue(mks[j])
+		}
+		f.e.encodeValue(rv.MapIndex(mks[j]))
+	}
+
+}
+
+
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
 // 
@@ -194,7 +360,7 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 	z := ioEncWriter{
 		w: ww,
 	}
-	return &Encoder{w: &z, h: h, e: h.newEncDriver(&z)}
+	return &Encoder{w: &z, h: h, e: h.newEncDriver(&z) }
 }
 
 // NewEncoderBytes returns an encoder for encoding directly and efficiently
@@ -211,7 +377,7 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 		b:   in,
 		out: out,
 	}
-	return &Encoder{w: &z, h: h, e: h.newEncDriver(&z)}
+	return &Encoder{w: &z, h: h, e: h.newEncDriver(&z) }
 }
 
 // Encode writes an object into a stream in the codec format.
@@ -257,10 +423,14 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 //                                                         //and encode struct as an array
 //      }   
 //
-// Note:
-//   - Encode will treat struct field names and keys in map[string]XXX as symbols.
-//     Some formats support symbols (e.g. binc) and will properly encode the string
-//     only once in the stream, and use a tag to refer to it thereafter.
+// The mode of encoding is based on the type of the value. When a value is seen:
+//   - If an extension is registered for it, call that extension function
+//   - If it implements BinaryMarshaler, call its MarshalBinary() (data []byte, err error)
+//   - Else encode it based on its reflect.Kind
+// 
+// Note that struct field names and keys in map[string]XXX will be treated as symbols.
+// Some formats support symbols (e.g. binc) and will properly encode the string
+// only once in the stream, and use a tag to refer to it thereafter. 
 func (e *Encoder) Encode(v interface{}) (err error) {
 	defer panicToErr(&err)
 	e.encode(v)
@@ -344,158 +514,60 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 	rt := rv.Type()
 	rtid := reflect.ValueOf(rt).Pointer()
 	
-	//encode based on type first, since over-rides are based on type.
-	ee := e.e //don't dereference everytime
-	if ee.encodeBuiltinType(rtid, rv) {
-		return
+	if e.f == nil {
+		// debugf("---->Creating new enc f map for type: %v\n", rt)
+		e.f = make(map[uintptr]encFn, 16)
 	}
 
-	//Note: tagFn must handle returning nil if value should be encoded as a nil.
-	if xfTag, xfFn := e.h.getEncodeExt(rtid); xfFn != nil {
-		bs, fnerr := xfFn(rv)
-		if fnerr != nil {
-			panic(fnerr)
-		}
-		if bs == nil {
-			ee.encodeNil()
-			return
-		}
-		if e.h.writeExt() {
-			ee.encodeExtPreamble(xfTag, len(bs))
-			e.w.writeb(bs)
+	fn, ok := e.f[rtid]
+	if !ok {
+		// debugf("\tCreating new enc fn for type: %v\n", rt)
+		fi := encFnInfo { sis:getTypeInfo(rtid, rt), e:e, ee:e.e, rt:rt, rtid:rtid }
+		if e.e.isBuiltinType(fi.sis.baseId) {
+			fn = encFn{ &fi, (*encFnInfo).builtin }
+		} else if xfTag, xfFn := e.h.getEncodeExt(fi.sis.baseId); xfFn != nil {
+			fi.xfTag, fi.xfFn = xfTag, xfFn
+			fn = encFn{ &fi, (*encFnInfo).ext }
+		} else if supportBinaryMarshal && fi.sis.m {
+			fn = encFn{ &fi, (*encFnInfo).binaryMarshal }
 		} else {
-			ee.encodeStringBytes(c_RAW, bs)
+			switch rk := rt.Kind(); rk {
+			case reflect.Bool:
+				fn = encFn{ &fi, (*encFnInfo).kBool }
+			case reflect.String:
+				fn = encFn{ &fi, (*encFnInfo).kString }
+			case reflect.Float64:
+				fn = encFn{ &fi, (*encFnInfo).kFloat64 }
+			case reflect.Float32:
+				fn = encFn{ &fi, (*encFnInfo).kFloat32 }
+			case reflect.Int, reflect.Int8, reflect.Int64, reflect.Int32, reflect.Int16:
+				fn = encFn{ &fi, (*encFnInfo).kInt }
+			case reflect.Uint8, reflect.Uint64, reflect.Uint, reflect.Uint32, reflect.Uint16:
+				fn = encFn{ &fi, (*encFnInfo).kUint }
+			case reflect.Invalid:
+				fn = encFn{ &fi, (*encFnInfo).kInvalid }
+			case reflect.Slice:
+				fn = encFn{ &fi, (*encFnInfo).kSlice }
+			case reflect.Array:
+				fn = encFn{ &fi, (*encFnInfo).kArray }
+			case reflect.Struct:
+				fn = encFn{ &fi, (*encFnInfo).kStruct }
+			case reflect.Ptr:
+				fn = encFn{ &fi, (*encFnInfo).kPtr }
+			case reflect.Interface:
+				fn = encFn{ &fi, (*encFnInfo).kInterface }
+			case reflect.Map:
+				fn = encFn{ &fi, (*encFnInfo).kMap }
+			default:
+				fn = encFn{ &fi, (*encFnInfo).kErr }
+			}
 		}
-		return
+		e.f[rtid] = fn
 	}
 	
-	// TODO: Encode if type is an encoding.BinaryMarshaler: MarshalBinary() (data []byte, err error)
-	// There is a cost, as we need to change the rv to an interface{} first.
+	fn.f(fn.i, rv)
 
-	// ensure more common cases appear early in switch.
-	rk := rv.Kind()
-	switch rk {
-	case reflect.Bool:
-		ee.encodeBool(rv.Bool())
-	case reflect.String:
-		ee.encodeString(c_UTF8, rv.String())
-	case reflect.Float64:
-		ee.encodeFloat64(rv.Float())
-	case reflect.Float32:
-		ee.encodeFloat32(float32(rv.Float()))
-	case reflect.Slice:
-		if rv.IsNil() {
-			ee.encodeNil()
-			break
-		}
-		if rt == byteSliceTyp {
-			ee.encodeStringBytes(c_RAW, rv.Bytes())
-			break
-		}
-		l := rv.Len()
-		ee.encodeArrayPreamble(l)
-		if l == 0 {
-			break
-		}
-		for j := 0; j < l; j++ {
-			e.encodeValue(rv.Index(j))
-		}
-	case reflect.Array:
-		e.encodeValue(rv.Slice(0, rv.Len()))
-	case reflect.Map:
-		if rv.IsNil() {
-			ee.encodeNil()
-			break
-		}
-		l := rv.Len()
-		ee.encodeMapPreamble(l)
-		if l == 0 {
-			break
-		}
-		keyTypeIsString := rt.Key().Kind() == reflect.String
-		mks := rv.MapKeys()
-		// for j, lmks := 0, len(mks); j < lmks; j++ {
-		for j := range mks {
-			if keyTypeIsString {
-				ee.encodeSymbol(mks[j].String())
-			} else {
-				e.encodeValue(mks[j])
-			}
-			e.encodeValue(rv.MapIndex(mks[j]))
-		}
-	case reflect.Struct:
-		sis := getStructFieldInfos(rtid, rt)
-		e.encStruct(sis, rv)
-	case reflect.Ptr:
-		if rv.IsNil() {
-			ee.encodeNil()
-			break
-		}
-		e.encodeValue(rv.Elem())
-	case reflect.Interface:
-		if rv.IsNil() {
-			ee.encodeNil()
-			break
-		}
-		e.encodeValue(rv.Elem())
-	case reflect.Int, reflect.Int8, reflect.Int64, reflect.Int32, reflect.Int16:
-		ee.encodeInt(rv.Int())
-	case reflect.Uint8, reflect.Uint64, reflect.Uint, reflect.Uint32, reflect.Uint16:
-		ee.encodeUint(rv.Uint())
-	case reflect.Invalid:
-		ee.encodeNil()
-	default:
-		encErr("Unsupported kind: %s, for: %#v", rk, rv)
-	}
-	return
 }
-
-func (e *Encoder) encStruct(sis *structFieldInfos, rv reflect.Value) {
-	newlen := len(sis.sis)
-	rvals := make([]reflect.Value, newlen)
-	var encnames []string
-	toMap := !(sis.toArray || e.h.structToArray())
-	sissis := sis.sisp
-	// if toMap, use the sorted array. If toArray, use unsorted array (to match sequence in struct)
-	if toMap {
-		sissis = sis.sis
-		encnames = make([]string, newlen)
-	}
-	newlen = 0
-	for _, si := range sissis {
-		if si.i != -1 {
-			rvals[newlen] = rv.Field(int(si.i))
-		} else {
-			rvals[newlen] = rv.FieldByIndex(si.is)
-		}
-		if toMap {
-			if si.omitEmpty && isEmptyValue(rvals[newlen]) {
-				continue
-			}
-			encnames[newlen] = si.encName
-		} else {
-			if si.omitEmpty && isEmptyValue(rvals[newlen]) {
-				rvals[newlen] = reflect.Value{} //encode as nil
-			}
-		}
-		newlen++
-	}
-
-	if toMap {
-		ee := e.e //don't dereference everytime
-		ee.encodeMapPreamble(newlen)
-		for j := 0; j < newlen; j++ {
-			ee.encodeSymbol(encnames[j])
-			e.encodeValue(rvals[j])
-		}
-	} else {
-		e.e.encodeArrayPreamble(newlen)
-		for j := 0; j < newlen; j++ {
-			e.encodeValue(rvals[j])
-		}
-	}
-}
-
 
 // ----------------------------------------
 

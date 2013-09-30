@@ -25,7 +25,7 @@ import (
 //    Unicode_Other Binc types (UTF16, UTF32) are currently unsupported.
 //Note that these EXCEPTIONS are temporary and full support is possible and may happen soon.
 type BincHandle struct {
-	encdecHandle
+	extHandle
 	EncodeOptions
 	DecodeOptions
 }
@@ -105,15 +105,17 @@ func (_ *BincHandle) writeExt() bool {
 	return true
 }
 
-func (e *bincEncDriver) encodeBuiltinType(rt uintptr, rv reflect.Value) bool {
+func (e *bincEncDriver) isBuiltinType(rt uintptr) bool {
+	return rt == timeTypId
+}
+
+func (e *bincEncDriver) encodeBuiltinType(rt uintptr, rv reflect.Value) {
 	switch rt {
 	case timeTypId:
 		bs := encodeTime(rv.Interface().(time.Time))
 		e.w.writen1(bincVdTimestamp<<4 | uint8(len(bs)))
 		e.w.writeb(bs)
-		return true
 	}
-	return false
 }
 
 func (e *bincEncDriver) encodeNil() {
@@ -402,7 +404,11 @@ func (d *bincDecDriver) tryDecodeAsNil() bool {
 	return false
 }
 
-func (d *bincDecDriver) decodeBuiltinType(rt uintptr, rv reflect.Value) bool {
+func (d *bincDecDriver) isBuiltinType(rt uintptr) bool {
+	return rt == timeTypId
+}
+
+func (d *bincDecDriver) decodeBuiltinType(rt uintptr, rv reflect.Value) {
 	switch rt {
 	case timeTypId:
 		if d.vd != bincVdTimestamp {
@@ -414,9 +420,7 @@ func (d *bincDecDriver) decodeBuiltinType(rt uintptr, rv reflect.Value) bool {
 		}
 		rv.Set(reflect.ValueOf(tt))
 		d.bdRead = false
-		return true
 	}
-	return false
 }
 
 func (d *bincDecDriver) decFloatPre(vs, defaultLen byte) {
@@ -833,7 +837,4 @@ func (d *bincDecDriver) decodeNaked() (rv reflect.Value, ctx decodeNakedContext)
 	}
 	return
 }
-
-
-
 

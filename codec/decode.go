@@ -21,7 +21,7 @@ type decodeNakedContext uint8
 const (
 	dncHandled decodeNakedContext = iota
 	dncNil
-	dncExt
+	// dncExt
 	dncContainer
 )
 
@@ -42,7 +42,7 @@ const (
 	detTimestamp
 	detExt
 )
-	
+
 // decReader abstracts the reading source, allowing implementations that can
 // read from an io.Reader or directly off a byte slice with zero-copying.
 type decReader interface {
@@ -58,7 +58,8 @@ type decDriver interface {
 	initReadNext()
 	tryDecodeAsNil() bool
 	currentEncodedType() decodeEncodedType
-	decodeBuiltinType(rt uintptr, rv reflect.Value) bool
+	isBuiltinType(rt uintptr) bool
+	decodeBuiltinType(rt uintptr, rv reflect.Value)
 	//decodeNaked should completely handle extensions, builtins, primitives, etc.
 	//Numbers are decoded as int64, uint64, float64 only (no smaller sized number types).
 	decodeNaked() (rv reflect.Value, ctx decodeNakedContext)
@@ -74,11 +75,275 @@ type decDriver interface {
 	readArrayLen() int
 }
 
+// decFnInfo has methods for registering handling decoding of a specific type
+// based on some characteristics (builtin, extension, reflect Kind, etc)
+type decFnInfo struct {
+	sis *typeInfo
+	d   *Decoder
+	dd  decDriver
+	rt    reflect.Type
+	rtid  uintptr
+	xfFn  func(reflect.Value, []byte) error
+	xfTag byte 
+}
+
+type decFn struct {
+	i *decFnInfo
+	f func(*decFnInfo, reflect.Value) 
+}
+
 // A Decoder reads and decodes an object from an input stream in the codec format.
 type Decoder struct {
 	r decReader
 	d decDriver
 	h decodeHandleI
+	f map[uintptr]decFn
+}
+
+func (f *decFnInfo) builtin(rv reflect.Value) {
+	baseRv := rv
+	baseIndir := f.sis.baseIndir
+	for j := int8(0); j < baseIndir; j++ {
+		baseRv = baseRv.Elem()
+	}
+	f.dd.decodeBuiltinType(f.sis.baseId, baseRv)
+}
+
+func (f *decFnInfo) ext(rv reflect.Value) {
+	xbs := f.dd.decodeExt(f.xfTag)
+	baseRv := rv
+	baseIndir := f.sis.baseIndir
+	for j := int8(0); j < baseIndir; j++ {
+		baseRv = baseRv.Elem()
+	}
+	if fnerr := f.xfFn(baseRv, xbs); fnerr != nil {
+		panic(fnerr)
+	}
+}
+
+func (f *decFnInfo) binaryMarshal(rv reflect.Value) {
+	var bm binaryUnmarshaler
+	if f.sis.unmIndir == -1 {
+		bm = rv.Addr().Interface().(binaryUnmarshaler)
+	} else if f.sis.unmIndir == 0 {
+		bm = rv.Interface().(binaryUnmarshaler)
+	} else {
+		rv2 := rv
+		unmIndir := f.sis.unmIndir
+		for j := int8(0); j < unmIndir; j++ {
+			rv2 = rv.Elem()
+		}
+		bm = rv2.Interface().(binaryUnmarshaler)
+	}
+	xbs, _ := f.dd.decodeBytes(nil)
+	if fnerr := bm.UnmarshalBinary(xbs); fnerr != nil {
+		panic(fnerr)
+	}
+}
+
+func (f *decFnInfo) kErr(rv reflect.Value) {
+	decErr("Unhandled value for kind: %v: %s", rv.Kind(), msgBadDesc)
+}
+
+func (f *decFnInfo) kString(rv reflect.Value) {
+	rv.SetString(f.dd.decodeString())
+}
+
+func (f *decFnInfo) kBool(rv reflect.Value) {
+	rv.SetBool(f.dd.decodeBool())
+}
+
+func (f *decFnInfo) kInt(rv reflect.Value) {
+	rv.SetInt(f.dd.decodeInt(intBitsize))
+}
+
+func (f *decFnInfo) kInt64(rv reflect.Value) {
+	rv.SetInt(f.dd.decodeInt(64))
+}
+
+func (f *decFnInfo) kInt32(rv reflect.Value) {
+	rv.SetInt(f.dd.decodeInt(32))
+}
+
+func (f *decFnInfo) kInt8(rv reflect.Value) {
+	rv.SetInt(f.dd.decodeInt(8))
+}
+
+func (f *decFnInfo) kInt16(rv reflect.Value) {
+	rv.SetInt(f.dd.decodeInt(16))
+}
+
+func (f *decFnInfo) kFloat32(rv reflect.Value) {
+	rv.SetFloat(f.dd.decodeFloat(true))
+}
+
+func (f *decFnInfo) kFloat64(rv reflect.Value) {
+	rv.SetFloat(f.dd.decodeFloat(false))
+}
+
+func (f *decFnInfo) kUint8(rv reflect.Value) {
+	rv.SetUint(f.dd.decodeUint(8))
+}
+
+func (f *decFnInfo) kUint64(rv reflect.Value) {
+	rv.SetUint(f.dd.decodeUint(64))
+}
+
+func (f *decFnInfo) kUint(rv reflect.Value) {
+	rv.SetUint(f.dd.decodeUint(uintBitsize))
+}
+
+func (f *decFnInfo) kUint32(rv reflect.Value) {
+	rv.SetUint(f.dd.decodeUint(32))
+}
+
+func (f *decFnInfo) kUint16(rv reflect.Value) {
+	rv.SetUint(f.dd.decodeUint(16))
+}
+
+func (f *decFnInfo) kPtr(rv reflect.Value) {
+	if rv.IsNil() {
+		rv.Set(reflect.New(f.rt.Elem()))
+	}
+	f.d.decodeValue(rv.Elem())
+}
+
+func (f *decFnInfo) kInterface(rv reflect.Value) {
+	f.d.decodeValue(rv.Elem())
+}
+
+func (f *decFnInfo) kStruct(rv reflect.Value) {
+	if currEncodedType := f.dd.currentEncodedType(); currEncodedType == detMap {
+		containerLen := f.dd.readMapLen()
+		if containerLen == 0 {
+			return
+		}
+		sissis := f.sis.sis 
+		for j := 0; j < containerLen; j++ {
+			// var rvkencname string
+			// ddecode(&rvkencname)
+			f.dd.initReadNext()
+			rvkencname := f.dd.decodeString()
+			// rvksi := sis.getForEncName(rvkencname)
+			if k := f.sis.indexForEncName(rvkencname); k > -1 {
+				sfik := sissis[k]
+				if sfik.i != -1 {
+					f.d.decodeValue(rv.Field(int(sfik.i)))
+				} else {
+					f.d.decodeValue(rv.FieldByIndex(sfik.is))
+				}
+				// f.d.decodeValue(sis.field(k, rv))
+			} else {
+				if f.d.h.errorIfNoField() {
+					decErr("No matching struct field found when decoding stream map with key: %v", rvkencname)
+				} else {
+					var nilintf0 interface{}
+					f.d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
+				}
+			}
+		}
+	} else if currEncodedType == detArray {
+		containerLen := f.dd.readArrayLen()
+		if containerLen == 0 {
+			return
+		}
+		for j, si := range f.sis.sisp {
+			if j == containerLen {
+				break
+			}
+			if si.i != -1 {
+				f.d.decodeValue(rv.Field(int(si.i)))
+			} else {
+				f.d.decodeValue(rv.FieldByIndex(si.is))
+			}
+		}
+		if containerLen > len(f.sis.sisp) {
+			// read remaining values and throw away
+			for j := len(f.sis.sisp); j < containerLen; j++ {
+				var nilintf0 interface{}
+				f.d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
+			}
+		}
+	} else {
+		decErr("Only encoded map or array can be decoded into a struct. (decodeEncodedType: %x)", currEncodedType)
+	}
+}
+
+func (f *decFnInfo) kSlice(rv reflect.Value) {
+	// Be more careful calling Set() here, because a reflect.Value from an array
+	// may have come in here (which may not be settable).
+	// In places where the slice got from an array could be, we should guard with CanSet() calls.
+
+	if f.rtid == byteSliceTypId { // rawbytes
+		if bs2, changed2 := f.dd.decodeBytes(rv.Bytes()); changed2 {
+			rv.SetBytes(bs2)
+		}
+		return
+	}
+
+	containerLen := f.dd.readArrayLen()
+
+	if rv.IsNil() {
+		rv.Set(reflect.MakeSlice(f.rt, containerLen, containerLen))
+	} 
+	if containerLen == 0 {
+		return
+	}
+
+	// if we need to reset rv but it cannot be set, we should err out.
+	// for example, if slice is got from unaddressable array, CanSet = false
+	if rvcap, rvlen := rv.Len(), rv.Cap(); containerLen > rvcap {
+		if rv.CanSet() {
+			rvn := reflect.MakeSlice(f.rt, containerLen, containerLen)
+			if rvlen > 0 {
+				reflect.Copy(rvn, rv)
+			}
+			rv.Set(rvn)
+		} else {
+			decErr("Cannot reset slice with less cap: %v than stream contents: %v", rvcap, containerLen)
+		}
+	} else if containerLen > rvlen {
+		rv.SetLen(containerLen)
+	}
+	for j := 0; j < containerLen; j++ {
+		f.d.decodeValue(rv.Index(j))
+	}
+}
+
+func (f *decFnInfo) kArray(rv reflect.Value) {
+	f.d.decodeValue(rv.Slice(0, rv.Len()))
+}
+
+func (f *decFnInfo) kMap(rv reflect.Value) {
+	containerLen := f.dd.readMapLen()
+
+	if rv.IsNil() {
+		rv.Set(reflect.MakeMap(f.rt))
+	}
+	
+	if containerLen == 0 {
+		return
+	}
+
+	ktype, vtype := f.rt.Key(), f.rt.Elem()
+	for j := 0; j < containerLen; j++ {
+		rvk := reflect.New(ktype).Elem()
+		f.d.decodeValue(rvk)
+
+		if ktype == intfTyp {
+			rvk = rvk.Elem()
+			if rvk.Type() == byteSliceTyp {
+				rvk = reflect.ValueOf(string(rvk.Bytes()))
+			}
+		}
+		rvv := rv.MapIndex(rvk)
+		if !rvv.IsValid() {
+			rvv = reflect.New(vtype).Elem()
+		}
+
+		f.d.decodeValue(rvv)
+		rv.SetMapIndex(rvk, rvv)
+	}
 }
 
 // ioDecReader is a decReader that reads off an io.Reader
@@ -95,26 +360,9 @@ type bytesDecReader struct {
 	a int    // available
 }
 
-type decExtTagFn struct {
-	fn  func(reflect.Value, []byte) error
-	tag byte
-}
-
-type decExtTypeTagFn struct {
-	rtid uintptr
-	rt reflect.Type
-	decExtTagFn
-}
-
 type decodeHandleI interface {
 	getDecodeExt(rt uintptr) (tag byte, fn func(reflect.Value, []byte) error)
 	errorIfNoField() bool
-}
-
-type decHandle struct {
-	// put word-aligned fields first (before bools, etc)
-	exts     []decExtTypeTagFn
-	extFuncs map[uintptr]decExtTagFn
 }
 
 type DecodeOptions struct {
@@ -131,62 +379,6 @@ type DecodeOptions struct {
 
 func (o *DecodeOptions) errorIfNoField() bool {
 	return o.ErrorIfNoField
-}
-
-// addDecodeExt registers a function to handle decoding into a given type when an
-// extension type and specific tag byte is detected in the codec stream.
-// To remove an extension, pass fn=nil.
-func (o *decHandle) addDecodeExt(rtid uintptr, rt reflect.Type, tag byte, fn func(reflect.Value, []byte) error) {
-	if o.exts == nil {
-		o.exts = make([]decExtTypeTagFn, 0, 2)
-		o.extFuncs = make(map[uintptr]decExtTagFn, 2)
-	} else {
-		if _, ok := o.extFuncs[rtid]; ok {
-			delete(o.extFuncs, rtid)
-			for i := 0; i < len(o.exts); i++ {
-				if o.exts[i].rtid == rtid {
-					o.exts = append(o.exts[:i], o.exts[i+1:]...)
-					break
-				}
-			}
-		}
-	}
-	if fn != nil {
-		o.extFuncs[rtid] = decExtTagFn{fn, tag}
-		o.exts = append(o.exts, decExtTypeTagFn{rtid, rt, decExtTagFn{fn, tag}})
-	}
-}
-
-func (o *decHandle) getDecodeExtForTag(tag byte) (rv reflect.Value, fn func(reflect.Value, []byte) error) {
-	for i, l := 0, len(o.exts); i < l; i++ {
-		if o.exts[i].tag == tag {
-			if o.exts[i].rt.Kind() == reflect.Ptr {
-				rv = reflect.New(o.exts[i].rt.Elem())
-			} else {
-				rv = reflect.New(o.exts[i].rt).Elem()
-			}
-			fn = o.exts[i].fn
-			return 
-		}
-	}
-	return
-}
-
-func (o *decHandle) getDecodeExt(rt uintptr) (tag byte, fn func(reflect.Value, []byte) error) {
-	if l := len(o.exts); l == 0 {
-		return
-	} else if l < mapAccessThreshold {
-		for i := 0; i < l; i++ {
-			if o.exts[i].rtid == rt {
-				x := o.exts[i].decExtTagFn
-				return x.tag, x.fn
-			}
-		}
-	} else {
-		x := o.extFuncs[rt]
-		return x.tag, x.fn
-	}
-	return
 }
 
 // NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
@@ -233,6 +425,12 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 // on the contents of the stream. Numbers are decoded as float64, int64 or uint64. Other values
 // are decoded appropriately (e.g. bool), and configurations exist on the Handle to override
 // defaults (e.g. for MapType, SliceType and how to decode raw bytes).
+// 
+// When decoding into a non-nil interface{} value, the mode of encoding is based on the 
+// type of the value. When a value is seen:
+//   - If an extension is registered for it, call that extension function
+//   - If it implements BinaryUnmarshaler, call its UnmarshalBinary(data []byte) error
+//   - Else decode it based on its reflect.Kind
 // 
 // There are some special rules when decoding into containers (slice/array/map/struct).
 // Decode will typically use the stream contents to UPDATE the container. 
@@ -298,42 +496,34 @@ func (d *Decoder) decode(iv interface{}) {
 }
 
 func (d *Decoder) decodeValue(rv reflect.Value) {
-	// Note: if stream is set to nil, we set the corresponding value to its "zero" value
+	d.d.initReadNext()
 
-	// var ctr int (define this above the  function if trying to do this run)
-	// ctr++
-	// log(".. [%v] enter decode: rv: %v <==> %T <==> %v", ctr, rv, rv.Interface(), rv.Interface())
-	// defer func(ctr2 int) {
-	// 	log(".... [%v] exit decode: rv: %v <==> %T <==> %v", ctr2, rv, rv.Interface(), rv.Interface())
-	// }(ctr)
-	dd := d.d //so we don't dereference constantly
-	dd.initReadNext()
-
-	rvOrig := rv
-	wasNilIntf := rv.Kind() == reflect.Interface && rv.IsNil()
 	rt := rv.Type()
+	rvOrig := rv
+	wasNilIntf := rt.Kind() == reflect.Interface && rv.IsNil()
 
 	var ndesc decodeNakedContext
 	//if nil interface, use some hieristics to set the nil interface to an
 	//appropriate value based on the first byte read (byte descriptor bd)
 	if wasNilIntf {
-		if dd.tryDecodeAsNil() {
+		// e.g. nil interface{}, error, io.Reader, etc
+		rv, ndesc = d.d.decodeNaked()
+		if ndesc == dncNil {
 			return
 		}
-		//Prevent from decoding into e.g. error, io.Reader, etc if it's nil and non-nil value in stream.
+		//Prevent from decoding into nil error, io.Reader, etc if non-nil value in stream.
 		//We can only decode into interface{} (0 methods). Else reflect.Set fails later.
 		if num := rt.NumMethod(); num > 0 {
 			decErr("decodeValue: Cannot decode non-nil codec value into nil %v (%v methods)", rt, num)
-		} else {
-			rv, ndesc = dd.decodeNaked()
-			if ndesc == dncHandled {
-				rvOrig.Set(rv)
-				return
-			}
-			rt = rv.Type()
+		} 
+		if ndesc == dncHandled {
+			rvOrig.Set(rv)
+			return
 		}
-	} else if dd.tryDecodeAsNil() {
-		// Note: if stream is set to nil, we set the dereferenced value to its "zero" value (if settable).
+		rt = rv.Type()
+	} else if d.d.tryDecodeAsNil() {
+		// Note: if value in stream is nil, 
+		// then we set the dereferenced value to its "zero" value (if settable).
 		for rv.Kind() == reflect.Ptr {
 			rv = rv.Elem()
 		}
@@ -345,222 +535,86 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 
 	rtid := reflect.ValueOf(rt).Pointer()
 	
-	// An extension can be registered for any type, regardless of the Kind
-	// (e.g. type BitSet int64, type MyStruct { / * unexported fields * / }, type X []int, etc.
-	//
-	// We can't check if it's an extension byte here first, because the user may have
-	// registered a pointer or non-pointer type, meaning we may have to recurse first
-	// before matching a mapped type, even though the extension byte is already detected.
-	//
-	// If we are checking for builtin or ext type here, it means we didn't go through decodeNaked,
-	// Because decodeNaked would have handled it. It also means wasNilIntf = false.
-	if dd.decodeBuiltinType(rtid, rv) {
-		return
+	// retrieve or register a focus'ed function for this type
+	// to eliminate need to do the retrieval multiple times
+	
+	if d.f == nil {
+		// debugf("---->Creating new dec f map for type: %v\n", rt)
+		d.f = make(map[uintptr]decFn, 16)
+	}
+	fn, ok := d.f[rtid]
+	if !ok {
+		// debugf("\tCreating new dec fn for type: %v\n", rt)
+		fi := decFnInfo { sis:getTypeInfo(rtid, rt), d:d, dd:d.d, rt:rt, rtid:rtid }
+		// An extension can be registered for any type, regardless of the Kind
+		// (e.g. type BitSet int64, type MyStruct { / * unexported fields * / }, type X []int, etc.
+		//
+		// We can't check if it's an extension byte here first, because the user may have
+		// registered a pointer or non-pointer type, meaning we may have to recurse first
+		// before matching a mapped type, even though the extension byte is already detected.
+		//
+		// If we are checking for builtin or ext type here, it means we didn't go through decodeNaked,
+		// Because decodeNaked would have handled it. It also means wasNilIntf = false.
+		if d.d.isBuiltinType(fi.sis.baseId) {
+			fn = decFn { &fi, (*decFnInfo).builtin }
+		} else if xfTag, xfFn := d.h.getDecodeExt(fi.sis.baseId); xfFn != nil {
+			fi.xfTag, fi.xfFn = xfTag, xfFn
+			fn = decFn { &fi, (*decFnInfo).ext }
+		} else if supportBinaryMarshal && fi.sis.unm {
+			fn = decFn { &fi, (*decFnInfo).binaryMarshal }
+		} else {
+			// NOTE: if decoding into a nil interface{}, we return a non-nil
+			// value except even if the container registers a length of 0.
+			switch rk := rt.Kind(); rk {
+			case reflect.String:
+				fn = decFn { &fi, (*decFnInfo).kString }
+			case reflect.Bool:
+				fn = decFn { &fi, (*decFnInfo).kBool }
+			case reflect.Int:
+				fn = decFn { &fi, (*decFnInfo).kInt }
+			case reflect.Int64:
+				fn = decFn { &fi, (*decFnInfo).kInt64 }
+			case reflect.Int32:
+				fn = decFn { &fi, (*decFnInfo).kInt32 }
+			case reflect.Int8:
+				fn = decFn { &fi, (*decFnInfo).kInt8 }
+			case reflect.Int16:
+				fn = decFn { &fi, (*decFnInfo).kInt16 }
+			case reflect.Float32:
+				fn = decFn { &fi, (*decFnInfo).kFloat32 }
+			case reflect.Float64:
+				fn = decFn { &fi, (*decFnInfo).kFloat64 }
+			case reflect.Uint8:
+				fn = decFn { &fi, (*decFnInfo).kUint8 }
+			case reflect.Uint64:
+				fn = decFn { &fi, (*decFnInfo).kUint64 }
+			case reflect.Uint:
+				fn = decFn { &fi, (*decFnInfo).kUint }
+			case reflect.Uint32:
+				fn = decFn { &fi, (*decFnInfo).kUint32 }
+			case reflect.Uint16:
+				fn = decFn { &fi, (*decFnInfo).kUint16 }
+			case reflect.Ptr:
+				fn = decFn { &fi, (*decFnInfo).kPtr }
+			case reflect.Interface:
+				fn = decFn { &fi, (*decFnInfo).kInterface }
+			case reflect.Struct:
+				fn = decFn { &fi, (*decFnInfo).kStruct }
+			case reflect.Slice:
+				fn = decFn { &fi, (*decFnInfo).kSlice }
+			case reflect.Array:
+				fn = decFn { &fi, (*decFnInfo).kArray }
+			case reflect.Map:
+				fn = decFn { &fi, (*decFnInfo).kMap }
+			default:
+				fn = decFn { &fi, (*decFnInfo).kErr }
+			}
+		}		
+		d.f[rtid] = fn
 	}
 	
-	if bfnTag, bfnFn := d.h.getDecodeExt(rtid); bfnFn != nil {
-		xbs := dd.decodeExt(bfnTag)
-		if fnerr := bfnFn(rv, xbs); fnerr != nil {
-			panic(fnerr)
-		}
-		return
-	}
-
-	// TODO: Decode if type is an encoding.BinaryUnmarshaler: UnmarshalBinary(data []byte) error
-	// There is a cost, as we need to change the rv to an interface{} first.
+	fn.f(fn.i, rv)
 	
-	// NOTE: if decoding into a nil interface{}, we return a non-nil
-	// value except even if the container registers a length of 0.
-	//
-	// NOTE: Do not make blocks for struct, slice, map, etc individual methods.
-	// It ends up being more expensive, because they recursively calls decodeValue
-	//
-	// (Mar 7, 2013. DON'T REARRANGE ... code clarity)
-	// tried arranging in sequence of most probable ones.
-	// string, bool, integer, float, struct, ptr, slice, array, map, interface, uint.
-	switch rk := rv.Kind(); rk {
-	case reflect.String:
-		rv.SetString(dd.decodeString())
-	case reflect.Bool:
-		rv.SetBool(dd.decodeBool())
-	case reflect.Int:
-		rv.SetInt(dd.decodeInt(intBitsize))
-	case reflect.Int64:
-		rv.SetInt(dd.decodeInt(64))
-	case reflect.Int32:
-		rv.SetInt(dd.decodeInt(32))
-	case reflect.Int8:
-		rv.SetInt(dd.decodeInt(8))
-	case reflect.Int16:
-		rv.SetInt(dd.decodeInt(16))
-	case reflect.Float32:
-		rv.SetFloat(dd.decodeFloat(true))
-	case reflect.Float64:
-		rv.SetFloat(dd.decodeFloat(false))
-	case reflect.Uint8:
-		rv.SetUint(dd.decodeUint(8))
-	case reflect.Uint64:
-		rv.SetUint(dd.decodeUint(64))
-	case reflect.Uint:
-		rv.SetUint(dd.decodeUint(uintBitsize))
-	case reflect.Uint32:
-		rv.SetUint(dd.decodeUint(32))
-	case reflect.Uint16:
-		rv.SetUint(dd.decodeUint(16))
-	case reflect.Ptr:
-		if rv.IsNil() {
-			if wasNilIntf {
-				rv = reflect.New(rt.Elem())
-			} else {
-				rv.Set(reflect.New(rt.Elem()))
-			}
-		}
-		d.decodeValue(rv.Elem())
-	case reflect.Interface:
-		d.decodeValue(rv.Elem())
-	case reflect.Struct:
-		if currEncodedType := dd.currentEncodedType(); currEncodedType == detMap {
-			containerLen := dd.readMapLen()
-			if containerLen == 0 {
-				break
-			}
-			sfi := getStructFieldInfos(rtid, rt)
-			sissis := sfi.sis 
-			for j := 0; j < containerLen; j++ {
-				// var rvkencname string
-				// ddecode(&rvkencname)
-				dd.initReadNext()
-				rvkencname := dd.decodeString()
-				// rvksi := sfi.getForEncName(rvkencname)
-				if k := sfi.indexForEncName(rvkencname); k > -1 {
-					sfik := sissis[k]
-					if sfik.i != -1 {
-						d.decodeValue(rv.Field(int(sfik.i)))
-					} else {
-						d.decodeValue(rv.FieldByIndex(sfik.is))
-					}
-					// d.decodeValue(sfi.field(k, rv))
-				} else {
-					if d.h.errorIfNoField() {
-						decErr("No matching struct field found when decoding stream map with key: %v", rvkencname)
-					} else {
-						var nilintf0 interface{}
-						d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
-					}
-				}
-			}
-		} else if currEncodedType == detArray {
-			containerLen := dd.readArrayLen()
-			if containerLen == 0 {
-				break
-			}
-			sfi := getStructFieldInfos(rtid, rt)
-			for j, si := range sfi.sisp {
-				if j == containerLen {
-					break
-				}
-				if si.i != -1 {
-					d.decodeValue(rv.Field(int(si.i)))
-				} else {
-					d.decodeValue(rv.FieldByIndex(si.is))
-				}
-			}
-			if containerLen > len(sfi.sisp) {
-				// read remaining values and throw away
-				for j := len(sfi.sisp); j < containerLen; j++ {
-					var nilintf0 interface{}
-					d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
-				}
-			}
-		} else {
-			decErr("Only encoded map or array can be decoded into a struct")
-		}
-		
-	case reflect.Slice:
-		// Be more careful calling Set() here, because a reflect.Value from an array
-		// may have come in here (which may not be settable).
-		// In places where the slice got from an array could be, we should guard with CanSet() calls.
-
-		if rt == byteSliceTyp { // rawbytes
-			if bs2, changed2 := dd.decodeBytes(rv.Bytes()); changed2 {
-				rv.SetBytes(bs2)
-			}
-			if wasNilIntf && rv.IsNil() {
-				rv.SetBytes([]byte{})
-			}
-			break
-		}
-
-		containerLen := dd.readArrayLen()
-
-		if wasNilIntf {
-			rv = reflect.MakeSlice(rt, containerLen, containerLen)
-		}
-		if containerLen == 0 {
-			if rv.IsNil() {
-				rv.Set(reflect.MakeSlice(rt, containerLen, containerLen))
-			} 
-			break
-		}
-
-		if rv.IsNil() {
-			// wasNilIntf only applies if rv is nil (since that's what we did earlier)
-			rv.Set(reflect.MakeSlice(rt, containerLen, containerLen))
-		} else {
-			// if we need to reset rv but it cannot be set, we should err out.
-			// for example, if slice is got from unaddressable array, CanSet = false
-			if rvcap, rvlen := rv.Len(), rv.Cap(); containerLen > rvcap {
-				if rv.CanSet() {
-					rvn := reflect.MakeSlice(rt, containerLen, containerLen)
-					if rvlen > 0 {
-						reflect.Copy(rvn, rv)
-					}
-					rv.Set(rvn)
-				} else {
-					decErr("Cannot reset slice with less cap: %v that stream contents: %v", rvcap, containerLen)
-				}
-			} else if containerLen > rvlen {
-				rv.SetLen(containerLen)
-			}
-		}
-		for j := 0; j < containerLen; j++ {
-			d.decodeValue(rv.Index(j))
-		}
-	case reflect.Array:
-		d.decodeValue(rv.Slice(0, rv.Len()))
-	case reflect.Map:
-		containerLen := dd.readMapLen()
-
-		if rv.IsNil() {
-			rv.Set(reflect.MakeMap(rt))
-		}
-		
-		if containerLen == 0 {
-			break
-		}
-
-		ktype, vtype := rt.Key(), rt.Elem()
-		for j := 0; j < containerLen; j++ {
-			rvk := reflect.New(ktype).Elem()
-			d.decodeValue(rvk)
-
-			if ktype == intfTyp {
-				rvk = rvk.Elem()
-				if rvk.Type() == byteSliceTyp {
-					rvk = reflect.ValueOf(string(rvk.Bytes()))
-				}
-			}
-			rvv := rv.MapIndex(rvk)
-			if !rvv.IsValid() {
-				rvv = reflect.New(vtype).Elem()
-			}
-
-			d.decodeValue(rvv)
-			rv.SetMapIndex(rvk, rvv)
-		}
-	default:
-		decErr("Unhandled value for kind: %v: %s", rk, msgBadDesc)
-	}
 
 	if wasNilIntf {
 		rvOrig.Set(rv)

@@ -36,6 +36,8 @@ import (
 	"strconv"
 	"testing"
 	"time"
+	"sync/atomic"
+	"runtime"
 )
 
 type testVerifyArg int
@@ -44,6 +46,7 @@ const (
 	testVerifyMapTypeSame testVerifyArg = iota
 	testVerifyMapTypeStrIntf
 	testVerifyMapTypeIntfIntf
+	// testVerifySliceIntf
 	testVerifyForPython
 )
 
@@ -53,7 +56,11 @@ var (
 	testStructToArray bool
 	_                           = fmt.Printf
 	skipVerifyVal   interface{} = &(struct{}{})
-	timeLoc                     = time.FixedZone("UTC-08:00", -8*60*60)         //time.UTC-8
+
+	// For Go Time, do not use a descriptive timezone. 
+	// It's unnecessary, and makes it harder to do a reflect.DeepEqual.
+	// The Offset already tells what the offset should be, if not on UTC and unknown zone name.
+	timeLoc                     = time.FixedZone("", -8*60*60)         // UTC-08:00 //time.UTC-8
 	timeToCompare1              = time.Date(2012, 2, 2, 2, 2, 2, 2000, timeLoc) 
 	timeToCompare2              = time.Date(1900, 2, 2, 2, 2, 2, 2000, timeLoc) 
 	timeToCompare3              = time.Unix(0, 0).UTC()
@@ -75,20 +82,6 @@ func testInitFlags() {
 	flag.BoolVar(&testUseIoEncDec, "tio", false, "Use IO Reader/Writer for Marshal/Unmarshal")
 	flag.BoolVar(&testStructToArray, "ts2a", false, "Set StructToArray option")
 }	
-
-func testInit() {	
-	gob.Register(new(TestStruc))
-	if testInitDebug {
-		ts0 := newTestStruc(2, false)
-		fmt.Printf("====> depth: %v, ts: %#v\n", 2, ts0)
-	}
-
-	testBincH.StructToArray = testStructToArray
-	testMsgpackH.StructToArray = testStructToArray
-	testMsgpackH.RawToString = true 
-	//testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
-	testMsgpackH.AddExt(timeTyp, 1, testMsgpackH.TimeEncodeExt, testMsgpackH.TimeDecodeExt)
-}
 
 type AnonInTestStruc struct {
 	AS        string
@@ -136,6 +129,10 @@ type TestStruc struct {
 	Nteststruc *TestStruc
 }
 
+type TestABC struct {
+	A, B, C string
+}
+
 type TestRpcInt struct {
 	i int
 }
@@ -143,6 +140,14 @@ type TestRpcInt struct {
 func (r *TestRpcInt) Update(n int, res *int) error      { r.i = n; *res = r.i; return nil }
 func (r *TestRpcInt) Square(ignore int, res *int) error { *res = r.i * r.i; return nil }
 func (r *TestRpcInt) Mult(n int, res *int) error        { *res = r.i * n; return nil }
+func (r *TestRpcInt) EchoStruct(arg TestABC, res *string) error { 
+	*res = fmt.Sprintf("%#v", arg)
+	return nil
+}
+func (r *TestRpcInt) Echo123(args []string, res *string) error {
+	*res = fmt.Sprintf("%#v", args)
+	return nil
+}
 
 func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
 	//for python msgpack, 
@@ -256,7 +261,18 @@ func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
 	return
 }
 
-func init() {
+func testInit() {	
+	gob.Register(new(TestStruc))
+	if testInitDebug {
+		ts0 := newTestStruc(2, false)
+		fmt.Printf("====> depth: %v, ts: %#v\n", 2, ts0)
+	}
+
+	testBincH.StructToArray = testStructToArray
+	testMsgpackH.StructToArray = testStructToArray
+	testMsgpackH.RawToString = true 
+	//testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
+	testMsgpackH.AddExt(timeTyp, 1, testMsgpackH.TimeEncodeExt, testMsgpackH.TimeDecodeExt)
 	primitives := []interface{}{
 		int8(-8),
 		int16(-1616),
@@ -501,6 +517,7 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 			continue
 		}
 
+		// debugf("=============>>>> %#v", v0check)
 		if err = deepEqual(v0check, v1); err == nil {
 			logT(t, "++++++++ Before and After marshal matched\n")
 		} else {
@@ -658,63 +675,42 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	}
 }
 
-func doTestRpcOne(t *testing.T, rr Rpc, h Handle, callClose, doRequest, doExit bool) {
+func doTestRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration,
+) (port int) {
 	srv := rpc.NewServer()
 	srv.Register(testRpcInt)
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	// log("listener: %v", ln.Addr())
 	checkErrT(t, err)
-	defer ln.Close()
-
+	port = (ln.Addr().(*net.TCPAddr)).Port
 	// var opts *DecoderOptions
 	// opts := testDecOpts
 	// opts.MapType = mapStringIntfTyp
 	// opts.RawToString = false
 	serverExitChan := make(chan bool, 1)
+	var serverExitFlag uint64 = 0
 	serverFn := func() {
 		for {
 			conn1, err1 := ln.Accept()
 			if err1 != nil {
+				//fmt.Printf("accept err1: %v\n", err1)
 				continue
 			}
-			bs := make([]byte, 1)
-			n1, err1 := conn1.Read(bs)
-			if n1 != 1 || err1 != nil {
-				conn1.Close()
-				continue
-			}
-			var sc rpc.ServerCodec
-			switch bs[0] {
-			case 'R':
-				sc = rr.ServerCodec(conn1, h)
-			case 'X':
+			if atomic.LoadUint64(&serverExitFlag) == 1 {
 				serverExitChan <- true
-				// <- serverExitChan
 				conn1.Close()
 				return // exit serverFn goroutine
 			}
-			if sc == nil {
-				conn1.Close()
-				continue
-			}
+			var sc rpc.ServerCodec = rr.ServerCodec(conn1, h)
 			srv.ServeCodec(sc)
-			// for {
-			// 	if err1 = srv.ServeRequest(sc); err1 != nil {
-			// 		break
-			// 	}
-			// }
-			// if callClose {
-			// 	sc.Close()
-			// }
 		}
 	}
 
 	clientFn := func(cc rpc.ClientCodec) {
 		cl := rpc.NewClientWithCodec(cc)
-		if callClose {
-			defer cl.Close()
-		}
+		defer cl.Close()
 		var up, sq, mult int
+		var rstr string
 		// log("Calling client")
 		checkErrT(t, cl.Call("TestRpcInt.Update", 5, &up))
 		// log("Called TestRpcInt.Update")
@@ -724,31 +720,48 @@ func doTestRpcOne(t *testing.T, rr Rpc, h Handle, callClose, doRequest, doExit b
 		checkEqualT(t, sq, 25)
 		checkErrT(t, cl.Call("TestRpcInt.Mult", 20, &mult))
 		checkEqualT(t, mult, 100)
+		checkErrT(t, cl.Call("TestRpcInt.EchoStruct", TestABC{"Aa", "Bb", "Cc"}, &rstr))
+		checkEqualT(t, rstr, fmt.Sprintf("%#v", TestABC{"Aa", "Bb", "Cc"}))
+		checkErrT(t, cl.Call("TestRpcInt.Echo123", []string{"A1", "B2", "C3"}, &rstr))
+		checkEqualT(t, rstr, fmt.Sprintf("%#v", []string{"A1", "B2", "C3"}))
 	}
 
-	connFn := func(req byte) (bs net.Conn) {
+	connFn := func() (bs net.Conn) {
 		// log("calling f1")
 		bs, err2 := net.Dial(ln.Addr().Network(), ln.Addr().String())
-		// log("f1. bs: %v, err2: %v", bs, err2)
+		//fmt.Printf("f1. bs: %v, err2: %v\n", bs, err2)
 		checkErrT(t, err2)
-		n1, err2 := bs.Write([]byte{req})
-		checkErrT(t, err2)
-		checkEqualT(t, n1, 1)
 		return
 	}
 
-	go serverFn()
-	if doRequest {
-		bs := connFn('R')
-		cc := rr.ClientCodec(bs, h)
-		clientFn(cc)
-	}
-	if doExit {
-		bs := connFn('X')
+	exitFn := func() {
+		atomic.StoreUint64(&serverExitFlag, 1)
+		bs := connFn()
 		<-serverExitChan
 		bs.Close()
 		// serverExitChan <- true
 	}
+
+	go serverFn()
+	runtime.Gosched()
+	//time.Sleep(100 * time.Millisecond)
+	if exitSleepMs == 0 {
+		defer ln.Close()
+		defer exitFn()
+	} 
+	if doRequest {
+		bs := connFn()
+		cc := rr.ClientCodec(bs, h)
+		clientFn(cc)
+	}
+	if exitSleepMs != 0 {
+		go func() {
+			defer ln.Close()
+			time.Sleep(exitSleepMs)
+			exitFn()
+		}()
+	}
+	return
 }
 
 // Comprehensive testing that generates data encoded from python msgpack,
@@ -769,7 +782,7 @@ func doTestMsgpackPythonGenStreams(t *testing.T) {
 	//cmd.Stdout = &out
 	var cmdout []byte
 	if cmdout, err = cmd.CombinedOutput(); err != nil {
-		logT(t, "-------- Error running python build.py. Err: %v", err)
+		logT(t, "-------- Error running msgpack_test.py testdata. Err: %v", err)
 		logT(t, "         %v", string(cmdout))
 		t.FailNow()
 	}
@@ -835,8 +848,50 @@ func doTestMsgpackPythonGenStreams(t *testing.T) {
 		}
 	}
 	testMsgpackH.MapType = oldMapType
-
 }
+
+// To test MsgpackSpecRpc, we test 3 scenarios:
+//    - Go Client to Go RPC Service (contained within TestMsgpackRpcSpec)
+//    - Go client to Python RPC Service (contained within doTestMsgpackRpcSpecGoClientToPythonSvc)
+//    - Python Client to Go RPC Service (contained within doTestMsgpackRpcSpecPythonClientToGoSvc)
+// 
+// This allows us test the different calling conventions 
+//    - Go Service requires only one argument
+//    - Python Service allows multiple arguments
+
+func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
+	openPort := "6789"
+	cmd := exec.Command("python", "msgpack_test.py", "rpc-server", openPort, "2")
+	checkErrT(t, cmd.Start())
+	time.Sleep(100 * time.Millisecond) // time for python rpc server to start
+	bs, err2 := net.Dial("tcp", ":" + openPort)
+	checkErrT(t, err2)
+	cc := MsgpackSpecRpc.ClientCodec(bs, testMsgpackH)
+	cl := rpc.NewClientWithCodec(cc)
+	defer cl.Close()
+	var rstr string
+	checkErrT(t, cl.Call("EchoStruct", TestABC{"Aa", "Bb", "Cc"}, &rstr))
+	//checkEqualT(t, rstr, "{'A': 'Aa', 'B': 'Bb', 'C': 'Cc'}")
+	var mArgs MsgpackSpecRpcMultiArgs = []interface{}{"A1", "B2", "C3"}
+	checkErrT(t, cl.Call("Echo123", mArgs, &rstr))
+	checkEqualT(t, rstr, "1:A1 2:B2 3:C3")
+}
+
+func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
+	port := doTestRpcOne(t, MsgpackSpecRpc, testMsgpackH, false, 1*time.Second)
+	//time.Sleep(1000 * time.Millisecond)
+	cmd := exec.Command("python", "msgpack_test.py", "rpc-client-go-service", strconv.Itoa(port))
+	var cmdout []byte
+	var err error
+	if cmdout, err = cmd.CombinedOutput(); err != nil {
+		logT(t, "-------- Error running msgpack_test.py rpc-client-go-service. Err: %v", err)
+		logT(t, "         %v", string(cmdout))
+		t.FailNow()
+	}
+	checkEqualT(t, string(cmdout), 
+		fmt.Sprintf("%#v\n%#v\n", []string{"A1", "B2", "C3"}, TestABC{"Aa", "Bb", "Cc"}))
+}
+
 
 func TestMsgpackCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testMsgpackH)
@@ -855,15 +910,15 @@ func TestBincCodecsMisc(t *testing.T) {
 }
 
 func TestMsgpackRpcGo(t *testing.T) {
-	doTestRpcOne(t, GoRpc, testMsgpackH, true, true, true)
+	doTestRpcOne(t, GoRpc, testMsgpackH, true, 0)
 }
 
 func TestMsgpackRpcSpec(t *testing.T) {
-	doTestRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, true, true)
+	doTestRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, 0)
 }
 
 func TestBincRpcGo(t *testing.T) {
-	doTestRpcOne(t, GoRpc, testBincH, true, true, true)
+	doTestRpcOne(t, GoRpc, testBincH, true, 0)
 }
 
 //TODO: 

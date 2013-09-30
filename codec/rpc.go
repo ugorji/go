@@ -40,11 +40,11 @@ type goRpcCodec struct {
 type goRpc struct{}
 
 func (x goRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec {
-	return goRpcCodec{newRPCCodec(conn, h)}
+	return &goRpcCodec{newRPCCodec(conn, h)}
 }
 
 func (x goRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec {
-	return goRpcCodec{newRPCCodec(conn, h)}
+	return &goRpcCodec{newRPCCodec(conn, h)}
 }
 
 func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
@@ -60,7 +60,7 @@ func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
 }
 
 // /////////////// RPC Codec Shared Methods ///////////////////
-func (c rpcCodec) write(obj1, obj2 interface{}, writeObj2, doFlush bool) (err error) {
+func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2, doFlush bool) (err error) {
 	if err = c.enc.Encode(obj1); err != nil {
 		return
 	}
@@ -77,7 +77,7 @@ func (c rpcCodec) write(obj1, obj2 interface{}, writeObj2, doFlush bool) (err er
 }
 
 
-func (c rpcCodec) read(obj interface{}) (err error) {
+func (c *rpcCodec) read(obj interface{}) (err error) {
 	//If nil is passed in, we should still attempt to read content to nowhere.
 	if obj == nil {
 		var obj2 interface{}
@@ -86,31 +86,31 @@ func (c rpcCodec) read(obj interface{}) (err error) {
 	return c.dec.Decode(obj)
 }
 
-func (c rpcCodec) Close() error {
+func (c *rpcCodec) Close() error {
 	return c.rwc.Close()
 }
 
-func (c rpcCodec) ReadResponseBody(body interface{}) error {
+func (c *rpcCodec) ReadResponseBody(body interface{}) error {
 	return c.read(body)
 }
 
-func (c rpcCodec) ReadRequestBody(body interface{}) error {
+func (c *rpcCodec) ReadRequestBody(body interface{}) error {
 	return c.read(body)
 }
 
 // /////////////// Go RPC Codec ///////////////////
-func (c goRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
+func (c *goRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
 	return c.write(r, body, true, true)
 }
 
-func (c goRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
+func (c *goRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
 	return c.write(r, body, true, true)
 }
 
-func (c goRpcCodec) ReadResponseHeader(r *rpc.Response) error {
+func (c *goRpcCodec) ReadResponseHeader(r *rpc.Response) error {
 	return c.read(r)
 }
 
-func (c goRpcCodec) ReadRequestHeader(r *rpc.Request) error {
+func (c *goRpcCodec) ReadRequestHeader(r *rpc.Request) error {
 	return c.read(r)
 }
