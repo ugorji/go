@@ -73,17 +73,16 @@ var (
 	intfSliceTyp     = reflect.TypeOf(nilIntfSlice)
 	intfTyp          = intfSliceTyp.Elem()
 	byteSliceTyp     = reflect.TypeOf([]byte(nil))
-	ptrByteSliceTyp  = reflect.TypeOf((*[]byte)(nil))
 	mapStringIntfTyp = reflect.TypeOf(map[string]interface{}(nil))
 	mapIntfIntfTyp   = reflect.TypeOf(map[interface{}]interface{}(nil))
 	
 	timeTyp          = reflect.TypeOf(time.Time{})
-	ptrTimeTyp       = reflect.TypeOf((*time.Time)(nil))
 	int64SliceTyp    = reflect.TypeOf([]int64(nil))
+	rawExtTyp        = reflect.TypeOf(RawExt{})
 	
 	timeTypId        = reflect.ValueOf(timeTyp).Pointer()
-	ptrTimeTypId     = reflect.ValueOf(ptrTimeTyp).Pointer()
 	byteSliceTypId   = reflect.ValueOf(byteSliceTyp).Pointer()
+	rawExtTypId      = reflect.ValueOf(rawExtTyp).Pointer()
 	
 	binaryMarshalerTyp = reflect.TypeOf((*binaryMarshaler)(nil)).Elem()
 	binaryUnmarshalerTyp = reflect.TypeOf((*binaryUnmarshaler)(nil)).Elem()
@@ -97,6 +96,12 @@ var (
 	bsAll0x00 = []byte{0, 0, 0, 0, 0, 0, 0, 0}
 	bsAll0xff = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 )
+
+// The RawExt type represents raw unprocessed extension data. 
+type RawExt struct {
+	Tag byte
+	Data []byte
+}
 
 // Handle is the interface for a specific encoding format.
 // 

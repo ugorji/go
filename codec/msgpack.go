@@ -65,7 +65,8 @@ const (
 )
 
 // MsgpackSpecRpc implements Rpc using the communication protocol defined in
-// the msgpack spec at http://wiki.msgpack.org/display/MSGPACK/RPC+specification
+// the msgpack spec at http://wiki.msgpack.org/display/MSGPACK/RPC+specification .
+// It's methods (ServerCodec and ClientCodec) return values that implement RpcCodecBuffered.
 var MsgpackSpecRpc msgpackSpecRpc
 
 // MsgpackSpecRpcMultiArgs is a special type which signifies to the MsgpackSpecRpcCodec
@@ -371,12 +372,14 @@ func (d *msgpackDecDriver) decodeNaked() (rv reflect.Value, ctx decodeNakedConte
 			//ctx = dncExt
 			clen := d.readExtLen()
 			xtag := d.r.readn1()
+			xbs := d.r.readn(clen)
 			var bfn func(reflect.Value, []byte) error
 			rv, bfn = d.h.getDecodeExtForTag(xtag)
 			if bfn == nil {
-				decErr("Unable to find type mapped to extension tag: %v", xtag)
-			}
-			if fnerr := bfn(rv, d.r.readn(clen)); fnerr != nil {
+				// decErr("Unable to find type mapped to extension tag: %v", xtag)
+				re := RawExt { xtag, xbs }
+				rv = reflect.ValueOf(&re).Elem()
+			} else if fnerr := bfn(rv, xbs); fnerr != nil {
 				panic(fnerr)
 			}
 		default:
@@ -680,7 +683,7 @@ func (d *msgpackDecDriver) readExtLen() (clen int) {
 	return
 }
 
-func (d *msgpackDecDriver) decodeExt(tag byte) (xbs []byte) {
+func (d *msgpackDecDriver) decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
 	xbd := d.bd
 	switch {
 	case xbd == mpBin8, xbd == mpBin16, xbd == mpBin32: 
@@ -690,13 +693,51 @@ func (d *msgpackDecDriver) decodeExt(tag byte) (xbs []byte) {
 		xbs = []byte(d.decodeString())
 	default:
 		clen := d.readExtLen()
-		if xtag := d.r.readn1(); xtag != tag {
+		xtag = d.r.readn1()
+		if verifyTag && xtag != tag {
 			decErr("Wrong extension tag. Got %b. Expecting: %v", xtag, tag)
 		}
 		xbs = d.r.readn(clen)
 	}
 	d.bdRead = false
 	return
+}
+
+//--------------------------------------------------
+
+// TimeEncodeExt encodes a time.Time as a byte slice.
+// Configure this to support the Time Extension, e.g. using tag 1.
+func (_ *MsgpackHandle) TimeEncodeExt(rv reflect.Value) (bs []byte, err error) {
+	rvi := rv.Interface()
+	switch iv := rvi.(type) {
+	case time.Time:
+		bs = encodeTime(iv)
+	default:
+		err = fmt.Errorf("codec/msgpack: TimeEncodeExt expects a time.Time. Received %T", rvi)
+	}
+	return
+}
+
+// TimeDecodeExt decodes a time.Time from the byte slice parameter, and sets it into the reflect value.
+// Configure this to support the Time Extension, e.g. using tag 1.
+func (_ *MsgpackHandle) TimeDecodeExt(rv reflect.Value, bs []byte) (err error) {
+	tt, err := decodeTime(bs)
+	if err == nil {
+		rv.Set(reflect.ValueOf(tt))
+	}
+	return
+}
+
+func (h *MsgpackHandle) newEncDriver(w encWriter) encDriver {
+	return &msgpackEncDriver{w: w, h: h}
+}
+
+func (h *MsgpackHandle) newDecDriver(r decReader) decDriver {
+	return &msgpackDecDriver{r: r, h: h}
+}
+
+func (h *MsgpackHandle) writeExt() bool {
+	return h.WriteExt
 }
 
 //--------------------------------------------------
@@ -786,42 +827,5 @@ func (c *msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint
 		return
 	}
 	return
-}
-
-//--------------------------------------------------
-
-// TimeEncodeExt encodes a time.Time as a byte slice.
-// Configure this to support the Time Extension, e.g. using tag 1.
-func (_ *MsgpackHandle) TimeEncodeExt(rv reflect.Value) (bs []byte, err error) {
-	rvi := rv.Interface()
-	switch iv := rvi.(type) {
-	case time.Time:
-		bs = encodeTime(iv)
-	default:
-		err = fmt.Errorf("codec/msgpack: TimeEncodeExt expects a time.Time. Received %T", rvi)
-	}
-	return
-}
-
-// TimeDecodeExt decodes a time.Time from the byte slice parameter, and sets it into the reflect value.
-// Configure this to support the Time Extension, e.g. using tag 1.
-func (_ *MsgpackHandle) TimeDecodeExt(rv reflect.Value, bs []byte) (err error) {
-	tt, err := decodeTime(bs)
-	if err == nil {
-		rv.Set(reflect.ValueOf(tt))
-	}
-	return
-}
-
-func (h *MsgpackHandle) newEncDriver(w encWriter) encDriver {
-	return &msgpackEncDriver{w: w, h: h}
-}
-
-func (h *MsgpackHandle) newDecDriver(r decReader) decDriver {
-	return &msgpackDecDriver{r: r, h: h}
-}
-
-func (h *MsgpackHandle) writeExt() bool {
-	return h.WriteExt
 }
 

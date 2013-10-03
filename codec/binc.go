@@ -733,11 +733,12 @@ func (d *bincDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 	return
 }
 
-func (d *bincDecDriver) decodeExt(tag byte) (xbs []byte) {
+func (d *bincDecDriver) decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
 	switch d.vd {
 	case bincVdCustomExt:
 		l := d.decLen()
-		if xtag := d.r.readn1(); xtag != tag {
+		xtag = d.r.readn1()
+		if verifyTag && xtag != tag {
 			decErr("Wrong extension tag. Got %b. Expecting: %v", xtag, tag)
 		}
 		xbs = d.r.readn(l)
@@ -773,14 +774,14 @@ func (d *bincDecDriver) decodeNaked() (rv reflect.Value, ctx decodeNakedContext)
 		case bincSpZeroFloat:
 			v = float64(0)
 		case bincSpZero:
-			v = int8(0)
+			v = int64(0) // int8(0)
 		case bincSpNegOne:
-			v = int8(-1)
+			v = int64(-1) // int8(-1)
 		default:
 			decErr("decodeNaked: Unrecognized special value 0x%x", d.vs)
 		}
 	case bincVdSmallInt:
-		v = int8(d.vs) + 1
+		v = int64(int8(d.vs)) + 1 // int8(d.vs) + 1
 	case bincVdUint:
 		v = d.decUint()
 	case bincVdInt:
@@ -803,12 +804,14 @@ func (d *bincDecDriver) decodeNaked() (rv reflect.Value, ctx decodeNakedContext)
 		//ctx = dncExt
 		l := d.decLen()
 		xtag := d.r.readn1()
+		xbs := d.r.readn(l)
 		var bfn func(reflect.Value, []byte) error
 		rv, bfn = d.h.getDecodeExtForTag(xtag)
 		if bfn == nil {
-			decErr("decodeNaked: Unable to find type mapped to extension tag: %v", xtag)
-		}
-		if fnerr := bfn(rv, d.r.readn(l)); fnerr != nil {
+			// decErr("decodeNaked: Unable to find type mapped to extension tag: %v", xtag)
+			re := RawExt { xtag, xbs }
+			rv = reflect.ValueOf(&re).Elem()
+		} else if fnerr := bfn(rv, xbs); fnerr != nil {
 			panic(fnerr)
 		}
 	case bincVdArray:

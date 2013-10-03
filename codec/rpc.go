@@ -16,19 +16,31 @@ import (
 )
 
 // GoRpc implements Rpc using the communication protocol defined in net/rpc package.
+// It's methods (ServerCodec and ClientCodec) return values that implement RpcCodecBuffered.
 var GoRpc goRpc
 
-// Rpc interface provides a rpc Server or Client Codec for rpc communication.
+// Rpc provides a rpc Server or Client Codec for rpc communication.
 type Rpc interface {
 	ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec
 	ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec
 }
 
+// RpcCodecBuffered allows access to the underlying bufio.Reader/Writer
+// used by the rpc connection. It accomodates use-cases where the connection
+// should be used by rpc and non-rpc functions, e.g. streaming a file after
+// sending an rpc response.
+type RpcCodecBuffered interface {
+	BufferedReader() *bufio.Reader
+	BufferedWriter() *bufio.Writer
+}
+
+// rpcCodec defines the struct members and common methods.
 type rpcCodec struct {
 	rwc io.ReadWriteCloser
 	dec *Decoder
 	enc *Encoder
-	encbuf *bufio.Writer 
+	bw *bufio.Writer
+	br *bufio.Reader
 }
 
 type goRpcCodec struct {
@@ -48,18 +60,26 @@ func (x goRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec {
 }
 
 func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
-	encbuf := bufio.NewWriter(conn)
+	bw := bufio.NewWriter(conn)
+	br := bufio.NewReader(conn)
 	return rpcCodec{
 		rwc: conn,
-		encbuf: encbuf,
-		enc: NewEncoder(encbuf, h),
-		dec: NewDecoder(bufio.NewReader(conn), h),
-		//enc: NewEncoder(conn, h),
-		//dec: NewDecoder(conn, h),
+		bw: bw,
+		br: br,
+		enc: NewEncoder(bw, h),
+		dec: NewDecoder(br, h),
 	}
 }
 
 // /////////////// RPC Codec Shared Methods ///////////////////
+func (c *rpcCodec) BufferedReader() *bufio.Reader {
+	return c.br
+}
+
+func (c *rpcCodec) BufferedWriter() *bufio.Writer {
+	return c.bw
+}
+
 func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2, doFlush bool) (err error) {
 	if err = c.enc.Encode(obj1); err != nil {
 		return
@@ -69,9 +89,9 @@ func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2, doFlush bool) (err e
 			return
 		}
 	}
-	if doFlush && c.encbuf != nil {
+	if doFlush && c.bw != nil {
 		//println("rpc flushing")
-		return c.encbuf.Flush()
+		return c.bw.Flush()
 	}
 	return
 }
@@ -94,10 +114,6 @@ func (c *rpcCodec) ReadResponseBody(body interface{}) error {
 	return c.read(body)
 }
 
-func (c *rpcCodec) ReadRequestBody(body interface{}) error {
-	return c.read(body)
-}
-
 // /////////////// Go RPC Codec ///////////////////
 func (c *goRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
 	return c.write(r, body, true, true)
@@ -114,3 +130,10 @@ func (c *goRpcCodec) ReadResponseHeader(r *rpc.Response) error {
 func (c *goRpcCodec) ReadRequestHeader(r *rpc.Request) error {
 	return c.read(r)
 }
+
+func (c *goRpcCodec) ReadRequestBody(body interface{}) error {
+	return c.read(body)
+}
+
+var _ RpcCodecBuffered = (*rpcCodec)(nil) // ensure *rpcCodec implements RpcCodecBuffered
+

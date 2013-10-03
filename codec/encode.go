@@ -145,19 +145,34 @@ func (o *EncodeOptions) structToArray() bool {
 }
 
 func (f *encFnInfo) builtin(rv reflect.Value) {
-	baseRv := rv
-	for j := int8(0); j < f.sis.baseIndir; j++ {
-		baseRv = baseRv.Elem()
+	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
+		rv = rv.Elem()
 	}
-	f.ee.encodeBuiltinType(f.sis.baseId, baseRv)
+	f.ee.encodeBuiltinType(f.sis.baseId, rv)
+}
+
+func (f *encFnInfo) rawExt(rv reflect.Value) {
+	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
+		rv = rv.Elem()
+	}
+	re := rv.Interface().(RawExt)
+	if re.Data == nil {
+		f.ee.encodeNil()
+		return
+	}
+	if f.e.h.writeExt() {
+		f.ee.encodeExtPreamble(re.Tag, len(re.Data))
+		f.e.w.writeb(re.Data)
+	} else {
+		f.ee.encodeStringBytes(c_RAW, re.Data)
+	}
 }
 
 func (f *encFnInfo) ext(rv reflect.Value) {
-	baseRv := rv
-	for j := int8(0); j < f.sis.baseIndir; j++ {
-		baseRv = baseRv.Elem()
+	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
+		rv = rv.Elem()
 	}
-	bs, fnerr := f.xfFn(baseRv)
+	bs, fnerr := f.xfFn(rv)
 	if fnerr != nil {
 		panic(fnerr)
 	}
@@ -181,11 +196,10 @@ func (f *encFnInfo) binaryMarshal(rv reflect.Value) {
 	} else if f.sis.mIndir == -1 {
 		bm = rv.Addr().Interface().(binaryMarshaler)
 	} else {
-		rv2 := rv
-		for j := int8(0); j < f.sis.mIndir; j++ {
-			rv2 = rv.Elem()
+		for j, k := int8(0), f.sis.mIndir; j < k; j++ {
+			rv = rv.Elem()
 		}
-		bm = rv2.Interface().(binaryMarshaler)
+		bm = rv.Interface().(binaryMarshaler)
 	}
 	// debugf(">>>> binaryMarshaler: %T", rv.Interface())
 	bs, fnerr := bm.MarshalBinary()
@@ -197,7 +211,6 @@ func (f *encFnInfo) binaryMarshal(rv reflect.Value) {
 	} else {
 		f.ee.encodeStringBytes(c_RAW, bs)
 	}
-
 }
 
 func (f *encFnInfo) kBool(rv reflect.Value) {
@@ -523,7 +536,9 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 	if !ok {
 		// debugf("\tCreating new enc fn for type: %v\n", rt)
 		fi := encFnInfo { sis:getTypeInfo(rtid, rt), e:e, ee:e.e, rt:rt, rtid:rtid }
-		if e.e.isBuiltinType(fi.sis.baseId) {
+		if fi.sis.baseId == rawExtTypId {
+			fn = encFn{ &fi, (*encFnInfo).rawExt }
+		} else if e.e.isBuiltinType(fi.sis.baseId) {
 			fn = encFn{ &fi, (*encFnInfo).builtin }
 		} else if xfTag, xfFn := e.h.getEncodeExt(fi.sis.baseId); xfFn != nil {
 			fi.xfTag, fi.xfFn = xfTag, xfFn
@@ -592,7 +607,7 @@ func (z *ioEncWriter) writeb(bs []byte) {
 		panic(err)
 	}
 	if n != len(bs) {
-		doPanic(msgTagEnc, "write: Incorrect num bytes written. Expecting: %v, Wrote: %v", len(bs), n)
+		encErr("write: Incorrect num bytes written. Expecting: %v, Wrote: %v", len(bs), n)
 	}
 }
 
@@ -602,7 +617,7 @@ func (z *ioEncWriter) writestr(s string) {
 		panic(err)
 	}
 	if n != len(s) {
-		doPanic(msgTagEnc, "write: Incorrect num bytes written. Expecting: %v, Wrote: %v", len(s), n)
+		encErr("write: Incorrect num bytes written. Expecting: %v, Wrote: %v", len(s), n)
 	}
 }
 

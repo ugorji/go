@@ -70,7 +70,7 @@ type decDriver interface {
 	// decodeString can also decode symbols
 	decodeString() (s string)
 	decodeBytes(bs []byte) (bsOut []byte, changed bool)
-	decodeExt(tag byte) []byte
+	decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte)
 	readMapLen() int
 	readArrayLen() int
 }
@@ -101,22 +101,27 @@ type Decoder struct {
 }
 
 func (f *decFnInfo) builtin(rv reflect.Value) {
-	baseRv := rv
-	baseIndir := f.sis.baseIndir
-	for j := int8(0); j < baseIndir; j++ {
-		baseRv = baseRv.Elem()
+	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
+		rv = rv.Elem()
 	}
-	f.dd.decodeBuiltinType(f.sis.baseId, baseRv)
+	f.dd.decodeBuiltinType(f.sis.baseId, rv)
+}
+
+func (f *decFnInfo) rawExt(rv reflect.Value) {
+	xtag, xbs := f.dd.decodeExt(false, 0)
+	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
+		rv = rv.Elem()
+	}
+	rv.Field(0).SetUint(uint64(xtag))
+	rv.Field(1).SetBytes(xbs)
 }
 
 func (f *decFnInfo) ext(rv reflect.Value) {
-	xbs := f.dd.decodeExt(f.xfTag)
-	baseRv := rv
-	baseIndir := f.sis.baseIndir
-	for j := int8(0); j < baseIndir; j++ {
-		baseRv = baseRv.Elem()
+	_, xbs := f.dd.decodeExt(true, f.xfTag)
+	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
+		rv = rv.Elem()
 	}
-	if fnerr := f.xfFn(baseRv, xbs); fnerr != nil {
+	if fnerr := f.xfFn(rv, xbs); fnerr != nil {
 		panic(fnerr)
 	}
 }
@@ -128,12 +133,10 @@ func (f *decFnInfo) binaryMarshal(rv reflect.Value) {
 	} else if f.sis.unmIndir == 0 {
 		bm = rv.Interface().(binaryUnmarshaler)
 	} else {
-		rv2 := rv
-		unmIndir := f.sis.unmIndir
-		for j := int8(0); j < unmIndir; j++ {
-			rv2 = rv.Elem()
+		for j, k := int8(0), f.sis.unmIndir; j < k; j++ {
+			rv = rv.Elem()
 		}
-		bm = rv2.Interface().(binaryUnmarshaler)
+		bm = rv.Interface().(binaryUnmarshaler)
 	}
 	xbs, _ := f.dd.decodeBytes(nil)
 	if fnerr := bm.UnmarshalBinary(xbs); fnerr != nil {
@@ -235,7 +238,8 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 				// f.d.decodeValue(sis.field(k, rv))
 			} else {
 				if f.d.h.errorIfNoField() {
-					decErr("No matching struct field found when decoding stream map with key: %v", rvkencname)
+					decErr("No matching struct field found when decoding stream map with key: %v", 
+						rvkencname)
 				} else {
 					var nilintf0 interface{}
 					f.d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
@@ -265,7 +269,8 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 			}
 		}
 	} else {
-		decErr("Only encoded map or array can be decoded into a struct. (decodeEncodedType: %x)", currEncodedType)
+		decErr("Only encoded map or array can be decoded into a struct. (decodeEncodedType: %x)", 
+			currEncodedType)
 	}
 }
 
@@ -300,7 +305,8 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 			}
 			rv.Set(rvn)
 		} else {
-			decErr("Cannot reset slice with less cap: %v than stream contents: %v", rvcap, containerLen)
+			decErr("Cannot reset slice with less cap: %v than stream contents: %v", 
+				rvcap, containerLen)
 		}
 	} else if containerLen > rvlen {
 		rv.SetLen(containerLen)
@@ -422,9 +428,13 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 //   err = dec.Decode(&v)
 // 
 // When decoding into a nil interface{}, we will decode into an appropriate value based
-// on the contents of the stream. Numbers are decoded as float64, int64 or uint64. Other values
-// are decoded appropriately (e.g. bool), and configurations exist on the Handle to override
-// defaults (e.g. for MapType, SliceType and how to decode raw bytes).
+// on the contents of the stream:
+//   - Numbers are decoded as float64, int64 or uint64. 
+//   - Other values are decoded appropriately depending on the encoding: 
+//     bool, string, []byte, time.Time, etc
+//   - Extensions are decoded as RawExt (if no ext function registered for the tag)
+// Configurations exist on the Handle to override defaults 
+// (e.g. for MapType, SliceType and how to decode raw bytes).
 // 
 // When decoding into a non-nil interface{} value, the mode of encoding is based on the 
 // type of the value. When a value is seen:
@@ -555,7 +565,9 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		//
 		// If we are checking for builtin or ext type here, it means we didn't go through decodeNaked,
 		// Because decodeNaked would have handled it. It also means wasNilIntf = false.
-		if d.d.isBuiltinType(fi.sis.baseId) {
+		if fi.sis.baseId == rawExtTypId {
+			fn = decFn { &fi, (*decFnInfo).rawExt }
+		} else if d.d.isBuiltinType(fi.sis.baseId) {
 			fn = decFn { &fi, (*decFnInfo).builtin }
 		} else if xfTag, xfFn := d.h.getDecodeExt(fi.sis.baseId); xfFn != nil {
 			fi.xfTag, fi.xfFn = xfTag, xfFn
@@ -685,7 +697,7 @@ func (z *bytesDecReader) consume(n int) (oldcursor int) {
 		panic(io.EOF)
 	}
 	if n > z.a {
-		doPanic(msgTagDec, "Trying to read %v bytes. Only %v available", n, z.a)
+		decErr("Trying to read %v bytes. Only %v available", n, z.a)
 	}
 	// z.checkAvailable(n)
 	oldcursor = z.c
