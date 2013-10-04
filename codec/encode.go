@@ -83,6 +83,8 @@ type Encoder struct {
 	e encDriver
 	h encodeHandleI
 	f map[uintptr]encFn
+	x []uintptr
+	s []encFn
 }
 
 type ioEncWriterWriter interface {
@@ -526,13 +528,22 @@ func (e *Encoder) encode(iv interface{}) {
 func (e *Encoder) encodeValue(rv reflect.Value) {
 	rt := rv.Type()
 	rtid := reflect.ValueOf(rt).Pointer()
-	
-	if e.f == nil {
-		// debugf("---->Creating new enc f map for type: %v\n", rt)
-		e.f = make(map[uintptr]encFn, 16)
+		
+	// if e.f == nil && e.s == nil {
+	// 	debugf("---->Creating new enc f map for type: %v\n", rt)
+	// }
+	var fn encFn 
+	var ok bool
+	if useMapForCodecCache {
+		fn, ok = e.f[rtid]
+	} else {
+		for i, v := range e.x {
+			if v == rtid {
+				fn, ok = e.s[i], true
+				break
+			}
+		}
 	}
-
-	fn, ok := e.f[rtid]
 	if !ok {
 		// debugf("\tCreating new enc fn for type: %v\n", rt)
 		fi := encFnInfo { sis:getTypeInfo(rtid, rt), e:e, ee:e.e, rt:rt, rtid:rtid }
@@ -577,7 +588,15 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 				fn = encFn{ &fi, (*encFnInfo).kErr }
 			}
 		}
-		e.f[rtid] = fn
+		if useMapForCodecCache {
+			if e.f == nil {
+				e.f = make(map[uintptr]encFn, 16)
+			}
+			e.f[rtid] = fn
+		} else {
+			e.s = append(e.s, fn )
+			e.x = append(e.x, rtid)
+		}
 	}
 	
 	fn.f(fn.i, rv)

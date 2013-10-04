@@ -98,6 +98,8 @@ type Decoder struct {
 	d decDriver
 	h decodeHandleI
 	f map[uintptr]decFn
+	x []uintptr
+	s []decFn
 }
 
 func (f *decFnInfo) builtin(rv reflect.Value) {
@@ -548,11 +550,21 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 	// retrieve or register a focus'ed function for this type
 	// to eliminate need to do the retrieval multiple times
 	
-	if d.f == nil {
-		// debugf("---->Creating new dec f map for type: %v\n", rt)
-		d.f = make(map[uintptr]decFn, 16)
+	// if d.f == nil && d.s == nil {
+	// 	// debugf("---->Creating new dec f map for type: %v\n", rt)
+	// }
+	var fn decFn 
+	var ok bool
+	if useMapForCodecCache {
+		fn, ok = d.f[rtid]
+	} else {
+		for i, v := range d.x {
+			if v == rtid {
+				fn, ok = d.s[i], true
+				break
+			}
+		}
 	}
-	fn, ok := d.f[rtid]
 	if !ok {
 		// debugf("\tCreating new dec fn for type: %v\n", rt)
 		fi := decFnInfo { sis:getTypeInfo(rtid, rt), d:d, dd:d.d, rt:rt, rtid:rtid }
@@ -621,8 +633,16 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 			default:
 				fn = decFn { &fi, (*decFnInfo).kErr }
 			}
-		}		
-		d.f[rtid] = fn
+		}
+		if useMapForCodecCache {
+			if d.f == nil {
+				d.f = make(map[uintptr]decFn, 16)
+			}
+			d.f[rtid] = fn
+		} else {
+			d.s = append(d.s, fn )
+			d.x = append(d.x, rtid)
+		}
 	}
 	
 	fn.f(fn.i, rv)

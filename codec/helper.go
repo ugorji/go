@@ -41,6 +41,14 @@ const (
 	// 
 	// TODO: Look into this again later.
 	supportBinaryMarshal  = true
+
+	// Each Encoder or Decoder uses a cache of functions based on conditionals,
+	// so that the conditionals are not run every time.
+	// 
+	// Either a map or a slice is used to keep track of the functions.
+	// The map is more natural, but has a higher cost than a slice/array.
+	// This flag (useMapForCodecCache) controls which is used.
+	useMapForCodecCache = false
 )
 
 type charEncoding uint8

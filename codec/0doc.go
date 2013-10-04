@@ -135,7 +135,7 @@ Representative Benchmark Results
 A sample run of benchmark using "go test -bi -bench=.":
 
    ..............................................
-   BENCHMARK INIT: 2013-09-30 14:18:26.997930788 -0400 EDT
+   BENCHMARK INIT: 2013-10-04 14:36:50.381959842 -0400 EDT
    To run full benchmark comparing encodings (MsgPack, Binc, JSON, GOB, etc), use: "go test -bench=."
    Benchmark: 
       	Struct recursive Depth:             1
@@ -149,19 +149,19 @@ A sample run of benchmark using "go test -bi -bench=.":
       	      json: len: 2538 bytes
    ..............................................
    PASS
-   Benchmark__Msgpack__Encode	   50000	     69408 ns/op	   15852 B/op	      84 allocs/op
-   Benchmark__Msgpack__Decode	   10000	    119152 ns/op	   15542 B/op	     424 allocs/op
-   Benchmark__Binc_____Encode	   20000	     80940 ns/op	   18033 B/op	      88 allocs/op
-   Benchmark__Binc_____Decode	   10000	    123617 ns/op	   16363 B/op	     305 allocs/op
-   Benchmark__Gob______Encode	   10000	    152634 ns/op	   21342 B/op	     238 allocs/op
-   Benchmark__Gob______Decode	    5000	    424450 ns/op	   83625 B/op	    1842 allocs/op
-   Benchmark__Json_____Encode	   20000	     83246 ns/op	   13866 B/op	     102 allocs/op
-   Benchmark__Json_____Decode	   10000	    263762 ns/op	   14166 B/op	     493 allocs/op
-   Benchmark__Bson_____Encode	   10000	    129876 ns/op	   27722 B/op	     514 allocs/op
-   Benchmark__Bson_____Decode	   10000	    164583 ns/op	   16478 B/op	     789 allocs/op
-   Benchmark__VMsgpack_Encode	   50000	     71333 ns/op	   12356 B/op	     343 allocs/op
-   Benchmark__VMsgpack_Decode	   10000	    161800 ns/op	   20302 B/op	     571 allocs/op
-   ok  	ugorji.net/codec	27.165s
+   Benchmark__Msgpack__Encode	   50000	     62774 ns/op	   16336 B/op	      93 allocs/op
+   Benchmark__Msgpack__Decode	   10000	    113152 ns/op	   16195 B/op	     434 allocs/op
+   Benchmark__Binc_____Encode	   50000	     73546 ns/op	   18515 B/op	      98 allocs/op
+   Benchmark__Binc_____Decode	   10000	    112489 ns/op	   16906 B/op	     315 allocs/op
+   Benchmark__Gob______Encode	   10000	    139114 ns/op	   21143 B/op	     237 allocs/op
+   Benchmark__Gob______Decode	    5000	    412988 ns/op	   82900 B/op	    1840 allocs/op
+   Benchmark__Json_____Encode	   20000	     80286 ns/op	   13866 B/op	     102 allocs/op
+   Benchmark__Json_____Decode	   10000	    249694 ns/op	   14153 B/op	     493 allocs/op
+   Benchmark__Bson_____Encode	   10000	    123965 ns/op	   27739 B/op	     514 allocs/op
+   Benchmark__Bson_____Decode	   10000	    157703 ns/op	   16441 B/op	     789 allocs/op
+   Benchmark__VMsgpack_Encode	   50000	     67791 ns/op	   12358 B/op	     343 allocs/op
+   Benchmark__VMsgpack_Decode	   10000	    151476 ns/op	   20264 B/op	     571 allocs/op
+   ok  	ugorji.net/codec	27.609s
 
 
 To run full benchmark suite (including against vmsgpack and bson), 
