@@ -207,7 +207,28 @@ func (f *decFnInfo) kUint16(rv reflect.Value) {
 // }
 
 func (f *decFnInfo) kInterface(rv reflect.Value) {
-	f.d.decodeValue(rv.Elem())
+	if rv.IsNil() {
+		// if nil interface, use some hieristics to set the nil interface to an
+		// appropriate value based on the first byte read (byte descriptor bd)
+		rv2, ndesc := f.dd.decodeNaked()
+		if ndesc == dncNil {
+			return
+		}
+		// Cannot decode into nil interface with methods (e.g. error, io.Reader, etc) 
+		// if non-nil value in stream.
+		if num := f.ti.rt.NumMethod(); num > 0 {
+			decErr("decodeValue: Cannot decode non-nil codec value into nil %v (%v methods)", 
+				f.ti.rt , num)
+		} 
+		if ndesc == dncHandled {
+			rv.Set(rv2)
+			return
+		}
+		f.d.decodeValue(rv2)
+		rv.Set(rv2)
+	} else {
+		f.d.decodeValue(rv.Elem())
+	}
 }
 
 func (f *decFnInfo) kStruct(rv reflect.Value) {
@@ -524,32 +545,7 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		rv = rv.Elem()
 	}
 	
-	rvOrig := rv
-
 	rt := rv.Type()
-	wasNilIntf := rt.Kind() == reflect.Interface && rv.IsNil()
-
-	var ndesc decodeNakedContext
-	//if nil interface, use some hieristics to set the nil interface to an
-	//appropriate value based on the first byte read (byte descriptor bd)
-	if wasNilIntf {
-		// e.g. nil interface{}, error, io.Reader, etc
-		rv, ndesc = d.d.decodeNaked()
-		if ndesc == dncNil {
-			return
-		}
-		// Cannot decode into nil interface with methods (e.g. error, io.Reader, etc) 
-		// if non-nil value in stream.
-		if num := rt.NumMethod(); num > 0 {
-			decErr("decodeValue: Cannot decode non-nil codec value into nil %v (%v methods)", rt, num)
-		} 
-		if ndesc == dncHandled {
-			rvOrig.Set(rv)
-			return
-		}
-		rt = rv.Type()
-	} 
-
 	rtid := reflect.ValueOf(rt).Pointer()
 	
 	// retrieve or register a focus'ed function for this type
@@ -581,9 +577,6 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		// registered a pointer or non-pointer type, meaning we may have to recurse first
 		// before matching a mapped type, even though the extension byte is already detected.
 		//
-		// If we are checking for builtin or ext type here, it means we didn't go through decodeNaked,
-		// Because decodeNaked would have handled it. It also means wasNilIntf = false.
-		// 
 		// NOTE: if decoding into a nil interface{}, we return a non-nil
 		// value except even if the container registers a length of 0.
 		if rtid == rawExtTypId {
@@ -653,10 +646,6 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 	}
 	
 	fn.f(fn.i, rv)
-	
-	if wasNilIntf {
-		rvOrig.Set(rv)
-	}
 	
 	return
 }
