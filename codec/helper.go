@@ -7,7 +7,6 @@ package codec
 
 import (
 	"encoding/binary"
-	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -131,11 +130,13 @@ type extTypeTagFn struct {
 	decFn func(reflect.Value, []byte) error
 }
 
-type extHandle map[uintptr]*extTypeTagFn
+type extHandle []*extTypeTagFn
 
 // AddExt registers an encode and decode function for a reflect.Type.
 // Note that the type must be a named type, and specifically not 
 // a pointer or Interface. An error is returned if that is not honored.
+// 
+// To Deregister an ext, call AddExt with 0 tag, nil encfn and nil decfn.
 func (o *extHandle) AddExt(
 	rt reflect.Type,
 	tag byte,
@@ -144,29 +145,37 @@ func (o *extHandle) AddExt(
 ) (err error) {
 	// o is a pointer, because we may need to initialize it
 	if rt.PkgPath() == "" || rt.Kind() == reflect.Interface {
-		err = fmt.Errorf("codec.Handle.AddExt: Takes a named type, especially not a pointer or interface: %T", 
+		err = fmt.Errorf("codec.Handle.AddExt: Takes named type, especially not a pointer or interface: %T", 
 			reflect.Zero(rt).Interface())
 		return
 	}
-	if o == nil {
-		err = errors.New("codec.Handle.AddExt: Nil (should never happen)")
-		return
-	}
+	
+	// o cannot be nil, since it is always embedded in a Handle. 
+	// if nil, let it panic.
+	// if o == nil {
+	// 	err = errors.New("codec.Handle.AddExt: extHandle cannot be a nil pointer.")
+	// 	return
+	// }
+	
 	rtid := reflect.ValueOf(rt).Pointer()
-	if *o == nil {
-		*o = make(map[uintptr]*extTypeTagFn, 4)
+	for _, v := range *o {
+		if v.rtid == rtid {
+			v.tag, v.encFn, v.decFn = tag, encfn, decfn
+			return
+		}
 	}
-	m := *o
-	if encfn == nil || decfn == nil {
-		delete(m, rtid)
-	} else {
-		m[rtid] = &extTypeTagFn { rtid, rt, tag, encfn, decfn }
-	}
+	
+	*o = append(*o, &extTypeTagFn { rtid, rt, tag, encfn, decfn })
 	return
 }
 
 func (o extHandle) getExt(rtid uintptr) *extTypeTagFn {
-	return o[rtid]
+	for _, v := range o {
+		if v.rtid == rtid {
+			return v
+		}
+	}
+	return nil
 }
 
 func (o extHandle) getExtForTag(tag byte) *extTypeTagFn {
@@ -189,7 +198,7 @@ func (o extHandle) getDecodeExtForTag(tag byte) (
 }
 
 func (o extHandle) getDecodeExt(rtid uintptr) (tag byte, fn func(reflect.Value, []byte) error) {
-	if x, ok := o[rtid]; ok {
+	if x := o.getExt(rtid); x != nil {
 		tag = x.tag
 		fn = x.decFn
 	}
@@ -197,7 +206,7 @@ func (o extHandle) getDecodeExt(rtid uintptr) (tag byte, fn func(reflect.Value, 
 }
 
 func (o extHandle) getEncodeExt(rtid uintptr) (tag byte, fn func(reflect.Value) ([]byte, error)) {
-	if x, ok := o[rtid]; ok {
+	if x := o.getExt(rtid); x != nil {
 		tag = x.tag
 		fn = x.encFn
 	}
@@ -212,14 +221,18 @@ func (o extHandle) getEncodeExt(rtid uintptr) (tag byte, fn func(reflect.Value) 
 //   - If type is binary(M/Unm)arshaler, call Binary(M/Unm)arshal method
 //   - Else decode appropriately based on the reflect.Kind
 type typeInfo struct {
-	sis       []*structFieldInfo // sorted. Used when enc/dec struct to map.
-	sisp      []*structFieldInfo // unsorted. Used when enc/dec struct to array.
-	// base      reflect.Type
+	sfi       []*structFieldInfo // sorted. Used when enc/dec struct to map.
+	sfip      []*structFieldInfo // unsorted. Used when enc/dec struct to array.
 	
-	// baseId is the pointer to the base reflect.Type, after deferencing
+	rt        reflect.Type
+	rtid      uintptr
+	
+	// baseId gives pointer to the base reflect.Type, after deferencing
 	// the pointers. E.g. base type of ***time.Time is time.Time.
+	base      reflect.Type
 	baseId    uintptr
 	baseIndir int8 // number of indirections to get to base
+	
 	m         bool // base type (T or *T) is a binaryMarshaler
 	unm       bool // base type (T or *T) is a binaryUnmarshaler
 	mIndir    int8 // number of indirections to get to binaryMarshaler type
@@ -249,43 +262,43 @@ func (p sfiSortedByEncName) Len() int           { return len(p) }
 func (p sfiSortedByEncName) Less(i, j int) bool { return p[i].encName < p[j].encName }
 func (p sfiSortedByEncName) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
-func (sis *typeInfo) indexForEncName(name string) int {
-	//sissis := sis.sis 
-	if sislen := len(sis.sis); sislen < binarySearchThreshold {
+func (ti *typeInfo) indexForEncName(name string) int {
+	//tisfi := ti.sfi 
+	if sfilen := len(ti.sfi); sfilen < binarySearchThreshold {
 		// linear search. faster than binary search in my testing up to 16-field structs.
-		// for i := 0; i < sislen; i++ {
-		// 	if sis.sis[i].encName == name {
+		// for i := 0; i < sfilen; i++ {
+		// 	if ti.sfi[i].encName == name {
 		// 		return i
 		// 	}
 		// }
-		for i, si := range sis.sis {
+		for i, si := range ti.sfi {
 			if si.encName == name {
 				return i
 			}
 		}
 	} else {
 		// binary search. adapted from sort/search.go.
-		h, i, j := 0, 0, sislen
+		h, i, j := 0, 0, sfilen
 		for i < j {
 			h = i + (j-i)/2
 			// i ≤ h < j
-			if sis.sis[h].encName < name {
+			if ti.sfi[h].encName < name {
 				i = h + 1 // preserves f(i-1) == false
 			} else {
 				j = h // preserves f(j) == true
 			}
 		}
-		if i < sislen && sis.sis[i].encName == name {
+		if i < sfilen && ti.sfi[i].encName == name {
 			return i
 		}
 	}
 	return -1
 }
 
-func getTypeInfo(rtid uintptr, rt reflect.Type) (sis *typeInfo) {
+func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	var ok bool
 	cachedTypeInfoMutex.RLock()
-	sis, ok = cachedTypeInfo[rtid]
+	pti, ok = cachedTypeInfo[rtid]
 	cachedTypeInfoMutex.RUnlock()
 	if ok {
 		return
@@ -293,66 +306,71 @@ func getTypeInfo(rtid uintptr, rt reflect.Type) (sis *typeInfo) {
 
 	cachedTypeInfoMutex.Lock()
 	defer cachedTypeInfoMutex.Unlock()
-	if sis, ok = cachedTypeInfo[rtid]; ok {
+	if pti, ok = cachedTypeInfo[rtid]; ok {
 		return
 	}
 
-	sis = new(typeInfo)
+	ti := typeInfo { rt: rt, rtid: rtid }
+	pti = &ti
 	
 	var indir int8
 	if ok, indir = implementsIntf(rt, binaryMarshalerTyp); ok {
-		sis.m, sis.mIndir = true, indir
+		ti.m, ti.mIndir = true, indir
 	}
 	if ok, indir = implementsIntf(rt, binaryUnmarshalerTyp); ok {
-		sis.unm, sis.unmIndir = true, indir
+		ti.unm, ti.unmIndir = true, indir
 	}
 	
 	pt := rt
 	var ptIndir int8 
-	for ; pt.Kind() == reflect.Ptr; pt, ptIndir = pt.Elem(), ptIndir+1 { }
+	// for ; pt.Kind() == reflect.Ptr; pt, ptIndir = pt.Elem(), ptIndir+1 { }
+	for pt.Kind() == reflect.Ptr {
+		pt = pt.Elem()
+		ptIndir++
+	}
 	if ptIndir == 0 {
-		//sis.base = rt 
-		sis.baseId = rtid
+		ti.base = rt 
+		ti.baseId = rtid
 	} else {
-		//sis.base = pt 
-		sis.baseId = reflect.ValueOf(pt).Pointer()
-		sis.baseIndir = ptIndir
+		ti.base = pt 
+		ti.baseId = reflect.ValueOf(pt).Pointer()
+		ti.baseIndir = ptIndir
 	}
 	
 	if rt.Kind() == reflect.Struct {
 		var siInfo *structFieldInfo
 		if f, ok := rt.FieldByName(structInfoFieldName); ok {
 			siInfo = parseStructFieldInfo(structInfoFieldName, f.Tag.Get(structTagName))
-			sis.toArray = siInfo.toArray
+			ti.toArray = siInfo.toArray
 		}
-		sisp := make([]*structFieldInfo, 0, rt.NumField())
-		rgetTypeInfo(rt, nil, make(map[string]bool), &sisp, siInfo)
+		sfip := make([]*structFieldInfo, 0, rt.NumField())
+		rgetTypeInfo(rt, nil, make(map[string]bool), &sfip, siInfo)
 
 		// // try to put all si close together
 		// const tryToPutAllStructFieldInfoTogether = true
 		// if tryToPutAllStructFieldInfoTogether {
-		// 	sisp2 := make([]structFieldInfo, len(sisp))
-		// 	for i, si := range sisp {
-		// 		sisp2[i] = *si
+		// 	sfip2 := make([]structFieldInfo, len(sfip))
+		// 	for i, si := range sfip {
+		// 		sfip2[i] = *si
 		// 	}
-		// 	for i := range sisp {
-		// 		sisp[i] = &sisp2[i]
+		// 	for i := range sfip {
+		// 		sfip[i] = &sfip2[i]
 		// 	}
 		// }
 		
-		sis.sisp = make([]*structFieldInfo, len(sisp))
-		sis.sis = make([]*structFieldInfo, len(sisp))
-		copy(sis.sisp, sisp)
-		sort.Sort(sfiSortedByEncName(sisp))
-		copy(sis.sis, sisp)
+		ti.sfip = make([]*structFieldInfo, len(sfip))
+		ti.sfi = make([]*structFieldInfo, len(sfip))
+		copy(ti.sfip, sfip)
+		sort.Sort(sfiSortedByEncName(sfip))
+		copy(ti.sfi, sfip)
 	}
-	// sis = sisp
-	cachedTypeInfo[rtid] = sis
+	// sfi = sfip
+	cachedTypeInfo[rtid] = pti
 	return
 }
 
 func rgetTypeInfo(rt reflect.Type, indexstack []int, fnameToHastag map[string]bool,
-	sis *[]*structFieldInfo, siInfo *structFieldInfo,
+	sfi *[]*structFieldInfo, siInfo *structFieldInfo,
 ) {
 	for j := 0; j < rt.NumField(); j++ {
 		f := rt.Field(j)
@@ -367,7 +385,7 @@ func rgetTypeInfo(rt reflect.Type, indexstack []int, fnameToHastag map[string]bo
 			//if anonymous, inline it if there is no struct tag, else treat as regular field
 			if stag == "" {
 				indexstack2 := append(append([]int(nil), indexstack...), j)
-				rgetTypeInfo(f.Type, indexstack2, fnameToHastag, sis, siInfo)
+				rgetTypeInfo(f.Type, indexstack2, fnameToHastag, sfi, siInfo)
 				continue
 			}
 		}
@@ -391,7 +409,7 @@ func rgetTypeInfo(rt reflect.Type, indexstack []int, fnameToHastag map[string]bo
 				si.omitEmpty = true
 			}
 		}
-		*sis = append(*sis, si)
+		*sfi = append(*sfi, si)
 		fnameToHastag[f.Name] = stag != ""
 	}
 }

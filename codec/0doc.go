@@ -141,7 +141,6 @@ A sample run of benchmark using "go test -bi -bench=.":
       	Struct recursive Depth:             1
       	ApproxDeepSize Of benchmark Struct: 4694 bytes
    Benchmark One-Pass Run:
-      	 v-msgpack: len: 1600 bytes
       	      bson: len: 3025 bytes
       	   msgpack: len: 1560 bytes
       	      binc: len: 1187 bytes
@@ -149,20 +148,16 @@ A sample run of benchmark using "go test -bi -bench=.":
       	      json: len: 2538 bytes
    ..............................................
    PASS
-   Benchmark__Msgpack__Encode	   50000	     62774 ns/op	   16336 B/op	      93 allocs/op
-   Benchmark__Msgpack__Decode	   10000	    113152 ns/op	   16195 B/op	     434 allocs/op
-   Benchmark__Binc_____Encode	   50000	     73546 ns/op	   18515 B/op	      98 allocs/op
-   Benchmark__Binc_____Decode	   10000	    112489 ns/op	   16906 B/op	     315 allocs/op
-   Benchmark__Gob______Encode	   10000	    139114 ns/op	   21143 B/op	     237 allocs/op
-   Benchmark__Gob______Decode	    5000	    412988 ns/op	   82900 B/op	    1840 allocs/op
-   Benchmark__Json_____Encode	   20000	     80286 ns/op	   13866 B/op	     102 allocs/op
-   Benchmark__Json_____Decode	   10000	    249694 ns/op	   14153 B/op	     493 allocs/op
-   Benchmark__Bson_____Encode	   10000	    123965 ns/op	   27739 B/op	     514 allocs/op
-   Benchmark__Bson_____Decode	   10000	    157703 ns/op	   16441 B/op	     789 allocs/op
-   Benchmark__VMsgpack_Encode	   50000	     67791 ns/op	   12358 B/op	     343 allocs/op
-   Benchmark__VMsgpack_Decode	   10000	    151476 ns/op	   20264 B/op	     571 allocs/op
-   ok  	ugorji.net/codec	27.609s
-
+   Benchmark__Msgpack__Encode	   50000	     61683 ns/op	   15395 B/op	      91 allocs/op
+   Benchmark__Msgpack__Decode	   10000	    111090 ns/op	   15591 B/op	     437 allocs/op
+   Benchmark__Binc_____Encode	   50000	     73577 ns/op	   17572 B/op	      95 allocs/op
+   Benchmark__Binc_____Decode	   10000	    112656 ns/op	   16474 B/op	     318 allocs/op
+   Benchmark__Gob______Encode	   10000	    138140 ns/op	   21164 B/op	     237 allocs/op
+   Benchmark__Gob______Decode	    5000	    408067 ns/op	   83202 B/op	    1840 allocs/op
+   Benchmark__Json_____Encode	   20000	     80442 ns/op	   13861 B/op	     102 allocs/op
+   Benchmark__Json_____Decode	   10000	    249169 ns/op	   14169 B/op	     493 allocs/op
+   Benchmark__Bson_____Encode	   10000	    121970 ns/op	   27717 B/op	     514 allocs/op
+   Benchmark__Bson_____Decode	   10000	    161103 ns/op	   16444 B/op	     788 allocs/op
 
 To run full benchmark suite (including against vmsgpack and bson), 
 see notes in ext_dep_test.go

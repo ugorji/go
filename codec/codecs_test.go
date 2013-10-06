@@ -522,7 +522,7 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 			logT(t, "++++++++ Before and After marshal matched\n")
 		} else {
 			logT(t, "-------- Before and After marshal do not match: Error: %v"+
-				" ====> AGAINST: (%T) %#v, DECODED: (%T) %#v\n", err, v0check, v0check, v1, v1)
+				" ====> GOLDEN: (%T) %#v, DECODED: (%T) %#v\n", err, v0check, v0check, v1, v1)
 			failT(t)
 		}
 	}

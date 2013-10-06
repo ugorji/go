@@ -59,11 +59,9 @@ type encodeHandleI interface {
 }
 
 type encFnInfo struct {
-	sis   *typeInfo
+	ti   *typeInfo
 	e     *Encoder
 	ee    encDriver
-	rt    reflect.Type
-	rtid  uintptr
 	xfFn  func(reflect.Value) ([]byte, error)
 	xfTag byte 
 }
@@ -147,16 +145,10 @@ func (o *EncodeOptions) structToArray() bool {
 }
 
 func (f *encFnInfo) builtin(rv reflect.Value) {
-	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
-		rv = rv.Elem()
-	}
-	f.ee.encodeBuiltinType(f.sis.baseId, rv)
+	f.ee.encodeBuiltinType(f.ti.rtid, rv)
 }
 
 func (f *encFnInfo) rawExt(rv reflect.Value) {
-	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
-		rv = rv.Elem()
-	}
 	re := rv.Interface().(RawExt)
 	if re.Data == nil {
 		f.ee.encodeNil()
@@ -171,9 +163,6 @@ func (f *encFnInfo) rawExt(rv reflect.Value) {
 }
 
 func (f *encFnInfo) ext(rv reflect.Value) {
-	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
-		rv = rv.Elem()
-	}
 	bs, fnerr := f.xfFn(rv)
 	if fnerr != nil {
 		panic(fnerr)
@@ -193,12 +182,16 @@ func (f *encFnInfo) ext(rv reflect.Value) {
 
 func (f *encFnInfo) binaryMarshal(rv reflect.Value) {
 	var bm binaryMarshaler
-	if f.sis.mIndir == 0 {
+	if f.ti.mIndir == 0 {
 		bm = rv.Interface().(binaryMarshaler)
-	} else if f.sis.mIndir == -1 {
+	} else if f.ti.mIndir == -1 {
 		bm = rv.Addr().Interface().(binaryMarshaler)
 	} else {
-		for j, k := int8(0), f.sis.mIndir; j < k; j++ {
+		for j, k := int8(0), f.ti.mIndir; j < k; j++ {
+			if rv.IsNil() {
+				f.ee.encodeNil()
+				return
+			}
 			rv = rv.Elem()
 		}
 		bm = rv.Interface().(binaryMarshaler)
@@ -252,7 +245,7 @@ func (f *encFnInfo) kSlice(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	if f.rtid == byteSliceTypId {
+	if f.ti.rtid == byteSliceTypId {
 		f.ee.encodeStringBytes(c_RAW, rv.Bytes())
 		return
 	}
@@ -271,19 +264,21 @@ func (f *encFnInfo) kArray(rv reflect.Value) {
 }
 
 func (f *encFnInfo) kStruct(rv reflect.Value) {
-	newlen := len(f.sis.sis)
+	// debugf(">>>> CALLING kStruct: %T, %v", rv.Interface(), rv.Interface())
+	fti := f.ti
+	newlen := len(fti.sfi)
 	rvals := make([]reflect.Value, newlen)
 	var encnames []string
 	e := f.e
-	sissis := f.sis.sisp
-	toMap := !(f.sis.toArray || e.h.structToArray())
+	tisfi := fti.sfip
+	toMap := !(fti.toArray || e.h.structToArray())
 	// if toMap, use the sorted array. If toArray, use unsorted array (to match sequence in struct)
 	if toMap {
-		sissis = f.sis.sis
+		tisfi = fti.sfi
 		encnames = make([]string, newlen)
 	}
 	newlen = 0
-	for _, si := range sissis {
+	for _, si := range tisfi {
 		if si.i != -1 {
 			rvals[newlen] = rv.Field(int(si.i))
 		} else {
@@ -302,6 +297,7 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 		newlen++
 	}
 
+	// debugf(">>>> kStruct: newlen: %v", newlen)
 	if toMap {
 		ee := f.ee //don't dereference everytime
 		ee.encodeMapPreamble(newlen)
@@ -317,13 +313,14 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) kPtr(rv reflect.Value) {
-	if rv.IsNil() {
-		f.ee.encodeNil()
-		return
-	}
-	f.e.encodeValue(rv.Elem())
-}
+// func (f *encFnInfo) kPtr(rv reflect.Value) {
+// 	debugf(">>>>>>> ??? encode kPtr called - shouldn't get called")
+// 	if rv.IsNil() {
+// 		f.ee.encodeNil()
+// 		return
+// 	}
+// 	f.e.encodeValue(rv.Elem())
+// }
 
 func (f *encFnInfo) kInterface(rv reflect.Value) {
 	if rv.IsNil() {
@@ -343,7 +340,7 @@ func (f *encFnInfo) kMap(rv reflect.Value) {
 	if l == 0 {
 		return
 	}
-	keyTypeIsString := f.rt.Key().Kind() == reflect.String
+	keyTypeIsString := f.ti.rt.Key().Kind() == reflect.String
 	mks := rv.MapKeys()
 	// for j, lmks := 0, len(mks); j < lmks; j++ {
 	for j := range mks {
@@ -526,12 +523,18 @@ func (e *Encoder) encode(iv interface{}) {
 }
 
 func (e *Encoder) encodeValue(rv reflect.Value) {
+	for rv.Kind() == reflect.Ptr {
+		if rv.IsNil() {
+			e.e.encodeNil()
+			return
+		}
+		rv = rv.Elem()
+	}
+	
 	rt := rv.Type()
 	rtid := reflect.ValueOf(rt).Pointer()
 		
-	// if e.f == nil && e.s == nil {
-	// 	debugf("---->Creating new enc f map for type: %v\n", rt)
-	// }
+	// if e.f == nil && e.s == nil { debugf("---->Creating new enc f map for type: %v\n", rt) }
 	var fn encFn 
 	var ok bool
 	if useMapForCodecCache {
@@ -546,46 +549,47 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 	}
 	if !ok {
 		// debugf("\tCreating new enc fn for type: %v\n", rt)
-		fi := encFnInfo { sis:getTypeInfo(rtid, rt), e:e, ee:e.e, rt:rt, rtid:rtid }
-		if fi.sis.baseId == rawExtTypId {
-			fn = encFn{ &fi, (*encFnInfo).rawExt }
-		} else if e.e.isBuiltinType(fi.sis.baseId) {
-			fn = encFn{ &fi, (*encFnInfo).builtin }
-		} else if xfTag, xfFn := e.h.getEncodeExt(fi.sis.baseId); xfFn != nil {
+		fi := encFnInfo { ti:getTypeInfo(rtid, rt), e:e, ee:e.e }
+		fn.i = &fi 
+		if rtid == rawExtTypId {
+			fn.f = (*encFnInfo).rawExt 
+		} else if e.e.isBuiltinType(rtid) {
+			fn.f = (*encFnInfo).builtin 
+		} else if xfTag, xfFn := e.h.getEncodeExt(rtid); xfFn != nil {
 			fi.xfTag, fi.xfFn = xfTag, xfFn
-			fn = encFn{ &fi, (*encFnInfo).ext }
-		} else if supportBinaryMarshal && fi.sis.m {
-			fn = encFn{ &fi, (*encFnInfo).binaryMarshal }
+			fn.f = (*encFnInfo).ext 
+		} else if supportBinaryMarshal && fi.ti.m {
+			fn.f = (*encFnInfo).binaryMarshal 
 		} else {
 			switch rk := rt.Kind(); rk {
 			case reflect.Bool:
-				fn = encFn{ &fi, (*encFnInfo).kBool }
+				fn.f = (*encFnInfo).kBool 
 			case reflect.String:
-				fn = encFn{ &fi, (*encFnInfo).kString }
+				fn.f = (*encFnInfo).kString 
 			case reflect.Float64:
-				fn = encFn{ &fi, (*encFnInfo).kFloat64 }
+				fn.f = (*encFnInfo).kFloat64 
 			case reflect.Float32:
-				fn = encFn{ &fi, (*encFnInfo).kFloat32 }
+				fn.f = (*encFnInfo).kFloat32 
 			case reflect.Int, reflect.Int8, reflect.Int64, reflect.Int32, reflect.Int16:
-				fn = encFn{ &fi, (*encFnInfo).kInt }
+				fn.f = (*encFnInfo).kInt 
 			case reflect.Uint8, reflect.Uint64, reflect.Uint, reflect.Uint32, reflect.Uint16:
-				fn = encFn{ &fi, (*encFnInfo).kUint }
+				fn.f = (*encFnInfo).kUint 
 			case reflect.Invalid:
-				fn = encFn{ &fi, (*encFnInfo).kInvalid }
+				fn.f = (*encFnInfo).kInvalid 
 			case reflect.Slice:
-				fn = encFn{ &fi, (*encFnInfo).kSlice }
+				fn.f = (*encFnInfo).kSlice 
 			case reflect.Array:
-				fn = encFn{ &fi, (*encFnInfo).kArray }
+				fn.f = (*encFnInfo).kArray 
 			case reflect.Struct:
-				fn = encFn{ &fi, (*encFnInfo).kStruct }
-			case reflect.Ptr:
-				fn = encFn{ &fi, (*encFnInfo).kPtr }
+				fn.f = (*encFnInfo).kStruct 
+			// case reflect.Ptr:
+			// 	fn.f = (*encFnInfo).kPtr 
 			case reflect.Interface:
-				fn = encFn{ &fi, (*encFnInfo).kInterface }
+				fn.f = (*encFnInfo).kInterface 
 			case reflect.Map:
-				fn = encFn{ &fi, (*encFnInfo).kMap }
+				fn.f = (*encFnInfo).kMap 
 			default:
-				fn = encFn{ &fi, (*encFnInfo).kErr }
+				fn.f = (*encFnInfo).kErr 
 			}
 		}
 		if useMapForCodecCache {

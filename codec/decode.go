@@ -78,11 +78,9 @@ type decDriver interface {
 // decFnInfo has methods for registering handling decoding of a specific type
 // based on some characteristics (builtin, extension, reflect Kind, etc)
 type decFnInfo struct {
-	sis *typeInfo
+	ti *typeInfo
 	d   *Decoder
 	dd  decDriver
-	rt    reflect.Type
-	rtid  uintptr
 	xfFn  func(reflect.Value, []byte) error
 	xfTag byte 
 }
@@ -103,26 +101,17 @@ type Decoder struct {
 }
 
 func (f *decFnInfo) builtin(rv reflect.Value) {
-	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
-		rv = rv.Elem()
-	}
-	f.dd.decodeBuiltinType(f.sis.baseId, rv)
+	f.dd.decodeBuiltinType(f.ti.rtid, rv)
 }
 
 func (f *decFnInfo) rawExt(rv reflect.Value) {
 	xtag, xbs := f.dd.decodeExt(false, 0)
-	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
-		rv = rv.Elem()
-	}
 	rv.Field(0).SetUint(uint64(xtag))
 	rv.Field(1).SetBytes(xbs)
 }
 
 func (f *decFnInfo) ext(rv reflect.Value) {
 	_, xbs := f.dd.decodeExt(true, f.xfTag)
-	for j, k := int8(0), f.sis.baseIndir; j < k; j++ {
-		rv = rv.Elem()
-	}
 	if fnerr := f.xfFn(rv, xbs); fnerr != nil {
 		panic(fnerr)
 	}
@@ -130,12 +119,15 @@ func (f *decFnInfo) ext(rv reflect.Value) {
 
 func (f *decFnInfo) binaryMarshal(rv reflect.Value) {
 	var bm binaryUnmarshaler
-	if f.sis.unmIndir == -1 {
+	if f.ti.unmIndir == -1 {
 		bm = rv.Addr().Interface().(binaryUnmarshaler)
-	} else if f.sis.unmIndir == 0 {
+	} else if f.ti.unmIndir == 0 {
 		bm = rv.Interface().(binaryUnmarshaler)
 	} else {
-		for j, k := int8(0), f.sis.unmIndir; j < k; j++ {
+		for j, k := int8(0), f.ti.unmIndir; j < k; j++ {
+			if rv.IsNil() {
+				rv.Set(reflect.New(rv.Type().Elem()))
+			}
 			rv = rv.Elem()
 		}
 		bm = rv.Interface().(binaryUnmarshaler)
@@ -206,38 +198,40 @@ func (f *decFnInfo) kUint16(rv reflect.Value) {
 	rv.SetUint(f.dd.decodeUint(16))
 }
 
-func (f *decFnInfo) kPtr(rv reflect.Value) {
-	if rv.IsNil() {
-		rv.Set(reflect.New(f.rt.Elem()))
-	}
-	f.d.decodeValue(rv.Elem())
-}
+// func (f *decFnInfo) kPtr(rv reflect.Value) {
+// 	debugf(">>>>>>> ??? decode kPtr called - shouldn't get called")
+// 	if rv.IsNil() {
+// 		rv.Set(reflect.New(rv.Type().Elem()))
+// 	}
+// 	f.d.decodeValue(rv.Elem())
+// }
 
 func (f *decFnInfo) kInterface(rv reflect.Value) {
 	f.d.decodeValue(rv.Elem())
 }
 
 func (f *decFnInfo) kStruct(rv reflect.Value) {
+	fti := f.ti
 	if currEncodedType := f.dd.currentEncodedType(); currEncodedType == detMap {
 		containerLen := f.dd.readMapLen()
 		if containerLen == 0 {
 			return
 		}
-		sissis := f.sis.sis 
+		tisfi := fti.sfi 
 		for j := 0; j < containerLen; j++ {
 			// var rvkencname string
 			// ddecode(&rvkencname)
 			f.dd.initReadNext()
 			rvkencname := f.dd.decodeString()
-			// rvksi := sis.getForEncName(rvkencname)
-			if k := f.sis.indexForEncName(rvkencname); k > -1 {
-				sfik := sissis[k]
+			// rvksi := ti.getForEncName(rvkencname)
+			if k := fti.indexForEncName(rvkencname); k > -1 {
+				sfik := tisfi[k]
 				if sfik.i != -1 {
 					f.d.decodeValue(rv.Field(int(sfik.i)))
 				} else {
 					f.d.decodeValue(rv.FieldByIndex(sfik.is))
 				}
-				// f.d.decodeValue(sis.field(k, rv))
+				// f.d.decodeValue(ti.field(k, rv))
 			} else {
 				if f.d.h.errorIfNoField() {
 					decErr("No matching struct field found when decoding stream map with key: %v", 
@@ -253,7 +247,7 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 		if containerLen == 0 {
 			return
 		}
-		for j, si := range f.sis.sisp {
+		for j, si := range fti.sfip {
 			if j == containerLen {
 				break
 			}
@@ -263,9 +257,9 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 				f.d.decodeValue(rv.FieldByIndex(si.is))
 			}
 		}
-		if containerLen > len(f.sis.sisp) {
+		if containerLen > len(fti.sfip) {
 			// read remaining values and throw away
-			for j := len(f.sis.sisp); j < containerLen; j++ {
+			for j := len(fti.sfip); j < containerLen; j++ {
 				var nilintf0 interface{}
 				f.d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
 			}
@@ -281,7 +275,7 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 	// may have come in here (which may not be settable).
 	// In places where the slice got from an array could be, we should guard with CanSet() calls.
 
-	if f.rtid == byteSliceTypId { // rawbytes
+	if f.ti.rtid == byteSliceTypId { // rawbytes
 		if bs2, changed2 := f.dd.decodeBytes(rv.Bytes()); changed2 {
 			rv.SetBytes(bs2)
 		}
@@ -291,7 +285,7 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 	containerLen := f.dd.readArrayLen()
 
 	if rv.IsNil() {
-		rv.Set(reflect.MakeSlice(f.rt, containerLen, containerLen))
+		rv.Set(reflect.MakeSlice(f.ti.rt, containerLen, containerLen))
 	} 
 	if containerLen == 0 {
 		return
@@ -301,7 +295,7 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 	// for example, if slice is got from unaddressable array, CanSet = false
 	if rvcap, rvlen := rv.Len(), rv.Cap(); containerLen > rvcap {
 		if rv.CanSet() {
-			rvn := reflect.MakeSlice(f.rt, containerLen, containerLen)
+			rvn := reflect.MakeSlice(f.ti.rt, containerLen, containerLen)
 			if rvlen > 0 {
 				reflect.Copy(rvn, rv)
 			}
@@ -326,14 +320,14 @@ func (f *decFnInfo) kMap(rv reflect.Value) {
 	containerLen := f.dd.readMapLen()
 
 	if rv.IsNil() {
-		rv.Set(reflect.MakeMap(f.rt))
+		rv.Set(reflect.MakeMap(f.ti.rt))
 	}
 	
 	if containerLen == 0 {
 		return
 	}
 
-	ktype, vtype := f.rt.Key(), f.rt.Elem()
+	ktype, vtype := f.ti.rt.Key(), f.ti.rt.Elem()
 	for j := 0; j < containerLen; j++ {
 		rvk := reflect.New(ktype).Elem()
 		f.d.decodeValue(rvk)
@@ -510,8 +504,29 @@ func (d *Decoder) decode(iv interface{}) {
 func (d *Decoder) decodeValue(rv reflect.Value) {
 	d.d.initReadNext()
 
-	rt := rv.Type()
+	if d.d.tryDecodeAsNil() {
+		// If value in stream is nil, set the dereferenced value to its "zero" value (if settable).
+		for rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+		}
+		if rv.CanSet() {
+			rv.Set(reflect.Zero(rv.Type()))
+		}
+		return
+	}
+	
+	// If stream is not containing a nil value, then we can deref to the base
+	// non-pointer value, and decode into that.
+	for rv.Kind() == reflect.Ptr {
+		if rv.IsNil() {
+			rv.Set(reflect.New(rv.Type().Elem()))
+		}
+		rv = rv.Elem()
+	}
+	
 	rvOrig := rv
+
+	rt := rv.Type()
 	wasNilIntf := rt.Kind() == reflect.Interface && rv.IsNil()
 
 	var ndesc decodeNakedContext
@@ -523,8 +538,8 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		if ndesc == dncNil {
 			return
 		}
-		//Prevent from decoding into nil error, io.Reader, etc if non-nil value in stream.
-		//We can only decode into interface{} (0 methods). Else reflect.Set fails later.
+		// Cannot decode into nil interface with methods (e.g. error, io.Reader, etc) 
+		// if non-nil value in stream.
 		if num := rt.NumMethod(); num > 0 {
 			decErr("decodeValue: Cannot decode non-nil codec value into nil %v (%v methods)", rt, num)
 		} 
@@ -533,17 +548,7 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 			return
 		}
 		rt = rv.Type()
-	} else if d.d.tryDecodeAsNil() {
-		// Note: if value in stream is nil, 
-		// then we set the dereferenced value to its "zero" value (if settable).
-		for rv.Kind() == reflect.Ptr {
-			rv = rv.Elem()
-		}
-		if rv.CanSet() {
-			rv.Set(reflect.Zero(rv.Type()))
-		}
-		return
-	}
+	} 
 
 	rtid := reflect.ValueOf(rt).Pointer()
 	
@@ -567,7 +572,8 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 	}
 	if !ok {
 		// debugf("\tCreating new dec fn for type: %v\n", rt)
-		fi := decFnInfo { sis:getTypeInfo(rtid, rt), d:d, dd:d.d, rt:rt, rtid:rtid }
+		fi := decFnInfo { ti:getTypeInfo(rtid, rt), d:d, dd:d.d }
+		fn.i = &fi 
 		// An extension can be registered for any type, regardless of the Kind
 		// (e.g. type BitSet int64, type MyStruct { / * unexported fields * / }, type X []int, etc.
 		//
@@ -577,61 +583,62 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		//
 		// If we are checking for builtin or ext type here, it means we didn't go through decodeNaked,
 		// Because decodeNaked would have handled it. It also means wasNilIntf = false.
-		if fi.sis.baseId == rawExtTypId {
-			fn = decFn { &fi, (*decFnInfo).rawExt }
-		} else if d.d.isBuiltinType(fi.sis.baseId) {
-			fn = decFn { &fi, (*decFnInfo).builtin }
-		} else if xfTag, xfFn := d.h.getDecodeExt(fi.sis.baseId); xfFn != nil {
+		// 
+		// NOTE: if decoding into a nil interface{}, we return a non-nil
+		// value except even if the container registers a length of 0.
+		if rtid == rawExtTypId {
+			fn.f = (*decFnInfo).rawExt 
+		} else if d.d.isBuiltinType(rtid) {
+			fn.f = (*decFnInfo).builtin 
+		} else if xfTag, xfFn := d.h.getDecodeExt(rtid); xfFn != nil {
 			fi.xfTag, fi.xfFn = xfTag, xfFn
-			fn = decFn { &fi, (*decFnInfo).ext }
-		} else if supportBinaryMarshal && fi.sis.unm {
-			fn = decFn { &fi, (*decFnInfo).binaryMarshal }
+			fn.f = (*decFnInfo).ext 
+		} else if supportBinaryMarshal && fi.ti.unm {
+			fn.f = (*decFnInfo).binaryMarshal 
 		} else {
-			// NOTE: if decoding into a nil interface{}, we return a non-nil
-			// value except even if the container registers a length of 0.
 			switch rk := rt.Kind(); rk {
 			case reflect.String:
-				fn = decFn { &fi, (*decFnInfo).kString }
+				fn.f = (*decFnInfo).kString 
 			case reflect.Bool:
-				fn = decFn { &fi, (*decFnInfo).kBool }
+				fn.f = (*decFnInfo).kBool 
 			case reflect.Int:
-				fn = decFn { &fi, (*decFnInfo).kInt }
+				fn.f = (*decFnInfo).kInt 
 			case reflect.Int64:
-				fn = decFn { &fi, (*decFnInfo).kInt64 }
+				fn.f = (*decFnInfo).kInt64 
 			case reflect.Int32:
-				fn = decFn { &fi, (*decFnInfo).kInt32 }
+				fn.f = (*decFnInfo).kInt32 
 			case reflect.Int8:
-				fn = decFn { &fi, (*decFnInfo).kInt8 }
+				fn.f = (*decFnInfo).kInt8 
 			case reflect.Int16:
-				fn = decFn { &fi, (*decFnInfo).kInt16 }
+				fn.f = (*decFnInfo).kInt16 
 			case reflect.Float32:
-				fn = decFn { &fi, (*decFnInfo).kFloat32 }
+				fn.f = (*decFnInfo).kFloat32 
 			case reflect.Float64:
-				fn = decFn { &fi, (*decFnInfo).kFloat64 }
+				fn.f = (*decFnInfo).kFloat64 
 			case reflect.Uint8:
-				fn = decFn { &fi, (*decFnInfo).kUint8 }
+				fn.f = (*decFnInfo).kUint8 
 			case reflect.Uint64:
-				fn = decFn { &fi, (*decFnInfo).kUint64 }
+				fn.f = (*decFnInfo).kUint64 
 			case reflect.Uint:
-				fn = decFn { &fi, (*decFnInfo).kUint }
+				fn.f = (*decFnInfo).kUint 
 			case reflect.Uint32:
-				fn = decFn { &fi, (*decFnInfo).kUint32 }
+				fn.f = (*decFnInfo).kUint32 
 			case reflect.Uint16:
-				fn = decFn { &fi, (*decFnInfo).kUint16 }
-			case reflect.Ptr:
-				fn = decFn { &fi, (*decFnInfo).kPtr }
+				fn.f = (*decFnInfo).kUint16 
+			// case reflect.Ptr:
+			// 	fn.f = (*decFnInfo).kPtr 
 			case reflect.Interface:
-				fn = decFn { &fi, (*decFnInfo).kInterface }
+				fn.f = (*decFnInfo).kInterface 
 			case reflect.Struct:
-				fn = decFn { &fi, (*decFnInfo).kStruct }
+				fn.f = (*decFnInfo).kStruct 
 			case reflect.Slice:
-				fn = decFn { &fi, (*decFnInfo).kSlice }
+				fn.f = (*decFnInfo).kSlice 
 			case reflect.Array:
-				fn = decFn { &fi, (*decFnInfo).kArray }
+				fn.f = (*decFnInfo).kArray 
 			case reflect.Map:
-				fn = decFn { &fi, (*decFnInfo).kMap }
+				fn.f = (*decFnInfo).kMap 
 			default:
-				fn = decFn { &fi, (*decFnInfo).kErr }
+				fn.f = (*decFnInfo).kErr 
 			}
 		}
 		if useMapForCodecCache {
@@ -640,17 +647,17 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 			}
 			d.f[rtid] = fn
 		} else {
-			d.s = append(d.s, fn )
+			d.s = append(d.s, fn)
 			d.x = append(d.x, rtid)
 		}
 	}
 	
 	fn.f(fn.i, rv)
 	
-
 	if wasNilIntf {
 		rvOrig.Set(rv)
 	}
+	
 	return
 }
 
