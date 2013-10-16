@@ -5,7 +5,7 @@ encode/decode support for different serialization formats.
 
 Supported Serialization formats are:
 
-  - msgpack: [http://wiki.msgpack.org/display/MSGPACK/Format+specification]
+  - msgpack: [https://github.com/msgpack/msgpack]
   - binc: [http://github.com/ugorji/binc]
 
 To install:
@@ -24,8 +24,8 @@ Rich Feature Set includes:
     Our extensive benchmarks show us outperforming Gob, Json and Bson by 2-4X.
     This was achieved by taking extreme care on:
       - managing allocation
-      - stack frame size (important due to Go's use of split stacks), 
-      - reflection use
+      - function frame size (important due to Go's use of split stacks),
+      - reflection use (and by-passing reflection for common types)
       - recursion implications
       - zero-copy mode (encoding/decoding to byte slice without using temp buffers)
   - Correct.  
@@ -39,6 +39,7 @@ Rich Feature Set includes:
   - Decoding into pointer to any non-nil typed value  
     (struct, slice, map, int, float32, bool, string, reflect.Value, etc)
   - Supports extension functions to handle the encode/decode of custom types
+  - Support Go 1.2 encoding.BinaryMarshaler/BinaryUnmarshaler
   - Schema-less decoding  
     (decode into a pointer to a nil interface{} as opposed to a typed non-nil value).  
     Includes Options to configure what specific map or slice type to use 
@@ -49,16 +50,23 @@ Rich Feature Set includes:
       - Options to resolve ambiguities in handling raw bytes (as string or []byte)  
         during schema-less decoding (decoding into a nil interface{})
       - RPC Server/Client Codec for msgpack-rpc protocol defined at: 
-        http://wiki.msgpack.org/display/MSGPACK/RPC+specification
+        https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md
+  - Fast Paths for some container types:  
+    For some container types, we circumvent reflection and its associated overhead
+    and allocation costs, and encode/decode directly. These types are:  
+	    []interface{}
+	    []int
+	    []string
+	    map[interface{}]interface{}
+	    map[int]interface{}
+	    map[string]interface{}
 
 ## Extension Support
 
 Users can register a function to handle the encoding or decoding of
-their custom types. 
+their custom types.
 
-There are no restrictions on what the custom type can be. Extensions can
-be any type: pointers, structs, custom types off arrays/slices, strings,
-etc. Some examples:
+There are no restrictions on what the custom type can be. Some examples:
 
     type BisSet   []int
     type BitSet64 uint64
@@ -66,37 +74,31 @@ etc. Some examples:
     type MyStructWithUnexportedFields struct { a int; b bool; c []int; }
     type GifImage struct { ... }
 
-Typically, MyStructWithUnexportedFields is encoded as an empty map because
-it has no exported fields, while UUID will be encoded as a string,
-etc. However, with extension support, you can encode any of these
-however you like.
+As an illustration, MyStructWithUnexportedFields would normally be
+encoded as an empty map because it has no exported fields, while UUID
+would be encoded as a string. However, with extension support, you can
+encode any of these however you like.
 
-We provide implementations of these functions where the spec has defined
-an inter-operable format. For msgpack, these are Binary and
-time.Time. Library users will have to explicitly configure these as seen
-in the usage below.
+## RPC
+
+RPC Client and Server Codecs are implemented, so the codecs can be used
+with the standard net/rpc package.
 
 ## Usage
 
 Typical usage model:
 
-    var (
-      mapStrIntfTyp = reflect.TypeOf(map[string]interface{}(nil))
-      sliceByteTyp = reflect.TypeOf([]byte(nil))
-      timeTyp = reflect.TypeOf(time.Time{})
-    )
-    
     // create and configure Handle
     var (
       bh codec.BincHandle
       mh codec.MsgpackHandle
     )
 
-    mh.MapType = mapStrIntfTyp
+    mh.MapType = reflect.TypeOf(map[string]interface{}(nil))
     
-    // configure extensions for msgpack, to enable Binary and Time support for tags 0 and 1
-    mh.AddExt(sliceByteTyp, 0, mh.BinaryEncodeExt, mh.BinaryDecodeExt)
-    mh.AddExt(timeTyp, 1, mh.TimeEncodeExt, mh.TimeDecodeExt)
+    // configure extensions
+    // e.g. for msgpack, define functions and enable Time support for tag 1
+    // mh.AddExt(reflect.TypeOf(time.Time{}), 1, myMsgpackTimeEncodeExtFn, myMsgpackTimeDecodeExtFn)
 
     // create and use decoder/encoder
     var (
@@ -123,41 +125,49 @@ Typical usage model:
             rpc.ServeCodec(rpcCodec)
         }
     }()
-    
+
     //RPC Communication (client side)
-    conn, err = net.Dial("tcp", "localhost:5555")  
-    rpcCodec := rpcH.ClientCodec(conn, h)  
+    conn, err = net.Dial("tcp", "localhost:5555")
+    rpcCodec := codec.GoRpc.ClientCodec(conn, h)
+    //OR rpcCodec := codec.MsgpackSpecRpc.ClientCodec(conn, h)
     client := rpc.NewClientWithCodec(rpcCodec)
 
 ## Representative Benchmark Results
 
-A sample run of benchmark using "go test -bi -bench=.":
+A sample run of benchmark using "go test -bi -bench=. -benchmem":
 
+    /proc/cpuinfo: Intel(R) Core(TM) i7-2630QM CPU @ 2.00GHz (HT)
+    
     ..............................................
+    BENCHMARK INIT: 2013-10-16 11:02:50.345970786 -0400 EDT
+    To run full benchmark comparing encodings (MsgPack, Binc, JSON, GOB, etc), use: "go test -bench=."
     Benchmark: 
     	Struct recursive Depth:             1
-    	ApproxDeepSize Of benchmark Struct: 4786
+    	ApproxDeepSize Of benchmark Struct: 4694 bytes
     Benchmark One-Pass Run:
-    	   msgpack: len: 1564
-    	      binc: len: 1191
-    	       gob: len: 1972
-    	      json: len: 2538
-    	 v-msgpack: len: 1600
-    	      bson: len: 3025
+    	 v-msgpack: len: 1600 bytes
+    	      bson: len: 3025 bytes
+    	   msgpack: len: 1560 bytes
+    	      binc: len: 1187 bytes
+    	       gob: len: 1972 bytes
+    	      json: len: 2538 bytes
     ..............................................
     PASS
-    Benchmark__Msgpack__Encode	   50000	     61731 ns/op
-    Benchmark__Msgpack__Decode	   10000	    115947 ns/op
-    Benchmark__Binc_____Encode	   50000	     64568 ns/op
-    Benchmark__Binc_____Decode	   10000	    113843 ns/op
-    Benchmark__Gob______Encode	   10000	    143956 ns/op
-    Benchmark__Gob______Decode	    5000	    431889 ns/op
-    Benchmark__Json_____Encode	   10000	    158662 ns/op
-    Benchmark__Json_____Decode	    5000	    310744 ns/op
-    Benchmark__Bson_____Encode	   10000	    172905 ns/op
-    Benchmark__Bson_____Decode	   10000	    228564 ns/op
-    Benchmark__VMsgpack_Encode	   20000	     81752 ns/op
-    Benchmark__VMsgpack_Decode	   10000	    160050 ns/op
+    Benchmark__Msgpack____Encode	   50000	     54359 ns/op	   14953 B/op	      83 allocs/op
+    Benchmark__Msgpack____Decode	   10000	    106531 ns/op	   14990 B/op	     410 allocs/op
+    Benchmark__Binc_NoSym_Encode	   50000	     53956 ns/op	   14966 B/op	      83 allocs/op
+    Benchmark__Binc_NoSym_Decode	   10000	    103751 ns/op	   14529 B/op	     386 allocs/op
+    Benchmark__Binc_Sym___Encode	   50000	     65961 ns/op	   17130 B/op	      88 allocs/op
+    Benchmark__Binc_Sym___Decode	   10000	    106310 ns/op	   15857 B/op	     287 allocs/op
+    Benchmark__Gob________Encode	   10000	    135944 ns/op	   21189 B/op	     237 allocs/op
+    Benchmark__Gob________Decode	    5000	    405390 ns/op	   83460 B/op	    1841 allocs/op
+    Benchmark__Json_______Encode	   20000	     79412 ns/op	   13874 B/op	     102 allocs/op
+    Benchmark__Json_______Decode	   10000	    247979 ns/op	   14202 B/op	     493 allocs/op
+    Benchmark__Bson_______Encode	   10000	    121762 ns/op	   27814 B/op	     514 allocs/op
+    Benchmark__Bson_______Decode	   10000	    162126 ns/op	   16514 B/op	     789 allocs/op
+    Benchmark__VMsgpack___Encode	   50000	     69155 ns/op	   12370 B/op	     344 allocs/op
+    Benchmark__VMsgpack___Decode	   10000	    151609 ns/op	   20307 B/op	     571 allocs/op
+    ok  	ugorji.net/codec	30.827s
 
 To run full benchmark suite (including against vmsgpack and bson), 
 see notes in ext\_dep\_test.go

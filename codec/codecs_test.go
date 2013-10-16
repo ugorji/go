@@ -33,11 +33,11 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"strconv"
+	"sync/atomic"
 	"testing"
 	"time"
-	"sync/atomic"
-	"runtime"
 )
 
 type testVerifyArg int
@@ -51,20 +51,22 @@ const (
 )
 
 var (
-	testInitDebug     bool
-	testUseIoEncDec   bool
-	testStructToArray bool
-	_                           = fmt.Printf
-	skipVerifyVal   interface{} = &(struct{}{})
+	testInitDebug      bool
+	testUseIoEncDec    bool
+	testStructToArray  bool
+	testWriteNoSymbols bool
 
-	// For Go Time, do not use a descriptive timezone. 
+	_                         = fmt.Printf
+	skipVerifyVal interface{} = &(struct{}{})
+
+	// For Go Time, do not use a descriptive timezone.
 	// It's unnecessary, and makes it harder to do a reflect.DeepEqual.
 	// The Offset already tells what the offset should be, if not on UTC and unknown zone name.
-	timeLoc                     = time.FixedZone("", -8*60*60)         // UTC-08:00 //time.UTC-8
-	timeToCompare1              = time.Date(2012, 2, 2, 2, 2, 2, 2000, timeLoc) 
-	timeToCompare2              = time.Date(1900, 2, 2, 2, 2, 2, 2000, timeLoc) 
-	timeToCompare3              = time.Unix(0, 0).UTC()
-	timeToCompare4              = time.Time{}.UTC()
+	timeLoc        = time.FixedZone("", -8*60*60) // UTC-08:00 //time.UTC-8
+	timeToCompare1 = time.Date(2012, 2, 2, 2, 2, 2, 2000, timeLoc)
+	timeToCompare2 = time.Date(1900, 2, 2, 2, 2, 2, 2000, timeLoc)
+	timeToCompare3 = time.Unix(0, 0).UTC()
+	timeToCompare4 = time.Time{}.UTC()
 
 	table              []interface{} // main items we encode
 	tableVerify        []interface{} // we verify encoded things against this after decode
@@ -78,10 +80,11 @@ var (
 
 func testInitFlags() {
 	// delete(testDecOpts.ExtFuncs, timeTyp)
-	flag.BoolVar(&testInitDebug, "tdbg", false, "Test Debug")
-	flag.BoolVar(&testUseIoEncDec, "tio", false, "Use IO Reader/Writer for Marshal/Unmarshal")
-	flag.BoolVar(&testStructToArray, "ts2a", false, "Set StructToArray option")
-}	
+	flag.BoolVar(&testInitDebug, "tg", false, "Test Debug")
+	flag.BoolVar(&testUseIoEncDec, "ti", false, "Use IO Reader/Writer for Marshal/Unmarshal")
+	flag.BoolVar(&testStructToArray, "ts", false, "Set StructToArray option")
+	flag.BoolVar(&testWriteNoSymbols, "tn", false, "Set NoSymbols option")
+}
 
 type AnonInTestStruc struct {
 	AS        string
@@ -140,7 +143,7 @@ type TestRpcInt struct {
 func (r *TestRpcInt) Update(n int, res *int) error      { r.i = n; *res = r.i; return nil }
 func (r *TestRpcInt) Square(ignore int, res *int) error { *res = r.i * r.i; return nil }
 func (r *TestRpcInt) Mult(n int, res *int) error        { *res = r.i * n; return nil }
-func (r *TestRpcInt) EchoStruct(arg TestABC, res *string) error { 
+func (r *TestRpcInt) EchoStruct(arg TestABC, res *string) error {
 	*res = fmt.Sprintf("%#v", arg)
 	return nil
 }
@@ -150,7 +153,7 @@ func (r *TestRpcInt) Echo123(args []string, res *string) error {
 }
 
 func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
-	//for python msgpack, 
+	//for python msgpack,
 	//  - all positive integers are unsigned 64-bit ints
 	//  - all floats are float64
 	switch iv := v.(type) {
@@ -261,7 +264,7 @@ func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
 	return
 }
 
-func testInit() {	
+func testInit() {
 	gob.Register(new(TestStruc))
 	if testInitDebug {
 		ts0 := newTestStruc(2, false)
@@ -269,10 +272,28 @@ func testInit() {
 	}
 
 	testBincH.StructToArray = testStructToArray
+	if testWriteNoSymbols {
+		testBincH.AsSymbols = AsSymbolNone
+	} else {
+		testBincH.AsSymbols = AsSymbolAll
+	}
 	testMsgpackH.StructToArray = testStructToArray
-	testMsgpackH.RawToString = true 
-	//testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
-	testMsgpackH.AddExt(timeTyp, 1, testMsgpackH.TimeEncodeExt, testMsgpackH.TimeDecodeExt)
+	testMsgpackH.RawToString = true
+	// testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
+	// testMsgpackH.AddExt(timeTyp, 1, testMsgpackH.TimeEncodeExt, testMsgpackH.TimeDecodeExt)
+	testMsgpackH.AddExt(timeTyp, 1,
+		func(rv reflect.Value) ([]byte, error) {
+			return encodeTime(rv.Interface().(time.Time)), nil
+		},
+		func(rv reflect.Value, bs []byte) error {
+			tt, err := decodeTime(bs)
+			if err == nil {
+				rv.Set(reflect.ValueOf(tt))
+			}
+			return err
+		},
+	)
+
 	primitives := []interface{}{
 		int8(-8),
 		int16(-1616),
@@ -517,7 +538,6 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 			continue
 		}
 
-		// debugf("=============>>>> %#v", v0check)
 		if err = deepEqual(v0check, v1); err == nil {
 			logT(t, "++++++++ Before and After marshal matched\n")
 		} else {
@@ -534,8 +554,8 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	var oldWriteExt, oldRawToString bool
 	switch v := h.(type) {
 	case *MsgpackHandle:
-		oldWriteExt, v.WriteExt = v.WriteExt, true 
-		oldRawToString, v.RawToString = v.RawToString, true 
+		oldWriteExt, v.WriteExt = v.WriteExt, true
+		oldRawToString, v.RawToString = v.RawToString, true
 	}
 	doTestCodecTableOne(t, false, h, table, tableVerify)
 	//if true { panic("") }
@@ -544,9 +564,9 @@ func testCodecTableOne(t *testing.T, h Handle) {
 		v.WriteExt, v.RawToString = oldWriteExt, oldRawToString
 	}
 	// func TestMsgpackAll(t *testing.T) {
-	
+
 	idxTime, numPrim, numMap := 19, 23, 4
-	
+
 	//skip []interface{} containing time.Time
 	doTestCodecTableOne(t, false, h, table[:numPrim], tableVerify[:numPrim])
 	doTestCodecTableOne(t, false, h, table[numPrim+1:], tableVerify[numPrim+1:])
@@ -570,10 +590,10 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	}
 
 	// func TestMsgpackNilIntf(t *testing.T) {
-	
+
 	//do newTestStruc and last element of map
 	doTestCodecTableOne(t, true, h, table[numPrim+numMap:], tableTestNilVerify[numPrim+numMap:])
-	//TODO? What is this one? 
+	//TODO? What is this one?
 	//doTestCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18])
 }
 
@@ -624,6 +644,7 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 		logT(t, "Error marshalling p: %v, Err: %v", p, err)
 		t.FailNow()
 	}
+
 	m2 := map[string]int{}
 	p2 := []interface{}{m2}
 	err = testUnmarshal(&p2, bs, h)
@@ -748,7 +769,7 @@ func doTestRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs ti
 	if exitSleepMs == 0 {
 		defer ln.Close()
 		defer exitFn()
-	} 
+	}
 	if doRequest {
 		bs := connFn()
 		cc := rr.ClientCodec(bs, h)
@@ -854,8 +875,8 @@ func doTestMsgpackPythonGenStreams(t *testing.T) {
 //    - Go Client to Go RPC Service (contained within TestMsgpackRpcSpec)
 //    - Go client to Python RPC Service (contained within doTestMsgpackRpcSpecGoClientToPythonSvc)
 //    - Python Client to Go RPC Service (contained within doTestMsgpackRpcSpecPythonClientToGoSvc)
-// 
-// This allows us test the different calling conventions 
+//
+// This allows us test the different calling conventions
 //    - Go Service requires only one argument
 //    - Python Service allows multiple arguments
 
@@ -864,7 +885,7 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 	cmd := exec.Command("python", "msgpack_test.py", "rpc-server", openPort, "2")
 	checkErrT(t, cmd.Start())
 	time.Sleep(100 * time.Millisecond) // time for python rpc server to start
-	bs, err2 := net.Dial("tcp", ":" + openPort)
+	bs, err2 := net.Dial("tcp", ":"+openPort)
 	checkErrT(t, err2)
 	cc := MsgpackSpecRpc.ClientCodec(bs, testMsgpackH)
 	cl := rpc.NewClientWithCodec(cc)
@@ -888,10 +909,9 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 		logT(t, "         %v", string(cmdout))
 		t.FailNow()
 	}
-	checkEqualT(t, string(cmdout), 
+	checkEqualT(t, string(cmdout),
 		fmt.Sprintf("%#v\n%#v\n", []string{"A1", "B2", "C3"}, TestABC{"Aa", "Bb", "Cc"}))
 }
-
 
 func TestMsgpackCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testMsgpackH)
@@ -921,6 +941,7 @@ func TestBincRpcGo(t *testing.T) {
 	doTestRpcOne(t, GoRpc, testBincH, true, 0)
 }
 
-//TODO: 
-//  - Add test for decoding empty list/map in stream into a nil slice/map
-
+// TODO:
+//   Add Tests for:
+//   - decoding empty list/map in stream into a nil slice/map
+//   - binary(M|Unm)arsher support for time.Time

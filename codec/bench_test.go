@@ -16,7 +16,7 @@ import (
 )
 
 // Sample way to run:
-// go test -bi -bv -bd=1 -benchmem -bench Msgpack__Encode
+// go test -bi -bv -bd=1 -benchmem -bench=.
 
 var (
 	_       = fmt.Printf
@@ -34,8 +34,10 @@ var (
 	benchCheckers  []benchChecker
 )
 
-type benchEncFn func(*TestStruc) ([]byte, error)
-type benchDecFn func([]byte, *TestStruc) error
+type benchEncFn func(interface{}) ([]byte, error)
+type benchDecFn func([]byte, interface{}) error
+type benchIntfFn func() interface{}
+
 type benchChecker struct {
 	name     string
 	encodefn benchEncFn
@@ -43,14 +45,14 @@ type benchChecker struct {
 }
 
 func benchInitFlags() {
-	flag.BoolVar(&benchInitDebug, "bdbg", false, "Bench Debug")
+	flag.BoolVar(&benchInitDebug, "bg", false, "Bench Debug")
 	flag.IntVar(&benchDepth, "bd", 1, "Bench Depth: If >1, potential unreliable results due to stack growth")
 	flag.BoolVar(&benchDoInitBench, "bi", false, "Run Bench Init")
 	flag.BoolVar(&benchVerify, "bv", false, "Verify Decoded Value during Benchmark")
 	flag.BoolVar(&benchUnscientificRes, "bu", false, "Show Unscientific Results during Benchmark")
 }
 
-func benchInit() {	
+func benchInit() {
 	benchTs = newTestStruc(benchDepth, true)
 	approxSize = approxDataSize(reflect.ValueOf(benchTs))
 	bytesLen := 1024 * 4 * (benchDepth + 1) * (benchDepth + 1)
@@ -93,6 +95,10 @@ func runBenchInit() {
 	}
 }
 
+func fnBenchNewTs() interface{} {
+	return new(TestStruc)
+}
+
 func doBenchCheck(name string, encfn benchEncFn, decfn benchDecFn) {
 	runtime.GC()
 	tnow := time.Now()
@@ -115,11 +121,11 @@ func doBenchCheck(name string, encfn benchEncFn, decfn benchDecFn) {
 	logT(nil, "\t%10s: len: %d bytes, encode: %v, decode: %v\n", name, encLen, encDur, decDur)
 }
 
-func fnBenchmarkEncode(b *testing.B, encName string, encfn benchEncFn) {
+func fnBenchmarkEncode(b *testing.B, encName string, ts interface{}, encfn benchEncFn) {
 	runtime.GC()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_, err := encfn(benchTs)
+		_, err := encfn(ts)
 		if err != nil {
 			logT(b, "Error encoding benchTs: %s: %v", encName, err)
 			b.FailNow()
@@ -127,8 +133,10 @@ func fnBenchmarkEncode(b *testing.B, encName string, encfn benchEncFn) {
 	}
 }
 
-func fnBenchmarkDecode(b *testing.B, encName string, encfn benchEncFn, decfn benchDecFn) {
-	buf, err := encfn(benchTs)
+func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
+	encfn benchEncFn, decfn benchDecFn, newfn benchIntfFn,
+) {
+	buf, err := encfn(ts)
 	if err != nil {
 		logT(b, "Error encoding benchTs: %s: %v", encName, err)
 		b.FailNow()
@@ -136,13 +144,15 @@ func fnBenchmarkDecode(b *testing.B, encName string, encfn benchEncFn, decfn ben
 	runtime.GC()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ts := new(TestStruc)
+		ts = newfn()
 		if err = decfn(buf, ts); err != nil {
 			logT(b, "Error decoding into new TestStruc: %s: %v", encName, err)
 			b.FailNow()
 		}
 		if benchVerify {
-			verifyTsTree(b, ts)
+			if vts, vok := ts.(*TestStruc); vok {
+				verifyTsTree(b, vts)
+			}
 		}
 	}
 }
@@ -190,70 +200,90 @@ func verifyOneOne(b *testing.B, ts *TestStruc) {
 	}
 }
 
-func fnMsgpackEncodeFn(ts *TestStruc) (bs []byte, err error) {
+func fnMsgpackEncodeFn(ts interface{}) (bs []byte, err error) {
 	err = NewEncoderBytes(&bs, testMsgpackH).Encode(ts)
 	return
 }
 
-func fnMsgpackDecodeFn(buf []byte, ts *TestStruc) error {
+func fnMsgpackDecodeFn(buf []byte, ts interface{}) error {
 	return NewDecoderBytes(buf, testMsgpackH).Decode(ts)
 }
 
-func fnBincEncodeFn(ts *TestStruc) (bs []byte, err error) {
+func fnBincEncodeFn(ts interface{}) (bs []byte, err error) {
 	err = NewEncoderBytes(&bs, testBincH).Encode(ts)
 	return
 }
 
-func fnBincDecodeFn(buf []byte, ts *TestStruc) error {
+func fnBincDecodeFn(buf []byte, ts interface{}) error {
 	return NewDecoderBytes(buf, testBincH).Decode(ts)
 }
 
-func fnGobEncodeFn(ts *TestStruc) ([]byte, error) {
+func fnGobEncodeFn(ts interface{}) ([]byte, error) {
 	bbuf := new(bytes.Buffer)
 	err := gob.NewEncoder(bbuf).Encode(ts)
 	return bbuf.Bytes(), err
 }
 
-func fnGobDecodeFn(buf []byte, ts *TestStruc) error {
+func fnGobDecodeFn(buf []byte, ts interface{}) error {
 	return gob.NewDecoder(bytes.NewBuffer(buf)).Decode(ts)
 }
 
-func fnJsonEncodeFn(ts *TestStruc) ([]byte, error) {
+func fnJsonEncodeFn(ts interface{}) ([]byte, error) {
 	return json.Marshal(ts)
 }
 
-func fnJsonDecodeFn(buf []byte, ts *TestStruc) error {
+func fnJsonDecodeFn(buf []byte, ts interface{}) error {
 	return json.Unmarshal(buf, ts)
 }
 
-func Benchmark__Msgpack__Encode(b *testing.B) {
-	fnBenchmarkEncode(b, "msgpack", fnMsgpackEncodeFn)
+func Benchmark__Msgpack____Encode(b *testing.B) {
+	fnBenchmarkEncode(b, "msgpack", benchTs, fnMsgpackEncodeFn)
 }
 
-func Benchmark__Msgpack__Decode(b *testing.B) {
-	fnBenchmarkDecode(b, "msgpack", fnMsgpackEncodeFn, fnMsgpackDecodeFn)
+func Benchmark__Msgpack____Decode(b *testing.B) {
+	fnBenchmarkDecode(b, "msgpack", benchTs, fnMsgpackEncodeFn, fnMsgpackDecodeFn, fnBenchNewTs)
 }
 
-func Benchmark__Binc_____Encode(b *testing.B) {
-	fnBenchmarkEncode(b, "binc", fnBincEncodeFn)
+func Benchmark__Binc_NoSym_Encode(b *testing.B) {
+	tSym := testBincH.AsSymbols
+	testBincH.AsSymbols = AsSymbolNone
+	fnBenchmarkEncode(b, "binc", benchTs, fnBincEncodeFn)
+	testBincH.AsSymbols = tSym
 }
 
-func Benchmark__Binc_____Decode(b *testing.B) {
-	fnBenchmarkDecode(b, "binc", fnBincEncodeFn, fnBincDecodeFn)
+func Benchmark__Binc_NoSym_Decode(b *testing.B) {
+	tSym := testBincH.AsSymbols
+	testBincH.AsSymbols = AsSymbolNone
+	fnBenchmarkDecode(b, "binc", benchTs, fnBincEncodeFn, fnBincDecodeFn, fnBenchNewTs)
+	testBincH.AsSymbols = tSym
 }
 
-func Benchmark__Gob______Encode(b *testing.B) {
-	fnBenchmarkEncode(b, "gob", fnGobEncodeFn)
+func Benchmark__Binc_Sym___Encode(b *testing.B) {
+	tSym := testBincH.AsSymbols
+	testBincH.AsSymbols = AsSymbolAll
+	fnBenchmarkEncode(b, "binc", benchTs, fnBincEncodeFn)
+	testBincH.AsSymbols = tSym
 }
 
-func Benchmark__Gob______Decode(b *testing.B) {
-	fnBenchmarkDecode(b, "gob", fnGobEncodeFn, fnGobDecodeFn)
+func Benchmark__Binc_Sym___Decode(b *testing.B) {
+	tSym := testBincH.AsSymbols
+	testBincH.AsSymbols = AsSymbolAll
+	fnBenchmarkDecode(b, "binc", benchTs, fnBincEncodeFn, fnBincDecodeFn, fnBenchNewTs)
+	testBincH.AsSymbols = tSym
 }
 
-func Benchmark__Json_____Encode(b *testing.B) {
-	fnBenchmarkEncode(b, "json", fnJsonEncodeFn)
+func Benchmark__Gob________Encode(b *testing.B) {
+	fnBenchmarkEncode(b, "gob", benchTs, fnGobEncodeFn)
 }
 
-func Benchmark__Json_____Decode(b *testing.B) {
-	fnBenchmarkDecode(b, "json", fnJsonEncodeFn, fnJsonDecodeFn)
+func Benchmark__Gob________Decode(b *testing.B) {
+	fnBenchmarkDecode(b, "gob", benchTs, fnGobEncodeFn, fnGobDecodeFn, fnBenchNewTs)
+}
+
+func Benchmark__Json_______Encode(b *testing.B) {
+	fnBenchmarkEncode(b, "json", benchTs, fnJsonEncodeFn)
+}
+
+func Benchmark__Json_______Decode(b *testing.B) {
+	fnBenchmarkDecode(b, "json", benchTs, fnJsonEncodeFn, fnJsonDecodeFn, fnBenchNewTs)
 }
