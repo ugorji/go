@@ -515,6 +515,7 @@ func (f *decFnInfo) kMap(rv reflect.Value) {
 		rvk := reflect.New(ktype).Elem()
 		f.d.decodeValue(rvk)
 
+		// special case if a byte array.
 		// if ktype == intfTyp {
 		if ktypeId == intfTypId {
 			rvk = rvk.Elem()
@@ -899,6 +900,10 @@ func (d *Decoder) decMapIntfIntf(v *map[interface{}]interface{}) {
 	for j := 0; j < containerLen; j++ {
 		var mk interface{}
 		d.decode(&mk)
+		// special case if a byte array.
+		if bv, bok := mk.([]byte); bok {
+			mk = string(bv)
+		}
 		mv := m[mk]
 		d.decode(&mv)
 		m[mk] = mv
