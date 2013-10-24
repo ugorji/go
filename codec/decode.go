@@ -14,7 +14,7 @@ var (
 	msgBadDesc = "Unrecognized descriptor byte"
 )
 
-// when decoding without schema, the nakedContext tells us what 
+// when decoding without schema, the nakedContext tells us what
 // we decoded into, or if decoding has been handled.
 type decodeNakedContext uint8
 
@@ -78,16 +78,16 @@ type decDriver interface {
 // decFnInfo has methods for registering handling decoding of a specific type
 // based on some characteristics (builtin, extension, reflect Kind, etc)
 type decFnInfo struct {
-	ti *typeInfo
-	d   *Decoder
-	dd  decDriver
+	ti    *typeInfo
+	d     *Decoder
+	dd    decDriver
 	xfFn  func(reflect.Value, []byte) error
-	xfTag byte 
+	xfTag byte
 }
 
 type decFn struct {
 	i *decFnInfo
-	f func(*decFnInfo, reflect.Value) 
+	f func(*decFnInfo, reflect.Value)
 }
 
 // A Decoder reads and decodes an object from an input stream in the codec format.
@@ -214,12 +214,12 @@ func (f *decFnInfo) kInterface(rv reflect.Value) {
 		if ndesc == dncNil {
 			return
 		}
-		// Cannot decode into nil interface with methods (e.g. error, io.Reader, etc) 
+		// Cannot decode into nil interface with methods (e.g. error, io.Reader, etc)
 		// if non-nil value in stream.
 		if num := f.ti.rt.NumMethod(); num > 0 {
-			decErr("decodeValue: Cannot decode non-nil codec value into nil %v (%v methods)", 
-				f.ti.rt , num)
-		} 
+			decErr("decodeValue: Cannot decode non-nil codec value into nil %v (%v methods)",
+				f.ti.rt, num)
+		}
 		if ndesc == dncHandled {
 			rv.Set(rv2)
 			return
@@ -238,7 +238,7 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 		if containerLen == 0 {
 			return
 		}
-		tisfi := fti.sfi 
+		tisfi := fti.sfi
 		for j := 0; j < containerLen; j++ {
 			// var rvkencname string
 			// ddecode(&rvkencname)
@@ -255,7 +255,7 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 				// f.d.decodeValue(ti.field(k, rv))
 			} else {
 				if f.d.h.errorIfNoField() {
-					decErr("No matching struct field found when decoding stream map with key: %v", 
+					decErr("No matching struct field found when decoding stream map with key: %v",
 						rvkencname)
 				} else {
 					var nilintf0 interface{}
@@ -286,7 +286,7 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 			}
 		}
 	} else {
-		decErr("Only encoded map or array can be decoded into a struct. (decodeEncodedType: %x)", 
+		decErr("Only encoded map or array can be decoded into a struct. (decodeEncodedType: %x)",
 			currEncodedType)
 	}
 }
@@ -307,7 +307,7 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 
 	if rv.IsNil() {
 		rv.Set(reflect.MakeSlice(f.ti.rt, containerLen, containerLen))
-	} 
+	}
 	if containerLen == 0 {
 		return
 	}
@@ -322,7 +322,7 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 			}
 			rv.Set(rvn)
 		} else {
-			decErr("Cannot reset slice with less cap: %v than stream contents: %v", 
+			decErr("Cannot reset slice with less cap: %v than stream contents: %v",
 				rvcap, containerLen)
 		}
 	} else if containerLen > rvlen {
@@ -343,7 +343,7 @@ func (f *decFnInfo) kMap(rv reflect.Value) {
 	if rv.IsNil() {
 		rv.Set(reflect.MakeMap(f.ti.rt))
 	}
-	
+
 	if containerLen == 0 {
 		return
 	}
@@ -371,9 +371,9 @@ func (f *decFnInfo) kMap(rv reflect.Value) {
 
 // ioDecReader is a decReader that reads off an io.Reader
 type ioDecReader struct {
-	r io.Reader
+	r  io.Reader
 	br io.ByteReader
-	x [8]byte //temp byte array re-used internally for efficiency
+	x  [8]byte //temp byte array re-used internally for efficiency
 }
 
 // bytesDecReader is a decReader that reads off a byte slice with zero copying
@@ -405,9 +405,9 @@ func (o *DecodeOptions) errorIfNoField() bool {
 }
 
 // NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
-// 
+//
 // For efficiency, Users are encouraged to pass in a memory buffered writer
-// (eg bufio.Reader, bytes.Buffer). 
+// (eg bufio.Reader, bytes.Buffer).
 func NewDecoder(r io.Reader, h Handle) *Decoder {
 	z := ioDecReader{
 		r: r,
@@ -433,7 +433,7 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 // Note that a pointer to a nil interface is not a nil pointer.
 // If you do not know what type of stream it is, pass in a pointer to a nil interface.
 // We will decode and store a value in that nil interface.
-// 
+//
 // Sample usages:
 //   // Decoding into a non-nil typed value
 //   var f float32
@@ -443,24 +443,24 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 //   var v interface{}
 //   dec := codec.NewDecoder(r, handle)
 //   err = dec.Decode(&v)
-// 
+//
 // When decoding into a nil interface{}, we will decode into an appropriate value based
 // on the contents of the stream:
-//   - Numbers are decoded as float64, int64 or uint64. 
-//   - Other values are decoded appropriately depending on the encoding: 
+//   - Numbers are decoded as float64, int64 or uint64.
+//   - Other values are decoded appropriately depending on the encoding:
 //     bool, string, []byte, time.Time, etc
 //   - Extensions are decoded as RawExt (if no ext function registered for the tag)
-// Configurations exist on the Handle to override defaults 
+// Configurations exist on the Handle to override defaults
 // (e.g. for MapType, SliceType and how to decode raw bytes).
-// 
-// When decoding into a non-nil interface{} value, the mode of encoding is based on the 
+//
+// When decoding into a non-nil interface{} value, the mode of encoding is based on the
 // type of the value. When a value is seen:
 //   - If an extension is registered for it, call that extension function
 //   - If it implements BinaryUnmarshaler, call its UnmarshalBinary(data []byte) error
 //   - Else decode it based on its reflect.Kind
-// 
+//
 // There are some special rules when decoding into containers (slice/array/map/struct).
-// Decode will typically use the stream contents to UPDATE the container. 
+// Decode will typically use the stream contents to UPDATE the container.
 //   - This means that for a struct or map, we just update matching fields or keys.
 //   - For a slice/array, we just update the first n elements, where n is length of the stream.
 //   - However, if decoding into a nil map/slice and the length of the stream is 0,
@@ -535,7 +535,7 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		}
 		return
 	}
-	
+
 	// If stream is not containing a nil value, then we can deref to the base
 	// non-pointer value, and decode into that.
 	for rv.Kind() == reflect.Ptr {
@@ -544,17 +544,17 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		}
 		rv = rv.Elem()
 	}
-	
+
 	rt := rv.Type()
 	rtid := reflect.ValueOf(rt).Pointer()
-	
+
 	// retrieve or register a focus'ed function for this type
 	// to eliminate need to do the retrieval multiple times
-	
+
 	// if d.f == nil && d.s == nil {
 	// 	// debugf("---->Creating new dec f map for type: %v\n", rt)
 	// }
-	var fn decFn 
+	var fn decFn
 	var ok bool
 	if useMapForCodecCache {
 		fn, ok = d.f[rtid]
@@ -568,8 +568,8 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 	}
 	if !ok {
 		// debugf("\tCreating new dec fn for type: %v\n", rt)
-		fi := decFnInfo { ti:getTypeInfo(rtid, rt), d:d, dd:d.d }
-		fn.i = &fi 
+		fi := decFnInfo{ti: getTypeInfo(rtid, rt), d: d, dd: d.d}
+		fn.i = &fi
 		// An extension can be registered for any type, regardless of the Kind
 		// (e.g. type BitSet int64, type MyStruct { / * unexported fields * / }, type X []int, etc.
 		//
@@ -580,58 +580,58 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		// NOTE: if decoding into a nil interface{}, we return a non-nil
 		// value except even if the container registers a length of 0.
 		if rtid == rawExtTypId {
-			fn.f = (*decFnInfo).rawExt 
+			fn.f = (*decFnInfo).rawExt
 		} else if d.d.isBuiltinType(rtid) {
-			fn.f = (*decFnInfo).builtin 
+			fn.f = (*decFnInfo).builtin
 		} else if xfTag, xfFn := d.h.getDecodeExt(rtid); xfFn != nil {
 			fi.xfTag, fi.xfFn = xfTag, xfFn
-			fn.f = (*decFnInfo).ext 
+			fn.f = (*decFnInfo).ext
 		} else if supportBinaryMarshal && fi.ti.unm {
-			fn.f = (*decFnInfo).binaryMarshal 
+			fn.f = (*decFnInfo).binaryMarshal
 		} else {
 			switch rk := rt.Kind(); rk {
 			case reflect.String:
-				fn.f = (*decFnInfo).kString 
+				fn.f = (*decFnInfo).kString
 			case reflect.Bool:
-				fn.f = (*decFnInfo).kBool 
+				fn.f = (*decFnInfo).kBool
 			case reflect.Int:
-				fn.f = (*decFnInfo).kInt 
+				fn.f = (*decFnInfo).kInt
 			case reflect.Int64:
-				fn.f = (*decFnInfo).kInt64 
+				fn.f = (*decFnInfo).kInt64
 			case reflect.Int32:
-				fn.f = (*decFnInfo).kInt32 
+				fn.f = (*decFnInfo).kInt32
 			case reflect.Int8:
-				fn.f = (*decFnInfo).kInt8 
+				fn.f = (*decFnInfo).kInt8
 			case reflect.Int16:
-				fn.f = (*decFnInfo).kInt16 
+				fn.f = (*decFnInfo).kInt16
 			case reflect.Float32:
-				fn.f = (*decFnInfo).kFloat32 
+				fn.f = (*decFnInfo).kFloat32
 			case reflect.Float64:
-				fn.f = (*decFnInfo).kFloat64 
+				fn.f = (*decFnInfo).kFloat64
 			case reflect.Uint8:
-				fn.f = (*decFnInfo).kUint8 
+				fn.f = (*decFnInfo).kUint8
 			case reflect.Uint64:
-				fn.f = (*decFnInfo).kUint64 
+				fn.f = (*decFnInfo).kUint64
 			case reflect.Uint:
-				fn.f = (*decFnInfo).kUint 
+				fn.f = (*decFnInfo).kUint
 			case reflect.Uint32:
-				fn.f = (*decFnInfo).kUint32 
+				fn.f = (*decFnInfo).kUint32
 			case reflect.Uint16:
-				fn.f = (*decFnInfo).kUint16 
+				fn.f = (*decFnInfo).kUint16
 			// case reflect.Ptr:
-			// 	fn.f = (*decFnInfo).kPtr 
+			// 	fn.f = (*decFnInfo).kPtr
 			case reflect.Interface:
-				fn.f = (*decFnInfo).kInterface 
+				fn.f = (*decFnInfo).kInterface
 			case reflect.Struct:
-				fn.f = (*decFnInfo).kStruct 
+				fn.f = (*decFnInfo).kStruct
 			case reflect.Slice:
-				fn.f = (*decFnInfo).kSlice 
+				fn.f = (*decFnInfo).kSlice
 			case reflect.Array:
-				fn.f = (*decFnInfo).kArray 
+				fn.f = (*decFnInfo).kArray
 			case reflect.Map:
-				fn.f = (*decFnInfo).kMap 
+				fn.f = (*decFnInfo).kMap
 			default:
-				fn.f = (*decFnInfo).kErr 
+				fn.f = (*decFnInfo).kErr
 			}
 		}
 		if useMapForCodecCache {
@@ -644,9 +644,9 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 			d.x = append(d.x, rtid)
 		}
 	}
-	
+
 	fn.f(fn.i, rv)
-	
+
 	return
 }
 
@@ -673,7 +673,7 @@ func (z *ioDecReader) readn(n int) (bs []byte) {
 	return
 }
 
-func (z *ioDecReader) readb(bs []byte) {	
+func (z *ioDecReader) readb(bs []byte) {
 	if _, err := io.ReadAtLeast(z.r, bs, len(bs)); err != nil {
 		panic(err)
 	}
@@ -761,4 +761,3 @@ func (z *bytesDecReader) readUint64() uint64 {
 func decErr(format string, params ...interface{}) {
 	doPanic(msgTagDec, format, params...)
 }
-

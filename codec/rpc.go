@@ -10,8 +10,8 @@ with the standard net/rpc package.
 package codec
 
 import (
-	"io"
 	"bufio"
+	"io"
 	"net/rpc"
 )
 
@@ -39,8 +39,8 @@ type rpcCodec struct {
 	rwc io.ReadWriteCloser
 	dec *Decoder
 	enc *Encoder
-	bw *bufio.Writer
-	br *bufio.Reader
+	bw  *bufio.Writer
+	br  *bufio.Reader
 }
 
 type goRpcCodec struct {
@@ -64,8 +64,8 @@ func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
 	br := bufio.NewReader(conn)
 	return rpcCodec{
 		rwc: conn,
-		bw: bw,
-		br: br,
+		bw:  bw,
+		br:  br,
 		enc: NewEncoder(bw, h),
 		dec: NewDecoder(br, h),
 	}
@@ -95,7 +95,6 @@ func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2, doFlush bool) (err e
 	}
 	return
 }
-
 
 func (c *rpcCodec) read(obj interface{}) (err error) {
 	//If nil is passed in, we should still attempt to read content to nowhere.
@@ -136,4 +135,3 @@ func (c *goRpcCodec) ReadRequestBody(body interface{}) error {
 }
 
 var _ RpcCodecBuffered = (*rpcCodec)(nil) // ensure *rpcCodec implements RpcCodecBuffered
-

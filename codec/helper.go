@@ -18,32 +18,32 @@ import (
 )
 
 const (
-	// For >= mapAccessThreshold elements, map outways cost of linear search 
+	// For >= mapAccessThreshold elements, map outways cost of linear search
 	//   - this was critical for reflect.Type, whose equality cost is pretty high (set to 4)
 	//   - for integers, equality cost is cheap (set to 16, 32 of 64)
 	// mapAccessThreshold    = 16 // 4
-	
+
 	binarySearchThreshold = 16
 	structTagName         = "codec"
-	
-	// Support 
+
+	// Support
 	//    encoding.BinaryMarshaler: MarshalBinary() (data []byte, err error)
 	//    encoding.BinaryUnmarshaler: UnmarshalBinary(data []byte) error
 	// This constant flag will enable or disable it.
-	// 
-	// Supporting this feature required a map access each time the en/decodeValue 
-	// method is called to get the typeInfo and look at baseId. This caused a 
+	//
+	// Supporting this feature required a map access each time the en/decodeValue
+	// method is called to get the typeInfo and look at baseId. This caused a
 	// clear performance degradation. Some refactoring helps a portion of the loss.
-	// 
+	//
 	// All the band-aids we can put try to mitigate performance loss due to stack splitting:
 	//    - using smaller functions to reduce func framesize
-	// 
+	//
 	// TODO: Look into this again later.
-	supportBinaryMarshal  = true
+	supportBinaryMarshal = true
 
 	// Each Encoder or Decoder uses a cache of functions based on conditionals,
 	// so that the conditionals are not run every time.
-	// 
+	//
 	// Either a map or a slice is used to keep track of the functions.
 	// The map is more natural, but has a higher cost than a slice/array.
 	// This flag (useMapForCodecCache) controls which is used.
@@ -82,21 +82,21 @@ var (
 	byteSliceTyp     = reflect.TypeOf([]byte(nil))
 	mapStringIntfTyp = reflect.TypeOf(map[string]interface{}(nil))
 	mapIntfIntfTyp   = reflect.TypeOf(map[interface{}]interface{}(nil))
-	
-	timeTyp          = reflect.TypeOf(time.Time{})
-	int64SliceTyp    = reflect.TypeOf([]int64(nil))
-	rawExtTyp        = reflect.TypeOf(RawExt{})
-	
-	timeTypId        = reflect.ValueOf(timeTyp).Pointer()
-	byteSliceTypId   = reflect.ValueOf(byteSliceTyp).Pointer()
-	rawExtTypId      = reflect.ValueOf(rawExtTyp).Pointer()
-	
-	binaryMarshalerTyp = reflect.TypeOf((*binaryMarshaler)(nil)).Elem()
+
+	timeTyp       = reflect.TypeOf(time.Time{})
+	int64SliceTyp = reflect.TypeOf([]int64(nil))
+	rawExtTyp     = reflect.TypeOf(RawExt{})
+
+	timeTypId      = reflect.ValueOf(timeTyp).Pointer()
+	byteSliceTypId = reflect.ValueOf(byteSliceTyp).Pointer()
+	rawExtTypId    = reflect.ValueOf(rawExtTyp).Pointer()
+
+	binaryMarshalerTyp   = reflect.TypeOf((*binaryMarshaler)(nil)).Elem()
 	binaryUnmarshalerTyp = reflect.TypeOf((*binaryUnmarshaler)(nil)).Elem()
-	
-	binaryMarshalerTypId = reflect.ValueOf(binaryMarshalerTyp).Pointer()
+
+	binaryMarshalerTypId   = reflect.ValueOf(binaryMarshalerTyp).Pointer()
 	binaryUnmarshalerTypId = reflect.ValueOf(binaryUnmarshalerTyp).Pointer()
-	
+
 	intBitsize  uint8 = uint8(reflect.TypeOf(int(0)).Bits())
 	uintBitsize uint8 = uint8(reflect.TypeOf(uint(0)).Bits())
 
@@ -104,14 +104,14 @@ var (
 	bsAll0xff = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 )
 
-// The RawExt type represents raw unprocessed extension data. 
+// The RawExt type represents raw unprocessed extension data.
 type RawExt struct {
-	Tag byte
+	Tag  byte
 	Data []byte
 }
 
 // Handle is the interface for a specific encoding format.
-// 
+//
 // Typically, a Handle is pre-configured before first time use,
 // and not modified while in use. Such a pre-configured Handle
 // is safe for concurrent access.
@@ -123,9 +123,9 @@ type Handle interface {
 }
 
 type extTypeTagFn struct {
-	rtid uintptr
-	rt reflect.Type
-	tag byte
+	rtid  uintptr
+	rt    reflect.Type
+	tag   byte
 	encFn func(reflect.Value) ([]byte, error)
 	decFn func(reflect.Value, []byte) error
 }
@@ -133,9 +133,9 @@ type extTypeTagFn struct {
 type extHandle []*extTypeTagFn
 
 // AddExt registers an encode and decode function for a reflect.Type.
-// Note that the type must be a named type, and specifically not 
+// Note that the type must be a named type, and specifically not
 // a pointer or Interface. An error is returned if that is not honored.
-// 
+//
 // To Deregister an ext, call AddExt with 0 tag, nil encfn and nil decfn.
 func (o *extHandle) AddExt(
 	rt reflect.Type,
@@ -145,18 +145,18 @@ func (o *extHandle) AddExt(
 ) (err error) {
 	// o is a pointer, because we may need to initialize it
 	if rt.PkgPath() == "" || rt.Kind() == reflect.Interface {
-		err = fmt.Errorf("codec.Handle.AddExt: Takes named type, especially not a pointer or interface: %T", 
+		err = fmt.Errorf("codec.Handle.AddExt: Takes named type, especially not a pointer or interface: %T",
 			reflect.Zero(rt).Interface())
 		return
 	}
-	
-	// o cannot be nil, since it is always embedded in a Handle. 
+
+	// o cannot be nil, since it is always embedded in a Handle.
 	// if nil, let it panic.
 	// if o == nil {
 	// 	err = errors.New("codec.Handle.AddExt: extHandle cannot be a nil pointer.")
 	// 	return
 	// }
-	
+
 	rtid := reflect.ValueOf(rt).Pointer()
 	for _, v := range *o {
 		if v.rtid == rtid {
@@ -164,8 +164,8 @@ func (o *extHandle) AddExt(
 			return
 		}
 	}
-	
-	*o = append(*o, &extTypeTagFn { rtid, rt, tag, encfn, decfn })
+
+	*o = append(*o, &extTypeTagFn{rtid, rt, tag, encfn, decfn})
 	return
 }
 
@@ -214,42 +214,42 @@ func (o extHandle) getEncodeExt(rtid uintptr) (tag byte, fn func(reflect.Value) 
 }
 
 // typeInfo keeps information about each type referenced in the encode/decode sequence.
-// 
+//
 // During an encode/decode sequence, we work as below:
 //   - If base is a built in type, en/decode base value
 //   - If base is registered as an extension, en/decode base value
 //   - If type is binary(M/Unm)arshaler, call Binary(M/Unm)arshal method
 //   - Else decode appropriately based on the reflect.Kind
 type typeInfo struct {
-	sfi       []*structFieldInfo // sorted. Used when enc/dec struct to map.
-	sfip      []*structFieldInfo // unsorted. Used when enc/dec struct to array.
-	
-	rt        reflect.Type
-	rtid      uintptr
-	
+	sfi  []*structFieldInfo // sorted. Used when enc/dec struct to map.
+	sfip []*structFieldInfo // unsorted. Used when enc/dec struct to array.
+
+	rt   reflect.Type
+	rtid uintptr
+
 	// baseId gives pointer to the base reflect.Type, after deferencing
 	// the pointers. E.g. base type of ***time.Time is time.Time.
 	base      reflect.Type
 	baseId    uintptr
 	baseIndir int8 // number of indirections to get to base
-	
-	m         bool // base type (T or *T) is a binaryMarshaler
-	unm       bool // base type (T or *T) is a binaryUnmarshaler
-	mIndir    int8 // number of indirections to get to binaryMarshaler type
-	unmIndir  int8 // number of indirections to get to binaryUnmarshaler type
-	toArray   bool // whether this (struct) type should be encoded as an array
+
+	m        bool // base type (T or *T) is a binaryMarshaler
+	unm      bool // base type (T or *T) is a binaryUnmarshaler
+	mIndir   int8 // number of indirections to get to binaryMarshaler type
+	unmIndir int8 // number of indirections to get to binaryUnmarshaler type
+	toArray  bool // whether this (struct) type should be encoded as an array
 }
 
 type structFieldInfo struct {
-	encName   string // encode name
-	
+	encName string // encode name
+
 	// only one of 'i' or 'is' can be set. If 'i' is -1, then 'is' has been set.
-	
+
 	is        []int // (recursive/embedded) field index in struct
 	i         int16 // field index in struct
-	omitEmpty bool  
-	toArray   bool  // if field is _struct, is the toArray set?
-	
+	omitEmpty bool
+	toArray   bool // if field is _struct, is the toArray set?
+
 	// tag       string   // tag
 	// name      string   // field name
 	// encNameBs []byte   // encoded name as byte stream
@@ -263,7 +263,7 @@ func (p sfiSortedByEncName) Less(i, j int) bool { return p[i].encName < p[j].enc
 func (p sfiSortedByEncName) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func (ti *typeInfo) indexForEncName(name string) int {
-	//tisfi := ti.sfi 
+	//tisfi := ti.sfi
 	if sfilen := len(ti.sfi); sfilen < binarySearchThreshold {
 		// linear search. faster than binary search in my testing up to 16-field structs.
 		// for i := 0; i < sfilen; i++ {
@@ -310,9 +310,9 @@ func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		return
 	}
 
-	ti := typeInfo { rt: rt, rtid: rtid }
+	ti := typeInfo{rt: rt, rtid: rtid}
 	pti = &ti
-	
+
 	var indir int8
 	if ok, indir = implementsIntf(rt, binaryMarshalerTyp); ok {
 		ti.m, ti.mIndir = true, indir
@@ -320,23 +320,23 @@ func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	if ok, indir = implementsIntf(rt, binaryUnmarshalerTyp); ok {
 		ti.unm, ti.unmIndir = true, indir
 	}
-	
+
 	pt := rt
-	var ptIndir int8 
+	var ptIndir int8
 	// for ; pt.Kind() == reflect.Ptr; pt, ptIndir = pt.Elem(), ptIndir+1 { }
 	for pt.Kind() == reflect.Ptr {
 		pt = pt.Elem()
 		ptIndir++
 	}
 	if ptIndir == 0 {
-		ti.base = rt 
+		ti.base = rt
 		ti.baseId = rtid
 	} else {
-		ti.base = pt 
+		ti.base = pt
 		ti.baseId = reflect.ValueOf(pt).Pointer()
 		ti.baseIndir = ptIndir
 	}
-	
+
 	if rt.Kind() == reflect.Struct {
 		var siInfo *structFieldInfo
 		if f, ok := rt.FieldByName(structInfoFieldName); ok {
@@ -357,7 +357,7 @@ func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		// 		sfip[i] = &sfip2[i]
 		// 	}
 		// }
-		
+
 		ti.sfip = make([]*structFieldInfo, len(sfip))
 		ti.sfi = make([]*structFieldInfo, len(sfip))
 		copy(ti.sfip, sfip)
@@ -390,7 +390,7 @@ func rgetTypeInfo(rt reflect.Type, indexstack []int, fnameToHastag map[string]bo
 			}
 		}
 		// do not let fields with same name in embedded structs override field at higher level.
-		// this must be done after anonymous check, to allow anonymous field 
+		// this must be done after anonymous check, to allow anonymous field
 		// still include their child fields
 		if _, ok := fnameToHastag[f.Name]; ok {
 			continue
@@ -457,4 +457,3 @@ func doPanic(tag string, format string, params ...interface{}) {
 	copy(params2[1:], params)
 	panic(fmt.Errorf("%s: "+format, params2...))
 }
-

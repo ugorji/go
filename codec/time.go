@@ -30,7 +30,7 @@ func encodeTime(t time.Time) []byte {
 		bd = bd | 0x80
 		bigen.PutUint64(btmp[:], uint64(tsecs))
 		f := pruneSignExt(btmp[:])
-		bd = bd | (byte(7-f) << 2)
+		bd = bd | byte(7-f)<<2
 		copy(bs[i:], btmp[f:])
 		i = i + (8 - f)
 	}
@@ -73,11 +73,11 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 	)
 	if bd&(1<<7) != 0 {
 		var btmp [8]byte
-		n = ((bd >> 2) & 0x7) + 1
+		n = bd>>2&0x7 + 1
 		i2 = i + n
 		copy(btmp[8-n:], bs[i:i2])
 		//if first bit of bs[i] is set, then fill btmp[0..8-n] with 0xff (ie sign extend it)
-		if bs[i] & (1 << 7) != 0 {
+		if bs[i]&(1<<7) != 0 {
 			copy(btmp[0:8-n], bsAll0xff)
 			//for j,k := byte(0), 8-n; j < k; j++ {	btmp[j] = 0xff }
 		}
@@ -86,7 +86,7 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 	}
 	if bd&(1<<6) != 0 {
 		var btmp [4]byte
-		n = (bd & 0x3) + 1
+		n = bd&0x3 + 1
 		i2 = i + n
 		copy(btmp[4-n:], bs[i:i2])
 		i = i2
@@ -115,7 +115,7 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 	if tzint == 0 {
 		tt = time.Unix(tsec, int64(tnsec)).UTC()
 	} else {
-		// For Go Time, do not use a descriptive timezone. 
+		// For Go Time, do not use a descriptive timezone.
 		// It's unnecessary, and makes it harder to do a reflect.DeepEqual.
 		// The Offset already tells what the offset should be, if not on UTC and unknown zone name.
 		// var zoneName = timeLocUTCName(tzint)
@@ -134,7 +134,7 @@ func timeLocUTCName(tzint int16) string {
 	var tzhr, tzmin int16
 	if tzint < 0 {
 		tzname[3] = '-' // (TODO: verify. this works here)
-		tzhr, tzmin = -tzint/60, (-tzint)%60
+		tzhr, tzmin = -tzint/60, -tzint%60
 	} else {
 		tzhr, tzmin = tzint/60, tzint%60
 	}
@@ -145,7 +145,3 @@ func timeLocUTCName(tzint int16) string {
 	return string(tzname)
 	//return time.FixedZone(string(tzname), int(tzint)*60)
 }
-
-
-
-

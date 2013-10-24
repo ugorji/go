@@ -59,16 +59,16 @@ type encodeHandleI interface {
 }
 
 type encFnInfo struct {
-	ti   *typeInfo
+	ti    *typeInfo
 	e     *Encoder
 	ee    encDriver
 	xfFn  func(reflect.Value) ([]byte, error)
-	xfTag byte 
+	xfTag byte
 }
 
 // encFn encapsulates the captured variables and the encode function.
-// This way, we only do some calculations one times, and pass to the 
-// code block that should be called (encapsulated in a function) 
+// This way, we only do some calculations one times, and pass to the
+// code block that should be called (encapsulated in a function)
 // instead of executing the checks every time.
 type encFn struct {
 	i *encFnInfo
@@ -96,7 +96,7 @@ type ioEncStringWriter interface {
 }
 
 type simpleIoEncWriterWriter struct {
-	w io.Writer 
+	w  io.Writer
 	bw io.ByteWriter
 	sw ioEncStringWriter
 }
@@ -139,7 +139,6 @@ func (o *simpleIoEncWriterWriter) Write(p []byte) (n int, err error) {
 	return o.w.Write(p)
 }
 
-
 func (o *EncodeOptions) structToArray() bool {
 	return o.StructToArray
 }
@@ -177,7 +176,7 @@ func (f *encFnInfo) ext(rv reflect.Value) {
 	} else {
 		f.ee.encodeStringBytes(c_RAW, bs)
 	}
-	
+
 }
 
 func (f *encFnInfo) binaryMarshal(rv reflect.Value) {
@@ -354,12 +353,10 @@ func (f *encFnInfo) kMap(rv reflect.Value) {
 
 }
 
-
-
 // NewEncoder returns an Encoder for encoding into an io.Writer.
-// 
+//
 // For efficiency, Users are encouraged to pass in a memory buffered writer
-// (eg bufio.Writer, bytes.Buffer). 
+// (eg bufio.Writer, bytes.Buffer).
 func NewEncoder(w io.Writer, h Handle) *Encoder {
 	ww, ok := w.(ioEncWriterWriter)
 	if !ok {
@@ -372,7 +369,7 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 	z := ioEncWriter{
 		w: ww,
 	}
-	return &Encoder{w: &z, h: h, e: h.newEncDriver(&z) }
+	return &Encoder{w: &z, h: h, e: h.newEncDriver(&z)}
 }
 
 // NewEncoderBytes returns an encoder for encoding directly and efficiently
@@ -389,36 +386,36 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 		b:   in,
 		out: out,
 	}
-	return &Encoder{w: &z, h: h, e: h.newEncDriver(&z) }
+	return &Encoder{w: &z, h: h, e: h.newEncDriver(&z)}
 }
 
 // Encode writes an object into a stream in the codec format.
 //
 // Encoding can be configured via the "codec" struct tag for the fields.
-// 
+//
 // The "codec" key in struct field's tag value is the key name,
 // followed by an optional comma and options.
-// 
+//
 // To set an option on all fields (e.g. omitempty on all fields), you
-// can create a field called _struct, and set flags on it. 
-// 
+// can create a field called _struct, and set flags on it.
+//
 // Struct values "usually" encode as maps. Each exported struct field is encoded unless:
 //    - the field's codec tag is "-", OR
 //    - the field is empty and its codec tag specifies the "omitempty" option.
-// 
+//
 // When encoding as a map, the first string in the tag (before the comma)
 // is the map key string to use when encoding.
-// 
+//
 // However, struct values may encode as arrays. This happens when:
 //    - StructToArray Encode option is set, OR
 //    - the codec tag on the _struct field sets the "toarray" option
-// 
-// The empty values (for omitempty option) are false, 0, any nil pointer 
+//
+// The empty values (for omitempty option) are false, 0, any nil pointer
 // or interface value, and any array, slice, map, or string of length zero.
 //
 // Anonymous fields are encoded inline if no struct tag is present.
 // Else they are encoded as regular fields.
-// 
+//
 // Examples:
 //
 //      type MyStruct struct {
@@ -429,20 +426,20 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 //          Field4 bool     `codec:"f4,omitempty"` //use key "f4". Omit if empty.
 //          ...
 //      }
-//      
+//
 //      type MyStruct struct {
 //          _struct bool    `codec:",omitempty,toarray"`   //set omitempty for every field
 //                                                         //and encode struct as an array
-//      }   
+//      }
 //
 // The mode of encoding is based on the type of the value. When a value is seen:
 //   - If an extension is registered for it, call that extension function
 //   - If it implements BinaryMarshaler, call its MarshalBinary() (data []byte, err error)
 //   - Else encode it based on its reflect.Kind
-// 
+//
 // Note that struct field names and keys in map[string]XXX will be treated as symbols.
 // Some formats support symbols (e.g. binc) and will properly encode the string
-// only once in the stream, and use a tag to refer to it thereafter. 
+// only once in the stream, and use a tag to refer to it thereafter.
 func (e *Encoder) Encode(v interface{}) (err error) {
 	defer panicToErr(&err)
 	e.encode(v)
@@ -530,12 +527,12 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 		}
 		rv = rv.Elem()
 	}
-	
+
 	rt := rv.Type()
 	rtid := reflect.ValueOf(rt).Pointer()
-		
+
 	// if e.f == nil && e.s == nil { debugf("---->Creating new enc f map for type: %v\n", rt) }
-	var fn encFn 
+	var fn encFn
 	var ok bool
 	if useMapForCodecCache {
 		fn, ok = e.f[rtid]
@@ -549,47 +546,47 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 	}
 	if !ok {
 		// debugf("\tCreating new enc fn for type: %v\n", rt)
-		fi := encFnInfo { ti:getTypeInfo(rtid, rt), e:e, ee:e.e }
-		fn.i = &fi 
+		fi := encFnInfo{ti: getTypeInfo(rtid, rt), e: e, ee: e.e}
+		fn.i = &fi
 		if rtid == rawExtTypId {
-			fn.f = (*encFnInfo).rawExt 
+			fn.f = (*encFnInfo).rawExt
 		} else if e.e.isBuiltinType(rtid) {
-			fn.f = (*encFnInfo).builtin 
+			fn.f = (*encFnInfo).builtin
 		} else if xfTag, xfFn := e.h.getEncodeExt(rtid); xfFn != nil {
 			fi.xfTag, fi.xfFn = xfTag, xfFn
-			fn.f = (*encFnInfo).ext 
+			fn.f = (*encFnInfo).ext
 		} else if supportBinaryMarshal && fi.ti.m {
-			fn.f = (*encFnInfo).binaryMarshal 
+			fn.f = (*encFnInfo).binaryMarshal
 		} else {
 			switch rk := rt.Kind(); rk {
 			case reflect.Bool:
-				fn.f = (*encFnInfo).kBool 
+				fn.f = (*encFnInfo).kBool
 			case reflect.String:
-				fn.f = (*encFnInfo).kString 
+				fn.f = (*encFnInfo).kString
 			case reflect.Float64:
-				fn.f = (*encFnInfo).kFloat64 
+				fn.f = (*encFnInfo).kFloat64
 			case reflect.Float32:
-				fn.f = (*encFnInfo).kFloat32 
+				fn.f = (*encFnInfo).kFloat32
 			case reflect.Int, reflect.Int8, reflect.Int64, reflect.Int32, reflect.Int16:
-				fn.f = (*encFnInfo).kInt 
+				fn.f = (*encFnInfo).kInt
 			case reflect.Uint8, reflect.Uint64, reflect.Uint, reflect.Uint32, reflect.Uint16:
-				fn.f = (*encFnInfo).kUint 
+				fn.f = (*encFnInfo).kUint
 			case reflect.Invalid:
-				fn.f = (*encFnInfo).kInvalid 
+				fn.f = (*encFnInfo).kInvalid
 			case reflect.Slice:
-				fn.f = (*encFnInfo).kSlice 
+				fn.f = (*encFnInfo).kSlice
 			case reflect.Array:
-				fn.f = (*encFnInfo).kArray 
+				fn.f = (*encFnInfo).kArray
 			case reflect.Struct:
-				fn.f = (*encFnInfo).kStruct 
+				fn.f = (*encFnInfo).kStruct
 			// case reflect.Ptr:
-			// 	fn.f = (*encFnInfo).kPtr 
+			// 	fn.f = (*encFnInfo).kPtr
 			case reflect.Interface:
-				fn.f = (*encFnInfo).kInterface 
+				fn.f = (*encFnInfo).kInterface
 			case reflect.Map:
-				fn.f = (*encFnInfo).kMap 
+				fn.f = (*encFnInfo).kMap
 			default:
-				fn.f = (*encFnInfo).kErr 
+				fn.f = (*encFnInfo).kErr
 			}
 		}
 		if useMapForCodecCache {
@@ -598,11 +595,11 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 			}
 			e.f[rtid] = fn
 		} else {
-			e.s = append(e.s, fn )
+			e.s = append(e.s, fn)
 			e.x = append(e.x, rtid)
 		}
 	}
-	
+
 	fn.f(fn.i, rv)
 
 }
@@ -655,7 +652,7 @@ func (z *ioEncWriter) writen2(b1 byte, b2 byte) {
 	z.writen1(b2)
 }
 
-func (z *ioEncWriter) atEndOfEncode() { }
+func (z *ioEncWriter) atEndOfEncode() {}
 
 // ----------------------------------------
 
@@ -707,7 +704,7 @@ func (z *bytesEncWriter) writen2(b1 byte, b2 byte) {
 }
 
 func (z *bytesEncWriter) atEndOfEncode() {
-	*(z.out) = z.b[:z.c]
+	*z.out = z.b[:z.c]
 }
 
 func (z *bytesEncWriter) grow(n int) (oldcursor int) {
@@ -731,4 +728,3 @@ func (z *bytesEncWriter) grow(n int) (oldcursor int) {
 func encErr(format string, params ...interface{}) {
 	doPanic(msgTagEnc, format, params...)
 }
-
