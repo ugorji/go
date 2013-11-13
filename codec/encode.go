@@ -367,16 +367,19 @@ func (f *encFnInfo) kSlice(rv reflect.Value) {
 		case intfSliceTypId:
 			f.e.encSliceIntf(rv.Interface().([]interface{}))
 			return
-		case intSliceTypId:
-			f.e.encSliceInt(rv.Interface().([]int))
-			return
 		case strSliceTypId:
 			f.e.encSliceStr(rv.Interface().([]string))
+			return
+		case uint64SliceTypId:
+			f.e.encSliceUint64(rv.Interface().([]uint64))
+			return
+		case int64SliceTypId:
+			f.e.encSliceInt64(rv.Interface().([]int64))
 			return
 		}
 	}
 
-	if f.ti.rtid == byteSliceTypId {
+	if f.ti.rtid == uint8SliceTypId {
 		f.ee.encodeStringBytes(c_RAW, rv.Bytes())
 		return
 	}
@@ -483,14 +486,20 @@ func (f *encFnInfo) kMap(rv reflect.Value) {
 
 	if shortCircuitReflectToFastPath {
 		switch f.ti.rtid {
-		case mapStringIntfTypId:
-			f.e.encMapStrIntf(rv.Interface().(map[string]interface{}))
-			return
 		case mapIntfIntfTypId:
 			f.e.encMapIntfIntf(rv.Interface().(map[interface{}]interface{}))
 			return
-		case mapIntIntfTypId:
-			f.e.encMapIntIntf(rv.Interface().(map[int]interface{}))
+		case mapStrIntfTypId:
+			f.e.encMapStrIntf(rv.Interface().(map[string]interface{}))
+			return
+		case mapStrStrTypId:
+			f.e.encMapStrStr(rv.Interface().(map[string]string))
+			return
+		case mapInt64IntfTypId:
+			f.e.encMapInt64Intf(rv.Interface().(map[int64]interface{}))
+			return
+		case mapUint64IntfTypId:
+			f.e.encMapUint64Intf(rv.Interface().(map[uint64]interface{}))
 			return
 		}
 	}
@@ -679,21 +688,28 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.encodeFloat32(v)
 	case float64:
 		e.e.encodeFloat64(v)
-	case []byte:
-		e.e.encodeStringBytes(c_RAW, v)
 
 	case []interface{}:
 		e.encSliceIntf(v)
 	case []string:
 		e.encSliceStr(v)
-	case []int:
-		e.encSliceInt(v)
-	case map[int]interface{}:
-		e.encMapIntIntf(v)
-	case map[string]interface{}:
-		e.encMapStrIntf(v)
+	case []int64:
+		e.encSliceInt64(v)
+	case []uint64:
+		e.encSliceUint64(v)
+	case []uint8:
+		e.e.encodeStringBytes(c_RAW, v)
+
 	case map[interface{}]interface{}:
 		e.encMapIntfIntf(v)
+	case map[string]interface{}:
+		e.encMapStrIntf(v)
+	case map[string]string:
+		e.encMapStrStr(v)
+	case map[int64]interface{}:
+		e.encMapInt64Intf(v)
+	case map[uint64]interface{}:
+		e.encMapUint64Intf(v)
 
 	case *string:
 		e.e.encodeString(c_UTF8, *v)
@@ -723,21 +739,28 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.encodeFloat32(*v)
 	case *float64:
 		e.e.encodeFloat64(*v)
-	case *[]byte:
-		e.e.encodeStringBytes(c_RAW, *v)
 
 	case *[]interface{}:
 		e.encSliceIntf(*v)
 	case *[]string:
 		e.encSliceStr(*v)
-	case *[]int:
-		e.encSliceInt(*v)
-	case *map[int]interface{}:
-		e.encMapIntIntf(*v)
-	case *map[string]interface{}:
-		e.encMapStrIntf(*v)
+	case *[]int64:
+		e.encSliceInt64(*v)
+	case *[]uint64:
+		e.encSliceUint64(*v)
+	case *[]uint8:
+		e.e.encodeStringBytes(c_RAW, *v)
+
 	case *map[interface{}]interface{}:
 		e.encMapIntfIntf(*v)
+	case *map[string]interface{}:
+		e.encMapStrIntf(*v)
+	case *map[string]string:
+		e.encMapStrStr(*v)
+	case *map[int64]interface{}:
+		e.encMapInt64Intf(*v)
+	case *map[uint64]interface{}:
+		e.encMapUint64Intf(*v)
 
 	default:
 		e.encodeValue(reflect.ValueOf(iv))
@@ -859,10 +882,30 @@ func (e *Encoder) encSliceStr(v []string) {
 	}
 }
 
-func (e *Encoder) encSliceInt(v []int) {
+func (e *Encoder) encSliceInt64(v []int64) {
 	e.e.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
-		e.e.encodeInt(int64(v2))
+		e.e.encodeInt(v2)
+	}
+}
+
+func (e *Encoder) encSliceUint64(v []uint64) {
+	e.e.encodeArrayPreamble(len(v))
+	for _, v2 := range v {
+		e.e.encodeUint(v2)
+	}
+}
+
+func (e *Encoder) encMapStrStr(v map[string]string) {
+	e.e.encodeMapPreamble(len(v))
+	asSymbols := e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	for k2, v2 := range v {
+		if asSymbols {
+			e.e.encodeSymbol(k2)
+		} else {
+			e.e.encodeString(c_UTF8, k2)
+		}
+		e.e.encodeString(c_UTF8, v2)
 	}
 }
 
@@ -879,10 +922,18 @@ func (e *Encoder) encMapStrIntf(v map[string]interface{}) {
 	}
 }
 
-func (e *Encoder) encMapIntIntf(v map[int]interface{}) {
+func (e *Encoder) encMapInt64Intf(v map[int64]interface{}) {
 	e.e.encodeMapPreamble(len(v))
 	for k2, v2 := range v {
-		e.e.encodeInt(int64(k2))
+		e.e.encodeInt(k2)
+		e.encode(v2)
+	}
+}
+
+func (e *Encoder) encMapUint64Intf(v map[uint64]interface{}) {
+	e.e.encodeMapPreamble(len(v))
+	for k2, v2 := range v {
+		e.e.encodeUint(uint64(k2))
 		e.encode(v2)
 	}
 }

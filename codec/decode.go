@@ -10,9 +10,10 @@ import (
 )
 
 // Some tagging information for error messages.
-var (
-	msgTagDec  = "codec.decoder"
-	msgBadDesc = "Unrecognized descriptor byte"
+const (
+	msgTagDec             = "codec.decoder"
+	msgBadDesc            = "Unrecognized descriptor byte"
+	msgDecCannotExpandArr = "cannot expand go array from %v to stream length: %v"
 )
 
 // decReader abstracts the reading source, allowing implementations that can
@@ -175,6 +176,7 @@ type decFnInfo struct {
 	dd    decDriver
 	xfFn  func(reflect.Value, []byte) error
 	xfTag byte
+	array bool
 }
 
 func (f *decFnInfo) builtin(rv reflect.Value) {
@@ -369,7 +371,20 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 				if sfik.i != -1 {
 					f.d.decodeValue(rv.Field(int(sfik.i)))
 				} else {
-					f.d.decodeValue(rv.FieldByIndex(sfik.is))
+					// f.d.decodeValue(rv.FieldByIndex(sfik.is))
+					// nil pointers may be here; so reproduce FieldByIndex logic + enhancements
+					var rv2 = rv
+					for _, x2 := range sfik.is {
+						if rv2.Kind() == reflect.Ptr {
+							if rv2.IsNil() {
+								rv2.Set(reflect.New(rv2.Type().Elem()))
+							}
+							// If a pointer, it must be a pointer to struct (based on typeInfo contract)
+							rv2 = rv2.Elem()
+						}
+						rv2 = rv2.Field(x2)
+					}
+					f.d.decodeValue(rv2)
 				}
 				// f.d.decodeValue(ti.field(k, rv))
 			} else {
@@ -411,29 +426,26 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 }
 
 func (f *decFnInfo) kSlice(rv reflect.Value) {
-	// Be more careful calling Set() here, because a reflect.Value from an array
-	// may have come in here (which may not be settable).
-	// In places where the slice got from an array could be, we should guard with CanSet() calls.
-
 	// A slice can be set from a map or array in stream.
 
-	if shortCircuitReflectToFastPath {
-		if rv.CanAddr() {
-			switch f.ti.rtid {
-			case intfSliceTypId:
-				f.d.decSliceIntf(rv.Addr().Interface().(*[]interface{}))
-				return
-			case intSliceTypId:
-				f.d.decSliceInt(rv.Addr().Interface().(*[]int))
-				return
-			case strSliceTypId:
-				f.d.decSliceStr(rv.Addr().Interface().(*[]string))
-				return
-			}
+	if shortCircuitReflectToFastPath && rv.CanAddr() {
+		switch f.ti.rtid {
+		case intfSliceTypId:
+			f.d.decSliceIntf(rv.Addr().Interface().(*[]interface{}), f.array)
+			return
+		case uint64SliceTypId:
+			f.d.decSliceUint64(rv.Addr().Interface().(*[]uint64), f.array)
+			return
+		case int64SliceTypId:
+			f.d.decSliceInt64(rv.Addr().Interface().(*[]int64), f.array)
+			return
+		case strSliceTypId:
+			f.d.decSliceStr(rv.Addr().Interface().(*[]string), f.array)
+			return
 		}
 	}
 
-	if f.ti.rtid == byteSliceTypId { // rawbytes
+	if f.ti.rtid == uint8SliceTypId { // rawbytes
 		if bs2, changed2 := f.dd.decodeBytes(rv.Bytes()); changed2 {
 			rv.SetBytes(bs2)
 		}
@@ -442,6 +454,8 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 
 	containerLen, containerLenS := decContLens(f.dd)
 
+	// an array can never return a nil slice. so no need to check f.array here.
+
 	if rv.IsNil() {
 		rv.Set(reflect.MakeSlice(f.ti.rt, containerLenS, containerLenS))
 	}
@@ -449,19 +463,15 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 		return
 	}
 
-	// if we need to reset rv but it cannot be set, we should err out.
-	// for example, if slice is got from unaddressable array, CanSet = false
 	if rvcap, rvlen := rv.Len(), rv.Cap(); containerLenS > rvcap {
-		if rv.CanSet() {
-			rvn := reflect.MakeSlice(f.ti.rt, containerLenS, containerLenS)
-			if rvlen > 0 {
-				reflect.Copy(rvn, rv)
-			}
-			rv.Set(rvn)
-		} else {
-			decErr("Cannot reset slice with less cap: %v than stream contents: %v",
-				rvcap, containerLenS)
+		if f.array { // !rv.CanSet()
+			decErr(msgDecCannotExpandArr, rvcap, containerLenS)
 		}
+		rvn := reflect.MakeSlice(f.ti.rt, containerLenS, containerLenS)
+		if rvlen > 0 {
+			reflect.Copy(rvn, rv)
+		}
+		rv.Set(rvn)
 	} else if containerLenS > rvlen {
 		rv.SetLen(containerLenS)
 	}
@@ -477,29 +487,24 @@ func (f *decFnInfo) kArray(rv reflect.Value) {
 }
 
 func (f *decFnInfo) kMap(rv reflect.Value) {
-	// debugf("\t=> kMap: rv: %v", rv)
-	if shortCircuitReflectToFastPath {
-		if rv.CanAddr() {
-			switch f.ti.rtid {
-			case mapStringIntfTypId:
-				f.d.decMapStrIntf(rv.Addr().Interface().(*map[string]interface{}))
-				return
-			case mapIntfIntfTypId:
-				f.d.decMapIntfIntf(rv.Addr().Interface().(*map[interface{}]interface{}))
-				return
-			case mapIntIntfTypId:
-				f.d.decMapIntIntf(rv.Addr().Interface().(*map[int]interface{}))
-				return
-			}
+	if shortCircuitReflectToFastPath && rv.CanAddr() {
+		switch f.ti.rtid {
+		case mapStrIntfTypId:
+			f.d.decMapStrIntf(rv.Addr().Interface().(*map[string]interface{}))
+			return
+		case mapIntfIntfTypId:
+			f.d.decMapIntfIntf(rv.Addr().Interface().(*map[interface{}]interface{}))
+			return
+		case mapInt64IntfTypId:
+			f.d.decMapInt64Intf(rv.Addr().Interface().(*map[int64]interface{}))
+			return
+		case mapUint64IntfTypId:
+			f.d.decMapUint64Intf(rv.Addr().Interface().(*map[uint64]interface{}))
+			return
 		}
 	}
 
 	containerLen := f.dd.readMapLen()
-	// defer func() {
-	// 	if rv.CanInterface() {
-	// 		debugf("\t=> kMap: containerLen: %v, rv.I: %v", containerLen, rv.Interface())
-	// 	}
-	// }()
 
 	if rv.IsNil() {
 		rv.Set(reflect.MakeMap(f.ti.rt))
@@ -519,7 +524,7 @@ func (f *decFnInfo) kMap(rv reflect.Value) {
 		// if ktype == intfTyp {
 		if ktypeId == intfTypId {
 			rvk = rvk.Elem()
-			if rvk.Type() == byteSliceTyp {
+			if rvk.Type() == uint8SliceTyp {
 				rvk = reflect.ValueOf(string(rvk.Bytes()))
 			}
 		}
@@ -672,17 +677,21 @@ func (d *Decoder) decode(iv interface{}) {
 		*v, _ = d.d.decodeBytes(v2)
 
 	case *[]interface{}:
-		d.decSliceIntf(v)
-	case *[]int:
-		d.decSliceInt(v)
+		d.decSliceIntf(v, false)
+	case *[]uint64:
+		d.decSliceUint64(v, false)
+	case *[]int64:
+		d.decSliceInt64(v, false)
 	case *[]string:
-		d.decSliceStr(v)
+		d.decSliceStr(v, false)
 	case *map[string]interface{}:
 		d.decMapStrIntf(v)
 	case *map[interface{}]interface{}:
 		d.decMapIntfIntf(v)
-	case *map[int]interface{}:
-		d.decMapIntIntf(v)
+	case *map[uint64]interface{}:
+		d.decMapUint64Intf(v)
+	case *map[int64]interface{}:
+		d.decMapInt64Intf(v)
 
 	case *interface{}:
 		d.decodeValue(reflect.ValueOf(iv).Elem())
@@ -698,11 +707,11 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 	d.d.initReadNext()
 
 	if d.d.tryDecodeAsNil() {
-		// If value in stream is nil, set the dereferenced value to its "zero" value (if settable).
+		// If value in stream is nil, set the dereferenced value to its "zero" value (if settable)
 		for rv.Kind() == reflect.Ptr {
 			rv = rv.Elem()
 		}
-		if rv.CanSet() {
+		if rv.IsValid() { // rv.CanSet() // always settable, except it's invalid
 			rv.Set(reflect.Zero(rv.Type()))
 		}
 		return
@@ -797,6 +806,7 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 			case reflect.Slice:
 				fn.f = (*decFnInfo).kSlice
 			case reflect.Array:
+				fi.array = true
 				fn.f = (*decFnInfo).kArray
 			case reflect.Map:
 				fn.f = (*decFnInfo).kMap
@@ -821,48 +831,35 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 }
 
 func (d *Decoder) chkPtrValue(rv reflect.Value) {
-	// We cannot marshal into a non-pointer or a nil pointer
-	// (at least pass a nil interface so we can marshal into it)
-	if rv.Kind() != reflect.Ptr || rv.IsNil() {
-		var rvi interface{} = rv
-		if rv.IsValid() && rv.CanInterface() {
-			rvi = rv.Interface()
-		}
-		decErr("Decode: Expecting valid pointer to decode into. Got: %v, %T, %v",
-			rv.Kind(), rvi, rvi)
+	// We can only decode into a non-nil pointer
+	if rv.Kind() == reflect.Ptr && !rv.IsNil() {
+		return
 	}
+	if !rv.IsValid() {
+		decErr("Cannot decode into a zero (ie invalid) reflect.Value")
+	}
+	if !rv.CanInterface() {
+		decErr("Cannot decode into a value without an interface: %v", rv)
+	}
+	rvi := rv.Interface()
+	decErr("Cannot decode into non-pointer or nil pointer. Got: %v, %T, %v",
+		rv.Kind(), rvi, rvi)
 }
 
 // --------------------------------------------------
 
 // short circuit functions for common maps and slices
 
-func (d *Decoder) decSliceIntf(v *[]interface{}) {
+func (d *Decoder) decSliceIntf(v *[]interface{}, doNotReset bool) {
 	_, containerLenS := decContLens(d.d)
 	s := *v
 	if s == nil {
 		s = make([]interface{}, containerLenS, containerLenS)
 	} else if containerLenS > cap(s) {
+		if doNotReset {
+			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+		}
 		s = make([]interface{}, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
-	}
-	// debugf("\t=> decSliceIntf: containerLenS: %v", containerLenS)
-	for j := 0; j < containerLenS; j++ {
-		// debugf("\t=> decSliceIntf: j: %v", j)
-		d.decode(&s[j])
-	}
-	*v = s
-}
-
-func (d *Decoder) decSliceInt(v *[]int) {
-	_, containerLenS := decContLens(d.d)
-	s := *v
-	if s == nil {
-		s = make([]int, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
-		s = make([]int, containerLenS, containerLenS)
 		copy(s, *v)
 	} else if containerLenS > len(s) {
 		s = s[:containerLenS]
@@ -873,19 +870,68 @@ func (d *Decoder) decSliceInt(v *[]int) {
 	*v = s
 }
 
-func (d *Decoder) decSliceStr(v *[]string) {
+func (d *Decoder) decSliceInt64(v *[]int64, doNotReset bool) {
+	_, containerLenS := decContLens(d.d)
+	s := *v
+	if s == nil {
+		s = make([]int64, containerLenS, containerLenS)
+	} else if containerLenS > cap(s) {
+		if doNotReset {
+			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+		}
+		s = make([]int64, containerLenS, containerLenS)
+		copy(s, *v)
+	} else if containerLenS > len(s) {
+		s = s[:containerLenS]
+	}
+	for j := 0; j < containerLenS; j++ {
+		// d.decode(&s[j])
+		d.d.initReadNext()
+		s[j] = d.d.decodeInt(intBitsize)
+	}
+	*v = s
+}
+
+func (d *Decoder) decSliceUint64(v *[]uint64, doNotReset bool) {
+	_, containerLenS := decContLens(d.d)
+	s := *v
+	if s == nil {
+		s = make([]uint64, containerLenS, containerLenS)
+	} else if containerLenS > cap(s) {
+		if doNotReset {
+			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+		}
+		s = make([]uint64, containerLenS, containerLenS)
+		copy(s, *v)
+	} else if containerLenS > len(s) {
+		s = s[:containerLenS]
+	}
+	for j := 0; j < containerLenS; j++ {
+		// d.decode(&s[j])
+		d.d.initReadNext()
+		s[j] = d.d.decodeUint(intBitsize)
+	}
+	*v = s
+}
+
+func (d *Decoder) decSliceStr(v *[]string, doNotReset bool) {
 	_, containerLenS := decContLens(d.d)
 	s := *v
 	if s == nil {
 		s = make([]string, containerLenS, containerLenS)
 	} else if containerLenS > cap(s) {
+		if doNotReset {
+			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+		}
 		s = make([]string, containerLenS, containerLenS)
 		copy(s, *v)
 	} else if containerLenS > len(s) {
 		s = s[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
-		d.decode(&s[j])
+		// d.decode(&s[j])
+		d.d.initReadNext()
+		s[j] = d.d.decodeString()
 	}
 	*v = s
 }
@@ -910,16 +956,32 @@ func (d *Decoder) decMapIntfIntf(v *map[interface{}]interface{}) {
 	}
 }
 
-func (d *Decoder) decMapIntIntf(v *map[int]interface{}) {
+func (d *Decoder) decMapInt64Intf(v *map[int64]interface{}) {
 	containerLen := d.d.readMapLen()
 	m := *v
 	if m == nil {
-		m = make(map[int]interface{}, containerLen)
+		m = make(map[int64]interface{}, containerLen)
 		*v = m
 	}
 	for j := 0; j < containerLen; j++ {
 		d.d.initReadNext()
-		mk := int(d.d.decodeInt(intBitsize))
+		mk := d.d.decodeInt(intBitsize)
+		mv := m[mk]
+		d.decode(&mv)
+		m[mk] = mv
+	}
+}
+
+func (d *Decoder) decMapUint64Intf(v *map[uint64]interface{}) {
+	containerLen := d.d.readMapLen()
+	m := *v
+	if m == nil {
+		m = make(map[uint64]interface{}, containerLen)
+		*v = m
+	}
+	for j := 0; j < containerLen; j++ {
+		d.d.initReadNext()
+		mk := d.d.decodeUint(intBitsize)
 		mv := m[mk]
 		d.decode(&mv)
 		m[mk] = mv

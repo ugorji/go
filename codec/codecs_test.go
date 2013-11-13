@@ -574,9 +574,9 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	var oldMapType reflect.Type
 	switch v := h.(type) {
 	case *MsgpackHandle:
-		oldMapType, v.MapType = v.MapType, mapStringIntfTyp
+		oldMapType, v.MapType = v.MapType, mapStrIntfTyp
 	case *BincHandle:
-		oldMapType, v.MapType = v.MapType, mapStringIntfTyp
+		oldMapType, v.MapType = v.MapType, mapStrIntfTyp
 	}
 	//skip time.Time, []interface{} containing time.Time, last map, and newStruc
 	doTestCodecTableOne(t, true, h, table[:idxTime], tableTestNilVerify[:idxTime])
@@ -696,8 +696,46 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	}
 }
 
+func testCodecEmbeddedPointer(t *testing.T, h Handle) {
+	type Z int
+	type A struct {
+		AnInt int
+	}
+	type B struct {
+		*Z
+		*A
+		MoreInt int
+	}
+	var err error
+	var buf bytes.Buffer
+	var z Z = 4
+	x1 := &B{&z, &A{5}, 6}
+	err = NewEncoder(&buf, h).Encode(x1)
+	if err != nil {
+		logT(t, "Error encoding %v, Err: %v", x1, err)
+		t.FailNow()
+	}
+	// fmt.Printf("buf: len(%v): %x\n", buf.Len(), buf.Bytes())
+	var x2 = new(B)
+	err = NewDecoder(&buf, h).Decode(x2)
+	if err != nil {
+		logT(t, "Error decoding into %v, Err: %v", x2, err)
+		t.FailNow()
+	}
+	if !reflect.DeepEqual(x1, x2) {
+		logT(t, "Error: NOT MATCH: x1: %v, x2: %v", x1, x2)
+		t.FailNow()
+	}
+
+}
+
 func doTestRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration,
 ) (port int) {
+	// rpc needs EOF, which is sent via a panic, and so must be recovered.
+	if !recoverPanicToErr {
+		logT(t, "EXPECTED. set recoverPanicToErr=true, since rpc needs EOF")
+		t.FailNow()
+	}
 	srv := rpc.NewServer()
 	srv.Register(testRpcInt)
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
@@ -706,7 +744,7 @@ func doTestRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs ti
 	port = (ln.Addr().(*net.TCPAddr)).Port
 	// var opts *DecoderOptions
 	// opts := testDecOpts
-	// opts.MapType = mapStringIntfTyp
+	// opts.MapType = mapStrIntfTyp
 	// opts.RawToString = false
 	serverExitChan := make(chan bool, 1)
 	var serverExitFlag uint64 = 0
@@ -825,7 +863,7 @@ func doTestMsgpackPythonGenStreams(t *testing.T) {
 			failT(t)
 			continue
 		}
-		testMsgpackH.MapType = mapStringIntfTyp
+		testMsgpackH.MapType = mapStrIntfTyp
 
 		var v1 interface{}
 		if err = testUnmarshal(&v1, bss, testMsgpackH); err != nil {
@@ -921,12 +959,20 @@ func TestMsgpackCodecsMisc(t *testing.T) {
 	testCodecMiscOne(t, testMsgpackH)
 }
 
+func TestMsgpackCodecsEmbeddedPointer(t *testing.T) {
+	testCodecEmbeddedPointer(t, testMsgpackH)
+}
+
 func TestBincCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testBincH)
 }
 
 func TestBincCodecsMisc(t *testing.T) {
 	testCodecMiscOne(t, testBincH)
+}
+
+func TestBincCodecsEmbeddedPointer(t *testing.T) {
+	testCodecEmbeddedPointer(t, testBincH)
 }
 
 func TestMsgpackRpcGo(t *testing.T) {
