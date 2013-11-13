@@ -371,20 +371,7 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 				if sfik.i != -1 {
 					f.d.decodeValue(rv.Field(int(sfik.i)))
 				} else {
-					// f.d.decodeValue(rv.FieldByIndex(sfik.is))
-					// nil pointers may be here; so reproduce FieldByIndex logic + enhancements
-					var rv2 = rv
-					for _, x2 := range sfik.is {
-						if rv2.Kind() == reflect.Ptr {
-							if rv2.IsNil() {
-								rv2.Set(reflect.New(rv2.Type().Elem()))
-							}
-							// If a pointer, it must be a pointer to struct (based on typeInfo contract)
-							rv2 = rv2.Elem()
-						}
-						rv2 = rv2.Field(x2)
-					}
-					f.d.decodeValue(rv2)
+					f.d.decEmbeddedField(rv, sfik.is)
 				}
 				// f.d.decodeValue(ti.field(k, rv))
 			} else {
@@ -409,7 +396,7 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 			if si.i != -1 {
 				f.d.decodeValue(rv.Field(int(si.i)))
 			} else {
-				f.d.decodeValue(rv.FieldByIndex(si.is))
+				f.d.decEmbeddedField(rv, si.is)
 			}
 		}
 		if containerLen > len(fti.sfip) {
@@ -844,6 +831,22 @@ func (d *Decoder) chkPtrValue(rv reflect.Value) {
 	rvi := rv.Interface()
 	decErr("Cannot decode into non-pointer or nil pointer. Got: %v, %T, %v",
 		rv.Kind(), rvi, rvi)
+}
+
+func (d *Decoder) decEmbeddedField(rv reflect.Value, index []int) {
+	// d.decodeValue(rv.FieldByIndex(index))
+	// nil pointers may be here; so reproduce FieldByIndex logic + enhancements
+	for _, j := range index {
+		if rv.Kind() == reflect.Ptr {
+			if rv.IsNil() {
+				rv.Set(reflect.New(rv.Type().Elem()))
+			}
+			// If a pointer, it must be a pointer to struct (based on typeInfo contract)
+			rv = rv.Elem()
+		}
+		rv = rv.Field(j)
+	}
+	d.decodeValue(rv)
 }
 
 // --------------------------------------------------
