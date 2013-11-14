@@ -432,7 +432,7 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 		}
 	}
 
-	if f.ti.rtid == uint8SliceTypId { // rawbytes
+	if f.ti.rtid == uint8SliceTypId || f.ti.rt.Elem().Kind() == reflect.Uint8 { 
 		if bs2, changed2 := f.dd.decodeBytes(rv.Bytes()); changed2 {
 			rv.SetBytes(bs2)
 		}
@@ -1018,7 +1018,7 @@ func decContLens(dd decDriver) (containerLen, containerLenS int) {
 		containerLen = dd.readMapLen()
 		containerLenS = containerLen * 2
 	default:
-		decErr("Only encoded map or array can be decoded into a slice. (valueType: %x)",
+		decErr("Only encoded map or array can be decoded into a slice. (valueType: %0x)",
 			currEncodedType)
 	}
 	return

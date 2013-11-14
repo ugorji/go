@@ -379,10 +379,13 @@ func (f *encFnInfo) kSlice(rv reflect.Value) {
 		}
 	}
 
-	if f.ti.rtid == uint8SliceTypId {
+	// If in this method, then there was no extension function defined.
+	// So it's okay to treat as []byte.
+	if f.ti.rtid == uint8SliceTypId || f.ti.rt.Elem().Kind() == reflect.Uint8 {
 		f.ee.encodeStringBytes(c_RAW, rv.Bytes())
 		return
 	}
+	
 	l := rv.Len()
 	if f.ti.mbs {
 		if l%2 == 1 {
@@ -402,8 +405,48 @@ func (f *encFnInfo) kSlice(rv reflect.Value) {
 }
 
 func (f *encFnInfo) kArray(rv reflect.Value) {
+	// We cannot share kSlice method, because the array may be non-addressable.
+	// E.g. type struct S{B [2]byte}; Encode(S{}) will bomb on "panic: slice of unaddressable array".
+	// So we have to duplicate the functionality here.
 	// f.e.encodeValue(rv.Slice(0, rv.Len()))
-	f.kSlice(rv.Slice(0, rv.Len()))
+	// f.kSlice(rv.Slice(0, rv.Len()))
+	
+	// Handle an array of bytes specially (in line with what is done for slices)
+	if f.ti.rt.Elem().Kind() == reflect.Uint8 {
+		rvlen := rv.Len()
+		if rvlen == 0 {
+			f.ee.encodeStringBytes(c_RAW, nil)
+			return
+		}
+		var bs []byte 
+		if rv.CanAddr() {
+			bs = rv.Slice(0, rv.Len()).Bytes()
+		} else {
+			bs = make([]byte, rv.Len())
+			for i := 0; i < len(bs); i++ {
+				bs[i] = byte(rv.Index(i).Uint())
+			}
+		}
+		f.ee.encodeStringBytes(c_RAW, bs)
+		return
+	}
+	
+	l := rv.Len()
+	if f.ti.mbs {
+		if l%2 == 1 {
+			encErr("mapBySlice: invalid length (must be divisible by 2): %v", l)
+		}
+		f.ee.encodeMapPreamble(l / 2)
+	} else {
+		f.ee.encodeArrayPreamble(l)
+	}
+	if l == 0 {
+		return
+	}
+	for j := 0; j < l; j++ {
+		// TODO: Consider perf implication of encoding odd index values as symbols if type is string
+		f.e.encodeValue(rv.Index(j))
+	}
 }
 
 func (f *encFnInfo) kStruct(rv reflect.Value) {

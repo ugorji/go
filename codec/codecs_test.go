@@ -694,6 +694,35 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 		logT(t, "Not Equal: %v. t2: %v, t3: %v", err, t2, t3)
 		t.FailNow()
 	}
+
+	// println(">>>>>")
+	// test simple arrays, non-addressable arrays, slices
+	type tarr struct {
+		A int64 
+		B [3]int64 
+		C []byte  
+		D [3]byte 
+	}
+	var tarr0 = tarr{1, [3]int64{2,3,4}, []byte{4,5,6}, [3]byte{7,8,9} }
+	// test both pointer and non-pointer (value)
+	for _, tarr1 := range []interface{}{tarr0, &tarr0} {
+		bs, err = testMarshal(tarr1, h)
+		if err != nil {
+			logT(t, "Error marshalling tarr: %v, Err: %v", tarr1, err)
+			t.FailNow()
+		}
+		var tarr2 tarr 
+		err = testUnmarshal(&tarr2, bs, h)
+		if err != nil {
+			logT(t, "Error unmarshalling into &tarr2: %v, Err: %v", tarr2, err)
+			t.FailNow()
+		}
+		if err = deepEqual(tarr0, tarr2); err != nil {
+			logT(t, "Not Equal: %v. tarr1: %v, tarr2: %v", err, tarr0, tarr2)
+			t.FailNow()
+		}
+		// fmt.Printf(">>>> err: %v. tarr1: %v, tarr2: %v\n", err, tarr0, tarr2)
+	}
 }
 
 func testCodecEmbeddedPointer(t *testing.T, h Handle) {
@@ -706,18 +735,16 @@ func testCodecEmbeddedPointer(t *testing.T, h Handle) {
 		*A
 		MoreInt int
 	}
-	var err error
-	var buf bytes.Buffer
 	var z Z = 4
 	x1 := &B{&z, &A{5}, 6}
-	err = NewEncoder(&buf, h).Encode(x1)
+	bs, err := testMarshal(x1, h)
 	if err != nil {
 		logT(t, "Error encoding %v, Err: %v", x1, err)
 		t.FailNow()
 	}
 	// fmt.Printf("buf: len(%v): %x\n", buf.Len(), buf.Bytes())
 	var x2 = new(B)
-	err = NewDecoder(&buf, h).Decode(x2)
+	err = testUnmarshal(x2, bs, h)
 	if err != nil {
 		logT(t, "Error decoding into %v, Err: %v", x2, err)
 		t.FailNow()
