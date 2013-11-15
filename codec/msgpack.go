@@ -1,6 +1,22 @@
 // Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
+/*
+MSGPACK
+
+Msgpack-c implementation powers the c, c++, python, ruby, etc libraries.
+We need to maintain compatibility with it and how it encodes integer values
+without caring about the type.
+
+For compatibility with behaviour of msgpack-c reference implementation:
+  - Go intX (>0) and uintX 
+       IS ENCODED AS 
+    msgpack +ve fixnum, unsigned
+  - Go intX (<0)
+       IS ENCODED AS 
+    msgpack -ve fixnum, signed
+
+*/
 package codec
 
 import (
@@ -61,11 +77,6 @@ const (
 	mpNegFixNumMax = 0xff
 )
 
-// TODO: Should I enable this, which causes small uints be encoded as fixnums?
-// uints are not fixnums. fixnums are always signed.
-// conditionally support them (but keep flag off for compatibility).
-const mpEncodeUintAsFixnum = false 
-
 // MsgpackSpecRpcMultiArgs is a special type which signifies to the MsgpackSpecRpcCodec
 // that the backend RPC service takes multiple arguments, which have been arranged
 // in sequence in the slice.
@@ -107,28 +118,29 @@ func (e *msgpackEncDriver) encodeNil() {
 }
 
 func (e *msgpackEncDriver) encodeInt(i int64) {
+	
 	switch {
-	case i >= -32 && i <= math.MaxInt8:
+	case i >= 0:
+		e.encodeUint(uint64(i))
+	case i >= -32:
 		e.w.writen1(byte(i))
-	case i < -32 && i >= math.MinInt8:
+	case i >= math.MinInt8:
 		e.w.writen2(mpInt8, byte(i))
-	case i >= math.MinInt16 && i <= math.MaxInt16:
+	case i >= math.MinInt16:
 		e.w.writen1(mpInt16)
 		e.w.writeUint16(uint16(i))
-	case i >= math.MinInt32 && i <= math.MaxInt32:
+	case i >= math.MinInt32:
 		e.w.writen1(mpInt32)
 		e.w.writeUint32(uint32(i))
-	case i >= math.MinInt64 && i <= math.MaxInt64:
+	default:
 		e.w.writen1(mpInt64)
 		e.w.writeUint64(uint64(i))
-	default:
-		encErr("encInt64: Unreachable block")
 	}
 }
 
 func (e *msgpackEncDriver) encodeUint(i uint64) {
 	switch {
-	case mpEncodeUintAsFixnum && i <= math.MaxInt8:
+	case i <= math.MaxInt8:
 		e.w.writen1(byte(i))
 	case i <= math.MaxUint8:
 		e.w.writen2(mpUint8, byte(i))

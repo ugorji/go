@@ -36,11 +36,12 @@ func checkErrT(t *testing.T, err error) {
 	}
 }
 
-func checkEqualT(t *testing.T, v1 interface{}, v2 interface{}) {
-	if err := deepEqual(v1, v2); err != nil {
-		logT(t, "Do not match: %v. v1: %v, v2: %v", err, v1, v2)
+func checkEqualT(t *testing.T, v1 interface{}, v2 interface{}, desc string) (err error) {
+	if err = deepEqual(v1, v2); err != nil {
+		logT(t, "Not Equal: %s: %v. v1: %v, v2: %v", desc, err, v1, v2)
 		failT(t)
 	}
+	return
 }
 
 func logT(x interface{}, format string, args ...interface{}) {

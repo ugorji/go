@@ -16,12 +16,6 @@ package codec
 //
 // Taken together, the tests are pretty extensive.
 
-// Some hints:
-// - python msgpack encodes positive numbers as uints, so use uints below
-//   for positive numbers.
-// - flag mpEncodeUintAsFixnum allows uints be encoded as fixnums.
-//   To accomodate it being true or false, ensure all unsigned values below are > 128.
-
 import (
 	"bytes"
 	"encoding/gob"
@@ -160,25 +154,25 @@ func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
 	//  - all floats are float64
 	switch iv := v.(type) {
 	case int8:
-		if arg == testVerifyForPython && iv > 0 {
+		if iv > 0 {
 			v2 = uint64(iv)
 		} else {
 			v2 = int64(iv)
 		}
 	case int16:
-		if arg == testVerifyForPython && iv > 0 {
+		if iv > 0 {
 			v2 = uint64(iv)
 		} else {
 			v2 = int64(iv)
 		}
 	case int32:
-		if arg == testVerifyForPython && iv > 0 {
+		if iv > 0 {
 			v2 = uint64(iv)
 		} else {
 			v2 = int64(iv)
 		}
 	case int64:
-		if arg == testVerifyForPython && iv > 0 {
+		if iv > 0 {
 			v2 = uint64(iv)
 		} else {
 			v2 = int64(iv)
@@ -426,6 +420,22 @@ func testMarshal(v interface{}, h Handle) (bs []byte, err error) {
 	return
 }
 
+func testMarshalErr(v interface{}, h Handle, t *testing.T, name string) (bs []byte, err error) {
+	if bs, err = testMarshal(v, h); err != nil {
+		logT(t, "Error encoding %s: %v, Err: %v", name, v, err)
+		t.FailNow()
+	}
+	return
+}
+
+func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name string) (err error) {
+	if err = testUnmarshal(v, data, h); err != nil {
+		logT(t, "Error Decoding into %s: %v, Err: %v", name, v, err)
+		t.FailNow()
+	}
+	return   
+}
+
 func newTestStruc(depth int, bench bool) (ts *TestStruc) {
 	var i64a, i64b, i64c, i64d int64 = 64, 6464, 646464, 64646464
 
@@ -501,10 +511,8 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 	for i, v0 := range vs {
 		logT(t, "..............................................")
 		logT(t, "         Testing: #%d:, %T, %#v\n", i, v0, v0)
-		b0, err := testMarshal(v0, h)
+		b0, err := testMarshalErr(v0, h, t, "v0")
 		if err != nil {
-			logT(t, err.Error())
-			failT(t)
 			continue
 		}
 		logT(t, "         Encoded bytes: len: %v, %v\n", len(b0), b0)
@@ -524,6 +532,7 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 		}
 
 		logT(t, "         v1 returned: %T, %#v", v1, v1)
+		// t.FailNow() //todo: ugorji: remove
 		// if v1 != nil {
 		//	logT(t, "         v1 returned: %T, %#v", v1, v1)
 		//	//we always indirect, because ptr to typed value may be passed (if not testNil)
@@ -600,7 +609,7 @@ func testCodecTableOne(t *testing.T, h Handle) {
 }
 
 func testCodecMiscOne(t *testing.T, h Handle) {
-	b, err := testMarshal(32, h)
+	b, err := testMarshalErr(32, h, t, "32")
 	// Cannot do this nil one, because faster type assertion decoding will panic
 	// var i *int32
 	// if err = testUnmarshal(b, i, nil); err == nil {
@@ -608,10 +617,7 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	// 	t.FailNow()
 	// }
 	var i2 int32 = 0
-	if err = testUnmarshal(&i2, b, h); err != nil {
-		logT(t, "------- Cannot unmarshal to int32 ptr. Error: %v", err)
-		t.FailNow()
-	}
+	err = testUnmarshalErr(&i2, b, h, t, "int32-ptr")
 	if i2 != int32(32) {
 		logT(t, "------- didn't unmarshal to 32: Received: %d", i2)
 		t.FailNow()
@@ -619,21 +625,15 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 
 	// func TestMsgpackDecodePtr(t *testing.T) {
 	ts := newTestStruc(0, false)
-	b, err = testMarshal(ts, h)
-	if err != nil {
-		logT(t, "------- Cannot Marshal pointer to struct. Error: %v", err)
-		t.FailNow()
-	} else if len(b) < 40 {
+	b, err = testMarshalErr(ts, h, t, "pointer-to-struct")
+	if len(b) < 40 {
 		logT(t, "------- Size must be > 40. Size: %d", len(b))
 		t.FailNow()
 	}
 	logT(t, "------- b: %v", b)
 	ts2 := new(TestStruc)
-	err = testUnmarshal(ts2, b, h)
-	if err != nil {
-		logT(t, "------- Cannot Unmarshal pointer to struct. Error: %v", err)
-		t.FailNow()
-	} else if ts2.I64 != math.MaxInt64*2/3 {
+	err = testUnmarshalErr(ts2, b, h, t, "pointer-to-struct")
+	if ts2.I64 != math.MaxInt64*2/3 {
 		logT(t, "------- Unmarshal wrong. Expect I64 = 64. Got: %v", ts2.I64)
 		t.FailNow()
 	}
@@ -641,25 +641,19 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	// func TestMsgpackIntfDecode(t *testing.T) {
 	m := map[string]int{"A": 2, "B": 3}
 	p := []interface{}{m}
-	bs, err := testMarshal(p, h)
-	if err != nil {
-		logT(t, "Error marshalling p: %v, Err: %v", p, err)
-		t.FailNow()
-	}
+	bs, err := testMarshalErr(p, h, t, "p")
 
 	m2 := map[string]int{}
 	p2 := []interface{}{m2}
-	err = testUnmarshal(&p2, bs, h)
-	if err != nil {
-		logT(t, "Error unmarshalling into &p2: %v, Err: %v", p2, err)
-		t.FailNow()
-	}
+	err = testUnmarshalErr(&p2, bs, h, t, "&p2")
 
 	if m2["A"] != 2 || m2["B"] != 3 {
 		logT(t, "m2 not as expected: expecting: %v, got: %v", m, m2)
 		t.FailNow()
 	}
 	// log("m: %v, m2: %v, p: %v, p2: %v", m, m2, p, p2)
+	checkEqualT(t, p, p2, "p=p2")
+	checkEqualT(t, m, m2, "m=m2")
 	if err = deepEqual(p, p2); err == nil {
 		logT(t, "p and p2 match")
 	} else {
@@ -672,30 +666,19 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 		logT(t, "Not Equal: %v. m: %v, m2: %v", err, m, m2)
 		t.FailNow()
 	}
-
+	
 	// func TestMsgpackDecodeStructSubset(t *testing.T) {
 	// test that we can decode a subset of the stream
 	mm := map[string]interface{}{"A": 5, "B": 99, "C": 333}
-	bs, err = testMarshal(mm, h)
-	if err != nil {
-		logT(t, "Error marshalling m: %v, Err: %v", mm, err)
-		t.FailNow()
-	}
+	bs, err = testMarshalErr(mm, h, t, "mm")
 	type ttt struct {
 		A uint8
 		C int32
 	}
 	var t2 ttt
-	err = testUnmarshal(&t2, bs, h)
-	if err != nil {
-		logT(t, "Error unmarshalling into &t2: %v, Err: %v", t2, err)
-		t.FailNow()
-	}
+	testUnmarshalErr(&t2, bs, h, t, "t2")
 	t3 := ttt{5, 333}
-	if err = deepEqual(t2, t3); err != nil {
-		logT(t, "Not Equal: %v. t2: %v, t3: %v", err, t2, t3)
-		t.FailNow()
-	}
+	checkEqualT(t, t2, t3, "t2=t3")
 
 	// println(">>>>>")
 	// test simple arrays, non-addressable arrays, slices
@@ -708,21 +691,10 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	var tarr0 = tarr{1, [3]int64{2,3,4}, []byte{4,5,6}, [3]byte{7,8,9} }
 	// test both pointer and non-pointer (value)
 	for _, tarr1 := range []interface{}{tarr0, &tarr0} {
-		bs, err = testMarshal(tarr1, h)
-		if err != nil {
-			logT(t, "Error marshalling tarr: %v, Err: %v", tarr1, err)
-			t.FailNow()
-		}
+		bs, err = testMarshalErr(tarr1, h, t, "tarr1")
 		var tarr2 tarr 
-		err = testUnmarshal(&tarr2, bs, h)
-		if err != nil {
-			logT(t, "Error unmarshalling into &tarr2: %v, Err: %v", tarr2, err)
-			t.FailNow()
-		}
-		if err = deepEqual(tarr0, tarr2); err != nil {
-			logT(t, "Not Equal: %v. tarr1: %v, tarr2: %v", err, tarr0, tarr2)
-			t.FailNow()
-		}
+		testUnmarshalErr(&tarr2, bs, h, t, "tarr2")
+		checkEqualT(t, tarr0, tarr2, "tarr0=tarr2")
 		// fmt.Printf(">>>> err: %v. tarr1: %v, tarr2: %v\n", err, tarr0, tarr2)
 	}
 
@@ -732,11 +704,7 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 			Anarray []byte
 		}
 		var ya = ystruct{}
-		err = testUnmarshal(&ya, []byte{0x91, 0x90}, h)
-		if err != nil {
-			logT(t, "Error unmarshalling into ystruct: %v, Err: %v", ya, err)
-			t.FailNow()
-		}
+		testUnmarshalErr(&ya, []byte{0x91, 0x90}, h, t, "ya")
 	}
 }
 
@@ -752,23 +720,12 @@ func testCodecEmbeddedPointer(t *testing.T, h Handle) {
 	}
 	var z Z = 4
 	x1 := &B{&z, &A{5}, 6}
-	bs, err := testMarshal(x1, h)
-	if err != nil {
-		logT(t, "Error encoding %v, Err: %v", x1, err)
-		t.FailNow()
-	}
+	bs, err := testMarshalErr(x1, h, t, "x1")
 	// fmt.Printf("buf: len(%v): %x\n", buf.Len(), buf.Bytes())
 	var x2 = new(B)
-	err = testUnmarshal(x2, bs, h)
-	if err != nil {
-		logT(t, "Error decoding into %v, Err: %v", x2, err)
-		t.FailNow()
-	}
-	if !reflect.DeepEqual(x1, x2) {
-		logT(t, "Error: NOT MATCH: x1: %v, x2: %v", x1, x2)
-		t.FailNow()
-	}
-
+	err = testUnmarshalErr(x2, bs, h, t, "x2")
+	err = checkEqualT(t, x1, x2, "x1=x2")
+	_ = err
 }
 
 func doTestRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration,
@@ -815,16 +772,16 @@ func doTestRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs ti
 		// log("Calling client")
 		checkErrT(t, cl.Call("TestRpcInt.Update", 5, &up))
 		// log("Called TestRpcInt.Update")
-		checkEqualT(t, testRpcInt.i, 5)
-		checkEqualT(t, up, 5)
+		checkEqualT(t, testRpcInt.i, 5, "testRpcInt.i=5")
+		checkEqualT(t, up, 5, "up=5")
 		checkErrT(t, cl.Call("TestRpcInt.Square", 1, &sq))
-		checkEqualT(t, sq, 25)
+		checkEqualT(t, sq, 25, "sq=25")
 		checkErrT(t, cl.Call("TestRpcInt.Mult", 20, &mult))
-		checkEqualT(t, mult, 100)
+		checkEqualT(t, mult, 100, "mult=100")
 		checkErrT(t, cl.Call("TestRpcInt.EchoStruct", TestABC{"Aa", "Bb", "Cc"}, &rstr))
-		checkEqualT(t, rstr, fmt.Sprintf("%#v", TestABC{"Aa", "Bb", "Cc"}))
+		checkEqualT(t, rstr, fmt.Sprintf("%#v", TestABC{"Aa", "Bb", "Cc"}), "rstr=")
 		checkErrT(t, cl.Call("TestRpcInt.Echo123", []string{"A1", "B2", "C3"}, &rstr))
-		checkEqualT(t, rstr, fmt.Sprintf("%#v", []string{"A1", "B2", "C3"}))
+		checkEqualT(t, rstr, fmt.Sprintf("%#v", []string{"A1", "B2", "C3"}), "rstr=")
 	}
 
 	connFn := func() (bs net.Conn) {
@@ -975,7 +932,7 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 	//checkEqualT(t, rstr, "{'A': 'Aa', 'B': 'Bb', 'C': 'Cc'}")
 	var mArgs MsgpackSpecRpcMultiArgs = []interface{}{"A1", "B2", "C3"}
 	checkErrT(t, cl.Call("Echo123", mArgs, &rstr))
-	checkEqualT(t, rstr, "1:A1 2:B2 3:C3")
+	checkEqualT(t, rstr, "1:A1 2:B2 3:C3", "rstr=")
 }
 
 func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
@@ -990,7 +947,7 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 		t.FailNow()
 	}
 	checkEqualT(t, string(cmdout),
-		fmt.Sprintf("%#v\n%#v\n", []string{"A1", "B2", "C3"}, TestABC{"Aa", "Bb", "Cc"}))
+		fmt.Sprintf("%#v\n%#v\n", []string{"A1", "B2", "C3"}, TestABC{"Aa", "Bb", "Cc"}), "cmdout=")
 }
 
 func TestMsgpackCodecsTable(t *testing.T) {

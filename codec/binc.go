@@ -16,8 +16,8 @@ import (
 // vd as low 4 bits (there are 16 slots)
 const (
 	bincVdSpecial byte = iota
-	bincVdUint
-	bincVdInt
+	bincVdPosInt
+	bincVdNegInt
 	bincVdFloat
 
 	bincVdString
@@ -137,29 +137,27 @@ func (e *bincEncDriver) encInteger8(bd byte, v uint64) {
 }
 
 func (e *bincEncDriver) encodeInt(v int64) {
-	const bd byte = bincVdInt << 4
+	const nbd byte = bincVdNegInt << 4
 	switch {
-	case v == 0:
-		e.w.writen1(bincVdSpecial<<4 | bincSpZero)
+	case v >= 0:
+		e.encUint(bincVdPosInt << 4, true, uint64(v))
 	case v == -1:
 		e.w.writen1(bincVdSpecial<<4 | bincSpNegOne)
-	case v >= 1 && v <= 16:
-		e.w.writen1(bincVdSmallInt<<4 | byte(v-1))
-	case v >= math.MinInt8 && v <= math.MaxInt8:
-		e.w.writen2(bd|0x0, byte(v))
-	case v >= math.MinInt16 && v <= math.MaxInt16:
-		e.w.writen1(bd | 0x1)
-		e.w.writeUint16(uint16(v))
-	case v >= math.MinInt32 && v <= math.MaxInt32:
-		e.encInteger4(bd, uint32(v))
 	default:
-		e.encInteger8(bd, uint64(v))
+		e.encUint(bincVdNegInt << 4, false, uint64(-v))
 	}
 }
 
 func (e *bincEncDriver) encodeUint(v uint64) {
-	const bd byte = bincVdUint << 4
+	e.encUint(bincVdPosInt << 4, true, v)
+}
+
+func (e *bincEncDriver) encUint(bd byte, pos bool, v uint64) {
 	switch {
+	case v == 0:
+		e.w.writen1(bincVdSpecial<<4 | bincSpZero)
+	case pos && v >= 1 && v <= 16:
+		e.w.writen1(bincVdSmallInt<<4 | byte(v-1))
 	case v <= math.MaxUint8:
 		e.w.writen2(bd|0x0, byte(v))
 	case v <= math.MaxUint16:
@@ -336,16 +334,18 @@ func (d *bincDecDriver) currentEncodedType() valueType {
 				d.bdType = valueTypeBool
 			case bincSpNan, bincSpNegInf, bincSpPosInf, bincSpZeroFloat:
 				d.bdType = valueTypeFloat
-			case bincSpZero, bincSpNegOne:
+			case bincSpZero:
+				d.bdType = valueTypeUint
+			case bincSpNegOne:
 				d.bdType = valueTypeInt
 			default:
 				decErr("currentEncodedType: Unrecognized special value 0x%x", d.vs)
 			}
 		case bincVdSmallInt:
-			d.bdType = valueTypeInt
-		case bincVdUint:
 			d.bdType = valueTypeUint
-		case bincVdInt:
+		case bincVdPosInt:
+			d.bdType = valueTypeUint
+		case bincVdNegInt:
 			d.bdType = valueTypeInt
 		case bincVdFloat:
 			d.bdType = valueTypeFloat
@@ -428,44 +428,44 @@ func (d *bincDecDriver) decFloat() (f float64) {
 	return
 }
 
-func (d *bincDecDriver) decInt() (v int64) {
-	// need to inline the code (interface conversion and type assertion expensive)
-	switch d.vs {
-	case 0:
-		v = int64(int8(d.r.readn1()))
-	case 1:
-		d.r.readb(d.b[6:])
-		v = int64(int16(bigen.Uint16(d.b[6:])))
-	case 2:
-		d.r.readb(d.b[5:])
-		if d.b[5]&0x80 == 0 {
-			d.b[4] = 0
-		} else {
-			d.b[4] = 0xff
-		}
-		v = int64(int32(bigen.Uint32(d.b[4:])))
-	case 3:
-		d.r.readb(d.b[4:])
-		v = int64(int32(bigen.Uint32(d.b[4:])))
-	case 4, 5, 6:
-		lim := int(7 - d.vs)
-		d.r.readb(d.b[lim:])
-		var fillval byte = 0
-		if d.b[lim]&0x80 != 0 {
-			fillval = 0xff
-		}
-		for i := 0; i < lim; i++ {
-			d.b[i] = fillval
-		}
-		v = int64(bigen.Uint64(d.b[:]))
-	case 7:
-		d.r.readb(d.b[:])
-		v = int64(bigen.Uint64(d.b[:]))
-	default:
-		decErr("integers with greater than 64 bits of precision not supported")
-	}
-	return
-}
+// func (d *bincDecDriver) decInt() (v int64) {
+// 	// need to inline the code (interface conversion and type assertion expensive)
+// 	switch d.vs {
+// 	case 0:
+// 		v = int64(int8(d.r.readn1()))
+// 	case 1:
+// 		d.r.readb(d.b[6:])
+// 		v = int64(int16(bigen.Uint16(d.b[6:])))
+// 	case 2:
+// 		d.r.readb(d.b[5:])
+// 		if d.b[5]&0x80 == 0 {
+// 			d.b[4] = 0
+// 		} else {
+// 			d.b[4] = 0xff
+// 		}
+// 		v = int64(int32(bigen.Uint32(d.b[4:])))
+// 	case 3:
+// 		d.r.readb(d.b[4:])
+// 		v = int64(int32(bigen.Uint32(d.b[4:])))
+// 	case 4, 5, 6:
+// 		lim := int(7 - d.vs)
+// 		d.r.readb(d.b[lim:])
+// 		var fillval byte = 0
+// 		if d.b[lim]&0x80 != 0 {
+// 			fillval = 0xff
+// 		}
+// 		for i := 0; i < lim; i++ {
+// 			d.b[i] = fillval
+// 		}
+// 		v = int64(bigen.Uint64(d.b[:]))
+// 	case 7:
+// 		d.r.readb(d.b[:])
+// 		v = int64(bigen.Uint64(d.b[:]))
+// 	default:
+// 		decErr("integers with greater than 64 bits of precision not supported")
+// 	}
+// 	return
+// }
 
 func (d *bincDecDriver) decUint() (v uint64) {
 	// need to inline the code (interface conversion and type assertion expensive)
@@ -498,17 +498,25 @@ func (d *bincDecDriver) decUint() (v uint64) {
 	return
 }
 
-func (d *bincDecDriver) decIntAny() (i int64) {
+func (d *bincDecDriver) decIntAny() (ui uint64, i int64, neg bool) {
 	switch d.vd {
-	case bincVdInt:
-		i = d.decInt()
+	case bincVdPosInt:
+		ui = d.decUint()
+		i = int64(ui)
+	case bincVdNegInt:
+		ui = d.decUint()
+		i = -(int64(ui))
+		neg = true
 	case bincVdSmallInt:
 		i = int64(d.vs) + 1
+		ui = uint64(d.vs) + 1
 	case bincVdSpecial:
 		switch d.vs {
 		case bincSpZero:
 			//i = 0
 		case bincSpNegOne:
+			neg = true
+			ui = 1
 			i = -1
 		default:
 			decErr("numeric decode fails for special value: d.vs: 0x%x", d.vs)
@@ -520,12 +528,7 @@ func (d *bincDecDriver) decIntAny() (i int64) {
 }
 
 func (d *bincDecDriver) decodeInt(bitsize uint8) (i int64) {
-	switch d.vd {
-	case bincVdUint:
-		i = int64(d.decUint())
-	default:
-		i = d.decIntAny()
-	}
+	_, i, _ = d.decIntAny()
 	// check overflow (logic adapted from std pkg reflect/value.go OverflowUint()
 	if bitsize > 0 {
 		if trunc := (i << (64 - bitsize)) >> (64 - bitsize); i != trunc {
@@ -537,15 +540,9 @@ func (d *bincDecDriver) decodeInt(bitsize uint8) (i int64) {
 }
 
 func (d *bincDecDriver) decodeUint(bitsize uint8) (ui uint64) {
-	switch d.vd {
-	case bincVdUint:
-		ui = d.decUint()
-	default:
-		if i := d.decIntAny(); i >= 0 {
-			ui = uint64(i)
-		} else {
-			decErr("Assigning negative signed value: %v, to unsigned type", i)
-		}
+	ui, i, neg := d.decIntAny()
+	if neg {
+		decErr("Assigning negative signed value: %v, to unsigned type", i)
 	}
 	// check overflow (logic adapted from std pkg reflect/value.go OverflowUint()
 	if bitsize > 0 {
@@ -575,10 +572,9 @@ func (d *bincDecDriver) decodeFloat(chkOverflow32 bool) (f float64) {
 		}
 	case bincVdFloat:
 		f = d.decFloat()
-	case bincVdUint:
-		f = float64(d.decUint())
 	default:
-		f = float64(d.decIntAny())
+		_, i, _ := d.decIntAny()
+		f = float64(i)
 	}
 
 	// check overflow (logic adapted from std pkg reflect/value.go OverflowFloat()
@@ -753,7 +749,7 @@ func (d *bincDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurthe
 			vt = valueTypeFloat
 			v = float64(0)
 		case bincSpZero:
-			vt = valueTypeInt
+			vt = valueTypeUint
 			v = int64(0) // int8(0)
 		case bincSpNegOne:
 			vt = valueTypeInt
@@ -762,14 +758,14 @@ func (d *bincDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurthe
 			decErr("decodeNaked: Unrecognized special value 0x%x", d.vs)
 		}
 	case bincVdSmallInt:
-		vt = valueTypeInt
+		vt = valueTypeUint
 		v = int64(int8(d.vs)) + 1 // int8(d.vs) + 1
-	case bincVdUint:
+	case bincVdPosInt:
 		vt = valueTypeUint
 		v = d.decUint()
-	case bincVdInt:
+	case bincVdNegInt:
 		vt = valueTypeInt
-		v = d.decInt()
+		v = -(int64(d.decUint()))
 	case bincVdFloat:
 		vt = valueTypeFloat
 		v = d.decFloat()
