@@ -74,6 +74,8 @@ const (
 	valueTypeArray
 	valueTypeTimestamp
 	valueTypeExt
+	
+	valueTypeInvalid = 0xff
 )
 
 var (

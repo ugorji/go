@@ -414,42 +414,47 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 
 func (f *decFnInfo) kSlice(rv reflect.Value) {
 	// A slice can be set from a map or array in stream.
-
+	currEncodedType := f.dd.currentEncodedType()
+	
+	switch currEncodedType {
+	case valueTypeBytes, valueTypeString:
+		if f.ti.rtid == uint8SliceTypId || f.ti.rt.Elem().Kind() == reflect.Uint8 { 
+			if bs2, changed2 := f.dd.decodeBytes(rv.Bytes()); changed2 {
+				rv.SetBytes(bs2)
+			}
+			return
+		}
+	}
+	
 	if shortCircuitReflectToFastPath && rv.CanAddr() {
 		switch f.ti.rtid {
 		case intfSliceTypId:
-			f.d.decSliceIntf(rv.Addr().Interface().(*[]interface{}), f.array)
+			f.d.decSliceIntf(rv.Addr().Interface().(*[]interface{}), currEncodedType, f.array)
 			return
 		case uint64SliceTypId:
-			f.d.decSliceUint64(rv.Addr().Interface().(*[]uint64), f.array)
+			f.d.decSliceUint64(rv.Addr().Interface().(*[]uint64), currEncodedType, f.array)
 			return
 		case int64SliceTypId:
-			f.d.decSliceInt64(rv.Addr().Interface().(*[]int64), f.array)
+			f.d.decSliceInt64(rv.Addr().Interface().(*[]int64), currEncodedType, f.array)
 			return
 		case strSliceTypId:
-			f.d.decSliceStr(rv.Addr().Interface().(*[]string), f.array)
+			f.d.decSliceStr(rv.Addr().Interface().(*[]string), currEncodedType, f.array)
 			return
 		}
 	}
 
-	if f.ti.rtid == uint8SliceTypId || f.ti.rt.Elem().Kind() == reflect.Uint8 { 
-		if bs2, changed2 := f.dd.decodeBytes(rv.Bytes()); changed2 {
-			rv.SetBytes(bs2)
-		}
-		return
-	}
-
-	containerLen, containerLenS := decContLens(f.dd)
+	containerLen, containerLenS := decContLens(f.dd, currEncodedType)
 
 	// an array can never return a nil slice. so no need to check f.array here.
 
 	if rv.IsNil() {
 		rv.Set(reflect.MakeSlice(f.ti.rt, containerLenS, containerLenS))
 	}
+	
 	if containerLen == 0 {
 		return
 	}
-
+	
 	if rvcap, rvlen := rv.Len(), rv.Cap(); containerLenS > rvcap {
 		if f.array { // !rv.CanSet()
 			decErr(msgDecCannotExpandArr, rvcap, containerLenS)
@@ -664,13 +669,13 @@ func (d *Decoder) decode(iv interface{}) {
 		*v, _ = d.d.decodeBytes(v2)
 
 	case *[]interface{}:
-		d.decSliceIntf(v, false)
+		d.decSliceIntf(v, valueTypeInvalid, false)
 	case *[]uint64:
-		d.decSliceUint64(v, false)
+		d.decSliceUint64(v, valueTypeInvalid, false)
 	case *[]int64:
-		d.decSliceInt64(v, false)
+		d.decSliceInt64(v, valueTypeInvalid, false)
 	case *[]string:
-		d.decSliceStr(v, false)
+		d.decSliceStr(v, valueTypeInvalid, false)
 	case *map[string]interface{}:
 		d.decMapStrIntf(v)
 	case *map[interface{}]interface{}:
@@ -853,8 +858,8 @@ func (d *Decoder) decEmbeddedField(rv reflect.Value, index []int) {
 
 // short circuit functions for common maps and slices
 
-func (d *Decoder) decSliceIntf(v *[]interface{}, doNotReset bool) {
-	_, containerLenS := decContLens(d.d)
+func (d *Decoder) decSliceIntf(v *[]interface{}, currEncodedType valueType, doNotReset bool) {
+	_, containerLenS := decContLens(d.d, currEncodedType)
 	s := *v
 	if s == nil {
 		s = make([]interface{}, containerLenS, containerLenS)
@@ -873,8 +878,8 @@ func (d *Decoder) decSliceIntf(v *[]interface{}, doNotReset bool) {
 	*v = s
 }
 
-func (d *Decoder) decSliceInt64(v *[]int64, doNotReset bool) {
-	_, containerLenS := decContLens(d.d)
+func (d *Decoder) decSliceInt64(v *[]int64, currEncodedType valueType, doNotReset bool) {
+	_, containerLenS := decContLens(d.d, currEncodedType)
 	s := *v
 	if s == nil {
 		s = make([]int64, containerLenS, containerLenS)
@@ -895,8 +900,8 @@ func (d *Decoder) decSliceInt64(v *[]int64, doNotReset bool) {
 	*v = s
 }
 
-func (d *Decoder) decSliceUint64(v *[]uint64, doNotReset bool) {
-	_, containerLenS := decContLens(d.d)
+func (d *Decoder) decSliceUint64(v *[]uint64, currEncodedType valueType, doNotReset bool) {
+	_, containerLenS := decContLens(d.d, currEncodedType)
 	s := *v
 	if s == nil {
 		s = make([]uint64, containerLenS, containerLenS)
@@ -917,8 +922,8 @@ func (d *Decoder) decSliceUint64(v *[]uint64, doNotReset bool) {
 	*v = s
 }
 
-func (d *Decoder) decSliceStr(v *[]string, doNotReset bool) {
-	_, containerLenS := decContLens(d.d)
+func (d *Decoder) decSliceStr(v *[]string, currEncodedType valueType, doNotReset bool) {
+	_, containerLenS := decContLens(d.d, currEncodedType)
 	s := *v
 	if s == nil {
 		s = make([]string, containerLenS, containerLenS)
@@ -1009,8 +1014,11 @@ func (d *Decoder) decMapStrIntf(v *map[string]interface{}) {
 
 // ----------------------------------------
 
-func decContLens(dd decDriver) (containerLen, containerLenS int) {
-	switch currEncodedType := dd.currentEncodedType(); currEncodedType {
+func decContLens(dd decDriver, currEncodedType valueType) (containerLen, containerLenS int) {
+	if currEncodedType == valueTypeInvalid {
+		currEncodedType = dd.currentEncodedType()
+	}
+	switch currEncodedType {
 	case valueTypeArray:
 		containerLen = dd.readArrayLen()
 		containerLenS = containerLen
@@ -1027,3 +1035,6 @@ func decContLens(dd decDriver) (containerLen, containerLenS int) {
 func decErr(format string, params ...interface{}) {
 	doPanic(msgTagDec, format, params...)
 }
+
+
+

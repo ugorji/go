@@ -19,6 +19,8 @@ package codec
 // Some hints:
 // - python msgpack encodes positive numbers as uints, so use uints below
 //   for positive numbers.
+// - flag mpEncodeUintAsFixnum allows uints be encoded as fixnums.
+//   To accomodate it being true or false, ensure all unsigned values below are > 128.
 
 import (
 	"bytes"
@@ -350,8 +352,8 @@ func testInit() {
 		},
 		map[interface{}]interface{}{
 			true:     "true",
-			uint8(8): false,
-			"false":  uint8(0),
+			uint8(138): false,
+			"false":  uint8(200),
 		},
 		newTestStruc(0, false),
 	}
@@ -439,12 +441,12 @@ func newTestStruc(depth int, bench bool) (ts *TestStruc) {
 		Sslice:    []string{"one", "two", "three"},
 		I64slice:  []int64{1, 2, 3},
 		I16slice:  []int16{4, 5, 6},
-		Ui64slice: []uint64{7, 8, 9},
-		Ui8slice:  []uint8{10, 11, 12},
+		Ui64slice: []uint64{137, 138, 139},
+		Ui8slice:  []uint8{210, 211, 212},
 		Bslice:    []bool{true, false, true, false},
 		Byslice:   []byte{13, 14, 15},
 
-		Islice: []interface{}{"true", true, "no", false, uint64(88), float64(0.4)},
+		Islice: []interface{}{"true", true, "no", false, uint64(288), float64(0.4)},
 
 		Ms: map[string]interface{}{
 			"true":     "true",
@@ -722,6 +724,19 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 			t.FailNow()
 		}
 		// fmt.Printf(">>>> err: %v. tarr1: %v, tarr2: %v\n", err, tarr0, tarr2)
+	}
+
+	// test byte array, even if empty (msgpack only)
+	if h == testMsgpackH {
+		type ystruct struct {
+			Anarray []byte
+		}
+		var ya = ystruct{}
+		err = testUnmarshal(&ya, []byte{0x91, 0x90}, h)
+		if err != nil {
+			logT(t, "Error unmarshalling into ystruct: %v, Err: %v", ya, err)
+			t.FailNow()
+		}
 	}
 }
 

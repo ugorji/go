@@ -61,6 +61,11 @@ const (
 	mpNegFixNumMax = 0xff
 )
 
+// TODO: Should I enable this, which causes small uints be encoded as fixnums?
+// uints are not fixnums. fixnums are always signed.
+// conditionally support them (but keep flag off for compatibility).
+const mpEncodeUintAsFixnum = false 
+
 // MsgpackSpecRpcMultiArgs is a special type which signifies to the MsgpackSpecRpcCodec
 // that the backend RPC service takes multiple arguments, which have been arranged
 // in sequence in the slice.
@@ -122,10 +127,9 @@ func (e *msgpackEncDriver) encodeInt(i int64) {
 }
 
 func (e *msgpackEncDriver) encodeUint(i uint64) {
-	// uints are not fixnums. fixnums are always signed.
-	// case i <= math.MaxInt8:
-	// 	e.w.writen1(byte(i))
 	switch {
+	case mpEncodeUintAsFixnum && i <= math.MaxInt8:
+		e.w.writen1(byte(i))
 	case i <= math.MaxUint8:
 		e.w.writen2(mpUint8, byte(i))
 	case i <= math.MaxUint16:
