@@ -766,21 +766,17 @@ func (c *msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint
 	// We read the response header by hand
 	// so that the body can be decoded on its own from the stream at a later time.
 
-	bs := make([]byte, 1)
-	n, err := c.rwc.Read(bs)
-	if err != nil {
-		return
-	}
-	if n != 1 {
-		err = fmt.Errorf("Couldn't read array descriptor: No bytes read")
-		return
-	}
+        z := c.dec.r.(*ioDecReader)
+        b, err := z.tryreadn1()
+
+        if err != nil {
+                return
+        }
 	const fia byte = 0x94 //four item array descriptor value
-	if bs[0] != fia {
-		err = fmt.Errorf("Unexpected value for array descriptor: Expecting %v. Received %v", fia, bs[0])
+	if b != fia {
+		err = fmt.Errorf("Unexpected value for array descriptor: Expecting %v. Received %v", fia, b)
 		return
 	}
-	var b byte
 	if err = c.read(&b); err != nil {
 		return
 	}
