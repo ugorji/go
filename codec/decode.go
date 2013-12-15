@@ -82,16 +82,22 @@ func (z *ioDecReader) readb(bs []byte) {
 	}
 }
 
+func (z *ioDecReader) tryreadn1() (b uint8, err error) {
+        if z.br != nil {
+                b, err = z.br.ReadByte()
+                return
+        }
+        z.readb(z.x[:1])
+        b = z.x[0]
+        return
+}
+
 func (z *ioDecReader) readn1() uint8 {
-	if z.br != nil {
-		b, err := z.br.ReadByte()
-		if err != nil {
-			panic(err)
-		}
-		return b
-	}
-	z.readb(z.x[:1])
-	return z.x[0]
+        b, err := z.tryreadn1()
+        if err != nil {
+                panic(err)
+        }
+        return b
 }
 
 func (z *ioDecReader) readUint16() uint16 {
