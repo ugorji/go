@@ -1,4 +1,4 @@
-//+build ignore
+// //+build ignore
 
 // Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
@@ -17,9 +17,10 @@ package codec
 //       go test -bi -bench=.
 
 import (
+	"testing"
+
 	vmsgpack "github.com/vmihailenco/msgpack"
 	"labix.org/v2/mgo/bson"
-	"testing"
 )
 
 func init() {

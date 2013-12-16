@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"io"
 	"net/rpc"
+	"sync"
 )
 
 // Rpc provides a rpc Server or Client Codec for rpc communication.
@@ -33,6 +34,8 @@ type rpcCodec struct {
 	enc *Encoder
 	bw  *bufio.Writer
 	br  *bufio.Reader
+	mu  sync.Mutex
+	cls bool
 }
 
 func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
@@ -56,6 +59,9 @@ func (c *rpcCodec) BufferedWriter() *bufio.Writer {
 }
 
 func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2, doFlush bool) (err error) {
+	if c.cls {
+		return io.EOF
+	}
 	if err = c.enc.Encode(obj1); err != nil {
 		return
 	}
@@ -71,6 +77,9 @@ func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2, doFlush bool) (err e
 }
 
 func (c *rpcCodec) read(obj interface{}) (err error) {
+	if c.cls {
+		return io.EOF
+	}
 	//If nil is passed in, we should still attempt to read content to nowhere.
 	if obj == nil {
 		var obj2 interface{}
@@ -80,6 +89,10 @@ func (c *rpcCodec) read(obj interface{}) (err error) {
 }
 
 func (c *rpcCodec) Close() error {
+	if c.cls {
+		return io.EOF
+	}
+	c.cls = true
 	return c.rwc.Close()
 }
 
@@ -94,10 +107,15 @@ type goRpcCodec struct {
 }
 
 func (c *goRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
+	// Must protect for concurrent access as per API
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	return c.write(r, body, true, true)
 }
 
 func (c *goRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	return c.write(r, body, true, true)
 }
 

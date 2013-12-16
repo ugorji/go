@@ -415,17 +415,17 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 func (f *decFnInfo) kSlice(rv reflect.Value) {
 	// A slice can be set from a map or array in stream.
 	currEncodedType := f.dd.currentEncodedType()
-	
+
 	switch currEncodedType {
 	case valueTypeBytes, valueTypeString:
-		if f.ti.rtid == uint8SliceTypId || f.ti.rt.Elem().Kind() == reflect.Uint8 { 
+		if f.ti.rtid == uint8SliceTypId || f.ti.rt.Elem().Kind() == reflect.Uint8 {
 			if bs2, changed2 := f.dd.decodeBytes(rv.Bytes()); changed2 {
 				rv.SetBytes(bs2)
 			}
 			return
 		}
 	}
-	
+
 	if shortCircuitReflectToFastPath && rv.CanAddr() {
 		switch f.ti.rtid {
 		case intfSliceTypId:
@@ -450,11 +450,11 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 	if rv.IsNil() {
 		rv.Set(reflect.MakeSlice(f.ti.rt, containerLenS, containerLenS))
 	}
-	
+
 	if containerLen == 0 {
 		return
 	}
-	
+
 	if rvcap, rvlen := rv.Len(), rv.Cap(); containerLenS > rvcap {
 		if f.array { // !rv.CanSet()
 			decErr(msgDecCannotExpandArr, rvcap, containerLenS)
@@ -634,7 +634,7 @@ func (d *Decoder) decode(iv interface{}) {
 
 	case reflect.Value:
 		d.chkPtrValue(v)
-		d.decodeValue(v)
+		d.decodeValue(v.Elem())
 
 	case *string:
 		*v = d.d.decodeString()
@@ -665,8 +665,7 @@ func (d *Decoder) decode(iv interface{}) {
 	case *float64:
 		*v = d.d.decodeFloat(false)
 	case *[]byte:
-		v2 := *v
-		*v, _ = d.d.decodeBytes(v2)
+		*v, _ = d.d.decodeBytes(*v)
 
 	case *[]interface{}:
 		d.decSliceIntf(v, valueTypeInvalid, false)
@@ -691,7 +690,7 @@ func (d *Decoder) decode(iv interface{}) {
 	default:
 		rv := reflect.ValueOf(iv)
 		d.chkPtrValue(rv)
-		d.decodeValue(rv)
+		d.decodeValue(rv.Elem())
 	}
 }
 
@@ -700,9 +699,15 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 
 	if d.d.tryDecodeAsNil() {
 		// If value in stream is nil, set the dereferenced value to its "zero" value (if settable)
-		for rv.Kind() == reflect.Ptr {
-			rv = rv.Elem()
+		if rv.Kind() == reflect.Ptr {
+			if !rv.IsNil() {
+				rv.Set(reflect.Zero(rv.Type()))
+			}
+			return
 		}
+		// for rv.Kind() == reflect.Ptr {
+		// 	rv = rv.Elem()
+		// }
 		if rv.IsValid() { // rv.CanSet() // always settable, except it's invalid
 			rv.Set(reflect.Zero(rv.Type()))
 		}
@@ -1035,6 +1040,3 @@ func decContLens(dd decDriver, currEncodedType valueType) (containerLen, contain
 func decErr(format string, params ...interface{}) {
 	doPanic(msgTagDec, format, params...)
 }
-
-
-

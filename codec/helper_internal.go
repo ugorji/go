@@ -34,6 +34,7 @@ func panicValToErr(panicVal interface{}, err *error) {
 }
 
 func isEmptyValue(v reflect.Value) bool {
+	const deref = true
 	switch v.Kind() {
 	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
 		return v.Len() == 0
@@ -46,7 +47,23 @@ func isEmptyValue(v reflect.Value) bool {
 	case reflect.Float32, reflect.Float64:
 		return v.Float() == 0
 	case reflect.Interface, reflect.Ptr:
-		return v.IsNil()
+		if deref {
+			if v.IsNil() {
+				return true
+			}
+			return isEmptyValue(v.Elem())
+		} else {
+			return v.IsNil()
+		}
+	case reflect.Struct:
+		// return true if all fields are empty. else return false.
+		return v.Interface() == reflect.Zero(v.Type()).Interface()
+		// for i, n := 0, v.NumField(); i < n; i++ {
+		// 	if !isEmptyValue(v.Field(i), deref) {
+		// 		return false
+		// 	}
+		// }
+		// return true
 	}
 	return false
 }
@@ -60,26 +77,14 @@ func debugf(format string, args ...interface{}) {
 	}
 }
 
-func pruneSignExt(v []byte) (n int) {
-	l := len(v)
-	if l < 2 {
-		return
-	}
-	if v[0] == 0 {
-		n2 := n + 1
-		for v[n] == 0 && n2 < l && (v[n2]&(1<<7) == 0) {
-			n++
-			n2++
+func pruneSignExt(v []byte, pos bool) (n int) {
+	if len(v) < 2 {
+	} else if pos && v[0] == 0 {
+		for ; v[n] == 0 && n+1 < len(v) && (v[n+1]&(1<<7) == 0); n++ {
 		}
-		return
-	}
-	if v[0] == 0xff {
-		n2 := n + 1
-		for v[n] == 0xff && n2 < l && (v[n2]&(1<<7) != 0) {
-			n++
-			n2++
+	} else if !pos && v[0] == 0xff {
+		for ; v[n] == 0xff && n+1 < len(v) && (v[n+1]&(1<<7) != 0); n++ {
 		}
-		return
 	}
 	return
 }

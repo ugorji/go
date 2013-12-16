@@ -345,9 +345,9 @@ func testInit() {
 			"SHORT STRING": "1234567890",
 		},
 		map[interface{}]interface{}{
-			true:     "true",
+			true:       "true",
 			uint8(138): false,
-			"false":  uint8(200),
+			"false":    uint8(200),
 		},
 		newTestStruc(0, false),
 	}
@@ -433,7 +433,7 @@ func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name s
 		logT(t, "Error Decoding into %s: %v, Err: %v", name, v, err)
 		t.FailNow()
 	}
-	return   
+	return
 }
 
 func newTestStruc(depth int, bench bool) (ts *TestStruc) {
@@ -532,7 +532,6 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 		}
 
 		logT(t, "         v1 returned: %T, %#v", v1, v1)
-		// t.FailNow() //todo: ugorji: remove
 		// if v1 != nil {
 		//	logT(t, "         v1 returned: %T, %#v", v1, v1)
 		//	//we always indirect, because ptr to typed value may be passed (if not testNil)
@@ -666,7 +665,7 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 		logT(t, "Not Equal: %v. m: %v, m2: %v", err, m, m2)
 		t.FailNow()
 	}
-	
+
 	// func TestMsgpackDecodeStructSubset(t *testing.T) {
 	// test that we can decode a subset of the stream
 	mm := map[string]interface{}{"A": 5, "B": 99, "C": 333}
@@ -683,16 +682,16 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	// println(">>>>>")
 	// test simple arrays, non-addressable arrays, slices
 	type tarr struct {
-		A int64 
-		B [3]int64 
-		C []byte  
-		D [3]byte 
+		A int64
+		B [3]int64
+		C []byte
+		D [3]byte
 	}
-	var tarr0 = tarr{1, [3]int64{2,3,4}, []byte{4,5,6}, [3]byte{7,8,9} }
+	var tarr0 = tarr{1, [3]int64{2, 3, 4}, []byte{4, 5, 6}, [3]byte{7, 8, 9}}
 	// test both pointer and non-pointer (value)
 	for _, tarr1 := range []interface{}{tarr0, &tarr0} {
 		bs, err = testMarshalErr(tarr1, h, t, "tarr1")
-		var tarr2 tarr 
+		var tarr2 tarr
 		testUnmarshalErr(&tarr2, bs, h, t, "tarr2")
 		checkEqualT(t, tarr0, tarr2, "tarr0=tarr2")
 		// fmt.Printf(">>>> err: %v. tarr1: %v, tarr2: %v\n", err, tarr0, tarr2)
@@ -750,17 +749,19 @@ func doTestRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs ti
 	serverFn := func() {
 		for {
 			conn1, err1 := ln.Accept()
-			if err1 != nil {
-				//fmt.Printf("accept err1: %v\n", err1)
-				continue
-			}
+			// if err1 != nil {
+			// 	//fmt.Printf("accept err1: %v\n", err1)
+			// 	continue
+			// }
 			if atomic.LoadUint64(&serverExitFlag) == 1 {
 				serverExitChan <- true
 				conn1.Close()
 				return // exit serverFn goroutine
 			}
-			var sc rpc.ServerCodec = rr.ServerCodec(conn1, h)
-			srv.ServeCodec(sc)
+			if err1 == nil {
+				var sc rpc.ServerCodec = rr.ServerCodec(conn1, h)
+				srv.ServeCodec(sc)
+			}
 		}
 	}
 

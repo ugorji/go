@@ -76,7 +76,7 @@ func encodeTime(t time.Time) []byte {
 	if tsecs != 0 {
 		bd = bd | 0x80
 		bigen.PutUint64(btmp[:], uint64(tsecs))
-		f := pruneSignExt(btmp[:])
+		f := pruneSignExt(btmp[:], tsecs >= 0)
 		bd = bd | (byte(7-f) << 2)
 		copy(bs[i:], btmp[f:])
 		i = i + (8 - f)
@@ -84,7 +84,7 @@ func encodeTime(t time.Time) []byte {
 	if tnsecs != 0 {
 		bd = bd | 0x40
 		bigen.PutUint32(btmp[:4], uint32(tnsecs))
-		f := pruneSignExt(btmp[:4])
+		f := pruneSignExt(btmp[:4], true)
 		bd = bd | byte(3-f)
 		copy(bs[i:], btmp[f:4])
 		i = i + (4 - f)

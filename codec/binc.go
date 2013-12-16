@@ -11,6 +11,8 @@ import (
 	//"fmt"
 )
 
+const bincDoPrune = true // No longer needed. Needed before as C lib did not support pruning.
+
 //var _ = fmt.Printf
 
 // vd as low 4 bits (there are 16 slots)
@@ -104,52 +106,53 @@ func (e *bincEncDriver) encodeFloat64(f float64) {
 		return
 	}
 	bigen.PutUint64(e.b[:], math.Float64bits(f))
-	var i int = 7
-	for ; i >= 0 && (e.b[i] == 0); i-- {
+	if bincDoPrune {
+		i := 7
+		for ; i >= 0 && (e.b[i] == 0); i-- {
+		}
+		i++
+		if i <= 6 {
+			e.w.writen1(bincVdFloat<<4 | 0x8 | bincFlBin64)
+			e.w.writen1(byte(i))
+			e.w.writeb(e.b[:i])
+			return
+		}
 	}
-	i++
-	if i > 6 { // 7 or 8 ie < 2 trailing zeros
-		e.w.writen1(bincVdFloat<<4 | bincFlBin64)
-		e.w.writeb(e.b[:])
+	e.w.writen1(bincVdFloat<<4 | bincFlBin64)
+	e.w.writeb(e.b[:])
+}
+
+func (e *bincEncDriver) encIntegerPrune(bd byte, pos bool, v uint64, lim uint8) {
+	eb := e.b[:lim]
+	if lim == 4 {
+		bigen.PutUint32(eb, uint32(v))
 	} else {
-		e.w.writen1(bincVdFloat<<4 | 0x8 | bincFlBin64)
-		e.w.writen1(byte(i))
-		e.w.writeb(e.b[:i])
+		bigen.PutUint64(eb, v)
 	}
-}
-
-func (e *bincEncDriver) encInteger4(bd byte, v uint32) {
-	const lim int = 4
-	eb := e.b[:lim]
-	bigen.PutUint32(eb, v)
-	i := pruneSignExt(eb)
-	e.w.writen1(bd | byte(lim-1-i))
-	e.w.writeb(e.b[i:lim])
-}
-
-func (e *bincEncDriver) encInteger8(bd byte, v uint64) {
-	const lim int = 8
-	eb := e.b[:lim]
-	bigen.PutUint64(eb, v)
-	i := pruneSignExt(eb)
-	e.w.writen1(bd | byte(lim-1-i))
-	e.w.writeb(e.b[i:lim])
+	if bincDoPrune {
+		i := pruneSignExt(eb, pos)
+		e.w.writen1(bd | lim - 1 - byte(i))
+		e.w.writeb(e.b[i:lim])
+	} else {
+		e.w.writen1(bd | lim - 1)
+		e.w.writeb(e.b[:lim])
+	}
 }
 
 func (e *bincEncDriver) encodeInt(v int64) {
 	const nbd byte = bincVdNegInt << 4
 	switch {
 	case v >= 0:
-		e.encUint(bincVdPosInt << 4, true, uint64(v))
+		e.encUint(bincVdPosInt<<4, true, uint64(v))
 	case v == -1:
 		e.w.writen1(bincVdSpecial<<4 | bincSpNegOne)
 	default:
-		e.encUint(bincVdNegInt << 4, false, uint64(-v))
+		e.encUint(bincVdNegInt<<4, false, uint64(-v))
 	}
 }
 
 func (e *bincEncDriver) encodeUint(v uint64) {
-	e.encUint(bincVdPosInt << 4, true, v)
+	e.encUint(bincVdPosInt<<4, true, v)
 }
 
 func (e *bincEncDriver) encUint(bd byte, pos bool, v uint64) {
@@ -164,9 +167,9 @@ func (e *bincEncDriver) encUint(bd byte, pos bool, v uint64) {
 		e.w.writen1(bd | 0x01)
 		e.w.writeUint16(uint16(v))
 	case v <= math.MaxUint32:
-		e.encInteger4(bd, uint32(v))
+		e.encIntegerPrune(bd, pos, v, 4)
 	default:
-		e.encInteger8(bd, v)
+		e.encIntegerPrune(bd, pos, v, 8)
 	}
 }
 
@@ -428,45 +431,6 @@ func (d *bincDecDriver) decFloat() (f float64) {
 	return
 }
 
-// func (d *bincDecDriver) decInt() (v int64) {
-// 	// need to inline the code (interface conversion and type assertion expensive)
-// 	switch d.vs {
-// 	case 0:
-// 		v = int64(int8(d.r.readn1()))
-// 	case 1:
-// 		d.r.readb(d.b[6:])
-// 		v = int64(int16(bigen.Uint16(d.b[6:])))
-// 	case 2:
-// 		d.r.readb(d.b[5:])
-// 		if d.b[5]&0x80 == 0 {
-// 			d.b[4] = 0
-// 		} else {
-// 			d.b[4] = 0xff
-// 		}
-// 		v = int64(int32(bigen.Uint32(d.b[4:])))
-// 	case 3:
-// 		d.r.readb(d.b[4:])
-// 		v = int64(int32(bigen.Uint32(d.b[4:])))
-// 	case 4, 5, 6:
-// 		lim := int(7 - d.vs)
-// 		d.r.readb(d.b[lim:])
-// 		var fillval byte = 0
-// 		if d.b[lim]&0x80 != 0 {
-// 			fillval = 0xff
-// 		}
-// 		for i := 0; i < lim; i++ {
-// 			d.b[i] = fillval
-// 		}
-// 		v = int64(bigen.Uint64(d.b[:]))
-// 	case 7:
-// 		d.r.readb(d.b[:])
-// 		v = int64(bigen.Uint64(d.b[:]))
-// 	default:
-// 		decErr("integers with greater than 64 bits of precision not supported")
-// 	}
-// 	return
-// }
-
 func (d *bincDecDriver) decUint() (v uint64) {
 	// need to inline the code (interface conversion and type assertion expensive)
 	switch d.vs {
@@ -529,12 +493,7 @@ func (d *bincDecDriver) decIntAny() (ui uint64, i int64, neg bool) {
 
 func (d *bincDecDriver) decodeInt(bitsize uint8) (i int64) {
 	_, i, _ = d.decIntAny()
-	// check overflow (logic adapted from std pkg reflect/value.go OverflowUint()
-	if bitsize > 0 {
-		if trunc := (i << (64 - bitsize)) >> (64 - bitsize); i != trunc {
-			decErr("Overflow int value: %v", i)
-		}
-	}
+	checkOverflow(0, i, bitsize)
 	d.bdRead = false
 	return
 }
@@ -544,12 +503,7 @@ func (d *bincDecDriver) decodeUint(bitsize uint8) (ui uint64) {
 	if neg {
 		decErr("Assigning negative signed value: %v, to unsigned type", i)
 	}
-	// check overflow (logic adapted from std pkg reflect/value.go OverflowUint()
-	if bitsize > 0 {
-		if trunc := (ui << (64 - bitsize)) >> (64 - bitsize); ui != trunc {
-			decErr("Overflow uint value: %v", ui)
-		}
-	}
+	checkOverflow(ui, 0, bitsize)
 	d.bdRead = false
 	return
 }
@@ -759,7 +713,7 @@ func (d *bincDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurthe
 		}
 	case bincVdSmallInt:
 		vt = valueTypeUint
-		v = int64(int8(d.vs)) + 1 // int8(d.vs) + 1
+		v = uint64(int8(d.vs)) + 1 // int8(d.vs) + 1
 	case bincVdPosInt:
 		vt = valueTypeUint
 		v = d.decUint()

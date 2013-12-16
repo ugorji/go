@@ -74,7 +74,7 @@ const (
 	valueTypeArray
 	valueTypeTimestamp
 	valueTypeExt
-	
+
 	valueTypeInvalid = 0xff
 )
 
@@ -554,4 +554,21 @@ func doPanic(tag string, format string, params ...interface{}) {
 	params2[0] = tag
 	copy(params2[1:], params)
 	panic(fmt.Errorf("%s: "+format, params2...))
+}
+
+func checkOverflow(ui uint64, i int64, bitsize uint8) {
+	// check overflow (logic adapted from std pkg reflect/value.go OverflowUint()
+	if bitsize == 0 {
+		return
+	}
+	if i != 0 {
+		if trunc := (i << (64 - bitsize)) >> (64 - bitsize); i != trunc {
+			decErr("Overflow int value: %v", i)
+		}
+	}
+	if ui != 0 {
+		if trunc := (ui << (64 - bitsize)) >> (64 - bitsize); ui != trunc {
+			decErr("Overflow uint value: %v", ui)
+		}
+	}
 }

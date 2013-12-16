@@ -9,11 +9,11 @@ We need to maintain compatibility with it and how it encodes integer values
 without caring about the type.
 
 For compatibility with behaviour of msgpack-c reference implementation:
-  - Go intX (>0) and uintX 
-       IS ENCODED AS 
+  - Go intX (>0) and uintX
+       IS ENCODED AS
     msgpack +ve fixnum, unsigned
   - Go intX (<0)
-       IS ENCODED AS 
+       IS ENCODED AS
     msgpack -ve fixnum, signed
 
 */
@@ -118,7 +118,7 @@ func (e *msgpackEncDriver) encodeNil() {
 }
 
 func (e *msgpackEncDriver) encodeInt(i int64) {
-	
+
 	switch {
 	case i >= 0:
 		e.encodeUint(uint64(i))
@@ -763,24 +763,29 @@ func (c *msgpackSpecRpcCodec) ReadRequestBody(body interface{}) error {
 
 func (c *msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint64, methodOrError *string) (err error) {
 
+	if c.cls {
+		return io.EOF
+	}
+
 	// We read the response header by hand
 	// so that the body can be decoded on its own from the stream at a later time.
 
-	bs := make([]byte, 1)
-	n, err := c.rwc.Read(bs)
+	const fia byte = 0x94 //four item array descriptor value
+	// Not sure why the panic of EOF is swallowed above.
+	// if bs1 := c.dec.r.readn1(); bs1 != fia {
+	// 	err = fmt.Errorf("Unexpected value for array descriptor: Expecting %v. Received %v", fia, bs1)
+	// 	return
+	// }
+	var b byte
+	b, err = c.br.ReadByte()
 	if err != nil {
 		return
 	}
-	if n != 1 {
-		err = fmt.Errorf("Couldn't read array descriptor: No bytes read")
+	if b != fia {
+		err = fmt.Errorf("Unexpected value for array descriptor: Expecting %v. Received %v", fia, b)
 		return
 	}
-	const fia byte = 0x94 //four item array descriptor value
-	if bs[0] != fia {
-		err = fmt.Errorf("Unexpected value for array descriptor: Expecting %v. Received %v", fia, bs[0])
-		return
-	}
-	var b byte
+
 	if err = c.read(&b); err != nil {
 		return
 	}
