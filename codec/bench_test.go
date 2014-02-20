@@ -62,7 +62,9 @@ func benchInit() {
 
 	benchCheckers = append(benchCheckers,
 		benchChecker{"msgpack", fnMsgpackEncodeFn, fnMsgpackDecodeFn},
-		benchChecker{"binc", fnBincEncodeFn, fnBincDecodeFn},
+		benchChecker{"binc-nosym", fnBincNoSymEncodeFn, fnBincNoSymDecodeFn},
+		benchChecker{"binc-sym", fnBincSymEncodeFn, fnBincSymDecodeFn},
+		benchChecker{"simple", fnSimpleEncodeFn, fnSimpleDecodeFn},
 		benchChecker{"gob", fnGobEncodeFn, fnGobDecodeFn},
 		benchChecker{"json", fnJsonEncodeFn, fnJsonDecodeFn},
 	)
@@ -74,7 +76,7 @@ func benchInit() {
 func runBenchInit() {
 	logT(nil, "..............................................")
 	logT(nil, "BENCHMARK INIT: %v", time.Now())
-	logT(nil, "To run full benchmark comparing encodings (MsgPack, Binc, JSON, GOB, etc), "+
+	logT(nil, "To run full benchmark comparing encodings (MsgPack, Binc, Simple, JSON, GOB, etc), "+
 		"use: \"go test -bench=.\"")
 	logT(nil, "Benchmark: ")
 	logT(nil, "\tStruct recursive Depth:             %d", benchDepth)
@@ -209,13 +211,45 @@ func fnMsgpackDecodeFn(buf []byte, ts interface{}) error {
 	return NewDecoderBytes(buf, testMsgpackH).Decode(ts)
 }
 
-func fnBincEncodeFn(ts interface{}) (bs []byte, err error) {
+func fnBincEncodeFn(ts interface{}, sym AsSymbolFlag) (bs []byte, err error) {
+	tSym := testBincH.AsSymbols
+	testBincH.AsSymbols = sym
 	err = NewEncoderBytes(&bs, testBincH).Encode(ts)
+	testBincH.AsSymbols = tSym
 	return
 }
 
-func fnBincDecodeFn(buf []byte, ts interface{}) error {
-	return NewDecoderBytes(buf, testBincH).Decode(ts)
+func fnBincDecodeFn(buf []byte, ts interface{}, sym AsSymbolFlag) (err error) {
+	tSym := testBincH.AsSymbols
+	testBincH.AsSymbols = sym
+	err = NewDecoderBytes(buf, testBincH).Decode(ts)
+	testBincH.AsSymbols = tSym
+	return
+}
+
+func fnBincNoSymEncodeFn(ts interface{}) (bs []byte, err error) {
+	return fnBincEncodeFn(ts, AsSymbolNone)
+}
+
+func fnBincNoSymDecodeFn(buf []byte, ts interface{}) error {
+	return fnBincDecodeFn(buf, ts, AsSymbolNone)
+}
+
+func fnBincSymEncodeFn(ts interface{}) (bs []byte, err error) {
+	return fnBincEncodeFn(ts, AsSymbolAll)
+}
+
+func fnBincSymDecodeFn(buf []byte, ts interface{}) error {
+	return fnBincDecodeFn(buf, ts, AsSymbolAll)
+}
+
+func fnSimpleEncodeFn(ts interface{}) (bs []byte, err error) {
+	err = NewEncoderBytes(&bs, testSimpleH).Encode(ts)
+	return
+}
+
+func fnSimpleDecodeFn(buf []byte, ts interface{}) error {
+	return NewDecoderBytes(buf, testSimpleH).Decode(ts)
 }
 
 func fnGobEncodeFn(ts interface{}) ([]byte, error) {
@@ -245,31 +279,27 @@ func Benchmark__Msgpack____Decode(b *testing.B) {
 }
 
 func Benchmark__Binc_NoSym_Encode(b *testing.B) {
-	tSym := testBincH.AsSymbols
-	testBincH.AsSymbols = AsSymbolNone
-	fnBenchmarkEncode(b, "binc", benchTs, fnBincEncodeFn)
-	testBincH.AsSymbols = tSym
+	fnBenchmarkEncode(b, "binc", benchTs, fnBincNoSymEncodeFn)
 }
 
 func Benchmark__Binc_NoSym_Decode(b *testing.B) {
-	tSym := testBincH.AsSymbols
-	testBincH.AsSymbols = AsSymbolNone
-	fnBenchmarkDecode(b, "binc", benchTs, fnBincEncodeFn, fnBincDecodeFn, fnBenchNewTs)
-	testBincH.AsSymbols = tSym
+	fnBenchmarkDecode(b, "binc", benchTs, fnBincNoSymEncodeFn, fnBincNoSymDecodeFn, fnBenchNewTs)
 }
 
 func Benchmark__Binc_Sym___Encode(b *testing.B) {
-	tSym := testBincH.AsSymbols
-	testBincH.AsSymbols = AsSymbolAll
-	fnBenchmarkEncode(b, "binc", benchTs, fnBincEncodeFn)
-	testBincH.AsSymbols = tSym
+	fnBenchmarkEncode(b, "binc", benchTs, fnBincSymEncodeFn)
 }
 
 func Benchmark__Binc_Sym___Decode(b *testing.B) {
-	tSym := testBincH.AsSymbols
-	testBincH.AsSymbols = AsSymbolAll
-	fnBenchmarkDecode(b, "binc", benchTs, fnBincEncodeFn, fnBincDecodeFn, fnBenchNewTs)
-	testBincH.AsSymbols = tSym
+	fnBenchmarkDecode(b, "binc", benchTs, fnBincSymEncodeFn, fnBincSymDecodeFn, fnBenchNewTs)
+}
+
+func Benchmark__Simple____Encode(b *testing.B) {
+	fnBenchmarkEncode(b, "simple", benchTs, fnSimpleEncodeFn)
+}
+
+func Benchmark__Simple____Decode(b *testing.B) {
+	fnBenchmarkDecode(b, "simple", benchTs, fnSimpleEncodeFn, fnSimpleDecodeFn, fnBenchNewTs)
 }
 
 func Benchmark__Gob________Encode(b *testing.B) {

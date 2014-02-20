@@ -8,6 +8,7 @@ package codec
 import (
 	"encoding/binary"
 	"fmt"
+	"math"
 	"reflect"
 	"sort"
 	"strings"
@@ -554,6 +555,20 @@ func doPanic(tag string, format string, params ...interface{}) {
 	params2[0] = tag
 	copy(params2[1:], params)
 	panic(fmt.Errorf("%s: "+format, params2...))
+}
+
+func checkOverflowFloat32(f float64, doCheck bool) {
+	if !doCheck {
+		return
+	}
+	// check overflow (logic adapted from std pkg reflect/value.go OverflowFloat()
+	f2 := f
+	if f2 < 0 {
+		f2 = -f
+	}
+	if math.MaxFloat32 < f2 && f2 <= math.MaxFloat64 {
+		decErr("Overflow float32 value: %v", f2)
+	}
 }
 
 func checkOverflow(ui uint64, i int64, bitsize uint8) {

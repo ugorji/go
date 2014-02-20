@@ -472,16 +472,7 @@ func (d *msgpackDecDriver) decodeFloat(chkOverflow32 bool) (f float64) {
 	default:
 		f = float64(d.decodeInt(0))
 	}
-	// check overflow (logic adapted from std pkg reflect/value.go OverflowFloat()
-	if chkOverflow32 {
-		f2 := f
-		if f2 < 0 {
-			f2 = -f
-		}
-		if math.MaxFloat32 < f2 && f2 <= math.MaxFloat64 {
-			decErr("Overflow float32 value: %v", f2)
-		}
-	}
+	checkOverflowFloat32(f, chkOverflow32)
 	d.bdRead = false
 	return
 }
@@ -820,3 +811,6 @@ func (x msgpackSpecRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.Serve
 func (x msgpackSpecRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec {
 	return &msgpackSpecRpcCodec{newRPCCodec(conn, h)}
 }
+
+var _ decDriver = (*msgpackDecDriver)(nil)
+var _ encDriver = (*msgpackEncDriver)(nil)

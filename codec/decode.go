@@ -69,6 +69,9 @@ type ioDecReader struct {
 }
 
 func (z *ioDecReader) readn(n int) (bs []byte) {
+	if n <= 0 {
+		return
+	}
 	bs = make([]byte, n)
 	if _, err := io.ReadAtLeast(z.r, bs, n); err != nil {
 		panic(err)
@@ -133,6 +136,9 @@ func (z *bytesDecReader) consume(n int) (oldcursor int) {
 }
 
 func (z *bytesDecReader) readn(n int) (bs []byte) {
+	if n <= 0 {
+		return
+	}
 	c0 := z.consume(n)
 	bs = z.b[c0:z.c]
 	return

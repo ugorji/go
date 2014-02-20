@@ -72,6 +72,7 @@ var (
 	testRpcInt   = new(TestRpcInt)
 	testMsgpackH = &MsgpackHandle{}
 	testBincH    = &BincHandle{}
+	testSimpleH  = &SimpleHandle{}
 )
 
 func testInitFlags() {
@@ -277,18 +278,20 @@ func testInit() {
 	testMsgpackH.RawToString = true
 	// testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
 	// testMsgpackH.AddExt(timeTyp, 1, testMsgpackH.TimeEncodeExt, testMsgpackH.TimeDecodeExt)
-	testMsgpackH.AddExt(timeTyp, 1,
-		func(rv reflect.Value) ([]byte, error) {
-			return encodeTime(rv.Interface().(time.Time)), nil
-		},
-		func(rv reflect.Value, bs []byte) error {
-			tt, err := decodeTime(bs)
-			if err == nil {
-				rv.Set(reflect.ValueOf(tt))
-			}
-			return err
-		},
-	)
+	timeEncExt := func(rv reflect.Value) ([]byte, error) {
+		return encodeTime(rv.Interface().(time.Time)), nil
+	}
+	timeDecExt := func(rv reflect.Value, bs []byte) error {
+		tt, err := decodeTime(bs)
+		if err == nil {
+			rv.Set(reflect.ValueOf(tt))
+		}
+		return err
+	}
+
+	// add extensions for msgpack, simple for time.Time, so we can encode/decode same way.
+	testMsgpackH.AddExt(timeTyp, 1, timeEncExt, timeDecExt)
+	testSimpleH.AddExt(timeTyp, 1, timeEncExt, timeDecExt)
 
 	primitives := []interface{}{
 		int8(-8),
@@ -561,20 +564,18 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 func testCodecTableOne(t *testing.T, h Handle) {
 	// func TestMsgpackAllExperimental(t *testing.T) {
 	// dopts := testDecOpts(nil, nil, false, true, true),
-	var oldWriteExt, oldRawToString bool
+
 	switch v := h.(type) {
 	case *MsgpackHandle:
+		var oldWriteExt, oldRawToString bool
 		oldWriteExt, v.WriteExt = v.WriteExt, true
 		oldRawToString, v.RawToString = v.RawToString, true
-	}
-	doTestCodecTableOne(t, false, h, table, tableVerify)
-	//if true { panic("") }
-	switch v := h.(type) {
-	case *MsgpackHandle:
+		doTestCodecTableOne(t, false, h, table, tableVerify)
 		v.WriteExt, v.RawToString = oldWriteExt, oldRawToString
+	default:
+		doTestCodecTableOne(t, false, h, table, tableVerify)
 	}
 	// func TestMsgpackAll(t *testing.T) {
-
 	idxTime, numPrim, numMap := 19, 23, 4
 
 	//skip []interface{} containing time.Time
@@ -582,22 +583,14 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	doTestCodecTableOne(t, false, h, table[numPrim+1:], tableVerify[numPrim+1:])
 	// func TestMsgpackNilStringMap(t *testing.T) {
 	var oldMapType reflect.Type
-	switch v := h.(type) {
-	case *MsgpackHandle:
-		oldMapType, v.MapType = v.MapType, mapStrIntfTyp
-	case *BincHandle:
-		oldMapType, v.MapType = v.MapType, mapStrIntfTyp
-	}
+	v := h.getBasicHandle()
+	oldMapType, v.MapType = v.MapType, mapStrIntfTyp
+
 	//skip time.Time, []interface{} containing time.Time, last map, and newStruc
 	doTestCodecTableOne(t, true, h, table[:idxTime], tableTestNilVerify[:idxTime])
 	doTestCodecTableOne(t, true, h, table[numPrim+1:numPrim+numMap], tableTestNilVerify[numPrim+1:numPrim+numMap])
 
-	switch v := h.(type) {
-	case *MsgpackHandle:
-		v.MapType = oldMapType
-	case *BincHandle:
-		v.MapType = oldMapType
-	}
+	v.MapType = oldMapType
 
 	// func TestMsgpackNilIntf(t *testing.T) {
 
@@ -951,18 +944,6 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 		fmt.Sprintf("%#v\n%#v\n", []string{"A1", "B2", "C3"}, TestABC{"Aa", "Bb", "Cc"}), "cmdout=")
 }
 
-func TestMsgpackCodecsTable(t *testing.T) {
-	testCodecTableOne(t, testMsgpackH)
-}
-
-func TestMsgpackCodecsMisc(t *testing.T) {
-	testCodecMiscOne(t, testMsgpackH)
-}
-
-func TestMsgpackCodecsEmbeddedPointer(t *testing.T) {
-	testCodecEmbeddedPointer(t, testMsgpackH)
-}
-
 func TestBincCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testBincH)
 }
@@ -975,16 +956,44 @@ func TestBincCodecsEmbeddedPointer(t *testing.T) {
 	testCodecEmbeddedPointer(t, testBincH)
 }
 
+func TestSimpleCodecsTable(t *testing.T) {
+	testCodecTableOne(t, testSimpleH)
+}
+
+func TestSimpleCodecsMisc(t *testing.T) {
+	testCodecMiscOne(t, testSimpleH)
+}
+
+func TestSimpleCodecsEmbeddedPointer(t *testing.T) {
+	testCodecEmbeddedPointer(t, testSimpleH)
+}
+
+func TestMsgpackCodecsTable(t *testing.T) {
+	testCodecTableOne(t, testMsgpackH)
+}
+
+func TestMsgpackCodecsMisc(t *testing.T) {
+	testCodecMiscOne(t, testMsgpackH)
+}
+
+func TestMsgpackCodecsEmbeddedPointer(t *testing.T) {
+	testCodecEmbeddedPointer(t, testMsgpackH)
+}
+
+func TestBincRpcGo(t *testing.T) {
+	doTestRpcOne(t, GoRpc, testBincH, true, 0)
+}
+
+func _TestSimpleRpcGo(t *testing.T) {
+	doTestRpcOne(t, GoRpc, testSimpleH, true, 0)
+}
+
 func TestMsgpackRpcGo(t *testing.T) {
 	doTestRpcOne(t, GoRpc, testMsgpackH, true, 0)
 }
 
 func TestMsgpackRpcSpec(t *testing.T) {
 	doTestRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, 0)
-}
-
-func TestBincRpcGo(t *testing.T) {
-	doTestRpcOne(t, GoRpc, testBincH, true, 0)
 }
 
 // TODO:

@@ -123,14 +123,13 @@ func (e *bincEncDriver) encodeFloat64(f float64) {
 }
 
 func (e *bincEncDriver) encIntegerPrune(bd byte, pos bool, v uint64, lim uint8) {
-	eb := e.b[:lim]
 	if lim == 4 {
-		bigen.PutUint32(eb, uint32(v))
+		bigen.PutUint32(e.b[:lim], uint32(v))
 	} else {
-		bigen.PutUint64(eb, v)
+		bigen.PutUint64(e.b[:lim], v)
 	}
 	if bincDoPrune {
-		i := pruneSignExt(eb, pos)
+		i := pruneSignExt(e.b[:lim], pos)
 		e.w.writen1(bd | lim - 1 - byte(i))
 		e.w.writeb(e.b[i:lim])
 	} else {
@@ -530,17 +529,7 @@ func (d *bincDecDriver) decodeFloat(chkOverflow32 bool) (f float64) {
 		_, i, _ := d.decIntAny()
 		f = float64(i)
 	}
-
-	// check overflow (logic adapted from std pkg reflect/value.go OverflowFloat()
-	if chkOverflow32 {
-		f2 := f
-		if f2 < 0 {
-			f2 = -f
-		}
-		if math.MaxFloat32 < f2 && f2 <= math.MaxFloat64 {
-			decErr("Overflow float32 value: %v", f2)
-		}
-	}
+	checkOverflowFloat32(f, chkOverflow32)
 	d.bdRead = false
 	return
 }

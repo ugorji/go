@@ -1,55 +1,34 @@
 // Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
-/*
-simple is a simplistic codec which does not pack integers, floats, etc into smaller chunks.
-
-All numbers are encoded with 8 bytes (int64, uint64, float64).
-
-Beyond this, it looks very similar to binc or msgpack.
-
-- nil, false, true are represented with single bytes
-- positive/negative ints, and floats are distinct types, all represented by 1,2,4 or 8 bytes
-- lengths of containers (strings, arrays, ext, map) occupy 2 bytes and
-  exist right after the bd
-- maps are encoded as [bd] [length] [[key][value]]...
-- arrays are encoded as [bd] [length] [value]...
-- extensions are encoded as [bd] [length] [tag] [byte]...
-- strings/bytearrays are encoded as [bd] [length] [tag] [byte]...
-
-*/
-
 package codec
 
 import "math"
 
 const (
-	_ byte = iota
-	simpleVdNil
-	simpleVdFalse
-	simpleVdTrue
-	simpleVdPosInt1
-	simpleVdPosInt2
-	simpleVdPosInt4
-	simpleVdPosInt8
-	simpleVdNegInt1
-	simpleVdNegInt2
-	simpleVdNegInt4
-	simpleVdNegInt8
-	simpleVdFloat32
-	simpleVdFloat64
+	_               uint8 = iota
+	simpleVdNil           = 1
+	simpleVdFalse         = 2
+	simpleVdTrue          = 3
+	simpleVdFloat32       = 4
+	simpleVdFloat64       = 5
 
-	simpleVdString
-	simpleVdByteArray
-	simpleVdArray
-	simpleVdMap
+	// each lasts for 4 (ie n, n+1, n+2, n+3)
+	simpleVdPosInt = 8
+	simpleVdNegInt = 12
 
-	simpleVdExt
+	// containers: each lasts for 4 (ie n, n+1, n+2, ... n+7)
+	simpleVdString    = 216
+	simpleVdByteArray = 224
+	simpleVdArray     = 232
+	simpleVdMap       = 240
+	simpleVdExt       = 248
 )
 
 type simpleEncDriver struct {
+	h *SimpleHandle
 	w encWriter
-	b [8]byte
+	//b [8]byte
 }
 
 func (e *simpleEncDriver) isBuiltinType(rt uintptr) bool {
@@ -61,7 +40,6 @@ func (e *simpleEncDriver) encodeBuiltin(rt uintptr, v interface{}) {
 
 func (e *simpleEncDriver) encodeNil() {
 	e.w.writen1(simpleVdNil)
-	// e.w.writen1(0)
 }
 
 func (e *simpleEncDriver) encodeBool(b bool) {
@@ -84,68 +62,66 @@ func (e *simpleEncDriver) encodeFloat64(f float64) {
 
 func (e *simpleEncDriver) encodeInt(v int64) {
 	if v < 0 {
-		e.encUint(uint64(-v), false)
+		e.encUint(uint64(-v), simpleVdNegInt)
 	} else {
-		e.encUint(uint64(v), true)
+		e.encUint(uint64(v), simpleVdPosInt)
 	}
 }
 
 func (e *simpleEncDriver) encodeUint(v uint64) {
-	e.encUint(v, true)
+	e.encUint(v, simpleVdPosInt)
 }
 
-func (e *simpleEncDriver) encUint(v uint64, pos bool) {
+func (e *simpleEncDriver) encUint(v uint64, bd uint8) {
 	switch {
 	case v <= math.MaxUint8:
-		if pos {
-			e.w.writen1(simpleVdPosInt1)
-		} else {
-			e.w.writen1(simpleVdNegInt1)
-		}
-		e.w.writen1(uint8(v))
+		e.w.writen2(bd, uint8(v))
 	case v <= math.MaxUint16:
-		if pos {
-			e.w.writen1(simpleVdPosInt2)
-		} else {
-			e.w.writen1(simpleVdNegInt2)
-		}
+		e.w.writen1(bd + 1)
 		e.w.writeUint16(uint16(v))
 	case v <= math.MaxUint32:
-		if pos {
-			e.w.writen1(simpleVdPosInt4)
-		} else {
-			e.w.writen1(simpleVdNegInt4)
-		}
+		e.w.writen1(bd + 2)
 		e.w.writeUint32(uint32(v))
 	case v <= math.MaxUint64:
-		if pos {
-			e.w.writen1(simpleVdPosInt8)
-		} else {
-			e.w.writen1(simpleVdNegInt8)
-		}
+		e.w.writen1(bd + 3)
 		e.w.writeUint64(v)
 	}
 }
 
+func (e *simpleEncDriver) encLen(bd byte, length int) {
+	switch {
+	case length == 0:
+		e.w.writen1(bd)
+	case length <= math.MaxUint8:
+		e.w.writen1(bd + 1)
+		e.w.writen1(uint8(length))
+	case length <= math.MaxUint16:
+		e.w.writen1(bd + 2)
+		e.w.writeUint16(uint16(length))
+	case length <= math.MaxUint32:
+		e.w.writen1(bd + 3)
+		e.w.writeUint32(uint32(length))
+	default:
+		e.w.writen1(bd + 4)
+		e.w.writeUint64(uint64(length))
+	}
+}
+
 func (e *simpleEncDriver) encodeExtPreamble(xtag byte, length int) {
-	e.w.writen1(simpleVdExt)
-	e.w.writeUint32(uint32(length))
+	e.encLen(simpleVdExt, length)
 	e.w.writen1(xtag)
 }
 
 func (e *simpleEncDriver) encodeArrayPreamble(length int) {
-	e.w.writen1(simpleVdArray)
-	e.w.writeUint32(uint32(length))
+	e.encLen(simpleVdArray, length)
 }
 
 func (e *simpleEncDriver) encodeMapPreamble(length int) {
-	e.w.writen1(simpleVdMap)
-	e.w.writeUint32(uint32(length))
+	e.encLen(simpleVdMap, length)
 }
 
 func (e *simpleEncDriver) encodeString(c charEncoding, v string) {
-	e.w.writen1(simpleVdString)
-	e.w.writeUint32(uint32(len(v)))
+	e.encLen(simpleVdString, len(v))
 	e.w.writestr(v)
 }
 
@@ -154,19 +130,19 @@ func (e *simpleEncDriver) encodeSymbol(v string) {
 }
 
 func (e *simpleEncDriver) encodeStringBytes(c charEncoding, v []byte) {
-	e.w.writen1(simpleVdByteArray)
-	e.w.writeUint32(uint32(len(v)))
+	e.encLen(simpleVdByteArray, len(v))
 	e.w.writeb(v)
 }
 
 //------------------------------------
 
 type simpleDecDriver struct {
+	h      *SimpleHandle
 	r      decReader
 	bdRead bool
 	bdType valueType
 	bd     byte
-	b      [8]byte
+	//b      [8]byte
 }
 
 func (d *simpleDecDriver) initReadNext() {
@@ -185,21 +161,21 @@ func (d *simpleDecDriver) currentEncodedType() valueType {
 			d.bdType = valueTypeNil
 		case simpleVdTrue, simpleVdFalse:
 			d.bdType = valueTypeBool
-		case simpleVdPosInt1, simpleVdPosInt2, simpleVdPosInt4, simpleVdPosInt8:
+		case simpleVdPosInt, simpleVdPosInt + 1, simpleVdPosInt + 2, simpleVdPosInt + 3:
 			d.bdType = valueTypeUint
-		case simpleVdNegInt1, simpleVdNegInt2, simpleVdNegInt4, simpleVdNegInt8:
+		case simpleVdNegInt, simpleVdNegInt + 1, simpleVdNegInt + 2, simpleVdNegInt + 3:
 			d.bdType = valueTypeInt
 		case simpleVdFloat32, simpleVdFloat64:
 			d.bdType = valueTypeFloat
-		case simpleVdString:
+		case simpleVdString, simpleVdString + 1, simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
 			d.bdType = valueTypeString
-		case simpleVdByteArray:
+		case simpleVdByteArray, simpleVdByteArray + 1, simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 			d.bdType = valueTypeBytes
-		case simpleVdExt:
+		case simpleVdExt, simpleVdExt + 1, simpleVdExt + 2, simpleVdExt + 3, simpleVdExt + 4:
 			d.bdType = valueTypeExt
-		case simpleVdArray:
+		case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2, simpleVdArray + 3, simpleVdArray + 4:
 			d.bdType = valueTypeArray
-		case simpleVdMap:
+		case simpleVdMap, simpleVdMap + 1, simpleVdMap + 2, simpleVdMap + 3, simpleVdMap + 4:
 			d.bdType = valueTypeMap
 		default:
 			decErr("currentEncodedType: Unrecognized d.vd: 0x%x", d.bd)
@@ -225,34 +201,41 @@ func (d *simpleDecDriver) decodeBuiltin(rt uintptr, v interface{}) {
 
 func (d *simpleDecDriver) decIntAny() (ui uint64, i int64, neg bool) {
 	switch d.bd {
-	case simpleVdPosInt1:
+	case simpleVdPosInt:
 		ui = uint64(d.r.readn1())
-	case simpleVdPosInt2:
+		i = int64(ui)
+	case simpleVdPosInt + 1:
 		ui = uint64(d.r.readUint16())
-	case simpleVdPosInt4:
+		i = int64(ui)
+	case simpleVdPosInt + 2:
 		ui = uint64(d.r.readUint32())
-	case simpleVdPosInt8:
+		i = int64(ui)
+	case simpleVdPosInt + 3:
 		ui = uint64(d.r.readUint64())
-	case simpleVdNegInt1:
+		i = int64(ui)
+	case simpleVdNegInt:
 		ui = uint64(d.r.readn1())
+		i = -(int64(ui))
 		neg = true
-	case simpleVdNegInt2:
+	case simpleVdNegInt + 1:
 		ui = uint64(d.r.readUint16())
+		i = -(int64(ui))
 		neg = true
-	case simpleVdNegInt4:
+	case simpleVdNegInt + 2:
 		ui = uint64(d.r.readUint32())
+		i = -(int64(ui))
 		neg = true
-	case simpleVdNegInt8:
+	case simpleVdNegInt + 3:
 		ui = uint64(d.r.readUint64())
+		i = -(int64(ui))
 		neg = true
 	default:
-		decErr("Integer only valid from pos/neg integer1..8. Invalid descriptor: %v", d.bd)
+		decErr("decIntAny: Integer only valid from pos/neg integer1..8. Invalid descriptor: %v", d.bd)
 	}
-	if neg {
-		i = -(int64(ui))
-	} else {
-		i = int64(ui)
-	}
+	// don't do this check, because callers may only want the unsigned value.
+	// if ui > math.MaxInt64 {
+	// 	decErr("decIntAny: Integer out of range for signed int64: %v", ui)
+	// }
 	return
 }
 
@@ -280,44 +263,60 @@ func (d *simpleDecDriver) decodeFloat(chkOverflow32 bool) (f float64) {
 	case simpleVdFloat64:
 		f = math.Float64frombits(d.r.readUint64())
 	default:
-		if d.bd >= simpleVdPosInt1 && d.bd <= simpleVdNegInt8 {
+		if d.bd >= simpleVdPosInt && d.bd <= simpleVdNegInt+3 {
 			_, i, _ := d.decIntAny()
 			f = float64(i)
 		} else {
 			decErr("Float only valid from float32/64: Invalid descriptor: %v", d.bd)
 		}
 	}
-	// check overflow (logic adapted from std pkg reflect/value.go OverflowFloat()
-	if chkOverflow32 {
-		f2 := f
-		if f2 < 0 {
-			f2 = -f
-		}
-		if math.MaxFloat32 < f2 && f2 <= math.MaxFloat64 {
-			decErr("Overflow float32 value: %v", f2)
-		}
-	}
+	checkOverflowFloat32(f, chkOverflow32)
+	d.bdRead = false
 	return
 }
 
 // bool can be decoded from bool only (single byte).
 func (d *simpleDecDriver) decodeBool() (b bool) {
-	b = d.r.readn1() != 0
+	switch d.bd {
+	case simpleVdTrue:
+		b = true
+	case simpleVdFalse:
+	default:
+		decErr("Invalid single-byte value for bool: %s: %x", msgBadDesc, d.bd)
+	}
 	d.bdRead = false
 	return
 }
 
 func (d *simpleDecDriver) readMapLen() (length int) {
+	d.bdRead = false
 	return d.decLen()
 }
 
 func (d *simpleDecDriver) readArrayLen() (length int) {
+	d.bdRead = false
 	return d.decLen()
 }
 
 func (d *simpleDecDriver) decLen() int {
-	d.r.readb(d.b[:4])
-	return int(bigen.Uint32(d.b[:4]))
+	switch d.bd % 8 {
+	case 0:
+		return 0
+	case 1:
+		return int(d.r.readn1())
+	case 2:
+		return int(d.r.readUint16())
+	case 3:
+		ui := uint64(d.r.readUint32())
+		checkOverflow(ui, 0, intBitsize)
+		return int(ui)
+	case 4:
+		ui := d.r.readUint64()
+		checkOverflow(ui, 0, intBitsize)
+		return int(ui)
+	}
+	decErr("decLen: Cannot read length: bd%8 must be in range 0..4. Got: %d", d.bd%8)
+	return -1
 }
 
 func (d *simpleDecDriver) decodeString() (s string) {
@@ -346,14 +345,14 @@ func (d *simpleDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 
 func (d *simpleDecDriver) decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
 	switch d.bd {
-	case simpleVdExt:
+	case simpleVdExt, simpleVdExt + 1, simpleVdExt + 2, simpleVdExt + 3, simpleVdExt + 4:
 		l := d.decLen()
 		xtag = d.r.readn1()
 		if verifyTag && xtag != tag {
 			decErr("Wrong extension tag. Got %b. Expecting: %v", xtag, tag)
 		}
 		xbs = d.r.readn(l)
-	case simpleVdByteArray:
+	case simpleVdByteArray, simpleVdByteArray + 1, simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		xbs, _ = d.decodeBytes(nil)
 	default:
 		decErr("Invalid d.vd for extensions (Expecting extensions or byte array). Got: 0x%x", d.bd)
@@ -374,11 +373,11 @@ func (d *simpleDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurt
 	case simpleVdTrue:
 		vt = valueTypeBool
 		v = true
-	case simpleVdPosInt1, simpleVdPosInt2, simpleVdPosInt4, simpleVdPosInt8:
+	case simpleVdPosInt, simpleVdPosInt + 1, simpleVdPosInt + 2, simpleVdPosInt + 3:
 		vt = valueTypeUint
 		ui, _, _ := d.decIntAny()
 		v = ui
-	case simpleVdNegInt1, simpleVdNegInt2, simpleVdNegInt4, simpleVdNegInt8:
+	case simpleVdNegInt, simpleVdNegInt + 1, simpleVdNegInt + 2, simpleVdNegInt + 3:
 		vt = valueTypeInt
 		_, i, _ := d.decIntAny()
 		v = i
@@ -388,13 +387,13 @@ func (d *simpleDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurt
 	case simpleVdFloat64:
 		vt = valueTypeFloat
 		v = d.decodeFloat(false)
-	case simpleVdString:
+	case simpleVdString, simpleVdString + 1, simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
 		vt = valueTypeString
 		v = d.decodeString()
-	case simpleVdByteArray:
+	case simpleVdByteArray, simpleVdByteArray + 1, simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		vt = valueTypeBytes
 		v, _ = d.decodeBytes(nil)
-	case simpleVdExt:
+	case simpleVdExt, simpleVdExt + 1, simpleVdExt + 2, simpleVdExt + 3, simpleVdExt + 4:
 		vt = valueTypeExt
 		l := d.decLen()
 		var re RawExt
@@ -402,10 +401,10 @@ func (d *simpleDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurt
 		re.Data = d.r.readn(l)
 		v = &re
 		vt = valueTypeExt
-	case simpleVdArray:
+	case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2, simpleVdArray + 3, simpleVdArray + 4:
 		vt = valueTypeArray
 		decodeFurther = true
-	case simpleVdMap:
+	case simpleVdMap, simpleVdMap + 1, simpleVdMap + 2, simpleVdMap + 3, simpleVdMap + 4:
 		vt = valueTypeMap
 		decodeFurther = true
 	default:
@@ -420,23 +419,34 @@ func (d *simpleDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurt
 
 //------------------------------------
 
-//SimpleHandle is a Handle for a very simple encoding format.
+// SimpleHandle is a Handle for a very simple encoding format.
 //
-//The simple format is similar to binc:
-//  - All numbers are represented with 8 bytes (int64, uint64, float64)
-//  - Strings, []byte, arrays and maps have the length pre-pended as a uint64
-//  - Thus, there isn't much packing, but the format is extremely simple.
-//    and easy to create different implementations of (e.g. in C).
+// simple is a simplistic codec similar to binc, but not as compact.
+//   - Encoding of a value is always preceeded by the descriptor byte (bd)
+//   - True, false, nil are encoded fully in 1 byte (the descriptor)
+//   - Integers (intXXX, uintXXX) are encoded in 1, 2, 4 or 8 bytes (plus a descriptor byte).
+//     There are positive (uintXXX and intXXX >= 0) and negative (intXXX < 0) integers.
+//   - Floats are encoded in 4 or 8 bytes (plus a descriptor byte)
+//   - Lenght of containers (strings, bytes, array, map, extensions)
+//     are encoded in 0, 1, 2, 4 or 8 bytes.
+//     Zero-length containers have no length encoded.
+//     For others, the number of bytes is given by pow(2, bd%3)
+//   - maps are encoded as [bd] [length] [[key][value]]...
+//   - arrays are encoded as [bd] [length] [value]...
+//   - extensions are encoded as [bd] [length] [tag] [byte]...
+//   - strings/bytearrays are encoded as [bd] [length] [byte]...
+//
+// The full spec will be published soon.
 type SimpleHandle struct {
 	BasicHandle
 }
 
 func (h *SimpleHandle) newEncDriver(w encWriter) encDriver {
-	return &simpleEncDriver{w: w}
+	return &simpleEncDriver{w: w, h: h}
 }
 
 func (h *SimpleHandle) newDecDriver(r decReader) decDriver {
-	return &simpleDecDriver{r: r}
+	return &simpleDecDriver{r: r, h: h}
 }
 
 func (_ *SimpleHandle) writeExt() bool {
