@@ -98,7 +98,7 @@ func (e *simpleEncDriver) encLen(bd byte, length int) {
 	case length <= math.MaxUint16:
 		e.w.writen1(bd + 2)
 		e.w.writeUint16(uint16(length))
-	case length <= math.MaxUint32:
+	case int64(length) <= math.MaxUint32:
 		e.w.writen1(bd + 3)
 		e.w.writeUint32(uint32(length))
 	default:
