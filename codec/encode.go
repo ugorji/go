@@ -6,6 +6,8 @@ package codec
 import (
 	"io"
 	"reflect"
+	"C"
+	"unsafe"
 )
 
 const (
@@ -826,6 +828,14 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 
 	rt := rv.Type()
 	rtid := reflect.ValueOf(rt).Pointer()
+
+	if rt.Name() == "_Ctype_char" {
+
+		rv = reflect.ValueOf(C.GoString((*C.char)(unsafe.Pointer(rv.Addr().Pointer()))))
+		rt = rv.Type()
+		rtid = reflect.ValueOf(rt).Pointer()
+
+	}
 
 	// if e.f == nil && e.s == nil { debugf("---->Creating new enc f map for type: %v\n", rt) }
 	var fn encFn
