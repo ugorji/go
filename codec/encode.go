@@ -37,7 +37,10 @@ const (
 	AsSymbolStructFieldNameFlag
 )
 
-// encWriter abstracting writing to a byte array or to an io.Writer.
+// fastpathsEnc holds the rtid (reflect.Type Pointer) to fast encode function for a selected slice/map type.
+var fastpathsEnc = make(map[uintptr]func(*encFnInfo, reflect.Value))
+
+// encWriter abstracts writing to a byte array or to an io.Writer.
 type encWriter interface {
 	writeUint16(uint16)
 	writeUint32(uint32)
@@ -368,23 +371,6 @@ func (f *encFnInfo) kSlice(rv reflect.Value) {
 		return
 	}
 
-	if shortCircuitReflectToFastPath {
-		switch f.ti.rtid {
-		case intfSliceTypId:
-			f.e.encSliceIntf(rv.Interface().([]interface{}))
-			return
-		case strSliceTypId:
-			f.e.encSliceStr(rv.Interface().([]string))
-			return
-		case uint64SliceTypId:
-			f.e.encSliceUint64(rv.Interface().([]uint64))
-			return
-		case int64SliceTypId:
-			f.e.encSliceInt64(rv.Interface().([]int64))
-			return
-		}
-	}
-
 	// If in this method, then there was no extension function defined.
 	// So it's okay to treat as []byte.
 	if f.ti.rtid == uint8SliceTypId || f.ti.rt.Elem().Kind() == reflect.Uint8 {
@@ -404,9 +390,15 @@ func (f *encFnInfo) kSlice(rv reflect.Value) {
 	if l == 0 {
 		return
 	}
+
+	rtelem := f.ti.rt.Elem()
+	for rtelem.Kind() == reflect.Ptr {
+		rtelem = rtelem.Elem()
+	}
+	fn := f.e.getEncFn(rtelem)
 	for j := 0; j < l; j++ {
 		// TODO: Consider perf implication of encoding odd index values as symbols if type is string
-		f.e.encodeValue(rv.Index(j))
+		f.e.encodeValue(rv.Index(j), fn)
 	}
 }
 
@@ -419,7 +411,8 @@ func (f *encFnInfo) kArray(rv reflect.Value) {
 
 	l := rv.Len()
 	// Handle an array of bytes specially (in line with what is done for slices)
-	if f.ti.rt.Elem().Kind() == reflect.Uint8 {
+	rtelem := f.ti.rt.Elem()
+	if rtelem.Kind() == reflect.Uint8 {
 		if l == 0 {
 			f.ee.encodeStringBytes(c_RAW, nil)
 			return
@@ -448,9 +441,13 @@ func (f *encFnInfo) kArray(rv reflect.Value) {
 	if l == 0 {
 		return
 	}
+	for rtelem.Kind() == reflect.Ptr {
+		rtelem = rtelem.Elem()
+	}
+	fn := f.e.getEncFn(rtelem)
 	for j := 0; j < l; j++ {
 		// TODO: Consider perf implication of encoding odd index values as symbols if type is string
-		f.e.encodeValue(rv.Index(j))
+		f.e.encodeValue(rv.Index(j), fn)
 	}
 }
 
@@ -499,12 +496,12 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 			} else {
 				ee.encodeString(c_UTF8, encnames[j])
 			}
-			e.encodeValue(rvals[j])
+			e.encodeValue(rvals[j], encFn{})
 		}
 	} else {
 		f.ee.encodeArrayPreamble(newlen)
 		for j := 0; j < newlen; j++ {
-			e.encodeValue(rvals[j])
+			e.encodeValue(rvals[j], encFn{})
 		}
 	}
 }
@@ -523,7 +520,7 @@ func (f *encFnInfo) kInterface(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.e.encodeValue(rv.Elem())
+	f.e.encodeValue(rv.Elem(), encFn{})
 }
 
 func (f *encFnInfo) kMap(rv reflect.Value) {
@@ -532,37 +529,32 @@ func (f *encFnInfo) kMap(rv reflect.Value) {
 		return
 	}
 
-	if shortCircuitReflectToFastPath {
-		switch f.ti.rtid {
-		case mapIntfIntfTypId:
-			f.e.encMapIntfIntf(rv.Interface().(map[interface{}]interface{}))
-			return
-		case mapStrIntfTypId:
-			f.e.encMapStrIntf(rv.Interface().(map[string]interface{}))
-			return
-		case mapStrStrTypId:
-			f.e.encMapStrStr(rv.Interface().(map[string]string))
-			return
-		case mapInt64IntfTypId:
-			f.e.encMapInt64Intf(rv.Interface().(map[int64]interface{}))
-			return
-		case mapUint64IntfTypId:
-			f.e.encMapUint64Intf(rv.Interface().(map[uint64]interface{}))
-			return
-		}
-	}
-
 	l := rv.Len()
 	f.ee.encodeMapPreamble(l)
 	if l == 0 {
 		return
 	}
-	// keyTypeIsString := f.ti.rt.Key().Kind() == reflect.String
-	keyTypeIsString := f.ti.rt.Key() == stringTyp
 	var asSymbols bool
+	// determine the underlying key and val encFn's for the map.
+	// This eliminates some work which is done for each loop iteration i.e.
+	// rv.Type(), ref.ValueOf(rt).Pointer(), then check map/list for fn.
+	var keyFn, valFn encFn
+	rtkey := f.ti.rt.Key()
+	rtval := f.ti.rt.Elem()
+	// keyTypeIsString := f.ti.rt.Key().Kind() == reflect.String
+	var keyTypeIsString = rtkey == stringTyp
 	if keyTypeIsString {
 		asSymbols = f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	} else {
+		for rtkey.Kind() == reflect.Ptr {
+			rtkey = rtkey.Elem()
+		}
+		keyFn = f.e.getEncFn(rtkey)
 	}
+	for rtval.Kind() == reflect.Ptr {
+		rtval = rtval.Elem()
+	}
+	valFn = f.e.getEncFn(rtval)
 	mks := rv.MapKeys()
 	// for j, lmks := 0, len(mks); j < lmks; j++ {
 	for j := range mks {
@@ -573,9 +565,9 @@ func (f *encFnInfo) kMap(rv reflect.Value) {
 				f.ee.encodeString(c_UTF8, mks[j].String())
 			}
 		} else {
-			f.e.encodeValue(mks[j])
+			f.e.encodeValue(mks[j], keyFn)
 		}
-		f.e.encodeValue(rv.MapIndex(mks[j]))
+		f.e.encodeValue(rv.MapIndex(mks[j]), valFn)
 	}
 
 }
@@ -706,7 +698,7 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.encodeNil()
 
 	case reflect.Value:
-		e.encodeValue(v)
+		e.encodeValue(v, encFn{})
 
 	case string:
 		e.e.encodeString(c_UTF8, v)
@@ -737,27 +729,8 @@ func (e *Encoder) encode(iv interface{}) {
 	case float64:
 		e.e.encodeFloat64(v)
 
-	case []interface{}:
-		e.encSliceIntf(v)
-	case []string:
-		e.encSliceStr(v)
-	case []int64:
-		e.encSliceInt64(v)
-	case []uint64:
-		e.encSliceUint64(v)
 	case []uint8:
 		e.e.encodeStringBytes(c_RAW, v)
-
-	case map[interface{}]interface{}:
-		e.encMapIntfIntf(v)
-	case map[string]interface{}:
-		e.encMapStrIntf(v)
-	case map[string]string:
-		e.encMapStrStr(v)
-	case map[int64]interface{}:
-		e.encMapInt64Intf(v)
-	case map[uint64]interface{}:
-		e.encMapUint64Intf(v)
 
 	case *string:
 		e.e.encodeString(c_UTF8, *v)
@@ -788,34 +761,16 @@ func (e *Encoder) encode(iv interface{}) {
 	case *float64:
 		e.e.encodeFloat64(*v)
 
-	case *[]interface{}:
-		e.encSliceIntf(*v)
-	case *[]string:
-		e.encSliceStr(*v)
-	case *[]int64:
-		e.encSliceInt64(*v)
-	case *[]uint64:
-		e.encSliceUint64(*v)
 	case *[]uint8:
 		e.e.encodeStringBytes(c_RAW, *v)
 
-	case *map[interface{}]interface{}:
-		e.encMapIntfIntf(*v)
-	case *map[string]interface{}:
-		e.encMapStrIntf(*v)
-	case *map[string]string:
-		e.encMapStrStr(*v)
-	case *map[int64]interface{}:
-		e.encMapInt64Intf(*v)
-	case *map[uint64]interface{}:
-		e.encMapUint64Intf(*v)
-
 	default:
-		e.encodeValue(reflect.ValueOf(iv))
+		e.encodeValue(reflect.ValueOf(iv), encFn{})
 	}
 }
 
-func (e *Encoder) encodeValue(rv reflect.Value) {
+func (e *Encoder) encodeValue(rv reflect.Value, fn encFn) {
+	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
 	for rv.Kind() == reflect.Ptr {
 		if rv.IsNil() {
 			e.e.encodeNil()
@@ -824,15 +779,22 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 		rv = rv.Elem()
 	}
 
-	rt := rv.Type()
-	rtid := reflect.ValueOf(rt).Pointer()
+	if fn.i == nil {
+		fn = e.getEncFn(rv.Type())
+	}
+	fn.f(fn.i, rv)
+}
 
+func (e *Encoder) getEncFn(rt reflect.Type) (fn encFn) {
 	// if e.f == nil && e.s == nil { debugf("---->Creating new enc f map for type: %v\n", rt) }
-	var fn encFn
+	rtid := reflect.ValueOf(rt).Pointer()
 	var ok bool
 	if useMapForCodecCache {
 		fn, ok = e.f[rtid]
 	} else {
+		// if len(e.x) > 0 && len(e.x)%10 == 0 {
+		// 	println("len(e.x) ", len(e.x))
+		// }
 		for i, v := range e.x {
 			if v == rtid {
 				fn, ok = e.s[i], true
@@ -853,6 +815,10 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 			fn.f = (*encFnInfo).ext
 		} else if supportBinaryMarshal && fi.ti.m {
 			fn.f = (*encFnInfo).binaryMarshal
+		} else if xxf := fastEnc(rtid); xxf != nil {
+			fn.f = xxf
+			// } else if xxf, xxok := fastpathsEnc[rtid]; xxok {
+			// 	fn.f = xxf
 		} else {
 			switch rk := rt.Kind(); rk {
 			case reflect.Bool:
@@ -887,7 +853,7 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 		}
 		if useMapForCodecCache {
 			if e.f == nil {
-				e.f = make(map[uintptr]encFn, 16)
+				e.f = make(map[uintptr]encFn, 64)
 			}
 			e.f[rtid] = fn
 		} else {
@@ -895,9 +861,7 @@ func (e *Encoder) encodeValue(rv reflect.Value) {
 			e.x = append(e.x, rtid)
 		}
 	}
-
-	fn.f(fn.i, rv)
-
+	return
 }
 
 func (e *Encoder) encRawExt(re RawExt) {
@@ -913,89 +877,16 @@ func (e *Encoder) encRawExt(re RawExt) {
 	}
 }
 
-// ---------------------------------------------
-// short circuit functions for common maps and slices
-
-func (e *Encoder) encSliceIntf(v []interface{}) {
-	e.e.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
-		e.encode(v2)
-	}
-}
-
-func (e *Encoder) encSliceStr(v []string) {
-	e.e.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
-		e.e.encodeString(c_UTF8, v2)
-	}
-}
-
-func (e *Encoder) encSliceInt64(v []int64) {
-	e.e.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
-		e.e.encodeInt(v2)
-	}
-}
-
-func (e *Encoder) encSliceUint64(v []uint64) {
-	e.e.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
-		e.e.encodeUint(v2)
-	}
-}
-
-func (e *Encoder) encMapStrStr(v map[string]string) {
-	e.e.encodeMapPreamble(len(v))
-	asSymbols := e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
-	for k2, v2 := range v {
-		if asSymbols {
-			e.e.encodeSymbol(k2)
-		} else {
-			e.e.encodeString(c_UTF8, k2)
-		}
-		e.e.encodeString(c_UTF8, v2)
-	}
-}
-
-func (e *Encoder) encMapStrIntf(v map[string]interface{}) {
-	e.e.encodeMapPreamble(len(v))
-	asSymbols := e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
-	for k2, v2 := range v {
-		if asSymbols {
-			e.e.encodeSymbol(k2)
-		} else {
-			e.e.encodeString(c_UTF8, k2)
-		}
-		e.encode(v2)
-	}
-}
-
-func (e *Encoder) encMapInt64Intf(v map[int64]interface{}) {
-	e.e.encodeMapPreamble(len(v))
-	for k2, v2 := range v {
-		e.e.encodeInt(k2)
-		e.encode(v2)
-	}
-}
-
-func (e *Encoder) encMapUint64Intf(v map[uint64]interface{}) {
-	e.e.encodeMapPreamble(len(v))
-	for k2, v2 := range v {
-		e.e.encodeUint(uint64(k2))
-		e.encode(v2)
-	}
-}
-
-func (e *Encoder) encMapIntfIntf(v map[interface{}]interface{}) {
-	e.e.encodeMapPreamble(len(v))
-	for k2, v2 := range v {
-		e.encode(k2)
-		e.encode(v2)
-	}
-}
-
 // ----------------------------------------
 
 func encErr(format string, params ...interface{}) {
 	doPanic(msgTagEnc, format, params...)
+}
+
+func fastEnc(rtid uintptr) func(*encFnInfo, reflect.Value) {
+	// Unfortunately, accessing an empty map is not free free.
+	if fastpathEnabled {
+		return fastpathsEnc[rtid]
+	}
+	return nil
 }

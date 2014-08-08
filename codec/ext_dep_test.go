@@ -1,4 +1,4 @@
-// //+build ignore
+//+build ignore
 
 // Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.

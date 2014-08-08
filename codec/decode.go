@@ -16,6 +16,9 @@ const (
 	msgDecCannotExpandArr = "cannot expand go array from %v to stream length: %v"
 )
 
+// fastpathsEnc holds the rtid (reflect.Type Pointer) to fast decode function for a selected slice/map type.
+var fastpathsDec = make(map[uintptr]func(*decFnInfo, reflect.Value))
+
 // decReader abstracts the reading source, allowing implementations that can
 // read from an io.Reader or directly off a byte slice with zero-copying.
 type decReader interface {
@@ -185,6 +188,13 @@ type decFnInfo struct {
 	array bool
 }
 
+// ----------------------------------------
+
+type decFn struct {
+	i *decFnInfo
+	f func(*decFnInfo, reflect.Value)
+}
+
 func (f *decFnInfo) builtin(rv reflect.Value) {
 	f.dd.decodeBuiltin(f.ti.rtid, rv.Addr().Interface())
 }
@@ -294,7 +304,7 @@ func (f *decFnInfo) kUint16(rv reflect.Value) {
 func (f *decFnInfo) kInterface(rv reflect.Value) {
 	// debugf("\t===> kInterface")
 	if !rv.IsNil() {
-		f.d.decodeValue(rv.Elem())
+		f.d.decodeValue(rv.Elem(), decFn{})
 		return
 	}
 	// nil interface:
@@ -343,7 +353,7 @@ func (f *decFnInfo) kInterface(rv reflect.Value) {
 	}
 	if decodeFurther {
 		if useRvn {
-			f.d.decodeValue(rvn)
+			f.d.decodeValue(rvn, decFn{})
 		} else if v != nil {
 			// this v is a pointer, so we need to dereference it when done
 			f.d.decode(v)
@@ -375,7 +385,7 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 			if k := fti.indexForEncName(rvkencname); k > -1 {
 				sfik := tisfi[k]
 				if sfik.i != -1 {
-					f.d.decodeValue(rv.Field(int(sfik.i)))
+					f.d.decodeValue(rv.Field(int(sfik.i)), decFn{})
 				} else {
 					f.d.decEmbeddedField(rv, sfik.is)
 				}
@@ -386,7 +396,7 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 						rvkencname)
 				} else {
 					var nilintf0 interface{}
-					f.d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
+					f.d.decodeValue(reflect.ValueOf(&nilintf0).Elem(), decFn{})
 				}
 			}
 		}
@@ -400,7 +410,7 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 				break
 			}
 			if si.i != -1 {
-				f.d.decodeValue(rv.Field(int(si.i)))
+				f.d.decodeValue(rv.Field(int(si.i)), decFn{})
 			} else {
 				f.d.decEmbeddedField(rv, si.is)
 			}
@@ -409,7 +419,7 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 			// read remaining values and throw away
 			for j := len(fti.sfip); j < containerLen; j++ {
 				var nilintf0 interface{}
-				f.d.decodeValue(reflect.ValueOf(&nilintf0).Elem())
+				f.d.decodeValue(reflect.ValueOf(&nilintf0).Elem(), decFn{})
 			}
 		}
 	} else {
@@ -428,23 +438,6 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 			if bs2, changed2 := f.dd.decodeBytes(rv.Bytes()); changed2 {
 				rv.SetBytes(bs2)
 			}
-			return
-		}
-	}
-
-	if shortCircuitReflectToFastPath && rv.CanAddr() {
-		switch f.ti.rtid {
-		case intfSliceTypId:
-			f.d.decSliceIntf(rv.Addr().Interface().(*[]interface{}), currEncodedType, f.array)
-			return
-		case uint64SliceTypId:
-			f.d.decSliceUint64(rv.Addr().Interface().(*[]uint64), currEncodedType, f.array)
-			return
-		case int64SliceTypId:
-			f.d.decSliceInt64(rv.Addr().Interface().(*[]int64), currEncodedType, f.array)
-			return
-		case strSliceTypId:
-			f.d.decSliceStr(rv.Addr().Interface().(*[]string), currEncodedType, f.array)
 			return
 		}
 	}
@@ -474,8 +467,13 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 		rv.SetLen(containerLenS)
 	}
 
+	rtelem := f.ti.rt.Elem()
+	for rtelem.Kind() == reflect.Ptr {
+		rtelem = rtelem.Elem()
+	}
+	fn := f.d.getDecFn(rtelem)
 	for j := 0; j < containerLenS; j++ {
-		f.d.decodeValue(rv.Index(j))
+		f.d.decodeValue(rv.Index(j), fn)
 	}
 }
 
@@ -485,23 +483,6 @@ func (f *decFnInfo) kArray(rv reflect.Value) {
 }
 
 func (f *decFnInfo) kMap(rv reflect.Value) {
-	if shortCircuitReflectToFastPath && rv.CanAddr() {
-		switch f.ti.rtid {
-		case mapStrIntfTypId:
-			f.d.decMapStrIntf(rv.Addr().Interface().(*map[string]interface{}))
-			return
-		case mapIntfIntfTypId:
-			f.d.decMapIntfIntf(rv.Addr().Interface().(*map[interface{}]interface{}))
-			return
-		case mapInt64IntfTypId:
-			f.d.decMapInt64Intf(rv.Addr().Interface().(*map[int64]interface{}))
-			return
-		case mapUint64IntfTypId:
-			f.d.decMapUint64Intf(rv.Addr().Interface().(*map[uint64]interface{}))
-			return
-		}
-	}
-
 	containerLen := f.dd.readMapLen()
 
 	if rv.IsNil() {
@@ -514,12 +495,19 @@ func (f *decFnInfo) kMap(rv reflect.Value) {
 
 	ktype, vtype := f.ti.rt.Key(), f.ti.rt.Elem()
 	ktypeId := reflect.ValueOf(ktype).Pointer()
+	var keyFn, valFn decFn
+	var xtyp reflect.Type
+	for xtyp = ktype; xtyp.Kind() == reflect.Ptr; xtyp = xtyp.Elem() {
+	}
+	keyFn = f.d.getDecFn(xtyp)
+	for xtyp = vtype; xtyp.Kind() == reflect.Ptr; xtyp = xtyp.Elem() {
+	}
+	valFn = f.d.getDecFn(xtyp)
 	for j := 0; j < containerLen; j++ {
 		rvk := reflect.New(ktype).Elem()
-		f.d.decodeValue(rvk)
+		f.d.decodeValue(rvk, keyFn)
 
 		// special case if a byte array.
-		// if ktype == intfTyp {
 		if ktypeId == intfTypId {
 			rvk = rvk.Elem()
 			if rvk.Type() == uint8SliceTyp {
@@ -531,16 +519,9 @@ func (f *decFnInfo) kMap(rv reflect.Value) {
 			rvv = reflect.New(vtype).Elem()
 		}
 
-		f.d.decodeValue(rvv)
+		f.d.decodeValue(rvv, valFn)
 		rv.SetMapIndex(rvk, rvv)
 	}
-}
-
-// ----------------------------------------
-
-type decFn struct {
-	i *decFnInfo
-	f func(*decFnInfo, reflect.Value)
 }
 
 // A Decoder reads and decodes an object from an input stream in the codec format.
@@ -640,7 +621,7 @@ func (d *Decoder) decode(iv interface{}) {
 
 	case reflect.Value:
 		d.chkPtrValue(v)
-		d.decodeValue(v.Elem())
+		d.decodeValue(v.Elem(), decFn{})
 
 	case *string:
 		*v = d.d.decodeString()
@@ -673,34 +654,17 @@ func (d *Decoder) decode(iv interface{}) {
 	case *[]byte:
 		*v, _ = d.d.decodeBytes(*v)
 
-	case *[]interface{}:
-		d.decSliceIntf(v, valueTypeInvalid, false)
-	case *[]uint64:
-		d.decSliceUint64(v, valueTypeInvalid, false)
-	case *[]int64:
-		d.decSliceInt64(v, valueTypeInvalid, false)
-	case *[]string:
-		d.decSliceStr(v, valueTypeInvalid, false)
-	case *map[string]interface{}:
-		d.decMapStrIntf(v)
-	case *map[interface{}]interface{}:
-		d.decMapIntfIntf(v)
-	case *map[uint64]interface{}:
-		d.decMapUint64Intf(v)
-	case *map[int64]interface{}:
-		d.decMapInt64Intf(v)
-
 	case *interface{}:
-		d.decodeValue(reflect.ValueOf(iv).Elem())
+		d.decodeValue(reflect.ValueOf(iv).Elem(), decFn{})
 
 	default:
 		rv := reflect.ValueOf(iv)
 		d.chkPtrValue(rv)
-		d.decodeValue(rv.Elem())
+		d.decodeValue(rv.Elem(), decFn{})
 	}
 }
 
-func (d *Decoder) decodeValue(rv reflect.Value) {
+func (d *Decoder) decodeValue(rv reflect.Value, fn decFn) {
 	d.d.initReadNext()
 
 	if d.d.tryDecodeAsNil() {
@@ -729,14 +693,20 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		rv = rv.Elem()
 	}
 
-	rt := rv.Type()
+	if fn.i == nil {
+		fn = d.getDecFn(rv.Type())
+	}
+	fn.f(fn.i, rv)
+	return
+}
+
+func (d *Decoder) getDecFn(rt reflect.Type) (fn decFn) {
 	rtid := reflect.ValueOf(rt).Pointer()
 
 	// retrieve or register a focus'ed function for this type
 	// to eliminate need to do the retrieval multiple times
 
 	// if d.f == nil && d.s == nil { debugf("---->Creating new dec f map for type: %v\n", rt) }
-	var fn decFn
 	var ok bool
 	if useMapForCodecCache {
 		fn, ok = d.f[rtid]
@@ -770,6 +740,10 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 			fn.f = (*decFnInfo).ext
 		} else if supportBinaryMarshal && fi.ti.unm {
 			fn.f = (*decFnInfo).binaryMarshal
+		} else if xxf := fastDec(rtid); xxf != nil {
+			fn.f = xxf
+			// } else if xxf, xxok := fastpathsDec[rtid]; xxok {
+			// 	fn.f = xxf
 		} else {
 			switch rk := rt.Kind(); rk {
 			case reflect.String:
@@ -828,8 +802,6 @@ func (d *Decoder) decodeValue(rv reflect.Value) {
 		}
 	}
 
-	fn.f(fn.i, rv)
-
 	return
 }
 
@@ -862,168 +834,10 @@ func (d *Decoder) decEmbeddedField(rv reflect.Value, index []int) {
 		}
 		rv = rv.Field(j)
 	}
-	d.decodeValue(rv)
+	d.decodeValue(rv, decFn{})
 }
 
 // --------------------------------------------------
-
-// short circuit functions for common maps and slices
-
-func (d *Decoder) decSliceIntf(v *[]interface{}, currEncodedType valueType, doNotReset bool) {
-	_, containerLenS := decContLens(d.d, currEncodedType)
-	s := *v
-	if s == nil {
-		s = make([]interface{}, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
-		if doNotReset {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
-		}
-		s = make([]interface{}, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
-	}
-	for j := 0; j < containerLenS; j++ {
-		d.decode(&s[j])
-	}
-	*v = s
-}
-
-func (d *Decoder) decSliceInt64(v *[]int64, currEncodedType valueType, doNotReset bool) {
-	_, containerLenS := decContLens(d.d, currEncodedType)
-	s := *v
-	if s == nil {
-		s = make([]int64, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
-		if doNotReset {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
-		}
-		s = make([]int64, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
-	}
-	for j := 0; j < containerLenS; j++ {
-		// d.decode(&s[j])
-		d.d.initReadNext()
-		s[j] = d.d.decodeInt(intBitsize)
-	}
-	*v = s
-}
-
-func (d *Decoder) decSliceUint64(v *[]uint64, currEncodedType valueType, doNotReset bool) {
-	_, containerLenS := decContLens(d.d, currEncodedType)
-	s := *v
-	if s == nil {
-		s = make([]uint64, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
-		if doNotReset {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
-		}
-		s = make([]uint64, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
-	}
-	for j := 0; j < containerLenS; j++ {
-		// d.decode(&s[j])
-		d.d.initReadNext()
-		s[j] = d.d.decodeUint(intBitsize)
-	}
-	*v = s
-}
-
-func (d *Decoder) decSliceStr(v *[]string, currEncodedType valueType, doNotReset bool) {
-	_, containerLenS := decContLens(d.d, currEncodedType)
-	s := *v
-	if s == nil {
-		s = make([]string, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
-		if doNotReset {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
-		}
-		s = make([]string, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
-	}
-	for j := 0; j < containerLenS; j++ {
-		// d.decode(&s[j])
-		d.d.initReadNext()
-		s[j] = d.d.decodeString()
-	}
-	*v = s
-}
-
-func (d *Decoder) decMapIntfIntf(v *map[interface{}]interface{}) {
-	containerLen := d.d.readMapLen()
-	m := *v
-	if m == nil {
-		m = make(map[interface{}]interface{}, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		var mk interface{}
-		d.decode(&mk)
-		// special case if a byte array.
-		if bv, bok := mk.([]byte); bok {
-			mk = string(bv)
-		}
-		mv := m[mk]
-		d.decode(&mv)
-		m[mk] = mv
-	}
-}
-
-func (d *Decoder) decMapInt64Intf(v *map[int64]interface{}) {
-	containerLen := d.d.readMapLen()
-	m := *v
-	if m == nil {
-		m = make(map[int64]interface{}, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		d.d.initReadNext()
-		mk := d.d.decodeInt(intBitsize)
-		mv := m[mk]
-		d.decode(&mv)
-		m[mk] = mv
-	}
-}
-
-func (d *Decoder) decMapUint64Intf(v *map[uint64]interface{}) {
-	containerLen := d.d.readMapLen()
-	m := *v
-	if m == nil {
-		m = make(map[uint64]interface{}, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		d.d.initReadNext()
-		mk := d.d.decodeUint(intBitsize)
-		mv := m[mk]
-		d.decode(&mv)
-		m[mk] = mv
-	}
-}
-
-func (d *Decoder) decMapStrIntf(v *map[string]interface{}) {
-	containerLen := d.d.readMapLen()
-	m := *v
-	if m == nil {
-		m = make(map[string]interface{}, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		d.d.initReadNext()
-		mk := d.d.decodeString()
-		mv := m[mk]
-		d.decode(&mv)
-		m[mk] = mv
-	}
-}
-
-// ----------------------------------------
 
 func decContLens(dd decDriver, currEncodedType valueType) (containerLen, containerLenS int) {
 	if currEncodedType == valueTypeInvalid {
@@ -1045,4 +859,12 @@ func decContLens(dd decDriver, currEncodedType valueType) (containerLen, contain
 
 func decErr(format string, params ...interface{}) {
 	doPanic(msgTagDec, format, params...)
+}
+
+func fastDec(rtid uintptr) func(*decFnInfo, reflect.Value) {
+	// Unfortunately, accessing an empty map is not free free.
+	if fastpathEnabled {
+		return fastpathsDec[rtid]
+	}
+	return nil
 }

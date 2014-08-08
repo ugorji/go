@@ -55,6 +55,8 @@ var (
 	_                         = fmt.Printf
 	skipVerifyVal interface{} = &(struct{}{})
 
+	testMapStrIntfTyp = reflect.TypeOf(map[string]interface{}(nil))
+
 	// For Go Time, do not use a descriptive timezone.
 	// It's unnecessary, and makes it harder to do a reflect.DeepEqual.
 	// The Offset already tells what the offset should be, if not on UTC and unknown zone name.
@@ -584,7 +586,8 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	// func TestMsgpackNilStringMap(t *testing.T) {
 	var oldMapType reflect.Type
 	v := h.getBasicHandle()
-	oldMapType, v.MapType = v.MapType, mapStrIntfTyp
+
+	oldMapType, v.MapType = v.MapType, testMapStrIntfTyp
 
 	//skip time.Time, []interface{} containing time.Time, last map, and newStruc
 	doTestCodecTableOne(t, true, h, table[:idxTime], tableTestNilVerify[:idxTime])
@@ -856,7 +859,7 @@ func doTestMsgpackPythonGenStreams(t *testing.T) {
 			failT(t)
 			continue
 		}
-		testMsgpackH.MapType = mapStrIntfTyp
+		testMsgpackH.MapType = testMapStrIntfTyp
 
 		var v1 interface{}
 		if err = testUnmarshal(&v1, bss, testMsgpackH); err != nil {

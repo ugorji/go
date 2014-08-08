@@ -294,11 +294,11 @@ func Benchmark__Binc_Sym___Decode(b *testing.B) {
 	fnBenchmarkDecode(b, "binc", benchTs, fnBincSymEncodeFn, fnBincSymDecodeFn, fnBenchNewTs)
 }
 
-func Benchmark__Simple____Encode(b *testing.B) {
+func Benchmark__Simple_____Encode(b *testing.B) {
 	fnBenchmarkEncode(b, "simple", benchTs, fnSimpleEncodeFn)
 }
 
-func Benchmark__Simple____Decode(b *testing.B) {
+func Benchmark__Simple_____Decode(b *testing.B) {
 	fnBenchmarkDecode(b, "simple", benchTs, fnSimpleEncodeFn, fnSimpleDecodeFn, fnBenchNewTs)
 }
 

@@ -35,16 +35,13 @@ const (
 	// This flag (useMapForCodecCache) controls which is used.
 	useMapForCodecCache = false
 
-	// For some common container types, we can short-circuit an elaborate
-	// reflection dance and call encode/decode directly.
-	// The currently supported types are:
-	//    - slices of strings, or id's (int64,uint64) or interfaces.
-	//    - maps of str->str, str->intf, id(int64,uint64)->intf, intf->intf
-	shortCircuitReflectToFastPath = true
-
 	// for debugging, set this to false, to catch panic traces.
 	// Note that this will always cause rpc tests to fail, since they need io.EOF sent via panic.
 	recoverPanicToErr = true
+
+	// Fast path functions try to create a fast path encode or decode implementation
+	// for common maps and slices, by by-passing reflection altogether.
+	fastpathEnabled = true
 )
 
 type charEncoding uint8
@@ -89,71 +86,21 @@ var (
 	intfSliceTyp = reflect.TypeOf([]interface{}(nil))
 	intfTyp      = intfSliceTyp.Elem()
 
-	strSliceTyp     = reflect.TypeOf([]string(nil))
-	boolSliceTyp    = reflect.TypeOf([]bool(nil))
-	uintSliceTyp    = reflect.TypeOf([]uint(nil))
-	uint8SliceTyp   = reflect.TypeOf([]uint8(nil))
-	uint16SliceTyp  = reflect.TypeOf([]uint16(nil))
-	uint32SliceTyp  = reflect.TypeOf([]uint32(nil))
-	uint64SliceTyp  = reflect.TypeOf([]uint64(nil))
-	intSliceTyp     = reflect.TypeOf([]int(nil))
-	int8SliceTyp    = reflect.TypeOf([]int8(nil))
-	int16SliceTyp   = reflect.TypeOf([]int16(nil))
-	int32SliceTyp   = reflect.TypeOf([]int32(nil))
-	int64SliceTyp   = reflect.TypeOf([]int64(nil))
-	float32SliceTyp = reflect.TypeOf([]float32(nil))
-	float64SliceTyp = reflect.TypeOf([]float64(nil))
-
-	mapIntfIntfTyp = reflect.TypeOf(map[interface{}]interface{}(nil))
-	mapStrIntfTyp  = reflect.TypeOf(map[string]interface{}(nil))
-	mapStrStrTyp   = reflect.TypeOf(map[string]string(nil))
-
-	mapIntIntfTyp    = reflect.TypeOf(map[int]interface{}(nil))
-	mapInt64IntfTyp  = reflect.TypeOf(map[int64]interface{}(nil))
-	mapUintIntfTyp   = reflect.TypeOf(map[uint]interface{}(nil))
-	mapUint64IntfTyp = reflect.TypeOf(map[uint64]interface{}(nil))
-
-	stringTyp = reflect.TypeOf("")
-	timeTyp   = reflect.TypeOf(time.Time{})
-	rawExtTyp = reflect.TypeOf(RawExt{})
+	stringTyp     = reflect.TypeOf("")
+	timeTyp       = reflect.TypeOf(time.Time{})
+	rawExtTyp     = reflect.TypeOf(RawExt{})
+	uint8SliceTyp = reflect.TypeOf([]uint8(nil))
 
 	mapBySliceTyp        = reflect.TypeOf((*MapBySlice)(nil)).Elem()
 	binaryMarshalerTyp   = reflect.TypeOf((*binaryMarshaler)(nil)).Elem()
 	binaryUnmarshalerTyp = reflect.TypeOf((*binaryUnmarshaler)(nil)).Elem()
 
-	rawExtTypId = reflect.ValueOf(rawExtTyp).Pointer()
-	intfTypId   = reflect.ValueOf(intfTyp).Pointer()
-	timeTypId   = reflect.ValueOf(timeTyp).Pointer()
+	uint8SliceTypId = reflect.ValueOf(uint8SliceTyp).Pointer()
+	rawExtTypId     = reflect.ValueOf(rawExtTyp).Pointer()
+	intfTypId       = reflect.ValueOf(intfTyp).Pointer()
+	timeTypId       = reflect.ValueOf(timeTyp).Pointer()
 
-	intfSliceTypId = reflect.ValueOf(intfSliceTyp).Pointer()
-	strSliceTypId  = reflect.ValueOf(strSliceTyp).Pointer()
-
-	boolSliceTypId    = reflect.ValueOf(boolSliceTyp).Pointer()
-	uintSliceTypId    = reflect.ValueOf(uintSliceTyp).Pointer()
-	uint8SliceTypId   = reflect.ValueOf(uint8SliceTyp).Pointer()
-	uint16SliceTypId  = reflect.ValueOf(uint16SliceTyp).Pointer()
-	uint32SliceTypId  = reflect.ValueOf(uint32SliceTyp).Pointer()
-	uint64SliceTypId  = reflect.ValueOf(uint64SliceTyp).Pointer()
-	intSliceTypId     = reflect.ValueOf(intSliceTyp).Pointer()
-	int8SliceTypId    = reflect.ValueOf(int8SliceTyp).Pointer()
-	int16SliceTypId   = reflect.ValueOf(int16SliceTyp).Pointer()
-	int32SliceTypId   = reflect.ValueOf(int32SliceTyp).Pointer()
-	int64SliceTypId   = reflect.ValueOf(int64SliceTyp).Pointer()
-	float32SliceTypId = reflect.ValueOf(float32SliceTyp).Pointer()
-	float64SliceTypId = reflect.ValueOf(float64SliceTyp).Pointer()
-
-	mapStrStrTypId     = reflect.ValueOf(mapStrStrTyp).Pointer()
-	mapIntfIntfTypId   = reflect.ValueOf(mapIntfIntfTyp).Pointer()
-	mapStrIntfTypId    = reflect.ValueOf(mapStrIntfTyp).Pointer()
-	mapIntIntfTypId    = reflect.ValueOf(mapIntIntfTyp).Pointer()
-	mapInt64IntfTypId  = reflect.ValueOf(mapInt64IntfTyp).Pointer()
-	mapUintIntfTypId   = reflect.ValueOf(mapUintIntfTyp).Pointer()
-	mapUint64IntfTypId = reflect.ValueOf(mapUint64IntfTyp).Pointer()
-	// Id = reflect.ValueOf().Pointer()
 	// mapBySliceTypId  = reflect.ValueOf(mapBySliceTyp).Pointer()
-
-	binaryMarshalerTypId   = reflect.ValueOf(binaryMarshalerTyp).Pointer()
-	binaryUnmarshalerTypId = reflect.ValueOf(binaryUnmarshalerTyp).Pointer()
 
 	intBitsize  uint8 = uint8(reflect.TypeOf(int(0)).Bits())
 	uintBitsize uint8 = uint8(reflect.TypeOf(uint(0)).Bits())
