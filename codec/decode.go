@@ -722,6 +722,7 @@ func (d *Decoder) getDecFn(rt reflect.Type) (fn decFn) {
 		// debugf("\tCreating new dec fn for type: %v\n", rt)
 		fi := decFnInfo{ti: getTypeInfo(rtid, rt), d: d, dd: d.d}
 		fn.i = &fi
+		rk := rt.Kind()
 		// An extension can be registered for any type, regardless of the Kind
 		// (e.g. type BitSet int64, type MyStruct { / * unexported fields * / }, type X []int, etc.
 		//
@@ -740,12 +741,12 @@ func (d *Decoder) getDecFn(rt reflect.Type) (fn decFn) {
 			fn.f = (*decFnInfo).ext
 		} else if supportBinaryMarshal && fi.ti.unm {
 			fn.f = (*decFnInfo).binaryMarshal
-		} else if xxf := fastDec(rtid); xxf != nil {
+		} else if xxf := fastDec(rtid, rk); xxf != nil {
 			fn.f = xxf
 			// } else if xxf, xxok := fastpathsDec[rtid]; xxok {
 			// 	fn.f = xxf
 		} else {
-			switch rk := rt.Kind(); rk {
+			switch rk {
 			case reflect.String:
 				fn.f = (*decFnInfo).kString
 			case reflect.Bool:
@@ -861,9 +862,9 @@ func decErr(format string, params ...interface{}) {
 	doPanic(msgTagDec, format, params...)
 }
 
-func fastDec(rtid uintptr) func(*decFnInfo, reflect.Value) {
+func fastDec(rtid uintptr, rk reflect.Kind) func(*decFnInfo, reflect.Value) {
 	// Unfortunately, accessing an empty map is not free free.
-	if fastpathEnabled {
+	if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice) {
 		return fastpathsDec[rtid]
 	}
 	return nil

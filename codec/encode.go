@@ -806,6 +806,7 @@ func (e *Encoder) getEncFn(rt reflect.Type) (fn encFn) {
 		// debugf("\tCreating new enc fn for type: %v\n", rt)
 		fi := encFnInfo{ti: getTypeInfo(rtid, rt), e: e, ee: e.e}
 		fn.i = &fi
+		rk := rt.Kind()
 		if rtid == rawExtTypId {
 			fn.f = (*encFnInfo).rawExt
 		} else if e.e.isBuiltinType(rtid) {
@@ -815,12 +816,12 @@ func (e *Encoder) getEncFn(rt reflect.Type) (fn encFn) {
 			fn.f = (*encFnInfo).ext
 		} else if supportBinaryMarshal && fi.ti.m {
 			fn.f = (*encFnInfo).binaryMarshal
-		} else if xxf := fastEnc(rtid); xxf != nil {
+		} else if xxf := fastEnc(rtid, rk); xxf != nil {
 			fn.f = xxf
 			// } else if xxf, xxok := fastpathsEnc[rtid]; xxok {
 			// 	fn.f = xxf
 		} else {
-			switch rk := rt.Kind(); rk {
+			switch rk {
 			case reflect.Bool:
 				fn.f = (*encFnInfo).kBool
 			case reflect.String:
@@ -883,9 +884,9 @@ func encErr(format string, params ...interface{}) {
 	doPanic(msgTagEnc, format, params...)
 }
 
-func fastEnc(rtid uintptr) func(*encFnInfo, reflect.Value) {
+func fastEnc(rtid uintptr, rk reflect.Kind) func(*encFnInfo, reflect.Value) {
 	// Unfortunately, accessing an empty map is not free free.
-	if fastpathEnabled {
+	if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice) {
 		return fastpathsEnc[rtid]
 	}
 	return nil
