@@ -987,7 +987,7 @@ func TestBincRpcGo(t *testing.T) {
 	doTestRpcOne(t, GoRpc, testBincH, true, 0)
 }
 
-func _TestSimpleRpcGo(t *testing.T) {
+func TestSimpleRpcGo(t *testing.T) {
 	doTestRpcOne(t, GoRpc, testSimpleH, true, 0)
 }
 
@@ -997,6 +997,26 @@ func TestMsgpackRpcGo(t *testing.T) {
 
 func TestMsgpackRpcSpec(t *testing.T) {
 	doTestRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, 0)
+}
+
+func TestCodecUnderlyingType(t *testing.T) {
+	// Manual Test.
+	// Run by hand, with accompanying print statements in fast-path.go
+	// to ensure that the fast functions are called.
+	type T1 map[string]string
+	v := T1{"1": "1s", "2": "2s"}
+	var bs []byte
+	err := NewEncoderBytes(&bs, testBincH).Encode(v)
+	if err != nil {
+		logT(t, "Error during encode: %v", err)
+		failT(t)
+	}
+	var v2 T1
+	err = NewDecoderBytes(bs, testBincH).Decode(&v2)
+	if err != nil {
+		logT(t, "Error during decode: %v", err)
+		failT(t)
+	}
 }
 
 // TODO:

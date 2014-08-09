@@ -23,6 +23,13 @@ package codec
 //    - map of all builtin types to string or interface value
 //    - symetrical maps of all builtin types (e.g. str-str, uint8-uint8)
 // This should provide adequate "typical" implementations.
+//
+// Note that fast track decode functions must handle values for which an address cannot be obtained.
+// For example:
+//   m2 := map[string]int{}
+//   p2 := []interface{}{m2}
+//   // decoding into p2 will bomb if fast track functions do not treat like unaddressable.
+//
 
 import (
 	"reflect"
@@ -32,130 +39,114 @@ func init() {
 	if !fastpathEnabled {
 		return // basically disable the fast path checks (since accessing empty map is basically free)
 	}
-	fdx := func(i interface{}, fd func(*decFnInfo, reflect.Value)) {
-		fastpathsDec[reflect.ValueOf(reflect.TypeOf(i)).Pointer()] = fd
+	fx := func(i interface{}, fe func(*encFnInfo, reflect.Value), fd func(*decFnInfo, reflect.Value)) {
+		xrt := reflect.TypeOf(i)
+		xptr := reflect.ValueOf(xrt).Pointer()
+		fastpathsTyp[xptr] = xrt
+		fastpathsEnc[xptr] = fe
+		fastpathsDec[xptr] = fd
 	}
-	fex := func(i interface{}, fe func(*encFnInfo, reflect.Value)) {
-		fastpathsEnc[reflect.ValueOf(reflect.TypeOf(i)).Pointer()] = fe
-	}
 
-	fex([]interface{}(nil), (*encFnInfo).fastEncSliceIntf)
-	fex([]string(nil), (*encFnInfo).fastEncSliceString)
-	fex([]float32(nil), (*encFnInfo).fastEncSliceFloat32)
-	fex([]float64(nil), (*encFnInfo).fastEncSliceFloat64)
-	fex([]uint(nil), (*encFnInfo).fastEncSliceUint)
-	fex([]uint16(nil), (*encFnInfo).fastEncSliceUint16)
-	fex([]uint32(nil), (*encFnInfo).fastEncSliceUint32)
-	fex([]uint64(nil), (*encFnInfo).fastEncSliceUint64)
-	fex([]int(nil), (*encFnInfo).fastEncSliceInt)
-	fex([]int8(nil), (*encFnInfo).fastEncSliceInt8)
-	fex([]int16(nil), (*encFnInfo).fastEncSliceInt16)
-	fex([]int32(nil), (*encFnInfo).fastEncSliceInt32)
-	fex([]int64(nil), (*encFnInfo).fastEncSliceInt64)
-	fex([]bool(nil), (*encFnInfo).fastEncSliceBool)
+	fx([]interface{}(nil), (*encFnInfo).fastEncSliceIntf, (*decFnInfo).fastDecSliceIntf)
+	fx([]string(nil), (*encFnInfo).fastEncSliceString, (*decFnInfo).fastDecSliceString)
+	fx([]float32(nil), (*encFnInfo).fastEncSliceFloat32, (*decFnInfo).fastDecSliceFloat32)
+	fx([]float64(nil), (*encFnInfo).fastEncSliceFloat64, (*decFnInfo).fastDecSliceFloat64)
+	fx([]uint(nil), (*encFnInfo).fastEncSliceUint, (*decFnInfo).fastDecSliceUint)
+	fx([]uint16(nil), (*encFnInfo).fastEncSliceUint16, (*decFnInfo).fastDecSliceUint16)
+	fx([]uint32(nil), (*encFnInfo).fastEncSliceUint32, (*decFnInfo).fastDecSliceUint32)
+	fx([]uint64(nil), (*encFnInfo).fastEncSliceUint64, (*decFnInfo).fastDecSliceUint64)
+	fx([]int(nil), (*encFnInfo).fastEncSliceInt, (*decFnInfo).fastDecSliceInt)
+	fx([]int8(nil), (*encFnInfo).fastEncSliceInt8, (*decFnInfo).fastDecSliceInt8)
+	fx([]int16(nil), (*encFnInfo).fastEncSliceInt16, (*decFnInfo).fastDecSliceInt16)
+	fx([]int32(nil), (*encFnInfo).fastEncSliceInt32, (*decFnInfo).fastDecSliceInt32)
+	fx([]int64(nil), (*encFnInfo).fastEncSliceInt64, (*decFnInfo).fastDecSliceInt64)
+	fx([]bool(nil), (*encFnInfo).fastEncSliceBool, (*decFnInfo).fastDecSliceBool)
 
-	fex(map[interface{}]interface{}(nil), (*encFnInfo).fastEncMapIntfIntf)
-	fex(map[interface{}]string(nil), (*encFnInfo).fastEncMapIntfString)
-	fex(map[string]interface{}(nil), (*encFnInfo).fastEncMapStringIntf)
-	fex(map[string]string(nil), (*encFnInfo).fastEncMapStringString)
-	fex(map[float32]interface{}(nil), (*encFnInfo).fastEncMapFloat32Intf)
-	fex(map[float32]string(nil), (*encFnInfo).fastEncMapFloat32String)
-	fex(map[float32]float32(nil), (*encFnInfo).fastEncMapFloat32Float32)
-	fex(map[float64]interface{}(nil), (*encFnInfo).fastEncMapFloat64Intf)
-	fex(map[float64]string(nil), (*encFnInfo).fastEncMapFloat64String)
-	fex(map[float64]float64(nil), (*encFnInfo).fastEncMapFloat64Float64)
-	fex(map[uint]interface{}(nil), (*encFnInfo).fastEncMapUintIntf)
-	fex(map[uint]string(nil), (*encFnInfo).fastEncMapUintString)
-	fex(map[uint]uint(nil), (*encFnInfo).fastEncMapUintUint)
-	fex(map[uint8]interface{}(nil), (*encFnInfo).fastEncMapUint8Intf)
-	fex(map[uint8]string(nil), (*encFnInfo).fastEncMapUint8String)
-	fex(map[uint8]uint8(nil), (*encFnInfo).fastEncMapUint8Uint8)
-	fex(map[uint16]interface{}(nil), (*encFnInfo).fastEncMapUint16Intf)
-	fex(map[uint16]string(nil), (*encFnInfo).fastEncMapUint16String)
-	fex(map[uint16]uint16(nil), (*encFnInfo).fastEncMapUint16Uint16)
-	fex(map[uint32]interface{}(nil), (*encFnInfo).fastEncMapUint32Intf)
-	fex(map[uint32]string(nil), (*encFnInfo).fastEncMapUint32String)
-	fex(map[uint32]uint32(nil), (*encFnInfo).fastEncMapUint32Uint32)
-	fex(map[uint64]interface{}(nil), (*encFnInfo).fastEncMapUint64Intf)
-	fex(map[uint64]string(nil), (*encFnInfo).fastEncMapUint64String)
-	fex(map[uint64]uint64(nil), (*encFnInfo).fastEncMapUint64Uint64)
-	fex(map[int]interface{}(nil), (*encFnInfo).fastEncMapIntIntf)
-	fex(map[int]string(nil), (*encFnInfo).fastEncMapIntString)
-	fex(map[int]int(nil), (*encFnInfo).fastEncMapIntInt)
-	fex(map[int8]interface{}(nil), (*encFnInfo).fastEncMapInt8Intf)
-	fex(map[int8]string(nil), (*encFnInfo).fastEncMapInt8String)
-	fex(map[int8]int8(nil), (*encFnInfo).fastEncMapInt8Int8)
-	fex(map[int16]interface{}(nil), (*encFnInfo).fastEncMapInt16Intf)
-	fex(map[int16]string(nil), (*encFnInfo).fastEncMapInt16String)
-	fex(map[int16]int16(nil), (*encFnInfo).fastEncMapInt16Int16)
-	fex(map[int32]interface{}(nil), (*encFnInfo).fastEncMapInt32Intf)
-	fex(map[int32]string(nil), (*encFnInfo).fastEncMapInt32String)
-	fex(map[int32]int32(nil), (*encFnInfo).fastEncMapInt32Int32)
-	fex(map[int64]interface{}(nil), (*encFnInfo).fastEncMapInt64Intf)
-	fex(map[int64]string(nil), (*encFnInfo).fastEncMapInt64String)
-	fex(map[int64]int64(nil), (*encFnInfo).fastEncMapInt64Int64)
-	fex(map[bool]interface{}(nil), (*encFnInfo).fastEncMapBoolIntf)
-	fex(map[bool]string(nil), (*encFnInfo).fastEncMapBoolString)
-	fex(map[bool]bool(nil), (*encFnInfo).fastEncMapBoolBool)
-
-	fdx([]interface{}(nil), (*decFnInfo).fastDecSliceIntf)
-	fdx([]string(nil), (*decFnInfo).fastDecSliceString)
-	fdx([]float32(nil), (*decFnInfo).fastDecSliceFloat32)
-	fdx([]float64(nil), (*decFnInfo).fastDecSliceFloat64)
-	fdx([]uint(nil), (*decFnInfo).fastDecSliceUint)
-	fdx([]uint16(nil), (*decFnInfo).fastDecSliceUint16)
-	fdx([]uint32(nil), (*decFnInfo).fastDecSliceUint32)
-	fdx([]uint64(nil), (*decFnInfo).fastDecSliceUint64)
-	fdx([]int(nil), (*decFnInfo).fastDecSliceInt)
-	fdx([]int8(nil), (*decFnInfo).fastDecSliceInt8)
-	fdx([]int16(nil), (*decFnInfo).fastDecSliceInt16)
-	fdx([]int32(nil), (*decFnInfo).fastDecSliceInt32)
-	fdx([]int64(nil), (*decFnInfo).fastDecSliceInt64)
-	fdx([]bool(nil), (*decFnInfo).fastDecSliceBool)
-
-	fdx(map[interface{}]interface{}(nil), (*decFnInfo).fastDecMapIntfIntf)
-	fdx(map[interface{}]string(nil), (*decFnInfo).fastDecMapIntfString)
-	fdx(map[string]interface{}(nil), (*decFnInfo).fastDecMapStringIntf)
-	fdx(map[string]string(nil), (*decFnInfo).fastDecMapStringString)
-	fdx(map[float32]interface{}(nil), (*decFnInfo).fastDecMapFloat32Intf)
-	fdx(map[float32]string(nil), (*decFnInfo).fastDecMapFloat32String)
-	fdx(map[float32]float32(nil), (*decFnInfo).fastDecMapFloat32Float32)
-	fdx(map[float64]interface{}(nil), (*decFnInfo).fastDecMapFloat64Intf)
-	fdx(map[float64]string(nil), (*decFnInfo).fastDecMapFloat64String)
-	fdx(map[float64]float64(nil), (*decFnInfo).fastDecMapFloat64Float64)
-	fdx(map[uint]interface{}(nil), (*decFnInfo).fastDecMapUintIntf)
-	fdx(map[uint]string(nil), (*decFnInfo).fastDecMapUintString)
-	fdx(map[uint]uint(nil), (*decFnInfo).fastDecMapUintUint)
-	fdx(map[uint8]interface{}(nil), (*decFnInfo).fastDecMapUint8Intf)
-	fdx(map[uint8]string(nil), (*decFnInfo).fastDecMapUint8String)
-	fdx(map[uint8]uint8(nil), (*decFnInfo).fastDecMapUint8Uint8)
-	fdx(map[uint16]interface{}(nil), (*decFnInfo).fastDecMapUint16Intf)
-	fdx(map[uint16]string(nil), (*decFnInfo).fastDecMapUint16String)
-	fdx(map[uint16]uint16(nil), (*decFnInfo).fastDecMapUint16Uint16)
-	fdx(map[uint32]interface{}(nil), (*decFnInfo).fastDecMapUint32Intf)
-	fdx(map[uint32]string(nil), (*decFnInfo).fastDecMapUint32String)
-	fdx(map[uint32]uint32(nil), (*decFnInfo).fastDecMapUint32Uint32)
-	fdx(map[uint64]interface{}(nil), (*decFnInfo).fastDecMapUint64Intf)
-	fdx(map[uint64]string(nil), (*decFnInfo).fastDecMapUint64String)
-	fdx(map[uint64]uint64(nil), (*decFnInfo).fastDecMapUint64Uint64)
-	fdx(map[int]interface{}(nil), (*decFnInfo).fastDecMapIntIntf)
-	fdx(map[int]string(nil), (*decFnInfo).fastDecMapIntString)
-	fdx(map[int]int(nil), (*decFnInfo).fastDecMapIntInt)
-	fdx(map[int8]interface{}(nil), (*decFnInfo).fastDecMapInt8Intf)
-	fdx(map[int8]string(nil), (*decFnInfo).fastDecMapInt8String)
-	fdx(map[int8]int8(nil), (*decFnInfo).fastDecMapInt8Int8)
-	fdx(map[int16]interface{}(nil), (*decFnInfo).fastDecMapInt16Intf)
-	fdx(map[int16]string(nil), (*decFnInfo).fastDecMapInt16String)
-	fdx(map[int16]int16(nil), (*decFnInfo).fastDecMapInt16Int16)
-	fdx(map[int32]interface{}(nil), (*decFnInfo).fastDecMapInt32Intf)
-	fdx(map[int32]string(nil), (*decFnInfo).fastDecMapInt32String)
-	fdx(map[int32]int32(nil), (*decFnInfo).fastDecMapInt32Int32)
-	fdx(map[int64]interface{}(nil), (*decFnInfo).fastDecMapInt64Intf)
-	fdx(map[int64]string(nil), (*decFnInfo).fastDecMapInt64String)
-	fdx(map[int64]int64(nil), (*decFnInfo).fastDecMapInt64Int64)
-	fdx(map[bool]interface{}(nil), (*decFnInfo).fastDecMapBoolIntf)
-	fdx(map[bool]string(nil), (*decFnInfo).fastDecMapBoolString)
-	fdx(map[bool]bool(nil), (*decFnInfo).fastDecMapBoolBool)
+	fx(map[interface{}]uint64(nil), (*encFnInfo).fastEncMapIntfUint64, (*decFnInfo).fastDecMapIntfUint64)
+	fx(map[interface{}]string(nil), (*encFnInfo).fastEncMapIntfString, (*decFnInfo).fastDecMapIntfString)
+	fx(map[interface{}]interface{}(nil), (*encFnInfo).fastEncMapIntfIntf, (*decFnInfo).fastDecMapIntfIntf)
+	fx(map[interface{}]int(nil), (*encFnInfo).fastEncMapIntfInt, (*decFnInfo).fastDecMapIntfInt)
+	fx(map[interface{}]int64(nil), (*encFnInfo).fastEncMapIntfInt64, (*decFnInfo).fastDecMapIntfInt64)
+	fx(map[string]string(nil), (*encFnInfo).fastEncMapStringString, (*decFnInfo).fastDecMapStringString)
+	fx(map[string]interface{}(nil), (*encFnInfo).fastEncMapStringIntf, (*decFnInfo).fastDecMapStringIntf)
+	fx(map[string]int(nil), (*encFnInfo).fastEncMapStringInt, (*decFnInfo).fastDecMapStringInt)
+	fx(map[string]int64(nil), (*encFnInfo).fastEncMapStringInt64, (*decFnInfo).fastDecMapStringInt64)
+	fx(map[string]uint64(nil), (*encFnInfo).fastEncMapStringUint64, (*decFnInfo).fastDecMapStringUint64)
+	fx(map[float32]float32(nil), (*encFnInfo).fastEncMapFloat32Float32, (*decFnInfo).fastDecMapFloat32Float32)
+	fx(map[float32]interface{}(nil), (*encFnInfo).fastEncMapFloat32Intf, (*decFnInfo).fastDecMapFloat32Intf)
+	fx(map[float32]int(nil), (*encFnInfo).fastEncMapFloat32Int, (*decFnInfo).fastDecMapFloat32Int)
+	fx(map[float32]int64(nil), (*encFnInfo).fastEncMapFloat32Int64, (*decFnInfo).fastDecMapFloat32Int64)
+	fx(map[float32]uint64(nil), (*encFnInfo).fastEncMapFloat32Uint64, (*decFnInfo).fastDecMapFloat32Uint64)
+	fx(map[float32]string(nil), (*encFnInfo).fastEncMapFloat32String, (*decFnInfo).fastDecMapFloat32String)
+	fx(map[float64]float64(nil), (*encFnInfo).fastEncMapFloat64Float64, (*decFnInfo).fastDecMapFloat64Float64)
+	fx(map[float64]string(nil), (*encFnInfo).fastEncMapFloat64String, (*decFnInfo).fastDecMapFloat64String)
+	fx(map[float64]interface{}(nil), (*encFnInfo).fastEncMapFloat64Intf, (*decFnInfo).fastDecMapFloat64Intf)
+	fx(map[float64]int(nil), (*encFnInfo).fastEncMapFloat64Int, (*decFnInfo).fastDecMapFloat64Int)
+	fx(map[float64]int64(nil), (*encFnInfo).fastEncMapFloat64Int64, (*decFnInfo).fastDecMapFloat64Int64)
+	fx(map[float64]uint64(nil), (*encFnInfo).fastEncMapFloat64Uint64, (*decFnInfo).fastDecMapFloat64Uint64)
+	fx(map[uint]uint(nil), (*encFnInfo).fastEncMapUintUint, (*decFnInfo).fastDecMapUintUint)
+	fx(map[uint]string(nil), (*encFnInfo).fastEncMapUintString, (*decFnInfo).fastDecMapUintString)
+	fx(map[uint]interface{}(nil), (*encFnInfo).fastEncMapUintIntf, (*decFnInfo).fastDecMapUintIntf)
+	fx(map[uint]int(nil), (*encFnInfo).fastEncMapUintInt, (*decFnInfo).fastDecMapUintInt)
+	fx(map[uint]int64(nil), (*encFnInfo).fastEncMapUintInt64, (*decFnInfo).fastDecMapUintInt64)
+	fx(map[uint]uint64(nil), (*encFnInfo).fastEncMapUintUint64, (*decFnInfo).fastDecMapUintUint64)
+	fx(map[uint8]uint8(nil), (*encFnInfo).fastEncMapUint8Uint8, (*decFnInfo).fastDecMapUint8Uint8)
+	fx(map[uint8]string(nil), (*encFnInfo).fastEncMapUint8String, (*decFnInfo).fastDecMapUint8String)
+	fx(map[uint8]interface{}(nil), (*encFnInfo).fastEncMapUint8Intf, (*decFnInfo).fastDecMapUint8Intf)
+	fx(map[uint8]int(nil), (*encFnInfo).fastEncMapUint8Int, (*decFnInfo).fastDecMapUint8Int)
+	fx(map[uint8]int64(nil), (*encFnInfo).fastEncMapUint8Int64, (*decFnInfo).fastDecMapUint8Int64)
+	fx(map[uint8]uint64(nil), (*encFnInfo).fastEncMapUint8Uint64, (*decFnInfo).fastDecMapUint8Uint64)
+	fx(map[uint16]uint16(nil), (*encFnInfo).fastEncMapUint16Uint16, (*decFnInfo).fastDecMapUint16Uint16)
+	fx(map[uint16]string(nil), (*encFnInfo).fastEncMapUint16String, (*decFnInfo).fastDecMapUint16String)
+	fx(map[uint16]interface{}(nil), (*encFnInfo).fastEncMapUint16Intf, (*decFnInfo).fastDecMapUint16Intf)
+	fx(map[uint16]int(nil), (*encFnInfo).fastEncMapUint16Int, (*decFnInfo).fastDecMapUint16Int)
+	fx(map[uint16]int64(nil), (*encFnInfo).fastEncMapUint16Int64, (*decFnInfo).fastDecMapUint16Int64)
+	fx(map[uint16]uint64(nil), (*encFnInfo).fastEncMapUint16Uint64, (*decFnInfo).fastDecMapUint16Uint64)
+	fx(map[uint32]uint32(nil), (*encFnInfo).fastEncMapUint32Uint32, (*decFnInfo).fastDecMapUint32Uint32)
+	fx(map[uint32]string(nil), (*encFnInfo).fastEncMapUint32String, (*decFnInfo).fastDecMapUint32String)
+	fx(map[uint32]interface{}(nil), (*encFnInfo).fastEncMapUint32Intf, (*decFnInfo).fastDecMapUint32Intf)
+	fx(map[uint32]int(nil), (*encFnInfo).fastEncMapUint32Int, (*decFnInfo).fastDecMapUint32Int)
+	fx(map[uint32]int64(nil), (*encFnInfo).fastEncMapUint32Int64, (*decFnInfo).fastDecMapUint32Int64)
+	fx(map[uint32]uint64(nil), (*encFnInfo).fastEncMapUint32Uint64, (*decFnInfo).fastDecMapUint32Uint64)
+	fx(map[uint64]int(nil), (*encFnInfo).fastEncMapUint64Int, (*decFnInfo).fastDecMapUint64Int)
+	fx(map[uint64]int64(nil), (*encFnInfo).fastEncMapUint64Int64, (*decFnInfo).fastDecMapUint64Int64)
+	fx(map[uint64]uint64(nil), (*encFnInfo).fastEncMapUint64Uint64, (*decFnInfo).fastDecMapUint64Uint64)
+	fx(map[uint64]string(nil), (*encFnInfo).fastEncMapUint64String, (*decFnInfo).fastDecMapUint64String)
+	fx(map[uint64]interface{}(nil), (*encFnInfo).fastEncMapUint64Intf, (*decFnInfo).fastDecMapUint64Intf)
+	fx(map[int]uint64(nil), (*encFnInfo).fastEncMapIntUint64, (*decFnInfo).fastDecMapIntUint64)
+	fx(map[int]string(nil), (*encFnInfo).fastEncMapIntString, (*decFnInfo).fastDecMapIntString)
+	fx(map[int]interface{}(nil), (*encFnInfo).fastEncMapIntIntf, (*decFnInfo).fastDecMapIntIntf)
+	fx(map[int]int(nil), (*encFnInfo).fastEncMapIntInt, (*decFnInfo).fastDecMapIntInt)
+	fx(map[int]int64(nil), (*encFnInfo).fastEncMapIntInt64, (*decFnInfo).fastDecMapIntInt64)
+	fx(map[int8]int8(nil), (*encFnInfo).fastEncMapInt8Int8, (*decFnInfo).fastDecMapInt8Int8)
+	fx(map[int8]string(nil), (*encFnInfo).fastEncMapInt8String, (*decFnInfo).fastDecMapInt8String)
+	fx(map[int8]interface{}(nil), (*encFnInfo).fastEncMapInt8Intf, (*decFnInfo).fastDecMapInt8Intf)
+	fx(map[int8]int(nil), (*encFnInfo).fastEncMapInt8Int, (*decFnInfo).fastDecMapInt8Int)
+	fx(map[int8]int64(nil), (*encFnInfo).fastEncMapInt8Int64, (*decFnInfo).fastDecMapInt8Int64)
+	fx(map[int8]uint64(nil), (*encFnInfo).fastEncMapInt8Uint64, (*decFnInfo).fastDecMapInt8Uint64)
+	fx(map[int16]int16(nil), (*encFnInfo).fastEncMapInt16Int16, (*decFnInfo).fastDecMapInt16Int16)
+	fx(map[int16]string(nil), (*encFnInfo).fastEncMapInt16String, (*decFnInfo).fastDecMapInt16String)
+	fx(map[int16]interface{}(nil), (*encFnInfo).fastEncMapInt16Intf, (*decFnInfo).fastDecMapInt16Intf)
+	fx(map[int16]int(nil), (*encFnInfo).fastEncMapInt16Int, (*decFnInfo).fastDecMapInt16Int)
+	fx(map[int16]int64(nil), (*encFnInfo).fastEncMapInt16Int64, (*decFnInfo).fastDecMapInt16Int64)
+	fx(map[int16]uint64(nil), (*encFnInfo).fastEncMapInt16Uint64, (*decFnInfo).fastDecMapInt16Uint64)
+	fx(map[int32]int32(nil), (*encFnInfo).fastEncMapInt32Int32, (*decFnInfo).fastDecMapInt32Int32)
+	fx(map[int32]uint64(nil), (*encFnInfo).fastEncMapInt32Uint64, (*decFnInfo).fastDecMapInt32Uint64)
+	fx(map[int32]string(nil), (*encFnInfo).fastEncMapInt32String, (*decFnInfo).fastDecMapInt32String)
+	fx(map[int32]interface{}(nil), (*encFnInfo).fastEncMapInt32Intf, (*decFnInfo).fastDecMapInt32Intf)
+	fx(map[int32]int(nil), (*encFnInfo).fastEncMapInt32Int, (*decFnInfo).fastDecMapInt32Int)
+	fx(map[int32]int64(nil), (*encFnInfo).fastEncMapInt32Int64, (*decFnInfo).fastDecMapInt32Int64)
+	fx(map[int64]string(nil), (*encFnInfo).fastEncMapInt64String, (*decFnInfo).fastDecMapInt64String)
+	fx(map[int64]interface{}(nil), (*encFnInfo).fastEncMapInt64Intf, (*decFnInfo).fastDecMapInt64Intf)
+	fx(map[int64]int(nil), (*encFnInfo).fastEncMapInt64Int, (*decFnInfo).fastDecMapInt64Int)
+	fx(map[int64]int64(nil), (*encFnInfo).fastEncMapInt64Int64, (*decFnInfo).fastDecMapInt64Int64)
+	fx(map[int64]uint64(nil), (*encFnInfo).fastEncMapInt64Uint64, (*decFnInfo).fastDecMapInt64Uint64)
+	fx(map[bool]bool(nil), (*encFnInfo).fastEncMapBoolBool, (*decFnInfo).fastDecMapBoolBool)
+	fx(map[bool]interface{}(nil), (*encFnInfo).fastEncMapBoolIntf, (*decFnInfo).fastDecMapBoolIntf)
+	fx(map[bool]int(nil), (*encFnInfo).fastEncMapBoolInt, (*decFnInfo).fastDecMapBoolInt)
+	fx(map[bool]int64(nil), (*encFnInfo).fastEncMapBoolInt64, (*decFnInfo).fastDecMapBoolInt64)
+	fx(map[bool]uint64(nil), (*encFnInfo).fastEncMapBoolUint64, (*decFnInfo).fastDecMapBoolUint64)
+	fx(map[bool]string(nil), (*encFnInfo).fastEncMapBoolString, (*decFnInfo).fastDecMapBoolString)
 
 }
 
@@ -273,6 +264,26 @@ func (f *encFnInfo) fastEncSliceBool(rv reflect.Value) {
 	}
 }
 
+func (f *encFnInfo) fastEncMapIntfUint64(rv reflect.Value) {
+	v := rv.Interface().(map[interface{}]uint64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.e.encode(k2)
+		f.ee.encodeUint(uint64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapIntfString(rv reflect.Value) {
+	v := rv.Interface().(map[interface{}]string)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.e.encode(k2)
+		f.ee.encodeString(c_UTF8, v2)
+	}
+}
+
 func (f *encFnInfo) fastEncMapIntfIntf(rv reflect.Value) {
 	v := rv.Interface().(map[interface{}]interface{})
 	f.ee.encodeMapPreamble(len(v))
@@ -283,12 +294,36 @@ func (f *encFnInfo) fastEncMapIntfIntf(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapIntfString(rv reflect.Value) {
-	v := rv.Interface().(map[interface{}]string)
+func (f *encFnInfo) fastEncMapIntfInt(rv reflect.Value) {
+	v := rv.Interface().(map[interface{}]int)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
 		f.e.encode(k2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapIntfInt64(rv reflect.Value) {
+	v := rv.Interface().(map[interface{}]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.e.encode(k2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapStringString(rv reflect.Value) {
+	v := rv.Interface().(map[string]string)
+	f.ee.encodeMapPreamble(len(v))
+	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	for k2, v2 := range v {
+		if asSymbols {
+			f.ee.encodeSymbol(k2)
+		} else {
+			f.ee.encodeString(c_UTF8, k2)
+		}
 		f.ee.encodeString(c_UTF8, v2)
 	}
 }
@@ -307,8 +342,8 @@ func (f *encFnInfo) fastEncMapStringIntf(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapStringString(rv reflect.Value) {
-	v := rv.Interface().(map[string]string)
+func (f *encFnInfo) fastEncMapStringInt(rv reflect.Value) {
+	v := rv.Interface().(map[string]int)
 	f.ee.encodeMapPreamble(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
@@ -317,27 +352,35 @@ func (f *encFnInfo) fastEncMapStringString(rv reflect.Value) {
 		} else {
 			f.ee.encodeString(c_UTF8, k2)
 		}
-		f.ee.encodeString(c_UTF8, v2)
+		f.ee.encodeInt(int64(v2))
 	}
 }
 
-func (f *encFnInfo) fastEncMapFloat32Intf(rv reflect.Value) {
-	v := rv.Interface().(map[float32]interface{})
+func (f *encFnInfo) fastEncMapStringInt64(rv reflect.Value) {
+	v := rv.Interface().(map[string]int64)
 	f.ee.encodeMapPreamble(len(v))
-
+	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
-		f.ee.encodeFloat32(k2)
-		f.e.encode(v2)
+		if asSymbols {
+			f.ee.encodeSymbol(k2)
+		} else {
+			f.ee.encodeString(c_UTF8, k2)
+		}
+		f.ee.encodeInt(int64(v2))
 	}
 }
 
-func (f *encFnInfo) fastEncMapFloat32String(rv reflect.Value) {
-	v := rv.Interface().(map[float32]string)
+func (f *encFnInfo) fastEncMapStringUint64(rv reflect.Value) {
+	v := rv.Interface().(map[string]uint64)
 	f.ee.encodeMapPreamble(len(v))
-
+	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
-		f.ee.encodeFloat32(k2)
-		f.ee.encodeString(c_UTF8, v2)
+		if asSymbols {
+			f.ee.encodeSymbol(k2)
+		} else {
+			f.ee.encodeString(c_UTF8, k2)
+		}
+		f.ee.encodeUint(uint64(v2))
 	}
 }
 
@@ -351,22 +394,52 @@ func (f *encFnInfo) fastEncMapFloat32Float32(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapFloat64Intf(rv reflect.Value) {
-	v := rv.Interface().(map[float64]interface{})
+func (f *encFnInfo) fastEncMapFloat32Intf(rv reflect.Value) {
+	v := rv.Interface().(map[float32]interface{})
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
-		f.ee.encodeFloat64(k2)
+		f.ee.encodeFloat32(k2)
 		f.e.encode(v2)
 	}
 }
 
-func (f *encFnInfo) fastEncMapFloat64String(rv reflect.Value) {
-	v := rv.Interface().(map[float64]string)
+func (f *encFnInfo) fastEncMapFloat32Int(rv reflect.Value) {
+	v := rv.Interface().(map[float32]int)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
-		f.ee.encodeFloat64(k2)
+		f.ee.encodeFloat32(k2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapFloat32Int64(rv reflect.Value) {
+	v := rv.Interface().(map[float32]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeFloat32(k2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapFloat32Uint64(rv reflect.Value) {
+	v := rv.Interface().(map[float32]uint64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeFloat32(k2)
+		f.ee.encodeUint(uint64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapFloat32String(rv reflect.Value) {
+	v := rv.Interface().(map[float32]string)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeFloat32(k2)
 		f.ee.encodeString(c_UTF8, v2)
 	}
 }
@@ -381,23 +454,53 @@ func (f *encFnInfo) fastEncMapFloat64Float64(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapUintIntf(rv reflect.Value) {
-	v := rv.Interface().(map[uint]interface{})
+func (f *encFnInfo) fastEncMapFloat64String(rv reflect.Value) {
+	v := rv.Interface().(map[float64]string)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
-		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeFloat64(k2)
+		f.ee.encodeString(c_UTF8, v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapFloat64Intf(rv reflect.Value) {
+	v := rv.Interface().(map[float64]interface{})
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeFloat64(k2)
 		f.e.encode(v2)
 	}
 }
 
-func (f *encFnInfo) fastEncMapUintString(rv reflect.Value) {
-	v := rv.Interface().(map[uint]string)
+func (f *encFnInfo) fastEncMapFloat64Int(rv reflect.Value) {
+	v := rv.Interface().(map[float64]int)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
-		f.ee.encodeUint(uint64(k2))
-		f.ee.encodeString(c_UTF8, v2)
+		f.ee.encodeFloat64(k2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapFloat64Int64(rv reflect.Value) {
+	v := rv.Interface().(map[float64]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeFloat64(k2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapFloat64Uint64(rv reflect.Value) {
+	v := rv.Interface().(map[float64]uint64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeFloat64(k2)
+		f.ee.encodeUint(uint64(v2))
 	}
 }
 
@@ -411,8 +514,18 @@ func (f *encFnInfo) fastEncMapUintUint(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapUint8Intf(rv reflect.Value) {
-	v := rv.Interface().(map[uint8]interface{})
+func (f *encFnInfo) fastEncMapUintString(rv reflect.Value) {
+	v := rv.Interface().(map[uint]string)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeString(c_UTF8, v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapUintIntf(rv reflect.Value) {
+	v := rv.Interface().(map[uint]interface{})
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -421,13 +534,33 @@ func (f *encFnInfo) fastEncMapUint8Intf(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapUint8String(rv reflect.Value) {
-	v := rv.Interface().(map[uint8]string)
+func (f *encFnInfo) fastEncMapUintInt(rv reflect.Value) {
+	v := rv.Interface().(map[uint]int)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
 		f.ee.encodeUint(uint64(k2))
-		f.ee.encodeString(c_UTF8, v2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapUintInt64(rv reflect.Value) {
+	v := rv.Interface().(map[uint]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapUintUint64(rv reflect.Value) {
+	v := rv.Interface().(map[uint]uint64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeUint(uint64(v2))
 	}
 }
 
@@ -441,8 +574,18 @@ func (f *encFnInfo) fastEncMapUint8Uint8(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapUint16Intf(rv reflect.Value) {
-	v := rv.Interface().(map[uint16]interface{})
+func (f *encFnInfo) fastEncMapUint8String(rv reflect.Value) {
+	v := rv.Interface().(map[uint8]string)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeString(c_UTF8, v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint8Intf(rv reflect.Value) {
+	v := rv.Interface().(map[uint8]interface{})
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -451,13 +594,33 @@ func (f *encFnInfo) fastEncMapUint16Intf(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapUint16String(rv reflect.Value) {
-	v := rv.Interface().(map[uint16]string)
+func (f *encFnInfo) fastEncMapUint8Int(rv reflect.Value) {
+	v := rv.Interface().(map[uint8]int)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
 		f.ee.encodeUint(uint64(k2))
-		f.ee.encodeString(c_UTF8, v2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint8Int64(rv reflect.Value) {
+	v := rv.Interface().(map[uint8]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint8Uint64(rv reflect.Value) {
+	v := rv.Interface().(map[uint8]uint64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeUint(uint64(v2))
 	}
 }
 
@@ -471,8 +634,58 @@ func (f *encFnInfo) fastEncMapUint16Uint16(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapUint32Intf(rv reflect.Value) {
-	v := rv.Interface().(map[uint32]interface{})
+func (f *encFnInfo) fastEncMapUint16String(rv reflect.Value) {
+	v := rv.Interface().(map[uint16]string)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeString(c_UTF8, v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint16Intf(rv reflect.Value) {
+	v := rv.Interface().(map[uint16]interface{})
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.e.encode(v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint16Int(rv reflect.Value) {
+	v := rv.Interface().(map[uint16]int)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint16Int64(rv reflect.Value) {
+	v := rv.Interface().(map[uint16]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint16Uint64(rv reflect.Value) {
+	v := rv.Interface().(map[uint16]uint64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeUint(uint64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint32Uint32(rv reflect.Value) {
+	v := rv.Interface().(map[uint32]uint32)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -491,8 +704,8 @@ func (f *encFnInfo) fastEncMapUint32String(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapUint32Uint32(rv reflect.Value) {
-	v := rv.Interface().(map[uint32]uint32)
+func (f *encFnInfo) fastEncMapUint32Intf(rv reflect.Value) {
+	v := rv.Interface().(map[uint32]interface{})
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -501,23 +714,53 @@ func (f *encFnInfo) fastEncMapUint32Uint32(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapUint64Intf(rv reflect.Value) {
-	v := rv.Interface().(map[uint64]interface{})
+func (f *encFnInfo) fastEncMapUint32Int(rv reflect.Value) {
+	v := rv.Interface().(map[uint32]int)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
-		f.ee.encodeUint(uint64(k2))
-		f.e.encode(v2)
+		f.e.encode(k2)
+		f.ee.encodeInt(int64(v2))
 	}
 }
 
-func (f *encFnInfo) fastEncMapUint64String(rv reflect.Value) {
-	v := rv.Interface().(map[uint64]string)
+func (f *encFnInfo) fastEncMapUint32Int64(rv reflect.Value) {
+	v := rv.Interface().(map[uint32]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.e.encode(k2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint32Uint64(rv reflect.Value) {
+	v := rv.Interface().(map[uint32]uint64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.e.encode(k2)
+		f.ee.encodeUint(uint64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint64Int(rv reflect.Value) {
+	v := rv.Interface().(map[uint64]int)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
 		f.ee.encodeUint(uint64(k2))
-		f.ee.encodeString(c_UTF8, v2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint64Int64(rv reflect.Value) {
+	v := rv.Interface().(map[uint64]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeInt(int64(v2))
 	}
 }
 
@@ -531,13 +774,33 @@ func (f *encFnInfo) fastEncMapUint64Uint64(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapIntIntf(rv reflect.Value) {
-	v := rv.Interface().(map[int]interface{})
+func (f *encFnInfo) fastEncMapUint64String(rv reflect.Value) {
+	v := rv.Interface().(map[uint64]string)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeString(c_UTF8, v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapUint64Intf(rv reflect.Value) {
+	v := rv.Interface().(map[uint64]interface{})
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeUint(uint64(k2))
+		f.e.encode(v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapIntUint64(rv reflect.Value) {
+	v := rv.Interface().(map[int]uint64)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
 		f.ee.encodeInt(int64(k2))
-		f.e.encode(v2)
+		f.ee.encodeUint(uint64(v2))
 	}
 }
 
@@ -551,6 +814,16 @@ func (f *encFnInfo) fastEncMapIntString(rv reflect.Value) {
 	}
 }
 
+func (f *encFnInfo) fastEncMapIntIntf(rv reflect.Value) {
+	v := rv.Interface().(map[int]interface{})
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeInt(int64(k2))
+		f.e.encode(v2)
+	}
+}
+
 func (f *encFnInfo) fastEncMapIntInt(rv reflect.Value) {
 	v := rv.Interface().(map[int]int)
 	f.ee.encodeMapPreamble(len(v))
@@ -561,23 +834,13 @@ func (f *encFnInfo) fastEncMapIntInt(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapInt8Intf(rv reflect.Value) {
-	v := rv.Interface().(map[int8]interface{})
+func (f *encFnInfo) fastEncMapIntInt64(rv reflect.Value) {
+	v := rv.Interface().(map[int]int64)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
 		f.ee.encodeInt(int64(k2))
-		f.e.encode(v2)
-	}
-}
-
-func (f *encFnInfo) fastEncMapInt8String(rv reflect.Value) {
-	v := rv.Interface().(map[int8]string)
-	f.ee.encodeMapPreamble(len(v))
-
-	for k2, v2 := range v {
-		f.ee.encodeInt(int64(k2))
-		f.ee.encodeString(c_UTF8, v2)
+		f.ee.encodeInt(int64(v2))
 	}
 }
 
@@ -591,8 +854,18 @@ func (f *encFnInfo) fastEncMapInt8Int8(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapInt16Intf(rv reflect.Value) {
-	v := rv.Interface().(map[int16]interface{})
+func (f *encFnInfo) fastEncMapInt8String(rv reflect.Value) {
+	v := rv.Interface().(map[int8]string)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeInt(int64(k2))
+		f.ee.encodeString(c_UTF8, v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt8Intf(rv reflect.Value) {
+	v := rv.Interface().(map[int8]interface{})
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -601,13 +874,33 @@ func (f *encFnInfo) fastEncMapInt16Intf(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapInt16String(rv reflect.Value) {
-	v := rv.Interface().(map[int16]string)
+func (f *encFnInfo) fastEncMapInt8Int(rv reflect.Value) {
+	v := rv.Interface().(map[int8]int)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
 		f.ee.encodeInt(int64(k2))
-		f.ee.encodeString(c_UTF8, v2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt8Int64(rv reflect.Value) {
+	v := rv.Interface().(map[int8]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeInt(int64(k2))
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt8Uint64(rv reflect.Value) {
+	v := rv.Interface().(map[int8]uint64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeInt(int64(k2))
+		f.ee.encodeUint(uint64(v2))
 	}
 }
 
@@ -621,23 +914,53 @@ func (f *encFnInfo) fastEncMapInt16Int16(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapInt32Intf(rv reflect.Value) {
-	v := rv.Interface().(map[int32]interface{})
+func (f *encFnInfo) fastEncMapInt16String(rv reflect.Value) {
+	v := rv.Interface().(map[int16]string)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
-		f.e.encode(k2)
+		f.ee.encodeInt(int64(k2))
+		f.ee.encodeString(c_UTF8, v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt16Intf(rv reflect.Value) {
+	v := rv.Interface().(map[int16]interface{})
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeInt(int64(k2))
 		f.e.encode(v2)
 	}
 }
 
-func (f *encFnInfo) fastEncMapInt32String(rv reflect.Value) {
-	v := rv.Interface().(map[int32]string)
+func (f *encFnInfo) fastEncMapInt16Int(rv reflect.Value) {
+	v := rv.Interface().(map[int16]int)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
-		f.e.encode(k2)
-		f.ee.encodeString(c_UTF8, v2)
+		f.ee.encodeInt(int64(k2))
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt16Int64(rv reflect.Value) {
+	v := rv.Interface().(map[int16]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeInt(int64(k2))
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt16Uint64(rv reflect.Value) {
+	v := rv.Interface().(map[int16]uint64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeInt(int64(k2))
+		f.ee.encodeUint(uint64(v2))
 	}
 }
 
@@ -651,13 +974,53 @@ func (f *encFnInfo) fastEncMapInt32Int32(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapInt64Intf(rv reflect.Value) {
-	v := rv.Interface().(map[int64]interface{})
+func (f *encFnInfo) fastEncMapInt32Uint64(rv reflect.Value) {
+	v := rv.Interface().(map[int32]uint64)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
-		f.ee.encodeInt(int64(k2))
+		f.e.encode(k2)
+		f.ee.encodeUint(uint64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt32String(rv reflect.Value) {
+	v := rv.Interface().(map[int32]string)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.e.encode(k2)
+		f.ee.encodeString(c_UTF8, v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt32Intf(rv reflect.Value) {
+	v := rv.Interface().(map[int32]interface{})
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.e.encode(k2)
 		f.e.encode(v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt32Int(rv reflect.Value) {
+	v := rv.Interface().(map[int32]int)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.e.encode(k2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt32Int64(rv reflect.Value) {
+	v := rv.Interface().(map[int32]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.e.encode(k2)
+		f.ee.encodeInt(int64(v2))
 	}
 }
 
@@ -671,6 +1034,26 @@ func (f *encFnInfo) fastEncMapInt64String(rv reflect.Value) {
 	}
 }
 
+func (f *encFnInfo) fastEncMapInt64Intf(rv reflect.Value) {
+	v := rv.Interface().(map[int64]interface{})
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeInt(int64(k2))
+		f.e.encode(v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapInt64Int(rv reflect.Value) {
+	v := rv.Interface().(map[int64]int)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeInt(int64(k2))
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
 func (f *encFnInfo) fastEncMapInt64Int64(rv reflect.Value) {
 	v := rv.Interface().(map[int64]int64)
 	f.ee.encodeMapPreamble(len(v))
@@ -681,23 +1064,13 @@ func (f *encFnInfo) fastEncMapInt64Int64(rv reflect.Value) {
 	}
 }
 
-func (f *encFnInfo) fastEncMapBoolIntf(rv reflect.Value) {
-	v := rv.Interface().(map[bool]interface{})
+func (f *encFnInfo) fastEncMapInt64Uint64(rv reflect.Value) {
+	v := rv.Interface().(map[int64]uint64)
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
-		f.ee.encodeBool(k2)
-		f.e.encode(v2)
-	}
-}
-
-func (f *encFnInfo) fastEncMapBoolString(rv reflect.Value) {
-	v := rv.Interface().(map[bool]string)
-	f.ee.encodeMapPreamble(len(v))
-
-	for k2, v2 := range v {
-		f.ee.encodeBool(k2)
-		f.ee.encodeString(c_UTF8, v2)
+		f.ee.encodeInt(int64(k2))
+		f.ee.encodeUint(uint64(v2))
 	}
 }
 
@@ -711,441 +1084,668 @@ func (f *encFnInfo) fastEncMapBoolBool(rv reflect.Value) {
 	}
 }
 
+func (f *encFnInfo) fastEncMapBoolIntf(rv reflect.Value) {
+	v := rv.Interface().(map[bool]interface{})
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeBool(k2)
+		f.e.encode(v2)
+	}
+}
+
+func (f *encFnInfo) fastEncMapBoolInt(rv reflect.Value) {
+	v := rv.Interface().(map[bool]int)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeBool(k2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapBoolInt64(rv reflect.Value) {
+	v := rv.Interface().(map[bool]int64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeBool(k2)
+		f.ee.encodeInt(int64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapBoolUint64(rv reflect.Value) {
+	v := rv.Interface().(map[bool]uint64)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeBool(k2)
+		f.ee.encodeUint(uint64(v2))
+	}
+}
+
+func (f *encFnInfo) fastEncMapBoolString(rv reflect.Value) {
+	v := rv.Interface().(map[bool]string)
+	f.ee.encodeMapPreamble(len(v))
+
+	for k2, v2 := range v {
+		f.ee.encodeBool(k2)
+		f.ee.encodeString(c_UTF8, v2)
+	}
+}
+
 // -- decode
 
 func (f *decFnInfo) fastDecSliceIntf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]interface{})
-	var s []interface{}
+	xaddr := rv.CanAddr()
+	var vp *[]interface{}
+	var v []interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().([]interface{})
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]interface{}, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]interface{}, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]interface{}, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]interface{}, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
-		f.d.decode(&s[j])
+		f.d.decode(&v[j])
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceString(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]string)
-	var s []string
+	xaddr := rv.CanAddr()
+	var vp *[]string
+	var v []string
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]string)
+		v = *vp
+	} else {
+		v = rv.Interface().([]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]string, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]string, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]string, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]string, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = f.dd.decodeString()
+		v[j] = f.dd.decodeString()
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceFloat32(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]float32)
-	var s []float32
+	xaddr := rv.CanAddr()
+	var vp *[]float32
+	var v []float32
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]float32)
+		v = *vp
+	} else {
+		v = rv.Interface().([]float32)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]float32, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]float32, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]float32, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]float32, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = float32(f.dd.decodeFloat(true))
+		v[j] = float32(f.dd.decodeFloat(true))
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceFloat64(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]float64)
-	var s []float64
+	xaddr := rv.CanAddr()
+	var vp *[]float64
+	var v []float64
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]float64)
+		v = *vp
+	} else {
+		v = rv.Interface().([]float64)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]float64, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]float64, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]float64, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]float64, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = f.dd.decodeFloat(false)
+		v[j] = f.dd.decodeFloat(false)
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceUint(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]uint)
-	var s []uint
+	xaddr := rv.CanAddr()
+	var vp *[]uint
+	var v []uint
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]uint)
+		v = *vp
+	} else {
+		v = rv.Interface().([]uint)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]uint, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]uint, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]uint, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]uint, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = uint(f.dd.decodeUint(uintBitsize))
+		v[j] = uint(f.dd.decodeUint(uintBitsize))
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceUint16(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]uint16)
-	var s []uint16
+	xaddr := rv.CanAddr()
+	var vp *[]uint16
+	var v []uint16
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]uint16)
+		v = *vp
+	} else {
+		v = rv.Interface().([]uint16)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]uint16, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]uint16, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]uint16, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]uint16, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = uint16(f.dd.decodeUint(16))
+		v[j] = uint16(f.dd.decodeUint(16))
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceUint32(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]uint32)
-	var s []uint32
+	xaddr := rv.CanAddr()
+	var vp *[]uint32
+	var v []uint32
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]uint32)
+		v = *vp
+	} else {
+		v = rv.Interface().([]uint32)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]uint32, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]uint32, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]uint32, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]uint32, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = uint32(f.dd.decodeUint(32))
+		v[j] = uint32(f.dd.decodeUint(32))
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceUint64(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]uint64)
-	var s []uint64
+	xaddr := rv.CanAddr()
+	var vp *[]uint64
+	var v []uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().([]uint64)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]uint64, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]uint64, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]uint64, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]uint64, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = f.dd.decodeUint(64)
+		v[j] = f.dd.decodeUint(64)
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceInt(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]int)
-	var s []int
+	xaddr := rv.CanAddr()
+	var vp *[]int
+	var v []int
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]int)
+		v = *vp
+	} else {
+		v = rv.Interface().([]int)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]int, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]int, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]int, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]int, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = int(f.dd.decodeInt(intBitsize))
+		v[j] = int(f.dd.decodeInt(intBitsize))
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceInt8(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]int8)
-	var s []int8
+	xaddr := rv.CanAddr()
+	var vp *[]int8
+	var v []int8
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]int8)
+		v = *vp
+	} else {
+		v = rv.Interface().([]int8)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]int8, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]int8, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]int8, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]int8, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = int8(f.dd.decodeInt(8))
+		v[j] = int8(f.dd.decodeInt(8))
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceInt16(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]int16)
-	var s []int16
+	xaddr := rv.CanAddr()
+	var vp *[]int16
+	var v []int16
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]int16)
+		v = *vp
+	} else {
+		v = rv.Interface().([]int16)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]int16, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]int16, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]int16, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]int16, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = int16(f.dd.decodeInt(16))
+		v[j] = int16(f.dd.decodeInt(16))
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceInt32(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]int32)
-	var s []int32
+	xaddr := rv.CanAddr()
+	var vp *[]int32
+	var v []int32
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]int32)
+		v = *vp
+	} else {
+		v = rv.Interface().([]int32)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]int32, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]int32, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]int32, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]int32, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = int32(f.dd.decodeInt(32))
+		v[j] = int32(f.dd.decodeInt(32))
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceInt64(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]int64)
-	var s []int64
+	xaddr := rv.CanAddr()
+	var vp *[]int64
+	var v []int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().([]int64)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]int64, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]int64, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]int64, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]int64, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = f.dd.decodeInt(64)
+		v[j] = f.dd.decodeInt(64)
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
 func (f *decFnInfo) fastDecSliceBool(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]bool)
-	var s []bool
+	xaddr := rv.CanAddr()
+	var vp *[]bool
+	var v []bool
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]bool)
+		v = *vp
+	} else {
+		v = rv.Interface().([]bool)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing.
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]bool, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]bool, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]bool, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]bool, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
 		f.dd.initReadNext()
-		s[j] = f.dd.decodeBool()
+		v[j] = f.dd.decodeBool()
 
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
-func (f *decFnInfo) fastDecMapIntfIntf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[interface{}]interface{})
-	var m map[interface{}]interface{}
+func (f *decFnInfo) fastDecMapIntfUint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[interface{}]uint64)
+	var v map[interface{}]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[interface{}]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[interface{}]uint64)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[interface{}]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[interface{}]uint64, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		var mk interface{}
@@ -1155,27 +1755,39 @@ func (f *decFnInfo) fastDecMapIntfIntf(rv reflect.Value) {
 			mk = string(bv)
 		}
 
-		mv := m[mk]
-		f.d.decode(&mv)
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapIntfString(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[interface{}]string)
-	var m map[interface{}]string
+	xaddr := rv.CanAddr()
+	var vp (*map[interface{}]string)
+	var v map[interface{}]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[interface{}]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[interface{}]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[interface{}]string, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[interface{}]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		var mk interface{}
@@ -1185,1103 +1797,3163 @@ func (f *decFnInfo) fastDecMapIntfString(rv reflect.Value) {
 			mk = string(bv)
 		}
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapStringIntf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[string]interface{})
-	var m map[string]interface{}
+func (f *decFnInfo) fastDecMapIntfIntf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[interface{}]interface{})
+	var v map[interface{}]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[interface{}]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[interface{}]interface{})
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[string]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[interface{}]interface{}, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
-		f.dd.initReadNext()
-		mk := f.dd.decodeString()
+		var mk interface{}
+		f.d.decode(&mk)
+		// special case if a byte array.
+		if bv, bok := mk.([]byte); bok {
+			mk = string(bv)
+		}
 
-		mv := m[mk]
+		mv := v[mk]
 		f.d.decode(&mv)
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapIntfInt(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[interface{}]int)
+	var v map[interface{}]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[interface{}]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[interface{}]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[interface{}]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		var mk interface{}
+		f.d.decode(&mk)
+		// special case if a byte array.
+		if bv, bok := mk.([]byte); bok {
+			mk = string(bv)
+		}
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapIntfInt64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[interface{}]int64)
+	var v map[interface{}]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[interface{}]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[interface{}]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[interface{}]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		var mk interface{}
+		f.d.decode(&mk)
+		// special case if a byte array.
+		if bv, bok := mk.([]byte); bok {
+			mk = string(bv)
+		}
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapStringString(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[string]string)
-	var m map[string]string
+	xaddr := rv.CanAddr()
+	var vp (*map[string]string)
+	var v map[string]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[string]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[string]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[string]string, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[string]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapFloat32Intf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[float32]interface{})
-	var m map[float32]interface{}
+func (f *decFnInfo) fastDecMapStringIntf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[string]interface{})
+	var v map[string]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[string]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[string]interface{})
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[float32]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[string]interface{}, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := float32(f.dd.decodeFloat(true))
+		mk := f.dd.decodeString()
 
-		mv := m[mk]
+		mv := v[mk]
 		f.d.decode(&mv)
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapFloat32String(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[float32]string)
-	var m map[float32]string
+func (f *decFnInfo) fastDecMapStringInt(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[string]int)
+	var v map[string]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[string]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[string]int)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[float32]string, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[string]int, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := float32(f.dd.decodeFloat(true))
+		mk := f.dd.decodeString()
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
-		mv = f.dd.decodeString()
+		mv = int(f.dd.decodeInt(intBitsize))
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapStringInt64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[string]int64)
+	var v map[string]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[string]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[string]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[string]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeString()
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapStringUint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[string]uint64)
+	var v map[string]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[string]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[string]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[string]uint64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeString()
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapFloat32Float32(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[float32]float32)
-	var m map[float32]float32
+	xaddr := rv.CanAddr()
+	var vp (*map[float32]float32)
+	var v map[float32]float32
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float32]float32)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float32]float32)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[float32]float32, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[float32]float32, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = float32(f.dd.decodeFloat(true))
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapFloat64Intf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[float64]interface{})
-	var m map[float64]interface{}
+func (f *decFnInfo) fastDecMapFloat32Intf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[float32]interface{})
+	var v map[float32]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float32]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float32]interface{})
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[float64]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[float32]interface{}, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := f.dd.decodeFloat(false)
+		mk := float32(f.dd.decodeFloat(true))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.d.decode(&mv)
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapFloat64String(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[float64]string)
-	var m map[float64]string
+func (f *decFnInfo) fastDecMapFloat32Int(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[float32]int)
+	var v map[float32]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float32]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float32]int)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[float64]string, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[float32]int, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := f.dd.decodeFloat(false)
+		mk := float32(f.dd.decodeFloat(true))
 
-		mv := m[mk]
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapFloat32Int64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[float32]int64)
+	var v map[float32]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float32]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float32]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[float32]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := float32(f.dd.decodeFloat(true))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapFloat32Uint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[float32]uint64)
+	var v map[float32]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float32]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float32]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[float32]uint64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := float32(f.dd.decodeFloat(true))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapFloat32String(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[float32]string)
+	var v map[float32]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float32]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float32]string)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[float32]string, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := float32(f.dd.decodeFloat(true))
+
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapFloat64Float64(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[float64]float64)
-	var m map[float64]float64
+	xaddr := rv.CanAddr()
+	var vp (*map[float64]float64)
+	var v map[float64]float64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float64]float64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float64]float64)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[float64]float64, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[float64]float64, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeFloat(false)
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapUintIntf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint]interface{})
-	var m map[uint]interface{}
+func (f *decFnInfo) fastDecMapFloat64String(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[float64]string)
+	var v map[float64]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float64]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float64]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[float64]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := uint(f.dd.decodeUint(uintBitsize))
+		mk := f.dd.decodeFloat(false)
 
-		mv := m[mk]
-		f.d.decode(&mv)
-
-		m[mk] = mv
-	}
-}
-
-func (f *decFnInfo) fastDecMapUintString(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint]string)
-	var m map[uint]string
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
-		*v = m
-		return
-	}
-
-	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint]string, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		f.dd.initReadNext()
-		mk := uint(f.dd.decodeUint(uintBitsize))
-
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapFloat64Intf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[float64]interface{})
+	var v map[float64]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float64]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float64]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[float64]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeFloat(false)
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapFloat64Int(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[float64]int)
+	var v map[float64]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float64]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float64]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[float64]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeFloat(false)
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapFloat64Int64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[float64]int64)
+	var v map[float64]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float64]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float64]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[float64]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeFloat(false)
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapFloat64Uint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[float64]uint64)
+	var v map[float64]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[float64]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[float64]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[float64]uint64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeFloat(false)
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapUintUint(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint]uint)
-	var m map[uint]uint
+	xaddr := rv.CanAddr()
+	var vp (*map[uint]uint)
+	var v map[uint]uint
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint]uint)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint]uint)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint]uint, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[uint]uint, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapUint8Intf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint8]interface{})
-	var m map[uint8]interface{}
+func (f *decFnInfo) fastDecMapUintString(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint]string)
+	var v map[uint]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint8]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[uint]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := uint8(f.dd.decodeUint(8))
+		mk := uint(f.dd.decodeUint(uintBitsize))
 
-		mv := m[mk]
-		f.d.decode(&mv)
-
-		m[mk] = mv
-	}
-}
-
-func (f *decFnInfo) fastDecMapUint8String(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint8]string)
-	var m map[uint8]string
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
-		*v = m
-		return
-	}
-
-	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint8]string, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		f.dd.initReadNext()
-		mk := uint8(f.dd.decodeUint(8))
-
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUintIntf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint]interface{})
+	var v map[uint]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint(f.dd.decodeUint(uintBitsize))
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUintInt(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint]int)
+	var v map[uint]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint(f.dd.decodeUint(uintBitsize))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUintInt64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint]int64)
+	var v map[uint]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint(f.dd.decodeUint(uintBitsize))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUintUint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint]uint64)
+	var v map[uint]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint]uint64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint(f.dd.decodeUint(uintBitsize))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapUint8Uint8(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint8]uint8)
-	var m map[uint8]uint8
+	xaddr := rv.CanAddr()
+	var vp (*map[uint8]uint8)
+	var v map[uint8]uint8
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint8]uint8)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint8]uint8)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint8]uint8, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[uint8]uint8, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint8(f.dd.decodeUint(8))
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapUint16Intf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint16]interface{})
-	var m map[uint16]interface{}
+func (f *decFnInfo) fastDecMapUint8String(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint8]string)
+	var v map[uint8]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint8]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint8]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint16]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[uint8]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := uint16(f.dd.decodeUint(16))
+		mk := uint8(f.dd.decodeUint(8))
 
-		mv := m[mk]
-		f.d.decode(&mv)
-
-		m[mk] = mv
-	}
-}
-
-func (f *decFnInfo) fastDecMapUint16String(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint16]string)
-	var m map[uint16]string
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
-		*v = m
-		return
-	}
-
-	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint16]string, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		f.dd.initReadNext()
-		mk := uint16(f.dd.decodeUint(16))
-
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint8Intf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint8]interface{})
+	var v map[uint8]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint8]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint8]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint8]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint8(f.dd.decodeUint(8))
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint8Int(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint8]int)
+	var v map[uint8]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint8]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint8]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint8]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint8(f.dd.decodeUint(8))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint8Int64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint8]int64)
+	var v map[uint8]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint8]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint8]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint8]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint8(f.dd.decodeUint(8))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint8Uint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint8]uint64)
+	var v map[uint8]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint8]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint8]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint8]uint64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint8(f.dd.decodeUint(8))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapUint16Uint16(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint16]uint16)
-	var m map[uint16]uint16
+	xaddr := rv.CanAddr()
+	var vp (*map[uint16]uint16)
+	var v map[uint16]uint16
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint16]uint16)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint16]uint16)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint16]uint16, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[uint16]uint16, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint16(f.dd.decodeUint(16))
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapUint32Intf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint32]interface{})
-	var m map[uint32]interface{}
+func (f *decFnInfo) fastDecMapUint16String(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint16]string)
+	var v map[uint16]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint16]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint16]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint32]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[uint16]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := uint32(f.dd.decodeUint(32))
+		mk := uint16(f.dd.decodeUint(16))
 
-		mv := m[mk]
-		f.d.decode(&mv)
-
-		m[mk] = mv
-	}
-}
-
-func (f *decFnInfo) fastDecMapUint32String(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint32]string)
-	var m map[uint32]string
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
-		*v = m
-		return
-	}
-
-	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint32]string, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		f.dd.initReadNext()
-		mk := uint32(f.dd.decodeUint(32))
-
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint16Intf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint16]interface{})
+	var v map[uint16]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint16]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint16]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint16]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint16(f.dd.decodeUint(16))
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint16Int(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint16]int)
+	var v map[uint16]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint16]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint16]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint16]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint16(f.dd.decodeUint(16))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint16Int64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint16]int64)
+	var v map[uint16]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint16]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint16]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint16]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint16(f.dd.decodeUint(16))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint16Uint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint16]uint64)
+	var v map[uint16]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint16]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint16]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint16]uint64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint16(f.dd.decodeUint(16))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapUint32Uint32(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint32]uint32)
-	var m map[uint32]uint32
+	xaddr := rv.CanAddr()
+	var vp (*map[uint32]uint32)
+	var v map[uint32]uint32
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint32]uint32)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint32]uint32)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint32]uint32, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[uint32]uint32, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapUint64Intf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint64]interface{})
-	var m map[uint64]interface{}
+func (f *decFnInfo) fastDecMapUint32String(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint32]string)
+	var v map[uint32]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint32]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint32]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint64]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[uint32]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := f.dd.decodeUint(64)
+		mk := uint32(f.dd.decodeUint(32))
 
-		mv := m[mk]
-		f.d.decode(&mv)
-
-		m[mk] = mv
-	}
-}
-
-func (f *decFnInfo) fastDecMapUint64String(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint64]string)
-	var m map[uint64]string
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
-		*v = m
-		return
-	}
-
-	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint64]string, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		f.dd.initReadNext()
-		mk := f.dd.decodeUint(64)
-
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint32Intf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint32]interface{})
+	var v map[uint32]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint32]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint32]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint32]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint32(f.dd.decodeUint(32))
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint32Int(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint32]int)
+	var v map[uint32]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint32]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint32]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint32]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint32(f.dd.decodeUint(32))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint32Int64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint32]int64)
+	var v map[uint32]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint32]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint32]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint32]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint32(f.dd.decodeUint(32))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint32Uint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint32]uint64)
+	var v map[uint32]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint32]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint32]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint32]uint64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := uint32(f.dd.decodeUint(32))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint64Int(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint64]int)
+	var v map[uint64]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint64]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint64]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint64]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeUint(64)
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint64Int64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint64]int64)
+	var v map[uint64]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint64]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint64]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint64]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeUint(64)
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapUint64Uint64(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[uint64]uint64)
-	var m map[uint64]uint64
+	xaddr := rv.CanAddr()
+	var vp (*map[uint64]uint64)
+	var v map[uint64]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint64]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint64]uint64)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[uint64]uint64, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[uint64]uint64, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapIntIntf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int]interface{})
-	var m map[int]interface{}
+func (f *decFnInfo) fastDecMapUint64String(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint64]string)
+	var v map[uint64]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint64]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint64]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[uint64]string, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeUint(64)
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeString()
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapUint64Intf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[uint64]interface{})
+	var v map[uint64]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[uint64]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[uint64]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[uint64]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeUint(64)
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapIntUint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int]uint64)
+	var v map[int]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int]uint64, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
-		mv := m[mk]
-		f.d.decode(&mv)
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapIntString(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int]string)
-	var m map[int]string
+	xaddr := rv.CanAddr()
+	var vp (*map[int]string)
+	var v map[int]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int]string, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapIntIntf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int]interface{})
+	var v map[int]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int(f.dd.decodeInt(intBitsize))
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapIntInt(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int]int)
-	var m map[int]int
+	xaddr := rv.CanAddr()
+	var vp (*map[int]int)
+	var v map[int]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int]int)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int]int, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int]int, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapInt8Intf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int8]interface{})
-	var m map[int8]interface{}
+func (f *decFnInfo) fastDecMapIntInt64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int]int64)
+	var v map[int]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int]int64)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int8]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int]int64, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := int8(f.dd.decodeInt(8))
+		mk := int(f.dd.decodeInt(intBitsize))
 
-		mv := m[mk]
-		f.d.decode(&mv)
-
-		m[mk] = mv
-	}
-}
-
-func (f *decFnInfo) fastDecMapInt8String(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int8]string)
-	var m map[int8]string
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
-		*v = m
-		return
-	}
-
-	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int8]string, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
+		mv := v[mk]
 		f.dd.initReadNext()
-		mk := int8(f.dd.decodeInt(8))
+		mv = f.dd.decodeInt(64)
 
-		mv := m[mk]
-		f.dd.initReadNext()
-		mv = f.dd.decodeString()
-
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapInt8Int8(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int8]int8)
-	var m map[int8]int8
+	xaddr := rv.CanAddr()
+	var vp (*map[int8]int8)
+	var v map[int8]int8
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int8]int8)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int8]int8)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int8]int8, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int8]int8, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int8(f.dd.decodeInt(8))
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapInt16Intf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int16]interface{})
-	var m map[int16]interface{}
+func (f *decFnInfo) fastDecMapInt8String(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int8]string)
+	var v map[int8]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int8]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int8]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int16]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int8]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := int16(f.dd.decodeInt(16))
+		mk := int8(f.dd.decodeInt(8))
 
-		mv := m[mk]
-		f.d.decode(&mv)
-
-		m[mk] = mv
-	}
-}
-
-func (f *decFnInfo) fastDecMapInt16String(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int16]string)
-	var m map[int16]string
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
-		*v = m
-		return
-	}
-
-	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int16]string, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		f.dd.initReadNext()
-		mk := int16(f.dd.decodeInt(16))
-
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt8Intf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int8]interface{})
+	var v map[int8]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int8]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int8]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int8]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int8(f.dd.decodeInt(8))
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt8Int(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int8]int)
+	var v map[int8]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int8]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int8]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int8]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int8(f.dd.decodeInt(8))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt8Int64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int8]int64)
+	var v map[int8]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int8]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int8]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int8]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int8(f.dd.decodeInt(8))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt8Uint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int8]uint64)
+	var v map[int8]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int8]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int8]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int8]uint64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int8(f.dd.decodeInt(8))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapInt16Int16(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int16]int16)
-	var m map[int16]int16
+	xaddr := rv.CanAddr()
+	var vp (*map[int16]int16)
+	var v map[int16]int16
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int16]int16)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int16]int16)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int16]int16, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int16]int16, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int16(f.dd.decodeInt(16))
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapInt32Intf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int32]interface{})
-	var m map[int32]interface{}
+func (f *decFnInfo) fastDecMapInt16String(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int16]string)
+	var v map[int16]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int16]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int16]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int32]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int16]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := int32(f.dd.decodeInt(32))
+		mk := int16(f.dd.decodeInt(16))
 
-		mv := m[mk]
-		f.d.decode(&mv)
-
-		m[mk] = mv
-	}
-}
-
-func (f *decFnInfo) fastDecMapInt32String(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int32]string)
-	var m map[int32]string
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
-		*v = m
-		return
-	}
-
-	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int32]string, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
-		f.dd.initReadNext()
-		mk := int32(f.dd.decodeInt(32))
-
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt16Intf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int16]interface{})
+	var v map[int16]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int16]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int16]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int16]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int16(f.dd.decodeInt(16))
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt16Int(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int16]int)
+	var v map[int16]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int16]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int16]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int16]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int16(f.dd.decodeInt(16))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt16Int64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int16]int64)
+	var v map[int16]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int16]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int16]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int16]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int16(f.dd.decodeInt(16))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt16Uint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int16]uint64)
+	var v map[int16]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int16]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int16]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int16]uint64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int16(f.dd.decodeInt(16))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapInt32Int32(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int32]int32)
-	var m map[int32]int32
+	xaddr := rv.CanAddr()
+	var vp (*map[int32]int32)
+	var v map[int32]int32
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int32]int32)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int32]int32)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int32]int32, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int32]int32, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapInt64Intf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int64]interface{})
-	var m map[int64]interface{}
+func (f *decFnInfo) fastDecMapInt32Uint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int32]uint64)
+	var v map[int32]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int32]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int32]uint64)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int64]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int32]uint64, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := f.dd.decodeInt(64)
+		mk := int32(f.dd.decodeInt(32))
 
-		mv := m[mk]
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt32String(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int32]string)
+	var v map[int32]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int32]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int32]string)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int32]string, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int32(f.dd.decodeInt(32))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeString()
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt32Intf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int32]interface{})
+	var v map[int32]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int32]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int32]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int32]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int32(f.dd.decodeInt(32))
+
+		mv := v[mk]
 		f.d.decode(&mv)
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt32Int(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int32]int)
+	var v map[int32]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int32]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int32]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int32]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int32(f.dd.decodeInt(32))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt32Int64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int32]int64)
+	var v map[int32]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int32]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int32]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int32]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := int32(f.dd.decodeInt(32))
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapInt64String(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int64]string)
-	var m map[int64]string
+	xaddr := rv.CanAddr()
+	var vp (*map[int64]string)
+	var v map[int64]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int64]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int64]string)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int64]string, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int64]string, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt64Intf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int64]interface{})
+	var v map[int64]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int64]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int64]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int64]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeInt(64)
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapInt64Int(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int64]int)
+	var v map[int64]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int64]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int64]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[int64]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeInt(64)
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapInt64Int64(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[int64]int64)
-	var m map[int64]int64
+	xaddr := rv.CanAddr()
+	var vp (*map[int64]int64)
+	var v map[int64]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int64]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int64]int64)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[int64]int64, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int64]int64, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-func (f *decFnInfo) fastDecMapBoolIntf(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[bool]interface{})
-	var m map[bool]interface{}
+func (f *decFnInfo) fastDecMapInt64Uint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[int64]uint64)
+	var v map[int64]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[int64]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[int64]uint64)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[bool]interface{}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[int64]uint64, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
-		mk := f.dd.decodeBool()
+		mk := f.dd.decodeInt(64)
 
-		mv := m[mk]
-		f.d.decode(&mv)
-
-		m[mk] = mv
-	}
-}
-
-func (f *decFnInfo) fastDecMapBoolString(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[bool]string)
-	var m map[bool]string
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
-		*v = m
-		return
-	}
-
-	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[bool]string, containerLen)
-		*v = m
-	}
-	for j := 0; j < containerLen; j++ {
+		mv := v[mk]
 		f.dd.initReadNext()
-		mk := f.dd.decodeBool()
+		mv = f.dd.decodeUint(64)
 
-		mv := m[mk]
-		f.dd.initReadNext()
-		mv = f.dd.decodeString()
-
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
 func (f *decFnInfo) fastDecMapBoolBool(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[bool]bool)
-	var m map[bool]bool
+	xaddr := rv.CanAddr()
+	var vp (*map[bool]bool)
+	var v map[bool]bool
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[bool]bool)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[bool]bool)
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[bool]bool, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[bool]bool, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
-		mv := m[mk]
+		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeBool()
 
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapBoolIntf(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[bool]interface{})
+	var v map[bool]interface{}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[bool]interface{})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[bool]interface{})
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[bool]interface{}, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeBool()
+
+		mv := v[mk]
+		f.d.decode(&mv)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapBoolInt(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[bool]int)
+	var v map[bool]int
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[bool]int)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[bool]int)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[bool]int, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeBool()
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = int(f.dd.decodeInt(intBitsize))
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapBoolInt64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[bool]int64)
+	var v map[bool]int64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[bool]int64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[bool]int64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[bool]int64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeBool()
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeInt(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapBoolUint64(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[bool]uint64)
+	var v map[bool]uint64
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[bool]uint64)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[bool]uint64)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[bool]uint64, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeBool()
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeUint(64)
+
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+}
+
+func (f *decFnInfo) fastDecMapBoolString(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[bool]string)
+	var v map[bool]string
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[bool]string)
+		v = *vp
+	} else {
+		v = rv.Interface().(map[bool]string)
+	}
+	vtype := f.dd.currentEncodedType()
+	if vtype == valueTypeNil {
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
+		return
+	}
+
+	containerLen := f.dd.readMapLen()
+	if xaddr && v == nil {
+		v = make(map[bool]string, containerLen)
+		*vp = v
+	}
+	for j := 0; j < containerLen; j++ {
+		f.dd.initReadNext()
+		mk := f.dd.decodeBool()
+
+		mv := v[mk]
+		f.dd.initReadNext()
+		mv = f.dd.decodeString()
+
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }

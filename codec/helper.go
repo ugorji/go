@@ -80,6 +80,8 @@ var (
 	bigen               = binary.BigEndian
 	structInfoFieldName = "_struct"
 
+	fastpathsTyp = make(map[uintptr]reflect.Type)
+
 	cachedTypeInfo      = make(map[uintptr]*typeInfo, 4)
 	cachedTypeInfoMutex sync.RWMutex
 

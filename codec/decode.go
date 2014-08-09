@@ -722,7 +722,6 @@ func (d *Decoder) getDecFn(rt reflect.Type) (fn decFn) {
 		// debugf("\tCreating new dec fn for type: %v\n", rt)
 		fi := decFnInfo{ti: getTypeInfo(rtid, rt), d: d, dd: d.d}
 		fn.i = &fi
-		rk := rt.Kind()
 		// An extension can be registered for any type, regardless of the Kind
 		// (e.g. type BitSet int64, type MyStruct { / * unexported fields * / }, type X []int, etc.
 		//
@@ -741,55 +740,74 @@ func (d *Decoder) getDecFn(rt reflect.Type) (fn decFn) {
 			fn.f = (*decFnInfo).ext
 		} else if supportBinaryMarshal && fi.ti.unm {
 			fn.f = (*decFnInfo).binaryMarshal
-		} else if xxf := fastDec(rtid, rk); xxf != nil {
-			fn.f = xxf
-			// } else if xxf, xxok := fastpathsDec[rtid]; xxok {
-			// 	fn.f = xxf
 		} else {
-			switch rk {
-			case reflect.String:
-				fn.f = (*decFnInfo).kString
-			case reflect.Bool:
-				fn.f = (*decFnInfo).kBool
-			case reflect.Int:
-				fn.f = (*decFnInfo).kInt
-			case reflect.Int64:
-				fn.f = (*decFnInfo).kInt64
-			case reflect.Int32:
-				fn.f = (*decFnInfo).kInt32
-			case reflect.Int8:
-				fn.f = (*decFnInfo).kInt8
-			case reflect.Int16:
-				fn.f = (*decFnInfo).kInt16
-			case reflect.Float32:
-				fn.f = (*decFnInfo).kFloat32
-			case reflect.Float64:
-				fn.f = (*decFnInfo).kFloat64
-			case reflect.Uint8:
-				fn.f = (*decFnInfo).kUint8
-			case reflect.Uint64:
-				fn.f = (*decFnInfo).kUint64
-			case reflect.Uint:
-				fn.f = (*decFnInfo).kUint
-			case reflect.Uint32:
-				fn.f = (*decFnInfo).kUint32
-			case reflect.Uint16:
-				fn.f = (*decFnInfo).kUint16
-			// case reflect.Ptr:
-			// 	fn.f = (*decFnInfo).kPtr
-			case reflect.Interface:
-				fn.f = (*decFnInfo).kInterface
-			case reflect.Struct:
-				fn.f = (*decFnInfo).kStruct
-			case reflect.Slice:
-				fn.f = (*decFnInfo).kSlice
-			case reflect.Array:
-				fi.array = true
-				fn.f = (*decFnInfo).kArray
-			case reflect.Map:
-				fn.f = (*decFnInfo).kMap
-			default:
-				fn.f = (*decFnInfo).kErr
+			rk := rt.Kind()
+			if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice) {
+				if fn.f, ok = fastpathsDec[rtid]; !ok && rt.PkgPath() != "" {
+					// use mapping for underlying type if there
+					var rtu reflect.Type
+					if rk == reflect.Map {
+						rtu = reflect.MapOf(rt.Key(), rt.Elem())
+					} else {
+						rtu = reflect.SliceOf(rt.Elem())
+					}
+					rtuid := reflect.ValueOf(rtu).Pointer()
+					if fn.f, ok = fastpathsDec[rtuid]; ok {
+						xfnf := fn.f
+						xrt := fastpathsTyp[rtuid]
+						fn.f = func(xf *decFnInfo, xrv reflect.Value) {
+							// xfnf(xf, xrv.Convert(xrt))
+							xfnf(xf, xrv.Addr().Convert(reflect.PtrTo(xrt)).Elem())
+						}
+					}
+				}
+			}
+			if fn.f == nil {
+				switch rk {
+				case reflect.String:
+					fn.f = (*decFnInfo).kString
+				case reflect.Bool:
+					fn.f = (*decFnInfo).kBool
+				case reflect.Int:
+					fn.f = (*decFnInfo).kInt
+				case reflect.Int64:
+					fn.f = (*decFnInfo).kInt64
+				case reflect.Int32:
+					fn.f = (*decFnInfo).kInt32
+				case reflect.Int8:
+					fn.f = (*decFnInfo).kInt8
+				case reflect.Int16:
+					fn.f = (*decFnInfo).kInt16
+				case reflect.Float32:
+					fn.f = (*decFnInfo).kFloat32
+				case reflect.Float64:
+					fn.f = (*decFnInfo).kFloat64
+				case reflect.Uint8:
+					fn.f = (*decFnInfo).kUint8
+				case reflect.Uint64:
+					fn.f = (*decFnInfo).kUint64
+				case reflect.Uint:
+					fn.f = (*decFnInfo).kUint
+				case reflect.Uint32:
+					fn.f = (*decFnInfo).kUint32
+				case reflect.Uint16:
+					fn.f = (*decFnInfo).kUint16
+					// case reflect.Ptr:
+					// 	fn.f = (*decFnInfo).kPtr
+				case reflect.Interface:
+					fn.f = (*decFnInfo).kInterface
+				case reflect.Struct:
+					fn.f = (*decFnInfo).kStruct
+				case reflect.Slice:
+					fn.f = (*decFnInfo).kSlice
+				case reflect.Array:
+					fi.array = true
+					fn.f = (*decFnInfo).kArray
+				case reflect.Map:
+					fn.f = (*decFnInfo).kMap
+				default:
+					fn.f = (*decFnInfo).kErr
+				}
 			}
 		}
 		if useMapForCodecCache {
@@ -860,12 +878,4 @@ func decContLens(dd decDriver, currEncodedType valueType) (containerLen, contain
 
 func decErr(format string, params ...interface{}) {
 	doPanic(msgTagDec, format, params...)
-}
-
-func fastDec(rtid uintptr, rk reflect.Kind) func(*decFnInfo, reflect.Value) {
-	// Unfortunately, accessing an empty map is not free free.
-	if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice) {
-		return fastpathsDec[rtid]
-	}
-	return nil
 }

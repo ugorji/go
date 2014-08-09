@@ -53,12 +53,9 @@ Rich Feature Set includes:
   - Fast Paths for some container types:
     For some container types, we circumvent reflection and its associated overhead
     and allocation costs, and encode/decode directly. These types are:
-	    []interface{}
-	    []int
-	    []string
-	    map[interface{}]interface{}
-	    map[int]interface{}
-	    map[string]interface{}
+	    Slice of all builtin types and interface{},
+	    map of all builtin types and interface{} to string, interface{}, int, int64, uint64
+	    symetrical maps of all builtin types and interface{}
 
 Extension Support
 

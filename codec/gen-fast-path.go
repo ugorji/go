@@ -39,6 +39,13 @@ package codec
 //    - map of all builtin types to string or interface value
 //    - symetrical maps of all builtin types (e.g. str-str, uint8-uint8)
 // This should provide adequate "typical" implementations.
+// 
+// Note that fast track decode functions must handle values for which an address cannot be obtained.
+// For example: 
+//   m2 := map[string]int{}
+//   p2 := []interface{}{m2}
+//   // decoding into p2 will bomb if fast track functions do not treat like unaddressable.
+// 
 
 import (
 	"reflect"
@@ -48,32 +55,27 @@ func init() {
 	if !fastpathEnabled {
 		return // basically disable the fast path checks (since accessing empty map is basically free)
 	}
-	fdx := func(i interface{}, fd func(*decFnInfo, reflect.Value)) {
-		fastpathsDec[reflect.ValueOf(reflect.TypeOf(i)).Pointer()] = fd
-	}
-	fex := func(i interface{}, fe func(*encFnInfo, reflect.Value)) {
-		fastpathsEnc[reflect.ValueOf(reflect.TypeOf(i)).Pointer()] = fe
+	fx := func(i interface{}, fe func(*encFnInfo, reflect.Value), fd func(*decFnInfo, reflect.Value)) {
+		xrt := reflect.TypeOf(i)
+		xptr := reflect.ValueOf(xrt).Pointer()
+		fastpathsTyp[xptr] = xrt
+		fastpathsEnc[xptr] = fe
+		fastpathsDec[xptr] = fd
 	}
 	
-	{{range .Values}}{{if .Encode}}{{if .Slice }}
-	fex([]{{ .Elem }}(nil), (*encFnInfo).{{ .MethodName }}){{end}}{{end}}{{end}}
+	{{range .Values}}{{if .Slice }}
+	fx([]{{ .Elem }}(nil), (*encFnInfo).{{ .MethodName true }}, (*decFnInfo).{{ .MethodName false}}){{end}}{{end}}
 
-	{{range .Values}}{{if .Encode}}{{if not .Slice }}
-	fex(map[{{ .MapKey }}]{{ .Elem }}(nil), (*encFnInfo).{{ .MethodName }}){{end}}{{end}}{{end}}
-
-	{{range .Values}}{{if not .Encode}}{{if .Slice }}
-	fdx([]{{ .Elem }}(nil), (*decFnInfo).{{ .MethodName }}){{end}}{{end}}{{end}}
-
-	{{range .Values}}{{if not .Encode}}{{if not .Slice }}
-	fdx(map[{{ .MapKey }}]{{ .Elem }}(nil), (*decFnInfo).{{ .MethodName }}){{end}}{{end}}{{end}}
+	{{range .Values}}{{if not .Slice }}
+	fx(map[{{ .MapKey }}]{{ .Elem }}(nil), (*encFnInfo).{{ .MethodName true }}, (*decFnInfo).{{ .MethodName false}}){{end}}{{end}}
 
 }
 
 // -- encode
 
-{{range .Values}}{{if .Encode}}{{if .Slice }}
+{{range .Values}}{{if .Slice }}
 
-func (f *encFnInfo) {{ .MethodName }}(rv reflect.Value) {
+func (f *encFnInfo) {{ .MethodName true }}(rv reflect.Value) {
 	v := rv.Interface().([]{{ .Elem }})
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
@@ -81,11 +83,11 @@ func (f *encFnInfo) {{ .MethodName }}(rv reflect.Value) {
 	}
 }
 
-{{end}}{{end}}{{end}}
+{{end}}{{end}}
 
-{{range .Values}}{{if .Encode}}{{if not .Slice }}
+{{range .Values}}{{if not .Slice }}
 
-func (f *encFnInfo) {{ .MethodName }}(rv reflect.Value) {
+func (f *encFnInfo) {{ .MethodName true }}(rv reflect.Value) {
 	v := rv.Interface().(map[{{ .MapKey }}]{{ .Elem }})
 	f.ee.encodeMapPreamble(len(v))
 	{{if eq .MapKey "string"}}asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0{{end}}
@@ -99,62 +101,83 @@ func (f *encFnInfo) {{ .MethodName }}(rv reflect.Value) {
 	}
 }
 
-{{end}}{{end}}{{end}}
+{{end}}{{end}}
 
 // -- decode
 
-{{range .Values}}{{if not .Encode}}{{if .Slice }}
+{{range .Values}}{{if .Slice }}
 
-func (f *decFnInfo) {{ .MethodName }}(rv reflect.Value) {
-	v := rv.Addr().Interface().(*[]{{ .Elem }})
-	var s []{{ .Elem }}
+func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp *[]{{ .Elem }}
+	var v []{{ .Elem }}
+	if xaddr {
+		vp = rv.Addr().Interface().(*[]{{ .Elem }})
+		v = *vp
+	} else {
+		v = rv.Interface().([]{{ .Elem }})
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = s
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. 
 		return
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
-	s = *v
-	if s == nil {
-		s = make([]{{ .Elem }}, containerLenS, containerLenS)
-	} else if containerLenS > cap(s) {
+	if v == nil {
+		v = make([]{{ .Elem }}, containerLenS, containerLenS)
+	} else if containerLenS > cap(v) {
 		if f.array {
-			decErr(msgDecCannotExpandArr, cap(s), containerLenS)
+			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
 		}
-		s = make([]{{ .Elem }}, containerLenS, containerLenS)
-		copy(s, *v)
-	} else if containerLenS > len(s) {
-		s = s[:containerLenS]
+		s := make([]{{ .Elem }}, containerLenS, containerLenS)
+		copy(s, v)
+		v = s
+	} else if containerLenS > len(v) {
+		v = v[:containerLenS]
 	}
 	for j := 0; j < containerLenS; j++ {
-		{{ if eq .Elem "interface{}" }}f.d.decode(&s[j])
+		{{ if eq .Elem "interface{}" }}f.d.decode(&v[j])
 		{{ else }}f.dd.initReadNext()
-		s[j] = {{ decmd .Elem }}
+		v[j] = {{ decmd .Elem }}
 		{{ end }}
 	}
-	*v = s
+	if xaddr {
+		*vp = v
+	}
 }
 
-{{end}}{{end}}{{end}}
+{{end}}{{end}}
 
 
-{{range .Values}}{{if not .Encode}}{{if not .Slice }}
+{{range .Values}}{{if not .Slice }}
 
-func (f *decFnInfo) {{ .MethodName }}(rv reflect.Value) {
-	v := rv.Addr().Interface().(*map[{{ .MapKey }}]{{ .Elem }})
-	var m map[{{ .MapKey }}]{{ .Elem }}
+func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
+	xaddr := rv.CanAddr()
+	var vp (*map[{{ .MapKey }}]{{ .Elem }})
+	var v map[{{ .MapKey }}]{{ .Elem }}
+	if xaddr {
+		vp = rv.Addr().Interface().(*map[{{ .MapKey }}]{{ .Elem }})
+		v = *vp
+	} else {
+		v = rv.Interface().(map[{{ .MapKey }}]{{ .Elem }})
+	}
 	vtype := f.dd.currentEncodedType()
 	if vtype == valueTypeNil {
-		*v = m
+		if xaddr {
+			v = nil
+			*vp = v
+		} // else do nothing. We never remove from a map.
 		return
 	}
 
 	containerLen := f.dd.readMapLen()
-	m = *v
-	if m == nil {
-		m = make(map[{{ .MapKey }}]{{ .Elem }}, containerLen)
-		*v = m
+	if xaddr && v == nil {
+		v = make(map[{{ .MapKey }}]{{ .Elem }}, containerLen)
+		*vp = v
 	}
 	for j := 0; j < containerLen; j++ {
 		{{ if eq .MapKey "interface{}" }}var mk interface{}
@@ -166,22 +189,23 @@ func (f *decFnInfo) {{ .MethodName }}(rv reflect.Value) {
 		{{ else }}f.dd.initReadNext()
 		mk := {{ decmd .MapKey }}
 		{{ end }}
-		mv := m[mk]
+        mv := v[mk]
 		{{ if eq .Elem "interface{}" }}f.d.decode(&mv)
 		{{ else }}f.dd.initReadNext()
 		mv = {{ decmd .Elem }}
 		{{ end }}
-		m[mk] = mv
+		if v != nil {
+			v[mk] = mv
+		}
 	}
 }
 
-{{end}}{{end}}{{end}}
+{{end}}{{end}}
 
 `
 
 type genInfo struct {
 	Slice  bool
-	Encode bool
 	MapKey string
 	Elem   string
 }
@@ -244,10 +268,10 @@ func DecCommandAsString(s string) string {
 
 }
 
-func (x *genInfo) MethodName() string {
+func (x *genInfo) MethodName(encode bool) string {
 	var name []byte
 	name = append(name, "fast"...)
-	if x.Encode {
+	if encode {
 		name = append(name, "Enc"...)
 	} else {
 		name = append(name, "Dec"...)
@@ -294,19 +318,24 @@ func main() {
 		"int64",
 		"bool",
 	}
+	mapvaltypes := map[string]bool{
+		"string":      true,
+		"interface{}": true,
+		"int":         true,
+		"int64":       true,
+		"uint64":      true,
+	}
 	var gt genTmpl
+	// For each slice or map type, there must be a (symetrical) Encode and Decode fast-path function
 	for _, s := range types {
 		if s != "uint8" { // do not generate fast path for slice of bytes. Treat specially already.
-			gt.Values = append(gt.Values, genInfo{true, true, "", s})
-			gt.Values = append(gt.Values, genInfo{true, false, "", s})
+			gt.Values = append(gt.Values, genInfo{true, "", s})
 		}
-		gt.Values = append(gt.Values, genInfo{false, true, s, "interface{}"})
-		gt.Values = append(gt.Values, genInfo{false, false, s, "interface{}"})
-		gt.Values = append(gt.Values, genInfo{false, true, s, "string"})
-		gt.Values = append(gt.Values, genInfo{false, false, s, "string"})
-		if s != "string" && s != "interface{}" {
-			gt.Values = append(gt.Values, genInfo{false, true, s, s})
-			gt.Values = append(gt.Values, genInfo{false, false, s, s})
+		if !mapvaltypes[s] {
+			gt.Values = append(gt.Values, genInfo{false, s, s})
+		}
+		for ms, _ := range mapvaltypes {
+			gt.Values = append(gt.Values, genInfo{false, s, ms})
 		}
 	}
 
