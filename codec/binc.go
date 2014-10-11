@@ -567,10 +567,27 @@ func (d *bincDecDriver) readArrayLen() (length int) {
 }
 
 func (d *bincDecDriver) decLen() int {
-	if d.vs <= 3 {
-		return int(d.decUint())
+	if d.vs > 3 {
+		return int(d.vs - 4)
 	}
-	return int(d.vs - 4)
+	return int(d.decLenNumber())
+}
+
+func (d *bincDecDriver) decLenNumber() (v uint64) {
+	switch d.vs {
+	case 0:
+		v = uint64(d.r.readn1())
+	case 1:
+		d.r.readb(d.b[6:])
+		v = uint64(bigen.Uint16(d.b[6:]))
+	case 2:
+		d.r.readb(d.b[4:])
+		v = uint64(bigen.Uint32(d.b[4:]))
+	default:
+		d.r.readb(d.b[:])
+		v = bigen.Uint64(d.b[:])
+	}
+	return
 }
 
 func (d *bincDecDriver) decodeString() (s string) {
