@@ -692,6 +692,13 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 	return
 }
 
+// MustEncode is like Encode, but panics if unable to Encode.
+// This provides insight to the code location that triggered the error.
+func (e *Encoder) MustEncode(v interface{}) {
+	e.encode(v)
+	e.w.atEndOfEncode()
+}
+
 func (e *Encoder) encode(iv interface{}) {
 	switch v := iv.(type) {
 	case nil:

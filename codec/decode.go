@@ -612,6 +612,12 @@ func (d *Decoder) Decode(v interface{}) (err error) {
 	return
 }
 
+// MustDecode is like Decode, but panics if unable to Decode.
+// This provides insight to the code location that triggered the error.
+func (d *Decoder) MustDecode(v interface{}) {
+	d.decode(v)
+}
+
 func (d *Decoder) decode(iv interface{}) {
 	d.d.initReadNext()
 
@@ -651,7 +657,7 @@ func (d *Decoder) decode(iv interface{}) {
 		*v = float32(d.d.decodeFloat(true))
 	case *float64:
 		*v = d.d.decodeFloat(false)
-	case *[]byte:
+	case *[]uint8:
 		*v, _ = d.d.decodeBytes(*v)
 
 	case *interface{}:
