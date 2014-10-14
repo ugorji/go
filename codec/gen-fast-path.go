@@ -212,9 +212,9 @@ type genInfo struct {
 
 func EncCommandAsString(s string, vname string) string {
 	switch s {
-	case "uint", "uint8", "uint16", "uint31", "uint64":
+	case "uint", "uint8", "uint16", "uint32", "uint64":
 		return "f.ee.encodeUint(uint64(" + vname + "))"
-	case "int", "int8", "int16", "int31", "int64":
+	case "int", "int8", "int16", "int32", "int64":
 		return "f.ee.encodeInt(int64(" + vname + "))"
 	case "string":
 		return "f.ee.encodeString(c_UTF8, " + vname + ")"
@@ -318,12 +318,21 @@ func main() {
 		"int64",
 		"bool",
 	}
-	mapvaltypes := map[string]bool{
-		"string":      true,
-		"interface{}": true,
-		"int":         true,
-		"int64":       true,
-		"uint64":      true,
+	// keep as slice, so it is in specific iteration order.
+	// Initial order was uint64, string, interface{}, int, int64
+	mapvaltypes := []string{
+		"interface{}",
+		"string",
+		"uint",
+		"uint32",
+		"uint64",
+		"int",
+		"int32",
+		"int64",
+	}
+	mapvaltypes2 := make(map[string]bool)
+	for _, s := range mapvaltypes {
+		mapvaltypes2[s] = true
 	}
 	var gt genTmpl
 	// For each slice or map type, there must be a (symetrical) Encode and Decode fast-path function
@@ -331,10 +340,10 @@ func main() {
 		if s != "uint8" { // do not generate fast path for slice of bytes. Treat specially already.
 			gt.Values = append(gt.Values, genInfo{true, "", s})
 		}
-		if !mapvaltypes[s] {
+		if !mapvaltypes2[s] {
 			gt.Values = append(gt.Values, genInfo{false, s, s})
 		}
-		for ms, _ := range mapvaltypes {
+		for _, ms := range mapvaltypes {
 			gt.Values = append(gt.Values, genInfo{false, s, ms})
 		}
 	}
