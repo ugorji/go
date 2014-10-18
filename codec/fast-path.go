@@ -196,6 +196,10 @@ func init() {
 
 func (f *encFnInfo) fastEncSliceIntf(rv reflect.Value) {
 	v := rv.Interface().([]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.e.encode(v2)
@@ -204,6 +208,10 @@ func (f *encFnInfo) fastEncSliceIntf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceString(rv reflect.Value) {
 	v := rv.Interface().([]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeString(c_UTF8, v2)
@@ -212,6 +220,10 @@ func (f *encFnInfo) fastEncSliceString(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceFloat32(rv reflect.Value) {
 	v := rv.Interface().([]float32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeFloat32(v2)
@@ -220,6 +232,10 @@ func (f *encFnInfo) fastEncSliceFloat32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceFloat64(rv reflect.Value) {
 	v := rv.Interface().([]float64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeFloat64(v2)
@@ -228,6 +244,10 @@ func (f *encFnInfo) fastEncSliceFloat64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceUint(rv reflect.Value) {
 	v := rv.Interface().([]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeUint(uint64(v2))
@@ -236,6 +256,10 @@ func (f *encFnInfo) fastEncSliceUint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceUint16(rv reflect.Value) {
 	v := rv.Interface().([]uint16)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeUint(uint64(v2))
@@ -244,6 +268,10 @@ func (f *encFnInfo) fastEncSliceUint16(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceUint32(rv reflect.Value) {
 	v := rv.Interface().([]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeUint(uint64(v2))
@@ -252,6 +280,10 @@ func (f *encFnInfo) fastEncSliceUint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceUint64(rv reflect.Value) {
 	v := rv.Interface().([]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeUint(uint64(v2))
@@ -260,6 +292,10 @@ func (f *encFnInfo) fastEncSliceUint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceInt(rv reflect.Value) {
 	v := rv.Interface().([]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeInt(int64(v2))
@@ -268,6 +304,10 @@ func (f *encFnInfo) fastEncSliceInt(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceInt8(rv reflect.Value) {
 	v := rv.Interface().([]int8)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeInt(int64(v2))
@@ -276,6 +316,10 @@ func (f *encFnInfo) fastEncSliceInt8(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceInt16(rv reflect.Value) {
 	v := rv.Interface().([]int16)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeInt(int64(v2))
@@ -284,6 +328,10 @@ func (f *encFnInfo) fastEncSliceInt16(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceInt32(rv reflect.Value) {
 	v := rv.Interface().([]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeInt(int64(v2))
@@ -292,6 +340,10 @@ func (f *encFnInfo) fastEncSliceInt32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceInt64(rv reflect.Value) {
 	v := rv.Interface().([]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeInt(int64(v2))
@@ -300,6 +352,10 @@ func (f *encFnInfo) fastEncSliceInt64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncSliceBool(rv reflect.Value) {
 	v := rv.Interface().([]bool)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		f.ee.encodeBool(v2)
@@ -308,6 +364,10 @@ func (f *encFnInfo) fastEncSliceBool(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntfIntf(rv reflect.Value) {
 	v := rv.Interface().(map[interface{}]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -318,6 +378,10 @@ func (f *encFnInfo) fastEncMapIntfIntf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntfString(rv reflect.Value) {
 	v := rv.Interface().(map[interface{}]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -328,6 +392,10 @@ func (f *encFnInfo) fastEncMapIntfString(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntfUint(rv reflect.Value) {
 	v := rv.Interface().(map[interface{}]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -338,6 +406,10 @@ func (f *encFnInfo) fastEncMapIntfUint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntfUint32(rv reflect.Value) {
 	v := rv.Interface().(map[interface{}]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -348,6 +420,10 @@ func (f *encFnInfo) fastEncMapIntfUint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntfUint64(rv reflect.Value) {
 	v := rv.Interface().(map[interface{}]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -358,6 +434,10 @@ func (f *encFnInfo) fastEncMapIntfUint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntfInt(rv reflect.Value) {
 	v := rv.Interface().(map[interface{}]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -368,6 +448,10 @@ func (f *encFnInfo) fastEncMapIntfInt(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntfInt32(rv reflect.Value) {
 	v := rv.Interface().(map[interface{}]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -378,6 +462,10 @@ func (f *encFnInfo) fastEncMapIntfInt32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntfInt64(rv reflect.Value) {
 	v := rv.Interface().(map[interface{}]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -388,6 +476,10 @@ func (f *encFnInfo) fastEncMapIntfInt64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapStringIntf(rv reflect.Value) {
 	v := rv.Interface().(map[string]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
@@ -402,6 +494,10 @@ func (f *encFnInfo) fastEncMapStringIntf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapStringString(rv reflect.Value) {
 	v := rv.Interface().(map[string]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
@@ -416,6 +512,10 @@ func (f *encFnInfo) fastEncMapStringString(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapStringUint(rv reflect.Value) {
 	v := rv.Interface().(map[string]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
@@ -430,6 +530,10 @@ func (f *encFnInfo) fastEncMapStringUint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapStringUint32(rv reflect.Value) {
 	v := rv.Interface().(map[string]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
@@ -444,6 +548,10 @@ func (f *encFnInfo) fastEncMapStringUint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapStringUint64(rv reflect.Value) {
 	v := rv.Interface().(map[string]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
@@ -458,6 +566,10 @@ func (f *encFnInfo) fastEncMapStringUint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapStringInt(rv reflect.Value) {
 	v := rv.Interface().(map[string]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
@@ -472,6 +584,10 @@ func (f *encFnInfo) fastEncMapStringInt(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapStringInt32(rv reflect.Value) {
 	v := rv.Interface().(map[string]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
@@ -486,6 +602,10 @@ func (f *encFnInfo) fastEncMapStringInt32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapStringInt64(rv reflect.Value) {
 	v := rv.Interface().(map[string]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	for k2, v2 := range v {
@@ -500,6 +620,10 @@ func (f *encFnInfo) fastEncMapStringInt64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat32Float32(rv reflect.Value) {
 	v := rv.Interface().(map[float32]float32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -510,6 +634,10 @@ func (f *encFnInfo) fastEncMapFloat32Float32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat32Intf(rv reflect.Value) {
 	v := rv.Interface().(map[float32]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -520,6 +648,10 @@ func (f *encFnInfo) fastEncMapFloat32Intf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat32String(rv reflect.Value) {
 	v := rv.Interface().(map[float32]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -530,6 +662,10 @@ func (f *encFnInfo) fastEncMapFloat32String(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat32Uint(rv reflect.Value) {
 	v := rv.Interface().(map[float32]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -540,6 +676,10 @@ func (f *encFnInfo) fastEncMapFloat32Uint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat32Uint32(rv reflect.Value) {
 	v := rv.Interface().(map[float32]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -550,6 +690,10 @@ func (f *encFnInfo) fastEncMapFloat32Uint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat32Uint64(rv reflect.Value) {
 	v := rv.Interface().(map[float32]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -560,6 +704,10 @@ func (f *encFnInfo) fastEncMapFloat32Uint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat32Int(rv reflect.Value) {
 	v := rv.Interface().(map[float32]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -570,6 +718,10 @@ func (f *encFnInfo) fastEncMapFloat32Int(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat32Int32(rv reflect.Value) {
 	v := rv.Interface().(map[float32]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -580,6 +732,10 @@ func (f *encFnInfo) fastEncMapFloat32Int32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat32Int64(rv reflect.Value) {
 	v := rv.Interface().(map[float32]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -590,6 +746,10 @@ func (f *encFnInfo) fastEncMapFloat32Int64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat64Float64(rv reflect.Value) {
 	v := rv.Interface().(map[float64]float64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -600,6 +760,10 @@ func (f *encFnInfo) fastEncMapFloat64Float64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat64Intf(rv reflect.Value) {
 	v := rv.Interface().(map[float64]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -610,6 +774,10 @@ func (f *encFnInfo) fastEncMapFloat64Intf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat64String(rv reflect.Value) {
 	v := rv.Interface().(map[float64]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -620,6 +788,10 @@ func (f *encFnInfo) fastEncMapFloat64String(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat64Uint(rv reflect.Value) {
 	v := rv.Interface().(map[float64]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -630,6 +802,10 @@ func (f *encFnInfo) fastEncMapFloat64Uint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat64Uint32(rv reflect.Value) {
 	v := rv.Interface().(map[float64]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -640,6 +816,10 @@ func (f *encFnInfo) fastEncMapFloat64Uint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat64Uint64(rv reflect.Value) {
 	v := rv.Interface().(map[float64]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -650,6 +830,10 @@ func (f *encFnInfo) fastEncMapFloat64Uint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat64Int(rv reflect.Value) {
 	v := rv.Interface().(map[float64]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -660,6 +844,10 @@ func (f *encFnInfo) fastEncMapFloat64Int(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat64Int32(rv reflect.Value) {
 	v := rv.Interface().(map[float64]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -670,6 +858,10 @@ func (f *encFnInfo) fastEncMapFloat64Int32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapFloat64Int64(rv reflect.Value) {
 	v := rv.Interface().(map[float64]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -680,6 +872,10 @@ func (f *encFnInfo) fastEncMapFloat64Int64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUintIntf(rv reflect.Value) {
 	v := rv.Interface().(map[uint]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -690,6 +886,10 @@ func (f *encFnInfo) fastEncMapUintIntf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUintString(rv reflect.Value) {
 	v := rv.Interface().(map[uint]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -700,6 +900,10 @@ func (f *encFnInfo) fastEncMapUintString(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUintUint(rv reflect.Value) {
 	v := rv.Interface().(map[uint]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -710,6 +914,10 @@ func (f *encFnInfo) fastEncMapUintUint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUintUint32(rv reflect.Value) {
 	v := rv.Interface().(map[uint]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -720,6 +928,10 @@ func (f *encFnInfo) fastEncMapUintUint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUintUint64(rv reflect.Value) {
 	v := rv.Interface().(map[uint]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -730,6 +942,10 @@ func (f *encFnInfo) fastEncMapUintUint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUintInt(rv reflect.Value) {
 	v := rv.Interface().(map[uint]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -740,6 +956,10 @@ func (f *encFnInfo) fastEncMapUintInt(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUintInt32(rv reflect.Value) {
 	v := rv.Interface().(map[uint]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -750,6 +970,10 @@ func (f *encFnInfo) fastEncMapUintInt32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUintInt64(rv reflect.Value) {
 	v := rv.Interface().(map[uint]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -760,6 +984,10 @@ func (f *encFnInfo) fastEncMapUintInt64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint8Uint8(rv reflect.Value) {
 	v := rv.Interface().(map[uint8]uint8)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -770,6 +998,10 @@ func (f *encFnInfo) fastEncMapUint8Uint8(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint8Intf(rv reflect.Value) {
 	v := rv.Interface().(map[uint8]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -780,6 +1012,10 @@ func (f *encFnInfo) fastEncMapUint8Intf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint8String(rv reflect.Value) {
 	v := rv.Interface().(map[uint8]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -790,6 +1026,10 @@ func (f *encFnInfo) fastEncMapUint8String(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint8Uint(rv reflect.Value) {
 	v := rv.Interface().(map[uint8]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -800,6 +1040,10 @@ func (f *encFnInfo) fastEncMapUint8Uint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint8Uint32(rv reflect.Value) {
 	v := rv.Interface().(map[uint8]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -810,6 +1054,10 @@ func (f *encFnInfo) fastEncMapUint8Uint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint8Uint64(rv reflect.Value) {
 	v := rv.Interface().(map[uint8]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -820,6 +1068,10 @@ func (f *encFnInfo) fastEncMapUint8Uint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint8Int(rv reflect.Value) {
 	v := rv.Interface().(map[uint8]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -830,6 +1082,10 @@ func (f *encFnInfo) fastEncMapUint8Int(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint8Int32(rv reflect.Value) {
 	v := rv.Interface().(map[uint8]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -840,6 +1096,10 @@ func (f *encFnInfo) fastEncMapUint8Int32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint8Int64(rv reflect.Value) {
 	v := rv.Interface().(map[uint8]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -850,6 +1110,10 @@ func (f *encFnInfo) fastEncMapUint8Int64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint16Uint16(rv reflect.Value) {
 	v := rv.Interface().(map[uint16]uint16)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -860,6 +1124,10 @@ func (f *encFnInfo) fastEncMapUint16Uint16(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint16Intf(rv reflect.Value) {
 	v := rv.Interface().(map[uint16]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -870,6 +1138,10 @@ func (f *encFnInfo) fastEncMapUint16Intf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint16String(rv reflect.Value) {
 	v := rv.Interface().(map[uint16]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -880,6 +1152,10 @@ func (f *encFnInfo) fastEncMapUint16String(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint16Uint(rv reflect.Value) {
 	v := rv.Interface().(map[uint16]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -890,6 +1166,10 @@ func (f *encFnInfo) fastEncMapUint16Uint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint16Uint32(rv reflect.Value) {
 	v := rv.Interface().(map[uint16]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -900,6 +1180,10 @@ func (f *encFnInfo) fastEncMapUint16Uint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint16Uint64(rv reflect.Value) {
 	v := rv.Interface().(map[uint16]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -910,6 +1194,10 @@ func (f *encFnInfo) fastEncMapUint16Uint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint16Int(rv reflect.Value) {
 	v := rv.Interface().(map[uint16]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -920,6 +1208,10 @@ func (f *encFnInfo) fastEncMapUint16Int(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint16Int32(rv reflect.Value) {
 	v := rv.Interface().(map[uint16]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -930,6 +1222,10 @@ func (f *encFnInfo) fastEncMapUint16Int32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint16Int64(rv reflect.Value) {
 	v := rv.Interface().(map[uint16]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -940,6 +1236,10 @@ func (f *encFnInfo) fastEncMapUint16Int64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint32Intf(rv reflect.Value) {
 	v := rv.Interface().(map[uint32]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -950,6 +1250,10 @@ func (f *encFnInfo) fastEncMapUint32Intf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint32String(rv reflect.Value) {
 	v := rv.Interface().(map[uint32]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -960,6 +1264,10 @@ func (f *encFnInfo) fastEncMapUint32String(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint32Uint(rv reflect.Value) {
 	v := rv.Interface().(map[uint32]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -970,6 +1278,10 @@ func (f *encFnInfo) fastEncMapUint32Uint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint32Uint32(rv reflect.Value) {
 	v := rv.Interface().(map[uint32]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -980,6 +1292,10 @@ func (f *encFnInfo) fastEncMapUint32Uint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint32Uint64(rv reflect.Value) {
 	v := rv.Interface().(map[uint32]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -990,6 +1306,10 @@ func (f *encFnInfo) fastEncMapUint32Uint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint32Int(rv reflect.Value) {
 	v := rv.Interface().(map[uint32]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1000,6 +1320,10 @@ func (f *encFnInfo) fastEncMapUint32Int(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint32Int32(rv reflect.Value) {
 	v := rv.Interface().(map[uint32]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1010,6 +1334,10 @@ func (f *encFnInfo) fastEncMapUint32Int32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint32Int64(rv reflect.Value) {
 	v := rv.Interface().(map[uint32]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1020,6 +1348,10 @@ func (f *encFnInfo) fastEncMapUint32Int64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint64Intf(rv reflect.Value) {
 	v := rv.Interface().(map[uint64]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1030,6 +1362,10 @@ func (f *encFnInfo) fastEncMapUint64Intf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint64String(rv reflect.Value) {
 	v := rv.Interface().(map[uint64]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1040,6 +1376,10 @@ func (f *encFnInfo) fastEncMapUint64String(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint64Uint(rv reflect.Value) {
 	v := rv.Interface().(map[uint64]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1050,6 +1390,10 @@ func (f *encFnInfo) fastEncMapUint64Uint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint64Uint32(rv reflect.Value) {
 	v := rv.Interface().(map[uint64]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1060,6 +1404,10 @@ func (f *encFnInfo) fastEncMapUint64Uint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint64Uint64(rv reflect.Value) {
 	v := rv.Interface().(map[uint64]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1070,6 +1418,10 @@ func (f *encFnInfo) fastEncMapUint64Uint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint64Int(rv reflect.Value) {
 	v := rv.Interface().(map[uint64]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1080,6 +1432,10 @@ func (f *encFnInfo) fastEncMapUint64Int(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint64Int32(rv reflect.Value) {
 	v := rv.Interface().(map[uint64]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1090,6 +1446,10 @@ func (f *encFnInfo) fastEncMapUint64Int32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapUint64Int64(rv reflect.Value) {
 	v := rv.Interface().(map[uint64]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1100,6 +1460,10 @@ func (f *encFnInfo) fastEncMapUint64Int64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntIntf(rv reflect.Value) {
 	v := rv.Interface().(map[int]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1110,6 +1474,10 @@ func (f *encFnInfo) fastEncMapIntIntf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntString(rv reflect.Value) {
 	v := rv.Interface().(map[int]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1120,6 +1488,10 @@ func (f *encFnInfo) fastEncMapIntString(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntUint(rv reflect.Value) {
 	v := rv.Interface().(map[int]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1130,6 +1502,10 @@ func (f *encFnInfo) fastEncMapIntUint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntUint32(rv reflect.Value) {
 	v := rv.Interface().(map[int]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1140,6 +1516,10 @@ func (f *encFnInfo) fastEncMapIntUint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntUint64(rv reflect.Value) {
 	v := rv.Interface().(map[int]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1150,6 +1530,10 @@ func (f *encFnInfo) fastEncMapIntUint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntInt(rv reflect.Value) {
 	v := rv.Interface().(map[int]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1160,6 +1544,10 @@ func (f *encFnInfo) fastEncMapIntInt(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntInt32(rv reflect.Value) {
 	v := rv.Interface().(map[int]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1170,6 +1558,10 @@ func (f *encFnInfo) fastEncMapIntInt32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapIntInt64(rv reflect.Value) {
 	v := rv.Interface().(map[int]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1180,6 +1572,10 @@ func (f *encFnInfo) fastEncMapIntInt64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt8Int8(rv reflect.Value) {
 	v := rv.Interface().(map[int8]int8)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1190,6 +1586,10 @@ func (f *encFnInfo) fastEncMapInt8Int8(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt8Intf(rv reflect.Value) {
 	v := rv.Interface().(map[int8]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1200,6 +1600,10 @@ func (f *encFnInfo) fastEncMapInt8Intf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt8String(rv reflect.Value) {
 	v := rv.Interface().(map[int8]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1210,6 +1614,10 @@ func (f *encFnInfo) fastEncMapInt8String(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt8Uint(rv reflect.Value) {
 	v := rv.Interface().(map[int8]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1220,6 +1628,10 @@ func (f *encFnInfo) fastEncMapInt8Uint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt8Uint32(rv reflect.Value) {
 	v := rv.Interface().(map[int8]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1230,6 +1642,10 @@ func (f *encFnInfo) fastEncMapInt8Uint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt8Uint64(rv reflect.Value) {
 	v := rv.Interface().(map[int8]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1240,6 +1656,10 @@ func (f *encFnInfo) fastEncMapInt8Uint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt8Int(rv reflect.Value) {
 	v := rv.Interface().(map[int8]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1250,6 +1670,10 @@ func (f *encFnInfo) fastEncMapInt8Int(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt8Int32(rv reflect.Value) {
 	v := rv.Interface().(map[int8]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1260,6 +1684,10 @@ func (f *encFnInfo) fastEncMapInt8Int32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt8Int64(rv reflect.Value) {
 	v := rv.Interface().(map[int8]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1270,6 +1698,10 @@ func (f *encFnInfo) fastEncMapInt8Int64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt16Int16(rv reflect.Value) {
 	v := rv.Interface().(map[int16]int16)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1280,6 +1712,10 @@ func (f *encFnInfo) fastEncMapInt16Int16(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt16Intf(rv reflect.Value) {
 	v := rv.Interface().(map[int16]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1290,6 +1726,10 @@ func (f *encFnInfo) fastEncMapInt16Intf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt16String(rv reflect.Value) {
 	v := rv.Interface().(map[int16]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1300,6 +1740,10 @@ func (f *encFnInfo) fastEncMapInt16String(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt16Uint(rv reflect.Value) {
 	v := rv.Interface().(map[int16]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1310,6 +1754,10 @@ func (f *encFnInfo) fastEncMapInt16Uint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt16Uint32(rv reflect.Value) {
 	v := rv.Interface().(map[int16]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1320,6 +1768,10 @@ func (f *encFnInfo) fastEncMapInt16Uint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt16Uint64(rv reflect.Value) {
 	v := rv.Interface().(map[int16]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1330,6 +1782,10 @@ func (f *encFnInfo) fastEncMapInt16Uint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt16Int(rv reflect.Value) {
 	v := rv.Interface().(map[int16]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1340,6 +1796,10 @@ func (f *encFnInfo) fastEncMapInt16Int(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt16Int32(rv reflect.Value) {
 	v := rv.Interface().(map[int16]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1350,6 +1810,10 @@ func (f *encFnInfo) fastEncMapInt16Int32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt16Int64(rv reflect.Value) {
 	v := rv.Interface().(map[int16]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1360,6 +1824,10 @@ func (f *encFnInfo) fastEncMapInt16Int64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt32Intf(rv reflect.Value) {
 	v := rv.Interface().(map[int32]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1370,6 +1838,10 @@ func (f *encFnInfo) fastEncMapInt32Intf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt32String(rv reflect.Value) {
 	v := rv.Interface().(map[int32]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1380,6 +1852,10 @@ func (f *encFnInfo) fastEncMapInt32String(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt32Uint(rv reflect.Value) {
 	v := rv.Interface().(map[int32]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1390,6 +1866,10 @@ func (f *encFnInfo) fastEncMapInt32Uint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt32Uint32(rv reflect.Value) {
 	v := rv.Interface().(map[int32]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1400,6 +1880,10 @@ func (f *encFnInfo) fastEncMapInt32Uint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt32Uint64(rv reflect.Value) {
 	v := rv.Interface().(map[int32]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1410,6 +1894,10 @@ func (f *encFnInfo) fastEncMapInt32Uint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt32Int(rv reflect.Value) {
 	v := rv.Interface().(map[int32]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1420,6 +1908,10 @@ func (f *encFnInfo) fastEncMapInt32Int(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt32Int32(rv reflect.Value) {
 	v := rv.Interface().(map[int32]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1430,6 +1922,10 @@ func (f *encFnInfo) fastEncMapInt32Int32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt32Int64(rv reflect.Value) {
 	v := rv.Interface().(map[int32]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1440,6 +1936,10 @@ func (f *encFnInfo) fastEncMapInt32Int64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt64Intf(rv reflect.Value) {
 	v := rv.Interface().(map[int64]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1450,6 +1950,10 @@ func (f *encFnInfo) fastEncMapInt64Intf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt64String(rv reflect.Value) {
 	v := rv.Interface().(map[int64]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1460,6 +1964,10 @@ func (f *encFnInfo) fastEncMapInt64String(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt64Uint(rv reflect.Value) {
 	v := rv.Interface().(map[int64]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1470,6 +1978,10 @@ func (f *encFnInfo) fastEncMapInt64Uint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt64Uint32(rv reflect.Value) {
 	v := rv.Interface().(map[int64]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1480,6 +1992,10 @@ func (f *encFnInfo) fastEncMapInt64Uint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt64Uint64(rv reflect.Value) {
 	v := rv.Interface().(map[int64]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1490,6 +2006,10 @@ func (f *encFnInfo) fastEncMapInt64Uint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt64Int(rv reflect.Value) {
 	v := rv.Interface().(map[int64]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1500,6 +2020,10 @@ func (f *encFnInfo) fastEncMapInt64Int(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt64Int32(rv reflect.Value) {
 	v := rv.Interface().(map[int64]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1510,6 +2034,10 @@ func (f *encFnInfo) fastEncMapInt64Int32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapInt64Int64(rv reflect.Value) {
 	v := rv.Interface().(map[int64]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1520,6 +2048,10 @@ func (f *encFnInfo) fastEncMapInt64Int64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapBoolBool(rv reflect.Value) {
 	v := rv.Interface().(map[bool]bool)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1530,6 +2062,10 @@ func (f *encFnInfo) fastEncMapBoolBool(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapBoolIntf(rv reflect.Value) {
 	v := rv.Interface().(map[bool]interface{})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1540,6 +2076,10 @@ func (f *encFnInfo) fastEncMapBoolIntf(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapBoolString(rv reflect.Value) {
 	v := rv.Interface().(map[bool]string)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1550,6 +2090,10 @@ func (f *encFnInfo) fastEncMapBoolString(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapBoolUint(rv reflect.Value) {
 	v := rv.Interface().(map[bool]uint)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1560,6 +2104,10 @@ func (f *encFnInfo) fastEncMapBoolUint(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapBoolUint32(rv reflect.Value) {
 	v := rv.Interface().(map[bool]uint32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1570,6 +2118,10 @@ func (f *encFnInfo) fastEncMapBoolUint32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapBoolUint64(rv reflect.Value) {
 	v := rv.Interface().(map[bool]uint64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1580,6 +2132,10 @@ func (f *encFnInfo) fastEncMapBoolUint64(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapBoolInt(rv reflect.Value) {
 	v := rv.Interface().(map[bool]int)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1590,6 +2146,10 @@ func (f *encFnInfo) fastEncMapBoolInt(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapBoolInt32(rv reflect.Value) {
 	v := rv.Interface().(map[bool]int32)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {
@@ -1600,6 +2160,10 @@ func (f *encFnInfo) fastEncMapBoolInt32(rv reflect.Value) {
 
 func (f *encFnInfo) fastEncMapBoolInt64(rv reflect.Value) {
 	v := rv.Interface().(map[bool]int64)
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 
 	for k2, v2 := range v {

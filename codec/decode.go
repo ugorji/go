@@ -536,7 +536,7 @@ type Decoder struct {
 
 // NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
 //
-// For efficiency, Users are encouraged to pass in a memory buffered writer
+// For efficiency, Users are encouraged to pass in a memory buffered reader
 // (eg bufio.Reader, bytes.Buffer).
 func NewDecoder(r io.Reader, h Handle) *Decoder {
 	z := ioDecReader{

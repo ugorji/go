@@ -77,6 +77,10 @@ func init() {
 
 func (f *encFnInfo) {{ .MethodName true }}(rv reflect.Value) {
 	v := rv.Interface().([]{{ .Elem }})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeArrayPreamble(len(v))
 	for _, v2 := range v {
 		{{ encmd .Elem "v2"}}
@@ -89,6 +93,10 @@ func (f *encFnInfo) {{ .MethodName true }}(rv reflect.Value) {
 
 func (f *encFnInfo) {{ .MethodName true }}(rv reflect.Value) {
 	v := rv.Interface().(map[{{ .MapKey }}]{{ .Elem }})
+	if v == nil {
+		f.ee.encodeNil()
+		return
+	}
 	f.ee.encodeMapPreamble(len(v))
 	{{if eq .MapKey "string"}}asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0{{end}}
 	for k2, v2 := range v {
