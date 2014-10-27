@@ -1,12 +1,13 @@
 # Codec
 
-High Performance and Feature-Rich Idiomatic Go Library providing
-encode/decode support for different serialization formats.
+High-Performance, Feature-Rich Idiomatic Go codec/encoding library for binc, msgpack and cbor.
 
 Supported Serialization formats are:
 
   - msgpack: [https://github.com/msgpack/msgpack]
-  - binc: [http://github.com/ugorji/binc]
+  - binc:    [http://github.com/ugorji/binc]
+  - cbor:    [http://cbor.io]
+  - simple: 
 
 To install:
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 /*
-High Performance, Feature-Rich Idiomatic Go encoding library for msgpack and binc .
+High Performance, Feature-Rich Idiomatic Go codec/encoding library for binc, msgpack and cbor.
 
 Supported Serialization formats are:
 
   - msgpack: [https://github.com/msgpack/msgpack]
   - binc:    [http://github.com/ugorji/binc]
   - cbor:    [http://cbor.io]
-  - simple: 
+  - simple:  
 
 To install:
 
