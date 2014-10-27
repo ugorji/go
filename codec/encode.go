@@ -62,7 +62,9 @@ type encDriver interface {
 	encodeBool(b bool)
 	encodeFloat32(f float32)
 	encodeFloat64(f float64)
-	encodeExtPreamble(xtag byte, length int)
+	// encodeExtPreamble(xtag byte, length int)
+	encodeRawExt(re *RawExt, e *Encoder)
+	encodeExt(rv reflect.Value, xtag uint16, ext Ext, e *Encoder)
 	encodeArrayPreamble(length int)
 	encodeMapPreamble(length int)
 	encodeString(c charEncoding, v string)
@@ -275,8 +277,8 @@ type encFnInfo struct {
 	ti    *typeInfo
 	e     *Encoder
 	ee    encDriver
-	xfFn  func(reflect.Value) ([]byte, error)
-	xfTag byte
+	xfFn  Ext
+	xfTag uint16
 }
 
 func (f *encFnInfo) builtin(rv reflect.Value) {
@@ -284,25 +286,11 @@ func (f *encFnInfo) builtin(rv reflect.Value) {
 }
 
 func (f *encFnInfo) rawExt(rv reflect.Value) {
-	f.e.encRawExt(rv.Interface().(RawExt))
+	f.ee.encodeRawExt(rv.Interface().(*RawExt), f.e)
 }
 
 func (f *encFnInfo) ext(rv reflect.Value) {
-	bs, fnerr := f.xfFn(rv)
-	if fnerr != nil {
-		panic(fnerr)
-	}
-	if bs == nil {
-		f.ee.encodeNil()
-		return
-	}
-	if f.e.hh.writeExt() {
-		f.ee.encodeExtPreamble(f.xfTag, len(bs))
-		f.e.w.writeb(bs)
-	} else {
-		f.ee.encodeStringBytes(c_RAW, bs)
-	}
-
+	f.ee.encodeExt(rv, f.xfTag, f.xfFn, f.e)
 }
 
 func (f *encFnInfo) binaryMarshal(rv reflect.Value) {
@@ -699,6 +687,16 @@ func (e *Encoder) MustEncode(v interface{}) {
 	e.w.atEndOfEncode()
 }
 
+func (e *Encoder) Write(bs []byte) (err error) {
+	defer panicToErr(&err)
+	e.w.writeb(bs)
+	return
+}
+
+func (e *Encoder) MustWrite(bs []byte) {
+	e.w.writeb(bs)
+}
+
 func (e *Encoder) encode(iv interface{}) {
 	switch v := iv.(type) {
 	case nil:
@@ -817,8 +815,8 @@ func (e *Encoder) getEncFn(rt reflect.Type) (fn encFn) {
 			fn.f = (*encFnInfo).rawExt
 		} else if e.e.isBuiltinType(rtid) {
 			fn.f = (*encFnInfo).builtin
-		} else if xfTag, xfFn := e.h.getEncodeExt(rtid); xfFn != nil {
-			fi.xfTag, fi.xfFn = xfTag, xfFn
+		} else if xfFn := e.h.getExt(rtid); xfFn != nil {
+			fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 			fn.f = (*encFnInfo).ext
 		} else if supportBinaryMarshal && fi.ti.m {
 			fn.f = (*encFnInfo).binaryMarshal
@@ -887,19 +885,6 @@ func (e *Encoder) getEncFn(rt reflect.Type) (fn encFn) {
 		}
 	}
 	return
-}
-
-func (e *Encoder) encRawExt(re RawExt) {
-	if re.Data == nil {
-		e.e.encodeNil()
-		return
-	}
-	if e.hh.writeExt() {
-		e.e.encodeExtPreamble(re.Tag, len(re.Data))
-		e.w.writeb(re.Data)
-	} else {
-		e.e.encodeStringBytes(c_RAW, re.Data)
-	}
 }
 
 // ----------------------------------------

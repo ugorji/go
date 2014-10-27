@@ -5,6 +5,7 @@ package codec
 
 import (
 	"math"
+	"reflect"
 	// "reflect"
 	// "sync/atomic"
 	"time"
@@ -172,6 +173,21 @@ func (e *bincEncDriver) encUint(bd byte, pos bool, v uint64) {
 	}
 }
 
+func (e *bincEncDriver) encodeExt(rv reflect.Value, xtag uint16, ext Ext, _ *Encoder) {
+	bs := ext.WriteExt(rv)
+	if bs == nil {
+		e.encodeNil()
+		return
+	}
+	e.encodeExtPreamble(uint8(xtag), len(bs))
+	e.w.writeb(bs)
+}
+
+func (e *bincEncDriver) encodeRawExt(re *RawExt, _ *Encoder) {
+	e.encodeExtPreamble(uint8(re.Tag), len(re.Data))
+	e.w.writeb(re.Data)
+}
+
 func (e *bincEncDriver) encodeExtPreamble(xtag byte, length int) {
 	e.encLen(bincVdCustomExt<<4, uint64(length))
 	e.w.writen1(xtag)
@@ -304,14 +320,16 @@ func (e *bincEncDriver) encLenNumber(bd byte, v uint64) {
 //------------------------------------
 
 type bincDecDriver struct {
+	h      *BincHandle
 	r      decReader
 	bdRead bool
 	bdType valueType
 	bd     byte
 	vd     byte
 	vs     byte
-	b      [8]byte
-	m      map[uint32]string // symbols (use uint32 as key, as map optimizes for it)
+	noStreamingCodec
+	b [8]byte
+	m map[uint32]string // symbols (use uint32 as key, as map optimizes for it)
 }
 
 func (d *bincDecDriver) initReadNext() {
@@ -337,16 +355,22 @@ func (d *bincDecDriver) currentEncodedType() valueType {
 			case bincSpNan, bincSpNegInf, bincSpPosInf, bincSpZeroFloat:
 				d.bdType = valueTypeFloat
 			case bincSpZero:
-				d.bdType = valueTypeUint
+				if d.h.SignedInteger {
+					d.bdType = valueTypeInt
+				} else {
+					d.bdType = valueTypeUint
+				}
 			case bincSpNegOne:
 				d.bdType = valueTypeInt
 			default:
 				decErr("currentEncodedType: Unrecognized special value 0x%x", d.vs)
 			}
-		case bincVdSmallInt:
-			d.bdType = valueTypeUint
-		case bincVdPosInt:
-			d.bdType = valueTypeUint
+		case bincVdSmallInt, bincVdPosInt:
+			if d.h.SignedInteger {
+				d.bdType = valueTypeInt
+			} else {
+				d.bdType = valueTypeUint
+			}
 		case bincVdNegInt:
 			d.bdType = valueTypeInt
 		case bincVdFloat:
@@ -664,7 +688,20 @@ func (d *bincDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 	return
 }
 
-func (d *bincDecDriver) decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
+func (d *bincDecDriver) decodeExt(rv reflect.Value, xtag uint16, ext Ext, _ *Decoder) (realxtag uint16) {
+	realxtag1, xbs := d.decodeExtV(ext != nil, uint8(xtag))
+	realxtag = uint16(realxtag1)
+	if ext == nil {
+		re := rv.Interface().(*RawExt)
+		re.Tag = realxtag
+		re.Data = xbs
+	} else {
+		ext.ReadExt(rv, xbs)
+	}
+	return
+}
+
+func (d *bincDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
 	switch d.vd {
 	case bincVdCustomExt:
 		l := d.decLen()
@@ -682,7 +719,7 @@ func (d *bincDecDriver) decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []by
 	return
 }
 
-func (d *bincDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurther bool) {
+func (d *bincDecDriver) decodeNaked(_ *Decoder) (v interface{}, vt valueType, decodeFurther bool) {
 	d.initReadNext()
 
 	switch d.vd {
@@ -710,7 +747,7 @@ func (d *bincDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurthe
 			v = float64(0)
 		case bincSpZero:
 			vt = valueTypeUint
-			v = int64(0) // int8(0)
+			v = uint64(0) // int8(0)
 		case bincSpNegOne:
 			vt = valueTypeInt
 			v = int64(-1) // int8(-1)
@@ -749,7 +786,7 @@ func (d *bincDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurthe
 		vt = valueTypeExt
 		l := d.decLen()
 		var re RawExt
-		re.Tag = d.r.readn1()
+		re.Tag = uint16(d.r.readn1())
 		re.Data = d.r.readn(l)
 		v = &re
 		vt = valueTypeExt
@@ -766,6 +803,10 @@ func (d *bincDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurthe
 	if !decodeFurther {
 		d.bdRead = false
 	}
+	if vt == valueTypeUint && d.h.SignedInteger {
+		d.bdType = valueTypeInt
+		v = int64(v.(uint64))
+	}
 	return
 }
 
@@ -781,6 +822,7 @@ func (d *bincDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurthe
 //    extended precision and decimal IEEE 754 floats are unsupported.
 //  - Only UTF-8 strings supported.
 //    Unicode_Other Binc types (UTF16, UTF32) are currently unsupported.
+//
 //Note that these EXCEPTIONS are temporary and full support is possible and may happen soon.
 type BincHandle struct {
 	BasicHandle
@@ -791,13 +833,8 @@ func (h *BincHandle) newEncDriver(w encWriter) encDriver {
 }
 
 func (h *BincHandle) newDecDriver(r decReader) decDriver {
-	return &bincDecDriver{r: r}
+	return &bincDecDriver{r: r, h: h}
 }
 
-func (_ *BincHandle) writeExt() bool {
-	return true
-}
-
-func (h *BincHandle) getBasicHandle() *BasicHandle {
-	return &h.BasicHandle
-}
+var _ decDriver = (*bincDecDriver)(nil)
+var _ encDriver = (*bincEncDriver)(nil)

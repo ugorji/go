@@ -135,8 +135,15 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]{{ .Elem }}, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]{{ .Elem }}, containerLenS, containerLenS)
+		} else {
+			v = make([]{{ .Elem }}, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -147,7 +154,18 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, {{ zerocmd .Elem }})
+		}
 		{{ if eq .Elem "interface{}" }}f.d.decode(&v[j])
 		{{ else }}f.dd.initReadNext()
 		v[j] = {{ decmd .Elem }}
@@ -183,11 +201,26 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[{{ .MapKey }}]{{ .Elem }}, containerLen)
+		if containerLen > 0 {
+			v = make(map[{{ .MapKey }}]{{ .Elem }}, containerLen)
+		} else {
+			v = make(map[{{ .MapKey }}]{{ .Elem }}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		{{ if eq .MapKey "interface{}" }}var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -304,6 +337,19 @@ func titleCaseName(s string) string {
 	}
 }
 
+func ZeroValue(s string) string {
+	switch s {
+	case "interface{}":
+		return "nil"
+	case "bool":
+		return "false"
+	case "string":
+		return `""`
+	default:
+		return "0"
+	}
+}
+
 type genTmpl struct {
 	Values []genInfo
 }
@@ -360,6 +406,7 @@ func main() {
 	// funcs["haspfx"] = strings.HasPrefix
 	funcs["encmd"] = EncCommandAsString
 	funcs["decmd"] = DecCommandAsString
+	funcs["zerocmd"] = ZeroValue
 
 	t := template.New("")
 	t = t.Funcs(funcs)

@@ -73,7 +73,7 @@ const (
 	valueTypeTimestamp
 	valueTypeExt
 
-	valueTypeInvalid = 0xff
+	// valueTypeInvalid = 0xff
 )
 
 var (
@@ -134,45 +134,125 @@ type BasicHandle struct {
 	DecodeOptions
 }
 
+func (x *BasicHandle) getBasicHandle() *BasicHandle {
+	return x
+}
+
 // Handle is the interface for a specific encoding format.
 //
 // Typically, a Handle is pre-configured before first time use,
 // and not modified while in use. Such a pre-configured Handle
 // is safe for concurrent access.
 type Handle interface {
-	writeExt() bool
 	getBasicHandle() *BasicHandle
 	newEncDriver(w encWriter) encDriver
 	newDecDriver(r decReader) decDriver
 }
 
 // RawExt represents raw unprocessed extension data.
+// Some codecs will decode extension data as a RawExt if there is no registered extension for the tag.
+//
+// Only one of Data or Value is nil. If Data is nil, then the content of the RawExt is in the Value.
 type RawExt struct {
-	Tag  byte
+	Tag uint16
+	// Data is the []byte which represents the raw ext. If Data is nil, ext is exposed in Value.
+	// Data is used by codecs (e.g. binc, msgpack, simple) which do custom serialization of the types
 	Data []byte
+	// Value represents the extension, if Data is nil.
+	// Value is used by codecs (e.g. cbor) which use the format to do custom serialization of the types.
+	Value interface{}
 }
 
-type extTypeTagFn struct {
-	rtid  uintptr
-	rt    reflect.Type
-	tag   byte
+// Ext handles custom (de)serialization of custom types / extensions.
+type Ext interface {
+	// WriteExt converts a value to a []byte.
+	// It is used by codecs (e.g. binc, msgpack, simple) which do custom serialization of the types.
+	WriteExt(v reflect.Value) []byte
+
+	// ReadExt updates a value from a []byte.
+	// It is used by codecs (e.g. binc, msgpack, simple) which do custom serialization of the types.
+	ReadExt(v reflect.Value, src []byte)
+
+	// ConvertExt converts a value into a simpler interface for easy encoding e.g. convert time.Time to int64.
+	// It is used by codecs (e.g. cbor) which use the format to do custom serialization of the types.
+	ConvertExt(v reflect.Value) interface{}
+
+	// UpdateExt updates a value from a simpler interface for easy decoding e.g. convert int64 to time.Time.
+	// It is used by codecs (e.g. cbor) which use the format to do custom serialization of the types.
+	UpdateExt(v reflect.Value, src interface{})
+}
+
+// bytesExt is a wrapper implementation to support former AddExt exported method.
+type bytesExt struct {
 	encFn func(reflect.Value) ([]byte, error)
 	decFn func(reflect.Value, []byte) error
 }
 
+func (x bytesExt) WriteExt(rv reflect.Value) []byte {
+	bs, err := x.encFn(rv)
+	if err != nil {
+		panic(err)
+	}
+	return bs
+}
+
+func (x bytesExt) ReadExt(rv reflect.Value, bs []byte) {
+	if err := x.decFn(rv, bs); err != nil {
+		panic(err)
+	}
+}
+
+func (x bytesExt) ConvertExt(rv reflect.Value) interface{} {
+	return x.WriteExt(rv)
+}
+
+func (x bytesExt) UpdateExt(rv reflect.Value, v interface{}) {
+	x.ReadExt(rv, v.([]byte))
+}
+
+// noBuiltInTypes is embedded into many types which do not support builtins
+// e.g. msgpack, simple, cbor.
+type noBuiltInTypes struct{}
+
+func (_ noBuiltInTypes) isBuiltinType(rt uintptr) bool           { return false }
+func (_ noBuiltInTypes) encodeBuiltin(rt uintptr, v interface{}) {}
+func (_ noBuiltInTypes) decodeBuiltin(rt uintptr, v interface{}) {}
+
+type noStreamingCodec struct{}
+
+func (_ noStreamingCodec) checkBreak() bool { return false }
+
+type extTypeTagFn struct {
+	rtid uintptr
+	rt   reflect.Type
+	tag  uint16
+	ext  Ext
+}
+
 type extHandle []*extTypeTagFn
 
-// AddExt registers an encode and decode function for a reflect.Type.
+// DEPRECATED: AddExt is deprecated in favor of SetExt. It exists for compatibility only.
+//
+// AddExt registes an encode and decode function for a reflect.Type.
+// AddExt internally calls SetExt.
+// To deregister an Ext, call AddExt with nil encfn and/or nil decfn.
+func (o *extHandle) AddExt(
+	rt reflect.Type, tag byte,
+	encfn func(reflect.Value) ([]byte, error), decfn func(reflect.Value, []byte) error,
+) (err error) {
+	if encfn == nil || decfn == nil {
+		return o.SetExt(rt, uint16(tag), nil)
+	}
+	return o.SetExt(rt, uint16(tag), bytesExt{encfn, decfn})
+}
+
+// SetExt registers a tag and Ext for a reflect.Type.
+//
 // Note that the type must be a named type, and specifically not
 // a pointer or Interface. An error is returned if that is not honored.
 //
-// To Deregister an ext, call AddExt with 0 tag, nil encfn and nil decfn.
-func (o *extHandle) AddExt(
-	rt reflect.Type,
-	tag byte,
-	encfn func(reflect.Value) ([]byte, error),
-	decfn func(reflect.Value, []byte) error,
-) (err error) {
+// To Deregister an ext, call SetExt with nil Ext
+func (o *extHandle) SetExt(rt reflect.Type, tag uint16, ext Ext) (err error) {
 	// o is a pointer, because we may need to initialize it
 	if rt.PkgPath() == "" || rt.Kind() == reflect.Interface {
 		err = fmt.Errorf("codec.Handle.AddExt: Takes named type, especially not a pointer or interface: %T",
@@ -180,22 +260,15 @@ func (o *extHandle) AddExt(
 		return
 	}
 
-	// o cannot be nil, since it is always embedded in a Handle.
-	// if nil, let it panic.
-	// if o == nil {
-	// 	err = errors.New("codec.Handle.AddExt: extHandle cannot be a nil pointer.")
-	// 	return
-	// }
-
 	rtid := reflect.ValueOf(rt).Pointer()
 	for _, v := range *o {
 		if v.rtid == rtid {
-			v.tag, v.encFn, v.decFn = tag, encfn, decfn
+			v.tag, v.ext = tag, ext
 			return
 		}
 	}
 
-	*o = append(*o, &extTypeTagFn{rtid, rt, tag, encfn, decfn})
+	*o = append(*o, &extTypeTagFn{rtid, rt, tag, ext})
 	return
 }
 
@@ -208,39 +281,13 @@ func (o extHandle) getExt(rtid uintptr) *extTypeTagFn {
 	return nil
 }
 
-func (o extHandle) getExtForTag(tag byte) *extTypeTagFn {
+func (o extHandle) getExtForTag(tag uint16) *extTypeTagFn {
 	for _, v := range o {
 		if v.tag == tag {
 			return v
 		}
 	}
 	return nil
-}
-
-func (o extHandle) getDecodeExtForTag(tag byte) (
-	rv reflect.Value, fn func(reflect.Value, []byte) error) {
-	if x := o.getExtForTag(tag); x != nil {
-		// ext is only registered for base
-		rv = reflect.New(x.rt).Elem()
-		fn = x.decFn
-	}
-	return
-}
-
-func (o extHandle) getDecodeExt(rtid uintptr) (tag byte, fn func(reflect.Value, []byte) error) {
-	if x := o.getExt(rtid); x != nil {
-		tag = x.tag
-		fn = x.decFn
-	}
-	return
-}
-
-func (o extHandle) getEncodeExt(rtid uintptr) (tag byte, fn func(reflect.Value) ([]byte, error)) {
-	if x := o.getExt(rtid); x != nil {
-		tag = x.tag
-		fn = x.encFn
-	}
-	return
 }
 
 type structFieldInfo struct {
@@ -252,11 +299,6 @@ type structFieldInfo struct {
 	i         int16 // field index in struct
 	omitEmpty bool
 	toArray   bool // if field is _struct, is the toArray set?
-
-	// tag       string   // tag
-	// name      string   // field name
-	// encNameBs []byte   // encoded name as byte stream
-	// ikind     int      // kind of the field as an int i.e. int(reflect.Kind)
 }
 
 func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
@@ -264,9 +306,7 @@ func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
 		panic("parseStructFieldInfo: No Field Name")
 	}
 	si := structFieldInfo{
-		// name: fname,
 		encName: fname,
-		// tag: stag,
 	}
 
 	if stag != "" {
@@ -414,18 +454,6 @@ func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		sfip := make([]*structFieldInfo, 0, rt.NumField())
 		rgetTypeInfo(rt, nil, make(map[string]bool), &sfip, siInfo)
 
-		// // try to put all si close together
-		// const tryToPutAllStructFieldInfoTogether = true
-		// if tryToPutAllStructFieldInfoTogether {
-		// 	sfip2 := make([]structFieldInfo, len(sfip))
-		// 	for i, si := range sfip {
-		// 		sfip2[i] = *si
-		// 	}
-		// 	for i := range sfip {
-		// 		sfip[i] = &sfip2[i]
-		// 	}
-		// }
-
 		ti.sfip = make([]*structFieldInfo, len(sfip))
 		ti.sfi = make([]*structFieldInfo, len(sfip))
 		copy(ti.sfip, sfip)
@@ -440,10 +468,6 @@ func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 func rgetTypeInfo(rt reflect.Type, indexstack []int, fnameToHastag map[string]bool,
 	sfi *[]*structFieldInfo, siInfo *structFieldInfo,
 ) {
-	// for rt.Kind() == reflect.Ptr {
-	// 	// indexstack = append(indexstack, 0)
-	// 	rt = rt.Elem()
-	// }
 	for j := 0; j < rt.NumField(); j++ {
 		f := rt.Field(j)
 		stag := f.Tag.Get(structTagName)

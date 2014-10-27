@@ -2194,8 +2194,15 @@ func (f *decFnInfo) fastDecSliceIntf(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]interface{}, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]interface{}, containerLenS, containerLenS)
+		} else {
+			v = make([]interface{}, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2206,7 +2213,18 @@ func (f *decFnInfo) fastDecSliceIntf(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, nil)
+		}
 		f.d.decode(&v[j])
 
 	}
@@ -2235,8 +2253,15 @@ func (f *decFnInfo) fastDecSliceString(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]string, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]string, containerLenS, containerLenS)
+		} else {
+			v = make([]string, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2247,7 +2272,18 @@ func (f *decFnInfo) fastDecSliceString(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, "")
+		}
 		f.dd.initReadNext()
 		v[j] = f.dd.decodeString()
 
@@ -2277,8 +2313,15 @@ func (f *decFnInfo) fastDecSliceFloat32(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]float32, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]float32, containerLenS, containerLenS)
+		} else {
+			v = make([]float32, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2289,7 +2332,18 @@ func (f *decFnInfo) fastDecSliceFloat32(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = float32(f.dd.decodeFloat(true))
 
@@ -2319,8 +2373,15 @@ func (f *decFnInfo) fastDecSliceFloat64(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]float64, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]float64, containerLenS, containerLenS)
+		} else {
+			v = make([]float64, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2331,7 +2392,18 @@ func (f *decFnInfo) fastDecSliceFloat64(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = f.dd.decodeFloat(false)
 
@@ -2361,8 +2433,15 @@ func (f *decFnInfo) fastDecSliceUint(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]uint, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]uint, containerLenS, containerLenS)
+		} else {
+			v = make([]uint, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2373,7 +2452,18 @@ func (f *decFnInfo) fastDecSliceUint(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = uint(f.dd.decodeUint(uintBitsize))
 
@@ -2403,8 +2493,15 @@ func (f *decFnInfo) fastDecSliceUint16(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]uint16, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]uint16, containerLenS, containerLenS)
+		} else {
+			v = make([]uint16, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2415,7 +2512,18 @@ func (f *decFnInfo) fastDecSliceUint16(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = uint16(f.dd.decodeUint(16))
 
@@ -2445,8 +2553,15 @@ func (f *decFnInfo) fastDecSliceUint32(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]uint32, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]uint32, containerLenS, containerLenS)
+		} else {
+			v = make([]uint32, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2457,7 +2572,18 @@ func (f *decFnInfo) fastDecSliceUint32(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = uint32(f.dd.decodeUint(32))
 
@@ -2487,8 +2613,15 @@ func (f *decFnInfo) fastDecSliceUint64(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]uint64, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]uint64, containerLenS, containerLenS)
+		} else {
+			v = make([]uint64, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2499,7 +2632,18 @@ func (f *decFnInfo) fastDecSliceUint64(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = f.dd.decodeUint(64)
 
@@ -2529,8 +2673,15 @@ func (f *decFnInfo) fastDecSliceInt(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]int, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]int, containerLenS, containerLenS)
+		} else {
+			v = make([]int, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2541,7 +2692,18 @@ func (f *decFnInfo) fastDecSliceInt(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = int(f.dd.decodeInt(intBitsize))
 
@@ -2571,8 +2733,15 @@ func (f *decFnInfo) fastDecSliceInt8(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]int8, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]int8, containerLenS, containerLenS)
+		} else {
+			v = make([]int8, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2583,7 +2752,18 @@ func (f *decFnInfo) fastDecSliceInt8(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = int8(f.dd.decodeInt(8))
 
@@ -2613,8 +2793,15 @@ func (f *decFnInfo) fastDecSliceInt16(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]int16, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]int16, containerLenS, containerLenS)
+		} else {
+			v = make([]int16, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2625,7 +2812,18 @@ func (f *decFnInfo) fastDecSliceInt16(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = int16(f.dd.decodeInt(16))
 
@@ -2655,8 +2853,15 @@ func (f *decFnInfo) fastDecSliceInt32(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]int32, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]int32, containerLenS, containerLenS)
+		} else {
+			v = make([]int32, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2667,7 +2872,18 @@ func (f *decFnInfo) fastDecSliceInt32(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = int32(f.dd.decodeInt(32))
 
@@ -2697,8 +2913,15 @@ func (f *decFnInfo) fastDecSliceInt64(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]int64, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]int64, containerLenS, containerLenS)
+		} else {
+			v = make([]int64, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2709,7 +2932,18 @@ func (f *decFnInfo) fastDecSliceInt64(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+		}
 		f.dd.initReadNext()
 		v[j] = f.dd.decodeInt(64)
 
@@ -2739,8 +2973,15 @@ func (f *decFnInfo) fastDecSliceBool(rv reflect.Value) {
 	}
 
 	_, containerLenS := decContLens(f.dd, vtype)
+	if containerLenS == 0 {
+		return
+	}
 	if v == nil {
-		v = make([]bool, containerLenS, containerLenS)
+		if containerLenS > 0 {
+			v = make([]bool, containerLenS, containerLenS)
+		} else {
+			v = make([]bool, 0, 4)
+		}
 	} else if containerLenS > cap(v) {
 		if f.array {
 			decErr(msgDecCannotExpandArr, cap(v), containerLenS)
@@ -2751,7 +2992,18 @@ func (f *decFnInfo) fastDecSliceBool(rv reflect.Value) {
 	} else if containerLenS > len(v) {
 		v = v[:containerLenS]
 	}
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		if j >= len(v) {
+			v = append(v, false)
+		}
 		f.dd.initReadNext()
 		v[j] = f.dd.decodeBool()
 
@@ -2781,11 +3033,26 @@ func (f *decFnInfo) fastDecMapIntfIntf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[interface{}]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[interface{}]interface{}, containerLen)
+		} else {
+			v = make(map[interface{}]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -2822,11 +3089,26 @@ func (f *decFnInfo) fastDecMapIntfString(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[interface{}]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[interface{}]string, containerLen)
+		} else {
+			v = make(map[interface{}]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -2864,11 +3146,26 @@ func (f *decFnInfo) fastDecMapIntfUint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[interface{}]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[interface{}]uint, containerLen)
+		} else {
+			v = make(map[interface{}]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -2906,11 +3203,26 @@ func (f *decFnInfo) fastDecMapIntfUint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[interface{}]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[interface{}]uint32, containerLen)
+		} else {
+			v = make(map[interface{}]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -2948,11 +3260,26 @@ func (f *decFnInfo) fastDecMapIntfUint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[interface{}]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[interface{}]uint64, containerLen)
+		} else {
+			v = make(map[interface{}]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -2990,11 +3317,26 @@ func (f *decFnInfo) fastDecMapIntfInt(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[interface{}]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[interface{}]int, containerLen)
+		} else {
+			v = make(map[interface{}]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3032,11 +3374,26 @@ func (f *decFnInfo) fastDecMapIntfInt32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[interface{}]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[interface{}]int32, containerLen)
+		} else {
+			v = make(map[interface{}]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3074,11 +3431,26 @@ func (f *decFnInfo) fastDecMapIntfInt64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[interface{}]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[interface{}]int64, containerLen)
+		} else {
+			v = make(map[interface{}]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3116,11 +3488,26 @@ func (f *decFnInfo) fastDecMapStringIntf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[string]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[string]interface{}, containerLen)
+		} else {
+			v = make(map[string]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
@@ -3153,11 +3540,26 @@ func (f *decFnInfo) fastDecMapStringString(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[string]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[string]string, containerLen)
+		} else {
+			v = make(map[string]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
@@ -3191,11 +3593,26 @@ func (f *decFnInfo) fastDecMapStringUint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[string]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[string]uint, containerLen)
+		} else {
+			v = make(map[string]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
@@ -3229,11 +3646,26 @@ func (f *decFnInfo) fastDecMapStringUint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[string]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[string]uint32, containerLen)
+		} else {
+			v = make(map[string]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
@@ -3267,11 +3699,26 @@ func (f *decFnInfo) fastDecMapStringUint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[string]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[string]uint64, containerLen)
+		} else {
+			v = make(map[string]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
@@ -3305,11 +3752,26 @@ func (f *decFnInfo) fastDecMapStringInt(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[string]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[string]int, containerLen)
+		} else {
+			v = make(map[string]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
@@ -3343,11 +3805,26 @@ func (f *decFnInfo) fastDecMapStringInt32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[string]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[string]int32, containerLen)
+		} else {
+			v = make(map[string]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
@@ -3381,11 +3858,26 @@ func (f *decFnInfo) fastDecMapStringInt64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[string]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[string]int64, containerLen)
+		} else {
+			v = make(map[string]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
@@ -3419,11 +3911,26 @@ func (f *decFnInfo) fastDecMapFloat32Float32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float32]float32, containerLen)
+		if containerLen > 0 {
+			v = make(map[float32]float32, containerLen)
+		} else {
+			v = make(map[float32]float32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
@@ -3457,11 +3964,26 @@ func (f *decFnInfo) fastDecMapFloat32Intf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float32]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[float32]interface{}, containerLen)
+		} else {
+			v = make(map[float32]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
@@ -3494,11 +4016,26 @@ func (f *decFnInfo) fastDecMapFloat32String(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float32]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[float32]string, containerLen)
+		} else {
+			v = make(map[float32]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
@@ -3532,11 +4069,26 @@ func (f *decFnInfo) fastDecMapFloat32Uint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float32]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[float32]uint, containerLen)
+		} else {
+			v = make(map[float32]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
@@ -3570,11 +4122,26 @@ func (f *decFnInfo) fastDecMapFloat32Uint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float32]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[float32]uint32, containerLen)
+		} else {
+			v = make(map[float32]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
@@ -3608,11 +4175,26 @@ func (f *decFnInfo) fastDecMapFloat32Uint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float32]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[float32]uint64, containerLen)
+		} else {
+			v = make(map[float32]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
@@ -3646,11 +4228,26 @@ func (f *decFnInfo) fastDecMapFloat32Int(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float32]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[float32]int, containerLen)
+		} else {
+			v = make(map[float32]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
@@ -3684,11 +4281,26 @@ func (f *decFnInfo) fastDecMapFloat32Int32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float32]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[float32]int32, containerLen)
+		} else {
+			v = make(map[float32]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
@@ -3722,11 +4334,26 @@ func (f *decFnInfo) fastDecMapFloat32Int64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float32]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[float32]int64, containerLen)
+		} else {
+			v = make(map[float32]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
@@ -3760,11 +4387,26 @@ func (f *decFnInfo) fastDecMapFloat64Float64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float64]float64, containerLen)
+		if containerLen > 0 {
+			v = make(map[float64]float64, containerLen)
+		} else {
+			v = make(map[float64]float64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
@@ -3798,11 +4440,26 @@ func (f *decFnInfo) fastDecMapFloat64Intf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float64]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[float64]interface{}, containerLen)
+		} else {
+			v = make(map[float64]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
@@ -3835,11 +4492,26 @@ func (f *decFnInfo) fastDecMapFloat64String(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float64]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[float64]string, containerLen)
+		} else {
+			v = make(map[float64]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
@@ -3873,11 +4545,26 @@ func (f *decFnInfo) fastDecMapFloat64Uint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float64]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[float64]uint, containerLen)
+		} else {
+			v = make(map[float64]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
@@ -3911,11 +4598,26 @@ func (f *decFnInfo) fastDecMapFloat64Uint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float64]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[float64]uint32, containerLen)
+		} else {
+			v = make(map[float64]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
@@ -3949,11 +4651,26 @@ func (f *decFnInfo) fastDecMapFloat64Uint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float64]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[float64]uint64, containerLen)
+		} else {
+			v = make(map[float64]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
@@ -3987,11 +4704,26 @@ func (f *decFnInfo) fastDecMapFloat64Int(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float64]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[float64]int, containerLen)
+		} else {
+			v = make(map[float64]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
@@ -4025,11 +4757,26 @@ func (f *decFnInfo) fastDecMapFloat64Int32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float64]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[float64]int32, containerLen)
+		} else {
+			v = make(map[float64]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
@@ -4063,11 +4810,26 @@ func (f *decFnInfo) fastDecMapFloat64Int64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[float64]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[float64]int64, containerLen)
+		} else {
+			v = make(map[float64]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
@@ -4101,11 +4863,26 @@ func (f *decFnInfo) fastDecMapUintIntf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint]interface{}, containerLen)
+		} else {
+			v = make(map[uint]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
@@ -4138,11 +4915,26 @@ func (f *decFnInfo) fastDecMapUintString(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint]string, containerLen)
+		} else {
+			v = make(map[uint]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
@@ -4176,11 +4968,26 @@ func (f *decFnInfo) fastDecMapUintUint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint]uint, containerLen)
+		} else {
+			v = make(map[uint]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
@@ -4214,11 +5021,26 @@ func (f *decFnInfo) fastDecMapUintUint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint]uint32, containerLen)
+		} else {
+			v = make(map[uint]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
@@ -4252,11 +5074,26 @@ func (f *decFnInfo) fastDecMapUintUint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint]uint64, containerLen)
+		} else {
+			v = make(map[uint]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
@@ -4290,11 +5127,26 @@ func (f *decFnInfo) fastDecMapUintInt(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint]int, containerLen)
+		} else {
+			v = make(map[uint]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
@@ -4328,11 +5180,26 @@ func (f *decFnInfo) fastDecMapUintInt32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint]int32, containerLen)
+		} else {
+			v = make(map[uint]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
@@ -4366,11 +5233,26 @@ func (f *decFnInfo) fastDecMapUintInt64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint]int64, containerLen)
+		} else {
+			v = make(map[uint]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
@@ -4404,11 +5286,26 @@ func (f *decFnInfo) fastDecMapUint8Uint8(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint8]uint8, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint8]uint8, containerLen)
+		} else {
+			v = make(map[uint8]uint8) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
@@ -4442,11 +5339,26 @@ func (f *decFnInfo) fastDecMapUint8Intf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint8]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint8]interface{}, containerLen)
+		} else {
+			v = make(map[uint8]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
@@ -4479,11 +5391,26 @@ func (f *decFnInfo) fastDecMapUint8String(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint8]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint8]string, containerLen)
+		} else {
+			v = make(map[uint8]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
@@ -4517,11 +5444,26 @@ func (f *decFnInfo) fastDecMapUint8Uint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint8]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint8]uint, containerLen)
+		} else {
+			v = make(map[uint8]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
@@ -4555,11 +5497,26 @@ func (f *decFnInfo) fastDecMapUint8Uint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint8]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint8]uint32, containerLen)
+		} else {
+			v = make(map[uint8]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
@@ -4593,11 +5550,26 @@ func (f *decFnInfo) fastDecMapUint8Uint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint8]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint8]uint64, containerLen)
+		} else {
+			v = make(map[uint8]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
@@ -4631,11 +5603,26 @@ func (f *decFnInfo) fastDecMapUint8Int(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint8]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint8]int, containerLen)
+		} else {
+			v = make(map[uint8]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
@@ -4669,11 +5656,26 @@ func (f *decFnInfo) fastDecMapUint8Int32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint8]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint8]int32, containerLen)
+		} else {
+			v = make(map[uint8]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
@@ -4707,11 +5709,26 @@ func (f *decFnInfo) fastDecMapUint8Int64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint8]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint8]int64, containerLen)
+		} else {
+			v = make(map[uint8]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
@@ -4745,11 +5762,26 @@ func (f *decFnInfo) fastDecMapUint16Uint16(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint16]uint16, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint16]uint16, containerLen)
+		} else {
+			v = make(map[uint16]uint16) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
@@ -4783,11 +5815,26 @@ func (f *decFnInfo) fastDecMapUint16Intf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint16]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint16]interface{}, containerLen)
+		} else {
+			v = make(map[uint16]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
@@ -4820,11 +5867,26 @@ func (f *decFnInfo) fastDecMapUint16String(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint16]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint16]string, containerLen)
+		} else {
+			v = make(map[uint16]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
@@ -4858,11 +5920,26 @@ func (f *decFnInfo) fastDecMapUint16Uint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint16]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint16]uint, containerLen)
+		} else {
+			v = make(map[uint16]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
@@ -4896,11 +5973,26 @@ func (f *decFnInfo) fastDecMapUint16Uint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint16]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint16]uint32, containerLen)
+		} else {
+			v = make(map[uint16]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
@@ -4934,11 +6026,26 @@ func (f *decFnInfo) fastDecMapUint16Uint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint16]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint16]uint64, containerLen)
+		} else {
+			v = make(map[uint16]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
@@ -4972,11 +6079,26 @@ func (f *decFnInfo) fastDecMapUint16Int(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint16]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint16]int, containerLen)
+		} else {
+			v = make(map[uint16]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
@@ -5010,11 +6132,26 @@ func (f *decFnInfo) fastDecMapUint16Int32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint16]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint16]int32, containerLen)
+		} else {
+			v = make(map[uint16]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
@@ -5048,11 +6185,26 @@ func (f *decFnInfo) fastDecMapUint16Int64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint16]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint16]int64, containerLen)
+		} else {
+			v = make(map[uint16]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
@@ -5086,11 +6238,26 @@ func (f *decFnInfo) fastDecMapUint32Intf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint32]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint32]interface{}, containerLen)
+		} else {
+			v = make(map[uint32]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
@@ -5123,11 +6290,26 @@ func (f *decFnInfo) fastDecMapUint32String(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint32]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint32]string, containerLen)
+		} else {
+			v = make(map[uint32]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
@@ -5161,11 +6343,26 @@ func (f *decFnInfo) fastDecMapUint32Uint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint32]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint32]uint, containerLen)
+		} else {
+			v = make(map[uint32]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
@@ -5199,11 +6396,26 @@ func (f *decFnInfo) fastDecMapUint32Uint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint32]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint32]uint32, containerLen)
+		} else {
+			v = make(map[uint32]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
@@ -5237,11 +6449,26 @@ func (f *decFnInfo) fastDecMapUint32Uint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint32]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint32]uint64, containerLen)
+		} else {
+			v = make(map[uint32]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
@@ -5275,11 +6502,26 @@ func (f *decFnInfo) fastDecMapUint32Int(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint32]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint32]int, containerLen)
+		} else {
+			v = make(map[uint32]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
@@ -5313,11 +6555,26 @@ func (f *decFnInfo) fastDecMapUint32Int32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint32]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint32]int32, containerLen)
+		} else {
+			v = make(map[uint32]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
@@ -5351,11 +6608,26 @@ func (f *decFnInfo) fastDecMapUint32Int64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint32]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint32]int64, containerLen)
+		} else {
+			v = make(map[uint32]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
@@ -5389,11 +6661,26 @@ func (f *decFnInfo) fastDecMapUint64Intf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint64]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint64]interface{}, containerLen)
+		} else {
+			v = make(map[uint64]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
@@ -5426,11 +6713,26 @@ func (f *decFnInfo) fastDecMapUint64String(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint64]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint64]string, containerLen)
+		} else {
+			v = make(map[uint64]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
@@ -5464,11 +6766,26 @@ func (f *decFnInfo) fastDecMapUint64Uint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint64]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint64]uint, containerLen)
+		} else {
+			v = make(map[uint64]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
@@ -5502,11 +6819,26 @@ func (f *decFnInfo) fastDecMapUint64Uint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint64]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint64]uint32, containerLen)
+		} else {
+			v = make(map[uint64]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
@@ -5540,11 +6872,26 @@ func (f *decFnInfo) fastDecMapUint64Uint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint64]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint64]uint64, containerLen)
+		} else {
+			v = make(map[uint64]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
@@ -5578,11 +6925,26 @@ func (f *decFnInfo) fastDecMapUint64Int(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint64]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint64]int, containerLen)
+		} else {
+			v = make(map[uint64]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
@@ -5616,11 +6978,26 @@ func (f *decFnInfo) fastDecMapUint64Int32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint64]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint64]int32, containerLen)
+		} else {
+			v = make(map[uint64]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
@@ -5654,11 +7031,26 @@ func (f *decFnInfo) fastDecMapUint64Int64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[uint64]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[uint64]int64, containerLen)
+		} else {
+			v = make(map[uint64]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
@@ -5692,11 +7084,26 @@ func (f *decFnInfo) fastDecMapIntIntf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[int]interface{}, containerLen)
+		} else {
+			v = make(map[int]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
@@ -5729,11 +7136,26 @@ func (f *decFnInfo) fastDecMapIntString(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[int]string, containerLen)
+		} else {
+			v = make(map[int]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
@@ -5767,11 +7189,26 @@ func (f *decFnInfo) fastDecMapIntUint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[int]uint, containerLen)
+		} else {
+			v = make(map[int]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
@@ -5805,11 +7242,26 @@ func (f *decFnInfo) fastDecMapIntUint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[int]uint32, containerLen)
+		} else {
+			v = make(map[int]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
@@ -5843,11 +7295,26 @@ func (f *decFnInfo) fastDecMapIntUint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[int]uint64, containerLen)
+		} else {
+			v = make(map[int]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
@@ -5881,11 +7348,26 @@ func (f *decFnInfo) fastDecMapIntInt(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[int]int, containerLen)
+		} else {
+			v = make(map[int]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
@@ -5919,11 +7401,26 @@ func (f *decFnInfo) fastDecMapIntInt32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[int]int32, containerLen)
+		} else {
+			v = make(map[int]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
@@ -5957,11 +7454,26 @@ func (f *decFnInfo) fastDecMapIntInt64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[int]int64, containerLen)
+		} else {
+			v = make(map[int]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
@@ -5995,11 +7507,26 @@ func (f *decFnInfo) fastDecMapInt8Int8(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int8]int8, containerLen)
+		if containerLen > 0 {
+			v = make(map[int8]int8, containerLen)
+		} else {
+			v = make(map[int8]int8) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
@@ -6033,11 +7560,26 @@ func (f *decFnInfo) fastDecMapInt8Intf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int8]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[int8]interface{}, containerLen)
+		} else {
+			v = make(map[int8]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
@@ -6070,11 +7612,26 @@ func (f *decFnInfo) fastDecMapInt8String(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int8]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[int8]string, containerLen)
+		} else {
+			v = make(map[int8]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
@@ -6108,11 +7665,26 @@ func (f *decFnInfo) fastDecMapInt8Uint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int8]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[int8]uint, containerLen)
+		} else {
+			v = make(map[int8]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
@@ -6146,11 +7718,26 @@ func (f *decFnInfo) fastDecMapInt8Uint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int8]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[int8]uint32, containerLen)
+		} else {
+			v = make(map[int8]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
@@ -6184,11 +7771,26 @@ func (f *decFnInfo) fastDecMapInt8Uint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int8]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[int8]uint64, containerLen)
+		} else {
+			v = make(map[int8]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
@@ -6222,11 +7824,26 @@ func (f *decFnInfo) fastDecMapInt8Int(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int8]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[int8]int, containerLen)
+		} else {
+			v = make(map[int8]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
@@ -6260,11 +7877,26 @@ func (f *decFnInfo) fastDecMapInt8Int32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int8]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[int8]int32, containerLen)
+		} else {
+			v = make(map[int8]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
@@ -6298,11 +7930,26 @@ func (f *decFnInfo) fastDecMapInt8Int64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int8]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[int8]int64, containerLen)
+		} else {
+			v = make(map[int8]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
@@ -6336,11 +7983,26 @@ func (f *decFnInfo) fastDecMapInt16Int16(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int16]int16, containerLen)
+		if containerLen > 0 {
+			v = make(map[int16]int16, containerLen)
+		} else {
+			v = make(map[int16]int16) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
@@ -6374,11 +8036,26 @@ func (f *decFnInfo) fastDecMapInt16Intf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int16]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[int16]interface{}, containerLen)
+		} else {
+			v = make(map[int16]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
@@ -6411,11 +8088,26 @@ func (f *decFnInfo) fastDecMapInt16String(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int16]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[int16]string, containerLen)
+		} else {
+			v = make(map[int16]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
@@ -6449,11 +8141,26 @@ func (f *decFnInfo) fastDecMapInt16Uint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int16]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[int16]uint, containerLen)
+		} else {
+			v = make(map[int16]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
@@ -6487,11 +8194,26 @@ func (f *decFnInfo) fastDecMapInt16Uint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int16]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[int16]uint32, containerLen)
+		} else {
+			v = make(map[int16]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
@@ -6525,11 +8247,26 @@ func (f *decFnInfo) fastDecMapInt16Uint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int16]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[int16]uint64, containerLen)
+		} else {
+			v = make(map[int16]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
@@ -6563,11 +8300,26 @@ func (f *decFnInfo) fastDecMapInt16Int(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int16]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[int16]int, containerLen)
+		} else {
+			v = make(map[int16]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
@@ -6601,11 +8353,26 @@ func (f *decFnInfo) fastDecMapInt16Int32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int16]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[int16]int32, containerLen)
+		} else {
+			v = make(map[int16]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
@@ -6639,11 +8406,26 @@ func (f *decFnInfo) fastDecMapInt16Int64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int16]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[int16]int64, containerLen)
+		} else {
+			v = make(map[int16]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
@@ -6677,11 +8459,26 @@ func (f *decFnInfo) fastDecMapInt32Intf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int32]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[int32]interface{}, containerLen)
+		} else {
+			v = make(map[int32]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
@@ -6714,11 +8511,26 @@ func (f *decFnInfo) fastDecMapInt32String(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int32]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[int32]string, containerLen)
+		} else {
+			v = make(map[int32]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
@@ -6752,11 +8564,26 @@ func (f *decFnInfo) fastDecMapInt32Uint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int32]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[int32]uint, containerLen)
+		} else {
+			v = make(map[int32]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
@@ -6790,11 +8617,26 @@ func (f *decFnInfo) fastDecMapInt32Uint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int32]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[int32]uint32, containerLen)
+		} else {
+			v = make(map[int32]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
@@ -6828,11 +8670,26 @@ func (f *decFnInfo) fastDecMapInt32Uint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int32]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[int32]uint64, containerLen)
+		} else {
+			v = make(map[int32]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
@@ -6866,11 +8723,26 @@ func (f *decFnInfo) fastDecMapInt32Int(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int32]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[int32]int, containerLen)
+		} else {
+			v = make(map[int32]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
@@ -6904,11 +8776,26 @@ func (f *decFnInfo) fastDecMapInt32Int32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int32]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[int32]int32, containerLen)
+		} else {
+			v = make(map[int32]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
@@ -6942,11 +8829,26 @@ func (f *decFnInfo) fastDecMapInt32Int64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int32]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[int32]int64, containerLen)
+		} else {
+			v = make(map[int32]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
@@ -6980,11 +8882,26 @@ func (f *decFnInfo) fastDecMapInt64Intf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int64]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[int64]interface{}, containerLen)
+		} else {
+			v = make(map[int64]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
@@ -7017,11 +8934,26 @@ func (f *decFnInfo) fastDecMapInt64String(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int64]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[int64]string, containerLen)
+		} else {
+			v = make(map[int64]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
@@ -7055,11 +8987,26 @@ func (f *decFnInfo) fastDecMapInt64Uint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int64]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[int64]uint, containerLen)
+		} else {
+			v = make(map[int64]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
@@ -7093,11 +9040,26 @@ func (f *decFnInfo) fastDecMapInt64Uint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int64]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[int64]uint32, containerLen)
+		} else {
+			v = make(map[int64]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
@@ -7131,11 +9093,26 @@ func (f *decFnInfo) fastDecMapInt64Uint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int64]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[int64]uint64, containerLen)
+		} else {
+			v = make(map[int64]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
@@ -7169,11 +9146,26 @@ func (f *decFnInfo) fastDecMapInt64Int(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int64]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[int64]int, containerLen)
+		} else {
+			v = make(map[int64]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
@@ -7207,11 +9199,26 @@ func (f *decFnInfo) fastDecMapInt64Int32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int64]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[int64]int32, containerLen)
+		} else {
+			v = make(map[int64]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
@@ -7245,11 +9252,26 @@ func (f *decFnInfo) fastDecMapInt64Int64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[int64]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[int64]int64, containerLen)
+		} else {
+			v = make(map[int64]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
@@ -7283,11 +9305,26 @@ func (f *decFnInfo) fastDecMapBoolBool(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[bool]bool, containerLen)
+		if containerLen > 0 {
+			v = make(map[bool]bool, containerLen)
+		} else {
+			v = make(map[bool]bool) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
@@ -7321,11 +9358,26 @@ func (f *decFnInfo) fastDecMapBoolIntf(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[bool]interface{}, containerLen)
+		if containerLen > 0 {
+			v = make(map[bool]interface{}, containerLen)
+		} else {
+			v = make(map[bool]interface{}) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
@@ -7358,11 +9410,26 @@ func (f *decFnInfo) fastDecMapBoolString(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[bool]string, containerLen)
+		if containerLen > 0 {
+			v = make(map[bool]string, containerLen)
+		} else {
+			v = make(map[bool]string) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
@@ -7396,11 +9463,26 @@ func (f *decFnInfo) fastDecMapBoolUint(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[bool]uint, containerLen)
+		if containerLen > 0 {
+			v = make(map[bool]uint, containerLen)
+		} else {
+			v = make(map[bool]uint) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
@@ -7434,11 +9516,26 @@ func (f *decFnInfo) fastDecMapBoolUint32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[bool]uint32, containerLen)
+		if containerLen > 0 {
+			v = make(map[bool]uint32, containerLen)
+		} else {
+			v = make(map[bool]uint32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
@@ -7472,11 +9569,26 @@ func (f *decFnInfo) fastDecMapBoolUint64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[bool]uint64, containerLen)
+		if containerLen > 0 {
+			v = make(map[bool]uint64, containerLen)
+		} else {
+			v = make(map[bool]uint64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
@@ -7510,11 +9622,26 @@ func (f *decFnInfo) fastDecMapBoolInt(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[bool]int, containerLen)
+		if containerLen > 0 {
+			v = make(map[bool]int, containerLen)
+		} else {
+			v = make(map[bool]int) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
@@ -7548,11 +9675,26 @@ func (f *decFnInfo) fastDecMapBoolInt32(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[bool]int32, containerLen)
+		if containerLen > 0 {
+			v = make(map[bool]int32, containerLen)
+		} else {
+			v = make(map[bool]int32) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
@@ -7586,11 +9728,26 @@ func (f *decFnInfo) fastDecMapBoolInt64(rv reflect.Value) {
 	}
 
 	containerLen := f.dd.readMapLen()
+	if containerLen == 0 {
+		return
+	}
 	if xaddr && v == nil {
-		v = make(map[bool]int64, containerLen)
+		if containerLen > 0 {
+			v = make(map[bool]int64, containerLen)
+		} else {
+			v = make(map[bool]int64) // supports indefinite-length, etc
+		}
 		*vp = v
 	}
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 

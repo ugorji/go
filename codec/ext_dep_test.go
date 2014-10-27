@@ -63,7 +63,11 @@ func Benchmark__VMsgpack___Decode(b *testing.B) {
 }
 
 func TestMsgpackPythonGenStreams(t *testing.T) {
-	doTestMsgpackPythonGenStreams(t)
+	doTestPythonGenStreams(t, "msgpack", testMsgpackH)
+}
+
+func TestCborPythonGenStreams(t *testing.T) {
+	doTestPythonGenStreams(t, "cbor", testCborH)
 }
 
 func TestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {

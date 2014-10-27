@@ -16,7 +16,7 @@ const (
 	msgDecCannotExpandArr = "cannot expand go array from %v to stream length: %v"
 )
 
-// fastpathsEnc holds the rtid (reflect.Type Pointer) to fast decode function for a selected slice/map type.
+// fastpathsDec holds the rtid (reflect.Type Pointer) to fast decode function for a selected slice/map type.
 var fastpathsDec = make(map[uintptr]func(*decFnInfo, reflect.Value))
 
 // decReader abstracts the reading source, allowing implementations that can
@@ -32,12 +32,15 @@ type decReader interface {
 
 type decDriver interface {
 	initReadNext()
+	// this will call initReadNext implicitly, and then check if the next token is a break.
+	checkBreak() bool
 	tryDecodeAsNil() bool
 	currentEncodedType() valueType
 	isBuiltinType(rt uintptr) bool
 	decodeBuiltin(rt uintptr, v interface{})
 	//decodeNaked: Numbers are decoded as int64, uint64, float64 only (no smaller sized number types).
-	decodeNaked() (v interface{}, vt valueType, decodeFurther bool)
+	//for extensions, decodeNaked must completely decode them as a *RawExt.
+	decodeNaked(*Decoder) (v interface{}, vt valueType, decodeFurther bool)
 	decodeInt(bitsize uint8) (i int64)
 	decodeUint(bitsize uint8) (ui uint64)
 	decodeFloat(chkOverflow32 bool) (f float64)
@@ -45,7 +48,9 @@ type decDriver interface {
 	// decodeString can also decode symbols
 	decodeString() (s string)
 	decodeBytes(bs []byte) (bsOut []byte, changed bool)
-	decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte)
+	// decodeExt will decode into a *RawExt or into an extension.
+	decodeExt(rv reflect.Value, xtag uint16, ext Ext, d *Decoder) (realxtag uint16)
+	// decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte)
 	readMapLen() int
 	readArrayLen() int
 }
@@ -60,6 +65,8 @@ type DecodeOptions struct {
 	// ErrorIfNoField controls whether an error is returned when decoding a map
 	// from a codec stream into a struct, and no matching struct field is found.
 	ErrorIfNoField bool
+	// If true, use the int64 during schema-less decoding of unsigned values (not uint64).
+	SignedInteger bool
 }
 
 // ------------------------------------
@@ -183,8 +190,8 @@ type decFnInfo struct {
 	ti    *typeInfo
 	d     *Decoder
 	dd    decDriver
-	xfFn  func(reflect.Value, []byte) error
-	xfTag byte
+	xfFn  Ext
+	xfTag uint16
 	array bool
 }
 
@@ -200,16 +207,11 @@ func (f *decFnInfo) builtin(rv reflect.Value) {
 }
 
 func (f *decFnInfo) rawExt(rv reflect.Value) {
-	xtag, xbs := f.dd.decodeExt(false, 0)
-	rv.Field(0).SetUint(uint64(xtag))
-	rv.Field(1).SetBytes(xbs)
+	f.dd.decodeExt(rv, 0, nil, f.d)
 }
 
 func (f *decFnInfo) ext(rv reflect.Value) {
-	_, xbs := f.dd.decodeExt(true, f.xfTag)
-	if fnerr := f.xfFn(rv, xbs); fnerr != nil {
-		panic(fnerr)
-	}
+	f.dd.decodeExt(rv, f.xfTag, f.xfFn, f.d)
 }
 
 func (f *decFnInfo) binaryMarshal(rv reflect.Value) {
@@ -310,7 +312,7 @@ func (f *decFnInfo) kInterface(rv reflect.Value) {
 	// nil interface:
 	// use some hieristics to set the nil interface to an
 	// appropriate value based on the first byte read (byte descriptor bd)
-	v, vt, decodeFurther := f.dd.decodeNaked()
+	v, vt, decodeFurther := f.dd.decodeNaked(f.d)
 	if vt == valueTypeNil {
 		return
 	}
@@ -341,12 +343,16 @@ func (f *decFnInfo) kInterface(rv reflect.Value) {
 		}
 	case valueTypeExt:
 		re := v.(*RawExt)
-		var bfn func(reflect.Value, []byte) error
-		rvn, bfn = f.d.h.getDecodeExtForTag(re.Tag)
+		bfn := f.d.h.getExtForTag(re.Tag)
 		if bfn == nil {
 			rvn = reflect.ValueOf(*re)
-		} else if fnerr := bfn(rvn, re.Data); fnerr != nil {
-			panic(fnerr)
+		} else {
+			rvn = reflect.New(bfn.rt).Elem()
+			if re.Data != nil {
+				bfn.ext.ReadExt(rvn, re.Data)
+			} else {
+				bfn.ext.UpdateExt(rvn, re.Value)
+			}
 		}
 		rv.Set(rvn)
 		return
@@ -431,7 +437,6 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 func (f *decFnInfo) kSlice(rv reflect.Value) {
 	// A slice can be set from a map or array in stream.
 	currEncodedType := f.dd.currentEncodedType()
-
 	switch currEncodedType {
 	case valueTypeBytes, valueTypeString:
 		if f.ti.rtid == uint8SliceTypId || f.ti.rt.Elem().Kind() == reflect.Uint8 {
@@ -447,33 +452,59 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 	// an array can never return a nil slice. so no need to check f.array here.
 
 	if rv.IsNil() {
-		rv.Set(reflect.MakeSlice(f.ti.rt, containerLenS, containerLenS))
+		if containerLenS < 0 {
+			rv.Set(reflect.MakeSlice(f.ti.rt, 0, 0))
+		} else {
+			rv.Set(reflect.MakeSlice(f.ti.rt, containerLenS, containerLenS))
+		}
 	}
 
 	if containerLen == 0 {
 		return
 	}
 
+	rv0 := rv
+	rvChanged := false
+
 	if rvcap, rvlen := rv.Len(), rv.Cap(); containerLenS > rvcap {
 		if f.array { // !rv.CanSet()
 			decErr(msgDecCannotExpandArr, rvcap, containerLenS)
 		}
-		rvn := reflect.MakeSlice(f.ti.rt, containerLenS, containerLenS)
+		rv = reflect.MakeSlice(f.ti.rt, containerLenS, containerLenS)
 		if rvlen > 0 {
-			reflect.Copy(rvn, rv)
+			reflect.Copy(rv, rv0)
 		}
-		rv.Set(rvn)
+		rvChanged = true
 	} else if containerLenS > rvlen {
 		rv.SetLen(containerLenS)
 	}
 
-	rtelem := f.ti.rt.Elem()
+	rtelem0 := f.ti.rt.Elem()
+	rtelem := rtelem0
 	for rtelem.Kind() == reflect.Ptr {
 		rtelem = rtelem.Elem()
 	}
 	fn := f.d.getDecFn(rtelem)
-	for j := 0; j < containerLenS; j++ {
+	// for j := 0; j < containerLenS; j++ {
+
+	for j := 0; ; j++ {
+		if containerLenS >= 0 {
+			if j >= containerLenS {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
+		// if indefinite, etc, then expand the slice if necessary
+		if j >= rv.Len() {
+			// TODO: Need to update this appropriately
+			rv = reflect.Append(rv, reflect.Zero(rtelem0))
+			rvChanged = true
+		}
 		f.d.decodeValue(rv.Index(j), fn)
+	}
+	if rvChanged {
+		rv0.Set(rv)
 	}
 }
 
@@ -503,7 +534,15 @@ func (f *decFnInfo) kMap(rv reflect.Value) {
 	for xtyp = vtype; xtyp.Kind() == reflect.Ptr; xtyp = xtyp.Elem() {
 	}
 	valFn = f.d.getDecFn(xtyp)
-	for j := 0; j < containerLen; j++ {
+	// for j := 0; j < containerLen; j++ {
+	for j := 0; ; j++ {
+		if containerLen >= 0 {
+			if j >= containerLen {
+				break
+			}
+		} else if f.dd.checkBreak() {
+			break
+		}
 		rvk := reflect.New(ktype).Elem()
 		f.d.decodeValue(rvk, keyFn)
 
@@ -741,8 +780,8 @@ func (d *Decoder) getDecFn(rt reflect.Type) (fn decFn) {
 			fn.f = (*decFnInfo).rawExt
 		} else if d.d.isBuiltinType(rtid) {
 			fn.f = (*decFnInfo).builtin
-		} else if xfTag, xfFn := d.h.getDecodeExt(rtid); xfFn != nil {
-			fi.xfTag, fi.xfFn = xfTag, xfFn
+		} else if xfFn := d.h.getExt(rtid); xfFn != nil {
+			fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 			fn.f = (*decFnInfo).ext
 		} else if supportBinaryMarshal && fi.ti.unm {
 			fn.f = (*decFnInfo).binaryMarshal
@@ -865,9 +904,10 @@ func (d *Decoder) decEmbeddedField(rv reflect.Value, index []int) {
 // --------------------------------------------------
 
 func decContLens(dd decDriver, currEncodedType valueType) (containerLen, containerLenS int) {
-	if currEncodedType == valueTypeInvalid {
-		currEncodedType = dd.currentEncodedType()
-	}
+	// currEncodedType = dd.currentEncodedType()
+	// if currEncodedType == valueTypeInvalid {
+	// 	currEncodedType = dd.currentEncodedType()
+	// }
 	switch currEncodedType {
 	case valueTypeArray:
 		containerLen = dd.readArrayLen()

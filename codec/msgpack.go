@@ -24,6 +24,7 @@ import (
 	"io"
 	"math"
 	"net/rpc"
+	"reflect"
 )
 
 const (
@@ -104,14 +105,8 @@ var (
 type msgpackEncDriver struct {
 	w encWriter
 	h *MsgpackHandle
+	noBuiltInTypes
 }
-
-func (e *msgpackEncDriver) isBuiltinType(rt uintptr) bool {
-	//no builtin types. All encodings are based on kinds. Types supported as extensions.
-	return false
-}
-
-func (e *msgpackEncDriver) encodeBuiltin(rt uintptr, v interface{}) {}
 
 func (e *msgpackEncDriver) encodeNil() {
 	e.w.writen1(mpNil)
@@ -172,6 +167,25 @@ func (e *msgpackEncDriver) encodeFloat32(f float32) {
 func (e *msgpackEncDriver) encodeFloat64(f float64) {
 	e.w.writen1(mpDouble)
 	e.w.writeUint64(math.Float64bits(f))
+}
+
+func (e *msgpackEncDriver) encodeExt(rv reflect.Value, xtag uint16, ext Ext, _ *Encoder) {
+	bs := ext.WriteExt(rv)
+	if bs == nil {
+		e.encodeNil()
+		return
+	}
+	if e.h.WriteExt {
+		e.encodeExtPreamble(uint8(xtag), len(bs))
+		e.w.writeb(bs)
+	} else {
+		e.encodeStringBytes(c_RAW, bs)
+	}
+}
+
+func (e *msgpackEncDriver) encodeRawExt(re *RawExt, _ *Encoder) {
+	e.encodeExtPreamble(uint8(re.Tag), len(re.Data))
+	e.w.writeb(re.Data)
 }
 
 func (e *msgpackEncDriver) encodeExtPreamble(xtag byte, l int) {
@@ -257,21 +271,16 @@ type msgpackDecDriver struct {
 	bd     byte
 	bdRead bool
 	bdType valueType
+	noBuiltInTypes
+	noStreamingCodec
 }
-
-func (d *msgpackDecDriver) isBuiltinType(rt uintptr) bool {
-	//no builtin types. All encodings are based on kinds. Types supported as extensions.
-	return false
-}
-
-func (d *msgpackDecDriver) decodeBuiltin(rt uintptr, v interface{}) {}
 
 // Note: This returns either a primitive (int, bool, etc) for non-containers,
 // or a containerType, or a specific type denoting nil or extension.
 // It is called when a nil interface{} is passed, leaving it up to the DecDriver
 // to introspect the stream and decide how best to decode.
 // It deciphers the value by looking at the stream first.
-func (d *msgpackDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurther bool) {
+func (d *msgpackDecDriver) decodeNaked(_ *Decoder) (v interface{}, vt valueType, decodeFurther bool) {
 	d.initReadNext()
 	bd := d.bd
 
@@ -354,7 +363,7 @@ func (d *msgpackDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFur
 		case bd >= mpFixExt1 && bd <= mpFixExt16, bd >= mpExt8 && bd <= mpExt32:
 			clen := d.readExtLen()
 			var re RawExt
-			re.Tag = d.r.readn1()
+			re.Tag = uint16(d.r.readn1())
 			re.Data = d.r.readn(clen)
 			v = &re
 			vt = valueTypeExt
@@ -364,6 +373,10 @@ func (d *msgpackDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFur
 	}
 	if !decodeFurther {
 		d.bdRead = false
+	}
+	if vt == valueTypeUint && d.h.SignedInteger {
+		d.bdType = valueTypeInt
+		v = int64(v.(uint64))
 	}
 	return
 }
@@ -553,7 +566,11 @@ func (d *msgpackDecDriver) currentEncodedType() valueType {
 		case mpFloat, mpDouble:
 			d.bdType = valueTypeFloat
 		case mpUint8, mpUint16, mpUint32, mpUint64:
-			d.bdType = valueTypeUint
+			if d.h.SignedInteger {
+				d.bdType = valueTypeInt
+			} else {
+				d.bdType = valueTypeUint
+			}
 		case mpInt8, mpInt16, mpInt32, mpInt64:
 			d.bdType = valueTypeInt
 		default:
@@ -646,7 +663,20 @@ func (d *msgpackDecDriver) readExtLen() (clen int) {
 	return
 }
 
-func (d *msgpackDecDriver) decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
+func (d *msgpackDecDriver) decodeExt(rv reflect.Value, xtag uint16, ext Ext, _ *Decoder) (realxtag uint16) {
+	realxtag1, xbs := d.decodeExtV(ext != nil, uint8(xtag))
+	realxtag = uint16(realxtag1)
+	if ext == nil {
+		re := rv.Interface().(*RawExt)
+		re.Tag = realxtag
+		re.Data = xbs
+	} else {
+		ext.ReadExt(rv, xbs)
+	}
+	return
+}
+
+func (d *msgpackDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
 	xbd := d.bd
 	switch {
 	case xbd == mpBin8, xbd == mpBin16, xbd == mpBin32:
@@ -693,14 +723,6 @@ func (h *MsgpackHandle) newEncDriver(w encWriter) encDriver {
 
 func (h *MsgpackHandle) newDecDriver(r decReader) decDriver {
 	return &msgpackDecDriver{r: r, h: h}
-}
-
-func (h *MsgpackHandle) writeExt() bool {
-	return h.WriteExt
-}
-
-func (h *MsgpackHandle) getBasicHandle() *BasicHandle {
-	return &h.BasicHandle
 }
 
 //--------------------------------------------------

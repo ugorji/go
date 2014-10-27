@@ -3,7 +3,10 @@
 
 package codec
 
-import "math"
+import (
+	"math"
+	"reflect"
+)
 
 const (
 	_               uint8 = iota
@@ -28,14 +31,8 @@ const (
 type simpleEncDriver struct {
 	h *SimpleHandle
 	w encWriter
+	noBuiltInTypes
 	//b [8]byte
-}
-
-func (e *simpleEncDriver) isBuiltinType(rt uintptr) bool {
-	return false
-}
-
-func (e *simpleEncDriver) encodeBuiltin(rt uintptr, v interface{}) {
 }
 
 func (e *simpleEncDriver) encodeNil() {
@@ -107,6 +104,21 @@ func (e *simpleEncDriver) encLen(bd byte, length int) {
 	}
 }
 
+func (e *simpleEncDriver) encodeExt(rv reflect.Value, xtag uint16, ext Ext, _ *Encoder) {
+	bs := ext.WriteExt(rv)
+	if bs == nil {
+		e.encodeNil()
+		return
+	}
+	e.encodeExtPreamble(uint8(xtag), len(bs))
+	e.w.writeb(bs)
+}
+
+func (e *simpleEncDriver) encodeRawExt(re *RawExt, _ *Encoder) {
+	e.encodeExtPreamble(uint8(re.Tag), len(re.Data))
+	e.w.writeb(re.Data)
+}
+
 func (e *simpleEncDriver) encodeExtPreamble(xtag byte, length int) {
 	e.encLen(simpleVdExt, length)
 	e.w.writen1(xtag)
@@ -142,6 +154,8 @@ type simpleDecDriver struct {
 	bdRead bool
 	bdType valueType
 	bd     byte
+	noBuiltInTypes
+	noStreamingCodec
 	//b      [8]byte
 }
 
@@ -162,7 +176,11 @@ func (d *simpleDecDriver) currentEncodedType() valueType {
 		case simpleVdTrue, simpleVdFalse:
 			d.bdType = valueTypeBool
 		case simpleVdPosInt, simpleVdPosInt + 1, simpleVdPosInt + 2, simpleVdPosInt + 3:
-			d.bdType = valueTypeUint
+			if d.h.SignedInteger {
+				d.bdType = valueTypeInt
+			} else {
+				d.bdType = valueTypeUint
+			}
 		case simpleVdNegInt, simpleVdNegInt + 1, simpleVdNegInt + 2, simpleVdNegInt + 3:
 			d.bdType = valueTypeInt
 		case simpleVdFloat32, simpleVdFloat64:
@@ -190,13 +208,6 @@ func (d *simpleDecDriver) tryDecodeAsNil() bool {
 		return true
 	}
 	return false
-}
-
-func (d *simpleDecDriver) isBuiltinType(rt uintptr) bool {
-	return false
-}
-
-func (d *simpleDecDriver) decodeBuiltin(rt uintptr, v interface{}) {
 }
 
 func (d *simpleDecDriver) decIntAny() (ui uint64, i int64, neg bool) {
@@ -343,7 +354,20 @@ func (d *simpleDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 	return
 }
 
-func (d *simpleDecDriver) decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
+func (d *simpleDecDriver) decodeExt(rv reflect.Value, xtag uint16, ext Ext, _ *Decoder) (realxtag uint16) {
+	realxtag1, xbs := d.decodeExtV(ext != nil, uint8(xtag))
+	realxtag = uint16(realxtag1)
+	if ext == nil {
+		re := rv.Interface().(*RawExt)
+		re.Tag = realxtag
+		re.Data = xbs
+	} else {
+		ext.ReadExt(rv, xbs)
+	}
+	return
+}
+
+func (d *simpleDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
 	switch d.bd {
 	case simpleVdExt, simpleVdExt + 1, simpleVdExt + 2, simpleVdExt + 3, simpleVdExt + 4:
 		l := d.decLen()
@@ -361,7 +385,7 @@ func (d *simpleDecDriver) decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []
 	return
 }
 
-func (d *simpleDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurther bool) {
+func (d *simpleDecDriver) decodeNaked(_ *Decoder) (v interface{}, vt valueType, decodeFurther bool) {
 	d.initReadNext()
 
 	switch d.bd {
@@ -374,9 +398,14 @@ func (d *simpleDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurt
 		vt = valueTypeBool
 		v = true
 	case simpleVdPosInt, simpleVdPosInt + 1, simpleVdPosInt + 2, simpleVdPosInt + 3:
-		vt = valueTypeUint
-		ui, _, _ := d.decIntAny()
-		v = ui
+		ui, i, _ := d.decIntAny()
+		if d.h.SignedInteger {
+			vt = valueTypeInt
+			v = i
+		} else {
+			vt = valueTypeUint
+			v = ui
+		}
 	case simpleVdNegInt, simpleVdNegInt + 1, simpleVdNegInt + 2, simpleVdNegInt + 3:
 		vt = valueTypeInt
 		_, i, _ := d.decIntAny()
@@ -397,10 +426,9 @@ func (d *simpleDecDriver) decodeNaked() (v interface{}, vt valueType, decodeFurt
 		vt = valueTypeExt
 		l := d.decLen()
 		var re RawExt
-		re.Tag = d.r.readn1()
+		re.Tag = uint16(d.r.readn1())
 		re.Data = d.r.readn(l)
 		v = &re
-		vt = valueTypeExt
 	case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2, simpleVdArray + 3, simpleVdArray + 4:
 		vt = valueTypeArray
 		decodeFurther = true
@@ -447,14 +475,6 @@ func (h *SimpleHandle) newEncDriver(w encWriter) encDriver {
 
 func (h *SimpleHandle) newDecDriver(r decReader) decDriver {
 	return &simpleDecDriver{r: r, h: h}
-}
-
-func (_ *SimpleHandle) writeExt() bool {
-	return true
-}
-
-func (h *SimpleHandle) getBasicHandle() *BasicHandle {
-	return &h.BasicHandle
 }
 
 var _ decDriver = (*simpleDecDriver)(nil)

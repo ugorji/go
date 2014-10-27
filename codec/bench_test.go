@@ -65,6 +65,7 @@ func benchInit() {
 		benchChecker{"binc-nosym", fnBincNoSymEncodeFn, fnBincNoSymDecodeFn},
 		benchChecker{"binc-sym", fnBincSymEncodeFn, fnBincSymDecodeFn},
 		benchChecker{"simple", fnSimpleEncodeFn, fnSimpleDecodeFn},
+		benchChecker{"cbor", fnCborEncodeFn, fnCborDecodeFn},
 		benchChecker{"gob", fnGobEncodeFn, fnGobDecodeFn},
 		benchChecker{"json", fnJsonEncodeFn, fnJsonDecodeFn},
 	)
@@ -76,7 +77,7 @@ func benchInit() {
 func runBenchInit() {
 	logT(nil, "..............................................")
 	logT(nil, "BENCHMARK INIT: %v", time.Now())
-	logT(nil, "To run full benchmark comparing encodings (MsgPack, Binc, Simple, JSON, GOB, etc), "+
+	logT(nil, "To run full benchmark comparing encodings (MsgPack, Binc, Simple, Cbor, JSON, GOB, etc), "+
 		"use: \"go test -bench=.\"")
 	logT(nil, "Benchmark: ")
 	logT(nil, "\tStruct recursive Depth:             %d", benchDepth)
@@ -252,6 +253,15 @@ func fnSimpleDecodeFn(buf []byte, ts interface{}) error {
 	return NewDecoderBytes(buf, testSimpleH).Decode(ts)
 }
 
+func fnCborEncodeFn(ts interface{}) (bs []byte, err error) {
+	err = NewEncoderBytes(&bs, testCborH).Encode(ts)
+	return
+}
+
+func fnCborDecodeFn(buf []byte, ts interface{}) error {
+	return NewDecoderBytes(buf, testCborH).Decode(ts)
+}
+
 func fnGobEncodeFn(ts interface{}) ([]byte, error) {
 	bbuf := new(bytes.Buffer)
 	err := gob.NewEncoder(bbuf).Encode(ts)
@@ -300,6 +310,14 @@ func Benchmark__Simple_____Encode(b *testing.B) {
 
 func Benchmark__Simple_____Decode(b *testing.B) {
 	fnBenchmarkDecode(b, "simple", benchTs, fnSimpleEncodeFn, fnSimpleDecodeFn, fnBenchNewTs)
+}
+
+func Benchmark__Cbor_______Encode(b *testing.B) {
+	fnBenchmarkEncode(b, "cbor", benchTs, fnCborEncodeFn)
+}
+
+func Benchmark__Cbor_______Decode(b *testing.B) {
+	fnBenchmarkDecode(b, "cbor", benchTs, fnCborEncodeFn, fnCborDecodeFn, fnBenchNewTs)
 }
 
 func Benchmark__Gob________Encode(b *testing.B) {
