@@ -129,8 +129,8 @@ func implementsIntf(typ, iTyp reflect.Type) (success bool, indir int8) {
 // validate that this function is correct ...
 // culled from OGRE (Object-Oriented Graphics Rendering Engine)
 // function: halfToFloatI (http://stderr.org/doc/ogre-doc/api/OgreBitwise_8h-source.html)
-func halfFloatToDoubleBits(yy uint16) (d uint64) {
-	y := uint64(yy)
+func halfFloatToFloatBits(yy uint16) (d uint32) {
+	y := uint32(yy)
 	s := (y >> 15) & 0x01
 	e := (y >> 10) & 0x1f
 	m := y & 0x03ff
@@ -144,7 +144,7 @@ func halfFloatToDoubleBits(yy uint16) (d uint64) {
 				e -= 1
 			}
 			e += 1
-			const zz uint64 = 0x0400
+			const zz uint32 = 0x0400
 			m &= ^zz
 		}
 	} else if e == 31 {

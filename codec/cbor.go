@@ -303,7 +303,7 @@ func (d *cborDecDriver) decodeUint(bitsize uint8) (ui uint64) {
 func (d *cborDecDriver) decodeFloat(chkOverflow32 bool) (f float64) {
 	switch d.bd {
 	case cborBdFloat16:
-		f = math.Float64frombits(halfFloatToDoubleBits(d.r.readUint16()))
+		f = float64(math.Float32frombits(halfFloatToFloatBits(d.r.readUint16())))
 	case cborBdFloat32:
 		f = float64(math.Float32frombits(d.r.readUint32()))
 	case cborBdFloat64:
