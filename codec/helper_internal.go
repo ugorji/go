@@ -151,7 +151,7 @@ func halfFloatToFloatBits(yy uint16) (d uint32) {
 		if m == 0 { // Inf
 			return (s << 31) | 0x7f800000
 		} else { // NaN
-			return (s << 31) | 0x7f800000 | (m << 31)
+			return (s << 31) | 0x7f800000 | (m << 13)
 		}
 	}
 	e = e + (127 - 15)
