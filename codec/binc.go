@@ -173,7 +173,7 @@ func (e *bincEncDriver) encUint(bd byte, pos bool, v uint64) {
 	}
 }
 
-func (e *bincEncDriver) encodeExt(rv reflect.Value, xtag uint16, ext Ext, _ *Encoder) {
+func (e *bincEncDriver) encodeExt(rv reflect.Value, xtag uint64, ext Ext, _ *Encoder) {
 	bs := ext.WriteExt(rv)
 	if bs == nil {
 		e.encodeNil()
@@ -688,9 +688,12 @@ func (d *bincDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 	return
 }
 
-func (d *bincDecDriver) decodeExt(rv reflect.Value, xtag uint16, ext Ext, _ *Decoder) (realxtag uint16) {
+func (d *bincDecDriver) decodeExt(rv reflect.Value, xtag uint64, ext Ext, _ *Decoder) (realxtag uint64) {
+	if xtag > 0xff {
+		decErr("decodeExt: tag must be <= 0xff; got: %v", xtag)
+	}
 	realxtag1, xbs := d.decodeExtV(ext != nil, uint8(xtag))
-	realxtag = uint16(realxtag1)
+	realxtag = uint64(realxtag1)
 	if ext == nil {
 		re := rv.Interface().(*RawExt)
 		re.Tag = realxtag
@@ -786,7 +789,7 @@ func (d *bincDecDriver) decodeNaked(_ *Decoder) (v interface{}, vt valueType, de
 		vt = valueTypeExt
 		l := d.decLen()
 		var re RawExt
-		re.Tag = uint16(d.r.readn1())
+		re.Tag = uint64(d.r.readn1())
 		re.Data = d.r.readn(l)
 		v = &re
 		vt = valueTypeExt

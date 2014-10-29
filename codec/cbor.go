@@ -121,7 +121,7 @@ func (e *cborEncDriver) encLen(bd byte, length int) {
 	e.encUint(uint64(length), bd)
 }
 
-func (e *cborEncDriver) encodeExt(rv reflect.Value, xtag uint16, ext Ext, en *Encoder) {
+func (e *cborEncDriver) encodeExt(rv reflect.Value, xtag uint64, ext Ext, en *Encoder) {
 	e.encUint(uint64(xtag), cborBaseTag)
 	if v := ext.ConvertExt(rv); v == nil {
 		e.encodeNil()
@@ -406,13 +406,10 @@ func (d *cborDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 	return
 }
 
-func (d *cborDecDriver) decodeExt(rv reflect.Value, xtag uint16, ext Ext, de *Decoder) (realxtag uint16) {
+func (d *cborDecDriver) decodeExt(rv reflect.Value, xtag uint64, ext Ext, de *Decoder) (realxtag uint64) {
 	u := d.decUint()
 	d.bdRead = false
-	if u > math.MaxInt16 {
-		decErr("decodeExt: tag must be <= 0xffff; got: %v", u)
-	}
-	realxtag = uint16(u)
+	realxtag = u
 	if ext == nil {
 		re := rv.Interface().(*RawExt)
 		re.Tag = realxtag
@@ -490,10 +487,7 @@ func (d *cborDecDriver) decodeNaked(de *Decoder) (v interface{}, vt valueType, d
 			var re RawExt
 			ui := d.decUint()
 			d.bdRead = false
-			if ui > math.MaxInt16 {
-				decErr("decodeExt: tag must be <= 0xffff; got: %v", ui)
-			}
-			re.Tag = uint16(ui)
+			re.Tag = ui
 			de.decode(&re.Value)
 			v = &re
 			// decodeFurther = true
@@ -510,7 +504,8 @@ func (d *cborDecDriver) decodeNaked(de *Decoder) (v interface{}, vt valueType, d
 
 // -------------------------
 
-// CborHandle is a Handle for the CBOR encoding format, defined at http://cbor.io .
+// CborHandle is a Handle for the CBOR encoding format,
+// defined at http://tools.ietf.org/html/rfc7049 and documented further at http://cbor.io .
 //
 // CBOR is comprehensively supported, including support for:
 //   - indefinite-length arrays/maps/bytes/strings

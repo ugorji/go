@@ -8,7 +8,7 @@ Supported Serialization formats are:
 
   - msgpack: [https://github.com/msgpack/msgpack]
   - binc:    [http://github.com/ugorji/binc]
-  - cbor:    [http://cbor.io]
+  - cbor:    [http://cbor.io] [http://tools.ietf.org/html/rfc7049]
   - simple:  
 
 To install:

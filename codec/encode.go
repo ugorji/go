@@ -64,7 +64,7 @@ type encDriver interface {
 	encodeFloat64(f float64)
 	// encodeExtPreamble(xtag byte, length int)
 	encodeRawExt(re *RawExt, e *Encoder)
-	encodeExt(rv reflect.Value, xtag uint16, ext Ext, e *Encoder)
+	encodeExt(rv reflect.Value, xtag uint64, ext Ext, e *Encoder)
 	encodeArrayPreamble(length int)
 	encodeMapPreamble(length int)
 	encodeString(c charEncoding, v string)
@@ -278,7 +278,7 @@ type encFnInfo struct {
 	e     *Encoder
 	ee    encDriver
 	xfFn  Ext
-	xfTag uint16
+	xfTag uint64
 }
 
 func (f *encFnInfo) builtin(rv reflect.Value) {

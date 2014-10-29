@@ -169,7 +169,7 @@ func (e *msgpackEncDriver) encodeFloat64(f float64) {
 	e.w.writeUint64(math.Float64bits(f))
 }
 
-func (e *msgpackEncDriver) encodeExt(rv reflect.Value, xtag uint16, ext Ext, _ *Encoder) {
+func (e *msgpackEncDriver) encodeExt(rv reflect.Value, xtag uint64, ext Ext, _ *Encoder) {
 	bs := ext.WriteExt(rv)
 	if bs == nil {
 		e.encodeNil()
@@ -363,7 +363,7 @@ func (d *msgpackDecDriver) decodeNaked(_ *Decoder) (v interface{}, vt valueType,
 		case bd >= mpFixExt1 && bd <= mpFixExt16, bd >= mpExt8 && bd <= mpExt32:
 			clen := d.readExtLen()
 			var re RawExt
-			re.Tag = uint16(d.r.readn1())
+			re.Tag = uint64(d.r.readn1())
 			re.Data = d.r.readn(clen)
 			v = &re
 			vt = valueTypeExt
@@ -663,9 +663,12 @@ func (d *msgpackDecDriver) readExtLen() (clen int) {
 	return
 }
 
-func (d *msgpackDecDriver) decodeExt(rv reflect.Value, xtag uint16, ext Ext, _ *Decoder) (realxtag uint16) {
+func (d *msgpackDecDriver) decodeExt(rv reflect.Value, xtag uint64, ext Ext, _ *Decoder) (realxtag uint64) {
+	if xtag > 0xff {
+		decErr("decodeExt: tag must be <= 0xff; got: %v", xtag)
+	}
 	realxtag1, xbs := d.decodeExtV(ext != nil, uint8(xtag))
-	realxtag = uint16(realxtag1)
+	realxtag = uint64(realxtag1)
 	if ext == nil {
 		re := rv.Interface().(*RawExt)
 		re.Tag = realxtag

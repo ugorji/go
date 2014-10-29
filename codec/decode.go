@@ -49,7 +49,7 @@ type decDriver interface {
 	decodeString() (s string)
 	decodeBytes(bs []byte) (bsOut []byte, changed bool)
 	// decodeExt will decode into a *RawExt or into an extension.
-	decodeExt(rv reflect.Value, xtag uint16, ext Ext, d *Decoder) (realxtag uint16)
+	decodeExt(rv reflect.Value, xtag uint64, ext Ext, d *Decoder) (realxtag uint64)
 	// decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte)
 	readMapLen() int
 	readArrayLen() int
@@ -191,7 +191,7 @@ type decFnInfo struct {
 	d     *Decoder
 	dd    decDriver
 	xfFn  Ext
-	xfTag uint16
+	xfTag uint64
 	array bool
 }
 
@@ -921,6 +921,13 @@ func decContLens(dd decDriver, currEncodedType valueType) (containerLen, contain
 	}
 	return
 }
+
+// func decToInt64(ui uint64) int64 {
+// 	if ui2 := ui & 0x7fffffffffffffff; ui2 > math.MaxInt64 {
+// 		decErr("uint64 value greater than max int64; got %v", ui2)
+// 	}
+// 	return int64(ui)
+// }
 
 func decErr(format string, params ...interface{}) {
 	doPanic(msgTagDec, format, params...)

@@ -154,7 +154,7 @@ type Handle interface {
 //
 // Only one of Data or Value is nil. If Data is nil, then the content of the RawExt is in the Value.
 type RawExt struct {
-	Tag uint16
+	Tag uint64
 	// Data is the []byte which represents the raw ext. If Data is nil, ext is exposed in Value.
 	// Data is used by codecs (e.g. binc, msgpack, simple) which do custom serialization of the types
 	Data []byte
@@ -225,7 +225,7 @@ func (_ noStreamingCodec) checkBreak() bool { return false }
 type extTypeTagFn struct {
 	rtid uintptr
 	rt   reflect.Type
-	tag  uint16
+	tag  uint64
 	ext  Ext
 }
 
@@ -241,9 +241,9 @@ func (o *extHandle) AddExt(
 	encfn func(reflect.Value) ([]byte, error), decfn func(reflect.Value, []byte) error,
 ) (err error) {
 	if encfn == nil || decfn == nil {
-		return o.SetExt(rt, uint16(tag), nil)
+		return o.SetExt(rt, uint64(tag), nil)
 	}
-	return o.SetExt(rt, uint16(tag), bytesExt{encfn, decfn})
+	return o.SetExt(rt, uint64(tag), bytesExt{encfn, decfn})
 }
 
 // SetExt registers a tag and Ext for a reflect.Type.
@@ -252,7 +252,7 @@ func (o *extHandle) AddExt(
 // a pointer or Interface. An error is returned if that is not honored.
 //
 // To Deregister an ext, call SetExt with nil Ext
-func (o *extHandle) SetExt(rt reflect.Type, tag uint16, ext Ext) (err error) {
+func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 	// o is a pointer, because we may need to initialize it
 	if rt.PkgPath() == "" || rt.Kind() == reflect.Interface {
 		err = fmt.Errorf("codec.Handle.AddExt: Takes named type, especially not a pointer or interface: %T",
@@ -281,7 +281,7 @@ func (o extHandle) getExt(rtid uintptr) *extTypeTagFn {
 	return nil
 }
 
-func (o extHandle) getExtForTag(tag uint16) *extTypeTagFn {
+func (o extHandle) getExtForTag(tag uint64) *extTypeTagFn {
 	for _, v := range o {
 		if v.tag == tag {
 			return v
