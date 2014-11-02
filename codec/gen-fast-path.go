@@ -136,6 +136,12 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []{{ .Elem }}{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -202,6 +208,10 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[{{ .MapKey }}]{{ .Elem }}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {

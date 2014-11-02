@@ -450,7 +450,6 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 	containerLen, containerLenS := decContLens(f.dd, currEncodedType)
 
 	// an array can never return a nil slice. so no need to check f.array here.
-
 	if rv.IsNil() {
 		if containerLenS < 0 {
 			rv.Set(reflect.MakeSlice(f.ti.rt, 0, 0))
@@ -460,6 +459,7 @@ func (f *decFnInfo) kSlice(rv reflect.Value) {
 	}
 
 	if containerLen == 0 {
+		rv.SetLen(0)
 		return
 	}
 
@@ -921,13 +921,6 @@ func decContLens(dd decDriver, currEncodedType valueType) (containerLen, contain
 	}
 	return
 }
-
-// func decToInt64(ui uint64) int64 {
-// 	if ui2 := ui & 0x7fffffffffffffff; ui2 > math.MaxInt64 {
-// 		decErr("uint64 value greater than max int64; got %v", ui2)
-// 	}
-// 	return int64(ui)
-// }
 
 func decErr(format string, params ...interface{}) {
 	doPanic(msgTagDec, format, params...)

@@ -75,7 +75,8 @@
     "cbor": "O///////////",
     "hex": "3bffffffffffffffff",
     "roundtrip": true,
-    "decoded": -18446744073709551616
+    "decoded": -18446744073709551616,
+    "skip": true
   },
   {
     "cbor": "w0kBAAAAAAAAAAA=",
@@ -448,6 +449,7 @@
     "cbor": "ogECAwQ=",
     "hex": "a201020304",
     "roundtrip": true,
+    "skip": true,
     "diagnostic": "{1: 2, 3: 4}"
   },
   {
@@ -489,6 +491,7 @@
     "cbor": "X0IBAkMDBAX/",
     "hex": "5f42010243030405ff",
     "roundtrip": false,
+    "skip": true,
     "diagnostic": "(_ h'0102', h'030405')"
   },
   {

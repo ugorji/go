@@ -527,10 +527,13 @@ func (d *msgpackDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 	// 	changed = true
 	// 	panic("length cannot be zero. this cannot be nil.")
 	// }
-	if clen > 0 {
-		// if no contents in stream, don't update the passed byteslice
+	if clen >= 0 {
+		if bs == nil {
+			bs = []byte{}
+			bsOut = bs
+			changed = true
+		}
 		if len(bs) != clen {
-			// Return changed=true if length of passed slice diff from length of bytes in stream
 			if len(bs) > clen {
 				bs = bs[:clen]
 			} else {
@@ -539,7 +542,9 @@ func (d *msgpackDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 			bsOut = bs
 			changed = true
 		}
-		d.r.readb(bs)
+		if len(bs) > 0 {
+			d.r.readb(bs)
+		}
 	}
 	d.bdRead = false
 	return

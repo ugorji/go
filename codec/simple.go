@@ -210,35 +210,29 @@ func (d *simpleDecDriver) tryDecodeAsNil() bool {
 	return false
 }
 
-func (d *simpleDecDriver) decIntAny() (ui uint64, i int64, neg bool) {
+// 		i = int64(ui)
+
+func (d *simpleDecDriver) decCheckInteger() (ui uint64, neg bool) {
 	switch d.bd {
 	case simpleVdPosInt:
 		ui = uint64(d.r.readn1())
-		i = int64(ui)
 	case simpleVdPosInt + 1:
 		ui = uint64(d.r.readUint16())
-		i = int64(ui)
 	case simpleVdPosInt + 2:
 		ui = uint64(d.r.readUint32())
-		i = int64(ui)
 	case simpleVdPosInt + 3:
 		ui = uint64(d.r.readUint64())
-		i = int64(ui)
 	case simpleVdNegInt:
 		ui = uint64(d.r.readn1())
-		i = -(int64(ui))
 		neg = true
 	case simpleVdNegInt + 1:
 		ui = uint64(d.r.readUint16())
-		i = -(int64(ui))
 		neg = true
 	case simpleVdNegInt + 2:
 		ui = uint64(d.r.readUint32())
-		i = -(int64(ui))
 		neg = true
 	case simpleVdNegInt + 3:
 		ui = uint64(d.r.readUint64())
-		i = -(int64(ui))
 		neg = true
 	default:
 		decErr("decIntAny: Integer only valid from pos/neg integer1..8. Invalid descriptor: %v", d.bd)
@@ -251,16 +245,21 @@ func (d *simpleDecDriver) decIntAny() (ui uint64, i int64, neg bool) {
 }
 
 func (d *simpleDecDriver) decodeInt(bitsize uint8) (i int64) {
-	_, i, _ = d.decIntAny()
+	ui, neg := d.decCheckInteger()
+	if neg {
+		i = -checkOverflowUint64ToInt64(ui)
+	} else {
+		i = checkOverflowUint64ToInt64(ui)
+	}
 	checkOverflow(0, i, bitsize)
 	d.bdRead = false
 	return
 }
 
 func (d *simpleDecDriver) decodeUint(bitsize uint8) (ui uint64) {
-	ui, i, neg := d.decIntAny()
+	ui, neg := d.decCheckInteger()
 	if neg {
-		decErr("Assigning negative signed value: %v, to unsigned type", i)
+		decErr("Assigning negative signed value to unsigned type")
 	}
 	checkOverflow(ui, 0, bitsize)
 	d.bdRead = false
@@ -275,8 +274,7 @@ func (d *simpleDecDriver) decodeFloat(chkOverflow32 bool) (f float64) {
 		f = math.Float64frombits(d.r.readUint64())
 	default:
 		if d.bd >= simpleVdPosInt && d.bd <= simpleVdNegInt+3 {
-			_, i, _ := d.decIntAny()
-			f = float64(i)
+			f = float64(d.decodeInt(64))
 		} else {
 			decErr("Float only valid from float32/64: Invalid descriptor: %v", d.bd)
 		}
@@ -337,9 +335,14 @@ func (d *simpleDecDriver) decodeString() (s string) {
 }
 
 func (d *simpleDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
-	if clen := d.decLen(); clen > 0 {
+	if clen := d.decLen(); clen >= 0 {
 		// if no contents in stream, don't update the passed byteslice
 		if len(bs) != clen {
+			if bs == nil {
+				bs = []byte{}
+				bsOut = bs
+				changed = true
+			}
 			if len(bs) > clen {
 				bs = bs[:clen]
 			} else {
@@ -348,7 +351,9 @@ func (d *simpleDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 			bsOut = bs
 			changed = true
 		}
-		d.r.readb(bs)
+		if len(bs) > 0 {
+			d.r.readb(bs)
+		}
 	}
 	d.bdRead = false
 	return
@@ -401,18 +406,16 @@ func (d *simpleDecDriver) decodeNaked(_ *Decoder) (v interface{}, vt valueType, 
 		vt = valueTypeBool
 		v = true
 	case simpleVdPosInt, simpleVdPosInt + 1, simpleVdPosInt + 2, simpleVdPosInt + 3:
-		ui, i, _ := d.decIntAny()
 		if d.h.SignedInteger {
 			vt = valueTypeInt
-			v = i
+			v = d.decodeInt(64)
 		} else {
 			vt = valueTypeUint
-			v = ui
+			v = d.decodeUint(64)
 		}
 	case simpleVdNegInt, simpleVdNegInt + 1, simpleVdNegInt + 2, simpleVdNegInt + 3:
 		vt = valueTypeInt
-		_, i, _ := d.decIntAny()
-		v = i
+		v = d.decodeInt(64)
 	case simpleVdFloat32:
 		vt = valueTypeFloat
 		v = d.decodeFloat(true)

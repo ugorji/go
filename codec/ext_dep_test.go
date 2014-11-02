@@ -70,6 +70,10 @@ func TestCborPythonGenStreams(t *testing.T) {
 	doTestPythonGenStreams(t, "cbor", testCborH)
 }
 
+func TestCborGoldens(t *testing.T) {
+	doTestCborGoldens(t)
+}
+
 func TestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 	doTestMsgpackRpcSpecGoClientToPythonSvc(t)
 }

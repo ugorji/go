@@ -229,7 +229,8 @@ func (d *cborDecDriver) currentEncodedType() valueType {
 }
 
 func (d *cborDecDriver) tryDecodeAsNil() bool {
-	if d.bd == cborBdNil {
+	// treat Nil and Undefined as nil values
+	if d.bd == cborBdNil || d.bd == cborBdUndefined {
 		d.bdRead = false
 		return true
 	}
@@ -260,41 +261,42 @@ func (d *cborDecDriver) decUint() (ui uint64) {
 		case 0x1b:
 			ui = uint64(d.r.readUint64())
 		default:
-			decErr("decIntAny: Invalid descriptor: %v", d.bd)
+			decErr("decUint: Invalid descriptor: %v", d.bd)
 		}
 	}
 	return
 }
 
-func (d *cborDecDriver) decIntAny() (ui uint64, i int64, neg bool) {
+func (d *cborDecDriver) decCheckInteger() (neg bool) {
 	switch major := d.bd >> 5; major {
 	case cborMajorUint:
 	case cborMajorNegInt:
 		neg = true
 	default:
-		decErr("decIntAny: invalid major: %v (bd: %v)", major, d.bd)
-	}
-	ui = d.decUint()
-	if neg {
-		i = -int64(ui + 1)
-	} else {
-		i = int64(ui)
+		decErr("invalid major: %v (bd: %v)", major, d.bd)
 	}
 	return
 }
 
 func (d *cborDecDriver) decodeInt(bitsize uint8) (i int64) {
-	_, i, _ = d.decIntAny()
+	neg := d.decCheckInteger()
+	ui := d.decUint()
+	// check if this number can be converted to an int without overflow
+	if neg {
+		i = -checkOverflowUint64ToInt64(ui + 1)
+	} else {
+		i = checkOverflowUint64ToInt64(ui)
+	}
 	checkOverflow(0, i, bitsize)
 	d.bdRead = false
 	return
 }
 
 func (d *cborDecDriver) decodeUint(bitsize uint8) (ui uint64) {
-	ui, i, neg := d.decIntAny()
-	if neg {
-		decErr("Assigning negative signed value: %v, to unsigned type", i)
+	if d.decCheckInteger() {
+		decErr("Assigning negative signed value to unsigned type")
 	}
+	ui = d.decUint()
 	checkOverflow(ui, 0, bitsize)
 	d.bdRead = false
 	return
@@ -310,8 +312,7 @@ func (d *cborDecDriver) decodeFloat(chkOverflow32 bool) (f float64) {
 		f = math.Float64frombits(d.r.readUint64())
 	default:
 		if d.bd >= cborBaseUint && d.bd < cborBaseBytes {
-			_, i, _ := d.decIntAny()
-			f = float64(i)
+			f = float64(d.decodeInt(64))
 		} else {
 			decErr("Float only valid from float16/32/64: Invalid descriptor: %v", d.bd)
 		}
@@ -382,6 +383,10 @@ func (d *cborDecDriver) decodeString() (s string) {
 
 func (d *cborDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
+		if bs == nil {
+			bs = []byte{}
+			changed = true
+		}
 		bsOut = d.decIndefiniteBytes(bs[:0])
 		if len(bsOut) != len(bs) {
 			changed = true
@@ -389,8 +394,12 @@ func (d *cborDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 		return
 	}
 	clen := d.decLen()
-	if clen > 0 {
-		// if no contents in stream, don't update the passed byteslice
+	if clen >= 0 {
+		if bs == nil {
+			bs = []byte{}
+			bsOut = bs
+			changed = true
+		}
 		if len(bs) != clen {
 			if len(bs) > clen {
 				bs = bs[:clen]
@@ -400,7 +409,9 @@ func (d *cborDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 			bsOut = bs
 			changed = true
 		}
-		d.r.readb(bs)
+		if len(bs) > 0 {
+			d.r.readb(bs)
+		}
 	}
 	d.bdRead = false
 	return
@@ -458,18 +469,16 @@ func (d *cborDecDriver) decodeNaked(de *Decoder) (v interface{}, vt valueType, d
 	default:
 		switch {
 		case d.bd >= cborBaseUint && d.bd < cborBaseNegInt:
-			ui, i, _ := d.decIntAny()
 			if d.h.SignedInteger {
 				vt = valueTypeInt
-				v = i
+				v = d.decodeInt(64)
 			} else {
 				vt = valueTypeUint
-				v = ui
+				v = d.decodeUint(64)
 			}
 		case d.bd >= cborBaseNegInt && d.bd < cborBaseBytes:
 			vt = valueTypeInt
-			_, i, _ := d.decIntAny()
-			v = i
+			v = d.decodeInt(64)
 		case d.bd >= cborBaseBytes && d.bd < cborBaseString:
 			vt = valueTypeBytes
 			v, _ = d.decodeBytes(nil)

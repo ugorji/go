@@ -485,17 +485,14 @@ func (d *bincDecDriver) decUint() (v uint64) {
 	return
 }
 
-func (d *bincDecDriver) decIntAny() (ui uint64, i int64, neg bool) {
+func (d *bincDecDriver) decCheckInteger() (ui uint64, neg bool) {
 	switch d.vd {
 	case bincVdPosInt:
 		ui = d.decUint()
-		i = int64(ui)
 	case bincVdNegInt:
 		ui = d.decUint()
-		i = -(int64(ui))
 		neg = true
 	case bincVdSmallInt:
-		i = int64(d.vs) + 1
 		ui = uint64(d.vs) + 1
 	case bincVdSpecial:
 		switch d.vs {
@@ -504,7 +501,6 @@ func (d *bincDecDriver) decIntAny() (ui uint64, i int64, neg bool) {
 		case bincSpNegOne:
 			neg = true
 			ui = 1
-			i = -1
 		default:
 			decErr("numeric decode fails for special value: d.vs: 0x%x", d.vs)
 		}
@@ -515,16 +511,21 @@ func (d *bincDecDriver) decIntAny() (ui uint64, i int64, neg bool) {
 }
 
 func (d *bincDecDriver) decodeInt(bitsize uint8) (i int64) {
-	_, i, _ = d.decIntAny()
+	ui, neg := d.decCheckInteger()
+	if neg {
+		i = -checkOverflowUint64ToInt64(ui)
+	} else {
+		i = checkOverflowUint64ToInt64(ui)
+	}
 	checkOverflow(0, i, bitsize)
 	d.bdRead = false
 	return
 }
 
 func (d *bincDecDriver) decodeUint(bitsize uint8) (ui uint64) {
-	ui, i, neg := d.decIntAny()
+	ui, neg := d.decCheckInteger()
 	if neg {
-		decErr("Assigning negative signed value: %v, to unsigned type", i)
+		decErr("Assigning negative signed value to unsigned type")
 	}
 	checkOverflow(ui, 0, bitsize)
 	d.bdRead = false
@@ -550,8 +551,7 @@ func (d *bincDecDriver) decodeFloat(chkOverflow32 bool) (f float64) {
 	case bincVdFloat:
 		f = d.decFloat()
 	default:
-		_, i, _ := d.decIntAny()
-		f = float64(i)
+		f = float64(d.decodeInt(64))
 	}
 	checkOverflowFloat32(f, chkOverflow32)
 	d.bdRead = false
@@ -671,8 +671,12 @@ func (d *bincDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 		decErr("Invalid d.vd for bytes. Expecting string:0x%x or bytearray:0x%x. Got: 0x%x",
 			bincVdString, bincVdByteArray, d.vd)
 	}
-	if clen > 0 {
-		// if no contents in stream, don't update the passed byteslice
+	if clen >= 0 {
+		if bs == nil {
+			bs = []byte{}
+			bsOut = bs
+			changed = true
+		}
 		if len(bs) != clen {
 			if len(bs) > clen {
 				bs = bs[:clen]
@@ -682,7 +686,9 @@ func (d *bincDecDriver) decodeBytes(bs []byte) (bsOut []byte, changed bool) {
 			bsOut = bs
 			changed = true
 		}
-		d.r.readb(bs)
+		if len(bs) > 0 {
+			d.r.readb(bs)
+		}
 	}
 	d.bdRead = false
 	return

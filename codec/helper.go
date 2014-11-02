@@ -150,7 +150,7 @@ type Handle interface {
 }
 
 // RawExt represents raw unprocessed extension data.
-// Some codecs will decode extension data as a RawExt if there is no registered extension for the tag.
+// Some codecs will decode extension data as a *RawExt if there is no registered extension for the tag.
 //
 // Only one of Data or Value is nil. If Data is nil, then the content of the RawExt is in the Value.
 type RawExt struct {
@@ -546,7 +546,7 @@ func checkOverflowFloat32(f float64, doCheck bool) {
 
 func checkOverflow(ui uint64, i int64, bitsize uint8) {
 	// check overflow (logic adapted from std pkg reflect/value.go OverflowUint()
-	if bitsize == 0 {
+	if bitsize == 0 || bitsize >= 64 {
 		return
 	}
 	if i != 0 {
@@ -559,4 +559,20 @@ func checkOverflow(ui uint64, i int64, bitsize uint8) {
 			decErr("Overflow uint value: %v", ui)
 		}
 	}
+}
+
+func checkOverflowUint64ToInt64(ui uint64) int64 {
+	//e.g. -127 to 128 for int8
+	pos := (ui >> 63) == 0
+	ui2 := ui & 0x7fffffffffffffff
+	if pos {
+		if ui2 > math.MaxInt64 {
+			decErr("uint64 value greater than max int64; got %v", ui2)
+		}
+	} else {
+		if ui2 > math.MaxInt64-1 {
+			decErr("uint64 value less than min int64; got %v", ui2)
+		}
+	}
+	return int64(ui)
 }

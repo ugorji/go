@@ -172,6 +172,8 @@ func (x testCborTimeExt) UpdateExt(rv reflect.Value, v interface{}) {
 		tt = time.Unix(0, v2).UTC()
 	case uint64:
 		tt = time.Unix(0, int64(v2)).UTC()
+	//case float64:
+	//case string:
 	default:
 		panic(fmt.Sprintf("unsupported format for time conversion: expecting int64/uint64; got %T", v))
 	}

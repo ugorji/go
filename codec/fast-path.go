@@ -2195,6 +2195,12 @@ func (f *decFnInfo) fastDecSliceIntf(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []interface{}{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2254,6 +2260,12 @@ func (f *decFnInfo) fastDecSliceString(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []string{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2314,6 +2326,12 @@ func (f *decFnInfo) fastDecSliceFloat32(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []float32{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2374,6 +2392,12 @@ func (f *decFnInfo) fastDecSliceFloat64(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []float64{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2434,6 +2458,12 @@ func (f *decFnInfo) fastDecSliceUint(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []uint{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2494,6 +2524,12 @@ func (f *decFnInfo) fastDecSliceUint16(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []uint16{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2554,6 +2590,12 @@ func (f *decFnInfo) fastDecSliceUint32(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []uint32{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2614,6 +2656,12 @@ func (f *decFnInfo) fastDecSliceUint64(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []uint64{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2674,6 +2722,12 @@ func (f *decFnInfo) fastDecSliceInt(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []int{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2734,6 +2788,12 @@ func (f *decFnInfo) fastDecSliceInt8(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []int8{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2794,6 +2854,12 @@ func (f *decFnInfo) fastDecSliceInt16(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []int16{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2854,6 +2920,12 @@ func (f *decFnInfo) fastDecSliceInt32(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []int32{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2914,6 +2986,12 @@ func (f *decFnInfo) fastDecSliceInt64(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []int64{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -2974,6 +3052,12 @@ func (f *decFnInfo) fastDecSliceBool(rv reflect.Value) {
 
 	_, containerLenS := decContLens(f.dd, vtype)
 	if containerLenS == 0 {
+		if v == nil {
+			v = []bool{}
+		} else {
+			v = v[:0]
+		}
+		*vp = v
 		return
 	}
 	if v == nil {
@@ -3034,6 +3118,10 @@ func (f *decFnInfo) fastDecMapIntfIntf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[interface{}]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3090,6 +3178,10 @@ func (f *decFnInfo) fastDecMapIntfString(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[interface{}]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3147,6 +3239,10 @@ func (f *decFnInfo) fastDecMapIntfUint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[interface{}]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3204,6 +3300,10 @@ func (f *decFnInfo) fastDecMapIntfUint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[interface{}]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3261,6 +3361,10 @@ func (f *decFnInfo) fastDecMapIntfUint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[interface{}]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3318,6 +3422,10 @@ func (f *decFnInfo) fastDecMapIntfInt(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[interface{}]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3375,6 +3483,10 @@ func (f *decFnInfo) fastDecMapIntfInt32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[interface{}]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3432,6 +3544,10 @@ func (f *decFnInfo) fastDecMapIntfInt64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[interface{}]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3489,6 +3605,10 @@ func (f *decFnInfo) fastDecMapStringIntf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[string]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3541,6 +3661,10 @@ func (f *decFnInfo) fastDecMapStringString(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[string]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3594,6 +3718,10 @@ func (f *decFnInfo) fastDecMapStringUint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[string]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3647,6 +3775,10 @@ func (f *decFnInfo) fastDecMapStringUint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[string]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3700,6 +3832,10 @@ func (f *decFnInfo) fastDecMapStringUint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[string]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3753,6 +3889,10 @@ func (f *decFnInfo) fastDecMapStringInt(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[string]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3806,6 +3946,10 @@ func (f *decFnInfo) fastDecMapStringInt32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[string]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3859,6 +4003,10 @@ func (f *decFnInfo) fastDecMapStringInt64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[string]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3912,6 +4060,10 @@ func (f *decFnInfo) fastDecMapFloat32Float32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float32]float32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -3965,6 +4117,10 @@ func (f *decFnInfo) fastDecMapFloat32Intf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float32]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4017,6 +4173,10 @@ func (f *decFnInfo) fastDecMapFloat32String(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float32]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4070,6 +4230,10 @@ func (f *decFnInfo) fastDecMapFloat32Uint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float32]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4123,6 +4287,10 @@ func (f *decFnInfo) fastDecMapFloat32Uint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float32]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4176,6 +4344,10 @@ func (f *decFnInfo) fastDecMapFloat32Uint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float32]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4229,6 +4401,10 @@ func (f *decFnInfo) fastDecMapFloat32Int(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float32]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4282,6 +4458,10 @@ func (f *decFnInfo) fastDecMapFloat32Int32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float32]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4335,6 +4515,10 @@ func (f *decFnInfo) fastDecMapFloat32Int64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float32]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4388,6 +4572,10 @@ func (f *decFnInfo) fastDecMapFloat64Float64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float64]float64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4441,6 +4629,10 @@ func (f *decFnInfo) fastDecMapFloat64Intf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float64]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4493,6 +4685,10 @@ func (f *decFnInfo) fastDecMapFloat64String(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float64]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4546,6 +4742,10 @@ func (f *decFnInfo) fastDecMapFloat64Uint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float64]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4599,6 +4799,10 @@ func (f *decFnInfo) fastDecMapFloat64Uint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float64]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4652,6 +4856,10 @@ func (f *decFnInfo) fastDecMapFloat64Uint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float64]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4705,6 +4913,10 @@ func (f *decFnInfo) fastDecMapFloat64Int(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float64]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4758,6 +4970,10 @@ func (f *decFnInfo) fastDecMapFloat64Int32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float64]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4811,6 +5027,10 @@ func (f *decFnInfo) fastDecMapFloat64Int64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[float64]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4864,6 +5084,10 @@ func (f *decFnInfo) fastDecMapUintIntf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4916,6 +5140,10 @@ func (f *decFnInfo) fastDecMapUintString(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -4969,6 +5197,10 @@ func (f *decFnInfo) fastDecMapUintUint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5022,6 +5254,10 @@ func (f *decFnInfo) fastDecMapUintUint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5075,6 +5311,10 @@ func (f *decFnInfo) fastDecMapUintUint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5128,6 +5368,10 @@ func (f *decFnInfo) fastDecMapUintInt(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5181,6 +5425,10 @@ func (f *decFnInfo) fastDecMapUintInt32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5234,6 +5482,10 @@ func (f *decFnInfo) fastDecMapUintInt64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5287,6 +5539,10 @@ func (f *decFnInfo) fastDecMapUint8Uint8(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint8]uint8{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5340,6 +5596,10 @@ func (f *decFnInfo) fastDecMapUint8Intf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint8]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5392,6 +5652,10 @@ func (f *decFnInfo) fastDecMapUint8String(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint8]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5445,6 +5709,10 @@ func (f *decFnInfo) fastDecMapUint8Uint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint8]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5498,6 +5766,10 @@ func (f *decFnInfo) fastDecMapUint8Uint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint8]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5551,6 +5823,10 @@ func (f *decFnInfo) fastDecMapUint8Uint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint8]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5604,6 +5880,10 @@ func (f *decFnInfo) fastDecMapUint8Int(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint8]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5657,6 +5937,10 @@ func (f *decFnInfo) fastDecMapUint8Int32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint8]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5710,6 +5994,10 @@ func (f *decFnInfo) fastDecMapUint8Int64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint8]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5763,6 +6051,10 @@ func (f *decFnInfo) fastDecMapUint16Uint16(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint16]uint16{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5816,6 +6108,10 @@ func (f *decFnInfo) fastDecMapUint16Intf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint16]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5868,6 +6164,10 @@ func (f *decFnInfo) fastDecMapUint16String(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint16]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5921,6 +6221,10 @@ func (f *decFnInfo) fastDecMapUint16Uint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint16]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -5974,6 +6278,10 @@ func (f *decFnInfo) fastDecMapUint16Uint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint16]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6027,6 +6335,10 @@ func (f *decFnInfo) fastDecMapUint16Uint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint16]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6080,6 +6392,10 @@ func (f *decFnInfo) fastDecMapUint16Int(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint16]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6133,6 +6449,10 @@ func (f *decFnInfo) fastDecMapUint16Int32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint16]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6186,6 +6506,10 @@ func (f *decFnInfo) fastDecMapUint16Int64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint16]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6239,6 +6563,10 @@ func (f *decFnInfo) fastDecMapUint32Intf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint32]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6291,6 +6619,10 @@ func (f *decFnInfo) fastDecMapUint32String(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint32]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6344,6 +6676,10 @@ func (f *decFnInfo) fastDecMapUint32Uint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint32]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6397,6 +6733,10 @@ func (f *decFnInfo) fastDecMapUint32Uint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint32]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6450,6 +6790,10 @@ func (f *decFnInfo) fastDecMapUint32Uint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint32]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6503,6 +6847,10 @@ func (f *decFnInfo) fastDecMapUint32Int(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint32]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6556,6 +6904,10 @@ func (f *decFnInfo) fastDecMapUint32Int32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint32]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6609,6 +6961,10 @@ func (f *decFnInfo) fastDecMapUint32Int64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint32]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6662,6 +7018,10 @@ func (f *decFnInfo) fastDecMapUint64Intf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint64]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6714,6 +7074,10 @@ func (f *decFnInfo) fastDecMapUint64String(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint64]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6767,6 +7131,10 @@ func (f *decFnInfo) fastDecMapUint64Uint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint64]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6820,6 +7188,10 @@ func (f *decFnInfo) fastDecMapUint64Uint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint64]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6873,6 +7245,10 @@ func (f *decFnInfo) fastDecMapUint64Uint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint64]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6926,6 +7302,10 @@ func (f *decFnInfo) fastDecMapUint64Int(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint64]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -6979,6 +7359,10 @@ func (f *decFnInfo) fastDecMapUint64Int32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint64]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7032,6 +7416,10 @@ func (f *decFnInfo) fastDecMapUint64Int64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[uint64]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7085,6 +7473,10 @@ func (f *decFnInfo) fastDecMapIntIntf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7137,6 +7529,10 @@ func (f *decFnInfo) fastDecMapIntString(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7190,6 +7586,10 @@ func (f *decFnInfo) fastDecMapIntUint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7243,6 +7643,10 @@ func (f *decFnInfo) fastDecMapIntUint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7296,6 +7700,10 @@ func (f *decFnInfo) fastDecMapIntUint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7349,6 +7757,10 @@ func (f *decFnInfo) fastDecMapIntInt(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7402,6 +7814,10 @@ func (f *decFnInfo) fastDecMapIntInt32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7455,6 +7871,10 @@ func (f *decFnInfo) fastDecMapIntInt64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7508,6 +7928,10 @@ func (f *decFnInfo) fastDecMapInt8Int8(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int8]int8{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7561,6 +7985,10 @@ func (f *decFnInfo) fastDecMapInt8Intf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int8]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7613,6 +8041,10 @@ func (f *decFnInfo) fastDecMapInt8String(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int8]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7666,6 +8098,10 @@ func (f *decFnInfo) fastDecMapInt8Uint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int8]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7719,6 +8155,10 @@ func (f *decFnInfo) fastDecMapInt8Uint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int8]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7772,6 +8212,10 @@ func (f *decFnInfo) fastDecMapInt8Uint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int8]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7825,6 +8269,10 @@ func (f *decFnInfo) fastDecMapInt8Int(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int8]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7878,6 +8326,10 @@ func (f *decFnInfo) fastDecMapInt8Int32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int8]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7931,6 +8383,10 @@ func (f *decFnInfo) fastDecMapInt8Int64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int8]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -7984,6 +8440,10 @@ func (f *decFnInfo) fastDecMapInt16Int16(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int16]int16{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8037,6 +8497,10 @@ func (f *decFnInfo) fastDecMapInt16Intf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int16]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8089,6 +8553,10 @@ func (f *decFnInfo) fastDecMapInt16String(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int16]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8142,6 +8610,10 @@ func (f *decFnInfo) fastDecMapInt16Uint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int16]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8195,6 +8667,10 @@ func (f *decFnInfo) fastDecMapInt16Uint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int16]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8248,6 +8724,10 @@ func (f *decFnInfo) fastDecMapInt16Uint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int16]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8301,6 +8781,10 @@ func (f *decFnInfo) fastDecMapInt16Int(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int16]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8354,6 +8838,10 @@ func (f *decFnInfo) fastDecMapInt16Int32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int16]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8407,6 +8895,10 @@ func (f *decFnInfo) fastDecMapInt16Int64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int16]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8460,6 +8952,10 @@ func (f *decFnInfo) fastDecMapInt32Intf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int32]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8512,6 +9008,10 @@ func (f *decFnInfo) fastDecMapInt32String(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int32]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8565,6 +9065,10 @@ func (f *decFnInfo) fastDecMapInt32Uint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int32]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8618,6 +9122,10 @@ func (f *decFnInfo) fastDecMapInt32Uint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int32]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8671,6 +9179,10 @@ func (f *decFnInfo) fastDecMapInt32Uint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int32]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8724,6 +9236,10 @@ func (f *decFnInfo) fastDecMapInt32Int(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int32]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8777,6 +9293,10 @@ func (f *decFnInfo) fastDecMapInt32Int32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int32]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8830,6 +9350,10 @@ func (f *decFnInfo) fastDecMapInt32Int64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int32]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8883,6 +9407,10 @@ func (f *decFnInfo) fastDecMapInt64Intf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int64]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8935,6 +9463,10 @@ func (f *decFnInfo) fastDecMapInt64String(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int64]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -8988,6 +9520,10 @@ func (f *decFnInfo) fastDecMapInt64Uint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int64]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9041,6 +9577,10 @@ func (f *decFnInfo) fastDecMapInt64Uint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int64]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9094,6 +9634,10 @@ func (f *decFnInfo) fastDecMapInt64Uint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int64]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9147,6 +9691,10 @@ func (f *decFnInfo) fastDecMapInt64Int(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int64]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9200,6 +9748,10 @@ func (f *decFnInfo) fastDecMapInt64Int32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int64]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9253,6 +9805,10 @@ func (f *decFnInfo) fastDecMapInt64Int64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[int64]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9306,6 +9862,10 @@ func (f *decFnInfo) fastDecMapBoolBool(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[bool]bool{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9359,6 +9919,10 @@ func (f *decFnInfo) fastDecMapBoolIntf(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[bool]interface{}{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9411,6 +9975,10 @@ func (f *decFnInfo) fastDecMapBoolString(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[bool]string{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9464,6 +10032,10 @@ func (f *decFnInfo) fastDecMapBoolUint(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[bool]uint{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9517,6 +10089,10 @@ func (f *decFnInfo) fastDecMapBoolUint32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[bool]uint32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9570,6 +10146,10 @@ func (f *decFnInfo) fastDecMapBoolUint64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[bool]uint64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9623,6 +10203,10 @@ func (f *decFnInfo) fastDecMapBoolInt(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[bool]int{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9676,6 +10260,10 @@ func (f *decFnInfo) fastDecMapBoolInt32(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[bool]int32{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
@@ -9729,6 +10317,10 @@ func (f *decFnInfo) fastDecMapBoolInt64(rv reflect.Value) {
 
 	containerLen := f.dd.readMapLen()
 	if containerLen == 0 {
+		if v == nil {
+			v = map[bool]int64{}
+			*vp = v
+		}
 		return
 	}
 	if xaddr && v == nil {
