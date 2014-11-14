@@ -783,7 +783,10 @@ func (e *Encoder) encodeValue(rv reflect.Value, fn encFn) {
 		}
 		rv = rv.Elem()
 	}
-
+	if !rv.IsValid() {
+		e.e.encodeNil()
+		return
+	}
 	if fn.i == nil {
 		fn = e.getEncFn(rv.Type())
 	}
