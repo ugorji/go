@@ -1,9 +1,10 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 package codec
 
 import (
+	"encoding"
 	"io"
 	"reflect"
 )
@@ -65,8 +66,13 @@ type encDriver interface {
 	// encodeExtPreamble(xtag byte, length int)
 	encodeRawExt(re *RawExt, e *Encoder)
 	encodeExt(rv reflect.Value, xtag uint64, ext Ext, e *Encoder)
-	encodeArrayPreamble(length int)
-	encodeMapPreamble(length int)
+	encodeArrayStart(length int)
+	encodeArrayEnd()
+	encodeArrayEntrySeparator()
+	encodeMapStart(length int)
+	encodeMapEnd()
+	encodeMapEntrySeparator()
+	encodeMapKVSeparator()
 	encodeString(c charEncoding, v string)
 	encodeSymbol(v string)
 	encodeStringBytes(c charEncoding, v []byte)
@@ -74,6 +80,17 @@ type encDriver interface {
 	//encBignum(f *big.Int)
 	//encStringRunes(c charEncoding, v []rune)
 }
+
+type encNoMapArrayEnd struct{}
+
+func (_ encNoMapArrayEnd) encodeMapEnd()   {}
+func (_ encNoMapArrayEnd) encodeArrayEnd() {}
+
+type encNoMapArraySeparator struct{}
+
+func (_ encNoMapArraySeparator) encodeArrayEntrySeparator() {}
+func (_ encNoMapArraySeparator) encodeMapEntrySeparator()   {}
+func (_ encNoMapArraySeparator) encodeMapKVSeparator()      {}
 
 type ioEncWriterWriter interface {
 	WriteByte(c byte) error
@@ -164,7 +181,7 @@ func (z *ioEncWriter) writeb(bs []byte) {
 		panic(err)
 	}
 	if n != len(bs) {
-		encErr("write: Incorrect num bytes written. Expecting: %v, Wrote: %v", len(bs), n)
+		encErr("incorrect num bytes written. Expecting: %v, Wrote: %v", len(bs), n)
 	}
 }
 
@@ -174,7 +191,7 @@ func (z *ioEncWriter) writestr(s string) {
 		panic(err)
 	}
 	if n != len(s) {
-		encErr("write: Incorrect num bytes written. Expecting: %v, Wrote: %v", len(s), n)
+		encErr("incorrect num bytes written. Expecting: %v, Wrote: %v", len(s), n)
 	}
 }
 
@@ -279,6 +296,7 @@ type encFnInfo struct {
 	ee    encDriver
 	xfFn  Ext
 	xfTag uint64
+	array bool
 }
 
 func (f *encFnInfo) builtin(rv reflect.Value) {
@@ -294,22 +312,22 @@ func (f *encFnInfo) ext(rv reflect.Value) {
 }
 
 func (f *encFnInfo) binaryMarshal(rv reflect.Value) {
-	var bm binaryMarshaler
-	if f.ti.mIndir == 0 {
-		bm = rv.Interface().(binaryMarshaler)
-	} else if f.ti.mIndir == -1 {
-		bm = rv.Addr().Interface().(binaryMarshaler)
+	var bm encoding.BinaryMarshaler
+	if f.ti.bmIndir == 0 {
+		bm = rv.Interface().(encoding.BinaryMarshaler)
+	} else if f.ti.bmIndir == -1 {
+		bm = rv.Addr().Interface().(encoding.BinaryMarshaler)
 	} else {
-		for j, k := int8(0), f.ti.mIndir; j < k; j++ {
+		for j, k := int8(0), f.ti.bmIndir; j < k; j++ {
 			if rv.IsNil() {
 				f.ee.encodeNil()
 				return
 			}
 			rv = rv.Elem()
 		}
-		bm = rv.Interface().(binaryMarshaler)
+		bm = rv.Interface().(encoding.BinaryMarshaler)
 	}
-	// debugf(">>>> binaryMarshaler: %T", rv.Interface())
+	// debugf(">>>> encoding.BinaryMarshaler: %T", rv.Interface())
 	bs, fnerr := bm.MarshalBinary()
 	if fnerr != nil {
 		panic(fnerr)
@@ -318,6 +336,34 @@ func (f *encFnInfo) binaryMarshal(rv reflect.Value) {
 		f.ee.encodeNil()
 	} else {
 		f.ee.encodeStringBytes(c_RAW, bs)
+	}
+}
+
+func (f *encFnInfo) textMarshal(rv reflect.Value) {
+	var tm encoding.TextMarshaler
+	if f.ti.tmIndir == 0 {
+		tm = rv.Interface().(encoding.TextMarshaler)
+	} else if f.ti.tmIndir == -1 {
+		tm = rv.Addr().Interface().(encoding.TextMarshaler)
+	} else {
+		for j, k := int8(0), f.ti.tmIndir; j < k; j++ {
+			if rv.IsNil() {
+				f.ee.encodeNil()
+				return
+			}
+			rv = rv.Elem()
+		}
+		tm = rv.Interface().(encoding.TextMarshaler)
+	}
+	// debugf(">>>> encoding.TextMarshaler: %T", rv.Interface())
+	bs, fnerr := tm.MarshalText()
+	if fnerr != nil {
+		panic(fnerr)
+	}
+	if bs == nil {
+		f.ee.encodeNil()
+	} else {
+		f.ee.encodeStringBytes(c_UTF8, bs)
 	}
 }
 
@@ -350,92 +396,80 @@ func (f *encFnInfo) kInvalid(rv reflect.Value) {
 }
 
 func (f *encFnInfo) kErr(rv reflect.Value) {
-	encErr("Unsupported kind: %s, for: %#v", rv.Kind(), rv)
+	encErr("unsupported kind %s, for %#v", rv.Kind(), rv)
 }
 
 func (f *encFnInfo) kSlice(rv reflect.Value) {
-	if rv.IsNil() {
-		f.ee.encodeNil()
-		return
-	}
-
-	// If in this method, then there was no extension function defined.
-	// So it's okay to treat as []byte.
-	if f.ti.rtid == uint8SliceTypId || f.ti.rt.Elem().Kind() == reflect.Uint8 {
-		f.ee.encodeStringBytes(c_RAW, rv.Bytes())
-		return
-	}
-
-	l := rv.Len()
-	if f.ti.mbs {
-		if l%2 == 1 {
-			encErr("mapBySlice: invalid length (must be divisible by 2): %v", l)
-		}
-		f.ee.encodeMapPreamble(l / 2)
-	} else {
-		f.ee.encodeArrayPreamble(l)
-	}
-	if l == 0 {
-		return
-	}
-
-	rtelem := f.ti.rt.Elem()
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
-	fn := f.e.getEncFn(rtelem)
-	for j := 0; j < l; j++ {
-		// TODO: Consider perf implication of encoding odd index values as symbols if type is string
-		f.e.encodeValue(rv.Index(j), fn)
-	}
-}
-
-func (f *encFnInfo) kArray(rv reflect.Value) {
-	// We cannot share kSlice method, because the array may be non-addressable.
+	// array may be non-addressable, so we have to manage with care (don't call rv.Bytes, rv.Slice, etc).
 	// E.g. type struct S{B [2]byte}; Encode(S{}) will bomb on "panic: slice of unaddressable array".
-	// So we have to duplicate the functionality here.
-	// f.e.encodeValue(rv.Slice(0, rv.Len()))
-	// f.kSlice(rv.Slice(0, rv.Len()))
 
-	l := rv.Len()
-	// Handle an array of bytes specially (in line with what is done for slices)
-	rtelem := f.ti.rt.Elem()
-	if rtelem.Kind() == reflect.Uint8 {
-		if l == 0 {
-			f.ee.encodeStringBytes(c_RAW, nil)
+	if !f.array {
+		if rv.IsNil() {
+			f.ee.encodeNil()
 			return
 		}
-		var bs []byte
-		if rv.CanAddr() {
-			bs = rv.Slice(0, l).Bytes()
-		} else {
-			bs = make([]byte, l)
-			for i := 0; i < l; i++ {
-				bs[i] = byte(rv.Index(i).Uint())
-			}
+		// If in this method, then there was no extension function defined.
+		// So it's okay to treat as []byte.
+		if f.ti.rtid == uint8SliceTypId {
+			f.ee.encodeStringBytes(c_RAW, rv.Bytes())
+			return
 		}
-		f.ee.encodeStringBytes(c_RAW, bs)
+	}
+	rtelem := f.ti.rt.Elem()
+	l := rv.Len()
+	if rtelem.Kind() == reflect.Uint8 {
+		if f.array {
+			// if l == 0 { f.ee.encodeStringBytes(c_RAW, nil) } else
+			if rv.CanAddr() {
+				f.ee.encodeStringBytes(c_RAW, rv.Slice(0, l).Bytes())
+			} else {
+				bs := make([]byte, l)
+				for i := 0; i < l; i++ {
+					bs[i] = byte(rv.Index(i).Uint())
+				}
+				f.ee.encodeStringBytes(c_RAW, bs)
+			}
+		} else {
+			f.ee.encodeStringBytes(c_RAW, rv.Bytes())
+		}
 		return
 	}
 
 	if f.ti.mbs {
 		if l%2 == 1 {
-			encErr("mapBySlice: invalid length (must be divisible by 2): %v", l)
+			encErr("mapBySlice requires even slice length, but got %v", l)
 		}
-		f.ee.encodeMapPreamble(l / 2)
+		f.ee.encodeMapStart(l / 2)
 	} else {
-		f.ee.encodeArrayPreamble(l)
+		f.ee.encodeArrayStart(l)
 	}
-	if l == 0 {
-		return
+
+	if l > 0 {
+		for rtelem.Kind() == reflect.Ptr {
+			rtelem = rtelem.Elem()
+		}
+		fn := f.e.getEncFn(rtelem)
+		for j := 0; j < l; j++ {
+			// TODO: Consider perf implication of encoding odd index values as symbols if type is string
+			if j > 0 {
+				if f.ti.mbs {
+					if j%2 == 0 {
+						f.ee.encodeMapEntrySeparator()
+					} else {
+						f.ee.encodeMapKVSeparator()
+					}
+				} else {
+					f.ee.encodeArrayEntrySeparator()
+				}
+			}
+			f.e.encodeValue(rv.Index(j), fn)
+		}
 	}
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
-	fn := f.e.getEncFn(rtelem)
-	for j := 0; j < l; j++ {
-		// TODO: Consider perf implication of encoding odd index values as symbols if type is string
-		f.e.encodeValue(rv.Index(j), fn)
+
+	if f.ti.mbs {
+		f.ee.encodeMapEnd()
+	} else {
+		f.ee.encodeArrayEnd()
 	}
 }
 
@@ -475,22 +509,31 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	// debugf(">>>> kStruct: newlen: %v", newlen)
 	if toMap {
 		ee := f.ee //don't dereference everytime
-		ee.encodeMapPreamble(newlen)
+		ee.encodeMapStart(newlen)
 		// asSymbols := e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 		asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 		for j := 0; j < newlen; j++ {
+			if j > 0 {
+				ee.encodeMapEntrySeparator()
+			}
 			if asSymbols {
 				ee.encodeSymbol(encnames[j])
 			} else {
 				ee.encodeString(c_UTF8, encnames[j])
 			}
+			ee.encodeMapKVSeparator()
 			e.encodeValue(rvals[j], encFn{})
 		}
+		ee.encodeMapEnd()
 	} else {
-		f.ee.encodeArrayPreamble(newlen)
+		f.ee.encodeArrayStart(newlen)
 		for j := 0; j < newlen; j++ {
+			if j > 0 {
+				f.ee.encodeArrayEntrySeparator()
+			}
 			e.encodeValue(rvals[j], encFn{})
 		}
+		f.ee.encodeArrayEnd()
 	}
 }
 
@@ -518,8 +561,9 @@ func (f *encFnInfo) kMap(rv reflect.Value) {
 	}
 
 	l := rv.Len()
-	f.ee.encodeMapPreamble(l)
+	f.ee.encodeMapStart(l)
 	if l == 0 {
+		f.ee.encodeMapEnd()
 		return
 	}
 	var asSymbols bool
@@ -545,19 +589,24 @@ func (f *encFnInfo) kMap(rv reflect.Value) {
 	valFn = f.e.getEncFn(rtval)
 	mks := rv.MapKeys()
 	// for j, lmks := 0, len(mks); j < lmks; j++ {
+	ee := f.ee //don't dereference everytime
 	for j := range mks {
+		if j > 0 {
+			ee.encodeMapEntrySeparator()
+		}
 		if keyTypeIsString {
 			if asSymbols {
-				f.ee.encodeSymbol(mks[j].String())
+				ee.encodeSymbol(mks[j].String())
 			} else {
-				f.ee.encodeString(c_UTF8, mks[j].String())
+				ee.encodeString(c_UTF8, mks[j].String())
 			}
 		} else {
 			f.e.encodeValue(mks[j], keyFn)
 		}
+		ee.encodeMapKVSeparator()
 		f.e.encodeValue(rv.MapIndex(mks[j]), valFn)
 	}
-
+	ee.encodeMapEnd()
 }
 
 // --------------------------------------------------
@@ -821,8 +870,10 @@ func (e *Encoder) getEncFn(rt reflect.Type) (fn encFn) {
 		} else if xfFn := e.h.getExt(rtid); xfFn != nil {
 			fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 			fn.f = (*encFnInfo).ext
-		} else if supportBinaryMarshal && fi.ti.m {
+		} else if supportMarshalInterfaces && e.hh.isBinaryEncoding() && fi.ti.bm {
 			fn.f = (*encFnInfo).binaryMarshal
+		} else if supportMarshalInterfaces && !e.hh.isBinaryEncoding() && fi.ti.tm {
+			fn.f = (*encFnInfo).textMarshal
 		} else {
 			rk := rt.Kind()
 			if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice) {
@@ -863,7 +914,8 @@ func (e *Encoder) getEncFn(rt reflect.Type) (fn encFn) {
 				case reflect.Slice:
 					fn.f = (*encFnInfo).kSlice
 				case reflect.Array:
-					fn.f = (*encFnInfo).kArray
+					fi.array = true
+					fn.f = (*encFnInfo).kSlice
 				case reflect.Struct:
 					fn.f = (*encFnInfo).kStruct
 					// case reflect.Ptr:

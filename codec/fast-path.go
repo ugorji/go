@@ -1,4 +1,4 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 // ************************************************************
@@ -200,10 +200,14 @@ func (f *encFnInfo) fastEncSliceIntf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.e.encode(v2)
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceString(rv reflect.Value) {
@@ -212,10 +216,14 @@ func (f *encFnInfo) fastEncSliceString(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeString(c_UTF8, v2)
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceFloat32(rv reflect.Value) {
@@ -224,10 +232,14 @@ func (f *encFnInfo) fastEncSliceFloat32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeFloat32(v2)
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceFloat64(rv reflect.Value) {
@@ -236,10 +248,14 @@ func (f *encFnInfo) fastEncSliceFloat64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeFloat64(v2)
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceUint(rv reflect.Value) {
@@ -248,10 +264,14 @@ func (f *encFnInfo) fastEncSliceUint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(v2))
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceUint16(rv reflect.Value) {
@@ -260,10 +280,14 @@ func (f *encFnInfo) fastEncSliceUint16(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(v2))
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceUint32(rv reflect.Value) {
@@ -272,10 +296,14 @@ func (f *encFnInfo) fastEncSliceUint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(v2))
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceUint64(rv reflect.Value) {
@@ -284,10 +312,14 @@ func (f *encFnInfo) fastEncSliceUint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(v2))
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceInt(rv reflect.Value) {
@@ -296,10 +328,14 @@ func (f *encFnInfo) fastEncSliceInt(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeInt(int64(v2))
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceInt8(rv reflect.Value) {
@@ -308,10 +344,14 @@ func (f *encFnInfo) fastEncSliceInt8(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeInt(int64(v2))
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceInt16(rv reflect.Value) {
@@ -320,10 +360,14 @@ func (f *encFnInfo) fastEncSliceInt16(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeInt(int64(v2))
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceInt32(rv reflect.Value) {
@@ -332,10 +376,14 @@ func (f *encFnInfo) fastEncSliceInt32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeInt(int64(v2))
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceInt64(rv reflect.Value) {
@@ -344,10 +392,14 @@ func (f *encFnInfo) fastEncSliceInt64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeInt(int64(v2))
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncSliceBool(rv reflect.Value) {
@@ -356,10 +408,14 @@ func (f *encFnInfo) fastEncSliceBool(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		f.ee.encodeBool(v2)
 	}
+	f.ee.encodeArrayEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntfIntf(rv reflect.Value) {
@@ -368,12 +424,19 @@ func (f *encFnInfo) fastEncMapIntfIntf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.e.encode(k2)
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntfString(rv reflect.Value) {
@@ -382,12 +445,19 @@ func (f *encFnInfo) fastEncMapIntfString(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.e.encode(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntfUint(rv reflect.Value) {
@@ -396,12 +466,19 @@ func (f *encFnInfo) fastEncMapIntfUint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.e.encode(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntfUint32(rv reflect.Value) {
@@ -410,12 +487,19 @@ func (f *encFnInfo) fastEncMapIntfUint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.e.encode(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntfUint64(rv reflect.Value) {
@@ -424,12 +508,19 @@ func (f *encFnInfo) fastEncMapIntfUint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.e.encode(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntfInt(rv reflect.Value) {
@@ -438,12 +529,19 @@ func (f *encFnInfo) fastEncMapIntfInt(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.e.encode(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntfInt32(rv reflect.Value) {
@@ -452,12 +550,19 @@ func (f *encFnInfo) fastEncMapIntfInt32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.e.encode(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntfInt64(rv reflect.Value) {
@@ -466,12 +571,19 @@ func (f *encFnInfo) fastEncMapIntfInt64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.e.encode(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapStringIntf(rv reflect.Value) {
@@ -480,16 +592,23 @@ func (f *encFnInfo) fastEncMapStringIntf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		if asSymbols {
 			f.ee.encodeSymbol(k2)
 		} else {
 			f.ee.encodeString(c_UTF8, k2)
 		}
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapStringString(rv reflect.Value) {
@@ -498,16 +617,23 @@ func (f *encFnInfo) fastEncMapStringString(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		if asSymbols {
 			f.ee.encodeSymbol(k2)
 		} else {
 			f.ee.encodeString(c_UTF8, k2)
 		}
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapStringUint(rv reflect.Value) {
@@ -516,16 +642,23 @@ func (f *encFnInfo) fastEncMapStringUint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		if asSymbols {
 			f.ee.encodeSymbol(k2)
 		} else {
 			f.ee.encodeString(c_UTF8, k2)
 		}
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapStringUint32(rv reflect.Value) {
@@ -534,16 +667,23 @@ func (f *encFnInfo) fastEncMapStringUint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		if asSymbols {
 			f.ee.encodeSymbol(k2)
 		} else {
 			f.ee.encodeString(c_UTF8, k2)
 		}
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapStringUint64(rv reflect.Value) {
@@ -552,16 +692,23 @@ func (f *encFnInfo) fastEncMapStringUint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		if asSymbols {
 			f.ee.encodeSymbol(k2)
 		} else {
 			f.ee.encodeString(c_UTF8, k2)
 		}
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapStringInt(rv reflect.Value) {
@@ -570,16 +717,23 @@ func (f *encFnInfo) fastEncMapStringInt(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		if asSymbols {
 			f.ee.encodeSymbol(k2)
 		} else {
 			f.ee.encodeString(c_UTF8, k2)
 		}
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapStringInt32(rv reflect.Value) {
@@ -588,16 +742,23 @@ func (f *encFnInfo) fastEncMapStringInt32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		if asSymbols {
 			f.ee.encodeSymbol(k2)
 		} else {
 			f.ee.encodeString(c_UTF8, k2)
 		}
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapStringInt64(rv reflect.Value) {
@@ -606,16 +767,23 @@ func (f *encFnInfo) fastEncMapStringInt64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 	asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		if asSymbols {
 			f.ee.encodeSymbol(k2)
 		} else {
 			f.ee.encodeString(c_UTF8, k2)
 		}
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat32Float32(rv reflect.Value) {
@@ -624,12 +792,19 @@ func (f *encFnInfo) fastEncMapFloat32Float32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat32(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeFloat32(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat32Intf(rv reflect.Value) {
@@ -638,12 +813,19 @@ func (f *encFnInfo) fastEncMapFloat32Intf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat32(k2)
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat32String(rv reflect.Value) {
@@ -652,12 +834,19 @@ func (f *encFnInfo) fastEncMapFloat32String(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat32(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat32Uint(rv reflect.Value) {
@@ -666,12 +855,19 @@ func (f *encFnInfo) fastEncMapFloat32Uint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat32(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat32Uint32(rv reflect.Value) {
@@ -680,12 +876,19 @@ func (f *encFnInfo) fastEncMapFloat32Uint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat32(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat32Uint64(rv reflect.Value) {
@@ -694,12 +897,19 @@ func (f *encFnInfo) fastEncMapFloat32Uint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat32(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat32Int(rv reflect.Value) {
@@ -708,12 +918,19 @@ func (f *encFnInfo) fastEncMapFloat32Int(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat32(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat32Int32(rv reflect.Value) {
@@ -722,12 +939,19 @@ func (f *encFnInfo) fastEncMapFloat32Int32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat32(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat32Int64(rv reflect.Value) {
@@ -736,12 +960,19 @@ func (f *encFnInfo) fastEncMapFloat32Int64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat32(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat64Float64(rv reflect.Value) {
@@ -750,12 +981,19 @@ func (f *encFnInfo) fastEncMapFloat64Float64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat64(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeFloat64(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat64Intf(rv reflect.Value) {
@@ -764,12 +1002,19 @@ func (f *encFnInfo) fastEncMapFloat64Intf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat64(k2)
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat64String(rv reflect.Value) {
@@ -778,12 +1023,19 @@ func (f *encFnInfo) fastEncMapFloat64String(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat64(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat64Uint(rv reflect.Value) {
@@ -792,12 +1044,19 @@ func (f *encFnInfo) fastEncMapFloat64Uint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat64(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat64Uint32(rv reflect.Value) {
@@ -806,12 +1065,19 @@ func (f *encFnInfo) fastEncMapFloat64Uint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat64(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat64Uint64(rv reflect.Value) {
@@ -820,12 +1086,19 @@ func (f *encFnInfo) fastEncMapFloat64Uint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat64(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat64Int(rv reflect.Value) {
@@ -834,12 +1107,19 @@ func (f *encFnInfo) fastEncMapFloat64Int(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat64(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat64Int32(rv reflect.Value) {
@@ -848,12 +1128,19 @@ func (f *encFnInfo) fastEncMapFloat64Int32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat64(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapFloat64Int64(rv reflect.Value) {
@@ -862,12 +1149,19 @@ func (f *encFnInfo) fastEncMapFloat64Int64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeFloat64(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUintIntf(rv reflect.Value) {
@@ -876,12 +1170,19 @@ func (f *encFnInfo) fastEncMapUintIntf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUintString(rv reflect.Value) {
@@ -890,12 +1191,19 @@ func (f *encFnInfo) fastEncMapUintString(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUintUint(rv reflect.Value) {
@@ -904,12 +1212,19 @@ func (f *encFnInfo) fastEncMapUintUint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUintUint32(rv reflect.Value) {
@@ -918,12 +1233,19 @@ func (f *encFnInfo) fastEncMapUintUint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUintUint64(rv reflect.Value) {
@@ -932,12 +1254,19 @@ func (f *encFnInfo) fastEncMapUintUint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUintInt(rv reflect.Value) {
@@ -946,12 +1275,19 @@ func (f *encFnInfo) fastEncMapUintInt(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUintInt32(rv reflect.Value) {
@@ -960,12 +1296,19 @@ func (f *encFnInfo) fastEncMapUintInt32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUintInt64(rv reflect.Value) {
@@ -974,12 +1317,19 @@ func (f *encFnInfo) fastEncMapUintInt64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint8Uint8(rv reflect.Value) {
@@ -988,12 +1338,19 @@ func (f *encFnInfo) fastEncMapUint8Uint8(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint8Intf(rv reflect.Value) {
@@ -1002,12 +1359,19 @@ func (f *encFnInfo) fastEncMapUint8Intf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint8String(rv reflect.Value) {
@@ -1016,12 +1380,19 @@ func (f *encFnInfo) fastEncMapUint8String(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint8Uint(rv reflect.Value) {
@@ -1030,12 +1401,19 @@ func (f *encFnInfo) fastEncMapUint8Uint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint8Uint32(rv reflect.Value) {
@@ -1044,12 +1422,19 @@ func (f *encFnInfo) fastEncMapUint8Uint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint8Uint64(rv reflect.Value) {
@@ -1058,12 +1443,19 @@ func (f *encFnInfo) fastEncMapUint8Uint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint8Int(rv reflect.Value) {
@@ -1072,12 +1464,19 @@ func (f *encFnInfo) fastEncMapUint8Int(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint8Int32(rv reflect.Value) {
@@ -1086,12 +1485,19 @@ func (f *encFnInfo) fastEncMapUint8Int32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint8Int64(rv reflect.Value) {
@@ -1100,12 +1506,19 @@ func (f *encFnInfo) fastEncMapUint8Int64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint16Uint16(rv reflect.Value) {
@@ -1114,12 +1527,19 @@ func (f *encFnInfo) fastEncMapUint16Uint16(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint16Intf(rv reflect.Value) {
@@ -1128,12 +1548,19 @@ func (f *encFnInfo) fastEncMapUint16Intf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint16String(rv reflect.Value) {
@@ -1142,12 +1569,19 @@ func (f *encFnInfo) fastEncMapUint16String(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint16Uint(rv reflect.Value) {
@@ -1156,12 +1590,19 @@ func (f *encFnInfo) fastEncMapUint16Uint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint16Uint32(rv reflect.Value) {
@@ -1170,12 +1611,19 @@ func (f *encFnInfo) fastEncMapUint16Uint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint16Uint64(rv reflect.Value) {
@@ -1184,12 +1632,19 @@ func (f *encFnInfo) fastEncMapUint16Uint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint16Int(rv reflect.Value) {
@@ -1198,12 +1653,19 @@ func (f *encFnInfo) fastEncMapUint16Int(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint16Int32(rv reflect.Value) {
@@ -1212,12 +1674,19 @@ func (f *encFnInfo) fastEncMapUint16Int32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint16Int64(rv reflect.Value) {
@@ -1226,12 +1695,19 @@ func (f *encFnInfo) fastEncMapUint16Int64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint32Intf(rv reflect.Value) {
@@ -1240,12 +1716,19 @@ func (f *encFnInfo) fastEncMapUint32Intf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint32String(rv reflect.Value) {
@@ -1254,12 +1737,19 @@ func (f *encFnInfo) fastEncMapUint32String(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint32Uint(rv reflect.Value) {
@@ -1268,12 +1758,19 @@ func (f *encFnInfo) fastEncMapUint32Uint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint32Uint32(rv reflect.Value) {
@@ -1282,12 +1779,19 @@ func (f *encFnInfo) fastEncMapUint32Uint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint32Uint64(rv reflect.Value) {
@@ -1296,12 +1800,19 @@ func (f *encFnInfo) fastEncMapUint32Uint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint32Int(rv reflect.Value) {
@@ -1310,12 +1821,19 @@ func (f *encFnInfo) fastEncMapUint32Int(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint32Int32(rv reflect.Value) {
@@ -1324,12 +1842,19 @@ func (f *encFnInfo) fastEncMapUint32Int32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint32Int64(rv reflect.Value) {
@@ -1338,12 +1863,19 @@ func (f *encFnInfo) fastEncMapUint32Int64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint64Intf(rv reflect.Value) {
@@ -1352,12 +1884,19 @@ func (f *encFnInfo) fastEncMapUint64Intf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint64String(rv reflect.Value) {
@@ -1366,12 +1905,19 @@ func (f *encFnInfo) fastEncMapUint64String(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint64Uint(rv reflect.Value) {
@@ -1380,12 +1926,19 @@ func (f *encFnInfo) fastEncMapUint64Uint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint64Uint32(rv reflect.Value) {
@@ -1394,12 +1947,19 @@ func (f *encFnInfo) fastEncMapUint64Uint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint64Uint64(rv reflect.Value) {
@@ -1408,12 +1968,19 @@ func (f *encFnInfo) fastEncMapUint64Uint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint64Int(rv reflect.Value) {
@@ -1422,12 +1989,19 @@ func (f *encFnInfo) fastEncMapUint64Int(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint64Int32(rv reflect.Value) {
@@ -1436,12 +2010,19 @@ func (f *encFnInfo) fastEncMapUint64Int32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapUint64Int64(rv reflect.Value) {
@@ -1450,12 +2031,19 @@ func (f *encFnInfo) fastEncMapUint64Int64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeUint(uint64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntIntf(rv reflect.Value) {
@@ -1464,12 +2052,19 @@ func (f *encFnInfo) fastEncMapIntIntf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntString(rv reflect.Value) {
@@ -1478,12 +2073,19 @@ func (f *encFnInfo) fastEncMapIntString(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntUint(rv reflect.Value) {
@@ -1492,12 +2094,19 @@ func (f *encFnInfo) fastEncMapIntUint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntUint32(rv reflect.Value) {
@@ -1506,12 +2115,19 @@ func (f *encFnInfo) fastEncMapIntUint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntUint64(rv reflect.Value) {
@@ -1520,12 +2136,19 @@ func (f *encFnInfo) fastEncMapIntUint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntInt(rv reflect.Value) {
@@ -1534,12 +2157,19 @@ func (f *encFnInfo) fastEncMapIntInt(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntInt32(rv reflect.Value) {
@@ -1548,12 +2178,19 @@ func (f *encFnInfo) fastEncMapIntInt32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapIntInt64(rv reflect.Value) {
@@ -1562,12 +2199,19 @@ func (f *encFnInfo) fastEncMapIntInt64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt8Int8(rv reflect.Value) {
@@ -1576,12 +2220,19 @@ func (f *encFnInfo) fastEncMapInt8Int8(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt8Intf(rv reflect.Value) {
@@ -1590,12 +2241,19 @@ func (f *encFnInfo) fastEncMapInt8Intf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt8String(rv reflect.Value) {
@@ -1604,12 +2262,19 @@ func (f *encFnInfo) fastEncMapInt8String(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt8Uint(rv reflect.Value) {
@@ -1618,12 +2283,19 @@ func (f *encFnInfo) fastEncMapInt8Uint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt8Uint32(rv reflect.Value) {
@@ -1632,12 +2304,19 @@ func (f *encFnInfo) fastEncMapInt8Uint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt8Uint64(rv reflect.Value) {
@@ -1646,12 +2325,19 @@ func (f *encFnInfo) fastEncMapInt8Uint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt8Int(rv reflect.Value) {
@@ -1660,12 +2346,19 @@ func (f *encFnInfo) fastEncMapInt8Int(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt8Int32(rv reflect.Value) {
@@ -1674,12 +2367,19 @@ func (f *encFnInfo) fastEncMapInt8Int32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt8Int64(rv reflect.Value) {
@@ -1688,12 +2388,19 @@ func (f *encFnInfo) fastEncMapInt8Int64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt16Int16(rv reflect.Value) {
@@ -1702,12 +2409,19 @@ func (f *encFnInfo) fastEncMapInt16Int16(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt16Intf(rv reflect.Value) {
@@ -1716,12 +2430,19 @@ func (f *encFnInfo) fastEncMapInt16Intf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt16String(rv reflect.Value) {
@@ -1730,12 +2451,19 @@ func (f *encFnInfo) fastEncMapInt16String(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt16Uint(rv reflect.Value) {
@@ -1744,12 +2472,19 @@ func (f *encFnInfo) fastEncMapInt16Uint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt16Uint32(rv reflect.Value) {
@@ -1758,12 +2493,19 @@ func (f *encFnInfo) fastEncMapInt16Uint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt16Uint64(rv reflect.Value) {
@@ -1772,12 +2514,19 @@ func (f *encFnInfo) fastEncMapInt16Uint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt16Int(rv reflect.Value) {
@@ -1786,12 +2535,19 @@ func (f *encFnInfo) fastEncMapInt16Int(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt16Int32(rv reflect.Value) {
@@ -1800,12 +2556,19 @@ func (f *encFnInfo) fastEncMapInt16Int32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt16Int64(rv reflect.Value) {
@@ -1814,12 +2577,19 @@ func (f *encFnInfo) fastEncMapInt16Int64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt32Intf(rv reflect.Value) {
@@ -1828,12 +2598,19 @@ func (f *encFnInfo) fastEncMapInt32Intf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt32String(rv reflect.Value) {
@@ -1842,12 +2619,19 @@ func (f *encFnInfo) fastEncMapInt32String(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt32Uint(rv reflect.Value) {
@@ -1856,12 +2640,19 @@ func (f *encFnInfo) fastEncMapInt32Uint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt32Uint32(rv reflect.Value) {
@@ -1870,12 +2661,19 @@ func (f *encFnInfo) fastEncMapInt32Uint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt32Uint64(rv reflect.Value) {
@@ -1884,12 +2682,19 @@ func (f *encFnInfo) fastEncMapInt32Uint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt32Int(rv reflect.Value) {
@@ -1898,12 +2703,19 @@ func (f *encFnInfo) fastEncMapInt32Int(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt32Int32(rv reflect.Value) {
@@ -1912,12 +2724,19 @@ func (f *encFnInfo) fastEncMapInt32Int32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt32Int64(rv reflect.Value) {
@@ -1926,12 +2745,19 @@ func (f *encFnInfo) fastEncMapInt32Int64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt64Intf(rv reflect.Value) {
@@ -1940,12 +2766,19 @@ func (f *encFnInfo) fastEncMapInt64Intf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt64String(rv reflect.Value) {
@@ -1954,12 +2787,19 @@ func (f *encFnInfo) fastEncMapInt64String(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt64Uint(rv reflect.Value) {
@@ -1968,12 +2808,19 @@ func (f *encFnInfo) fastEncMapInt64Uint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt64Uint32(rv reflect.Value) {
@@ -1982,12 +2829,19 @@ func (f *encFnInfo) fastEncMapInt64Uint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt64Uint64(rv reflect.Value) {
@@ -1996,12 +2850,19 @@ func (f *encFnInfo) fastEncMapInt64Uint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt64Int(rv reflect.Value) {
@@ -2010,12 +2871,19 @@ func (f *encFnInfo) fastEncMapInt64Int(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt64Int32(rv reflect.Value) {
@@ -2024,12 +2892,19 @@ func (f *encFnInfo) fastEncMapInt64Int32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapInt64Int64(rv reflect.Value) {
@@ -2038,12 +2913,19 @@ func (f *encFnInfo) fastEncMapInt64Int64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeInt(int64(k2))
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapBoolBool(rv reflect.Value) {
@@ -2052,12 +2934,19 @@ func (f *encFnInfo) fastEncMapBoolBool(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeBool(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeBool(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapBoolIntf(rv reflect.Value) {
@@ -2066,12 +2955,19 @@ func (f *encFnInfo) fastEncMapBoolIntf(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeBool(k2)
+		f.ee.encodeMapKVSeparator()
 		f.e.encode(v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapBoolString(rv reflect.Value) {
@@ -2080,12 +2976,19 @@ func (f *encFnInfo) fastEncMapBoolString(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeBool(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeString(c_UTF8, v2)
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapBoolUint(rv reflect.Value) {
@@ -2094,12 +2997,19 @@ func (f *encFnInfo) fastEncMapBoolUint(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeBool(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapBoolUint32(rv reflect.Value) {
@@ -2108,12 +3018,19 @@ func (f *encFnInfo) fastEncMapBoolUint32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeBool(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapBoolUint64(rv reflect.Value) {
@@ -2122,12 +3039,19 @@ func (f *encFnInfo) fastEncMapBoolUint64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeBool(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeUint(uint64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapBoolInt(rv reflect.Value) {
@@ -2136,12 +3060,19 @@ func (f *encFnInfo) fastEncMapBoolInt(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeBool(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapBoolInt32(rv reflect.Value) {
@@ -2150,12 +3081,19 @@ func (f *encFnInfo) fastEncMapBoolInt32(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeBool(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 func (f *encFnInfo) fastEncMapBoolInt64(rv reflect.Value) {
@@ -2164,12 +3102,19 @@ func (f *encFnInfo) fastEncMapBoolInt64(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		f.ee.encodeBool(k2)
+		f.ee.encodeMapKVSeparator()
 		f.ee.encodeInt(int64(v2))
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 // -- decode
@@ -2184,8 +3129,7 @@ func (f *decFnInfo) fastDecSliceIntf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2193,7 +3137,8 @@ func (f *decFnInfo) fastDecSliceIntf(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []interface{}{}
@@ -2201,6 +3146,7 @@ func (f *decFnInfo) fastDecSliceIntf(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2231,9 +3177,13 @@ func (f *decFnInfo) fastDecSliceIntf(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, nil)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.d.decode(&v[j])
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2249,8 +3199,7 @@ func (f *decFnInfo) fastDecSliceString(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2258,7 +3207,8 @@ func (f *decFnInfo) fastDecSliceString(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []string{}
@@ -2266,6 +3216,7 @@ func (f *decFnInfo) fastDecSliceString(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2296,10 +3247,14 @@ func (f *decFnInfo) fastDecSliceString(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, "")
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = f.dd.decodeString()
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2315,8 +3270,7 @@ func (f *decFnInfo) fastDecSliceFloat32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]float32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2324,7 +3278,8 @@ func (f *decFnInfo) fastDecSliceFloat32(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []float32{}
@@ -2332,6 +3287,7 @@ func (f *decFnInfo) fastDecSliceFloat32(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2362,10 +3318,14 @@ func (f *decFnInfo) fastDecSliceFloat32(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = float32(f.dd.decodeFloat(true))
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2381,8 +3341,7 @@ func (f *decFnInfo) fastDecSliceFloat64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]float64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2390,7 +3349,8 @@ func (f *decFnInfo) fastDecSliceFloat64(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []float64{}
@@ -2398,6 +3358,7 @@ func (f *decFnInfo) fastDecSliceFloat64(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2428,10 +3389,14 @@ func (f *decFnInfo) fastDecSliceFloat64(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = f.dd.decodeFloat(false)
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2447,8 +3412,7 @@ func (f *decFnInfo) fastDecSliceUint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2456,7 +3420,8 @@ func (f *decFnInfo) fastDecSliceUint(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []uint{}
@@ -2464,6 +3429,7 @@ func (f *decFnInfo) fastDecSliceUint(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2494,10 +3460,14 @@ func (f *decFnInfo) fastDecSliceUint(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = uint(f.dd.decodeUint(uintBitsize))
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2513,8 +3483,7 @@ func (f *decFnInfo) fastDecSliceUint16(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]uint16)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2522,7 +3491,8 @@ func (f *decFnInfo) fastDecSliceUint16(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []uint16{}
@@ -2530,6 +3500,7 @@ func (f *decFnInfo) fastDecSliceUint16(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2560,10 +3531,14 @@ func (f *decFnInfo) fastDecSliceUint16(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = uint16(f.dd.decodeUint(16))
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2579,8 +3554,7 @@ func (f *decFnInfo) fastDecSliceUint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2588,7 +3562,8 @@ func (f *decFnInfo) fastDecSliceUint32(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []uint32{}
@@ -2596,6 +3571,7 @@ func (f *decFnInfo) fastDecSliceUint32(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2626,10 +3602,14 @@ func (f *decFnInfo) fastDecSliceUint32(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = uint32(f.dd.decodeUint(32))
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2645,8 +3625,7 @@ func (f *decFnInfo) fastDecSliceUint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2654,7 +3633,8 @@ func (f *decFnInfo) fastDecSliceUint64(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []uint64{}
@@ -2662,6 +3642,7 @@ func (f *decFnInfo) fastDecSliceUint64(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2692,10 +3673,14 @@ func (f *decFnInfo) fastDecSliceUint64(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = f.dd.decodeUint(64)
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2711,8 +3696,7 @@ func (f *decFnInfo) fastDecSliceInt(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2720,7 +3704,8 @@ func (f *decFnInfo) fastDecSliceInt(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []int{}
@@ -2728,6 +3713,7 @@ func (f *decFnInfo) fastDecSliceInt(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2758,10 +3744,14 @@ func (f *decFnInfo) fastDecSliceInt(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = int(f.dd.decodeInt(intBitsize))
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2777,8 +3767,7 @@ func (f *decFnInfo) fastDecSliceInt8(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]int8)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2786,7 +3775,8 @@ func (f *decFnInfo) fastDecSliceInt8(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []int8{}
@@ -2794,6 +3784,7 @@ func (f *decFnInfo) fastDecSliceInt8(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2824,10 +3815,14 @@ func (f *decFnInfo) fastDecSliceInt8(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = int8(f.dd.decodeInt(8))
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2843,8 +3838,7 @@ func (f *decFnInfo) fastDecSliceInt16(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]int16)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2852,7 +3846,8 @@ func (f *decFnInfo) fastDecSliceInt16(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []int16{}
@@ -2860,6 +3855,7 @@ func (f *decFnInfo) fastDecSliceInt16(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2890,10 +3886,14 @@ func (f *decFnInfo) fastDecSliceInt16(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = int16(f.dd.decodeInt(16))
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2909,8 +3909,7 @@ func (f *decFnInfo) fastDecSliceInt32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2918,7 +3917,8 @@ func (f *decFnInfo) fastDecSliceInt32(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []int32{}
@@ -2926,6 +3926,7 @@ func (f *decFnInfo) fastDecSliceInt32(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -2956,10 +3957,14 @@ func (f *decFnInfo) fastDecSliceInt32(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = int32(f.dd.decodeInt(32))
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -2975,8 +3980,7 @@ func (f *decFnInfo) fastDecSliceInt64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -2984,7 +3988,8 @@ func (f *decFnInfo) fastDecSliceInt64(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []int64{}
@@ -2992,6 +3997,7 @@ func (f *decFnInfo) fastDecSliceInt64(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -3022,10 +4028,14 @@ func (f *decFnInfo) fastDecSliceInt64(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, 0)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = f.dd.decodeInt(64)
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -3041,8 +4051,7 @@ func (f *decFnInfo) fastDecSliceBool(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]bool)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3050,7 +4059,8 @@ func (f *decFnInfo) fastDecSliceBool(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []bool{}
@@ -3058,6 +4068,7 @@ func (f *decFnInfo) fastDecSliceBool(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -3088,10 +4099,14 @@ func (f *decFnInfo) fastDecSliceBool(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, false)
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		f.dd.initReadNext()
 		v[j] = f.dd.decodeBool()
 
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -3107,8 +4122,7 @@ func (f *decFnInfo) fastDecMapIntfIntf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[interface{}]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3116,12 +4130,13 @@ func (f *decFnInfo) fastDecMapIntfIntf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[interface{}]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3141,6 +4156,9 @@ func (f *decFnInfo) fastDecMapIntfIntf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3148,6 +4166,7 @@ func (f *decFnInfo) fastDecMapIntfIntf(rv reflect.Value) {
 			mk = string(bv)
 		}
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -3155,6 +4174,7 @@ func (f *decFnInfo) fastDecMapIntfIntf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntfString(rv reflect.Value) {
@@ -3167,8 +4187,7 @@ func (f *decFnInfo) fastDecMapIntfString(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[interface{}]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3176,12 +4195,13 @@ func (f *decFnInfo) fastDecMapIntfString(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[interface{}]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3201,6 +4221,9 @@ func (f *decFnInfo) fastDecMapIntfString(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3208,6 +4231,7 @@ func (f *decFnInfo) fastDecMapIntfString(rv reflect.Value) {
 			mk = string(bv)
 		}
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -3216,6 +4240,7 @@ func (f *decFnInfo) fastDecMapIntfString(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntfUint(rv reflect.Value) {
@@ -3228,8 +4253,7 @@ func (f *decFnInfo) fastDecMapIntfUint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[interface{}]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3237,12 +4261,13 @@ func (f *decFnInfo) fastDecMapIntfUint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[interface{}]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3262,6 +4287,9 @@ func (f *decFnInfo) fastDecMapIntfUint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3269,6 +4297,7 @@ func (f *decFnInfo) fastDecMapIntfUint(rv reflect.Value) {
 			mk = string(bv)
 		}
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -3277,6 +4306,7 @@ func (f *decFnInfo) fastDecMapIntfUint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntfUint32(rv reflect.Value) {
@@ -3289,8 +4319,7 @@ func (f *decFnInfo) fastDecMapIntfUint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[interface{}]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3298,12 +4327,13 @@ func (f *decFnInfo) fastDecMapIntfUint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[interface{}]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3323,6 +4353,9 @@ func (f *decFnInfo) fastDecMapIntfUint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3330,6 +4363,7 @@ func (f *decFnInfo) fastDecMapIntfUint32(rv reflect.Value) {
 			mk = string(bv)
 		}
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -3338,6 +4372,7 @@ func (f *decFnInfo) fastDecMapIntfUint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntfUint64(rv reflect.Value) {
@@ -3350,8 +4385,7 @@ func (f *decFnInfo) fastDecMapIntfUint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[interface{}]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3359,12 +4393,13 @@ func (f *decFnInfo) fastDecMapIntfUint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[interface{}]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3384,6 +4419,9 @@ func (f *decFnInfo) fastDecMapIntfUint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3391,6 +4429,7 @@ func (f *decFnInfo) fastDecMapIntfUint64(rv reflect.Value) {
 			mk = string(bv)
 		}
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -3399,6 +4438,7 @@ func (f *decFnInfo) fastDecMapIntfUint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntfInt(rv reflect.Value) {
@@ -3411,8 +4451,7 @@ func (f *decFnInfo) fastDecMapIntfInt(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[interface{}]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3420,12 +4459,13 @@ func (f *decFnInfo) fastDecMapIntfInt(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[interface{}]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3445,6 +4485,9 @@ func (f *decFnInfo) fastDecMapIntfInt(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3452,6 +4495,7 @@ func (f *decFnInfo) fastDecMapIntfInt(rv reflect.Value) {
 			mk = string(bv)
 		}
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -3460,6 +4504,7 @@ func (f *decFnInfo) fastDecMapIntfInt(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntfInt32(rv reflect.Value) {
@@ -3472,8 +4517,7 @@ func (f *decFnInfo) fastDecMapIntfInt32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[interface{}]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3481,12 +4525,13 @@ func (f *decFnInfo) fastDecMapIntfInt32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[interface{}]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3506,6 +4551,9 @@ func (f *decFnInfo) fastDecMapIntfInt32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3513,6 +4561,7 @@ func (f *decFnInfo) fastDecMapIntfInt32(rv reflect.Value) {
 			mk = string(bv)
 		}
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -3521,6 +4570,7 @@ func (f *decFnInfo) fastDecMapIntfInt32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntfInt64(rv reflect.Value) {
@@ -3533,8 +4583,7 @@ func (f *decFnInfo) fastDecMapIntfInt64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[interface{}]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3542,12 +4591,13 @@ func (f *decFnInfo) fastDecMapIntfInt64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[interface{}]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3567,6 +4617,9 @@ func (f *decFnInfo) fastDecMapIntfInt64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -3574,6 +4627,7 @@ func (f *decFnInfo) fastDecMapIntfInt64(rv reflect.Value) {
 			mk = string(bv)
 		}
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -3582,6 +4636,7 @@ func (f *decFnInfo) fastDecMapIntfInt64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapStringIntf(rv reflect.Value) {
@@ -3594,8 +4649,7 @@ func (f *decFnInfo) fastDecMapStringIntf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[string]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3603,12 +4657,13 @@ func (f *decFnInfo) fastDecMapStringIntf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[string]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3628,9 +4683,13 @@ func (f *decFnInfo) fastDecMapStringIntf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -3638,6 +4697,7 @@ func (f *decFnInfo) fastDecMapStringIntf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapStringString(rv reflect.Value) {
@@ -3650,8 +4710,7 @@ func (f *decFnInfo) fastDecMapStringString(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[string]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3659,12 +4718,13 @@ func (f *decFnInfo) fastDecMapStringString(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[string]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3684,9 +4744,13 @@ func (f *decFnInfo) fastDecMapStringString(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -3695,6 +4759,7 @@ func (f *decFnInfo) fastDecMapStringString(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapStringUint(rv reflect.Value) {
@@ -3707,8 +4772,7 @@ func (f *decFnInfo) fastDecMapStringUint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[string]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3716,12 +4780,13 @@ func (f *decFnInfo) fastDecMapStringUint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[string]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3741,9 +4806,13 @@ func (f *decFnInfo) fastDecMapStringUint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -3752,6 +4821,7 @@ func (f *decFnInfo) fastDecMapStringUint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapStringUint32(rv reflect.Value) {
@@ -3764,8 +4834,7 @@ func (f *decFnInfo) fastDecMapStringUint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[string]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3773,12 +4842,13 @@ func (f *decFnInfo) fastDecMapStringUint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[string]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3798,9 +4868,13 @@ func (f *decFnInfo) fastDecMapStringUint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -3809,6 +4883,7 @@ func (f *decFnInfo) fastDecMapStringUint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapStringUint64(rv reflect.Value) {
@@ -3821,8 +4896,7 @@ func (f *decFnInfo) fastDecMapStringUint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[string]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3830,12 +4904,13 @@ func (f *decFnInfo) fastDecMapStringUint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[string]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3855,9 +4930,13 @@ func (f *decFnInfo) fastDecMapStringUint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -3866,6 +4945,7 @@ func (f *decFnInfo) fastDecMapStringUint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapStringInt(rv reflect.Value) {
@@ -3878,8 +4958,7 @@ func (f *decFnInfo) fastDecMapStringInt(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[string]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3887,12 +4966,13 @@ func (f *decFnInfo) fastDecMapStringInt(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[string]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3912,9 +4992,13 @@ func (f *decFnInfo) fastDecMapStringInt(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -3923,6 +5007,7 @@ func (f *decFnInfo) fastDecMapStringInt(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapStringInt32(rv reflect.Value) {
@@ -3935,8 +5020,7 @@ func (f *decFnInfo) fastDecMapStringInt32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[string]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -3944,12 +5028,13 @@ func (f *decFnInfo) fastDecMapStringInt32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[string]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -3969,9 +5054,13 @@ func (f *decFnInfo) fastDecMapStringInt32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -3980,6 +5069,7 @@ func (f *decFnInfo) fastDecMapStringInt32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapStringInt64(rv reflect.Value) {
@@ -3992,8 +5082,7 @@ func (f *decFnInfo) fastDecMapStringInt64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[string]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4001,12 +5090,13 @@ func (f *decFnInfo) fastDecMapStringInt64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[string]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4026,9 +5116,13 @@ func (f *decFnInfo) fastDecMapStringInt64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeString()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -4037,6 +5131,7 @@ func (f *decFnInfo) fastDecMapStringInt64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat32Float32(rv reflect.Value) {
@@ -4049,8 +5144,7 @@ func (f *decFnInfo) fastDecMapFloat32Float32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float32]float32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4058,12 +5152,13 @@ func (f *decFnInfo) fastDecMapFloat32Float32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float32]float32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4083,9 +5178,13 @@ func (f *decFnInfo) fastDecMapFloat32Float32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = float32(f.dd.decodeFloat(true))
@@ -4094,6 +5193,7 @@ func (f *decFnInfo) fastDecMapFloat32Float32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat32Intf(rv reflect.Value) {
@@ -4106,8 +5206,7 @@ func (f *decFnInfo) fastDecMapFloat32Intf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float32]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4115,12 +5214,13 @@ func (f *decFnInfo) fastDecMapFloat32Intf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float32]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4140,9 +5240,13 @@ func (f *decFnInfo) fastDecMapFloat32Intf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -4150,6 +5254,7 @@ func (f *decFnInfo) fastDecMapFloat32Intf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat32String(rv reflect.Value) {
@@ -4162,8 +5267,7 @@ func (f *decFnInfo) fastDecMapFloat32String(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float32]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4171,12 +5275,13 @@ func (f *decFnInfo) fastDecMapFloat32String(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float32]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4196,9 +5301,13 @@ func (f *decFnInfo) fastDecMapFloat32String(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -4207,6 +5316,7 @@ func (f *decFnInfo) fastDecMapFloat32String(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat32Uint(rv reflect.Value) {
@@ -4219,8 +5329,7 @@ func (f *decFnInfo) fastDecMapFloat32Uint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float32]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4228,12 +5337,13 @@ func (f *decFnInfo) fastDecMapFloat32Uint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float32]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4253,9 +5363,13 @@ func (f *decFnInfo) fastDecMapFloat32Uint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -4264,6 +5378,7 @@ func (f *decFnInfo) fastDecMapFloat32Uint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat32Uint32(rv reflect.Value) {
@@ -4276,8 +5391,7 @@ func (f *decFnInfo) fastDecMapFloat32Uint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float32]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4285,12 +5399,13 @@ func (f *decFnInfo) fastDecMapFloat32Uint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float32]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4310,9 +5425,13 @@ func (f *decFnInfo) fastDecMapFloat32Uint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -4321,6 +5440,7 @@ func (f *decFnInfo) fastDecMapFloat32Uint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat32Uint64(rv reflect.Value) {
@@ -4333,8 +5453,7 @@ func (f *decFnInfo) fastDecMapFloat32Uint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float32]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4342,12 +5461,13 @@ func (f *decFnInfo) fastDecMapFloat32Uint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float32]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4367,9 +5487,13 @@ func (f *decFnInfo) fastDecMapFloat32Uint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -4378,6 +5502,7 @@ func (f *decFnInfo) fastDecMapFloat32Uint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat32Int(rv reflect.Value) {
@@ -4390,8 +5515,7 @@ func (f *decFnInfo) fastDecMapFloat32Int(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float32]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4399,12 +5523,13 @@ func (f *decFnInfo) fastDecMapFloat32Int(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float32]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4424,9 +5549,13 @@ func (f *decFnInfo) fastDecMapFloat32Int(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -4435,6 +5564,7 @@ func (f *decFnInfo) fastDecMapFloat32Int(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat32Int32(rv reflect.Value) {
@@ -4447,8 +5577,7 @@ func (f *decFnInfo) fastDecMapFloat32Int32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float32]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4456,12 +5585,13 @@ func (f *decFnInfo) fastDecMapFloat32Int32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float32]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4481,9 +5611,13 @@ func (f *decFnInfo) fastDecMapFloat32Int32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -4492,6 +5626,7 @@ func (f *decFnInfo) fastDecMapFloat32Int32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat32Int64(rv reflect.Value) {
@@ -4504,8 +5639,7 @@ func (f *decFnInfo) fastDecMapFloat32Int64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float32]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4513,12 +5647,13 @@ func (f *decFnInfo) fastDecMapFloat32Int64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float32]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4538,9 +5673,13 @@ func (f *decFnInfo) fastDecMapFloat32Int64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := float32(f.dd.decodeFloat(true))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -4549,6 +5688,7 @@ func (f *decFnInfo) fastDecMapFloat32Int64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat64Float64(rv reflect.Value) {
@@ -4561,8 +5701,7 @@ func (f *decFnInfo) fastDecMapFloat64Float64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float64]float64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4570,12 +5709,13 @@ func (f *decFnInfo) fastDecMapFloat64Float64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float64]float64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4595,9 +5735,13 @@ func (f *decFnInfo) fastDecMapFloat64Float64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeFloat(false)
@@ -4606,6 +5750,7 @@ func (f *decFnInfo) fastDecMapFloat64Float64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat64Intf(rv reflect.Value) {
@@ -4618,8 +5763,7 @@ func (f *decFnInfo) fastDecMapFloat64Intf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float64]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4627,12 +5771,13 @@ func (f *decFnInfo) fastDecMapFloat64Intf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float64]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4652,9 +5797,13 @@ func (f *decFnInfo) fastDecMapFloat64Intf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -4662,6 +5811,7 @@ func (f *decFnInfo) fastDecMapFloat64Intf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat64String(rv reflect.Value) {
@@ -4674,8 +5824,7 @@ func (f *decFnInfo) fastDecMapFloat64String(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float64]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4683,12 +5832,13 @@ func (f *decFnInfo) fastDecMapFloat64String(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float64]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4708,9 +5858,13 @@ func (f *decFnInfo) fastDecMapFloat64String(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -4719,6 +5873,7 @@ func (f *decFnInfo) fastDecMapFloat64String(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat64Uint(rv reflect.Value) {
@@ -4731,8 +5886,7 @@ func (f *decFnInfo) fastDecMapFloat64Uint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float64]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4740,12 +5894,13 @@ func (f *decFnInfo) fastDecMapFloat64Uint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float64]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4765,9 +5920,13 @@ func (f *decFnInfo) fastDecMapFloat64Uint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -4776,6 +5935,7 @@ func (f *decFnInfo) fastDecMapFloat64Uint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat64Uint32(rv reflect.Value) {
@@ -4788,8 +5948,7 @@ func (f *decFnInfo) fastDecMapFloat64Uint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float64]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4797,12 +5956,13 @@ func (f *decFnInfo) fastDecMapFloat64Uint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float64]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4822,9 +5982,13 @@ func (f *decFnInfo) fastDecMapFloat64Uint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -4833,6 +5997,7 @@ func (f *decFnInfo) fastDecMapFloat64Uint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat64Uint64(rv reflect.Value) {
@@ -4845,8 +6010,7 @@ func (f *decFnInfo) fastDecMapFloat64Uint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float64]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4854,12 +6018,13 @@ func (f *decFnInfo) fastDecMapFloat64Uint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float64]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4879,9 +6044,13 @@ func (f *decFnInfo) fastDecMapFloat64Uint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -4890,6 +6059,7 @@ func (f *decFnInfo) fastDecMapFloat64Uint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat64Int(rv reflect.Value) {
@@ -4902,8 +6072,7 @@ func (f *decFnInfo) fastDecMapFloat64Int(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float64]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4911,12 +6080,13 @@ func (f *decFnInfo) fastDecMapFloat64Int(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float64]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4936,9 +6106,13 @@ func (f *decFnInfo) fastDecMapFloat64Int(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -4947,6 +6121,7 @@ func (f *decFnInfo) fastDecMapFloat64Int(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat64Int32(rv reflect.Value) {
@@ -4959,8 +6134,7 @@ func (f *decFnInfo) fastDecMapFloat64Int32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float64]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -4968,12 +6142,13 @@ func (f *decFnInfo) fastDecMapFloat64Int32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float64]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -4993,9 +6168,13 @@ func (f *decFnInfo) fastDecMapFloat64Int32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -5004,6 +6183,7 @@ func (f *decFnInfo) fastDecMapFloat64Int32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapFloat64Int64(rv reflect.Value) {
@@ -5016,8 +6196,7 @@ func (f *decFnInfo) fastDecMapFloat64Int64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[float64]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5025,12 +6204,13 @@ func (f *decFnInfo) fastDecMapFloat64Int64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[float64]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5050,9 +6230,13 @@ func (f *decFnInfo) fastDecMapFloat64Int64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeFloat(false)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -5061,6 +6245,7 @@ func (f *decFnInfo) fastDecMapFloat64Int64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUintIntf(rv reflect.Value) {
@@ -5073,8 +6258,7 @@ func (f *decFnInfo) fastDecMapUintIntf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5082,12 +6266,13 @@ func (f *decFnInfo) fastDecMapUintIntf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5107,9 +6292,13 @@ func (f *decFnInfo) fastDecMapUintIntf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -5117,6 +6306,7 @@ func (f *decFnInfo) fastDecMapUintIntf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUintString(rv reflect.Value) {
@@ -5129,8 +6319,7 @@ func (f *decFnInfo) fastDecMapUintString(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5138,12 +6327,13 @@ func (f *decFnInfo) fastDecMapUintString(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5163,9 +6353,13 @@ func (f *decFnInfo) fastDecMapUintString(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -5174,6 +6368,7 @@ func (f *decFnInfo) fastDecMapUintString(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUintUint(rv reflect.Value) {
@@ -5186,8 +6381,7 @@ func (f *decFnInfo) fastDecMapUintUint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5195,12 +6389,13 @@ func (f *decFnInfo) fastDecMapUintUint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5220,9 +6415,13 @@ func (f *decFnInfo) fastDecMapUintUint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -5231,6 +6430,7 @@ func (f *decFnInfo) fastDecMapUintUint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUintUint32(rv reflect.Value) {
@@ -5243,8 +6443,7 @@ func (f *decFnInfo) fastDecMapUintUint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5252,12 +6451,13 @@ func (f *decFnInfo) fastDecMapUintUint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5277,9 +6477,13 @@ func (f *decFnInfo) fastDecMapUintUint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -5288,6 +6492,7 @@ func (f *decFnInfo) fastDecMapUintUint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUintUint64(rv reflect.Value) {
@@ -5300,8 +6505,7 @@ func (f *decFnInfo) fastDecMapUintUint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5309,12 +6513,13 @@ func (f *decFnInfo) fastDecMapUintUint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5334,9 +6539,13 @@ func (f *decFnInfo) fastDecMapUintUint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -5345,6 +6554,7 @@ func (f *decFnInfo) fastDecMapUintUint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUintInt(rv reflect.Value) {
@@ -5357,8 +6567,7 @@ func (f *decFnInfo) fastDecMapUintInt(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5366,12 +6575,13 @@ func (f *decFnInfo) fastDecMapUintInt(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5391,9 +6601,13 @@ func (f *decFnInfo) fastDecMapUintInt(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -5402,6 +6616,7 @@ func (f *decFnInfo) fastDecMapUintInt(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUintInt32(rv reflect.Value) {
@@ -5414,8 +6629,7 @@ func (f *decFnInfo) fastDecMapUintInt32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5423,12 +6637,13 @@ func (f *decFnInfo) fastDecMapUintInt32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5448,9 +6663,13 @@ func (f *decFnInfo) fastDecMapUintInt32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -5459,6 +6678,7 @@ func (f *decFnInfo) fastDecMapUintInt32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUintInt64(rv reflect.Value) {
@@ -5471,8 +6691,7 @@ func (f *decFnInfo) fastDecMapUintInt64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5480,12 +6699,13 @@ func (f *decFnInfo) fastDecMapUintInt64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5505,9 +6725,13 @@ func (f *decFnInfo) fastDecMapUintInt64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint(f.dd.decodeUint(uintBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -5516,6 +6740,7 @@ func (f *decFnInfo) fastDecMapUintInt64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint8Uint8(rv reflect.Value) {
@@ -5528,8 +6753,7 @@ func (f *decFnInfo) fastDecMapUint8Uint8(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint8]uint8)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5537,12 +6761,13 @@ func (f *decFnInfo) fastDecMapUint8Uint8(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint8]uint8{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5562,9 +6787,13 @@ func (f *decFnInfo) fastDecMapUint8Uint8(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint8(f.dd.decodeUint(8))
@@ -5573,6 +6802,7 @@ func (f *decFnInfo) fastDecMapUint8Uint8(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint8Intf(rv reflect.Value) {
@@ -5585,8 +6815,7 @@ func (f *decFnInfo) fastDecMapUint8Intf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint8]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5594,12 +6823,13 @@ func (f *decFnInfo) fastDecMapUint8Intf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint8]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5619,9 +6849,13 @@ func (f *decFnInfo) fastDecMapUint8Intf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -5629,6 +6863,7 @@ func (f *decFnInfo) fastDecMapUint8Intf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint8String(rv reflect.Value) {
@@ -5641,8 +6876,7 @@ func (f *decFnInfo) fastDecMapUint8String(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint8]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5650,12 +6884,13 @@ func (f *decFnInfo) fastDecMapUint8String(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint8]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5675,9 +6910,13 @@ func (f *decFnInfo) fastDecMapUint8String(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -5686,6 +6925,7 @@ func (f *decFnInfo) fastDecMapUint8String(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint8Uint(rv reflect.Value) {
@@ -5698,8 +6938,7 @@ func (f *decFnInfo) fastDecMapUint8Uint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint8]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5707,12 +6946,13 @@ func (f *decFnInfo) fastDecMapUint8Uint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint8]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5732,9 +6972,13 @@ func (f *decFnInfo) fastDecMapUint8Uint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -5743,6 +6987,7 @@ func (f *decFnInfo) fastDecMapUint8Uint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint8Uint32(rv reflect.Value) {
@@ -5755,8 +7000,7 @@ func (f *decFnInfo) fastDecMapUint8Uint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint8]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5764,12 +7008,13 @@ func (f *decFnInfo) fastDecMapUint8Uint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint8]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5789,9 +7034,13 @@ func (f *decFnInfo) fastDecMapUint8Uint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -5800,6 +7049,7 @@ func (f *decFnInfo) fastDecMapUint8Uint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint8Uint64(rv reflect.Value) {
@@ -5812,8 +7062,7 @@ func (f *decFnInfo) fastDecMapUint8Uint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint8]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5821,12 +7070,13 @@ func (f *decFnInfo) fastDecMapUint8Uint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint8]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5846,9 +7096,13 @@ func (f *decFnInfo) fastDecMapUint8Uint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -5857,6 +7111,7 @@ func (f *decFnInfo) fastDecMapUint8Uint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint8Int(rv reflect.Value) {
@@ -5869,8 +7124,7 @@ func (f *decFnInfo) fastDecMapUint8Int(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint8]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5878,12 +7132,13 @@ func (f *decFnInfo) fastDecMapUint8Int(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint8]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5903,9 +7158,13 @@ func (f *decFnInfo) fastDecMapUint8Int(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -5914,6 +7173,7 @@ func (f *decFnInfo) fastDecMapUint8Int(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint8Int32(rv reflect.Value) {
@@ -5926,8 +7186,7 @@ func (f *decFnInfo) fastDecMapUint8Int32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint8]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5935,12 +7194,13 @@ func (f *decFnInfo) fastDecMapUint8Int32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint8]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -5960,9 +7220,13 @@ func (f *decFnInfo) fastDecMapUint8Int32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -5971,6 +7235,7 @@ func (f *decFnInfo) fastDecMapUint8Int32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint8Int64(rv reflect.Value) {
@@ -5983,8 +7248,7 @@ func (f *decFnInfo) fastDecMapUint8Int64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint8]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -5992,12 +7256,13 @@ func (f *decFnInfo) fastDecMapUint8Int64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint8]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6017,9 +7282,13 @@ func (f *decFnInfo) fastDecMapUint8Int64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint8(f.dd.decodeUint(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -6028,6 +7297,7 @@ func (f *decFnInfo) fastDecMapUint8Int64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint16Uint16(rv reflect.Value) {
@@ -6040,8 +7310,7 @@ func (f *decFnInfo) fastDecMapUint16Uint16(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint16]uint16)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6049,12 +7318,13 @@ func (f *decFnInfo) fastDecMapUint16Uint16(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint16]uint16{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6074,9 +7344,13 @@ func (f *decFnInfo) fastDecMapUint16Uint16(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint16(f.dd.decodeUint(16))
@@ -6085,6 +7359,7 @@ func (f *decFnInfo) fastDecMapUint16Uint16(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint16Intf(rv reflect.Value) {
@@ -6097,8 +7372,7 @@ func (f *decFnInfo) fastDecMapUint16Intf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint16]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6106,12 +7380,13 @@ func (f *decFnInfo) fastDecMapUint16Intf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint16]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6131,9 +7406,13 @@ func (f *decFnInfo) fastDecMapUint16Intf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -6141,6 +7420,7 @@ func (f *decFnInfo) fastDecMapUint16Intf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint16String(rv reflect.Value) {
@@ -6153,8 +7433,7 @@ func (f *decFnInfo) fastDecMapUint16String(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint16]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6162,12 +7441,13 @@ func (f *decFnInfo) fastDecMapUint16String(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint16]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6187,9 +7467,13 @@ func (f *decFnInfo) fastDecMapUint16String(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -6198,6 +7482,7 @@ func (f *decFnInfo) fastDecMapUint16String(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint16Uint(rv reflect.Value) {
@@ -6210,8 +7495,7 @@ func (f *decFnInfo) fastDecMapUint16Uint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint16]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6219,12 +7503,13 @@ func (f *decFnInfo) fastDecMapUint16Uint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint16]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6244,9 +7529,13 @@ func (f *decFnInfo) fastDecMapUint16Uint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -6255,6 +7544,7 @@ func (f *decFnInfo) fastDecMapUint16Uint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint16Uint32(rv reflect.Value) {
@@ -6267,8 +7557,7 @@ func (f *decFnInfo) fastDecMapUint16Uint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint16]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6276,12 +7565,13 @@ func (f *decFnInfo) fastDecMapUint16Uint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint16]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6301,9 +7591,13 @@ func (f *decFnInfo) fastDecMapUint16Uint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -6312,6 +7606,7 @@ func (f *decFnInfo) fastDecMapUint16Uint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint16Uint64(rv reflect.Value) {
@@ -6324,8 +7619,7 @@ func (f *decFnInfo) fastDecMapUint16Uint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint16]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6333,12 +7627,13 @@ func (f *decFnInfo) fastDecMapUint16Uint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint16]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6358,9 +7653,13 @@ func (f *decFnInfo) fastDecMapUint16Uint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -6369,6 +7668,7 @@ func (f *decFnInfo) fastDecMapUint16Uint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint16Int(rv reflect.Value) {
@@ -6381,8 +7681,7 @@ func (f *decFnInfo) fastDecMapUint16Int(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint16]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6390,12 +7689,13 @@ func (f *decFnInfo) fastDecMapUint16Int(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint16]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6415,9 +7715,13 @@ func (f *decFnInfo) fastDecMapUint16Int(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -6426,6 +7730,7 @@ func (f *decFnInfo) fastDecMapUint16Int(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint16Int32(rv reflect.Value) {
@@ -6438,8 +7743,7 @@ func (f *decFnInfo) fastDecMapUint16Int32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint16]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6447,12 +7751,13 @@ func (f *decFnInfo) fastDecMapUint16Int32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint16]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6472,9 +7777,13 @@ func (f *decFnInfo) fastDecMapUint16Int32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -6483,6 +7792,7 @@ func (f *decFnInfo) fastDecMapUint16Int32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint16Int64(rv reflect.Value) {
@@ -6495,8 +7805,7 @@ func (f *decFnInfo) fastDecMapUint16Int64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint16]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6504,12 +7813,13 @@ func (f *decFnInfo) fastDecMapUint16Int64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint16]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6529,9 +7839,13 @@ func (f *decFnInfo) fastDecMapUint16Int64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint16(f.dd.decodeUint(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -6540,6 +7854,7 @@ func (f *decFnInfo) fastDecMapUint16Int64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint32Intf(rv reflect.Value) {
@@ -6552,8 +7867,7 @@ func (f *decFnInfo) fastDecMapUint32Intf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint32]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6561,12 +7875,13 @@ func (f *decFnInfo) fastDecMapUint32Intf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint32]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6586,9 +7901,13 @@ func (f *decFnInfo) fastDecMapUint32Intf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -6596,6 +7915,7 @@ func (f *decFnInfo) fastDecMapUint32Intf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint32String(rv reflect.Value) {
@@ -6608,8 +7928,7 @@ func (f *decFnInfo) fastDecMapUint32String(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint32]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6617,12 +7936,13 @@ func (f *decFnInfo) fastDecMapUint32String(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint32]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6642,9 +7962,13 @@ func (f *decFnInfo) fastDecMapUint32String(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -6653,6 +7977,7 @@ func (f *decFnInfo) fastDecMapUint32String(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint32Uint(rv reflect.Value) {
@@ -6665,8 +7990,7 @@ func (f *decFnInfo) fastDecMapUint32Uint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint32]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6674,12 +7998,13 @@ func (f *decFnInfo) fastDecMapUint32Uint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint32]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6699,9 +8024,13 @@ func (f *decFnInfo) fastDecMapUint32Uint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -6710,6 +8039,7 @@ func (f *decFnInfo) fastDecMapUint32Uint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint32Uint32(rv reflect.Value) {
@@ -6722,8 +8052,7 @@ func (f *decFnInfo) fastDecMapUint32Uint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint32]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6731,12 +8060,13 @@ func (f *decFnInfo) fastDecMapUint32Uint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint32]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6756,9 +8086,13 @@ func (f *decFnInfo) fastDecMapUint32Uint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -6767,6 +8101,7 @@ func (f *decFnInfo) fastDecMapUint32Uint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint32Uint64(rv reflect.Value) {
@@ -6779,8 +8114,7 @@ func (f *decFnInfo) fastDecMapUint32Uint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint32]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6788,12 +8122,13 @@ func (f *decFnInfo) fastDecMapUint32Uint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint32]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6813,9 +8148,13 @@ func (f *decFnInfo) fastDecMapUint32Uint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -6824,6 +8163,7 @@ func (f *decFnInfo) fastDecMapUint32Uint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint32Int(rv reflect.Value) {
@@ -6836,8 +8176,7 @@ func (f *decFnInfo) fastDecMapUint32Int(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint32]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6845,12 +8184,13 @@ func (f *decFnInfo) fastDecMapUint32Int(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint32]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6870,9 +8210,13 @@ func (f *decFnInfo) fastDecMapUint32Int(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -6881,6 +8225,7 @@ func (f *decFnInfo) fastDecMapUint32Int(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint32Int32(rv reflect.Value) {
@@ -6893,8 +8238,7 @@ func (f *decFnInfo) fastDecMapUint32Int32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint32]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6902,12 +8246,13 @@ func (f *decFnInfo) fastDecMapUint32Int32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint32]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6927,9 +8272,13 @@ func (f *decFnInfo) fastDecMapUint32Int32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -6938,6 +8287,7 @@ func (f *decFnInfo) fastDecMapUint32Int32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint32Int64(rv reflect.Value) {
@@ -6950,8 +8300,7 @@ func (f *decFnInfo) fastDecMapUint32Int64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint32]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -6959,12 +8308,13 @@ func (f *decFnInfo) fastDecMapUint32Int64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint32]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -6984,9 +8334,13 @@ func (f *decFnInfo) fastDecMapUint32Int64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := uint32(f.dd.decodeUint(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -6995,6 +8349,7 @@ func (f *decFnInfo) fastDecMapUint32Int64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint64Intf(rv reflect.Value) {
@@ -7007,8 +8362,7 @@ func (f *decFnInfo) fastDecMapUint64Intf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint64]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7016,12 +8370,13 @@ func (f *decFnInfo) fastDecMapUint64Intf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint64]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7041,9 +8396,13 @@ func (f *decFnInfo) fastDecMapUint64Intf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -7051,6 +8410,7 @@ func (f *decFnInfo) fastDecMapUint64Intf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint64String(rv reflect.Value) {
@@ -7063,8 +8423,7 @@ func (f *decFnInfo) fastDecMapUint64String(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint64]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7072,12 +8431,13 @@ func (f *decFnInfo) fastDecMapUint64String(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint64]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7097,9 +8457,13 @@ func (f *decFnInfo) fastDecMapUint64String(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -7108,6 +8472,7 @@ func (f *decFnInfo) fastDecMapUint64String(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint64Uint(rv reflect.Value) {
@@ -7120,8 +8485,7 @@ func (f *decFnInfo) fastDecMapUint64Uint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint64]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7129,12 +8493,13 @@ func (f *decFnInfo) fastDecMapUint64Uint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint64]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7154,9 +8519,13 @@ func (f *decFnInfo) fastDecMapUint64Uint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -7165,6 +8534,7 @@ func (f *decFnInfo) fastDecMapUint64Uint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint64Uint32(rv reflect.Value) {
@@ -7177,8 +8547,7 @@ func (f *decFnInfo) fastDecMapUint64Uint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint64]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7186,12 +8555,13 @@ func (f *decFnInfo) fastDecMapUint64Uint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint64]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7211,9 +8581,13 @@ func (f *decFnInfo) fastDecMapUint64Uint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -7222,6 +8596,7 @@ func (f *decFnInfo) fastDecMapUint64Uint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint64Uint64(rv reflect.Value) {
@@ -7234,8 +8609,7 @@ func (f *decFnInfo) fastDecMapUint64Uint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint64]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7243,12 +8617,13 @@ func (f *decFnInfo) fastDecMapUint64Uint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint64]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7268,9 +8643,13 @@ func (f *decFnInfo) fastDecMapUint64Uint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -7279,6 +8658,7 @@ func (f *decFnInfo) fastDecMapUint64Uint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint64Int(rv reflect.Value) {
@@ -7291,8 +8671,7 @@ func (f *decFnInfo) fastDecMapUint64Int(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint64]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7300,12 +8679,13 @@ func (f *decFnInfo) fastDecMapUint64Int(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint64]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7325,9 +8705,13 @@ func (f *decFnInfo) fastDecMapUint64Int(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -7336,6 +8720,7 @@ func (f *decFnInfo) fastDecMapUint64Int(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint64Int32(rv reflect.Value) {
@@ -7348,8 +8733,7 @@ func (f *decFnInfo) fastDecMapUint64Int32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint64]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7357,12 +8741,13 @@ func (f *decFnInfo) fastDecMapUint64Int32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint64]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7382,9 +8767,13 @@ func (f *decFnInfo) fastDecMapUint64Int32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -7393,6 +8782,7 @@ func (f *decFnInfo) fastDecMapUint64Int32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapUint64Int64(rv reflect.Value) {
@@ -7405,8 +8795,7 @@ func (f *decFnInfo) fastDecMapUint64Int64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[uint64]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7414,12 +8803,13 @@ func (f *decFnInfo) fastDecMapUint64Int64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[uint64]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7439,9 +8829,13 @@ func (f *decFnInfo) fastDecMapUint64Int64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeUint(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -7450,6 +8844,7 @@ func (f *decFnInfo) fastDecMapUint64Int64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntIntf(rv reflect.Value) {
@@ -7462,8 +8857,7 @@ func (f *decFnInfo) fastDecMapIntIntf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7471,12 +8865,13 @@ func (f *decFnInfo) fastDecMapIntIntf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7496,9 +8891,13 @@ func (f *decFnInfo) fastDecMapIntIntf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -7506,6 +8905,7 @@ func (f *decFnInfo) fastDecMapIntIntf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntString(rv reflect.Value) {
@@ -7518,8 +8918,7 @@ func (f *decFnInfo) fastDecMapIntString(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7527,12 +8926,13 @@ func (f *decFnInfo) fastDecMapIntString(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7552,9 +8952,13 @@ func (f *decFnInfo) fastDecMapIntString(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -7563,6 +8967,7 @@ func (f *decFnInfo) fastDecMapIntString(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntUint(rv reflect.Value) {
@@ -7575,8 +8980,7 @@ func (f *decFnInfo) fastDecMapIntUint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7584,12 +8988,13 @@ func (f *decFnInfo) fastDecMapIntUint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7609,9 +9014,13 @@ func (f *decFnInfo) fastDecMapIntUint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -7620,6 +9029,7 @@ func (f *decFnInfo) fastDecMapIntUint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntUint32(rv reflect.Value) {
@@ -7632,8 +9042,7 @@ func (f *decFnInfo) fastDecMapIntUint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7641,12 +9050,13 @@ func (f *decFnInfo) fastDecMapIntUint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7666,9 +9076,13 @@ func (f *decFnInfo) fastDecMapIntUint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -7677,6 +9091,7 @@ func (f *decFnInfo) fastDecMapIntUint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntUint64(rv reflect.Value) {
@@ -7689,8 +9104,7 @@ func (f *decFnInfo) fastDecMapIntUint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7698,12 +9112,13 @@ func (f *decFnInfo) fastDecMapIntUint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7723,9 +9138,13 @@ func (f *decFnInfo) fastDecMapIntUint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -7734,6 +9153,7 @@ func (f *decFnInfo) fastDecMapIntUint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntInt(rv reflect.Value) {
@@ -7746,8 +9166,7 @@ func (f *decFnInfo) fastDecMapIntInt(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7755,12 +9174,13 @@ func (f *decFnInfo) fastDecMapIntInt(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7780,9 +9200,13 @@ func (f *decFnInfo) fastDecMapIntInt(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -7791,6 +9215,7 @@ func (f *decFnInfo) fastDecMapIntInt(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntInt32(rv reflect.Value) {
@@ -7803,8 +9228,7 @@ func (f *decFnInfo) fastDecMapIntInt32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7812,12 +9236,13 @@ func (f *decFnInfo) fastDecMapIntInt32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7837,9 +9262,13 @@ func (f *decFnInfo) fastDecMapIntInt32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -7848,6 +9277,7 @@ func (f *decFnInfo) fastDecMapIntInt32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapIntInt64(rv reflect.Value) {
@@ -7860,8 +9290,7 @@ func (f *decFnInfo) fastDecMapIntInt64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7869,12 +9298,13 @@ func (f *decFnInfo) fastDecMapIntInt64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7894,9 +9324,13 @@ func (f *decFnInfo) fastDecMapIntInt64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int(f.dd.decodeInt(intBitsize))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -7905,6 +9339,7 @@ func (f *decFnInfo) fastDecMapIntInt64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt8Int8(rv reflect.Value) {
@@ -7917,8 +9352,7 @@ func (f *decFnInfo) fastDecMapInt8Int8(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int8]int8)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7926,12 +9360,13 @@ func (f *decFnInfo) fastDecMapInt8Int8(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int8]int8{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -7951,9 +9386,13 @@ func (f *decFnInfo) fastDecMapInt8Int8(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int8(f.dd.decodeInt(8))
@@ -7962,6 +9401,7 @@ func (f *decFnInfo) fastDecMapInt8Int8(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt8Intf(rv reflect.Value) {
@@ -7974,8 +9414,7 @@ func (f *decFnInfo) fastDecMapInt8Intf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int8]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -7983,12 +9422,13 @@ func (f *decFnInfo) fastDecMapInt8Intf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int8]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8008,9 +9448,13 @@ func (f *decFnInfo) fastDecMapInt8Intf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -8018,6 +9462,7 @@ func (f *decFnInfo) fastDecMapInt8Intf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt8String(rv reflect.Value) {
@@ -8030,8 +9475,7 @@ func (f *decFnInfo) fastDecMapInt8String(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int8]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8039,12 +9483,13 @@ func (f *decFnInfo) fastDecMapInt8String(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int8]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8064,9 +9509,13 @@ func (f *decFnInfo) fastDecMapInt8String(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -8075,6 +9524,7 @@ func (f *decFnInfo) fastDecMapInt8String(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt8Uint(rv reflect.Value) {
@@ -8087,8 +9537,7 @@ func (f *decFnInfo) fastDecMapInt8Uint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int8]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8096,12 +9545,13 @@ func (f *decFnInfo) fastDecMapInt8Uint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int8]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8121,9 +9571,13 @@ func (f *decFnInfo) fastDecMapInt8Uint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -8132,6 +9586,7 @@ func (f *decFnInfo) fastDecMapInt8Uint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt8Uint32(rv reflect.Value) {
@@ -8144,8 +9599,7 @@ func (f *decFnInfo) fastDecMapInt8Uint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int8]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8153,12 +9607,13 @@ func (f *decFnInfo) fastDecMapInt8Uint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int8]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8178,9 +9633,13 @@ func (f *decFnInfo) fastDecMapInt8Uint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -8189,6 +9648,7 @@ func (f *decFnInfo) fastDecMapInt8Uint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt8Uint64(rv reflect.Value) {
@@ -8201,8 +9661,7 @@ func (f *decFnInfo) fastDecMapInt8Uint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int8]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8210,12 +9669,13 @@ func (f *decFnInfo) fastDecMapInt8Uint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int8]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8235,9 +9695,13 @@ func (f *decFnInfo) fastDecMapInt8Uint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -8246,6 +9710,7 @@ func (f *decFnInfo) fastDecMapInt8Uint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt8Int(rv reflect.Value) {
@@ -8258,8 +9723,7 @@ func (f *decFnInfo) fastDecMapInt8Int(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int8]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8267,12 +9731,13 @@ func (f *decFnInfo) fastDecMapInt8Int(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int8]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8292,9 +9757,13 @@ func (f *decFnInfo) fastDecMapInt8Int(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -8303,6 +9772,7 @@ func (f *decFnInfo) fastDecMapInt8Int(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt8Int32(rv reflect.Value) {
@@ -8315,8 +9785,7 @@ func (f *decFnInfo) fastDecMapInt8Int32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int8]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8324,12 +9793,13 @@ func (f *decFnInfo) fastDecMapInt8Int32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int8]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8349,9 +9819,13 @@ func (f *decFnInfo) fastDecMapInt8Int32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -8360,6 +9834,7 @@ func (f *decFnInfo) fastDecMapInt8Int32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt8Int64(rv reflect.Value) {
@@ -8372,8 +9847,7 @@ func (f *decFnInfo) fastDecMapInt8Int64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int8]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8381,12 +9855,13 @@ func (f *decFnInfo) fastDecMapInt8Int64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int8]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8406,9 +9881,13 @@ func (f *decFnInfo) fastDecMapInt8Int64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int8(f.dd.decodeInt(8))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -8417,6 +9896,7 @@ func (f *decFnInfo) fastDecMapInt8Int64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt16Int16(rv reflect.Value) {
@@ -8429,8 +9909,7 @@ func (f *decFnInfo) fastDecMapInt16Int16(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int16]int16)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8438,12 +9917,13 @@ func (f *decFnInfo) fastDecMapInt16Int16(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int16]int16{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8463,9 +9943,13 @@ func (f *decFnInfo) fastDecMapInt16Int16(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int16(f.dd.decodeInt(16))
@@ -8474,6 +9958,7 @@ func (f *decFnInfo) fastDecMapInt16Int16(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt16Intf(rv reflect.Value) {
@@ -8486,8 +9971,7 @@ func (f *decFnInfo) fastDecMapInt16Intf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int16]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8495,12 +9979,13 @@ func (f *decFnInfo) fastDecMapInt16Intf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int16]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8520,9 +10005,13 @@ func (f *decFnInfo) fastDecMapInt16Intf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -8530,6 +10019,7 @@ func (f *decFnInfo) fastDecMapInt16Intf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt16String(rv reflect.Value) {
@@ -8542,8 +10032,7 @@ func (f *decFnInfo) fastDecMapInt16String(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int16]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8551,12 +10040,13 @@ func (f *decFnInfo) fastDecMapInt16String(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int16]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8576,9 +10066,13 @@ func (f *decFnInfo) fastDecMapInt16String(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -8587,6 +10081,7 @@ func (f *decFnInfo) fastDecMapInt16String(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt16Uint(rv reflect.Value) {
@@ -8599,8 +10094,7 @@ func (f *decFnInfo) fastDecMapInt16Uint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int16]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8608,12 +10102,13 @@ func (f *decFnInfo) fastDecMapInt16Uint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int16]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8633,9 +10128,13 @@ func (f *decFnInfo) fastDecMapInt16Uint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -8644,6 +10143,7 @@ func (f *decFnInfo) fastDecMapInt16Uint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt16Uint32(rv reflect.Value) {
@@ -8656,8 +10156,7 @@ func (f *decFnInfo) fastDecMapInt16Uint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int16]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8665,12 +10164,13 @@ func (f *decFnInfo) fastDecMapInt16Uint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int16]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8690,9 +10190,13 @@ func (f *decFnInfo) fastDecMapInt16Uint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -8701,6 +10205,7 @@ func (f *decFnInfo) fastDecMapInt16Uint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt16Uint64(rv reflect.Value) {
@@ -8713,8 +10218,7 @@ func (f *decFnInfo) fastDecMapInt16Uint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int16]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8722,12 +10226,13 @@ func (f *decFnInfo) fastDecMapInt16Uint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int16]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8747,9 +10252,13 @@ func (f *decFnInfo) fastDecMapInt16Uint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -8758,6 +10267,7 @@ func (f *decFnInfo) fastDecMapInt16Uint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt16Int(rv reflect.Value) {
@@ -8770,8 +10280,7 @@ func (f *decFnInfo) fastDecMapInt16Int(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int16]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8779,12 +10288,13 @@ func (f *decFnInfo) fastDecMapInt16Int(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int16]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8804,9 +10314,13 @@ func (f *decFnInfo) fastDecMapInt16Int(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -8815,6 +10329,7 @@ func (f *decFnInfo) fastDecMapInt16Int(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt16Int32(rv reflect.Value) {
@@ -8827,8 +10342,7 @@ func (f *decFnInfo) fastDecMapInt16Int32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int16]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8836,12 +10350,13 @@ func (f *decFnInfo) fastDecMapInt16Int32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int16]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8861,9 +10376,13 @@ func (f *decFnInfo) fastDecMapInt16Int32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -8872,6 +10391,7 @@ func (f *decFnInfo) fastDecMapInt16Int32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt16Int64(rv reflect.Value) {
@@ -8884,8 +10404,7 @@ func (f *decFnInfo) fastDecMapInt16Int64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int16]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8893,12 +10412,13 @@ func (f *decFnInfo) fastDecMapInt16Int64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int16]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8918,9 +10438,13 @@ func (f *decFnInfo) fastDecMapInt16Int64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int16(f.dd.decodeInt(16))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -8929,6 +10453,7 @@ func (f *decFnInfo) fastDecMapInt16Int64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt32Intf(rv reflect.Value) {
@@ -8941,8 +10466,7 @@ func (f *decFnInfo) fastDecMapInt32Intf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int32]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -8950,12 +10474,13 @@ func (f *decFnInfo) fastDecMapInt32Intf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int32]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -8975,9 +10500,13 @@ func (f *decFnInfo) fastDecMapInt32Intf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -8985,6 +10514,7 @@ func (f *decFnInfo) fastDecMapInt32Intf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt32String(rv reflect.Value) {
@@ -8997,8 +10527,7 @@ func (f *decFnInfo) fastDecMapInt32String(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int32]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9006,12 +10535,13 @@ func (f *decFnInfo) fastDecMapInt32String(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int32]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9031,9 +10561,13 @@ func (f *decFnInfo) fastDecMapInt32String(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -9042,6 +10576,7 @@ func (f *decFnInfo) fastDecMapInt32String(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt32Uint(rv reflect.Value) {
@@ -9054,8 +10589,7 @@ func (f *decFnInfo) fastDecMapInt32Uint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int32]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9063,12 +10597,13 @@ func (f *decFnInfo) fastDecMapInt32Uint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int32]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9088,9 +10623,13 @@ func (f *decFnInfo) fastDecMapInt32Uint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -9099,6 +10638,7 @@ func (f *decFnInfo) fastDecMapInt32Uint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt32Uint32(rv reflect.Value) {
@@ -9111,8 +10651,7 @@ func (f *decFnInfo) fastDecMapInt32Uint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int32]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9120,12 +10659,13 @@ func (f *decFnInfo) fastDecMapInt32Uint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int32]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9145,9 +10685,13 @@ func (f *decFnInfo) fastDecMapInt32Uint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -9156,6 +10700,7 @@ func (f *decFnInfo) fastDecMapInt32Uint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt32Uint64(rv reflect.Value) {
@@ -9168,8 +10713,7 @@ func (f *decFnInfo) fastDecMapInt32Uint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int32]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9177,12 +10721,13 @@ func (f *decFnInfo) fastDecMapInt32Uint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int32]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9202,9 +10747,13 @@ func (f *decFnInfo) fastDecMapInt32Uint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -9213,6 +10762,7 @@ func (f *decFnInfo) fastDecMapInt32Uint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt32Int(rv reflect.Value) {
@@ -9225,8 +10775,7 @@ func (f *decFnInfo) fastDecMapInt32Int(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int32]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9234,12 +10783,13 @@ func (f *decFnInfo) fastDecMapInt32Int(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int32]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9259,9 +10809,13 @@ func (f *decFnInfo) fastDecMapInt32Int(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -9270,6 +10824,7 @@ func (f *decFnInfo) fastDecMapInt32Int(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt32Int32(rv reflect.Value) {
@@ -9282,8 +10837,7 @@ func (f *decFnInfo) fastDecMapInt32Int32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int32]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9291,12 +10845,13 @@ func (f *decFnInfo) fastDecMapInt32Int32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int32]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9316,9 +10871,13 @@ func (f *decFnInfo) fastDecMapInt32Int32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -9327,6 +10886,7 @@ func (f *decFnInfo) fastDecMapInt32Int32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt32Int64(rv reflect.Value) {
@@ -9339,8 +10899,7 @@ func (f *decFnInfo) fastDecMapInt32Int64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int32]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9348,12 +10907,13 @@ func (f *decFnInfo) fastDecMapInt32Int64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int32]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9373,9 +10933,13 @@ func (f *decFnInfo) fastDecMapInt32Int64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := int32(f.dd.decodeInt(32))
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -9384,6 +10948,7 @@ func (f *decFnInfo) fastDecMapInt32Int64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt64Intf(rv reflect.Value) {
@@ -9396,8 +10961,7 @@ func (f *decFnInfo) fastDecMapInt64Intf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int64]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9405,12 +10969,13 @@ func (f *decFnInfo) fastDecMapInt64Intf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int64]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9430,9 +10995,13 @@ func (f *decFnInfo) fastDecMapInt64Intf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -9440,6 +11009,7 @@ func (f *decFnInfo) fastDecMapInt64Intf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt64String(rv reflect.Value) {
@@ -9452,8 +11022,7 @@ func (f *decFnInfo) fastDecMapInt64String(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int64]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9461,12 +11030,13 @@ func (f *decFnInfo) fastDecMapInt64String(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int64]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9486,9 +11056,13 @@ func (f *decFnInfo) fastDecMapInt64String(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -9497,6 +11071,7 @@ func (f *decFnInfo) fastDecMapInt64String(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt64Uint(rv reflect.Value) {
@@ -9509,8 +11084,7 @@ func (f *decFnInfo) fastDecMapInt64Uint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int64]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9518,12 +11092,13 @@ func (f *decFnInfo) fastDecMapInt64Uint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int64]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9543,9 +11118,13 @@ func (f *decFnInfo) fastDecMapInt64Uint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -9554,6 +11133,7 @@ func (f *decFnInfo) fastDecMapInt64Uint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt64Uint32(rv reflect.Value) {
@@ -9566,8 +11146,7 @@ func (f *decFnInfo) fastDecMapInt64Uint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int64]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9575,12 +11154,13 @@ func (f *decFnInfo) fastDecMapInt64Uint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int64]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9600,9 +11180,13 @@ func (f *decFnInfo) fastDecMapInt64Uint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -9611,6 +11195,7 @@ func (f *decFnInfo) fastDecMapInt64Uint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt64Uint64(rv reflect.Value) {
@@ -9623,8 +11208,7 @@ func (f *decFnInfo) fastDecMapInt64Uint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int64]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9632,12 +11216,13 @@ func (f *decFnInfo) fastDecMapInt64Uint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int64]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9657,9 +11242,13 @@ func (f *decFnInfo) fastDecMapInt64Uint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -9668,6 +11257,7 @@ func (f *decFnInfo) fastDecMapInt64Uint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt64Int(rv reflect.Value) {
@@ -9680,8 +11270,7 @@ func (f *decFnInfo) fastDecMapInt64Int(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int64]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9689,12 +11278,13 @@ func (f *decFnInfo) fastDecMapInt64Int(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int64]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9714,9 +11304,13 @@ func (f *decFnInfo) fastDecMapInt64Int(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -9725,6 +11319,7 @@ func (f *decFnInfo) fastDecMapInt64Int(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt64Int32(rv reflect.Value) {
@@ -9737,8 +11332,7 @@ func (f *decFnInfo) fastDecMapInt64Int32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int64]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9746,12 +11340,13 @@ func (f *decFnInfo) fastDecMapInt64Int32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int64]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9771,9 +11366,13 @@ func (f *decFnInfo) fastDecMapInt64Int32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -9782,6 +11381,7 @@ func (f *decFnInfo) fastDecMapInt64Int32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapInt64Int64(rv reflect.Value) {
@@ -9794,8 +11394,7 @@ func (f *decFnInfo) fastDecMapInt64Int64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[int64]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9803,12 +11402,13 @@ func (f *decFnInfo) fastDecMapInt64Int64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[int64]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9828,9 +11428,13 @@ func (f *decFnInfo) fastDecMapInt64Int64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeInt(64)
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -9839,6 +11443,7 @@ func (f *decFnInfo) fastDecMapInt64Int64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapBoolBool(rv reflect.Value) {
@@ -9851,8 +11456,7 @@ func (f *decFnInfo) fastDecMapBoolBool(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[bool]bool)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9860,12 +11464,13 @@ func (f *decFnInfo) fastDecMapBoolBool(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[bool]bool{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9885,9 +11490,13 @@ func (f *decFnInfo) fastDecMapBoolBool(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeBool()
@@ -9896,6 +11505,7 @@ func (f *decFnInfo) fastDecMapBoolBool(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapBoolIntf(rv reflect.Value) {
@@ -9908,8 +11518,7 @@ func (f *decFnInfo) fastDecMapBoolIntf(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[bool]interface{})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9917,12 +11526,13 @@ func (f *decFnInfo) fastDecMapBoolIntf(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[bool]interface{}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9942,9 +11552,13 @@ func (f *decFnInfo) fastDecMapBoolIntf(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.d.decode(&mv)
 
@@ -9952,6 +11566,7 @@ func (f *decFnInfo) fastDecMapBoolIntf(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapBoolString(rv reflect.Value) {
@@ -9964,8 +11579,7 @@ func (f *decFnInfo) fastDecMapBoolString(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[bool]string)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -9973,12 +11587,13 @@ func (f *decFnInfo) fastDecMapBoolString(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[bool]string{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -9998,9 +11613,13 @@ func (f *decFnInfo) fastDecMapBoolString(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeString()
@@ -10009,6 +11628,7 @@ func (f *decFnInfo) fastDecMapBoolString(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapBoolUint(rv reflect.Value) {
@@ -10021,8 +11641,7 @@ func (f *decFnInfo) fastDecMapBoolUint(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[bool]uint)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -10030,12 +11649,13 @@ func (f *decFnInfo) fastDecMapBoolUint(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[bool]uint{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -10055,9 +11675,13 @@ func (f *decFnInfo) fastDecMapBoolUint(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint(f.dd.decodeUint(uintBitsize))
@@ -10066,6 +11690,7 @@ func (f *decFnInfo) fastDecMapBoolUint(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapBoolUint32(rv reflect.Value) {
@@ -10078,8 +11703,7 @@ func (f *decFnInfo) fastDecMapBoolUint32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[bool]uint32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -10087,12 +11711,13 @@ func (f *decFnInfo) fastDecMapBoolUint32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[bool]uint32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -10112,9 +11737,13 @@ func (f *decFnInfo) fastDecMapBoolUint32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = uint32(f.dd.decodeUint(32))
@@ -10123,6 +11752,7 @@ func (f *decFnInfo) fastDecMapBoolUint32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapBoolUint64(rv reflect.Value) {
@@ -10135,8 +11765,7 @@ func (f *decFnInfo) fastDecMapBoolUint64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[bool]uint64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -10144,12 +11773,13 @@ func (f *decFnInfo) fastDecMapBoolUint64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[bool]uint64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -10169,9 +11799,13 @@ func (f *decFnInfo) fastDecMapBoolUint64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeUint(64)
@@ -10180,6 +11814,7 @@ func (f *decFnInfo) fastDecMapBoolUint64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapBoolInt(rv reflect.Value) {
@@ -10192,8 +11827,7 @@ func (f *decFnInfo) fastDecMapBoolInt(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[bool]int)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -10201,12 +11835,13 @@ func (f *decFnInfo) fastDecMapBoolInt(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[bool]int{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -10226,9 +11861,13 @@ func (f *decFnInfo) fastDecMapBoolInt(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int(f.dd.decodeInt(intBitsize))
@@ -10237,6 +11876,7 @@ func (f *decFnInfo) fastDecMapBoolInt(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapBoolInt32(rv reflect.Value) {
@@ -10249,8 +11889,7 @@ func (f *decFnInfo) fastDecMapBoolInt32(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[bool]int32)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -10258,12 +11897,13 @@ func (f *decFnInfo) fastDecMapBoolInt32(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[bool]int32{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -10283,9 +11923,13 @@ func (f *decFnInfo) fastDecMapBoolInt32(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = int32(f.dd.decodeInt(32))
@@ -10294,6 +11938,7 @@ func (f *decFnInfo) fastDecMapBoolInt32(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 func (f *decFnInfo) fastDecMapBoolInt64(rv reflect.Value) {
@@ -10306,8 +11951,7 @@ func (f *decFnInfo) fastDecMapBoolInt64(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[bool]int64)
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -10315,12 +11959,13 @@ func (f *decFnInfo) fastDecMapBoolInt64(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[bool]int64{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -10340,9 +11985,13 @@ func (f *decFnInfo) fastDecMapBoolInt64(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		f.dd.initReadNext()
 		mk := f.dd.decodeBool()
 
+		f.dd.readMapKVSeparator()
 		mv := v[mk]
 		f.dd.initReadNext()
 		mv = f.dd.decodeInt(64)
@@ -10351,4 +12000,5 @@ func (f *decFnInfo) fastDecMapBoolInt64(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }

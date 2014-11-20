@@ -1,13 +1,14 @@
 # Codec
 
-High-Performance, Feature-Rich Idiomatic Go codec/encoding library for binc, msgpack and cbor.
+High Performance, Feature-Rich Idiomatic Go codec/encoding library for binc, msgpack, cbor, json.
 
 Supported Serialization formats are:
 
   - msgpack: [https://github.com/msgpack/msgpack]
   - binc:    [http://github.com/ugorji/binc]
-  - cbor:    [http://cbor.io]
+  - cbor:    [http://cbor.io] [http://tools.ietf.org/html/rfc7049]
   - simple: 
+  - json:    [http://json.org] [http://tools.ietf.org/html/rfc7159] 
 
 To install:
 
@@ -25,31 +26,24 @@ Rich Feature Set includes:
     Our extensive benchmarks show us outperforming Gob, Json and Bson by 2-4X.
     Achieved by extreme care on allocations, recursions, bypassing reflection, zero-copy, etc.
   - Multiple conversions:
-    Package co-erces types where appropriate e.g. decode an int in the stream into a float, etc
+    Package coerces types where appropriate e.g. decode an int in the stream into a float, etc
   - Corner Cases: Overflows, nil maps/slices, nil values in streams are handled correctly
   - Standard field renaming via tags
-  - Encoding from any value
+  - Encoding from any value and decoding into pointer to any value
     (struct, slice, map, primitives, pointers, interface{}, etc)
-  - Decoding into pointer to any value
-    (struct, slice, map, int, float32, bool, string, reflect.Value, etc)
   - Supports extension functions to handle the encode/decode of custom types
-  - Support Go 1.2 encoding.BinaryMarshaler/BinaryUnmarshaler
+  - Support encoding.(Binary|Text)(M|Unm)arshaler interfaces
   - Schema-less decoding
     (decode into a pointer to a nil interface{} as opposed to a typed value).
     Includes Options to configure what specific map or slice type to use
     when decoding an encoded list or map into a nil interface{}
   - Provides a RPC Server and Client Codec for net/rpc communication protocol.
-  - Fast Paths for some container types:
-    For some container types, we circumvent reflection and its associated overhead
-    and allocation costs, and encode/decode directly. These types are:
-	    Slice of all builtin types and interface{},
-	    map of all builtin types and interface{} to string, interface{}, int, int64, uint64
-	    symetrical maps of all builtin types and interface{}
-  - Msgpack Specific:
-      - Options to resolve ambiguities in handling raw bytes (as string or []byte)
-        during schema-less decoding (decoding into a nil interface{})
-      - RPC Server/Client Codec for msgpack-rpc protocol defined at:
-        https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md
+  - Fast Paths for common maps and slices of built-in types (numbers, string, bool).
+    Reflection (and its associated overhead) is bypassed.
+  - Handle unique idiosynchracies of codecs e.g. 
+    - For messagepack, configure how ambiguities in handling raw bytes are resolved 
+    - For messagepack, provide rpc server/client codec to support  msgpack-rpc protocol defined at:
+      https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md
 
 ## Extension Support
 
@@ -122,44 +116,4 @@ Typical usage model:
     rpcCodec := codec.GoRpc.ClientCodec(conn, h)
     //OR rpcCodec := codec.MsgpackSpecRpc.ClientCodec(conn, h)
     client := rpc.NewClientWithCodec(rpcCodec)
-
-## Representative Benchmark Results
-
-A sample run of benchmark using "go test -bi -bench=. -benchmem":
-
-    /proc/cpuinfo: Intel(R) Core(TM) i7-2630QM CPU @ 2.00GHz (HT)
-    
-    ..............................................
-    BENCHMARK INIT: 2013-10-16 11:02:50.345970786 -0400 EDT
-    To run full benchmark comparing encodings (MsgPack, Binc, JSON, GOB, etc), use: "go test -bench=."
-    Benchmark: 
-    	Struct recursive Depth:             1
-    	ApproxDeepSize Of benchmark Struct: 4694 bytes
-    Benchmark One-Pass Run:
-    	 v-msgpack: len: 1600 bytes
-    	      bson: len: 3025 bytes
-    	   msgpack: len: 1560 bytes
-    	      binc: len: 1187 bytes
-    	       gob: len: 1972 bytes
-    	      json: len: 2538 bytes
-    ..............................................
-    PASS
-    Benchmark__Msgpack____Encode	   50000	     54359 ns/op	   14953 B/op	      83 allocs/op
-    Benchmark__Msgpack____Decode	   10000	    106531 ns/op	   14990 B/op	     410 allocs/op
-    Benchmark__Binc_NoSym_Encode	   50000	     53956 ns/op	   14966 B/op	      83 allocs/op
-    Benchmark__Binc_NoSym_Decode	   10000	    103751 ns/op	   14529 B/op	     386 allocs/op
-    Benchmark__Binc_Sym___Encode	   50000	     65961 ns/op	   17130 B/op	      88 allocs/op
-    Benchmark__Binc_Sym___Decode	   10000	    106310 ns/op	   15857 B/op	     287 allocs/op
-    Benchmark__Gob________Encode	   10000	    135944 ns/op	   21189 B/op	     237 allocs/op
-    Benchmark__Gob________Decode	    5000	    405390 ns/op	   83460 B/op	    1841 allocs/op
-    Benchmark__Json_______Encode	   20000	     79412 ns/op	   13874 B/op	     102 allocs/op
-    Benchmark__Json_______Decode	   10000	    247979 ns/op	   14202 B/op	     493 allocs/op
-    Benchmark__Bson_______Encode	   10000	    121762 ns/op	   27814 B/op	     514 allocs/op
-    Benchmark__Bson_______Decode	   10000	    162126 ns/op	   16514 B/op	     789 allocs/op
-    Benchmark__VMsgpack___Encode	   50000	     69155 ns/op	   12370 B/op	     344 allocs/op
-    Benchmark__VMsgpack___Decode	   10000	    151609 ns/op	   20307 B/op	     571 allocs/op
-    ok  	ugorji.net/codec	30.827s
-
-To run full benchmark suite (including against vmsgpack and bson), 
-see notes in ext\_dep\_test.go
 

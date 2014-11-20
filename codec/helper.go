@@ -1,4 +1,4 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 package codec
@@ -6,6 +6,7 @@ package codec
 // Contains code shared by both encode and decode.
 
 import (
+	"encoding"
 	"encoding/binary"
 	"fmt"
 	"math"
@@ -21,11 +22,9 @@ import (
 const (
 	structTagName = "codec"
 
-	// Support
-	//    encoding.BinaryMarshaler: MarshalBinary() (data []byte, err error)
-	//    encoding.BinaryUnmarshaler: UnmarshalBinary(data []byte) error
+	// Support encoding.(Binary|Text)(Unm|M)arshaler.
 	// This constant flag will enable or disable it.
-	supportBinaryMarshal = true
+	supportMarshalInterfaces = true
 
 	// Each Encoder or Decoder uses a cache of functions based on conditionals,
 	// so that the conditionals are not run every time.
@@ -33,6 +32,9 @@ const (
 	// Either a map or a slice is used to keep track of the functions.
 	// The map is more natural, but has a higher cost than a slice/array.
 	// This flag (useMapForCodecCache) controls which is used.
+	//
+	// From benchmarks, slices with linear search perform better with < 32 entries.
+	// We have typically seen a high threshold of about 24 entries.
 	useMapForCodecCache = false
 
 	// for debugging, set this to false, to catch panic traces.
@@ -93,9 +95,13 @@ var (
 	rawExtTyp     = reflect.TypeOf(RawExt{})
 	uint8SliceTyp = reflect.TypeOf([]uint8(nil))
 
-	mapBySliceTyp        = reflect.TypeOf((*MapBySlice)(nil)).Elem()
-	binaryMarshalerTyp   = reflect.TypeOf((*binaryMarshaler)(nil)).Elem()
-	binaryUnmarshalerTyp = reflect.TypeOf((*binaryUnmarshaler)(nil)).Elem()
+	mapBySliceTyp = reflect.TypeOf((*MapBySlice)(nil)).Elem()
+
+	binaryMarshalerTyp   = reflect.TypeOf((*encoding.BinaryMarshaler)(nil)).Elem()
+	binaryUnmarshalerTyp = reflect.TypeOf((*encoding.BinaryUnmarshaler)(nil)).Elem()
+
+	textMarshalerTyp   = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
+	textUnmarshalerTyp = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
 
 	uint8SliceTypId = reflect.ValueOf(uint8SliceTyp).Pointer()
 	rawExtTypId     = reflect.ValueOf(rawExtTyp).Pointer()
@@ -111,16 +117,13 @@ var (
 	bsAll0xff = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 )
 
-type binaryUnmarshaler interface {
-	UnmarshalBinary(data []byte) error
-}
-
-type binaryMarshaler interface {
-	MarshalBinary() (data []byte, err error)
-}
-
 // MapBySlice represents a slice which should be encoded as a map in the stream.
 // The slice contains a sequence of key-value pairs.
+// This affords storing a map in a specific sequence in the stream.
+//
+// The support of MapBySlice affords the following:
+//   - A slice type which implements MapBySlice will be encoded as a map
+//   - A slice can be decoded from a map in the stream
 type MapBySlice interface {
 	MapBySlice()
 }
@@ -138,6 +141,10 @@ func (x *BasicHandle) getBasicHandle() *BasicHandle {
 	return x
 }
 
+func (x *BasicHandle) isBinaryEncoding() bool {
+	return true
+}
+
 // Handle is the interface for a specific encoding format.
 //
 // Typically, a Handle is pre-configured before first time use,
@@ -147,6 +154,7 @@ type Handle interface {
 	getBasicHandle() *BasicHandle
 	newEncDriver(w encWriter) encDriver
 	newDecDriver(r decReader) decDriver
+	isBinaryEncoding() bool
 }
 
 // RawExt represents raw unprocessed extension data.
@@ -303,7 +311,7 @@ type structFieldInfo struct {
 
 func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
 	if fname == "" {
-		panic("parseStructFieldInfo: No Field Name")
+		panic("no field name passed to parseStructFieldInfo")
 	}
 	si := structFieldInfo{
 		encName: fname,
@@ -349,6 +357,7 @@ func (p sfiSortedByEncName) Swap(i, j int) {
 //   - If base is a built in type, en/decode base value
 //   - If base is registered as an extension, en/decode base value
 //   - If type is binary(M/Unm)arshaler, call Binary(M/Unm)arshal method
+//   - If type is text(M/Unm)arshaler, call Text(M/Unm)arshal method
 //   - Else decode appropriately based on the reflect.Kind
 type typeInfo struct {
 	sfi  []*structFieldInfo // sorted. Used when enc/dec struct to map.
@@ -365,11 +374,17 @@ type typeInfo struct {
 
 	mbs bool // base type (T or *T) is a MapBySlice
 
-	m        bool // base type (T or *T) is a binaryMarshaler
-	unm      bool // base type (T or *T) is a binaryUnmarshaler
-	mIndir   int8 // number of indirections to get to binaryMarshaler type
-	unmIndir int8 // number of indirections to get to binaryUnmarshaler type
-	toArray  bool // whether this (struct) type should be encoded as an array
+	bm        bool // base type (T or *T) is a binaryMarshaler
+	bunm      bool // base type (T or *T) is a binaryUnmarshaler
+	bmIndir   int8 // number of indirections to get to binaryMarshaler type
+	bunmIndir int8 // number of indirections to get to binaryUnmarshaler type
+
+	tm        bool // base type (T or *T) is a textMarshaler
+	tunm      bool // base type (T or *T) is a textUnmarshaler
+	tmIndir   int8 // number of indirections to get to textMarshaler type
+	tunmIndir int8 // number of indirections to get to textUnmarshaler type
+
+	toArray bool // whether this (struct) type should be encoded as an array
 }
 
 func (ti *typeInfo) indexForEncName(name string) int {
@@ -420,10 +435,16 @@ func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 
 	var indir int8
 	if ok, indir = implementsIntf(rt, binaryMarshalerTyp); ok {
-		ti.m, ti.mIndir = true, indir
+		ti.bm, ti.bmIndir = true, indir
 	}
 	if ok, indir = implementsIntf(rt, binaryUnmarshalerTyp); ok {
-		ti.unm, ti.unmIndir = true, indir
+		ti.bunm, ti.bunmIndir = true, indir
+	}
+	if ok, indir = implementsIntf(rt, textMarshalerTyp); ok {
+		ti.tm, ti.tmIndir = true, indir
+	}
+	if ok, indir = implementsIntf(rt, textUnmarshalerTyp); ok {
+		ti.tunm, ti.tunmIndir = true, indir
 	}
 	if ok, _ = implementsIntf(rt, mapBySliceTyp); ok {
 		ti.mbs = true

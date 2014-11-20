@@ -11,8 +11,9 @@ package codec
 
 import (
 	"errors"
-	"reflect"
 	"flag"
+	"fmt"
+	"reflect"
 	"testing"
 )
 
@@ -22,11 +23,30 @@ var (
 )
 
 func init() {
+	testBincHSym.AsSymbols = AsSymbolAll
+	testBincHNoSym.AsSymbols = AsSymbolNone
 	testInitFlags()
-	benchInitFlags()
 	flag.Parse()
 	testInit()
-	benchInit()
+}
+
+var (
+	testMsgpackH   = &MsgpackHandle{}
+	testBincH      = &BincHandle{}
+	testBincHNoSym = &BincHandle{}
+	testBincHSym   = &BincHandle{}
+	testSimpleH    = &SimpleHandle{}
+	testCborH      = &CborHandle{}
+	testJsonH      = &JsonHandle{}
+)
+
+func fnCodecEncode(ts interface{}, h Handle) (bs []byte, err error) {
+	err = NewEncoderBytes(&bs, h).Encode(ts)
+	return
+}
+
+func fnCodecDecode(buf []byte, ts interface{}, h Handle) error {
+	return NewDecoderBytes(buf, h).Decode(ts)
 }
 
 func checkErrT(t *testing.T, err error) {
@@ -50,7 +70,10 @@ func logT(x interface{}, format string, args ...interface{}) {
 	} else if b, ok := x.(*testing.B); ok && b != nil && testLogToT {
 		b.Logf(format, args...)
 	} else {
-		debugf(format, args...)
+		if len(format) == 0 || format[len(format)-1] != '\n' {
+			format = format + "\n"
+		}
+		fmt.Printf(format, args...)
 	}
 }
 
@@ -65,39 +88,6 @@ func failT(t *testing.T) {
 func deepEqual(v1, v2 interface{}) (err error) {
 	if !reflect.DeepEqual(v1, v2) {
 		err = errors.New("Not Match")
-	}
-	return
-}
-
-func approxDataSize(rv reflect.Value) (sum int) {
-	switch rk := rv.Kind(); rk {
-	case reflect.Invalid:
-	case reflect.Ptr, reflect.Interface:
-		sum += int(rv.Type().Size())
-		sum += approxDataSize(rv.Elem())
-	case reflect.Slice:
-		sum += int(rv.Type().Size())
-		for j := 0; j < rv.Len(); j++ {
-			sum += approxDataSize(rv.Index(j))
-		}
-	case reflect.String:
-		sum += int(rv.Type().Size())
-		sum += rv.Len()
-	case reflect.Map:
-		sum += int(rv.Type().Size())
-		for _, mk := range rv.MapKeys() {
-			sum += approxDataSize(mk)
-			sum += approxDataSize(rv.MapIndex(mk))
-		}
-	case reflect.Struct:
-		//struct size already includes the full data size.
-		//sum += int(rv.Type().Size())
-		for j := 0; j < rv.NumField(); j++ {
-			sum += approxDataSize(rv.Field(j))
-		}
-	default:
-		//pure value types
-		sum += int(rv.Type().Size())
 	}
 	return
 }

@@ -1,15 +1,16 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 /*
-High Performance, Feature-Rich Idiomatic Go codec/encoding library for binc, msgpack and cbor.
+High Performance, Feature-Rich Idiomatic Go codec/encoding library for binc, msgpack, cbor, json.
 
 Supported Serialization formats are:
 
   - msgpack: [https://github.com/msgpack/msgpack]
   - binc:    [http://github.com/ugorji/binc]
   - cbor:    [http://cbor.io] [http://tools.ietf.org/html/rfc7049]
-  - simple:  
+  - simple: 
+  - json:    [http://json.org] [http://tools.ietf.org/html/rfc7159] 
 
 To install:
 
@@ -25,31 +26,24 @@ Rich Feature Set includes:
     Our extensive benchmarks show us outperforming Gob, Json and Bson by 2-4X.
     Achieved by extreme care on allocations, recursions, bypassing reflection, zero-copy, etc.
   - Multiple conversions:
-    Package co-erces types where appropriate e.g. decode an int in the stream into a float, etc
+    Package coerces types where appropriate e.g. decode an int in the stream into a float, etc
   - Corner Cases: Overflows, nil maps/slices, nil values in streams are handled correctly
   - Standard field renaming via tags
-  - Encoding from any value
+  - Encoding from any value and decoding into pointer to any value
     (struct, slice, map, primitives, pointers, interface{}, etc)
-  - Decoding into pointer to any value
-    (struct, slice, map, int, float32, bool, string, reflect.Value, etc)
   - Supports extension functions to handle the encode/decode of custom types
-  - Support Go 1.2 encoding.BinaryMarshaler/BinaryUnmarshaler
+  - Support encoding.(Binary|Text)(M|Unm)arshaler interfaces
   - Schema-less decoding
     (decode into a pointer to a nil interface{} as opposed to a typed value).
     Includes Options to configure what specific map or slice type to use
     when decoding an encoded list or map into a nil interface{}
   - Provides a RPC Server and Client Codec for net/rpc communication protocol.
-  - Fast Paths for some container types:
-    For some container types, we circumvent reflection and its associated overhead
-    and allocation costs, and encode/decode directly. These types are:
-	    Slice of all builtin types and interface{},
-	    map of all builtin types and interface{} to string, interface{}, int, int64, uint64
-	    symetrical maps of all builtin types and interface{}
-  - Msgpack Specific:
-      - Options to resolve ambiguities in handling raw bytes (as string or []byte)
-        during schema-less decoding (decoding into a nil interface{})
-      - RPC Server/Client Codec for msgpack-rpc protocol defined at:
-        https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md
+  - Fast Paths for common maps and slices of built-in types (numbers, string, bool).
+    Reflection (and its associated overhead) is bypassed.
+  - Handle unique idiosynchracies of codecs e.g. 
+    - For messagepack, configure how ambiguities in handling raw bytes are resolved 
+    - For messagepack, provide rpc server/client codec to support  msgpack-rpc protocol defined at:
+      https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md
 
 Extension Support
 
@@ -122,14 +116,6 @@ Typical usage model:
     rpcCodec := codec.GoRpc.ClientCodec(conn, h)
     //OR rpcCodec := codec.MsgpackSpecRpc.ClientCodec(conn, h)
     client := rpc.NewClientWithCodec(rpcCodec)
-
-Representative Benchmark Results
-
-Run the benchmark suite using:
-   go test -bi -bench=. -benchmem
-
-To run full benchmark suite (including against vmsgpack and bson),
-see notes in ext_dep_test.go
 
 */
 package codec

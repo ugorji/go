@@ -1,4 +1,4 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 /*
@@ -106,6 +106,8 @@ type msgpackEncDriver struct {
 	w encWriter
 	h *MsgpackHandle
 	noBuiltInTypes
+	encNoMapArrayEnd
+	encNoMapArraySeparator
 }
 
 func (e *msgpackEncDriver) encodeNil() {
@@ -214,11 +216,11 @@ func (e *msgpackEncDriver) encodeExtPreamble(xtag byte, l int) {
 	}
 }
 
-func (e *msgpackEncDriver) encodeArrayPreamble(length int) {
+func (e *msgpackEncDriver) encodeArrayStart(length int) {
 	e.writeContainerLen(msgpackContainerList, length)
 }
 
-func (e *msgpackEncDriver) encodeMapPreamble(length int) {
+func (e *msgpackEncDriver) encodeMapStart(length int) {
 	e.writeContainerLen(msgpackContainerMap, length)
 }
 
@@ -273,6 +275,8 @@ type msgpackDecDriver struct {
 	bdType valueType
 	noBuiltInTypes
 	noStreamingCodec
+	decNoMapArrayEnd
+	decNoMapArraySeparator
 }
 
 // Note: This returns either a primitive (int, bool, etc) for non-containers,
@@ -560,50 +564,25 @@ func (d *msgpackDecDriver) initReadNext() {
 	d.bdType = valueTypeUnset
 }
 
-func (d *msgpackDecDriver) currentEncodedType() valueType {
-	if d.bdType == valueTypeUnset {
-		bd := d.bd
-		switch bd {
-		case mpNil:
-			d.bdType = valueTypeNil
-		case mpFalse, mpTrue:
-			d.bdType = valueTypeBool
-		case mpFloat, mpDouble:
-			d.bdType = valueTypeFloat
-		case mpUint8, mpUint16, mpUint32, mpUint64:
-			if d.h.SignedInteger {
-				d.bdType = valueTypeInt
-			} else {
-				d.bdType = valueTypeUint
-			}
-		case mpInt8, mpInt16, mpInt32, mpInt64:
-			d.bdType = valueTypeInt
-		default:
-			switch {
-			case bd >= mpPosFixNumMin && bd <= mpPosFixNumMax:
-				d.bdType = valueTypeInt
-			case bd >= mpNegFixNumMin && bd <= mpNegFixNumMax:
-				d.bdType = valueTypeInt
-			case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
-				if d.h.RawToString {
-					d.bdType = valueTypeString
-				} else {
-					d.bdType = valueTypeBytes
-				}
-			case bd == mpBin8, bd == mpBin16, bd == mpBin32:
-				d.bdType = valueTypeBytes
-			case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
-				d.bdType = valueTypeArray
-			case bd == mpMap16, bd == mpMap32, bd >= mpFixMapMin && bd <= mpFixMapMax:
-				d.bdType = valueTypeMap
-			case bd >= mpFixExt1 && bd <= mpFixExt16, bd >= mpExt8 && bd <= mpExt32:
-				d.bdType = valueTypeExt
-			default:
-				decErr("currentEncodedType: Undeciphered descriptor: %s: hex: %x, dec: %d", msgBadDesc, bd, bd)
-			}
-		}
+func (d *msgpackDecDriver) isContainerType(vt valueType) bool {
+	bd := d.bd
+	switch vt {
+	case valueTypeNil:
+		return bd == mpNil
+	case valueTypeBytes:
+		return bd == mpBin8 || bd == mpBin16 || bd == mpBin32 ||
+			(!d.h.RawToString &&
+				(bd == mpStr8 || bd == mpStr16 || bd == mpStr32 || (bd >= mpFixStrMin && bd <= mpFixStrMax)))
+	case valueTypeString:
+		return d.h.RawToString &&
+			(bd == mpStr8 || bd == mpStr16 || bd == mpStr32 || (bd >= mpFixStrMin && bd <= mpFixStrMax))
+	case valueTypeArray:
+		return bd == mpArray16 || bd == mpArray32 || (bd >= mpFixArrayMin && bd <= mpFixArrayMax)
+	case valueTypeMap:
+		return bd == mpMap16 || bd == mpMap32 || (bd >= mpFixMapMin && bd <= mpFixMapMax)
 	}
-	return d.bdType
+	decErr("isContainerType: unsupported parameter: %v", vt)
+	panic("unreachable")
 }
 
 func (d *msgpackDecDriver) tryDecodeAsNil() bool {
@@ -634,11 +613,11 @@ func (d *msgpackDecDriver) readContainerLen(ct msgpackContainerType) (clen int) 
 	return
 }
 
-func (d *msgpackDecDriver) readMapLen() int {
+func (d *msgpackDecDriver) readMapStart() int {
 	return d.readContainerLen(msgpackContainerMap)
 }
 
-func (d *msgpackDecDriver) readArrayLen() int {
+func (d *msgpackDecDriver) readArrayStart() int {
 	return d.readContainerLen(msgpackContainerList)
 }
 
@@ -712,6 +691,7 @@ type MsgpackHandle struct {
 
 	// RawToString controls how raw bytes are decoded into a nil interface{}.
 	RawToString bool
+
 	// WriteExt flag supports encoding configured extensions with extension tags.
 	// It also controls whether other elements of the new spec are encoded (ie Str8).
 	//

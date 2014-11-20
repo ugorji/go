@@ -1,4 +1,4 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 package codec
@@ -77,11 +77,7 @@ var (
 	tableTestNilVerify []interface{} // for nil interface, use this to verify (rules are different)
 	tablePythonVerify  []interface{} // for verifying for python, since Python sometimes
 	// will encode a float32 as float64, or large int as uint
-	testRpcInt   = new(TestRpcInt)
-	testMsgpackH = &MsgpackHandle{}
-	testBincH    = &BincHandle{}
-	testSimpleH  = &SimpleHandle{}
-	testCborH    = &CborHandle{}
+	testRpcInt = new(TestRpcInt)
 )
 
 func testInitFlags() {
@@ -90,52 +86,6 @@ func testInitFlags() {
 	flag.BoolVar(&testUseIoEncDec, "ti", false, "Use IO Reader/Writer for Marshal/Unmarshal")
 	flag.BoolVar(&testStructToArray, "ts", false, "Set StructToArray option")
 	flag.BoolVar(&testWriteNoSymbols, "tn", false, "Set NoSymbols option")
-}
-
-type AnonInTestStruc struct {
-	AS        string
-	AI64      int64
-	AI16      int16
-	AUi64     uint64
-	ASslice   []string
-	AI64slice []int64
-}
-
-type TestStruc struct {
-	S    string
-	I64  int64
-	I16  int16
-	Ui64 uint64
-	Ui8  uint8
-	B    bool
-	By   byte
-
-	Sslice    []string
-	I64slice  []int64
-	I16slice  []int16
-	Ui64slice []uint64
-	Ui8slice  []uint8
-	Bslice    []bool
-	Byslice   []byte
-
-	Islice    []interface{}
-	Iptrslice []*int64
-
-	AnonInTestStruc
-
-	//M map[interface{}]interface{}  `json:"-",bson:"-"`
-	Ms    map[string]interface{}
-	Msi64 map[string]int64
-
-	Nintf      interface{} //don't set this, so we can test for nil
-	T          time.Time
-	Nmap       map[string]bool //don't set this, so we can test for nil
-	Nslice     []byte          //don't set this, so we can test for nil
-	Nint64     *int64          //don't set this, so we can test for nil
-	Mtsptr     map[string]*TestStruc
-	Mts        map[string]TestStruc
-	Its        []*TestStruc
-	Nteststruc *TestStruc
 }
 
 type TestABC struct {
@@ -158,14 +108,14 @@ func (r *TestRpcInt) Echo123(args []string, res *string) error {
 	return nil
 }
 
-type testCborTimeExt struct{}
+type testUnixNanoTimeExt struct{}
 
-func (x testCborTimeExt) WriteExt(reflect.Value) []byte { panic("unsupported") }
-func (x testCborTimeExt) ReadExt(reflect.Value, []byte) { panic("unsupported") }
-func (x testCborTimeExt) ConvertExt(rv reflect.Value) interface{} {
+func (x testUnixNanoTimeExt) WriteExt(reflect.Value) []byte { panic("unsupported") }
+func (x testUnixNanoTimeExt) ReadExt(reflect.Value, []byte) { panic("unsupported") }
+func (x testUnixNanoTimeExt) ConvertExt(rv reflect.Value) interface{} {
 	return rv.Interface().(time.Time).UTC().UnixNano()
 }
-func (x testCborTimeExt) UpdateExt(rv reflect.Value, v interface{}) {
+func (x testUnixNanoTimeExt) UpdateExt(rv reflect.Value, v interface{}) {
 	var tt time.Time
 	switch v2 := v.(type) {
 	case int64:
@@ -299,6 +249,7 @@ func testInit() {
 		fmt.Printf("====> depth: %v, ts: %#v\n", 2, ts0)
 	}
 
+	testJsonH.StructToArray = testStructToArray
 	testCborH.StructToArray = testStructToArray
 	testSimpleH.StructToArray = testStructToArray
 	testBincH.StructToArray = testStructToArray
@@ -327,7 +278,8 @@ func testInit() {
 	// add extensions for msgpack, simple for time.Time, so we can encode/decode same way.
 	testMsgpackH.AddExt(timeTyp, 1, timeEncExt, timeDecExt)
 	testSimpleH.AddExt(timeTyp, 1, timeEncExt, timeDecExt)
-	testCborH.SetExt(timeTyp, 1, &testCborTimeExt{})
+	testCborH.SetExt(timeTyp, 1, &testUnixNanoTimeExt{})
+	testJsonH.SetExt(timeTyp, 1, &testUnixNanoTimeExt{})
 
 	primitives := []interface{}{
 		int8(-8),
@@ -477,72 +429,6 @@ func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name s
 	return
 }
 
-func newTestStruc(depth int, bench bool) (ts *TestStruc) {
-	var i64a, i64b, i64c, i64d int64 = 64, 6464, 646464, 64646464
-
-	ts = &TestStruc{
-		S:    "some string",
-		I64:  math.MaxInt64 * 2 / 3, // 64,
-		I16:  16,
-		Ui64: uint64(int64(math.MaxInt64 * 2 / 3)), // 64, //don't use MaxUint64, as bson can't write it
-		Ui8:  160,
-		B:    true,
-		By:   5,
-
-		Sslice:    []string{"one", "two", "three"},
-		I64slice:  []int64{1, 2, 3},
-		I16slice:  []int16{4, 5, 6},
-		Ui64slice: []uint64{137, 138, 139},
-		Ui8slice:  []uint8{210, 211, 212},
-		Bslice:    []bool{true, false, true, false},
-		Byslice:   []byte{13, 14, 15},
-
-		Islice: []interface{}{"true", true, "no", false, uint64(288), float64(0.4)},
-
-		Ms: map[string]interface{}{
-			"true":     "true",
-			"int64(9)": false,
-		},
-		Msi64: map[string]int64{
-			"one": 1,
-			"two": 2,
-		},
-		T: timeToCompare1,
-		AnonInTestStruc: AnonInTestStruc{
-			AS:        "A-String",
-			AI64:      64,
-			AI16:      16,
-			AUi64:     64,
-			ASslice:   []string{"Aone", "Atwo", "Athree"},
-			AI64slice: []int64{1, 2, 3},
-		},
-	}
-	//For benchmarks, some things will not work.
-	if !bench {
-		//json and bson require string keys in maps
-		//ts.M = map[interface{}]interface{}{
-		//	true: "true",
-		//	int8(9): false,
-		//}
-		//gob cannot encode nil in element in array (encodeArray: nil element)
-		ts.Iptrslice = []*int64{nil, &i64a, nil, &i64b, nil, &i64c, nil, &i64d, nil}
-		// ts.Iptrslice = nil
-	}
-	if depth > 0 {
-		depth--
-		if ts.Mtsptr == nil {
-			ts.Mtsptr = make(map[string]*TestStruc)
-		}
-		if ts.Mts == nil {
-			ts.Mts = make(map[string]TestStruc)
-		}
-		ts.Mtsptr["0"] = newTestStruc(depth, bench)
-		ts.Mts["0"] = *(ts.Mtsptr["0"])
-		ts.Its = append(ts.Its, ts.Mtsptr["0"])
-	}
-	return
-}
-
 // doTestCodecTableOne allows us test for different variations based on arguments passed.
 func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 	vs []interface{}, vsVerify []interface{}) {
@@ -556,8 +442,12 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 		if err != nil {
 			continue
 		}
-		logT(t, "         Encoded bytes: len: %v, %v\n", len(b0), b0)
-
+		if h.isBinaryEncoding() {
+			logT(t, "         Encoded bytes: len: %v, %v\n", len(b0), b0)
+		} else {
+			logT(t, "         Encoded string: len: %v, %v\n", len(string(b0)), string(b0))
+			// println("########### encoded string: " + string(b0))
+		}
 		var v1 interface{}
 
 		if testNil {
@@ -606,6 +496,8 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	// func TestMsgpackAllExperimental(t *testing.T) {
 	// dopts := testDecOpts(nil, nil, false, true, true),
 
+	idxTime, numPrim, numMap := 19, 23, 4
+	//println("#################")
 	switch v := h.(type) {
 	case *MsgpackHandle:
 		var oldWriteExt, oldRawToString bool
@@ -613,15 +505,20 @@ func testCodecTableOne(t *testing.T, h Handle) {
 		oldRawToString, v.RawToString = v.RawToString, true
 		doTestCodecTableOne(t, false, h, table, tableVerify)
 		v.WriteExt, v.RawToString = oldWriteExt, oldRawToString
+	case *JsonHandle:
+		//skip []interface{} containing time.Time, as it encodes as a number, but cannot decode back to time.Time.
+		//As there is no real support for extension tags in json, this must be skipped.
+		doTestCodecTableOne(t, false, h, table[:numPrim], tableVerify[:numPrim])
+		doTestCodecTableOne(t, false, h, table[numPrim+1:], tableVerify[numPrim+1:])
 	default:
 		doTestCodecTableOne(t, false, h, table, tableVerify)
 	}
+	//println("%%%%%%%%%%%%%%%%%")
 	// func TestMsgpackAll(t *testing.T) {
-	idxTime, numPrim, numMap := 19, 23, 4
 
-	//skip []interface{} containing time.Time
-	doTestCodecTableOne(t, false, h, table[:numPrim], tableVerify[:numPrim])
-	doTestCodecTableOne(t, false, h, table[numPrim+1:], tableVerify[numPrim+1:])
+	// //skip []interface{} containing time.Time
+	// doTestCodecTableOne(t, false, h, table[:numPrim], tableVerify[:numPrim])
+	// doTestCodecTableOne(t, false, h, table[numPrim+1:], tableVerify[numPrim+1:])
 	// func TestMsgpackNilStringMap(t *testing.T) {
 	var oldMapType reflect.Type
 	v := h.getBasicHandle()
@@ -664,7 +561,11 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 		logT(t, "------- Size must be > 40. Size: %d", len(b))
 		t.FailNow()
 	}
-	logT(t, "------- b: %v", b)
+	if h.isBinaryEncoding() {
+		logT(t, "------- b: %v", b)
+	} else {
+		logT(t, "------- b: %s", b)
+	}
 	ts2 := new(TestStruc)
 	err = testUnmarshalErr(ts2, b, h, t, "pointer-to-struct")
 	if ts2.I64 != math.MaxInt64*2/3 {
@@ -781,6 +682,7 @@ func doTestRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs ti
 	// opts.RawToString = false
 	serverExitChan := make(chan bool, 1)
 	var serverExitFlag uint64 = 0
+	//println("111111111111111")
 	serverFn := func() {
 		for {
 			conn1, err1 := ln.Accept()
@@ -803,6 +705,7 @@ func doTestRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs ti
 	clientFn := func(cc rpc.ClientCodec) {
 		cl := rpc.NewClientWithCodec(cc)
 		defer cl.Close()
+		//	defer func() { println("##### client closing"); cl.Close() }()
 		var up, sq, mult int
 		var rstr string
 		// log("Calling client")
@@ -1040,6 +943,20 @@ func TestCborCodecsEmbeddedPointer(t *testing.T) {
 	testCodecEmbeddedPointer(t, testCborH)
 }
 
+func TestJsonCodecsTable(t *testing.T) {
+	testCodecTableOne(t, testJsonH)
+}
+
+func TestJsonCodecsMisc(t *testing.T) {
+	testCodecMiscOne(t, testJsonH)
+}
+
+func TestJsonCodecsEmbeddedPointer(t *testing.T) {
+	testCodecEmbeddedPointer(t, testJsonH)
+}
+
+// ----- RPC -----
+
 func TestBincRpcGo(t *testing.T) {
 	doTestRpcOne(t, GoRpc, testBincH, true, 0)
 }
@@ -1054,6 +971,10 @@ func TestMsgpackRpcGo(t *testing.T) {
 
 func TestCborRpcGo(t *testing.T) {
 	doTestRpcOne(t, GoRpc, testCborH, true, 0)
+}
+
+func TestJsonRpcGo(t *testing.T) {
+	doTestRpcOne(t, GoRpc, testJsonH, true, 0)
 }
 
 func TestMsgpackRpcSpec(t *testing.T) {

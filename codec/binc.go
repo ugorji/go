@@ -1,4 +1,4 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 package codec
@@ -65,6 +65,8 @@ type bincEncDriver struct {
 	m map[string]uint16 // symbols
 	s uint32            // symbols sequencer
 	b [8]byte
+	encNoMapArrayEnd
+	encNoMapArraySeparator
 }
 
 func (e *bincEncDriver) isBuiltinType(rt uintptr) bool {
@@ -193,11 +195,11 @@ func (e *bincEncDriver) encodeExtPreamble(xtag byte, length int) {
 	e.w.writen1(xtag)
 }
 
-func (e *bincEncDriver) encodeArrayPreamble(length int) {
+func (e *bincEncDriver) encodeArrayStart(length int) {
 	e.encLen(bincVdArray<<4, uint64(length))
 }
 
-func (e *bincEncDriver) encodeMapPreamble(length int) {
+func (e *bincEncDriver) encodeMapStart(length int) {
 	e.encLen(bincVdMap<<4, uint64(length))
 }
 
@@ -328,6 +330,8 @@ type bincDecDriver struct {
 	vd     byte
 	vs     byte
 	noStreamingCodec
+	decNoMapArrayEnd
+	decNoMapArraySeparator
 	b [8]byte
 	m map[uint32]string // symbols (use uint32 as key, as map optimizes for it)
 }
@@ -343,57 +347,21 @@ func (d *bincDecDriver) initReadNext() {
 	d.bdType = valueTypeUnset
 }
 
-func (d *bincDecDriver) currentEncodedType() valueType {
-	if d.bdType == valueTypeUnset {
-		switch d.vd {
-		case bincVdSpecial:
-			switch d.vs {
-			case bincSpNil:
-				d.bdType = valueTypeNil
-			case bincSpFalse, bincSpTrue:
-				d.bdType = valueTypeBool
-			case bincSpNan, bincSpNegInf, bincSpPosInf, bincSpZeroFloat:
-				d.bdType = valueTypeFloat
-			case bincSpZero:
-				if d.h.SignedInteger {
-					d.bdType = valueTypeInt
-				} else {
-					d.bdType = valueTypeUint
-				}
-			case bincSpNegOne:
-				d.bdType = valueTypeInt
-			default:
-				decErr("currentEncodedType: Unrecognized special value 0x%x", d.vs)
-			}
-		case bincVdSmallInt, bincVdPosInt:
-			if d.h.SignedInteger {
-				d.bdType = valueTypeInt
-			} else {
-				d.bdType = valueTypeUint
-			}
-		case bincVdNegInt:
-			d.bdType = valueTypeInt
-		case bincVdFloat:
-			d.bdType = valueTypeFloat
-		case bincVdString:
-			d.bdType = valueTypeString
-		case bincVdSymbol:
-			d.bdType = valueTypeSymbol
-		case bincVdByteArray:
-			d.bdType = valueTypeBytes
-		case bincVdTimestamp:
-			d.bdType = valueTypeTimestamp
-		case bincVdCustomExt:
-			d.bdType = valueTypeExt
-		case bincVdArray:
-			d.bdType = valueTypeArray
-		case bincVdMap:
-			d.bdType = valueTypeMap
-		default:
-			decErr("currentEncodedType: Unrecognized d.vd: 0x%x", d.vd)
-		}
+func (d *bincDecDriver) isContainerType(vt valueType) bool {
+	switch vt {
+	case valueTypeNil:
+		return d.vd == bincVdSpecial && d.vs == bincSpNil
+	case valueTypeBytes:
+		return d.vd == bincVdByteArray
+	case valueTypeString:
+		return d.vd == bincVdString
+	case valueTypeArray:
+		return d.vd == bincVdArray
+	case valueTypeMap:
+		return d.vd == bincVdMap
 	}
-	return d.bdType
+	decErr("isContainerType: unsupported parameter: %v", vt)
+	panic("unreachable")
 }
 
 func (d *bincDecDriver) tryDecodeAsNil() bool {
@@ -572,7 +540,7 @@ func (d *bincDecDriver) decodeBool() (b bool) {
 	return
 }
 
-func (d *bincDecDriver) readMapLen() (length int) {
+func (d *bincDecDriver) readMapStart() (length int) {
 	if d.vd != bincVdMap {
 		decErr("Invalid d.vd for map. Expecting 0x%x. Got: 0x%x", bincVdMap, d.vd)
 	}
@@ -581,7 +549,7 @@ func (d *bincDecDriver) readMapLen() (length int) {
 	return
 }
 
-func (d *bincDecDriver) readArrayLen() (length int) {
+func (d *bincDecDriver) readArrayStart() (length int) {
 	if d.vd != bincVdArray {
 		decErr("Invalid d.vd for array. Expecting 0x%x. Got: 0x%x", bincVdArray, d.vd)
 	}

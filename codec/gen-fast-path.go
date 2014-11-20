@@ -1,6 +1,6 @@
 //+build ignore
 
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 package main
@@ -13,8 +13,12 @@ import (
 	"text/template"
 )
 
+// fastpathenabled uses maps to track the uintptr to the function.
+// It is shown by experiments that maps scale better than linear search
+// when there are more than 32 entries.
+
 const tmplstr = `
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 // ************************************************************
@@ -81,10 +85,14 @@ func (f *encFnInfo) {{ .MethodName true }}(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeArrayPreamble(len(v))
-	for _, v2 := range v {
+	f.ee.encodeArrayStart(len(v))
+	for j, v2 := range v {
+		if j > 0 {
+			f.ee.encodeArrayEntrySeparator()
+		}
 		{{ encmd .Elem "v2"}}
 	}
+	f.ee.encodeArrayEnd()
 }
 
 {{end}}{{end}}
@@ -97,16 +105,23 @@ func (f *encFnInfo) {{ .MethodName true }}(rv reflect.Value) {
 		f.ee.encodeNil()
 		return
 	}
-	f.ee.encodeMapPreamble(len(v))
+	f.ee.encodeMapStart(len(v))
 	{{if eq .MapKey "string"}}asSymbols := f.e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0{{end}}
+	j := 0
 	for k2, v2 := range v {
+		if j > 0 {
+			f.ee.encodeMapEntrySeparator()
+		}
 		{{if eq .MapKey "string"}}if asSymbols {
 			f.ee.encodeSymbol(k2)
 		} else {
 			f.ee.encodeString(c_UTF8, k2)
 		}{{else}}{{ encmd .MapKey "k2"}}{{end}}
+		f.ee.encodeMapKVSeparator()
 		{{ encmd .Elem "v2"}}
+		j++
 	}
+	f.ee.encodeMapEnd()
 }
 
 {{end}}{{end}}
@@ -125,8 +140,7 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 	} else {
 		v = rv.Interface().([]{{ .Elem }})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -134,7 +148,8 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 		return
 	}
 
-	_, containerLenS := decContLens(f.dd, vtype)
+	slh := decSliceHelper{dd: f.dd}
+	containerLenS := slh.start()
 	if containerLenS == 0 {
 		if v == nil {
 			v = []{{ .Elem }}{}
@@ -142,6 +157,7 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 			v = v[:0]
 		}
 		*vp = v
+		f.dd.readArrayEnd()
 		return
 	}
 	if v == nil {
@@ -172,11 +188,15 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 		if j >= len(v) {
 			v = append(v, {{ zerocmd .Elem }})
 		}
+		if j > 0 {
+			slh.sep(j)
+		}
 		{{ if eq .Elem "interface{}" }}f.d.decode(&v[j])
 		{{ else }}f.dd.initReadNext()
 		v[j] = {{ decmd .Elem }}
 		{{ end }}
 	}
+	slh.end()
 	if xaddr {
 		*vp = v
 	}
@@ -197,8 +217,7 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 	} else {
 		v = rv.Interface().(map[{{ .MapKey }}]{{ .Elem }})
 	}
-	vtype := f.dd.currentEncodedType()
-	if vtype == valueTypeNil {
+	if f.dd.isContainerType(valueTypeNil) {
 		if xaddr {
 			v = nil
 			*vp = v
@@ -206,12 +225,13 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 		return
 	}
 
-	containerLen := f.dd.readMapLen()
+	containerLen := f.dd.readMapStart()
 	if containerLen == 0 {
 		if v == nil {
 			v = map[{{ .MapKey }}]{{ .Elem }}{}
 			*vp = v
 		}
+		f.dd.readMapEnd()
 		return
 	}
 	if xaddr && v == nil {
@@ -231,6 +251,9 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 		} else if f.dd.checkBreak() {
 			break
 		}
+		if j > 0 {
+			f.dd.readMapEntrySeparator()
+		}
 		{{ if eq .MapKey "interface{}" }}var mk interface{}
 		f.d.decode(&mk)
 		// special case if a byte array.
@@ -240,6 +263,7 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 		{{ else }}f.dd.initReadNext()
 		mk := {{ decmd .MapKey }}
 		{{ end }}
+		f.dd.readMapKVSeparator()
         mv := v[mk]
 		{{ if eq .Elem "interface{}" }}f.d.decode(&mv)
 		{{ else }}f.dd.initReadNext()
@@ -249,6 +273,7 @@ func (f *decFnInfo) {{ .MethodName false }}(rv reflect.Value) {
 			v[mk] = mv
 		}
 	}
+	f.dd.readMapEnd()
 }
 
 {{end}}{{end}}

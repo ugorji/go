@@ -1,4 +1,4 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 package codec
@@ -63,6 +63,8 @@ type cborEncDriver struct {
 	w encWriter
 	h *CborHandle
 	noBuiltInTypes
+	encNoMapArrayEnd
+	encNoMapArraySeparator
 }
 
 func (e *cborEncDriver) encodeNil() {
@@ -141,11 +143,11 @@ func (e *cborEncDriver) encodeRawExt(re *RawExt, en *Encoder) {
 	}
 }
 
-func (e *cborEncDriver) encodeArrayPreamble(length int) {
+func (e *cborEncDriver) encodeArrayStart(length int) {
 	e.encLen(cborBaseArray, length)
 }
 
-func (e *cborEncDriver) encodeMapPreamble(length int) {
+func (e *cborEncDriver) encodeMapStart(length int) {
 	e.encLen(cborBaseMap, length)
 }
 
@@ -172,6 +174,8 @@ type cborDecDriver struct {
 	bdType valueType
 	bd     byte
 	noBuiltInTypes
+	decNoMapArrayEnd
+	decNoMapArraySeparator
 }
 
 func (d *cborDecDriver) initReadNext() {
@@ -183,49 +187,21 @@ func (d *cborDecDriver) initReadNext() {
 	d.bdType = valueTypeUnset
 }
 
-func (d *cborDecDriver) currentEncodedType() valueType {
-	if d.bdType == valueTypeUnset {
-		switch d.bd {
-		case cborBdNil:
-			d.bdType = valueTypeNil
-		case cborBdFalse, cborBdTrue:
-			d.bdType = valueTypeBool
-		case cborBdFloat16, cborBdFloat32, cborBdFloat64:
-			d.bdType = valueTypeFloat
-		case cborBdIndefiniteBytes:
-			d.bdType = valueTypeBytes
-		case cborBdIndefiniteString:
-			d.bdType = valueTypeString
-		case cborBdIndefiniteArray:
-			d.bdType = valueTypeArray
-		case cborBdIndefiniteMap:
-			d.bdType = valueTypeMap
-		default:
-			switch {
-			case d.bd >= cborBaseUint && d.bd < cborBaseNegInt:
-				if d.h.SignedInteger {
-					d.bdType = valueTypeInt
-				} else {
-					d.bdType = valueTypeUint
-				}
-			case d.bd >= cborBaseNegInt && d.bd < cborBaseBytes:
-				d.bdType = valueTypeInt
-			case d.bd >= cborBaseBytes && d.bd < cborBaseString:
-				d.bdType = valueTypeBytes
-			case d.bd >= cborBaseString && d.bd < cborBaseArray:
-				d.bdType = valueTypeString
-			case d.bd >= cborBaseArray && d.bd < cborBaseMap:
-				d.bdType = valueTypeArray
-			case d.bd >= cborBaseMap && d.bd < cborBaseTag:
-				d.bdType = valueTypeMap
-			case d.bd >= cborBaseTag && d.bd < cborBaseSimple:
-				d.bdType = valueTypeExt
-			default:
-				decErr("currentEncodedType: Unrecognized d.bd: 0x%x", d.bd)
-			}
-		}
+func (d *cborDecDriver) isContainerType(vt valueType) bool {
+	switch vt {
+	case valueTypeNil:
+		return d.bd == cborBdNil
+	case valueTypeBytes:
+		return d.bd == cborBdIndefiniteBytes || (d.bd >= cborBaseBytes && d.bd < cborBaseString)
+	case valueTypeString:
+		return d.bd == cborBdIndefiniteString || (d.bd >= cborBaseString && d.bd < cborBaseArray)
+	case valueTypeArray:
+		return d.bd == cborBdIndefiniteArray || (d.bd >= cborBaseArray && d.bd < cborBaseMap)
+	case valueTypeMap:
+		return d.bd == cborBdIndefiniteMap || (d.bd >= cborBaseMap && d.bd < cborBaseTag)
 	}
-	return d.bdType
+	decErr("isContainerType: unsupported parameter: %v", vt)
+	panic("unreachable")
 }
 
 func (d *cborDecDriver) tryDecodeAsNil() bool {
@@ -335,7 +311,7 @@ func (d *cborDecDriver) decodeBool() (b bool) {
 	return
 }
 
-func (d *cborDecDriver) readMapLen() (length int) {
+func (d *cborDecDriver) readMapStart() (length int) {
 	d.bdRead = false
 	if d.bd == cborBdIndefiniteMap {
 		return -1
@@ -343,7 +319,7 @@ func (d *cborDecDriver) readMapLen() (length int) {
 	return d.decLen()
 }
 
-func (d *cborDecDriver) readArrayLen() (length int) {
+func (d *cborDecDriver) readArrayStart() (length int) {
 	d.bdRead = false
 	if d.bd == cborBdIndefiniteArray {
 		return -1

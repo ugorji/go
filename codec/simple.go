@@ -1,4 +1,4 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 package codec
@@ -33,6 +33,8 @@ type simpleEncDriver struct {
 	w encWriter
 	noBuiltInTypes
 	//b [8]byte
+	encNoMapArrayEnd
+	encNoMapArraySeparator
 }
 
 func (e *simpleEncDriver) encodeNil() {
@@ -124,11 +126,11 @@ func (e *simpleEncDriver) encodeExtPreamble(xtag byte, length int) {
 	e.w.writen1(xtag)
 }
 
-func (e *simpleEncDriver) encodeArrayPreamble(length int) {
+func (e *simpleEncDriver) encodeArrayStart(length int) {
 	e.encLen(simpleVdArray, length)
 }
 
-func (e *simpleEncDriver) encodeMapPreamble(length int) {
+func (e *simpleEncDriver) encodeMapStart(length int) {
 	e.encLen(simpleVdMap, length)
 }
 
@@ -156,6 +158,8 @@ type simpleDecDriver struct {
 	bd     byte
 	noBuiltInTypes
 	noStreamingCodec
+	decNoMapArrayEnd
+	decNoMapArraySeparator
 	//b      [8]byte
 }
 
@@ -168,38 +172,25 @@ func (d *simpleDecDriver) initReadNext() {
 	d.bdType = valueTypeUnset
 }
 
-func (d *simpleDecDriver) currentEncodedType() valueType {
-	if d.bdType == valueTypeUnset {
-		switch d.bd {
-		case simpleVdNil:
-			d.bdType = valueTypeNil
-		case simpleVdTrue, simpleVdFalse:
-			d.bdType = valueTypeBool
-		case simpleVdPosInt, simpleVdPosInt + 1, simpleVdPosInt + 2, simpleVdPosInt + 3:
-			if d.h.SignedInteger {
-				d.bdType = valueTypeInt
-			} else {
-				d.bdType = valueTypeUint
-			}
-		case simpleVdNegInt, simpleVdNegInt + 1, simpleVdNegInt + 2, simpleVdNegInt + 3:
-			d.bdType = valueTypeInt
-		case simpleVdFloat32, simpleVdFloat64:
-			d.bdType = valueTypeFloat
-		case simpleVdString, simpleVdString + 1, simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
-			d.bdType = valueTypeString
-		case simpleVdByteArray, simpleVdByteArray + 1, simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
-			d.bdType = valueTypeBytes
-		case simpleVdExt, simpleVdExt + 1, simpleVdExt + 2, simpleVdExt + 3, simpleVdExt + 4:
-			d.bdType = valueTypeExt
-		case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2, simpleVdArray + 3, simpleVdArray + 4:
-			d.bdType = valueTypeArray
-		case simpleVdMap, simpleVdMap + 1, simpleVdMap + 2, simpleVdMap + 3, simpleVdMap + 4:
-			d.bdType = valueTypeMap
-		default:
-			decErr("currentEncodedType: Unrecognized d.vd: 0x%x", d.bd)
-		}
+func (d *simpleDecDriver) isContainerType(vt valueType) bool {
+	switch vt {
+	case valueTypeNil:
+		return d.bd == simpleVdNil
+	case valueTypeBytes:
+		const x uint8 = simpleVdByteArray
+		return d.bd == x || d.bd == x+1 || d.bd == x+2 || d.bd == x+3 || d.bd == x+4
+	case valueTypeString:
+		const x uint8 = simpleVdString
+		return d.bd == x || d.bd == x+1 || d.bd == x+2 || d.bd == x+3 || d.bd == x+4
+	case valueTypeArray:
+		const x uint8 = simpleVdArray
+		return d.bd == x || d.bd == x+1 || d.bd == x+2 || d.bd == x+3 || d.bd == x+4
+	case valueTypeMap:
+		const x uint8 = simpleVdMap
+		return d.bd == x || d.bd == x+1 || d.bd == x+2 || d.bd == x+3 || d.bd == x+4
 	}
-	return d.bdType
+	decErr("isContainerType: unsupported parameter: %v", vt)
+	panic("unreachable")
 }
 
 func (d *simpleDecDriver) tryDecodeAsNil() bool {
@@ -209,8 +200,6 @@ func (d *simpleDecDriver) tryDecodeAsNil() bool {
 	}
 	return false
 }
-
-// 		i = int64(ui)
 
 func (d *simpleDecDriver) decCheckInteger() (ui uint64, neg bool) {
 	switch d.bd {
@@ -297,12 +286,12 @@ func (d *simpleDecDriver) decodeBool() (b bool) {
 	return
 }
 
-func (d *simpleDecDriver) readMapLen() (length int) {
+func (d *simpleDecDriver) readMapStart() (length int) {
 	d.bdRead = false
 	return d.decLen()
 }
 
-func (d *simpleDecDriver) readArrayLen() (length int) {
+func (d *simpleDecDriver) readArrayStart() (length int) {
 	d.bdRead = false
 	return d.decLen()
 }
