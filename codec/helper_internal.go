@@ -74,15 +74,6 @@ func isEmptyValue(v reflect.Value) bool {
 	return isEmptyValueDeref(v, true)
 }
 
-func debugf(format string, args ...interface{}) {
-	if debugging {
-		if len(format) == 0 || format[len(format)-1] != '\n' {
-			format = format + "\n"
-		}
-		fmt.Printf(format, args...)
-	}
-}
-
 func pruneSignExt(v []byte, pos bool) (n int) {
 	if len(v) < 2 {
 	} else if pos && v[0] == 0 {
