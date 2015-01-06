@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license found in the LICENSE file.
 
 /*
-High Performance, Feature-Rich Idiomatic Go codec/encoding library for binc, msgpack, cbor, json.
+High Performance, Feature-Rich Idiomatic Go codec/encoding library for 
+binc, msgpack, cbor, json.
 
 Supported Serialization formats are:
 
-  - msgpack: [https://github.com/msgpack/msgpack]
-  - binc:    [http://github.com/ugorji/binc]
-  - cbor:    [http://cbor.io] [http://tools.ietf.org/html/rfc7049]
+  - msgpack: https://github.com/msgpack/msgpack
+  - binc:    http://github.com/ugorji/binc
+  - cbor:    http://cbor.io http://tools.ietf.org/html/rfc7049
+  - json:    http://json.org http://tools.ietf.org/html/rfc7159
   - simple: 
-  - json:    [http://json.org] [http://tools.ietf.org/html/rfc7159] 
 
 To install:
 
@@ -23,28 +24,38 @@ Rich Feature Set includes:
 
   - Simple but extremely powerful and feature-rich API
   - Very High Performance.
-    Our extensive benchmarks show us outperforming Gob, Json and Bson by 2-4X.
-    Achieved by extreme care on allocations, recursions, bypassing reflection, zero-copy, etc.
+    Our extensive benchmarks show us outperforming Gob, Json, Bson, etc by 2-4X.
   - Multiple conversions:
-    Package coerces types where appropriate e.g. decode an int in the stream into a float, etc
-  - Corner Cases: Overflows, nil maps/slices, nil values in streams are handled correctly
+    Package coerces types where appropriate 
+    e.g. decode an int in the stream into a float, etc.
+  - Corner Cases: 
+    Overflows, nil maps/slices, nil values in streams are handled correctly
   - Standard field renaming via tags
+  - Support for omitting empty fields during an encoding
   - Encoding from any value and decoding into pointer to any value
     (struct, slice, map, primitives, pointers, interface{}, etc)
-  - Supports extension functions to handle the encode/decode of custom types
+  - Extensions to support efficient encoding/decoding of any named types
   - Support encoding.(Binary|Text)(M|Unm)arshaler interfaces
-  - Schema-less decoding
-    (decode into a pointer to a nil interface{} as opposed to a typed value).
+  - Decoding without a schema (into a interface{}).
     Includes Options to configure what specific map or slice type to use
     when decoding an encoded list or map into a nil interface{}
+  - Encode a struct as an array, and decode struct from an array in the data stream
+  - Comprehensive support for anonymous fields
+  - Fast (no-reflection) encoding/decoding of common maps and slices
+  - Code-generation for faster performance.
+  - Support binary (e.g. messagepack, cbor) and text (e.g. json) formats
+  - Support indefinite-length formats to enable true streaming
+  - NIL in data stream decoded as zero value
+  - Never silently skip data when decoding.
+    User decides whether to return an error or silently skip data when keys or indexes
+    in the data stream do not map to fields in the struct.
   - Provides a RPC Server and Client Codec for net/rpc communication protocol.
-  - Fast Paths for common maps and slices of built-in types (numbers, string, bool).
-    Reflection (and its associated overhead) is bypassed.
   - Handle unique idiosynchracies of codecs e.g. 
     - For messagepack, configure how ambiguities in handling raw bytes are resolved 
-    - For messagepack, provide rpc server/client codec to support  msgpack-rpc protocol defined at:
+    - For messagepack, provide rpc server/client codec to support 
+      msgpack-rpc protocol defined at:
       https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md
-
+  
 Extension Support
 
 Users can register a function to handle the encoding or decoding of

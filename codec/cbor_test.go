@@ -4,14 +4,12 @@
 package codec
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/hex"
-	"encoding/json"
 	"math"
 	"os"
-	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
 	"testing"
 )
@@ -90,12 +88,12 @@ func TestCborIndefiniteLength(t *testing.T) {
 }
 
 type testCborGolden struct {
-	Base64     string      `json:"cbor"`
-	Hex        string      `json:"hex"`
-	Roundtrip  bool        `json:"roundtrip"`
-	Decoded    interface{} `json:"decoded"`
-	Diagnostic string      `json:"diagnostic"`
-	Skip       bool        `json:"skip"`
+	Base64     string      `codec:"cbor"`
+	Hex        string      `codec:"hex"`
+	Roundtrip  bool        `codec:"roundtrip"`
+	Decoded    interface{} `codec:"decoded"`
+	Diagnostic string      `codec:"diagnostic"`
+	Skip       bool        `codec:"skip"`
 }
 
 // Some tests are skipped because they include numbers outside the range of int64/uint64
@@ -117,9 +115,13 @@ func doTestCborGoldens(t *testing.T) {
 		logT(t, "error opening test-cbor-goldens.json: %v", err)
 		failT(t)
 	}
-	d := json.NewDecoder(f)
-	d.UseNumber()
-	err = d.Decode(&gs)
+	defer f.Close()
+	jh := new(JsonHandle)
+	jh.MapType = testMapStrIntfTyp
+	// d := NewDecoder(f, jh)
+	d := NewDecoder(bufio.NewReader(f), jh)
+	// err = d.Decode(&gs)
+	d.MustDecode(&gs)
 	if err != nil {
 		logT(t, "error json decoding test-cbor-goldens.json: %v", err)
 		failT(t)
@@ -139,7 +141,7 @@ func doTestCborGoldens(t *testing.T) {
 		if hexregex.MatchString(g.Diagnostic) {
 			// println(i, "g.Diagnostic matched hex")
 			if s2 := g.Diagnostic[2 : len(g.Diagnostic)-1]; s2 == "" {
-				g.Decoded = []byte{}
+				g.Decoded = zeroByteSlice
 			} else if bs2, err2 := hex.DecodeString(s2); err2 == nil {
 				g.Decoded = bs2
 			}
@@ -172,7 +174,7 @@ func doTestCborGoldens(t *testing.T) {
 			testCborError(t, i, nil, v, nil, &b)
 		default:
 			v0 := g.Decoded
-			testCborCoerceJsonNumber(reflect.ValueOf(&v0))
+			// testCborCoerceJsonNumber(reflect.ValueOf(&v0))
 			testCborError(t, i, v0, v, deepEqual(v0, v), nil)
 		}
 	}
@@ -196,61 +198,6 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 		failT(t)
 	}
 	// fmt.Printf("%v testCborError passed (checks passed)\n", i)
-}
-
-var testJsonNumTyp = reflect.TypeOf(json.Number(""))
-
-// coerce a value from json decoding to convert json.Number into a uint64, int64 or float64.
-// This will allow it to be checked for equality using deepEqual.
-func testCborCoerceJsonNumber(rv reflect.Value) (out reflect.Value, changed bool) {
-	if !rv.IsValid() {
-		return
-	}
-	// fmt.Printf(">>>>>>>>>> testCborCoerceJsonNumber: typ: %T, %v, %v, val: %v\n",
-	// 	rv.Interface(), rv.Kind(), rv.Type(), rv.Interface())
-	if rv.Type() == testJsonNumTyp {
-		// if there is an e OR . in it, decode as float
-		// if there is a - in front, decode as int64
-		// else decode as uint64
-		s := rv.String()
-		if strings.Index(s, "e") >= 0 || strings.Index(s, ".") >= 0 {
-			xx, _ := strconv.ParseFloat(s, 64)
-			out = reflect.ValueOf(xx)
-		} else if s[0] == '-' {
-			xx, _ := strconv.ParseInt(s, 10, 64)
-			out = reflect.ValueOf(xx)
-		} else {
-			xx, _ := strconv.ParseUint(s, 10, 64)
-			out = reflect.ValueOf(xx)
-		}
-		changed = true
-		return
-	}
-	switch rk := rv.Kind(); rk {
-	case reflect.Ptr:
-		testCborCoerceJsonNumber(rv.Elem())
-	case reflect.Interface:
-		if out2, changed2 := testCborCoerceJsonNumber(rv.Elem()); changed2 {
-			if rv.CanSet() {
-				rv.Set(out2)
-			} else {
-				return out2, true
-			}
-		}
-	case reflect.Map:
-		for _, mk := range rv.MapKeys() {
-			if out2, changed2 := testCborCoerceJsonNumber(rv.MapIndex(mk)); changed2 {
-				rv.SetMapIndex(mk, out2)
-			}
-		}
-	case reflect.Slice:
-		for j := 0; j < rv.Len(); j++ {
-			if out2, changed2 := testCborCoerceJsonNumber(rv.Index(j)); changed2 {
-				rv.Index(j).Set(out2)
-			}
-		}
-	}
-	return
 }
 
 func TestCborGoldens(t *testing.T) {

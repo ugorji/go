@@ -5,6 +5,83 @@ package codec
 
 // Contains code shared by both encode and decode.
 
+// Some shared ideas around encoding/decoding
+// ------------------------------------------
+//
+// If an interface{} is passed, we first do a type assertion to see if it is
+// a primitive type or a map/slice of primitive types, and use a fastpath to handle it.
+//
+// If we start with a reflect.Value, we are already in reflect.Value land and
+// will try to grab the function for the underlying Type and directly call that function.
+// This is more performant than calling reflect.Value.Interface().
+//
+// This still helps us bypass many layers of reflection, and give best performance.
+//
+// Containers
+// ------------
+// Containers in the stream are either associative arrays (key-value pairs) or
+// regular arrays (indexed by incrementing integers).
+//
+// Some streams support indefinite-length containers, and use a breaking
+// byte-sequence to denote that the container has come to an end.
+//
+// Some streams also are text-based, and use explicit separators to denote the
+// end/beginning of different values.
+//
+// During encode, we use a high-level condition to determine how to iterate through
+// the container. That decision is based on whether the container is text-based (with
+// separators) or binary (without separators). If binary, we do not even call the
+// encoding of separators.
+//
+// During decode, we use a different high-level condition to determine how to iterate
+// through the containers. That decision is based on whether the stream contained
+// a length prefix, or if it used explicit breaks. If length-prefixed, we assume that
+// it has to be binary, and we do not even try to read separators.
+//
+// The only codec that may suffer (slightly) is cbor, and only when decoding indefinite-length.
+// It may suffer because we treat it like a text-based codec, and read separators.
+// However, this read is a no-op and the cost is insignificant.
+//
+// Philosophy
+// ------------
+// On decode, this codec will update containers appropriately:
+//    - If struct, update fields from stream into fields of struct.
+//      If field in stream not found in struct, handle appropriately (based on option).
+//      If a struct field has no corresponding value in the stream, leave it AS IS.
+//      If nil in stream, set value to nil/zero value.
+//    - If map, update map from stream.
+//      If the stream value is NIL, set the map to nil.
+//    - if slice, try to update up to length of array in stream.
+//      if container len is less than stream array length,
+//      and container cannot be expanded, handled (based on option).
+//      This means you can decode 4-element stream array into 1-element array.
+//
+// ------------------------------------
+// On encode, user can specify omitEmpty. This means that the value will be omitted
+// if the zero value. The problem may occur during decode, where omitted values do not affect
+// the value being decoded into. This means that if decoding into a struct with an
+// int field with current value=5, and the field is omitted in the stream, then after
+// decoding, the value will still be 5 (not 0).
+// omitEmpty only works if you guarantee that you always decode into zero-values.
+//
+// ------------------------------------
+// We could have truncated a map to remove keys not available in the stream,
+// or set values in the struct which are not in the stream to their zero values.
+// We decided against it because there is no efficient way to do it.
+// We may introduce it as an option later.
+// However, that will require enabling it for both runtime and code generation modes.
+//
+// To support truncate, we need to do 2 passes over the container:
+//   map
+//   - first collect all keys (e.g. in k1)
+//   - for each key in stream, mark k1 that the key should not be removed
+//   - after updating map, do second pass and call delete for all keys in k1 which are not marked
+//   struct:
+//   - for each field, track the *typeInfo s1
+//   - iterate through all s1, and for each one not marked, set value to zero
+//   - this involves checking the possible anonymous fields which are nil ptrs.
+//     too much work.
+
 import (
 	"encoding"
 	"encoding/binary"
@@ -21,6 +98,8 @@ import (
 
 const (
 	structTagName = "codec"
+
+	scratchByteArrayLen = 32
 
 	// Support encoding.(Binary|Text)(Unm|M)arshaler.
 	// This constant flag will enable or disable it.
@@ -44,7 +123,14 @@ const (
 	// Fast path functions try to create a fast path encode or decode implementation
 	// for common maps and slices, by by-passing reflection altogether.
 	fastpathEnabled = true
+
+	// if checkStructForEmptyValue, check structs fields to see if an empty value.
+	// This could be an expensive call, but possibly disable it.
+	checkStructForEmptyValue = false
 )
+
+var oneByteArr = [1]byte{0}
+var zeroByteSlice = oneByteArr[:0:0]
 
 type charEncoding uint8
 
@@ -82,11 +168,10 @@ var (
 	bigen               = binary.BigEndian
 	structInfoFieldName = "_struct"
 
-	fastpathsTyp = make(map[uintptr]reflect.Type)
-
-	cachedTypeInfo      = make(map[uintptr]*typeInfo, 4)
+	cachedTypeInfo      = make(map[uintptr]*typeInfo, 64)
 	cachedTypeInfoMutex sync.RWMutex
 
+	// mapStrIntfTyp = reflect.TypeOf(map[string]interface{}(nil))
 	intfSliceTyp = reflect.TypeOf([]interface{}(nil))
 	intfTyp      = intfSliceTyp.Elem()
 
@@ -103,10 +188,13 @@ var (
 	textMarshalerTyp   = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
 	textUnmarshalerTyp = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
 
+	selferTyp = reflect.TypeOf((*Selfer)(nil)).Elem()
+
 	uint8SliceTypId = reflect.ValueOf(uint8SliceTyp).Pointer()
 	rawExtTypId     = reflect.ValueOf(rawExtTyp).Pointer()
 	intfTypId       = reflect.ValueOf(intfTyp).Pointer()
 	timeTypId       = reflect.ValueOf(timeTyp).Pointer()
+	stringTypId     = reflect.ValueOf(stringTyp).Pointer()
 
 	// mapBySliceTypId  = reflect.ValueOf(mapBySliceTyp).Pointer()
 
@@ -115,7 +203,19 @@ var (
 
 	bsAll0x00 = []byte{0, 0, 0, 0, 0, 0, 0, 0}
 	bsAll0xff = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
+
+	chkOvf checkOverflow
 )
+
+// Selfer defines methods by which a value can encode or decode itself.
+//
+// Any type which implements Selfer will be able to encode or decode itself.
+// Consequently, during (en|de)code, this takes precedence over
+// (text|binary)(M|Unm)arshal or extension support.
+type Selfer interface {
+	CodecEncodeSelf(*Encoder)
+	CodecDecodeSelf(*Decoder)
+}
 
 // MapBySlice represents a slice which should be encoded as a map in the stream.
 // The slice contains a sequence of key-value pairs.
@@ -139,10 +239,6 @@ type BasicHandle struct {
 
 func (x *BasicHandle) getBasicHandle() *BasicHandle {
 	return x
-}
-
-func (x *BasicHandle) isBinaryEncoding() bool {
-	return true
 }
 
 // Handle is the interface for a specific encoding format.
@@ -175,19 +271,19 @@ type RawExt struct {
 type Ext interface {
 	// WriteExt converts a value to a []byte.
 	// It is used by codecs (e.g. binc, msgpack, simple) which do custom serialization of the types.
-	WriteExt(v reflect.Value) []byte
+	WriteExt(v interface{}) []byte
 
 	// ReadExt updates a value from a []byte.
 	// It is used by codecs (e.g. binc, msgpack, simple) which do custom serialization of the types.
-	ReadExt(v reflect.Value, src []byte)
+	ReadExt(dst interface{}, src []byte)
 
 	// ConvertExt converts a value into a simpler interface for easy encoding e.g. convert time.Time to int64.
 	// It is used by codecs (e.g. cbor) which use the format to do custom serialization of the types.
-	ConvertExt(v reflect.Value) interface{}
+	ConvertExt(v interface{}) interface{}
 
 	// UpdateExt updates a value from a simpler interface for easy decoding e.g. convert int64 to time.Time.
 	// It is used by codecs (e.g. cbor) which use the format to do custom serialization of the types.
-	UpdateExt(v reflect.Value, src interface{})
+	UpdateExt(dst interface{}, src interface{})
 }
 
 // bytesExt is a wrapper implementation to support former AddExt exported method.
@@ -196,39 +292,74 @@ type bytesExt struct {
 	decFn func(reflect.Value, []byte) error
 }
 
-func (x bytesExt) WriteExt(rv reflect.Value) []byte {
-	bs, err := x.encFn(rv)
+func (x bytesExt) WriteExt(v interface{}) []byte {
+	// fmt.Printf(">>>>>>>>>> WriteExt: %T, %v\n", v, v)
+	bs, err := x.encFn(reflect.ValueOf(v))
 	if err != nil {
 		panic(err)
 	}
 	return bs
 }
 
-func (x bytesExt) ReadExt(rv reflect.Value, bs []byte) {
-	if err := x.decFn(rv, bs); err != nil {
+func (x bytesExt) ReadExt(v interface{}, bs []byte) {
+	// fmt.Printf(">>>>>>>>>> ReadExt: %T, %v\n", v, v)
+	if err := x.decFn(reflect.ValueOf(v), bs); err != nil {
 		panic(err)
 	}
 }
 
-func (x bytesExt) ConvertExt(rv reflect.Value) interface{} {
-	return x.WriteExt(rv)
+func (x bytesExt) ConvertExt(v interface{}) interface{} {
+	return x.WriteExt(v)
 }
 
-func (x bytesExt) UpdateExt(rv reflect.Value, v interface{}) {
-	x.ReadExt(rv, v.([]byte))
+func (x bytesExt) UpdateExt(dest interface{}, v interface{}) {
+	x.ReadExt(dest, v.([]byte))
 }
+
+// type errorString string
+// func (x errorString) Error() string { return string(x) }
+
+type binaryEncodingType struct{}
+
+func (_ binaryEncodingType) isBinaryEncoding() bool { return true }
+
+type textEncodingType struct{}
+
+func (_ textEncodingType) isBinaryEncoding() bool { return false }
 
 // noBuiltInTypes is embedded into many types which do not support builtins
 // e.g. msgpack, simple, cbor.
 type noBuiltInTypes struct{}
 
-func (_ noBuiltInTypes) isBuiltinType(rt uintptr) bool           { return false }
-func (_ noBuiltInTypes) encodeBuiltin(rt uintptr, v interface{}) {}
-func (_ noBuiltInTypes) decodeBuiltin(rt uintptr, v interface{}) {}
+func (_ noBuiltInTypes) IsBuiltinType(rt uintptr) bool           { return false }
+func (_ noBuiltInTypes) EncodeBuiltin(rt uintptr, v interface{}) {}
+func (_ noBuiltInTypes) DecodeBuiltin(rt uintptr, v interface{}) {}
 
 type noStreamingCodec struct{}
 
-func (_ noStreamingCodec) checkBreak() bool { return false }
+func (_ noStreamingCodec) CheckBreak() bool { return false }
+
+// bigenHelper.
+// Users must already slice the x completely, because we will not reslice.
+type bigenHelper struct {
+	x []byte // must be correctly sliced to appropriate len. slicing is a cost.
+	w encWriter
+}
+
+func (z bigenHelper) writeUint16(v uint16) {
+	bigen.PutUint16(z.x, v)
+	z.w.writeb(z.x)
+}
+
+func (z bigenHelper) writeUint32(v uint32) {
+	bigen.PutUint32(z.x, v)
+	z.w.writeb(z.x)
+}
+
+func (z bigenHelper) writeUint64(v uint64) {
+	bigen.PutUint64(z.x, v)
+	z.w.writeb(z.x)
+}
 
 type extTypeTagFn struct {
 	rtid uintptr
@@ -309,6 +440,50 @@ type structFieldInfo struct {
 	toArray   bool // if field is _struct, is the toArray set?
 }
 
+// rv returns the field of the struct.
+// If anonymous, it returns an Invalid
+func (si *structFieldInfo) field(v reflect.Value, update bool) (rv2 reflect.Value) {
+	if si.i != -1 {
+		v = v.Field(int(si.i))
+		return v
+	}
+	// replicate FieldByIndex
+	for _, x := range si.is {
+		for v.Kind() == reflect.Ptr {
+			if v.IsNil() {
+				if !update {
+					return
+				}
+				v.Set(reflect.New(v.Type().Elem()))
+			}
+			v = v.Elem()
+		}
+		v = v.Field(x)
+	}
+	return v
+}
+
+func (si *structFieldInfo) setToZeroValue(v reflect.Value) {
+	if si.i != -1 {
+		v = v.Field(int(si.i))
+		v.Set(reflect.Zero(v.Type()))
+		// v.Set(reflect.New(v.Type()).Elem())
+		// v.Set(reflect.New(v.Type()))
+	} else {
+		// replicate FieldByIndex
+		for _, x := range si.is {
+			for v.Kind() == reflect.Ptr {
+				if v.IsNil() {
+					return
+				}
+				v = v.Elem()
+			}
+			v = v.Field(x)
+		}
+		v.Set(reflect.Zero(v.Type()))
+	}
+}
+
 func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
 	if fname == "" {
 		panic("no field name passed to parseStructFieldInfo")
@@ -324,10 +499,9 @@ func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
 					si.encName = s
 				}
 			} else {
-				switch s {
-				case "omitempty":
+				if s == "omitempty" {
 					si.omitEmpty = true
-				case "toarray":
+				} else if s == "toarray" {
 					si.toArray = true
 				}
 			}
@@ -383,6 +557,9 @@ type typeInfo struct {
 	tunm      bool // base type (T or *T) is a textUnmarshaler
 	tmIndir   int8 // number of indirections to get to textMarshaler type
 	tunmIndir int8 // number of indirections to get to textUnmarshaler type
+
+	cs      bool // base type (T or *T) is a Selfer
+	csIndir int8 // number of indirections to get to Selfer type
 
 	toArray bool // whether this (struct) type should be encoded as an array
 }
@@ -446,6 +623,9 @@ func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	if ok, indir = implementsIntf(rt, textUnmarshalerTyp); ok {
 		ti.tunm, ti.tunmIndir = true, indir
 	}
+	if ok, indir = implementsIntf(rt, selferTyp); ok {
+		ti.cs, ti.csIndir = true, indir
+	}
 	if ok, _ = implementsIntf(rt, mapBySliceTyp); ok {
 		ti.mbs = true
 	}
@@ -473,7 +653,7 @@ func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 			ti.toArray = siInfo.toArray
 		}
 		sfip := make([]*structFieldInfo, 0, rt.NumField())
-		rgetTypeInfo(rt, nil, make(map[string]bool), &sfip, siInfo)
+		rgetTypeInfo(rt, nil, make(map[string]bool, 16), &sfip, siInfo)
 
 		ti.sfip = make([]*structFieldInfo, len(sfip))
 		ti.sfi = make([]*structFieldInfo, len(sfip))
@@ -491,6 +671,10 @@ func rgetTypeInfo(rt reflect.Type, indexstack []int, fnameToHastag map[string]bo
 ) {
 	for j := 0; j < rt.NumField(); j++ {
 		f := rt.Field(j)
+		// chan and func types are skipped.
+		if tk := f.Type.Kind(); tk == reflect.Chan || tk == reflect.Func {
+			continue
+		}
 		stag := f.Tag.Get(structTagName)
 		if stag == "-" {
 			continue
@@ -505,7 +689,10 @@ func rgetTypeInfo(rt reflect.Type, indexstack []int, fnameToHastag map[string]bo
 				ft = ft.Elem()
 			}
 			if ft.Kind() == reflect.Struct {
-				indexstack2 := append(append(make([]int, 0, len(indexstack)+4), indexstack...), j)
+				indexstack2 := make([]int, len(indexstack)+1, len(indexstack)+4)
+				copy(indexstack2, indexstack)
+				indexstack2[len(indexstack)] = j
+				// indexstack2 := append(append(make([]int, 0, len(indexstack)+4), indexstack...), j)
 				rgetTypeInfo(ft, indexstack2, fnameToHastag, sfi, siInfo)
 				continue
 			}
@@ -551,49 +738,68 @@ func doPanic(tag string, format string, params ...interface{}) {
 	panic(fmt.Errorf("%s: "+format, params2...))
 }
 
-func checkOverflowFloat32(f float64, doCheck bool) {
-	if !doCheck {
-		return
-	}
-	// check overflow (logic adapted from std pkg reflect/value.go OverflowFloat()
-	f2 := f
-	if f2 < 0 {
-		f2 = -f
-	}
-	if math.MaxFloat32 < f2 && f2 <= math.MaxFloat64 {
-		decErr("Overflow float32 value: %v", f2)
-	}
+func isMutableKind(k reflect.Kind) (v bool) {
+	return k == reflect.Int ||
+		k == reflect.Int8 ||
+		k == reflect.Int16 ||
+		k == reflect.Int32 ||
+		k == reflect.Int64 ||
+		k == reflect.Uint ||
+		k == reflect.Uint8 ||
+		k == reflect.Uint16 ||
+		k == reflect.Uint32 ||
+		k == reflect.Uint64 ||
+		k == reflect.Float32 ||
+		k == reflect.Float64 ||
+		k == reflect.Bool ||
+		k == reflect.String
 }
 
-func checkOverflow(ui uint64, i int64, bitsize uint8) {
-	// check overflow (logic adapted from std pkg reflect/value.go OverflowUint()
-	if bitsize == 0 || bitsize >= 64 {
-		return
+// these functions must be inlinable, and not call anybody
+type checkOverflow struct{}
+
+func (_ checkOverflow) Float32(f float64) (overflow bool) {
+	if f < 0 {
+		f = -f
 	}
-	if i != 0 {
-		if trunc := (i << (64 - bitsize)) >> (64 - bitsize); i != trunc {
-			decErr("Overflow int value: %v", i)
-		}
-	}
-	if ui != 0 {
-		if trunc := (ui << (64 - bitsize)) >> (64 - bitsize); ui != trunc {
-			decErr("Overflow uint value: %v", ui)
-		}
-	}
+	return math.MaxFloat32 < f && f <= math.MaxFloat64
 }
 
-func checkOverflowUint64ToInt64(ui uint64) int64 {
+func (_ checkOverflow) Uint(v uint64, bitsize uint8) (overflow bool) {
+	if bitsize == 0 || bitsize >= 64 || v == 0 {
+		return
+	}
+	if trunc := (v << (64 - bitsize)) >> (64 - bitsize); v != trunc {
+		overflow = true
+	}
+	return
+}
+
+func (_ checkOverflow) Int(v int64, bitsize uint8) (overflow bool) {
+	if bitsize == 0 || bitsize >= 64 || v == 0 {
+		return
+	}
+	if trunc := (v << (64 - bitsize)) >> (64 - bitsize); v != trunc {
+		overflow = true
+	}
+	return
+}
+
+func (_ checkOverflow) SignedInt(v uint64) (i int64, overflow bool) {
 	//e.g. -127 to 128 for int8
-	pos := (ui >> 63) == 0
-	ui2 := ui & 0x7fffffffffffffff
+	pos := (v >> 63) == 0
+	ui2 := v & 0x7fffffffffffffff
 	if pos {
 		if ui2 > math.MaxInt64 {
-			decErr("uint64 value greater than max int64; got %v", ui2)
+			overflow = true
+			return
 		}
 	} else {
 		if ui2 > math.MaxInt64-1 {
-			decErr("uint64 value less than min int64; got %v", ui2)
+			overflow = true
+			return
 		}
 	}
-	return int64(ui)
+	i = int64(v)
+	return
 }
