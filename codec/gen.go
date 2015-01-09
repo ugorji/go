@@ -203,18 +203,15 @@ func Gen(w io.Writer, buildTags, pkgName string, useUnsafe bool, typ ...reflect.
 		x.linef("var v%v unsafe.Pointer", n)
 		n++
 	}
-	for i := 0; i < n; i++ {
-		if i != 0 {
-			x.out(", ")
-		}
+	if n > 0 {
 		x.out("_")
-	}
-	x.out(" = ")
-	for i := 0; i < n; i++ {
-		if i != 0 {
-			x.out(", ")
+		for i := 1; i < n; i++ {
+			x.out(", _")
 		}
-		x.outf("v%v", i)
+		x.out(" = v0")
+		for i := 1; i < n; i++ {
+			x.outf(", v%v", i)
+		}
 	}
 	x.line("} ") // close if false
 	x.line("}")  // close init
