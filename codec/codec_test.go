@@ -466,7 +466,7 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 		if err != nil {
 			continue
 		}
-		if h.isBinaryEncoding() {
+		if h.isBinary() {
 			logT(t, "         Encoded bytes: len: %v, %v\n", len(b0), b0)
 		} else {
 			logT(t, "         Encoded string: len: %v, %v\n", len(string(b0)), string(b0))
@@ -586,7 +586,7 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 		logT(t, "------- Size must be > 40. Size: %d", len(b))
 		t.FailNow()
 	}
-	if h.isBinaryEncoding() {
+	if h.isBinary() {
 		logT(t, "------- b: %v", b)
 	} else {
 		logT(t, "------- b: %s", b)

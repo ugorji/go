@@ -81,10 +81,29 @@ package codec
 //   - iterate through all s1, and for each one not marked, set value to zero
 //   - this involves checking the possible anonymous fields which are nil ptrs.
 //     too much work.
+//
+// ------------------------------------------
+// Error Handling is done within the library using panic.
+//
+// This way, the code doesn't have to keep checking if an error has happened,
+// and we don't have to keep sending the error value along with each call
+// or storing it in the En|Decoder and checking it constantly along the way.
+//
+// The disadvantage is that small functions which use panics cannot be inlined.
+// The code accounts for that by only using panics behind an interface;
+// since interface calls cannot be inlined, this is irrelevant.
+//
+// We considered storing the error is En|Decoder.
+//   - once it has its err field set, it cannot be used again.
+//   - panicing will be optional, controlled by const flag.
+//   - code should always check error first and return early.
+// We eventually decided against it as it makes the code clumsier to always
+// check for these error conditions.
 
 import (
 	"encoding"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -205,6 +224,8 @@ var (
 	bsAll0xff = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 
 	chkOvf checkOverflow
+
+	noFieldNameToStructFieldInfoErr = errors.New("no field name passed to parseStructFieldInfo")
 )
 
 // Selfer defines methods by which a value can encode or decode itself.
@@ -248,9 +269,9 @@ func (x *BasicHandle) getBasicHandle() *BasicHandle {
 // is safe for concurrent access.
 type Handle interface {
 	getBasicHandle() *BasicHandle
-	newEncDriver(w encWriter) encDriver
-	newDecDriver(r decReader) decDriver
-	isBinaryEncoding() bool
+	newEncDriver(w *Encoder) encDriver
+	newDecDriver(r *Decoder) decDriver
+	isBinary() bool
 }
 
 // RawExt represents raw unprocessed extension data.
@@ -321,11 +342,11 @@ func (x bytesExt) UpdateExt(dest interface{}, v interface{}) {
 
 type binaryEncodingType struct{}
 
-func (_ binaryEncodingType) isBinaryEncoding() bool { return true }
+func (_ binaryEncodingType) isBinary() bool { return true }
 
 type textEncodingType struct{}
 
-func (_ textEncodingType) isBinaryEncoding() bool { return false }
+func (_ textEncodingType) isBinary() bool { return false }
 
 // noBuiltInTypes is embedded into many types which do not support builtins
 // e.g. msgpack, simple, cbor.
@@ -486,7 +507,7 @@ func (si *structFieldInfo) setToZeroValue(v reflect.Value) {
 
 func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
 	if fname == "" {
-		panic("no field name passed to parseStructFieldInfo")
+		panic(noFieldNameToStructFieldInfoErr)
 	}
 	si := structFieldInfo{
 		encName: fname,
@@ -731,12 +752,12 @@ func panicToErr(err *error) {
 	}
 }
 
-func doPanic(tag string, format string, params ...interface{}) {
-	params2 := make([]interface{}, len(params)+1)
-	params2[0] = tag
-	copy(params2[1:], params)
-	panic(fmt.Errorf("%s: "+format, params2...))
-}
+// func doPanic(tag string, format string, params ...interface{}) {
+// 	params2 := make([]interface{}, len(params)+1)
+// 	params2[0] = tag
+// 	copy(params2[1:], params)
+// 	panic(fmt.Errorf("%s: "+format, params2...))
+// }
 
 func isMutableKind(k reflect.Kind) (v bool) {
 	return k == reflect.Int ||

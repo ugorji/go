@@ -5,6 +5,8 @@ package codec
 
 import (
 	"encoding"
+	"errors"
+	"fmt"
 	"io"
 	"reflect"
 	"sync"
@@ -134,7 +136,8 @@ func (o *simpleIoEncWriterWriter) WriteString(s string) (n int, err error) {
 	if o.sw != nil {
 		return o.sw.WriteString(s)
 	}
-	return o.w.Write([]byte(s))
+	// return o.w.Write([]byte(s))
+	return o.w.Write(bytesView(s))
 }
 
 func (o *simpleIoEncWriterWriter) Write(p []byte) (n int, err error) {
@@ -158,7 +161,7 @@ func (z *ioEncWriter) writeb(bs []byte) {
 		panic(err)
 	}
 	if n != len(bs) {
-		encErr("incorrect num bytes written. Expecting: %v, Wrote: %v", len(bs), n)
+		panic(fmt.Errorf("incorrect num bytes written. Expecting: %v, Wrote: %v", len(bs), n))
 	}
 }
 
@@ -168,7 +171,7 @@ func (z *ioEncWriter) writestr(s string) {
 		panic(err)
 	}
 	if n != len(s) {
-		encErr("incorrect num bytes written. Expecting: %v, Wrote: %v", len(s), n)
+		panic(fmt.Errorf("incorrect num bytes written. Expecting: %v, Wrote: %v", len(s), n))
 	}
 }
 
@@ -362,7 +365,7 @@ func (f encFnInfo) kInvalid(rv reflect.Value) {
 }
 
 func (f encFnInfo) kErr(rv reflect.Value) {
-	encErr("unsupported kind %s, for %#v", rv.Kind(), rv)
+	f.e.errorf("unsupported kind %s, for %#v", rv.Kind(), rv)
 }
 
 func (f encFnInfo) kSlice(rv reflect.Value) {
@@ -407,7 +410,8 @@ func (f encFnInfo) kSlice(rv reflect.Value) {
 
 	if ti.mbs {
 		if l%2 == 1 {
-			encErr("mapBySlice requires even slice length, but got %v", l)
+			f.e.errorf("mapBySlice requires even slice length, but got %v", l)
+			return
 		}
 		f.ee.EncodeMapStart(l / 2)
 	} else {
@@ -475,7 +479,7 @@ func (f encFnInfo) kStruct(rv reflect.Value) {
 	var poolv interface{}
 	idxpool := newlen / 8
 	if encStructPoolLen != 4 {
-		panic("encStructPoolLen must be equal to 4") // defensive, in case it is changed
+		panic(errors.New("encStructPoolLen must be equal to 4")) // defensive, in case it is changed
 	}
 	if idxpool < encStructPoolLen {
 		pool = &encStructPool[idxpool]
@@ -724,16 +728,17 @@ type rtidEncFn struct {
 // An Encoder writes an object to an output stream in the codec format.
 type Encoder struct {
 	// hopefully, reduce derefencing cost by laying the encWriter inside the Encoder
-	w  encWriter
-	wi ioEncWriter
-	wb bytesEncWriter
-
 	e  encDriver
-	h  *BasicHandle
-	hh Handle
-	f  map[uintptr]encFn
+	w  encWriter
 	s  []rtidEncFn
 	be bool // is binary encoding
+
+	wi ioEncWriter
+	wb bytesEncWriter
+	h  *BasicHandle
+
+	hh Handle
+	f  map[uintptr]encFn
 }
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
@@ -741,7 +746,7 @@ type Encoder struct {
 // For efficiency, Users are encouraged to pass in a memory buffered writer
 // (eg bufio.Writer, bytes.Buffer).
 func NewEncoder(w io.Writer, h Handle) *Encoder {
-	e := &Encoder{hh: h, h: h.getBasicHandle(), be: h.isBinaryEncoding()}
+	e := &Encoder{hh: h, h: h.getBasicHandle(), be: h.isBinary()}
 	ww, ok := w.(ioEncWriterWriter)
 	if !ok {
 		sww := simpleIoEncWriterWriter{w: w}
@@ -752,7 +757,7 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 	}
 	e.wi.w = ww
 	e.w = &e.wi
-	e.e = h.newEncDriver(e.w)
+	e.e = h.newEncDriver(e)
 	return e
 }
 
@@ -762,14 +767,14 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 // It will potentially replace the output byte slice pointed to.
 // After encoding, the out parameter contains the encoded contents.
 func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
-	e := &Encoder{hh: h, h: h.getBasicHandle(), be: h.isBinaryEncoding()}
+	e := &Encoder{hh: h, h: h.getBasicHandle(), be: h.isBinary()}
 	in := *out
 	if in == nil {
 		in = make([]byte, defEncByteBufSize)
 	}
 	e.wb.b, e.wb.out = in, out
 	e.w = &e.wb
-	e.e = h.newEncDriver(e.w)
+	e.e = h.newEncDriver(e)
 	return e
 }
 
@@ -1111,6 +1116,11 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkAll bool) (fn enc
 	return
 }
 
+func (e *Encoder) errorf(format string, params ...interface{}) {
+	err := fmt.Errorf(format, params...)
+	panic(err)
+}
+
 // ----------------------------------------
 
 const encStructPoolLen = 4
@@ -1155,6 +1165,6 @@ func init() {
 
 // ----------------------------------------
 
-func encErr(format string, params ...interface{}) {
-	doPanic(msgTagEnc, format, params...)
-}
+// func encErr(format string, params ...interface{}) {
+// 	doPanic(msgTagEnc, format, params...)
+// }

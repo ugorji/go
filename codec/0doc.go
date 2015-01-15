@@ -17,6 +17,16 @@ To install:
 
     go get github.com/ugorji/go/codec
 
+This package understands the 'unsafe' tag, to allow using unsafe semantics:
+
+  - When decoding into a struct, you need to read the field name as a string 
+    so you can find the struct field it is mapped to.
+    Using `unsafe` will bypass the allocation and copying overhead of []byte->string conversion.
+
+To install using unsafe, pass the 'unsafe' tag:
+
+    go get -tags=unsafe github.com/ugorji/go/codec
+
 For detailed usage information, read the primer at http://ugorji.net/blog/go-codec-primer .
 
 The idiomatic Go support is as seen in other encoding packages in

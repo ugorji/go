@@ -6,6 +6,7 @@ package codec
 import (
 	"encoding"
 	"errors"
+	"fmt"
 	"io"
 	"reflect"
 )
@@ -15,6 +16,11 @@ const (
 	msgTagDec             = "codec.decoder"
 	msgBadDesc            = "Unrecognized descriptor byte"
 	msgDecCannotExpandArr = "cannot expand go array from %v to stream length: %v"
+)
+
+var (
+	onlyMapOrArrayCanDecodeIntoStructErr = errors.New("only encoded map or array can be decoded into a struct")
+	cannotDecodeIntoNilErr               = errors.New("cannot decode into nil")
 )
 
 // decReader abstracts the reading source, allowing implementations that can
@@ -53,7 +59,7 @@ type decDriver interface {
 	//for extensions, decodeNaked must completely decode them as a *RawExt.
 	//extensions should also use readx to decode them, for efficiency.
 	//kInterface will extract the detached byte slice if it has to pass it outside its realm.
-	DecodeNaked(*Decoder) (v interface{}, vt valueType, decodeFurther bool)
+	DecodeNaked() (v interface{}, vt valueType, decodeFurther bool)
 	DecodeInt(bitsize uint8) (i int64)
 	DecodeUint(bitsize uint8) (ui uint64)
 	DecodeFloat(chkOverflow32 bool) (f float64)
@@ -70,7 +76,7 @@ type decDriver interface {
 	DecodeBytes(bs []byte, isstring, zerocopy bool) (bsOut []byte)
 
 	// decodeExt will decode into a *RawExt or into an extension.
-	DecodeExt(v interface{}, xtag uint64, ext Ext, d *Decoder) (realxtag uint64)
+	DecodeExt(v interface{}, xtag uint64, ext Ext) (realxtag uint64)
 	// decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte)
 	ReadMapStart() int
 	ReadArrayStart() int
@@ -168,7 +174,9 @@ func (z *ioDecByteScanner) UnreadByte() (err error) {
 // ioDecReader is a decReader that reads off an io.Reader
 type ioDecReader struct {
 	br decReaderByteScanner
-	x  [scratchByteArrayLen]byte //temp byte array re-used internally for efficiency
+	// temp byte array re-used internally for efficiency during read.
+	// shares buffer with Decoder, so we keep size of struct within 8 words.
+	x  *[scratchByteArrayLen]byte
 	bs ioDecByteScanner
 }
 
@@ -223,6 +231,8 @@ func (z *ioDecReader) unreadn1() {
 
 // ------------------------------------
 
+var bytesDecReaderCannotUnreadErr = errors.New("cannot unread last byte read")
+
 // bytesDecReader is a decReader that reads off a byte slice with zero copying
 type bytesDecReader struct {
 	b []byte // data
@@ -232,7 +242,7 @@ type bytesDecReader struct {
 
 func (z *bytesDecReader) unreadn1() {
 	if z.c == 0 || len(z.b) == 0 {
-		decErr("cannot unread last byte read")
+		panic(bytesDecReaderCannotUnreadErr)
 	}
 	z.c--
 	z.a++
@@ -319,11 +329,11 @@ func (f decFnInfo) builtin(rv reflect.Value) {
 }
 
 func (f decFnInfo) rawExt(rv reflect.Value) {
-	f.dd.DecodeExt(rv.Addr().Interface(), 0, nil, f.d)
+	f.dd.DecodeExt(rv.Addr().Interface(), 0, nil)
 }
 
 func (f decFnInfo) ext(rv reflect.Value) {
-	f.dd.DecodeExt(rv.Addr().Interface(), f.xfTag, f.xfFn, f.d)
+	f.dd.DecodeExt(rv.Addr().Interface(), f.xfTag, f.xfFn)
 }
 
 func (f decFnInfo) getValueForUnmarshalInterface(rv reflect.Value, indir int8) (v interface{}) {
@@ -372,7 +382,7 @@ func (f decFnInfo) textUnmarshal(rv reflect.Value) {
 }
 
 func (f decFnInfo) kErr(rv reflect.Value) {
-	decErr("no decoding function defined for kind %v", rv.Kind())
+	f.d.errorf("no decoding function defined for kind %v", rv.Kind())
 }
 
 func (f decFnInfo) kString(rv reflect.Value) {
@@ -445,14 +455,14 @@ func (f decFnInfo) kInterfaceNaked() (rvn reflect.Value) {
 	// nil interface:
 	// use some hieristics to decode it appropriately
 	// based on the detected next value in the stream.
-	v, vt, decodeFurther := f.dd.DecodeNaked(f.d)
+	v, vt, decodeFurther := f.dd.DecodeNaked()
 	if vt == valueTypeNil {
 		return
 	}
 	// We cannot decode non-nil stream value into nil interface with methods (e.g. io.Reader).
 	if num := f.ti.rt.NumMethod(); num > 0 {
-		decErr("cannot decode non-nil codec value into nil %v (%v methods)",
-			f.ti.rt, num)
+		f.d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, num)
+		return
 	}
 	var useRvn bool
 	switch vt {
@@ -551,7 +561,8 @@ func (f decFnInfo) kStruct(rv reflect.Value) {
 		hasLen := containerLen >= 0
 		if hasLen {
 			for j := 0; j < containerLen; j++ {
-				rvkencname := f.dd.DecodeString()
+				// rvkencname := f.dd.DecodeString()
+				rvkencname := stringView(f.dd.DecodeBytes(f.d.b[:], true, true))
 				// rvksi := ti.getForEncName(rvkencname)
 				if k := fti.indexForEncName(rvkencname); k > -1 {
 					si := tisfi[k]
@@ -569,7 +580,8 @@ func (f decFnInfo) kStruct(rv reflect.Value) {
 				if j > 0 {
 					f.dd.ReadMapEntrySeparator()
 				}
-				rvkencname := f.dd.DecodeString()
+				// rvkencname := f.dd.DecodeString()
+				rvkencname := stringView(f.dd.DecodeBytes(f.d.b[:], true, true))
 				f.dd.ReadMapKVSeparator()
 				// rvksi := ti.getForEncName(rvkencname)
 				if k := fti.indexForEncName(rvkencname); k > -1 {
@@ -627,7 +639,8 @@ func (f decFnInfo) kStruct(rv reflect.Value) {
 		}
 		f.dd.ReadArrayEnd()
 	} else {
-		decErr("only encoded map or array can be decoded into a struct")
+		f.d.error(onlyMapOrArrayCanDecodeIntoStructErr)
+		return
 	}
 }
 
@@ -833,21 +846,25 @@ type rtidDecFn struct {
 
 // A Decoder reads and decodes an object from an input stream in the codec format.
 type Decoder struct {
-	// hopefully, reduce derefencing cost by laying the decReader inside the Decoder
-	r  decReader
-	rb bytesDecReader
-	ri ioDecReader
+	// hopefully, reduce derefencing cost by laying the decReader inside the Decoder.
+	// Try to put things that go together to fit within a cache line (8 words).
 
-	d  decDriver
-	h  *BasicHandle
-	hh Handle
-	f  map[uintptr]decFn
+	d decDriver
+	r decReader
 	//sa [32]rtidDecFn
 	s []rtidDecFn
-	b [scratchByteArrayLen]byte
+	h *BasicHandle
 
+	rb    bytesDecReader
+	hh    Handle
 	be    bool // is binary encoding
 	bytes bool // is bytes reader
+
+	ri ioDecReader
+	f  map[uintptr]decFn
+	_  uintptr // for alignment purposes, so next one starts from a cache line
+
+	b [scratchByteArrayLen]byte
 }
 
 // NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
@@ -855,8 +872,9 @@ type Decoder struct {
 // For efficiency, Users are encouraged to pass in a memory buffered reader
 // (eg bufio.Reader, bytes.Buffer).
 func NewDecoder(r io.Reader, h Handle) (d *Decoder) {
-	d = &Decoder{hh: h, h: h.getBasicHandle(), be: h.isBinaryEncoding()}
+	d = &Decoder{hh: h, h: h.getBasicHandle(), be: h.isBinary()}
 	//d.s = d.sa[:0]
+	d.ri.x = &d.b
 	d.ri.bs.r = r
 	var ok bool
 	d.ri.br, ok = r.(decReaderByteScanner)
@@ -864,19 +882,19 @@ func NewDecoder(r io.Reader, h Handle) (d *Decoder) {
 		d.ri.br = &d.ri.bs
 	}
 	d.r = &d.ri
-	d.d = h.newDecDriver(d.r)
+	d.d = h.newDecDriver(d)
 	return
 }
 
 // NewDecoderBytes returns a Decoder which efficiently decodes directly
 // from a byte slice with zero copying.
 func NewDecoderBytes(in []byte, h Handle) (d *Decoder) {
-	d = &Decoder{hh: h, h: h.getBasicHandle(), be: h.isBinaryEncoding(), bytes: true}
+	d = &Decoder{hh: h, h: h.getBasicHandle(), be: h.isBinary(), bytes: true}
 	//d.s = d.sa[:0]
 	d.rb.b = in
 	d.rb.a = len(in)
 	d.r = &d.rb
-	d.d = h.newDecDriver(d.r)
+	d.d = h.newDecDriver(d)
 	// d.d = h.newDecDriver(decReaderT{true, &d.rb, &d.ri})
 	return
 }
@@ -991,7 +1009,7 @@ func (d *Decoder) swallow() {
 		// dd.DecodeStringAsBytes(d.b[:])
 	default:
 		// these are all primitives, which we can get from decodeNaked
-		dd.DecodeNaked(d)
+		dd.DecodeNaked()
 	}
 }
 
@@ -1059,7 +1077,8 @@ func (d *Decoder) decode(iv interface{}) {
 
 	switch v := iv.(type) {
 	case nil:
-		decErr("cannot decode into nil.")
+		d.error(cannotDecodeIntoNilErr)
+		return
 
 	case Selfer:
 		v.CodecDecodeSelf(d)
@@ -1321,9 +1340,11 @@ func (d *Decoder) getDecFn(rt reflect.Type, checkAll bool) (fn decFn) {
 func (d *Decoder) structFieldNotFound(index int, rvkencname string) {
 	if d.h.ErrorIfNoField {
 		if index >= 0 {
-			decErr("no matching struct field found when decoding stream array at index %v", index)
+			d.errorf("no matching struct field found when decoding stream array at index %v", index)
+			return
 		} else if rvkencname != "" {
-			decErr("no matching struct field found when decoding stream map with key %s", rvkencname)
+			d.errorf("no matching struct field found when decoding stream map with key %s", rvkencname)
+			return
 		}
 	}
 	d.swallow()
@@ -1331,7 +1352,7 @@ func (d *Decoder) structFieldNotFound(index int, rvkencname string) {
 
 func (d *Decoder) arrayCannotExpand(sliceLen, streamLen int) {
 	if d.h.ErrorIfNoArrayExpand {
-		decErr("cannot expand array len during decode from %v to %v", sliceLen, streamLen)
+		d.errorf("cannot expand array len during decode from %v to %v", sliceLen, streamLen)
 	}
 }
 
@@ -1341,14 +1362,24 @@ func (d *Decoder) chkPtrValue(rv reflect.Value) {
 		return
 	}
 	if !rv.IsValid() {
-		decErr("cannot decode into a zero (ie invalid) reflect.Value")
+		d.error(cannotDecodeIntoNilErr)
+		return
 	}
 	if !rv.CanInterface() {
-		decErr("cannot decode into a value without an interface: %v", rv)
+		d.errorf("cannot decode into a value without an interface: %v", rv)
+		return
 	}
 	rvi := rv.Interface()
-	decErr("cannot decode into non-pointer or nil pointer. Got: %v, %T, %v",
-		rv.Kind(), rvi, rvi)
+	d.errorf("cannot decode into non-pointer or nil pointer. Got: %v, %T, %v", rv.Kind(), rvi, rvi)
+}
+
+func (d *Decoder) error(err error) {
+	panic(err)
+}
+
+func (d *Decoder) errorf(format string, params ...interface{}) {
+	err := fmt.Errorf(format, params...)
+	panic(err)
 }
 
 // --------------------------------------------------
@@ -1369,7 +1400,7 @@ func (d *Decoder) decSliceHelperStart() (x decSliceHelper, clen int) {
 		x.ct = valueTypeMap
 		clen = x.dd.ReadMapStart() * 2
 	} else {
-		decErr("only encoded map or array can be decoded into a slice")
+		d.errorf("only encoded map or array can be decoded into a slice")
 	}
 	return
 }
@@ -1394,9 +1425,9 @@ func (x decSliceHelper) End() {
 	}
 }
 
-func decErr(format string, params ...interface{}) {
-	doPanic(msgTagDec, format, params...)
-}
+// func decErr(format string, params ...interface{}) {
+// 	doPanic(msgTagDec, format, params...)
+// }
 
 func decByteSlice(r decReader, clen int, bs []byte) (bsOut []byte) {
 	if clen == 0 {
