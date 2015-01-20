@@ -10,7 +10,7 @@ a High Performance and Feature-Rich Idiomatic encode/decode and rpc library for
 
 For more information:
 
-  - [see the Readme on github](https://github.com/ugorji/go/tree/master/codec#readme)
+  - [see the codec/Readme for quick usage information](https://github.com/ugorji/go/tree/master/codec#readme)
   - [view the API on godoc](http://godoc.org/github.com/ugorji/go/codec)
   - [read the detailed usage/how-to primer](http://ugorji.net/blog/go-codec-primer)
 

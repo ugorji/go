@@ -134,8 +134,8 @@ func Generate(outfile, buildTag, codecPkgPath string, useUnsafe bool, goRunTag s
 	for _, f := range astfiles {
 		for _, d := range f.Decls {
 			if gd, ok := d.(*ast.GenDecl); ok {
-				if len(gd.Specs) == 1 {
-					if td, ok := gd.Specs[0].(*ast.TypeSpec); ok {
+				for _, dd := range gd.Specs {
+					if td, ok := dd.(*ast.TypeSpec); ok {
 						if len(td.Name.Name) == 0 || td.Name.Name[0] > 'Z' || td.Name.Name[0] < 'A' {
 							continue
 						}
@@ -145,10 +145,11 @@ func Generate(outfile, buildTag, codecPkgPath string, useUnsafe bool, goRunTag s
 						//   primitives (numbers, bool, string): Ident
 						//   map: MapType
 						//   slice, array: ArrayType
+						//   chan: ChanType
 						// do not generate:
-						//   ChanType, FuncType, InterfaceType, StarExpr (ptr), etc
+						//   FuncType, InterfaceType, StarExpr (ptr), etc
 						switch td.Type.(type) {
-						case *ast.StructType, *ast.Ident, *ast.MapType, *ast.ArrayType:
+						case *ast.StructType, *ast.Ident, *ast.MapType, *ast.ArrayType, *ast.ChanType:
 							if regexName.FindStringIndex(td.Name.Name) != nil {
 								tv.Types = append(tv.Types, td.Name.Name)
 							}

@@ -191,7 +191,7 @@ func (e *jsonEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
 		e.w.writen1('"')
 	} else {
 		// e.EncodeString(c, string(v))
-		e.quoteBytes(v)
+		e.quoteStr(stringView(v))
 	}
 }
 
@@ -224,9 +224,10 @@ func (e *jsonEncDriver) quoteStr(s string) {
 			case '\t':
 				w.writen2('\\', 't')
 			default:
+				// encode all bytes < 0x20 (except \r, \n).
+				// also encode < > & to prevent security holes when served to some browsers.
 				w.writestr(`\u00`)
-				w.writen1(hex[b>>4])
-				w.writen1(hex[b&0xF])
+				w.writen2(hex[b>>4], hex[b&0xF])
 			}
 			i++
 			start = i
@@ -258,75 +259,6 @@ func (e *jsonEncDriver) quoteStr(s string) {
 	}
 	if start < len(s) {
 		w.writestr(s[start:])
-	}
-	w.writen1('"')
-}
-
-// keep this in sync with quoteStr above. Needed to elide the str->[]byte allocation.
-// This may be automatically called from EncodeStringBytes, called by MarshalText implementers.
-func (e *jsonEncDriver) quoteBytes(s []byte) {
-	// adapted from std pkg encoding/json
-	const hex = "0123456789abcdef"
-	w := e.w
-	w.writen1('"')
-	start := 0
-	for i := 0; i < len(s); {
-		if b := s[i]; b < utf8.RuneSelf {
-			if 0x20 <= b && b != '\\' && b != '"' && b != '<' && b != '>' && b != '&' {
-				i++
-				continue
-			}
-			if start < i {
-				w.writeb(s[start:i])
-			}
-			switch b {
-			case '\\', '"':
-				w.writen2('\\', b)
-			case '\n':
-				w.writen2('\\', 'n')
-			case '\r':
-				w.writen2('\\', 'r')
-			case '\b':
-				w.writen2('\\', 'b')
-			case '\f':
-				w.writen2('\\', 'f')
-			case '\t':
-				w.writen2('\\', 't')
-			default:
-				w.writestr(`\u00`)
-				w.writen1(hex[b>>4])
-				w.writen1(hex[b&0xF])
-			}
-			i++
-			start = i
-			continue
-		}
-		c, size := utf8.DecodeRune(s[i:])
-		if c == utf8.RuneError && size == 1 {
-			if start < i {
-				w.writeb(s[start:i])
-			}
-			w.writestr(`\ufffd`)
-			i += size
-			start = i
-			continue
-		}
-		// U+2028 is LINE SEPARATOR. U+2029 is PARAGRAPH SEPARATOR.
-		// Both technically valid JSON, but bomb on JSONP, so fix here.
-		if c == '\u2028' || c == '\u2029' {
-			if start < i {
-				w.writeb(s[start:i])
-			}
-			w.writestr(`\u202`)
-			w.writen1(hex[c&0xF])
-			i += size
-			start = i
-			continue
-		}
-		i += size
-	}
-	if start < len(s) {
-		w.writeb(s[start:])
 	}
 	w.writen1('"')
 }
@@ -456,32 +388,13 @@ func (d *jsonDecDriver) CheckBreak() bool {
 	return b == '}' || b == ']'
 }
 
-// func (d *jsonDecDriver) readStr(s []byte) {
-// 	if jsonValidateSymbols {
-// 		bs := d.b[:len(s)]
-// 		d.r.readb(bs)
-// 		if !bytes.Equal(bs, s) {
-// 			d.d.errorf("json: expecting %s: got %s", s, bs)
-//			return
-// 		}
-// 	} else {
-// 		d.r.readx(len(s))
-// 	}
-// 	if jsonTrackSkipWhitespace {
-// 		d.wsSkipped = false
-// 	}
-// }
-
 func (d *jsonDecDriver) readStrIdx(fromIdx, toIdx uint8) {
+	bs := d.r.readx(int(toIdx - fromIdx))
 	if jsonValidateSymbols {
-		bs := d.b[:(toIdx - fromIdx)]
-		d.r.readb(bs)
 		if !bytes.Equal(bs, jsonLiterals[fromIdx:toIdx]) {
 			d.d.errorf("json: expecting %s: got %s", jsonLiterals[fromIdx:toIdx], bs)
 			return
 		}
-	} else {
-		d.r.readx(int(toIdx - fromIdx))
 	}
 	if jsonTrackSkipWhitespace {
 		d.wsSkipped = false

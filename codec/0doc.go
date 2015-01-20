@@ -56,11 +56,13 @@ Rich Feature Set includes:
   - Fast (no-reflection) encoding/decoding of common maps and slices
   - Code-generation for faster performance.
   - Support binary (e.g. messagepack, cbor) and text (e.g. json) formats
-  - Support indefinite-length formats to enable true streaming
+  - Support indefinite-length formats to enable true streaming 
+    (for formats which support it e.g. json, cbor)
   - NIL in data stream decoded as zero value
   - Never silently skip data when decoding.
     User decides whether to return an error or silently skip data when keys or indexes
     in the data stream do not map to fields in the struct.
+  - Encode/Decode from/to chan types (for iterative streaming support)
   - Provides a RPC Server and Client Codec for net/rpc communication protocol.
   - Handle unique idiosynchracies of codecs e.g. 
     - For messagepack, configure how ambiguities in handling raw bytes are resolved 

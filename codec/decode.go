@@ -300,7 +300,7 @@ type decFnInfoX struct {
 	ti    *typeInfo
 	xfFn  Ext
 	xfTag uint64
-	array bool
+	seq   seqType
 }
 
 // decFnInfo has methods for handling decoding of a specific type
@@ -651,35 +651,52 @@ func (f decFnInfo) kSlice(rv reflect.Value) {
 	d := f.d
 	if f.dd.IsContainerType(valueTypeBytes) || f.dd.IsContainerType(valueTypeString) {
 		if ti.rtid == uint8SliceTypId || ti.rt.Elem().Kind() == reflect.Uint8 {
-			rvbs := rv.Bytes()
-			bs2 := f.dd.DecodeBytes(rvbs, false, false)
-			if rvbs == nil && bs2 != nil || rvbs != nil && bs2 == nil || len(bs2) != len(rvbs) {
-				if rv.CanSet() {
-					rv.SetBytes(bs2)
-				} else {
-					copy(rvbs, bs2)
+			if f.seq == seqTypeChan {
+				bs2 := f.dd.DecodeBytes(nil, false, true)
+				ch := rv.Interface().(chan<- byte)
+				for _, b := range bs2 {
+					ch <- b
+				}
+			} else {
+				rvbs := rv.Bytes()
+				bs2 := f.dd.DecodeBytes(rvbs, false, false)
+				if rvbs == nil && bs2 != nil || rvbs != nil && bs2 == nil || len(bs2) != len(rvbs) {
+					if rv.CanSet() {
+						rv.SetBytes(bs2)
+					} else {
+						copy(rvbs, bs2)
+					}
 				}
 			}
 			return
 		}
 	}
 
-	array := f.array
+	// array := f.seq == seqTypeChan
 
 	slh, containerLenS := d.decSliceHelperStart()
 
 	// an array can never return a nil slice. so no need to check f.array here.
 	if rv.IsNil() {
-		if containerLenS <= 0 {
-			rv.Set(reflect.MakeSlice(ti.rt, 0, 0))
-		} else {
-			rv.Set(reflect.MakeSlice(ti.rt, containerLenS, containerLenS))
+		// either chan or slice
+		if f.seq == seqTypeSlice {
+			if containerLenS <= 0 {
+				rv.Set(reflect.MakeSlice(ti.rt, 0, 0))
+			} else {
+				rv.Set(reflect.MakeSlice(ti.rt, containerLenS, containerLenS))
+			}
+		} else if f.seq == seqTypeChan {
+			if containerLenS <= 0 {
+				rv.Set(reflect.MakeChan(ti.rt, 0))
+			} else {
+				rv.Set(reflect.MakeChan(ti.rt, containerLenS))
+			}
 		}
 	}
 
 	rvlen := rv.Len()
 	if containerLenS == 0 {
-		if !array && rvlen != 0 {
+		if f.seq == seqTypeSlice && rvlen != 0 {
 			rv.SetLen(0)
 		}
 		// slh.End() // f.dd.ReadArrayEnd()
@@ -702,32 +719,41 @@ func (f decFnInfo) kSlice(rv reflect.Value) {
 
 	hasLen := containerLenS >= 0
 	if hasLen {
-		numToRead := containerLenS
-		if containerLenS > rvcap {
-			if array {
-				d.arrayCannotExpand(rv.Len(), containerLenS)
-				numToRead = rvlen
-			} else {
-				rv = reflect.MakeSlice(ti.rt, containerLenS, containerLenS)
-				if rvlen > 0 && !isMutableKind(ti.rt.Kind()) {
-					rv1 := rv0
-					rv1.SetLen(rvcap)
-					reflect.Copy(rv, rv1)
+		if f.seq == seqTypeChan {
+			// handle chan specially:
+			for j := 0; j < containerLenS; j++ {
+				rv0 := reflect.New(rtelem0).Elem()
+				d.decodeValue(rv0, fn)
+				rv.Send(rv0)
+			}
+		} else {
+			numToRead := containerLenS
+			if containerLenS > rvcap {
+				if f.seq == seqTypeArray {
+					d.arrayCannotExpand(rv.Len(), containerLenS)
+					numToRead = rvlen
+				} else {
+					rv = reflect.MakeSlice(ti.rt, containerLenS, containerLenS)
+					if rvlen > 0 && !isMutableKind(ti.rt.Kind()) {
+						rv1 := rv0
+						rv1.SetLen(rvcap)
+						reflect.Copy(rv, rv1)
+					}
+					rvChanged = true
+					rvlen = containerLenS
 				}
-				rvChanged = true
+			} else if containerLenS != rvlen {
+				rv.SetLen(containerLenS)
 				rvlen = containerLenS
 			}
-		} else if containerLenS != rvlen {
-			rv.SetLen(containerLenS)
-			rvlen = containerLenS
-		}
-		j := 0
-		for ; j < numToRead; j++ {
-			d.decodeValue(rv.Index(j), fn)
-		}
-		if array {
-			for ; j < containerLenS; j++ {
-				d.swallow()
+			j := 0
+			for ; j < numToRead; j++ {
+				d.decodeValue(rv.Index(j), fn)
+			}
+			if f.seq == seqTypeArray {
+				for ; j < containerLenS; j++ {
+					d.swallow()
+				}
 			}
 		}
 	} else {
@@ -735,10 +761,10 @@ func (f decFnInfo) kSlice(rv reflect.Value) {
 			var decodeIntoBlank bool
 			// if indefinite, etc, then expand the slice if necessary
 			if j >= rvlen {
-				if array {
+				if f.seq == seqTypeArray {
 					d.arrayCannotExpand(rvlen, j+1)
 					decodeIntoBlank = true
-				} else {
+				} else if f.seq == seqTypeSlice {
 					rv = reflect.Append(rv, reflect.Zero(rtelem0))
 					rvlen++
 					rvChanged = true
@@ -747,7 +773,11 @@ func (f decFnInfo) kSlice(rv reflect.Value) {
 			if j > 0 {
 				slh.Sep(j)
 			}
-			if decodeIntoBlank {
+			if f.seq == seqTypeChan {
+				rv0 := reflect.New(rtelem0).Elem()
+				d.decodeValue(rv0, fn)
+				rv.Send(rv0)
+			} else if decodeIntoBlank {
 				d.swallow()
 			} else {
 				d.decodeValue(rv.Index(j), fn)
@@ -1305,13 +1335,15 @@ func (d *Decoder) getDecFn(rt reflect.Type, checkAll bool) (fn decFn) {
 			case reflect.Struct:
 				fi.decFnInfoX = &decFnInfoX{d: d, ti: ti}
 				fn.f = (decFnInfo).kStruct
+			case reflect.Chan:
+				fi.decFnInfoX = &decFnInfoX{d: d, ti: ti, seq: seqTypeChan}
+				fn.f = (decFnInfo).kSlice
 			case reflect.Slice:
-				fi.decFnInfoX = &decFnInfoX{d: d, ti: ti}
+				fi.decFnInfoX = &decFnInfoX{d: d, ti: ti, seq: seqTypeSlice}
 				fn.f = (decFnInfo).kSlice
 			case reflect.Array:
 				// fi.decFnInfoX = &decFnInfoX{array: true}
-				fi.decFnInfoX = &decFnInfoX{d: d, ti: ti}
-				fi.array = true
+				fi.decFnInfoX = &decFnInfoX{d: d, ti: ti, seq: seqTypeArray}
 				fn.f = (decFnInfo).kArray
 			case reflect.Map:
 				fi.decFnInfoX = &decFnInfoX{d: d, ti: ti}

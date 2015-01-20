@@ -252,7 +252,7 @@ type encFnInfoX struct {
 	ti    *typeInfo
 	xfFn  Ext
 	xfTag uint64
-	array bool
+	seq   seqType
 }
 
 type encFnInfo struct {
@@ -374,7 +374,7 @@ func (f encFnInfo) kSlice(rv reflect.Value) {
 	//   (don't call rv.Bytes, rv.Slice, etc).
 	// E.g. type struct S{B [2]byte};
 	//   Encode(S{}) will bomb on "panic: slice of unaddressable array".
-	if !f.array {
+	if f.seq != seqTypeArray {
 		if rv.IsNil() {
 			f.ee.EncodeNil()
 			return
@@ -389,12 +389,18 @@ func (f encFnInfo) kSlice(rv reflect.Value) {
 	rtelem := ti.rt.Elem()
 	l := rv.Len()
 	if rtelem.Kind() == reflect.Uint8 {
-		if f.array {
+		switch f.seq {
+		case seqTypeArray:
 			// if l == 0 { f.ee.encodeStringBytes(c_RAW, nil) } else
 			if rv.CanAddr() {
 				f.ee.EncodeStringBytes(c_RAW, rv.Slice(0, l).Bytes())
 			} else {
-				bs := make([]byte, l)
+				var bs []byte
+				if l <= cap(f.e.b) {
+					bs = f.e.b[:l]
+				} else {
+					bs = make([]byte, l)
+				}
 				reflect.Copy(reflect.ValueOf(bs), rv)
 				// TODO: Test that reflect.Copy works instead of manual one-by-one
 				// for i := 0; i < l; i++ {
@@ -402,8 +408,20 @@ func (f encFnInfo) kSlice(rv reflect.Value) {
 				// }
 				f.ee.EncodeStringBytes(c_RAW, bs)
 			}
-		} else {
+		case seqTypeSlice:
 			f.ee.EncodeStringBytes(c_RAW, rv.Bytes())
+		case seqTypeChan:
+			bs := f.e.b[:0]
+			// do not use range, so that the number of elements encoded
+			// does not change, and encoding does not hang waiting on someone to close chan.
+			// for b := range rv.Interface().(<-chan byte) {
+			// 	bs = append(bs, b)
+			// }
+			ch := rv.Interface().(<-chan byte)
+			for i := 0; i < l; i++ {
+				bs = append(bs, <-ch)
+			}
+			f.ee.EncodeStringBytes(c_RAW, bs)
 		}
 		return
 	}
@@ -446,11 +464,23 @@ func (f encFnInfo) kSlice(rv reflect.Value) {
 						f.ee.EncodeArrayEntrySeparator()
 					}
 				}
-				e.encodeValue(rv.Index(j), fn)
+				if f.seq == seqTypeChan {
+					if rv2, ok2 := rv.Recv(); ok2 {
+						e.encodeValue(rv2, fn)
+					}
+				} else {
+					e.encodeValue(rv.Index(j), fn)
+				}
 			}
 		} else {
 			for j := 0; j < l; j++ {
-				e.encodeValue(rv.Index(j), fn)
+				if f.seq == seqTypeChan {
+					if rv2, ok2 := rv.Recv(); ok2 {
+						e.encodeValue(rv2, fn)
+					}
+				} else {
+					e.encodeValue(rv.Index(j), fn)
+				}
 			}
 		}
 	}
@@ -739,6 +769,7 @@ type Encoder struct {
 
 	hh Handle
 	f  map[uintptr]encFn
+	b  [scratchByteArrayLen]byte
 }
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
@@ -970,7 +1001,7 @@ LOOP:
 				e.e.EncodeNil()
 				return
 			}
-		case reflect.Invalid, reflect.Chan, reflect.Func:
+		case reflect.Invalid, reflect.Func:
 			e.e.EncodeNil()
 			return
 		}
@@ -1077,12 +1108,14 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkAll bool) (fn enc
 				fn.f = (encFnInfo).kUint
 			case reflect.Invalid:
 				fn.f = (encFnInfo).kInvalid
+			case reflect.Chan:
+				fi.encFnInfoX = &encFnInfoX{e: e, ti: ti, seq: seqTypeChan}
+				fn.f = (encFnInfo).kSlice
 			case reflect.Slice:
-				fi.encFnInfoX = &encFnInfoX{e: e, ti: ti}
+				fi.encFnInfoX = &encFnInfoX{e: e, ti: ti, seq: seqTypeSlice}
 				fn.f = (encFnInfo).kSlice
 			case reflect.Array:
-				fi.encFnInfoX = &encFnInfoX{e: e, ti: ti, array: true}
-				// fi.array = true
+				fi.encFnInfoX = &encFnInfoX{e: e, ti: ti, seq: seqTypeArray}
 				fn.f = (encFnInfo).kSlice
 			case reflect.Struct:
 				fi.encFnInfoX = &encFnInfoX{e: e, ti: ti}

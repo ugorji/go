@@ -183,6 +183,15 @@ const (
 	// valueTypeInvalid = 0xff
 )
 
+type seqType uint8
+
+const (
+	_ seqType = iota
+	seqTypeArray
+	seqTypeSlice
+	seqTypeChan
+)
+
 var (
 	bigen               = binary.BigEndian
 	structInfoFieldName = "_struct"
@@ -692,8 +701,8 @@ func rgetTypeInfo(rt reflect.Type, indexstack []int, fnameToHastag map[string]bo
 ) {
 	for j := 0; j < rt.NumField(); j++ {
 		f := rt.Field(j)
-		// chan and func types are skipped.
-		if tk := f.Type.Kind(); tk == reflect.Chan || tk == reflect.Func {
+		// func types are skipped.
+		if tk := f.Type.Kind(); tk == reflect.Func {
 			continue
 		}
 		stag := f.Tag.Get(structTagName)

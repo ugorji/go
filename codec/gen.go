@@ -241,7 +241,7 @@ func Gen(w io.Writer, buildTags, pkgName string, useUnsafe bool, typ ...reflect.
 		x.linef("func (x %s) enc%s(v %s, e *%sEncoder) {", x.hn, x.genMethodNameT(t), x.genTypeName(t), x.cpfx)
 		x.genRequiredMethodVars(true)
 		switch t.Kind() {
-		case reflect.Array, reflect.Slice:
+		case reflect.Array, reflect.Slice, reflect.Chan:
 			x.encListFallback("v", rtid, t)
 		case reflect.Map:
 			x.encMapFallback("v", rtid, t)
@@ -255,10 +255,8 @@ func Gen(w io.Writer, buildTags, pkgName string, useUnsafe bool, typ ...reflect.
 		x.linef("func (x %s) dec%s(v *%s, d *%sDecoder) {", x.hn, x.genMethodNameT(t), x.genTypeName(t), x.cpfx)
 		x.genRequiredMethodVars(false)
 		switch t.Kind() {
-		case reflect.Array:
-			x.decListFallback("v", rtid, true, t)
-		case reflect.Slice:
-			x.decListFallback("v", rtid, false, t)
+		case reflect.Array, reflect.Slice, reflect.Chan:
+			x.decListFallback("v", rtid, t)
 		case reflect.Map:
 			x.decMapFallback("v", rtid, t)
 		default:
@@ -292,7 +290,7 @@ func (x *genRunner) genRefPkgs(t reflect.Type) {
 		x.im[tpkg] = t
 	}
 	switch t.Kind() {
-	case reflect.Array, reflect.Slice, reflect.Ptr:
+	case reflect.Array, reflect.Slice, reflect.Ptr, reflect.Chan:
 		x.genRefPkgs(t.Elem())
 	case reflect.Map:
 		x.genRefPkgs(t.Elem())
@@ -425,7 +423,7 @@ func (x *genRunner) xtraSM(varname string, encode bool, t reflect.Type) {
 func (x *genRunner) encVar(varname string, t reflect.Type) {
 	var checkNil bool
 	switch t.Kind() {
-	case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map:
+	case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map, reflect.Chan:
 		checkNil = true
 	}
 	if checkNil {
@@ -500,7 +498,7 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 		x.line("r.EncodeBool(bool(" + varname + "))")
 	case reflect.String:
 		x.line("r.EncodeString(codecSelferC_UTF8" + x.xs + ", string(" + varname + "))")
-	case reflect.Array:
+	case reflect.Array, reflect.Chan:
 		x.xtraSM(varname, true, t)
 		// x.encListFallback(varname, rtid, t)
 	case reflect.Slice:
@@ -617,7 +615,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		switch t2.Type.Kind() {
 		case reflect.Struct:
 			omitline += " true"
-		case reflect.Map, reflect.Slice, reflect.Array:
+		case reflect.Map, reflect.Slice, reflect.Array, reflect.Chan:
 			omitline += "len(" + varname + "." + t2.Name + ") != 0"
 		default:
 			omitline += varname + "." + t2.Name + " != " + genZeroValueR(t2.Type, x.tc)
@@ -738,16 +736,27 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 
 func (x *genRunner) encListFallback(varname string, rtid uintptr, t reflect.Type) {
 	i := x.varsfx()
+	g := genTempVarPfx
 	x.line("r.EncodeArrayStart(len(" + varname + "))")
 	x.line(genTempVarPfx + "s" + i + " := !z.EncBinary()")
 	x.line("if " + genTempVarPfx + "s" + i + " {")
-	x.linef("for %si%s, %sv%s := range %s {", genTempVarPfx, i, genTempVarPfx, i, varname)
+	if t.Kind() == reflect.Chan {
+		x.linef("for %si%s, %si2%s := 0, len(%s); %si%s < %si2%s; %si%s++ {", g, i, g, i, varname, g, i, g, i, g, i)
+		x.linef("%sv%s := <-%s", g, i, varname)
+	} else {
+		x.linef("for %si%s, %sv%s := range %s {", genTempVarPfx, i, genTempVarPfx, i, varname)
+	}
 	x.line("if " + genTempVarPfx + "i" + i + " > 0 { r.EncodeArrayEntrySeparator() }")
 	x.encVar(genTempVarPfx+"v"+i, t.Elem())
 	x.line("}")
 	x.line("r.EncodeArrayEnd()")
 	x.line("} else {")
-	x.line("for _, " + genTempVarPfx + "v" + i + " := range " + varname + " {")
+	if t.Kind() == reflect.Chan {
+		x.linef("for %si%s, %si2%s := 0, len(%s); %si%s < %si2%s; %si%s++ {", g, i, g, i, varname, g, i, g, i, g, i)
+		x.linef("%sv%s := <-%s", g, i, varname)
+	} else {
+		x.line("for _, " + genTempVarPfx + "v" + i + " := range " + varname + " {")
+	}
 	x.encVar(genTempVarPfx+"v"+i, t.Elem())
 	x.line("}")
 	x.line("}")
@@ -932,7 +941,7 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	case reflect.String:
 		x.line("*((*string)(" + varname + ")) = r.DecodeString()")
 		// x.line("z.DecString((*string)(" + varname + "))")
-	case reflect.Array:
+	case reflect.Array, reflect.Chan:
 		x.xtraSM(varname, false, t)
 		// x.decListFallback(varname, rtid, true, t)
 	case reflect.Slice:
@@ -1019,18 +1028,17 @@ func (x *genRunner) decTryAssignPrimitive(varname string, t reflect.Type) (tryAs
 	return
 }
 
-func (x *genRunner) decListFallback(varname string, rtid uintptr, array bool, t reflect.Type) {
+func (x *genRunner) decListFallback(varname string, rtid uintptr, t reflect.Type) {
 	type tstruc struct {
 		TempVar   string
 		Rand      string
 		Varname   string
+		CTyp      string
 		Typ       string
-		Array     bool
 		Immutable bool
 	}
 	telem := t.Elem()
-	ts := tstruc{genTempVarPfx, x.varsfx(), varname, x.genTypeName(telem),
-		array, genIsImmutable(telem)}
+	ts := tstruc{genTempVarPfx, x.varsfx(), varname, x.genTypeName(t), x.genTypeName(telem), genIsImmutable(telem)}
 
 	funcs := make(template.FuncMap)
 	funcs["decLineVar"] = func(varname string) string {
@@ -1046,6 +1054,15 @@ func (x *genRunner) decListFallback(varname string, rtid uintptr, array bool, t 
 	}
 	funcs["zero"] = func() string {
 		return genZeroValueR(telem, x.tc)
+	}
+	funcs["isArray"] = func() bool {
+		return t.Kind() == reflect.Array
+	}
+	funcs["isSlice"] = func() bool {
+		return t.Kind() == reflect.Slice
+	}
+	funcs["isChan"] = func() bool {
+		return t.Kind() == reflect.Chan
 	}
 	tm, err := template.New("").Funcs(funcs).Parse(genDecListTmpl)
 	if err != nil {
@@ -1344,6 +1361,8 @@ func genTypeName(t reflect.Type, tRef reflect.Type) (n string) {
 		return ptrPfx + "[]" + genTypeName(t.Elem(), tRef)
 	case reflect.Array:
 		return ptrPfx + "[" + strconv.FormatInt(int64(t.Len()), 10) + "]" + genTypeName(t.Elem(), tRef)
+	case reflect.Chan:
+		return ptrPfx + t.ChanDir().String() + " " + genTypeName(t.Elem(), tRef)
 	default:
 		if t == intfTyp {
 			return ptrPfx + "interface{}"
@@ -1370,6 +1389,17 @@ func genMethodNameT(t reflect.Type, tRef reflect.Type) (n string) {
 		return ptrPfx + "Slice" + genMethodNameT(t.Elem(), tRef)
 	case reflect.Array:
 		return ptrPfx + "Array" + strconv.FormatInt(int64(t.Len()), 10) + genMethodNameT(t.Elem(), tRef)
+	case reflect.Chan:
+		var cx string
+		switch t.ChanDir() {
+		case reflect.SendDir:
+			cx = "ChanSend"
+		case reflect.RecvDir:
+			cx = "ChanRecv"
+		default:
+			cx = "Chan"
+		}
+		return ptrPfx + cx + genMethodNameT(t.Elem(), tRef)
 	default:
 		if t == intfTyp {
 			return ptrPfx + "Interface"
