@@ -217,7 +217,9 @@ func main() {
 	u := flag.Bool("u", false, "Use unsafe, e.g. to avoid unnecessary allocation on []byte->string")
 
 	flag.Parse()
-	if err := Generate(*o, *t, *c, *u, *rt, regexp.MustCompile(*r), !*x, flag.Args()...); err != nil {
-		panic(err)
+	if err := Generate(*o, *t, *c, *u, *rt,
+		regexp.MustCompile(*r), !*x, flag.Args()...); err != nil {
+		fmt.Fprintf(os.Stderr, "codecgen error: %v\n", err)
+		os.Exit(1)
 	}
 }

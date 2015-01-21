@@ -13,7 +13,6 @@ import (
 
 // Some tagging information for error messages.
 const (
-	msgTagDec             = "codec.decoder"
 	msgBadDesc            = "Unrecognized descriptor byte"
 	msgDecCannotExpandArr = "cannot expand go array from %v to stream length: %v"
 )

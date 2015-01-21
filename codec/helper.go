@@ -116,8 +116,6 @@ import (
 )
 
 const (
-	structTagName = "codec"
-
 	scratchByteArrayLen = 32
 
 	// Support encoding.(Binary|Text)(Unm|M)arshaler.
@@ -622,6 +620,16 @@ func (ti *typeInfo) indexForEncName(name string) int {
 	return -1
 }
 
+func getStructTag(t reflect.StructTag) (s string) {
+	// check for tags: codec, json, in that order.
+	// this allows seamless support for many configured structs.
+	s = t.Get("codec")
+	if s == "" {
+		s = t.Get("json")
+	}
+	return
+}
+
 func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	var ok bool
 	cachedTypeInfoMutex.RLock()
@@ -679,7 +687,7 @@ func getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	if rt.Kind() == reflect.Struct {
 		var siInfo *structFieldInfo
 		if f, ok := rt.FieldByName(structInfoFieldName); ok {
-			siInfo = parseStructFieldInfo(structInfoFieldName, f.Tag.Get(structTagName))
+			siInfo = parseStructFieldInfo(structInfoFieldName, getStructTag(f.Tag))
 			ti.toArray = siInfo.toArray
 		}
 		sfip := make([]*structFieldInfo, 0, rt.NumField())
@@ -705,7 +713,7 @@ func rgetTypeInfo(rt reflect.Type, indexstack []int, fnameToHastag map[string]bo
 		if tk := f.Type.Kind(); tk == reflect.Func {
 			continue
 		}
-		stag := f.Tag.Get(structTagName)
+		stag := getStructTag(f.Tag)
 		if stag == "-" {
 			continue
 		}

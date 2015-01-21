@@ -13,10 +13,7 @@ import (
 )
 
 const (
-	// Some tagging information for error messages.
-	msgTagEnc         = "codec.encoder"
 	defEncByteBufSize = 1 << 6 // 4:16, 6:64, 8:256, 10:1024
-	// maxTimeSecs32 = math.MaxInt32 / 60 / 24 / 366
 )
 
 // AsSymbolFlag defines what should be encoded as symbols.
@@ -809,26 +806,26 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 	return e
 }
 
-// Encode writes an object into a stream in the codec format.
+// Encode writes an object into a stream.
 //
-// Encoding can be configured via the "codec" struct tag for the fields.
-//
+// Encoding can be configured via the struct tag for the fields.
 // The "codec" key in struct field's tag value is the key name,
 // followed by an optional comma and options.
+// Note that the "json" key is used in the absence of the "codec" key.
 //
 // To set an option on all fields (e.g. omitempty on all fields), you
 // can create a field called _struct, and set flags on it.
 //
 // Struct values "usually" encode as maps. Each exported struct field is encoded unless:
-//    - the field's codec tag is "-", OR
-//    - the field is empty and its codec tag specifies the "omitempty" option.
+//    - the field's tag is "-", OR
+//    - the field is empty (empty or the zero value) and its tag specifies the "omitempty" option.
 //
 // When encoding as a map, the first string in the tag (before the comma)
 // is the map key string to use when encoding.
 //
 // However, struct values may encode as arrays. This happens when:
 //    - StructToArray Encode option is set, OR
-//    - the codec tag on the _struct field sets the "toarray" option
+//    - the tag on the _struct field sets the "toarray" option
 //
 // Values with types that implement MapBySlice are encoded as stream maps.
 //
@@ -840,6 +837,7 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 //
 // Examples:
 //
+//      // NOTE: 'json:' can be used as struct tag key, in place 'codec:' below.
 //      type MyStruct struct {
 //          _struct bool    `codec:",omitempty"`   //set omitempty for every field
 //          Field1 string   `codec:"-"`            //skip this field
