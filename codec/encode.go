@@ -269,7 +269,15 @@ func (f encFnInfo) builtin(rv reflect.Value) {
 }
 
 func (f encFnInfo) rawExt(rv reflect.Value) {
-	f.ee.EncodeRawExt(rv.Interface().(*RawExt), f.e)
+	i := rv.Interface()
+	switch v := i.(type) {
+	case *RawExt:
+		f.ee.EncodeRawExt(v, f.e)
+	case RawExt:
+		f.ee.EncodeRawExt(&v, f.e)
+	default:
+		panic(fmt.Sprintf("Unsupported type: %v", i))
+	}
 }
 
 func (f encFnInfo) ext(rv reflect.Value) {
