@@ -269,7 +269,16 @@ func (f encFnInfo) builtin(rv reflect.Value) {
 }
 
 func (f encFnInfo) rawExt(rv reflect.Value) {
-	f.ee.EncodeRawExt(rv.Interface().(*RawExt), f.e)
+	// rev := rv.Interface().(RawExt)
+	// f.ee.EncodeRawExt(&rev, f.e)
+	var re *RawExt
+	if rv.CanAddr() {
+		re = rv.Addr().Interface().(*RawExt)
+	} else {
+		rev := rv.Interface().(RawExt)
+		re = &rev
+	}
+	f.ee.EncodeRawExt(re, f.e)
 }
 
 func (f encFnInfo) ext(rv reflect.Value) {
