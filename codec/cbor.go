@@ -40,7 +40,7 @@ const (
 	CborStreamString      = 0x7f
 	CborStreamArray       = 0x9f
 	CborStreamMap         = 0xbf
-	cborStreamBreak       = 0xff
+	CborStreamBreak       = 0xff
 )
 
 const (
