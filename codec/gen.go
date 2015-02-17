@@ -5,6 +5,7 @@ package codec
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"go/format"
@@ -12,6 +13,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -85,6 +87,8 @@ const (
 var (
 	genAllTypesSamePkgErr  = errors.New("All types must be in the same package")
 	genExpectArrayOrMapErr = errors.New("unexpected type. Expecting array/map/slice")
+	genBase64enc           = base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789__")
+	genQNameRegex          = regexp.MustCompile(`[A-Za-z_.]+`)
 )
 
 // genRunner holds some state used during a Gen run.
@@ -1367,7 +1371,7 @@ func genTypeName(t reflect.Type, tRef reflect.Type) (n string) {
 		if t == intfTyp {
 			return ptrPfx + "interface{}"
 		} else {
-			if tRef != nil && t.PkgPath() == tRef.PkgPath() {
+			if tRef != nil && t.PkgPath() == tRef.PkgPath() && t.Name() != "" {
 				return ptrPfx + t.Name()
 			} else {
 				return ptrPfx + t.String() // best way to get the package name inclusive
@@ -1405,13 +1409,40 @@ func genMethodNameT(t reflect.Type, tRef reflect.Type) (n string) {
 			return ptrPfx + "Interface"
 		} else {
 			if tRef != nil && t.PkgPath() == tRef.PkgPath() {
-				return ptrPfx + t.Name()
+				if t.Name() != "" {
+					return ptrPfx + t.Name()
+				} else {
+					return ptrPfx + genCustomTypeName(t.String())
+				}
 			} else {
-				return ptrPfx + strings.Replace(t.String(), ".", "_", 1000)
 				// best way to get the package name inclusive
+				// return ptrPfx + strings.Replace(t.String(), ".", "_", 1000)
+				// return ptrPfx + genBase64enc.EncodeToString([]byte(t.String()))
+				tstr := t.String()
+				if t.Name() != "" && genQNameRegex.MatchString(tstr) {
+					return ptrPfx + strings.Replace(tstr, ".", "_", 1000)
+				} else {
+					return ptrPfx + genCustomTypeName(tstr)
+				}
 			}
 		}
 	}
+}
+
+// genCustomNameForType base64encodes the t.String() value in such a way
+// that it can be used within a function name.
+func genCustomTypeName(tstr string) string {
+	len2 := genBase64enc.EncodedLen(len(tstr))
+	bufx := make([]byte, len2)
+	genBase64enc.Encode(bufx, []byte(tstr))
+	for i := len2 - 1; i >= 0; i-- {
+		if bufx[i] == '=' {
+			len2--
+		} else {
+			break
+		}
+	}
+	return string(bufx[:len2])
 }
 
 func genIsImmutable(t reflect.Type) (v bool) {
