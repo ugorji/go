@@ -26,6 +26,7 @@ import (
 	"encoding/gob"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math"
 	"net"
@@ -1085,6 +1086,59 @@ func TestMsgpackRpcSpec(t *testing.T) {
 
 func TestBincUnderlyingType(t *testing.T) {
 	testCodecUnderlyingType(t, testBincH)
+}
+
+type lastByteTest struct {
+	A int32 `codec:"a"`
+}
+
+type byteReader struct {
+	b      []byte
+	offset int
+}
+
+// Read is allowed to return io.EOF on the last read before
+// returning zero, make sure the decoder can handle it.
+func (br *byteReader) Read(b []byte) (int, error) {
+	if br.offset >= len(br.b) {
+		return 0, io.EOF
+	}
+	n := copy(b, br.b[br.offset:])
+	br.offset += n
+	if br.offset == len(br.b) {
+		return n, io.EOF
+	}
+	return n, nil
+}
+
+func TestMsgpackEofOnLastByte(t *testing.T) {
+	data := []lastByteTest{
+		lastByteTest{
+			A: 1,
+		},
+	}
+	encoded := []byte{}
+	enc := NewEncoderBytes(&encoded, testMsgpackH)
+	err := enc.Encode(data)
+	if err != nil {
+		t.Fatal("Failed to encoded", err)
+	}
+	rdr := &byteReader{
+		b:      encoded,
+		offset: 0,
+	}
+	dec := NewDecoder(rdr, testMsgpackH)
+	var decoded []lastByteTest
+	err = dec.Decode(&decoded)
+	if err != nil {
+		t.Fatal("Failed to decode", err)
+	}
+	if len(decoded) != 1 {
+		t.Fatal("Decoded is the wrong size", decoded)
+	}
+	if decoded[0].A != 1 {
+		t.Error("Decoded is not the right value", decoded[1].A)
+	}
 }
 
 // TODO:
