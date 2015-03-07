@@ -141,6 +141,10 @@ func (z *ioDecByteScanner) Read(p []byte) (n int, err error) {
 	}
 	n, err = z.r.Read(p)
 	if n > 0 {
+		// Read() can return io.EOF as an error even when
+		// bytes are successfully read. Simplify the error
+		// handling by hiding EOF in this case.
+		err = nil
 		z.l = p[n-1]
 		z.ls = 2
 	}
