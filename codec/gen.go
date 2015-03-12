@@ -750,7 +750,7 @@ func (x *genRunner) encListFallback(varname string, rtid uintptr, t reflect.Type
 	} else {
 		x.linef("for %si%s, %sv%s := range %s {", genTempVarPfx, i, genTempVarPfx, i, varname)
 	}
-	x.line("if " + genTempVarPfx + "i" + i + " > 0 { r.EncodeArrayEntrySeparator() }")
+	x.linef("if %si%s > 0 { r.EncodeArrayEntrySeparator() }", genTempVarPfx, i)
 	x.encVar(genTempVarPfx+"v"+i, t.Elem())
 	x.line("}")
 	x.line("r.EncodeArrayEnd()")
@@ -781,6 +781,7 @@ func (x *genRunner) encMapFallback(varname string, rtid uintptr, t reflect.Type)
 	x.encVar(genTempVarPfx+"k"+i, t.Key())
 	x.line("r.EncodeMapKVSeparator()")
 	x.encVar(genTempVarPfx+"v"+i, t.Elem())
+	x.line(genTempVarPfx + "j" + i + "++")
 	x.line("}")
 	x.line("r.EncodeMapEnd()")
 
