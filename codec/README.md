@@ -59,6 +59,8 @@ Rich Feature Set includes:
   - Support binary (e.g. messagepack, cbor) and text (e.g. json) formats
   - Support indefinite-length formats to enable true streaming 
     (for formats which support it e.g. json, cbor)
+  - Support canonical encoding, where a value is ALWAYS encoded as same sequence of bytes.
+    This mostly applies to maps, where iteration order is non-deterministic.
   - NIL in data stream decoded as zero value
   - Never silently skip data when decoding.
     User decides whether to return an error or silently skip data when keys or indexes

@@ -55,7 +55,7 @@ func (f genHelperEncoder) EncBinary() bool {
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncFallback(iv interface{}) {
 	// println(">>>>>>>>> EncFallback")
-	f.e.encodeI(iv, false)
+	f.e.encodeI(iv, false, false)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -77,7 +77,7 @@ func (f genHelperDecoder) DecScratchBuffer() []byte {
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecFallback(iv interface{}, chkPtr bool) {
 	// println(">>>>>>>>> DecFallback")
-	f.d.decodeI(iv, chkPtr, false, false)
+	f.d.decodeI(iv, chkPtr, false, false, false)
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecSliceHelperStart() (decSliceHelper, int) {

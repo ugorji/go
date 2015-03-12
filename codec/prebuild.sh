@@ -49,7 +49,7 @@ _build() {
         # [ -e "safe${_gg}" ] && mv safe${_gg} safe${_gg}__${_zts}.bak
         # [ -e "unsafe${_gg}" ] && mv unsafe${_gg} unsafe${_gg}__${_zts}.bak
     else 
-        rm -f fast-path.generated.go gen.generated.go gen-helper.generated.go *safe.generated.go *_generated_test.go
+        rm -f fast-path.generated.go gen.generated.go gen-helper.generated.go *safe.generated.go *_generated_test.go *.generated_ffjson_expose.go
     fi
 
     cat > gen.generated.go <<EOF
@@ -85,6 +85,8 @@ import "reflect"
 // func GenBytesToStringRO(b []byte) string { return string(b) }
 func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool { return false }
 func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool { return false }
+func fastpathEncodeTypeSwitchSlice(iv interface{}, e *Encoder) bool { return false }
+func fastpathEncodeTypeSwitchMap(iv interface{}, e *Encoder) bool { return false }
 type fastpathE struct {
 	rtid uintptr
 	rt reflect.Type 
@@ -113,7 +115,8 @@ defer fin.Close()
 fout, err := os.Create(fnameOut)
 if err != nil { panic(err) }
 defer fout.Close()
-codec.GenInternalGoFile(fin, fout, safe)
+err = codec.GenInternalGoFile(fin, fout, safe)
+if err != nil { panic(err) }
 }
 
 func main() {
@@ -130,14 +133,25 @@ EOF
         rm -f gen-from-tmpl.generated.go 
 }
 
-_msgp_and_codecgen() {
+_codegenerators() {
     if [[ $zforce == "1" || 
                 "1" == $( _needgen "values_msgp${zsfx}" ) 
                 || "1" == $( _needgen "values_codecgen${zsfx}" ) ]] 
     then
-        msgp -tests=false -pkg=codec -o=values_msgp${zsfx} -file=$zfin && \
+        true && \
+            echo "msgp ... " && \
+            msgp -tests=false -pkg=codec -o=values_msgp${zsfx} -file=$zfin && \
+            echo "codecgen - !unsafe ... " && \
             codecgen -rt codecgen -t 'x,codecgen,!unsafe' -o values_codecgen${zsfx} $zfin && \
-            codecgen -u -rt codecgen -t 'x,codecgen,unsafe' -o values_codecgen_unsafe${zsfx} $zfin 
+            echo "codecgen - unsafe ... " && \
+            codecgen -u -rt codecgen -t 'x,codecgen,unsafe' -o values_codecgen_unsafe${zsfx} $zfin && \
+            echo "ffjson ... " && \
+            ffjson -w values_ffjson${zsfx} $zfin && \
+            # remove (M|Unm)arshalJSON implementations, so they don't conflict with encoding/json bench \
+            sed -i 's+ MarshalJSON(+ _MarshalJSON(+g' values_ffjson${zsfx} && \
+            sed -i 's+ UnmarshalJSON(+ _UnmarshalJSON(+g' values_ffjson${zsfx} && \
+            echo "generators done!" && \
+            true
     fi 
 }
 
@@ -168,7 +182,7 @@ then
         _init "$@" && \
         _build && \
         cp $zmydir/values_test.go $zmydir/$zfin && \
-        _msgp_and_codecgen && \
+        _codegenerators && \
         echo prebuild done successfully
     rm -f $zmydir/$zfin
 else

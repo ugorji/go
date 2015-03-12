@@ -4,11 +4,13 @@
 package codec
 
 import (
+	"bytes"
 	"encoding"
 	"errors"
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"sync"
 )
 
@@ -83,6 +85,17 @@ func (_ encNoSeparator) EncodeArrayEntrySeparator() {}
 func (_ encNoSeparator) EncodeMapEntrySeparator()   {}
 func (_ encNoSeparator) EncodeMapKVSeparator()      {}
 
+type encStructFieldBytesV struct {
+	b []byte
+	v reflect.Value
+}
+
+type encStructFieldBytesVslice []encStructFieldBytesV
+
+func (p encStructFieldBytesVslice) Len() int           { return len(p) }
+func (p encStructFieldBytesVslice) Less(i, j int) bool { return bytes.Compare(p[i].b, p[j].b) == -1 }
+func (p encStructFieldBytesVslice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
 type ioEncWriterWriter interface {
 	WriteByte(c byte) error
 	WriteString(s string) (n int, err error)
@@ -94,8 +107,15 @@ type ioEncStringWriter interface {
 }
 
 type EncodeOptions struct {
-	// Encode a struct as an array, and not as a map.
+	// Encode a struct as an array, and not as a map
 	StructToArray bool
+
+	// Canonical representation means that encoding a value will always result in the same
+	// sequence of bytes.
+	//
+	// This mostly will apply to maps. In this case, codec will do more work to encode the
+	// map keys out of band, and then sort them, before writing out the map to the stream.
+	Canonical bool
 
 	// AsSymbols defines what should be encoded as symbols.
 	//
@@ -454,7 +474,7 @@ func (f encFnInfo) kSlice(rv reflect.Value) {
 		var fn encFn
 		if rtelem.Kind() != reflect.Interface {
 			rtelemid := reflect.ValueOf(rtelem).Pointer()
-			fn = e.getEncFn(rtelemid, rtelem, true)
+			fn = e.getEncFn(rtelemid, rtelem, true, true)
 		}
 		// TODO: Consider perf implication of encoding odd index values as symbols if type is string
 		if sep {
@@ -509,8 +529,7 @@ func (f encFnInfo) kStruct(rv reflect.Value) {
 	// Use sync.Pool to reduce allocating slices unnecessarily.
 	// The cost of the occasional locking is less than the cost of locking.
 
-	var rvals []reflect.Value
-	var encnames []string
+	var fkvs []encStructFieldKV
 	var pool *sync.Pool
 	var poolv interface{}
 	idxpool := newlen / 8
@@ -521,62 +540,49 @@ func (f encFnInfo) kStruct(rv reflect.Value) {
 		pool = &encStructPool[idxpool]
 		poolv = pool.Get()
 		switch vv := poolv.(type) {
-		case *encStructPool8:
-			rvals = vv.r[:newlen]
-			if toMap {
-				encnames = vv.s[:newlen]
-			}
-		case *encStructPool16:
-			rvals = vv.r[:newlen]
-			if toMap {
-				encnames = vv.s[:newlen]
-			}
-		case *encStructPool32:
-			rvals = vv.r[:newlen]
-			if toMap {
-				encnames = vv.s[:newlen]
-			}
-		case *encStructPool64:
-			rvals = vv.r[:newlen]
-			if toMap {
-				encnames = vv.s[:newlen]
-			}
+		case *[8]encStructFieldKV:
+			fkvs = vv[:newlen]
+		case *[16]encStructFieldKV:
+			fkvs = vv[:newlen]
+		case *[32]encStructFieldKV:
+			fkvs = vv[:newlen]
+		case *[64]encStructFieldKV:
+			fkvs = vv[:newlen]
 		}
 	}
-	if rvals == nil {
-		rvals = make([]reflect.Value, newlen)
+	if fkvs == nil {
+		fkvs = make([]encStructFieldKV, newlen)
 	}
 	// if toMap, use the sorted array. If toArray, use unsorted array (to match sequence in struct)
 	if toMap {
 		tisfi = fti.sfi
-		if encnames == nil {
-			encnames = make([]string, newlen)
-		}
 	}
 	newlen = 0
+	var kv encStructFieldKV
 	for _, si := range tisfi {
-		rvals[newlen] = si.field(rv, false)
+		kv.v = si.field(rv, false)
 		// if si.i != -1 {
 		// 	rvals[newlen] = rv.Field(int(si.i))
 		// } else {
 		// 	rvals[newlen] = rv.FieldByIndex(si.is)
 		// }
 		if toMap {
-			if si.omitEmpty && isEmptyValue(rvals[newlen]) {
+			if si.omitEmpty && isEmptyValue(kv.v) {
 				continue
 			}
-			encnames[newlen] = si.encName
+			kv.k = si.encName
 		} else {
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
-			if si.omitEmpty && isEmptyValue(rvals[newlen]) {
-				switch rvals[newlen].Kind() {
+			if si.omitEmpty && isEmptyValue(kv.v) {
+				switch kv.v.Kind() {
 				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array,
 					reflect.Map, reflect.Slice:
-					rvals[newlen] = reflect.Value{} //encode as nil
+					kv.v = reflect.Value{} //encode as nil
 				}
 			}
 		}
+		fkvs[newlen] = kv
 		newlen++
 	}
 
@@ -589,25 +595,27 @@ func (f encFnInfo) kStruct(rv reflect.Value) {
 			// asSymbols := e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 			asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 			for j := 0; j < newlen; j++ {
+				kv = fkvs[j]
 				if j > 0 {
 					ee.EncodeMapEntrySeparator()
 				}
 				if asSymbols {
-					ee.EncodeSymbol(encnames[j])
+					ee.EncodeSymbol(kv.k)
 				} else {
-					ee.EncodeString(c_UTF8, encnames[j])
+					ee.EncodeString(c_UTF8, kv.k)
 				}
 				ee.EncodeMapKVSeparator()
-				e.encodeValue(rvals[j], encFn{})
+				e.encodeValue(kv.v, encFn{})
 			}
 			ee.EncodeMapEnd()
 		} else {
 			ee.EncodeArrayStart(newlen)
 			for j := 0; j < newlen; j++ {
+				kv = fkvs[j]
 				if j > 0 {
 					ee.EncodeArrayEntrySeparator()
 				}
-				e.encodeValue(rvals[j], encFn{})
+				e.encodeValue(kv.v, encFn{})
 			}
 			ee.EncodeArrayEnd()
 		}
@@ -617,17 +625,19 @@ func (f encFnInfo) kStruct(rv reflect.Value) {
 			// asSymbols := e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 			asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 			for j := 0; j < newlen; j++ {
+				kv = fkvs[j]
 				if asSymbols {
-					ee.EncodeSymbol(encnames[j])
+					ee.EncodeSymbol(kv.k)
 				} else {
-					ee.EncodeString(c_UTF8, encnames[j])
+					ee.EncodeString(c_UTF8, kv.k)
 				}
-				e.encodeValue(rvals[j], encFn{})
+				e.encodeValue(kv.v, encFn{})
 			}
 		} else {
 			ee.EncodeArrayStart(newlen)
 			for j := 0; j < newlen; j++ {
-				e.encodeValue(rvals[j], encFn{})
+				kv = fkvs[j]
+				e.encodeValue(kv.v, encFn{})
 			}
 		}
 	}
@@ -696,7 +706,7 @@ func (f encFnInfo) kMap(rv reflect.Value) {
 		}
 		if rtkey.Kind() != reflect.Interface {
 			rtkeyid = reflect.ValueOf(rtkey).Pointer()
-			keyFn = e.getEncFn(rtkeyid, rtkey, true)
+			keyFn = e.getEncFn(rtkeyid, rtkey, true, true)
 		}
 	}
 	for rtval.Kind() == reflect.Ptr {
@@ -704,12 +714,34 @@ func (f encFnInfo) kMap(rv reflect.Value) {
 	}
 	if rtval.Kind() != reflect.Interface {
 		rtvalid := reflect.ValueOf(rtval).Pointer()
-		valFn = e.getEncFn(rtvalid, rtval, true)
+		valFn = e.getEncFn(rtvalid, rtval, true, true)
 	}
 	mks := rv.MapKeys()
 	// for j, lmks := 0, len(mks); j < lmks; j++ {
 	ee := f.ee //don't dereference everytime
-	if sep {
+	if e.h.Canonical {
+		// first encode each key to a []byte first, then sort them, then record
+		// println(">>>>>>>> CANONICAL <<<<<<<<")
+		var mksv []byte // temporary byte slice for the encoding
+		e2 := NewEncoderBytes(&mksv, e.hh)
+		mksbv := make([]encStructFieldBytesV, len(mks))
+		for i, k := range mks {
+			l := len(mksv)
+			e2.MustEncode(k)
+			mksbv[i].v = k
+			mksbv[i].b = mksv[l:]
+		}
+		sort.Sort(encStructFieldBytesVslice(mksbv))
+		for j := range mksbv {
+			if j > 0 {
+				ee.EncodeMapEntrySeparator()
+			}
+			e.w.writeb(mksbv[j].b)
+			ee.EncodeMapKVSeparator()
+			e.encodeValue(rv.MapIndex(mksbv[j].v), valFn)
+		}
+		ee.EncodeMapEnd()
+	} else if sep {
 		for j := range mks {
 			if j > 0 {
 				ee.EncodeMapEntrySeparator()
@@ -977,17 +1009,22 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.EncodeStringBytes(c_RAW, *v)
 
 	default:
-		if !fastpathEncodeTypeSwitch(iv, e) {
-			e.encodeI(iv, false)
+		// canonical mode is not supported for fastpath of maps (but is fine for slices)
+		if e.h.Canonical {
+			if !fastpathEncodeTypeSwitchSlice(iv, e) {
+				e.encodeI(iv, false, false)
+			}
+		} else if !fastpathEncodeTypeSwitch(iv, e) {
+			e.encodeI(iv, false, false)
 		}
 	}
 }
 
-func (e *Encoder) encodeI(iv interface{}, encFnCheckAll bool) {
+func (e *Encoder) encodeI(iv interface{}, checkFastpath, checkCodecSelfer bool) {
 	if rv, proceed := e.preEncodeValue(reflect.ValueOf(iv)); proceed {
 		rt := rv.Type()
 		rtid := reflect.ValueOf(rt).Pointer()
-		fn := e.getEncFn(rtid, rt, encFnCheckAll)
+		fn := e.getEncFn(rtid, rt, checkFastpath, checkCodecSelfer)
 		fn.f(fn.i, rv)
 	}
 }
@@ -1024,13 +1061,13 @@ func (e *Encoder) encodeValue(rv reflect.Value, fn encFn) {
 		if fn.f == nil {
 			rt := rv.Type()
 			rtid := reflect.ValueOf(rt).Pointer()
-			fn = e.getEncFn(rtid, rt, true)
+			fn = e.getEncFn(rtid, rt, true, true)
 		}
 		fn.f(fn.i, rv)
 	}
 }
 
-func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkAll bool) (fn encFn) {
+func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkFastpath, checkCodecSelfer bool) (fn encFn) {
 	// rtid := reflect.ValueOf(rt).Pointer()
 	var ok bool
 	if useMapForCodecCache {
@@ -1051,7 +1088,7 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkAll bool) (fn enc
 	var fi encFnInfo
 	fi.ee = e.e
 
-	if checkAll && ti.cs {
+	if checkCodecSelfer && ti.cs {
 		fi.encFnInfoX = &encFnInfoX{e: e, ti: ti}
 		fn.f = (encFnInfo).selferMarshal
 	} else if rtid == rawExtTypId {
@@ -1073,7 +1110,7 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkAll bool) (fn enc
 		fn.f = (encFnInfo).textMarshal
 	} else {
 		rk := rt.Kind()
-		if fastpathEnabled && checkAll && (rk == reflect.Map || rk == reflect.Slice) {
+		if fastpathEnabled && checkFastpath && (rk == reflect.Map || rk == reflect.Slice) {
 			if rt.PkgPath() == "" {
 				if idx := fastpathAV.index(rtid); idx != -1 {
 					fi.encFnInfoX = &encFnInfoX{e: e, ti: ti}
@@ -1163,6 +1200,11 @@ func (e *Encoder) errorf(format string, params ...interface{}) {
 
 // ----------------------------------------
 
+type encStructFieldKV struct {
+	k string
+	v reflect.Value
+}
+
 const encStructPoolLen = 4
 
 // encStructPool is an array of sync.Pool.
@@ -1176,31 +1218,11 @@ const encStructPoolLen = 4
 // enough to reduce thread contention.
 var encStructPool [encStructPoolLen]sync.Pool
 
-type encStructPool8 struct {
-	r [8]reflect.Value
-	s [8]string
-}
-
-type encStructPool16 struct {
-	r [16]reflect.Value
-	s [16]string
-}
-
-type encStructPool32 struct {
-	r [32]reflect.Value
-	s [32]string
-}
-
-type encStructPool64 struct {
-	r [64]reflect.Value
-	s [64]string
-}
-
 func init() {
-	encStructPool[0].New = func() interface{} { return new(encStructPool8) }
-	encStructPool[1].New = func() interface{} { return new(encStructPool16) }
-	encStructPool[2].New = func() interface{} { return new(encStructPool32) }
-	encStructPool[3].New = func() interface{} { return new(encStructPool64) }
+	encStructPool[0].New = func() interface{} { return new([8]encStructFieldKV) }
+	encStructPool[1].New = func() interface{} { return new([16]encStructFieldKV) }
+	encStructPool[2].New = func() interface{} { return new([32]encStructFieldKV) }
+	encStructPool[3].New = func() interface{} { return new([64]encStructFieldKV) }
 }
 
 // ----------------------------------------

@@ -141,6 +141,9 @@ func (z *ioDecByteScanner) Read(p []byte) (n int, err error) {
 	}
 	n, err = z.r.Read(p)
 	if n > 0 {
+		if err == io.EOF && n == len(p) {
+			err = nil // read was successful, so postpone EOF (till next time)
+		}
 		z.l = p[n-1]
 		z.ls = 2
 	}
@@ -154,6 +157,9 @@ func (z *ioDecByteScanner) ReadByte() (c byte, err error) {
 	n, err := z.Read(z.b[:])
 	if n == 1 {
 		c = z.b[0]
+		if err == io.EOF {
+			err = nil // read was successful, so postpone EOF (till next time)
+		}
 	}
 	return
 }
@@ -707,7 +713,7 @@ func (f decFnInfo) kSlice(rv reflect.Value) {
 	for rtelem.Kind() == reflect.Ptr {
 		rtelem = rtelem.Elem()
 	}
-	fn := d.getDecFn(rtelem, true)
+	fn := d.getDecFn(rtelem, true, true)
 
 	rv0 := rv
 	rvChanged := false
@@ -816,10 +822,10 @@ func (f decFnInfo) kMap(rv reflect.Value) {
 	var xtyp reflect.Type
 	for xtyp = ktype; xtyp.Kind() == reflect.Ptr; xtyp = xtyp.Elem() {
 	}
-	keyFn = d.getDecFn(xtyp, true)
+	keyFn = d.getDecFn(xtyp, true, true)
 	for xtyp = vtype; xtyp.Kind() == reflect.Ptr; xtyp = xtyp.Elem() {
 	}
-	valFn = d.getDecFn(xtyp, true)
+	valFn = d.getDecFn(xtyp, true, true)
 	// for j := 0; j < containerLen; j++ {
 	if containerLen > 0 {
 		for j := 0; j < containerLen; j++ {
@@ -1153,7 +1159,7 @@ func (d *Decoder) decode(iv interface{}) {
 
 	default:
 		if !fastpathDecodeTypeSwitch(iv, d) {
-			d.decodeI(iv, true, false, false)
+			d.decodeI(iv, true, false, false, false)
 		}
 	}
 }
@@ -1180,14 +1186,14 @@ func (d *Decoder) preDecodeValue(rv reflect.Value, tryNil bool) (rv2 reflect.Val
 	return rv, true
 }
 
-func (d *Decoder) decodeI(iv interface{}, checkPtr, tryNil, decFnCheckAll bool) {
+func (d *Decoder) decodeI(iv interface{}, checkPtr, tryNil, checkFastpath, checkCodecSelfer bool) {
 	rv := reflect.ValueOf(iv)
 	if checkPtr {
 		d.chkPtrValue(rv)
 	}
 	rv, proceed := d.preDecodeValue(rv, tryNil)
 	if proceed {
-		fn := d.getDecFn(rv.Type(), decFnCheckAll)
+		fn := d.getDecFn(rv.Type(), checkFastpath, checkCodecSelfer)
 		fn.f(fn.i, rv)
 	}
 }
@@ -1195,7 +1201,7 @@ func (d *Decoder) decodeI(iv interface{}, checkPtr, tryNil, decFnCheckAll bool) 
 func (d *Decoder) decodeValue(rv reflect.Value, fn decFn) {
 	if rv, proceed := d.preDecodeValue(rv, true); proceed {
 		if fn.f == nil {
-			fn = d.getDecFn(rv.Type(), true)
+			fn = d.getDecFn(rv.Type(), true, true)
 		}
 		fn.f(fn.i, rv)
 	}
@@ -1204,13 +1210,13 @@ func (d *Decoder) decodeValue(rv reflect.Value, fn decFn) {
 func (d *Decoder) decodeValueNotNil(rv reflect.Value, fn decFn) {
 	if rv, proceed := d.preDecodeValue(rv, false); proceed {
 		if fn.f == nil {
-			fn = d.getDecFn(rv.Type(), true)
+			fn = d.getDecFn(rv.Type(), true, true)
 		}
 		fn.f(fn.i, rv)
 	}
 }
 
-func (d *Decoder) getDecFn(rt reflect.Type, checkAll bool) (fn decFn) {
+func (d *Decoder) getDecFn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (fn decFn) {
 	rtid := reflect.ValueOf(rt).Pointer()
 
 	// retrieve or register a focus'ed function for this type
@@ -1247,7 +1253,7 @@ func (d *Decoder) getDecFn(rt reflect.Type, checkAll bool) (fn decFn) {
 	//
 	// NOTE: if decoding into a nil interface{}, we return a non-nil
 	// value except even if the container registers a length of 0.
-	if checkAll && ti.cs {
+	if checkCodecSelfer && ti.cs {
 		fi.decFnInfoX = &decFnInfoX{d: d, ti: ti}
 		fn.f = (decFnInfo).selferUnmarshal
 	} else if rtid == rawExtTypId {
@@ -1269,7 +1275,7 @@ func (d *Decoder) getDecFn(rt reflect.Type, checkAll bool) (fn decFn) {
 		fn.f = (decFnInfo).textUnmarshal
 	} else {
 		rk := rt.Kind()
-		if fastpathEnabled && checkAll && (rk == reflect.Map || rk == reflect.Slice) {
+		if fastpathEnabled && checkFastpath && (rk == reflect.Map || rk == reflect.Slice) {
 			if rt.PkgPath() == "" {
 				if idx := fastpathAV.index(rtid); idx != -1 {
 					fi.decFnInfoX = &decFnInfoX{d: d, ti: ti}

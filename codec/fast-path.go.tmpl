@@ -121,6 +121,34 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 	return true
 }
 
+func fastpathEncodeTypeSwitchSlice(iv interface{}, e *Encoder) bool {
+	switch v := iv.(type) {
+{{range .Values}}{{if not .Primitive}}{{if .Slice }}
+	case []{{ .Elem }}:
+		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(v, fastpathCheckNilTrue, e)
+	case *[]{{ .Elem }}:
+		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(*v, fastpathCheckNilTrue, e)
+{{end}}{{end}}{{end}}
+	default:
+		return false
+	}
+	return true
+}
+
+func fastpathEncodeTypeSwitchMap(iv interface{}, e *Encoder) bool {
+	switch v := iv.(type) {
+{{range .Values}}{{if not .Primitive}}{{if not .Slice }}
+	case map[{{ .MapKey }}]{{ .Elem }}:
+		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(v, fastpathCheckNilTrue, e)
+	case *map[{{ .MapKey }}]{{ .Elem }}:
+		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(*v, fastpathCheckNilTrue, e)
+{{end}}{{end}}{{end}}
+	default:
+		return false
+	}
+	return true
+}
+
 // -- -- fast path functions
 {{range .Values}}{{if not .Primitive}}{{if .Slice }} 
 

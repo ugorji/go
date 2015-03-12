@@ -63,6 +63,7 @@ var (
 	testInitDebug      bool
 	testUseIoEncDec    bool
 	testStructToArray  bool
+	testCanonical      bool
 	testWriteNoSymbols bool
 	testSkipIntf       bool
 
@@ -95,6 +96,7 @@ func testInitFlags() {
 	flag.BoolVar(&testUseIoEncDec, "ti", false, "Use IO Reader/Writer for Marshal/Unmarshal")
 	flag.BoolVar(&testStructToArray, "ts", false, "Set StructToArray option")
 	flag.BoolVar(&testWriteNoSymbols, "tn", false, "Set NoSymbols option")
+	flag.BoolVar(&testCanonical, "tc", false, "Set Canonical option")
 	flag.BoolVar(&testSkipIntf, "tf", false, "Skip Interfaces")
 }
 
@@ -267,17 +269,26 @@ func testInit() {
 		fmt.Printf("====> depth: %v, ts: %#v\n", 2, ts0)
 	}
 
+	testJsonH.Canonical = testCanonical
+	testCborH.Canonical = testCanonical
+	testSimpleH.Canonical = testCanonical
+	testBincH.Canonical = testCanonical
+	testMsgpackH.Canonical = testCanonical
+
 	testJsonH.StructToArray = testStructToArray
 	testCborH.StructToArray = testStructToArray
 	testSimpleH.StructToArray = testStructToArray
 	testBincH.StructToArray = testStructToArray
+	testMsgpackH.StructToArray = testStructToArray
+
+	testMsgpackH.RawToString = true
+
 	if testWriteNoSymbols {
 		testBincH.AsSymbols = AsSymbolNone
 	} else {
 		testBincH.AsSymbols = AsSymbolAll
 	}
-	testMsgpackH.StructToArray = testStructToArray
-	testMsgpackH.RawToString = true
+
 	// testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
 	// testMsgpackH.AddExt(timeTyp, 1, testMsgpackH.TimeEncodeExt, testMsgpackH.TimeDecodeExt)
 	timeEncExt := func(rv reflect.Value) (bs []byte, err error) {
@@ -1100,3 +1111,7 @@ func TestBincUnderlyingType(t *testing.T) {
 //   - interfaces: textMarshaler, binaryMarshaler, codecSelfer
 //   - struct tags:
 //     on anonymous fields, _struct (all fields), etc
+//   - codecgen of struct containing channels.
+//
+//   Cleanup tests:
+//   - The are brittle in their handling of validation and skipping
