@@ -66,7 +66,7 @@ import (
 //   It was a concious decision to have gen.go always explicitly call EncodeNil or TryDecodeAsNil.
 //   This way, there isn't a function call overhead just to see that we should not enter a block of code.
 
-const GenVersion = 1 // increment this value each time codecgen changes fundamentally.
+const GenVersion = 2 // increment this value each time codecgen changes fundamentally.
 
 const (
 	genCodecPkg   = "codec1978"
@@ -713,7 +713,8 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 			x.line("r.EncodeMapEntrySeparator()")
 			x.line("}")
 		}
-		x.line("r.EncodeString(codecSelferC_UTF8" + x.xs + ", string(\"" + t2.Name + "\"))")
+		// x.line("r.EncodeString(codecSelferC_UTF8" + x.xs + ", string(\"" + t2.Name + "\"))")
+		x.line("r.EncodeString(codecSelferC_UTF8" + x.xs + ", string(\"" + si.encName + "\"))")
 		x.line("if " + sepVarname + " {")
 		x.line("r.EncodeMapKVSeparator()")
 		x.line("}")

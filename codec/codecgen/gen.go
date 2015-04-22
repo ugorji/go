@@ -22,27 +22,40 @@ import (
 	"time"
 )
 
-const genFrunTmpl = `//+build ignore
+const genFrunMainTmpl = `//+build ignore
 
 package main
+{{ if .Types }}import "{{ .ImportPath }}"{{ end }}
+func main() {
+	{{ $.PackageName }}.CodecGenTempWrite{{ .RandString }}()
+}
+`
+
+const genFrunPkgTmpl = `//+build codecgen
+
+package {{ $.PackageName }}
 
 import (
 	{{ if not .CodecPkgFiles }}{{ .CodecPkgName }} "{{ .CodecImportPath }}"{{ end }}
+{{/*
 	{{ if .Types }}"{{ .ImportPath }}"{{ end }}
+	"io"
+*/}}
 	"os"
 	"reflect"
-	"io"
 	"bytes"
 	"go/format"
 )
 
+{{/* This is not used anymore. Remove it.
 func write(w io.Writer, s string) {
 	if _, err := io.WriteString(w, s); err != nil {
 		panic(err)
 	}
 }
+*/}}
 
-func main() {
+func CodecGenTempWrite{{ .RandString }}() {
 	fout, err := os.Create("{{ .OutFile }}")
 	if err != nil {
 		panic(err)
@@ -52,10 +65,10 @@ func main() {
 	
 	var typs []reflect.Type 
 {{ range $index, $element := .Types }}
-	var t{{ $index }} {{ $.PackageName }}.{{ . }}
+	var t{{ $index }} {{ . }}
 	typs = append(typs, reflect.TypeOf(t{{ $index }}))
 {{ end }}
-	{{ .CodecPkgName }}.Gen(&out, "{{ .BuildTag }}", "{{ .PackageName }}", {{ .UseUnsafe }}, typs...)
+	{{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}Gen(&out, "{{ .BuildTag }}", "{{ .PackageName }}", {{ .UseUnsafe }}, typs...)
 	bout, err := format.Source(out.Bytes())
 	if err != nil {
 		fout.Write(out.Bytes())
@@ -67,10 +80,14 @@ func main() {
 `
 
 // Generate is given a list of *.go files to parse, and an output file (fout).
-// It finds all types T in the files, and it creates a tmp file (frun).
-// frun calls *genRunner.Selfer to write Selfer impls for each T.
+//
+// It finds all types T in the files, and it creates 2 tmp files (frun).
+//   - main package file passed to 'go run'
+//   - package level file which calls *genRunner.Selfer to write Selfer impls for each T.
+// We use a package level file so that it can reference unexported types in the package being worked on.
 // Tool then executes: "go run __frun__" which creates fout.
 // fout contains Codec(En|De)codeSelf implementations for every type T.
+//
 func Generate(outfile, buildTag, codecPkgPath string, useUnsafe bool, goRunTag string,
 	regexName *regexp.Regexp, deleteTempFile bool, infiles ...string) (err error) {
 	// For each file, grab AST, find each type, and write a call to it.
@@ -98,6 +115,7 @@ func Generate(outfile, buildTag, codecPkgPath string, useUnsafe bool, goRunTag s
 		ImportPath      string
 		OutFile         string
 		PackageName     string
+		RandString      string
 		BuildTag        string
 		Types           []string
 		CodecPkgFiles   bool
@@ -109,6 +127,7 @@ func Generate(outfile, buildTag, codecPkgPath string, useUnsafe bool, goRunTag s
 		CodecImportPath: codecPkgPath,
 		BuildTag:        buildTag,
 		UseUnsafe:       useUnsafe,
+		RandString:      strconv.FormatInt(time.Now().UnixNano(), 10),
 	}
 	tv.ImportPath = pkg.ImportPath
 	if tv.ImportPath == tv.CodecImportPath {
@@ -136,7 +155,8 @@ func Generate(outfile, buildTag, codecPkgPath string, useUnsafe bool, goRunTag s
 			if gd, ok := d.(*ast.GenDecl); ok {
 				for _, dd := range gd.Specs {
 					if td, ok := dd.(*ast.TypeSpec); ok {
-						if len(td.Name.Name) == 0 || td.Name.Name[0] > 'Z' || td.Name.Name[0] < 'A' {
+						// if len(td.Name.Name) == 0 || td.Name.Name[0] > 'Z' || td.Name.Name[0] < 'A' {
+						if len(td.Name.Name) == 0 {
 							continue
 						}
 
@@ -164,43 +184,58 @@ func Generate(outfile, buildTag, codecPkgPath string, useUnsafe bool, goRunTag s
 		return
 	}
 
-	var frun *os.File
+	var frunMain, frunPkg *os.File
 	// we cannot use ioutil.TempFile, because we cannot guarantee the file suffix (.go).
 	// Also, we cannot create file in temp directory, because go run will not work (as it needs to see the types here).
 	// Consequently, create the temp file in the current directory, and remove when done.
 	// frun, err = ioutil.TempFile("", "codecgen-")
 	// frunName := filepath.Join(os.TempDir(), "codecgen-"+strconv.FormatInt(time.Now().UnixNano(), 10)+".go")
-	frunName := "codecgen-" + strconv.FormatInt(time.Now().UnixNano(), 10) + ".generated.go"
-	os.Remove(frunName)
-	if frun, err = os.Create(frunName); err != nil {
+	frunMainName := "codecgen-main-" + tv.RandString + ".generated.go"
+	frunPkgName := "codecgen-pkg-" + tv.RandString + ".generated.go"
+	os.Remove(frunMainName)
+	os.Remove(frunPkgName)
+	if frunMain, err = os.Create(frunMainName); err != nil {
+		return
+	}
+	if frunPkg, err = os.Create(frunPkgName); err != nil {
 		return
 	}
 	defer func() {
-		frun.Close()
+		frunMain.Close()
+		frunPkg.Close()
 		if deleteTempFile {
-			os.Remove(frun.Name())
+			os.Remove(frunMain.Name())
+			os.Remove(frunPkg.Name())
 		}
 	}()
 
 	t := template.New("")
-	if t, err = t.Parse(genFrunTmpl); err != nil {
+	if t, err = t.Parse(genFrunMainTmpl); err != nil {
 		return
 	}
-	if err = t.Execute(frun, &tv); err != nil {
+	if err = t.Execute(frunMain, &tv); err != nil {
 		return
 	}
-	frun.Close()
+	frunMain.Close()
+	t = template.New("")
+	if t, err = t.Parse(genFrunPkgTmpl); err != nil {
+		return
+	}
+	if err = t.Execute(frunPkg, &tv); err != nil {
+		return
+	}
+	frunPkg.Close()
 
 	// remove the outfile, so that running "go run ..." will not think that the types in the outfile already exist.
 	os.Remove(outfile)
 
 	// execute go run frun
-	cmd := exec.Command("go", "run", "-tags="+goRunTag, frun.Name())
+	cmd := exec.Command("go", "run", "-tags="+goRunTag, frunMain.Name())
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
 	if err = cmd.Run(); err != nil {
-		err = fmt.Errorf("Error running go run %s. Error: %v. stdout/err: %s", frun.Name(), err, buf.Bytes())
+		err = fmt.Errorf("Error running go run %s. Error: %v. stdout/err: %s", frunMain.Name(), err, buf.Bytes())
 		return
 	}
 	os.Stdout.Write(buf.Bytes())

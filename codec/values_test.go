@@ -76,6 +76,14 @@ type TestStruc struct {
 	Nteststruc *TestStruc
 }
 
+// small struct for testing that codecgen works for unexported types
+type tLowerFirstLetter struct {
+	I int
+	u uint64
+	S string
+	b []byte
+}
+
 func newTestStruc(depth int, bench bool, useInterface, useStringKeyOnly bool) (ts *TestStruc) {
 	var i64a, i64b, i64c, i64d int64 = 64, 6464, 646464, 64646464
 
