@@ -31,8 +31,8 @@ func main() {
 }
 `
 
-const genFrunPkgTmpl = `//+build codecgen
-
+// const genFrunPkgTmpl = `//+build codecgen
+const genFrunPkgTmpl = `
 package {{ $.PackageName }}
 
 import (
