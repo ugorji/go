@@ -997,37 +997,57 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 }
 
 func (x *genRunner) decTryAssignPrimitive(varname string, t reflect.Type) (tryAsPtr bool) {
+	// We have to use the actual type name when doing a direct assignment.
+	// We don't have the luxury of casting the pointer to the underlying type.
+	//
+	// Consequently, in the situation of a
+	//     type Message int32
+	//     var x Message
+	//     var i int32 = 32
+	//     x = i // this will bomb
+	//     x = Message(i) // this will work
+	//     *((*int32)(&x)) = i // this will work
+	//
+	// Consequently, we replace:
+	//      case reflect.Uint32: x.line(varname + " = uint32(r.DecodeUint(32))")
+	// with:
+	//      case reflect.Uint32: x.line(varname + " = " + genTypeNamePrimitiveKind(t, x.tc) + "(r.DecodeUint(32))")
+
+	xfn := func(t reflect.Type) string {
+		return genTypeNamePrimitiveKind(t, x.tc)
+	}
 	switch t.Kind() {
 	case reflect.Int:
-		x.line(varname + " = int(r.DecodeInt(codecSelferBitsize" + x.xs + "))")
+		x.linef("%s = %s(r.DecodeInt(codecSelferBitsize%s))", varname, xfn(t), x.xs)
 	case reflect.Int8:
-		x.line(varname + " = int8(r.DecodeInt(8))")
+		x.linef("%s = %s(r.DecodeInt(8))", varname, xfn(t))
 	case reflect.Int16:
-		x.line(varname + " = int16(r.DecodeInt(16))")
+		x.linef("%s = %s(r.DecodeInt(16))", varname, xfn(t))
 	case reflect.Int32:
-		x.line(varname + " = int32(r.DecodeInt(32))")
+		x.linef("%s = %s(r.DecodeInt(32))", varname, xfn(t))
 	case reflect.Int64:
-		x.line(varname + " = int64(r.DecodeInt(64))")
+		x.linef("%s = %s(r.DecodeInt(64))", varname, xfn(t))
 
 	case reflect.Uint:
-		x.line(varname + " = uint(r.DecodeUint(codecSelferBitsize" + x.xs + "))")
+		x.linef("%s = %s(r.DecodeUint(codecSelferBitsize%s))", varname, xfn(t), x.xs)
 	case reflect.Uint8:
-		x.line(varname + " = uint8(r.DecodeUint(8))")
+		x.linef("%s = %s(r.DecodeUint(8))", varname, xfn(t))
 	case reflect.Uint16:
-		x.line(varname + " = uint16(r.DecodeUint(16))")
+		x.linef("%s = %s(r.DecodeUint(16))", varname, xfn(t))
 	case reflect.Uint32:
-		x.line(varname + " = uint32(r.DecodeUint(32))")
+		x.linef("%s = %s(r.DecodeUint(32))", varname, xfn(t))
 	case reflect.Uint64:
-		x.line(varname + " = uint64(r.DecodeUint(64))")
+		x.linef("%s = %s(r.DecodeUint(64))", varname, xfn(t))
 
 	case reflect.Float32:
-		x.line(varname + " = float32(r.DecodeFloat(true))")
+		x.linef("%s = %s(r.DecodeFloat(true))", varname, xfn(t))
 	case reflect.Float64:
-		x.line(varname + " = float64(r.DecodeFloat(false))")
+		x.linef("%s = %s(r.DecodeFloat(false))", varname, xfn(t))
+
 	case reflect.Bool:
-		x.line(varname + " = r.DecodeBool()")
+		x.linef("%s = %s(r.DecodeBool())", varname, xfn(t))
 	case reflect.String:
-		x.line(varname + " = r.DecodeString()")
+		x.linef("%s = %s(r.DecodeString())", varname, xfn(t))
 	default:
 		tryAsPtr = true
 	}
@@ -1347,6 +1367,14 @@ func genTitleCaseName(s string) string {
 	}
 }
 
+func genTypeNamePrimitiveKind(t reflect.Type, tRef reflect.Type) (n string) {
+	if tRef != nil && t.PkgPath() == tRef.PkgPath() && t.Name() != "" {
+		return t.Name()
+	} else {
+		return t.String() // best way to get the package name inclusive
+	}
+}
+
 func genTypeName(t reflect.Type, tRef reflect.Type) (n string) {
 	// defer func() { fmt.Printf(">>>> ####: genTypeName: t: %v, name: '%s'\n", t, n) }()
 
@@ -1373,11 +1401,7 @@ func genTypeName(t reflect.Type, tRef reflect.Type) (n string) {
 		if t == intfTyp {
 			return ptrPfx + "interface{}"
 		} else {
-			if tRef != nil && t.PkgPath() == tRef.PkgPath() && t.Name() != "" {
-				return ptrPfx + t.Name()
-			} else {
-				return ptrPfx + t.String() // best way to get the package name inclusive
-			}
+			return ptrPfx + genTypeNamePrimitiveKind(t, tRef)
 		}
 	}
 }
