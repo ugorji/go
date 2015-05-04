@@ -147,6 +147,14 @@ func Generate(outfile, buildTag, codecPkgPath string, useUnsafe bool, goRunTag s
 		}
 		if i == 0 {
 			tv.PackageName = astfiles[i].Name.Name
+			if tv.PackageName == "main" {
+				// codecgen cannot be run on types in the 'main' package.
+				// A temporary 'main' package must be created, and should reference the fully built
+				// package containing the types.
+				// Also, the temporary main package will conflict with the main package which already has a main method.
+				err = errors.New("codecgen cannot be run on types in the 'main' package")
+				return
+			}
 		}
 	}
 
@@ -230,7 +238,7 @@ func Generate(outfile, buildTag, codecPkgPath string, useUnsafe bool, goRunTag s
 	os.Remove(outfile)
 
 	// execute go run frun
-	cmd := exec.Command("go", "run", "-tags="+goRunTag, frunMain.Name())
+	cmd := exec.Command("go", "run", "-tags="+goRunTag, frunMain.Name()) //, frunPkg.Name())
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
