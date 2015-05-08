@@ -5,6 +5,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"errors"
 	"flag"
@@ -192,61 +193,63 @@ func Generate(outfile, buildTag, codecPkgPath string, useUnsafe bool, goRunTag s
 		return
 	}
 
-	var frunMain, frunPkg *os.File
 	// we cannot use ioutil.TempFile, because we cannot guarantee the file suffix (.go).
-	// Also, we cannot create file in temp directory, because go run will not work (as it needs to see the types here).
+	// Also, we cannot create file in temp directory,
+	// because go run will not work (as it needs to see the types here).
 	// Consequently, create the temp file in the current directory, and remove when done.
+
 	// frun, err = ioutil.TempFile("", "codecgen-")
 	// frunName := filepath.Join(os.TempDir(), "codecgen-"+strconv.FormatInt(time.Now().UnixNano(), 10)+".go")
+
 	frunMainName := "codecgen-main-" + tv.RandString + ".generated.go"
 	frunPkgName := "codecgen-pkg-" + tv.RandString + ".generated.go"
-	os.Remove(frunMainName)
-	os.Remove(frunPkgName)
-	if frunMain, err = os.Create(frunMainName); err != nil {
+	if deleteTempFile {
+		defer os.Remove(frunMainName)
+		defer os.Remove(frunPkgName)
+	}
+	// var frunMain, frunPkg *os.File
+	if _, err = gen1(frunMainName, genFrunMainTmpl, &tv); err != nil {
 		return
 	}
-	if frunPkg, err = os.Create(frunPkgName); err != nil {
+	if _, err = gen1(frunPkgName, genFrunPkgTmpl, &tv); err != nil {
 		return
 	}
-	defer func() {
-		frunMain.Close()
-		frunPkg.Close()
-		if deleteTempFile {
-			os.Remove(frunMain.Name())
-			os.Remove(frunPkg.Name())
-		}
-	}()
 
-	t := template.New("")
-	if t, err = t.Parse(genFrunMainTmpl); err != nil {
-		return
-	}
-	if err = t.Execute(frunMain, &tv); err != nil {
-		return
-	}
-	frunMain.Close()
-	t = template.New("")
-	if t, err = t.Parse(genFrunPkgTmpl); err != nil {
-		return
-	}
-	if err = t.Execute(frunPkg, &tv); err != nil {
-		return
-	}
-	frunPkg.Close()
-
-	// remove the outfile, so that running "go run ..." will not think that the types in the outfile already exist.
+	// remove outfile, so "go run ..." will not think that types in outfile already exist.
 	os.Remove(outfile)
 
 	// execute go run frun
-	cmd := exec.Command("go", "run", "-tags="+goRunTag, frunMain.Name()) //, frunPkg.Name())
+	cmd := exec.Command("go", "run", "-tags="+goRunTag, frunMainName) //, frunPkg.Name())
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
 	if err = cmd.Run(); err != nil {
-		err = fmt.Errorf("Error running go run %s. Error: %v. stdout/err: %s", frunMain.Name(), err, buf.Bytes())
+		err = fmt.Errorf("error running 'go run %s': %v, console: %s",
+			frunMainName, err, buf.Bytes())
 		return
 	}
 	os.Stdout.Write(buf.Bytes())
+	return
+}
+
+func gen1(frunName, tmplStr string, tv interface{}) (frun *os.File, err error) {
+	os.Remove(frunName)
+	if frun, err = os.Create(frunName); err != nil {
+		return
+	}
+	defer frun.Close()
+
+	t := template.New("")
+	if t, err = t.Parse(tmplStr); err != nil {
+		return
+	}
+	bw := bufio.NewWriter(frun)
+	if err = t.Execute(bw, tv); err != nil {
+		return
+	}
+	if err = bw.Flush(); err != nil {
+		return
+	}
 	return
 }
 
