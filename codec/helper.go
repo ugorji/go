@@ -142,8 +142,11 @@ const (
 	fastpathEnabled = true
 
 	// if checkStructForEmptyValue, check structs fields to see if an empty value.
-	// This could be an expensive call, but possibly disable it.
+	// This could be an expensive call, so possibly disable it.
 	checkStructForEmptyValue = false
+
+	// if derefForIsEmptyValue, deref pointers and interfaces when checking isEmptyValue
+	derefForIsEmptyValue = false
 )
 
 var oneByteArr = [1]byte{0}

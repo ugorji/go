@@ -48,7 +48,7 @@ func hIsEmptyValue(v reflect.Value, deref, checkStruct bool) bool {
 			if v.IsNil() {
 				return true
 			}
-			return hIsEmptyValue(v.Elem(), checkStruct, deref)
+			return hIsEmptyValue(v.Elem(), deref, checkStruct)
 		} else {
 			return v.IsNil()
 		}
@@ -61,7 +61,7 @@ func hIsEmptyValue(v reflect.Value, deref, checkStruct bool) bool {
 		// and consequently the structs are not comparable.
 		// return v.Interface() == reflect.Zero(v.Type()).Interface()
 		for i, n := 0, v.NumField(); i < n; i++ {
-			if !hIsEmptyValue(v.Field(i), checkStruct, deref) {
+			if !hIsEmptyValue(v.Field(i), deref, checkStruct) {
 				return false
 			}
 		}
@@ -71,7 +71,7 @@ func hIsEmptyValue(v reflect.Value, deref, checkStruct bool) bool {
 }
 
 func isEmptyValue(v reflect.Value) bool {
-	return hIsEmptyValue(v, true, checkStructForEmptyValue)
+	return hIsEmptyValue(v, derefForIsEmptyValue, checkStructForEmptyValue)
 }
 
 func pruneSignExt(v []byte, pos bool) (n int) {
