@@ -579,7 +579,10 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	ti := getTypeInfo(rtid, t)
 	i := x.varsfx()
 	sepVarname := genTempVarPfx + "sep" + i
+	firstVarname := genTempVarPfx + "first" + i
+
 	x.line(sepVarname + " := !z.EncBinary()")
+	x.line("var " + firstVarname + " bool")
 	tisfi := ti.sfip // always use sequence from file. decStruct expects same thing.
 	numfieldsvar := genTempVarPfx + "q" + i
 	ti2arrayvar := genTempVarPfx + "r" + i
@@ -685,11 +688,11 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 			// omitEmptyVarNameX := genTempVarPfx + "ov" + i
 			// x.line("var " + omitEmptyVarNameX + " " + x.genTypeName(t2.Type))
 			// x.encVar(omitEmptyVarNameX, t2.Type)
-			x.encZero(t2.Type)
-			x.linef("} else {")
 		}
 		x.encVar(varname+"."+t2.Name, t2.Type)
 		if si.omitEmpty {
+			x.linef("} else {")
+			x.encZero(t2.Type)
 			x.linef("}")
 		}
 		if labelUsed {
@@ -708,11 +711,12 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 			// }
 			// x.line(varname + "." + t2.Name + " != " + genZeroValueR(t2.Type, x.tc) + " {")
 		}
-		if j > 0 {
-			x.line("if " + sepVarname + " {")
-			x.line("r.EncodeMapEntrySeparator()")
-			x.line("}")
+		if j == 0 {
+			x.linef("%s = true", firstVarname)
+		} else {
+			x.linef("if %s { r.EncodeMapEntrySeparator() } else { %s = true }", firstVarname, firstVarname)
 		}
+
 		// x.line("r.EncodeString(codecSelferC_UTF8" + x.xs + ", string(\"" + t2.Name + "\"))")
 		x.line("r.EncodeString(codecSelferC_UTF8" + x.xs + ", string(\"" + si.encName + "\"))")
 		x.line("if " + sepVarname + " {")
