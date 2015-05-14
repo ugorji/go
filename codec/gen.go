@@ -1420,7 +1420,16 @@ func genMethodNameT(t reflect.Type, tRef reflect.Type) (n string) {
 		t = t.Elem()
 	}
 	if tn := t.Name(); tn != "" {
-		return ptrPfx + genTypeNamePrimitiveKind(t, tRef)
+		if tRef != nil && t.PkgPath() == tRef.PkgPath() {
+			return ptrPfx + tn
+		} else {
+			tstr := t.String()
+			if genQNameRegex.MatchString(tstr) {
+				return ptrPfx + strings.Replace(tstr, ".", "_", 1000)
+			} else {
+				return ptrPfx + genCustomTypeName(tstr)
+			}
+		}
 	}
 	switch t.Kind() {
 	case reflect.Map:
