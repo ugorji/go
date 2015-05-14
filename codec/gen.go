@@ -1388,6 +1388,9 @@ func genTypeName(t reflect.Type, tRef reflect.Type) (n string) {
 		ptrPfx += "*"
 		t = t.Elem()
 	}
+	if tn := t.Name(); tn != "" {
+		return ptrPfx + tn
+	}
 	switch t.Kind() {
 	case reflect.Map:
 		return ptrPfx + "map[" + genTypeName(t.Key(), tRef) + "]" + genTypeName(t.Elem(), tRef)
@@ -1411,6 +1414,9 @@ func genMethodNameT(t reflect.Type, tRef reflect.Type) (n string) {
 	for t.Kind() == reflect.Ptr {
 		ptrPfx += "Ptrto"
 		t = t.Elem()
+	}
+	if tn := t.Name(); tn != "" {
+		return ptrPfx + tn
 	}
 	switch t.Kind() {
 	case reflect.Map:
