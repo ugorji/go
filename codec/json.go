@@ -733,7 +733,14 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, isstring, zerocopy bool) (bsOut [
 	} else {
 		bsOut = make([]byte, slen)
 	}
-	base64.StdEncoding.Decode(bsOut, bs0)
+	slen2, err := base64.StdEncoding.Decode(bsOut, bs0)
+	if err != nil {
+		d.d.errorf("json: error decoding base64 binary '%s': %v", bs0, err)
+		return nil
+	}
+	if slen != slen2 {
+		bsOut = bsOut[:slen2]
+	}
 	return
 }
 
