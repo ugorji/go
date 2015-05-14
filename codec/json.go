@@ -810,7 +810,7 @@ func (d *jsonDecDriver) jsonU4(checkSlashU bool) rune {
 			d.d.errorf(`json: unquoteStr: invalid hex char in \u unicode sequence: %q`, v)
 			return 0
 		}
-		u = u*10 + uint32(v)
+		u = u*16 + uint32(v)
 	}
 	return rune(u)
 }
