@@ -580,18 +580,21 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	i := x.varsfx()
 	sepVarname := genTempVarPfx + "sep" + i
 	firstVarname := genTempVarPfx + "first" + i
-
-	x.line(sepVarname + " := !z.EncBinary()")
-	x.line("var " + firstVarname + " bool")
-	tisfi := ti.sfip // always use sequence from file. decStruct expects same thing.
 	numfieldsvar := genTempVarPfx + "q" + i
 	ti2arrayvar := genTempVarPfx + "r" + i
-	x.linef("const %s bool = %v", ti2arrayvar, ti.toArray)
+	struct2arrvar := genTempVarPfx + "2arr" + i
+
+	x.line(sepVarname + " := !z.EncBinary()")
+	x.linef("%s := z.EncBasicHandle().StructToArray", struct2arrvar)
+	x.line("var " + firstVarname + " bool")
+	tisfi := ti.sfip // always use sequence from file. decStruct expects same thing.
 	// due to omitEmpty, we need to calculate the
 	// number of non-empty things we write out first.
 	// This is required as we need to pre-determine the size of the container,
 	// to support length-prefixing.
 	x.linef("var %s [%v]bool", numfieldsvar, len(tisfi))
+	x.linef("_, _, _, _ = %s, %s, %s, %s", sepVarname, firstVarname, numfieldsvar, struct2arrvar)
+	x.linef("const %s bool = %v", ti2arrayvar, ti.toArray)
 	nn := 0
 	for j, si := range tisfi {
 		if !si.omitEmpty {
@@ -629,7 +632,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		}
 		x.linef("%s[%v] = %s", numfieldsvar, j, omitline)
 	}
-	x.linef("if %s || z.EncBasicHandle().StructToArray {", ti2arrayvar) // if ti.toArray {
+	x.linef("if %s || %s {", ti2arrayvar, struct2arrvar) // if ti.toArray {
 	x.line("r.EncodeArrayStart(" + strconv.FormatInt(int64(len(tisfi)), 10) + ")")
 	x.linef("} else {") // if not ti.toArray
 	x.linef("var %snn%s int = %v", genTempVarPfx, i, nn)
@@ -674,7 +677,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		}
 		// if the type of the field is a Selfer, or one of the ones
 
-		x.linef("if %s || z.EncBasicHandle().StructToArray {", ti2arrayvar) // if ti.toArray
+		x.linef("if %s || %s {", ti2arrayvar, struct2arrvar) // if ti.toArray
 		if j > 0 {
 			x.line("if " + sepVarname + " {")
 			x.line("r.EncodeArrayEntrySeparator()")
@@ -735,7 +738,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		x.linef("} ") // end if/else ti.toArray
 	}
 	x.line("if " + sepVarname + " {")
-	x.linef("if %s || z.EncBasicHandle().StructToArray {", ti2arrayvar) // if ti.toArray {
+	x.linef("if %s || %s {", ti2arrayvar, struct2arrvar) // if ti.toArray {
 	x.line("r.EncodeArrayEnd()")
 	x.linef("} else {") // if not ti.toArray
 	x.line("r.EncodeMapEnd()")
