@@ -294,7 +294,7 @@ func (x *jsonNum) uintExp() (n uint64, overflow bool) {
 		return
 	}
 	n *= jsonUint64Pow10[e]
-	if n < x.mantissa || n > jsonNumUintMaxVal {
+	if n < x.mantissa {
 		overflow = true
 		return
 	}
@@ -581,7 +581,7 @@ LOOP:
 				n.mantissa *= 10
 				if v != 0 {
 					n1 := n.mantissa + v
-					if n1 < n.mantissa || n1 > jsonNumUintMaxVal {
+					if n1 < n.mantissa {
 						n.manOverflow = true // n+v overflows
 						break
 					}
