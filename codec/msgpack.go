@@ -168,7 +168,20 @@ func (e *msgpackEncDriver) EncodeFloat64(f float64) {
 	bigenHelper{e.x[:8], e.w}.writeUint64(math.Float64bits(f))
 }
 
-func (e *msgpackEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext, _ *Encoder) {
+func (e *msgpackEncDriver) EncodeExtWithConvert(rv interface{}, xtag uint64, ext Ext, en *Encoder) {
+	if v := ext.ConvertExt(rv); v == nil {
+		e.EncodeNil()
+	} else {
+		en.encode(v)
+	}
+}
+
+func (e *msgpackEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext, en *Encoder) {
+	if e.h.Convert {
+		e.EncodeExtWithConvert(v, xtag, ext, en)
+		return
+	}
+
 	bs := ext.WriteExt(v)
 	if bs == nil {
 		e.EncodeNil()
@@ -659,7 +672,25 @@ func (d *msgpackDecDriver) readExtLen() (clen int) {
 	return
 }
 
+func (d *msgpackDecDriver) DecodeExtWithUpdate(rv interface{}, xtag uint64, ext Ext) (realxtag uint64) {
+	if ext == nil {
+		re := rv.(*RawExt)
+		re.Tag = xtag
+		d.d.decode(&re.Value)
+	} else {
+		var v interface{}
+		d.d.decode(&v)
+		ext.UpdateExt(rv, v)
+	}
+	return
+}
+
 func (d *msgpackDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxtag uint64) {
+	if d.h.Convert {
+		d.DecodeExtWithUpdate(rv, xtag, ext)
+		return
+	}
+
 	if xtag > 0xff {
 		d.d.errorf("decodeExt: tag must be <= 0xff; got: %v", xtag)
 		return
@@ -720,6 +751,10 @@ type MsgpackHandle struct {
 	// type is provided (e.g. decoding into a nil interface{}), you get back
 	// a []byte or string based on the setting of RawToString.
 	WriteExt bool
+
+	// If Convert=true, then we will use ConvertExt/UpdateExt instead of WriteExt/ReadExt
+	// like in the JSON codec.
+	Convert bool
 }
 
 func (h *MsgpackHandle) newEncDriver(e *Encoder) encDriver {
