@@ -98,7 +98,7 @@ func (e *cborEncDriver) encUint(v uint64, bd byte) {
 	} else if v <= math.MaxUint32 {
 		e.w.writen1(bd + 0x1a)
 		bigenHelper{e.x[:4], e.w}.writeUint32(uint32(v))
-	} else if v <= math.MaxUint64 {
+	} else { // if v <= math.MaxUint64 {
 		e.w.writen1(bd + 0x1b)
 		bigenHelper{e.x[:8], e.w}.writeUint64(v)
 	}
