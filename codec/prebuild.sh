@@ -54,7 +54,7 @@ _build() {
 
     cat > gen.generated.go <<EOF
 // Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
-// Use of this source code is governed by a BSD-style license found in the LICENSE file.
+// Use of this source code is governed by a MIT license found in the LICENSE file.
 
 package codec
 
