@@ -57,6 +57,11 @@ type TestStruc struct {
 
 	Iptrslice []*int64
 
+	// TODO: test these separately, specifically for reflection and codecgen.
+	// Unfortunately, ffjson doesn't support these. Its compilation even fails.
+	// Ui64array      [4]uint64
+	// Ui64slicearray [][4]uint64
+
 	AnonInTestStruc
 
 	//M map[interface{}]interface{}  `json:"-",bson:"-"`

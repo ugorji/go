@@ -748,8 +748,10 @@ func (f decFnInfo) kSlice(rv reflect.Value) {
 					rvlen = containerLenS
 				}
 			} else if containerLenS != rvlen {
-				rv.SetLen(containerLenS)
-				rvlen = containerLenS
+				if f.seq == seqTypeSlice {
+					rv.SetLen(containerLenS)
+					rvlen = containerLenS
+				}
 			}
 			j := 0
 			for ; j < numToRead; j++ {

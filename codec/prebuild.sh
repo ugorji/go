@@ -135,16 +135,18 @@ EOF
 
 _codegenerators() {
     if [[ $zforce == "1" || 
-                "1" == $( _needgen "values_msgp${zsfx}" ) 
-                || "1" == $( _needgen "values_codecgen${zsfx}" ) ]] 
+                "1" == $( _needgen "values_codecgen${zsfx}" ) ||
+                "1" == $( _needgen "values_msgp${zsfx}" ) ||
+                "1" == $( _needgen "values_ffjson${zsfx}" ) ||
+                1 == 0 ]] 
     then
         true && \
-            echo "msgp ... " && \
-            msgp -tests=false -pkg=codec -o=values_msgp${zsfx} -file=$zfin && \
             echo "codecgen - !unsafe ... " && \
             codecgen -rt codecgen -t 'x,codecgen,!unsafe' -o values_codecgen${zsfx} $zfin && \
             echo "codecgen - unsafe ... " && \
             codecgen -u -rt codecgen -t 'x,codecgen,unsafe' -o values_codecgen_unsafe${zsfx} $zfin && \
+            echo "msgp ... " && \
+            msgp -tests=false -pkg=codec -o=values_msgp${zsfx} -file=$zfin && \
             echo "ffjson ... " && \
             ffjson -w values_ffjson${zsfx} $zfin && \
             # remove (M|Unm)arshalJSON implementations, so they don't conflict with encoding/json bench \
