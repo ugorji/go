@@ -874,7 +874,8 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 // The empty values (for omitempty option) are false, 0, any nil pointer
 // or interface value, and any array, slice, map, or string of length zero.
 //
-// Anonymous fields are encoded inline if no struct tag is present.
+// Anonymous fields are encoded inline if the struct tag is "effectively" blank
+// i.e. it is not present or does not have any parameters specified.
 // Else they are encoded as regular fields.
 //
 // Examples:
