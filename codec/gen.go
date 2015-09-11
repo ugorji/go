@@ -23,8 +23,10 @@ import (
 
 // ---------------------------------------------------
 // codecgen only works in the following:
-//   - extensions are not supported. Do not make a type a Selfer and an extension.
-//   - Canonical is not supported.
+//   - extensions are not supported.
+//     Do not make a type a Selfer and an extension.
+//   - Canonical option is ignored (not supported AT THIS TIME).
+//     This is just because it has not been implemented.
 //   - Selfer takes precedence.
 //     Any type that implements it knows how to encode/decode itself statically.
 //     Extensions are only known at runtime.
