@@ -363,6 +363,20 @@ func (f encFnInfo) textMarshal(rv reflect.Value) {
 	}
 }
 
+func (f encFnInfo) jsonMarshal(rv reflect.Value) {
+	if v, proceed := f.getValueForMarshalInterface(rv, f.ti.jmIndir); proceed {
+		bs, fnerr := v.(jsonMarshaler).MarshalJSON()
+		if fnerr != nil {
+			panic(fnerr)
+		}
+		if bs == nil {
+			f.ee.EncodeNil()
+		} else {
+			f.ee.EncodeStringBytes(c_UTF8, bs)
+		}
+	}
+}
+
 func (f encFnInfo) kBool(rv reflect.Value) {
 	f.ee.EncodeBool(rv.Bool())
 }
@@ -1110,6 +1124,10 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkFastpath, checkCo
 	} else if supportMarshalInterfaces && !e.be && ti.tm {
 		fi.encFnInfoX = &encFnInfoX{e: e, ti: ti}
 		fn.f = (encFnInfo).textMarshal
+	} else if supportMarshalInterfaces && !e.be && ti.jm {
+		//TODO: This only works NOW, as JSON is the ONLY text format.
+		fi.encFnInfoX = &encFnInfoX{e: e, ti: ti}
+		fn.f = (encFnInfo).jsonMarshal
 	} else {
 		rk := rt.Kind()
 		// if fastpathEnabled && checkFastpath && (rk == reflect.Map || rk == reflect.Slice) {
