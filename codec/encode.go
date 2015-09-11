@@ -337,14 +337,7 @@ func (f encFnInfo) selferMarshal(rv reflect.Value) {
 func (f encFnInfo) binaryMarshal(rv reflect.Value) {
 	if v, proceed := f.getValueForMarshalInterface(rv, f.ti.bmIndir); proceed {
 		bs, fnerr := v.(encoding.BinaryMarshaler).MarshalBinary()
-		if fnerr != nil {
-			panic(fnerr)
-		}
-		if bs == nil {
-			f.ee.EncodeNil()
-		} else {
-			f.ee.EncodeStringBytes(c_RAW, bs)
-		}
+		f.e.marshal(bs, fnerr, c_RAW)
 	}
 }
 
@@ -352,28 +345,14 @@ func (f encFnInfo) textMarshal(rv reflect.Value) {
 	if v, proceed := f.getValueForMarshalInterface(rv, f.ti.tmIndir); proceed {
 		// debugf(">>>> encoding.TextMarshaler: %T", rv.Interface())
 		bs, fnerr := v.(encoding.TextMarshaler).MarshalText()
-		if fnerr != nil {
-			panic(fnerr)
-		}
-		if bs == nil {
-			f.ee.EncodeNil()
-		} else {
-			f.ee.EncodeStringBytes(c_UTF8, bs)
-		}
+		f.e.marshal(bs, fnerr, c_UTF8)
 	}
 }
 
 func (f encFnInfo) jsonMarshal(rv reflect.Value) {
 	if v, proceed := f.getValueForMarshalInterface(rv, f.ti.jmIndir); proceed {
 		bs, fnerr := v.(jsonMarshaler).MarshalJSON()
-		if fnerr != nil {
-			panic(fnerr)
-		}
-		if bs == nil {
-			f.ee.EncodeNil()
-		} else {
-			f.ee.EncodeStringBytes(c_UTF8, bs)
-		}
+		f.e.marshal(bs, fnerr, c_UTF8)
 	}
 }
 
@@ -1212,6 +1191,17 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkFastpath, checkCo
 		e.s = append(e.s, rtidEncFn{rtid, fn})
 	}
 	return
+}
+
+func (e *Encoder) marshal(bs []byte, fnerr error, c charEncoding) {
+	if fnerr != nil {
+		panic(fnerr)
+	}
+	if bs == nil {
+		e.e.EncodeNil()
+	} else {
+		e.e.EncodeStringBytes(c, bs)
+	}
 }
 
 func (e *Encoder) errorf(format string, params ...interface{}) {
