@@ -870,9 +870,9 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 // The empty values (for omitempty option) are false, 0, any nil pointer
 // or interface value, and any array, slice, map, or string of length zero.
 //
-// Anonymous fields are encoded inline if the struct tag is "effectively" blank
-// i.e. it is not present or does not have any parameters specified.
-// Else they are encoded as regular fields.
+// Anonymous fields are encoded inline except:
+//    - the struct tag specifies a replacement name (first value)
+//    - the field is of an interface type
 //
 // Examples:
 //
@@ -883,6 +883,9 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 //          Field2 int      `codec:"myName"`       //Use key "myName" in encode stream
 //          Field3 int32    `codec:",omitempty"`   //use key "Field3". Omit if empty.
 //          Field4 bool     `codec:"f4,omitempty"` //use key "f4". Omit if empty.
+//          io.Reader                              //use key "Reader".
+//          MyStruct        `codec:"my1"           //use key "my1".
+//          MyStruct                               //inline it
 //          ...
 //      }
 //
@@ -892,8 +895,9 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 //      }
 //
 // The mode of encoding is based on the type of the value. When a value is seen:
+//   - If a Selfer, call its CodecEncodeSelf method
 //   - If an extension is registered for it, call that extension function
-//   - If it implements BinaryMarshaler, call its MarshalBinary() (data []byte, err error)
+//   - If it implements encoding.(Binary|Text|JSON)Marshaler, call its Marshal(Binary|Text|JSON) method
 //   - Else encode it based on its reflect.Kind
 //
 // Note that struct field names and keys in map[string]XXX will be treated as symbols.
