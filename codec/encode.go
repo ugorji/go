@@ -337,7 +337,7 @@ func (f encFnInfo) selferMarshal(rv reflect.Value) {
 func (f encFnInfo) binaryMarshal(rv reflect.Value) {
 	if v, proceed := f.getValueForMarshalInterface(rv, f.ti.bmIndir); proceed {
 		bs, fnerr := v.(encoding.BinaryMarshaler).MarshalBinary()
-		f.e.marshal(bs, fnerr, c_RAW)
+		f.e.marshal(bs, fnerr, false, c_RAW)
 	}
 }
 
@@ -345,14 +345,14 @@ func (f encFnInfo) textMarshal(rv reflect.Value) {
 	if v, proceed := f.getValueForMarshalInterface(rv, f.ti.tmIndir); proceed {
 		// debugf(">>>> encoding.TextMarshaler: %T", rv.Interface())
 		bs, fnerr := v.(encoding.TextMarshaler).MarshalText()
-		f.e.marshal(bs, fnerr, c_UTF8)
+		f.e.marshal(bs, fnerr, false, c_UTF8)
 	}
 }
 
 func (f encFnInfo) jsonMarshal(rv reflect.Value) {
 	if v, proceed := f.getValueForMarshalInterface(rv, f.ti.jmIndir); proceed {
 		bs, fnerr := v.(jsonMarshaler).MarshalJSON()
-		f.e.marshal(bs, fnerr, c_UTF8)
+		f.e.marshal(bs, fnerr, true, c_UTF8)
 	}
 }
 
@@ -794,6 +794,7 @@ type Encoder struct {
 	w  encWriter
 	s  []rtidEncFn
 	be bool // is binary encoding
+	js bool // is json handle
 
 	wi ioEncWriter
 	wb bytesEncWriter
@@ -820,6 +821,7 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 	}
 	e.wi.w = ww
 	e.w = &e.wi
+	_, e.js = h.(*JsonHandle)
 	e.e = h.newEncDriver(e)
 	return e
 }
@@ -837,6 +839,7 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 	}
 	e.wb.b, e.wb.out = in, out
 	e.w = &e.wb
+	_, e.js = h.(*JsonHandle)
 	e.e = h.newEncDriver(e)
 	return e
 }
@@ -1100,13 +1103,13 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkFastpath, checkCo
 	} else if supportMarshalInterfaces && e.be && ti.bm {
 		fi.encFnInfoX = &encFnInfoX{e: e, ti: ti}
 		fn.f = (encFnInfo).binaryMarshal
+	} else if supportMarshalInterfaces && !e.be && e.js && ti.jm {
+		//If JSON, we should check JSONMarshal before textMarshal
+		fi.encFnInfoX = &encFnInfoX{e: e, ti: ti}
+		fn.f = (encFnInfo).jsonMarshal
 	} else if supportMarshalInterfaces && !e.be && ti.tm {
 		fi.encFnInfoX = &encFnInfoX{e: e, ti: ti}
 		fn.f = (encFnInfo).textMarshal
-	} else if supportMarshalInterfaces && !e.be && ti.jm {
-		//TODO: This only works NOW, as JSON is the ONLY text format.
-		fi.encFnInfoX = &encFnInfoX{e: e, ti: ti}
-		fn.f = (encFnInfo).jsonMarshal
 	} else {
 		rk := rt.Kind()
 		// if fastpathEnabled && checkFastpath && (rk == reflect.Map || rk == reflect.Slice) {
@@ -1193,12 +1196,14 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkFastpath, checkCo
 	return
 }
 
-func (e *Encoder) marshal(bs []byte, fnerr error, c charEncoding) {
+func (e *Encoder) marshal(bs []byte, fnerr error, asis bool, c charEncoding) {
 	if fnerr != nil {
 		panic(fnerr)
 	}
 	if bs == nil {
 		e.e.EncodeNil()
+	} else if asis {
+		e.w.writeb(bs)
 	} else {
 		e.e.EncodeStringBytes(c, bs)
 	}
