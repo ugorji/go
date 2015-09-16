@@ -1012,12 +1012,15 @@ func (e *Encoder) encode(iv interface{}) {
 
 	default:
 		// canonical mode is not supported for fastpath of maps (but is fine for slices)
+		const checkCodecSelfer1 = true // in case T is passed, where *T is a Selfer, still checkCodecSelfer
 		if e.h.Canonical {
 			if !fastpathEncodeTypeSwitchSlice(iv, e) {
-				e.encodeI(iv, false, false)
+				e.encodeI(iv, false, checkCodecSelfer1)
 			}
-		} else if !fastpathEncodeTypeSwitch(iv, e) {
-			e.encodeI(iv, false, false)
+		} else {
+			if !fastpathEncodeTypeSwitch(iv, e) {
+				e.encodeI(iv, false, checkCodecSelfer1)
+			}
 		}
 	}
 }
@@ -1155,7 +1158,7 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkFastpath, checkCo
 				fn.f = (encFnInfo).kFloat32
 			case reflect.Int, reflect.Int8, reflect.Int64, reflect.Int32, reflect.Int16:
 				fn.f = (encFnInfo).kInt
-			case reflect.Uint8, reflect.Uint64, reflect.Uint, reflect.Uint32, reflect.Uint16:
+			case reflect.Uint8, reflect.Uint64, reflect.Uint, reflect.Uint32, reflect.Uint16, reflect.Uintptr:
 				fn.f = (encFnInfo).kUint
 			case reflect.Invalid:
 				fn.f = (encFnInfo).kInvalid
