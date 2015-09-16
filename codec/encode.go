@@ -303,8 +303,8 @@ func (f encFnInfo) rawExt(rv reflect.Value) {
 }
 
 func (f encFnInfo) ext(rv reflect.Value) {
-	// if this is a struct and it was addressable, then pass the address directly (not the value)
-	if rv.CanAddr() && rv.Kind() == reflect.Struct {
+	// if this is a struct|array and it was addressable, then pass the address directly (not the value)
+	if k := rv.Kind(); (k == reflect.Struct || k == reflect.Array) && rv.CanAddr() {
 		rv = rv.Addr()
 	}
 	f.ee.EncodeExt(rv.Interface(), f.xfTag, f.xfFn, f.e)
@@ -314,7 +314,16 @@ func (f encFnInfo) getValueForMarshalInterface(rv reflect.Value, indir int8) (v 
 	if indir == 0 {
 		v = rv.Interface()
 	} else if indir == -1 {
-		v = rv.Addr().Interface()
+		// If a non-pointer was passed to Encode(), then that value is not addressable.
+		// Take addr if addresable, else copy value to an addressable value.
+		if rv.CanAddr() {
+			v = rv.Addr().Interface()
+		} else {
+			rv2 := reflect.New(rv.Type())
+			rv2.Elem().Set(rv)
+			v = rv2.Interface()
+			// fmt.Printf("rv.Type: %v, rv2.Type: %v, v: %v\n", rv.Type(), rv2.Type(), v)
+		}
 	} else {
 		for j := int8(0); j < indir; j++ {
 			if rv.IsNil() {
