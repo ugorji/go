@@ -124,9 +124,11 @@ type genRunner struct {
 	cpfx   string // codec package prefix
 	unsafe bool   // is unsafe to be used in generated code?
 
-	ts map[reflect.Type]struct{} // types for which enc/dec must be generated
-	xs string                    // top level variable/constant suffix
-	hn string                    // fn helper type name
+	tm map[reflect.Type]struct{} // types for which enc/dec must be generated
+	ts []reflect.Type            // types for which enc/dec must be generated
+
+	xs string // top level variable/constant suffix
+	hn string // fn helper type name
 
 	// rr *rand.Rand // random generator for file-specific types
 }
@@ -148,7 +150,8 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, typ ...ref
 		im:     make(map[string]reflect.Type),
 		imn:    make(map[string]string),
 		is:     make(map[reflect.Type]struct{}),
-		ts:     make(map[reflect.Type]struct{}),
+		tm:     make(map[reflect.Type]struct{}),
+		ts:     []reflect.Type{},
 		bp:     typ[0].PkgPath(),
 		xs:     uid,
 	}
@@ -261,7 +264,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, typ ...ref
 		x.selfer(false)
 	}
 
-	for t, _ := range x.ts {
+	for _, t := range x.ts {
 		rtid := reflect.ValueOf(t).Pointer()
 		// generate enc functions for all these slice/map types.
 		x.linef("func (x %s) enc%s(v %s%s, e *%sEncoder) {", x.hn, x.genMethodNameT(t), x.arr2str(t, "*"), x.genTypeName(t), x.cpfx)
@@ -523,7 +526,10 @@ func (x *genRunner) xtraSM(varname string, encode bool, t reflect.Type) {
 		x.linef("h.dec%s((*%s)(%s), d)", x.genMethodNameT(t), x.genTypeName(t), varname)
 		// x.line("h.dec" + x.genMethodNameT(t) + "((*" + x.genTypeName(t) + ")(" + varname + "), d)")
 	}
-	x.ts[t] = struct{}{}
+	if _, ok := x.tm[t]; !ok {
+		x.tm[t] = struct{}{}
+		x.ts = append(x.ts, t)
+	}
 }
 
 // encVar will encode a variable.
