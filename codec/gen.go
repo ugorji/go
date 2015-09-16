@@ -631,7 +631,7 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	switch t.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		x.line("r.EncodeInt(int64(" + varname + "))")
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		x.line("r.EncodeUint(uint64(" + varname + "))")
 	case reflect.Float32:
 		x.line("r.EncodeFloat32(float32(" + varname + "))")
@@ -697,7 +697,7 @@ func (x *genRunner) encZero(t reflect.Type) {
 	switch t.Kind() {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		x.line("r.EncodeInt(0)")
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		x.line("r.EncodeUint(0)")
 	case reflect.Float32:
 		x.line("r.EncodeFloat32(0)")
@@ -1121,6 +1121,8 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	case reflect.Uint64:
 		x.line("*((*uint64)(" + varname + ")) = uint64(r.DecodeUint(64))")
 		//x.line("z.DecUint64((*uint64)(" + varname + "))")
+	case reflect.Uintptr:
+		x.line("*((*uintptr)(" + varname + ")) = uintptr(r.DecodeUint(codecSelferBitsize" + x.xs + "))")
 
 	case reflect.Float32:
 		x.line("*((*float32)(" + varname + ")) = float32(r.DecodeFloat(true))")
@@ -1226,6 +1228,8 @@ func (x *genRunner) decTryAssignPrimitive(varname string, t reflect.Type) (tryAs
 		x.linef("%s = %s(r.DecodeUint(32))", varname, xfn(t))
 	case reflect.Uint64:
 		x.linef("%s = %s(r.DecodeUint(64))", varname, xfn(t))
+	case reflect.Uintptr:
+		x.linef("%s = %s(r.DecodeUint(codecSelferBitsize%s))", varname, xfn(t), x.xs)
 
 	case reflect.Float32:
 		x.linef("%s = %s(r.DecodeFloat(true))", varname, xfn(t))
