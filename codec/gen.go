@@ -128,12 +128,14 @@ type genRunner struct {
 	xs string                    // top level variable/constant suffix
 	hn string                    // fn helper type name
 
-	rr *rand.Rand // random generator for file-specific types
+	// rr *rand.Rand // random generator for file-specific types
 }
 
 // Gen will write a complete go file containing Selfer implementations for each
 // type passed. All the types must be in the same package.
-func Gen(w io.Writer, buildTags, pkgName string, useUnsafe bool, typ ...reflect.Type) {
+//
+// Library users: *DO NOT USE IT DIRECTLY. IT WILL CHANGE CONTINOUSLY WITHOUT NOTICE.*
+func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, typ ...reflect.Type) {
 	if len(typ) == 0 {
 		return
 	}
@@ -148,8 +150,13 @@ func Gen(w io.Writer, buildTags, pkgName string, useUnsafe bool, typ ...reflect.
 		is:     make(map[reflect.Type]struct{}),
 		ts:     make(map[reflect.Type]struct{}),
 		bp:     typ[0].PkgPath(),
-		rr:     rand.New(rand.NewSource(time.Now().UnixNano())),
+		xs:     uid,
 	}
+	if x.xs == "" {
+		rr := rand.New(rand.NewSource(time.Now().UnixNano()))
+		x.xs = strconv.FormatInt(rr.Int63n(9999), 10)
+	}
+
 	// gather imports first:
 	x.cp = reflect.TypeOf(x).PkgPath()
 	x.imn[x.cp] = genCodecPkg
@@ -193,8 +200,6 @@ func Gen(w io.Writer, buildTags, pkgName string, useUnsafe bool, typ ...reflect.
 	}
 	x.line(")")
 	x.line("")
-
-	x.xs = strconv.FormatInt(x.rr.Int63n(9999), 10)
 
 	x.line("const (")
 	x.linef("codecSelferC_UTF8%s = %v", x.xs, int64(c_UTF8))
