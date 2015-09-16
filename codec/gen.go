@@ -77,7 +77,14 @@ import (
 //   It was a concious decision to have gen.go always explicitly call EncodeNil or TryDecodeAsNil.
 //   This way, there isn't a function call overhead just to see that we should not enter a block of code.
 
-const GenVersion = 2 // increment this value each time codecgen changes fundamentally.
+// GenVersion is the current version of codecgen.
+//
+// NOTE: Increment this value each time codecgen changes fundamentally.
+// Fundamental changes are:
+//   - helper methods change (signature change, new ones added, some removed, etc)
+//   - codecgen command line changes
+//
+const GenVersion = 3
 
 const (
 	genCodecPkg        = "codec1978"
