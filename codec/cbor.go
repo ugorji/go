@@ -3,7 +3,10 @@
 
 package codec
 
-import "math"
+import (
+	"math"
+	"reflect"
+)
 
 const (
 	cborMajorUint byte = iota
@@ -564,6 +567,10 @@ func (h *CborHandle) newEncDriver(e *Encoder) encDriver {
 
 func (h *CborHandle) newDecDriver(d *Decoder) decDriver {
 	return &cborDecDriver{d: d, r: d.r, h: h, br: d.bytes}
+}
+
+func (h *CborHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
+	return h.SetExt(rt, tag, &setExtWrapper{i: ext})
 }
 
 var _ decDriver = (*cborDecDriver)(nil)
