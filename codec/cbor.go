@@ -158,7 +158,11 @@ func (e *cborEncDriver) EncodeSymbol(v string) {
 }
 
 func (e *cborEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
-	e.encLen(cborBaseBytes, len(v))
+	if c == c_RAW {
+		e.encLen(cborBaseBytes, len(v))
+	} else {
+		e.encLen(cborBaseString, len(v))
+	}
 	e.w.writeb(v)
 }
 

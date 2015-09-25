@@ -219,8 +219,8 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, typ ...ref
 	x.line("const (")
 	x.linef("codecSelferC_UTF8%s = %v", x.xs, int64(c_UTF8))
 	x.linef("codecSelferC_RAW%s = %v", x.xs, int64(c_RAW))
-	x.linef("codecSelverValueTypeArray%s = %v", x.xs, int64(valueTypeArray))
-	x.linef("codecSelverValueTypeMap%s = %v", x.xs, int64(valueTypeMap))
+	x.linef("codecSelferValueTypeArray%s = %v", x.xs, int64(valueTypeArray))
+	x.linef("codecSelferValueTypeMap%s = %v", x.xs, int64(valueTypeMap))
 	x.line(")")
 	x.line("var (")
 	x.line("codecSelferBitsize" + x.xs + " = uint8(reflect.TypeOf(uint(0)).Bits())")
@@ -1453,7 +1453,7 @@ func (x *genRunner) decStruct(varname string, rtid uintptr, t reflect.Type) {
 	// if container is map
 	// x.line("if z.DecContainerIsMap() { ")
 	i := x.varsfx()
-	x.line("if r.IsContainerType(codecSelverValueTypeMap" + x.xs + ") {")
+	x.line("if r.IsContainerType(codecSelferValueTypeMap" + x.xs + ") {")
 	x.line(genTempVarPfx + "l" + i + " := r.ReadMapStart()")
 	x.linef("if %sl%s == 0 {", genTempVarPfx, i)
 	x.line("r.ReadEnd()")
@@ -1470,7 +1470,7 @@ func (x *genRunner) decStruct(varname string, rtid uintptr, t reflect.Type) {
 
 	// else if container is array
 	// x.line("} else if z.DecContainerIsArray() { ")
-	x.line("} else if r.IsContainerType(codecSelverValueTypeArray" + x.xs + ") {")
+	x.line("} else if r.IsContainerType(codecSelferValueTypeArray" + x.xs + ") {")
 	x.line(genTempVarPfx + "l" + i + " := r.ReadArrayStart()")
 	x.linef("if %sl%s == 0 {", genTempVarPfx, i)
 	x.line("r.ReadEnd()")
