@@ -14,6 +14,7 @@ import (
 	"math/rand"
 	"reflect"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -201,7 +202,13 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, typ ...ref
 		x.cpfx = genCodecPkg + "."
 		x.linef("%s \"%s\"", genCodecPkg, x.cp)
 	}
+	// use a sorted set of im keys, so that we can get consistent output
+	imKeys := make([]string, 0, len(x.im))
 	for k, _ := range x.im {
+		imKeys = append(imKeys, k)
+	}
+	sort.Strings(imKeys)
+	for _, k := range imKeys { // for k, _ := range x.im {
 		x.linef("%s \"%s\"", x.imn[k], k)
 	}
 	// add required packages
@@ -247,7 +254,9 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, typ ...ref
 	x.linef("}")
 	x.line("if false { // reference the types, but skip this branch at build/run time")
 	var n int
-	for k, t := range x.im {
+	// for k, t := range x.im {
+	for _, k := range imKeys {
+		t := x.im[k]
 		x.linef("var v%v %s.%s", n, x.imn[k], t.Name())
 		n++
 	}
