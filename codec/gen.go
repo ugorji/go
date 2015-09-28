@@ -1535,10 +1535,13 @@ func genImportPath(t reflect.Type) (s string) {
 	s = t.PkgPath()
 	if genCheckVendor {
 		// HACK: Misbehaviour occurs in go 1.5. May have to re-visit this later.
-		// if s contains /vendor/, then return everything after it.
-		const vendorStr = "/vendor/"
-		if i := strings.LastIndex(s, vendorStr); i >= 0 {
-			s = s[i+len(vendorStr):]
+		// if s contains /vendor/ OR startsWith vendor/, then return everything after it.
+		const vendorStart = "vendor/"
+		const vendorInline = "/vendor/"
+		if i := strings.LastIndex(s, vendorInline); i >= 0 {
+			s = s[i+len(vendorInline):]
+		} else if strings.HasPrefix(s, vendorStart) {
+			s = s[len(vendorStart):]
 		}
 	}
 	return
