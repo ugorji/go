@@ -12,6 +12,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"reflect"
 	"regexp"
 	"sort"
@@ -165,7 +166,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, typ ...ref
 		is:     make(map[reflect.Type]struct{}),
 		tm:     make(map[reflect.Type]struct{}),
 		ts:     []reflect.Type{},
-		bp:     typ[0].PkgPath(),
+		bp:     genImportPath(typ[0]),
 		xs:     uid,
 	}
 	if x.xs == "" {
@@ -174,11 +175,11 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, typ ...ref
 	}
 
 	// gather imports first:
-	x.cp = reflect.TypeOf(x).PkgPath()
+	x.cp = genImportPath(reflect.TypeOf(x))
 	x.imn[x.cp] = genCodecPkg
 	for _, t := range typ {
-		// fmt.Printf("###########: PkgPath: '%v', Name: '%s'\n", t.PkgPath(), t.Name())
-		if t.PkgPath() != x.bp {
+		// fmt.Printf("###########: PkgPath: '%v', Name: '%s'\n", genImportPath(t), t.Name())
+		if genImportPath(t) != x.bp {
 			panic(genAllTypesSamePkgErr)
 		}
 		x.genRefPkgs(t)
@@ -346,9 +347,9 @@ func (x *genRunner) genRefPkgs(t reflect.Type) {
 	if _, ok := x.is[t]; ok {
 		return
 	}
-	// fmt.Printf(">>>>>>: PkgPath: '%v', Name: '%s'\n", t.PkgPath(), t.Name())
+	// fmt.Printf(">>>>>>: PkgPath: '%v', Name: '%s'\n", genImportPath(t), t.Name())
 	x.is[t] = struct{}{}
-	tpkg, tname := t.PkgPath(), t.Name()
+	tpkg, tname := genImportPath(t), t.Name()
 	if tpkg != "" && tpkg != x.bp && tpkg != x.cp && tname != "" && tname[0] >= 'A' && tname[0] <= 'Z' {
 		if _, ok := x.im[tpkg]; !ok {
 			x.im[tpkg] = t
@@ -438,10 +439,10 @@ func (x *genRunner) genTypeName(t reflect.Type) (n string) {
 func (x *genRunner) genTypeNamePrim(t reflect.Type) (n string) {
 	if t.Name() == "" {
 		return t.String()
-	} else if t.PkgPath() == "" || t.PkgPath() == x.tc.PkgPath() {
+	} else if genImportPath(t) == "" || genImportPath(t) == genImportPath(x.tc) {
 		return t.Name()
 	} else {
-		return x.imn[t.PkgPath()] + "." + t.Name()
+		return x.imn[genImportPath(t)] + "." + t.Name()
 		// return t.String() // best way to get the package name inclusive
 	}
 }
@@ -653,7 +654,7 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 		x.linef("r.EncodeBuiltin(%s, %s)", vrtid, varname)
 	}
 	// only check for extensions if the type is named, and has a packagePath.
-	if t.PkgPath() != "" && t.Name() != "" {
+	if genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion
 		x.linef("} else if z.HasExtensions() && z.EncExt(%s) {", varname)
 	}
@@ -1065,7 +1066,7 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 		x.linef("r.DecodeBuiltin(%s, %s)", vrtid, varname)
 	}
 	// only check for extensions if the type is named, and has a packagePath.
-	if t.PkgPath() != "" && t.Name() != "" {
+	if genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion
 		x.linef("} else if z.HasExtensions() && z.DecExt(%s) {", varname)
 	}
@@ -1523,6 +1524,26 @@ func (x *genV) MethodNamePfx(prefix string, prim bool) string {
 
 }
 
+var genCheckVendor = os.Getenv("GO15VENDOREXPERIMENT") == "1"
+
+// genImportPath returns import path of a non-predeclared named typed, or an empty string otherwise.
+//
+// This handles the misbehaviour that occurs when 1.5-style vendoring is enabled,
+// where PkgPath returns the full path, including the vendoring pre-fix that should have been stripped.
+// We strip it here.
+func genImportPath(t reflect.Type) (s string) {
+	s = t.PkgPath()
+	if genCheckVendor {
+		// HACK: Misbehaviour occurs in go 1.5. May have to re-visit this later.
+		// if s contains /vendor/, then return everything after it.
+		const vendorStr = "/vendor/"
+		if i := strings.LastIndex(s, vendorStr); i >= 0 {
+			s = s[i+len(vendorStr):]
+		}
+	}
+	return
+}
+
 func genNonPtr(t reflect.Type) reflect.Type {
 	for t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -1547,7 +1568,7 @@ func genMethodNameT(t reflect.Type, tRef reflect.Type) (n string) {
 	}
 	tstr := t.String()
 	if tn := t.Name(); tn != "" {
-		if tRef != nil && t.PkgPath() == tRef.PkgPath() {
+		if tRef != nil && genImportPath(t) == genImportPath(tRef) {
 			return ptrPfx + tn
 		} else {
 			if genQNameRegex.MatchString(tstr) {
@@ -1579,7 +1600,7 @@ func genMethodNameT(t reflect.Type, tRef reflect.Type) (n string) {
 		if t == intfTyp {
 			return ptrPfx + "Interface"
 		} else {
-			if tRef != nil && t.PkgPath() == tRef.PkgPath() {
+			if tRef != nil && genImportPath(t) == genImportPath(tRef) {
 				if t.Name() != "" {
 					return ptrPfx + t.Name()
 				} else {
