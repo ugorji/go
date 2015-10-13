@@ -426,7 +426,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v map[{{ .MapKey }}]{{ .Ele
 			{{ if eq .MapKey "interface{}" }}mk = nil 
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
+				mk = d.string(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
 			}{{ else }}mk = {{ decmd .MapKey }}{{ end }}
 			{{ if eq .Elem "interface{}" }}if mapGet { mv = v[mk] } else { mv = nil }
 			d.decode(&mv){{ else }}mv = {{ decmd .Elem }}{{ end }}
@@ -439,7 +439,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v map[{{ .MapKey }}]{{ .Ele
 			{{ if eq .MapKey "interface{}" }}mk = nil 
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
+				mk = d.string(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
 			}{{ else }}mk = {{ decmd .MapKey }}{{ end }}
 			{{ if eq .Elem "interface{}" }}if mapGet { mv = v[mk] } else { mv = nil }
 			d.decode(&mv){{ else }}mv = {{ decmd .Elem }}{{ end }}

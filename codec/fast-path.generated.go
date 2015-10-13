@@ -15329,7 +15329,7 @@ func (_ fastpathT) DecMapIntfIntfV(v map[interface{}]interface{}, checkNil bool,
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			if mapGet {
 				mv = v[mk]
@@ -15346,7 +15346,7 @@ func (_ fastpathT) DecMapIntfIntfV(v map[interface{}]interface{}, checkNil bool,
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			if mapGet {
 				mv = v[mk]
@@ -15406,7 +15406,7 @@ func (_ fastpathT) DecMapIntfStringV(v map[interface{}]string, checkNil bool, ca
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = dd.DecodeString()
 			if v != nil {
@@ -15418,7 +15418,7 @@ func (_ fastpathT) DecMapIntfStringV(v map[interface{}]string, checkNil bool, ca
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = dd.DecodeString()
 			if v != nil {
@@ -15473,7 +15473,7 @@ func (_ fastpathT) DecMapIntfUintV(v map[interface{}]uint, checkNil bool, canCha
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = uint(dd.DecodeUint(uintBitsize))
 			if v != nil {
@@ -15485,7 +15485,7 @@ func (_ fastpathT) DecMapIntfUintV(v map[interface{}]uint, checkNil bool, canCha
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = uint(dd.DecodeUint(uintBitsize))
 			if v != nil {
@@ -15540,7 +15540,7 @@ func (_ fastpathT) DecMapIntfUint8V(v map[interface{}]uint8, checkNil bool, canC
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = uint8(dd.DecodeUint(8))
 			if v != nil {
@@ -15552,7 +15552,7 @@ func (_ fastpathT) DecMapIntfUint8V(v map[interface{}]uint8, checkNil bool, canC
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = uint8(dd.DecodeUint(8))
 			if v != nil {
@@ -15607,7 +15607,7 @@ func (_ fastpathT) DecMapIntfUint16V(v map[interface{}]uint16, checkNil bool, ca
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = uint16(dd.DecodeUint(16))
 			if v != nil {
@@ -15619,7 +15619,7 @@ func (_ fastpathT) DecMapIntfUint16V(v map[interface{}]uint16, checkNil bool, ca
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = uint16(dd.DecodeUint(16))
 			if v != nil {
@@ -15674,7 +15674,7 @@ func (_ fastpathT) DecMapIntfUint32V(v map[interface{}]uint32, checkNil bool, ca
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = uint32(dd.DecodeUint(32))
 			if v != nil {
@@ -15686,7 +15686,7 @@ func (_ fastpathT) DecMapIntfUint32V(v map[interface{}]uint32, checkNil bool, ca
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = uint32(dd.DecodeUint(32))
 			if v != nil {
@@ -15741,7 +15741,7 @@ func (_ fastpathT) DecMapIntfUint64V(v map[interface{}]uint64, checkNil bool, ca
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = dd.DecodeUint(64)
 			if v != nil {
@@ -15753,7 +15753,7 @@ func (_ fastpathT) DecMapIntfUint64V(v map[interface{}]uint64, checkNil bool, ca
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = dd.DecodeUint(64)
 			if v != nil {
@@ -15808,7 +15808,7 @@ func (_ fastpathT) DecMapIntfUintptrV(v map[interface{}]uintptr, checkNil bool, 
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = uintptr(dd.DecodeUint(uintBitsize))
 			if v != nil {
@@ -15820,7 +15820,7 @@ func (_ fastpathT) DecMapIntfUintptrV(v map[interface{}]uintptr, checkNil bool, 
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = uintptr(dd.DecodeUint(uintBitsize))
 			if v != nil {
@@ -15875,7 +15875,7 @@ func (_ fastpathT) DecMapIntfIntV(v map[interface{}]int, checkNil bool, canChang
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = int(dd.DecodeInt(intBitsize))
 			if v != nil {
@@ -15887,7 +15887,7 @@ func (_ fastpathT) DecMapIntfIntV(v map[interface{}]int, checkNil bool, canChang
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = int(dd.DecodeInt(intBitsize))
 			if v != nil {
@@ -15942,7 +15942,7 @@ func (_ fastpathT) DecMapIntfInt8V(v map[interface{}]int8, checkNil bool, canCha
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = int8(dd.DecodeInt(8))
 			if v != nil {
@@ -15954,7 +15954,7 @@ func (_ fastpathT) DecMapIntfInt8V(v map[interface{}]int8, checkNil bool, canCha
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = int8(dd.DecodeInt(8))
 			if v != nil {
@@ -16009,7 +16009,7 @@ func (_ fastpathT) DecMapIntfInt16V(v map[interface{}]int16, checkNil bool, canC
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = int16(dd.DecodeInt(16))
 			if v != nil {
@@ -16021,7 +16021,7 @@ func (_ fastpathT) DecMapIntfInt16V(v map[interface{}]int16, checkNil bool, canC
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = int16(dd.DecodeInt(16))
 			if v != nil {
@@ -16076,7 +16076,7 @@ func (_ fastpathT) DecMapIntfInt32V(v map[interface{}]int32, checkNil bool, canC
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = int32(dd.DecodeInt(32))
 			if v != nil {
@@ -16088,7 +16088,7 @@ func (_ fastpathT) DecMapIntfInt32V(v map[interface{}]int32, checkNil bool, canC
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = int32(dd.DecodeInt(32))
 			if v != nil {
@@ -16143,7 +16143,7 @@ func (_ fastpathT) DecMapIntfInt64V(v map[interface{}]int64, checkNil bool, canC
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = dd.DecodeInt(64)
 			if v != nil {
@@ -16155,7 +16155,7 @@ func (_ fastpathT) DecMapIntfInt64V(v map[interface{}]int64, checkNil bool, canC
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = dd.DecodeInt(64)
 			if v != nil {
@@ -16210,7 +16210,7 @@ func (_ fastpathT) DecMapIntfFloat32V(v map[interface{}]float32, checkNil bool, 
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = float32(dd.DecodeFloat(true))
 			if v != nil {
@@ -16222,7 +16222,7 @@ func (_ fastpathT) DecMapIntfFloat32V(v map[interface{}]float32, checkNil bool, 
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = float32(dd.DecodeFloat(true))
 			if v != nil {
@@ -16277,7 +16277,7 @@ func (_ fastpathT) DecMapIntfFloat64V(v map[interface{}]float64, checkNil bool, 
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = dd.DecodeFloat(false)
 			if v != nil {
@@ -16289,7 +16289,7 @@ func (_ fastpathT) DecMapIntfFloat64V(v map[interface{}]float64, checkNil bool, 
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = dd.DecodeFloat(false)
 			if v != nil {
@@ -16344,7 +16344,7 @@ func (_ fastpathT) DecMapIntfBoolV(v map[interface{}]bool, checkNil bool, canCha
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = dd.DecodeBool()
 			if v != nil {
@@ -16356,7 +16356,7 @@ func (_ fastpathT) DecMapIntfBoolV(v map[interface{}]bool, checkNil bool, canCha
 			mk = nil
 			d.decode(&mk)
 			if bv, bok := mk.([]byte); bok {
-				mk = string(bv)
+				mk = d.string(bv)
 			}
 			mv = dd.DecodeBool()
 			if v != nil {
