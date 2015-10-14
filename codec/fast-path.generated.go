@@ -3104,6 +3104,7 @@ func fastpathEncodeTypeSwitchMap(iv interface{}, e *Encoder) bool {
 		fastpathTV.EncMapBoolBoolV(*v, fastpathCheckNilTrue, e)
 
 	default:
+		_ = v // TODO: workaround https://github.com/golang/go/issues/12927 (remove after go 1.6 release)
 		return false
 	}
 	return true
