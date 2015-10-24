@@ -194,14 +194,6 @@ const (
 
 type seqType uint8
 
-// mirror json.Marshaler and json.Unmarshaler here, so we don't import the encoding/json package
-type jsonMarshaler interface {
-	MarshalJSON() ([]byte, error)
-}
-type jsonUnmarshaler interface {
-	UnmarshalJSON([]byte) error
-}
-
 const (
 	_ seqType = iota
 	seqTypeArray
@@ -209,13 +201,43 @@ const (
 	seqTypeChan
 )
 
+// note that containerMapStart and containerArraySend are not sent.
+// This is because the ReadXXXStart and EncodeXXXStart already does these.
+type containerState uint8
+
+const (
+	_ containerState = iota
+
+	containerMapStart // slot left open, since Driver method already covers it
+	containerMapKey
+	containerMapValue
+	containerMapEnd
+	containerArrayStart // slot left open, since Driver methods already cover it
+	containerArrayElem
+	containerArrayEnd
+)
+
+type containerStateRecv interface {
+	sendContainerState(containerState)
+}
+
+// mirror json.Marshaler and json.Unmarshaler here,
+// so we don't import the encoding/json package
+type jsonMarshaler interface {
+	MarshalJSON() ([]byte, error)
+}
+type jsonUnmarshaler interface {
+	UnmarshalJSON([]byte) error
+}
+
 var (
 	bigen               = binary.BigEndian
 	structInfoFieldName = "_struct"
 
-	// mapStrIntfTyp = reflect.TypeOf(map[string]interface{}(nil))
-	intfSliceTyp = reflect.TypeOf([]interface{}(nil))
-	intfTyp      = intfSliceTyp.Elem()
+	mapStrIntfTyp  = reflect.TypeOf(map[string]interface{}(nil))
+	mapIntfIntfTyp = reflect.TypeOf(map[interface{}]interface{}(nil))
+	intfSliceTyp   = reflect.TypeOf([]interface{}(nil))
+	intfTyp        = intfSliceTyp.Elem()
 
 	stringTyp     = reflect.TypeOf("")
 	timeTyp       = reflect.TypeOf(time.Time{})
@@ -241,6 +263,9 @@ var (
 	timeTypId       = reflect.ValueOf(timeTyp).Pointer()
 	stringTypId     = reflect.ValueOf(stringTyp).Pointer()
 
+	mapStrIntfTypId  = reflect.ValueOf(mapStrIntfTyp).Pointer()
+	mapIntfIntfTypId = reflect.ValueOf(mapIntfIntfTyp).Pointer()
+	intfSliceTypId   = reflect.ValueOf(intfSliceTyp).Pointer()
 	// mapBySliceTypId  = reflect.ValueOf(mapBySliceTyp).Pointer()
 
 	intBitsize  uint8 = uint8(reflect.TypeOf(int(0)).Bits())
@@ -283,7 +308,7 @@ type MapBySlice interface {
 type BasicHandle struct {
 	// TypeInfos is used to get the type info for any type.
 	//
-	// If not configure, the default TypeInfos is used, which uses struct tag keys: codec, json
+	// If not configured, the default TypeInfos is used, which uses struct tag keys: codec, json
 	TypeInfos *TypeInfos
 
 	extHandle
@@ -474,7 +499,7 @@ type extTypeTagFn struct {
 	ext  Ext
 }
 
-type extHandle []*extTypeTagFn
+type extHandle []extTypeTagFn
 
 // DEPRECATED: Use SetBytesExt or SetInterfaceExt on the Handle instead.
 //
@@ -513,12 +538,17 @@ func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 		}
 	}
 
-	*o = append(*o, &extTypeTagFn{rtid, rt, tag, ext})
+	if *o == nil {
+		*o = make([]extTypeTagFn, 0, 4)
+	}
+	*o = append(*o, extTypeTagFn{rtid, rt, tag, ext})
 	return
 }
 
 func (o extHandle) getExt(rtid uintptr) *extTypeTagFn {
-	for _, v := range o {
+	var v *extTypeTagFn
+	for i := range o {
+		v = &o[i]
 		if v.rtid == rtid {
 			return v
 		}
@@ -527,7 +557,9 @@ func (o extHandle) getExt(rtid uintptr) *extTypeTagFn {
 }
 
 func (o extHandle) getExtForTag(tag uint64) *extTypeTagFn {
-	for _, v := range o {
+	var v *extTypeTagFn
+	for i := range o {
+		v = &o[i]
 		if v.tag == tag {
 			return v
 		}
@@ -650,6 +682,8 @@ type typeInfo struct {
 	rt   reflect.Type
 	rtid uintptr
 
+	numMeth uint16 // number of methods
+
 	// baseId gives pointer to the base reflect.Type, after deferencing
 	// the pointers. E.g. base type of ***time.Time is time.Time.
 	base      reflect.Type
@@ -746,14 +780,10 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		return
 	}
 
-	x.mu.Lock()
-	defer x.mu.Unlock()
-	if pti, ok = x.infos[rtid]; ok {
-		return
-	}
-
+	// do not hold lock while computing this.
+	// it may lead to duplication, but that's ok.
 	ti := typeInfo{rt: rt, rtid: rtid}
-	pti = &ti
+	ti.numMeth = uint16(rt.NumMethod())
 
 	var indir int8
 	if ok, indir = implementsIntf(rt, binaryMarshalerTyp); ok {
@@ -813,7 +843,13 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		copy(ti.sfi, sfip)
 	}
 	// sfi = sfip
-	x.infos[rtid] = pti
+
+	x.mu.Lock()
+	if pti, ok = x.infos[rtid]; !ok {
+		pti = &ti
+		x.infos[rtid] = pti
+	}
+	x.mu.Unlock()
 	return
 }
 

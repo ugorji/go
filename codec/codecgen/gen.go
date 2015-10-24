@@ -220,7 +220,7 @@ func Generate(outfile, buildTag, codecPkgPath string, uid int64, useUnsafe bool,
 	os.Remove(outfile)
 
 	// execute go run frun
-	cmd := exec.Command("go", "run", "-tags="+goRunTag, frunMainName) //, frunPkg.Name())
+	cmd := exec.Command("go", "run", "-tags=notfastpath "+goRunTag, frunMainName) //, frunPkg.Name())
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf

@@ -116,6 +116,15 @@ func (f genHelperEncoder) EncExt(v interface{}) (r bool) {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncSendContainerState(c containerState) {
+	if f.e.cr != nil {
+		f.e.cr.sendContainerState(c)
+	}
+}
+
+// ---------------- DECODER FOLLOWS -----------------
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecBasicHandle() *BasicHandle {
 	return f.d.h
 }
@@ -217,4 +226,11 @@ func (f genHelperDecoder) DecExt(v interface{}) (r bool) {
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecInferLen(clen, maxlen, unit int) (rvlen int, truncated bool) {
 	return decInferLen(clen, maxlen, unit)
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperDecoder) DecSendContainerState(c containerState) {
+	if f.d.cr != nil {
+		f.d.cr.sendContainerState(c)
+	}
 }
