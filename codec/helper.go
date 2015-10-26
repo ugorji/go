@@ -112,8 +112,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"unicode"
-	"unicode/utf8"
 )
 
 const (
@@ -357,6 +355,8 @@ type RawExt struct {
 // It is used by codecs (e.g. binc, msgpack, simple) which do custom serialization of the types.
 type BytesExt interface {
 	// WriteExt converts a value to a []byte.
+	//
+	// Note: v *may* be a pointer to the extension type, if the extension type was a struct or array.
 	WriteExt(v interface{}) []byte
 
 	// ReadExt updates a value from a []byte.
@@ -369,6 +369,8 @@ type BytesExt interface {
 // It is used by codecs (e.g. cbor, json) which use the format to do custom serialization of the types.
 type InterfaceExt interface {
 	// ConvertExt converts a value into a simpler interface for easy encoding e.g. convert time.Time to int64.
+	//
+	// Note: v *may* be a pointer to the extension type, if the extension type was a struct or array.
 	ConvertExt(v interface{}) interface{}
 
 	// UpdateExt updates a value from a simpler interface for easy decoding e.g. convert int64 to time.Time.
@@ -388,7 +390,6 @@ type addExtWrapper struct {
 }
 
 func (x addExtWrapper) WriteExt(v interface{}) []byte {
-	// fmt.Printf(">>>>>>>>>> WriteExt: %T, %v\n", v, v)
 	bs, err := x.encFn(reflect.ValueOf(v))
 	if err != nil {
 		panic(err)
@@ -397,7 +398,6 @@ func (x addExtWrapper) WriteExt(v interface{}) []byte {
 }
 
 func (x addExtWrapper) ReadExt(v interface{}, bs []byte) {
-	// fmt.Printf(">>>>>>>>>> ReadExt: %T, %v\n", v, v)
 	if err := x.decFn(reflect.ValueOf(v), bs); err != nil {
 		panic(err)
 	}
@@ -858,45 +858,49 @@ func (x *TypeInfos) rget(rt reflect.Type, indexstack []int, fnameToHastag map[st
 ) {
 	for j := 0; j < rt.NumField(); j++ {
 		f := rt.Field(j)
-		// func types are skipped.
-		if tk := f.Type.Kind(); tk == reflect.Func {
+		fkind := f.Type.Kind()
+		// skip if a func type, or is unexported, or structTag value == "-"
+		if fkind == reflect.Func {
+			continue
+		}
+		// if r1, _ := utf8.DecodeRuneInString(f.Name); r1 == utf8.RuneError || !unicode.IsUpper(r1) {
+		if f.PkgPath != "" && !f.Anonymous { // unexported, not embedded
 			continue
 		}
 		stag := x.structTag(f.Tag)
 		if stag == "-" {
 			continue
 		}
-		if r1, _ := utf8.DecodeRuneInString(f.Name); r1 == utf8.RuneError || !unicode.IsUpper(r1) {
-			continue
-		}
 		var si *structFieldInfo
-		// if anonymous and there is no struct tag (or it's blank)
-		// and its a struct (or pointer to struct), inline it.
-		var doInline bool
-		if f.Anonymous && f.Type.Kind() != reflect.Interface {
-			doInline = stag == ""
+		// if anonymous and no struct tag (or it's blank), and a struct (or pointer to struct), inline it.
+		if f.Anonymous && fkind != reflect.Interface {
+			doInline := stag == ""
 			if !doInline {
 				si = parseStructFieldInfo("", stag)
 				doInline = si.encName == ""
 				// doInline = si.isZero()
-				// fmt.Printf(">>>> doInline for si.isZero: %s: %v\n", f.Name, doInline)
+			}
+			if doInline {
+				ft := f.Type
+				for ft.Kind() == reflect.Ptr {
+					ft = ft.Elem()
+				}
+				if ft.Kind() == reflect.Struct {
+					indexstack2 := make([]int, len(indexstack)+1, len(indexstack)+4)
+					copy(indexstack2, indexstack)
+					indexstack2[len(indexstack)] = j
+					// indexstack2 := append(append(make([]int, 0, len(indexstack)+4), indexstack...), j)
+					x.rget(ft, indexstack2, fnameToHastag, sfi, siInfo)
+					continue
+				}
 			}
 		}
 
-		if doInline {
-			ft := f.Type
-			for ft.Kind() == reflect.Ptr {
-				ft = ft.Elem()
-			}
-			if ft.Kind() == reflect.Struct {
-				indexstack2 := make([]int, len(indexstack)+1, len(indexstack)+4)
-				copy(indexstack2, indexstack)
-				indexstack2[len(indexstack)] = j
-				// indexstack2 := append(append(make([]int, 0, len(indexstack)+4), indexstack...), j)
-				x.rget(ft, indexstack2, fnameToHastag, sfi, siInfo)
-				continue
-			}
+		// after the anonymous dance: if an unexported field, skip
+		if f.PkgPath != "" { // unexported
+			continue
 		}
+
 		// do not let fields with same name in embedded structs override field at higher level.
 		// this must be done after anonymous check, to allow anonymous field
 		// still include their child fields

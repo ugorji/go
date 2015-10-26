@@ -34,32 +34,10 @@ func (x timeExt) ReadExt(v interface{}, bs []byte) {
 }
 
 func (x timeExt) ConvertExt(v interface{}) interface{} {
-	var bs []byte
-	switch v2 := v.(type) {
-	case time.Time:
-		bs = encodeTime(v2)
-	case *time.Time:
-		bs = encodeTime(*v2)
-	default:
-		panic(fmt.Errorf("unsupported format for time conversion: expecting time.Time; got %T", v2))
-	}
-	return bs
+	return x.WriteExt(v)
 }
 func (x timeExt) UpdateExt(v interface{}, src interface{}) {
-	var bs []byte
-	switch s2 := src.(type) {
-	case []byte:
-		bs = s2
-	case *[]byte:
-		bs = *s2
-	default:
-		panic(fmt.Errorf("unsupported format for time conversion: expecting []byte; got %T", s2))
-	}
-	tt, err := decodeTime(bs)
-	if err != nil {
-		panic(err)
-	}
-	*(v.(*time.Time)) = tt
+	x.ReadExt(v, src.([]byte))
 }
 
 // EncodeTime encodes a time.Time as a []byte, including

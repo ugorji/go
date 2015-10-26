@@ -385,41 +385,26 @@ func jsonIsWS(b byte) bool {
 	return b == ' ' || b == '\t' || b == '\r' || b == '\n'
 }
 
-// This will skip whitespace characters and return the next byte to read.
-// The next byte determines what the value will be one of.
-func (d *jsonDecDriver) skipWhitespace() {
-	// fast-path: do not enter loop. Just check first (in case no whitespace).
-	b := d.r.readn1()
-	if jsonIsWS(b) {
-		r := d.r
-		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
-		}
-	}
-	d.tok = b
-}
-
-// // To inline  if d.tok == 0 { d.skipWhitespace() }: USE:
-// func (d *jsonDecDriver) XXX() {
-// 	if d.tok == 0 {
-// 		b := d.r.readn1()
-// 		if jsonIsWS(b) {
-// 			r := d.r
-// 			for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
-// 			}
-// 		}
-// 		d.tok = b
-// 	}
-// 	// OR
-// 	if b, r := d.tok, d.r; b == 0 {
+// // This will skip whitespace characters and return the next byte to read.
+// // The next byte determines what the value will be one of.
+// func (d *jsonDecDriver) skipWhitespace() {
+// 	// fast-path: do not enter loop. Just check first (in case no whitespace).
+// 	b := d.r.readn1()
+// 	if jsonIsWS(b) {
+// 		r := d.r
 // 		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
 // 		}
-// 		d.tok = b
 // 	}
+// 	d.tok = b
 // }
 
 func (d *jsonDecDriver) sendContainerState(c containerState) {
 	if d.tok == 0 {
-		d.skipWhitespace()
+		var b byte
+		r := d.r
+		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
+		}
+		d.tok = b
 	}
 	var xc uint8 // char expected
 	if c == containerMapKey {
@@ -448,7 +433,11 @@ func (d *jsonDecDriver) sendContainerState(c containerState) {
 
 func (d *jsonDecDriver) CheckBreak() bool {
 	if d.tok == 0 {
-		d.skipWhitespace()
+		var b byte
+		r := d.r
+		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
+		}
+		d.tok = b
 	}
 	if d.tok == '}' || d.tok == ']' {
 		// d.tok = 0 // only checking, not consuming
@@ -470,7 +459,11 @@ func (d *jsonDecDriver) readStrIdx(fromIdx, toIdx uint8) {
 
 func (d *jsonDecDriver) TryDecodeAsNil() bool {
 	if d.tok == 0 {
-		d.skipWhitespace()
+		var b byte
+		r := d.r
+		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
+		}
+		d.tok = b
 	}
 	if d.tok == 'n' {
 		d.readStrIdx(10, 13) // ull
@@ -481,7 +474,11 @@ func (d *jsonDecDriver) TryDecodeAsNil() bool {
 
 func (d *jsonDecDriver) DecodeBool() bool {
 	if d.tok == 0 {
-		d.skipWhitespace()
+		var b byte
+		r := d.r
+		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
+		}
+		d.tok = b
 	}
 	if d.tok == 'f' {
 		d.readStrIdx(5, 9) // alse
@@ -497,7 +494,11 @@ func (d *jsonDecDriver) DecodeBool() bool {
 
 func (d *jsonDecDriver) ReadMapStart() int {
 	if d.tok == 0 {
-		d.skipWhitespace()
+		var b byte
+		r := d.r
+		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
+		}
+		d.tok = b
 	}
 	if d.tok != '{' {
 		d.d.errorf("json: expect char '%c' but got char '%c'", '{', d.tok)
@@ -509,7 +510,11 @@ func (d *jsonDecDriver) ReadMapStart() int {
 
 func (d *jsonDecDriver) ReadArrayStart() int {
 	if d.tok == 0 {
-		d.skipWhitespace()
+		var b byte
+		r := d.r
+		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
+		}
+		d.tok = b
 	}
 	if d.tok != '[' {
 		d.d.errorf("json: expect char '%c' but got char '%c'", '[', d.tok)
@@ -522,7 +527,11 @@ func (d *jsonDecDriver) ReadArrayStart() int {
 func (d *jsonDecDriver) ContainerType() (vt valueType) {
 	// check container type by checking the first char
 	if d.tok == 0 {
-		d.skipWhitespace()
+		var b byte
+		r := d.r
+		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
+		}
+		d.tok = b
 	}
 	if b := d.tok; b == '{' {
 		return valueTypeMap
@@ -541,7 +550,11 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 func (d *jsonDecDriver) decNum(storeBytes bool) {
 	// If it is has a . or an e|E, decode as a float; else decode as an int.
 	if d.tok == 0 {
-		d.skipWhitespace()
+		var b byte
+		r := d.r
+		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
+		}
+		d.tok = b
 	}
 	b := d.tok
 	if !(b == '+' || b == '-' || b == '.' || (b >= '0' && b <= '9')) {
@@ -833,7 +846,11 @@ func (d *jsonDecDriver) DecodeString() (s string) {
 
 func (d *jsonDecDriver) appendStringAsBytes() {
 	if d.tok == 0 {
-		d.skipWhitespace()
+		var b byte
+		r := d.r
+		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
+		}
+		d.tok = b
 	}
 	if d.tok != '"' {
 		d.d.errorf("json: expect char '%c' but got char '%c'", '"', d.tok)
@@ -910,7 +927,11 @@ func (d *jsonDecDriver) DecodeNaked() {
 	// var decodeFurther bool
 
 	if d.tok == 0 {
-		d.skipWhitespace()
+		var b byte
+		r := d.r
+		for b = r.readn1(); jsonIsWS(b); b = r.readn1() {
+		}
+		d.tok = b
 	}
 	switch d.tok {
 	case 'n':
