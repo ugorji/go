@@ -56,7 +56,8 @@ func (h *noopDrv) m(v int) int { h.i++; return h.i % v }
 func (h *noopDrv) newEncDriver(e *Encoder) encDriver { h.e = e; return h }
 func (h *noopDrv) newDecDriver(d *Decoder) decDriver { h.d = d; return h }
 
-func (h *noopDrv) reset() {}
+func (h *noopDrv) reset()       {}
+func (h *noopDrv) uncacheRead() {}
 
 // --- encDriver
 

@@ -398,6 +398,13 @@ func jsonIsWS(b byte) bool {
 // 	d.tok = b
 // }
 
+func (d *jsonDecDriver) uncacheRead() {
+	if d.tok != 0 {
+		d.r.unreadn1()
+		d.tok = 0
+	}
+}
+
 func (d *jsonDecDriver) sendContainerState(c containerState) {
 	if d.tok == 0 {
 		var b byte

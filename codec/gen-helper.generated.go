@@ -176,11 +176,8 @@ func (f genHelperDecoder) DecTextUnmarshal(tm encoding.TextUnmarshaler) {
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecJSONUnmarshal(tm jsonUnmarshaler) {
 	// bs := f.dd.DecodeBytes(f.d.b[:], true, true)
-	f.d.r.track()
-	f.d.swallow()
-	bs := f.d.r.stopTrack()
-	// fmt.Printf(">>>>>> CODECGEN JSON: %s\n", bs)
-	fnerr := tm.UnmarshalJSON(bs)
+	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
+	fnerr := tm.UnmarshalJSON(f.d.nextValueBytes())
 	if fnerr != nil {
 		panic(fnerr)
 	}
