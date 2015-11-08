@@ -857,6 +857,13 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 func (x *TypeInfos) rget(rt reflect.Type, indexstack []int, fnameToHastag map[string]bool,
 	sfi *[]*structFieldInfo, siInfo *structFieldInfo, visited map[uintptr]struct{},
 ) {
+	// skip already visited fields
+	rtid := reflect.ValueOf(rt).Pointer()
+	if _, ok := visited[rtid]; ok {
+		return
+	}
+	visited[rtid] = struct{}{}
+
 	for j := 0; j < rt.NumField(); j++ {
 		f := rt.Field(j)
 		fkind := f.Type.Kind()
@@ -868,13 +875,6 @@ func (x *TypeInfos) rget(rt reflect.Type, indexstack []int, fnameToHastag map[st
 		if f.PkgPath != "" && !f.Anonymous { // unexported, not embedded
 			continue
 		}
-
-		// skip already visited fields
-		rtid := reflect.ValueOf(f.Type).Pointer()
-		if _, ok := visited[rtid]; ok {
-			continue
-		}
-		visited[rtid] = struct{}{}
 
 		stag := x.structTag(f.Tag)
 		if stag == "-" {
