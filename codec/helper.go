@@ -834,7 +834,8 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 			ti.toArray = siInfo.toArray
 		}
 		sfip := make([]*structFieldInfo, 0, rt.NumField())
-		x.rget(rt, nil, make(map[string]bool, 16), &sfip, siInfo)
+		visited := make(map[uintptr]struct{}, rt.NumField())
+		x.rget(rt, nil, make(map[string]bool, 16), &sfip, siInfo, visited)
 
 		ti.sfip = make([]*structFieldInfo, len(sfip))
 		ti.sfi = make([]*structFieldInfo, len(sfip))
@@ -854,8 +855,15 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 }
 
 func (x *TypeInfos) rget(rt reflect.Type, indexstack []int, fnameToHastag map[string]bool,
-	sfi *[]*structFieldInfo, siInfo *structFieldInfo,
+	sfi *[]*structFieldInfo, siInfo *structFieldInfo, visited map[uintptr]struct{},
 ) {
+	// skip already visited fields
+	rtid := reflect.ValueOf(rt).Pointer()
+	if _, ok := visited[rtid]; ok {
+		return
+	}
+	visited[rtid] = struct{}{}
+
 	for j := 0; j < rt.NumField(); j++ {
 		f := rt.Field(j)
 		fkind := f.Type.Kind()
@@ -867,6 +875,7 @@ func (x *TypeInfos) rget(rt reflect.Type, indexstack []int, fnameToHastag map[st
 		if f.PkgPath != "" && !f.Anonymous { // unexported, not embedded
 			continue
 		}
+
 		stag := x.structTag(f.Tag)
 		if stag == "-" {
 			continue
@@ -890,7 +899,7 @@ func (x *TypeInfos) rget(rt reflect.Type, indexstack []int, fnameToHastag map[st
 					copy(indexstack2, indexstack)
 					indexstack2[len(indexstack)] = j
 					// indexstack2 := append(append(make([]int, 0, len(indexstack)+4), indexstack...), j)
-					x.rget(ft, indexstack2, fnameToHastag, sfi, siInfo)
+					x.rget(ft, indexstack2, fnameToHastag, sfi, siInfo, visited)
 					continue
 				}
 			}
