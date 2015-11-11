@@ -729,6 +729,7 @@ func (e *msgpackEncDriver) reset() {
 
 func (d *msgpackDecDriver) reset() {
 	d.r = d.d.r
+	d.bd, d.bdRead = 0, false
 }
 
 //--------------------------------------------------
