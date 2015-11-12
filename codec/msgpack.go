@@ -374,7 +374,7 @@ func (d *msgpackDecDriver) DecodeNaked() {
 	}
 	if n.v == valueTypeUint && d.h.SignedInteger {
 		n.v = valueTypeInt
-		n.i = int64(n.v)
+		n.i = int64(n.u)
 	}
 	return
 }
