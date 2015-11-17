@@ -566,9 +566,28 @@ func (x *genRunner) xtraSM(varname string, encode bool, t reflect.Type) {
 	} else {
 		x.linef("h.dec%s((*%s)(%s), d)", x.genMethodNameT(t), x.genTypeName(t), varname)
 	}
-	if _, ok := x.tm[t]; !ok {
-		x.tm[t] = struct{}{}
-		x.ts = append(x.ts, t)
+	x.registerXtraT(t)
+}
+
+func (x *genRunner) registerXtraT(t reflect.Type) {
+	// recursively register the types
+	if _, ok := x.tm[t]; ok {
+		return
+	}
+	var tkey reflect.Type
+	switch t.Kind() {
+	case reflect.Chan, reflect.Slice, reflect.Array:
+	case reflect.Map:
+		tkey = t.Key()
+	default:
+		return
+	}
+	x.tm[t] = struct{}{}
+	x.ts = append(x.ts, t)
+	// check if this refers to any xtra types eg. a slice of array: add the array
+	x.registerXtraT(t.Elem())
+	if tkey != nil {
+		x.registerXtraT(tkey)
 	}
 }
 

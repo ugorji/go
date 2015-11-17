@@ -68,8 +68,9 @@ z.DecSendContainerState(codecSelfer_containerMapEnd{{ .Sfx }})
 
 const genDecListTmpl = `
 {{var "v"}} := {{if not isArray}}*{{end}}{{ .Varname }}
-{{var "h"}}, {{var "l"}} := z.DecSliceHelperStart() {{/* // helper, containerLenS */}}
+{{var "h"}}, {{var "l"}} := z.DecSliceHelperStart() {{/* // helper, containerLenS */}}{{if not isArray}}
 var {{var "c"}} bool {{/* // changed */}}
+_ = {{var "c"}}{{end}}
 if {{var "l"}} == 0 {
 	{{if isSlice }}if {{var "v"}} == nil {
 		{{var "v"}} = []{{ .Typ }}{}
@@ -95,6 +96,7 @@ if {{var "l"}} == 0 {
 	}
 	{{ else }}	var {{var "rr"}}, {{var "rl"}} int {{/* // num2read, length of slice/array/chan */}}
 	var {{var "rt"}} bool {{/* truncated */}}
+	_, _, _ = {{var "rr"}}, {{var "rl"}}, {{var "rt"}}
 	if {{var "l"}} > cap({{var "v"}}) {
 		{{if isArray }}z.DecArrayCannotExpand(len({{var "v"}}), {{var "l"}})
 		{{ else }}{{if not .Immutable }}
