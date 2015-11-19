@@ -630,7 +630,7 @@ func (x *genRunner) encVar(varname string, t reflect.Type) {
 // enc will encode a variable (varname) of type T,
 // except t is of kind reflect.Struct or reflect.Array, wherein varname is of type *T (to prevent copying)
 func (x *genRunner) enc(varname string, t reflect.Type) {
-	// varName here must be to a pointer to a struct/array, or to a value directly.
+	// varName here must be a pointer to a struct/array, or a value directly.
 	rtid := reflect.ValueOf(t).Pointer()
 	// We call CodecEncodeSelf if one of the following are honored:
 	//   - the type already implements Selfer, call that
@@ -698,8 +698,11 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	if t.Implements(binaryMarshalerTyp) || tptr.Implements(binaryMarshalerTyp) {
 		x.linef("} else if %sm%s { z.EncBinaryMarshal(%v) ", genTempVarPfx, mi, varname)
 	}
-	if t.Implements(jsonMarshalerTyp) || tptr.Implements(jsonMarshalerTyp) {
+	if t.Implements(jsonMarshalerTyp) {
 		x.linef("} else if !%sm%s && z.IsJSONHandle() { z.EncJSONMarshal(%v) ", genTempVarPfx, mi, varname)
+	} else if tptr.Implements(jsonMarshalerTyp) {
+		// varname represent value, use address of varname
+		x.linef("} else if !%sm%s && z.IsJSONHandle() { z.EncJSONMarshal(&%v) ", genTempVarPfx, mi, varname)
 	} else if t.Implements(textMarshalerTyp) || tptr.Implements(textMarshalerTyp) {
 		x.linef("} else if !%sm%s { z.EncTextMarshal(%v) ", genTempVarPfx, mi, varname)
 	}
