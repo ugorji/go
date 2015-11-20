@@ -627,22 +627,33 @@ func (x *genRunner) encVar(varname string, t reflect.Type) {
 
 }
 
-// enc will encode a variable (varname) of type T,
-// except t is of kind reflect.Struct or reflect.Array, wherein varname is of type *T (to prevent copying)
+// enc will encode a variable (varname) of type t,
+// except t is of kind reflect.Struct or reflect.Array, wherein varname is of type ptrTo(T) (to prevent copying)
 func (x *genRunner) enc(varname string, t reflect.Type) {
-	// varName here must be to a pointer to a struct/array, or to a value directly.
 	rtid := reflect.ValueOf(t).Pointer()
 	// We call CodecEncodeSelf if one of the following are honored:
 	//   - the type already implements Selfer, call that
 	//   - the type has a Selfer implementation just created, use that
 	//   - the type is in the list of the ones we will generate for, but it is not currently being generated
 
+	mi := x.varsfx()
 	tptr := reflect.PtrTo(t)
 	tk := t.Kind()
 	if x.checkForSelfer(t, varname) {
-		if t.Implements(selferTyp) || (tptr.Implements(selferTyp) && (tk == reflect.Array || tk == reflect.Struct)) {
-			x.line(varname + ".CodecEncodeSelf(e)")
-			return
+		if tk == reflect.Array || tk == reflect.Struct { // varname is of type *T
+			if tptr.Implements(selferTyp) || t.Implements(selferTyp) {
+				x.line(varname + ".CodecEncodeSelf(e)")
+				return
+			}
+		} else { // varname is of type T
+			if t.Implements(selferTyp) {
+				x.line(varname + ".CodecEncodeSelf(e)")
+				return
+			} else if tptr.Implements(selferTyp) {
+				x.linef("%ssf%s := &%s", genTempVarPfx, mi, varname)
+				x.linef("%ssf%s.CodecEncodeSelf(e)", genTempVarPfx, mi)
+				return
+			}
 		}
 
 		if _, ok := x.te[rtid]; ok {
@@ -672,7 +683,6 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	// check if
 	//   - type is RawExt
 	//   - the type implements (Text|JSON|Binary)(Unm|M)arshal
-	mi := x.varsfx()
 	x.linef("%sm%s := z.EncBinary()", genTempVarPfx, mi)
 	x.linef("_ = %sm%s", genTempVarPfx, mi)
 	x.line("if false {")           //start if block
@@ -695,15 +705,31 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 		// first check if extensions are configued, before doing the interface conversion
 		x.linef("} else if z.HasExtensions() && z.EncExt(%s) {", varname)
 	}
-	if t.Implements(binaryMarshalerTyp) || tptr.Implements(binaryMarshalerTyp) {
-		x.linef("} else if %sm%s { z.EncBinaryMarshal(%v) ", genTempVarPfx, mi, varname)
+	if tk == reflect.Array || tk == reflect.Struct { // varname is of type *T
+		if t.Implements(binaryMarshalerTyp) || tptr.Implements(binaryMarshalerTyp) {
+			x.linef("} else if %sm%s { z.EncBinaryMarshal(%v) ", genTempVarPfx, mi, varname)
+		}
+		if t.Implements(jsonMarshalerTyp) || tptr.Implements(jsonMarshalerTyp) {
+			x.linef("} else if !%sm%s && z.IsJSONHandle() { z.EncJSONMarshal(%v) ", genTempVarPfx, mi, varname)
+		} else if t.Implements(textMarshalerTyp) || tptr.Implements(textMarshalerTyp) {
+			x.linef("} else if !%sm%s { z.EncTextMarshal(%v) ", genTempVarPfx, mi, varname)
+		}
+	} else { // varname is of type T
+		if t.Implements(binaryMarshalerTyp) {
+			x.linef("} else if %sm%s { z.EncBinaryMarshal(%v) ", genTempVarPfx, mi, varname)
+		} else if tptr.Implements(binaryMarshalerTyp) {
+			x.linef("} else if %sm%s { z.EncBinaryMarshal(&%v) ", genTempVarPfx, mi, varname)
+		}
+		if t.Implements(jsonMarshalerTyp) {
+			x.linef("} else if !%sm%s && z.IsJSONHandle() { z.EncJSONMarshal(%v) ", genTempVarPfx, mi, varname)
+		} else if tptr.Implements(jsonMarshalerTyp) {
+			x.linef("} else if !%sm%s && z.IsJSONHandle() { z.EncJSONMarshal(&%v) ", genTempVarPfx, mi, varname)
+		} else if t.Implements(textMarshalerTyp) {
+			x.linef("} else if !%sm%s { z.EncTextMarshal(%v) ", genTempVarPfx, mi, varname)
+		} else if tptr.Implements(textMarshalerTyp) {
+			x.linef("} else if !%sm%s { z.EncTextMarshal(&%v) ", genTempVarPfx, mi, varname)
+		}
 	}
-	if t.Implements(jsonMarshalerTyp) || tptr.Implements(jsonMarshalerTyp) {
-		x.linef("} else if !%sm%s && z.IsJSONHandle() { z.EncJSONMarshal(%v) ", genTempVarPfx, mi, varname)
-	} else if t.Implements(textMarshalerTyp) || tptr.Implements(textMarshalerTyp) {
-		x.linef("} else if !%sm%s { z.EncTextMarshal(%v) ", genTempVarPfx, mi, varname)
-	}
-
 	x.line("} else {")
 
 	switch t.Kind() {
@@ -1039,6 +1065,8 @@ func (x *genRunner) decVar(varname string, t reflect.Type, canBeNil bool) {
 	}
 }
 
+// dec will decode a variable (varname) of type ptrTo(t).
+// t is always a basetype (i.e. not of kind reflect.Ptr).
 func (x *genRunner) dec(varname string, t reflect.Type) {
 	// assumptions:
 	//   - the varname is to a pointer already. No need to take address of it
