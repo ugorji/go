@@ -415,6 +415,15 @@ func testInit() {
 			"bool":         true,
 			"LONG STRING":  "123456789012345678901234567890123456789012345678901234567890",
 			"SHORT STRING": "1234567890",
+			"nested": []interface{}{
+				[]interface{}{
+					[]interface{}{
+						[]interface{}{
+							[]interface{}{},
+						},
+					},
+				},
+			},
 		},
 		map[interface{}]interface{}{
 			true:       "true",
