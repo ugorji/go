@@ -473,7 +473,7 @@ func (f *encFnInfo) kSlice(rv reflect.Value) {
 		for j := 0; j < l; j++ {
 			if cr != nil {
 				if ti.mbs {
-					if l%2 == 0 {
+					if j%2 == 0 {
 						cr.sendContainerState(containerMapKey)
 					} else {
 						cr.sendContainerState(containerMapValue)
@@ -1265,10 +1265,11 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkFastpath, checkCo
 	} else {
 		rk := rt.Kind()
 		if fastpathEnabled && checkFastpath && (rk == reflect.Map || rk == reflect.Slice) {
-			if rt.PkgPath() == "" {
+			if rt.PkgPath() == "" { // un-named slice or map
 				if idx := fastpathAV.index(rtid); idx != -1 {
 					fn.f = fastpathAV[idx].encfn
 				}
+			} else if ti.mbs { // map by slice. Do not use underlying type AS-IS.
 			} else {
 				ok = false
 				// use mapping for underlying type if there
