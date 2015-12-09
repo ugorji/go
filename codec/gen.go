@@ -377,7 +377,7 @@ func (x *genRunner) genRefPkgs(t reflect.Type) {
 				x.imn[tpkg] = tpkg
 			} else {
 				x.imc++
-				x.imn[tpkg] = "pkg" + strconv.FormatUint(x.imc, 10) + "_" + tpkg[idx+1:]
+				x.imn[tpkg] = "pkg" + strconv.FormatUint(x.imc, 10) + "_" + strings.Replace(tpkg[idx+1:], "-", "_", -1)
 			}
 		}
 	}
