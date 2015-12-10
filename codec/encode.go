@@ -1188,7 +1188,8 @@ func (e *Encoder) doEncodeValue(rv reflect.Value, fn *encFn, sptr uintptr,
 	if fn == nil {
 		rt := rv.Type()
 		rtid := reflect.ValueOf(rt).Pointer()
-		fn = e.getEncFn(rtid, rt, true, true)
+		// fn = e.getEncFn(rtid, rt, true, true)
+		fn = e.getEncFn(rtid, rt, checkFastpath, checkCodecSelfer)
 	}
 	fn.f(&fn.i, rv)
 	if sptr != 0 {
@@ -1269,7 +1270,6 @@ func (e *Encoder) getEncFn(rtid uintptr, rt reflect.Type, checkFastpath, checkCo
 				if idx := fastpathAV.index(rtid); idx != -1 {
 					fn.f = fastpathAV[idx].encfn
 				}
-			} else if ti.mbs { // map by slice. Do not use underlying type AS-IS.
 			} else {
 				ok = false
 				// use mapping for underlying type if there

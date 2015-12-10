@@ -48,6 +48,11 @@ func init() {
 	testPreInitFns = append(testPreInitFns, testInit)
 }
 
+// make this a mapbyslice
+type testMbsT []interface{}
+
+func (_ testMbsT) MapBySlice() {}
+
 type testVerifyArg int
 
 const (
@@ -59,6 +64,12 @@ const (
 )
 
 const testSkipRPCTests = false
+
+var (
+	testTableNumPrimitives int
+	testTableIdxTime       int
+	testTableNumMaps       int
+)
 
 var (
 	testVerbose        bool
@@ -261,6 +272,12 @@ func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
 			m2[j] = testVerifyVal(vj, arg)
 		}
 		v2 = m2
+	case testMbsT:
+		m2 := make([]interface{}, len(iv))
+		for j, vj := range iv {
+			m2[j] = testVerifyVal(vj, arg)
+		}
+		v2 = testMbsT(m2)
 	case map[string]bool:
 		switch arg {
 		case testVerifyMapTypeSame:
@@ -362,6 +379,7 @@ func testInit() {
 	testCborH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
 	// testJsonH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
 
+	// primitives MUST be an even number, so it can be used as a mapBySlice also.
 	primitives := []interface{}{
 		int8(-8),
 		int16(-1616),
@@ -375,19 +393,23 @@ func testInit() {
 		float32(-3232.0),
 		float64(-6464646464.0),
 		float32(3232.0),
+		float64(6464.0),
 		float64(6464646464.0),
 		false,
 		true,
+		"null",
 		nil,
 		"someday",
-		"",
-		"bytestring",
 		timeToCompare1,
+		"",
 		timeToCompare2,
+		"bytestring",
 		timeToCompare3,
+		"none",
 		timeToCompare4,
 	}
-	mapsAndStrucs := []interface{}{
+
+	maps := []interface{}{
 		map[string]bool{
 			"true":  true,
 			"false": false,
@@ -421,28 +443,35 @@ func testInit() {
 			uint8(138): false,
 			"false":    uint8(200),
 		},
-		newTestStruc(0, false, !testSkipIntf, false),
 	}
 
+	testTableNumPrimitives = len(primitives)
+	testTableIdxTime = testTableNumPrimitives - 8
+	testTableNumMaps = len(maps)
+
 	table = []interface{}{}
-	table = append(table, primitives...)    //0-19 are primitives
-	table = append(table, primitives)       //20 is a list of primitives
-	table = append(table, mapsAndStrucs...) //21-24 are maps. 25 is a *struct
+	table = append(table, primitives...)
+	table = append(table, primitives)
+	table = append(table, testMbsT(primitives))
+	table = append(table, maps...)
+	table = append(table, newTestStruc(0, false, !testSkipIntf, false))
 
 	tableVerify = make([]interface{}, len(table))
 	tableTestNilVerify = make([]interface{}, len(table))
 	tablePythonVerify = make([]interface{}, len(table))
 
-	lp := len(primitives)
+	lp := testTableNumPrimitives + 4
 	av := tableVerify
 	for i, v := range table {
-		if i == lp+3 {
+		if i == lp {
 			av[i] = skipVerifyVal
 			continue
 		}
 		//av[i] = testVerifyVal(v, testVerifyMapTypeSame)
 		switch v.(type) {
 		case []interface{}:
+			av[i] = testVerifyVal(v, testVerifyMapTypeSame)
+		case testMbsT:
 			av[i] = testVerifyVal(v, testVerifyMapTypeSame)
 		case map[string]interface{}:
 			av[i] = testVerifyVal(v, testVerifyMapTypeSame)
@@ -455,7 +484,7 @@ func testInit() {
 
 	av = tableTestNilVerify
 	for i, v := range table {
-		if i > lp+3 {
+		if i > lp {
 			av[i] = skipVerifyVal
 			continue
 		}
@@ -464,14 +493,15 @@ func testInit() {
 
 	av = tablePythonVerify
 	for i, v := range table {
-		if i > lp+3 {
+		if i == testTableNumPrimitives+1 || i > lp { // testTableNumPrimitives+1 is the mapBySlice
 			av[i] = skipVerifyVal
 			continue
 		}
 		av[i] = testVerifyVal(v, testVerifyForPython)
 	}
 
-	tablePythonVerify = tablePythonVerify[:24]
+	// only do the python verify up to the maps, skipping the last 2 maps.
+	tablePythonVerify = tablePythonVerify[:testTableNumPrimitives+2+testTableNumMaps-2]
 }
 
 func testUnmarshal(v interface{}, data []byte, h Handle) (err error) {
@@ -566,7 +596,8 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	// func TestMsgpackAllExperimental(t *testing.T) {
 	// dopts := testDecOpts(nil, nil, false, true, true),
 
-	idxTime, numPrim, numMap := 19, 23, 4
+	numPrim, numMap, idxTime, idxMap := testTableNumPrimitives, testTableNumMaps, testTableIdxTime, testTableNumPrimitives+2
+
 	//println("#################")
 	switch v := h.(type) {
 	case *MsgpackHandle:
@@ -579,7 +610,7 @@ func testCodecTableOne(t *testing.T, h Handle) {
 		//skip []interface{} containing time.Time, as it encodes as a number, but cannot decode back to time.Time.
 		//As there is no real support for extension tags in json, this must be skipped.
 		doTestCodecTableOne(t, false, h, table[:numPrim], tableVerify[:numPrim])
-		doTestCodecTableOne(t, false, h, table[numPrim+1:], tableVerify[numPrim+1:])
+		doTestCodecTableOne(t, false, h, table[idxMap:], tableVerify[idxMap:])
 	default:
 		doTestCodecTableOne(t, false, h, table, tableVerify)
 	}
@@ -596,14 +627,15 @@ func testCodecTableOne(t *testing.T, h Handle) {
 
 	//skip time.Time, []interface{} containing time.Time, last map, and newStruc
 	doTestCodecTableOne(t, true, h, table[:idxTime], tableTestNilVerify[:idxTime])
-	doTestCodecTableOne(t, true, h, table[numPrim+1:numPrim+numMap], tableTestNilVerify[numPrim+1:numPrim+numMap])
+	doTestCodecTableOne(t, true, h, table[idxMap:idxMap+numMap-1], tableTestNilVerify[idxMap:idxMap+numMap-1])
 
 	v.MapType = oldMapType
 
 	// func TestMsgpackNilIntf(t *testing.T) {
 
-	//do newTestStruc and last element of map
-	doTestCodecTableOne(t, true, h, table[numPrim+numMap:], tableTestNilVerify[numPrim+numMap:])
+	//do last map and newStruc
+	idx2 := idxMap + numMap - 1
+	doTestCodecTableOne(t, true, h, table[idx2:], tableTestNilVerify[idx2:])
 	//TODO? What is this one?
 	//doTestCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18])
 }
