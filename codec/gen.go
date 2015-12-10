@@ -1651,7 +1651,7 @@ func genGoIdentifier(s string, checkFirstChar bool) string {
 			b = append(b, '_')
 		}
 		// r must be unicode_letter, unicode_digit or _
-		if unicode.IsLetter(r) || unicode.IsNumber(r) {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
 			n = utf8.EncodeRune(t, r)
 			b = append(b, t[:n]...)
 		} else {
