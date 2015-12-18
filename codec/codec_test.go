@@ -18,8 +18,6 @@ package codec
 //
 // The following manual tests must be done:
 //   - TestCodecUnderlyingType
-//   - Set fastpathEnabled to false and run tests (to ensure that regular reflection works).
-//     We don't want to use a variable there so that code is ellided.
 
 import (
 	"bytes"
@@ -1077,6 +1075,74 @@ func doTestAnonCycle(t *testing.T, name string, h Handle) {
 	logT(t, "pti: %v", pti)
 }
 
+func doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
+	logT(t, "Running doTestJsonLargeInteger: v: %#v, ias: %c", v, ias)
+	oldIAS := testJsonH.IntegerAsString
+	defer func() { testJsonH.IntegerAsString = oldIAS }()
+	testJsonH.IntegerAsString = ias
+
+	var vu uint
+	var vi int
+	var vb bool
+	var b []byte
+	e := NewEncoderBytes(&b, testJsonH)
+	e.MustEncode(v)
+	e.MustEncode(true)
+	d := NewDecoderBytes(b, testJsonH)
+	// below, we validate that the json string or number was encoded,
+	// then decode, and validate that the correct value was decoded.
+	fnStrChk := func() {
+		// check that output started with ", and ended with "true
+		if !(b[0] == '"' && string(b[len(b)-5:]) == `"true`) {
+			logT(t, "Expecting a JSON string, got: %s", b)
+			failT(t)
+		}
+	}
+
+	switch ias {
+	case 'L':
+		switch v2 := v.(type) {
+		case int:
+			if v2 > 1<<53 || (v2 < 0 && -v2 > 1<<53) {
+				fnStrChk()
+			}
+		case uint:
+			if v2 > 1<<53 {
+				fnStrChk()
+			}
+		}
+	case 'A':
+		fnStrChk()
+	default:
+		// check that output doesn't contain " at all
+		for _, i := range b {
+			if i == '"' {
+				logT(t, "Expecting a JSON Number without quotation: got: %s", b)
+				failT(t)
+			}
+		}
+	}
+	switch v2 := v.(type) {
+	case int:
+		d.MustDecode(&vi)
+		d.MustDecode(&vb)
+		// check that vb = true, and vi == v2
+		if !(vb && vi == v2) {
+			logT(t, "Expecting equal values from %s: got golden: %v, decoded: %v", b, v2, vi)
+			failT(t)
+		}
+	case uint:
+		d.MustDecode(&vu)
+		d.MustDecode(&vb)
+		// check that vb = true, and vi == v2
+		if !(vb && vu == v2) {
+			logT(t, "Expecting equal values from %s: got golden: %v, decoded: %v", b, v2, vu)
+			failT(t)
+		}
+		// fmt.Printf("%v: %s, decode: %d, bool: %v, equal_on_decode: %v\n", v, b, vu, vb, vu == v.(uint))
+	}
+}
+
 // Comprehensive testing that generates data encoded from python handle (cbor, msgpack),
 // and validates that our code can read and write it out accordingly.
 // We keep this unexported here, and put actual test in ext_dep_test.go.
@@ -1354,6 +1420,23 @@ func TestMsgpackRpcSpec(t *testing.T) {
 
 func TestBincUnderlyingType(t *testing.T) {
 	testCodecUnderlyingType(t, testBincH)
+}
+
+func TestJsonLargeInteger(t *testing.T) {
+	for _, i := range []uint8{'L', 'A', 0} {
+		for _, j := range []interface{}{
+			1 << 60,
+			-(1 << 60),
+			0,
+			1 << 20,
+			-(1 << 20),
+			uint(1 << 60),
+			uint(0),
+			uint(1 << 20),
+		} {
+			doTestJsonLargeInteger(t, j, i)
+		}
+	}
 }
 
 // TODO:
