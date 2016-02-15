@@ -31,6 +31,16 @@ Usage of codecgen:
 % codecgen -o values_codecgen.go values.go values2.go moretypedefs.go
 ```
 
+To disable code generation for specific types, add a `// codecgen:
+skip` comment immediately before its definition. For instance:
+
+```go
+// codecgen: skip
+type struct Foo {
+   Bar string
+}
+```
+
 Please see the [blog article](http://ugorji.net/blog/go-codecgen)
 for more information on how to use the tool.
 

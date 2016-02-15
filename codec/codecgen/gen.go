@@ -26,6 +26,8 @@ import (
 
 const genCodecPkg = "codec1978" // keep this in sync with codec.genCodecPkg
 
+var skipre = regexp.MustCompile(".*codecgen:\\s*skip.*")
+
 const genFrunMainTmpl = `//+build ignore
 
 package main
@@ -143,7 +145,7 @@ func Generate(outfile, buildTag, codecPkgPath string, uid int64, useUnsafe bool,
 			return
 		}
 		fset := token.NewFileSet()
-		astfiles[i], err = parser.ParseFile(fset, infile, nil, 0)
+		astfiles[i], err = parser.ParseFile(fset, infile, nil, parser.ParseComments)
 		if err != nil {
 			return
 		}
@@ -180,6 +182,14 @@ func Generate(outfile, buildTag, codecPkgPath string, uid int64, useUnsafe bool,
 						//   FuncType, InterfaceType, StarExpr (ptr), etc
 						switch td.Type.(type) {
 						case *ast.StructType, *ast.Ident, *ast.MapType, *ast.ArrayType, *ast.ChanType:
+							if gd.Doc != nil {
+								comments := (*gd.Doc).List
+								lastComment := comments[len(comments)-1]
+								if skipre.MatchString(lastComment.Text) {
+									continue
+								}
+							}
+
 							if regexName.FindStringIndex(td.Name.Name) != nil {
 								tv.Types = append(tv.Types, td.Name.Name)
 							}
