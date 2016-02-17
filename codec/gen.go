@@ -1246,59 +1246,49 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 }
 
 func (x *genRunner) decTryAssignPrimitive(varname string, t reflect.Type) (tryAsPtr bool) {
-	// We have to use the actual type name when doing a direct assignment.
-	// We don't have the luxury of casting the pointer to the underlying type.
-	//
-	// Consequently, in the situation of a
-	//     type Message int32
-	//     var x Message
-	//     var i int32 = 32
-	//     x = i // this will bomb
-	//     x = Message(i) // this will work
-	//     *((*int32)(&x)) = i // this will work
-	//
-	// Consequently, we replace:
-	//      case reflect.Uint32: x.line(varname + " = uint32(r.DecodeUint(32))")
-	// with:
-	//      case reflect.Uint32: x.line(varname + " = " + genTypeNamePrim(t, x.tc) + "(r.DecodeUint(32))")
+	// This should only be used for exact primitives (ie un-named types).
+	// Named types may be implementations of Selfer, Unmarshaler, etc.
+	// They should be handled by dec(...)
 
-	xfn := func(t reflect.Type) string {
-		return x.genTypeNamePrim(t)
+	if t.Name() != "" {
+		tryAsPtr = true
+		return
 	}
+
 	switch t.Kind() {
 	case reflect.Int:
-		x.linef("%s = %s(r.DecodeInt(codecSelferBitsize%s))", varname, xfn(t), x.xs)
+		x.linef("%s = r.DecodeInt(codecSelferBitsize%s)", varname, x.xs)
 	case reflect.Int8:
-		x.linef("%s = %s(r.DecodeInt(8))", varname, xfn(t))
+		x.linef("%s = r.DecodeInt(8)", varname)
 	case reflect.Int16:
-		x.linef("%s = %s(r.DecodeInt(16))", varname, xfn(t))
+		x.linef("%s = r.DecodeInt(16)", varname)
 	case reflect.Int32:
-		x.linef("%s = %s(r.DecodeInt(32))", varname, xfn(t))
+		x.linef("%s = r.DecodeInt(32)", varname)
 	case reflect.Int64:
-		x.linef("%s = %s(r.DecodeInt(64))", varname, xfn(t))
+		x.linef("%s = r.DecodeInt(64)", varname)
 
 	case reflect.Uint:
-		x.linef("%s = %s(r.DecodeUint(codecSelferBitsize%s))", varname, xfn(t), x.xs)
+		x.linef("%s = r.DecodeUint(codecSelferBitsize%s)", varname, x.xs)
 	case reflect.Uint8:
-		x.linef("%s = %s(r.DecodeUint(8))", varname, xfn(t))
+		x.linef("%s = r.DecodeUint(8)", varname)
 	case reflect.Uint16:
-		x.linef("%s = %s(r.DecodeUint(16))", varname, xfn(t))
+		x.linef("%s = r.DecodeUint(16)", varname)
 	case reflect.Uint32:
-		x.linef("%s = %s(r.DecodeUint(32))", varname, xfn(t))
+		x.linef("%s = r.DecodeUint(32)", varname)
 	case reflect.Uint64:
-		x.linef("%s = %s(r.DecodeUint(64))", varname, xfn(t))
+		x.linef("%s = r.DecodeUint(64)", varname)
 	case reflect.Uintptr:
-		x.linef("%s = %s(r.DecodeUint(codecSelferBitsize%s))", varname, xfn(t), x.xs)
+		x.linef("%s = r.DecodeUint(codecSelferBitsize%s)", varname, x.xs)
 
 	case reflect.Float32:
-		x.linef("%s = %s(r.DecodeFloat(true))", varname, xfn(t))
+		x.linef("%s = r.DecodeFloat(true)", varname)
 	case reflect.Float64:
-		x.linef("%s = %s(r.DecodeFloat(false))", varname, xfn(t))
+		x.linef("%s = r.DecodeFloat(false)", varname)
 
 	case reflect.Bool:
-		x.linef("%s = %s(r.DecodeBool())", varname, xfn(t))
+		x.linef("%s = r.DecodeBool()", varname)
 	case reflect.String:
-		x.linef("%s = %s(r.DecodeString())", varname, xfn(t))
+		x.linef("%s = r.DecodeString()", varname)
 	default:
 		tryAsPtr = true
 	}
