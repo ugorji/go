@@ -15,6 +15,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -1626,17 +1627,34 @@ func (x *genV) MethodNamePfx(prefix string, prim bool) string {
 
 }
 
-var genCheckVendor = os.Getenv("GO15VENDOREXPERIMENT") == "1"
+var genCheckVendor bool
+
+func init() {
+	var major, minor int
+	if n, err := fmt.Sscanf(runtime.Version(), "go%d.%d", &major, &minor); err != nil || n != 2 {
+		return
+	}
+
+	switch {
+	case major == 1 && minor == 5:
+		genCheckVendor = os.Getenv("GO15VENDOREXPERIMENT") == "1"
+
+	case major == 1 && minor == 6:
+		genCheckVendor = os.Getenv("GO15VENDOREXPERIMENT") != "0"
+
+	case major > 1, major == 1 && minor > 6:
+		genCheckVendor = true
+	}
+}
 
 // genImportPath returns import path of a non-predeclared named typed, or an empty string otherwise.
 //
-// This handles the misbehaviour that occurs when 1.5-style vendoring is enabled,
+// This handles the misbehaviour that occurs when vendoring is enabled,
 // where PkgPath returns the full path, including the vendoring pre-fix that should have been stripped.
 // We strip it here.
 func genImportPath(t reflect.Type) (s string) {
 	s = t.PkgPath()
 	if genCheckVendor {
-		// HACK: Misbehaviour occurs in go 1.5. May have to re-visit this later.
 		// if s contains /vendor/ OR startsWith vendor/, then return everything after it.
 		const vendorStart = "vendor/"
 		const vendorInline = "/vendor/"
