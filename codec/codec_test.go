@@ -1290,6 +1290,62 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 		fmt.Sprintf("%#v\n%#v\n", []string{"A1", "B2", "C3"}, TestRpcABC{"Aa", "Bb", "Cc"}), "cmdout=")
 }
 
+type U1 struct {
+	S string
+	B bool
+	I int
+
+	unknownFields map[string]interface{}
+}
+
+type U2 struct {
+	U1
+
+	S2 string
+	B2 bool
+	I2 int
+
+	unknownFields map[string]interface{}
+}
+
+func doTestEncUnknownFields(t *testing.T, h Handle) {
+	u2 := U2{U1{"t1", true, 5, nil}, "t2", false, 3, nil}
+
+	var bs []byte
+	var err error
+	err = NewEncoderBytes(&bs, h).Encode(&u2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var u1 U1
+	err = NewDecoderBytes(bs, h).Decode(&u1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(u1, u2.U1) {
+		t.Fatalf("u1=%+v != u2.U1=%+v", u1, u2.U1)
+	}
+
+	// TODO: Check u1.unknownFields
+
+	err = NewEncoderBytes(&bs, h).Encode(&u1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var u22 U2
+	err = NewDecoderBytes(bs, h).Decode(&u22)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(u22, u2) {
+		t.Fatalf("u22=%+v != u2=%+v", u22, u2)
+	}
+}
+
 func TestBincCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testBincH)
 }
@@ -1390,6 +1446,10 @@ func TestAllEncCircularRef(t *testing.T) {
 
 func TestAllAnonCycle(t *testing.T) {
 	doTestAnonCycle(t, "cbor", testCborH)
+}
+
+func TestAllEncUnknownFields(t *testing.T) {
+	doTestEncUnknownFields(t, testMsgpackH)
 }
 
 // ----- RPC -----
