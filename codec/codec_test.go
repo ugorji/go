@@ -1290,22 +1290,29 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 		fmt.Sprintf("%#v\n%#v\n", []string{"A1", "B2", "C3"}, TestRpcABC{"Aa", "Bb", "Cc"}), "cmdout=")
 }
 
-type U1 struct {
+type UBase struct {
 	S string
 	B bool
 	I int
+}
+
+type U1 struct {
+	UBase
 
 	unknownFields map[string]interface{}
 }
 
-func (u1 *U1) CodecOnUnknownField(fieldName string) {
-	fmt.Printf("Unknown field: %s\n", fieldName)
+func (u1 *U1) CodecOnUnknownField(fieldName string, fieldValue interface{}) {
+	if u1.unknownFields == nil {
+		u1.unknownFields = make(map[string]interface{})
+	}
+	u1.unknownFields[fieldName] = fieldValue
 }
 
 var _ UnknownFieldsHandler = (*U1)(nil)
 
 type U2 struct {
-	U1
+	UBase
 
 	S2 string
 	B2 bool
@@ -1315,7 +1322,7 @@ type U2 struct {
 }
 
 func doTestEncUnknownFields(t *testing.T, h Handle) {
-	u2 := U2{U1{"t1", true, 5, nil}, "t2", false, 3, nil}
+	u2 := U2{UBase{"t1", true, 5}, "t2", false, 3, nil}
 
 	var bs []byte
 	var err error
@@ -1330,11 +1337,20 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(u1, u2.U1) {
-		t.Fatalf("u1=%+v != u2.U1=%+v", u1, u2.U1)
+	if !reflect.DeepEqual(u1.UBase, u2.UBase) {
+		t.Fatalf("u1.UBase=%+v != u2.UBase=%+v", u1.UBase, u2.UBase)
 	}
 
-	// TODO: Check u1.unknownFields
+	expectedUnknownFields := map[string]interface{}{
+		"B2": false,
+		"I2": int64(3),
+		"S2": []byte("t2"),
+	}
+
+	if !reflect.DeepEqual(expectedUnknownFields, u1.unknownFields) {
+		t.Fatalf("1expectedUnknownFields=%+v != u1.unknownFields=%+v",
+			expectedUnknownFields, u1.unknownFields)
+	}
 
 	err = NewEncoderBytes(&bs, h).Encode(&u1)
 	if err != nil {

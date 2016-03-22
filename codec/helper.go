@@ -314,7 +314,7 @@ type Selfer interface {
 // UnknownFieldsHandler defines methods by which a value can store
 // unknown fields encountered during decoding.
 type UnknownFieldsHandler interface {
-	CodecOnUnknownField(fieldName string)
+	CodecOnUnknownField(fieldName string, fieldValue interface{})
 }
 
 // MapBySlice represents a slice which should be encoded as a map in the stream.

@@ -736,11 +736,13 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 					}
 				} else if fti.ufh {
 					ufh := f.getValueForUnmarshalInterface(rv, fti.ufhIndir).(UnknownFieldsHandler)
+					var val interface{}
+					if !dd.TryDecodeAsNil() {
+						d.decodeValue(reflect.ValueOf(&val).Elem(), nil)
+					}
 					// TODO: Is it safe to pass in
 					// stringViews?
-					ufh.CodecOnUnknownField(rvkencname)
-					// TODO: Pass in value, too.
-					d.swallow()
+					ufh.CodecOnUnknownField(rvkencname, val)
 				} else {
 					d.structFieldNotFound(-1, rvkencname)
 				}
