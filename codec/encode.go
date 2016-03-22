@@ -514,6 +514,19 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	toMap := !(fti.toArray || e.h.StructToArray)
 	newlen := len(fti.sfi)
 
+	var unknownFields map[string]interface{}
+	// TODO: Merge unknown fields with known ones rather than just
+	// tack the unknown ones at the end.
+	if fti.ufh {
+		if ufh, proceed := f.getValueForMarshalInterface(rv, fti.ufhIndir); proceed {
+			if !toMap {
+				panic("Unknown fields supported only when toMap=true")
+			}
+			unknownFields = ufh.(UnknownFieldsHandler).GetUnknownFields()
+			newlen += len(unknownFields)
+		}
+	}
+
 	// Use sync.Pool to reduce allocating slices unnecessarily.
 	// The cost of sync.Pool is less than the cost of new allocation.
 	pool, poolv, fkvs := encStructPoolGet(newlen)
@@ -542,6 +555,13 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 				}
 			}
 		}
+		fkvs[newlen] = kv
+		newlen++
+	}
+
+	for k, v := range unknownFields {
+		kv.v = k
+		kv.r = reflect.ValueOf(v)
 		fkvs[newlen] = kv
 		newlen++
 	}

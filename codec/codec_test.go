@@ -1309,6 +1309,11 @@ func (u1 *U1) CodecOnUnknownField(fieldName string, fieldValue interface{}) {
 	u1.unknownFields[fieldName] = fieldValue
 }
 
+func (u1 *U1) GetUnknownFields() map[string]interface{} {
+	fmt.Printf("U1.GetUnknownFields called, returning %+v\n", u1.unknownFields)
+	return u1.unknownFields
+}
+
 var _ UnknownFieldsHandler = (*U1)(nil)
 
 type U2 struct {
@@ -1319,6 +1324,17 @@ type U2 struct {
 	I2 int
 
 	unknownFields map[string]interface{}
+}
+
+var _ UnknownFieldsHandler = (*U2)(nil)
+
+func (u2 *U2) CodecOnUnknownField(fieldName string, fieldValue interface{}) {
+	panic("Unexpected")
+}
+
+func (u2 *U2) GetUnknownFields() map[string]interface{} {
+	fmt.Printf("U2.GetUnknownFields called, returning %+v\n", u2.unknownFields)
+	return u2.unknownFields
 }
 
 func doTestEncUnknownFields(t *testing.T, h Handle) {
