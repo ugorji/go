@@ -734,6 +734,13 @@ func (f *decFnInfo) kStruct(rv reflect.Value) {
 					} else {
 						d.decodeValue(si.field(rv, true), nil)
 					}
+				} else if fti.ufh {
+					ufh := f.getValueForUnmarshalInterface(rv, fti.ufhIndir).(UnknownFieldsHandler)
+					// TODO: Is it safe to pass in
+					// stringViews?
+					ufh.CodecOnUnknownField(rvkencname)
+					// TODO: Pass in value, too.
+					d.swallow()
 				} else {
 					d.structFieldNotFound(-1, rvkencname)
 				}

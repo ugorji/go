@@ -275,6 +275,8 @@ var (
 
 	selferTyp = reflect.TypeOf((*Selfer)(nil)).Elem()
 
+	unknownFieldsHandlerTyp = reflect.TypeOf((*UnknownFieldsHandler)(nil)).Elem()
+
 	uint8SliceTypId = reflect.ValueOf(uint8SliceTyp).Pointer()
 	rawExtTypId     = reflect.ValueOf(rawExtTyp).Pointer()
 	intfTypId       = reflect.ValueOf(intfTyp).Pointer()
@@ -307,6 +309,12 @@ var defTypeInfos = NewTypeInfos([]string{"codec", "json"})
 type Selfer interface {
 	CodecEncodeSelf(*Encoder)
 	CodecDecodeSelf(*Decoder)
+}
+
+// UnknownFieldsHandler defines methods by which a value can store
+// unknown fields encountered during decoding.
+type UnknownFieldsHandler interface {
+	CodecOnUnknownField(fieldName string)
 }
 
 // MapBySlice represents a slice which should be encoded as a map in the stream.
@@ -730,6 +738,9 @@ type typeInfo struct {
 	cs      bool // base type (T or *T) is a Selfer
 	csIndir int8 // number of indirections to get to Selfer type
 
+	ufh      bool // base type (T or *T) is an UnknownFieldsHandler
+	ufhIndir int8 // number of indirections to get to UnknownFieldsHandler type
+
 	toArray bool // whether this (struct) type should be encoded as an array
 }
 
@@ -827,6 +838,9 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	}
 	if ok, indir = implementsIntf(rt, selferTyp); ok {
 		ti.cs, ti.csIndir = true, indir
+	}
+	if ok, indir = implementsIntf(rt, unknownFieldsHandlerTyp); ok {
+		ti.ufh, ti.ufhIndir = true, indir
 	}
 	if ok, _ = implementsIntf(rt, mapBySliceTyp); ok {
 		ti.mbs = true
