@@ -506,6 +506,13 @@ func (f *encFnInfo) kSlice(rv reflect.Value) {
 	}
 }
 
+type keyValuePair struct {
+	key        string
+	encoded    bool
+	val        reflect.Value
+	encodedVal []byte
+}
+
 func (f *encFnInfo) kStruct(rv reflect.Value) {
 	fti := f.ti
 	e := f.e
@@ -514,7 +521,7 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	toMap := !(fti.toArray || e.h.StructToArray)
 	newlen := len(fti.sfi)
 
-	var unknownFields map[string]interface{}
+	var unknownFields map[string][]byte
 	// TODO: Merge unknown fields with known ones rather than just
 	// tack the unknown ones at the end.
 	if fti.ufh {
@@ -536,22 +543,24 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 		tisfi = fti.sfi
 	}
 	newlen = 0
-	var kv stringRv
+
+	var kv keyValuePair
 	for _, si := range tisfi {
-		kv.r = si.field(rv, false)
+		kv.encoded = false
+		kv.val = si.field(rv, false)
 		if toMap {
-			if si.omitEmpty && isEmptyValue(kv.r) {
+			if si.omitEmpty && isEmptyValue(kv.val) {
 				continue
 			}
-			kv.v = si.encName
+			kv.key = si.encName
 		} else {
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
-			if si.omitEmpty && isEmptyValue(kv.r) {
-				switch kv.r.Kind() {
+			if si.omitEmpty && isEmptyValue(kv.val) {
+				switch kv.val.Kind() {
 				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array,
 					reflect.Map, reflect.Slice:
-					kv.r = reflect.Value{} //encode as nil
+					kv.val = reflect.Value{} //encode as nil
 				}
 			}
 		}
@@ -560,8 +569,9 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	}
 
 	for k, v := range unknownFields {
-		kv.v = k
-		kv.r = reflect.ValueOf(v)
+		kv.key = k
+		kv.encoded = true
+		kv.encodedVal = v
 		fkvs[newlen] = kv
 		newlen++
 	}
@@ -580,14 +590,18 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 				cr.sendContainerState(containerMapKey)
 			}
 			if asSymbols {
-				ee.EncodeSymbol(kv.v)
+				ee.EncodeSymbol(kv.key)
 			} else {
-				ee.EncodeString(c_UTF8, kv.v)
+				ee.EncodeString(c_UTF8, kv.key)
 			}
 			if cr != nil {
 				cr.sendContainerState(containerMapValue)
 			}
-			e.encodeValue(kv.r, nil)
+			if kv.encoded {
+				e.asis(kv.encodedVal)
+			} else {
+				e.encodeValue(kv.val, nil)
+			}
 		}
 		if cr != nil {
 			cr.sendContainerState(containerMapEnd)
@@ -599,7 +613,11 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 			if cr != nil {
 				cr.sendContainerState(containerArrayElem)
 			}
-			e.encodeValue(kv.r, nil)
+			if kv.encoded {
+				e.asis(kv.encodedVal)
+			} else {
+				e.encodeValue(kv.val, nil)
+			}
 		}
 		if cr != nil {
 			cr.sendContainerState(containerArrayEnd)
@@ -1397,14 +1415,14 @@ const encStructPoolLen = 5
 var encStructPool [encStructPoolLen]sync.Pool
 
 func init() {
-	encStructPool[0].New = func() interface{} { return new([8]stringRv) }
-	encStructPool[1].New = func() interface{} { return new([16]stringRv) }
-	encStructPool[2].New = func() interface{} { return new([32]stringRv) }
-	encStructPool[3].New = func() interface{} { return new([64]stringRv) }
-	encStructPool[4].New = func() interface{} { return new([128]stringRv) }
+	encStructPool[0].New = func() interface{} { return new([8]keyValuePair) }
+	encStructPool[1].New = func() interface{} { return new([16]keyValuePair) }
+	encStructPool[2].New = func() interface{} { return new([32]keyValuePair) }
+	encStructPool[3].New = func() interface{} { return new([64]keyValuePair) }
+	encStructPool[4].New = func() interface{} { return new([128]keyValuePair) }
 }
 
-func encStructPoolGet(newlen int) (p *sync.Pool, v interface{}, s []stringRv) {
+func encStructPoolGet(newlen int) (p *sync.Pool, v interface{}, s []keyValuePair) {
 	// if encStructPoolLen != 5 { // constant chec, so removed at build time.
 	// 	panic(errors.New("encStructPoolLen must be equal to 4")) // defensive, in case it is changed
 	// }
@@ -1412,25 +1430,25 @@ func encStructPoolGet(newlen int) (p *sync.Pool, v interface{}, s []stringRv) {
 	if newlen <= 8 {
 		p = &encStructPool[0]
 		v = p.Get()
-		s = v.(*[8]stringRv)[:newlen]
+		s = v.(*[8]keyValuePair)[:newlen]
 	} else if newlen <= 16 {
 		p = &encStructPool[1]
 		v = p.Get()
-		s = v.(*[16]stringRv)[:newlen]
+		s = v.(*[16]keyValuePair)[:newlen]
 	} else if newlen <= 32 {
 		p = &encStructPool[2]
 		v = p.Get()
-		s = v.(*[32]stringRv)[:newlen]
+		s = v.(*[32]keyValuePair)[:newlen]
 	} else if newlen <= 64 {
 		p = &encStructPool[3]
 		v = p.Get()
-		s = v.(*[64]stringRv)[:newlen]
+		s = v.(*[64]keyValuePair)[:newlen]
 	} else if newlen <= 128 {
 		p = &encStructPool[4]
 		v = p.Get()
-		s = v.(*[128]stringRv)[:newlen]
+		s = v.(*[128]keyValuePair)[:newlen]
 	} else {
-		s = make([]stringRv, newlen)
+		s = make([]keyValuePair, newlen)
 	}
 	return
 }

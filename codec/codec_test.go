@@ -1299,17 +1299,17 @@ type UBase struct {
 type U1 struct {
 	UBase
 
-	unknownFields map[string]interface{}
+	unknownFields map[string][]byte
 }
 
-func (u1 *U1) CodecOnUnknownField(fieldName string, fieldValue interface{}) {
+func (u1 *U1) CodecOnUnknownField(fieldName string, encodedValue []byte) {
 	if u1.unknownFields == nil {
-		u1.unknownFields = make(map[string]interface{})
+		u1.unknownFields = make(map[string][]byte)
 	}
-	u1.unknownFields[fieldName] = fieldValue
+	u1.unknownFields[fieldName] = encodedValue
 }
 
-func (u1 *U1) GetUnknownFields() map[string]interface{} {
+func (u1 *U1) GetUnknownFields() map[string][]byte {
 	fmt.Printf("U1.GetUnknownFields called, returning %+v\n", u1.unknownFields)
 	return u1.unknownFields
 }
@@ -1323,16 +1323,16 @@ type U2 struct {
 	B2 bool
 	I2 int
 
-	unknownFields map[string]interface{}
+	unknownFields map[string][]byte
 }
 
 var _ UnknownFieldsHandler = (*U2)(nil)
 
-func (u2 *U2) CodecOnUnknownField(fieldName string, fieldValue interface{}) {
+func (u2 *U2) CodecOnUnknownField(fieldName string, encodedValue []byte) {
 	panic("Unexpected")
 }
 
-func (u2 *U2) GetUnknownFields() map[string]interface{} {
+func (u2 *U2) GetUnknownFields() map[string][]byte {
 	fmt.Printf("U2.GetUnknownFields called, returning %+v\n", u2.unknownFields)
 	return u2.unknownFields
 }
@@ -1357,14 +1357,14 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 		t.Fatalf("u1.UBase=%+v != u2.UBase=%+v", u1.UBase, u2.UBase)
 	}
 
-	expectedUnknownFields := map[string]interface{}{
-		"B2": false,
-		"I2": int64(3),
-		"S2": []byte("t2"),
+	expectedUnknownFields := map[string][]byte{
+		"B2": []byte{194},
+		"I2": []byte{3},
+		"S2": []byte{162, 116, 50},
 	}
 
 	if !reflect.DeepEqual(expectedUnknownFields, u1.unknownFields) {
-		t.Fatalf("1expectedUnknownFields=%+v != u1.unknownFields=%+v",
+		t.Fatalf("expectedUnknownFields=%+v != u1.unknownFields=%+v",
 			expectedUnknownFields, u1.unknownFields)
 	}
 
