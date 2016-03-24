@@ -275,7 +275,7 @@ var (
 
 	selferTyp = reflect.TypeOf((*Selfer)(nil)).Elem()
 
-	unknownFieldsHandlerTyp = reflect.TypeOf((*UnknownFieldsHandler)(nil)).Elem()
+	unknownFieldHandlerTyp = reflect.TypeOf((*UnknownFieldHandler)(nil)).Elem()
 
 	uint8SliceTypId = reflect.ValueOf(uint8SliceTyp).Pointer()
 	rawExtTypId     = reflect.ValueOf(rawExtTyp).Pointer()
@@ -311,11 +311,38 @@ type Selfer interface {
 	CodecDecodeSelf(*Decoder)
 }
 
+// An UnknownFieldSet holds information about unknown fields
+// encountered during decoding.
+type UnknownFieldSet struct {
+	// Map from field name to encoded value.
+	fields map[string][]byte
+}
+
+func (ufs *UnknownFieldSet) add(name string, encodedVal []byte) {
+	if ufs.fields == nil {
+		ufs.fields = make(map[string][]byte)
+	} else {
+		if _, ok := ufs.fields[name]; ok {
+			panic(fmt.Errorf("Duplicate unknown field with name %q", name))
+		}
+	}
+	// In general, encodedVal is a slice into a buffer, so we need
+	// to store a copy.
+	encodedValCopy := make([]byte, len(encodedVal))
+	copy(encodedValCopy, encodedVal)
+	ufs.fields[name] = encodedValCopy
+}
+
 // UnknownFieldsHandler defines methods by which a value can store
 // unknown fields encountered during decoding.
-type UnknownFieldsHandler interface {
-	CodecOnUnknownField(fieldName string, encodedValue []byte)
-	GetUnknownFields() map[string][]byte
+type UnknownFieldHandler interface {
+	// CodecSetUnknownFields is called exactly once during
+	// decoding with the set of all unknown fields encountered.
+	CodecSetUnknownFields(UnknownFieldSet)
+	// CodecGetUnknownFields is called exactly once during
+	// encoding to get the set of unknown fields to include in the
+	// encoding.
+	CodecGetUnknownFields() UnknownFieldSet
 }
 
 // MapBySlice represents a slice which should be encoded as a map in the stream.
@@ -840,7 +867,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	if ok, indir = implementsIntf(rt, selferTyp); ok {
 		ti.cs, ti.csIndir = true, indir
 	}
-	if ok, indir = implementsIntf(rt, unknownFieldsHandlerTyp); ok {
+	if ok, indir = implementsIntf(rt, unknownFieldHandlerTyp); ok {
 		ti.ufh, ti.ufhIndir = true, indir
 	}
 	if ok, _ = implementsIntf(rt, mapBySliceTyp); ok {

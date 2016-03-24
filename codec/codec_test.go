@@ -1299,22 +1299,18 @@ type UBase struct {
 type U1 struct {
 	UBase
 
-	unknownFields map[string][]byte
+	ufs UnknownFieldSet
 }
 
-func (u1 *U1) CodecOnUnknownField(fieldName string, encodedValue []byte) {
-	if u1.unknownFields == nil {
-		u1.unknownFields = make(map[string][]byte)
-	}
-	u1.unknownFields[fieldName] = encodedValue
+func (u1 *U1) CodecSetUnknownFields(ufs UnknownFieldSet) {
+	u1.ufs = ufs
 }
 
-func (u1 *U1) GetUnknownFields() map[string][]byte {
-	fmt.Printf("U1.GetUnknownFields called, returning %+v\n", u1.unknownFields)
-	return u1.unknownFields
+func (u1 *U1) CodecGetUnknownFields() UnknownFieldSet {
+	return u1.ufs
 }
 
-var _ UnknownFieldsHandler = (*U1)(nil)
+var _ UnknownFieldHandler = (*U1)(nil)
 
 type U2 struct {
 	UBase
@@ -1323,22 +1319,21 @@ type U2 struct {
 	B2 bool
 	I2 int
 
-	unknownFields map[string][]byte
+	ufs UnknownFieldSet
 }
 
-var _ UnknownFieldsHandler = (*U2)(nil)
+var _ UnknownFieldHandler = (*U2)(nil)
 
-func (u2 *U2) CodecOnUnknownField(fieldName string, encodedValue []byte) {
-	panic("Unexpected")
+func (u2 *U2) CodecSetUnknownFields(ufs UnknownFieldSet) {
+	u2.ufs = ufs
 }
 
-func (u2 *U2) GetUnknownFields() map[string][]byte {
-	fmt.Printf("U2.GetUnknownFields called, returning %+v\n", u2.unknownFields)
-	return u2.unknownFields
+func (u2 *U2) CodecGetUnknownFields() UnknownFieldSet {
+	return u2.ufs
 }
 
 func doTestEncUnknownFields(t *testing.T, h Handle) {
-	u2 := U2{UBase{"t1", true, 5}, "t2", false, 3, nil}
+	u2 := U2{UBase{"t1", true, 5}, "t2", false, 3, UnknownFieldSet{}}
 
 	var bs []byte
 	var err error
@@ -1363,9 +1358,9 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 		"S2": []byte{162, 116, 50},
 	}
 
-	if !reflect.DeepEqual(expectedUnknownFields, u1.unknownFields) {
-		t.Fatalf("expectedUnknownFields=%+v != u1.unknownFields=%+v",
-			expectedUnknownFields, u1.unknownFields)
+	if !reflect.DeepEqual(expectedUnknownFields, u1.ufs.fields) {
+		t.Fatalf("expectedUnknownFields=%+v != u1.ufs.fields=%+v",
+			expectedUnknownFields, u1.ufs.fields)
 	}
 
 	var bs2 []byte

@@ -527,7 +527,7 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	toMap := !(fti.toArray || e.h.StructToArray)
 	newlen := len(fti.sfi)
 
-	var unknownFields map[string][]byte
+	var ufs UnknownFieldSet
 	// TODO: Merge unknown fields with known ones rather than just
 	// tack the unknown ones at the end.
 	if fti.ufh {
@@ -535,8 +535,8 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 			if !toMap {
 				panic("Unknown fields supported only when toMap=true")
 			}
-			unknownFields = ufh.(UnknownFieldsHandler).GetUnknownFields()
-			newlen += len(unknownFields)
+			ufs = ufh.(UnknownFieldHandler).CodecGetUnknownFields()
+			newlen += len(ufs.fields)
 		}
 	}
 
@@ -574,10 +574,10 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 		newlen++
 	}
 
-	for k, v := range unknownFields {
-		kv.key = k
+	for name, encodedVal := range ufs.fields {
+		kv.key = name
 		kv.encoded = true
-		kv.encodedVal = v
+		kv.encodedVal = encodedVal
 		fkvs[newlen] = kv
 		newlen++
 	}
