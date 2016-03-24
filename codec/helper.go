@@ -341,7 +341,8 @@ type UnknownFieldHandler interface {
 	CodecSetUnknownFields(UnknownFieldSet)
 	// CodecGetUnknownFields is called exactly once during
 	// encoding to get the set of unknown fields to include in the
-	// encoding.
+	// encoding. Encoding must be done with the same handle type
+	// as what was used when decoding.
 	CodecGetUnknownFields() UnknownFieldSet
 }
 
