@@ -1333,54 +1333,74 @@ func (u2 *U2) CodecGetUnknownFields() UnknownFieldSet {
 }
 
 func doTestEncUnknownFields(t *testing.T, h Handle) {
-	u2 := U2{UBase{"t1", true, 5}, "t2", false, 3, UnknownFieldSet{}}
+	u2 := U2{
+		UBase: UBase{
+			S: "t1",
+			B: true,
+			I: 5,
+		},
+		S2: "t2",
+		B2: false,
+		I2: 3,
+	}
 
-	var bs []byte
-	var err error
-	err = NewEncoderBytes(&bs, h).Encode(&u2)
+	// Encode a U2.
+	var bs2 []byte
+	err := NewEncoderBytes(&bs2, h).Encode(&u2)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	// Decode it into a U1.
 	var u1 U1
-	err = NewDecoderBytes(bs, h).Decode(&u1)
+	err = NewDecoderBytes(bs2, h).Decode(&u1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	// Decoded U1 should have the same known fields as the encoded
+	// U2.
 	if !reflect.DeepEqual(u1.UBase, u2.UBase) {
 		t.Fatalf("u1.UBase=%+v != u2.UBase=%+v", u1.UBase, u2.UBase)
 	}
 
-	expectedUnknownFields := map[string][]byte{
-		"B2": []byte{194},
-		"I2": []byte{3},
-		"S2": []byte{162, 116, 50},
+	expectedUfs := UnknownFieldSet{
+		fields: map[string][]byte{
+			// msgpack-encoded
+			"B2": []byte{0xc2},           // false
+			"I2": []byte{0x03},           // 3
+			"S2": []byte{0xa2, 't', '2'}, // "t2"
+		},
 	}
 
-	if !reflect.DeepEqual(expectedUnknownFields, u1.ufs.fields) {
-		t.Fatalf("expectedUnknownFields=%+v != u1.ufs.fields=%+v",
-			expectedUnknownFields, u1.ufs.fields)
+	// Decoded U1 should have the U2-only fields as unknown.
+	if !reflect.DeepEqual(expectedUfs, u1.ufs) {
+		t.Fatalf("expectedUfs=%+v != u1.ufs=%+v", expectedUfs, u1.ufs)
 	}
 
-	var bs2 []byte
-	err = NewEncoderBytes(&bs2, h).Encode(&u1)
+	// Encode U1.
+	var bs1 []byte
+	err = NewEncoderBytes(&bs1, h).Encode(&u1)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(bs2, bs) {
-		t.Fatalf("bs2=%+v != bs=%+v", bs2, bs)
+	// Encoded U1 should encode into the same bytes as the U2.
+	if !reflect.DeepEqual(bs2, bs1) {
+		t.Fatalf("bs2=%+v != bs1=%+v", bs2, bs1)
 	}
 
-	var u22 U2
-	err = NewDecoderBytes(bs, h).Decode(&u22)
+	// Decode into another U2.
+	var u3 U2
+	err = NewDecoderBytes(bs1, h).Decode(&u3)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(u22, u2) {
-		t.Fatalf("u22=%+v != u2=%+v", u22, u2)
+	// Second U2 should have the same known and unknown fields
+	// (i.e., none) as the first U2.
+	if !reflect.DeepEqual(u2, u3) {
+		t.Fatalf("u2=%+v != u3=%+v", u2, u3)
 	}
 }
 
