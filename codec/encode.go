@@ -5,6 +5,7 @@ package codec
 
 import (
 	"encoding"
+	"errors"
 	"fmt"
 	"io"
 	"reflect"
@@ -506,18 +507,22 @@ func (f *encFnInfo) kSlice(rv reflect.Value) {
 	}
 }
 
-type keyValuePair struct {
-	key        string
-	encoded    bool
+// A structField stores all the info for a single field of a struct.
+// If encoding into a map, name is filled, and otherwise it is left
+// empty. For known fields, val is filled, and for unknown fields
+// (used only when encoding into a map), encodedVal is filled.
+type structField struct {
+	name       string
+	known      bool
 	val        reflect.Value
 	encodedVal []byte
 }
 
-type keyValuePairSlice []keyValuePair
+type structFieldSlice []structField
 
-func (p keyValuePairSlice) Len() int           { return len(p) }
-func (p keyValuePairSlice) Less(i, j int) bool { return p[i].key < p[j].key }
-func (p keyValuePairSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p structFieldSlice) Len() int           { return len(p) }
+func (p structFieldSlice) Less(i, j int) bool { return p[i].name < p[j].name }
+func (p structFieldSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func (f *encFnInfo) kStruct(rv reflect.Value) {
 	fti := f.ti
@@ -528,12 +533,10 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	newlen := len(fti.sfi)
 
 	var ufs UnknownFieldSet
-	// TODO: Merge unknown fields with known ones rather than just
-	// tack the unknown ones at the end.
 	if fti.ufh {
 		if ufh, proceed := f.getValueForMarshalInterface(rv, fti.ufhIndir); proceed {
 			if !toMap {
-				panic("Unknown fields supported only when toMap=true")
+				panic(errors.New("can use UnknownFieldHandler only when encoding into a map"))
 			}
 			ufs = ufh.(UnknownFieldHandler).CodecGetUnknownFields()
 			newlen += len(ufs.fields)
@@ -542,7 +545,7 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 
 	// Use sync.Pool to reduce allocating slices unnecessarily.
 	// The cost of sync.Pool is less than the cost of new allocation.
-	pool, poolv, fkvs := encStructPoolGet(newlen)
+	pool, poolv, fsfs := encStructPoolGet(newlen)
 
 	// if toMap, use the sorted array. If toArray, use unsorted array (to match sequence in struct)
 	if toMap {
@@ -550,35 +553,35 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	}
 	newlen = 0
 
-	var kv keyValuePair
+	var sf structField
 	for _, si := range tisfi {
-		kv.encoded = false
-		kv.val = si.field(rv, false)
+		sf.known = true
+		sf.val = si.field(rv, false)
 		if toMap {
-			if si.omitEmpty && isEmptyValue(kv.val) {
+			if si.omitEmpty && isEmptyValue(sf.val) {
 				continue
 			}
-			kv.key = si.encName
+			sf.name = si.encName
 		} else {
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
-			if si.omitEmpty && isEmptyValue(kv.val) {
-				switch kv.val.Kind() {
+			if si.omitEmpty && isEmptyValue(sf.val) {
+				switch sf.val.Kind() {
 				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array,
 					reflect.Map, reflect.Slice:
-					kv.val = reflect.Value{} //encode as nil
+					sf.val = reflect.Value{} //encode as nil
 				}
 			}
 		}
-		fkvs[newlen] = kv
+		fsfs[newlen] = sf
 		newlen++
 	}
 
 	for name, encodedVal := range ufs.fields {
-		kv.key = name
-		kv.encoded = true
-		kv.encodedVal = encodedVal
-		fkvs[newlen] = kv
+		sf.name = name
+		sf.known = false
+		sf.encodedVal = encodedVal
+		fsfs[newlen] = sf
 		newlen++
 	}
 
@@ -587,28 +590,32 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	ee := e.e //don't dereference everytime
 
 	if toMap {
-		sort.Sort(keyValuePairSlice(fkvs[:newlen]))
+		if len(ufs.fields) > 0 {
+			// We have unknown fields, so we need to
+			// re-sort.
+			sort.Sort(structFieldSlice(fsfs[:newlen]))
+		}
 
 		ee.EncodeMapStart(newlen)
 		// asSymbols := e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 		asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 		for j := 0; j < newlen; j++ {
-			kv = fkvs[j]
+			sf = fsfs[j]
 			if cr != nil {
 				cr.sendContainerState(containerMapKey)
 			}
 			if asSymbols {
-				ee.EncodeSymbol(kv.key)
+				ee.EncodeSymbol(sf.name)
 			} else {
-				ee.EncodeString(c_UTF8, kv.key)
+				ee.EncodeString(c_UTF8, sf.name)
 			}
 			if cr != nil {
 				cr.sendContainerState(containerMapValue)
 			}
-			if kv.encoded {
-				e.asis(kv.encodedVal)
+			if sf.known {
+				e.encodeValue(sf.val, nil)
 			} else {
-				e.encodeValue(kv.val, nil)
+				e.asis(sf.encodedVal)
 			}
 		}
 		if cr != nil {
@@ -617,15 +624,11 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	} else {
 		ee.EncodeArrayStart(newlen)
 		for j := 0; j < newlen; j++ {
-			kv = fkvs[j]
+			sf = fsfs[j]
 			if cr != nil {
 				cr.sendContainerState(containerArrayElem)
 			}
-			if kv.encoded {
-				e.asis(kv.encodedVal)
-			} else {
-				e.encodeValue(kv.val, nil)
-			}
+			e.encodeValue(sf.val, nil)
 		}
 		if cr != nil {
 			cr.sendContainerState(containerArrayEnd)
@@ -1423,14 +1426,14 @@ const encStructPoolLen = 5
 var encStructPool [encStructPoolLen]sync.Pool
 
 func init() {
-	encStructPool[0].New = func() interface{} { return new([8]keyValuePair) }
-	encStructPool[1].New = func() interface{} { return new([16]keyValuePair) }
-	encStructPool[2].New = func() interface{} { return new([32]keyValuePair) }
-	encStructPool[3].New = func() interface{} { return new([64]keyValuePair) }
-	encStructPool[4].New = func() interface{} { return new([128]keyValuePair) }
+	encStructPool[0].New = func() interface{} { return new([8]structField) }
+	encStructPool[1].New = func() interface{} { return new([16]structField) }
+	encStructPool[2].New = func() interface{} { return new([32]structField) }
+	encStructPool[3].New = func() interface{} { return new([64]structField) }
+	encStructPool[4].New = func() interface{} { return new([128]structField) }
 }
 
-func encStructPoolGet(newlen int) (p *sync.Pool, v interface{}, s []keyValuePair) {
+func encStructPoolGet(newlen int) (p *sync.Pool, v interface{}, s []structField) {
 	// if encStructPoolLen != 5 { // constant chec, so removed at build time.
 	// 	panic(errors.New("encStructPoolLen must be equal to 4")) // defensive, in case it is changed
 	// }
@@ -1438,25 +1441,25 @@ func encStructPoolGet(newlen int) (p *sync.Pool, v interface{}, s []keyValuePair
 	if newlen <= 8 {
 		p = &encStructPool[0]
 		v = p.Get()
-		s = v.(*[8]keyValuePair)[:newlen]
+		s = v.(*[8]structField)[:newlen]
 	} else if newlen <= 16 {
 		p = &encStructPool[1]
 		v = p.Get()
-		s = v.(*[16]keyValuePair)[:newlen]
+		s = v.(*[16]structField)[:newlen]
 	} else if newlen <= 32 {
 		p = &encStructPool[2]
 		v = p.Get()
-		s = v.(*[32]keyValuePair)[:newlen]
+		s = v.(*[32]structField)[:newlen]
 	} else if newlen <= 64 {
 		p = &encStructPool[3]
 		v = p.Get()
-		s = v.(*[64]keyValuePair)[:newlen]
+		s = v.(*[64]structField)[:newlen]
 	} else if newlen <= 128 {
 		p = &encStructPool[4]
 		v = p.Get()
-		s = v.(*[128]keyValuePair)[:newlen]
+		s = v.(*[128]structField)[:newlen]
 	} else {
-		s = make([]keyValuePair, newlen)
+		s = make([]structField, newlen)
 	}
 	return
 }
