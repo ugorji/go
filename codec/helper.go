@@ -333,7 +333,7 @@ func (ufs *UnknownFieldSet) add(name string, encodedVal []byte) {
 	ufs.fields[name] = encodedValCopy
 }
 
-// UnknownFieldsHandler defines methods by which a value can store
+// UnknownFieldHandler defines methods by which a value can store
 // unknown fields encountered during decoding.
 type UnknownFieldHandler interface {
 	// CodecSetUnknownFields is called exactly once during
@@ -766,8 +766,8 @@ type typeInfo struct {
 	cs      bool // base type (T or *T) is a Selfer
 	csIndir int8 // number of indirections to get to Selfer type
 
-	ufh      bool // base type (T or *T) is an UnknownFieldsHandler
-	ufhIndir int8 // number of indirections to get to UnknownFieldsHandler type
+	ufh      bool // base type (T or *T) is an UnknownFieldHandler
+	ufhIndir int8 // number of indirections to get to UnknownFieldHandler type
 
 	toArray bool // whether this (struct) type should be encoded as an array
 }
