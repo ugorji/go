@@ -592,8 +592,16 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	if toMap {
 		if len(ufs.fields) > 0 {
 			// We have unknown fields, so we need to
-			// re-sort.
+			// re-sort. Also check for duplicate field
+			// names.
 			sort.Sort(structFieldSlice(fsfs[:newlen]))
+			for j := 1; j < newlen; j++ {
+				sfPrev := fsfs[j-1]
+				sf := fsfs[j]
+				if sf.name == sfPrev.name {
+					panic(fmt.Errorf("Duplicate field with name %q", sf.name))
+				}
+			}
 		}
 
 		ee.EncodeMapStart(newlen)
