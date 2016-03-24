@@ -1368,9 +1368,14 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 			expectedUnknownFields, u1.unknownFields)
 	}
 
-	err = NewEncoderBytes(&bs, h).Encode(&u1)
+	var bs2 []byte
+	err = NewEncoderBytes(&bs2, h).Encode(&u1)
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(bs2, bs) {
+		t.Fatalf("bs2=%+v != bs=%+v", bs2, bs)
 	}
 
 	var u22 U2

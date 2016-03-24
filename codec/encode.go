@@ -513,6 +513,12 @@ type keyValuePair struct {
 	encodedVal []byte
 }
 
+type keyValuePairSlice []keyValuePair
+
+func (p keyValuePairSlice) Len() int           { return len(p) }
+func (p keyValuePairSlice) Less(i, j int) bool { return p[i].key < p[j].key }
+func (p keyValuePairSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
 func (f *encFnInfo) kStruct(rv reflect.Value) {
 	fti := f.ti
 	e := f.e
@@ -581,6 +587,8 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	ee := e.e //don't dereference everytime
 
 	if toMap {
+		sort.Sort(keyValuePairSlice(fkvs[:newlen]))
+
 		ee.EncodeMapStart(newlen)
 		// asSymbols := e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 		asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
