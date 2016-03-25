@@ -316,7 +316,8 @@ type Selfer interface {
 // set.
 //
 // UnknownFieldSet implements UnknownFieldHandler, so you can just
-// embed it in a struct type that you want to preserve unknown fields.
+// embed it in a struct type and it will automatically preserve
+// unknown fields.
 type UnknownFieldSet struct {
 	// Map from field name to encoded value.
 	fields map[string][]byte

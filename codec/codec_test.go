@@ -1335,6 +1335,28 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 		t.Fatal(err)
 	}
 
+	// Decode it into a map.
+	var m map[string]interface{}
+	err = NewDecoderBytes(bs2, h).Decode(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedM := map[string]interface{}{
+		"S":  "t1",
+		"B":  true,
+		"I":  int64(5),
+		"S2": "t2",
+		"B2": false,
+		"I2": int64(3),
+	}
+
+	// Decoded map should have all fields except for
+	// UnknownFieldSet.
+	if !reflect.DeepEqual(expectedM, m) {
+		t.Fatalf("expectedM=%+v != m=%+v", expectedM, m)
+	}
+
 	// Decode it into a U1.
 	var u1 U1
 	err = NewDecoderBytes(bs2, h).Decode(&u1)
