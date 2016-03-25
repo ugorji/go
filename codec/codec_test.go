@@ -1290,6 +1290,120 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 		fmt.Sprintf("%#v\n%#v\n", []string{"A1", "B2", "C3"}, TestRpcABC{"Aa", "Bb", "Cc"}), "cmdout=")
 }
 
+type UBase struct {
+	S string
+	B bool
+	I int
+}
+
+type U1 struct {
+	UBase
+
+	ufs UnknownFieldSet
+}
+
+func (u1 *U1) CodecSetUnknownFields(ufs UnknownFieldSet) {
+	u1.ufs = ufs
+}
+
+func (u1 *U1) CodecGetUnknownFields() UnknownFieldSet {
+	return u1.ufs
+}
+
+var _ UnknownFieldHandler = (*U1)(nil)
+
+type U2 struct {
+	UBase
+
+	S2 string
+	B2 bool
+	I2 int
+
+	ufs UnknownFieldSet
+}
+
+var _ UnknownFieldHandler = (*U2)(nil)
+
+func (u2 *U2) CodecSetUnknownFields(ufs UnknownFieldSet) {
+	u2.ufs = ufs
+}
+
+func (u2 *U2) CodecGetUnknownFields() UnknownFieldSet {
+	return u2.ufs
+}
+
+func doTestEncUnknownFields(t *testing.T, h Handle) {
+	u2 := U2{
+		UBase: UBase{
+			S: "t1",
+			B: true,
+			I: 5,
+		},
+		S2: "t2",
+		B2: false,
+		I2: 3,
+	}
+
+	// Encode a U2.
+	var bs2 []byte
+	err := NewEncoderBytes(&bs2, h).Encode(&u2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Decode it into a U1.
+	var u1 U1
+	err = NewDecoderBytes(bs2, h).Decode(&u1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Decoded U1 should have the same known fields as the encoded
+	// U2.
+	if !reflect.DeepEqual(u1.UBase, u2.UBase) {
+		t.Fatalf("u1.UBase=%+v != u2.UBase=%+v", u1.UBase, u2.UBase)
+	}
+
+	expectedUfs := UnknownFieldSet{
+		fields: map[string][]byte{
+			// msgpack-encoded
+			"B2": []byte{0xc2},           // false
+			"I2": []byte{0x03},           // 3
+			"S2": []byte{0xa2, 't', '2'}, // "t2"
+		},
+	}
+
+	// Decoded U1 should have the U2-only fields as unknown.
+	if !reflect.DeepEqual(expectedUfs, u1.ufs) {
+		t.Fatalf("expectedUfs=%+v != u1.ufs=%+v", expectedUfs, u1.ufs)
+	}
+
+	// Encode U1.
+	var bs1 []byte
+	err = NewEncoderBytes(&bs1, h).Encode(&u1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Encoded U1 should encode into the same bytes as the U2.
+	if !reflect.DeepEqual(bs2, bs1) {
+		t.Fatalf("bs2=%+v != bs1=%+v", bs2, bs1)
+	}
+
+	// Decode into another U2.
+	var u3 U2
+	err = NewDecoderBytes(bs1, h).Decode(&u3)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Second U2 should have the same known and unknown fields
+	// (i.e., none) as the first U2.
+	if !reflect.DeepEqual(u2, u3) {
+		t.Fatalf("u2=%+v != u3=%+v", u2, u3)
+	}
+}
+
 func TestBincCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testBincH)
 }
@@ -1390,6 +1504,10 @@ func TestAllEncCircularRef(t *testing.T) {
 
 func TestAllAnonCycle(t *testing.T) {
 	doTestAnonCycle(t, "cbor", testCborH)
+}
+
+func TestAllEncUnknownFields(t *testing.T) {
+	doTestEncUnknownFields(t, testMsgpackH)
 }
 
 // ----- RPC -----
