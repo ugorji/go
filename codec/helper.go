@@ -312,10 +312,18 @@ type Selfer interface {
 }
 
 // An UnknownFieldSet holds information about unknown fields
-// encountered during decoding.
+// encountered during decoding. The zero value is an empty
+// set.
 type UnknownFieldSet struct {
 	// Map from field name to encoded value.
 	fields map[string][]byte
+}
+
+// DeepCopy returns a deep copy of the receiver.
+func (ufs UnknownFieldSet) DeepCopy() UnknownFieldSet {
+	// UnknownFieldSet is externally immutable, so it's okay to
+	// just return the receiver.
+	return ufs
 }
 
 func (ufs *UnknownFieldSet) add(name string, encodedVal []byte) {
