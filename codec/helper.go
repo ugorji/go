@@ -314,9 +314,23 @@ type Selfer interface {
 // An UnknownFieldSet holds information about unknown fields
 // encountered during decoding. The zero value is an empty
 // set.
+//
+// UnknownFieldSet implements UnknownFieldHandler, so you can just
+// embed it in a struct type and it will automatically preserve
+// unknown fields.
 type UnknownFieldSet struct {
 	// Map from field name to encoded value.
 	fields map[string][]byte
+}
+
+var _ UnknownFieldHandler = (*UnknownFieldSet)(nil)
+
+func (ufs *UnknownFieldSet) CodecSetUnknownFields(other UnknownFieldSet) {
+	*ufs = other
+}
+
+func (ufs UnknownFieldSet) CodecGetUnknownFields() UnknownFieldSet {
+	return ufs
 }
 
 // DeepCopy returns a deep copy of the receiver.
