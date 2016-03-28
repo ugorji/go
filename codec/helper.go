@@ -354,7 +354,9 @@ func (ufs *UnknownFieldSet) add(name string, encodedVal []byte) {
 		}
 	}
 	// In general, encodedVal is a slice into a buffer, so we need
-	// to store a copy.
+	// to store a copy. Consistently allocate a new slice even
+	// when encodedVal has length 0 so that reflect.DeepEquals
+	// works. (Consistently storing nil would also work.)
 	encodedValCopy := make([]byte, len(encodedVal))
 	copy(encodedValCopy, encodedVal)
 	ufs.fields[name] = encodedValCopy
