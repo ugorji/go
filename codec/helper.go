@@ -318,6 +318,11 @@ type Selfer interface {
 // UnknownFieldSet implements UnknownFieldHandler, so you can just
 // embed it in a struct type and it will automatically preserve
 // unknown fields.
+//
+// You can use reflect.DeepEquals with UnknownFieldSet, although
+// equality only makes sense with respect to UnknownFieldSets that
+// arise from decoding with the same handle, or the zero
+// UnknownFieldSet.
 type UnknownFieldSet struct {
 	// Map from field name to encoded value.
 	fields map[string][]byte
