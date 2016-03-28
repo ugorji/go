@@ -70,19 +70,6 @@ var (
 )
 
 var (
-	testVerbose        bool
-	testInitDebug      bool
-	testUseIoEncDec    bool
-	testStructToArray  bool
-	testCanonical      bool
-	testUseReset       bool
-	testWriteNoSymbols bool
-	testSkipIntf       bool
-	testInternStr      bool
-	testUseMust        bool
-	testCheckCircRef   bool
-	testJsonIndent     int
-
 	skipVerifyVal interface{} = &(struct{}{})
 
 	testMapStrIntfTyp = reflect.TypeOf(map[string]interface{}(nil))
