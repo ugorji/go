@@ -318,6 +318,11 @@ type Selfer interface {
 // UnknownFieldSet implements UnknownFieldHandler, so you can just
 // embed it in a struct type and it will automatically preserve
 // unknown fields.
+//
+// You can use reflect.DeepEquals with UnknownFieldSet, although
+// equality only makes sense with respect to UnknownFieldSets that
+// arise from decoding with the same handle, or the zero
+// UnknownFieldSet.
 type UnknownFieldSet struct {
 	// Map from field name to encoded value.
 	fields map[string][]byte
@@ -349,7 +354,9 @@ func (ufs *UnknownFieldSet) add(name string, encodedVal []byte) {
 		}
 	}
 	// In general, encodedVal is a slice into a buffer, so we need
-	// to store a copy.
+	// to store a copy. Consistently allocate a new slice even
+	// when encodedVal has length 0 so that reflect.DeepEquals
+	// works. (Consistently storing nil would also work.)
 	encodedValCopy := make([]byte, len(encodedVal))
 	copy(encodedValCopy, encodedVal)
 	ufs.fields[name] = encodedValCopy
