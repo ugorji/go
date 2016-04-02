@@ -1299,7 +1299,7 @@ type UBase struct {
 type U1 struct {
 	UBase
 
-	UnknownFieldSet
+	UnknownFieldSetHandler
 }
 
 var _ UnknownFieldHandler = (*U1)(nil)
@@ -1311,7 +1311,7 @@ type U2 struct {
 	B2 bool
 	I2 int
 
-	UnknownFieldSet
+	UnknownFieldSetHandler
 }
 
 var _ UnknownFieldHandler = (*U2)(nil)
@@ -1389,16 +1389,16 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 		},
 	}
 
-	if len(u1.UnknownFieldSet.fields) > 0 {
-		t.Fatalf("len(u1.UnknownFieldSet.fields)=%d > 0",
-			len(u1.UnknownFieldSet.fields))
+	if len(u1.CodecGetUnknownFields().fields) > 0 {
+		t.Fatalf("len(u1.CodecGetUnknownFields().fields)=%d > 0",
+			len(u1.CodecGetUnknownFields().fields))
 	}
 
 	// Decoded U1 with unknown fields should have the U2-only
 	// fields as unknown.
-	if !reflect.DeepEqual(expectedUfs, u1WithUnknown.UnknownFieldSet) {
-		t.Fatalf("expectedUfs=%+v != u1WithUnknown.UnknownFieldSet=%+v",
-			expectedUfs, u1WithUnknown.UnknownFieldSet)
+	if !reflect.DeepEqual(expectedUfs, u1WithUnknown.CodecGetUnknownFields()) {
+		t.Fatalf("expectedUfs=%+v != u1WithUnknown.CodecGetUnknownFields()=%+v",
+			expectedUfs, u1WithUnknown.CodecGetUnknownFields())
 	}
 
 	// Encode U1.
