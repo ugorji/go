@@ -1403,7 +1403,9 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 
 	// Encode U1.
 	var bs1 []byte
+	h.getBasicHandle().EncodeUnknownFields = true
 	err = NewEncoderBytes(&bs1, h).Encode(&u1WithUnknown)
+	h.getBasicHandle().EncodeUnknownFields = false
 	if err != nil {
 		t.Fatal(err)
 	}
