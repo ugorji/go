@@ -1357,17 +1357,27 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 		t.Fatalf("expectedM=%+v != m=%+v", expectedM, m)
 	}
 
-	// Decode it into a U1.
-	var u1 U1
+	// Decode it into a U1, with and without unknown fields.
+	var u1, u1WithUnknown U1
 	err = NewDecoderBytes(bs2, h).Decode(&u1)
 	if err != nil {
 		t.Fatal(err)
 	}
+	h.getBasicHandle().DecodeUnknownFields = true
+	err = NewDecoderBytes(bs2, h).Decode(&u1WithUnknown)
+	h.getBasicHandle().DecodeUnknownFields = false
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// Decoded U1 should have the same known fields as the encoded
-	// U2.
+	// Both decoded U1s should have the same known fields as the
+	// encoded U2.
 	if !reflect.DeepEqual(u1.UBase, u2.UBase) {
 		t.Fatalf("u1.UBase=%+v != u2.UBase=%+v", u1.UBase, u2.UBase)
+	}
+	if !reflect.DeepEqual(u1WithUnknown.UBase, u2.UBase) {
+		t.Fatalf("u1WithUnknown.UBase=%+v != u2.UBase=%+v",
+			u1WithUnknown.UBase, u2.UBase)
 	}
 
 	expectedUfs := UnknownFieldSet{
@@ -1379,15 +1389,21 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 		},
 	}
 
-	// Decoded U1 should have the U2-only fields as unknown.
-	if !reflect.DeepEqual(expectedUfs, u1.UnknownFieldSet) {
-		t.Fatalf("expectedUfs=%+v != u1.UnknownFieldSet=%+v",
-			expectedUfs, u1.UnknownFieldSet)
+	if len(u1.UnknownFieldSet.fields) > 0 {
+		t.Fatalf("len(u1.UnknownFieldSet.fields)=%d > 0",
+			len(u1.UnknownFieldSet.fields))
+	}
+
+	// Decoded U1 with unknown fields should have the U2-only
+	// fields as unknown.
+	if !reflect.DeepEqual(expectedUfs, u1WithUnknown.UnknownFieldSet) {
+		t.Fatalf("expectedUfs=%+v != u1WithUnknown.UnknownFieldSet=%+v",
+			expectedUfs, u1WithUnknown.UnknownFieldSet)
 	}
 
 	// Encode U1.
 	var bs1 []byte
-	err = NewEncoderBytes(&bs1, h).Encode(&u1)
+	err = NewEncoderBytes(&bs1, h).Encode(&u1WithUnknown)
 	if err != nil {
 		t.Fatal(err)
 	}
