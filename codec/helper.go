@@ -658,11 +658,15 @@ type structFieldInfo struct {
 
 	// only one of 'i' or 'is' can be set. If 'i' is -1, then 'is' has been set.
 
-	is              []int // (recursive/embedded) field index in struct
-	i               int16 // field index in struct
-	omitEmpty       bool
-	omitEmptyStruct bool
-	toArray         bool // if field is _struct, is the toArray set?
+	is []int // (recursive/embedded) field index in struct
+	i  int16 // field index in struct
+
+	omitEmpty bool
+	// Only has an effect when omitEmpty is true. Whether or not
+	// the empty check should recursively check structs.
+	omitEmptyCheckStruct bool
+
+	toArray bool // if field is _struct, is the toArray set?
 }
 
 // func (si *structFieldInfo) isZero() bool {
@@ -730,8 +734,8 @@ func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
 			} else {
 				if s == "omitempty" {
 					si.omitEmpty = true
-				} else if s == "omitemptystruct" {
-					si.omitEmptyStruct = true
+				} else if s == "omitemptycheckstruct" {
+					si.omitEmptyCheckStruct = true
 				} else if s == "toarray" {
 					si.toArray = true
 				}
@@ -1057,8 +1061,8 @@ LOOP:
 			if siInfo.omitEmpty {
 				si.omitEmpty = true
 			}
-			if siInfo.omitEmptyStruct {
-				si.omitEmptyStruct = true
+			if siInfo.omitEmptyCheckStruct {
+				si.omitEmptyCheckStruct = true
 			}
 		}
 		pv.sfis = append(pv.sfis, si)
