@@ -1411,6 +1411,46 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 	}
 }
 
+func doTestOmitEmpty(t *testing.T, h Handle) {
+	type O1 struct {
+		M map[int]bool
+	}
+
+	type O2 struct {
+		A  O1  `codec:",omitempty"`
+		B  O1  `codec:",omitempty,omitemptycheckstruct"`
+		I1 int `codec:",omitempty"`
+		I2 int `codec:",omitempty,omitemptycheckstruct"`
+	}
+
+	o2 := O2{}
+
+	// Encode an O2.
+	var bs []byte
+	err := NewEncoderBytes(&bs, h).Encode(o2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Decode it into a map.
+	var m map[string]interface{}
+	err = NewDecoderBytes(bs, h).Decode(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedM := map[string]interface{}{
+		"A": map[interface{}]interface{}{
+			"M": nil,
+		},
+	}
+
+	// Decoded map should have A but not B.
+	if !reflect.DeepEqual(expectedM, m) {
+		t.Fatalf("expectedM=%+v != m=%+v", expectedM, m)
+	}
+}
+
 func TestBincCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testBincH)
 }
@@ -1515,6 +1555,10 @@ func TestAllAnonCycle(t *testing.T) {
 
 func TestAllEncUnknownFields(t *testing.T) {
 	doTestEncUnknownFields(t, testMsgpackH)
+}
+
+func TestAllOmitEmpty(t *testing.T) {
+	doTestOmitEmpty(t, testMsgpackH)
 }
 
 // ----- RPC -----
