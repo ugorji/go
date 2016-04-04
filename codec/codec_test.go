@@ -1420,8 +1420,22 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 		t.Fatal(err)
 	}
 
-	// Encoded U1 with unknown fields should encode into the same
-	// bytes as the U2.
+	// u1WithUnknown encoded without unknown fields should encode
+	// into the same bytes as u1.
+
+	var bs3 []byte
+	h.getBasicHandle().EncodeUnknownFields = true
+	err = NewEncoderBytes(&bs3, h).Encode(&u1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(bs3, bs1) {
+		t.Fatalf("bs3=%+v != bs1WithUnknown=%+v", bs3, bs1)
+	}
+
+	// u1WithUnknown encoded with unknown fields should encode
+	// into the same bytes as the U2.
 	if !reflect.DeepEqual(bs2, bs1WithUnknown) {
 		t.Fatalf("bs2=%+v != bs1WithUnknown=%+v", bs2, bs1WithUnknown)
 	}
