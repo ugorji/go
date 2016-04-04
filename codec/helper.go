@@ -141,10 +141,6 @@ const (
 	// for common maps and slices, by by-passing reflection altogether.
 	fastpathEnabled = true
 
-	// if checkStructForEmptyValue, check structs fields to see if an empty value.
-	// This could be an expensive call, so possibly disable it.
-	checkStructForEmptyValue = false
-
 	// if derefForIsEmptyValue, deref pointers and interfaces when checking isEmptyValue
 	derefForIsEmptyValue = false
 
