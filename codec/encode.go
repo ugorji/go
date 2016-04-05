@@ -134,6 +134,11 @@ type EncodeOptions struct {
 	//   AsSymbolMapStringKeys
 	//   AsSymbolMapStringKeysFlag | AsSymbolStructFieldNameFlag
 	AsSymbols AsSymbolFlag
+
+	// If EncodeUnknownFields, then when encoding a struct
+	// implementing UnknownFieldHandler, also encode the unknown
+	// fields.
+	EncodeUnknownFields bool
 }
 
 // ---------------------------------------------
@@ -533,7 +538,7 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 	newlen := len(fti.sfi)
 
 	var ufs UnknownFieldSet
-	if fti.ufh {
+	if e.h.EncodeUnknownFields && fti.ufh {
 		if ufh, proceed := f.getValueForMarshalInterface(rv, fti.ufhIndir); proceed {
 			if !toMap {
 				panic(errors.New("can use UnknownFieldHandler only when encoding into a map"))

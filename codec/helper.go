@@ -310,35 +310,9 @@ type Selfer interface {
 // An UnknownFieldSet holds information about unknown fields
 // encountered during decoding. The zero value is an empty
 // set.
-//
-// UnknownFieldSet implements UnknownFieldHandler, so you can just
-// embed it in a struct type and it will automatically preserve
-// unknown fields.
-//
-// You can use reflect.DeepEquals with UnknownFieldSet, although
-// equality only makes sense with respect to UnknownFieldSets that
-// arise from decoding with the same handle, or the zero
-// UnknownFieldSet.
 type UnknownFieldSet struct {
 	// Map from field name to encoded value.
 	fields map[string][]byte
-}
-
-var _ UnknownFieldHandler = (*UnknownFieldSet)(nil)
-
-func (ufs *UnknownFieldSet) CodecSetUnknownFields(other UnknownFieldSet) {
-	*ufs = other
-}
-
-func (ufs UnknownFieldSet) CodecGetUnknownFields() UnknownFieldSet {
-	return ufs
-}
-
-// DeepCopy returns a deep copy of the receiver.
-func (ufs UnknownFieldSet) DeepCopy() UnknownFieldSet {
-	// UnknownFieldSet is externally immutable, so it's okay to
-	// just return the receiver.
-	return ufs
 }
 
 func (ufs *UnknownFieldSet) add(name string, encodedVal []byte) {
@@ -369,6 +343,23 @@ type UnknownFieldHandler interface {
 	// encoding. Encoding must be done with the same handle type
 	// as what was used when decoding.
 	CodecGetUnknownFields() UnknownFieldSet
+}
+
+// UnknownFieldSetHandler is an implementation of UnknownFieldHandler
+// that uses an underlying UnknownFieldSet, so you can just embed it
+// in a struct type and it will automatically preserve unknown fields.
+type UnknownFieldSetHandler struct {
+	ufs UnknownFieldSet
+}
+
+var _ UnknownFieldHandler = (*UnknownFieldSetHandler)(nil)
+
+func (ufsh *UnknownFieldSetHandler) CodecSetUnknownFields(other UnknownFieldSet) {
+	ufsh.ufs = other
+}
+
+func (ufsh UnknownFieldSetHandler) CodecGetUnknownFields() UnknownFieldSet {
+	return ufsh.ufs
 }
 
 // MapBySlice represents a slice which should be encoded as a map in the stream.
