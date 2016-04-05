@@ -1411,6 +1411,81 @@ func doTestEncUnknownFields(t *testing.T, h Handle) {
 	}
 }
 
+func doTestOmitEmpty(t *testing.T, h Handle) {
+	type S1 struct {
+		M map[int]bool
+	}
+
+	type S2 struct {
+		A  S1  `codec:",omitempty"`
+		B  S1  `codec:",omitempty,omitemptycheckstruct"`
+		I1 int `codec:",omitempty"`
+		I2 int `codec:",omitempty,omitemptycheckstruct"`
+	}
+
+	s2 := S2{}
+
+	// Encode an S2.
+	var bs []byte
+	err := NewEncoderBytes(&bs, h).Encode(s2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Decode it into a map.
+	var m map[string]interface{}
+	err = NewDecoderBytes(bs, h).Decode(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedM := map[string]interface{}{
+		"A": map[interface{}]interface{}{
+			"M": nil,
+		},
+	}
+
+	// Decoded map should have A but not B.
+	if !reflect.DeepEqual(expectedM, m) {
+		t.Fatalf("expectedM=%+v != m=%+v", expectedM, m)
+	}
+
+	// Make sure B, I1, and I2 aren't omitted when non-empty.
+
+	s2.B.M = map[int]bool{
+		1: true,
+	}
+	s2.I1 = 2
+	s2.I2 = 3
+
+	err = NewEncoderBytes(&bs, h).Encode(s2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = NewDecoderBytes(bs, h).Decode(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedM = map[string]interface{}{
+		"A": map[interface{}]interface{}{
+			"M": nil,
+		},
+		"B": map[interface{}]interface{}{
+			"M": map[interface{}]interface{}{
+				int64(1): true,
+			},
+		},
+		"I1": int64(2),
+		"I2": int64(3),
+	}
+
+	if !reflect.DeepEqual(expectedM, m) {
+		t.Fatalf("expectedM=%+v != m=%+v", expectedM, m)
+	}
+}
+
 func TestBincCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testBincH)
 }
@@ -1515,6 +1590,10 @@ func TestAllAnonCycle(t *testing.T) {
 
 func TestAllEncUnknownFields(t *testing.T) {
 	doTestEncUnknownFields(t, testMsgpackH)
+}
+
+func TestAllOmitEmpty(t *testing.T) {
+	doTestOmitEmpty(t, testMsgpackH)
 }
 
 // ----- RPC -----

@@ -558,14 +558,14 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 		sf.known = true
 		sf.val = si.field(rv, false)
 		if toMap {
-			if si.omitEmpty && isEmptyValue(sf.val) {
+			if si.omitEmpty && isEmptyValue(sf.val, si.omitEmptyCheckStruct) {
 				continue
 			}
 			sf.name = si.encName
 		} else {
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
-			if si.omitEmpty && isEmptyValue(sf.val) {
+			if si.omitEmpty && isEmptyValue(sf.val, si.omitEmptyCheckStruct) {
 				switch sf.val.Kind() {
 				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array,
 					reflect.Map, reflect.Slice:
