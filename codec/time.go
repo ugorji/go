@@ -1,15 +1,55 @@
-// Copyright (c) 2012, 2013 Ugorji Nwoke. All rights reserved.
-// Use of this source code is governed by a BSD-style license found in the LICENSE file.
+// Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
+// Use of this source code is governed by a MIT license found in the LICENSE file.
 
 package codec
 
 import (
+	"fmt"
+	"reflect"
 	"time"
 )
 
 var (
-	timeDigits = [...]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
+	timeDigits   = [...]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
+	timeExtEncFn = func(rv reflect.Value) (bs []byte, err error) {
+		defer panicToErr(&err)
+		bs = timeExt{}.WriteExt(rv.Interface())
+		return
+	}
+	timeExtDecFn = func(rv reflect.Value, bs []byte) (err error) {
+		defer panicToErr(&err)
+		timeExt{}.ReadExt(rv.Interface(), bs)
+		return
+	}
 )
+
+type timeExt struct{}
+
+func (x timeExt) WriteExt(v interface{}) (bs []byte) {
+	switch v2 := v.(type) {
+	case time.Time:
+		bs = encodeTime(v2)
+	case *time.Time:
+		bs = encodeTime(*v2)
+	default:
+		panic(fmt.Errorf("unsupported format for time conversion: expecting time.Time; got %T", v2))
+	}
+	return
+}
+func (x timeExt) ReadExt(v interface{}, bs []byte) {
+	tt, err := decodeTime(bs)
+	if err != nil {
+		panic(err)
+	}
+	*(v.(*time.Time)) = tt
+}
+
+func (x timeExt) ConvertExt(v interface{}) interface{} {
+	return x.WriteExt(v)
+}
+func (x timeExt) UpdateExt(v interface{}, src interface{}) {
+	x.ReadExt(v, src.([]byte))
+}
 
 // EncodeTime encodes a time.Time as a []byte, including
 // information on the instant in time and UTC offset.
@@ -76,7 +116,7 @@ func encodeTime(t time.Time) []byte {
 	if tsecs != 0 {
 		bd = bd | 0x80
 		bigen.PutUint64(btmp[:], uint64(tsecs))
-		f := pruneSignExt(btmp[:])
+		f := pruneSignExt(btmp[:], tsecs >= 0)
 		bd = bd | (byte(7-f) << 2)
 		copy(bs[i:], btmp[f:])
 		i = i + (8 - f)
@@ -84,7 +124,7 @@ func encodeTime(t time.Time) []byte {
 	if tnsecs != 0 {
 		bd = bd | 0x40
 		bigen.PutUint32(btmp[:4], uint32(tnsecs))
-		f := pruneSignExt(btmp[:4])
+		f := pruneSignExt(btmp[:4], true)
 		bd = bd | byte(3-f)
 		copy(bs[i:], btmp[f:4])
 		i = i + (4 - f)
