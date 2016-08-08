@@ -314,7 +314,7 @@ func (f *encFnInfo) getValueForMarshalInterface(rv reflect.Value, indir int8) (v
 		v = rv.Interface()
 	} else if indir == -1 {
 		// If a non-pointer was passed to Encode(), then that value is not addressable.
-		// Take addr if addresable, else copy value to an addressable value.
+		// Take addr if addressable, else copy value to an addressable value.
 		if rv.CanAddr() {
 			v = rv.Addr().Interface()
 		} else {
@@ -554,7 +554,7 @@ func (f *encFnInfo) kStruct(rv reflect.Value) {
 
 	// debugf(">>>> kStruct: newlen: %v", newlen)
 	// sep := !e.be
-	ee := e.e //don't dereference everytime
+	ee := e.e //don't dereference every time
 
 	if toMap {
 		ee.EncodeMapStart(newlen)
@@ -941,7 +941,7 @@ func newEncoder(h Handle) *Encoder {
 
 // Reset the Encoder with a new output stream.
 //
-// This accomodates using the state of the Encoder,
+// This accommodates using the state of the Encoder,
 // where it has "cached" information about sub-engines.
 func (e *Encoder) Reset(w io.Writer) {
 	ww, ok := w.(ioEncWriterWriter)
