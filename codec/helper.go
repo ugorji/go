@@ -208,7 +208,7 @@ const (
 
 // sfiIdx used for tracking where a fieldName is seen in a []*structFieldInfo
 type sfiIdx struct {
-	fieldName string
+	encName   string
 	index     int
 }
 
@@ -1001,10 +1001,10 @@ LOOP:
 func rgetResolveSFI(x []*structFieldInfo, pv []sfiIdx) (y, z []*structFieldInfo) {
 	var n int
 	for i, v := range x {
-		xf := v.fieldName
+		xe := v.encName
 		var found bool
 		for _, k := range pv {
-			if k.fieldName == xf {
+			if k.encName == xe {
 				if len(v.is) < len(x[k.index].is) {
 					x[k.index] = nil
 					k.index = i
@@ -1015,7 +1015,7 @@ func rgetResolveSFI(x []*structFieldInfo, pv []sfiIdx) (y, z []*structFieldInfo)
 			}
 		}
 		if !found {
-			pv = append(pv, sfiIdx{xf, i})
+			pv = append(pv, sfiIdx{xe, i})
 		}
 	}
 
