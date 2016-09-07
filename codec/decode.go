@@ -605,7 +605,14 @@ func (f *decFnInfo) kInterfaceNaked() (rvn reflect.Value) {
 			n.ss = append(n.ss, nil)
 			var v2 interface{} = &n.ss[l]
 			d.decode(v2)
-			rvn = reflect.ValueOf(v2).Elem()
+			// cast the result to a slice and convert to an array of interface{}
+			var v3 []interface{} = *v2.(*[]interface{})
+			rvn = makeIntfArray(len(v3))
+			for i, x := range v3 {
+				if x != nil {
+					rvn.Index(i).Set(reflect.ValueOf(x))
+				}
+			}
 			n.ss = n.ss[:l]
 		} else {
 			rvn = reflect.New(d.h.SliceType).Elem()

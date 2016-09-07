@@ -1309,3 +1309,7 @@ func (s *set) remove(v uintptr) (exists bool) {
 	}
 	return
 }
+
+func makeIntfArray(n int) reflect.Value {
+	return reflect.New(reflect.ArrayOf(n, intfTyp)).Elem()
+}
