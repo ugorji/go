@@ -163,6 +163,12 @@ type DecodeOptions struct {
 	// Note: Handles will be smart when using the intern functionality.
 	// So everything will not be interned.
 	InternString bool
+
+	// PreferArrayOverSlice controls whether to decode to an array or a slice.
+	//
+	// This only impacts decoding into a nil interface{}.
+	// Consequently, it has no effect on codecgen.
+	PreferArrayOverSlice bool
 }
 
 // ------------------------------------
@@ -611,8 +617,13 @@ func (f *decFnInfo) kInterfaceNaked() (rvn reflect.Value) {
 			n.ss = append(n.ss, nil)
 			var v2 interface{} = &n.ss[l]
 			d.decode(v2)
-			rvn = reflect.ValueOf(v2).Elem()
 			n.ss = n.ss[:l]
+			rvn = reflect.ValueOf(v2).Elem()
+			if d.stid == 0 && d.h.PreferArrayOverSlice {
+				rvn2 := reflect.New(reflect.ArrayOf(rvn.Len(), intfTyp)).Elem()
+				reflect.Copy(rvn2, rvn)
+				rvn = rvn2
+			}
 		} else {
 			rvn = reflect.New(d.h.SliceType).Elem()
 			d.decodeValue(rvn, nil)
