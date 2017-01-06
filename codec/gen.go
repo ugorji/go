@@ -8,7 +8,11 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"go/ast"
+	"go/build"
 	"go/format"
+	"go/parser"
+	"go/token"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -169,7 +173,39 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, useUnsafe bool, ti *TypeIn
 	typ2 := make([]reflect.Type, 0, len(typ))
 	for _, t := range typ {
 		if reflect.PtrTo(t).Implements(selferTyp) || t.Implements(selferTyp) {
-			continue
+			pkg, err := build.Default.Import(t.PkgPath(), "", 0)
+			if err != nil {
+				panic(err)
+			}
+			nonPromotedMethods := map[string]bool{}
+			for _, goFile := range pkg.GoFiles {
+				fset := token.NewFileSet()
+				astFile, err := parser.ParseFile(fset, goFile, nil, 0)
+				if err != nil {
+					panic(err)
+				}
+				for _, d := range astFile.Decls {
+					if fd, ok := d.(*ast.FuncDecl); ok && fd.Recv != nil && fd.Recv.NumFields() == 1 {
+						recvType := fd.Recv.List[0].Type
+						if ptr, ok := recvType.(*ast.StarExpr); ok {
+							recvType = ptr.X
+						}
+						if id, ok := recvType.(*ast.Ident); ok && id.Name == t.Name() {
+							nonPromotedMethods[fd.Name.Name] = true
+						}
+					}
+				}
+			}
+			skip := true
+			for i := 0; i < selferTyp.NumMethod(); i++ {
+				if found := nonPromotedMethods[selferTyp.Method(i).Name]; !found {
+					skip = false
+					break
+				}
+			}
+			if skip {
+				continue
+			}
 		}
 		typ2 = append(typ2, t)
 	}

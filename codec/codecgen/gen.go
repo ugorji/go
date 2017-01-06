@@ -50,11 +50,6 @@ import (
 )
 
 func CodecGenTempWrite{{ .RandString }}() {
-	fout, err := os.Create("{{ .OutFile }}")
-	if err != nil {
-		panic(err)
-	}
-	defer fout.Close()
 	var out bytes.Buffer
 	
 	var typs []reflect.Type 
@@ -63,6 +58,13 @@ func CodecGenTempWrite{{ .RandString }}() {
 	typs = append(typs, reflect.TypeOf(t{{ $index }}))
 {{ end }}
 	{{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}Gen(&out, "{{ .BuildTag }}", "{{ .PackageName }}", "{{ .RandString }}", {{ .UseUnsafe }}, {{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}NewTypeInfos(strings.Split("{{ .StructTags }}", ",")), typs...)
+
+	fout, err := os.Create("{{ .OutFile }}")
+	if err != nil {
+		panic(err)
+	}
+	defer fout.Close()
+
 	bout, err := format.Source(out.Bytes())
 	if err != nil {
 		fout.Write(out.Bytes())
