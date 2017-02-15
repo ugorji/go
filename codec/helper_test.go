@@ -91,6 +91,8 @@ var (
 	testCheckCircRef   bool
 	testJsonIndent     int
 	testMaxInitLen     int
+
+	testJsonHTMLCharsAsIs bool
 )
 
 func init() {

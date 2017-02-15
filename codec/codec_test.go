@@ -107,6 +107,7 @@ func testInitFlags() {
 	flag.IntVar(&testMaxInitLen, "tx", 0, "Max Init Len")
 	flag.BoolVar(&testUseMust, "tm", true, "Use Must(En|De)code")
 	flag.BoolVar(&testCheckCircRef, "tl", false, "Use Check Circular Ref")
+	flag.BoolVar(&testJsonHTMLCharsAsIs, "tas", false, "Set JSON HTMLCharsAsIs")
 }
 
 func testByteBuf(in []byte) *bytes.Buffer {
@@ -357,6 +358,7 @@ func testInit() {
 	}
 
 	testJsonH.Indent = int8(testJsonIndent)
+	testJsonH.HTMLCharsAsIs = testJsonHTMLCharsAsIs
 	testMsgpackH.RawToString = true
 
 	// testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
@@ -391,7 +393,7 @@ func testInit() {
 		true,
 		"null",
 		nil,
-		"someday",
+		"some&day>some<day",
 		timeToCompare1,
 		"",
 		timeToCompare2,
