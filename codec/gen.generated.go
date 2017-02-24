@@ -24,7 +24,7 @@ if {{var "bh"}}.MapValueReset {
 	{{end}} }
 if {{var "l"}} > 0  {
 for {{var "j"}} := 0; {{var "j"}} < {{var "l"}}; {{var "j"}}++ {
-	z.DecSendContainerState(codecSelfer_containerMapKey{{ .Sfx }})
+	z.DecSendContainerState(codecSelferContainerMapKey{{ .Sfx }})
 	{{ $x := printf "%vmk%v" .TempVar .Rand }}{{ decLineVarK $x }}
 {{ if eq .KTyp "interface{}" }}{{/* // special case if a byte array. */}}if {{var "bv"}}, {{var "bok"}} := {{var "mk"}}.([]byte); {{var "bok"}} {
 		{{var "mk"}} = string({{var "bv"}})
@@ -36,7 +36,7 @@ for {{var "j"}} := 0; {{var "j"}} < {{var "l"}}; {{var "j"}}++ {
 			{{var "ms"}} = false
 		} {{else}}{{var "mv"}} = {{var "v"}}[{{var "mk"}}] {{end}}
 	} {{if not decElemKindImmutable}}else { {{var "mv"}} = {{decElemZero}} }{{end}}
-	z.DecSendContainerState(codecSelfer_containerMapValue{{ .Sfx }})
+	z.DecSendContainerState(codecSelferContainerMapValue{{ .Sfx }})
 	{{ $x := printf "%vmv%v" .TempVar .Rand }}{{ decLineVar $x }}
 	if {{if decElemKindPtr}} {{var "ms"}} && {{end}} {{var "v"}} != nil {
 		{{var "v"}}[{{var "mk"}}] = {{var "mv"}}
@@ -44,7 +44,7 @@ for {{var "j"}} := 0; {{var "j"}} < {{var "l"}}; {{var "j"}}++ {
 }
 } else if {{var "l"}} < 0  {
 for {{var "j"}} := 0; !r.CheckBreak(); {{var "j"}}++ {
-	z.DecSendContainerState(codecSelfer_containerMapKey{{ .Sfx }})
+	z.DecSendContainerState(codecSelferContainerMapKey{{ .Sfx }})
 	{{ $x := printf "%vmk%v" .TempVar .Rand }}{{ decLineVarK $x }}
 {{ if eq .KTyp "interface{}" }}{{/* // special case if a byte array. */}}if {{var "bv"}}, {{var "bok"}} := {{var "mk"}}.([]byte); {{var "bok"}} {
 		{{var "mk"}} = string({{var "bv"}})
@@ -56,14 +56,14 @@ for {{var "j"}} := 0; !r.CheckBreak(); {{var "j"}}++ {
 			{{var "ms"}} = false
 		} {{else}}{{var "mv"}} = {{var "v"}}[{{var "mk"}}] {{end}}
 	} {{if not decElemKindImmutable}}else { {{var "mv"}} = {{decElemZero}} }{{end}}
-	z.DecSendContainerState(codecSelfer_containerMapValue{{ .Sfx }})
+	z.DecSendContainerState(codecSelferContainerMapValue{{ .Sfx }})
 	{{ $x := printf "%vmv%v" .TempVar .Rand }}{{ decLineVar $x }}
 	if {{if decElemKindPtr}} {{var "ms"}} && {{end}} {{var "v"}} != nil {
 		{{var "v"}}[{{var "mk"}}] = {{var "mv"}}
 	}
 }
 } // else len==0: TODO: Should we clear map entries?
-z.DecSendContainerState(codecSelfer_containerMapEnd{{ .Sfx }})
+z.DecSendContainerState(codecSelferContainerMapEnd{{ .Sfx }})
 `
 
 const genDecListTmpl = `
