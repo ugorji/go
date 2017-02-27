@@ -132,7 +132,8 @@ func Generate(outfile, buildTag, codecPkgPath string, uid int64, useUnsafe bool,
 		RandString:      strconv.FormatInt(uid, 10),
 		StructTags:      st,
 	}
-	tv.ImportPath = pkg.ImportPath
+	importedPaths := strings.Split(pkg.ImportPath, "vendor/")
+	tv.ImportPath = importedPaths[len(importedPaths)-1]
 	if tv.ImportPath == tv.CodecImportPath {
 		tv.CodecPkgFiles = true
 		tv.CodecPkgName = "codec"
