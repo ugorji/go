@@ -81,13 +81,15 @@ their custom types.
 
 There are no restrictions on what the custom type can be. Some examples:
 
-    type BisSet   []int
+```go
+    type BitSet   []int
     type BitSet64 uint64
     type UUID     string
     type MyStructWithUnexportedFields struct { a int; b bool; c []int; }
     type GifImage struct { ... }
+```
 
-As an illustration, MyStructWithUnexportedFields would normally be
+As an illustration, `MyStructWithUnexportedFields` would normally be
 encoded as an empty map because it has no exported fields, while UUID
 would be encoded as a string. However, with extension support, you can
 encode any of these however you like.
@@ -101,6 +103,7 @@ with the standard net/rpc package.
 
 Typical usage model:
 
+```go
     // create and configure Handle
     var (
       bh codec.BincHandle
@@ -145,4 +148,4 @@ Typical usage model:
     rpcCodec := codec.GoRpc.ClientCodec(conn, h)
     //OR rpcCodec := codec.MsgpackSpecRpc.ClientCodec(conn, h)
     client := rpc.NewClientWithCodec(rpcCodec)
-
+```
