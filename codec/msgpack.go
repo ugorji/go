@@ -553,7 +553,7 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, isstring, zerocopy bool) (bsOu
 }
 
 func (d *msgpackDecDriver) DecodeString() (s string) {
-	return string(d.DecodeBytes(d.b[:], true, true))
+	return d.d.string(d.DecodeBytes(d.b[:], true, true))
 }
 
 func (d *msgpackDecDriver) readNextBd() {
