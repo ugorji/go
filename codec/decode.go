@@ -164,6 +164,8 @@ type DecodeOptions struct {
 	// So everything will not be interned.
 	InternString bool
 
+	MaxInternStringLength int
+
 	// PreferArrayOverSlice controls whether to decode to an array or a slice.
 	//
 	// This only impacts decoding into a nil interface{}.
@@ -1271,6 +1273,7 @@ type Decoder struct {
 	n  decNaked
 	b  [scratchByteArrayLen]byte
 	is map[string]string // used for interning strings
+	im int               // max length of string that will be interned
 }
 
 // NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
@@ -1302,6 +1305,7 @@ func newDecoder(h Handle) *Decoder {
 	_, d.js = h.(*JsonHandle)
 	if d.h.InternString {
 		d.is = make(map[string]string, 32)
+		d.im = d.h.MaxInternStringLength
 	}
 	d.d = h.newDecDriver(d)
 	d.cr, _ = d.d.(containerStateRecv)
@@ -1874,7 +1878,7 @@ func (d *Decoder) errorf(format string, params ...interface{}) {
 }
 
 func (d *Decoder) string(v []byte) (s string) {
-	if d.is != nil {
+	if d.is != nil && d.im != 0 && len(v) <= d.im {
 		s, ok := d.is[string(v)] // no allocation here.
 		if !ok {
 			s = string(v)
