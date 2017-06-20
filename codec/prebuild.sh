@@ -94,7 +94,7 @@ EOF
 package main
 
 //import "flag"
-import "ugorji.net/codec"
+import "${zpkg}"
 import "os"
 
 func run(fnameIn, fnameOut string, safe bool) {
@@ -146,10 +146,10 @@ _codegenerators() {
         fi
         
         echo "codecgen - !unsafe ... " && \
-            codecgen -rt codecgen -t 'x,codecgen,!unsafe' -o values_codecgen${zsfx} -d 19780 $zfin &
+            $zgobase/bin/codecgen -rt codecgen -t 'x,codecgen,!unsafe' -o values_codecgen${zsfx} -d 19780 $zfin &
         zzzIdC=$!
         echo "codecgen - unsafe ... " && \
-            codecgen  -u -rt codecgen -t 'x,codecgen,unsafe' -o values_codecgen_unsafe${zsfx} -d 19781 $zfin &
+            $zgobase/bin/codecgen  -u -rt codecgen -t 'x,codecgen,unsafe' -o values_codecgen_unsafe${zsfx} -d 19781 $zfin &
         zzzIdCU=$!
         wait $zzzIdC $zzzIdCU $zzzIdMsgp $zzzIdFF && \
             # remove (M|Unm)arshalJSON implementations, so they don't conflict with encoding/json bench \
@@ -166,13 +166,14 @@ _codegenerators() {
 # _init reads the arguments and sets up the flags
 _init() {
 OPTIND=1
-while getopts "fbx" flag
+while getopts "fbxp:" flag
 do
     case "x$flag" in 
         'xf') zforce=1;;
         'xb') zbak=1;;
         'xx') zexternal=1;;
-        *) echo "prebuild.sh accepts [-fbx] only"; return 1;;
+        'xp') zpkg="${OPTARG}" ;;
+        *) echo "prebuild.sh accepts [-fbx] [-p basepkgname] only"; return 1;;
     esac
 done
 shift $((OPTIND-1))
@@ -181,11 +182,15 @@ OPTIND=1
 
 # main script.
 # First ensure that this is being run from the basedir (i.e. dirname of script is .)
+# Sample usage:
 if [ "." = `dirname $0` ]
 then
     zmydir=`pwd`
     zfin="test_values.generated.go"
     zsfx="_generated_test.go"
+    # zpkg="ugorji.net/codec"
+    zpkg=${zmydir##*/src/}
+    zgobase=${zmydir%%/src/*}
     # rm -f *_generated_test.go 
     rm -f codecgen-*.go && \
         _init "$@" && \
