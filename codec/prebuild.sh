@@ -38,7 +38,7 @@ _build() {
         return 0
     fi 
 
-   # echo "Running prebuild"
+    # echo "Running prebuild"
     if [ "${zbak}" == "1" ] 
     then
         # echo "Backing up old generated files"
@@ -46,12 +46,13 @@ _build() {
         _gg=".generated.go"
         [ -e "gen-helper${_gg}" ] && mv gen-helper${_gg} gen-helper${_gg}__${_zts}.bak
         [ -e "fast-path${_gg}" ] && mv fast-path${_gg} fast-path${_gg}__${_zts}.bak
+        [ -e "gen${_gg}" ] && mv gen${_gg} gen${_gg}__${_zts}.bak
         # [ -e "safe${_gg}" ] && mv safe${_gg} safe${_gg}__${_zts}.bak
         # [ -e "unsafe${_gg}" ] && mv unsafe${_gg} unsafe${_gg}__${_zts}.bak
-    else 
-        rm -f fast-path.generated.go gen.generated.go gen-helper.generated.go \
-           *safe.generated.go *_generated_test.go *.generated_ffjson_expose.go
-    fi
+    fi 
+    rm -f gen-helper.generated.go fast-path.generated.go \
+       gen.generated.go \
+       *safe.generated.go *_generated_test.go *.generated_ffjson_expose.go
 
     cat > gen.generated.go <<EOF
 // Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
