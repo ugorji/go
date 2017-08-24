@@ -988,6 +988,18 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 		return
 	}
 
+	// handle boolean values as strings
+	if d.tok == 'f' {
+		d.readStrIdx(5, 9) // alse
+		d.bs = d.bs[:0]
+		return
+	}
+	if d.tok == 't' {
+		d.readStrIdx(1, 4) // rue
+		d.bs = d.bs[:0]
+		return
+	}
+
 	if d.tok != '"' {
 		d.d.errorf("json: expect char '%c' but got char '%c'", '"', d.tok)
 	}
