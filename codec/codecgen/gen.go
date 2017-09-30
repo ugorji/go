@@ -20,7 +20,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
-	"strings"
 	"text/template"
 	"time"
 )
@@ -136,16 +135,6 @@ func Generate(outfile, buildTag, codecPkgPath string, uid int64, useUnsafe bool,
 	if tv.ImportPath == tv.CodecImportPath {
 		tv.CodecPkgFiles = true
 		tv.CodecPkgName = "codec"
-	} else {
-		// HACK: always handle vendoring. It should be typically on in go 1.6, 1.7
-		s := tv.ImportPath
-		const vendorStart = "vendor/"
-		const vendorInline = "/vendor/"
-		if i := strings.LastIndex(s, vendorInline); i >= 0 {
-			tv.ImportPath = s[i+len(vendorInline):]
-		} else if strings.HasPrefix(s, vendorStart) {
-			tv.ImportPath = s[len(vendorStart):]
-		}
 	}
 	astfiles := make([]*ast.File, len(infiles))
 	for i, infile := range infiles {
