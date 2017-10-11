@@ -35,6 +35,9 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 
 	testReinit() // so flag.Parse() is called first, and never called again
 
+	testDecodeOptions = DecodeOptions{}
+	testEncodeOptions = EncodeOptions{}
+
 	testUseMust = false
 	testCanonical = false
 	testUseMust = false
@@ -47,6 +50,7 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testUseReset = false
 	testMaxInitLen = 0
 	testJsonIndent = 0
+	testUseIoWrapper = false
 	testReinit()
 	t.Run("optionsFalse", f)
 
@@ -70,8 +74,28 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testCheckCircRef = true
 	testJsonHTMLCharsAsIs = true
 	testUseReset = true
+	testDecodeOptions.MapValueReset = true
 	testReinit()
 	t.Run("optionsTrue", f)
+
+	testUseIoWrapper = true
+	testReinit()
+	t.Run("optionsTrue-ioWrapper", f)
+
+	testDepth = 6
+	testReinit()
+	t.Run("optionsTrue-deepstruct", f)
+
+	// The following here MUST be tested individually, as they create
+	// side effects i.e. the decoded value is different.
+	// testDecodeOptions.MapValueReset = true // ok - no side effects
+	// testDecodeOptions.InterfaceReset = true // error??? because we do deepEquals to verify
+	// testDecodeOptions.ErrorIfNoField = true // error, as expected, as fields not there
+	// testDecodeOptions.ErrorIfNoArrayExpand = true // no error, but no error case either
+	// testDecodeOptions.PreferArrayOverSlice = true // error??? because slice != array.
+	// .... however, update deepEqual to take this option
+	// testReinit()
+	// t.Run("optionsTrue-resetOptions", f)
 }
 
 /*
@@ -84,6 +108,7 @@ find . -name "$z" | xargs grep -e '^func Test' | \
 func testCodecGroup(t *testing.T) {
 	// println("running testcodecsuite")
 	// <setup code>
+
 	t.Run("TestBincCodecsTable", TestBincCodecsTable)
 	t.Run("TestBincCodecsMisc", TestBincCodecsMisc)
 	t.Run("TestBincCodecsEmbeddedPointer", TestBincCodecsEmbeddedPointer)
