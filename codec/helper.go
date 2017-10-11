@@ -772,10 +772,6 @@ type structFieldInfo struct {
 	toArray   bool // if field is _struct, is the toArray set?
 }
 
-// func (si *structFieldInfo) isZero() bool {
-// 	return si.encName == "" && len(si.is) == 0 && si.i == 0 && !si.omitEmpty && !si.toArray
-// }
-
 func (si *structFieldInfo) setToZeroValue(v reflect.Value) {
 	if v, valid := si.field(v, false); valid {
 		v.Set(reflect.Zero(v.Type()))
@@ -1292,13 +1288,13 @@ LOOP:
 func rgetResolveSFI(x []*structFieldInfo, pv []sfiIdx) (y, z []*structFieldInfo, anyOmitEmpty bool) {
 	var n int
 	for i, v := range x {
-		xn := v.encName //TODO: fieldName or encName? use encName for now.
+		xn := v.encName // TODO: fieldName or encName? use encName for now.
 		var found bool
 		for j, k := range pv {
 			if k.name == xn {
 				// one of them must be reset to nil, and the index updated appropriately to the other one
-				if len(v.is) == len(x[k.index].is) {
-				} else if len(v.is) < len(x[k.index].is) {
+				if v.nis == x[k.index].nis {
+				} else if v.nis < x[k.index].nis {
 					pv[j].index = i
 					if x[k.index] != nil {
 						x[k.index] = nil

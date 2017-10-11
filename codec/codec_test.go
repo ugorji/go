@@ -1571,6 +1571,47 @@ func doTestDecodeNilMapValue(t *testing.T, handle Handle) {
 	}
 }
 
+func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
+	type Embedded struct {
+		Field byte
+	}
+	type Struct struct {
+		Field byte
+		Embedded
+	}
+	toEncode := Struct{
+		Field:    1,
+		Embedded: Embedded{Field: 2},
+	}
+	_, isJsonHandle := h.(*JsonHandle)
+	handle := h.getBasicHandle()
+	oldMapType := handle.MapType
+	defer func() { handle.MapType = oldMapType }()
+
+	handle.MapType = reflect.TypeOf(map[interface{}]interface{}(nil))
+
+	bs, err := testMarshal(toEncode, h)
+	if err != nil {
+		logT(t, "Error encoding: %v, Err: %v", toEncode, err)
+		failT(t)
+	}
+
+	var decoded Struct
+	err = testUnmarshal(&decoded, bs, h)
+	if err != nil {
+		logT(t, "Error decoding: %v", err)
+		failT(t)
+	}
+
+	if decoded.Field != toEncode.Field {
+		logT(t, "Decoded result %v != %v", decoded.Field, toEncode.Field) // hex to look at what was encoded
+		if isJsonHandle {
+			logT(t, "JSON encoded as: %s", bs) // hex to look at what was encoded
+		}
+		failT(t)
+	}
+}
+
 func testRandomFillRV(v reflect.Value) {
 	testOnce.Do(testInitAll)
 	fneg := func() int64 {
@@ -1902,6 +1943,26 @@ func TestBincDecodeNilMapValue(t *testing.T) {
 
 func TestSimpleDecodeNilMapValue(t *testing.T) {
 	doTestDecodeNilMapValue(t, testSimpleH)
+}
+
+func TestJsonEmbeddedFieldPrecedence(t *testing.T) {
+	doTestEmbeddedFieldPrecedence(t, testJsonH)
+}
+
+func TestCborEmbeddedFieldPrecedence(t *testing.T) {
+	doTestEmbeddedFieldPrecedence(t, testCborH)
+}
+
+func TestMsgpackEmbeddedFieldPrecedence(t *testing.T) {
+	doTestEmbeddedFieldPrecedence(t, testMsgpackH)
+}
+
+func TestBincEmbeddedFieldPrecedence(t *testing.T) {
+	doTestEmbeddedFieldPrecedence(t, testBincH)
+}
+
+func TestSimpleEmbeddedFieldPrecedence(t *testing.T) {
+	doTestEmbeddedFieldPrecedence(t, testSimpleH)
 }
 
 func TestJsonLargeInteger(t *testing.T) {
