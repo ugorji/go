@@ -11,6 +11,7 @@ package codec
 
 import (
 	"math"
+	"strings"
 	"time"
 )
 
@@ -210,17 +211,21 @@ func populateTestStrucCommon(ts *testStrucCommon, bench, useInterface, useString
 
 	var a = AnonInTestStruc{
 		// There's more leeway in altering this.
-		AS:    "A-String",
+		AS:    strRpt("A-String"),
 		AI64:  -64646464,
 		AI16:  1616,
 		AUi64: 64646464,
 		// (U+1D11E)G-clef character may be represented in json as "\uD834\uDD1E".
 		// single reverse solidus character may be represented in json as "\u005C".
 		// include these in ASslice below.
-		ASslice: []string{"Aone", "Atwo", "Athree",
-			"Afour.reverse_solidus.\u005c", "Afive.Gclef.\U0001d11E"},
+		ASslice: []string{
+			strRpt("Aone"),
+			strRpt("Atwo"),
+			strRpt("Athree"),
+			strRpt("Afour.reverse_solidus.\u005c"),
+			strRpt("Afive.Gclef.\U0001d11E\"ugorji\"done.")},
 		AI64slice: []int64{1, -22, 333, -4444, 55555, -666666},
-		AMSU16:    map[string]uint16{"1": 1, "22": 2, "333": 3, "4444": 4},
+		AMSU16:    map[string]uint16{strRpt("1"): 1, strRpt("22"): 2, strRpt("333"): 3, strRpt("4444"): 4},
 		AF64slice: []float64{
 			11.11e-11, -11.11e+11,
 			2.222E+12, -2.222E-12,
@@ -236,7 +241,7 @@ func populateTestStrucCommon(ts *testStrucCommon, bench, useInterface, useString
 	}
 
 	*ts = testStrucCommon{
-		S: "some string",
+		S: strRpt(`some really really cool names that are nigerian and american like "ugorji melody nwoke" - get it? `),
 
 		// set the numbers close to the limits
 		I8:   math.MaxInt8 * 2 / 3,  // 8,
@@ -259,7 +264,7 @@ func populateTestStrucCommon(ts *testStrucCommon, bench, useInterface, useString
 		B:  true,
 		By: 5,
 
-		Sslice:    []string{"one", "two", "three"},
+		Sslice:    []string{strRpt("one"), strRpt("two"), strRpt("three")},
 		I64slice:  []int64{1111, 2222, 3333},
 		I16slice:  []int16{44, 55, 66},
 		Ui64slice: []uint64{12121212, 34343434, 56565656},
@@ -268,14 +273,15 @@ func populateTestStrucCommon(ts *testStrucCommon, bench, useInterface, useString
 		Byslice:   []byte{13, 14, 15},
 
 		Msi64: map[string]int64{
-			"one": 1,
-			"two": 2,
+			strRpt("one"):       1,
+			strRpt("two"):       2,
+			strRpt("\"three\""): 3,
 		},
 
 		Ui64array: [4]uint64{4, 16, 64, 256},
 
 		WrapSliceInt64:  []uint64{4, 16, 64, 256},
-		WrapSliceString: []string{"4", "16", "64", "256"},
+		WrapSliceString: []string{strRpt("4"), strRpt("16"), strRpt("64"), strRpt("256")},
 
 		// DecodeNaked bombs here, because the stringUint64T is decoded as a map,
 		// and a map cannot be the key type of a map.
@@ -287,7 +293,7 @@ func populateTestStrucCommon(ts *testStrucCommon, bench, useInterface, useString
 
 		// make Simplef same as top-level
 		Simplef: testSimpleFields{
-			S: "some string",
+			S: strRpt(`some really really cool names that are nigerian and american like "ugorji melody nwoke" - get it? `),
 
 			// set the numbers close to the limits
 			I8:   math.MaxInt8 * 2 / 3,  // 8,
@@ -310,7 +316,7 @@ func populateTestStrucCommon(ts *testStrucCommon, bench, useInterface, useString
 			B:  true,
 			By: 5,
 
-			Sslice:    []string{"one", "two", "three"},
+			Sslice:    []string{strRpt("one"), strRpt("two"), strRpt("three")},
 			I64slice:  []int64{1111, 2222, 3333},
 			I16slice:  []int16{44, 55, 66},
 			Ui64slice: []uint64{12121212, 34343434, 56565656},
@@ -319,14 +325,15 @@ func populateTestStrucCommon(ts *testStrucCommon, bench, useInterface, useString
 			Byslice:   []byte{13, 14, 15},
 
 			Msi64: map[string]int64{
-				"one": 1,
-				"two": 2,
+				strRpt("one"):       1,
+				strRpt("two"):       2,
+				strRpt("\"three\""): 3,
 			},
 
 			Ui64array: [4]uint64{4, 16, 64, 256},
 
 			WrapSliceInt64:  []uint64{4, 16, 64, 256},
-			WrapSliceString: []string{"4", "16", "64", "256"},
+			WrapSliceString: []string{strRpt("4"), strRpt("16"), strRpt("64"), strRpt("256")},
 		},
 
 		AnonInTestStruc: a,
@@ -337,10 +344,10 @@ func populateTestStrucCommon(ts *testStrucCommon, bench, useInterface, useString
 
 	if useInterface {
 		ts.AnonInTestStrucIntf = &AnonInTestStrucIntf{
-			Islice: []interface{}{"true", true, "no", false, uint64(288), float64(0.4)},
+			Islice: []interface{}{strRpt("true"), true, strRpt("no"), false, uint64(288), float64(0.4)},
 			Ms: map[string]interface{}{
-				"true":     "true",
-				"int64(9)": false,
+				strRpt("true"):     strRpt("true"),
+				strRpt("int64(9)"): false,
 			},
 			T: testStrucTime,
 		}
@@ -373,9 +380,13 @@ func newTestStruc(depth int, bench, useInterface, useStringKeyOnly bool) (ts *Te
 		if ts.Mts == nil {
 			ts.Mts = make(map[string]TestStruc)
 		}
-		ts.Mtsptr["0"] = newTestStruc(depth, bench, useInterface, useStringKeyOnly)
-		ts.Mts["0"] = *(ts.Mtsptr["0"])
-		ts.Its = append(ts.Its, ts.Mtsptr["0"])
+		ts.Mtsptr[strRpt("0")] = newTestStruc(depth, bench, useInterface, useStringKeyOnly)
+		ts.Mts[strRpt("0")] = *(ts.Mtsptr[strRpt("0")])
+		ts.Its = append(ts.Its, ts.Mtsptr[strRpt("0")])
 	}
 	return
+}
+
+func strRpt(s string) string {
+	return strings.Repeat(s, testNumRepeatString)
 }

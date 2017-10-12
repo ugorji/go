@@ -257,23 +257,25 @@ type bytesEncWriter struct {
 }
 
 func (z *bytesEncWriter) writeb(s []byte) {
-	if len(s) == 0 {
+	slen := len(s)
+	if slen == 0 {
 		return
 	}
-	oc, a := z.growNoAlloc(len(s))
+	oc, a := z.growNoAlloc(slen)
 	if a {
-		z.growAlloc(len(s), oc)
+		z.growAlloc(slen, oc)
 	}
 	copy(z.b[oc:], s)
 }
 
 func (z *bytesEncWriter) writestr(s string) {
-	if len(s) == 0 {
+	slen := len(s)
+	if slen == 0 {
 		return
 	}
-	oc, a := z.growNoAlloc(len(s))
+	oc, a := z.growNoAlloc(slen)
 	if a {
-		z.growAlloc(len(s), oc)
+		z.growAlloc(slen, oc)
 	}
 	copy(z.b[oc:], s)
 }

@@ -222,12 +222,13 @@ func (e *msgpackEncDriver) EncodeMapStart(length int) {
 }
 
 func (e *msgpackEncDriver) EncodeString(c charEncoding, s string) {
+	slen := len(s)
 	if c == c_RAW && e.h.WriteExt {
-		e.writeContainerLen(msgpackContainerBin, len(s))
+		e.writeContainerLen(msgpackContainerBin, slen)
 	} else {
-		e.writeContainerLen(msgpackContainerStr, len(s))
+		e.writeContainerLen(msgpackContainerStr, slen)
 	}
-	if len(s) > 0 {
+	if slen > 0 {
 		e.w.writestr(s)
 	}
 }
@@ -237,12 +238,13 @@ func (e *msgpackEncDriver) EncodeSymbol(v string) {
 }
 
 func (e *msgpackEncDriver) EncodeStringBytes(c charEncoding, bs []byte) {
+	slen := len(bs)
 	if c == c_RAW && e.h.WriteExt {
-		e.writeContainerLen(msgpackContainerBin, len(bs))
+		e.writeContainerLen(msgpackContainerBin, slen)
 	} else {
-		e.writeContainerLen(msgpackContainerStr, len(bs))
+		e.writeContainerLen(msgpackContainerStr, slen)
 	}
-	if len(bs) > 0 {
+	if slen > 0 {
 		e.w.writeb(bs)
 	}
 }

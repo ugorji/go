@@ -51,6 +51,7 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testMaxInitLen = 0
 	testJsonIndent = 0
 	testUseIoWrapper = false
+	testNumRepeatString = 10
 	testReinit()
 	t.Run("optionsFalse", f)
 
@@ -85,6 +86,10 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testDepth = 6
 	testReinit()
 	t.Run("optionsTrue-deepstruct", f)
+
+	testNumRepeatString = 40
+	testReinit()
+	t.Run("optionsTrue-largestrings", f)
 
 	// The following here MUST be tested individually, as they create
 	// side effects i.e. the decoded value is different.

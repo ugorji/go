@@ -791,6 +791,7 @@ func (si *structFieldInfo) field(v reflect.Value, update bool) (rv2 reflect.Valu
 		}
 		v = v.Field(int(x))
 	}
+
 	return v, true
 }
 
@@ -1180,8 +1181,8 @@ func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
 	//       Typically, types have < 16 fields,
 	//       and iteration using equals is faster than maps there
 	flen := rt.NumField()
-	if flen > (1<<16 - 1) {
-		panic(fmt.Errorf("codec: types with more than %v fields are not supported - has %v fields", (1<<16 - 1), flen))
+	if flen > (1<<maxLevelsEmbedding - 1) {
+		panic(fmt.Errorf("codec: types with more than %v fields are not supported - has %v fields", (1<<maxLevelsEmbedding - 1), flen))
 	}
 LOOP:
 	for j, jlen := uint16(0), uint16(flen); j < jlen; j++ {

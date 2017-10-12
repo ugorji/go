@@ -547,7 +547,8 @@ func (z *bytesDecReader) skip(accept *bitset256) (token byte) {
 	if z.a == 0 {
 		return
 	}
-	for i := z.c; i < len(z.b); i++ {
+	blen := len(z.b)
+	for i := z.c; i < blen; i++ {
 		if accept.isset(z.b[i]) {
 			continue
 		}
@@ -557,15 +558,16 @@ func (z *bytesDecReader) skip(accept *bitset256) (token byte) {
 		z.c = i
 		return
 	}
-	z.a, z.c = 0, len(z.b)
+	z.a, z.c = 0, blen
 	return
 }
 
-func (z *bytesDecReader) readTo(in []byte, accept *bitset256) (out []byte) {
+func (z *bytesDecReader) readTo(_ []byte, accept *bitset256) (out []byte) {
 	if z.a == 0 {
 		return
 	}
-	for i := z.c; i < len(z.b); i++ {
+	blen := len(z.b)
+	for i := z.c; i < blen; i++ {
 		if !accept.isset(z.b[i]) {
 			out = z.b[z.c:i]
 			z.a -= (i - z.c)
@@ -574,15 +576,16 @@ func (z *bytesDecReader) readTo(in []byte, accept *bitset256) (out []byte) {
 		}
 	}
 	out = z.b[z.c:]
-	z.a, z.c = 0, len(z.b)
+	z.a, z.c = 0, blen
 	return
 }
 
-func (z *bytesDecReader) readUntil(in []byte, stop byte) (out []byte) {
+func (z *bytesDecReader) readUntil(_ []byte, stop byte) (out []byte) {
 	if z.a == 0 {
 		panic(io.EOF)
 	}
-	for i := z.c; i < len(z.b); i++ {
+	blen := len(z.b)
+	for i := z.c; i < blen; i++ {
 		if z.b[i] == stop {
 			i++
 			out = z.b[z.c:i]
@@ -591,7 +594,7 @@ func (z *bytesDecReader) readUntil(in []byte, stop byte) (out []byte) {
 			return
 		}
 	}
-	z.a, z.c = 0, len(z.b)
+	z.a, z.c = 0, blen
 	panic(io.EOF)
 }
 

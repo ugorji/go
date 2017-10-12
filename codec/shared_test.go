@@ -111,6 +111,8 @@ var (
 
 	testJsonHTMLCharsAsIs bool
 	testJsonPreferFloat   bool
+
+	testNumRepeatString int
 )
 
 // variables that are not flags, but which can configure the handles
@@ -155,6 +157,7 @@ func testInitFlags() {
 	flag.BoolVar(&testSkipIntf, "tf", false, "Skip Interfaces")
 	flag.BoolVar(&testUseReset, "tr", false, "Use Reset")
 	flag.IntVar(&testJsonIndent, "td", 0, "Use JSON Indent")
+	flag.IntVar(&testNumRepeatString, "trs", 10, "Create string variables by repeating a string N times")
 	flag.IntVar(&testMaxInitLen, "tx", 0, "Max Init Len")
 	flag.BoolVar(&testUseMust, "tm", true, "Use Must(En|De)code")
 	flag.BoolVar(&testCheckCircRef, "tl", false, "Use Check Circular Ref")

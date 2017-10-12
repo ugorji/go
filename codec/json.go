@@ -63,6 +63,8 @@ var (
 	jsonCharSafeSet       bitset128
 	jsonCharWhitespaceSet bitset256
 	jsonNumSet            bitset256
+
+	jsonU4Set [256]byte
 )
 
 const (
@@ -83,6 +85,8 @@ const (
 	jsonValidateSymbols = true
 
 	jsonSpacesOrTabsLen = 128
+
+	jsonU4SetErrVal = 128
 )
 
 func init() {
@@ -119,6 +123,19 @@ func init() {
 			jsonNumSet.set(i)
 		}
 	}
+	for j := range jsonU4Set {
+		switch i = byte(j); i {
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+			jsonU4Set[i] = i - '0'
+		case 'a', 'b', 'c', 'd', 'e', 'f':
+			jsonU4Set[i] = i - 'a' + 10
+		case 'A', 'B', 'C', 'D', 'E', 'F':
+			jsonU4Set[i] = i - 'A' + 10
+		default:
+			jsonU4Set[i] = jsonU4SetErrVal
+		}
+	}
+	// jsonU4Set[255] = jsonU4SetErrVal
 }
 
 type jsonEncDriver struct {
@@ -319,8 +336,8 @@ func (e *jsonEncDriver) quoteStr(s string) {
 	const hex = "0123456789abcdef"
 	w := e.w
 	w.writen1('"')
-	start := 0
-	for i := 0; i < len(s); {
+	var start int
+	for i, slen := 0, len(s); i < slen; {
 		// encode all bytes < 0x20 (except \r, \n).
 		// also encode < > & to prevent security holes when served to some browsers.
 		if b := s[i]; b < utf8.RuneSelf {
@@ -701,23 +718,33 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 
 	d.tok = 0
 	r := d.r
-	var cs []byte
-	v := d.bs[:0]
+	var cs = r.readUntil(d.b2[:0], '"')
+	var cslen = len(cs)
 	var c uint8
-	for i := 0; ; i++ {
-		if i == len(cs) {
+	v := d.bs[:0]
+	// append on each byte seen can be expensive, so we just
+	// keep track of where we last read a contiguous set of
+	// non-special bytes (using cursor variable),
+	// and when we see a special byte
+	// e.g. end-of-slice, " or \,
+	// we will append the full range into the v slice before proceeding
+	for i, cursor := 0, 0; ; {
+		if i == cslen {
+			v = append(v, cs[cursor:]...)
 			cs = r.readUntil(d.b2[:0], '"')
-			i = 0
+			cslen = len(cs)
+			i, cursor = 0, 0
 		}
 		c = cs[i]
 		if c == '"' {
+			v = append(v, cs[cursor:i]...)
 			break
 		}
 		if c != '\\' {
-			v = append(v, c)
+			i++
 			continue
 		}
-		// cs[i] == '\\'
+		v = append(v, cs[cursor:i]...)
 		i++
 		c = cs[i]
 		switch c {
@@ -734,44 +761,65 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 		case 't':
 			v = append(v, '\t')
 		case 'u':
-			rr := d.jsonU4Arr([4]byte{cs[i+1], cs[i+2], cs[i+3], cs[i+4]})
+			var r rune
+			var rr uint32
+			c = cs[i+4] // may help reduce bounds-checking
+			for j := 1; j < 5; j++ {
+				c = jsonU4Set[cs[i+j]]
+				if c == jsonU4SetErrVal {
+					d.d.errorf(`json: unquoteStr: invalid hex char in \u unicode sequence: %q`, c)
+				}
+				rr = rr*16 + uint32(c)
+			}
+			r = rune(rr)
 			i += 4
-			if utf16.IsSurrogate(rr) {
-				if !(cs[i+1] == '\\' && cs[i+2] == 'u') {
+			if utf16.IsSurrogate(r) {
+				if !(cs[i+2] == 'u' && cs[i+i] == '\\') {
 					d.d.errorf(`json: unquoteStr: invalid unicode sequence. Expecting \u`)
 					return
 				}
 				i += 2
-				rr = utf16.DecodeRune(rr, d.jsonU4Arr([4]byte{cs[i+1], cs[i+2], cs[i+3], cs[i+4]}))
+				c = cs[i+4] // may help reduce bounds-checking
+				var rr1 uint32
+				for j := 1; j < 5; j++ {
+					c = jsonU4Set[cs[i+j]]
+					if c == jsonU4SetErrVal {
+						d.d.errorf(`json: unquoteStr: invalid hex char in \u unicode sequence: %q`, c)
+					}
+					rr1 = rr1*16 + uint32(c)
+				}
+				r = utf16.DecodeRune(r, rune(rr1))
 				i += 4
 			}
-			w2 := utf8.EncodeRune(d.bstr[:], rr)
+			w2 := utf8.EncodeRune(d.bstr[:], r)
 			v = append(v, d.bstr[:w2]...)
 		default:
 			d.d.errorf("json: unsupported escaped value: %c", c)
 		}
+		i++
+		cursor = i
 	}
 	d.bs = v
 }
 
-func (d *jsonDecDriver) jsonU4Arr(bs [4]byte) (r rune) {
-	// u, _ := strconv.ParseUint(string(d.bstr[:4]), 16, 64)
-	var u uint32
-	for _, v := range bs {
-		if '0' <= v && v <= '9' {
-			v = v - '0'
-		} else if 'a' <= v && v <= 'z' {
-			v = v - 'a' + 10
-		} else if 'A' <= v && v <= 'Z' {
-			v = v - 'A' + 10
-		} else {
-			d.d.errorf(`json: unquoteStr: invalid hex char in \u unicode sequence: %q`, v)
-			return 0
-		}
-		u = u*16 + uint32(v)
-	}
-	return rune(u)
-}
+// func (d *jsonDecDriver) jsonU4Arr(bs [4]byte) (r rune) {
+// 	// u, _ := strconv.ParseUint(string(d.bstr[:4]), 16, 64)
+// 	var u uint32
+// 	for _, v := range bs {
+// 		if '0' <= v && v <= '9' {
+// 			v = v - '0'
+// 		} else if 'a' <= v && v <= 'f' {
+// 			v = v - 'a' + 10
+// 		} else if 'A' <= v && v <= 'f' {
+// 			v = v - 'A' + 10
+// 		} else {
+// 			// d.d.errorf(`json: unquoteStr: invalid hex char in \u unicode sequence: %q`, v)
+// 			return utf8.RuneError
+// 		}
+// 		u = u*16 + uint32(v)
+// 	}
+// 	return rune(u)
+// }
 
 func (d *jsonDecDriver) DecodeNaked() {
 	z := d.d.n
@@ -805,10 +853,7 @@ func (d *jsonDecDriver) DecodeNaked() {
 		if len(bs) == 0 {
 			d.d.errorf("json: decode number from empty string")
 			return
-		} else if d.h.PreferFloat ||
-			bytes.IndexByte(bs, '.') != -1 ||
-			bytes.IndexByte(bs, 'e') != -1 ||
-			bytes.IndexByte(bs, 'E') != -1 {
+		} else if d.h.PreferFloat || jsonIsFloatBytes(bs) { // bytes.IndexByte(bs, '.') != -1 ||...
 			// } else if d.h.PreferFloat || bytes.ContainsAny(bs, ".eE") {
 			z.v = valueTypeFloat
 			z.f, err = strconv.ParseFloat(stringView(bs), 64)
@@ -941,6 +986,15 @@ func (d *jsonDecDriver) reset() {
 	}
 	d.c, d.tok = 0, 0
 	// d.n.reset()
+}
+
+func jsonIsFloatBytes(bs []byte) bool {
+	for _, v := range bs {
+		if v == '.' || v == 'e' || v == 'E' {
+			return true
+		}
+	}
+	return false
 }
 
 var jsonEncodeTerminate = []byte{' '}
