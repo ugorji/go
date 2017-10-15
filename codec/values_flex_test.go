@@ -25,7 +25,7 @@ type TestStrucFlex struct {
 	Nteststruc *TestStrucFlex
 }
 
-func newTestStrucFlex(depth int, bench, useInterface, useStringKeyOnly bool) (ts *TestStrucFlex) {
+func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts *TestStrucFlex) {
 	ts = &TestStrucFlex{
 		Miwu64s: map[int]wrapUint64Slice{
 			5: []wrapUint64{1, 2, 3, 4, 5},
@@ -52,7 +52,7 @@ func newTestStrucFlex(depth int, bench, useInterface, useStringKeyOnly bool) (ts
 			-44: "minus forty four",
 		},
 	}
-	populateTestStrucCommon(&ts.testStrucCommon, bench, useInterface, useStringKeyOnly)
+	populateTestStrucCommon(&ts.testStrucCommon, n, bench, useInterface, useStringKeyOnly)
 	if depth > 0 {
 		depth--
 		if ts.Mtsptr == nil {
@@ -61,7 +61,7 @@ func newTestStrucFlex(depth int, bench, useInterface, useStringKeyOnly bool) (ts
 		if ts.Mts == nil {
 			ts.Mts = make(map[string]TestStrucFlex)
 		}
-		ts.Mtsptr["0"] = newTestStrucFlex(depth, bench, useInterface, useStringKeyOnly)
+		ts.Mtsptr["0"] = newTestStrucFlex(depth, n, bench, useInterface, useStringKeyOnly)
 		ts.Mts["0"] = *(ts.Mtsptr["0"])
 		ts.Its = append(ts.Its, ts.Mtsptr["0"])
 	}

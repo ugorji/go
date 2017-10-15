@@ -4,6 +4,7 @@
 package codec
 
 import (
+	"bufio"
 	"encoding"
 	"fmt"
 	"io"
@@ -80,15 +81,19 @@ type encNoSeparator struct{}
 
 func (_ encNoSeparator) EncodeEnd() {}
 
-type ioEncWriterWriter interface {
-	WriteByte(c byte) error
-	WriteString(s string) (n int, err error)
-	Write(p []byte) (n int, err error)
-}
-
 type ioEncStringWriter interface {
 	WriteString(s string) (n int, err error)
 }
+
+type ioEncFlusher interface {
+	Flush() error
+}
+
+// type ioEncWriterWriter interface {
+// 	WriteByte(c byte) error
+// 	WriteString(s string) (n int, err error)
+// 	Write(p []byte) (n int, err error)
+// }
 
 type EncodeOptions struct {
 	// Encode a struct as an array, and not as a map
@@ -146,105 +151,118 @@ type EncodeOptions struct {
 	//   AsSymbolMapStringKeys
 	//   AsSymbolMapStringKeysFlag | AsSymbolStructFieldNameFlag
 	AsSymbols AsSymbolFlag
+
+	// WriterBufferSize is the size of the buffer used when writing.
+	//
+	// if > 0, we use a smart buffer internally for performance purposes.
+	WriterBufferSize int
 }
 
 // ---------------------------------------------
 
-type simpleIoEncWriterWriter struct {
-	w  io.Writer
-	bw io.ByteWriter
-	sw ioEncStringWriter
-	bs [1]byte
+type simpleIoEncWriter struct {
+	io.Writer
 }
 
-func (o *simpleIoEncWriterWriter) WriteByte(c byte) (err error) {
-	if o.bw != nil {
-		return o.bw.WriteByte(c)
-	}
-	// _, err = o.w.Write([]byte{c})
-	o.bs[0] = c
-	_, err = o.w.Write(o.bs[:])
-	return
-}
+// type bufIoEncWriter struct {
+// 	w   io.Writer
+// 	buf []byte
+// 	err error
+// }
 
-func (o *simpleIoEncWriterWriter) WriteString(s string) (n int, err error) {
-	if o.sw != nil {
-		return o.sw.WriteString(s)
-	}
-	// return o.w.Write([]byte(s))
-	return o.w.Write(bytesView(s))
-}
-
-func (o *simpleIoEncWriterWriter) Write(p []byte) (n int, err error) {
-	return o.w.Write(p)
-}
-
-// ----------------------------------------
+// func (x *bufIoEncWriter) Write(b []byte) (n int, err error) {
+// 	if x.err != nil {
+// 		return 0, x.err
+// 	}
+// 	if cap(x.buf)-len(x.buf) >= len(b) {
+// 		x.buf = append(x.buf, b)
+// 		return len(b), nil
+// 	}
+// 	n, err = x.w.Write(x.buf)
+// 	if err != nil {
+// 		x.err = err
+// 		return 0, x.err
+// 	}
+// 	n, err = x.w.Write(b)
+// 	x.err = err
+// 	return
+// }
 
 // ioEncWriter implements encWriter and can write to an io.Writer implementation
 type ioEncWriter struct {
-	w ioEncWriterWriter
-	s simpleIoEncWriterWriter
-	// x [8]byte // temp byte array re-used internally for efficiency
+	w  io.Writer
+	ww io.Writer
+	bw io.ByteWriter
+	sw ioEncStringWriter
+	fw ioEncFlusher
+	b  [8]byte
+}
+
+func (x *ioEncWriter) WriteByte(b byte) (err error) {
+	// x.bs[0] = b
+	// _, err = x.ww.Write(x.bs[:])
+	var ba = [1]byte{b}
+	_, err = x.w.Write(ba[:])
+	return
+}
+
+func (x *ioEncWriter) WriteString(s string) (n int, err error) {
+	return x.w.Write(bytesView(s))
 }
 
 func (z *ioEncWriter) writeb(bs []byte) {
-	if len(bs) == 0 {
-		return
-	}
-	n, err := z.w.Write(bs)
-	if err != nil {
+	// if len(bs) == 0 {
+	// 	return
+	// }
+	if _, err := z.ww.Write(bs); err != nil {
 		panic(err)
-	}
-	if n != len(bs) {
-		panic(fmt.Errorf("incorrect num bytes written. Expecting: %v, Wrote: %v", len(bs), n))
 	}
 }
 
 func (z *ioEncWriter) writestr(s string) {
-	if len(s) == 0 {
-		return
-	}
-	n, err := z.w.WriteString(s)
-	if err != nil {
+	// if len(s) == 0 {
+	// 	return
+	// }
+	if _, err := z.sw.WriteString(s); err != nil {
 		panic(err)
-	}
-	if n != len(s) {
-		panic(fmt.Errorf("incorrect num bytes written. Expecting: %v, Wrote: %v", len(s), n))
 	}
 }
 
 func (z *ioEncWriter) writen1(b byte) {
-	if err := z.w.WriteByte(b); err != nil {
+	if err := z.bw.WriteByte(b); err != nil {
 		panic(err)
 	}
 }
 
 func (z *ioEncWriter) writen2(b1, b2 byte) {
-	for _, b := range [...]byte{b1, b2} {
-		if err := z.w.WriteByte(b); err != nil {
-			panic(err)
+	var err error
+	if err = z.bw.WriteByte(b1); err == nil {
+		if err = z.bw.WriteByte(b2); err == nil {
+			return
 		}
 	}
+	panic(err)
 }
 
 func (z *ioEncWriter) writen4(b1, b2, b3, b4 byte) {
-	for _, b := range [...]byte{b1, b2, b3, b4} {
-		if err := z.w.WriteByte(b); err != nil {
-			panic(err)
-		}
+	z.b[0], z.b[1], z.b[2], z.b[3] = b1, b2, b3, b4
+	if _, err := z.ww.Write(z.b[:4]); err != nil {
+		panic(err)
 	}
 }
 
 func (z *ioEncWriter) writen5(b1, b2, b3, b4, b5 byte) {
-	for _, b := range [...]byte{b1, b2, b3, b4, b5} {
-		if err := z.w.WriteByte(b); err != nil {
-			panic(err)
-		}
+	z.b[0], z.b[1], z.b[2], z.b[3], z.b[4] = b1, b2, b3, b4, b5
+	if _, err := z.ww.Write(z.b[:5]); err != nil {
+		panic(err)
 	}
 }
 
-func (z *ioEncWriter) atEndOfEncode() {}
+func (z *ioEncWriter) atEndOfEncode() {
+	if z.fw != nil {
+		z.fw.Flush()
+	}
+}
 
 // ----------------------------------------
 
@@ -257,25 +275,17 @@ type bytesEncWriter struct {
 }
 
 func (z *bytesEncWriter) writeb(s []byte) {
-	slen := len(s)
-	if slen == 0 {
-		return
-	}
-	oc, a := z.growNoAlloc(slen)
+	oc, a := z.growNoAlloc(len(s))
 	if a {
-		z.growAlloc(slen, oc)
+		z.growAlloc(len(s), oc)
 	}
 	copy(z.b[oc:], s)
 }
 
 func (z *bytesEncWriter) writestr(s string) {
-	slen := len(s)
-	if slen == 0 {
-		return
-	}
-	oc, a := z.growNoAlloc(slen)
+	oc, a := z.growNoAlloc(len(s))
 	if a {
-		z.growAlloc(slen, oc)
+		z.growAlloc(len(s), oc)
 	}
 	copy(z.b[oc:], s)
 }
@@ -1046,6 +1056,7 @@ type Encoder struct {
 
 	wi ioEncWriter
 	wb bytesEncWriter
+	bw bufio.Writer
 
 	cr containerStateRecv
 	as encDriverAsis
@@ -1092,16 +1103,24 @@ func newEncoder(h Handle) *Encoder {
 // This accommodates using the state of the Encoder,
 // where it has "cached" information about sub-engines.
 func (e *Encoder) Reset(w io.Writer) {
-	ww, ok := w.(ioEncWriterWriter)
-	if ok {
-		e.wi.w = ww
+	var ok bool
+	e.wi.w = w
+	if e.h.WriterBufferSize > 0 {
+		bw := bufio.NewWriterSize(w, e.h.WriterBufferSize)
+		e.bw = *bw
+		e.wi.bw = &e.bw
+		e.wi.sw = &e.bw
+		e.wi.fw = &e.bw
+		e.wi.ww = &e.bw
 	} else {
-		sww := &e.wi.s
-		sww.w = w
-		sww.bw, _ = w.(io.ByteWriter)
-		sww.sw, _ = w.(ioEncStringWriter)
-		e.wi.w = sww
-		//ww = bufio.NewWriterSize(w, defEncByteBufSize)
+		if e.wi.bw, ok = w.(io.ByteWriter); !ok {
+			e.wi.bw = &e.wi
+		}
+		if e.wi.sw, ok = w.(ioEncStringWriter); !ok {
+			e.wi.sw = &e.wi
+		}
+		e.wi.fw, _ = w.(ioEncFlusher)
+		e.wi.ww = w
 	}
 	e.w = &e.wi
 	e.e.reset()
