@@ -303,9 +303,9 @@ type typeInfoLoadArray struct {
 	sfiidx   [typeInfoLoadArrayLen]sfiIdx
 }
 
-type containerStateRecv interface {
-	sendContainerState(containerState)
-}
+// type containerStateRecv interface {
+// 	sendContainerState(containerState)
+// }
 
 // mirror json.Marshaler and json.Unmarshaler here,
 // so we don't import the encoding/json package
@@ -521,6 +521,7 @@ type Handle interface {
 	newEncDriver(w *Encoder) encDriver
 	newDecDriver(r *Decoder) decDriver
 	isBinary() bool
+	hasElemSeparators() bool
 	IsBuiltinType(rtid uintptr) bool
 }
 
@@ -659,9 +660,13 @@ type noBuiltInTypes struct{ noBuiltInTypeChecker }
 func (_ noBuiltInTypes) EncodeBuiltin(rt uintptr, v interface{}) {}
 func (_ noBuiltInTypes) DecodeBuiltin(rt uintptr, v interface{}) {}
 
-type noStreamingCodec struct{}
+// type noStreamingCodec struct{}
+// func (_ noStreamingCodec) CheckBreak() bool { return false }
+// func (_ noStreamingCodec) hasElemSeparators() bool { return false }
 
-func (_ noStreamingCodec) CheckBreak() bool { return false }
+type noElemSeparators struct{}
+
+func (_ noElemSeparators) hasElemSeparators() (v bool) { return }
 
 // bigenHelper.
 // Users must already slice the x completely, because we will not reslice.

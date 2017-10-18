@@ -158,48 +158,115 @@ type jsonEncDriver struct {
 //   - newline and indent are added before each ending,
 //     except there was no entry (so we can have {} or [])
 
-func (e *jsonEncDriver) sendContainerState(c containerState) {
-	// determine whether to output separators
-	switch c {
-	case containerMapKey:
-		if e.c != containerMapStart {
-			e.w.writen1(',')
-		}
-		if e.d {
-			e.writeIndent()
-		}
-	case containerMapValue:
-		if e.d {
-			e.w.writen2(':', ' ')
-		} else {
-			e.w.writen1(':')
-		}
-	case containerMapEnd:
-		if e.d {
-			e.dl--
-			if e.c != containerMapStart {
-				e.writeIndent()
-			}
-		}
-		e.w.writen1('}')
-	case containerArrayElem:
-		if e.c != containerArrayStart {
-			e.w.writen1(',')
-		}
-		if e.d {
-			e.writeIndent()
-		}
-	case containerArrayEnd:
-		if e.d {
-			e.dl--
-			if e.c != containerArrayStart {
-				e.writeIndent()
-			}
-		}
-		e.w.writen1(']')
+func (e *jsonEncDriver) WriteArrayStart(length int) {
+	if e.d {
+		e.dl++
 	}
-	e.c = c
+	e.w.writen1('[')
+	e.c = containerArrayStart
 }
+
+func (e *jsonEncDriver) WriteArrayElem() {
+	if e.c != containerArrayStart {
+		e.w.writen1(',')
+	}
+	if e.d {
+		e.writeIndent()
+	}
+	e.c = containerArrayElem
+}
+
+func (e *jsonEncDriver) WriteArrayEnd() {
+	if e.d {
+		e.dl--
+		if e.c != containerArrayStart {
+			e.writeIndent()
+		}
+	}
+	e.w.writen1(']')
+	e.c = containerArrayEnd
+}
+
+func (e *jsonEncDriver) WriteMapStart(length int) {
+	if e.d {
+		e.dl++
+	}
+	e.w.writen1('{')
+	e.c = containerMapStart
+}
+
+func (e *jsonEncDriver) WriteMapElemKey() {
+	if e.c != containerMapStart {
+		e.w.writen1(',')
+	}
+	if e.d {
+		e.writeIndent()
+	}
+	e.c = containerMapKey
+}
+
+func (e *jsonEncDriver) WriteMapElemValue() {
+	if e.d {
+		e.w.writen2(':', ' ')
+	} else {
+		e.w.writen1(':')
+	}
+	e.c = containerMapValue
+}
+
+func (e *jsonEncDriver) WriteMapEnd() {
+	if e.d {
+		e.dl--
+		if e.c != containerMapStart {
+			e.writeIndent()
+		}
+	}
+	e.w.writen1('}')
+	e.c = containerMapEnd
+}
+
+// func (e *jsonEncDriver) sendContainerState(c containerState) {
+// 	// determine whether to output separators
+// 	switch c {
+// 	case containerMapKey:
+// 		if e.c != containerMapStart {
+// 			e.w.writen1(',')
+// 		}
+// 		if e.d {
+// 			e.writeIndent()
+// 		}
+// 	case containerMapValue:
+// 		if e.d {
+// 			e.w.writen2(':', ' ')
+// 		} else {
+// 			e.w.writen1(':')
+// 		}
+// 	case containerMapEnd:
+// 		if e.d {
+// 			e.dl--
+// 			if e.c != containerMapStart {
+// 				e.writeIndent()
+// 			}
+// 		}
+// 		e.w.writen1('}')
+// 	case containerArrayElem:
+// 		if e.c != containerArrayStart {
+// 			e.w.writen1(',')
+// 		}
+// 		if e.d {
+// 			e.writeIndent()
+// 		}
+// 	case containerArrayEnd:
+// 		if e.d {
+// 			e.dl--
+// 			if e.c != containerArrayStart {
+// 				e.writeIndent()
+// 			}
+// 		}
+// 		e.w.writen1(']')
+// 	}
+// 	e.c = c
+// }
 
 func (e *jsonEncDriver) writeIndent() {
 	e.w.writen1('\n')
@@ -279,22 +346,6 @@ func (e *jsonEncDriver) EncodeRawExt(re *RawExt, en *Encoder) {
 	} else {
 		en.encode(re.Value)
 	}
-}
-
-func (e *jsonEncDriver) EncodeArrayStart(length int) {
-	if e.d {
-		e.dl++
-	}
-	e.w.writen1('[')
-	e.c = containerArrayStart
-}
-
-func (e *jsonEncDriver) EncodeMapStart(length int) {
-	if e.d {
-		e.dl++
-	}
-	e.w.writen1('{')
-	e.c = containerMapStart
 }
 
 func (e *jsonEncDriver) EncodeString(c charEncoding, v string) {
@@ -434,34 +485,28 @@ func (d *jsonDecDriver) uncacheRead() {
 	}
 }
 
-func (d *jsonDecDriver) sendContainerState(c containerState) {
+func (d *jsonDecDriver) ReadMapStart() int {
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
-	var xc uint8 // char expected
-	switch c {
-	case containerMapKey:
-		if d.c != containerMapStart {
-			xc = ','
-		}
-	case containerMapValue:
-		xc = ':'
-	case containerMapEnd:
-		xc = '}'
-	case containerArrayElem:
-		if d.c != containerArrayStart {
-			xc = ','
-		}
-	case containerArrayEnd:
-		xc = ']'
+	if d.tok != '{' {
+		d.d.errorf("json: expect char '%c' but got char '%c'", '{', d.tok)
 	}
-	if xc != 0 {
-		if d.tok != xc {
-			d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
-		}
-		d.tok = 0
+	d.tok = 0
+	d.c = containerMapStart
+	return -1
+}
+
+func (d *jsonDecDriver) ReadArrayStart() int {
+	if d.tok == 0 {
+		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
-	d.c = c
+	if d.tok != '[' {
+		d.d.errorf("json: expect char '%c' but got char '%c'", '[', d.tok)
+	}
+	d.tok = 0
+	d.c = containerArrayStart
+	return -1
 }
 
 func (d *jsonDecDriver) CheckBreak() bool {
@@ -470,6 +515,113 @@ func (d *jsonDecDriver) CheckBreak() bool {
 	}
 	return d.tok == '}' || d.tok == ']'
 }
+
+func (d *jsonDecDriver) ReadArrayElem() {
+	if d.tok == 0 {
+		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+	}
+	if d.c != containerArrayStart {
+		const xc uint8 = ','
+		if d.tok != xc {
+			d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+		}
+		d.tok = 0
+	}
+	d.c = containerArrayElem
+}
+
+func (d *jsonDecDriver) ReadArrayEnd() {
+	if d.tok == 0 {
+		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+	}
+	const xc uint8 = ']'
+	if d.tok != xc {
+		d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+	}
+	d.tok = 0
+	d.c = containerArrayEnd
+}
+
+func (d *jsonDecDriver) ReadMapElemKey() {
+	if d.tok == 0 {
+		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+	}
+	if d.c != containerMapStart {
+		const xc uint8 = ','
+		if d.tok != xc {
+			d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+		}
+		d.tok = 0
+	}
+	d.c = containerMapKey
+}
+
+func (d *jsonDecDriver) ReadMapElemValue() {
+	if d.tok == 0 {
+		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+	}
+	const xc uint8 = ':'
+	if d.tok != xc {
+		d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+	}
+	d.tok = 0
+	d.c = containerMapValue
+}
+
+func (d *jsonDecDriver) ReadMapEnd() {
+	if d.tok == 0 {
+		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+	}
+	const xc uint8 = '}'
+	if d.tok != xc {
+		d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+	}
+	d.tok = 0
+	d.c = containerMapEnd
+}
+
+// func (d *jsonDecDriver) readContainerState(c containerState, xc uint8, check bool) {
+// 	if d.tok == 0 {
+// 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+// 	}
+// 	if check {
+// 		if d.tok != xc {
+// 			d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+// 		}
+// 		d.tok = 0
+// 	}
+// 	d.c = c
+// }
+
+// func (d *jsonDecDriver) sendContainerState(c containerState) {
+// 	if d.tok == 0 {
+// 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+// 	}
+// 	var xc uint8 // char expected
+// 	switch c {
+// 	case containerMapKey:
+// 		if d.c != containerMapStart {
+// 			xc = ','
+// 		}
+// 	case containerMapValue:
+// 		xc = ':'
+// 	case containerMapEnd:
+// 		xc = '}'
+// 	case containerArrayElem:
+// 		if d.c != containerArrayStart {
+// 			xc = ','
+// 		}
+// 	case containerArrayEnd:
+// 		xc = ']'
+// 	}
+// 	if xc != 0 {
+// 		if d.tok != xc {
+// 			d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+// 		}
+// 		d.tok = 0
+// 	}
+// 	d.c = c
+// }
 
 // func (d *jsonDecDriver) readLiteralIdx(fromIdx, toIdx uint8) {
 // 	bs := d.r.readx(int(toIdx - fromIdx))
@@ -523,30 +675,6 @@ func (d *jsonDecDriver) DecodeBool() bool {
 	}
 	d.d.errorf("json: decode bool: got first char %c", d.tok)
 	return false // "unreachable"
-}
-
-func (d *jsonDecDriver) ReadMapStart() int {
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
-	if d.tok != '{' {
-		d.d.errorf("json: expect char '%c' but got char '%c'", '{', d.tok)
-	}
-	d.tok = 0
-	d.c = containerMapStart
-	return -1
-}
-
-func (d *jsonDecDriver) ReadArrayStart() int {
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
-	if d.tok != '[' {
-		d.d.errorf("json: expect char '%c' but got char '%c'", '[', d.tok)
-	}
-	d.tok = 0
-	d.c = containerArrayStart
-	return -1
 }
 
 func (d *jsonDecDriver) ContainerType() (vt valueType) {
@@ -938,6 +1066,8 @@ type JsonHandle struct {
 	// integer type if it doesn't have any of the characters [.eE].
 	PreferFloat bool
 }
+
+func (h *JsonHandle) hasElemSeparators() bool { return true }
 
 func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
 	return h.SetExt(rt, tag, &setExtWrapper{i: ext})

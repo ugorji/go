@@ -165,33 +165,33 @@ func (e *Encoder) {{ .MethodNamePfx "fastpathEnc" false }}R(f *codecFnInfo, rv r
 	}
 }
 func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *Encoder) {
-	ee, cr := e.e, e.cr 
-	ee.EncodeArrayStart(len(v))
+	ee, esep := e.e, e.hh.hasElemSeparators()
+	ee.WriteArrayStart(len(v))
 	for _, v2 := range v {
-		if cr != nil { cr.sendContainerState(containerArrayElem) }
+		if esep { ee.WriteArrayElem() }
 		{{ encmd .Elem "v2"}}
 	}
-	if cr != nil { cr.sendContainerState(containerArrayEnd) }{{/* ee.EncodeEnd() */}}
+	ee.WriteArrayEnd()
 }
 
 func (_ fastpathT) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *Encoder) {
-	ee, cr := e.e, e.cr 
+	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
 		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
 		return
 	}
-	ee.EncodeMapStart(len(v) / 2)
+	ee.WriteMapStart(len(v) / 2)
 	for j, v2 := range v {
-		if cr != nil {
+		if esep {
 			if j%2 == 0 {
-				cr.sendContainerState(containerMapKey)
+				ee.WriteMapElemKey()
 			} else {
-				cr.sendContainerState(containerMapValue)
+				ee.WriteMapElemValue()
 			}
 		}
 		{{ encmd .Elem "v2"}}
 	}
-	if cr != nil { cr.sendContainerState(containerMapEnd) }
+	ee.WriteMapEnd()
 }
 
 {{end}}{{end}}{{end}}
@@ -202,8 +202,8 @@ func (e *Encoder) {{ .MethodNamePfx "fastpathEnc" false }}R(f *codecFnInfo, rv r
 	fastpathTV.{{ .MethodNamePfx "Enc" false }}V(rv2i(rv).(map[{{ .MapKey }}]{{ .Elem }}), e)
 }
 func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Elem }}, e *Encoder) {
-	ee, cr := e.e, e.cr 
-	ee.EncodeMapStart(len(v))
+	ee, esep := e.e, e.hh.hasElemSeparators() 
+	ee.WriteMapStart(len(v))
 	{{if eq .MapKey "string"}}asSymbols := e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	{{end}}if e.h.Canonical {
 		{{if eq .MapKey "interface{}"}}{{/* out of band 
@@ -222,9 +222,9 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Ele
 		}
 		sort.Sort(bytesISlice(v2))
 		for j := range v2 {
-			if cr != nil { cr.sendContainerState(containerMapKey) }
+			if esep { ee.WriteMapElemKey() }
 			e.asis(v2[j].v)
-			if cr != nil { cr.sendContainerState(containerMapValue) }
+			if esep { ee.WriteMapElemValue() }
 			e.encode(v[v2[j].i])
 		} {{else}}{{ $x := sorttype .MapKey true}}v2 := make([]{{ $x }}, len(v))
 		var i int 
@@ -234,28 +234,28 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Ele
 		}
 		sort.Sort({{ sorttype .MapKey false}}(v2))
 		for _, k2 := range v2 {
-			if cr != nil { cr.sendContainerState(containerMapKey) }
+			if esep { ee.WriteMapElemKey() }
 			{{if eq .MapKey "string"}}if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
 				ee.EncodeString(c_UTF8, k2)
 			}{{else}}{{ $y := printf "%s(k2)" .MapKey }}{{ encmd .MapKey $y }}{{end}}
-			if cr != nil { cr.sendContainerState(containerMapValue) }
+			if esep { ee.WriteMapElemValue() }
 			{{ $y := printf "v[%s(k2)]" .MapKey }}{{ encmd .Elem $y }}
 		} {{end}}
 	} else {
 		for k2, v2 := range v {
-			if cr != nil { cr.sendContainerState(containerMapKey) }
+			if esep { ee.WriteMapElemKey() }
 			{{if eq .MapKey "string"}}if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
 				ee.EncodeString(c_UTF8, k2)
 			}{{else}}{{ encmd .MapKey "k2"}}{{end}}
-			if cr != nil { cr.sendContainerState(containerMapValue) }
+			if esep { ee.WriteMapElemValue() }
 			{{ encmd .Elem "v2"}}
 		}
 	}
-	if cr != nil { cr.sendContainerState(containerMapEnd) }{{/* ee.EncodeEnd() */}}
+	ee.WriteMapEnd()
 }
 
 {{end}}{{end}}{{end}}
@@ -421,7 +421,7 @@ func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{{ .E
 }
 func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v map[{{ .MapKey }}]{{ .Elem }}, canChange bool, 
 	d *Decoder) (_ map[{{ .MapKey }}]{{ .Elem }}, changed bool) {
-	dd, cr := d.d, d.cr
+	dd, esep := d.d, d.hh.hasElemSeparators()
 	{{/* // if dd.isContainerType(valueTypeNil) {dd.TryDecodeAsNil() */}}
 	containerLen := dd.ReadMapStart()
 	if canChange && v == nil {
@@ -430,7 +430,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v map[{{ .MapKey }}]{{ .Ele
 		changed = true
 	}
 	if containerLen == 0 {
-		if cr != nil { cr.sendContainerState(containerMapEnd) }
+		dd.ReadMapEnd()
 		return v, changed
 	}
 	{{ if eq .Elem "interface{}" }}mapGet := !d.h.MapValueReset && !d.h.InterfaceReset{{end}}
@@ -438,13 +438,13 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v map[{{ .MapKey }}]{{ .Ele
 	var mv {{ .Elem }}
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
-		if cr != nil { cr.sendContainerState(containerMapKey) }
+		if esep { dd.ReadMapElemKey() }
 		{{ if eq .MapKey "interface{}" }}mk = nil 
 		d.decode(&mk)
 		if bv, bok := mk.([]byte); bok {
 			mk = d.string(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
 		}{{ else }}mk = {{ decmd .MapKey }}{{ end }}
-		if cr != nil { cr.sendContainerState(containerMapValue) }
+		if esep { dd.ReadMapElemValue() }
 		if dd.TryDecodeAsNil() {
 			if d.h.DeleteOnNilMapValue { delete(v, mk) } else { v[mk] = {{ zerocmd .Elem }} }
 			continue 
@@ -455,7 +455,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v map[{{ .MapKey }}]{{ .Ele
 			v[mk] = mv
 		}
 	}
-	if cr != nil { cr.sendContainerState(containerMapEnd) }
+	dd.ReadMapEnd()
 	return v, changed
 }
 

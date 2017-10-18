@@ -206,8 +206,6 @@ type Sinterface interface {
 
 var testStrucTime = time.Date(2012, 2, 2, 2, 2, 2, 2000, time.UTC).UTC()
 
-var testNumRepeatStringMirror int = 8
-
 func populateTestStrucCommon(ts *testStrucCommon, n int, bench, useInterface, useStringKeyOnly bool) {
 	var i64a, i64b, i64c, i64d int64 = 64, 6464, 646464, 64646464
 

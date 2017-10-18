@@ -104,7 +104,8 @@ var (
 
 type msgpackEncDriver struct {
 	noBuiltInTypes
-	encNoSeparator
+	encDriverNoopContainerWriter
+	// encNoSeparator
 	e *Encoder
 	w encWriter
 	h *MsgpackHandle
@@ -213,11 +214,11 @@ func (e *msgpackEncDriver) encodeExtPreamble(xtag byte, l int) {
 	}
 }
 
-func (e *msgpackEncDriver) EncodeArrayStart(length int) {
+func (e *msgpackEncDriver) WriteArrayStart(length int) {
 	e.writeContainerLen(msgpackContainerList, length)
 }
 
-func (e *msgpackEncDriver) EncodeMapStart(length int) {
+func (e *msgpackEncDriver) WriteMapStart(length int) {
 	e.writeContainerLen(msgpackContainerMap, length)
 }
 
@@ -274,8 +275,9 @@ type msgpackDecDriver struct {
 	bdRead bool
 	br     bool // bytes reader
 	noBuiltInTypes
-	noStreamingCodec
-	decNoSeparator
+	// noStreamingCodec
+	// decNoSeparator
+	decDriverNoopContainerReader
 }
 
 // Note: This returns either a primitive (int, bool, etc) for non-containers,
@@ -760,6 +762,7 @@ type MsgpackHandle struct {
 	// a []byte or string based on the setting of RawToString.
 	WriteExt bool
 	binaryEncodingType
+	noElemSeparators
 }
 
 func (h *MsgpackHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {

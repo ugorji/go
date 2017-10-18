@@ -42,11 +42,11 @@ import (
 
 func init() {
 	testPreInitFns = append(testPreInitFns, testInit)
-	fmt.Printf("sizeof: Decoder: %v, Encoder: %v, decNaked: %v\n",
-		reflect.TypeOf((*Decoder)(nil)).Elem().Size(),
-		reflect.TypeOf((*Encoder)(nil)).Elem().Size(),
-		reflect.TypeOf((*decNaked)(nil)).Elem().Size(),
-	)
+	// fmt.Printf("sizeof: Decoder: %v, Encoder: %v, decNaked: %v\n",
+	// 	reflect.TypeOf((*Decoder)(nil)).Elem().Size(),
+	// 	reflect.TypeOf((*Encoder)(nil)).Elem().Size(),
+	// 	reflect.TypeOf((*decNaked)(nil)).Elem().Size(),
+	// )
 }
 
 // make this a mapbyslice
@@ -349,17 +349,7 @@ func testInit() {
 		bh.CheckCircularRef = testCheckCircRef
 		bh.StructToArray = testStructToArray
 		bh.MaxInitLen = testMaxInitLen
-		// mostly doing this for binc
-		if testWriteNoSymbols {
-			bh.AsSymbols = AsSymbolNone
-		} else {
-			bh.AsSymbols = AsSymbolAll
-		}
 	}
-
-	testJsonH.Indent = int8(testJsonIndent)
-	testJsonH.HTMLCharsAsIs = testJsonHTMLCharsAsIs
-	testJsonH.PreferFloat = testJsonPreferFloat
 
 	testMsgpackH.RawToString = true
 

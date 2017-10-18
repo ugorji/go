@@ -44,7 +44,7 @@ func fnEasyjsonEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
 	if _, ok := ts.(easyjson.Marshaler); !ok {
 		return nil, errors.New("easyjson: input is not a easyjson.Marshaler")
 	}
-	if testUseIoEncDec {
+	if testUseIoEncDec >= 0 {
 		buf := new(bytes.Buffer)
 		_, err := easyjson.MarshalToWriter(ts.(easyjson.Marshaler), buf)
 		return buf.Bytes(), err
@@ -57,7 +57,7 @@ func fnEasyjsonDecodeFn(buf []byte, ts interface{}) error {
 	if _, ok := ts.(easyjson.Unmarshaler); !ok {
 		return errors.New("easyjson: input is not a easyjson.Unmarshaler")
 	}
-	if testUseIoEncDec {
+	if testUseIoEncDec >= 0 {
 		return easyjson.UnmarshalFromReader(bytes.NewReader(buf), ts.(easyjson.Unmarshaler))
 	}
 	return easyjson.Unmarshal(buf, ts.(easyjson.Unmarshaler))
@@ -78,7 +78,7 @@ func fnMsgpEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
 	if _, ok := ts.(msgp.Encodable); !ok {
 		return nil, fmt.Errorf("msgp: input of type %T is not a msgp.Encodable", ts)
 	}
-	if testUseIoEncDec {
+	if testUseIoEncDec >= 0 {
 		buf := fnBenchmarkByteBuf(bsIn)
 		err := ts.(msgp.Encodable).EncodeMsg(msgp.NewWriter(buf))
 		return buf.Bytes(), err
@@ -90,7 +90,7 @@ func fnMsgpDecodeFn(buf []byte, ts interface{}) (err error) {
 	if _, ok := ts.(msgp.Decodable); !ok {
 		return fmt.Errorf("msgp: input of type %T is not a msgp.Decodable", ts)
 	}
-	if testUseIoEncDec {
+	if testUseIoEncDec >= 0 {
 		err = ts.(msgp.Decodable).DecodeMsg(msgp.NewReader(bytes.NewReader(buf)))
 		return
 	}

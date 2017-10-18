@@ -104,17 +104,31 @@ type decDriver interface {
 	// decodeExt will decode into a *RawExt or into an extension.
 	DecodeExt(v interface{}, xtag uint64, ext Ext) (realxtag uint64)
 	// decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte)
-	ReadMapStart() int
 	ReadArrayStart() int
+	ReadArrayElem()
+	ReadArrayEnd()
+	ReadMapStart() int
+	ReadMapElemKey()
+	ReadMapElemValue()
+	ReadMapEnd()
 
 	reset()
 	uncacheRead()
 }
 
-type decNoSeparator struct {
-}
+// type decNoSeparator struct {}
+// func (_ decNoSeparator) ReadEnd() {}
 
-func (_ decNoSeparator) ReadEnd() {}
+type decDriverNoopContainerReader struct{}
+
+func (_ decDriverNoopContainerReader) ReadArrayStart() (v int) { return }
+func (_ decDriverNoopContainerReader) ReadArrayElem()          {}
+func (_ decDriverNoopContainerReader) ReadArrayEnd()           {}
+func (_ decDriverNoopContainerReader) ReadMapStart() (v int)   { return }
+func (_ decDriverNoopContainerReader) ReadMapElemKey()         {}
+func (_ decDriverNoopContainerReader) ReadMapElemValue()       {}
+func (_ decDriverNoopContainerReader) ReadMapEnd()             {}
+func (_ decDriverNoopContainerReader) CheckBreak() (v bool)    { return }
 
 // func (_ decNoSeparator) uncacheRead() {}
 
@@ -363,17 +377,17 @@ func (z *bufioDecReader) readb(bs []byte) {
 	}
 }
 
-func (z *bufioDecReader) readn1eof() (b uint8, eof bool) {
-	b, err := z.ReadByte()
-	if err != nil {
-		if err == io.EOF {
-			eof = true
-		} else {
-			panic(err)
-		}
-	}
-	return
-}
+// func (z *bufioDecReader) readn1eof() (b uint8, eof bool) {
+// 	b, err := z.ReadByte()
+// 	if err != nil {
+// 		if err == io.EOF {
+// 			eof = true
+// 		} else {
+// 			panic(err)
+// 		}
+// 	}
+// 	return
+// }
 
 func (z *bufioDecReader) readn1() (b uint8) {
 	b, err := z.ReadByte()
@@ -1181,15 +1195,13 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 
 	fti := f.ti
 	dd := d.d
-	cr := d.cr
+	elemsep := d.hh.hasElemSeparators()
 	sfn := structFieldNode{v: rv, update: true}
 	ctyp := dd.ContainerType()
 	if ctyp == valueTypeMap {
 		containerLen := dd.ReadMapStart()
 		if containerLen == 0 {
-			if cr != nil {
-				cr.sendContainerState(containerMapEnd)
-			}
+			dd.ReadMapEnd()
 			return
 		}
 		tisfi := fti.sfi
@@ -1197,14 +1209,14 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 
 		for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
 			// rvkencname := dd.DecodeString()
-			if cr != nil {
-				cr.sendContainerState(containerMapKey)
+			if elemsep {
+				dd.ReadMapElemKey()
 			}
 			rvkencnameB := dd.DecodeStringAsBytes()
 			rvkencname := stringView(rvkencnameB)
 			// rvksi := ti.getForEncName(rvkencname)
-			if cr != nil {
-				cr.sendContainerState(containerMapValue)
+			if elemsep {
+				dd.ReadMapElemValue()
 			}
 			if k := fti.indexForEncName(rvkencname); k > -1 {
 				si := tisfi[k]
@@ -1218,15 +1230,11 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			}
 			// keepAlive4StringView(rvkencnameB) // maintain ref 4 stringView // not needed, as reference is outside loop
 		}
-		if cr != nil {
-			cr.sendContainerState(containerMapEnd)
-		}
+		dd.ReadMapEnd()
 	} else if ctyp == valueTypeArray {
 		containerLen := dd.ReadArrayStart()
 		if containerLen == 0 {
-			if cr != nil {
-				cr.sendContainerState(containerArrayEnd)
-			}
+			dd.ReadArrayEnd()
 			return
 		}
 		// Not much gain from doing it two ways for array.
@@ -1236,8 +1244,8 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			if (hasLen && j == containerLen) || (!hasLen && dd.CheckBreak()) {
 				break
 			}
-			if cr != nil {
-				cr.sendContainerState(containerArrayElem)
+			if elemsep {
+				dd.ReadArrayElem()
 			}
 			if dd.TryDecodeAsNil() {
 				si.setToZeroValue(rv)
@@ -1248,15 +1256,13 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		if containerLen > len(fti.sfip) {
 			// read remaining values and throw away
 			for j := len(fti.sfip); j < containerLen; j++ {
-				if cr != nil {
-					cr.sendContainerState(containerArrayElem)
+				if elemsep {
+					dd.ReadArrayElem()
 				}
 				d.structFieldNotFound(j, "")
 			}
 		}
-		if cr != nil {
-			cr.sendContainerState(containerArrayEnd)
-		}
+		dd.ReadArrayEnd()
 	} else {
 		d.error(onlyMapOrArrayCanDecodeIntoStructErr)
 		return
@@ -1492,16 +1498,14 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	dd := d.d
 	containerLen := dd.ReadMapStart()
-	cr := d.cr
+	elemsep := d.hh.hasElemSeparators()
 	ti := f.ti
 	if rv.IsNil() {
 		rv.Set(makeMapReflect(ti.rt, containerLen))
 	}
 
 	if containerLen == 0 {
-		if cr != nil {
-			cr.sendContainerState(containerMapEnd)
-		}
+		dd.ReadMapEnd()
 		return
 	}
 
@@ -1550,13 +1554,13 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	hasLen := containerLen > 0
 	var kstrbs []byte
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
-		if cr != nil {
-			cr.sendContainerState(containerMapKey)
+		if elemsep {
+			dd.ReadMapElemKey()
 		}
 		// if a nil key, just ignore the mapped value and continue
 		if dd.TryDecodeAsNil() {
-			if cr != nil {
-				cr.sendContainerState(containerMapValue)
+			if elemsep {
+				dd.ReadMapElemValue()
 			}
 			d.swallow()
 			continue
@@ -1591,8 +1595,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			}
 		}
 
-		if cr != nil {
-			cr.sendContainerState(containerMapValue)
+		if elemsep {
+			dd.ReadMapElemValue()
 		}
 
 		// Brittle, but OK per TryDecodeAsNil() contract.
@@ -1668,9 +1672,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		// }
 	}
 
-	if cr != nil {
-		cr.sendContainerState(containerMapEnd)
-	}
+	dd.ReadMapEnd()
 }
 
 // decNaked is used to keep track of the primitives decoded.
@@ -1799,7 +1801,7 @@ type Decoder struct {
 	ri ioDecReader
 	bi bufioDecReader
 
-	cr containerStateRecv
+	// cr containerStateRecv
 
 	n   *decNaked
 	nsp *sync.Pool
@@ -1852,7 +1854,7 @@ func newDecoder(h Handle) *Decoder {
 		d.is = make(map[string]string, 32)
 	}
 	d.d = h.newDecDriver(d)
-	d.cr, _ = d.d.(containerStateRecv)
+	// d.cr, _ = d.d.(containerStateRecv)
 	return d
 }
 
@@ -2012,37 +2014,33 @@ func (d *Decoder) swallow() {
 	if dd.TryDecodeAsNil() {
 		return
 	}
-	cr := d.cr
+	elemsep := d.hh.hasElemSeparators()
 	switch dd.ContainerType() {
 	case valueTypeMap:
 		containerLen := dd.ReadMapStart()
 		hasLen := containerLen >= 0
 		for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
 			// if clenGtEqualZero {if j >= containerLen {break} } else if dd.CheckBreak() {break}
-			if cr != nil {
-				cr.sendContainerState(containerMapKey)
+			if elemsep {
+				dd.ReadMapElemKey()
 			}
 			d.swallow()
-			if cr != nil {
-				cr.sendContainerState(containerMapValue)
+			if elemsep {
+				dd.ReadMapElemValue()
 			}
 			d.swallow()
 		}
-		if cr != nil {
-			cr.sendContainerState(containerMapEnd)
-		}
+		dd.ReadMapEnd()
 	case valueTypeArray:
 		containerLen := dd.ReadArrayStart()
 		hasLen := containerLen >= 0
 		for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
-			if cr != nil {
-				cr.sendContainerState(containerArrayElem)
+			if elemsep {
+				dd.ReadArrayElem()
 			}
 			d.swallow()
 		}
-		if cr != nil {
-			cr.sendContainerState(containerArrayEnd)
-		}
+		dd.ReadArrayEnd()
 	case valueTypeBytes:
 		dd.DecodeBytes(d.b[:], true)
 	case valueTypeString:
@@ -2389,29 +2387,21 @@ func (d *Decoder) decSliceHelperStart() (x decSliceHelper, clen int) {
 }
 
 func (x decSliceHelper) End() {
-	cr := x.d.cr
-	if cr == nil {
-		return
-	}
 	if x.array {
-		cr.sendContainerState(containerArrayEnd)
+		x.d.d.ReadArrayEnd()
 	} else {
-		cr.sendContainerState(containerMapEnd)
+		x.d.d.ReadMapEnd()
 	}
 }
 
 func (x decSliceHelper) ElemContainerState(index int) {
-	cr := x.d.cr
-	if cr == nil {
-		return
-	}
 	if x.array {
-		cr.sendContainerState(containerArrayElem)
+		x.d.d.ReadArrayElem()
 	} else {
 		if index%2 == 0 {
-			cr.sendContainerState(containerMapKey)
+			x.d.d.ReadMapElemKey()
 		} else {
-			cr.sendContainerState(containerMapValue)
+			x.d.d.ReadMapElemValue()
 		}
 	}
 }
