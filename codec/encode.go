@@ -76,6 +76,7 @@ type encDriver interface {
 	//encStringRunes(c charEncoding, v []rune)
 
 	reset()
+	atEndOfEncode()
 }
 
 type ioEncStringWriter interface {
@@ -102,6 +103,7 @@ func (_ encDriverNoopContainerWriter) WriteMapStart(length int)   {}
 func (_ encDriverNoopContainerWriter) WriteMapElemKey()           {}
 func (_ encDriverNoopContainerWriter) WriteMapElemValue()         {}
 func (_ encDriverNoopContainerWriter) WriteMapEnd()               {}
+func (_ encDriverNoopContainerWriter) atEndOfEncode()             {}
 
 // type ioEncWriterWriter interface {
 // 	WriteByte(c byte) error
@@ -1220,6 +1222,7 @@ func (e *Encoder) MustEncode(v interface{}) {
 		panic(e.err)
 	}
 	e.encode(v)
+	e.e.atEndOfEncode()
 	e.w.atEndOfEncode()
 }
 

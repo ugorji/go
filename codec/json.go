@@ -63,6 +63,7 @@ var (
 	jsonCharSafeSet       bitset128
 	jsonCharWhitespaceSet bitset256
 	jsonNumSet            bitset256
+	// jsonIsFloatSet        bitset256
 
 	jsonU4Set [256]byte
 )
@@ -134,6 +135,10 @@ func init() {
 		default:
 			jsonU4Set[i] = jsonU4SetErrVal
 		}
+		// switch i = byte(j); i {
+		// case 'e', 'E', '.':
+		// 	jsonIsFloatSet.set(i)
+		// }
 	}
 	// jsonU4Set[255] = jsonU4SetErrVal
 }
@@ -305,10 +310,11 @@ func (e *jsonEncDriver) EncodeFloat64(f float64) {
 
 func (e *jsonEncDriver) encodeFloat(f float64, numbits int) {
 	x := strconv.AppendFloat(e.b[:0], f, 'G', -1, numbits)
-	e.w.writeb(x)
-	if bytes.IndexByte(x, 'E') == -1 && bytes.IndexByte(x, '.') == -1 {
-		e.w.writen2('.', '0')
+	// if bytes.IndexByte(x, 'E') == -1 && bytes.IndexByte(x, '.') == -1 {
+	if !jsonIsFloatBytesB2(x) {
+		x = append(x, '.', '0')
 	}
+	e.w.writeb(x)
 }
 
 func (e *jsonEncDriver) EncodeInt(v int64) {
@@ -449,6 +455,16 @@ func (e *jsonEncDriver) quoteStr(s string) {
 		w.writestr(s[start:])
 	}
 	w.writen1('"')
+}
+
+func (e *jsonEncDriver) atEndOfEncode() {
+	if e.h.TermWhitespace {
+		if e.d {
+			e.w.writen1('\n')
+		} else {
+			e.w.writen1(' ')
+		}
+	}
 }
 
 type jsonDecDriver struct {
@@ -981,7 +997,7 @@ func (d *jsonDecDriver) DecodeNaked() {
 		if len(bs) == 0 {
 			d.d.errorf("json: decode number from empty string")
 			return
-		} else if d.h.PreferFloat || jsonIsFloatBytes(bs) { // bytes.IndexByte(bs, '.') != -1 ||...
+		} else if d.h.PreferFloat || jsonIsFloatBytesB3(bs) { // bytes.IndexByte(bs, '.') != -1 ||...
 			// } else if d.h.PreferFloat || bytes.ContainsAny(bs, ".eE") {
 			z.v = valueTypeFloat
 			z.f, err = strconv.ParseFloat(stringView(bs), 64)
@@ -1065,6 +1081,13 @@ type JsonHandle struct {
 	// If not set, we will examine the characters of the number and decode as an
 	// integer type if it doesn't have any of the characters [.eE].
 	PreferFloat bool
+
+	// TermWhitespace says that we add a whitespace character
+	// at the end of an encoding.
+	//
+	// The whitespace is important, especially if using numbers in a context
+	// where multiple items are written to a stream.
+	TermWhitespace bool
 }
 
 func (h *JsonHandle) hasElemSeparators() bool { return true }
@@ -1118,20 +1141,32 @@ func (d *jsonDecDriver) reset() {
 	// d.n.reset()
 }
 
-func jsonIsFloatBytes(bs []byte) bool {
-	for _, v := range bs {
-		if v == '.' || v == 'e' || v == 'E' {
-			return true
-		}
-	}
-	return false
+// func jsonIsFloatBytes(bs []byte) bool {
+// 	for _, v := range bs {
+// 		// if v == '.' || v == 'e' || v == 'E' {
+// 		if jsonIsFloatSet.isset(v) {
+// 			return true
+// 		}
+// 	}
+// 	return false
+// }
+
+func jsonIsFloatBytesB2(bs []byte) bool {
+	return bytes.IndexByte(bs, '.') != -1 ||
+		bytes.IndexByte(bs, 'E') != -1
 }
 
-var jsonEncodeTerminate = []byte{' '}
-
-func (h *JsonHandle) rpcEncodeTerminate() []byte {
-	return jsonEncodeTerminate
+func jsonIsFloatBytesB3(bs []byte) bool {
+	return bytes.IndexByte(bs, '.') != -1 ||
+		bytes.IndexByte(bs, 'E') != -1 ||
+		bytes.IndexByte(bs, 'e') != -1
 }
+
+// var jsonEncodeTerminate = []byte{' '}
+
+// func (h *JsonHandle) rpcEncodeTerminate() []byte {
+// 	return jsonEncodeTerminate
+// }
 
 var _ decDriver = (*jsonDecDriver)(nil)
 var _ encDriver = (*jsonEncDriver)(nil)

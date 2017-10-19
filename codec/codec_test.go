@@ -951,6 +951,11 @@ func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs
 		logT(t, "EXPECTED. set recoverPanicToErr=true, since rpc needs EOF")
 		failT(t)
 	}
+
+	if jsonH, ok := h.(*JsonHandle); ok && !jsonH.TermWhitespace {
+		jsonH.TermWhitespace = true
+		defer func() { jsonH.TermWhitespace = false }()
+	}
 	srv := rpc.NewServer()
 	srv.Register(testRpcInt)
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
@@ -2184,3 +2189,20 @@ func TestBufioDecReader(t *testing.T) {
 //
 //  Add negative tests for failure conditions:
 //   - bad input with large array length prefix
+//
+//  More tests:
+//  - length of containers (array, string, bytes, map):
+//    len = 0
+//    maxUint16 < len < maxuint32
+//    len > maxuint32
+//  - large numbers: in every range: up to maxuint8, maxuint16, maxuint32, maxuint64
+//    int64
+//    uint64
+//  - standard numbers:
+//    0, -1, 1, +inf, -inf, 0.0f, etc
+//  - (encode ext, encode raw ext, etc)
+//    (include extensions)
+//  - tracking:
+//    z.trb: track, stop track, check
+//  - test with diff: mapType and sliceType, and decodeNaked
+//  - decodeAsNil: for maps, slices, etc
