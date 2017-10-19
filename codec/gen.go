@@ -101,7 +101,7 @@ import (
 // v4: Removed separator support from (en|de)cDriver, and refactored codec(gen)
 // v5: changes to support faster json decoding. Let encoder/decoder maintain state of collections.
 // v6: removed unsafe from gen, and now uses codecgen.exec tag
-const genVersion = 6
+const genVersion = 8
 
 const (
 	genCodecPkg        = "codec1978"
