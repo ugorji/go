@@ -5,7 +5,7 @@ go:
   - 1.9.x
   - tip
 script:
-  - go test -tags "alltests" -run Suite -coverprofile default.cover.txt github.com/ugorji/go/codec
+  - go test -tags "alltests" -run Suite -coverprofile coverage.txt github.com/ugorji/go/codec
 after_success:
-  - bash <(curl -s https://codecov.io/bash) -t d363f760-34c1-4232-8c47-569fe7c02549 -f '*.cover.txt'
+  - bash <(curl -s https://codecov.io/bash) -t d363f760-34c1-4232-8c47-569fe7c02549 -f coverage.txt
 
