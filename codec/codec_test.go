@@ -211,6 +211,15 @@ func (x *testUnixNanoTimeExt) UpdateExt(dest interface{}, v interface{}) {
 	}
 }
 
+func testCodecEncode(ts interface{}, bsIn []byte,
+	fn func([]byte) *bytes.Buffer, h Handle) (bs []byte, err error) {
+	return sTestCodecEncode(ts, bsIn, fn, h, h.getBasicHandle())
+}
+
+func testCodecDecode(bs []byte, ts interface{}, h Handle) (err error) {
+	return sTestCodecDecode(bs, ts, h, h.getBasicHandle())
+}
+
 func testVerifyVal(v interface{}, arg testVerifyArg) (v2 interface{}) {
 	//for python msgpack,
 	//  - all positive integers are unsigned 64-bit ints
@@ -373,7 +382,7 @@ func testInit() {
 		}
 	)
 	testSimpleH.AddExt(timeTyp, 1, timeExtEncFn, timeExtDecFn)
-
+	// testBincH.SetBytesExt(timeTyp, 1, timeExt{}) // time is builtin for binc
 	testMsgpackH.SetBytesExt(timeTyp, 1, timeExt{})
 	testCborH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
 	// testJsonH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
@@ -453,7 +462,7 @@ ugorji
 		map[interface{}]interface{}{
 			true:       "true",
 			uint8(138): false,
-			"false":    uint8(200),
+			false:      uint8(200),
 		},
 	}
 
@@ -838,6 +847,7 @@ func testCodecChan(t *testing.T, h Handle) {
 	// - do this for codecs: json, cbor (covers all types)
 
 	if true {
+		logT(t, "*int64")
 		sl1 := make([]*int64, 4)
 		for i := range sl1 {
 			var j int64 = int64(i)
@@ -863,6 +873,7 @@ func testCodecChan(t *testing.T, h Handle) {
 	}
 
 	if true {
+		logT(t, "testBytesT []byte - input []byte")
 		type testBytesT []byte
 		sl1 := make([]testBytesT, 4)
 		for i := range sl1 {
@@ -880,6 +891,7 @@ func testCodecChan(t *testing.T, h Handle) {
 		close(ch2)
 		var sl2 []testBytesT
 		for j := range ch2 {
+			// logT(t, ">>>> from chan: is nil? %v, %v", j == nil, j)
 			sl2 = append(sl2, j)
 		}
 		if err := deepEqual(sl1, sl2); err != nil {
@@ -888,6 +900,7 @@ func testCodecChan(t *testing.T, h Handle) {
 		}
 	}
 	if true {
+		logT(t, "testBytesT byte - input string/testBytesT")
 		type testBytesT byte
 		sl1 := make([]testBytesT, 4)
 		for i := range sl1 {
@@ -914,6 +927,7 @@ func testCodecChan(t *testing.T, h Handle) {
 	}
 
 	if true {
+		logT(t, "*[]byte")
 		sl1 := make([]byte, 4)
 		for i := range sl1 {
 			var j = strconv.FormatInt(int64(i), 10)[0]
@@ -1080,10 +1094,19 @@ func doTestMapEncodeForCanonical(t *testing.T, name string, h Handle) {
 		},
 	}
 	var v2 map[stringUint64T]interface{}
-	var b1, b2 []byte
+	var b1, b2, b3 []byte
 
-	// encode v1 into b1, decode b1 into v2, encode v2 into b2, compare b1 and b2
+	// encode v1 into b1, decode b1 into v2, encode v2 into b2, and compare b1 and b2.
+	// OR
+	// encode v1 into b1, decode b1 into v2, encode v2 into b2 and b3, and compare b2 and b3.
+	//   e.g. when doing cbor indefinite, we may haveto use out-of-band encoding
+	//   where each key is encoded as an indefinite length string, which makes it not the same
+	//   order as the strings were lexicographically ordered before.
 
+	var cborIndef bool
+	if ch, ok := h.(*CborHandle); ok {
+		cborIndef = ch.IndefiniteLength
+	}
 	bh := h.getBasicHandle()
 	if !bh.Canonical {
 		bh.Canonical = true
@@ -1094,10 +1117,18 @@ func doTestMapEncodeForCanonical(t *testing.T, name string, h Handle) {
 	e1.MustEncode(v1)
 	d1 := NewDecoderBytes(b1, h)
 	d1.MustDecode(&v2)
+	// testDeepEqualErr(v1, v2, t, "huh?")
 	e2 := NewEncoderBytes(&b2, h)
 	e2.MustEncode(v2)
-	if !bytes.Equal(b1, b2) {
-		logT(t, "Unequal bytes: %v VS %v", b1, b2)
+	var b1t, b2t = b1, b2
+	if cborIndef {
+		e2 = NewEncoderBytes(&b3, h)
+		e2.MustEncode(v2)
+		b1t, b2t = b2, b3
+	}
+
+	if !bytes.Equal(b1t, b2t) {
+		logT(t, "Unequal bytes: %v VS %v", b1t, b2t)
 		failT(t)
 	}
 }
@@ -1499,6 +1530,11 @@ func doTestRawExt(t *testing.T, h Handle) {
 	}
 }
 
+// func doTestTimeExt(t *testing.T, h Handle) {
+// 	var t = time.Now()
+// 	// add time ext to the handle
+// }
+
 func doTestMapStructKey(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 	var b []byte
@@ -1610,6 +1646,85 @@ func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
 	}
 }
 
+func doTestLargeContainerLen(t *testing.T, h Handle) {
+	m := make(map[int][]struct{})
+	for i := range []int{
+		0, 1,
+		math.MaxInt8, math.MaxInt8 + 4, math.MaxInt8 - 4,
+		math.MaxInt16, math.MaxInt16 + 4, math.MaxInt16 - 4,
+		math.MaxInt32, math.MaxInt32 + 4, math.MaxInt32 - 4,
+		math.MaxInt64, math.MaxInt64 - 4,
+
+		math.MaxUint8, math.MaxUint8 + 4, math.MaxUint8 - 4,
+		math.MaxUint16, math.MaxUint16 + 4, math.MaxUint16 - 4,
+		math.MaxUint32, math.MaxUint32 + 4, math.MaxUint32 - 4,
+	} {
+		m[i] = make([]struct{}, i)
+	}
+	bs, _ := testMarshalErr(m, h, t, "-")
+	var m2 = make(map[int][]struct{})
+	testUnmarshalErr(m2, bs, h, t, "-")
+	testDeepEqualErr(m, m2, t, "-")
+
+	// TODO: skip rest if 32-bit
+
+	// do same tests for large strings (encoded as symbols or not)
+	// skip if 32-bit or not using unsafe mode
+	if safeMode || (32<<(^uint(0)>>63)) < 64 {
+		return
+	}
+
+	// now, want to do tests for large strings, which
+	// could be encoded as symbols.
+	// to do this, we create a simple one-field struct,
+	// use use flags to switch from symbols to non-symbols
+
+	bh := h.getBasicHandle()
+	oldAsSymbols := bh.AsSymbols
+	defer func() { bh.AsSymbols = oldAsSymbols }()
+
+	var out []byte = make([]byte, 0, math.MaxUint16*3/2)
+	var in []byte = make([]byte, math.MaxUint16*3/2)
+	for i := range in {
+		in[i] = 'A'
+	}
+	e := NewEncoder(nil, h)
+	for _, i := range []int{
+		0, 1, 4, 8, 12, 16, 28, 32, 36,
+		math.MaxInt8, math.MaxInt8 + 4, math.MaxInt8 - 4,
+		math.MaxInt16, math.MaxInt16 + 4, math.MaxInt16 - 4,
+
+		math.MaxUint8, math.MaxUint8 + 4, math.MaxUint8 - 4,
+		math.MaxUint16, math.MaxUint16 + 4, math.MaxUint16 - 4,
+	} {
+		var m1, m2 map[string]bool
+		m1 = make(map[string]bool, 1)
+		var s1 = stringView(in[:i])
+		// fmt.Printf("testcontainerlen: large string: i: %v, |%s|\n", i, s1)
+		m1[s1] = true
+
+		bh.AsSymbols = AsSymbolNone
+		out = out[:0]
+		e.ResetBytes(&out)
+		e.MustEncode(m1)
+		// bs, _ = testMarshalErr(m1, h, t, "-")
+		m2 = make(map[string]bool, 1)
+		testUnmarshalErr(m2, out, h, t, "no-symbols")
+		testDeepEqualErr(m1, m2, t, "no-symbols")
+
+		// now, do as symbols
+		bh.AsSymbols = AsSymbolAll
+		out = out[:0]
+		e.ResetBytes(&out)
+		e.MustEncode(m1)
+		// bs, _ = testMarshalErr(m1, h, t, "-")
+		m2 = make(map[string]bool, 1)
+		testUnmarshalErr(m2, out, h, t, "symbols")
+		testDeepEqualErr(m1, m2, t, "symbols")
+	}
+
+}
+
 func testRandomFillRV(v reflect.Value) {
 	testOnce.Do(testInitAll)
 	fneg := func() int64 {
@@ -1693,6 +1808,219 @@ func testMammoth(t *testing.T, name string, h Handle) {
 }
 
 // -----------------
+
+func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
+	var b = `{"s.true": "true", "b.true": true, "s.false": "false", "b.false": false, "s.10": "10", "i.10": 10, "i.-10": -10}`
+	var golden = map[string]string{"s.true": "true", "b.true": "true", "s.false": "false", "b.false": "false", "s.10": "10", "i.10": "10", "i.-10": "-10"}
+
+	var m map[string]string
+	d := NewDecoderBytes([]byte(b), testJsonH)
+	d.MustDecode(&m)
+	if err := deepEqual(golden, m); err == nil {
+		logT(t, "++++ match: decoded: %#v", m)
+	} else {
+		logT(t, "---- mismatch: %v ==> golden: %#v, decoded: %#v", err, golden, m)
+		failT(t)
+	}
+}
+
+func TestJsonEncodeIndent(t *testing.T) {
+	v := TestSimplish{
+		Ii: -794,
+		Ss: `A Man is
+after the new line
+	after new line and tab
+`,
+	}
+	v2 := v
+	v.Mm = make(map[string]*TestSimplish)
+	for i := 0; i < len(v.Ar); i++ {
+		v3 := v2
+		v3.Ii += (i * 4)
+		v3.Ss = fmt.Sprintf("%d - %s", v3.Ii, v3.Ss)
+		if i%2 == 0 {
+			v.Ar[i] = &v3
+		}
+		// v3 = v2
+		v.Sl = append(v.Sl, &v3)
+		v.Mm[strconv.FormatInt(int64(i), 10)] = &v3
+	}
+	oldcan := testJsonH.Canonical
+	oldIndent := testJsonH.Indent
+	oldS2A := testJsonH.StructToArray
+	defer func() {
+		testJsonH.Canonical = oldcan
+		testJsonH.Indent = oldIndent
+		testJsonH.StructToArray = oldS2A
+	}()
+	testJsonH.Canonical = true
+	testJsonH.Indent = -1
+	testJsonH.StructToArray = false
+	var bs []byte
+	NewEncoderBytes(&bs, testJsonH).MustEncode(&v)
+	txt1Tab := string(bs)
+	bs = nil
+	testJsonH.Indent = 120
+	NewEncoderBytes(&bs, testJsonH).MustEncode(&v)
+	txtSpaces := string(bs)
+	// fmt.Printf("\n-----------\n%s\n------------\n%s\n-------------\n", txt1Tab, txtSpaces)
+
+	goldenResultTab := `{
+	"Ar": [
+		{
+			"Ar": [
+				null,
+				null
+			],
+			"Ii": -794,
+			"Mm": null,
+			"Sl": null,
+			"Ss": "-794 - A Man is\nafter the new line\n\tafter new line and tab\n"
+		},
+		null
+	],
+	"Ii": -794,
+	"Mm": {
+		"0": {
+			"Ar": [
+				null,
+				null
+			],
+			"Ii": -794,
+			"Mm": null,
+			"Sl": null,
+			"Ss": "-794 - A Man is\nafter the new line\n\tafter new line and tab\n"
+		},
+		"1": {
+			"Ar": [
+				null,
+				null
+			],
+			"Ii": -790,
+			"Mm": null,
+			"Sl": null,
+			"Ss": "-790 - A Man is\nafter the new line\n\tafter new line and tab\n"
+		}
+	},
+	"Sl": [
+		{
+			"Ar": [
+				null,
+				null
+			],
+			"Ii": -794,
+			"Mm": null,
+			"Sl": null,
+			"Ss": "-794 - A Man is\nafter the new line\n\tafter new line and tab\n"
+		},
+		{
+			"Ar": [
+				null,
+				null
+			],
+			"Ii": -790,
+			"Mm": null,
+			"Sl": null,
+			"Ss": "-790 - A Man is\nafter the new line\n\tafter new line and tab\n"
+		}
+	],
+	"Ss": "A Man is\nafter the new line\n\tafter new line and tab\n"
+}`
+
+	if txt1Tab != goldenResultTab {
+		logT(t, "decoded indented with tabs != expected: \nexpected: %s\nencoded: %s", goldenResultTab, txt1Tab)
+		failT(t)
+	}
+	if txtSpaces != strings.Replace(goldenResultTab, "\t", strings.Repeat(" ", 120), -1) {
+		logT(t, "decoded indented with spaces != expected: \nexpected: %s\nencoded: %s", goldenResultTab, txtSpaces)
+		failT(t)
+	}
+}
+
+func TestBufioDecReader(t *testing.T) {
+	// try to read 85 bytes in chunks of 7 at a time.
+	var s = strings.Repeat("01234'56789      ", 5)
+	// fmt.Printf("s: %s\n", s)
+	var r = strings.NewReader(s)
+	var br = &bufioDecReader{r: r, buf: make([]byte, 0, 13)}
+	b, err := ioutil.ReadAll(br)
+	if err != nil {
+		panic(err)
+	}
+	var s2 = string(b)
+	// fmt.Printf("s==s2: %v, len(s): %v, len(b): %v, len(s2): %v\n", s == s2, len(s), len(b), len(s2))
+	if s != s2 {
+		logT(t, "not equal: \ns:  %s\ns2: %s", s, s2)
+		failT(t)
+	}
+	// Now, test search functions for skip, readTo and readUntil
+	// readUntil ', readTo ', skip whitespace. 3 times in a loop, each time compare the token and/or outs
+	// readUntil: see: 56789
+	var out []byte
+	var token byte
+	br = &bufioDecReader{r: strings.NewReader(s), buf: make([]byte, 0, 7)}
+	// println()
+	for _, v2 := range [...]string{
+		`01234'`,
+		`56789      01234'`,
+		`56789      01234'`,
+		`56789      01234'`,
+	} {
+		out = br.readUntil(nil, '\'')
+		testDeepEqualErr(string(out), v2, t, "-")
+		// fmt.Printf("readUntil: out: `%s`\n", out)
+	}
+	br = &bufioDecReader{r: strings.NewReader(s), buf: make([]byte, 0, 7)}
+	// println()
+	for range [4]struct{}{} {
+		out = br.readTo(nil, &jsonNumSet)
+		testDeepEqualErr(string(out), `01234`, t, "-")
+		// fmt.Printf("readTo: out: `%s`\n", out)
+		out = br.readUntil(nil, '\'')
+		testDeepEqualErr(string(out), "'", t, "-")
+		// fmt.Printf("readUntil: out: `%s`\n", out)
+		out = br.readTo(nil, &jsonNumSet)
+		testDeepEqualErr(string(out), `56789`, t, "-")
+		// fmt.Printf("readTo: out: `%s`\n", out)
+		out = br.readUntil(nil, '0')
+		testDeepEqualErr(string(out), `      0`, t, "-")
+		// fmt.Printf("readUntil: out: `%s`\n", out)
+		br.UnreadByte()
+	}
+	br = &bufioDecReader{r: strings.NewReader(s), buf: make([]byte, 0, 7)}
+	// println()
+	for range [4]struct{}{} {
+		out = br.readUntil(nil, ' ')
+		testDeepEqualErr(string(out), `01234'56789 `, t, "-")
+		// fmt.Printf("readUntil: out: |%s|\n", out)
+		token = br.skip(&jsonCharWhitespaceSet)
+		testDeepEqualErr(token, byte('0'), t, "-")
+		// fmt.Printf("skip: token: '%c'\n", token)
+		br.UnreadByte()
+	}
+	// println()
+}
+
+// -----------
+
+func TestJsonLargeInteger(t *testing.T) {
+	for _, i := range []uint8{'L', 'A', 0} {
+		for _, j := range []interface{}{
+			int64(1 << 60),
+			-int64(1 << 60),
+			0,
+			1 << 20,
+			-(1 << 20),
+			uint64(1 << 60),
+			uint(0),
+			uint(1 << 20),
+		} {
+			doTestJsonLargeInteger(t, j, i)
+		}
+	}
+}
+
+// ----------
 
 func TestBincCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testBincH)
@@ -1963,213 +2291,44 @@ func TestSimpleEmbeddedFieldPrecedence(t *testing.T) {
 	doTestEmbeddedFieldPrecedence(t, testSimpleH)
 }
 
-func TestJsonLargeInteger(t *testing.T) {
-	for _, i := range []uint8{'L', 'A', 0} {
-		for _, j := range []interface{}{
-			int64(1 << 60),
-			-int64(1 << 60),
-			0,
-			1 << 20,
-			-(1 << 20),
-			uint64(1 << 60),
-			uint(0),
-			uint(1 << 20),
-		} {
-			doTestJsonLargeInteger(t, j, i)
-		}
-	}
+func TestJsonLargeContainerLen(t *testing.T) {
+	doTestLargeContainerLen(t, testJsonH)
 }
 
-func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
-	var b = `{"s.true": "true", "b.true": true, "s.false": "false", "b.false": false, "s.10": "10", "i.10": 10, "i.-10": -10}`
-	var golden = map[string]string{"s.true": "true", "b.true": "true", "s.false": "false", "b.false": "false", "s.10": "10", "i.10": "10", "i.-10": "-10"}
-
-	var m map[string]string
-	d := NewDecoderBytes([]byte(b), testJsonH)
-	d.MustDecode(&m)
-	if err := deepEqual(golden, m); err == nil {
-		logT(t, "++++ match: decoded: %#v", m)
-	} else {
-		logT(t, "---- mismatch: %v ==> golden: %#v, decoded: %#v", err, golden, m)
-		failT(t)
-	}
+func TestCborLargeContainerLen(t *testing.T) {
+	doTestLargeContainerLen(t, testCborH)
 }
 
-func TestJsonEncodeIndent(t *testing.T) {
-	v := TestSimplish{
-		Ii: -794,
-		Ss: `A Man is
-after the new line
-	after new line and tab
-`,
-	}
-	v2 := v
-	v.Mm = make(map[string]*TestSimplish)
-	for i := 0; i < len(v.Ar); i++ {
-		v3 := v2
-		v3.Ii += (i * 4)
-		v3.Ss = fmt.Sprintf("%d - %s", v3.Ii, v3.Ss)
-		if i%2 == 0 {
-			v.Ar[i] = &v3
-		}
-		// v3 = v2
-		v.Sl = append(v.Sl, &v3)
-		v.Mm[strconv.FormatInt(int64(i), 10)] = &v3
-	}
-	oldcan := testJsonH.Canonical
-	oldIndent := testJsonH.Indent
-	oldS2A := testJsonH.StructToArray
-	defer func() {
-		testJsonH.Canonical = oldcan
-		testJsonH.Indent = oldIndent
-		testJsonH.StructToArray = oldS2A
-	}()
-	testJsonH.Canonical = true
-	testJsonH.Indent = -1
-	testJsonH.StructToArray = false
-	var bs []byte
-	NewEncoderBytes(&bs, testJsonH).MustEncode(&v)
-	txt1Tab := string(bs)
-	bs = nil
-	testJsonH.Indent = 120
-	NewEncoderBytes(&bs, testJsonH).MustEncode(&v)
-	txtSpaces := string(bs)
-	// fmt.Printf("\n-----------\n%s\n------------\n%s\n-------------\n", txt1Tab, txtSpaces)
-
-	goldenResultTab := `{
-	"Ar": [
-		{
-			"Ar": [
-				null,
-				null
-			],
-			"Ii": -794,
-			"Mm": null,
-			"Sl": null,
-			"Ss": "-794 - A Man is\nafter the new line\n\tafter new line and tab\n"
-		},
-		null
-	],
-	"Ii": -794,
-	"Mm": {
-		"0": {
-			"Ar": [
-				null,
-				null
-			],
-			"Ii": -794,
-			"Mm": null,
-			"Sl": null,
-			"Ss": "-794 - A Man is\nafter the new line\n\tafter new line and tab\n"
-		},
-		"1": {
-			"Ar": [
-				null,
-				null
-			],
-			"Ii": -790,
-			"Mm": null,
-			"Sl": null,
-			"Ss": "-790 - A Man is\nafter the new line\n\tafter new line and tab\n"
-		}
-	},
-	"Sl": [
-		{
-			"Ar": [
-				null,
-				null
-			],
-			"Ii": -794,
-			"Mm": null,
-			"Sl": null,
-			"Ss": "-794 - A Man is\nafter the new line\n\tafter new line and tab\n"
-		},
-		{
-			"Ar": [
-				null,
-				null
-			],
-			"Ii": -790,
-			"Mm": null,
-			"Sl": null,
-			"Ss": "-790 - A Man is\nafter the new line\n\tafter new line and tab\n"
-		}
-	],
-	"Ss": "A Man is\nafter the new line\n\tafter new line and tab\n"
-}`
-
-	if txt1Tab != goldenResultTab {
-		logT(t, "decoded indented with tabs != expected: \nexpected: %s\nencoded: %s", goldenResultTab, txt1Tab)
-		failT(t)
-	}
-	if txtSpaces != strings.Replace(goldenResultTab, "\t", strings.Repeat(" ", 120), -1) {
-		logT(t, "decoded indented with spaces != expected: \nexpected: %s\nencoded: %s", goldenResultTab, txtSpaces)
-		failT(t)
-	}
+func TestMsgpackLargeContainerLen(t *testing.T) {
+	doTestLargeContainerLen(t, testMsgpackH)
 }
 
-func TestBufioDecReader(t *testing.T) {
-	// try to read 85 bytes in chunks of 7 at a time.
-	var s = strings.Repeat("01234'56789      ", 5)
-	// fmt.Printf("s: %s\n", s)
-	var r = strings.NewReader(s)
-	var br = &bufioDecReader{r: r, buf: make([]byte, 0, 13)}
-	b, err := ioutil.ReadAll(br)
-	if err != nil {
-		panic(err)
-	}
-	var s2 = string(b)
-	// fmt.Printf("s==s2: %v, len(s): %v, len(b): %v, len(s2): %v\n", s == s2, len(s), len(b), len(s2))
-	if s != s2 {
-		logT(t, "not equal: \ns:  %s\ns2: %s", s, s2)
-		failT(t)
-	}
-	// Now, test search functions for skip, readTo and readUntil
-	// readUntil ', readTo ', skip whitespace. 3 times in a loop, each time compare the token and/or outs
-	// readUntil: see: 56789
-	var out []byte
-	var token byte
-	br = &bufioDecReader{r: strings.NewReader(s), buf: make([]byte, 0, 7)}
-	// println()
-	for _, v2 := range [...]string{
-		`01234'`,
-		`56789      01234'`,
-		`56789      01234'`,
-		`56789      01234'`,
-	} {
-		out = br.readUntil(nil, '\'')
-		testDeepEqualErr(string(out), v2, t, "-")
-		// fmt.Printf("readUntil: out: `%s`\n", out)
-	}
-	br = &bufioDecReader{r: strings.NewReader(s), buf: make([]byte, 0, 7)}
-	// println()
-	for range [4]struct{}{} {
-		out = br.readTo(nil, &jsonNumSet)
-		testDeepEqualErr(string(out), `01234`, t, "-")
-		// fmt.Printf("readTo: out: `%s`\n", out)
-		out = br.readUntil(nil, '\'')
-		testDeepEqualErr(string(out), "'", t, "-")
-		// fmt.Printf("readUntil: out: `%s`\n", out)
-		out = br.readTo(nil, &jsonNumSet)
-		testDeepEqualErr(string(out), `56789`, t, "-")
-		// fmt.Printf("readTo: out: `%s`\n", out)
-		out = br.readUntil(nil, '0')
-		testDeepEqualErr(string(out), `      0`, t, "-")
-		// fmt.Printf("readUntil: out: `%s`\n", out)
-		br.UnreadByte()
-	}
-	br = &bufioDecReader{r: strings.NewReader(s), buf: make([]byte, 0, 7)}
-	// println()
-	for range [4]struct{}{} {
-		out = br.readUntil(nil, ' ')
-		testDeepEqualErr(string(out), `01234'56789 `, t, "-")
-		// fmt.Printf("readUntil: out: |%s|\n", out)
-		token = br.skip(&jsonCharWhitespaceSet)
-		testDeepEqualErr(token, byte('0'), t, "-")
-		// fmt.Printf("skip: token: '%c'\n", token)
-		br.UnreadByte()
-	}
-	// println()
+func TestBincLargeContainerLen(t *testing.T) {
+	doTestLargeContainerLen(t, testBincH)
+}
+
+func TestSimpleLargeContainerLen(t *testing.T) {
+	doTestLargeContainerLen(t, testSimpleH)
+}
+
+func TestJsonMammothMapsAndSlices(t *testing.T) {
+	doTestMammothMapsAndSlices(t, testJsonH)
+}
+
+func TestCborMammothMapsAndSlices(t *testing.T) {
+	doTestMammothMapsAndSlices(t, testCborH)
+}
+
+func TestMsgpackMammothMapsAndSlices(t *testing.T) {
+	doTestMammothMapsAndSlices(t, testMsgpackH)
+}
+
+func TestBincMammothMapsAndSlices(t *testing.T) {
+	doTestMammothMapsAndSlices(t, testBincH)
+}
+
+func TestSimpleMammothMapsAndSlices(t *testing.T) {
+	doTestMammothMapsAndSlices(t, testSimpleH)
 }
 
 // TODO:
@@ -2191,18 +2350,24 @@ func TestBufioDecReader(t *testing.T) {
 //   - bad input with large array length prefix
 //
 //  More tests:
+//  - large integers x: int64 and uint64
+//    x = 0, -1, 1, maxUint8, maxUint16, maxuint32
+//    maxUint8 < x < maxUint16
+//    maxUint16 < x < maxuint32
+//    x > maxuint32
+//  - standard floats x: float32 and float64
+//    0, -1, 1, +inf, -inf, etc
 //  - length of containers (array, string, bytes, map):
+//    container == nil
 //    len = 0
+//  - length of containers (array, string, bytes, map):
+//    len = maxUint8, maxUint16, maxuint32
+//    maxUint8 < len < maxUint16
 //    maxUint16 < len < maxuint32
 //    len > maxuint32
-//  - large numbers: in every range: up to maxuint8, maxuint16, maxuint32, maxuint64
-//    int64
-//    uint64
-//  - standard numbers:
-//    0, -1, 1, +inf, -inf, 0.0f, etc
-//  - (encode ext, encode raw ext, etc)
-//    (include extensions)
+//  - (encode extensions: ext, raw ext, etc)
 //  - tracking:
 //    z.trb: track, stop track, check
 //  - test with diff: mapType and sliceType, and decodeNaked
-//  - decodeAsNil: for maps, slices, etc
+//  - extension that isn't builtin e.g. type uint64Ext uint64.
+//    it encodes as a uint64.

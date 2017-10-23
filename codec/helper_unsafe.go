@@ -18,6 +18,7 @@ import (
 
 // var zeroRTv [4]uintptr
 
+const safeMode = false
 const unsafeFlagIndir = 1 << 7 // keep in sync with GO_ROOT/src/reflect/value.go
 
 type unsafeString struct {

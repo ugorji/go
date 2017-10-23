@@ -10,6 +10,8 @@ import (
 	"sync/atomic"
 )
 
+const safeMode = true
+
 // stringView returns a view of the []byte as a string.
 // In unsafe mode, it doesn't incur allocation and copying caused by conversion.
 // In regular safe mode, it is an allocation and copy.

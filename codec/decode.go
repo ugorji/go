@@ -39,9 +39,6 @@ type decReader interface {
 	readx(n int) []byte
 	readb([]byte)
 	readn1() uint8
-	readn3() (uint8, uint8, uint8)
-	readn4() (uint8, uint8, uint8, uint8)
-	// readn1eof() (v uint8, eof bool)
 	numread() int // number of bytes read
 	track()
 	stopTrack() []byte
@@ -53,11 +50,6 @@ type decReader interface {
 	// readUntil will read, only stopping once it matches the 'stop' byte.
 	readUntil(in []byte, stop byte) (out []byte)
 }
-
-// type decReaderByteScanner interface {
-// 	io.Reader
-// 	io.ByteScanner
-// }
 
 type decDriver interface {
 	// this will check if the next token is a break.
@@ -397,16 +389,6 @@ func (z *bufioDecReader) readn1() (b uint8) {
 	return
 }
 
-func (z *bufioDecReader) readn3() (b1, b2, b3 uint8) {
-	z.readb(z.b[:3])
-	return z.b[0], z.b[1], z.b[2]
-}
-
-func (z *bufioDecReader) readn4() (b1, b2, b3, b4 uint8) {
-	z.readb(z.b[:4])
-	return z.b[0], z.b[1], z.b[2], z.b[3]
-}
-
 func (z *bufioDecReader) search(in []byte, accept *bitset256, stop, flag uint8) (token byte, out []byte) {
 	// flag: 1 (skip), 2 (readTo), 4 (readUntil)
 	if flag == 4 {
@@ -692,16 +674,6 @@ func (z *ioDecReader) readn1() (b uint8) {
 	panic(err)
 }
 
-func (z *ioDecReader) readn3() (b1, b2, b3 uint8) {
-	z.readb(z.b[:3])
-	return z.b[0], z.b[1], z.b[2]
-}
-
-func (z *ioDecReader) readn4() (b1, b2, b3, b4 uint8) {
-	z.readb(z.b[:4])
-	return z.b[0], z.b[1], z.b[2], z.b[3]
-}
-
 func (z *ioDecReader) skip(accept *bitset256) (token byte) {
 	for {
 		var eof bool
@@ -833,31 +805,6 @@ func (z *bytesDecReader) readn1() (v uint8) {
 	v = z.b[z.c]
 	z.c++
 	z.a--
-	return
-}
-
-func (z *bytesDecReader) readn3() (b1, b2, b3 uint8) {
-	if 3 > z.a {
-		panic(io.ErrUnexpectedEOF)
-	}
-	b3 = z.b[z.c+2]
-	b2 = z.b[z.c+1]
-	b1 = z.b[z.c]
-	z.c += 3
-	z.a -= 3
-	return
-}
-
-func (z *bytesDecReader) readn4() (b1, b2, b3, b4 uint8) {
-	if 4 > z.a {
-		panic(io.ErrUnexpectedEOF)
-	}
-	b4 = z.b[z.c+3]
-	b3 = z.b[z.c+2]
-	b2 = z.b[z.c+1]
-	b1 = z.b[z.c]
-	z.c += 4
-	z.a -= 4
 	return
 }
 
@@ -1554,22 +1501,20 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	hasLen := containerLen > 0
 	var kstrbs []byte
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
-		if elemsep {
-			dd.ReadMapElemKey()
-		}
-		// if a nil key, just ignore the mapped value and continue
-		if dd.TryDecodeAsNil() {
-			if elemsep {
-				dd.ReadMapElemValue()
-			}
-			d.swallow()
-			continue
-		}
 		if rvkMut || !rvkp.IsValid() {
 			rvkp = reflect.New(ktype)
 			rvk = rvkp.Elem()
 		}
-		if ktypeIsString {
+		if elemsep {
+			dd.ReadMapElemKey()
+		}
+		if dd.TryDecodeAsNil() {
+			// Previously, if a nil key, we just ignored the mapped value and continued.
+			// However, that makes the result of encoding and then decoding map[intf]intf{nil:nil}
+			// to be an empty map.
+			// Instead, we treat a nil key as the zero value of the type.
+			rvk.Set(reflect.Zero(ktype))
+		} else if ktypeIsString {
 			kstrbs = dd.DecodeStringAsBytes()
 			rvk.SetString(stringView(kstrbs))
 			// NOTE: if doing an insert, you MUST use a real string (not stringview)
@@ -1589,9 +1534,11 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 		// special case if a byte array.
 		if ktypeIsIntf {
-			rvk = rvk.Elem()
-			if rvk.Type() == uint8SliceTyp {
-				rvk = reflect.ValueOf(d.string(rvk.Bytes()))
+			if rvk2 := rvk.Elem(); rvk2.IsValid() {
+				rvk = rvk2
+				if rvk.Type() == uint8SliceTyp {
+					rvk = reflect.ValueOf(d.string(rvk.Bytes()))
+				}
 			}
 		}
 
@@ -2457,6 +2404,9 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 	// handle when maxlen is not set i.e. <= 0
 	if clen <= 0 {
 		return
+	}
+	if unit == 0 {
+		return clen
 	}
 	if maxlen <= 0 {
 		// no maxlen defined. Use maximum of 256K memory, with a floor of 4K items.

@@ -28,16 +28,26 @@ type stringUint64T struct {
 }
 
 type AnonInTestStruc struct {
-	AS        string
-	AI64      int64
-	AI16      int16
-	AUi64     uint64
-	ASslice   []string
-	AI64slice []int64
-	AF64slice []float64
+	AS         string
+	AI64       int64
+	AI16       int16
+	AUi64      uint64
+	ASslice    []string
+	AI64slice  []int64
+	AUi64slice []uint64
+	AF64slice  []float64
+	AF32slice  []float32
+
 	// AMI32U32  map[int32]uint32
 	// AMU32F64 map[uint32]float64 // json/bson do not like it
 	AMSU16 map[string]uint16
+
+	// use these to test 0-len or nil slices/maps/arrays
+	AI64arr0    [0]int64
+	A164slice0  []int64
+	AUi64sliceN []uint64
+	AMSU16N     map[string]uint16
+	AMSU16E     map[string]uint16
 }
 
 type AnonInTestStrucIntf struct {
@@ -224,8 +234,27 @@ func populateTestStrucCommon(ts *testStrucCommon, n int, bench, useInterface, us
 			strRpt(n, "Athree"),
 			strRpt(n, "Afour.reverse_solidus.\u005c"),
 			strRpt(n, "Afive.Gclef.\U0001d11E\"ugorji\"done.")},
-		AI64slice: []int64{1, -22, 333, -4444, 55555, -666666},
-		AMSU16:    map[string]uint16{strRpt(n, "1"): 1, strRpt(n, "22"): 2, strRpt(n, "333"): 3, strRpt(n, "4444"): 4},
+		AI64slice: []int64{
+			0, 1, -1, -22, 333, -4444, 55555, -666666,
+			// standard ones
+			0, -1, 1,
+			math.MaxInt8, math.MaxInt8 + 4, math.MaxInt8 - 4,
+			math.MaxInt16, math.MaxInt16 + 4, math.MaxInt16 - 4,
+			math.MaxInt32, math.MaxInt32 + 4, math.MaxInt32 - 4,
+			math.MaxInt64, math.MaxInt64 - 4,
+		},
+		AUi64slice: []uint64{
+			0, 1, 22, 333, 4444, 55555, 666666,
+			// standard ones
+			math.MaxUint8, math.MaxUint8 + 4, math.MaxUint8 - 4,
+			math.MaxUint16, math.MaxUint16 + 4, math.MaxUint16 - 4,
+			math.MaxUint32, math.MaxUint32 + 4, math.MaxUint32 - 4,
+			math.MaxUint64, math.MaxUint64 - 4,
+		},
+		AMSU16: map[string]uint16{strRpt(n, "1"): 1, strRpt(n, "22"): 2, strRpt(n, "333"): 3, strRpt(n, "4444"): 4},
+
+		// Note: +/- inf, NaN, and other non-representable numbers should not be explicitly tested here
+
 		AF64slice: []float64{
 			11.11e-11, -11.11e+11,
 			2.222E+12, -2.222E-12,
@@ -237,7 +266,32 @@ func populateTestStrucCommon(ts *testStrucCommon, n int, bench, useInterface, us
 			// these below are hairy enough to need strconv.ParseFloat
 			33.33E-33, -33.33E+33,
 			44.44e+44, -44.44e-44,
+			// standard ones
+			0, -1, 1,
+			// math.Inf(1), math.Inf(-1),
+			math.Pi, math.Phi, math.E,
+			math.MaxFloat64, math.SmallestNonzeroFloat64,
 		},
+		AF32slice: []float32{
+			11.11e-11, -11.11e+11,
+			2.222E+12, -2.222E-12,
+			-555.55E-5, 555.55E+5,
+			666.66E-6, -666.66E+6,
+			7777.7777E-7, -7777.7777E-7,
+			-8888.8888E+8, 8888.8888E+8,
+			-99999.9999E+9, 99999.9999E+9,
+			// these below are hairy enough to need strconv.ParseFloat
+			33.33E-33, -33.33E+33,
+			// standard ones
+			0, -1, 1,
+			// math.Float32frombits(0x7FF00000), math.Float32frombits(0xFFF00000), //+inf and -inf
+			math.MaxFloat32, math.SmallestNonzeroFloat32,
+		},
+
+		A164slice0:  []int64{},
+		AUi64sliceN: nil,
+		AMSU16N:     nil,
+		AMSU16E:     map[string]uint16{},
 	}
 
 	*ts = testStrucCommon{

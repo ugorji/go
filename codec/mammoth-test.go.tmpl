@@ -8,6 +8,8 @@
 
 package codec
 
+import "testing"
+
 // TestMammoth has all the different paths optimized in fast-path
 // It has all the primitives, slices and maps.
 // 
@@ -30,4 +32,40 @@ type TestMammoth struct {
 {{ .MethodNamePfx "Fptr" false }} *map[{{ .MapKey }}]{{ .Elem }}
 {{end}}{{end}}{{end}}
 
+}
+
+func doTestMammothSlices(t *testing.T, h Handle) {
+{{range $i, $e := .Values }}{{if not .Primitive }}{{if not .MapKey }}{{/*
+*/}}
+	v{{$i}}v1 := []{{ .Elem }}{ {{ zerocmd .Elem }}, {{ zerocmd .Elem }} }
+	bs{{$i}}, _ := testMarshalErr(v{{$i}}v1, h, t, "-")
+	v{{$i}}v2 := make([]{{ .Elem }}, 2)
+	testUnmarshalErr(v{{$i}}v2, bs{{$i}}, h, t, "-")
+	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "-")
+	bs{{$i}}, _ = testMarshalErr(&v{{$i}}v1, h, t, "-")
+	v{{$i}}v2 = nil
+	testUnmarshalErr(&v{{$i}}v2, bs{{$i}}, h, t, "-")
+	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "-")
+{{end}}{{end}}{{end}}
+}
+
+func doTestMammothMaps(t *testing.T, h Handle) {
+{{range $i, $e := .Values }}{{if not .Primitive }}{{if .MapKey }}{{/*
+*/}}
+	v{{$i}}v1 := map[{{ .MapKey }}]{{ .Elem }}{ {{ zerocmd .MapKey }}:{{ zerocmd .Elem }} }
+	bs{{$i}}, _ := testMarshalErr(v{{$i}}v1, h, t, "-")
+	v{{$i}}v2 := make(map[{{ .MapKey }}]{{ .Elem }})
+	testUnmarshalErr(v{{$i}}v2, bs{{$i}}, h, t, "-")
+	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "-")
+	bs{{$i}}, _ = testMarshalErr(&v{{$i}}v1, h, t, "-")
+	v{{$i}}v2 = nil
+	testUnmarshalErr(&v{{$i}}v2, bs{{$i}}, h, t, "-")
+	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "-")
+{{end}}{{end}}{{end}}
+
+}
+
+func doTestMammothMapsAndSlices(t *testing.T, h Handle) {
+     doTestMammothSlices(t, h)
+     doTestMammothMaps(t, h)
 }

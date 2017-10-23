@@ -172,22 +172,52 @@ func (e *cborEncDriver) WriteArrayEnd() {
 	}
 }
 
-func (e *cborEncDriver) EncodeString(c charEncoding, v string) {
-	e.encLen(cborBaseString, len(v))
-	e.w.writestr(v)
+func (e *cborEncDriver) EncodeSymbol(v string) {
+	e.encStringBytesS(cborBaseString, v)
 }
 
-func (e *cborEncDriver) EncodeSymbol(v string) {
-	e.EncodeString(c_UTF8, v)
+func (e *cborEncDriver) EncodeString(c charEncoding, v string) {
+	e.encStringBytesS(cborBaseString, v)
 }
 
 func (e *cborEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
 	if c == c_RAW {
-		e.encLen(cborBaseBytes, len(v))
+		e.encStringBytesS(cborBaseBytes, stringView(v))
 	} else {
-		e.encLen(cborBaseString, len(v))
+		e.encStringBytesS(cborBaseString, stringView(v))
 	}
-	e.w.writeb(v)
+}
+
+func (e *cborEncDriver) encStringBytesS(bb byte, v string) {
+	if e.h.IndefiniteLength {
+		if bb == cborBaseBytes {
+			e.w.writen1(cborBdIndefiniteBytes)
+		} else {
+			e.w.writen1(cborBdIndefiniteString)
+		}
+		blen := len(v) / 4
+		if blen == 0 {
+			blen = 64
+		} else if blen > 1024 {
+			blen = 1024
+		}
+		for i := 0; i < len(v); {
+			var v2 string
+			i2 := i + blen
+			if i2 < len(v) {
+				v2 = v[i:i2]
+			} else {
+				v2 = v[i:]
+			}
+			e.encLen(bb, len(v2))
+			e.w.writestr(v2)
+			i = i2
+		}
+		e.w.writen1(cborBdBreak)
+	} else {
+		e.encLen(bb, len(v))
+		e.w.writestr(v)
+	}
 }
 
 // ----------------------
@@ -438,8 +468,9 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		return nil
 	}
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
+		d.bdRead = false
 		if bs == nil {
-			return d.decAppendIndefiniteBytes(nil)
+			return d.decAppendIndefiniteBytes(zeroByteSlice)
 		}
 		return d.decAppendIndefiniteBytes(bs[:0])
 	}

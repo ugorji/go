@@ -43,8 +43,6 @@ type encWriter interface {
 	writestr(string)
 	writen1(byte)
 	writen2(byte, byte)
-	writen4(byte, byte, byte, byte)
-	writen5(byte, byte, byte, byte, byte)
 	atEndOfEncode()
 }
 
@@ -71,6 +69,7 @@ type encDriver interface {
 	EncodeString(c charEncoding, v string)
 	EncodeSymbol(v string)
 	EncodeStringBytes(c charEncoding, v []byte)
+
 	//TODO
 	//encBignum(f *big.Int)
 	//encStringRunes(c charEncoding, v []rune)
@@ -260,19 +259,12 @@ func (z *ioEncWriter) writen2(b1, b2 byte) {
 	panic(err)
 }
 
-func (z *ioEncWriter) writen4(b1, b2, b3, b4 byte) {
-	z.b[0], z.b[1], z.b[2], z.b[3] = b1, b2, b3, b4
-	if _, err := z.ww.Write(z.b[:4]); err != nil {
-		panic(err)
-	}
-}
-
-func (z *ioEncWriter) writen5(b1, b2, b3, b4, b5 byte) {
-	z.b[0], z.b[1], z.b[2], z.b[3], z.b[4] = b1, b2, b3, b4, b5
-	if _, err := z.ww.Write(z.b[:5]); err != nil {
-		panic(err)
-	}
-}
+// func (z *ioEncWriter) writen5(b1, b2, b3, b4, b5 byte) {
+// 	z.b[0], z.b[1], z.b[2], z.b[3], z.b[4] = b1, b2, b3, b4, b5
+// 	if _, err := z.ww.Write(z.b[:5]); err != nil {
+// 		panic(err)
+// 	}
+// }
 
 func (z *ioEncWriter) atEndOfEncode() {
 	if z.fw != nil {
@@ -319,29 +311,6 @@ func (z *bytesEncWriter) writen2(b1, b2 byte) {
 	if a {
 		z.growAlloc(2, oc)
 	}
-	z.b[oc+1] = b2
-	z.b[oc] = b1
-}
-
-func (z *bytesEncWriter) writen4(b1, b2, b3, b4 byte) {
-	oc, a := z.growNoAlloc(4)
-	if a {
-		z.growAlloc(4, oc)
-	}
-	z.b[oc+3] = b4
-	z.b[oc+2] = b3
-	z.b[oc+1] = b2
-	z.b[oc] = b1
-}
-
-func (z *bytesEncWriter) writen5(b1, b2, b3, b4, b5 byte) {
-	oc, a := z.growNoAlloc(5)
-	if a {
-		z.growAlloc(5, oc)
-	}
-	z.b[oc+4] = b5
-	z.b[oc+3] = b4
-	z.b[oc+2] = b3
 	z.b[oc+1] = b2
 	z.b[oc] = b1
 }

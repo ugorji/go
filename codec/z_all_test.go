@@ -164,6 +164,43 @@ func testCodecGroup(t *testing.T) {
 	t.Run("TestJsonLargeInteger", TestJsonLargeInteger)
 	t.Run("TestJsonDecodeNonStringScalarInStringContext", TestJsonDecodeNonStringScalarInStringContext)
 	t.Run("TestJsonEncodeIndent", TestJsonEncodeIndent)
+
+	t.Run("TestJsonSwallowAndZero", TestJsonSwallowAndZero)
+	t.Run("TestCborSwallowAndZero", TestCborSwallowAndZero)
+	t.Run("TestMsgpackSwallowAndZero", TestMsgpackSwallowAndZero)
+	t.Run("TestBincSwallowAndZero", TestBincSwallowAndZero)
+	t.Run("TestSimpleSwallowAndZero", TestSimpleSwallowAndZero)
+	t.Run("TestJsonRawExt", TestJsonRawExt)
+	t.Run("TestCborRawExt", TestCborRawExt)
+	t.Run("TestMsgpackRawExt", TestMsgpackRawExt)
+	t.Run("TestBincRawExt", TestBincRawExt)
+	t.Run("TestSimpleRawExt", TestSimpleRawExt)
+	t.Run("TestJsonMapStructKey", TestJsonMapStructKey)
+	t.Run("TestCborMapStructKey", TestCborMapStructKey)
+	t.Run("TestMsgpackMapStructKey", TestMsgpackMapStructKey)
+	t.Run("TestBincMapStructKey", TestBincMapStructKey)
+	t.Run("TestSimpleMapStructKey", TestSimpleMapStructKey)
+	t.Run("TestJsonDecodeNilMapValue", TestJsonDecodeNilMapValue)
+	t.Run("TestCborDecodeNilMapValue", TestCborDecodeNilMapValue)
+	t.Run("TestMsgpackDecodeNilMapValue", TestMsgpackDecodeNilMapValue)
+	t.Run("TestBincDecodeNilMapValue", TestBincDecodeNilMapValue)
+	t.Run("TestSimpleDecodeNilMapValue", TestSimpleDecodeNilMapValue)
+	t.Run("TestJsonEmbeddedFieldPrecedence", TestJsonEmbeddedFieldPrecedence)
+	t.Run("TestCborEmbeddedFieldPrecedence", TestCborEmbeddedFieldPrecedence)
+	t.Run("TestMsgpackEmbeddedFieldPrecedence", TestMsgpackEmbeddedFieldPrecedence)
+	t.Run("TestBincEmbeddedFieldPrecedence", TestBincEmbeddedFieldPrecedence)
+	t.Run("TestSimpleEmbeddedFieldPrecedence", TestSimpleEmbeddedFieldPrecedence)
+	t.Run("TestJsonLargeContainerLen", TestJsonLargeContainerLen)
+	t.Run("TestCborLargeContainerLen", TestCborLargeContainerLen)
+	t.Run("TestMsgpackLargeContainerLen", TestMsgpackLargeContainerLen)
+	t.Run("TestBincLargeContainerLen", TestBincLargeContainerLen)
+	t.Run("TestSimpleLargeContainerLen", TestSimpleLargeContainerLen)
+	t.Run("TestJsonMammothMapsAndSlices", TestJsonMammothMapsAndSlices)
+	t.Run("TestCborMammothMapsAndSlices", TestCborMammothMapsAndSlices)
+	t.Run("TestMsgpackMammothMapsAndSlices", TestMsgpackMammothMapsAndSlices)
+	t.Run("TestBincMammothMapsAndSlices", TestBincMammothMapsAndSlices)
+	t.Run("TestSimpleMammothMapsAndSlices", TestSimpleMammothMapsAndSlices)
+
 	// <tear-down code>
 }
 
@@ -179,6 +216,14 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonLargeInteger", TestJsonLargeInteger)
 	t.Run("TestJsonDecodeNonStringScalarInStringContext", TestJsonDecodeNonStringScalarInStringContext)
 	t.Run("TestJsonEncodeIndent", TestJsonEncodeIndent)
+
+	t.Run("TestJsonSwallowAndZero", TestJsonSwallowAndZero)
+	t.Run("TestJsonRawExt", TestJsonRawExt)
+	t.Run("TestJsonMapStructKey", TestJsonMapStructKey)
+	t.Run("TestJsonDecodeNilMapValue", TestJsonDecodeNilMapValue)
+	t.Run("TestJsonEmbeddedFieldPrecedence", TestJsonEmbeddedFieldPrecedence)
+	t.Run("TestJsonLargeContainerLen", TestJsonLargeContainerLen)
+	t.Run("TestJsonMammothMapsAndSlices", TestJsonMammothMapsAndSlices)
 }
 
 func testBincGroup(t *testing.T) {
@@ -190,6 +235,14 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincRaw", TestBincRaw)
 	t.Run("TestSimpleRpcGo", TestSimpleRpcGo)
 	t.Run("TestBincUnderlyingType", TestBincUnderlyingType)
+
+	t.Run("TestBincSwallowAndZero", TestBincSwallowAndZero)
+	t.Run("TestBincRawExt", TestBincRawExt)
+	t.Run("TestBincMapStructKey", TestBincMapStructKey)
+	t.Run("TestBincDecodeNilMapValue", TestBincDecodeNilMapValue)
+	t.Run("TestBincEmbeddedFieldPrecedence", TestBincEmbeddedFieldPrecedence)
+	t.Run("TestBincLargeContainerLen", TestBincLargeContainerLen)
+	t.Run("TestBincMammothMapsAndSlices", TestBincMammothMapsAndSlices)
 }
 
 func testCborGroup(t *testing.T) {
@@ -202,6 +255,14 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborMammoth", TestCborMammoth)
 	t.Run("TestCborRaw", TestCborRaw)
 	t.Run("TestCborRpcGo", TestCborRpcGo)
+
+	t.Run("TestCborSwallowAndZero", TestCborSwallowAndZero)
+	t.Run("TestCborRawExt", TestCborRawExt)
+	t.Run("TestCborMapStructKey", TestCborMapStructKey)
+	t.Run("TestCborDecodeNilMapValue", TestCborDecodeNilMapValue)
+	t.Run("TestCborEmbeddedFieldPrecedence", TestCborEmbeddedFieldPrecedence)
+	t.Run("TestCborLargeContainerLen", TestCborLargeContainerLen)
+	t.Run("TestCborMammothMapsAndSlices", TestCborMammothMapsAndSlices)
 }
 
 func TestCodecSuite(t *testing.T) {
@@ -209,11 +270,13 @@ func TestCodecSuite(t *testing.T) {
 
 	testGroupResetFlags()
 
-	oldIndent, oldCharsAsis, oldPreferFloat := testJsonH.Indent, testJsonH.HTMLCharsAsIs, testJsonH.PreferFloat
+	oldIndent, oldCharsAsis, oldPreferFloat, oldMapKeyAsString :=
+		testJsonH.Indent, testJsonH.HTMLCharsAsIs, testJsonH.PreferFloat, testJsonH.MapKeyAsString
 
 	testMaxInitLen = 10
 	testJsonH.Indent = 8
 	testJsonH.HTMLCharsAsIs = true
+	testJsonH.MapKeyAsString = true
 	// testJsonH.PreferFloat = true
 	testReinit()
 	t.Run("json-spaces-htmlcharsasis-initLen10", testJsonGroup)
@@ -221,11 +284,13 @@ func TestCodecSuite(t *testing.T) {
 	testMaxInitLen = 10
 	testJsonH.Indent = -1
 	testJsonH.HTMLCharsAsIs = false
+	testJsonH.MapKeyAsString = true
 	// testJsonH.PreferFloat = false
 	testReinit()
 	t.Run("json-tabs-initLen10", testJsonGroup)
 
-	testJsonH.Indent, testJsonH.HTMLCharsAsIs, testJsonH.PreferFloat = oldIndent, oldCharsAsis, oldPreferFloat
+	testJsonH.Indent, testJsonH.HTMLCharsAsIs, testJsonH.PreferFloat, testJsonH.MapKeyAsString =
+		oldIndent, oldCharsAsis, oldPreferFloat, oldMapKeyAsString
 
 	oldIndefLen := testCborH.IndefiniteLength
 

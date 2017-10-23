@@ -194,8 +194,8 @@ func testInitAll() {
 	}
 }
 
-func testCodecEncode(ts interface{}, bsIn []byte,
-	fn func([]byte) *bytes.Buffer, h Handle) (bs []byte, err error) {
+func sTestCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer,
+	h Handle, bh *BasicHandle) (bs []byte, err error) {
 	// bs = make([]byte, 0, approxSize)
 	var e *Encoder
 	var buf *bytes.Buffer
@@ -204,7 +204,6 @@ func testCodecEncode(ts interface{}, bsIn []byte,
 	} else {
 		e = NewEncoder(nil, h)
 	}
-	bh := BasicHandleDoNotUse(h)
 	var oldWriteBufferSize int
 	if testUseIoEncDec >= 0 {
 		buf = fn(bsIn)
@@ -232,7 +231,7 @@ func testCodecEncode(ts interface{}, bsIn []byte,
 	return
 }
 
-func testCodecDecode(bs []byte, ts interface{}, h Handle) (err error) {
+func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err error) {
 	var d *Decoder
 	// var buf *bytes.Reader
 	if testUseReset {
@@ -240,7 +239,6 @@ func testCodecDecode(bs []byte, ts interface{}, h Handle) (err error) {
 	} else {
 		d = NewDecoder(nil, h)
 	}
-	bh := BasicHandleDoNotUse(h)
 	var oldReadBufferSize int
 	if testUseIoEncDec >= 0 {
 		buf := bytes.NewReader(bs)
@@ -275,10 +273,10 @@ func fnBenchmarkByteBuf(bsIn []byte) (buf *bytes.Buffer) {
 	return
 }
 
-func benchFnCodecEncode(ts interface{}, bsIn []byte, h Handle) (bs []byte, err error) {
-	return testCodecEncode(ts, bsIn, fnBenchmarkByteBuf, h)
-}
+// func benchFnCodecEncode(ts interface{}, bsIn []byte, h Handle) (bs []byte, err error) {
+// 	return testCodecEncode(ts, bsIn, fnBenchmarkByteBuf, h)
+// }
 
-func benchFnCodecDecode(bs []byte, ts interface{}, h Handle) (err error) {
-	return testCodecDecode(bs, ts, h)
-}
+// func benchFnCodecDecode(bs []byte, ts interface{}, h Handle) (err error) {
+// 	return testCodecDecode(bs, ts, h)
+// }

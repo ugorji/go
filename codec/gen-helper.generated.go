@@ -42,11 +42,6 @@ func GenHelperDecoder(d *Decoder) (genHelperDecoder, decDriver) {
 	return genHelperDecoder{d: d}, d.d
 }
 
-// Library users: DO NOT USE IT DIRECTLY. IT WILL CHANGE CONTINOUSLY WITHOUT NOTICE.
-func BasicHandleDoNotUse(h Handle) *BasicHandle {
-	return h.getBasicHandle()
-}
-
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 type genHelperEncoder struct {
 	e *Encoder

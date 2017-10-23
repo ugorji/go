@@ -11,14 +11,6 @@ import (
 	"sync"
 )
 
-// // rpcEncodeTerminator allows a handler specify a []byte terminator to send after each Encode.
-// //
-// // Some codecs like json need to put a space after each encoded value, to serve as a
-// // delimiter for things like numbers (else json codec will continue reading till EOF).
-// type rpcEncodeTerminator interface {
-// 	rpcEncodeTerminate() []byte
-// }
-
 // Rpc provides a rpc Server or Client Codec for rpc communication.
 type Rpc interface {
 	ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec
@@ -84,17 +76,10 @@ func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2, doFlush bool) (err e
 	if err = c.enc.Encode(obj1); err != nil {
 		return
 	}
-	// t, tOk := c.h.(rpcEncodeTerminator)
-	// if tOk {
-	// 	c.bw.Write(t.rpcEncodeTerminate())
-	// }
 	if writeObj2 {
 		if err = c.enc.Encode(obj2); err != nil {
 			return
 		}
-		// if tOk {
-		// 	c.bw.Write(t.rpcEncodeTerminate())
-		// }
 	}
 	if doFlush {
 		return c.bw.Flush()
