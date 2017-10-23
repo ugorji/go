@@ -124,6 +124,7 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 	return true
 }
 
+{{/* **** removing this block, as they are never called directly ****
 func fastpathEncodeTypeSwitchSlice(iv interface{}, e *Encoder) bool {
 	switch v := iv.(type) {
 {{range .Values}}{{if not .Primitive}}{{if not .MapKey }}
@@ -153,6 +154,7 @@ func fastpathEncodeTypeSwitchMap(iv interface{}, e *Encoder) bool {
 	}
 	return true
 }
+*/}}
 
 // -- -- fast path functions
 {{range .Values}}{{if not .Primitive}}{{if not .MapKey }} 

@@ -1285,7 +1285,8 @@ func (e *Encoder) encode(iv interface{}) {
 
 	default:
 		if !fastpathEncodeTypeSwitch(iv, e) {
-			e.encodeValue(reflect.ValueOf(iv), nil, false)
+			// checkfastpath=true (not false), as underlying slice/map type may be fast-path
+			e.encodeValue(reflect.ValueOf(iv), nil, true)
 		}
 	}
 }

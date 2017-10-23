@@ -1797,6 +1797,21 @@ func genInternalZeroValue(s string) string {
 	}
 }
 
+func genInternalNonZeroValue(s string) string {
+	switch s {
+	case "interface{}", "interface {}":
+		return `"string-is-an-interface"` // return string, to remove ambiguity
+	case "bool":
+		return "true"
+	case "string":
+		return `"some-string"`
+	case "float32", "float64", "float", "double":
+		return "10.1"
+	default:
+		return "10"
+	}
+}
+
 func genInternalEncCommandAsString(s string, vname string) string {
 	switch s {
 	case "uint", "uint8", "uint16", "uint32", "uint64":
@@ -1970,6 +1985,7 @@ func genInternalInit() {
 	funcs["encmd"] = genInternalEncCommandAsString
 	funcs["decmd"] = genInternalDecCommandAsString
 	funcs["zerocmd"] = genInternalZeroValue
+	funcs["nonzerocmd"] = genInternalNonZeroValue
 	funcs["hasprefix"] = strings.HasPrefix
 	funcs["sorttype"] = genInternalSortType
 

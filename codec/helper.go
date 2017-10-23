@@ -1494,14 +1494,14 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 		fn.fe = (*Encoder).ext
 		fn.fd = (*Decoder).ext
 		fn.i.addr = true
-	} else if supportMarshalInterfaces && c.be && ti.bm {
+	} else if supportMarshalInterfaces && c.be && ti.bm && ti.bunm {
 		fn.fe = (*Encoder).binaryMarshal
 		fn.fd = (*Decoder).binaryUnmarshal
-	} else if supportMarshalInterfaces && !c.be && c.js && ti.jm {
+	} else if supportMarshalInterfaces && !c.be && c.js && ti.jm && ti.junm {
 		//If JSON, we should check JSONMarshal before textMarshal
 		fn.fe = (*Encoder).jsonMarshal
 		fn.fd = (*Decoder).jsonUnmarshal
-	} else if supportMarshalInterfaces && !c.be && ti.tm {
+	} else if supportMarshalInterfaces && !c.be && ti.tm && ti.tunm {
 		fn.fe = (*Encoder).textMarshal
 		fn.fd = (*Decoder).textUnmarshal
 	} else {

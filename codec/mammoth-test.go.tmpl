@@ -34,10 +34,15 @@ type TestMammoth struct {
 
 }
 
+{{range .Values }}{{if not .Primitive }}{{if not .MapKey }}{{/*
+*/}} type {{ .MethodNamePfx "type" false }} []{{ .Elem }}
+func (_ {{ .MethodNamePfx "type" false }}) MapBySlice() { }
+{{end}}{{end}}{{end}}
+
 func doTestMammothSlices(t *testing.T, h Handle) {
 {{range $i, $e := .Values }}{{if not .Primitive }}{{if not .MapKey }}{{/*
 */}}
-	v{{$i}}v1 := []{{ .Elem }}{ {{ zerocmd .Elem }}, {{ zerocmd .Elem }} }
+	v{{$i}}v1 := []{{ .Elem }}{ {{ nonzerocmd .Elem }}, {{ nonzerocmd .Elem }} }
 	bs{{$i}}, _ := testMarshalErr(v{{$i}}v1, h, t, "-")
 	v{{$i}}v2 := make([]{{ .Elem }}, 2)
 	testUnmarshalErr(v{{$i}}v2, bs{{$i}}, h, t, "-")
@@ -46,13 +51,25 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	v{{$i}}v2 = nil
 	testUnmarshalErr(&v{{$i}}v2, bs{{$i}}, h, t, "-")
 	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "-")
+    // ...
+    v{{$i}}v2 = make([]{{ .Elem }}, 2)
+    v{{$i}}v3 := {{ .MethodNamePfx "type" false }}(v{{$i}}v1)
+    bs{{$i}}, _ = testMarshalErr(v{{$i}}v3, h, t, "-")
+    v{{$i}}v4 := {{ .MethodNamePfx "type" false }}(v{{$i}}v2)
+    testUnmarshalErr(v{{$i}}v4, bs{{$i}}, h, t, "-")
+    testDeepEqualErr(v{{$i}}v3, v{{$i}}v4, t, "-")
+    v{{$i}}v2 = nil
+    bs{{$i}}, _ = testMarshalErr(&v{{$i}}v3, h, t, "-")
+    v{{$i}}v4 = {{ .MethodNamePfx "type" false }}(v{{$i}}v2)
+    testUnmarshalErr(&v{{$i}}v4, bs{{$i}}, h, t, "-")
+    testDeepEqualErr(v{{$i}}v3, v{{$i}}v4, t, "-")
 {{end}}{{end}}{{end}}
 }
 
 func doTestMammothMaps(t *testing.T, h Handle) {
 {{range $i, $e := .Values }}{{if not .Primitive }}{{if .MapKey }}{{/*
 */}}
-	v{{$i}}v1 := map[{{ .MapKey }}]{{ .Elem }}{ {{ zerocmd .MapKey }}:{{ zerocmd .Elem }} }
+	v{{$i}}v1 := map[{{ .MapKey }}]{{ .Elem }}{ {{ nonzerocmd .MapKey }}:{{ nonzerocmd .Elem }} }
 	bs{{$i}}, _ := testMarshalErr(v{{$i}}v1, h, t, "-")
 	v{{$i}}v2 := make(map[{{ .MapKey }}]{{ .Elem }})
 	testUnmarshalErr(v{{$i}}v2, bs{{$i}}, h, t, "-")
