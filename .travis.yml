@@ -1,0 +1,13 @@
+language: go
+sudo: false
+go:
+  - 1.8.x
+  - 1.9.x
+  - tip
+before_install:
+  - go get -t -v ./...
+script:
+  - cd codec && bash run.sh -t
+after_success:
+  - cd codec && bash <(curl -s https://codecov.io/bash) -t d363f760-34c1-4232-8c47-569fe7c02549 -f '*.cov.out'
+
