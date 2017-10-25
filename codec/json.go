@@ -36,6 +36,7 @@ import (
 	"encoding/base64"
 	"reflect"
 	"strconv"
+	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
 )
@@ -88,14 +89,6 @@ var (
 )
 
 const (
-	// jsonUnreadAfterDecNum controls whether we unread after decoding a number.
-	//
-	// instead of unreading, just update d.tok (iff it's not a whitespace char)
-	// However, doing this means that we may HOLD onto some data which belongs to another stream.
-	// Thus, it is safest to unread the data when done.
-	// keep behind a constant flag for now.
-	jsonUnreadAfterDecNum = true
-
 	// If !jsonValidateSymbols, decoding will be faster, by skipping some checks:
 	//   - If we see first character of null, false or true,
 	//     do not validate subsequent characters.
@@ -882,34 +875,45 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 		case 'u':
 			var r rune
 			var rr uint32
-			c = cs[i+4] // may help reduce bounds-checking
+			if len(cs) < i+4 { // may help reduce bounds-checking
+				d.d.errorf(`json: need at least 4 more bytes for unicode sequence`)
+			}
+			// c = cs[i+4] // may help reduce bounds-checking
 			for j := 1; j < 5; j++ {
 				c = jsonU4Set[cs[i+j]]
 				if c == jsonU4SetErrVal {
-					d.d.errorf(`json: unquoteStr: invalid hex char in \u unicode sequence: %q`, c)
+					// d.d.errorf(`json: unquoteStr: invalid hex char in \u unicode sequence: %q`, c)
+					r = unicode.ReplacementChar
+					i += 4
+					goto encode_rune
 				}
 				rr = rr*16 + uint32(c)
 			}
 			r = rune(rr)
 			i += 4
 			if utf16.IsSurrogate(r) {
-				if !(cs[i+2] == 'u' && cs[i+i] == '\\') {
-					d.d.errorf(`json: unquoteStr: invalid unicode sequence. Expecting \u`)
-					return
-				}
-				i += 2
-				c = cs[i+4] // may help reduce bounds-checking
-				var rr1 uint32
-				for j := 1; j < 5; j++ {
-					c = jsonU4Set[cs[i+j]]
-					if c == jsonU4SetErrVal {
-						d.d.errorf(`json: unquoteStr: invalid hex char in \u unicode sequence: %q`, c)
+				if len(cs) >= i+6 && cs[i+2] == 'u' && cs[i+1] == '\\' {
+					i += 2
+					// c = cs[i+4] // may help reduce bounds-checking
+					var rr1 uint32
+					for j := 1; j < 5; j++ {
+						c = jsonU4Set[cs[i+j]]
+						if c == jsonU4SetErrVal {
+							// d.d.errorf(`json: unquoteStr: invalid hex char in \u unicode sequence: %q`, c)
+							r = unicode.ReplacementChar
+							i += 4
+							goto encode_rune
+						}
+						rr1 = rr1*16 + uint32(c)
 					}
-					rr1 = rr1*16 + uint32(c)
+					r = utf16.DecodeRune(r, rune(rr1))
+					i += 4
+				} else {
+					r = unicode.ReplacementChar
+					goto encode_rune
 				}
-				r = utf16.DecodeRune(r, rune(rr1))
-				i += 4
 			}
+		encode_rune:
 			w2 := utf8.EncodeRune(d.bstr[:], r)
 			v = append(v, d.bstr[:w2]...)
 		default:
@@ -1032,6 +1036,10 @@ func (d *jsonDecDriver) DecodeNaked() {
 // reading multiple values from a stream containing json and non-json content.
 // For example, a user can read a json value, then a cbor value, then a msgpack value,
 // all from the same stream in sequence.
+//
+// Note that, when decoding quoted strings, invalid UTF-8 or invalid UTF-16 surrogate pairs
+// are not treated as an error.
+// Instead, they are replaced by the Unicode replacement character U+FFFD.
 type JsonHandle struct {
 	textEncodingType
 	BasicHandle

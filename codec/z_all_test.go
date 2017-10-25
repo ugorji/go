@@ -201,6 +201,7 @@ func testCodecGroup(t *testing.T) {
 	t.Run("TestBincMammothMapsAndSlices", TestBincMammothMapsAndSlices)
 	t.Run("TestSimpleMammothMapsAndSlices", TestSimpleMammothMapsAndSlices)
 
+	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 	// <tear-down code>
 }
 
@@ -224,6 +225,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonEmbeddedFieldPrecedence", TestJsonEmbeddedFieldPrecedence)
 	t.Run("TestJsonLargeContainerLen", TestJsonLargeContainerLen)
 	t.Run("TestJsonMammothMapsAndSlices", TestJsonMammothMapsAndSlices)
+	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 }
 
 func testBincGroup(t *testing.T) {

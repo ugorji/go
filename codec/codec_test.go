@@ -2020,6 +2020,29 @@ func TestJsonLargeInteger(t *testing.T) {
 	}
 }
 
+func TestJsonInvalidUnicode(t *testing.T) {
+	var m = map[string]string{
+		`"\udc49\u0430abc"`: "\uFFFDabc",
+		`"\udc49\u0430"`:    "\uFFFD",
+		`"\udc49abc"`:       "\uFFFDabc",
+		`"\udc49"`:          "\uFFFD",
+		`"\udZ49\u0430abc"`: "\uFFFD\u0430abc",
+		`"\udcG9\u0430"`:    "\uFFFD\u0430",
+		`"\uHc49abc"`:       "\uFFFDabc",
+		`"\uKc49"`:          "\uFFFD",
+		// ``: "",
+	}
+	for k, v := range m {
+		// println("k = ", k)
+		var s string
+		testUnmarshalErr(&s, []byte(k), testJsonH, t, "-")
+		if s != v {
+			logT(t, "not equal: %q, %q", v, s)
+			failT(t)
+		}
+	}
+}
+
 // ----------
 
 func TestBincCodecsTable(t *testing.T) {
