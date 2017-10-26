@@ -68,6 +68,7 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testReinit()
 	t.Run("optionsTrue", f)
 
+	testEncodeOptions.AsSymbols = AsSymbolAll
 	testUseIoWrapper = true
 	testReinit()
 	t.Run("optionsTrue-ioWrapper", f)
@@ -317,17 +318,12 @@ func TestCodecSuite(t *testing.T) {
 	testGroupResetFlags()
 }
 
-// func TestCodecSuite(t *testing.T) { testSuite2(t, testCodecGroup2) }
-// func testCodecGroup2(t *testing.T) {
-// 	t.Run("TestJsonCodecsTable", TestJsonCodecsTable)
-// 	t.Run("TestJsonCodecsMisc", TestJsonCodecsMisc)
-// }
-// func testSuite2(t *testing.T, f func(t *testing.T)) {
-// 	testUseIoEncDec = true
-// 	testDecodeOptions = DecodeOptions{}
-// 	testEncodeOptions = EncodeOptions{}
-// 	testDecodeOptions.ReaderBufferSize = 128
-// 	testEncodeOptions.WriterBufferSize = 128
+// func TestCodecSuite(t *testing.T) {
+// 	testReinit() // so flag.Parse() is called first, and never called again
+// 	testDecodeOptions, testEncodeOptions = DecodeOptions{}, EncodeOptions{}
+// 	testGroupResetFlags()
 // 	testReinit()
-// 	t.Run("optionsTrue-bufio", f)
+// 	t.Run("optionsFalse", func(t *testing.T) {
+// 		t.Run("TestJsonMammothMapsAndSlices", TestJsonMammothMapsAndSlices)
+// 	})
 // }

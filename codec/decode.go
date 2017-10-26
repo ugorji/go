@@ -2016,6 +2016,7 @@ func (d *Decoder) setZero(iv interface{}) {
 	if iv == nil || definitelyNil(iv) {
 		return
 	}
+	var canDecode bool
 	switch v := iv.(type) {
 	case *string:
 		*v = ""
@@ -2050,15 +2051,13 @@ func (d *Decoder) setZero(iv interface{}) {
 	case *Raw:
 		*v = nil
 	case reflect.Value:
-		v = d.ensureDecodeable(v)
-		if v.CanSet() {
+		if v, canDecode = isDecodeable(v); canDecode && v.CanSet() {
 			v.Set(reflect.Zero(v.Type()))
 		} // TODO: else drain if chan, clear if map, set all to nil if slice???
 	default:
 		if !fastpathDecodeSetZeroTypeSwitch(iv, d) {
 			v := reflect.ValueOf(iv)
-			v = d.ensureDecodeable(v)
-			if v.CanSet() {
+			if v, canDecode = isDecodeable(v); canDecode && v.CanSet() {
 				v.Set(reflect.Zero(v.Type()))
 			} // TODO: else drain if chan, clear if map, set all to nil if slice???
 		}

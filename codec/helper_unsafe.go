@@ -64,7 +64,16 @@ func bytesView(v string) []byte {
 }
 
 func definitelyNil(v interface{}) bool {
-	return (*unsafeIntf)(unsafe.Pointer(&v)).word == nil
+	// There is no global way of checking if an interface is nil.
+	// For true references (map, ptr, func, chan), you can just look
+	// at the word of the interface. However, for slices, you have to dereference
+	// the word, and get a pointer to the 3-word interface value.
+
+	// var ui *unsafeIntf = (*unsafeIntf)(unsafe.Pointer(&v))
+	// var word unsafe.Pointer = ui.word
+	// // fmt.Printf(">>>> definitely nil: isnil: %v, TYPE: \t%T, word: %v, *word: %v, type: %v, nil: %v\n", v == nil, v, word, *((*unsafe.Pointer)(word)), ui.typ, nil)
+	// return word == nil // || *((*unsafe.Pointer)(word)) == nil
+	return ((*unsafeIntf)(unsafe.Pointer(&v))).word == nil
 }
 
 // func keepAlive4BytesView(v string) {
@@ -81,16 +90,19 @@ func definitelyNil(v interface{}) bool {
 // the source go stdlib reflect/value.go,
 // and trims the implementation.
 func rv2i(rv reflect.Value) interface{} {
-	if false {
-		return rv.Interface()
-	}
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	// references that are single-words (map, ptr) may be double-referenced as flagIndir
-	kk := urv.flag & (1<<5 - 1)
-	if (kk == uintptr(reflect.Map) || kk == uintptr(reflect.Ptr)) && urv.flag&unsafeFlagIndir != 0 {
-		return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: *(*unsafe.Pointer)(urv.ptr), typ: urv.typ}))
+	// true references (map, func, chan, ptr - NOT slice) may be double-referenced as flagIndir
+	var ptr unsafe.Pointer
+	// kk := reflect.Kind(urv.flag & (1<<5 - 1))
+	// if (kk == reflect.Map || kk == reflect.Ptr || kk == reflect.Chan || kk == reflect.Func) && urv.flag&unsafeFlagIndir != 0 {
+	if refBitset.isset(byte(urv.flag&(1<<5-1))) && urv.flag&unsafeFlagIndir != 0 {
+		ptr = *(*unsafe.Pointer)(urv.ptr)
+	} else {
+		ptr = urv.ptr
 	}
-	return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: urv.ptr, typ: urv.typ}))
+	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: ptr}))
+	// return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: *(*unsafe.Pointer)(urv.ptr), typ: urv.typ}))
+	// return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: urv.ptr, typ: urv.typ}))
 }
 
 func rt2id(rt reflect.Type) uintptr {

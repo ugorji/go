@@ -33,6 +33,8 @@ func bytesView(v string) []byte {
 }
 
 func definitelyNil(v interface{}) bool {
+	// this is a best-effort option.
+	// We just return false, so we don't unneessarily incur the cost of reflection this early.
 	return false
 	// rv := reflect.ValueOf(v)
 	// switch rv.Kind() {

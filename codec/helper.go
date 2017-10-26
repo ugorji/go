@@ -171,10 +171,17 @@ var (
 	zeroByteSlice = oneByteArr[:0:0]
 )
 
+var refBitset bitset32
+
 var pool pooler
 
 func init() {
 	pool.init()
+
+	refBitset.set(byte(reflect.Map))
+	refBitset.set(byte(reflect.Ptr))
+	refBitset.set(byte(reflect.Func))
+	refBitset.set(byte(reflect.Chan))
 }
 
 // type findCodecFnMode uint8
@@ -1898,6 +1905,18 @@ func (x *bitset128) unset(pos byte) {
 	x[pos>>3] &^= (1 << (pos & 7))
 }
 func (x *bitset128) isset(pos byte) bool {
+	return x[pos>>3]&(1<<(pos&7)) != 0
+}
+
+type bitset32 [4]byte
+
+func (x *bitset32) set(pos byte) {
+	x[pos>>3] |= (1 << (pos & 7))
+}
+func (x *bitset32) unset(pos byte) {
+	x[pos>>3] &^= (1 << (pos & 7))
+}
+func (x *bitset32) isset(pos byte) bool {
 	return x[pos>>3]&(1<<(pos&7)) != 0
 }
 

@@ -167,6 +167,7 @@ func (e *Encoder) {{ .MethodNamePfx "fastpathEnc" false }}R(f *codecFnInfo, rv r
 	}
 }
 func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *Encoder) {
+	if v == nil { e.e.EncodeNil(); return }
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	ee.WriteArrayStart(len(v))
 	for _, v2 := range v {
@@ -204,6 +205,7 @@ func (e *Encoder) {{ .MethodNamePfx "fastpathEnc" false }}R(f *codecFnInfo, rv r
 	fastpathTV.{{ .MethodNamePfx "Enc" false }}V(rv2i(rv).(map[{{ .MapKey }}]{{ .Elem }}), e)
 }
 func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Elem }}, e *Encoder) {
+	if v == nil { e.e.EncodeNil(); return }
 	ee, esep := e.e, e.hh.hasElemSeparators() 
 	ee.WriteMapStart(len(v))
 	{{if eq .MapKey "string"}}asSymbols := e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
@@ -316,7 +318,6 @@ func (d *Decoder) {{ .MethodNamePfx "fastpathDec" false }}R(f *codecFnInfo, rv r
 		fastpathTV.{{ .MethodNamePfx "Dec" false }}V(rv2i(rv).([]{{ .Elem }}), !array, d)
 	}
 }
-
 func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *[]{{ .Elem }}, d *Decoder) {
 	if v, changed := f.{{ .MethodNamePfx "Dec" false }}V(*vp, true, d); changed {
 		*vp = v 
