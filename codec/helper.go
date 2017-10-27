@@ -408,13 +408,19 @@ var immutableKindsSet = [32]bool{
 	// reflect.UnsafePointer
 }
 
-var recognizedRtids []uintptr
-var recognizedRtidPtrs []uintptr
-var recognizedRtidOrPtrs []uintptr
+var (
+	recognizedRtids       []uintptr
+	recognizedRtidPtrs    []uintptr
+	recognizedRtidOrPtrs  []uintptr
+	recognizedRtidsLoaded bool
+)
 
 func init() {
 	if !useLookupRecognizedTypes {
 		return
+	}
+	if recognizedRtidsLoaded {
+		panic("recognizedRtidsLoaded = true - cannot happen")
 	}
 	for _, v := range [...]interface{}{
 		float32(0),
@@ -440,6 +446,16 @@ func init() {
 		recognizedRtids = append(recognizedRtids, rt2id(rt))
 		recognizedRtidPtrs = append(recognizedRtidPtrs, rt2id(reflect.PtrTo(rt)))
 	}
+
+	// now sort it.
+	sort.Sort(uintptrSlice(recognizedRtids))
+	sort.Sort(uintptrSlice(recognizedRtidPtrs))
+	recognizedRtidOrPtrs = make([]uintptr, len(recognizedRtids)+len(recognizedRtidPtrs))
+	copy(recognizedRtidOrPtrs, recognizedRtids)
+	copy(recognizedRtidOrPtrs[len(recognizedRtids):], recognizedRtidPtrs)
+	sort.Sort(uintptrSlice(recognizedRtidOrPtrs))
+
+	recognizedRtidsLoaded = true
 }
 
 func containsU(s []uintptr, v uintptr) bool {
@@ -966,7 +982,7 @@ type typeInfo struct {
 
 	mbs bool // base type (T or *T) is a MapBySlice
 
-	// [btj][mu]p? OR csp?
+	// format of marshal type fields below: [btj][mu]p? OR csp?
 
 	bm  bool // T is a binaryMarshaler
 	bmp bool // *T is a binaryMarshaler
@@ -982,26 +998,6 @@ type typeInfo struct {
 	jup bool // *T is a jsonUnmarshaler
 	cs  bool // T is a Selfer
 	csp bool // *T is a Selfer
-	// su  bool // T is a
-	// sup  bool // *T is a
-
-	// bm        bool // base type (T or *T) is a binaryMarshaler
-	// bunm      bool // base type (T or *T) is a binaryUnmarshaler
-	// bmIndir   bool // is *T binaryMarshaler type
-	// bunmIndir bool // number of indirections to get to binaryUnmarshaler type
-
-	// tm        bool // base type (T or *T) is a textMarshaler
-	// tunm      bool // base type (T or *T) is a textUnmarshaler
-	// tmIndir   bool // number of indirections to get to textMarshaler type
-	// tunmIndir bool // number of indirections to get to textUnmarshaler type
-
-	// jm        bool // base type (T or *T) is a jsonMarshaler
-	// junm      bool // base type (T or *T) is a jsonUnmarshaler
-	// jmIndir   bool // number of indirections to get to jsonMarshaler type
-	// junmIndir bool // number of indirections to get to jsonUnmarshaler type
-
-	// cs      bool // base type (T or *T) is a Selfer
-	// csIndir bool // number of indirections to get to Selfer type
 
 	toArray bool // whether this (struct) type should be encoded as an array
 }

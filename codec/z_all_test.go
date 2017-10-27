@@ -201,8 +201,14 @@ func testCodecGroup(t *testing.T) {
 	t.Run("TestMsgpackMammothMapsAndSlices", TestMsgpackMammothMapsAndSlices)
 	t.Run("TestBincMammothMapsAndSlices", TestBincMammothMapsAndSlices)
 	t.Run("TestSimpleMammothMapsAndSlices", TestSimpleMammothMapsAndSlices)
+	t.Run("TestJsonTime", TestJsonTime)
+	t.Run("TestCborTime", TestCborTime)
+	t.Run("TestMsgpackTime", TestMsgpackTime)
+	t.Run("TestBincTime", TestBincTime)
+	t.Run("TestSimpleTime", TestSimpleTime)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
+	t.Run("TestBincTime", TestBincTime)
 	// <tear-down code>
 }
 
@@ -227,6 +233,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonLargeContainerLen", TestJsonLargeContainerLen)
 	t.Run("TestJsonMammothMapsAndSlices", TestJsonMammothMapsAndSlices)
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
+	t.Run("TestJsonTime", TestJsonTime)
 }
 
 func testBincGroup(t *testing.T) {
@@ -246,6 +253,7 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincEmbeddedFieldPrecedence", TestBincEmbeddedFieldPrecedence)
 	t.Run("TestBincLargeContainerLen", TestBincLargeContainerLen)
 	t.Run("TestBincMammothMapsAndSlices", TestBincMammothMapsAndSlices)
+	t.Run("TestBincTime", TestBincTime)
 }
 
 func testCborGroup(t *testing.T) {
@@ -266,6 +274,26 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborEmbeddedFieldPrecedence", TestCborEmbeddedFieldPrecedence)
 	t.Run("TestCborLargeContainerLen", TestCborLargeContainerLen)
 	t.Run("TestCborMammothMapsAndSlices", TestCborMammothMapsAndSlices)
+	t.Run("TestCborTime", TestCborTime)
+}
+
+func testMsgpackGroup(t *testing.T) {
+	t.Run("TestMsgpackCodecsTable", TestMsgpackCodecsTable)
+	t.Run("TestMsgpackCodecsMisc", TestMsgpackCodecsMisc)
+	t.Run("TestMsgpackCodecsEmbeddedPointer", TestMsgpackCodecsEmbeddedPointer)
+	t.Run("TestMsgpackStdEncIntf", TestMsgpackStdEncIntf)
+	t.Run("TestMsgpackMammoth", TestMsgpackMammoth)
+	t.Run("TestMsgpackRaw", TestMsgpackRaw)
+	t.Run("TestMsgpackRpcGo", TestMsgpackRpcGo)
+	t.Run("TestMsgpackRpcSpec", TestMsgpackRpcSpec)
+	t.Run("TestMsgpackSwallowAndZero", TestMsgpackSwallowAndZero)
+	t.Run("TestMsgpackRawExt", TestMsgpackRawExt)
+	t.Run("TestMsgpackMapStructKey", TestMsgpackMapStructKey)
+	t.Run("TestMsgpackDecodeNilMapValue", TestMsgpackDecodeNilMapValue)
+	t.Run("TestMsgpackEmbeddedFieldPrecedence", TestMsgpackEmbeddedFieldPrecedence)
+	t.Run("TestMsgpackLargeContainerLen", TestMsgpackLargeContainerLen)
+	t.Run("TestMsgpackMammothMapsAndSlices", TestMsgpackMammothMapsAndSlices)
+	t.Run("TestMsgpackTime", TestMsgpackTime)
 }
 
 func TestCodecSuite(t *testing.T) {
@@ -314,6 +342,18 @@ func TestCodecSuite(t *testing.T) {
 	t.Run("binc-all-symbols", testBincGroup)
 
 	testBincH.getBasicHandle().AsSymbols = oldSymbols
+
+	oldWriteExt := testMsgpackH.WriteExt
+
+	testMsgpackH.WriteExt = true
+	testReinit()
+	t.Run("msgpack-writeext", testMsgpackGroup)
+
+	testMsgpackH.WriteExt = false
+	testReinit()
+	t.Run("msgpack-no-writeext", testMsgpackGroup)
+
+	testMsgpackH.WriteExt = oldWriteExt
 
 	testGroupResetFlags()
 }

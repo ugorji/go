@@ -236,12 +236,18 @@ func populateTestStrucCommon(ts *testStrucCommon, n int, bench, useInterface, us
 			strRpt(n, "Afive.Gclef.\U0001d11E\"ugorji\"done.")},
 		AI64slice: []int64{
 			0, 1, -1, -22, 333, -4444, 55555, -666666,
+			// msgpack ones
+			-48, -32, -24,
 			// standard ones
 			0, -1, 1,
 			math.MaxInt8, math.MaxInt8 + 4, math.MaxInt8 - 4,
 			math.MaxInt16, math.MaxInt16 + 4, math.MaxInt16 - 4,
 			math.MaxInt32, math.MaxInt32 + 4, math.MaxInt32 - 4,
 			math.MaxInt64, math.MaxInt64 - 4,
+			math.MinInt8, math.MinInt8 + 4, math.MinInt8 - 4,
+			math.MinInt16, math.MinInt16 + 4, math.MinInt16 - 4,
+			math.MinInt32, math.MinInt32 + 4, math.MinInt32 - 4,
+			math.MinInt64, math.MinInt64 + 4,
 		},
 		AUi64slice: []uint64{
 			0, 1, 22, 333, 4444, 55555, 666666,

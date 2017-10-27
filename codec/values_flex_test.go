@@ -12,6 +12,7 @@ type TestStrucFlex struct {
 	testStrucCommon
 
 	Mis     map[int]string
+	Mbu64   map[bool]struct{}
 	Miwu64s map[int]wrapUint64Slice
 	Mfwss   map[float64]wrapStringSlice
 	Mf32wss map[float32]wrapStringSlice
@@ -51,6 +52,7 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 			22:  "twenty two",
 			-44: "minus forty four",
 		},
+		Mbu64: map[bool]struct{}{false: struct{}{}, true: struct{}{}},
 	}
 	populateTestStrucCommon(&ts.testStrucCommon, n, bench, useInterface, useStringKeyOnly)
 	if depth > 0 {

@@ -1091,6 +1091,10 @@ func doTestMapEncodeForCanonical(t *testing.T, name string, h Handle) {
 				"4444":  4444,
 				"55555": 55555,
 			},
+			"c/g": map[bool]int{
+				false: 0,
+				true:  1,
+			},
 		},
 	}
 	var v2 map[stringUint64T]interface{}
@@ -1807,6 +1811,22 @@ func testMammoth(t *testing.T, name string, h Handle) {
 	testDeepEqualErr(&m, &m2, t, "mammoth-"+name)
 }
 
+func testTime(t *testing.T, name string, h Handle) {
+	// test time which uses the time.go implementation (ie Binc)
+	var tt, tt2 time.Time
+	// time in 1990
+	tt = time.Unix(20*366*24*60*60, 1000*900).In(time.FixedZone("UGO", -5*60*60))
+	// fmt.Printf("time tt: %v\n", tt)
+	b, _ := testMarshalErr(tt, h, t, "time-"+name)
+	testUnmarshalErr(&tt2, b, h, t, "time-"+name)
+	// per go documentation, test time with .Equal not ==
+	if !tt2.Equal(tt) {
+		logT(t, "%s: values not equal: 1: %v, 2: %v", name, tt2, tt)
+		failT(t)
+	}
+	// testDeepEqualErr(tt.UTC(), tt2, t, "time-"+name)
+}
+
 // -----------------
 
 func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
@@ -2354,43 +2374,64 @@ func TestSimpleMammothMapsAndSlices(t *testing.T) {
 	doTestMammothMapsAndSlices(t, testSimpleH)
 }
 
+func TestJsonTime(t *testing.T) {
+	testTime(t, "json", testJsonH)
+}
+
+func TestCborTime(t *testing.T) {
+	testTime(t, "cbor", testCborH)
+}
+
+func TestMsgpackTime(t *testing.T) {
+	testTime(t, "msgpack", testMsgpackH)
+}
+
+func TestBincTime(t *testing.T) {
+	testTime(t, "binc", testBincH)
+}
+
+func TestSimpleTime(t *testing.T) {
+	testTime(t, "simple", testSimpleH)
+}
+
 // TODO:
+//
 //   Add Tests for:
-//   - decoding empty list/map in stream into a nil slice/map
-//   - binary(M|Unm)arsher support for time.Time (e.g. cbor encoding)
-//   - text(M|Unm)arshaler support for time.Time (e.g. json encoding)
-//   - non fast-path scenarios e.g. map[string]uint16, []customStruct.
-//     Expand cbor to include indefinite length stuff for this non-fast-path types.
-//     This may not be necessary, since we have the manual tests (fastpathEnabled=false) to test/validate with.
-//   - CodecSelfer
-//     Ensure it is called when (en|de)coding interface{} or reflect.Value (2 different codepaths).
-//   - interfaces: textMarshaler, binaryMarshaler, codecSelfer
 //   - struct tags:
 //     on anonymous fields, _struct (all fields), etc
 //   - codecgen of struct containing channels.
+//   - (encode extensions: ext, raw ext, etc)
+//   - extension that isn't builtin e.g. type uint64Ext uint64.
+//     it encodes as a uint64.
 //
 //  Add negative tests for failure conditions:
 //   - bad input with large array length prefix
 //
-//  More tests:
-//  - large integers x: int64 and uint64
-//    x = 0, -1, 1, maxUint8, maxUint16, maxuint32
-//    maxUint8 < x < maxUint16
-//    maxUint16 < x < maxuint32
-//    x > maxuint32
-//  - standard floats x: float32 and float64
-//    0, -1, 1, +inf, -inf, etc
-//  - length of containers (array, string, bytes, map):
-//    container == nil
-//    len = 0
-//  - length of containers (array, string, bytes, map):
-//    len = maxUint8, maxUint16, maxuint32
-//    maxUint8 < len < maxUint16
-//    maxUint16 < len < maxuint32
-//    len > maxuint32
-//  - (encode extensions: ext, raw ext, etc)
-//  - tracking:
+// msgpack
+// - add reading uint from encoded int
+// - support time as built-in extension:
+//   see https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type
+//
+// decode.go
+// - UnreadByte: only 2 states (z.ls = 2 and z.ls = 1) (0 --> 2 --> 1)
+// - track
 //    z.trb: track, stop track, check
-//  - test with diff: mapType and sliceType, and decodeNaked
-//  - extension that isn't builtin e.g. type uint64Ext uint64.
-//    it encodes as a uint64.
+// - maptype, slicetype: diff from map[string]intf, map[intf]intf or []intf,
+// - PreferArrayOverSlice??? (standalone test)
+// - InterfaceReset (standalone test)
+// - (chan byte) to decode []byte (with mapbyslice track)
+// - decode slice of len 6, 16 into slice of (len 4, cap 8) and (len ) with maxinitlen=6, 8, 16
+// - ktypeisintf
+// - DeleteOnNilMapValue
+// - decnaked: n.l == nil
+// - setZero: all types: *bool, *intXXX, *uintXXX, *floatXXX, *Raw, *[]byte, etc
+// - codec.Selfer implementation
+//     Ensure it is called when (en|de)coding interface{} or reflect.Value (2 different codepaths).
+// - ensureDecodeable (try to decode into a non-decodeable thing e.g. a nil interface{},
+//
+// encode.go
+// - mapbyslice (for non-fastpath things)
+// - nil and 0-len slices and maps for non-fastpath things
+//
+// cbor:
+// - halffloat

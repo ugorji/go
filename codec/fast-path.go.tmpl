@@ -80,6 +80,9 @@ var fastpathAV fastpathA
 
 // due to possible initialization loop error, make fastpath in an init()
 func init() {
+	if useLookupRecognizedTypes && recognizedRtidsLoaded {
+		panic("recognizedRtidsLoaded = true - cannot happen")
+	}
 	i := 0
 	fn := func(v interface{},
 		fe func(*Encoder, *codecFnInfo, reflect.Value),

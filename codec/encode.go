@@ -508,8 +508,11 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	if l > 0 {
 		var fn *codecFn
-		var recognizedVtyp = useLookupRecognizedTypes && isRecognizedRtidOrPtr(rt2id(rtelem))
-		if !recognizedVtyp {
+		var recognizedVtyp bool
+		if useLookupRecognizedTypes {
+			recognizedVtyp = isRecognizedRtidOrPtr(rt2id(rtelem))
+		}
+		if !(useLookupRecognizedTypes && recognizedVtyp) {
 			for rtelem.Kind() == reflect.Ptr {
 				rtelem = rtelem.Elem()
 			}
@@ -786,7 +789,8 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		asSymbols = e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	} else {
 		if useLookupRecognizedTypes {
-			if recognizedKtyp = isRecognizedRtidOrPtr(rtkeyid); recognizedKtyp {
+			recognizedKtyp = isRecognizedRtidOrPtr(rtkeyid)
+			if recognizedKtyp {
 				goto LABEL1
 			}
 		}
@@ -801,7 +805,9 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	// for j, lmks := 0, len(mks); j < lmks; j++ {
 LABEL1:
-	recognizedVtyp = useLookupRecognizedTypes && isRecognizedRtidOrPtr(rtvalid)
+	if useLookupRecognizedTypes {
+		recognizedVtyp = isRecognizedRtidOrPtr(rtvalid)
+	}
 	for j := range mks {
 		if elemsep {
 			ee.WriteMapElemKey()
