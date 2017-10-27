@@ -895,29 +895,12 @@ func (d *Decoder) ext(f *codecFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.xfTag, f.xfFn)
 }
 
-func (d *Decoder) getValueForUnmarshalInterface(rv reflect.Value, indir int8) (v interface{}) {
-	if indir == -1 {
-		v = rv2i(rv.Addr())
-	} else if indir == 0 {
-		v = rv2i(rv)
-	} else {
-		for j := int8(0); j < indir; j++ {
-			if rv.IsNil() {
-				rv.Set(reflect.New(rv.Type().Elem()))
-			}
-			rv = rv.Elem()
-		}
-		v = rv2i(rv)
-	}
-	return
-}
-
 func (d *Decoder) selferUnmarshal(f *codecFnInfo, rv reflect.Value) {
-	d.getValueForUnmarshalInterface(rv, f.ti.csIndir).(Selfer).CodecDecodeSelf(d)
+	rv2i(rv).(Selfer).CodecDecodeSelf(d)
 }
 
 func (d *Decoder) binaryUnmarshal(f *codecFnInfo, rv reflect.Value) {
-	bm := d.getValueForUnmarshalInterface(rv, f.ti.bunmIndir).(encoding.BinaryUnmarshaler)
+	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil, true)
 	if fnerr := bm.UnmarshalBinary(xbs); fnerr != nil {
 		panic(fnerr)
@@ -925,7 +908,7 @@ func (d *Decoder) binaryUnmarshal(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (d *Decoder) textUnmarshal(f *codecFnInfo, rv reflect.Value) {
-	tm := d.getValueForUnmarshalInterface(rv, f.ti.tunmIndir).(encoding.TextUnmarshaler)
+	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
 	if fnerr != nil {
 		panic(fnerr)
@@ -933,7 +916,7 @@ func (d *Decoder) textUnmarshal(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
-	tm := d.getValueForUnmarshalInterface(rv, f.ti.junmIndir).(jsonUnmarshaler)
+	tm := rv2i(rv).(jsonUnmarshaler)
 	// bs := d.d.DecodeBytes(d.b[:], true, true)
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
 	fnerr := tm.UnmarshalJSON(d.nextValueBytes())
@@ -2165,7 +2148,7 @@ func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn, tryRecognized, chkA
 		// always pass checkCodecSelfer=true, in case T or ****T is passed, where *T is a Selfer
 		fn = d.cf.get(rv.Type(), chkAll, true) // chkAll, chkAll)
 	}
-	if fn.i.addr {
+	if fn.i.addrD {
 		if rvpValid {
 			fn.fd(d, &fn.i, rvp)
 		} else if rv.CanAddr() {

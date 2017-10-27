@@ -944,7 +944,7 @@ func baseStructRv(v reflect.Value, update bool) (v2 reflect.Value, valid bool) {
 	return v, true
 }
 
-// typeInfo keeps information about each type referenced in the encode/decode sequence.
+// typeInfo keeps information about each (non-ptr) type referenced in the encode/decode sequence.
 //
 // During an encode/decode sequence, we work as below:
 //   - If base is a built in type, en/decode base value
@@ -962,33 +962,46 @@ type typeInfo struct {
 
 	numMeth uint16 // number of methods
 
-	// baseId gives pointer to the base reflect.Type, after deferencing
-	// the pointers. E.g. base type of ***time.Time is time.Time.
-	base      reflect.Type
-	baseId    uintptr
-	baseIndir int8 // number of indirections to get to base
-
 	anyOmitEmpty bool
 
 	mbs bool // base type (T or *T) is a MapBySlice
 
-	bm        bool // base type (T or *T) is a binaryMarshaler
-	bunm      bool // base type (T or *T) is a binaryUnmarshaler
-	bmIndir   int8 // number of indirections to get to binaryMarshaler type
-	bunmIndir int8 // number of indirections to get to binaryUnmarshaler type
+	// [btj][mu]p? OR csp?
 
-	tm        bool // base type (T or *T) is a textMarshaler
-	tunm      bool // base type (T or *T) is a textUnmarshaler
-	tmIndir   int8 // number of indirections to get to textMarshaler type
-	tunmIndir int8 // number of indirections to get to textUnmarshaler type
+	bm  bool // T is a binaryMarshaler
+	bmp bool // *T is a binaryMarshaler
+	bu  bool // T is a binaryUnmarshaler
+	bup bool // *T is a binaryUnmarshaler
+	tm  bool // T is a textMarshaler
+	tmp bool // *T is a textMarshaler
+	tu  bool // T is a textUnmarshaler
+	tup bool // *T is a textUnmarshaler
+	jm  bool // T is a jsonMarshaler
+	jmp bool // *T is a jsonMarshaler
+	ju  bool // T is a jsonUnmarshaler
+	jup bool // *T is a jsonUnmarshaler
+	cs  bool // T is a Selfer
+	csp bool // *T is a Selfer
+	// su  bool // T is a
+	// sup  bool // *T is a
 
-	jm        bool // base type (T or *T) is a jsonMarshaler
-	junm      bool // base type (T or *T) is a jsonUnmarshaler
-	jmIndir   int8 // number of indirections to get to jsonMarshaler type
-	junmIndir int8 // number of indirections to get to jsonUnmarshaler type
+	// bm        bool // base type (T or *T) is a binaryMarshaler
+	// bunm      bool // base type (T or *T) is a binaryUnmarshaler
+	// bmIndir   bool // is *T binaryMarshaler type
+	// bunmIndir bool // number of indirections to get to binaryUnmarshaler type
 
-	cs      bool // base type (T or *T) is a Selfer
-	csIndir int8 // number of indirections to get to Selfer type
+	// tm        bool // base type (T or *T) is a textMarshaler
+	// tunm      bool // base type (T or *T) is a textUnmarshaler
+	// tmIndir   bool // number of indirections to get to textMarshaler type
+	// tunmIndir bool // number of indirections to get to textUnmarshaler type
+
+	// jm        bool // base type (T or *T) is a jsonMarshaler
+	// junm      bool // base type (T or *T) is a jsonUnmarshaler
+	// jmIndir   bool // number of indirections to get to jsonMarshaler type
+	// junmIndir bool // number of indirections to get to jsonUnmarshaler type
+
+	// cs      bool // base type (T or *T) is a Selfer
+	// csIndir bool // number of indirections to get to Selfer type
 
 	toArray bool // whether this (struct) type should be encoded as an array
 }
@@ -1092,56 +1105,29 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		}
 	}
 
+	rk := rt.Kind()
+
+	if rk == reflect.Ptr { // || (rk == reflect.Interface && rtid != intfTypId) {
+		panic(fmt.Errorf("invalid kind passed to TypeInfos.get: %v - %v", rk, rt))
+	}
+
 	// do not hold lock while computing this.
 	// it may lead to duplication, but that's ok.
 	ti := typeInfo{rt: rt, rtid: rtid}
 	// ti.rv0 = reflect.Zero(rt)
 
 	ti.numMeth = uint16(rt.NumMethod())
-	var ok bool
-	var indir int8
-	if ok, indir = implementsIntf(rt, binaryMarshalerTyp); ok {
-		ti.bm, ti.bmIndir = true, indir
-	}
-	if ok, indir = implementsIntf(rt, binaryUnmarshalerTyp); ok {
-		ti.bunm, ti.bunmIndir = true, indir
-	}
-	if ok, indir = implementsIntf(rt, textMarshalerTyp); ok {
-		ti.tm, ti.tmIndir = true, indir
-	}
-	if ok, indir = implementsIntf(rt, textUnmarshalerTyp); ok {
-		ti.tunm, ti.tunmIndir = true, indir
-	}
-	if ok, indir = implementsIntf(rt, jsonMarshalerTyp); ok {
-		ti.jm, ti.jmIndir = true, indir
-	}
-	if ok, indir = implementsIntf(rt, jsonUnmarshalerTyp); ok {
-		ti.junm, ti.junmIndir = true, indir
-	}
-	if ok, indir = implementsIntf(rt, selferTyp); ok {
-		ti.cs, ti.csIndir = true, indir
-	}
-	if ok, _ = implementsIntf(rt, mapBySliceTyp); ok {
-		ti.mbs = true
-	}
 
-	pt := rt
-	var ptIndir int8
-	// for ; pt.Kind() == reflect.Ptr; pt, ptIndir = pt.Elem(), ptIndir+1 { }
-	for pt.Kind() == reflect.Ptr {
-		pt = pt.Elem()
-		ptIndir++
-	}
-	if ptIndir == 0 {
-		ti.base = rt
-		ti.baseId = rtid
-	} else {
-		ti.base = pt
-		ti.baseId = rt2id(pt)
-		ti.baseIndir = ptIndir
-	}
+	ti.bm, ti.bmp = implIntf(rt, binaryMarshalerTyp)
+	ti.bu, ti.bup = implIntf(rt, binaryUnmarshalerTyp)
+	ti.tm, ti.tmp = implIntf(rt, textMarshalerTyp)
+	ti.tu, ti.tup = implIntf(rt, textUnmarshalerTyp)
+	ti.jm, ti.jmp = implIntf(rt, jsonMarshalerTyp)
+	ti.ju, ti.jup = implIntf(rt, jsonUnmarshalerTyp)
+	ti.cs, ti.csp = implIntf(rt, selferTyp)
+	ti.mbs, _ = implIntf(rt, mapBySliceTyp)
 
-	if rt.Kind() == reflect.Struct {
+	if rk == reflect.Struct {
 		var omitEmpty bool
 		if f, ok := rt.FieldByName(structInfoFieldName); ok {
 			siInfo := parseStructFieldInfo(structInfoFieldName, x.structTag(f.Tag))
@@ -1150,7 +1136,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		}
 		pp, pi := pool.tiLoad()
 		pv := pi.(*typeInfoLoadArray)
-		pv.etypes[0] = ti.baseId
+		pv.etypes[0] = ti.rtid
 		vv := typeInfoLoad{pv.fNames[:0], pv.encNames[:0], pv.etypes[:1], pv.sfis[:0]}
 		x.rget(rt, rtid, omitEmpty, nil, &vv)
 		ti.sfip, ti.sfi, ti.anyOmitEmpty = rgetResolveSFI(vv.sfis, pv.sfiidx[:0])
@@ -1348,6 +1334,10 @@ func rgetResolveSFI(x []*structFieldInfo, pv []sfiIdx) (y, z []*structFieldInfo,
 	return
 }
 
+func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
+	return rt.Implements(iTyp), reflect.PtrTo(rt).Implements(iTyp)
+}
+
 func xprintf(format string, a ...interface{}) {
 	if xDebug {
 		fmt.Fprintf(os.Stderr, format, a...)
@@ -1409,7 +1399,8 @@ type codecFnInfo struct {
 	xfFn  Ext
 	xfTag uint64
 	seq   seqType
-	addr  bool
+	addrD bool
+	addrE bool
 }
 
 // codecFn encapsulates the captured variables and the encode function.
@@ -1482,43 +1473,56 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 	fi := &(fn.i)
 	fi.ti = ti
 
-	if checkCodecSelfer && ti.cs {
+	rk := rt.Kind()
+
+	if checkCodecSelfer && (ti.cs || ti.csp) {
 		fn.fe = (*Encoder).selferMarshal
 		fn.fd = (*Decoder).selferUnmarshal
+		fi.addrD = ti.csp
+		fi.addrE = ti.csp
 	} else if rtid == rawTypId {
 		fn.fe = (*Encoder).raw
 		fn.fd = (*Decoder).raw
 	} else if rtid == rawExtTypId {
 		fn.fe = (*Encoder).rawExt
 		fn.fd = (*Decoder).rawExt
-		fn.i.addr = true
+		fi.addrD = true
+		fi.addrE = true
 	} else if c.hh.IsBuiltinType(rtid) {
 		fn.fe = (*Encoder).builtin
 		fn.fd = (*Decoder).builtin
-		fn.i.addr = true
+		fi.addrD = true
 	} else if xfFn := c.h.getExt(rtid); xfFn != nil {
 		fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 		fn.fe = (*Encoder).ext
 		fn.fd = (*Decoder).ext
-		fn.i.addr = true
-	} else if supportMarshalInterfaces && c.be && ti.bm && ti.bunm {
+		fi.addrD = true
+		if rk == reflect.Struct || rk == reflect.Array {
+			fi.addrE = true
+		}
+	} else if supportMarshalInterfaces && c.be && (ti.bm || ti.bmp) && (ti.bu || ti.bup) {
 		fn.fe = (*Encoder).binaryMarshal
 		fn.fd = (*Decoder).binaryUnmarshal
-	} else if supportMarshalInterfaces && !c.be && c.js && ti.jm && ti.junm {
+		fi.addrD = ti.bup
+		fi.addrE = ti.bmp
+	} else if supportMarshalInterfaces && !c.be && c.js && (ti.jm || ti.jmp) && (ti.ju || ti.jup) {
 		//If JSON, we should check JSONMarshal before textMarshal
 		fn.fe = (*Encoder).jsonMarshal
 		fn.fd = (*Decoder).jsonUnmarshal
-	} else if supportMarshalInterfaces && !c.be && ti.tm && ti.tunm {
+		fi.addrD = ti.jup
+		fi.addrE = ti.jmp
+	} else if supportMarshalInterfaces && !c.be && (ti.tm || ti.tmp) && (ti.tu || ti.tup) {
 		fn.fe = (*Encoder).textMarshal
 		fn.fd = (*Decoder).textUnmarshal
+		fi.addrD = ti.tup
+		fi.addrE = ti.tmp
 	} else {
-		rk := rt.Kind()
 		if fastpathEnabled && checkFastpath && (rk == reflect.Map || rk == reflect.Slice) {
 			if rt.PkgPath() == "" { // un-named slice or map
 				if idx := fastpathAV.index(rtid); idx != -1 {
 					fn.fe = fastpathAV[idx].encfn
 					fn.fd = fastpathAV[idx].decfn
-					fn.i.addr = true
+					fi.addrD = true
 				}
 			} else {
 				// use mapping for underlying type if there
@@ -1535,7 +1539,7 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 					fn.fe = func(e *Encoder, xf *codecFnInfo, xrv reflect.Value) {
 						xfnf(e, xf, xrv.Convert(xrt))
 					}
-					fn.i.addr = true
+					fi.addrD = true
 					xfnf2 := fastpathAV[idx].decfn
 					fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
 						xfnf2(d, xf, xrv.Convert(reflect.PtrTo(xrt)))
@@ -1605,7 +1609,7 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 			case reflect.Array:
 				fi.seq = seqTypeArray
 				fn.fe = (*Encoder).kSlice
-				fi.addr = false
+				fi.addrD = false
 				rt2 := reflect.SliceOf(rt.Elem())
 				fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
 					// println(">>>>>> decoding an array ... ")

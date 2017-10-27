@@ -9,7 +9,6 @@ package codec
 import (
 	"errors"
 	"fmt"
-	"math"
 	"reflect"
 )
 
@@ -84,37 +83,6 @@ func pruneSignExt(v []byte, pos bool) (n int) {
 		}
 	}
 	return
-}
-
-func implementsIntf(typ, iTyp reflect.Type) (success bool, indir int8) {
-	if typ == nil {
-		return
-	}
-	rt := typ
-	// The type might be a pointer and we need to keep
-	// dereferencing to the base type until we find an implementation.
-	for {
-		if rt.Implements(iTyp) {
-			return true, indir
-		}
-		if p := rt; p.Kind() == reflect.Ptr {
-			indir++
-			if indir >= math.MaxInt8 { // insane number of indirections
-				return false, 0
-			}
-			rt = p.Elem()
-			continue
-		}
-		break
-	}
-	// No luck yet, but if this is a base type (non-pointer), the pointer might satisfy.
-	if typ.Kind() != reflect.Ptr {
-		// Not a pointer, but does the pointer work?
-		if reflect.PtrTo(typ).Implements(iTyp) {
-			return true, -1
-		}
-	}
-	return false, 0
 }
 
 // validate that this function is correct ...

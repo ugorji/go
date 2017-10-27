@@ -357,75 +357,55 @@ func (e *Encoder) raw(f *codecFnInfo, rv reflect.Value) {
 func (e *Encoder) rawExt(f *codecFnInfo, rv reflect.Value) {
 	// rev := rv2i(rv).(RawExt)
 	// e.e.EncodeRawExt(&rev, e)
-	var re *RawExt
-	if rv.CanAddr() {
-		re = rv2i(rv.Addr()).(*RawExt)
-	} else {
-		rev := rv2i(rv).(RawExt)
-		re = &rev
-	}
-	e.e.EncodeRawExt(re, e)
+	// var re *RawExt
+	// if rv.CanAddr() {
+	// 	re = rv2i(rv.Addr()).(*RawExt)
+	// } else {
+	// 	rev := rv2i(rv).(RawExt)
+	// 	re = &rev
+	// }
+	// e.e.EncodeRawExt(re, e)
+	e.e.EncodeRawExt(rv2i(rv).(*RawExt), e)
 }
 
 func (e *Encoder) ext(f *codecFnInfo, rv reflect.Value) {
 	// if this is a struct|array and it was addressable, then pass the address directly (not the value)
-	if k := rv.Kind(); (k == reflect.Struct || k == reflect.Array) && rv.CanAddr() {
-		rv = rv.Addr()
-	}
+	// if k := rv.Kind(); (k == reflect.Struct || k == reflect.Array) && rv.CanAddr() {
+	// 	rv = rv.Addr()
+	// }
 	e.e.EncodeExt(rv2i(rv), f.xfTag, f.xfFn, e)
 }
 
-func (e *Encoder) getValueForMarshalInterface(rv reflect.Value, indir int8) (v interface{}, proceed bool) {
-	if indir == 0 {
-		v = rv2i(rv)
-	} else if indir == -1 {
-		// If a non-pointer was passed to Encode(), then that value is not addressable.
-		// Take addr if addressable, else copy value to an addressable value.
-		if rv.CanAddr() {
-			v = rv2i(rv.Addr())
-		} else {
-			rv2 := reflect.New(rv.Type())
-			rv2.Elem().Set(rv)
-			v = rv2i(rv2)
-		}
-	} else {
-		for j := int8(0); j < indir; j++ {
-			if rv.IsNil() {
-				e.e.EncodeNil()
-				return
-			}
-			rv = rv.Elem()
-		}
-		v = rv2i(rv)
-	}
-	return v, true
-}
+// func rviptr(rv reflect.Value) (v interface{}) {
+// 	// If a non-pointer was passed to Encode(), then that value is not addressable.
+// 	// Take addr if addressable, else copy value to an addressable value.
+// 	if rv.CanAddr() {
+// 		v = rv2i(rv.Addr())
+// 	} else {
+// 		rv2 := reflect.New(rv.Type())
+// 		rv2.Elem().Set(rv)
+// 		v = rv2i(rv2)
+// 	}
+// 	return v
+// }
 
 func (e *Encoder) selferMarshal(f *codecFnInfo, rv reflect.Value) {
-	if v, proceed := e.getValueForMarshalInterface(rv, f.ti.csIndir); proceed {
-		v.(Selfer).CodecEncodeSelf(e)
-	}
+	rv2i(rv).(Selfer).CodecEncodeSelf(e)
 }
 
 func (e *Encoder) binaryMarshal(f *codecFnInfo, rv reflect.Value) {
-	if v, proceed := e.getValueForMarshalInterface(rv, f.ti.bmIndir); proceed {
-		bs, fnerr := v.(encoding.BinaryMarshaler).MarshalBinary()
-		e.marshal(bs, fnerr, false, c_RAW)
-	}
+	bs, fnerr := rv2i(rv).(encoding.BinaryMarshaler).MarshalBinary()
+	e.marshal(bs, fnerr, false, c_RAW)
 }
 
 func (e *Encoder) textMarshal(f *codecFnInfo, rv reflect.Value) {
-	if v, proceed := e.getValueForMarshalInterface(rv, f.ti.tmIndir); proceed {
-		bs, fnerr := v.(encoding.TextMarshaler).MarshalText()
-		e.marshal(bs, fnerr, false, c_UTF8)
-	}
+	bs, fnerr := rv2i(rv).(encoding.TextMarshaler).MarshalText()
+	e.marshal(bs, fnerr, false, c_UTF8)
 }
 
 func (e *Encoder) jsonMarshal(f *codecFnInfo, rv reflect.Value) {
-	if v, proceed := e.getValueForMarshalInterface(rv, f.ti.jmIndir); proceed {
-		bs, fnerr := v.(jsonMarshaler).MarshalJSON()
-		e.marshal(bs, fnerr, true, c_UTF8)
-	}
+	bs, fnerr := rv2i(rv).(jsonMarshaler).MarshalJSON()
+	e.marshal(bs, fnerr, true, c_UTF8)
 }
 
 func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
@@ -1294,6 +1274,8 @@ func (e *Encoder) encode(iv interface{}) {
 func (e *Encoder) encodeValue(rv reflect.Value, fn *codecFn, checkFastpath bool) {
 	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
 	var sptr uintptr
+	var rvp reflect.Value
+	var rvpValid bool
 TOP:
 	switch rv.Kind() {
 	case reflect.Ptr:
@@ -1301,6 +1283,8 @@ TOP:
 			e.e.EncodeNil()
 			return
 		}
+		rvpValid = true
+		rvp = rv
 		rv = rv.Elem()
 		if e.h.CheckCircularRef && rv.Kind() == reflect.Struct {
 			// TODO: Movable pointers will be an issue here. Future problem.
@@ -1339,7 +1323,19 @@ TOP:
 		// always pass checkCodecSelfer=true, in case T or ****T is passed, where *T is a Selfer
 		fn = e.cf.get(rt, checkFastpath, true)
 	}
-	fn.fe(e, &fn.i, rv)
+	if fn.i.addrE {
+		if rvpValid {
+			fn.fe(e, &fn.i, rvp)
+		} else if rv.CanAddr() {
+			fn.fe(e, &fn.i, rv.Addr())
+		} else {
+			rv2 := reflect.New(rv.Type())
+			rv2.Elem().Set(rv)
+			fn.fe(e, &fn.i, rv2)
+		}
+	} else {
+		fn.fe(e, &fn.i, rv)
+	}
 	if sptr != 0 {
 		(&e.ci).remove(sptr)
 	}
