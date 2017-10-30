@@ -2515,6 +2515,3 @@ func TestSimpleUintToInt(t *testing.T) {
 // - mapbyslice (for non-fastpath things)
 // - nil and 0-len slices and maps for non-fastpath things
 // - pointers to scalars at top-level e.g. v := uint(7), encode(&v)
-//
-// cbor:
-// - halffloat

@@ -213,6 +213,7 @@ func testCodecGroup(t *testing.T) {
 	t.Run("TestSimpleUintToInt", TestSimpleUintToInt)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
+	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 	// <tear-down code>
 }
 
@@ -282,6 +283,8 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborMammothMapsAndSlices", TestCborMammothMapsAndSlices)
 	t.Run("TestCborTime", TestCborTime)
 	t.Run("TestCborUintToInt", TestCborUintToInt)
+
+	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 }
 
 func testMsgpackGroup(t *testing.T) {
