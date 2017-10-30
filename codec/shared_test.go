@@ -43,8 +43,10 @@ package codec
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"io"
 	"sync"
+	"testing"
 )
 
 // DO NOT REMOVE - replacement line for go-codec-bench import declaration tag //
@@ -263,7 +265,22 @@ func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err
 	return
 }
 
-// ----- functions below are used only by benchmarks alone
+// --- functions below are used by both benchmarks and tests
+
+func logT(x interface{}, format string, args ...interface{}) {
+	if t, ok := x.(*testing.T); ok && t != nil {
+		t.Logf(format, args...)
+	} else if b, ok := x.(*testing.B); ok && b != nil {
+		b.Logf(format, args...)
+	} else if testVerbose {
+		if len(format) == 0 || format[len(format)-1] != '\n' {
+			format = format + "\n"
+		}
+		fmt.Printf(format, args...)
+	}
+}
+
+// --- functions below are used only by benchmarks alone
 
 func fnBenchmarkByteBuf(bsIn []byte) (buf *bytes.Buffer) {
 	// var buf bytes.Buffer

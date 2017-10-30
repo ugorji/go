@@ -350,10 +350,6 @@ func (e *Encoder) builtin(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeBuiltin(f.ti.rtid, rv2i(rv))
 }
 
-func (e *Encoder) raw(f *codecFnInfo, rv reflect.Value) {
-	e.rawBytes(rv2i(rv).(Raw))
-}
-
 func (e *Encoder) rawExt(f *codecFnInfo, rv reflect.Value) {
 	// rev := rv2i(rv).(RawExt)
 	// e.e.EncodeRawExt(&rev, e)
@@ -408,28 +404,8 @@ func (e *Encoder) jsonMarshal(f *codecFnInfo, rv reflect.Value) {
 	e.marshal(bs, fnerr, true, c_UTF8)
 }
 
-func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeBool(rv.Bool())
-}
-
-func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeString(c_UTF8, rv.String())
-}
-
-func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeFloat64(rv.Float())
-}
-
-func (e *Encoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeFloat32(float32(rv.Float()))
-}
-
-func (e *Encoder) kInt(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeInt(rv.Int())
-}
-
-func (e *Encoder) kUint(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeUint(rv.Uint())
+func (e *Encoder) raw(f *codecFnInfo, rv reflect.Value) {
+	e.rawBytes(rv2i(rv).(Raw))
 }
 
 func (e *Encoder) kInvalid(f *codecFnInfo, rv reflect.Value) {

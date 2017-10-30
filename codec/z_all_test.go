@@ -206,9 +206,13 @@ func testCodecGroup(t *testing.T) {
 	t.Run("TestMsgpackTime", TestMsgpackTime)
 	t.Run("TestBincTime", TestBincTime)
 	t.Run("TestSimpleTime", TestSimpleTime)
+	t.Run("TestJsonUintToInt", TestJsonUintToInt)
+	t.Run("TestCborUintToInt", TestCborUintToInt)
+	t.Run("TestMsgpackUintToInt", TestMsgpackUintToInt)
+	t.Run("TestBincUintToInt", TestBincUintToInt)
+	t.Run("TestSimpleUintToInt", TestSimpleUintToInt)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
-	t.Run("TestBincTime", TestBincTime)
 	// <tear-down code>
 }
 
@@ -234,6 +238,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonMammothMapsAndSlices", TestJsonMammothMapsAndSlices)
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 	t.Run("TestJsonTime", TestJsonTime)
+	t.Run("TestJsonUintToInt", TestJsonUintToInt)
 }
 
 func testBincGroup(t *testing.T) {
@@ -254,6 +259,7 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincLargeContainerLen", TestBincLargeContainerLen)
 	t.Run("TestBincMammothMapsAndSlices", TestBincMammothMapsAndSlices)
 	t.Run("TestBincTime", TestBincTime)
+	t.Run("TestBincUintToInt", TestBincUintToInt)
 }
 
 func testCborGroup(t *testing.T) {
@@ -275,6 +281,7 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborLargeContainerLen", TestCborLargeContainerLen)
 	t.Run("TestCborMammothMapsAndSlices", TestCborMammothMapsAndSlices)
 	t.Run("TestCborTime", TestCborTime)
+	t.Run("TestCborUintToInt", TestCborUintToInt)
 }
 
 func testMsgpackGroup(t *testing.T) {
@@ -294,6 +301,7 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackLargeContainerLen", TestMsgpackLargeContainerLen)
 	t.Run("TestMsgpackMammothMapsAndSlices", TestMsgpackMammothMapsAndSlices)
 	t.Run("TestMsgpackTime", TestMsgpackTime)
+	t.Run("TestMsgpackUintToInt", TestMsgpackUintToInt)
 }
 
 func TestCodecSuite(t *testing.T) {
@@ -344,16 +352,19 @@ func TestCodecSuite(t *testing.T) {
 	testBincH.getBasicHandle().AsSymbols = oldSymbols
 
 	oldWriteExt := testMsgpackH.WriteExt
+	oldNoFixedNum := testMsgpackH.NoFixedNum
 
-	testMsgpackH.WriteExt = true
+	testMsgpackH.WriteExt = !testMsgpackH.WriteExt
 	testReinit()
-	t.Run("msgpack-writeext", testMsgpackGroup)
-
-	testMsgpackH.WriteExt = false
-	testReinit()
-	t.Run("msgpack-no-writeext", testMsgpackGroup)
+	t.Run("msgpack-inverse-writeext", testMsgpackGroup)
 
 	testMsgpackH.WriteExt = oldWriteExt
+
+	testMsgpackH.NoFixedNum = !testMsgpackH.NoFixedNum
+	testReinit()
+	t.Run("msgpack-fixednum", testMsgpackGroup)
+
+	testMsgpackH.NoFixedNum = oldNoFixedNum
 
 	testGroupResetFlags()
 }

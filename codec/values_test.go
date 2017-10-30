@@ -237,7 +237,7 @@ func populateTestStrucCommon(ts *testStrucCommon, n int, bench, useInterface, us
 		AI64slice: []int64{
 			0, 1, -1, -22, 333, -4444, 55555, -666666,
 			// msgpack ones
-			-48, -32, -24,
+			-48, -32, -24, -8, 32, 127, 192, 255,
 			// standard ones
 			0, -1, 1,
 			math.MaxInt8, math.MaxInt8 + 4, math.MaxInt8 - 4,

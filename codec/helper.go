@@ -1555,36 +1555,36 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 				fn.fd = (*Decoder).kInt
 				fn.fe = (*Encoder).kInt
 			case reflect.Int8:
-				fn.fe = (*Encoder).kInt
+				fn.fe = (*Encoder).kInt8
 				fn.fd = (*Decoder).kInt8
 			case reflect.Int16:
-				fn.fe = (*Encoder).kInt
+				fn.fe = (*Encoder).kInt16
 				fn.fd = (*Decoder).kInt16
 			case reflect.Int32:
-				fn.fe = (*Encoder).kInt
+				fn.fe = (*Encoder).kInt32
 				fn.fd = (*Decoder).kInt32
 			case reflect.Int64:
-				fn.fe = (*Encoder).kInt
+				fn.fe = (*Encoder).kInt64
 				fn.fd = (*Decoder).kInt64
 			case reflect.Uint:
 				fn.fd = (*Decoder).kUint
 				fn.fe = (*Encoder).kUint
 			case reflect.Uint8:
-				fn.fe = (*Encoder).kUint
+				fn.fe = (*Encoder).kUint8
 				fn.fd = (*Decoder).kUint8
 			case reflect.Uint16:
-				fn.fe = (*Encoder).kUint
+				fn.fe = (*Encoder).kUint16
 				fn.fd = (*Decoder).kUint16
 			case reflect.Uint32:
-				fn.fe = (*Encoder).kUint
+				fn.fe = (*Encoder).kUint32
 				fn.fd = (*Decoder).kUint32
 			case reflect.Uint64:
-				fn.fe = (*Encoder).kUint
+				fn.fe = (*Encoder).kUint64
 				fn.fd = (*Decoder).kUint64
 				// case reflect.Ptr:
 				// 	fn.fd = (*Decoder).kPtr
 			case reflect.Uintptr:
-				fn.fe = (*Encoder).kUint
+				fn.fe = (*Encoder).kUintptr
 				fn.fd = (*Decoder).kUintptr
 			case reflect.Float32:
 				fn.fe = (*Encoder).kFloat32
@@ -1594,6 +1594,7 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 				fn.fd = (*Decoder).kFloat64
 			case reflect.Invalid:
 				fn.fe = (*Encoder).kInvalid
+				fn.fd = (*Decoder).kErr
 			case reflect.Chan:
 				fi.seq = seqTypeChan
 				fn.fe = (*Encoder).kSlice
@@ -1631,6 +1632,7 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 			case reflect.Interface:
 				// encode: reflect.Interface are handled already by preEncodeValue
 				fn.fd = (*Decoder).kInterface
+				fn.fe = (*Encoder).kErr
 			default:
 				fn.fe = (*Encoder).kErr
 				fn.fd = (*Decoder).kErr
