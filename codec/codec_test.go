@@ -1809,11 +1809,7 @@ func testRandomFillRV(v reflect.Value) {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		v.SetUint(uint64(rand.Int63n(255)))
 	case reflect.Bool:
-		if fneg() == 1 {
-			v.SetBool(true)
-		} else {
-			v.SetBool(false)
-		}
+		v.SetBool(fneg() == 1)
 	case reflect.Float32, reflect.Float64:
 		v.SetFloat(float64(fneg()) * float64(rand.Float32()))
 	case reflect.String:
@@ -1825,11 +1821,20 @@ func testRandomFillRV(v reflect.Value) {
 
 func testMammoth(t *testing.T, name string, h Handle) {
 	testOnce.Do(testInitAll)
+	var b []byte
+
 	var m, m2 TestMammoth
 	testRandomFillRV(reflect.ValueOf(&m).Elem())
-	b := testMarshalErr(&m, h, t, "mammoth-"+name)
+	b = testMarshalErr(&m, h, t, "mammoth-"+name)
 	testUnmarshalErr(&m2, b, h, t, "mammoth-"+name)
 	testDeepEqualErr(&m, &m2, t, "mammoth-"+name)
+
+	var mm, mm2 TestMammoth2Wrapper
+	testRandomFillRV(reflect.ValueOf(&mm).Elem())
+	b = testMarshalErr(&mm, h, t, "mammoth2-"+name)
+	testUnmarshalErr(&mm2, b, h, t, "mammoth2-"+name)
+	testDeepEqualErr(&mm, &mm2, t, "mammoth2-"+name)
+	// testMammoth2(t, name, h)
 }
 
 func testTime(t *testing.T, name string, h Handle) {

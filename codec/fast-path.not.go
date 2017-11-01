@@ -33,3 +33,6 @@ func (x fastpathA) index(rtid uintptr) int { return -1 }
 
 var fastpathAV fastpathA
 var fastpathTV fastpathT
+
+// ----
+type TestMammoth2Wrapper struct{} // to allow testMammoth work in notfastpath mode
