@@ -645,7 +645,7 @@ func (x *testMammoth2Json) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
-type testMammoth2Basic uint64
+type testMammoth2Basic [4]uint64
 
 type TestMammoth2Wrapper struct {
 	V TestMammoth2
@@ -655,4 +655,5 @@ type TestMammoth2Wrapper struct {
 	C testMammoth2Basic
 	M map[testMammoth2Basic]TestMammoth2
 	L []TestMammoth2
+	A [4]int64
 }

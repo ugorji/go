@@ -44040,16 +44040,20 @@ func (x *testMammoth2Json) CodecDecodeSelf(d *Decoder) {
 	}
 }
 
-func (x testMammoth2Basic) CodecEncodeSelf(e *Encoder) {
+func (x *testMammoth2Basic) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	yym1 := z.EncBinary()
-	_ = yym1
-	if false {
-	} else if z.HasExtensions() && z.EncExt(x) {
+	if x == nil {
+		r.EncodeNil()
 	} else {
-		r.EncodeUint(uint64(x))
+		yym1 := z.EncBinary()
+		_ = yym1
+		if false {
+		} else if z.HasExtensions() && z.EncExt(x) {
+		} else {
+			h.enctestMammoth2Basic((*testMammoth2Basic)(x), e)
+		}
 	}
 }
 
@@ -44062,7 +44066,7 @@ func (x *testMammoth2Basic) CodecDecodeSelf(d *Decoder) {
 	if false {
 	} else if z.HasExtensions() && z.DecExt(x) {
 	} else {
-		*((*uint64)(x)) = uint64(r.DecodeUint(64))
+		h.dectestMammoth2Basic((*testMammoth2Basic)(x), d)
 	}
 }
 
@@ -44083,9 +44087,9 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			_, _ = yysep2, yy2arr2
 			const yyr2 bool = false
 			if yyr2 || yy2arr2 {
-				r.WriteArrayStart(7)
+				r.WriteArrayStart(8)
 			} else {
-				r.WriteMapStart(7)
+				r.WriteMapStart(8)
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
@@ -44127,20 +44131,22 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				x.C.CodecEncodeSelf(e)
+				yy18 := &x.C
+				yy18.CodecEncodeSelf(e)
 			} else {
 				r.WriteMapElemKey()
 				r.EncodeString(codecSelferC_UTF819781, string("C"))
 				r.WriteMapElemValue()
-				x.C.CodecEncodeSelf(e)
+				yy20 := &x.C
+				yy20.CodecEncodeSelf(e)
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
 				if x.M == nil {
 					r.EncodeNil()
 				} else {
-					yym21 := z.EncBinary()
-					_ = yym21
+					yym23 := z.EncBinary()
+					_ = yym23
 					if false {
 					} else {
 						h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
@@ -44153,8 +44159,8 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				if x.M == nil {
 					r.EncodeNil()
 				} else {
-					yym22 := z.EncBinary()
-					_ = yym22
+					yym24 := z.EncBinary()
+					_ = yym24
 					if false {
 					} else {
 						h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
@@ -44166,8 +44172,8 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				if x.L == nil {
 					r.EncodeNil()
 				} else {
-					yym24 := z.EncBinary()
-					_ = yym24
+					yym26 := z.EncBinary()
+					_ = yym26
 					if false {
 					} else {
 						h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
@@ -44180,12 +44186,33 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				if x.L == nil {
 					r.EncodeNil()
 				} else {
-					yym25 := z.EncBinary()
-					_ = yym25
+					yym27 := z.EncBinary()
+					_ = yym27
 					if false {
 					} else {
 						h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
 					}
+				}
+			}
+			if yyr2 || yy2arr2 {
+				r.WriteArrayElem()
+				yy29 := &x.A
+				yym30 := z.EncBinary()
+				_ = yym30
+				if false {
+				} else {
+					h.encArray4int64((*[4]int64)(yy29), e)
+				}
+			} else {
+				r.WriteMapElemKey()
+				r.EncodeString(codecSelferC_UTF819781, string("A"))
+				r.WriteMapElemValue()
+				yy31 := &x.A
+				yym32 := z.EncBinary()
+				_ = yym32
+				if false {
+				} else {
+					h.encArray4int64((*[4]int64)(yy31), e)
 				}
 			}
 			if yyr2 || yy2arr2 {
@@ -44279,7 +44306,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		case "C":
 			if r.TryDecodeAsNil() {
-				x.C = 0
+				x.C = testMammoth2Basic{}
 			} else {
 				yyv8 := &x.C
 				yyv8.CodecDecodeSelf(d)
@@ -44308,6 +44335,18 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 					h.decSliceTestMammoth2((*[]TestMammoth2)(yyv11), d)
 				}
 			}
+		case "A":
+			if r.TryDecodeAsNil() {
+				x.A = [4]int64{}
+			} else {
+				yyv13 := &x.A
+				yym14 := z.DecBinary()
+				_ = yym14
+				if false {
+				} else {
+					h.decArray4int64((*[4]int64)(yyv13), d)
+				}
+			}
 		default:
 			z.DecStructFieldNotFound(-1, yys3)
 		} // end switch yys3
@@ -44319,16 +44358,16 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var h codecSelfer19781
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	var yyj13 int
-	var yyb13 bool
-	var yyhl13 bool = l >= 0
-	yyj13++
-	if yyhl13 {
-		yyb13 = yyj13 > l
+	var yyj15 int
+	var yyb15 bool
+	var yyhl15 bool = l >= 0
+	yyj15++
+	if yyhl15 {
+		yyb15 = yyj15 > l
 	} else {
-		yyb13 = r.CheckBreak()
+		yyb15 = r.CheckBreak()
 	}
-	if yyb13 {
+	if yyb15 {
 		r.ReadArrayEnd()
 		return
 	}
@@ -44336,16 +44375,16 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if r.TryDecodeAsNil() {
 		x.V = TestMammoth2{}
 	} else {
-		yyv14 := &x.V
-		yyv14.CodecDecodeSelf(d)
+		yyv16 := &x.V
+		yyv16.CodecDecodeSelf(d)
 	}
-	yyj13++
-	if yyhl13 {
-		yyb13 = yyj13 > l
+	yyj15++
+	if yyhl15 {
+		yyb15 = yyj15 > l
 	} else {
-		yyb13 = r.CheckBreak()
+		yyb15 = r.CheckBreak()
 	}
-	if yyb13 {
+	if yyb15 {
 		r.ReadArrayEnd()
 		return
 	}
@@ -44353,16 +44392,16 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if r.TryDecodeAsNil() {
 		x.T = 0
 	} else {
-		yyv15 := &x.T
-		yyv15.CodecDecodeSelf(d)
+		yyv17 := &x.T
+		yyv17.CodecDecodeSelf(d)
 	}
-	yyj13++
-	if yyhl13 {
-		yyb13 = yyj13 > l
+	yyj15++
+	if yyhl15 {
+		yyb15 = yyj15 > l
 	} else {
-		yyb13 = r.CheckBreak()
+		yyb15 = r.CheckBreak()
 	}
-	if yyb13 {
+	if yyb15 {
 		r.ReadArrayEnd()
 		return
 	}
@@ -44370,16 +44409,16 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if r.TryDecodeAsNil() {
 		x.B = 0
 	} else {
-		yyv16 := &x.B
-		yyv16.CodecDecodeSelf(d)
+		yyv18 := &x.B
+		yyv18.CodecDecodeSelf(d)
 	}
-	yyj13++
-	if yyhl13 {
-		yyb13 = yyj13 > l
+	yyj15++
+	if yyhl15 {
+		yyb15 = yyj15 > l
 	} else {
-		yyb13 = r.CheckBreak()
+		yyb15 = r.CheckBreak()
 	}
-	if yyb13 {
+	if yyb15 {
 		r.ReadArrayEnd()
 		return
 	}
@@ -44387,33 +44426,33 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if r.TryDecodeAsNil() {
 		x.J = 0
 	} else {
-		yyv17 := &x.J
-		yyv17.CodecDecodeSelf(d)
+		yyv19 := &x.J
+		yyv19.CodecDecodeSelf(d)
 	}
-	yyj13++
-	if yyhl13 {
-		yyb13 = yyj13 > l
+	yyj15++
+	if yyhl15 {
+		yyb15 = yyj15 > l
 	} else {
-		yyb13 = r.CheckBreak()
+		yyb15 = r.CheckBreak()
 	}
-	if yyb13 {
+	if yyb15 {
 		r.ReadArrayEnd()
 		return
 	}
 	r.ReadArrayElem()
 	if r.TryDecodeAsNil() {
-		x.C = 0
+		x.C = testMammoth2Basic{}
 	} else {
-		yyv18 := &x.C
-		yyv18.CodecDecodeSelf(d)
+		yyv20 := &x.C
+		yyv20.CodecDecodeSelf(d)
 	}
-	yyj13++
-	if yyhl13 {
-		yyb13 = yyj13 > l
+	yyj15++
+	if yyhl15 {
+		yyb15 = yyj15 > l
 	} else {
-		yyb13 = r.CheckBreak()
+		yyb15 = r.CheckBreak()
 	}
-	if yyb13 {
+	if yyb15 {
 		r.ReadArrayEnd()
 		return
 	}
@@ -44421,21 +44460,21 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if r.TryDecodeAsNil() {
 		x.M = nil
 	} else {
-		yyv19 := &x.M
-		yym20 := z.DecBinary()
-		_ = yym20
+		yyv21 := &x.M
+		yym22 := z.DecBinary()
+		_ = yym22
 		if false {
 		} else {
-			h.decMaptestMammoth2BasicTestMammoth2((*map[testMammoth2Basic]TestMammoth2)(yyv19), d)
+			h.decMaptestMammoth2BasicTestMammoth2((*map[testMammoth2Basic]TestMammoth2)(yyv21), d)
 		}
 	}
-	yyj13++
-	if yyhl13 {
-		yyb13 = yyj13 > l
+	yyj15++
+	if yyhl15 {
+		yyb15 = yyj15 > l
 	} else {
-		yyb13 = r.CheckBreak()
+		yyb15 = r.CheckBreak()
 	}
-	if yyb13 {
+	if yyb15 {
 		r.ReadArrayEnd()
 		return
 	}
@@ -44443,28 +44482,119 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if r.TryDecodeAsNil() {
 		x.L = nil
 	} else {
-		yyv21 := &x.L
-		yym22 := z.DecBinary()
-		_ = yym22
+		yyv23 := &x.L
+		yym24 := z.DecBinary()
+		_ = yym24
 		if false {
 		} else {
-			h.decSliceTestMammoth2((*[]TestMammoth2)(yyv21), d)
+			h.decSliceTestMammoth2((*[]TestMammoth2)(yyv23), d)
+		}
+	}
+	yyj15++
+	if yyhl15 {
+		yyb15 = yyj15 > l
+	} else {
+		yyb15 = r.CheckBreak()
+	}
+	if yyb15 {
+		r.ReadArrayEnd()
+		return
+	}
+	r.ReadArrayElem()
+	if r.TryDecodeAsNil() {
+		x.A = [4]int64{}
+	} else {
+		yyv25 := &x.A
+		yym26 := z.DecBinary()
+		_ = yym26
+		if false {
+		} else {
+			h.decArray4int64((*[4]int64)(yyv25), d)
 		}
 	}
 	for {
-		yyj13++
-		if yyhl13 {
-			yyb13 = yyj13 > l
+		yyj15++
+		if yyhl15 {
+			yyb15 = yyj15 > l
 		} else {
-			yyb13 = r.CheckBreak()
+			yyb15 = r.CheckBreak()
 		}
-		if yyb13 {
+		if yyb15 {
 			break
 		}
 		r.ReadArrayElem()
-		z.DecStructFieldNotFound(yyj13-1, "")
+		z.DecStructFieldNotFound(yyj15-1, "")
 	}
 	r.ReadArrayEnd()
+}
+
+func (x codecSelfer19781) enctestMammoth2Basic(v *testMammoth2Basic, e *Encoder) {
+	var h codecSelfer19781
+	z, r := GenHelperEncoder(e)
+	_, _, _ = h, z, r
+	r.WriteArrayStart(len(v))
+	for _, yyv1 := range v {
+		r.WriteArrayElem()
+		yym2 := z.EncBinary()
+		_ = yym2
+		if false {
+		} else {
+			r.EncodeUint(uint64(yyv1))
+		}
+	}
+	r.WriteArrayEnd()
+}
+
+func (x codecSelfer19781) dectestMammoth2Basic(v *testMammoth2Basic, d *Decoder) {
+	var h codecSelfer19781
+	z, r := GenHelperDecoder(d)
+	_, _, _ = h, z, r
+
+	yyv1 := v
+	yyh1, yyl1 := z.DecSliceHelperStart()
+	if yyl1 == 0 {
+
+	} else {
+		yyhl1 := yyl1 > 0
+		var yyrl1 int
+		_ = yyrl1
+
+		var yyj1 int
+		// var yydn1 bool
+		for ; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+
+			yyh1.ElemContainerState(yyj1)
+			// yydn1 = r.TryDecodeAsNil()
+
+			// if indefinite, etc, then expand the slice if necessary
+			var yydb1 bool
+			if yyj1 >= len(yyv1) {
+				z.DecArrayCannotExpand(len(v), yyj1+1)
+				yydb1 = true
+
+			}
+			if yydb1 {
+				z.DecSwallow()
+			} else {
+				if r.TryDecodeAsNil() {
+					yyv1[yyj1] = 0
+				} else {
+					yyv2 := &yyv1[yyj1]
+					yym3 := z.DecBinary()
+					_ = yym3
+					if false {
+					} else {
+						*((*uint64)(yyv2)) = uint64(r.DecodeUint(64))
+					}
+				}
+
+			}
+
+		}
+
+	}
+	yyh1.End()
+
 }
 
 func (x codecSelfer19781) encMaptestMammoth2BasicTestMammoth2(v map[testMammoth2Basic]TestMammoth2, e *Encoder) {
@@ -44474,10 +44604,11 @@ func (x codecSelfer19781) encMaptestMammoth2BasicTestMammoth2(v map[testMammoth2
 	r.WriteMapStart(len(v))
 	for yyk1, yyv1 := range v {
 		r.WriteMapElemKey()
-		yyk1.CodecEncodeSelf(e)
+		yy2 := &yyk1
+		yy2.CodecEncodeSelf(e)
 		r.WriteMapElemValue()
-		yy3 := &yyv1
-		yy3.CodecEncodeSelf(e)
+		yy4 := &yyv1
+		yy4.CodecEncodeSelf(e)
 	}
 	r.WriteMapEnd()
 }
@@ -44491,7 +44622,7 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 	yyl1 := r.ReadMapStart()
 	yybh1 := z.DecBasicHandle()
 	if yyv1 == nil {
-		yyrl1 := z.DecInferLen(yyl1, yybh1.MaxInitLen, 4856)
+		yyrl1 := z.DecInferLen(yyl1, yybh1.MaxInitLen, 4880)
 		yyv1 = make(map[testMammoth2Basic]TestMammoth2, yyrl1)
 		*v = yyv1
 	}
@@ -44506,7 +44637,7 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 		for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
 			r.ReadMapElemKey()
 			if r.TryDecodeAsNil() {
-				yymk1 = 0
+				yymk1 = testMammoth2Basic{}
 			} else {
 				yyv2 := &yymk1
 				yyv2.CodecDecodeSelf(d)
@@ -44635,5 +44766,74 @@ func (x codecSelfer19781) decSliceTestMammoth2(v *[]TestMammoth2, d *Decoder) {
 	if yyc1 {
 		*v = yyv1
 	}
+
+}
+
+func (x codecSelfer19781) encArray4int64(v *[4]int64, e *Encoder) {
+	var h codecSelfer19781
+	z, r := GenHelperEncoder(e)
+	_, _, _ = h, z, r
+	r.WriteArrayStart(len(v))
+	for _, yyv1 := range v {
+		r.WriteArrayElem()
+		yym2 := z.EncBinary()
+		_ = yym2
+		if false {
+		} else {
+			r.EncodeInt(int64(yyv1))
+		}
+	}
+	r.WriteArrayEnd()
+}
+
+func (x codecSelfer19781) decArray4int64(v *[4]int64, d *Decoder) {
+	var h codecSelfer19781
+	z, r := GenHelperDecoder(d)
+	_, _, _ = h, z, r
+
+	yyv1 := v
+	yyh1, yyl1 := z.DecSliceHelperStart()
+	if yyl1 == 0 {
+
+	} else {
+		yyhl1 := yyl1 > 0
+		var yyrl1 int
+		_ = yyrl1
+
+		var yyj1 int
+		// var yydn1 bool
+		for ; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+
+			yyh1.ElemContainerState(yyj1)
+			// yydn1 = r.TryDecodeAsNil()
+
+			// if indefinite, etc, then expand the slice if necessary
+			var yydb1 bool
+			if yyj1 >= len(yyv1) {
+				z.DecArrayCannotExpand(len(v), yyj1+1)
+				yydb1 = true
+
+			}
+			if yydb1 {
+				z.DecSwallow()
+			} else {
+				if r.TryDecodeAsNil() {
+					yyv1[yyj1] = 0
+				} else {
+					yyv2 := &yyv1[yyj1]
+					yym3 := z.DecBinary()
+					_ = yym3
+					if false {
+					} else {
+						*((*int64)(yyv2)) = int64(r.DecodeInt(64))
+					}
+				}
+
+			}
+
+		}
+
+	}
+	yyh1.End()
 
 }
