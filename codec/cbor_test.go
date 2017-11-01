@@ -202,10 +202,13 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 
 func TestCborHalfFloat(t *testing.T) {
 	m := map[uint16]float64{
+		// using examples from
+		// https://en.wikipedia.org/wiki/Half-precision_floating-point_format
 		0x3c00: 1,
 		0x3c01: 1 + math.Pow(2, -10),
 		0xc000: -2,
-		//0x0800: math.Pow(2, -14),
+		0x7bff: 65504,
+		0x0400: math.Pow(2, -14),
 		0x03ff: math.Pow(2, -14) - math.Pow(2, -24),
 		0x0001: math.Pow(2, -24),
 		0x0000: 0,
@@ -221,7 +224,7 @@ func TestCborHalfFloat(t *testing.T) {
 		if res == v {
 			logT(t, "equal floats: from %x %b, %v", k, k, v)
 		} else {
-			failT(t, "unequal floats: from %v %b, %v != %v", k, k, res, v)
+			failT(t, "unequal floats: from %x %b, %v != %v", k, k, res, v)
 		}
 	}
 }
