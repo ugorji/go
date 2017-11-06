@@ -289,7 +289,7 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 	return true
 }
 
-func fastpathDecodeSetZeroTypeSwitch(iv interface{}, d *Decoder) bool {
+func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 	switch v := iv.(type) {
 {{range .Values}}{{if not .Primitive}}{{if not .MapKey }}
 	case *[]{{ .Elem }}: {{else}}

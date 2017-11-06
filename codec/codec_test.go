@@ -3,22 +3,6 @@
 
 package codec
 
-// Test works by using a slice of interfaces.
-// It can test for encoding/decoding into/from a nil interface{}
-// or passing the object to encode/decode into.
-//
-// There are basically 2 main tests here.
-// First test internally encodes and decodes things and verifies that
-// the artifact was as expected.
-// Second test will use python msgpack to create a bunch of golden files,
-// read those files, and compare them to what it should be. It then
-// writes those files back out and compares the byte streams.
-//
-// Taken together, the tests are pretty extensive.
-//
-// The following manual tests must be done:
-//   - TestCodecUnderlyingType
-
 import (
 	"bytes"
 	"encoding/gob"
@@ -49,10 +33,16 @@ func init() {
 	// )
 }
 
+type testCustomStringT string
+
 // make this a mapbyslice
 type testMbsT []interface{}
 
 func (_ testMbsT) MapBySlice() {}
+
+type testMbsCustStrT []testCustomStringT
+
+func (_ testMbsCustStrT) MapBySlice() {}
 
 type testVerifyFlag uint8
 
@@ -1520,7 +1510,7 @@ func doTestSwallowAndZero(t *testing.T, h Handle) {
 		logT(t, "swallow didn't consume all encoded bytes: %v out of %v", d1.r.numread(), len(b1))
 		failT(t)
 	}
-	d1.setZero(v1)
+	setZero(v1)
 	testDeepEqualErr(v1, &TestStrucFlex{}, t, "filled-and-zeroed")
 }
 
@@ -1589,6 +1579,7 @@ func doTestMapStructKey(t *testing.T, h Handle) {
 }
 
 func doTestDecodeNilMapValue(t *testing.T, handle Handle) {
+	testOnce.Do(testInitAll)
 	type Struct struct {
 		Field map[uint16]map[uint32]struct{}
 	}
@@ -1631,6 +1622,7 @@ func doTestDecodeNilMapValue(t *testing.T, handle Handle) {
 }
 
 func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
 	type Embedded struct {
 		Field byte
 	}
@@ -1672,6 +1664,7 @@ func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
 }
 
 func doTestLargeContainerLen(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
 	m := make(map[int][]struct{})
 	for i := range []int{
 		0, 1,
@@ -1838,6 +1831,7 @@ func testMammoth(t *testing.T, name string, h Handle) {
 }
 
 func testTime(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
 	// test time which uses the time.go implementation (ie Binc)
 	var tt, tt2 time.Time
 	// time in 1990
@@ -1854,6 +1848,7 @@ func testTime(t *testing.T, name string, h Handle) {
 }
 
 func testUintToInt(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
 	var golden = [...]int64{
 		0, 1, 22, 333, 4444, 55555, 666666,
 		// msgpack ones
@@ -1895,9 +1890,172 @@ func testUintToInt(t *testing.T, name string, h Handle) {
 	}
 }
 
+func doTestDifferentMapOrSliceType(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
+
+	// - maptype, slicetype: diff from map[string]intf, map[intf]intf or []intf, etc
+	//   include map[interface{}]string where some keys are []byte.
+	//   To test, take a sequence of []byte and string, and decode into []string and []interface.
+	//   Also, decode into map[string]string, map[string]interface{}, map[interface{}]string
+
+	bh := h.getBasicHandle()
+	oldM, oldS := bh.MapType, bh.SliceType
+	defer func() { bh.MapType, bh.SliceType = oldM, oldS }()
+
+	var b []byte
+
+	var vi = []interface{}{
+		"hello 1",
+		[]byte("hello 2"),
+		"hello 3",
+		[]byte("hello 4"),
+		"hello 5",
+	}
+	var vs []string
+	var v2i, v2s testMbsT
+	var v2ss testMbsCustStrT
+	// encode it as a map or as a slice
+	for i, v := range vi {
+		vv, ok := v.(string)
+		if !ok {
+			vv = string(v.([]byte))
+		}
+		vs = append(vs, vv)
+		v2i = append(v2i, v, strconv.FormatInt(int64(i+1), 10))
+		v2s = append(v2s, vv, strconv.FormatInt(int64(i+1), 10))
+		v2ss = append(v2ss, testCustomStringT(vv), testCustomStringT(strconv.FormatInt(int64(i+1), 10)))
+	}
+
+	var v2d interface{}
+
+	// encode vs as a list, and decode into a list and compare
+	var goldSliceS = []string{"hello 1", "hello 2", "hello 3", "hello 4", "hello 5"}
+	var goldSliceI = []interface{}{"hello 1", "hello 2", "hello 3", "hello 4", "hello 5"}
+	var goldSlice = []interface{}{goldSliceS, goldSliceI}
+	for j, g := range goldSlice {
+		bh.SliceType = reflect.TypeOf(g)
+		name := fmt.Sprintf("slice-%s-%v", name, j+1)
+		b = testMarshalErr(vs, h, t, name)
+		v2d = nil
+		// v2d = reflect.New(bh.SliceType).Elem().Interface()
+		testUnmarshalErr(&v2d, b, h, t, name)
+		testDeepEqualErr(v2d, goldSlice[j], t, name)
+	}
+
+	// to ensure that we do not use fast-path for map[intf]string, use a custom string type (for goldMapIS).
+	// this will allow us to test out the path that sees a []byte where a map has an interface{} type,
+	// and convert it to a string for the decoded map key.
+
+	// encode v2i as a map, and decode into a map and compare
+	var goldMapSS = map[string]string{"hello 1": "1", "hello 2": "2", "hello 3": "3", "hello 4": "4", "hello 5": "5"}
+	var goldMapSI = map[string]interface{}{"hello 1": "1", "hello 2": "2", "hello 3": "3", "hello 4": "4", "hello 5": "5"}
+	var goldMapIS = map[interface{}]testCustomStringT{"hello 1": "1", "hello 2": "2", "hello 3": "3", "hello 4": "4", "hello 5": "5"}
+	var goldMap = []interface{}{goldMapSS, goldMapSI, goldMapIS}
+	for j, g := range goldMap {
+		bh.MapType = reflect.TypeOf(g)
+		name := fmt.Sprintf("map-%s-%v", name, j+1)
+		// for formats that clearly differentiate binary from string, use v2i
+		// else use the v2s (with all strings, no []byte)
+		v2d = nil
+		// v2d = reflect.New(bh.MapType).Elem().Interface()
+		switch h.(type) {
+		case *MsgpackHandle, *BincHandle, *CborHandle:
+			b = testMarshalErr(v2i, h, t, name)
+			testUnmarshalErr(&v2d, b, h, t, name)
+			testDeepEqualErr(v2d, goldMap[j], t, name)
+		default:
+			b = testMarshalErr(v2s, h, t, name)
+			testUnmarshalErr(&v2d, b, h, t, name)
+			testDeepEqualErr(v2d, goldMap[j], t, name)
+			b = testMarshalErr(v2ss, h, t, name)
+			v2d = nil
+			testUnmarshalErr(&v2d, b, h, t, name)
+			testDeepEqualErr(v2d, goldMap[j], t, name)
+		}
+	}
+
+}
+
+func doTestScalars(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
+
+	// for each scalar:
+	// - encode its ptr
+	// - encode it (non-ptr)
+	// - check that bytes are same
+	// - make a copy (using reflect)
+	// - check that same
+	// - set zero on it
+	// - check that its equal to 0 value
+	// - decode into new
+	// - compare to original
+
+	bh := h.getBasicHandle()
+	if !bh.Canonical {
+		bh.Canonical = true
+		defer func() { bh.Canonical = false }()
+	}
+
+	vi := []interface{}{
+		int(0),
+		int8(0),
+		int16(0),
+		int32(0),
+		int64(0),
+		uint(0),
+		uint8(0),
+		uint16(0),
+		uint32(0),
+		uint64(0),
+		uintptr(0),
+		float32(0),
+		float64(0),
+		bool(false),
+		string(""),
+		[]byte(nil),
+	}
+	for _, v := range fastpathAV {
+		vi = append(vi, reflect.Zero(v.rt).Interface())
+	}
+	for _, v := range vi {
+		rv := reflect.New(reflect.TypeOf(v)).Elem()
+		testRandomFillRV(rv)
+		v = rv.Interface()
+
+		rv2 := reflect.New(rv.Type())
+		rv2.Elem().Set(rv)
+		vp := rv2.Interface()
+
+		var tname string
+		switch rv.Kind() {
+		case reflect.Map:
+			tname = "map[" + rv.Type().Key().Name() + "]" + rv.Type().Elem().Name()
+		case reflect.Slice:
+			tname = "[]" + rv.Type().Elem().Name()
+		default:
+			tname = rv.Type().Name()
+		}
+
+		var b, b1, b2 []byte
+		b1 = testMarshalErr(v, h, t, tname+"-enc")
+		// store b1 into b, as b1 slice is reused for next marshal
+		b = make([]byte, len(b1))
+		copy(b, b1)
+		b2 = testMarshalErr(vp, h, t, tname+"-enc-ptr")
+		testDeepEqualErr(b1, b2, t, tname+"-enc-eq")
+		setZero(vp)
+		testDeepEqualErr(rv2.Elem().Interface(), reflect.Zero(rv.Type()).Interface(), t, tname+"-enc-eq-zero-ref")
+
+		vp = rv2.Interface()
+		testUnmarshalErr(vp, b, h, t, tname+"-dec")
+		testDeepEqualErr(rv2.Elem().Interface(), v, t, tname+"-dec-eq")
+	}
+}
+
 // -----------------
 
 func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
+	testOnce.Do(testInitAll)
 	var b = `{"s.true": "true", "b.true": true, "s.false": "false", "b.false": false, "s.10": "10", "i.10": 10, "i.-10": -10}`
 	var golden = map[string]string{"s.true": "true", "b.true": "true", "s.false": "false", "b.false": "false", "s.10": "10", "i.10": "10", "i.-10": "-10"}
 
@@ -1913,6 +2071,7 @@ func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
 }
 
 func TestJsonEncodeIndent(t *testing.T) {
+	testOnce.Do(testInitAll)
 	v := TestSimplish{
 		Ii: -794,
 		Ss: `A Man is
@@ -2026,6 +2185,7 @@ after the new line
 }
 
 func TestBufioDecReader(t *testing.T) {
+	testOnce.Do(testInitAll)
 	// try to read 85 bytes in chunks of 7 at a time.
 	var s = strings.Repeat("01234'56789      ", 5)
 	// fmt.Printf("s: %s\n", s)
@@ -2092,6 +2252,7 @@ func TestBufioDecReader(t *testing.T) {
 // -----------
 
 func TestJsonLargeInteger(t *testing.T) {
+	testOnce.Do(testInitAll)
 	for _, i := range []uint8{'L', 'A', 0} {
 		for _, j := range []interface{}{
 			int64(1 << 60),
@@ -2109,6 +2270,7 @@ func TestJsonLargeInteger(t *testing.T) {
 }
 
 func TestJsonInvalidUnicode(t *testing.T) {
+	testOnce.Do(testInitAll)
 	var m = map[string]string{
 		`"\udc49\u0430abc"`: "\uFFFDabc",
 		`"\udc49\u0430"`:    "\uFFFD",
@@ -2482,6 +2644,46 @@ func TestSimpleUintToInt(t *testing.T) {
 	testUintToInt(t, "simple", testSimpleH)
 }
 
+func TestJsonDifferentMapOrSliceType(t *testing.T) {
+	doTestDifferentMapOrSliceType(t, "json", testJsonH)
+}
+
+func TestCborDifferentMapOrSliceType(t *testing.T) {
+	doTestDifferentMapOrSliceType(t, "cbor", testCborH)
+}
+
+func TestMsgpackDifferentMapOrSliceType(t *testing.T) {
+	doTestDifferentMapOrSliceType(t, "msgpack", testMsgpackH)
+}
+
+func TestBincDifferentMapOrSliceType(t *testing.T) {
+	doTestDifferentMapOrSliceType(t, "binc", testBincH)
+}
+
+func TestSimpleDifferentMapOrSliceType(t *testing.T) {
+	doTestDifferentMapOrSliceType(t, "simple", testSimpleH)
+}
+
+func TestJsonScalars(t *testing.T) {
+	doTestScalars(t, "json", testJsonH)
+}
+
+func TestCborScalars(t *testing.T) {
+	doTestScalars(t, "cbor", testCborH)
+}
+
+func TestMsgpackScalars(t *testing.T) {
+	doTestScalars(t, "msgpack", testMsgpackH)
+}
+
+func TestBincScalars(t *testing.T) {
+	doTestScalars(t, "binc", testBincH)
+}
+
+func TestSimpleScalars(t *testing.T) {
+	doTestScalars(t, "simple", testSimpleH)
+}
+
 // TODO:
 //
 //   Add Tests for:
@@ -2503,20 +2705,13 @@ func TestSimpleUintToInt(t *testing.T) {
 // - UnreadByte: only 2 states (z.ls = 2 and z.ls = 1) (0 --> 2 --> 1)
 // - track
 //    z.trb: track, stop track, check
-// - maptype, slicetype: diff from map[string]intf, map[intf]intf or []intf,
 // - PreferArrayOverSlice??? (standalone test)
 // - InterfaceReset (standalone test)
 // - (chan byte) to decode []byte (with mapbyslice track)
 // - decode slice of len 6, 16 into slice of (len 4, cap 8) and (len ) with maxinitlen=6, 8, 16
-// - ktypeisintf
 // - DeleteOnNilMapValue (standalone test)
 // - decnaked: n.l == nil
-// - setZero: all types: *bool, *intXXX, *uintXXX, *floatXXX, *Raw, *[]byte, etc (not just struct)
-// - codec.Selfer implementation
-//     Ensure it is called when (en|de)coding interface{} or reflect.Value (2 different codepaths).
 // - ensureDecodeable (try to decode into a non-decodeable thing e.g. a nil interface{},
 //
 // encode.go
-// - mapbyslice (for non-fastpath things)
 // - nil and 0-len slices and maps for non-fastpath things
-// - pointers to scalars at top-level e.g. v := uint(7), encode(&v)

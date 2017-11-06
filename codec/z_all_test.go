@@ -110,8 +110,7 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 }
 
 /*
-z='codec_test.go'
-find . -name "$z" | xargs grep -e '^func Test' | \
+find . -name "codec_test.go" | xargs grep -e '^func Test' | \
     cut -d '(' -f 1 | cut -d ' ' -f 2 | \
     while read f; do echo "t.Run(\"$f\", $f)"; done
 */
@@ -211,6 +210,16 @@ func testCodecGroup(t *testing.T) {
 	t.Run("TestMsgpackUintToInt", TestMsgpackUintToInt)
 	t.Run("TestBincUintToInt", TestBincUintToInt)
 	t.Run("TestSimpleUintToInt", TestSimpleUintToInt)
+	t.Run("TestJsonDifferentMapOrSliceType", TestJsonDifferentMapOrSliceType)
+	t.Run("TestCborDifferentMapOrSliceType", TestCborDifferentMapOrSliceType)
+	t.Run("TestMsgpackDifferentMapOrSliceType", TestMsgpackDifferentMapOrSliceType)
+	t.Run("TestBincDifferentMapOrSliceType", TestBincDifferentMapOrSliceType)
+	t.Run("TestSimpleDifferentMapOrSliceType", TestSimpleDifferentMapOrSliceType)
+	t.Run("TestJsonScalars", TestJsonScalars)
+	t.Run("TestCborScalars", TestCborScalars)
+	t.Run("TestMsgpackScalars", TestMsgpackScalars)
+	t.Run("TestBincScalars", TestBincScalars)
+	t.Run("TestSimpleScalars", TestSimpleScalars)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
@@ -240,6 +249,8 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 	t.Run("TestJsonTime", TestJsonTime)
 	t.Run("TestJsonUintToInt", TestJsonUintToInt)
+	t.Run("TestJsonDifferentMapOrSliceType", TestJsonDifferentMapOrSliceType)
+	t.Run("TestJsonScalars", TestJsonScalars)
 }
 
 func testBincGroup(t *testing.T) {
@@ -261,6 +272,8 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincMammothMapsAndSlices", TestBincMammothMapsAndSlices)
 	t.Run("TestBincTime", TestBincTime)
 	t.Run("TestBincUintToInt", TestBincUintToInt)
+	t.Run("TestBincDifferentMapOrSliceType", TestBincDifferentMapOrSliceType)
+	t.Run("TestBincScalars", TestBincScalars)
 }
 
 func testCborGroup(t *testing.T) {
@@ -283,6 +296,8 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborMammothMapsAndSlices", TestCborMammothMapsAndSlices)
 	t.Run("TestCborTime", TestCborTime)
 	t.Run("TestCborUintToInt", TestCborUintToInt)
+	t.Run("TestCborDifferentMapOrSliceType", TestCborDifferentMapOrSliceType)
+	t.Run("TestCborScalars", TestCborScalars)
 
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 }
@@ -305,6 +320,8 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackMammothMapsAndSlices", TestMsgpackMammothMapsAndSlices)
 	t.Run("TestMsgpackTime", TestMsgpackTime)
 	t.Run("TestMsgpackUintToInt", TestMsgpackUintToInt)
+	t.Run("TestMsgpackDifferentMapOrSliceType", TestMsgpackDifferentMapOrSliceType)
+	t.Run("TestMsgpackScalars", TestMsgpackScalars)
 }
 
 func TestCodecSuite(t *testing.T) {

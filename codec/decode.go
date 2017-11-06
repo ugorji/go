@@ -1518,9 +1518,10 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		// special case if a byte array.
 		if ktypeIsIntf {
 			if rvk2 := rvk.Elem(); rvk2.IsValid() {
-				rvk = rvk2
-				if rvk.Type() == uint8SliceTyp {
-					rvk = reflect.ValueOf(d.string(rvk.Bytes()))
+				if rvk2.Type() == uint8SliceTyp {
+					rvk = reflect.ValueOf(d.string(rvk2.Bytes()))
+				} else {
+					rvk = rvk2
 				}
 			}
 		}
@@ -1917,7 +1918,7 @@ func (d *Decoder) MustDecode(v interface{}) {
 		panic(d.err)
 	}
 	if d.d.TryDecodeAsNil() {
-		d.setZero(v)
+		setZero(v)
 	} else {
 		d.decode(v)
 	}
@@ -1995,7 +1996,7 @@ func (d *Decoder) swallow() {
 	}
 }
 
-func (d *Decoder) setZero(iv interface{}) {
+func setZero(iv interface{}) {
 	if iv == nil || definitelyNil(iv) {
 		return
 	}
@@ -2038,7 +2039,7 @@ func (d *Decoder) setZero(iv interface{}) {
 			v.Set(reflect.Zero(v.Type()))
 		} // TODO: else drain if chan, clear if map, set all to nil if slice???
 	default:
-		if !fastpathDecodeSetZeroTypeSwitch(iv, d) {
+		if !fastpathDecodeSetZeroTypeSwitch(iv) {
 			v := reflect.ValueOf(iv)
 			if v, canDecode = isDecodeable(v); canDecode && v.CanSet() {
 				v.Set(reflect.Zero(v.Type()))
