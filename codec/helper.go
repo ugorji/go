@@ -190,32 +190,25 @@ const (
 	// valueTypeInvalid = 0xff
 )
 
+var valueTypeStrings = [...]string{
+	"Unset",
+	"Nil",
+	"Int",
+	"Uint",
+	"Float",
+	"Bool",
+	"String",
+	"Symbol",
+	"Bytes",
+	"Map",
+	"Array",
+	"Timestamp",
+	"Ext",
+}
+
 func (x valueType) String() string {
-	switch x {
-	case valueTypeNil:
-		return "Nil"
-	case valueTypeInt:
-		return "Int"
-	case valueTypeUint:
-		return "Uint"
-	case valueTypeFloat:
-		return "Float"
-	case valueTypeBool:
-		return "Bool"
-	case valueTypeString:
-		return "String"
-	case valueTypeSymbol:
-		return "Symbol"
-	case valueTypeBytes:
-		return "Bytes"
-	case valueTypeMap:
-		return "Map"
-	case valueTypeArray:
-		return "Array"
-	case valueTypeTimestamp:
-		return "Timestamp"
-	case valueTypeExt:
-		return "Ext"
+	if int(x) < len(valueTypeStrings) {
+		return valueTypeStrings[x]
 	}
 	return strconv.FormatInt(int64(x), 10)
 }
