@@ -701,11 +701,11 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	defer func() { x.line("}") }() //end if block
 
 	if t == rawTyp {
-		x.linef("} else { z.EncRaw(%v)", varname)
+		x.linef("} else { z.EncRaw(%s)", varname)
 		return
 	}
 	if t == rawExtTyp {
-		x.linef("} else { r.EncodeRawExt(%v, e)", varname)
+		x.linef("} else { r.EncodeRawExt(%s, e)", varname)
 		return
 	}
 	// HACK: Support for Builtins.
@@ -714,7 +714,7 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	if t == timeTyp {
 		vrtid := genTempVarPfx + "m" + x.varsfx()
 		x.linef("} else if %s := z.TimeRtidIfBinc(); %s != 0 { ", vrtid, vrtid)
-		x.linef("r.EncodeBuiltin(%s, %s)", vrtid, varname)
+		x.linef("r.EncodeBuiltin(%s, *%s)", vrtid, varname)
 	}
 	// only check for extensions if the type is named, and has a packagePath.
 	if !x.nx && genImportPath(t) != "" && t.Name() != "" {
