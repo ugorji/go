@@ -867,6 +867,8 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 			{
 				t2typ := t
 				varname3 := varname
+				// go through the loop, record the t2 field explicitly,
+				// and gather the omit line if embedded in pointers.
 				for ij, ix := range si.is {
 					if uint8(ij) == si.nis {
 						break
@@ -877,7 +879,9 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 					t2 = t2typ.Field(int(ix))
 					t2typ = t2.Type
 					varname3 = varname3 + "." + t2.Name
-					if t2typ.Kind() == reflect.Ptr {
+					// do not include actual field in the omit line.
+					// that is done subsequently (right after - below).
+					if uint8(ij+1) < si.nis && t2typ.Kind() == reflect.Ptr {
 						omitline += varname3 + " != nil && "
 					}
 				}
