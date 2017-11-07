@@ -80,19 +80,12 @@ var fastpathAV fastpathA
 
 // due to possible initialization loop error, make fastpath in an init()
 func init() {
-	if useLookupRecognizedTypes && recognizedRtidsLoaded {
-		panic("recognizedRtidsLoaded = true - cannot happen")
-	}
 	i := 0
 	fn := func(v interface{},
 		fe func(*Encoder, *codecFnInfo, reflect.Value),
 		fd func(*Decoder, *codecFnInfo, reflect.Value)) (f fastpathE) {
 		xrt := reflect.TypeOf(v)
 		xptr := rt2id(xrt)
-		if useLookupRecognizedTypes {
-			recognizedRtids = append(recognizedRtids, xptr)
-			recognizedRtidPtrs = append(recognizedRtidPtrs, rt2id(reflect.PtrTo(xrt)))
-		}
 		fastpathAV[i] = fastpathE{xptr, xrt, fe, fd}
 		i++
 		return

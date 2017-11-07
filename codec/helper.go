@@ -128,40 +128,6 @@ const (
 	// allowing zero-alloc initialization.
 	arrayCacheLen = 8
 
-	// We tried an optimization, where we detect if a type is one of the known types
-	// we optimized for (e.g. int, []uint64, etc).
-	//
-	// However, we notice some worse performance when using this optimization.
-	// So we hide it behind a flag, to turn on if needed.
-	useLookupRecognizedTypes = false
-
-	// using recognized allows us to do d.decode(interface{}) instead of d.decodeValue(reflect.Value)
-	// when we can infer that the kind of the interface{} is one of the ones hard-coded in the
-	// type switch for known types or the ones defined by fast-path.
-	//
-	// However, it seems we get better performance when we don't recognize, and just let
-	// reflection handle it.
-	//
-	// Reasoning is as below:
-	// typeswitch is a binary search with a branch to a code-point.
-	// getdecfn is a binary search with a call to a function pointer.
-	//
-	// both are about the same.
-	//
-	// so: why prefer typeswitch?
-	//
-	// is recognized does the following:
-	// - lookup rtid
-	// - check if in sorted list
-	// - calls decode(type switch)
-	//   - 1 or 2 binary search to a point in code
-	//   - branch there
-	//
-	// vs getdecfn
-	// - lookup rtid
-	// - check in sorted list for a function pointer
-	// - calls it to decode using reflection (optimized)
-
 	// always set xDebug = false before releasing software
 	xDebug = true
 )
@@ -406,85 +372,6 @@ var immutableKindsSet = [32]bool{
 	reflect.String: true,
 	// reflect.Struct
 	// reflect.UnsafePointer
-}
-
-var (
-	recognizedRtids       []uintptr
-	recognizedRtidPtrs    []uintptr
-	recognizedRtidOrPtrs  []uintptr
-	recognizedRtidsLoaded bool
-)
-
-func init() {
-	if !useLookupRecognizedTypes {
-		return
-	}
-	if recognizedRtidsLoaded {
-		panic("recognizedRtidsLoaded = true - cannot happen")
-	}
-	for _, v := range [...]interface{}{
-		float32(0),
-		float64(0),
-		uintptr(0),
-		uint(0),
-		uint8(0),
-		uint16(0),
-		uint32(0),
-		uint64(0),
-		uintptr(0),
-		int(0),
-		int8(0),
-		int16(0),
-		int32(0),
-		int64(0),
-		bool(false),
-		string(""),
-		Raw{},
-		[]byte(nil),
-	} {
-		rt := reflect.TypeOf(v)
-		recognizedRtids = append(recognizedRtids, rt2id(rt))
-		recognizedRtidPtrs = append(recognizedRtidPtrs, rt2id(reflect.PtrTo(rt)))
-	}
-
-	// now sort it.
-	sort.Sort(uintptrSlice(recognizedRtids))
-	sort.Sort(uintptrSlice(recognizedRtidPtrs))
-	recognizedRtidOrPtrs = make([]uintptr, len(recognizedRtids)+len(recognizedRtidPtrs))
-	copy(recognizedRtidOrPtrs, recognizedRtids)
-	copy(recognizedRtidOrPtrs[len(recognizedRtids):], recognizedRtidPtrs)
-	sort.Sort(uintptrSlice(recognizedRtidOrPtrs))
-
-	recognizedRtidsLoaded = true
-}
-
-func containsU(s []uintptr, v uintptr) bool {
-	// return false // TODO: REMOVE
-	h, i, j := 0, 0, len(s)
-	for i < j {
-		h = i + (j-i)/2
-		if s[h] < v {
-			i = h + 1
-		} else {
-			j = h
-		}
-	}
-	if i < len(s) && s[i] == v {
-		return true
-	}
-	return false
-}
-
-func isRecognizedRtid(rtid uintptr) bool {
-	return containsU(recognizedRtids, rtid)
-}
-
-func isRecognizedRtidPtr(rtid uintptr) bool {
-	return containsU(recognizedRtidPtrs, rtid)
-}
-
-func isRecognizedRtidOrPtr(rtid uintptr) bool {
-	return containsU(recognizedRtidOrPtrs, rtid)
 }
 
 // Selfer defines methods by which a value can encode or decode itself.
