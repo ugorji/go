@@ -823,10 +823,10 @@ func (si *structFieldInfo) field(v reflect.Value, update bool) (rv2 reflect.Valu
 	return v, true
 }
 
-func (si *structFieldInfo) fieldval(v reflect.Value, update bool) reflect.Value {
-	v, _ = si.field(v, update)
-	return v
-}
+// func (si *structFieldInfo) fieldval(v reflect.Value, update bool) reflect.Value {
+// 	v, _ = si.field(v, update)
+// 	return v
+// }
 
 func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
 	// if fname == "" {
@@ -1888,39 +1888,42 @@ func (s *set) remove(v uintptr) (exists bool) {
 
 type bitset256 [32]byte
 
-func (x *bitset256) set(pos byte) {
-	x[pos>>3] |= (1 << (pos & 7))
-}
-func (x *bitset256) unset(pos byte) {
-	x[pos>>3] &^= (1 << (pos & 7))
-}
 func (x *bitset256) isset(pos byte) bool {
 	return x[pos>>3]&(1<<(pos&7)) != 0
 }
+func (x *bitset256) set(pos byte) {
+	x[pos>>3] |= (1 << (pos & 7))
+}
+
+// func (x *bitset256) unset(pos byte) {
+// 	x[pos>>3] &^= (1 << (pos & 7))
+// }
 
 type bitset128 [16]byte
 
-func (x *bitset128) set(pos byte) {
-	x[pos>>3] |= (1 << (pos & 7))
-}
-func (x *bitset128) unset(pos byte) {
-	x[pos>>3] &^= (1 << (pos & 7))
-}
 func (x *bitset128) isset(pos byte) bool {
 	return x[pos>>3]&(1<<(pos&7)) != 0
 }
+func (x *bitset128) set(pos byte) {
+	x[pos>>3] |= (1 << (pos & 7))
+}
+
+// func (x *bitset128) unset(pos byte) {
+// 	x[pos>>3] &^= (1 << (pos & 7))
+// }
 
 type bitset32 [4]byte
 
-func (x *bitset32) set(pos byte) {
-	x[pos>>3] |= (1 << (pos & 7))
-}
-func (x *bitset32) unset(pos byte) {
-	x[pos>>3] &^= (1 << (pos & 7))
-}
 func (x *bitset32) isset(pos byte) bool {
 	return x[pos>>3]&(1<<(pos&7)) != 0
 }
+func (x *bitset32) set(pos byte) {
+	x[pos>>3] |= (1 << (pos & 7))
+}
+
+// func (x *bitset32) unset(pos byte) {
+// 	x[pos>>3] &^= (1 << (pos & 7))
+// }
 
 // ------------
 
