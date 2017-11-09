@@ -3,10 +3,7 @@
 // Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-// ************************************************************
-// DO NOT EDIT.
-// THIS FILE IS AUTO-GENERATED from gen-helper.go.tmpl
-// ************************************************************
+// Code generated from gen-helper.go.tmpl - DO NOT EDIT.
 
 package codec
 

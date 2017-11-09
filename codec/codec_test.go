@@ -2711,8 +2711,7 @@ func TestSimpleScalars(t *testing.T) {
 //
 // decode.go
 // - UnreadByte: only 2 states (z.ls = 2 and z.ls = 1) (0 --> 2 --> 1)
-// - track
-//    z.trb: track, stop track, check
+// - track: z.trb: track, stop track, check
 // - PreferArrayOverSlice??? (standalone test)
 // - InterfaceReset (standalone test)
 // - (chan byte) to decode []byte (with mapbyslice track)

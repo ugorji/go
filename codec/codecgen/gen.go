@@ -29,6 +29,8 @@ const genCodecPkg = "codec1978" // keep this in sync with codec.genCodecPkg
 
 const genFrunMainTmpl = `//+build ignore
 
+// Code generated - temporary main package for codecgen - DO NOT EDIT.
+
 package main
 {{ if .Types }}import "{{ .ImportPath }}"{{ end }}
 func main() {
@@ -38,6 +40,9 @@ func main() {
 
 // const genFrunPkgTmpl = `//+build codecgen
 const genFrunPkgTmpl = `
+
+// Code generated - temporary package for codecgen - DO NOT EDIT.
+
 package {{ $.PackageName }}
 
 import (
