@@ -82,10 +82,6 @@ type ioEncStringWriter interface {
 	WriteString(s string) (n int, err error)
 }
 
-type ioEncFlusher interface {
-	Flush() error
-}
-
 type encDriverAsis interface {
 	EncodeAsis(v []byte)
 }
@@ -209,7 +205,7 @@ type ioEncWriter struct {
 	ww io.Writer
 	bw io.ByteWriter
 	sw ioEncStringWriter
-	fw ioEncFlusher
+	fw ioFlusher
 	b  [8]byte
 }
 
@@ -1028,7 +1024,7 @@ func (e *Encoder) Reset(w io.Writer) {
 		if e.wi.sw, ok = w.(ioEncStringWriter); !ok {
 			e.wi.sw = &e.wi
 		}
-		e.wi.fw, _ = w.(ioEncFlusher)
+		e.wi.fw, _ = w.(ioFlusher)
 		e.wi.ww = w
 	}
 	e.w = &e.wi

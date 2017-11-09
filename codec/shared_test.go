@@ -110,6 +110,8 @@ var (
 	testMaxInitLen int
 
 	testNumRepeatString int
+
+	testRpcBufsize int
 )
 
 // variables that are not flags, but which can configure the handles

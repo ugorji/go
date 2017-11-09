@@ -45,8 +45,9 @@ type rpcCodec struct {
 	mu sync.Mutex
 	h  Handle
 
-	cls   bool
-	clsmu sync.RWMutex
+	cls    bool
+	clsmu  sync.RWMutex
+	clsErr error
 }
 
 func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
@@ -124,13 +125,21 @@ func (c *rpcCodec) Close() error {
 		return nil
 	}
 	if c.isClosed() {
-		return io.EOF
+		return c.clsErr
 	}
 	c.clsmu.Lock()
 	c.cls = true
-	err := c.c.Close()
+	var fErr error
+	if c.f != nil {
+		fErr = c.f.Flush()
+	}
+	_ = fErr
+	c.clsErr = c.c.Close()
+	if c.clsErr == nil && fErr != nil {
+		c.clsErr = fErr
+	}
 	c.clsmu.Unlock()
-	return err
+	return c.clsErr
 }
 
 func (c *rpcCodec) ReadResponseBody(body interface{}) error {
@@ -176,6 +185,12 @@ type goRpc struct{}
 
 // GoRpc implements Rpc using the communication protocol defined in net/rpc package.
 // Its methods (ServerCodec and ClientCodec) return values that implement RpcCodecBuffered.
+//
+// By default, the conn parameter got from a network is not buffered.
+// For performance, considering using a buffered value e.g.
+//   var conn io.ReadWriteCloser // connection got from a socket
+//   conn2 := codec.NewReadWriteCloser(conn, conn, 1024, 1024) // wrapped in 1024-byte bufer
+//   var h = GoRpc.ServerCodec(conn2, handle)
 var GoRpc goRpc
 
 func (x goRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec {
@@ -184,12 +199,6 @@ func (x goRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec {
 
 func (x goRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec {
 	return &goRpcCodec{newRPCCodec(conn, h)}
-}
-
-// Use this method to allow you create wrapped versions of the reader, writer if desired.
-// For example, to create a buffered implementation.
-func (x goRpc) Codec(r io.Reader, w io.Writer, c io.Closer, h Handle) *goRpcCodec {
-	return &goRpcCodec{newRPCCodec2(r, w, c, h)}
 }
 
 // var _ RpcCodecBuffered = (*rpcCodec)(nil) // ensure *rpcCodec implements RpcCodecBuffered

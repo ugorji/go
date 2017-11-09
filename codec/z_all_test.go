@@ -324,6 +324,15 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackScalars", TestMsgpackScalars)
 }
 
+func testRpcGroup(t *testing.T) {
+	t.Run("TestBincRpcGo", TestBincRpcGo)
+	t.Run("TestSimpleRpcGo", TestSimpleRpcGo)
+	t.Run("TestMsgpackRpcGo", TestMsgpackRpcGo)
+	t.Run("TestCborRpcGo", TestCborRpcGo)
+	t.Run("TestJsonRpcGo", TestJsonRpcGo)
+	t.Run("TestMsgpackRpcSpec", TestMsgpackRpcSpec)
+}
+
 func TestCodecSuite(t *testing.T) {
 	testSuite(t, testCodecGroup)
 
@@ -385,6 +394,19 @@ func TestCodecSuite(t *testing.T) {
 	t.Run("msgpack-fixednum", testMsgpackGroup)
 
 	testMsgpackH.NoFixedNum = oldNoFixedNum
+
+	oldRpcBufsize := testRpcBufsize
+	testRpcBufsize = 0
+	t.Run("rpc-buf-0", testRpcGroup)
+	testRpcBufsize = 0
+	t.Run("rpc-buf-00", testRpcGroup)
+	testRpcBufsize = 0
+	t.Run("rpc-buf-000", testRpcGroup)
+	testRpcBufsize = 16
+	t.Run("rpc-buf-16", testRpcGroup)
+	testRpcBufsize = 2048
+	t.Run("rpc-buf-2048", testRpcGroup)
+	testRpcBufsize = oldRpcBufsize
 
 	testGroupResetFlags()
 }

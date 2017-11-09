@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"math"
 	"math/rand"
@@ -574,6 +575,13 @@ func testDeepEqualErr(v1, v2 interface{}, t *testing.T, name string) {
 	}
 }
 
+func testReadWriteCloser(c io.ReadWriteCloser) io.ReadWriteCloser {
+	if testRpcBufsize <= 0 && rand.Int63()%2 == 0 {
+		return c
+	}
+	return NewReadWriteCloser(c, c, testRpcBufsize, testRpcBufsize)
+}
+
 // doTestCodecTableOne allows us test for different variations based on arguments passed.
 func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 	vs []interface{}, vsVerify []interface{}) {
@@ -1005,7 +1013,7 @@ func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs
 				return // exit serverFn goroutine
 			}
 			if err1 == nil {
-				var sc rpc.ServerCodec = rr.ServerCodec(conn1, h)
+				sc := rr.ServerCodec(testReadWriteCloser(conn1), h)
 				srv.ServeCodec(sc)
 			}
 		}
@@ -1056,7 +1064,7 @@ func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs
 	}
 	if doRequest {
 		bs := connFn()
-		cc := rr.ClientCodec(bs, h)
+		cc := rr.ClientCodec(testReadWriteCloser(bs), h)
 		clientFn(cc)
 	}
 	if exitSleepMs != 0 {
@@ -1466,7 +1474,7 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 		bs, err2 = net.Dial("tcp", ":"+openPort)
 	}
 	checkErrT(t, err2)
-	cc := MsgpackSpecRpc.ClientCodec(bs, testMsgpackH)
+	cc := MsgpackSpecRpc.ClientCodec(testReadWriteCloser(bs), testMsgpackH)
 	cl := rpc.NewClientWithCodec(cc)
 	defer cl.Close()
 	var rstr string
