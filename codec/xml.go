@@ -38,7 +38,8 @@ Extend the struct tag. See representative example:
   }
 
 Based on this, we encode
-  - fields as elements, BUT encode as attributes if struct tag contains ",attr".
+  - fields as elements, BUT
+    encode as attributes if struct tag contains ",attr" and is a scalar (bool, number or string)
   - text as entity-escaped text, BUT encode as CDATA if struct tag contains ",cdata".
 
 In this mode, we only encode as attribute if ",attr" is found, and only encode as CDATA
@@ -63,6 +64,7 @@ To handle namespaces:
           switch {
             case !nsAware: panic(...)
             case strings.endsWith("nsabc"): x.abc()
+            case strings.endsWith("nsdef"): x.def()
             default: panic(...)
           }
         }
@@ -178,7 +180,7 @@ An XML document is a name, a map of attributes and a list of children.
 Consequently, we cannot "DecodeNaked" into a map[string]interface{} (for example).
 We have to "DecodeNaked" into something that resembles XML data.
 
-To support DecodeNaked (decode into nil interface{}) we have to define some "supporting" types:
+To support DecodeNaked (decode into nil interface{}), we have to define some "supporting" types:
     type Name struct { // Prefered. Less allocations due to conversions.
       Local string
       Space string
@@ -189,6 +191,8 @@ To support DecodeNaked (decode into nil interface{}) we have to define some "sup
       Children []interface{} // each child is either *Element or string
     }
 Only two "supporting" types are exposed for XML: Name and Element.
+
+// ------------------
 
 We considered 'type Name string' where Name is like "Space Local" (space-separated).
 We decided against it, because each creation of a name would lead to
@@ -214,6 +218,8 @@ intelligent accessor methods to extract information and for performance.
       childrenI []int // each child is a index into T or E.
     }
     func (x *Element) child(i) interface{} // returns string or *Element
+
+// ------------------
 
 Per XML spec and our default handling, white space is insignificant between elements,
 specifically between parent-child or siblings. White space occuring alone between start
