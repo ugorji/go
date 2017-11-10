@@ -4,6 +4,7 @@
 package codec
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/gob"
 	"fmt"
@@ -579,7 +580,11 @@ func testReadWriteCloser(c io.ReadWriteCloser) io.ReadWriteCloser {
 	if testRpcBufsize <= 0 && rand.Int63()%2 == 0 {
 		return c
 	}
-	return NewReadWriteCloser(c, c, testRpcBufsize, testRpcBufsize)
+	return struct {
+		io.Closer
+		*bufio.Reader
+		*bufio.Writer
+	}{c, bufio.NewReaderSize(c, testRpcBufsize), bufio.NewWriterSize(c, testRpcBufsize)}
 }
 
 // doTestCodecTableOne allows us test for different variations based on arguments passed.

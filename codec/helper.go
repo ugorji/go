@@ -97,13 +97,11 @@ package codec
 // check for these error conditions.
 
 import (
-	"bufio"
 	"bytes"
 	"encoding"
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"io"
 	"math"
 	"os"
 	"reflect"
@@ -604,11 +602,11 @@ type extTypeTagFn struct {
 
 type extHandle []extTypeTagFn
 
-// DEPRECATED: Use SetBytesExt or SetInterfaceExt on the Handle instead.
-//
 // AddExt registes an encode and decode function for a reflect.Type.
 // AddExt internally calls SetExt.
 // To deregister an Ext, call AddExt with nil encfn and/or nil decfn.
+//
+// Deprecated: Use SetBytesExt or SetInterfaceExt on the Handle instead.
 func (o *extHandle) AddExt(
 	rt reflect.Type, tag byte,
 	encfn func(reflect.Value) ([]byte, error), decfn func(reflect.Value, []byte) error,
@@ -619,12 +617,11 @@ func (o *extHandle) AddExt(
 	return o.SetExt(rt, uint64(tag), addExtWrapper{encfn, decfn})
 }
 
-// DEPRECATED: Use SetBytesExt or SetInterfaceExt on the Handle instead.
-//
 // Note that the type must be a named type, and specifically not
 // a pointer or Interface. An error is returned if that is not honored.
+// To Deregister an ext, call SetExt with nil Ext.
 //
-// To Deregister an ext, call SetExt with nil Ext
+// Deprecated: Use SetBytesExt or SetInterfaceExt on the Handle instead.
 func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 	// o is a pointer, because we may need to initialize it
 	if rt.PkgPath() == "" || rt.Kind() == reflect.Interface {
@@ -1584,89 +1581,6 @@ func isNaN(f float64) bool { return f != f }
 
 type ioFlusher interface {
 	Flush() error
-}
-
-// ReadWriteCloser wraps a Reader and Writer to return
-// a possibly buffered io.ReadWriteCloser implementation.
-type ReadWriteCloser struct {
-	r io.Reader
-	w io.Writer
-
-	br *bufio.Reader
-	bw *bufio.Writer
-	rc io.Closer
-	wc io.Closer
-
-	f ioFlusher
-}
-
-func (x *ReadWriteCloser) Reader() io.Reader {
-	if x.br != nil {
-		return x.br
-	}
-	return x.r
-}
-
-func (x *ReadWriteCloser) Writer() io.Writer {
-	if x.bw != nil {
-		return x.bw
-	}
-	return x.w
-}
-
-func (x *ReadWriteCloser) Read(p []byte) (n int, err error) {
-	if x.br != nil {
-		return x.br.Read(p)
-	}
-	return x.r.Read(p)
-}
-
-func (x *ReadWriteCloser) Write(p []byte) (n int, err error) {
-	if x.bw != nil {
-		return x.bw.Write(p)
-	}
-	return x.w.Write(p)
-}
-
-func (x *ReadWriteCloser) Close() (err error) {
-	err = x.Flush()
-	if x.rc != nil {
-		err = x.rc.Close()
-	}
-	if x.wc != nil {
-		err = x.wc.Close()
-	}
-	return err
-}
-
-func (x *ReadWriteCloser) Flush() (err error) {
-	if x.bw != nil {
-		err = x.bw.Flush()
-	}
-	if x.f != nil {
-		err = x.f.Flush()
-	}
-	return err
-}
-
-// ---------
-
-// ReadWriteCloser returns a (possibly buffered) value wrapping
-// the Reader and Writer and with an appropriate method for the close.
-//
-// Use it in contexts (e.g. rpc) where you need to get a buffered wrapper
-func NewReadWriteCloser(r io.Reader, w io.Writer, rbufsize, wbufsize int) (x *ReadWriteCloser) {
-	x = &ReadWriteCloser{r: r, w: w}
-	if rbufsize > 0 {
-		x.br = bufio.NewReaderSize(x.r, rbufsize)
-	}
-	if wbufsize > 0 {
-		x.bw = bufio.NewWriterSize(x.w, wbufsize)
-	}
-	x.rc, _ = r.(io.Closer)
-	x.wc, _ = w.(io.Closer)
-	x.f, _ = w.(ioFlusher)
-	return x
 }
 
 // -----------------------

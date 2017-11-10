@@ -15,8 +15,8 @@ For compatibility with behaviour of msgpack-c reference implementation:
   - Go intX (<0)
        IS ENCODED AS
     msgpack -ve fixnum, signed
-
 */
+
 package codec
 
 import (
@@ -827,7 +827,7 @@ func (c *msgpackSpecRpcCodec) WriteRequest(r *rpc.Request, body interface{}) err
 		bodyArr = []interface{}{body}
 	}
 	r2 := []interface{}{0, uint32(r.Seq), r.ServiceMethod, bodyArr}
-	return c.write(r2, nil, false, true)
+	return c.write(r2, nil, false)
 }
 
 func (c *msgpackSpecRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
@@ -839,7 +839,7 @@ func (c *msgpackSpecRpcCodec) WriteResponse(r *rpc.Response, body interface{}) e
 		body = nil
 	}
 	r2 := []interface{}{1, uint32(r.Seq), moe, body}
-	return c.write(r2, nil, false, true)
+	return c.write(r2, nil, false)
 }
 
 func (c *msgpackSpecRpcCodec) ReadResponseHeader(r *rpc.Response) error {
@@ -914,7 +914,8 @@ type msgpackSpecRpc struct{}
 
 // MsgpackSpecRpc implements Rpc using the communication protocol defined in
 // the msgpack spec at https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md .
-// Its methods (ServerCodec and ClientCodec) return values that implement RpcCodecBuffered.
+//
+// See GoRpc documentation, for information on buffering for better performance.
 var MsgpackSpecRpc msgpackSpecRpc
 
 func (x msgpackSpecRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec {
