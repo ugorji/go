@@ -611,23 +611,8 @@ func (d *cborDecDriver) DecodeNaked() {
 //
 // None of the optional extensions (with tags) defined in the spec are supported out-of-the-box.
 // Users can implement them as needed (using SetExt), including spec-documented ones:
-//   - timestamp, BigNum, BigFloat, Decimals, Encoded Text (e.g. URL, regexp, base64, MIME Message), etc.
-//
-// To encode with indefinite lengths (streaming), users will use
-// (Must)Encode methods of *Encoder, along with writing CborStreamXXX constants.
-//
-// For example, to encode "one-byte" as an indefinite length string:
-//     var buf bytes.Buffer
-//     e := NewEncoder(&buf, new(CborHandle))
-//     buf.WriteByte(CborStreamString)
-//     e.MustEncode("one-")
-//     e.MustEncode("byte")
-//     buf.WriteByte(CborStreamBreak)
-//     encodedBytes := buf.Bytes()
-//     var vv interface{}
-//     NewDecoderBytes(buf.Bytes(), new(CborHandle)).MustDecode(&vv)
-//     // Now, vv contains the same string "one-byte"
-//
+//   - timestamp, BigNum, BigFloat, Decimals,
+//   - Encoded Text (e.g. URL, regexp, base64, MIME Message), etc.
 type CborHandle struct {
 	binaryEncodingType
 	noElemSeparators

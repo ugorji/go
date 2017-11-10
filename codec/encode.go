@@ -19,9 +19,7 @@ const defEncByteBufSize = 1 << 6 // 4:16, 6:64, 8:256, 10:1024
 type AsSymbolFlag uint8
 
 const (
-	// AsSymbolDefault is default.
-	// Currently, this means only encode struct field names as symbols.
-	// The default is subject to change.
+	// AsSymbolDefault means only encode struct field names as symbols.
 	AsSymbolDefault AsSymbolFlag = iota
 
 	// AsSymbolAll means encode anything which could be a symbol as a symbol.
