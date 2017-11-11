@@ -324,6 +324,31 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackScalars", TestMsgpackScalars)
 }
 
+func testSimpleGroup(t *testing.T) {
+	t.Run("TestSimpleCodecsTable", TestSimpleCodecsTable)
+	t.Run("TestSimpleCodecsMisc", TestSimpleCodecsMisc)
+	t.Run("TestSimpleCodecsEmbeddedPointer", TestSimpleCodecsEmbeddedPointer)
+	t.Run("TestSimpleStdEncIntf", TestSimpleStdEncIntf)
+	t.Run("TestSimpleMammoth", TestSimpleMammoth)
+	t.Run("TestSimpleRaw", TestSimpleRaw)
+	t.Run("TestSimpleRpcGo", TestSimpleRpcGo)
+	t.Run("TestSimpleSwallowAndZero", TestSimpleSwallowAndZero)
+	t.Run("TestSimpleRawExt", TestSimpleRawExt)
+	t.Run("TestSimpleMapStructKey", TestSimpleMapStructKey)
+	t.Run("TestSimpleDecodeNilMapValue", TestSimpleDecodeNilMapValue)
+	t.Run("TestSimpleEmbeddedFieldPrecedence", TestSimpleEmbeddedFieldPrecedence)
+	t.Run("TestSimpleLargeContainerLen", TestSimpleLargeContainerLen)
+	t.Run("TestSimpleMammothMapsAndSlices", TestSimpleMammothMapsAndSlices)
+	t.Run("TestSimpleTime", TestSimpleTime)
+	t.Run("TestSimpleUintToInt", TestSimpleUintToInt)
+	t.Run("TestSimpleDifferentMapOrSliceType", TestSimpleDifferentMapOrSliceType)
+	t.Run("TestSimpleScalars", TestSimpleScalars)
+}
+
+func testSimpleMammothGroup(t *testing.T) {
+	t.Run("TestSimpleMammothMapsAndSlices", TestSimpleMammothMapsAndSlices)
+}
+
 func testRpcGroup(t *testing.T) {
 	t.Run("TestBincRpcGo", TestBincRpcGo)
 	t.Run("TestSimpleRpcGo", TestSimpleRpcGo)
@@ -394,6 +419,13 @@ func TestCodecSuite(t *testing.T) {
 	t.Run("msgpack-fixednum", testMsgpackGroup)
 
 	testMsgpackH.NoFixedNum = oldNoFixedNum
+
+	oldEncZeroValuesAsNil := testSimpleH.EncZeroValuesAsNil
+	testSimpleH.EncZeroValuesAsNil = !testSimpleH.EncZeroValuesAsNil
+	testUseMust = true
+	testReinit()
+	t.Run("simple-enczeroasnil", testSimpleMammothGroup) // testSimpleGroup
+	testSimpleH.EncZeroValuesAsNil = oldEncZeroValuesAsNil
 
 	oldRpcBufsize := testRpcBufsize
 	testRpcBufsize = 0
