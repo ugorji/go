@@ -16451,6 +16451,8 @@ func (_ fastpathT) DecSliceIntfV(v []interface{}, canChange bool, d *Decoder) (_
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = nil
 		} else {
 			d.decode(&v[j])
 		}
@@ -16541,6 +16543,8 @@ func (_ fastpathT) DecSliceStringV(v []string, canChange bool, d *Decoder) (_ []
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = ""
 		} else {
 			v[j] = dd.DecodeString()
 		}
@@ -16631,6 +16635,8 @@ func (_ fastpathT) DecSliceFloat32V(v []float32, canChange bool, d *Decoder) (_ 
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = float32(dd.DecodeFloat(true))
 		}
@@ -16721,6 +16727,8 @@ func (_ fastpathT) DecSliceFloat64V(v []float64, canChange bool, d *Decoder) (_ 
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = dd.DecodeFloat(false)
 		}
@@ -16811,6 +16819,8 @@ func (_ fastpathT) DecSliceUintV(v []uint, canChange bool, d *Decoder) (_ []uint
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = uint(dd.DecodeUint(uintBitsize))
 		}
@@ -16901,6 +16911,8 @@ func (_ fastpathT) DecSliceUint16V(v []uint16, canChange bool, d *Decoder) (_ []
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = uint16(dd.DecodeUint(16))
 		}
@@ -16991,6 +17003,8 @@ func (_ fastpathT) DecSliceUint32V(v []uint32, canChange bool, d *Decoder) (_ []
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = uint32(dd.DecodeUint(32))
 		}
@@ -17081,6 +17095,8 @@ func (_ fastpathT) DecSliceUint64V(v []uint64, canChange bool, d *Decoder) (_ []
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = dd.DecodeUint(64)
 		}
@@ -17171,6 +17187,8 @@ func (_ fastpathT) DecSliceUintptrV(v []uintptr, canChange bool, d *Decoder) (_ 
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = uintptr(dd.DecodeUint(uintBitsize))
 		}
@@ -17261,6 +17279,8 @@ func (_ fastpathT) DecSliceIntV(v []int, canChange bool, d *Decoder) (_ []int, c
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = int(dd.DecodeInt(intBitsize))
 		}
@@ -17351,6 +17371,8 @@ func (_ fastpathT) DecSliceInt8V(v []int8, canChange bool, d *Decoder) (_ []int8
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = int8(dd.DecodeInt(8))
 		}
@@ -17441,6 +17463,8 @@ func (_ fastpathT) DecSliceInt16V(v []int16, canChange bool, d *Decoder) (_ []in
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = int16(dd.DecodeInt(16))
 		}
@@ -17531,6 +17555,8 @@ func (_ fastpathT) DecSliceInt32V(v []int32, canChange bool, d *Decoder) (_ []in
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = int32(dd.DecodeInt(32))
 		}
@@ -17621,6 +17647,8 @@ func (_ fastpathT) DecSliceInt64V(v []int64, canChange bool, d *Decoder) (_ []in
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
 		} else {
 			v[j] = dd.DecodeInt(64)
 		}
@@ -17711,6 +17739,8 @@ func (_ fastpathT) DecSliceBoolV(v []bool, canChange bool, d *Decoder) (_ []bool
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = false
 		} else {
 			v[j] = dd.DecodeBool()
 		}

@@ -374,6 +374,8 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v []{{ .Elem }}, canChange 
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = {{ zerocmd .Elem }}
 		} else {
 			{{ if eq .Elem "interface{}" }}d.decode(&v[j]){{ else }}v[j] = {{ decmd .Elem }}{{ end }}
 		}
