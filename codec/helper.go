@@ -1269,12 +1269,20 @@ func isImmutableKind(k reflect.Kind) (v bool) {
 
 // ----
 
+// type codecFnInfoAddrKind uint8
+// const (
+// 	codecFnInfoAddrAddr codecFnInfoAddrKind = iota // default
+// 	codecFnInfoAddrBase
+// 	codecFnInfoAddrAddrElseBase
+// )
+
 type codecFnInfo struct {
 	ti    *typeInfo
 	xfFn  Ext
 	xfTag uint64
 	seq   seqType
 	addrD bool
+	addrF bool // if addrD, this says whether decode function can take a value or a ptr
 	addrE bool
 }
 
@@ -1353,6 +1361,7 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 	if checkCodecSelfer && (ti.cs || ti.csp) {
 		fn.fe = (*Encoder).selferMarshal
 		fn.fd = (*Decoder).selferUnmarshal
+		fi.addrF = true
 		fi.addrD = ti.csp
 		fi.addrE = ti.csp
 	} else if rtid == rawTypId {
@@ -1361,16 +1370,19 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 	} else if rtid == rawExtTypId {
 		fn.fe = (*Encoder).rawExt
 		fn.fd = (*Decoder).rawExt
+		fi.addrF = true
 		fi.addrD = true
 		fi.addrE = true
 	} else if c.hh.IsBuiltinType(rtid) {
 		fn.fe = (*Encoder).builtin
 		fn.fd = (*Decoder).builtin
+		fi.addrF = true
 		fi.addrD = true
 	} else if xfFn := c.h.getExt(rtid); xfFn != nil {
 		fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 		fn.fe = (*Encoder).ext
 		fn.fd = (*Decoder).ext
+		fi.addrF = true
 		fi.addrD = true
 		if rk == reflect.Struct || rk == reflect.Array {
 			fi.addrE = true
@@ -1378,17 +1390,20 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 	} else if supportMarshalInterfaces && c.be && (ti.bm || ti.bmp) && (ti.bu || ti.bup) {
 		fn.fe = (*Encoder).binaryMarshal
 		fn.fd = (*Decoder).binaryUnmarshal
+		fi.addrF = true
 		fi.addrD = ti.bup
 		fi.addrE = ti.bmp
 	} else if supportMarshalInterfaces && !c.be && c.js && (ti.jm || ti.jmp) && (ti.ju || ti.jup) {
 		//If JSON, we should check JSONMarshal before textMarshal
 		fn.fe = (*Encoder).jsonMarshal
 		fn.fd = (*Decoder).jsonUnmarshal
+		fi.addrF = true
 		fi.addrD = ti.jup
 		fi.addrE = ti.jmp
 	} else if supportMarshalInterfaces && !c.be && (ti.tm || ti.tmp) && (ti.tu || ti.tup) {
 		fn.fe = (*Encoder).textMarshal
 		fn.fd = (*Decoder).textUnmarshal
+		fi.addrF = true
 		fi.addrD = ti.tup
 		fi.addrE = ti.tmp
 	} else {
@@ -1398,6 +1413,7 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 					fn.fe = fastpathAV[idx].encfn
 					fn.fd = fastpathAV[idx].decfn
 					fi.addrD = true
+					fi.addrF = false
 				}
 			} else {
 				// use mapping for underlying type if there
@@ -1415,6 +1431,7 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 						xfnf(e, xf, xrv.Convert(xrt))
 					}
 					fi.addrD = true
+					fi.addrF = false
 					xfnf2 := fastpathAV[idx].decfn
 					fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
 						xfnf2(d, xf, xrv.Convert(reflect.PtrTo(xrt)))
@@ -1485,6 +1502,7 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 			case reflect.Array:
 				fi.seq = seqTypeArray
 				fn.fe = (*Encoder).kSlice
+				fi.addrF = false
 				fi.addrD = false
 				rt2 := reflect.SliceOf(rt.Elem())
 				fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {

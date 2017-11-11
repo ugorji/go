@@ -1258,9 +1258,10 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	var fn *codecFn
 
-	var rv0, rv9 reflect.Value
-	rv0 = rv
-	rvChanged := false
+	var rvCanset = rv.CanSet()
+	var rvChanged bool
+	var rv0 = rv
+	var rv9 reflect.Value
 
 	rvlen := rv.Len()
 	rvcap := rv.Cap()
@@ -1270,28 +1271,29 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			oldRvlenGtZero := rvlen > 0
 			rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(rtelem0.Size()))
 			if rvlen <= rvcap {
-				if rv.CanSet() {
+				if rvCanset {
 					rv.SetLen(rvlen)
-				} else {
-					rv = rv.Slice(0, rvlen)
-					rvChanged = true
 				}
-			} else {
+			} else if rvCanset {
 				rv = reflect.MakeSlice(ti.rt, rvlen, rvlen)
 				rvcap = rvlen
 				rvChanged = true
+			} else {
+				d.errorf("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && !isImmutableKind(rtelem0.Kind()) {
 				reflect.Copy(rv, rv0) // only copy up to length NOT cap i.e. rv0.Slice(0, rvcap)
 			}
 		} else if containerLenS != rvlen {
 			rvlen = containerLenS
-			if rv.CanSet() {
+			if rvCanset {
 				rv.SetLen(rvlen)
-			} else {
-				rv = rv.Slice(0, rvlen)
-				rvChanged = true
 			}
+			// else {
+			// rv = rv.Slice(0, rvlen)
+			// rvChanged = true
+			// d.errorf("cannot decode into non-settable slice")
+			// }
 		}
 	}
 
@@ -1307,11 +1309,16 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			} else {
 				rvlen = 8
 			}
-			if f.seq == seqTypeSlice {
-				rv = reflect.MakeSlice(ti.rt, rvlen, rvlen)
-				rvChanged = true
-			} else if f.seq == seqTypeChan {
-				rv.Set(reflect.MakeChan(ti.rt, rvlen))
+			if rvCanset {
+				if f.seq == seqTypeSlice {
+					rv = reflect.MakeSlice(ti.rt, rvlen, rvlen)
+					rvChanged = true
+				} else { // chan
+					rv = reflect.MakeChan(ti.rt, rvlen)
+					rvChanged = true
+				}
+			} else {
+				d.errorf("cannot decode into non-settable slice")
 			}
 		}
 		slh.ElemContainerState(j)
@@ -1339,7 +1346,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				} else { // if f.seq == seqTypeSlice
 					// rv = reflect.Append(rv, reflect.Zero(rtelem0)) // uses append logic, plus varargs
 					var rvcap2 int
-					rv9, rvcap2, rvChanged = decExpandSliceRV(rv, ti.rt, rtelem0Size, 1, rvlen, rvcap)
+					rv9, rvcap2, rvChanged = d.expandSliceRV(rv, ti.rt, rvCanset, rtelem0Size, 1, rvlen, rvcap)
 					rvlen++
 					if rvChanged {
 						rv = rv9
@@ -1375,19 +1382,21 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		if j < rvlen {
 			if rv.CanSet() {
 				rv.SetLen(j)
-			} else {
+			} else if rvCanset {
 				rv = rv.Slice(0, j)
 				rvChanged = true
-			}
+			} // else { d.errorf("kSlice: cannot change non-settable slice") }
 			rvlen = j
 		} else if j == 0 && rv.IsNil() {
-			rv = reflect.MakeSlice(ti.rt, 0, 0)
-			rvChanged = true
+			if rvCanset {
+				rv = reflect.MakeSlice(ti.rt, 0, 0)
+				rvChanged = true
+			} // else { d.errorf("kSlice: cannot change non-settable slice") }
 		}
 	}
 	slh.End()
 
-	if rvChanged {
+	if rvChanged { // infers rvCanset=true, so it can be reset
 		rv0.Set(rv)
 	}
 }
@@ -1455,7 +1464,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		if elemsep {
 			dd.ReadMapElemKey()
 		}
-		if dd.TryDecodeAsNil() {
+		if false && dd.TryDecodeAsNil() { // nil cannot be a map key, so disregard this block
 			// Previously, if a nil key, we just ignored the mapped value and continued.
 			// However, that makes the result of encoding and then decoding map[intf]intf{nil:nil}
 			// to be an empty map.
@@ -1843,6 +1852,8 @@ func (d *Decoder) ResetBytes(in []byte) {
 // However, when decoding a stream nil, we reset the destination container
 // to its "zero" value (e.g. nil for slice/map, etc).
 //
+// Note: we allow nil values in the stream anywhere except for map keys.
+// A nil value in the encoded stream where a map key is expected is treated as an error.
 func (d *Decoder) Decode(v interface{}) (err error) {
 	defer panicToErrs2(&d.err, &err)
 	d.MustDecode(v)
@@ -2083,8 +2094,10 @@ func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn, chkAll bool) {
 			fn.fd(d, &fn.i, rvp)
 		} else if rv.CanAddr() {
 			fn.fd(d, &fn.i, rv.Addr())
-		} else {
+		} else if !fn.i.addrF {
 			fn.fd(d, &fn.i, rv)
+		} else {
+			d.errorf("cannot decode into a non-pointer value")
 		}
 	} else {
 		fn.fd(d, &fn.i, rv)
@@ -2340,21 +2353,26 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 	return
 }
 
-func decExpandSliceRV(s reflect.Value, st reflect.Type, stElemSize, num, slen, scap int) (
+func (d *Decoder) expandSliceRV(s reflect.Value, st reflect.Type, canChange bool, stElemSize, num, slen, scap int) (
 	s2 reflect.Value, scap2 int, changed bool) {
 	l1 := slen + num // new slice length
 	if l1 < slen {
-		panic("expandSlice: slice overflow")
+		d.errorf("expand slice: slice overflow")
 	}
 	if l1 <= scap {
 		if s.CanSet() {
 			s.SetLen(l1)
-		} else {
+		} else if canChange {
 			s2 = s.Slice(0, l1)
 			scap2 = scap
 			changed = true
+		} else {
+			d.errorf("expand slice: cannot change")
 		}
 		return
+	}
+	if !canChange {
+		d.errorf("expand slice: cannot change")
 	}
 	scap2 = growCap(scap, stElemSize, num)
 	s2 = reflect.MakeSlice(st, l1, scap2)
