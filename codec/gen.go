@@ -1798,18 +1798,29 @@ func genInternalZeroValue(s string) string {
 	}
 }
 
+var genInternalNonZeroValueIdx [5]uint64
+var genInternalNonZeroValueStrs = [2][5]string{
+	[5]string{`"string-is-an-interface"`, "true", `"some-string"`, "11.1", "33"},
+	[5]string{`"string-is-an-interface-2"`, "true", `"some-string-2"`, "22.2", "44"},
+}
+
 func genInternalNonZeroValue(s string) string {
 	switch s {
 	case "interface{}", "interface {}":
-		return `"string-is-an-interface"` // return string, to remove ambiguity
+		genInternalNonZeroValueIdx[0]++
+		return genInternalNonZeroValueStrs[genInternalNonZeroValueIdx[0]%2][0] // return string, to remove ambiguity
 	case "bool":
-		return "true"
+		genInternalNonZeroValueIdx[1]++
+		return genInternalNonZeroValueStrs[genInternalNonZeroValueIdx[1]%2][1]
 	case "string":
-		return `"some-string"`
+		genInternalNonZeroValueIdx[2]++
+		return genInternalNonZeroValueStrs[genInternalNonZeroValueIdx[2]%2][2]
 	case "float32", "float64", "float", "double":
-		return "10.1"
+		genInternalNonZeroValueIdx[3]++
+		return genInternalNonZeroValueStrs[genInternalNonZeroValueIdx[3]%2][3]
 	default:
-		return "10"
+		genInternalNonZeroValueIdx[4]++
+		return genInternalNonZeroValueStrs[genInternalNonZeroValueIdx[4]%2][4]
 	}
 }
 
