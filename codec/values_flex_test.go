@@ -52,7 +52,7 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 			22:  "twenty two",
 			-44: "minus forty four",
 		},
-		Mbu64: map[bool]struct{}{false: struct{}{}, true: struct{}{}},
+		Mbu64: map[bool]struct{}{false: {}, true: {}},
 	}
 	populateTestStrucCommon(&ts.testStrucCommon, n, bench, useInterface, useStringKeyOnly)
 	if depth > 0 {

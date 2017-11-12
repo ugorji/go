@@ -161,12 +161,12 @@ func init() {
 type charEncoding uint8
 
 const (
-	c_RAW charEncoding = iota
-	c_UTF8
-	c_UTF16LE
-	c_UTF16BE
-	c_UTF32LE
-	c_UTF32BE
+	cRAW charEncoding = iota
+	cUTF8
+	cUTF16LE
+	cUTF16BE
+	cUTF32LE
+	cUTF32BE
 )
 
 // valueType is the stream type
@@ -332,7 +332,7 @@ var (
 
 	chkOvf checkOverflow
 
-	noFieldNameToStructFieldInfoErr = errors.New("no field name passed to parseStructFieldInfo")
+	errNoFieldNameToStructFieldInfo = errors.New("no field name passed to parseStructFieldInfo")
 )
 
 var defTypeInfos = NewTypeInfos([]string{"codec", "json"})
@@ -388,9 +388,9 @@ type MapBySlice interface {
 	MapBySlice()
 }
 
-// WARNING: DO NOT USE DIRECTLY. EXPORTED FOR GODOC BENEFIT. WILL BE REMOVED.
-//
 // BasicHandle encapsulates the common options and extension functions.
+//
+// Deprecated: DO NOT USE DIRECTLY. EXPORTED FOR GODOC BENEFIT. WILL BE REMOVED.
 type BasicHandle struct {
 	// TypeInfos is used to get the type info for any type.
 	//
@@ -545,31 +545,31 @@ func (x *setExtWrapper) UpdateExt(dest interface{}, v interface{}) {
 
 type binaryEncodingType struct{}
 
-func (_ binaryEncodingType) isBinary() bool { return true }
+func (binaryEncodingType) isBinary() bool { return true }
 
 type textEncodingType struct{}
 
-func (_ textEncodingType) isBinary() bool { return false }
+func (textEncodingType) isBinary() bool { return false }
 
 // noBuiltInTypes is embedded into many types which do not support builtins
 // e.g. msgpack, simple, cbor.
 
 type noBuiltInTypeChecker struct{}
 
-func (_ noBuiltInTypeChecker) IsBuiltinType(rt uintptr) bool { return false }
+func (noBuiltInTypeChecker) IsBuiltinType(rt uintptr) bool { return false }
 
 type noBuiltInTypes struct{ noBuiltInTypeChecker }
 
-func (_ noBuiltInTypes) EncodeBuiltin(rt uintptr, v interface{}) {}
-func (_ noBuiltInTypes) DecodeBuiltin(rt uintptr, v interface{}) {}
+func (noBuiltInTypes) EncodeBuiltin(rt uintptr, v interface{}) {}
+func (noBuiltInTypes) DecodeBuiltin(rt uintptr, v interface{}) {}
 
 // type noStreamingCodec struct{}
-// func (_ noStreamingCodec) CheckBreak() bool { return false }
-// func (_ noStreamingCodec) hasElemSeparators() bool { return false }
+// func (noStreamingCodec) CheckBreak() bool { return false }
+// func (noStreamingCodec) hasElemSeparators() bool { return false }
 
 type noElemSeparators struct{}
 
-func (_ noElemSeparators) hasElemSeparators() (v bool) { return }
+func (noElemSeparators) hasElemSeparators() (v bool) { return }
 
 // bigenHelper.
 // Users must already slice the x completely, because we will not reslice.
@@ -709,7 +709,7 @@ func (si *structFieldInfo) field(v reflect.Value, update bool) (rv2 reflect.Valu
 
 func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
 	// if fname == "" {
-	// 	panic(noFieldNameToStructFieldInfoErr)
+	// 	panic(errNoFieldNameToStructFieldInfo)
 	// }
 	si := structFieldInfo{
 		encName: fname,
@@ -1128,7 +1128,7 @@ LOOP:
 		}
 
 		if f.Name == "" {
-			panic(noFieldNameToStructFieldInfoErr)
+			panic(errNoFieldNameToStructFieldInfo)
 		}
 
 		pv.fNames = append(pv.fNames, f.Name)
@@ -1545,14 +1545,14 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 // these functions must be inlinable, and not call anybody
 type checkOverflow struct{}
 
-func (_ checkOverflow) Float32(f float64) (overflow bool) {
+func (checkOverflow) Float32(f float64) (overflow bool) {
 	if f < 0 {
 		f = -f
 	}
 	return math.MaxFloat32 < f && f <= math.MaxFloat64
 }
 
-func (_ checkOverflow) Uint(v uint64, bitsize uint8) (overflow bool) {
+func (checkOverflow) Uint(v uint64, bitsize uint8) (overflow bool) {
 	if bitsize == 0 || bitsize >= 64 || v == 0 {
 		return
 	}
@@ -1562,7 +1562,7 @@ func (_ checkOverflow) Uint(v uint64, bitsize uint8) (overflow bool) {
 	return
 }
 
-func (_ checkOverflow) Int(v int64, bitsize uint8) (overflow bool) {
+func (checkOverflow) Int(v int64, bitsize uint8) (overflow bool) {
 	if bitsize == 0 || bitsize >= 64 || v == 0 {
 		return
 	}
@@ -1572,7 +1572,7 @@ func (_ checkOverflow) Int(v int64, bitsize uint8) (overflow bool) {
 	return
 }
 
-func (_ checkOverflow) SignedInt(v uint64) (i int64, overflow bool) {
+func (checkOverflow) SignedInt(v uint64) (i int64, overflow bool) {
 	//e.g. -127 to 128 for int8
 	pos := (v >> 63) == 0
 	ui2 := v & 0x7fffffffffffffff

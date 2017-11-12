@@ -176,7 +176,7 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 
 	i2 = i + 2
 	tz = bigen.Uint16(bs[i:i2])
-	i = i2
+	// i = i2
 	// sign extend sign bit into top 2 MSB (which were dst bits):
 	if tz&(1<<13) == 0 { // positive
 		tz = tz & 0x3fff //clear 2 MSBs: dst bits

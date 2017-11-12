@@ -20,12 +20,12 @@ const (
 )
 
 var (
-	onlyMapOrArrayCanDecodeIntoStructErr = errors.New("only encoded map or array can be decoded into a struct")
-	cannotDecodeIntoNilErr               = errors.New("cannot decode into nil")
+	errOnlyMapOrArrayCanDecodeIntoStruct = errors.New("only encoded map or array can be decoded into a struct")
+	errCannotDecodeIntoNil               = errors.New("cannot decode into nil")
 
-	decUnreadByteNothingToReadErr   = errors.New("cannot unread - nothing has been read")
-	decUnreadByteLastByteNotReadErr = errors.New("cannot unread - last byte has not been read")
-	decUnreadByteUnknownErr         = errors.New("cannot unread - reason unknown")
+	errDecUnreadByteNothingToRead   = errors.New("cannot unread - nothing has been read")
+	errDecUnreadByteLastByteNotRead = errors.New("cannot unread - last byte has not been read")
+	errDecUnreadByteUnknown         = errors.New("cannot unread - reason unknown")
 )
 
 // decReader abstracts the reading source, allowing implementations that can
@@ -108,22 +108,20 @@ type decDriver interface {
 	uncacheRead()
 }
 
-// type decNoSeparator struct {}
-// func (_ decNoSeparator) ReadEnd() {}
-
 type decDriverNoopContainerReader struct{}
 
-func (_ decDriverNoopContainerReader) ReadArrayStart() (v int) { return }
-func (_ decDriverNoopContainerReader) ReadArrayElem()          {}
-func (_ decDriverNoopContainerReader) ReadArrayEnd()           {}
-func (_ decDriverNoopContainerReader) ReadMapStart() (v int)   { return }
-func (_ decDriverNoopContainerReader) ReadMapElemKey()         {}
-func (_ decDriverNoopContainerReader) ReadMapElemValue()       {}
-func (_ decDriverNoopContainerReader) ReadMapEnd()             {}
-func (_ decDriverNoopContainerReader) CheckBreak() (v bool)    { return }
+func (x decDriverNoopContainerReader) ReadArrayStart() (v int) { return }
+func (x decDriverNoopContainerReader) ReadArrayElem()          {}
+func (x decDriverNoopContainerReader) ReadArrayEnd()           {}
+func (x decDriverNoopContainerReader) ReadMapStart() (v int)   { return }
+func (x decDriverNoopContainerReader) ReadMapElemKey()         {}
+func (x decDriverNoopContainerReader) ReadMapElemValue()       {}
+func (x decDriverNoopContainerReader) ReadMapEnd()             {}
+func (x decDriverNoopContainerReader) CheckBreak() (v bool)    { return }
 
-// func (_ decNoSeparator) uncacheRead() {}
+// func (x decNoSeparator) uncacheRead() {}
 
+// DecodeOptions captures configuration options during decode.
 type DecodeOptions struct {
 	// MapType specifies type to use during schema-less decoding of a map in the stream.
 	// If nil, we use map[interface{}]interface{}
@@ -334,7 +332,7 @@ func (z *bufioDecReader) UnreadByte() (err error) {
 		}
 		return
 	}
-	return decUnreadByteNothingToReadErr
+	return errDecUnreadByteNothingToRead
 }
 
 func (z *bufioDecReader) numread() int {
@@ -602,11 +600,11 @@ func (z *ioDecReader) UnreadByte() (err error) {
 	case 2:
 		z.ls = 1
 	case 0:
-		err = decUnreadByteNothingToReadErr
+		err = errDecUnreadByteNothingToRead
 	case 1:
-		err = decUnreadByteLastByteNotReadErr
+		err = errDecUnreadByteLastByteNotRead
 	default:
-		err = decUnreadByteUnknownErr
+		err = errDecUnreadByteUnknown
 	}
 	return
 }
@@ -745,7 +743,7 @@ func (z *ioDecReader) stopTrack() (bs []byte) {
 
 // ------------------------------------
 
-var bytesDecReaderCannotUnreadErr = errors.New("cannot unread last byte read")
+var errBytesDecReaderCannotUnread = errors.New("cannot unread last byte read")
 
 // bytesDecReader is a decReader that reads off a byte slice with zero copying
 type bytesDecReader struct {
@@ -768,7 +766,7 @@ func (z *bytesDecReader) numread() int {
 
 func (z *bytesDecReader) unreadn1() {
 	if z.c == 0 || len(z.b) == 0 {
-		panic(bytesDecReaderCannotUnreadErr)
+		panic(errBytesDecReaderCannotUnread)
 	}
 	z.c--
 	z.a++
@@ -1186,7 +1184,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		}
 		dd.ReadArrayEnd()
 	} else {
-		d.error(onlyMapOrArrayCanDecodeIntoStructErr)
+		d.error(errOnlyMapOrArrayCanDecodeIntoStruct)
 		return
 	}
 }
@@ -1781,6 +1779,8 @@ func (d *Decoder) resetCommon() {
 	}
 }
 
+// Reset the Decoder with a new Reader to decode from,
+// clearing all state from last run(s).
 func (d *Decoder) Reset(r io.Reader) {
 	if d.h.ReaderBufferSize > 0 {
 		d.bi.buf = make([]byte, 0, d.h.ReaderBufferSize)
@@ -1795,6 +1795,8 @@ func (d *Decoder) Reset(r io.Reader) {
 	d.resetCommon()
 }
 
+// ResetBytes resets the Decoder with a new []byte to decode from,
+// clearing all state from last run(s).
 func (d *Decoder) ResetBytes(in []byte) {
 	d.bytes = true
 	d.rb.reset(in)
@@ -2002,7 +2004,7 @@ func (d *Decoder) decode(iv interface{}) {
 	// check nil and interfaces explicitly,
 	// so that type switches just have a run of constant non-interface types.
 	if iv == nil {
-		d.error(cannotDecodeIntoNilErr)
+		d.error(errCannotDecodeIntoNil)
 		return
 	}
 	if v, ok := iv.(Selfer); ok {
@@ -2153,7 +2155,7 @@ func (d *Decoder) ensureDecodeable(rv reflect.Value) (rv2 reflect.Value) {
 		return
 	}
 	if !rv.IsValid() {
-		d.error(cannotDecodeIntoNilErr)
+		d.error(errCannotDecodeIntoNil)
 		return
 	}
 	if !rv.CanInterface() {
@@ -2175,7 +2177,7 @@ func (d *Decoder) ensureDecodeable(rv reflect.Value) (rv2 reflect.Value) {
 
 // func (d *Decoder) errNotValidPtrValue(rv reflect.Value) {
 // 	if !rv.IsValid() {
-// 		d.error(cannotDecodeIntoNilErr)
+// 		d.error(errCannotDecodeIntoNil)
 // 		return
 // 	}
 // 	if !rv.CanInterface() {

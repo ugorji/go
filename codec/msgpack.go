@@ -200,7 +200,7 @@ func (e *msgpackEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext, _ *Enc
 		e.encodeExtPreamble(uint8(xtag), len(bs))
 		e.w.writeb(bs)
 	} else {
-		e.EncodeStringBytes(c_RAW, bs)
+		e.EncodeStringBytes(cRAW, bs)
 	}
 }
 
@@ -244,7 +244,7 @@ func (e *msgpackEncDriver) WriteMapStart(length int) {
 
 func (e *msgpackEncDriver) EncodeString(c charEncoding, s string) {
 	slen := len(s)
-	if c == c_RAW && e.h.WriteExt {
+	if c == cRAW && e.h.WriteExt {
 		e.writeContainerLen(msgpackContainerBin, slen)
 	} else {
 		e.writeContainerLen(msgpackContainerStr, slen)
@@ -255,12 +255,12 @@ func (e *msgpackEncDriver) EncodeString(c charEncoding, s string) {
 }
 
 func (e *msgpackEncDriver) EncodeSymbol(v string) {
-	e.EncodeString(c_UTF8, v)
+	e.EncodeString(cUTF8, v)
 }
 
 func (e *msgpackEncDriver) EncodeStringBytes(c charEncoding, bs []byte) {
 	slen := len(bs)
-	if c == c_RAW && e.h.WriteExt {
+	if c == cRAW && e.h.WriteExt {
 		e.writeContainerLen(msgpackContainerBin, slen)
 	} else {
 		e.writeContainerLen(msgpackContainerStr, slen)
@@ -643,9 +643,10 @@ func (d *msgpackDecDriver) ContainerType() (vt valueType) {
 		return valueTypeArray
 	} else if bd == mpMap16 || bd == mpMap32 || (bd >= mpFixMapMin && bd <= mpFixMapMax) {
 		return valueTypeMap
-	} else {
-		// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
 	}
+	// else {
+	// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
+	// }
 	return valueTypeUnset
 }
 
@@ -788,6 +789,7 @@ type MsgpackHandle struct {
 	noElemSeparators
 }
 
+// SetBytesExt sets an extension
 func (h *MsgpackHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
 	return h.SetExt(rt, tag, &setExtWrapper{b: ext})
 }

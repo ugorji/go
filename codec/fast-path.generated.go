@@ -1795,7 +1795,7 @@ func (_ fastpathT) EncSliceStringV(v []string, e *Encoder) {
 		if esep {
 			ee.WriteArrayElem()
 		}
-		ee.EncodeString(c_UTF8, v2)
+		ee.EncodeString(cUTF8, v2)
 	}
 	ee.WriteArrayEnd()
 }
@@ -1815,7 +1815,7 @@ func (_ fastpathT) EncAsMapSliceStringV(v []string, e *Encoder) {
 				ee.WriteMapElemValue()
 			}
 		}
-		ee.EncodeString(c_UTF8, v2)
+		ee.EncodeString(cUTF8, v2)
 	}
 	ee.WriteMapEnd()
 }
@@ -2473,7 +2473,7 @@ func (_ fastpathT) EncMapIntfStringV(v map[interface{}]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -3205,7 +3205,7 @@ func (_ fastpathT) EncMapStringIntfV(v map[string]interface{}, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3220,7 +3220,7 @@ func (_ fastpathT) EncMapStringIntfV(v map[string]interface{}, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3257,12 +3257,12 @@ func (_ fastpathT) EncMapStringStringV(v map[string]string, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[string(k2)])
+			ee.EncodeString(cUTF8, v[string(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -3272,12 +3272,12 @@ func (_ fastpathT) EncMapStringStringV(v map[string]string, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -3309,7 +3309,7 @@ func (_ fastpathT) EncMapStringUintV(v map[string]uint, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3324,7 +3324,7 @@ func (_ fastpathT) EncMapStringUintV(v map[string]uint, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3361,7 +3361,7 @@ func (_ fastpathT) EncMapStringUint8V(v map[string]uint8, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3376,7 +3376,7 @@ func (_ fastpathT) EncMapStringUint8V(v map[string]uint8, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3413,7 +3413,7 @@ func (_ fastpathT) EncMapStringUint16V(v map[string]uint16, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3428,7 +3428,7 @@ func (_ fastpathT) EncMapStringUint16V(v map[string]uint16, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3465,7 +3465,7 @@ func (_ fastpathT) EncMapStringUint32V(v map[string]uint32, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3480,7 +3480,7 @@ func (_ fastpathT) EncMapStringUint32V(v map[string]uint32, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3517,7 +3517,7 @@ func (_ fastpathT) EncMapStringUint64V(v map[string]uint64, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3532,7 +3532,7 @@ func (_ fastpathT) EncMapStringUint64V(v map[string]uint64, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3569,7 +3569,7 @@ func (_ fastpathT) EncMapStringUintptrV(v map[string]uintptr, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3584,7 +3584,7 @@ func (_ fastpathT) EncMapStringUintptrV(v map[string]uintptr, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3621,7 +3621,7 @@ func (_ fastpathT) EncMapStringIntV(v map[string]int, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3636,7 +3636,7 @@ func (_ fastpathT) EncMapStringIntV(v map[string]int, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3673,7 +3673,7 @@ func (_ fastpathT) EncMapStringInt8V(v map[string]int8, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3688,7 +3688,7 @@ func (_ fastpathT) EncMapStringInt8V(v map[string]int8, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3725,7 +3725,7 @@ func (_ fastpathT) EncMapStringInt16V(v map[string]int16, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3740,7 +3740,7 @@ func (_ fastpathT) EncMapStringInt16V(v map[string]int16, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3777,7 +3777,7 @@ func (_ fastpathT) EncMapStringInt32V(v map[string]int32, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3792,7 +3792,7 @@ func (_ fastpathT) EncMapStringInt32V(v map[string]int32, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3829,7 +3829,7 @@ func (_ fastpathT) EncMapStringInt64V(v map[string]int64, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3844,7 +3844,7 @@ func (_ fastpathT) EncMapStringInt64V(v map[string]int64, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3881,7 +3881,7 @@ func (_ fastpathT) EncMapStringFloat32V(v map[string]float32, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3896,7 +3896,7 @@ func (_ fastpathT) EncMapStringFloat32V(v map[string]float32, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3933,7 +3933,7 @@ func (_ fastpathT) EncMapStringFloat64V(v map[string]float64, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3948,7 +3948,7 @@ func (_ fastpathT) EncMapStringFloat64V(v map[string]float64, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -3985,7 +3985,7 @@ func (_ fastpathT) EncMapStringBoolV(v map[string]bool, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -4000,7 +4000,7 @@ func (_ fastpathT) EncMapStringBoolV(v map[string]bool, e *Encoder) {
 			if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}
 			if esep {
 				ee.WriteMapElemValue()
@@ -4080,7 +4080,7 @@ func (_ fastpathT) EncMapFloat32StringV(v map[float32]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[float32(k2)])
+			ee.EncodeString(cUTF8, v[float32(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -4091,7 +4091,7 @@ func (_ fastpathT) EncMapFloat32StringV(v map[float32]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -4768,7 +4768,7 @@ func (_ fastpathT) EncMapFloat64StringV(v map[float64]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[float64(k2)])
+			ee.EncodeString(cUTF8, v[float64(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -4779,7 +4779,7 @@ func (_ fastpathT) EncMapFloat64StringV(v map[float64]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -5456,7 +5456,7 @@ func (_ fastpathT) EncMapUintStringV(v map[uint]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[uint(k2)])
+			ee.EncodeString(cUTF8, v[uint(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -5467,7 +5467,7 @@ func (_ fastpathT) EncMapUintStringV(v map[uint]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -6144,7 +6144,7 @@ func (_ fastpathT) EncMapUint8StringV(v map[uint8]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[uint8(k2)])
+			ee.EncodeString(cUTF8, v[uint8(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -6155,7 +6155,7 @@ func (_ fastpathT) EncMapUint8StringV(v map[uint8]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -6832,7 +6832,7 @@ func (_ fastpathT) EncMapUint16StringV(v map[uint16]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[uint16(k2)])
+			ee.EncodeString(cUTF8, v[uint16(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -6843,7 +6843,7 @@ func (_ fastpathT) EncMapUint16StringV(v map[uint16]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -7520,7 +7520,7 @@ func (_ fastpathT) EncMapUint32StringV(v map[uint32]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[uint32(k2)])
+			ee.EncodeString(cUTF8, v[uint32(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -7531,7 +7531,7 @@ func (_ fastpathT) EncMapUint32StringV(v map[uint32]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -8208,7 +8208,7 @@ func (_ fastpathT) EncMapUint64StringV(v map[uint64]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[uint64(k2)])
+			ee.EncodeString(cUTF8, v[uint64(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -8219,7 +8219,7 @@ func (_ fastpathT) EncMapUint64StringV(v map[uint64]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -8896,7 +8896,7 @@ func (_ fastpathT) EncMapUintptrStringV(v map[uintptr]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[uintptr(k2)])
+			ee.EncodeString(cUTF8, v[uintptr(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -8907,7 +8907,7 @@ func (_ fastpathT) EncMapUintptrStringV(v map[uintptr]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -9584,7 +9584,7 @@ func (_ fastpathT) EncMapIntStringV(v map[int]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[int(k2)])
+			ee.EncodeString(cUTF8, v[int(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -9595,7 +9595,7 @@ func (_ fastpathT) EncMapIntStringV(v map[int]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -10272,7 +10272,7 @@ func (_ fastpathT) EncMapInt8StringV(v map[int8]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[int8(k2)])
+			ee.EncodeString(cUTF8, v[int8(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -10283,7 +10283,7 @@ func (_ fastpathT) EncMapInt8StringV(v map[int8]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -10960,7 +10960,7 @@ func (_ fastpathT) EncMapInt16StringV(v map[int16]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[int16(k2)])
+			ee.EncodeString(cUTF8, v[int16(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -10971,7 +10971,7 @@ func (_ fastpathT) EncMapInt16StringV(v map[int16]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -11648,7 +11648,7 @@ func (_ fastpathT) EncMapInt32StringV(v map[int32]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[int32(k2)])
+			ee.EncodeString(cUTF8, v[int32(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -11659,7 +11659,7 @@ func (_ fastpathT) EncMapInt32StringV(v map[int32]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -12336,7 +12336,7 @@ func (_ fastpathT) EncMapInt64StringV(v map[int64]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[int64(k2)])
+			ee.EncodeString(cUTF8, v[int64(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -12347,7 +12347,7 @@ func (_ fastpathT) EncMapInt64StringV(v map[int64]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()
@@ -13024,7 +13024,7 @@ func (_ fastpathT) EncMapBoolStringV(v map[bool]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v[bool(k2)])
+			ee.EncodeString(cUTF8, v[bool(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
@@ -13035,7 +13035,7 @@ func (_ fastpathT) EncMapBoolStringV(v map[bool]string, e *Encoder) {
 			if esep {
 				ee.WriteMapElemValue()
 			}
-			ee.EncodeString(c_UTF8, v2)
+			ee.EncodeString(cUTF8, v2)
 		}
 	}
 	ee.WriteMapEnd()

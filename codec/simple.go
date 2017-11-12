@@ -182,7 +182,7 @@ func (e *simpleEncDriver) EncodeString(c charEncoding, v string) {
 }
 
 func (e *simpleEncDriver) EncodeSymbol(v string) {
-	e.EncodeString(c_UTF8, v)
+	e.EncodeString(cUTF8, v)
 }
 
 func (e *simpleEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
@@ -240,9 +240,10 @@ func (d *simpleDecDriver) ContainerType() (vt valueType) {
 	} else if d.bd == simpleVdMap || d.bd == simpleVdMap+1 ||
 		d.bd == simpleVdMap+2 || d.bd == simpleVdMap+3 || d.bd == simpleVdMap+4 {
 		return valueTypeMap
-	} else {
-		// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
 	}
+	// else {
+	// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
+	// }
 	return valueTypeUnset
 }
 
@@ -570,7 +571,7 @@ func (d *simpleDecDriver) DecodeNaked() {
 //   - Integers (intXXX, uintXXX) are encoded in 1, 2, 4 or 8 bytes (plus a descriptor byte).
 //     There are positive (uintXXX and intXXX >= 0) and negative (intXXX < 0) integers.
 //   - Floats are encoded in 4 or 8 bytes (plus a descriptor byte)
-//   - Lenght of containers (strings, bytes, array, map, extensions)
+//   - Length of containers (strings, bytes, array, map, extensions)
 //     are encoded in 0, 1, 2, 4 or 8 bytes.
 //     Zero-length containers have no length encoded.
 //     For others, the number of bytes is given by pow(2, bd%3)
@@ -588,11 +589,12 @@ type SimpleHandle struct {
 	EncZeroValuesAsNil bool
 }
 
-func (h *SimpleHandle) hasElemSeparators() bool { return true } // as it implements Write(Map|Array)XXX
-
+// SetBytesExt sets an extension
 func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
 	return h.SetExt(rt, tag, &setExtWrapper{b: ext})
 }
+
+func (h *SimpleHandle) hasElemSeparators() bool { return true } // as it implements Write(Map|Array)XXX
 
 func (h *SimpleHandle) newEncDriver(e *Encoder) encDriver {
 	return &simpleEncDriver{e: e, w: e.w, h: h}

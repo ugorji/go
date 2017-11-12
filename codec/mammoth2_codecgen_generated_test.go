@@ -13,22 +13,22 @@ import (
 
 const (
 	// ----- content types ----
-	codecSelferC_UTF819781 = 1
-	codecSelferC_RAW19781  = 0
+	codecSelferCcUTF819781 = 1
+	codecSelferCcRAW19781  = 0
 	// ----- value types used ----
 	codecSelferValueTypeArray19781 = 10
 	codecSelferValueTypeMap19781   = 9
 	// ----- containerStateValues ----
-	codecSelfer_containerMapKey19781    = 2
-	codecSelfer_containerMapValue19781  = 3
-	codecSelfer_containerMapEnd19781    = 4
-	codecSelfer_containerArrayElem19781 = 6
-	codecSelfer_containerArrayEnd19781  = 7
+	codecSelferKcontainerMapKey19781    = 2
+	codecSelferKcontainerMapValue19781  = 3
+	codecSelferKcontainerMapEnd19781    = 4
+	codecSelferKcontainerArrayElem19781 = 6
+	codecSelferKcontainerArrayEnd19781  = 7
 )
 
 var (
 	codecSelferBitsize19781                         = uint8(reflect.TypeOf(uint(0)).Bits())
-	codecSelferOnlyMapOrArrayEncodeToStructErr19781 = errors.New(`only encoded map or array can be decoded into a struct`)
+	errCodecSelferOnlyMapOrArrayEncodeToStruct19781 = errors.New(`only encoded map or array can be decoded into a struct`)
 )
 
 type codecSelfer19781 struct{}
@@ -79,7 +79,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FIntf`)
 				r.WriteMapElemValue()
 				if x.FIntf == nil {
 					r.EncodeNil()
@@ -118,7 +118,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrIntf`)
 				r.WriteMapElemValue()
 				if yyn6 {
 					r.EncodeNil()
@@ -142,17 +142,17 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				_ = yym12
 				if false {
 				} else {
-					r.EncodeString(codecSelferC_UTF819781, string(x.FString))
+					r.EncodeString(codecSelferCcUTF819781, string(x.FString))
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FString"))
+				r.EncodeString(codecSelferCcUTF819781, `FString`)
 				r.WriteMapElemValue()
 				yym13 := z.EncBinary()
 				_ = yym13
 				if false {
 				} else {
-					r.EncodeString(codecSelferC_UTF819781, string(x.FString))
+					r.EncodeString(codecSelferCcUTF819781, string(x.FString))
 				}
 			}
 			var yyn14 bool
@@ -175,13 +175,13 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						_ = yym16
 						if false {
 						} else {
-							r.EncodeString(codecSelferC_UTF819781, string(yy15))
+							r.EncodeString(codecSelferCcUTF819781, string(yy15))
 						}
 					}
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrString"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrString`)
 				r.WriteMapElemValue()
 				if yyn14 {
 					r.EncodeNil()
@@ -194,7 +194,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						_ = yym18
 						if false {
 						} else {
-							r.EncodeString(codecSelferC_UTF819781, string(yy17))
+							r.EncodeString(codecSelferCcUTF819781, string(yy17))
 						}
 					}
 				}
@@ -209,7 +209,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FFloat32`)
 				r.WriteMapElemValue()
 				yym21 := z.EncBinary()
 				_ = yym21
@@ -244,7 +244,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrFloat32`)
 				r.WriteMapElemValue()
 				if yyn22 {
 					r.EncodeNil()
@@ -272,7 +272,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FFloat64`)
 				r.WriteMapElemValue()
 				yym29 := z.EncBinary()
 				_ = yym29
@@ -307,7 +307,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrFloat64`)
 				r.WriteMapElemValue()
 				if yyn30 {
 					r.EncodeNil()
@@ -335,7 +335,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FUint`)
 				r.WriteMapElemValue()
 				yym37 := z.EncBinary()
 				_ = yym37
@@ -370,7 +370,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrUint`)
 				r.WriteMapElemValue()
 				if yyn38 {
 					r.EncodeNil()
@@ -398,7 +398,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FUint8`)
 				r.WriteMapElemValue()
 				yym45 := z.EncBinary()
 				_ = yym45
@@ -433,7 +433,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrUint8`)
 				r.WriteMapElemValue()
 				if yyn46 {
 					r.EncodeNil()
@@ -461,7 +461,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FUint16`)
 				r.WriteMapElemValue()
 				yym53 := z.EncBinary()
 				_ = yym53
@@ -496,7 +496,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrUint16`)
 				r.WriteMapElemValue()
 				if yyn54 {
 					r.EncodeNil()
@@ -524,7 +524,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FUint32`)
 				r.WriteMapElemValue()
 				yym61 := z.EncBinary()
 				_ = yym61
@@ -559,7 +559,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrUint32`)
 				r.WriteMapElemValue()
 				if yyn62 {
 					r.EncodeNil()
@@ -587,7 +587,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FUint64`)
 				r.WriteMapElemValue()
 				yym69 := z.EncBinary()
 				_ = yym69
@@ -622,7 +622,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrUint64`)
 				r.WriteMapElemValue()
 				if yyn70 {
 					r.EncodeNil()
@@ -650,7 +650,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FUintptr`)
 				r.WriteMapElemValue()
 				yym77 := z.EncBinary()
 				_ = yym77
@@ -685,7 +685,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrUintptr`)
 				r.WriteMapElemValue()
 				if yyn78 {
 					r.EncodeNil()
@@ -713,7 +713,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FInt`)
 				r.WriteMapElemValue()
 				yym85 := z.EncBinary()
 				_ = yym85
@@ -748,7 +748,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrInt`)
 				r.WriteMapElemValue()
 				if yyn86 {
 					r.EncodeNil()
@@ -776,7 +776,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FInt8`)
 				r.WriteMapElemValue()
 				yym93 := z.EncBinary()
 				_ = yym93
@@ -811,7 +811,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrInt8`)
 				r.WriteMapElemValue()
 				if yyn94 {
 					r.EncodeNil()
@@ -839,7 +839,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FInt16`)
 				r.WriteMapElemValue()
 				yym101 := z.EncBinary()
 				_ = yym101
@@ -874,7 +874,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrInt16`)
 				r.WriteMapElemValue()
 				if yyn102 {
 					r.EncodeNil()
@@ -902,7 +902,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FInt32`)
 				r.WriteMapElemValue()
 				yym109 := z.EncBinary()
 				_ = yym109
@@ -937,7 +937,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrInt32`)
 				r.WriteMapElemValue()
 				if yyn110 {
 					r.EncodeNil()
@@ -965,7 +965,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FInt64`)
 				r.WriteMapElemValue()
 				yym117 := z.EncBinary()
 				_ = yym117
@@ -1000,7 +1000,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrInt64`)
 				r.WriteMapElemValue()
 				if yyn118 {
 					r.EncodeNil()
@@ -1028,7 +1028,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FBool`)
 				r.WriteMapElemValue()
 				yym125 := z.EncBinary()
 				_ = yym125
@@ -1063,7 +1063,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrBool`)
 				r.WriteMapElemValue()
 				if yyn126 {
 					r.EncodeNil()
@@ -1095,7 +1095,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceIntf`)
 				r.WriteMapElemValue()
 				if x.FSliceIntf == nil {
 					r.EncodeNil()
@@ -1134,7 +1134,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceIntf`)
 				r.WriteMapElemValue()
 				if yyn134 {
 					r.EncodeNil()
@@ -1166,7 +1166,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceString"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceString`)
 				r.WriteMapElemValue()
 				if x.FSliceString == nil {
 					r.EncodeNil()
@@ -1205,7 +1205,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceString"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceString`)
 				r.WriteMapElemValue()
 				if yyn142 {
 					r.EncodeNil()
@@ -1237,7 +1237,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceFloat32`)
 				r.WriteMapElemValue()
 				if x.FSliceFloat32 == nil {
 					r.EncodeNil()
@@ -1276,7 +1276,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceFloat32`)
 				r.WriteMapElemValue()
 				if yyn150 {
 					r.EncodeNil()
@@ -1308,7 +1308,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceFloat64`)
 				r.WriteMapElemValue()
 				if x.FSliceFloat64 == nil {
 					r.EncodeNil()
@@ -1347,7 +1347,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceFloat64`)
 				r.WriteMapElemValue()
 				if yyn158 {
 					r.EncodeNil()
@@ -1379,7 +1379,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceUint`)
 				r.WriteMapElemValue()
 				if x.FSliceUint == nil {
 					r.EncodeNil()
@@ -1418,7 +1418,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceUint`)
 				r.WriteMapElemValue()
 				if yyn166 {
 					r.EncodeNil()
@@ -1450,7 +1450,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceUint16`)
 				r.WriteMapElemValue()
 				if x.FSliceUint16 == nil {
 					r.EncodeNil()
@@ -1489,7 +1489,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceUint16`)
 				r.WriteMapElemValue()
 				if yyn174 {
 					r.EncodeNil()
@@ -1521,7 +1521,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceUint32`)
 				r.WriteMapElemValue()
 				if x.FSliceUint32 == nil {
 					r.EncodeNil()
@@ -1560,7 +1560,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceUint32`)
 				r.WriteMapElemValue()
 				if yyn182 {
 					r.EncodeNil()
@@ -1592,7 +1592,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceUint64`)
 				r.WriteMapElemValue()
 				if x.FSliceUint64 == nil {
 					r.EncodeNil()
@@ -1631,7 +1631,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceUint64`)
 				r.WriteMapElemValue()
 				if yyn190 {
 					r.EncodeNil()
@@ -1663,7 +1663,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceUintptr`)
 				r.WriteMapElemValue()
 				if x.FSliceUintptr == nil {
 					r.EncodeNil()
@@ -1702,7 +1702,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceUintptr`)
 				r.WriteMapElemValue()
 				if yyn198 {
 					r.EncodeNil()
@@ -1734,7 +1734,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceInt`)
 				r.WriteMapElemValue()
 				if x.FSliceInt == nil {
 					r.EncodeNil()
@@ -1773,7 +1773,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceInt`)
 				r.WriteMapElemValue()
 				if yyn206 {
 					r.EncodeNil()
@@ -1805,7 +1805,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceInt8`)
 				r.WriteMapElemValue()
 				if x.FSliceInt8 == nil {
 					r.EncodeNil()
@@ -1844,7 +1844,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceInt8`)
 				r.WriteMapElemValue()
 				if yyn214 {
 					r.EncodeNil()
@@ -1876,7 +1876,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceInt16`)
 				r.WriteMapElemValue()
 				if x.FSliceInt16 == nil {
 					r.EncodeNil()
@@ -1915,7 +1915,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceInt16`)
 				r.WriteMapElemValue()
 				if yyn222 {
 					r.EncodeNil()
@@ -1947,7 +1947,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceInt32`)
 				r.WriteMapElemValue()
 				if x.FSliceInt32 == nil {
 					r.EncodeNil()
@@ -1986,7 +1986,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceInt32`)
 				r.WriteMapElemValue()
 				if yyn230 {
 					r.EncodeNil()
@@ -2018,7 +2018,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceInt64`)
 				r.WriteMapElemValue()
 				if x.FSliceInt64 == nil {
 					r.EncodeNil()
@@ -2057,7 +2057,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceInt64`)
 				r.WriteMapElemValue()
 				if yyn238 {
 					r.EncodeNil()
@@ -2089,7 +2089,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FSliceBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FSliceBool`)
 				r.WriteMapElemValue()
 				if x.FSliceBool == nil {
 					r.EncodeNil()
@@ -2128,7 +2128,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrSliceBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrSliceBool`)
 				r.WriteMapElemValue()
 				if yyn246 {
 					r.EncodeNil()
@@ -2160,7 +2160,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfIntf`)
 				r.WriteMapElemValue()
 				if x.FMapIntfIntf == nil {
 					r.EncodeNil()
@@ -2199,7 +2199,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfIntf`)
 				r.WriteMapElemValue()
 				if yyn254 {
 					r.EncodeNil()
@@ -2231,7 +2231,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfString"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfString`)
 				r.WriteMapElemValue()
 				if x.FMapIntfString == nil {
 					r.EncodeNil()
@@ -2270,7 +2270,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfString"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfString`)
 				r.WriteMapElemValue()
 				if yyn262 {
 					r.EncodeNil()
@@ -2302,7 +2302,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfUint`)
 				r.WriteMapElemValue()
 				if x.FMapIntfUint == nil {
 					r.EncodeNil()
@@ -2341,7 +2341,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfUint`)
 				r.WriteMapElemValue()
 				if yyn270 {
 					r.EncodeNil()
@@ -2373,7 +2373,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfUint8`)
 				r.WriteMapElemValue()
 				if x.FMapIntfUint8 == nil {
 					r.EncodeNil()
@@ -2412,7 +2412,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfUint8`)
 				r.WriteMapElemValue()
 				if yyn278 {
 					r.EncodeNil()
@@ -2444,7 +2444,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfUint16`)
 				r.WriteMapElemValue()
 				if x.FMapIntfUint16 == nil {
 					r.EncodeNil()
@@ -2483,7 +2483,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfUint16`)
 				r.WriteMapElemValue()
 				if yyn286 {
 					r.EncodeNil()
@@ -2515,7 +2515,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfUint32`)
 				r.WriteMapElemValue()
 				if x.FMapIntfUint32 == nil {
 					r.EncodeNil()
@@ -2554,7 +2554,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfUint32`)
 				r.WriteMapElemValue()
 				if yyn294 {
 					r.EncodeNil()
@@ -2586,7 +2586,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfUint64`)
 				r.WriteMapElemValue()
 				if x.FMapIntfUint64 == nil {
 					r.EncodeNil()
@@ -2625,7 +2625,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfUint64`)
 				r.WriteMapElemValue()
 				if yyn302 {
 					r.EncodeNil()
@@ -2657,7 +2657,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfUintptr`)
 				r.WriteMapElemValue()
 				if x.FMapIntfUintptr == nil {
 					r.EncodeNil()
@@ -2696,7 +2696,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfUintptr`)
 				r.WriteMapElemValue()
 				if yyn310 {
 					r.EncodeNil()
@@ -2728,7 +2728,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfInt`)
 				r.WriteMapElemValue()
 				if x.FMapIntfInt == nil {
 					r.EncodeNil()
@@ -2767,7 +2767,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfInt`)
 				r.WriteMapElemValue()
 				if yyn318 {
 					r.EncodeNil()
@@ -2799,7 +2799,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfInt8`)
 				r.WriteMapElemValue()
 				if x.FMapIntfInt8 == nil {
 					r.EncodeNil()
@@ -2838,7 +2838,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfInt8`)
 				r.WriteMapElemValue()
 				if yyn326 {
 					r.EncodeNil()
@@ -2870,7 +2870,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfInt16`)
 				r.WriteMapElemValue()
 				if x.FMapIntfInt16 == nil {
 					r.EncodeNil()
@@ -2909,7 +2909,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfInt16`)
 				r.WriteMapElemValue()
 				if yyn334 {
 					r.EncodeNil()
@@ -2941,7 +2941,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfInt32`)
 				r.WriteMapElemValue()
 				if x.FMapIntfInt32 == nil {
 					r.EncodeNil()
@@ -2980,7 +2980,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfInt32`)
 				r.WriteMapElemValue()
 				if yyn342 {
 					r.EncodeNil()
@@ -3012,7 +3012,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfInt64`)
 				r.WriteMapElemValue()
 				if x.FMapIntfInt64 == nil {
 					r.EncodeNil()
@@ -3051,7 +3051,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfInt64`)
 				r.WriteMapElemValue()
 				if yyn350 {
 					r.EncodeNil()
@@ -3083,7 +3083,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfFloat32`)
 				r.WriteMapElemValue()
 				if x.FMapIntfFloat32 == nil {
 					r.EncodeNil()
@@ -3122,7 +3122,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfFloat32`)
 				r.WriteMapElemValue()
 				if yyn358 {
 					r.EncodeNil()
@@ -3154,7 +3154,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfFloat64`)
 				r.WriteMapElemValue()
 				if x.FMapIntfFloat64 == nil {
 					r.EncodeNil()
@@ -3193,7 +3193,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfFloat64`)
 				r.WriteMapElemValue()
 				if yyn366 {
 					r.EncodeNil()
@@ -3225,7 +3225,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntfBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntfBool`)
 				r.WriteMapElemValue()
 				if x.FMapIntfBool == nil {
 					r.EncodeNil()
@@ -3264,7 +3264,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntfBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntfBool`)
 				r.WriteMapElemValue()
 				if yyn374 {
 					r.EncodeNil()
@@ -3296,7 +3296,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringIntf`)
 				r.WriteMapElemValue()
 				if x.FMapStringIntf == nil {
 					r.EncodeNil()
@@ -3335,7 +3335,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringIntf`)
 				r.WriteMapElemValue()
 				if yyn382 {
 					r.EncodeNil()
@@ -3367,7 +3367,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringString"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringString`)
 				r.WriteMapElemValue()
 				if x.FMapStringString == nil {
 					r.EncodeNil()
@@ -3406,7 +3406,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringString"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringString`)
 				r.WriteMapElemValue()
 				if yyn390 {
 					r.EncodeNil()
@@ -3438,7 +3438,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringUint`)
 				r.WriteMapElemValue()
 				if x.FMapStringUint == nil {
 					r.EncodeNil()
@@ -3477,7 +3477,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringUint`)
 				r.WriteMapElemValue()
 				if yyn398 {
 					r.EncodeNil()
@@ -3509,7 +3509,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringUint8`)
 				r.WriteMapElemValue()
 				if x.FMapStringUint8 == nil {
 					r.EncodeNil()
@@ -3548,7 +3548,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringUint8`)
 				r.WriteMapElemValue()
 				if yyn406 {
 					r.EncodeNil()
@@ -3580,7 +3580,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringUint16`)
 				r.WriteMapElemValue()
 				if x.FMapStringUint16 == nil {
 					r.EncodeNil()
@@ -3619,7 +3619,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringUint16`)
 				r.WriteMapElemValue()
 				if yyn414 {
 					r.EncodeNil()
@@ -3651,7 +3651,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringUint32`)
 				r.WriteMapElemValue()
 				if x.FMapStringUint32 == nil {
 					r.EncodeNil()
@@ -3690,7 +3690,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringUint32`)
 				r.WriteMapElemValue()
 				if yyn422 {
 					r.EncodeNil()
@@ -3722,7 +3722,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringUint64`)
 				r.WriteMapElemValue()
 				if x.FMapStringUint64 == nil {
 					r.EncodeNil()
@@ -3761,7 +3761,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringUint64`)
 				r.WriteMapElemValue()
 				if yyn430 {
 					r.EncodeNil()
@@ -3793,7 +3793,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringUintptr`)
 				r.WriteMapElemValue()
 				if x.FMapStringUintptr == nil {
 					r.EncodeNil()
@@ -3832,7 +3832,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringUintptr`)
 				r.WriteMapElemValue()
 				if yyn438 {
 					r.EncodeNil()
@@ -3864,7 +3864,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringInt`)
 				r.WriteMapElemValue()
 				if x.FMapStringInt == nil {
 					r.EncodeNil()
@@ -3903,7 +3903,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringInt`)
 				r.WriteMapElemValue()
 				if yyn446 {
 					r.EncodeNil()
@@ -3935,7 +3935,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringInt8`)
 				r.WriteMapElemValue()
 				if x.FMapStringInt8 == nil {
 					r.EncodeNil()
@@ -3974,7 +3974,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringInt8`)
 				r.WriteMapElemValue()
 				if yyn454 {
 					r.EncodeNil()
@@ -4006,7 +4006,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringInt16`)
 				r.WriteMapElemValue()
 				if x.FMapStringInt16 == nil {
 					r.EncodeNil()
@@ -4045,7 +4045,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringInt16`)
 				r.WriteMapElemValue()
 				if yyn462 {
 					r.EncodeNil()
@@ -4077,7 +4077,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringInt32`)
 				r.WriteMapElemValue()
 				if x.FMapStringInt32 == nil {
 					r.EncodeNil()
@@ -4116,7 +4116,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringInt32`)
 				r.WriteMapElemValue()
 				if yyn470 {
 					r.EncodeNil()
@@ -4148,7 +4148,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringInt64`)
 				r.WriteMapElemValue()
 				if x.FMapStringInt64 == nil {
 					r.EncodeNil()
@@ -4187,7 +4187,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringInt64`)
 				r.WriteMapElemValue()
 				if yyn478 {
 					r.EncodeNil()
@@ -4219,7 +4219,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringFloat32`)
 				r.WriteMapElemValue()
 				if x.FMapStringFloat32 == nil {
 					r.EncodeNil()
@@ -4258,7 +4258,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringFloat32`)
 				r.WriteMapElemValue()
 				if yyn486 {
 					r.EncodeNil()
@@ -4290,7 +4290,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringFloat64`)
 				r.WriteMapElemValue()
 				if x.FMapStringFloat64 == nil {
 					r.EncodeNil()
@@ -4329,7 +4329,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringFloat64`)
 				r.WriteMapElemValue()
 				if yyn494 {
 					r.EncodeNil()
@@ -4361,7 +4361,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapStringBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapStringBool`)
 				r.WriteMapElemValue()
 				if x.FMapStringBool == nil {
 					r.EncodeNil()
@@ -4400,7 +4400,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapStringBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapStringBool`)
 				r.WriteMapElemValue()
 				if yyn502 {
 					r.EncodeNil()
@@ -4432,7 +4432,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Intf`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Intf == nil {
 					r.EncodeNil()
@@ -4471,7 +4471,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Intf`)
 				r.WriteMapElemValue()
 				if yyn510 {
 					r.EncodeNil()
@@ -4503,7 +4503,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32String"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32String`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32String == nil {
 					r.EncodeNil()
@@ -4542,7 +4542,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32String"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32String`)
 				r.WriteMapElemValue()
 				if yyn518 {
 					r.EncodeNil()
@@ -4574,7 +4574,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Uint`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Uint == nil {
 					r.EncodeNil()
@@ -4613,7 +4613,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Uint`)
 				r.WriteMapElemValue()
 				if yyn526 {
 					r.EncodeNil()
@@ -4645,7 +4645,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Uint8`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Uint8 == nil {
 					r.EncodeNil()
@@ -4684,7 +4684,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Uint8`)
 				r.WriteMapElemValue()
 				if yyn534 {
 					r.EncodeNil()
@@ -4716,7 +4716,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Uint16`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Uint16 == nil {
 					r.EncodeNil()
@@ -4755,7 +4755,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Uint16`)
 				r.WriteMapElemValue()
 				if yyn542 {
 					r.EncodeNil()
@@ -4787,7 +4787,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Uint32`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Uint32 == nil {
 					r.EncodeNil()
@@ -4826,7 +4826,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Uint32`)
 				r.WriteMapElemValue()
 				if yyn550 {
 					r.EncodeNil()
@@ -4858,7 +4858,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Uint64`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Uint64 == nil {
 					r.EncodeNil()
@@ -4897,7 +4897,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Uint64`)
 				r.WriteMapElemValue()
 				if yyn558 {
 					r.EncodeNil()
@@ -4929,7 +4929,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Uintptr`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Uintptr == nil {
 					r.EncodeNil()
@@ -4968,7 +4968,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Uintptr`)
 				r.WriteMapElemValue()
 				if yyn566 {
 					r.EncodeNil()
@@ -5000,7 +5000,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Int`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Int == nil {
 					r.EncodeNil()
@@ -5039,7 +5039,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Int`)
 				r.WriteMapElemValue()
 				if yyn574 {
 					r.EncodeNil()
@@ -5071,7 +5071,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Int8`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Int8 == nil {
 					r.EncodeNil()
@@ -5110,7 +5110,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Int8`)
 				r.WriteMapElemValue()
 				if yyn582 {
 					r.EncodeNil()
@@ -5142,7 +5142,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Int16`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Int16 == nil {
 					r.EncodeNil()
@@ -5181,7 +5181,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Int16`)
 				r.WriteMapElemValue()
 				if yyn590 {
 					r.EncodeNil()
@@ -5213,7 +5213,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Int32`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Int32 == nil {
 					r.EncodeNil()
@@ -5252,7 +5252,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Int32`)
 				r.WriteMapElemValue()
 				if yyn598 {
 					r.EncodeNil()
@@ -5284,7 +5284,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Int64`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Int64 == nil {
 					r.EncodeNil()
@@ -5323,7 +5323,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Int64`)
 				r.WriteMapElemValue()
 				if yyn606 {
 					r.EncodeNil()
@@ -5355,7 +5355,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Float32`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Float32 == nil {
 					r.EncodeNil()
@@ -5394,7 +5394,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Float32`)
 				r.WriteMapElemValue()
 				if yyn614 {
 					r.EncodeNil()
@@ -5426,7 +5426,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Float64`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Float64 == nil {
 					r.EncodeNil()
@@ -5465,7 +5465,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Float64`)
 				r.WriteMapElemValue()
 				if yyn622 {
 					r.EncodeNil()
@@ -5497,7 +5497,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat32Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat32Bool`)
 				r.WriteMapElemValue()
 				if x.FMapFloat32Bool == nil {
 					r.EncodeNil()
@@ -5536,7 +5536,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat32Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat32Bool`)
 				r.WriteMapElemValue()
 				if yyn630 {
 					r.EncodeNil()
@@ -5568,7 +5568,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Intf`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Intf == nil {
 					r.EncodeNil()
@@ -5607,7 +5607,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Intf`)
 				r.WriteMapElemValue()
 				if yyn638 {
 					r.EncodeNil()
@@ -5639,7 +5639,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64String"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64String`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64String == nil {
 					r.EncodeNil()
@@ -5678,7 +5678,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64String"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64String`)
 				r.WriteMapElemValue()
 				if yyn646 {
 					r.EncodeNil()
@@ -5710,7 +5710,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Uint`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Uint == nil {
 					r.EncodeNil()
@@ -5749,7 +5749,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Uint`)
 				r.WriteMapElemValue()
 				if yyn654 {
 					r.EncodeNil()
@@ -5781,7 +5781,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Uint8`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Uint8 == nil {
 					r.EncodeNil()
@@ -5820,7 +5820,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Uint8`)
 				r.WriteMapElemValue()
 				if yyn662 {
 					r.EncodeNil()
@@ -5852,7 +5852,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Uint16`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Uint16 == nil {
 					r.EncodeNil()
@@ -5891,7 +5891,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Uint16`)
 				r.WriteMapElemValue()
 				if yyn670 {
 					r.EncodeNil()
@@ -5923,7 +5923,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Uint32`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Uint32 == nil {
 					r.EncodeNil()
@@ -5962,7 +5962,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Uint32`)
 				r.WriteMapElemValue()
 				if yyn678 {
 					r.EncodeNil()
@@ -5994,7 +5994,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Uint64`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Uint64 == nil {
 					r.EncodeNil()
@@ -6033,7 +6033,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Uint64`)
 				r.WriteMapElemValue()
 				if yyn686 {
 					r.EncodeNil()
@@ -6065,7 +6065,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Uintptr`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Uintptr == nil {
 					r.EncodeNil()
@@ -6104,7 +6104,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Uintptr`)
 				r.WriteMapElemValue()
 				if yyn694 {
 					r.EncodeNil()
@@ -6136,7 +6136,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Int`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Int == nil {
 					r.EncodeNil()
@@ -6175,7 +6175,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Int`)
 				r.WriteMapElemValue()
 				if yyn702 {
 					r.EncodeNil()
@@ -6207,7 +6207,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Int8`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Int8 == nil {
 					r.EncodeNil()
@@ -6246,7 +6246,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Int8`)
 				r.WriteMapElemValue()
 				if yyn710 {
 					r.EncodeNil()
@@ -6278,7 +6278,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Int16`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Int16 == nil {
 					r.EncodeNil()
@@ -6317,7 +6317,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Int16`)
 				r.WriteMapElemValue()
 				if yyn718 {
 					r.EncodeNil()
@@ -6349,7 +6349,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Int32`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Int32 == nil {
 					r.EncodeNil()
@@ -6388,7 +6388,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Int32`)
 				r.WriteMapElemValue()
 				if yyn726 {
 					r.EncodeNil()
@@ -6420,7 +6420,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Int64`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Int64 == nil {
 					r.EncodeNil()
@@ -6459,7 +6459,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Int64`)
 				r.WriteMapElemValue()
 				if yyn734 {
 					r.EncodeNil()
@@ -6491,7 +6491,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Float32`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Float32 == nil {
 					r.EncodeNil()
@@ -6530,7 +6530,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Float32`)
 				r.WriteMapElemValue()
 				if yyn742 {
 					r.EncodeNil()
@@ -6562,7 +6562,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Float64`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Float64 == nil {
 					r.EncodeNil()
@@ -6601,7 +6601,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Float64`)
 				r.WriteMapElemValue()
 				if yyn750 {
 					r.EncodeNil()
@@ -6633,7 +6633,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapFloat64Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapFloat64Bool`)
 				r.WriteMapElemValue()
 				if x.FMapFloat64Bool == nil {
 					r.EncodeNil()
@@ -6672,7 +6672,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapFloat64Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapFloat64Bool`)
 				r.WriteMapElemValue()
 				if yyn758 {
 					r.EncodeNil()
@@ -6704,7 +6704,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintIntf`)
 				r.WriteMapElemValue()
 				if x.FMapUintIntf == nil {
 					r.EncodeNil()
@@ -6743,7 +6743,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintIntf`)
 				r.WriteMapElemValue()
 				if yyn766 {
 					r.EncodeNil()
@@ -6775,7 +6775,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintString"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintString`)
 				r.WriteMapElemValue()
 				if x.FMapUintString == nil {
 					r.EncodeNil()
@@ -6814,7 +6814,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintString"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintString`)
 				r.WriteMapElemValue()
 				if yyn774 {
 					r.EncodeNil()
@@ -6846,7 +6846,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintUint`)
 				r.WriteMapElemValue()
 				if x.FMapUintUint == nil {
 					r.EncodeNil()
@@ -6885,7 +6885,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintUint`)
 				r.WriteMapElemValue()
 				if yyn782 {
 					r.EncodeNil()
@@ -6917,7 +6917,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintUint8`)
 				r.WriteMapElemValue()
 				if x.FMapUintUint8 == nil {
 					r.EncodeNil()
@@ -6956,7 +6956,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintUint8`)
 				r.WriteMapElemValue()
 				if yyn790 {
 					r.EncodeNil()
@@ -6988,7 +6988,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintUint16`)
 				r.WriteMapElemValue()
 				if x.FMapUintUint16 == nil {
 					r.EncodeNil()
@@ -7027,7 +7027,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintUint16`)
 				r.WriteMapElemValue()
 				if yyn798 {
 					r.EncodeNil()
@@ -7059,7 +7059,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintUint32`)
 				r.WriteMapElemValue()
 				if x.FMapUintUint32 == nil {
 					r.EncodeNil()
@@ -7098,7 +7098,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintUint32`)
 				r.WriteMapElemValue()
 				if yyn806 {
 					r.EncodeNil()
@@ -7130,7 +7130,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintUint64`)
 				r.WriteMapElemValue()
 				if x.FMapUintUint64 == nil {
 					r.EncodeNil()
@@ -7169,7 +7169,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintUint64`)
 				r.WriteMapElemValue()
 				if yyn814 {
 					r.EncodeNil()
@@ -7201,7 +7201,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintUintptr`)
 				r.WriteMapElemValue()
 				if x.FMapUintUintptr == nil {
 					r.EncodeNil()
@@ -7240,7 +7240,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintUintptr`)
 				r.WriteMapElemValue()
 				if yyn822 {
 					r.EncodeNil()
@@ -7272,7 +7272,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintInt`)
 				r.WriteMapElemValue()
 				if x.FMapUintInt == nil {
 					r.EncodeNil()
@@ -7311,7 +7311,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintInt`)
 				r.WriteMapElemValue()
 				if yyn830 {
 					r.EncodeNil()
@@ -7343,7 +7343,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintInt8`)
 				r.WriteMapElemValue()
 				if x.FMapUintInt8 == nil {
 					r.EncodeNil()
@@ -7382,7 +7382,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintInt8`)
 				r.WriteMapElemValue()
 				if yyn838 {
 					r.EncodeNil()
@@ -7414,7 +7414,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintInt16`)
 				r.WriteMapElemValue()
 				if x.FMapUintInt16 == nil {
 					r.EncodeNil()
@@ -7453,7 +7453,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintInt16`)
 				r.WriteMapElemValue()
 				if yyn846 {
 					r.EncodeNil()
@@ -7485,7 +7485,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintInt32`)
 				r.WriteMapElemValue()
 				if x.FMapUintInt32 == nil {
 					r.EncodeNil()
@@ -7524,7 +7524,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintInt32`)
 				r.WriteMapElemValue()
 				if yyn854 {
 					r.EncodeNil()
@@ -7556,7 +7556,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintInt64`)
 				r.WriteMapElemValue()
 				if x.FMapUintInt64 == nil {
 					r.EncodeNil()
@@ -7595,7 +7595,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintInt64`)
 				r.WriteMapElemValue()
 				if yyn862 {
 					r.EncodeNil()
@@ -7627,7 +7627,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintFloat32`)
 				r.WriteMapElemValue()
 				if x.FMapUintFloat32 == nil {
 					r.EncodeNil()
@@ -7666,7 +7666,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintFloat32`)
 				r.WriteMapElemValue()
 				if yyn870 {
 					r.EncodeNil()
@@ -7698,7 +7698,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintFloat64`)
 				r.WriteMapElemValue()
 				if x.FMapUintFloat64 == nil {
 					r.EncodeNil()
@@ -7737,7 +7737,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintFloat64`)
 				r.WriteMapElemValue()
 				if yyn878 {
 					r.EncodeNil()
@@ -7769,7 +7769,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintBool`)
 				r.WriteMapElemValue()
 				if x.FMapUintBool == nil {
 					r.EncodeNil()
@@ -7808,7 +7808,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintBool`)
 				r.WriteMapElemValue()
 				if yyn886 {
 					r.EncodeNil()
@@ -7840,7 +7840,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Intf`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Intf == nil {
 					r.EncodeNil()
@@ -7879,7 +7879,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Intf`)
 				r.WriteMapElemValue()
 				if yyn894 {
 					r.EncodeNil()
@@ -7911,7 +7911,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8String"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8String`)
 				r.WriteMapElemValue()
 				if x.FMapUint8String == nil {
 					r.EncodeNil()
@@ -7950,7 +7950,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8String"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8String`)
 				r.WriteMapElemValue()
 				if yyn902 {
 					r.EncodeNil()
@@ -7982,7 +7982,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Uint`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Uint == nil {
 					r.EncodeNil()
@@ -8021,7 +8021,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Uint`)
 				r.WriteMapElemValue()
 				if yyn910 {
 					r.EncodeNil()
@@ -8053,7 +8053,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Uint8`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Uint8 == nil {
 					r.EncodeNil()
@@ -8092,7 +8092,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Uint8`)
 				r.WriteMapElemValue()
 				if yyn918 {
 					r.EncodeNil()
@@ -8124,7 +8124,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Uint16`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Uint16 == nil {
 					r.EncodeNil()
@@ -8163,7 +8163,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Uint16`)
 				r.WriteMapElemValue()
 				if yyn926 {
 					r.EncodeNil()
@@ -8195,7 +8195,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Uint32`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Uint32 == nil {
 					r.EncodeNil()
@@ -8234,7 +8234,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Uint32`)
 				r.WriteMapElemValue()
 				if yyn934 {
 					r.EncodeNil()
@@ -8266,7 +8266,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Uint64`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Uint64 == nil {
 					r.EncodeNil()
@@ -8305,7 +8305,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Uint64`)
 				r.WriteMapElemValue()
 				if yyn942 {
 					r.EncodeNil()
@@ -8337,7 +8337,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Uintptr`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Uintptr == nil {
 					r.EncodeNil()
@@ -8376,7 +8376,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Uintptr`)
 				r.WriteMapElemValue()
 				if yyn950 {
 					r.EncodeNil()
@@ -8408,7 +8408,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Int`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Int == nil {
 					r.EncodeNil()
@@ -8447,7 +8447,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Int`)
 				r.WriteMapElemValue()
 				if yyn958 {
 					r.EncodeNil()
@@ -8479,7 +8479,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Int8`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Int8 == nil {
 					r.EncodeNil()
@@ -8518,7 +8518,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Int8`)
 				r.WriteMapElemValue()
 				if yyn966 {
 					r.EncodeNil()
@@ -8550,7 +8550,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Int16`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Int16 == nil {
 					r.EncodeNil()
@@ -8589,7 +8589,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Int16`)
 				r.WriteMapElemValue()
 				if yyn974 {
 					r.EncodeNil()
@@ -8621,7 +8621,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Int32`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Int32 == nil {
 					r.EncodeNil()
@@ -8660,7 +8660,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Int32`)
 				r.WriteMapElemValue()
 				if yyn982 {
 					r.EncodeNil()
@@ -8692,7 +8692,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Int64`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Int64 == nil {
 					r.EncodeNil()
@@ -8731,7 +8731,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Int64`)
 				r.WriteMapElemValue()
 				if yyn990 {
 					r.EncodeNil()
@@ -8763,7 +8763,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Float32`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Float32 == nil {
 					r.EncodeNil()
@@ -8802,7 +8802,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Float32`)
 				r.WriteMapElemValue()
 				if yyn998 {
 					r.EncodeNil()
@@ -8834,7 +8834,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Float64`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Float64 == nil {
 					r.EncodeNil()
@@ -8873,7 +8873,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Float64`)
 				r.WriteMapElemValue()
 				if yyn1006 {
 					r.EncodeNil()
@@ -8905,7 +8905,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint8Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint8Bool`)
 				r.WriteMapElemValue()
 				if x.FMapUint8Bool == nil {
 					r.EncodeNil()
@@ -8944,7 +8944,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint8Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint8Bool`)
 				r.WriteMapElemValue()
 				if yyn1014 {
 					r.EncodeNil()
@@ -8976,7 +8976,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Intf`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Intf == nil {
 					r.EncodeNil()
@@ -9015,7 +9015,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Intf`)
 				r.WriteMapElemValue()
 				if yyn1022 {
 					r.EncodeNil()
@@ -9047,7 +9047,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16String"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16String`)
 				r.WriteMapElemValue()
 				if x.FMapUint16String == nil {
 					r.EncodeNil()
@@ -9086,7 +9086,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16String"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16String`)
 				r.WriteMapElemValue()
 				if yyn1030 {
 					r.EncodeNil()
@@ -9118,7 +9118,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Uint`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Uint == nil {
 					r.EncodeNil()
@@ -9157,7 +9157,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Uint`)
 				r.WriteMapElemValue()
 				if yyn1038 {
 					r.EncodeNil()
@@ -9189,7 +9189,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Uint8`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Uint8 == nil {
 					r.EncodeNil()
@@ -9228,7 +9228,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Uint8`)
 				r.WriteMapElemValue()
 				if yyn1046 {
 					r.EncodeNil()
@@ -9260,7 +9260,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Uint16`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Uint16 == nil {
 					r.EncodeNil()
@@ -9299,7 +9299,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Uint16`)
 				r.WriteMapElemValue()
 				if yyn1054 {
 					r.EncodeNil()
@@ -9331,7 +9331,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Uint32`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Uint32 == nil {
 					r.EncodeNil()
@@ -9370,7 +9370,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Uint32`)
 				r.WriteMapElemValue()
 				if yyn1062 {
 					r.EncodeNil()
@@ -9402,7 +9402,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Uint64`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Uint64 == nil {
 					r.EncodeNil()
@@ -9441,7 +9441,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Uint64`)
 				r.WriteMapElemValue()
 				if yyn1070 {
 					r.EncodeNil()
@@ -9473,7 +9473,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Uintptr`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Uintptr == nil {
 					r.EncodeNil()
@@ -9512,7 +9512,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Uintptr`)
 				r.WriteMapElemValue()
 				if yyn1078 {
 					r.EncodeNil()
@@ -9544,7 +9544,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Int`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Int == nil {
 					r.EncodeNil()
@@ -9583,7 +9583,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Int`)
 				r.WriteMapElemValue()
 				if yyn1086 {
 					r.EncodeNil()
@@ -9615,7 +9615,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Int8`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Int8 == nil {
 					r.EncodeNil()
@@ -9654,7 +9654,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Int8`)
 				r.WriteMapElemValue()
 				if yyn1094 {
 					r.EncodeNil()
@@ -9686,7 +9686,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Int16`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Int16 == nil {
 					r.EncodeNil()
@@ -9725,7 +9725,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Int16`)
 				r.WriteMapElemValue()
 				if yyn1102 {
 					r.EncodeNil()
@@ -9757,7 +9757,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Int32`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Int32 == nil {
 					r.EncodeNil()
@@ -9796,7 +9796,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Int32`)
 				r.WriteMapElemValue()
 				if yyn1110 {
 					r.EncodeNil()
@@ -9828,7 +9828,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Int64`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Int64 == nil {
 					r.EncodeNil()
@@ -9867,7 +9867,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Int64`)
 				r.WriteMapElemValue()
 				if yyn1118 {
 					r.EncodeNil()
@@ -9899,7 +9899,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Float32`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Float32 == nil {
 					r.EncodeNil()
@@ -9938,7 +9938,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Float32`)
 				r.WriteMapElemValue()
 				if yyn1126 {
 					r.EncodeNil()
@@ -9970,7 +9970,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Float64`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Float64 == nil {
 					r.EncodeNil()
@@ -10009,7 +10009,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Float64`)
 				r.WriteMapElemValue()
 				if yyn1134 {
 					r.EncodeNil()
@@ -10041,7 +10041,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint16Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint16Bool`)
 				r.WriteMapElemValue()
 				if x.FMapUint16Bool == nil {
 					r.EncodeNil()
@@ -10080,7 +10080,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint16Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint16Bool`)
 				r.WriteMapElemValue()
 				if yyn1142 {
 					r.EncodeNil()
@@ -10112,7 +10112,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Intf`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Intf == nil {
 					r.EncodeNil()
@@ -10151,7 +10151,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Intf`)
 				r.WriteMapElemValue()
 				if yyn1150 {
 					r.EncodeNil()
@@ -10183,7 +10183,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32String"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32String`)
 				r.WriteMapElemValue()
 				if x.FMapUint32String == nil {
 					r.EncodeNil()
@@ -10222,7 +10222,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32String"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32String`)
 				r.WriteMapElemValue()
 				if yyn1158 {
 					r.EncodeNil()
@@ -10254,7 +10254,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Uint`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Uint == nil {
 					r.EncodeNil()
@@ -10293,7 +10293,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Uint`)
 				r.WriteMapElemValue()
 				if yyn1166 {
 					r.EncodeNil()
@@ -10325,7 +10325,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Uint8`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Uint8 == nil {
 					r.EncodeNil()
@@ -10364,7 +10364,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Uint8`)
 				r.WriteMapElemValue()
 				if yyn1174 {
 					r.EncodeNil()
@@ -10396,7 +10396,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Uint16`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Uint16 == nil {
 					r.EncodeNil()
@@ -10435,7 +10435,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Uint16`)
 				r.WriteMapElemValue()
 				if yyn1182 {
 					r.EncodeNil()
@@ -10467,7 +10467,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Uint32`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Uint32 == nil {
 					r.EncodeNil()
@@ -10506,7 +10506,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Uint32`)
 				r.WriteMapElemValue()
 				if yyn1190 {
 					r.EncodeNil()
@@ -10538,7 +10538,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Uint64`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Uint64 == nil {
 					r.EncodeNil()
@@ -10577,7 +10577,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Uint64`)
 				r.WriteMapElemValue()
 				if yyn1198 {
 					r.EncodeNil()
@@ -10609,7 +10609,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Uintptr`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Uintptr == nil {
 					r.EncodeNil()
@@ -10648,7 +10648,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Uintptr`)
 				r.WriteMapElemValue()
 				if yyn1206 {
 					r.EncodeNil()
@@ -10680,7 +10680,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Int`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Int == nil {
 					r.EncodeNil()
@@ -10719,7 +10719,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Int`)
 				r.WriteMapElemValue()
 				if yyn1214 {
 					r.EncodeNil()
@@ -10751,7 +10751,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Int8`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Int8 == nil {
 					r.EncodeNil()
@@ -10790,7 +10790,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Int8`)
 				r.WriteMapElemValue()
 				if yyn1222 {
 					r.EncodeNil()
@@ -10822,7 +10822,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Int16`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Int16 == nil {
 					r.EncodeNil()
@@ -10861,7 +10861,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Int16`)
 				r.WriteMapElemValue()
 				if yyn1230 {
 					r.EncodeNil()
@@ -10893,7 +10893,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Int32`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Int32 == nil {
 					r.EncodeNil()
@@ -10932,7 +10932,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Int32`)
 				r.WriteMapElemValue()
 				if yyn1238 {
 					r.EncodeNil()
@@ -10964,7 +10964,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Int64`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Int64 == nil {
 					r.EncodeNil()
@@ -11003,7 +11003,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Int64`)
 				r.WriteMapElemValue()
 				if yyn1246 {
 					r.EncodeNil()
@@ -11035,7 +11035,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Float32`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Float32 == nil {
 					r.EncodeNil()
@@ -11074,7 +11074,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Float32`)
 				r.WriteMapElemValue()
 				if yyn1254 {
 					r.EncodeNil()
@@ -11106,7 +11106,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Float64`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Float64 == nil {
 					r.EncodeNil()
@@ -11145,7 +11145,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Float64`)
 				r.WriteMapElemValue()
 				if yyn1262 {
 					r.EncodeNil()
@@ -11177,7 +11177,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint32Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint32Bool`)
 				r.WriteMapElemValue()
 				if x.FMapUint32Bool == nil {
 					r.EncodeNil()
@@ -11216,7 +11216,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint32Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint32Bool`)
 				r.WriteMapElemValue()
 				if yyn1270 {
 					r.EncodeNil()
@@ -11248,7 +11248,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Intf`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Intf == nil {
 					r.EncodeNil()
@@ -11287,7 +11287,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Intf`)
 				r.WriteMapElemValue()
 				if yyn1278 {
 					r.EncodeNil()
@@ -11319,7 +11319,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64String"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64String`)
 				r.WriteMapElemValue()
 				if x.FMapUint64String == nil {
 					r.EncodeNil()
@@ -11358,7 +11358,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64String"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64String`)
 				r.WriteMapElemValue()
 				if yyn1286 {
 					r.EncodeNil()
@@ -11390,7 +11390,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Uint`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Uint == nil {
 					r.EncodeNil()
@@ -11429,7 +11429,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Uint`)
 				r.WriteMapElemValue()
 				if yyn1294 {
 					r.EncodeNil()
@@ -11461,7 +11461,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Uint8`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Uint8 == nil {
 					r.EncodeNil()
@@ -11500,7 +11500,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Uint8`)
 				r.WriteMapElemValue()
 				if yyn1302 {
 					r.EncodeNil()
@@ -11532,7 +11532,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Uint16`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Uint16 == nil {
 					r.EncodeNil()
@@ -11571,7 +11571,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Uint16`)
 				r.WriteMapElemValue()
 				if yyn1310 {
 					r.EncodeNil()
@@ -11603,7 +11603,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Uint32`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Uint32 == nil {
 					r.EncodeNil()
@@ -11642,7 +11642,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Uint32`)
 				r.WriteMapElemValue()
 				if yyn1318 {
 					r.EncodeNil()
@@ -11674,7 +11674,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Uint64`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Uint64 == nil {
 					r.EncodeNil()
@@ -11713,7 +11713,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Uint64`)
 				r.WriteMapElemValue()
 				if yyn1326 {
 					r.EncodeNil()
@@ -11745,7 +11745,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Uintptr`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Uintptr == nil {
 					r.EncodeNil()
@@ -11784,7 +11784,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Uintptr`)
 				r.WriteMapElemValue()
 				if yyn1334 {
 					r.EncodeNil()
@@ -11816,7 +11816,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Int`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Int == nil {
 					r.EncodeNil()
@@ -11855,7 +11855,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Int`)
 				r.WriteMapElemValue()
 				if yyn1342 {
 					r.EncodeNil()
@@ -11887,7 +11887,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Int8`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Int8 == nil {
 					r.EncodeNil()
@@ -11926,7 +11926,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Int8`)
 				r.WriteMapElemValue()
 				if yyn1350 {
 					r.EncodeNil()
@@ -11958,7 +11958,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Int16`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Int16 == nil {
 					r.EncodeNil()
@@ -11997,7 +11997,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Int16`)
 				r.WriteMapElemValue()
 				if yyn1358 {
 					r.EncodeNil()
@@ -12029,7 +12029,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Int32`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Int32 == nil {
 					r.EncodeNil()
@@ -12068,7 +12068,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Int32`)
 				r.WriteMapElemValue()
 				if yyn1366 {
 					r.EncodeNil()
@@ -12100,7 +12100,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Int64`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Int64 == nil {
 					r.EncodeNil()
@@ -12139,7 +12139,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Int64`)
 				r.WriteMapElemValue()
 				if yyn1374 {
 					r.EncodeNil()
@@ -12171,7 +12171,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Float32`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Float32 == nil {
 					r.EncodeNil()
@@ -12210,7 +12210,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Float32`)
 				r.WriteMapElemValue()
 				if yyn1382 {
 					r.EncodeNil()
@@ -12242,7 +12242,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Float64`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Float64 == nil {
 					r.EncodeNil()
@@ -12281,7 +12281,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Float64`)
 				r.WriteMapElemValue()
 				if yyn1390 {
 					r.EncodeNil()
@@ -12313,7 +12313,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUint64Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUint64Bool`)
 				r.WriteMapElemValue()
 				if x.FMapUint64Bool == nil {
 					r.EncodeNil()
@@ -12352,7 +12352,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUint64Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUint64Bool`)
 				r.WriteMapElemValue()
 				if yyn1398 {
 					r.EncodeNil()
@@ -12384,7 +12384,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrIntf`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrIntf == nil {
 					r.EncodeNil()
@@ -12423,7 +12423,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrIntf`)
 				r.WriteMapElemValue()
 				if yyn1406 {
 					r.EncodeNil()
@@ -12455,7 +12455,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrString"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrString`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrString == nil {
 					r.EncodeNil()
@@ -12494,7 +12494,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrString"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrString`)
 				r.WriteMapElemValue()
 				if yyn1414 {
 					r.EncodeNil()
@@ -12526,7 +12526,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrUint`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrUint == nil {
 					r.EncodeNil()
@@ -12565,7 +12565,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrUint`)
 				r.WriteMapElemValue()
 				if yyn1422 {
 					r.EncodeNil()
@@ -12597,7 +12597,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrUint8`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrUint8 == nil {
 					r.EncodeNil()
@@ -12636,7 +12636,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrUint8`)
 				r.WriteMapElemValue()
 				if yyn1430 {
 					r.EncodeNil()
@@ -12668,7 +12668,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrUint16`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrUint16 == nil {
 					r.EncodeNil()
@@ -12707,7 +12707,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrUint16`)
 				r.WriteMapElemValue()
 				if yyn1438 {
 					r.EncodeNil()
@@ -12739,7 +12739,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrUint32`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrUint32 == nil {
 					r.EncodeNil()
@@ -12778,7 +12778,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrUint32`)
 				r.WriteMapElemValue()
 				if yyn1446 {
 					r.EncodeNil()
@@ -12810,7 +12810,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrUint64`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrUint64 == nil {
 					r.EncodeNil()
@@ -12849,7 +12849,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrUint64`)
 				r.WriteMapElemValue()
 				if yyn1454 {
 					r.EncodeNil()
@@ -12881,7 +12881,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrUintptr`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrUintptr == nil {
 					r.EncodeNil()
@@ -12920,7 +12920,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrUintptr`)
 				r.WriteMapElemValue()
 				if yyn1462 {
 					r.EncodeNil()
@@ -12952,7 +12952,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrInt`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrInt == nil {
 					r.EncodeNil()
@@ -12991,7 +12991,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrInt`)
 				r.WriteMapElemValue()
 				if yyn1470 {
 					r.EncodeNil()
@@ -13023,7 +13023,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrInt8`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrInt8 == nil {
 					r.EncodeNil()
@@ -13062,7 +13062,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrInt8`)
 				r.WriteMapElemValue()
 				if yyn1478 {
 					r.EncodeNil()
@@ -13094,7 +13094,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrInt16`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrInt16 == nil {
 					r.EncodeNil()
@@ -13133,7 +13133,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrInt16`)
 				r.WriteMapElemValue()
 				if yyn1486 {
 					r.EncodeNil()
@@ -13165,7 +13165,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrInt32`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrInt32 == nil {
 					r.EncodeNil()
@@ -13204,7 +13204,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrInt32`)
 				r.WriteMapElemValue()
 				if yyn1494 {
 					r.EncodeNil()
@@ -13236,7 +13236,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrInt64`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrInt64 == nil {
 					r.EncodeNil()
@@ -13275,7 +13275,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrInt64`)
 				r.WriteMapElemValue()
 				if yyn1502 {
 					r.EncodeNil()
@@ -13307,7 +13307,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrFloat32`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrFloat32 == nil {
 					r.EncodeNil()
@@ -13346,7 +13346,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrFloat32`)
 				r.WriteMapElemValue()
 				if yyn1510 {
 					r.EncodeNil()
@@ -13378,7 +13378,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrFloat64`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrFloat64 == nil {
 					r.EncodeNil()
@@ -13417,7 +13417,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrFloat64`)
 				r.WriteMapElemValue()
 				if yyn1518 {
 					r.EncodeNil()
@@ -13449,7 +13449,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapUintptrBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapUintptrBool`)
 				r.WriteMapElemValue()
 				if x.FMapUintptrBool == nil {
 					r.EncodeNil()
@@ -13488,7 +13488,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapUintptrBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapUintptrBool`)
 				r.WriteMapElemValue()
 				if yyn1526 {
 					r.EncodeNil()
@@ -13520,7 +13520,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntIntf`)
 				r.WriteMapElemValue()
 				if x.FMapIntIntf == nil {
 					r.EncodeNil()
@@ -13559,7 +13559,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntIntf`)
 				r.WriteMapElemValue()
 				if yyn1534 {
 					r.EncodeNil()
@@ -13591,7 +13591,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntString"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntString`)
 				r.WriteMapElemValue()
 				if x.FMapIntString == nil {
 					r.EncodeNil()
@@ -13630,7 +13630,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntString"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntString`)
 				r.WriteMapElemValue()
 				if yyn1542 {
 					r.EncodeNil()
@@ -13662,7 +13662,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntUint`)
 				r.WriteMapElemValue()
 				if x.FMapIntUint == nil {
 					r.EncodeNil()
@@ -13701,7 +13701,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntUint`)
 				r.WriteMapElemValue()
 				if yyn1550 {
 					r.EncodeNil()
@@ -13733,7 +13733,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntUint8`)
 				r.WriteMapElemValue()
 				if x.FMapIntUint8 == nil {
 					r.EncodeNil()
@@ -13772,7 +13772,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntUint8`)
 				r.WriteMapElemValue()
 				if yyn1558 {
 					r.EncodeNil()
@@ -13804,7 +13804,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntUint16`)
 				r.WriteMapElemValue()
 				if x.FMapIntUint16 == nil {
 					r.EncodeNil()
@@ -13843,7 +13843,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntUint16`)
 				r.WriteMapElemValue()
 				if yyn1566 {
 					r.EncodeNil()
@@ -13875,7 +13875,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntUint32`)
 				r.WriteMapElemValue()
 				if x.FMapIntUint32 == nil {
 					r.EncodeNil()
@@ -13914,7 +13914,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntUint32`)
 				r.WriteMapElemValue()
 				if yyn1574 {
 					r.EncodeNil()
@@ -13946,7 +13946,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntUint64`)
 				r.WriteMapElemValue()
 				if x.FMapIntUint64 == nil {
 					r.EncodeNil()
@@ -13985,7 +13985,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntUint64`)
 				r.WriteMapElemValue()
 				if yyn1582 {
 					r.EncodeNil()
@@ -14017,7 +14017,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntUintptr`)
 				r.WriteMapElemValue()
 				if x.FMapIntUintptr == nil {
 					r.EncodeNil()
@@ -14056,7 +14056,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntUintptr`)
 				r.WriteMapElemValue()
 				if yyn1590 {
 					r.EncodeNil()
@@ -14088,7 +14088,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntInt`)
 				r.WriteMapElemValue()
 				if x.FMapIntInt == nil {
 					r.EncodeNil()
@@ -14127,7 +14127,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntInt`)
 				r.WriteMapElemValue()
 				if yyn1598 {
 					r.EncodeNil()
@@ -14159,7 +14159,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntInt8`)
 				r.WriteMapElemValue()
 				if x.FMapIntInt8 == nil {
 					r.EncodeNil()
@@ -14198,7 +14198,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntInt8`)
 				r.WriteMapElemValue()
 				if yyn1606 {
 					r.EncodeNil()
@@ -14230,7 +14230,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntInt16`)
 				r.WriteMapElemValue()
 				if x.FMapIntInt16 == nil {
 					r.EncodeNil()
@@ -14269,7 +14269,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntInt16`)
 				r.WriteMapElemValue()
 				if yyn1614 {
 					r.EncodeNil()
@@ -14301,7 +14301,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntInt32`)
 				r.WriteMapElemValue()
 				if x.FMapIntInt32 == nil {
 					r.EncodeNil()
@@ -14340,7 +14340,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntInt32`)
 				r.WriteMapElemValue()
 				if yyn1622 {
 					r.EncodeNil()
@@ -14372,7 +14372,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntInt64`)
 				r.WriteMapElemValue()
 				if x.FMapIntInt64 == nil {
 					r.EncodeNil()
@@ -14411,7 +14411,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntInt64`)
 				r.WriteMapElemValue()
 				if yyn1630 {
 					r.EncodeNil()
@@ -14443,7 +14443,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntFloat32`)
 				r.WriteMapElemValue()
 				if x.FMapIntFloat32 == nil {
 					r.EncodeNil()
@@ -14482,7 +14482,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntFloat32`)
 				r.WriteMapElemValue()
 				if yyn1638 {
 					r.EncodeNil()
@@ -14514,7 +14514,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntFloat64`)
 				r.WriteMapElemValue()
 				if x.FMapIntFloat64 == nil {
 					r.EncodeNil()
@@ -14553,7 +14553,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntFloat64`)
 				r.WriteMapElemValue()
 				if yyn1646 {
 					r.EncodeNil()
@@ -14585,7 +14585,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapIntBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapIntBool`)
 				r.WriteMapElemValue()
 				if x.FMapIntBool == nil {
 					r.EncodeNil()
@@ -14624,7 +14624,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapIntBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapIntBool`)
 				r.WriteMapElemValue()
 				if yyn1654 {
 					r.EncodeNil()
@@ -14656,7 +14656,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Intf`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Intf == nil {
 					r.EncodeNil()
@@ -14695,7 +14695,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Intf`)
 				r.WriteMapElemValue()
 				if yyn1662 {
 					r.EncodeNil()
@@ -14727,7 +14727,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8String"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8String`)
 				r.WriteMapElemValue()
 				if x.FMapInt8String == nil {
 					r.EncodeNil()
@@ -14766,7 +14766,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8String"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8String`)
 				r.WriteMapElemValue()
 				if yyn1670 {
 					r.EncodeNil()
@@ -14798,7 +14798,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Uint`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Uint == nil {
 					r.EncodeNil()
@@ -14837,7 +14837,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Uint`)
 				r.WriteMapElemValue()
 				if yyn1678 {
 					r.EncodeNil()
@@ -14869,7 +14869,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Uint8`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Uint8 == nil {
 					r.EncodeNil()
@@ -14908,7 +14908,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Uint8`)
 				r.WriteMapElemValue()
 				if yyn1686 {
 					r.EncodeNil()
@@ -14940,7 +14940,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Uint16`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Uint16 == nil {
 					r.EncodeNil()
@@ -14979,7 +14979,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Uint16`)
 				r.WriteMapElemValue()
 				if yyn1694 {
 					r.EncodeNil()
@@ -15011,7 +15011,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Uint32`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Uint32 == nil {
 					r.EncodeNil()
@@ -15050,7 +15050,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Uint32`)
 				r.WriteMapElemValue()
 				if yyn1702 {
 					r.EncodeNil()
@@ -15082,7 +15082,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Uint64`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Uint64 == nil {
 					r.EncodeNil()
@@ -15121,7 +15121,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Uint64`)
 				r.WriteMapElemValue()
 				if yyn1710 {
 					r.EncodeNil()
@@ -15153,7 +15153,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Uintptr`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Uintptr == nil {
 					r.EncodeNil()
@@ -15192,7 +15192,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Uintptr`)
 				r.WriteMapElemValue()
 				if yyn1718 {
 					r.EncodeNil()
@@ -15224,7 +15224,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Int`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Int == nil {
 					r.EncodeNil()
@@ -15263,7 +15263,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Int`)
 				r.WriteMapElemValue()
 				if yyn1726 {
 					r.EncodeNil()
@@ -15295,7 +15295,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Int8`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Int8 == nil {
 					r.EncodeNil()
@@ -15334,7 +15334,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Int8`)
 				r.WriteMapElemValue()
 				if yyn1734 {
 					r.EncodeNil()
@@ -15366,7 +15366,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Int16`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Int16 == nil {
 					r.EncodeNil()
@@ -15405,7 +15405,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Int16`)
 				r.WriteMapElemValue()
 				if yyn1742 {
 					r.EncodeNil()
@@ -15437,7 +15437,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Int32`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Int32 == nil {
 					r.EncodeNil()
@@ -15476,7 +15476,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Int32`)
 				r.WriteMapElemValue()
 				if yyn1750 {
 					r.EncodeNil()
@@ -15508,7 +15508,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Int64`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Int64 == nil {
 					r.EncodeNil()
@@ -15547,7 +15547,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Int64`)
 				r.WriteMapElemValue()
 				if yyn1758 {
 					r.EncodeNil()
@@ -15579,7 +15579,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Float32`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Float32 == nil {
 					r.EncodeNil()
@@ -15618,7 +15618,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Float32`)
 				r.WriteMapElemValue()
 				if yyn1766 {
 					r.EncodeNil()
@@ -15650,7 +15650,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Float64`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Float64 == nil {
 					r.EncodeNil()
@@ -15689,7 +15689,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Float64`)
 				r.WriteMapElemValue()
 				if yyn1774 {
 					r.EncodeNil()
@@ -15721,7 +15721,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt8Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt8Bool`)
 				r.WriteMapElemValue()
 				if x.FMapInt8Bool == nil {
 					r.EncodeNil()
@@ -15760,7 +15760,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt8Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt8Bool`)
 				r.WriteMapElemValue()
 				if yyn1782 {
 					r.EncodeNil()
@@ -15792,7 +15792,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Intf`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Intf == nil {
 					r.EncodeNil()
@@ -15831,7 +15831,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Intf`)
 				r.WriteMapElemValue()
 				if yyn1790 {
 					r.EncodeNil()
@@ -15863,7 +15863,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16String"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16String`)
 				r.WriteMapElemValue()
 				if x.FMapInt16String == nil {
 					r.EncodeNil()
@@ -15902,7 +15902,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16String"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16String`)
 				r.WriteMapElemValue()
 				if yyn1798 {
 					r.EncodeNil()
@@ -15934,7 +15934,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Uint`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Uint == nil {
 					r.EncodeNil()
@@ -15973,7 +15973,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Uint`)
 				r.WriteMapElemValue()
 				if yyn1806 {
 					r.EncodeNil()
@@ -16005,7 +16005,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Uint8`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Uint8 == nil {
 					r.EncodeNil()
@@ -16044,7 +16044,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Uint8`)
 				r.WriteMapElemValue()
 				if yyn1814 {
 					r.EncodeNil()
@@ -16076,7 +16076,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Uint16`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Uint16 == nil {
 					r.EncodeNil()
@@ -16115,7 +16115,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Uint16`)
 				r.WriteMapElemValue()
 				if yyn1822 {
 					r.EncodeNil()
@@ -16147,7 +16147,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Uint32`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Uint32 == nil {
 					r.EncodeNil()
@@ -16186,7 +16186,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Uint32`)
 				r.WriteMapElemValue()
 				if yyn1830 {
 					r.EncodeNil()
@@ -16218,7 +16218,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Uint64`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Uint64 == nil {
 					r.EncodeNil()
@@ -16257,7 +16257,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Uint64`)
 				r.WriteMapElemValue()
 				if yyn1838 {
 					r.EncodeNil()
@@ -16289,7 +16289,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Uintptr`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Uintptr == nil {
 					r.EncodeNil()
@@ -16328,7 +16328,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Uintptr`)
 				r.WriteMapElemValue()
 				if yyn1846 {
 					r.EncodeNil()
@@ -16360,7 +16360,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Int`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Int == nil {
 					r.EncodeNil()
@@ -16399,7 +16399,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Int`)
 				r.WriteMapElemValue()
 				if yyn1854 {
 					r.EncodeNil()
@@ -16431,7 +16431,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Int8`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Int8 == nil {
 					r.EncodeNil()
@@ -16470,7 +16470,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Int8`)
 				r.WriteMapElemValue()
 				if yyn1862 {
 					r.EncodeNil()
@@ -16502,7 +16502,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Int16`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Int16 == nil {
 					r.EncodeNil()
@@ -16541,7 +16541,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Int16`)
 				r.WriteMapElemValue()
 				if yyn1870 {
 					r.EncodeNil()
@@ -16573,7 +16573,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Int32`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Int32 == nil {
 					r.EncodeNil()
@@ -16612,7 +16612,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Int32`)
 				r.WriteMapElemValue()
 				if yyn1878 {
 					r.EncodeNil()
@@ -16644,7 +16644,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Int64`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Int64 == nil {
 					r.EncodeNil()
@@ -16683,7 +16683,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Int64`)
 				r.WriteMapElemValue()
 				if yyn1886 {
 					r.EncodeNil()
@@ -16715,7 +16715,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Float32`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Float32 == nil {
 					r.EncodeNil()
@@ -16754,7 +16754,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Float32`)
 				r.WriteMapElemValue()
 				if yyn1894 {
 					r.EncodeNil()
@@ -16786,7 +16786,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Float64`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Float64 == nil {
 					r.EncodeNil()
@@ -16825,7 +16825,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Float64`)
 				r.WriteMapElemValue()
 				if yyn1902 {
 					r.EncodeNil()
@@ -16857,7 +16857,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt16Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt16Bool`)
 				r.WriteMapElemValue()
 				if x.FMapInt16Bool == nil {
 					r.EncodeNil()
@@ -16896,7 +16896,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt16Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt16Bool`)
 				r.WriteMapElemValue()
 				if yyn1910 {
 					r.EncodeNil()
@@ -16928,7 +16928,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Intf`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Intf == nil {
 					r.EncodeNil()
@@ -16967,7 +16967,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Intf`)
 				r.WriteMapElemValue()
 				if yyn1918 {
 					r.EncodeNil()
@@ -16999,7 +16999,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32String"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32String`)
 				r.WriteMapElemValue()
 				if x.FMapInt32String == nil {
 					r.EncodeNil()
@@ -17038,7 +17038,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32String"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32String`)
 				r.WriteMapElemValue()
 				if yyn1926 {
 					r.EncodeNil()
@@ -17070,7 +17070,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Uint`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Uint == nil {
 					r.EncodeNil()
@@ -17109,7 +17109,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Uint`)
 				r.WriteMapElemValue()
 				if yyn1934 {
 					r.EncodeNil()
@@ -17141,7 +17141,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Uint8`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Uint8 == nil {
 					r.EncodeNil()
@@ -17180,7 +17180,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Uint8`)
 				r.WriteMapElemValue()
 				if yyn1942 {
 					r.EncodeNil()
@@ -17212,7 +17212,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Uint16`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Uint16 == nil {
 					r.EncodeNil()
@@ -17251,7 +17251,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Uint16`)
 				r.WriteMapElemValue()
 				if yyn1950 {
 					r.EncodeNil()
@@ -17283,7 +17283,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Uint32`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Uint32 == nil {
 					r.EncodeNil()
@@ -17322,7 +17322,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Uint32`)
 				r.WriteMapElemValue()
 				if yyn1958 {
 					r.EncodeNil()
@@ -17354,7 +17354,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Uint64`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Uint64 == nil {
 					r.EncodeNil()
@@ -17393,7 +17393,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Uint64`)
 				r.WriteMapElemValue()
 				if yyn1966 {
 					r.EncodeNil()
@@ -17425,7 +17425,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Uintptr`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Uintptr == nil {
 					r.EncodeNil()
@@ -17464,7 +17464,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Uintptr`)
 				r.WriteMapElemValue()
 				if yyn1974 {
 					r.EncodeNil()
@@ -17496,7 +17496,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Int`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Int == nil {
 					r.EncodeNil()
@@ -17535,7 +17535,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Int`)
 				r.WriteMapElemValue()
 				if yyn1982 {
 					r.EncodeNil()
@@ -17567,7 +17567,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Int8`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Int8 == nil {
 					r.EncodeNil()
@@ -17606,7 +17606,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Int8`)
 				r.WriteMapElemValue()
 				if yyn1990 {
 					r.EncodeNil()
@@ -17638,7 +17638,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Int16`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Int16 == nil {
 					r.EncodeNil()
@@ -17677,7 +17677,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Int16`)
 				r.WriteMapElemValue()
 				if yyn1998 {
 					r.EncodeNil()
@@ -17709,7 +17709,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Int32`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Int32 == nil {
 					r.EncodeNil()
@@ -17748,7 +17748,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Int32`)
 				r.WriteMapElemValue()
 				if yyn2006 {
 					r.EncodeNil()
@@ -17780,7 +17780,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Int64`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Int64 == nil {
 					r.EncodeNil()
@@ -17819,7 +17819,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Int64`)
 				r.WriteMapElemValue()
 				if yyn2014 {
 					r.EncodeNil()
@@ -17851,7 +17851,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Float32`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Float32 == nil {
 					r.EncodeNil()
@@ -17890,7 +17890,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Float32`)
 				r.WriteMapElemValue()
 				if yyn2022 {
 					r.EncodeNil()
@@ -17922,7 +17922,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Float64`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Float64 == nil {
 					r.EncodeNil()
@@ -17961,7 +17961,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Float64`)
 				r.WriteMapElemValue()
 				if yyn2030 {
 					r.EncodeNil()
@@ -17993,7 +17993,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt32Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt32Bool`)
 				r.WriteMapElemValue()
 				if x.FMapInt32Bool == nil {
 					r.EncodeNil()
@@ -18032,7 +18032,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt32Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt32Bool`)
 				r.WriteMapElemValue()
 				if yyn2038 {
 					r.EncodeNil()
@@ -18064,7 +18064,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Intf`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Intf == nil {
 					r.EncodeNil()
@@ -18103,7 +18103,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Intf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Intf`)
 				r.WriteMapElemValue()
 				if yyn2046 {
 					r.EncodeNil()
@@ -18135,7 +18135,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64String"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64String`)
 				r.WriteMapElemValue()
 				if x.FMapInt64String == nil {
 					r.EncodeNil()
@@ -18174,7 +18174,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64String"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64String`)
 				r.WriteMapElemValue()
 				if yyn2054 {
 					r.EncodeNil()
@@ -18206,7 +18206,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Uint`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Uint == nil {
 					r.EncodeNil()
@@ -18245,7 +18245,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Uint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Uint`)
 				r.WriteMapElemValue()
 				if yyn2062 {
 					r.EncodeNil()
@@ -18277,7 +18277,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Uint8`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Uint8 == nil {
 					r.EncodeNil()
@@ -18316,7 +18316,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Uint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Uint8`)
 				r.WriteMapElemValue()
 				if yyn2070 {
 					r.EncodeNil()
@@ -18348,7 +18348,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Uint16`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Uint16 == nil {
 					r.EncodeNil()
@@ -18387,7 +18387,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Uint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Uint16`)
 				r.WriteMapElemValue()
 				if yyn2078 {
 					r.EncodeNil()
@@ -18419,7 +18419,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Uint32`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Uint32 == nil {
 					r.EncodeNil()
@@ -18458,7 +18458,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Uint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Uint32`)
 				r.WriteMapElemValue()
 				if yyn2086 {
 					r.EncodeNil()
@@ -18490,7 +18490,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Uint64`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Uint64 == nil {
 					r.EncodeNil()
@@ -18529,7 +18529,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Uint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Uint64`)
 				r.WriteMapElemValue()
 				if yyn2094 {
 					r.EncodeNil()
@@ -18561,7 +18561,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Uintptr`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Uintptr == nil {
 					r.EncodeNil()
@@ -18600,7 +18600,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Uintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Uintptr`)
 				r.WriteMapElemValue()
 				if yyn2102 {
 					r.EncodeNil()
@@ -18632,7 +18632,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Int`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Int == nil {
 					r.EncodeNil()
@@ -18671,7 +18671,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Int"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Int`)
 				r.WriteMapElemValue()
 				if yyn2110 {
 					r.EncodeNil()
@@ -18703,7 +18703,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Int8`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Int8 == nil {
 					r.EncodeNil()
@@ -18742,7 +18742,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Int8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Int8`)
 				r.WriteMapElemValue()
 				if yyn2118 {
 					r.EncodeNil()
@@ -18774,7 +18774,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Int16`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Int16 == nil {
 					r.EncodeNil()
@@ -18813,7 +18813,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Int16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Int16`)
 				r.WriteMapElemValue()
 				if yyn2126 {
 					r.EncodeNil()
@@ -18845,7 +18845,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Int32`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Int32 == nil {
 					r.EncodeNil()
@@ -18884,7 +18884,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Int32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Int32`)
 				r.WriteMapElemValue()
 				if yyn2134 {
 					r.EncodeNil()
@@ -18916,7 +18916,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Int64`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Int64 == nil {
 					r.EncodeNil()
@@ -18955,7 +18955,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Int64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Int64`)
 				r.WriteMapElemValue()
 				if yyn2142 {
 					r.EncodeNil()
@@ -18987,7 +18987,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Float32`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Float32 == nil {
 					r.EncodeNil()
@@ -19026,7 +19026,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Float32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Float32`)
 				r.WriteMapElemValue()
 				if yyn2150 {
 					r.EncodeNil()
@@ -19058,7 +19058,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Float64`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Float64 == nil {
 					r.EncodeNil()
@@ -19097,7 +19097,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Float64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Float64`)
 				r.WriteMapElemValue()
 				if yyn2158 {
 					r.EncodeNil()
@@ -19129,7 +19129,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapInt64Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapInt64Bool`)
 				r.WriteMapElemValue()
 				if x.FMapInt64Bool == nil {
 					r.EncodeNil()
@@ -19168,7 +19168,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapInt64Bool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapInt64Bool`)
 				r.WriteMapElemValue()
 				if yyn2166 {
 					r.EncodeNil()
@@ -19200,7 +19200,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolIntf`)
 				r.WriteMapElemValue()
 				if x.FMapBoolIntf == nil {
 					r.EncodeNil()
@@ -19239,7 +19239,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolIntf"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolIntf`)
 				r.WriteMapElemValue()
 				if yyn2174 {
 					r.EncodeNil()
@@ -19271,7 +19271,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolString"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolString`)
 				r.WriteMapElemValue()
 				if x.FMapBoolString == nil {
 					r.EncodeNil()
@@ -19310,7 +19310,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolString"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolString`)
 				r.WriteMapElemValue()
 				if yyn2182 {
 					r.EncodeNil()
@@ -19342,7 +19342,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolUint`)
 				r.WriteMapElemValue()
 				if x.FMapBoolUint == nil {
 					r.EncodeNil()
@@ -19381,7 +19381,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolUint"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolUint`)
 				r.WriteMapElemValue()
 				if yyn2190 {
 					r.EncodeNil()
@@ -19413,7 +19413,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolUint8`)
 				r.WriteMapElemValue()
 				if x.FMapBoolUint8 == nil {
 					r.EncodeNil()
@@ -19452,7 +19452,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolUint8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolUint8`)
 				r.WriteMapElemValue()
 				if yyn2198 {
 					r.EncodeNil()
@@ -19484,7 +19484,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolUint16`)
 				r.WriteMapElemValue()
 				if x.FMapBoolUint16 == nil {
 					r.EncodeNil()
@@ -19523,7 +19523,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolUint16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolUint16`)
 				r.WriteMapElemValue()
 				if yyn2206 {
 					r.EncodeNil()
@@ -19555,7 +19555,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolUint32`)
 				r.WriteMapElemValue()
 				if x.FMapBoolUint32 == nil {
 					r.EncodeNil()
@@ -19594,7 +19594,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolUint32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolUint32`)
 				r.WriteMapElemValue()
 				if yyn2214 {
 					r.EncodeNil()
@@ -19626,7 +19626,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolUint64`)
 				r.WriteMapElemValue()
 				if x.FMapBoolUint64 == nil {
 					r.EncodeNil()
@@ -19665,7 +19665,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolUint64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolUint64`)
 				r.WriteMapElemValue()
 				if yyn2222 {
 					r.EncodeNil()
@@ -19697,7 +19697,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolUintptr`)
 				r.WriteMapElemValue()
 				if x.FMapBoolUintptr == nil {
 					r.EncodeNil()
@@ -19736,7 +19736,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolUintptr"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolUintptr`)
 				r.WriteMapElemValue()
 				if yyn2230 {
 					r.EncodeNil()
@@ -19768,7 +19768,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolInt`)
 				r.WriteMapElemValue()
 				if x.FMapBoolInt == nil {
 					r.EncodeNil()
@@ -19807,7 +19807,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolInt"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolInt`)
 				r.WriteMapElemValue()
 				if yyn2238 {
 					r.EncodeNil()
@@ -19839,7 +19839,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolInt8`)
 				r.WriteMapElemValue()
 				if x.FMapBoolInt8 == nil {
 					r.EncodeNil()
@@ -19878,7 +19878,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolInt8"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolInt8`)
 				r.WriteMapElemValue()
 				if yyn2246 {
 					r.EncodeNil()
@@ -19910,7 +19910,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolInt16`)
 				r.WriteMapElemValue()
 				if x.FMapBoolInt16 == nil {
 					r.EncodeNil()
@@ -19949,7 +19949,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolInt16"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolInt16`)
 				r.WriteMapElemValue()
 				if yyn2254 {
 					r.EncodeNil()
@@ -19981,7 +19981,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolInt32`)
 				r.WriteMapElemValue()
 				if x.FMapBoolInt32 == nil {
 					r.EncodeNil()
@@ -20020,7 +20020,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolInt32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolInt32`)
 				r.WriteMapElemValue()
 				if yyn2262 {
 					r.EncodeNil()
@@ -20052,7 +20052,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolInt64`)
 				r.WriteMapElemValue()
 				if x.FMapBoolInt64 == nil {
 					r.EncodeNil()
@@ -20091,7 +20091,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolInt64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolInt64`)
 				r.WriteMapElemValue()
 				if yyn2270 {
 					r.EncodeNil()
@@ -20123,7 +20123,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolFloat32`)
 				r.WriteMapElemValue()
 				if x.FMapBoolFloat32 == nil {
 					r.EncodeNil()
@@ -20162,7 +20162,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolFloat32"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolFloat32`)
 				r.WriteMapElemValue()
 				if yyn2278 {
 					r.EncodeNil()
@@ -20194,7 +20194,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolFloat64`)
 				r.WriteMapElemValue()
 				if x.FMapBoolFloat64 == nil {
 					r.EncodeNil()
@@ -20233,7 +20233,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolFloat64"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolFloat64`)
 				r.WriteMapElemValue()
 				if yyn2286 {
 					r.EncodeNil()
@@ -20265,7 +20265,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FMapBoolBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FMapBoolBool`)
 				r.WriteMapElemValue()
 				if x.FMapBoolBool == nil {
 					r.EncodeNil()
@@ -20304,7 +20304,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("FptrMapBoolBool"))
+				r.EncodeString(codecSelferCcUTF819781, `FptrMapBoolBool`)
 				r.WriteMapElemValue()
 				if yyn2294 {
 					r.EncodeNil()
@@ -20356,7 +20356,7 @@ func (x *TestMammoth2) CodecDecodeSelf(d *Decoder) {
 				x.codecDecodeSelfFromArray(yyl2, d)
 			}
 		} else {
-			panic(codecSelferOnlyMapOrArrayEncodeToStructErr19781)
+			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19781)
 		}
 	}
 }
@@ -44094,7 +44094,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				yy4.CodecEncodeSelf(e)
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("V"))
+				r.EncodeString(codecSelferCcUTF819781, `V`)
 				r.WriteMapElemValue()
 				yy6 := &x.V
 				yy6.CodecEncodeSelf(e)
@@ -44104,7 +44104,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				x.T.CodecEncodeSelf(e)
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("T"))
+				r.EncodeString(codecSelferCcUTF819781, `T`)
 				r.WriteMapElemValue()
 				x.T.CodecEncodeSelf(e)
 			}
@@ -44113,7 +44113,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				x.B.CodecEncodeSelf(e)
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("B"))
+				r.EncodeString(codecSelferCcUTF819781, `B`)
 				r.WriteMapElemValue()
 				x.B.CodecEncodeSelf(e)
 			}
@@ -44122,7 +44122,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				x.J.CodecEncodeSelf(e)
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("J"))
+				r.EncodeString(codecSelferCcUTF819781, `J`)
 				r.WriteMapElemValue()
 				x.J.CodecEncodeSelf(e)
 			}
@@ -44132,7 +44132,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				yy18.CodecEncodeSelf(e)
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("C"))
+				r.EncodeString(codecSelferCcUTF819781, `C`)
 				r.WriteMapElemValue()
 				yy20 := &x.C
 				yy20.CodecEncodeSelf(e)
@@ -44151,7 +44151,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("M"))
+				r.EncodeString(codecSelferCcUTF819781, `M`)
 				r.WriteMapElemValue()
 				if x.M == nil {
 					r.EncodeNil()
@@ -44178,7 +44178,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("L"))
+				r.EncodeString(codecSelferCcUTF819781, `L`)
 				r.WriteMapElemValue()
 				if x.L == nil {
 					r.EncodeNil()
@@ -44202,7 +44202,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 			} else {
 				r.WriteMapElemKey()
-				r.EncodeString(codecSelferC_UTF819781, string("A"))
+				r.EncodeString(codecSelferCcUTF819781, `A`)
 				r.WriteMapElemValue()
 				yy31 := &x.A
 				yym32 := z.EncBinary()
@@ -44246,7 +44246,7 @@ func (x *TestMammoth2Wrapper) CodecDecodeSelf(d *Decoder) {
 				x.codecDecodeSelfFromArray(yyl2, d)
 			}
 		} else {
-			panic(codecSelferOnlyMapOrArrayEncodeToStructErr19781)
+			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19781)
 		}
 	}
 }

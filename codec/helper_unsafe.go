@@ -226,7 +226,7 @@ func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
 
 func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeString(c_UTF8, *(*string)(v.ptr))
+	e.e.EncodeString(cUTF8, *(*string)(v.ptr))
 }
 
 func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {

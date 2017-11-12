@@ -107,7 +107,7 @@ This symmetry is important to reduce chances of issues happening because the
 encoding and decoding sides are out of sync e.g. decoded via very specific
 encoding.TextUnmarshaler but encoded via kind-specific generalized mode.
 
-Consequently, if a type only defines one-half of the symetry
+Consequently, if a type only defines one-half of the symmetry
 (e.g. it implements UnmarshalJSON() but not MarshalJSON() ),
 then that type doesn't satisfy the check and we will continue walking down the
 decision tree.

@@ -208,7 +208,7 @@ func (e *bincEncDriver) EncodeString(c charEncoding, v string) {
 
 func (e *bincEncDriver) EncodeSymbol(v string) {
 	// if WriteSymbolsNoRefs {
-	// 	e.encodeString(c_UTF8, v)
+	// 	e.encodeString(cUTF8, v)
 	// 	return
 	// }
 
@@ -218,10 +218,10 @@ func (e *bincEncDriver) EncodeSymbol(v string) {
 
 	l := len(v)
 	if l == 0 {
-		e.encBytesLen(c_UTF8, 0)
+		e.encBytesLen(cUTF8, 0)
 		return
 	} else if l == 1 {
-		e.encBytesLen(c_UTF8, 1)
+		e.encBytesLen(cUTF8, 1)
 		e.w.writen1(v[0])
 		return
 	}
@@ -280,7 +280,7 @@ func (e *bincEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
 
 func (e *bincEncDriver) encBytesLen(c charEncoding, length uint64) {
 	//TODO: support bincUnicodeOther (for now, just use string or bytearray)
-	if c == c_RAW {
+	if c == cRAW {
 		e.encLen(bincVdByteArray<<4, length)
 	} else {
 		e.encLen(bincVdString<<4, length)
@@ -365,9 +365,10 @@ func (d *bincDecDriver) ContainerType() (vt valueType) {
 		return valueTypeArray
 	} else if d.vd == bincVdMap {
 		return valueTypeMap
-	} else {
-		// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
 	}
+	// else {
+	// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
+	// }
 	return valueTypeUnset
 }
 
@@ -399,7 +400,7 @@ func (d *bincDecDriver) DecodeBuiltin(rt uintptr, v interface{}) {
 		if err != nil {
 			panic(err)
 		}
-		var vt *time.Time = v.(*time.Time)
+		var vt = v.(*time.Time)
 		*vt = tt
 		d.bdRead = false
 		return
@@ -637,7 +638,7 @@ func (d *bincDecDriver) decStringAndBytes(bs []byte, withString, zerocopy bool) 
 		d.bdRead = false
 		return
 	}
-	var slen int = -1
+	var slen = -1
 	// var ok bool
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
@@ -910,6 +911,7 @@ type BincHandle struct {
 	noElemSeparators
 }
 
+// SetBytesExt sets an extension
 func (h *BincHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
 	return h.SetExt(rt, tag, &setExtWrapper{b: ext})
 }
@@ -922,7 +924,9 @@ func (h *BincHandle) newDecDriver(d *Decoder) decDriver {
 	return &bincDecDriver{d: d, h: h, r: d.r, br: d.bytes}
 }
 
-func (_ *BincHandle) IsBuiltinType(rt uintptr) bool {
+// IsBuiltinType returns true for time.Time, else false.
+// only time.Time is builtin.
+func (h *BincHandle) IsBuiltinType(rt uintptr) bool {
 	return rt == timeTypId
 }
 

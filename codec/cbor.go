@@ -38,6 +38,8 @@ const (
 	cborBdBreak                 = 0xff
 )
 
+// These define some in-stream descriptors for
+// manual encoding e.g. when doing explicit indefinite-length
 const (
 	CborStreamBytes  byte = 0x5f
 	CborStreamString      = 0x7f
@@ -181,7 +183,7 @@ func (e *cborEncDriver) EncodeString(c charEncoding, v string) {
 }
 
 func (e *cborEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
-	if c == c_RAW {
+	if c == cRAW {
 		e.encStringBytesS(cborBaseBytes, stringView(v))
 	} else {
 		e.encStringBytesS(cborBaseString, stringView(v))
@@ -261,9 +263,10 @@ func (d *cborDecDriver) ContainerType() (vt valueType) {
 		return valueTypeArray
 	} else if d.bd == cborBdIndefiniteMap || (d.bd >= cborBaseMap && d.bd < cborBaseTag) {
 		return valueTypeMap
-	} else {
-		// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
 	}
+	// else {
+	// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
+	// }
 	return valueTypeUnset
 }
 
@@ -622,6 +625,7 @@ type CborHandle struct {
 	IndefiniteLength bool
 }
 
+// SetInterfaceExt sets an extension
 func (h *CborHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
 	return h.SetExt(rt, tag, &setExtWrapper{i: ext})
 }

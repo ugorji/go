@@ -235,7 +235,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Ele
 			{{if eq .MapKey "string"}}if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}{{else}}{{ $y := printf "%s(k2)" .MapKey }}{{ encmd .MapKey $y }}{{end}}
 			if esep { ee.WriteMapElemValue() }
 			{{ $y := printf "v[%s(k2)]" .MapKey }}{{ encmd .Elem $y }}
@@ -246,7 +246,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Ele
 			{{if eq .MapKey "string"}}if asSymbols {
 				ee.EncodeSymbol(k2)
 			} else {
-				ee.EncodeString(c_UTF8, k2)
+				ee.EncodeString(cUTF8, k2)
 			}{{else}}{{ encmd .MapKey "k2"}}{{end}}
 			if esep { ee.WriteMapElemValue() }
 			{{ encmd .Elem "v2"}}

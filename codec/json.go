@@ -375,11 +375,12 @@ func (e *jsonEncDriver) EncodeSymbol(v string) {
 
 func (e *jsonEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
 	// if encoding raw bytes and RawBytesExt is configured, use it to encode
-	if c == c_RAW && e.se.i != nil {
-		e.EncodeExt(v, 0, &e.se, e.e)
-		return
-	}
-	if c == c_RAW {
+	if c == cRAW {
+		if e.se.i != nil {
+			e.EncodeExt(v, 0, &e.se, e.e)
+			return
+		}
+
 		slen := base64.StdEncoding.EncodedLen(len(v))
 		if cap(e.bs) >= slen {
 			e.bs = e.bs[:slen]
@@ -636,7 +637,7 @@ func (d *jsonDecDriver) TryDecodeAsNil() bool {
 	// TODO: we shouldn't try to see if "null" was here, right?
 	// only "null" denotes a nil
 	if d.tok == 'n' {
-		d.readLit(3, jsonLitNull+1) // ull
+		d.readLit(3, jsonLitNull+1) // (n)ull
 		return true
 	}
 	return false
@@ -652,10 +653,10 @@ func (d *jsonDecDriver) DecodeBool() (v bool) {
 	}
 	switch d.tok {
 	case 'f':
-		d.readLit(4, jsonLitFalse+1) // alse
+		d.readLit(4, jsonLitFalse+1) // (f)alse
 		// v = false
 	case 't':
-		d.readLit(3, jsonLitTrue+1) // rue
+		d.readLit(3, jsonLitTrue+1) // (t)rue
 		v = true
 	default:
 		d.d.errorf("json: decode bool: got first char %c", d.tok)
@@ -808,15 +809,15 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 		// handle non-string scalar: null, true, false or a number
 		switch d.tok {
 		case 'n':
-			d.readLit(3, jsonLitNull+1) // ull
+			d.readLit(3, jsonLitNull+1) // (n)ull
 			d.bs = d.bs[:0]
 			d.fnull = true
 		case 'f':
-			d.readLit(4, jsonLitFalse+1) // alse
+			d.readLit(4, jsonLitFalse+1) // (f)alse
 			d.bs = d.bs[:5]
 			copy(d.bs, "false")
 		case 't':
-			d.readLit(3, jsonLitTrue+1) // rue
+			d.readLit(3, jsonLitTrue+1) // (t)rue
 			d.bs = d.bs[:4]
 			copy(d.bs, "true")
 		default:
@@ -963,14 +964,14 @@ func (d *jsonDecDriver) DecodeNaked() {
 	}
 	switch d.tok {
 	case 'n':
-		d.readLit(3, jsonLitNull+1) // ull
+		d.readLit(3, jsonLitNull+1) // (n)ull
 		z.v = valueTypeNil
 	case 'f':
-		d.readLit(4, jsonLitFalse+1) // alse
+		d.readLit(4, jsonLitFalse+1) // (f)alse
 		z.v = valueTypeBool
 		z.b = false
 	case 't':
-		d.readLit(3, jsonLitTrue+1) // rue
+		d.readLit(3, jsonLitTrue+1) // (t)rue
 		z.v = valueTypeBool
 		z.b = true
 	case '{':
@@ -1093,6 +1094,7 @@ type JsonHandle struct {
 
 func (h *JsonHandle) hasElemSeparators() bool { return true }
 
+// SetInterfaceExt sets an extension
 func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
 	return h.SetExt(rt, tag, &setExtWrapper{i: ext})
 }

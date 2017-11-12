@@ -48,9 +48,8 @@ func hIsEmptyValue(v reflect.Value, deref, checkStruct bool) bool {
 				return true
 			}
 			return hIsEmptyValue(v.Elem(), deref, checkStruct)
-		} else {
-			return v.IsNil()
 		}
+		return v.IsNil()
 	case reflect.Struct:
 		if !checkStruct {
 			return false
@@ -97,21 +96,20 @@ func halfFloatToFloatBits(yy uint16) (d uint32) {
 	if e == 0 {
 		if m == 0 { // plu or minus 0
 			return s << 31
-		} else { // Denormalized number -- renormalize it
-			for (m & 0x00000400) == 0 {
-				m <<= 1
-				e -= 1
-			}
-			e += 1
-			const zz uint32 = 0x0400
-			m &= ^zz
 		}
+		// Denormalized number -- renormalize it
+		for (m & 0x00000400) == 0 {
+			m <<= 1
+			e -= 1
+		}
+		e += 1
+		const zz uint32 = 0x0400
+		m &= ^zz
 	} else if e == 31 {
 		if m == 0 { // Inf
 			return (s << 31) | 0x7f800000
-		} else { // NaN
-			return (s << 31) | 0x7f800000 | (m << 13)
 		}
+		return (s << 31) | 0x7f800000 | (m << 13) // NaN
 	}
 	e = e + (127 - 15)
 	m = m << 13

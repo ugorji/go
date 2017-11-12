@@ -72,8 +72,8 @@ func rv2rtid(rv reflect.Value) uintptr {
 // --------------------------
 // type ptrToRvMap struct{}
 
-// func (_ *ptrToRvMap) init() {}
-// func (_ *ptrToRvMap) get(i interface{}) reflect.Value {
+// func (*ptrToRvMap) init() {}
+// func (*ptrToRvMap) get(i interface{}) reflect.Value {
 // 	return reflect.ValueOf(i).Elem()
 // }
 
@@ -166,7 +166,7 @@ func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeString(c_UTF8, rv.String())
+	e.e.EncodeString(cUTF8, rv.String())
 }
 
 func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {

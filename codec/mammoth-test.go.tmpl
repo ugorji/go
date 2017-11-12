@@ -48,7 +48,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 {{range $i, $e := .Values }}{{if not .Primitive }}{{if not .MapKey }}{{/*
 */}}
     var v{{$i}}va [8]{{ .Elem }}
-    for _, v := range [][]{{ .Elem }}{ nil, []{{ .Elem }}{}, []{{ .Elem }}{ {{ nonzerocmd .Elem }}, {{ zerocmd .Elem }}, {{ zerocmd .Elem }}, {{ nonzerocmd .Elem }} } } { {{/*
+    for _, v := range [][]{{ .Elem }}{ nil, {}, { {{ nonzerocmd .Elem }}, {{ zerocmd .Elem }}, {{ zerocmd .Elem }}, {{ nonzerocmd .Elem }} } } { {{/*
     // fmt.Printf(">>>> running mammoth slice v{{$i}}: %v\n", v)
     //   - encode value to some []byte
     //   - decode into a length-wise-equal []byte
@@ -117,7 +117,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 func doTestMammothMaps(t *testing.T, h Handle) {
 {{range $i, $e := .Values }}{{if not .Primitive }}{{if .MapKey }}{{/*
 */}}
-    for _, v := range []map[{{ .MapKey }}]{{ .Elem }}{ nil, map[{{ .MapKey }}]{{ .Elem }}{}, map[{{ .MapKey }}]{{ .Elem }}{ {{ nonzerocmd .MapKey }}:{{ zerocmd .Elem }} {{if ne "bool" .MapKey}}, {{ nonzerocmd .MapKey }}:{{ nonzerocmd .Elem }} {{end}} } } {
+    for _, v := range []map[{{ .MapKey }}]{{ .Elem }}{ nil, {}, { {{ nonzerocmd .MapKey }}:{{ zerocmd .Elem }} {{if ne "bool" .MapKey}}, {{ nonzerocmd .MapKey }}:{{ nonzerocmd .Elem }} {{end}} } } {
     // fmt.Printf(">>>> running mammoth map v{{$i}}: %v\n", v)
     var v{{$i}}v1, v{{$i}}v2 map[{{ .MapKey }}]{{ .Elem }}
 	v{{$i}}v1 = v

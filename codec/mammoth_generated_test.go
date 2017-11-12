@@ -915,7 +915,7 @@ type typMapMapBoolBool map[bool]bool
 func doTestMammothSlices(t *testing.T, h Handle) {
 
 	var v1va [8]interface{}
-	for _, v := range [][]interface{}{nil, []interface{}{}, []interface{}{"string-is-an-interface-2", nil, nil, "string-is-an-interface"}} {
+	for _, v := range [][]interface{}{nil, {}, {"string-is-an-interface-2", nil, nil, "string-is-an-interface"}} {
 		var v1v1, v1v2 []interface{}
 		v1v1 = v
 		bs1 := testMarshalErr(v1v1, h, t, "enc-slice-v1")
@@ -977,7 +977,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v19va [8]string
-	for _, v := range [][]string{nil, []string{}, []string{"some-string-2", "", "", "some-string"}} {
+	for _, v := range [][]string{nil, {}, {"some-string-2", "", "", "some-string"}} {
 		var v19v1, v19v2 []string
 		v19v1 = v
 		bs19 := testMarshalErr(v19v1, h, t, "enc-slice-v19")
@@ -1039,7 +1039,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v37va [8]float32
-	for _, v := range [][]float32{nil, []float32{}, []float32{22.2, 0, 0, 11.1}} {
+	for _, v := range [][]float32{nil, {}, {22.2, 0, 0, 11.1}} {
 		var v37v1, v37v2 []float32
 		v37v1 = v
 		bs37 := testMarshalErr(v37v1, h, t, "enc-slice-v37")
@@ -1101,7 +1101,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v55va [8]float64
-	for _, v := range [][]float64{nil, []float64{}, []float64{22.2, 0, 0, 11.1}} {
+	for _, v := range [][]float64{nil, {}, {22.2, 0, 0, 11.1}} {
 		var v55v1, v55v2 []float64
 		v55v1 = v
 		bs55 := testMarshalErr(v55v1, h, t, "enc-slice-v55")
@@ -1163,7 +1163,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v73va [8]uint
-	for _, v := range [][]uint{nil, []uint{}, []uint{44, 0, 0, 33}} {
+	for _, v := range [][]uint{nil, {}, {44, 0, 0, 33}} {
 		var v73v1, v73v2 []uint
 		v73v1 = v
 		bs73 := testMarshalErr(v73v1, h, t, "enc-slice-v73")
@@ -1225,7 +1225,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v108va [8]uint16
-	for _, v := range [][]uint16{nil, []uint16{}, []uint16{44, 0, 0, 33}} {
+	for _, v := range [][]uint16{nil, {}, {44, 0, 0, 33}} {
 		var v108v1, v108v2 []uint16
 		v108v1 = v
 		bs108 := testMarshalErr(v108v1, h, t, "enc-slice-v108")
@@ -1287,7 +1287,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v126va [8]uint32
-	for _, v := range [][]uint32{nil, []uint32{}, []uint32{44, 0, 0, 33}} {
+	for _, v := range [][]uint32{nil, {}, {44, 0, 0, 33}} {
 		var v126v1, v126v2 []uint32
 		v126v1 = v
 		bs126 := testMarshalErr(v126v1, h, t, "enc-slice-v126")
@@ -1349,7 +1349,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v144va [8]uint64
-	for _, v := range [][]uint64{nil, []uint64{}, []uint64{44, 0, 0, 33}} {
+	for _, v := range [][]uint64{nil, {}, {44, 0, 0, 33}} {
 		var v144v1, v144v2 []uint64
 		v144v1 = v
 		bs144 := testMarshalErr(v144v1, h, t, "enc-slice-v144")
@@ -1411,7 +1411,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v162va [8]uintptr
-	for _, v := range [][]uintptr{nil, []uintptr{}, []uintptr{44, 0, 0, 33}} {
+	for _, v := range [][]uintptr{nil, {}, {44, 0, 0, 33}} {
 		var v162v1, v162v2 []uintptr
 		v162v1 = v
 		bs162 := testMarshalErr(v162v1, h, t, "enc-slice-v162")
@@ -1473,7 +1473,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v180va [8]int
-	for _, v := range [][]int{nil, []int{}, []int{44, 0, 0, 33}} {
+	for _, v := range [][]int{nil, {}, {44, 0, 0, 33}} {
 		var v180v1, v180v2 []int
 		v180v1 = v
 		bs180 := testMarshalErr(v180v1, h, t, "enc-slice-v180")
@@ -1535,7 +1535,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v198va [8]int8
-	for _, v := range [][]int8{nil, []int8{}, []int8{44, 0, 0, 33}} {
+	for _, v := range [][]int8{nil, {}, {44, 0, 0, 33}} {
 		var v198v1, v198v2 []int8
 		v198v1 = v
 		bs198 := testMarshalErr(v198v1, h, t, "enc-slice-v198")
@@ -1597,7 +1597,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v216va [8]int16
-	for _, v := range [][]int16{nil, []int16{}, []int16{44, 0, 0, 33}} {
+	for _, v := range [][]int16{nil, {}, {44, 0, 0, 33}} {
 		var v216v1, v216v2 []int16
 		v216v1 = v
 		bs216 := testMarshalErr(v216v1, h, t, "enc-slice-v216")
@@ -1659,7 +1659,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v234va [8]int32
-	for _, v := range [][]int32{nil, []int32{}, []int32{44, 0, 0, 33}} {
+	for _, v := range [][]int32{nil, {}, {44, 0, 0, 33}} {
 		var v234v1, v234v2 []int32
 		v234v1 = v
 		bs234 := testMarshalErr(v234v1, h, t, "enc-slice-v234")
@@ -1721,7 +1721,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v252va [8]int64
-	for _, v := range [][]int64{nil, []int64{}, []int64{44, 0, 0, 33}} {
+	for _, v := range [][]int64{nil, {}, {44, 0, 0, 33}} {
 		var v252v1, v252v2 []int64
 		v252v1 = v
 		bs252 := testMarshalErr(v252v1, h, t, "enc-slice-v252")
@@ -1783,7 +1783,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	}
 
 	var v270va [8]bool
-	for _, v := range [][]bool{nil, []bool{}, []bool{true, false, false, true}} {
+	for _, v := range [][]bool{nil, {}, {true, false, false, true}} {
 		var v270v1, v270v2 []bool
 		v270v1 = v
 		bs270 := testMarshalErr(v270v1, h, t, "enc-slice-v270")
@@ -1848,7 +1848,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 
 func doTestMammothMaps(t *testing.T, h Handle) {
 
-	for _, v := range []map[interface{}]interface{}{nil, map[interface{}]interface{}{}, map[interface{}]interface{}{"string-is-an-interface-2": nil, "string-is-an-interface": "string-is-an-interface-2"}} {
+	for _, v := range []map[interface{}]interface{}{nil, {}, {"string-is-an-interface-2": nil, "string-is-an-interface": "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v2: %v\n", v)
 		var v2v1, v2v2 map[interface{}]interface{}
 		v2v1 = v
@@ -1892,7 +1892,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v2v3, v2v4, t, "equal-map-v2-p-len")
 	}
 
-	for _, v := range []map[interface{}]string{nil, map[interface{}]string{}, map[interface{}]string{"string-is-an-interface": "", "string-is-an-interface-2": "some-string-2"}} {
+	for _, v := range []map[interface{}]string{nil, {}, {"string-is-an-interface": "", "string-is-an-interface-2": "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v3: %v\n", v)
 		var v3v1, v3v2 map[interface{}]string
 		v3v1 = v
@@ -1936,7 +1936,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v3v3, v3v4, t, "equal-map-v3-p-len")
 	}
 
-	for _, v := range []map[interface{}]uint{nil, map[interface{}]uint{}, map[interface{}]uint{"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
+	for _, v := range []map[interface{}]uint{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
 		// fmt.Printf(">>>> running mammoth map v4: %v\n", v)
 		var v4v1, v4v2 map[interface{}]uint
 		v4v1 = v
@@ -1980,7 +1980,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v4v3, v4v4, t, "equal-map-v4-p-len")
 	}
 
-	for _, v := range []map[interface{}]uint8{nil, map[interface{}]uint8{}, map[interface{}]uint8{"string-is-an-interface": 0, "string-is-an-interface-2": 33}} {
+	for _, v := range []map[interface{}]uint8{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 33}} {
 		// fmt.Printf(">>>> running mammoth map v5: %v\n", v)
 		var v5v1, v5v2 map[interface{}]uint8
 		v5v1 = v
@@ -2024,7 +2024,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v5v3, v5v4, t, "equal-map-v5-p-len")
 	}
 
-	for _, v := range []map[interface{}]uint16{nil, map[interface{}]uint16{}, map[interface{}]uint16{"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
+	for _, v := range []map[interface{}]uint16{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
 		// fmt.Printf(">>>> running mammoth map v6: %v\n", v)
 		var v6v1, v6v2 map[interface{}]uint16
 		v6v1 = v
@@ -2068,7 +2068,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v6v3, v6v4, t, "equal-map-v6-p-len")
 	}
 
-	for _, v := range []map[interface{}]uint32{nil, map[interface{}]uint32{}, map[interface{}]uint32{"string-is-an-interface": 0, "string-is-an-interface-2": 33}} {
+	for _, v := range []map[interface{}]uint32{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 33}} {
 		// fmt.Printf(">>>> running mammoth map v7: %v\n", v)
 		var v7v1, v7v2 map[interface{}]uint32
 		v7v1 = v
@@ -2112,7 +2112,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v7v3, v7v4, t, "equal-map-v7-p-len")
 	}
 
-	for _, v := range []map[interface{}]uint64{nil, map[interface{}]uint64{}, map[interface{}]uint64{"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
+	for _, v := range []map[interface{}]uint64{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
 		// fmt.Printf(">>>> running mammoth map v8: %v\n", v)
 		var v8v1, v8v2 map[interface{}]uint64
 		v8v1 = v
@@ -2156,7 +2156,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v8v3, v8v4, t, "equal-map-v8-p-len")
 	}
 
-	for _, v := range []map[interface{}]uintptr{nil, map[interface{}]uintptr{}, map[interface{}]uintptr{"string-is-an-interface": 0, "string-is-an-interface-2": 33}} {
+	for _, v := range []map[interface{}]uintptr{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 33}} {
 		// fmt.Printf(">>>> running mammoth map v9: %v\n", v)
 		var v9v1, v9v2 map[interface{}]uintptr
 		v9v1 = v
@@ -2200,7 +2200,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v9v3, v9v4, t, "equal-map-v9-p-len")
 	}
 
-	for _, v := range []map[interface{}]int{nil, map[interface{}]int{}, map[interface{}]int{"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
+	for _, v := range []map[interface{}]int{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
 		// fmt.Printf(">>>> running mammoth map v10: %v\n", v)
 		var v10v1, v10v2 map[interface{}]int
 		v10v1 = v
@@ -2244,7 +2244,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v10v3, v10v4, t, "equal-map-v10-p-len")
 	}
 
-	for _, v := range []map[interface{}]int8{nil, map[interface{}]int8{}, map[interface{}]int8{"string-is-an-interface": 0, "string-is-an-interface-2": 33}} {
+	for _, v := range []map[interface{}]int8{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 33}} {
 		// fmt.Printf(">>>> running mammoth map v11: %v\n", v)
 		var v11v1, v11v2 map[interface{}]int8
 		v11v1 = v
@@ -2288,7 +2288,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v11v3, v11v4, t, "equal-map-v11-p-len")
 	}
 
-	for _, v := range []map[interface{}]int16{nil, map[interface{}]int16{}, map[interface{}]int16{"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
+	for _, v := range []map[interface{}]int16{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
 		// fmt.Printf(">>>> running mammoth map v12: %v\n", v)
 		var v12v1, v12v2 map[interface{}]int16
 		v12v1 = v
@@ -2332,7 +2332,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v12v3, v12v4, t, "equal-map-v12-p-len")
 	}
 
-	for _, v := range []map[interface{}]int32{nil, map[interface{}]int32{}, map[interface{}]int32{"string-is-an-interface": 0, "string-is-an-interface-2": 33}} {
+	for _, v := range []map[interface{}]int32{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 33}} {
 		// fmt.Printf(">>>> running mammoth map v13: %v\n", v)
 		var v13v1, v13v2 map[interface{}]int32
 		v13v1 = v
@@ -2376,7 +2376,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v13v3, v13v4, t, "equal-map-v13-p-len")
 	}
 
-	for _, v := range []map[interface{}]int64{nil, map[interface{}]int64{}, map[interface{}]int64{"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
+	for _, v := range []map[interface{}]int64{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 44}} {
 		// fmt.Printf(">>>> running mammoth map v14: %v\n", v)
 		var v14v1, v14v2 map[interface{}]int64
 		v14v1 = v
@@ -2420,7 +2420,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v14v3, v14v4, t, "equal-map-v14-p-len")
 	}
 
-	for _, v := range []map[interface{}]float32{nil, map[interface{}]float32{}, map[interface{}]float32{"string-is-an-interface": 0, "string-is-an-interface-2": 22.2}} {
+	for _, v := range []map[interface{}]float32{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v15: %v\n", v)
 		var v15v1, v15v2 map[interface{}]float32
 		v15v1 = v
@@ -2464,7 +2464,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v15v3, v15v4, t, "equal-map-v15-p-len")
 	}
 
-	for _, v := range []map[interface{}]float64{nil, map[interface{}]float64{}, map[interface{}]float64{"string-is-an-interface": 0, "string-is-an-interface-2": 11.1}} {
+	for _, v := range []map[interface{}]float64{nil, {}, {"string-is-an-interface": 0, "string-is-an-interface-2": 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v16: %v\n", v)
 		var v16v1, v16v2 map[interface{}]float64
 		v16v1 = v
@@ -2508,7 +2508,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v16v3, v16v4, t, "equal-map-v16-p-len")
 	}
 
-	for _, v := range []map[interface{}]bool{nil, map[interface{}]bool{}, map[interface{}]bool{"string-is-an-interface": false, "string-is-an-interface-2": true}} {
+	for _, v := range []map[interface{}]bool{nil, {}, {"string-is-an-interface": false, "string-is-an-interface-2": true}} {
 		// fmt.Printf(">>>> running mammoth map v17: %v\n", v)
 		var v17v1, v17v2 map[interface{}]bool
 		v17v1 = v
@@ -2552,7 +2552,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v17v3, v17v4, t, "equal-map-v17-p-len")
 	}
 
-	for _, v := range []map[string]interface{}{nil, map[string]interface{}{}, map[string]interface{}{"some-string": nil, "some-string-2": "string-is-an-interface"}} {
+	for _, v := range []map[string]interface{}{nil, {}, {"some-string": nil, "some-string-2": "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v20: %v\n", v)
 		var v20v1, v20v2 map[string]interface{}
 		v20v1 = v
@@ -2596,7 +2596,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v20v3, v20v4, t, "equal-map-v20-p-len")
 	}
 
-	for _, v := range []map[string]string{nil, map[string]string{}, map[string]string{"some-string": "", "some-string-2": "some-string"}} {
+	for _, v := range []map[string]string{nil, {}, {"some-string": "", "some-string-2": "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v21: %v\n", v)
 		var v21v1, v21v2 map[string]string
 		v21v1 = v
@@ -2640,7 +2640,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v21v3, v21v4, t, "equal-map-v21-p-len")
 	}
 
-	for _, v := range []map[string]uint{nil, map[string]uint{}, map[string]uint{"some-string-2": 0, "some-string": 33}} {
+	for _, v := range []map[string]uint{nil, {}, {"some-string-2": 0, "some-string": 33}} {
 		// fmt.Printf(">>>> running mammoth map v22: %v\n", v)
 		var v22v1, v22v2 map[string]uint
 		v22v1 = v
@@ -2684,7 +2684,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v22v3, v22v4, t, "equal-map-v22-p-len")
 	}
 
-	for _, v := range []map[string]uint8{nil, map[string]uint8{}, map[string]uint8{"some-string-2": 0, "some-string": 44}} {
+	for _, v := range []map[string]uint8{nil, {}, {"some-string-2": 0, "some-string": 44}} {
 		// fmt.Printf(">>>> running mammoth map v23: %v\n", v)
 		var v23v1, v23v2 map[string]uint8
 		v23v1 = v
@@ -2728,7 +2728,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v23v3, v23v4, t, "equal-map-v23-p-len")
 	}
 
-	for _, v := range []map[string]uint16{nil, map[string]uint16{}, map[string]uint16{"some-string-2": 0, "some-string": 33}} {
+	for _, v := range []map[string]uint16{nil, {}, {"some-string-2": 0, "some-string": 33}} {
 		// fmt.Printf(">>>> running mammoth map v24: %v\n", v)
 		var v24v1, v24v2 map[string]uint16
 		v24v1 = v
@@ -2772,7 +2772,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v24v3, v24v4, t, "equal-map-v24-p-len")
 	}
 
-	for _, v := range []map[string]uint32{nil, map[string]uint32{}, map[string]uint32{"some-string-2": 0, "some-string": 44}} {
+	for _, v := range []map[string]uint32{nil, {}, {"some-string-2": 0, "some-string": 44}} {
 		// fmt.Printf(">>>> running mammoth map v25: %v\n", v)
 		var v25v1, v25v2 map[string]uint32
 		v25v1 = v
@@ -2816,7 +2816,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v25v3, v25v4, t, "equal-map-v25-p-len")
 	}
 
-	for _, v := range []map[string]uint64{nil, map[string]uint64{}, map[string]uint64{"some-string-2": 0, "some-string": 33}} {
+	for _, v := range []map[string]uint64{nil, {}, {"some-string-2": 0, "some-string": 33}} {
 		// fmt.Printf(">>>> running mammoth map v26: %v\n", v)
 		var v26v1, v26v2 map[string]uint64
 		v26v1 = v
@@ -2860,7 +2860,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v26v3, v26v4, t, "equal-map-v26-p-len")
 	}
 
-	for _, v := range []map[string]uintptr{nil, map[string]uintptr{}, map[string]uintptr{"some-string-2": 0, "some-string": 44}} {
+	for _, v := range []map[string]uintptr{nil, {}, {"some-string-2": 0, "some-string": 44}} {
 		// fmt.Printf(">>>> running mammoth map v27: %v\n", v)
 		var v27v1, v27v2 map[string]uintptr
 		v27v1 = v
@@ -2904,7 +2904,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v27v3, v27v4, t, "equal-map-v27-p-len")
 	}
 
-	for _, v := range []map[string]int{nil, map[string]int{}, map[string]int{"some-string-2": 0, "some-string": 33}} {
+	for _, v := range []map[string]int{nil, {}, {"some-string-2": 0, "some-string": 33}} {
 		// fmt.Printf(">>>> running mammoth map v28: %v\n", v)
 		var v28v1, v28v2 map[string]int
 		v28v1 = v
@@ -2948,7 +2948,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v28v3, v28v4, t, "equal-map-v28-p-len")
 	}
 
-	for _, v := range []map[string]int8{nil, map[string]int8{}, map[string]int8{"some-string-2": 0, "some-string": 44}} {
+	for _, v := range []map[string]int8{nil, {}, {"some-string-2": 0, "some-string": 44}} {
 		// fmt.Printf(">>>> running mammoth map v29: %v\n", v)
 		var v29v1, v29v2 map[string]int8
 		v29v1 = v
@@ -2992,7 +2992,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v29v3, v29v4, t, "equal-map-v29-p-len")
 	}
 
-	for _, v := range []map[string]int16{nil, map[string]int16{}, map[string]int16{"some-string-2": 0, "some-string": 33}} {
+	for _, v := range []map[string]int16{nil, {}, {"some-string-2": 0, "some-string": 33}} {
 		// fmt.Printf(">>>> running mammoth map v30: %v\n", v)
 		var v30v1, v30v2 map[string]int16
 		v30v1 = v
@@ -3036,7 +3036,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v30v3, v30v4, t, "equal-map-v30-p-len")
 	}
 
-	for _, v := range []map[string]int32{nil, map[string]int32{}, map[string]int32{"some-string-2": 0, "some-string": 44}} {
+	for _, v := range []map[string]int32{nil, {}, {"some-string-2": 0, "some-string": 44}} {
 		// fmt.Printf(">>>> running mammoth map v31: %v\n", v)
 		var v31v1, v31v2 map[string]int32
 		v31v1 = v
@@ -3080,7 +3080,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v31v3, v31v4, t, "equal-map-v31-p-len")
 	}
 
-	for _, v := range []map[string]int64{nil, map[string]int64{}, map[string]int64{"some-string-2": 0, "some-string": 33}} {
+	for _, v := range []map[string]int64{nil, {}, {"some-string-2": 0, "some-string": 33}} {
 		// fmt.Printf(">>>> running mammoth map v32: %v\n", v)
 		var v32v1, v32v2 map[string]int64
 		v32v1 = v
@@ -3124,7 +3124,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v32v3, v32v4, t, "equal-map-v32-p-len")
 	}
 
-	for _, v := range []map[string]float32{nil, map[string]float32{}, map[string]float32{"some-string-2": 0, "some-string": 22.2}} {
+	for _, v := range []map[string]float32{nil, {}, {"some-string-2": 0, "some-string": 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v33: %v\n", v)
 		var v33v1, v33v2 map[string]float32
 		v33v1 = v
@@ -3168,7 +3168,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v33v3, v33v4, t, "equal-map-v33-p-len")
 	}
 
-	for _, v := range []map[string]float64{nil, map[string]float64{}, map[string]float64{"some-string-2": 0, "some-string": 11.1}} {
+	for _, v := range []map[string]float64{nil, {}, {"some-string-2": 0, "some-string": 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v34: %v\n", v)
 		var v34v1, v34v2 map[string]float64
 		v34v1 = v
@@ -3212,7 +3212,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v34v3, v34v4, t, "equal-map-v34-p-len")
 	}
 
-	for _, v := range []map[string]bool{nil, map[string]bool{}, map[string]bool{"some-string-2": false, "some-string": true}} {
+	for _, v := range []map[string]bool{nil, {}, {"some-string-2": false, "some-string": true}} {
 		// fmt.Printf(">>>> running mammoth map v35: %v\n", v)
 		var v35v1, v35v2 map[string]bool
 		v35v1 = v
@@ -3256,7 +3256,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v35v3, v35v4, t, "equal-map-v35-p-len")
 	}
 
-	for _, v := range []map[float32]interface{}{nil, map[float32]interface{}{}, map[float32]interface{}{22.2: nil, 11.1: "string-is-an-interface-2"}} {
+	for _, v := range []map[float32]interface{}{nil, {}, {22.2: nil, 11.1: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v38: %v\n", v)
 		var v38v1, v38v2 map[float32]interface{}
 		v38v1 = v
@@ -3300,7 +3300,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v38v3, v38v4, t, "equal-map-v38-p-len")
 	}
 
-	for _, v := range []map[float32]string{nil, map[float32]string{}, map[float32]string{22.2: "", 11.1: "some-string-2"}} {
+	for _, v := range []map[float32]string{nil, {}, {22.2: "", 11.1: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v39: %v\n", v)
 		var v39v1, v39v2 map[float32]string
 		v39v1 = v
@@ -3344,7 +3344,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v39v3, v39v4, t, "equal-map-v39-p-len")
 	}
 
-	for _, v := range []map[float32]uint{nil, map[float32]uint{}, map[float32]uint{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float32]uint{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v40: %v\n", v)
 		var v40v1, v40v2 map[float32]uint
 		v40v1 = v
@@ -3388,7 +3388,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v40v3, v40v4, t, "equal-map-v40-p-len")
 	}
 
-	for _, v := range []map[float32]uint8{nil, map[float32]uint8{}, map[float32]uint8{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float32]uint8{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v41: %v\n", v)
 		var v41v1, v41v2 map[float32]uint8
 		v41v1 = v
@@ -3432,7 +3432,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v41v3, v41v4, t, "equal-map-v41-p-len")
 	}
 
-	for _, v := range []map[float32]uint16{nil, map[float32]uint16{}, map[float32]uint16{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float32]uint16{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v42: %v\n", v)
 		var v42v1, v42v2 map[float32]uint16
 		v42v1 = v
@@ -3476,7 +3476,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v42v3, v42v4, t, "equal-map-v42-p-len")
 	}
 
-	for _, v := range []map[float32]uint32{nil, map[float32]uint32{}, map[float32]uint32{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float32]uint32{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v43: %v\n", v)
 		var v43v1, v43v2 map[float32]uint32
 		v43v1 = v
@@ -3520,7 +3520,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v43v3, v43v4, t, "equal-map-v43-p-len")
 	}
 
-	for _, v := range []map[float32]uint64{nil, map[float32]uint64{}, map[float32]uint64{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float32]uint64{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v44: %v\n", v)
 		var v44v1, v44v2 map[float32]uint64
 		v44v1 = v
@@ -3564,7 +3564,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v44v3, v44v4, t, "equal-map-v44-p-len")
 	}
 
-	for _, v := range []map[float32]uintptr{nil, map[float32]uintptr{}, map[float32]uintptr{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float32]uintptr{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v45: %v\n", v)
 		var v45v1, v45v2 map[float32]uintptr
 		v45v1 = v
@@ -3608,7 +3608,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v45v3, v45v4, t, "equal-map-v45-p-len")
 	}
 
-	for _, v := range []map[float32]int{nil, map[float32]int{}, map[float32]int{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float32]int{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v46: %v\n", v)
 		var v46v1, v46v2 map[float32]int
 		v46v1 = v
@@ -3652,7 +3652,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v46v3, v46v4, t, "equal-map-v46-p-len")
 	}
 
-	for _, v := range []map[float32]int8{nil, map[float32]int8{}, map[float32]int8{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float32]int8{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v47: %v\n", v)
 		var v47v1, v47v2 map[float32]int8
 		v47v1 = v
@@ -3696,7 +3696,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v47v3, v47v4, t, "equal-map-v47-p-len")
 	}
 
-	for _, v := range []map[float32]int16{nil, map[float32]int16{}, map[float32]int16{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float32]int16{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v48: %v\n", v)
 		var v48v1, v48v2 map[float32]int16
 		v48v1 = v
@@ -3740,7 +3740,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v48v3, v48v4, t, "equal-map-v48-p-len")
 	}
 
-	for _, v := range []map[float32]int32{nil, map[float32]int32{}, map[float32]int32{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float32]int32{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v49: %v\n", v)
 		var v49v1, v49v2 map[float32]int32
 		v49v1 = v
@@ -3784,7 +3784,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v49v3, v49v4, t, "equal-map-v49-p-len")
 	}
 
-	for _, v := range []map[float32]int64{nil, map[float32]int64{}, map[float32]int64{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float32]int64{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v50: %v\n", v)
 		var v50v1, v50v2 map[float32]int64
 		v50v1 = v
@@ -3828,7 +3828,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v50v3, v50v4, t, "equal-map-v50-p-len")
 	}
 
-	for _, v := range []map[float32]float32{nil, map[float32]float32{}, map[float32]float32{22.2: 0, 11.1: 22.2}} {
+	for _, v := range []map[float32]float32{nil, {}, {22.2: 0, 11.1: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v51: %v\n", v)
 		var v51v1, v51v2 map[float32]float32
 		v51v1 = v
@@ -3872,7 +3872,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v51v3, v51v4, t, "equal-map-v51-p-len")
 	}
 
-	for _, v := range []map[float32]float64{nil, map[float32]float64{}, map[float32]float64{11.1: 0, 22.2: 11.1}} {
+	for _, v := range []map[float32]float64{nil, {}, {11.1: 0, 22.2: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v52: %v\n", v)
 		var v52v1, v52v2 map[float32]float64
 		v52v1 = v
@@ -3916,7 +3916,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v52v3, v52v4, t, "equal-map-v52-p-len")
 	}
 
-	for _, v := range []map[float32]bool{nil, map[float32]bool{}, map[float32]bool{22.2: false, 11.1: true}} {
+	for _, v := range []map[float32]bool{nil, {}, {22.2: false, 11.1: true}} {
 		// fmt.Printf(">>>> running mammoth map v53: %v\n", v)
 		var v53v1, v53v2 map[float32]bool
 		v53v1 = v
@@ -3960,7 +3960,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v53v3, v53v4, t, "equal-map-v53-p-len")
 	}
 
-	for _, v := range []map[float64]interface{}{nil, map[float64]interface{}{}, map[float64]interface{}{22.2: nil, 11.1: "string-is-an-interface"}} {
+	for _, v := range []map[float64]interface{}{nil, {}, {22.2: nil, 11.1: "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v56: %v\n", v)
 		var v56v1, v56v2 map[float64]interface{}
 		v56v1 = v
@@ -4004,7 +4004,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v56v3, v56v4, t, "equal-map-v56-p-len")
 	}
 
-	for _, v := range []map[float64]string{nil, map[float64]string{}, map[float64]string{22.2: "", 11.1: "some-string"}} {
+	for _, v := range []map[float64]string{nil, {}, {22.2: "", 11.1: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v57: %v\n", v)
 		var v57v1, v57v2 map[float64]string
 		v57v1 = v
@@ -4048,7 +4048,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v57v3, v57v4, t, "equal-map-v57-p-len")
 	}
 
-	for _, v := range []map[float64]uint{nil, map[float64]uint{}, map[float64]uint{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float64]uint{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v58: %v\n", v)
 		var v58v1, v58v2 map[float64]uint
 		v58v1 = v
@@ -4092,7 +4092,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v58v3, v58v4, t, "equal-map-v58-p-len")
 	}
 
-	for _, v := range []map[float64]uint8{nil, map[float64]uint8{}, map[float64]uint8{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float64]uint8{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v59: %v\n", v)
 		var v59v1, v59v2 map[float64]uint8
 		v59v1 = v
@@ -4136,7 +4136,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v59v3, v59v4, t, "equal-map-v59-p-len")
 	}
 
-	for _, v := range []map[float64]uint16{nil, map[float64]uint16{}, map[float64]uint16{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float64]uint16{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v60: %v\n", v)
 		var v60v1, v60v2 map[float64]uint16
 		v60v1 = v
@@ -4180,7 +4180,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v60v3, v60v4, t, "equal-map-v60-p-len")
 	}
 
-	for _, v := range []map[float64]uint32{nil, map[float64]uint32{}, map[float64]uint32{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float64]uint32{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v61: %v\n", v)
 		var v61v1, v61v2 map[float64]uint32
 		v61v1 = v
@@ -4224,7 +4224,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v61v3, v61v4, t, "equal-map-v61-p-len")
 	}
 
-	for _, v := range []map[float64]uint64{nil, map[float64]uint64{}, map[float64]uint64{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float64]uint64{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v62: %v\n", v)
 		var v62v1, v62v2 map[float64]uint64
 		v62v1 = v
@@ -4268,7 +4268,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v62v3, v62v4, t, "equal-map-v62-p-len")
 	}
 
-	for _, v := range []map[float64]uintptr{nil, map[float64]uintptr{}, map[float64]uintptr{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float64]uintptr{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v63: %v\n", v)
 		var v63v1, v63v2 map[float64]uintptr
 		v63v1 = v
@@ -4312,7 +4312,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v63v3, v63v4, t, "equal-map-v63-p-len")
 	}
 
-	for _, v := range []map[float64]int{nil, map[float64]int{}, map[float64]int{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float64]int{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v64: %v\n", v)
 		var v64v1, v64v2 map[float64]int
 		v64v1 = v
@@ -4356,7 +4356,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v64v3, v64v4, t, "equal-map-v64-p-len")
 	}
 
-	for _, v := range []map[float64]int8{nil, map[float64]int8{}, map[float64]int8{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float64]int8{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v65: %v\n", v)
 		var v65v1, v65v2 map[float64]int8
 		v65v1 = v
@@ -4400,7 +4400,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v65v3, v65v4, t, "equal-map-v65-p-len")
 	}
 
-	for _, v := range []map[float64]int16{nil, map[float64]int16{}, map[float64]int16{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float64]int16{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v66: %v\n", v)
 		var v66v1, v66v2 map[float64]int16
 		v66v1 = v
@@ -4444,7 +4444,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v66v3, v66v4, t, "equal-map-v66-p-len")
 	}
 
-	for _, v := range []map[float64]int32{nil, map[float64]int32{}, map[float64]int32{22.2: 0, 11.1: 44}} {
+	for _, v := range []map[float64]int32{nil, {}, {22.2: 0, 11.1: 44}} {
 		// fmt.Printf(">>>> running mammoth map v67: %v\n", v)
 		var v67v1, v67v2 map[float64]int32
 		v67v1 = v
@@ -4488,7 +4488,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v67v3, v67v4, t, "equal-map-v67-p-len")
 	}
 
-	for _, v := range []map[float64]int64{nil, map[float64]int64{}, map[float64]int64{22.2: 0, 11.1: 33}} {
+	for _, v := range []map[float64]int64{nil, {}, {22.2: 0, 11.1: 33}} {
 		// fmt.Printf(">>>> running mammoth map v68: %v\n", v)
 		var v68v1, v68v2 map[float64]int64
 		v68v1 = v
@@ -4532,7 +4532,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v68v3, v68v4, t, "equal-map-v68-p-len")
 	}
 
-	for _, v := range []map[float64]float32{nil, map[float64]float32{}, map[float64]float32{22.2: 0, 11.1: 22.2}} {
+	for _, v := range []map[float64]float32{nil, {}, {22.2: 0, 11.1: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v69: %v\n", v)
 		var v69v1, v69v2 map[float64]float32
 		v69v1 = v
@@ -4576,7 +4576,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v69v3, v69v4, t, "equal-map-v69-p-len")
 	}
 
-	for _, v := range []map[float64]float64{nil, map[float64]float64{}, map[float64]float64{11.1: 0, 22.2: 11.1}} {
+	for _, v := range []map[float64]float64{nil, {}, {11.1: 0, 22.2: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v70: %v\n", v)
 		var v70v1, v70v2 map[float64]float64
 		v70v1 = v
@@ -4620,7 +4620,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v70v3, v70v4, t, "equal-map-v70-p-len")
 	}
 
-	for _, v := range []map[float64]bool{nil, map[float64]bool{}, map[float64]bool{22.2: false, 11.1: true}} {
+	for _, v := range []map[float64]bool{nil, {}, {22.2: false, 11.1: true}} {
 		// fmt.Printf(">>>> running mammoth map v71: %v\n", v)
 		var v71v1, v71v2 map[float64]bool
 		v71v1 = v
@@ -4664,7 +4664,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v71v3, v71v4, t, "equal-map-v71-p-len")
 	}
 
-	for _, v := range []map[uint]interface{}{nil, map[uint]interface{}{}, map[uint]interface{}{44: nil, 33: "string-is-an-interface-2"}} {
+	for _, v := range []map[uint]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v74: %v\n", v)
 		var v74v1, v74v2 map[uint]interface{}
 		v74v1 = v
@@ -4708,7 +4708,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v74v3, v74v4, t, "equal-map-v74-p-len")
 	}
 
-	for _, v := range []map[uint]string{nil, map[uint]string{}, map[uint]string{44: "", 33: "some-string-2"}} {
+	for _, v := range []map[uint]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v75: %v\n", v)
 		var v75v1, v75v2 map[uint]string
 		v75v1 = v
@@ -4752,7 +4752,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v75v3, v75v4, t, "equal-map-v75-p-len")
 	}
 
-	for _, v := range []map[uint]uint{nil, map[uint]uint{}, map[uint]uint{44: 0, 33: 44}} {
+	for _, v := range []map[uint]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v76: %v\n", v)
 		var v76v1, v76v2 map[uint]uint
 		v76v1 = v
@@ -4796,7 +4796,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v76v3, v76v4, t, "equal-map-v76-p-len")
 	}
 
-	for _, v := range []map[uint]uint8{nil, map[uint]uint8{}, map[uint]uint8{33: 0, 44: 33}} {
+	for _, v := range []map[uint]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v77: %v\n", v)
 		var v77v1, v77v2 map[uint]uint8
 		v77v1 = v
@@ -4840,7 +4840,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v77v3, v77v4, t, "equal-map-v77-p-len")
 	}
 
-	for _, v := range []map[uint]uint16{nil, map[uint]uint16{}, map[uint]uint16{44: 0, 33: 44}} {
+	for _, v := range []map[uint]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v78: %v\n", v)
 		var v78v1, v78v2 map[uint]uint16
 		v78v1 = v
@@ -4884,7 +4884,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v78v3, v78v4, t, "equal-map-v78-p-len")
 	}
 
-	for _, v := range []map[uint]uint32{nil, map[uint]uint32{}, map[uint]uint32{33: 0, 44: 33}} {
+	for _, v := range []map[uint]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v79: %v\n", v)
 		var v79v1, v79v2 map[uint]uint32
 		v79v1 = v
@@ -4928,7 +4928,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v79v3, v79v4, t, "equal-map-v79-p-len")
 	}
 
-	for _, v := range []map[uint]uint64{nil, map[uint]uint64{}, map[uint]uint64{44: 0, 33: 44}} {
+	for _, v := range []map[uint]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v80: %v\n", v)
 		var v80v1, v80v2 map[uint]uint64
 		v80v1 = v
@@ -4972,7 +4972,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v80v3, v80v4, t, "equal-map-v80-p-len")
 	}
 
-	for _, v := range []map[uint]uintptr{nil, map[uint]uintptr{}, map[uint]uintptr{33: 0, 44: 33}} {
+	for _, v := range []map[uint]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v81: %v\n", v)
 		var v81v1, v81v2 map[uint]uintptr
 		v81v1 = v
@@ -5016,7 +5016,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v81v3, v81v4, t, "equal-map-v81-p-len")
 	}
 
-	for _, v := range []map[uint]int{nil, map[uint]int{}, map[uint]int{44: 0, 33: 44}} {
+	for _, v := range []map[uint]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v82: %v\n", v)
 		var v82v1, v82v2 map[uint]int
 		v82v1 = v
@@ -5060,7 +5060,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v82v3, v82v4, t, "equal-map-v82-p-len")
 	}
 
-	for _, v := range []map[uint]int8{nil, map[uint]int8{}, map[uint]int8{33: 0, 44: 33}} {
+	for _, v := range []map[uint]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v83: %v\n", v)
 		var v83v1, v83v2 map[uint]int8
 		v83v1 = v
@@ -5104,7 +5104,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v83v3, v83v4, t, "equal-map-v83-p-len")
 	}
 
-	for _, v := range []map[uint]int16{nil, map[uint]int16{}, map[uint]int16{44: 0, 33: 44}} {
+	for _, v := range []map[uint]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v84: %v\n", v)
 		var v84v1, v84v2 map[uint]int16
 		v84v1 = v
@@ -5148,7 +5148,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v84v3, v84v4, t, "equal-map-v84-p-len")
 	}
 
-	for _, v := range []map[uint]int32{nil, map[uint]int32{}, map[uint]int32{33: 0, 44: 33}} {
+	for _, v := range []map[uint]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v85: %v\n", v)
 		var v85v1, v85v2 map[uint]int32
 		v85v1 = v
@@ -5192,7 +5192,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v85v3, v85v4, t, "equal-map-v85-p-len")
 	}
 
-	for _, v := range []map[uint]int64{nil, map[uint]int64{}, map[uint]int64{44: 0, 33: 44}} {
+	for _, v := range []map[uint]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v86: %v\n", v)
 		var v86v1, v86v2 map[uint]int64
 		v86v1 = v
@@ -5236,7 +5236,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v86v3, v86v4, t, "equal-map-v86-p-len")
 	}
 
-	for _, v := range []map[uint]float32{nil, map[uint]float32{}, map[uint]float32{33: 0, 44: 22.2}} {
+	for _, v := range []map[uint]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v87: %v\n", v)
 		var v87v1, v87v2 map[uint]float32
 		v87v1 = v
@@ -5280,7 +5280,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v87v3, v87v4, t, "equal-map-v87-p-len")
 	}
 
-	for _, v := range []map[uint]float64{nil, map[uint]float64{}, map[uint]float64{33: 0, 44: 11.1}} {
+	for _, v := range []map[uint]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v88: %v\n", v)
 		var v88v1, v88v2 map[uint]float64
 		v88v1 = v
@@ -5324,7 +5324,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v88v3, v88v4, t, "equal-map-v88-p-len")
 	}
 
-	for _, v := range []map[uint]bool{nil, map[uint]bool{}, map[uint]bool{33: false, 44: true}} {
+	for _, v := range []map[uint]bool{nil, {}, {33: false, 44: true}} {
 		// fmt.Printf(">>>> running mammoth map v89: %v\n", v)
 		var v89v1, v89v2 map[uint]bool
 		v89v1 = v
@@ -5368,7 +5368,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v89v3, v89v4, t, "equal-map-v89-p-len")
 	}
 
-	for _, v := range []map[uint8]interface{}{nil, map[uint8]interface{}{}, map[uint8]interface{}{33: nil, 44: "string-is-an-interface"}} {
+	for _, v := range []map[uint8]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v91: %v\n", v)
 		var v91v1, v91v2 map[uint8]interface{}
 		v91v1 = v
@@ -5412,7 +5412,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v91v3, v91v4, t, "equal-map-v91-p-len")
 	}
 
-	for _, v := range []map[uint8]string{nil, map[uint8]string{}, map[uint8]string{33: "", 44: "some-string"}} {
+	for _, v := range []map[uint8]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v92: %v\n", v)
 		var v92v1, v92v2 map[uint8]string
 		v92v1 = v
@@ -5456,7 +5456,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v92v3, v92v4, t, "equal-map-v92-p-len")
 	}
 
-	for _, v := range []map[uint8]uint{nil, map[uint8]uint{}, map[uint8]uint{33: 0, 44: 33}} {
+	for _, v := range []map[uint8]uint{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v93: %v\n", v)
 		var v93v1, v93v2 map[uint8]uint
 		v93v1 = v
@@ -5500,7 +5500,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v93v3, v93v4, t, "equal-map-v93-p-len")
 	}
 
-	for _, v := range []map[uint8]uint8{nil, map[uint8]uint8{}, map[uint8]uint8{44: 0, 33: 44}} {
+	for _, v := range []map[uint8]uint8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v94: %v\n", v)
 		var v94v1, v94v2 map[uint8]uint8
 		v94v1 = v
@@ -5544,7 +5544,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v94v3, v94v4, t, "equal-map-v94-p-len")
 	}
 
-	for _, v := range []map[uint8]uint16{nil, map[uint8]uint16{}, map[uint8]uint16{33: 0, 44: 33}} {
+	for _, v := range []map[uint8]uint16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v95: %v\n", v)
 		var v95v1, v95v2 map[uint8]uint16
 		v95v1 = v
@@ -5588,7 +5588,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v95v3, v95v4, t, "equal-map-v95-p-len")
 	}
 
-	for _, v := range []map[uint8]uint32{nil, map[uint8]uint32{}, map[uint8]uint32{44: 0, 33: 44}} {
+	for _, v := range []map[uint8]uint32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v96: %v\n", v)
 		var v96v1, v96v2 map[uint8]uint32
 		v96v1 = v
@@ -5632,7 +5632,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v96v3, v96v4, t, "equal-map-v96-p-len")
 	}
 
-	for _, v := range []map[uint8]uint64{nil, map[uint8]uint64{}, map[uint8]uint64{33: 0, 44: 33}} {
+	for _, v := range []map[uint8]uint64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v97: %v\n", v)
 		var v97v1, v97v2 map[uint8]uint64
 		v97v1 = v
@@ -5676,7 +5676,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v97v3, v97v4, t, "equal-map-v97-p-len")
 	}
 
-	for _, v := range []map[uint8]uintptr{nil, map[uint8]uintptr{}, map[uint8]uintptr{44: 0, 33: 44}} {
+	for _, v := range []map[uint8]uintptr{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v98: %v\n", v)
 		var v98v1, v98v2 map[uint8]uintptr
 		v98v1 = v
@@ -5720,7 +5720,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v98v3, v98v4, t, "equal-map-v98-p-len")
 	}
 
-	for _, v := range []map[uint8]int{nil, map[uint8]int{}, map[uint8]int{33: 0, 44: 33}} {
+	for _, v := range []map[uint8]int{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v99: %v\n", v)
 		var v99v1, v99v2 map[uint8]int
 		v99v1 = v
@@ -5764,7 +5764,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v99v3, v99v4, t, "equal-map-v99-p-len")
 	}
 
-	for _, v := range []map[uint8]int8{nil, map[uint8]int8{}, map[uint8]int8{44: 0, 33: 44}} {
+	for _, v := range []map[uint8]int8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v100: %v\n", v)
 		var v100v1, v100v2 map[uint8]int8
 		v100v1 = v
@@ -5808,7 +5808,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v100v3, v100v4, t, "equal-map-v100-p-len")
 	}
 
-	for _, v := range []map[uint8]int16{nil, map[uint8]int16{}, map[uint8]int16{33: 0, 44: 33}} {
+	for _, v := range []map[uint8]int16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v101: %v\n", v)
 		var v101v1, v101v2 map[uint8]int16
 		v101v1 = v
@@ -5852,7 +5852,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v101v3, v101v4, t, "equal-map-v101-p-len")
 	}
 
-	for _, v := range []map[uint8]int32{nil, map[uint8]int32{}, map[uint8]int32{44: 0, 33: 44}} {
+	for _, v := range []map[uint8]int32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v102: %v\n", v)
 		var v102v1, v102v2 map[uint8]int32
 		v102v1 = v
@@ -5896,7 +5896,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v102v3, v102v4, t, "equal-map-v102-p-len")
 	}
 
-	for _, v := range []map[uint8]int64{nil, map[uint8]int64{}, map[uint8]int64{33: 0, 44: 33}} {
+	for _, v := range []map[uint8]int64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v103: %v\n", v)
 		var v103v1, v103v2 map[uint8]int64
 		v103v1 = v
@@ -5940,7 +5940,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v103v3, v103v4, t, "equal-map-v103-p-len")
 	}
 
-	for _, v := range []map[uint8]float32{nil, map[uint8]float32{}, map[uint8]float32{44: 0, 33: 22.2}} {
+	for _, v := range []map[uint8]float32{nil, {}, {44: 0, 33: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v104: %v\n", v)
 		var v104v1, v104v2 map[uint8]float32
 		v104v1 = v
@@ -5984,7 +5984,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v104v3, v104v4, t, "equal-map-v104-p-len")
 	}
 
-	for _, v := range []map[uint8]float64{nil, map[uint8]float64{}, map[uint8]float64{44: 0, 33: 11.1}} {
+	for _, v := range []map[uint8]float64{nil, {}, {44: 0, 33: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v105: %v\n", v)
 		var v105v1, v105v2 map[uint8]float64
 		v105v1 = v
@@ -6028,7 +6028,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v105v3, v105v4, t, "equal-map-v105-p-len")
 	}
 
-	for _, v := range []map[uint8]bool{nil, map[uint8]bool{}, map[uint8]bool{44: false, 33: true}} {
+	for _, v := range []map[uint8]bool{nil, {}, {44: false, 33: true}} {
 		// fmt.Printf(">>>> running mammoth map v106: %v\n", v)
 		var v106v1, v106v2 map[uint8]bool
 		v106v1 = v
@@ -6072,7 +6072,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v106v3, v106v4, t, "equal-map-v106-p-len")
 	}
 
-	for _, v := range []map[uint16]interface{}{nil, map[uint16]interface{}{}, map[uint16]interface{}{44: nil, 33: "string-is-an-interface-2"}} {
+	for _, v := range []map[uint16]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v109: %v\n", v)
 		var v109v1, v109v2 map[uint16]interface{}
 		v109v1 = v
@@ -6116,7 +6116,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v109v3, v109v4, t, "equal-map-v109-p-len")
 	}
 
-	for _, v := range []map[uint16]string{nil, map[uint16]string{}, map[uint16]string{44: "", 33: "some-string-2"}} {
+	for _, v := range []map[uint16]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v110: %v\n", v)
 		var v110v1, v110v2 map[uint16]string
 		v110v1 = v
@@ -6160,7 +6160,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v110v3, v110v4, t, "equal-map-v110-p-len")
 	}
 
-	for _, v := range []map[uint16]uint{nil, map[uint16]uint{}, map[uint16]uint{44: 0, 33: 44}} {
+	for _, v := range []map[uint16]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v111: %v\n", v)
 		var v111v1, v111v2 map[uint16]uint
 		v111v1 = v
@@ -6204,7 +6204,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v111v3, v111v4, t, "equal-map-v111-p-len")
 	}
 
-	for _, v := range []map[uint16]uint8{nil, map[uint16]uint8{}, map[uint16]uint8{33: 0, 44: 33}} {
+	for _, v := range []map[uint16]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v112: %v\n", v)
 		var v112v1, v112v2 map[uint16]uint8
 		v112v1 = v
@@ -6248,7 +6248,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v112v3, v112v4, t, "equal-map-v112-p-len")
 	}
 
-	for _, v := range []map[uint16]uint16{nil, map[uint16]uint16{}, map[uint16]uint16{44: 0, 33: 44}} {
+	for _, v := range []map[uint16]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v113: %v\n", v)
 		var v113v1, v113v2 map[uint16]uint16
 		v113v1 = v
@@ -6292,7 +6292,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v113v3, v113v4, t, "equal-map-v113-p-len")
 	}
 
-	for _, v := range []map[uint16]uint32{nil, map[uint16]uint32{}, map[uint16]uint32{33: 0, 44: 33}} {
+	for _, v := range []map[uint16]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v114: %v\n", v)
 		var v114v1, v114v2 map[uint16]uint32
 		v114v1 = v
@@ -6336,7 +6336,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v114v3, v114v4, t, "equal-map-v114-p-len")
 	}
 
-	for _, v := range []map[uint16]uint64{nil, map[uint16]uint64{}, map[uint16]uint64{44: 0, 33: 44}} {
+	for _, v := range []map[uint16]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v115: %v\n", v)
 		var v115v1, v115v2 map[uint16]uint64
 		v115v1 = v
@@ -6380,7 +6380,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v115v3, v115v4, t, "equal-map-v115-p-len")
 	}
 
-	for _, v := range []map[uint16]uintptr{nil, map[uint16]uintptr{}, map[uint16]uintptr{33: 0, 44: 33}} {
+	for _, v := range []map[uint16]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v116: %v\n", v)
 		var v116v1, v116v2 map[uint16]uintptr
 		v116v1 = v
@@ -6424,7 +6424,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v116v3, v116v4, t, "equal-map-v116-p-len")
 	}
 
-	for _, v := range []map[uint16]int{nil, map[uint16]int{}, map[uint16]int{44: 0, 33: 44}} {
+	for _, v := range []map[uint16]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v117: %v\n", v)
 		var v117v1, v117v2 map[uint16]int
 		v117v1 = v
@@ -6468,7 +6468,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v117v3, v117v4, t, "equal-map-v117-p-len")
 	}
 
-	for _, v := range []map[uint16]int8{nil, map[uint16]int8{}, map[uint16]int8{33: 0, 44: 33}} {
+	for _, v := range []map[uint16]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v118: %v\n", v)
 		var v118v1, v118v2 map[uint16]int8
 		v118v1 = v
@@ -6512,7 +6512,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v118v3, v118v4, t, "equal-map-v118-p-len")
 	}
 
-	for _, v := range []map[uint16]int16{nil, map[uint16]int16{}, map[uint16]int16{44: 0, 33: 44}} {
+	for _, v := range []map[uint16]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v119: %v\n", v)
 		var v119v1, v119v2 map[uint16]int16
 		v119v1 = v
@@ -6556,7 +6556,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v119v3, v119v4, t, "equal-map-v119-p-len")
 	}
 
-	for _, v := range []map[uint16]int32{nil, map[uint16]int32{}, map[uint16]int32{33: 0, 44: 33}} {
+	for _, v := range []map[uint16]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v120: %v\n", v)
 		var v120v1, v120v2 map[uint16]int32
 		v120v1 = v
@@ -6600,7 +6600,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v120v3, v120v4, t, "equal-map-v120-p-len")
 	}
 
-	for _, v := range []map[uint16]int64{nil, map[uint16]int64{}, map[uint16]int64{44: 0, 33: 44}} {
+	for _, v := range []map[uint16]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v121: %v\n", v)
 		var v121v1, v121v2 map[uint16]int64
 		v121v1 = v
@@ -6644,7 +6644,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v121v3, v121v4, t, "equal-map-v121-p-len")
 	}
 
-	for _, v := range []map[uint16]float32{nil, map[uint16]float32{}, map[uint16]float32{33: 0, 44: 22.2}} {
+	for _, v := range []map[uint16]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v122: %v\n", v)
 		var v122v1, v122v2 map[uint16]float32
 		v122v1 = v
@@ -6688,7 +6688,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v122v3, v122v4, t, "equal-map-v122-p-len")
 	}
 
-	for _, v := range []map[uint16]float64{nil, map[uint16]float64{}, map[uint16]float64{33: 0, 44: 11.1}} {
+	for _, v := range []map[uint16]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v123: %v\n", v)
 		var v123v1, v123v2 map[uint16]float64
 		v123v1 = v
@@ -6732,7 +6732,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v123v3, v123v4, t, "equal-map-v123-p-len")
 	}
 
-	for _, v := range []map[uint16]bool{nil, map[uint16]bool{}, map[uint16]bool{33: false, 44: true}} {
+	for _, v := range []map[uint16]bool{nil, {}, {33: false, 44: true}} {
 		// fmt.Printf(">>>> running mammoth map v124: %v\n", v)
 		var v124v1, v124v2 map[uint16]bool
 		v124v1 = v
@@ -6776,7 +6776,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v124v3, v124v4, t, "equal-map-v124-p-len")
 	}
 
-	for _, v := range []map[uint32]interface{}{nil, map[uint32]interface{}{}, map[uint32]interface{}{33: nil, 44: "string-is-an-interface"}} {
+	for _, v := range []map[uint32]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v127: %v\n", v)
 		var v127v1, v127v2 map[uint32]interface{}
 		v127v1 = v
@@ -6820,7 +6820,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v127v3, v127v4, t, "equal-map-v127-p-len")
 	}
 
-	for _, v := range []map[uint32]string{nil, map[uint32]string{}, map[uint32]string{33: "", 44: "some-string"}} {
+	for _, v := range []map[uint32]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v128: %v\n", v)
 		var v128v1, v128v2 map[uint32]string
 		v128v1 = v
@@ -6864,7 +6864,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v128v3, v128v4, t, "equal-map-v128-p-len")
 	}
 
-	for _, v := range []map[uint32]uint{nil, map[uint32]uint{}, map[uint32]uint{33: 0, 44: 33}} {
+	for _, v := range []map[uint32]uint{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v129: %v\n", v)
 		var v129v1, v129v2 map[uint32]uint
 		v129v1 = v
@@ -6908,7 +6908,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v129v3, v129v4, t, "equal-map-v129-p-len")
 	}
 
-	for _, v := range []map[uint32]uint8{nil, map[uint32]uint8{}, map[uint32]uint8{44: 0, 33: 44}} {
+	for _, v := range []map[uint32]uint8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v130: %v\n", v)
 		var v130v1, v130v2 map[uint32]uint8
 		v130v1 = v
@@ -6952,7 +6952,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v130v3, v130v4, t, "equal-map-v130-p-len")
 	}
 
-	for _, v := range []map[uint32]uint16{nil, map[uint32]uint16{}, map[uint32]uint16{33: 0, 44: 33}} {
+	for _, v := range []map[uint32]uint16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v131: %v\n", v)
 		var v131v1, v131v2 map[uint32]uint16
 		v131v1 = v
@@ -6996,7 +6996,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v131v3, v131v4, t, "equal-map-v131-p-len")
 	}
 
-	for _, v := range []map[uint32]uint32{nil, map[uint32]uint32{}, map[uint32]uint32{44: 0, 33: 44}} {
+	for _, v := range []map[uint32]uint32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v132: %v\n", v)
 		var v132v1, v132v2 map[uint32]uint32
 		v132v1 = v
@@ -7040,7 +7040,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v132v3, v132v4, t, "equal-map-v132-p-len")
 	}
 
-	for _, v := range []map[uint32]uint64{nil, map[uint32]uint64{}, map[uint32]uint64{33: 0, 44: 33}} {
+	for _, v := range []map[uint32]uint64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v133: %v\n", v)
 		var v133v1, v133v2 map[uint32]uint64
 		v133v1 = v
@@ -7084,7 +7084,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v133v3, v133v4, t, "equal-map-v133-p-len")
 	}
 
-	for _, v := range []map[uint32]uintptr{nil, map[uint32]uintptr{}, map[uint32]uintptr{44: 0, 33: 44}} {
+	for _, v := range []map[uint32]uintptr{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v134: %v\n", v)
 		var v134v1, v134v2 map[uint32]uintptr
 		v134v1 = v
@@ -7128,7 +7128,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v134v3, v134v4, t, "equal-map-v134-p-len")
 	}
 
-	for _, v := range []map[uint32]int{nil, map[uint32]int{}, map[uint32]int{33: 0, 44: 33}} {
+	for _, v := range []map[uint32]int{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v135: %v\n", v)
 		var v135v1, v135v2 map[uint32]int
 		v135v1 = v
@@ -7172,7 +7172,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v135v3, v135v4, t, "equal-map-v135-p-len")
 	}
 
-	for _, v := range []map[uint32]int8{nil, map[uint32]int8{}, map[uint32]int8{44: 0, 33: 44}} {
+	for _, v := range []map[uint32]int8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v136: %v\n", v)
 		var v136v1, v136v2 map[uint32]int8
 		v136v1 = v
@@ -7216,7 +7216,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v136v3, v136v4, t, "equal-map-v136-p-len")
 	}
 
-	for _, v := range []map[uint32]int16{nil, map[uint32]int16{}, map[uint32]int16{33: 0, 44: 33}} {
+	for _, v := range []map[uint32]int16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v137: %v\n", v)
 		var v137v1, v137v2 map[uint32]int16
 		v137v1 = v
@@ -7260,7 +7260,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v137v3, v137v4, t, "equal-map-v137-p-len")
 	}
 
-	for _, v := range []map[uint32]int32{nil, map[uint32]int32{}, map[uint32]int32{44: 0, 33: 44}} {
+	for _, v := range []map[uint32]int32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v138: %v\n", v)
 		var v138v1, v138v2 map[uint32]int32
 		v138v1 = v
@@ -7304,7 +7304,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v138v3, v138v4, t, "equal-map-v138-p-len")
 	}
 
-	for _, v := range []map[uint32]int64{nil, map[uint32]int64{}, map[uint32]int64{33: 0, 44: 33}} {
+	for _, v := range []map[uint32]int64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v139: %v\n", v)
 		var v139v1, v139v2 map[uint32]int64
 		v139v1 = v
@@ -7348,7 +7348,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v139v3, v139v4, t, "equal-map-v139-p-len")
 	}
 
-	for _, v := range []map[uint32]float32{nil, map[uint32]float32{}, map[uint32]float32{44: 0, 33: 22.2}} {
+	for _, v := range []map[uint32]float32{nil, {}, {44: 0, 33: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v140: %v\n", v)
 		var v140v1, v140v2 map[uint32]float32
 		v140v1 = v
@@ -7392,7 +7392,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v140v3, v140v4, t, "equal-map-v140-p-len")
 	}
 
-	for _, v := range []map[uint32]float64{nil, map[uint32]float64{}, map[uint32]float64{44: 0, 33: 11.1}} {
+	for _, v := range []map[uint32]float64{nil, {}, {44: 0, 33: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v141: %v\n", v)
 		var v141v1, v141v2 map[uint32]float64
 		v141v1 = v
@@ -7436,7 +7436,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v141v3, v141v4, t, "equal-map-v141-p-len")
 	}
 
-	for _, v := range []map[uint32]bool{nil, map[uint32]bool{}, map[uint32]bool{44: false, 33: true}} {
+	for _, v := range []map[uint32]bool{nil, {}, {44: false, 33: true}} {
 		// fmt.Printf(">>>> running mammoth map v142: %v\n", v)
 		var v142v1, v142v2 map[uint32]bool
 		v142v1 = v
@@ -7480,7 +7480,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v142v3, v142v4, t, "equal-map-v142-p-len")
 	}
 
-	for _, v := range []map[uint64]interface{}{nil, map[uint64]interface{}{}, map[uint64]interface{}{44: nil, 33: "string-is-an-interface-2"}} {
+	for _, v := range []map[uint64]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v145: %v\n", v)
 		var v145v1, v145v2 map[uint64]interface{}
 		v145v1 = v
@@ -7524,7 +7524,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v145v3, v145v4, t, "equal-map-v145-p-len")
 	}
 
-	for _, v := range []map[uint64]string{nil, map[uint64]string{}, map[uint64]string{44: "", 33: "some-string-2"}} {
+	for _, v := range []map[uint64]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v146: %v\n", v)
 		var v146v1, v146v2 map[uint64]string
 		v146v1 = v
@@ -7568,7 +7568,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v146v3, v146v4, t, "equal-map-v146-p-len")
 	}
 
-	for _, v := range []map[uint64]uint{nil, map[uint64]uint{}, map[uint64]uint{44: 0, 33: 44}} {
+	for _, v := range []map[uint64]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v147: %v\n", v)
 		var v147v1, v147v2 map[uint64]uint
 		v147v1 = v
@@ -7612,7 +7612,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v147v3, v147v4, t, "equal-map-v147-p-len")
 	}
 
-	for _, v := range []map[uint64]uint8{nil, map[uint64]uint8{}, map[uint64]uint8{33: 0, 44: 33}} {
+	for _, v := range []map[uint64]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v148: %v\n", v)
 		var v148v1, v148v2 map[uint64]uint8
 		v148v1 = v
@@ -7656,7 +7656,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v148v3, v148v4, t, "equal-map-v148-p-len")
 	}
 
-	for _, v := range []map[uint64]uint16{nil, map[uint64]uint16{}, map[uint64]uint16{44: 0, 33: 44}} {
+	for _, v := range []map[uint64]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v149: %v\n", v)
 		var v149v1, v149v2 map[uint64]uint16
 		v149v1 = v
@@ -7700,7 +7700,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v149v3, v149v4, t, "equal-map-v149-p-len")
 	}
 
-	for _, v := range []map[uint64]uint32{nil, map[uint64]uint32{}, map[uint64]uint32{33: 0, 44: 33}} {
+	for _, v := range []map[uint64]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v150: %v\n", v)
 		var v150v1, v150v2 map[uint64]uint32
 		v150v1 = v
@@ -7744,7 +7744,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v150v3, v150v4, t, "equal-map-v150-p-len")
 	}
 
-	for _, v := range []map[uint64]uint64{nil, map[uint64]uint64{}, map[uint64]uint64{44: 0, 33: 44}} {
+	for _, v := range []map[uint64]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v151: %v\n", v)
 		var v151v1, v151v2 map[uint64]uint64
 		v151v1 = v
@@ -7788,7 +7788,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v151v3, v151v4, t, "equal-map-v151-p-len")
 	}
 
-	for _, v := range []map[uint64]uintptr{nil, map[uint64]uintptr{}, map[uint64]uintptr{33: 0, 44: 33}} {
+	for _, v := range []map[uint64]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v152: %v\n", v)
 		var v152v1, v152v2 map[uint64]uintptr
 		v152v1 = v
@@ -7832,7 +7832,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v152v3, v152v4, t, "equal-map-v152-p-len")
 	}
 
-	for _, v := range []map[uint64]int{nil, map[uint64]int{}, map[uint64]int{44: 0, 33: 44}} {
+	for _, v := range []map[uint64]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v153: %v\n", v)
 		var v153v1, v153v2 map[uint64]int
 		v153v1 = v
@@ -7876,7 +7876,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v153v3, v153v4, t, "equal-map-v153-p-len")
 	}
 
-	for _, v := range []map[uint64]int8{nil, map[uint64]int8{}, map[uint64]int8{33: 0, 44: 33}} {
+	for _, v := range []map[uint64]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v154: %v\n", v)
 		var v154v1, v154v2 map[uint64]int8
 		v154v1 = v
@@ -7920,7 +7920,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v154v3, v154v4, t, "equal-map-v154-p-len")
 	}
 
-	for _, v := range []map[uint64]int16{nil, map[uint64]int16{}, map[uint64]int16{44: 0, 33: 44}} {
+	for _, v := range []map[uint64]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v155: %v\n", v)
 		var v155v1, v155v2 map[uint64]int16
 		v155v1 = v
@@ -7964,7 +7964,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v155v3, v155v4, t, "equal-map-v155-p-len")
 	}
 
-	for _, v := range []map[uint64]int32{nil, map[uint64]int32{}, map[uint64]int32{33: 0, 44: 33}} {
+	for _, v := range []map[uint64]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v156: %v\n", v)
 		var v156v1, v156v2 map[uint64]int32
 		v156v1 = v
@@ -8008,7 +8008,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v156v3, v156v4, t, "equal-map-v156-p-len")
 	}
 
-	for _, v := range []map[uint64]int64{nil, map[uint64]int64{}, map[uint64]int64{44: 0, 33: 44}} {
+	for _, v := range []map[uint64]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v157: %v\n", v)
 		var v157v1, v157v2 map[uint64]int64
 		v157v1 = v
@@ -8052,7 +8052,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v157v3, v157v4, t, "equal-map-v157-p-len")
 	}
 
-	for _, v := range []map[uint64]float32{nil, map[uint64]float32{}, map[uint64]float32{33: 0, 44: 22.2}} {
+	for _, v := range []map[uint64]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v158: %v\n", v)
 		var v158v1, v158v2 map[uint64]float32
 		v158v1 = v
@@ -8096,7 +8096,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v158v3, v158v4, t, "equal-map-v158-p-len")
 	}
 
-	for _, v := range []map[uint64]float64{nil, map[uint64]float64{}, map[uint64]float64{33: 0, 44: 11.1}} {
+	for _, v := range []map[uint64]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v159: %v\n", v)
 		var v159v1, v159v2 map[uint64]float64
 		v159v1 = v
@@ -8140,7 +8140,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v159v3, v159v4, t, "equal-map-v159-p-len")
 	}
 
-	for _, v := range []map[uint64]bool{nil, map[uint64]bool{}, map[uint64]bool{33: false, 44: true}} {
+	for _, v := range []map[uint64]bool{nil, {}, {33: false, 44: true}} {
 		// fmt.Printf(">>>> running mammoth map v160: %v\n", v)
 		var v160v1, v160v2 map[uint64]bool
 		v160v1 = v
@@ -8184,7 +8184,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v160v3, v160v4, t, "equal-map-v160-p-len")
 	}
 
-	for _, v := range []map[uintptr]interface{}{nil, map[uintptr]interface{}{}, map[uintptr]interface{}{33: nil, 44: "string-is-an-interface"}} {
+	for _, v := range []map[uintptr]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v163: %v\n", v)
 		var v163v1, v163v2 map[uintptr]interface{}
 		v163v1 = v
@@ -8228,7 +8228,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v163v3, v163v4, t, "equal-map-v163-p-len")
 	}
 
-	for _, v := range []map[uintptr]string{nil, map[uintptr]string{}, map[uintptr]string{33: "", 44: "some-string"}} {
+	for _, v := range []map[uintptr]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v164: %v\n", v)
 		var v164v1, v164v2 map[uintptr]string
 		v164v1 = v
@@ -8272,7 +8272,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v164v3, v164v4, t, "equal-map-v164-p-len")
 	}
 
-	for _, v := range []map[uintptr]uint{nil, map[uintptr]uint{}, map[uintptr]uint{33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]uint{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v165: %v\n", v)
 		var v165v1, v165v2 map[uintptr]uint
 		v165v1 = v
@@ -8316,7 +8316,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v165v3, v165v4, t, "equal-map-v165-p-len")
 	}
 
-	for _, v := range []map[uintptr]uint8{nil, map[uintptr]uint8{}, map[uintptr]uint8{44: 0, 33: 44}} {
+	for _, v := range []map[uintptr]uint8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v166: %v\n", v)
 		var v166v1, v166v2 map[uintptr]uint8
 		v166v1 = v
@@ -8360,7 +8360,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v166v3, v166v4, t, "equal-map-v166-p-len")
 	}
 
-	for _, v := range []map[uintptr]uint16{nil, map[uintptr]uint16{}, map[uintptr]uint16{33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]uint16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v167: %v\n", v)
 		var v167v1, v167v2 map[uintptr]uint16
 		v167v1 = v
@@ -8404,7 +8404,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v167v3, v167v4, t, "equal-map-v167-p-len")
 	}
 
-	for _, v := range []map[uintptr]uint32{nil, map[uintptr]uint32{}, map[uintptr]uint32{44: 0, 33: 44}} {
+	for _, v := range []map[uintptr]uint32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v168: %v\n", v)
 		var v168v1, v168v2 map[uintptr]uint32
 		v168v1 = v
@@ -8448,7 +8448,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v168v3, v168v4, t, "equal-map-v168-p-len")
 	}
 
-	for _, v := range []map[uintptr]uint64{nil, map[uintptr]uint64{}, map[uintptr]uint64{33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]uint64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v169: %v\n", v)
 		var v169v1, v169v2 map[uintptr]uint64
 		v169v1 = v
@@ -8492,7 +8492,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v169v3, v169v4, t, "equal-map-v169-p-len")
 	}
 
-	for _, v := range []map[uintptr]uintptr{nil, map[uintptr]uintptr{}, map[uintptr]uintptr{44: 0, 33: 44}} {
+	for _, v := range []map[uintptr]uintptr{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v170: %v\n", v)
 		var v170v1, v170v2 map[uintptr]uintptr
 		v170v1 = v
@@ -8536,7 +8536,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v170v3, v170v4, t, "equal-map-v170-p-len")
 	}
 
-	for _, v := range []map[uintptr]int{nil, map[uintptr]int{}, map[uintptr]int{33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]int{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v171: %v\n", v)
 		var v171v1, v171v2 map[uintptr]int
 		v171v1 = v
@@ -8580,7 +8580,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v171v3, v171v4, t, "equal-map-v171-p-len")
 	}
 
-	for _, v := range []map[uintptr]int8{nil, map[uintptr]int8{}, map[uintptr]int8{44: 0, 33: 44}} {
+	for _, v := range []map[uintptr]int8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v172: %v\n", v)
 		var v172v1, v172v2 map[uintptr]int8
 		v172v1 = v
@@ -8624,7 +8624,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v172v3, v172v4, t, "equal-map-v172-p-len")
 	}
 
-	for _, v := range []map[uintptr]int16{nil, map[uintptr]int16{}, map[uintptr]int16{33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]int16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v173: %v\n", v)
 		var v173v1, v173v2 map[uintptr]int16
 		v173v1 = v
@@ -8668,7 +8668,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v173v3, v173v4, t, "equal-map-v173-p-len")
 	}
 
-	for _, v := range []map[uintptr]int32{nil, map[uintptr]int32{}, map[uintptr]int32{44: 0, 33: 44}} {
+	for _, v := range []map[uintptr]int32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v174: %v\n", v)
 		var v174v1, v174v2 map[uintptr]int32
 		v174v1 = v
@@ -8712,7 +8712,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v174v3, v174v4, t, "equal-map-v174-p-len")
 	}
 
-	for _, v := range []map[uintptr]int64{nil, map[uintptr]int64{}, map[uintptr]int64{33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]int64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v175: %v\n", v)
 		var v175v1, v175v2 map[uintptr]int64
 		v175v1 = v
@@ -8756,7 +8756,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v175v3, v175v4, t, "equal-map-v175-p-len")
 	}
 
-	for _, v := range []map[uintptr]float32{nil, map[uintptr]float32{}, map[uintptr]float32{44: 0, 33: 22.2}} {
+	for _, v := range []map[uintptr]float32{nil, {}, {44: 0, 33: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v176: %v\n", v)
 		var v176v1, v176v2 map[uintptr]float32
 		v176v1 = v
@@ -8800,7 +8800,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v176v3, v176v4, t, "equal-map-v176-p-len")
 	}
 
-	for _, v := range []map[uintptr]float64{nil, map[uintptr]float64{}, map[uintptr]float64{44: 0, 33: 11.1}} {
+	for _, v := range []map[uintptr]float64{nil, {}, {44: 0, 33: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v177: %v\n", v)
 		var v177v1, v177v2 map[uintptr]float64
 		v177v1 = v
@@ -8844,7 +8844,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v177v3, v177v4, t, "equal-map-v177-p-len")
 	}
 
-	for _, v := range []map[uintptr]bool{nil, map[uintptr]bool{}, map[uintptr]bool{44: false, 33: true}} {
+	for _, v := range []map[uintptr]bool{nil, {}, {44: false, 33: true}} {
 		// fmt.Printf(">>>> running mammoth map v178: %v\n", v)
 		var v178v1, v178v2 map[uintptr]bool
 		v178v1 = v
@@ -8888,7 +8888,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v178v3, v178v4, t, "equal-map-v178-p-len")
 	}
 
-	for _, v := range []map[int]interface{}{nil, map[int]interface{}{}, map[int]interface{}{44: nil, 33: "string-is-an-interface-2"}} {
+	for _, v := range []map[int]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v181: %v\n", v)
 		var v181v1, v181v2 map[int]interface{}
 		v181v1 = v
@@ -8932,7 +8932,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v181v3, v181v4, t, "equal-map-v181-p-len")
 	}
 
-	for _, v := range []map[int]string{nil, map[int]string{}, map[int]string{44: "", 33: "some-string-2"}} {
+	for _, v := range []map[int]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v182: %v\n", v)
 		var v182v1, v182v2 map[int]string
 		v182v1 = v
@@ -8976,7 +8976,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v182v3, v182v4, t, "equal-map-v182-p-len")
 	}
 
-	for _, v := range []map[int]uint{nil, map[int]uint{}, map[int]uint{44: 0, 33: 44}} {
+	for _, v := range []map[int]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v183: %v\n", v)
 		var v183v1, v183v2 map[int]uint
 		v183v1 = v
@@ -9020,7 +9020,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v183v3, v183v4, t, "equal-map-v183-p-len")
 	}
 
-	for _, v := range []map[int]uint8{nil, map[int]uint8{}, map[int]uint8{33: 0, 44: 33}} {
+	for _, v := range []map[int]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v184: %v\n", v)
 		var v184v1, v184v2 map[int]uint8
 		v184v1 = v
@@ -9064,7 +9064,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v184v3, v184v4, t, "equal-map-v184-p-len")
 	}
 
-	for _, v := range []map[int]uint16{nil, map[int]uint16{}, map[int]uint16{44: 0, 33: 44}} {
+	for _, v := range []map[int]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v185: %v\n", v)
 		var v185v1, v185v2 map[int]uint16
 		v185v1 = v
@@ -9108,7 +9108,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v185v3, v185v4, t, "equal-map-v185-p-len")
 	}
 
-	for _, v := range []map[int]uint32{nil, map[int]uint32{}, map[int]uint32{33: 0, 44: 33}} {
+	for _, v := range []map[int]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v186: %v\n", v)
 		var v186v1, v186v2 map[int]uint32
 		v186v1 = v
@@ -9152,7 +9152,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v186v3, v186v4, t, "equal-map-v186-p-len")
 	}
 
-	for _, v := range []map[int]uint64{nil, map[int]uint64{}, map[int]uint64{44: 0, 33: 44}} {
+	for _, v := range []map[int]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v187: %v\n", v)
 		var v187v1, v187v2 map[int]uint64
 		v187v1 = v
@@ -9196,7 +9196,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v187v3, v187v4, t, "equal-map-v187-p-len")
 	}
 
-	for _, v := range []map[int]uintptr{nil, map[int]uintptr{}, map[int]uintptr{33: 0, 44: 33}} {
+	for _, v := range []map[int]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v188: %v\n", v)
 		var v188v1, v188v2 map[int]uintptr
 		v188v1 = v
@@ -9240,7 +9240,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v188v3, v188v4, t, "equal-map-v188-p-len")
 	}
 
-	for _, v := range []map[int]int{nil, map[int]int{}, map[int]int{44: 0, 33: 44}} {
+	for _, v := range []map[int]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v189: %v\n", v)
 		var v189v1, v189v2 map[int]int
 		v189v1 = v
@@ -9284,7 +9284,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v189v3, v189v4, t, "equal-map-v189-p-len")
 	}
 
-	for _, v := range []map[int]int8{nil, map[int]int8{}, map[int]int8{33: 0, 44: 33}} {
+	for _, v := range []map[int]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v190: %v\n", v)
 		var v190v1, v190v2 map[int]int8
 		v190v1 = v
@@ -9328,7 +9328,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v190v3, v190v4, t, "equal-map-v190-p-len")
 	}
 
-	for _, v := range []map[int]int16{nil, map[int]int16{}, map[int]int16{44: 0, 33: 44}} {
+	for _, v := range []map[int]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v191: %v\n", v)
 		var v191v1, v191v2 map[int]int16
 		v191v1 = v
@@ -9372,7 +9372,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v191v3, v191v4, t, "equal-map-v191-p-len")
 	}
 
-	for _, v := range []map[int]int32{nil, map[int]int32{}, map[int]int32{33: 0, 44: 33}} {
+	for _, v := range []map[int]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v192: %v\n", v)
 		var v192v1, v192v2 map[int]int32
 		v192v1 = v
@@ -9416,7 +9416,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v192v3, v192v4, t, "equal-map-v192-p-len")
 	}
 
-	for _, v := range []map[int]int64{nil, map[int]int64{}, map[int]int64{44: 0, 33: 44}} {
+	for _, v := range []map[int]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v193: %v\n", v)
 		var v193v1, v193v2 map[int]int64
 		v193v1 = v
@@ -9460,7 +9460,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v193v3, v193v4, t, "equal-map-v193-p-len")
 	}
 
-	for _, v := range []map[int]float32{nil, map[int]float32{}, map[int]float32{33: 0, 44: 22.2}} {
+	for _, v := range []map[int]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v194: %v\n", v)
 		var v194v1, v194v2 map[int]float32
 		v194v1 = v
@@ -9504,7 +9504,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v194v3, v194v4, t, "equal-map-v194-p-len")
 	}
 
-	for _, v := range []map[int]float64{nil, map[int]float64{}, map[int]float64{33: 0, 44: 11.1}} {
+	for _, v := range []map[int]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v195: %v\n", v)
 		var v195v1, v195v2 map[int]float64
 		v195v1 = v
@@ -9548,7 +9548,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v195v3, v195v4, t, "equal-map-v195-p-len")
 	}
 
-	for _, v := range []map[int]bool{nil, map[int]bool{}, map[int]bool{33: false, 44: true}} {
+	for _, v := range []map[int]bool{nil, {}, {33: false, 44: true}} {
 		// fmt.Printf(">>>> running mammoth map v196: %v\n", v)
 		var v196v1, v196v2 map[int]bool
 		v196v1 = v
@@ -9592,7 +9592,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v196v3, v196v4, t, "equal-map-v196-p-len")
 	}
 
-	for _, v := range []map[int8]interface{}{nil, map[int8]interface{}{}, map[int8]interface{}{33: nil, 44: "string-is-an-interface"}} {
+	for _, v := range []map[int8]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v199: %v\n", v)
 		var v199v1, v199v2 map[int8]interface{}
 		v199v1 = v
@@ -9636,7 +9636,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v199v3, v199v4, t, "equal-map-v199-p-len")
 	}
 
-	for _, v := range []map[int8]string{nil, map[int8]string{}, map[int8]string{33: "", 44: "some-string"}} {
+	for _, v := range []map[int8]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v200: %v\n", v)
 		var v200v1, v200v2 map[int8]string
 		v200v1 = v
@@ -9680,7 +9680,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v200v3, v200v4, t, "equal-map-v200-p-len")
 	}
 
-	for _, v := range []map[int8]uint{nil, map[int8]uint{}, map[int8]uint{33: 0, 44: 33}} {
+	for _, v := range []map[int8]uint{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v201: %v\n", v)
 		var v201v1, v201v2 map[int8]uint
 		v201v1 = v
@@ -9724,7 +9724,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v201v3, v201v4, t, "equal-map-v201-p-len")
 	}
 
-	for _, v := range []map[int8]uint8{nil, map[int8]uint8{}, map[int8]uint8{44: 0, 33: 44}} {
+	for _, v := range []map[int8]uint8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v202: %v\n", v)
 		var v202v1, v202v2 map[int8]uint8
 		v202v1 = v
@@ -9768,7 +9768,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v202v3, v202v4, t, "equal-map-v202-p-len")
 	}
 
-	for _, v := range []map[int8]uint16{nil, map[int8]uint16{}, map[int8]uint16{33: 0, 44: 33}} {
+	for _, v := range []map[int8]uint16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v203: %v\n", v)
 		var v203v1, v203v2 map[int8]uint16
 		v203v1 = v
@@ -9812,7 +9812,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v203v3, v203v4, t, "equal-map-v203-p-len")
 	}
 
-	for _, v := range []map[int8]uint32{nil, map[int8]uint32{}, map[int8]uint32{44: 0, 33: 44}} {
+	for _, v := range []map[int8]uint32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v204: %v\n", v)
 		var v204v1, v204v2 map[int8]uint32
 		v204v1 = v
@@ -9856,7 +9856,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v204v3, v204v4, t, "equal-map-v204-p-len")
 	}
 
-	for _, v := range []map[int8]uint64{nil, map[int8]uint64{}, map[int8]uint64{33: 0, 44: 33}} {
+	for _, v := range []map[int8]uint64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v205: %v\n", v)
 		var v205v1, v205v2 map[int8]uint64
 		v205v1 = v
@@ -9900,7 +9900,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v205v3, v205v4, t, "equal-map-v205-p-len")
 	}
 
-	for _, v := range []map[int8]uintptr{nil, map[int8]uintptr{}, map[int8]uintptr{44: 0, 33: 44}} {
+	for _, v := range []map[int8]uintptr{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v206: %v\n", v)
 		var v206v1, v206v2 map[int8]uintptr
 		v206v1 = v
@@ -9944,7 +9944,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v206v3, v206v4, t, "equal-map-v206-p-len")
 	}
 
-	for _, v := range []map[int8]int{nil, map[int8]int{}, map[int8]int{33: 0, 44: 33}} {
+	for _, v := range []map[int8]int{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v207: %v\n", v)
 		var v207v1, v207v2 map[int8]int
 		v207v1 = v
@@ -9988,7 +9988,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v207v3, v207v4, t, "equal-map-v207-p-len")
 	}
 
-	for _, v := range []map[int8]int8{nil, map[int8]int8{}, map[int8]int8{44: 0, 33: 44}} {
+	for _, v := range []map[int8]int8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v208: %v\n", v)
 		var v208v1, v208v2 map[int8]int8
 		v208v1 = v
@@ -10032,7 +10032,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v208v3, v208v4, t, "equal-map-v208-p-len")
 	}
 
-	for _, v := range []map[int8]int16{nil, map[int8]int16{}, map[int8]int16{33: 0, 44: 33}} {
+	for _, v := range []map[int8]int16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v209: %v\n", v)
 		var v209v1, v209v2 map[int8]int16
 		v209v1 = v
@@ -10076,7 +10076,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v209v3, v209v4, t, "equal-map-v209-p-len")
 	}
 
-	for _, v := range []map[int8]int32{nil, map[int8]int32{}, map[int8]int32{44: 0, 33: 44}} {
+	for _, v := range []map[int8]int32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v210: %v\n", v)
 		var v210v1, v210v2 map[int8]int32
 		v210v1 = v
@@ -10120,7 +10120,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v210v3, v210v4, t, "equal-map-v210-p-len")
 	}
 
-	for _, v := range []map[int8]int64{nil, map[int8]int64{}, map[int8]int64{33: 0, 44: 33}} {
+	for _, v := range []map[int8]int64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v211: %v\n", v)
 		var v211v1, v211v2 map[int8]int64
 		v211v1 = v
@@ -10164,7 +10164,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v211v3, v211v4, t, "equal-map-v211-p-len")
 	}
 
-	for _, v := range []map[int8]float32{nil, map[int8]float32{}, map[int8]float32{44: 0, 33: 22.2}} {
+	for _, v := range []map[int8]float32{nil, {}, {44: 0, 33: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v212: %v\n", v)
 		var v212v1, v212v2 map[int8]float32
 		v212v1 = v
@@ -10208,7 +10208,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v212v3, v212v4, t, "equal-map-v212-p-len")
 	}
 
-	for _, v := range []map[int8]float64{nil, map[int8]float64{}, map[int8]float64{44: 0, 33: 11.1}} {
+	for _, v := range []map[int8]float64{nil, {}, {44: 0, 33: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v213: %v\n", v)
 		var v213v1, v213v2 map[int8]float64
 		v213v1 = v
@@ -10252,7 +10252,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v213v3, v213v4, t, "equal-map-v213-p-len")
 	}
 
-	for _, v := range []map[int8]bool{nil, map[int8]bool{}, map[int8]bool{44: false, 33: true}} {
+	for _, v := range []map[int8]bool{nil, {}, {44: false, 33: true}} {
 		// fmt.Printf(">>>> running mammoth map v214: %v\n", v)
 		var v214v1, v214v2 map[int8]bool
 		v214v1 = v
@@ -10296,7 +10296,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v214v3, v214v4, t, "equal-map-v214-p-len")
 	}
 
-	for _, v := range []map[int16]interface{}{nil, map[int16]interface{}{}, map[int16]interface{}{44: nil, 33: "string-is-an-interface-2"}} {
+	for _, v := range []map[int16]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v217: %v\n", v)
 		var v217v1, v217v2 map[int16]interface{}
 		v217v1 = v
@@ -10340,7 +10340,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v217v3, v217v4, t, "equal-map-v217-p-len")
 	}
 
-	for _, v := range []map[int16]string{nil, map[int16]string{}, map[int16]string{44: "", 33: "some-string-2"}} {
+	for _, v := range []map[int16]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v218: %v\n", v)
 		var v218v1, v218v2 map[int16]string
 		v218v1 = v
@@ -10384,7 +10384,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v218v3, v218v4, t, "equal-map-v218-p-len")
 	}
 
-	for _, v := range []map[int16]uint{nil, map[int16]uint{}, map[int16]uint{44: 0, 33: 44}} {
+	for _, v := range []map[int16]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v219: %v\n", v)
 		var v219v1, v219v2 map[int16]uint
 		v219v1 = v
@@ -10428,7 +10428,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v219v3, v219v4, t, "equal-map-v219-p-len")
 	}
 
-	for _, v := range []map[int16]uint8{nil, map[int16]uint8{}, map[int16]uint8{33: 0, 44: 33}} {
+	for _, v := range []map[int16]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v220: %v\n", v)
 		var v220v1, v220v2 map[int16]uint8
 		v220v1 = v
@@ -10472,7 +10472,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v220v3, v220v4, t, "equal-map-v220-p-len")
 	}
 
-	for _, v := range []map[int16]uint16{nil, map[int16]uint16{}, map[int16]uint16{44: 0, 33: 44}} {
+	for _, v := range []map[int16]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v221: %v\n", v)
 		var v221v1, v221v2 map[int16]uint16
 		v221v1 = v
@@ -10516,7 +10516,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v221v3, v221v4, t, "equal-map-v221-p-len")
 	}
 
-	for _, v := range []map[int16]uint32{nil, map[int16]uint32{}, map[int16]uint32{33: 0, 44: 33}} {
+	for _, v := range []map[int16]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v222: %v\n", v)
 		var v222v1, v222v2 map[int16]uint32
 		v222v1 = v
@@ -10560,7 +10560,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v222v3, v222v4, t, "equal-map-v222-p-len")
 	}
 
-	for _, v := range []map[int16]uint64{nil, map[int16]uint64{}, map[int16]uint64{44: 0, 33: 44}} {
+	for _, v := range []map[int16]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v223: %v\n", v)
 		var v223v1, v223v2 map[int16]uint64
 		v223v1 = v
@@ -10604,7 +10604,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v223v3, v223v4, t, "equal-map-v223-p-len")
 	}
 
-	for _, v := range []map[int16]uintptr{nil, map[int16]uintptr{}, map[int16]uintptr{33: 0, 44: 33}} {
+	for _, v := range []map[int16]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v224: %v\n", v)
 		var v224v1, v224v2 map[int16]uintptr
 		v224v1 = v
@@ -10648,7 +10648,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v224v3, v224v4, t, "equal-map-v224-p-len")
 	}
 
-	for _, v := range []map[int16]int{nil, map[int16]int{}, map[int16]int{44: 0, 33: 44}} {
+	for _, v := range []map[int16]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v225: %v\n", v)
 		var v225v1, v225v2 map[int16]int
 		v225v1 = v
@@ -10692,7 +10692,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v225v3, v225v4, t, "equal-map-v225-p-len")
 	}
 
-	for _, v := range []map[int16]int8{nil, map[int16]int8{}, map[int16]int8{33: 0, 44: 33}} {
+	for _, v := range []map[int16]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v226: %v\n", v)
 		var v226v1, v226v2 map[int16]int8
 		v226v1 = v
@@ -10736,7 +10736,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v226v3, v226v4, t, "equal-map-v226-p-len")
 	}
 
-	for _, v := range []map[int16]int16{nil, map[int16]int16{}, map[int16]int16{44: 0, 33: 44}} {
+	for _, v := range []map[int16]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v227: %v\n", v)
 		var v227v1, v227v2 map[int16]int16
 		v227v1 = v
@@ -10780,7 +10780,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v227v3, v227v4, t, "equal-map-v227-p-len")
 	}
 
-	for _, v := range []map[int16]int32{nil, map[int16]int32{}, map[int16]int32{33: 0, 44: 33}} {
+	for _, v := range []map[int16]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v228: %v\n", v)
 		var v228v1, v228v2 map[int16]int32
 		v228v1 = v
@@ -10824,7 +10824,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v228v3, v228v4, t, "equal-map-v228-p-len")
 	}
 
-	for _, v := range []map[int16]int64{nil, map[int16]int64{}, map[int16]int64{44: 0, 33: 44}} {
+	for _, v := range []map[int16]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v229: %v\n", v)
 		var v229v1, v229v2 map[int16]int64
 		v229v1 = v
@@ -10868,7 +10868,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v229v3, v229v4, t, "equal-map-v229-p-len")
 	}
 
-	for _, v := range []map[int16]float32{nil, map[int16]float32{}, map[int16]float32{33: 0, 44: 22.2}} {
+	for _, v := range []map[int16]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v230: %v\n", v)
 		var v230v1, v230v2 map[int16]float32
 		v230v1 = v
@@ -10912,7 +10912,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v230v3, v230v4, t, "equal-map-v230-p-len")
 	}
 
-	for _, v := range []map[int16]float64{nil, map[int16]float64{}, map[int16]float64{33: 0, 44: 11.1}} {
+	for _, v := range []map[int16]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v231: %v\n", v)
 		var v231v1, v231v2 map[int16]float64
 		v231v1 = v
@@ -10956,7 +10956,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v231v3, v231v4, t, "equal-map-v231-p-len")
 	}
 
-	for _, v := range []map[int16]bool{nil, map[int16]bool{}, map[int16]bool{33: false, 44: true}} {
+	for _, v := range []map[int16]bool{nil, {}, {33: false, 44: true}} {
 		// fmt.Printf(">>>> running mammoth map v232: %v\n", v)
 		var v232v1, v232v2 map[int16]bool
 		v232v1 = v
@@ -11000,7 +11000,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v232v3, v232v4, t, "equal-map-v232-p-len")
 	}
 
-	for _, v := range []map[int32]interface{}{nil, map[int32]interface{}{}, map[int32]interface{}{33: nil, 44: "string-is-an-interface"}} {
+	for _, v := range []map[int32]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v235: %v\n", v)
 		var v235v1, v235v2 map[int32]interface{}
 		v235v1 = v
@@ -11044,7 +11044,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v235v3, v235v4, t, "equal-map-v235-p-len")
 	}
 
-	for _, v := range []map[int32]string{nil, map[int32]string{}, map[int32]string{33: "", 44: "some-string"}} {
+	for _, v := range []map[int32]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v236: %v\n", v)
 		var v236v1, v236v2 map[int32]string
 		v236v1 = v
@@ -11088,7 +11088,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v236v3, v236v4, t, "equal-map-v236-p-len")
 	}
 
-	for _, v := range []map[int32]uint{nil, map[int32]uint{}, map[int32]uint{33: 0, 44: 33}} {
+	for _, v := range []map[int32]uint{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v237: %v\n", v)
 		var v237v1, v237v2 map[int32]uint
 		v237v1 = v
@@ -11132,7 +11132,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v237v3, v237v4, t, "equal-map-v237-p-len")
 	}
 
-	for _, v := range []map[int32]uint8{nil, map[int32]uint8{}, map[int32]uint8{44: 0, 33: 44}} {
+	for _, v := range []map[int32]uint8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v238: %v\n", v)
 		var v238v1, v238v2 map[int32]uint8
 		v238v1 = v
@@ -11176,7 +11176,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v238v3, v238v4, t, "equal-map-v238-p-len")
 	}
 
-	for _, v := range []map[int32]uint16{nil, map[int32]uint16{}, map[int32]uint16{33: 0, 44: 33}} {
+	for _, v := range []map[int32]uint16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v239: %v\n", v)
 		var v239v1, v239v2 map[int32]uint16
 		v239v1 = v
@@ -11220,7 +11220,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v239v3, v239v4, t, "equal-map-v239-p-len")
 	}
 
-	for _, v := range []map[int32]uint32{nil, map[int32]uint32{}, map[int32]uint32{44: 0, 33: 44}} {
+	for _, v := range []map[int32]uint32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v240: %v\n", v)
 		var v240v1, v240v2 map[int32]uint32
 		v240v1 = v
@@ -11264,7 +11264,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v240v3, v240v4, t, "equal-map-v240-p-len")
 	}
 
-	for _, v := range []map[int32]uint64{nil, map[int32]uint64{}, map[int32]uint64{33: 0, 44: 33}} {
+	for _, v := range []map[int32]uint64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v241: %v\n", v)
 		var v241v1, v241v2 map[int32]uint64
 		v241v1 = v
@@ -11308,7 +11308,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v241v3, v241v4, t, "equal-map-v241-p-len")
 	}
 
-	for _, v := range []map[int32]uintptr{nil, map[int32]uintptr{}, map[int32]uintptr{44: 0, 33: 44}} {
+	for _, v := range []map[int32]uintptr{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v242: %v\n", v)
 		var v242v1, v242v2 map[int32]uintptr
 		v242v1 = v
@@ -11352,7 +11352,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v242v3, v242v4, t, "equal-map-v242-p-len")
 	}
 
-	for _, v := range []map[int32]int{nil, map[int32]int{}, map[int32]int{33: 0, 44: 33}} {
+	for _, v := range []map[int32]int{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v243: %v\n", v)
 		var v243v1, v243v2 map[int32]int
 		v243v1 = v
@@ -11396,7 +11396,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v243v3, v243v4, t, "equal-map-v243-p-len")
 	}
 
-	for _, v := range []map[int32]int8{nil, map[int32]int8{}, map[int32]int8{44: 0, 33: 44}} {
+	for _, v := range []map[int32]int8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v244: %v\n", v)
 		var v244v1, v244v2 map[int32]int8
 		v244v1 = v
@@ -11440,7 +11440,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v244v3, v244v4, t, "equal-map-v244-p-len")
 	}
 
-	for _, v := range []map[int32]int16{nil, map[int32]int16{}, map[int32]int16{33: 0, 44: 33}} {
+	for _, v := range []map[int32]int16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v245: %v\n", v)
 		var v245v1, v245v2 map[int32]int16
 		v245v1 = v
@@ -11484,7 +11484,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v245v3, v245v4, t, "equal-map-v245-p-len")
 	}
 
-	for _, v := range []map[int32]int32{nil, map[int32]int32{}, map[int32]int32{44: 0, 33: 44}} {
+	for _, v := range []map[int32]int32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v246: %v\n", v)
 		var v246v1, v246v2 map[int32]int32
 		v246v1 = v
@@ -11528,7 +11528,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v246v3, v246v4, t, "equal-map-v246-p-len")
 	}
 
-	for _, v := range []map[int32]int64{nil, map[int32]int64{}, map[int32]int64{33: 0, 44: 33}} {
+	for _, v := range []map[int32]int64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v247: %v\n", v)
 		var v247v1, v247v2 map[int32]int64
 		v247v1 = v
@@ -11572,7 +11572,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v247v3, v247v4, t, "equal-map-v247-p-len")
 	}
 
-	for _, v := range []map[int32]float32{nil, map[int32]float32{}, map[int32]float32{44: 0, 33: 22.2}} {
+	for _, v := range []map[int32]float32{nil, {}, {44: 0, 33: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v248: %v\n", v)
 		var v248v1, v248v2 map[int32]float32
 		v248v1 = v
@@ -11616,7 +11616,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v248v3, v248v4, t, "equal-map-v248-p-len")
 	}
 
-	for _, v := range []map[int32]float64{nil, map[int32]float64{}, map[int32]float64{44: 0, 33: 11.1}} {
+	for _, v := range []map[int32]float64{nil, {}, {44: 0, 33: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v249: %v\n", v)
 		var v249v1, v249v2 map[int32]float64
 		v249v1 = v
@@ -11660,7 +11660,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v249v3, v249v4, t, "equal-map-v249-p-len")
 	}
 
-	for _, v := range []map[int32]bool{nil, map[int32]bool{}, map[int32]bool{44: false, 33: true}} {
+	for _, v := range []map[int32]bool{nil, {}, {44: false, 33: true}} {
 		// fmt.Printf(">>>> running mammoth map v250: %v\n", v)
 		var v250v1, v250v2 map[int32]bool
 		v250v1 = v
@@ -11704,7 +11704,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v250v3, v250v4, t, "equal-map-v250-p-len")
 	}
 
-	for _, v := range []map[int64]interface{}{nil, map[int64]interface{}{}, map[int64]interface{}{44: nil, 33: "string-is-an-interface-2"}} {
+	for _, v := range []map[int64]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v253: %v\n", v)
 		var v253v1, v253v2 map[int64]interface{}
 		v253v1 = v
@@ -11748,7 +11748,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v253v3, v253v4, t, "equal-map-v253-p-len")
 	}
 
-	for _, v := range []map[int64]string{nil, map[int64]string{}, map[int64]string{44: "", 33: "some-string-2"}} {
+	for _, v := range []map[int64]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v254: %v\n", v)
 		var v254v1, v254v2 map[int64]string
 		v254v1 = v
@@ -11792,7 +11792,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v254v3, v254v4, t, "equal-map-v254-p-len")
 	}
 
-	for _, v := range []map[int64]uint{nil, map[int64]uint{}, map[int64]uint{44: 0, 33: 44}} {
+	for _, v := range []map[int64]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v255: %v\n", v)
 		var v255v1, v255v2 map[int64]uint
 		v255v1 = v
@@ -11836,7 +11836,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v255v3, v255v4, t, "equal-map-v255-p-len")
 	}
 
-	for _, v := range []map[int64]uint8{nil, map[int64]uint8{}, map[int64]uint8{33: 0, 44: 33}} {
+	for _, v := range []map[int64]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v256: %v\n", v)
 		var v256v1, v256v2 map[int64]uint8
 		v256v1 = v
@@ -11880,7 +11880,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v256v3, v256v4, t, "equal-map-v256-p-len")
 	}
 
-	for _, v := range []map[int64]uint16{nil, map[int64]uint16{}, map[int64]uint16{44: 0, 33: 44}} {
+	for _, v := range []map[int64]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v257: %v\n", v)
 		var v257v1, v257v2 map[int64]uint16
 		v257v1 = v
@@ -11924,7 +11924,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v257v3, v257v4, t, "equal-map-v257-p-len")
 	}
 
-	for _, v := range []map[int64]uint32{nil, map[int64]uint32{}, map[int64]uint32{33: 0, 44: 33}} {
+	for _, v := range []map[int64]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v258: %v\n", v)
 		var v258v1, v258v2 map[int64]uint32
 		v258v1 = v
@@ -11968,7 +11968,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v258v3, v258v4, t, "equal-map-v258-p-len")
 	}
 
-	for _, v := range []map[int64]uint64{nil, map[int64]uint64{}, map[int64]uint64{44: 0, 33: 44}} {
+	for _, v := range []map[int64]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v259: %v\n", v)
 		var v259v1, v259v2 map[int64]uint64
 		v259v1 = v
@@ -12012,7 +12012,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v259v3, v259v4, t, "equal-map-v259-p-len")
 	}
 
-	for _, v := range []map[int64]uintptr{nil, map[int64]uintptr{}, map[int64]uintptr{33: 0, 44: 33}} {
+	for _, v := range []map[int64]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v260: %v\n", v)
 		var v260v1, v260v2 map[int64]uintptr
 		v260v1 = v
@@ -12056,7 +12056,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v260v3, v260v4, t, "equal-map-v260-p-len")
 	}
 
-	for _, v := range []map[int64]int{nil, map[int64]int{}, map[int64]int{44: 0, 33: 44}} {
+	for _, v := range []map[int64]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v261: %v\n", v)
 		var v261v1, v261v2 map[int64]int
 		v261v1 = v
@@ -12100,7 +12100,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v261v3, v261v4, t, "equal-map-v261-p-len")
 	}
 
-	for _, v := range []map[int64]int8{nil, map[int64]int8{}, map[int64]int8{33: 0, 44: 33}} {
+	for _, v := range []map[int64]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v262: %v\n", v)
 		var v262v1, v262v2 map[int64]int8
 		v262v1 = v
@@ -12144,7 +12144,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v262v3, v262v4, t, "equal-map-v262-p-len")
 	}
 
-	for _, v := range []map[int64]int16{nil, map[int64]int16{}, map[int64]int16{44: 0, 33: 44}} {
+	for _, v := range []map[int64]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v263: %v\n", v)
 		var v263v1, v263v2 map[int64]int16
 		v263v1 = v
@@ -12188,7 +12188,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v263v3, v263v4, t, "equal-map-v263-p-len")
 	}
 
-	for _, v := range []map[int64]int32{nil, map[int64]int32{}, map[int64]int32{33: 0, 44: 33}} {
+	for _, v := range []map[int64]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v264: %v\n", v)
 		var v264v1, v264v2 map[int64]int32
 		v264v1 = v
@@ -12232,7 +12232,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v264v3, v264v4, t, "equal-map-v264-p-len")
 	}
 
-	for _, v := range []map[int64]int64{nil, map[int64]int64{}, map[int64]int64{44: 0, 33: 44}} {
+	for _, v := range []map[int64]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v265: %v\n", v)
 		var v265v1, v265v2 map[int64]int64
 		v265v1 = v
@@ -12276,7 +12276,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v265v3, v265v4, t, "equal-map-v265-p-len")
 	}
 
-	for _, v := range []map[int64]float32{nil, map[int64]float32{}, map[int64]float32{33: 0, 44: 22.2}} {
+	for _, v := range []map[int64]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v266: %v\n", v)
 		var v266v1, v266v2 map[int64]float32
 		v266v1 = v
@@ -12320,7 +12320,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v266v3, v266v4, t, "equal-map-v266-p-len")
 	}
 
-	for _, v := range []map[int64]float64{nil, map[int64]float64{}, map[int64]float64{33: 0, 44: 11.1}} {
+	for _, v := range []map[int64]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v267: %v\n", v)
 		var v267v1, v267v2 map[int64]float64
 		v267v1 = v
@@ -12364,7 +12364,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v267v3, v267v4, t, "equal-map-v267-p-len")
 	}
 
-	for _, v := range []map[int64]bool{nil, map[int64]bool{}, map[int64]bool{33: false, 44: true}} {
+	for _, v := range []map[int64]bool{nil, {}, {33: false, 44: true}} {
 		// fmt.Printf(">>>> running mammoth map v268: %v\n", v)
 		var v268v1, v268v2 map[int64]bool
 		v268v1 = v
@@ -12408,7 +12408,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v268v3, v268v4, t, "equal-map-v268-p-len")
 	}
 
-	for _, v := range []map[bool]interface{}{nil, map[bool]interface{}{}, map[bool]interface{}{true: nil}} {
+	for _, v := range []map[bool]interface{}{nil, {}, {true: nil}} {
 		// fmt.Printf(">>>> running mammoth map v271: %v\n", v)
 		var v271v1, v271v2 map[bool]interface{}
 		v271v1 = v
@@ -12452,7 +12452,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v271v3, v271v4, t, "equal-map-v271-p-len")
 	}
 
-	for _, v := range []map[bool]string{nil, map[bool]string{}, map[bool]string{true: ""}} {
+	for _, v := range []map[bool]string{nil, {}, {true: ""}} {
 		// fmt.Printf(">>>> running mammoth map v272: %v\n", v)
 		var v272v1, v272v2 map[bool]string
 		v272v1 = v
@@ -12496,7 +12496,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v272v3, v272v4, t, "equal-map-v272-p-len")
 	}
 
-	for _, v := range []map[bool]uint{nil, map[bool]uint{}, map[bool]uint{true: 0}} {
+	for _, v := range []map[bool]uint{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v273: %v\n", v)
 		var v273v1, v273v2 map[bool]uint
 		v273v1 = v
@@ -12540,7 +12540,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v273v3, v273v4, t, "equal-map-v273-p-len")
 	}
 
-	for _, v := range []map[bool]uint8{nil, map[bool]uint8{}, map[bool]uint8{true: 0}} {
+	for _, v := range []map[bool]uint8{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v274: %v\n", v)
 		var v274v1, v274v2 map[bool]uint8
 		v274v1 = v
@@ -12584,7 +12584,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v274v3, v274v4, t, "equal-map-v274-p-len")
 	}
 
-	for _, v := range []map[bool]uint16{nil, map[bool]uint16{}, map[bool]uint16{true: 0}} {
+	for _, v := range []map[bool]uint16{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v275: %v\n", v)
 		var v275v1, v275v2 map[bool]uint16
 		v275v1 = v
@@ -12628,7 +12628,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v275v3, v275v4, t, "equal-map-v275-p-len")
 	}
 
-	for _, v := range []map[bool]uint32{nil, map[bool]uint32{}, map[bool]uint32{true: 0}} {
+	for _, v := range []map[bool]uint32{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v276: %v\n", v)
 		var v276v1, v276v2 map[bool]uint32
 		v276v1 = v
@@ -12672,7 +12672,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v276v3, v276v4, t, "equal-map-v276-p-len")
 	}
 
-	for _, v := range []map[bool]uint64{nil, map[bool]uint64{}, map[bool]uint64{true: 0}} {
+	for _, v := range []map[bool]uint64{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v277: %v\n", v)
 		var v277v1, v277v2 map[bool]uint64
 		v277v1 = v
@@ -12716,7 +12716,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v277v3, v277v4, t, "equal-map-v277-p-len")
 	}
 
-	for _, v := range []map[bool]uintptr{nil, map[bool]uintptr{}, map[bool]uintptr{true: 0}} {
+	for _, v := range []map[bool]uintptr{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v278: %v\n", v)
 		var v278v1, v278v2 map[bool]uintptr
 		v278v1 = v
@@ -12760,7 +12760,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v278v3, v278v4, t, "equal-map-v278-p-len")
 	}
 
-	for _, v := range []map[bool]int{nil, map[bool]int{}, map[bool]int{true: 0}} {
+	for _, v := range []map[bool]int{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v279: %v\n", v)
 		var v279v1, v279v2 map[bool]int
 		v279v1 = v
@@ -12804,7 +12804,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v279v3, v279v4, t, "equal-map-v279-p-len")
 	}
 
-	for _, v := range []map[bool]int8{nil, map[bool]int8{}, map[bool]int8{true: 0}} {
+	for _, v := range []map[bool]int8{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v280: %v\n", v)
 		var v280v1, v280v2 map[bool]int8
 		v280v1 = v
@@ -12848,7 +12848,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v280v3, v280v4, t, "equal-map-v280-p-len")
 	}
 
-	for _, v := range []map[bool]int16{nil, map[bool]int16{}, map[bool]int16{true: 0}} {
+	for _, v := range []map[bool]int16{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v281: %v\n", v)
 		var v281v1, v281v2 map[bool]int16
 		v281v1 = v
@@ -12892,7 +12892,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v281v3, v281v4, t, "equal-map-v281-p-len")
 	}
 
-	for _, v := range []map[bool]int32{nil, map[bool]int32{}, map[bool]int32{true: 0}} {
+	for _, v := range []map[bool]int32{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v282: %v\n", v)
 		var v282v1, v282v2 map[bool]int32
 		v282v1 = v
@@ -12936,7 +12936,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v282v3, v282v4, t, "equal-map-v282-p-len")
 	}
 
-	for _, v := range []map[bool]int64{nil, map[bool]int64{}, map[bool]int64{true: 0}} {
+	for _, v := range []map[bool]int64{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v283: %v\n", v)
 		var v283v1, v283v2 map[bool]int64
 		v283v1 = v
@@ -12980,7 +12980,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v283v3, v283v4, t, "equal-map-v283-p-len")
 	}
 
-	for _, v := range []map[bool]float32{nil, map[bool]float32{}, map[bool]float32{true: 0}} {
+	for _, v := range []map[bool]float32{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v284: %v\n", v)
 		var v284v1, v284v2 map[bool]float32
 		v284v1 = v
@@ -13024,7 +13024,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v284v3, v284v4, t, "equal-map-v284-p-len")
 	}
 
-	for _, v := range []map[bool]float64{nil, map[bool]float64{}, map[bool]float64{true: 0}} {
+	for _, v := range []map[bool]float64{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v285: %v\n", v)
 		var v285v1, v285v2 map[bool]float64
 		v285v1 = v
@@ -13068,7 +13068,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		testDeepEqualErr(v285v3, v285v4, t, "equal-map-v285-p-len")
 	}
 
-	for _, v := range []map[bool]bool{nil, map[bool]bool{}, map[bool]bool{true: false}} {
+	for _, v := range []map[bool]bool{nil, {}, {true: false}} {
 		// fmt.Printf(">>>> running mammoth map v286: %v\n", v)
 		var v286v1, v286v2 map[bool]bool
 		v286v1 = v

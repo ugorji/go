@@ -40,11 +40,11 @@ type testCustomStringT string
 // make this a mapbyslice
 type testMbsT []interface{}
 
-func (_ testMbsT) MapBySlice() {}
+func (testMbsT) MapBySlice() {}
 
 type testMbsCustStrT []testCustomStringT
 
-func (_ testMbsCustStrT) MapBySlice() {}
+func (testMbsCustStrT) MapBySlice() {}
 
 type testVerifyFlag uint8
 
@@ -716,7 +716,7 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	// 	logT(t, "------- Expecting error because we cannot unmarshal to int32 nil ptr")
 	// 	failT(t)
 	// }
-	var i2 int32 = 0
+	var i2 int32
 	testUnmarshalErr(&i2, b, h, t, "int32-ptr")
 	if i2 != int32(32) {
 		logT(t, "------- didn't unmarshal to 32: Received: %d", i2)
@@ -1004,7 +1004,7 @@ func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs
 	// opts.MapType = mapStrIntfTyp
 	// opts.RawToString = false
 	serverExitChan := make(chan bool, 1)
-	var serverExitFlag uint64 = 0
+	var serverExitFlag uint64
 	serverFn := func() {
 		for {
 			conn1, err1 := ln.Accept()
