@@ -7,9 +7,13 @@ package codec
 
 // This file contains values used by tests and benchmarks.
 
+type testInt64 int64
+
 type TestStrucFlex struct {
 	_struct struct{} `codec:",omitempty"` //set omitempty for every field
 	testStrucCommon
+
+	Ci64 testInt64 // added here, so we can execute the extension paths
 
 	Mis     map[int]string
 	Mbu64   map[bool]struct{}
@@ -28,6 +32,7 @@ type TestStrucFlex struct {
 
 func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts *TestStrucFlex) {
 	ts = &TestStrucFlex{
+		Ci64: -22,
 		Miwu64s: map[int]wrapUint64Slice{
 			5: []wrapUint64{1, 2, 3, 4, 5},
 			3: []wrapUint64{1, 2, 3},

@@ -173,21 +173,33 @@ type TestRawValue struct {
 
 type testUnixNanoTimeExt struct {
 	// keep timestamp here, so that do not incur interface-conversion costs
-	ts int64
+	// ts int64
 }
 
-// func (x *testUnixNanoTimeExt) WriteExt(interface{}) []byte { panic("unsupported") }
-// func (x *testUnixNanoTimeExt) ReadExt(interface{}, []byte) { panic("unsupported") }
+func (x *testUnixNanoTimeExt) WriteExt(v interface{}) []byte {
+	v2 := v.(*time.Time)
+	bs := make([]byte, 8)
+	bigen.PutUint64(bs, uint64(v2.UnixNano()))
+	return bs
+}
+func (x *testUnixNanoTimeExt) ReadExt(v interface{}, bs []byte) {
+	v2 := v.(*time.Time)
+	ui := bigen.Uint64(bs)
+	*v2 = time.Unix(0, int64(ui)).UTC()
+}
 func (x *testUnixNanoTimeExt) ConvertExt(v interface{}) interface{} {
-	switch v2 := v.(type) {
-	case time.Time:
-		x.ts = v2.UTC().UnixNano()
-	case *time.Time:
-		x.ts = v2.UTC().UnixNano()
-	default:
-		panic(fmt.Sprintf("unsupported format for time conversion: expecting time.Time; got %T", v))
-	}
-	return &x.ts
+	v2 := v.(*time.Time) // structs are encoded by passing the value
+	return v2.UTC().UnixNano()
+	// return x.ts
+	// switch v2 := v.(type) {
+	// case time.Time:
+	// 	x.ts = v2.UTC().UnixNano()
+	// case *time.Time:
+	// 	x.ts = v2.UTC().UnixNano()
+	// default:
+	// 	panic(fmt.Sprintf("unsupported format for time conversion: expecting time.Time; got %T", v))
+	// }
+	// return &x.ts
 }
 
 func (x *testUnixNanoTimeExt) UpdateExt(dest interface{}, v interface{}) {
@@ -195,17 +207,36 @@ func (x *testUnixNanoTimeExt) UpdateExt(dest interface{}, v interface{}) {
 	switch v2 := v.(type) {
 	case int64:
 		*tt = time.Unix(0, v2).UTC()
-	case *int64:
-		*tt = time.Unix(0, *v2).UTC()
 	case uint64:
 		*tt = time.Unix(0, int64(v2)).UTC()
-	case *uint64:
-		*tt = time.Unix(0, int64(*v2)).UTC()
 	//case float64:
 	//case string:
 	default:
 		panic(fmt.Sprintf("unsupported format for time conversion: expecting int64/uint64; got %T", v))
 	}
+}
+
+var testInt64Typ = reflect.TypeOf(testInt64(0))
+
+type testInt64Ext int64
+
+func (x *testInt64Ext) WriteExt(v interface{}) []byte {
+	v2 := uint64(int64(v.(testInt64)))
+	bs := make([]byte, 8)
+	bigen.PutUint64(bs, v2)
+	return bs
+}
+func (x *testInt64Ext) ReadExt(v interface{}, bs []byte) {
+	v2 := v.(*testInt64)
+	ui := bigen.Uint64(bs)
+	*v2 = testInt64(int64(ui))
+}
+func (x *testInt64Ext) ConvertExt(v interface{}) interface{} {
+	return int64(v.(testInt64))
+}
+func (x *testInt64Ext) UpdateExt(dest interface{}, v interface{}) {
+	v2 := dest.(*testInt64)
+	*v2 = testInt64(v.(int64))
 }
 
 func testCodecEncode(ts interface{}, bsIn []byte,
@@ -281,11 +312,24 @@ func testInit() {
 			return
 		}
 	)
+
+	// Although these extensions on time.Time will have no effect
+	// (as time.Time is a native type),
+	// we add these here to ensure nothing happens.
 	testSimpleH.AddExt(timeTyp, 1, timeExtEncFn, timeExtDecFn)
 	// testBincH.SetBytesExt(timeTyp, 1, timeExt{}) // time is builtin for binc
 	testMsgpackH.SetBytesExt(timeTyp, 1, timeExt{})
 	testCborH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
 	// testJsonH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
+
+	// Now, add extensions for the type testInt64,
+	// so we can execute the Encode/Decode Ext paths.
+	var tI64Ext testInt64Ext
+	testSimpleH.SetBytesExt(testInt64Typ, 18, &tI64Ext)
+	testMsgpackH.SetBytesExt(testInt64Typ, 18, &tI64Ext)
+	testBincH.SetBytesExt(testInt64Typ, 18, &tI64Ext)
+	testJsonH.SetInterfaceExt(testInt64Typ, 18, &tI64Ext)
+	testCborH.SetInterfaceExt(testInt64Typ, 18, &tI64Ext)
 
 	// primitives MUST be an even number, so it can be used as a mapBySlice also.
 	primitives := []interface{}{
@@ -2711,16 +2755,9 @@ func TestSimpleScalars(t *testing.T) {
 //   - struct tags:
 //     on anonymous fields, _struct (all fields), etc
 //   - codecgen of struct containing channels.
-//   - (encode extensions: ext, raw ext, etc)
-//   - extension that isn't builtin e.g. type uint64Ext uint64.
-//     it encodes as a uint64.
 //
 //  Add negative tests for failure conditions:
 //   - bad input with large array length prefix
-//
-// msgpack
-// - support time as built-in extension:
-//   see https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type
 //
 // decode.go
 // - UnreadByte: only 2 states (z.ls = 2 and z.ls = 1) (0 --> 2 --> 1)

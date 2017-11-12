@@ -393,6 +393,12 @@ func TestCodecSuite(t *testing.T) {
 
 	testCborH.IndefiniteLength = oldIndefLen
 
+	oldTimeRFC3339 := testCborH.TimeRFC3339
+	testCborH.TimeRFC3339 = !testCborH.TimeRFC3339
+	testReinit()
+	t.Run("cbor-rfc3339", testCborGroup)
+	testCborH.TimeRFC3339 = oldTimeRFC3339
+
 	oldSymbols := testBincH.getBasicHandle().AsSymbols
 
 	testBincH.getBasicHandle().AsSymbols = AsSymbolNone
