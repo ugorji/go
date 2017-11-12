@@ -274,12 +274,14 @@ func (e *jsonEncDriver) EncodeNil() {
 }
 
 func (e *jsonEncDriver) EncodeTime(t time.Time) {
-	v, err := t.MarshalJSON()
-	if err != nil {
-		e.e.error(err)
-		return
-	}
-	e.w.writeb(v)
+	// Do NOT use MarshalJSON, as it allocates internally.
+	// instead, we call AppendFormat directly, using our scratch buffer (e.b)
+	e.b[0] = '"'
+	b := t.AppendFormat(e.b[1:1], time.RFC3339Nano)
+	e.b[len(b)+1] = '"'
+	e.w.writeb(e.b[:len(b)+2])
+	// fmt.Printf(">>>> time as a string: '%s'\n", e.b[:len(b)+2])
+	// v, err := t.MarshalJSON(); if err != nil { e.e.error(err) } e.w.writeb(v)
 }
 
 func (e *jsonEncDriver) EncodeBool(b bool) {
@@ -502,7 +504,7 @@ type jsonDecDriver struct {
 	fnull bool // found null from appendStringAsBytes
 
 	bstr [8]byte  // scratch used for string \UXXX parsing
-	b    [64]byte // scratch, used for parsing strings or numbers
+	b    [64]byte // scratch, used for parsing strings or numbers or time.Time
 	b2   [64]byte // scratch, used only for decodeBytes (after base64)
 	bs   []byte   // scratch. Initialized from b. Used for parsing strings or numbers.
 
