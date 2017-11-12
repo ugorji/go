@@ -93,9 +93,10 @@ func (f genHelperEncoder) EncRaw(iv Raw) {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) TimeRtidIfBinc() uintptr {
-	if _, ok := f.e.hh.(*BincHandle); ok {
-		return timeTypId
-	}
+	// // Note: builtin is no longer supported - so make this a no-op
+	// if _, ok := f.e.hh.(*BincHandle); ok {
+	// 	return timeTypId
+	// }
 	return 0
 }
 
@@ -204,9 +205,10 @@ func (f genHelperDecoder) DecRaw() []byte {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) TimeRtidIfBinc() uintptr {
-	if _, ok := f.d.hh.(*BincHandle); ok {
-		return timeTypId
-	}
+	// // Note: builtin is no longer supported - so make this a no-op
+	// if _, ok := f.d.hh.(*BincHandle); ok {
+	// 	return timeTypId
+	// }
 	return 0
 }
 
