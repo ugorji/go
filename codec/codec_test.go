@@ -419,6 +419,8 @@ func testTableVerify(f testVerifyFlag, h Handle) (av []interface{}) {
 				av[i] = testVerifyVal(v, f, h)
 			case map[interface{}]interface{}:
 				av[i] = testVerifyVal(v, f, h)
+			case time.Time:
+				av[i] = testVerifyVal(v, f, h)
 			default:
 				av[i] = v
 			}
@@ -447,6 +449,7 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 	//  - all positive integers are unsigned 64-bit ints
 	//  - all floats are float64
 	_, isMsgp := h.(*MsgpackHandle)
+	_, isCbor := h.(*CborHandle)
 	switch iv := v.(type) {
 	case int8:
 		v2 = testVerifyValInt(int64(iv), isMsgp)
@@ -537,6 +540,11 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 			} else {
 				v2 = int64(iv2)
 			}
+		case isMsgp:
+			v2 = iv.UTC()
+		case isCbor:
+			// fmt.Printf("%%%% cbor verifier\n")
+			v2 = iv.UTC().Round(0).Round(time.Microsecond)
 		default:
 			v2 = v
 		}
@@ -626,7 +634,7 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 			}
 		}
 
-		logT(t, "         v1 returned: %T, %#v", v1, v1)
+		logT(t, "         v1 returned: %T, %v %#v", v1, v1, v1)
 		// if v1 != nil {
 		//	logT(t, "         v1 returned: %T, %#v", v1, v1)
 		//	//we always indirect, because ptr to typed value may be passed (if not testNil)
@@ -647,8 +655,8 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 			// logT(t, "-------- Before and After marshal do not match: Error: %v"+
 			// 	" ====> GOLDEN: (%T) %#v, DECODED: (%T) %#v\n", err, v0check, v0check, v1, v1)
 			logT(t, "-------- FAIL: Before and After marshal do not match: Error: %v", err)
-			logT(t, "    ....... GOLDEN:  (%T) %#v", v0check, v0check)
-			logT(t, "    ....... DECODED: (%T) %#v", v1, v1)
+			logT(t, "    ....... GOLDEN:  (%T) %v %#v", v0check, v0check, v0check)
+			logT(t, "    ....... DECODED: (%T) %v %#v", v1, v1, v1)
 			failT(t)
 		}
 	}

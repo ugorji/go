@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"sort"
 	"sync"
+	"time"
 )
 
 const defEncByteBufSize = 1 << 6 // 4:16, 6:64, 8:256, 10:1024
@@ -47,6 +48,8 @@ type encWriter interface {
 // encDriver abstracts the actual codec (binc vs msgpack, etc)
 type encDriver interface {
 	// IsBuiltinType(rt uintptr) bool
+
+	// Deprecated: left here for now so that old codecgen'ed filed will work. TODO: remove.
 	EncodeBuiltin(rt uintptr, v interface{})
 	EncodeNil()
 	EncodeInt(i int64)
@@ -67,7 +70,7 @@ type encDriver interface {
 	EncodeString(c charEncoding, v string)
 	EncodeSymbol(v string)
 	EncodeStringBytes(c charEncoding, v []byte)
-
+	EncodeTime(time.Time)
 	//TODO
 	//encBignum(f *big.Int)
 	//encStringRunes(c charEncoding, v []rune)
@@ -338,9 +341,9 @@ func (z *bytesEncWriter) growAlloc(n int, oldcursor int) {
 
 // ---------------------------------------------
 
-func (e *Encoder) builtin(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeBuiltin(f.ti.rtid, rv2i(rv))
-}
+// func (e *Encoder) builtin(f *codecFnInfo, rv reflect.Value) {
+// 	e.e.EncodeBuiltin(f.ti.rtid, rv2i(rv))
+// }
 
 func (e *Encoder) rawExt(f *codecFnInfo, rv reflect.Value) {
 	// rev := rv2i(rv).(RawExt)
@@ -913,6 +916,28 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 			}
 			e.encodeValue(rv.MapIndex(mksv[i].r), valFn, true)
 		}
+	case reflect.Struct:
+		if rv.Type() == timeTyp {
+			mksv := make([]timeRv, len(mks))
+			for i, k := range mks {
+				v := &mksv[i]
+				v.r = k
+				v.v = rv2i(k).(time.Time)
+			}
+			sort.Sort(timeRvSlice(mksv))
+			for i := range mksv {
+				if elemsep {
+					ee.WriteMapElemKey()
+				}
+				ee.EncodeTime(mksv[i].v)
+				if elemsep {
+					ee.WriteMapElemValue()
+				}
+				e.encodeValue(rv.MapIndex(mksv[i].r), valFn, true)
+			}
+			break
+		}
+		fallthrough
 	default:
 		// out-of-band
 		// first encode each key to a []byte first, then sort them, then record
@@ -1169,9 +1194,13 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.EncodeFloat32(v)
 	case float64:
 		e.e.EncodeFloat64(v)
-
+	case time.Time:
+		e.e.EncodeTime(v)
 	case []uint8:
 		e.e.EncodeStringBytes(cRAW, v)
+
+	case *Raw:
+		e.rawBytes(*v)
 
 	case *string:
 		e.e.EncodeString(cUTF8, *v)
@@ -1203,6 +1232,8 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.EncodeFloat32(*v)
 	case *float64:
 		e.e.EncodeFloat64(*v)
+	case *time.Time:
+		e.e.EncodeTime(*v)
 
 	case *[]uint8:
 		e.e.EncodeStringBytes(cRAW, *v)
@@ -1315,5 +1346,9 @@ func (e *Encoder) rawBytes(vv Raw) {
 
 func (e *Encoder) errorf(format string, params ...interface{}) {
 	err := fmt.Errorf(format, params...)
+	panic(err)
+}
+
+func (e *Encoder) error(err error) {
 	panic(err)
 }

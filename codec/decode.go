@@ -62,6 +62,8 @@ type decDriver interface {
 	// vt is one of: Bytes, String, Nil, Slice or Map. Return unSet if not known.
 	ContainerType() (vt valueType)
 	// IsBuiltinType(rt uintptr) bool
+
+	// Deprecated: left here for now so that old codecgen'ed filed will work. TODO: remove.
 	DecodeBuiltin(rt uintptr, v interface{})
 
 	// DecodeNaked will decode primitives (number, bool, string, []byte) and RawExt.
@@ -80,6 +82,7 @@ type decDriver interface {
 	DecodeUint(bitsize uint8) (ui uint64)
 	DecodeFloat(chkOverflow32 bool) (f float64)
 	DecodeBool() (b bool)
+	DecodeTime() (t time.Time)
 	// DecodeString can also decode symbols.
 	// It looks redundant as DecodeBytes is available.
 	// However, some codecs (e.g. binc) support symbols and can
@@ -881,9 +884,9 @@ func (z *bytesDecReader) stopTrack() (bs []byte) {
 
 // ----------------------------------------
 
-func (d *Decoder) builtin(f *codecFnInfo, rv reflect.Value) {
-	d.d.DecodeBuiltin(f.ti.rtid, rv2i(rv))
-}
+// func (d *Decoder) builtin(f *codecFnInfo, rv reflect.Value) {
+// 	d.d.DecodeBuiltin(f.ti.rtid, rv2i(rv))
+// }
 
 func (d *Decoder) rawExt(f *codecFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), 0, nil)
@@ -1055,7 +1058,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 		rvn = n.rr[decNakedStringIdx] // d.np.get(&n.s)
 	case valueTypeBytes:
 		rvn = n.rr[decNakedBytesIdx] // d.np.get(&n.l)
-	case valueTypeTimestamp:
+	case valueTypeTime:
 		rvn = n.rr[decNakedTimeIdx] // d.np.get(&n.t)
 	default:
 		panic(fmt.Errorf("kInterfaceNaked: unexpected valueType: %d", n.v))
@@ -2051,6 +2054,8 @@ func (d *Decoder) decode(iv interface{}) {
 	case *[]uint8:
 		*v = d.d.DecodeBytes(*v, false)
 
+	case *time.Time:
+		*v = d.d.DecodeTime()
 	case *Raw:
 		*v = d.rawBytes()
 
@@ -2192,12 +2197,15 @@ func (d *Decoder) error(err error) {
 	panic(err)
 }
 
-func (d *Decoder) errorf(format string, params ...interface{}) {
+func (d *Decoder) errorvf(format string, params ...interface{}) (err error) {
 	params2 := make([]interface{}, len(params)+1)
 	params2[0] = d.r.numread()
 	copy(params2[1:], params)
-	err := fmt.Errorf("[pos %d]: "+format, params2...)
-	panic(err)
+	return fmt.Errorf("[pos %d]: "+format, params2...)
+}
+
+func (d *Decoder) errorf(format string, params ...interface{}) {
+	panic(d.errorvf(format, params...))
 }
 
 // Possibly get an interned version of a string

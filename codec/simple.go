@@ -6,6 +6,7 @@ package codec
 import (
 	"math"
 	"reflect"
+	"time"
 )
 
 const (
@@ -19,6 +20,8 @@ const (
 	// each lasts for 4 (ie n, n+1, n+2, n+3)
 	simpleVdPosInt = 8
 	simpleVdNegInt = 12
+
+	simpleVdTime = 24
 
 	// containers: each lasts for 4 (ie n, n+1, n+2, ... n+7)
 	simpleVdString    = 216
@@ -194,6 +197,21 @@ func (e *simpleEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
 	e.w.writeb(v)
 }
 
+func (e *simpleEncDriver) EncodeTime(t time.Time) {
+	if e.h.EncZeroValuesAsNil && e.c != containerMapKey && t.IsZero() {
+		e.EncodeNil()
+		return
+	}
+	v, err := t.MarshalBinary()
+	if err != nil {
+		e.e.error(err)
+		return
+	}
+	// time.Time marshalbinary takes about 14 bytes.
+	e.w.writen2(simpleVdTime, uint8(len(v)))
+	e.w.writeb(v)
+}
+
 //------------------------------------
 
 type simpleDecDriver struct {
@@ -226,20 +244,19 @@ func (d *simpleDecDriver) ContainerType() (vt valueType) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	if d.bd == simpleVdNil {
+	switch d.bd {
+	case simpleVdNil:
 		return valueTypeNil
-	} else if d.bd == simpleVdByteArray || d.bd == simpleVdByteArray+1 ||
-		d.bd == simpleVdByteArray+2 || d.bd == simpleVdByteArray+3 || d.bd == simpleVdByteArray+4 {
+	case simpleVdByteArray, simpleVdByteArray + 1, simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		return valueTypeBytes
-	} else if d.bd == simpleVdString || d.bd == simpleVdString+1 ||
-		d.bd == simpleVdString+2 || d.bd == simpleVdString+3 || d.bd == simpleVdString+4 {
+	case simpleVdString, simpleVdString + 1, simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
 		return valueTypeString
-	} else if d.bd == simpleVdArray || d.bd == simpleVdArray+1 ||
-		d.bd == simpleVdArray+2 || d.bd == simpleVdArray+3 || d.bd == simpleVdArray+4 {
+	case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2, simpleVdArray + 3, simpleVdArray + 4:
 		return valueTypeArray
-	} else if d.bd == simpleVdMap || d.bd == simpleVdMap+1 ||
-		d.bd == simpleVdMap+2 || d.bd == simpleVdMap+3 || d.bd == simpleVdMap+4 {
+	case simpleVdMap, simpleVdMap + 1, simpleVdMap + 2, simpleVdMap + 3, simpleVdMap + 4:
 		return valueTypeMap
+		// case simpleVdTime:
+		// 	return valueTypeTime
 	}
 	// else {
 	// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
@@ -460,6 +477,27 @@ func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	return decByteSlice(d.r, clen, d.d.h.MaxInitLen, bs)
 }
 
+func (d *simpleDecDriver) DecodeTime() (t time.Time) {
+	if !d.bdRead {
+		d.readNextBd()
+	}
+	if d.bd == simpleVdNil {
+		d.bdRead = false
+		return
+	}
+	if d.bd != simpleVdTime {
+		d.d.errorf("invalid descriptor for time.Time - expect 0x%x, received 0x%x", simpleVdTime, d.bd)
+		return
+	}
+	d.bdRead = false
+	clen := int(d.r.readn1())
+	b := d.r.readx(clen)
+	if err := (&t).UnmarshalBinary(b); err != nil {
+		d.d.error(err)
+	}
+	return
+}
+
 func (d *simpleDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxtag uint64) {
 	if xtag > 0xff {
 		d.d.errorf("decodeExt: tag must be <= 0xff; got: %v", xtag)
@@ -493,7 +531,7 @@ func (d *simpleDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs [
 	case simpleVdByteArray, simpleVdByteArray + 1, simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		xbs = d.DecodeBytes(nil, true)
 	default:
-		d.d.errorf("Invalid d.bd for extensions (Expecting extensions or byte array). Got: 0x%x", d.bd)
+		d.d.errorf("Invalid descriptor for extensions (Expecting extensions or byte array). Got: 0x%x", d.bd)
 		return
 	}
 	d.bdRead = false
@@ -534,6 +572,9 @@ func (d *simpleDecDriver) DecodeNaked() {
 	case simpleVdFloat64:
 		n.v = valueTypeFloat
 		n.f = d.DecodeFloat(false)
+	case simpleVdTime:
+		n.v = valueTypeTime
+		n.t = d.DecodeTime()
 	case simpleVdString, simpleVdString + 1, simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
 		n.v = valueTypeString
 		n.s = d.DecodeString()
@@ -579,6 +620,7 @@ func (d *simpleDecDriver) DecodeNaked() {
 //   - arrays are encoded as [bd] [length] [value]...
 //   - extensions are encoded as [bd] [length] [tag] [byte]...
 //   - strings/bytearrays are encoded as [bd] [length] [byte]...
+//   - time.Time are encoded as [bd] [length] [byte]...
 //
 // The full spec will be published soon.
 type SimpleHandle struct {

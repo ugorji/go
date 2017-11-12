@@ -6,6 +6,7 @@ package codec
 import (
 	"math"
 	"reflect"
+	"time"
 )
 
 const (
@@ -124,6 +125,30 @@ func (e *cborEncDriver) EncodeUint(v uint64) {
 
 func (e *cborEncDriver) encLen(bd byte, length int) {
 	e.encUint(uint64(length), bd)
+}
+
+func (e *cborEncDriver) EncodeTime(t time.Time) {
+	if e.h.TimeRFC3339 {
+		e.encUint(0, cborBaseTag)
+		e.EncodeString(cUTF8, t.Format(time.RFC3339Nano))
+	} else {
+		e.encUint(1, cborBaseTag)
+		// fmt.Printf(">>>> - encoding time: %v\n", t)
+		t = t.UTC().Round(0).Round(time.Microsecond)
+		// fmt.Printf(">>>> - encoding time: %v\n", t)
+		sec, nsec := t.Unix(), uint64(t.Nanosecond())
+		if nsec == 0 {
+			e.EncodeInt(sec)
+			// fmt.Printf(">>>> i encoding time using: %v\n", sec)
+		} else {
+			e.EncodeFloat64(float64(sec) + float64(nsec)/1e9)
+			// round nsec to microseconds, so it fits into float64 without losing resolution
+			// e.EncodeFloat64(float64(sec) + round(float64(nsec)/1e3)/1e6)
+			// e.EncodeFloat64(float64(sec) + float64(nsec/1e3)/1e6)
+			// fmt.Printf(">>>> f encoding time using: %v + %v = %v, nsec: %v, \n",
+			// 	float64(sec), round(float64(nsec)/1e3)/1e6, float64(sec)+round(float64(nsec)/1e3)/1e6, nsec)
+		}
+	}
 }
 
 func (e *cborEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext, en *Encoder) {
@@ -497,6 +522,54 @@ func (d *cborDecDriver) DecodeStringAsBytes() (s []byte) {
 	return d.DecodeBytes(d.b[:], true)
 }
 
+func (d *cborDecDriver) DecodeTime() (t time.Time) {
+	if !d.bdRead {
+		d.readNextBd()
+	}
+	xtag := d.decUint()
+	d.bdRead = false
+	return d.decodeTime(xtag)
+}
+
+func (d *cborDecDriver) decodeTime(xtag uint64) (t time.Time) {
+	if !d.bdRead {
+		d.readNextBd()
+	}
+	switch xtag {
+	case 0:
+		var err error
+		if t, err = time.Parse(time.RFC3339, stringView(d.DecodeStringAsBytes())); err != nil {
+			d.d.error(err)
+		}
+	case 1:
+		// decode an int64 or a float, and infer time.Time from there.
+		// for floats, round to microseconds, as that is what is guaranteed to fit well.
+		switch {
+		case d.bd == cborBdFloat16, d.bd == cborBdFloat32:
+			f1, f2 := math.Modf(d.DecodeFloat(true))
+			// t = time.Unix(int64(f1), int64(round(f2*1e6))*1e3).Round(time.Microsecond).UTC()
+			t = time.Unix(int64(f1), int64(f2*1e9))
+		case d.bd == cborBdFloat64:
+			f1, f2 := math.Modf(d.DecodeFloat(false))
+			// fmt.Printf(">>>> f decoding time using: %v + %v --> %v %v\n",
+			//   f1, f2, int64(f2*1e9), int64(round(f2*1e6))*1e3)
+			// t = time.Unix(int64(f1), (int64(f2*1e9)/1e3)*1e3).UTC()
+			// t = time.Unix(int64(f1), int64(round(f2*1e6))*1e3).Round(time.Microsecond).UTC()
+			t = time.Unix(int64(f1), int64(f2*1e9))
+			// fmt.Printf(">>>> f decoding time using: %v + %v = %v\n", t.Unix(), t.Nanosecond(), t)
+		case d.bd >= cborBaseUint && d.bd < cborBaseNegInt, d.bd >= cborBaseNegInt && d.bd < cborBaseBytes:
+			t = time.Unix(d.DecodeInt(64), 0)
+			// fmt.Printf(">>>> i decoding time using: %v + %v = %v\n", t.Unix(), t.Nanosecond(), t)
+		default:
+			d.d.errorf("cbor: time.Time can only be decoded from a number (or RFC3339 string)")
+		}
+	default:
+		d.d.errorf("cbor: invalid tag for time.Time - expecting 0 or 1, got 0x%x", xtag)
+	}
+	t = t.Round(time.Microsecond).UTC()
+	return
+}
+
 func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxtag uint64) {
 	if !d.bdRead {
 		d.readNextBd()
@@ -584,6 +657,11 @@ func (d *cborDecDriver) DecodeNaked() {
 			n.v = valueTypeExt
 			n.u = d.decUint()
 			n.l = nil
+			if n.u == 0 || n.u == 1 {
+				d.bdRead = false
+				n.v = valueTypeTime
+				n.t = d.decodeTime(n.u)
+			}
 			// d.bdRead = false
 			// d.d.decode(&re.Value) // handled by decode itself.
 			// decodeFurther = true
@@ -623,6 +701,10 @@ type CborHandle struct {
 
 	// IndefiniteLength=true, means that we encode using indefinitelength
 	IndefiniteLength bool
+
+	// TimeRFC3339 says to encode time.Time using RFC3339 format.
+	// If unset, we encode time.Time using seconds past epoch.
+	TimeRFC3339 bool
 }
 
 // SetInterfaceExt sets an extension

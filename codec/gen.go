@@ -30,7 +30,6 @@ import (
 // codecgen supports the full cycle of reflection-based codec:
 //    - RawExt
 //    - Raw
-//    - Builtins
 //    - Extensions
 //    - (Binary|Text|JSON)(Unm|M)arshal
 //    - generic by-kind
@@ -709,11 +708,12 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	// HACK: Support for Builtins.
 	//       Currently, only Binc supports builtins, and the only builtin type is time.Time.
 	//       Have a method that returns the rtid for time.Time if Handle is Binc.
-	if t == timeTyp {
-		vrtid := genTempVarPfx + "m" + x.varsfx()
-		x.linef("} else if %s := z.TimeRtidIfBinc(); %s != 0 { ", vrtid, vrtid)
-		x.linef("r.EncodeBuiltin(%s, *%s)", vrtid, varname)
-	}
+	// 2017-11-12: builtin no longer supported - comment out
+	// if t == timeTyp {
+	// 	vrtid := genTempVarPfx + "m" + x.varsfx()
+	// 	x.linef("} else if %s := z.TimeRtidIfBinc(); %s != 0 { ", vrtid, vrtid)
+	// 	x.linef("r.EncodeBuiltin(%s, *%s)", vrtid, varname)
+	// }
 	// only check for extensions if the type is named, and has a packagePath.
 	if !x.nx && genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion
@@ -1162,11 +1162,12 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	// HACK: Support for Builtins.
 	//       Currently, only Binc supports builtins, and the only builtin type is time.Time.
 	//       Have a method that returns the rtid for time.Time if Handle is Binc.
-	if t == timeTyp {
-		vrtid := genTempVarPfx + "m" + x.varsfx()
-		x.linef("} else if %s := z.TimeRtidIfBinc(); %s != 0 { ", vrtid, vrtid)
-		x.linef("r.DecodeBuiltin(%s, %s)", vrtid, varname)
-	}
+	// 2017-11-12: builtin no longer supported - comment out
+	// if t == timeTyp {
+	// 	vrtid := genTempVarPfx + "m" + x.varsfx()
+	// 	x.linef("} else if %s := z.TimeRtidIfBinc(); %s != 0 { ", vrtid, vrtid)
+	// 	x.linef("r.DecodeBuiltin(%s, %s)", vrtid, varname)
+	// }
 	// only check for extensions if the type is named, and has a packagePath.
 	if !x.nx && genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion

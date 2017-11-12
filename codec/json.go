@@ -36,6 +36,7 @@ import (
 	"encoding/base64"
 	"reflect"
 	"strconv"
+	"time"
 	"unicode"
 	"unicode/utf16"
 	"unicode/utf8"
@@ -270,6 +271,15 @@ func (e *jsonEncDriver) EncodeNil() {
 	// } else {
 	// 	e.w.writeb(jsonLiterals[jsonLitNull : jsonLitNull+4])
 	// }
+}
+
+func (e *jsonEncDriver) EncodeTime(t time.Time) {
+	v, err := t.MarshalJSON()
+	if err != nil {
+		e.e.error(err)
+		return
+	}
+	e.w.writeb(v)
 }
 
 func (e *jsonEncDriver) EncodeBool(b bool) {
@@ -664,6 +674,16 @@ func (d *jsonDecDriver) DecodeBool() (v bool) {
 	}
 	if fquot {
 		d.r.readn1()
+	}
+	return
+}
+
+func (d *jsonDecDriver) DecodeTime() (t time.Time) {
+	// read string, and pass the string into json.unmarshal
+	d.appendStringAsBytes()
+	t, err := time.Parse(time.RFC3339, stringView(d.bs))
+	if err != nil {
+		d.d.error(err)
 	}
 	return
 }

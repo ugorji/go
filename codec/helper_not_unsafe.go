@@ -8,6 +8,7 @@ package codec
 import (
 	"reflect"
 	"sync/atomic"
+	"time"
 )
 
 const safeMode = true
@@ -107,6 +108,10 @@ func (d *Decoder) kBool(f *codecFnInfo, rv reflect.Value) {
 	rv.SetBool(d.d.DecodeBool())
 }
 
+func (d *Decoder) kTime(f *codecFnInfo, rv reflect.Value) {
+	rv.Set(reflect.ValueOf(d.d.DecodeTime()))
+}
+
 func (d *Decoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
 	rv.SetFloat(d.d.DecodeFloat(true))
 }
@@ -163,6 +168,10 @@ func (d *Decoder) kUint64(f *codecFnInfo, rv reflect.Value) {
 
 func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeBool(rv.Bool())
+}
+
+func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeTime(rv2i(rv).(time.Time))
 }
 
 func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {

@@ -25,6 +25,7 @@ import (
 	"math"
 	"net/rpc"
 	"reflect"
+	"time"
 )
 
 const (
@@ -77,6 +78,9 @@ const (
 	mpNegFixNumMin = 0xe0
 	mpNegFixNumMax = 0xff
 )
+
+var mpTimeExtTag int8 = -1
+var mpTimeExtTagU = uint8(mpTimeExtTag)
 
 // MsgpackSpecRpcMultiArgs is a special type which signifies to the MsgpackSpecRpcCodec
 // that the backend RPC service takes multiple arguments, which have been arranged
@@ -188,6 +192,35 @@ func (e *msgpackEncDriver) EncodeFloat32(f float32) {
 func (e *msgpackEncDriver) EncodeFloat64(f float64) {
 	e.w.writen1(mpDouble)
 	bigenHelper{e.x[:8], e.w}.writeUint64(math.Float64bits(f))
+}
+
+func (e *msgpackEncDriver) EncodeTime(t time.Time) {
+	t = t.UTC()
+	sec, nsec := t.Unix(), uint64(t.Nanosecond())
+	var data64 uint64
+	var l = 4
+	if sec >= 0 && sec>>34 == 0 {
+		data64 = (nsec << 34) | uint64(sec)
+		if data64&0xffffffff00000000 != 0 {
+			l = 8
+		}
+	} else {
+		l = 12
+	}
+	if e.h.WriteExt {
+		e.encodeExtPreamble(mpTimeExtTagU, l)
+	} else {
+		e.writeContainerLen(msgpackContainerStr, l)
+	}
+	switch l {
+	case 4:
+		bigenHelper{e.x[:4], e.w}.writeUint32(uint32(data64))
+	case 8:
+		bigenHelper{e.x[:8], e.w}.writeUint64(data64)
+	case 12:
+		bigenHelper{e.x[:4], e.w}.writeUint32(uint32(nsec))
+		bigenHelper{e.x[:8], e.w}.writeUint64(uint64(sec))
+	}
 }
 
 func (e *msgpackEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext, _ *Encoder) {
@@ -388,7 +421,12 @@ func (d *msgpackDecDriver) DecodeNaked() {
 			n.v = valueTypeExt
 			clen := d.readExtLen()
 			n.u = uint64(d.r.readn1())
-			n.l = d.r.readx(clen)
+			if n.u == uint64(mpTimeExtTagU) {
+				n.v = valueTypeTime
+				n.t = d.decodeTime(clen)
+			} else {
+				n.l = d.r.readx(clen)
+			}
 		default:
 			d.d.errorf("Nil-Deciphered DecodeValue: %s: hex: %x, dec: %d", msgBadDesc, bd, bd)
 		}
@@ -584,7 +622,7 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 		d.bdRead = false
 		return bs
 	default:
-		d.d.errorf("invalid container type: expecting bin|str|array")
+		d.d.errorf("invalid container type: expecting bin|str|array, got: 0x%x", uint8(vt))
 		return
 	}
 
@@ -717,6 +755,53 @@ func (d *msgpackDecDriver) readExtLen() (clen int) {
 		clen = int(bigen.Uint32(d.r.readx(4)))
 	default:
 		d.d.errorf("decoding ext bytes: found unexpected byte: %x", d.bd)
+		return
+	}
+	return
+}
+
+func (d *msgpackDecDriver) DecodeTime() (t time.Time) {
+	// decode time from string bytes or ext
+	if !d.bdRead {
+		d.readNextBd()
+	}
+	var clen int
+	switch d.ContainerType() {
+	case valueTypeBytes, valueTypeString:
+		clen = d.readContainerLen(msgpackContainerStr)
+	default:
+		// expect to see mpFixExt4,-1 OR mpFixExt8,-1 OR mpExt8,12,-1
+		d.bdRead = false
+		b2 := d.r.readn1()
+		if d.bd == mpFixExt4 && b2 == mpTimeExtTagU {
+			clen = 4
+		} else if d.bd == mpFixExt8 && b2 == mpTimeExtTagU {
+			clen = 8
+		} else if d.bd == mpExt8 && b2 == 12 && d.r.readn1() == mpTimeExtTagU {
+			clen = 12
+		} else {
+			d.d.errorf("invalid sequence of bytes for decoding time as an extension: got 0x%x, 0x%x", d.bd, b2)
+			return
+		}
+	}
+	return d.decodeTime(clen)
+}
+
+func (d *msgpackDecDriver) decodeTime(clen int) (t time.Time) {
+	// bs = d.r.readx(clen)
+	d.bdRead = false
+	switch clen {
+	case 4:
+		t = time.Unix(int64(bigen.Uint32(d.r.readx(4))), 0).UTC()
+	case 8:
+		tv := bigen.Uint64(d.r.readx(8))
+		t = time.Unix(int64(tv&0x00000003ffffffff), int64(tv>>34)).UTC()
+	case 12:
+		nsec := bigen.Uint32(d.r.readx(4))
+		sec := bigen.Uint64(d.r.readx(8))
+		t = time.Unix(int64(sec), int64(nsec)).UTC()
+	default:
+		d.d.errorf("invalid length of bytes for decoding time - expecting 4 or 8 or 12, got %d", clen)
 		return
 	}
 	return

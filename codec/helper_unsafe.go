@@ -10,6 +10,7 @@ package codec
 import (
 	"reflect"
 	"sync/atomic"
+	"time"
 	"unsafe"
 )
 
@@ -152,6 +153,11 @@ func (d *Decoder) kBool(f *codecFnInfo, rv reflect.Value) {
 	*(*bool)(urv.ptr) = d.d.DecodeBool()
 }
 
+func (d *Decoder) kTime(f *codecFnInfo, rv reflect.Value) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	*(*time.Time)(urv.ptr) = d.d.DecodeTime()
+}
+
 func (d *Decoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	*(*float32)(urv.ptr) = float32(d.d.DecodeFloat(true))
@@ -222,6 +228,11 @@ func (d *Decoder) kUint64(f *codecFnInfo, rv reflect.Value) {
 func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	e.e.EncodeBool(*(*bool)(v.ptr))
+}
+
+func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
+	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	e.e.EncodeTime(*(*time.Time)(v.ptr))
 }
 
 func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {

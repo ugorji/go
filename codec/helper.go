@@ -184,7 +184,7 @@ const (
 	valueTypeBytes
 	valueTypeMap
 	valueTypeArray
-	valueTypeTimestamp
+	valueTypeTime
 	valueTypeExt
 
 	// valueTypeInvalid = 0xff
@@ -1213,6 +1213,14 @@ func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 	return rt.Implements(iTyp), reflect.PtrTo(rt).Implements(iTyp)
 }
 
+// func round(x float64) float64 {
+// 	t := math.Trunc(x)
+// 	if math.Abs(x-t) >= 0.5 {
+// 		return t + math.Copysign(1, x)
+// 	}
+// 	return t
+// }
+
 func xprintf(format string, a ...interface{}) {
 	if xDebug {
 		fmt.Fprintf(os.Stderr, format, a...)
@@ -1364,6 +1372,9 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 		fi.addrF = true
 		fi.addrD = ti.csp
 		fi.addrE = ti.csp
+	} else if rtid == timeTypId {
+		fn.fe = (*Encoder).kTime
+		fn.fd = (*Decoder).kTime
 	} else if rtid == rawTypId {
 		fn.fe = (*Encoder).raw
 		fn.fd = (*Decoder).raw
@@ -1373,11 +1384,12 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 		fi.addrF = true
 		fi.addrD = true
 		fi.addrE = true
-	} else if c.hh.IsBuiltinType(rtid) {
-		fn.fe = (*Encoder).builtin
-		fn.fd = (*Decoder).builtin
-		fi.addrF = true
-		fi.addrD = true
+	} else if false && c.hh.IsBuiltinType(rtid) {
+		// TODO: remove this whole block. currently turned off with the "false &&"
+		// fn.fe = (*Encoder).builtin
+		// fn.fd = (*Decoder).builtin
+		// fi.addrF = true
+		// fi.addrD = true
 	} else if xfFn := c.h.getExt(rtid); xfFn != nil {
 		fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 		fn.fe = (*Encoder).ext
@@ -1673,6 +1685,11 @@ type bytesRv struct {
 	r reflect.Value
 }
 type bytesRvSlice []bytesRv
+type timeRv struct {
+	v time.Time
+	r reflect.Value
+}
+type timeRvSlice []timeRv
 
 func (p intRvSlice) Len() int           { return len(p) }
 func (p intRvSlice) Less(i, j int) bool { return p[i].v < p[j].v }
@@ -1699,6 +1716,10 @@ func (p bytesRvSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 func (p boolRvSlice) Len() int           { return len(p) }
 func (p boolRvSlice) Less(i, j int) bool { return !p[i].v && p[j].v }
 func (p boolRvSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+func (p timeRvSlice) Len() int           { return len(p) }
+func (p timeRvSlice) Less(i, j int) bool { return p[i].v.Before(p[j].v) }
+func (p timeRvSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 // -----------------
 
