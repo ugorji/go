@@ -1220,7 +1220,8 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		} else {
 			rvbs := rv.Bytes()
 			bs2 := dd.DecodeBytes(rvbs, false)
-			if rvbs == nil && bs2 != nil || rvbs != nil && bs2 == nil || len(bs2) != len(rvbs) {
+			// if rvbs == nil && bs2 != nil || rvbs != nil && bs2 == nil || len(bs2) != len(rvbs) {
+			if !(len(bs2) > 0 && len(bs2) == len(rvbs) && &bs2[0] == &rvbs[0]) {
 				if rv.CanSet() {
 					rv.SetBytes(bs2)
 				} else {
@@ -2028,7 +2029,7 @@ func (d *Decoder) decode(iv interface{}) {
 
 	case reflect.Value:
 		v = d.ensureDecodeable(v)
-		d.decodeValue(v, nil, true) // TODO: maybe ask to recognize ...
+		d.decodeValue(v, nil, true)
 
 	case *string:
 		*v = d.d.DecodeString()
@@ -2060,7 +2061,11 @@ func (d *Decoder) decode(iv interface{}) {
 		*v = d.d.DecodeFloat(false)
 	case *[]uint8:
 		*v = d.d.DecodeBytes(*v, false)
-
+	case []uint8:
+		b := d.d.DecodeBytes(v, false)
+		if !(len(b) > 0 && len(b) == len(v) && &b[0] == &v[0]) {
+			copy(v, b)
+		}
 	case *time.Time:
 		*v = d.d.DecodeTime()
 	case *Raw:
@@ -2175,7 +2180,8 @@ func (d *Decoder) ensureDecodeable(rv reflect.Value) (rv2 reflect.Value) {
 		return
 	}
 	rvi := rv2i(rv)
-	d.errorf("cannot decode into value of kind: %v, type: %T, %v", rv.Kind(), rvi, rvi)
+	rvk := rv.Kind()
+	d.errorf("cannot decode into value of kind: %v, type: %T, %v", rvk, rvi, rvi)
 	return
 }
 
