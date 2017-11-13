@@ -276,6 +276,10 @@ func (e *bincEncDriver) EncodeSymbol(v string) {
 }
 
 func (e *bincEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
+	if v == nil {
+		e.EncodeNil()
+		return
+	}
 	l := uint64(len(v))
 	e.encBytesLen(c, l)
 	if l > 0 {
@@ -749,6 +753,11 @@ func (d *bincDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	if d.bd == bincVdSpecial<<4|bincSpNil {
 		d.bdRead = false
 		return nil
+	}
+	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
+	if d.vd == bincVdArray {
+		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
+		return
 	}
 	var clen int
 	if d.vd == bincVdString || d.vd == bincVdByteArray {

@@ -292,6 +292,10 @@ func (e *msgpackEncDriver) EncodeSymbol(v string) {
 }
 
 func (e *msgpackEncDriver) EncodeStringBytes(c charEncoding, bs []byte) {
+	if bs == nil {
+		e.EncodeNil()
+		return
+	}
 	slen := len(bs)
 	if c == cRAW && e.h.WriteExt {
 		e.writeContainerLen(msgpackContainerBin, slen)
@@ -592,13 +596,15 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 		d.readNextBd()
 	}
 
+	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
+	bd := d.bd
 	// DecodeBytes could be from: bin str fixstr fixarray array ...
 	var clen int
 	vt := d.ContainerType()
 	switch vt {
 	case valueTypeBytes:
 		// valueTypeBytes may be a mpBin or an mpStr container
-		if bd := d.bd; bd == mpBin8 || bd == mpBin16 || bd == mpBin32 {
+		if bd == mpBin8 || bd == mpBin16 || bd == mpBin32 {
 			clen = d.readContainerLen(msgpackContainerBin)
 		} else {
 			clen = d.readContainerLen(msgpackContainerStr)
@@ -606,21 +612,23 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 	case valueTypeString:
 		clen = d.readContainerLen(msgpackContainerStr)
 	case valueTypeArray:
-		clen = d.readContainerLen(msgpackContainerList)
-		// ensure everything after is one byte each
-		for i := 0; i < clen; i++ {
-			d.readNextBd()
-			if d.bd == mpNil {
-				bs = append(bs, 0)
-			} else if d.bd == mpUint8 {
-				bs = append(bs, d.r.readn1())
-			} else {
-				d.d.errorf("cannot read non-byte into a byte array")
-				return
-			}
-		}
-		d.bdRead = false
-		return bs
+		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
+		return
+		// clen = d.readContainerLen(msgpackContainerList)
+		// // ensure everything after is one byte each
+		// for i := 0; i < clen; i++ {
+		// 	d.readNextBd()
+		// 	if d.bd == mpNil {
+		// 		bs = append(bs, 0)
+		// 	} else if d.bd == mpUint8 {
+		// 		bs = append(bs, d.r.readn1())
+		// 	} else {
+		// 		d.d.errorf("cannot read non-byte into a byte array")
+		// 		return
+		// 	}
+		// }
+		// d.bdRead = false
+		// return bs
 	default:
 		d.d.errorf("invalid container type: expecting bin|str|array, got: 0x%x", uint8(vt))
 		return

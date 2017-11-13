@@ -189,7 +189,8 @@ func (e *simpleEncDriver) EncodeSymbol(v string) {
 }
 
 func (e *simpleEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
-	if e.h.EncZeroValuesAsNil && e.c != containerMapKey && v == nil {
+	// if e.h.EncZeroValuesAsNil && e.c != containerMapKey && v == nil {
+	if v == nil {
 		e.EncodeNil()
 		return
 	}
@@ -465,6 +466,12 @@ func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		d.bdRead = false
 		return
 	}
+	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
+	if d.bd >= simpleVdArray && d.bd <= simpleVdMap+4 {
+		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
+		return
+	}
+
 	clen := d.decLen()
 	d.bdRead = false
 	if zerocopy {

@@ -387,6 +387,10 @@ func (e *jsonEncDriver) EncodeSymbol(v string) {
 
 func (e *jsonEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
 	// if encoding raw bytes and RawBytesExt is configured, use it to encode
+	if v == nil {
+		e.EncodeNil()
+		return
+	}
 	if c == cRAW {
 		if e.se.i != nil {
 			e.EncodeExt(v, 0, &e.se, e.e)
@@ -777,6 +781,14 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	if d.se.i != nil {
 		bsOut = bs
 		d.DecodeExt(&bsOut, 0, &d.se)
+		return
+	}
+	if d.tok == 0 {
+		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+	}
+	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
+	if d.tok == '[' {
+		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		return
 	}
 	d.appendStringAsBytes()
