@@ -430,11 +430,18 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			return
 		}
 	}
+	if f.seq == seqTypeChan && ti.rt.ChanDir()&reflect.RecvDir == 0 {
+		e.errorf("send-only channel cannot be used for receiving byte(s)")
+	}
 	elemsep := e.hh.hasElemSeparators()
-	rtelem := ti.rt.Elem()
 	l := rv.Len()
-	if ti.rtid == uint8SliceTypId || rtelem.Kind() == reflect.Uint8 {
+	rtelem := ti.rt.Elem()
+	rtelemIsByte := uint8TypId == rt2id(rtelem) // NOT rtelem.Kind() == reflect.Uint8
+	// if a slice, array or chan of bytes, treat specially
+	if rtelemIsByte {
 		switch f.seq {
+		case seqTypeSlice:
+			ee.EncodeStringBytes(cRAW, rv.Bytes())
 		case seqTypeArray:
 			if rv.CanAddr() {
 				ee.EncodeStringBytes(cRAW, rv.Slice(0, l).Bytes())
@@ -448,22 +455,22 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				reflect.Copy(reflect.ValueOf(bs), rv)
 				ee.EncodeStringBytes(cRAW, bs)
 			}
-			return
-		case seqTypeSlice:
-			ee.EncodeStringBytes(cRAW, rv.Bytes())
-			return
+		case seqTypeChan:
+			bs := e.b[:0]
+			// do not use range, so that the number of elements encoded
+			// does not change, and encoding does not hang waiting on someone to close chan.
+			// for b := range rv2i(rv).(<-chan byte) { bs = append(bs, b) }
+			// ch := rv2i(rv).(<-chan byte) // fix error - that this is a chan byte, not a <-chan byte.
+			irv := rv2i(rv)
+			ch, ok := irv.(<-chan byte)
+			if !ok {
+				ch = irv.(chan byte)
+			}
+			for i := 0; i < l; i++ {
+				bs = append(bs, <-ch)
+			}
+			ee.EncodeStringBytes(cRAW, bs)
 		}
-	}
-	if ti.rtid == uint8SliceTypId && f.seq == seqTypeChan {
-		bs := e.b[:0]
-		// do not use range, so that the number of elements encoded
-		// does not change, and encoding does not hang waiting on someone to close chan.
-		// for b := range rv2i(rv).(<-chan byte) { bs = append(bs, b) }
-		ch := rv2i(rv).(<-chan byte)
-		for i := 0; i < l; i++ {
-			bs = append(bs, <-ch)
-		}
-		ee.EncodeStringBytes(cRAW, bs)
 		return
 	}
 
