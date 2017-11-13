@@ -974,21 +974,18 @@ func (c *msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint
 	var b = ba[0]
 	if b != fia {
 		err = fmt.Errorf("Unexpected value for array descriptor: Expecting %v. Received %v", fia, b)
-		return
-	}
-
-	if err = c.read(&b); err != nil {
-		return
-	}
-	if b != expectTypeByte {
-		err = fmt.Errorf("Unexpected byte descriptor in header. Expecting %v. Received %v", expectTypeByte, b)
-		return
-	}
-	if err = c.read(msgid); err != nil {
-		return
-	}
-	if err = c.read(methodOrError); err != nil {
-		return
+	} else {
+		err = c.read(&b)
+		if err == nil {
+			if b != expectTypeByte {
+				err = fmt.Errorf("Unexpected byte descriptor in header. Expecting %v. Received %v", expectTypeByte, b)
+			} else {
+				err = c.read(msgid)
+				if err == nil {
+					err = c.read(methodOrError)
+				}
+			}
+		}
 	}
 	return
 }
