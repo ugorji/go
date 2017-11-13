@@ -216,27 +216,55 @@ func (x *testUnixNanoTimeExt) UpdateExt(dest interface{}, v interface{}) {
 	}
 }
 
-var testInt64Typ = reflect.TypeOf(testInt64(0))
+var wrapInt64Typ = reflect.TypeOf(wrapInt64(0))
 
-type testInt64Ext int64
+type wrapInt64Ext int64
 
-func (x *testInt64Ext) WriteExt(v interface{}) []byte {
-	v2 := uint64(int64(v.(testInt64)))
+func (x *wrapInt64Ext) WriteExt(v interface{}) []byte {
+	v2 := uint64(int64(v.(wrapInt64)))
 	bs := make([]byte, 8)
 	bigen.PutUint64(bs, v2)
 	return bs
 }
-func (x *testInt64Ext) ReadExt(v interface{}, bs []byte) {
-	v2 := v.(*testInt64)
+func (x *wrapInt64Ext) ReadExt(v interface{}, bs []byte) {
+	v2 := v.(*wrapInt64)
 	ui := bigen.Uint64(bs)
-	*v2 = testInt64(int64(ui))
+	*v2 = wrapInt64(int64(ui))
 }
-func (x *testInt64Ext) ConvertExt(v interface{}) interface{} {
-	return int64(v.(testInt64))
+func (x *wrapInt64Ext) ConvertExt(v interface{}) interface{} {
+	return int64(v.(wrapInt64))
 }
-func (x *testInt64Ext) UpdateExt(dest interface{}, v interface{}) {
-	v2 := dest.(*testInt64)
-	*v2 = testInt64(v.(int64))
+func (x *wrapInt64Ext) UpdateExt(dest interface{}, v interface{}) {
+	v2 := dest.(*wrapInt64)
+	*v2 = wrapInt64(v.(int64))
+}
+
+var wrapBytesTyp = reflect.TypeOf(wrapBytes(nil))
+
+type wrapBytesExt struct{}
+
+func (x *wrapBytesExt) WriteExt(v interface{}) []byte {
+	return ([]byte)(v.(wrapBytes))
+}
+func (x *wrapBytesExt) ReadExt(v interface{}, bs []byte) {
+	v2 := v.(*wrapBytes)
+	*v2 = wrapBytes(bs)
+}
+func (x *wrapBytesExt) ConvertExt(v interface{}) interface{} {
+	return ([]byte)(v.(wrapBytes))
+}
+func (x *wrapBytesExt) UpdateExt(dest interface{}, v interface{}) {
+	v2 := dest.(*wrapBytes)
+	// some formats (e.g. json) cannot nakedly determine []byte from string, so expect both
+	switch v3 := v.(type) {
+	case []byte:
+		*v2 = wrapBytes(v3)
+	case string:
+		*v2 = wrapBytes([]byte(v3))
+	default:
+		panic("UpdateExt for wrapBytesExt expects string or []byte")
+	}
+	// *v2 = wrapBytes(v.([]byte))
 }
 
 func testCodecEncode(ts interface{}, bsIn []byte,
@@ -322,14 +350,22 @@ func testInit() {
 	testCborH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
 	// testJsonH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
 
-	// Now, add extensions for the type testInt64,
+	// Now, add extensions for the type wrapInt64,
 	// so we can execute the Encode/Decode Ext paths.
-	var tI64Ext testInt64Ext
-	testSimpleH.SetBytesExt(testInt64Typ, 18, &tI64Ext)
-	testMsgpackH.SetBytesExt(testInt64Typ, 18, &tI64Ext)
-	testBincH.SetBytesExt(testInt64Typ, 18, &tI64Ext)
-	testJsonH.SetInterfaceExt(testInt64Typ, 18, &tI64Ext)
-	testCborH.SetInterfaceExt(testInt64Typ, 18, &tI64Ext)
+	var tI64Ext wrapInt64Ext
+	testSimpleH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext)
+	testMsgpackH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext)
+	testBincH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext)
+	testJsonH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext)
+	testCborH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext)
+
+	var tBytesExt wrapBytesExt
+
+	testSimpleH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt)
+	testMsgpackH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt)
+	testBincH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt)
+	testJsonH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt)
+	testCborH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt)
 
 	// primitives MUST be an even number, so it can be used as a mapBySlice also.
 	primitives := []interface{}{
@@ -1583,31 +1619,68 @@ func doTestRawExt(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 	// return // TODO: need to fix this ...
 	var b []byte
-	var v interface{}
+	var v RawExt // interface{}
 	_, isJson := h.(*JsonHandle)
 	_, isCbor := h.(*CborHandle)
-	isValuer := isJson || isCbor
-	_ = isValuer
+	bh := h.getBasicHandle()
+	// isValuer := isJson || isCbor
+	// _ = isValuer
 	for _, r := range []RawExt{
 		{Tag: 99, Value: "9999", Data: []byte("9999")},
 	} {
 		e := NewEncoderBytes(&b, h)
 		e.MustEncode(&r)
+		// fmt.Printf(">>>> rawext: isnil? %v, %d - %v\n", b == nil, len(b), b)
 		d := NewDecoderBytes(b, h)
 		d.MustDecode(&v)
-		switch h.(type) {
-		case *JsonHandle:
-			testDeepEqualErr(r.Value, v, t, "rawext-json")
+		var r2 = r
+		switch {
+		case isJson:
+			r2.Tag = 0
+			r2.Data = nil
+		case isCbor:
+			r2.Data = nil
 		default:
-			r2 := r
-			if isValuer {
-				r2.Data = nil
-			} else {
-				r2.Value = nil
-			}
-			testDeepEqualErr(v, r2, t, "rawext-default")
+			r2.Value = nil
 		}
+		testDeepEqualErr(v, r2, t, "rawext-default")
+		// switch h.(type) {
+		// case *JsonHandle:
+		// 	testDeepEqualErr(r.Value, v, t, "rawext-json")
+		// default:
+		// 	var r2 = r
+		// 	if isValuer {
+		// 		r2.Data = nil
+		// 	} else {
+		// 		r2.Value = nil
+		// 	}
+		// 	testDeepEqualErr(v, r2, t, "rawext-default")
+		// }
 	}
+
+	// Add testing for Raw also
+	if b != nil {
+		b = b[:0]
+	}
+	oldRawMode := bh.Raw
+	defer func() { bh.Raw = oldRawMode }()
+	bh.Raw = true
+
+	var v2 Raw
+	for _, s := range []string{
+		"goodbye",
+		"hello",
+	} {
+		e := NewEncoderBytes(&b, h)
+		e.MustEncode(&s)
+		// fmt.Printf(">>>> rawext: isnil? %v, %d - %v\n", b == nil, len(b), b)
+		var r Raw = make([]byte, len(b))
+		copy(r, b)
+		d := NewDecoderBytes(b, h)
+		d.MustDecode(&v2)
+		testDeepEqualErr(v2, r, t, "raw-default")
+	}
+
 }
 
 // func doTestTimeExt(t *testing.T, h Handle) {

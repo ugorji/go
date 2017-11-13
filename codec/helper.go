@@ -297,6 +297,7 @@ var (
 	timeTyp       = reflect.TypeOf(time.Time{})
 	rawExtTyp     = reflect.TypeOf(RawExt{})
 	rawTyp        = reflect.TypeOf(Raw{})
+	uint8Typ      = reflect.TypeOf(uint8(0))
 	uint8SliceTyp = reflect.TypeOf([]uint8(nil))
 
 	mapBySliceTyp = reflect.TypeOf((*MapBySlice)(nil)).Elem()
@@ -312,6 +313,7 @@ var (
 
 	selferTyp = reflect.TypeOf((*Selfer)(nil)).Elem()
 
+	uint8TypId      = rt2id(uint8Typ)
 	uint8SliceTypId = rt2id(uint8SliceTyp)
 	rawExtTypId     = rt2id(rawExtTyp)
 	rawTypId        = rt2id(rawTyp)
@@ -429,7 +431,7 @@ type Handle interface {
 }
 
 // Raw represents raw formatted bytes.
-// We "blindly" store it during encode and store the raw bytes during decode.
+// We "blindly" store it during encode and retrieve the raw bytes during decode.
 // Note: it is dangerous during encode, so we may gate the behaviour behind an Encode flag which must be explicitly set.
 type Raw []byte
 
