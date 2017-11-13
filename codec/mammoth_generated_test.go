@@ -60,6 +60,8 @@ type TestMammoth struct {
 	FptrSliceFloat64 *[]float64
 	FSliceUint       []uint
 	FptrSliceUint    *[]uint
+	FSliceUint8      []uint8
+	FptrSliceUint8   *[]uint8
 	FSliceUint16     []uint16
 	FptrSliceUint16  *[]uint16
 	FSliceUint32     []uint32
@@ -614,6 +616,10 @@ func (_ typMbsSliceFloat64) MapBySlice() {}
 type typMbsSliceUint []uint
 
 func (_ typMbsSliceUint) MapBySlice() {}
+
+type typMbsSliceUint8 []uint8
+
+func (_ typMbsSliceUint8) MapBySlice() {}
 
 type typMbsSliceUint16 []uint16
 
@@ -1224,624 +1230,686 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		testDeepEqualErr(v73v3, v73v4, t, "equal-slice-v73-custom-p")
 	}
 
-	var v108va [8]uint16
+	var v91va [8]uint8
+	for _, v := range [][]uint8{nil, {}, {44, 0, 0, 33}} {
+		var v91v1, v91v2 []uint8
+		v91v1 = v
+		bs91 := testMarshalErr(v91v1, h, t, "enc-slice-v91")
+		if v == nil {
+			v91v2 = nil
+		} else {
+			v91v2 = make([]uint8, len(v))
+		}
+		testUnmarshalErr(v91v2, bs91, h, t, "dec-slice-v91")
+		testDeepEqualErr(v91v1, v91v2, t, "equal-slice-v91")
+		if v == nil {
+			v91v2 = nil
+		} else {
+			v91v2 = make([]uint8, len(v))
+		}
+		testUnmarshalErr(reflect.ValueOf(v91v2), bs91, h, t, "dec-slice-v91-noaddr") // non-addressable value
+		testDeepEqualErr(v91v1, v91v2, t, "equal-slice-v91-noaddr")
+		// ...
+		bs91 = testMarshalErr(&v91v1, h, t, "enc-slice-v91-p")
+		v91v2 = nil
+		testUnmarshalErr(&v91v2, bs91, h, t, "dec-slice-v91-p")
+		testDeepEqualErr(v91v1, v91v2, t, "equal-slice-v91-p")
+		v91va = [8]uint8{} // clear the array
+		v91v2 = v91va[:1:1]
+		testUnmarshalErr(&v91v2, bs91, h, t, "dec-slice-v91-p-1")
+		testDeepEqualErr(v91v1, v91v2, t, "equal-slice-v91-p-1")
+		v91va = [8]uint8{} // clear the array
+		v91v2 = v91va[:len(v91v1):len(v91v1)]
+		testUnmarshalErr(&v91v2, bs91, h, t, "dec-slice-v91-p-len")
+		testDeepEqualErr(v91v1, v91v2, t, "equal-slice-v91-p-len")
+		v91va = [8]uint8{} // clear the array
+		v91v2 = v91va[:]
+		testUnmarshalErr(&v91v2, bs91, h, t, "dec-slice-v91-p-cap")
+		testDeepEqualErr(v91v1, v91v2, t, "equal-slice-v91-p-cap")
+		if len(v91v1) > 1 {
+			v91va = [8]uint8{} // clear the array
+			testUnmarshalErr((&v91va)[:len(v91v1)], bs91, h, t, "dec-slice-v91-p-len-noaddr")
+			testDeepEqualErr(v91v1, v91va[:len(v91v1)], t, "equal-slice-v91-p-len-noaddr")
+			v91va = [8]uint8{} // clear the array
+			testUnmarshalErr((&v91va)[:], bs91, h, t, "dec-slice-v91-p-cap-noaddr")
+			testDeepEqualErr(v91v1, v91va[:len(v91v1)], t, "equal-slice-v91-p-cap-noaddr")
+		}
+		// ...
+		var v91v3, v91v4 typMbsSliceUint8
+		v91v2 = nil
+		if v != nil {
+			v91v2 = make([]uint8, len(v))
+		}
+		v91v3 = typMbsSliceUint8(v91v1)
+		v91v4 = typMbsSliceUint8(v91v2)
+		bs91 = testMarshalErr(v91v3, h, t, "enc-slice-v91-custom")
+		testUnmarshalErr(v91v4, bs91, h, t, "dec-slice-v91-custom")
+		testDeepEqualErr(v91v3, v91v4, t, "equal-slice-v91-custom")
+		bs91 = testMarshalErr(&v91v3, h, t, "enc-slice-v91-custom-p")
+		v91v2 = nil
+		v91v4 = typMbsSliceUint8(v91v2)
+		testUnmarshalErr(&v91v4, bs91, h, t, "dec-slice-v91-custom-p")
+		testDeepEqualErr(v91v3, v91v4, t, "equal-slice-v91-custom-p")
+	}
+
+	var v109va [8]uint16
 	for _, v := range [][]uint16{nil, {}, {44, 0, 0, 33}} {
-		var v108v1, v108v2 []uint16
-		v108v1 = v
-		bs108 := testMarshalErr(v108v1, h, t, "enc-slice-v108")
+		var v109v1, v109v2 []uint16
+		v109v1 = v
+		bs109 := testMarshalErr(v109v1, h, t, "enc-slice-v109")
 		if v == nil {
-			v108v2 = nil
+			v109v2 = nil
 		} else {
-			v108v2 = make([]uint16, len(v))
+			v109v2 = make([]uint16, len(v))
 		}
-		testUnmarshalErr(v108v2, bs108, h, t, "dec-slice-v108")
-		testDeepEqualErr(v108v1, v108v2, t, "equal-slice-v108")
+		testUnmarshalErr(v109v2, bs109, h, t, "dec-slice-v109")
+		testDeepEqualErr(v109v1, v109v2, t, "equal-slice-v109")
 		if v == nil {
-			v108v2 = nil
+			v109v2 = nil
 		} else {
-			v108v2 = make([]uint16, len(v))
+			v109v2 = make([]uint16, len(v))
 		}
-		testUnmarshalErr(reflect.ValueOf(v108v2), bs108, h, t, "dec-slice-v108-noaddr") // non-addressable value
-		testDeepEqualErr(v108v1, v108v2, t, "equal-slice-v108-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v109v2), bs109, h, t, "dec-slice-v109-noaddr") // non-addressable value
+		testDeepEqualErr(v109v1, v109v2, t, "equal-slice-v109-noaddr")
 		// ...
-		bs108 = testMarshalErr(&v108v1, h, t, "enc-slice-v108-p")
-		v108v2 = nil
-		testUnmarshalErr(&v108v2, bs108, h, t, "dec-slice-v108-p")
-		testDeepEqualErr(v108v1, v108v2, t, "equal-slice-v108-p")
-		v108va = [8]uint16{} // clear the array
-		v108v2 = v108va[:1:1]
-		testUnmarshalErr(&v108v2, bs108, h, t, "dec-slice-v108-p-1")
-		testDeepEqualErr(v108v1, v108v2, t, "equal-slice-v108-p-1")
-		v108va = [8]uint16{} // clear the array
-		v108v2 = v108va[:len(v108v1):len(v108v1)]
-		testUnmarshalErr(&v108v2, bs108, h, t, "dec-slice-v108-p-len")
-		testDeepEqualErr(v108v1, v108v2, t, "equal-slice-v108-p-len")
-		v108va = [8]uint16{} // clear the array
-		v108v2 = v108va[:]
-		testUnmarshalErr(&v108v2, bs108, h, t, "dec-slice-v108-p-cap")
-		testDeepEqualErr(v108v1, v108v2, t, "equal-slice-v108-p-cap")
-		if len(v108v1) > 1 {
-			v108va = [8]uint16{} // clear the array
-			testUnmarshalErr((&v108va)[:len(v108v1)], bs108, h, t, "dec-slice-v108-p-len-noaddr")
-			testDeepEqualErr(v108v1, v108va[:len(v108v1)], t, "equal-slice-v108-p-len-noaddr")
-			v108va = [8]uint16{} // clear the array
-			testUnmarshalErr((&v108va)[:], bs108, h, t, "dec-slice-v108-p-cap-noaddr")
-			testDeepEqualErr(v108v1, v108va[:len(v108v1)], t, "equal-slice-v108-p-cap-noaddr")
+		bs109 = testMarshalErr(&v109v1, h, t, "enc-slice-v109-p")
+		v109v2 = nil
+		testUnmarshalErr(&v109v2, bs109, h, t, "dec-slice-v109-p")
+		testDeepEqualErr(v109v1, v109v2, t, "equal-slice-v109-p")
+		v109va = [8]uint16{} // clear the array
+		v109v2 = v109va[:1:1]
+		testUnmarshalErr(&v109v2, bs109, h, t, "dec-slice-v109-p-1")
+		testDeepEqualErr(v109v1, v109v2, t, "equal-slice-v109-p-1")
+		v109va = [8]uint16{} // clear the array
+		v109v2 = v109va[:len(v109v1):len(v109v1)]
+		testUnmarshalErr(&v109v2, bs109, h, t, "dec-slice-v109-p-len")
+		testDeepEqualErr(v109v1, v109v2, t, "equal-slice-v109-p-len")
+		v109va = [8]uint16{} // clear the array
+		v109v2 = v109va[:]
+		testUnmarshalErr(&v109v2, bs109, h, t, "dec-slice-v109-p-cap")
+		testDeepEqualErr(v109v1, v109v2, t, "equal-slice-v109-p-cap")
+		if len(v109v1) > 1 {
+			v109va = [8]uint16{} // clear the array
+			testUnmarshalErr((&v109va)[:len(v109v1)], bs109, h, t, "dec-slice-v109-p-len-noaddr")
+			testDeepEqualErr(v109v1, v109va[:len(v109v1)], t, "equal-slice-v109-p-len-noaddr")
+			v109va = [8]uint16{} // clear the array
+			testUnmarshalErr((&v109va)[:], bs109, h, t, "dec-slice-v109-p-cap-noaddr")
+			testDeepEqualErr(v109v1, v109va[:len(v109v1)], t, "equal-slice-v109-p-cap-noaddr")
 		}
 		// ...
-		var v108v3, v108v4 typMbsSliceUint16
-		v108v2 = nil
+		var v109v3, v109v4 typMbsSliceUint16
+		v109v2 = nil
 		if v != nil {
-			v108v2 = make([]uint16, len(v))
+			v109v2 = make([]uint16, len(v))
 		}
-		v108v3 = typMbsSliceUint16(v108v1)
-		v108v4 = typMbsSliceUint16(v108v2)
-		bs108 = testMarshalErr(v108v3, h, t, "enc-slice-v108-custom")
-		testUnmarshalErr(v108v4, bs108, h, t, "dec-slice-v108-custom")
-		testDeepEqualErr(v108v3, v108v4, t, "equal-slice-v108-custom")
-		bs108 = testMarshalErr(&v108v3, h, t, "enc-slice-v108-custom-p")
-		v108v2 = nil
-		v108v4 = typMbsSliceUint16(v108v2)
-		testUnmarshalErr(&v108v4, bs108, h, t, "dec-slice-v108-custom-p")
-		testDeepEqualErr(v108v3, v108v4, t, "equal-slice-v108-custom-p")
+		v109v3 = typMbsSliceUint16(v109v1)
+		v109v4 = typMbsSliceUint16(v109v2)
+		bs109 = testMarshalErr(v109v3, h, t, "enc-slice-v109-custom")
+		testUnmarshalErr(v109v4, bs109, h, t, "dec-slice-v109-custom")
+		testDeepEqualErr(v109v3, v109v4, t, "equal-slice-v109-custom")
+		bs109 = testMarshalErr(&v109v3, h, t, "enc-slice-v109-custom-p")
+		v109v2 = nil
+		v109v4 = typMbsSliceUint16(v109v2)
+		testUnmarshalErr(&v109v4, bs109, h, t, "dec-slice-v109-custom-p")
+		testDeepEqualErr(v109v3, v109v4, t, "equal-slice-v109-custom-p")
 	}
 
-	var v126va [8]uint32
+	var v127va [8]uint32
 	for _, v := range [][]uint32{nil, {}, {44, 0, 0, 33}} {
-		var v126v1, v126v2 []uint32
-		v126v1 = v
-		bs126 := testMarshalErr(v126v1, h, t, "enc-slice-v126")
+		var v127v1, v127v2 []uint32
+		v127v1 = v
+		bs127 := testMarshalErr(v127v1, h, t, "enc-slice-v127")
 		if v == nil {
-			v126v2 = nil
+			v127v2 = nil
 		} else {
-			v126v2 = make([]uint32, len(v))
+			v127v2 = make([]uint32, len(v))
 		}
-		testUnmarshalErr(v126v2, bs126, h, t, "dec-slice-v126")
-		testDeepEqualErr(v126v1, v126v2, t, "equal-slice-v126")
+		testUnmarshalErr(v127v2, bs127, h, t, "dec-slice-v127")
+		testDeepEqualErr(v127v1, v127v2, t, "equal-slice-v127")
 		if v == nil {
-			v126v2 = nil
+			v127v2 = nil
 		} else {
-			v126v2 = make([]uint32, len(v))
+			v127v2 = make([]uint32, len(v))
 		}
-		testUnmarshalErr(reflect.ValueOf(v126v2), bs126, h, t, "dec-slice-v126-noaddr") // non-addressable value
-		testDeepEqualErr(v126v1, v126v2, t, "equal-slice-v126-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v127v2), bs127, h, t, "dec-slice-v127-noaddr") // non-addressable value
+		testDeepEqualErr(v127v1, v127v2, t, "equal-slice-v127-noaddr")
 		// ...
-		bs126 = testMarshalErr(&v126v1, h, t, "enc-slice-v126-p")
-		v126v2 = nil
-		testUnmarshalErr(&v126v2, bs126, h, t, "dec-slice-v126-p")
-		testDeepEqualErr(v126v1, v126v2, t, "equal-slice-v126-p")
-		v126va = [8]uint32{} // clear the array
-		v126v2 = v126va[:1:1]
-		testUnmarshalErr(&v126v2, bs126, h, t, "dec-slice-v126-p-1")
-		testDeepEqualErr(v126v1, v126v2, t, "equal-slice-v126-p-1")
-		v126va = [8]uint32{} // clear the array
-		v126v2 = v126va[:len(v126v1):len(v126v1)]
-		testUnmarshalErr(&v126v2, bs126, h, t, "dec-slice-v126-p-len")
-		testDeepEqualErr(v126v1, v126v2, t, "equal-slice-v126-p-len")
-		v126va = [8]uint32{} // clear the array
-		v126v2 = v126va[:]
-		testUnmarshalErr(&v126v2, bs126, h, t, "dec-slice-v126-p-cap")
-		testDeepEqualErr(v126v1, v126v2, t, "equal-slice-v126-p-cap")
-		if len(v126v1) > 1 {
-			v126va = [8]uint32{} // clear the array
-			testUnmarshalErr((&v126va)[:len(v126v1)], bs126, h, t, "dec-slice-v126-p-len-noaddr")
-			testDeepEqualErr(v126v1, v126va[:len(v126v1)], t, "equal-slice-v126-p-len-noaddr")
-			v126va = [8]uint32{} // clear the array
-			testUnmarshalErr((&v126va)[:], bs126, h, t, "dec-slice-v126-p-cap-noaddr")
-			testDeepEqualErr(v126v1, v126va[:len(v126v1)], t, "equal-slice-v126-p-cap-noaddr")
+		bs127 = testMarshalErr(&v127v1, h, t, "enc-slice-v127-p")
+		v127v2 = nil
+		testUnmarshalErr(&v127v2, bs127, h, t, "dec-slice-v127-p")
+		testDeepEqualErr(v127v1, v127v2, t, "equal-slice-v127-p")
+		v127va = [8]uint32{} // clear the array
+		v127v2 = v127va[:1:1]
+		testUnmarshalErr(&v127v2, bs127, h, t, "dec-slice-v127-p-1")
+		testDeepEqualErr(v127v1, v127v2, t, "equal-slice-v127-p-1")
+		v127va = [8]uint32{} // clear the array
+		v127v2 = v127va[:len(v127v1):len(v127v1)]
+		testUnmarshalErr(&v127v2, bs127, h, t, "dec-slice-v127-p-len")
+		testDeepEqualErr(v127v1, v127v2, t, "equal-slice-v127-p-len")
+		v127va = [8]uint32{} // clear the array
+		v127v2 = v127va[:]
+		testUnmarshalErr(&v127v2, bs127, h, t, "dec-slice-v127-p-cap")
+		testDeepEqualErr(v127v1, v127v2, t, "equal-slice-v127-p-cap")
+		if len(v127v1) > 1 {
+			v127va = [8]uint32{} // clear the array
+			testUnmarshalErr((&v127va)[:len(v127v1)], bs127, h, t, "dec-slice-v127-p-len-noaddr")
+			testDeepEqualErr(v127v1, v127va[:len(v127v1)], t, "equal-slice-v127-p-len-noaddr")
+			v127va = [8]uint32{} // clear the array
+			testUnmarshalErr((&v127va)[:], bs127, h, t, "dec-slice-v127-p-cap-noaddr")
+			testDeepEqualErr(v127v1, v127va[:len(v127v1)], t, "equal-slice-v127-p-cap-noaddr")
 		}
 		// ...
-		var v126v3, v126v4 typMbsSliceUint32
-		v126v2 = nil
+		var v127v3, v127v4 typMbsSliceUint32
+		v127v2 = nil
 		if v != nil {
-			v126v2 = make([]uint32, len(v))
+			v127v2 = make([]uint32, len(v))
 		}
-		v126v3 = typMbsSliceUint32(v126v1)
-		v126v4 = typMbsSliceUint32(v126v2)
-		bs126 = testMarshalErr(v126v3, h, t, "enc-slice-v126-custom")
-		testUnmarshalErr(v126v4, bs126, h, t, "dec-slice-v126-custom")
-		testDeepEqualErr(v126v3, v126v4, t, "equal-slice-v126-custom")
-		bs126 = testMarshalErr(&v126v3, h, t, "enc-slice-v126-custom-p")
-		v126v2 = nil
-		v126v4 = typMbsSliceUint32(v126v2)
-		testUnmarshalErr(&v126v4, bs126, h, t, "dec-slice-v126-custom-p")
-		testDeepEqualErr(v126v3, v126v4, t, "equal-slice-v126-custom-p")
+		v127v3 = typMbsSliceUint32(v127v1)
+		v127v4 = typMbsSliceUint32(v127v2)
+		bs127 = testMarshalErr(v127v3, h, t, "enc-slice-v127-custom")
+		testUnmarshalErr(v127v4, bs127, h, t, "dec-slice-v127-custom")
+		testDeepEqualErr(v127v3, v127v4, t, "equal-slice-v127-custom")
+		bs127 = testMarshalErr(&v127v3, h, t, "enc-slice-v127-custom-p")
+		v127v2 = nil
+		v127v4 = typMbsSliceUint32(v127v2)
+		testUnmarshalErr(&v127v4, bs127, h, t, "dec-slice-v127-custom-p")
+		testDeepEqualErr(v127v3, v127v4, t, "equal-slice-v127-custom-p")
 	}
 
-	var v144va [8]uint64
+	var v145va [8]uint64
 	for _, v := range [][]uint64{nil, {}, {44, 0, 0, 33}} {
-		var v144v1, v144v2 []uint64
-		v144v1 = v
-		bs144 := testMarshalErr(v144v1, h, t, "enc-slice-v144")
+		var v145v1, v145v2 []uint64
+		v145v1 = v
+		bs145 := testMarshalErr(v145v1, h, t, "enc-slice-v145")
 		if v == nil {
-			v144v2 = nil
+			v145v2 = nil
 		} else {
-			v144v2 = make([]uint64, len(v))
+			v145v2 = make([]uint64, len(v))
 		}
-		testUnmarshalErr(v144v2, bs144, h, t, "dec-slice-v144")
-		testDeepEqualErr(v144v1, v144v2, t, "equal-slice-v144")
+		testUnmarshalErr(v145v2, bs145, h, t, "dec-slice-v145")
+		testDeepEqualErr(v145v1, v145v2, t, "equal-slice-v145")
 		if v == nil {
-			v144v2 = nil
+			v145v2 = nil
 		} else {
-			v144v2 = make([]uint64, len(v))
+			v145v2 = make([]uint64, len(v))
 		}
-		testUnmarshalErr(reflect.ValueOf(v144v2), bs144, h, t, "dec-slice-v144-noaddr") // non-addressable value
-		testDeepEqualErr(v144v1, v144v2, t, "equal-slice-v144-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v145v2), bs145, h, t, "dec-slice-v145-noaddr") // non-addressable value
+		testDeepEqualErr(v145v1, v145v2, t, "equal-slice-v145-noaddr")
 		// ...
-		bs144 = testMarshalErr(&v144v1, h, t, "enc-slice-v144-p")
-		v144v2 = nil
-		testUnmarshalErr(&v144v2, bs144, h, t, "dec-slice-v144-p")
-		testDeepEqualErr(v144v1, v144v2, t, "equal-slice-v144-p")
-		v144va = [8]uint64{} // clear the array
-		v144v2 = v144va[:1:1]
-		testUnmarshalErr(&v144v2, bs144, h, t, "dec-slice-v144-p-1")
-		testDeepEqualErr(v144v1, v144v2, t, "equal-slice-v144-p-1")
-		v144va = [8]uint64{} // clear the array
-		v144v2 = v144va[:len(v144v1):len(v144v1)]
-		testUnmarshalErr(&v144v2, bs144, h, t, "dec-slice-v144-p-len")
-		testDeepEqualErr(v144v1, v144v2, t, "equal-slice-v144-p-len")
-		v144va = [8]uint64{} // clear the array
-		v144v2 = v144va[:]
-		testUnmarshalErr(&v144v2, bs144, h, t, "dec-slice-v144-p-cap")
-		testDeepEqualErr(v144v1, v144v2, t, "equal-slice-v144-p-cap")
-		if len(v144v1) > 1 {
-			v144va = [8]uint64{} // clear the array
-			testUnmarshalErr((&v144va)[:len(v144v1)], bs144, h, t, "dec-slice-v144-p-len-noaddr")
-			testDeepEqualErr(v144v1, v144va[:len(v144v1)], t, "equal-slice-v144-p-len-noaddr")
-			v144va = [8]uint64{} // clear the array
-			testUnmarshalErr((&v144va)[:], bs144, h, t, "dec-slice-v144-p-cap-noaddr")
-			testDeepEqualErr(v144v1, v144va[:len(v144v1)], t, "equal-slice-v144-p-cap-noaddr")
+		bs145 = testMarshalErr(&v145v1, h, t, "enc-slice-v145-p")
+		v145v2 = nil
+		testUnmarshalErr(&v145v2, bs145, h, t, "dec-slice-v145-p")
+		testDeepEqualErr(v145v1, v145v2, t, "equal-slice-v145-p")
+		v145va = [8]uint64{} // clear the array
+		v145v2 = v145va[:1:1]
+		testUnmarshalErr(&v145v2, bs145, h, t, "dec-slice-v145-p-1")
+		testDeepEqualErr(v145v1, v145v2, t, "equal-slice-v145-p-1")
+		v145va = [8]uint64{} // clear the array
+		v145v2 = v145va[:len(v145v1):len(v145v1)]
+		testUnmarshalErr(&v145v2, bs145, h, t, "dec-slice-v145-p-len")
+		testDeepEqualErr(v145v1, v145v2, t, "equal-slice-v145-p-len")
+		v145va = [8]uint64{} // clear the array
+		v145v2 = v145va[:]
+		testUnmarshalErr(&v145v2, bs145, h, t, "dec-slice-v145-p-cap")
+		testDeepEqualErr(v145v1, v145v2, t, "equal-slice-v145-p-cap")
+		if len(v145v1) > 1 {
+			v145va = [8]uint64{} // clear the array
+			testUnmarshalErr((&v145va)[:len(v145v1)], bs145, h, t, "dec-slice-v145-p-len-noaddr")
+			testDeepEqualErr(v145v1, v145va[:len(v145v1)], t, "equal-slice-v145-p-len-noaddr")
+			v145va = [8]uint64{} // clear the array
+			testUnmarshalErr((&v145va)[:], bs145, h, t, "dec-slice-v145-p-cap-noaddr")
+			testDeepEqualErr(v145v1, v145va[:len(v145v1)], t, "equal-slice-v145-p-cap-noaddr")
 		}
 		// ...
-		var v144v3, v144v4 typMbsSliceUint64
-		v144v2 = nil
+		var v145v3, v145v4 typMbsSliceUint64
+		v145v2 = nil
 		if v != nil {
-			v144v2 = make([]uint64, len(v))
+			v145v2 = make([]uint64, len(v))
 		}
-		v144v3 = typMbsSliceUint64(v144v1)
-		v144v4 = typMbsSliceUint64(v144v2)
-		bs144 = testMarshalErr(v144v3, h, t, "enc-slice-v144-custom")
-		testUnmarshalErr(v144v4, bs144, h, t, "dec-slice-v144-custom")
-		testDeepEqualErr(v144v3, v144v4, t, "equal-slice-v144-custom")
-		bs144 = testMarshalErr(&v144v3, h, t, "enc-slice-v144-custom-p")
-		v144v2 = nil
-		v144v4 = typMbsSliceUint64(v144v2)
-		testUnmarshalErr(&v144v4, bs144, h, t, "dec-slice-v144-custom-p")
-		testDeepEqualErr(v144v3, v144v4, t, "equal-slice-v144-custom-p")
+		v145v3 = typMbsSliceUint64(v145v1)
+		v145v4 = typMbsSliceUint64(v145v2)
+		bs145 = testMarshalErr(v145v3, h, t, "enc-slice-v145-custom")
+		testUnmarshalErr(v145v4, bs145, h, t, "dec-slice-v145-custom")
+		testDeepEqualErr(v145v3, v145v4, t, "equal-slice-v145-custom")
+		bs145 = testMarshalErr(&v145v3, h, t, "enc-slice-v145-custom-p")
+		v145v2 = nil
+		v145v4 = typMbsSliceUint64(v145v2)
+		testUnmarshalErr(&v145v4, bs145, h, t, "dec-slice-v145-custom-p")
+		testDeepEqualErr(v145v3, v145v4, t, "equal-slice-v145-custom-p")
 	}
 
-	var v162va [8]uintptr
+	var v163va [8]uintptr
 	for _, v := range [][]uintptr{nil, {}, {44, 0, 0, 33}} {
-		var v162v1, v162v2 []uintptr
-		v162v1 = v
-		bs162 := testMarshalErr(v162v1, h, t, "enc-slice-v162")
+		var v163v1, v163v2 []uintptr
+		v163v1 = v
+		bs163 := testMarshalErr(v163v1, h, t, "enc-slice-v163")
 		if v == nil {
-			v162v2 = nil
+			v163v2 = nil
 		} else {
-			v162v2 = make([]uintptr, len(v))
+			v163v2 = make([]uintptr, len(v))
 		}
-		testUnmarshalErr(v162v2, bs162, h, t, "dec-slice-v162")
-		testDeepEqualErr(v162v1, v162v2, t, "equal-slice-v162")
+		testUnmarshalErr(v163v2, bs163, h, t, "dec-slice-v163")
+		testDeepEqualErr(v163v1, v163v2, t, "equal-slice-v163")
 		if v == nil {
-			v162v2 = nil
+			v163v2 = nil
 		} else {
-			v162v2 = make([]uintptr, len(v))
+			v163v2 = make([]uintptr, len(v))
 		}
-		testUnmarshalErr(reflect.ValueOf(v162v2), bs162, h, t, "dec-slice-v162-noaddr") // non-addressable value
-		testDeepEqualErr(v162v1, v162v2, t, "equal-slice-v162-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v163v2), bs163, h, t, "dec-slice-v163-noaddr") // non-addressable value
+		testDeepEqualErr(v163v1, v163v2, t, "equal-slice-v163-noaddr")
 		// ...
-		bs162 = testMarshalErr(&v162v1, h, t, "enc-slice-v162-p")
-		v162v2 = nil
-		testUnmarshalErr(&v162v2, bs162, h, t, "dec-slice-v162-p")
-		testDeepEqualErr(v162v1, v162v2, t, "equal-slice-v162-p")
-		v162va = [8]uintptr{} // clear the array
-		v162v2 = v162va[:1:1]
-		testUnmarshalErr(&v162v2, bs162, h, t, "dec-slice-v162-p-1")
-		testDeepEqualErr(v162v1, v162v2, t, "equal-slice-v162-p-1")
-		v162va = [8]uintptr{} // clear the array
-		v162v2 = v162va[:len(v162v1):len(v162v1)]
-		testUnmarshalErr(&v162v2, bs162, h, t, "dec-slice-v162-p-len")
-		testDeepEqualErr(v162v1, v162v2, t, "equal-slice-v162-p-len")
-		v162va = [8]uintptr{} // clear the array
-		v162v2 = v162va[:]
-		testUnmarshalErr(&v162v2, bs162, h, t, "dec-slice-v162-p-cap")
-		testDeepEqualErr(v162v1, v162v2, t, "equal-slice-v162-p-cap")
-		if len(v162v1) > 1 {
-			v162va = [8]uintptr{} // clear the array
-			testUnmarshalErr((&v162va)[:len(v162v1)], bs162, h, t, "dec-slice-v162-p-len-noaddr")
-			testDeepEqualErr(v162v1, v162va[:len(v162v1)], t, "equal-slice-v162-p-len-noaddr")
-			v162va = [8]uintptr{} // clear the array
-			testUnmarshalErr((&v162va)[:], bs162, h, t, "dec-slice-v162-p-cap-noaddr")
-			testDeepEqualErr(v162v1, v162va[:len(v162v1)], t, "equal-slice-v162-p-cap-noaddr")
+		bs163 = testMarshalErr(&v163v1, h, t, "enc-slice-v163-p")
+		v163v2 = nil
+		testUnmarshalErr(&v163v2, bs163, h, t, "dec-slice-v163-p")
+		testDeepEqualErr(v163v1, v163v2, t, "equal-slice-v163-p")
+		v163va = [8]uintptr{} // clear the array
+		v163v2 = v163va[:1:1]
+		testUnmarshalErr(&v163v2, bs163, h, t, "dec-slice-v163-p-1")
+		testDeepEqualErr(v163v1, v163v2, t, "equal-slice-v163-p-1")
+		v163va = [8]uintptr{} // clear the array
+		v163v2 = v163va[:len(v163v1):len(v163v1)]
+		testUnmarshalErr(&v163v2, bs163, h, t, "dec-slice-v163-p-len")
+		testDeepEqualErr(v163v1, v163v2, t, "equal-slice-v163-p-len")
+		v163va = [8]uintptr{} // clear the array
+		v163v2 = v163va[:]
+		testUnmarshalErr(&v163v2, bs163, h, t, "dec-slice-v163-p-cap")
+		testDeepEqualErr(v163v1, v163v2, t, "equal-slice-v163-p-cap")
+		if len(v163v1) > 1 {
+			v163va = [8]uintptr{} // clear the array
+			testUnmarshalErr((&v163va)[:len(v163v1)], bs163, h, t, "dec-slice-v163-p-len-noaddr")
+			testDeepEqualErr(v163v1, v163va[:len(v163v1)], t, "equal-slice-v163-p-len-noaddr")
+			v163va = [8]uintptr{} // clear the array
+			testUnmarshalErr((&v163va)[:], bs163, h, t, "dec-slice-v163-p-cap-noaddr")
+			testDeepEqualErr(v163v1, v163va[:len(v163v1)], t, "equal-slice-v163-p-cap-noaddr")
 		}
 		// ...
-		var v162v3, v162v4 typMbsSliceUintptr
-		v162v2 = nil
+		var v163v3, v163v4 typMbsSliceUintptr
+		v163v2 = nil
 		if v != nil {
-			v162v2 = make([]uintptr, len(v))
+			v163v2 = make([]uintptr, len(v))
 		}
-		v162v3 = typMbsSliceUintptr(v162v1)
-		v162v4 = typMbsSliceUintptr(v162v2)
-		bs162 = testMarshalErr(v162v3, h, t, "enc-slice-v162-custom")
-		testUnmarshalErr(v162v4, bs162, h, t, "dec-slice-v162-custom")
-		testDeepEqualErr(v162v3, v162v4, t, "equal-slice-v162-custom")
-		bs162 = testMarshalErr(&v162v3, h, t, "enc-slice-v162-custom-p")
-		v162v2 = nil
-		v162v4 = typMbsSliceUintptr(v162v2)
-		testUnmarshalErr(&v162v4, bs162, h, t, "dec-slice-v162-custom-p")
-		testDeepEqualErr(v162v3, v162v4, t, "equal-slice-v162-custom-p")
+		v163v3 = typMbsSliceUintptr(v163v1)
+		v163v4 = typMbsSliceUintptr(v163v2)
+		bs163 = testMarshalErr(v163v3, h, t, "enc-slice-v163-custom")
+		testUnmarshalErr(v163v4, bs163, h, t, "dec-slice-v163-custom")
+		testDeepEqualErr(v163v3, v163v4, t, "equal-slice-v163-custom")
+		bs163 = testMarshalErr(&v163v3, h, t, "enc-slice-v163-custom-p")
+		v163v2 = nil
+		v163v4 = typMbsSliceUintptr(v163v2)
+		testUnmarshalErr(&v163v4, bs163, h, t, "dec-slice-v163-custom-p")
+		testDeepEqualErr(v163v3, v163v4, t, "equal-slice-v163-custom-p")
 	}
 
-	var v180va [8]int
+	var v181va [8]int
 	for _, v := range [][]int{nil, {}, {44, 0, 0, 33}} {
-		var v180v1, v180v2 []int
-		v180v1 = v
-		bs180 := testMarshalErr(v180v1, h, t, "enc-slice-v180")
+		var v181v1, v181v2 []int
+		v181v1 = v
+		bs181 := testMarshalErr(v181v1, h, t, "enc-slice-v181")
 		if v == nil {
-			v180v2 = nil
+			v181v2 = nil
 		} else {
-			v180v2 = make([]int, len(v))
+			v181v2 = make([]int, len(v))
 		}
-		testUnmarshalErr(v180v2, bs180, h, t, "dec-slice-v180")
-		testDeepEqualErr(v180v1, v180v2, t, "equal-slice-v180")
+		testUnmarshalErr(v181v2, bs181, h, t, "dec-slice-v181")
+		testDeepEqualErr(v181v1, v181v2, t, "equal-slice-v181")
 		if v == nil {
-			v180v2 = nil
+			v181v2 = nil
 		} else {
-			v180v2 = make([]int, len(v))
+			v181v2 = make([]int, len(v))
 		}
-		testUnmarshalErr(reflect.ValueOf(v180v2), bs180, h, t, "dec-slice-v180-noaddr") // non-addressable value
-		testDeepEqualErr(v180v1, v180v2, t, "equal-slice-v180-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v181v2), bs181, h, t, "dec-slice-v181-noaddr") // non-addressable value
+		testDeepEqualErr(v181v1, v181v2, t, "equal-slice-v181-noaddr")
 		// ...
-		bs180 = testMarshalErr(&v180v1, h, t, "enc-slice-v180-p")
-		v180v2 = nil
-		testUnmarshalErr(&v180v2, bs180, h, t, "dec-slice-v180-p")
-		testDeepEqualErr(v180v1, v180v2, t, "equal-slice-v180-p")
-		v180va = [8]int{} // clear the array
-		v180v2 = v180va[:1:1]
-		testUnmarshalErr(&v180v2, bs180, h, t, "dec-slice-v180-p-1")
-		testDeepEqualErr(v180v1, v180v2, t, "equal-slice-v180-p-1")
-		v180va = [8]int{} // clear the array
-		v180v2 = v180va[:len(v180v1):len(v180v1)]
-		testUnmarshalErr(&v180v2, bs180, h, t, "dec-slice-v180-p-len")
-		testDeepEqualErr(v180v1, v180v2, t, "equal-slice-v180-p-len")
-		v180va = [8]int{} // clear the array
-		v180v2 = v180va[:]
-		testUnmarshalErr(&v180v2, bs180, h, t, "dec-slice-v180-p-cap")
-		testDeepEqualErr(v180v1, v180v2, t, "equal-slice-v180-p-cap")
-		if len(v180v1) > 1 {
-			v180va = [8]int{} // clear the array
-			testUnmarshalErr((&v180va)[:len(v180v1)], bs180, h, t, "dec-slice-v180-p-len-noaddr")
-			testDeepEqualErr(v180v1, v180va[:len(v180v1)], t, "equal-slice-v180-p-len-noaddr")
-			v180va = [8]int{} // clear the array
-			testUnmarshalErr((&v180va)[:], bs180, h, t, "dec-slice-v180-p-cap-noaddr")
-			testDeepEqualErr(v180v1, v180va[:len(v180v1)], t, "equal-slice-v180-p-cap-noaddr")
+		bs181 = testMarshalErr(&v181v1, h, t, "enc-slice-v181-p")
+		v181v2 = nil
+		testUnmarshalErr(&v181v2, bs181, h, t, "dec-slice-v181-p")
+		testDeepEqualErr(v181v1, v181v2, t, "equal-slice-v181-p")
+		v181va = [8]int{} // clear the array
+		v181v2 = v181va[:1:1]
+		testUnmarshalErr(&v181v2, bs181, h, t, "dec-slice-v181-p-1")
+		testDeepEqualErr(v181v1, v181v2, t, "equal-slice-v181-p-1")
+		v181va = [8]int{} // clear the array
+		v181v2 = v181va[:len(v181v1):len(v181v1)]
+		testUnmarshalErr(&v181v2, bs181, h, t, "dec-slice-v181-p-len")
+		testDeepEqualErr(v181v1, v181v2, t, "equal-slice-v181-p-len")
+		v181va = [8]int{} // clear the array
+		v181v2 = v181va[:]
+		testUnmarshalErr(&v181v2, bs181, h, t, "dec-slice-v181-p-cap")
+		testDeepEqualErr(v181v1, v181v2, t, "equal-slice-v181-p-cap")
+		if len(v181v1) > 1 {
+			v181va = [8]int{} // clear the array
+			testUnmarshalErr((&v181va)[:len(v181v1)], bs181, h, t, "dec-slice-v181-p-len-noaddr")
+			testDeepEqualErr(v181v1, v181va[:len(v181v1)], t, "equal-slice-v181-p-len-noaddr")
+			v181va = [8]int{} // clear the array
+			testUnmarshalErr((&v181va)[:], bs181, h, t, "dec-slice-v181-p-cap-noaddr")
+			testDeepEqualErr(v181v1, v181va[:len(v181v1)], t, "equal-slice-v181-p-cap-noaddr")
 		}
 		// ...
-		var v180v3, v180v4 typMbsSliceInt
-		v180v2 = nil
+		var v181v3, v181v4 typMbsSliceInt
+		v181v2 = nil
 		if v != nil {
-			v180v2 = make([]int, len(v))
+			v181v2 = make([]int, len(v))
 		}
-		v180v3 = typMbsSliceInt(v180v1)
-		v180v4 = typMbsSliceInt(v180v2)
-		bs180 = testMarshalErr(v180v3, h, t, "enc-slice-v180-custom")
-		testUnmarshalErr(v180v4, bs180, h, t, "dec-slice-v180-custom")
-		testDeepEqualErr(v180v3, v180v4, t, "equal-slice-v180-custom")
-		bs180 = testMarshalErr(&v180v3, h, t, "enc-slice-v180-custom-p")
-		v180v2 = nil
-		v180v4 = typMbsSliceInt(v180v2)
-		testUnmarshalErr(&v180v4, bs180, h, t, "dec-slice-v180-custom-p")
-		testDeepEqualErr(v180v3, v180v4, t, "equal-slice-v180-custom-p")
+		v181v3 = typMbsSliceInt(v181v1)
+		v181v4 = typMbsSliceInt(v181v2)
+		bs181 = testMarshalErr(v181v3, h, t, "enc-slice-v181-custom")
+		testUnmarshalErr(v181v4, bs181, h, t, "dec-slice-v181-custom")
+		testDeepEqualErr(v181v3, v181v4, t, "equal-slice-v181-custom")
+		bs181 = testMarshalErr(&v181v3, h, t, "enc-slice-v181-custom-p")
+		v181v2 = nil
+		v181v4 = typMbsSliceInt(v181v2)
+		testUnmarshalErr(&v181v4, bs181, h, t, "dec-slice-v181-custom-p")
+		testDeepEqualErr(v181v3, v181v4, t, "equal-slice-v181-custom-p")
 	}
 
-	var v198va [8]int8
+	var v199va [8]int8
 	for _, v := range [][]int8{nil, {}, {44, 0, 0, 33}} {
-		var v198v1, v198v2 []int8
-		v198v1 = v
-		bs198 := testMarshalErr(v198v1, h, t, "enc-slice-v198")
+		var v199v1, v199v2 []int8
+		v199v1 = v
+		bs199 := testMarshalErr(v199v1, h, t, "enc-slice-v199")
 		if v == nil {
-			v198v2 = nil
+			v199v2 = nil
 		} else {
-			v198v2 = make([]int8, len(v))
+			v199v2 = make([]int8, len(v))
 		}
-		testUnmarshalErr(v198v2, bs198, h, t, "dec-slice-v198")
-		testDeepEqualErr(v198v1, v198v2, t, "equal-slice-v198")
+		testUnmarshalErr(v199v2, bs199, h, t, "dec-slice-v199")
+		testDeepEqualErr(v199v1, v199v2, t, "equal-slice-v199")
 		if v == nil {
-			v198v2 = nil
+			v199v2 = nil
 		} else {
-			v198v2 = make([]int8, len(v))
+			v199v2 = make([]int8, len(v))
 		}
-		testUnmarshalErr(reflect.ValueOf(v198v2), bs198, h, t, "dec-slice-v198-noaddr") // non-addressable value
-		testDeepEqualErr(v198v1, v198v2, t, "equal-slice-v198-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v199v2), bs199, h, t, "dec-slice-v199-noaddr") // non-addressable value
+		testDeepEqualErr(v199v1, v199v2, t, "equal-slice-v199-noaddr")
 		// ...
-		bs198 = testMarshalErr(&v198v1, h, t, "enc-slice-v198-p")
-		v198v2 = nil
-		testUnmarshalErr(&v198v2, bs198, h, t, "dec-slice-v198-p")
-		testDeepEqualErr(v198v1, v198v2, t, "equal-slice-v198-p")
-		v198va = [8]int8{} // clear the array
-		v198v2 = v198va[:1:1]
-		testUnmarshalErr(&v198v2, bs198, h, t, "dec-slice-v198-p-1")
-		testDeepEqualErr(v198v1, v198v2, t, "equal-slice-v198-p-1")
-		v198va = [8]int8{} // clear the array
-		v198v2 = v198va[:len(v198v1):len(v198v1)]
-		testUnmarshalErr(&v198v2, bs198, h, t, "dec-slice-v198-p-len")
-		testDeepEqualErr(v198v1, v198v2, t, "equal-slice-v198-p-len")
-		v198va = [8]int8{} // clear the array
-		v198v2 = v198va[:]
-		testUnmarshalErr(&v198v2, bs198, h, t, "dec-slice-v198-p-cap")
-		testDeepEqualErr(v198v1, v198v2, t, "equal-slice-v198-p-cap")
-		if len(v198v1) > 1 {
-			v198va = [8]int8{} // clear the array
-			testUnmarshalErr((&v198va)[:len(v198v1)], bs198, h, t, "dec-slice-v198-p-len-noaddr")
-			testDeepEqualErr(v198v1, v198va[:len(v198v1)], t, "equal-slice-v198-p-len-noaddr")
-			v198va = [8]int8{} // clear the array
-			testUnmarshalErr((&v198va)[:], bs198, h, t, "dec-slice-v198-p-cap-noaddr")
-			testDeepEqualErr(v198v1, v198va[:len(v198v1)], t, "equal-slice-v198-p-cap-noaddr")
+		bs199 = testMarshalErr(&v199v1, h, t, "enc-slice-v199-p")
+		v199v2 = nil
+		testUnmarshalErr(&v199v2, bs199, h, t, "dec-slice-v199-p")
+		testDeepEqualErr(v199v1, v199v2, t, "equal-slice-v199-p")
+		v199va = [8]int8{} // clear the array
+		v199v2 = v199va[:1:1]
+		testUnmarshalErr(&v199v2, bs199, h, t, "dec-slice-v199-p-1")
+		testDeepEqualErr(v199v1, v199v2, t, "equal-slice-v199-p-1")
+		v199va = [8]int8{} // clear the array
+		v199v2 = v199va[:len(v199v1):len(v199v1)]
+		testUnmarshalErr(&v199v2, bs199, h, t, "dec-slice-v199-p-len")
+		testDeepEqualErr(v199v1, v199v2, t, "equal-slice-v199-p-len")
+		v199va = [8]int8{} // clear the array
+		v199v2 = v199va[:]
+		testUnmarshalErr(&v199v2, bs199, h, t, "dec-slice-v199-p-cap")
+		testDeepEqualErr(v199v1, v199v2, t, "equal-slice-v199-p-cap")
+		if len(v199v1) > 1 {
+			v199va = [8]int8{} // clear the array
+			testUnmarshalErr((&v199va)[:len(v199v1)], bs199, h, t, "dec-slice-v199-p-len-noaddr")
+			testDeepEqualErr(v199v1, v199va[:len(v199v1)], t, "equal-slice-v199-p-len-noaddr")
+			v199va = [8]int8{} // clear the array
+			testUnmarshalErr((&v199va)[:], bs199, h, t, "dec-slice-v199-p-cap-noaddr")
+			testDeepEqualErr(v199v1, v199va[:len(v199v1)], t, "equal-slice-v199-p-cap-noaddr")
 		}
 		// ...
-		var v198v3, v198v4 typMbsSliceInt8
-		v198v2 = nil
+		var v199v3, v199v4 typMbsSliceInt8
+		v199v2 = nil
 		if v != nil {
-			v198v2 = make([]int8, len(v))
+			v199v2 = make([]int8, len(v))
 		}
-		v198v3 = typMbsSliceInt8(v198v1)
-		v198v4 = typMbsSliceInt8(v198v2)
-		bs198 = testMarshalErr(v198v3, h, t, "enc-slice-v198-custom")
-		testUnmarshalErr(v198v4, bs198, h, t, "dec-slice-v198-custom")
-		testDeepEqualErr(v198v3, v198v4, t, "equal-slice-v198-custom")
-		bs198 = testMarshalErr(&v198v3, h, t, "enc-slice-v198-custom-p")
-		v198v2 = nil
-		v198v4 = typMbsSliceInt8(v198v2)
-		testUnmarshalErr(&v198v4, bs198, h, t, "dec-slice-v198-custom-p")
-		testDeepEqualErr(v198v3, v198v4, t, "equal-slice-v198-custom-p")
+		v199v3 = typMbsSliceInt8(v199v1)
+		v199v4 = typMbsSliceInt8(v199v2)
+		bs199 = testMarshalErr(v199v3, h, t, "enc-slice-v199-custom")
+		testUnmarshalErr(v199v4, bs199, h, t, "dec-slice-v199-custom")
+		testDeepEqualErr(v199v3, v199v4, t, "equal-slice-v199-custom")
+		bs199 = testMarshalErr(&v199v3, h, t, "enc-slice-v199-custom-p")
+		v199v2 = nil
+		v199v4 = typMbsSliceInt8(v199v2)
+		testUnmarshalErr(&v199v4, bs199, h, t, "dec-slice-v199-custom-p")
+		testDeepEqualErr(v199v3, v199v4, t, "equal-slice-v199-custom-p")
 	}
 
-	var v216va [8]int16
+	var v217va [8]int16
 	for _, v := range [][]int16{nil, {}, {44, 0, 0, 33}} {
-		var v216v1, v216v2 []int16
-		v216v1 = v
-		bs216 := testMarshalErr(v216v1, h, t, "enc-slice-v216")
+		var v217v1, v217v2 []int16
+		v217v1 = v
+		bs217 := testMarshalErr(v217v1, h, t, "enc-slice-v217")
 		if v == nil {
-			v216v2 = nil
+			v217v2 = nil
 		} else {
-			v216v2 = make([]int16, len(v))
+			v217v2 = make([]int16, len(v))
 		}
-		testUnmarshalErr(v216v2, bs216, h, t, "dec-slice-v216")
-		testDeepEqualErr(v216v1, v216v2, t, "equal-slice-v216")
+		testUnmarshalErr(v217v2, bs217, h, t, "dec-slice-v217")
+		testDeepEqualErr(v217v1, v217v2, t, "equal-slice-v217")
 		if v == nil {
-			v216v2 = nil
+			v217v2 = nil
 		} else {
-			v216v2 = make([]int16, len(v))
+			v217v2 = make([]int16, len(v))
 		}
-		testUnmarshalErr(reflect.ValueOf(v216v2), bs216, h, t, "dec-slice-v216-noaddr") // non-addressable value
-		testDeepEqualErr(v216v1, v216v2, t, "equal-slice-v216-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v217v2), bs217, h, t, "dec-slice-v217-noaddr") // non-addressable value
+		testDeepEqualErr(v217v1, v217v2, t, "equal-slice-v217-noaddr")
 		// ...
-		bs216 = testMarshalErr(&v216v1, h, t, "enc-slice-v216-p")
-		v216v2 = nil
-		testUnmarshalErr(&v216v2, bs216, h, t, "dec-slice-v216-p")
-		testDeepEqualErr(v216v1, v216v2, t, "equal-slice-v216-p")
-		v216va = [8]int16{} // clear the array
-		v216v2 = v216va[:1:1]
-		testUnmarshalErr(&v216v2, bs216, h, t, "dec-slice-v216-p-1")
-		testDeepEqualErr(v216v1, v216v2, t, "equal-slice-v216-p-1")
-		v216va = [8]int16{} // clear the array
-		v216v2 = v216va[:len(v216v1):len(v216v1)]
-		testUnmarshalErr(&v216v2, bs216, h, t, "dec-slice-v216-p-len")
-		testDeepEqualErr(v216v1, v216v2, t, "equal-slice-v216-p-len")
-		v216va = [8]int16{} // clear the array
-		v216v2 = v216va[:]
-		testUnmarshalErr(&v216v2, bs216, h, t, "dec-slice-v216-p-cap")
-		testDeepEqualErr(v216v1, v216v2, t, "equal-slice-v216-p-cap")
-		if len(v216v1) > 1 {
-			v216va = [8]int16{} // clear the array
-			testUnmarshalErr((&v216va)[:len(v216v1)], bs216, h, t, "dec-slice-v216-p-len-noaddr")
-			testDeepEqualErr(v216v1, v216va[:len(v216v1)], t, "equal-slice-v216-p-len-noaddr")
-			v216va = [8]int16{} // clear the array
-			testUnmarshalErr((&v216va)[:], bs216, h, t, "dec-slice-v216-p-cap-noaddr")
-			testDeepEqualErr(v216v1, v216va[:len(v216v1)], t, "equal-slice-v216-p-cap-noaddr")
+		bs217 = testMarshalErr(&v217v1, h, t, "enc-slice-v217-p")
+		v217v2 = nil
+		testUnmarshalErr(&v217v2, bs217, h, t, "dec-slice-v217-p")
+		testDeepEqualErr(v217v1, v217v2, t, "equal-slice-v217-p")
+		v217va = [8]int16{} // clear the array
+		v217v2 = v217va[:1:1]
+		testUnmarshalErr(&v217v2, bs217, h, t, "dec-slice-v217-p-1")
+		testDeepEqualErr(v217v1, v217v2, t, "equal-slice-v217-p-1")
+		v217va = [8]int16{} // clear the array
+		v217v2 = v217va[:len(v217v1):len(v217v1)]
+		testUnmarshalErr(&v217v2, bs217, h, t, "dec-slice-v217-p-len")
+		testDeepEqualErr(v217v1, v217v2, t, "equal-slice-v217-p-len")
+		v217va = [8]int16{} // clear the array
+		v217v2 = v217va[:]
+		testUnmarshalErr(&v217v2, bs217, h, t, "dec-slice-v217-p-cap")
+		testDeepEqualErr(v217v1, v217v2, t, "equal-slice-v217-p-cap")
+		if len(v217v1) > 1 {
+			v217va = [8]int16{} // clear the array
+			testUnmarshalErr((&v217va)[:len(v217v1)], bs217, h, t, "dec-slice-v217-p-len-noaddr")
+			testDeepEqualErr(v217v1, v217va[:len(v217v1)], t, "equal-slice-v217-p-len-noaddr")
+			v217va = [8]int16{} // clear the array
+			testUnmarshalErr((&v217va)[:], bs217, h, t, "dec-slice-v217-p-cap-noaddr")
+			testDeepEqualErr(v217v1, v217va[:len(v217v1)], t, "equal-slice-v217-p-cap-noaddr")
 		}
 		// ...
-		var v216v3, v216v4 typMbsSliceInt16
-		v216v2 = nil
+		var v217v3, v217v4 typMbsSliceInt16
+		v217v2 = nil
 		if v != nil {
-			v216v2 = make([]int16, len(v))
+			v217v2 = make([]int16, len(v))
 		}
-		v216v3 = typMbsSliceInt16(v216v1)
-		v216v4 = typMbsSliceInt16(v216v2)
-		bs216 = testMarshalErr(v216v3, h, t, "enc-slice-v216-custom")
-		testUnmarshalErr(v216v4, bs216, h, t, "dec-slice-v216-custom")
-		testDeepEqualErr(v216v3, v216v4, t, "equal-slice-v216-custom")
-		bs216 = testMarshalErr(&v216v3, h, t, "enc-slice-v216-custom-p")
-		v216v2 = nil
-		v216v4 = typMbsSliceInt16(v216v2)
-		testUnmarshalErr(&v216v4, bs216, h, t, "dec-slice-v216-custom-p")
-		testDeepEqualErr(v216v3, v216v4, t, "equal-slice-v216-custom-p")
+		v217v3 = typMbsSliceInt16(v217v1)
+		v217v4 = typMbsSliceInt16(v217v2)
+		bs217 = testMarshalErr(v217v3, h, t, "enc-slice-v217-custom")
+		testUnmarshalErr(v217v4, bs217, h, t, "dec-slice-v217-custom")
+		testDeepEqualErr(v217v3, v217v4, t, "equal-slice-v217-custom")
+		bs217 = testMarshalErr(&v217v3, h, t, "enc-slice-v217-custom-p")
+		v217v2 = nil
+		v217v4 = typMbsSliceInt16(v217v2)
+		testUnmarshalErr(&v217v4, bs217, h, t, "dec-slice-v217-custom-p")
+		testDeepEqualErr(v217v3, v217v4, t, "equal-slice-v217-custom-p")
 	}
 
-	var v234va [8]int32
+	var v235va [8]int32
 	for _, v := range [][]int32{nil, {}, {44, 0, 0, 33}} {
-		var v234v1, v234v2 []int32
-		v234v1 = v
-		bs234 := testMarshalErr(v234v1, h, t, "enc-slice-v234")
+		var v235v1, v235v2 []int32
+		v235v1 = v
+		bs235 := testMarshalErr(v235v1, h, t, "enc-slice-v235")
 		if v == nil {
-			v234v2 = nil
+			v235v2 = nil
 		} else {
-			v234v2 = make([]int32, len(v))
+			v235v2 = make([]int32, len(v))
 		}
-		testUnmarshalErr(v234v2, bs234, h, t, "dec-slice-v234")
-		testDeepEqualErr(v234v1, v234v2, t, "equal-slice-v234")
+		testUnmarshalErr(v235v2, bs235, h, t, "dec-slice-v235")
+		testDeepEqualErr(v235v1, v235v2, t, "equal-slice-v235")
 		if v == nil {
-			v234v2 = nil
+			v235v2 = nil
 		} else {
-			v234v2 = make([]int32, len(v))
+			v235v2 = make([]int32, len(v))
 		}
-		testUnmarshalErr(reflect.ValueOf(v234v2), bs234, h, t, "dec-slice-v234-noaddr") // non-addressable value
-		testDeepEqualErr(v234v1, v234v2, t, "equal-slice-v234-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v235v2), bs235, h, t, "dec-slice-v235-noaddr") // non-addressable value
+		testDeepEqualErr(v235v1, v235v2, t, "equal-slice-v235-noaddr")
 		// ...
-		bs234 = testMarshalErr(&v234v1, h, t, "enc-slice-v234-p")
-		v234v2 = nil
-		testUnmarshalErr(&v234v2, bs234, h, t, "dec-slice-v234-p")
-		testDeepEqualErr(v234v1, v234v2, t, "equal-slice-v234-p")
-		v234va = [8]int32{} // clear the array
-		v234v2 = v234va[:1:1]
-		testUnmarshalErr(&v234v2, bs234, h, t, "dec-slice-v234-p-1")
-		testDeepEqualErr(v234v1, v234v2, t, "equal-slice-v234-p-1")
-		v234va = [8]int32{} // clear the array
-		v234v2 = v234va[:len(v234v1):len(v234v1)]
-		testUnmarshalErr(&v234v2, bs234, h, t, "dec-slice-v234-p-len")
-		testDeepEqualErr(v234v1, v234v2, t, "equal-slice-v234-p-len")
-		v234va = [8]int32{} // clear the array
-		v234v2 = v234va[:]
-		testUnmarshalErr(&v234v2, bs234, h, t, "dec-slice-v234-p-cap")
-		testDeepEqualErr(v234v1, v234v2, t, "equal-slice-v234-p-cap")
-		if len(v234v1) > 1 {
-			v234va = [8]int32{} // clear the array
-			testUnmarshalErr((&v234va)[:len(v234v1)], bs234, h, t, "dec-slice-v234-p-len-noaddr")
-			testDeepEqualErr(v234v1, v234va[:len(v234v1)], t, "equal-slice-v234-p-len-noaddr")
-			v234va = [8]int32{} // clear the array
-			testUnmarshalErr((&v234va)[:], bs234, h, t, "dec-slice-v234-p-cap-noaddr")
-			testDeepEqualErr(v234v1, v234va[:len(v234v1)], t, "equal-slice-v234-p-cap-noaddr")
+		bs235 = testMarshalErr(&v235v1, h, t, "enc-slice-v235-p")
+		v235v2 = nil
+		testUnmarshalErr(&v235v2, bs235, h, t, "dec-slice-v235-p")
+		testDeepEqualErr(v235v1, v235v2, t, "equal-slice-v235-p")
+		v235va = [8]int32{} // clear the array
+		v235v2 = v235va[:1:1]
+		testUnmarshalErr(&v235v2, bs235, h, t, "dec-slice-v235-p-1")
+		testDeepEqualErr(v235v1, v235v2, t, "equal-slice-v235-p-1")
+		v235va = [8]int32{} // clear the array
+		v235v2 = v235va[:len(v235v1):len(v235v1)]
+		testUnmarshalErr(&v235v2, bs235, h, t, "dec-slice-v235-p-len")
+		testDeepEqualErr(v235v1, v235v2, t, "equal-slice-v235-p-len")
+		v235va = [8]int32{} // clear the array
+		v235v2 = v235va[:]
+		testUnmarshalErr(&v235v2, bs235, h, t, "dec-slice-v235-p-cap")
+		testDeepEqualErr(v235v1, v235v2, t, "equal-slice-v235-p-cap")
+		if len(v235v1) > 1 {
+			v235va = [8]int32{} // clear the array
+			testUnmarshalErr((&v235va)[:len(v235v1)], bs235, h, t, "dec-slice-v235-p-len-noaddr")
+			testDeepEqualErr(v235v1, v235va[:len(v235v1)], t, "equal-slice-v235-p-len-noaddr")
+			v235va = [8]int32{} // clear the array
+			testUnmarshalErr((&v235va)[:], bs235, h, t, "dec-slice-v235-p-cap-noaddr")
+			testDeepEqualErr(v235v1, v235va[:len(v235v1)], t, "equal-slice-v235-p-cap-noaddr")
 		}
 		// ...
-		var v234v3, v234v4 typMbsSliceInt32
-		v234v2 = nil
+		var v235v3, v235v4 typMbsSliceInt32
+		v235v2 = nil
 		if v != nil {
-			v234v2 = make([]int32, len(v))
+			v235v2 = make([]int32, len(v))
 		}
-		v234v3 = typMbsSliceInt32(v234v1)
-		v234v4 = typMbsSliceInt32(v234v2)
-		bs234 = testMarshalErr(v234v3, h, t, "enc-slice-v234-custom")
-		testUnmarshalErr(v234v4, bs234, h, t, "dec-slice-v234-custom")
-		testDeepEqualErr(v234v3, v234v4, t, "equal-slice-v234-custom")
-		bs234 = testMarshalErr(&v234v3, h, t, "enc-slice-v234-custom-p")
-		v234v2 = nil
-		v234v4 = typMbsSliceInt32(v234v2)
-		testUnmarshalErr(&v234v4, bs234, h, t, "dec-slice-v234-custom-p")
-		testDeepEqualErr(v234v3, v234v4, t, "equal-slice-v234-custom-p")
+		v235v3 = typMbsSliceInt32(v235v1)
+		v235v4 = typMbsSliceInt32(v235v2)
+		bs235 = testMarshalErr(v235v3, h, t, "enc-slice-v235-custom")
+		testUnmarshalErr(v235v4, bs235, h, t, "dec-slice-v235-custom")
+		testDeepEqualErr(v235v3, v235v4, t, "equal-slice-v235-custom")
+		bs235 = testMarshalErr(&v235v3, h, t, "enc-slice-v235-custom-p")
+		v235v2 = nil
+		v235v4 = typMbsSliceInt32(v235v2)
+		testUnmarshalErr(&v235v4, bs235, h, t, "dec-slice-v235-custom-p")
+		testDeepEqualErr(v235v3, v235v4, t, "equal-slice-v235-custom-p")
 	}
 
-	var v252va [8]int64
+	var v253va [8]int64
 	for _, v := range [][]int64{nil, {}, {44, 0, 0, 33}} {
-		var v252v1, v252v2 []int64
-		v252v1 = v
-		bs252 := testMarshalErr(v252v1, h, t, "enc-slice-v252")
+		var v253v1, v253v2 []int64
+		v253v1 = v
+		bs253 := testMarshalErr(v253v1, h, t, "enc-slice-v253")
 		if v == nil {
-			v252v2 = nil
+			v253v2 = nil
 		} else {
-			v252v2 = make([]int64, len(v))
+			v253v2 = make([]int64, len(v))
 		}
-		testUnmarshalErr(v252v2, bs252, h, t, "dec-slice-v252")
-		testDeepEqualErr(v252v1, v252v2, t, "equal-slice-v252")
+		testUnmarshalErr(v253v2, bs253, h, t, "dec-slice-v253")
+		testDeepEqualErr(v253v1, v253v2, t, "equal-slice-v253")
 		if v == nil {
-			v252v2 = nil
+			v253v2 = nil
 		} else {
-			v252v2 = make([]int64, len(v))
+			v253v2 = make([]int64, len(v))
 		}
-		testUnmarshalErr(reflect.ValueOf(v252v2), bs252, h, t, "dec-slice-v252-noaddr") // non-addressable value
-		testDeepEqualErr(v252v1, v252v2, t, "equal-slice-v252-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v253v2), bs253, h, t, "dec-slice-v253-noaddr") // non-addressable value
+		testDeepEqualErr(v253v1, v253v2, t, "equal-slice-v253-noaddr")
 		// ...
-		bs252 = testMarshalErr(&v252v1, h, t, "enc-slice-v252-p")
-		v252v2 = nil
-		testUnmarshalErr(&v252v2, bs252, h, t, "dec-slice-v252-p")
-		testDeepEqualErr(v252v1, v252v2, t, "equal-slice-v252-p")
-		v252va = [8]int64{} // clear the array
-		v252v2 = v252va[:1:1]
-		testUnmarshalErr(&v252v2, bs252, h, t, "dec-slice-v252-p-1")
-		testDeepEqualErr(v252v1, v252v2, t, "equal-slice-v252-p-1")
-		v252va = [8]int64{} // clear the array
-		v252v2 = v252va[:len(v252v1):len(v252v1)]
-		testUnmarshalErr(&v252v2, bs252, h, t, "dec-slice-v252-p-len")
-		testDeepEqualErr(v252v1, v252v2, t, "equal-slice-v252-p-len")
-		v252va = [8]int64{} // clear the array
-		v252v2 = v252va[:]
-		testUnmarshalErr(&v252v2, bs252, h, t, "dec-slice-v252-p-cap")
-		testDeepEqualErr(v252v1, v252v2, t, "equal-slice-v252-p-cap")
-		if len(v252v1) > 1 {
-			v252va = [8]int64{} // clear the array
-			testUnmarshalErr((&v252va)[:len(v252v1)], bs252, h, t, "dec-slice-v252-p-len-noaddr")
-			testDeepEqualErr(v252v1, v252va[:len(v252v1)], t, "equal-slice-v252-p-len-noaddr")
-			v252va = [8]int64{} // clear the array
-			testUnmarshalErr((&v252va)[:], bs252, h, t, "dec-slice-v252-p-cap-noaddr")
-			testDeepEqualErr(v252v1, v252va[:len(v252v1)], t, "equal-slice-v252-p-cap-noaddr")
+		bs253 = testMarshalErr(&v253v1, h, t, "enc-slice-v253-p")
+		v253v2 = nil
+		testUnmarshalErr(&v253v2, bs253, h, t, "dec-slice-v253-p")
+		testDeepEqualErr(v253v1, v253v2, t, "equal-slice-v253-p")
+		v253va = [8]int64{} // clear the array
+		v253v2 = v253va[:1:1]
+		testUnmarshalErr(&v253v2, bs253, h, t, "dec-slice-v253-p-1")
+		testDeepEqualErr(v253v1, v253v2, t, "equal-slice-v253-p-1")
+		v253va = [8]int64{} // clear the array
+		v253v2 = v253va[:len(v253v1):len(v253v1)]
+		testUnmarshalErr(&v253v2, bs253, h, t, "dec-slice-v253-p-len")
+		testDeepEqualErr(v253v1, v253v2, t, "equal-slice-v253-p-len")
+		v253va = [8]int64{} // clear the array
+		v253v2 = v253va[:]
+		testUnmarshalErr(&v253v2, bs253, h, t, "dec-slice-v253-p-cap")
+		testDeepEqualErr(v253v1, v253v2, t, "equal-slice-v253-p-cap")
+		if len(v253v1) > 1 {
+			v253va = [8]int64{} // clear the array
+			testUnmarshalErr((&v253va)[:len(v253v1)], bs253, h, t, "dec-slice-v253-p-len-noaddr")
+			testDeepEqualErr(v253v1, v253va[:len(v253v1)], t, "equal-slice-v253-p-len-noaddr")
+			v253va = [8]int64{} // clear the array
+			testUnmarshalErr((&v253va)[:], bs253, h, t, "dec-slice-v253-p-cap-noaddr")
+			testDeepEqualErr(v253v1, v253va[:len(v253v1)], t, "equal-slice-v253-p-cap-noaddr")
 		}
 		// ...
-		var v252v3, v252v4 typMbsSliceInt64
-		v252v2 = nil
+		var v253v3, v253v4 typMbsSliceInt64
+		v253v2 = nil
 		if v != nil {
-			v252v2 = make([]int64, len(v))
+			v253v2 = make([]int64, len(v))
 		}
-		v252v3 = typMbsSliceInt64(v252v1)
-		v252v4 = typMbsSliceInt64(v252v2)
-		bs252 = testMarshalErr(v252v3, h, t, "enc-slice-v252-custom")
-		testUnmarshalErr(v252v4, bs252, h, t, "dec-slice-v252-custom")
-		testDeepEqualErr(v252v3, v252v4, t, "equal-slice-v252-custom")
-		bs252 = testMarshalErr(&v252v3, h, t, "enc-slice-v252-custom-p")
-		v252v2 = nil
-		v252v4 = typMbsSliceInt64(v252v2)
-		testUnmarshalErr(&v252v4, bs252, h, t, "dec-slice-v252-custom-p")
-		testDeepEqualErr(v252v3, v252v4, t, "equal-slice-v252-custom-p")
+		v253v3 = typMbsSliceInt64(v253v1)
+		v253v4 = typMbsSliceInt64(v253v2)
+		bs253 = testMarshalErr(v253v3, h, t, "enc-slice-v253-custom")
+		testUnmarshalErr(v253v4, bs253, h, t, "dec-slice-v253-custom")
+		testDeepEqualErr(v253v3, v253v4, t, "equal-slice-v253-custom")
+		bs253 = testMarshalErr(&v253v3, h, t, "enc-slice-v253-custom-p")
+		v253v2 = nil
+		v253v4 = typMbsSliceInt64(v253v2)
+		testUnmarshalErr(&v253v4, bs253, h, t, "dec-slice-v253-custom-p")
+		testDeepEqualErr(v253v3, v253v4, t, "equal-slice-v253-custom-p")
 	}
 
-	var v270va [8]bool
+	var v271va [8]bool
 	for _, v := range [][]bool{nil, {}, {true, false, false, true}} {
-		var v270v1, v270v2 []bool
-		v270v1 = v
-		bs270 := testMarshalErr(v270v1, h, t, "enc-slice-v270")
+		var v271v1, v271v2 []bool
+		v271v1 = v
+		bs271 := testMarshalErr(v271v1, h, t, "enc-slice-v271")
 		if v == nil {
-			v270v2 = nil
+			v271v2 = nil
 		} else {
-			v270v2 = make([]bool, len(v))
+			v271v2 = make([]bool, len(v))
 		}
-		testUnmarshalErr(v270v2, bs270, h, t, "dec-slice-v270")
-		testDeepEqualErr(v270v1, v270v2, t, "equal-slice-v270")
+		testUnmarshalErr(v271v2, bs271, h, t, "dec-slice-v271")
+		testDeepEqualErr(v271v1, v271v2, t, "equal-slice-v271")
 		if v == nil {
-			v270v2 = nil
+			v271v2 = nil
 		} else {
-			v270v2 = make([]bool, len(v))
+			v271v2 = make([]bool, len(v))
 		}
-		testUnmarshalErr(reflect.ValueOf(v270v2), bs270, h, t, "dec-slice-v270-noaddr") // non-addressable value
-		testDeepEqualErr(v270v1, v270v2, t, "equal-slice-v270-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v271v2), bs271, h, t, "dec-slice-v271-noaddr") // non-addressable value
+		testDeepEqualErr(v271v1, v271v2, t, "equal-slice-v271-noaddr")
 		// ...
-		bs270 = testMarshalErr(&v270v1, h, t, "enc-slice-v270-p")
-		v270v2 = nil
-		testUnmarshalErr(&v270v2, bs270, h, t, "dec-slice-v270-p")
-		testDeepEqualErr(v270v1, v270v2, t, "equal-slice-v270-p")
-		v270va = [8]bool{} // clear the array
-		v270v2 = v270va[:1:1]
-		testUnmarshalErr(&v270v2, bs270, h, t, "dec-slice-v270-p-1")
-		testDeepEqualErr(v270v1, v270v2, t, "equal-slice-v270-p-1")
-		v270va = [8]bool{} // clear the array
-		v270v2 = v270va[:len(v270v1):len(v270v1)]
-		testUnmarshalErr(&v270v2, bs270, h, t, "dec-slice-v270-p-len")
-		testDeepEqualErr(v270v1, v270v2, t, "equal-slice-v270-p-len")
-		v270va = [8]bool{} // clear the array
-		v270v2 = v270va[:]
-		testUnmarshalErr(&v270v2, bs270, h, t, "dec-slice-v270-p-cap")
-		testDeepEqualErr(v270v1, v270v2, t, "equal-slice-v270-p-cap")
-		if len(v270v1) > 1 {
-			v270va = [8]bool{} // clear the array
-			testUnmarshalErr((&v270va)[:len(v270v1)], bs270, h, t, "dec-slice-v270-p-len-noaddr")
-			testDeepEqualErr(v270v1, v270va[:len(v270v1)], t, "equal-slice-v270-p-len-noaddr")
-			v270va = [8]bool{} // clear the array
-			testUnmarshalErr((&v270va)[:], bs270, h, t, "dec-slice-v270-p-cap-noaddr")
-			testDeepEqualErr(v270v1, v270va[:len(v270v1)], t, "equal-slice-v270-p-cap-noaddr")
+		bs271 = testMarshalErr(&v271v1, h, t, "enc-slice-v271-p")
+		v271v2 = nil
+		testUnmarshalErr(&v271v2, bs271, h, t, "dec-slice-v271-p")
+		testDeepEqualErr(v271v1, v271v2, t, "equal-slice-v271-p")
+		v271va = [8]bool{} // clear the array
+		v271v2 = v271va[:1:1]
+		testUnmarshalErr(&v271v2, bs271, h, t, "dec-slice-v271-p-1")
+		testDeepEqualErr(v271v1, v271v2, t, "equal-slice-v271-p-1")
+		v271va = [8]bool{} // clear the array
+		v271v2 = v271va[:len(v271v1):len(v271v1)]
+		testUnmarshalErr(&v271v2, bs271, h, t, "dec-slice-v271-p-len")
+		testDeepEqualErr(v271v1, v271v2, t, "equal-slice-v271-p-len")
+		v271va = [8]bool{} // clear the array
+		v271v2 = v271va[:]
+		testUnmarshalErr(&v271v2, bs271, h, t, "dec-slice-v271-p-cap")
+		testDeepEqualErr(v271v1, v271v2, t, "equal-slice-v271-p-cap")
+		if len(v271v1) > 1 {
+			v271va = [8]bool{} // clear the array
+			testUnmarshalErr((&v271va)[:len(v271v1)], bs271, h, t, "dec-slice-v271-p-len-noaddr")
+			testDeepEqualErr(v271v1, v271va[:len(v271v1)], t, "equal-slice-v271-p-len-noaddr")
+			v271va = [8]bool{} // clear the array
+			testUnmarshalErr((&v271va)[:], bs271, h, t, "dec-slice-v271-p-cap-noaddr")
+			testDeepEqualErr(v271v1, v271va[:len(v271v1)], t, "equal-slice-v271-p-cap-noaddr")
 		}
 		// ...
-		var v270v3, v270v4 typMbsSliceBool
-		v270v2 = nil
+		var v271v3, v271v4 typMbsSliceBool
+		v271v2 = nil
 		if v != nil {
-			v270v2 = make([]bool, len(v))
+			v271v2 = make([]bool, len(v))
 		}
-		v270v3 = typMbsSliceBool(v270v1)
-		v270v4 = typMbsSliceBool(v270v2)
-		bs270 = testMarshalErr(v270v3, h, t, "enc-slice-v270-custom")
-		testUnmarshalErr(v270v4, bs270, h, t, "dec-slice-v270-custom")
-		testDeepEqualErr(v270v3, v270v4, t, "equal-slice-v270-custom")
-		bs270 = testMarshalErr(&v270v3, h, t, "enc-slice-v270-custom-p")
-		v270v2 = nil
-		v270v4 = typMbsSliceBool(v270v2)
-		testUnmarshalErr(&v270v4, bs270, h, t, "dec-slice-v270-custom-p")
-		testDeepEqualErr(v270v3, v270v4, t, "equal-slice-v270-custom-p")
+		v271v3 = typMbsSliceBool(v271v1)
+		v271v4 = typMbsSliceBool(v271v2)
+		bs271 = testMarshalErr(v271v3, h, t, "enc-slice-v271-custom")
+		testUnmarshalErr(v271v4, bs271, h, t, "dec-slice-v271-custom")
+		testDeepEqualErr(v271v3, v271v4, t, "equal-slice-v271-custom")
+		bs271 = testMarshalErr(&v271v3, h, t, "enc-slice-v271-custom-p")
+		v271v2 = nil
+		v271v4 = typMbsSliceBool(v271v2)
+		testUnmarshalErr(&v271v4, bs271, h, t, "dec-slice-v271-custom-p")
+		testDeepEqualErr(v271v3, v271v4, t, "equal-slice-v271-custom-p")
 	}
 
 }
@@ -5369,72 +5437,28 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 	}
 
 	for _, v := range []map[uint8]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
-		// fmt.Printf(">>>> running mammoth map v91: %v\n", v)
-		var v91v1, v91v2 map[uint8]interface{}
-		v91v1 = v
-		bs91 := testMarshalErr(v91v1, h, t, "enc-map-v91")
-		if v == nil {
-			v91v2 = nil
-		} else {
-			v91v2 = make(map[uint8]interface{}, len(v))
-		} // reset map
-		testUnmarshalErr(v91v2, bs91, h, t, "dec-map-v91")
-		testDeepEqualErr(v91v1, v91v2, t, "equal-map-v91")
-		if v == nil {
-			v91v2 = nil
-		} else {
-			v91v2 = make(map[uint8]interface{}, len(v))
-		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v91v2), bs91, h, t, "dec-map-v91-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v91v1, v91v2, t, "equal-map-v91-noaddr")
-		if v == nil {
-			v91v2 = nil
-		} else {
-			v91v2 = make(map[uint8]interface{}, len(v))
-		} // reset map
-		testUnmarshalErr(&v91v2, bs91, h, t, "dec-map-v91-p-len")
-		testDeepEqualErr(v91v1, v91v2, t, "equal-map-v91-p-len")
-		bs91 = testMarshalErr(&v91v1, h, t, "enc-map-v91-p")
-		v91v2 = nil
-		testUnmarshalErr(&v91v2, bs91, h, t, "dec-map-v91-p-nil")
-		testDeepEqualErr(v91v1, v91v2, t, "equal-map-v91-p-nil")
-		// ...
-		if v == nil {
-			v91v2 = nil
-		} else {
-			v91v2 = make(map[uint8]interface{}, len(v))
-		} // reset map
-		var v91v3, v91v4 typMapMapUint8Intf
-		v91v3 = typMapMapUint8Intf(v91v1)
-		v91v4 = typMapMapUint8Intf(v91v2)
-		bs91 = testMarshalErr(v91v3, h, t, "enc-map-v91-custom")
-		testUnmarshalErr(v91v4, bs91, h, t, "dec-map-v91-p-len")
-		testDeepEqualErr(v91v3, v91v4, t, "equal-map-v91-p-len")
-	}
-
-	for _, v := range []map[uint8]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v92: %v\n", v)
-		var v92v1, v92v2 map[uint8]string
+		var v92v1, v92v2 map[uint8]interface{}
 		v92v1 = v
 		bs92 := testMarshalErr(v92v1, h, t, "enc-map-v92")
 		if v == nil {
 			v92v2 = nil
 		} else {
-			v92v2 = make(map[uint8]string, len(v))
+			v92v2 = make(map[uint8]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v92v2, bs92, h, t, "dec-map-v92")
 		testDeepEqualErr(v92v1, v92v2, t, "equal-map-v92")
 		if v == nil {
 			v92v2 = nil
 		} else {
-			v92v2 = make(map[uint8]string, len(v))
+			v92v2 = make(map[uint8]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v92v2), bs92, h, t, "dec-map-v92-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v92v1, v92v2, t, "equal-map-v92-noaddr")
 		if v == nil {
 			v92v2 = nil
 		} else {
-			v92v2 = make(map[uint8]string, len(v))
+			v92v2 = make(map[uint8]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v92v2, bs92, h, t, "dec-map-v92-p-len")
 		testDeepEqualErr(v92v1, v92v2, t, "equal-map-v92-p-len")
@@ -5446,39 +5470,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v92v2 = nil
 		} else {
-			v92v2 = make(map[uint8]string, len(v))
+			v92v2 = make(map[uint8]interface{}, len(v))
 		} // reset map
-		var v92v3, v92v4 typMapMapUint8String
-		v92v3 = typMapMapUint8String(v92v1)
-		v92v4 = typMapMapUint8String(v92v2)
+		var v92v3, v92v4 typMapMapUint8Intf
+		v92v3 = typMapMapUint8Intf(v92v1)
+		v92v4 = typMapMapUint8Intf(v92v2)
 		bs92 = testMarshalErr(v92v3, h, t, "enc-map-v92-custom")
 		testUnmarshalErr(v92v4, bs92, h, t, "dec-map-v92-p-len")
 		testDeepEqualErr(v92v3, v92v4, t, "equal-map-v92-p-len")
 	}
 
-	for _, v := range []map[uint8]uint{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint8]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v93: %v\n", v)
-		var v93v1, v93v2 map[uint8]uint
+		var v93v1, v93v2 map[uint8]string
 		v93v1 = v
 		bs93 := testMarshalErr(v93v1, h, t, "enc-map-v93")
 		if v == nil {
 			v93v2 = nil
 		} else {
-			v93v2 = make(map[uint8]uint, len(v))
+			v93v2 = make(map[uint8]string, len(v))
 		} // reset map
 		testUnmarshalErr(v93v2, bs93, h, t, "dec-map-v93")
 		testDeepEqualErr(v93v1, v93v2, t, "equal-map-v93")
 		if v == nil {
 			v93v2 = nil
 		} else {
-			v93v2 = make(map[uint8]uint, len(v))
+			v93v2 = make(map[uint8]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v93v2), bs93, h, t, "dec-map-v93-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v93v1, v93v2, t, "equal-map-v93-noaddr")
 		if v == nil {
 			v93v2 = nil
 		} else {
-			v93v2 = make(map[uint8]uint, len(v))
+			v93v2 = make(map[uint8]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v93v2, bs93, h, t, "dec-map-v93-p-len")
 		testDeepEqualErr(v93v1, v93v2, t, "equal-map-v93-p-len")
@@ -5490,39 +5514,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v93v2 = nil
 		} else {
-			v93v2 = make(map[uint8]uint, len(v))
+			v93v2 = make(map[uint8]string, len(v))
 		} // reset map
-		var v93v3, v93v4 typMapMapUint8Uint
-		v93v3 = typMapMapUint8Uint(v93v1)
-		v93v4 = typMapMapUint8Uint(v93v2)
+		var v93v3, v93v4 typMapMapUint8String
+		v93v3 = typMapMapUint8String(v93v1)
+		v93v4 = typMapMapUint8String(v93v2)
 		bs93 = testMarshalErr(v93v3, h, t, "enc-map-v93-custom")
 		testUnmarshalErr(v93v4, bs93, h, t, "dec-map-v93-p-len")
 		testDeepEqualErr(v93v3, v93v4, t, "equal-map-v93-p-len")
 	}
 
-	for _, v := range []map[uint8]uint8{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint8]uint{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v94: %v\n", v)
-		var v94v1, v94v2 map[uint8]uint8
+		var v94v1, v94v2 map[uint8]uint
 		v94v1 = v
 		bs94 := testMarshalErr(v94v1, h, t, "enc-map-v94")
 		if v == nil {
 			v94v2 = nil
 		} else {
-			v94v2 = make(map[uint8]uint8, len(v))
+			v94v2 = make(map[uint8]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v94v2, bs94, h, t, "dec-map-v94")
 		testDeepEqualErr(v94v1, v94v2, t, "equal-map-v94")
 		if v == nil {
 			v94v2 = nil
 		} else {
-			v94v2 = make(map[uint8]uint8, len(v))
+			v94v2 = make(map[uint8]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v94v2), bs94, h, t, "dec-map-v94-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v94v1, v94v2, t, "equal-map-v94-noaddr")
 		if v == nil {
 			v94v2 = nil
 		} else {
-			v94v2 = make(map[uint8]uint8, len(v))
+			v94v2 = make(map[uint8]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v94v2, bs94, h, t, "dec-map-v94-p-len")
 		testDeepEqualErr(v94v1, v94v2, t, "equal-map-v94-p-len")
@@ -5534,39 +5558,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v94v2 = nil
 		} else {
-			v94v2 = make(map[uint8]uint8, len(v))
+			v94v2 = make(map[uint8]uint, len(v))
 		} // reset map
-		var v94v3, v94v4 typMapMapUint8Uint8
-		v94v3 = typMapMapUint8Uint8(v94v1)
-		v94v4 = typMapMapUint8Uint8(v94v2)
+		var v94v3, v94v4 typMapMapUint8Uint
+		v94v3 = typMapMapUint8Uint(v94v1)
+		v94v4 = typMapMapUint8Uint(v94v2)
 		bs94 = testMarshalErr(v94v3, h, t, "enc-map-v94-custom")
 		testUnmarshalErr(v94v4, bs94, h, t, "dec-map-v94-p-len")
 		testDeepEqualErr(v94v3, v94v4, t, "equal-map-v94-p-len")
 	}
 
-	for _, v := range []map[uint8]uint16{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint8]uint8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v95: %v\n", v)
-		var v95v1, v95v2 map[uint8]uint16
+		var v95v1, v95v2 map[uint8]uint8
 		v95v1 = v
 		bs95 := testMarshalErr(v95v1, h, t, "enc-map-v95")
 		if v == nil {
 			v95v2 = nil
 		} else {
-			v95v2 = make(map[uint8]uint16, len(v))
+			v95v2 = make(map[uint8]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v95v2, bs95, h, t, "dec-map-v95")
 		testDeepEqualErr(v95v1, v95v2, t, "equal-map-v95")
 		if v == nil {
 			v95v2 = nil
 		} else {
-			v95v2 = make(map[uint8]uint16, len(v))
+			v95v2 = make(map[uint8]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v95v2), bs95, h, t, "dec-map-v95-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v95v1, v95v2, t, "equal-map-v95-noaddr")
 		if v == nil {
 			v95v2 = nil
 		} else {
-			v95v2 = make(map[uint8]uint16, len(v))
+			v95v2 = make(map[uint8]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v95v2, bs95, h, t, "dec-map-v95-p-len")
 		testDeepEqualErr(v95v1, v95v2, t, "equal-map-v95-p-len")
@@ -5578,39 +5602,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v95v2 = nil
 		} else {
-			v95v2 = make(map[uint8]uint16, len(v))
+			v95v2 = make(map[uint8]uint8, len(v))
 		} // reset map
-		var v95v3, v95v4 typMapMapUint8Uint16
-		v95v3 = typMapMapUint8Uint16(v95v1)
-		v95v4 = typMapMapUint8Uint16(v95v2)
+		var v95v3, v95v4 typMapMapUint8Uint8
+		v95v3 = typMapMapUint8Uint8(v95v1)
+		v95v4 = typMapMapUint8Uint8(v95v2)
 		bs95 = testMarshalErr(v95v3, h, t, "enc-map-v95-custom")
 		testUnmarshalErr(v95v4, bs95, h, t, "dec-map-v95-p-len")
 		testDeepEqualErr(v95v3, v95v4, t, "equal-map-v95-p-len")
 	}
 
-	for _, v := range []map[uint8]uint32{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint8]uint16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v96: %v\n", v)
-		var v96v1, v96v2 map[uint8]uint32
+		var v96v1, v96v2 map[uint8]uint16
 		v96v1 = v
 		bs96 := testMarshalErr(v96v1, h, t, "enc-map-v96")
 		if v == nil {
 			v96v2 = nil
 		} else {
-			v96v2 = make(map[uint8]uint32, len(v))
+			v96v2 = make(map[uint8]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v96v2, bs96, h, t, "dec-map-v96")
 		testDeepEqualErr(v96v1, v96v2, t, "equal-map-v96")
 		if v == nil {
 			v96v2 = nil
 		} else {
-			v96v2 = make(map[uint8]uint32, len(v))
+			v96v2 = make(map[uint8]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v96v2), bs96, h, t, "dec-map-v96-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v96v1, v96v2, t, "equal-map-v96-noaddr")
 		if v == nil {
 			v96v2 = nil
 		} else {
-			v96v2 = make(map[uint8]uint32, len(v))
+			v96v2 = make(map[uint8]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v96v2, bs96, h, t, "dec-map-v96-p-len")
 		testDeepEqualErr(v96v1, v96v2, t, "equal-map-v96-p-len")
@@ -5622,39 +5646,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v96v2 = nil
 		} else {
-			v96v2 = make(map[uint8]uint32, len(v))
+			v96v2 = make(map[uint8]uint16, len(v))
 		} // reset map
-		var v96v3, v96v4 typMapMapUint8Uint32
-		v96v3 = typMapMapUint8Uint32(v96v1)
-		v96v4 = typMapMapUint8Uint32(v96v2)
+		var v96v3, v96v4 typMapMapUint8Uint16
+		v96v3 = typMapMapUint8Uint16(v96v1)
+		v96v4 = typMapMapUint8Uint16(v96v2)
 		bs96 = testMarshalErr(v96v3, h, t, "enc-map-v96-custom")
 		testUnmarshalErr(v96v4, bs96, h, t, "dec-map-v96-p-len")
 		testDeepEqualErr(v96v3, v96v4, t, "equal-map-v96-p-len")
 	}
 
-	for _, v := range []map[uint8]uint64{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint8]uint32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v97: %v\n", v)
-		var v97v1, v97v2 map[uint8]uint64
+		var v97v1, v97v2 map[uint8]uint32
 		v97v1 = v
 		bs97 := testMarshalErr(v97v1, h, t, "enc-map-v97")
 		if v == nil {
 			v97v2 = nil
 		} else {
-			v97v2 = make(map[uint8]uint64, len(v))
+			v97v2 = make(map[uint8]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v97v2, bs97, h, t, "dec-map-v97")
 		testDeepEqualErr(v97v1, v97v2, t, "equal-map-v97")
 		if v == nil {
 			v97v2 = nil
 		} else {
-			v97v2 = make(map[uint8]uint64, len(v))
+			v97v2 = make(map[uint8]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v97v2), bs97, h, t, "dec-map-v97-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v97v1, v97v2, t, "equal-map-v97-noaddr")
 		if v == nil {
 			v97v2 = nil
 		} else {
-			v97v2 = make(map[uint8]uint64, len(v))
+			v97v2 = make(map[uint8]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v97v2, bs97, h, t, "dec-map-v97-p-len")
 		testDeepEqualErr(v97v1, v97v2, t, "equal-map-v97-p-len")
@@ -5666,39 +5690,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v97v2 = nil
 		} else {
-			v97v2 = make(map[uint8]uint64, len(v))
+			v97v2 = make(map[uint8]uint32, len(v))
 		} // reset map
-		var v97v3, v97v4 typMapMapUint8Uint64
-		v97v3 = typMapMapUint8Uint64(v97v1)
-		v97v4 = typMapMapUint8Uint64(v97v2)
+		var v97v3, v97v4 typMapMapUint8Uint32
+		v97v3 = typMapMapUint8Uint32(v97v1)
+		v97v4 = typMapMapUint8Uint32(v97v2)
 		bs97 = testMarshalErr(v97v3, h, t, "enc-map-v97-custom")
 		testUnmarshalErr(v97v4, bs97, h, t, "dec-map-v97-p-len")
 		testDeepEqualErr(v97v3, v97v4, t, "equal-map-v97-p-len")
 	}
 
-	for _, v := range []map[uint8]uintptr{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint8]uint64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v98: %v\n", v)
-		var v98v1, v98v2 map[uint8]uintptr
+		var v98v1, v98v2 map[uint8]uint64
 		v98v1 = v
 		bs98 := testMarshalErr(v98v1, h, t, "enc-map-v98")
 		if v == nil {
 			v98v2 = nil
 		} else {
-			v98v2 = make(map[uint8]uintptr, len(v))
+			v98v2 = make(map[uint8]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v98v2, bs98, h, t, "dec-map-v98")
 		testDeepEqualErr(v98v1, v98v2, t, "equal-map-v98")
 		if v == nil {
 			v98v2 = nil
 		} else {
-			v98v2 = make(map[uint8]uintptr, len(v))
+			v98v2 = make(map[uint8]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v98v2), bs98, h, t, "dec-map-v98-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v98v1, v98v2, t, "equal-map-v98-noaddr")
 		if v == nil {
 			v98v2 = nil
 		} else {
-			v98v2 = make(map[uint8]uintptr, len(v))
+			v98v2 = make(map[uint8]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v98v2, bs98, h, t, "dec-map-v98-p-len")
 		testDeepEqualErr(v98v1, v98v2, t, "equal-map-v98-p-len")
@@ -5710,39 +5734,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v98v2 = nil
 		} else {
-			v98v2 = make(map[uint8]uintptr, len(v))
+			v98v2 = make(map[uint8]uint64, len(v))
 		} // reset map
-		var v98v3, v98v4 typMapMapUint8Uintptr
-		v98v3 = typMapMapUint8Uintptr(v98v1)
-		v98v4 = typMapMapUint8Uintptr(v98v2)
+		var v98v3, v98v4 typMapMapUint8Uint64
+		v98v3 = typMapMapUint8Uint64(v98v1)
+		v98v4 = typMapMapUint8Uint64(v98v2)
 		bs98 = testMarshalErr(v98v3, h, t, "enc-map-v98-custom")
 		testUnmarshalErr(v98v4, bs98, h, t, "dec-map-v98-p-len")
 		testDeepEqualErr(v98v3, v98v4, t, "equal-map-v98-p-len")
 	}
 
-	for _, v := range []map[uint8]int{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint8]uintptr{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v99: %v\n", v)
-		var v99v1, v99v2 map[uint8]int
+		var v99v1, v99v2 map[uint8]uintptr
 		v99v1 = v
 		bs99 := testMarshalErr(v99v1, h, t, "enc-map-v99")
 		if v == nil {
 			v99v2 = nil
 		} else {
-			v99v2 = make(map[uint8]int, len(v))
+			v99v2 = make(map[uint8]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v99v2, bs99, h, t, "dec-map-v99")
 		testDeepEqualErr(v99v1, v99v2, t, "equal-map-v99")
 		if v == nil {
 			v99v2 = nil
 		} else {
-			v99v2 = make(map[uint8]int, len(v))
+			v99v2 = make(map[uint8]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v99v2), bs99, h, t, "dec-map-v99-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v99v1, v99v2, t, "equal-map-v99-noaddr")
 		if v == nil {
 			v99v2 = nil
 		} else {
-			v99v2 = make(map[uint8]int, len(v))
+			v99v2 = make(map[uint8]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v99v2, bs99, h, t, "dec-map-v99-p-len")
 		testDeepEqualErr(v99v1, v99v2, t, "equal-map-v99-p-len")
@@ -5754,39 +5778,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v99v2 = nil
 		} else {
-			v99v2 = make(map[uint8]int, len(v))
+			v99v2 = make(map[uint8]uintptr, len(v))
 		} // reset map
-		var v99v3, v99v4 typMapMapUint8Int
-		v99v3 = typMapMapUint8Int(v99v1)
-		v99v4 = typMapMapUint8Int(v99v2)
+		var v99v3, v99v4 typMapMapUint8Uintptr
+		v99v3 = typMapMapUint8Uintptr(v99v1)
+		v99v4 = typMapMapUint8Uintptr(v99v2)
 		bs99 = testMarshalErr(v99v3, h, t, "enc-map-v99-custom")
 		testUnmarshalErr(v99v4, bs99, h, t, "dec-map-v99-p-len")
 		testDeepEqualErr(v99v3, v99v4, t, "equal-map-v99-p-len")
 	}
 
-	for _, v := range []map[uint8]int8{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint8]int{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v100: %v\n", v)
-		var v100v1, v100v2 map[uint8]int8
+		var v100v1, v100v2 map[uint8]int
 		v100v1 = v
 		bs100 := testMarshalErr(v100v1, h, t, "enc-map-v100")
 		if v == nil {
 			v100v2 = nil
 		} else {
-			v100v2 = make(map[uint8]int8, len(v))
+			v100v2 = make(map[uint8]int, len(v))
 		} // reset map
 		testUnmarshalErr(v100v2, bs100, h, t, "dec-map-v100")
 		testDeepEqualErr(v100v1, v100v2, t, "equal-map-v100")
 		if v == nil {
 			v100v2 = nil
 		} else {
-			v100v2 = make(map[uint8]int8, len(v))
+			v100v2 = make(map[uint8]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v100v2), bs100, h, t, "dec-map-v100-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v100v1, v100v2, t, "equal-map-v100-noaddr")
 		if v == nil {
 			v100v2 = nil
 		} else {
-			v100v2 = make(map[uint8]int8, len(v))
+			v100v2 = make(map[uint8]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v100v2, bs100, h, t, "dec-map-v100-p-len")
 		testDeepEqualErr(v100v1, v100v2, t, "equal-map-v100-p-len")
@@ -5798,39 +5822,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v100v2 = nil
 		} else {
-			v100v2 = make(map[uint8]int8, len(v))
+			v100v2 = make(map[uint8]int, len(v))
 		} // reset map
-		var v100v3, v100v4 typMapMapUint8Int8
-		v100v3 = typMapMapUint8Int8(v100v1)
-		v100v4 = typMapMapUint8Int8(v100v2)
+		var v100v3, v100v4 typMapMapUint8Int
+		v100v3 = typMapMapUint8Int(v100v1)
+		v100v4 = typMapMapUint8Int(v100v2)
 		bs100 = testMarshalErr(v100v3, h, t, "enc-map-v100-custom")
 		testUnmarshalErr(v100v4, bs100, h, t, "dec-map-v100-p-len")
 		testDeepEqualErr(v100v3, v100v4, t, "equal-map-v100-p-len")
 	}
 
-	for _, v := range []map[uint8]int16{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint8]int8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v101: %v\n", v)
-		var v101v1, v101v2 map[uint8]int16
+		var v101v1, v101v2 map[uint8]int8
 		v101v1 = v
 		bs101 := testMarshalErr(v101v1, h, t, "enc-map-v101")
 		if v == nil {
 			v101v2 = nil
 		} else {
-			v101v2 = make(map[uint8]int16, len(v))
+			v101v2 = make(map[uint8]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v101v2, bs101, h, t, "dec-map-v101")
 		testDeepEqualErr(v101v1, v101v2, t, "equal-map-v101")
 		if v == nil {
 			v101v2 = nil
 		} else {
-			v101v2 = make(map[uint8]int16, len(v))
+			v101v2 = make(map[uint8]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v101v2), bs101, h, t, "dec-map-v101-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v101v1, v101v2, t, "equal-map-v101-noaddr")
 		if v == nil {
 			v101v2 = nil
 		} else {
-			v101v2 = make(map[uint8]int16, len(v))
+			v101v2 = make(map[uint8]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v101v2, bs101, h, t, "dec-map-v101-p-len")
 		testDeepEqualErr(v101v1, v101v2, t, "equal-map-v101-p-len")
@@ -5842,39 +5866,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v101v2 = nil
 		} else {
-			v101v2 = make(map[uint8]int16, len(v))
+			v101v2 = make(map[uint8]int8, len(v))
 		} // reset map
-		var v101v3, v101v4 typMapMapUint8Int16
-		v101v3 = typMapMapUint8Int16(v101v1)
-		v101v4 = typMapMapUint8Int16(v101v2)
+		var v101v3, v101v4 typMapMapUint8Int8
+		v101v3 = typMapMapUint8Int8(v101v1)
+		v101v4 = typMapMapUint8Int8(v101v2)
 		bs101 = testMarshalErr(v101v3, h, t, "enc-map-v101-custom")
 		testUnmarshalErr(v101v4, bs101, h, t, "dec-map-v101-p-len")
 		testDeepEqualErr(v101v3, v101v4, t, "equal-map-v101-p-len")
 	}
 
-	for _, v := range []map[uint8]int32{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint8]int16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v102: %v\n", v)
-		var v102v1, v102v2 map[uint8]int32
+		var v102v1, v102v2 map[uint8]int16
 		v102v1 = v
 		bs102 := testMarshalErr(v102v1, h, t, "enc-map-v102")
 		if v == nil {
 			v102v2 = nil
 		} else {
-			v102v2 = make(map[uint8]int32, len(v))
+			v102v2 = make(map[uint8]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v102v2, bs102, h, t, "dec-map-v102")
 		testDeepEqualErr(v102v1, v102v2, t, "equal-map-v102")
 		if v == nil {
 			v102v2 = nil
 		} else {
-			v102v2 = make(map[uint8]int32, len(v))
+			v102v2 = make(map[uint8]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v102v2), bs102, h, t, "dec-map-v102-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v102v1, v102v2, t, "equal-map-v102-noaddr")
 		if v == nil {
 			v102v2 = nil
 		} else {
-			v102v2 = make(map[uint8]int32, len(v))
+			v102v2 = make(map[uint8]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v102v2, bs102, h, t, "dec-map-v102-p-len")
 		testDeepEqualErr(v102v1, v102v2, t, "equal-map-v102-p-len")
@@ -5886,39 +5910,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v102v2 = nil
 		} else {
-			v102v2 = make(map[uint8]int32, len(v))
+			v102v2 = make(map[uint8]int16, len(v))
 		} // reset map
-		var v102v3, v102v4 typMapMapUint8Int32
-		v102v3 = typMapMapUint8Int32(v102v1)
-		v102v4 = typMapMapUint8Int32(v102v2)
+		var v102v3, v102v4 typMapMapUint8Int16
+		v102v3 = typMapMapUint8Int16(v102v1)
+		v102v4 = typMapMapUint8Int16(v102v2)
 		bs102 = testMarshalErr(v102v3, h, t, "enc-map-v102-custom")
 		testUnmarshalErr(v102v4, bs102, h, t, "dec-map-v102-p-len")
 		testDeepEqualErr(v102v3, v102v4, t, "equal-map-v102-p-len")
 	}
 
-	for _, v := range []map[uint8]int64{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint8]int32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v103: %v\n", v)
-		var v103v1, v103v2 map[uint8]int64
+		var v103v1, v103v2 map[uint8]int32
 		v103v1 = v
 		bs103 := testMarshalErr(v103v1, h, t, "enc-map-v103")
 		if v == nil {
 			v103v2 = nil
 		} else {
-			v103v2 = make(map[uint8]int64, len(v))
+			v103v2 = make(map[uint8]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v103v2, bs103, h, t, "dec-map-v103")
 		testDeepEqualErr(v103v1, v103v2, t, "equal-map-v103")
 		if v == nil {
 			v103v2 = nil
 		} else {
-			v103v2 = make(map[uint8]int64, len(v))
+			v103v2 = make(map[uint8]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v103v2), bs103, h, t, "dec-map-v103-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v103v1, v103v2, t, "equal-map-v103-noaddr")
 		if v == nil {
 			v103v2 = nil
 		} else {
-			v103v2 = make(map[uint8]int64, len(v))
+			v103v2 = make(map[uint8]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v103v2, bs103, h, t, "dec-map-v103-p-len")
 		testDeepEqualErr(v103v1, v103v2, t, "equal-map-v103-p-len")
@@ -5930,39 +5954,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v103v2 = nil
 		} else {
-			v103v2 = make(map[uint8]int64, len(v))
+			v103v2 = make(map[uint8]int32, len(v))
 		} // reset map
-		var v103v3, v103v4 typMapMapUint8Int64
-		v103v3 = typMapMapUint8Int64(v103v1)
-		v103v4 = typMapMapUint8Int64(v103v2)
+		var v103v3, v103v4 typMapMapUint8Int32
+		v103v3 = typMapMapUint8Int32(v103v1)
+		v103v4 = typMapMapUint8Int32(v103v2)
 		bs103 = testMarshalErr(v103v3, h, t, "enc-map-v103-custom")
 		testUnmarshalErr(v103v4, bs103, h, t, "dec-map-v103-p-len")
 		testDeepEqualErr(v103v3, v103v4, t, "equal-map-v103-p-len")
 	}
 
-	for _, v := range []map[uint8]float32{nil, {}, {44: 0, 33: 22.2}} {
+	for _, v := range []map[uint8]int64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v104: %v\n", v)
-		var v104v1, v104v2 map[uint8]float32
+		var v104v1, v104v2 map[uint8]int64
 		v104v1 = v
 		bs104 := testMarshalErr(v104v1, h, t, "enc-map-v104")
 		if v == nil {
 			v104v2 = nil
 		} else {
-			v104v2 = make(map[uint8]float32, len(v))
+			v104v2 = make(map[uint8]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v104v2, bs104, h, t, "dec-map-v104")
 		testDeepEqualErr(v104v1, v104v2, t, "equal-map-v104")
 		if v == nil {
 			v104v2 = nil
 		} else {
-			v104v2 = make(map[uint8]float32, len(v))
+			v104v2 = make(map[uint8]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v104v2), bs104, h, t, "dec-map-v104-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v104v1, v104v2, t, "equal-map-v104-noaddr")
 		if v == nil {
 			v104v2 = nil
 		} else {
-			v104v2 = make(map[uint8]float32, len(v))
+			v104v2 = make(map[uint8]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v104v2, bs104, h, t, "dec-map-v104-p-len")
 		testDeepEqualErr(v104v1, v104v2, t, "equal-map-v104-p-len")
@@ -5974,39 +5998,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v104v2 = nil
 		} else {
-			v104v2 = make(map[uint8]float32, len(v))
+			v104v2 = make(map[uint8]int64, len(v))
 		} // reset map
-		var v104v3, v104v4 typMapMapUint8Float32
-		v104v3 = typMapMapUint8Float32(v104v1)
-		v104v4 = typMapMapUint8Float32(v104v2)
+		var v104v3, v104v4 typMapMapUint8Int64
+		v104v3 = typMapMapUint8Int64(v104v1)
+		v104v4 = typMapMapUint8Int64(v104v2)
 		bs104 = testMarshalErr(v104v3, h, t, "enc-map-v104-custom")
 		testUnmarshalErr(v104v4, bs104, h, t, "dec-map-v104-p-len")
 		testDeepEqualErr(v104v3, v104v4, t, "equal-map-v104-p-len")
 	}
 
-	for _, v := range []map[uint8]float64{nil, {}, {44: 0, 33: 11.1}} {
+	for _, v := range []map[uint8]float32{nil, {}, {44: 0, 33: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v105: %v\n", v)
-		var v105v1, v105v2 map[uint8]float64
+		var v105v1, v105v2 map[uint8]float32
 		v105v1 = v
 		bs105 := testMarshalErr(v105v1, h, t, "enc-map-v105")
 		if v == nil {
 			v105v2 = nil
 		} else {
-			v105v2 = make(map[uint8]float64, len(v))
+			v105v2 = make(map[uint8]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v105v2, bs105, h, t, "dec-map-v105")
 		testDeepEqualErr(v105v1, v105v2, t, "equal-map-v105")
 		if v == nil {
 			v105v2 = nil
 		} else {
-			v105v2 = make(map[uint8]float64, len(v))
+			v105v2 = make(map[uint8]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v105v2), bs105, h, t, "dec-map-v105-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v105v1, v105v2, t, "equal-map-v105-noaddr")
 		if v == nil {
 			v105v2 = nil
 		} else {
-			v105v2 = make(map[uint8]float64, len(v))
+			v105v2 = make(map[uint8]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v105v2, bs105, h, t, "dec-map-v105-p-len")
 		testDeepEqualErr(v105v1, v105v2, t, "equal-map-v105-p-len")
@@ -6018,39 +6042,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v105v2 = nil
 		} else {
-			v105v2 = make(map[uint8]float64, len(v))
+			v105v2 = make(map[uint8]float32, len(v))
 		} // reset map
-		var v105v3, v105v4 typMapMapUint8Float64
-		v105v3 = typMapMapUint8Float64(v105v1)
-		v105v4 = typMapMapUint8Float64(v105v2)
+		var v105v3, v105v4 typMapMapUint8Float32
+		v105v3 = typMapMapUint8Float32(v105v1)
+		v105v4 = typMapMapUint8Float32(v105v2)
 		bs105 = testMarshalErr(v105v3, h, t, "enc-map-v105-custom")
 		testUnmarshalErr(v105v4, bs105, h, t, "dec-map-v105-p-len")
 		testDeepEqualErr(v105v3, v105v4, t, "equal-map-v105-p-len")
 	}
 
-	for _, v := range []map[uint8]bool{nil, {}, {44: false, 33: true}} {
+	for _, v := range []map[uint8]float64{nil, {}, {44: 0, 33: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v106: %v\n", v)
-		var v106v1, v106v2 map[uint8]bool
+		var v106v1, v106v2 map[uint8]float64
 		v106v1 = v
 		bs106 := testMarshalErr(v106v1, h, t, "enc-map-v106")
 		if v == nil {
 			v106v2 = nil
 		} else {
-			v106v2 = make(map[uint8]bool, len(v))
+			v106v2 = make(map[uint8]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v106v2, bs106, h, t, "dec-map-v106")
 		testDeepEqualErr(v106v1, v106v2, t, "equal-map-v106")
 		if v == nil {
 			v106v2 = nil
 		} else {
-			v106v2 = make(map[uint8]bool, len(v))
+			v106v2 = make(map[uint8]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v106v2), bs106, h, t, "dec-map-v106-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v106v1, v106v2, t, "equal-map-v106-noaddr")
 		if v == nil {
 			v106v2 = nil
 		} else {
-			v106v2 = make(map[uint8]bool, len(v))
+			v106v2 = make(map[uint8]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v106v2, bs106, h, t, "dec-map-v106-p-len")
 		testDeepEqualErr(v106v1, v106v2, t, "equal-map-v106-p-len")
@@ -6062,83 +6086,83 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v106v2 = nil
 		} else {
-			v106v2 = make(map[uint8]bool, len(v))
+			v106v2 = make(map[uint8]float64, len(v))
 		} // reset map
-		var v106v3, v106v4 typMapMapUint8Bool
-		v106v3 = typMapMapUint8Bool(v106v1)
-		v106v4 = typMapMapUint8Bool(v106v2)
+		var v106v3, v106v4 typMapMapUint8Float64
+		v106v3 = typMapMapUint8Float64(v106v1)
+		v106v4 = typMapMapUint8Float64(v106v2)
 		bs106 = testMarshalErr(v106v3, h, t, "enc-map-v106-custom")
 		testUnmarshalErr(v106v4, bs106, h, t, "dec-map-v106-p-len")
 		testDeepEqualErr(v106v3, v106v4, t, "equal-map-v106-p-len")
 	}
 
-	for _, v := range []map[uint16]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
-		// fmt.Printf(">>>> running mammoth map v109: %v\n", v)
-		var v109v1, v109v2 map[uint16]interface{}
-		v109v1 = v
-		bs109 := testMarshalErr(v109v1, h, t, "enc-map-v109")
+	for _, v := range []map[uint8]bool{nil, {}, {44: false, 33: true}} {
+		// fmt.Printf(">>>> running mammoth map v107: %v\n", v)
+		var v107v1, v107v2 map[uint8]bool
+		v107v1 = v
+		bs107 := testMarshalErr(v107v1, h, t, "enc-map-v107")
 		if v == nil {
-			v109v2 = nil
+			v107v2 = nil
 		} else {
-			v109v2 = make(map[uint16]interface{}, len(v))
+			v107v2 = make(map[uint8]bool, len(v))
 		} // reset map
-		testUnmarshalErr(v109v2, bs109, h, t, "dec-map-v109")
-		testDeepEqualErr(v109v1, v109v2, t, "equal-map-v109")
+		testUnmarshalErr(v107v2, bs107, h, t, "dec-map-v107")
+		testDeepEqualErr(v107v1, v107v2, t, "equal-map-v107")
 		if v == nil {
-			v109v2 = nil
+			v107v2 = nil
 		} else {
-			v109v2 = make(map[uint16]interface{}, len(v))
+			v107v2 = make(map[uint8]bool, len(v))
 		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v109v2), bs109, h, t, "dec-map-v109-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v109v1, v109v2, t, "equal-map-v109-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v107v2), bs107, h, t, "dec-map-v107-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v107v1, v107v2, t, "equal-map-v107-noaddr")
 		if v == nil {
-			v109v2 = nil
+			v107v2 = nil
 		} else {
-			v109v2 = make(map[uint16]interface{}, len(v))
+			v107v2 = make(map[uint8]bool, len(v))
 		} // reset map
-		testUnmarshalErr(&v109v2, bs109, h, t, "dec-map-v109-p-len")
-		testDeepEqualErr(v109v1, v109v2, t, "equal-map-v109-p-len")
-		bs109 = testMarshalErr(&v109v1, h, t, "enc-map-v109-p")
-		v109v2 = nil
-		testUnmarshalErr(&v109v2, bs109, h, t, "dec-map-v109-p-nil")
-		testDeepEqualErr(v109v1, v109v2, t, "equal-map-v109-p-nil")
+		testUnmarshalErr(&v107v2, bs107, h, t, "dec-map-v107-p-len")
+		testDeepEqualErr(v107v1, v107v2, t, "equal-map-v107-p-len")
+		bs107 = testMarshalErr(&v107v1, h, t, "enc-map-v107-p")
+		v107v2 = nil
+		testUnmarshalErr(&v107v2, bs107, h, t, "dec-map-v107-p-nil")
+		testDeepEqualErr(v107v1, v107v2, t, "equal-map-v107-p-nil")
 		// ...
 		if v == nil {
-			v109v2 = nil
+			v107v2 = nil
 		} else {
-			v109v2 = make(map[uint16]interface{}, len(v))
+			v107v2 = make(map[uint8]bool, len(v))
 		} // reset map
-		var v109v3, v109v4 typMapMapUint16Intf
-		v109v3 = typMapMapUint16Intf(v109v1)
-		v109v4 = typMapMapUint16Intf(v109v2)
-		bs109 = testMarshalErr(v109v3, h, t, "enc-map-v109-custom")
-		testUnmarshalErr(v109v4, bs109, h, t, "dec-map-v109-p-len")
-		testDeepEqualErr(v109v3, v109v4, t, "equal-map-v109-p-len")
+		var v107v3, v107v4 typMapMapUint8Bool
+		v107v3 = typMapMapUint8Bool(v107v1)
+		v107v4 = typMapMapUint8Bool(v107v2)
+		bs107 = testMarshalErr(v107v3, h, t, "enc-map-v107-custom")
+		testUnmarshalErr(v107v4, bs107, h, t, "dec-map-v107-p-len")
+		testDeepEqualErr(v107v3, v107v4, t, "equal-map-v107-p-len")
 	}
 
-	for _, v := range []map[uint16]string{nil, {}, {44: "", 33: "some-string-2"}} {
+	for _, v := range []map[uint16]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v110: %v\n", v)
-		var v110v1, v110v2 map[uint16]string
+		var v110v1, v110v2 map[uint16]interface{}
 		v110v1 = v
 		bs110 := testMarshalErr(v110v1, h, t, "enc-map-v110")
 		if v == nil {
 			v110v2 = nil
 		} else {
-			v110v2 = make(map[uint16]string, len(v))
+			v110v2 = make(map[uint16]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v110v2, bs110, h, t, "dec-map-v110")
 		testDeepEqualErr(v110v1, v110v2, t, "equal-map-v110")
 		if v == nil {
 			v110v2 = nil
 		} else {
-			v110v2 = make(map[uint16]string, len(v))
+			v110v2 = make(map[uint16]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v110v2), bs110, h, t, "dec-map-v110-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v110v1, v110v2, t, "equal-map-v110-noaddr")
 		if v == nil {
 			v110v2 = nil
 		} else {
-			v110v2 = make(map[uint16]string, len(v))
+			v110v2 = make(map[uint16]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v110v2, bs110, h, t, "dec-map-v110-p-len")
 		testDeepEqualErr(v110v1, v110v2, t, "equal-map-v110-p-len")
@@ -6150,39 +6174,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v110v2 = nil
 		} else {
-			v110v2 = make(map[uint16]string, len(v))
+			v110v2 = make(map[uint16]interface{}, len(v))
 		} // reset map
-		var v110v3, v110v4 typMapMapUint16String
-		v110v3 = typMapMapUint16String(v110v1)
-		v110v4 = typMapMapUint16String(v110v2)
+		var v110v3, v110v4 typMapMapUint16Intf
+		v110v3 = typMapMapUint16Intf(v110v1)
+		v110v4 = typMapMapUint16Intf(v110v2)
 		bs110 = testMarshalErr(v110v3, h, t, "enc-map-v110-custom")
 		testUnmarshalErr(v110v4, bs110, h, t, "dec-map-v110-p-len")
 		testDeepEqualErr(v110v3, v110v4, t, "equal-map-v110-p-len")
 	}
 
-	for _, v := range []map[uint16]uint{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint16]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v111: %v\n", v)
-		var v111v1, v111v2 map[uint16]uint
+		var v111v1, v111v2 map[uint16]string
 		v111v1 = v
 		bs111 := testMarshalErr(v111v1, h, t, "enc-map-v111")
 		if v == nil {
 			v111v2 = nil
 		} else {
-			v111v2 = make(map[uint16]uint, len(v))
+			v111v2 = make(map[uint16]string, len(v))
 		} // reset map
 		testUnmarshalErr(v111v2, bs111, h, t, "dec-map-v111")
 		testDeepEqualErr(v111v1, v111v2, t, "equal-map-v111")
 		if v == nil {
 			v111v2 = nil
 		} else {
-			v111v2 = make(map[uint16]uint, len(v))
+			v111v2 = make(map[uint16]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v111v2), bs111, h, t, "dec-map-v111-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v111v1, v111v2, t, "equal-map-v111-noaddr")
 		if v == nil {
 			v111v2 = nil
 		} else {
-			v111v2 = make(map[uint16]uint, len(v))
+			v111v2 = make(map[uint16]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v111v2, bs111, h, t, "dec-map-v111-p-len")
 		testDeepEqualErr(v111v1, v111v2, t, "equal-map-v111-p-len")
@@ -6194,39 +6218,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v111v2 = nil
 		} else {
-			v111v2 = make(map[uint16]uint, len(v))
+			v111v2 = make(map[uint16]string, len(v))
 		} // reset map
-		var v111v3, v111v4 typMapMapUint16Uint
-		v111v3 = typMapMapUint16Uint(v111v1)
-		v111v4 = typMapMapUint16Uint(v111v2)
+		var v111v3, v111v4 typMapMapUint16String
+		v111v3 = typMapMapUint16String(v111v1)
+		v111v4 = typMapMapUint16String(v111v2)
 		bs111 = testMarshalErr(v111v3, h, t, "enc-map-v111-custom")
 		testUnmarshalErr(v111v4, bs111, h, t, "dec-map-v111-p-len")
 		testDeepEqualErr(v111v3, v111v4, t, "equal-map-v111-p-len")
 	}
 
-	for _, v := range []map[uint16]uint8{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint16]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v112: %v\n", v)
-		var v112v1, v112v2 map[uint16]uint8
+		var v112v1, v112v2 map[uint16]uint
 		v112v1 = v
 		bs112 := testMarshalErr(v112v1, h, t, "enc-map-v112")
 		if v == nil {
 			v112v2 = nil
 		} else {
-			v112v2 = make(map[uint16]uint8, len(v))
+			v112v2 = make(map[uint16]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v112v2, bs112, h, t, "dec-map-v112")
 		testDeepEqualErr(v112v1, v112v2, t, "equal-map-v112")
 		if v == nil {
 			v112v2 = nil
 		} else {
-			v112v2 = make(map[uint16]uint8, len(v))
+			v112v2 = make(map[uint16]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v112v2), bs112, h, t, "dec-map-v112-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v112v1, v112v2, t, "equal-map-v112-noaddr")
 		if v == nil {
 			v112v2 = nil
 		} else {
-			v112v2 = make(map[uint16]uint8, len(v))
+			v112v2 = make(map[uint16]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v112v2, bs112, h, t, "dec-map-v112-p-len")
 		testDeepEqualErr(v112v1, v112v2, t, "equal-map-v112-p-len")
@@ -6238,39 +6262,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v112v2 = nil
 		} else {
-			v112v2 = make(map[uint16]uint8, len(v))
+			v112v2 = make(map[uint16]uint, len(v))
 		} // reset map
-		var v112v3, v112v4 typMapMapUint16Uint8
-		v112v3 = typMapMapUint16Uint8(v112v1)
-		v112v4 = typMapMapUint16Uint8(v112v2)
+		var v112v3, v112v4 typMapMapUint16Uint
+		v112v3 = typMapMapUint16Uint(v112v1)
+		v112v4 = typMapMapUint16Uint(v112v2)
 		bs112 = testMarshalErr(v112v3, h, t, "enc-map-v112-custom")
 		testUnmarshalErr(v112v4, bs112, h, t, "dec-map-v112-p-len")
 		testDeepEqualErr(v112v3, v112v4, t, "equal-map-v112-p-len")
 	}
 
-	for _, v := range []map[uint16]uint16{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint16]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v113: %v\n", v)
-		var v113v1, v113v2 map[uint16]uint16
+		var v113v1, v113v2 map[uint16]uint8
 		v113v1 = v
 		bs113 := testMarshalErr(v113v1, h, t, "enc-map-v113")
 		if v == nil {
 			v113v2 = nil
 		} else {
-			v113v2 = make(map[uint16]uint16, len(v))
+			v113v2 = make(map[uint16]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v113v2, bs113, h, t, "dec-map-v113")
 		testDeepEqualErr(v113v1, v113v2, t, "equal-map-v113")
 		if v == nil {
 			v113v2 = nil
 		} else {
-			v113v2 = make(map[uint16]uint16, len(v))
+			v113v2 = make(map[uint16]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v113v2), bs113, h, t, "dec-map-v113-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v113v1, v113v2, t, "equal-map-v113-noaddr")
 		if v == nil {
 			v113v2 = nil
 		} else {
-			v113v2 = make(map[uint16]uint16, len(v))
+			v113v2 = make(map[uint16]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v113v2, bs113, h, t, "dec-map-v113-p-len")
 		testDeepEqualErr(v113v1, v113v2, t, "equal-map-v113-p-len")
@@ -6282,39 +6306,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v113v2 = nil
 		} else {
-			v113v2 = make(map[uint16]uint16, len(v))
+			v113v2 = make(map[uint16]uint8, len(v))
 		} // reset map
-		var v113v3, v113v4 typMapMapUint16Uint16
-		v113v3 = typMapMapUint16Uint16(v113v1)
-		v113v4 = typMapMapUint16Uint16(v113v2)
+		var v113v3, v113v4 typMapMapUint16Uint8
+		v113v3 = typMapMapUint16Uint8(v113v1)
+		v113v4 = typMapMapUint16Uint8(v113v2)
 		bs113 = testMarshalErr(v113v3, h, t, "enc-map-v113-custom")
 		testUnmarshalErr(v113v4, bs113, h, t, "dec-map-v113-p-len")
 		testDeepEqualErr(v113v3, v113v4, t, "equal-map-v113-p-len")
 	}
 
-	for _, v := range []map[uint16]uint32{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint16]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v114: %v\n", v)
-		var v114v1, v114v2 map[uint16]uint32
+		var v114v1, v114v2 map[uint16]uint16
 		v114v1 = v
 		bs114 := testMarshalErr(v114v1, h, t, "enc-map-v114")
 		if v == nil {
 			v114v2 = nil
 		} else {
-			v114v2 = make(map[uint16]uint32, len(v))
+			v114v2 = make(map[uint16]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v114v2, bs114, h, t, "dec-map-v114")
 		testDeepEqualErr(v114v1, v114v2, t, "equal-map-v114")
 		if v == nil {
 			v114v2 = nil
 		} else {
-			v114v2 = make(map[uint16]uint32, len(v))
+			v114v2 = make(map[uint16]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v114v2), bs114, h, t, "dec-map-v114-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v114v1, v114v2, t, "equal-map-v114-noaddr")
 		if v == nil {
 			v114v2 = nil
 		} else {
-			v114v2 = make(map[uint16]uint32, len(v))
+			v114v2 = make(map[uint16]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v114v2, bs114, h, t, "dec-map-v114-p-len")
 		testDeepEqualErr(v114v1, v114v2, t, "equal-map-v114-p-len")
@@ -6326,39 +6350,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v114v2 = nil
 		} else {
-			v114v2 = make(map[uint16]uint32, len(v))
+			v114v2 = make(map[uint16]uint16, len(v))
 		} // reset map
-		var v114v3, v114v4 typMapMapUint16Uint32
-		v114v3 = typMapMapUint16Uint32(v114v1)
-		v114v4 = typMapMapUint16Uint32(v114v2)
+		var v114v3, v114v4 typMapMapUint16Uint16
+		v114v3 = typMapMapUint16Uint16(v114v1)
+		v114v4 = typMapMapUint16Uint16(v114v2)
 		bs114 = testMarshalErr(v114v3, h, t, "enc-map-v114-custom")
 		testUnmarshalErr(v114v4, bs114, h, t, "dec-map-v114-p-len")
 		testDeepEqualErr(v114v3, v114v4, t, "equal-map-v114-p-len")
 	}
 
-	for _, v := range []map[uint16]uint64{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint16]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v115: %v\n", v)
-		var v115v1, v115v2 map[uint16]uint64
+		var v115v1, v115v2 map[uint16]uint32
 		v115v1 = v
 		bs115 := testMarshalErr(v115v1, h, t, "enc-map-v115")
 		if v == nil {
 			v115v2 = nil
 		} else {
-			v115v2 = make(map[uint16]uint64, len(v))
+			v115v2 = make(map[uint16]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v115v2, bs115, h, t, "dec-map-v115")
 		testDeepEqualErr(v115v1, v115v2, t, "equal-map-v115")
 		if v == nil {
 			v115v2 = nil
 		} else {
-			v115v2 = make(map[uint16]uint64, len(v))
+			v115v2 = make(map[uint16]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v115v2), bs115, h, t, "dec-map-v115-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v115v1, v115v2, t, "equal-map-v115-noaddr")
 		if v == nil {
 			v115v2 = nil
 		} else {
-			v115v2 = make(map[uint16]uint64, len(v))
+			v115v2 = make(map[uint16]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v115v2, bs115, h, t, "dec-map-v115-p-len")
 		testDeepEqualErr(v115v1, v115v2, t, "equal-map-v115-p-len")
@@ -6370,39 +6394,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v115v2 = nil
 		} else {
-			v115v2 = make(map[uint16]uint64, len(v))
+			v115v2 = make(map[uint16]uint32, len(v))
 		} // reset map
-		var v115v3, v115v4 typMapMapUint16Uint64
-		v115v3 = typMapMapUint16Uint64(v115v1)
-		v115v4 = typMapMapUint16Uint64(v115v2)
+		var v115v3, v115v4 typMapMapUint16Uint32
+		v115v3 = typMapMapUint16Uint32(v115v1)
+		v115v4 = typMapMapUint16Uint32(v115v2)
 		bs115 = testMarshalErr(v115v3, h, t, "enc-map-v115-custom")
 		testUnmarshalErr(v115v4, bs115, h, t, "dec-map-v115-p-len")
 		testDeepEqualErr(v115v3, v115v4, t, "equal-map-v115-p-len")
 	}
 
-	for _, v := range []map[uint16]uintptr{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint16]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v116: %v\n", v)
-		var v116v1, v116v2 map[uint16]uintptr
+		var v116v1, v116v2 map[uint16]uint64
 		v116v1 = v
 		bs116 := testMarshalErr(v116v1, h, t, "enc-map-v116")
 		if v == nil {
 			v116v2 = nil
 		} else {
-			v116v2 = make(map[uint16]uintptr, len(v))
+			v116v2 = make(map[uint16]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v116v2, bs116, h, t, "dec-map-v116")
 		testDeepEqualErr(v116v1, v116v2, t, "equal-map-v116")
 		if v == nil {
 			v116v2 = nil
 		} else {
-			v116v2 = make(map[uint16]uintptr, len(v))
+			v116v2 = make(map[uint16]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v116v2), bs116, h, t, "dec-map-v116-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v116v1, v116v2, t, "equal-map-v116-noaddr")
 		if v == nil {
 			v116v2 = nil
 		} else {
-			v116v2 = make(map[uint16]uintptr, len(v))
+			v116v2 = make(map[uint16]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v116v2, bs116, h, t, "dec-map-v116-p-len")
 		testDeepEqualErr(v116v1, v116v2, t, "equal-map-v116-p-len")
@@ -6414,39 +6438,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v116v2 = nil
 		} else {
-			v116v2 = make(map[uint16]uintptr, len(v))
+			v116v2 = make(map[uint16]uint64, len(v))
 		} // reset map
-		var v116v3, v116v4 typMapMapUint16Uintptr
-		v116v3 = typMapMapUint16Uintptr(v116v1)
-		v116v4 = typMapMapUint16Uintptr(v116v2)
+		var v116v3, v116v4 typMapMapUint16Uint64
+		v116v3 = typMapMapUint16Uint64(v116v1)
+		v116v4 = typMapMapUint16Uint64(v116v2)
 		bs116 = testMarshalErr(v116v3, h, t, "enc-map-v116-custom")
 		testUnmarshalErr(v116v4, bs116, h, t, "dec-map-v116-p-len")
 		testDeepEqualErr(v116v3, v116v4, t, "equal-map-v116-p-len")
 	}
 
-	for _, v := range []map[uint16]int{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint16]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v117: %v\n", v)
-		var v117v1, v117v2 map[uint16]int
+		var v117v1, v117v2 map[uint16]uintptr
 		v117v1 = v
 		bs117 := testMarshalErr(v117v1, h, t, "enc-map-v117")
 		if v == nil {
 			v117v2 = nil
 		} else {
-			v117v2 = make(map[uint16]int, len(v))
+			v117v2 = make(map[uint16]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v117v2, bs117, h, t, "dec-map-v117")
 		testDeepEqualErr(v117v1, v117v2, t, "equal-map-v117")
 		if v == nil {
 			v117v2 = nil
 		} else {
-			v117v2 = make(map[uint16]int, len(v))
+			v117v2 = make(map[uint16]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v117v2), bs117, h, t, "dec-map-v117-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v117v1, v117v2, t, "equal-map-v117-noaddr")
 		if v == nil {
 			v117v2 = nil
 		} else {
-			v117v2 = make(map[uint16]int, len(v))
+			v117v2 = make(map[uint16]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v117v2, bs117, h, t, "dec-map-v117-p-len")
 		testDeepEqualErr(v117v1, v117v2, t, "equal-map-v117-p-len")
@@ -6458,39 +6482,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v117v2 = nil
 		} else {
-			v117v2 = make(map[uint16]int, len(v))
+			v117v2 = make(map[uint16]uintptr, len(v))
 		} // reset map
-		var v117v3, v117v4 typMapMapUint16Int
-		v117v3 = typMapMapUint16Int(v117v1)
-		v117v4 = typMapMapUint16Int(v117v2)
+		var v117v3, v117v4 typMapMapUint16Uintptr
+		v117v3 = typMapMapUint16Uintptr(v117v1)
+		v117v4 = typMapMapUint16Uintptr(v117v2)
 		bs117 = testMarshalErr(v117v3, h, t, "enc-map-v117-custom")
 		testUnmarshalErr(v117v4, bs117, h, t, "dec-map-v117-p-len")
 		testDeepEqualErr(v117v3, v117v4, t, "equal-map-v117-p-len")
 	}
 
-	for _, v := range []map[uint16]int8{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint16]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v118: %v\n", v)
-		var v118v1, v118v2 map[uint16]int8
+		var v118v1, v118v2 map[uint16]int
 		v118v1 = v
 		bs118 := testMarshalErr(v118v1, h, t, "enc-map-v118")
 		if v == nil {
 			v118v2 = nil
 		} else {
-			v118v2 = make(map[uint16]int8, len(v))
+			v118v2 = make(map[uint16]int, len(v))
 		} // reset map
 		testUnmarshalErr(v118v2, bs118, h, t, "dec-map-v118")
 		testDeepEqualErr(v118v1, v118v2, t, "equal-map-v118")
 		if v == nil {
 			v118v2 = nil
 		} else {
-			v118v2 = make(map[uint16]int8, len(v))
+			v118v2 = make(map[uint16]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v118v2), bs118, h, t, "dec-map-v118-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v118v1, v118v2, t, "equal-map-v118-noaddr")
 		if v == nil {
 			v118v2 = nil
 		} else {
-			v118v2 = make(map[uint16]int8, len(v))
+			v118v2 = make(map[uint16]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v118v2, bs118, h, t, "dec-map-v118-p-len")
 		testDeepEqualErr(v118v1, v118v2, t, "equal-map-v118-p-len")
@@ -6502,39 +6526,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v118v2 = nil
 		} else {
-			v118v2 = make(map[uint16]int8, len(v))
+			v118v2 = make(map[uint16]int, len(v))
 		} // reset map
-		var v118v3, v118v4 typMapMapUint16Int8
-		v118v3 = typMapMapUint16Int8(v118v1)
-		v118v4 = typMapMapUint16Int8(v118v2)
+		var v118v3, v118v4 typMapMapUint16Int
+		v118v3 = typMapMapUint16Int(v118v1)
+		v118v4 = typMapMapUint16Int(v118v2)
 		bs118 = testMarshalErr(v118v3, h, t, "enc-map-v118-custom")
 		testUnmarshalErr(v118v4, bs118, h, t, "dec-map-v118-p-len")
 		testDeepEqualErr(v118v3, v118v4, t, "equal-map-v118-p-len")
 	}
 
-	for _, v := range []map[uint16]int16{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint16]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v119: %v\n", v)
-		var v119v1, v119v2 map[uint16]int16
+		var v119v1, v119v2 map[uint16]int8
 		v119v1 = v
 		bs119 := testMarshalErr(v119v1, h, t, "enc-map-v119")
 		if v == nil {
 			v119v2 = nil
 		} else {
-			v119v2 = make(map[uint16]int16, len(v))
+			v119v2 = make(map[uint16]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v119v2, bs119, h, t, "dec-map-v119")
 		testDeepEqualErr(v119v1, v119v2, t, "equal-map-v119")
 		if v == nil {
 			v119v2 = nil
 		} else {
-			v119v2 = make(map[uint16]int16, len(v))
+			v119v2 = make(map[uint16]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v119v2), bs119, h, t, "dec-map-v119-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v119v1, v119v2, t, "equal-map-v119-noaddr")
 		if v == nil {
 			v119v2 = nil
 		} else {
-			v119v2 = make(map[uint16]int16, len(v))
+			v119v2 = make(map[uint16]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v119v2, bs119, h, t, "dec-map-v119-p-len")
 		testDeepEqualErr(v119v1, v119v2, t, "equal-map-v119-p-len")
@@ -6546,39 +6570,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v119v2 = nil
 		} else {
-			v119v2 = make(map[uint16]int16, len(v))
+			v119v2 = make(map[uint16]int8, len(v))
 		} // reset map
-		var v119v3, v119v4 typMapMapUint16Int16
-		v119v3 = typMapMapUint16Int16(v119v1)
-		v119v4 = typMapMapUint16Int16(v119v2)
+		var v119v3, v119v4 typMapMapUint16Int8
+		v119v3 = typMapMapUint16Int8(v119v1)
+		v119v4 = typMapMapUint16Int8(v119v2)
 		bs119 = testMarshalErr(v119v3, h, t, "enc-map-v119-custom")
 		testUnmarshalErr(v119v4, bs119, h, t, "dec-map-v119-p-len")
 		testDeepEqualErr(v119v3, v119v4, t, "equal-map-v119-p-len")
 	}
 
-	for _, v := range []map[uint16]int32{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint16]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v120: %v\n", v)
-		var v120v1, v120v2 map[uint16]int32
+		var v120v1, v120v2 map[uint16]int16
 		v120v1 = v
 		bs120 := testMarshalErr(v120v1, h, t, "enc-map-v120")
 		if v == nil {
 			v120v2 = nil
 		} else {
-			v120v2 = make(map[uint16]int32, len(v))
+			v120v2 = make(map[uint16]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v120v2, bs120, h, t, "dec-map-v120")
 		testDeepEqualErr(v120v1, v120v2, t, "equal-map-v120")
 		if v == nil {
 			v120v2 = nil
 		} else {
-			v120v2 = make(map[uint16]int32, len(v))
+			v120v2 = make(map[uint16]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v120v2), bs120, h, t, "dec-map-v120-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v120v1, v120v2, t, "equal-map-v120-noaddr")
 		if v == nil {
 			v120v2 = nil
 		} else {
-			v120v2 = make(map[uint16]int32, len(v))
+			v120v2 = make(map[uint16]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v120v2, bs120, h, t, "dec-map-v120-p-len")
 		testDeepEqualErr(v120v1, v120v2, t, "equal-map-v120-p-len")
@@ -6590,39 +6614,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v120v2 = nil
 		} else {
-			v120v2 = make(map[uint16]int32, len(v))
+			v120v2 = make(map[uint16]int16, len(v))
 		} // reset map
-		var v120v3, v120v4 typMapMapUint16Int32
-		v120v3 = typMapMapUint16Int32(v120v1)
-		v120v4 = typMapMapUint16Int32(v120v2)
+		var v120v3, v120v4 typMapMapUint16Int16
+		v120v3 = typMapMapUint16Int16(v120v1)
+		v120v4 = typMapMapUint16Int16(v120v2)
 		bs120 = testMarshalErr(v120v3, h, t, "enc-map-v120-custom")
 		testUnmarshalErr(v120v4, bs120, h, t, "dec-map-v120-p-len")
 		testDeepEqualErr(v120v3, v120v4, t, "equal-map-v120-p-len")
 	}
 
-	for _, v := range []map[uint16]int64{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint16]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v121: %v\n", v)
-		var v121v1, v121v2 map[uint16]int64
+		var v121v1, v121v2 map[uint16]int32
 		v121v1 = v
 		bs121 := testMarshalErr(v121v1, h, t, "enc-map-v121")
 		if v == nil {
 			v121v2 = nil
 		} else {
-			v121v2 = make(map[uint16]int64, len(v))
+			v121v2 = make(map[uint16]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v121v2, bs121, h, t, "dec-map-v121")
 		testDeepEqualErr(v121v1, v121v2, t, "equal-map-v121")
 		if v == nil {
 			v121v2 = nil
 		} else {
-			v121v2 = make(map[uint16]int64, len(v))
+			v121v2 = make(map[uint16]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v121v2), bs121, h, t, "dec-map-v121-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v121v1, v121v2, t, "equal-map-v121-noaddr")
 		if v == nil {
 			v121v2 = nil
 		} else {
-			v121v2 = make(map[uint16]int64, len(v))
+			v121v2 = make(map[uint16]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v121v2, bs121, h, t, "dec-map-v121-p-len")
 		testDeepEqualErr(v121v1, v121v2, t, "equal-map-v121-p-len")
@@ -6634,39 +6658,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v121v2 = nil
 		} else {
-			v121v2 = make(map[uint16]int64, len(v))
+			v121v2 = make(map[uint16]int32, len(v))
 		} // reset map
-		var v121v3, v121v4 typMapMapUint16Int64
-		v121v3 = typMapMapUint16Int64(v121v1)
-		v121v4 = typMapMapUint16Int64(v121v2)
+		var v121v3, v121v4 typMapMapUint16Int32
+		v121v3 = typMapMapUint16Int32(v121v1)
+		v121v4 = typMapMapUint16Int32(v121v2)
 		bs121 = testMarshalErr(v121v3, h, t, "enc-map-v121-custom")
 		testUnmarshalErr(v121v4, bs121, h, t, "dec-map-v121-p-len")
 		testDeepEqualErr(v121v3, v121v4, t, "equal-map-v121-p-len")
 	}
 
-	for _, v := range []map[uint16]float32{nil, {}, {33: 0, 44: 22.2}} {
+	for _, v := range []map[uint16]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v122: %v\n", v)
-		var v122v1, v122v2 map[uint16]float32
+		var v122v1, v122v2 map[uint16]int64
 		v122v1 = v
 		bs122 := testMarshalErr(v122v1, h, t, "enc-map-v122")
 		if v == nil {
 			v122v2 = nil
 		} else {
-			v122v2 = make(map[uint16]float32, len(v))
+			v122v2 = make(map[uint16]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v122v2, bs122, h, t, "dec-map-v122")
 		testDeepEqualErr(v122v1, v122v2, t, "equal-map-v122")
 		if v == nil {
 			v122v2 = nil
 		} else {
-			v122v2 = make(map[uint16]float32, len(v))
+			v122v2 = make(map[uint16]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v122v2), bs122, h, t, "dec-map-v122-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v122v1, v122v2, t, "equal-map-v122-noaddr")
 		if v == nil {
 			v122v2 = nil
 		} else {
-			v122v2 = make(map[uint16]float32, len(v))
+			v122v2 = make(map[uint16]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v122v2, bs122, h, t, "dec-map-v122-p-len")
 		testDeepEqualErr(v122v1, v122v2, t, "equal-map-v122-p-len")
@@ -6678,39 +6702,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v122v2 = nil
 		} else {
-			v122v2 = make(map[uint16]float32, len(v))
+			v122v2 = make(map[uint16]int64, len(v))
 		} // reset map
-		var v122v3, v122v4 typMapMapUint16Float32
-		v122v3 = typMapMapUint16Float32(v122v1)
-		v122v4 = typMapMapUint16Float32(v122v2)
+		var v122v3, v122v4 typMapMapUint16Int64
+		v122v3 = typMapMapUint16Int64(v122v1)
+		v122v4 = typMapMapUint16Int64(v122v2)
 		bs122 = testMarshalErr(v122v3, h, t, "enc-map-v122-custom")
 		testUnmarshalErr(v122v4, bs122, h, t, "dec-map-v122-p-len")
 		testDeepEqualErr(v122v3, v122v4, t, "equal-map-v122-p-len")
 	}
 
-	for _, v := range []map[uint16]float64{nil, {}, {33: 0, 44: 11.1}} {
+	for _, v := range []map[uint16]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v123: %v\n", v)
-		var v123v1, v123v2 map[uint16]float64
+		var v123v1, v123v2 map[uint16]float32
 		v123v1 = v
 		bs123 := testMarshalErr(v123v1, h, t, "enc-map-v123")
 		if v == nil {
 			v123v2 = nil
 		} else {
-			v123v2 = make(map[uint16]float64, len(v))
+			v123v2 = make(map[uint16]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v123v2, bs123, h, t, "dec-map-v123")
 		testDeepEqualErr(v123v1, v123v2, t, "equal-map-v123")
 		if v == nil {
 			v123v2 = nil
 		} else {
-			v123v2 = make(map[uint16]float64, len(v))
+			v123v2 = make(map[uint16]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v123v2), bs123, h, t, "dec-map-v123-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v123v1, v123v2, t, "equal-map-v123-noaddr")
 		if v == nil {
 			v123v2 = nil
 		} else {
-			v123v2 = make(map[uint16]float64, len(v))
+			v123v2 = make(map[uint16]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v123v2, bs123, h, t, "dec-map-v123-p-len")
 		testDeepEqualErr(v123v1, v123v2, t, "equal-map-v123-p-len")
@@ -6722,39 +6746,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v123v2 = nil
 		} else {
-			v123v2 = make(map[uint16]float64, len(v))
+			v123v2 = make(map[uint16]float32, len(v))
 		} // reset map
-		var v123v3, v123v4 typMapMapUint16Float64
-		v123v3 = typMapMapUint16Float64(v123v1)
-		v123v4 = typMapMapUint16Float64(v123v2)
+		var v123v3, v123v4 typMapMapUint16Float32
+		v123v3 = typMapMapUint16Float32(v123v1)
+		v123v4 = typMapMapUint16Float32(v123v2)
 		bs123 = testMarshalErr(v123v3, h, t, "enc-map-v123-custom")
 		testUnmarshalErr(v123v4, bs123, h, t, "dec-map-v123-p-len")
 		testDeepEqualErr(v123v3, v123v4, t, "equal-map-v123-p-len")
 	}
 
-	for _, v := range []map[uint16]bool{nil, {}, {33: false, 44: true}} {
+	for _, v := range []map[uint16]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v124: %v\n", v)
-		var v124v1, v124v2 map[uint16]bool
+		var v124v1, v124v2 map[uint16]float64
 		v124v1 = v
 		bs124 := testMarshalErr(v124v1, h, t, "enc-map-v124")
 		if v == nil {
 			v124v2 = nil
 		} else {
-			v124v2 = make(map[uint16]bool, len(v))
+			v124v2 = make(map[uint16]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v124v2, bs124, h, t, "dec-map-v124")
 		testDeepEqualErr(v124v1, v124v2, t, "equal-map-v124")
 		if v == nil {
 			v124v2 = nil
 		} else {
-			v124v2 = make(map[uint16]bool, len(v))
+			v124v2 = make(map[uint16]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v124v2), bs124, h, t, "dec-map-v124-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v124v1, v124v2, t, "equal-map-v124-noaddr")
 		if v == nil {
 			v124v2 = nil
 		} else {
-			v124v2 = make(map[uint16]bool, len(v))
+			v124v2 = make(map[uint16]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v124v2, bs124, h, t, "dec-map-v124-p-len")
 		testDeepEqualErr(v124v1, v124v2, t, "equal-map-v124-p-len")
@@ -6766,83 +6790,83 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v124v2 = nil
 		} else {
-			v124v2 = make(map[uint16]bool, len(v))
+			v124v2 = make(map[uint16]float64, len(v))
 		} // reset map
-		var v124v3, v124v4 typMapMapUint16Bool
-		v124v3 = typMapMapUint16Bool(v124v1)
-		v124v4 = typMapMapUint16Bool(v124v2)
+		var v124v3, v124v4 typMapMapUint16Float64
+		v124v3 = typMapMapUint16Float64(v124v1)
+		v124v4 = typMapMapUint16Float64(v124v2)
 		bs124 = testMarshalErr(v124v3, h, t, "enc-map-v124-custom")
 		testUnmarshalErr(v124v4, bs124, h, t, "dec-map-v124-p-len")
 		testDeepEqualErr(v124v3, v124v4, t, "equal-map-v124-p-len")
 	}
 
-	for _, v := range []map[uint32]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
-		// fmt.Printf(">>>> running mammoth map v127: %v\n", v)
-		var v127v1, v127v2 map[uint32]interface{}
-		v127v1 = v
-		bs127 := testMarshalErr(v127v1, h, t, "enc-map-v127")
+	for _, v := range []map[uint16]bool{nil, {}, {33: false, 44: true}} {
+		// fmt.Printf(">>>> running mammoth map v125: %v\n", v)
+		var v125v1, v125v2 map[uint16]bool
+		v125v1 = v
+		bs125 := testMarshalErr(v125v1, h, t, "enc-map-v125")
 		if v == nil {
-			v127v2 = nil
+			v125v2 = nil
 		} else {
-			v127v2 = make(map[uint32]interface{}, len(v))
+			v125v2 = make(map[uint16]bool, len(v))
 		} // reset map
-		testUnmarshalErr(v127v2, bs127, h, t, "dec-map-v127")
-		testDeepEqualErr(v127v1, v127v2, t, "equal-map-v127")
+		testUnmarshalErr(v125v2, bs125, h, t, "dec-map-v125")
+		testDeepEqualErr(v125v1, v125v2, t, "equal-map-v125")
 		if v == nil {
-			v127v2 = nil
+			v125v2 = nil
 		} else {
-			v127v2 = make(map[uint32]interface{}, len(v))
+			v125v2 = make(map[uint16]bool, len(v))
 		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v127v2), bs127, h, t, "dec-map-v127-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v127v1, v127v2, t, "equal-map-v127-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v125v2), bs125, h, t, "dec-map-v125-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v125v1, v125v2, t, "equal-map-v125-noaddr")
 		if v == nil {
-			v127v2 = nil
+			v125v2 = nil
 		} else {
-			v127v2 = make(map[uint32]interface{}, len(v))
+			v125v2 = make(map[uint16]bool, len(v))
 		} // reset map
-		testUnmarshalErr(&v127v2, bs127, h, t, "dec-map-v127-p-len")
-		testDeepEqualErr(v127v1, v127v2, t, "equal-map-v127-p-len")
-		bs127 = testMarshalErr(&v127v1, h, t, "enc-map-v127-p")
-		v127v2 = nil
-		testUnmarshalErr(&v127v2, bs127, h, t, "dec-map-v127-p-nil")
-		testDeepEqualErr(v127v1, v127v2, t, "equal-map-v127-p-nil")
+		testUnmarshalErr(&v125v2, bs125, h, t, "dec-map-v125-p-len")
+		testDeepEqualErr(v125v1, v125v2, t, "equal-map-v125-p-len")
+		bs125 = testMarshalErr(&v125v1, h, t, "enc-map-v125-p")
+		v125v2 = nil
+		testUnmarshalErr(&v125v2, bs125, h, t, "dec-map-v125-p-nil")
+		testDeepEqualErr(v125v1, v125v2, t, "equal-map-v125-p-nil")
 		// ...
 		if v == nil {
-			v127v2 = nil
+			v125v2 = nil
 		} else {
-			v127v2 = make(map[uint32]interface{}, len(v))
+			v125v2 = make(map[uint16]bool, len(v))
 		} // reset map
-		var v127v3, v127v4 typMapMapUint32Intf
-		v127v3 = typMapMapUint32Intf(v127v1)
-		v127v4 = typMapMapUint32Intf(v127v2)
-		bs127 = testMarshalErr(v127v3, h, t, "enc-map-v127-custom")
-		testUnmarshalErr(v127v4, bs127, h, t, "dec-map-v127-p-len")
-		testDeepEqualErr(v127v3, v127v4, t, "equal-map-v127-p-len")
+		var v125v3, v125v4 typMapMapUint16Bool
+		v125v3 = typMapMapUint16Bool(v125v1)
+		v125v4 = typMapMapUint16Bool(v125v2)
+		bs125 = testMarshalErr(v125v3, h, t, "enc-map-v125-custom")
+		testUnmarshalErr(v125v4, bs125, h, t, "dec-map-v125-p-len")
+		testDeepEqualErr(v125v3, v125v4, t, "equal-map-v125-p-len")
 	}
 
-	for _, v := range []map[uint32]string{nil, {}, {33: "", 44: "some-string"}} {
+	for _, v := range []map[uint32]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v128: %v\n", v)
-		var v128v1, v128v2 map[uint32]string
+		var v128v1, v128v2 map[uint32]interface{}
 		v128v1 = v
 		bs128 := testMarshalErr(v128v1, h, t, "enc-map-v128")
 		if v == nil {
 			v128v2 = nil
 		} else {
-			v128v2 = make(map[uint32]string, len(v))
+			v128v2 = make(map[uint32]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v128v2, bs128, h, t, "dec-map-v128")
 		testDeepEqualErr(v128v1, v128v2, t, "equal-map-v128")
 		if v == nil {
 			v128v2 = nil
 		} else {
-			v128v2 = make(map[uint32]string, len(v))
+			v128v2 = make(map[uint32]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v128v2), bs128, h, t, "dec-map-v128-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v128v1, v128v2, t, "equal-map-v128-noaddr")
 		if v == nil {
 			v128v2 = nil
 		} else {
-			v128v2 = make(map[uint32]string, len(v))
+			v128v2 = make(map[uint32]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v128v2, bs128, h, t, "dec-map-v128-p-len")
 		testDeepEqualErr(v128v1, v128v2, t, "equal-map-v128-p-len")
@@ -6854,39 +6878,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v128v2 = nil
 		} else {
-			v128v2 = make(map[uint32]string, len(v))
+			v128v2 = make(map[uint32]interface{}, len(v))
 		} // reset map
-		var v128v3, v128v4 typMapMapUint32String
-		v128v3 = typMapMapUint32String(v128v1)
-		v128v4 = typMapMapUint32String(v128v2)
+		var v128v3, v128v4 typMapMapUint32Intf
+		v128v3 = typMapMapUint32Intf(v128v1)
+		v128v4 = typMapMapUint32Intf(v128v2)
 		bs128 = testMarshalErr(v128v3, h, t, "enc-map-v128-custom")
 		testUnmarshalErr(v128v4, bs128, h, t, "dec-map-v128-p-len")
 		testDeepEqualErr(v128v3, v128v4, t, "equal-map-v128-p-len")
 	}
 
-	for _, v := range []map[uint32]uint{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint32]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v129: %v\n", v)
-		var v129v1, v129v2 map[uint32]uint
+		var v129v1, v129v2 map[uint32]string
 		v129v1 = v
 		bs129 := testMarshalErr(v129v1, h, t, "enc-map-v129")
 		if v == nil {
 			v129v2 = nil
 		} else {
-			v129v2 = make(map[uint32]uint, len(v))
+			v129v2 = make(map[uint32]string, len(v))
 		} // reset map
 		testUnmarshalErr(v129v2, bs129, h, t, "dec-map-v129")
 		testDeepEqualErr(v129v1, v129v2, t, "equal-map-v129")
 		if v == nil {
 			v129v2 = nil
 		} else {
-			v129v2 = make(map[uint32]uint, len(v))
+			v129v2 = make(map[uint32]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v129v2), bs129, h, t, "dec-map-v129-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v129v1, v129v2, t, "equal-map-v129-noaddr")
 		if v == nil {
 			v129v2 = nil
 		} else {
-			v129v2 = make(map[uint32]uint, len(v))
+			v129v2 = make(map[uint32]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v129v2, bs129, h, t, "dec-map-v129-p-len")
 		testDeepEqualErr(v129v1, v129v2, t, "equal-map-v129-p-len")
@@ -6898,39 +6922,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v129v2 = nil
 		} else {
-			v129v2 = make(map[uint32]uint, len(v))
+			v129v2 = make(map[uint32]string, len(v))
 		} // reset map
-		var v129v3, v129v4 typMapMapUint32Uint
-		v129v3 = typMapMapUint32Uint(v129v1)
-		v129v4 = typMapMapUint32Uint(v129v2)
+		var v129v3, v129v4 typMapMapUint32String
+		v129v3 = typMapMapUint32String(v129v1)
+		v129v4 = typMapMapUint32String(v129v2)
 		bs129 = testMarshalErr(v129v3, h, t, "enc-map-v129-custom")
 		testUnmarshalErr(v129v4, bs129, h, t, "dec-map-v129-p-len")
 		testDeepEqualErr(v129v3, v129v4, t, "equal-map-v129-p-len")
 	}
 
-	for _, v := range []map[uint32]uint8{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint32]uint{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v130: %v\n", v)
-		var v130v1, v130v2 map[uint32]uint8
+		var v130v1, v130v2 map[uint32]uint
 		v130v1 = v
 		bs130 := testMarshalErr(v130v1, h, t, "enc-map-v130")
 		if v == nil {
 			v130v2 = nil
 		} else {
-			v130v2 = make(map[uint32]uint8, len(v))
+			v130v2 = make(map[uint32]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v130v2, bs130, h, t, "dec-map-v130")
 		testDeepEqualErr(v130v1, v130v2, t, "equal-map-v130")
 		if v == nil {
 			v130v2 = nil
 		} else {
-			v130v2 = make(map[uint32]uint8, len(v))
+			v130v2 = make(map[uint32]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v130v2), bs130, h, t, "dec-map-v130-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v130v1, v130v2, t, "equal-map-v130-noaddr")
 		if v == nil {
 			v130v2 = nil
 		} else {
-			v130v2 = make(map[uint32]uint8, len(v))
+			v130v2 = make(map[uint32]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v130v2, bs130, h, t, "dec-map-v130-p-len")
 		testDeepEqualErr(v130v1, v130v2, t, "equal-map-v130-p-len")
@@ -6942,39 +6966,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v130v2 = nil
 		} else {
-			v130v2 = make(map[uint32]uint8, len(v))
+			v130v2 = make(map[uint32]uint, len(v))
 		} // reset map
-		var v130v3, v130v4 typMapMapUint32Uint8
-		v130v3 = typMapMapUint32Uint8(v130v1)
-		v130v4 = typMapMapUint32Uint8(v130v2)
+		var v130v3, v130v4 typMapMapUint32Uint
+		v130v3 = typMapMapUint32Uint(v130v1)
+		v130v4 = typMapMapUint32Uint(v130v2)
 		bs130 = testMarshalErr(v130v3, h, t, "enc-map-v130-custom")
 		testUnmarshalErr(v130v4, bs130, h, t, "dec-map-v130-p-len")
 		testDeepEqualErr(v130v3, v130v4, t, "equal-map-v130-p-len")
 	}
 
-	for _, v := range []map[uint32]uint16{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint32]uint8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v131: %v\n", v)
-		var v131v1, v131v2 map[uint32]uint16
+		var v131v1, v131v2 map[uint32]uint8
 		v131v1 = v
 		bs131 := testMarshalErr(v131v1, h, t, "enc-map-v131")
 		if v == nil {
 			v131v2 = nil
 		} else {
-			v131v2 = make(map[uint32]uint16, len(v))
+			v131v2 = make(map[uint32]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v131v2, bs131, h, t, "dec-map-v131")
 		testDeepEqualErr(v131v1, v131v2, t, "equal-map-v131")
 		if v == nil {
 			v131v2 = nil
 		} else {
-			v131v2 = make(map[uint32]uint16, len(v))
+			v131v2 = make(map[uint32]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v131v2), bs131, h, t, "dec-map-v131-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v131v1, v131v2, t, "equal-map-v131-noaddr")
 		if v == nil {
 			v131v2 = nil
 		} else {
-			v131v2 = make(map[uint32]uint16, len(v))
+			v131v2 = make(map[uint32]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v131v2, bs131, h, t, "dec-map-v131-p-len")
 		testDeepEqualErr(v131v1, v131v2, t, "equal-map-v131-p-len")
@@ -6986,39 +7010,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v131v2 = nil
 		} else {
-			v131v2 = make(map[uint32]uint16, len(v))
+			v131v2 = make(map[uint32]uint8, len(v))
 		} // reset map
-		var v131v3, v131v4 typMapMapUint32Uint16
-		v131v3 = typMapMapUint32Uint16(v131v1)
-		v131v4 = typMapMapUint32Uint16(v131v2)
+		var v131v3, v131v4 typMapMapUint32Uint8
+		v131v3 = typMapMapUint32Uint8(v131v1)
+		v131v4 = typMapMapUint32Uint8(v131v2)
 		bs131 = testMarshalErr(v131v3, h, t, "enc-map-v131-custom")
 		testUnmarshalErr(v131v4, bs131, h, t, "dec-map-v131-p-len")
 		testDeepEqualErr(v131v3, v131v4, t, "equal-map-v131-p-len")
 	}
 
-	for _, v := range []map[uint32]uint32{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint32]uint16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v132: %v\n", v)
-		var v132v1, v132v2 map[uint32]uint32
+		var v132v1, v132v2 map[uint32]uint16
 		v132v1 = v
 		bs132 := testMarshalErr(v132v1, h, t, "enc-map-v132")
 		if v == nil {
 			v132v2 = nil
 		} else {
-			v132v2 = make(map[uint32]uint32, len(v))
+			v132v2 = make(map[uint32]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v132v2, bs132, h, t, "dec-map-v132")
 		testDeepEqualErr(v132v1, v132v2, t, "equal-map-v132")
 		if v == nil {
 			v132v2 = nil
 		} else {
-			v132v2 = make(map[uint32]uint32, len(v))
+			v132v2 = make(map[uint32]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v132v2), bs132, h, t, "dec-map-v132-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v132v1, v132v2, t, "equal-map-v132-noaddr")
 		if v == nil {
 			v132v2 = nil
 		} else {
-			v132v2 = make(map[uint32]uint32, len(v))
+			v132v2 = make(map[uint32]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v132v2, bs132, h, t, "dec-map-v132-p-len")
 		testDeepEqualErr(v132v1, v132v2, t, "equal-map-v132-p-len")
@@ -7030,39 +7054,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v132v2 = nil
 		} else {
-			v132v2 = make(map[uint32]uint32, len(v))
+			v132v2 = make(map[uint32]uint16, len(v))
 		} // reset map
-		var v132v3, v132v4 typMapMapUint32Uint32
-		v132v3 = typMapMapUint32Uint32(v132v1)
-		v132v4 = typMapMapUint32Uint32(v132v2)
+		var v132v3, v132v4 typMapMapUint32Uint16
+		v132v3 = typMapMapUint32Uint16(v132v1)
+		v132v4 = typMapMapUint32Uint16(v132v2)
 		bs132 = testMarshalErr(v132v3, h, t, "enc-map-v132-custom")
 		testUnmarshalErr(v132v4, bs132, h, t, "dec-map-v132-p-len")
 		testDeepEqualErr(v132v3, v132v4, t, "equal-map-v132-p-len")
 	}
 
-	for _, v := range []map[uint32]uint64{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint32]uint32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v133: %v\n", v)
-		var v133v1, v133v2 map[uint32]uint64
+		var v133v1, v133v2 map[uint32]uint32
 		v133v1 = v
 		bs133 := testMarshalErr(v133v1, h, t, "enc-map-v133")
 		if v == nil {
 			v133v2 = nil
 		} else {
-			v133v2 = make(map[uint32]uint64, len(v))
+			v133v2 = make(map[uint32]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v133v2, bs133, h, t, "dec-map-v133")
 		testDeepEqualErr(v133v1, v133v2, t, "equal-map-v133")
 		if v == nil {
 			v133v2 = nil
 		} else {
-			v133v2 = make(map[uint32]uint64, len(v))
+			v133v2 = make(map[uint32]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v133v2), bs133, h, t, "dec-map-v133-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v133v1, v133v2, t, "equal-map-v133-noaddr")
 		if v == nil {
 			v133v2 = nil
 		} else {
-			v133v2 = make(map[uint32]uint64, len(v))
+			v133v2 = make(map[uint32]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v133v2, bs133, h, t, "dec-map-v133-p-len")
 		testDeepEqualErr(v133v1, v133v2, t, "equal-map-v133-p-len")
@@ -7074,39 +7098,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v133v2 = nil
 		} else {
-			v133v2 = make(map[uint32]uint64, len(v))
+			v133v2 = make(map[uint32]uint32, len(v))
 		} // reset map
-		var v133v3, v133v4 typMapMapUint32Uint64
-		v133v3 = typMapMapUint32Uint64(v133v1)
-		v133v4 = typMapMapUint32Uint64(v133v2)
+		var v133v3, v133v4 typMapMapUint32Uint32
+		v133v3 = typMapMapUint32Uint32(v133v1)
+		v133v4 = typMapMapUint32Uint32(v133v2)
 		bs133 = testMarshalErr(v133v3, h, t, "enc-map-v133-custom")
 		testUnmarshalErr(v133v4, bs133, h, t, "dec-map-v133-p-len")
 		testDeepEqualErr(v133v3, v133v4, t, "equal-map-v133-p-len")
 	}
 
-	for _, v := range []map[uint32]uintptr{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint32]uint64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v134: %v\n", v)
-		var v134v1, v134v2 map[uint32]uintptr
+		var v134v1, v134v2 map[uint32]uint64
 		v134v1 = v
 		bs134 := testMarshalErr(v134v1, h, t, "enc-map-v134")
 		if v == nil {
 			v134v2 = nil
 		} else {
-			v134v2 = make(map[uint32]uintptr, len(v))
+			v134v2 = make(map[uint32]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v134v2, bs134, h, t, "dec-map-v134")
 		testDeepEqualErr(v134v1, v134v2, t, "equal-map-v134")
 		if v == nil {
 			v134v2 = nil
 		} else {
-			v134v2 = make(map[uint32]uintptr, len(v))
+			v134v2 = make(map[uint32]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v134v2), bs134, h, t, "dec-map-v134-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v134v1, v134v2, t, "equal-map-v134-noaddr")
 		if v == nil {
 			v134v2 = nil
 		} else {
-			v134v2 = make(map[uint32]uintptr, len(v))
+			v134v2 = make(map[uint32]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v134v2, bs134, h, t, "dec-map-v134-p-len")
 		testDeepEqualErr(v134v1, v134v2, t, "equal-map-v134-p-len")
@@ -7118,39 +7142,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v134v2 = nil
 		} else {
-			v134v2 = make(map[uint32]uintptr, len(v))
+			v134v2 = make(map[uint32]uint64, len(v))
 		} // reset map
-		var v134v3, v134v4 typMapMapUint32Uintptr
-		v134v3 = typMapMapUint32Uintptr(v134v1)
-		v134v4 = typMapMapUint32Uintptr(v134v2)
+		var v134v3, v134v4 typMapMapUint32Uint64
+		v134v3 = typMapMapUint32Uint64(v134v1)
+		v134v4 = typMapMapUint32Uint64(v134v2)
 		bs134 = testMarshalErr(v134v3, h, t, "enc-map-v134-custom")
 		testUnmarshalErr(v134v4, bs134, h, t, "dec-map-v134-p-len")
 		testDeepEqualErr(v134v3, v134v4, t, "equal-map-v134-p-len")
 	}
 
-	for _, v := range []map[uint32]int{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint32]uintptr{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v135: %v\n", v)
-		var v135v1, v135v2 map[uint32]int
+		var v135v1, v135v2 map[uint32]uintptr
 		v135v1 = v
 		bs135 := testMarshalErr(v135v1, h, t, "enc-map-v135")
 		if v == nil {
 			v135v2 = nil
 		} else {
-			v135v2 = make(map[uint32]int, len(v))
+			v135v2 = make(map[uint32]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v135v2, bs135, h, t, "dec-map-v135")
 		testDeepEqualErr(v135v1, v135v2, t, "equal-map-v135")
 		if v == nil {
 			v135v2 = nil
 		} else {
-			v135v2 = make(map[uint32]int, len(v))
+			v135v2 = make(map[uint32]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v135v2), bs135, h, t, "dec-map-v135-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v135v1, v135v2, t, "equal-map-v135-noaddr")
 		if v == nil {
 			v135v2 = nil
 		} else {
-			v135v2 = make(map[uint32]int, len(v))
+			v135v2 = make(map[uint32]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v135v2, bs135, h, t, "dec-map-v135-p-len")
 		testDeepEqualErr(v135v1, v135v2, t, "equal-map-v135-p-len")
@@ -7162,39 +7186,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v135v2 = nil
 		} else {
-			v135v2 = make(map[uint32]int, len(v))
+			v135v2 = make(map[uint32]uintptr, len(v))
 		} // reset map
-		var v135v3, v135v4 typMapMapUint32Int
-		v135v3 = typMapMapUint32Int(v135v1)
-		v135v4 = typMapMapUint32Int(v135v2)
+		var v135v3, v135v4 typMapMapUint32Uintptr
+		v135v3 = typMapMapUint32Uintptr(v135v1)
+		v135v4 = typMapMapUint32Uintptr(v135v2)
 		bs135 = testMarshalErr(v135v3, h, t, "enc-map-v135-custom")
 		testUnmarshalErr(v135v4, bs135, h, t, "dec-map-v135-p-len")
 		testDeepEqualErr(v135v3, v135v4, t, "equal-map-v135-p-len")
 	}
 
-	for _, v := range []map[uint32]int8{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint32]int{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v136: %v\n", v)
-		var v136v1, v136v2 map[uint32]int8
+		var v136v1, v136v2 map[uint32]int
 		v136v1 = v
 		bs136 := testMarshalErr(v136v1, h, t, "enc-map-v136")
 		if v == nil {
 			v136v2 = nil
 		} else {
-			v136v2 = make(map[uint32]int8, len(v))
+			v136v2 = make(map[uint32]int, len(v))
 		} // reset map
 		testUnmarshalErr(v136v2, bs136, h, t, "dec-map-v136")
 		testDeepEqualErr(v136v1, v136v2, t, "equal-map-v136")
 		if v == nil {
 			v136v2 = nil
 		} else {
-			v136v2 = make(map[uint32]int8, len(v))
+			v136v2 = make(map[uint32]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v136v2), bs136, h, t, "dec-map-v136-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v136v1, v136v2, t, "equal-map-v136-noaddr")
 		if v == nil {
 			v136v2 = nil
 		} else {
-			v136v2 = make(map[uint32]int8, len(v))
+			v136v2 = make(map[uint32]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v136v2, bs136, h, t, "dec-map-v136-p-len")
 		testDeepEqualErr(v136v1, v136v2, t, "equal-map-v136-p-len")
@@ -7206,39 +7230,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v136v2 = nil
 		} else {
-			v136v2 = make(map[uint32]int8, len(v))
+			v136v2 = make(map[uint32]int, len(v))
 		} // reset map
-		var v136v3, v136v4 typMapMapUint32Int8
-		v136v3 = typMapMapUint32Int8(v136v1)
-		v136v4 = typMapMapUint32Int8(v136v2)
+		var v136v3, v136v4 typMapMapUint32Int
+		v136v3 = typMapMapUint32Int(v136v1)
+		v136v4 = typMapMapUint32Int(v136v2)
 		bs136 = testMarshalErr(v136v3, h, t, "enc-map-v136-custom")
 		testUnmarshalErr(v136v4, bs136, h, t, "dec-map-v136-p-len")
 		testDeepEqualErr(v136v3, v136v4, t, "equal-map-v136-p-len")
 	}
 
-	for _, v := range []map[uint32]int16{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint32]int8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v137: %v\n", v)
-		var v137v1, v137v2 map[uint32]int16
+		var v137v1, v137v2 map[uint32]int8
 		v137v1 = v
 		bs137 := testMarshalErr(v137v1, h, t, "enc-map-v137")
 		if v == nil {
 			v137v2 = nil
 		} else {
-			v137v2 = make(map[uint32]int16, len(v))
+			v137v2 = make(map[uint32]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v137v2, bs137, h, t, "dec-map-v137")
 		testDeepEqualErr(v137v1, v137v2, t, "equal-map-v137")
 		if v == nil {
 			v137v2 = nil
 		} else {
-			v137v2 = make(map[uint32]int16, len(v))
+			v137v2 = make(map[uint32]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v137v2), bs137, h, t, "dec-map-v137-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v137v1, v137v2, t, "equal-map-v137-noaddr")
 		if v == nil {
 			v137v2 = nil
 		} else {
-			v137v2 = make(map[uint32]int16, len(v))
+			v137v2 = make(map[uint32]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v137v2, bs137, h, t, "dec-map-v137-p-len")
 		testDeepEqualErr(v137v1, v137v2, t, "equal-map-v137-p-len")
@@ -7250,39 +7274,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v137v2 = nil
 		} else {
-			v137v2 = make(map[uint32]int16, len(v))
+			v137v2 = make(map[uint32]int8, len(v))
 		} // reset map
-		var v137v3, v137v4 typMapMapUint32Int16
-		v137v3 = typMapMapUint32Int16(v137v1)
-		v137v4 = typMapMapUint32Int16(v137v2)
+		var v137v3, v137v4 typMapMapUint32Int8
+		v137v3 = typMapMapUint32Int8(v137v1)
+		v137v4 = typMapMapUint32Int8(v137v2)
 		bs137 = testMarshalErr(v137v3, h, t, "enc-map-v137-custom")
 		testUnmarshalErr(v137v4, bs137, h, t, "dec-map-v137-p-len")
 		testDeepEqualErr(v137v3, v137v4, t, "equal-map-v137-p-len")
 	}
 
-	for _, v := range []map[uint32]int32{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint32]int16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v138: %v\n", v)
-		var v138v1, v138v2 map[uint32]int32
+		var v138v1, v138v2 map[uint32]int16
 		v138v1 = v
 		bs138 := testMarshalErr(v138v1, h, t, "enc-map-v138")
 		if v == nil {
 			v138v2 = nil
 		} else {
-			v138v2 = make(map[uint32]int32, len(v))
+			v138v2 = make(map[uint32]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v138v2, bs138, h, t, "dec-map-v138")
 		testDeepEqualErr(v138v1, v138v2, t, "equal-map-v138")
 		if v == nil {
 			v138v2 = nil
 		} else {
-			v138v2 = make(map[uint32]int32, len(v))
+			v138v2 = make(map[uint32]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v138v2), bs138, h, t, "dec-map-v138-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v138v1, v138v2, t, "equal-map-v138-noaddr")
 		if v == nil {
 			v138v2 = nil
 		} else {
-			v138v2 = make(map[uint32]int32, len(v))
+			v138v2 = make(map[uint32]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v138v2, bs138, h, t, "dec-map-v138-p-len")
 		testDeepEqualErr(v138v1, v138v2, t, "equal-map-v138-p-len")
@@ -7294,39 +7318,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v138v2 = nil
 		} else {
-			v138v2 = make(map[uint32]int32, len(v))
+			v138v2 = make(map[uint32]int16, len(v))
 		} // reset map
-		var v138v3, v138v4 typMapMapUint32Int32
-		v138v3 = typMapMapUint32Int32(v138v1)
-		v138v4 = typMapMapUint32Int32(v138v2)
+		var v138v3, v138v4 typMapMapUint32Int16
+		v138v3 = typMapMapUint32Int16(v138v1)
+		v138v4 = typMapMapUint32Int16(v138v2)
 		bs138 = testMarshalErr(v138v3, h, t, "enc-map-v138-custom")
 		testUnmarshalErr(v138v4, bs138, h, t, "dec-map-v138-p-len")
 		testDeepEqualErr(v138v3, v138v4, t, "equal-map-v138-p-len")
 	}
 
-	for _, v := range []map[uint32]int64{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint32]int32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v139: %v\n", v)
-		var v139v1, v139v2 map[uint32]int64
+		var v139v1, v139v2 map[uint32]int32
 		v139v1 = v
 		bs139 := testMarshalErr(v139v1, h, t, "enc-map-v139")
 		if v == nil {
 			v139v2 = nil
 		} else {
-			v139v2 = make(map[uint32]int64, len(v))
+			v139v2 = make(map[uint32]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v139v2, bs139, h, t, "dec-map-v139")
 		testDeepEqualErr(v139v1, v139v2, t, "equal-map-v139")
 		if v == nil {
 			v139v2 = nil
 		} else {
-			v139v2 = make(map[uint32]int64, len(v))
+			v139v2 = make(map[uint32]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v139v2), bs139, h, t, "dec-map-v139-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v139v1, v139v2, t, "equal-map-v139-noaddr")
 		if v == nil {
 			v139v2 = nil
 		} else {
-			v139v2 = make(map[uint32]int64, len(v))
+			v139v2 = make(map[uint32]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v139v2, bs139, h, t, "dec-map-v139-p-len")
 		testDeepEqualErr(v139v1, v139v2, t, "equal-map-v139-p-len")
@@ -7338,39 +7362,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v139v2 = nil
 		} else {
-			v139v2 = make(map[uint32]int64, len(v))
+			v139v2 = make(map[uint32]int32, len(v))
 		} // reset map
-		var v139v3, v139v4 typMapMapUint32Int64
-		v139v3 = typMapMapUint32Int64(v139v1)
-		v139v4 = typMapMapUint32Int64(v139v2)
+		var v139v3, v139v4 typMapMapUint32Int32
+		v139v3 = typMapMapUint32Int32(v139v1)
+		v139v4 = typMapMapUint32Int32(v139v2)
 		bs139 = testMarshalErr(v139v3, h, t, "enc-map-v139-custom")
 		testUnmarshalErr(v139v4, bs139, h, t, "dec-map-v139-p-len")
 		testDeepEqualErr(v139v3, v139v4, t, "equal-map-v139-p-len")
 	}
 
-	for _, v := range []map[uint32]float32{nil, {}, {44: 0, 33: 22.2}} {
+	for _, v := range []map[uint32]int64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v140: %v\n", v)
-		var v140v1, v140v2 map[uint32]float32
+		var v140v1, v140v2 map[uint32]int64
 		v140v1 = v
 		bs140 := testMarshalErr(v140v1, h, t, "enc-map-v140")
 		if v == nil {
 			v140v2 = nil
 		} else {
-			v140v2 = make(map[uint32]float32, len(v))
+			v140v2 = make(map[uint32]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v140v2, bs140, h, t, "dec-map-v140")
 		testDeepEqualErr(v140v1, v140v2, t, "equal-map-v140")
 		if v == nil {
 			v140v2 = nil
 		} else {
-			v140v2 = make(map[uint32]float32, len(v))
+			v140v2 = make(map[uint32]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v140v2), bs140, h, t, "dec-map-v140-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v140v1, v140v2, t, "equal-map-v140-noaddr")
 		if v == nil {
 			v140v2 = nil
 		} else {
-			v140v2 = make(map[uint32]float32, len(v))
+			v140v2 = make(map[uint32]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v140v2, bs140, h, t, "dec-map-v140-p-len")
 		testDeepEqualErr(v140v1, v140v2, t, "equal-map-v140-p-len")
@@ -7382,39 +7406,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v140v2 = nil
 		} else {
-			v140v2 = make(map[uint32]float32, len(v))
+			v140v2 = make(map[uint32]int64, len(v))
 		} // reset map
-		var v140v3, v140v4 typMapMapUint32Float32
-		v140v3 = typMapMapUint32Float32(v140v1)
-		v140v4 = typMapMapUint32Float32(v140v2)
+		var v140v3, v140v4 typMapMapUint32Int64
+		v140v3 = typMapMapUint32Int64(v140v1)
+		v140v4 = typMapMapUint32Int64(v140v2)
 		bs140 = testMarshalErr(v140v3, h, t, "enc-map-v140-custom")
 		testUnmarshalErr(v140v4, bs140, h, t, "dec-map-v140-p-len")
 		testDeepEqualErr(v140v3, v140v4, t, "equal-map-v140-p-len")
 	}
 
-	for _, v := range []map[uint32]float64{nil, {}, {44: 0, 33: 11.1}} {
+	for _, v := range []map[uint32]float32{nil, {}, {44: 0, 33: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v141: %v\n", v)
-		var v141v1, v141v2 map[uint32]float64
+		var v141v1, v141v2 map[uint32]float32
 		v141v1 = v
 		bs141 := testMarshalErr(v141v1, h, t, "enc-map-v141")
 		if v == nil {
 			v141v2 = nil
 		} else {
-			v141v2 = make(map[uint32]float64, len(v))
+			v141v2 = make(map[uint32]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v141v2, bs141, h, t, "dec-map-v141")
 		testDeepEqualErr(v141v1, v141v2, t, "equal-map-v141")
 		if v == nil {
 			v141v2 = nil
 		} else {
-			v141v2 = make(map[uint32]float64, len(v))
+			v141v2 = make(map[uint32]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v141v2), bs141, h, t, "dec-map-v141-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v141v1, v141v2, t, "equal-map-v141-noaddr")
 		if v == nil {
 			v141v2 = nil
 		} else {
-			v141v2 = make(map[uint32]float64, len(v))
+			v141v2 = make(map[uint32]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v141v2, bs141, h, t, "dec-map-v141-p-len")
 		testDeepEqualErr(v141v1, v141v2, t, "equal-map-v141-p-len")
@@ -7426,39 +7450,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v141v2 = nil
 		} else {
-			v141v2 = make(map[uint32]float64, len(v))
+			v141v2 = make(map[uint32]float32, len(v))
 		} // reset map
-		var v141v3, v141v4 typMapMapUint32Float64
-		v141v3 = typMapMapUint32Float64(v141v1)
-		v141v4 = typMapMapUint32Float64(v141v2)
+		var v141v3, v141v4 typMapMapUint32Float32
+		v141v3 = typMapMapUint32Float32(v141v1)
+		v141v4 = typMapMapUint32Float32(v141v2)
 		bs141 = testMarshalErr(v141v3, h, t, "enc-map-v141-custom")
 		testUnmarshalErr(v141v4, bs141, h, t, "dec-map-v141-p-len")
 		testDeepEqualErr(v141v3, v141v4, t, "equal-map-v141-p-len")
 	}
 
-	for _, v := range []map[uint32]bool{nil, {}, {44: false, 33: true}} {
+	for _, v := range []map[uint32]float64{nil, {}, {44: 0, 33: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v142: %v\n", v)
-		var v142v1, v142v2 map[uint32]bool
+		var v142v1, v142v2 map[uint32]float64
 		v142v1 = v
 		bs142 := testMarshalErr(v142v1, h, t, "enc-map-v142")
 		if v == nil {
 			v142v2 = nil
 		} else {
-			v142v2 = make(map[uint32]bool, len(v))
+			v142v2 = make(map[uint32]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v142v2, bs142, h, t, "dec-map-v142")
 		testDeepEqualErr(v142v1, v142v2, t, "equal-map-v142")
 		if v == nil {
 			v142v2 = nil
 		} else {
-			v142v2 = make(map[uint32]bool, len(v))
+			v142v2 = make(map[uint32]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v142v2), bs142, h, t, "dec-map-v142-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v142v1, v142v2, t, "equal-map-v142-noaddr")
 		if v == nil {
 			v142v2 = nil
 		} else {
-			v142v2 = make(map[uint32]bool, len(v))
+			v142v2 = make(map[uint32]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v142v2, bs142, h, t, "dec-map-v142-p-len")
 		testDeepEqualErr(v142v1, v142v2, t, "equal-map-v142-p-len")
@@ -7470,83 +7494,83 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v142v2 = nil
 		} else {
-			v142v2 = make(map[uint32]bool, len(v))
+			v142v2 = make(map[uint32]float64, len(v))
 		} // reset map
-		var v142v3, v142v4 typMapMapUint32Bool
-		v142v3 = typMapMapUint32Bool(v142v1)
-		v142v4 = typMapMapUint32Bool(v142v2)
+		var v142v3, v142v4 typMapMapUint32Float64
+		v142v3 = typMapMapUint32Float64(v142v1)
+		v142v4 = typMapMapUint32Float64(v142v2)
 		bs142 = testMarshalErr(v142v3, h, t, "enc-map-v142-custom")
 		testUnmarshalErr(v142v4, bs142, h, t, "dec-map-v142-p-len")
 		testDeepEqualErr(v142v3, v142v4, t, "equal-map-v142-p-len")
 	}
 
-	for _, v := range []map[uint64]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
-		// fmt.Printf(">>>> running mammoth map v145: %v\n", v)
-		var v145v1, v145v2 map[uint64]interface{}
-		v145v1 = v
-		bs145 := testMarshalErr(v145v1, h, t, "enc-map-v145")
+	for _, v := range []map[uint32]bool{nil, {}, {44: false, 33: true}} {
+		// fmt.Printf(">>>> running mammoth map v143: %v\n", v)
+		var v143v1, v143v2 map[uint32]bool
+		v143v1 = v
+		bs143 := testMarshalErr(v143v1, h, t, "enc-map-v143")
 		if v == nil {
-			v145v2 = nil
+			v143v2 = nil
 		} else {
-			v145v2 = make(map[uint64]interface{}, len(v))
+			v143v2 = make(map[uint32]bool, len(v))
 		} // reset map
-		testUnmarshalErr(v145v2, bs145, h, t, "dec-map-v145")
-		testDeepEqualErr(v145v1, v145v2, t, "equal-map-v145")
+		testUnmarshalErr(v143v2, bs143, h, t, "dec-map-v143")
+		testDeepEqualErr(v143v1, v143v2, t, "equal-map-v143")
 		if v == nil {
-			v145v2 = nil
+			v143v2 = nil
 		} else {
-			v145v2 = make(map[uint64]interface{}, len(v))
+			v143v2 = make(map[uint32]bool, len(v))
 		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v145v2), bs145, h, t, "dec-map-v145-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v145v1, v145v2, t, "equal-map-v145-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v143v2), bs143, h, t, "dec-map-v143-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v143v1, v143v2, t, "equal-map-v143-noaddr")
 		if v == nil {
-			v145v2 = nil
+			v143v2 = nil
 		} else {
-			v145v2 = make(map[uint64]interface{}, len(v))
+			v143v2 = make(map[uint32]bool, len(v))
 		} // reset map
-		testUnmarshalErr(&v145v2, bs145, h, t, "dec-map-v145-p-len")
-		testDeepEqualErr(v145v1, v145v2, t, "equal-map-v145-p-len")
-		bs145 = testMarshalErr(&v145v1, h, t, "enc-map-v145-p")
-		v145v2 = nil
-		testUnmarshalErr(&v145v2, bs145, h, t, "dec-map-v145-p-nil")
-		testDeepEqualErr(v145v1, v145v2, t, "equal-map-v145-p-nil")
+		testUnmarshalErr(&v143v2, bs143, h, t, "dec-map-v143-p-len")
+		testDeepEqualErr(v143v1, v143v2, t, "equal-map-v143-p-len")
+		bs143 = testMarshalErr(&v143v1, h, t, "enc-map-v143-p")
+		v143v2 = nil
+		testUnmarshalErr(&v143v2, bs143, h, t, "dec-map-v143-p-nil")
+		testDeepEqualErr(v143v1, v143v2, t, "equal-map-v143-p-nil")
 		// ...
 		if v == nil {
-			v145v2 = nil
+			v143v2 = nil
 		} else {
-			v145v2 = make(map[uint64]interface{}, len(v))
+			v143v2 = make(map[uint32]bool, len(v))
 		} // reset map
-		var v145v3, v145v4 typMapMapUint64Intf
-		v145v3 = typMapMapUint64Intf(v145v1)
-		v145v4 = typMapMapUint64Intf(v145v2)
-		bs145 = testMarshalErr(v145v3, h, t, "enc-map-v145-custom")
-		testUnmarshalErr(v145v4, bs145, h, t, "dec-map-v145-p-len")
-		testDeepEqualErr(v145v3, v145v4, t, "equal-map-v145-p-len")
+		var v143v3, v143v4 typMapMapUint32Bool
+		v143v3 = typMapMapUint32Bool(v143v1)
+		v143v4 = typMapMapUint32Bool(v143v2)
+		bs143 = testMarshalErr(v143v3, h, t, "enc-map-v143-custom")
+		testUnmarshalErr(v143v4, bs143, h, t, "dec-map-v143-p-len")
+		testDeepEqualErr(v143v3, v143v4, t, "equal-map-v143-p-len")
 	}
 
-	for _, v := range []map[uint64]string{nil, {}, {44: "", 33: "some-string-2"}} {
+	for _, v := range []map[uint64]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v146: %v\n", v)
-		var v146v1, v146v2 map[uint64]string
+		var v146v1, v146v2 map[uint64]interface{}
 		v146v1 = v
 		bs146 := testMarshalErr(v146v1, h, t, "enc-map-v146")
 		if v == nil {
 			v146v2 = nil
 		} else {
-			v146v2 = make(map[uint64]string, len(v))
+			v146v2 = make(map[uint64]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v146v2, bs146, h, t, "dec-map-v146")
 		testDeepEqualErr(v146v1, v146v2, t, "equal-map-v146")
 		if v == nil {
 			v146v2 = nil
 		} else {
-			v146v2 = make(map[uint64]string, len(v))
+			v146v2 = make(map[uint64]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v146v2), bs146, h, t, "dec-map-v146-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v146v1, v146v2, t, "equal-map-v146-noaddr")
 		if v == nil {
 			v146v2 = nil
 		} else {
-			v146v2 = make(map[uint64]string, len(v))
+			v146v2 = make(map[uint64]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v146v2, bs146, h, t, "dec-map-v146-p-len")
 		testDeepEqualErr(v146v1, v146v2, t, "equal-map-v146-p-len")
@@ -7558,39 +7582,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v146v2 = nil
 		} else {
-			v146v2 = make(map[uint64]string, len(v))
+			v146v2 = make(map[uint64]interface{}, len(v))
 		} // reset map
-		var v146v3, v146v4 typMapMapUint64String
-		v146v3 = typMapMapUint64String(v146v1)
-		v146v4 = typMapMapUint64String(v146v2)
+		var v146v3, v146v4 typMapMapUint64Intf
+		v146v3 = typMapMapUint64Intf(v146v1)
+		v146v4 = typMapMapUint64Intf(v146v2)
 		bs146 = testMarshalErr(v146v3, h, t, "enc-map-v146-custom")
 		testUnmarshalErr(v146v4, bs146, h, t, "dec-map-v146-p-len")
 		testDeepEqualErr(v146v3, v146v4, t, "equal-map-v146-p-len")
 	}
 
-	for _, v := range []map[uint64]uint{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint64]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v147: %v\n", v)
-		var v147v1, v147v2 map[uint64]uint
+		var v147v1, v147v2 map[uint64]string
 		v147v1 = v
 		bs147 := testMarshalErr(v147v1, h, t, "enc-map-v147")
 		if v == nil {
 			v147v2 = nil
 		} else {
-			v147v2 = make(map[uint64]uint, len(v))
+			v147v2 = make(map[uint64]string, len(v))
 		} // reset map
 		testUnmarshalErr(v147v2, bs147, h, t, "dec-map-v147")
 		testDeepEqualErr(v147v1, v147v2, t, "equal-map-v147")
 		if v == nil {
 			v147v2 = nil
 		} else {
-			v147v2 = make(map[uint64]uint, len(v))
+			v147v2 = make(map[uint64]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v147v2), bs147, h, t, "dec-map-v147-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v147v1, v147v2, t, "equal-map-v147-noaddr")
 		if v == nil {
 			v147v2 = nil
 		} else {
-			v147v2 = make(map[uint64]uint, len(v))
+			v147v2 = make(map[uint64]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v147v2, bs147, h, t, "dec-map-v147-p-len")
 		testDeepEqualErr(v147v1, v147v2, t, "equal-map-v147-p-len")
@@ -7602,39 +7626,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v147v2 = nil
 		} else {
-			v147v2 = make(map[uint64]uint, len(v))
+			v147v2 = make(map[uint64]string, len(v))
 		} // reset map
-		var v147v3, v147v4 typMapMapUint64Uint
-		v147v3 = typMapMapUint64Uint(v147v1)
-		v147v4 = typMapMapUint64Uint(v147v2)
+		var v147v3, v147v4 typMapMapUint64String
+		v147v3 = typMapMapUint64String(v147v1)
+		v147v4 = typMapMapUint64String(v147v2)
 		bs147 = testMarshalErr(v147v3, h, t, "enc-map-v147-custom")
 		testUnmarshalErr(v147v4, bs147, h, t, "dec-map-v147-p-len")
 		testDeepEqualErr(v147v3, v147v4, t, "equal-map-v147-p-len")
 	}
 
-	for _, v := range []map[uint64]uint8{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint64]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v148: %v\n", v)
-		var v148v1, v148v2 map[uint64]uint8
+		var v148v1, v148v2 map[uint64]uint
 		v148v1 = v
 		bs148 := testMarshalErr(v148v1, h, t, "enc-map-v148")
 		if v == nil {
 			v148v2 = nil
 		} else {
-			v148v2 = make(map[uint64]uint8, len(v))
+			v148v2 = make(map[uint64]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v148v2, bs148, h, t, "dec-map-v148")
 		testDeepEqualErr(v148v1, v148v2, t, "equal-map-v148")
 		if v == nil {
 			v148v2 = nil
 		} else {
-			v148v2 = make(map[uint64]uint8, len(v))
+			v148v2 = make(map[uint64]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v148v2), bs148, h, t, "dec-map-v148-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v148v1, v148v2, t, "equal-map-v148-noaddr")
 		if v == nil {
 			v148v2 = nil
 		} else {
-			v148v2 = make(map[uint64]uint8, len(v))
+			v148v2 = make(map[uint64]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v148v2, bs148, h, t, "dec-map-v148-p-len")
 		testDeepEqualErr(v148v1, v148v2, t, "equal-map-v148-p-len")
@@ -7646,39 +7670,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v148v2 = nil
 		} else {
-			v148v2 = make(map[uint64]uint8, len(v))
+			v148v2 = make(map[uint64]uint, len(v))
 		} // reset map
-		var v148v3, v148v4 typMapMapUint64Uint8
-		v148v3 = typMapMapUint64Uint8(v148v1)
-		v148v4 = typMapMapUint64Uint8(v148v2)
+		var v148v3, v148v4 typMapMapUint64Uint
+		v148v3 = typMapMapUint64Uint(v148v1)
+		v148v4 = typMapMapUint64Uint(v148v2)
 		bs148 = testMarshalErr(v148v3, h, t, "enc-map-v148-custom")
 		testUnmarshalErr(v148v4, bs148, h, t, "dec-map-v148-p-len")
 		testDeepEqualErr(v148v3, v148v4, t, "equal-map-v148-p-len")
 	}
 
-	for _, v := range []map[uint64]uint16{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint64]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v149: %v\n", v)
-		var v149v1, v149v2 map[uint64]uint16
+		var v149v1, v149v2 map[uint64]uint8
 		v149v1 = v
 		bs149 := testMarshalErr(v149v1, h, t, "enc-map-v149")
 		if v == nil {
 			v149v2 = nil
 		} else {
-			v149v2 = make(map[uint64]uint16, len(v))
+			v149v2 = make(map[uint64]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v149v2, bs149, h, t, "dec-map-v149")
 		testDeepEqualErr(v149v1, v149v2, t, "equal-map-v149")
 		if v == nil {
 			v149v2 = nil
 		} else {
-			v149v2 = make(map[uint64]uint16, len(v))
+			v149v2 = make(map[uint64]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v149v2), bs149, h, t, "dec-map-v149-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v149v1, v149v2, t, "equal-map-v149-noaddr")
 		if v == nil {
 			v149v2 = nil
 		} else {
-			v149v2 = make(map[uint64]uint16, len(v))
+			v149v2 = make(map[uint64]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v149v2, bs149, h, t, "dec-map-v149-p-len")
 		testDeepEqualErr(v149v1, v149v2, t, "equal-map-v149-p-len")
@@ -7690,39 +7714,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v149v2 = nil
 		} else {
-			v149v2 = make(map[uint64]uint16, len(v))
+			v149v2 = make(map[uint64]uint8, len(v))
 		} // reset map
-		var v149v3, v149v4 typMapMapUint64Uint16
-		v149v3 = typMapMapUint64Uint16(v149v1)
-		v149v4 = typMapMapUint64Uint16(v149v2)
+		var v149v3, v149v4 typMapMapUint64Uint8
+		v149v3 = typMapMapUint64Uint8(v149v1)
+		v149v4 = typMapMapUint64Uint8(v149v2)
 		bs149 = testMarshalErr(v149v3, h, t, "enc-map-v149-custom")
 		testUnmarshalErr(v149v4, bs149, h, t, "dec-map-v149-p-len")
 		testDeepEqualErr(v149v3, v149v4, t, "equal-map-v149-p-len")
 	}
 
-	for _, v := range []map[uint64]uint32{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint64]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v150: %v\n", v)
-		var v150v1, v150v2 map[uint64]uint32
+		var v150v1, v150v2 map[uint64]uint16
 		v150v1 = v
 		bs150 := testMarshalErr(v150v1, h, t, "enc-map-v150")
 		if v == nil {
 			v150v2 = nil
 		} else {
-			v150v2 = make(map[uint64]uint32, len(v))
+			v150v2 = make(map[uint64]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v150v2, bs150, h, t, "dec-map-v150")
 		testDeepEqualErr(v150v1, v150v2, t, "equal-map-v150")
 		if v == nil {
 			v150v2 = nil
 		} else {
-			v150v2 = make(map[uint64]uint32, len(v))
+			v150v2 = make(map[uint64]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v150v2), bs150, h, t, "dec-map-v150-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v150v1, v150v2, t, "equal-map-v150-noaddr")
 		if v == nil {
 			v150v2 = nil
 		} else {
-			v150v2 = make(map[uint64]uint32, len(v))
+			v150v2 = make(map[uint64]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v150v2, bs150, h, t, "dec-map-v150-p-len")
 		testDeepEqualErr(v150v1, v150v2, t, "equal-map-v150-p-len")
@@ -7734,39 +7758,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v150v2 = nil
 		} else {
-			v150v2 = make(map[uint64]uint32, len(v))
+			v150v2 = make(map[uint64]uint16, len(v))
 		} // reset map
-		var v150v3, v150v4 typMapMapUint64Uint32
-		v150v3 = typMapMapUint64Uint32(v150v1)
-		v150v4 = typMapMapUint64Uint32(v150v2)
+		var v150v3, v150v4 typMapMapUint64Uint16
+		v150v3 = typMapMapUint64Uint16(v150v1)
+		v150v4 = typMapMapUint64Uint16(v150v2)
 		bs150 = testMarshalErr(v150v3, h, t, "enc-map-v150-custom")
 		testUnmarshalErr(v150v4, bs150, h, t, "dec-map-v150-p-len")
 		testDeepEqualErr(v150v3, v150v4, t, "equal-map-v150-p-len")
 	}
 
-	for _, v := range []map[uint64]uint64{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint64]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v151: %v\n", v)
-		var v151v1, v151v2 map[uint64]uint64
+		var v151v1, v151v2 map[uint64]uint32
 		v151v1 = v
 		bs151 := testMarshalErr(v151v1, h, t, "enc-map-v151")
 		if v == nil {
 			v151v2 = nil
 		} else {
-			v151v2 = make(map[uint64]uint64, len(v))
+			v151v2 = make(map[uint64]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v151v2, bs151, h, t, "dec-map-v151")
 		testDeepEqualErr(v151v1, v151v2, t, "equal-map-v151")
 		if v == nil {
 			v151v2 = nil
 		} else {
-			v151v2 = make(map[uint64]uint64, len(v))
+			v151v2 = make(map[uint64]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v151v2), bs151, h, t, "dec-map-v151-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v151v1, v151v2, t, "equal-map-v151-noaddr")
 		if v == nil {
 			v151v2 = nil
 		} else {
-			v151v2 = make(map[uint64]uint64, len(v))
+			v151v2 = make(map[uint64]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v151v2, bs151, h, t, "dec-map-v151-p-len")
 		testDeepEqualErr(v151v1, v151v2, t, "equal-map-v151-p-len")
@@ -7778,39 +7802,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v151v2 = nil
 		} else {
-			v151v2 = make(map[uint64]uint64, len(v))
+			v151v2 = make(map[uint64]uint32, len(v))
 		} // reset map
-		var v151v3, v151v4 typMapMapUint64Uint64
-		v151v3 = typMapMapUint64Uint64(v151v1)
-		v151v4 = typMapMapUint64Uint64(v151v2)
+		var v151v3, v151v4 typMapMapUint64Uint32
+		v151v3 = typMapMapUint64Uint32(v151v1)
+		v151v4 = typMapMapUint64Uint32(v151v2)
 		bs151 = testMarshalErr(v151v3, h, t, "enc-map-v151-custom")
 		testUnmarshalErr(v151v4, bs151, h, t, "dec-map-v151-p-len")
 		testDeepEqualErr(v151v3, v151v4, t, "equal-map-v151-p-len")
 	}
 
-	for _, v := range []map[uint64]uintptr{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint64]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v152: %v\n", v)
-		var v152v1, v152v2 map[uint64]uintptr
+		var v152v1, v152v2 map[uint64]uint64
 		v152v1 = v
 		bs152 := testMarshalErr(v152v1, h, t, "enc-map-v152")
 		if v == nil {
 			v152v2 = nil
 		} else {
-			v152v2 = make(map[uint64]uintptr, len(v))
+			v152v2 = make(map[uint64]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v152v2, bs152, h, t, "dec-map-v152")
 		testDeepEqualErr(v152v1, v152v2, t, "equal-map-v152")
 		if v == nil {
 			v152v2 = nil
 		} else {
-			v152v2 = make(map[uint64]uintptr, len(v))
+			v152v2 = make(map[uint64]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v152v2), bs152, h, t, "dec-map-v152-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v152v1, v152v2, t, "equal-map-v152-noaddr")
 		if v == nil {
 			v152v2 = nil
 		} else {
-			v152v2 = make(map[uint64]uintptr, len(v))
+			v152v2 = make(map[uint64]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v152v2, bs152, h, t, "dec-map-v152-p-len")
 		testDeepEqualErr(v152v1, v152v2, t, "equal-map-v152-p-len")
@@ -7822,39 +7846,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v152v2 = nil
 		} else {
-			v152v2 = make(map[uint64]uintptr, len(v))
+			v152v2 = make(map[uint64]uint64, len(v))
 		} // reset map
-		var v152v3, v152v4 typMapMapUint64Uintptr
-		v152v3 = typMapMapUint64Uintptr(v152v1)
-		v152v4 = typMapMapUint64Uintptr(v152v2)
+		var v152v3, v152v4 typMapMapUint64Uint64
+		v152v3 = typMapMapUint64Uint64(v152v1)
+		v152v4 = typMapMapUint64Uint64(v152v2)
 		bs152 = testMarshalErr(v152v3, h, t, "enc-map-v152-custom")
 		testUnmarshalErr(v152v4, bs152, h, t, "dec-map-v152-p-len")
 		testDeepEqualErr(v152v3, v152v4, t, "equal-map-v152-p-len")
 	}
 
-	for _, v := range []map[uint64]int{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint64]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v153: %v\n", v)
-		var v153v1, v153v2 map[uint64]int
+		var v153v1, v153v2 map[uint64]uintptr
 		v153v1 = v
 		bs153 := testMarshalErr(v153v1, h, t, "enc-map-v153")
 		if v == nil {
 			v153v2 = nil
 		} else {
-			v153v2 = make(map[uint64]int, len(v))
+			v153v2 = make(map[uint64]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v153v2, bs153, h, t, "dec-map-v153")
 		testDeepEqualErr(v153v1, v153v2, t, "equal-map-v153")
 		if v == nil {
 			v153v2 = nil
 		} else {
-			v153v2 = make(map[uint64]int, len(v))
+			v153v2 = make(map[uint64]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v153v2), bs153, h, t, "dec-map-v153-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v153v1, v153v2, t, "equal-map-v153-noaddr")
 		if v == nil {
 			v153v2 = nil
 		} else {
-			v153v2 = make(map[uint64]int, len(v))
+			v153v2 = make(map[uint64]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v153v2, bs153, h, t, "dec-map-v153-p-len")
 		testDeepEqualErr(v153v1, v153v2, t, "equal-map-v153-p-len")
@@ -7866,39 +7890,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v153v2 = nil
 		} else {
-			v153v2 = make(map[uint64]int, len(v))
+			v153v2 = make(map[uint64]uintptr, len(v))
 		} // reset map
-		var v153v3, v153v4 typMapMapUint64Int
-		v153v3 = typMapMapUint64Int(v153v1)
-		v153v4 = typMapMapUint64Int(v153v2)
+		var v153v3, v153v4 typMapMapUint64Uintptr
+		v153v3 = typMapMapUint64Uintptr(v153v1)
+		v153v4 = typMapMapUint64Uintptr(v153v2)
 		bs153 = testMarshalErr(v153v3, h, t, "enc-map-v153-custom")
 		testUnmarshalErr(v153v4, bs153, h, t, "dec-map-v153-p-len")
 		testDeepEqualErr(v153v3, v153v4, t, "equal-map-v153-p-len")
 	}
 
-	for _, v := range []map[uint64]int8{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint64]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v154: %v\n", v)
-		var v154v1, v154v2 map[uint64]int8
+		var v154v1, v154v2 map[uint64]int
 		v154v1 = v
 		bs154 := testMarshalErr(v154v1, h, t, "enc-map-v154")
 		if v == nil {
 			v154v2 = nil
 		} else {
-			v154v2 = make(map[uint64]int8, len(v))
+			v154v2 = make(map[uint64]int, len(v))
 		} // reset map
 		testUnmarshalErr(v154v2, bs154, h, t, "dec-map-v154")
 		testDeepEqualErr(v154v1, v154v2, t, "equal-map-v154")
 		if v == nil {
 			v154v2 = nil
 		} else {
-			v154v2 = make(map[uint64]int8, len(v))
+			v154v2 = make(map[uint64]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v154v2), bs154, h, t, "dec-map-v154-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v154v1, v154v2, t, "equal-map-v154-noaddr")
 		if v == nil {
 			v154v2 = nil
 		} else {
-			v154v2 = make(map[uint64]int8, len(v))
+			v154v2 = make(map[uint64]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v154v2, bs154, h, t, "dec-map-v154-p-len")
 		testDeepEqualErr(v154v1, v154v2, t, "equal-map-v154-p-len")
@@ -7910,39 +7934,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v154v2 = nil
 		} else {
-			v154v2 = make(map[uint64]int8, len(v))
+			v154v2 = make(map[uint64]int, len(v))
 		} // reset map
-		var v154v3, v154v4 typMapMapUint64Int8
-		v154v3 = typMapMapUint64Int8(v154v1)
-		v154v4 = typMapMapUint64Int8(v154v2)
+		var v154v3, v154v4 typMapMapUint64Int
+		v154v3 = typMapMapUint64Int(v154v1)
+		v154v4 = typMapMapUint64Int(v154v2)
 		bs154 = testMarshalErr(v154v3, h, t, "enc-map-v154-custom")
 		testUnmarshalErr(v154v4, bs154, h, t, "dec-map-v154-p-len")
 		testDeepEqualErr(v154v3, v154v4, t, "equal-map-v154-p-len")
 	}
 
-	for _, v := range []map[uint64]int16{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint64]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v155: %v\n", v)
-		var v155v1, v155v2 map[uint64]int16
+		var v155v1, v155v2 map[uint64]int8
 		v155v1 = v
 		bs155 := testMarshalErr(v155v1, h, t, "enc-map-v155")
 		if v == nil {
 			v155v2 = nil
 		} else {
-			v155v2 = make(map[uint64]int16, len(v))
+			v155v2 = make(map[uint64]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v155v2, bs155, h, t, "dec-map-v155")
 		testDeepEqualErr(v155v1, v155v2, t, "equal-map-v155")
 		if v == nil {
 			v155v2 = nil
 		} else {
-			v155v2 = make(map[uint64]int16, len(v))
+			v155v2 = make(map[uint64]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v155v2), bs155, h, t, "dec-map-v155-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v155v1, v155v2, t, "equal-map-v155-noaddr")
 		if v == nil {
 			v155v2 = nil
 		} else {
-			v155v2 = make(map[uint64]int16, len(v))
+			v155v2 = make(map[uint64]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v155v2, bs155, h, t, "dec-map-v155-p-len")
 		testDeepEqualErr(v155v1, v155v2, t, "equal-map-v155-p-len")
@@ -7954,39 +7978,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v155v2 = nil
 		} else {
-			v155v2 = make(map[uint64]int16, len(v))
+			v155v2 = make(map[uint64]int8, len(v))
 		} // reset map
-		var v155v3, v155v4 typMapMapUint64Int16
-		v155v3 = typMapMapUint64Int16(v155v1)
-		v155v4 = typMapMapUint64Int16(v155v2)
+		var v155v3, v155v4 typMapMapUint64Int8
+		v155v3 = typMapMapUint64Int8(v155v1)
+		v155v4 = typMapMapUint64Int8(v155v2)
 		bs155 = testMarshalErr(v155v3, h, t, "enc-map-v155-custom")
 		testUnmarshalErr(v155v4, bs155, h, t, "dec-map-v155-p-len")
 		testDeepEqualErr(v155v3, v155v4, t, "equal-map-v155-p-len")
 	}
 
-	for _, v := range []map[uint64]int32{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uint64]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v156: %v\n", v)
-		var v156v1, v156v2 map[uint64]int32
+		var v156v1, v156v2 map[uint64]int16
 		v156v1 = v
 		bs156 := testMarshalErr(v156v1, h, t, "enc-map-v156")
 		if v == nil {
 			v156v2 = nil
 		} else {
-			v156v2 = make(map[uint64]int32, len(v))
+			v156v2 = make(map[uint64]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v156v2, bs156, h, t, "dec-map-v156")
 		testDeepEqualErr(v156v1, v156v2, t, "equal-map-v156")
 		if v == nil {
 			v156v2 = nil
 		} else {
-			v156v2 = make(map[uint64]int32, len(v))
+			v156v2 = make(map[uint64]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v156v2), bs156, h, t, "dec-map-v156-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v156v1, v156v2, t, "equal-map-v156-noaddr")
 		if v == nil {
 			v156v2 = nil
 		} else {
-			v156v2 = make(map[uint64]int32, len(v))
+			v156v2 = make(map[uint64]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v156v2, bs156, h, t, "dec-map-v156-p-len")
 		testDeepEqualErr(v156v1, v156v2, t, "equal-map-v156-p-len")
@@ -7998,39 +8022,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v156v2 = nil
 		} else {
-			v156v2 = make(map[uint64]int32, len(v))
+			v156v2 = make(map[uint64]int16, len(v))
 		} // reset map
-		var v156v3, v156v4 typMapMapUint64Int32
-		v156v3 = typMapMapUint64Int32(v156v1)
-		v156v4 = typMapMapUint64Int32(v156v2)
+		var v156v3, v156v4 typMapMapUint64Int16
+		v156v3 = typMapMapUint64Int16(v156v1)
+		v156v4 = typMapMapUint64Int16(v156v2)
 		bs156 = testMarshalErr(v156v3, h, t, "enc-map-v156-custom")
 		testUnmarshalErr(v156v4, bs156, h, t, "dec-map-v156-p-len")
 		testDeepEqualErr(v156v3, v156v4, t, "equal-map-v156-p-len")
 	}
 
-	for _, v := range []map[uint64]int64{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uint64]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v157: %v\n", v)
-		var v157v1, v157v2 map[uint64]int64
+		var v157v1, v157v2 map[uint64]int32
 		v157v1 = v
 		bs157 := testMarshalErr(v157v1, h, t, "enc-map-v157")
 		if v == nil {
 			v157v2 = nil
 		} else {
-			v157v2 = make(map[uint64]int64, len(v))
+			v157v2 = make(map[uint64]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v157v2, bs157, h, t, "dec-map-v157")
 		testDeepEqualErr(v157v1, v157v2, t, "equal-map-v157")
 		if v == nil {
 			v157v2 = nil
 		} else {
-			v157v2 = make(map[uint64]int64, len(v))
+			v157v2 = make(map[uint64]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v157v2), bs157, h, t, "dec-map-v157-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v157v1, v157v2, t, "equal-map-v157-noaddr")
 		if v == nil {
 			v157v2 = nil
 		} else {
-			v157v2 = make(map[uint64]int64, len(v))
+			v157v2 = make(map[uint64]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v157v2, bs157, h, t, "dec-map-v157-p-len")
 		testDeepEqualErr(v157v1, v157v2, t, "equal-map-v157-p-len")
@@ -8042,39 +8066,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v157v2 = nil
 		} else {
-			v157v2 = make(map[uint64]int64, len(v))
+			v157v2 = make(map[uint64]int32, len(v))
 		} // reset map
-		var v157v3, v157v4 typMapMapUint64Int64
-		v157v3 = typMapMapUint64Int64(v157v1)
-		v157v4 = typMapMapUint64Int64(v157v2)
+		var v157v3, v157v4 typMapMapUint64Int32
+		v157v3 = typMapMapUint64Int32(v157v1)
+		v157v4 = typMapMapUint64Int32(v157v2)
 		bs157 = testMarshalErr(v157v3, h, t, "enc-map-v157-custom")
 		testUnmarshalErr(v157v4, bs157, h, t, "dec-map-v157-p-len")
 		testDeepEqualErr(v157v3, v157v4, t, "equal-map-v157-p-len")
 	}
 
-	for _, v := range []map[uint64]float32{nil, {}, {33: 0, 44: 22.2}} {
+	for _, v := range []map[uint64]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v158: %v\n", v)
-		var v158v1, v158v2 map[uint64]float32
+		var v158v1, v158v2 map[uint64]int64
 		v158v1 = v
 		bs158 := testMarshalErr(v158v1, h, t, "enc-map-v158")
 		if v == nil {
 			v158v2 = nil
 		} else {
-			v158v2 = make(map[uint64]float32, len(v))
+			v158v2 = make(map[uint64]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v158v2, bs158, h, t, "dec-map-v158")
 		testDeepEqualErr(v158v1, v158v2, t, "equal-map-v158")
 		if v == nil {
 			v158v2 = nil
 		} else {
-			v158v2 = make(map[uint64]float32, len(v))
+			v158v2 = make(map[uint64]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v158v2), bs158, h, t, "dec-map-v158-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v158v1, v158v2, t, "equal-map-v158-noaddr")
 		if v == nil {
 			v158v2 = nil
 		} else {
-			v158v2 = make(map[uint64]float32, len(v))
+			v158v2 = make(map[uint64]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v158v2, bs158, h, t, "dec-map-v158-p-len")
 		testDeepEqualErr(v158v1, v158v2, t, "equal-map-v158-p-len")
@@ -8086,39 +8110,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v158v2 = nil
 		} else {
-			v158v2 = make(map[uint64]float32, len(v))
+			v158v2 = make(map[uint64]int64, len(v))
 		} // reset map
-		var v158v3, v158v4 typMapMapUint64Float32
-		v158v3 = typMapMapUint64Float32(v158v1)
-		v158v4 = typMapMapUint64Float32(v158v2)
+		var v158v3, v158v4 typMapMapUint64Int64
+		v158v3 = typMapMapUint64Int64(v158v1)
+		v158v4 = typMapMapUint64Int64(v158v2)
 		bs158 = testMarshalErr(v158v3, h, t, "enc-map-v158-custom")
 		testUnmarshalErr(v158v4, bs158, h, t, "dec-map-v158-p-len")
 		testDeepEqualErr(v158v3, v158v4, t, "equal-map-v158-p-len")
 	}
 
-	for _, v := range []map[uint64]float64{nil, {}, {33: 0, 44: 11.1}} {
+	for _, v := range []map[uint64]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v159: %v\n", v)
-		var v159v1, v159v2 map[uint64]float64
+		var v159v1, v159v2 map[uint64]float32
 		v159v1 = v
 		bs159 := testMarshalErr(v159v1, h, t, "enc-map-v159")
 		if v == nil {
 			v159v2 = nil
 		} else {
-			v159v2 = make(map[uint64]float64, len(v))
+			v159v2 = make(map[uint64]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v159v2, bs159, h, t, "dec-map-v159")
 		testDeepEqualErr(v159v1, v159v2, t, "equal-map-v159")
 		if v == nil {
 			v159v2 = nil
 		} else {
-			v159v2 = make(map[uint64]float64, len(v))
+			v159v2 = make(map[uint64]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v159v2), bs159, h, t, "dec-map-v159-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v159v1, v159v2, t, "equal-map-v159-noaddr")
 		if v == nil {
 			v159v2 = nil
 		} else {
-			v159v2 = make(map[uint64]float64, len(v))
+			v159v2 = make(map[uint64]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v159v2, bs159, h, t, "dec-map-v159-p-len")
 		testDeepEqualErr(v159v1, v159v2, t, "equal-map-v159-p-len")
@@ -8130,39 +8154,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v159v2 = nil
 		} else {
-			v159v2 = make(map[uint64]float64, len(v))
+			v159v2 = make(map[uint64]float32, len(v))
 		} // reset map
-		var v159v3, v159v4 typMapMapUint64Float64
-		v159v3 = typMapMapUint64Float64(v159v1)
-		v159v4 = typMapMapUint64Float64(v159v2)
+		var v159v3, v159v4 typMapMapUint64Float32
+		v159v3 = typMapMapUint64Float32(v159v1)
+		v159v4 = typMapMapUint64Float32(v159v2)
 		bs159 = testMarshalErr(v159v3, h, t, "enc-map-v159-custom")
 		testUnmarshalErr(v159v4, bs159, h, t, "dec-map-v159-p-len")
 		testDeepEqualErr(v159v3, v159v4, t, "equal-map-v159-p-len")
 	}
 
-	for _, v := range []map[uint64]bool{nil, {}, {33: false, 44: true}} {
+	for _, v := range []map[uint64]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v160: %v\n", v)
-		var v160v1, v160v2 map[uint64]bool
+		var v160v1, v160v2 map[uint64]float64
 		v160v1 = v
 		bs160 := testMarshalErr(v160v1, h, t, "enc-map-v160")
 		if v == nil {
 			v160v2 = nil
 		} else {
-			v160v2 = make(map[uint64]bool, len(v))
+			v160v2 = make(map[uint64]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v160v2, bs160, h, t, "dec-map-v160")
 		testDeepEqualErr(v160v1, v160v2, t, "equal-map-v160")
 		if v == nil {
 			v160v2 = nil
 		} else {
-			v160v2 = make(map[uint64]bool, len(v))
+			v160v2 = make(map[uint64]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v160v2), bs160, h, t, "dec-map-v160-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v160v1, v160v2, t, "equal-map-v160-noaddr")
 		if v == nil {
 			v160v2 = nil
 		} else {
-			v160v2 = make(map[uint64]bool, len(v))
+			v160v2 = make(map[uint64]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v160v2, bs160, h, t, "dec-map-v160-p-len")
 		testDeepEqualErr(v160v1, v160v2, t, "equal-map-v160-p-len")
@@ -8174,83 +8198,83 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v160v2 = nil
 		} else {
-			v160v2 = make(map[uint64]bool, len(v))
+			v160v2 = make(map[uint64]float64, len(v))
 		} // reset map
-		var v160v3, v160v4 typMapMapUint64Bool
-		v160v3 = typMapMapUint64Bool(v160v1)
-		v160v4 = typMapMapUint64Bool(v160v2)
+		var v160v3, v160v4 typMapMapUint64Float64
+		v160v3 = typMapMapUint64Float64(v160v1)
+		v160v4 = typMapMapUint64Float64(v160v2)
 		bs160 = testMarshalErr(v160v3, h, t, "enc-map-v160-custom")
 		testUnmarshalErr(v160v4, bs160, h, t, "dec-map-v160-p-len")
 		testDeepEqualErr(v160v3, v160v4, t, "equal-map-v160-p-len")
 	}
 
-	for _, v := range []map[uintptr]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
-		// fmt.Printf(">>>> running mammoth map v163: %v\n", v)
-		var v163v1, v163v2 map[uintptr]interface{}
-		v163v1 = v
-		bs163 := testMarshalErr(v163v1, h, t, "enc-map-v163")
+	for _, v := range []map[uint64]bool{nil, {}, {33: false, 44: true}} {
+		// fmt.Printf(">>>> running mammoth map v161: %v\n", v)
+		var v161v1, v161v2 map[uint64]bool
+		v161v1 = v
+		bs161 := testMarshalErr(v161v1, h, t, "enc-map-v161")
 		if v == nil {
-			v163v2 = nil
+			v161v2 = nil
 		} else {
-			v163v2 = make(map[uintptr]interface{}, len(v))
+			v161v2 = make(map[uint64]bool, len(v))
 		} // reset map
-		testUnmarshalErr(v163v2, bs163, h, t, "dec-map-v163")
-		testDeepEqualErr(v163v1, v163v2, t, "equal-map-v163")
+		testUnmarshalErr(v161v2, bs161, h, t, "dec-map-v161")
+		testDeepEqualErr(v161v1, v161v2, t, "equal-map-v161")
 		if v == nil {
-			v163v2 = nil
+			v161v2 = nil
 		} else {
-			v163v2 = make(map[uintptr]interface{}, len(v))
+			v161v2 = make(map[uint64]bool, len(v))
 		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v163v2), bs163, h, t, "dec-map-v163-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v163v1, v163v2, t, "equal-map-v163-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v161v2), bs161, h, t, "dec-map-v161-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v161v1, v161v2, t, "equal-map-v161-noaddr")
 		if v == nil {
-			v163v2 = nil
+			v161v2 = nil
 		} else {
-			v163v2 = make(map[uintptr]interface{}, len(v))
+			v161v2 = make(map[uint64]bool, len(v))
 		} // reset map
-		testUnmarshalErr(&v163v2, bs163, h, t, "dec-map-v163-p-len")
-		testDeepEqualErr(v163v1, v163v2, t, "equal-map-v163-p-len")
-		bs163 = testMarshalErr(&v163v1, h, t, "enc-map-v163-p")
-		v163v2 = nil
-		testUnmarshalErr(&v163v2, bs163, h, t, "dec-map-v163-p-nil")
-		testDeepEqualErr(v163v1, v163v2, t, "equal-map-v163-p-nil")
+		testUnmarshalErr(&v161v2, bs161, h, t, "dec-map-v161-p-len")
+		testDeepEqualErr(v161v1, v161v2, t, "equal-map-v161-p-len")
+		bs161 = testMarshalErr(&v161v1, h, t, "enc-map-v161-p")
+		v161v2 = nil
+		testUnmarshalErr(&v161v2, bs161, h, t, "dec-map-v161-p-nil")
+		testDeepEqualErr(v161v1, v161v2, t, "equal-map-v161-p-nil")
 		// ...
 		if v == nil {
-			v163v2 = nil
+			v161v2 = nil
 		} else {
-			v163v2 = make(map[uintptr]interface{}, len(v))
+			v161v2 = make(map[uint64]bool, len(v))
 		} // reset map
-		var v163v3, v163v4 typMapMapUintptrIntf
-		v163v3 = typMapMapUintptrIntf(v163v1)
-		v163v4 = typMapMapUintptrIntf(v163v2)
-		bs163 = testMarshalErr(v163v3, h, t, "enc-map-v163-custom")
-		testUnmarshalErr(v163v4, bs163, h, t, "dec-map-v163-p-len")
-		testDeepEqualErr(v163v3, v163v4, t, "equal-map-v163-p-len")
+		var v161v3, v161v4 typMapMapUint64Bool
+		v161v3 = typMapMapUint64Bool(v161v1)
+		v161v4 = typMapMapUint64Bool(v161v2)
+		bs161 = testMarshalErr(v161v3, h, t, "enc-map-v161-custom")
+		testUnmarshalErr(v161v4, bs161, h, t, "dec-map-v161-p-len")
+		testDeepEqualErr(v161v3, v161v4, t, "equal-map-v161-p-len")
 	}
 
-	for _, v := range []map[uintptr]string{nil, {}, {33: "", 44: "some-string"}} {
+	for _, v := range []map[uintptr]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v164: %v\n", v)
-		var v164v1, v164v2 map[uintptr]string
+		var v164v1, v164v2 map[uintptr]interface{}
 		v164v1 = v
 		bs164 := testMarshalErr(v164v1, h, t, "enc-map-v164")
 		if v == nil {
 			v164v2 = nil
 		} else {
-			v164v2 = make(map[uintptr]string, len(v))
+			v164v2 = make(map[uintptr]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v164v2, bs164, h, t, "dec-map-v164")
 		testDeepEqualErr(v164v1, v164v2, t, "equal-map-v164")
 		if v == nil {
 			v164v2 = nil
 		} else {
-			v164v2 = make(map[uintptr]string, len(v))
+			v164v2 = make(map[uintptr]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v164v2), bs164, h, t, "dec-map-v164-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v164v1, v164v2, t, "equal-map-v164-noaddr")
 		if v == nil {
 			v164v2 = nil
 		} else {
-			v164v2 = make(map[uintptr]string, len(v))
+			v164v2 = make(map[uintptr]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v164v2, bs164, h, t, "dec-map-v164-p-len")
 		testDeepEqualErr(v164v1, v164v2, t, "equal-map-v164-p-len")
@@ -8262,39 +8286,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v164v2 = nil
 		} else {
-			v164v2 = make(map[uintptr]string, len(v))
+			v164v2 = make(map[uintptr]interface{}, len(v))
 		} // reset map
-		var v164v3, v164v4 typMapMapUintptrString
-		v164v3 = typMapMapUintptrString(v164v1)
-		v164v4 = typMapMapUintptrString(v164v2)
+		var v164v3, v164v4 typMapMapUintptrIntf
+		v164v3 = typMapMapUintptrIntf(v164v1)
+		v164v4 = typMapMapUintptrIntf(v164v2)
 		bs164 = testMarshalErr(v164v3, h, t, "enc-map-v164-custom")
 		testUnmarshalErr(v164v4, bs164, h, t, "dec-map-v164-p-len")
 		testDeepEqualErr(v164v3, v164v4, t, "equal-map-v164-p-len")
 	}
 
-	for _, v := range []map[uintptr]uint{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v165: %v\n", v)
-		var v165v1, v165v2 map[uintptr]uint
+		var v165v1, v165v2 map[uintptr]string
 		v165v1 = v
 		bs165 := testMarshalErr(v165v1, h, t, "enc-map-v165")
 		if v == nil {
 			v165v2 = nil
 		} else {
-			v165v2 = make(map[uintptr]uint, len(v))
+			v165v2 = make(map[uintptr]string, len(v))
 		} // reset map
 		testUnmarshalErr(v165v2, bs165, h, t, "dec-map-v165")
 		testDeepEqualErr(v165v1, v165v2, t, "equal-map-v165")
 		if v == nil {
 			v165v2 = nil
 		} else {
-			v165v2 = make(map[uintptr]uint, len(v))
+			v165v2 = make(map[uintptr]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v165v2), bs165, h, t, "dec-map-v165-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v165v1, v165v2, t, "equal-map-v165-noaddr")
 		if v == nil {
 			v165v2 = nil
 		} else {
-			v165v2 = make(map[uintptr]uint, len(v))
+			v165v2 = make(map[uintptr]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v165v2, bs165, h, t, "dec-map-v165-p-len")
 		testDeepEqualErr(v165v1, v165v2, t, "equal-map-v165-p-len")
@@ -8306,39 +8330,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v165v2 = nil
 		} else {
-			v165v2 = make(map[uintptr]uint, len(v))
+			v165v2 = make(map[uintptr]string, len(v))
 		} // reset map
-		var v165v3, v165v4 typMapMapUintptrUint
-		v165v3 = typMapMapUintptrUint(v165v1)
-		v165v4 = typMapMapUintptrUint(v165v2)
+		var v165v3, v165v4 typMapMapUintptrString
+		v165v3 = typMapMapUintptrString(v165v1)
+		v165v4 = typMapMapUintptrString(v165v2)
 		bs165 = testMarshalErr(v165v3, h, t, "enc-map-v165-custom")
 		testUnmarshalErr(v165v4, bs165, h, t, "dec-map-v165-p-len")
 		testDeepEqualErr(v165v3, v165v4, t, "equal-map-v165-p-len")
 	}
 
-	for _, v := range []map[uintptr]uint8{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uintptr]uint{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v166: %v\n", v)
-		var v166v1, v166v2 map[uintptr]uint8
+		var v166v1, v166v2 map[uintptr]uint
 		v166v1 = v
 		bs166 := testMarshalErr(v166v1, h, t, "enc-map-v166")
 		if v == nil {
 			v166v2 = nil
 		} else {
-			v166v2 = make(map[uintptr]uint8, len(v))
+			v166v2 = make(map[uintptr]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v166v2, bs166, h, t, "dec-map-v166")
 		testDeepEqualErr(v166v1, v166v2, t, "equal-map-v166")
 		if v == nil {
 			v166v2 = nil
 		} else {
-			v166v2 = make(map[uintptr]uint8, len(v))
+			v166v2 = make(map[uintptr]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v166v2), bs166, h, t, "dec-map-v166-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v166v1, v166v2, t, "equal-map-v166-noaddr")
 		if v == nil {
 			v166v2 = nil
 		} else {
-			v166v2 = make(map[uintptr]uint8, len(v))
+			v166v2 = make(map[uintptr]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v166v2, bs166, h, t, "dec-map-v166-p-len")
 		testDeepEqualErr(v166v1, v166v2, t, "equal-map-v166-p-len")
@@ -8350,39 +8374,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v166v2 = nil
 		} else {
-			v166v2 = make(map[uintptr]uint8, len(v))
+			v166v2 = make(map[uintptr]uint, len(v))
 		} // reset map
-		var v166v3, v166v4 typMapMapUintptrUint8
-		v166v3 = typMapMapUintptrUint8(v166v1)
-		v166v4 = typMapMapUintptrUint8(v166v2)
+		var v166v3, v166v4 typMapMapUintptrUint
+		v166v3 = typMapMapUintptrUint(v166v1)
+		v166v4 = typMapMapUintptrUint(v166v2)
 		bs166 = testMarshalErr(v166v3, h, t, "enc-map-v166-custom")
 		testUnmarshalErr(v166v4, bs166, h, t, "dec-map-v166-p-len")
 		testDeepEqualErr(v166v3, v166v4, t, "equal-map-v166-p-len")
 	}
 
-	for _, v := range []map[uintptr]uint16{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]uint8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v167: %v\n", v)
-		var v167v1, v167v2 map[uintptr]uint16
+		var v167v1, v167v2 map[uintptr]uint8
 		v167v1 = v
 		bs167 := testMarshalErr(v167v1, h, t, "enc-map-v167")
 		if v == nil {
 			v167v2 = nil
 		} else {
-			v167v2 = make(map[uintptr]uint16, len(v))
+			v167v2 = make(map[uintptr]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v167v2, bs167, h, t, "dec-map-v167")
 		testDeepEqualErr(v167v1, v167v2, t, "equal-map-v167")
 		if v == nil {
 			v167v2 = nil
 		} else {
-			v167v2 = make(map[uintptr]uint16, len(v))
+			v167v2 = make(map[uintptr]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v167v2), bs167, h, t, "dec-map-v167-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v167v1, v167v2, t, "equal-map-v167-noaddr")
 		if v == nil {
 			v167v2 = nil
 		} else {
-			v167v2 = make(map[uintptr]uint16, len(v))
+			v167v2 = make(map[uintptr]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v167v2, bs167, h, t, "dec-map-v167-p-len")
 		testDeepEqualErr(v167v1, v167v2, t, "equal-map-v167-p-len")
@@ -8394,39 +8418,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v167v2 = nil
 		} else {
-			v167v2 = make(map[uintptr]uint16, len(v))
+			v167v2 = make(map[uintptr]uint8, len(v))
 		} // reset map
-		var v167v3, v167v4 typMapMapUintptrUint16
-		v167v3 = typMapMapUintptrUint16(v167v1)
-		v167v4 = typMapMapUintptrUint16(v167v2)
+		var v167v3, v167v4 typMapMapUintptrUint8
+		v167v3 = typMapMapUintptrUint8(v167v1)
+		v167v4 = typMapMapUintptrUint8(v167v2)
 		bs167 = testMarshalErr(v167v3, h, t, "enc-map-v167-custom")
 		testUnmarshalErr(v167v4, bs167, h, t, "dec-map-v167-p-len")
 		testDeepEqualErr(v167v3, v167v4, t, "equal-map-v167-p-len")
 	}
 
-	for _, v := range []map[uintptr]uint32{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uintptr]uint16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v168: %v\n", v)
-		var v168v1, v168v2 map[uintptr]uint32
+		var v168v1, v168v2 map[uintptr]uint16
 		v168v1 = v
 		bs168 := testMarshalErr(v168v1, h, t, "enc-map-v168")
 		if v == nil {
 			v168v2 = nil
 		} else {
-			v168v2 = make(map[uintptr]uint32, len(v))
+			v168v2 = make(map[uintptr]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v168v2, bs168, h, t, "dec-map-v168")
 		testDeepEqualErr(v168v1, v168v2, t, "equal-map-v168")
 		if v == nil {
 			v168v2 = nil
 		} else {
-			v168v2 = make(map[uintptr]uint32, len(v))
+			v168v2 = make(map[uintptr]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v168v2), bs168, h, t, "dec-map-v168-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v168v1, v168v2, t, "equal-map-v168-noaddr")
 		if v == nil {
 			v168v2 = nil
 		} else {
-			v168v2 = make(map[uintptr]uint32, len(v))
+			v168v2 = make(map[uintptr]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v168v2, bs168, h, t, "dec-map-v168-p-len")
 		testDeepEqualErr(v168v1, v168v2, t, "equal-map-v168-p-len")
@@ -8438,39 +8462,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v168v2 = nil
 		} else {
-			v168v2 = make(map[uintptr]uint32, len(v))
+			v168v2 = make(map[uintptr]uint16, len(v))
 		} // reset map
-		var v168v3, v168v4 typMapMapUintptrUint32
-		v168v3 = typMapMapUintptrUint32(v168v1)
-		v168v4 = typMapMapUintptrUint32(v168v2)
+		var v168v3, v168v4 typMapMapUintptrUint16
+		v168v3 = typMapMapUintptrUint16(v168v1)
+		v168v4 = typMapMapUintptrUint16(v168v2)
 		bs168 = testMarshalErr(v168v3, h, t, "enc-map-v168-custom")
 		testUnmarshalErr(v168v4, bs168, h, t, "dec-map-v168-p-len")
 		testDeepEqualErr(v168v3, v168v4, t, "equal-map-v168-p-len")
 	}
 
-	for _, v := range []map[uintptr]uint64{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]uint32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v169: %v\n", v)
-		var v169v1, v169v2 map[uintptr]uint64
+		var v169v1, v169v2 map[uintptr]uint32
 		v169v1 = v
 		bs169 := testMarshalErr(v169v1, h, t, "enc-map-v169")
 		if v == nil {
 			v169v2 = nil
 		} else {
-			v169v2 = make(map[uintptr]uint64, len(v))
+			v169v2 = make(map[uintptr]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v169v2, bs169, h, t, "dec-map-v169")
 		testDeepEqualErr(v169v1, v169v2, t, "equal-map-v169")
 		if v == nil {
 			v169v2 = nil
 		} else {
-			v169v2 = make(map[uintptr]uint64, len(v))
+			v169v2 = make(map[uintptr]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v169v2), bs169, h, t, "dec-map-v169-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v169v1, v169v2, t, "equal-map-v169-noaddr")
 		if v == nil {
 			v169v2 = nil
 		} else {
-			v169v2 = make(map[uintptr]uint64, len(v))
+			v169v2 = make(map[uintptr]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v169v2, bs169, h, t, "dec-map-v169-p-len")
 		testDeepEqualErr(v169v1, v169v2, t, "equal-map-v169-p-len")
@@ -8482,39 +8506,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v169v2 = nil
 		} else {
-			v169v2 = make(map[uintptr]uint64, len(v))
+			v169v2 = make(map[uintptr]uint32, len(v))
 		} // reset map
-		var v169v3, v169v4 typMapMapUintptrUint64
-		v169v3 = typMapMapUintptrUint64(v169v1)
-		v169v4 = typMapMapUintptrUint64(v169v2)
+		var v169v3, v169v4 typMapMapUintptrUint32
+		v169v3 = typMapMapUintptrUint32(v169v1)
+		v169v4 = typMapMapUintptrUint32(v169v2)
 		bs169 = testMarshalErr(v169v3, h, t, "enc-map-v169-custom")
 		testUnmarshalErr(v169v4, bs169, h, t, "dec-map-v169-p-len")
 		testDeepEqualErr(v169v3, v169v4, t, "equal-map-v169-p-len")
 	}
 
-	for _, v := range []map[uintptr]uintptr{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uintptr]uint64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v170: %v\n", v)
-		var v170v1, v170v2 map[uintptr]uintptr
+		var v170v1, v170v2 map[uintptr]uint64
 		v170v1 = v
 		bs170 := testMarshalErr(v170v1, h, t, "enc-map-v170")
 		if v == nil {
 			v170v2 = nil
 		} else {
-			v170v2 = make(map[uintptr]uintptr, len(v))
+			v170v2 = make(map[uintptr]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v170v2, bs170, h, t, "dec-map-v170")
 		testDeepEqualErr(v170v1, v170v2, t, "equal-map-v170")
 		if v == nil {
 			v170v2 = nil
 		} else {
-			v170v2 = make(map[uintptr]uintptr, len(v))
+			v170v2 = make(map[uintptr]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v170v2), bs170, h, t, "dec-map-v170-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v170v1, v170v2, t, "equal-map-v170-noaddr")
 		if v == nil {
 			v170v2 = nil
 		} else {
-			v170v2 = make(map[uintptr]uintptr, len(v))
+			v170v2 = make(map[uintptr]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v170v2, bs170, h, t, "dec-map-v170-p-len")
 		testDeepEqualErr(v170v1, v170v2, t, "equal-map-v170-p-len")
@@ -8526,39 +8550,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v170v2 = nil
 		} else {
-			v170v2 = make(map[uintptr]uintptr, len(v))
+			v170v2 = make(map[uintptr]uint64, len(v))
 		} // reset map
-		var v170v3, v170v4 typMapMapUintptrUintptr
-		v170v3 = typMapMapUintptrUintptr(v170v1)
-		v170v4 = typMapMapUintptrUintptr(v170v2)
+		var v170v3, v170v4 typMapMapUintptrUint64
+		v170v3 = typMapMapUintptrUint64(v170v1)
+		v170v4 = typMapMapUintptrUint64(v170v2)
 		bs170 = testMarshalErr(v170v3, h, t, "enc-map-v170-custom")
 		testUnmarshalErr(v170v4, bs170, h, t, "dec-map-v170-p-len")
 		testDeepEqualErr(v170v3, v170v4, t, "equal-map-v170-p-len")
 	}
 
-	for _, v := range []map[uintptr]int{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]uintptr{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v171: %v\n", v)
-		var v171v1, v171v2 map[uintptr]int
+		var v171v1, v171v2 map[uintptr]uintptr
 		v171v1 = v
 		bs171 := testMarshalErr(v171v1, h, t, "enc-map-v171")
 		if v == nil {
 			v171v2 = nil
 		} else {
-			v171v2 = make(map[uintptr]int, len(v))
+			v171v2 = make(map[uintptr]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v171v2, bs171, h, t, "dec-map-v171")
 		testDeepEqualErr(v171v1, v171v2, t, "equal-map-v171")
 		if v == nil {
 			v171v2 = nil
 		} else {
-			v171v2 = make(map[uintptr]int, len(v))
+			v171v2 = make(map[uintptr]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v171v2), bs171, h, t, "dec-map-v171-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v171v1, v171v2, t, "equal-map-v171-noaddr")
 		if v == nil {
 			v171v2 = nil
 		} else {
-			v171v2 = make(map[uintptr]int, len(v))
+			v171v2 = make(map[uintptr]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v171v2, bs171, h, t, "dec-map-v171-p-len")
 		testDeepEqualErr(v171v1, v171v2, t, "equal-map-v171-p-len")
@@ -8570,39 +8594,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v171v2 = nil
 		} else {
-			v171v2 = make(map[uintptr]int, len(v))
+			v171v2 = make(map[uintptr]uintptr, len(v))
 		} // reset map
-		var v171v3, v171v4 typMapMapUintptrInt
-		v171v3 = typMapMapUintptrInt(v171v1)
-		v171v4 = typMapMapUintptrInt(v171v2)
+		var v171v3, v171v4 typMapMapUintptrUintptr
+		v171v3 = typMapMapUintptrUintptr(v171v1)
+		v171v4 = typMapMapUintptrUintptr(v171v2)
 		bs171 = testMarshalErr(v171v3, h, t, "enc-map-v171-custom")
 		testUnmarshalErr(v171v4, bs171, h, t, "dec-map-v171-p-len")
 		testDeepEqualErr(v171v3, v171v4, t, "equal-map-v171-p-len")
 	}
 
-	for _, v := range []map[uintptr]int8{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uintptr]int{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v172: %v\n", v)
-		var v172v1, v172v2 map[uintptr]int8
+		var v172v1, v172v2 map[uintptr]int
 		v172v1 = v
 		bs172 := testMarshalErr(v172v1, h, t, "enc-map-v172")
 		if v == nil {
 			v172v2 = nil
 		} else {
-			v172v2 = make(map[uintptr]int8, len(v))
+			v172v2 = make(map[uintptr]int, len(v))
 		} // reset map
 		testUnmarshalErr(v172v2, bs172, h, t, "dec-map-v172")
 		testDeepEqualErr(v172v1, v172v2, t, "equal-map-v172")
 		if v == nil {
 			v172v2 = nil
 		} else {
-			v172v2 = make(map[uintptr]int8, len(v))
+			v172v2 = make(map[uintptr]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v172v2), bs172, h, t, "dec-map-v172-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v172v1, v172v2, t, "equal-map-v172-noaddr")
 		if v == nil {
 			v172v2 = nil
 		} else {
-			v172v2 = make(map[uintptr]int8, len(v))
+			v172v2 = make(map[uintptr]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v172v2, bs172, h, t, "dec-map-v172-p-len")
 		testDeepEqualErr(v172v1, v172v2, t, "equal-map-v172-p-len")
@@ -8614,39 +8638,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v172v2 = nil
 		} else {
-			v172v2 = make(map[uintptr]int8, len(v))
+			v172v2 = make(map[uintptr]int, len(v))
 		} // reset map
-		var v172v3, v172v4 typMapMapUintptrInt8
-		v172v3 = typMapMapUintptrInt8(v172v1)
-		v172v4 = typMapMapUintptrInt8(v172v2)
+		var v172v3, v172v4 typMapMapUintptrInt
+		v172v3 = typMapMapUintptrInt(v172v1)
+		v172v4 = typMapMapUintptrInt(v172v2)
 		bs172 = testMarshalErr(v172v3, h, t, "enc-map-v172-custom")
 		testUnmarshalErr(v172v4, bs172, h, t, "dec-map-v172-p-len")
 		testDeepEqualErr(v172v3, v172v4, t, "equal-map-v172-p-len")
 	}
 
-	for _, v := range []map[uintptr]int16{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]int8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v173: %v\n", v)
-		var v173v1, v173v2 map[uintptr]int16
+		var v173v1, v173v2 map[uintptr]int8
 		v173v1 = v
 		bs173 := testMarshalErr(v173v1, h, t, "enc-map-v173")
 		if v == nil {
 			v173v2 = nil
 		} else {
-			v173v2 = make(map[uintptr]int16, len(v))
+			v173v2 = make(map[uintptr]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v173v2, bs173, h, t, "dec-map-v173")
 		testDeepEqualErr(v173v1, v173v2, t, "equal-map-v173")
 		if v == nil {
 			v173v2 = nil
 		} else {
-			v173v2 = make(map[uintptr]int16, len(v))
+			v173v2 = make(map[uintptr]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v173v2), bs173, h, t, "dec-map-v173-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v173v1, v173v2, t, "equal-map-v173-noaddr")
 		if v == nil {
 			v173v2 = nil
 		} else {
-			v173v2 = make(map[uintptr]int16, len(v))
+			v173v2 = make(map[uintptr]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v173v2, bs173, h, t, "dec-map-v173-p-len")
 		testDeepEqualErr(v173v1, v173v2, t, "equal-map-v173-p-len")
@@ -8658,39 +8682,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v173v2 = nil
 		} else {
-			v173v2 = make(map[uintptr]int16, len(v))
+			v173v2 = make(map[uintptr]int8, len(v))
 		} // reset map
-		var v173v3, v173v4 typMapMapUintptrInt16
-		v173v3 = typMapMapUintptrInt16(v173v1)
-		v173v4 = typMapMapUintptrInt16(v173v2)
+		var v173v3, v173v4 typMapMapUintptrInt8
+		v173v3 = typMapMapUintptrInt8(v173v1)
+		v173v4 = typMapMapUintptrInt8(v173v2)
 		bs173 = testMarshalErr(v173v3, h, t, "enc-map-v173-custom")
 		testUnmarshalErr(v173v4, bs173, h, t, "dec-map-v173-p-len")
 		testDeepEqualErr(v173v3, v173v4, t, "equal-map-v173-p-len")
 	}
 
-	for _, v := range []map[uintptr]int32{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[uintptr]int16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v174: %v\n", v)
-		var v174v1, v174v2 map[uintptr]int32
+		var v174v1, v174v2 map[uintptr]int16
 		v174v1 = v
 		bs174 := testMarshalErr(v174v1, h, t, "enc-map-v174")
 		if v == nil {
 			v174v2 = nil
 		} else {
-			v174v2 = make(map[uintptr]int32, len(v))
+			v174v2 = make(map[uintptr]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v174v2, bs174, h, t, "dec-map-v174")
 		testDeepEqualErr(v174v1, v174v2, t, "equal-map-v174")
 		if v == nil {
 			v174v2 = nil
 		} else {
-			v174v2 = make(map[uintptr]int32, len(v))
+			v174v2 = make(map[uintptr]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v174v2), bs174, h, t, "dec-map-v174-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v174v1, v174v2, t, "equal-map-v174-noaddr")
 		if v == nil {
 			v174v2 = nil
 		} else {
-			v174v2 = make(map[uintptr]int32, len(v))
+			v174v2 = make(map[uintptr]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v174v2, bs174, h, t, "dec-map-v174-p-len")
 		testDeepEqualErr(v174v1, v174v2, t, "equal-map-v174-p-len")
@@ -8702,39 +8726,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v174v2 = nil
 		} else {
-			v174v2 = make(map[uintptr]int32, len(v))
+			v174v2 = make(map[uintptr]int16, len(v))
 		} // reset map
-		var v174v3, v174v4 typMapMapUintptrInt32
-		v174v3 = typMapMapUintptrInt32(v174v1)
-		v174v4 = typMapMapUintptrInt32(v174v2)
+		var v174v3, v174v4 typMapMapUintptrInt16
+		v174v3 = typMapMapUintptrInt16(v174v1)
+		v174v4 = typMapMapUintptrInt16(v174v2)
 		bs174 = testMarshalErr(v174v3, h, t, "enc-map-v174-custom")
 		testUnmarshalErr(v174v4, bs174, h, t, "dec-map-v174-p-len")
 		testDeepEqualErr(v174v3, v174v4, t, "equal-map-v174-p-len")
 	}
 
-	for _, v := range []map[uintptr]int64{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[uintptr]int32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v175: %v\n", v)
-		var v175v1, v175v2 map[uintptr]int64
+		var v175v1, v175v2 map[uintptr]int32
 		v175v1 = v
 		bs175 := testMarshalErr(v175v1, h, t, "enc-map-v175")
 		if v == nil {
 			v175v2 = nil
 		} else {
-			v175v2 = make(map[uintptr]int64, len(v))
+			v175v2 = make(map[uintptr]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v175v2, bs175, h, t, "dec-map-v175")
 		testDeepEqualErr(v175v1, v175v2, t, "equal-map-v175")
 		if v == nil {
 			v175v2 = nil
 		} else {
-			v175v2 = make(map[uintptr]int64, len(v))
+			v175v2 = make(map[uintptr]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v175v2), bs175, h, t, "dec-map-v175-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v175v1, v175v2, t, "equal-map-v175-noaddr")
 		if v == nil {
 			v175v2 = nil
 		} else {
-			v175v2 = make(map[uintptr]int64, len(v))
+			v175v2 = make(map[uintptr]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v175v2, bs175, h, t, "dec-map-v175-p-len")
 		testDeepEqualErr(v175v1, v175v2, t, "equal-map-v175-p-len")
@@ -8746,39 +8770,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v175v2 = nil
 		} else {
-			v175v2 = make(map[uintptr]int64, len(v))
+			v175v2 = make(map[uintptr]int32, len(v))
 		} // reset map
-		var v175v3, v175v4 typMapMapUintptrInt64
-		v175v3 = typMapMapUintptrInt64(v175v1)
-		v175v4 = typMapMapUintptrInt64(v175v2)
+		var v175v3, v175v4 typMapMapUintptrInt32
+		v175v3 = typMapMapUintptrInt32(v175v1)
+		v175v4 = typMapMapUintptrInt32(v175v2)
 		bs175 = testMarshalErr(v175v3, h, t, "enc-map-v175-custom")
 		testUnmarshalErr(v175v4, bs175, h, t, "dec-map-v175-p-len")
 		testDeepEqualErr(v175v3, v175v4, t, "equal-map-v175-p-len")
 	}
 
-	for _, v := range []map[uintptr]float32{nil, {}, {44: 0, 33: 22.2}} {
+	for _, v := range []map[uintptr]int64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v176: %v\n", v)
-		var v176v1, v176v2 map[uintptr]float32
+		var v176v1, v176v2 map[uintptr]int64
 		v176v1 = v
 		bs176 := testMarshalErr(v176v1, h, t, "enc-map-v176")
 		if v == nil {
 			v176v2 = nil
 		} else {
-			v176v2 = make(map[uintptr]float32, len(v))
+			v176v2 = make(map[uintptr]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v176v2, bs176, h, t, "dec-map-v176")
 		testDeepEqualErr(v176v1, v176v2, t, "equal-map-v176")
 		if v == nil {
 			v176v2 = nil
 		} else {
-			v176v2 = make(map[uintptr]float32, len(v))
+			v176v2 = make(map[uintptr]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v176v2), bs176, h, t, "dec-map-v176-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v176v1, v176v2, t, "equal-map-v176-noaddr")
 		if v == nil {
 			v176v2 = nil
 		} else {
-			v176v2 = make(map[uintptr]float32, len(v))
+			v176v2 = make(map[uintptr]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v176v2, bs176, h, t, "dec-map-v176-p-len")
 		testDeepEqualErr(v176v1, v176v2, t, "equal-map-v176-p-len")
@@ -8790,39 +8814,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v176v2 = nil
 		} else {
-			v176v2 = make(map[uintptr]float32, len(v))
+			v176v2 = make(map[uintptr]int64, len(v))
 		} // reset map
-		var v176v3, v176v4 typMapMapUintptrFloat32
-		v176v3 = typMapMapUintptrFloat32(v176v1)
-		v176v4 = typMapMapUintptrFloat32(v176v2)
+		var v176v3, v176v4 typMapMapUintptrInt64
+		v176v3 = typMapMapUintptrInt64(v176v1)
+		v176v4 = typMapMapUintptrInt64(v176v2)
 		bs176 = testMarshalErr(v176v3, h, t, "enc-map-v176-custom")
 		testUnmarshalErr(v176v4, bs176, h, t, "dec-map-v176-p-len")
 		testDeepEqualErr(v176v3, v176v4, t, "equal-map-v176-p-len")
 	}
 
-	for _, v := range []map[uintptr]float64{nil, {}, {44: 0, 33: 11.1}} {
+	for _, v := range []map[uintptr]float32{nil, {}, {44: 0, 33: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v177: %v\n", v)
-		var v177v1, v177v2 map[uintptr]float64
+		var v177v1, v177v2 map[uintptr]float32
 		v177v1 = v
 		bs177 := testMarshalErr(v177v1, h, t, "enc-map-v177")
 		if v == nil {
 			v177v2 = nil
 		} else {
-			v177v2 = make(map[uintptr]float64, len(v))
+			v177v2 = make(map[uintptr]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v177v2, bs177, h, t, "dec-map-v177")
 		testDeepEqualErr(v177v1, v177v2, t, "equal-map-v177")
 		if v == nil {
 			v177v2 = nil
 		} else {
-			v177v2 = make(map[uintptr]float64, len(v))
+			v177v2 = make(map[uintptr]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v177v2), bs177, h, t, "dec-map-v177-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v177v1, v177v2, t, "equal-map-v177-noaddr")
 		if v == nil {
 			v177v2 = nil
 		} else {
-			v177v2 = make(map[uintptr]float64, len(v))
+			v177v2 = make(map[uintptr]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v177v2, bs177, h, t, "dec-map-v177-p-len")
 		testDeepEqualErr(v177v1, v177v2, t, "equal-map-v177-p-len")
@@ -8834,39 +8858,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v177v2 = nil
 		} else {
-			v177v2 = make(map[uintptr]float64, len(v))
+			v177v2 = make(map[uintptr]float32, len(v))
 		} // reset map
-		var v177v3, v177v4 typMapMapUintptrFloat64
-		v177v3 = typMapMapUintptrFloat64(v177v1)
-		v177v4 = typMapMapUintptrFloat64(v177v2)
+		var v177v3, v177v4 typMapMapUintptrFloat32
+		v177v3 = typMapMapUintptrFloat32(v177v1)
+		v177v4 = typMapMapUintptrFloat32(v177v2)
 		bs177 = testMarshalErr(v177v3, h, t, "enc-map-v177-custom")
 		testUnmarshalErr(v177v4, bs177, h, t, "dec-map-v177-p-len")
 		testDeepEqualErr(v177v3, v177v4, t, "equal-map-v177-p-len")
 	}
 
-	for _, v := range []map[uintptr]bool{nil, {}, {44: false, 33: true}} {
+	for _, v := range []map[uintptr]float64{nil, {}, {44: 0, 33: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v178: %v\n", v)
-		var v178v1, v178v2 map[uintptr]bool
+		var v178v1, v178v2 map[uintptr]float64
 		v178v1 = v
 		bs178 := testMarshalErr(v178v1, h, t, "enc-map-v178")
 		if v == nil {
 			v178v2 = nil
 		} else {
-			v178v2 = make(map[uintptr]bool, len(v))
+			v178v2 = make(map[uintptr]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v178v2, bs178, h, t, "dec-map-v178")
 		testDeepEqualErr(v178v1, v178v2, t, "equal-map-v178")
 		if v == nil {
 			v178v2 = nil
 		} else {
-			v178v2 = make(map[uintptr]bool, len(v))
+			v178v2 = make(map[uintptr]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v178v2), bs178, h, t, "dec-map-v178-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v178v1, v178v2, t, "equal-map-v178-noaddr")
 		if v == nil {
 			v178v2 = nil
 		} else {
-			v178v2 = make(map[uintptr]bool, len(v))
+			v178v2 = make(map[uintptr]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v178v2, bs178, h, t, "dec-map-v178-p-len")
 		testDeepEqualErr(v178v1, v178v2, t, "equal-map-v178-p-len")
@@ -8878,83 +8902,83 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v178v2 = nil
 		} else {
-			v178v2 = make(map[uintptr]bool, len(v))
+			v178v2 = make(map[uintptr]float64, len(v))
 		} // reset map
-		var v178v3, v178v4 typMapMapUintptrBool
-		v178v3 = typMapMapUintptrBool(v178v1)
-		v178v4 = typMapMapUintptrBool(v178v2)
+		var v178v3, v178v4 typMapMapUintptrFloat64
+		v178v3 = typMapMapUintptrFloat64(v178v1)
+		v178v4 = typMapMapUintptrFloat64(v178v2)
 		bs178 = testMarshalErr(v178v3, h, t, "enc-map-v178-custom")
 		testUnmarshalErr(v178v4, bs178, h, t, "dec-map-v178-p-len")
 		testDeepEqualErr(v178v3, v178v4, t, "equal-map-v178-p-len")
 	}
 
-	for _, v := range []map[int]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
-		// fmt.Printf(">>>> running mammoth map v181: %v\n", v)
-		var v181v1, v181v2 map[int]interface{}
-		v181v1 = v
-		bs181 := testMarshalErr(v181v1, h, t, "enc-map-v181")
+	for _, v := range []map[uintptr]bool{nil, {}, {44: false, 33: true}} {
+		// fmt.Printf(">>>> running mammoth map v179: %v\n", v)
+		var v179v1, v179v2 map[uintptr]bool
+		v179v1 = v
+		bs179 := testMarshalErr(v179v1, h, t, "enc-map-v179")
 		if v == nil {
-			v181v2 = nil
+			v179v2 = nil
 		} else {
-			v181v2 = make(map[int]interface{}, len(v))
+			v179v2 = make(map[uintptr]bool, len(v))
 		} // reset map
-		testUnmarshalErr(v181v2, bs181, h, t, "dec-map-v181")
-		testDeepEqualErr(v181v1, v181v2, t, "equal-map-v181")
+		testUnmarshalErr(v179v2, bs179, h, t, "dec-map-v179")
+		testDeepEqualErr(v179v1, v179v2, t, "equal-map-v179")
 		if v == nil {
-			v181v2 = nil
+			v179v2 = nil
 		} else {
-			v181v2 = make(map[int]interface{}, len(v))
+			v179v2 = make(map[uintptr]bool, len(v))
 		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v181v2), bs181, h, t, "dec-map-v181-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v181v1, v181v2, t, "equal-map-v181-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v179v2), bs179, h, t, "dec-map-v179-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v179v1, v179v2, t, "equal-map-v179-noaddr")
 		if v == nil {
-			v181v2 = nil
+			v179v2 = nil
 		} else {
-			v181v2 = make(map[int]interface{}, len(v))
+			v179v2 = make(map[uintptr]bool, len(v))
 		} // reset map
-		testUnmarshalErr(&v181v2, bs181, h, t, "dec-map-v181-p-len")
-		testDeepEqualErr(v181v1, v181v2, t, "equal-map-v181-p-len")
-		bs181 = testMarshalErr(&v181v1, h, t, "enc-map-v181-p")
-		v181v2 = nil
-		testUnmarshalErr(&v181v2, bs181, h, t, "dec-map-v181-p-nil")
-		testDeepEqualErr(v181v1, v181v2, t, "equal-map-v181-p-nil")
+		testUnmarshalErr(&v179v2, bs179, h, t, "dec-map-v179-p-len")
+		testDeepEqualErr(v179v1, v179v2, t, "equal-map-v179-p-len")
+		bs179 = testMarshalErr(&v179v1, h, t, "enc-map-v179-p")
+		v179v2 = nil
+		testUnmarshalErr(&v179v2, bs179, h, t, "dec-map-v179-p-nil")
+		testDeepEqualErr(v179v1, v179v2, t, "equal-map-v179-p-nil")
 		// ...
 		if v == nil {
-			v181v2 = nil
+			v179v2 = nil
 		} else {
-			v181v2 = make(map[int]interface{}, len(v))
+			v179v2 = make(map[uintptr]bool, len(v))
 		} // reset map
-		var v181v3, v181v4 typMapMapIntIntf
-		v181v3 = typMapMapIntIntf(v181v1)
-		v181v4 = typMapMapIntIntf(v181v2)
-		bs181 = testMarshalErr(v181v3, h, t, "enc-map-v181-custom")
-		testUnmarshalErr(v181v4, bs181, h, t, "dec-map-v181-p-len")
-		testDeepEqualErr(v181v3, v181v4, t, "equal-map-v181-p-len")
+		var v179v3, v179v4 typMapMapUintptrBool
+		v179v3 = typMapMapUintptrBool(v179v1)
+		v179v4 = typMapMapUintptrBool(v179v2)
+		bs179 = testMarshalErr(v179v3, h, t, "enc-map-v179-custom")
+		testUnmarshalErr(v179v4, bs179, h, t, "dec-map-v179-p-len")
+		testDeepEqualErr(v179v3, v179v4, t, "equal-map-v179-p-len")
 	}
 
-	for _, v := range []map[int]string{nil, {}, {44: "", 33: "some-string-2"}} {
+	for _, v := range []map[int]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v182: %v\n", v)
-		var v182v1, v182v2 map[int]string
+		var v182v1, v182v2 map[int]interface{}
 		v182v1 = v
 		bs182 := testMarshalErr(v182v1, h, t, "enc-map-v182")
 		if v == nil {
 			v182v2 = nil
 		} else {
-			v182v2 = make(map[int]string, len(v))
+			v182v2 = make(map[int]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v182v2, bs182, h, t, "dec-map-v182")
 		testDeepEqualErr(v182v1, v182v2, t, "equal-map-v182")
 		if v == nil {
 			v182v2 = nil
 		} else {
-			v182v2 = make(map[int]string, len(v))
+			v182v2 = make(map[int]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v182v2), bs182, h, t, "dec-map-v182-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v182v1, v182v2, t, "equal-map-v182-noaddr")
 		if v == nil {
 			v182v2 = nil
 		} else {
-			v182v2 = make(map[int]string, len(v))
+			v182v2 = make(map[int]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v182v2, bs182, h, t, "dec-map-v182-p-len")
 		testDeepEqualErr(v182v1, v182v2, t, "equal-map-v182-p-len")
@@ -8966,39 +8990,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v182v2 = nil
 		} else {
-			v182v2 = make(map[int]string, len(v))
+			v182v2 = make(map[int]interface{}, len(v))
 		} // reset map
-		var v182v3, v182v4 typMapMapIntString
-		v182v3 = typMapMapIntString(v182v1)
-		v182v4 = typMapMapIntString(v182v2)
+		var v182v3, v182v4 typMapMapIntIntf
+		v182v3 = typMapMapIntIntf(v182v1)
+		v182v4 = typMapMapIntIntf(v182v2)
 		bs182 = testMarshalErr(v182v3, h, t, "enc-map-v182-custom")
 		testUnmarshalErr(v182v4, bs182, h, t, "dec-map-v182-p-len")
 		testDeepEqualErr(v182v3, v182v4, t, "equal-map-v182-p-len")
 	}
 
-	for _, v := range []map[int]uint{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v183: %v\n", v)
-		var v183v1, v183v2 map[int]uint
+		var v183v1, v183v2 map[int]string
 		v183v1 = v
 		bs183 := testMarshalErr(v183v1, h, t, "enc-map-v183")
 		if v == nil {
 			v183v2 = nil
 		} else {
-			v183v2 = make(map[int]uint, len(v))
+			v183v2 = make(map[int]string, len(v))
 		} // reset map
 		testUnmarshalErr(v183v2, bs183, h, t, "dec-map-v183")
 		testDeepEqualErr(v183v1, v183v2, t, "equal-map-v183")
 		if v == nil {
 			v183v2 = nil
 		} else {
-			v183v2 = make(map[int]uint, len(v))
+			v183v2 = make(map[int]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v183v2), bs183, h, t, "dec-map-v183-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v183v1, v183v2, t, "equal-map-v183-noaddr")
 		if v == nil {
 			v183v2 = nil
 		} else {
-			v183v2 = make(map[int]uint, len(v))
+			v183v2 = make(map[int]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v183v2, bs183, h, t, "dec-map-v183-p-len")
 		testDeepEqualErr(v183v1, v183v2, t, "equal-map-v183-p-len")
@@ -9010,39 +9034,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v183v2 = nil
 		} else {
-			v183v2 = make(map[int]uint, len(v))
+			v183v2 = make(map[int]string, len(v))
 		} // reset map
-		var v183v3, v183v4 typMapMapIntUint
-		v183v3 = typMapMapIntUint(v183v1)
-		v183v4 = typMapMapIntUint(v183v2)
+		var v183v3, v183v4 typMapMapIntString
+		v183v3 = typMapMapIntString(v183v1)
+		v183v4 = typMapMapIntString(v183v2)
 		bs183 = testMarshalErr(v183v3, h, t, "enc-map-v183-custom")
 		testUnmarshalErr(v183v4, bs183, h, t, "dec-map-v183-p-len")
 		testDeepEqualErr(v183v3, v183v4, t, "equal-map-v183-p-len")
 	}
 
-	for _, v := range []map[int]uint8{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v184: %v\n", v)
-		var v184v1, v184v2 map[int]uint8
+		var v184v1, v184v2 map[int]uint
 		v184v1 = v
 		bs184 := testMarshalErr(v184v1, h, t, "enc-map-v184")
 		if v == nil {
 			v184v2 = nil
 		} else {
-			v184v2 = make(map[int]uint8, len(v))
+			v184v2 = make(map[int]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v184v2, bs184, h, t, "dec-map-v184")
 		testDeepEqualErr(v184v1, v184v2, t, "equal-map-v184")
 		if v == nil {
 			v184v2 = nil
 		} else {
-			v184v2 = make(map[int]uint8, len(v))
+			v184v2 = make(map[int]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v184v2), bs184, h, t, "dec-map-v184-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v184v1, v184v2, t, "equal-map-v184-noaddr")
 		if v == nil {
 			v184v2 = nil
 		} else {
-			v184v2 = make(map[int]uint8, len(v))
+			v184v2 = make(map[int]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v184v2, bs184, h, t, "dec-map-v184-p-len")
 		testDeepEqualErr(v184v1, v184v2, t, "equal-map-v184-p-len")
@@ -9054,39 +9078,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v184v2 = nil
 		} else {
-			v184v2 = make(map[int]uint8, len(v))
+			v184v2 = make(map[int]uint, len(v))
 		} // reset map
-		var v184v3, v184v4 typMapMapIntUint8
-		v184v3 = typMapMapIntUint8(v184v1)
-		v184v4 = typMapMapIntUint8(v184v2)
+		var v184v3, v184v4 typMapMapIntUint
+		v184v3 = typMapMapIntUint(v184v1)
+		v184v4 = typMapMapIntUint(v184v2)
 		bs184 = testMarshalErr(v184v3, h, t, "enc-map-v184-custom")
 		testUnmarshalErr(v184v4, bs184, h, t, "dec-map-v184-p-len")
 		testDeepEqualErr(v184v3, v184v4, t, "equal-map-v184-p-len")
 	}
 
-	for _, v := range []map[int]uint16{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v185: %v\n", v)
-		var v185v1, v185v2 map[int]uint16
+		var v185v1, v185v2 map[int]uint8
 		v185v1 = v
 		bs185 := testMarshalErr(v185v1, h, t, "enc-map-v185")
 		if v == nil {
 			v185v2 = nil
 		} else {
-			v185v2 = make(map[int]uint16, len(v))
+			v185v2 = make(map[int]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v185v2, bs185, h, t, "dec-map-v185")
 		testDeepEqualErr(v185v1, v185v2, t, "equal-map-v185")
 		if v == nil {
 			v185v2 = nil
 		} else {
-			v185v2 = make(map[int]uint16, len(v))
+			v185v2 = make(map[int]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v185v2), bs185, h, t, "dec-map-v185-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v185v1, v185v2, t, "equal-map-v185-noaddr")
 		if v == nil {
 			v185v2 = nil
 		} else {
-			v185v2 = make(map[int]uint16, len(v))
+			v185v2 = make(map[int]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v185v2, bs185, h, t, "dec-map-v185-p-len")
 		testDeepEqualErr(v185v1, v185v2, t, "equal-map-v185-p-len")
@@ -9098,39 +9122,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v185v2 = nil
 		} else {
-			v185v2 = make(map[int]uint16, len(v))
+			v185v2 = make(map[int]uint8, len(v))
 		} // reset map
-		var v185v3, v185v4 typMapMapIntUint16
-		v185v3 = typMapMapIntUint16(v185v1)
-		v185v4 = typMapMapIntUint16(v185v2)
+		var v185v3, v185v4 typMapMapIntUint8
+		v185v3 = typMapMapIntUint8(v185v1)
+		v185v4 = typMapMapIntUint8(v185v2)
 		bs185 = testMarshalErr(v185v3, h, t, "enc-map-v185-custom")
 		testUnmarshalErr(v185v4, bs185, h, t, "dec-map-v185-p-len")
 		testDeepEqualErr(v185v3, v185v4, t, "equal-map-v185-p-len")
 	}
 
-	for _, v := range []map[int]uint32{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v186: %v\n", v)
-		var v186v1, v186v2 map[int]uint32
+		var v186v1, v186v2 map[int]uint16
 		v186v1 = v
 		bs186 := testMarshalErr(v186v1, h, t, "enc-map-v186")
 		if v == nil {
 			v186v2 = nil
 		} else {
-			v186v2 = make(map[int]uint32, len(v))
+			v186v2 = make(map[int]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v186v2, bs186, h, t, "dec-map-v186")
 		testDeepEqualErr(v186v1, v186v2, t, "equal-map-v186")
 		if v == nil {
 			v186v2 = nil
 		} else {
-			v186v2 = make(map[int]uint32, len(v))
+			v186v2 = make(map[int]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v186v2), bs186, h, t, "dec-map-v186-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v186v1, v186v2, t, "equal-map-v186-noaddr")
 		if v == nil {
 			v186v2 = nil
 		} else {
-			v186v2 = make(map[int]uint32, len(v))
+			v186v2 = make(map[int]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v186v2, bs186, h, t, "dec-map-v186-p-len")
 		testDeepEqualErr(v186v1, v186v2, t, "equal-map-v186-p-len")
@@ -9142,39 +9166,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v186v2 = nil
 		} else {
-			v186v2 = make(map[int]uint32, len(v))
+			v186v2 = make(map[int]uint16, len(v))
 		} // reset map
-		var v186v3, v186v4 typMapMapIntUint32
-		v186v3 = typMapMapIntUint32(v186v1)
-		v186v4 = typMapMapIntUint32(v186v2)
+		var v186v3, v186v4 typMapMapIntUint16
+		v186v3 = typMapMapIntUint16(v186v1)
+		v186v4 = typMapMapIntUint16(v186v2)
 		bs186 = testMarshalErr(v186v3, h, t, "enc-map-v186-custom")
 		testUnmarshalErr(v186v4, bs186, h, t, "dec-map-v186-p-len")
 		testDeepEqualErr(v186v3, v186v4, t, "equal-map-v186-p-len")
 	}
 
-	for _, v := range []map[int]uint64{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v187: %v\n", v)
-		var v187v1, v187v2 map[int]uint64
+		var v187v1, v187v2 map[int]uint32
 		v187v1 = v
 		bs187 := testMarshalErr(v187v1, h, t, "enc-map-v187")
 		if v == nil {
 			v187v2 = nil
 		} else {
-			v187v2 = make(map[int]uint64, len(v))
+			v187v2 = make(map[int]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v187v2, bs187, h, t, "dec-map-v187")
 		testDeepEqualErr(v187v1, v187v2, t, "equal-map-v187")
 		if v == nil {
 			v187v2 = nil
 		} else {
-			v187v2 = make(map[int]uint64, len(v))
+			v187v2 = make(map[int]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v187v2), bs187, h, t, "dec-map-v187-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v187v1, v187v2, t, "equal-map-v187-noaddr")
 		if v == nil {
 			v187v2 = nil
 		} else {
-			v187v2 = make(map[int]uint64, len(v))
+			v187v2 = make(map[int]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v187v2, bs187, h, t, "dec-map-v187-p-len")
 		testDeepEqualErr(v187v1, v187v2, t, "equal-map-v187-p-len")
@@ -9186,39 +9210,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v187v2 = nil
 		} else {
-			v187v2 = make(map[int]uint64, len(v))
+			v187v2 = make(map[int]uint32, len(v))
 		} // reset map
-		var v187v3, v187v4 typMapMapIntUint64
-		v187v3 = typMapMapIntUint64(v187v1)
-		v187v4 = typMapMapIntUint64(v187v2)
+		var v187v3, v187v4 typMapMapIntUint32
+		v187v3 = typMapMapIntUint32(v187v1)
+		v187v4 = typMapMapIntUint32(v187v2)
 		bs187 = testMarshalErr(v187v3, h, t, "enc-map-v187-custom")
 		testUnmarshalErr(v187v4, bs187, h, t, "dec-map-v187-p-len")
 		testDeepEqualErr(v187v3, v187v4, t, "equal-map-v187-p-len")
 	}
 
-	for _, v := range []map[int]uintptr{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v188: %v\n", v)
-		var v188v1, v188v2 map[int]uintptr
+		var v188v1, v188v2 map[int]uint64
 		v188v1 = v
 		bs188 := testMarshalErr(v188v1, h, t, "enc-map-v188")
 		if v == nil {
 			v188v2 = nil
 		} else {
-			v188v2 = make(map[int]uintptr, len(v))
+			v188v2 = make(map[int]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v188v2, bs188, h, t, "dec-map-v188")
 		testDeepEqualErr(v188v1, v188v2, t, "equal-map-v188")
 		if v == nil {
 			v188v2 = nil
 		} else {
-			v188v2 = make(map[int]uintptr, len(v))
+			v188v2 = make(map[int]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v188v2), bs188, h, t, "dec-map-v188-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v188v1, v188v2, t, "equal-map-v188-noaddr")
 		if v == nil {
 			v188v2 = nil
 		} else {
-			v188v2 = make(map[int]uintptr, len(v))
+			v188v2 = make(map[int]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v188v2, bs188, h, t, "dec-map-v188-p-len")
 		testDeepEqualErr(v188v1, v188v2, t, "equal-map-v188-p-len")
@@ -9230,39 +9254,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v188v2 = nil
 		} else {
-			v188v2 = make(map[int]uintptr, len(v))
+			v188v2 = make(map[int]uint64, len(v))
 		} // reset map
-		var v188v3, v188v4 typMapMapIntUintptr
-		v188v3 = typMapMapIntUintptr(v188v1)
-		v188v4 = typMapMapIntUintptr(v188v2)
+		var v188v3, v188v4 typMapMapIntUint64
+		v188v3 = typMapMapIntUint64(v188v1)
+		v188v4 = typMapMapIntUint64(v188v2)
 		bs188 = testMarshalErr(v188v3, h, t, "enc-map-v188-custom")
 		testUnmarshalErr(v188v4, bs188, h, t, "dec-map-v188-p-len")
 		testDeepEqualErr(v188v3, v188v4, t, "equal-map-v188-p-len")
 	}
 
-	for _, v := range []map[int]int{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v189: %v\n", v)
-		var v189v1, v189v2 map[int]int
+		var v189v1, v189v2 map[int]uintptr
 		v189v1 = v
 		bs189 := testMarshalErr(v189v1, h, t, "enc-map-v189")
 		if v == nil {
 			v189v2 = nil
 		} else {
-			v189v2 = make(map[int]int, len(v))
+			v189v2 = make(map[int]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v189v2, bs189, h, t, "dec-map-v189")
 		testDeepEqualErr(v189v1, v189v2, t, "equal-map-v189")
 		if v == nil {
 			v189v2 = nil
 		} else {
-			v189v2 = make(map[int]int, len(v))
+			v189v2 = make(map[int]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v189v2), bs189, h, t, "dec-map-v189-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v189v1, v189v2, t, "equal-map-v189-noaddr")
 		if v == nil {
 			v189v2 = nil
 		} else {
-			v189v2 = make(map[int]int, len(v))
+			v189v2 = make(map[int]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v189v2, bs189, h, t, "dec-map-v189-p-len")
 		testDeepEqualErr(v189v1, v189v2, t, "equal-map-v189-p-len")
@@ -9274,39 +9298,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v189v2 = nil
 		} else {
-			v189v2 = make(map[int]int, len(v))
+			v189v2 = make(map[int]uintptr, len(v))
 		} // reset map
-		var v189v3, v189v4 typMapMapIntInt
-		v189v3 = typMapMapIntInt(v189v1)
-		v189v4 = typMapMapIntInt(v189v2)
+		var v189v3, v189v4 typMapMapIntUintptr
+		v189v3 = typMapMapIntUintptr(v189v1)
+		v189v4 = typMapMapIntUintptr(v189v2)
 		bs189 = testMarshalErr(v189v3, h, t, "enc-map-v189-custom")
 		testUnmarshalErr(v189v4, bs189, h, t, "dec-map-v189-p-len")
 		testDeepEqualErr(v189v3, v189v4, t, "equal-map-v189-p-len")
 	}
 
-	for _, v := range []map[int]int8{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v190: %v\n", v)
-		var v190v1, v190v2 map[int]int8
+		var v190v1, v190v2 map[int]int
 		v190v1 = v
 		bs190 := testMarshalErr(v190v1, h, t, "enc-map-v190")
 		if v == nil {
 			v190v2 = nil
 		} else {
-			v190v2 = make(map[int]int8, len(v))
+			v190v2 = make(map[int]int, len(v))
 		} // reset map
 		testUnmarshalErr(v190v2, bs190, h, t, "dec-map-v190")
 		testDeepEqualErr(v190v1, v190v2, t, "equal-map-v190")
 		if v == nil {
 			v190v2 = nil
 		} else {
-			v190v2 = make(map[int]int8, len(v))
+			v190v2 = make(map[int]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v190v2), bs190, h, t, "dec-map-v190-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v190v1, v190v2, t, "equal-map-v190-noaddr")
 		if v == nil {
 			v190v2 = nil
 		} else {
-			v190v2 = make(map[int]int8, len(v))
+			v190v2 = make(map[int]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v190v2, bs190, h, t, "dec-map-v190-p-len")
 		testDeepEqualErr(v190v1, v190v2, t, "equal-map-v190-p-len")
@@ -9318,39 +9342,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v190v2 = nil
 		} else {
-			v190v2 = make(map[int]int8, len(v))
+			v190v2 = make(map[int]int, len(v))
 		} // reset map
-		var v190v3, v190v4 typMapMapIntInt8
-		v190v3 = typMapMapIntInt8(v190v1)
-		v190v4 = typMapMapIntInt8(v190v2)
+		var v190v3, v190v4 typMapMapIntInt
+		v190v3 = typMapMapIntInt(v190v1)
+		v190v4 = typMapMapIntInt(v190v2)
 		bs190 = testMarshalErr(v190v3, h, t, "enc-map-v190-custom")
 		testUnmarshalErr(v190v4, bs190, h, t, "dec-map-v190-p-len")
 		testDeepEqualErr(v190v3, v190v4, t, "equal-map-v190-p-len")
 	}
 
-	for _, v := range []map[int]int16{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v191: %v\n", v)
-		var v191v1, v191v2 map[int]int16
+		var v191v1, v191v2 map[int]int8
 		v191v1 = v
 		bs191 := testMarshalErr(v191v1, h, t, "enc-map-v191")
 		if v == nil {
 			v191v2 = nil
 		} else {
-			v191v2 = make(map[int]int16, len(v))
+			v191v2 = make(map[int]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v191v2, bs191, h, t, "dec-map-v191")
 		testDeepEqualErr(v191v1, v191v2, t, "equal-map-v191")
 		if v == nil {
 			v191v2 = nil
 		} else {
-			v191v2 = make(map[int]int16, len(v))
+			v191v2 = make(map[int]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v191v2), bs191, h, t, "dec-map-v191-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v191v1, v191v2, t, "equal-map-v191-noaddr")
 		if v == nil {
 			v191v2 = nil
 		} else {
-			v191v2 = make(map[int]int16, len(v))
+			v191v2 = make(map[int]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v191v2, bs191, h, t, "dec-map-v191-p-len")
 		testDeepEqualErr(v191v1, v191v2, t, "equal-map-v191-p-len")
@@ -9362,39 +9386,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v191v2 = nil
 		} else {
-			v191v2 = make(map[int]int16, len(v))
+			v191v2 = make(map[int]int8, len(v))
 		} // reset map
-		var v191v3, v191v4 typMapMapIntInt16
-		v191v3 = typMapMapIntInt16(v191v1)
-		v191v4 = typMapMapIntInt16(v191v2)
+		var v191v3, v191v4 typMapMapIntInt8
+		v191v3 = typMapMapIntInt8(v191v1)
+		v191v4 = typMapMapIntInt8(v191v2)
 		bs191 = testMarshalErr(v191v3, h, t, "enc-map-v191-custom")
 		testUnmarshalErr(v191v4, bs191, h, t, "dec-map-v191-p-len")
 		testDeepEqualErr(v191v3, v191v4, t, "equal-map-v191-p-len")
 	}
 
-	for _, v := range []map[int]int32{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v192: %v\n", v)
-		var v192v1, v192v2 map[int]int32
+		var v192v1, v192v2 map[int]int16
 		v192v1 = v
 		bs192 := testMarshalErr(v192v1, h, t, "enc-map-v192")
 		if v == nil {
 			v192v2 = nil
 		} else {
-			v192v2 = make(map[int]int32, len(v))
+			v192v2 = make(map[int]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v192v2, bs192, h, t, "dec-map-v192")
 		testDeepEqualErr(v192v1, v192v2, t, "equal-map-v192")
 		if v == nil {
 			v192v2 = nil
 		} else {
-			v192v2 = make(map[int]int32, len(v))
+			v192v2 = make(map[int]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v192v2), bs192, h, t, "dec-map-v192-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v192v1, v192v2, t, "equal-map-v192-noaddr")
 		if v == nil {
 			v192v2 = nil
 		} else {
-			v192v2 = make(map[int]int32, len(v))
+			v192v2 = make(map[int]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v192v2, bs192, h, t, "dec-map-v192-p-len")
 		testDeepEqualErr(v192v1, v192v2, t, "equal-map-v192-p-len")
@@ -9406,39 +9430,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v192v2 = nil
 		} else {
-			v192v2 = make(map[int]int32, len(v))
+			v192v2 = make(map[int]int16, len(v))
 		} // reset map
-		var v192v3, v192v4 typMapMapIntInt32
-		v192v3 = typMapMapIntInt32(v192v1)
-		v192v4 = typMapMapIntInt32(v192v2)
+		var v192v3, v192v4 typMapMapIntInt16
+		v192v3 = typMapMapIntInt16(v192v1)
+		v192v4 = typMapMapIntInt16(v192v2)
 		bs192 = testMarshalErr(v192v3, h, t, "enc-map-v192-custom")
 		testUnmarshalErr(v192v4, bs192, h, t, "dec-map-v192-p-len")
 		testDeepEqualErr(v192v3, v192v4, t, "equal-map-v192-p-len")
 	}
 
-	for _, v := range []map[int]int64{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v193: %v\n", v)
-		var v193v1, v193v2 map[int]int64
+		var v193v1, v193v2 map[int]int32
 		v193v1 = v
 		bs193 := testMarshalErr(v193v1, h, t, "enc-map-v193")
 		if v == nil {
 			v193v2 = nil
 		} else {
-			v193v2 = make(map[int]int64, len(v))
+			v193v2 = make(map[int]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v193v2, bs193, h, t, "dec-map-v193")
 		testDeepEqualErr(v193v1, v193v2, t, "equal-map-v193")
 		if v == nil {
 			v193v2 = nil
 		} else {
-			v193v2 = make(map[int]int64, len(v))
+			v193v2 = make(map[int]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v193v2), bs193, h, t, "dec-map-v193-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v193v1, v193v2, t, "equal-map-v193-noaddr")
 		if v == nil {
 			v193v2 = nil
 		} else {
-			v193v2 = make(map[int]int64, len(v))
+			v193v2 = make(map[int]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v193v2, bs193, h, t, "dec-map-v193-p-len")
 		testDeepEqualErr(v193v1, v193v2, t, "equal-map-v193-p-len")
@@ -9450,39 +9474,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v193v2 = nil
 		} else {
-			v193v2 = make(map[int]int64, len(v))
+			v193v2 = make(map[int]int32, len(v))
 		} // reset map
-		var v193v3, v193v4 typMapMapIntInt64
-		v193v3 = typMapMapIntInt64(v193v1)
-		v193v4 = typMapMapIntInt64(v193v2)
+		var v193v3, v193v4 typMapMapIntInt32
+		v193v3 = typMapMapIntInt32(v193v1)
+		v193v4 = typMapMapIntInt32(v193v2)
 		bs193 = testMarshalErr(v193v3, h, t, "enc-map-v193-custom")
 		testUnmarshalErr(v193v4, bs193, h, t, "dec-map-v193-p-len")
 		testDeepEqualErr(v193v3, v193v4, t, "equal-map-v193-p-len")
 	}
 
-	for _, v := range []map[int]float32{nil, {}, {33: 0, 44: 22.2}} {
+	for _, v := range []map[int]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v194: %v\n", v)
-		var v194v1, v194v2 map[int]float32
+		var v194v1, v194v2 map[int]int64
 		v194v1 = v
 		bs194 := testMarshalErr(v194v1, h, t, "enc-map-v194")
 		if v == nil {
 			v194v2 = nil
 		} else {
-			v194v2 = make(map[int]float32, len(v))
+			v194v2 = make(map[int]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v194v2, bs194, h, t, "dec-map-v194")
 		testDeepEqualErr(v194v1, v194v2, t, "equal-map-v194")
 		if v == nil {
 			v194v2 = nil
 		} else {
-			v194v2 = make(map[int]float32, len(v))
+			v194v2 = make(map[int]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v194v2), bs194, h, t, "dec-map-v194-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v194v1, v194v2, t, "equal-map-v194-noaddr")
 		if v == nil {
 			v194v2 = nil
 		} else {
-			v194v2 = make(map[int]float32, len(v))
+			v194v2 = make(map[int]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v194v2, bs194, h, t, "dec-map-v194-p-len")
 		testDeepEqualErr(v194v1, v194v2, t, "equal-map-v194-p-len")
@@ -9494,39 +9518,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v194v2 = nil
 		} else {
-			v194v2 = make(map[int]float32, len(v))
+			v194v2 = make(map[int]int64, len(v))
 		} // reset map
-		var v194v3, v194v4 typMapMapIntFloat32
-		v194v3 = typMapMapIntFloat32(v194v1)
-		v194v4 = typMapMapIntFloat32(v194v2)
+		var v194v3, v194v4 typMapMapIntInt64
+		v194v3 = typMapMapIntInt64(v194v1)
+		v194v4 = typMapMapIntInt64(v194v2)
 		bs194 = testMarshalErr(v194v3, h, t, "enc-map-v194-custom")
 		testUnmarshalErr(v194v4, bs194, h, t, "dec-map-v194-p-len")
 		testDeepEqualErr(v194v3, v194v4, t, "equal-map-v194-p-len")
 	}
 
-	for _, v := range []map[int]float64{nil, {}, {33: 0, 44: 11.1}} {
+	for _, v := range []map[int]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v195: %v\n", v)
-		var v195v1, v195v2 map[int]float64
+		var v195v1, v195v2 map[int]float32
 		v195v1 = v
 		bs195 := testMarshalErr(v195v1, h, t, "enc-map-v195")
 		if v == nil {
 			v195v2 = nil
 		} else {
-			v195v2 = make(map[int]float64, len(v))
+			v195v2 = make(map[int]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v195v2, bs195, h, t, "dec-map-v195")
 		testDeepEqualErr(v195v1, v195v2, t, "equal-map-v195")
 		if v == nil {
 			v195v2 = nil
 		} else {
-			v195v2 = make(map[int]float64, len(v))
+			v195v2 = make(map[int]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v195v2), bs195, h, t, "dec-map-v195-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v195v1, v195v2, t, "equal-map-v195-noaddr")
 		if v == nil {
 			v195v2 = nil
 		} else {
-			v195v2 = make(map[int]float64, len(v))
+			v195v2 = make(map[int]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v195v2, bs195, h, t, "dec-map-v195-p-len")
 		testDeepEqualErr(v195v1, v195v2, t, "equal-map-v195-p-len")
@@ -9538,39 +9562,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v195v2 = nil
 		} else {
-			v195v2 = make(map[int]float64, len(v))
+			v195v2 = make(map[int]float32, len(v))
 		} // reset map
-		var v195v3, v195v4 typMapMapIntFloat64
-		v195v3 = typMapMapIntFloat64(v195v1)
-		v195v4 = typMapMapIntFloat64(v195v2)
+		var v195v3, v195v4 typMapMapIntFloat32
+		v195v3 = typMapMapIntFloat32(v195v1)
+		v195v4 = typMapMapIntFloat32(v195v2)
 		bs195 = testMarshalErr(v195v3, h, t, "enc-map-v195-custom")
 		testUnmarshalErr(v195v4, bs195, h, t, "dec-map-v195-p-len")
 		testDeepEqualErr(v195v3, v195v4, t, "equal-map-v195-p-len")
 	}
 
-	for _, v := range []map[int]bool{nil, {}, {33: false, 44: true}} {
+	for _, v := range []map[int]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v196: %v\n", v)
-		var v196v1, v196v2 map[int]bool
+		var v196v1, v196v2 map[int]float64
 		v196v1 = v
 		bs196 := testMarshalErr(v196v1, h, t, "enc-map-v196")
 		if v == nil {
 			v196v2 = nil
 		} else {
-			v196v2 = make(map[int]bool, len(v))
+			v196v2 = make(map[int]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v196v2, bs196, h, t, "dec-map-v196")
 		testDeepEqualErr(v196v1, v196v2, t, "equal-map-v196")
 		if v == nil {
 			v196v2 = nil
 		} else {
-			v196v2 = make(map[int]bool, len(v))
+			v196v2 = make(map[int]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v196v2), bs196, h, t, "dec-map-v196-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v196v1, v196v2, t, "equal-map-v196-noaddr")
 		if v == nil {
 			v196v2 = nil
 		} else {
-			v196v2 = make(map[int]bool, len(v))
+			v196v2 = make(map[int]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v196v2, bs196, h, t, "dec-map-v196-p-len")
 		testDeepEqualErr(v196v1, v196v2, t, "equal-map-v196-p-len")
@@ -9582,83 +9606,83 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v196v2 = nil
 		} else {
-			v196v2 = make(map[int]bool, len(v))
+			v196v2 = make(map[int]float64, len(v))
 		} // reset map
-		var v196v3, v196v4 typMapMapIntBool
-		v196v3 = typMapMapIntBool(v196v1)
-		v196v4 = typMapMapIntBool(v196v2)
+		var v196v3, v196v4 typMapMapIntFloat64
+		v196v3 = typMapMapIntFloat64(v196v1)
+		v196v4 = typMapMapIntFloat64(v196v2)
 		bs196 = testMarshalErr(v196v3, h, t, "enc-map-v196-custom")
 		testUnmarshalErr(v196v4, bs196, h, t, "dec-map-v196-p-len")
 		testDeepEqualErr(v196v3, v196v4, t, "equal-map-v196-p-len")
 	}
 
-	for _, v := range []map[int8]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
-		// fmt.Printf(">>>> running mammoth map v199: %v\n", v)
-		var v199v1, v199v2 map[int8]interface{}
-		v199v1 = v
-		bs199 := testMarshalErr(v199v1, h, t, "enc-map-v199")
+	for _, v := range []map[int]bool{nil, {}, {33: false, 44: true}} {
+		// fmt.Printf(">>>> running mammoth map v197: %v\n", v)
+		var v197v1, v197v2 map[int]bool
+		v197v1 = v
+		bs197 := testMarshalErr(v197v1, h, t, "enc-map-v197")
 		if v == nil {
-			v199v2 = nil
+			v197v2 = nil
 		} else {
-			v199v2 = make(map[int8]interface{}, len(v))
+			v197v2 = make(map[int]bool, len(v))
 		} // reset map
-		testUnmarshalErr(v199v2, bs199, h, t, "dec-map-v199")
-		testDeepEqualErr(v199v1, v199v2, t, "equal-map-v199")
+		testUnmarshalErr(v197v2, bs197, h, t, "dec-map-v197")
+		testDeepEqualErr(v197v1, v197v2, t, "equal-map-v197")
 		if v == nil {
-			v199v2 = nil
+			v197v2 = nil
 		} else {
-			v199v2 = make(map[int8]interface{}, len(v))
+			v197v2 = make(map[int]bool, len(v))
 		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v199v2), bs199, h, t, "dec-map-v199-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v199v1, v199v2, t, "equal-map-v199-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v197v2), bs197, h, t, "dec-map-v197-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v197v1, v197v2, t, "equal-map-v197-noaddr")
 		if v == nil {
-			v199v2 = nil
+			v197v2 = nil
 		} else {
-			v199v2 = make(map[int8]interface{}, len(v))
+			v197v2 = make(map[int]bool, len(v))
 		} // reset map
-		testUnmarshalErr(&v199v2, bs199, h, t, "dec-map-v199-p-len")
-		testDeepEqualErr(v199v1, v199v2, t, "equal-map-v199-p-len")
-		bs199 = testMarshalErr(&v199v1, h, t, "enc-map-v199-p")
-		v199v2 = nil
-		testUnmarshalErr(&v199v2, bs199, h, t, "dec-map-v199-p-nil")
-		testDeepEqualErr(v199v1, v199v2, t, "equal-map-v199-p-nil")
+		testUnmarshalErr(&v197v2, bs197, h, t, "dec-map-v197-p-len")
+		testDeepEqualErr(v197v1, v197v2, t, "equal-map-v197-p-len")
+		bs197 = testMarshalErr(&v197v1, h, t, "enc-map-v197-p")
+		v197v2 = nil
+		testUnmarshalErr(&v197v2, bs197, h, t, "dec-map-v197-p-nil")
+		testDeepEqualErr(v197v1, v197v2, t, "equal-map-v197-p-nil")
 		// ...
 		if v == nil {
-			v199v2 = nil
+			v197v2 = nil
 		} else {
-			v199v2 = make(map[int8]interface{}, len(v))
+			v197v2 = make(map[int]bool, len(v))
 		} // reset map
-		var v199v3, v199v4 typMapMapInt8Intf
-		v199v3 = typMapMapInt8Intf(v199v1)
-		v199v4 = typMapMapInt8Intf(v199v2)
-		bs199 = testMarshalErr(v199v3, h, t, "enc-map-v199-custom")
-		testUnmarshalErr(v199v4, bs199, h, t, "dec-map-v199-p-len")
-		testDeepEqualErr(v199v3, v199v4, t, "equal-map-v199-p-len")
+		var v197v3, v197v4 typMapMapIntBool
+		v197v3 = typMapMapIntBool(v197v1)
+		v197v4 = typMapMapIntBool(v197v2)
+		bs197 = testMarshalErr(v197v3, h, t, "enc-map-v197-custom")
+		testUnmarshalErr(v197v4, bs197, h, t, "dec-map-v197-p-len")
+		testDeepEqualErr(v197v3, v197v4, t, "equal-map-v197-p-len")
 	}
 
-	for _, v := range []map[int8]string{nil, {}, {33: "", 44: "some-string"}} {
+	for _, v := range []map[int8]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v200: %v\n", v)
-		var v200v1, v200v2 map[int8]string
+		var v200v1, v200v2 map[int8]interface{}
 		v200v1 = v
 		bs200 := testMarshalErr(v200v1, h, t, "enc-map-v200")
 		if v == nil {
 			v200v2 = nil
 		} else {
-			v200v2 = make(map[int8]string, len(v))
+			v200v2 = make(map[int8]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v200v2, bs200, h, t, "dec-map-v200")
 		testDeepEqualErr(v200v1, v200v2, t, "equal-map-v200")
 		if v == nil {
 			v200v2 = nil
 		} else {
-			v200v2 = make(map[int8]string, len(v))
+			v200v2 = make(map[int8]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v200v2), bs200, h, t, "dec-map-v200-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v200v1, v200v2, t, "equal-map-v200-noaddr")
 		if v == nil {
 			v200v2 = nil
 		} else {
-			v200v2 = make(map[int8]string, len(v))
+			v200v2 = make(map[int8]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v200v2, bs200, h, t, "dec-map-v200-p-len")
 		testDeepEqualErr(v200v1, v200v2, t, "equal-map-v200-p-len")
@@ -9670,39 +9694,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v200v2 = nil
 		} else {
-			v200v2 = make(map[int8]string, len(v))
+			v200v2 = make(map[int8]interface{}, len(v))
 		} // reset map
-		var v200v3, v200v4 typMapMapInt8String
-		v200v3 = typMapMapInt8String(v200v1)
-		v200v4 = typMapMapInt8String(v200v2)
+		var v200v3, v200v4 typMapMapInt8Intf
+		v200v3 = typMapMapInt8Intf(v200v1)
+		v200v4 = typMapMapInt8Intf(v200v2)
 		bs200 = testMarshalErr(v200v3, h, t, "enc-map-v200-custom")
 		testUnmarshalErr(v200v4, bs200, h, t, "dec-map-v200-p-len")
 		testDeepEqualErr(v200v3, v200v4, t, "equal-map-v200-p-len")
 	}
 
-	for _, v := range []map[int8]uint{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int8]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v201: %v\n", v)
-		var v201v1, v201v2 map[int8]uint
+		var v201v1, v201v2 map[int8]string
 		v201v1 = v
 		bs201 := testMarshalErr(v201v1, h, t, "enc-map-v201")
 		if v == nil {
 			v201v2 = nil
 		} else {
-			v201v2 = make(map[int8]uint, len(v))
+			v201v2 = make(map[int8]string, len(v))
 		} // reset map
 		testUnmarshalErr(v201v2, bs201, h, t, "dec-map-v201")
 		testDeepEqualErr(v201v1, v201v2, t, "equal-map-v201")
 		if v == nil {
 			v201v2 = nil
 		} else {
-			v201v2 = make(map[int8]uint, len(v))
+			v201v2 = make(map[int8]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v201v2), bs201, h, t, "dec-map-v201-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v201v1, v201v2, t, "equal-map-v201-noaddr")
 		if v == nil {
 			v201v2 = nil
 		} else {
-			v201v2 = make(map[int8]uint, len(v))
+			v201v2 = make(map[int8]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v201v2, bs201, h, t, "dec-map-v201-p-len")
 		testDeepEqualErr(v201v1, v201v2, t, "equal-map-v201-p-len")
@@ -9714,39 +9738,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v201v2 = nil
 		} else {
-			v201v2 = make(map[int8]uint, len(v))
+			v201v2 = make(map[int8]string, len(v))
 		} // reset map
-		var v201v3, v201v4 typMapMapInt8Uint
-		v201v3 = typMapMapInt8Uint(v201v1)
-		v201v4 = typMapMapInt8Uint(v201v2)
+		var v201v3, v201v4 typMapMapInt8String
+		v201v3 = typMapMapInt8String(v201v1)
+		v201v4 = typMapMapInt8String(v201v2)
 		bs201 = testMarshalErr(v201v3, h, t, "enc-map-v201-custom")
 		testUnmarshalErr(v201v4, bs201, h, t, "dec-map-v201-p-len")
 		testDeepEqualErr(v201v3, v201v4, t, "equal-map-v201-p-len")
 	}
 
-	for _, v := range []map[int8]uint8{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int8]uint{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v202: %v\n", v)
-		var v202v1, v202v2 map[int8]uint8
+		var v202v1, v202v2 map[int8]uint
 		v202v1 = v
 		bs202 := testMarshalErr(v202v1, h, t, "enc-map-v202")
 		if v == nil {
 			v202v2 = nil
 		} else {
-			v202v2 = make(map[int8]uint8, len(v))
+			v202v2 = make(map[int8]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v202v2, bs202, h, t, "dec-map-v202")
 		testDeepEqualErr(v202v1, v202v2, t, "equal-map-v202")
 		if v == nil {
 			v202v2 = nil
 		} else {
-			v202v2 = make(map[int8]uint8, len(v))
+			v202v2 = make(map[int8]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v202v2), bs202, h, t, "dec-map-v202-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v202v1, v202v2, t, "equal-map-v202-noaddr")
 		if v == nil {
 			v202v2 = nil
 		} else {
-			v202v2 = make(map[int8]uint8, len(v))
+			v202v2 = make(map[int8]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v202v2, bs202, h, t, "dec-map-v202-p-len")
 		testDeepEqualErr(v202v1, v202v2, t, "equal-map-v202-p-len")
@@ -9758,39 +9782,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v202v2 = nil
 		} else {
-			v202v2 = make(map[int8]uint8, len(v))
+			v202v2 = make(map[int8]uint, len(v))
 		} // reset map
-		var v202v3, v202v4 typMapMapInt8Uint8
-		v202v3 = typMapMapInt8Uint8(v202v1)
-		v202v4 = typMapMapInt8Uint8(v202v2)
+		var v202v3, v202v4 typMapMapInt8Uint
+		v202v3 = typMapMapInt8Uint(v202v1)
+		v202v4 = typMapMapInt8Uint(v202v2)
 		bs202 = testMarshalErr(v202v3, h, t, "enc-map-v202-custom")
 		testUnmarshalErr(v202v4, bs202, h, t, "dec-map-v202-p-len")
 		testDeepEqualErr(v202v3, v202v4, t, "equal-map-v202-p-len")
 	}
 
-	for _, v := range []map[int8]uint16{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int8]uint8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v203: %v\n", v)
-		var v203v1, v203v2 map[int8]uint16
+		var v203v1, v203v2 map[int8]uint8
 		v203v1 = v
 		bs203 := testMarshalErr(v203v1, h, t, "enc-map-v203")
 		if v == nil {
 			v203v2 = nil
 		} else {
-			v203v2 = make(map[int8]uint16, len(v))
+			v203v2 = make(map[int8]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v203v2, bs203, h, t, "dec-map-v203")
 		testDeepEqualErr(v203v1, v203v2, t, "equal-map-v203")
 		if v == nil {
 			v203v2 = nil
 		} else {
-			v203v2 = make(map[int8]uint16, len(v))
+			v203v2 = make(map[int8]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v203v2), bs203, h, t, "dec-map-v203-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v203v1, v203v2, t, "equal-map-v203-noaddr")
 		if v == nil {
 			v203v2 = nil
 		} else {
-			v203v2 = make(map[int8]uint16, len(v))
+			v203v2 = make(map[int8]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v203v2, bs203, h, t, "dec-map-v203-p-len")
 		testDeepEqualErr(v203v1, v203v2, t, "equal-map-v203-p-len")
@@ -9802,39 +9826,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v203v2 = nil
 		} else {
-			v203v2 = make(map[int8]uint16, len(v))
+			v203v2 = make(map[int8]uint8, len(v))
 		} // reset map
-		var v203v3, v203v4 typMapMapInt8Uint16
-		v203v3 = typMapMapInt8Uint16(v203v1)
-		v203v4 = typMapMapInt8Uint16(v203v2)
+		var v203v3, v203v4 typMapMapInt8Uint8
+		v203v3 = typMapMapInt8Uint8(v203v1)
+		v203v4 = typMapMapInt8Uint8(v203v2)
 		bs203 = testMarshalErr(v203v3, h, t, "enc-map-v203-custom")
 		testUnmarshalErr(v203v4, bs203, h, t, "dec-map-v203-p-len")
 		testDeepEqualErr(v203v3, v203v4, t, "equal-map-v203-p-len")
 	}
 
-	for _, v := range []map[int8]uint32{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int8]uint16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v204: %v\n", v)
-		var v204v1, v204v2 map[int8]uint32
+		var v204v1, v204v2 map[int8]uint16
 		v204v1 = v
 		bs204 := testMarshalErr(v204v1, h, t, "enc-map-v204")
 		if v == nil {
 			v204v2 = nil
 		} else {
-			v204v2 = make(map[int8]uint32, len(v))
+			v204v2 = make(map[int8]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v204v2, bs204, h, t, "dec-map-v204")
 		testDeepEqualErr(v204v1, v204v2, t, "equal-map-v204")
 		if v == nil {
 			v204v2 = nil
 		} else {
-			v204v2 = make(map[int8]uint32, len(v))
+			v204v2 = make(map[int8]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v204v2), bs204, h, t, "dec-map-v204-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v204v1, v204v2, t, "equal-map-v204-noaddr")
 		if v == nil {
 			v204v2 = nil
 		} else {
-			v204v2 = make(map[int8]uint32, len(v))
+			v204v2 = make(map[int8]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v204v2, bs204, h, t, "dec-map-v204-p-len")
 		testDeepEqualErr(v204v1, v204v2, t, "equal-map-v204-p-len")
@@ -9846,39 +9870,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v204v2 = nil
 		} else {
-			v204v2 = make(map[int8]uint32, len(v))
+			v204v2 = make(map[int8]uint16, len(v))
 		} // reset map
-		var v204v3, v204v4 typMapMapInt8Uint32
-		v204v3 = typMapMapInt8Uint32(v204v1)
-		v204v4 = typMapMapInt8Uint32(v204v2)
+		var v204v3, v204v4 typMapMapInt8Uint16
+		v204v3 = typMapMapInt8Uint16(v204v1)
+		v204v4 = typMapMapInt8Uint16(v204v2)
 		bs204 = testMarshalErr(v204v3, h, t, "enc-map-v204-custom")
 		testUnmarshalErr(v204v4, bs204, h, t, "dec-map-v204-p-len")
 		testDeepEqualErr(v204v3, v204v4, t, "equal-map-v204-p-len")
 	}
 
-	for _, v := range []map[int8]uint64{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int8]uint32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v205: %v\n", v)
-		var v205v1, v205v2 map[int8]uint64
+		var v205v1, v205v2 map[int8]uint32
 		v205v1 = v
 		bs205 := testMarshalErr(v205v1, h, t, "enc-map-v205")
 		if v == nil {
 			v205v2 = nil
 		} else {
-			v205v2 = make(map[int8]uint64, len(v))
+			v205v2 = make(map[int8]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v205v2, bs205, h, t, "dec-map-v205")
 		testDeepEqualErr(v205v1, v205v2, t, "equal-map-v205")
 		if v == nil {
 			v205v2 = nil
 		} else {
-			v205v2 = make(map[int8]uint64, len(v))
+			v205v2 = make(map[int8]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v205v2), bs205, h, t, "dec-map-v205-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v205v1, v205v2, t, "equal-map-v205-noaddr")
 		if v == nil {
 			v205v2 = nil
 		} else {
-			v205v2 = make(map[int8]uint64, len(v))
+			v205v2 = make(map[int8]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v205v2, bs205, h, t, "dec-map-v205-p-len")
 		testDeepEqualErr(v205v1, v205v2, t, "equal-map-v205-p-len")
@@ -9890,39 +9914,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v205v2 = nil
 		} else {
-			v205v2 = make(map[int8]uint64, len(v))
+			v205v2 = make(map[int8]uint32, len(v))
 		} // reset map
-		var v205v3, v205v4 typMapMapInt8Uint64
-		v205v3 = typMapMapInt8Uint64(v205v1)
-		v205v4 = typMapMapInt8Uint64(v205v2)
+		var v205v3, v205v4 typMapMapInt8Uint32
+		v205v3 = typMapMapInt8Uint32(v205v1)
+		v205v4 = typMapMapInt8Uint32(v205v2)
 		bs205 = testMarshalErr(v205v3, h, t, "enc-map-v205-custom")
 		testUnmarshalErr(v205v4, bs205, h, t, "dec-map-v205-p-len")
 		testDeepEqualErr(v205v3, v205v4, t, "equal-map-v205-p-len")
 	}
 
-	for _, v := range []map[int8]uintptr{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int8]uint64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v206: %v\n", v)
-		var v206v1, v206v2 map[int8]uintptr
+		var v206v1, v206v2 map[int8]uint64
 		v206v1 = v
 		bs206 := testMarshalErr(v206v1, h, t, "enc-map-v206")
 		if v == nil {
 			v206v2 = nil
 		} else {
-			v206v2 = make(map[int8]uintptr, len(v))
+			v206v2 = make(map[int8]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v206v2, bs206, h, t, "dec-map-v206")
 		testDeepEqualErr(v206v1, v206v2, t, "equal-map-v206")
 		if v == nil {
 			v206v2 = nil
 		} else {
-			v206v2 = make(map[int8]uintptr, len(v))
+			v206v2 = make(map[int8]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v206v2), bs206, h, t, "dec-map-v206-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v206v1, v206v2, t, "equal-map-v206-noaddr")
 		if v == nil {
 			v206v2 = nil
 		} else {
-			v206v2 = make(map[int8]uintptr, len(v))
+			v206v2 = make(map[int8]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v206v2, bs206, h, t, "dec-map-v206-p-len")
 		testDeepEqualErr(v206v1, v206v2, t, "equal-map-v206-p-len")
@@ -9934,39 +9958,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v206v2 = nil
 		} else {
-			v206v2 = make(map[int8]uintptr, len(v))
+			v206v2 = make(map[int8]uint64, len(v))
 		} // reset map
-		var v206v3, v206v4 typMapMapInt8Uintptr
-		v206v3 = typMapMapInt8Uintptr(v206v1)
-		v206v4 = typMapMapInt8Uintptr(v206v2)
+		var v206v3, v206v4 typMapMapInt8Uint64
+		v206v3 = typMapMapInt8Uint64(v206v1)
+		v206v4 = typMapMapInt8Uint64(v206v2)
 		bs206 = testMarshalErr(v206v3, h, t, "enc-map-v206-custom")
 		testUnmarshalErr(v206v4, bs206, h, t, "dec-map-v206-p-len")
 		testDeepEqualErr(v206v3, v206v4, t, "equal-map-v206-p-len")
 	}
 
-	for _, v := range []map[int8]int{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int8]uintptr{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v207: %v\n", v)
-		var v207v1, v207v2 map[int8]int
+		var v207v1, v207v2 map[int8]uintptr
 		v207v1 = v
 		bs207 := testMarshalErr(v207v1, h, t, "enc-map-v207")
 		if v == nil {
 			v207v2 = nil
 		} else {
-			v207v2 = make(map[int8]int, len(v))
+			v207v2 = make(map[int8]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v207v2, bs207, h, t, "dec-map-v207")
 		testDeepEqualErr(v207v1, v207v2, t, "equal-map-v207")
 		if v == nil {
 			v207v2 = nil
 		} else {
-			v207v2 = make(map[int8]int, len(v))
+			v207v2 = make(map[int8]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v207v2), bs207, h, t, "dec-map-v207-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v207v1, v207v2, t, "equal-map-v207-noaddr")
 		if v == nil {
 			v207v2 = nil
 		} else {
-			v207v2 = make(map[int8]int, len(v))
+			v207v2 = make(map[int8]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v207v2, bs207, h, t, "dec-map-v207-p-len")
 		testDeepEqualErr(v207v1, v207v2, t, "equal-map-v207-p-len")
@@ -9978,39 +10002,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v207v2 = nil
 		} else {
-			v207v2 = make(map[int8]int, len(v))
+			v207v2 = make(map[int8]uintptr, len(v))
 		} // reset map
-		var v207v3, v207v4 typMapMapInt8Int
-		v207v3 = typMapMapInt8Int(v207v1)
-		v207v4 = typMapMapInt8Int(v207v2)
+		var v207v3, v207v4 typMapMapInt8Uintptr
+		v207v3 = typMapMapInt8Uintptr(v207v1)
+		v207v4 = typMapMapInt8Uintptr(v207v2)
 		bs207 = testMarshalErr(v207v3, h, t, "enc-map-v207-custom")
 		testUnmarshalErr(v207v4, bs207, h, t, "dec-map-v207-p-len")
 		testDeepEqualErr(v207v3, v207v4, t, "equal-map-v207-p-len")
 	}
 
-	for _, v := range []map[int8]int8{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int8]int{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v208: %v\n", v)
-		var v208v1, v208v2 map[int8]int8
+		var v208v1, v208v2 map[int8]int
 		v208v1 = v
 		bs208 := testMarshalErr(v208v1, h, t, "enc-map-v208")
 		if v == nil {
 			v208v2 = nil
 		} else {
-			v208v2 = make(map[int8]int8, len(v))
+			v208v2 = make(map[int8]int, len(v))
 		} // reset map
 		testUnmarshalErr(v208v2, bs208, h, t, "dec-map-v208")
 		testDeepEqualErr(v208v1, v208v2, t, "equal-map-v208")
 		if v == nil {
 			v208v2 = nil
 		} else {
-			v208v2 = make(map[int8]int8, len(v))
+			v208v2 = make(map[int8]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v208v2), bs208, h, t, "dec-map-v208-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v208v1, v208v2, t, "equal-map-v208-noaddr")
 		if v == nil {
 			v208v2 = nil
 		} else {
-			v208v2 = make(map[int8]int8, len(v))
+			v208v2 = make(map[int8]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v208v2, bs208, h, t, "dec-map-v208-p-len")
 		testDeepEqualErr(v208v1, v208v2, t, "equal-map-v208-p-len")
@@ -10022,39 +10046,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v208v2 = nil
 		} else {
-			v208v2 = make(map[int8]int8, len(v))
+			v208v2 = make(map[int8]int, len(v))
 		} // reset map
-		var v208v3, v208v4 typMapMapInt8Int8
-		v208v3 = typMapMapInt8Int8(v208v1)
-		v208v4 = typMapMapInt8Int8(v208v2)
+		var v208v3, v208v4 typMapMapInt8Int
+		v208v3 = typMapMapInt8Int(v208v1)
+		v208v4 = typMapMapInt8Int(v208v2)
 		bs208 = testMarshalErr(v208v3, h, t, "enc-map-v208-custom")
 		testUnmarshalErr(v208v4, bs208, h, t, "dec-map-v208-p-len")
 		testDeepEqualErr(v208v3, v208v4, t, "equal-map-v208-p-len")
 	}
 
-	for _, v := range []map[int8]int16{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int8]int8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v209: %v\n", v)
-		var v209v1, v209v2 map[int8]int16
+		var v209v1, v209v2 map[int8]int8
 		v209v1 = v
 		bs209 := testMarshalErr(v209v1, h, t, "enc-map-v209")
 		if v == nil {
 			v209v2 = nil
 		} else {
-			v209v2 = make(map[int8]int16, len(v))
+			v209v2 = make(map[int8]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v209v2, bs209, h, t, "dec-map-v209")
 		testDeepEqualErr(v209v1, v209v2, t, "equal-map-v209")
 		if v == nil {
 			v209v2 = nil
 		} else {
-			v209v2 = make(map[int8]int16, len(v))
+			v209v2 = make(map[int8]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v209v2), bs209, h, t, "dec-map-v209-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v209v1, v209v2, t, "equal-map-v209-noaddr")
 		if v == nil {
 			v209v2 = nil
 		} else {
-			v209v2 = make(map[int8]int16, len(v))
+			v209v2 = make(map[int8]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v209v2, bs209, h, t, "dec-map-v209-p-len")
 		testDeepEqualErr(v209v1, v209v2, t, "equal-map-v209-p-len")
@@ -10066,39 +10090,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v209v2 = nil
 		} else {
-			v209v2 = make(map[int8]int16, len(v))
+			v209v2 = make(map[int8]int8, len(v))
 		} // reset map
-		var v209v3, v209v4 typMapMapInt8Int16
-		v209v3 = typMapMapInt8Int16(v209v1)
-		v209v4 = typMapMapInt8Int16(v209v2)
+		var v209v3, v209v4 typMapMapInt8Int8
+		v209v3 = typMapMapInt8Int8(v209v1)
+		v209v4 = typMapMapInt8Int8(v209v2)
 		bs209 = testMarshalErr(v209v3, h, t, "enc-map-v209-custom")
 		testUnmarshalErr(v209v4, bs209, h, t, "dec-map-v209-p-len")
 		testDeepEqualErr(v209v3, v209v4, t, "equal-map-v209-p-len")
 	}
 
-	for _, v := range []map[int8]int32{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int8]int16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v210: %v\n", v)
-		var v210v1, v210v2 map[int8]int32
+		var v210v1, v210v2 map[int8]int16
 		v210v1 = v
 		bs210 := testMarshalErr(v210v1, h, t, "enc-map-v210")
 		if v == nil {
 			v210v2 = nil
 		} else {
-			v210v2 = make(map[int8]int32, len(v))
+			v210v2 = make(map[int8]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v210v2, bs210, h, t, "dec-map-v210")
 		testDeepEqualErr(v210v1, v210v2, t, "equal-map-v210")
 		if v == nil {
 			v210v2 = nil
 		} else {
-			v210v2 = make(map[int8]int32, len(v))
+			v210v2 = make(map[int8]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v210v2), bs210, h, t, "dec-map-v210-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v210v1, v210v2, t, "equal-map-v210-noaddr")
 		if v == nil {
 			v210v2 = nil
 		} else {
-			v210v2 = make(map[int8]int32, len(v))
+			v210v2 = make(map[int8]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v210v2, bs210, h, t, "dec-map-v210-p-len")
 		testDeepEqualErr(v210v1, v210v2, t, "equal-map-v210-p-len")
@@ -10110,39 +10134,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v210v2 = nil
 		} else {
-			v210v2 = make(map[int8]int32, len(v))
+			v210v2 = make(map[int8]int16, len(v))
 		} // reset map
-		var v210v3, v210v4 typMapMapInt8Int32
-		v210v3 = typMapMapInt8Int32(v210v1)
-		v210v4 = typMapMapInt8Int32(v210v2)
+		var v210v3, v210v4 typMapMapInt8Int16
+		v210v3 = typMapMapInt8Int16(v210v1)
+		v210v4 = typMapMapInt8Int16(v210v2)
 		bs210 = testMarshalErr(v210v3, h, t, "enc-map-v210-custom")
 		testUnmarshalErr(v210v4, bs210, h, t, "dec-map-v210-p-len")
 		testDeepEqualErr(v210v3, v210v4, t, "equal-map-v210-p-len")
 	}
 
-	for _, v := range []map[int8]int64{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int8]int32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v211: %v\n", v)
-		var v211v1, v211v2 map[int8]int64
+		var v211v1, v211v2 map[int8]int32
 		v211v1 = v
 		bs211 := testMarshalErr(v211v1, h, t, "enc-map-v211")
 		if v == nil {
 			v211v2 = nil
 		} else {
-			v211v2 = make(map[int8]int64, len(v))
+			v211v2 = make(map[int8]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v211v2, bs211, h, t, "dec-map-v211")
 		testDeepEqualErr(v211v1, v211v2, t, "equal-map-v211")
 		if v == nil {
 			v211v2 = nil
 		} else {
-			v211v2 = make(map[int8]int64, len(v))
+			v211v2 = make(map[int8]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v211v2), bs211, h, t, "dec-map-v211-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v211v1, v211v2, t, "equal-map-v211-noaddr")
 		if v == nil {
 			v211v2 = nil
 		} else {
-			v211v2 = make(map[int8]int64, len(v))
+			v211v2 = make(map[int8]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v211v2, bs211, h, t, "dec-map-v211-p-len")
 		testDeepEqualErr(v211v1, v211v2, t, "equal-map-v211-p-len")
@@ -10154,39 +10178,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v211v2 = nil
 		} else {
-			v211v2 = make(map[int8]int64, len(v))
+			v211v2 = make(map[int8]int32, len(v))
 		} // reset map
-		var v211v3, v211v4 typMapMapInt8Int64
-		v211v3 = typMapMapInt8Int64(v211v1)
-		v211v4 = typMapMapInt8Int64(v211v2)
+		var v211v3, v211v4 typMapMapInt8Int32
+		v211v3 = typMapMapInt8Int32(v211v1)
+		v211v4 = typMapMapInt8Int32(v211v2)
 		bs211 = testMarshalErr(v211v3, h, t, "enc-map-v211-custom")
 		testUnmarshalErr(v211v4, bs211, h, t, "dec-map-v211-p-len")
 		testDeepEqualErr(v211v3, v211v4, t, "equal-map-v211-p-len")
 	}
 
-	for _, v := range []map[int8]float32{nil, {}, {44: 0, 33: 22.2}} {
+	for _, v := range []map[int8]int64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v212: %v\n", v)
-		var v212v1, v212v2 map[int8]float32
+		var v212v1, v212v2 map[int8]int64
 		v212v1 = v
 		bs212 := testMarshalErr(v212v1, h, t, "enc-map-v212")
 		if v == nil {
 			v212v2 = nil
 		} else {
-			v212v2 = make(map[int8]float32, len(v))
+			v212v2 = make(map[int8]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v212v2, bs212, h, t, "dec-map-v212")
 		testDeepEqualErr(v212v1, v212v2, t, "equal-map-v212")
 		if v == nil {
 			v212v2 = nil
 		} else {
-			v212v2 = make(map[int8]float32, len(v))
+			v212v2 = make(map[int8]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v212v2), bs212, h, t, "dec-map-v212-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v212v1, v212v2, t, "equal-map-v212-noaddr")
 		if v == nil {
 			v212v2 = nil
 		} else {
-			v212v2 = make(map[int8]float32, len(v))
+			v212v2 = make(map[int8]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v212v2, bs212, h, t, "dec-map-v212-p-len")
 		testDeepEqualErr(v212v1, v212v2, t, "equal-map-v212-p-len")
@@ -10198,39 +10222,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v212v2 = nil
 		} else {
-			v212v2 = make(map[int8]float32, len(v))
+			v212v2 = make(map[int8]int64, len(v))
 		} // reset map
-		var v212v3, v212v4 typMapMapInt8Float32
-		v212v3 = typMapMapInt8Float32(v212v1)
-		v212v4 = typMapMapInt8Float32(v212v2)
+		var v212v3, v212v4 typMapMapInt8Int64
+		v212v3 = typMapMapInt8Int64(v212v1)
+		v212v4 = typMapMapInt8Int64(v212v2)
 		bs212 = testMarshalErr(v212v3, h, t, "enc-map-v212-custom")
 		testUnmarshalErr(v212v4, bs212, h, t, "dec-map-v212-p-len")
 		testDeepEqualErr(v212v3, v212v4, t, "equal-map-v212-p-len")
 	}
 
-	for _, v := range []map[int8]float64{nil, {}, {44: 0, 33: 11.1}} {
+	for _, v := range []map[int8]float32{nil, {}, {44: 0, 33: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v213: %v\n", v)
-		var v213v1, v213v2 map[int8]float64
+		var v213v1, v213v2 map[int8]float32
 		v213v1 = v
 		bs213 := testMarshalErr(v213v1, h, t, "enc-map-v213")
 		if v == nil {
 			v213v2 = nil
 		} else {
-			v213v2 = make(map[int8]float64, len(v))
+			v213v2 = make(map[int8]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v213v2, bs213, h, t, "dec-map-v213")
 		testDeepEqualErr(v213v1, v213v2, t, "equal-map-v213")
 		if v == nil {
 			v213v2 = nil
 		} else {
-			v213v2 = make(map[int8]float64, len(v))
+			v213v2 = make(map[int8]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v213v2), bs213, h, t, "dec-map-v213-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v213v1, v213v2, t, "equal-map-v213-noaddr")
 		if v == nil {
 			v213v2 = nil
 		} else {
-			v213v2 = make(map[int8]float64, len(v))
+			v213v2 = make(map[int8]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v213v2, bs213, h, t, "dec-map-v213-p-len")
 		testDeepEqualErr(v213v1, v213v2, t, "equal-map-v213-p-len")
@@ -10242,39 +10266,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v213v2 = nil
 		} else {
-			v213v2 = make(map[int8]float64, len(v))
+			v213v2 = make(map[int8]float32, len(v))
 		} // reset map
-		var v213v3, v213v4 typMapMapInt8Float64
-		v213v3 = typMapMapInt8Float64(v213v1)
-		v213v4 = typMapMapInt8Float64(v213v2)
+		var v213v3, v213v4 typMapMapInt8Float32
+		v213v3 = typMapMapInt8Float32(v213v1)
+		v213v4 = typMapMapInt8Float32(v213v2)
 		bs213 = testMarshalErr(v213v3, h, t, "enc-map-v213-custom")
 		testUnmarshalErr(v213v4, bs213, h, t, "dec-map-v213-p-len")
 		testDeepEqualErr(v213v3, v213v4, t, "equal-map-v213-p-len")
 	}
 
-	for _, v := range []map[int8]bool{nil, {}, {44: false, 33: true}} {
+	for _, v := range []map[int8]float64{nil, {}, {44: 0, 33: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v214: %v\n", v)
-		var v214v1, v214v2 map[int8]bool
+		var v214v1, v214v2 map[int8]float64
 		v214v1 = v
 		bs214 := testMarshalErr(v214v1, h, t, "enc-map-v214")
 		if v == nil {
 			v214v2 = nil
 		} else {
-			v214v2 = make(map[int8]bool, len(v))
+			v214v2 = make(map[int8]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v214v2, bs214, h, t, "dec-map-v214")
 		testDeepEqualErr(v214v1, v214v2, t, "equal-map-v214")
 		if v == nil {
 			v214v2 = nil
 		} else {
-			v214v2 = make(map[int8]bool, len(v))
+			v214v2 = make(map[int8]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v214v2), bs214, h, t, "dec-map-v214-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v214v1, v214v2, t, "equal-map-v214-noaddr")
 		if v == nil {
 			v214v2 = nil
 		} else {
-			v214v2 = make(map[int8]bool, len(v))
+			v214v2 = make(map[int8]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v214v2, bs214, h, t, "dec-map-v214-p-len")
 		testDeepEqualErr(v214v1, v214v2, t, "equal-map-v214-p-len")
@@ -10286,83 +10310,83 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v214v2 = nil
 		} else {
-			v214v2 = make(map[int8]bool, len(v))
+			v214v2 = make(map[int8]float64, len(v))
 		} // reset map
-		var v214v3, v214v4 typMapMapInt8Bool
-		v214v3 = typMapMapInt8Bool(v214v1)
-		v214v4 = typMapMapInt8Bool(v214v2)
+		var v214v3, v214v4 typMapMapInt8Float64
+		v214v3 = typMapMapInt8Float64(v214v1)
+		v214v4 = typMapMapInt8Float64(v214v2)
 		bs214 = testMarshalErr(v214v3, h, t, "enc-map-v214-custom")
 		testUnmarshalErr(v214v4, bs214, h, t, "dec-map-v214-p-len")
 		testDeepEqualErr(v214v3, v214v4, t, "equal-map-v214-p-len")
 	}
 
-	for _, v := range []map[int16]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
-		// fmt.Printf(">>>> running mammoth map v217: %v\n", v)
-		var v217v1, v217v2 map[int16]interface{}
-		v217v1 = v
-		bs217 := testMarshalErr(v217v1, h, t, "enc-map-v217")
+	for _, v := range []map[int8]bool{nil, {}, {44: false, 33: true}} {
+		// fmt.Printf(">>>> running mammoth map v215: %v\n", v)
+		var v215v1, v215v2 map[int8]bool
+		v215v1 = v
+		bs215 := testMarshalErr(v215v1, h, t, "enc-map-v215")
 		if v == nil {
-			v217v2 = nil
+			v215v2 = nil
 		} else {
-			v217v2 = make(map[int16]interface{}, len(v))
+			v215v2 = make(map[int8]bool, len(v))
 		} // reset map
-		testUnmarshalErr(v217v2, bs217, h, t, "dec-map-v217")
-		testDeepEqualErr(v217v1, v217v2, t, "equal-map-v217")
+		testUnmarshalErr(v215v2, bs215, h, t, "dec-map-v215")
+		testDeepEqualErr(v215v1, v215v2, t, "equal-map-v215")
 		if v == nil {
-			v217v2 = nil
+			v215v2 = nil
 		} else {
-			v217v2 = make(map[int16]interface{}, len(v))
+			v215v2 = make(map[int8]bool, len(v))
 		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v217v2), bs217, h, t, "dec-map-v217-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v217v1, v217v2, t, "equal-map-v217-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v215v2), bs215, h, t, "dec-map-v215-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v215v1, v215v2, t, "equal-map-v215-noaddr")
 		if v == nil {
-			v217v2 = nil
+			v215v2 = nil
 		} else {
-			v217v2 = make(map[int16]interface{}, len(v))
+			v215v2 = make(map[int8]bool, len(v))
 		} // reset map
-		testUnmarshalErr(&v217v2, bs217, h, t, "dec-map-v217-p-len")
-		testDeepEqualErr(v217v1, v217v2, t, "equal-map-v217-p-len")
-		bs217 = testMarshalErr(&v217v1, h, t, "enc-map-v217-p")
-		v217v2 = nil
-		testUnmarshalErr(&v217v2, bs217, h, t, "dec-map-v217-p-nil")
-		testDeepEqualErr(v217v1, v217v2, t, "equal-map-v217-p-nil")
+		testUnmarshalErr(&v215v2, bs215, h, t, "dec-map-v215-p-len")
+		testDeepEqualErr(v215v1, v215v2, t, "equal-map-v215-p-len")
+		bs215 = testMarshalErr(&v215v1, h, t, "enc-map-v215-p")
+		v215v2 = nil
+		testUnmarshalErr(&v215v2, bs215, h, t, "dec-map-v215-p-nil")
+		testDeepEqualErr(v215v1, v215v2, t, "equal-map-v215-p-nil")
 		// ...
 		if v == nil {
-			v217v2 = nil
+			v215v2 = nil
 		} else {
-			v217v2 = make(map[int16]interface{}, len(v))
+			v215v2 = make(map[int8]bool, len(v))
 		} // reset map
-		var v217v3, v217v4 typMapMapInt16Intf
-		v217v3 = typMapMapInt16Intf(v217v1)
-		v217v4 = typMapMapInt16Intf(v217v2)
-		bs217 = testMarshalErr(v217v3, h, t, "enc-map-v217-custom")
-		testUnmarshalErr(v217v4, bs217, h, t, "dec-map-v217-p-len")
-		testDeepEqualErr(v217v3, v217v4, t, "equal-map-v217-p-len")
+		var v215v3, v215v4 typMapMapInt8Bool
+		v215v3 = typMapMapInt8Bool(v215v1)
+		v215v4 = typMapMapInt8Bool(v215v2)
+		bs215 = testMarshalErr(v215v3, h, t, "enc-map-v215-custom")
+		testUnmarshalErr(v215v4, bs215, h, t, "dec-map-v215-p-len")
+		testDeepEqualErr(v215v3, v215v4, t, "equal-map-v215-p-len")
 	}
 
-	for _, v := range []map[int16]string{nil, {}, {44: "", 33: "some-string-2"}} {
+	for _, v := range []map[int16]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v218: %v\n", v)
-		var v218v1, v218v2 map[int16]string
+		var v218v1, v218v2 map[int16]interface{}
 		v218v1 = v
 		bs218 := testMarshalErr(v218v1, h, t, "enc-map-v218")
 		if v == nil {
 			v218v2 = nil
 		} else {
-			v218v2 = make(map[int16]string, len(v))
+			v218v2 = make(map[int16]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v218v2, bs218, h, t, "dec-map-v218")
 		testDeepEqualErr(v218v1, v218v2, t, "equal-map-v218")
 		if v == nil {
 			v218v2 = nil
 		} else {
-			v218v2 = make(map[int16]string, len(v))
+			v218v2 = make(map[int16]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v218v2), bs218, h, t, "dec-map-v218-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v218v1, v218v2, t, "equal-map-v218-noaddr")
 		if v == nil {
 			v218v2 = nil
 		} else {
-			v218v2 = make(map[int16]string, len(v))
+			v218v2 = make(map[int16]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v218v2, bs218, h, t, "dec-map-v218-p-len")
 		testDeepEqualErr(v218v1, v218v2, t, "equal-map-v218-p-len")
@@ -10374,39 +10398,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v218v2 = nil
 		} else {
-			v218v2 = make(map[int16]string, len(v))
+			v218v2 = make(map[int16]interface{}, len(v))
 		} // reset map
-		var v218v3, v218v4 typMapMapInt16String
-		v218v3 = typMapMapInt16String(v218v1)
-		v218v4 = typMapMapInt16String(v218v2)
+		var v218v3, v218v4 typMapMapInt16Intf
+		v218v3 = typMapMapInt16Intf(v218v1)
+		v218v4 = typMapMapInt16Intf(v218v2)
 		bs218 = testMarshalErr(v218v3, h, t, "enc-map-v218-custom")
 		testUnmarshalErr(v218v4, bs218, h, t, "dec-map-v218-p-len")
 		testDeepEqualErr(v218v3, v218v4, t, "equal-map-v218-p-len")
 	}
 
-	for _, v := range []map[int16]uint{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int16]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v219: %v\n", v)
-		var v219v1, v219v2 map[int16]uint
+		var v219v1, v219v2 map[int16]string
 		v219v1 = v
 		bs219 := testMarshalErr(v219v1, h, t, "enc-map-v219")
 		if v == nil {
 			v219v2 = nil
 		} else {
-			v219v2 = make(map[int16]uint, len(v))
+			v219v2 = make(map[int16]string, len(v))
 		} // reset map
 		testUnmarshalErr(v219v2, bs219, h, t, "dec-map-v219")
 		testDeepEqualErr(v219v1, v219v2, t, "equal-map-v219")
 		if v == nil {
 			v219v2 = nil
 		} else {
-			v219v2 = make(map[int16]uint, len(v))
+			v219v2 = make(map[int16]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v219v2), bs219, h, t, "dec-map-v219-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v219v1, v219v2, t, "equal-map-v219-noaddr")
 		if v == nil {
 			v219v2 = nil
 		} else {
-			v219v2 = make(map[int16]uint, len(v))
+			v219v2 = make(map[int16]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v219v2, bs219, h, t, "dec-map-v219-p-len")
 		testDeepEqualErr(v219v1, v219v2, t, "equal-map-v219-p-len")
@@ -10418,39 +10442,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v219v2 = nil
 		} else {
-			v219v2 = make(map[int16]uint, len(v))
+			v219v2 = make(map[int16]string, len(v))
 		} // reset map
-		var v219v3, v219v4 typMapMapInt16Uint
-		v219v3 = typMapMapInt16Uint(v219v1)
-		v219v4 = typMapMapInt16Uint(v219v2)
+		var v219v3, v219v4 typMapMapInt16String
+		v219v3 = typMapMapInt16String(v219v1)
+		v219v4 = typMapMapInt16String(v219v2)
 		bs219 = testMarshalErr(v219v3, h, t, "enc-map-v219-custom")
 		testUnmarshalErr(v219v4, bs219, h, t, "dec-map-v219-p-len")
 		testDeepEqualErr(v219v3, v219v4, t, "equal-map-v219-p-len")
 	}
 
-	for _, v := range []map[int16]uint8{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int16]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v220: %v\n", v)
-		var v220v1, v220v2 map[int16]uint8
+		var v220v1, v220v2 map[int16]uint
 		v220v1 = v
 		bs220 := testMarshalErr(v220v1, h, t, "enc-map-v220")
 		if v == nil {
 			v220v2 = nil
 		} else {
-			v220v2 = make(map[int16]uint8, len(v))
+			v220v2 = make(map[int16]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v220v2, bs220, h, t, "dec-map-v220")
 		testDeepEqualErr(v220v1, v220v2, t, "equal-map-v220")
 		if v == nil {
 			v220v2 = nil
 		} else {
-			v220v2 = make(map[int16]uint8, len(v))
+			v220v2 = make(map[int16]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v220v2), bs220, h, t, "dec-map-v220-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v220v1, v220v2, t, "equal-map-v220-noaddr")
 		if v == nil {
 			v220v2 = nil
 		} else {
-			v220v2 = make(map[int16]uint8, len(v))
+			v220v2 = make(map[int16]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v220v2, bs220, h, t, "dec-map-v220-p-len")
 		testDeepEqualErr(v220v1, v220v2, t, "equal-map-v220-p-len")
@@ -10462,39 +10486,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v220v2 = nil
 		} else {
-			v220v2 = make(map[int16]uint8, len(v))
+			v220v2 = make(map[int16]uint, len(v))
 		} // reset map
-		var v220v3, v220v4 typMapMapInt16Uint8
-		v220v3 = typMapMapInt16Uint8(v220v1)
-		v220v4 = typMapMapInt16Uint8(v220v2)
+		var v220v3, v220v4 typMapMapInt16Uint
+		v220v3 = typMapMapInt16Uint(v220v1)
+		v220v4 = typMapMapInt16Uint(v220v2)
 		bs220 = testMarshalErr(v220v3, h, t, "enc-map-v220-custom")
 		testUnmarshalErr(v220v4, bs220, h, t, "dec-map-v220-p-len")
 		testDeepEqualErr(v220v3, v220v4, t, "equal-map-v220-p-len")
 	}
 
-	for _, v := range []map[int16]uint16{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int16]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v221: %v\n", v)
-		var v221v1, v221v2 map[int16]uint16
+		var v221v1, v221v2 map[int16]uint8
 		v221v1 = v
 		bs221 := testMarshalErr(v221v1, h, t, "enc-map-v221")
 		if v == nil {
 			v221v2 = nil
 		} else {
-			v221v2 = make(map[int16]uint16, len(v))
+			v221v2 = make(map[int16]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v221v2, bs221, h, t, "dec-map-v221")
 		testDeepEqualErr(v221v1, v221v2, t, "equal-map-v221")
 		if v == nil {
 			v221v2 = nil
 		} else {
-			v221v2 = make(map[int16]uint16, len(v))
+			v221v2 = make(map[int16]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v221v2), bs221, h, t, "dec-map-v221-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v221v1, v221v2, t, "equal-map-v221-noaddr")
 		if v == nil {
 			v221v2 = nil
 		} else {
-			v221v2 = make(map[int16]uint16, len(v))
+			v221v2 = make(map[int16]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v221v2, bs221, h, t, "dec-map-v221-p-len")
 		testDeepEqualErr(v221v1, v221v2, t, "equal-map-v221-p-len")
@@ -10506,39 +10530,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v221v2 = nil
 		} else {
-			v221v2 = make(map[int16]uint16, len(v))
+			v221v2 = make(map[int16]uint8, len(v))
 		} // reset map
-		var v221v3, v221v4 typMapMapInt16Uint16
-		v221v3 = typMapMapInt16Uint16(v221v1)
-		v221v4 = typMapMapInt16Uint16(v221v2)
+		var v221v3, v221v4 typMapMapInt16Uint8
+		v221v3 = typMapMapInt16Uint8(v221v1)
+		v221v4 = typMapMapInt16Uint8(v221v2)
 		bs221 = testMarshalErr(v221v3, h, t, "enc-map-v221-custom")
 		testUnmarshalErr(v221v4, bs221, h, t, "dec-map-v221-p-len")
 		testDeepEqualErr(v221v3, v221v4, t, "equal-map-v221-p-len")
 	}
 
-	for _, v := range []map[int16]uint32{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int16]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v222: %v\n", v)
-		var v222v1, v222v2 map[int16]uint32
+		var v222v1, v222v2 map[int16]uint16
 		v222v1 = v
 		bs222 := testMarshalErr(v222v1, h, t, "enc-map-v222")
 		if v == nil {
 			v222v2 = nil
 		} else {
-			v222v2 = make(map[int16]uint32, len(v))
+			v222v2 = make(map[int16]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v222v2, bs222, h, t, "dec-map-v222")
 		testDeepEqualErr(v222v1, v222v2, t, "equal-map-v222")
 		if v == nil {
 			v222v2 = nil
 		} else {
-			v222v2 = make(map[int16]uint32, len(v))
+			v222v2 = make(map[int16]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v222v2), bs222, h, t, "dec-map-v222-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v222v1, v222v2, t, "equal-map-v222-noaddr")
 		if v == nil {
 			v222v2 = nil
 		} else {
-			v222v2 = make(map[int16]uint32, len(v))
+			v222v2 = make(map[int16]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v222v2, bs222, h, t, "dec-map-v222-p-len")
 		testDeepEqualErr(v222v1, v222v2, t, "equal-map-v222-p-len")
@@ -10550,39 +10574,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v222v2 = nil
 		} else {
-			v222v2 = make(map[int16]uint32, len(v))
+			v222v2 = make(map[int16]uint16, len(v))
 		} // reset map
-		var v222v3, v222v4 typMapMapInt16Uint32
-		v222v3 = typMapMapInt16Uint32(v222v1)
-		v222v4 = typMapMapInt16Uint32(v222v2)
+		var v222v3, v222v4 typMapMapInt16Uint16
+		v222v3 = typMapMapInt16Uint16(v222v1)
+		v222v4 = typMapMapInt16Uint16(v222v2)
 		bs222 = testMarshalErr(v222v3, h, t, "enc-map-v222-custom")
 		testUnmarshalErr(v222v4, bs222, h, t, "dec-map-v222-p-len")
 		testDeepEqualErr(v222v3, v222v4, t, "equal-map-v222-p-len")
 	}
 
-	for _, v := range []map[int16]uint64{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int16]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v223: %v\n", v)
-		var v223v1, v223v2 map[int16]uint64
+		var v223v1, v223v2 map[int16]uint32
 		v223v1 = v
 		bs223 := testMarshalErr(v223v1, h, t, "enc-map-v223")
 		if v == nil {
 			v223v2 = nil
 		} else {
-			v223v2 = make(map[int16]uint64, len(v))
+			v223v2 = make(map[int16]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v223v2, bs223, h, t, "dec-map-v223")
 		testDeepEqualErr(v223v1, v223v2, t, "equal-map-v223")
 		if v == nil {
 			v223v2 = nil
 		} else {
-			v223v2 = make(map[int16]uint64, len(v))
+			v223v2 = make(map[int16]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v223v2), bs223, h, t, "dec-map-v223-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v223v1, v223v2, t, "equal-map-v223-noaddr")
 		if v == nil {
 			v223v2 = nil
 		} else {
-			v223v2 = make(map[int16]uint64, len(v))
+			v223v2 = make(map[int16]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v223v2, bs223, h, t, "dec-map-v223-p-len")
 		testDeepEqualErr(v223v1, v223v2, t, "equal-map-v223-p-len")
@@ -10594,39 +10618,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v223v2 = nil
 		} else {
-			v223v2 = make(map[int16]uint64, len(v))
+			v223v2 = make(map[int16]uint32, len(v))
 		} // reset map
-		var v223v3, v223v4 typMapMapInt16Uint64
-		v223v3 = typMapMapInt16Uint64(v223v1)
-		v223v4 = typMapMapInt16Uint64(v223v2)
+		var v223v3, v223v4 typMapMapInt16Uint32
+		v223v3 = typMapMapInt16Uint32(v223v1)
+		v223v4 = typMapMapInt16Uint32(v223v2)
 		bs223 = testMarshalErr(v223v3, h, t, "enc-map-v223-custom")
 		testUnmarshalErr(v223v4, bs223, h, t, "dec-map-v223-p-len")
 		testDeepEqualErr(v223v3, v223v4, t, "equal-map-v223-p-len")
 	}
 
-	for _, v := range []map[int16]uintptr{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int16]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v224: %v\n", v)
-		var v224v1, v224v2 map[int16]uintptr
+		var v224v1, v224v2 map[int16]uint64
 		v224v1 = v
 		bs224 := testMarshalErr(v224v1, h, t, "enc-map-v224")
 		if v == nil {
 			v224v2 = nil
 		} else {
-			v224v2 = make(map[int16]uintptr, len(v))
+			v224v2 = make(map[int16]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v224v2, bs224, h, t, "dec-map-v224")
 		testDeepEqualErr(v224v1, v224v2, t, "equal-map-v224")
 		if v == nil {
 			v224v2 = nil
 		} else {
-			v224v2 = make(map[int16]uintptr, len(v))
+			v224v2 = make(map[int16]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v224v2), bs224, h, t, "dec-map-v224-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v224v1, v224v2, t, "equal-map-v224-noaddr")
 		if v == nil {
 			v224v2 = nil
 		} else {
-			v224v2 = make(map[int16]uintptr, len(v))
+			v224v2 = make(map[int16]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v224v2, bs224, h, t, "dec-map-v224-p-len")
 		testDeepEqualErr(v224v1, v224v2, t, "equal-map-v224-p-len")
@@ -10638,39 +10662,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v224v2 = nil
 		} else {
-			v224v2 = make(map[int16]uintptr, len(v))
+			v224v2 = make(map[int16]uint64, len(v))
 		} // reset map
-		var v224v3, v224v4 typMapMapInt16Uintptr
-		v224v3 = typMapMapInt16Uintptr(v224v1)
-		v224v4 = typMapMapInt16Uintptr(v224v2)
+		var v224v3, v224v4 typMapMapInt16Uint64
+		v224v3 = typMapMapInt16Uint64(v224v1)
+		v224v4 = typMapMapInt16Uint64(v224v2)
 		bs224 = testMarshalErr(v224v3, h, t, "enc-map-v224-custom")
 		testUnmarshalErr(v224v4, bs224, h, t, "dec-map-v224-p-len")
 		testDeepEqualErr(v224v3, v224v4, t, "equal-map-v224-p-len")
 	}
 
-	for _, v := range []map[int16]int{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int16]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v225: %v\n", v)
-		var v225v1, v225v2 map[int16]int
+		var v225v1, v225v2 map[int16]uintptr
 		v225v1 = v
 		bs225 := testMarshalErr(v225v1, h, t, "enc-map-v225")
 		if v == nil {
 			v225v2 = nil
 		} else {
-			v225v2 = make(map[int16]int, len(v))
+			v225v2 = make(map[int16]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v225v2, bs225, h, t, "dec-map-v225")
 		testDeepEqualErr(v225v1, v225v2, t, "equal-map-v225")
 		if v == nil {
 			v225v2 = nil
 		} else {
-			v225v2 = make(map[int16]int, len(v))
+			v225v2 = make(map[int16]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v225v2), bs225, h, t, "dec-map-v225-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v225v1, v225v2, t, "equal-map-v225-noaddr")
 		if v == nil {
 			v225v2 = nil
 		} else {
-			v225v2 = make(map[int16]int, len(v))
+			v225v2 = make(map[int16]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v225v2, bs225, h, t, "dec-map-v225-p-len")
 		testDeepEqualErr(v225v1, v225v2, t, "equal-map-v225-p-len")
@@ -10682,39 +10706,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v225v2 = nil
 		} else {
-			v225v2 = make(map[int16]int, len(v))
+			v225v2 = make(map[int16]uintptr, len(v))
 		} // reset map
-		var v225v3, v225v4 typMapMapInt16Int
-		v225v3 = typMapMapInt16Int(v225v1)
-		v225v4 = typMapMapInt16Int(v225v2)
+		var v225v3, v225v4 typMapMapInt16Uintptr
+		v225v3 = typMapMapInt16Uintptr(v225v1)
+		v225v4 = typMapMapInt16Uintptr(v225v2)
 		bs225 = testMarshalErr(v225v3, h, t, "enc-map-v225-custom")
 		testUnmarshalErr(v225v4, bs225, h, t, "dec-map-v225-p-len")
 		testDeepEqualErr(v225v3, v225v4, t, "equal-map-v225-p-len")
 	}
 
-	for _, v := range []map[int16]int8{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int16]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v226: %v\n", v)
-		var v226v1, v226v2 map[int16]int8
+		var v226v1, v226v2 map[int16]int
 		v226v1 = v
 		bs226 := testMarshalErr(v226v1, h, t, "enc-map-v226")
 		if v == nil {
 			v226v2 = nil
 		} else {
-			v226v2 = make(map[int16]int8, len(v))
+			v226v2 = make(map[int16]int, len(v))
 		} // reset map
 		testUnmarshalErr(v226v2, bs226, h, t, "dec-map-v226")
 		testDeepEqualErr(v226v1, v226v2, t, "equal-map-v226")
 		if v == nil {
 			v226v2 = nil
 		} else {
-			v226v2 = make(map[int16]int8, len(v))
+			v226v2 = make(map[int16]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v226v2), bs226, h, t, "dec-map-v226-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v226v1, v226v2, t, "equal-map-v226-noaddr")
 		if v == nil {
 			v226v2 = nil
 		} else {
-			v226v2 = make(map[int16]int8, len(v))
+			v226v2 = make(map[int16]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v226v2, bs226, h, t, "dec-map-v226-p-len")
 		testDeepEqualErr(v226v1, v226v2, t, "equal-map-v226-p-len")
@@ -10726,39 +10750,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v226v2 = nil
 		} else {
-			v226v2 = make(map[int16]int8, len(v))
+			v226v2 = make(map[int16]int, len(v))
 		} // reset map
-		var v226v3, v226v4 typMapMapInt16Int8
-		v226v3 = typMapMapInt16Int8(v226v1)
-		v226v4 = typMapMapInt16Int8(v226v2)
+		var v226v3, v226v4 typMapMapInt16Int
+		v226v3 = typMapMapInt16Int(v226v1)
+		v226v4 = typMapMapInt16Int(v226v2)
 		bs226 = testMarshalErr(v226v3, h, t, "enc-map-v226-custom")
 		testUnmarshalErr(v226v4, bs226, h, t, "dec-map-v226-p-len")
 		testDeepEqualErr(v226v3, v226v4, t, "equal-map-v226-p-len")
 	}
 
-	for _, v := range []map[int16]int16{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int16]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v227: %v\n", v)
-		var v227v1, v227v2 map[int16]int16
+		var v227v1, v227v2 map[int16]int8
 		v227v1 = v
 		bs227 := testMarshalErr(v227v1, h, t, "enc-map-v227")
 		if v == nil {
 			v227v2 = nil
 		} else {
-			v227v2 = make(map[int16]int16, len(v))
+			v227v2 = make(map[int16]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v227v2, bs227, h, t, "dec-map-v227")
 		testDeepEqualErr(v227v1, v227v2, t, "equal-map-v227")
 		if v == nil {
 			v227v2 = nil
 		} else {
-			v227v2 = make(map[int16]int16, len(v))
+			v227v2 = make(map[int16]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v227v2), bs227, h, t, "dec-map-v227-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v227v1, v227v2, t, "equal-map-v227-noaddr")
 		if v == nil {
 			v227v2 = nil
 		} else {
-			v227v2 = make(map[int16]int16, len(v))
+			v227v2 = make(map[int16]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v227v2, bs227, h, t, "dec-map-v227-p-len")
 		testDeepEqualErr(v227v1, v227v2, t, "equal-map-v227-p-len")
@@ -10770,39 +10794,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v227v2 = nil
 		} else {
-			v227v2 = make(map[int16]int16, len(v))
+			v227v2 = make(map[int16]int8, len(v))
 		} // reset map
-		var v227v3, v227v4 typMapMapInt16Int16
-		v227v3 = typMapMapInt16Int16(v227v1)
-		v227v4 = typMapMapInt16Int16(v227v2)
+		var v227v3, v227v4 typMapMapInt16Int8
+		v227v3 = typMapMapInt16Int8(v227v1)
+		v227v4 = typMapMapInt16Int8(v227v2)
 		bs227 = testMarshalErr(v227v3, h, t, "enc-map-v227-custom")
 		testUnmarshalErr(v227v4, bs227, h, t, "dec-map-v227-p-len")
 		testDeepEqualErr(v227v3, v227v4, t, "equal-map-v227-p-len")
 	}
 
-	for _, v := range []map[int16]int32{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int16]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v228: %v\n", v)
-		var v228v1, v228v2 map[int16]int32
+		var v228v1, v228v2 map[int16]int16
 		v228v1 = v
 		bs228 := testMarshalErr(v228v1, h, t, "enc-map-v228")
 		if v == nil {
 			v228v2 = nil
 		} else {
-			v228v2 = make(map[int16]int32, len(v))
+			v228v2 = make(map[int16]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v228v2, bs228, h, t, "dec-map-v228")
 		testDeepEqualErr(v228v1, v228v2, t, "equal-map-v228")
 		if v == nil {
 			v228v2 = nil
 		} else {
-			v228v2 = make(map[int16]int32, len(v))
+			v228v2 = make(map[int16]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v228v2), bs228, h, t, "dec-map-v228-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v228v1, v228v2, t, "equal-map-v228-noaddr")
 		if v == nil {
 			v228v2 = nil
 		} else {
-			v228v2 = make(map[int16]int32, len(v))
+			v228v2 = make(map[int16]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v228v2, bs228, h, t, "dec-map-v228-p-len")
 		testDeepEqualErr(v228v1, v228v2, t, "equal-map-v228-p-len")
@@ -10814,39 +10838,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v228v2 = nil
 		} else {
-			v228v2 = make(map[int16]int32, len(v))
+			v228v2 = make(map[int16]int16, len(v))
 		} // reset map
-		var v228v3, v228v4 typMapMapInt16Int32
-		v228v3 = typMapMapInt16Int32(v228v1)
-		v228v4 = typMapMapInt16Int32(v228v2)
+		var v228v3, v228v4 typMapMapInt16Int16
+		v228v3 = typMapMapInt16Int16(v228v1)
+		v228v4 = typMapMapInt16Int16(v228v2)
 		bs228 = testMarshalErr(v228v3, h, t, "enc-map-v228-custom")
 		testUnmarshalErr(v228v4, bs228, h, t, "dec-map-v228-p-len")
 		testDeepEqualErr(v228v3, v228v4, t, "equal-map-v228-p-len")
 	}
 
-	for _, v := range []map[int16]int64{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int16]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v229: %v\n", v)
-		var v229v1, v229v2 map[int16]int64
+		var v229v1, v229v2 map[int16]int32
 		v229v1 = v
 		bs229 := testMarshalErr(v229v1, h, t, "enc-map-v229")
 		if v == nil {
 			v229v2 = nil
 		} else {
-			v229v2 = make(map[int16]int64, len(v))
+			v229v2 = make(map[int16]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v229v2, bs229, h, t, "dec-map-v229")
 		testDeepEqualErr(v229v1, v229v2, t, "equal-map-v229")
 		if v == nil {
 			v229v2 = nil
 		} else {
-			v229v2 = make(map[int16]int64, len(v))
+			v229v2 = make(map[int16]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v229v2), bs229, h, t, "dec-map-v229-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v229v1, v229v2, t, "equal-map-v229-noaddr")
 		if v == nil {
 			v229v2 = nil
 		} else {
-			v229v2 = make(map[int16]int64, len(v))
+			v229v2 = make(map[int16]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v229v2, bs229, h, t, "dec-map-v229-p-len")
 		testDeepEqualErr(v229v1, v229v2, t, "equal-map-v229-p-len")
@@ -10858,39 +10882,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v229v2 = nil
 		} else {
-			v229v2 = make(map[int16]int64, len(v))
+			v229v2 = make(map[int16]int32, len(v))
 		} // reset map
-		var v229v3, v229v4 typMapMapInt16Int64
-		v229v3 = typMapMapInt16Int64(v229v1)
-		v229v4 = typMapMapInt16Int64(v229v2)
+		var v229v3, v229v4 typMapMapInt16Int32
+		v229v3 = typMapMapInt16Int32(v229v1)
+		v229v4 = typMapMapInt16Int32(v229v2)
 		bs229 = testMarshalErr(v229v3, h, t, "enc-map-v229-custom")
 		testUnmarshalErr(v229v4, bs229, h, t, "dec-map-v229-p-len")
 		testDeepEqualErr(v229v3, v229v4, t, "equal-map-v229-p-len")
 	}
 
-	for _, v := range []map[int16]float32{nil, {}, {33: 0, 44: 22.2}} {
+	for _, v := range []map[int16]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v230: %v\n", v)
-		var v230v1, v230v2 map[int16]float32
+		var v230v1, v230v2 map[int16]int64
 		v230v1 = v
 		bs230 := testMarshalErr(v230v1, h, t, "enc-map-v230")
 		if v == nil {
 			v230v2 = nil
 		} else {
-			v230v2 = make(map[int16]float32, len(v))
+			v230v2 = make(map[int16]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v230v2, bs230, h, t, "dec-map-v230")
 		testDeepEqualErr(v230v1, v230v2, t, "equal-map-v230")
 		if v == nil {
 			v230v2 = nil
 		} else {
-			v230v2 = make(map[int16]float32, len(v))
+			v230v2 = make(map[int16]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v230v2), bs230, h, t, "dec-map-v230-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v230v1, v230v2, t, "equal-map-v230-noaddr")
 		if v == nil {
 			v230v2 = nil
 		} else {
-			v230v2 = make(map[int16]float32, len(v))
+			v230v2 = make(map[int16]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v230v2, bs230, h, t, "dec-map-v230-p-len")
 		testDeepEqualErr(v230v1, v230v2, t, "equal-map-v230-p-len")
@@ -10902,39 +10926,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v230v2 = nil
 		} else {
-			v230v2 = make(map[int16]float32, len(v))
+			v230v2 = make(map[int16]int64, len(v))
 		} // reset map
-		var v230v3, v230v4 typMapMapInt16Float32
-		v230v3 = typMapMapInt16Float32(v230v1)
-		v230v4 = typMapMapInt16Float32(v230v2)
+		var v230v3, v230v4 typMapMapInt16Int64
+		v230v3 = typMapMapInt16Int64(v230v1)
+		v230v4 = typMapMapInt16Int64(v230v2)
 		bs230 = testMarshalErr(v230v3, h, t, "enc-map-v230-custom")
 		testUnmarshalErr(v230v4, bs230, h, t, "dec-map-v230-p-len")
 		testDeepEqualErr(v230v3, v230v4, t, "equal-map-v230-p-len")
 	}
 
-	for _, v := range []map[int16]float64{nil, {}, {33: 0, 44: 11.1}} {
+	for _, v := range []map[int16]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v231: %v\n", v)
-		var v231v1, v231v2 map[int16]float64
+		var v231v1, v231v2 map[int16]float32
 		v231v1 = v
 		bs231 := testMarshalErr(v231v1, h, t, "enc-map-v231")
 		if v == nil {
 			v231v2 = nil
 		} else {
-			v231v2 = make(map[int16]float64, len(v))
+			v231v2 = make(map[int16]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v231v2, bs231, h, t, "dec-map-v231")
 		testDeepEqualErr(v231v1, v231v2, t, "equal-map-v231")
 		if v == nil {
 			v231v2 = nil
 		} else {
-			v231v2 = make(map[int16]float64, len(v))
+			v231v2 = make(map[int16]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v231v2), bs231, h, t, "dec-map-v231-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v231v1, v231v2, t, "equal-map-v231-noaddr")
 		if v == nil {
 			v231v2 = nil
 		} else {
-			v231v2 = make(map[int16]float64, len(v))
+			v231v2 = make(map[int16]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v231v2, bs231, h, t, "dec-map-v231-p-len")
 		testDeepEqualErr(v231v1, v231v2, t, "equal-map-v231-p-len")
@@ -10946,39 +10970,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v231v2 = nil
 		} else {
-			v231v2 = make(map[int16]float64, len(v))
+			v231v2 = make(map[int16]float32, len(v))
 		} // reset map
-		var v231v3, v231v4 typMapMapInt16Float64
-		v231v3 = typMapMapInt16Float64(v231v1)
-		v231v4 = typMapMapInt16Float64(v231v2)
+		var v231v3, v231v4 typMapMapInt16Float32
+		v231v3 = typMapMapInt16Float32(v231v1)
+		v231v4 = typMapMapInt16Float32(v231v2)
 		bs231 = testMarshalErr(v231v3, h, t, "enc-map-v231-custom")
 		testUnmarshalErr(v231v4, bs231, h, t, "dec-map-v231-p-len")
 		testDeepEqualErr(v231v3, v231v4, t, "equal-map-v231-p-len")
 	}
 
-	for _, v := range []map[int16]bool{nil, {}, {33: false, 44: true}} {
+	for _, v := range []map[int16]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v232: %v\n", v)
-		var v232v1, v232v2 map[int16]bool
+		var v232v1, v232v2 map[int16]float64
 		v232v1 = v
 		bs232 := testMarshalErr(v232v1, h, t, "enc-map-v232")
 		if v == nil {
 			v232v2 = nil
 		} else {
-			v232v2 = make(map[int16]bool, len(v))
+			v232v2 = make(map[int16]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v232v2, bs232, h, t, "dec-map-v232")
 		testDeepEqualErr(v232v1, v232v2, t, "equal-map-v232")
 		if v == nil {
 			v232v2 = nil
 		} else {
-			v232v2 = make(map[int16]bool, len(v))
+			v232v2 = make(map[int16]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v232v2), bs232, h, t, "dec-map-v232-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v232v1, v232v2, t, "equal-map-v232-noaddr")
 		if v == nil {
 			v232v2 = nil
 		} else {
-			v232v2 = make(map[int16]bool, len(v))
+			v232v2 = make(map[int16]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v232v2, bs232, h, t, "dec-map-v232-p-len")
 		testDeepEqualErr(v232v1, v232v2, t, "equal-map-v232-p-len")
@@ -10990,83 +11014,83 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v232v2 = nil
 		} else {
-			v232v2 = make(map[int16]bool, len(v))
+			v232v2 = make(map[int16]float64, len(v))
 		} // reset map
-		var v232v3, v232v4 typMapMapInt16Bool
-		v232v3 = typMapMapInt16Bool(v232v1)
-		v232v4 = typMapMapInt16Bool(v232v2)
+		var v232v3, v232v4 typMapMapInt16Float64
+		v232v3 = typMapMapInt16Float64(v232v1)
+		v232v4 = typMapMapInt16Float64(v232v2)
 		bs232 = testMarshalErr(v232v3, h, t, "enc-map-v232-custom")
 		testUnmarshalErr(v232v4, bs232, h, t, "dec-map-v232-p-len")
 		testDeepEqualErr(v232v3, v232v4, t, "equal-map-v232-p-len")
 	}
 
-	for _, v := range []map[int32]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
-		// fmt.Printf(">>>> running mammoth map v235: %v\n", v)
-		var v235v1, v235v2 map[int32]interface{}
-		v235v1 = v
-		bs235 := testMarshalErr(v235v1, h, t, "enc-map-v235")
+	for _, v := range []map[int16]bool{nil, {}, {33: false, 44: true}} {
+		// fmt.Printf(">>>> running mammoth map v233: %v\n", v)
+		var v233v1, v233v2 map[int16]bool
+		v233v1 = v
+		bs233 := testMarshalErr(v233v1, h, t, "enc-map-v233")
 		if v == nil {
-			v235v2 = nil
+			v233v2 = nil
 		} else {
-			v235v2 = make(map[int32]interface{}, len(v))
+			v233v2 = make(map[int16]bool, len(v))
 		} // reset map
-		testUnmarshalErr(v235v2, bs235, h, t, "dec-map-v235")
-		testDeepEqualErr(v235v1, v235v2, t, "equal-map-v235")
+		testUnmarshalErr(v233v2, bs233, h, t, "dec-map-v233")
+		testDeepEqualErr(v233v1, v233v2, t, "equal-map-v233")
 		if v == nil {
-			v235v2 = nil
+			v233v2 = nil
 		} else {
-			v235v2 = make(map[int32]interface{}, len(v))
+			v233v2 = make(map[int16]bool, len(v))
 		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v235v2), bs235, h, t, "dec-map-v235-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v235v1, v235v2, t, "equal-map-v235-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v233v2), bs233, h, t, "dec-map-v233-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v233v1, v233v2, t, "equal-map-v233-noaddr")
 		if v == nil {
-			v235v2 = nil
+			v233v2 = nil
 		} else {
-			v235v2 = make(map[int32]interface{}, len(v))
+			v233v2 = make(map[int16]bool, len(v))
 		} // reset map
-		testUnmarshalErr(&v235v2, bs235, h, t, "dec-map-v235-p-len")
-		testDeepEqualErr(v235v1, v235v2, t, "equal-map-v235-p-len")
-		bs235 = testMarshalErr(&v235v1, h, t, "enc-map-v235-p")
-		v235v2 = nil
-		testUnmarshalErr(&v235v2, bs235, h, t, "dec-map-v235-p-nil")
-		testDeepEqualErr(v235v1, v235v2, t, "equal-map-v235-p-nil")
+		testUnmarshalErr(&v233v2, bs233, h, t, "dec-map-v233-p-len")
+		testDeepEqualErr(v233v1, v233v2, t, "equal-map-v233-p-len")
+		bs233 = testMarshalErr(&v233v1, h, t, "enc-map-v233-p")
+		v233v2 = nil
+		testUnmarshalErr(&v233v2, bs233, h, t, "dec-map-v233-p-nil")
+		testDeepEqualErr(v233v1, v233v2, t, "equal-map-v233-p-nil")
 		// ...
 		if v == nil {
-			v235v2 = nil
+			v233v2 = nil
 		} else {
-			v235v2 = make(map[int32]interface{}, len(v))
+			v233v2 = make(map[int16]bool, len(v))
 		} // reset map
-		var v235v3, v235v4 typMapMapInt32Intf
-		v235v3 = typMapMapInt32Intf(v235v1)
-		v235v4 = typMapMapInt32Intf(v235v2)
-		bs235 = testMarshalErr(v235v3, h, t, "enc-map-v235-custom")
-		testUnmarshalErr(v235v4, bs235, h, t, "dec-map-v235-p-len")
-		testDeepEqualErr(v235v3, v235v4, t, "equal-map-v235-p-len")
+		var v233v3, v233v4 typMapMapInt16Bool
+		v233v3 = typMapMapInt16Bool(v233v1)
+		v233v4 = typMapMapInt16Bool(v233v2)
+		bs233 = testMarshalErr(v233v3, h, t, "enc-map-v233-custom")
+		testUnmarshalErr(v233v4, bs233, h, t, "dec-map-v233-p-len")
+		testDeepEqualErr(v233v3, v233v4, t, "equal-map-v233-p-len")
 	}
 
-	for _, v := range []map[int32]string{nil, {}, {33: "", 44: "some-string"}} {
+	for _, v := range []map[int32]interface{}{nil, {}, {33: nil, 44: "string-is-an-interface"}} {
 		// fmt.Printf(">>>> running mammoth map v236: %v\n", v)
-		var v236v1, v236v2 map[int32]string
+		var v236v1, v236v2 map[int32]interface{}
 		v236v1 = v
 		bs236 := testMarshalErr(v236v1, h, t, "enc-map-v236")
 		if v == nil {
 			v236v2 = nil
 		} else {
-			v236v2 = make(map[int32]string, len(v))
+			v236v2 = make(map[int32]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v236v2, bs236, h, t, "dec-map-v236")
 		testDeepEqualErr(v236v1, v236v2, t, "equal-map-v236")
 		if v == nil {
 			v236v2 = nil
 		} else {
-			v236v2 = make(map[int32]string, len(v))
+			v236v2 = make(map[int32]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v236v2), bs236, h, t, "dec-map-v236-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v236v1, v236v2, t, "equal-map-v236-noaddr")
 		if v == nil {
 			v236v2 = nil
 		} else {
-			v236v2 = make(map[int32]string, len(v))
+			v236v2 = make(map[int32]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v236v2, bs236, h, t, "dec-map-v236-p-len")
 		testDeepEqualErr(v236v1, v236v2, t, "equal-map-v236-p-len")
@@ -11078,39 +11102,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v236v2 = nil
 		} else {
-			v236v2 = make(map[int32]string, len(v))
+			v236v2 = make(map[int32]interface{}, len(v))
 		} // reset map
-		var v236v3, v236v4 typMapMapInt32String
-		v236v3 = typMapMapInt32String(v236v1)
-		v236v4 = typMapMapInt32String(v236v2)
+		var v236v3, v236v4 typMapMapInt32Intf
+		v236v3 = typMapMapInt32Intf(v236v1)
+		v236v4 = typMapMapInt32Intf(v236v2)
 		bs236 = testMarshalErr(v236v3, h, t, "enc-map-v236-custom")
 		testUnmarshalErr(v236v4, bs236, h, t, "dec-map-v236-p-len")
 		testDeepEqualErr(v236v3, v236v4, t, "equal-map-v236-p-len")
 	}
 
-	for _, v := range []map[int32]uint{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int32]string{nil, {}, {33: "", 44: "some-string"}} {
 		// fmt.Printf(">>>> running mammoth map v237: %v\n", v)
-		var v237v1, v237v2 map[int32]uint
+		var v237v1, v237v2 map[int32]string
 		v237v1 = v
 		bs237 := testMarshalErr(v237v1, h, t, "enc-map-v237")
 		if v == nil {
 			v237v2 = nil
 		} else {
-			v237v2 = make(map[int32]uint, len(v))
+			v237v2 = make(map[int32]string, len(v))
 		} // reset map
 		testUnmarshalErr(v237v2, bs237, h, t, "dec-map-v237")
 		testDeepEqualErr(v237v1, v237v2, t, "equal-map-v237")
 		if v == nil {
 			v237v2 = nil
 		} else {
-			v237v2 = make(map[int32]uint, len(v))
+			v237v2 = make(map[int32]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v237v2), bs237, h, t, "dec-map-v237-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v237v1, v237v2, t, "equal-map-v237-noaddr")
 		if v == nil {
 			v237v2 = nil
 		} else {
-			v237v2 = make(map[int32]uint, len(v))
+			v237v2 = make(map[int32]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v237v2, bs237, h, t, "dec-map-v237-p-len")
 		testDeepEqualErr(v237v1, v237v2, t, "equal-map-v237-p-len")
@@ -11122,39 +11146,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v237v2 = nil
 		} else {
-			v237v2 = make(map[int32]uint, len(v))
+			v237v2 = make(map[int32]string, len(v))
 		} // reset map
-		var v237v3, v237v4 typMapMapInt32Uint
-		v237v3 = typMapMapInt32Uint(v237v1)
-		v237v4 = typMapMapInt32Uint(v237v2)
+		var v237v3, v237v4 typMapMapInt32String
+		v237v3 = typMapMapInt32String(v237v1)
+		v237v4 = typMapMapInt32String(v237v2)
 		bs237 = testMarshalErr(v237v3, h, t, "enc-map-v237-custom")
 		testUnmarshalErr(v237v4, bs237, h, t, "dec-map-v237-p-len")
 		testDeepEqualErr(v237v3, v237v4, t, "equal-map-v237-p-len")
 	}
 
-	for _, v := range []map[int32]uint8{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int32]uint{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v238: %v\n", v)
-		var v238v1, v238v2 map[int32]uint8
+		var v238v1, v238v2 map[int32]uint
 		v238v1 = v
 		bs238 := testMarshalErr(v238v1, h, t, "enc-map-v238")
 		if v == nil {
 			v238v2 = nil
 		} else {
-			v238v2 = make(map[int32]uint8, len(v))
+			v238v2 = make(map[int32]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v238v2, bs238, h, t, "dec-map-v238")
 		testDeepEqualErr(v238v1, v238v2, t, "equal-map-v238")
 		if v == nil {
 			v238v2 = nil
 		} else {
-			v238v2 = make(map[int32]uint8, len(v))
+			v238v2 = make(map[int32]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v238v2), bs238, h, t, "dec-map-v238-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v238v1, v238v2, t, "equal-map-v238-noaddr")
 		if v == nil {
 			v238v2 = nil
 		} else {
-			v238v2 = make(map[int32]uint8, len(v))
+			v238v2 = make(map[int32]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v238v2, bs238, h, t, "dec-map-v238-p-len")
 		testDeepEqualErr(v238v1, v238v2, t, "equal-map-v238-p-len")
@@ -11166,39 +11190,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v238v2 = nil
 		} else {
-			v238v2 = make(map[int32]uint8, len(v))
+			v238v2 = make(map[int32]uint, len(v))
 		} // reset map
-		var v238v3, v238v4 typMapMapInt32Uint8
-		v238v3 = typMapMapInt32Uint8(v238v1)
-		v238v4 = typMapMapInt32Uint8(v238v2)
+		var v238v3, v238v4 typMapMapInt32Uint
+		v238v3 = typMapMapInt32Uint(v238v1)
+		v238v4 = typMapMapInt32Uint(v238v2)
 		bs238 = testMarshalErr(v238v3, h, t, "enc-map-v238-custom")
 		testUnmarshalErr(v238v4, bs238, h, t, "dec-map-v238-p-len")
 		testDeepEqualErr(v238v3, v238v4, t, "equal-map-v238-p-len")
 	}
 
-	for _, v := range []map[int32]uint16{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int32]uint8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v239: %v\n", v)
-		var v239v1, v239v2 map[int32]uint16
+		var v239v1, v239v2 map[int32]uint8
 		v239v1 = v
 		bs239 := testMarshalErr(v239v1, h, t, "enc-map-v239")
 		if v == nil {
 			v239v2 = nil
 		} else {
-			v239v2 = make(map[int32]uint16, len(v))
+			v239v2 = make(map[int32]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v239v2, bs239, h, t, "dec-map-v239")
 		testDeepEqualErr(v239v1, v239v2, t, "equal-map-v239")
 		if v == nil {
 			v239v2 = nil
 		} else {
-			v239v2 = make(map[int32]uint16, len(v))
+			v239v2 = make(map[int32]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v239v2), bs239, h, t, "dec-map-v239-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v239v1, v239v2, t, "equal-map-v239-noaddr")
 		if v == nil {
 			v239v2 = nil
 		} else {
-			v239v2 = make(map[int32]uint16, len(v))
+			v239v2 = make(map[int32]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v239v2, bs239, h, t, "dec-map-v239-p-len")
 		testDeepEqualErr(v239v1, v239v2, t, "equal-map-v239-p-len")
@@ -11210,39 +11234,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v239v2 = nil
 		} else {
-			v239v2 = make(map[int32]uint16, len(v))
+			v239v2 = make(map[int32]uint8, len(v))
 		} // reset map
-		var v239v3, v239v4 typMapMapInt32Uint16
-		v239v3 = typMapMapInt32Uint16(v239v1)
-		v239v4 = typMapMapInt32Uint16(v239v2)
+		var v239v3, v239v4 typMapMapInt32Uint8
+		v239v3 = typMapMapInt32Uint8(v239v1)
+		v239v4 = typMapMapInt32Uint8(v239v2)
 		bs239 = testMarshalErr(v239v3, h, t, "enc-map-v239-custom")
 		testUnmarshalErr(v239v4, bs239, h, t, "dec-map-v239-p-len")
 		testDeepEqualErr(v239v3, v239v4, t, "equal-map-v239-p-len")
 	}
 
-	for _, v := range []map[int32]uint32{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int32]uint16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v240: %v\n", v)
-		var v240v1, v240v2 map[int32]uint32
+		var v240v1, v240v2 map[int32]uint16
 		v240v1 = v
 		bs240 := testMarshalErr(v240v1, h, t, "enc-map-v240")
 		if v == nil {
 			v240v2 = nil
 		} else {
-			v240v2 = make(map[int32]uint32, len(v))
+			v240v2 = make(map[int32]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v240v2, bs240, h, t, "dec-map-v240")
 		testDeepEqualErr(v240v1, v240v2, t, "equal-map-v240")
 		if v == nil {
 			v240v2 = nil
 		} else {
-			v240v2 = make(map[int32]uint32, len(v))
+			v240v2 = make(map[int32]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v240v2), bs240, h, t, "dec-map-v240-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v240v1, v240v2, t, "equal-map-v240-noaddr")
 		if v == nil {
 			v240v2 = nil
 		} else {
-			v240v2 = make(map[int32]uint32, len(v))
+			v240v2 = make(map[int32]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v240v2, bs240, h, t, "dec-map-v240-p-len")
 		testDeepEqualErr(v240v1, v240v2, t, "equal-map-v240-p-len")
@@ -11254,39 +11278,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v240v2 = nil
 		} else {
-			v240v2 = make(map[int32]uint32, len(v))
+			v240v2 = make(map[int32]uint16, len(v))
 		} // reset map
-		var v240v3, v240v4 typMapMapInt32Uint32
-		v240v3 = typMapMapInt32Uint32(v240v1)
-		v240v4 = typMapMapInt32Uint32(v240v2)
+		var v240v3, v240v4 typMapMapInt32Uint16
+		v240v3 = typMapMapInt32Uint16(v240v1)
+		v240v4 = typMapMapInt32Uint16(v240v2)
 		bs240 = testMarshalErr(v240v3, h, t, "enc-map-v240-custom")
 		testUnmarshalErr(v240v4, bs240, h, t, "dec-map-v240-p-len")
 		testDeepEqualErr(v240v3, v240v4, t, "equal-map-v240-p-len")
 	}
 
-	for _, v := range []map[int32]uint64{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int32]uint32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v241: %v\n", v)
-		var v241v1, v241v2 map[int32]uint64
+		var v241v1, v241v2 map[int32]uint32
 		v241v1 = v
 		bs241 := testMarshalErr(v241v1, h, t, "enc-map-v241")
 		if v == nil {
 			v241v2 = nil
 		} else {
-			v241v2 = make(map[int32]uint64, len(v))
+			v241v2 = make(map[int32]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v241v2, bs241, h, t, "dec-map-v241")
 		testDeepEqualErr(v241v1, v241v2, t, "equal-map-v241")
 		if v == nil {
 			v241v2 = nil
 		} else {
-			v241v2 = make(map[int32]uint64, len(v))
+			v241v2 = make(map[int32]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v241v2), bs241, h, t, "dec-map-v241-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v241v1, v241v2, t, "equal-map-v241-noaddr")
 		if v == nil {
 			v241v2 = nil
 		} else {
-			v241v2 = make(map[int32]uint64, len(v))
+			v241v2 = make(map[int32]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v241v2, bs241, h, t, "dec-map-v241-p-len")
 		testDeepEqualErr(v241v1, v241v2, t, "equal-map-v241-p-len")
@@ -11298,39 +11322,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v241v2 = nil
 		} else {
-			v241v2 = make(map[int32]uint64, len(v))
+			v241v2 = make(map[int32]uint32, len(v))
 		} // reset map
-		var v241v3, v241v4 typMapMapInt32Uint64
-		v241v3 = typMapMapInt32Uint64(v241v1)
-		v241v4 = typMapMapInt32Uint64(v241v2)
+		var v241v3, v241v4 typMapMapInt32Uint32
+		v241v3 = typMapMapInt32Uint32(v241v1)
+		v241v4 = typMapMapInt32Uint32(v241v2)
 		bs241 = testMarshalErr(v241v3, h, t, "enc-map-v241-custom")
 		testUnmarshalErr(v241v4, bs241, h, t, "dec-map-v241-p-len")
 		testDeepEqualErr(v241v3, v241v4, t, "equal-map-v241-p-len")
 	}
 
-	for _, v := range []map[int32]uintptr{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int32]uint64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v242: %v\n", v)
-		var v242v1, v242v2 map[int32]uintptr
+		var v242v1, v242v2 map[int32]uint64
 		v242v1 = v
 		bs242 := testMarshalErr(v242v1, h, t, "enc-map-v242")
 		if v == nil {
 			v242v2 = nil
 		} else {
-			v242v2 = make(map[int32]uintptr, len(v))
+			v242v2 = make(map[int32]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v242v2, bs242, h, t, "dec-map-v242")
 		testDeepEqualErr(v242v1, v242v2, t, "equal-map-v242")
 		if v == nil {
 			v242v2 = nil
 		} else {
-			v242v2 = make(map[int32]uintptr, len(v))
+			v242v2 = make(map[int32]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v242v2), bs242, h, t, "dec-map-v242-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v242v1, v242v2, t, "equal-map-v242-noaddr")
 		if v == nil {
 			v242v2 = nil
 		} else {
-			v242v2 = make(map[int32]uintptr, len(v))
+			v242v2 = make(map[int32]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v242v2, bs242, h, t, "dec-map-v242-p-len")
 		testDeepEqualErr(v242v1, v242v2, t, "equal-map-v242-p-len")
@@ -11342,39 +11366,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v242v2 = nil
 		} else {
-			v242v2 = make(map[int32]uintptr, len(v))
+			v242v2 = make(map[int32]uint64, len(v))
 		} // reset map
-		var v242v3, v242v4 typMapMapInt32Uintptr
-		v242v3 = typMapMapInt32Uintptr(v242v1)
-		v242v4 = typMapMapInt32Uintptr(v242v2)
+		var v242v3, v242v4 typMapMapInt32Uint64
+		v242v3 = typMapMapInt32Uint64(v242v1)
+		v242v4 = typMapMapInt32Uint64(v242v2)
 		bs242 = testMarshalErr(v242v3, h, t, "enc-map-v242-custom")
 		testUnmarshalErr(v242v4, bs242, h, t, "dec-map-v242-p-len")
 		testDeepEqualErr(v242v3, v242v4, t, "equal-map-v242-p-len")
 	}
 
-	for _, v := range []map[int32]int{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int32]uintptr{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v243: %v\n", v)
-		var v243v1, v243v2 map[int32]int
+		var v243v1, v243v2 map[int32]uintptr
 		v243v1 = v
 		bs243 := testMarshalErr(v243v1, h, t, "enc-map-v243")
 		if v == nil {
 			v243v2 = nil
 		} else {
-			v243v2 = make(map[int32]int, len(v))
+			v243v2 = make(map[int32]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v243v2, bs243, h, t, "dec-map-v243")
 		testDeepEqualErr(v243v1, v243v2, t, "equal-map-v243")
 		if v == nil {
 			v243v2 = nil
 		} else {
-			v243v2 = make(map[int32]int, len(v))
+			v243v2 = make(map[int32]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v243v2), bs243, h, t, "dec-map-v243-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v243v1, v243v2, t, "equal-map-v243-noaddr")
 		if v == nil {
 			v243v2 = nil
 		} else {
-			v243v2 = make(map[int32]int, len(v))
+			v243v2 = make(map[int32]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v243v2, bs243, h, t, "dec-map-v243-p-len")
 		testDeepEqualErr(v243v1, v243v2, t, "equal-map-v243-p-len")
@@ -11386,39 +11410,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v243v2 = nil
 		} else {
-			v243v2 = make(map[int32]int, len(v))
+			v243v2 = make(map[int32]uintptr, len(v))
 		} // reset map
-		var v243v3, v243v4 typMapMapInt32Int
-		v243v3 = typMapMapInt32Int(v243v1)
-		v243v4 = typMapMapInt32Int(v243v2)
+		var v243v3, v243v4 typMapMapInt32Uintptr
+		v243v3 = typMapMapInt32Uintptr(v243v1)
+		v243v4 = typMapMapInt32Uintptr(v243v2)
 		bs243 = testMarshalErr(v243v3, h, t, "enc-map-v243-custom")
 		testUnmarshalErr(v243v4, bs243, h, t, "dec-map-v243-p-len")
 		testDeepEqualErr(v243v3, v243v4, t, "equal-map-v243-p-len")
 	}
 
-	for _, v := range []map[int32]int8{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int32]int{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v244: %v\n", v)
-		var v244v1, v244v2 map[int32]int8
+		var v244v1, v244v2 map[int32]int
 		v244v1 = v
 		bs244 := testMarshalErr(v244v1, h, t, "enc-map-v244")
 		if v == nil {
 			v244v2 = nil
 		} else {
-			v244v2 = make(map[int32]int8, len(v))
+			v244v2 = make(map[int32]int, len(v))
 		} // reset map
 		testUnmarshalErr(v244v2, bs244, h, t, "dec-map-v244")
 		testDeepEqualErr(v244v1, v244v2, t, "equal-map-v244")
 		if v == nil {
 			v244v2 = nil
 		} else {
-			v244v2 = make(map[int32]int8, len(v))
+			v244v2 = make(map[int32]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v244v2), bs244, h, t, "dec-map-v244-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v244v1, v244v2, t, "equal-map-v244-noaddr")
 		if v == nil {
 			v244v2 = nil
 		} else {
-			v244v2 = make(map[int32]int8, len(v))
+			v244v2 = make(map[int32]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v244v2, bs244, h, t, "dec-map-v244-p-len")
 		testDeepEqualErr(v244v1, v244v2, t, "equal-map-v244-p-len")
@@ -11430,39 +11454,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v244v2 = nil
 		} else {
-			v244v2 = make(map[int32]int8, len(v))
+			v244v2 = make(map[int32]int, len(v))
 		} // reset map
-		var v244v3, v244v4 typMapMapInt32Int8
-		v244v3 = typMapMapInt32Int8(v244v1)
-		v244v4 = typMapMapInt32Int8(v244v2)
+		var v244v3, v244v4 typMapMapInt32Int
+		v244v3 = typMapMapInt32Int(v244v1)
+		v244v4 = typMapMapInt32Int(v244v2)
 		bs244 = testMarshalErr(v244v3, h, t, "enc-map-v244-custom")
 		testUnmarshalErr(v244v4, bs244, h, t, "dec-map-v244-p-len")
 		testDeepEqualErr(v244v3, v244v4, t, "equal-map-v244-p-len")
 	}
 
-	for _, v := range []map[int32]int16{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int32]int8{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v245: %v\n", v)
-		var v245v1, v245v2 map[int32]int16
+		var v245v1, v245v2 map[int32]int8
 		v245v1 = v
 		bs245 := testMarshalErr(v245v1, h, t, "enc-map-v245")
 		if v == nil {
 			v245v2 = nil
 		} else {
-			v245v2 = make(map[int32]int16, len(v))
+			v245v2 = make(map[int32]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v245v2, bs245, h, t, "dec-map-v245")
 		testDeepEqualErr(v245v1, v245v2, t, "equal-map-v245")
 		if v == nil {
 			v245v2 = nil
 		} else {
-			v245v2 = make(map[int32]int16, len(v))
+			v245v2 = make(map[int32]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v245v2), bs245, h, t, "dec-map-v245-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v245v1, v245v2, t, "equal-map-v245-noaddr")
 		if v == nil {
 			v245v2 = nil
 		} else {
-			v245v2 = make(map[int32]int16, len(v))
+			v245v2 = make(map[int32]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v245v2, bs245, h, t, "dec-map-v245-p-len")
 		testDeepEqualErr(v245v1, v245v2, t, "equal-map-v245-p-len")
@@ -11474,39 +11498,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v245v2 = nil
 		} else {
-			v245v2 = make(map[int32]int16, len(v))
+			v245v2 = make(map[int32]int8, len(v))
 		} // reset map
-		var v245v3, v245v4 typMapMapInt32Int16
-		v245v3 = typMapMapInt32Int16(v245v1)
-		v245v4 = typMapMapInt32Int16(v245v2)
+		var v245v3, v245v4 typMapMapInt32Int8
+		v245v3 = typMapMapInt32Int8(v245v1)
+		v245v4 = typMapMapInt32Int8(v245v2)
 		bs245 = testMarshalErr(v245v3, h, t, "enc-map-v245-custom")
 		testUnmarshalErr(v245v4, bs245, h, t, "dec-map-v245-p-len")
 		testDeepEqualErr(v245v3, v245v4, t, "equal-map-v245-p-len")
 	}
 
-	for _, v := range []map[int32]int32{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int32]int16{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v246: %v\n", v)
-		var v246v1, v246v2 map[int32]int32
+		var v246v1, v246v2 map[int32]int16
 		v246v1 = v
 		bs246 := testMarshalErr(v246v1, h, t, "enc-map-v246")
 		if v == nil {
 			v246v2 = nil
 		} else {
-			v246v2 = make(map[int32]int32, len(v))
+			v246v2 = make(map[int32]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v246v2, bs246, h, t, "dec-map-v246")
 		testDeepEqualErr(v246v1, v246v2, t, "equal-map-v246")
 		if v == nil {
 			v246v2 = nil
 		} else {
-			v246v2 = make(map[int32]int32, len(v))
+			v246v2 = make(map[int32]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v246v2), bs246, h, t, "dec-map-v246-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v246v1, v246v2, t, "equal-map-v246-noaddr")
 		if v == nil {
 			v246v2 = nil
 		} else {
-			v246v2 = make(map[int32]int32, len(v))
+			v246v2 = make(map[int32]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v246v2, bs246, h, t, "dec-map-v246-p-len")
 		testDeepEqualErr(v246v1, v246v2, t, "equal-map-v246-p-len")
@@ -11518,39 +11542,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v246v2 = nil
 		} else {
-			v246v2 = make(map[int32]int32, len(v))
+			v246v2 = make(map[int32]int16, len(v))
 		} // reset map
-		var v246v3, v246v4 typMapMapInt32Int32
-		v246v3 = typMapMapInt32Int32(v246v1)
-		v246v4 = typMapMapInt32Int32(v246v2)
+		var v246v3, v246v4 typMapMapInt32Int16
+		v246v3 = typMapMapInt32Int16(v246v1)
+		v246v4 = typMapMapInt32Int16(v246v2)
 		bs246 = testMarshalErr(v246v3, h, t, "enc-map-v246-custom")
 		testUnmarshalErr(v246v4, bs246, h, t, "dec-map-v246-p-len")
 		testDeepEqualErr(v246v3, v246v4, t, "equal-map-v246-p-len")
 	}
 
-	for _, v := range []map[int32]int64{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int32]int32{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v247: %v\n", v)
-		var v247v1, v247v2 map[int32]int64
+		var v247v1, v247v2 map[int32]int32
 		v247v1 = v
 		bs247 := testMarshalErr(v247v1, h, t, "enc-map-v247")
 		if v == nil {
 			v247v2 = nil
 		} else {
-			v247v2 = make(map[int32]int64, len(v))
+			v247v2 = make(map[int32]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v247v2, bs247, h, t, "dec-map-v247")
 		testDeepEqualErr(v247v1, v247v2, t, "equal-map-v247")
 		if v == nil {
 			v247v2 = nil
 		} else {
-			v247v2 = make(map[int32]int64, len(v))
+			v247v2 = make(map[int32]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v247v2), bs247, h, t, "dec-map-v247-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v247v1, v247v2, t, "equal-map-v247-noaddr")
 		if v == nil {
 			v247v2 = nil
 		} else {
-			v247v2 = make(map[int32]int64, len(v))
+			v247v2 = make(map[int32]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v247v2, bs247, h, t, "dec-map-v247-p-len")
 		testDeepEqualErr(v247v1, v247v2, t, "equal-map-v247-p-len")
@@ -11562,39 +11586,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v247v2 = nil
 		} else {
-			v247v2 = make(map[int32]int64, len(v))
+			v247v2 = make(map[int32]int32, len(v))
 		} // reset map
-		var v247v3, v247v4 typMapMapInt32Int64
-		v247v3 = typMapMapInt32Int64(v247v1)
-		v247v4 = typMapMapInt32Int64(v247v2)
+		var v247v3, v247v4 typMapMapInt32Int32
+		v247v3 = typMapMapInt32Int32(v247v1)
+		v247v4 = typMapMapInt32Int32(v247v2)
 		bs247 = testMarshalErr(v247v3, h, t, "enc-map-v247-custom")
 		testUnmarshalErr(v247v4, bs247, h, t, "dec-map-v247-p-len")
 		testDeepEqualErr(v247v3, v247v4, t, "equal-map-v247-p-len")
 	}
 
-	for _, v := range []map[int32]float32{nil, {}, {44: 0, 33: 22.2}} {
+	for _, v := range []map[int32]int64{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v248: %v\n", v)
-		var v248v1, v248v2 map[int32]float32
+		var v248v1, v248v2 map[int32]int64
 		v248v1 = v
 		bs248 := testMarshalErr(v248v1, h, t, "enc-map-v248")
 		if v == nil {
 			v248v2 = nil
 		} else {
-			v248v2 = make(map[int32]float32, len(v))
+			v248v2 = make(map[int32]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v248v2, bs248, h, t, "dec-map-v248")
 		testDeepEqualErr(v248v1, v248v2, t, "equal-map-v248")
 		if v == nil {
 			v248v2 = nil
 		} else {
-			v248v2 = make(map[int32]float32, len(v))
+			v248v2 = make(map[int32]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v248v2), bs248, h, t, "dec-map-v248-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v248v1, v248v2, t, "equal-map-v248-noaddr")
 		if v == nil {
 			v248v2 = nil
 		} else {
-			v248v2 = make(map[int32]float32, len(v))
+			v248v2 = make(map[int32]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v248v2, bs248, h, t, "dec-map-v248-p-len")
 		testDeepEqualErr(v248v1, v248v2, t, "equal-map-v248-p-len")
@@ -11606,39 +11630,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v248v2 = nil
 		} else {
-			v248v2 = make(map[int32]float32, len(v))
+			v248v2 = make(map[int32]int64, len(v))
 		} // reset map
-		var v248v3, v248v4 typMapMapInt32Float32
-		v248v3 = typMapMapInt32Float32(v248v1)
-		v248v4 = typMapMapInt32Float32(v248v2)
+		var v248v3, v248v4 typMapMapInt32Int64
+		v248v3 = typMapMapInt32Int64(v248v1)
+		v248v4 = typMapMapInt32Int64(v248v2)
 		bs248 = testMarshalErr(v248v3, h, t, "enc-map-v248-custom")
 		testUnmarshalErr(v248v4, bs248, h, t, "dec-map-v248-p-len")
 		testDeepEqualErr(v248v3, v248v4, t, "equal-map-v248-p-len")
 	}
 
-	for _, v := range []map[int32]float64{nil, {}, {44: 0, 33: 11.1}} {
+	for _, v := range []map[int32]float32{nil, {}, {44: 0, 33: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v249: %v\n", v)
-		var v249v1, v249v2 map[int32]float64
+		var v249v1, v249v2 map[int32]float32
 		v249v1 = v
 		bs249 := testMarshalErr(v249v1, h, t, "enc-map-v249")
 		if v == nil {
 			v249v2 = nil
 		} else {
-			v249v2 = make(map[int32]float64, len(v))
+			v249v2 = make(map[int32]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v249v2, bs249, h, t, "dec-map-v249")
 		testDeepEqualErr(v249v1, v249v2, t, "equal-map-v249")
 		if v == nil {
 			v249v2 = nil
 		} else {
-			v249v2 = make(map[int32]float64, len(v))
+			v249v2 = make(map[int32]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v249v2), bs249, h, t, "dec-map-v249-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v249v1, v249v2, t, "equal-map-v249-noaddr")
 		if v == nil {
 			v249v2 = nil
 		} else {
-			v249v2 = make(map[int32]float64, len(v))
+			v249v2 = make(map[int32]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v249v2, bs249, h, t, "dec-map-v249-p-len")
 		testDeepEqualErr(v249v1, v249v2, t, "equal-map-v249-p-len")
@@ -11650,39 +11674,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v249v2 = nil
 		} else {
-			v249v2 = make(map[int32]float64, len(v))
+			v249v2 = make(map[int32]float32, len(v))
 		} // reset map
-		var v249v3, v249v4 typMapMapInt32Float64
-		v249v3 = typMapMapInt32Float64(v249v1)
-		v249v4 = typMapMapInt32Float64(v249v2)
+		var v249v3, v249v4 typMapMapInt32Float32
+		v249v3 = typMapMapInt32Float32(v249v1)
+		v249v4 = typMapMapInt32Float32(v249v2)
 		bs249 = testMarshalErr(v249v3, h, t, "enc-map-v249-custom")
 		testUnmarshalErr(v249v4, bs249, h, t, "dec-map-v249-p-len")
 		testDeepEqualErr(v249v3, v249v4, t, "equal-map-v249-p-len")
 	}
 
-	for _, v := range []map[int32]bool{nil, {}, {44: false, 33: true}} {
+	for _, v := range []map[int32]float64{nil, {}, {44: 0, 33: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v250: %v\n", v)
-		var v250v1, v250v2 map[int32]bool
+		var v250v1, v250v2 map[int32]float64
 		v250v1 = v
 		bs250 := testMarshalErr(v250v1, h, t, "enc-map-v250")
 		if v == nil {
 			v250v2 = nil
 		} else {
-			v250v2 = make(map[int32]bool, len(v))
+			v250v2 = make(map[int32]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v250v2, bs250, h, t, "dec-map-v250")
 		testDeepEqualErr(v250v1, v250v2, t, "equal-map-v250")
 		if v == nil {
 			v250v2 = nil
 		} else {
-			v250v2 = make(map[int32]bool, len(v))
+			v250v2 = make(map[int32]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v250v2), bs250, h, t, "dec-map-v250-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v250v1, v250v2, t, "equal-map-v250-noaddr")
 		if v == nil {
 			v250v2 = nil
 		} else {
-			v250v2 = make(map[int32]bool, len(v))
+			v250v2 = make(map[int32]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v250v2, bs250, h, t, "dec-map-v250-p-len")
 		testDeepEqualErr(v250v1, v250v2, t, "equal-map-v250-p-len")
@@ -11694,83 +11718,83 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v250v2 = nil
 		} else {
-			v250v2 = make(map[int32]bool, len(v))
+			v250v2 = make(map[int32]float64, len(v))
 		} // reset map
-		var v250v3, v250v4 typMapMapInt32Bool
-		v250v3 = typMapMapInt32Bool(v250v1)
-		v250v4 = typMapMapInt32Bool(v250v2)
+		var v250v3, v250v4 typMapMapInt32Float64
+		v250v3 = typMapMapInt32Float64(v250v1)
+		v250v4 = typMapMapInt32Float64(v250v2)
 		bs250 = testMarshalErr(v250v3, h, t, "enc-map-v250-custom")
 		testUnmarshalErr(v250v4, bs250, h, t, "dec-map-v250-p-len")
 		testDeepEqualErr(v250v3, v250v4, t, "equal-map-v250-p-len")
 	}
 
-	for _, v := range []map[int64]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
-		// fmt.Printf(">>>> running mammoth map v253: %v\n", v)
-		var v253v1, v253v2 map[int64]interface{}
-		v253v1 = v
-		bs253 := testMarshalErr(v253v1, h, t, "enc-map-v253")
+	for _, v := range []map[int32]bool{nil, {}, {44: false, 33: true}} {
+		// fmt.Printf(">>>> running mammoth map v251: %v\n", v)
+		var v251v1, v251v2 map[int32]bool
+		v251v1 = v
+		bs251 := testMarshalErr(v251v1, h, t, "enc-map-v251")
 		if v == nil {
-			v253v2 = nil
+			v251v2 = nil
 		} else {
-			v253v2 = make(map[int64]interface{}, len(v))
+			v251v2 = make(map[int32]bool, len(v))
 		} // reset map
-		testUnmarshalErr(v253v2, bs253, h, t, "dec-map-v253")
-		testDeepEqualErr(v253v1, v253v2, t, "equal-map-v253")
+		testUnmarshalErr(v251v2, bs251, h, t, "dec-map-v251")
+		testDeepEqualErr(v251v1, v251v2, t, "equal-map-v251")
 		if v == nil {
-			v253v2 = nil
+			v251v2 = nil
 		} else {
-			v253v2 = make(map[int64]interface{}, len(v))
+			v251v2 = make(map[int32]bool, len(v))
 		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v253v2), bs253, h, t, "dec-map-v253-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v253v1, v253v2, t, "equal-map-v253-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v251v2), bs251, h, t, "dec-map-v251-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v251v1, v251v2, t, "equal-map-v251-noaddr")
 		if v == nil {
-			v253v2 = nil
+			v251v2 = nil
 		} else {
-			v253v2 = make(map[int64]interface{}, len(v))
+			v251v2 = make(map[int32]bool, len(v))
 		} // reset map
-		testUnmarshalErr(&v253v2, bs253, h, t, "dec-map-v253-p-len")
-		testDeepEqualErr(v253v1, v253v2, t, "equal-map-v253-p-len")
-		bs253 = testMarshalErr(&v253v1, h, t, "enc-map-v253-p")
-		v253v2 = nil
-		testUnmarshalErr(&v253v2, bs253, h, t, "dec-map-v253-p-nil")
-		testDeepEqualErr(v253v1, v253v2, t, "equal-map-v253-p-nil")
+		testUnmarshalErr(&v251v2, bs251, h, t, "dec-map-v251-p-len")
+		testDeepEqualErr(v251v1, v251v2, t, "equal-map-v251-p-len")
+		bs251 = testMarshalErr(&v251v1, h, t, "enc-map-v251-p")
+		v251v2 = nil
+		testUnmarshalErr(&v251v2, bs251, h, t, "dec-map-v251-p-nil")
+		testDeepEqualErr(v251v1, v251v2, t, "equal-map-v251-p-nil")
 		// ...
 		if v == nil {
-			v253v2 = nil
+			v251v2 = nil
 		} else {
-			v253v2 = make(map[int64]interface{}, len(v))
+			v251v2 = make(map[int32]bool, len(v))
 		} // reset map
-		var v253v3, v253v4 typMapMapInt64Intf
-		v253v3 = typMapMapInt64Intf(v253v1)
-		v253v4 = typMapMapInt64Intf(v253v2)
-		bs253 = testMarshalErr(v253v3, h, t, "enc-map-v253-custom")
-		testUnmarshalErr(v253v4, bs253, h, t, "dec-map-v253-p-len")
-		testDeepEqualErr(v253v3, v253v4, t, "equal-map-v253-p-len")
+		var v251v3, v251v4 typMapMapInt32Bool
+		v251v3 = typMapMapInt32Bool(v251v1)
+		v251v4 = typMapMapInt32Bool(v251v2)
+		bs251 = testMarshalErr(v251v3, h, t, "enc-map-v251-custom")
+		testUnmarshalErr(v251v4, bs251, h, t, "dec-map-v251-p-len")
+		testDeepEqualErr(v251v3, v251v4, t, "equal-map-v251-p-len")
 	}
 
-	for _, v := range []map[int64]string{nil, {}, {44: "", 33: "some-string-2"}} {
+	for _, v := range []map[int64]interface{}{nil, {}, {44: nil, 33: "string-is-an-interface-2"}} {
 		// fmt.Printf(">>>> running mammoth map v254: %v\n", v)
-		var v254v1, v254v2 map[int64]string
+		var v254v1, v254v2 map[int64]interface{}
 		v254v1 = v
 		bs254 := testMarshalErr(v254v1, h, t, "enc-map-v254")
 		if v == nil {
 			v254v2 = nil
 		} else {
-			v254v2 = make(map[int64]string, len(v))
+			v254v2 = make(map[int64]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v254v2, bs254, h, t, "dec-map-v254")
 		testDeepEqualErr(v254v1, v254v2, t, "equal-map-v254")
 		if v == nil {
 			v254v2 = nil
 		} else {
-			v254v2 = make(map[int64]string, len(v))
+			v254v2 = make(map[int64]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v254v2), bs254, h, t, "dec-map-v254-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v254v1, v254v2, t, "equal-map-v254-noaddr")
 		if v == nil {
 			v254v2 = nil
 		} else {
-			v254v2 = make(map[int64]string, len(v))
+			v254v2 = make(map[int64]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v254v2, bs254, h, t, "dec-map-v254-p-len")
 		testDeepEqualErr(v254v1, v254v2, t, "equal-map-v254-p-len")
@@ -11782,39 +11806,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v254v2 = nil
 		} else {
-			v254v2 = make(map[int64]string, len(v))
+			v254v2 = make(map[int64]interface{}, len(v))
 		} // reset map
-		var v254v3, v254v4 typMapMapInt64String
-		v254v3 = typMapMapInt64String(v254v1)
-		v254v4 = typMapMapInt64String(v254v2)
+		var v254v3, v254v4 typMapMapInt64Intf
+		v254v3 = typMapMapInt64Intf(v254v1)
+		v254v4 = typMapMapInt64Intf(v254v2)
 		bs254 = testMarshalErr(v254v3, h, t, "enc-map-v254-custom")
 		testUnmarshalErr(v254v4, bs254, h, t, "dec-map-v254-p-len")
 		testDeepEqualErr(v254v3, v254v4, t, "equal-map-v254-p-len")
 	}
 
-	for _, v := range []map[int64]uint{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int64]string{nil, {}, {44: "", 33: "some-string-2"}} {
 		// fmt.Printf(">>>> running mammoth map v255: %v\n", v)
-		var v255v1, v255v2 map[int64]uint
+		var v255v1, v255v2 map[int64]string
 		v255v1 = v
 		bs255 := testMarshalErr(v255v1, h, t, "enc-map-v255")
 		if v == nil {
 			v255v2 = nil
 		} else {
-			v255v2 = make(map[int64]uint, len(v))
+			v255v2 = make(map[int64]string, len(v))
 		} // reset map
 		testUnmarshalErr(v255v2, bs255, h, t, "dec-map-v255")
 		testDeepEqualErr(v255v1, v255v2, t, "equal-map-v255")
 		if v == nil {
 			v255v2 = nil
 		} else {
-			v255v2 = make(map[int64]uint, len(v))
+			v255v2 = make(map[int64]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v255v2), bs255, h, t, "dec-map-v255-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v255v1, v255v2, t, "equal-map-v255-noaddr")
 		if v == nil {
 			v255v2 = nil
 		} else {
-			v255v2 = make(map[int64]uint, len(v))
+			v255v2 = make(map[int64]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v255v2, bs255, h, t, "dec-map-v255-p-len")
 		testDeepEqualErr(v255v1, v255v2, t, "equal-map-v255-p-len")
@@ -11826,39 +11850,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v255v2 = nil
 		} else {
-			v255v2 = make(map[int64]uint, len(v))
+			v255v2 = make(map[int64]string, len(v))
 		} // reset map
-		var v255v3, v255v4 typMapMapInt64Uint
-		v255v3 = typMapMapInt64Uint(v255v1)
-		v255v4 = typMapMapInt64Uint(v255v2)
+		var v255v3, v255v4 typMapMapInt64String
+		v255v3 = typMapMapInt64String(v255v1)
+		v255v4 = typMapMapInt64String(v255v2)
 		bs255 = testMarshalErr(v255v3, h, t, "enc-map-v255-custom")
 		testUnmarshalErr(v255v4, bs255, h, t, "dec-map-v255-p-len")
 		testDeepEqualErr(v255v3, v255v4, t, "equal-map-v255-p-len")
 	}
 
-	for _, v := range []map[int64]uint8{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int64]uint{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v256: %v\n", v)
-		var v256v1, v256v2 map[int64]uint8
+		var v256v1, v256v2 map[int64]uint
 		v256v1 = v
 		bs256 := testMarshalErr(v256v1, h, t, "enc-map-v256")
 		if v == nil {
 			v256v2 = nil
 		} else {
-			v256v2 = make(map[int64]uint8, len(v))
+			v256v2 = make(map[int64]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v256v2, bs256, h, t, "dec-map-v256")
 		testDeepEqualErr(v256v1, v256v2, t, "equal-map-v256")
 		if v == nil {
 			v256v2 = nil
 		} else {
-			v256v2 = make(map[int64]uint8, len(v))
+			v256v2 = make(map[int64]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v256v2), bs256, h, t, "dec-map-v256-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v256v1, v256v2, t, "equal-map-v256-noaddr")
 		if v == nil {
 			v256v2 = nil
 		} else {
-			v256v2 = make(map[int64]uint8, len(v))
+			v256v2 = make(map[int64]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v256v2, bs256, h, t, "dec-map-v256-p-len")
 		testDeepEqualErr(v256v1, v256v2, t, "equal-map-v256-p-len")
@@ -11870,39 +11894,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v256v2 = nil
 		} else {
-			v256v2 = make(map[int64]uint8, len(v))
+			v256v2 = make(map[int64]uint, len(v))
 		} // reset map
-		var v256v3, v256v4 typMapMapInt64Uint8
-		v256v3 = typMapMapInt64Uint8(v256v1)
-		v256v4 = typMapMapInt64Uint8(v256v2)
+		var v256v3, v256v4 typMapMapInt64Uint
+		v256v3 = typMapMapInt64Uint(v256v1)
+		v256v4 = typMapMapInt64Uint(v256v2)
 		bs256 = testMarshalErr(v256v3, h, t, "enc-map-v256-custom")
 		testUnmarshalErr(v256v4, bs256, h, t, "dec-map-v256-p-len")
 		testDeepEqualErr(v256v3, v256v4, t, "equal-map-v256-p-len")
 	}
 
-	for _, v := range []map[int64]uint16{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int64]uint8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v257: %v\n", v)
-		var v257v1, v257v2 map[int64]uint16
+		var v257v1, v257v2 map[int64]uint8
 		v257v1 = v
 		bs257 := testMarshalErr(v257v1, h, t, "enc-map-v257")
 		if v == nil {
 			v257v2 = nil
 		} else {
-			v257v2 = make(map[int64]uint16, len(v))
+			v257v2 = make(map[int64]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v257v2, bs257, h, t, "dec-map-v257")
 		testDeepEqualErr(v257v1, v257v2, t, "equal-map-v257")
 		if v == nil {
 			v257v2 = nil
 		} else {
-			v257v2 = make(map[int64]uint16, len(v))
+			v257v2 = make(map[int64]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v257v2), bs257, h, t, "dec-map-v257-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v257v1, v257v2, t, "equal-map-v257-noaddr")
 		if v == nil {
 			v257v2 = nil
 		} else {
-			v257v2 = make(map[int64]uint16, len(v))
+			v257v2 = make(map[int64]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v257v2, bs257, h, t, "dec-map-v257-p-len")
 		testDeepEqualErr(v257v1, v257v2, t, "equal-map-v257-p-len")
@@ -11914,39 +11938,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v257v2 = nil
 		} else {
-			v257v2 = make(map[int64]uint16, len(v))
+			v257v2 = make(map[int64]uint8, len(v))
 		} // reset map
-		var v257v3, v257v4 typMapMapInt64Uint16
-		v257v3 = typMapMapInt64Uint16(v257v1)
-		v257v4 = typMapMapInt64Uint16(v257v2)
+		var v257v3, v257v4 typMapMapInt64Uint8
+		v257v3 = typMapMapInt64Uint8(v257v1)
+		v257v4 = typMapMapInt64Uint8(v257v2)
 		bs257 = testMarshalErr(v257v3, h, t, "enc-map-v257-custom")
 		testUnmarshalErr(v257v4, bs257, h, t, "dec-map-v257-p-len")
 		testDeepEqualErr(v257v3, v257v4, t, "equal-map-v257-p-len")
 	}
 
-	for _, v := range []map[int64]uint32{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int64]uint16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v258: %v\n", v)
-		var v258v1, v258v2 map[int64]uint32
+		var v258v1, v258v2 map[int64]uint16
 		v258v1 = v
 		bs258 := testMarshalErr(v258v1, h, t, "enc-map-v258")
 		if v == nil {
 			v258v2 = nil
 		} else {
-			v258v2 = make(map[int64]uint32, len(v))
+			v258v2 = make(map[int64]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v258v2, bs258, h, t, "dec-map-v258")
 		testDeepEqualErr(v258v1, v258v2, t, "equal-map-v258")
 		if v == nil {
 			v258v2 = nil
 		} else {
-			v258v2 = make(map[int64]uint32, len(v))
+			v258v2 = make(map[int64]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v258v2), bs258, h, t, "dec-map-v258-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v258v1, v258v2, t, "equal-map-v258-noaddr")
 		if v == nil {
 			v258v2 = nil
 		} else {
-			v258v2 = make(map[int64]uint32, len(v))
+			v258v2 = make(map[int64]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v258v2, bs258, h, t, "dec-map-v258-p-len")
 		testDeepEqualErr(v258v1, v258v2, t, "equal-map-v258-p-len")
@@ -11958,39 +11982,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v258v2 = nil
 		} else {
-			v258v2 = make(map[int64]uint32, len(v))
+			v258v2 = make(map[int64]uint16, len(v))
 		} // reset map
-		var v258v3, v258v4 typMapMapInt64Uint32
-		v258v3 = typMapMapInt64Uint32(v258v1)
-		v258v4 = typMapMapInt64Uint32(v258v2)
+		var v258v3, v258v4 typMapMapInt64Uint16
+		v258v3 = typMapMapInt64Uint16(v258v1)
+		v258v4 = typMapMapInt64Uint16(v258v2)
 		bs258 = testMarshalErr(v258v3, h, t, "enc-map-v258-custom")
 		testUnmarshalErr(v258v4, bs258, h, t, "dec-map-v258-p-len")
 		testDeepEqualErr(v258v3, v258v4, t, "equal-map-v258-p-len")
 	}
 
-	for _, v := range []map[int64]uint64{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int64]uint32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v259: %v\n", v)
-		var v259v1, v259v2 map[int64]uint64
+		var v259v1, v259v2 map[int64]uint32
 		v259v1 = v
 		bs259 := testMarshalErr(v259v1, h, t, "enc-map-v259")
 		if v == nil {
 			v259v2 = nil
 		} else {
-			v259v2 = make(map[int64]uint64, len(v))
+			v259v2 = make(map[int64]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v259v2, bs259, h, t, "dec-map-v259")
 		testDeepEqualErr(v259v1, v259v2, t, "equal-map-v259")
 		if v == nil {
 			v259v2 = nil
 		} else {
-			v259v2 = make(map[int64]uint64, len(v))
+			v259v2 = make(map[int64]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v259v2), bs259, h, t, "dec-map-v259-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v259v1, v259v2, t, "equal-map-v259-noaddr")
 		if v == nil {
 			v259v2 = nil
 		} else {
-			v259v2 = make(map[int64]uint64, len(v))
+			v259v2 = make(map[int64]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v259v2, bs259, h, t, "dec-map-v259-p-len")
 		testDeepEqualErr(v259v1, v259v2, t, "equal-map-v259-p-len")
@@ -12002,39 +12026,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v259v2 = nil
 		} else {
-			v259v2 = make(map[int64]uint64, len(v))
+			v259v2 = make(map[int64]uint32, len(v))
 		} // reset map
-		var v259v3, v259v4 typMapMapInt64Uint64
-		v259v3 = typMapMapInt64Uint64(v259v1)
-		v259v4 = typMapMapInt64Uint64(v259v2)
+		var v259v3, v259v4 typMapMapInt64Uint32
+		v259v3 = typMapMapInt64Uint32(v259v1)
+		v259v4 = typMapMapInt64Uint32(v259v2)
 		bs259 = testMarshalErr(v259v3, h, t, "enc-map-v259-custom")
 		testUnmarshalErr(v259v4, bs259, h, t, "dec-map-v259-p-len")
 		testDeepEqualErr(v259v3, v259v4, t, "equal-map-v259-p-len")
 	}
 
-	for _, v := range []map[int64]uintptr{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int64]uint64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v260: %v\n", v)
-		var v260v1, v260v2 map[int64]uintptr
+		var v260v1, v260v2 map[int64]uint64
 		v260v1 = v
 		bs260 := testMarshalErr(v260v1, h, t, "enc-map-v260")
 		if v == nil {
 			v260v2 = nil
 		} else {
-			v260v2 = make(map[int64]uintptr, len(v))
+			v260v2 = make(map[int64]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v260v2, bs260, h, t, "dec-map-v260")
 		testDeepEqualErr(v260v1, v260v2, t, "equal-map-v260")
 		if v == nil {
 			v260v2 = nil
 		} else {
-			v260v2 = make(map[int64]uintptr, len(v))
+			v260v2 = make(map[int64]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v260v2), bs260, h, t, "dec-map-v260-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v260v1, v260v2, t, "equal-map-v260-noaddr")
 		if v == nil {
 			v260v2 = nil
 		} else {
-			v260v2 = make(map[int64]uintptr, len(v))
+			v260v2 = make(map[int64]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v260v2, bs260, h, t, "dec-map-v260-p-len")
 		testDeepEqualErr(v260v1, v260v2, t, "equal-map-v260-p-len")
@@ -12046,39 +12070,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v260v2 = nil
 		} else {
-			v260v2 = make(map[int64]uintptr, len(v))
+			v260v2 = make(map[int64]uint64, len(v))
 		} // reset map
-		var v260v3, v260v4 typMapMapInt64Uintptr
-		v260v3 = typMapMapInt64Uintptr(v260v1)
-		v260v4 = typMapMapInt64Uintptr(v260v2)
+		var v260v3, v260v4 typMapMapInt64Uint64
+		v260v3 = typMapMapInt64Uint64(v260v1)
+		v260v4 = typMapMapInt64Uint64(v260v2)
 		bs260 = testMarshalErr(v260v3, h, t, "enc-map-v260-custom")
 		testUnmarshalErr(v260v4, bs260, h, t, "dec-map-v260-p-len")
 		testDeepEqualErr(v260v3, v260v4, t, "equal-map-v260-p-len")
 	}
 
-	for _, v := range []map[int64]int{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int64]uintptr{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v261: %v\n", v)
-		var v261v1, v261v2 map[int64]int
+		var v261v1, v261v2 map[int64]uintptr
 		v261v1 = v
 		bs261 := testMarshalErr(v261v1, h, t, "enc-map-v261")
 		if v == nil {
 			v261v2 = nil
 		} else {
-			v261v2 = make(map[int64]int, len(v))
+			v261v2 = make(map[int64]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v261v2, bs261, h, t, "dec-map-v261")
 		testDeepEqualErr(v261v1, v261v2, t, "equal-map-v261")
 		if v == nil {
 			v261v2 = nil
 		} else {
-			v261v2 = make(map[int64]int, len(v))
+			v261v2 = make(map[int64]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v261v2), bs261, h, t, "dec-map-v261-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v261v1, v261v2, t, "equal-map-v261-noaddr")
 		if v == nil {
 			v261v2 = nil
 		} else {
-			v261v2 = make(map[int64]int, len(v))
+			v261v2 = make(map[int64]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v261v2, bs261, h, t, "dec-map-v261-p-len")
 		testDeepEqualErr(v261v1, v261v2, t, "equal-map-v261-p-len")
@@ -12090,39 +12114,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v261v2 = nil
 		} else {
-			v261v2 = make(map[int64]int, len(v))
+			v261v2 = make(map[int64]uintptr, len(v))
 		} // reset map
-		var v261v3, v261v4 typMapMapInt64Int
-		v261v3 = typMapMapInt64Int(v261v1)
-		v261v4 = typMapMapInt64Int(v261v2)
+		var v261v3, v261v4 typMapMapInt64Uintptr
+		v261v3 = typMapMapInt64Uintptr(v261v1)
+		v261v4 = typMapMapInt64Uintptr(v261v2)
 		bs261 = testMarshalErr(v261v3, h, t, "enc-map-v261-custom")
 		testUnmarshalErr(v261v4, bs261, h, t, "dec-map-v261-p-len")
 		testDeepEqualErr(v261v3, v261v4, t, "equal-map-v261-p-len")
 	}
 
-	for _, v := range []map[int64]int8{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int64]int{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v262: %v\n", v)
-		var v262v1, v262v2 map[int64]int8
+		var v262v1, v262v2 map[int64]int
 		v262v1 = v
 		bs262 := testMarshalErr(v262v1, h, t, "enc-map-v262")
 		if v == nil {
 			v262v2 = nil
 		} else {
-			v262v2 = make(map[int64]int8, len(v))
+			v262v2 = make(map[int64]int, len(v))
 		} // reset map
 		testUnmarshalErr(v262v2, bs262, h, t, "dec-map-v262")
 		testDeepEqualErr(v262v1, v262v2, t, "equal-map-v262")
 		if v == nil {
 			v262v2 = nil
 		} else {
-			v262v2 = make(map[int64]int8, len(v))
+			v262v2 = make(map[int64]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v262v2), bs262, h, t, "dec-map-v262-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v262v1, v262v2, t, "equal-map-v262-noaddr")
 		if v == nil {
 			v262v2 = nil
 		} else {
-			v262v2 = make(map[int64]int8, len(v))
+			v262v2 = make(map[int64]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v262v2, bs262, h, t, "dec-map-v262-p-len")
 		testDeepEqualErr(v262v1, v262v2, t, "equal-map-v262-p-len")
@@ -12134,39 +12158,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v262v2 = nil
 		} else {
-			v262v2 = make(map[int64]int8, len(v))
+			v262v2 = make(map[int64]int, len(v))
 		} // reset map
-		var v262v3, v262v4 typMapMapInt64Int8
-		v262v3 = typMapMapInt64Int8(v262v1)
-		v262v4 = typMapMapInt64Int8(v262v2)
+		var v262v3, v262v4 typMapMapInt64Int
+		v262v3 = typMapMapInt64Int(v262v1)
+		v262v4 = typMapMapInt64Int(v262v2)
 		bs262 = testMarshalErr(v262v3, h, t, "enc-map-v262-custom")
 		testUnmarshalErr(v262v4, bs262, h, t, "dec-map-v262-p-len")
 		testDeepEqualErr(v262v3, v262v4, t, "equal-map-v262-p-len")
 	}
 
-	for _, v := range []map[int64]int16{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int64]int8{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v263: %v\n", v)
-		var v263v1, v263v2 map[int64]int16
+		var v263v1, v263v2 map[int64]int8
 		v263v1 = v
 		bs263 := testMarshalErr(v263v1, h, t, "enc-map-v263")
 		if v == nil {
 			v263v2 = nil
 		} else {
-			v263v2 = make(map[int64]int16, len(v))
+			v263v2 = make(map[int64]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v263v2, bs263, h, t, "dec-map-v263")
 		testDeepEqualErr(v263v1, v263v2, t, "equal-map-v263")
 		if v == nil {
 			v263v2 = nil
 		} else {
-			v263v2 = make(map[int64]int16, len(v))
+			v263v2 = make(map[int64]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v263v2), bs263, h, t, "dec-map-v263-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v263v1, v263v2, t, "equal-map-v263-noaddr")
 		if v == nil {
 			v263v2 = nil
 		} else {
-			v263v2 = make(map[int64]int16, len(v))
+			v263v2 = make(map[int64]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v263v2, bs263, h, t, "dec-map-v263-p-len")
 		testDeepEqualErr(v263v1, v263v2, t, "equal-map-v263-p-len")
@@ -12178,39 +12202,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v263v2 = nil
 		} else {
-			v263v2 = make(map[int64]int16, len(v))
+			v263v2 = make(map[int64]int8, len(v))
 		} // reset map
-		var v263v3, v263v4 typMapMapInt64Int16
-		v263v3 = typMapMapInt64Int16(v263v1)
-		v263v4 = typMapMapInt64Int16(v263v2)
+		var v263v3, v263v4 typMapMapInt64Int8
+		v263v3 = typMapMapInt64Int8(v263v1)
+		v263v4 = typMapMapInt64Int8(v263v2)
 		bs263 = testMarshalErr(v263v3, h, t, "enc-map-v263-custom")
 		testUnmarshalErr(v263v4, bs263, h, t, "dec-map-v263-p-len")
 		testDeepEqualErr(v263v3, v263v4, t, "equal-map-v263-p-len")
 	}
 
-	for _, v := range []map[int64]int32{nil, {}, {33: 0, 44: 33}} {
+	for _, v := range []map[int64]int16{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v264: %v\n", v)
-		var v264v1, v264v2 map[int64]int32
+		var v264v1, v264v2 map[int64]int16
 		v264v1 = v
 		bs264 := testMarshalErr(v264v1, h, t, "enc-map-v264")
 		if v == nil {
 			v264v2 = nil
 		} else {
-			v264v2 = make(map[int64]int32, len(v))
+			v264v2 = make(map[int64]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v264v2, bs264, h, t, "dec-map-v264")
 		testDeepEqualErr(v264v1, v264v2, t, "equal-map-v264")
 		if v == nil {
 			v264v2 = nil
 		} else {
-			v264v2 = make(map[int64]int32, len(v))
+			v264v2 = make(map[int64]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v264v2), bs264, h, t, "dec-map-v264-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v264v1, v264v2, t, "equal-map-v264-noaddr")
 		if v == nil {
 			v264v2 = nil
 		} else {
-			v264v2 = make(map[int64]int32, len(v))
+			v264v2 = make(map[int64]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v264v2, bs264, h, t, "dec-map-v264-p-len")
 		testDeepEqualErr(v264v1, v264v2, t, "equal-map-v264-p-len")
@@ -12222,39 +12246,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v264v2 = nil
 		} else {
-			v264v2 = make(map[int64]int32, len(v))
+			v264v2 = make(map[int64]int16, len(v))
 		} // reset map
-		var v264v3, v264v4 typMapMapInt64Int32
-		v264v3 = typMapMapInt64Int32(v264v1)
-		v264v4 = typMapMapInt64Int32(v264v2)
+		var v264v3, v264v4 typMapMapInt64Int16
+		v264v3 = typMapMapInt64Int16(v264v1)
+		v264v4 = typMapMapInt64Int16(v264v2)
 		bs264 = testMarshalErr(v264v3, h, t, "enc-map-v264-custom")
 		testUnmarshalErr(v264v4, bs264, h, t, "dec-map-v264-p-len")
 		testDeepEqualErr(v264v3, v264v4, t, "equal-map-v264-p-len")
 	}
 
-	for _, v := range []map[int64]int64{nil, {}, {44: 0, 33: 44}} {
+	for _, v := range []map[int64]int32{nil, {}, {33: 0, 44: 33}} {
 		// fmt.Printf(">>>> running mammoth map v265: %v\n", v)
-		var v265v1, v265v2 map[int64]int64
+		var v265v1, v265v2 map[int64]int32
 		v265v1 = v
 		bs265 := testMarshalErr(v265v1, h, t, "enc-map-v265")
 		if v == nil {
 			v265v2 = nil
 		} else {
-			v265v2 = make(map[int64]int64, len(v))
+			v265v2 = make(map[int64]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v265v2, bs265, h, t, "dec-map-v265")
 		testDeepEqualErr(v265v1, v265v2, t, "equal-map-v265")
 		if v == nil {
 			v265v2 = nil
 		} else {
-			v265v2 = make(map[int64]int64, len(v))
+			v265v2 = make(map[int64]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v265v2), bs265, h, t, "dec-map-v265-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v265v1, v265v2, t, "equal-map-v265-noaddr")
 		if v == nil {
 			v265v2 = nil
 		} else {
-			v265v2 = make(map[int64]int64, len(v))
+			v265v2 = make(map[int64]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v265v2, bs265, h, t, "dec-map-v265-p-len")
 		testDeepEqualErr(v265v1, v265v2, t, "equal-map-v265-p-len")
@@ -12266,39 +12290,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v265v2 = nil
 		} else {
-			v265v2 = make(map[int64]int64, len(v))
+			v265v2 = make(map[int64]int32, len(v))
 		} // reset map
-		var v265v3, v265v4 typMapMapInt64Int64
-		v265v3 = typMapMapInt64Int64(v265v1)
-		v265v4 = typMapMapInt64Int64(v265v2)
+		var v265v3, v265v4 typMapMapInt64Int32
+		v265v3 = typMapMapInt64Int32(v265v1)
+		v265v4 = typMapMapInt64Int32(v265v2)
 		bs265 = testMarshalErr(v265v3, h, t, "enc-map-v265-custom")
 		testUnmarshalErr(v265v4, bs265, h, t, "dec-map-v265-p-len")
 		testDeepEqualErr(v265v3, v265v4, t, "equal-map-v265-p-len")
 	}
 
-	for _, v := range []map[int64]float32{nil, {}, {33: 0, 44: 22.2}} {
+	for _, v := range []map[int64]int64{nil, {}, {44: 0, 33: 44}} {
 		// fmt.Printf(">>>> running mammoth map v266: %v\n", v)
-		var v266v1, v266v2 map[int64]float32
+		var v266v1, v266v2 map[int64]int64
 		v266v1 = v
 		bs266 := testMarshalErr(v266v1, h, t, "enc-map-v266")
 		if v == nil {
 			v266v2 = nil
 		} else {
-			v266v2 = make(map[int64]float32, len(v))
+			v266v2 = make(map[int64]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v266v2, bs266, h, t, "dec-map-v266")
 		testDeepEqualErr(v266v1, v266v2, t, "equal-map-v266")
 		if v == nil {
 			v266v2 = nil
 		} else {
-			v266v2 = make(map[int64]float32, len(v))
+			v266v2 = make(map[int64]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v266v2), bs266, h, t, "dec-map-v266-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v266v1, v266v2, t, "equal-map-v266-noaddr")
 		if v == nil {
 			v266v2 = nil
 		} else {
-			v266v2 = make(map[int64]float32, len(v))
+			v266v2 = make(map[int64]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v266v2, bs266, h, t, "dec-map-v266-p-len")
 		testDeepEqualErr(v266v1, v266v2, t, "equal-map-v266-p-len")
@@ -12310,39 +12334,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v266v2 = nil
 		} else {
-			v266v2 = make(map[int64]float32, len(v))
+			v266v2 = make(map[int64]int64, len(v))
 		} // reset map
-		var v266v3, v266v4 typMapMapInt64Float32
-		v266v3 = typMapMapInt64Float32(v266v1)
-		v266v4 = typMapMapInt64Float32(v266v2)
+		var v266v3, v266v4 typMapMapInt64Int64
+		v266v3 = typMapMapInt64Int64(v266v1)
+		v266v4 = typMapMapInt64Int64(v266v2)
 		bs266 = testMarshalErr(v266v3, h, t, "enc-map-v266-custom")
 		testUnmarshalErr(v266v4, bs266, h, t, "dec-map-v266-p-len")
 		testDeepEqualErr(v266v3, v266v4, t, "equal-map-v266-p-len")
 	}
 
-	for _, v := range []map[int64]float64{nil, {}, {33: 0, 44: 11.1}} {
+	for _, v := range []map[int64]float32{nil, {}, {33: 0, 44: 22.2}} {
 		// fmt.Printf(">>>> running mammoth map v267: %v\n", v)
-		var v267v1, v267v2 map[int64]float64
+		var v267v1, v267v2 map[int64]float32
 		v267v1 = v
 		bs267 := testMarshalErr(v267v1, h, t, "enc-map-v267")
 		if v == nil {
 			v267v2 = nil
 		} else {
-			v267v2 = make(map[int64]float64, len(v))
+			v267v2 = make(map[int64]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v267v2, bs267, h, t, "dec-map-v267")
 		testDeepEqualErr(v267v1, v267v2, t, "equal-map-v267")
 		if v == nil {
 			v267v2 = nil
 		} else {
-			v267v2 = make(map[int64]float64, len(v))
+			v267v2 = make(map[int64]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v267v2), bs267, h, t, "dec-map-v267-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v267v1, v267v2, t, "equal-map-v267-noaddr")
 		if v == nil {
 			v267v2 = nil
 		} else {
-			v267v2 = make(map[int64]float64, len(v))
+			v267v2 = make(map[int64]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v267v2, bs267, h, t, "dec-map-v267-p-len")
 		testDeepEqualErr(v267v1, v267v2, t, "equal-map-v267-p-len")
@@ -12354,39 +12378,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v267v2 = nil
 		} else {
-			v267v2 = make(map[int64]float64, len(v))
+			v267v2 = make(map[int64]float32, len(v))
 		} // reset map
-		var v267v3, v267v4 typMapMapInt64Float64
-		v267v3 = typMapMapInt64Float64(v267v1)
-		v267v4 = typMapMapInt64Float64(v267v2)
+		var v267v3, v267v4 typMapMapInt64Float32
+		v267v3 = typMapMapInt64Float32(v267v1)
+		v267v4 = typMapMapInt64Float32(v267v2)
 		bs267 = testMarshalErr(v267v3, h, t, "enc-map-v267-custom")
 		testUnmarshalErr(v267v4, bs267, h, t, "dec-map-v267-p-len")
 		testDeepEqualErr(v267v3, v267v4, t, "equal-map-v267-p-len")
 	}
 
-	for _, v := range []map[int64]bool{nil, {}, {33: false, 44: true}} {
+	for _, v := range []map[int64]float64{nil, {}, {33: 0, 44: 11.1}} {
 		// fmt.Printf(">>>> running mammoth map v268: %v\n", v)
-		var v268v1, v268v2 map[int64]bool
+		var v268v1, v268v2 map[int64]float64
 		v268v1 = v
 		bs268 := testMarshalErr(v268v1, h, t, "enc-map-v268")
 		if v == nil {
 			v268v2 = nil
 		} else {
-			v268v2 = make(map[int64]bool, len(v))
+			v268v2 = make(map[int64]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v268v2, bs268, h, t, "dec-map-v268")
 		testDeepEqualErr(v268v1, v268v2, t, "equal-map-v268")
 		if v == nil {
 			v268v2 = nil
 		} else {
-			v268v2 = make(map[int64]bool, len(v))
+			v268v2 = make(map[int64]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v268v2), bs268, h, t, "dec-map-v268-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v268v1, v268v2, t, "equal-map-v268-noaddr")
 		if v == nil {
 			v268v2 = nil
 		} else {
-			v268v2 = make(map[int64]bool, len(v))
+			v268v2 = make(map[int64]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v268v2, bs268, h, t, "dec-map-v268-p-len")
 		testDeepEqualErr(v268v1, v268v2, t, "equal-map-v268-p-len")
@@ -12398,83 +12422,83 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v268v2 = nil
 		} else {
-			v268v2 = make(map[int64]bool, len(v))
+			v268v2 = make(map[int64]float64, len(v))
 		} // reset map
-		var v268v3, v268v4 typMapMapInt64Bool
-		v268v3 = typMapMapInt64Bool(v268v1)
-		v268v4 = typMapMapInt64Bool(v268v2)
+		var v268v3, v268v4 typMapMapInt64Float64
+		v268v3 = typMapMapInt64Float64(v268v1)
+		v268v4 = typMapMapInt64Float64(v268v2)
 		bs268 = testMarshalErr(v268v3, h, t, "enc-map-v268-custom")
 		testUnmarshalErr(v268v4, bs268, h, t, "dec-map-v268-p-len")
 		testDeepEqualErr(v268v3, v268v4, t, "equal-map-v268-p-len")
 	}
 
-	for _, v := range []map[bool]interface{}{nil, {}, {true: nil}} {
-		// fmt.Printf(">>>> running mammoth map v271: %v\n", v)
-		var v271v1, v271v2 map[bool]interface{}
-		v271v1 = v
-		bs271 := testMarshalErr(v271v1, h, t, "enc-map-v271")
+	for _, v := range []map[int64]bool{nil, {}, {33: false, 44: true}} {
+		// fmt.Printf(">>>> running mammoth map v269: %v\n", v)
+		var v269v1, v269v2 map[int64]bool
+		v269v1 = v
+		bs269 := testMarshalErr(v269v1, h, t, "enc-map-v269")
 		if v == nil {
-			v271v2 = nil
+			v269v2 = nil
 		} else {
-			v271v2 = make(map[bool]interface{}, len(v))
+			v269v2 = make(map[int64]bool, len(v))
 		} // reset map
-		testUnmarshalErr(v271v2, bs271, h, t, "dec-map-v271")
-		testDeepEqualErr(v271v1, v271v2, t, "equal-map-v271")
+		testUnmarshalErr(v269v2, bs269, h, t, "dec-map-v269")
+		testDeepEqualErr(v269v1, v269v2, t, "equal-map-v269")
 		if v == nil {
-			v271v2 = nil
+			v269v2 = nil
 		} else {
-			v271v2 = make(map[bool]interface{}, len(v))
+			v269v2 = make(map[int64]bool, len(v))
 		} // reset map
-		testUnmarshalErr(reflect.ValueOf(v271v2), bs271, h, t, "dec-map-v271-noaddr") // decode into non-addressable map value
-		testDeepEqualErr(v271v1, v271v2, t, "equal-map-v271-noaddr")
+		testUnmarshalErr(reflect.ValueOf(v269v2), bs269, h, t, "dec-map-v269-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v269v1, v269v2, t, "equal-map-v269-noaddr")
 		if v == nil {
-			v271v2 = nil
+			v269v2 = nil
 		} else {
-			v271v2 = make(map[bool]interface{}, len(v))
+			v269v2 = make(map[int64]bool, len(v))
 		} // reset map
-		testUnmarshalErr(&v271v2, bs271, h, t, "dec-map-v271-p-len")
-		testDeepEqualErr(v271v1, v271v2, t, "equal-map-v271-p-len")
-		bs271 = testMarshalErr(&v271v1, h, t, "enc-map-v271-p")
-		v271v2 = nil
-		testUnmarshalErr(&v271v2, bs271, h, t, "dec-map-v271-p-nil")
-		testDeepEqualErr(v271v1, v271v2, t, "equal-map-v271-p-nil")
+		testUnmarshalErr(&v269v2, bs269, h, t, "dec-map-v269-p-len")
+		testDeepEqualErr(v269v1, v269v2, t, "equal-map-v269-p-len")
+		bs269 = testMarshalErr(&v269v1, h, t, "enc-map-v269-p")
+		v269v2 = nil
+		testUnmarshalErr(&v269v2, bs269, h, t, "dec-map-v269-p-nil")
+		testDeepEqualErr(v269v1, v269v2, t, "equal-map-v269-p-nil")
 		// ...
 		if v == nil {
-			v271v2 = nil
+			v269v2 = nil
 		} else {
-			v271v2 = make(map[bool]interface{}, len(v))
+			v269v2 = make(map[int64]bool, len(v))
 		} // reset map
-		var v271v3, v271v4 typMapMapBoolIntf
-		v271v3 = typMapMapBoolIntf(v271v1)
-		v271v4 = typMapMapBoolIntf(v271v2)
-		bs271 = testMarshalErr(v271v3, h, t, "enc-map-v271-custom")
-		testUnmarshalErr(v271v4, bs271, h, t, "dec-map-v271-p-len")
-		testDeepEqualErr(v271v3, v271v4, t, "equal-map-v271-p-len")
+		var v269v3, v269v4 typMapMapInt64Bool
+		v269v3 = typMapMapInt64Bool(v269v1)
+		v269v4 = typMapMapInt64Bool(v269v2)
+		bs269 = testMarshalErr(v269v3, h, t, "enc-map-v269-custom")
+		testUnmarshalErr(v269v4, bs269, h, t, "dec-map-v269-p-len")
+		testDeepEqualErr(v269v3, v269v4, t, "equal-map-v269-p-len")
 	}
 
-	for _, v := range []map[bool]string{nil, {}, {true: ""}} {
+	for _, v := range []map[bool]interface{}{nil, {}, {true: nil}} {
 		// fmt.Printf(">>>> running mammoth map v272: %v\n", v)
-		var v272v1, v272v2 map[bool]string
+		var v272v1, v272v2 map[bool]interface{}
 		v272v1 = v
 		bs272 := testMarshalErr(v272v1, h, t, "enc-map-v272")
 		if v == nil {
 			v272v2 = nil
 		} else {
-			v272v2 = make(map[bool]string, len(v))
+			v272v2 = make(map[bool]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(v272v2, bs272, h, t, "dec-map-v272")
 		testDeepEqualErr(v272v1, v272v2, t, "equal-map-v272")
 		if v == nil {
 			v272v2 = nil
 		} else {
-			v272v2 = make(map[bool]string, len(v))
+			v272v2 = make(map[bool]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v272v2), bs272, h, t, "dec-map-v272-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v272v1, v272v2, t, "equal-map-v272-noaddr")
 		if v == nil {
 			v272v2 = nil
 		} else {
-			v272v2 = make(map[bool]string, len(v))
+			v272v2 = make(map[bool]interface{}, len(v))
 		} // reset map
 		testUnmarshalErr(&v272v2, bs272, h, t, "dec-map-v272-p-len")
 		testDeepEqualErr(v272v1, v272v2, t, "equal-map-v272-p-len")
@@ -12486,39 +12510,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v272v2 = nil
 		} else {
-			v272v2 = make(map[bool]string, len(v))
+			v272v2 = make(map[bool]interface{}, len(v))
 		} // reset map
-		var v272v3, v272v4 typMapMapBoolString
-		v272v3 = typMapMapBoolString(v272v1)
-		v272v4 = typMapMapBoolString(v272v2)
+		var v272v3, v272v4 typMapMapBoolIntf
+		v272v3 = typMapMapBoolIntf(v272v1)
+		v272v4 = typMapMapBoolIntf(v272v2)
 		bs272 = testMarshalErr(v272v3, h, t, "enc-map-v272-custom")
 		testUnmarshalErr(v272v4, bs272, h, t, "dec-map-v272-p-len")
 		testDeepEqualErr(v272v3, v272v4, t, "equal-map-v272-p-len")
 	}
 
-	for _, v := range []map[bool]uint{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]string{nil, {}, {true: ""}} {
 		// fmt.Printf(">>>> running mammoth map v273: %v\n", v)
-		var v273v1, v273v2 map[bool]uint
+		var v273v1, v273v2 map[bool]string
 		v273v1 = v
 		bs273 := testMarshalErr(v273v1, h, t, "enc-map-v273")
 		if v == nil {
 			v273v2 = nil
 		} else {
-			v273v2 = make(map[bool]uint, len(v))
+			v273v2 = make(map[bool]string, len(v))
 		} // reset map
 		testUnmarshalErr(v273v2, bs273, h, t, "dec-map-v273")
 		testDeepEqualErr(v273v1, v273v2, t, "equal-map-v273")
 		if v == nil {
 			v273v2 = nil
 		} else {
-			v273v2 = make(map[bool]uint, len(v))
+			v273v2 = make(map[bool]string, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v273v2), bs273, h, t, "dec-map-v273-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v273v1, v273v2, t, "equal-map-v273-noaddr")
 		if v == nil {
 			v273v2 = nil
 		} else {
-			v273v2 = make(map[bool]uint, len(v))
+			v273v2 = make(map[bool]string, len(v))
 		} // reset map
 		testUnmarshalErr(&v273v2, bs273, h, t, "dec-map-v273-p-len")
 		testDeepEqualErr(v273v1, v273v2, t, "equal-map-v273-p-len")
@@ -12530,39 +12554,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v273v2 = nil
 		} else {
-			v273v2 = make(map[bool]uint, len(v))
+			v273v2 = make(map[bool]string, len(v))
 		} // reset map
-		var v273v3, v273v4 typMapMapBoolUint
-		v273v3 = typMapMapBoolUint(v273v1)
-		v273v4 = typMapMapBoolUint(v273v2)
+		var v273v3, v273v4 typMapMapBoolString
+		v273v3 = typMapMapBoolString(v273v1)
+		v273v4 = typMapMapBoolString(v273v2)
 		bs273 = testMarshalErr(v273v3, h, t, "enc-map-v273-custom")
 		testUnmarshalErr(v273v4, bs273, h, t, "dec-map-v273-p-len")
 		testDeepEqualErr(v273v3, v273v4, t, "equal-map-v273-p-len")
 	}
 
-	for _, v := range []map[bool]uint8{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]uint{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v274: %v\n", v)
-		var v274v1, v274v2 map[bool]uint8
+		var v274v1, v274v2 map[bool]uint
 		v274v1 = v
 		bs274 := testMarshalErr(v274v1, h, t, "enc-map-v274")
 		if v == nil {
 			v274v2 = nil
 		} else {
-			v274v2 = make(map[bool]uint8, len(v))
+			v274v2 = make(map[bool]uint, len(v))
 		} // reset map
 		testUnmarshalErr(v274v2, bs274, h, t, "dec-map-v274")
 		testDeepEqualErr(v274v1, v274v2, t, "equal-map-v274")
 		if v == nil {
 			v274v2 = nil
 		} else {
-			v274v2 = make(map[bool]uint8, len(v))
+			v274v2 = make(map[bool]uint, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v274v2), bs274, h, t, "dec-map-v274-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v274v1, v274v2, t, "equal-map-v274-noaddr")
 		if v == nil {
 			v274v2 = nil
 		} else {
-			v274v2 = make(map[bool]uint8, len(v))
+			v274v2 = make(map[bool]uint, len(v))
 		} // reset map
 		testUnmarshalErr(&v274v2, bs274, h, t, "dec-map-v274-p-len")
 		testDeepEqualErr(v274v1, v274v2, t, "equal-map-v274-p-len")
@@ -12574,39 +12598,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v274v2 = nil
 		} else {
-			v274v2 = make(map[bool]uint8, len(v))
+			v274v2 = make(map[bool]uint, len(v))
 		} // reset map
-		var v274v3, v274v4 typMapMapBoolUint8
-		v274v3 = typMapMapBoolUint8(v274v1)
-		v274v4 = typMapMapBoolUint8(v274v2)
+		var v274v3, v274v4 typMapMapBoolUint
+		v274v3 = typMapMapBoolUint(v274v1)
+		v274v4 = typMapMapBoolUint(v274v2)
 		bs274 = testMarshalErr(v274v3, h, t, "enc-map-v274-custom")
 		testUnmarshalErr(v274v4, bs274, h, t, "dec-map-v274-p-len")
 		testDeepEqualErr(v274v3, v274v4, t, "equal-map-v274-p-len")
 	}
 
-	for _, v := range []map[bool]uint16{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]uint8{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v275: %v\n", v)
-		var v275v1, v275v2 map[bool]uint16
+		var v275v1, v275v2 map[bool]uint8
 		v275v1 = v
 		bs275 := testMarshalErr(v275v1, h, t, "enc-map-v275")
 		if v == nil {
 			v275v2 = nil
 		} else {
-			v275v2 = make(map[bool]uint16, len(v))
+			v275v2 = make(map[bool]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(v275v2, bs275, h, t, "dec-map-v275")
 		testDeepEqualErr(v275v1, v275v2, t, "equal-map-v275")
 		if v == nil {
 			v275v2 = nil
 		} else {
-			v275v2 = make(map[bool]uint16, len(v))
+			v275v2 = make(map[bool]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v275v2), bs275, h, t, "dec-map-v275-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v275v1, v275v2, t, "equal-map-v275-noaddr")
 		if v == nil {
 			v275v2 = nil
 		} else {
-			v275v2 = make(map[bool]uint16, len(v))
+			v275v2 = make(map[bool]uint8, len(v))
 		} // reset map
 		testUnmarshalErr(&v275v2, bs275, h, t, "dec-map-v275-p-len")
 		testDeepEqualErr(v275v1, v275v2, t, "equal-map-v275-p-len")
@@ -12618,39 +12642,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v275v2 = nil
 		} else {
-			v275v2 = make(map[bool]uint16, len(v))
+			v275v2 = make(map[bool]uint8, len(v))
 		} // reset map
-		var v275v3, v275v4 typMapMapBoolUint16
-		v275v3 = typMapMapBoolUint16(v275v1)
-		v275v4 = typMapMapBoolUint16(v275v2)
+		var v275v3, v275v4 typMapMapBoolUint8
+		v275v3 = typMapMapBoolUint8(v275v1)
+		v275v4 = typMapMapBoolUint8(v275v2)
 		bs275 = testMarshalErr(v275v3, h, t, "enc-map-v275-custom")
 		testUnmarshalErr(v275v4, bs275, h, t, "dec-map-v275-p-len")
 		testDeepEqualErr(v275v3, v275v4, t, "equal-map-v275-p-len")
 	}
 
-	for _, v := range []map[bool]uint32{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]uint16{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v276: %v\n", v)
-		var v276v1, v276v2 map[bool]uint32
+		var v276v1, v276v2 map[bool]uint16
 		v276v1 = v
 		bs276 := testMarshalErr(v276v1, h, t, "enc-map-v276")
 		if v == nil {
 			v276v2 = nil
 		} else {
-			v276v2 = make(map[bool]uint32, len(v))
+			v276v2 = make(map[bool]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(v276v2, bs276, h, t, "dec-map-v276")
 		testDeepEqualErr(v276v1, v276v2, t, "equal-map-v276")
 		if v == nil {
 			v276v2 = nil
 		} else {
-			v276v2 = make(map[bool]uint32, len(v))
+			v276v2 = make(map[bool]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v276v2), bs276, h, t, "dec-map-v276-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v276v1, v276v2, t, "equal-map-v276-noaddr")
 		if v == nil {
 			v276v2 = nil
 		} else {
-			v276v2 = make(map[bool]uint32, len(v))
+			v276v2 = make(map[bool]uint16, len(v))
 		} // reset map
 		testUnmarshalErr(&v276v2, bs276, h, t, "dec-map-v276-p-len")
 		testDeepEqualErr(v276v1, v276v2, t, "equal-map-v276-p-len")
@@ -12662,39 +12686,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v276v2 = nil
 		} else {
-			v276v2 = make(map[bool]uint32, len(v))
+			v276v2 = make(map[bool]uint16, len(v))
 		} // reset map
-		var v276v3, v276v4 typMapMapBoolUint32
-		v276v3 = typMapMapBoolUint32(v276v1)
-		v276v4 = typMapMapBoolUint32(v276v2)
+		var v276v3, v276v4 typMapMapBoolUint16
+		v276v3 = typMapMapBoolUint16(v276v1)
+		v276v4 = typMapMapBoolUint16(v276v2)
 		bs276 = testMarshalErr(v276v3, h, t, "enc-map-v276-custom")
 		testUnmarshalErr(v276v4, bs276, h, t, "dec-map-v276-p-len")
 		testDeepEqualErr(v276v3, v276v4, t, "equal-map-v276-p-len")
 	}
 
-	for _, v := range []map[bool]uint64{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]uint32{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v277: %v\n", v)
-		var v277v1, v277v2 map[bool]uint64
+		var v277v1, v277v2 map[bool]uint32
 		v277v1 = v
 		bs277 := testMarshalErr(v277v1, h, t, "enc-map-v277")
 		if v == nil {
 			v277v2 = nil
 		} else {
-			v277v2 = make(map[bool]uint64, len(v))
+			v277v2 = make(map[bool]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(v277v2, bs277, h, t, "dec-map-v277")
 		testDeepEqualErr(v277v1, v277v2, t, "equal-map-v277")
 		if v == nil {
 			v277v2 = nil
 		} else {
-			v277v2 = make(map[bool]uint64, len(v))
+			v277v2 = make(map[bool]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v277v2), bs277, h, t, "dec-map-v277-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v277v1, v277v2, t, "equal-map-v277-noaddr")
 		if v == nil {
 			v277v2 = nil
 		} else {
-			v277v2 = make(map[bool]uint64, len(v))
+			v277v2 = make(map[bool]uint32, len(v))
 		} // reset map
 		testUnmarshalErr(&v277v2, bs277, h, t, "dec-map-v277-p-len")
 		testDeepEqualErr(v277v1, v277v2, t, "equal-map-v277-p-len")
@@ -12706,39 +12730,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v277v2 = nil
 		} else {
-			v277v2 = make(map[bool]uint64, len(v))
+			v277v2 = make(map[bool]uint32, len(v))
 		} // reset map
-		var v277v3, v277v4 typMapMapBoolUint64
-		v277v3 = typMapMapBoolUint64(v277v1)
-		v277v4 = typMapMapBoolUint64(v277v2)
+		var v277v3, v277v4 typMapMapBoolUint32
+		v277v3 = typMapMapBoolUint32(v277v1)
+		v277v4 = typMapMapBoolUint32(v277v2)
 		bs277 = testMarshalErr(v277v3, h, t, "enc-map-v277-custom")
 		testUnmarshalErr(v277v4, bs277, h, t, "dec-map-v277-p-len")
 		testDeepEqualErr(v277v3, v277v4, t, "equal-map-v277-p-len")
 	}
 
-	for _, v := range []map[bool]uintptr{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]uint64{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v278: %v\n", v)
-		var v278v1, v278v2 map[bool]uintptr
+		var v278v1, v278v2 map[bool]uint64
 		v278v1 = v
 		bs278 := testMarshalErr(v278v1, h, t, "enc-map-v278")
 		if v == nil {
 			v278v2 = nil
 		} else {
-			v278v2 = make(map[bool]uintptr, len(v))
+			v278v2 = make(map[bool]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(v278v2, bs278, h, t, "dec-map-v278")
 		testDeepEqualErr(v278v1, v278v2, t, "equal-map-v278")
 		if v == nil {
 			v278v2 = nil
 		} else {
-			v278v2 = make(map[bool]uintptr, len(v))
+			v278v2 = make(map[bool]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v278v2), bs278, h, t, "dec-map-v278-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v278v1, v278v2, t, "equal-map-v278-noaddr")
 		if v == nil {
 			v278v2 = nil
 		} else {
-			v278v2 = make(map[bool]uintptr, len(v))
+			v278v2 = make(map[bool]uint64, len(v))
 		} // reset map
 		testUnmarshalErr(&v278v2, bs278, h, t, "dec-map-v278-p-len")
 		testDeepEqualErr(v278v1, v278v2, t, "equal-map-v278-p-len")
@@ -12750,39 +12774,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v278v2 = nil
 		} else {
-			v278v2 = make(map[bool]uintptr, len(v))
+			v278v2 = make(map[bool]uint64, len(v))
 		} // reset map
-		var v278v3, v278v4 typMapMapBoolUintptr
-		v278v3 = typMapMapBoolUintptr(v278v1)
-		v278v4 = typMapMapBoolUintptr(v278v2)
+		var v278v3, v278v4 typMapMapBoolUint64
+		v278v3 = typMapMapBoolUint64(v278v1)
+		v278v4 = typMapMapBoolUint64(v278v2)
 		bs278 = testMarshalErr(v278v3, h, t, "enc-map-v278-custom")
 		testUnmarshalErr(v278v4, bs278, h, t, "dec-map-v278-p-len")
 		testDeepEqualErr(v278v3, v278v4, t, "equal-map-v278-p-len")
 	}
 
-	for _, v := range []map[bool]int{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]uintptr{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v279: %v\n", v)
-		var v279v1, v279v2 map[bool]int
+		var v279v1, v279v2 map[bool]uintptr
 		v279v1 = v
 		bs279 := testMarshalErr(v279v1, h, t, "enc-map-v279")
 		if v == nil {
 			v279v2 = nil
 		} else {
-			v279v2 = make(map[bool]int, len(v))
+			v279v2 = make(map[bool]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(v279v2, bs279, h, t, "dec-map-v279")
 		testDeepEqualErr(v279v1, v279v2, t, "equal-map-v279")
 		if v == nil {
 			v279v2 = nil
 		} else {
-			v279v2 = make(map[bool]int, len(v))
+			v279v2 = make(map[bool]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v279v2), bs279, h, t, "dec-map-v279-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v279v1, v279v2, t, "equal-map-v279-noaddr")
 		if v == nil {
 			v279v2 = nil
 		} else {
-			v279v2 = make(map[bool]int, len(v))
+			v279v2 = make(map[bool]uintptr, len(v))
 		} // reset map
 		testUnmarshalErr(&v279v2, bs279, h, t, "dec-map-v279-p-len")
 		testDeepEqualErr(v279v1, v279v2, t, "equal-map-v279-p-len")
@@ -12794,39 +12818,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v279v2 = nil
 		} else {
-			v279v2 = make(map[bool]int, len(v))
+			v279v2 = make(map[bool]uintptr, len(v))
 		} // reset map
-		var v279v3, v279v4 typMapMapBoolInt
-		v279v3 = typMapMapBoolInt(v279v1)
-		v279v4 = typMapMapBoolInt(v279v2)
+		var v279v3, v279v4 typMapMapBoolUintptr
+		v279v3 = typMapMapBoolUintptr(v279v1)
+		v279v4 = typMapMapBoolUintptr(v279v2)
 		bs279 = testMarshalErr(v279v3, h, t, "enc-map-v279-custom")
 		testUnmarshalErr(v279v4, bs279, h, t, "dec-map-v279-p-len")
 		testDeepEqualErr(v279v3, v279v4, t, "equal-map-v279-p-len")
 	}
 
-	for _, v := range []map[bool]int8{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]int{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v280: %v\n", v)
-		var v280v1, v280v2 map[bool]int8
+		var v280v1, v280v2 map[bool]int
 		v280v1 = v
 		bs280 := testMarshalErr(v280v1, h, t, "enc-map-v280")
 		if v == nil {
 			v280v2 = nil
 		} else {
-			v280v2 = make(map[bool]int8, len(v))
+			v280v2 = make(map[bool]int, len(v))
 		} // reset map
 		testUnmarshalErr(v280v2, bs280, h, t, "dec-map-v280")
 		testDeepEqualErr(v280v1, v280v2, t, "equal-map-v280")
 		if v == nil {
 			v280v2 = nil
 		} else {
-			v280v2 = make(map[bool]int8, len(v))
+			v280v2 = make(map[bool]int, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v280v2), bs280, h, t, "dec-map-v280-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v280v1, v280v2, t, "equal-map-v280-noaddr")
 		if v == nil {
 			v280v2 = nil
 		} else {
-			v280v2 = make(map[bool]int8, len(v))
+			v280v2 = make(map[bool]int, len(v))
 		} // reset map
 		testUnmarshalErr(&v280v2, bs280, h, t, "dec-map-v280-p-len")
 		testDeepEqualErr(v280v1, v280v2, t, "equal-map-v280-p-len")
@@ -12838,39 +12862,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v280v2 = nil
 		} else {
-			v280v2 = make(map[bool]int8, len(v))
+			v280v2 = make(map[bool]int, len(v))
 		} // reset map
-		var v280v3, v280v4 typMapMapBoolInt8
-		v280v3 = typMapMapBoolInt8(v280v1)
-		v280v4 = typMapMapBoolInt8(v280v2)
+		var v280v3, v280v4 typMapMapBoolInt
+		v280v3 = typMapMapBoolInt(v280v1)
+		v280v4 = typMapMapBoolInt(v280v2)
 		bs280 = testMarshalErr(v280v3, h, t, "enc-map-v280-custom")
 		testUnmarshalErr(v280v4, bs280, h, t, "dec-map-v280-p-len")
 		testDeepEqualErr(v280v3, v280v4, t, "equal-map-v280-p-len")
 	}
 
-	for _, v := range []map[bool]int16{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]int8{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v281: %v\n", v)
-		var v281v1, v281v2 map[bool]int16
+		var v281v1, v281v2 map[bool]int8
 		v281v1 = v
 		bs281 := testMarshalErr(v281v1, h, t, "enc-map-v281")
 		if v == nil {
 			v281v2 = nil
 		} else {
-			v281v2 = make(map[bool]int16, len(v))
+			v281v2 = make(map[bool]int8, len(v))
 		} // reset map
 		testUnmarshalErr(v281v2, bs281, h, t, "dec-map-v281")
 		testDeepEqualErr(v281v1, v281v2, t, "equal-map-v281")
 		if v == nil {
 			v281v2 = nil
 		} else {
-			v281v2 = make(map[bool]int16, len(v))
+			v281v2 = make(map[bool]int8, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v281v2), bs281, h, t, "dec-map-v281-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v281v1, v281v2, t, "equal-map-v281-noaddr")
 		if v == nil {
 			v281v2 = nil
 		} else {
-			v281v2 = make(map[bool]int16, len(v))
+			v281v2 = make(map[bool]int8, len(v))
 		} // reset map
 		testUnmarshalErr(&v281v2, bs281, h, t, "dec-map-v281-p-len")
 		testDeepEqualErr(v281v1, v281v2, t, "equal-map-v281-p-len")
@@ -12882,39 +12906,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v281v2 = nil
 		} else {
-			v281v2 = make(map[bool]int16, len(v))
+			v281v2 = make(map[bool]int8, len(v))
 		} // reset map
-		var v281v3, v281v4 typMapMapBoolInt16
-		v281v3 = typMapMapBoolInt16(v281v1)
-		v281v4 = typMapMapBoolInt16(v281v2)
+		var v281v3, v281v4 typMapMapBoolInt8
+		v281v3 = typMapMapBoolInt8(v281v1)
+		v281v4 = typMapMapBoolInt8(v281v2)
 		bs281 = testMarshalErr(v281v3, h, t, "enc-map-v281-custom")
 		testUnmarshalErr(v281v4, bs281, h, t, "dec-map-v281-p-len")
 		testDeepEqualErr(v281v3, v281v4, t, "equal-map-v281-p-len")
 	}
 
-	for _, v := range []map[bool]int32{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]int16{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v282: %v\n", v)
-		var v282v1, v282v2 map[bool]int32
+		var v282v1, v282v2 map[bool]int16
 		v282v1 = v
 		bs282 := testMarshalErr(v282v1, h, t, "enc-map-v282")
 		if v == nil {
 			v282v2 = nil
 		} else {
-			v282v2 = make(map[bool]int32, len(v))
+			v282v2 = make(map[bool]int16, len(v))
 		} // reset map
 		testUnmarshalErr(v282v2, bs282, h, t, "dec-map-v282")
 		testDeepEqualErr(v282v1, v282v2, t, "equal-map-v282")
 		if v == nil {
 			v282v2 = nil
 		} else {
-			v282v2 = make(map[bool]int32, len(v))
+			v282v2 = make(map[bool]int16, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v282v2), bs282, h, t, "dec-map-v282-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v282v1, v282v2, t, "equal-map-v282-noaddr")
 		if v == nil {
 			v282v2 = nil
 		} else {
-			v282v2 = make(map[bool]int32, len(v))
+			v282v2 = make(map[bool]int16, len(v))
 		} // reset map
 		testUnmarshalErr(&v282v2, bs282, h, t, "dec-map-v282-p-len")
 		testDeepEqualErr(v282v1, v282v2, t, "equal-map-v282-p-len")
@@ -12926,39 +12950,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v282v2 = nil
 		} else {
-			v282v2 = make(map[bool]int32, len(v))
+			v282v2 = make(map[bool]int16, len(v))
 		} // reset map
-		var v282v3, v282v4 typMapMapBoolInt32
-		v282v3 = typMapMapBoolInt32(v282v1)
-		v282v4 = typMapMapBoolInt32(v282v2)
+		var v282v3, v282v4 typMapMapBoolInt16
+		v282v3 = typMapMapBoolInt16(v282v1)
+		v282v4 = typMapMapBoolInt16(v282v2)
 		bs282 = testMarshalErr(v282v3, h, t, "enc-map-v282-custom")
 		testUnmarshalErr(v282v4, bs282, h, t, "dec-map-v282-p-len")
 		testDeepEqualErr(v282v3, v282v4, t, "equal-map-v282-p-len")
 	}
 
-	for _, v := range []map[bool]int64{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]int32{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v283: %v\n", v)
-		var v283v1, v283v2 map[bool]int64
+		var v283v1, v283v2 map[bool]int32
 		v283v1 = v
 		bs283 := testMarshalErr(v283v1, h, t, "enc-map-v283")
 		if v == nil {
 			v283v2 = nil
 		} else {
-			v283v2 = make(map[bool]int64, len(v))
+			v283v2 = make(map[bool]int32, len(v))
 		} // reset map
 		testUnmarshalErr(v283v2, bs283, h, t, "dec-map-v283")
 		testDeepEqualErr(v283v1, v283v2, t, "equal-map-v283")
 		if v == nil {
 			v283v2 = nil
 		} else {
-			v283v2 = make(map[bool]int64, len(v))
+			v283v2 = make(map[bool]int32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v283v2), bs283, h, t, "dec-map-v283-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v283v1, v283v2, t, "equal-map-v283-noaddr")
 		if v == nil {
 			v283v2 = nil
 		} else {
-			v283v2 = make(map[bool]int64, len(v))
+			v283v2 = make(map[bool]int32, len(v))
 		} // reset map
 		testUnmarshalErr(&v283v2, bs283, h, t, "dec-map-v283-p-len")
 		testDeepEqualErr(v283v1, v283v2, t, "equal-map-v283-p-len")
@@ -12970,39 +12994,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v283v2 = nil
 		} else {
-			v283v2 = make(map[bool]int64, len(v))
+			v283v2 = make(map[bool]int32, len(v))
 		} // reset map
-		var v283v3, v283v4 typMapMapBoolInt64
-		v283v3 = typMapMapBoolInt64(v283v1)
-		v283v4 = typMapMapBoolInt64(v283v2)
+		var v283v3, v283v4 typMapMapBoolInt32
+		v283v3 = typMapMapBoolInt32(v283v1)
+		v283v4 = typMapMapBoolInt32(v283v2)
 		bs283 = testMarshalErr(v283v3, h, t, "enc-map-v283-custom")
 		testUnmarshalErr(v283v4, bs283, h, t, "dec-map-v283-p-len")
 		testDeepEqualErr(v283v3, v283v4, t, "equal-map-v283-p-len")
 	}
 
-	for _, v := range []map[bool]float32{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]int64{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v284: %v\n", v)
-		var v284v1, v284v2 map[bool]float32
+		var v284v1, v284v2 map[bool]int64
 		v284v1 = v
 		bs284 := testMarshalErr(v284v1, h, t, "enc-map-v284")
 		if v == nil {
 			v284v2 = nil
 		} else {
-			v284v2 = make(map[bool]float32, len(v))
+			v284v2 = make(map[bool]int64, len(v))
 		} // reset map
 		testUnmarshalErr(v284v2, bs284, h, t, "dec-map-v284")
 		testDeepEqualErr(v284v1, v284v2, t, "equal-map-v284")
 		if v == nil {
 			v284v2 = nil
 		} else {
-			v284v2 = make(map[bool]float32, len(v))
+			v284v2 = make(map[bool]int64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v284v2), bs284, h, t, "dec-map-v284-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v284v1, v284v2, t, "equal-map-v284-noaddr")
 		if v == nil {
 			v284v2 = nil
 		} else {
-			v284v2 = make(map[bool]float32, len(v))
+			v284v2 = make(map[bool]int64, len(v))
 		} // reset map
 		testUnmarshalErr(&v284v2, bs284, h, t, "dec-map-v284-p-len")
 		testDeepEqualErr(v284v1, v284v2, t, "equal-map-v284-p-len")
@@ -13014,39 +13038,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v284v2 = nil
 		} else {
-			v284v2 = make(map[bool]float32, len(v))
+			v284v2 = make(map[bool]int64, len(v))
 		} // reset map
-		var v284v3, v284v4 typMapMapBoolFloat32
-		v284v3 = typMapMapBoolFloat32(v284v1)
-		v284v4 = typMapMapBoolFloat32(v284v2)
+		var v284v3, v284v4 typMapMapBoolInt64
+		v284v3 = typMapMapBoolInt64(v284v1)
+		v284v4 = typMapMapBoolInt64(v284v2)
 		bs284 = testMarshalErr(v284v3, h, t, "enc-map-v284-custom")
 		testUnmarshalErr(v284v4, bs284, h, t, "dec-map-v284-p-len")
 		testDeepEqualErr(v284v3, v284v4, t, "equal-map-v284-p-len")
 	}
 
-	for _, v := range []map[bool]float64{nil, {}, {true: 0}} {
+	for _, v := range []map[bool]float32{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v285: %v\n", v)
-		var v285v1, v285v2 map[bool]float64
+		var v285v1, v285v2 map[bool]float32
 		v285v1 = v
 		bs285 := testMarshalErr(v285v1, h, t, "enc-map-v285")
 		if v == nil {
 			v285v2 = nil
 		} else {
-			v285v2 = make(map[bool]float64, len(v))
+			v285v2 = make(map[bool]float32, len(v))
 		} // reset map
 		testUnmarshalErr(v285v2, bs285, h, t, "dec-map-v285")
 		testDeepEqualErr(v285v1, v285v2, t, "equal-map-v285")
 		if v == nil {
 			v285v2 = nil
 		} else {
-			v285v2 = make(map[bool]float64, len(v))
+			v285v2 = make(map[bool]float32, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v285v2), bs285, h, t, "dec-map-v285-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v285v1, v285v2, t, "equal-map-v285-noaddr")
 		if v == nil {
 			v285v2 = nil
 		} else {
-			v285v2 = make(map[bool]float64, len(v))
+			v285v2 = make(map[bool]float32, len(v))
 		} // reset map
 		testUnmarshalErr(&v285v2, bs285, h, t, "dec-map-v285-p-len")
 		testDeepEqualErr(v285v1, v285v2, t, "equal-map-v285-p-len")
@@ -13058,39 +13082,39 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v285v2 = nil
 		} else {
-			v285v2 = make(map[bool]float64, len(v))
+			v285v2 = make(map[bool]float32, len(v))
 		} // reset map
-		var v285v3, v285v4 typMapMapBoolFloat64
-		v285v3 = typMapMapBoolFloat64(v285v1)
-		v285v4 = typMapMapBoolFloat64(v285v2)
+		var v285v3, v285v4 typMapMapBoolFloat32
+		v285v3 = typMapMapBoolFloat32(v285v1)
+		v285v4 = typMapMapBoolFloat32(v285v2)
 		bs285 = testMarshalErr(v285v3, h, t, "enc-map-v285-custom")
 		testUnmarshalErr(v285v4, bs285, h, t, "dec-map-v285-p-len")
 		testDeepEqualErr(v285v3, v285v4, t, "equal-map-v285-p-len")
 	}
 
-	for _, v := range []map[bool]bool{nil, {}, {true: false}} {
+	for _, v := range []map[bool]float64{nil, {}, {true: 0}} {
 		// fmt.Printf(">>>> running mammoth map v286: %v\n", v)
-		var v286v1, v286v2 map[bool]bool
+		var v286v1, v286v2 map[bool]float64
 		v286v1 = v
 		bs286 := testMarshalErr(v286v1, h, t, "enc-map-v286")
 		if v == nil {
 			v286v2 = nil
 		} else {
-			v286v2 = make(map[bool]bool, len(v))
+			v286v2 = make(map[bool]float64, len(v))
 		} // reset map
 		testUnmarshalErr(v286v2, bs286, h, t, "dec-map-v286")
 		testDeepEqualErr(v286v1, v286v2, t, "equal-map-v286")
 		if v == nil {
 			v286v2 = nil
 		} else {
-			v286v2 = make(map[bool]bool, len(v))
+			v286v2 = make(map[bool]float64, len(v))
 		} // reset map
 		testUnmarshalErr(reflect.ValueOf(v286v2), bs286, h, t, "dec-map-v286-noaddr") // decode into non-addressable map value
 		testDeepEqualErr(v286v1, v286v2, t, "equal-map-v286-noaddr")
 		if v == nil {
 			v286v2 = nil
 		} else {
-			v286v2 = make(map[bool]bool, len(v))
+			v286v2 = make(map[bool]float64, len(v))
 		} // reset map
 		testUnmarshalErr(&v286v2, bs286, h, t, "dec-map-v286-p-len")
 		testDeepEqualErr(v286v1, v286v2, t, "equal-map-v286-p-len")
@@ -13102,14 +13126,58 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		if v == nil {
 			v286v2 = nil
 		} else {
-			v286v2 = make(map[bool]bool, len(v))
+			v286v2 = make(map[bool]float64, len(v))
 		} // reset map
-		var v286v3, v286v4 typMapMapBoolBool
-		v286v3 = typMapMapBoolBool(v286v1)
-		v286v4 = typMapMapBoolBool(v286v2)
+		var v286v3, v286v4 typMapMapBoolFloat64
+		v286v3 = typMapMapBoolFloat64(v286v1)
+		v286v4 = typMapMapBoolFloat64(v286v2)
 		bs286 = testMarshalErr(v286v3, h, t, "enc-map-v286-custom")
 		testUnmarshalErr(v286v4, bs286, h, t, "dec-map-v286-p-len")
 		testDeepEqualErr(v286v3, v286v4, t, "equal-map-v286-p-len")
+	}
+
+	for _, v := range []map[bool]bool{nil, {}, {true: false}} {
+		// fmt.Printf(">>>> running mammoth map v287: %v\n", v)
+		var v287v1, v287v2 map[bool]bool
+		v287v1 = v
+		bs287 := testMarshalErr(v287v1, h, t, "enc-map-v287")
+		if v == nil {
+			v287v2 = nil
+		} else {
+			v287v2 = make(map[bool]bool, len(v))
+		} // reset map
+		testUnmarshalErr(v287v2, bs287, h, t, "dec-map-v287")
+		testDeepEqualErr(v287v1, v287v2, t, "equal-map-v287")
+		if v == nil {
+			v287v2 = nil
+		} else {
+			v287v2 = make(map[bool]bool, len(v))
+		} // reset map
+		testUnmarshalErr(reflect.ValueOf(v287v2), bs287, h, t, "dec-map-v287-noaddr") // decode into non-addressable map value
+		testDeepEqualErr(v287v1, v287v2, t, "equal-map-v287-noaddr")
+		if v == nil {
+			v287v2 = nil
+		} else {
+			v287v2 = make(map[bool]bool, len(v))
+		} // reset map
+		testUnmarshalErr(&v287v2, bs287, h, t, "dec-map-v287-p-len")
+		testDeepEqualErr(v287v1, v287v2, t, "equal-map-v287-p-len")
+		bs287 = testMarshalErr(&v287v1, h, t, "enc-map-v287-p")
+		v287v2 = nil
+		testUnmarshalErr(&v287v2, bs287, h, t, "dec-map-v287-p-nil")
+		testDeepEqualErr(v287v1, v287v2, t, "equal-map-v287-p-nil")
+		// ...
+		if v == nil {
+			v287v2 = nil
+		} else {
+			v287v2 = make(map[bool]bool, len(v))
+		} // reset map
+		var v287v3, v287v4 typMapMapBoolBool
+		v287v3 = typMapMapBoolBool(v287v1)
+		v287v4 = typMapMapBoolBool(v287v2)
+		bs287 = testMarshalErr(v287v3, h, t, "enc-map-v287-custom")
+		testUnmarshalErr(v287v4, bs287, h, t, "dec-map-v287-p-len")
+		testDeepEqualErr(v287v3, v287v4, t, "equal-map-v287-p-len")
 	}
 
 }

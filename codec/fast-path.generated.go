@@ -374,1352 +374,1083 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 		fastpathTV.EncSliceIntfV(v, e)
 	case *[]interface{}:
 		fastpathTV.EncSliceIntfV(*v, e)
-
-	case map[interface{}]interface{}:
-		fastpathTV.EncMapIntfIntfV(v, e)
-	case *map[interface{}]interface{}:
-		fastpathTV.EncMapIntfIntfV(*v, e)
-
-	case map[interface{}]string:
-		fastpathTV.EncMapIntfStringV(v, e)
-	case *map[interface{}]string:
-		fastpathTV.EncMapIntfStringV(*v, e)
-
-	case map[interface{}]uint:
-		fastpathTV.EncMapIntfUintV(v, e)
-	case *map[interface{}]uint:
-		fastpathTV.EncMapIntfUintV(*v, e)
-
-	case map[interface{}]uint8:
-		fastpathTV.EncMapIntfUint8V(v, e)
-	case *map[interface{}]uint8:
-		fastpathTV.EncMapIntfUint8V(*v, e)
-
-	case map[interface{}]uint16:
-		fastpathTV.EncMapIntfUint16V(v, e)
-	case *map[interface{}]uint16:
-		fastpathTV.EncMapIntfUint16V(*v, e)
-
-	case map[interface{}]uint32:
-		fastpathTV.EncMapIntfUint32V(v, e)
-	case *map[interface{}]uint32:
-		fastpathTV.EncMapIntfUint32V(*v, e)
-
-	case map[interface{}]uint64:
-		fastpathTV.EncMapIntfUint64V(v, e)
-	case *map[interface{}]uint64:
-		fastpathTV.EncMapIntfUint64V(*v, e)
-
-	case map[interface{}]uintptr:
-		fastpathTV.EncMapIntfUintptrV(v, e)
-	case *map[interface{}]uintptr:
-		fastpathTV.EncMapIntfUintptrV(*v, e)
-
-	case map[interface{}]int:
-		fastpathTV.EncMapIntfIntV(v, e)
-	case *map[interface{}]int:
-		fastpathTV.EncMapIntfIntV(*v, e)
-
-	case map[interface{}]int8:
-		fastpathTV.EncMapIntfInt8V(v, e)
-	case *map[interface{}]int8:
-		fastpathTV.EncMapIntfInt8V(*v, e)
-
-	case map[interface{}]int16:
-		fastpathTV.EncMapIntfInt16V(v, e)
-	case *map[interface{}]int16:
-		fastpathTV.EncMapIntfInt16V(*v, e)
-
-	case map[interface{}]int32:
-		fastpathTV.EncMapIntfInt32V(v, e)
-	case *map[interface{}]int32:
-		fastpathTV.EncMapIntfInt32V(*v, e)
-
-	case map[interface{}]int64:
-		fastpathTV.EncMapIntfInt64V(v, e)
-	case *map[interface{}]int64:
-		fastpathTV.EncMapIntfInt64V(*v, e)
-
-	case map[interface{}]float32:
-		fastpathTV.EncMapIntfFloat32V(v, e)
-	case *map[interface{}]float32:
-		fastpathTV.EncMapIntfFloat32V(*v, e)
-
-	case map[interface{}]float64:
-		fastpathTV.EncMapIntfFloat64V(v, e)
-	case *map[interface{}]float64:
-		fastpathTV.EncMapIntfFloat64V(*v, e)
-
-	case map[interface{}]bool:
-		fastpathTV.EncMapIntfBoolV(v, e)
-	case *map[interface{}]bool:
-		fastpathTV.EncMapIntfBoolV(*v, e)
-
 	case []string:
 		fastpathTV.EncSliceStringV(v, e)
 	case *[]string:
 		fastpathTV.EncSliceStringV(*v, e)
-
-	case map[string]interface{}:
-		fastpathTV.EncMapStringIntfV(v, e)
-	case *map[string]interface{}:
-		fastpathTV.EncMapStringIntfV(*v, e)
-
-	case map[string]string:
-		fastpathTV.EncMapStringStringV(v, e)
-	case *map[string]string:
-		fastpathTV.EncMapStringStringV(*v, e)
-
-	case map[string]uint:
-		fastpathTV.EncMapStringUintV(v, e)
-	case *map[string]uint:
-		fastpathTV.EncMapStringUintV(*v, e)
-
-	case map[string]uint8:
-		fastpathTV.EncMapStringUint8V(v, e)
-	case *map[string]uint8:
-		fastpathTV.EncMapStringUint8V(*v, e)
-
-	case map[string]uint16:
-		fastpathTV.EncMapStringUint16V(v, e)
-	case *map[string]uint16:
-		fastpathTV.EncMapStringUint16V(*v, e)
-
-	case map[string]uint32:
-		fastpathTV.EncMapStringUint32V(v, e)
-	case *map[string]uint32:
-		fastpathTV.EncMapStringUint32V(*v, e)
-
-	case map[string]uint64:
-		fastpathTV.EncMapStringUint64V(v, e)
-	case *map[string]uint64:
-		fastpathTV.EncMapStringUint64V(*v, e)
-
-	case map[string]uintptr:
-		fastpathTV.EncMapStringUintptrV(v, e)
-	case *map[string]uintptr:
-		fastpathTV.EncMapStringUintptrV(*v, e)
-
-	case map[string]int:
-		fastpathTV.EncMapStringIntV(v, e)
-	case *map[string]int:
-		fastpathTV.EncMapStringIntV(*v, e)
-
-	case map[string]int8:
-		fastpathTV.EncMapStringInt8V(v, e)
-	case *map[string]int8:
-		fastpathTV.EncMapStringInt8V(*v, e)
-
-	case map[string]int16:
-		fastpathTV.EncMapStringInt16V(v, e)
-	case *map[string]int16:
-		fastpathTV.EncMapStringInt16V(*v, e)
-
-	case map[string]int32:
-		fastpathTV.EncMapStringInt32V(v, e)
-	case *map[string]int32:
-		fastpathTV.EncMapStringInt32V(*v, e)
-
-	case map[string]int64:
-		fastpathTV.EncMapStringInt64V(v, e)
-	case *map[string]int64:
-		fastpathTV.EncMapStringInt64V(*v, e)
-
-	case map[string]float32:
-		fastpathTV.EncMapStringFloat32V(v, e)
-	case *map[string]float32:
-		fastpathTV.EncMapStringFloat32V(*v, e)
-
-	case map[string]float64:
-		fastpathTV.EncMapStringFloat64V(v, e)
-	case *map[string]float64:
-		fastpathTV.EncMapStringFloat64V(*v, e)
-
-	case map[string]bool:
-		fastpathTV.EncMapStringBoolV(v, e)
-	case *map[string]bool:
-		fastpathTV.EncMapStringBoolV(*v, e)
-
 	case []float32:
 		fastpathTV.EncSliceFloat32V(v, e)
 	case *[]float32:
 		fastpathTV.EncSliceFloat32V(*v, e)
-
-	case map[float32]interface{}:
-		fastpathTV.EncMapFloat32IntfV(v, e)
-	case *map[float32]interface{}:
-		fastpathTV.EncMapFloat32IntfV(*v, e)
-
-	case map[float32]string:
-		fastpathTV.EncMapFloat32StringV(v, e)
-	case *map[float32]string:
-		fastpathTV.EncMapFloat32StringV(*v, e)
-
-	case map[float32]uint:
-		fastpathTV.EncMapFloat32UintV(v, e)
-	case *map[float32]uint:
-		fastpathTV.EncMapFloat32UintV(*v, e)
-
-	case map[float32]uint8:
-		fastpathTV.EncMapFloat32Uint8V(v, e)
-	case *map[float32]uint8:
-		fastpathTV.EncMapFloat32Uint8V(*v, e)
-
-	case map[float32]uint16:
-		fastpathTV.EncMapFloat32Uint16V(v, e)
-	case *map[float32]uint16:
-		fastpathTV.EncMapFloat32Uint16V(*v, e)
-
-	case map[float32]uint32:
-		fastpathTV.EncMapFloat32Uint32V(v, e)
-	case *map[float32]uint32:
-		fastpathTV.EncMapFloat32Uint32V(*v, e)
-
-	case map[float32]uint64:
-		fastpathTV.EncMapFloat32Uint64V(v, e)
-	case *map[float32]uint64:
-		fastpathTV.EncMapFloat32Uint64V(*v, e)
-
-	case map[float32]uintptr:
-		fastpathTV.EncMapFloat32UintptrV(v, e)
-	case *map[float32]uintptr:
-		fastpathTV.EncMapFloat32UintptrV(*v, e)
-
-	case map[float32]int:
-		fastpathTV.EncMapFloat32IntV(v, e)
-	case *map[float32]int:
-		fastpathTV.EncMapFloat32IntV(*v, e)
-
-	case map[float32]int8:
-		fastpathTV.EncMapFloat32Int8V(v, e)
-	case *map[float32]int8:
-		fastpathTV.EncMapFloat32Int8V(*v, e)
-
-	case map[float32]int16:
-		fastpathTV.EncMapFloat32Int16V(v, e)
-	case *map[float32]int16:
-		fastpathTV.EncMapFloat32Int16V(*v, e)
-
-	case map[float32]int32:
-		fastpathTV.EncMapFloat32Int32V(v, e)
-	case *map[float32]int32:
-		fastpathTV.EncMapFloat32Int32V(*v, e)
-
-	case map[float32]int64:
-		fastpathTV.EncMapFloat32Int64V(v, e)
-	case *map[float32]int64:
-		fastpathTV.EncMapFloat32Int64V(*v, e)
-
-	case map[float32]float32:
-		fastpathTV.EncMapFloat32Float32V(v, e)
-	case *map[float32]float32:
-		fastpathTV.EncMapFloat32Float32V(*v, e)
-
-	case map[float32]float64:
-		fastpathTV.EncMapFloat32Float64V(v, e)
-	case *map[float32]float64:
-		fastpathTV.EncMapFloat32Float64V(*v, e)
-
-	case map[float32]bool:
-		fastpathTV.EncMapFloat32BoolV(v, e)
-	case *map[float32]bool:
-		fastpathTV.EncMapFloat32BoolV(*v, e)
-
 	case []float64:
 		fastpathTV.EncSliceFloat64V(v, e)
 	case *[]float64:
 		fastpathTV.EncSliceFloat64V(*v, e)
-
-	case map[float64]interface{}:
-		fastpathTV.EncMapFloat64IntfV(v, e)
-	case *map[float64]interface{}:
-		fastpathTV.EncMapFloat64IntfV(*v, e)
-
-	case map[float64]string:
-		fastpathTV.EncMapFloat64StringV(v, e)
-	case *map[float64]string:
-		fastpathTV.EncMapFloat64StringV(*v, e)
-
-	case map[float64]uint:
-		fastpathTV.EncMapFloat64UintV(v, e)
-	case *map[float64]uint:
-		fastpathTV.EncMapFloat64UintV(*v, e)
-
-	case map[float64]uint8:
-		fastpathTV.EncMapFloat64Uint8V(v, e)
-	case *map[float64]uint8:
-		fastpathTV.EncMapFloat64Uint8V(*v, e)
-
-	case map[float64]uint16:
-		fastpathTV.EncMapFloat64Uint16V(v, e)
-	case *map[float64]uint16:
-		fastpathTV.EncMapFloat64Uint16V(*v, e)
-
-	case map[float64]uint32:
-		fastpathTV.EncMapFloat64Uint32V(v, e)
-	case *map[float64]uint32:
-		fastpathTV.EncMapFloat64Uint32V(*v, e)
-
-	case map[float64]uint64:
-		fastpathTV.EncMapFloat64Uint64V(v, e)
-	case *map[float64]uint64:
-		fastpathTV.EncMapFloat64Uint64V(*v, e)
-
-	case map[float64]uintptr:
-		fastpathTV.EncMapFloat64UintptrV(v, e)
-	case *map[float64]uintptr:
-		fastpathTV.EncMapFloat64UintptrV(*v, e)
-
-	case map[float64]int:
-		fastpathTV.EncMapFloat64IntV(v, e)
-	case *map[float64]int:
-		fastpathTV.EncMapFloat64IntV(*v, e)
-
-	case map[float64]int8:
-		fastpathTV.EncMapFloat64Int8V(v, e)
-	case *map[float64]int8:
-		fastpathTV.EncMapFloat64Int8V(*v, e)
-
-	case map[float64]int16:
-		fastpathTV.EncMapFloat64Int16V(v, e)
-	case *map[float64]int16:
-		fastpathTV.EncMapFloat64Int16V(*v, e)
-
-	case map[float64]int32:
-		fastpathTV.EncMapFloat64Int32V(v, e)
-	case *map[float64]int32:
-		fastpathTV.EncMapFloat64Int32V(*v, e)
-
-	case map[float64]int64:
-		fastpathTV.EncMapFloat64Int64V(v, e)
-	case *map[float64]int64:
-		fastpathTV.EncMapFloat64Int64V(*v, e)
-
-	case map[float64]float32:
-		fastpathTV.EncMapFloat64Float32V(v, e)
-	case *map[float64]float32:
-		fastpathTV.EncMapFloat64Float32V(*v, e)
-
-	case map[float64]float64:
-		fastpathTV.EncMapFloat64Float64V(v, e)
-	case *map[float64]float64:
-		fastpathTV.EncMapFloat64Float64V(*v, e)
-
-	case map[float64]bool:
-		fastpathTV.EncMapFloat64BoolV(v, e)
-	case *map[float64]bool:
-		fastpathTV.EncMapFloat64BoolV(*v, e)
-
 	case []uint:
 		fastpathTV.EncSliceUintV(v, e)
 	case *[]uint:
 		fastpathTV.EncSliceUintV(*v, e)
-
-	case map[uint]interface{}:
-		fastpathTV.EncMapUintIntfV(v, e)
-	case *map[uint]interface{}:
-		fastpathTV.EncMapUintIntfV(*v, e)
-
-	case map[uint]string:
-		fastpathTV.EncMapUintStringV(v, e)
-	case *map[uint]string:
-		fastpathTV.EncMapUintStringV(*v, e)
-
-	case map[uint]uint:
-		fastpathTV.EncMapUintUintV(v, e)
-	case *map[uint]uint:
-		fastpathTV.EncMapUintUintV(*v, e)
-
-	case map[uint]uint8:
-		fastpathTV.EncMapUintUint8V(v, e)
-	case *map[uint]uint8:
-		fastpathTV.EncMapUintUint8V(*v, e)
-
-	case map[uint]uint16:
-		fastpathTV.EncMapUintUint16V(v, e)
-	case *map[uint]uint16:
-		fastpathTV.EncMapUintUint16V(*v, e)
-
-	case map[uint]uint32:
-		fastpathTV.EncMapUintUint32V(v, e)
-	case *map[uint]uint32:
-		fastpathTV.EncMapUintUint32V(*v, e)
-
-	case map[uint]uint64:
-		fastpathTV.EncMapUintUint64V(v, e)
-	case *map[uint]uint64:
-		fastpathTV.EncMapUintUint64V(*v, e)
-
-	case map[uint]uintptr:
-		fastpathTV.EncMapUintUintptrV(v, e)
-	case *map[uint]uintptr:
-		fastpathTV.EncMapUintUintptrV(*v, e)
-
-	case map[uint]int:
-		fastpathTV.EncMapUintIntV(v, e)
-	case *map[uint]int:
-		fastpathTV.EncMapUintIntV(*v, e)
-
-	case map[uint]int8:
-		fastpathTV.EncMapUintInt8V(v, e)
-	case *map[uint]int8:
-		fastpathTV.EncMapUintInt8V(*v, e)
-
-	case map[uint]int16:
-		fastpathTV.EncMapUintInt16V(v, e)
-	case *map[uint]int16:
-		fastpathTV.EncMapUintInt16V(*v, e)
-
-	case map[uint]int32:
-		fastpathTV.EncMapUintInt32V(v, e)
-	case *map[uint]int32:
-		fastpathTV.EncMapUintInt32V(*v, e)
-
-	case map[uint]int64:
-		fastpathTV.EncMapUintInt64V(v, e)
-	case *map[uint]int64:
-		fastpathTV.EncMapUintInt64V(*v, e)
-
-	case map[uint]float32:
-		fastpathTV.EncMapUintFloat32V(v, e)
-	case *map[uint]float32:
-		fastpathTV.EncMapUintFloat32V(*v, e)
-
-	case map[uint]float64:
-		fastpathTV.EncMapUintFloat64V(v, e)
-	case *map[uint]float64:
-		fastpathTV.EncMapUintFloat64V(*v, e)
-
-	case map[uint]bool:
-		fastpathTV.EncMapUintBoolV(v, e)
-	case *map[uint]bool:
-		fastpathTV.EncMapUintBoolV(*v, e)
-
-	case map[uint8]interface{}:
-		fastpathTV.EncMapUint8IntfV(v, e)
-	case *map[uint8]interface{}:
-		fastpathTV.EncMapUint8IntfV(*v, e)
-
-	case map[uint8]string:
-		fastpathTV.EncMapUint8StringV(v, e)
-	case *map[uint8]string:
-		fastpathTV.EncMapUint8StringV(*v, e)
-
-	case map[uint8]uint:
-		fastpathTV.EncMapUint8UintV(v, e)
-	case *map[uint8]uint:
-		fastpathTV.EncMapUint8UintV(*v, e)
-
-	case map[uint8]uint8:
-		fastpathTV.EncMapUint8Uint8V(v, e)
-	case *map[uint8]uint8:
-		fastpathTV.EncMapUint8Uint8V(*v, e)
-
-	case map[uint8]uint16:
-		fastpathTV.EncMapUint8Uint16V(v, e)
-	case *map[uint8]uint16:
-		fastpathTV.EncMapUint8Uint16V(*v, e)
-
-	case map[uint8]uint32:
-		fastpathTV.EncMapUint8Uint32V(v, e)
-	case *map[uint8]uint32:
-		fastpathTV.EncMapUint8Uint32V(*v, e)
-
-	case map[uint8]uint64:
-		fastpathTV.EncMapUint8Uint64V(v, e)
-	case *map[uint8]uint64:
-		fastpathTV.EncMapUint8Uint64V(*v, e)
-
-	case map[uint8]uintptr:
-		fastpathTV.EncMapUint8UintptrV(v, e)
-	case *map[uint8]uintptr:
-		fastpathTV.EncMapUint8UintptrV(*v, e)
-
-	case map[uint8]int:
-		fastpathTV.EncMapUint8IntV(v, e)
-	case *map[uint8]int:
-		fastpathTV.EncMapUint8IntV(*v, e)
-
-	case map[uint8]int8:
-		fastpathTV.EncMapUint8Int8V(v, e)
-	case *map[uint8]int8:
-		fastpathTV.EncMapUint8Int8V(*v, e)
-
-	case map[uint8]int16:
-		fastpathTV.EncMapUint8Int16V(v, e)
-	case *map[uint8]int16:
-		fastpathTV.EncMapUint8Int16V(*v, e)
-
-	case map[uint8]int32:
-		fastpathTV.EncMapUint8Int32V(v, e)
-	case *map[uint8]int32:
-		fastpathTV.EncMapUint8Int32V(*v, e)
-
-	case map[uint8]int64:
-		fastpathTV.EncMapUint8Int64V(v, e)
-	case *map[uint8]int64:
-		fastpathTV.EncMapUint8Int64V(*v, e)
-
-	case map[uint8]float32:
-		fastpathTV.EncMapUint8Float32V(v, e)
-	case *map[uint8]float32:
-		fastpathTV.EncMapUint8Float32V(*v, e)
-
-	case map[uint8]float64:
-		fastpathTV.EncMapUint8Float64V(v, e)
-	case *map[uint8]float64:
-		fastpathTV.EncMapUint8Float64V(*v, e)
-
-	case map[uint8]bool:
-		fastpathTV.EncMapUint8BoolV(v, e)
-	case *map[uint8]bool:
-		fastpathTV.EncMapUint8BoolV(*v, e)
-
 	case []uint16:
 		fastpathTV.EncSliceUint16V(v, e)
 	case *[]uint16:
 		fastpathTV.EncSliceUint16V(*v, e)
-
-	case map[uint16]interface{}:
-		fastpathTV.EncMapUint16IntfV(v, e)
-	case *map[uint16]interface{}:
-		fastpathTV.EncMapUint16IntfV(*v, e)
-
-	case map[uint16]string:
-		fastpathTV.EncMapUint16StringV(v, e)
-	case *map[uint16]string:
-		fastpathTV.EncMapUint16StringV(*v, e)
-
-	case map[uint16]uint:
-		fastpathTV.EncMapUint16UintV(v, e)
-	case *map[uint16]uint:
-		fastpathTV.EncMapUint16UintV(*v, e)
-
-	case map[uint16]uint8:
-		fastpathTV.EncMapUint16Uint8V(v, e)
-	case *map[uint16]uint8:
-		fastpathTV.EncMapUint16Uint8V(*v, e)
-
-	case map[uint16]uint16:
-		fastpathTV.EncMapUint16Uint16V(v, e)
-	case *map[uint16]uint16:
-		fastpathTV.EncMapUint16Uint16V(*v, e)
-
-	case map[uint16]uint32:
-		fastpathTV.EncMapUint16Uint32V(v, e)
-	case *map[uint16]uint32:
-		fastpathTV.EncMapUint16Uint32V(*v, e)
-
-	case map[uint16]uint64:
-		fastpathTV.EncMapUint16Uint64V(v, e)
-	case *map[uint16]uint64:
-		fastpathTV.EncMapUint16Uint64V(*v, e)
-
-	case map[uint16]uintptr:
-		fastpathTV.EncMapUint16UintptrV(v, e)
-	case *map[uint16]uintptr:
-		fastpathTV.EncMapUint16UintptrV(*v, e)
-
-	case map[uint16]int:
-		fastpathTV.EncMapUint16IntV(v, e)
-	case *map[uint16]int:
-		fastpathTV.EncMapUint16IntV(*v, e)
-
-	case map[uint16]int8:
-		fastpathTV.EncMapUint16Int8V(v, e)
-	case *map[uint16]int8:
-		fastpathTV.EncMapUint16Int8V(*v, e)
-
-	case map[uint16]int16:
-		fastpathTV.EncMapUint16Int16V(v, e)
-	case *map[uint16]int16:
-		fastpathTV.EncMapUint16Int16V(*v, e)
-
-	case map[uint16]int32:
-		fastpathTV.EncMapUint16Int32V(v, e)
-	case *map[uint16]int32:
-		fastpathTV.EncMapUint16Int32V(*v, e)
-
-	case map[uint16]int64:
-		fastpathTV.EncMapUint16Int64V(v, e)
-	case *map[uint16]int64:
-		fastpathTV.EncMapUint16Int64V(*v, e)
-
-	case map[uint16]float32:
-		fastpathTV.EncMapUint16Float32V(v, e)
-	case *map[uint16]float32:
-		fastpathTV.EncMapUint16Float32V(*v, e)
-
-	case map[uint16]float64:
-		fastpathTV.EncMapUint16Float64V(v, e)
-	case *map[uint16]float64:
-		fastpathTV.EncMapUint16Float64V(*v, e)
-
-	case map[uint16]bool:
-		fastpathTV.EncMapUint16BoolV(v, e)
-	case *map[uint16]bool:
-		fastpathTV.EncMapUint16BoolV(*v, e)
-
 	case []uint32:
 		fastpathTV.EncSliceUint32V(v, e)
 	case *[]uint32:
 		fastpathTV.EncSliceUint32V(*v, e)
-
-	case map[uint32]interface{}:
-		fastpathTV.EncMapUint32IntfV(v, e)
-	case *map[uint32]interface{}:
-		fastpathTV.EncMapUint32IntfV(*v, e)
-
-	case map[uint32]string:
-		fastpathTV.EncMapUint32StringV(v, e)
-	case *map[uint32]string:
-		fastpathTV.EncMapUint32StringV(*v, e)
-
-	case map[uint32]uint:
-		fastpathTV.EncMapUint32UintV(v, e)
-	case *map[uint32]uint:
-		fastpathTV.EncMapUint32UintV(*v, e)
-
-	case map[uint32]uint8:
-		fastpathTV.EncMapUint32Uint8V(v, e)
-	case *map[uint32]uint8:
-		fastpathTV.EncMapUint32Uint8V(*v, e)
-
-	case map[uint32]uint16:
-		fastpathTV.EncMapUint32Uint16V(v, e)
-	case *map[uint32]uint16:
-		fastpathTV.EncMapUint32Uint16V(*v, e)
-
-	case map[uint32]uint32:
-		fastpathTV.EncMapUint32Uint32V(v, e)
-	case *map[uint32]uint32:
-		fastpathTV.EncMapUint32Uint32V(*v, e)
-
-	case map[uint32]uint64:
-		fastpathTV.EncMapUint32Uint64V(v, e)
-	case *map[uint32]uint64:
-		fastpathTV.EncMapUint32Uint64V(*v, e)
-
-	case map[uint32]uintptr:
-		fastpathTV.EncMapUint32UintptrV(v, e)
-	case *map[uint32]uintptr:
-		fastpathTV.EncMapUint32UintptrV(*v, e)
-
-	case map[uint32]int:
-		fastpathTV.EncMapUint32IntV(v, e)
-	case *map[uint32]int:
-		fastpathTV.EncMapUint32IntV(*v, e)
-
-	case map[uint32]int8:
-		fastpathTV.EncMapUint32Int8V(v, e)
-	case *map[uint32]int8:
-		fastpathTV.EncMapUint32Int8V(*v, e)
-
-	case map[uint32]int16:
-		fastpathTV.EncMapUint32Int16V(v, e)
-	case *map[uint32]int16:
-		fastpathTV.EncMapUint32Int16V(*v, e)
-
-	case map[uint32]int32:
-		fastpathTV.EncMapUint32Int32V(v, e)
-	case *map[uint32]int32:
-		fastpathTV.EncMapUint32Int32V(*v, e)
-
-	case map[uint32]int64:
-		fastpathTV.EncMapUint32Int64V(v, e)
-	case *map[uint32]int64:
-		fastpathTV.EncMapUint32Int64V(*v, e)
-
-	case map[uint32]float32:
-		fastpathTV.EncMapUint32Float32V(v, e)
-	case *map[uint32]float32:
-		fastpathTV.EncMapUint32Float32V(*v, e)
-
-	case map[uint32]float64:
-		fastpathTV.EncMapUint32Float64V(v, e)
-	case *map[uint32]float64:
-		fastpathTV.EncMapUint32Float64V(*v, e)
-
-	case map[uint32]bool:
-		fastpathTV.EncMapUint32BoolV(v, e)
-	case *map[uint32]bool:
-		fastpathTV.EncMapUint32BoolV(*v, e)
-
 	case []uint64:
 		fastpathTV.EncSliceUint64V(v, e)
 	case *[]uint64:
 		fastpathTV.EncSliceUint64V(*v, e)
-
-	case map[uint64]interface{}:
-		fastpathTV.EncMapUint64IntfV(v, e)
-	case *map[uint64]interface{}:
-		fastpathTV.EncMapUint64IntfV(*v, e)
-
-	case map[uint64]string:
-		fastpathTV.EncMapUint64StringV(v, e)
-	case *map[uint64]string:
-		fastpathTV.EncMapUint64StringV(*v, e)
-
-	case map[uint64]uint:
-		fastpathTV.EncMapUint64UintV(v, e)
-	case *map[uint64]uint:
-		fastpathTV.EncMapUint64UintV(*v, e)
-
-	case map[uint64]uint8:
-		fastpathTV.EncMapUint64Uint8V(v, e)
-	case *map[uint64]uint8:
-		fastpathTV.EncMapUint64Uint8V(*v, e)
-
-	case map[uint64]uint16:
-		fastpathTV.EncMapUint64Uint16V(v, e)
-	case *map[uint64]uint16:
-		fastpathTV.EncMapUint64Uint16V(*v, e)
-
-	case map[uint64]uint32:
-		fastpathTV.EncMapUint64Uint32V(v, e)
-	case *map[uint64]uint32:
-		fastpathTV.EncMapUint64Uint32V(*v, e)
-
-	case map[uint64]uint64:
-		fastpathTV.EncMapUint64Uint64V(v, e)
-	case *map[uint64]uint64:
-		fastpathTV.EncMapUint64Uint64V(*v, e)
-
-	case map[uint64]uintptr:
-		fastpathTV.EncMapUint64UintptrV(v, e)
-	case *map[uint64]uintptr:
-		fastpathTV.EncMapUint64UintptrV(*v, e)
-
-	case map[uint64]int:
-		fastpathTV.EncMapUint64IntV(v, e)
-	case *map[uint64]int:
-		fastpathTV.EncMapUint64IntV(*v, e)
-
-	case map[uint64]int8:
-		fastpathTV.EncMapUint64Int8V(v, e)
-	case *map[uint64]int8:
-		fastpathTV.EncMapUint64Int8V(*v, e)
-
-	case map[uint64]int16:
-		fastpathTV.EncMapUint64Int16V(v, e)
-	case *map[uint64]int16:
-		fastpathTV.EncMapUint64Int16V(*v, e)
-
-	case map[uint64]int32:
-		fastpathTV.EncMapUint64Int32V(v, e)
-	case *map[uint64]int32:
-		fastpathTV.EncMapUint64Int32V(*v, e)
-
-	case map[uint64]int64:
-		fastpathTV.EncMapUint64Int64V(v, e)
-	case *map[uint64]int64:
-		fastpathTV.EncMapUint64Int64V(*v, e)
-
-	case map[uint64]float32:
-		fastpathTV.EncMapUint64Float32V(v, e)
-	case *map[uint64]float32:
-		fastpathTV.EncMapUint64Float32V(*v, e)
-
-	case map[uint64]float64:
-		fastpathTV.EncMapUint64Float64V(v, e)
-	case *map[uint64]float64:
-		fastpathTV.EncMapUint64Float64V(*v, e)
-
-	case map[uint64]bool:
-		fastpathTV.EncMapUint64BoolV(v, e)
-	case *map[uint64]bool:
-		fastpathTV.EncMapUint64BoolV(*v, e)
-
 	case []uintptr:
 		fastpathTV.EncSliceUintptrV(v, e)
 	case *[]uintptr:
 		fastpathTV.EncSliceUintptrV(*v, e)
-
-	case map[uintptr]interface{}:
-		fastpathTV.EncMapUintptrIntfV(v, e)
-	case *map[uintptr]interface{}:
-		fastpathTV.EncMapUintptrIntfV(*v, e)
-
-	case map[uintptr]string:
-		fastpathTV.EncMapUintptrStringV(v, e)
-	case *map[uintptr]string:
-		fastpathTV.EncMapUintptrStringV(*v, e)
-
-	case map[uintptr]uint:
-		fastpathTV.EncMapUintptrUintV(v, e)
-	case *map[uintptr]uint:
-		fastpathTV.EncMapUintptrUintV(*v, e)
-
-	case map[uintptr]uint8:
-		fastpathTV.EncMapUintptrUint8V(v, e)
-	case *map[uintptr]uint8:
-		fastpathTV.EncMapUintptrUint8V(*v, e)
-
-	case map[uintptr]uint16:
-		fastpathTV.EncMapUintptrUint16V(v, e)
-	case *map[uintptr]uint16:
-		fastpathTV.EncMapUintptrUint16V(*v, e)
-
-	case map[uintptr]uint32:
-		fastpathTV.EncMapUintptrUint32V(v, e)
-	case *map[uintptr]uint32:
-		fastpathTV.EncMapUintptrUint32V(*v, e)
-
-	case map[uintptr]uint64:
-		fastpathTV.EncMapUintptrUint64V(v, e)
-	case *map[uintptr]uint64:
-		fastpathTV.EncMapUintptrUint64V(*v, e)
-
-	case map[uintptr]uintptr:
-		fastpathTV.EncMapUintptrUintptrV(v, e)
-	case *map[uintptr]uintptr:
-		fastpathTV.EncMapUintptrUintptrV(*v, e)
-
-	case map[uintptr]int:
-		fastpathTV.EncMapUintptrIntV(v, e)
-	case *map[uintptr]int:
-		fastpathTV.EncMapUintptrIntV(*v, e)
-
-	case map[uintptr]int8:
-		fastpathTV.EncMapUintptrInt8V(v, e)
-	case *map[uintptr]int8:
-		fastpathTV.EncMapUintptrInt8V(*v, e)
-
-	case map[uintptr]int16:
-		fastpathTV.EncMapUintptrInt16V(v, e)
-	case *map[uintptr]int16:
-		fastpathTV.EncMapUintptrInt16V(*v, e)
-
-	case map[uintptr]int32:
-		fastpathTV.EncMapUintptrInt32V(v, e)
-	case *map[uintptr]int32:
-		fastpathTV.EncMapUintptrInt32V(*v, e)
-
-	case map[uintptr]int64:
-		fastpathTV.EncMapUintptrInt64V(v, e)
-	case *map[uintptr]int64:
-		fastpathTV.EncMapUintptrInt64V(*v, e)
-
-	case map[uintptr]float32:
-		fastpathTV.EncMapUintptrFloat32V(v, e)
-	case *map[uintptr]float32:
-		fastpathTV.EncMapUintptrFloat32V(*v, e)
-
-	case map[uintptr]float64:
-		fastpathTV.EncMapUintptrFloat64V(v, e)
-	case *map[uintptr]float64:
-		fastpathTV.EncMapUintptrFloat64V(*v, e)
-
-	case map[uintptr]bool:
-		fastpathTV.EncMapUintptrBoolV(v, e)
-	case *map[uintptr]bool:
-		fastpathTV.EncMapUintptrBoolV(*v, e)
-
 	case []int:
 		fastpathTV.EncSliceIntV(v, e)
 	case *[]int:
 		fastpathTV.EncSliceIntV(*v, e)
-
-	case map[int]interface{}:
-		fastpathTV.EncMapIntIntfV(v, e)
-	case *map[int]interface{}:
-		fastpathTV.EncMapIntIntfV(*v, e)
-
-	case map[int]string:
-		fastpathTV.EncMapIntStringV(v, e)
-	case *map[int]string:
-		fastpathTV.EncMapIntStringV(*v, e)
-
-	case map[int]uint:
-		fastpathTV.EncMapIntUintV(v, e)
-	case *map[int]uint:
-		fastpathTV.EncMapIntUintV(*v, e)
-
-	case map[int]uint8:
-		fastpathTV.EncMapIntUint8V(v, e)
-	case *map[int]uint8:
-		fastpathTV.EncMapIntUint8V(*v, e)
-
-	case map[int]uint16:
-		fastpathTV.EncMapIntUint16V(v, e)
-	case *map[int]uint16:
-		fastpathTV.EncMapIntUint16V(*v, e)
-
-	case map[int]uint32:
-		fastpathTV.EncMapIntUint32V(v, e)
-	case *map[int]uint32:
-		fastpathTV.EncMapIntUint32V(*v, e)
-
-	case map[int]uint64:
-		fastpathTV.EncMapIntUint64V(v, e)
-	case *map[int]uint64:
-		fastpathTV.EncMapIntUint64V(*v, e)
-
-	case map[int]uintptr:
-		fastpathTV.EncMapIntUintptrV(v, e)
-	case *map[int]uintptr:
-		fastpathTV.EncMapIntUintptrV(*v, e)
-
-	case map[int]int:
-		fastpathTV.EncMapIntIntV(v, e)
-	case *map[int]int:
-		fastpathTV.EncMapIntIntV(*v, e)
-
-	case map[int]int8:
-		fastpathTV.EncMapIntInt8V(v, e)
-	case *map[int]int8:
-		fastpathTV.EncMapIntInt8V(*v, e)
-
-	case map[int]int16:
-		fastpathTV.EncMapIntInt16V(v, e)
-	case *map[int]int16:
-		fastpathTV.EncMapIntInt16V(*v, e)
-
-	case map[int]int32:
-		fastpathTV.EncMapIntInt32V(v, e)
-	case *map[int]int32:
-		fastpathTV.EncMapIntInt32V(*v, e)
-
-	case map[int]int64:
-		fastpathTV.EncMapIntInt64V(v, e)
-	case *map[int]int64:
-		fastpathTV.EncMapIntInt64V(*v, e)
-
-	case map[int]float32:
-		fastpathTV.EncMapIntFloat32V(v, e)
-	case *map[int]float32:
-		fastpathTV.EncMapIntFloat32V(*v, e)
-
-	case map[int]float64:
-		fastpathTV.EncMapIntFloat64V(v, e)
-	case *map[int]float64:
-		fastpathTV.EncMapIntFloat64V(*v, e)
-
-	case map[int]bool:
-		fastpathTV.EncMapIntBoolV(v, e)
-	case *map[int]bool:
-		fastpathTV.EncMapIntBoolV(*v, e)
-
 	case []int8:
 		fastpathTV.EncSliceInt8V(v, e)
 	case *[]int8:
 		fastpathTV.EncSliceInt8V(*v, e)
-
-	case map[int8]interface{}:
-		fastpathTV.EncMapInt8IntfV(v, e)
-	case *map[int8]interface{}:
-		fastpathTV.EncMapInt8IntfV(*v, e)
-
-	case map[int8]string:
-		fastpathTV.EncMapInt8StringV(v, e)
-	case *map[int8]string:
-		fastpathTV.EncMapInt8StringV(*v, e)
-
-	case map[int8]uint:
-		fastpathTV.EncMapInt8UintV(v, e)
-	case *map[int8]uint:
-		fastpathTV.EncMapInt8UintV(*v, e)
-
-	case map[int8]uint8:
-		fastpathTV.EncMapInt8Uint8V(v, e)
-	case *map[int8]uint8:
-		fastpathTV.EncMapInt8Uint8V(*v, e)
-
-	case map[int8]uint16:
-		fastpathTV.EncMapInt8Uint16V(v, e)
-	case *map[int8]uint16:
-		fastpathTV.EncMapInt8Uint16V(*v, e)
-
-	case map[int8]uint32:
-		fastpathTV.EncMapInt8Uint32V(v, e)
-	case *map[int8]uint32:
-		fastpathTV.EncMapInt8Uint32V(*v, e)
-
-	case map[int8]uint64:
-		fastpathTV.EncMapInt8Uint64V(v, e)
-	case *map[int8]uint64:
-		fastpathTV.EncMapInt8Uint64V(*v, e)
-
-	case map[int8]uintptr:
-		fastpathTV.EncMapInt8UintptrV(v, e)
-	case *map[int8]uintptr:
-		fastpathTV.EncMapInt8UintptrV(*v, e)
-
-	case map[int8]int:
-		fastpathTV.EncMapInt8IntV(v, e)
-	case *map[int8]int:
-		fastpathTV.EncMapInt8IntV(*v, e)
-
-	case map[int8]int8:
-		fastpathTV.EncMapInt8Int8V(v, e)
-	case *map[int8]int8:
-		fastpathTV.EncMapInt8Int8V(*v, e)
-
-	case map[int8]int16:
-		fastpathTV.EncMapInt8Int16V(v, e)
-	case *map[int8]int16:
-		fastpathTV.EncMapInt8Int16V(*v, e)
-
-	case map[int8]int32:
-		fastpathTV.EncMapInt8Int32V(v, e)
-	case *map[int8]int32:
-		fastpathTV.EncMapInt8Int32V(*v, e)
-
-	case map[int8]int64:
-		fastpathTV.EncMapInt8Int64V(v, e)
-	case *map[int8]int64:
-		fastpathTV.EncMapInt8Int64V(*v, e)
-
-	case map[int8]float32:
-		fastpathTV.EncMapInt8Float32V(v, e)
-	case *map[int8]float32:
-		fastpathTV.EncMapInt8Float32V(*v, e)
-
-	case map[int8]float64:
-		fastpathTV.EncMapInt8Float64V(v, e)
-	case *map[int8]float64:
-		fastpathTV.EncMapInt8Float64V(*v, e)
-
-	case map[int8]bool:
-		fastpathTV.EncMapInt8BoolV(v, e)
-	case *map[int8]bool:
-		fastpathTV.EncMapInt8BoolV(*v, e)
-
 	case []int16:
 		fastpathTV.EncSliceInt16V(v, e)
 	case *[]int16:
 		fastpathTV.EncSliceInt16V(*v, e)
-
-	case map[int16]interface{}:
-		fastpathTV.EncMapInt16IntfV(v, e)
-	case *map[int16]interface{}:
-		fastpathTV.EncMapInt16IntfV(*v, e)
-
-	case map[int16]string:
-		fastpathTV.EncMapInt16StringV(v, e)
-	case *map[int16]string:
-		fastpathTV.EncMapInt16StringV(*v, e)
-
-	case map[int16]uint:
-		fastpathTV.EncMapInt16UintV(v, e)
-	case *map[int16]uint:
-		fastpathTV.EncMapInt16UintV(*v, e)
-
-	case map[int16]uint8:
-		fastpathTV.EncMapInt16Uint8V(v, e)
-	case *map[int16]uint8:
-		fastpathTV.EncMapInt16Uint8V(*v, e)
-
-	case map[int16]uint16:
-		fastpathTV.EncMapInt16Uint16V(v, e)
-	case *map[int16]uint16:
-		fastpathTV.EncMapInt16Uint16V(*v, e)
-
-	case map[int16]uint32:
-		fastpathTV.EncMapInt16Uint32V(v, e)
-	case *map[int16]uint32:
-		fastpathTV.EncMapInt16Uint32V(*v, e)
-
-	case map[int16]uint64:
-		fastpathTV.EncMapInt16Uint64V(v, e)
-	case *map[int16]uint64:
-		fastpathTV.EncMapInt16Uint64V(*v, e)
-
-	case map[int16]uintptr:
-		fastpathTV.EncMapInt16UintptrV(v, e)
-	case *map[int16]uintptr:
-		fastpathTV.EncMapInt16UintptrV(*v, e)
-
-	case map[int16]int:
-		fastpathTV.EncMapInt16IntV(v, e)
-	case *map[int16]int:
-		fastpathTV.EncMapInt16IntV(*v, e)
-
-	case map[int16]int8:
-		fastpathTV.EncMapInt16Int8V(v, e)
-	case *map[int16]int8:
-		fastpathTV.EncMapInt16Int8V(*v, e)
-
-	case map[int16]int16:
-		fastpathTV.EncMapInt16Int16V(v, e)
-	case *map[int16]int16:
-		fastpathTV.EncMapInt16Int16V(*v, e)
-
-	case map[int16]int32:
-		fastpathTV.EncMapInt16Int32V(v, e)
-	case *map[int16]int32:
-		fastpathTV.EncMapInt16Int32V(*v, e)
-
-	case map[int16]int64:
-		fastpathTV.EncMapInt16Int64V(v, e)
-	case *map[int16]int64:
-		fastpathTV.EncMapInt16Int64V(*v, e)
-
-	case map[int16]float32:
-		fastpathTV.EncMapInt16Float32V(v, e)
-	case *map[int16]float32:
-		fastpathTV.EncMapInt16Float32V(*v, e)
-
-	case map[int16]float64:
-		fastpathTV.EncMapInt16Float64V(v, e)
-	case *map[int16]float64:
-		fastpathTV.EncMapInt16Float64V(*v, e)
-
-	case map[int16]bool:
-		fastpathTV.EncMapInt16BoolV(v, e)
-	case *map[int16]bool:
-		fastpathTV.EncMapInt16BoolV(*v, e)
-
 	case []int32:
 		fastpathTV.EncSliceInt32V(v, e)
 	case *[]int32:
 		fastpathTV.EncSliceInt32V(*v, e)
-
-	case map[int32]interface{}:
-		fastpathTV.EncMapInt32IntfV(v, e)
-	case *map[int32]interface{}:
-		fastpathTV.EncMapInt32IntfV(*v, e)
-
-	case map[int32]string:
-		fastpathTV.EncMapInt32StringV(v, e)
-	case *map[int32]string:
-		fastpathTV.EncMapInt32StringV(*v, e)
-
-	case map[int32]uint:
-		fastpathTV.EncMapInt32UintV(v, e)
-	case *map[int32]uint:
-		fastpathTV.EncMapInt32UintV(*v, e)
-
-	case map[int32]uint8:
-		fastpathTV.EncMapInt32Uint8V(v, e)
-	case *map[int32]uint8:
-		fastpathTV.EncMapInt32Uint8V(*v, e)
-
-	case map[int32]uint16:
-		fastpathTV.EncMapInt32Uint16V(v, e)
-	case *map[int32]uint16:
-		fastpathTV.EncMapInt32Uint16V(*v, e)
-
-	case map[int32]uint32:
-		fastpathTV.EncMapInt32Uint32V(v, e)
-	case *map[int32]uint32:
-		fastpathTV.EncMapInt32Uint32V(*v, e)
-
-	case map[int32]uint64:
-		fastpathTV.EncMapInt32Uint64V(v, e)
-	case *map[int32]uint64:
-		fastpathTV.EncMapInt32Uint64V(*v, e)
-
-	case map[int32]uintptr:
-		fastpathTV.EncMapInt32UintptrV(v, e)
-	case *map[int32]uintptr:
-		fastpathTV.EncMapInt32UintptrV(*v, e)
-
-	case map[int32]int:
-		fastpathTV.EncMapInt32IntV(v, e)
-	case *map[int32]int:
-		fastpathTV.EncMapInt32IntV(*v, e)
-
-	case map[int32]int8:
-		fastpathTV.EncMapInt32Int8V(v, e)
-	case *map[int32]int8:
-		fastpathTV.EncMapInt32Int8V(*v, e)
-
-	case map[int32]int16:
-		fastpathTV.EncMapInt32Int16V(v, e)
-	case *map[int32]int16:
-		fastpathTV.EncMapInt32Int16V(*v, e)
-
-	case map[int32]int32:
-		fastpathTV.EncMapInt32Int32V(v, e)
-	case *map[int32]int32:
-		fastpathTV.EncMapInt32Int32V(*v, e)
-
-	case map[int32]int64:
-		fastpathTV.EncMapInt32Int64V(v, e)
-	case *map[int32]int64:
-		fastpathTV.EncMapInt32Int64V(*v, e)
-
-	case map[int32]float32:
-		fastpathTV.EncMapInt32Float32V(v, e)
-	case *map[int32]float32:
-		fastpathTV.EncMapInt32Float32V(*v, e)
-
-	case map[int32]float64:
-		fastpathTV.EncMapInt32Float64V(v, e)
-	case *map[int32]float64:
-		fastpathTV.EncMapInt32Float64V(*v, e)
-
-	case map[int32]bool:
-		fastpathTV.EncMapInt32BoolV(v, e)
-	case *map[int32]bool:
-		fastpathTV.EncMapInt32BoolV(*v, e)
-
 	case []int64:
 		fastpathTV.EncSliceInt64V(v, e)
 	case *[]int64:
 		fastpathTV.EncSliceInt64V(*v, e)
-
-	case map[int64]interface{}:
-		fastpathTV.EncMapInt64IntfV(v, e)
-	case *map[int64]interface{}:
-		fastpathTV.EncMapInt64IntfV(*v, e)
-
-	case map[int64]string:
-		fastpathTV.EncMapInt64StringV(v, e)
-	case *map[int64]string:
-		fastpathTV.EncMapInt64StringV(*v, e)
-
-	case map[int64]uint:
-		fastpathTV.EncMapInt64UintV(v, e)
-	case *map[int64]uint:
-		fastpathTV.EncMapInt64UintV(*v, e)
-
-	case map[int64]uint8:
-		fastpathTV.EncMapInt64Uint8V(v, e)
-	case *map[int64]uint8:
-		fastpathTV.EncMapInt64Uint8V(*v, e)
-
-	case map[int64]uint16:
-		fastpathTV.EncMapInt64Uint16V(v, e)
-	case *map[int64]uint16:
-		fastpathTV.EncMapInt64Uint16V(*v, e)
-
-	case map[int64]uint32:
-		fastpathTV.EncMapInt64Uint32V(v, e)
-	case *map[int64]uint32:
-		fastpathTV.EncMapInt64Uint32V(*v, e)
-
-	case map[int64]uint64:
-		fastpathTV.EncMapInt64Uint64V(v, e)
-	case *map[int64]uint64:
-		fastpathTV.EncMapInt64Uint64V(*v, e)
-
-	case map[int64]uintptr:
-		fastpathTV.EncMapInt64UintptrV(v, e)
-	case *map[int64]uintptr:
-		fastpathTV.EncMapInt64UintptrV(*v, e)
-
-	case map[int64]int:
-		fastpathTV.EncMapInt64IntV(v, e)
-	case *map[int64]int:
-		fastpathTV.EncMapInt64IntV(*v, e)
-
-	case map[int64]int8:
-		fastpathTV.EncMapInt64Int8V(v, e)
-	case *map[int64]int8:
-		fastpathTV.EncMapInt64Int8V(*v, e)
-
-	case map[int64]int16:
-		fastpathTV.EncMapInt64Int16V(v, e)
-	case *map[int64]int16:
-		fastpathTV.EncMapInt64Int16V(*v, e)
-
-	case map[int64]int32:
-		fastpathTV.EncMapInt64Int32V(v, e)
-	case *map[int64]int32:
-		fastpathTV.EncMapInt64Int32V(*v, e)
-
-	case map[int64]int64:
-		fastpathTV.EncMapInt64Int64V(v, e)
-	case *map[int64]int64:
-		fastpathTV.EncMapInt64Int64V(*v, e)
-
-	case map[int64]float32:
-		fastpathTV.EncMapInt64Float32V(v, e)
-	case *map[int64]float32:
-		fastpathTV.EncMapInt64Float32V(*v, e)
-
-	case map[int64]float64:
-		fastpathTV.EncMapInt64Float64V(v, e)
-	case *map[int64]float64:
-		fastpathTV.EncMapInt64Float64V(*v, e)
-
-	case map[int64]bool:
-		fastpathTV.EncMapInt64BoolV(v, e)
-	case *map[int64]bool:
-		fastpathTV.EncMapInt64BoolV(*v, e)
-
 	case []bool:
 		fastpathTV.EncSliceBoolV(v, e)
 	case *[]bool:
 		fastpathTV.EncSliceBoolV(*v, e)
 
+	case map[interface{}]interface{}:
+		fastpathTV.EncMapIntfIntfV(v, e)
+	case *map[interface{}]interface{}:
+		fastpathTV.EncMapIntfIntfV(*v, e)
+	case map[interface{}]string:
+		fastpathTV.EncMapIntfStringV(v, e)
+	case *map[interface{}]string:
+		fastpathTV.EncMapIntfStringV(*v, e)
+	case map[interface{}]uint:
+		fastpathTV.EncMapIntfUintV(v, e)
+	case *map[interface{}]uint:
+		fastpathTV.EncMapIntfUintV(*v, e)
+	case map[interface{}]uint8:
+		fastpathTV.EncMapIntfUint8V(v, e)
+	case *map[interface{}]uint8:
+		fastpathTV.EncMapIntfUint8V(*v, e)
+	case map[interface{}]uint16:
+		fastpathTV.EncMapIntfUint16V(v, e)
+	case *map[interface{}]uint16:
+		fastpathTV.EncMapIntfUint16V(*v, e)
+	case map[interface{}]uint32:
+		fastpathTV.EncMapIntfUint32V(v, e)
+	case *map[interface{}]uint32:
+		fastpathTV.EncMapIntfUint32V(*v, e)
+	case map[interface{}]uint64:
+		fastpathTV.EncMapIntfUint64V(v, e)
+	case *map[interface{}]uint64:
+		fastpathTV.EncMapIntfUint64V(*v, e)
+	case map[interface{}]uintptr:
+		fastpathTV.EncMapIntfUintptrV(v, e)
+	case *map[interface{}]uintptr:
+		fastpathTV.EncMapIntfUintptrV(*v, e)
+	case map[interface{}]int:
+		fastpathTV.EncMapIntfIntV(v, e)
+	case *map[interface{}]int:
+		fastpathTV.EncMapIntfIntV(*v, e)
+	case map[interface{}]int8:
+		fastpathTV.EncMapIntfInt8V(v, e)
+	case *map[interface{}]int8:
+		fastpathTV.EncMapIntfInt8V(*v, e)
+	case map[interface{}]int16:
+		fastpathTV.EncMapIntfInt16V(v, e)
+	case *map[interface{}]int16:
+		fastpathTV.EncMapIntfInt16V(*v, e)
+	case map[interface{}]int32:
+		fastpathTV.EncMapIntfInt32V(v, e)
+	case *map[interface{}]int32:
+		fastpathTV.EncMapIntfInt32V(*v, e)
+	case map[interface{}]int64:
+		fastpathTV.EncMapIntfInt64V(v, e)
+	case *map[interface{}]int64:
+		fastpathTV.EncMapIntfInt64V(*v, e)
+	case map[interface{}]float32:
+		fastpathTV.EncMapIntfFloat32V(v, e)
+	case *map[interface{}]float32:
+		fastpathTV.EncMapIntfFloat32V(*v, e)
+	case map[interface{}]float64:
+		fastpathTV.EncMapIntfFloat64V(v, e)
+	case *map[interface{}]float64:
+		fastpathTV.EncMapIntfFloat64V(*v, e)
+	case map[interface{}]bool:
+		fastpathTV.EncMapIntfBoolV(v, e)
+	case *map[interface{}]bool:
+		fastpathTV.EncMapIntfBoolV(*v, e)
+	case map[string]interface{}:
+		fastpathTV.EncMapStringIntfV(v, e)
+	case *map[string]interface{}:
+		fastpathTV.EncMapStringIntfV(*v, e)
+	case map[string]string:
+		fastpathTV.EncMapStringStringV(v, e)
+	case *map[string]string:
+		fastpathTV.EncMapStringStringV(*v, e)
+	case map[string]uint:
+		fastpathTV.EncMapStringUintV(v, e)
+	case *map[string]uint:
+		fastpathTV.EncMapStringUintV(*v, e)
+	case map[string]uint8:
+		fastpathTV.EncMapStringUint8V(v, e)
+	case *map[string]uint8:
+		fastpathTV.EncMapStringUint8V(*v, e)
+	case map[string]uint16:
+		fastpathTV.EncMapStringUint16V(v, e)
+	case *map[string]uint16:
+		fastpathTV.EncMapStringUint16V(*v, e)
+	case map[string]uint32:
+		fastpathTV.EncMapStringUint32V(v, e)
+	case *map[string]uint32:
+		fastpathTV.EncMapStringUint32V(*v, e)
+	case map[string]uint64:
+		fastpathTV.EncMapStringUint64V(v, e)
+	case *map[string]uint64:
+		fastpathTV.EncMapStringUint64V(*v, e)
+	case map[string]uintptr:
+		fastpathTV.EncMapStringUintptrV(v, e)
+	case *map[string]uintptr:
+		fastpathTV.EncMapStringUintptrV(*v, e)
+	case map[string]int:
+		fastpathTV.EncMapStringIntV(v, e)
+	case *map[string]int:
+		fastpathTV.EncMapStringIntV(*v, e)
+	case map[string]int8:
+		fastpathTV.EncMapStringInt8V(v, e)
+	case *map[string]int8:
+		fastpathTV.EncMapStringInt8V(*v, e)
+	case map[string]int16:
+		fastpathTV.EncMapStringInt16V(v, e)
+	case *map[string]int16:
+		fastpathTV.EncMapStringInt16V(*v, e)
+	case map[string]int32:
+		fastpathTV.EncMapStringInt32V(v, e)
+	case *map[string]int32:
+		fastpathTV.EncMapStringInt32V(*v, e)
+	case map[string]int64:
+		fastpathTV.EncMapStringInt64V(v, e)
+	case *map[string]int64:
+		fastpathTV.EncMapStringInt64V(*v, e)
+	case map[string]float32:
+		fastpathTV.EncMapStringFloat32V(v, e)
+	case *map[string]float32:
+		fastpathTV.EncMapStringFloat32V(*v, e)
+	case map[string]float64:
+		fastpathTV.EncMapStringFloat64V(v, e)
+	case *map[string]float64:
+		fastpathTV.EncMapStringFloat64V(*v, e)
+	case map[string]bool:
+		fastpathTV.EncMapStringBoolV(v, e)
+	case *map[string]bool:
+		fastpathTV.EncMapStringBoolV(*v, e)
+	case map[float32]interface{}:
+		fastpathTV.EncMapFloat32IntfV(v, e)
+	case *map[float32]interface{}:
+		fastpathTV.EncMapFloat32IntfV(*v, e)
+	case map[float32]string:
+		fastpathTV.EncMapFloat32StringV(v, e)
+	case *map[float32]string:
+		fastpathTV.EncMapFloat32StringV(*v, e)
+	case map[float32]uint:
+		fastpathTV.EncMapFloat32UintV(v, e)
+	case *map[float32]uint:
+		fastpathTV.EncMapFloat32UintV(*v, e)
+	case map[float32]uint8:
+		fastpathTV.EncMapFloat32Uint8V(v, e)
+	case *map[float32]uint8:
+		fastpathTV.EncMapFloat32Uint8V(*v, e)
+	case map[float32]uint16:
+		fastpathTV.EncMapFloat32Uint16V(v, e)
+	case *map[float32]uint16:
+		fastpathTV.EncMapFloat32Uint16V(*v, e)
+	case map[float32]uint32:
+		fastpathTV.EncMapFloat32Uint32V(v, e)
+	case *map[float32]uint32:
+		fastpathTV.EncMapFloat32Uint32V(*v, e)
+	case map[float32]uint64:
+		fastpathTV.EncMapFloat32Uint64V(v, e)
+	case *map[float32]uint64:
+		fastpathTV.EncMapFloat32Uint64V(*v, e)
+	case map[float32]uintptr:
+		fastpathTV.EncMapFloat32UintptrV(v, e)
+	case *map[float32]uintptr:
+		fastpathTV.EncMapFloat32UintptrV(*v, e)
+	case map[float32]int:
+		fastpathTV.EncMapFloat32IntV(v, e)
+	case *map[float32]int:
+		fastpathTV.EncMapFloat32IntV(*v, e)
+	case map[float32]int8:
+		fastpathTV.EncMapFloat32Int8V(v, e)
+	case *map[float32]int8:
+		fastpathTV.EncMapFloat32Int8V(*v, e)
+	case map[float32]int16:
+		fastpathTV.EncMapFloat32Int16V(v, e)
+	case *map[float32]int16:
+		fastpathTV.EncMapFloat32Int16V(*v, e)
+	case map[float32]int32:
+		fastpathTV.EncMapFloat32Int32V(v, e)
+	case *map[float32]int32:
+		fastpathTV.EncMapFloat32Int32V(*v, e)
+	case map[float32]int64:
+		fastpathTV.EncMapFloat32Int64V(v, e)
+	case *map[float32]int64:
+		fastpathTV.EncMapFloat32Int64V(*v, e)
+	case map[float32]float32:
+		fastpathTV.EncMapFloat32Float32V(v, e)
+	case *map[float32]float32:
+		fastpathTV.EncMapFloat32Float32V(*v, e)
+	case map[float32]float64:
+		fastpathTV.EncMapFloat32Float64V(v, e)
+	case *map[float32]float64:
+		fastpathTV.EncMapFloat32Float64V(*v, e)
+	case map[float32]bool:
+		fastpathTV.EncMapFloat32BoolV(v, e)
+	case *map[float32]bool:
+		fastpathTV.EncMapFloat32BoolV(*v, e)
+	case map[float64]interface{}:
+		fastpathTV.EncMapFloat64IntfV(v, e)
+	case *map[float64]interface{}:
+		fastpathTV.EncMapFloat64IntfV(*v, e)
+	case map[float64]string:
+		fastpathTV.EncMapFloat64StringV(v, e)
+	case *map[float64]string:
+		fastpathTV.EncMapFloat64StringV(*v, e)
+	case map[float64]uint:
+		fastpathTV.EncMapFloat64UintV(v, e)
+	case *map[float64]uint:
+		fastpathTV.EncMapFloat64UintV(*v, e)
+	case map[float64]uint8:
+		fastpathTV.EncMapFloat64Uint8V(v, e)
+	case *map[float64]uint8:
+		fastpathTV.EncMapFloat64Uint8V(*v, e)
+	case map[float64]uint16:
+		fastpathTV.EncMapFloat64Uint16V(v, e)
+	case *map[float64]uint16:
+		fastpathTV.EncMapFloat64Uint16V(*v, e)
+	case map[float64]uint32:
+		fastpathTV.EncMapFloat64Uint32V(v, e)
+	case *map[float64]uint32:
+		fastpathTV.EncMapFloat64Uint32V(*v, e)
+	case map[float64]uint64:
+		fastpathTV.EncMapFloat64Uint64V(v, e)
+	case *map[float64]uint64:
+		fastpathTV.EncMapFloat64Uint64V(*v, e)
+	case map[float64]uintptr:
+		fastpathTV.EncMapFloat64UintptrV(v, e)
+	case *map[float64]uintptr:
+		fastpathTV.EncMapFloat64UintptrV(*v, e)
+	case map[float64]int:
+		fastpathTV.EncMapFloat64IntV(v, e)
+	case *map[float64]int:
+		fastpathTV.EncMapFloat64IntV(*v, e)
+	case map[float64]int8:
+		fastpathTV.EncMapFloat64Int8V(v, e)
+	case *map[float64]int8:
+		fastpathTV.EncMapFloat64Int8V(*v, e)
+	case map[float64]int16:
+		fastpathTV.EncMapFloat64Int16V(v, e)
+	case *map[float64]int16:
+		fastpathTV.EncMapFloat64Int16V(*v, e)
+	case map[float64]int32:
+		fastpathTV.EncMapFloat64Int32V(v, e)
+	case *map[float64]int32:
+		fastpathTV.EncMapFloat64Int32V(*v, e)
+	case map[float64]int64:
+		fastpathTV.EncMapFloat64Int64V(v, e)
+	case *map[float64]int64:
+		fastpathTV.EncMapFloat64Int64V(*v, e)
+	case map[float64]float32:
+		fastpathTV.EncMapFloat64Float32V(v, e)
+	case *map[float64]float32:
+		fastpathTV.EncMapFloat64Float32V(*v, e)
+	case map[float64]float64:
+		fastpathTV.EncMapFloat64Float64V(v, e)
+	case *map[float64]float64:
+		fastpathTV.EncMapFloat64Float64V(*v, e)
+	case map[float64]bool:
+		fastpathTV.EncMapFloat64BoolV(v, e)
+	case *map[float64]bool:
+		fastpathTV.EncMapFloat64BoolV(*v, e)
+	case map[uint]interface{}:
+		fastpathTV.EncMapUintIntfV(v, e)
+	case *map[uint]interface{}:
+		fastpathTV.EncMapUintIntfV(*v, e)
+	case map[uint]string:
+		fastpathTV.EncMapUintStringV(v, e)
+	case *map[uint]string:
+		fastpathTV.EncMapUintStringV(*v, e)
+	case map[uint]uint:
+		fastpathTV.EncMapUintUintV(v, e)
+	case *map[uint]uint:
+		fastpathTV.EncMapUintUintV(*v, e)
+	case map[uint]uint8:
+		fastpathTV.EncMapUintUint8V(v, e)
+	case *map[uint]uint8:
+		fastpathTV.EncMapUintUint8V(*v, e)
+	case map[uint]uint16:
+		fastpathTV.EncMapUintUint16V(v, e)
+	case *map[uint]uint16:
+		fastpathTV.EncMapUintUint16V(*v, e)
+	case map[uint]uint32:
+		fastpathTV.EncMapUintUint32V(v, e)
+	case *map[uint]uint32:
+		fastpathTV.EncMapUintUint32V(*v, e)
+	case map[uint]uint64:
+		fastpathTV.EncMapUintUint64V(v, e)
+	case *map[uint]uint64:
+		fastpathTV.EncMapUintUint64V(*v, e)
+	case map[uint]uintptr:
+		fastpathTV.EncMapUintUintptrV(v, e)
+	case *map[uint]uintptr:
+		fastpathTV.EncMapUintUintptrV(*v, e)
+	case map[uint]int:
+		fastpathTV.EncMapUintIntV(v, e)
+	case *map[uint]int:
+		fastpathTV.EncMapUintIntV(*v, e)
+	case map[uint]int8:
+		fastpathTV.EncMapUintInt8V(v, e)
+	case *map[uint]int8:
+		fastpathTV.EncMapUintInt8V(*v, e)
+	case map[uint]int16:
+		fastpathTV.EncMapUintInt16V(v, e)
+	case *map[uint]int16:
+		fastpathTV.EncMapUintInt16V(*v, e)
+	case map[uint]int32:
+		fastpathTV.EncMapUintInt32V(v, e)
+	case *map[uint]int32:
+		fastpathTV.EncMapUintInt32V(*v, e)
+	case map[uint]int64:
+		fastpathTV.EncMapUintInt64V(v, e)
+	case *map[uint]int64:
+		fastpathTV.EncMapUintInt64V(*v, e)
+	case map[uint]float32:
+		fastpathTV.EncMapUintFloat32V(v, e)
+	case *map[uint]float32:
+		fastpathTV.EncMapUintFloat32V(*v, e)
+	case map[uint]float64:
+		fastpathTV.EncMapUintFloat64V(v, e)
+	case *map[uint]float64:
+		fastpathTV.EncMapUintFloat64V(*v, e)
+	case map[uint]bool:
+		fastpathTV.EncMapUintBoolV(v, e)
+	case *map[uint]bool:
+		fastpathTV.EncMapUintBoolV(*v, e)
+	case map[uint8]interface{}:
+		fastpathTV.EncMapUint8IntfV(v, e)
+	case *map[uint8]interface{}:
+		fastpathTV.EncMapUint8IntfV(*v, e)
+	case map[uint8]string:
+		fastpathTV.EncMapUint8StringV(v, e)
+	case *map[uint8]string:
+		fastpathTV.EncMapUint8StringV(*v, e)
+	case map[uint8]uint:
+		fastpathTV.EncMapUint8UintV(v, e)
+	case *map[uint8]uint:
+		fastpathTV.EncMapUint8UintV(*v, e)
+	case map[uint8]uint8:
+		fastpathTV.EncMapUint8Uint8V(v, e)
+	case *map[uint8]uint8:
+		fastpathTV.EncMapUint8Uint8V(*v, e)
+	case map[uint8]uint16:
+		fastpathTV.EncMapUint8Uint16V(v, e)
+	case *map[uint8]uint16:
+		fastpathTV.EncMapUint8Uint16V(*v, e)
+	case map[uint8]uint32:
+		fastpathTV.EncMapUint8Uint32V(v, e)
+	case *map[uint8]uint32:
+		fastpathTV.EncMapUint8Uint32V(*v, e)
+	case map[uint8]uint64:
+		fastpathTV.EncMapUint8Uint64V(v, e)
+	case *map[uint8]uint64:
+		fastpathTV.EncMapUint8Uint64V(*v, e)
+	case map[uint8]uintptr:
+		fastpathTV.EncMapUint8UintptrV(v, e)
+	case *map[uint8]uintptr:
+		fastpathTV.EncMapUint8UintptrV(*v, e)
+	case map[uint8]int:
+		fastpathTV.EncMapUint8IntV(v, e)
+	case *map[uint8]int:
+		fastpathTV.EncMapUint8IntV(*v, e)
+	case map[uint8]int8:
+		fastpathTV.EncMapUint8Int8V(v, e)
+	case *map[uint8]int8:
+		fastpathTV.EncMapUint8Int8V(*v, e)
+	case map[uint8]int16:
+		fastpathTV.EncMapUint8Int16V(v, e)
+	case *map[uint8]int16:
+		fastpathTV.EncMapUint8Int16V(*v, e)
+	case map[uint8]int32:
+		fastpathTV.EncMapUint8Int32V(v, e)
+	case *map[uint8]int32:
+		fastpathTV.EncMapUint8Int32V(*v, e)
+	case map[uint8]int64:
+		fastpathTV.EncMapUint8Int64V(v, e)
+	case *map[uint8]int64:
+		fastpathTV.EncMapUint8Int64V(*v, e)
+	case map[uint8]float32:
+		fastpathTV.EncMapUint8Float32V(v, e)
+	case *map[uint8]float32:
+		fastpathTV.EncMapUint8Float32V(*v, e)
+	case map[uint8]float64:
+		fastpathTV.EncMapUint8Float64V(v, e)
+	case *map[uint8]float64:
+		fastpathTV.EncMapUint8Float64V(*v, e)
+	case map[uint8]bool:
+		fastpathTV.EncMapUint8BoolV(v, e)
+	case *map[uint8]bool:
+		fastpathTV.EncMapUint8BoolV(*v, e)
+	case map[uint16]interface{}:
+		fastpathTV.EncMapUint16IntfV(v, e)
+	case *map[uint16]interface{}:
+		fastpathTV.EncMapUint16IntfV(*v, e)
+	case map[uint16]string:
+		fastpathTV.EncMapUint16StringV(v, e)
+	case *map[uint16]string:
+		fastpathTV.EncMapUint16StringV(*v, e)
+	case map[uint16]uint:
+		fastpathTV.EncMapUint16UintV(v, e)
+	case *map[uint16]uint:
+		fastpathTV.EncMapUint16UintV(*v, e)
+	case map[uint16]uint8:
+		fastpathTV.EncMapUint16Uint8V(v, e)
+	case *map[uint16]uint8:
+		fastpathTV.EncMapUint16Uint8V(*v, e)
+	case map[uint16]uint16:
+		fastpathTV.EncMapUint16Uint16V(v, e)
+	case *map[uint16]uint16:
+		fastpathTV.EncMapUint16Uint16V(*v, e)
+	case map[uint16]uint32:
+		fastpathTV.EncMapUint16Uint32V(v, e)
+	case *map[uint16]uint32:
+		fastpathTV.EncMapUint16Uint32V(*v, e)
+	case map[uint16]uint64:
+		fastpathTV.EncMapUint16Uint64V(v, e)
+	case *map[uint16]uint64:
+		fastpathTV.EncMapUint16Uint64V(*v, e)
+	case map[uint16]uintptr:
+		fastpathTV.EncMapUint16UintptrV(v, e)
+	case *map[uint16]uintptr:
+		fastpathTV.EncMapUint16UintptrV(*v, e)
+	case map[uint16]int:
+		fastpathTV.EncMapUint16IntV(v, e)
+	case *map[uint16]int:
+		fastpathTV.EncMapUint16IntV(*v, e)
+	case map[uint16]int8:
+		fastpathTV.EncMapUint16Int8V(v, e)
+	case *map[uint16]int8:
+		fastpathTV.EncMapUint16Int8V(*v, e)
+	case map[uint16]int16:
+		fastpathTV.EncMapUint16Int16V(v, e)
+	case *map[uint16]int16:
+		fastpathTV.EncMapUint16Int16V(*v, e)
+	case map[uint16]int32:
+		fastpathTV.EncMapUint16Int32V(v, e)
+	case *map[uint16]int32:
+		fastpathTV.EncMapUint16Int32V(*v, e)
+	case map[uint16]int64:
+		fastpathTV.EncMapUint16Int64V(v, e)
+	case *map[uint16]int64:
+		fastpathTV.EncMapUint16Int64V(*v, e)
+	case map[uint16]float32:
+		fastpathTV.EncMapUint16Float32V(v, e)
+	case *map[uint16]float32:
+		fastpathTV.EncMapUint16Float32V(*v, e)
+	case map[uint16]float64:
+		fastpathTV.EncMapUint16Float64V(v, e)
+	case *map[uint16]float64:
+		fastpathTV.EncMapUint16Float64V(*v, e)
+	case map[uint16]bool:
+		fastpathTV.EncMapUint16BoolV(v, e)
+	case *map[uint16]bool:
+		fastpathTV.EncMapUint16BoolV(*v, e)
+	case map[uint32]interface{}:
+		fastpathTV.EncMapUint32IntfV(v, e)
+	case *map[uint32]interface{}:
+		fastpathTV.EncMapUint32IntfV(*v, e)
+	case map[uint32]string:
+		fastpathTV.EncMapUint32StringV(v, e)
+	case *map[uint32]string:
+		fastpathTV.EncMapUint32StringV(*v, e)
+	case map[uint32]uint:
+		fastpathTV.EncMapUint32UintV(v, e)
+	case *map[uint32]uint:
+		fastpathTV.EncMapUint32UintV(*v, e)
+	case map[uint32]uint8:
+		fastpathTV.EncMapUint32Uint8V(v, e)
+	case *map[uint32]uint8:
+		fastpathTV.EncMapUint32Uint8V(*v, e)
+	case map[uint32]uint16:
+		fastpathTV.EncMapUint32Uint16V(v, e)
+	case *map[uint32]uint16:
+		fastpathTV.EncMapUint32Uint16V(*v, e)
+	case map[uint32]uint32:
+		fastpathTV.EncMapUint32Uint32V(v, e)
+	case *map[uint32]uint32:
+		fastpathTV.EncMapUint32Uint32V(*v, e)
+	case map[uint32]uint64:
+		fastpathTV.EncMapUint32Uint64V(v, e)
+	case *map[uint32]uint64:
+		fastpathTV.EncMapUint32Uint64V(*v, e)
+	case map[uint32]uintptr:
+		fastpathTV.EncMapUint32UintptrV(v, e)
+	case *map[uint32]uintptr:
+		fastpathTV.EncMapUint32UintptrV(*v, e)
+	case map[uint32]int:
+		fastpathTV.EncMapUint32IntV(v, e)
+	case *map[uint32]int:
+		fastpathTV.EncMapUint32IntV(*v, e)
+	case map[uint32]int8:
+		fastpathTV.EncMapUint32Int8V(v, e)
+	case *map[uint32]int8:
+		fastpathTV.EncMapUint32Int8V(*v, e)
+	case map[uint32]int16:
+		fastpathTV.EncMapUint32Int16V(v, e)
+	case *map[uint32]int16:
+		fastpathTV.EncMapUint32Int16V(*v, e)
+	case map[uint32]int32:
+		fastpathTV.EncMapUint32Int32V(v, e)
+	case *map[uint32]int32:
+		fastpathTV.EncMapUint32Int32V(*v, e)
+	case map[uint32]int64:
+		fastpathTV.EncMapUint32Int64V(v, e)
+	case *map[uint32]int64:
+		fastpathTV.EncMapUint32Int64V(*v, e)
+	case map[uint32]float32:
+		fastpathTV.EncMapUint32Float32V(v, e)
+	case *map[uint32]float32:
+		fastpathTV.EncMapUint32Float32V(*v, e)
+	case map[uint32]float64:
+		fastpathTV.EncMapUint32Float64V(v, e)
+	case *map[uint32]float64:
+		fastpathTV.EncMapUint32Float64V(*v, e)
+	case map[uint32]bool:
+		fastpathTV.EncMapUint32BoolV(v, e)
+	case *map[uint32]bool:
+		fastpathTV.EncMapUint32BoolV(*v, e)
+	case map[uint64]interface{}:
+		fastpathTV.EncMapUint64IntfV(v, e)
+	case *map[uint64]interface{}:
+		fastpathTV.EncMapUint64IntfV(*v, e)
+	case map[uint64]string:
+		fastpathTV.EncMapUint64StringV(v, e)
+	case *map[uint64]string:
+		fastpathTV.EncMapUint64StringV(*v, e)
+	case map[uint64]uint:
+		fastpathTV.EncMapUint64UintV(v, e)
+	case *map[uint64]uint:
+		fastpathTV.EncMapUint64UintV(*v, e)
+	case map[uint64]uint8:
+		fastpathTV.EncMapUint64Uint8V(v, e)
+	case *map[uint64]uint8:
+		fastpathTV.EncMapUint64Uint8V(*v, e)
+	case map[uint64]uint16:
+		fastpathTV.EncMapUint64Uint16V(v, e)
+	case *map[uint64]uint16:
+		fastpathTV.EncMapUint64Uint16V(*v, e)
+	case map[uint64]uint32:
+		fastpathTV.EncMapUint64Uint32V(v, e)
+	case *map[uint64]uint32:
+		fastpathTV.EncMapUint64Uint32V(*v, e)
+	case map[uint64]uint64:
+		fastpathTV.EncMapUint64Uint64V(v, e)
+	case *map[uint64]uint64:
+		fastpathTV.EncMapUint64Uint64V(*v, e)
+	case map[uint64]uintptr:
+		fastpathTV.EncMapUint64UintptrV(v, e)
+	case *map[uint64]uintptr:
+		fastpathTV.EncMapUint64UintptrV(*v, e)
+	case map[uint64]int:
+		fastpathTV.EncMapUint64IntV(v, e)
+	case *map[uint64]int:
+		fastpathTV.EncMapUint64IntV(*v, e)
+	case map[uint64]int8:
+		fastpathTV.EncMapUint64Int8V(v, e)
+	case *map[uint64]int8:
+		fastpathTV.EncMapUint64Int8V(*v, e)
+	case map[uint64]int16:
+		fastpathTV.EncMapUint64Int16V(v, e)
+	case *map[uint64]int16:
+		fastpathTV.EncMapUint64Int16V(*v, e)
+	case map[uint64]int32:
+		fastpathTV.EncMapUint64Int32V(v, e)
+	case *map[uint64]int32:
+		fastpathTV.EncMapUint64Int32V(*v, e)
+	case map[uint64]int64:
+		fastpathTV.EncMapUint64Int64V(v, e)
+	case *map[uint64]int64:
+		fastpathTV.EncMapUint64Int64V(*v, e)
+	case map[uint64]float32:
+		fastpathTV.EncMapUint64Float32V(v, e)
+	case *map[uint64]float32:
+		fastpathTV.EncMapUint64Float32V(*v, e)
+	case map[uint64]float64:
+		fastpathTV.EncMapUint64Float64V(v, e)
+	case *map[uint64]float64:
+		fastpathTV.EncMapUint64Float64V(*v, e)
+	case map[uint64]bool:
+		fastpathTV.EncMapUint64BoolV(v, e)
+	case *map[uint64]bool:
+		fastpathTV.EncMapUint64BoolV(*v, e)
+	case map[uintptr]interface{}:
+		fastpathTV.EncMapUintptrIntfV(v, e)
+	case *map[uintptr]interface{}:
+		fastpathTV.EncMapUintptrIntfV(*v, e)
+	case map[uintptr]string:
+		fastpathTV.EncMapUintptrStringV(v, e)
+	case *map[uintptr]string:
+		fastpathTV.EncMapUintptrStringV(*v, e)
+	case map[uintptr]uint:
+		fastpathTV.EncMapUintptrUintV(v, e)
+	case *map[uintptr]uint:
+		fastpathTV.EncMapUintptrUintV(*v, e)
+	case map[uintptr]uint8:
+		fastpathTV.EncMapUintptrUint8V(v, e)
+	case *map[uintptr]uint8:
+		fastpathTV.EncMapUintptrUint8V(*v, e)
+	case map[uintptr]uint16:
+		fastpathTV.EncMapUintptrUint16V(v, e)
+	case *map[uintptr]uint16:
+		fastpathTV.EncMapUintptrUint16V(*v, e)
+	case map[uintptr]uint32:
+		fastpathTV.EncMapUintptrUint32V(v, e)
+	case *map[uintptr]uint32:
+		fastpathTV.EncMapUintptrUint32V(*v, e)
+	case map[uintptr]uint64:
+		fastpathTV.EncMapUintptrUint64V(v, e)
+	case *map[uintptr]uint64:
+		fastpathTV.EncMapUintptrUint64V(*v, e)
+	case map[uintptr]uintptr:
+		fastpathTV.EncMapUintptrUintptrV(v, e)
+	case *map[uintptr]uintptr:
+		fastpathTV.EncMapUintptrUintptrV(*v, e)
+	case map[uintptr]int:
+		fastpathTV.EncMapUintptrIntV(v, e)
+	case *map[uintptr]int:
+		fastpathTV.EncMapUintptrIntV(*v, e)
+	case map[uintptr]int8:
+		fastpathTV.EncMapUintptrInt8V(v, e)
+	case *map[uintptr]int8:
+		fastpathTV.EncMapUintptrInt8V(*v, e)
+	case map[uintptr]int16:
+		fastpathTV.EncMapUintptrInt16V(v, e)
+	case *map[uintptr]int16:
+		fastpathTV.EncMapUintptrInt16V(*v, e)
+	case map[uintptr]int32:
+		fastpathTV.EncMapUintptrInt32V(v, e)
+	case *map[uintptr]int32:
+		fastpathTV.EncMapUintptrInt32V(*v, e)
+	case map[uintptr]int64:
+		fastpathTV.EncMapUintptrInt64V(v, e)
+	case *map[uintptr]int64:
+		fastpathTV.EncMapUintptrInt64V(*v, e)
+	case map[uintptr]float32:
+		fastpathTV.EncMapUintptrFloat32V(v, e)
+	case *map[uintptr]float32:
+		fastpathTV.EncMapUintptrFloat32V(*v, e)
+	case map[uintptr]float64:
+		fastpathTV.EncMapUintptrFloat64V(v, e)
+	case *map[uintptr]float64:
+		fastpathTV.EncMapUintptrFloat64V(*v, e)
+	case map[uintptr]bool:
+		fastpathTV.EncMapUintptrBoolV(v, e)
+	case *map[uintptr]bool:
+		fastpathTV.EncMapUintptrBoolV(*v, e)
+	case map[int]interface{}:
+		fastpathTV.EncMapIntIntfV(v, e)
+	case *map[int]interface{}:
+		fastpathTV.EncMapIntIntfV(*v, e)
+	case map[int]string:
+		fastpathTV.EncMapIntStringV(v, e)
+	case *map[int]string:
+		fastpathTV.EncMapIntStringV(*v, e)
+	case map[int]uint:
+		fastpathTV.EncMapIntUintV(v, e)
+	case *map[int]uint:
+		fastpathTV.EncMapIntUintV(*v, e)
+	case map[int]uint8:
+		fastpathTV.EncMapIntUint8V(v, e)
+	case *map[int]uint8:
+		fastpathTV.EncMapIntUint8V(*v, e)
+	case map[int]uint16:
+		fastpathTV.EncMapIntUint16V(v, e)
+	case *map[int]uint16:
+		fastpathTV.EncMapIntUint16V(*v, e)
+	case map[int]uint32:
+		fastpathTV.EncMapIntUint32V(v, e)
+	case *map[int]uint32:
+		fastpathTV.EncMapIntUint32V(*v, e)
+	case map[int]uint64:
+		fastpathTV.EncMapIntUint64V(v, e)
+	case *map[int]uint64:
+		fastpathTV.EncMapIntUint64V(*v, e)
+	case map[int]uintptr:
+		fastpathTV.EncMapIntUintptrV(v, e)
+	case *map[int]uintptr:
+		fastpathTV.EncMapIntUintptrV(*v, e)
+	case map[int]int:
+		fastpathTV.EncMapIntIntV(v, e)
+	case *map[int]int:
+		fastpathTV.EncMapIntIntV(*v, e)
+	case map[int]int8:
+		fastpathTV.EncMapIntInt8V(v, e)
+	case *map[int]int8:
+		fastpathTV.EncMapIntInt8V(*v, e)
+	case map[int]int16:
+		fastpathTV.EncMapIntInt16V(v, e)
+	case *map[int]int16:
+		fastpathTV.EncMapIntInt16V(*v, e)
+	case map[int]int32:
+		fastpathTV.EncMapIntInt32V(v, e)
+	case *map[int]int32:
+		fastpathTV.EncMapIntInt32V(*v, e)
+	case map[int]int64:
+		fastpathTV.EncMapIntInt64V(v, e)
+	case *map[int]int64:
+		fastpathTV.EncMapIntInt64V(*v, e)
+	case map[int]float32:
+		fastpathTV.EncMapIntFloat32V(v, e)
+	case *map[int]float32:
+		fastpathTV.EncMapIntFloat32V(*v, e)
+	case map[int]float64:
+		fastpathTV.EncMapIntFloat64V(v, e)
+	case *map[int]float64:
+		fastpathTV.EncMapIntFloat64V(*v, e)
+	case map[int]bool:
+		fastpathTV.EncMapIntBoolV(v, e)
+	case *map[int]bool:
+		fastpathTV.EncMapIntBoolV(*v, e)
+	case map[int8]interface{}:
+		fastpathTV.EncMapInt8IntfV(v, e)
+	case *map[int8]interface{}:
+		fastpathTV.EncMapInt8IntfV(*v, e)
+	case map[int8]string:
+		fastpathTV.EncMapInt8StringV(v, e)
+	case *map[int8]string:
+		fastpathTV.EncMapInt8StringV(*v, e)
+	case map[int8]uint:
+		fastpathTV.EncMapInt8UintV(v, e)
+	case *map[int8]uint:
+		fastpathTV.EncMapInt8UintV(*v, e)
+	case map[int8]uint8:
+		fastpathTV.EncMapInt8Uint8V(v, e)
+	case *map[int8]uint8:
+		fastpathTV.EncMapInt8Uint8V(*v, e)
+	case map[int8]uint16:
+		fastpathTV.EncMapInt8Uint16V(v, e)
+	case *map[int8]uint16:
+		fastpathTV.EncMapInt8Uint16V(*v, e)
+	case map[int8]uint32:
+		fastpathTV.EncMapInt8Uint32V(v, e)
+	case *map[int8]uint32:
+		fastpathTV.EncMapInt8Uint32V(*v, e)
+	case map[int8]uint64:
+		fastpathTV.EncMapInt8Uint64V(v, e)
+	case *map[int8]uint64:
+		fastpathTV.EncMapInt8Uint64V(*v, e)
+	case map[int8]uintptr:
+		fastpathTV.EncMapInt8UintptrV(v, e)
+	case *map[int8]uintptr:
+		fastpathTV.EncMapInt8UintptrV(*v, e)
+	case map[int8]int:
+		fastpathTV.EncMapInt8IntV(v, e)
+	case *map[int8]int:
+		fastpathTV.EncMapInt8IntV(*v, e)
+	case map[int8]int8:
+		fastpathTV.EncMapInt8Int8V(v, e)
+	case *map[int8]int8:
+		fastpathTV.EncMapInt8Int8V(*v, e)
+	case map[int8]int16:
+		fastpathTV.EncMapInt8Int16V(v, e)
+	case *map[int8]int16:
+		fastpathTV.EncMapInt8Int16V(*v, e)
+	case map[int8]int32:
+		fastpathTV.EncMapInt8Int32V(v, e)
+	case *map[int8]int32:
+		fastpathTV.EncMapInt8Int32V(*v, e)
+	case map[int8]int64:
+		fastpathTV.EncMapInt8Int64V(v, e)
+	case *map[int8]int64:
+		fastpathTV.EncMapInt8Int64V(*v, e)
+	case map[int8]float32:
+		fastpathTV.EncMapInt8Float32V(v, e)
+	case *map[int8]float32:
+		fastpathTV.EncMapInt8Float32V(*v, e)
+	case map[int8]float64:
+		fastpathTV.EncMapInt8Float64V(v, e)
+	case *map[int8]float64:
+		fastpathTV.EncMapInt8Float64V(*v, e)
+	case map[int8]bool:
+		fastpathTV.EncMapInt8BoolV(v, e)
+	case *map[int8]bool:
+		fastpathTV.EncMapInt8BoolV(*v, e)
+	case map[int16]interface{}:
+		fastpathTV.EncMapInt16IntfV(v, e)
+	case *map[int16]interface{}:
+		fastpathTV.EncMapInt16IntfV(*v, e)
+	case map[int16]string:
+		fastpathTV.EncMapInt16StringV(v, e)
+	case *map[int16]string:
+		fastpathTV.EncMapInt16StringV(*v, e)
+	case map[int16]uint:
+		fastpathTV.EncMapInt16UintV(v, e)
+	case *map[int16]uint:
+		fastpathTV.EncMapInt16UintV(*v, e)
+	case map[int16]uint8:
+		fastpathTV.EncMapInt16Uint8V(v, e)
+	case *map[int16]uint8:
+		fastpathTV.EncMapInt16Uint8V(*v, e)
+	case map[int16]uint16:
+		fastpathTV.EncMapInt16Uint16V(v, e)
+	case *map[int16]uint16:
+		fastpathTV.EncMapInt16Uint16V(*v, e)
+	case map[int16]uint32:
+		fastpathTV.EncMapInt16Uint32V(v, e)
+	case *map[int16]uint32:
+		fastpathTV.EncMapInt16Uint32V(*v, e)
+	case map[int16]uint64:
+		fastpathTV.EncMapInt16Uint64V(v, e)
+	case *map[int16]uint64:
+		fastpathTV.EncMapInt16Uint64V(*v, e)
+	case map[int16]uintptr:
+		fastpathTV.EncMapInt16UintptrV(v, e)
+	case *map[int16]uintptr:
+		fastpathTV.EncMapInt16UintptrV(*v, e)
+	case map[int16]int:
+		fastpathTV.EncMapInt16IntV(v, e)
+	case *map[int16]int:
+		fastpathTV.EncMapInt16IntV(*v, e)
+	case map[int16]int8:
+		fastpathTV.EncMapInt16Int8V(v, e)
+	case *map[int16]int8:
+		fastpathTV.EncMapInt16Int8V(*v, e)
+	case map[int16]int16:
+		fastpathTV.EncMapInt16Int16V(v, e)
+	case *map[int16]int16:
+		fastpathTV.EncMapInt16Int16V(*v, e)
+	case map[int16]int32:
+		fastpathTV.EncMapInt16Int32V(v, e)
+	case *map[int16]int32:
+		fastpathTV.EncMapInt16Int32V(*v, e)
+	case map[int16]int64:
+		fastpathTV.EncMapInt16Int64V(v, e)
+	case *map[int16]int64:
+		fastpathTV.EncMapInt16Int64V(*v, e)
+	case map[int16]float32:
+		fastpathTV.EncMapInt16Float32V(v, e)
+	case *map[int16]float32:
+		fastpathTV.EncMapInt16Float32V(*v, e)
+	case map[int16]float64:
+		fastpathTV.EncMapInt16Float64V(v, e)
+	case *map[int16]float64:
+		fastpathTV.EncMapInt16Float64V(*v, e)
+	case map[int16]bool:
+		fastpathTV.EncMapInt16BoolV(v, e)
+	case *map[int16]bool:
+		fastpathTV.EncMapInt16BoolV(*v, e)
+	case map[int32]interface{}:
+		fastpathTV.EncMapInt32IntfV(v, e)
+	case *map[int32]interface{}:
+		fastpathTV.EncMapInt32IntfV(*v, e)
+	case map[int32]string:
+		fastpathTV.EncMapInt32StringV(v, e)
+	case *map[int32]string:
+		fastpathTV.EncMapInt32StringV(*v, e)
+	case map[int32]uint:
+		fastpathTV.EncMapInt32UintV(v, e)
+	case *map[int32]uint:
+		fastpathTV.EncMapInt32UintV(*v, e)
+	case map[int32]uint8:
+		fastpathTV.EncMapInt32Uint8V(v, e)
+	case *map[int32]uint8:
+		fastpathTV.EncMapInt32Uint8V(*v, e)
+	case map[int32]uint16:
+		fastpathTV.EncMapInt32Uint16V(v, e)
+	case *map[int32]uint16:
+		fastpathTV.EncMapInt32Uint16V(*v, e)
+	case map[int32]uint32:
+		fastpathTV.EncMapInt32Uint32V(v, e)
+	case *map[int32]uint32:
+		fastpathTV.EncMapInt32Uint32V(*v, e)
+	case map[int32]uint64:
+		fastpathTV.EncMapInt32Uint64V(v, e)
+	case *map[int32]uint64:
+		fastpathTV.EncMapInt32Uint64V(*v, e)
+	case map[int32]uintptr:
+		fastpathTV.EncMapInt32UintptrV(v, e)
+	case *map[int32]uintptr:
+		fastpathTV.EncMapInt32UintptrV(*v, e)
+	case map[int32]int:
+		fastpathTV.EncMapInt32IntV(v, e)
+	case *map[int32]int:
+		fastpathTV.EncMapInt32IntV(*v, e)
+	case map[int32]int8:
+		fastpathTV.EncMapInt32Int8V(v, e)
+	case *map[int32]int8:
+		fastpathTV.EncMapInt32Int8V(*v, e)
+	case map[int32]int16:
+		fastpathTV.EncMapInt32Int16V(v, e)
+	case *map[int32]int16:
+		fastpathTV.EncMapInt32Int16V(*v, e)
+	case map[int32]int32:
+		fastpathTV.EncMapInt32Int32V(v, e)
+	case *map[int32]int32:
+		fastpathTV.EncMapInt32Int32V(*v, e)
+	case map[int32]int64:
+		fastpathTV.EncMapInt32Int64V(v, e)
+	case *map[int32]int64:
+		fastpathTV.EncMapInt32Int64V(*v, e)
+	case map[int32]float32:
+		fastpathTV.EncMapInt32Float32V(v, e)
+	case *map[int32]float32:
+		fastpathTV.EncMapInt32Float32V(*v, e)
+	case map[int32]float64:
+		fastpathTV.EncMapInt32Float64V(v, e)
+	case *map[int32]float64:
+		fastpathTV.EncMapInt32Float64V(*v, e)
+	case map[int32]bool:
+		fastpathTV.EncMapInt32BoolV(v, e)
+	case *map[int32]bool:
+		fastpathTV.EncMapInt32BoolV(*v, e)
+	case map[int64]interface{}:
+		fastpathTV.EncMapInt64IntfV(v, e)
+	case *map[int64]interface{}:
+		fastpathTV.EncMapInt64IntfV(*v, e)
+	case map[int64]string:
+		fastpathTV.EncMapInt64StringV(v, e)
+	case *map[int64]string:
+		fastpathTV.EncMapInt64StringV(*v, e)
+	case map[int64]uint:
+		fastpathTV.EncMapInt64UintV(v, e)
+	case *map[int64]uint:
+		fastpathTV.EncMapInt64UintV(*v, e)
+	case map[int64]uint8:
+		fastpathTV.EncMapInt64Uint8V(v, e)
+	case *map[int64]uint8:
+		fastpathTV.EncMapInt64Uint8V(*v, e)
+	case map[int64]uint16:
+		fastpathTV.EncMapInt64Uint16V(v, e)
+	case *map[int64]uint16:
+		fastpathTV.EncMapInt64Uint16V(*v, e)
+	case map[int64]uint32:
+		fastpathTV.EncMapInt64Uint32V(v, e)
+	case *map[int64]uint32:
+		fastpathTV.EncMapInt64Uint32V(*v, e)
+	case map[int64]uint64:
+		fastpathTV.EncMapInt64Uint64V(v, e)
+	case *map[int64]uint64:
+		fastpathTV.EncMapInt64Uint64V(*v, e)
+	case map[int64]uintptr:
+		fastpathTV.EncMapInt64UintptrV(v, e)
+	case *map[int64]uintptr:
+		fastpathTV.EncMapInt64UintptrV(*v, e)
+	case map[int64]int:
+		fastpathTV.EncMapInt64IntV(v, e)
+	case *map[int64]int:
+		fastpathTV.EncMapInt64IntV(*v, e)
+	case map[int64]int8:
+		fastpathTV.EncMapInt64Int8V(v, e)
+	case *map[int64]int8:
+		fastpathTV.EncMapInt64Int8V(*v, e)
+	case map[int64]int16:
+		fastpathTV.EncMapInt64Int16V(v, e)
+	case *map[int64]int16:
+		fastpathTV.EncMapInt64Int16V(*v, e)
+	case map[int64]int32:
+		fastpathTV.EncMapInt64Int32V(v, e)
+	case *map[int64]int32:
+		fastpathTV.EncMapInt64Int32V(*v, e)
+	case map[int64]int64:
+		fastpathTV.EncMapInt64Int64V(v, e)
+	case *map[int64]int64:
+		fastpathTV.EncMapInt64Int64V(*v, e)
+	case map[int64]float32:
+		fastpathTV.EncMapInt64Float32V(v, e)
+	case *map[int64]float32:
+		fastpathTV.EncMapInt64Float32V(*v, e)
+	case map[int64]float64:
+		fastpathTV.EncMapInt64Float64V(v, e)
+	case *map[int64]float64:
+		fastpathTV.EncMapInt64Float64V(*v, e)
+	case map[int64]bool:
+		fastpathTV.EncMapInt64BoolV(v, e)
+	case *map[int64]bool:
+		fastpathTV.EncMapInt64BoolV(*v, e)
 	case map[bool]interface{}:
 		fastpathTV.EncMapBoolIntfV(v, e)
 	case *map[bool]interface{}:
 		fastpathTV.EncMapBoolIntfV(*v, e)
-
 	case map[bool]string:
 		fastpathTV.EncMapBoolStringV(v, e)
 	case *map[bool]string:
 		fastpathTV.EncMapBoolStringV(*v, e)
-
 	case map[bool]uint:
 		fastpathTV.EncMapBoolUintV(v, e)
 	case *map[bool]uint:
 		fastpathTV.EncMapBoolUintV(*v, e)
-
 	case map[bool]uint8:
 		fastpathTV.EncMapBoolUint8V(v, e)
 	case *map[bool]uint8:
 		fastpathTV.EncMapBoolUint8V(*v, e)
-
 	case map[bool]uint16:
 		fastpathTV.EncMapBoolUint16V(v, e)
 	case *map[bool]uint16:
 		fastpathTV.EncMapBoolUint16V(*v, e)
-
 	case map[bool]uint32:
 		fastpathTV.EncMapBoolUint32V(v, e)
 	case *map[bool]uint32:
 		fastpathTV.EncMapBoolUint32V(*v, e)
-
 	case map[bool]uint64:
 		fastpathTV.EncMapBoolUint64V(v, e)
 	case *map[bool]uint64:
 		fastpathTV.EncMapBoolUint64V(*v, e)
-
 	case map[bool]uintptr:
 		fastpathTV.EncMapBoolUintptrV(v, e)
 	case *map[bool]uintptr:
 		fastpathTV.EncMapBoolUintptrV(*v, e)
-
 	case map[bool]int:
 		fastpathTV.EncMapBoolIntV(v, e)
 	case *map[bool]int:
 		fastpathTV.EncMapBoolIntV(*v, e)
-
 	case map[bool]int8:
 		fastpathTV.EncMapBoolInt8V(v, e)
 	case *map[bool]int8:
 		fastpathTV.EncMapBoolInt8V(*v, e)
-
 	case map[bool]int16:
 		fastpathTV.EncMapBoolInt16V(v, e)
 	case *map[bool]int16:
 		fastpathTV.EncMapBoolInt16V(*v, e)
-
 	case map[bool]int32:
 		fastpathTV.EncMapBoolInt32V(v, e)
 	case *map[bool]int32:
 		fastpathTV.EncMapBoolInt32V(*v, e)
-
 	case map[bool]int64:
 		fastpathTV.EncMapBoolInt64V(v, e)
 	case *map[bool]int64:
 		fastpathTV.EncMapBoolInt64V(*v, e)
-
 	case map[bool]float32:
 		fastpathTV.EncMapBoolFloat32V(v, e)
 	case *map[bool]float32:
 		fastpathTV.EncMapBoolFloat32V(*v, e)
-
 	case map[bool]float64:
 		fastpathTV.EncMapBoolFloat64V(v, e)
 	case *map[bool]float64:
 		fastpathTV.EncMapBoolFloat64V(*v, e)
-
 	case map[bool]bool:
 		fastpathTV.EncMapBoolBoolV(v, e)
 	case *map[bool]bool:
@@ -1930,6 +1661,49 @@ func (_ fastpathT) EncSliceUintV(v []uint, e *Encoder) {
 }
 
 func (_ fastpathT) EncAsMapSliceUintV(v []uint, e *Encoder) {
+	ee, esep := e.e, e.hh.hasElemSeparators()
+	if len(v)%2 == 1 {
+		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		return
+	}
+	ee.WriteMapStart(len(v) / 2)
+	for j, v2 := range v {
+		if esep {
+			if j%2 == 0 {
+				ee.WriteMapElemKey()
+			} else {
+				ee.WriteMapElemValue()
+			}
+		}
+		ee.EncodeUint(uint64(v2))
+	}
+	ee.WriteMapEnd()
+}
+
+func (e *Encoder) fastpathEncSliceUint8R(f *codecFnInfo, rv reflect.Value) {
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceUint8V(rv2i(rv).([]uint8), e)
+	} else {
+		fastpathTV.EncSliceUint8V(rv2i(rv).([]uint8), e)
+	}
+}
+func (_ fastpathT) EncSliceUint8V(v []uint8, e *Encoder) {
+	if v == nil {
+		e.e.EncodeNil()
+		return
+	}
+	ee, esep := e.e, e.hh.hasElemSeparators()
+	ee.WriteArrayStart(len(v))
+	for _, v2 := range v {
+		if esep {
+			ee.WriteArrayElem()
+		}
+		ee.EncodeUint(uint64(v2))
+	}
+	ee.WriteArrayEnd()
+}
+
+func (_ fastpathT) EncAsMapSliceUint8V(v []uint8, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
 		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
@@ -13655,1778 +13429,84 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 		if v2, changed2 := fastpathTV.DecSliceIntfV(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[interface{}]interface{}:
-		fastpathTV.DecMapIntfIntfV(v, false, d)
-	case *map[interface{}]interface{}:
-		if v2, changed2 := fastpathTV.DecMapIntfIntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]string:
-		fastpathTV.DecMapIntfStringV(v, false, d)
-	case *map[interface{}]string:
-		if v2, changed2 := fastpathTV.DecMapIntfStringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]uint:
-		fastpathTV.DecMapIntfUintV(v, false, d)
-	case *map[interface{}]uint:
-		if v2, changed2 := fastpathTV.DecMapIntfUintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]uint8:
-		fastpathTV.DecMapIntfUint8V(v, false, d)
-	case *map[interface{}]uint8:
-		if v2, changed2 := fastpathTV.DecMapIntfUint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]uint16:
-		fastpathTV.DecMapIntfUint16V(v, false, d)
-	case *map[interface{}]uint16:
-		if v2, changed2 := fastpathTV.DecMapIntfUint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]uint32:
-		fastpathTV.DecMapIntfUint32V(v, false, d)
-	case *map[interface{}]uint32:
-		if v2, changed2 := fastpathTV.DecMapIntfUint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]uint64:
-		fastpathTV.DecMapIntfUint64V(v, false, d)
-	case *map[interface{}]uint64:
-		if v2, changed2 := fastpathTV.DecMapIntfUint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]uintptr:
-		fastpathTV.DecMapIntfUintptrV(v, false, d)
-	case *map[interface{}]uintptr:
-		if v2, changed2 := fastpathTV.DecMapIntfUintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]int:
-		fastpathTV.DecMapIntfIntV(v, false, d)
-	case *map[interface{}]int:
-		if v2, changed2 := fastpathTV.DecMapIntfIntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]int8:
-		fastpathTV.DecMapIntfInt8V(v, false, d)
-	case *map[interface{}]int8:
-		if v2, changed2 := fastpathTV.DecMapIntfInt8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]int16:
-		fastpathTV.DecMapIntfInt16V(v, false, d)
-	case *map[interface{}]int16:
-		if v2, changed2 := fastpathTV.DecMapIntfInt16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]int32:
-		fastpathTV.DecMapIntfInt32V(v, false, d)
-	case *map[interface{}]int32:
-		if v2, changed2 := fastpathTV.DecMapIntfInt32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]int64:
-		fastpathTV.DecMapIntfInt64V(v, false, d)
-	case *map[interface{}]int64:
-		if v2, changed2 := fastpathTV.DecMapIntfInt64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]float32:
-		fastpathTV.DecMapIntfFloat32V(v, false, d)
-	case *map[interface{}]float32:
-		if v2, changed2 := fastpathTV.DecMapIntfFloat32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]float64:
-		fastpathTV.DecMapIntfFloat64V(v, false, d)
-	case *map[interface{}]float64:
-		if v2, changed2 := fastpathTV.DecMapIntfFloat64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[interface{}]bool:
-		fastpathTV.DecMapIntfBoolV(v, false, d)
-	case *map[interface{}]bool:
-		if v2, changed2 := fastpathTV.DecMapIntfBoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []string:
 		fastpathTV.DecSliceStringV(v, false, d)
 	case *[]string:
 		if v2, changed2 := fastpathTV.DecSliceStringV(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[string]interface{}:
-		fastpathTV.DecMapStringIntfV(v, false, d)
-	case *map[string]interface{}:
-		if v2, changed2 := fastpathTV.DecMapStringIntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]string:
-		fastpathTV.DecMapStringStringV(v, false, d)
-	case *map[string]string:
-		if v2, changed2 := fastpathTV.DecMapStringStringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]uint:
-		fastpathTV.DecMapStringUintV(v, false, d)
-	case *map[string]uint:
-		if v2, changed2 := fastpathTV.DecMapStringUintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]uint8:
-		fastpathTV.DecMapStringUint8V(v, false, d)
-	case *map[string]uint8:
-		if v2, changed2 := fastpathTV.DecMapStringUint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]uint16:
-		fastpathTV.DecMapStringUint16V(v, false, d)
-	case *map[string]uint16:
-		if v2, changed2 := fastpathTV.DecMapStringUint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]uint32:
-		fastpathTV.DecMapStringUint32V(v, false, d)
-	case *map[string]uint32:
-		if v2, changed2 := fastpathTV.DecMapStringUint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]uint64:
-		fastpathTV.DecMapStringUint64V(v, false, d)
-	case *map[string]uint64:
-		if v2, changed2 := fastpathTV.DecMapStringUint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]uintptr:
-		fastpathTV.DecMapStringUintptrV(v, false, d)
-	case *map[string]uintptr:
-		if v2, changed2 := fastpathTV.DecMapStringUintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]int:
-		fastpathTV.DecMapStringIntV(v, false, d)
-	case *map[string]int:
-		if v2, changed2 := fastpathTV.DecMapStringIntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]int8:
-		fastpathTV.DecMapStringInt8V(v, false, d)
-	case *map[string]int8:
-		if v2, changed2 := fastpathTV.DecMapStringInt8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]int16:
-		fastpathTV.DecMapStringInt16V(v, false, d)
-	case *map[string]int16:
-		if v2, changed2 := fastpathTV.DecMapStringInt16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]int32:
-		fastpathTV.DecMapStringInt32V(v, false, d)
-	case *map[string]int32:
-		if v2, changed2 := fastpathTV.DecMapStringInt32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]int64:
-		fastpathTV.DecMapStringInt64V(v, false, d)
-	case *map[string]int64:
-		if v2, changed2 := fastpathTV.DecMapStringInt64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]float32:
-		fastpathTV.DecMapStringFloat32V(v, false, d)
-	case *map[string]float32:
-		if v2, changed2 := fastpathTV.DecMapStringFloat32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]float64:
-		fastpathTV.DecMapStringFloat64V(v, false, d)
-	case *map[string]float64:
-		if v2, changed2 := fastpathTV.DecMapStringFloat64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[string]bool:
-		fastpathTV.DecMapStringBoolV(v, false, d)
-	case *map[string]bool:
-		if v2, changed2 := fastpathTV.DecMapStringBoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []float32:
 		fastpathTV.DecSliceFloat32V(v, false, d)
 	case *[]float32:
 		if v2, changed2 := fastpathTV.DecSliceFloat32V(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[float32]interface{}:
-		fastpathTV.DecMapFloat32IntfV(v, false, d)
-	case *map[float32]interface{}:
-		if v2, changed2 := fastpathTV.DecMapFloat32IntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]string:
-		fastpathTV.DecMapFloat32StringV(v, false, d)
-	case *map[float32]string:
-		if v2, changed2 := fastpathTV.DecMapFloat32StringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]uint:
-		fastpathTV.DecMapFloat32UintV(v, false, d)
-	case *map[float32]uint:
-		if v2, changed2 := fastpathTV.DecMapFloat32UintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]uint8:
-		fastpathTV.DecMapFloat32Uint8V(v, false, d)
-	case *map[float32]uint8:
-		if v2, changed2 := fastpathTV.DecMapFloat32Uint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]uint16:
-		fastpathTV.DecMapFloat32Uint16V(v, false, d)
-	case *map[float32]uint16:
-		if v2, changed2 := fastpathTV.DecMapFloat32Uint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]uint32:
-		fastpathTV.DecMapFloat32Uint32V(v, false, d)
-	case *map[float32]uint32:
-		if v2, changed2 := fastpathTV.DecMapFloat32Uint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]uint64:
-		fastpathTV.DecMapFloat32Uint64V(v, false, d)
-	case *map[float32]uint64:
-		if v2, changed2 := fastpathTV.DecMapFloat32Uint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]uintptr:
-		fastpathTV.DecMapFloat32UintptrV(v, false, d)
-	case *map[float32]uintptr:
-		if v2, changed2 := fastpathTV.DecMapFloat32UintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]int:
-		fastpathTV.DecMapFloat32IntV(v, false, d)
-	case *map[float32]int:
-		if v2, changed2 := fastpathTV.DecMapFloat32IntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]int8:
-		fastpathTV.DecMapFloat32Int8V(v, false, d)
-	case *map[float32]int8:
-		if v2, changed2 := fastpathTV.DecMapFloat32Int8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]int16:
-		fastpathTV.DecMapFloat32Int16V(v, false, d)
-	case *map[float32]int16:
-		if v2, changed2 := fastpathTV.DecMapFloat32Int16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]int32:
-		fastpathTV.DecMapFloat32Int32V(v, false, d)
-	case *map[float32]int32:
-		if v2, changed2 := fastpathTV.DecMapFloat32Int32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]int64:
-		fastpathTV.DecMapFloat32Int64V(v, false, d)
-	case *map[float32]int64:
-		if v2, changed2 := fastpathTV.DecMapFloat32Int64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]float32:
-		fastpathTV.DecMapFloat32Float32V(v, false, d)
-	case *map[float32]float32:
-		if v2, changed2 := fastpathTV.DecMapFloat32Float32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]float64:
-		fastpathTV.DecMapFloat32Float64V(v, false, d)
-	case *map[float32]float64:
-		if v2, changed2 := fastpathTV.DecMapFloat32Float64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float32]bool:
-		fastpathTV.DecMapFloat32BoolV(v, false, d)
-	case *map[float32]bool:
-		if v2, changed2 := fastpathTV.DecMapFloat32BoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []float64:
 		fastpathTV.DecSliceFloat64V(v, false, d)
 	case *[]float64:
 		if v2, changed2 := fastpathTV.DecSliceFloat64V(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[float64]interface{}:
-		fastpathTV.DecMapFloat64IntfV(v, false, d)
-	case *map[float64]interface{}:
-		if v2, changed2 := fastpathTV.DecMapFloat64IntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]string:
-		fastpathTV.DecMapFloat64StringV(v, false, d)
-	case *map[float64]string:
-		if v2, changed2 := fastpathTV.DecMapFloat64StringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]uint:
-		fastpathTV.DecMapFloat64UintV(v, false, d)
-	case *map[float64]uint:
-		if v2, changed2 := fastpathTV.DecMapFloat64UintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]uint8:
-		fastpathTV.DecMapFloat64Uint8V(v, false, d)
-	case *map[float64]uint8:
-		if v2, changed2 := fastpathTV.DecMapFloat64Uint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]uint16:
-		fastpathTV.DecMapFloat64Uint16V(v, false, d)
-	case *map[float64]uint16:
-		if v2, changed2 := fastpathTV.DecMapFloat64Uint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]uint32:
-		fastpathTV.DecMapFloat64Uint32V(v, false, d)
-	case *map[float64]uint32:
-		if v2, changed2 := fastpathTV.DecMapFloat64Uint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]uint64:
-		fastpathTV.DecMapFloat64Uint64V(v, false, d)
-	case *map[float64]uint64:
-		if v2, changed2 := fastpathTV.DecMapFloat64Uint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]uintptr:
-		fastpathTV.DecMapFloat64UintptrV(v, false, d)
-	case *map[float64]uintptr:
-		if v2, changed2 := fastpathTV.DecMapFloat64UintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]int:
-		fastpathTV.DecMapFloat64IntV(v, false, d)
-	case *map[float64]int:
-		if v2, changed2 := fastpathTV.DecMapFloat64IntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]int8:
-		fastpathTV.DecMapFloat64Int8V(v, false, d)
-	case *map[float64]int8:
-		if v2, changed2 := fastpathTV.DecMapFloat64Int8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]int16:
-		fastpathTV.DecMapFloat64Int16V(v, false, d)
-	case *map[float64]int16:
-		if v2, changed2 := fastpathTV.DecMapFloat64Int16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]int32:
-		fastpathTV.DecMapFloat64Int32V(v, false, d)
-	case *map[float64]int32:
-		if v2, changed2 := fastpathTV.DecMapFloat64Int32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]int64:
-		fastpathTV.DecMapFloat64Int64V(v, false, d)
-	case *map[float64]int64:
-		if v2, changed2 := fastpathTV.DecMapFloat64Int64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]float32:
-		fastpathTV.DecMapFloat64Float32V(v, false, d)
-	case *map[float64]float32:
-		if v2, changed2 := fastpathTV.DecMapFloat64Float32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]float64:
-		fastpathTV.DecMapFloat64Float64V(v, false, d)
-	case *map[float64]float64:
-		if v2, changed2 := fastpathTV.DecMapFloat64Float64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[float64]bool:
-		fastpathTV.DecMapFloat64BoolV(v, false, d)
-	case *map[float64]bool:
-		if v2, changed2 := fastpathTV.DecMapFloat64BoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []uint:
 		fastpathTV.DecSliceUintV(v, false, d)
 	case *[]uint:
 		if v2, changed2 := fastpathTV.DecSliceUintV(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[uint]interface{}:
-		fastpathTV.DecMapUintIntfV(v, false, d)
-	case *map[uint]interface{}:
-		if v2, changed2 := fastpathTV.DecMapUintIntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]string:
-		fastpathTV.DecMapUintStringV(v, false, d)
-	case *map[uint]string:
-		if v2, changed2 := fastpathTV.DecMapUintStringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]uint:
-		fastpathTV.DecMapUintUintV(v, false, d)
-	case *map[uint]uint:
-		if v2, changed2 := fastpathTV.DecMapUintUintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]uint8:
-		fastpathTV.DecMapUintUint8V(v, false, d)
-	case *map[uint]uint8:
-		if v2, changed2 := fastpathTV.DecMapUintUint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]uint16:
-		fastpathTV.DecMapUintUint16V(v, false, d)
-	case *map[uint]uint16:
-		if v2, changed2 := fastpathTV.DecMapUintUint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]uint32:
-		fastpathTV.DecMapUintUint32V(v, false, d)
-	case *map[uint]uint32:
-		if v2, changed2 := fastpathTV.DecMapUintUint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]uint64:
-		fastpathTV.DecMapUintUint64V(v, false, d)
-	case *map[uint]uint64:
-		if v2, changed2 := fastpathTV.DecMapUintUint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]uintptr:
-		fastpathTV.DecMapUintUintptrV(v, false, d)
-	case *map[uint]uintptr:
-		if v2, changed2 := fastpathTV.DecMapUintUintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]int:
-		fastpathTV.DecMapUintIntV(v, false, d)
-	case *map[uint]int:
-		if v2, changed2 := fastpathTV.DecMapUintIntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]int8:
-		fastpathTV.DecMapUintInt8V(v, false, d)
-	case *map[uint]int8:
-		if v2, changed2 := fastpathTV.DecMapUintInt8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]int16:
-		fastpathTV.DecMapUintInt16V(v, false, d)
-	case *map[uint]int16:
-		if v2, changed2 := fastpathTV.DecMapUintInt16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]int32:
-		fastpathTV.DecMapUintInt32V(v, false, d)
-	case *map[uint]int32:
-		if v2, changed2 := fastpathTV.DecMapUintInt32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]int64:
-		fastpathTV.DecMapUintInt64V(v, false, d)
-	case *map[uint]int64:
-		if v2, changed2 := fastpathTV.DecMapUintInt64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]float32:
-		fastpathTV.DecMapUintFloat32V(v, false, d)
-	case *map[uint]float32:
-		if v2, changed2 := fastpathTV.DecMapUintFloat32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]float64:
-		fastpathTV.DecMapUintFloat64V(v, false, d)
-	case *map[uint]float64:
-		if v2, changed2 := fastpathTV.DecMapUintFloat64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint]bool:
-		fastpathTV.DecMapUintBoolV(v, false, d)
-	case *map[uint]bool:
-		if v2, changed2 := fastpathTV.DecMapUintBoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]interface{}:
-		fastpathTV.DecMapUint8IntfV(v, false, d)
-	case *map[uint8]interface{}:
-		if v2, changed2 := fastpathTV.DecMapUint8IntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]string:
-		fastpathTV.DecMapUint8StringV(v, false, d)
-	case *map[uint8]string:
-		if v2, changed2 := fastpathTV.DecMapUint8StringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]uint:
-		fastpathTV.DecMapUint8UintV(v, false, d)
-	case *map[uint8]uint:
-		if v2, changed2 := fastpathTV.DecMapUint8UintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]uint8:
-		fastpathTV.DecMapUint8Uint8V(v, false, d)
-	case *map[uint8]uint8:
-		if v2, changed2 := fastpathTV.DecMapUint8Uint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]uint16:
-		fastpathTV.DecMapUint8Uint16V(v, false, d)
-	case *map[uint8]uint16:
-		if v2, changed2 := fastpathTV.DecMapUint8Uint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]uint32:
-		fastpathTV.DecMapUint8Uint32V(v, false, d)
-	case *map[uint8]uint32:
-		if v2, changed2 := fastpathTV.DecMapUint8Uint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]uint64:
-		fastpathTV.DecMapUint8Uint64V(v, false, d)
-	case *map[uint8]uint64:
-		if v2, changed2 := fastpathTV.DecMapUint8Uint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]uintptr:
-		fastpathTV.DecMapUint8UintptrV(v, false, d)
-	case *map[uint8]uintptr:
-		if v2, changed2 := fastpathTV.DecMapUint8UintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]int:
-		fastpathTV.DecMapUint8IntV(v, false, d)
-	case *map[uint8]int:
-		if v2, changed2 := fastpathTV.DecMapUint8IntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]int8:
-		fastpathTV.DecMapUint8Int8V(v, false, d)
-	case *map[uint8]int8:
-		if v2, changed2 := fastpathTV.DecMapUint8Int8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]int16:
-		fastpathTV.DecMapUint8Int16V(v, false, d)
-	case *map[uint8]int16:
-		if v2, changed2 := fastpathTV.DecMapUint8Int16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]int32:
-		fastpathTV.DecMapUint8Int32V(v, false, d)
-	case *map[uint8]int32:
-		if v2, changed2 := fastpathTV.DecMapUint8Int32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]int64:
-		fastpathTV.DecMapUint8Int64V(v, false, d)
-	case *map[uint8]int64:
-		if v2, changed2 := fastpathTV.DecMapUint8Int64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]float32:
-		fastpathTV.DecMapUint8Float32V(v, false, d)
-	case *map[uint8]float32:
-		if v2, changed2 := fastpathTV.DecMapUint8Float32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]float64:
-		fastpathTV.DecMapUint8Float64V(v, false, d)
-	case *map[uint8]float64:
-		if v2, changed2 := fastpathTV.DecMapUint8Float64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint8]bool:
-		fastpathTV.DecMapUint8BoolV(v, false, d)
-	case *map[uint8]bool:
-		if v2, changed2 := fastpathTV.DecMapUint8BoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []uint16:
 		fastpathTV.DecSliceUint16V(v, false, d)
 	case *[]uint16:
 		if v2, changed2 := fastpathTV.DecSliceUint16V(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[uint16]interface{}:
-		fastpathTV.DecMapUint16IntfV(v, false, d)
-	case *map[uint16]interface{}:
-		if v2, changed2 := fastpathTV.DecMapUint16IntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]string:
-		fastpathTV.DecMapUint16StringV(v, false, d)
-	case *map[uint16]string:
-		if v2, changed2 := fastpathTV.DecMapUint16StringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]uint:
-		fastpathTV.DecMapUint16UintV(v, false, d)
-	case *map[uint16]uint:
-		if v2, changed2 := fastpathTV.DecMapUint16UintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]uint8:
-		fastpathTV.DecMapUint16Uint8V(v, false, d)
-	case *map[uint16]uint8:
-		if v2, changed2 := fastpathTV.DecMapUint16Uint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]uint16:
-		fastpathTV.DecMapUint16Uint16V(v, false, d)
-	case *map[uint16]uint16:
-		if v2, changed2 := fastpathTV.DecMapUint16Uint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]uint32:
-		fastpathTV.DecMapUint16Uint32V(v, false, d)
-	case *map[uint16]uint32:
-		if v2, changed2 := fastpathTV.DecMapUint16Uint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]uint64:
-		fastpathTV.DecMapUint16Uint64V(v, false, d)
-	case *map[uint16]uint64:
-		if v2, changed2 := fastpathTV.DecMapUint16Uint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]uintptr:
-		fastpathTV.DecMapUint16UintptrV(v, false, d)
-	case *map[uint16]uintptr:
-		if v2, changed2 := fastpathTV.DecMapUint16UintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]int:
-		fastpathTV.DecMapUint16IntV(v, false, d)
-	case *map[uint16]int:
-		if v2, changed2 := fastpathTV.DecMapUint16IntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]int8:
-		fastpathTV.DecMapUint16Int8V(v, false, d)
-	case *map[uint16]int8:
-		if v2, changed2 := fastpathTV.DecMapUint16Int8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]int16:
-		fastpathTV.DecMapUint16Int16V(v, false, d)
-	case *map[uint16]int16:
-		if v2, changed2 := fastpathTV.DecMapUint16Int16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]int32:
-		fastpathTV.DecMapUint16Int32V(v, false, d)
-	case *map[uint16]int32:
-		if v2, changed2 := fastpathTV.DecMapUint16Int32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]int64:
-		fastpathTV.DecMapUint16Int64V(v, false, d)
-	case *map[uint16]int64:
-		if v2, changed2 := fastpathTV.DecMapUint16Int64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]float32:
-		fastpathTV.DecMapUint16Float32V(v, false, d)
-	case *map[uint16]float32:
-		if v2, changed2 := fastpathTV.DecMapUint16Float32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]float64:
-		fastpathTV.DecMapUint16Float64V(v, false, d)
-	case *map[uint16]float64:
-		if v2, changed2 := fastpathTV.DecMapUint16Float64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint16]bool:
-		fastpathTV.DecMapUint16BoolV(v, false, d)
-	case *map[uint16]bool:
-		if v2, changed2 := fastpathTV.DecMapUint16BoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []uint32:
 		fastpathTV.DecSliceUint32V(v, false, d)
 	case *[]uint32:
 		if v2, changed2 := fastpathTV.DecSliceUint32V(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[uint32]interface{}:
-		fastpathTV.DecMapUint32IntfV(v, false, d)
-	case *map[uint32]interface{}:
-		if v2, changed2 := fastpathTV.DecMapUint32IntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]string:
-		fastpathTV.DecMapUint32StringV(v, false, d)
-	case *map[uint32]string:
-		if v2, changed2 := fastpathTV.DecMapUint32StringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]uint:
-		fastpathTV.DecMapUint32UintV(v, false, d)
-	case *map[uint32]uint:
-		if v2, changed2 := fastpathTV.DecMapUint32UintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]uint8:
-		fastpathTV.DecMapUint32Uint8V(v, false, d)
-	case *map[uint32]uint8:
-		if v2, changed2 := fastpathTV.DecMapUint32Uint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]uint16:
-		fastpathTV.DecMapUint32Uint16V(v, false, d)
-	case *map[uint32]uint16:
-		if v2, changed2 := fastpathTV.DecMapUint32Uint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]uint32:
-		fastpathTV.DecMapUint32Uint32V(v, false, d)
-	case *map[uint32]uint32:
-		if v2, changed2 := fastpathTV.DecMapUint32Uint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]uint64:
-		fastpathTV.DecMapUint32Uint64V(v, false, d)
-	case *map[uint32]uint64:
-		if v2, changed2 := fastpathTV.DecMapUint32Uint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]uintptr:
-		fastpathTV.DecMapUint32UintptrV(v, false, d)
-	case *map[uint32]uintptr:
-		if v2, changed2 := fastpathTV.DecMapUint32UintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]int:
-		fastpathTV.DecMapUint32IntV(v, false, d)
-	case *map[uint32]int:
-		if v2, changed2 := fastpathTV.DecMapUint32IntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]int8:
-		fastpathTV.DecMapUint32Int8V(v, false, d)
-	case *map[uint32]int8:
-		if v2, changed2 := fastpathTV.DecMapUint32Int8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]int16:
-		fastpathTV.DecMapUint32Int16V(v, false, d)
-	case *map[uint32]int16:
-		if v2, changed2 := fastpathTV.DecMapUint32Int16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]int32:
-		fastpathTV.DecMapUint32Int32V(v, false, d)
-	case *map[uint32]int32:
-		if v2, changed2 := fastpathTV.DecMapUint32Int32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]int64:
-		fastpathTV.DecMapUint32Int64V(v, false, d)
-	case *map[uint32]int64:
-		if v2, changed2 := fastpathTV.DecMapUint32Int64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]float32:
-		fastpathTV.DecMapUint32Float32V(v, false, d)
-	case *map[uint32]float32:
-		if v2, changed2 := fastpathTV.DecMapUint32Float32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]float64:
-		fastpathTV.DecMapUint32Float64V(v, false, d)
-	case *map[uint32]float64:
-		if v2, changed2 := fastpathTV.DecMapUint32Float64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint32]bool:
-		fastpathTV.DecMapUint32BoolV(v, false, d)
-	case *map[uint32]bool:
-		if v2, changed2 := fastpathTV.DecMapUint32BoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []uint64:
 		fastpathTV.DecSliceUint64V(v, false, d)
 	case *[]uint64:
 		if v2, changed2 := fastpathTV.DecSliceUint64V(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[uint64]interface{}:
-		fastpathTV.DecMapUint64IntfV(v, false, d)
-	case *map[uint64]interface{}:
-		if v2, changed2 := fastpathTV.DecMapUint64IntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]string:
-		fastpathTV.DecMapUint64StringV(v, false, d)
-	case *map[uint64]string:
-		if v2, changed2 := fastpathTV.DecMapUint64StringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]uint:
-		fastpathTV.DecMapUint64UintV(v, false, d)
-	case *map[uint64]uint:
-		if v2, changed2 := fastpathTV.DecMapUint64UintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]uint8:
-		fastpathTV.DecMapUint64Uint8V(v, false, d)
-	case *map[uint64]uint8:
-		if v2, changed2 := fastpathTV.DecMapUint64Uint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]uint16:
-		fastpathTV.DecMapUint64Uint16V(v, false, d)
-	case *map[uint64]uint16:
-		if v2, changed2 := fastpathTV.DecMapUint64Uint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]uint32:
-		fastpathTV.DecMapUint64Uint32V(v, false, d)
-	case *map[uint64]uint32:
-		if v2, changed2 := fastpathTV.DecMapUint64Uint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]uint64:
-		fastpathTV.DecMapUint64Uint64V(v, false, d)
-	case *map[uint64]uint64:
-		if v2, changed2 := fastpathTV.DecMapUint64Uint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]uintptr:
-		fastpathTV.DecMapUint64UintptrV(v, false, d)
-	case *map[uint64]uintptr:
-		if v2, changed2 := fastpathTV.DecMapUint64UintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]int:
-		fastpathTV.DecMapUint64IntV(v, false, d)
-	case *map[uint64]int:
-		if v2, changed2 := fastpathTV.DecMapUint64IntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]int8:
-		fastpathTV.DecMapUint64Int8V(v, false, d)
-	case *map[uint64]int8:
-		if v2, changed2 := fastpathTV.DecMapUint64Int8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]int16:
-		fastpathTV.DecMapUint64Int16V(v, false, d)
-	case *map[uint64]int16:
-		if v2, changed2 := fastpathTV.DecMapUint64Int16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]int32:
-		fastpathTV.DecMapUint64Int32V(v, false, d)
-	case *map[uint64]int32:
-		if v2, changed2 := fastpathTV.DecMapUint64Int32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]int64:
-		fastpathTV.DecMapUint64Int64V(v, false, d)
-	case *map[uint64]int64:
-		if v2, changed2 := fastpathTV.DecMapUint64Int64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]float32:
-		fastpathTV.DecMapUint64Float32V(v, false, d)
-	case *map[uint64]float32:
-		if v2, changed2 := fastpathTV.DecMapUint64Float32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]float64:
-		fastpathTV.DecMapUint64Float64V(v, false, d)
-	case *map[uint64]float64:
-		if v2, changed2 := fastpathTV.DecMapUint64Float64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uint64]bool:
-		fastpathTV.DecMapUint64BoolV(v, false, d)
-	case *map[uint64]bool:
-		if v2, changed2 := fastpathTV.DecMapUint64BoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []uintptr:
 		fastpathTV.DecSliceUintptrV(v, false, d)
 	case *[]uintptr:
 		if v2, changed2 := fastpathTV.DecSliceUintptrV(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[uintptr]interface{}:
-		fastpathTV.DecMapUintptrIntfV(v, false, d)
-	case *map[uintptr]interface{}:
-		if v2, changed2 := fastpathTV.DecMapUintptrIntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]string:
-		fastpathTV.DecMapUintptrStringV(v, false, d)
-	case *map[uintptr]string:
-		if v2, changed2 := fastpathTV.DecMapUintptrStringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]uint:
-		fastpathTV.DecMapUintptrUintV(v, false, d)
-	case *map[uintptr]uint:
-		if v2, changed2 := fastpathTV.DecMapUintptrUintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]uint8:
-		fastpathTV.DecMapUintptrUint8V(v, false, d)
-	case *map[uintptr]uint8:
-		if v2, changed2 := fastpathTV.DecMapUintptrUint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]uint16:
-		fastpathTV.DecMapUintptrUint16V(v, false, d)
-	case *map[uintptr]uint16:
-		if v2, changed2 := fastpathTV.DecMapUintptrUint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]uint32:
-		fastpathTV.DecMapUintptrUint32V(v, false, d)
-	case *map[uintptr]uint32:
-		if v2, changed2 := fastpathTV.DecMapUintptrUint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]uint64:
-		fastpathTV.DecMapUintptrUint64V(v, false, d)
-	case *map[uintptr]uint64:
-		if v2, changed2 := fastpathTV.DecMapUintptrUint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]uintptr:
-		fastpathTV.DecMapUintptrUintptrV(v, false, d)
-	case *map[uintptr]uintptr:
-		if v2, changed2 := fastpathTV.DecMapUintptrUintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]int:
-		fastpathTV.DecMapUintptrIntV(v, false, d)
-	case *map[uintptr]int:
-		if v2, changed2 := fastpathTV.DecMapUintptrIntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]int8:
-		fastpathTV.DecMapUintptrInt8V(v, false, d)
-	case *map[uintptr]int8:
-		if v2, changed2 := fastpathTV.DecMapUintptrInt8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]int16:
-		fastpathTV.DecMapUintptrInt16V(v, false, d)
-	case *map[uintptr]int16:
-		if v2, changed2 := fastpathTV.DecMapUintptrInt16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]int32:
-		fastpathTV.DecMapUintptrInt32V(v, false, d)
-	case *map[uintptr]int32:
-		if v2, changed2 := fastpathTV.DecMapUintptrInt32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]int64:
-		fastpathTV.DecMapUintptrInt64V(v, false, d)
-	case *map[uintptr]int64:
-		if v2, changed2 := fastpathTV.DecMapUintptrInt64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]float32:
-		fastpathTV.DecMapUintptrFloat32V(v, false, d)
-	case *map[uintptr]float32:
-		if v2, changed2 := fastpathTV.DecMapUintptrFloat32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]float64:
-		fastpathTV.DecMapUintptrFloat64V(v, false, d)
-	case *map[uintptr]float64:
-		if v2, changed2 := fastpathTV.DecMapUintptrFloat64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[uintptr]bool:
-		fastpathTV.DecMapUintptrBoolV(v, false, d)
-	case *map[uintptr]bool:
-		if v2, changed2 := fastpathTV.DecMapUintptrBoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []int:
 		fastpathTV.DecSliceIntV(v, false, d)
 	case *[]int:
 		if v2, changed2 := fastpathTV.DecSliceIntV(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[int]interface{}:
-		fastpathTV.DecMapIntIntfV(v, false, d)
-	case *map[int]interface{}:
-		if v2, changed2 := fastpathTV.DecMapIntIntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]string:
-		fastpathTV.DecMapIntStringV(v, false, d)
-	case *map[int]string:
-		if v2, changed2 := fastpathTV.DecMapIntStringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]uint:
-		fastpathTV.DecMapIntUintV(v, false, d)
-	case *map[int]uint:
-		if v2, changed2 := fastpathTV.DecMapIntUintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]uint8:
-		fastpathTV.DecMapIntUint8V(v, false, d)
-	case *map[int]uint8:
-		if v2, changed2 := fastpathTV.DecMapIntUint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]uint16:
-		fastpathTV.DecMapIntUint16V(v, false, d)
-	case *map[int]uint16:
-		if v2, changed2 := fastpathTV.DecMapIntUint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]uint32:
-		fastpathTV.DecMapIntUint32V(v, false, d)
-	case *map[int]uint32:
-		if v2, changed2 := fastpathTV.DecMapIntUint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]uint64:
-		fastpathTV.DecMapIntUint64V(v, false, d)
-	case *map[int]uint64:
-		if v2, changed2 := fastpathTV.DecMapIntUint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]uintptr:
-		fastpathTV.DecMapIntUintptrV(v, false, d)
-	case *map[int]uintptr:
-		if v2, changed2 := fastpathTV.DecMapIntUintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]int:
-		fastpathTV.DecMapIntIntV(v, false, d)
-	case *map[int]int:
-		if v2, changed2 := fastpathTV.DecMapIntIntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]int8:
-		fastpathTV.DecMapIntInt8V(v, false, d)
-	case *map[int]int8:
-		if v2, changed2 := fastpathTV.DecMapIntInt8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]int16:
-		fastpathTV.DecMapIntInt16V(v, false, d)
-	case *map[int]int16:
-		if v2, changed2 := fastpathTV.DecMapIntInt16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]int32:
-		fastpathTV.DecMapIntInt32V(v, false, d)
-	case *map[int]int32:
-		if v2, changed2 := fastpathTV.DecMapIntInt32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]int64:
-		fastpathTV.DecMapIntInt64V(v, false, d)
-	case *map[int]int64:
-		if v2, changed2 := fastpathTV.DecMapIntInt64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]float32:
-		fastpathTV.DecMapIntFloat32V(v, false, d)
-	case *map[int]float32:
-		if v2, changed2 := fastpathTV.DecMapIntFloat32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]float64:
-		fastpathTV.DecMapIntFloat64V(v, false, d)
-	case *map[int]float64:
-		if v2, changed2 := fastpathTV.DecMapIntFloat64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int]bool:
-		fastpathTV.DecMapIntBoolV(v, false, d)
-	case *map[int]bool:
-		if v2, changed2 := fastpathTV.DecMapIntBoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []int8:
 		fastpathTV.DecSliceInt8V(v, false, d)
 	case *[]int8:
 		if v2, changed2 := fastpathTV.DecSliceInt8V(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[int8]interface{}:
-		fastpathTV.DecMapInt8IntfV(v, false, d)
-	case *map[int8]interface{}:
-		if v2, changed2 := fastpathTV.DecMapInt8IntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]string:
-		fastpathTV.DecMapInt8StringV(v, false, d)
-	case *map[int8]string:
-		if v2, changed2 := fastpathTV.DecMapInt8StringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]uint:
-		fastpathTV.DecMapInt8UintV(v, false, d)
-	case *map[int8]uint:
-		if v2, changed2 := fastpathTV.DecMapInt8UintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]uint8:
-		fastpathTV.DecMapInt8Uint8V(v, false, d)
-	case *map[int8]uint8:
-		if v2, changed2 := fastpathTV.DecMapInt8Uint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]uint16:
-		fastpathTV.DecMapInt8Uint16V(v, false, d)
-	case *map[int8]uint16:
-		if v2, changed2 := fastpathTV.DecMapInt8Uint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]uint32:
-		fastpathTV.DecMapInt8Uint32V(v, false, d)
-	case *map[int8]uint32:
-		if v2, changed2 := fastpathTV.DecMapInt8Uint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]uint64:
-		fastpathTV.DecMapInt8Uint64V(v, false, d)
-	case *map[int8]uint64:
-		if v2, changed2 := fastpathTV.DecMapInt8Uint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]uintptr:
-		fastpathTV.DecMapInt8UintptrV(v, false, d)
-	case *map[int8]uintptr:
-		if v2, changed2 := fastpathTV.DecMapInt8UintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]int:
-		fastpathTV.DecMapInt8IntV(v, false, d)
-	case *map[int8]int:
-		if v2, changed2 := fastpathTV.DecMapInt8IntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]int8:
-		fastpathTV.DecMapInt8Int8V(v, false, d)
-	case *map[int8]int8:
-		if v2, changed2 := fastpathTV.DecMapInt8Int8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]int16:
-		fastpathTV.DecMapInt8Int16V(v, false, d)
-	case *map[int8]int16:
-		if v2, changed2 := fastpathTV.DecMapInt8Int16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]int32:
-		fastpathTV.DecMapInt8Int32V(v, false, d)
-	case *map[int8]int32:
-		if v2, changed2 := fastpathTV.DecMapInt8Int32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]int64:
-		fastpathTV.DecMapInt8Int64V(v, false, d)
-	case *map[int8]int64:
-		if v2, changed2 := fastpathTV.DecMapInt8Int64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]float32:
-		fastpathTV.DecMapInt8Float32V(v, false, d)
-	case *map[int8]float32:
-		if v2, changed2 := fastpathTV.DecMapInt8Float32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]float64:
-		fastpathTV.DecMapInt8Float64V(v, false, d)
-	case *map[int8]float64:
-		if v2, changed2 := fastpathTV.DecMapInt8Float64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int8]bool:
-		fastpathTV.DecMapInt8BoolV(v, false, d)
-	case *map[int8]bool:
-		if v2, changed2 := fastpathTV.DecMapInt8BoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []int16:
 		fastpathTV.DecSliceInt16V(v, false, d)
 	case *[]int16:
 		if v2, changed2 := fastpathTV.DecSliceInt16V(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[int16]interface{}:
-		fastpathTV.DecMapInt16IntfV(v, false, d)
-	case *map[int16]interface{}:
-		if v2, changed2 := fastpathTV.DecMapInt16IntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]string:
-		fastpathTV.DecMapInt16StringV(v, false, d)
-	case *map[int16]string:
-		if v2, changed2 := fastpathTV.DecMapInt16StringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]uint:
-		fastpathTV.DecMapInt16UintV(v, false, d)
-	case *map[int16]uint:
-		if v2, changed2 := fastpathTV.DecMapInt16UintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]uint8:
-		fastpathTV.DecMapInt16Uint8V(v, false, d)
-	case *map[int16]uint8:
-		if v2, changed2 := fastpathTV.DecMapInt16Uint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]uint16:
-		fastpathTV.DecMapInt16Uint16V(v, false, d)
-	case *map[int16]uint16:
-		if v2, changed2 := fastpathTV.DecMapInt16Uint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]uint32:
-		fastpathTV.DecMapInt16Uint32V(v, false, d)
-	case *map[int16]uint32:
-		if v2, changed2 := fastpathTV.DecMapInt16Uint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]uint64:
-		fastpathTV.DecMapInt16Uint64V(v, false, d)
-	case *map[int16]uint64:
-		if v2, changed2 := fastpathTV.DecMapInt16Uint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]uintptr:
-		fastpathTV.DecMapInt16UintptrV(v, false, d)
-	case *map[int16]uintptr:
-		if v2, changed2 := fastpathTV.DecMapInt16UintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]int:
-		fastpathTV.DecMapInt16IntV(v, false, d)
-	case *map[int16]int:
-		if v2, changed2 := fastpathTV.DecMapInt16IntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]int8:
-		fastpathTV.DecMapInt16Int8V(v, false, d)
-	case *map[int16]int8:
-		if v2, changed2 := fastpathTV.DecMapInt16Int8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]int16:
-		fastpathTV.DecMapInt16Int16V(v, false, d)
-	case *map[int16]int16:
-		if v2, changed2 := fastpathTV.DecMapInt16Int16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]int32:
-		fastpathTV.DecMapInt16Int32V(v, false, d)
-	case *map[int16]int32:
-		if v2, changed2 := fastpathTV.DecMapInt16Int32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]int64:
-		fastpathTV.DecMapInt16Int64V(v, false, d)
-	case *map[int16]int64:
-		if v2, changed2 := fastpathTV.DecMapInt16Int64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]float32:
-		fastpathTV.DecMapInt16Float32V(v, false, d)
-	case *map[int16]float32:
-		if v2, changed2 := fastpathTV.DecMapInt16Float32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]float64:
-		fastpathTV.DecMapInt16Float64V(v, false, d)
-	case *map[int16]float64:
-		if v2, changed2 := fastpathTV.DecMapInt16Float64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int16]bool:
-		fastpathTV.DecMapInt16BoolV(v, false, d)
-	case *map[int16]bool:
-		if v2, changed2 := fastpathTV.DecMapInt16BoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []int32:
 		fastpathTV.DecSliceInt32V(v, false, d)
 	case *[]int32:
 		if v2, changed2 := fastpathTV.DecSliceInt32V(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[int32]interface{}:
-		fastpathTV.DecMapInt32IntfV(v, false, d)
-	case *map[int32]interface{}:
-		if v2, changed2 := fastpathTV.DecMapInt32IntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]string:
-		fastpathTV.DecMapInt32StringV(v, false, d)
-	case *map[int32]string:
-		if v2, changed2 := fastpathTV.DecMapInt32StringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]uint:
-		fastpathTV.DecMapInt32UintV(v, false, d)
-	case *map[int32]uint:
-		if v2, changed2 := fastpathTV.DecMapInt32UintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]uint8:
-		fastpathTV.DecMapInt32Uint8V(v, false, d)
-	case *map[int32]uint8:
-		if v2, changed2 := fastpathTV.DecMapInt32Uint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]uint16:
-		fastpathTV.DecMapInt32Uint16V(v, false, d)
-	case *map[int32]uint16:
-		if v2, changed2 := fastpathTV.DecMapInt32Uint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]uint32:
-		fastpathTV.DecMapInt32Uint32V(v, false, d)
-	case *map[int32]uint32:
-		if v2, changed2 := fastpathTV.DecMapInt32Uint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]uint64:
-		fastpathTV.DecMapInt32Uint64V(v, false, d)
-	case *map[int32]uint64:
-		if v2, changed2 := fastpathTV.DecMapInt32Uint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]uintptr:
-		fastpathTV.DecMapInt32UintptrV(v, false, d)
-	case *map[int32]uintptr:
-		if v2, changed2 := fastpathTV.DecMapInt32UintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]int:
-		fastpathTV.DecMapInt32IntV(v, false, d)
-	case *map[int32]int:
-		if v2, changed2 := fastpathTV.DecMapInt32IntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]int8:
-		fastpathTV.DecMapInt32Int8V(v, false, d)
-	case *map[int32]int8:
-		if v2, changed2 := fastpathTV.DecMapInt32Int8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]int16:
-		fastpathTV.DecMapInt32Int16V(v, false, d)
-	case *map[int32]int16:
-		if v2, changed2 := fastpathTV.DecMapInt32Int16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]int32:
-		fastpathTV.DecMapInt32Int32V(v, false, d)
-	case *map[int32]int32:
-		if v2, changed2 := fastpathTV.DecMapInt32Int32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]int64:
-		fastpathTV.DecMapInt32Int64V(v, false, d)
-	case *map[int32]int64:
-		if v2, changed2 := fastpathTV.DecMapInt32Int64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]float32:
-		fastpathTV.DecMapInt32Float32V(v, false, d)
-	case *map[int32]float32:
-		if v2, changed2 := fastpathTV.DecMapInt32Float32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]float64:
-		fastpathTV.DecMapInt32Float64V(v, false, d)
-	case *map[int32]float64:
-		if v2, changed2 := fastpathTV.DecMapInt32Float64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int32]bool:
-		fastpathTV.DecMapInt32BoolV(v, false, d)
-	case *map[int32]bool:
-		if v2, changed2 := fastpathTV.DecMapInt32BoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []int64:
 		fastpathTV.DecSliceInt64V(v, false, d)
 	case *[]int64:
 		if v2, changed2 := fastpathTV.DecSliceInt64V(*v, true, d); changed2 {
 			*v = v2
 		}
-
-	case map[int64]interface{}:
-		fastpathTV.DecMapInt64IntfV(v, false, d)
-	case *map[int64]interface{}:
-		if v2, changed2 := fastpathTV.DecMapInt64IntfV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]string:
-		fastpathTV.DecMapInt64StringV(v, false, d)
-	case *map[int64]string:
-		if v2, changed2 := fastpathTV.DecMapInt64StringV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]uint:
-		fastpathTV.DecMapInt64UintV(v, false, d)
-	case *map[int64]uint:
-		if v2, changed2 := fastpathTV.DecMapInt64UintV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]uint8:
-		fastpathTV.DecMapInt64Uint8V(v, false, d)
-	case *map[int64]uint8:
-		if v2, changed2 := fastpathTV.DecMapInt64Uint8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]uint16:
-		fastpathTV.DecMapInt64Uint16V(v, false, d)
-	case *map[int64]uint16:
-		if v2, changed2 := fastpathTV.DecMapInt64Uint16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]uint32:
-		fastpathTV.DecMapInt64Uint32V(v, false, d)
-	case *map[int64]uint32:
-		if v2, changed2 := fastpathTV.DecMapInt64Uint32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]uint64:
-		fastpathTV.DecMapInt64Uint64V(v, false, d)
-	case *map[int64]uint64:
-		if v2, changed2 := fastpathTV.DecMapInt64Uint64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]uintptr:
-		fastpathTV.DecMapInt64UintptrV(v, false, d)
-	case *map[int64]uintptr:
-		if v2, changed2 := fastpathTV.DecMapInt64UintptrV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]int:
-		fastpathTV.DecMapInt64IntV(v, false, d)
-	case *map[int64]int:
-		if v2, changed2 := fastpathTV.DecMapInt64IntV(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]int8:
-		fastpathTV.DecMapInt64Int8V(v, false, d)
-	case *map[int64]int8:
-		if v2, changed2 := fastpathTV.DecMapInt64Int8V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]int16:
-		fastpathTV.DecMapInt64Int16V(v, false, d)
-	case *map[int64]int16:
-		if v2, changed2 := fastpathTV.DecMapInt64Int16V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]int32:
-		fastpathTV.DecMapInt64Int32V(v, false, d)
-	case *map[int64]int32:
-		if v2, changed2 := fastpathTV.DecMapInt64Int32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]int64:
-		fastpathTV.DecMapInt64Int64V(v, false, d)
-	case *map[int64]int64:
-		if v2, changed2 := fastpathTV.DecMapInt64Int64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]float32:
-		fastpathTV.DecMapInt64Float32V(v, false, d)
-	case *map[int64]float32:
-		if v2, changed2 := fastpathTV.DecMapInt64Float32V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]float64:
-		fastpathTV.DecMapInt64Float64V(v, false, d)
-	case *map[int64]float64:
-		if v2, changed2 := fastpathTV.DecMapInt64Float64V(*v, true, d); changed2 {
-			*v = v2
-		}
-
-	case map[int64]bool:
-		fastpathTV.DecMapInt64BoolV(v, false, d)
-	case *map[int64]bool:
-		if v2, changed2 := fastpathTV.DecMapInt64BoolV(*v, true, d); changed2 {
-			*v = v2
-		}
-
 	case []bool:
 		fastpathTV.DecSliceBoolV(v, false, d)
 	case *[]bool:
@@ -15434,118 +13514,1542 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 			*v = v2
 		}
 
+	case map[interface{}]interface{}:
+		fastpathTV.DecMapIntfIntfV(v, false, d)
+	case *map[interface{}]interface{}:
+		if v2, changed2 := fastpathTV.DecMapIntfIntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]string:
+		fastpathTV.DecMapIntfStringV(v, false, d)
+	case *map[interface{}]string:
+		if v2, changed2 := fastpathTV.DecMapIntfStringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]uint:
+		fastpathTV.DecMapIntfUintV(v, false, d)
+	case *map[interface{}]uint:
+		if v2, changed2 := fastpathTV.DecMapIntfUintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]uint8:
+		fastpathTV.DecMapIntfUint8V(v, false, d)
+	case *map[interface{}]uint8:
+		if v2, changed2 := fastpathTV.DecMapIntfUint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]uint16:
+		fastpathTV.DecMapIntfUint16V(v, false, d)
+	case *map[interface{}]uint16:
+		if v2, changed2 := fastpathTV.DecMapIntfUint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]uint32:
+		fastpathTV.DecMapIntfUint32V(v, false, d)
+	case *map[interface{}]uint32:
+		if v2, changed2 := fastpathTV.DecMapIntfUint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]uint64:
+		fastpathTV.DecMapIntfUint64V(v, false, d)
+	case *map[interface{}]uint64:
+		if v2, changed2 := fastpathTV.DecMapIntfUint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]uintptr:
+		fastpathTV.DecMapIntfUintptrV(v, false, d)
+	case *map[interface{}]uintptr:
+		if v2, changed2 := fastpathTV.DecMapIntfUintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]int:
+		fastpathTV.DecMapIntfIntV(v, false, d)
+	case *map[interface{}]int:
+		if v2, changed2 := fastpathTV.DecMapIntfIntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]int8:
+		fastpathTV.DecMapIntfInt8V(v, false, d)
+	case *map[interface{}]int8:
+		if v2, changed2 := fastpathTV.DecMapIntfInt8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]int16:
+		fastpathTV.DecMapIntfInt16V(v, false, d)
+	case *map[interface{}]int16:
+		if v2, changed2 := fastpathTV.DecMapIntfInt16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]int32:
+		fastpathTV.DecMapIntfInt32V(v, false, d)
+	case *map[interface{}]int32:
+		if v2, changed2 := fastpathTV.DecMapIntfInt32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]int64:
+		fastpathTV.DecMapIntfInt64V(v, false, d)
+	case *map[interface{}]int64:
+		if v2, changed2 := fastpathTV.DecMapIntfInt64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]float32:
+		fastpathTV.DecMapIntfFloat32V(v, false, d)
+	case *map[interface{}]float32:
+		if v2, changed2 := fastpathTV.DecMapIntfFloat32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]float64:
+		fastpathTV.DecMapIntfFloat64V(v, false, d)
+	case *map[interface{}]float64:
+		if v2, changed2 := fastpathTV.DecMapIntfFloat64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[interface{}]bool:
+		fastpathTV.DecMapIntfBoolV(v, false, d)
+	case *map[interface{}]bool:
+		if v2, changed2 := fastpathTV.DecMapIntfBoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]interface{}:
+		fastpathTV.DecMapStringIntfV(v, false, d)
+	case *map[string]interface{}:
+		if v2, changed2 := fastpathTV.DecMapStringIntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]string:
+		fastpathTV.DecMapStringStringV(v, false, d)
+	case *map[string]string:
+		if v2, changed2 := fastpathTV.DecMapStringStringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]uint:
+		fastpathTV.DecMapStringUintV(v, false, d)
+	case *map[string]uint:
+		if v2, changed2 := fastpathTV.DecMapStringUintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]uint8:
+		fastpathTV.DecMapStringUint8V(v, false, d)
+	case *map[string]uint8:
+		if v2, changed2 := fastpathTV.DecMapStringUint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]uint16:
+		fastpathTV.DecMapStringUint16V(v, false, d)
+	case *map[string]uint16:
+		if v2, changed2 := fastpathTV.DecMapStringUint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]uint32:
+		fastpathTV.DecMapStringUint32V(v, false, d)
+	case *map[string]uint32:
+		if v2, changed2 := fastpathTV.DecMapStringUint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]uint64:
+		fastpathTV.DecMapStringUint64V(v, false, d)
+	case *map[string]uint64:
+		if v2, changed2 := fastpathTV.DecMapStringUint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]uintptr:
+		fastpathTV.DecMapStringUintptrV(v, false, d)
+	case *map[string]uintptr:
+		if v2, changed2 := fastpathTV.DecMapStringUintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]int:
+		fastpathTV.DecMapStringIntV(v, false, d)
+	case *map[string]int:
+		if v2, changed2 := fastpathTV.DecMapStringIntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]int8:
+		fastpathTV.DecMapStringInt8V(v, false, d)
+	case *map[string]int8:
+		if v2, changed2 := fastpathTV.DecMapStringInt8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]int16:
+		fastpathTV.DecMapStringInt16V(v, false, d)
+	case *map[string]int16:
+		if v2, changed2 := fastpathTV.DecMapStringInt16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]int32:
+		fastpathTV.DecMapStringInt32V(v, false, d)
+	case *map[string]int32:
+		if v2, changed2 := fastpathTV.DecMapStringInt32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]int64:
+		fastpathTV.DecMapStringInt64V(v, false, d)
+	case *map[string]int64:
+		if v2, changed2 := fastpathTV.DecMapStringInt64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]float32:
+		fastpathTV.DecMapStringFloat32V(v, false, d)
+	case *map[string]float32:
+		if v2, changed2 := fastpathTV.DecMapStringFloat32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]float64:
+		fastpathTV.DecMapStringFloat64V(v, false, d)
+	case *map[string]float64:
+		if v2, changed2 := fastpathTV.DecMapStringFloat64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[string]bool:
+		fastpathTV.DecMapStringBoolV(v, false, d)
+	case *map[string]bool:
+		if v2, changed2 := fastpathTV.DecMapStringBoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]interface{}:
+		fastpathTV.DecMapFloat32IntfV(v, false, d)
+	case *map[float32]interface{}:
+		if v2, changed2 := fastpathTV.DecMapFloat32IntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]string:
+		fastpathTV.DecMapFloat32StringV(v, false, d)
+	case *map[float32]string:
+		if v2, changed2 := fastpathTV.DecMapFloat32StringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]uint:
+		fastpathTV.DecMapFloat32UintV(v, false, d)
+	case *map[float32]uint:
+		if v2, changed2 := fastpathTV.DecMapFloat32UintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]uint8:
+		fastpathTV.DecMapFloat32Uint8V(v, false, d)
+	case *map[float32]uint8:
+		if v2, changed2 := fastpathTV.DecMapFloat32Uint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]uint16:
+		fastpathTV.DecMapFloat32Uint16V(v, false, d)
+	case *map[float32]uint16:
+		if v2, changed2 := fastpathTV.DecMapFloat32Uint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]uint32:
+		fastpathTV.DecMapFloat32Uint32V(v, false, d)
+	case *map[float32]uint32:
+		if v2, changed2 := fastpathTV.DecMapFloat32Uint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]uint64:
+		fastpathTV.DecMapFloat32Uint64V(v, false, d)
+	case *map[float32]uint64:
+		if v2, changed2 := fastpathTV.DecMapFloat32Uint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]uintptr:
+		fastpathTV.DecMapFloat32UintptrV(v, false, d)
+	case *map[float32]uintptr:
+		if v2, changed2 := fastpathTV.DecMapFloat32UintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]int:
+		fastpathTV.DecMapFloat32IntV(v, false, d)
+	case *map[float32]int:
+		if v2, changed2 := fastpathTV.DecMapFloat32IntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]int8:
+		fastpathTV.DecMapFloat32Int8V(v, false, d)
+	case *map[float32]int8:
+		if v2, changed2 := fastpathTV.DecMapFloat32Int8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]int16:
+		fastpathTV.DecMapFloat32Int16V(v, false, d)
+	case *map[float32]int16:
+		if v2, changed2 := fastpathTV.DecMapFloat32Int16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]int32:
+		fastpathTV.DecMapFloat32Int32V(v, false, d)
+	case *map[float32]int32:
+		if v2, changed2 := fastpathTV.DecMapFloat32Int32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]int64:
+		fastpathTV.DecMapFloat32Int64V(v, false, d)
+	case *map[float32]int64:
+		if v2, changed2 := fastpathTV.DecMapFloat32Int64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]float32:
+		fastpathTV.DecMapFloat32Float32V(v, false, d)
+	case *map[float32]float32:
+		if v2, changed2 := fastpathTV.DecMapFloat32Float32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]float64:
+		fastpathTV.DecMapFloat32Float64V(v, false, d)
+	case *map[float32]float64:
+		if v2, changed2 := fastpathTV.DecMapFloat32Float64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float32]bool:
+		fastpathTV.DecMapFloat32BoolV(v, false, d)
+	case *map[float32]bool:
+		if v2, changed2 := fastpathTV.DecMapFloat32BoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]interface{}:
+		fastpathTV.DecMapFloat64IntfV(v, false, d)
+	case *map[float64]interface{}:
+		if v2, changed2 := fastpathTV.DecMapFloat64IntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]string:
+		fastpathTV.DecMapFloat64StringV(v, false, d)
+	case *map[float64]string:
+		if v2, changed2 := fastpathTV.DecMapFloat64StringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]uint:
+		fastpathTV.DecMapFloat64UintV(v, false, d)
+	case *map[float64]uint:
+		if v2, changed2 := fastpathTV.DecMapFloat64UintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]uint8:
+		fastpathTV.DecMapFloat64Uint8V(v, false, d)
+	case *map[float64]uint8:
+		if v2, changed2 := fastpathTV.DecMapFloat64Uint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]uint16:
+		fastpathTV.DecMapFloat64Uint16V(v, false, d)
+	case *map[float64]uint16:
+		if v2, changed2 := fastpathTV.DecMapFloat64Uint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]uint32:
+		fastpathTV.DecMapFloat64Uint32V(v, false, d)
+	case *map[float64]uint32:
+		if v2, changed2 := fastpathTV.DecMapFloat64Uint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]uint64:
+		fastpathTV.DecMapFloat64Uint64V(v, false, d)
+	case *map[float64]uint64:
+		if v2, changed2 := fastpathTV.DecMapFloat64Uint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]uintptr:
+		fastpathTV.DecMapFloat64UintptrV(v, false, d)
+	case *map[float64]uintptr:
+		if v2, changed2 := fastpathTV.DecMapFloat64UintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]int:
+		fastpathTV.DecMapFloat64IntV(v, false, d)
+	case *map[float64]int:
+		if v2, changed2 := fastpathTV.DecMapFloat64IntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]int8:
+		fastpathTV.DecMapFloat64Int8V(v, false, d)
+	case *map[float64]int8:
+		if v2, changed2 := fastpathTV.DecMapFloat64Int8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]int16:
+		fastpathTV.DecMapFloat64Int16V(v, false, d)
+	case *map[float64]int16:
+		if v2, changed2 := fastpathTV.DecMapFloat64Int16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]int32:
+		fastpathTV.DecMapFloat64Int32V(v, false, d)
+	case *map[float64]int32:
+		if v2, changed2 := fastpathTV.DecMapFloat64Int32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]int64:
+		fastpathTV.DecMapFloat64Int64V(v, false, d)
+	case *map[float64]int64:
+		if v2, changed2 := fastpathTV.DecMapFloat64Int64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]float32:
+		fastpathTV.DecMapFloat64Float32V(v, false, d)
+	case *map[float64]float32:
+		if v2, changed2 := fastpathTV.DecMapFloat64Float32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]float64:
+		fastpathTV.DecMapFloat64Float64V(v, false, d)
+	case *map[float64]float64:
+		if v2, changed2 := fastpathTV.DecMapFloat64Float64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[float64]bool:
+		fastpathTV.DecMapFloat64BoolV(v, false, d)
+	case *map[float64]bool:
+		if v2, changed2 := fastpathTV.DecMapFloat64BoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]interface{}:
+		fastpathTV.DecMapUintIntfV(v, false, d)
+	case *map[uint]interface{}:
+		if v2, changed2 := fastpathTV.DecMapUintIntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]string:
+		fastpathTV.DecMapUintStringV(v, false, d)
+	case *map[uint]string:
+		if v2, changed2 := fastpathTV.DecMapUintStringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]uint:
+		fastpathTV.DecMapUintUintV(v, false, d)
+	case *map[uint]uint:
+		if v2, changed2 := fastpathTV.DecMapUintUintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]uint8:
+		fastpathTV.DecMapUintUint8V(v, false, d)
+	case *map[uint]uint8:
+		if v2, changed2 := fastpathTV.DecMapUintUint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]uint16:
+		fastpathTV.DecMapUintUint16V(v, false, d)
+	case *map[uint]uint16:
+		if v2, changed2 := fastpathTV.DecMapUintUint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]uint32:
+		fastpathTV.DecMapUintUint32V(v, false, d)
+	case *map[uint]uint32:
+		if v2, changed2 := fastpathTV.DecMapUintUint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]uint64:
+		fastpathTV.DecMapUintUint64V(v, false, d)
+	case *map[uint]uint64:
+		if v2, changed2 := fastpathTV.DecMapUintUint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]uintptr:
+		fastpathTV.DecMapUintUintptrV(v, false, d)
+	case *map[uint]uintptr:
+		if v2, changed2 := fastpathTV.DecMapUintUintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]int:
+		fastpathTV.DecMapUintIntV(v, false, d)
+	case *map[uint]int:
+		if v2, changed2 := fastpathTV.DecMapUintIntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]int8:
+		fastpathTV.DecMapUintInt8V(v, false, d)
+	case *map[uint]int8:
+		if v2, changed2 := fastpathTV.DecMapUintInt8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]int16:
+		fastpathTV.DecMapUintInt16V(v, false, d)
+	case *map[uint]int16:
+		if v2, changed2 := fastpathTV.DecMapUintInt16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]int32:
+		fastpathTV.DecMapUintInt32V(v, false, d)
+	case *map[uint]int32:
+		if v2, changed2 := fastpathTV.DecMapUintInt32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]int64:
+		fastpathTV.DecMapUintInt64V(v, false, d)
+	case *map[uint]int64:
+		if v2, changed2 := fastpathTV.DecMapUintInt64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]float32:
+		fastpathTV.DecMapUintFloat32V(v, false, d)
+	case *map[uint]float32:
+		if v2, changed2 := fastpathTV.DecMapUintFloat32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]float64:
+		fastpathTV.DecMapUintFloat64V(v, false, d)
+	case *map[uint]float64:
+		if v2, changed2 := fastpathTV.DecMapUintFloat64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint]bool:
+		fastpathTV.DecMapUintBoolV(v, false, d)
+	case *map[uint]bool:
+		if v2, changed2 := fastpathTV.DecMapUintBoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]interface{}:
+		fastpathTV.DecMapUint8IntfV(v, false, d)
+	case *map[uint8]interface{}:
+		if v2, changed2 := fastpathTV.DecMapUint8IntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]string:
+		fastpathTV.DecMapUint8StringV(v, false, d)
+	case *map[uint8]string:
+		if v2, changed2 := fastpathTV.DecMapUint8StringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]uint:
+		fastpathTV.DecMapUint8UintV(v, false, d)
+	case *map[uint8]uint:
+		if v2, changed2 := fastpathTV.DecMapUint8UintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]uint8:
+		fastpathTV.DecMapUint8Uint8V(v, false, d)
+	case *map[uint8]uint8:
+		if v2, changed2 := fastpathTV.DecMapUint8Uint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]uint16:
+		fastpathTV.DecMapUint8Uint16V(v, false, d)
+	case *map[uint8]uint16:
+		if v2, changed2 := fastpathTV.DecMapUint8Uint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]uint32:
+		fastpathTV.DecMapUint8Uint32V(v, false, d)
+	case *map[uint8]uint32:
+		if v2, changed2 := fastpathTV.DecMapUint8Uint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]uint64:
+		fastpathTV.DecMapUint8Uint64V(v, false, d)
+	case *map[uint8]uint64:
+		if v2, changed2 := fastpathTV.DecMapUint8Uint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]uintptr:
+		fastpathTV.DecMapUint8UintptrV(v, false, d)
+	case *map[uint8]uintptr:
+		if v2, changed2 := fastpathTV.DecMapUint8UintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]int:
+		fastpathTV.DecMapUint8IntV(v, false, d)
+	case *map[uint8]int:
+		if v2, changed2 := fastpathTV.DecMapUint8IntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]int8:
+		fastpathTV.DecMapUint8Int8V(v, false, d)
+	case *map[uint8]int8:
+		if v2, changed2 := fastpathTV.DecMapUint8Int8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]int16:
+		fastpathTV.DecMapUint8Int16V(v, false, d)
+	case *map[uint8]int16:
+		if v2, changed2 := fastpathTV.DecMapUint8Int16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]int32:
+		fastpathTV.DecMapUint8Int32V(v, false, d)
+	case *map[uint8]int32:
+		if v2, changed2 := fastpathTV.DecMapUint8Int32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]int64:
+		fastpathTV.DecMapUint8Int64V(v, false, d)
+	case *map[uint8]int64:
+		if v2, changed2 := fastpathTV.DecMapUint8Int64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]float32:
+		fastpathTV.DecMapUint8Float32V(v, false, d)
+	case *map[uint8]float32:
+		if v2, changed2 := fastpathTV.DecMapUint8Float32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]float64:
+		fastpathTV.DecMapUint8Float64V(v, false, d)
+	case *map[uint8]float64:
+		if v2, changed2 := fastpathTV.DecMapUint8Float64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint8]bool:
+		fastpathTV.DecMapUint8BoolV(v, false, d)
+	case *map[uint8]bool:
+		if v2, changed2 := fastpathTV.DecMapUint8BoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]interface{}:
+		fastpathTV.DecMapUint16IntfV(v, false, d)
+	case *map[uint16]interface{}:
+		if v2, changed2 := fastpathTV.DecMapUint16IntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]string:
+		fastpathTV.DecMapUint16StringV(v, false, d)
+	case *map[uint16]string:
+		if v2, changed2 := fastpathTV.DecMapUint16StringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]uint:
+		fastpathTV.DecMapUint16UintV(v, false, d)
+	case *map[uint16]uint:
+		if v2, changed2 := fastpathTV.DecMapUint16UintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]uint8:
+		fastpathTV.DecMapUint16Uint8V(v, false, d)
+	case *map[uint16]uint8:
+		if v2, changed2 := fastpathTV.DecMapUint16Uint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]uint16:
+		fastpathTV.DecMapUint16Uint16V(v, false, d)
+	case *map[uint16]uint16:
+		if v2, changed2 := fastpathTV.DecMapUint16Uint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]uint32:
+		fastpathTV.DecMapUint16Uint32V(v, false, d)
+	case *map[uint16]uint32:
+		if v2, changed2 := fastpathTV.DecMapUint16Uint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]uint64:
+		fastpathTV.DecMapUint16Uint64V(v, false, d)
+	case *map[uint16]uint64:
+		if v2, changed2 := fastpathTV.DecMapUint16Uint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]uintptr:
+		fastpathTV.DecMapUint16UintptrV(v, false, d)
+	case *map[uint16]uintptr:
+		if v2, changed2 := fastpathTV.DecMapUint16UintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]int:
+		fastpathTV.DecMapUint16IntV(v, false, d)
+	case *map[uint16]int:
+		if v2, changed2 := fastpathTV.DecMapUint16IntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]int8:
+		fastpathTV.DecMapUint16Int8V(v, false, d)
+	case *map[uint16]int8:
+		if v2, changed2 := fastpathTV.DecMapUint16Int8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]int16:
+		fastpathTV.DecMapUint16Int16V(v, false, d)
+	case *map[uint16]int16:
+		if v2, changed2 := fastpathTV.DecMapUint16Int16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]int32:
+		fastpathTV.DecMapUint16Int32V(v, false, d)
+	case *map[uint16]int32:
+		if v2, changed2 := fastpathTV.DecMapUint16Int32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]int64:
+		fastpathTV.DecMapUint16Int64V(v, false, d)
+	case *map[uint16]int64:
+		if v2, changed2 := fastpathTV.DecMapUint16Int64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]float32:
+		fastpathTV.DecMapUint16Float32V(v, false, d)
+	case *map[uint16]float32:
+		if v2, changed2 := fastpathTV.DecMapUint16Float32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]float64:
+		fastpathTV.DecMapUint16Float64V(v, false, d)
+	case *map[uint16]float64:
+		if v2, changed2 := fastpathTV.DecMapUint16Float64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint16]bool:
+		fastpathTV.DecMapUint16BoolV(v, false, d)
+	case *map[uint16]bool:
+		if v2, changed2 := fastpathTV.DecMapUint16BoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]interface{}:
+		fastpathTV.DecMapUint32IntfV(v, false, d)
+	case *map[uint32]interface{}:
+		if v2, changed2 := fastpathTV.DecMapUint32IntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]string:
+		fastpathTV.DecMapUint32StringV(v, false, d)
+	case *map[uint32]string:
+		if v2, changed2 := fastpathTV.DecMapUint32StringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]uint:
+		fastpathTV.DecMapUint32UintV(v, false, d)
+	case *map[uint32]uint:
+		if v2, changed2 := fastpathTV.DecMapUint32UintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]uint8:
+		fastpathTV.DecMapUint32Uint8V(v, false, d)
+	case *map[uint32]uint8:
+		if v2, changed2 := fastpathTV.DecMapUint32Uint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]uint16:
+		fastpathTV.DecMapUint32Uint16V(v, false, d)
+	case *map[uint32]uint16:
+		if v2, changed2 := fastpathTV.DecMapUint32Uint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]uint32:
+		fastpathTV.DecMapUint32Uint32V(v, false, d)
+	case *map[uint32]uint32:
+		if v2, changed2 := fastpathTV.DecMapUint32Uint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]uint64:
+		fastpathTV.DecMapUint32Uint64V(v, false, d)
+	case *map[uint32]uint64:
+		if v2, changed2 := fastpathTV.DecMapUint32Uint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]uintptr:
+		fastpathTV.DecMapUint32UintptrV(v, false, d)
+	case *map[uint32]uintptr:
+		if v2, changed2 := fastpathTV.DecMapUint32UintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]int:
+		fastpathTV.DecMapUint32IntV(v, false, d)
+	case *map[uint32]int:
+		if v2, changed2 := fastpathTV.DecMapUint32IntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]int8:
+		fastpathTV.DecMapUint32Int8V(v, false, d)
+	case *map[uint32]int8:
+		if v2, changed2 := fastpathTV.DecMapUint32Int8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]int16:
+		fastpathTV.DecMapUint32Int16V(v, false, d)
+	case *map[uint32]int16:
+		if v2, changed2 := fastpathTV.DecMapUint32Int16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]int32:
+		fastpathTV.DecMapUint32Int32V(v, false, d)
+	case *map[uint32]int32:
+		if v2, changed2 := fastpathTV.DecMapUint32Int32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]int64:
+		fastpathTV.DecMapUint32Int64V(v, false, d)
+	case *map[uint32]int64:
+		if v2, changed2 := fastpathTV.DecMapUint32Int64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]float32:
+		fastpathTV.DecMapUint32Float32V(v, false, d)
+	case *map[uint32]float32:
+		if v2, changed2 := fastpathTV.DecMapUint32Float32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]float64:
+		fastpathTV.DecMapUint32Float64V(v, false, d)
+	case *map[uint32]float64:
+		if v2, changed2 := fastpathTV.DecMapUint32Float64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint32]bool:
+		fastpathTV.DecMapUint32BoolV(v, false, d)
+	case *map[uint32]bool:
+		if v2, changed2 := fastpathTV.DecMapUint32BoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]interface{}:
+		fastpathTV.DecMapUint64IntfV(v, false, d)
+	case *map[uint64]interface{}:
+		if v2, changed2 := fastpathTV.DecMapUint64IntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]string:
+		fastpathTV.DecMapUint64StringV(v, false, d)
+	case *map[uint64]string:
+		if v2, changed2 := fastpathTV.DecMapUint64StringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]uint:
+		fastpathTV.DecMapUint64UintV(v, false, d)
+	case *map[uint64]uint:
+		if v2, changed2 := fastpathTV.DecMapUint64UintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]uint8:
+		fastpathTV.DecMapUint64Uint8V(v, false, d)
+	case *map[uint64]uint8:
+		if v2, changed2 := fastpathTV.DecMapUint64Uint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]uint16:
+		fastpathTV.DecMapUint64Uint16V(v, false, d)
+	case *map[uint64]uint16:
+		if v2, changed2 := fastpathTV.DecMapUint64Uint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]uint32:
+		fastpathTV.DecMapUint64Uint32V(v, false, d)
+	case *map[uint64]uint32:
+		if v2, changed2 := fastpathTV.DecMapUint64Uint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]uint64:
+		fastpathTV.DecMapUint64Uint64V(v, false, d)
+	case *map[uint64]uint64:
+		if v2, changed2 := fastpathTV.DecMapUint64Uint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]uintptr:
+		fastpathTV.DecMapUint64UintptrV(v, false, d)
+	case *map[uint64]uintptr:
+		if v2, changed2 := fastpathTV.DecMapUint64UintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]int:
+		fastpathTV.DecMapUint64IntV(v, false, d)
+	case *map[uint64]int:
+		if v2, changed2 := fastpathTV.DecMapUint64IntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]int8:
+		fastpathTV.DecMapUint64Int8V(v, false, d)
+	case *map[uint64]int8:
+		if v2, changed2 := fastpathTV.DecMapUint64Int8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]int16:
+		fastpathTV.DecMapUint64Int16V(v, false, d)
+	case *map[uint64]int16:
+		if v2, changed2 := fastpathTV.DecMapUint64Int16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]int32:
+		fastpathTV.DecMapUint64Int32V(v, false, d)
+	case *map[uint64]int32:
+		if v2, changed2 := fastpathTV.DecMapUint64Int32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]int64:
+		fastpathTV.DecMapUint64Int64V(v, false, d)
+	case *map[uint64]int64:
+		if v2, changed2 := fastpathTV.DecMapUint64Int64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]float32:
+		fastpathTV.DecMapUint64Float32V(v, false, d)
+	case *map[uint64]float32:
+		if v2, changed2 := fastpathTV.DecMapUint64Float32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]float64:
+		fastpathTV.DecMapUint64Float64V(v, false, d)
+	case *map[uint64]float64:
+		if v2, changed2 := fastpathTV.DecMapUint64Float64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uint64]bool:
+		fastpathTV.DecMapUint64BoolV(v, false, d)
+	case *map[uint64]bool:
+		if v2, changed2 := fastpathTV.DecMapUint64BoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]interface{}:
+		fastpathTV.DecMapUintptrIntfV(v, false, d)
+	case *map[uintptr]interface{}:
+		if v2, changed2 := fastpathTV.DecMapUintptrIntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]string:
+		fastpathTV.DecMapUintptrStringV(v, false, d)
+	case *map[uintptr]string:
+		if v2, changed2 := fastpathTV.DecMapUintptrStringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]uint:
+		fastpathTV.DecMapUintptrUintV(v, false, d)
+	case *map[uintptr]uint:
+		if v2, changed2 := fastpathTV.DecMapUintptrUintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]uint8:
+		fastpathTV.DecMapUintptrUint8V(v, false, d)
+	case *map[uintptr]uint8:
+		if v2, changed2 := fastpathTV.DecMapUintptrUint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]uint16:
+		fastpathTV.DecMapUintptrUint16V(v, false, d)
+	case *map[uintptr]uint16:
+		if v2, changed2 := fastpathTV.DecMapUintptrUint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]uint32:
+		fastpathTV.DecMapUintptrUint32V(v, false, d)
+	case *map[uintptr]uint32:
+		if v2, changed2 := fastpathTV.DecMapUintptrUint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]uint64:
+		fastpathTV.DecMapUintptrUint64V(v, false, d)
+	case *map[uintptr]uint64:
+		if v2, changed2 := fastpathTV.DecMapUintptrUint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]uintptr:
+		fastpathTV.DecMapUintptrUintptrV(v, false, d)
+	case *map[uintptr]uintptr:
+		if v2, changed2 := fastpathTV.DecMapUintptrUintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]int:
+		fastpathTV.DecMapUintptrIntV(v, false, d)
+	case *map[uintptr]int:
+		if v2, changed2 := fastpathTV.DecMapUintptrIntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]int8:
+		fastpathTV.DecMapUintptrInt8V(v, false, d)
+	case *map[uintptr]int8:
+		if v2, changed2 := fastpathTV.DecMapUintptrInt8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]int16:
+		fastpathTV.DecMapUintptrInt16V(v, false, d)
+	case *map[uintptr]int16:
+		if v2, changed2 := fastpathTV.DecMapUintptrInt16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]int32:
+		fastpathTV.DecMapUintptrInt32V(v, false, d)
+	case *map[uintptr]int32:
+		if v2, changed2 := fastpathTV.DecMapUintptrInt32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]int64:
+		fastpathTV.DecMapUintptrInt64V(v, false, d)
+	case *map[uintptr]int64:
+		if v2, changed2 := fastpathTV.DecMapUintptrInt64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]float32:
+		fastpathTV.DecMapUintptrFloat32V(v, false, d)
+	case *map[uintptr]float32:
+		if v2, changed2 := fastpathTV.DecMapUintptrFloat32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]float64:
+		fastpathTV.DecMapUintptrFloat64V(v, false, d)
+	case *map[uintptr]float64:
+		if v2, changed2 := fastpathTV.DecMapUintptrFloat64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[uintptr]bool:
+		fastpathTV.DecMapUintptrBoolV(v, false, d)
+	case *map[uintptr]bool:
+		if v2, changed2 := fastpathTV.DecMapUintptrBoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]interface{}:
+		fastpathTV.DecMapIntIntfV(v, false, d)
+	case *map[int]interface{}:
+		if v2, changed2 := fastpathTV.DecMapIntIntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]string:
+		fastpathTV.DecMapIntStringV(v, false, d)
+	case *map[int]string:
+		if v2, changed2 := fastpathTV.DecMapIntStringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]uint:
+		fastpathTV.DecMapIntUintV(v, false, d)
+	case *map[int]uint:
+		if v2, changed2 := fastpathTV.DecMapIntUintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]uint8:
+		fastpathTV.DecMapIntUint8V(v, false, d)
+	case *map[int]uint8:
+		if v2, changed2 := fastpathTV.DecMapIntUint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]uint16:
+		fastpathTV.DecMapIntUint16V(v, false, d)
+	case *map[int]uint16:
+		if v2, changed2 := fastpathTV.DecMapIntUint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]uint32:
+		fastpathTV.DecMapIntUint32V(v, false, d)
+	case *map[int]uint32:
+		if v2, changed2 := fastpathTV.DecMapIntUint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]uint64:
+		fastpathTV.DecMapIntUint64V(v, false, d)
+	case *map[int]uint64:
+		if v2, changed2 := fastpathTV.DecMapIntUint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]uintptr:
+		fastpathTV.DecMapIntUintptrV(v, false, d)
+	case *map[int]uintptr:
+		if v2, changed2 := fastpathTV.DecMapIntUintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]int:
+		fastpathTV.DecMapIntIntV(v, false, d)
+	case *map[int]int:
+		if v2, changed2 := fastpathTV.DecMapIntIntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]int8:
+		fastpathTV.DecMapIntInt8V(v, false, d)
+	case *map[int]int8:
+		if v2, changed2 := fastpathTV.DecMapIntInt8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]int16:
+		fastpathTV.DecMapIntInt16V(v, false, d)
+	case *map[int]int16:
+		if v2, changed2 := fastpathTV.DecMapIntInt16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]int32:
+		fastpathTV.DecMapIntInt32V(v, false, d)
+	case *map[int]int32:
+		if v2, changed2 := fastpathTV.DecMapIntInt32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]int64:
+		fastpathTV.DecMapIntInt64V(v, false, d)
+	case *map[int]int64:
+		if v2, changed2 := fastpathTV.DecMapIntInt64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]float32:
+		fastpathTV.DecMapIntFloat32V(v, false, d)
+	case *map[int]float32:
+		if v2, changed2 := fastpathTV.DecMapIntFloat32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]float64:
+		fastpathTV.DecMapIntFloat64V(v, false, d)
+	case *map[int]float64:
+		if v2, changed2 := fastpathTV.DecMapIntFloat64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int]bool:
+		fastpathTV.DecMapIntBoolV(v, false, d)
+	case *map[int]bool:
+		if v2, changed2 := fastpathTV.DecMapIntBoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]interface{}:
+		fastpathTV.DecMapInt8IntfV(v, false, d)
+	case *map[int8]interface{}:
+		if v2, changed2 := fastpathTV.DecMapInt8IntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]string:
+		fastpathTV.DecMapInt8StringV(v, false, d)
+	case *map[int8]string:
+		if v2, changed2 := fastpathTV.DecMapInt8StringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]uint:
+		fastpathTV.DecMapInt8UintV(v, false, d)
+	case *map[int8]uint:
+		if v2, changed2 := fastpathTV.DecMapInt8UintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]uint8:
+		fastpathTV.DecMapInt8Uint8V(v, false, d)
+	case *map[int8]uint8:
+		if v2, changed2 := fastpathTV.DecMapInt8Uint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]uint16:
+		fastpathTV.DecMapInt8Uint16V(v, false, d)
+	case *map[int8]uint16:
+		if v2, changed2 := fastpathTV.DecMapInt8Uint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]uint32:
+		fastpathTV.DecMapInt8Uint32V(v, false, d)
+	case *map[int8]uint32:
+		if v2, changed2 := fastpathTV.DecMapInt8Uint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]uint64:
+		fastpathTV.DecMapInt8Uint64V(v, false, d)
+	case *map[int8]uint64:
+		if v2, changed2 := fastpathTV.DecMapInt8Uint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]uintptr:
+		fastpathTV.DecMapInt8UintptrV(v, false, d)
+	case *map[int8]uintptr:
+		if v2, changed2 := fastpathTV.DecMapInt8UintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]int:
+		fastpathTV.DecMapInt8IntV(v, false, d)
+	case *map[int8]int:
+		if v2, changed2 := fastpathTV.DecMapInt8IntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]int8:
+		fastpathTV.DecMapInt8Int8V(v, false, d)
+	case *map[int8]int8:
+		if v2, changed2 := fastpathTV.DecMapInt8Int8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]int16:
+		fastpathTV.DecMapInt8Int16V(v, false, d)
+	case *map[int8]int16:
+		if v2, changed2 := fastpathTV.DecMapInt8Int16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]int32:
+		fastpathTV.DecMapInt8Int32V(v, false, d)
+	case *map[int8]int32:
+		if v2, changed2 := fastpathTV.DecMapInt8Int32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]int64:
+		fastpathTV.DecMapInt8Int64V(v, false, d)
+	case *map[int8]int64:
+		if v2, changed2 := fastpathTV.DecMapInt8Int64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]float32:
+		fastpathTV.DecMapInt8Float32V(v, false, d)
+	case *map[int8]float32:
+		if v2, changed2 := fastpathTV.DecMapInt8Float32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]float64:
+		fastpathTV.DecMapInt8Float64V(v, false, d)
+	case *map[int8]float64:
+		if v2, changed2 := fastpathTV.DecMapInt8Float64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int8]bool:
+		fastpathTV.DecMapInt8BoolV(v, false, d)
+	case *map[int8]bool:
+		if v2, changed2 := fastpathTV.DecMapInt8BoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]interface{}:
+		fastpathTV.DecMapInt16IntfV(v, false, d)
+	case *map[int16]interface{}:
+		if v2, changed2 := fastpathTV.DecMapInt16IntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]string:
+		fastpathTV.DecMapInt16StringV(v, false, d)
+	case *map[int16]string:
+		if v2, changed2 := fastpathTV.DecMapInt16StringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]uint:
+		fastpathTV.DecMapInt16UintV(v, false, d)
+	case *map[int16]uint:
+		if v2, changed2 := fastpathTV.DecMapInt16UintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]uint8:
+		fastpathTV.DecMapInt16Uint8V(v, false, d)
+	case *map[int16]uint8:
+		if v2, changed2 := fastpathTV.DecMapInt16Uint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]uint16:
+		fastpathTV.DecMapInt16Uint16V(v, false, d)
+	case *map[int16]uint16:
+		if v2, changed2 := fastpathTV.DecMapInt16Uint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]uint32:
+		fastpathTV.DecMapInt16Uint32V(v, false, d)
+	case *map[int16]uint32:
+		if v2, changed2 := fastpathTV.DecMapInt16Uint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]uint64:
+		fastpathTV.DecMapInt16Uint64V(v, false, d)
+	case *map[int16]uint64:
+		if v2, changed2 := fastpathTV.DecMapInt16Uint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]uintptr:
+		fastpathTV.DecMapInt16UintptrV(v, false, d)
+	case *map[int16]uintptr:
+		if v2, changed2 := fastpathTV.DecMapInt16UintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]int:
+		fastpathTV.DecMapInt16IntV(v, false, d)
+	case *map[int16]int:
+		if v2, changed2 := fastpathTV.DecMapInt16IntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]int8:
+		fastpathTV.DecMapInt16Int8V(v, false, d)
+	case *map[int16]int8:
+		if v2, changed2 := fastpathTV.DecMapInt16Int8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]int16:
+		fastpathTV.DecMapInt16Int16V(v, false, d)
+	case *map[int16]int16:
+		if v2, changed2 := fastpathTV.DecMapInt16Int16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]int32:
+		fastpathTV.DecMapInt16Int32V(v, false, d)
+	case *map[int16]int32:
+		if v2, changed2 := fastpathTV.DecMapInt16Int32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]int64:
+		fastpathTV.DecMapInt16Int64V(v, false, d)
+	case *map[int16]int64:
+		if v2, changed2 := fastpathTV.DecMapInt16Int64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]float32:
+		fastpathTV.DecMapInt16Float32V(v, false, d)
+	case *map[int16]float32:
+		if v2, changed2 := fastpathTV.DecMapInt16Float32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]float64:
+		fastpathTV.DecMapInt16Float64V(v, false, d)
+	case *map[int16]float64:
+		if v2, changed2 := fastpathTV.DecMapInt16Float64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int16]bool:
+		fastpathTV.DecMapInt16BoolV(v, false, d)
+	case *map[int16]bool:
+		if v2, changed2 := fastpathTV.DecMapInt16BoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]interface{}:
+		fastpathTV.DecMapInt32IntfV(v, false, d)
+	case *map[int32]interface{}:
+		if v2, changed2 := fastpathTV.DecMapInt32IntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]string:
+		fastpathTV.DecMapInt32StringV(v, false, d)
+	case *map[int32]string:
+		if v2, changed2 := fastpathTV.DecMapInt32StringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]uint:
+		fastpathTV.DecMapInt32UintV(v, false, d)
+	case *map[int32]uint:
+		if v2, changed2 := fastpathTV.DecMapInt32UintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]uint8:
+		fastpathTV.DecMapInt32Uint8V(v, false, d)
+	case *map[int32]uint8:
+		if v2, changed2 := fastpathTV.DecMapInt32Uint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]uint16:
+		fastpathTV.DecMapInt32Uint16V(v, false, d)
+	case *map[int32]uint16:
+		if v2, changed2 := fastpathTV.DecMapInt32Uint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]uint32:
+		fastpathTV.DecMapInt32Uint32V(v, false, d)
+	case *map[int32]uint32:
+		if v2, changed2 := fastpathTV.DecMapInt32Uint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]uint64:
+		fastpathTV.DecMapInt32Uint64V(v, false, d)
+	case *map[int32]uint64:
+		if v2, changed2 := fastpathTV.DecMapInt32Uint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]uintptr:
+		fastpathTV.DecMapInt32UintptrV(v, false, d)
+	case *map[int32]uintptr:
+		if v2, changed2 := fastpathTV.DecMapInt32UintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]int:
+		fastpathTV.DecMapInt32IntV(v, false, d)
+	case *map[int32]int:
+		if v2, changed2 := fastpathTV.DecMapInt32IntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]int8:
+		fastpathTV.DecMapInt32Int8V(v, false, d)
+	case *map[int32]int8:
+		if v2, changed2 := fastpathTV.DecMapInt32Int8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]int16:
+		fastpathTV.DecMapInt32Int16V(v, false, d)
+	case *map[int32]int16:
+		if v2, changed2 := fastpathTV.DecMapInt32Int16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]int32:
+		fastpathTV.DecMapInt32Int32V(v, false, d)
+	case *map[int32]int32:
+		if v2, changed2 := fastpathTV.DecMapInt32Int32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]int64:
+		fastpathTV.DecMapInt32Int64V(v, false, d)
+	case *map[int32]int64:
+		if v2, changed2 := fastpathTV.DecMapInt32Int64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]float32:
+		fastpathTV.DecMapInt32Float32V(v, false, d)
+	case *map[int32]float32:
+		if v2, changed2 := fastpathTV.DecMapInt32Float32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]float64:
+		fastpathTV.DecMapInt32Float64V(v, false, d)
+	case *map[int32]float64:
+		if v2, changed2 := fastpathTV.DecMapInt32Float64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int32]bool:
+		fastpathTV.DecMapInt32BoolV(v, false, d)
+	case *map[int32]bool:
+		if v2, changed2 := fastpathTV.DecMapInt32BoolV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]interface{}:
+		fastpathTV.DecMapInt64IntfV(v, false, d)
+	case *map[int64]interface{}:
+		if v2, changed2 := fastpathTV.DecMapInt64IntfV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]string:
+		fastpathTV.DecMapInt64StringV(v, false, d)
+	case *map[int64]string:
+		if v2, changed2 := fastpathTV.DecMapInt64StringV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]uint:
+		fastpathTV.DecMapInt64UintV(v, false, d)
+	case *map[int64]uint:
+		if v2, changed2 := fastpathTV.DecMapInt64UintV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]uint8:
+		fastpathTV.DecMapInt64Uint8V(v, false, d)
+	case *map[int64]uint8:
+		if v2, changed2 := fastpathTV.DecMapInt64Uint8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]uint16:
+		fastpathTV.DecMapInt64Uint16V(v, false, d)
+	case *map[int64]uint16:
+		if v2, changed2 := fastpathTV.DecMapInt64Uint16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]uint32:
+		fastpathTV.DecMapInt64Uint32V(v, false, d)
+	case *map[int64]uint32:
+		if v2, changed2 := fastpathTV.DecMapInt64Uint32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]uint64:
+		fastpathTV.DecMapInt64Uint64V(v, false, d)
+	case *map[int64]uint64:
+		if v2, changed2 := fastpathTV.DecMapInt64Uint64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]uintptr:
+		fastpathTV.DecMapInt64UintptrV(v, false, d)
+	case *map[int64]uintptr:
+		if v2, changed2 := fastpathTV.DecMapInt64UintptrV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]int:
+		fastpathTV.DecMapInt64IntV(v, false, d)
+	case *map[int64]int:
+		if v2, changed2 := fastpathTV.DecMapInt64IntV(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]int8:
+		fastpathTV.DecMapInt64Int8V(v, false, d)
+	case *map[int64]int8:
+		if v2, changed2 := fastpathTV.DecMapInt64Int8V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]int16:
+		fastpathTV.DecMapInt64Int16V(v, false, d)
+	case *map[int64]int16:
+		if v2, changed2 := fastpathTV.DecMapInt64Int16V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]int32:
+		fastpathTV.DecMapInt64Int32V(v, false, d)
+	case *map[int64]int32:
+		if v2, changed2 := fastpathTV.DecMapInt64Int32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]int64:
+		fastpathTV.DecMapInt64Int64V(v, false, d)
+	case *map[int64]int64:
+		if v2, changed2 := fastpathTV.DecMapInt64Int64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]float32:
+		fastpathTV.DecMapInt64Float32V(v, false, d)
+	case *map[int64]float32:
+		if v2, changed2 := fastpathTV.DecMapInt64Float32V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]float64:
+		fastpathTV.DecMapInt64Float64V(v, false, d)
+	case *map[int64]float64:
+		if v2, changed2 := fastpathTV.DecMapInt64Float64V(*v, true, d); changed2 {
+			*v = v2
+		}
+	case map[int64]bool:
+		fastpathTV.DecMapInt64BoolV(v, false, d)
+	case *map[int64]bool:
+		if v2, changed2 := fastpathTV.DecMapInt64BoolV(*v, true, d); changed2 {
+			*v = v2
+		}
 	case map[bool]interface{}:
 		fastpathTV.DecMapBoolIntfV(v, false, d)
 	case *map[bool]interface{}:
 		if v2, changed2 := fastpathTV.DecMapBoolIntfV(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]string:
 		fastpathTV.DecMapBoolStringV(v, false, d)
 	case *map[bool]string:
 		if v2, changed2 := fastpathTV.DecMapBoolStringV(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]uint:
 		fastpathTV.DecMapBoolUintV(v, false, d)
 	case *map[bool]uint:
 		if v2, changed2 := fastpathTV.DecMapBoolUintV(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]uint8:
 		fastpathTV.DecMapBoolUint8V(v, false, d)
 	case *map[bool]uint8:
 		if v2, changed2 := fastpathTV.DecMapBoolUint8V(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]uint16:
 		fastpathTV.DecMapBoolUint16V(v, false, d)
 	case *map[bool]uint16:
 		if v2, changed2 := fastpathTV.DecMapBoolUint16V(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]uint32:
 		fastpathTV.DecMapBoolUint32V(v, false, d)
 	case *map[bool]uint32:
 		if v2, changed2 := fastpathTV.DecMapBoolUint32V(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]uint64:
 		fastpathTV.DecMapBoolUint64V(v, false, d)
 	case *map[bool]uint64:
 		if v2, changed2 := fastpathTV.DecMapBoolUint64V(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]uintptr:
 		fastpathTV.DecMapBoolUintptrV(v, false, d)
 	case *map[bool]uintptr:
 		if v2, changed2 := fastpathTV.DecMapBoolUintptrV(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]int:
 		fastpathTV.DecMapBoolIntV(v, false, d)
 	case *map[bool]int:
 		if v2, changed2 := fastpathTV.DecMapBoolIntV(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]int8:
 		fastpathTV.DecMapBoolInt8V(v, false, d)
 	case *map[bool]int8:
 		if v2, changed2 := fastpathTV.DecMapBoolInt8V(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]int16:
 		fastpathTV.DecMapBoolInt16V(v, false, d)
 	case *map[bool]int16:
 		if v2, changed2 := fastpathTV.DecMapBoolInt16V(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]int32:
 		fastpathTV.DecMapBoolInt32V(v, false, d)
 	case *map[bool]int32:
 		if v2, changed2 := fastpathTV.DecMapBoolInt32V(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]int64:
 		fastpathTV.DecMapBoolInt64V(v, false, d)
 	case *map[bool]int64:
 		if v2, changed2 := fastpathTV.DecMapBoolInt64V(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]float32:
 		fastpathTV.DecMapBoolFloat32V(v, false, d)
 	case *map[bool]float32:
 		if v2, changed2 := fastpathTV.DecMapBoolFloat32V(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]float64:
 		fastpathTV.DecMapBoolFloat64V(v, false, d)
 	case *map[bool]float64:
 		if v2, changed2 := fastpathTV.DecMapBoolFloat64V(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	case map[bool]bool:
 		fastpathTV.DecMapBoolBoolV(v, false, d)
 	case *map[bool]bool:
 		if v2, changed2 := fastpathTV.DecMapBoolBoolV(*v, true, d); changed2 {
 			*v = v2
 		}
-
 	default:
 		_ = v // TODO: workaround https://github.com/golang/go/issues/12927 (remove after go 1.6 release)
 		return false
@@ -15558,817 +15062,549 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 
 	case *[]interface{}:
 		*v = nil
-
-	case *map[interface{}]interface{}:
-		*v = nil
-
-	case *map[interface{}]string:
-		*v = nil
-
-	case *map[interface{}]uint:
-		*v = nil
-
-	case *map[interface{}]uint8:
-		*v = nil
-
-	case *map[interface{}]uint16:
-		*v = nil
-
-	case *map[interface{}]uint32:
-		*v = nil
-
-	case *map[interface{}]uint64:
-		*v = nil
-
-	case *map[interface{}]uintptr:
-		*v = nil
-
-	case *map[interface{}]int:
-		*v = nil
-
-	case *map[interface{}]int8:
-		*v = nil
-
-	case *map[interface{}]int16:
-		*v = nil
-
-	case *map[interface{}]int32:
-		*v = nil
-
-	case *map[interface{}]int64:
-		*v = nil
-
-	case *map[interface{}]float32:
-		*v = nil
-
-	case *map[interface{}]float64:
-		*v = nil
-
-	case *map[interface{}]bool:
-		*v = nil
-
 	case *[]string:
 		*v = nil
-
-	case *map[string]interface{}:
-		*v = nil
-
-	case *map[string]string:
-		*v = nil
-
-	case *map[string]uint:
-		*v = nil
-
-	case *map[string]uint8:
-		*v = nil
-
-	case *map[string]uint16:
-		*v = nil
-
-	case *map[string]uint32:
-		*v = nil
-
-	case *map[string]uint64:
-		*v = nil
-
-	case *map[string]uintptr:
-		*v = nil
-
-	case *map[string]int:
-		*v = nil
-
-	case *map[string]int8:
-		*v = nil
-
-	case *map[string]int16:
-		*v = nil
-
-	case *map[string]int32:
-		*v = nil
-
-	case *map[string]int64:
-		*v = nil
-
-	case *map[string]float32:
-		*v = nil
-
-	case *map[string]float64:
-		*v = nil
-
-	case *map[string]bool:
-		*v = nil
-
 	case *[]float32:
 		*v = nil
-
-	case *map[float32]interface{}:
-		*v = nil
-
-	case *map[float32]string:
-		*v = nil
-
-	case *map[float32]uint:
-		*v = nil
-
-	case *map[float32]uint8:
-		*v = nil
-
-	case *map[float32]uint16:
-		*v = nil
-
-	case *map[float32]uint32:
-		*v = nil
-
-	case *map[float32]uint64:
-		*v = nil
-
-	case *map[float32]uintptr:
-		*v = nil
-
-	case *map[float32]int:
-		*v = nil
-
-	case *map[float32]int8:
-		*v = nil
-
-	case *map[float32]int16:
-		*v = nil
-
-	case *map[float32]int32:
-		*v = nil
-
-	case *map[float32]int64:
-		*v = nil
-
-	case *map[float32]float32:
-		*v = nil
-
-	case *map[float32]float64:
-		*v = nil
-
-	case *map[float32]bool:
-		*v = nil
-
 	case *[]float64:
 		*v = nil
-
-	case *map[float64]interface{}:
-		*v = nil
-
-	case *map[float64]string:
-		*v = nil
-
-	case *map[float64]uint:
-		*v = nil
-
-	case *map[float64]uint8:
-		*v = nil
-
-	case *map[float64]uint16:
-		*v = nil
-
-	case *map[float64]uint32:
-		*v = nil
-
-	case *map[float64]uint64:
-		*v = nil
-
-	case *map[float64]uintptr:
-		*v = nil
-
-	case *map[float64]int:
-		*v = nil
-
-	case *map[float64]int8:
-		*v = nil
-
-	case *map[float64]int16:
-		*v = nil
-
-	case *map[float64]int32:
-		*v = nil
-
-	case *map[float64]int64:
-		*v = nil
-
-	case *map[float64]float32:
-		*v = nil
-
-	case *map[float64]float64:
-		*v = nil
-
-	case *map[float64]bool:
-		*v = nil
-
 	case *[]uint:
 		*v = nil
-
-	case *map[uint]interface{}:
+	case *[]uint8:
 		*v = nil
-
-	case *map[uint]string:
-		*v = nil
-
-	case *map[uint]uint:
-		*v = nil
-
-	case *map[uint]uint8:
-		*v = nil
-
-	case *map[uint]uint16:
-		*v = nil
-
-	case *map[uint]uint32:
-		*v = nil
-
-	case *map[uint]uint64:
-		*v = nil
-
-	case *map[uint]uintptr:
-		*v = nil
-
-	case *map[uint]int:
-		*v = nil
-
-	case *map[uint]int8:
-		*v = nil
-
-	case *map[uint]int16:
-		*v = nil
-
-	case *map[uint]int32:
-		*v = nil
-
-	case *map[uint]int64:
-		*v = nil
-
-	case *map[uint]float32:
-		*v = nil
-
-	case *map[uint]float64:
-		*v = nil
-
-	case *map[uint]bool:
-		*v = nil
-
-	case *map[uint8]interface{}:
-		*v = nil
-
-	case *map[uint8]string:
-		*v = nil
-
-	case *map[uint8]uint:
-		*v = nil
-
-	case *map[uint8]uint8:
-		*v = nil
-
-	case *map[uint8]uint16:
-		*v = nil
-
-	case *map[uint8]uint32:
-		*v = nil
-
-	case *map[uint8]uint64:
-		*v = nil
-
-	case *map[uint8]uintptr:
-		*v = nil
-
-	case *map[uint8]int:
-		*v = nil
-
-	case *map[uint8]int8:
-		*v = nil
-
-	case *map[uint8]int16:
-		*v = nil
-
-	case *map[uint8]int32:
-		*v = nil
-
-	case *map[uint8]int64:
-		*v = nil
-
-	case *map[uint8]float32:
-		*v = nil
-
-	case *map[uint8]float64:
-		*v = nil
-
-	case *map[uint8]bool:
-		*v = nil
-
 	case *[]uint16:
 		*v = nil
-
-	case *map[uint16]interface{}:
-		*v = nil
-
-	case *map[uint16]string:
-		*v = nil
-
-	case *map[uint16]uint:
-		*v = nil
-
-	case *map[uint16]uint8:
-		*v = nil
-
-	case *map[uint16]uint16:
-		*v = nil
-
-	case *map[uint16]uint32:
-		*v = nil
-
-	case *map[uint16]uint64:
-		*v = nil
-
-	case *map[uint16]uintptr:
-		*v = nil
-
-	case *map[uint16]int:
-		*v = nil
-
-	case *map[uint16]int8:
-		*v = nil
-
-	case *map[uint16]int16:
-		*v = nil
-
-	case *map[uint16]int32:
-		*v = nil
-
-	case *map[uint16]int64:
-		*v = nil
-
-	case *map[uint16]float32:
-		*v = nil
-
-	case *map[uint16]float64:
-		*v = nil
-
-	case *map[uint16]bool:
-		*v = nil
-
 	case *[]uint32:
 		*v = nil
-
-	case *map[uint32]interface{}:
-		*v = nil
-
-	case *map[uint32]string:
-		*v = nil
-
-	case *map[uint32]uint:
-		*v = nil
-
-	case *map[uint32]uint8:
-		*v = nil
-
-	case *map[uint32]uint16:
-		*v = nil
-
-	case *map[uint32]uint32:
-		*v = nil
-
-	case *map[uint32]uint64:
-		*v = nil
-
-	case *map[uint32]uintptr:
-		*v = nil
-
-	case *map[uint32]int:
-		*v = nil
-
-	case *map[uint32]int8:
-		*v = nil
-
-	case *map[uint32]int16:
-		*v = nil
-
-	case *map[uint32]int32:
-		*v = nil
-
-	case *map[uint32]int64:
-		*v = nil
-
-	case *map[uint32]float32:
-		*v = nil
-
-	case *map[uint32]float64:
-		*v = nil
-
-	case *map[uint32]bool:
-		*v = nil
-
 	case *[]uint64:
 		*v = nil
-
-	case *map[uint64]interface{}:
-		*v = nil
-
-	case *map[uint64]string:
-		*v = nil
-
-	case *map[uint64]uint:
-		*v = nil
-
-	case *map[uint64]uint8:
-		*v = nil
-
-	case *map[uint64]uint16:
-		*v = nil
-
-	case *map[uint64]uint32:
-		*v = nil
-
-	case *map[uint64]uint64:
-		*v = nil
-
-	case *map[uint64]uintptr:
-		*v = nil
-
-	case *map[uint64]int:
-		*v = nil
-
-	case *map[uint64]int8:
-		*v = nil
-
-	case *map[uint64]int16:
-		*v = nil
-
-	case *map[uint64]int32:
-		*v = nil
-
-	case *map[uint64]int64:
-		*v = nil
-
-	case *map[uint64]float32:
-		*v = nil
-
-	case *map[uint64]float64:
-		*v = nil
-
-	case *map[uint64]bool:
-		*v = nil
-
 	case *[]uintptr:
 		*v = nil
-
-	case *map[uintptr]interface{}:
-		*v = nil
-
-	case *map[uintptr]string:
-		*v = nil
-
-	case *map[uintptr]uint:
-		*v = nil
-
-	case *map[uintptr]uint8:
-		*v = nil
-
-	case *map[uintptr]uint16:
-		*v = nil
-
-	case *map[uintptr]uint32:
-		*v = nil
-
-	case *map[uintptr]uint64:
-		*v = nil
-
-	case *map[uintptr]uintptr:
-		*v = nil
-
-	case *map[uintptr]int:
-		*v = nil
-
-	case *map[uintptr]int8:
-		*v = nil
-
-	case *map[uintptr]int16:
-		*v = nil
-
-	case *map[uintptr]int32:
-		*v = nil
-
-	case *map[uintptr]int64:
-		*v = nil
-
-	case *map[uintptr]float32:
-		*v = nil
-
-	case *map[uintptr]float64:
-		*v = nil
-
-	case *map[uintptr]bool:
-		*v = nil
-
 	case *[]int:
 		*v = nil
-
-	case *map[int]interface{}:
-		*v = nil
-
-	case *map[int]string:
-		*v = nil
-
-	case *map[int]uint:
-		*v = nil
-
-	case *map[int]uint8:
-		*v = nil
-
-	case *map[int]uint16:
-		*v = nil
-
-	case *map[int]uint32:
-		*v = nil
-
-	case *map[int]uint64:
-		*v = nil
-
-	case *map[int]uintptr:
-		*v = nil
-
-	case *map[int]int:
-		*v = nil
-
-	case *map[int]int8:
-		*v = nil
-
-	case *map[int]int16:
-		*v = nil
-
-	case *map[int]int32:
-		*v = nil
-
-	case *map[int]int64:
-		*v = nil
-
-	case *map[int]float32:
-		*v = nil
-
-	case *map[int]float64:
-		*v = nil
-
-	case *map[int]bool:
-		*v = nil
-
 	case *[]int8:
 		*v = nil
-
-	case *map[int8]interface{}:
-		*v = nil
-
-	case *map[int8]string:
-		*v = nil
-
-	case *map[int8]uint:
-		*v = nil
-
-	case *map[int8]uint8:
-		*v = nil
-
-	case *map[int8]uint16:
-		*v = nil
-
-	case *map[int8]uint32:
-		*v = nil
-
-	case *map[int8]uint64:
-		*v = nil
-
-	case *map[int8]uintptr:
-		*v = nil
-
-	case *map[int8]int:
-		*v = nil
-
-	case *map[int8]int8:
-		*v = nil
-
-	case *map[int8]int16:
-		*v = nil
-
-	case *map[int8]int32:
-		*v = nil
-
-	case *map[int8]int64:
-		*v = nil
-
-	case *map[int8]float32:
-		*v = nil
-
-	case *map[int8]float64:
-		*v = nil
-
-	case *map[int8]bool:
-		*v = nil
-
 	case *[]int16:
 		*v = nil
-
-	case *map[int16]interface{}:
-		*v = nil
-
-	case *map[int16]string:
-		*v = nil
-
-	case *map[int16]uint:
-		*v = nil
-
-	case *map[int16]uint8:
-		*v = nil
-
-	case *map[int16]uint16:
-		*v = nil
-
-	case *map[int16]uint32:
-		*v = nil
-
-	case *map[int16]uint64:
-		*v = nil
-
-	case *map[int16]uintptr:
-		*v = nil
-
-	case *map[int16]int:
-		*v = nil
-
-	case *map[int16]int8:
-		*v = nil
-
-	case *map[int16]int16:
-		*v = nil
-
-	case *map[int16]int32:
-		*v = nil
-
-	case *map[int16]int64:
-		*v = nil
-
-	case *map[int16]float32:
-		*v = nil
-
-	case *map[int16]float64:
-		*v = nil
-
-	case *map[int16]bool:
-		*v = nil
-
 	case *[]int32:
 		*v = nil
-
-	case *map[int32]interface{}:
-		*v = nil
-
-	case *map[int32]string:
-		*v = nil
-
-	case *map[int32]uint:
-		*v = nil
-
-	case *map[int32]uint8:
-		*v = nil
-
-	case *map[int32]uint16:
-		*v = nil
-
-	case *map[int32]uint32:
-		*v = nil
-
-	case *map[int32]uint64:
-		*v = nil
-
-	case *map[int32]uintptr:
-		*v = nil
-
-	case *map[int32]int:
-		*v = nil
-
-	case *map[int32]int8:
-		*v = nil
-
-	case *map[int32]int16:
-		*v = nil
-
-	case *map[int32]int32:
-		*v = nil
-
-	case *map[int32]int64:
-		*v = nil
-
-	case *map[int32]float32:
-		*v = nil
-
-	case *map[int32]float64:
-		*v = nil
-
-	case *map[int32]bool:
-		*v = nil
-
 	case *[]int64:
 		*v = nil
-
-	case *map[int64]interface{}:
-		*v = nil
-
-	case *map[int64]string:
-		*v = nil
-
-	case *map[int64]uint:
-		*v = nil
-
-	case *map[int64]uint8:
-		*v = nil
-
-	case *map[int64]uint16:
-		*v = nil
-
-	case *map[int64]uint32:
-		*v = nil
-
-	case *map[int64]uint64:
-		*v = nil
-
-	case *map[int64]uintptr:
-		*v = nil
-
-	case *map[int64]int:
-		*v = nil
-
-	case *map[int64]int8:
-		*v = nil
-
-	case *map[int64]int16:
-		*v = nil
-
-	case *map[int64]int32:
-		*v = nil
-
-	case *map[int64]int64:
-		*v = nil
-
-	case *map[int64]float32:
-		*v = nil
-
-	case *map[int64]float64:
-		*v = nil
-
-	case *map[int64]bool:
-		*v = nil
-
 	case *[]bool:
 		*v = nil
 
+	case *map[interface{}]interface{}:
+		*v = nil
+	case *map[interface{}]string:
+		*v = nil
+	case *map[interface{}]uint:
+		*v = nil
+	case *map[interface{}]uint8:
+		*v = nil
+	case *map[interface{}]uint16:
+		*v = nil
+	case *map[interface{}]uint32:
+		*v = nil
+	case *map[interface{}]uint64:
+		*v = nil
+	case *map[interface{}]uintptr:
+		*v = nil
+	case *map[interface{}]int:
+		*v = nil
+	case *map[interface{}]int8:
+		*v = nil
+	case *map[interface{}]int16:
+		*v = nil
+	case *map[interface{}]int32:
+		*v = nil
+	case *map[interface{}]int64:
+		*v = nil
+	case *map[interface{}]float32:
+		*v = nil
+	case *map[interface{}]float64:
+		*v = nil
+	case *map[interface{}]bool:
+		*v = nil
+	case *map[string]interface{}:
+		*v = nil
+	case *map[string]string:
+		*v = nil
+	case *map[string]uint:
+		*v = nil
+	case *map[string]uint8:
+		*v = nil
+	case *map[string]uint16:
+		*v = nil
+	case *map[string]uint32:
+		*v = nil
+	case *map[string]uint64:
+		*v = nil
+	case *map[string]uintptr:
+		*v = nil
+	case *map[string]int:
+		*v = nil
+	case *map[string]int8:
+		*v = nil
+	case *map[string]int16:
+		*v = nil
+	case *map[string]int32:
+		*v = nil
+	case *map[string]int64:
+		*v = nil
+	case *map[string]float32:
+		*v = nil
+	case *map[string]float64:
+		*v = nil
+	case *map[string]bool:
+		*v = nil
+	case *map[float32]interface{}:
+		*v = nil
+	case *map[float32]string:
+		*v = nil
+	case *map[float32]uint:
+		*v = nil
+	case *map[float32]uint8:
+		*v = nil
+	case *map[float32]uint16:
+		*v = nil
+	case *map[float32]uint32:
+		*v = nil
+	case *map[float32]uint64:
+		*v = nil
+	case *map[float32]uintptr:
+		*v = nil
+	case *map[float32]int:
+		*v = nil
+	case *map[float32]int8:
+		*v = nil
+	case *map[float32]int16:
+		*v = nil
+	case *map[float32]int32:
+		*v = nil
+	case *map[float32]int64:
+		*v = nil
+	case *map[float32]float32:
+		*v = nil
+	case *map[float32]float64:
+		*v = nil
+	case *map[float32]bool:
+		*v = nil
+	case *map[float64]interface{}:
+		*v = nil
+	case *map[float64]string:
+		*v = nil
+	case *map[float64]uint:
+		*v = nil
+	case *map[float64]uint8:
+		*v = nil
+	case *map[float64]uint16:
+		*v = nil
+	case *map[float64]uint32:
+		*v = nil
+	case *map[float64]uint64:
+		*v = nil
+	case *map[float64]uintptr:
+		*v = nil
+	case *map[float64]int:
+		*v = nil
+	case *map[float64]int8:
+		*v = nil
+	case *map[float64]int16:
+		*v = nil
+	case *map[float64]int32:
+		*v = nil
+	case *map[float64]int64:
+		*v = nil
+	case *map[float64]float32:
+		*v = nil
+	case *map[float64]float64:
+		*v = nil
+	case *map[float64]bool:
+		*v = nil
+	case *map[uint]interface{}:
+		*v = nil
+	case *map[uint]string:
+		*v = nil
+	case *map[uint]uint:
+		*v = nil
+	case *map[uint]uint8:
+		*v = nil
+	case *map[uint]uint16:
+		*v = nil
+	case *map[uint]uint32:
+		*v = nil
+	case *map[uint]uint64:
+		*v = nil
+	case *map[uint]uintptr:
+		*v = nil
+	case *map[uint]int:
+		*v = nil
+	case *map[uint]int8:
+		*v = nil
+	case *map[uint]int16:
+		*v = nil
+	case *map[uint]int32:
+		*v = nil
+	case *map[uint]int64:
+		*v = nil
+	case *map[uint]float32:
+		*v = nil
+	case *map[uint]float64:
+		*v = nil
+	case *map[uint]bool:
+		*v = nil
+	case *map[uint8]interface{}:
+		*v = nil
+	case *map[uint8]string:
+		*v = nil
+	case *map[uint8]uint:
+		*v = nil
+	case *map[uint8]uint8:
+		*v = nil
+	case *map[uint8]uint16:
+		*v = nil
+	case *map[uint8]uint32:
+		*v = nil
+	case *map[uint8]uint64:
+		*v = nil
+	case *map[uint8]uintptr:
+		*v = nil
+	case *map[uint8]int:
+		*v = nil
+	case *map[uint8]int8:
+		*v = nil
+	case *map[uint8]int16:
+		*v = nil
+	case *map[uint8]int32:
+		*v = nil
+	case *map[uint8]int64:
+		*v = nil
+	case *map[uint8]float32:
+		*v = nil
+	case *map[uint8]float64:
+		*v = nil
+	case *map[uint8]bool:
+		*v = nil
+	case *map[uint16]interface{}:
+		*v = nil
+	case *map[uint16]string:
+		*v = nil
+	case *map[uint16]uint:
+		*v = nil
+	case *map[uint16]uint8:
+		*v = nil
+	case *map[uint16]uint16:
+		*v = nil
+	case *map[uint16]uint32:
+		*v = nil
+	case *map[uint16]uint64:
+		*v = nil
+	case *map[uint16]uintptr:
+		*v = nil
+	case *map[uint16]int:
+		*v = nil
+	case *map[uint16]int8:
+		*v = nil
+	case *map[uint16]int16:
+		*v = nil
+	case *map[uint16]int32:
+		*v = nil
+	case *map[uint16]int64:
+		*v = nil
+	case *map[uint16]float32:
+		*v = nil
+	case *map[uint16]float64:
+		*v = nil
+	case *map[uint16]bool:
+		*v = nil
+	case *map[uint32]interface{}:
+		*v = nil
+	case *map[uint32]string:
+		*v = nil
+	case *map[uint32]uint:
+		*v = nil
+	case *map[uint32]uint8:
+		*v = nil
+	case *map[uint32]uint16:
+		*v = nil
+	case *map[uint32]uint32:
+		*v = nil
+	case *map[uint32]uint64:
+		*v = nil
+	case *map[uint32]uintptr:
+		*v = nil
+	case *map[uint32]int:
+		*v = nil
+	case *map[uint32]int8:
+		*v = nil
+	case *map[uint32]int16:
+		*v = nil
+	case *map[uint32]int32:
+		*v = nil
+	case *map[uint32]int64:
+		*v = nil
+	case *map[uint32]float32:
+		*v = nil
+	case *map[uint32]float64:
+		*v = nil
+	case *map[uint32]bool:
+		*v = nil
+	case *map[uint64]interface{}:
+		*v = nil
+	case *map[uint64]string:
+		*v = nil
+	case *map[uint64]uint:
+		*v = nil
+	case *map[uint64]uint8:
+		*v = nil
+	case *map[uint64]uint16:
+		*v = nil
+	case *map[uint64]uint32:
+		*v = nil
+	case *map[uint64]uint64:
+		*v = nil
+	case *map[uint64]uintptr:
+		*v = nil
+	case *map[uint64]int:
+		*v = nil
+	case *map[uint64]int8:
+		*v = nil
+	case *map[uint64]int16:
+		*v = nil
+	case *map[uint64]int32:
+		*v = nil
+	case *map[uint64]int64:
+		*v = nil
+	case *map[uint64]float32:
+		*v = nil
+	case *map[uint64]float64:
+		*v = nil
+	case *map[uint64]bool:
+		*v = nil
+	case *map[uintptr]interface{}:
+		*v = nil
+	case *map[uintptr]string:
+		*v = nil
+	case *map[uintptr]uint:
+		*v = nil
+	case *map[uintptr]uint8:
+		*v = nil
+	case *map[uintptr]uint16:
+		*v = nil
+	case *map[uintptr]uint32:
+		*v = nil
+	case *map[uintptr]uint64:
+		*v = nil
+	case *map[uintptr]uintptr:
+		*v = nil
+	case *map[uintptr]int:
+		*v = nil
+	case *map[uintptr]int8:
+		*v = nil
+	case *map[uintptr]int16:
+		*v = nil
+	case *map[uintptr]int32:
+		*v = nil
+	case *map[uintptr]int64:
+		*v = nil
+	case *map[uintptr]float32:
+		*v = nil
+	case *map[uintptr]float64:
+		*v = nil
+	case *map[uintptr]bool:
+		*v = nil
+	case *map[int]interface{}:
+		*v = nil
+	case *map[int]string:
+		*v = nil
+	case *map[int]uint:
+		*v = nil
+	case *map[int]uint8:
+		*v = nil
+	case *map[int]uint16:
+		*v = nil
+	case *map[int]uint32:
+		*v = nil
+	case *map[int]uint64:
+		*v = nil
+	case *map[int]uintptr:
+		*v = nil
+	case *map[int]int:
+		*v = nil
+	case *map[int]int8:
+		*v = nil
+	case *map[int]int16:
+		*v = nil
+	case *map[int]int32:
+		*v = nil
+	case *map[int]int64:
+		*v = nil
+	case *map[int]float32:
+		*v = nil
+	case *map[int]float64:
+		*v = nil
+	case *map[int]bool:
+		*v = nil
+	case *map[int8]interface{}:
+		*v = nil
+	case *map[int8]string:
+		*v = nil
+	case *map[int8]uint:
+		*v = nil
+	case *map[int8]uint8:
+		*v = nil
+	case *map[int8]uint16:
+		*v = nil
+	case *map[int8]uint32:
+		*v = nil
+	case *map[int8]uint64:
+		*v = nil
+	case *map[int8]uintptr:
+		*v = nil
+	case *map[int8]int:
+		*v = nil
+	case *map[int8]int8:
+		*v = nil
+	case *map[int8]int16:
+		*v = nil
+	case *map[int8]int32:
+		*v = nil
+	case *map[int8]int64:
+		*v = nil
+	case *map[int8]float32:
+		*v = nil
+	case *map[int8]float64:
+		*v = nil
+	case *map[int8]bool:
+		*v = nil
+	case *map[int16]interface{}:
+		*v = nil
+	case *map[int16]string:
+		*v = nil
+	case *map[int16]uint:
+		*v = nil
+	case *map[int16]uint8:
+		*v = nil
+	case *map[int16]uint16:
+		*v = nil
+	case *map[int16]uint32:
+		*v = nil
+	case *map[int16]uint64:
+		*v = nil
+	case *map[int16]uintptr:
+		*v = nil
+	case *map[int16]int:
+		*v = nil
+	case *map[int16]int8:
+		*v = nil
+	case *map[int16]int16:
+		*v = nil
+	case *map[int16]int32:
+		*v = nil
+	case *map[int16]int64:
+		*v = nil
+	case *map[int16]float32:
+		*v = nil
+	case *map[int16]float64:
+		*v = nil
+	case *map[int16]bool:
+		*v = nil
+	case *map[int32]interface{}:
+		*v = nil
+	case *map[int32]string:
+		*v = nil
+	case *map[int32]uint:
+		*v = nil
+	case *map[int32]uint8:
+		*v = nil
+	case *map[int32]uint16:
+		*v = nil
+	case *map[int32]uint32:
+		*v = nil
+	case *map[int32]uint64:
+		*v = nil
+	case *map[int32]uintptr:
+		*v = nil
+	case *map[int32]int:
+		*v = nil
+	case *map[int32]int8:
+		*v = nil
+	case *map[int32]int16:
+		*v = nil
+	case *map[int32]int32:
+		*v = nil
+	case *map[int32]int64:
+		*v = nil
+	case *map[int32]float32:
+		*v = nil
+	case *map[int32]float64:
+		*v = nil
+	case *map[int32]bool:
+		*v = nil
+	case *map[int64]interface{}:
+		*v = nil
+	case *map[int64]string:
+		*v = nil
+	case *map[int64]uint:
+		*v = nil
+	case *map[int64]uint8:
+		*v = nil
+	case *map[int64]uint16:
+		*v = nil
+	case *map[int64]uint32:
+		*v = nil
+	case *map[int64]uint64:
+		*v = nil
+	case *map[int64]uintptr:
+		*v = nil
+	case *map[int64]int:
+		*v = nil
+	case *map[int64]int8:
+		*v = nil
+	case *map[int64]int16:
+		*v = nil
+	case *map[int64]int32:
+		*v = nil
+	case *map[int64]int64:
+		*v = nil
+	case *map[int64]float32:
+		*v = nil
+	case *map[int64]float64:
+		*v = nil
+	case *map[int64]bool:
+		*v = nil
 	case *map[bool]interface{}:
 		*v = nil
-
 	case *map[bool]string:
 		*v = nil
-
 	case *map[bool]uint:
 		*v = nil
-
 	case *map[bool]uint8:
 		*v = nil
-
 	case *map[bool]uint16:
 		*v = nil
-
 	case *map[bool]uint32:
 		*v = nil
-
 	case *map[bool]uint64:
 		*v = nil
-
 	case *map[bool]uintptr:
 		*v = nil
-
 	case *map[bool]int:
 		*v = nil
-
 	case *map[bool]int8:
 		*v = nil
-
 	case *map[bool]int16:
 		*v = nil
-
 	case *map[bool]int32:
 		*v = nil
-
 	case *map[bool]int64:
 		*v = nil
-
 	case *map[bool]float32:
 		*v = nil
-
 	case *map[bool]float64:
 		*v = nil
-
 	case *map[bool]bool:
 		*v = nil
-
 	default:
 		_ = v // TODO: workaround https://github.com/golang/go/issues/12927 (remove after go 1.6 release)
 		return false
@@ -16831,6 +16067,98 @@ func (_ fastpathT) DecSliceUintV(v []uint, canChange bool, d *Decoder) (_ []uint
 			changed = true
 		} else if j == 0 && v == nil {
 			v = make([]uint, 0)
+			changed = true
+		}
+	}
+	slh.End()
+	return v, changed
+}
+
+func (d *Decoder) fastpathDecSliceUint8R(f *codecFnInfo, rv reflect.Value) {
+	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
+		var vp = rv2i(rv).(*[]uint8)
+		if v, changed := fastpathTV.DecSliceUint8V(*vp, !array, d); changed {
+			*vp = v
+		}
+	} else {
+		fastpathTV.DecSliceUint8V(rv2i(rv).([]uint8), !array, d)
+	}
+}
+func (f fastpathT) DecSliceUint8X(vp *[]uint8, d *Decoder) {
+	if v, changed := f.DecSliceUint8V(*vp, true, d); changed {
+		*vp = v
+	}
+}
+func (_ fastpathT) DecSliceUint8V(v []uint8, canChange bool, d *Decoder) (_ []uint8, changed bool) {
+	dd := d.d
+
+	slh, containerLenS := d.decSliceHelperStart()
+	if containerLenS == 0 {
+		if canChange {
+			if v == nil {
+				v = []uint8{}
+			} else if len(v) != 0 {
+				v = v[:0]
+			}
+			changed = true
+		}
+		slh.End()
+		return v, changed
+	}
+
+	hasLen := containerLenS > 0
+	var xlen int
+	if hasLen && canChange {
+		if containerLenS > cap(v) {
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			if xlen <= cap(v) {
+				v = v[:xlen]
+			} else {
+				v = make([]uint8, xlen)
+			}
+			changed = true
+		} else if containerLenS != len(v) {
+			v = v[:containerLenS]
+			changed = true
+		}
+	}
+	j := 0
+	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+		if j == 0 && len(v) == 0 {
+			if hasLen {
+				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			} else {
+				xlen = 8
+			}
+			v = make([]uint8, xlen)
+			changed = true
+		}
+		// if indefinite, etc, then expand the slice if necessary
+		var decodeIntoBlank bool
+		if j >= len(v) {
+			if canChange {
+				v = append(v, 0)
+				changed = true
+			} else {
+				d.arrayCannotExpand(len(v), j+1)
+				decodeIntoBlank = true
+			}
+		}
+		slh.ElemContainerState(j)
+		if decodeIntoBlank {
+			d.swallow()
+		} else if dd.TryDecodeAsNil() {
+			v[j] = 0
+		} else {
+			v[j] = uint8(dd.DecodeUint(8))
+		}
+	}
+	if canChange {
+		if j < len(v) {
+			v = v[:j]
+			changed = true
+		} else if j == 0 && v == nil {
+			v = make([]uint8, 0)
 			changed = true
 		}
 	}

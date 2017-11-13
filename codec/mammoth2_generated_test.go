@@ -71,6 +71,8 @@ type TestMammoth2 struct {
 	FptrSliceFloat64 *[]float64
 	FSliceUint       []uint
 	FptrSliceUint    *[]uint
+	FSliceUint8      []uint8
+	FptrSliceUint8   *[]uint8
 	FSliceUint16     []uint16
 	FptrSliceUint16  *[]uint16
 	FSliceUint32     []uint32
