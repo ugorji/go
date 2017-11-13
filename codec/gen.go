@@ -1780,7 +1780,7 @@ type genInternal struct {
 
 func (x genInternal) FastpathLen() (l int) {
 	for _, v := range x.Values {
-		if v.Primitive == "" {
+		if v.Primitive == "" && !(v.MapKey == "" && v.Elem == "uint8") {
 			l++
 		}
 	}
@@ -1983,9 +1983,10 @@ func genInternalInit() {
 	// For each slice or map type, there must be a (symmetrical) Encode and Decode fast-path function
 	for _, s := range types {
 		gt.Values = append(gt.Values, genV{Primitive: s, Size: mapvaltypes2[s]})
-		if s != "uint8" { // do not generate fast path for slice of bytes. Treat specially already.
-			gt.Values = append(gt.Values, genV{Elem: s, Size: mapvaltypes2[s]})
-		}
+		// if s != "uint8" { // do not generate fast path for slice of bytes. Treat specially already.
+		// 	gt.Values = append(gt.Values, genV{Elem: s, Size: mapvaltypes2[s]})
+		// }
+		gt.Values = append(gt.Values, genV{Elem: s, Size: mapvaltypes2[s]})
 		if _, ok := mapvaltypes2[s]; !ok {
 			gt.Values = append(gt.Values, genV{MapKey: s, Elem: s, Size: 2 * mapvaltypes2[s]})
 		}

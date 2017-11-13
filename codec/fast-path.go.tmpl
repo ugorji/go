@@ -87,9 +87,9 @@ func init() {
 		i++
 		return
 	}
-	
-	{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}
-	fn([]{{ .Elem }}(nil), (*Encoder).{{ .MethodNamePfx "fastpathEnc" false }}R, (*Decoder).{{ .MethodNamePfx "fastpathDec" false }}R){{end}}{{end}}{{end}}
+	{{/* do not register []uint8 in fast-path */}}
+	{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}{{if ne .Elem "uint8"}}
+	fn([]{{ .Elem }}(nil), (*Encoder).{{ .MethodNamePfx "fastpathEnc" false }}R, (*Decoder).{{ .MethodNamePfx "fastpathDec" false }}R){{end}}{{end}}{{end}}{{end}}
 	
 	{{range .Values}}{{if not .Primitive}}{{if .MapKey }}
 	fn(map[{{ .MapKey }}]{{ .Elem }}(nil), (*Encoder).{{ .MethodNamePfx "fastpathEnc" false }}R, (*Decoder).{{ .MethodNamePfx "fastpathDec" false }}R){{end}}{{end}}{{end}}
@@ -102,14 +102,21 @@ func init() {
 // -- -- fast path type switch
 func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 	switch v := iv.(type) {
-{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}
-	case []{{ .Elem }}:{{else}}
-	case map[{{ .MapKey }}]{{ .Elem }}:{{end}}
-		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(v, e){{if not .MapKey }}
-	case *[]{{ .Elem }}:{{else}}
-	case *map[{{ .MapKey }}]{{ .Elem }}:{{end}}
-		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(*v, e)
-{{end}}{{end}}
+
+{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}{{if ne .Elem "uint8"}}
+	case []{{ .Elem }}:
+		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(v, e)
+	case *[]{{ .Elem }}:
+		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(*v, e){{/*
+*/}}{{end}}{{end}}{{end}}{{end}}
+
+{{range .Values}}{{if not .Primitive}}{{if .MapKey }}
+	case map[{{ .MapKey }}]{{ .Elem }}:
+		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(v, e)
+	case *map[{{ .MapKey }}]{{ .Elem }}:
+		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(*v, e){{/*
+*/}}{{end}}{{end}}{{end}}
+
 	default:
         _ = v // TODO: workaround https://github.com/golang/go/issues/12927 (remove after go 1.6 release)
 		return false
@@ -118,6 +125,27 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 }
 
 {{/* **** removing this block, as they are never called directly ****
+
+
+
+
+
+
+
+
+
+
+
+
+**** removing this block, as they are never called directly ****
+
+
+
+
+
+
+
+
 func fastpathEncodeTypeSwitchSlice(iv interface{}, e *Encoder) bool {
 	switch v := iv.(type) {
 {{range .Values}}{{if not .Primitive}}{{if not .MapKey }}
@@ -147,6 +175,22 @@ func fastpathEncodeTypeSwitchMap(iv interface{}, e *Encoder) bool {
 	}
 	return true
 }
+
+
+
+
+
+
+
+**** removing this block, as they are never called directly ****
+
+
+
+
+
+
+
+
 */}}
 
 // -- -- fast path functions
@@ -262,16 +306,22 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Ele
 // -- -- fast path type switch
 func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 	switch v := iv.(type) {
-{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}
-	case []{{ .Elem }}:{{else}}
-	case map[{{ .MapKey }}]{{ .Elem }}:{{end}}
-		fastpathTV.{{ .MethodNamePfx "Dec" false }}V(v, false, d){{if not .MapKey }}
-	case *[]{{ .Elem }}: {{else}}
-	case *map[{{ .MapKey }}]{{ .Elem }}: {{end}}
+{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}{{if ne .Elem "uint8"}}
+	case []{{ .Elem }}:
+		fastpathTV.{{ .MethodNamePfx "Dec" false }}V(v, false, d)
+	case *[]{{ .Elem }}:
 		if v2, changed2 := fastpathTV.{{ .MethodNamePfx "Dec" false }}V(*v, true, d); changed2 {
 			*v = v2 
-		}
-{{end}}{{end}}
+		}{{/*
+*/}}{{end}}{{end}}{{end}}{{end}}
+{{range .Values}}{{if not .Primitive}}{{if .MapKey }}
+	case map[{{ .MapKey }}]{{ .Elem }}:
+		fastpathTV.{{ .MethodNamePfx "Dec" false }}V(v, false, d)
+	case *map[{{ .MapKey }}]{{ .Elem }}:
+		if v2, changed2 := fastpathTV.{{ .MethodNamePfx "Dec" false }}V(*v, true, d); changed2 {
+			*v = v2 
+		}{{/*
+*/}}{{end}}{{end}}{{end}}
 	default:
         _ = v // TODO: workaround https://github.com/golang/go/issues/12927 (remove after go 1.6 release)
 		return false
@@ -282,10 +332,13 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 	switch v := iv.(type) {
 {{range .Values}}{{if not .Primitive}}{{if not .MapKey }}
-	case *[]{{ .Elem }}: {{else}}
-	case *map[{{ .MapKey }}]{{ .Elem }}: {{end}}
-		*v = nil 
-{{end}}{{end}}
+	case *[]{{ .Elem }}: 
+		*v = nil {{/*
+*/}}{{end}}{{end}}{{end}}
+{{range .Values}}{{if not .Primitive}}{{if .MapKey }}
+	case *map[{{ .MapKey }}]{{ .Elem }}: 
+		*v = nil {{/*
+*/}}{{end}}{{end}}{{end}}
 	default:
         _ = v // TODO: workaround https://github.com/golang/go/issues/12927 (remove after go 1.6 release)
 		return false
