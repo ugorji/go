@@ -905,6 +905,13 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 		var ya = ystruct{}
 		testUnmarshalErr(&ya, []byte{0x91, 0x90}, h, t, "ya")
 	}
+
+	// test encoding a slice of byte (but not []byte) and decoding into a []byte
+	var sw = []wrapUint8{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'}
+	var bw []byte // ("ABCDEFGHIJ")
+	bs = testMarshalErr(sw, h, t, "wrap-bytes-enc")
+	testUnmarshalErr(&bw, bs, h, t, "wrap-bytes-dec")
+	testDeepEqualErr(bw, []byte("ABCDEFGHIJ"), t, "wrap-bytes-eq")
 }
 
 func testCodecEmbeddedPointer(t *testing.T, h Handle) {
@@ -2731,6 +2738,11 @@ func TestCborMammothMapsAndSlices(t *testing.T) {
 }
 
 func TestMsgpackMammothMapsAndSlices(t *testing.T) {
+	old1, old2 := testMsgpackH.RawToString, testMsgpackH.WriteExt
+	defer func() { testMsgpackH.RawToString, testMsgpackH.WriteExt = old1, old2 }()
+	testMsgpackH.RawToString = true
+	testMsgpackH.WriteExt = true
+
 	doTestMammothMapsAndSlices(t, testMsgpackH)
 }
 
