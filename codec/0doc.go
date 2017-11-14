@@ -202,5 +202,19 @@ Running Benchmarks
 
 Please see http://github.com/ugorji/go-codec-bench .
 
+Caveats
+
+Struct fields matching the following are ignored during encoding and decoding
+    - struct tag value set to -
+    - func, complex numbers, unsafe pointers
+    - unexported and not embedded
+    - unexported embedded non-struct
+    - unexported embedded pointers (from go1.10)
+
+Every other field in a struct will be encoded/decoded.
+
+Embedded fields are encoded as if they exist in the top-level struct,
+with some caveats. See Encode documentation.
+
 */
 package codec

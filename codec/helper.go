@@ -1069,9 +1069,8 @@ LOOP:
 			continue LOOP
 		}
 
-		// if r1, _ := utf8.DecodeRuneInString(f.Name);
-		// r1 == utf8.RuneError || !unicode.IsUpper(r1) {
-		if f.PkgPath != "" && !f.Anonymous { // unexported, not embedded
+		isUnexported := f.PkgPath != ""
+		if isUnexported && !f.Anonymous {
 			continue
 		}
 		stag := x.structTag(f.Tag)
@@ -1082,50 +1081,59 @@ LOOP:
 		// if anonymous and no struct tag (or it's blank),
 		// and a struct (or pointer to struct), inline it.
 		if f.Anonymous && fkind != reflect.Interface {
+			// ^^ redundant but ok: per go spec, an embedded pointer type cannot be to an interface
+			ft := f.Type
+			isPtr := ft.Kind() == reflect.Ptr
+			for ft.Kind() == reflect.Ptr {
+				ft = ft.Elem()
+			}
+			isStruct := ft.Kind() == reflect.Struct
+
+			// Ignore embedded fields of unexported non-struct types.
+			// Also, from go1.10, ignore pointers to unexported struct types
+			// because unmarshal cannot assign a new struct to an unexported field.
+			// See https://golang.org/issue/21357
+			if (isUnexported && !isStruct) || (!allowSetUnexportedEmbeddedPtr && isUnexported && isPtr) {
+				continue
+			}
 			doInline := stag == ""
 			if !doInline {
 				si = parseStructFieldInfo("", stag)
 				doInline = si.encName == ""
 				// doInline = si.isZero()
 			}
-			if doInline {
-				ft := f.Type
-				for ft.Kind() == reflect.Ptr {
-					ft = ft.Elem()
-				}
-				if ft.Kind() == reflect.Struct {
-					// if etypes contains this, don't call rget again (as fields are already seen here)
-					ftid := rt2id(ft)
-					// We cannot recurse forever, but we need to track other field depths.
-					// So - we break if we see a type twice (not the first time).
-					// This should be sufficient to handle an embedded type that refers to its
-					// owning type, which then refers to its embedded type.
-					processIt := true
-					numk := 0
-					for _, k := range pv.etypes {
-						if k == ftid {
-							numk++
-							if numk == rgetMaxRecursion {
-								processIt = false
-								break
-							}
+			if doInline && isStruct {
+				// if etypes contains this, don't call rget again (as fields are already seen here)
+				ftid := rt2id(ft)
+				// We cannot recurse forever, but we need to track other field depths.
+				// So - we break if we see a type twice (not the first time).
+				// This should be sufficient to handle an embedded type that refers to its
+				// owning type, which then refers to its embedded type.
+				processIt := true
+				numk := 0
+				for _, k := range pv.etypes {
+					if k == ftid {
+						numk++
+						if numk == rgetMaxRecursion {
+							processIt = false
+							break
 						}
 					}
-					if processIt {
-						pv.etypes = append(pv.etypes, ftid)
-						indexstack2 := make([]uint16, len(indexstack)+1)
-						copy(indexstack2, indexstack)
-						indexstack2[len(indexstack)] = j
-						// indexstack2 := append(append(make([]int, 0, len(indexstack)+4), indexstack...), j)
-						x.rget(ft, ftid, omitEmpty, indexstack2, pv)
-					}
-					continue
 				}
+				if processIt {
+					pv.etypes = append(pv.etypes, ftid)
+					indexstack2 := make([]uint16, len(indexstack)+1)
+					copy(indexstack2, indexstack)
+					indexstack2[len(indexstack)] = j
+					// indexstack2 := append(append(make([]int, 0, len(indexstack)+4), indexstack...), j)
+					x.rget(ft, ftid, omitEmpty, indexstack2, pv)
+				}
+				continue
 			}
 		}
 
 		// after the anonymous dance: if an unexported field, skip
-		if f.PkgPath != "" { // unexported
+		if isUnexported {
 			continue
 		}
 
