@@ -100,20 +100,16 @@ func (c *rpcCodec) read(obj interface{}) (err error) {
 }
 
 func (c *rpcCodec) isClosed() (b bool) {
-	if c.c == nil {
-		return false
+	if c.c != nil {
+		c.clsmu.RLock()
+		b = c.cls
+		c.clsmu.RUnlock()
 	}
-	c.clsmu.RLock()
-	b = c.cls
-	c.clsmu.RUnlock()
 	return
 }
 
 func (c *rpcCodec) Close() error {
-	if c.c == nil {
-		return nil
-	}
-	if c.isClosed() {
+	if c.c == nil || c.isClosed() {
 		return c.clsErr
 	}
 	c.clsmu.Lock()
