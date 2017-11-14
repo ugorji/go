@@ -6,11 +6,11 @@
 package codec
 
 // This file contains values used by tests and benchmarks.
-// JSON/BSON do not like maps with keys that are not strings,
+// Consequently, we only use values that will parse well in all engines.
+// For example, JSON/BSON do not like maps with keys that are not strings,
 // so we only use maps with string keys here.
 
 import (
-	"bytes"
 	"math"
 	"strings"
 	"time"
@@ -18,13 +18,10 @@ import (
 
 type wrapSliceUint64 []uint64
 type wrapSliceString []string
-type wrapUint8 uint8
-type wrapInt64 int64
 type wrapUint64 uint64
 type wrapString string
 type wrapUint64Slice []wrapUint64
 type wrapStringSlice []wrapString
-type wrapBytes []uint8
 type wrapBytesSlice []wrapBytes
 
 type stringUint64T struct {
@@ -161,10 +158,6 @@ type testStrucCommon struct {
 	// for comparison (e.g. with msgp), give it a struct tag (so it is not inlined),
 	// make this one omitempty (so it is excluded if nil).
 	*AnonInTestStrucIntf `codec:",omitempty"`
-
-	Ci64       wrapInt64
-	Swrapbytes []wrapBytes
-	Swrapuint8 []wrapUint8
 
 	// R          Raw // Testing Raw must be explicitly turned on, so use standalone test
 	// Rext RawExt // Testing RawExt is tricky, so use standalone test
@@ -355,22 +348,6 @@ func populateTestStrucCommon(ts *testStrucCommon, n int, bench, useInterface, us
 		WrapSliceInt64:  []uint64{4, 16, 64, 256},
 		WrapSliceString: []string{strRpt(n, "4"), strRpt(n, "16"), strRpt(n, "64"), strRpt(n, "256")},
 
-		Ci64: -22,
-		Swrapbytes: []wrapBytes{ // lengths of 1, 2, 4, 8, 16, 32, 64, 128, 256,
-			wstrRpt(1, "A"),
-			wstrRpt(2, "A"),
-			wstrRpt(4, "A"),
-			wstrRpt(8, "A"),
-			wstrRpt(16, "A"),
-			wstrRpt(32, "A"),
-			wstrRpt(64, "A"),
-			wstrRpt(128, "A"),
-			wstrRpt(256, "A"),
-			wstrRpt(512, "A"),
-		},
-		Swrapuint8: []wrapUint8{
-			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-		},
 		// R: Raw([]byte("goodbye")),
 		// Rext: RawExt{ 120, []byte("hello"), }, // TODO: don't set this - it's hard to test
 
@@ -479,10 +456,28 @@ func newTestStruc(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts 
 	return
 }
 
+var testStrRptMap = make(map[int]map[string]string)
+
 func strRpt(n int, s string) string {
-	return strings.Repeat(s, n)
+	if false {
+		// fmt.Printf(">>>> calling strings.Repeat on n: %d, key: %s\n", n, s)
+		return strings.Repeat(s, n)
+	}
+	m1, ok := testStrRptMap[n]
+	if !ok {
+		// fmt.Printf(">>>> making new map for n: %v\n", n)
+		m1 = make(map[string]string)
+		testStrRptMap[n] = m1
+	}
+	v1, ok := m1[s]
+	if !ok {
+		// fmt.Printf(">>>> creating new entry for key: %s\n", s)
+		v1 = strings.Repeat(s, n)
+		m1[s] = v1
+	}
+	return v1
 }
 
-func wstrRpt(n int, s string) wrapBytes {
-	return wrapBytes(bytes.Repeat([]byte(s), n))
-}
+// func wstrRpt(n int, s string) wrapBytes {
+// 	 return wrapBytes(bytes.Repeat([]byte(s), n))
+// }
