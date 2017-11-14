@@ -624,7 +624,7 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 			v2 = iv.UTC()
 		case isCbor:
 			// fmt.Printf("%%%% cbor verifier\n")
-			v2 = iv.UTC().Round(0).Round(time.Microsecond)
+			v2 = iv.UTC().Round(time.Microsecond)
 		default:
 			v2 = v
 		}

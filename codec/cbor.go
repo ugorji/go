@@ -133,7 +133,7 @@ func (e *cborEncDriver) EncodeTime(t time.Time) {
 		e.EncodeString(cUTF8, t.Format(time.RFC3339Nano))
 	} else {
 		e.encUint(1, cborBaseTag)
-		t = t.UTC().Round(0).Round(time.Microsecond)
+		t = t.UTC().Round(time.Microsecond)
 		sec, nsec := t.Unix(), uint64(t.Nanosecond())
 		if nsec == 0 {
 			e.EncodeInt(sec)
@@ -558,7 +558,7 @@ func (d *cborDecDriver) decodeTime(xtag uint64) (t time.Time) {
 	default:
 		d.d.errorf("cbor: invalid tag for time.Time - expecting 0 or 1, got 0x%x", xtag)
 	}
-	t = t.Round(time.Microsecond).UTC()
+	t = t.UTC().Round(time.Microsecond)
 	return
 }
 
