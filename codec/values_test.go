@@ -22,7 +22,6 @@ type wrapUint64 uint64
 type wrapString string
 type wrapUint64Slice []wrapUint64
 type wrapStringSlice []wrapString
-type wrapBytesSlice []wrapBytes
 
 type stringUint64T struct {
 	S string
