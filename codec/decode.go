@@ -1224,7 +1224,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			if !(len(bs2) > 0 && len(bs2) == len(rvbs) && &bs2[0] == &rvbs[0]) {
 				if rv.CanSet() {
 					rv.SetBytes(bs2)
-				} else {
+				} else if len(rvbs) > 0 && len(bs2) > 0 {
 					copy(rvbs, bs2)
 				}
 			}
