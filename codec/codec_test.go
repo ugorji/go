@@ -906,6 +906,12 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 		testUnmarshalErr(&ya, []byte{0x91, 0x90}, h, t, "ya")
 	}
 
+	var tt1, tt2 time.Time
+	tt2 = time.Now()
+	bs = testMarshalErr(tt1, h, t, "zero-time-enc")
+	testUnmarshalErr(&tt2, bs, h, t, "zero-time-dec")
+	testDeepEqualErr(tt1, tt2, t, "zero-time-eq")
+
 	// test encoding a slice of byte (but not []byte) and decoding into a []byte
 	var sw = []wrapUint8{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'}
 	var bw []byte // ("ABCDEFGHIJ")

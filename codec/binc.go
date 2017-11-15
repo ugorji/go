@@ -83,9 +83,13 @@ func (e *bincEncDriver) EncodeNil() {
 // }
 
 func (e *bincEncDriver) EncodeTime(t time.Time) {
-	bs := encodeTime(t)
-	e.w.writen1(bincVdTimestamp<<4 | uint8(len(bs)))
-	e.w.writeb(bs)
+	if t.IsZero() {
+		e.EncodeNil()
+	} else {
+		bs := encodeTime(t)
+		e.w.writen1(bincVdTimestamp<<4 | uint8(len(bs)))
+		e.w.writeb(bs)
+	}
 }
 
 func (e *bincEncDriver) EncodeBool(b bool) {
@@ -397,15 +401,19 @@ func (d *bincDecDriver) TryDecodeAsNil() bool {
 // 	return rt == timeTypId
 // }
 
-func (d *bincDecDriver) DecodeTime() (tt time.Time) {
+func (d *bincDecDriver) DecodeTime() (t time.Time) {
 	if !d.bdRead {
 		d.readNextBd()
+	}
+	if d.bd == bincVdSpecial<<4|bincSpNil {
+		d.bdRead = false
+		return
 	}
 	if d.vd != bincVdTimestamp {
 		d.d.errorf("Invalid d.vd. Expecting 0x%x. Received: 0x%x", bincVdTimestamp, d.vd)
 		return
 	}
-	tt, err := decodeTime(d.r.readx(int(d.vs)))
+	t, err := decodeTime(d.r.readx(int(d.vs)))
 	if err != nil {
 		panic(err)
 	}

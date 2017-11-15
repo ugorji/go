@@ -1997,6 +1997,8 @@ func setZero(iv interface{}) {
 		*v = nil
 	case *Raw:
 		*v = nil
+	case *time.Time:
+		*v = time.Time{}
 	case reflect.Value:
 		if v, canDecode = isDecodeable(v); canDecode && v.CanSet() {
 			v.Set(reflect.Zero(v.Type()))

@@ -128,7 +128,9 @@ func (e *cborEncDriver) encLen(bd byte, length int) {
 }
 
 func (e *cborEncDriver) EncodeTime(t time.Time) {
-	if e.h.TimeRFC3339 {
+	if t.IsZero() {
+		e.EncodeNil()
+	} else if e.h.TimeRFC3339 {
 		e.encUint(0, cborBaseTag)
 		e.EncodeString(cUTF8, t.Format(time.RFC3339Nano))
 	} else {
@@ -524,6 +526,10 @@ func (d *cborDecDriver) DecodeStringAsBytes() (s []byte) {
 func (d *cborDecDriver) DecodeTime() (t time.Time) {
 	if !d.bdRead {
 		d.readNextBd()
+	}
+	if d.bd == cborBdNil || d.bd == cborBdUndefined {
+		d.bdRead = false
+		return
 	}
 	xtag := d.decUint()
 	d.bdRead = false

@@ -195,6 +195,10 @@ func (e *msgpackEncDriver) EncodeFloat64(f float64) {
 }
 
 func (e *msgpackEncDriver) EncodeTime(t time.Time) {
+	if t.IsZero() {
+		e.EncodeNil()
+		return
+	}
 	t = t.UTC()
 	sec, nsec := t.Unix(), uint64(t.Nanosecond())
 	var data64 uint64
@@ -702,7 +706,7 @@ func (d *msgpackDecDriver) TryDecodeAsNil() (v bool) {
 	}
 	if d.bd == mpNil {
 		d.bdRead = false
-		v = true
+		return true
 	}
 	return
 }
@@ -772,6 +776,10 @@ func (d *msgpackDecDriver) DecodeTime() (t time.Time) {
 	// decode time from string bytes or ext
 	if !d.bdRead {
 		d.readNextBd()
+	}
+	if d.bd == mpNil {
+		d.bdRead = false
+		return
 	}
 	var clen int
 	switch d.ContainerType() {

@@ -199,7 +199,8 @@ func (e *simpleEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
 }
 
 func (e *simpleEncDriver) EncodeTime(t time.Time) {
-	if e.h.EncZeroValuesAsNil && e.c != containerMapKey && t.IsZero() {
+	// if e.h.EncZeroValuesAsNil && e.c != containerMapKey && t.IsZero() {
+	if t.IsZero() {
 		e.EncodeNil()
 		return
 	}
