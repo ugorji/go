@@ -514,34 +514,28 @@ type setExtWrapper struct {
 	i InterfaceExt
 }
 
-func (x *setExtWrapper) WriteExt(v interface{}) []byte {
-	if x.b == nil {
-		panic("BytesExt.WriteExt is not supported")
+func (x *setExtWrapper) check(v bool, s string) {
+	if v {
+		panic(fmt.Errorf("%s is not supported", s))
 	}
+}
+func (x *setExtWrapper) WriteExt(v interface{}) []byte {
+	x.check(x.b == nil, "BytesExt.WriteExt")
 	return x.b.WriteExt(v)
 }
 
 func (x *setExtWrapper) ReadExt(v interface{}, bs []byte) {
-	if x.b == nil {
-		panic("BytesExt.WriteExt is not supported")
-
-	}
+	x.check(x.b == nil, "BytesExt.ReadExt")
 	x.b.ReadExt(v, bs)
 }
 
 func (x *setExtWrapper) ConvertExt(v interface{}) interface{} {
-	if x.i == nil {
-		panic("InterfaceExt.ConvertExt is not supported")
-
-	}
+	x.check(x.i == nil, "InterfaceExt.ConvertExt")
 	return x.i.ConvertExt(v)
 }
 
 func (x *setExtWrapper) UpdateExt(dest interface{}, v interface{}) {
-	if x.i == nil {
-		panic("InterfaceExxt.UpdateExt is not supported")
-
-	}
+	x.check(x.i == nil, "InterfaceExt.UpdateExt")
 	x.i.UpdateExt(dest, v)
 }
 

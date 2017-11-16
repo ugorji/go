@@ -14,11 +14,8 @@ import (
 )
 
 func panicValToErr(panicVal interface{}, err *error) {
-	if panicVal == nil {
-		return
-	}
-	// case nil
 	switch xerr := panicVal.(type) {
+	case nil:
 	case error:
 		*err = xerr
 	case string:

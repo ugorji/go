@@ -94,6 +94,9 @@ var (
 	testRpcInt = new(TestRpcInt)
 )
 
+var wrapInt64Typ = reflect.TypeOf(wrapInt64(0))
+var wrapBytesTyp = reflect.TypeOf(wrapBytes(nil))
+
 func testByteBuf(in []byte) *bytes.Buffer {
 	return bytes.NewBuffer(in)
 }
@@ -171,6 +174,8 @@ type TestRawValue struct {
 	I int
 }
 
+// ----
+
 type testUnixNanoTimeExt struct {
 	// keep timestamp here, so that do not incur interface-conversion costs
 	// ts int64
@@ -216,7 +221,7 @@ func (x *testUnixNanoTimeExt) UpdateExt(dest interface{}, v interface{}) {
 	}
 }
 
-var wrapInt64Typ = reflect.TypeOf(wrapInt64(0))
+// ----
 
 type wrapInt64Ext int64
 
@@ -239,7 +244,7 @@ func (x *wrapInt64Ext) UpdateExt(dest interface{}, v interface{}) {
 	*v2 = wrapInt64(v.(int64))
 }
 
-var wrapBytesTyp = reflect.TypeOf(wrapBytes(nil))
+// ----
 
 type wrapBytesExt struct{}
 
@@ -266,6 +271,38 @@ func (x *wrapBytesExt) UpdateExt(dest interface{}, v interface{}) {
 	}
 	// *v2 = wrapBytes(v.([]byte))
 }
+
+// ----
+
+type timeExt struct{}
+
+func (x timeExt) WriteExt(v interface{}) (bs []byte) {
+	switch v2 := v.(type) {
+	case time.Time:
+		bs = encodeTime(v2)
+	case *time.Time:
+		bs = encodeTime(*v2)
+	default:
+		panic(fmt.Errorf("unsupported format for time conversion: expecting time.Time; got %T", v2))
+	}
+	return
+}
+func (x timeExt) ReadExt(v interface{}, bs []byte) {
+	tt, err := decodeTime(bs)
+	if err != nil {
+		panic(err)
+	}
+	*(v.(*time.Time)) = tt
+}
+
+func (x timeExt) ConvertExt(v interface{}) interface{} {
+	return x.WriteExt(v)
+}
+func (x timeExt) UpdateExt(v interface{}, src interface{}) {
+	x.ReadExt(v, src.([]byte))
+}
+
+// ----
 
 func testCodecEncode(ts interface{}, bsIn []byte,
 	fn func([]byte) *bytes.Buffer, h Handle) (bs []byte, err error) {
@@ -321,51 +358,58 @@ func testInit() {
 
 	testMsgpackH.RawToString = true
 
-	// testMsgpackH.AddExt(byteSliceTyp, 0, testMsgpackH.BinaryEncodeExt, testMsgpackH.BinaryDecodeExt)
-	// testMsgpackH.AddExt(timeTyp, 1, testMsgpackH.TimeEncodeExt, testMsgpackH.TimeDecodeExt)
+	var tTimeExt timeExt
+	var tBytesExt wrapBytesExt
+	var tI64Ext wrapInt64Ext
 
-	// add extensions for msgpack, simple for time.Time, so we can encode/decode same way.
-	// use different flavors of XXXExt calls, including deprecated ones.
-	// NOTE:
-	// DO NOT set extensions for JsonH, so we can test json(M|Unm)arshal support.
+	// create legacy functions suitable for deprecated AddExt functionality,
+	// and use on some places for testSimpleH e.g. for time.Time and wrapInt64
 	var (
-		timeExtEncFn = func(rv reflect.Value) (bs []byte, err error) {
+		myExtEncFn = func(x BytesExt, rv reflect.Value) (bs []byte, err error) {
 			defer panicToErr(&err)
-			bs = timeExt{}.WriteExt(rv.Interface())
+			bs = x.WriteExt(rv.Interface())
 			return
 		}
-		timeExtDecFn = func(rv reflect.Value, bs []byte) (err error) {
+		myExtDecFn = func(x BytesExt, rv reflect.Value, bs []byte) (err error) {
 			defer panicToErr(&err)
-			timeExt{}.ReadExt(rv.Interface(), bs)
+			x.ReadExt(rv.Interface(), bs)
 			return
 		}
+		timeExtEncFn      = func(rv reflect.Value) (bs []byte, err error) { return myExtEncFn(tTimeExt, rv) }
+		timeExtDecFn      = func(rv reflect.Value, bs []byte) (err error) { return myExtDecFn(tTimeExt, rv, bs) }
+		wrapInt64ExtEncFn = func(rv reflect.Value) (bs []byte, err error) { return myExtEncFn(&tI64Ext, rv) }
+		wrapInt64ExtDecFn = func(rv reflect.Value, bs []byte) (err error) { return myExtDecFn(&tI64Ext, rv, bs) }
 	)
 
-	// Although these extensions on time.Time will have no effect
-	// (as time.Time is a native type),
-	// we add these here to ensure nothing happens.
-	testSimpleH.AddExt(timeTyp, 1, timeExtEncFn, timeExtDecFn)
+	chkErr := func(err error) {
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	// time.Time is a native type, so extensions will have no effect.
+	// However, we add these here to ensure nothing happens.
+	chkErr(testSimpleH.AddExt(timeTyp, 1, timeExtEncFn, timeExtDecFn))
 	// testBincH.SetBytesExt(timeTyp, 1, timeExt{}) // time is builtin for binc
-	testMsgpackH.SetBytesExt(timeTyp, 1, timeExt{})
-	testCborH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
+	chkErr(testMsgpackH.SetBytesExt(timeTyp, 1, timeExt{}))
+	chkErr(testCborH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{}))
 	// testJsonH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
 
-	// Now, add extensions for the type wrapInt64,
+	// Now, add extensions for the type wrapInt64 and wrapBytes,
 	// so we can execute the Encode/Decode Ext paths.
-	var tI64Ext wrapInt64Ext
-	testSimpleH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext)
-	testMsgpackH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext)
-	testBincH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext)
-	testJsonH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext)
-	testCborH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext)
 
-	var tBytesExt wrapBytesExt
+	chkErr(testSimpleH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt))
+	chkErr(testMsgpackH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt))
+	chkErr(testBincH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt))
+	chkErr(testJsonH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt))
+	chkErr(testCborH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt))
 
-	testSimpleH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt)
-	testMsgpackH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt)
-	testBincH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt)
-	testJsonH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt)
-	testCborH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt)
+	chkErr(testSimpleH.AddExt(wrapInt64Typ, 16, wrapInt64ExtEncFn, wrapInt64ExtDecFn))
+	// chkErr(testSimpleH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext))
+	chkErr(testMsgpackH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext))
+	chkErr(testBincH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext))
+	chkErr(testJsonH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext))
+	chkErr(testCborH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext))
 
 	// primitives MUST be an even number, so it can be used as a mapBySlice also.
 	primitives := []interface{}{
@@ -2842,24 +2886,23 @@ func TestSimpleScalars(t *testing.T) {
 
 // TODO:
 //
-//   Add Tests for:
-//   - struct tags:
-//     on anonymous fields, _struct (all fields), etc
-//   - codecgen of struct containing channels.
+// Add Tests for:
+// - struct tags: on anonymous fields, _struct (all fields), etc
+// - chan to encode and decode (with support for codecgen also)
 //
-//  Add negative tests for failure conditions:
-//   - bad input with large array length prefix
+// Add negative tests for failure conditions:
+// - bad input with large array length prefix
 //
-// decode.go
+// decode.go (standalone)
 // - UnreadByte: only 2 states (z.ls = 2 and z.ls = 1) (0 --> 2 --> 1)
 // - track: z.trb: track, stop track, check
-// - PreferArrayOverSlice??? (standalone test)
-// - InterfaceReset (standalone test)
+// - PreferArrayOverSlice???
+// - InterfaceReset
 // - (chan byte) to decode []byte (with mapbyslice track)
 // - decode slice of len 6, 16 into slice of (len 4, cap 8) and (len ) with maxinitlen=6, 8, 16
-// - DeleteOnNilMapValue (standalone test)
+// - DeleteOnNilMapValue
 // - decnaked: n.l == nil
 // - ensureDecodeable (try to decode into a non-decodeable thing e.g. a nil interface{},
 //
-// encode.go
+// encode.go (standalone)
 // - nil and 0-len slices and maps for non-fastpath things

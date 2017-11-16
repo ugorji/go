@@ -69,12 +69,24 @@ func definitelyNil(v interface{}) bool {
 	// For true references (map, ptr, func, chan), you can just look
 	// at the word of the interface. However, for slices, you have to dereference
 	// the word, and get a pointer to the 3-word interface value.
+	//
+	// However, the following are cheap calls
+	// - TypeOf(interface): cheap 2-line call.
+	// - ValueOf(interface{}): expensive
+	// - type.Kind: cheap call through an interface
+	// - Value.Type(): cheap call
+	//                 except it's a method value (e.g. r.Read, which implies that it is a Func)
+
+	return ((*unsafeIntf)(unsafe.Pointer(&v))).word == nil
 
 	// var ui *unsafeIntf = (*unsafeIntf)(unsafe.Pointer(&v))
-	// var word unsafe.Pointer = ui.word
-	// // fmt.Printf(">>>> definitely nil: isnil: %v, TYPE: \t%T, word: %v, *word: %v, type: %v, nil: %v\n", v == nil, v, word, *((*unsafe.Pointer)(word)), ui.typ, nil)
-	// return word == nil // || *((*unsafe.Pointer)(word)) == nil
-	return ((*unsafeIntf)(unsafe.Pointer(&v))).word == nil
+	// if ui.word == nil {
+	// 	return true
+	// }
+	// var tk = reflect.TypeOf(v).Kind()
+	// return (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.word) == nil
+	// fmt.Printf(">>>> definitely nil: isnil: %v, TYPE: \t%T, word: %v, *word: %v, type: %v, nil: %v\n",
+	// v == nil, v, word, *((*unsafe.Pointer)(word)), ui.typ, nil)
 }
 
 // func keepAlive4BytesView(v string) {

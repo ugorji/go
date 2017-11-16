@@ -41,6 +41,9 @@ func testGroupResetFlags() {
 	testMaxInitLen = 0
 	testUseIoWrapper = false
 	testNumRepeatString = 8
+	testEncodeOptions.RecursiveEmptyCheck = false
+	testDecodeOptions.MapValueReset = false
+	testUseIoEncDec = -1
 }
 
 func testSuite(t *testing.T, f func(t *testing.T)) {
@@ -65,6 +68,7 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testCheckCircRef = true
 	testUseReset = true
 	testDecodeOptions.MapValueReset = true
+	testEncodeOptions.RecursiveEmptyCheck = true
 	testReinit()
 	t.Run("optionsTrue", f)
 
