@@ -6,9 +6,14 @@
 package codec
 
 // This file contains values used by tests and benchmarks.
-// Consequently, we only use values that will parse well in all engines.
-// For example, JSON/BSON do not like maps with keys that are not strings,
-// so we only use maps with string keys here.
+// The benchmarks will test performance against other libraries (encoding/json, json-iterator, bson, gob, etc).
+// Consequently, we only use values that will parse well in all engines,
+// and only leverage features that work across multiple libraries for a truer comparison.
+// For example,
+// - JSON/BSON do not like maps with keys that are not strings,
+//   so we only use maps with string keys here.
+// - _struct options are not honored by other libraries,
+//   so we don't use them in this file.
 
 import (
 	"math"
@@ -156,7 +161,7 @@ type testStrucCommon struct {
 	// make this a ptr, so that it could be set or not.
 	// for comparison (e.g. with msgp), give it a struct tag (so it is not inlined),
 	// make this one omitempty (so it is excluded if nil).
-	*AnonInTestStrucIntf `codec:",omitempty"`
+	*AnonInTestStrucIntf `json:",omitempty"`
 
 	// R          Raw // Testing Raw must be explicitly turned on, so use standalone test
 	// Rext RawExt // Testing RawExt is tricky, so use standalone test
@@ -167,7 +172,7 @@ type testStrucCommon struct {
 }
 
 type TestStruc struct {
-	_struct struct{} `codec:",omitempty"` //set omitempty for every field
+	// _struct struct{} `json:",omitempty"` //set omitempty for every field
 
 	testStrucCommon
 
@@ -175,47 +180,6 @@ type TestStruc struct {
 	Mts        map[string]TestStruc
 	Its        []*TestStruc
 	Nteststruc *TestStruc
-}
-
-// small struct for testing that codecgen works for unexported types
-type tLowerFirstLetter struct {
-	I int
-	u uint64
-	S string
-	b []byte
-}
-
-// Some other types
-
-type Sstring string
-type Bbool bool
-type Sstructsmall struct {
-	A int
-}
-
-type Sstructbig struct {
-	A int
-	B bool
-	c string
-	// Sval Sstruct
-	Ssmallptr *Sstructsmall
-	Ssmall    *Sstructsmall
-	Sptr      *Sstructbig
-}
-
-type SstructbigMapBySlice struct {
-	_struct struct{} `codec:",toarray"`
-	A       int
-	B       bool
-	c       string
-	// Sval Sstruct
-	Ssmallptr *Sstructsmall
-	Ssmall    *Sstructsmall
-	Sptr      *Sstructbig
-}
-
-type Sinterface interface {
-	Noop()
 }
 
 var testStrucTime = time.Date(2012, 2, 2, 2, 2, 2, 2000, time.UTC).UTC()

@@ -10,6 +10,47 @@ package codec
 // that other engines may not support or may barf upon
 // e.g. custom extensions for wrapped types, maps with non-string keys, etc.
 
+// Some unused types just stored here
+type Bbool bool
+type Sstring string
+type Sstructsmall struct {
+	A int
+}
+
+type Sstructbig struct {
+	A int
+	B bool
+	c string
+	// Sval Sstruct
+	Ssmallptr *Sstructsmall
+	Ssmall    *Sstructsmall
+	Sptr      *Sstructbig
+}
+
+type SstructbigMapBySlice struct {
+	_struct struct{} `codec:",toarray"`
+	A       int
+	B       bool
+	c       string
+	// Sval Sstruct
+	Ssmallptr *Sstructsmall
+	Ssmall    *Sstructsmall
+	Sptr      *Sstructbig
+}
+
+type Sinterface interface {
+	Noop()
+}
+
+// small struct for testing that codecgen works for unexported types
+type tLowerFirstLetter struct {
+	I int
+	u uint64
+	S string
+	b []byte
+}
+
+// Some used types
 type wrapInt64 int64
 type wrapUint8 uint8
 type wrapBytes []uint8
