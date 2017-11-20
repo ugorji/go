@@ -45,6 +45,8 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"log"
 	"sync"
 	"testing"
 )
@@ -133,6 +135,7 @@ var (
 )
 
 func init() {
+	log.SetOutput(ioutil.Discard) // don't allow things log to standard out/err
 	testHEDs = make([]testHED, 0, 32)
 	testHandles = append(testHandles,
 		// testNoopH,
