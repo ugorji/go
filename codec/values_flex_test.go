@@ -67,7 +67,7 @@ func init() {
 
 type TestStrucFlex struct {
 	_struct struct{} `codec:",omitempty"` //set omitempty for every field
-	testStrucCommon
+	TestStrucCommon
 
 	Mis     map[int]string
 	Mbu64   map[bool]struct{}
@@ -80,6 +80,9 @@ type TestStrucFlex struct {
 	Ci64       wrapInt64
 	Swrapbytes []wrapBytes
 	Swrapuint8 []wrapUint8
+
+	Ui64array      [4]uint64
+	Ui64slicearray []*[4]uint64
 
 	//M map[interface{}]interface{}  `json:"-",bson:"-"`
 	Mtsptr     map[string]*TestStrucFlex
@@ -132,8 +135,12 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 		Swrapuint8: []wrapUint8{
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 		},
+		Ui64array: [4]uint64{4, 16, 64, 256},
 	}
-	populateTestStrucCommon(&ts.testStrucCommon, n, bench, useInterface, useStringKeyOnly)
+
+	ts.Ui64slicearray = []*[4]uint64{&ts.Ui64array, &ts.Ui64array}
+
+	populateTestStrucCommon(&ts.TestStrucCommon, n, bench, useInterface, useStringKeyOnly)
 	if depth > 0 {
 		depth--
 		if ts.Mtsptr == nil {
