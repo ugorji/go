@@ -18,7 +18,6 @@ package codec
 import (
 	"math"
 	"strings"
-	"time"
 )
 
 type wrapSliceUint64 []uint64
@@ -54,13 +53,6 @@ type AnonInTestStruc struct {
 	AUi64sliceN []uint64
 	AMSU16N     map[string]uint16
 	AMSU16E     map[string]uint16
-}
-
-type AnonInTestStrucIntf struct {
-	Islice []interface{}
-	Ms     map[string]interface{}
-	Nintf  interface{} //don't set this, so we can test for nil
-	T      time.Time
 }
 
 type testSimpleFields struct {
@@ -154,11 +146,6 @@ type TestStrucCommon struct {
 
 	NotAnon AnonInTestStruc
 
-	// make this a ptr, so that it could be set or not.
-	// for comparison (e.g. with msgp), give it a struct tag (so it is not inlined),
-	// make this one omitempty (so it is excluded if nil).
-	*AnonInTestStrucIntf `json:",omitempty"`
-
 	// R          Raw // Testing Raw must be explicitly turned on, so use standalone test
 	// Rext RawExt // Testing RawExt is tricky, so use standalone test
 
@@ -177,8 +164,6 @@ type TestStruc struct {
 	Its        []*TestStruc
 	Nteststruc *TestStruc
 }
-
-var testStrucTime = time.Date(2012, 2, 2, 2, 2, 2, 2000, time.UTC).UTC()
 
 func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, useStringKeyOnly bool) {
 	var i64a, i64b, i64c, i64d int64 = 64, 6464, 646464, 64646464
@@ -371,17 +356,6 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 	if bench {
 		ts.Ui64 = math.MaxInt64 * 2 / 3
 		ts.Simplef.Ui64 = ts.Ui64
-	}
-
-	if useInterface {
-		ts.AnonInTestStrucIntf = &AnonInTestStrucIntf{
-			Islice: []interface{}{strRpt(n, "true"), true, strRpt(n, "no"), false, uint64(288), float64(0.4)},
-			Ms: map[string]interface{}{
-				strRpt(n, "true"):     strRpt(n, "true"),
-				strRpt(n, "int64(9)"): false,
-			},
-			T: testStrucTime,
-		}
 	}
 
 	//For benchmarks, some things will not work.
