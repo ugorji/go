@@ -48,7 +48,7 @@ func testGroupResetFlags() {
 
 func testSuite(t *testing.T, f func(t *testing.T)) {
 	// find . -name "*_test.go" | xargs grep -e 'flag.' | cut -d '&' -f 2 | cut -d ',' -f 1 | grep -e '^test'
-	// Disregard the following: testVerbose, testInitDebug, testSkipIntf, testJsonIndent (Need a test for it)
+	// Disregard the following: testInitDebug, testSkipIntf, testJsonIndent (Need a test for it)
 
 	testReinit() // so flag.Parse() is called first, and never called again
 
