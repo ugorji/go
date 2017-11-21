@@ -127,11 +127,12 @@ func (x decDriverNoopContainerReader) CheckBreak() (v bool)    { return }
 // DecodeOptions captures configuration options during decode.
 type DecodeOptions struct {
 	// MapType specifies type to use during schema-less decoding of a map in the stream.
-	// If nil, we use map[interface{}]interface{}
+	// If nil (unset), we default to map[string]interface{} for json and
+	// map[interface{}]interface{} for all other formats.
 	MapType reflect.Type
 
 	// SliceType specifies type to use during schema-less decoding of an array in the stream.
-	// If nil, we use []interface{}
+	// If nil (unset), we default to []interface{} for all formats.
 	SliceType reflect.Type
 
 	// MaxInitLen defines the maxinum initial length that we "make" a collection (string, slice, map, chan).
@@ -950,7 +951,16 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 	// var useRvn bool
 	switch n.v {
 	case valueTypeMap:
-		if d.mtid == 0 || d.mtid == mapIntfIntfTypId {
+		// if json, default to a map type with string keys
+		mtid := d.mtid
+		if mtid == 0 {
+			if d.js {
+				mtid = mapStrIntfTypId
+			} else {
+				mtid = mapIntfIntfTypId
+			}
+		}
+		if mtid == mapIntfIntfTypId {
 			if n.lm < arrayCacheLen {
 				n.ma[n.lm] = nil
 				rvn = n.rr[decNakedMapIntfIntfIdx*arrayCacheLen+n.lm]
@@ -962,7 +972,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 				d.decode(&v2)
 				rvn = reflect.ValueOf(&v2).Elem()
 			}
-		} else if d.mtid == mapStrIntfTypId { // for json performance
+		} else if mtid == mapStrIntfTypId { // for json performance
 			if n.ln < arrayCacheLen {
 				n.na[n.ln] = nil
 				rvn = n.rr[decNakedMapStrIntfIdx*arrayCacheLen+n.ln]
