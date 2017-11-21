@@ -31,7 +31,7 @@ Rich Feature Set includes:
 
   - Simple but extremely powerful and feature-rich API
   - Support for go1.4 and above, while selectively using newer APIs for later releases
-  - Good code coverage ( > 70% )
+  - Excellent code coverage ( > 90% )
   - Very High Performance.
     Our extensive benchmarks show us outperforming Gob, Json, Bson, etc by 2-4X.
   - Careful selected use of 'unsafe' for targeted performance gains.
