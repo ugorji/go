@@ -216,6 +216,10 @@ func Generate(outfile, buildTag, codecPkgPath string,
 						//   chan: ChanType
 						// do not generate:
 						//   FuncType, InterfaceType, StarExpr (ptr), etc
+						//
+						// We generate for all these types (not just structs), because they may be a field
+						// in another struct which doesn't have codecgen run on it, and it will be nice
+						// to take advantage of the fact that the type is a Selfer.
 						switch td.Type.(type) {
 						case *ast.StructType, *ast.Ident, *ast.MapType, *ast.ArrayType, *ast.ChanType:
 							// only add to tv.Types iff
@@ -322,14 +326,14 @@ func main() {
 	rt := flag.String("rt", "", "tags for go run")
 	st := flag.String("st", "codec,json", "struct tag keys to introspect")
 	x := flag.Bool("x", false, "keep temp file")
-	_ = flag.Bool("u", false, "*IGNORED - kept for backwards compatibility*: Allow unsafe use")
+	_ = flag.Bool("u", false, "Allow unsafe use. ***IGNORED*** - kept for backwards compatibility: ")
 	d := flag.Int64("d", 0, "random identifier for use in generated code")
-	nx := flag.Bool("nx", false, "no extensions")
+	nx := flag.Bool("nx", false, "do not support extensions - support of extensions may cause extra allocation")
 
 	flag.Parse()
-	if err := Generate(*o, *t, *c, *d, *rt, *st,
-		regexp.MustCompile(*r), regexp.MustCompile(*nr), !*x, *nx,
-		flag.Args()...); err != nil {
+	err := Generate(*o, *t, *c, *d, *rt, *st,
+		regexp.MustCompile(*r), regexp.MustCompile(*nr), !*x, *nx, flag.Args()...)
+	if err != nil {
 		fmt.Fprintf(os.Stderr, "codecgen error: %v\n", err)
 		os.Exit(1)
 	}
