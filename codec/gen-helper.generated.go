@@ -126,14 +126,19 @@ func (f genHelperEncoder) EncExtension(v interface{}, xfFn *extTypeTagFn) {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+//
+// Deprecated: No longer used,
+// but leave in-place so that old generated files continue to work without regeneration.
 func (f genHelperEncoder) HasExtensions() bool {
 	return len(f.e.h.extHandle) != 0
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+//
+// Deprecated: No longer used,
+// but leave in-place so that old generated files continue to work without regeneration.
 func (f genHelperEncoder) EncExt(v interface{}) (r bool) {
-	xfFn := f.e.h.getExt(i2rtid(v))
-	if xfFn != nil {
+	if xfFn := f.e.h.getExt(i2rtid(v)); xfFn != nil {
 		f.e.e.EncodeExt(v, xfFn.tag, xfFn.ext, f.e)
 		return true
 	}
@@ -250,14 +255,19 @@ func (f genHelperDecoder) DecExtension(v interface{}, xfFn *extTypeTagFn) {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+//
+// Deprecated: No longer used,
+// but leave in-place so that old generated files continue to work without regeneration.
 func (f genHelperDecoder) HasExtensions() bool {
 	return len(f.d.h.extHandle) != 0
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+//
+// Deprecated: No longer used,
+// but leave in-place so that old generated files continue to work without regeneration.
 func (f genHelperDecoder) DecExt(v interface{}) (r bool) {
-	xfFn := f.d.h.getExt(i2rtid(v))
-	if xfFn != nil {
+	if xfFn := f.d.h.getExt(i2rtid(v)); xfFn != nil {
 		f.d.d.DecodeExt(v, xfFn.tag, xfFn.ext)
 		return true
 	}
