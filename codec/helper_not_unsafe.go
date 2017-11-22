@@ -70,6 +70,10 @@ func rv2rtid(rv reflect.Value) uintptr {
 	return reflect.ValueOf(rv.Type()).Pointer()
 }
 
+func i2rtid(i interface{}) uintptr {
+	return reflect.ValueOf(reflect.TypeOf(i)).Pointer()
+}
+
 // --------------------------
 // type ptrToRvMap struct{}
 

@@ -51,6 +51,7 @@ type encDriver interface {
 
 	// Deprecated: left here for now so that old codecgen'ed filed will work. TODO: remove.
 	EncodeBuiltin(rt uintptr, v interface{})
+
 	EncodeNil()
 	EncodeInt(i int64)
 	EncodeUint(i uint64)

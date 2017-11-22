@@ -100,8 +100,7 @@ func definitelyNil(v interface{}) bool {
 // TODO: consider a more generally-known optimization for reflect.Value ==> Interface
 //
 // Currently, we use this fragile method that taps into implememtation details from
-// the source go stdlib reflect/value.go,
-// and trims the implementation.
+// the source go stdlib reflect/value.go, and trims the implementation.
 func rv2i(rv reflect.Value) interface{} {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	// true references (map, func, chan, ptr - NOT slice) may be double-referenced as flagIndir
@@ -124,6 +123,10 @@ func rt2id(rt reflect.Type) uintptr {
 
 func rv2rtid(rv reflect.Value) uintptr {
 	return uintptr((*unsafeReflectValue)(unsafe.Pointer(&rv)).typ)
+}
+
+func i2rtid(i interface{}) uintptr {
+	return uintptr(((*unsafeIntf)(unsafe.Pointer(&i))).typ)
 }
 
 // func rv0t(rt reflect.Type) reflect.Value {

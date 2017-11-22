@@ -1674,7 +1674,6 @@ func doTestSwallowAndZero(t *testing.T, h Handle) {
 
 func doTestRawExt(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
-	// return // TODO: need to fix this ...
 	var b []byte
 	var v RawExt // interface{}
 	_, isJson := h.(*JsonHandle)

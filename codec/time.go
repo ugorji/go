@@ -151,7 +151,6 @@ func decodeTime(bs []byte) (tt time.Time, err error) {
 		tz = tz & 0x3fff //clear 2 MSBs: dst bits
 	} else { // negative
 		tz = tz | 0xc000 //set 2 MSBs: dst bits
-		//tzname[3] = '-' (TODO: verify. this works here)
 	}
 	tzint := int16(tz)
 	if tzint == 0 {

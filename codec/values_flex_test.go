@@ -91,6 +91,8 @@ type TestStrucFlex struct {
 	Swrapbytes []wrapBytes
 	Swrapuint8 []wrapUint8
 
+	ArrStrUi64T [4]stringUint64T
+
 	Ui64array      [4]uint64
 	Ui64slicearray []*[4]uint64
 
@@ -150,7 +152,8 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 		Swrapuint8: []wrapUint8{
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 		},
-		Ui64array: [4]uint64{4, 16, 64, 256},
+		Ui64array:   [4]uint64{4, 16, 64, 256},
+		ArrStrUi64T: [4]stringUint64T{{"4", 4}, {"3", 3}, {"2", 2}, {"1", 1}},
 	}
 
 	ts.Ui64slicearray = []*[4]uint64{&ts.Ui64array, &ts.Ui64array}

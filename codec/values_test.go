@@ -89,9 +89,6 @@ type testSimpleFields struct {
 
 	Iptrslice []*int64
 
-	// TODO: test these separately, specifically for reflection and codecgen.
-	// Unfortunately, ffjson doesn't support these. Its compilation even fails.
-
 	WrapSliceInt64  wrapSliceUint64
 	WrapSliceString wrapSliceString
 
@@ -132,15 +129,14 @@ type TestStrucCommon struct {
 
 	Iptrslice []*int64
 
-	// TODO: test these separately, specifically for reflection and codecgen.
-	// Unfortunately, ffjson doesn't support these. Its compilation even fails.
-
 	WrapSliceInt64  wrapSliceUint64
 	WrapSliceString wrapSliceString
 
 	Msi64 map[string]int64
 
 	Simplef testSimpleFields
+
+	SstrUi64T []stringUint64T
 
 	AnonInTestStruc
 
@@ -349,6 +345,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			WrapSliceString: []string{strRpt(n, "4"), strRpt(n, "16"), strRpt(n, "64"), strRpt(n, "256")},
 		},
 
+		SstrUi64T:       []stringUint64T{{"1", 1}, {"2", 2}, {"3", 3}, {"4", 4}},
 		AnonInTestStruc: a,
 		NotAnon:         a,
 	}

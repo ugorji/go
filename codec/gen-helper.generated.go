@@ -111,18 +111,28 @@ func (f genHelperEncoder) IsJSONHandle() bool {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) I2Rtid(v interface{}) uintptr {
+	return i2rtid(v)
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) Extension(rtid uintptr) (xfn *extTypeTagFn) {
+	return f.e.h.getExt(rtid)
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncExtension(v interface{}, xfFn *extTypeTagFn) {
+	f.e.e.EncodeExt(v, xfFn.tag, xfFn.ext, f.e)
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) HasExtensions() bool {
 	return len(f.e.h.extHandle) != 0
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncExt(v interface{}) (r bool) {
-	rt := reflect.TypeOf(v)
-	if rt.Kind() == reflect.Ptr {
-		rt = rt.Elem()
-	}
-	rtid := rt2id(rt)
-	xfFn := f.e.h.getExt(rtid)
+	xfFn := f.e.h.getExt(i2rtid(v))
 	if xfFn != nil {
 		f.e.e.EncodeExt(v, xfFn.tag, xfFn.ext, f.e)
 		return true
@@ -225,15 +235,28 @@ func (f genHelperDecoder) IsJSONHandle() bool {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperDecoder) I2Rtid(v interface{}) uintptr {
+	return i2rtid(v)
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperDecoder) Extension(rtid uintptr) (xfn *extTypeTagFn) {
+	return f.d.h.getExt(rtid)
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperDecoder) DecExtension(v interface{}, xfFn *extTypeTagFn) {
+	f.d.d.DecodeExt(v, xfFn.tag, xfFn.ext)
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) HasExtensions() bool {
 	return len(f.d.h.extHandle) != 0
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecExt(v interface{}) (r bool) {
-	rt := reflect.TypeOf(v).Elem()
-	rtid := rt2id(rt)
-	xfFn := f.d.h.getExt(rtid)
+	xfFn := f.d.h.getExt(i2rtid(v))
 	if xfFn != nil {
 		f.d.d.DecodeExt(v, xfFn.tag, xfFn.ext)
 		return true

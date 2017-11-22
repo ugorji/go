@@ -254,12 +254,13 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.linef("// ----- value types used ----")
 	x.linef("codecSelferValueTypeArray%s = %v", x.xs, int64(valueTypeArray))
 	x.linef("codecSelferValueTypeMap%s = %v", x.xs, int64(valueTypeMap))
-	x.linef("// ----- containerStateValues ----")
-	x.linef("codecSelferKcontainerMapKey%s = %v", x.xs, int64(containerMapKey))
-	x.linef("codecSelferKcontainerMapValue%s = %v", x.xs, int64(containerMapValue))
-	x.linef("codecSelferKcontainerMapEnd%s = %v", x.xs, int64(containerMapEnd))
-	x.linef("codecSelferKcontainerArrayElem%s = %v", x.xs, int64(containerArrayElem))
-	x.linef("codecSelferKcontainerArrayEnd%s = %v", x.xs, int64(containerArrayEnd))
+	// These are no longer needed, as there are functions created for them
+	// x.linef("// ----- containerStateValues ----")
+	// x.linef("codecSelferKcontainerMapKey%s = %v", x.xs, int64(containerMapKey))
+	// x.linef("codecSelferKcontainerMapValue%s = %v", x.xs, int64(containerMapValue))
+	// x.linef("codecSelferKcontainerMapEnd%s = %v", x.xs, int64(containerMapEnd))
+	// x.linef("codecSelferKcontainerArrayElem%s = %v", x.xs, int64(containerArrayElem))
+	// x.linef("codecSelferKcontainerArrayEnd%s = %v", x.xs, int64(containerArrayEnd))
 	x.line(")")
 	x.line("var (")
 	x.line("codecSelferBitsize" + x.xs + " = uint8(reflect.TypeOf(uint(0)).Bits())")
@@ -715,11 +716,24 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	// 	x.linef("r.EncodeBuiltin(%s, *%s)", vrtid, varname)
 	// }
 	// only check for extensions if the type is named, and has a packagePath.
+	var arrayOrStruct = tk == reflect.Array || tk == reflect.Struct // meaning varname if of type *T
 	if !x.nx && genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion
-		x.linef("} else if z.HasExtensions() && z.EncExt(%s) {", varname)
+		// x.linef("} else if z.HasExtensions() && z.EncExt(%s) {", varname)
+		//
+		// yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
+		// // always pass a ptr, so if not array or struct, then take the address
+		// var zz string
+		// if !arrayOrStruct {
+		// 	// zz = "&" // taking address is more expensive. instead, let it optimize itself.
+		// }
+		// x.linef("} else if %s := z.Extension(z.I2Rtid(%s%s)); %s != nil { z.EncExtension(%s%s, %s) ",
+		// 	yy, zz, varname, yy, zz, varname, yy)
+		//
+		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
+		x.linef("} else if %s := z.Extension(z.I2Rtid(%s)); %s != nil { z.EncExtension(%s, %s) ", yy, varname, yy, varname, yy)
 	}
-	if tk == reflect.Array || tk == reflect.Struct { // varname is of type *T
+	if arrayOrStruct { // varname is of type *T
 		if t.Implements(binaryMarshalerTyp) || tptr.Implements(binaryMarshalerTyp) {
 			x.linef("} else if %sm%s { z.EncBinaryMarshal(%v) ", genTempVarPfx, mi, varname)
 		}
@@ -1171,7 +1185,9 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	// only check for extensions if the type is named, and has a packagePath.
 	if !x.nx && genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion
-		x.linef("} else if z.HasExtensions() && z.DecExt(%s) {", varname)
+		// x.linef("} else if z.HasExtensions() && z.DecExt(%s) {", varname)
+		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
+		x.linef("} else if %s := z.Extension(z.I2Rtid(%s)); %s != nil { z.DecExtension(%s, %s) ", yy, varname, yy, varname, yy)
 	}
 
 	if t.Implements(binaryUnmarshalerTyp) || tptr.Implements(binaryUnmarshalerTyp) {

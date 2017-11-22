@@ -2084,7 +2084,7 @@ func (d *Decoder) decode(iv interface{}) {
 		*v = d.rawBytes()
 
 	case *interface{}:
-		d.decodeValue(reflect.ValueOf(iv).Elem(), nil, true) // TODO: consider recognize here
+		d.decodeValue(reflect.ValueOf(iv).Elem(), nil, true)
 		// d.decodeValueNotNil(reflect.ValueOf(iv).Elem())
 
 	default:

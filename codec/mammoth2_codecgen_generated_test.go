@@ -18,12 +18,6 @@ const (
 	// ----- value types used ----
 	codecSelferValueTypeArray19781 = 10
 	codecSelferValueTypeMap19781   = 9
-	// ----- containerStateValues ----
-	codecSelferKcontainerMapKey19781    = 2
-	codecSelferKcontainerMapValue19781  = 3
-	codecSelferKcontainerMapEnd19781    = 4
-	codecSelferKcontainerArrayElem19781 = 6
-	codecSelferKcontainerArrayEnd19781  = 7
 )
 
 var (
@@ -54,7 +48,8 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 		yym1 := z.EncBinary()
 		_ = yym1
 		if false {
-		} else if z.HasExtensions() && z.EncExt(x) {
+		} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+			z.EncExtension(x, yyxt1)
 		} else {
 			yysep2 := !z.EncBinary()
 			yy2arr2 := z.EncBasicHandle().StructToArray
@@ -20409,7 +20404,8 @@ func (x *TestMammoth2) CodecDecodeSelf(d *Decoder) {
 	yym1 := z.DecBinary()
 	_ = yym1
 	if false {
-	} else if z.HasExtensions() && z.DecExt(x) {
+	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+		z.DecExtension(x, yyxt1)
 	} else {
 		yyct2 := r.ContainerType()
 		if yyct2 == codecSelferValueTypeMap19781 {
@@ -44107,7 +44103,8 @@ func (x testMammoth2Binary) CodecEncodeSelf(e *Encoder) {
 	yym1 := z.EncBinary()
 	_ = yym1
 	if false {
-	} else if z.HasExtensions() && z.EncExt(x) {
+	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+		z.EncExtension(x, yyxt1)
 	} else if yym1 {
 		z.EncBinaryMarshal(x)
 	} else {
@@ -44122,7 +44119,8 @@ func (x *testMammoth2Binary) CodecDecodeSelf(d *Decoder) {
 	yym1 := z.DecBinary()
 	_ = yym1
 	if false {
-	} else if z.HasExtensions() && z.DecExt(x) {
+	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+		z.DecExtension(x, yyxt1)
 	} else if yym1 {
 		z.DecBinaryUnmarshal(x)
 	} else {
@@ -44137,7 +44135,8 @@ func (x testMammoth2Text) CodecEncodeSelf(e *Encoder) {
 	yym1 := z.EncBinary()
 	_ = yym1
 	if false {
-	} else if z.HasExtensions() && z.EncExt(x) {
+	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+		z.EncExtension(x, yyxt1)
 	} else if !yym1 {
 		z.EncTextMarshal(x)
 	} else {
@@ -44152,7 +44151,8 @@ func (x *testMammoth2Text) CodecDecodeSelf(d *Decoder) {
 	yym1 := z.DecBinary()
 	_ = yym1
 	if false {
-	} else if z.HasExtensions() && z.DecExt(x) {
+	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+		z.DecExtension(x, yyxt1)
 	} else if !yym1 {
 		z.DecTextUnmarshal(x)
 	} else {
@@ -44167,7 +44167,8 @@ func (x testMammoth2Json) CodecEncodeSelf(e *Encoder) {
 	yym1 := z.EncBinary()
 	_ = yym1
 	if false {
-	} else if z.HasExtensions() && z.EncExt(x) {
+	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+		z.EncExtension(x, yyxt1)
 	} else if !yym1 && z.IsJSONHandle() {
 		z.EncJSONMarshal(x)
 	} else {
@@ -44182,7 +44183,8 @@ func (x *testMammoth2Json) CodecDecodeSelf(d *Decoder) {
 	yym1 := z.DecBinary()
 	_ = yym1
 	if false {
-	} else if z.HasExtensions() && z.DecExt(x) {
+	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+		z.DecExtension(x, yyxt1)
 	} else if !yym1 && z.IsJSONHandle() {
 		z.DecJSONUnmarshal(x)
 	} else {
@@ -44200,7 +44202,8 @@ func (x *testMammoth2Basic) CodecEncodeSelf(e *Encoder) {
 		yym1 := z.EncBinary()
 		_ = yym1
 		if false {
-		} else if z.HasExtensions() && z.EncExt(x) {
+		} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+			z.EncExtension(x, yyxt1)
 		} else {
 			h.enctestMammoth2Basic((*testMammoth2Basic)(x), e)
 		}
@@ -44214,7 +44217,8 @@ func (x *testMammoth2Basic) CodecDecodeSelf(d *Decoder) {
 	yym1 := z.DecBinary()
 	_ = yym1
 	if false {
-	} else if z.HasExtensions() && z.DecExt(x) {
+	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+		z.DecExtension(x, yyxt1)
 	} else {
 		h.dectestMammoth2Basic((*testMammoth2Basic)(x), d)
 	}
@@ -44230,7 +44234,8 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 		yym1 := z.EncBinary()
 		_ = yym1
 		if false {
-		} else if z.HasExtensions() && z.EncExt(x) {
+		} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+			z.EncExtension(x, yyxt1)
 		} else {
 			yysep2 := !z.EncBinary()
 			yy2arr2 := z.EncBasicHandle().StructToArray
@@ -44381,7 +44386,8 @@ func (x *TestMammoth2Wrapper) CodecDecodeSelf(d *Decoder) {
 	yym1 := z.DecBinary()
 	_ = yym1
 	if false {
-	} else if z.HasExtensions() && z.DecExt(x) {
+	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
+		z.DecExtension(x, yyxt1)
 	} else {
 		yyct2 := r.ContainerType()
 		if yyct2 == codecSelferValueTypeMap19781 {
