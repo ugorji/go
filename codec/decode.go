@@ -127,8 +127,8 @@ func (x decDriverNoopContainerReader) CheckBreak() (v bool)    { return }
 // DecodeOptions captures configuration options during decode.
 type DecodeOptions struct {
 	// MapType specifies type to use during schema-less decoding of a map in the stream.
-	// If nil (unset), we default to map[string]interface{} for json and
-	// map[interface{}]interface{} for all other formats.
+	// If nil (unset), we default to map[string]interface{} iff json handle and MapStringAsKey=true,
+	// else map[interface{}]interface{}.
 	MapType reflect.Type
 
 	// SliceType specifies type to use during schema-less decoding of an array in the stream.
@@ -954,7 +954,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 		// if json, default to a map type with string keys
 		mtid := d.mtid
 		if mtid == 0 {
-			if d.js {
+			if d.jsms {
 				mtid = mapStrIntfTypId
 			} else {
 				mtid = mapIntfIntfTypId
@@ -1128,7 +1128,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	fti := f.ti
 	dd := d.d
-	elemsep := d.hh.hasElemSeparators()
+	elemsep := d.esep
 	sfn := structFieldNode{v: rv, update: true}
 	ctyp := dd.ContainerType()
 	if ctyp == valueTypeMap {
@@ -1428,7 +1428,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	dd := d.d
 	containerLen := dd.ReadMapStart()
-	elemsep := d.hh.hasElemSeparators()
+	elemsep := d.esep
 	ti := f.ti
 	if rv.IsNil() {
 		rv.Set(makeMapReflect(ti.rt, containerLen))
@@ -1699,33 +1699,34 @@ type Decoder struct {
 	be    bool // is binary encoding
 	bytes bool // is bytes reader
 	js    bool // is json handle
+	jsms  bool // is json handle, and MapKeyAsString
+	esep  bool // has elem separators
 
 	// ---- cpu cache line boundary?
-
 	rb bytesDecReader
-	ri ioDecReader
-	bi bufioDecReader
-
-	// cr containerStateRecv
-
-	n   *decNaked
-	nsp *sync.Pool
-
 	// ---- cpu cache line boundary?
-
+	ri ioDecReader
+	// ---- cpu cache line boundary?
+	bi bufioDecReader
+	// ---- cpu cache line boundary?
+	cf codecFner
+	// ---- cpu cache line boundary?
+	// cr containerStateRecv
 	is map[string]string // used for interning strings
-
 	// cache the mapTypeId and sliceTypeId for faster comparisons
 	mtid uintptr
 	stid uintptr
-
-	b [scratchByteArrayLen]byte
 	// _  uintptr // for alignment purposes, so next one starts from a cache line
 
+	// ---- writable fields during execution --- *try* to keep in sep cache line
+
+	// ---- cpu cache line boundary?
+	b   [scratchByteArrayLen]byte
+	n   *decNaked
+	nsp *sync.Pool
 	err error
 	// ---- cpu cache line boundary?
 
-	cf codecFner
 	// _ [64]byte // force alignment???
 }
 
@@ -1753,8 +1754,12 @@ func newDecoder(h Handle) *Decoder {
 	d := &Decoder{hh: h, h: h.getBasicHandle(), be: h.isBinary()}
 
 	// NOTE: do not initialize d.n here. It is lazily initialized in d.naked()
-
-	_, d.js = h.(*JsonHandle)
+	var jh *JsonHandle
+	jh, d.js = h.(*JsonHandle)
+	if d.js {
+		d.jsms = jh.MapKeyAsString
+	}
+	d.esep = d.hh.hasElemSeparators()
 	if d.h.InternString {
 		d.is = make(map[string]string, 32)
 	}
@@ -1895,14 +1900,13 @@ func (d *Decoder) MustDecode(v interface{}) {
 	} else {
 		d.decode(v)
 	}
-	if d.nsp != nil {
-		if d.n != nil {
-			d.nsp.Put(d.n)
-			d.n = nil
-		}
+	if d.n != nil {
+		// if d.n != nil { }
+		// if nsp != nil, then n != nil (they are always set together)
+		d.nsp.Put(d.n)
+		d.n = nil
 		d.nsp = nil
 	}
-	d.n = nil
 	// xprintf(">>>>>>>> >>>>>>>> num decFns: %v\n", d.cf.sn)
 }
 
@@ -1918,7 +1922,7 @@ func (d *Decoder) swallow() {
 	if dd.TryDecodeAsNil() {
 		return
 	}
-	elemsep := d.hh.hasElemSeparators()
+	elemsep := d.esep
 	switch dd.ContainerType() {
 	case valueTypeMap:
 		containerLen := dd.ReadMapStart()

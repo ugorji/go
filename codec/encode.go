@@ -434,7 +434,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if f.seq == seqTypeChan && ti.rt.ChanDir()&reflect.RecvDir == 0 {
 		e.errorf("send-only channel cannot be used for receiving byte(s)")
 	}
-	elemsep := e.hh.hasElemSeparators()
+	elemsep := e.esep
 	l := rv.Len()
 	rtelem := ti.rt.Elem()
 	rtelemIsByte := uint8TypId == rt2id(rtelem) // NOT rtelem.Kind() == reflect.Uint8
@@ -530,7 +530,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	fti := f.ti
-	elemsep := e.hh.hasElemSeparators()
+	elemsep := e.esep
 	tisfi := fti.sfip
 	toMap := !(fti.toArray || e.h.StructToArray)
 	if toMap {
@@ -583,7 +583,7 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 
 func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	fti := f.ti
-	elemsep := e.hh.hasElemSeparators()
+	elemsep := e.esep
 	tisfi := fti.sfip
 	toMap := !(fti.toArray || e.h.StructToArray)
 	// if toMap, use the sorted array. If toArray, use unsorted array (to match sequence in struct)
@@ -713,7 +713,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	l := rv.Len()
 	ee.WriteMapStart(l)
-	elemsep := e.hh.hasElemSeparators()
+	elemsep := e.esep
 	if l == 0 {
 		ee.WriteMapEnd()
 		return
@@ -785,7 +785,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []reflect.Value, valFn *codecFn, asSymbols bool) {
 	ee := e.e
-	elemsep := e.hh.hasElemSeparators()
+	elemsep := e.esep
 	// we previously did out-of-band if an extension was registered.
 	// This is not necessary, as the natural kind is sufficient for ordering.
 
@@ -986,21 +986,29 @@ type Encoder struct {
 	hh Handle
 	h  *BasicHandle
 
+	esep bool // whether it has elem separators
+
 	// ---- cpu cache line boundary?
-
-	wi ioEncWriter
-	wb bytesEncWriter
-	bw bufio.Writer
-
 	// cr containerStateRecv
 	as encDriverAsis
+	ci set
+
 	// ---- cpu cache line boundary?
+	wi ioEncWriter
+	// ---- cpu cache line boundary?
+	wb bytesEncWriter
 
-	ci  set
-	err error
+	// ---- cpu cache line boundary?
+	bw bufio.Writer
 
-	b  [scratchByteArrayLen]byte
+	// ---- cpu cache line boundary?
 	cf codecFner
+
+	// ---- writable fields during execution --- *try* to keep in sep cache line
+
+	// ---- cpu cache line boundary?
+	b   [scratchByteArrayLen]byte
+	err error
 }
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
@@ -1028,6 +1036,7 @@ func newEncoder(h Handle) *Encoder {
 	e := &Encoder{hh: h, h: h.getBasicHandle()}
 	e.e = h.newEncDriver(e)
 	e.as, _ = e.e.(encDriverAsis)
+	e.esep = e.hh.hasElemSeparators()
 	// e.cr, _ = e.e.(containerStateRecv)
 	return e
 }
