@@ -34,6 +34,7 @@ package codec
 import (
 	"bytes"
 	"encoding/base64"
+	"math"
 	"reflect"
 	"strconv"
 	"time"
@@ -159,18 +160,23 @@ func init() {
 }
 
 type jsonEncDriver struct {
-	e  *Encoder
-	w  encWriter
-	h  *JsonHandle
-	b  [64]byte // scratch
-	bs []byte   // scratch
-	se setExtWrapper
-	ds string // indent string
-	dl uint16 // indent level
-	dt bool   // indent using tabs
-	d  bool   // indent
-	c  containerState
 	noBuiltInTypes
+	e  *Encoder
+	h  *JsonHandle
+	w  encWriter
+	se setExtWrapper
+	// ---- cpu cache line boundary?
+	ds string // indent string
+	d  bool   // indent
+	dt bool   // indent using tabs
+
+	// ---- writable fields during execution --- *try* to keep in sep cache line
+
+	c  containerState
+	dl uint16 // indent level
+	bs []byte // scratch
+	// ---- cpu cache line boundary?
+	b [64]byte // scratch
 }
 
 // indent is done as below:
@@ -312,30 +318,34 @@ func (e *jsonEncDriver) EncodeFloat64(f float64) {
 	e.encodeFloat(f, 64)
 }
 
-func (e *jsonEncDriver) encodeFloat(f float64, numbits int) {
+func (e *jsonEncDriver) encodeFloat(f float64, bits int) {
 	var blen int
-	var x []byte
-	if e.h.MapKeyAsString && e.c == containerMapKey {
-		e.b[0] = '"'
-		x = strconv.AppendFloat(e.b[1:1], f, 'G', -1, numbits)
-		blen = 1 + len(x)
-		if jsonIsFloatBytesB2(x) {
-			e.b[blen] = '"'
-			blen += 1
-		} else {
-			e.b[blen] = '.'
-			e.b[blen+1] = '0'
-			e.b[blen+2] = '"'
-			blen += 3
-		}
+	// instead of using 'g', specify whether to use 'e' or 'f'
+	var abs = math.Abs(f)
+	var fmt byte
+	var prec int = -1
+	if abs != 0 && (bits == 64 && (abs < 1e-6 || abs >= 1e21) || bits == 32 && (float32(abs) < 1e-6 || float32(abs) >= 1e21)) {
+		fmt = 'e'
 	} else {
-		x = strconv.AppendFloat(e.b[:0], f, 'G', -1, numbits)
-		blen = len(x)
-		if !jsonIsFloatBytesB2(x) {
-			e.b[blen] = '.'
-			e.b[blen+1] = '0'
-			blen += 2
+		fmt = 'f'
+		// set prec to 1 iff mod is 0.
+		//     better than using jsonIsFloatBytesB2 to check if a . or E in the float bytes.
+		// this ensures that every float has an e or .0 in it.
+		if abs <= 1 {
+			if abs == 0 || abs == 1 {
+				prec = 1
+			}
+		} else if _, mod := math.Modf(abs); mod == 0 {
+			prec = 1
 		}
+	}
+
+	if e.h.MapKeyAsString && e.c == containerMapKey {
+		blen = 2 + len(strconv.AppendFloat(e.b[1:1], f, fmt, prec, bits))
+		e.b[0] = '"'
+		e.b[blen-1] = '"'
+	} else {
+		blen = len(strconv.AppendFloat(e.b[:0], f, fmt, prec, bits))
 	}
 	e.w.writeb(e.b[:blen])
 }
@@ -501,30 +511,30 @@ func (e *jsonEncDriver) atEndOfEncode() {
 
 type jsonDecDriver struct {
 	noBuiltInTypes
-	d *Decoder
-	h *JsonHandle
-	r decReader
+	d  *Decoder
+	h  *JsonHandle
+	r  decReader
+	se setExtWrapper
+
+	// ---- writable fields during execution --- *try* to keep in sep cache line
 
 	c containerState
 	// tok is used to store the token read right after skipWhiteSpace.
-	tok uint8
-
-	fnull bool // found null from appendStringAsBytes
-
-	bstr [8]byte  // scratch used for string \UXXX parsing
-	b    [64]byte // scratch, used for parsing strings or numbers or time.Time
-	b2   [64]byte // scratch, used only for decodeBytes (after base64)
-	bs   []byte   // scratch. Initialized from b. Used for parsing strings or numbers.
-
-	se setExtWrapper
+	tok   uint8
+	fnull bool    // found null from appendStringAsBytes
+	bs    []byte  // scratch. Initialized from b. Used for parsing strings or numbers.
+	bstr  [8]byte // scratch used for string \UXXX parsing
+	// ---- cpu cache line boundary?
+	b  [64]byte // scratch 1, used for parsing strings or numbers or time.Time
+	b2 [64]byte // scratch 2, used only for readUntil, decNumBytes
 
 	// n jsonNum
 }
 
-func jsonIsWS(b byte) bool {
-	// return b == ' ' || b == '\t' || b == '\r' || b == '\n'
-	return jsonCharWhitespaceSet.isset(b)
-}
+// func jsonIsWS(b byte) bool {
+// 	// return b == ' ' || b == '\t' || b == '\r' || b == '\n'
+// 	return jsonCharWhitespaceSet.isset(b)
+// }
 
 func (d *jsonDecDriver) uncacheRead() {
 	if d.tok != 0 {
@@ -537,8 +547,9 @@ func (d *jsonDecDriver) ReadMapStart() int {
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
-	if d.tok != '{' {
-		d.d.errorf("json: expect char '%c' but got char '%c'", '{', d.tok)
+	const xc uint8 = '{'
+	if d.tok != xc {
+		d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
 	}
 	d.tok = 0
 	d.c = containerMapStart
@@ -549,8 +560,9 @@ func (d *jsonDecDriver) ReadArrayStart() int {
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
-	if d.tok != '[' {
-		d.d.errorf("json: expect char '%c' but got char '%c'", '[', d.tok)
+	const xc uint8 = '['
+	if d.tok != xc {
+		d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
 	}
 	d.tok = 0
 	d.c = containerArrayStart
@@ -864,7 +876,11 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 		default:
 			// try to parse a valid number
 			bs := d.decNumBytes()
-			d.bs = d.bs[:len(bs)]
+			if len(bs) <= cap(d.bs) {
+				d.bs = d.bs[:len(bs)]
+			} else {
+				d.bs = make([]byte, len(bs))
+			}
 			copy(d.bs, bs)
 		}
 		return
@@ -1195,10 +1211,10 @@ func (d *jsonDecDriver) reset() {
 // 	return false
 // }
 
-func jsonIsFloatBytesB2(bs []byte) bool {
-	return bytes.IndexByte(bs, '.') != -1 ||
-		bytes.IndexByte(bs, 'E') != -1
-}
+// func jsonIsFloatBytesB2(bs []byte) bool {
+// 	return bytes.IndexByte(bs, '.') != -1 ||
+// 		bytes.IndexByte(bs, 'E') != -1
+// }
 
 func jsonIsFloatBytesB3(bs []byte) bool {
 	return bytes.IndexByte(bs, '.') != -1 ||
