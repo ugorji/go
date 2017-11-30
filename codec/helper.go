@@ -402,6 +402,7 @@ type BasicHandle struct {
 	extHandle
 	EncodeOptions
 	DecodeOptions
+	RPCOptions
 	noBuiltInTypeChecker
 }
 
@@ -1629,6 +1630,14 @@ func isNaN(f float64) bool { return f != f }
 
 type ioFlusher interface {
 	Flush() error
+}
+
+type ioPeeker interface {
+	Peek(int) ([]byte, error)
+}
+
+type ioBuffered interface {
+	Buffered() int
 }
 
 // -----------------------

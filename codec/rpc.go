@@ -17,6 +17,15 @@ type Rpc interface {
 	ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec
 }
 
+type RPCOptions struct {
+	// RPCNoBuffer configures whether we attempt to buffer reads and writes during RPC calls.
+	//
+	// Set RPCNoBuffer=true to turn buffering off.
+	// Buffering can still be done if buffered connections are passed in, or
+	// buffering is configured on the handle.
+	RPCNoBuffer bool
+}
+
 // rpcCodec defines the struct members and common methods.
 type rpcCodec struct {
 	c io.Closer
@@ -49,9 +58,22 @@ func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 	// always ensure that we use a flusher, and always flush what was written to the connection.
 	// we lose nothing by using a buffered writer internally.
 	f, ok := w.(ioFlusher)
-	if !ok {
-		bw := bufio.NewWriter(w)
-		f, w = bw, bw
+	bh := h.getBasicHandle()
+	if !bh.RPCNoBuffer {
+		if bh.WriterBufferSize <= 0 {
+			if !ok {
+				bw := bufio.NewWriter(w)
+				f, w = bw, bw
+			}
+		}
+		if bh.ReaderBufferSize <= 0 {
+			if _, ok = w.(ioPeeker); !ok {
+				if _, ok = w.(ioBuffered); !ok {
+					br := bufio.NewReader(r)
+					r = br
+				}
+			}
+		}
 	}
 	return rpcCodec{
 		c:   c,
@@ -171,10 +193,24 @@ type goRpc struct{}
 // GoRpc implements Rpc using the communication protocol defined in net/rpc package.
 //
 // Note: network connection (from net.Dial, of type io.ReadWriteCloser) is not buffered.
-// We will internally use a buffer during writes, for performance, if the non-buffered
-// connection is passed in.
 //
-// However, you may consider explicitly passing in a buffered value e.g.
+// For performance, you should configure WriterBufferSize and ReaderBufferSize on the handle.
+// This ensures we use an adequate buffer during reading and writing.
+// If not configured, we will internally initialize and use a buffer during reads and writes.
+// This can be turned off via the RPCNoBuffer option on the Handle.
+//   var handle codec.JsonHandle
+//   handle.RPCNoBuffer = true // turns off attempt by rpc module to initialize a buffer
+//
+// Example 1: one way of configuring buffering explicitly:
+//   var handle codec.JsonHandle // codec handle
+//   handle.ReaderBufferSize = 1024
+//   handle.WriterBufferSize = 1024
+//   var conn io.ReadWriteCloser // connection got from a socket
+//   var serverCodec = GoRpc.ServerCodec(conn, handle)
+//   var clientCodec = GoRpc.ClientCodec(conn, handle)
+//
+// Example 2: you can also explicitly create a buffered connection yourself,
+//            and not worry about configuring the buffer sizes in the Handle.
 //   var handle codec.Handle     // codec handle
 //   var conn io.ReadWriteCloser // connection got from a socket
 //   var bufconn = struct {      // bufconn here is a buffered io.ReadWriteCloser
@@ -185,7 +221,6 @@ type goRpc struct{}
 //   var serverCodec = GoRpc.ServerCodec(bufconn, handle)
 //   var clientCodec = GoRpc.ClientCodec(bufconn, handle)
 //
-// If all you care about is buffered writes, this is done automatically for you.
 var GoRpc goRpc
 
 func (x goRpc) ServerCodec(conn io.ReadWriteCloser, h Handle) rpc.ServerCodec {

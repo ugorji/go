@@ -2284,12 +2284,13 @@ type decSliceHelper struct {
 func (d *Decoder) decSliceHelperStart() (x decSliceHelper, clen int) {
 	dd := d.d
 	ctyp := dd.ContainerType()
-	if ctyp == valueTypeArray {
+	switch ctyp {
+	case valueTypeArray:
 		x.array = true
 		clen = dd.ReadArrayStart()
-	} else if ctyp == valueTypeMap {
+	case valueTypeMap:
 		clen = dd.ReadMapStart() * 2
-	} else {
+	default:
 		d.errorf("only encoded map or array can be decoded into a slice (%d)", ctyp)
 	}
 	// x.ct = ctyp
@@ -2308,12 +2309,10 @@ func (x decSliceHelper) End() {
 func (x decSliceHelper) ElemContainerState(index int) {
 	if x.array {
 		x.d.d.ReadArrayElem()
+	} else if index%2 == 0 {
+		x.d.d.ReadMapElemKey()
 	} else {
-		if index%2 == 0 {
-			x.d.d.ReadMapElemKey()
-		} else {
-			x.d.d.ReadMapElemValue()
-		}
+		x.d.d.ReadMapElemValue()
 	}
 }
 
