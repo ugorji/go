@@ -44,6 +44,7 @@ func testGroupResetFlags() {
 	testEncodeOptions.RecursiveEmptyCheck = false
 	testDecodeOptions.MapValueReset = false
 	testUseIoEncDec = -1
+	testDepth = 0
 }
 
 func testSuite(t *testing.T, f func(t *testing.T)) {
@@ -72,16 +73,17 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testReinit()
 	t.Run("optionsTrue", f)
 
+	testDepth = 6
+	testReinit()
+	t.Run("optionsTrue-deepstruct", f)
+	testDepth = 0
+
 	testEncodeOptions.AsSymbols = AsSymbolAll
 	testUseIoWrapper = true
 	testReinit()
 	t.Run("optionsTrue-ioWrapper", f)
 
 	testUseIoEncDec = -1
-
-	testDepth = 6
-	testReinit()
-	t.Run("optionsTrue-deepstruct", f)
 
 	// make buffer small enough so that we have to re-fill multiple times.
 	testSkipRPCTests = true

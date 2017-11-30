@@ -163,7 +163,7 @@ type jsonEncDriver struct {
 	noBuiltInTypes
 	e  *Encoder
 	h  *JsonHandle
-	w  encWriter
+	w  encWriter // encWriter // *encWriterSwitch
 	se setExtWrapper
 	// ---- cpu cache line boundary?
 	ds string // indent string
@@ -513,7 +513,7 @@ type jsonDecDriver struct {
 	noBuiltInTypes
 	d  *Decoder
 	h  *JsonHandle
-	r  decReader
+	r  decReader // *decReaderSwitch // decReader
 	se setExtWrapper
 
 	// ---- writable fields during execution --- *try* to keep in sep cache line
@@ -666,8 +666,8 @@ func (d *jsonDecDriver) TryDecodeAsNil() bool {
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
-	// TODO: we shouldn't try to see if "null" was here, right?
-	// only "null" denotes a nil
+	// we shouldn't try to see if "null" was here, right?
+	// only the plain string: `null` denotes a nil (ie not quotes)
 	if d.tok == 'n' {
 		d.readLit(3, jsonLitNull+1) // (n)ull
 		return true
@@ -1174,7 +1174,7 @@ func (h *JsonHandle) newDecDriver(d *Decoder) decDriver {
 }
 
 func (e *jsonEncDriver) reset() {
-	e.w = e.e.w
+	e.w = e.e.w // e.e.w // &e.e.encWriterSwitch
 	e.se.i = e.h.RawBytesExt
 	if e.bs != nil {
 		e.bs = e.bs[:0]
@@ -1192,7 +1192,7 @@ func (e *jsonEncDriver) reset() {
 }
 
 func (d *jsonDecDriver) reset() {
-	d.r = d.d.r
+	d.r = d.d.r // &d.d.decReaderSwitch // d.d.r
 	d.se.i = d.h.RawBytesExt
 	if d.bs != nil {
 		d.bs = d.bs[:0]
