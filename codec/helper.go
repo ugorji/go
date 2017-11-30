@@ -379,13 +379,23 @@ type Selfer interface {
 	CodecDecodeSelf(*Decoder)
 }
 
-// MapBySlice represents a slice which should be encoded as a map in the stream.
+// MapBySlice is a tag interface that denotes a slice which should be encoded as a map in the stream.
 // The slice contains a sequence of key-value pairs.
 // This affords storing a map in a specific sequence in the stream.
+//
+// Example usage:
+//    type T1 []string         // or []int or []Point or any other "slice" type
+//    func (_ T1) MapBySlice{} // T1 now implements MapBySlice, and will be encoded as a map
+//    type T2 struct { KeyValues T1 }
+//
+//    var kvs = []string{"one", "1", "two", "2", "three", "3"}
+//    var v2 = T2{ KeyValues: T1(kvs) }
+//    // v2 will be encoded like the map: {"KeyValues": {"one": "1", "two": "2", "three": "3"} }
 //
 // The support of MapBySlice affords the following:
 //   - A slice type which implements MapBySlice will be encoded as a map
 //   - A slice can be decoded from a map in the stream
+//   - It MUST be a slice type (not a pointer receiver) that implements MapBySlice
 type MapBySlice interface {
 	MapBySlice()
 }
@@ -1011,7 +1021,9 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	ti.jm, ti.jmp = implIntf(rt, jsonMarshalerTyp)
 	ti.ju, ti.jup = implIntf(rt, jsonUnmarshalerTyp)
 	ti.cs, ti.csp = implIntf(rt, selferTyp)
-	ti.mbs, _ = implIntf(rt, mapBySliceTyp)
+	if rt.Kind() == reflect.Slice {
+		ti.mbs, _ = implIntf(rt, mapBySliceTyp)
+	}
 
 	if rk == reflect.Struct {
 		var omitEmpty bool
