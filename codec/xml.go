@@ -24,7 +24,6 @@ It is a replacement, based on the simplicity and performance of codec.
 Look at it like JAXB for Go.
 
 Challenges:
-
   - Need to output XML preamble, with all namespaces at the right location in the output.
   - Each "end" block is dynamic, so we need to maintain a context-aware stack
   - How to decide when to use an attribute VS an element
@@ -34,7 +33,8 @@ Challenges:
 
 Extend the struct tag. See representative example:
   type X struct {
-    ID uint8 codec:"xid|http://ugorji.net/x-namespace id,omitempty,toarray,attr,cdata"
+    ID uint8 `codec:"http://ugorji.net/x-namespace xid id,omitempty,toarray,attr,cdata"`
+    // format: [namespace-uri ][namespace-prefix ]local-name, ...
   }
 
 Based on this, we encode
@@ -42,17 +42,17 @@ Based on this, we encode
     encode as attributes if struct tag contains ",attr" and is a scalar (bool, number or string)
   - text as entity-escaped text, BUT encode as CDATA if struct tag contains ",cdata".
 
-In this mode, we only encode as attribute if ",attr" is found, and only encode as CDATA
-if ",cdata" is found in the struct tag.
-
 To handle namespaces:
   - XMLHandle is denoted as being namespace-aware.
     Consequently, we WILL use the ns:name pair to encode and decode if defined, else use the plain name.
   - *Encoder and *Decoder know whether the Handle "prefers" namespaces.
   - add *Encoder.getEncName(*structFieldInfo).
     No one calls *structFieldInfo.indexForEncName directly anymore
+  - OR better yet: indexForEncName is namespace-aware, and helper.go is all namespace-aware
+    indexForEncName takes a parameter of the form namespace:local-name OR local-name
   - add *Decoder.getStructFieldInfo(encName string) // encName here is either like abc, or h1:nsabc
-    No one accesses .encName anymore except in
+    by being a method on *Decoder, or maybe a method on the Handle itself.
+    No one accesses .encName anymore
   - let encode.go and decode.go use these (for consistency)
   - only problem exists for gen.go, where we create a big switch on encName.
     Now, we also have to add a switch on strings.endsWith(kName, encNsName)
@@ -63,8 +63,8 @@ To handle namespaces:
         default {
           switch {
             case !nsAware: panic(...)
-            case strings.endsWith("nsabc"): x.abc()
-            case strings.endsWith("nsdef"): x.def()
+            case strings.endsWith(":abc"): x.abc()
+            case strings.endsWith(":def"): x.def()
             default: panic(...)
           }
         }
@@ -90,7 +90,10 @@ indexForEncName is now an internal helper function that takes a sorted array
 (one of ti.sfins or ti.sfi). It is only used by *Encoder.getStructFieldInfo(...)
 
 There will be a separate parser from the builder.
-The parser will have a method: next() xmlToken method.
+The parser will have a method: next() xmlToken method. It has lookahead support,
+so you can pop multiple tokens, make a determination, and push them back in the order popped.
+This will be needed to determine whether we are "nakedly" decoding a container or not.
+The stack will be implemented using a slice and push/pop happens at the [0] element.
 
 xmlToken has fields:
   - type uint8: 0 | ElementStart | ElementEnd | AttrKey | AttrVal | Text
@@ -221,16 +224,14 @@ intelligent accessor methods to extract information and for performance.
 
 // ------------------
 
-Per XML spec and our default handling, white space is insignificant between elements,
-specifically between parent-child or siblings. White space occurring alone between start
-and end element IS significant. However, if xml:space='preserve', then we 'preserve'
-all whitespace. This is more critical when doing a DecodeNaked, but MAY not be as critical
-when decoding into a typed value.
+Per XML spec and our default handling, white space is always treated as
+insignificant between elements, except in a text node. The xml:space='preserve'
+attribute is ignored.
 
 **Note: there is no xml: namespace. The xml: attributes were defined before namespaces.**
 **So treat them as just "directives" that should be interpreted to mean something**.
 
-On encoding, we don't add any prettifying markup (indenting, etc).
+On encoding, we support indenting aka prettifying markup in the same way we support it for json.
 
 A document or element can only be encoded/decoded from/to a struct. In this mode:
   - struct name maps to element name (or tag-info from _struct field)
@@ -264,15 +265,14 @@ the struct tag signifying it should be attr, then all its fields are encoded as 
 e.g.
 
     type X struct {
-       M map[string]int `codec:"m,attr"` // encode as attributes
+       M map[string]int `codec:"m,attr"` // encode keys as attributes named
     }
 
 Question:
   - if encoding a map, what if map keys have spaces in them???
     Then they cannot be attributes or child elements. Error.
 
-Misc:
-
+Options to consider adding later:
   - For attribute values, normalize by trimming beginning and ending white space,
     and converting every white space sequence to a single space.
   - ATTLIST restrictions are enforced.
@@ -290,6 +290,8 @@ Misc:
       CheckName bool
     }
 
+Misc:
+
 ROADMAP (1 weeks):
   - build encoder (1 day)
   - build decoder (based off xmlParser) (1 day)
@@ -298,7 +300,78 @@ ROADMAP (1 weeks):
   - integrate and TEST (1 days)
   - write article and post it (1 day)
 
+// ---------- MORE NOTES FROM 2017-11-30 ------------
 
+when parsing
+- parse the attributes first
+- then parse the nodes
+
+basically:
+- if encoding a field: we use the field name for the wrapper
+- if encoding a non-field, then just use the element type name
+
+  map[string]string ==> <map><key>abc</key><value>val</value></map>... or
+                        <map key="abc">val</map>... OR
+                        <key1>val1</key1><key2>val2</key2>...                <- PREFERED
+  []string  ==> <string>v1</string><string>v2</string>...
+  string v1 ==> <string>v1</string>
+  bool true ==> <bool>true</bool>
+  float 1.0 ==> <float>1.0</float>
+  ...
+
+  F1 map[string]string ==> <F1><key>abc</key><value>val</value></F1>... OR
+                           <F1 key="abc">val</F1>... OR
+                           <F1><abc>val</abc>...</F1>                        <- PREFERED
+  F2 []string          ==> <F2>v1</F2><F2>v2</F2>...
+  F3 bool              ==> <F3>true</F3>
+  ...
+
+- a scalar is encoded as:
+  (value) of type T  ==> <T><value/></T>
+  (value) of field F ==> <F><value/></F>
+- A kv-pair is encoded as:
+  (key,value) ==> <map><key><value/></key></map> OR <map key="value">
+  (key,value) of field F ==> <F><key><value/></key></F> OR <F key="value">
+- A map or struct is just a list of kv-pairs
+- A list is encoded as sequences of same node e.g.
+  <F1 key1="value11">
+  <F1 key2="value12">
+  <F2>value21</F2>
+  <F2>value22</F2>
+- we may have to singularize the field name, when entering into xml,
+  and pluralize them when encoding.
+- bi-directional encode->decode->encode is not a MUST.
+  even encoding/xml cannot decode correctly what was encoded:
+
+  see https://play.golang.org/p/224V_nyhMS
+  func main() {
+	fmt.Println("Hello, playground")
+	v := []interface{}{"hello", 1, true, nil, time.Now()}
+	s, err := xml.Marshal(v)
+	fmt.Printf("err: %v, \ns: %s\n", err, s)
+	var v2 []interface{}
+	err = xml.Unmarshal(s, &v2)
+	fmt.Printf("err: %v, \nv2: %v\n", err, v2)
+	type T struct {
+	    V []interface{}
+	}
+	v3 := T{V: v}
+	s, err = xml.Marshal(v3)
+	fmt.Printf("err: %v, \ns: %s\n", err, s)
+	var v4 T
+	err = xml.Unmarshal(s, &v4)
+	fmt.Printf("err: %v, \nv4: %v\n", err, v4)
+  }
+  Output:
+    err: <nil>,
+    s: <string>hello</string><int>1</int><bool>true</bool><Time>2009-11-10T23:00:00Z</Time>
+    err: <nil>,
+    v2: [<nil>]
+    err: <nil>,
+    s: <T><V>hello</V><V>1</V><V>true</V><V>2009-11-10T23:00:00Z</V></T>
+    err: <nil>,
+    v4: {[<nil> <nil> <nil> <nil>]}
+-
 */
 
 // ----------- PARSER  -------------------
