@@ -225,4 +225,9 @@ package codec
 //     This involves uncommenting the methods for decReaderSwitch and encWriterSwitch
 //     and using those (decReaderSwitch and encWriterSwitch in all handles
 //     instead of encWriter and decReader.
-//
+//   - removing conditionals used to avoid calling no-op functions via interface calls.
+//     esep, etc.
+//     It *should* make the code cleaner, and maybe more performant,
+//     as conditional branches are expensive.
+//     However, per https://groups.google.com/forum/#!topic/golang-nuts/DNELyNnTzFA ,
+//     there is no optimization if calling an empty function via an interface.

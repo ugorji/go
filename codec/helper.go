@@ -416,6 +416,15 @@ type BasicHandle struct {
 	noBuiltInTypeChecker
 }
 
+// func (x *BasicHandle) postCopy() {
+// 	if len(x.extHandle) == 0 {
+// 		return
+// 	}
+// 	v := make(extHandle, len(x.extHandle))
+// 	copy(v, x.extHandle)
+// 	x.extHandle = v
+// }
+
 func (x *BasicHandle) getBasicHandle() *BasicHandle {
 	return x
 }
@@ -440,6 +449,33 @@ type Handle interface {
 	hasElemSeparators() bool
 	IsBuiltinType(rtid uintptr) bool
 }
+
+// func copyHandle(h Handle) (h2 Handle) {
+// 	_ = h.getBasicHandle().postCopy // ensure postCopy function on basicHandle isn't commented
+// 	switch hh := h.(type) {
+// 	case *JsonHandle:
+// 		hh2 := *hh
+// 		hh2.postCopy()
+// 		h2 = &hh2
+// 	case *SimpleHandle:
+// 		hh2 := *hh
+// 		hh2.postCopy()
+// 		h2 = &hh2
+// 	case *CborHandle:
+// 		hh2 := *hh
+// 		hh2.postCopy()
+// 		h2 = &hh2
+// 	case *MsgpackHandle:
+// 		hh2 := *hh
+// 		hh2.postCopy()
+// 		h2 = &hh2
+// 	case *BincHandle:
+// 		hh2 := *hh
+// 		hh2.postCopy()
+// 		h2 = &hh2
+// 	}
+// 	return
+// }
 
 // Raw represents raw formatted bytes.
 // We "blindly" store it during encode and retrieve the raw bytes during decode.
@@ -728,31 +764,30 @@ func (si *structFieldInfo) field(v reflect.Value, update bool) (rv2 reflect.Valu
 // 	return v
 // }
 
-func parseStructFieldInfo(fname string, stag string) *structFieldInfo {
+func parseStructFieldInfo(fname string, stag string) (si *structFieldInfo) {
 	// if fname == "" {
 	// 	panic(errNoFieldNameToStructFieldInfo)
 	// }
-	si := structFieldInfo{
-		encName: fname,
-	}
+	si = &structFieldInfo{encName: fname}
 
-	if stag != "" {
-		for i, s := range strings.Split(stag, ",") {
-			if i == 0 {
-				if s != "" {
-					si.encName = s
-				}
-			} else {
-				if s == "omitempty" {
-					si.omitEmpty = true
-				} else if s == "toarray" {
-					si.toArray = true
-				}
+	if stag == "" {
+		return
+	}
+	for i, s := range strings.Split(stag, ",") {
+		if i == 0 {
+			if s != "" {
+				si.encName = s
+			}
+		} else {
+			if s == "omitempty" {
+				si.omitEmpty = true
+			} else if s == "toarray" {
+				si.toArray = true
 			}
 		}
 	}
 	// si.encNameBs = []byte(si.encName)
-	return &si
+	return
 }
 
 type sfiSortedByEncName []*structFieldInfo

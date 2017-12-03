@@ -1016,8 +1016,10 @@ type encWriterSwitch struct {
 	wi ioEncWriter
 	// ---- cpu cache line boundary?
 	// wb bytesEncWriter
-	wb bytesEncAppender
-	wx bool // if bytes, wx=true
+	wb   bytesEncAppender
+	wx   bool // if bytes, wx=true
+	esep bool // whether it has elem separators
+	isas bool // whether e.as != nil
 }
 
 // TODO: Uncomment after mid-stack inlining enabled in go 1.10
@@ -1059,10 +1061,9 @@ type Encoder struct {
 	// as the handler MAY need to do some coordination.
 	w encWriter
 
+	// ho Handle // original handle
 	hh Handle
 	h  *BasicHandle
-
-	esep bool // whether it has elem separators
 
 	// ---- cpu cache line boundary?
 	// cr containerStateRecv
@@ -1108,11 +1109,17 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 
 func newEncoder(h Handle) *Encoder {
 	e := &Encoder{hh: h, h: h.getBasicHandle(), err: errEncoderNotInitialized}
+	e.esep = h.hasElemSeparators()
 	e.e = h.newEncDriver(e)
-	e.as, _ = e.e.(encDriverAsis)
-	e.esep = e.hh.hasElemSeparators()
+	e.as, e.isas = e.e.(encDriverAsis)
 	// e.cr, _ = e.e.(containerStateRecv)
 	return e
+}
+
+func (e *Encoder) postReset() {
+	e.e.reset()
+	e.cf.reset(e.hh)
+	e.err = nil
 }
 
 // Reset resets the Encoder with a new output stream.
@@ -1144,9 +1151,7 @@ func (e *Encoder) Reset(w io.Writer) {
 		e.wi.ww = w
 	}
 	e.w = &e.wi
-	e.e.reset()
-	e.cf.reset(e.hh)
-	e.err = nil
+	e.postReset()
 }
 
 // ResetBytes resets the Encoder with a new destination output []byte.
@@ -1164,9 +1169,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 	e.wx = true
 	e.wb.reset(in, out)
 	e.w = &e.wb
-	e.e.reset()
-	e.cf.reset(e.hh)
-	e.err = nil
+	e.postReset()
 }
 
 // Encode writes an object into a stream.
@@ -1427,10 +1430,10 @@ func (e *Encoder) marshal(bs []byte, fnerr error, asis bool, c charEncoding) {
 }
 
 func (e *Encoder) asis(v []byte) {
-	if e.as == nil {
-		e.w.writeb(v)
-	} else {
+	if e.isas {
 		e.as.EncodeAsis(v)
+	} else {
+		e.w.writeb(v)
 	}
 }
 
@@ -1439,11 +1442,7 @@ func (e *Encoder) rawBytes(vv Raw) {
 	if !e.h.Raw {
 		e.errorf("Raw values cannot be encoded: %v", v)
 	}
-	if e.as == nil {
-		e.w.writeb(v)
-	} else {
-		e.as.EncodeAsis(v)
-	}
+	e.asis(v)
 }
 
 func (e *Encoder) errorf(format string, params ...interface{}) {
