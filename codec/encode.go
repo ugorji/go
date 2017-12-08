@@ -13,6 +13,7 @@ import (
 	"sort"
 	"sync"
 	"time"
+	"strconv"
 )
 
 const defEncByteBufSize = 1 << 6 // 4:16, 6:64, 8:256, 10:1024
@@ -170,6 +171,9 @@ type EncodeOptions struct {
 	//
 	// if > 0, we use a smart buffer internally for performance purposes.
 	WriterBufferSize int
+
+	// use int type key for struct key element
+	UseIntKeyStructEnc bool
 }
 
 // ---------------------------------------------
@@ -583,7 +587,17 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 		if !elemsep {
 			for _, si := range tisfi {
 				if asSymbols {
-					ee.EncodeSymbol(si.encName)
+					if (e.h.UseIntKeyStructEnc) {
+						// Encode symbol as int
+						i, err := strconv.Atoi(si.encName)
+						if err != nil {
+							panic(err)
+						}
+						ee.EncodeInt(int64(i))
+					} else {
+						// Encode symbol
+						ee.EncodeSymbol(si.encName)
+					}
 				} else {
 					ee.EncodeString(cUTF8, si.encName)
 				}
@@ -593,7 +607,17 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 			for _, si := range tisfi {
 				ee.WriteMapElemKey()
 				if asSymbols {
-					ee.EncodeSymbol(si.encName)
+					if (e.h.UseIntKeyStructEnc) {
+						// Encode symbol as int
+						i, err := strconv.Atoi(si.encName)
+						if err != nil {
+							panic(err)
+						}
+						ee.EncodeInt(int64(i))
+					} else {
+						// Encode symbol
+						ee.EncodeSymbol(si.encName)
+					}
 				} else {
 					ee.EncodeString(cUTF8, si.encName)
 				}
@@ -698,7 +722,17 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			for j := 0; j < newlen; j++ {
 				kv = fkvs[j]
 				if asSymbols {
-					ee.EncodeSymbol(kv.v)
+					if (e.h.UseIntKeyStructEnc) {
+						// Encode symbol as int
+						i, err := strconv.Atoi(kv.v)
+						if err != nil {
+							panic(err)
+						}
+						ee.EncodeInt(int64(i))
+					} else {
+						// Encode symbol
+						ee.EncodeSymbol(kv.v)
+					}
 				} else {
 					ee.EncodeString(cUTF8, kv.v)
 				}
@@ -709,7 +743,17 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				kv = fkvs[j]
 				ee.WriteMapElemKey()
 				if asSymbols {
-					ee.EncodeSymbol(kv.v)
+					if (e.h.UseIntKeyStructEnc) {
+						// Encode symbol as int
+						i, err := strconv.Atoi(kv.v)
+						if err != nil {
+							panic(err)
+						}
+						ee.EncodeInt(int64(i))
+					} else {
+						// Encode symbol
+						ee.EncodeSymbol(kv.v)
+					}
 				} else {
 					ee.EncodeString(cUTF8, kv.v)
 				}

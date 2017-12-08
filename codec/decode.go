@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"sync"
 	"time"
+	"strconv"
 )
 
 // Some tagging information for error messages.
@@ -218,6 +219,9 @@ type DecodeOptions struct {
 	//
 	// if > 0, we use a smart buffer internally for performance purposes.
 	ReaderBufferSize int
+
+	// use int type key for struct key element
+	UseIntKeyStructDec bool
 }
 
 // ------------------------------------
@@ -1145,9 +1149,16 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			if elemsep {
 				dd.ReadMapElemKey()
 			}
-			rvkencnameB := dd.DecodeStringAsBytes()
-			rvkencname := stringView(rvkencnameB)
 			// rvksi := ti.getForEncName(rvkencname)
+			var rvkencname string
+			if (d.h.UseIntKeyStructDec) {
+				// get element as int
+				rvkencname = strconv.Itoa(int(dd.DecodeInt(8)))
+			} else {
+				// get element as string
+				rvkencnameB := dd.DecodeStringAsBytes()
+				rvkencname = stringView(rvkencnameB)
+			}
 			if elemsep {
 				dd.ReadMapElemValue()
 			}
