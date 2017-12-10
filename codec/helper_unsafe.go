@@ -174,13 +174,17 @@ func (d *Decoder) kTime(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (d *Decoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
+	fv := d.d.DecodeFloat64()
+	if chkOvf.Float32(fv) {
+		d.errorf("float32 overflow: %v", fv)
+	}
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*float32)(urv.ptr) = float32(d.d.DecodeFloat(true))
+	*(*float32)(urv.ptr) = float32(fv)
 }
 
 func (d *Decoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*float64)(urv.ptr) = d.d.DecodeFloat(false)
+	*(*float64)(urv.ptr) = d.d.DecodeFloat64()
 }
 
 func (d *Decoder) kInt(f *codecFnInfo, rv reflect.Value) {

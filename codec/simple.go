@@ -206,7 +206,7 @@ func (e *simpleEncDriver) EncodeTime(t time.Time) {
 	}
 	v, err := t.MarshalBinary()
 	if err != nil {
-		e.e.error(err)
+		e.e.errorv(err)
 		return
 	}
 	// time.Time marshalbinary takes about 14 bytes.
@@ -346,7 +346,7 @@ func (d *simpleDecDriver) DecodeUint(bitsize uint8) (ui uint64) {
 	return
 }
 
-func (d *simpleDecDriver) DecodeFloat(chkOverflow32 bool) (f float64) {
+func (d *simpleDecDriver) DecodeFloat64() (f float64) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -361,10 +361,6 @@ func (d *simpleDecDriver) DecodeFloat(chkOverflow32 bool) (f float64) {
 			d.d.errorf("Float only valid from float32/64: Invalid descriptor: %v", d.bd)
 			return
 		}
-	}
-	if chkOverflow32 && chkOvf.Float32(f) {
-		d.d.errorf("msgpack: float32 overflow: %v", f)
-		return
 	}
 	d.bdRead = false
 	return
@@ -501,7 +497,7 @@ func (d *simpleDecDriver) DecodeTime() (t time.Time) {
 	clen := int(d.r.readn1())
 	b := d.r.readx(clen)
 	if err := (&t).UnmarshalBinary(b); err != nil {
-		d.d.error(err)
+		d.d.errorv(err)
 	}
 	return
 }
@@ -576,10 +572,10 @@ func (d *simpleDecDriver) DecodeNaked() {
 		n.i = d.DecodeInt(64)
 	case simpleVdFloat32:
 		n.v = valueTypeFloat
-		n.f = d.DecodeFloat(true)
+		n.f = d.DecodeFloat64()
 	case simpleVdFloat64:
 		n.v = valueTypeFloat
-		n.f = d.DecodeFloat(false)
+		n.f = d.DecodeFloat64()
 	case simpleVdTime:
 		n.v = valueTypeTime
 		n.t = d.DecodeTime()
@@ -638,6 +634,9 @@ type SimpleHandle struct {
 	// EncZeroValuesAsNil says to encode zero values for numbers, bool, string, etc as nil
 	EncZeroValuesAsNil bool
 }
+
+// Name returns the name of the handle: simple
+func (h *SimpleHandle) Name() string { return "simple" }
 
 // SetBytesExt sets an extension
 func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {

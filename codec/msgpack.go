@@ -559,7 +559,7 @@ func (d *msgpackDecDriver) DecodeUint(bitsize uint8) (ui uint64) {
 }
 
 // float can either be decoded from msgpack type: float, double or intX
-func (d *msgpackDecDriver) DecodeFloat(chkOverflow32 bool) (f float64) {
+func (d *msgpackDecDriver) DecodeFloat64() (f float64) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -569,10 +569,6 @@ func (d *msgpackDecDriver) DecodeFloat(chkOverflow32 bool) (f float64) {
 		f = math.Float64frombits(bigen.Uint64(d.r.readx(8)))
 	} else {
 		f = float64(d.DecodeInt(0))
-	}
-	if chkOverflow32 && chkOvf.Float32(f) {
-		d.d.errorf("msgpack: float32 overflow: %v", f)
-		return
 	}
 	d.bdRead = false
 	return
@@ -889,6 +885,9 @@ type MsgpackHandle struct {
 	binaryEncodingType
 	noElemSeparators
 }
+
+// Name returns the name of the handle: msgpack
+func (h *MsgpackHandle) Name() string { return "msgpack" }
 
 // SetBytesExt sets an extension
 func (h *MsgpackHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {

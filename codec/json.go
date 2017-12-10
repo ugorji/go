@@ -311,20 +311,17 @@ func (e *jsonEncDriver) EncodeBool(b bool) {
 }
 
 func (e *jsonEncDriver) EncodeFloat32(f float32) {
-	e.encodeFloat(float64(f), 32)
+	// e.encodeFloat(float64(f), 32)
+	e.EncodeFloat64(float64(f))
 }
 
 func (e *jsonEncDriver) EncodeFloat64(f float64) {
-	e.encodeFloat(f, 64)
-}
-
-func (e *jsonEncDriver) encodeFloat(f float64, bits int) {
 	var blen int
 	// instead of using 'g', specify whether to use 'e' or 'f'
 	var abs = math.Abs(f)
 	var fmt byte
 	var prec int = -1
-	if abs != 0 && (bits == 64 && (abs < 1e-6 || abs >= 1e21) || bits == 32 && (float32(abs) < 1e-6 || float32(abs) >= 1e21)) {
+	if abs != 0 && (abs < 1e-6 || abs >= 1e21) {
 		fmt = 'e'
 	} else {
 		fmt = 'f'
@@ -341,14 +338,50 @@ func (e *jsonEncDriver) encodeFloat(f float64, bits int) {
 	}
 
 	if e.h.MapKeyAsString && e.c == containerMapKey {
-		blen = 2 + len(strconv.AppendFloat(e.b[1:1], f, fmt, prec, bits))
+		blen = 2 + len(strconv.AppendFloat(e.b[1:1], f, fmt, prec, 64))
 		e.b[0] = '"'
 		e.b[blen-1] = '"'
 	} else {
-		blen = len(strconv.AppendFloat(e.b[:0], f, fmt, prec, bits))
+		blen = len(strconv.AppendFloat(e.b[:0], f, fmt, prec, 64))
 	}
 	e.w.writeb(e.b[:blen])
 }
+
+// func (e *jsonEncDriver) EncodeFloat64(f float64) {
+// 	e.encodeFloat(f, 64)
+// }
+
+// func (e *jsonEncDriver) encodeFloat(f float64, bits int) {
+// 	var blen int
+// 	// instead of using 'g', specify whether to use 'e' or 'f'
+// 	var abs = math.Abs(f)
+// 	var fmt byte
+// 	var prec int = -1
+// 	if abs != 0 && (bits == 64 && (abs < 1e-6 || abs >= 1e21) || bits == 32 && (float32(abs) < 1e-6 || float32(abs) >= 1e21)) {
+// 		fmt = 'e'
+// 	} else {
+// 		fmt = 'f'
+// 		// set prec to 1 iff mod is 0.
+// 		//     better than using jsonIsFloatBytesB2 to check if a . or E in the float bytes.
+// 		// this ensures that every float has an e or .0 in it.
+// 		if abs <= 1 {
+// 			if abs == 0 || abs == 1 {
+// 				prec = 1
+// 			}
+// 		} else if _, mod := math.Modf(abs); mod == 0 {
+// 			prec = 1
+// 		}
+// 	}
+
+// 	if e.h.MapKeyAsString && e.c == containerMapKey {
+// 		blen = 2 + len(strconv.AppendFloat(e.b[1:1], f, fmt, prec, bits))
+// 		e.b[0] = '"'
+// 		e.b[blen-1] = '"'
+// 	} else {
+// 		blen = len(strconv.AppendFloat(e.b[:0], f, fmt, prec, bits))
+// 	}
+// 	e.w.writeb(e.b[:blen])
+// }
 
 func (e *jsonEncDriver) EncodeInt(v int64) {
 	x := e.h.IntegerAsString
@@ -708,7 +741,7 @@ func (d *jsonDecDriver) DecodeTime() (t time.Time) {
 	}
 	t, err := time.Parse(time.RFC3339, stringView(d.bs))
 	if err != nil {
-		d.d.error(err)
+		d.d.errorv(err)
 	}
 	return
 }
@@ -762,22 +795,16 @@ func (d *jsonDecDriver) DecodeInt(bitsize uint8) (i int64) {
 	bs := d.decNumBytes()
 	i, err := strconv.ParseInt(stringView(bs), 10, int(bitsize))
 	if err != nil {
-		d.d.errorf("json: decode int from %s: %v", bs, err)
-		return
+		d.d.errorv(err)
 	}
 	return
 }
 
-func (d *jsonDecDriver) DecodeFloat(chkOverflow32 bool) (f float64) {
+func (d *jsonDecDriver) DecodeFloat64() (f float64) {
 	bs := d.decNumBytes()
-	bitsize := 64
-	if chkOverflow32 {
-		bitsize = 32
-	}
-	f, err := strconv.ParseFloat(stringView(bs), bitsize)
+	f, err := strconv.ParseFloat(stringView(bs), 64)
 	if err != nil {
-		d.d.errorf("json: decode float from %s: %v", bs, err)
-		return
+		d.d.errorv(err)
 	}
 	return
 }
@@ -1148,6 +1175,9 @@ type JsonHandle struct {
 	// The only caveat is that nil value is ALWAYS written as null (never as "null")
 	MapKeyAsString bool
 }
+
+// Name returns the name of the handle: json
+func (h *JsonHandle) Name() string { return "json" }
 
 func (h *JsonHandle) hasElemSeparators() bool { return true }
 

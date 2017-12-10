@@ -366,12 +366,12 @@ func testInit() {
 	// and use on some places for testSimpleH e.g. for time.Time and wrapInt64
 	var (
 		myExtEncFn = func(x BytesExt, rv reflect.Value) (bs []byte, err error) {
-			defer panicToErr(&err)
+			defer panicToErr(errstrDecoratorDef{}, &err)
 			bs = x.WriteExt(rv.Interface())
 			return
 		}
 		myExtDecFn = func(x BytesExt, rv reflect.Value, bs []byte) (err error) {
-			defer panicToErr(&err)
+			defer panicToErr(errstrDecoratorDef{}, &err)
 			x.ReadExt(rv.Interface(), bs)
 			return
 		}

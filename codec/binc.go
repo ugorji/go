@@ -554,7 +554,7 @@ func (d *bincDecDriver) DecodeUint(bitsize uint8) (ui uint64) {
 	return
 }
 
-func (d *bincDecDriver) DecodeFloat(chkOverflow32 bool) (f float64) {
+func (d *bincDecDriver) DecodeFloat64() (f float64) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -577,10 +577,6 @@ func (d *bincDecDriver) DecodeFloat(chkOverflow32 bool) (f float64) {
 		f = d.decFloat()
 	} else {
 		f = float64(d.DecodeInt(64))
-	}
-	if chkOverflow32 && chkOvf.Float32(f) {
-		d.d.errorf("binc: float32 overflow: %v", f)
-		return
 	}
 	d.bdRead = false
 	return
@@ -937,6 +933,9 @@ type BincHandle struct {
 	binaryEncodingType
 	noElemSeparators
 }
+
+// Name returns the name of the handle: binc
+func (h *BincHandle) Name() string { return "binc" }
 
 // SetBytesExt sets an extension
 func (h *BincHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {

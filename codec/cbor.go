@@ -389,7 +389,7 @@ func (d *cborDecDriver) DecodeUint(bitsize uint8) (ui uint64) {
 	return
 }
 
-func (d *cborDecDriver) DecodeFloat(chkOverflow32 bool) (f float64) {
+func (d *cborDecDriver) DecodeFloat64() (f float64) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -403,10 +403,6 @@ func (d *cborDecDriver) DecodeFloat(chkOverflow32 bool) (f float64) {
 		f = float64(d.DecodeInt(64))
 	} else {
 		d.d.errorf("Float only valid from float16/32/64: Invalid descriptor: %v", bd)
-		return
-	}
-	if chkOverflow32 && chkOvf.Float32(f) {
-		d.d.errorf("cbor: float32 overflow: %v", f)
 		return
 	}
 	d.bdRead = false
@@ -544,17 +540,17 @@ func (d *cborDecDriver) decodeTime(xtag uint64) (t time.Time) {
 	case 0:
 		var err error
 		if t, err = time.Parse(time.RFC3339, stringView(d.DecodeStringAsBytes())); err != nil {
-			d.d.error(err)
+			d.d.errorv(err)
 		}
 	case 1:
 		// decode an int64 or a float, and infer time.Time from there.
 		// for floats, round to microseconds, as that is what is guaranteed to fit well.
 		switch {
 		case d.bd == cborBdFloat16, d.bd == cborBdFloat32:
-			f1, f2 := math.Modf(d.DecodeFloat(true))
+			f1, f2 := math.Modf(d.DecodeFloat64())
 			t = time.Unix(int64(f1), int64(f2*1e9))
 		case d.bd == cborBdFloat64:
-			f1, f2 := math.Modf(d.DecodeFloat(false))
+			f1, f2 := math.Modf(d.DecodeFloat64())
 			t = time.Unix(int64(f1), int64(f2*1e9))
 		case d.bd >= cborBaseUint && d.bd < cborBaseNegInt, d.bd >= cborBaseNegInt && d.bd < cborBaseBytes:
 			t = time.Unix(d.DecodeInt(64), 0)
@@ -608,12 +604,9 @@ func (d *cborDecDriver) DecodeNaked() {
 	case cborBdTrue:
 		n.v = valueTypeBool
 		n.b = true
-	case cborBdFloat16, cborBdFloat32:
+	case cborBdFloat16, cborBdFloat32, cborBdFloat64:
 		n.v = valueTypeFloat
-		n.f = d.DecodeFloat(true)
-	case cborBdFloat64:
-		n.v = valueTypeFloat
-		n.f = d.DecodeFloat(false)
+		n.f = d.DecodeFloat64()
 	case cborBdIndefiniteBytes:
 		n.v = valueTypeBytes
 		n.l = d.DecodeBytes(nil, false)
@@ -704,6 +697,9 @@ type CborHandle struct {
 	// If unset, we encode time.Time using seconds past epoch.
 	TimeRFC3339 bool
 }
+
+// Name returns the name of the handle: cbor
+func (h *CborHandle) Name() string { return "cbor" }
 
 // SetInterfaceExt sets an extension
 func (h *CborHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {

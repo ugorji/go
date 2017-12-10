@@ -7,24 +7,9 @@ package codec
 // so porting to different environment is easy (just update functions).
 
 import (
-	"errors"
-	"fmt"
 	"reflect"
 	"time"
 )
-
-func panicValToErr(panicVal interface{}, err *error) {
-	switch xerr := panicVal.(type) {
-	case nil:
-	case error:
-		*err = xerr
-	case string:
-		*err = errors.New(xerr)
-	default:
-		*err = fmt.Errorf("%v", panicVal)
-	}
-	return
-}
 
 func hIsEmptyValue(v reflect.Value, deref, checkStruct bool) bool {
 	switch v.Kind() {

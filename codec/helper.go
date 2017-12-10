@@ -102,6 +102,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"reflect"
@@ -138,8 +139,8 @@ var (
 )
 
 var refBitset bitset32
-
 var pool pooler
+var panicv panicHdl
 
 func init() {
 	pool.init()
@@ -442,6 +443,7 @@ func (x *BasicHandle) getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo)
 // and not modified while in use. Such a pre-configured Handle
 // is safe for concurrent access.
 type Handle interface {
+	Name() string
 	getBasicHandle() *BasicHandle
 	newEncDriver(w *Encoder) encDriver
 	newDecDriver(r *Decoder) decDriver
@@ -733,7 +735,7 @@ type structFieldInfo struct {
 	is        [maxLevelsEmbedding]uint16 // (recursive/embedded) field index in struct
 	nis       uint8                      // num levels of embedding. if 1, then it's not embedded.
 	omitEmpty bool
-	toArray   bool // if field is _struct, is the toArray set?
+	// toArray   bool // if field is _struct, is the toArray set?
 }
 
 func (si *structFieldInfo) setToZeroValue(v reflect.Value) {
@@ -764,6 +766,35 @@ func (si *structFieldInfo) field(v reflect.Value, update bool) (rv2 reflect.Valu
 // 	return v
 // }
 
+func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
+	keytype = valueTypeString // default
+	if stag == "" {
+		return
+	}
+	for i, s := range strings.Split(stag, ",") {
+		if i == 0 {
+		} else {
+			switch s {
+			case "omitempty":
+				omitEmpty = true
+			case "toarray":
+				toArray = true
+			case "int":
+				keytype = valueTypeInt
+			case "uint":
+				keytype = valueTypeUint
+			case "float":
+				keytype = valueTypeFloat
+				// case "bool":
+				// 	keytype = valueTypeBool
+			case "string":
+				keytype = valueTypeString
+			}
+		}
+	}
+	return
+}
+
 func parseStructFieldInfo(fname string, stag string) (si *structFieldInfo) {
 	// if fname == "" {
 	// 	panic(errNoFieldNameToStructFieldInfo)
@@ -779,10 +810,11 @@ func parseStructFieldInfo(fname string, stag string) (si *structFieldInfo) {
 				si.encName = s
 			}
 		} else {
-			if s == "omitempty" {
+			switch s {
+			case "omitempty":
 				si.omitEmpty = true
-			} else if s == "toarray" {
-				si.toArray = true
+				// case "toarray":
+				// 	si.toArray = true
 			}
 		}
 	}
@@ -934,7 +966,8 @@ type typeInfo struct {
 	cs  bool // T is a Selfer
 	csp bool // *T is a Selfer
 
-	toArray bool // whether this (struct) type should be encoded as an array
+	toArray bool      // whether this (struct) type should be encoded as an array
+	keyType valueType // what type of key: default is string
 }
 
 // define length beyond which we do a binary search instead of a linear search.
@@ -1063,9 +1096,9 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	if rk == reflect.Struct {
 		var omitEmpty bool
 		if f, ok := rt.FieldByName(structInfoFieldName); ok {
-			siInfo := parseStructFieldInfo(structInfoFieldName, x.structTag(f.Tag))
-			ti.toArray = siInfo.toArray
-			omitEmpty = siInfo.omitEmpty
+			ti.toArray, omitEmpty, ti.keyType = parseStructInfo(x.structTag(f.Tag))
+		} else {
+			ti.keyType = valueTypeString
 		}
 		pp, pi := pool.tiLoad()
 		pv := pi.(*typeInfoLoadArray)
@@ -1293,24 +1326,44 @@ func xprintf(format string, a ...interface{}) {
 	}
 }
 
-func panicToErr(err *error) {
+func panicToErr(h errstrDecorator, err *error) {
 	if recoverPanicToErr {
 		if x := recover(); x != nil {
 			// if false && xDebug {
 			// 	fmt.Printf("panic'ing with: %v\n", x)
 			// 	debug.PrintStack()
 			// }
-			panicValToErr(x, err)
+			panicValToErr(h, x, err)
 		}
 	}
 }
 
-func panicToErrs2(err1, err2 *error) {
+func panicToErrs2(h errstrDecorator, err1, err2 *error) {
 	if recoverPanicToErr {
 		if x := recover(); x != nil {
-			panicValToErr(x, err1)
-			panicValToErr(x, err2)
+			panicValToErr(h, x, err1)
+			panicValToErr(h, x, err2)
 		}
+	}
+}
+
+func panicValToErr(h errstrDecorator, v interface{}, err *error) {
+	switch xerr := v.(type) {
+	case nil:
+	case error:
+		switch xerr {
+		case nil:
+		case io.EOF, io.ErrUnexpectedEOF, errEncoderNotInitialized: // treat as special (bubble up)
+			*err = xerr
+		default:
+			h.wrapErrstr(xerr.Error(), err)
+		}
+	case string:
+		if xerr != "" {
+			h.wrapErrstr(xerr, err)
+		}
+	default:
+		h.wrapErrstr(v, err)
 	}
 }
 
@@ -1620,8 +1673,28 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 
 // ----
 
-// these functions must be inlinable, and not call anybody
+func chkFloat32(f float64) (f32 float32) {
+	// f32 = float32(f)
+	if chkOvf.Float32(f) {
+		panicv.errorf("float32 overflow: %v", f)
+	}
+	return float32(f)
+}
+
+// these "checkOverflow" functions must be inlinable, and not call anybody.
+// Overflow means that the value cannot be represented without wrapping/overflow.
+// Overflow=false does not mean that the value can be represented without losing precision
+// (especially for floating point).
+
 type checkOverflow struct{}
+
+// func (checkOverflow) Float16(f float64) (overflow bool) {
+// 	panicv.errorf("unimplemented")
+// 	if f < 0 {
+// 		f = -f
+// 	}
+// 	return math.MaxFloat32 < f && f <= math.MaxFloat64
+// }
 
 func (checkOverflow) Float32(f float64) (overflow bool) {
 	if f < 0 {
@@ -1657,15 +1730,16 @@ func (checkOverflow) SignedInt(v uint64) (i int64, overflow bool) {
 	if pos {
 		if ui2 > math.MaxInt64 {
 			overflow = true
-			return
+		} else {
+			i = int64(v)
 		}
 	} else {
 		if ui2 > math.MaxInt64-1 {
 			overflow = true
-			return
+		} else {
+			i = int64(v)
 		}
 	}
-	i = int64(v)
 	return
 }
 
@@ -1963,4 +2037,63 @@ func (p *pooler) decNaked() (sp *sync.Pool, v interface{}) {
 }
 func (p *pooler) tiLoad() (sp *sync.Pool, v interface{}) {
 	return &p.tiload, p.tiload.Get()
+}
+
+type panicHdl struct{}
+
+func (panicHdl) errorv(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (panicHdl) errorstr(message string) {
+	if message != "" {
+		panic(message)
+	}
+}
+
+func (panicHdl) errorf(format string, params ...interface{}) {
+	if format != "" {
+		if len(params) == 0 {
+			panic(format)
+		} else {
+			panic(fmt.Sprintf(format, params...))
+		}
+	}
+}
+
+type errstrDecorator interface {
+	wrapErrstr(interface{}, *error)
+}
+
+type errstrDecoratorDef struct{}
+
+func (errstrDecoratorDef) wrapErrstr(v interface{}, e *error) { *e = fmt.Errorf("%v", v) }
+
+type must struct{}
+
+func (must) String(s string, err error) string {
+	if err != nil {
+		panicv.errorv(err)
+	}
+	return s
+}
+func (must) Int(s int64, err error) int64 {
+	if err != nil {
+		panicv.errorv(err)
+	}
+	return s
+}
+func (must) Uint(s uint64, err error) uint64 {
+	if err != nil {
+		panicv.errorv(err)
+	}
+	return s
+}
+func (must) Float(s float64, err error) float64 {
+	if err != nil {
+		panicv.errorv(err)
+	}
+	return s
 }

@@ -16473,7 +16473,7 @@ func (_ fastpathT) DecSliceFloat32V(v []float32, canChange bool, d *Decoder) (_ 
 		} else if dd.TryDecodeAsNil() {
 			v[j] = 0
 		} else {
-			v[j] = float32(dd.DecodeFloat(true))
+			v[j] = float32(chkFloat32(dd.DecodeFloat64()))
 		}
 	}
 	if canChange {
@@ -16569,7 +16569,7 @@ func (_ fastpathT) DecSliceFloat64V(v []float64, canChange bool, d *Decoder) (_ 
 		} else if dd.TryDecodeAsNil() {
 			v[j] = 0
 		} else {
-			v[j] = dd.DecodeFloat(false)
+			v[j] = dd.DecodeFloat64()
 		}
 	}
 	if canChange {
@@ -18616,7 +18616,7 @@ func (_ fastpathT) DecMapIntfFloat32V(v map[interface{}]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -18679,7 +18679,7 @@ func (_ fastpathT) DecMapIntfFloat64V(v map[interface{}]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -19574,7 +19574,7 @@ func (_ fastpathT) DecMapStringFloat32V(v map[string]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -19633,7 +19633,7 @@ func (_ fastpathT) DecMapStringFloat64V(v map[string]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -19739,7 +19739,7 @@ func (_ fastpathT) DecMapFloat32IntfV(v map[float32]interface{}, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -19803,7 +19803,7 @@ func (_ fastpathT) DecMapFloat32StringV(v map[float32]string, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -19862,7 +19862,7 @@ func (_ fastpathT) DecMapFloat32UintV(v map[float32]uint, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -19921,7 +19921,7 @@ func (_ fastpathT) DecMapFloat32Uint8V(v map[float32]uint8, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -19980,7 +19980,7 @@ func (_ fastpathT) DecMapFloat32Uint16V(v map[float32]uint16, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20039,7 +20039,7 @@ func (_ fastpathT) DecMapFloat32Uint32V(v map[float32]uint32, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20098,7 +20098,7 @@ func (_ fastpathT) DecMapFloat32Uint64V(v map[float32]uint64, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20157,7 +20157,7 @@ func (_ fastpathT) DecMapFloat32UintptrV(v map[float32]uintptr, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20216,7 +20216,7 @@ func (_ fastpathT) DecMapFloat32IntV(v map[float32]int, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20275,7 +20275,7 @@ func (_ fastpathT) DecMapFloat32Int8V(v map[float32]int8, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20334,7 +20334,7 @@ func (_ fastpathT) DecMapFloat32Int16V(v map[float32]int16, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20393,7 +20393,7 @@ func (_ fastpathT) DecMapFloat32Int32V(v map[float32]int32, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20452,7 +20452,7 @@ func (_ fastpathT) DecMapFloat32Int64V(v map[float32]int64, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20511,7 +20511,7 @@ func (_ fastpathT) DecMapFloat32Float32V(v map[float32]float32, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20524,7 +20524,7 @@ func (_ fastpathT) DecMapFloat32Float32V(v map[float32]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -20570,7 +20570,7 @@ func (_ fastpathT) DecMapFloat32Float64V(v map[float32]float64, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20583,7 +20583,7 @@ func (_ fastpathT) DecMapFloat32Float64V(v map[float32]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -20629,7 +20629,7 @@ func (_ fastpathT) DecMapFloat32BoolV(v map[float32]bool, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = float32(dd.DecodeFloat(true))
+		mk = float32(chkFloat32(dd.DecodeFloat64()))
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20689,7 +20689,7 @@ func (_ fastpathT) DecMapFloat64IntfV(v map[float64]interface{}, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20753,7 +20753,7 @@ func (_ fastpathT) DecMapFloat64StringV(v map[float64]string, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20812,7 +20812,7 @@ func (_ fastpathT) DecMapFloat64UintV(v map[float64]uint, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20871,7 +20871,7 @@ func (_ fastpathT) DecMapFloat64Uint8V(v map[float64]uint8, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20930,7 +20930,7 @@ func (_ fastpathT) DecMapFloat64Uint16V(v map[float64]uint16, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -20989,7 +20989,7 @@ func (_ fastpathT) DecMapFloat64Uint32V(v map[float64]uint32, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -21048,7 +21048,7 @@ func (_ fastpathT) DecMapFloat64Uint64V(v map[float64]uint64, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -21107,7 +21107,7 @@ func (_ fastpathT) DecMapFloat64UintptrV(v map[float64]uintptr, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -21166,7 +21166,7 @@ func (_ fastpathT) DecMapFloat64IntV(v map[float64]int, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -21225,7 +21225,7 @@ func (_ fastpathT) DecMapFloat64Int8V(v map[float64]int8, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -21284,7 +21284,7 @@ func (_ fastpathT) DecMapFloat64Int16V(v map[float64]int16, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -21343,7 +21343,7 @@ func (_ fastpathT) DecMapFloat64Int32V(v map[float64]int32, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -21402,7 +21402,7 @@ func (_ fastpathT) DecMapFloat64Int64V(v map[float64]int64, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -21461,7 +21461,7 @@ func (_ fastpathT) DecMapFloat64Float32V(v map[float64]float32, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -21474,7 +21474,7 @@ func (_ fastpathT) DecMapFloat64Float32V(v map[float64]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -21520,7 +21520,7 @@ func (_ fastpathT) DecMapFloat64Float64V(v map[float64]float64, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -21533,7 +21533,7 @@ func (_ fastpathT) DecMapFloat64Float64V(v map[float64]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -21579,7 +21579,7 @@ func (_ fastpathT) DecMapFloat64BoolV(v map[float64]bool, canChange bool,
 		if esep {
 			dd.ReadMapElemKey()
 		}
-		mk = dd.DecodeFloat(false)
+		mk = dd.DecodeFloat64()
 		if esep {
 			dd.ReadMapElemValue()
 		}
@@ -22424,7 +22424,7 @@ func (_ fastpathT) DecMapUintFloat32V(v map[uint]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -22483,7 +22483,7 @@ func (_ fastpathT) DecMapUintFloat64V(v map[uint]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -23374,7 +23374,7 @@ func (_ fastpathT) DecMapUint8Float32V(v map[uint8]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -23433,7 +23433,7 @@ func (_ fastpathT) DecMapUint8Float64V(v map[uint8]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -24324,7 +24324,7 @@ func (_ fastpathT) DecMapUint16Float32V(v map[uint16]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -24383,7 +24383,7 @@ func (_ fastpathT) DecMapUint16Float64V(v map[uint16]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -25274,7 +25274,7 @@ func (_ fastpathT) DecMapUint32Float32V(v map[uint32]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -25333,7 +25333,7 @@ func (_ fastpathT) DecMapUint32Float64V(v map[uint32]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -26224,7 +26224,7 @@ func (_ fastpathT) DecMapUint64Float32V(v map[uint64]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -26283,7 +26283,7 @@ func (_ fastpathT) DecMapUint64Float64V(v map[uint64]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -27174,7 +27174,7 @@ func (_ fastpathT) DecMapUintptrFloat32V(v map[uintptr]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -27233,7 +27233,7 @@ func (_ fastpathT) DecMapUintptrFloat64V(v map[uintptr]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -28124,7 +28124,7 @@ func (_ fastpathT) DecMapIntFloat32V(v map[int]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -28183,7 +28183,7 @@ func (_ fastpathT) DecMapIntFloat64V(v map[int]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -29074,7 +29074,7 @@ func (_ fastpathT) DecMapInt8Float32V(v map[int8]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -29133,7 +29133,7 @@ func (_ fastpathT) DecMapInt8Float64V(v map[int8]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -30024,7 +30024,7 @@ func (_ fastpathT) DecMapInt16Float32V(v map[int16]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -30083,7 +30083,7 @@ func (_ fastpathT) DecMapInt16Float64V(v map[int16]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -30974,7 +30974,7 @@ func (_ fastpathT) DecMapInt32Float32V(v map[int32]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -31033,7 +31033,7 @@ func (_ fastpathT) DecMapInt32Float64V(v map[int32]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -31924,7 +31924,7 @@ func (_ fastpathT) DecMapInt64Float32V(v map[int64]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -31983,7 +31983,7 @@ func (_ fastpathT) DecMapInt64Float64V(v map[int64]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}
@@ -32874,7 +32874,7 @@ func (_ fastpathT) DecMapBoolFloat32V(v map[bool]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(dd.DecodeFloat(true))
+		mv = float32(chkFloat32(dd.DecodeFloat64()))
 		if v != nil {
 			v[mk] = mv
 		}
@@ -32933,7 +32933,7 @@ func (_ fastpathT) DecMapBoolFloat64V(v map[bool]float64, canChange bool,
 			}
 			continue
 		}
-		mv = dd.DecodeFloat(false)
+		mv = dd.DecodeFloat64()
 		if v != nil {
 			v[mk] = mv
 		}

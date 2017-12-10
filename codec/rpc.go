@@ -103,7 +103,7 @@ func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2 bool) (err error) {
 }
 
 func (c *rpcCodec) swallow(err *error) {
-	defer panicToErr(err)
+	defer panicToErr(c.dec, err)
 	c.dec.swallow()
 }
 

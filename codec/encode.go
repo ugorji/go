@@ -11,6 +11,7 @@ import (
 	"io"
 	"reflect"
 	"sort"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -178,30 +179,6 @@ type simpleIoEncWriter struct {
 	io.Writer
 }
 
-// type bufIoEncWriter struct {
-// 	w   io.Writer
-// 	buf []byte
-// 	err error
-// }
-
-// func (x *bufIoEncWriter) Write(b []byte) (n int, err error) {
-// 	if x.err != nil {
-// 		return 0, x.err
-// 	}
-// 	if cap(x.buf)-len(x.buf) >= len(b) {
-// 		x.buf = append(x.buf, b)
-// 		return len(b), nil
-// 	}
-// 	n, err = x.w.Write(x.buf)
-// 	if err != nil {
-// 		x.err = err
-// 		return 0, x.err
-// 	}
-// 	n, err = x.w.Write(b)
-// 	x.err = err
-// 	return
-// }
-
 // ioEncWriter implements encWriter and can write to an io.Writer implementation
 type ioEncWriter struct {
 	w  io.Writer
@@ -271,84 +248,6 @@ func (z *ioEncWriter) atEndOfEncode() {
 	}
 }
 
-// // ----------------------------------------
-
-// // bytesEncWriter implements encWriter and can write to an byte slice.
-// // It is used by Marshal function.
-// type bytesEncWriter struct {
-// 	b   []byte
-// 	c   int     // cursor
-// 	out *[]byte // write out on atEndOfEncode
-// }
-
-// func (z *bytesEncWriter) writeb(s []byte) {
-// 	oc, a := z.growNoAlloc(len(s))
-// 	if a {
-// 		z.growAlloc(len(s), oc)
-// 	}
-// 	copy(z.b[oc:], s)
-// }
-
-// func (z *bytesEncWriter) writestr(s string) {
-// 	oc, a := z.growNoAlloc(len(s))
-// 	if a {
-// 		z.growAlloc(len(s), oc)
-// 	}
-// 	copy(z.b[oc:], s)
-// }
-
-// func (z *bytesEncWriter) writen1(b1 byte) {
-// 	oc, a := z.growNoAlloc(1)
-// 	if a {
-// 		z.growAlloc(1, oc)
-// 	}
-// 	z.b[oc] = b1
-// }
-
-// func (z *bytesEncWriter) writen2(b1, b2 byte) {
-// 	oc, a := z.growNoAlloc(2)
-// 	if a {
-// 		z.growAlloc(2, oc)
-// 	}
-// 	z.b[oc+1] = b2
-// 	z.b[oc] = b1
-// }
-
-// func (z *bytesEncWriter) atEndOfEncode() {
-// 	*(z.out) = z.b[:z.c]
-// }
-
-// // have a growNoalloc(n int), which can be inlined.
-// // if allocation is needed, then call growAlloc(n int)
-
-// func (z *bytesEncWriter) growNoAlloc(n int) (oldcursor int, allocNeeded bool) {
-// 	oldcursor = z.c
-// 	z.c = z.c + n
-// 	if z.c > len(z.b) {
-// 		if z.c > cap(z.b) {
-// 			allocNeeded = true
-// 		} else {
-// 			z.b = z.b[:cap(z.b)]
-// 		}
-// 	}
-// 	return
-// }
-
-// func (z *bytesEncWriter) growAlloc(n int, oldcursor int) {
-// 	// appendslice logic (if cap < 1024, *2, else *1.25): more expensive. many copy calls.
-// 	// bytes.Buffer model (2*cap + n): much better
-// 	// bs := make([]byte, 2*cap(z.b)+n)
-// 	bs := make([]byte, growCap(cap(z.b), 1, n))
-// 	copy(bs, z.b[:oldcursor])
-// 	z.b = bs
-// }
-
-// func (z *bytesEncWriter) reset(in []byte, out *[]byte) {
-// 	z.out = out
-// 	z.b = in
-// 	z.c = 0
-// }
-
 // ---------------------------------------------
 
 // bytesEncAppender implements encWriter and can write to an byte slice.
@@ -384,16 +283,6 @@ func (z *bytesEncAppender) reset(in []byte, out *[]byte) {
 // }
 
 func (e *Encoder) rawExt(f *codecFnInfo, rv reflect.Value) {
-	// rev := rv2i(rv).(RawExt)
-	// e.e.EncodeRawExt(&rev, e)
-	// var re *RawExt
-	// if rv.CanAddr() {
-	// 	re = rv2i(rv.Addr()).(*RawExt)
-	// } else {
-	// 	rev := rv2i(rv).(RawExt)
-	// 	re = &rev
-	// }
-	// e.e.EncodeRawExt(re, e)
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt), e)
 }
 
@@ -580,41 +469,57 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 		ee.WriteMapStart(len(tisfi))
 		// asSymbols := e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 		asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
-		if !elemsep {
+		if elemsep {
 			for _, si := range tisfi {
-				if asSymbols {
-					ee.EncodeSymbol(si.encName)
-				} else {
-					ee.EncodeString(cUTF8, si.encName)
-				}
+				ee.WriteMapElemKey()
+				encStructFieldKey(ee, fti.keyType, si.encName, asSymbols)
+				ee.WriteMapElemValue()
 				e.encodeValue(sfn.field(si), nil, true)
 			}
 		} else {
 			for _, si := range tisfi {
-				ee.WriteMapElemKey()
-				if asSymbols {
-					ee.EncodeSymbol(si.encName)
-				} else {
-					ee.EncodeString(cUTF8, si.encName)
-				}
-				ee.WriteMapElemValue()
+				encStructFieldKey(ee, fti.keyType, si.encName, asSymbols)
 				e.encodeValue(sfn.field(si), nil, true)
 			}
 		}
 		ee.WriteMapEnd()
 	} else {
 		ee.WriteArrayStart(len(tisfi))
-		if !elemsep {
-			for _, si := range tisfi {
-				e.encodeValue(sfn.field(si), nil, true)
-			}
-		} else {
+		if elemsep {
 			for _, si := range tisfi {
 				ee.WriteArrayElem()
 				e.encodeValue(sfn.field(si), nil, true)
 			}
+		} else {
+			for _, si := range tisfi {
+				e.encodeValue(sfn.field(si), nil, true)
+			}
 		}
 		ee.WriteArrayEnd()
+	}
+}
+
+func encStructFieldKey(ee encDriver, keyType valueType, s string, asSymbols bool) {
+	var m must
+	switch keyType {
+	case valueTypeString:
+		if asSymbols {
+			ee.EncodeSymbol(s)
+		} else {
+			ee.EncodeString(cUTF8, s)
+		}
+	case valueTypeInt:
+		ee.EncodeInt(m.Int(strconv.ParseInt(s, 10, 64)))
+	case valueTypeUint:
+		ee.EncodeUint(m.Uint(strconv.ParseUint(s, 10, 64)))
+	case valueTypeFloat:
+		ee.EncodeFloat64(m.Float(strconv.ParseFloat(s, 64)))
+	default: // string
+		if asSymbols {
+			ee.EncodeSymbol(s)
+		} else {
+			ee.EncodeString(cUTF8, s)
+		}
 	}
 }
 
@@ -694,39 +599,31 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		ee.WriteMapStart(newlen)
 		// asSymbols := e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 		asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
-		if !elemsep {
+		if elemsep {
 			for j := 0; j < newlen; j++ {
 				kv = fkvs[j]
-				if asSymbols {
-					ee.EncodeSymbol(kv.v)
-				} else {
-					ee.EncodeString(cUTF8, kv.v)
-				}
+				ee.WriteMapElemKey()
+				encStructFieldKey(ee, fti.keyType, kv.v, asSymbols)
+				ee.WriteMapElemValue()
 				e.encodeValue(kv.r, nil, true)
 			}
 		} else {
 			for j := 0; j < newlen; j++ {
 				kv = fkvs[j]
-				ee.WriteMapElemKey()
-				if asSymbols {
-					ee.EncodeSymbol(kv.v)
-				} else {
-					ee.EncodeString(cUTF8, kv.v)
-				}
-				ee.WriteMapElemValue()
+				encStructFieldKey(ee, fti.keyType, kv.v, asSymbols)
 				e.encodeValue(kv.r, nil, true)
 			}
 		}
 		ee.WriteMapEnd()
 	} else {
 		ee.WriteArrayStart(newlen)
-		if !elemsep {
+		if elemsep {
 			for j := 0; j < newlen; j++ {
+				ee.WriteArrayElem()
 				e.encodeValue(fkvs[j].r, nil, true)
 			}
 		} else {
 			for j := 0; j < newlen; j++ {
-				ee.WriteArrayElem()
 				e.encodeValue(fkvs[j].r, nil, true)
 			}
 		}
@@ -1055,6 +952,7 @@ type encWriterSwitch struct {
 
 // An Encoder writes an object to an output stream in the codec format.
 type Encoder struct {
+	panicHdl
 	// hopefully, reduce derefencing cost by laying the encWriter inside the Encoder
 	e encDriver
 	// NOTE: Encoder shouldn't call it's write methods,
@@ -1180,7 +1078,14 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // Note that the "json" key is used in the absence of the "codec" key.
 //
 // To set an option on all fields (e.g. omitempty on all fields), you
-// can create a field called _struct, and set flags on it.
+// can create a field called _struct, and set flags on it. The options
+// which can be set on _struct are:
+//    - omitempty: so all fields are omitted if empty
+//    - toarray: so struct is encoded as an array
+//    - int: so struct key names are encoded as signed integers (instead of strings)
+//    - uint: so struct key names are encoded as unsigned integers (instead of strings)
+//    - float: so struct key names are encoded as floats (instead of strings)
+// More details on these below.
 //
 // Struct values "usually" encode as maps. Each exported struct field is encoded unless:
 //    - the field's tag is "-", OR
@@ -1188,6 +1093,13 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 //
 // When encoding as a map, the first string in the tag (before the comma)
 // is the map key string to use when encoding.
+// ...
+// This key is typically encoded as a string.
+// However, there are instances where the encoded stream has mapping keys encoded as numbers.
+// For example, some cbor streams have keys as integer codes in the stream, but they should map
+// to fields in a structured object. Consequently, a struct is the natural representation in code.
+// For these, you can configure the struct to encode/decode the keys as numbers (instead of string).
+// This is done with the int,uint or float option on the _struct field (see above).
 //
 // However, struct values may encode as arrays. This happens when:
 //    - StructToArray Encode option is set, OR
@@ -1220,7 +1132,13 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 //      }
 //
 //      type MyStruct struct {
-//          _struct bool    `codec:",toarray"`   //encode struct as an array
+//          _struct bool    `codec:",toarray"`     //encode struct as an array
+//      }
+//
+//      type MyStruct struct {
+//          _struct bool    `codec:",uint"`        //encode struct with "unsigned integer" keys
+//          Field1 string   `codec:"1"`            //encode Field1 key using: EncodeInt(1)
+//          Field2 string   `codec:"2"`            //encode Field2 key using: EncodeInt(2)
 //      }
 //
 // The mode of encoding is based on the type of the value. When a value is seen:
@@ -1233,7 +1151,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // Some formats support symbols (e.g. binc) and will properly encode the string
 // only once in the stream, and use a tag to refer to it thereafter.
 func (e *Encoder) Encode(v interface{}) (err error) {
-	defer panicToErrs2(&e.err, &err)
+	defer panicToErrs2(e, &e.err, &err)
 	e.MustEncode(v)
 	return
 }
@@ -1445,11 +1363,6 @@ func (e *Encoder) rawBytes(vv Raw) {
 	e.asis(v)
 }
 
-func (e *Encoder) errorf(format string, params ...interface{}) {
-	err := fmt.Errorf(format, params...)
-	panic(err)
-}
-
-func (e *Encoder) error(err error) {
-	panic(err)
+func (e *Encoder) wrapErrstr(v interface{}, err *error) {
+	*err = fmt.Errorf("%s encode error: %v", e.hh.Name(), v)
 }
