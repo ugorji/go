@@ -52,6 +52,8 @@ Rich Feature Set includes:
     Includes Options to configure what specific map or slice type to use
     when decoding an encoded list or map into a nil interface{}
   - Encode a struct as an array, and decode struct from an array in the data stream
+  - Option to encode struct keys as numbers (instead of strings)
+    (to support structured streams with fields encoded as numeric codes)
   - Comprehensive support for anonymous fields
   - Fast (no-reflection) encoding/decoding of common maps and slices
   - Code-generation for faster performance.

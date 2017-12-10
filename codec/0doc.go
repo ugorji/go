@@ -33,7 +33,7 @@ Rich Feature Set includes:
 
   - Simple but extremely powerful and feature-rich API
   - Support for go1.4 and above, while selectively using newer APIs for later releases
-  - Good code coverage ( > 70% )
+  - Excellent code coverage ( > 90% )
   - Very High Performance.
     Our extensive benchmarks show us outperforming Gob, Json, Bson, etc by 2-4X.
   - Careful selected use of 'unsafe' for targeted performance gains.
@@ -54,6 +54,8 @@ Rich Feature Set includes:
     Includes Options to configure what specific map or slice type to use
     when decoding an encoded list or map into a nil interface{}
   - Encode a struct as an array, and decode struct from an array in the data stream
+  - Option to encode struct keys as numbers (instead of strings)
+    (to support structured streams with fields encoded as numeric codes)
   - Comprehensive support for anonymous fields
   - Fast (no-reflection) encoding/decoding of common maps and slices
   - Code-generation for faster performance.
