@@ -81,7 +81,7 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	t.Run("optionsTrue-deepstruct", f)
 	testDepth = 0
 
-	testEncodeOptions.AsSymbols = AsSymbolAll
+	// testEncodeOptions.AsSymbols = AsSymbolAll
 	testUseIoWrapper = true
 	testReinit()
 	t.Run("optionsTrue-ioWrapper", f)
@@ -408,17 +408,17 @@ func TestCodecSuite(t *testing.T) {
 	t.Run("cbor-rfc3339", testCborGroup)
 	testCborH.TimeRFC3339 = oldTimeRFC3339
 
-	oldSymbols := testBincH.getBasicHandle().AsSymbols
+	oldSymbols := testBincH.AsSymbols
 
-	testBincH.getBasicHandle().AsSymbols = AsSymbolNone
+	testBincH.AsSymbols = 2 // AsSymbolNone
 	testReinit()
 	t.Run("binc-no-symbols", testBincGroup)
 
-	testBincH.getBasicHandle().AsSymbols = AsSymbolAll
+	testBincH.AsSymbols = 1 // AsSymbolAll
 	testReinit()
 	t.Run("binc-all-symbols", testBincGroup)
 
-	testBincH.getBasicHandle().AsSymbols = oldSymbols
+	testBincH.AsSymbols = oldSymbols
 
 	oldWriteExt := testMsgpackH.WriteExt
 	oldNoFixedNum := testMsgpackH.NoFixedNum

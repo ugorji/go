@@ -27,6 +27,8 @@ var (
 	errmsgExpandSliceOverflow     = "expand slice: slice overflow"
 	errmsgExpandSliceCannotChange = "expand slice: cannot change"
 
+	errDecoderNotInitialized = errors.New("Decoder not initialized")
+
 	errDecUnreadByteNothingToRead   = errors.New("cannot unread - nothing has been read")
 	errDecUnreadByteLastByteNotRead = errors.New("cannot unread - last byte has not been read")
 	errDecUnreadByteUnknown         = errors.New("cannot unread - reason unknown")
@@ -80,8 +82,12 @@ type decDriver interface {
 	// kInterface will extract the detached byte slice if it has to pass it outside its realm.
 	DecodeNaked()
 
-	DecodeInt(bitsize uint8) (i int64)
-	DecodeUint(bitsize uint8) (ui uint64)
+	// Deprecated: use DecodeInt64 and DecodeUint64 instead
+	// DecodeInt(bitsize uint8) (i int64)
+	// DecodeUint(bitsize uint8) (ui uint64)
+
+	DecodeInt64() (i int64)
+	DecodeUint64() (ui uint64)
 
 	DecodeFloat64() (f float64)
 	DecodeBool() (b bool)
@@ -1076,7 +1082,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 	case valueTypeTime:
 		rvn = n.rr[decNakedTimeIdx] // d.np.get(&n.t)
 	default:
-		panic(fmt.Errorf("kInterfaceNaked: unexpected valueType: %d", n.v))
+		panicv.errorf("kInterfaceNaked: unexpected valueType: %d", n.v)
 	}
 	return
 }
@@ -1131,19 +1137,35 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 }
 
 func decStructFieldKey(dd decDriver, keyType valueType, b *[scratchByteArrayLen]byte) (rvkencname []byte) {
-	switch keyType {
-	case valueTypeString:
-		rvkencname = (dd.DecodeStringAsBytes())
-	case valueTypeInt:
-		rvkencname = (strconv.AppendInt(b[:0], dd.DecodeInt(64), 10))
-	case valueTypeUint:
-		rvkencname = (strconv.AppendUint(b[:0], dd.DecodeUint(64), 10))
-	case valueTypeFloat:
-		rvkencname = (strconv.AppendFloat(b[:0], dd.DecodeFloat64(), 'f', -1, 64))
-	default: // string
-		rvkencname = (dd.DecodeStringAsBytes())
+	// use if-else-if, not switch (which compiles to binary-search)
+	// since keyType is typically valueTypeString, branch prediction is pretty good.
+
+	if keyType == valueTypeString {
+		rvkencname = dd.DecodeStringAsBytes()
+	} else if keyType == valueTypeInt {
+		rvkencname = strconv.AppendInt(b[:0], dd.DecodeInt64(), 10)
+	} else if keyType == valueTypeUint {
+		rvkencname = strconv.AppendUint(b[:0], dd.DecodeUint64(), 10)
+	} else if keyType == valueTypeFloat {
+		rvkencname = strconv.AppendFloat(b[:0], dd.DecodeFloat64(), 'f', -1, 64)
+	} else {
+		rvkencname = dd.DecodeStringAsBytes()
 	}
-	return
+	return rvkencname
+
+	// switch keyType {
+	// case valueTypeString:
+	// 	return dd.DecodeStringAsBytes()
+	// case valueTypeInt:
+	// 	return strconv.AppendInt(b[:0], dd.DecodeInt64(), 10)
+	// case valueTypeUint:
+	// 	return strconv.AppendUint(b[:0], dd.DecodeUint64(), 10)
+	// case valueTypeFloat:
+	// 	return strconv.AppendFloat(b[:0], dd.DecodeFloat64(), 'f', -1, 64)
+	// 	// default: // string
+	// 	// 	return dd.DecodeStringAsBytes()
+	// }
+	// return dd.DecodeStringAsBytes()
 }
 
 func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
@@ -1846,7 +1868,7 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 var defaultDecNaked decNaked
 
 func newDecoder(h Handle) *Decoder {
-	d := &Decoder{hh: h, h: h.getBasicHandle()}
+	d := &Decoder{hh: h, h: h.getBasicHandle(), err: errDecoderNotInitialized}
 	d.be = h.isBinary()
 	// NOTE: do not initialize d.n here. It is lazily initialized in d.naked()
 	var jh *JsonHandle
@@ -2154,25 +2176,25 @@ func (d *Decoder) decode(iv interface{}) {
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
-		*v = int(d.d.DecodeInt(intBitsize))
+		*v = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 	case *int8:
-		*v = int8(d.d.DecodeInt(8))
+		*v = int8(chkOvf.IntV(d.d.DecodeInt64(), 8))
 	case *int16:
-		*v = int16(d.d.DecodeInt(16))
+		*v = int16(chkOvf.IntV(d.d.DecodeInt64(), 16))
 	case *int32:
-		*v = int32(d.d.DecodeInt(32))
+		*v = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 	case *int64:
-		*v = d.d.DecodeInt(64)
+		*v = d.d.DecodeInt64()
 	case *uint:
-		*v = uint(d.d.DecodeUint(uintBitsize))
+		*v = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
 	case *uint8:
-		*v = uint8(d.d.DecodeUint(8))
+		*v = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 	case *uint16:
-		*v = uint16(d.d.DecodeUint(16))
+		*v = uint16(chkOvf.UintV(d.d.DecodeUint64(), 16))
 	case *uint32:
-		*v = uint32(d.d.DecodeUint(32))
+		*v = uint32(chkOvf.UintV(d.d.DecodeUint64(), 32))
 	case *uint64:
-		*v = d.d.DecodeUint(64)
+		*v = d.d.DecodeUint64()
 	case *float32:
 		f64 := d.d.DecodeFloat64()
 		if chkOvf.Float32(f64) {

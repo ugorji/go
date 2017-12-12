@@ -291,9 +291,9 @@ func (e *msgpackEncDriver) EncodeString(c charEncoding, s string) {
 	}
 }
 
-func (e *msgpackEncDriver) EncodeSymbol(v string) {
-	e.EncodeString(cUTF8, v)
-}
+// func (e *msgpackEncDriver) EncodeSymbol(v string) {
+// 	e.EncodeString(cUTF8, v)
+// }
 
 func (e *msgpackEncDriver) EncodeStringBytes(c charEncoding, bs []byte) {
 	if bs == nil {
@@ -450,7 +450,7 @@ func (d *msgpackDecDriver) DecodeNaked() {
 }
 
 // int can be decoded from msgpack type: intXXX or uintXXX
-func (d *msgpackDecDriver) DecodeInt(bitsize uint8) (i int64) {
+func (d *msgpackDecDriver) DecodeInt64() (i int64) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -482,19 +482,12 @@ func (d *msgpackDecDriver) DecodeInt(bitsize uint8) (i int64) {
 			return
 		}
 	}
-	// check overflow (logic adapted from std pkg reflect/value.go OverflowUint()
-	if bitsize > 0 {
-		if trunc := (i << (64 - bitsize)) >> (64 - bitsize); i != trunc {
-			d.d.errorf("Overflow int value: %v", i)
-			return
-		}
-	}
 	d.bdRead = false
 	return
 }
 
 // uint can be decoded from msgpack type: intXXX or uintXXX
-func (d *msgpackDecDriver) DecodeUint(bitsize uint8) (ui uint64) {
+func (d *msgpackDecDriver) DecodeUint64() (ui uint64) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -547,13 +540,6 @@ func (d *msgpackDecDriver) DecodeUint(bitsize uint8) (ui uint64) {
 			return
 		}
 	}
-	// check overflow (logic adapted from std pkg reflect/value.go OverflowUint()
-	if bitsize > 0 {
-		if trunc := (ui << (64 - bitsize)) >> (64 - bitsize); ui != trunc {
-			d.d.errorf("Overflow uint value: %v", ui)
-			return
-		}
-	}
 	d.bdRead = false
 	return
 }
@@ -568,7 +554,7 @@ func (d *msgpackDecDriver) DecodeFloat64() (f float64) {
 	} else if d.bd == mpDouble {
 		f = math.Float64frombits(bigen.Uint64(d.r.readx(8)))
 	} else {
-		f = float64(d.DecodeInt(0))
+		f = float64(d.DecodeInt64())
 	}
 	d.bdRead = false
 	return

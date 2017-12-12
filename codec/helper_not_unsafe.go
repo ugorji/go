@@ -129,47 +129,47 @@ func (d *Decoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (d *Decoder) kInt(f *codecFnInfo, rv reflect.Value) {
-	rv.SetInt(d.d.DecodeInt(intBitsize))
+	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 }
 
 func (d *Decoder) kInt8(f *codecFnInfo, rv reflect.Value) {
-	rv.SetInt(d.d.DecodeInt(8))
+	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), 8))
 }
 
 func (d *Decoder) kInt16(f *codecFnInfo, rv reflect.Value) {
-	rv.SetInt(d.d.DecodeInt(16))
+	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), 16))
 }
 
 func (d *Decoder) kInt32(f *codecFnInfo, rv reflect.Value) {
-	rv.SetInt(d.d.DecodeInt(32))
+	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), 32))
 }
 
 func (d *Decoder) kInt64(f *codecFnInfo, rv reflect.Value) {
-	rv.SetInt(d.d.DecodeInt(64))
+	rv.SetInt(d.d.DecodeInt64())
 }
 
 func (d *Decoder) kUint(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(d.d.DecodeUint(uintBitsize))
+	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
 }
 
 func (d *Decoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(d.d.DecodeUint(uintBitsize))
+	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
 }
 
 func (d *Decoder) kUint8(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(d.d.DecodeUint(8))
+	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), 8))
 }
 
 func (d *Decoder) kUint16(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(d.d.DecodeUint(16))
+	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), 16))
 }
 
 func (d *Decoder) kUint32(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(d.d.DecodeUint(32))
+	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), 32))
 }
 
 func (d *Decoder) kUint64(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(d.d.DecodeUint(64))
+	rv.SetUint(d.d.DecodeUint64())
 }
 
 // ----------------

@@ -346,8 +346,8 @@ func testInit() {
 		// pre-fill them first
 		bh.EncodeOptions = testEncodeOptions
 		bh.DecodeOptions = testDecodeOptions
-		// bh.InterfaceReset = true // TODO: remove
-		// bh.PreferArrayOverSlice = true // TODO: remove
+		// bh.InterfaceReset = true
+		// bh.PreferArrayOverSlice = true
 		// modify from flag'ish things
 		bh.InternString = testInternStr
 		bh.Canonical = testCanonical
@@ -1878,8 +1878,6 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testUnmarshalErr(m2, bs, h, t, "-")
 	testDeepEqualErr(m, m2, t, "-")
 
-	// TODO: skip rest if 32-bit
-
 	// do same tests for large strings (encoded as symbols or not)
 	// skip if 32-bit or not using unsafe mode
 	if safeMode || (32<<(^uint(0)>>63)) < 64 {
@@ -1891,10 +1889,11 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	// to do this, we create a simple one-field struct,
 	// use use flags to switch from symbols to non-symbols
 
-	bh := h.getBasicHandle()
-	oldAsSymbols := bh.AsSymbols
-	defer func() { bh.AsSymbols = oldAsSymbols }()
-
+	hbinc, okbinc := h.(*BincHandle)
+	if okbinc {
+		oldAsSymbols := hbinc.AsSymbols
+		defer func() { hbinc.AsSymbols = oldAsSymbols }()
+	}
 	var out []byte = make([]byte, 0, math.MaxUint16*3/2)
 	var in []byte = make([]byte, math.MaxUint16*3/2)
 	for i := range in {
@@ -1915,7 +1914,9 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		// fmt.Printf("testcontainerlen: large string: i: %v, |%s|\n", i, s1)
 		m1[s1] = true
 
-		bh.AsSymbols = AsSymbolNone
+		if okbinc {
+			hbinc.AsSymbols = 2
+		}
 		out = out[:0]
 		e.ResetBytes(&out)
 		e.MustEncode(m1)
@@ -1924,15 +1925,17 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testUnmarshalErr(m2, out, h, t, "no-symbols")
 		testDeepEqualErr(m1, m2, t, "no-symbols")
 
-		// now, do as symbols
-		bh.AsSymbols = AsSymbolAll
-		out = out[:0]
-		e.ResetBytes(&out)
-		e.MustEncode(m1)
-		// bs, _ = testMarshalErr(m1, h, t, "-")
-		m2 = make(map[string]bool, 1)
-		testUnmarshalErr(m2, out, h, t, "symbols")
-		testDeepEqualErr(m1, m2, t, "symbols")
+		if okbinc {
+			// now, do as symbols
+			hbinc.AsSymbols = 1
+			out = out[:0]
+			e.ResetBytes(&out)
+			e.MustEncode(m1)
+			// bs, _ = testMarshalErr(m1, h, t, "-")
+			m2 = make(map[string]bool, 1)
+			testUnmarshalErr(m2, out, h, t, "symbols")
+			testDeepEqualErr(m1, m2, t, "symbols")
+		}
 	}
 
 }

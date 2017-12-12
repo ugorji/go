@@ -565,7 +565,7 @@ type setExtWrapper struct {
 
 func (x *setExtWrapper) check(v bool, s string) {
 	if v {
-		panic(fmt.Errorf("%s is not supported", s))
+		panicv.errorf("%s is not supported", s)
 	}
 }
 func (x *setExtWrapper) WriteExt(v interface{}) []byte {
@@ -1072,7 +1072,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	rk := rt.Kind()
 
 	if rk == reflect.Ptr { // || (rk == reflect.Interface && rtid != intfTypId) {
-		panic(fmt.Errorf("invalid kind passed to TypeInfos.get: %v - %v", rk, rt))
+		panicv.errorf("invalid kind passed to TypeInfos.get: %v - %v", rk, rt)
 	}
 
 	// do not hold lock while computing this.
@@ -1110,25 +1110,38 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	}
 	// sfi = sfip
 
-	var vs []rtid2ti
 	x.mu.Lock()
 	sp = x.infos.load()
 	if sp == nil {
 		pti = &ti
-		vs = []rtid2ti{{rtid, pti}}
+		vs := append(make([]rtid2ti, 0, 16), rtid2ti{rtid, pti})
 		x.infos.store(&vs)
 	} else {
 		idx, pti = x.find(sp, rtid)
 		if pti == nil {
-			s := *sp
 			pti = &ti
-			vs = make([]rtid2ti, len(s)+1)
-			copy(vs, s[:idx])
+			vs := append(*sp, rtid2ti{})
+			copy(vs[idx+1:], vs[idx:])
 			vs[idx] = rtid2ti{rtid, pti}
-			copy(vs[idx+1:], s[idx:])
 			x.infos.store(&vs)
 		}
 	}
+	// if sp == nil {
+	// 	pti = &ti
+	// 	vs := []rtid2ti{{rtid, pti}}
+	// 	x.infos.store(&vs)
+	// } else {
+	// 	idx, pti = x.find(sp, rtid)
+	// 	if pti == nil {
+	// 		s := *sp
+	// 		pti = &ti
+	// 		vs := make([]rtid2ti, len(s)+1)
+	// 		copy(vs, s[:idx])
+	// 		vs[idx] = rtid2ti{rtid, pti}
+	// 		copy(vs[idx+1:], s[idx:])
+	// 		x.infos.store(&vs)
+	// 	}
+	// }
 	x.mu.Unlock()
 	return
 }
@@ -1146,7 +1159,7 @@ func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
 	//       and iteration using equals is faster than maps there
 	flen := rt.NumField()
 	if flen > (1<<maxLevelsEmbedding - 1) {
-		panic(fmt.Errorf("codec: types with more than %v fields are not supported - has %v fields", (1<<maxLevelsEmbedding - 1), flen))
+		panicv.errorf("codec: types with more than %v fields are not supported - has %v fields", (1<<maxLevelsEmbedding - 1), flen)
 	}
 LOOP:
 	for j, jlen := uint16(0), uint16(flen); j < jlen; j++ {
@@ -1243,7 +1256,7 @@ LOOP:
 
 		// si.ikind = int(f.Type.Kind())
 		if len(indexstack) > maxLevelsEmbedding-1 {
-			panic(fmt.Errorf("codec: only supports up to %v depth of embedding - type has %v depth", maxLevelsEmbedding-1, len(indexstack)))
+			panicv.errorf("codec: only supports up to %v depth of embedding - type has %v depth", maxLevelsEmbedding-1, len(indexstack))
 		}
 		si.nis = uint8(len(indexstack)) + 1
 		copy(si.is[:], indexstack)
@@ -1261,7 +1274,7 @@ LOOP:
 func rgetResolveSFI(x []*structFieldInfo, pv []sfiIdx) (y, z []*structFieldInfo, anyOmitEmpty bool) {
 	var n int
 	for i, v := range x {
-		xn := v.encName // TODO: fieldName or encName? use encName for now.
+		xn := v.encName // fieldName or encName? use encName for now.
 		var found bool
 		for j, k := range pv {
 			if k.name == xn {
@@ -1353,7 +1366,8 @@ func panicValToErr(h errstrDecorator, v interface{}, err *error) {
 	case error:
 		switch xerr {
 		case nil:
-		case io.EOF, io.ErrUnexpectedEOF, errEncoderNotInitialized: // treat as special (bubble up)
+		case io.EOF, io.ErrUnexpectedEOF, errEncoderNotInitialized, errDecoderNotInitialized:
+			// treat as special (bubble up)
 			*err = xerr
 		default:
 			h.wrapErrstr(xerr.Error(), err)
@@ -1361,6 +1375,10 @@ func panicValToErr(h errstrDecorator, v interface{}, err *error) {
 	case string:
 		if xerr != "" {
 			h.wrapErrstr(xerr, err)
+		}
+	case fmt.Stringer:
+		if xerr != nil {
+			h.wrapErrstr(xerr.String(), err)
 		}
 	default:
 		h.wrapErrstr(v, err)
@@ -1371,7 +1389,7 @@ func panicValToErr(h errstrDecorator, v interface{}, err *error) {
 // 	params2 := make([]interface{}, len(params)+1)
 // 	params2[0] = tag
 // 	copy(params2[1:], params)
-// 	panic(fmt.Errorf("%s: "+format, params2...))
+// 	panicv.errorf("%s: "+format, params2...)
 // }
 
 func isImmutableKind(k reflect.Kind) (v bool) {
@@ -1673,14 +1691,6 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 
 // ----
 
-func chkFloat32(f float64) (f32 float32) {
-	// f32 = float32(f)
-	if chkOvf.Float32(f) {
-		panicv.errorf("float32 overflow: %v", f)
-	}
-	return float32(f)
-}
-
 // these "checkOverflow" functions must be inlinable, and not call anybody.
 // Overflow means that the value cannot be represented without wrapping/overflow.
 // Overflow=false does not mean that the value can be represented without losing precision
@@ -1696,13 +1706,12 @@ type checkOverflow struct{}
 // 	return math.MaxFloat32 < f && f <= math.MaxFloat64
 // }
 
-func (checkOverflow) Float32(f float64) (overflow bool) {
-	if f < 0 {
-		f = -f
+func (checkOverflow) Float32(v float64) (overflow bool) {
+	if v < 0 {
+		v = -v
 	}
-	return math.MaxFloat32 < f && f <= math.MaxFloat64
+	return math.MaxFloat32 < v && v <= math.MaxFloat64
 }
-
 func (checkOverflow) Uint(v uint64, bitsize uint8) (overflow bool) {
 	if bitsize == 0 || bitsize >= 64 || v == 0 {
 		return
@@ -1712,7 +1721,6 @@ func (checkOverflow) Uint(v uint64, bitsize uint8) (overflow bool) {
 	}
 	return
 }
-
 func (checkOverflow) Int(v int64, bitsize uint8) (overflow bool) {
 	if bitsize == 0 || bitsize >= 64 || v == 0 {
 		return
@@ -1722,25 +1730,45 @@ func (checkOverflow) Int(v int64, bitsize uint8) (overflow bool) {
 	}
 	return
 }
-
-func (checkOverflow) SignedInt(v uint64) (i int64, overflow bool) {
+func (checkOverflow) SignedInt(v uint64) (overflow bool) {
 	//e.g. -127 to 128 for int8
 	pos := (v >> 63) == 0
 	ui2 := v & 0x7fffffffffffffff
 	if pos {
 		if ui2 > math.MaxInt64 {
 			overflow = true
-		} else {
-			i = int64(v)
 		}
 	} else {
 		if ui2 > math.MaxInt64-1 {
 			overflow = true
-		} else {
-			i = int64(v)
 		}
 	}
 	return
+}
+
+func (x checkOverflow) Float32V(v float64) float64 {
+	if x.Float32(v) {
+		panicv.errorf("float32 overflow: %v", v)
+	}
+	return v
+}
+func (x checkOverflow) UintV(v uint64, bitsize uint8) uint64 {
+	if x.Uint(v, bitsize) {
+		panicv.errorf("uint64 overflow: %v", v)
+	}
+	return v
+}
+func (x checkOverflow) IntV(v int64, bitsize uint8) int64 {
+	if x.Int(v, bitsize) {
+		panicv.errorf("int64 overflow: %v", v)
+	}
+	return v
+}
+func (x checkOverflow) SignedIntV(v uint64) int64 {
+	if x.SignedInt(v) {
+		panicv.errorf("uint64 to int64 overflow: %v", v)
+	}
+	return int64(v)
 }
 
 // ------------------ SORT -----------------

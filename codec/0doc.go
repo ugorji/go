@@ -225,11 +225,11 @@ package codec
 //   - In Go 1.10, when mid-stack inlining is enabled,
 //     we should use committed functions for writeXXX and readXXX calls.
 //     This involves uncommenting the methods for decReaderSwitch and encWriterSwitch
-//     and using those (decReaderSwitch and encWriterSwitch in all handles
+//     and using those (decReaderSwitch and encWriterSwitch) in all handles
 //     instead of encWriter and decReader.
-//   - removing conditionals used to avoid calling no-op functions via interface calls.
-//     esep, etc.
-//     It *should* make the code cleaner, and maybe more performant,
-//     as conditional branches are expensive.
-//     However, per https://groups.google.com/forum/#!topic/golang-nuts/DNELyNnTzFA ,
-//     there is no optimization if calling an empty function via an interface.
+//     The benefit is that, for the (En|De)coder over []byte, the encWriter/decReader
+//     will be inlined, giving a performance bump for that typical case.
+//     However, it will only  be inlined if mid-stack inlining is enabled,
+//     as we call panic to raise errors, and panic currently prevents inlining.
+//   - Clean up comments in the codebase
+//     Remove all unnecesssary comments, so code is clean.

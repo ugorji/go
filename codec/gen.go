@@ -1211,38 +1211,38 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	// Since these are pointers, we cannot share, and have to use them one by one
 	switch t.Kind() {
 	case reflect.Int:
-		x.line("*((*int)(" + varname + ")) = int(r.DecodeInt(codecSelferBitsize" + x.xs + "))")
+		x.line("*((*int)(" + varname + ")) = int(z.c.IntV(r.DecodeInt64(), codecSelferBitsize" + x.xs + "))")
 		// x.line("z.DecInt((*int)(" + varname + "))")
 	case reflect.Int8:
-		x.line("*((*int8)(" + varname + ")) = int8(r.DecodeInt(8))")
+		x.line("*((*int8)(" + varname + ")) = int8(z.c.IntV(r.DecodeInt64(), 8))")
 		// x.line("z.DecInt8((*int8)(" + varname + "))")
 	case reflect.Int16:
-		x.line("*((*int16)(" + varname + ")) = int16(r.DecodeInt(16))")
+		x.line("*((*int16)(" + varname + ")) = int16(z.c.IntV(r.DecodeInt64(), 16))")
 		// x.line("z.DecInt16((*int16)(" + varname + "))")
 	case reflect.Int32:
-		x.line("*((*int32)(" + varname + ")) = int32(r.DecodeInt(32))")
+		x.line("*((*int32)(" + varname + ")) = int32(z.c.IntV(r.DecodeInt64(), 32))")
 		// x.line("z.DecInt32((*int32)(" + varname + "))")
 	case reflect.Int64:
-		x.line("*((*int64)(" + varname + ")) = int64(r.DecodeInt(64))")
+		x.line("*((*int64)(" + varname + ")) = int64(r.DecodeInt64())")
 		// x.line("z.DecInt64((*int64)(" + varname + "))")
 
 	case reflect.Uint:
-		x.line("*((*uint)(" + varname + ")) = uint(r.DecodeUint(codecSelferBitsize" + x.xs + "))")
+		x.line("*((*uint)(" + varname + ")) = uint(z.c.UintV(r.DecodeUint64(), codecSelferBitsize" + x.xs + "))")
 		// x.line("z.DecUint((*uint)(" + varname + "))")
 	case reflect.Uint8:
-		x.line("*((*uint8)(" + varname + ")) = uint8(r.DecodeUint(8))")
+		x.line("*((*uint8)(" + varname + ")) = uint8(z.c.UintV(r.DecodeUint64(), 8))")
 		// x.line("z.DecUint8((*uint8)(" + varname + "))")
 	case reflect.Uint16:
-		x.line("*((*uint16)(" + varname + ")) = uint16(r.DecodeUint(16))")
+		x.line("*((*uint16)(" + varname + ")) = uint16(z.c.UintV(r.DecodeUint64(), 16))")
 		//x.line("z.DecUint16((*uint16)(" + varname + "))")
 	case reflect.Uint32:
-		x.line("*((*uint32)(" + varname + ")) = uint32(r.DecodeUint(32))")
+		x.line("*((*uint32)(" + varname + ")) = uint32(z.c.UintV(r.DecodeUint64(), 32))")
 		//x.line("z.DecUint32((*uint32)(" + varname + "))")
 	case reflect.Uint64:
-		x.line("*((*uint64)(" + varname + ")) = uint64(r.DecodeUint(64))")
+		x.line("*((*uint64)(" + varname + ")) = uint64(r.DecodeUint64())")
 		//x.line("z.DecUint64((*uint64)(" + varname + "))")
 	case reflect.Uintptr:
-		x.line("*((*uintptr)(" + varname + ")) = uintptr(r.DecodeUint(codecSelferBitsize" + x.xs + "))")
+		x.line("*((*uintptr)(" + varname + ")) = uintptr(z.c.UintV(r.DecodeUint64(), codecSelferBitsize" + x.xs + "))")
 
 	case reflect.Float32:
 		x.line("*((*float32)(" + varname + ")) = float32(r.DecodeFloat32As64())")
@@ -1314,28 +1314,28 @@ func (x *genRunner) decTryAssignPrimitive(varname string, t reflect.Type) (tryAs
 
 	switch t.Kind() {
 	case reflect.Int:
-		x.linef("%s = r.DecodeInt(codecSelferBitsize%s)", varname, x.xs)
+		x.linef("%s = z.c.IntV(r.DecodeInt64(), codecSelferBitsize%s)", varname, x.xs)
 	case reflect.Int8:
-		x.linef("%s = r.DecodeInt(8)", varname)
+		x.linef("%s = z.c.IntV(r.DecodeInt64(), 8)", varname)
 	case reflect.Int16:
-		x.linef("%s = r.DecodeInt(16)", varname)
+		x.linef("%s = z.c.IntV(r.DecodeInt64(), 16)", varname)
 	case reflect.Int32:
-		x.linef("%s = r.DecodeInt(32)", varname)
+		x.linef("%s = z.c.IntV(r.DecodeInt64(), 32)", varname)
 	case reflect.Int64:
-		x.linef("%s = r.DecodeInt(64)", varname)
+		x.linef("%s = r.DecodeInt64()", varname)
 
 	case reflect.Uint:
-		x.linef("%s = r.DecodeUint(codecSelferBitsize%s)", varname, x.xs)
+		x.linef("%s = z.c.UintV(r.DecodeUint64(), codecSelferBitsize%s)", varname, x.xs)
 	case reflect.Uint8:
-		x.linef("%s = r.DecodeUint(8)", varname)
+		x.linef("%s = z.c.UintV(r.DecodeUint64(), 8)", varname)
 	case reflect.Uint16:
-		x.linef("%s = r.DecodeUint(16)", varname)
+		x.linef("%s = z.c.UintV(r.DecodeUint64(), 16)", varname)
 	case reflect.Uint32:
-		x.linef("%s = r.DecodeUint(32)", varname)
+		x.linef("%s = z.c.UintV(r.DecodeUint64(), 32)", varname)
 	case reflect.Uint64:
-		x.linef("%s = r.DecodeUint(64)", varname)
+		x.linef("%s = r.DecodeUint64()", varname)
 	case reflect.Uintptr:
-		x.linef("%s = r.DecodeUint(codecSelferBitsize%s)", varname, x.xs)
+		x.linef("%s = z.c.UintV(r.DecodeUint64(), codecSelferBitsize%s)", varname, x.xs)
 
 	case reflect.Float32:
 		x.linef("%s = r.DecodeFloat32As64()", varname)
@@ -1865,8 +1865,8 @@ func genInternalEncCommandAsString(s string, vname string) string {
 		return "ee.EncodeFloat64(" + vname + ")"
 	case "bool":
 		return "ee.EncodeBool(" + vname + ")"
-	case "symbol":
-		return "ee.EncodeSymbol(" + vname + ")"
+	// case "symbol":
+	// 	return "ee.EncodeSymbol(" + vname + ")"
 	default:
 		return "e.encode(" + vname + ")"
 	}
@@ -1875,32 +1875,32 @@ func genInternalEncCommandAsString(s string, vname string) string {
 func genInternalDecCommandAsString(s string) string {
 	switch s {
 	case "uint":
-		return "uint(dd.DecodeUint(uintBitsize))"
+		return "uint(chkOvf.UintV(dd.DecodeUint64(), uintBitsize))"
 	case "uint8":
-		return "uint8(dd.DecodeUint(8))"
+		return "uint8(chkOvf.UintV(dd.DecodeUint64(), 8))"
 	case "uint16":
-		return "uint16(dd.DecodeUint(16))"
+		return "uint16(chkOvf.UintV(dd.DecodeUint64(), 16))"
 	case "uint32":
-		return "uint32(dd.DecodeUint(32))"
+		return "uint32(chkOvf.UintV(dd.DecodeUint64(), 32))"
 	case "uint64":
-		return "dd.DecodeUint(64)"
+		return "dd.DecodeUint64()"
 	case "uintptr":
-		return "uintptr(dd.DecodeUint(uintBitsize))"
+		return "uintptr(chkOvf.UintV(dd.DecodeUint64(), uintBitsize))"
 	case "int":
-		return "int(dd.DecodeInt(intBitsize))"
+		return "int(chkOvf.IntV(dd.DecodeInt64(), intBitsize))"
 	case "int8":
-		return "int8(dd.DecodeInt(8))"
+		return "int8(chkOvf.IntV(dd.DecodeInt64(), 8))"
 	case "int16":
-		return "int16(dd.DecodeInt(16))"
+		return "int16(chkOvf.IntV(dd.DecodeInt64(), 16))"
 	case "int32":
-		return "int32(dd.DecodeInt(32))"
+		return "int32(chkOvf.IntV(dd.DecodeInt64(), 32))"
 	case "int64":
-		return "dd.DecodeInt(64)"
+		return "dd.DecodeInt64()"
 
 	case "string":
 		return "dd.DecodeString()"
 	case "float32":
-		return "float32(chkFloat32(dd.DecodeFloat64()))"
+		return "float32(chkOvf.Float32V(dd.DecodeFloat64()))"
 	case "float64":
 		return "dd.DecodeFloat64()"
 	case "bool":

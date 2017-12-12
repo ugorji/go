@@ -189,57 +189,57 @@ func (d *Decoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
 
 func (d *Decoder) kInt(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int)(urv.ptr) = int(d.d.DecodeInt(intBitsize))
+	*(*int)(urv.ptr) = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 }
 
 func (d *Decoder) kInt8(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int8)(urv.ptr) = int8(d.d.DecodeInt(8))
+	*(*int8)(urv.ptr) = int8(chkOvf.IntV(d.d.DecodeInt64(), 8))
 }
 
 func (d *Decoder) kInt16(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int16)(urv.ptr) = int16(d.d.DecodeInt(16))
+	*(*int16)(urv.ptr) = int16(chkOvf.IntV(d.d.DecodeInt64(), 16))
 }
 
 func (d *Decoder) kInt32(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int32)(urv.ptr) = int32(d.d.DecodeInt(32))
+	*(*int32)(urv.ptr) = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 }
 
 func (d *Decoder) kInt64(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int64)(urv.ptr) = d.d.DecodeInt(64)
+	*(*int64)(urv.ptr) = d.d.DecodeInt64()
 }
 
 func (d *Decoder) kUint(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint)(urv.ptr) = uint(d.d.DecodeUint(uintBitsize))
+	*(*uint)(urv.ptr) = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
 }
 
 func (d *Decoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uintptr)(urv.ptr) = uintptr(d.d.DecodeUint(uintBitsize))
+	*(*uintptr)(urv.ptr) = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
 }
 
 func (d *Decoder) kUint8(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint8)(urv.ptr) = uint8(d.d.DecodeUint(8))
+	*(*uint8)(urv.ptr) = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 }
 
 func (d *Decoder) kUint16(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint16)(urv.ptr) = uint16(d.d.DecodeUint(16))
+	*(*uint16)(urv.ptr) = uint16(chkOvf.UintV(d.d.DecodeUint64(), 16))
 }
 
 func (d *Decoder) kUint32(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint32)(urv.ptr) = uint32(d.d.DecodeUint(32))
+	*(*uint32)(urv.ptr) = uint32(chkOvf.UintV(d.d.DecodeUint64(), 32))
 }
 
 func (d *Decoder) kUint64(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint64)(urv.ptr) = d.d.DecodeUint(64)
+	*(*uint64)(urv.ptr) = d.d.DecodeUint64()
 }
 
 // ------------

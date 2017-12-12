@@ -57,13 +57,15 @@ const (
 
 type bincEncDriver struct {
 	e *Encoder
+	h *BincHandle
 	w encWriter
 	m map[string]uint16 // symbols
 	b [scratchByteArrayLen]byte
 	s uint16 // symbols sequencer
-	// encNoSeparator
-	encDriverNoopContainerWriter
+	// c containerState
+	encDriverTrackContainerWriter
 	noBuiltInTypes
+	// encNoSeparator
 }
 
 // func (e *bincEncDriver) IsBuiltinType(rt uintptr) bool {
@@ -201,13 +203,19 @@ func (e *bincEncDriver) encodeExtPreamble(xtag byte, length int) {
 
 func (e *bincEncDriver) WriteArrayStart(length int) {
 	e.encLen(bincVdArray<<4, uint64(length))
+	e.c = containerArrayStart
 }
 
 func (e *bincEncDriver) WriteMapStart(length int) {
 	e.encLen(bincVdMap<<4, uint64(length))
+	e.c = containerMapStart
 }
 
 func (e *bincEncDriver) EncodeString(c charEncoding, v string) {
+	if e.c == containerMapKey && c == cUTF8 && (e.h.AsSymbols == 0 || e.h.AsSymbols == 1) {
+		e.EncodeSymbol(v)
+		return
+	}
 	l := uint64(len(v))
 	e.encBytesLen(c, l)
 	if l > 0 {
@@ -522,32 +530,20 @@ func (d *bincDecDriver) decCheckInteger() (ui uint64, neg bool) {
 	return
 }
 
-func (d *bincDecDriver) DecodeInt(bitsize uint8) (i int64) {
+func (d *bincDecDriver) DecodeInt64() (i int64) {
 	ui, neg := d.decCheckInteger()
-	i, overflow := chkOvf.SignedInt(ui)
-	if overflow {
-		d.d.errorf("simple: overflow converting %v to signed integer", ui)
-		return
-	}
+	i = chkOvf.SignedIntV(ui)
 	if neg {
 		i = -i
-	}
-	if chkOvf.Int(i, bitsize) {
-		d.d.errorf("binc: overflow integer: %v for num bits: %v", i, bitsize)
-		return
 	}
 	d.bdRead = false
 	return
 }
 
-func (d *bincDecDriver) DecodeUint(bitsize uint8) (ui uint64) {
+func (d *bincDecDriver) DecodeUint64() (ui uint64) {
 	ui, neg := d.decCheckInteger()
 	if neg {
 		d.d.errorf("Assigning negative signed value to unsigned type")
-		return
-	}
-	if chkOvf.Uint(ui, bitsize) {
-		d.d.errorf("binc: overflow integer: %v", ui)
 		return
 	}
 	d.bdRead = false
@@ -576,7 +572,7 @@ func (d *bincDecDriver) DecodeFloat64() (f float64) {
 	} else if vd == bincVdFloat {
 		f = d.decFloat()
 	} else {
-		f = float64(d.DecodeInt(64))
+		f = float64(d.DecodeInt64())
 	}
 	d.bdRead = false
 	return
@@ -932,6 +928,26 @@ type BincHandle struct {
 	BasicHandle
 	binaryEncodingType
 	noElemSeparators
+
+	// AsSymbols defines what should be encoded as symbols.
+	//
+	// Encoding as symbols can reduce the encoded size significantly.
+	//
+	// However, during decoding, each string to be encoded as a symbol must
+	// be checked to see if it has been seen before. Consequently, encoding time
+	// will increase if using symbols, because string comparisons has a clear cost.
+	//
+	// Values:
+	// - 0: default: library uses best judgement
+	// - 1: use symbols
+	// - 2: do not use symbols
+	AsSymbols byte
+
+	// AsSymbols: may later on introduce more options ...
+	// - m: map keys
+	// - s: struct fields
+	// - n: none
+	// - a: all: same as m, s, ...
 }
 
 // Name returns the name of the handle: binc
@@ -943,7 +959,7 @@ func (h *BincHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err
 }
 
 func (h *BincHandle) newEncDriver(e *Encoder) encDriver {
-	return &bincEncDriver{e: e, w: e.w}
+	return &bincEncDriver{e: e, h: h, w: e.w}
 }
 
 func (h *BincHandle) newDecDriver(d *Decoder) decDriver {
@@ -959,6 +975,7 @@ func (h *BincHandle) newDecDriver(d *Decoder) decDriver {
 func (e *bincEncDriver) reset() {
 	e.w = e.e.w
 	e.s = 0
+	e.c = 0
 	e.m = nil
 }
 

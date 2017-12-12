@@ -20,25 +20,25 @@ const defEncByteBufSize = 1 << 6 // 4:16, 6:64, 8:256, 10:1024
 
 var errEncoderNotInitialized = errors.New("Encoder not initialized")
 
-// AsSymbolFlag defines what should be encoded as symbols.
-type AsSymbolFlag uint8
+// // AsSymbolFlag defines what should be encoded as symbols.
+// type AsSymbolFlag uint8
 
-const (
-	// AsSymbolDefault means only encode struct field names as symbols.
-	AsSymbolDefault AsSymbolFlag = iota
+// const (
+// 	// AsSymbolDefault means only encode struct field names as symbols.
+// 	AsSymbolDefault AsSymbolFlag = iota
 
-	// AsSymbolAll means encode anything which could be a symbol as a symbol.
-	AsSymbolAll = 0xfe
+// 	// AsSymbolAll means encode anything which could be a symbol as a symbol.
+// 	AsSymbolAll = 0xfe
 
-	// AsSymbolNone means do not encode anything as a symbol.
-	AsSymbolNone = 1 << iota
+// 	// AsSymbolNone means do not encode anything as a symbol.
+// 	AsSymbolNone = 1 << iota
 
-	// AsSymbolMapStringKeysFlag means encode keys in map[string]XXX as symbols.
-	AsSymbolMapStringKeysFlag
+// 	// AsSymbolMapStringKeysFlag means encode keys in map[string]XXX as symbols.
+// 	AsSymbolMapStringKeysFlag
 
-	// AsSymbolStructFieldNameFlag means encode struct field names as symbols.
-	AsSymbolStructFieldNameFlag
-)
+// 	// AsSymbolStructFieldNameFlag means encode struct field names as symbols.
+// 	AsSymbolStructFieldNameFlag
+// )
 
 // encWriter abstracts writing to a byte array or to an io.Writer.
 type encWriter interface {
@@ -53,8 +53,8 @@ type encWriter interface {
 type encDriver interface {
 	// IsBuiltinType(rt uintptr) bool
 
-	// Deprecated: left here for now so that old codecgen'ed filed will work. TODO: remove.
-	EncodeBuiltin(rt uintptr, v interface{})
+	// Deprecated: left here for now so that old codecgen'ed filed will work.
+	// EncodeBuiltin(rt uintptr, v interface{})
 
 	EncodeNil()
 	EncodeInt(i int64)
@@ -65,6 +65,12 @@ type encDriver interface {
 	// encodeExtPreamble(xtag byte, length int)
 	EncodeRawExt(re *RawExt, e *Encoder)
 	EncodeExt(v interface{}, xtag uint64, ext Ext, e *Encoder)
+	EncodeString(c charEncoding, v string)
+	// EncodeSymbol(v string)
+	EncodeStringBytes(c charEncoding, v []byte)
+	EncodeTime(time.Time)
+	//encBignum(f *big.Int)
+	//encStringRunes(c charEncoding, v []rune)
 	WriteArrayStart(length int)
 	WriteArrayElem()
 	WriteArrayEnd()
@@ -72,13 +78,6 @@ type encDriver interface {
 	WriteMapElemKey()
 	WriteMapElemValue()
 	WriteMapEnd()
-	EncodeString(c charEncoding, v string)
-	EncodeSymbol(v string)
-	EncodeStringBytes(c charEncoding, v []byte)
-	EncodeTime(time.Time)
-	//TODO
-	//encBignum(f *big.Int)
-	//encStringRunes(c charEncoding, v []rune)
 
 	reset()
 	atEndOfEncode()
@@ -102,6 +101,19 @@ func (encDriverNoopContainerWriter) WriteMapElemKey()           {}
 func (encDriverNoopContainerWriter) WriteMapElemValue()         {}
 func (encDriverNoopContainerWriter) WriteMapEnd()               {}
 func (encDriverNoopContainerWriter) atEndOfEncode()             {}
+
+type encDriverTrackContainerWriter struct {
+	c containerState
+}
+
+func (e *encDriverTrackContainerWriter) WriteArrayStart(length int) { e.c = containerArrayStart }
+func (e *encDriverTrackContainerWriter) WriteArrayElem()            { e.c = containerArrayElem }
+func (e *encDriverTrackContainerWriter) WriteArrayEnd()             { e.c = containerArrayEnd }
+func (e *encDriverTrackContainerWriter) WriteMapStart(length int)   { e.c = containerMapStart }
+func (e *encDriverTrackContainerWriter) WriteMapElemKey()           { e.c = containerMapKey }
+func (e *encDriverTrackContainerWriter) WriteMapElemValue()         { e.c = containerMapValue }
+func (e *encDriverTrackContainerWriter) WriteMapEnd()               { e.c = containerMapEnd }
+func (e *encDriverTrackContainerWriter) atEndOfEncode()             {}
 
 // type ioEncWriterWriter interface {
 // 	WriteByte(c byte) error
@@ -152,20 +164,20 @@ type EncodeOptions struct {
 	// If unset, we error out.
 	Raw bool
 
-	// AsSymbols defines what should be encoded as symbols.
-	//
-	// Encoding as symbols can reduce the encoded size significantly.
-	//
-	// However, during decoding, each string to be encoded as a symbol must
-	// be checked to see if it has been seen before. Consequently, encoding time
-	// will increase if using symbols, because string comparisons has a clear cost.
-	//
-	// Sample values:
-	//   AsSymbolNone
-	//   AsSymbolAll
-	//   AsSymbolMapStringKeys
-	//   AsSymbolMapStringKeysFlag | AsSymbolStructFieldNameFlag
-	AsSymbols AsSymbolFlag
+	// // AsSymbols defines what should be encoded as symbols.
+	// //
+	// // Encoding as symbols can reduce the encoded size significantly.
+	// //
+	// // However, during decoding, each string to be encoded as a symbol must
+	// // be checked to see if it has been seen before. Consequently, encoding time
+	// // will increase if using symbols, because string comparisons has a clear cost.
+	// //
+	// // Sample values:
+	// //   AsSymbolNone
+	// //   AsSymbolAll
+	// //   AsSymbolMapStringKeys
+	// //   AsSymbolMapStringKeysFlag | AsSymbolStructFieldNameFlag
+	// AsSymbols AsSymbolFlag
 
 	// WriterBufferSize is the size of the buffer used when writing.
 	//
@@ -422,7 +434,6 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		if rtelem.Kind() != reflect.Interface {
 			fn = e.cf.get(rtelem, true, true)
 		}
-		// TODO: Consider perf implication of encoding odd index values as symbols if type is string
 		for j := 0; j < l; j++ {
 			if elemsep {
 				if ti.mbs {
@@ -468,17 +479,19 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	if toMap {
 		ee.WriteMapStart(len(tisfi))
 		// asSymbols := e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
-		asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
+		// asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 		if elemsep {
 			for _, si := range tisfi {
 				ee.WriteMapElemKey()
-				encStructFieldKey(ee, fti.keyType, si.encName, asSymbols)
+				// ee.EncodeString(cUTF8, si.encName)
+				encStructFieldKey(ee, fti.keyType, si.encName)
 				ee.WriteMapElemValue()
 				e.encodeValue(sfn.field(si), nil, true)
 			}
 		} else {
 			for _, si := range tisfi {
-				encStructFieldKey(ee, fti.keyType, si.encName, asSymbols)
+				// ee.EncodeString(cUTF8, si.encName)
+				encStructFieldKey(ee, fti.keyType, si.encName)
 				e.encodeValue(sfn.field(si), nil, true)
 			}
 		}
@@ -499,28 +512,36 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 
-func encStructFieldKey(ee encDriver, keyType valueType, s string, asSymbols bool) {
+func encStructFieldKey(ee encDriver, keyType valueType, s string) {
 	var m must
-	switch keyType {
-	case valueTypeString:
-		if asSymbols {
-			ee.EncodeSymbol(s)
-		} else {
-			ee.EncodeString(cUTF8, s)
-		}
-	case valueTypeInt:
+
+	// use if-else-if, not switch (which compiles to binary-search)
+	// since keyType is typically valueTypeString, branch prediction is pretty good.
+
+	if keyType == valueTypeString {
+		ee.EncodeString(cUTF8, s)
+	} else if keyType == valueTypeInt {
 		ee.EncodeInt(m.Int(strconv.ParseInt(s, 10, 64)))
-	case valueTypeUint:
+	} else if keyType == valueTypeUint {
 		ee.EncodeUint(m.Uint(strconv.ParseUint(s, 10, 64)))
-	case valueTypeFloat:
+	} else if keyType == valueTypeFloat {
 		ee.EncodeFloat64(m.Float(strconv.ParseFloat(s, 64)))
-	default: // string
-		if asSymbols {
-			ee.EncodeSymbol(s)
-		} else {
-			ee.EncodeString(cUTF8, s)
-		}
+	} else {
+		ee.EncodeString(cUTF8, s)
 	}
+
+	// switch keyType {
+	// case valueTypeString:
+	// 	ee.EncodeString(cUTF8, s)
+	// case valueTypeInt:
+	// 	ee.EncodeInt(m.Int(strconv.ParseInt(s, 10, 64)))
+	// case valueTypeUint:
+	// 	ee.EncodeUint(m.Uint(strconv.ParseUint(s, 10, 64)))
+	// case valueTypeFloat:
+	// 	ee.EncodeFloat64(m.Float(strconv.ParseFloat(s, 64)))
+	// default: // string
+	// 	ee.EncodeString(cUTF8, s)
+	// }
 }
 
 func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
@@ -598,19 +619,21 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	if toMap {
 		ee.WriteMapStart(newlen)
 		// asSymbols := e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
-		asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
+		// asSymbols := e.h.AsSymbols == AsSymbolDefault || e.h.AsSymbols&AsSymbolStructFieldNameFlag != 0
 		if elemsep {
 			for j := 0; j < newlen; j++ {
 				kv = fkvs[j]
 				ee.WriteMapElemKey()
-				encStructFieldKey(ee, fti.keyType, kv.v, asSymbols)
+				// ee.EncodeString(cUTF8, kv.v)
+				encStructFieldKey(ee, fti.keyType, kv.v)
 				ee.WriteMapElemValue()
 				e.encodeValue(kv.r, nil, true)
 			}
 		} else {
 			for j := 0; j < newlen; j++ {
 				kv = fkvs[j]
-				encStructFieldKey(ee, fti.keyType, kv.v, asSymbols)
+				// ee.EncodeString(cUTF8, kv.v)
+				encStructFieldKey(ee, fti.keyType, kv.v)
 				e.encodeValue(kv.r, nil, true)
 			}
 		}
@@ -652,7 +675,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		ee.WriteMapEnd()
 		return
 	}
-	var asSymbols bool
+	// var asSymbols bool
 	// determine the underlying key and val encFn's for the map.
 	// This eliminates some work which is done for each loop iteration i.e.
 	// rv.Type(), ref.ValueOf(rt).Pointer(), then check map/list for fn.
@@ -676,14 +699,14 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	mks := rv.MapKeys()
 
 	if e.h.Canonical {
-		e.kMapCanonical(rtkey, rv, mks, valFn, asSymbols)
+		e.kMapCanonical(rtkey, rv, mks, valFn)
 		ee.WriteMapEnd()
 		return
 	}
 
 	var keyTypeIsString = stringTypId == rt2id(rtkey0) // rtkeyid
 	if keyTypeIsString {
-		asSymbols = e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
+		// asSymbols = e.h.AsSymbols&AsSymbolMapStringKeysFlag != 0
 	} else {
 		for rtkey.Kind() == reflect.Ptr {
 			rtkey = rtkey.Elem()
@@ -700,11 +723,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			ee.WriteMapElemKey()
 		}
 		if keyTypeIsString {
-			if asSymbols {
-				ee.EncodeSymbol(mks[j].String())
-			} else {
-				ee.EncodeString(cUTF8, mks[j].String())
-			}
+			ee.EncodeString(cUTF8, mks[j].String())
 		} else {
 			e.encodeValue(mks[j], keyFn, true)
 		}
@@ -717,7 +736,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	ee.WriteMapEnd()
 }
 
-func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []reflect.Value, valFn *codecFn, asSymbols bool) {
+func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []reflect.Value, valFn *codecFn) {
 	ee := e.e
 	elemsep := e.esep
 	// we previously did out-of-band if an extension was registered.
@@ -776,11 +795,7 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 			if elemsep {
 				ee.WriteMapElemKey()
 			}
-			if asSymbols {
-				ee.EncodeSymbol(mksv[i].v)
-			} else {
-				ee.EncodeString(cUTF8, mksv[i].v)
-			}
+			ee.EncodeString(cUTF8, mksv[i].v)
 			if elemsep {
 				ee.WriteMapElemValue()
 			}

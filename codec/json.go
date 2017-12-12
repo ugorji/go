@@ -87,7 +87,8 @@ var (
 	jsonNumSet            bitset256
 	// jsonIsFloatSet        bitset256
 
-	jsonU4Set [256]byte
+	jsonU4Set        [256]byte
+	jsonContainerSet [256]valueType
 )
 
 const (
@@ -156,6 +157,21 @@ func init() {
 		// 	jsonIsFloatSet.set(i)
 		// }
 	}
+	for j := range jsonContainerSet {
+		switch i = byte(j); i {
+		case '{':
+			jsonContainerSet[j] = valueTypeMap
+		case '[':
+			jsonContainerSet[j] = valueTypeArray
+		case 'n':
+			jsonContainerSet[j] = valueTypeNil
+		case '"':
+			jsonContainerSet[j] = valueTypeString
+		default:
+			jsonContainerSet[j] = valueTypeUnset
+		}
+	}
+
 	// jsonU4Set[255] = jsonU4SetErrVal
 }
 
@@ -312,6 +328,9 @@ func (e *jsonEncDriver) EncodeBool(b bool) {
 
 func (e *jsonEncDriver) EncodeFloat32(f float32) {
 	// e.encodeFloat(float64(f), 32)
+	// always encode all floats as IEEE 64-bit floating point.
+	// It also ensures that we can decode in full precision even if into a float32,
+	// as what is written is always to float64 precision.
 	e.EncodeFloat64(float64(f))
 }
 
@@ -346,42 +365,6 @@ func (e *jsonEncDriver) EncodeFloat64(f float64) {
 	}
 	e.w.writeb(e.b[:blen])
 }
-
-// func (e *jsonEncDriver) EncodeFloat64(f float64) {
-// 	e.encodeFloat(f, 64)
-// }
-
-// func (e *jsonEncDriver) encodeFloat(f float64, bits int) {
-// 	var blen int
-// 	// instead of using 'g', specify whether to use 'e' or 'f'
-// 	var abs = math.Abs(f)
-// 	var fmt byte
-// 	var prec int = -1
-// 	if abs != 0 && (bits == 64 && (abs < 1e-6 || abs >= 1e21) || bits == 32 && (float32(abs) < 1e-6 || float32(abs) >= 1e21)) {
-// 		fmt = 'e'
-// 	} else {
-// 		fmt = 'f'
-// 		// set prec to 1 iff mod is 0.
-// 		//     better than using jsonIsFloatBytesB2 to check if a . or E in the float bytes.
-// 		// this ensures that every float has an e or .0 in it.
-// 		if abs <= 1 {
-// 			if abs == 0 || abs == 1 {
-// 				prec = 1
-// 			}
-// 		} else if _, mod := math.Modf(abs); mod == 0 {
-// 			prec = 1
-// 		}
-// 	}
-
-// 	if e.h.MapKeyAsString && e.c == containerMapKey {
-// 		blen = 2 + len(strconv.AppendFloat(e.b[1:1], f, fmt, prec, bits))
-// 		e.b[0] = '"'
-// 		e.b[blen-1] = '"'
-// 	} else {
-// 		blen = len(strconv.AppendFloat(e.b[:0], f, fmt, prec, bits))
-// 	}
-// 	e.w.writeb(e.b[:blen])
-// }
 
 func (e *jsonEncDriver) EncodeInt(v int64) {
 	x := e.h.IntegerAsString
@@ -428,9 +411,9 @@ func (e *jsonEncDriver) EncodeString(c charEncoding, v string) {
 	e.quoteStr(v)
 }
 
-func (e *jsonEncDriver) EncodeSymbol(v string) {
-	e.quoteStr(v)
-}
+// func (e *jsonEncDriver) EncodeSymbol(v string) {
+// 	e.quoteStr(v)
+// }
 
 func (e *jsonEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
 	// if encoding raw bytes and RawBytesExt is configured, use it to encode
@@ -582,7 +565,7 @@ func (d *jsonDecDriver) ReadMapStart() int {
 	}
 	const xc uint8 = '{'
 	if d.tok != xc {
-		d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+		d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 	}
 	d.tok = 0
 	d.c = containerMapStart
@@ -595,7 +578,7 @@ func (d *jsonDecDriver) ReadArrayStart() int {
 	}
 	const xc uint8 = '['
 	if d.tok != xc {
-		d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+		d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 	}
 	d.tok = 0
 	d.c = containerArrayStart
@@ -616,7 +599,7 @@ func (d *jsonDecDriver) ReadArrayElem() {
 	if d.c != containerArrayStart {
 		const xc uint8 = ','
 		if d.tok != xc {
-			d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+			d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 		}
 		d.tok = 0
 	}
@@ -629,7 +612,7 @@ func (d *jsonDecDriver) ReadArrayEnd() {
 	}
 	const xc uint8 = ']'
 	if d.tok != xc {
-		d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+		d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 	}
 	d.tok = 0
 	d.c = containerArrayEnd
@@ -642,7 +625,7 @@ func (d *jsonDecDriver) ReadMapElemKey() {
 	if d.c != containerMapStart {
 		const xc uint8 = ','
 		if d.tok != xc {
-			d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+			d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 		}
 		d.tok = 0
 	}
@@ -655,7 +638,7 @@ func (d *jsonDecDriver) ReadMapElemValue() {
 	}
 	const xc uint8 = ':'
 	if d.tok != xc {
-		d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+		d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 	}
 	d.tok = 0
 	d.c = containerMapValue
@@ -667,7 +650,7 @@ func (d *jsonDecDriver) ReadMapEnd() {
 	}
 	const xc uint8 = '}'
 	if d.tok != xc {
-		d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+		d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 	}
 	d.tok = 0
 	d.c = containerMapEnd
@@ -679,7 +662,7 @@ func (d *jsonDecDriver) ReadMapEnd() {
 // 	}
 // 	if check {
 // 		if d.tok != xc {
-// 			d.d.errorf("json: expect char '%c' but got char '%c'", xc, d.tok)
+// 			d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 // 		}
 // 		d.tok = 0
 // 	}
@@ -690,7 +673,7 @@ func (d *jsonDecDriver) readLit(length, fromIdx uint8) {
 	bs := d.r.readx(int(length))
 	d.tok = 0
 	if jsonValidateSymbols && !bytes.Equal(bs, jsonLiterals[fromIdx:fromIdx+length]) {
-		d.d.errorf("json: expecting %s: got %s", jsonLiterals[fromIdx:fromIdx+length], bs)
+		d.d.errorf("expecting %s: got %s", jsonLiterals[fromIdx:fromIdx+length], bs)
 		return
 	}
 }
@@ -724,7 +707,7 @@ func (d *jsonDecDriver) DecodeBool() (v bool) {
 		d.readLit(3, jsonLitTrue+1) // (t)rue
 		v = true
 	default:
-		d.d.errorf("json: decode bool: got first char %c", d.tok)
+		d.d.errorf("decode bool: got first char %c", d.tok)
 		// v = false // "unreachable"
 	}
 	if fquot {
@@ -751,6 +734,24 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
+
+	// optimize this, so we don't do 4 checks but do one computation.
+	// return jsonContainerSet[d.tok]
+
+	// switch d.tok {
+	// case '{':
+	// 	return valueTypeMap
+	// case '[':
+	// 	return valueTypeArray
+	// case 'n':
+	// 	return valueTypeNil
+	// case '"':
+	// 	return valueTypeString
+	// }
+	// return valueTypeUnset
+
+	// ContainerType is mostly called for Map and Array,
+	// so this conditional is good enough (max 2 checks typically)
 	if b := d.tok; b == '{' {
 		return valueTypeMap
 	} else if b == '[' {
@@ -761,6 +762,7 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 		return valueTypeString
 	}
 	return valueTypeUnset
+
 	// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
 	// return false // "unreachable"
 }
@@ -781,19 +783,19 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 	return bs
 }
 
-func (d *jsonDecDriver) DecodeUint(bitsize uint8) (u uint64) {
+func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 	bs := d.decNumBytes()
-	u, err := strconv.ParseUint(stringView(bs), 10, int(bitsize))
+	u, err := strconv.ParseUint(stringView(bs), 10, 64)
 	if err != nil {
-		d.d.errorf("json: decode uint from %s: %v", bs, err)
+		d.d.errorf("decode uint from %s: %v", bs, err)
 		return
 	}
 	return
 }
 
-func (d *jsonDecDriver) DecodeInt(bitsize uint8) (i int64) {
+func (d *jsonDecDriver) DecodeInt64() (i int64) {
 	bs := d.decNumBytes()
-	i, err := strconv.ParseInt(stringView(bs), 10, int(bitsize))
+	i, err := strconv.ParseInt(stringView(bs), 10, 64)
 	if err != nil {
 		d.d.errorv(err)
 	}
@@ -859,7 +861,7 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	}
 	slen2, err := base64.StdEncoding.Decode(bsOut, bs0)
 	if err != nil {
-		d.d.errorf("json: error decoding base64 binary '%s': %v", bs0, err)
+		d.d.errorf("error decoding base64 binary '%s': %v", bs0, err)
 		return nil
 	}
 	if slen != slen2 {
@@ -885,7 +887,7 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 
 	d.fnull = false
 	if d.tok != '"' {
-		// d.d.errorf("json: expect char '%c' but got char '%c'", '"', d.tok)
+		// d.d.errorf("expect char '%c' but got char '%c'", '"', d.tok)
 		// handle non-string scalar: null, true, false or a number
 		switch d.tok {
 		case 'n':
@@ -1002,7 +1004,7 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 			w2 := utf8.EncodeRune(d.bstr[:], r)
 			v = append(v, d.bstr[:w2]...)
 		default:
-			d.d.errorf("json: unsupported escaped value: %c", c)
+			d.d.errorf("unsupported escaped value: %c", c)
 		}
 		i++
 		cursor = i
@@ -1089,11 +1091,11 @@ func (d *jsonDecDriver) DecodeNaked() {
 	default: // number
 		bs := d.decNumBytes()
 		if len(bs) == 0 {
-			d.d.errorf("json: decode number from empty string")
+			d.d.errorf("decode number from empty string")
 			return
 		}
 		if err := d.nakedNum(z, bs); err != nil {
-			d.d.errorf("json: decode number from %s: %v", bs, err)
+			d.d.errorf("decode number from %s: %v", bs, err)
 			return
 		}
 	}

@@ -33,13 +33,14 @@ const (
 
 type simpleEncDriver struct {
 	noBuiltInTypes
-	encDriverNoopContainerWriter
 	// encNoSeparator
 	e *Encoder
 	h *SimpleHandle
 	w encWriter
 	b [8]byte
-	c containerState
+	// c containerState
+	encDriverTrackContainerWriter
+	// encDriverNoopContainerWriter
 }
 
 func (e *simpleEncDriver) EncodeNil() {
@@ -150,29 +151,9 @@ func (e *simpleEncDriver) WriteArrayStart(length int) {
 	e.encLen(simpleVdArray, length)
 }
 
-func (e *simpleEncDriver) WriteArrayElem() {
-	e.c = containerArrayElem
-}
-
-func (e *simpleEncDriver) WriteArrayEnd() {
-	e.c = containerArrayEnd
-}
-
 func (e *simpleEncDriver) WriteMapStart(length int) {
 	e.c = containerMapStart
 	e.encLen(simpleVdMap, length)
-}
-
-func (e *simpleEncDriver) WriteMapElemKey() {
-	e.c = containerMapKey
-}
-
-func (e *simpleEncDriver) WriteMapElemValue() {
-	e.c = containerMapValue
-}
-
-func (e *simpleEncDriver) WriteMapEnd() {
-	e.c = containerMapEnd
 }
 
 func (e *simpleEncDriver) EncodeString(c charEncoding, v string) {
@@ -184,9 +165,9 @@ func (e *simpleEncDriver) EncodeString(c charEncoding, v string) {
 	e.w.writestr(v)
 }
 
-func (e *simpleEncDriver) EncodeSymbol(v string) {
-	e.EncodeString(cUTF8, v)
-}
+// func (e *simpleEncDriver) EncodeSymbol(v string) {
+// 	e.EncodeString(cUTF8, v)
+// }
 
 func (e *simpleEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
 	// if e.h.EncZeroValuesAsNil && e.c != containerMapKey && v == nil {
@@ -314,32 +295,20 @@ func (d *simpleDecDriver) decCheckInteger() (ui uint64, neg bool) {
 	return
 }
 
-func (d *simpleDecDriver) DecodeInt(bitsize uint8) (i int64) {
+func (d *simpleDecDriver) DecodeInt64() (i int64) {
 	ui, neg := d.decCheckInteger()
-	i, overflow := chkOvf.SignedInt(ui)
-	if overflow {
-		d.d.errorf("simple: overflow converting %v to signed integer", ui)
-		return
-	}
+	i = chkOvf.SignedIntV(ui)
 	if neg {
 		i = -i
-	}
-	if chkOvf.Int(i, bitsize) {
-		d.d.errorf("simple: overflow integer: %v", i)
-		return
 	}
 	d.bdRead = false
 	return
 }
 
-func (d *simpleDecDriver) DecodeUint(bitsize uint8) (ui uint64) {
+func (d *simpleDecDriver) DecodeUint64() (ui uint64) {
 	ui, neg := d.decCheckInteger()
 	if neg {
 		d.d.errorf("Assigning negative signed value to unsigned type")
-		return
-	}
-	if chkOvf.Uint(ui, bitsize) {
-		d.d.errorf("simple: overflow integer: %v", ui)
 		return
 	}
 	d.bdRead = false
@@ -356,7 +325,7 @@ func (d *simpleDecDriver) DecodeFloat64() (f float64) {
 		f = math.Float64frombits(bigen.Uint64(d.r.readx(8)))
 	} else {
 		if d.bd >= simpleVdPosInt && d.bd <= simpleVdNegInt+3 {
-			f = float64(d.DecodeInt(64))
+			f = float64(d.DecodeInt64())
 		} else {
 			d.d.errorf("Float only valid from float32/64: Invalid descriptor: %v", d.bd)
 			return
@@ -431,14 +400,14 @@ func (d *simpleDecDriver) decLen() int {
 	case 3:
 		ui := uint64(bigen.Uint32(d.r.readx(4)))
 		if chkOvf.Uint(ui, intBitsize) {
-			d.d.errorf("simple: overflow integer: %v", ui)
+			d.d.errorf("overflow integer: %v", ui)
 			return 0
 		}
 		return int(ui)
 	case 4:
 		ui := bigen.Uint64(d.r.readx(8))
 		if chkOvf.Uint(ui, intBitsize) {
-			d.d.errorf("simple: overflow integer: %v", ui)
+			d.d.errorf("overflow integer: %v", ui)
 			return 0
 		}
 		return int(ui)
@@ -562,14 +531,14 @@ func (d *simpleDecDriver) DecodeNaked() {
 	case simpleVdPosInt, simpleVdPosInt + 1, simpleVdPosInt + 2, simpleVdPosInt + 3:
 		if d.h.SignedInteger {
 			n.v = valueTypeInt
-			n.i = d.DecodeInt(64)
+			n.i = d.DecodeInt64()
 		} else {
 			n.v = valueTypeUint
-			n.u = d.DecodeUint(64)
+			n.u = d.DecodeUint64()
 		}
 	case simpleVdNegInt, simpleVdNegInt + 1, simpleVdNegInt + 2, simpleVdNegInt + 3:
 		n.v = valueTypeInt
-		n.i = d.DecodeInt(64)
+		n.i = d.DecodeInt64()
 	case simpleVdFloat32:
 		n.v = valueTypeFloat
 		n.f = d.DecodeFloat64()

@@ -193,9 +193,9 @@ func (e *cborEncDriver) WriteArrayEnd() {
 	}
 }
 
-func (e *cborEncDriver) EncodeSymbol(v string) {
-	e.encStringBytesS(cborBaseString, v)
-}
+// func (e *cborEncDriver) EncodeSymbol(v string) {
+// 	e.encStringBytesS(cborBaseString, v)
+// }
 
 func (e *cborEncDriver) EncodeString(c charEncoding, v string) {
 	e.encStringBytesS(cborBaseString, v)
@@ -350,41 +350,25 @@ func (d *cborDecDriver) decCheckInteger() (neg bool) {
 	return
 }
 
-func (d *cborDecDriver) DecodeInt(bitsize uint8) (i int64) {
+func (d *cborDecDriver) DecodeInt64() (i int64) {
 	neg := d.decCheckInteger()
 	ui := d.decUint()
 	// check if this number can be converted to an int without overflow
-	var overflow bool
 	if neg {
-		if i, overflow = chkOvf.SignedInt(ui + 1); overflow {
-			d.d.errorf("cbor: overflow converting %v to signed integer", ui+1)
-			return
-		}
-		i = -i
+		i = -(chkOvf.SignedIntV(ui + 1))
 	} else {
-		if i, overflow = chkOvf.SignedInt(ui); overflow {
-			d.d.errorf("cbor: overflow converting %v to signed integer", ui)
-			return
-		}
-	}
-	if chkOvf.Int(i, bitsize) {
-		d.d.errorf("cbor: overflow integer: %v", i)
-		return
+		i = chkOvf.SignedIntV(ui)
 	}
 	d.bdRead = false
 	return
 }
 
-func (d *cborDecDriver) DecodeUint(bitsize uint8) (ui uint64) {
+func (d *cborDecDriver) DecodeUint64() (ui uint64) {
 	if d.decCheckInteger() {
 		d.d.errorf("Assigning negative signed value to unsigned type")
 		return
 	}
 	ui = d.decUint()
-	if chkOvf.Uint(ui, bitsize) {
-		d.d.errorf("cbor: overflow integer: %v", ui)
-		return
-	}
 	d.bdRead = false
 	return
 }
@@ -400,7 +384,7 @@ func (d *cborDecDriver) DecodeFloat64() (f float64) {
 	} else if bd == cborBdFloat64 {
 		f = math.Float64frombits(bigen.Uint64(d.r.readx(8)))
 	} else if bd >= cborBaseUint && bd < cborBaseBytes {
-		f = float64(d.DecodeInt(64))
+		f = float64(d.DecodeInt64())
 	} else {
 		d.d.errorf("Float only valid from float16/32/64: Invalid descriptor: %v", bd)
 		return
@@ -458,7 +442,7 @@ func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 			break
 		}
 		if major := d.bd >> 5; major != cborMajorBytes && major != cborMajorText {
-			d.d.errorf("cbor: expect bytes or string major type in indefinite string/bytes; got: %v, byte: %v", major, d.bd)
+			d.d.errorf("expect bytes or string major type in indefinite string/bytes; got: %v, byte: %v", major, d.bd)
 			return nil
 		}
 		n := d.decLen()
@@ -553,12 +537,12 @@ func (d *cborDecDriver) decodeTime(xtag uint64) (t time.Time) {
 			f1, f2 := math.Modf(d.DecodeFloat64())
 			t = time.Unix(int64(f1), int64(f2*1e9))
 		case d.bd >= cborBaseUint && d.bd < cborBaseNegInt, d.bd >= cborBaseNegInt && d.bd < cborBaseBytes:
-			t = time.Unix(d.DecodeInt(64), 0)
+			t = time.Unix(d.DecodeInt64(), 0)
 		default:
-			d.d.errorf("cbor: time.Time can only be decoded from a number (or RFC3339 string)")
+			d.d.errorf("time.Time can only be decoded from a number (or RFC3339 string)")
 		}
 	default:
-		d.d.errorf("cbor: invalid tag for time.Time - expecting 0 or 1, got 0x%x", xtag)
+		d.d.errorf("invalid tag for time.Time - expecting 0 or 1, got 0x%x", xtag)
 	}
 	t = t.UTC().Round(time.Microsecond)
 	return
@@ -624,14 +608,14 @@ func (d *cborDecDriver) DecodeNaked() {
 		case d.bd >= cborBaseUint && d.bd < cborBaseNegInt:
 			if d.h.SignedInteger {
 				n.v = valueTypeInt
-				n.i = d.DecodeInt(64)
+				n.i = d.DecodeInt64()
 			} else {
 				n.v = valueTypeUint
-				n.u = d.DecodeUint(64)
+				n.u = d.DecodeUint64()
 			}
 		case d.bd >= cborBaseNegInt && d.bd < cborBaseBytes:
 			n.v = valueTypeInt
-			n.i = d.DecodeInt(64)
+			n.i = d.DecodeInt64()
 		case d.bd >= cborBaseBytes && d.bd < cborBaseString:
 			n.v = valueTypeBytes
 			n.l = d.DecodeBytes(nil, false)
