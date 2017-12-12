@@ -283,6 +283,10 @@ type jsonUnmarshaler interface {
 	UnmarshalJSON([]byte) error
 }
 
+type isZeroer interface {
+	IsZero() bool
+}
+
 // type byteAccepter func(byte) bool
 
 var (
@@ -313,6 +317,7 @@ var (
 	jsonUnmarshalerTyp = reflect.TypeOf((*jsonUnmarshaler)(nil)).Elem()
 
 	selferTyp = reflect.TypeOf((*Selfer)(nil)).Elem()
+	iszeroTyp = reflect.TypeOf((*isZeroer)(nil)).Elem()
 
 	uint8TypId      = rt2id(uint8Typ)
 	uint8SliceTypId = rt2id(uint8SliceTyp)
@@ -945,7 +950,8 @@ type typeInfo struct {
 
 	numMeth uint16 // number of methods
 
-	anyOmitEmpty bool
+	comparable   bool // true if a struct, and is comparable
+	anyOmitEmpty bool // true if a struct, and any of the fields are tagged "omitempty"
 
 	mbs bool // base type (T or *T) is a MapBySlice
 
@@ -967,7 +973,7 @@ type typeInfo struct {
 	csp bool // *T is a Selfer
 
 	toArray bool      // whether this (struct) type should be encoded as an array
-	keyType valueType // what type of key: default is string
+	keyType valueType // if struct, how is the field name stored in a stream? default is string
 }
 
 // define length beyond which we do a binary search instead of a linear search.
@@ -1080,6 +1086,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	ti := typeInfo{rt: rt, rtid: rtid}
 	// ti.rv0 = reflect.Zero(rt)
 
+	ti.comparable = rt.Comparable()
 	ti.numMeth = uint16(rt.NumMethod())
 
 	ti.bm, ti.bmp = implIntf(rt, binaryMarshalerTyp)

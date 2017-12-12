@@ -12,6 +12,13 @@ import (
 )
 
 func hIsEmptyValue(v reflect.Value, deref, checkStruct bool) bool {
+	if !v.IsValid() {
+		return true
+	}
+	vt := v.Type()
+	if vt.Implements(iszeroTyp) {
+		return rv2i(v).(isZeroer).IsZero()
+	}
 	switch v.Kind() {
 	case reflect.Invalid:
 		return true
@@ -34,17 +41,16 @@ func hIsEmptyValue(v reflect.Value, deref, checkStruct bool) bool {
 		}
 		return v.IsNil()
 	case reflect.Struct:
-		// check for time.Time, and return true if IsZero
 		if rv2rtid(v) == timeTypId {
 			return rv2i(v).(time.Time).IsZero()
 		}
 		if !checkStruct {
 			return false
 		}
+		if vt.Comparable() {
+			return v.Interface() == reflect.Zero(vt).Interface()
+		}
 		// return true if all fields are empty. else return false.
-		// we cannot use equality check, because some fields may be maps/slices/etc
-		// and consequently the structs are not comparable.
-		// return v.Interface() == reflect.Zero(v.Type()).Interface()
 		for i, n := 0, v.NumField(); i < n; i++ {
 			if !hIsEmptyValue(v.Field(i), deref, checkStruct) {
 				return false

@@ -863,11 +863,19 @@ func (x *genRunner) encZero(t reflect.Type) {
 func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf *genBuf) {
 	// smartly check omitEmpty on a struct type, as it may contain uncomparable map/slice/etc.
 	// also, for maps/slices/arrays, check if len ! 0 (not if == zero value)
+	varname2 := varname + "." + t2.Name
 	switch t2.Type.Kind() {
 	case reflect.Struct:
 		// fmt.Printf(">>>> structfield: omitempty: type: %s, field: %s\n", t2.Type.Name(), t2.Name)
+		if t2.Type.Comparable() {
+			buf.s(varname2).s(" != ").s(x.genZeroValueR(t2.Type))
+			break
+		}
+		if t2.Type.Implements(iszeroTyp) || reflect.PtrTo(t2.Type).Implements(iszeroTyp) {
+			buf.s("!(").s(varname2).s(".IsZero())")
+			break
+		}
 		buf.s("true ")
-		varname2 := varname + "." + t2.Name
 		for i, n := 0, t2.Type.NumField(); i < n; i++ {
 			f := t2.Type.Field(i)
 			if f.PkgPath != "" { // unexported
@@ -877,9 +885,9 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 			x.encOmitEmptyLine(f, varname2, buf)
 		}
 	case reflect.Map, reflect.Slice, reflect.Array, reflect.Chan:
-		buf.s("len(").s(varname).s(".").s(t2.Name).s(") != 0")
+		buf.s("len(").s(varname2).s(") != 0")
 	default:
-		buf.s(varname).s(".").s(t2.Name).s(" != ").s(x.genZeroValueR(t2.Type))
+		buf.s(varname2).s(" != ").s(x.genZeroValueR(t2.Type))
 	}
 }
 
