@@ -135,6 +135,14 @@ var (
 	genQNameRegex = regexp.MustCompile(`[A-Za-z_.]+`)
 )
 
+type genBuf struct {
+	buf []byte
+}
+
+func (x *genBuf) s(s string) *genBuf { x.buf = append(x.buf, s...); return x }
+func (x *genBuf) b(s []byte) *genBuf { x.buf = append(x.buf, s...); return x }
+func (x *genBuf) v() string          { return string(x.buf) }
+
 // genRunner holds some state used during a Gen run.
 type genRunner struct {
 	w io.Writer      // output
@@ -697,13 +705,17 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	}
 
 	// check if
-	//   - type is RawExt, Raw
+	//   - type is time.Time, RawExt, Raw
 	//   - the type implements (Text|JSON|Binary)(Unm|M)arshal
 	x.linef("%sm%s := z.EncBinary()", genTempVarPfx, mi)
 	x.linef("_ = %sm%s", genTempVarPfx, mi)
 	x.line("if false {")           //start if block
 	defer func() { x.line("}") }() //end if block
 
+	if t == timeTyp {
+		x.linef("} else { r.EncodeTime(*%s)", varname)
+		return
+	}
 	if t == rawTyp {
 		x.linef("} else { z.EncRaw(%s)", varname)
 		return
@@ -848,6 +860,29 @@ func (x *genRunner) encZero(t reflect.Type) {
 	}
 }
 
+func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf *genBuf) {
+	// smartly check omitEmpty on a struct type, as it may contain uncomparable map/slice/etc.
+	// also, for maps/slices/arrays, check if len ! 0 (not if == zero value)
+	switch t2.Type.Kind() {
+	case reflect.Struct:
+		// fmt.Printf(">>>> structfield: omitempty: type: %s, field: %s\n", t2.Type.Name(), t2.Name)
+		buf.s("true ")
+		varname2 := varname + "." + t2.Name
+		for i, n := 0, t2.Type.NumField(); i < n; i++ {
+			f := t2.Type.Field(i)
+			if f.PkgPath != "" { // unexported
+				continue
+			}
+			buf.s(" && ")
+			x.encOmitEmptyLine(f, varname2, buf)
+		}
+	case reflect.Map, reflect.Slice, reflect.Array, reflect.Chan:
+		buf.s("len(").s(varname).s(".").s(t2.Name).s(") != 0")
+	default:
+		buf.s(varname).s(".").s(t2.Name).s(" != ").s(x.genZeroValueR(t2.Type))
+	}
+}
+
 func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	// Use knowledge from structfieldinfo (mbs, encodable fields. Ignore omitempty. )
 	// replicate code in kStruct i.e. for each field, deref type to non-pointer, and call x.enc on it
@@ -881,7 +916,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 				continue
 			}
 			var t2 reflect.StructField
-			var omitline string
+			var omitline genBuf
 			{
 				t2typ := t
 				varname3 := varname
@@ -900,21 +935,13 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 					// do not include actual field in the omit line.
 					// that is done subsequently (right after - below).
 					if uint8(ij+1) < si.nis && t2typ.Kind() == reflect.Ptr {
-						omitline += varname3 + " != nil && "
+						omitline.s(varname3).s(" != nil && ")
+						// omitline += varname3 + " != nil && "
 					}
 				}
 			}
-			// never check omitEmpty on a struct type, as it may contain uncomparable map/slice/etc.
-			// also, for maps/slices/arrays, check if len ! 0 (not if == zero value)
-			switch t2.Type.Kind() {
-			case reflect.Struct:
-				omitline += " true"
-			case reflect.Map, reflect.Slice, reflect.Array, reflect.Chan:
-				omitline += "len(" + varname + "." + t2.Name + ") != 0"
-			default:
-				omitline += varname + "." + t2.Name + " != " + x.genZeroValueR(t2.Type)
-			}
-			x.linef("%s[%v] = %s", numfieldsvar, j, omitline)
+			x.encOmitEmptyLine(t2, varname, &omitline)
+			x.linef("%s[%v] = %s", numfieldsvar, j, omitline.v())
 		}
 	}
 	// x.linef("var %snn%s int", genTempVarPfx, i)
@@ -1163,7 +1190,7 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	}
 
 	// check if
-	//   - type is Raw, RawExt
+	//   - type is time.Time, Raw, RawExt
 	//   - the type implements (Text|JSON|Binary)(Unm|M)arshal
 	mi := x.varsfx()
 	x.linef("%sm%s := z.DecBinary()", genTempVarPfx, mi)
@@ -1171,6 +1198,10 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	x.line("if false {")           //start if block
 	defer func() { x.line("}") }() //end if block
 
+	if t == timeTyp {
+		x.linef("} else { *%v = r.DecodeTime()", varname)
+		return
+	}
 	if t == rawTyp {
 		x.linef("} else { *%v = z.DecRaw()", varname)
 		return
@@ -1677,7 +1708,7 @@ func genImportPath(t reflect.Type) (s string) {
 	s = t.PkgPath()
 	if genCheckVendor {
 		// HACK: always handle vendoring. It should be typically on in go 1.6, 1.7
-		s = stripVendor(s)
+		s = genStripVendor(s)
 	}
 	return
 }
@@ -1926,7 +1957,7 @@ func genInternalSortType(s string, elem bool) string {
 	panic("sorttype: unexpected type: " + s)
 }
 
-func stripVendor(s string) string {
+func genStripVendor(s string) string {
 	// HACK: Misbehaviour occurs in go 1.5. May have to re-visit this later.
 	// if s contains /vendor/ OR startsWith vendor/, then return everything after it.
 	const vendorStart = "vendor/"
