@@ -707,8 +707,9 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	// check if
 	//   - type is time.Time, RawExt, Raw
 	//   - the type implements (Text|JSON|Binary)(Unm|M)arshal
-	x.linef("%sm%s := z.EncBinary()", genTempVarPfx, mi)
-	x.linef("_ = %sm%s", genTempVarPfx, mi)
+
+	// x.linef("%sm%s := z.EncBinary()", genTempVarPfx, mi)
+	// x.linef("_ = %sm%s", genTempVarPfx, mi)
 	x.line("if false {")           //start if block
 	defer func() { x.line("}") }() //end if block
 
@@ -753,27 +754,27 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	}
 	if arrayOrStruct { // varname is of type *T
 		if t.Implements(binaryMarshalerTyp) || tptr.Implements(binaryMarshalerTyp) {
-			x.linef("} else if %sm%s { z.EncBinaryMarshal(%v) ", genTempVarPfx, mi, varname)
+			x.linef("} else if z.EncBinary() { z.EncBinaryMarshal(%v) ", varname)
 		}
 		if t.Implements(jsonMarshalerTyp) || tptr.Implements(jsonMarshalerTyp) {
-			x.linef("} else if !%sm%s && z.IsJSONHandle() { z.EncJSONMarshal(%v) ", genTempVarPfx, mi, varname)
+			x.linef("} else if !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(%v) ", varname)
 		} else if t.Implements(textMarshalerTyp) || tptr.Implements(textMarshalerTyp) {
-			x.linef("} else if !%sm%s { z.EncTextMarshal(%v) ", genTempVarPfx, mi, varname)
+			x.linef("} else if !z.EncBinary() { z.EncTextMarshal(%v) ", varname)
 		}
 	} else { // varname is of type T
 		if t.Implements(binaryMarshalerTyp) {
-			x.linef("} else if %sm%s { z.EncBinaryMarshal(%v) ", genTempVarPfx, mi, varname)
+			x.linef("} else if z.EncBinary() { z.EncBinaryMarshal(%v) ", varname)
 		} else if tptr.Implements(binaryMarshalerTyp) {
-			x.linef("} else if %sm%s { z.EncBinaryMarshal(&%v) ", genTempVarPfx, mi, varname)
+			x.linef("} else if z.EncBinary() { z.EncBinaryMarshal(&%v) ", varname)
 		}
 		if t.Implements(jsonMarshalerTyp) {
-			x.linef("} else if !%sm%s && z.IsJSONHandle() { z.EncJSONMarshal(%v) ", genTempVarPfx, mi, varname)
+			x.linef("} else if !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(%v) ", varname)
 		} else if tptr.Implements(jsonMarshalerTyp) {
-			x.linef("} else if !%sm%s && z.IsJSONHandle() { z.EncJSONMarshal(&%v) ", genTempVarPfx, mi, varname)
+			x.linef("} else if !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(&%v) ", varname)
 		} else if t.Implements(textMarshalerTyp) {
-			x.linef("} else if !%sm%s { z.EncTextMarshal(%v) ", genTempVarPfx, mi, varname)
+			x.linef("} else if !z.EncBinary() { z.EncTextMarshal(%v) ", varname)
 		} else if tptr.Implements(textMarshalerTyp) {
-			x.linef("} else if !%sm%s { z.EncTextMarshal(&%v) ", genTempVarPfx, mi, varname)
+			x.linef("} else if !z.EncBinary() { z.EncTextMarshal(&%v) ", varname)
 		}
 	}
 	x.line("} else {")
@@ -875,15 +876,19 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 			buf.s("!(").s(varname2).s(".IsZero())")
 			break
 		}
-		buf.s("true ")
+		// buf.s("(")
+		buf.s("false")
 		for i, n := 0, t2.Type.NumField(); i < n; i++ {
 			f := t2.Type.Field(i)
 			if f.PkgPath != "" { // unexported
 				continue
 			}
-			buf.s(" && ")
+			buf.s(" || ")
 			x.encOmitEmptyLine(f, varname2, buf)
 		}
+		//buf.s(")")
+	case reflect.Bool:
+		buf.s(varname2)
 	case reflect.Map, reflect.Slice, reflect.Array, reflect.Chan:
 		buf.s("len(").s(varname2).s(") != 0")
 	default:
@@ -905,22 +910,25 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 
 	x.line(sepVarname + " := !z.EncBinary()")
 	x.linef("%s := z.EncBasicHandle().StructToArray", struct2arrvar)
+	x.linef("_, _ = %s, %s", sepVarname, struct2arrvar)
+	x.linef("const %s bool = %v // struct tag has 'toArray'", ti2arrayvar, ti.toArray)
+
 	tisfi := ti.sfip // always use sequence from file. decStruct expects same thing.
+
+	// var nn int
 	// due to omitEmpty, we need to calculate the
 	// number of non-empty things we write out first.
 	// This is required as we need to pre-determine the size of the container,
 	// to support length-prefixing.
 	if ti.anyOmitEmpty {
-		x.linef("var %s [%v]bool", numfieldsvar, len(tisfi))
-		x.linef("_ = %s", numfieldsvar)
-	}
-	x.linef("_, _ = %s, %s", sepVarname, struct2arrvar)
-	x.linef("const %s bool = %v", ti2arrayvar, ti.toArray)
-	var nn int
-	if ti.anyOmitEmpty {
+		x.linef("var %s = [%v]bool{ // should field at this index be written?", numfieldsvar, len(tisfi))
+
 		for j, si := range tisfi {
+			_ = j
 			if !si.omitEmpty {
-				nn++
+				// x.linef("%s[%v] = true // %s", numfieldsvar, j, si.fieldName)
+				x.linef("true, // %s", si.fieldName)
+				// nn++
 				continue
 			}
 			var t2 reflect.StructField
@@ -949,15 +957,19 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 				}
 			}
 			x.encOmitEmptyLine(t2, varname, &omitline)
-			x.linef("%s[%v] = %s", numfieldsvar, j, omitline.v())
+			x.linef("%s, // %s", omitline.v(), si.fieldName)
 		}
+		x.line("}")
+		x.linef("_ = %s", numfieldsvar)
 	}
 	// x.linef("var %snn%s int", genTempVarPfx, i)
 	x.linef("if %s || %s {", ti2arrayvar, struct2arrvar) // if ti.toArray {
 	x.linef("r.WriteArrayStart(%d)", len(tisfi))
 	x.linef("} else {") // if not ti.toArray
 	if ti.anyOmitEmpty {
-		x.linef("var %snn%s = %v", genTempVarPfx, i, nn)
+		// nn = 0
+		// x.linef("var %snn%s = %v", genTempVarPfx, i, nn)
+		x.linef("var %snn%s int", genTempVarPfx, i)
 		x.linef("for _, b := range %s { if b { %snn%s++ } }", numfieldsvar, genTempVarPfx, i)
 		x.linef("r.WriteMapStart(%snn%s)", genTempVarPfx, i)
 		x.linef("%snn%s = %v", genTempVarPfx, i, 0)
@@ -1200,9 +1212,10 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	// check if
 	//   - type is time.Time, Raw, RawExt
 	//   - the type implements (Text|JSON|Binary)(Unm|M)arshal
+
 	mi := x.varsfx()
-	x.linef("%sm%s := z.DecBinary()", genTempVarPfx, mi)
-	x.linef("_ = %sm%s", genTempVarPfx, mi)
+	// x.linef("%sm%s := z.DecBinary()", genTempVarPfx, mi)
+	// x.linef("_ = %sm%s", genTempVarPfx, mi)
 	x.line("if false {")           //start if block
 	defer func() { x.line("}") }() //end if block
 
@@ -1237,12 +1250,12 @@ func (x *genRunner) dec(varname string, t reflect.Type) {
 	}
 
 	if t.Implements(binaryUnmarshalerTyp) || tptr.Implements(binaryUnmarshalerTyp) {
-		x.linef("} else if %sm%s { z.DecBinaryUnmarshal(%v) ", genTempVarPfx, mi, varname)
+		x.linef("} else if z.DecBinary() { z.DecBinaryUnmarshal(%v) ", varname)
 	}
 	if t.Implements(jsonUnmarshalerTyp) || tptr.Implements(jsonUnmarshalerTyp) {
-		x.linef("} else if !%sm%s && z.IsJSONHandle() { z.DecJSONUnmarshal(%v)", genTempVarPfx, mi, varname)
+		x.linef("} else if !z.DecBinary() && z.IsJSONHandle() { z.DecJSONUnmarshal(%v)", varname)
 	} else if t.Implements(textUnmarshalerTyp) || tptr.Implements(textUnmarshalerTyp) {
-		x.linef("} else if !%sm%s { z.DecTextUnmarshal(%v)", genTempVarPfx, mi, varname)
+		x.linef("} else if !z.DecBinary() { z.DecTextUnmarshal(%v)", varname)
 	}
 
 	x.line("} else {")

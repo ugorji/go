@@ -49,8 +49,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yym1 := z.EncBinary()
-		_ = yym1
 		if false {
 		} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 			z.EncExtension(x, yyxt1)
@@ -58,7 +56,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			yysep2 := !z.EncBinary()
 			yy2arr2 := z.EncBasicHandle().StructToArray
 			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false
+			const yyr2 bool = false // struct tag has 'toArray'
 			if yyr2 || yy2arr2 {
 				r.WriteArrayStart(576)
 			} else {
@@ -69,8 +67,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym4 := z.EncBinary()
-					_ = yym4
 					if false {
 					} else {
 						z.EncFallback(x.FIntf)
@@ -83,8 +79,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym5 := z.EncBinary()
-					_ = yym5
 					if false {
 					} else {
 						z.EncFallback(x.FIntf)
@@ -107,8 +101,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy7 := *x.FptrIntf
-						yym8 := z.EncBinary()
-						_ = yym8
 						if false {
 						} else {
 							z.EncFallback(yy7)
@@ -126,8 +118,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy9 := *x.FptrIntf
-						yym10 := z.EncBinary()
-						_ = yym10
 						if false {
 						} else {
 							z.EncFallback(yy9)
@@ -137,8 +127,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym12 := z.EncBinary()
-				_ = yym12
 				if false {
 				} else {
 					r.EncodeString(codecSelferCcUTF819781, string(x.FString))
@@ -147,8 +135,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FString`)
 				r.WriteMapElemValue()
-				yym13 := z.EncBinary()
-				_ = yym13
 				if false {
 				} else {
 					r.EncodeString(codecSelferCcUTF819781, string(x.FString))
@@ -170,8 +156,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy15 := *x.FptrString
-						yym16 := z.EncBinary()
-						_ = yym16
 						if false {
 						} else {
 							r.EncodeString(codecSelferCcUTF819781, string(yy15))
@@ -189,8 +173,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy17 := *x.FptrString
-						yym18 := z.EncBinary()
-						_ = yym18
 						if false {
 						} else {
 							r.EncodeString(codecSelferCcUTF819781, string(yy17))
@@ -200,8 +182,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym20 := z.EncBinary()
-				_ = yym20
 				if false {
 				} else {
 					r.EncodeFloat32(float32(x.FFloat32))
@@ -210,8 +190,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FFloat32`)
 				r.WriteMapElemValue()
-				yym21 := z.EncBinary()
-				_ = yym21
 				if false {
 				} else {
 					r.EncodeFloat32(float32(x.FFloat32))
@@ -233,8 +211,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy23 := *x.FptrFloat32
-						yym24 := z.EncBinary()
-						_ = yym24
 						if false {
 						} else {
 							r.EncodeFloat32(float32(yy23))
@@ -252,8 +228,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy25 := *x.FptrFloat32
-						yym26 := z.EncBinary()
-						_ = yym26
 						if false {
 						} else {
 							r.EncodeFloat32(float32(yy25))
@@ -263,8 +237,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym28 := z.EncBinary()
-				_ = yym28
 				if false {
 				} else {
 					r.EncodeFloat64(float64(x.FFloat64))
@@ -273,8 +245,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FFloat64`)
 				r.WriteMapElemValue()
-				yym29 := z.EncBinary()
-				_ = yym29
 				if false {
 				} else {
 					r.EncodeFloat64(float64(x.FFloat64))
@@ -296,8 +266,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy31 := *x.FptrFloat64
-						yym32 := z.EncBinary()
-						_ = yym32
 						if false {
 						} else {
 							r.EncodeFloat64(float64(yy31))
@@ -315,8 +283,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy33 := *x.FptrFloat64
-						yym34 := z.EncBinary()
-						_ = yym34
 						if false {
 						} else {
 							r.EncodeFloat64(float64(yy33))
@@ -326,8 +292,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym36 := z.EncBinary()
-				_ = yym36
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUint))
@@ -336,8 +300,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FUint`)
 				r.WriteMapElemValue()
-				yym37 := z.EncBinary()
-				_ = yym37
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUint))
@@ -359,8 +321,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy39 := *x.FptrUint
-						yym40 := z.EncBinary()
-						_ = yym40
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy39))
@@ -378,8 +338,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy41 := *x.FptrUint
-						yym42 := z.EncBinary()
-						_ = yym42
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy41))
@@ -389,8 +347,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym44 := z.EncBinary()
-				_ = yym44
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUint8))
@@ -399,8 +355,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FUint8`)
 				r.WriteMapElemValue()
-				yym45 := z.EncBinary()
-				_ = yym45
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUint8))
@@ -422,8 +376,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy47 := *x.FptrUint8
-						yym48 := z.EncBinary()
-						_ = yym48
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy47))
@@ -441,8 +393,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy49 := *x.FptrUint8
-						yym50 := z.EncBinary()
-						_ = yym50
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy49))
@@ -452,8 +402,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym52 := z.EncBinary()
-				_ = yym52
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUint16))
@@ -462,8 +410,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FUint16`)
 				r.WriteMapElemValue()
-				yym53 := z.EncBinary()
-				_ = yym53
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUint16))
@@ -485,8 +431,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy55 := *x.FptrUint16
-						yym56 := z.EncBinary()
-						_ = yym56
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy55))
@@ -504,8 +448,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy57 := *x.FptrUint16
-						yym58 := z.EncBinary()
-						_ = yym58
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy57))
@@ -515,8 +457,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym60 := z.EncBinary()
-				_ = yym60
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUint32))
@@ -525,8 +465,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FUint32`)
 				r.WriteMapElemValue()
-				yym61 := z.EncBinary()
-				_ = yym61
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUint32))
@@ -548,8 +486,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy63 := *x.FptrUint32
-						yym64 := z.EncBinary()
-						_ = yym64
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy63))
@@ -567,8 +503,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy65 := *x.FptrUint32
-						yym66 := z.EncBinary()
-						_ = yym66
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy65))
@@ -578,8 +512,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym68 := z.EncBinary()
-				_ = yym68
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUint64))
@@ -588,8 +520,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FUint64`)
 				r.WriteMapElemValue()
-				yym69 := z.EncBinary()
-				_ = yym69
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUint64))
@@ -611,8 +541,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy71 := *x.FptrUint64
-						yym72 := z.EncBinary()
-						_ = yym72
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy71))
@@ -630,8 +558,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy73 := *x.FptrUint64
-						yym74 := z.EncBinary()
-						_ = yym74
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy73))
@@ -641,8 +567,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym76 := z.EncBinary()
-				_ = yym76
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUintptr))
@@ -651,8 +575,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FUintptr`)
 				r.WriteMapElemValue()
-				yym77 := z.EncBinary()
-				_ = yym77
 				if false {
 				} else {
 					r.EncodeUint(uint64(x.FUintptr))
@@ -674,8 +596,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy79 := *x.FptrUintptr
-						yym80 := z.EncBinary()
-						_ = yym80
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy79))
@@ -693,8 +613,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy81 := *x.FptrUintptr
-						yym82 := z.EncBinary()
-						_ = yym82
 						if false {
 						} else {
 							r.EncodeUint(uint64(yy81))
@@ -704,8 +622,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym84 := z.EncBinary()
-				_ = yym84
 				if false {
 				} else {
 					r.EncodeInt(int64(x.FInt))
@@ -714,8 +630,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FInt`)
 				r.WriteMapElemValue()
-				yym85 := z.EncBinary()
-				_ = yym85
 				if false {
 				} else {
 					r.EncodeInt(int64(x.FInt))
@@ -737,8 +651,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy87 := *x.FptrInt
-						yym88 := z.EncBinary()
-						_ = yym88
 						if false {
 						} else {
 							r.EncodeInt(int64(yy87))
@@ -756,8 +668,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy89 := *x.FptrInt
-						yym90 := z.EncBinary()
-						_ = yym90
 						if false {
 						} else {
 							r.EncodeInt(int64(yy89))
@@ -767,8 +677,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym92 := z.EncBinary()
-				_ = yym92
 				if false {
 				} else {
 					r.EncodeInt(int64(x.FInt8))
@@ -777,8 +685,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FInt8`)
 				r.WriteMapElemValue()
-				yym93 := z.EncBinary()
-				_ = yym93
 				if false {
 				} else {
 					r.EncodeInt(int64(x.FInt8))
@@ -800,8 +706,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy95 := *x.FptrInt8
-						yym96 := z.EncBinary()
-						_ = yym96
 						if false {
 						} else {
 							r.EncodeInt(int64(yy95))
@@ -819,8 +723,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy97 := *x.FptrInt8
-						yym98 := z.EncBinary()
-						_ = yym98
 						if false {
 						} else {
 							r.EncodeInt(int64(yy97))
@@ -830,8 +732,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym100 := z.EncBinary()
-				_ = yym100
 				if false {
 				} else {
 					r.EncodeInt(int64(x.FInt16))
@@ -840,8 +740,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FInt16`)
 				r.WriteMapElemValue()
-				yym101 := z.EncBinary()
-				_ = yym101
 				if false {
 				} else {
 					r.EncodeInt(int64(x.FInt16))
@@ -863,8 +761,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy103 := *x.FptrInt16
-						yym104 := z.EncBinary()
-						_ = yym104
 						if false {
 						} else {
 							r.EncodeInt(int64(yy103))
@@ -882,8 +778,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy105 := *x.FptrInt16
-						yym106 := z.EncBinary()
-						_ = yym106
 						if false {
 						} else {
 							r.EncodeInt(int64(yy105))
@@ -893,8 +787,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym108 := z.EncBinary()
-				_ = yym108
 				if false {
 				} else {
 					r.EncodeInt(int64(x.FInt32))
@@ -903,8 +795,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FInt32`)
 				r.WriteMapElemValue()
-				yym109 := z.EncBinary()
-				_ = yym109
 				if false {
 				} else {
 					r.EncodeInt(int64(x.FInt32))
@@ -926,8 +816,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy111 := *x.FptrInt32
-						yym112 := z.EncBinary()
-						_ = yym112
 						if false {
 						} else {
 							r.EncodeInt(int64(yy111))
@@ -945,8 +833,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy113 := *x.FptrInt32
-						yym114 := z.EncBinary()
-						_ = yym114
 						if false {
 						} else {
 							r.EncodeInt(int64(yy113))
@@ -956,8 +842,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym116 := z.EncBinary()
-				_ = yym116
 				if false {
 				} else {
 					r.EncodeInt(int64(x.FInt64))
@@ -966,8 +850,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FInt64`)
 				r.WriteMapElemValue()
-				yym117 := z.EncBinary()
-				_ = yym117
 				if false {
 				} else {
 					r.EncodeInt(int64(x.FInt64))
@@ -989,8 +871,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy119 := *x.FptrInt64
-						yym120 := z.EncBinary()
-						_ = yym120
 						if false {
 						} else {
 							r.EncodeInt(int64(yy119))
@@ -1008,8 +888,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy121 := *x.FptrInt64
-						yym122 := z.EncBinary()
-						_ = yym122
 						if false {
 						} else {
 							r.EncodeInt(int64(yy121))
@@ -1019,8 +897,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
-				yym124 := z.EncBinary()
-				_ = yym124
 				if false {
 				} else {
 					r.EncodeBool(bool(x.FBool))
@@ -1029,8 +905,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemKey()
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `FBool`)
 				r.WriteMapElemValue()
-				yym125 := z.EncBinary()
-				_ = yym125
 				if false {
 				} else {
 					r.EncodeBool(bool(x.FBool))
@@ -1052,8 +926,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy127 := *x.FptrBool
-						yym128 := z.EncBinary()
-						_ = yym128
 						if false {
 						} else {
 							r.EncodeBool(bool(yy127))
@@ -1071,8 +943,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy129 := *x.FptrBool
-						yym130 := z.EncBinary()
-						_ = yym130
 						if false {
 						} else {
 							r.EncodeBool(bool(yy129))
@@ -1085,8 +955,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym132 := z.EncBinary()
-					_ = yym132
 					if false {
 					} else {
 						z.F.EncSliceIntfV(x.FSliceIntf, e)
@@ -1099,8 +967,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym133 := z.EncBinary()
-					_ = yym133
 					if false {
 					} else {
 						z.F.EncSliceIntfV(x.FSliceIntf, e)
@@ -1123,8 +989,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy135 := *x.FptrSliceIntf
-						yym136 := z.EncBinary()
-						_ = yym136
 						if false {
 						} else {
 							z.F.EncSliceIntfV(yy135, e)
@@ -1142,8 +1006,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy137 := *x.FptrSliceIntf
-						yym138 := z.EncBinary()
-						_ = yym138
 						if false {
 						} else {
 							z.F.EncSliceIntfV(yy137, e)
@@ -1156,8 +1018,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceString == nil {
 					r.EncodeNil()
 				} else {
-					yym140 := z.EncBinary()
-					_ = yym140
 					if false {
 					} else {
 						z.F.EncSliceStringV(x.FSliceString, e)
@@ -1170,8 +1030,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceString == nil {
 					r.EncodeNil()
 				} else {
-					yym141 := z.EncBinary()
-					_ = yym141
 					if false {
 					} else {
 						z.F.EncSliceStringV(x.FSliceString, e)
@@ -1194,8 +1052,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy143 := *x.FptrSliceString
-						yym144 := z.EncBinary()
-						_ = yym144
 						if false {
 						} else {
 							z.F.EncSliceStringV(yy143, e)
@@ -1213,8 +1069,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy145 := *x.FptrSliceString
-						yym146 := z.EncBinary()
-						_ = yym146
 						if false {
 						} else {
 							z.F.EncSliceStringV(yy145, e)
@@ -1227,8 +1081,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym148 := z.EncBinary()
-					_ = yym148
 					if false {
 					} else {
 						z.F.EncSliceFloat32V(x.FSliceFloat32, e)
@@ -1241,8 +1093,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym149 := z.EncBinary()
-					_ = yym149
 					if false {
 					} else {
 						z.F.EncSliceFloat32V(x.FSliceFloat32, e)
@@ -1265,8 +1115,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy151 := *x.FptrSliceFloat32
-						yym152 := z.EncBinary()
-						_ = yym152
 						if false {
 						} else {
 							z.F.EncSliceFloat32V(yy151, e)
@@ -1284,8 +1132,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy153 := *x.FptrSliceFloat32
-						yym154 := z.EncBinary()
-						_ = yym154
 						if false {
 						} else {
 							z.F.EncSliceFloat32V(yy153, e)
@@ -1298,8 +1144,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym156 := z.EncBinary()
-					_ = yym156
 					if false {
 					} else {
 						z.F.EncSliceFloat64V(x.FSliceFloat64, e)
@@ -1312,8 +1156,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym157 := z.EncBinary()
-					_ = yym157
 					if false {
 					} else {
 						z.F.EncSliceFloat64V(x.FSliceFloat64, e)
@@ -1336,8 +1178,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy159 := *x.FptrSliceFloat64
-						yym160 := z.EncBinary()
-						_ = yym160
 						if false {
 						} else {
 							z.F.EncSliceFloat64V(yy159, e)
@@ -1355,8 +1195,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy161 := *x.FptrSliceFloat64
-						yym162 := z.EncBinary()
-						_ = yym162
 						if false {
 						} else {
 							z.F.EncSliceFloat64V(yy161, e)
@@ -1369,8 +1207,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUint == nil {
 					r.EncodeNil()
 				} else {
-					yym164 := z.EncBinary()
-					_ = yym164
 					if false {
 					} else {
 						z.F.EncSliceUintV(x.FSliceUint, e)
@@ -1383,8 +1219,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUint == nil {
 					r.EncodeNil()
 				} else {
-					yym165 := z.EncBinary()
-					_ = yym165
 					if false {
 					} else {
 						z.F.EncSliceUintV(x.FSliceUint, e)
@@ -1407,8 +1241,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy167 := *x.FptrSliceUint
-						yym168 := z.EncBinary()
-						_ = yym168
 						if false {
 						} else {
 							z.F.EncSliceUintV(yy167, e)
@@ -1426,8 +1258,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy169 := *x.FptrSliceUint
-						yym170 := z.EncBinary()
-						_ = yym170
 						if false {
 						} else {
 							z.F.EncSliceUintV(yy169, e)
@@ -1440,8 +1270,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym172 := z.EncBinary()
-					_ = yym172
 					if false {
 					} else {
 						r.EncodeStringBytes(codecSelferCcRAW19781, []byte(x.FSliceUint8))
@@ -1454,8 +1282,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym173 := z.EncBinary()
-					_ = yym173
 					if false {
 					} else {
 						r.EncodeStringBytes(codecSelferCcRAW19781, []byte(x.FSliceUint8))
@@ -1478,8 +1304,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy175 := *x.FptrSliceUint8
-						yym176 := z.EncBinary()
-						_ = yym176
 						if false {
 						} else {
 							r.EncodeStringBytes(codecSelferCcRAW19781, []byte(yy175))
@@ -1497,8 +1321,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy177 := *x.FptrSliceUint8
-						yym178 := z.EncBinary()
-						_ = yym178
 						if false {
 						} else {
 							r.EncodeStringBytes(codecSelferCcRAW19781, []byte(yy177))
@@ -1511,8 +1333,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym180 := z.EncBinary()
-					_ = yym180
 					if false {
 					} else {
 						z.F.EncSliceUint16V(x.FSliceUint16, e)
@@ -1525,8 +1345,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym181 := z.EncBinary()
-					_ = yym181
 					if false {
 					} else {
 						z.F.EncSliceUint16V(x.FSliceUint16, e)
@@ -1549,8 +1367,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy183 := *x.FptrSliceUint16
-						yym184 := z.EncBinary()
-						_ = yym184
 						if false {
 						} else {
 							z.F.EncSliceUint16V(yy183, e)
@@ -1568,8 +1384,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy185 := *x.FptrSliceUint16
-						yym186 := z.EncBinary()
-						_ = yym186
 						if false {
 						} else {
 							z.F.EncSliceUint16V(yy185, e)
@@ -1582,8 +1396,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym188 := z.EncBinary()
-					_ = yym188
 					if false {
 					} else {
 						z.F.EncSliceUint32V(x.FSliceUint32, e)
@@ -1596,8 +1408,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym189 := z.EncBinary()
-					_ = yym189
 					if false {
 					} else {
 						z.F.EncSliceUint32V(x.FSliceUint32, e)
@@ -1620,8 +1430,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy191 := *x.FptrSliceUint32
-						yym192 := z.EncBinary()
-						_ = yym192
 						if false {
 						} else {
 							z.F.EncSliceUint32V(yy191, e)
@@ -1639,8 +1447,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy193 := *x.FptrSliceUint32
-						yym194 := z.EncBinary()
-						_ = yym194
 						if false {
 						} else {
 							z.F.EncSliceUint32V(yy193, e)
@@ -1653,8 +1459,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym196 := z.EncBinary()
-					_ = yym196
 					if false {
 					} else {
 						z.F.EncSliceUint64V(x.FSliceUint64, e)
@@ -1667,8 +1471,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym197 := z.EncBinary()
-					_ = yym197
 					if false {
 					} else {
 						z.F.EncSliceUint64V(x.FSliceUint64, e)
@@ -1691,8 +1493,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy199 := *x.FptrSliceUint64
-						yym200 := z.EncBinary()
-						_ = yym200
 						if false {
 						} else {
 							z.F.EncSliceUint64V(yy199, e)
@@ -1710,8 +1510,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy201 := *x.FptrSliceUint64
-						yym202 := z.EncBinary()
-						_ = yym202
 						if false {
 						} else {
 							z.F.EncSliceUint64V(yy201, e)
@@ -1724,8 +1522,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym204 := z.EncBinary()
-					_ = yym204
 					if false {
 					} else {
 						z.F.EncSliceUintptrV(x.FSliceUintptr, e)
@@ -1738,8 +1534,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym205 := z.EncBinary()
-					_ = yym205
 					if false {
 					} else {
 						z.F.EncSliceUintptrV(x.FSliceUintptr, e)
@@ -1762,8 +1556,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy207 := *x.FptrSliceUintptr
-						yym208 := z.EncBinary()
-						_ = yym208
 						if false {
 						} else {
 							z.F.EncSliceUintptrV(yy207, e)
@@ -1781,8 +1573,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy209 := *x.FptrSliceUintptr
-						yym210 := z.EncBinary()
-						_ = yym210
 						if false {
 						} else {
 							z.F.EncSliceUintptrV(yy209, e)
@@ -1795,8 +1585,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceInt == nil {
 					r.EncodeNil()
 				} else {
-					yym212 := z.EncBinary()
-					_ = yym212
 					if false {
 					} else {
 						z.F.EncSliceIntV(x.FSliceInt, e)
@@ -1809,8 +1597,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceInt == nil {
 					r.EncodeNil()
 				} else {
-					yym213 := z.EncBinary()
-					_ = yym213
 					if false {
 					} else {
 						z.F.EncSliceIntV(x.FSliceInt, e)
@@ -1833,8 +1619,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy215 := *x.FptrSliceInt
-						yym216 := z.EncBinary()
-						_ = yym216
 						if false {
 						} else {
 							z.F.EncSliceIntV(yy215, e)
@@ -1852,8 +1636,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy217 := *x.FptrSliceInt
-						yym218 := z.EncBinary()
-						_ = yym218
 						if false {
 						} else {
 							z.F.EncSliceIntV(yy217, e)
@@ -1866,8 +1648,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym220 := z.EncBinary()
-					_ = yym220
 					if false {
 					} else {
 						z.F.EncSliceInt8V(x.FSliceInt8, e)
@@ -1880,8 +1660,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym221 := z.EncBinary()
-					_ = yym221
 					if false {
 					} else {
 						z.F.EncSliceInt8V(x.FSliceInt8, e)
@@ -1904,8 +1682,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy223 := *x.FptrSliceInt8
-						yym224 := z.EncBinary()
-						_ = yym224
 						if false {
 						} else {
 							z.F.EncSliceInt8V(yy223, e)
@@ -1923,8 +1699,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy225 := *x.FptrSliceInt8
-						yym226 := z.EncBinary()
-						_ = yym226
 						if false {
 						} else {
 							z.F.EncSliceInt8V(yy225, e)
@@ -1937,8 +1711,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym228 := z.EncBinary()
-					_ = yym228
 					if false {
 					} else {
 						z.F.EncSliceInt16V(x.FSliceInt16, e)
@@ -1951,8 +1723,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym229 := z.EncBinary()
-					_ = yym229
 					if false {
 					} else {
 						z.F.EncSliceInt16V(x.FSliceInt16, e)
@@ -1975,8 +1745,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy231 := *x.FptrSliceInt16
-						yym232 := z.EncBinary()
-						_ = yym232
 						if false {
 						} else {
 							z.F.EncSliceInt16V(yy231, e)
@@ -1994,8 +1762,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy233 := *x.FptrSliceInt16
-						yym234 := z.EncBinary()
-						_ = yym234
 						if false {
 						} else {
 							z.F.EncSliceInt16V(yy233, e)
@@ -2008,8 +1774,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym236 := z.EncBinary()
-					_ = yym236
 					if false {
 					} else {
 						z.F.EncSliceInt32V(x.FSliceInt32, e)
@@ -2022,8 +1786,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym237 := z.EncBinary()
-					_ = yym237
 					if false {
 					} else {
 						z.F.EncSliceInt32V(x.FSliceInt32, e)
@@ -2046,8 +1808,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy239 := *x.FptrSliceInt32
-						yym240 := z.EncBinary()
-						_ = yym240
 						if false {
 						} else {
 							z.F.EncSliceInt32V(yy239, e)
@@ -2065,8 +1825,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy241 := *x.FptrSliceInt32
-						yym242 := z.EncBinary()
-						_ = yym242
 						if false {
 						} else {
 							z.F.EncSliceInt32V(yy241, e)
@@ -2079,8 +1837,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym244 := z.EncBinary()
-					_ = yym244
 					if false {
 					} else {
 						z.F.EncSliceInt64V(x.FSliceInt64, e)
@@ -2093,8 +1849,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym245 := z.EncBinary()
-					_ = yym245
 					if false {
 					} else {
 						z.F.EncSliceInt64V(x.FSliceInt64, e)
@@ -2117,8 +1871,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy247 := *x.FptrSliceInt64
-						yym248 := z.EncBinary()
-						_ = yym248
 						if false {
 						} else {
 							z.F.EncSliceInt64V(yy247, e)
@@ -2136,8 +1888,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy249 := *x.FptrSliceInt64
-						yym250 := z.EncBinary()
-						_ = yym250
 						if false {
 						} else {
 							z.F.EncSliceInt64V(yy249, e)
@@ -2150,8 +1900,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceBool == nil {
 					r.EncodeNil()
 				} else {
-					yym252 := z.EncBinary()
-					_ = yym252
 					if false {
 					} else {
 						z.F.EncSliceBoolV(x.FSliceBool, e)
@@ -2164,8 +1912,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FSliceBool == nil {
 					r.EncodeNil()
 				} else {
-					yym253 := z.EncBinary()
-					_ = yym253
 					if false {
 					} else {
 						z.F.EncSliceBoolV(x.FSliceBool, e)
@@ -2188,8 +1934,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy255 := *x.FptrSliceBool
-						yym256 := z.EncBinary()
-						_ = yym256
 						if false {
 						} else {
 							z.F.EncSliceBoolV(yy255, e)
@@ -2207,8 +1951,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy257 := *x.FptrSliceBool
-						yym258 := z.EncBinary()
-						_ = yym258
 						if false {
 						} else {
 							z.F.EncSliceBoolV(yy257, e)
@@ -2221,8 +1963,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym260 := z.EncBinary()
-					_ = yym260
 					if false {
 					} else {
 						z.F.EncMapIntfIntfV(x.FMapIntfIntf, e)
@@ -2235,8 +1975,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym261 := z.EncBinary()
-					_ = yym261
 					if false {
 					} else {
 						z.F.EncMapIntfIntfV(x.FMapIntfIntf, e)
@@ -2259,8 +1997,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy263 := *x.FptrMapIntfIntf
-						yym264 := z.EncBinary()
-						_ = yym264
 						if false {
 						} else {
 							z.F.EncMapIntfIntfV(yy263, e)
@@ -2278,8 +2014,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy265 := *x.FptrMapIntfIntf
-						yym266 := z.EncBinary()
-						_ = yym266
 						if false {
 						} else {
 							z.F.EncMapIntfIntfV(yy265, e)
@@ -2292,8 +2026,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfString == nil {
 					r.EncodeNil()
 				} else {
-					yym268 := z.EncBinary()
-					_ = yym268
 					if false {
 					} else {
 						z.F.EncMapIntfStringV(x.FMapIntfString, e)
@@ -2306,8 +2038,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfString == nil {
 					r.EncodeNil()
 				} else {
-					yym269 := z.EncBinary()
-					_ = yym269
 					if false {
 					} else {
 						z.F.EncMapIntfStringV(x.FMapIntfString, e)
@@ -2330,8 +2060,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy271 := *x.FptrMapIntfString
-						yym272 := z.EncBinary()
-						_ = yym272
 						if false {
 						} else {
 							z.F.EncMapIntfStringV(yy271, e)
@@ -2349,8 +2077,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy273 := *x.FptrMapIntfString
-						yym274 := z.EncBinary()
-						_ = yym274
 						if false {
 						} else {
 							z.F.EncMapIntfStringV(yy273, e)
@@ -2363,8 +2089,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUint == nil {
 					r.EncodeNil()
 				} else {
-					yym276 := z.EncBinary()
-					_ = yym276
 					if false {
 					} else {
 						z.F.EncMapIntfUintV(x.FMapIntfUint, e)
@@ -2377,8 +2101,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUint == nil {
 					r.EncodeNil()
 				} else {
-					yym277 := z.EncBinary()
-					_ = yym277
 					if false {
 					} else {
 						z.F.EncMapIntfUintV(x.FMapIntfUint, e)
@@ -2401,8 +2123,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy279 := *x.FptrMapIntfUint
-						yym280 := z.EncBinary()
-						_ = yym280
 						if false {
 						} else {
 							z.F.EncMapIntfUintV(yy279, e)
@@ -2420,8 +2140,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy281 := *x.FptrMapIntfUint
-						yym282 := z.EncBinary()
-						_ = yym282
 						if false {
 						} else {
 							z.F.EncMapIntfUintV(yy281, e)
@@ -2434,8 +2152,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym284 := z.EncBinary()
-					_ = yym284
 					if false {
 					} else {
 						z.F.EncMapIntfUint8V(x.FMapIntfUint8, e)
@@ -2448,8 +2164,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym285 := z.EncBinary()
-					_ = yym285
 					if false {
 					} else {
 						z.F.EncMapIntfUint8V(x.FMapIntfUint8, e)
@@ -2472,8 +2186,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy287 := *x.FptrMapIntfUint8
-						yym288 := z.EncBinary()
-						_ = yym288
 						if false {
 						} else {
 							z.F.EncMapIntfUint8V(yy287, e)
@@ -2491,8 +2203,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy289 := *x.FptrMapIntfUint8
-						yym290 := z.EncBinary()
-						_ = yym290
 						if false {
 						} else {
 							z.F.EncMapIntfUint8V(yy289, e)
@@ -2505,8 +2215,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym292 := z.EncBinary()
-					_ = yym292
 					if false {
 					} else {
 						z.F.EncMapIntfUint16V(x.FMapIntfUint16, e)
@@ -2519,8 +2227,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym293 := z.EncBinary()
-					_ = yym293
 					if false {
 					} else {
 						z.F.EncMapIntfUint16V(x.FMapIntfUint16, e)
@@ -2543,8 +2249,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy295 := *x.FptrMapIntfUint16
-						yym296 := z.EncBinary()
-						_ = yym296
 						if false {
 						} else {
 							z.F.EncMapIntfUint16V(yy295, e)
@@ -2562,8 +2266,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy297 := *x.FptrMapIntfUint16
-						yym298 := z.EncBinary()
-						_ = yym298
 						if false {
 						} else {
 							z.F.EncMapIntfUint16V(yy297, e)
@@ -2576,8 +2278,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym300 := z.EncBinary()
-					_ = yym300
 					if false {
 					} else {
 						z.F.EncMapIntfUint32V(x.FMapIntfUint32, e)
@@ -2590,8 +2290,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym301 := z.EncBinary()
-					_ = yym301
 					if false {
 					} else {
 						z.F.EncMapIntfUint32V(x.FMapIntfUint32, e)
@@ -2614,8 +2312,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy303 := *x.FptrMapIntfUint32
-						yym304 := z.EncBinary()
-						_ = yym304
 						if false {
 						} else {
 							z.F.EncMapIntfUint32V(yy303, e)
@@ -2633,8 +2329,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy305 := *x.FptrMapIntfUint32
-						yym306 := z.EncBinary()
-						_ = yym306
 						if false {
 						} else {
 							z.F.EncMapIntfUint32V(yy305, e)
@@ -2647,8 +2341,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym308 := z.EncBinary()
-					_ = yym308
 					if false {
 					} else {
 						z.F.EncMapIntfUint64V(x.FMapIntfUint64, e)
@@ -2661,8 +2353,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym309 := z.EncBinary()
-					_ = yym309
 					if false {
 					} else {
 						z.F.EncMapIntfUint64V(x.FMapIntfUint64, e)
@@ -2685,8 +2375,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy311 := *x.FptrMapIntfUint64
-						yym312 := z.EncBinary()
-						_ = yym312
 						if false {
 						} else {
 							z.F.EncMapIntfUint64V(yy311, e)
@@ -2704,8 +2392,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy313 := *x.FptrMapIntfUint64
-						yym314 := z.EncBinary()
-						_ = yym314
 						if false {
 						} else {
 							z.F.EncMapIntfUint64V(yy313, e)
@@ -2718,8 +2404,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym316 := z.EncBinary()
-					_ = yym316
 					if false {
 					} else {
 						z.F.EncMapIntfUintptrV(x.FMapIntfUintptr, e)
@@ -2732,8 +2416,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym317 := z.EncBinary()
-					_ = yym317
 					if false {
 					} else {
 						z.F.EncMapIntfUintptrV(x.FMapIntfUintptr, e)
@@ -2756,8 +2438,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy319 := *x.FptrMapIntfUintptr
-						yym320 := z.EncBinary()
-						_ = yym320
 						if false {
 						} else {
 							z.F.EncMapIntfUintptrV(yy319, e)
@@ -2775,8 +2455,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy321 := *x.FptrMapIntfUintptr
-						yym322 := z.EncBinary()
-						_ = yym322
 						if false {
 						} else {
 							z.F.EncMapIntfUintptrV(yy321, e)
@@ -2789,8 +2467,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfInt == nil {
 					r.EncodeNil()
 				} else {
-					yym324 := z.EncBinary()
-					_ = yym324
 					if false {
 					} else {
 						z.F.EncMapIntfIntV(x.FMapIntfInt, e)
@@ -2803,8 +2479,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfInt == nil {
 					r.EncodeNil()
 				} else {
-					yym325 := z.EncBinary()
-					_ = yym325
 					if false {
 					} else {
 						z.F.EncMapIntfIntV(x.FMapIntfInt, e)
@@ -2827,8 +2501,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy327 := *x.FptrMapIntfInt
-						yym328 := z.EncBinary()
-						_ = yym328
 						if false {
 						} else {
 							z.F.EncMapIntfIntV(yy327, e)
@@ -2846,8 +2518,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy329 := *x.FptrMapIntfInt
-						yym330 := z.EncBinary()
-						_ = yym330
 						if false {
 						} else {
 							z.F.EncMapIntfIntV(yy329, e)
@@ -2860,8 +2530,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym332 := z.EncBinary()
-					_ = yym332
 					if false {
 					} else {
 						z.F.EncMapIntfInt8V(x.FMapIntfInt8, e)
@@ -2874,8 +2542,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym333 := z.EncBinary()
-					_ = yym333
 					if false {
 					} else {
 						z.F.EncMapIntfInt8V(x.FMapIntfInt8, e)
@@ -2898,8 +2564,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy335 := *x.FptrMapIntfInt8
-						yym336 := z.EncBinary()
-						_ = yym336
 						if false {
 						} else {
 							z.F.EncMapIntfInt8V(yy335, e)
@@ -2917,8 +2581,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy337 := *x.FptrMapIntfInt8
-						yym338 := z.EncBinary()
-						_ = yym338
 						if false {
 						} else {
 							z.F.EncMapIntfInt8V(yy337, e)
@@ -2931,8 +2593,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym340 := z.EncBinary()
-					_ = yym340
 					if false {
 					} else {
 						z.F.EncMapIntfInt16V(x.FMapIntfInt16, e)
@@ -2945,8 +2605,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym341 := z.EncBinary()
-					_ = yym341
 					if false {
 					} else {
 						z.F.EncMapIntfInt16V(x.FMapIntfInt16, e)
@@ -2969,8 +2627,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy343 := *x.FptrMapIntfInt16
-						yym344 := z.EncBinary()
-						_ = yym344
 						if false {
 						} else {
 							z.F.EncMapIntfInt16V(yy343, e)
@@ -2988,8 +2644,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy345 := *x.FptrMapIntfInt16
-						yym346 := z.EncBinary()
-						_ = yym346
 						if false {
 						} else {
 							z.F.EncMapIntfInt16V(yy345, e)
@@ -3002,8 +2656,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym348 := z.EncBinary()
-					_ = yym348
 					if false {
 					} else {
 						z.F.EncMapIntfInt32V(x.FMapIntfInt32, e)
@@ -3016,8 +2668,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym349 := z.EncBinary()
-					_ = yym349
 					if false {
 					} else {
 						z.F.EncMapIntfInt32V(x.FMapIntfInt32, e)
@@ -3040,8 +2690,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy351 := *x.FptrMapIntfInt32
-						yym352 := z.EncBinary()
-						_ = yym352
 						if false {
 						} else {
 							z.F.EncMapIntfInt32V(yy351, e)
@@ -3059,8 +2707,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy353 := *x.FptrMapIntfInt32
-						yym354 := z.EncBinary()
-						_ = yym354
 						if false {
 						} else {
 							z.F.EncMapIntfInt32V(yy353, e)
@@ -3073,8 +2719,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym356 := z.EncBinary()
-					_ = yym356
 					if false {
 					} else {
 						z.F.EncMapIntfInt64V(x.FMapIntfInt64, e)
@@ -3087,8 +2731,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym357 := z.EncBinary()
-					_ = yym357
 					if false {
 					} else {
 						z.F.EncMapIntfInt64V(x.FMapIntfInt64, e)
@@ -3111,8 +2753,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy359 := *x.FptrMapIntfInt64
-						yym360 := z.EncBinary()
-						_ = yym360
 						if false {
 						} else {
 							z.F.EncMapIntfInt64V(yy359, e)
@@ -3130,8 +2770,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy361 := *x.FptrMapIntfInt64
-						yym362 := z.EncBinary()
-						_ = yym362
 						if false {
 						} else {
 							z.F.EncMapIntfInt64V(yy361, e)
@@ -3144,8 +2782,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym364 := z.EncBinary()
-					_ = yym364
 					if false {
 					} else {
 						z.F.EncMapIntfFloat32V(x.FMapIntfFloat32, e)
@@ -3158,8 +2794,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym365 := z.EncBinary()
-					_ = yym365
 					if false {
 					} else {
 						z.F.EncMapIntfFloat32V(x.FMapIntfFloat32, e)
@@ -3182,8 +2816,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy367 := *x.FptrMapIntfFloat32
-						yym368 := z.EncBinary()
-						_ = yym368
 						if false {
 						} else {
 							z.F.EncMapIntfFloat32V(yy367, e)
@@ -3201,8 +2833,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy369 := *x.FptrMapIntfFloat32
-						yym370 := z.EncBinary()
-						_ = yym370
 						if false {
 						} else {
 							z.F.EncMapIntfFloat32V(yy369, e)
@@ -3215,8 +2845,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym372 := z.EncBinary()
-					_ = yym372
 					if false {
 					} else {
 						z.F.EncMapIntfFloat64V(x.FMapIntfFloat64, e)
@@ -3229,8 +2857,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym373 := z.EncBinary()
-					_ = yym373
 					if false {
 					} else {
 						z.F.EncMapIntfFloat64V(x.FMapIntfFloat64, e)
@@ -3253,8 +2879,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy375 := *x.FptrMapIntfFloat64
-						yym376 := z.EncBinary()
-						_ = yym376
 						if false {
 						} else {
 							z.F.EncMapIntfFloat64V(yy375, e)
@@ -3272,8 +2896,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy377 := *x.FptrMapIntfFloat64
-						yym378 := z.EncBinary()
-						_ = yym378
 						if false {
 						} else {
 							z.F.EncMapIntfFloat64V(yy377, e)
@@ -3286,8 +2908,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfBool == nil {
 					r.EncodeNil()
 				} else {
-					yym380 := z.EncBinary()
-					_ = yym380
 					if false {
 					} else {
 						z.F.EncMapIntfBoolV(x.FMapIntfBool, e)
@@ -3300,8 +2920,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntfBool == nil {
 					r.EncodeNil()
 				} else {
-					yym381 := z.EncBinary()
-					_ = yym381
 					if false {
 					} else {
 						z.F.EncMapIntfBoolV(x.FMapIntfBool, e)
@@ -3324,8 +2942,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy383 := *x.FptrMapIntfBool
-						yym384 := z.EncBinary()
-						_ = yym384
 						if false {
 						} else {
 							z.F.EncMapIntfBoolV(yy383, e)
@@ -3343,8 +2959,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy385 := *x.FptrMapIntfBool
-						yym386 := z.EncBinary()
-						_ = yym386
 						if false {
 						} else {
 							z.F.EncMapIntfBoolV(yy385, e)
@@ -3357,8 +2971,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym388 := z.EncBinary()
-					_ = yym388
 					if false {
 					} else {
 						z.F.EncMapStringIntfV(x.FMapStringIntf, e)
@@ -3371,8 +2983,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym389 := z.EncBinary()
-					_ = yym389
 					if false {
 					} else {
 						z.F.EncMapStringIntfV(x.FMapStringIntf, e)
@@ -3395,8 +3005,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy391 := *x.FptrMapStringIntf
-						yym392 := z.EncBinary()
-						_ = yym392
 						if false {
 						} else {
 							z.F.EncMapStringIntfV(yy391, e)
@@ -3414,8 +3022,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy393 := *x.FptrMapStringIntf
-						yym394 := z.EncBinary()
-						_ = yym394
 						if false {
 						} else {
 							z.F.EncMapStringIntfV(yy393, e)
@@ -3428,8 +3034,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringString == nil {
 					r.EncodeNil()
 				} else {
-					yym396 := z.EncBinary()
-					_ = yym396
 					if false {
 					} else {
 						z.F.EncMapStringStringV(x.FMapStringString, e)
@@ -3442,8 +3046,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringString == nil {
 					r.EncodeNil()
 				} else {
-					yym397 := z.EncBinary()
-					_ = yym397
 					if false {
 					} else {
 						z.F.EncMapStringStringV(x.FMapStringString, e)
@@ -3466,8 +3068,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy399 := *x.FptrMapStringString
-						yym400 := z.EncBinary()
-						_ = yym400
 						if false {
 						} else {
 							z.F.EncMapStringStringV(yy399, e)
@@ -3485,8 +3085,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy401 := *x.FptrMapStringString
-						yym402 := z.EncBinary()
-						_ = yym402
 						if false {
 						} else {
 							z.F.EncMapStringStringV(yy401, e)
@@ -3499,8 +3097,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUint == nil {
 					r.EncodeNil()
 				} else {
-					yym404 := z.EncBinary()
-					_ = yym404
 					if false {
 					} else {
 						z.F.EncMapStringUintV(x.FMapStringUint, e)
@@ -3513,8 +3109,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUint == nil {
 					r.EncodeNil()
 				} else {
-					yym405 := z.EncBinary()
-					_ = yym405
 					if false {
 					} else {
 						z.F.EncMapStringUintV(x.FMapStringUint, e)
@@ -3537,8 +3131,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy407 := *x.FptrMapStringUint
-						yym408 := z.EncBinary()
-						_ = yym408
 						if false {
 						} else {
 							z.F.EncMapStringUintV(yy407, e)
@@ -3556,8 +3148,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy409 := *x.FptrMapStringUint
-						yym410 := z.EncBinary()
-						_ = yym410
 						if false {
 						} else {
 							z.F.EncMapStringUintV(yy409, e)
@@ -3570,8 +3160,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym412 := z.EncBinary()
-					_ = yym412
 					if false {
 					} else {
 						z.F.EncMapStringUint8V(x.FMapStringUint8, e)
@@ -3584,8 +3172,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym413 := z.EncBinary()
-					_ = yym413
 					if false {
 					} else {
 						z.F.EncMapStringUint8V(x.FMapStringUint8, e)
@@ -3608,8 +3194,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy415 := *x.FptrMapStringUint8
-						yym416 := z.EncBinary()
-						_ = yym416
 						if false {
 						} else {
 							z.F.EncMapStringUint8V(yy415, e)
@@ -3627,8 +3211,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy417 := *x.FptrMapStringUint8
-						yym418 := z.EncBinary()
-						_ = yym418
 						if false {
 						} else {
 							z.F.EncMapStringUint8V(yy417, e)
@@ -3641,8 +3223,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym420 := z.EncBinary()
-					_ = yym420
 					if false {
 					} else {
 						z.F.EncMapStringUint16V(x.FMapStringUint16, e)
@@ -3655,8 +3235,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym421 := z.EncBinary()
-					_ = yym421
 					if false {
 					} else {
 						z.F.EncMapStringUint16V(x.FMapStringUint16, e)
@@ -3679,8 +3257,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy423 := *x.FptrMapStringUint16
-						yym424 := z.EncBinary()
-						_ = yym424
 						if false {
 						} else {
 							z.F.EncMapStringUint16V(yy423, e)
@@ -3698,8 +3274,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy425 := *x.FptrMapStringUint16
-						yym426 := z.EncBinary()
-						_ = yym426
 						if false {
 						} else {
 							z.F.EncMapStringUint16V(yy425, e)
@@ -3712,8 +3286,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym428 := z.EncBinary()
-					_ = yym428
 					if false {
 					} else {
 						z.F.EncMapStringUint32V(x.FMapStringUint32, e)
@@ -3726,8 +3298,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym429 := z.EncBinary()
-					_ = yym429
 					if false {
 					} else {
 						z.F.EncMapStringUint32V(x.FMapStringUint32, e)
@@ -3750,8 +3320,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy431 := *x.FptrMapStringUint32
-						yym432 := z.EncBinary()
-						_ = yym432
 						if false {
 						} else {
 							z.F.EncMapStringUint32V(yy431, e)
@@ -3769,8 +3337,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy433 := *x.FptrMapStringUint32
-						yym434 := z.EncBinary()
-						_ = yym434
 						if false {
 						} else {
 							z.F.EncMapStringUint32V(yy433, e)
@@ -3783,8 +3349,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym436 := z.EncBinary()
-					_ = yym436
 					if false {
 					} else {
 						z.F.EncMapStringUint64V(x.FMapStringUint64, e)
@@ -3797,8 +3361,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym437 := z.EncBinary()
-					_ = yym437
 					if false {
 					} else {
 						z.F.EncMapStringUint64V(x.FMapStringUint64, e)
@@ -3821,8 +3383,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy439 := *x.FptrMapStringUint64
-						yym440 := z.EncBinary()
-						_ = yym440
 						if false {
 						} else {
 							z.F.EncMapStringUint64V(yy439, e)
@@ -3840,8 +3400,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy441 := *x.FptrMapStringUint64
-						yym442 := z.EncBinary()
-						_ = yym442
 						if false {
 						} else {
 							z.F.EncMapStringUint64V(yy441, e)
@@ -3854,8 +3412,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym444 := z.EncBinary()
-					_ = yym444
 					if false {
 					} else {
 						z.F.EncMapStringUintptrV(x.FMapStringUintptr, e)
@@ -3868,8 +3424,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym445 := z.EncBinary()
-					_ = yym445
 					if false {
 					} else {
 						z.F.EncMapStringUintptrV(x.FMapStringUintptr, e)
@@ -3892,8 +3446,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy447 := *x.FptrMapStringUintptr
-						yym448 := z.EncBinary()
-						_ = yym448
 						if false {
 						} else {
 							z.F.EncMapStringUintptrV(yy447, e)
@@ -3911,8 +3463,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy449 := *x.FptrMapStringUintptr
-						yym450 := z.EncBinary()
-						_ = yym450
 						if false {
 						} else {
 							z.F.EncMapStringUintptrV(yy449, e)
@@ -3925,8 +3475,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringInt == nil {
 					r.EncodeNil()
 				} else {
-					yym452 := z.EncBinary()
-					_ = yym452
 					if false {
 					} else {
 						z.F.EncMapStringIntV(x.FMapStringInt, e)
@@ -3939,8 +3487,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringInt == nil {
 					r.EncodeNil()
 				} else {
-					yym453 := z.EncBinary()
-					_ = yym453
 					if false {
 					} else {
 						z.F.EncMapStringIntV(x.FMapStringInt, e)
@@ -3963,8 +3509,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy455 := *x.FptrMapStringInt
-						yym456 := z.EncBinary()
-						_ = yym456
 						if false {
 						} else {
 							z.F.EncMapStringIntV(yy455, e)
@@ -3982,8 +3526,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy457 := *x.FptrMapStringInt
-						yym458 := z.EncBinary()
-						_ = yym458
 						if false {
 						} else {
 							z.F.EncMapStringIntV(yy457, e)
@@ -3996,8 +3538,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym460 := z.EncBinary()
-					_ = yym460
 					if false {
 					} else {
 						z.F.EncMapStringInt8V(x.FMapStringInt8, e)
@@ -4010,8 +3550,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym461 := z.EncBinary()
-					_ = yym461
 					if false {
 					} else {
 						z.F.EncMapStringInt8V(x.FMapStringInt8, e)
@@ -4034,8 +3572,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy463 := *x.FptrMapStringInt8
-						yym464 := z.EncBinary()
-						_ = yym464
 						if false {
 						} else {
 							z.F.EncMapStringInt8V(yy463, e)
@@ -4053,8 +3589,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy465 := *x.FptrMapStringInt8
-						yym466 := z.EncBinary()
-						_ = yym466
 						if false {
 						} else {
 							z.F.EncMapStringInt8V(yy465, e)
@@ -4067,8 +3601,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym468 := z.EncBinary()
-					_ = yym468
 					if false {
 					} else {
 						z.F.EncMapStringInt16V(x.FMapStringInt16, e)
@@ -4081,8 +3613,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym469 := z.EncBinary()
-					_ = yym469
 					if false {
 					} else {
 						z.F.EncMapStringInt16V(x.FMapStringInt16, e)
@@ -4105,8 +3635,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy471 := *x.FptrMapStringInt16
-						yym472 := z.EncBinary()
-						_ = yym472
 						if false {
 						} else {
 							z.F.EncMapStringInt16V(yy471, e)
@@ -4124,8 +3652,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy473 := *x.FptrMapStringInt16
-						yym474 := z.EncBinary()
-						_ = yym474
 						if false {
 						} else {
 							z.F.EncMapStringInt16V(yy473, e)
@@ -4138,8 +3664,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym476 := z.EncBinary()
-					_ = yym476
 					if false {
 					} else {
 						z.F.EncMapStringInt32V(x.FMapStringInt32, e)
@@ -4152,8 +3676,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym477 := z.EncBinary()
-					_ = yym477
 					if false {
 					} else {
 						z.F.EncMapStringInt32V(x.FMapStringInt32, e)
@@ -4176,8 +3698,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy479 := *x.FptrMapStringInt32
-						yym480 := z.EncBinary()
-						_ = yym480
 						if false {
 						} else {
 							z.F.EncMapStringInt32V(yy479, e)
@@ -4195,8 +3715,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy481 := *x.FptrMapStringInt32
-						yym482 := z.EncBinary()
-						_ = yym482
 						if false {
 						} else {
 							z.F.EncMapStringInt32V(yy481, e)
@@ -4209,8 +3727,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym484 := z.EncBinary()
-					_ = yym484
 					if false {
 					} else {
 						z.F.EncMapStringInt64V(x.FMapStringInt64, e)
@@ -4223,8 +3739,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym485 := z.EncBinary()
-					_ = yym485
 					if false {
 					} else {
 						z.F.EncMapStringInt64V(x.FMapStringInt64, e)
@@ -4247,8 +3761,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy487 := *x.FptrMapStringInt64
-						yym488 := z.EncBinary()
-						_ = yym488
 						if false {
 						} else {
 							z.F.EncMapStringInt64V(yy487, e)
@@ -4266,8 +3778,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy489 := *x.FptrMapStringInt64
-						yym490 := z.EncBinary()
-						_ = yym490
 						if false {
 						} else {
 							z.F.EncMapStringInt64V(yy489, e)
@@ -4280,8 +3790,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym492 := z.EncBinary()
-					_ = yym492
 					if false {
 					} else {
 						z.F.EncMapStringFloat32V(x.FMapStringFloat32, e)
@@ -4294,8 +3802,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym493 := z.EncBinary()
-					_ = yym493
 					if false {
 					} else {
 						z.F.EncMapStringFloat32V(x.FMapStringFloat32, e)
@@ -4318,8 +3824,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy495 := *x.FptrMapStringFloat32
-						yym496 := z.EncBinary()
-						_ = yym496
 						if false {
 						} else {
 							z.F.EncMapStringFloat32V(yy495, e)
@@ -4337,8 +3841,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy497 := *x.FptrMapStringFloat32
-						yym498 := z.EncBinary()
-						_ = yym498
 						if false {
 						} else {
 							z.F.EncMapStringFloat32V(yy497, e)
@@ -4351,8 +3853,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym500 := z.EncBinary()
-					_ = yym500
 					if false {
 					} else {
 						z.F.EncMapStringFloat64V(x.FMapStringFloat64, e)
@@ -4365,8 +3865,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym501 := z.EncBinary()
-					_ = yym501
 					if false {
 					} else {
 						z.F.EncMapStringFloat64V(x.FMapStringFloat64, e)
@@ -4389,8 +3887,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy503 := *x.FptrMapStringFloat64
-						yym504 := z.EncBinary()
-						_ = yym504
 						if false {
 						} else {
 							z.F.EncMapStringFloat64V(yy503, e)
@@ -4408,8 +3904,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy505 := *x.FptrMapStringFloat64
-						yym506 := z.EncBinary()
-						_ = yym506
 						if false {
 						} else {
 							z.F.EncMapStringFloat64V(yy505, e)
@@ -4422,8 +3916,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringBool == nil {
 					r.EncodeNil()
 				} else {
-					yym508 := z.EncBinary()
-					_ = yym508
 					if false {
 					} else {
 						z.F.EncMapStringBoolV(x.FMapStringBool, e)
@@ -4436,8 +3928,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapStringBool == nil {
 					r.EncodeNil()
 				} else {
-					yym509 := z.EncBinary()
-					_ = yym509
 					if false {
 					} else {
 						z.F.EncMapStringBoolV(x.FMapStringBool, e)
@@ -4460,8 +3950,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy511 := *x.FptrMapStringBool
-						yym512 := z.EncBinary()
-						_ = yym512
 						if false {
 						} else {
 							z.F.EncMapStringBoolV(yy511, e)
@@ -4479,8 +3967,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy513 := *x.FptrMapStringBool
-						yym514 := z.EncBinary()
-						_ = yym514
 						if false {
 						} else {
 							z.F.EncMapStringBoolV(yy513, e)
@@ -4493,8 +3979,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym516 := z.EncBinary()
-					_ = yym516
 					if false {
 					} else {
 						z.F.EncMapFloat32IntfV(x.FMapFloat32Intf, e)
@@ -4507,8 +3991,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym517 := z.EncBinary()
-					_ = yym517
 					if false {
 					} else {
 						z.F.EncMapFloat32IntfV(x.FMapFloat32Intf, e)
@@ -4531,8 +4013,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy519 := *x.FptrMapFloat32Intf
-						yym520 := z.EncBinary()
-						_ = yym520
 						if false {
 						} else {
 							z.F.EncMapFloat32IntfV(yy519, e)
@@ -4550,8 +4030,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy521 := *x.FptrMapFloat32Intf
-						yym522 := z.EncBinary()
-						_ = yym522
 						if false {
 						} else {
 							z.F.EncMapFloat32IntfV(yy521, e)
@@ -4564,8 +4042,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32String == nil {
 					r.EncodeNil()
 				} else {
-					yym524 := z.EncBinary()
-					_ = yym524
 					if false {
 					} else {
 						z.F.EncMapFloat32StringV(x.FMapFloat32String, e)
@@ -4578,8 +4054,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32String == nil {
 					r.EncodeNil()
 				} else {
-					yym525 := z.EncBinary()
-					_ = yym525
 					if false {
 					} else {
 						z.F.EncMapFloat32StringV(x.FMapFloat32String, e)
@@ -4602,8 +4076,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy527 := *x.FptrMapFloat32String
-						yym528 := z.EncBinary()
-						_ = yym528
 						if false {
 						} else {
 							z.F.EncMapFloat32StringV(yy527, e)
@@ -4621,8 +4093,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy529 := *x.FptrMapFloat32String
-						yym530 := z.EncBinary()
-						_ = yym530
 						if false {
 						} else {
 							z.F.EncMapFloat32StringV(yy529, e)
@@ -4635,8 +4105,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym532 := z.EncBinary()
-					_ = yym532
 					if false {
 					} else {
 						z.F.EncMapFloat32UintV(x.FMapFloat32Uint, e)
@@ -4649,8 +4117,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym533 := z.EncBinary()
-					_ = yym533
 					if false {
 					} else {
 						z.F.EncMapFloat32UintV(x.FMapFloat32Uint, e)
@@ -4673,8 +4139,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy535 := *x.FptrMapFloat32Uint
-						yym536 := z.EncBinary()
-						_ = yym536
 						if false {
 						} else {
 							z.F.EncMapFloat32UintV(yy535, e)
@@ -4692,8 +4156,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy537 := *x.FptrMapFloat32Uint
-						yym538 := z.EncBinary()
-						_ = yym538
 						if false {
 						} else {
 							z.F.EncMapFloat32UintV(yy537, e)
@@ -4706,8 +4168,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym540 := z.EncBinary()
-					_ = yym540
 					if false {
 					} else {
 						z.F.EncMapFloat32Uint8V(x.FMapFloat32Uint8, e)
@@ -4720,8 +4180,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym541 := z.EncBinary()
-					_ = yym541
 					if false {
 					} else {
 						z.F.EncMapFloat32Uint8V(x.FMapFloat32Uint8, e)
@@ -4744,8 +4202,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy543 := *x.FptrMapFloat32Uint8
-						yym544 := z.EncBinary()
-						_ = yym544
 						if false {
 						} else {
 							z.F.EncMapFloat32Uint8V(yy543, e)
@@ -4763,8 +4219,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy545 := *x.FptrMapFloat32Uint8
-						yym546 := z.EncBinary()
-						_ = yym546
 						if false {
 						} else {
 							z.F.EncMapFloat32Uint8V(yy545, e)
@@ -4777,8 +4231,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym548 := z.EncBinary()
-					_ = yym548
 					if false {
 					} else {
 						z.F.EncMapFloat32Uint16V(x.FMapFloat32Uint16, e)
@@ -4791,8 +4243,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym549 := z.EncBinary()
-					_ = yym549
 					if false {
 					} else {
 						z.F.EncMapFloat32Uint16V(x.FMapFloat32Uint16, e)
@@ -4815,8 +4265,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy551 := *x.FptrMapFloat32Uint16
-						yym552 := z.EncBinary()
-						_ = yym552
 						if false {
 						} else {
 							z.F.EncMapFloat32Uint16V(yy551, e)
@@ -4834,8 +4282,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy553 := *x.FptrMapFloat32Uint16
-						yym554 := z.EncBinary()
-						_ = yym554
 						if false {
 						} else {
 							z.F.EncMapFloat32Uint16V(yy553, e)
@@ -4848,8 +4294,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym556 := z.EncBinary()
-					_ = yym556
 					if false {
 					} else {
 						z.F.EncMapFloat32Uint32V(x.FMapFloat32Uint32, e)
@@ -4862,8 +4306,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym557 := z.EncBinary()
-					_ = yym557
 					if false {
 					} else {
 						z.F.EncMapFloat32Uint32V(x.FMapFloat32Uint32, e)
@@ -4886,8 +4328,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy559 := *x.FptrMapFloat32Uint32
-						yym560 := z.EncBinary()
-						_ = yym560
 						if false {
 						} else {
 							z.F.EncMapFloat32Uint32V(yy559, e)
@@ -4905,8 +4345,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy561 := *x.FptrMapFloat32Uint32
-						yym562 := z.EncBinary()
-						_ = yym562
 						if false {
 						} else {
 							z.F.EncMapFloat32Uint32V(yy561, e)
@@ -4919,8 +4357,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym564 := z.EncBinary()
-					_ = yym564
 					if false {
 					} else {
 						z.F.EncMapFloat32Uint64V(x.FMapFloat32Uint64, e)
@@ -4933,8 +4369,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym565 := z.EncBinary()
-					_ = yym565
 					if false {
 					} else {
 						z.F.EncMapFloat32Uint64V(x.FMapFloat32Uint64, e)
@@ -4957,8 +4391,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy567 := *x.FptrMapFloat32Uint64
-						yym568 := z.EncBinary()
-						_ = yym568
 						if false {
 						} else {
 							z.F.EncMapFloat32Uint64V(yy567, e)
@@ -4976,8 +4408,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy569 := *x.FptrMapFloat32Uint64
-						yym570 := z.EncBinary()
-						_ = yym570
 						if false {
 						} else {
 							z.F.EncMapFloat32Uint64V(yy569, e)
@@ -4990,8 +4420,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym572 := z.EncBinary()
-					_ = yym572
 					if false {
 					} else {
 						z.F.EncMapFloat32UintptrV(x.FMapFloat32Uintptr, e)
@@ -5004,8 +4432,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym573 := z.EncBinary()
-					_ = yym573
 					if false {
 					} else {
 						z.F.EncMapFloat32UintptrV(x.FMapFloat32Uintptr, e)
@@ -5028,8 +4454,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy575 := *x.FptrMapFloat32Uintptr
-						yym576 := z.EncBinary()
-						_ = yym576
 						if false {
 						} else {
 							z.F.EncMapFloat32UintptrV(yy575, e)
@@ -5047,8 +4471,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy577 := *x.FptrMapFloat32Uintptr
-						yym578 := z.EncBinary()
-						_ = yym578
 						if false {
 						} else {
 							z.F.EncMapFloat32UintptrV(yy577, e)
@@ -5061,8 +4483,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Int == nil {
 					r.EncodeNil()
 				} else {
-					yym580 := z.EncBinary()
-					_ = yym580
 					if false {
 					} else {
 						z.F.EncMapFloat32IntV(x.FMapFloat32Int, e)
@@ -5075,8 +4495,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Int == nil {
 					r.EncodeNil()
 				} else {
-					yym581 := z.EncBinary()
-					_ = yym581
 					if false {
 					} else {
 						z.F.EncMapFloat32IntV(x.FMapFloat32Int, e)
@@ -5099,8 +4517,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy583 := *x.FptrMapFloat32Int
-						yym584 := z.EncBinary()
-						_ = yym584
 						if false {
 						} else {
 							z.F.EncMapFloat32IntV(yy583, e)
@@ -5118,8 +4534,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy585 := *x.FptrMapFloat32Int
-						yym586 := z.EncBinary()
-						_ = yym586
 						if false {
 						} else {
 							z.F.EncMapFloat32IntV(yy585, e)
@@ -5132,8 +4546,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym588 := z.EncBinary()
-					_ = yym588
 					if false {
 					} else {
 						z.F.EncMapFloat32Int8V(x.FMapFloat32Int8, e)
@@ -5146,8 +4558,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym589 := z.EncBinary()
-					_ = yym589
 					if false {
 					} else {
 						z.F.EncMapFloat32Int8V(x.FMapFloat32Int8, e)
@@ -5170,8 +4580,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy591 := *x.FptrMapFloat32Int8
-						yym592 := z.EncBinary()
-						_ = yym592
 						if false {
 						} else {
 							z.F.EncMapFloat32Int8V(yy591, e)
@@ -5189,8 +4597,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy593 := *x.FptrMapFloat32Int8
-						yym594 := z.EncBinary()
-						_ = yym594
 						if false {
 						} else {
 							z.F.EncMapFloat32Int8V(yy593, e)
@@ -5203,8 +4609,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym596 := z.EncBinary()
-					_ = yym596
 					if false {
 					} else {
 						z.F.EncMapFloat32Int16V(x.FMapFloat32Int16, e)
@@ -5217,8 +4621,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym597 := z.EncBinary()
-					_ = yym597
 					if false {
 					} else {
 						z.F.EncMapFloat32Int16V(x.FMapFloat32Int16, e)
@@ -5241,8 +4643,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy599 := *x.FptrMapFloat32Int16
-						yym600 := z.EncBinary()
-						_ = yym600
 						if false {
 						} else {
 							z.F.EncMapFloat32Int16V(yy599, e)
@@ -5260,8 +4660,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy601 := *x.FptrMapFloat32Int16
-						yym602 := z.EncBinary()
-						_ = yym602
 						if false {
 						} else {
 							z.F.EncMapFloat32Int16V(yy601, e)
@@ -5274,8 +4672,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym604 := z.EncBinary()
-					_ = yym604
 					if false {
 					} else {
 						z.F.EncMapFloat32Int32V(x.FMapFloat32Int32, e)
@@ -5288,8 +4684,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym605 := z.EncBinary()
-					_ = yym605
 					if false {
 					} else {
 						z.F.EncMapFloat32Int32V(x.FMapFloat32Int32, e)
@@ -5312,8 +4706,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy607 := *x.FptrMapFloat32Int32
-						yym608 := z.EncBinary()
-						_ = yym608
 						if false {
 						} else {
 							z.F.EncMapFloat32Int32V(yy607, e)
@@ -5331,8 +4723,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy609 := *x.FptrMapFloat32Int32
-						yym610 := z.EncBinary()
-						_ = yym610
 						if false {
 						} else {
 							z.F.EncMapFloat32Int32V(yy609, e)
@@ -5345,8 +4735,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym612 := z.EncBinary()
-					_ = yym612
 					if false {
 					} else {
 						z.F.EncMapFloat32Int64V(x.FMapFloat32Int64, e)
@@ -5359,8 +4747,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym613 := z.EncBinary()
-					_ = yym613
 					if false {
 					} else {
 						z.F.EncMapFloat32Int64V(x.FMapFloat32Int64, e)
@@ -5383,8 +4769,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy615 := *x.FptrMapFloat32Int64
-						yym616 := z.EncBinary()
-						_ = yym616
 						if false {
 						} else {
 							z.F.EncMapFloat32Int64V(yy615, e)
@@ -5402,8 +4786,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy617 := *x.FptrMapFloat32Int64
-						yym618 := z.EncBinary()
-						_ = yym618
 						if false {
 						} else {
 							z.F.EncMapFloat32Int64V(yy617, e)
@@ -5416,8 +4798,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym620 := z.EncBinary()
-					_ = yym620
 					if false {
 					} else {
 						z.F.EncMapFloat32Float32V(x.FMapFloat32Float32, e)
@@ -5430,8 +4810,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym621 := z.EncBinary()
-					_ = yym621
 					if false {
 					} else {
 						z.F.EncMapFloat32Float32V(x.FMapFloat32Float32, e)
@@ -5454,8 +4832,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy623 := *x.FptrMapFloat32Float32
-						yym624 := z.EncBinary()
-						_ = yym624
 						if false {
 						} else {
 							z.F.EncMapFloat32Float32V(yy623, e)
@@ -5473,8 +4849,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy625 := *x.FptrMapFloat32Float32
-						yym626 := z.EncBinary()
-						_ = yym626
 						if false {
 						} else {
 							z.F.EncMapFloat32Float32V(yy625, e)
@@ -5487,8 +4861,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym628 := z.EncBinary()
-					_ = yym628
 					if false {
 					} else {
 						z.F.EncMapFloat32Float64V(x.FMapFloat32Float64, e)
@@ -5501,8 +4873,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym629 := z.EncBinary()
-					_ = yym629
 					if false {
 					} else {
 						z.F.EncMapFloat32Float64V(x.FMapFloat32Float64, e)
@@ -5525,8 +4895,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy631 := *x.FptrMapFloat32Float64
-						yym632 := z.EncBinary()
-						_ = yym632
 						if false {
 						} else {
 							z.F.EncMapFloat32Float64V(yy631, e)
@@ -5544,8 +4912,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy633 := *x.FptrMapFloat32Float64
-						yym634 := z.EncBinary()
-						_ = yym634
 						if false {
 						} else {
 							z.F.EncMapFloat32Float64V(yy633, e)
@@ -5558,8 +4924,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym636 := z.EncBinary()
-					_ = yym636
 					if false {
 					} else {
 						z.F.EncMapFloat32BoolV(x.FMapFloat32Bool, e)
@@ -5572,8 +4936,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat32Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym637 := z.EncBinary()
-					_ = yym637
 					if false {
 					} else {
 						z.F.EncMapFloat32BoolV(x.FMapFloat32Bool, e)
@@ -5596,8 +4958,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy639 := *x.FptrMapFloat32Bool
-						yym640 := z.EncBinary()
-						_ = yym640
 						if false {
 						} else {
 							z.F.EncMapFloat32BoolV(yy639, e)
@@ -5615,8 +4975,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy641 := *x.FptrMapFloat32Bool
-						yym642 := z.EncBinary()
-						_ = yym642
 						if false {
 						} else {
 							z.F.EncMapFloat32BoolV(yy641, e)
@@ -5629,8 +4987,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym644 := z.EncBinary()
-					_ = yym644
 					if false {
 					} else {
 						z.F.EncMapFloat64IntfV(x.FMapFloat64Intf, e)
@@ -5643,8 +4999,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym645 := z.EncBinary()
-					_ = yym645
 					if false {
 					} else {
 						z.F.EncMapFloat64IntfV(x.FMapFloat64Intf, e)
@@ -5667,8 +5021,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy647 := *x.FptrMapFloat64Intf
-						yym648 := z.EncBinary()
-						_ = yym648
 						if false {
 						} else {
 							z.F.EncMapFloat64IntfV(yy647, e)
@@ -5686,8 +5038,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy649 := *x.FptrMapFloat64Intf
-						yym650 := z.EncBinary()
-						_ = yym650
 						if false {
 						} else {
 							z.F.EncMapFloat64IntfV(yy649, e)
@@ -5700,8 +5050,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64String == nil {
 					r.EncodeNil()
 				} else {
-					yym652 := z.EncBinary()
-					_ = yym652
 					if false {
 					} else {
 						z.F.EncMapFloat64StringV(x.FMapFloat64String, e)
@@ -5714,8 +5062,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64String == nil {
 					r.EncodeNil()
 				} else {
-					yym653 := z.EncBinary()
-					_ = yym653
 					if false {
 					} else {
 						z.F.EncMapFloat64StringV(x.FMapFloat64String, e)
@@ -5738,8 +5084,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy655 := *x.FptrMapFloat64String
-						yym656 := z.EncBinary()
-						_ = yym656
 						if false {
 						} else {
 							z.F.EncMapFloat64StringV(yy655, e)
@@ -5757,8 +5101,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy657 := *x.FptrMapFloat64String
-						yym658 := z.EncBinary()
-						_ = yym658
 						if false {
 						} else {
 							z.F.EncMapFloat64StringV(yy657, e)
@@ -5771,8 +5113,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym660 := z.EncBinary()
-					_ = yym660
 					if false {
 					} else {
 						z.F.EncMapFloat64UintV(x.FMapFloat64Uint, e)
@@ -5785,8 +5125,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym661 := z.EncBinary()
-					_ = yym661
 					if false {
 					} else {
 						z.F.EncMapFloat64UintV(x.FMapFloat64Uint, e)
@@ -5809,8 +5147,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy663 := *x.FptrMapFloat64Uint
-						yym664 := z.EncBinary()
-						_ = yym664
 						if false {
 						} else {
 							z.F.EncMapFloat64UintV(yy663, e)
@@ -5828,8 +5164,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy665 := *x.FptrMapFloat64Uint
-						yym666 := z.EncBinary()
-						_ = yym666
 						if false {
 						} else {
 							z.F.EncMapFloat64UintV(yy665, e)
@@ -5842,8 +5176,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym668 := z.EncBinary()
-					_ = yym668
 					if false {
 					} else {
 						z.F.EncMapFloat64Uint8V(x.FMapFloat64Uint8, e)
@@ -5856,8 +5188,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym669 := z.EncBinary()
-					_ = yym669
 					if false {
 					} else {
 						z.F.EncMapFloat64Uint8V(x.FMapFloat64Uint8, e)
@@ -5880,8 +5210,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy671 := *x.FptrMapFloat64Uint8
-						yym672 := z.EncBinary()
-						_ = yym672
 						if false {
 						} else {
 							z.F.EncMapFloat64Uint8V(yy671, e)
@@ -5899,8 +5227,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy673 := *x.FptrMapFloat64Uint8
-						yym674 := z.EncBinary()
-						_ = yym674
 						if false {
 						} else {
 							z.F.EncMapFloat64Uint8V(yy673, e)
@@ -5913,8 +5239,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym676 := z.EncBinary()
-					_ = yym676
 					if false {
 					} else {
 						z.F.EncMapFloat64Uint16V(x.FMapFloat64Uint16, e)
@@ -5927,8 +5251,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym677 := z.EncBinary()
-					_ = yym677
 					if false {
 					} else {
 						z.F.EncMapFloat64Uint16V(x.FMapFloat64Uint16, e)
@@ -5951,8 +5273,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy679 := *x.FptrMapFloat64Uint16
-						yym680 := z.EncBinary()
-						_ = yym680
 						if false {
 						} else {
 							z.F.EncMapFloat64Uint16V(yy679, e)
@@ -5970,8 +5290,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy681 := *x.FptrMapFloat64Uint16
-						yym682 := z.EncBinary()
-						_ = yym682
 						if false {
 						} else {
 							z.F.EncMapFloat64Uint16V(yy681, e)
@@ -5984,8 +5302,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym684 := z.EncBinary()
-					_ = yym684
 					if false {
 					} else {
 						z.F.EncMapFloat64Uint32V(x.FMapFloat64Uint32, e)
@@ -5998,8 +5314,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym685 := z.EncBinary()
-					_ = yym685
 					if false {
 					} else {
 						z.F.EncMapFloat64Uint32V(x.FMapFloat64Uint32, e)
@@ -6022,8 +5336,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy687 := *x.FptrMapFloat64Uint32
-						yym688 := z.EncBinary()
-						_ = yym688
 						if false {
 						} else {
 							z.F.EncMapFloat64Uint32V(yy687, e)
@@ -6041,8 +5353,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy689 := *x.FptrMapFloat64Uint32
-						yym690 := z.EncBinary()
-						_ = yym690
 						if false {
 						} else {
 							z.F.EncMapFloat64Uint32V(yy689, e)
@@ -6055,8 +5365,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym692 := z.EncBinary()
-					_ = yym692
 					if false {
 					} else {
 						z.F.EncMapFloat64Uint64V(x.FMapFloat64Uint64, e)
@@ -6069,8 +5377,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym693 := z.EncBinary()
-					_ = yym693
 					if false {
 					} else {
 						z.F.EncMapFloat64Uint64V(x.FMapFloat64Uint64, e)
@@ -6093,8 +5399,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy695 := *x.FptrMapFloat64Uint64
-						yym696 := z.EncBinary()
-						_ = yym696
 						if false {
 						} else {
 							z.F.EncMapFloat64Uint64V(yy695, e)
@@ -6112,8 +5416,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy697 := *x.FptrMapFloat64Uint64
-						yym698 := z.EncBinary()
-						_ = yym698
 						if false {
 						} else {
 							z.F.EncMapFloat64Uint64V(yy697, e)
@@ -6126,8 +5428,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym700 := z.EncBinary()
-					_ = yym700
 					if false {
 					} else {
 						z.F.EncMapFloat64UintptrV(x.FMapFloat64Uintptr, e)
@@ -6140,8 +5440,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym701 := z.EncBinary()
-					_ = yym701
 					if false {
 					} else {
 						z.F.EncMapFloat64UintptrV(x.FMapFloat64Uintptr, e)
@@ -6164,8 +5462,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy703 := *x.FptrMapFloat64Uintptr
-						yym704 := z.EncBinary()
-						_ = yym704
 						if false {
 						} else {
 							z.F.EncMapFloat64UintptrV(yy703, e)
@@ -6183,8 +5479,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy705 := *x.FptrMapFloat64Uintptr
-						yym706 := z.EncBinary()
-						_ = yym706
 						if false {
 						} else {
 							z.F.EncMapFloat64UintptrV(yy705, e)
@@ -6197,8 +5491,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Int == nil {
 					r.EncodeNil()
 				} else {
-					yym708 := z.EncBinary()
-					_ = yym708
 					if false {
 					} else {
 						z.F.EncMapFloat64IntV(x.FMapFloat64Int, e)
@@ -6211,8 +5503,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Int == nil {
 					r.EncodeNil()
 				} else {
-					yym709 := z.EncBinary()
-					_ = yym709
 					if false {
 					} else {
 						z.F.EncMapFloat64IntV(x.FMapFloat64Int, e)
@@ -6235,8 +5525,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy711 := *x.FptrMapFloat64Int
-						yym712 := z.EncBinary()
-						_ = yym712
 						if false {
 						} else {
 							z.F.EncMapFloat64IntV(yy711, e)
@@ -6254,8 +5542,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy713 := *x.FptrMapFloat64Int
-						yym714 := z.EncBinary()
-						_ = yym714
 						if false {
 						} else {
 							z.F.EncMapFloat64IntV(yy713, e)
@@ -6268,8 +5554,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym716 := z.EncBinary()
-					_ = yym716
 					if false {
 					} else {
 						z.F.EncMapFloat64Int8V(x.FMapFloat64Int8, e)
@@ -6282,8 +5566,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym717 := z.EncBinary()
-					_ = yym717
 					if false {
 					} else {
 						z.F.EncMapFloat64Int8V(x.FMapFloat64Int8, e)
@@ -6306,8 +5588,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy719 := *x.FptrMapFloat64Int8
-						yym720 := z.EncBinary()
-						_ = yym720
 						if false {
 						} else {
 							z.F.EncMapFloat64Int8V(yy719, e)
@@ -6325,8 +5605,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy721 := *x.FptrMapFloat64Int8
-						yym722 := z.EncBinary()
-						_ = yym722
 						if false {
 						} else {
 							z.F.EncMapFloat64Int8V(yy721, e)
@@ -6339,8 +5617,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym724 := z.EncBinary()
-					_ = yym724
 					if false {
 					} else {
 						z.F.EncMapFloat64Int16V(x.FMapFloat64Int16, e)
@@ -6353,8 +5629,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym725 := z.EncBinary()
-					_ = yym725
 					if false {
 					} else {
 						z.F.EncMapFloat64Int16V(x.FMapFloat64Int16, e)
@@ -6377,8 +5651,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy727 := *x.FptrMapFloat64Int16
-						yym728 := z.EncBinary()
-						_ = yym728
 						if false {
 						} else {
 							z.F.EncMapFloat64Int16V(yy727, e)
@@ -6396,8 +5668,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy729 := *x.FptrMapFloat64Int16
-						yym730 := z.EncBinary()
-						_ = yym730
 						if false {
 						} else {
 							z.F.EncMapFloat64Int16V(yy729, e)
@@ -6410,8 +5680,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym732 := z.EncBinary()
-					_ = yym732
 					if false {
 					} else {
 						z.F.EncMapFloat64Int32V(x.FMapFloat64Int32, e)
@@ -6424,8 +5692,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym733 := z.EncBinary()
-					_ = yym733
 					if false {
 					} else {
 						z.F.EncMapFloat64Int32V(x.FMapFloat64Int32, e)
@@ -6448,8 +5714,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy735 := *x.FptrMapFloat64Int32
-						yym736 := z.EncBinary()
-						_ = yym736
 						if false {
 						} else {
 							z.F.EncMapFloat64Int32V(yy735, e)
@@ -6467,8 +5731,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy737 := *x.FptrMapFloat64Int32
-						yym738 := z.EncBinary()
-						_ = yym738
 						if false {
 						} else {
 							z.F.EncMapFloat64Int32V(yy737, e)
@@ -6481,8 +5743,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym740 := z.EncBinary()
-					_ = yym740
 					if false {
 					} else {
 						z.F.EncMapFloat64Int64V(x.FMapFloat64Int64, e)
@@ -6495,8 +5755,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym741 := z.EncBinary()
-					_ = yym741
 					if false {
 					} else {
 						z.F.EncMapFloat64Int64V(x.FMapFloat64Int64, e)
@@ -6519,8 +5777,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy743 := *x.FptrMapFloat64Int64
-						yym744 := z.EncBinary()
-						_ = yym744
 						if false {
 						} else {
 							z.F.EncMapFloat64Int64V(yy743, e)
@@ -6538,8 +5794,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy745 := *x.FptrMapFloat64Int64
-						yym746 := z.EncBinary()
-						_ = yym746
 						if false {
 						} else {
 							z.F.EncMapFloat64Int64V(yy745, e)
@@ -6552,8 +5806,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym748 := z.EncBinary()
-					_ = yym748
 					if false {
 					} else {
 						z.F.EncMapFloat64Float32V(x.FMapFloat64Float32, e)
@@ -6566,8 +5818,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym749 := z.EncBinary()
-					_ = yym749
 					if false {
 					} else {
 						z.F.EncMapFloat64Float32V(x.FMapFloat64Float32, e)
@@ -6590,8 +5840,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy751 := *x.FptrMapFloat64Float32
-						yym752 := z.EncBinary()
-						_ = yym752
 						if false {
 						} else {
 							z.F.EncMapFloat64Float32V(yy751, e)
@@ -6609,8 +5857,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy753 := *x.FptrMapFloat64Float32
-						yym754 := z.EncBinary()
-						_ = yym754
 						if false {
 						} else {
 							z.F.EncMapFloat64Float32V(yy753, e)
@@ -6623,8 +5869,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym756 := z.EncBinary()
-					_ = yym756
 					if false {
 					} else {
 						z.F.EncMapFloat64Float64V(x.FMapFloat64Float64, e)
@@ -6637,8 +5881,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym757 := z.EncBinary()
-					_ = yym757
 					if false {
 					} else {
 						z.F.EncMapFloat64Float64V(x.FMapFloat64Float64, e)
@@ -6661,8 +5903,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy759 := *x.FptrMapFloat64Float64
-						yym760 := z.EncBinary()
-						_ = yym760
 						if false {
 						} else {
 							z.F.EncMapFloat64Float64V(yy759, e)
@@ -6680,8 +5920,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy761 := *x.FptrMapFloat64Float64
-						yym762 := z.EncBinary()
-						_ = yym762
 						if false {
 						} else {
 							z.F.EncMapFloat64Float64V(yy761, e)
@@ -6694,8 +5932,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym764 := z.EncBinary()
-					_ = yym764
 					if false {
 					} else {
 						z.F.EncMapFloat64BoolV(x.FMapFloat64Bool, e)
@@ -6708,8 +5944,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapFloat64Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym765 := z.EncBinary()
-					_ = yym765
 					if false {
 					} else {
 						z.F.EncMapFloat64BoolV(x.FMapFloat64Bool, e)
@@ -6732,8 +5966,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy767 := *x.FptrMapFloat64Bool
-						yym768 := z.EncBinary()
-						_ = yym768
 						if false {
 						} else {
 							z.F.EncMapFloat64BoolV(yy767, e)
@@ -6751,8 +5983,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy769 := *x.FptrMapFloat64Bool
-						yym770 := z.EncBinary()
-						_ = yym770
 						if false {
 						} else {
 							z.F.EncMapFloat64BoolV(yy769, e)
@@ -6765,8 +5995,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym772 := z.EncBinary()
-					_ = yym772
 					if false {
 					} else {
 						z.F.EncMapUintIntfV(x.FMapUintIntf, e)
@@ -6779,8 +6007,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym773 := z.EncBinary()
-					_ = yym773
 					if false {
 					} else {
 						z.F.EncMapUintIntfV(x.FMapUintIntf, e)
@@ -6803,8 +6029,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy775 := *x.FptrMapUintIntf
-						yym776 := z.EncBinary()
-						_ = yym776
 						if false {
 						} else {
 							z.F.EncMapUintIntfV(yy775, e)
@@ -6822,8 +6046,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy777 := *x.FptrMapUintIntf
-						yym778 := z.EncBinary()
-						_ = yym778
 						if false {
 						} else {
 							z.F.EncMapUintIntfV(yy777, e)
@@ -6836,8 +6058,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintString == nil {
 					r.EncodeNil()
 				} else {
-					yym780 := z.EncBinary()
-					_ = yym780
 					if false {
 					} else {
 						z.F.EncMapUintStringV(x.FMapUintString, e)
@@ -6850,8 +6070,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintString == nil {
 					r.EncodeNil()
 				} else {
-					yym781 := z.EncBinary()
-					_ = yym781
 					if false {
 					} else {
 						z.F.EncMapUintStringV(x.FMapUintString, e)
@@ -6874,8 +6092,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy783 := *x.FptrMapUintString
-						yym784 := z.EncBinary()
-						_ = yym784
 						if false {
 						} else {
 							z.F.EncMapUintStringV(yy783, e)
@@ -6893,8 +6109,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy785 := *x.FptrMapUintString
-						yym786 := z.EncBinary()
-						_ = yym786
 						if false {
 						} else {
 							z.F.EncMapUintStringV(yy785, e)
@@ -6907,8 +6121,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUint == nil {
 					r.EncodeNil()
 				} else {
-					yym788 := z.EncBinary()
-					_ = yym788
 					if false {
 					} else {
 						z.F.EncMapUintUintV(x.FMapUintUint, e)
@@ -6921,8 +6133,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUint == nil {
 					r.EncodeNil()
 				} else {
-					yym789 := z.EncBinary()
-					_ = yym789
 					if false {
 					} else {
 						z.F.EncMapUintUintV(x.FMapUintUint, e)
@@ -6945,8 +6155,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy791 := *x.FptrMapUintUint
-						yym792 := z.EncBinary()
-						_ = yym792
 						if false {
 						} else {
 							z.F.EncMapUintUintV(yy791, e)
@@ -6964,8 +6172,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy793 := *x.FptrMapUintUint
-						yym794 := z.EncBinary()
-						_ = yym794
 						if false {
 						} else {
 							z.F.EncMapUintUintV(yy793, e)
@@ -6978,8 +6184,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym796 := z.EncBinary()
-					_ = yym796
 					if false {
 					} else {
 						z.F.EncMapUintUint8V(x.FMapUintUint8, e)
@@ -6992,8 +6196,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym797 := z.EncBinary()
-					_ = yym797
 					if false {
 					} else {
 						z.F.EncMapUintUint8V(x.FMapUintUint8, e)
@@ -7016,8 +6218,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy799 := *x.FptrMapUintUint8
-						yym800 := z.EncBinary()
-						_ = yym800
 						if false {
 						} else {
 							z.F.EncMapUintUint8V(yy799, e)
@@ -7035,8 +6235,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy801 := *x.FptrMapUintUint8
-						yym802 := z.EncBinary()
-						_ = yym802
 						if false {
 						} else {
 							z.F.EncMapUintUint8V(yy801, e)
@@ -7049,8 +6247,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym804 := z.EncBinary()
-					_ = yym804
 					if false {
 					} else {
 						z.F.EncMapUintUint16V(x.FMapUintUint16, e)
@@ -7063,8 +6259,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym805 := z.EncBinary()
-					_ = yym805
 					if false {
 					} else {
 						z.F.EncMapUintUint16V(x.FMapUintUint16, e)
@@ -7087,8 +6281,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy807 := *x.FptrMapUintUint16
-						yym808 := z.EncBinary()
-						_ = yym808
 						if false {
 						} else {
 							z.F.EncMapUintUint16V(yy807, e)
@@ -7106,8 +6298,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy809 := *x.FptrMapUintUint16
-						yym810 := z.EncBinary()
-						_ = yym810
 						if false {
 						} else {
 							z.F.EncMapUintUint16V(yy809, e)
@@ -7120,8 +6310,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym812 := z.EncBinary()
-					_ = yym812
 					if false {
 					} else {
 						z.F.EncMapUintUint32V(x.FMapUintUint32, e)
@@ -7134,8 +6322,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym813 := z.EncBinary()
-					_ = yym813
 					if false {
 					} else {
 						z.F.EncMapUintUint32V(x.FMapUintUint32, e)
@@ -7158,8 +6344,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy815 := *x.FptrMapUintUint32
-						yym816 := z.EncBinary()
-						_ = yym816
 						if false {
 						} else {
 							z.F.EncMapUintUint32V(yy815, e)
@@ -7177,8 +6361,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy817 := *x.FptrMapUintUint32
-						yym818 := z.EncBinary()
-						_ = yym818
 						if false {
 						} else {
 							z.F.EncMapUintUint32V(yy817, e)
@@ -7191,8 +6373,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym820 := z.EncBinary()
-					_ = yym820
 					if false {
 					} else {
 						z.F.EncMapUintUint64V(x.FMapUintUint64, e)
@@ -7205,8 +6385,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym821 := z.EncBinary()
-					_ = yym821
 					if false {
 					} else {
 						z.F.EncMapUintUint64V(x.FMapUintUint64, e)
@@ -7229,8 +6407,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy823 := *x.FptrMapUintUint64
-						yym824 := z.EncBinary()
-						_ = yym824
 						if false {
 						} else {
 							z.F.EncMapUintUint64V(yy823, e)
@@ -7248,8 +6424,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy825 := *x.FptrMapUintUint64
-						yym826 := z.EncBinary()
-						_ = yym826
 						if false {
 						} else {
 							z.F.EncMapUintUint64V(yy825, e)
@@ -7262,8 +6436,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym828 := z.EncBinary()
-					_ = yym828
 					if false {
 					} else {
 						z.F.EncMapUintUintptrV(x.FMapUintUintptr, e)
@@ -7276,8 +6448,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym829 := z.EncBinary()
-					_ = yym829
 					if false {
 					} else {
 						z.F.EncMapUintUintptrV(x.FMapUintUintptr, e)
@@ -7300,8 +6470,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy831 := *x.FptrMapUintUintptr
-						yym832 := z.EncBinary()
-						_ = yym832
 						if false {
 						} else {
 							z.F.EncMapUintUintptrV(yy831, e)
@@ -7319,8 +6487,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy833 := *x.FptrMapUintUintptr
-						yym834 := z.EncBinary()
-						_ = yym834
 						if false {
 						} else {
 							z.F.EncMapUintUintptrV(yy833, e)
@@ -7333,8 +6499,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintInt == nil {
 					r.EncodeNil()
 				} else {
-					yym836 := z.EncBinary()
-					_ = yym836
 					if false {
 					} else {
 						z.F.EncMapUintIntV(x.FMapUintInt, e)
@@ -7347,8 +6511,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintInt == nil {
 					r.EncodeNil()
 				} else {
-					yym837 := z.EncBinary()
-					_ = yym837
 					if false {
 					} else {
 						z.F.EncMapUintIntV(x.FMapUintInt, e)
@@ -7371,8 +6533,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy839 := *x.FptrMapUintInt
-						yym840 := z.EncBinary()
-						_ = yym840
 						if false {
 						} else {
 							z.F.EncMapUintIntV(yy839, e)
@@ -7390,8 +6550,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy841 := *x.FptrMapUintInt
-						yym842 := z.EncBinary()
-						_ = yym842
 						if false {
 						} else {
 							z.F.EncMapUintIntV(yy841, e)
@@ -7404,8 +6562,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym844 := z.EncBinary()
-					_ = yym844
 					if false {
 					} else {
 						z.F.EncMapUintInt8V(x.FMapUintInt8, e)
@@ -7418,8 +6574,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym845 := z.EncBinary()
-					_ = yym845
 					if false {
 					} else {
 						z.F.EncMapUintInt8V(x.FMapUintInt8, e)
@@ -7442,8 +6596,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy847 := *x.FptrMapUintInt8
-						yym848 := z.EncBinary()
-						_ = yym848
 						if false {
 						} else {
 							z.F.EncMapUintInt8V(yy847, e)
@@ -7461,8 +6613,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy849 := *x.FptrMapUintInt8
-						yym850 := z.EncBinary()
-						_ = yym850
 						if false {
 						} else {
 							z.F.EncMapUintInt8V(yy849, e)
@@ -7475,8 +6625,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym852 := z.EncBinary()
-					_ = yym852
 					if false {
 					} else {
 						z.F.EncMapUintInt16V(x.FMapUintInt16, e)
@@ -7489,8 +6637,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym853 := z.EncBinary()
-					_ = yym853
 					if false {
 					} else {
 						z.F.EncMapUintInt16V(x.FMapUintInt16, e)
@@ -7513,8 +6659,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy855 := *x.FptrMapUintInt16
-						yym856 := z.EncBinary()
-						_ = yym856
 						if false {
 						} else {
 							z.F.EncMapUintInt16V(yy855, e)
@@ -7532,8 +6676,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy857 := *x.FptrMapUintInt16
-						yym858 := z.EncBinary()
-						_ = yym858
 						if false {
 						} else {
 							z.F.EncMapUintInt16V(yy857, e)
@@ -7546,8 +6688,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym860 := z.EncBinary()
-					_ = yym860
 					if false {
 					} else {
 						z.F.EncMapUintInt32V(x.FMapUintInt32, e)
@@ -7560,8 +6700,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym861 := z.EncBinary()
-					_ = yym861
 					if false {
 					} else {
 						z.F.EncMapUintInt32V(x.FMapUintInt32, e)
@@ -7584,8 +6722,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy863 := *x.FptrMapUintInt32
-						yym864 := z.EncBinary()
-						_ = yym864
 						if false {
 						} else {
 							z.F.EncMapUintInt32V(yy863, e)
@@ -7603,8 +6739,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy865 := *x.FptrMapUintInt32
-						yym866 := z.EncBinary()
-						_ = yym866
 						if false {
 						} else {
 							z.F.EncMapUintInt32V(yy865, e)
@@ -7617,8 +6751,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym868 := z.EncBinary()
-					_ = yym868
 					if false {
 					} else {
 						z.F.EncMapUintInt64V(x.FMapUintInt64, e)
@@ -7631,8 +6763,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym869 := z.EncBinary()
-					_ = yym869
 					if false {
 					} else {
 						z.F.EncMapUintInt64V(x.FMapUintInt64, e)
@@ -7655,8 +6785,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy871 := *x.FptrMapUintInt64
-						yym872 := z.EncBinary()
-						_ = yym872
 						if false {
 						} else {
 							z.F.EncMapUintInt64V(yy871, e)
@@ -7674,8 +6802,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy873 := *x.FptrMapUintInt64
-						yym874 := z.EncBinary()
-						_ = yym874
 						if false {
 						} else {
 							z.F.EncMapUintInt64V(yy873, e)
@@ -7688,8 +6814,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym876 := z.EncBinary()
-					_ = yym876
 					if false {
 					} else {
 						z.F.EncMapUintFloat32V(x.FMapUintFloat32, e)
@@ -7702,8 +6826,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym877 := z.EncBinary()
-					_ = yym877
 					if false {
 					} else {
 						z.F.EncMapUintFloat32V(x.FMapUintFloat32, e)
@@ -7726,8 +6848,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy879 := *x.FptrMapUintFloat32
-						yym880 := z.EncBinary()
-						_ = yym880
 						if false {
 						} else {
 							z.F.EncMapUintFloat32V(yy879, e)
@@ -7745,8 +6865,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy881 := *x.FptrMapUintFloat32
-						yym882 := z.EncBinary()
-						_ = yym882
 						if false {
 						} else {
 							z.F.EncMapUintFloat32V(yy881, e)
@@ -7759,8 +6877,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym884 := z.EncBinary()
-					_ = yym884
 					if false {
 					} else {
 						z.F.EncMapUintFloat64V(x.FMapUintFloat64, e)
@@ -7773,8 +6889,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym885 := z.EncBinary()
-					_ = yym885
 					if false {
 					} else {
 						z.F.EncMapUintFloat64V(x.FMapUintFloat64, e)
@@ -7797,8 +6911,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy887 := *x.FptrMapUintFloat64
-						yym888 := z.EncBinary()
-						_ = yym888
 						if false {
 						} else {
 							z.F.EncMapUintFloat64V(yy887, e)
@@ -7816,8 +6928,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy889 := *x.FptrMapUintFloat64
-						yym890 := z.EncBinary()
-						_ = yym890
 						if false {
 						} else {
 							z.F.EncMapUintFloat64V(yy889, e)
@@ -7830,8 +6940,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintBool == nil {
 					r.EncodeNil()
 				} else {
-					yym892 := z.EncBinary()
-					_ = yym892
 					if false {
 					} else {
 						z.F.EncMapUintBoolV(x.FMapUintBool, e)
@@ -7844,8 +6952,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintBool == nil {
 					r.EncodeNil()
 				} else {
-					yym893 := z.EncBinary()
-					_ = yym893
 					if false {
 					} else {
 						z.F.EncMapUintBoolV(x.FMapUintBool, e)
@@ -7868,8 +6974,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy895 := *x.FptrMapUintBool
-						yym896 := z.EncBinary()
-						_ = yym896
 						if false {
 						} else {
 							z.F.EncMapUintBoolV(yy895, e)
@@ -7887,8 +6991,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy897 := *x.FptrMapUintBool
-						yym898 := z.EncBinary()
-						_ = yym898
 						if false {
 						} else {
 							z.F.EncMapUintBoolV(yy897, e)
@@ -7901,8 +7003,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym900 := z.EncBinary()
-					_ = yym900
 					if false {
 					} else {
 						z.F.EncMapUint8IntfV(x.FMapUint8Intf, e)
@@ -7915,8 +7015,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym901 := z.EncBinary()
-					_ = yym901
 					if false {
 					} else {
 						z.F.EncMapUint8IntfV(x.FMapUint8Intf, e)
@@ -7939,8 +7037,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy903 := *x.FptrMapUint8Intf
-						yym904 := z.EncBinary()
-						_ = yym904
 						if false {
 						} else {
 							z.F.EncMapUint8IntfV(yy903, e)
@@ -7958,8 +7054,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy905 := *x.FptrMapUint8Intf
-						yym906 := z.EncBinary()
-						_ = yym906
 						if false {
 						} else {
 							z.F.EncMapUint8IntfV(yy905, e)
@@ -7972,8 +7066,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8String == nil {
 					r.EncodeNil()
 				} else {
-					yym908 := z.EncBinary()
-					_ = yym908
 					if false {
 					} else {
 						z.F.EncMapUint8StringV(x.FMapUint8String, e)
@@ -7986,8 +7078,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8String == nil {
 					r.EncodeNil()
 				} else {
-					yym909 := z.EncBinary()
-					_ = yym909
 					if false {
 					} else {
 						z.F.EncMapUint8StringV(x.FMapUint8String, e)
@@ -8010,8 +7100,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy911 := *x.FptrMapUint8String
-						yym912 := z.EncBinary()
-						_ = yym912
 						if false {
 						} else {
 							z.F.EncMapUint8StringV(yy911, e)
@@ -8029,8 +7117,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy913 := *x.FptrMapUint8String
-						yym914 := z.EncBinary()
-						_ = yym914
 						if false {
 						} else {
 							z.F.EncMapUint8StringV(yy913, e)
@@ -8043,8 +7129,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym916 := z.EncBinary()
-					_ = yym916
 					if false {
 					} else {
 						z.F.EncMapUint8UintV(x.FMapUint8Uint, e)
@@ -8057,8 +7141,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym917 := z.EncBinary()
-					_ = yym917
 					if false {
 					} else {
 						z.F.EncMapUint8UintV(x.FMapUint8Uint, e)
@@ -8081,8 +7163,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy919 := *x.FptrMapUint8Uint
-						yym920 := z.EncBinary()
-						_ = yym920
 						if false {
 						} else {
 							z.F.EncMapUint8UintV(yy919, e)
@@ -8100,8 +7180,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy921 := *x.FptrMapUint8Uint
-						yym922 := z.EncBinary()
-						_ = yym922
 						if false {
 						} else {
 							z.F.EncMapUint8UintV(yy921, e)
@@ -8114,8 +7192,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym924 := z.EncBinary()
-					_ = yym924
 					if false {
 					} else {
 						z.F.EncMapUint8Uint8V(x.FMapUint8Uint8, e)
@@ -8128,8 +7204,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym925 := z.EncBinary()
-					_ = yym925
 					if false {
 					} else {
 						z.F.EncMapUint8Uint8V(x.FMapUint8Uint8, e)
@@ -8152,8 +7226,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy927 := *x.FptrMapUint8Uint8
-						yym928 := z.EncBinary()
-						_ = yym928
 						if false {
 						} else {
 							z.F.EncMapUint8Uint8V(yy927, e)
@@ -8171,8 +7243,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy929 := *x.FptrMapUint8Uint8
-						yym930 := z.EncBinary()
-						_ = yym930
 						if false {
 						} else {
 							z.F.EncMapUint8Uint8V(yy929, e)
@@ -8185,8 +7255,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym932 := z.EncBinary()
-					_ = yym932
 					if false {
 					} else {
 						z.F.EncMapUint8Uint16V(x.FMapUint8Uint16, e)
@@ -8199,8 +7267,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym933 := z.EncBinary()
-					_ = yym933
 					if false {
 					} else {
 						z.F.EncMapUint8Uint16V(x.FMapUint8Uint16, e)
@@ -8223,8 +7289,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy935 := *x.FptrMapUint8Uint16
-						yym936 := z.EncBinary()
-						_ = yym936
 						if false {
 						} else {
 							z.F.EncMapUint8Uint16V(yy935, e)
@@ -8242,8 +7306,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy937 := *x.FptrMapUint8Uint16
-						yym938 := z.EncBinary()
-						_ = yym938
 						if false {
 						} else {
 							z.F.EncMapUint8Uint16V(yy937, e)
@@ -8256,8 +7318,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym940 := z.EncBinary()
-					_ = yym940
 					if false {
 					} else {
 						z.F.EncMapUint8Uint32V(x.FMapUint8Uint32, e)
@@ -8270,8 +7330,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym941 := z.EncBinary()
-					_ = yym941
 					if false {
 					} else {
 						z.F.EncMapUint8Uint32V(x.FMapUint8Uint32, e)
@@ -8294,8 +7352,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy943 := *x.FptrMapUint8Uint32
-						yym944 := z.EncBinary()
-						_ = yym944
 						if false {
 						} else {
 							z.F.EncMapUint8Uint32V(yy943, e)
@@ -8313,8 +7369,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy945 := *x.FptrMapUint8Uint32
-						yym946 := z.EncBinary()
-						_ = yym946
 						if false {
 						} else {
 							z.F.EncMapUint8Uint32V(yy945, e)
@@ -8327,8 +7381,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym948 := z.EncBinary()
-					_ = yym948
 					if false {
 					} else {
 						z.F.EncMapUint8Uint64V(x.FMapUint8Uint64, e)
@@ -8341,8 +7393,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym949 := z.EncBinary()
-					_ = yym949
 					if false {
 					} else {
 						z.F.EncMapUint8Uint64V(x.FMapUint8Uint64, e)
@@ -8365,8 +7415,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy951 := *x.FptrMapUint8Uint64
-						yym952 := z.EncBinary()
-						_ = yym952
 						if false {
 						} else {
 							z.F.EncMapUint8Uint64V(yy951, e)
@@ -8384,8 +7432,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy953 := *x.FptrMapUint8Uint64
-						yym954 := z.EncBinary()
-						_ = yym954
 						if false {
 						} else {
 							z.F.EncMapUint8Uint64V(yy953, e)
@@ -8398,8 +7444,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym956 := z.EncBinary()
-					_ = yym956
 					if false {
 					} else {
 						z.F.EncMapUint8UintptrV(x.FMapUint8Uintptr, e)
@@ -8412,8 +7456,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym957 := z.EncBinary()
-					_ = yym957
 					if false {
 					} else {
 						z.F.EncMapUint8UintptrV(x.FMapUint8Uintptr, e)
@@ -8436,8 +7478,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy959 := *x.FptrMapUint8Uintptr
-						yym960 := z.EncBinary()
-						_ = yym960
 						if false {
 						} else {
 							z.F.EncMapUint8UintptrV(yy959, e)
@@ -8455,8 +7495,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy961 := *x.FptrMapUint8Uintptr
-						yym962 := z.EncBinary()
-						_ = yym962
 						if false {
 						} else {
 							z.F.EncMapUint8UintptrV(yy961, e)
@@ -8469,8 +7507,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Int == nil {
 					r.EncodeNil()
 				} else {
-					yym964 := z.EncBinary()
-					_ = yym964
 					if false {
 					} else {
 						z.F.EncMapUint8IntV(x.FMapUint8Int, e)
@@ -8483,8 +7519,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Int == nil {
 					r.EncodeNil()
 				} else {
-					yym965 := z.EncBinary()
-					_ = yym965
 					if false {
 					} else {
 						z.F.EncMapUint8IntV(x.FMapUint8Int, e)
@@ -8507,8 +7541,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy967 := *x.FptrMapUint8Int
-						yym968 := z.EncBinary()
-						_ = yym968
 						if false {
 						} else {
 							z.F.EncMapUint8IntV(yy967, e)
@@ -8526,8 +7558,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy969 := *x.FptrMapUint8Int
-						yym970 := z.EncBinary()
-						_ = yym970
 						if false {
 						} else {
 							z.F.EncMapUint8IntV(yy969, e)
@@ -8540,8 +7570,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym972 := z.EncBinary()
-					_ = yym972
 					if false {
 					} else {
 						z.F.EncMapUint8Int8V(x.FMapUint8Int8, e)
@@ -8554,8 +7582,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym973 := z.EncBinary()
-					_ = yym973
 					if false {
 					} else {
 						z.F.EncMapUint8Int8V(x.FMapUint8Int8, e)
@@ -8578,8 +7604,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy975 := *x.FptrMapUint8Int8
-						yym976 := z.EncBinary()
-						_ = yym976
 						if false {
 						} else {
 							z.F.EncMapUint8Int8V(yy975, e)
@@ -8597,8 +7621,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy977 := *x.FptrMapUint8Int8
-						yym978 := z.EncBinary()
-						_ = yym978
 						if false {
 						} else {
 							z.F.EncMapUint8Int8V(yy977, e)
@@ -8611,8 +7633,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym980 := z.EncBinary()
-					_ = yym980
 					if false {
 					} else {
 						z.F.EncMapUint8Int16V(x.FMapUint8Int16, e)
@@ -8625,8 +7645,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym981 := z.EncBinary()
-					_ = yym981
 					if false {
 					} else {
 						z.F.EncMapUint8Int16V(x.FMapUint8Int16, e)
@@ -8649,8 +7667,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy983 := *x.FptrMapUint8Int16
-						yym984 := z.EncBinary()
-						_ = yym984
 						if false {
 						} else {
 							z.F.EncMapUint8Int16V(yy983, e)
@@ -8668,8 +7684,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy985 := *x.FptrMapUint8Int16
-						yym986 := z.EncBinary()
-						_ = yym986
 						if false {
 						} else {
 							z.F.EncMapUint8Int16V(yy985, e)
@@ -8682,8 +7696,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym988 := z.EncBinary()
-					_ = yym988
 					if false {
 					} else {
 						z.F.EncMapUint8Int32V(x.FMapUint8Int32, e)
@@ -8696,8 +7708,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym989 := z.EncBinary()
-					_ = yym989
 					if false {
 					} else {
 						z.F.EncMapUint8Int32V(x.FMapUint8Int32, e)
@@ -8720,8 +7730,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy991 := *x.FptrMapUint8Int32
-						yym992 := z.EncBinary()
-						_ = yym992
 						if false {
 						} else {
 							z.F.EncMapUint8Int32V(yy991, e)
@@ -8739,8 +7747,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy993 := *x.FptrMapUint8Int32
-						yym994 := z.EncBinary()
-						_ = yym994
 						if false {
 						} else {
 							z.F.EncMapUint8Int32V(yy993, e)
@@ -8753,8 +7759,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym996 := z.EncBinary()
-					_ = yym996
 					if false {
 					} else {
 						z.F.EncMapUint8Int64V(x.FMapUint8Int64, e)
@@ -8767,8 +7771,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym997 := z.EncBinary()
-					_ = yym997
 					if false {
 					} else {
 						z.F.EncMapUint8Int64V(x.FMapUint8Int64, e)
@@ -8791,8 +7793,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy999 := *x.FptrMapUint8Int64
-						yym1000 := z.EncBinary()
-						_ = yym1000
 						if false {
 						} else {
 							z.F.EncMapUint8Int64V(yy999, e)
@@ -8810,8 +7810,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1001 := *x.FptrMapUint8Int64
-						yym1002 := z.EncBinary()
-						_ = yym1002
 						if false {
 						} else {
 							z.F.EncMapUint8Int64V(yy1001, e)
@@ -8824,8 +7822,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1004 := z.EncBinary()
-					_ = yym1004
 					if false {
 					} else {
 						z.F.EncMapUint8Float32V(x.FMapUint8Float32, e)
@@ -8838,8 +7834,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1005 := z.EncBinary()
-					_ = yym1005
 					if false {
 					} else {
 						z.F.EncMapUint8Float32V(x.FMapUint8Float32, e)
@@ -8862,8 +7856,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1007 := *x.FptrMapUint8Float32
-						yym1008 := z.EncBinary()
-						_ = yym1008
 						if false {
 						} else {
 							z.F.EncMapUint8Float32V(yy1007, e)
@@ -8881,8 +7873,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1009 := *x.FptrMapUint8Float32
-						yym1010 := z.EncBinary()
-						_ = yym1010
 						if false {
 						} else {
 							z.F.EncMapUint8Float32V(yy1009, e)
@@ -8895,8 +7885,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1012 := z.EncBinary()
-					_ = yym1012
 					if false {
 					} else {
 						z.F.EncMapUint8Float64V(x.FMapUint8Float64, e)
@@ -8909,8 +7897,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1013 := z.EncBinary()
-					_ = yym1013
 					if false {
 					} else {
 						z.F.EncMapUint8Float64V(x.FMapUint8Float64, e)
@@ -8933,8 +7919,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1015 := *x.FptrMapUint8Float64
-						yym1016 := z.EncBinary()
-						_ = yym1016
 						if false {
 						} else {
 							z.F.EncMapUint8Float64V(yy1015, e)
@@ -8952,8 +7936,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1017 := *x.FptrMapUint8Float64
-						yym1018 := z.EncBinary()
-						_ = yym1018
 						if false {
 						} else {
 							z.F.EncMapUint8Float64V(yy1017, e)
@@ -8966,8 +7948,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1020 := z.EncBinary()
-					_ = yym1020
 					if false {
 					} else {
 						z.F.EncMapUint8BoolV(x.FMapUint8Bool, e)
@@ -8980,8 +7960,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint8Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1021 := z.EncBinary()
-					_ = yym1021
 					if false {
 					} else {
 						z.F.EncMapUint8BoolV(x.FMapUint8Bool, e)
@@ -9004,8 +7982,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1023 := *x.FptrMapUint8Bool
-						yym1024 := z.EncBinary()
-						_ = yym1024
 						if false {
 						} else {
 							z.F.EncMapUint8BoolV(yy1023, e)
@@ -9023,8 +7999,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1025 := *x.FptrMapUint8Bool
-						yym1026 := z.EncBinary()
-						_ = yym1026
 						if false {
 						} else {
 							z.F.EncMapUint8BoolV(yy1025, e)
@@ -9037,8 +8011,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1028 := z.EncBinary()
-					_ = yym1028
 					if false {
 					} else {
 						z.F.EncMapUint16IntfV(x.FMapUint16Intf, e)
@@ -9051,8 +8023,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1029 := z.EncBinary()
-					_ = yym1029
 					if false {
 					} else {
 						z.F.EncMapUint16IntfV(x.FMapUint16Intf, e)
@@ -9075,8 +8045,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1031 := *x.FptrMapUint16Intf
-						yym1032 := z.EncBinary()
-						_ = yym1032
 						if false {
 						} else {
 							z.F.EncMapUint16IntfV(yy1031, e)
@@ -9094,8 +8062,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1033 := *x.FptrMapUint16Intf
-						yym1034 := z.EncBinary()
-						_ = yym1034
 						if false {
 						} else {
 							z.F.EncMapUint16IntfV(yy1033, e)
@@ -9108,8 +8074,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16String == nil {
 					r.EncodeNil()
 				} else {
-					yym1036 := z.EncBinary()
-					_ = yym1036
 					if false {
 					} else {
 						z.F.EncMapUint16StringV(x.FMapUint16String, e)
@@ -9122,8 +8086,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16String == nil {
 					r.EncodeNil()
 				} else {
-					yym1037 := z.EncBinary()
-					_ = yym1037
 					if false {
 					} else {
 						z.F.EncMapUint16StringV(x.FMapUint16String, e)
@@ -9146,8 +8108,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1039 := *x.FptrMapUint16String
-						yym1040 := z.EncBinary()
-						_ = yym1040
 						if false {
 						} else {
 							z.F.EncMapUint16StringV(yy1039, e)
@@ -9165,8 +8125,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1041 := *x.FptrMapUint16String
-						yym1042 := z.EncBinary()
-						_ = yym1042
 						if false {
 						} else {
 							z.F.EncMapUint16StringV(yy1041, e)
@@ -9179,8 +8137,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1044 := z.EncBinary()
-					_ = yym1044
 					if false {
 					} else {
 						z.F.EncMapUint16UintV(x.FMapUint16Uint, e)
@@ -9193,8 +8149,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1045 := z.EncBinary()
-					_ = yym1045
 					if false {
 					} else {
 						z.F.EncMapUint16UintV(x.FMapUint16Uint, e)
@@ -9217,8 +8171,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1047 := *x.FptrMapUint16Uint
-						yym1048 := z.EncBinary()
-						_ = yym1048
 						if false {
 						} else {
 							z.F.EncMapUint16UintV(yy1047, e)
@@ -9236,8 +8188,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1049 := *x.FptrMapUint16Uint
-						yym1050 := z.EncBinary()
-						_ = yym1050
 						if false {
 						} else {
 							z.F.EncMapUint16UintV(yy1049, e)
@@ -9250,8 +8200,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1052 := z.EncBinary()
-					_ = yym1052
 					if false {
 					} else {
 						z.F.EncMapUint16Uint8V(x.FMapUint16Uint8, e)
@@ -9264,8 +8212,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1053 := z.EncBinary()
-					_ = yym1053
 					if false {
 					} else {
 						z.F.EncMapUint16Uint8V(x.FMapUint16Uint8, e)
@@ -9288,8 +8234,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1055 := *x.FptrMapUint16Uint8
-						yym1056 := z.EncBinary()
-						_ = yym1056
 						if false {
 						} else {
 							z.F.EncMapUint16Uint8V(yy1055, e)
@@ -9307,8 +8251,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1057 := *x.FptrMapUint16Uint8
-						yym1058 := z.EncBinary()
-						_ = yym1058
 						if false {
 						} else {
 							z.F.EncMapUint16Uint8V(yy1057, e)
@@ -9321,8 +8263,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1060 := z.EncBinary()
-					_ = yym1060
 					if false {
 					} else {
 						z.F.EncMapUint16Uint16V(x.FMapUint16Uint16, e)
@@ -9335,8 +8275,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1061 := z.EncBinary()
-					_ = yym1061
 					if false {
 					} else {
 						z.F.EncMapUint16Uint16V(x.FMapUint16Uint16, e)
@@ -9359,8 +8297,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1063 := *x.FptrMapUint16Uint16
-						yym1064 := z.EncBinary()
-						_ = yym1064
 						if false {
 						} else {
 							z.F.EncMapUint16Uint16V(yy1063, e)
@@ -9378,8 +8314,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1065 := *x.FptrMapUint16Uint16
-						yym1066 := z.EncBinary()
-						_ = yym1066
 						if false {
 						} else {
 							z.F.EncMapUint16Uint16V(yy1065, e)
@@ -9392,8 +8326,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1068 := z.EncBinary()
-					_ = yym1068
 					if false {
 					} else {
 						z.F.EncMapUint16Uint32V(x.FMapUint16Uint32, e)
@@ -9406,8 +8338,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1069 := z.EncBinary()
-					_ = yym1069
 					if false {
 					} else {
 						z.F.EncMapUint16Uint32V(x.FMapUint16Uint32, e)
@@ -9430,8 +8360,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1071 := *x.FptrMapUint16Uint32
-						yym1072 := z.EncBinary()
-						_ = yym1072
 						if false {
 						} else {
 							z.F.EncMapUint16Uint32V(yy1071, e)
@@ -9449,8 +8377,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1073 := *x.FptrMapUint16Uint32
-						yym1074 := z.EncBinary()
-						_ = yym1074
 						if false {
 						} else {
 							z.F.EncMapUint16Uint32V(yy1073, e)
@@ -9463,8 +8389,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1076 := z.EncBinary()
-					_ = yym1076
 					if false {
 					} else {
 						z.F.EncMapUint16Uint64V(x.FMapUint16Uint64, e)
@@ -9477,8 +8401,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1077 := z.EncBinary()
-					_ = yym1077
 					if false {
 					} else {
 						z.F.EncMapUint16Uint64V(x.FMapUint16Uint64, e)
@@ -9501,8 +8423,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1079 := *x.FptrMapUint16Uint64
-						yym1080 := z.EncBinary()
-						_ = yym1080
 						if false {
 						} else {
 							z.F.EncMapUint16Uint64V(yy1079, e)
@@ -9520,8 +8440,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1081 := *x.FptrMapUint16Uint64
-						yym1082 := z.EncBinary()
-						_ = yym1082
 						if false {
 						} else {
 							z.F.EncMapUint16Uint64V(yy1081, e)
@@ -9534,8 +8452,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1084 := z.EncBinary()
-					_ = yym1084
 					if false {
 					} else {
 						z.F.EncMapUint16UintptrV(x.FMapUint16Uintptr, e)
@@ -9548,8 +8464,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1085 := z.EncBinary()
-					_ = yym1085
 					if false {
 					} else {
 						z.F.EncMapUint16UintptrV(x.FMapUint16Uintptr, e)
@@ -9572,8 +8486,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1087 := *x.FptrMapUint16Uintptr
-						yym1088 := z.EncBinary()
-						_ = yym1088
 						if false {
 						} else {
 							z.F.EncMapUint16UintptrV(yy1087, e)
@@ -9591,8 +8503,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1089 := *x.FptrMapUint16Uintptr
-						yym1090 := z.EncBinary()
-						_ = yym1090
 						if false {
 						} else {
 							z.F.EncMapUint16UintptrV(yy1089, e)
@@ -9605,8 +8515,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1092 := z.EncBinary()
-					_ = yym1092
 					if false {
 					} else {
 						z.F.EncMapUint16IntV(x.FMapUint16Int, e)
@@ -9619,8 +8527,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1093 := z.EncBinary()
-					_ = yym1093
 					if false {
 					} else {
 						z.F.EncMapUint16IntV(x.FMapUint16Int, e)
@@ -9643,8 +8549,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1095 := *x.FptrMapUint16Int
-						yym1096 := z.EncBinary()
-						_ = yym1096
 						if false {
 						} else {
 							z.F.EncMapUint16IntV(yy1095, e)
@@ -9662,8 +8566,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1097 := *x.FptrMapUint16Int
-						yym1098 := z.EncBinary()
-						_ = yym1098
 						if false {
 						} else {
 							z.F.EncMapUint16IntV(yy1097, e)
@@ -9676,8 +8578,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1100 := z.EncBinary()
-					_ = yym1100
 					if false {
 					} else {
 						z.F.EncMapUint16Int8V(x.FMapUint16Int8, e)
@@ -9690,8 +8590,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1101 := z.EncBinary()
-					_ = yym1101
 					if false {
 					} else {
 						z.F.EncMapUint16Int8V(x.FMapUint16Int8, e)
@@ -9714,8 +8612,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1103 := *x.FptrMapUint16Int8
-						yym1104 := z.EncBinary()
-						_ = yym1104
 						if false {
 						} else {
 							z.F.EncMapUint16Int8V(yy1103, e)
@@ -9733,8 +8629,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1105 := *x.FptrMapUint16Int8
-						yym1106 := z.EncBinary()
-						_ = yym1106
 						if false {
 						} else {
 							z.F.EncMapUint16Int8V(yy1105, e)
@@ -9747,8 +8641,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1108 := z.EncBinary()
-					_ = yym1108
 					if false {
 					} else {
 						z.F.EncMapUint16Int16V(x.FMapUint16Int16, e)
@@ -9761,8 +8653,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1109 := z.EncBinary()
-					_ = yym1109
 					if false {
 					} else {
 						z.F.EncMapUint16Int16V(x.FMapUint16Int16, e)
@@ -9785,8 +8675,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1111 := *x.FptrMapUint16Int16
-						yym1112 := z.EncBinary()
-						_ = yym1112
 						if false {
 						} else {
 							z.F.EncMapUint16Int16V(yy1111, e)
@@ -9804,8 +8692,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1113 := *x.FptrMapUint16Int16
-						yym1114 := z.EncBinary()
-						_ = yym1114
 						if false {
 						} else {
 							z.F.EncMapUint16Int16V(yy1113, e)
@@ -9818,8 +8704,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1116 := z.EncBinary()
-					_ = yym1116
 					if false {
 					} else {
 						z.F.EncMapUint16Int32V(x.FMapUint16Int32, e)
@@ -9832,8 +8716,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1117 := z.EncBinary()
-					_ = yym1117
 					if false {
 					} else {
 						z.F.EncMapUint16Int32V(x.FMapUint16Int32, e)
@@ -9856,8 +8738,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1119 := *x.FptrMapUint16Int32
-						yym1120 := z.EncBinary()
-						_ = yym1120
 						if false {
 						} else {
 							z.F.EncMapUint16Int32V(yy1119, e)
@@ -9875,8 +8755,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1121 := *x.FptrMapUint16Int32
-						yym1122 := z.EncBinary()
-						_ = yym1122
 						if false {
 						} else {
 							z.F.EncMapUint16Int32V(yy1121, e)
@@ -9889,8 +8767,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1124 := z.EncBinary()
-					_ = yym1124
 					if false {
 					} else {
 						z.F.EncMapUint16Int64V(x.FMapUint16Int64, e)
@@ -9903,8 +8779,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1125 := z.EncBinary()
-					_ = yym1125
 					if false {
 					} else {
 						z.F.EncMapUint16Int64V(x.FMapUint16Int64, e)
@@ -9927,8 +8801,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1127 := *x.FptrMapUint16Int64
-						yym1128 := z.EncBinary()
-						_ = yym1128
 						if false {
 						} else {
 							z.F.EncMapUint16Int64V(yy1127, e)
@@ -9946,8 +8818,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1129 := *x.FptrMapUint16Int64
-						yym1130 := z.EncBinary()
-						_ = yym1130
 						if false {
 						} else {
 							z.F.EncMapUint16Int64V(yy1129, e)
@@ -9960,8 +8830,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1132 := z.EncBinary()
-					_ = yym1132
 					if false {
 					} else {
 						z.F.EncMapUint16Float32V(x.FMapUint16Float32, e)
@@ -9974,8 +8842,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1133 := z.EncBinary()
-					_ = yym1133
 					if false {
 					} else {
 						z.F.EncMapUint16Float32V(x.FMapUint16Float32, e)
@@ -9998,8 +8864,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1135 := *x.FptrMapUint16Float32
-						yym1136 := z.EncBinary()
-						_ = yym1136
 						if false {
 						} else {
 							z.F.EncMapUint16Float32V(yy1135, e)
@@ -10017,8 +8881,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1137 := *x.FptrMapUint16Float32
-						yym1138 := z.EncBinary()
-						_ = yym1138
 						if false {
 						} else {
 							z.F.EncMapUint16Float32V(yy1137, e)
@@ -10031,8 +8893,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1140 := z.EncBinary()
-					_ = yym1140
 					if false {
 					} else {
 						z.F.EncMapUint16Float64V(x.FMapUint16Float64, e)
@@ -10045,8 +8905,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1141 := z.EncBinary()
-					_ = yym1141
 					if false {
 					} else {
 						z.F.EncMapUint16Float64V(x.FMapUint16Float64, e)
@@ -10069,8 +8927,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1143 := *x.FptrMapUint16Float64
-						yym1144 := z.EncBinary()
-						_ = yym1144
 						if false {
 						} else {
 							z.F.EncMapUint16Float64V(yy1143, e)
@@ -10088,8 +8944,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1145 := *x.FptrMapUint16Float64
-						yym1146 := z.EncBinary()
-						_ = yym1146
 						if false {
 						} else {
 							z.F.EncMapUint16Float64V(yy1145, e)
@@ -10102,8 +8956,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1148 := z.EncBinary()
-					_ = yym1148
 					if false {
 					} else {
 						z.F.EncMapUint16BoolV(x.FMapUint16Bool, e)
@@ -10116,8 +8968,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint16Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1149 := z.EncBinary()
-					_ = yym1149
 					if false {
 					} else {
 						z.F.EncMapUint16BoolV(x.FMapUint16Bool, e)
@@ -10140,8 +8990,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1151 := *x.FptrMapUint16Bool
-						yym1152 := z.EncBinary()
-						_ = yym1152
 						if false {
 						} else {
 							z.F.EncMapUint16BoolV(yy1151, e)
@@ -10159,8 +9007,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1153 := *x.FptrMapUint16Bool
-						yym1154 := z.EncBinary()
-						_ = yym1154
 						if false {
 						} else {
 							z.F.EncMapUint16BoolV(yy1153, e)
@@ -10173,8 +9019,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1156 := z.EncBinary()
-					_ = yym1156
 					if false {
 					} else {
 						z.F.EncMapUint32IntfV(x.FMapUint32Intf, e)
@@ -10187,8 +9031,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1157 := z.EncBinary()
-					_ = yym1157
 					if false {
 					} else {
 						z.F.EncMapUint32IntfV(x.FMapUint32Intf, e)
@@ -10211,8 +9053,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1159 := *x.FptrMapUint32Intf
-						yym1160 := z.EncBinary()
-						_ = yym1160
 						if false {
 						} else {
 							z.F.EncMapUint32IntfV(yy1159, e)
@@ -10230,8 +9070,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1161 := *x.FptrMapUint32Intf
-						yym1162 := z.EncBinary()
-						_ = yym1162
 						if false {
 						} else {
 							z.F.EncMapUint32IntfV(yy1161, e)
@@ -10244,8 +9082,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32String == nil {
 					r.EncodeNil()
 				} else {
-					yym1164 := z.EncBinary()
-					_ = yym1164
 					if false {
 					} else {
 						z.F.EncMapUint32StringV(x.FMapUint32String, e)
@@ -10258,8 +9094,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32String == nil {
 					r.EncodeNil()
 				} else {
-					yym1165 := z.EncBinary()
-					_ = yym1165
 					if false {
 					} else {
 						z.F.EncMapUint32StringV(x.FMapUint32String, e)
@@ -10282,8 +9116,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1167 := *x.FptrMapUint32String
-						yym1168 := z.EncBinary()
-						_ = yym1168
 						if false {
 						} else {
 							z.F.EncMapUint32StringV(yy1167, e)
@@ -10301,8 +9133,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1169 := *x.FptrMapUint32String
-						yym1170 := z.EncBinary()
-						_ = yym1170
 						if false {
 						} else {
 							z.F.EncMapUint32StringV(yy1169, e)
@@ -10315,8 +9145,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1172 := z.EncBinary()
-					_ = yym1172
 					if false {
 					} else {
 						z.F.EncMapUint32UintV(x.FMapUint32Uint, e)
@@ -10329,8 +9157,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1173 := z.EncBinary()
-					_ = yym1173
 					if false {
 					} else {
 						z.F.EncMapUint32UintV(x.FMapUint32Uint, e)
@@ -10353,8 +9179,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1175 := *x.FptrMapUint32Uint
-						yym1176 := z.EncBinary()
-						_ = yym1176
 						if false {
 						} else {
 							z.F.EncMapUint32UintV(yy1175, e)
@@ -10372,8 +9196,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1177 := *x.FptrMapUint32Uint
-						yym1178 := z.EncBinary()
-						_ = yym1178
 						if false {
 						} else {
 							z.F.EncMapUint32UintV(yy1177, e)
@@ -10386,8 +9208,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1180 := z.EncBinary()
-					_ = yym1180
 					if false {
 					} else {
 						z.F.EncMapUint32Uint8V(x.FMapUint32Uint8, e)
@@ -10400,8 +9220,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1181 := z.EncBinary()
-					_ = yym1181
 					if false {
 					} else {
 						z.F.EncMapUint32Uint8V(x.FMapUint32Uint8, e)
@@ -10424,8 +9242,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1183 := *x.FptrMapUint32Uint8
-						yym1184 := z.EncBinary()
-						_ = yym1184
 						if false {
 						} else {
 							z.F.EncMapUint32Uint8V(yy1183, e)
@@ -10443,8 +9259,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1185 := *x.FptrMapUint32Uint8
-						yym1186 := z.EncBinary()
-						_ = yym1186
 						if false {
 						} else {
 							z.F.EncMapUint32Uint8V(yy1185, e)
@@ -10457,8 +9271,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1188 := z.EncBinary()
-					_ = yym1188
 					if false {
 					} else {
 						z.F.EncMapUint32Uint16V(x.FMapUint32Uint16, e)
@@ -10471,8 +9283,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1189 := z.EncBinary()
-					_ = yym1189
 					if false {
 					} else {
 						z.F.EncMapUint32Uint16V(x.FMapUint32Uint16, e)
@@ -10495,8 +9305,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1191 := *x.FptrMapUint32Uint16
-						yym1192 := z.EncBinary()
-						_ = yym1192
 						if false {
 						} else {
 							z.F.EncMapUint32Uint16V(yy1191, e)
@@ -10514,8 +9322,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1193 := *x.FptrMapUint32Uint16
-						yym1194 := z.EncBinary()
-						_ = yym1194
 						if false {
 						} else {
 							z.F.EncMapUint32Uint16V(yy1193, e)
@@ -10528,8 +9334,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1196 := z.EncBinary()
-					_ = yym1196
 					if false {
 					} else {
 						z.F.EncMapUint32Uint32V(x.FMapUint32Uint32, e)
@@ -10542,8 +9346,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1197 := z.EncBinary()
-					_ = yym1197
 					if false {
 					} else {
 						z.F.EncMapUint32Uint32V(x.FMapUint32Uint32, e)
@@ -10566,8 +9368,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1199 := *x.FptrMapUint32Uint32
-						yym1200 := z.EncBinary()
-						_ = yym1200
 						if false {
 						} else {
 							z.F.EncMapUint32Uint32V(yy1199, e)
@@ -10585,8 +9385,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1201 := *x.FptrMapUint32Uint32
-						yym1202 := z.EncBinary()
-						_ = yym1202
 						if false {
 						} else {
 							z.F.EncMapUint32Uint32V(yy1201, e)
@@ -10599,8 +9397,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1204 := z.EncBinary()
-					_ = yym1204
 					if false {
 					} else {
 						z.F.EncMapUint32Uint64V(x.FMapUint32Uint64, e)
@@ -10613,8 +9409,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1205 := z.EncBinary()
-					_ = yym1205
 					if false {
 					} else {
 						z.F.EncMapUint32Uint64V(x.FMapUint32Uint64, e)
@@ -10637,8 +9431,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1207 := *x.FptrMapUint32Uint64
-						yym1208 := z.EncBinary()
-						_ = yym1208
 						if false {
 						} else {
 							z.F.EncMapUint32Uint64V(yy1207, e)
@@ -10656,8 +9448,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1209 := *x.FptrMapUint32Uint64
-						yym1210 := z.EncBinary()
-						_ = yym1210
 						if false {
 						} else {
 							z.F.EncMapUint32Uint64V(yy1209, e)
@@ -10670,8 +9460,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1212 := z.EncBinary()
-					_ = yym1212
 					if false {
 					} else {
 						z.F.EncMapUint32UintptrV(x.FMapUint32Uintptr, e)
@@ -10684,8 +9472,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1213 := z.EncBinary()
-					_ = yym1213
 					if false {
 					} else {
 						z.F.EncMapUint32UintptrV(x.FMapUint32Uintptr, e)
@@ -10708,8 +9494,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1215 := *x.FptrMapUint32Uintptr
-						yym1216 := z.EncBinary()
-						_ = yym1216
 						if false {
 						} else {
 							z.F.EncMapUint32UintptrV(yy1215, e)
@@ -10727,8 +9511,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1217 := *x.FptrMapUint32Uintptr
-						yym1218 := z.EncBinary()
-						_ = yym1218
 						if false {
 						} else {
 							z.F.EncMapUint32UintptrV(yy1217, e)
@@ -10741,8 +9523,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1220 := z.EncBinary()
-					_ = yym1220
 					if false {
 					} else {
 						z.F.EncMapUint32IntV(x.FMapUint32Int, e)
@@ -10755,8 +9535,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1221 := z.EncBinary()
-					_ = yym1221
 					if false {
 					} else {
 						z.F.EncMapUint32IntV(x.FMapUint32Int, e)
@@ -10779,8 +9557,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1223 := *x.FptrMapUint32Int
-						yym1224 := z.EncBinary()
-						_ = yym1224
 						if false {
 						} else {
 							z.F.EncMapUint32IntV(yy1223, e)
@@ -10798,8 +9574,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1225 := *x.FptrMapUint32Int
-						yym1226 := z.EncBinary()
-						_ = yym1226
 						if false {
 						} else {
 							z.F.EncMapUint32IntV(yy1225, e)
@@ -10812,8 +9586,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1228 := z.EncBinary()
-					_ = yym1228
 					if false {
 					} else {
 						z.F.EncMapUint32Int8V(x.FMapUint32Int8, e)
@@ -10826,8 +9598,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1229 := z.EncBinary()
-					_ = yym1229
 					if false {
 					} else {
 						z.F.EncMapUint32Int8V(x.FMapUint32Int8, e)
@@ -10850,8 +9620,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1231 := *x.FptrMapUint32Int8
-						yym1232 := z.EncBinary()
-						_ = yym1232
 						if false {
 						} else {
 							z.F.EncMapUint32Int8V(yy1231, e)
@@ -10869,8 +9637,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1233 := *x.FptrMapUint32Int8
-						yym1234 := z.EncBinary()
-						_ = yym1234
 						if false {
 						} else {
 							z.F.EncMapUint32Int8V(yy1233, e)
@@ -10883,8 +9649,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1236 := z.EncBinary()
-					_ = yym1236
 					if false {
 					} else {
 						z.F.EncMapUint32Int16V(x.FMapUint32Int16, e)
@@ -10897,8 +9661,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1237 := z.EncBinary()
-					_ = yym1237
 					if false {
 					} else {
 						z.F.EncMapUint32Int16V(x.FMapUint32Int16, e)
@@ -10921,8 +9683,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1239 := *x.FptrMapUint32Int16
-						yym1240 := z.EncBinary()
-						_ = yym1240
 						if false {
 						} else {
 							z.F.EncMapUint32Int16V(yy1239, e)
@@ -10940,8 +9700,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1241 := *x.FptrMapUint32Int16
-						yym1242 := z.EncBinary()
-						_ = yym1242
 						if false {
 						} else {
 							z.F.EncMapUint32Int16V(yy1241, e)
@@ -10954,8 +9712,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1244 := z.EncBinary()
-					_ = yym1244
 					if false {
 					} else {
 						z.F.EncMapUint32Int32V(x.FMapUint32Int32, e)
@@ -10968,8 +9724,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1245 := z.EncBinary()
-					_ = yym1245
 					if false {
 					} else {
 						z.F.EncMapUint32Int32V(x.FMapUint32Int32, e)
@@ -10992,8 +9746,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1247 := *x.FptrMapUint32Int32
-						yym1248 := z.EncBinary()
-						_ = yym1248
 						if false {
 						} else {
 							z.F.EncMapUint32Int32V(yy1247, e)
@@ -11011,8 +9763,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1249 := *x.FptrMapUint32Int32
-						yym1250 := z.EncBinary()
-						_ = yym1250
 						if false {
 						} else {
 							z.F.EncMapUint32Int32V(yy1249, e)
@@ -11025,8 +9775,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1252 := z.EncBinary()
-					_ = yym1252
 					if false {
 					} else {
 						z.F.EncMapUint32Int64V(x.FMapUint32Int64, e)
@@ -11039,8 +9787,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1253 := z.EncBinary()
-					_ = yym1253
 					if false {
 					} else {
 						z.F.EncMapUint32Int64V(x.FMapUint32Int64, e)
@@ -11063,8 +9809,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1255 := *x.FptrMapUint32Int64
-						yym1256 := z.EncBinary()
-						_ = yym1256
 						if false {
 						} else {
 							z.F.EncMapUint32Int64V(yy1255, e)
@@ -11082,8 +9826,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1257 := *x.FptrMapUint32Int64
-						yym1258 := z.EncBinary()
-						_ = yym1258
 						if false {
 						} else {
 							z.F.EncMapUint32Int64V(yy1257, e)
@@ -11096,8 +9838,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1260 := z.EncBinary()
-					_ = yym1260
 					if false {
 					} else {
 						z.F.EncMapUint32Float32V(x.FMapUint32Float32, e)
@@ -11110,8 +9850,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1261 := z.EncBinary()
-					_ = yym1261
 					if false {
 					} else {
 						z.F.EncMapUint32Float32V(x.FMapUint32Float32, e)
@@ -11134,8 +9872,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1263 := *x.FptrMapUint32Float32
-						yym1264 := z.EncBinary()
-						_ = yym1264
 						if false {
 						} else {
 							z.F.EncMapUint32Float32V(yy1263, e)
@@ -11153,8 +9889,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1265 := *x.FptrMapUint32Float32
-						yym1266 := z.EncBinary()
-						_ = yym1266
 						if false {
 						} else {
 							z.F.EncMapUint32Float32V(yy1265, e)
@@ -11167,8 +9901,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1268 := z.EncBinary()
-					_ = yym1268
 					if false {
 					} else {
 						z.F.EncMapUint32Float64V(x.FMapUint32Float64, e)
@@ -11181,8 +9913,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1269 := z.EncBinary()
-					_ = yym1269
 					if false {
 					} else {
 						z.F.EncMapUint32Float64V(x.FMapUint32Float64, e)
@@ -11205,8 +9935,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1271 := *x.FptrMapUint32Float64
-						yym1272 := z.EncBinary()
-						_ = yym1272
 						if false {
 						} else {
 							z.F.EncMapUint32Float64V(yy1271, e)
@@ -11224,8 +9952,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1273 := *x.FptrMapUint32Float64
-						yym1274 := z.EncBinary()
-						_ = yym1274
 						if false {
 						} else {
 							z.F.EncMapUint32Float64V(yy1273, e)
@@ -11238,8 +9964,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1276 := z.EncBinary()
-					_ = yym1276
 					if false {
 					} else {
 						z.F.EncMapUint32BoolV(x.FMapUint32Bool, e)
@@ -11252,8 +9976,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint32Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1277 := z.EncBinary()
-					_ = yym1277
 					if false {
 					} else {
 						z.F.EncMapUint32BoolV(x.FMapUint32Bool, e)
@@ -11276,8 +9998,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1279 := *x.FptrMapUint32Bool
-						yym1280 := z.EncBinary()
-						_ = yym1280
 						if false {
 						} else {
 							z.F.EncMapUint32BoolV(yy1279, e)
@@ -11295,8 +10015,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1281 := *x.FptrMapUint32Bool
-						yym1282 := z.EncBinary()
-						_ = yym1282
 						if false {
 						} else {
 							z.F.EncMapUint32BoolV(yy1281, e)
@@ -11309,8 +10027,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1284 := z.EncBinary()
-					_ = yym1284
 					if false {
 					} else {
 						z.F.EncMapUint64IntfV(x.FMapUint64Intf, e)
@@ -11323,8 +10039,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1285 := z.EncBinary()
-					_ = yym1285
 					if false {
 					} else {
 						z.F.EncMapUint64IntfV(x.FMapUint64Intf, e)
@@ -11347,8 +10061,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1287 := *x.FptrMapUint64Intf
-						yym1288 := z.EncBinary()
-						_ = yym1288
 						if false {
 						} else {
 							z.F.EncMapUint64IntfV(yy1287, e)
@@ -11366,8 +10078,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1289 := *x.FptrMapUint64Intf
-						yym1290 := z.EncBinary()
-						_ = yym1290
 						if false {
 						} else {
 							z.F.EncMapUint64IntfV(yy1289, e)
@@ -11380,8 +10090,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64String == nil {
 					r.EncodeNil()
 				} else {
-					yym1292 := z.EncBinary()
-					_ = yym1292
 					if false {
 					} else {
 						z.F.EncMapUint64StringV(x.FMapUint64String, e)
@@ -11394,8 +10102,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64String == nil {
 					r.EncodeNil()
 				} else {
-					yym1293 := z.EncBinary()
-					_ = yym1293
 					if false {
 					} else {
 						z.F.EncMapUint64StringV(x.FMapUint64String, e)
@@ -11418,8 +10124,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1295 := *x.FptrMapUint64String
-						yym1296 := z.EncBinary()
-						_ = yym1296
 						if false {
 						} else {
 							z.F.EncMapUint64StringV(yy1295, e)
@@ -11437,8 +10141,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1297 := *x.FptrMapUint64String
-						yym1298 := z.EncBinary()
-						_ = yym1298
 						if false {
 						} else {
 							z.F.EncMapUint64StringV(yy1297, e)
@@ -11451,8 +10153,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1300 := z.EncBinary()
-					_ = yym1300
 					if false {
 					} else {
 						z.F.EncMapUint64UintV(x.FMapUint64Uint, e)
@@ -11465,8 +10165,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1301 := z.EncBinary()
-					_ = yym1301
 					if false {
 					} else {
 						z.F.EncMapUint64UintV(x.FMapUint64Uint, e)
@@ -11489,8 +10187,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1303 := *x.FptrMapUint64Uint
-						yym1304 := z.EncBinary()
-						_ = yym1304
 						if false {
 						} else {
 							z.F.EncMapUint64UintV(yy1303, e)
@@ -11508,8 +10204,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1305 := *x.FptrMapUint64Uint
-						yym1306 := z.EncBinary()
-						_ = yym1306
 						if false {
 						} else {
 							z.F.EncMapUint64UintV(yy1305, e)
@@ -11522,8 +10216,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1308 := z.EncBinary()
-					_ = yym1308
 					if false {
 					} else {
 						z.F.EncMapUint64Uint8V(x.FMapUint64Uint8, e)
@@ -11536,8 +10228,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1309 := z.EncBinary()
-					_ = yym1309
 					if false {
 					} else {
 						z.F.EncMapUint64Uint8V(x.FMapUint64Uint8, e)
@@ -11560,8 +10250,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1311 := *x.FptrMapUint64Uint8
-						yym1312 := z.EncBinary()
-						_ = yym1312
 						if false {
 						} else {
 							z.F.EncMapUint64Uint8V(yy1311, e)
@@ -11579,8 +10267,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1313 := *x.FptrMapUint64Uint8
-						yym1314 := z.EncBinary()
-						_ = yym1314
 						if false {
 						} else {
 							z.F.EncMapUint64Uint8V(yy1313, e)
@@ -11593,8 +10279,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1316 := z.EncBinary()
-					_ = yym1316
 					if false {
 					} else {
 						z.F.EncMapUint64Uint16V(x.FMapUint64Uint16, e)
@@ -11607,8 +10291,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1317 := z.EncBinary()
-					_ = yym1317
 					if false {
 					} else {
 						z.F.EncMapUint64Uint16V(x.FMapUint64Uint16, e)
@@ -11631,8 +10313,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1319 := *x.FptrMapUint64Uint16
-						yym1320 := z.EncBinary()
-						_ = yym1320
 						if false {
 						} else {
 							z.F.EncMapUint64Uint16V(yy1319, e)
@@ -11650,8 +10330,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1321 := *x.FptrMapUint64Uint16
-						yym1322 := z.EncBinary()
-						_ = yym1322
 						if false {
 						} else {
 							z.F.EncMapUint64Uint16V(yy1321, e)
@@ -11664,8 +10342,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1324 := z.EncBinary()
-					_ = yym1324
 					if false {
 					} else {
 						z.F.EncMapUint64Uint32V(x.FMapUint64Uint32, e)
@@ -11678,8 +10354,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1325 := z.EncBinary()
-					_ = yym1325
 					if false {
 					} else {
 						z.F.EncMapUint64Uint32V(x.FMapUint64Uint32, e)
@@ -11702,8 +10376,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1327 := *x.FptrMapUint64Uint32
-						yym1328 := z.EncBinary()
-						_ = yym1328
 						if false {
 						} else {
 							z.F.EncMapUint64Uint32V(yy1327, e)
@@ -11721,8 +10393,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1329 := *x.FptrMapUint64Uint32
-						yym1330 := z.EncBinary()
-						_ = yym1330
 						if false {
 						} else {
 							z.F.EncMapUint64Uint32V(yy1329, e)
@@ -11735,8 +10405,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1332 := z.EncBinary()
-					_ = yym1332
 					if false {
 					} else {
 						z.F.EncMapUint64Uint64V(x.FMapUint64Uint64, e)
@@ -11749,8 +10417,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1333 := z.EncBinary()
-					_ = yym1333
 					if false {
 					} else {
 						z.F.EncMapUint64Uint64V(x.FMapUint64Uint64, e)
@@ -11773,8 +10439,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1335 := *x.FptrMapUint64Uint64
-						yym1336 := z.EncBinary()
-						_ = yym1336
 						if false {
 						} else {
 							z.F.EncMapUint64Uint64V(yy1335, e)
@@ -11792,8 +10456,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1337 := *x.FptrMapUint64Uint64
-						yym1338 := z.EncBinary()
-						_ = yym1338
 						if false {
 						} else {
 							z.F.EncMapUint64Uint64V(yy1337, e)
@@ -11806,8 +10468,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1340 := z.EncBinary()
-					_ = yym1340
 					if false {
 					} else {
 						z.F.EncMapUint64UintptrV(x.FMapUint64Uintptr, e)
@@ -11820,8 +10480,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1341 := z.EncBinary()
-					_ = yym1341
 					if false {
 					} else {
 						z.F.EncMapUint64UintptrV(x.FMapUint64Uintptr, e)
@@ -11844,8 +10502,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1343 := *x.FptrMapUint64Uintptr
-						yym1344 := z.EncBinary()
-						_ = yym1344
 						if false {
 						} else {
 							z.F.EncMapUint64UintptrV(yy1343, e)
@@ -11863,8 +10519,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1345 := *x.FptrMapUint64Uintptr
-						yym1346 := z.EncBinary()
-						_ = yym1346
 						if false {
 						} else {
 							z.F.EncMapUint64UintptrV(yy1345, e)
@@ -11877,8 +10531,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1348 := z.EncBinary()
-					_ = yym1348
 					if false {
 					} else {
 						z.F.EncMapUint64IntV(x.FMapUint64Int, e)
@@ -11891,8 +10543,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1349 := z.EncBinary()
-					_ = yym1349
 					if false {
 					} else {
 						z.F.EncMapUint64IntV(x.FMapUint64Int, e)
@@ -11915,8 +10565,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1351 := *x.FptrMapUint64Int
-						yym1352 := z.EncBinary()
-						_ = yym1352
 						if false {
 						} else {
 							z.F.EncMapUint64IntV(yy1351, e)
@@ -11934,8 +10582,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1353 := *x.FptrMapUint64Int
-						yym1354 := z.EncBinary()
-						_ = yym1354
 						if false {
 						} else {
 							z.F.EncMapUint64IntV(yy1353, e)
@@ -11948,8 +10594,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1356 := z.EncBinary()
-					_ = yym1356
 					if false {
 					} else {
 						z.F.EncMapUint64Int8V(x.FMapUint64Int8, e)
@@ -11962,8 +10606,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1357 := z.EncBinary()
-					_ = yym1357
 					if false {
 					} else {
 						z.F.EncMapUint64Int8V(x.FMapUint64Int8, e)
@@ -11986,8 +10628,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1359 := *x.FptrMapUint64Int8
-						yym1360 := z.EncBinary()
-						_ = yym1360
 						if false {
 						} else {
 							z.F.EncMapUint64Int8V(yy1359, e)
@@ -12005,8 +10645,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1361 := *x.FptrMapUint64Int8
-						yym1362 := z.EncBinary()
-						_ = yym1362
 						if false {
 						} else {
 							z.F.EncMapUint64Int8V(yy1361, e)
@@ -12019,8 +10657,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1364 := z.EncBinary()
-					_ = yym1364
 					if false {
 					} else {
 						z.F.EncMapUint64Int16V(x.FMapUint64Int16, e)
@@ -12033,8 +10669,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1365 := z.EncBinary()
-					_ = yym1365
 					if false {
 					} else {
 						z.F.EncMapUint64Int16V(x.FMapUint64Int16, e)
@@ -12057,8 +10691,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1367 := *x.FptrMapUint64Int16
-						yym1368 := z.EncBinary()
-						_ = yym1368
 						if false {
 						} else {
 							z.F.EncMapUint64Int16V(yy1367, e)
@@ -12076,8 +10708,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1369 := *x.FptrMapUint64Int16
-						yym1370 := z.EncBinary()
-						_ = yym1370
 						if false {
 						} else {
 							z.F.EncMapUint64Int16V(yy1369, e)
@@ -12090,8 +10720,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1372 := z.EncBinary()
-					_ = yym1372
 					if false {
 					} else {
 						z.F.EncMapUint64Int32V(x.FMapUint64Int32, e)
@@ -12104,8 +10732,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1373 := z.EncBinary()
-					_ = yym1373
 					if false {
 					} else {
 						z.F.EncMapUint64Int32V(x.FMapUint64Int32, e)
@@ -12128,8 +10754,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1375 := *x.FptrMapUint64Int32
-						yym1376 := z.EncBinary()
-						_ = yym1376
 						if false {
 						} else {
 							z.F.EncMapUint64Int32V(yy1375, e)
@@ -12147,8 +10771,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1377 := *x.FptrMapUint64Int32
-						yym1378 := z.EncBinary()
-						_ = yym1378
 						if false {
 						} else {
 							z.F.EncMapUint64Int32V(yy1377, e)
@@ -12161,8 +10783,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1380 := z.EncBinary()
-					_ = yym1380
 					if false {
 					} else {
 						z.F.EncMapUint64Int64V(x.FMapUint64Int64, e)
@@ -12175,8 +10795,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1381 := z.EncBinary()
-					_ = yym1381
 					if false {
 					} else {
 						z.F.EncMapUint64Int64V(x.FMapUint64Int64, e)
@@ -12199,8 +10817,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1383 := *x.FptrMapUint64Int64
-						yym1384 := z.EncBinary()
-						_ = yym1384
 						if false {
 						} else {
 							z.F.EncMapUint64Int64V(yy1383, e)
@@ -12218,8 +10834,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1385 := *x.FptrMapUint64Int64
-						yym1386 := z.EncBinary()
-						_ = yym1386
 						if false {
 						} else {
 							z.F.EncMapUint64Int64V(yy1385, e)
@@ -12232,8 +10846,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1388 := z.EncBinary()
-					_ = yym1388
 					if false {
 					} else {
 						z.F.EncMapUint64Float32V(x.FMapUint64Float32, e)
@@ -12246,8 +10858,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1389 := z.EncBinary()
-					_ = yym1389
 					if false {
 					} else {
 						z.F.EncMapUint64Float32V(x.FMapUint64Float32, e)
@@ -12270,8 +10880,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1391 := *x.FptrMapUint64Float32
-						yym1392 := z.EncBinary()
-						_ = yym1392
 						if false {
 						} else {
 							z.F.EncMapUint64Float32V(yy1391, e)
@@ -12289,8 +10897,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1393 := *x.FptrMapUint64Float32
-						yym1394 := z.EncBinary()
-						_ = yym1394
 						if false {
 						} else {
 							z.F.EncMapUint64Float32V(yy1393, e)
@@ -12303,8 +10909,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1396 := z.EncBinary()
-					_ = yym1396
 					if false {
 					} else {
 						z.F.EncMapUint64Float64V(x.FMapUint64Float64, e)
@@ -12317,8 +10921,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1397 := z.EncBinary()
-					_ = yym1397
 					if false {
 					} else {
 						z.F.EncMapUint64Float64V(x.FMapUint64Float64, e)
@@ -12341,8 +10943,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1399 := *x.FptrMapUint64Float64
-						yym1400 := z.EncBinary()
-						_ = yym1400
 						if false {
 						} else {
 							z.F.EncMapUint64Float64V(yy1399, e)
@@ -12360,8 +10960,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1401 := *x.FptrMapUint64Float64
-						yym1402 := z.EncBinary()
-						_ = yym1402
 						if false {
 						} else {
 							z.F.EncMapUint64Float64V(yy1401, e)
@@ -12374,8 +10972,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1404 := z.EncBinary()
-					_ = yym1404
 					if false {
 					} else {
 						z.F.EncMapUint64BoolV(x.FMapUint64Bool, e)
@@ -12388,8 +10984,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUint64Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1405 := z.EncBinary()
-					_ = yym1405
 					if false {
 					} else {
 						z.F.EncMapUint64BoolV(x.FMapUint64Bool, e)
@@ -12412,8 +11006,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1407 := *x.FptrMapUint64Bool
-						yym1408 := z.EncBinary()
-						_ = yym1408
 						if false {
 						} else {
 							z.F.EncMapUint64BoolV(yy1407, e)
@@ -12431,8 +11023,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1409 := *x.FptrMapUint64Bool
-						yym1410 := z.EncBinary()
-						_ = yym1410
 						if false {
 						} else {
 							z.F.EncMapUint64BoolV(yy1409, e)
@@ -12445,8 +11035,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym1412 := z.EncBinary()
-					_ = yym1412
 					if false {
 					} else {
 						z.F.EncMapUintptrIntfV(x.FMapUintptrIntf, e)
@@ -12459,8 +11047,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym1413 := z.EncBinary()
-					_ = yym1413
 					if false {
 					} else {
 						z.F.EncMapUintptrIntfV(x.FMapUintptrIntf, e)
@@ -12483,8 +11069,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1415 := *x.FptrMapUintptrIntf
-						yym1416 := z.EncBinary()
-						_ = yym1416
 						if false {
 						} else {
 							z.F.EncMapUintptrIntfV(yy1415, e)
@@ -12502,8 +11086,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1417 := *x.FptrMapUintptrIntf
-						yym1418 := z.EncBinary()
-						_ = yym1418
 						if false {
 						} else {
 							z.F.EncMapUintptrIntfV(yy1417, e)
@@ -12516,8 +11098,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrString == nil {
 					r.EncodeNil()
 				} else {
-					yym1420 := z.EncBinary()
-					_ = yym1420
 					if false {
 					} else {
 						z.F.EncMapUintptrStringV(x.FMapUintptrString, e)
@@ -12530,8 +11110,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrString == nil {
 					r.EncodeNil()
 				} else {
-					yym1421 := z.EncBinary()
-					_ = yym1421
 					if false {
 					} else {
 						z.F.EncMapUintptrStringV(x.FMapUintptrString, e)
@@ -12554,8 +11132,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1423 := *x.FptrMapUintptrString
-						yym1424 := z.EncBinary()
-						_ = yym1424
 						if false {
 						} else {
 							z.F.EncMapUintptrStringV(yy1423, e)
@@ -12573,8 +11149,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1425 := *x.FptrMapUintptrString
-						yym1426 := z.EncBinary()
-						_ = yym1426
 						if false {
 						} else {
 							z.F.EncMapUintptrStringV(yy1425, e)
@@ -12587,8 +11161,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUint == nil {
 					r.EncodeNil()
 				} else {
-					yym1428 := z.EncBinary()
-					_ = yym1428
 					if false {
 					} else {
 						z.F.EncMapUintptrUintV(x.FMapUintptrUint, e)
@@ -12601,8 +11173,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUint == nil {
 					r.EncodeNil()
 				} else {
-					yym1429 := z.EncBinary()
-					_ = yym1429
 					if false {
 					} else {
 						z.F.EncMapUintptrUintV(x.FMapUintptrUint, e)
@@ -12625,8 +11195,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1431 := *x.FptrMapUintptrUint
-						yym1432 := z.EncBinary()
-						_ = yym1432
 						if false {
 						} else {
 							z.F.EncMapUintptrUintV(yy1431, e)
@@ -12644,8 +11212,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1433 := *x.FptrMapUintptrUint
-						yym1434 := z.EncBinary()
-						_ = yym1434
 						if false {
 						} else {
 							z.F.EncMapUintptrUintV(yy1433, e)
@@ -12658,8 +11224,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1436 := z.EncBinary()
-					_ = yym1436
 					if false {
 					} else {
 						z.F.EncMapUintptrUint8V(x.FMapUintptrUint8, e)
@@ -12672,8 +11236,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1437 := z.EncBinary()
-					_ = yym1437
 					if false {
 					} else {
 						z.F.EncMapUintptrUint8V(x.FMapUintptrUint8, e)
@@ -12696,8 +11258,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1439 := *x.FptrMapUintptrUint8
-						yym1440 := z.EncBinary()
-						_ = yym1440
 						if false {
 						} else {
 							z.F.EncMapUintptrUint8V(yy1439, e)
@@ -12715,8 +11275,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1441 := *x.FptrMapUintptrUint8
-						yym1442 := z.EncBinary()
-						_ = yym1442
 						if false {
 						} else {
 							z.F.EncMapUintptrUint8V(yy1441, e)
@@ -12729,8 +11287,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1444 := z.EncBinary()
-					_ = yym1444
 					if false {
 					} else {
 						z.F.EncMapUintptrUint16V(x.FMapUintptrUint16, e)
@@ -12743,8 +11299,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1445 := z.EncBinary()
-					_ = yym1445
 					if false {
 					} else {
 						z.F.EncMapUintptrUint16V(x.FMapUintptrUint16, e)
@@ -12767,8 +11321,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1447 := *x.FptrMapUintptrUint16
-						yym1448 := z.EncBinary()
-						_ = yym1448
 						if false {
 						} else {
 							z.F.EncMapUintptrUint16V(yy1447, e)
@@ -12786,8 +11338,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1449 := *x.FptrMapUintptrUint16
-						yym1450 := z.EncBinary()
-						_ = yym1450
 						if false {
 						} else {
 							z.F.EncMapUintptrUint16V(yy1449, e)
@@ -12800,8 +11350,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1452 := z.EncBinary()
-					_ = yym1452
 					if false {
 					} else {
 						z.F.EncMapUintptrUint32V(x.FMapUintptrUint32, e)
@@ -12814,8 +11362,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1453 := z.EncBinary()
-					_ = yym1453
 					if false {
 					} else {
 						z.F.EncMapUintptrUint32V(x.FMapUintptrUint32, e)
@@ -12838,8 +11384,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1455 := *x.FptrMapUintptrUint32
-						yym1456 := z.EncBinary()
-						_ = yym1456
 						if false {
 						} else {
 							z.F.EncMapUintptrUint32V(yy1455, e)
@@ -12857,8 +11401,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1457 := *x.FptrMapUintptrUint32
-						yym1458 := z.EncBinary()
-						_ = yym1458
 						if false {
 						} else {
 							z.F.EncMapUintptrUint32V(yy1457, e)
@@ -12871,8 +11413,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1460 := z.EncBinary()
-					_ = yym1460
 					if false {
 					} else {
 						z.F.EncMapUintptrUint64V(x.FMapUintptrUint64, e)
@@ -12885,8 +11425,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1461 := z.EncBinary()
-					_ = yym1461
 					if false {
 					} else {
 						z.F.EncMapUintptrUint64V(x.FMapUintptrUint64, e)
@@ -12909,8 +11447,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1463 := *x.FptrMapUintptrUint64
-						yym1464 := z.EncBinary()
-						_ = yym1464
 						if false {
 						} else {
 							z.F.EncMapUintptrUint64V(yy1463, e)
@@ -12928,8 +11464,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1465 := *x.FptrMapUintptrUint64
-						yym1466 := z.EncBinary()
-						_ = yym1466
 						if false {
 						} else {
 							z.F.EncMapUintptrUint64V(yy1465, e)
@@ -12942,8 +11476,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1468 := z.EncBinary()
-					_ = yym1468
 					if false {
 					} else {
 						z.F.EncMapUintptrUintptrV(x.FMapUintptrUintptr, e)
@@ -12956,8 +11488,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1469 := z.EncBinary()
-					_ = yym1469
 					if false {
 					} else {
 						z.F.EncMapUintptrUintptrV(x.FMapUintptrUintptr, e)
@@ -12980,8 +11510,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1471 := *x.FptrMapUintptrUintptr
-						yym1472 := z.EncBinary()
-						_ = yym1472
 						if false {
 						} else {
 							z.F.EncMapUintptrUintptrV(yy1471, e)
@@ -12999,8 +11527,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1473 := *x.FptrMapUintptrUintptr
-						yym1474 := z.EncBinary()
-						_ = yym1474
 						if false {
 						} else {
 							z.F.EncMapUintptrUintptrV(yy1473, e)
@@ -13013,8 +11539,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrInt == nil {
 					r.EncodeNil()
 				} else {
-					yym1476 := z.EncBinary()
-					_ = yym1476
 					if false {
 					} else {
 						z.F.EncMapUintptrIntV(x.FMapUintptrInt, e)
@@ -13027,8 +11551,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrInt == nil {
 					r.EncodeNil()
 				} else {
-					yym1477 := z.EncBinary()
-					_ = yym1477
 					if false {
 					} else {
 						z.F.EncMapUintptrIntV(x.FMapUintptrInt, e)
@@ -13051,8 +11573,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1479 := *x.FptrMapUintptrInt
-						yym1480 := z.EncBinary()
-						_ = yym1480
 						if false {
 						} else {
 							z.F.EncMapUintptrIntV(yy1479, e)
@@ -13070,8 +11590,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1481 := *x.FptrMapUintptrInt
-						yym1482 := z.EncBinary()
-						_ = yym1482
 						if false {
 						} else {
 							z.F.EncMapUintptrIntV(yy1481, e)
@@ -13084,8 +11602,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1484 := z.EncBinary()
-					_ = yym1484
 					if false {
 					} else {
 						z.F.EncMapUintptrInt8V(x.FMapUintptrInt8, e)
@@ -13098,8 +11614,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1485 := z.EncBinary()
-					_ = yym1485
 					if false {
 					} else {
 						z.F.EncMapUintptrInt8V(x.FMapUintptrInt8, e)
@@ -13122,8 +11636,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1487 := *x.FptrMapUintptrInt8
-						yym1488 := z.EncBinary()
-						_ = yym1488
 						if false {
 						} else {
 							z.F.EncMapUintptrInt8V(yy1487, e)
@@ -13141,8 +11653,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1489 := *x.FptrMapUintptrInt8
-						yym1490 := z.EncBinary()
-						_ = yym1490
 						if false {
 						} else {
 							z.F.EncMapUintptrInt8V(yy1489, e)
@@ -13155,8 +11665,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1492 := z.EncBinary()
-					_ = yym1492
 					if false {
 					} else {
 						z.F.EncMapUintptrInt16V(x.FMapUintptrInt16, e)
@@ -13169,8 +11677,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1493 := z.EncBinary()
-					_ = yym1493
 					if false {
 					} else {
 						z.F.EncMapUintptrInt16V(x.FMapUintptrInt16, e)
@@ -13193,8 +11699,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1495 := *x.FptrMapUintptrInt16
-						yym1496 := z.EncBinary()
-						_ = yym1496
 						if false {
 						} else {
 							z.F.EncMapUintptrInt16V(yy1495, e)
@@ -13212,8 +11716,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1497 := *x.FptrMapUintptrInt16
-						yym1498 := z.EncBinary()
-						_ = yym1498
 						if false {
 						} else {
 							z.F.EncMapUintptrInt16V(yy1497, e)
@@ -13226,8 +11728,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1500 := z.EncBinary()
-					_ = yym1500
 					if false {
 					} else {
 						z.F.EncMapUintptrInt32V(x.FMapUintptrInt32, e)
@@ -13240,8 +11740,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1501 := z.EncBinary()
-					_ = yym1501
 					if false {
 					} else {
 						z.F.EncMapUintptrInt32V(x.FMapUintptrInt32, e)
@@ -13264,8 +11762,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1503 := *x.FptrMapUintptrInt32
-						yym1504 := z.EncBinary()
-						_ = yym1504
 						if false {
 						} else {
 							z.F.EncMapUintptrInt32V(yy1503, e)
@@ -13283,8 +11779,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1505 := *x.FptrMapUintptrInt32
-						yym1506 := z.EncBinary()
-						_ = yym1506
 						if false {
 						} else {
 							z.F.EncMapUintptrInt32V(yy1505, e)
@@ -13297,8 +11791,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1508 := z.EncBinary()
-					_ = yym1508
 					if false {
 					} else {
 						z.F.EncMapUintptrInt64V(x.FMapUintptrInt64, e)
@@ -13311,8 +11803,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1509 := z.EncBinary()
-					_ = yym1509
 					if false {
 					} else {
 						z.F.EncMapUintptrInt64V(x.FMapUintptrInt64, e)
@@ -13335,8 +11825,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1511 := *x.FptrMapUintptrInt64
-						yym1512 := z.EncBinary()
-						_ = yym1512
 						if false {
 						} else {
 							z.F.EncMapUintptrInt64V(yy1511, e)
@@ -13354,8 +11842,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1513 := *x.FptrMapUintptrInt64
-						yym1514 := z.EncBinary()
-						_ = yym1514
 						if false {
 						} else {
 							z.F.EncMapUintptrInt64V(yy1513, e)
@@ -13368,8 +11854,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1516 := z.EncBinary()
-					_ = yym1516
 					if false {
 					} else {
 						z.F.EncMapUintptrFloat32V(x.FMapUintptrFloat32, e)
@@ -13382,8 +11866,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1517 := z.EncBinary()
-					_ = yym1517
 					if false {
 					} else {
 						z.F.EncMapUintptrFloat32V(x.FMapUintptrFloat32, e)
@@ -13406,8 +11888,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1519 := *x.FptrMapUintptrFloat32
-						yym1520 := z.EncBinary()
-						_ = yym1520
 						if false {
 						} else {
 							z.F.EncMapUintptrFloat32V(yy1519, e)
@@ -13425,8 +11905,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1521 := *x.FptrMapUintptrFloat32
-						yym1522 := z.EncBinary()
-						_ = yym1522
 						if false {
 						} else {
 							z.F.EncMapUintptrFloat32V(yy1521, e)
@@ -13439,8 +11917,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1524 := z.EncBinary()
-					_ = yym1524
 					if false {
 					} else {
 						z.F.EncMapUintptrFloat64V(x.FMapUintptrFloat64, e)
@@ -13453,8 +11929,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1525 := z.EncBinary()
-					_ = yym1525
 					if false {
 					} else {
 						z.F.EncMapUintptrFloat64V(x.FMapUintptrFloat64, e)
@@ -13477,8 +11951,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1527 := *x.FptrMapUintptrFloat64
-						yym1528 := z.EncBinary()
-						_ = yym1528
 						if false {
 						} else {
 							z.F.EncMapUintptrFloat64V(yy1527, e)
@@ -13496,8 +11968,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1529 := *x.FptrMapUintptrFloat64
-						yym1530 := z.EncBinary()
-						_ = yym1530
 						if false {
 						} else {
 							z.F.EncMapUintptrFloat64V(yy1529, e)
@@ -13510,8 +11980,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrBool == nil {
 					r.EncodeNil()
 				} else {
-					yym1532 := z.EncBinary()
-					_ = yym1532
 					if false {
 					} else {
 						z.F.EncMapUintptrBoolV(x.FMapUintptrBool, e)
@@ -13524,8 +11992,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapUintptrBool == nil {
 					r.EncodeNil()
 				} else {
-					yym1533 := z.EncBinary()
-					_ = yym1533
 					if false {
 					} else {
 						z.F.EncMapUintptrBoolV(x.FMapUintptrBool, e)
@@ -13548,8 +12014,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1535 := *x.FptrMapUintptrBool
-						yym1536 := z.EncBinary()
-						_ = yym1536
 						if false {
 						} else {
 							z.F.EncMapUintptrBoolV(yy1535, e)
@@ -13567,8 +12031,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1537 := *x.FptrMapUintptrBool
-						yym1538 := z.EncBinary()
-						_ = yym1538
 						if false {
 						} else {
 							z.F.EncMapUintptrBoolV(yy1537, e)
@@ -13581,8 +12043,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym1540 := z.EncBinary()
-					_ = yym1540
 					if false {
 					} else {
 						z.F.EncMapIntIntfV(x.FMapIntIntf, e)
@@ -13595,8 +12055,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym1541 := z.EncBinary()
-					_ = yym1541
 					if false {
 					} else {
 						z.F.EncMapIntIntfV(x.FMapIntIntf, e)
@@ -13619,8 +12077,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1543 := *x.FptrMapIntIntf
-						yym1544 := z.EncBinary()
-						_ = yym1544
 						if false {
 						} else {
 							z.F.EncMapIntIntfV(yy1543, e)
@@ -13638,8 +12094,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1545 := *x.FptrMapIntIntf
-						yym1546 := z.EncBinary()
-						_ = yym1546
 						if false {
 						} else {
 							z.F.EncMapIntIntfV(yy1545, e)
@@ -13652,8 +12106,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntString == nil {
 					r.EncodeNil()
 				} else {
-					yym1548 := z.EncBinary()
-					_ = yym1548
 					if false {
 					} else {
 						z.F.EncMapIntStringV(x.FMapIntString, e)
@@ -13666,8 +12118,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntString == nil {
 					r.EncodeNil()
 				} else {
-					yym1549 := z.EncBinary()
-					_ = yym1549
 					if false {
 					} else {
 						z.F.EncMapIntStringV(x.FMapIntString, e)
@@ -13690,8 +12140,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1551 := *x.FptrMapIntString
-						yym1552 := z.EncBinary()
-						_ = yym1552
 						if false {
 						} else {
 							z.F.EncMapIntStringV(yy1551, e)
@@ -13709,8 +12157,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1553 := *x.FptrMapIntString
-						yym1554 := z.EncBinary()
-						_ = yym1554
 						if false {
 						} else {
 							z.F.EncMapIntStringV(yy1553, e)
@@ -13723,8 +12169,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUint == nil {
 					r.EncodeNil()
 				} else {
-					yym1556 := z.EncBinary()
-					_ = yym1556
 					if false {
 					} else {
 						z.F.EncMapIntUintV(x.FMapIntUint, e)
@@ -13737,8 +12181,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUint == nil {
 					r.EncodeNil()
 				} else {
-					yym1557 := z.EncBinary()
-					_ = yym1557
 					if false {
 					} else {
 						z.F.EncMapIntUintV(x.FMapIntUint, e)
@@ -13761,8 +12203,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1559 := *x.FptrMapIntUint
-						yym1560 := z.EncBinary()
-						_ = yym1560
 						if false {
 						} else {
 							z.F.EncMapIntUintV(yy1559, e)
@@ -13780,8 +12220,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1561 := *x.FptrMapIntUint
-						yym1562 := z.EncBinary()
-						_ = yym1562
 						if false {
 						} else {
 							z.F.EncMapIntUintV(yy1561, e)
@@ -13794,8 +12232,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1564 := z.EncBinary()
-					_ = yym1564
 					if false {
 					} else {
 						z.F.EncMapIntUint8V(x.FMapIntUint8, e)
@@ -13808,8 +12244,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1565 := z.EncBinary()
-					_ = yym1565
 					if false {
 					} else {
 						z.F.EncMapIntUint8V(x.FMapIntUint8, e)
@@ -13832,8 +12266,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1567 := *x.FptrMapIntUint8
-						yym1568 := z.EncBinary()
-						_ = yym1568
 						if false {
 						} else {
 							z.F.EncMapIntUint8V(yy1567, e)
@@ -13851,8 +12283,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1569 := *x.FptrMapIntUint8
-						yym1570 := z.EncBinary()
-						_ = yym1570
 						if false {
 						} else {
 							z.F.EncMapIntUint8V(yy1569, e)
@@ -13865,8 +12295,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1572 := z.EncBinary()
-					_ = yym1572
 					if false {
 					} else {
 						z.F.EncMapIntUint16V(x.FMapIntUint16, e)
@@ -13879,8 +12307,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1573 := z.EncBinary()
-					_ = yym1573
 					if false {
 					} else {
 						z.F.EncMapIntUint16V(x.FMapIntUint16, e)
@@ -13903,8 +12329,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1575 := *x.FptrMapIntUint16
-						yym1576 := z.EncBinary()
-						_ = yym1576
 						if false {
 						} else {
 							z.F.EncMapIntUint16V(yy1575, e)
@@ -13922,8 +12346,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1577 := *x.FptrMapIntUint16
-						yym1578 := z.EncBinary()
-						_ = yym1578
 						if false {
 						} else {
 							z.F.EncMapIntUint16V(yy1577, e)
@@ -13936,8 +12358,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1580 := z.EncBinary()
-					_ = yym1580
 					if false {
 					} else {
 						z.F.EncMapIntUint32V(x.FMapIntUint32, e)
@@ -13950,8 +12370,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1581 := z.EncBinary()
-					_ = yym1581
 					if false {
 					} else {
 						z.F.EncMapIntUint32V(x.FMapIntUint32, e)
@@ -13974,8 +12392,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1583 := *x.FptrMapIntUint32
-						yym1584 := z.EncBinary()
-						_ = yym1584
 						if false {
 						} else {
 							z.F.EncMapIntUint32V(yy1583, e)
@@ -13993,8 +12409,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1585 := *x.FptrMapIntUint32
-						yym1586 := z.EncBinary()
-						_ = yym1586
 						if false {
 						} else {
 							z.F.EncMapIntUint32V(yy1585, e)
@@ -14007,8 +12421,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1588 := z.EncBinary()
-					_ = yym1588
 					if false {
 					} else {
 						z.F.EncMapIntUint64V(x.FMapIntUint64, e)
@@ -14021,8 +12433,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1589 := z.EncBinary()
-					_ = yym1589
 					if false {
 					} else {
 						z.F.EncMapIntUint64V(x.FMapIntUint64, e)
@@ -14045,8 +12455,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1591 := *x.FptrMapIntUint64
-						yym1592 := z.EncBinary()
-						_ = yym1592
 						if false {
 						} else {
 							z.F.EncMapIntUint64V(yy1591, e)
@@ -14064,8 +12472,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1593 := *x.FptrMapIntUint64
-						yym1594 := z.EncBinary()
-						_ = yym1594
 						if false {
 						} else {
 							z.F.EncMapIntUint64V(yy1593, e)
@@ -14078,8 +12484,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1596 := z.EncBinary()
-					_ = yym1596
 					if false {
 					} else {
 						z.F.EncMapIntUintptrV(x.FMapIntUintptr, e)
@@ -14092,8 +12496,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1597 := z.EncBinary()
-					_ = yym1597
 					if false {
 					} else {
 						z.F.EncMapIntUintptrV(x.FMapIntUintptr, e)
@@ -14116,8 +12518,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1599 := *x.FptrMapIntUintptr
-						yym1600 := z.EncBinary()
-						_ = yym1600
 						if false {
 						} else {
 							z.F.EncMapIntUintptrV(yy1599, e)
@@ -14135,8 +12535,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1601 := *x.FptrMapIntUintptr
-						yym1602 := z.EncBinary()
-						_ = yym1602
 						if false {
 						} else {
 							z.F.EncMapIntUintptrV(yy1601, e)
@@ -14149,8 +12547,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntInt == nil {
 					r.EncodeNil()
 				} else {
-					yym1604 := z.EncBinary()
-					_ = yym1604
 					if false {
 					} else {
 						z.F.EncMapIntIntV(x.FMapIntInt, e)
@@ -14163,8 +12559,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntInt == nil {
 					r.EncodeNil()
 				} else {
-					yym1605 := z.EncBinary()
-					_ = yym1605
 					if false {
 					} else {
 						z.F.EncMapIntIntV(x.FMapIntInt, e)
@@ -14187,8 +12581,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1607 := *x.FptrMapIntInt
-						yym1608 := z.EncBinary()
-						_ = yym1608
 						if false {
 						} else {
 							z.F.EncMapIntIntV(yy1607, e)
@@ -14206,8 +12598,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1609 := *x.FptrMapIntInt
-						yym1610 := z.EncBinary()
-						_ = yym1610
 						if false {
 						} else {
 							z.F.EncMapIntIntV(yy1609, e)
@@ -14220,8 +12610,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1612 := z.EncBinary()
-					_ = yym1612
 					if false {
 					} else {
 						z.F.EncMapIntInt8V(x.FMapIntInt8, e)
@@ -14234,8 +12622,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1613 := z.EncBinary()
-					_ = yym1613
 					if false {
 					} else {
 						z.F.EncMapIntInt8V(x.FMapIntInt8, e)
@@ -14258,8 +12644,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1615 := *x.FptrMapIntInt8
-						yym1616 := z.EncBinary()
-						_ = yym1616
 						if false {
 						} else {
 							z.F.EncMapIntInt8V(yy1615, e)
@@ -14277,8 +12661,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1617 := *x.FptrMapIntInt8
-						yym1618 := z.EncBinary()
-						_ = yym1618
 						if false {
 						} else {
 							z.F.EncMapIntInt8V(yy1617, e)
@@ -14291,8 +12673,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1620 := z.EncBinary()
-					_ = yym1620
 					if false {
 					} else {
 						z.F.EncMapIntInt16V(x.FMapIntInt16, e)
@@ -14305,8 +12685,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1621 := z.EncBinary()
-					_ = yym1621
 					if false {
 					} else {
 						z.F.EncMapIntInt16V(x.FMapIntInt16, e)
@@ -14329,8 +12707,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1623 := *x.FptrMapIntInt16
-						yym1624 := z.EncBinary()
-						_ = yym1624
 						if false {
 						} else {
 							z.F.EncMapIntInt16V(yy1623, e)
@@ -14348,8 +12724,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1625 := *x.FptrMapIntInt16
-						yym1626 := z.EncBinary()
-						_ = yym1626
 						if false {
 						} else {
 							z.F.EncMapIntInt16V(yy1625, e)
@@ -14362,8 +12736,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1628 := z.EncBinary()
-					_ = yym1628
 					if false {
 					} else {
 						z.F.EncMapIntInt32V(x.FMapIntInt32, e)
@@ -14376,8 +12748,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1629 := z.EncBinary()
-					_ = yym1629
 					if false {
 					} else {
 						z.F.EncMapIntInt32V(x.FMapIntInt32, e)
@@ -14400,8 +12770,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1631 := *x.FptrMapIntInt32
-						yym1632 := z.EncBinary()
-						_ = yym1632
 						if false {
 						} else {
 							z.F.EncMapIntInt32V(yy1631, e)
@@ -14419,8 +12787,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1633 := *x.FptrMapIntInt32
-						yym1634 := z.EncBinary()
-						_ = yym1634
 						if false {
 						} else {
 							z.F.EncMapIntInt32V(yy1633, e)
@@ -14433,8 +12799,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1636 := z.EncBinary()
-					_ = yym1636
 					if false {
 					} else {
 						z.F.EncMapIntInt64V(x.FMapIntInt64, e)
@@ -14447,8 +12811,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1637 := z.EncBinary()
-					_ = yym1637
 					if false {
 					} else {
 						z.F.EncMapIntInt64V(x.FMapIntInt64, e)
@@ -14471,8 +12833,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1639 := *x.FptrMapIntInt64
-						yym1640 := z.EncBinary()
-						_ = yym1640
 						if false {
 						} else {
 							z.F.EncMapIntInt64V(yy1639, e)
@@ -14490,8 +12850,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1641 := *x.FptrMapIntInt64
-						yym1642 := z.EncBinary()
-						_ = yym1642
 						if false {
 						} else {
 							z.F.EncMapIntInt64V(yy1641, e)
@@ -14504,8 +12862,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1644 := z.EncBinary()
-					_ = yym1644
 					if false {
 					} else {
 						z.F.EncMapIntFloat32V(x.FMapIntFloat32, e)
@@ -14518,8 +12874,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1645 := z.EncBinary()
-					_ = yym1645
 					if false {
 					} else {
 						z.F.EncMapIntFloat32V(x.FMapIntFloat32, e)
@@ -14542,8 +12896,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1647 := *x.FptrMapIntFloat32
-						yym1648 := z.EncBinary()
-						_ = yym1648
 						if false {
 						} else {
 							z.F.EncMapIntFloat32V(yy1647, e)
@@ -14561,8 +12913,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1649 := *x.FptrMapIntFloat32
-						yym1650 := z.EncBinary()
-						_ = yym1650
 						if false {
 						} else {
 							z.F.EncMapIntFloat32V(yy1649, e)
@@ -14575,8 +12925,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1652 := z.EncBinary()
-					_ = yym1652
 					if false {
 					} else {
 						z.F.EncMapIntFloat64V(x.FMapIntFloat64, e)
@@ -14589,8 +12937,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1653 := z.EncBinary()
-					_ = yym1653
 					if false {
 					} else {
 						z.F.EncMapIntFloat64V(x.FMapIntFloat64, e)
@@ -14613,8 +12959,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1655 := *x.FptrMapIntFloat64
-						yym1656 := z.EncBinary()
-						_ = yym1656
 						if false {
 						} else {
 							z.F.EncMapIntFloat64V(yy1655, e)
@@ -14632,8 +12976,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1657 := *x.FptrMapIntFloat64
-						yym1658 := z.EncBinary()
-						_ = yym1658
 						if false {
 						} else {
 							z.F.EncMapIntFloat64V(yy1657, e)
@@ -14646,8 +12988,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntBool == nil {
 					r.EncodeNil()
 				} else {
-					yym1660 := z.EncBinary()
-					_ = yym1660
 					if false {
 					} else {
 						z.F.EncMapIntBoolV(x.FMapIntBool, e)
@@ -14660,8 +13000,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapIntBool == nil {
 					r.EncodeNil()
 				} else {
-					yym1661 := z.EncBinary()
-					_ = yym1661
 					if false {
 					} else {
 						z.F.EncMapIntBoolV(x.FMapIntBool, e)
@@ -14684,8 +13022,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1663 := *x.FptrMapIntBool
-						yym1664 := z.EncBinary()
-						_ = yym1664
 						if false {
 						} else {
 							z.F.EncMapIntBoolV(yy1663, e)
@@ -14703,8 +13039,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1665 := *x.FptrMapIntBool
-						yym1666 := z.EncBinary()
-						_ = yym1666
 						if false {
 						} else {
 							z.F.EncMapIntBoolV(yy1665, e)
@@ -14717,8 +13051,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1668 := z.EncBinary()
-					_ = yym1668
 					if false {
 					} else {
 						z.F.EncMapInt8IntfV(x.FMapInt8Intf, e)
@@ -14731,8 +13063,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1669 := z.EncBinary()
-					_ = yym1669
 					if false {
 					} else {
 						z.F.EncMapInt8IntfV(x.FMapInt8Intf, e)
@@ -14755,8 +13085,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1671 := *x.FptrMapInt8Intf
-						yym1672 := z.EncBinary()
-						_ = yym1672
 						if false {
 						} else {
 							z.F.EncMapInt8IntfV(yy1671, e)
@@ -14774,8 +13102,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1673 := *x.FptrMapInt8Intf
-						yym1674 := z.EncBinary()
-						_ = yym1674
 						if false {
 						} else {
 							z.F.EncMapInt8IntfV(yy1673, e)
@@ -14788,8 +13114,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8String == nil {
 					r.EncodeNil()
 				} else {
-					yym1676 := z.EncBinary()
-					_ = yym1676
 					if false {
 					} else {
 						z.F.EncMapInt8StringV(x.FMapInt8String, e)
@@ -14802,8 +13126,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8String == nil {
 					r.EncodeNil()
 				} else {
-					yym1677 := z.EncBinary()
-					_ = yym1677
 					if false {
 					} else {
 						z.F.EncMapInt8StringV(x.FMapInt8String, e)
@@ -14826,8 +13148,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1679 := *x.FptrMapInt8String
-						yym1680 := z.EncBinary()
-						_ = yym1680
 						if false {
 						} else {
 							z.F.EncMapInt8StringV(yy1679, e)
@@ -14845,8 +13165,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1681 := *x.FptrMapInt8String
-						yym1682 := z.EncBinary()
-						_ = yym1682
 						if false {
 						} else {
 							z.F.EncMapInt8StringV(yy1681, e)
@@ -14859,8 +13177,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1684 := z.EncBinary()
-					_ = yym1684
 					if false {
 					} else {
 						z.F.EncMapInt8UintV(x.FMapInt8Uint, e)
@@ -14873,8 +13189,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1685 := z.EncBinary()
-					_ = yym1685
 					if false {
 					} else {
 						z.F.EncMapInt8UintV(x.FMapInt8Uint, e)
@@ -14897,8 +13211,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1687 := *x.FptrMapInt8Uint
-						yym1688 := z.EncBinary()
-						_ = yym1688
 						if false {
 						} else {
 							z.F.EncMapInt8UintV(yy1687, e)
@@ -14916,8 +13228,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1689 := *x.FptrMapInt8Uint
-						yym1690 := z.EncBinary()
-						_ = yym1690
 						if false {
 						} else {
 							z.F.EncMapInt8UintV(yy1689, e)
@@ -14930,8 +13240,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1692 := z.EncBinary()
-					_ = yym1692
 					if false {
 					} else {
 						z.F.EncMapInt8Uint8V(x.FMapInt8Uint8, e)
@@ -14944,8 +13252,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1693 := z.EncBinary()
-					_ = yym1693
 					if false {
 					} else {
 						z.F.EncMapInt8Uint8V(x.FMapInt8Uint8, e)
@@ -14968,8 +13274,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1695 := *x.FptrMapInt8Uint8
-						yym1696 := z.EncBinary()
-						_ = yym1696
 						if false {
 						} else {
 							z.F.EncMapInt8Uint8V(yy1695, e)
@@ -14987,8 +13291,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1697 := *x.FptrMapInt8Uint8
-						yym1698 := z.EncBinary()
-						_ = yym1698
 						if false {
 						} else {
 							z.F.EncMapInt8Uint8V(yy1697, e)
@@ -15001,8 +13303,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1700 := z.EncBinary()
-					_ = yym1700
 					if false {
 					} else {
 						z.F.EncMapInt8Uint16V(x.FMapInt8Uint16, e)
@@ -15015,8 +13315,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1701 := z.EncBinary()
-					_ = yym1701
 					if false {
 					} else {
 						z.F.EncMapInt8Uint16V(x.FMapInt8Uint16, e)
@@ -15039,8 +13337,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1703 := *x.FptrMapInt8Uint16
-						yym1704 := z.EncBinary()
-						_ = yym1704
 						if false {
 						} else {
 							z.F.EncMapInt8Uint16V(yy1703, e)
@@ -15058,8 +13354,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1705 := *x.FptrMapInt8Uint16
-						yym1706 := z.EncBinary()
-						_ = yym1706
 						if false {
 						} else {
 							z.F.EncMapInt8Uint16V(yy1705, e)
@@ -15072,8 +13366,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1708 := z.EncBinary()
-					_ = yym1708
 					if false {
 					} else {
 						z.F.EncMapInt8Uint32V(x.FMapInt8Uint32, e)
@@ -15086,8 +13378,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1709 := z.EncBinary()
-					_ = yym1709
 					if false {
 					} else {
 						z.F.EncMapInt8Uint32V(x.FMapInt8Uint32, e)
@@ -15110,8 +13400,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1711 := *x.FptrMapInt8Uint32
-						yym1712 := z.EncBinary()
-						_ = yym1712
 						if false {
 						} else {
 							z.F.EncMapInt8Uint32V(yy1711, e)
@@ -15129,8 +13417,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1713 := *x.FptrMapInt8Uint32
-						yym1714 := z.EncBinary()
-						_ = yym1714
 						if false {
 						} else {
 							z.F.EncMapInt8Uint32V(yy1713, e)
@@ -15143,8 +13429,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1716 := z.EncBinary()
-					_ = yym1716
 					if false {
 					} else {
 						z.F.EncMapInt8Uint64V(x.FMapInt8Uint64, e)
@@ -15157,8 +13441,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1717 := z.EncBinary()
-					_ = yym1717
 					if false {
 					} else {
 						z.F.EncMapInt8Uint64V(x.FMapInt8Uint64, e)
@@ -15181,8 +13463,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1719 := *x.FptrMapInt8Uint64
-						yym1720 := z.EncBinary()
-						_ = yym1720
 						if false {
 						} else {
 							z.F.EncMapInt8Uint64V(yy1719, e)
@@ -15200,8 +13480,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1721 := *x.FptrMapInt8Uint64
-						yym1722 := z.EncBinary()
-						_ = yym1722
 						if false {
 						} else {
 							z.F.EncMapInt8Uint64V(yy1721, e)
@@ -15214,8 +13492,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1724 := z.EncBinary()
-					_ = yym1724
 					if false {
 					} else {
 						z.F.EncMapInt8UintptrV(x.FMapInt8Uintptr, e)
@@ -15228,8 +13504,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1725 := z.EncBinary()
-					_ = yym1725
 					if false {
 					} else {
 						z.F.EncMapInt8UintptrV(x.FMapInt8Uintptr, e)
@@ -15252,8 +13526,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1727 := *x.FptrMapInt8Uintptr
-						yym1728 := z.EncBinary()
-						_ = yym1728
 						if false {
 						} else {
 							z.F.EncMapInt8UintptrV(yy1727, e)
@@ -15271,8 +13543,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1729 := *x.FptrMapInt8Uintptr
-						yym1730 := z.EncBinary()
-						_ = yym1730
 						if false {
 						} else {
 							z.F.EncMapInt8UintptrV(yy1729, e)
@@ -15285,8 +13555,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1732 := z.EncBinary()
-					_ = yym1732
 					if false {
 					} else {
 						z.F.EncMapInt8IntV(x.FMapInt8Int, e)
@@ -15299,8 +13567,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1733 := z.EncBinary()
-					_ = yym1733
 					if false {
 					} else {
 						z.F.EncMapInt8IntV(x.FMapInt8Int, e)
@@ -15323,8 +13589,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1735 := *x.FptrMapInt8Int
-						yym1736 := z.EncBinary()
-						_ = yym1736
 						if false {
 						} else {
 							z.F.EncMapInt8IntV(yy1735, e)
@@ -15342,8 +13606,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1737 := *x.FptrMapInt8Int
-						yym1738 := z.EncBinary()
-						_ = yym1738
 						if false {
 						} else {
 							z.F.EncMapInt8IntV(yy1737, e)
@@ -15356,8 +13618,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1740 := z.EncBinary()
-					_ = yym1740
 					if false {
 					} else {
 						z.F.EncMapInt8Int8V(x.FMapInt8Int8, e)
@@ -15370,8 +13630,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1741 := z.EncBinary()
-					_ = yym1741
 					if false {
 					} else {
 						z.F.EncMapInt8Int8V(x.FMapInt8Int8, e)
@@ -15394,8 +13652,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1743 := *x.FptrMapInt8Int8
-						yym1744 := z.EncBinary()
-						_ = yym1744
 						if false {
 						} else {
 							z.F.EncMapInt8Int8V(yy1743, e)
@@ -15413,8 +13669,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1745 := *x.FptrMapInt8Int8
-						yym1746 := z.EncBinary()
-						_ = yym1746
 						if false {
 						} else {
 							z.F.EncMapInt8Int8V(yy1745, e)
@@ -15427,8 +13681,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1748 := z.EncBinary()
-					_ = yym1748
 					if false {
 					} else {
 						z.F.EncMapInt8Int16V(x.FMapInt8Int16, e)
@@ -15441,8 +13693,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1749 := z.EncBinary()
-					_ = yym1749
 					if false {
 					} else {
 						z.F.EncMapInt8Int16V(x.FMapInt8Int16, e)
@@ -15465,8 +13715,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1751 := *x.FptrMapInt8Int16
-						yym1752 := z.EncBinary()
-						_ = yym1752
 						if false {
 						} else {
 							z.F.EncMapInt8Int16V(yy1751, e)
@@ -15484,8 +13732,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1753 := *x.FptrMapInt8Int16
-						yym1754 := z.EncBinary()
-						_ = yym1754
 						if false {
 						} else {
 							z.F.EncMapInt8Int16V(yy1753, e)
@@ -15498,8 +13744,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1756 := z.EncBinary()
-					_ = yym1756
 					if false {
 					} else {
 						z.F.EncMapInt8Int32V(x.FMapInt8Int32, e)
@@ -15512,8 +13756,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1757 := z.EncBinary()
-					_ = yym1757
 					if false {
 					} else {
 						z.F.EncMapInt8Int32V(x.FMapInt8Int32, e)
@@ -15536,8 +13778,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1759 := *x.FptrMapInt8Int32
-						yym1760 := z.EncBinary()
-						_ = yym1760
 						if false {
 						} else {
 							z.F.EncMapInt8Int32V(yy1759, e)
@@ -15555,8 +13795,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1761 := *x.FptrMapInt8Int32
-						yym1762 := z.EncBinary()
-						_ = yym1762
 						if false {
 						} else {
 							z.F.EncMapInt8Int32V(yy1761, e)
@@ -15569,8 +13807,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1764 := z.EncBinary()
-					_ = yym1764
 					if false {
 					} else {
 						z.F.EncMapInt8Int64V(x.FMapInt8Int64, e)
@@ -15583,8 +13819,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1765 := z.EncBinary()
-					_ = yym1765
 					if false {
 					} else {
 						z.F.EncMapInt8Int64V(x.FMapInt8Int64, e)
@@ -15607,8 +13841,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1767 := *x.FptrMapInt8Int64
-						yym1768 := z.EncBinary()
-						_ = yym1768
 						if false {
 						} else {
 							z.F.EncMapInt8Int64V(yy1767, e)
@@ -15626,8 +13858,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1769 := *x.FptrMapInt8Int64
-						yym1770 := z.EncBinary()
-						_ = yym1770
 						if false {
 						} else {
 							z.F.EncMapInt8Int64V(yy1769, e)
@@ -15640,8 +13870,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1772 := z.EncBinary()
-					_ = yym1772
 					if false {
 					} else {
 						z.F.EncMapInt8Float32V(x.FMapInt8Float32, e)
@@ -15654,8 +13882,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1773 := z.EncBinary()
-					_ = yym1773
 					if false {
 					} else {
 						z.F.EncMapInt8Float32V(x.FMapInt8Float32, e)
@@ -15678,8 +13904,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1775 := *x.FptrMapInt8Float32
-						yym1776 := z.EncBinary()
-						_ = yym1776
 						if false {
 						} else {
 							z.F.EncMapInt8Float32V(yy1775, e)
@@ -15697,8 +13921,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1777 := *x.FptrMapInt8Float32
-						yym1778 := z.EncBinary()
-						_ = yym1778
 						if false {
 						} else {
 							z.F.EncMapInt8Float32V(yy1777, e)
@@ -15711,8 +13933,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1780 := z.EncBinary()
-					_ = yym1780
 					if false {
 					} else {
 						z.F.EncMapInt8Float64V(x.FMapInt8Float64, e)
@@ -15725,8 +13945,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1781 := z.EncBinary()
-					_ = yym1781
 					if false {
 					} else {
 						z.F.EncMapInt8Float64V(x.FMapInt8Float64, e)
@@ -15749,8 +13967,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1783 := *x.FptrMapInt8Float64
-						yym1784 := z.EncBinary()
-						_ = yym1784
 						if false {
 						} else {
 							z.F.EncMapInt8Float64V(yy1783, e)
@@ -15768,8 +13984,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1785 := *x.FptrMapInt8Float64
-						yym1786 := z.EncBinary()
-						_ = yym1786
 						if false {
 						} else {
 							z.F.EncMapInt8Float64V(yy1785, e)
@@ -15782,8 +13996,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1788 := z.EncBinary()
-					_ = yym1788
 					if false {
 					} else {
 						z.F.EncMapInt8BoolV(x.FMapInt8Bool, e)
@@ -15796,8 +14008,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt8Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1789 := z.EncBinary()
-					_ = yym1789
 					if false {
 					} else {
 						z.F.EncMapInt8BoolV(x.FMapInt8Bool, e)
@@ -15820,8 +14030,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1791 := *x.FptrMapInt8Bool
-						yym1792 := z.EncBinary()
-						_ = yym1792
 						if false {
 						} else {
 							z.F.EncMapInt8BoolV(yy1791, e)
@@ -15839,8 +14047,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1793 := *x.FptrMapInt8Bool
-						yym1794 := z.EncBinary()
-						_ = yym1794
 						if false {
 						} else {
 							z.F.EncMapInt8BoolV(yy1793, e)
@@ -15853,8 +14059,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1796 := z.EncBinary()
-					_ = yym1796
 					if false {
 					} else {
 						z.F.EncMapInt16IntfV(x.FMapInt16Intf, e)
@@ -15867,8 +14071,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1797 := z.EncBinary()
-					_ = yym1797
 					if false {
 					} else {
 						z.F.EncMapInt16IntfV(x.FMapInt16Intf, e)
@@ -15891,8 +14093,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1799 := *x.FptrMapInt16Intf
-						yym1800 := z.EncBinary()
-						_ = yym1800
 						if false {
 						} else {
 							z.F.EncMapInt16IntfV(yy1799, e)
@@ -15910,8 +14110,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1801 := *x.FptrMapInt16Intf
-						yym1802 := z.EncBinary()
-						_ = yym1802
 						if false {
 						} else {
 							z.F.EncMapInt16IntfV(yy1801, e)
@@ -15924,8 +14122,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16String == nil {
 					r.EncodeNil()
 				} else {
-					yym1804 := z.EncBinary()
-					_ = yym1804
 					if false {
 					} else {
 						z.F.EncMapInt16StringV(x.FMapInt16String, e)
@@ -15938,8 +14134,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16String == nil {
 					r.EncodeNil()
 				} else {
-					yym1805 := z.EncBinary()
-					_ = yym1805
 					if false {
 					} else {
 						z.F.EncMapInt16StringV(x.FMapInt16String, e)
@@ -15962,8 +14156,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1807 := *x.FptrMapInt16String
-						yym1808 := z.EncBinary()
-						_ = yym1808
 						if false {
 						} else {
 							z.F.EncMapInt16StringV(yy1807, e)
@@ -15981,8 +14173,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1809 := *x.FptrMapInt16String
-						yym1810 := z.EncBinary()
-						_ = yym1810
 						if false {
 						} else {
 							z.F.EncMapInt16StringV(yy1809, e)
@@ -15995,8 +14185,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1812 := z.EncBinary()
-					_ = yym1812
 					if false {
 					} else {
 						z.F.EncMapInt16UintV(x.FMapInt16Uint, e)
@@ -16009,8 +14197,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1813 := z.EncBinary()
-					_ = yym1813
 					if false {
 					} else {
 						z.F.EncMapInt16UintV(x.FMapInt16Uint, e)
@@ -16033,8 +14219,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1815 := *x.FptrMapInt16Uint
-						yym1816 := z.EncBinary()
-						_ = yym1816
 						if false {
 						} else {
 							z.F.EncMapInt16UintV(yy1815, e)
@@ -16052,8 +14236,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1817 := *x.FptrMapInt16Uint
-						yym1818 := z.EncBinary()
-						_ = yym1818
 						if false {
 						} else {
 							z.F.EncMapInt16UintV(yy1817, e)
@@ -16066,8 +14248,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1820 := z.EncBinary()
-					_ = yym1820
 					if false {
 					} else {
 						z.F.EncMapInt16Uint8V(x.FMapInt16Uint8, e)
@@ -16080,8 +14260,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1821 := z.EncBinary()
-					_ = yym1821
 					if false {
 					} else {
 						z.F.EncMapInt16Uint8V(x.FMapInt16Uint8, e)
@@ -16104,8 +14282,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1823 := *x.FptrMapInt16Uint8
-						yym1824 := z.EncBinary()
-						_ = yym1824
 						if false {
 						} else {
 							z.F.EncMapInt16Uint8V(yy1823, e)
@@ -16123,8 +14299,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1825 := *x.FptrMapInt16Uint8
-						yym1826 := z.EncBinary()
-						_ = yym1826
 						if false {
 						} else {
 							z.F.EncMapInt16Uint8V(yy1825, e)
@@ -16137,8 +14311,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1828 := z.EncBinary()
-					_ = yym1828
 					if false {
 					} else {
 						z.F.EncMapInt16Uint16V(x.FMapInt16Uint16, e)
@@ -16151,8 +14323,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1829 := z.EncBinary()
-					_ = yym1829
 					if false {
 					} else {
 						z.F.EncMapInt16Uint16V(x.FMapInt16Uint16, e)
@@ -16175,8 +14345,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1831 := *x.FptrMapInt16Uint16
-						yym1832 := z.EncBinary()
-						_ = yym1832
 						if false {
 						} else {
 							z.F.EncMapInt16Uint16V(yy1831, e)
@@ -16194,8 +14362,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1833 := *x.FptrMapInt16Uint16
-						yym1834 := z.EncBinary()
-						_ = yym1834
 						if false {
 						} else {
 							z.F.EncMapInt16Uint16V(yy1833, e)
@@ -16208,8 +14374,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1836 := z.EncBinary()
-					_ = yym1836
 					if false {
 					} else {
 						z.F.EncMapInt16Uint32V(x.FMapInt16Uint32, e)
@@ -16222,8 +14386,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1837 := z.EncBinary()
-					_ = yym1837
 					if false {
 					} else {
 						z.F.EncMapInt16Uint32V(x.FMapInt16Uint32, e)
@@ -16246,8 +14408,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1839 := *x.FptrMapInt16Uint32
-						yym1840 := z.EncBinary()
-						_ = yym1840
 						if false {
 						} else {
 							z.F.EncMapInt16Uint32V(yy1839, e)
@@ -16265,8 +14425,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1841 := *x.FptrMapInt16Uint32
-						yym1842 := z.EncBinary()
-						_ = yym1842
 						if false {
 						} else {
 							z.F.EncMapInt16Uint32V(yy1841, e)
@@ -16279,8 +14437,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1844 := z.EncBinary()
-					_ = yym1844
 					if false {
 					} else {
 						z.F.EncMapInt16Uint64V(x.FMapInt16Uint64, e)
@@ -16293,8 +14449,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1845 := z.EncBinary()
-					_ = yym1845
 					if false {
 					} else {
 						z.F.EncMapInt16Uint64V(x.FMapInt16Uint64, e)
@@ -16317,8 +14471,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1847 := *x.FptrMapInt16Uint64
-						yym1848 := z.EncBinary()
-						_ = yym1848
 						if false {
 						} else {
 							z.F.EncMapInt16Uint64V(yy1847, e)
@@ -16336,8 +14488,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1849 := *x.FptrMapInt16Uint64
-						yym1850 := z.EncBinary()
-						_ = yym1850
 						if false {
 						} else {
 							z.F.EncMapInt16Uint64V(yy1849, e)
@@ -16350,8 +14500,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1852 := z.EncBinary()
-					_ = yym1852
 					if false {
 					} else {
 						z.F.EncMapInt16UintptrV(x.FMapInt16Uintptr, e)
@@ -16364,8 +14512,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1853 := z.EncBinary()
-					_ = yym1853
 					if false {
 					} else {
 						z.F.EncMapInt16UintptrV(x.FMapInt16Uintptr, e)
@@ -16388,8 +14534,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1855 := *x.FptrMapInt16Uintptr
-						yym1856 := z.EncBinary()
-						_ = yym1856
 						if false {
 						} else {
 							z.F.EncMapInt16UintptrV(yy1855, e)
@@ -16407,8 +14551,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1857 := *x.FptrMapInt16Uintptr
-						yym1858 := z.EncBinary()
-						_ = yym1858
 						if false {
 						} else {
 							z.F.EncMapInt16UintptrV(yy1857, e)
@@ -16421,8 +14563,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1860 := z.EncBinary()
-					_ = yym1860
 					if false {
 					} else {
 						z.F.EncMapInt16IntV(x.FMapInt16Int, e)
@@ -16435,8 +14575,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1861 := z.EncBinary()
-					_ = yym1861
 					if false {
 					} else {
 						z.F.EncMapInt16IntV(x.FMapInt16Int, e)
@@ -16459,8 +14597,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1863 := *x.FptrMapInt16Int
-						yym1864 := z.EncBinary()
-						_ = yym1864
 						if false {
 						} else {
 							z.F.EncMapInt16IntV(yy1863, e)
@@ -16478,8 +14614,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1865 := *x.FptrMapInt16Int
-						yym1866 := z.EncBinary()
-						_ = yym1866
 						if false {
 						} else {
 							z.F.EncMapInt16IntV(yy1865, e)
@@ -16492,8 +14626,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1868 := z.EncBinary()
-					_ = yym1868
 					if false {
 					} else {
 						z.F.EncMapInt16Int8V(x.FMapInt16Int8, e)
@@ -16506,8 +14638,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1869 := z.EncBinary()
-					_ = yym1869
 					if false {
 					} else {
 						z.F.EncMapInt16Int8V(x.FMapInt16Int8, e)
@@ -16530,8 +14660,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1871 := *x.FptrMapInt16Int8
-						yym1872 := z.EncBinary()
-						_ = yym1872
 						if false {
 						} else {
 							z.F.EncMapInt16Int8V(yy1871, e)
@@ -16549,8 +14677,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1873 := *x.FptrMapInt16Int8
-						yym1874 := z.EncBinary()
-						_ = yym1874
 						if false {
 						} else {
 							z.F.EncMapInt16Int8V(yy1873, e)
@@ -16563,8 +14689,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1876 := z.EncBinary()
-					_ = yym1876
 					if false {
 					} else {
 						z.F.EncMapInt16Int16V(x.FMapInt16Int16, e)
@@ -16577,8 +14701,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1877 := z.EncBinary()
-					_ = yym1877
 					if false {
 					} else {
 						z.F.EncMapInt16Int16V(x.FMapInt16Int16, e)
@@ -16601,8 +14723,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1879 := *x.FptrMapInt16Int16
-						yym1880 := z.EncBinary()
-						_ = yym1880
 						if false {
 						} else {
 							z.F.EncMapInt16Int16V(yy1879, e)
@@ -16620,8 +14740,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1881 := *x.FptrMapInt16Int16
-						yym1882 := z.EncBinary()
-						_ = yym1882
 						if false {
 						} else {
 							z.F.EncMapInt16Int16V(yy1881, e)
@@ -16634,8 +14752,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1884 := z.EncBinary()
-					_ = yym1884
 					if false {
 					} else {
 						z.F.EncMapInt16Int32V(x.FMapInt16Int32, e)
@@ -16648,8 +14764,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1885 := z.EncBinary()
-					_ = yym1885
 					if false {
 					} else {
 						z.F.EncMapInt16Int32V(x.FMapInt16Int32, e)
@@ -16672,8 +14786,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1887 := *x.FptrMapInt16Int32
-						yym1888 := z.EncBinary()
-						_ = yym1888
 						if false {
 						} else {
 							z.F.EncMapInt16Int32V(yy1887, e)
@@ -16691,8 +14803,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1889 := *x.FptrMapInt16Int32
-						yym1890 := z.EncBinary()
-						_ = yym1890
 						if false {
 						} else {
 							z.F.EncMapInt16Int32V(yy1889, e)
@@ -16705,8 +14815,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1892 := z.EncBinary()
-					_ = yym1892
 					if false {
 					} else {
 						z.F.EncMapInt16Int64V(x.FMapInt16Int64, e)
@@ -16719,8 +14827,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1893 := z.EncBinary()
-					_ = yym1893
 					if false {
 					} else {
 						z.F.EncMapInt16Int64V(x.FMapInt16Int64, e)
@@ -16743,8 +14849,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1895 := *x.FptrMapInt16Int64
-						yym1896 := z.EncBinary()
-						_ = yym1896
 						if false {
 						} else {
 							z.F.EncMapInt16Int64V(yy1895, e)
@@ -16762,8 +14866,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1897 := *x.FptrMapInt16Int64
-						yym1898 := z.EncBinary()
-						_ = yym1898
 						if false {
 						} else {
 							z.F.EncMapInt16Int64V(yy1897, e)
@@ -16776,8 +14878,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1900 := z.EncBinary()
-					_ = yym1900
 					if false {
 					} else {
 						z.F.EncMapInt16Float32V(x.FMapInt16Float32, e)
@@ -16790,8 +14890,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1901 := z.EncBinary()
-					_ = yym1901
 					if false {
 					} else {
 						z.F.EncMapInt16Float32V(x.FMapInt16Float32, e)
@@ -16814,8 +14912,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1903 := *x.FptrMapInt16Float32
-						yym1904 := z.EncBinary()
-						_ = yym1904
 						if false {
 						} else {
 							z.F.EncMapInt16Float32V(yy1903, e)
@@ -16833,8 +14929,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1905 := *x.FptrMapInt16Float32
-						yym1906 := z.EncBinary()
-						_ = yym1906
 						if false {
 						} else {
 							z.F.EncMapInt16Float32V(yy1905, e)
@@ -16847,8 +14941,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1908 := z.EncBinary()
-					_ = yym1908
 					if false {
 					} else {
 						z.F.EncMapInt16Float64V(x.FMapInt16Float64, e)
@@ -16861,8 +14953,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1909 := z.EncBinary()
-					_ = yym1909
 					if false {
 					} else {
 						z.F.EncMapInt16Float64V(x.FMapInt16Float64, e)
@@ -16885,8 +14975,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1911 := *x.FptrMapInt16Float64
-						yym1912 := z.EncBinary()
-						_ = yym1912
 						if false {
 						} else {
 							z.F.EncMapInt16Float64V(yy1911, e)
@@ -16904,8 +14992,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1913 := *x.FptrMapInt16Float64
-						yym1914 := z.EncBinary()
-						_ = yym1914
 						if false {
 						} else {
 							z.F.EncMapInt16Float64V(yy1913, e)
@@ -16918,8 +15004,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1916 := z.EncBinary()
-					_ = yym1916
 					if false {
 					} else {
 						z.F.EncMapInt16BoolV(x.FMapInt16Bool, e)
@@ -16932,8 +15016,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt16Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym1917 := z.EncBinary()
-					_ = yym1917
 					if false {
 					} else {
 						z.F.EncMapInt16BoolV(x.FMapInt16Bool, e)
@@ -16956,8 +15038,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1919 := *x.FptrMapInt16Bool
-						yym1920 := z.EncBinary()
-						_ = yym1920
 						if false {
 						} else {
 							z.F.EncMapInt16BoolV(yy1919, e)
@@ -16975,8 +15055,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1921 := *x.FptrMapInt16Bool
-						yym1922 := z.EncBinary()
-						_ = yym1922
 						if false {
 						} else {
 							z.F.EncMapInt16BoolV(yy1921, e)
@@ -16989,8 +15067,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1924 := z.EncBinary()
-					_ = yym1924
 					if false {
 					} else {
 						z.F.EncMapInt32IntfV(x.FMapInt32Intf, e)
@@ -17003,8 +15079,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym1925 := z.EncBinary()
-					_ = yym1925
 					if false {
 					} else {
 						z.F.EncMapInt32IntfV(x.FMapInt32Intf, e)
@@ -17027,8 +15101,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1927 := *x.FptrMapInt32Intf
-						yym1928 := z.EncBinary()
-						_ = yym1928
 						if false {
 						} else {
 							z.F.EncMapInt32IntfV(yy1927, e)
@@ -17046,8 +15118,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1929 := *x.FptrMapInt32Intf
-						yym1930 := z.EncBinary()
-						_ = yym1930
 						if false {
 						} else {
 							z.F.EncMapInt32IntfV(yy1929, e)
@@ -17060,8 +15130,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32String == nil {
 					r.EncodeNil()
 				} else {
-					yym1932 := z.EncBinary()
-					_ = yym1932
 					if false {
 					} else {
 						z.F.EncMapInt32StringV(x.FMapInt32String, e)
@@ -17074,8 +15142,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32String == nil {
 					r.EncodeNil()
 				} else {
-					yym1933 := z.EncBinary()
-					_ = yym1933
 					if false {
 					} else {
 						z.F.EncMapInt32StringV(x.FMapInt32String, e)
@@ -17098,8 +15164,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1935 := *x.FptrMapInt32String
-						yym1936 := z.EncBinary()
-						_ = yym1936
 						if false {
 						} else {
 							z.F.EncMapInt32StringV(yy1935, e)
@@ -17117,8 +15181,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1937 := *x.FptrMapInt32String
-						yym1938 := z.EncBinary()
-						_ = yym1938
 						if false {
 						} else {
 							z.F.EncMapInt32StringV(yy1937, e)
@@ -17131,8 +15193,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1940 := z.EncBinary()
-					_ = yym1940
 					if false {
 					} else {
 						z.F.EncMapInt32UintV(x.FMapInt32Uint, e)
@@ -17145,8 +15205,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym1941 := z.EncBinary()
-					_ = yym1941
 					if false {
 					} else {
 						z.F.EncMapInt32UintV(x.FMapInt32Uint, e)
@@ -17169,8 +15227,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1943 := *x.FptrMapInt32Uint
-						yym1944 := z.EncBinary()
-						_ = yym1944
 						if false {
 						} else {
 							z.F.EncMapInt32UintV(yy1943, e)
@@ -17188,8 +15244,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1945 := *x.FptrMapInt32Uint
-						yym1946 := z.EncBinary()
-						_ = yym1946
 						if false {
 						} else {
 							z.F.EncMapInt32UintV(yy1945, e)
@@ -17202,8 +15256,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1948 := z.EncBinary()
-					_ = yym1948
 					if false {
 					} else {
 						z.F.EncMapInt32Uint8V(x.FMapInt32Uint8, e)
@@ -17216,8 +15268,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1949 := z.EncBinary()
-					_ = yym1949
 					if false {
 					} else {
 						z.F.EncMapInt32Uint8V(x.FMapInt32Uint8, e)
@@ -17240,8 +15290,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1951 := *x.FptrMapInt32Uint8
-						yym1952 := z.EncBinary()
-						_ = yym1952
 						if false {
 						} else {
 							z.F.EncMapInt32Uint8V(yy1951, e)
@@ -17259,8 +15307,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1953 := *x.FptrMapInt32Uint8
-						yym1954 := z.EncBinary()
-						_ = yym1954
 						if false {
 						} else {
 							z.F.EncMapInt32Uint8V(yy1953, e)
@@ -17273,8 +15319,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1956 := z.EncBinary()
-					_ = yym1956
 					if false {
 					} else {
 						z.F.EncMapInt32Uint16V(x.FMapInt32Uint16, e)
@@ -17287,8 +15331,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym1957 := z.EncBinary()
-					_ = yym1957
 					if false {
 					} else {
 						z.F.EncMapInt32Uint16V(x.FMapInt32Uint16, e)
@@ -17311,8 +15353,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1959 := *x.FptrMapInt32Uint16
-						yym1960 := z.EncBinary()
-						_ = yym1960
 						if false {
 						} else {
 							z.F.EncMapInt32Uint16V(yy1959, e)
@@ -17330,8 +15370,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1961 := *x.FptrMapInt32Uint16
-						yym1962 := z.EncBinary()
-						_ = yym1962
 						if false {
 						} else {
 							z.F.EncMapInt32Uint16V(yy1961, e)
@@ -17344,8 +15382,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1964 := z.EncBinary()
-					_ = yym1964
 					if false {
 					} else {
 						z.F.EncMapInt32Uint32V(x.FMapInt32Uint32, e)
@@ -17358,8 +15394,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym1965 := z.EncBinary()
-					_ = yym1965
 					if false {
 					} else {
 						z.F.EncMapInt32Uint32V(x.FMapInt32Uint32, e)
@@ -17382,8 +15416,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1967 := *x.FptrMapInt32Uint32
-						yym1968 := z.EncBinary()
-						_ = yym1968
 						if false {
 						} else {
 							z.F.EncMapInt32Uint32V(yy1967, e)
@@ -17401,8 +15433,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1969 := *x.FptrMapInt32Uint32
-						yym1970 := z.EncBinary()
-						_ = yym1970
 						if false {
 						} else {
 							z.F.EncMapInt32Uint32V(yy1969, e)
@@ -17415,8 +15445,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1972 := z.EncBinary()
-					_ = yym1972
 					if false {
 					} else {
 						z.F.EncMapInt32Uint64V(x.FMapInt32Uint64, e)
@@ -17429,8 +15457,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym1973 := z.EncBinary()
-					_ = yym1973
 					if false {
 					} else {
 						z.F.EncMapInt32Uint64V(x.FMapInt32Uint64, e)
@@ -17453,8 +15479,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1975 := *x.FptrMapInt32Uint64
-						yym1976 := z.EncBinary()
-						_ = yym1976
 						if false {
 						} else {
 							z.F.EncMapInt32Uint64V(yy1975, e)
@@ -17472,8 +15496,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1977 := *x.FptrMapInt32Uint64
-						yym1978 := z.EncBinary()
-						_ = yym1978
 						if false {
 						} else {
 							z.F.EncMapInt32Uint64V(yy1977, e)
@@ -17486,8 +15508,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1980 := z.EncBinary()
-					_ = yym1980
 					if false {
 					} else {
 						z.F.EncMapInt32UintptrV(x.FMapInt32Uintptr, e)
@@ -17500,8 +15520,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym1981 := z.EncBinary()
-					_ = yym1981
 					if false {
 					} else {
 						z.F.EncMapInt32UintptrV(x.FMapInt32Uintptr, e)
@@ -17524,8 +15542,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1983 := *x.FptrMapInt32Uintptr
-						yym1984 := z.EncBinary()
-						_ = yym1984
 						if false {
 						} else {
 							z.F.EncMapInt32UintptrV(yy1983, e)
@@ -17543,8 +15559,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1985 := *x.FptrMapInt32Uintptr
-						yym1986 := z.EncBinary()
-						_ = yym1986
 						if false {
 						} else {
 							z.F.EncMapInt32UintptrV(yy1985, e)
@@ -17557,8 +15571,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1988 := z.EncBinary()
-					_ = yym1988
 					if false {
 					} else {
 						z.F.EncMapInt32IntV(x.FMapInt32Int, e)
@@ -17571,8 +15583,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Int == nil {
 					r.EncodeNil()
 				} else {
-					yym1989 := z.EncBinary()
-					_ = yym1989
 					if false {
 					} else {
 						z.F.EncMapInt32IntV(x.FMapInt32Int, e)
@@ -17595,8 +15605,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1991 := *x.FptrMapInt32Int
-						yym1992 := z.EncBinary()
-						_ = yym1992
 						if false {
 						} else {
 							z.F.EncMapInt32IntV(yy1991, e)
@@ -17614,8 +15622,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1993 := *x.FptrMapInt32Int
-						yym1994 := z.EncBinary()
-						_ = yym1994
 						if false {
 						} else {
 							z.F.EncMapInt32IntV(yy1993, e)
@@ -17628,8 +15634,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1996 := z.EncBinary()
-					_ = yym1996
 					if false {
 					} else {
 						z.F.EncMapInt32Int8V(x.FMapInt32Int8, e)
@@ -17642,8 +15646,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym1997 := z.EncBinary()
-					_ = yym1997
 					if false {
 					} else {
 						z.F.EncMapInt32Int8V(x.FMapInt32Int8, e)
@@ -17666,8 +15668,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy1999 := *x.FptrMapInt32Int8
-						yym2000 := z.EncBinary()
-						_ = yym2000
 						if false {
 						} else {
 							z.F.EncMapInt32Int8V(yy1999, e)
@@ -17685,8 +15685,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2001 := *x.FptrMapInt32Int8
-						yym2002 := z.EncBinary()
-						_ = yym2002
 						if false {
 						} else {
 							z.F.EncMapInt32Int8V(yy2001, e)
@@ -17699,8 +15697,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym2004 := z.EncBinary()
-					_ = yym2004
 					if false {
 					} else {
 						z.F.EncMapInt32Int16V(x.FMapInt32Int16, e)
@@ -17713,8 +15709,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym2005 := z.EncBinary()
-					_ = yym2005
 					if false {
 					} else {
 						z.F.EncMapInt32Int16V(x.FMapInt32Int16, e)
@@ -17737,8 +15731,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2007 := *x.FptrMapInt32Int16
-						yym2008 := z.EncBinary()
-						_ = yym2008
 						if false {
 						} else {
 							z.F.EncMapInt32Int16V(yy2007, e)
@@ -17756,8 +15748,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2009 := *x.FptrMapInt32Int16
-						yym2010 := z.EncBinary()
-						_ = yym2010
 						if false {
 						} else {
 							z.F.EncMapInt32Int16V(yy2009, e)
@@ -17770,8 +15760,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2012 := z.EncBinary()
-					_ = yym2012
 					if false {
 					} else {
 						z.F.EncMapInt32Int32V(x.FMapInt32Int32, e)
@@ -17784,8 +15772,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2013 := z.EncBinary()
-					_ = yym2013
 					if false {
 					} else {
 						z.F.EncMapInt32Int32V(x.FMapInt32Int32, e)
@@ -17808,8 +15794,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2015 := *x.FptrMapInt32Int32
-						yym2016 := z.EncBinary()
-						_ = yym2016
 						if false {
 						} else {
 							z.F.EncMapInt32Int32V(yy2015, e)
@@ -17827,8 +15811,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2017 := *x.FptrMapInt32Int32
-						yym2018 := z.EncBinary()
-						_ = yym2018
 						if false {
 						} else {
 							z.F.EncMapInt32Int32V(yy2017, e)
@@ -17841,8 +15823,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2020 := z.EncBinary()
-					_ = yym2020
 					if false {
 					} else {
 						z.F.EncMapInt32Int64V(x.FMapInt32Int64, e)
@@ -17855,8 +15835,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2021 := z.EncBinary()
-					_ = yym2021
 					if false {
 					} else {
 						z.F.EncMapInt32Int64V(x.FMapInt32Int64, e)
@@ -17879,8 +15857,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2023 := *x.FptrMapInt32Int64
-						yym2024 := z.EncBinary()
-						_ = yym2024
 						if false {
 						} else {
 							z.F.EncMapInt32Int64V(yy2023, e)
@@ -17898,8 +15874,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2025 := *x.FptrMapInt32Int64
-						yym2026 := z.EncBinary()
-						_ = yym2026
 						if false {
 						} else {
 							z.F.EncMapInt32Int64V(yy2025, e)
@@ -17912,8 +15886,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2028 := z.EncBinary()
-					_ = yym2028
 					if false {
 					} else {
 						z.F.EncMapInt32Float32V(x.FMapInt32Float32, e)
@@ -17926,8 +15898,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2029 := z.EncBinary()
-					_ = yym2029
 					if false {
 					} else {
 						z.F.EncMapInt32Float32V(x.FMapInt32Float32, e)
@@ -17950,8 +15920,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2031 := *x.FptrMapInt32Float32
-						yym2032 := z.EncBinary()
-						_ = yym2032
 						if false {
 						} else {
 							z.F.EncMapInt32Float32V(yy2031, e)
@@ -17969,8 +15937,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2033 := *x.FptrMapInt32Float32
-						yym2034 := z.EncBinary()
-						_ = yym2034
 						if false {
 						} else {
 							z.F.EncMapInt32Float32V(yy2033, e)
@@ -17983,8 +15949,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2036 := z.EncBinary()
-					_ = yym2036
 					if false {
 					} else {
 						z.F.EncMapInt32Float64V(x.FMapInt32Float64, e)
@@ -17997,8 +15961,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2037 := z.EncBinary()
-					_ = yym2037
 					if false {
 					} else {
 						z.F.EncMapInt32Float64V(x.FMapInt32Float64, e)
@@ -18021,8 +15983,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2039 := *x.FptrMapInt32Float64
-						yym2040 := z.EncBinary()
-						_ = yym2040
 						if false {
 						} else {
 							z.F.EncMapInt32Float64V(yy2039, e)
@@ -18040,8 +16000,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2041 := *x.FptrMapInt32Float64
-						yym2042 := z.EncBinary()
-						_ = yym2042
 						if false {
 						} else {
 							z.F.EncMapInt32Float64V(yy2041, e)
@@ -18054,8 +16012,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym2044 := z.EncBinary()
-					_ = yym2044
 					if false {
 					} else {
 						z.F.EncMapInt32BoolV(x.FMapInt32Bool, e)
@@ -18068,8 +16024,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt32Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym2045 := z.EncBinary()
-					_ = yym2045
 					if false {
 					} else {
 						z.F.EncMapInt32BoolV(x.FMapInt32Bool, e)
@@ -18092,8 +16046,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2047 := *x.FptrMapInt32Bool
-						yym2048 := z.EncBinary()
-						_ = yym2048
 						if false {
 						} else {
 							z.F.EncMapInt32BoolV(yy2047, e)
@@ -18111,8 +16063,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2049 := *x.FptrMapInt32Bool
-						yym2050 := z.EncBinary()
-						_ = yym2050
 						if false {
 						} else {
 							z.F.EncMapInt32BoolV(yy2049, e)
@@ -18125,8 +16075,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym2052 := z.EncBinary()
-					_ = yym2052
 					if false {
 					} else {
 						z.F.EncMapInt64IntfV(x.FMapInt64Intf, e)
@@ -18139,8 +16087,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Intf == nil {
 					r.EncodeNil()
 				} else {
-					yym2053 := z.EncBinary()
-					_ = yym2053
 					if false {
 					} else {
 						z.F.EncMapInt64IntfV(x.FMapInt64Intf, e)
@@ -18163,8 +16109,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2055 := *x.FptrMapInt64Intf
-						yym2056 := z.EncBinary()
-						_ = yym2056
 						if false {
 						} else {
 							z.F.EncMapInt64IntfV(yy2055, e)
@@ -18182,8 +16126,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2057 := *x.FptrMapInt64Intf
-						yym2058 := z.EncBinary()
-						_ = yym2058
 						if false {
 						} else {
 							z.F.EncMapInt64IntfV(yy2057, e)
@@ -18196,8 +16138,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64String == nil {
 					r.EncodeNil()
 				} else {
-					yym2060 := z.EncBinary()
-					_ = yym2060
 					if false {
 					} else {
 						z.F.EncMapInt64StringV(x.FMapInt64String, e)
@@ -18210,8 +16150,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64String == nil {
 					r.EncodeNil()
 				} else {
-					yym2061 := z.EncBinary()
-					_ = yym2061
 					if false {
 					} else {
 						z.F.EncMapInt64StringV(x.FMapInt64String, e)
@@ -18234,8 +16172,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2063 := *x.FptrMapInt64String
-						yym2064 := z.EncBinary()
-						_ = yym2064
 						if false {
 						} else {
 							z.F.EncMapInt64StringV(yy2063, e)
@@ -18253,8 +16189,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2065 := *x.FptrMapInt64String
-						yym2066 := z.EncBinary()
-						_ = yym2066
 						if false {
 						} else {
 							z.F.EncMapInt64StringV(yy2065, e)
@@ -18267,8 +16201,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym2068 := z.EncBinary()
-					_ = yym2068
 					if false {
 					} else {
 						z.F.EncMapInt64UintV(x.FMapInt64Uint, e)
@@ -18281,8 +16213,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uint == nil {
 					r.EncodeNil()
 				} else {
-					yym2069 := z.EncBinary()
-					_ = yym2069
 					if false {
 					} else {
 						z.F.EncMapInt64UintV(x.FMapInt64Uint, e)
@@ -18305,8 +16235,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2071 := *x.FptrMapInt64Uint
-						yym2072 := z.EncBinary()
-						_ = yym2072
 						if false {
 						} else {
 							z.F.EncMapInt64UintV(yy2071, e)
@@ -18324,8 +16252,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2073 := *x.FptrMapInt64Uint
-						yym2074 := z.EncBinary()
-						_ = yym2074
 						if false {
 						} else {
 							z.F.EncMapInt64UintV(yy2073, e)
@@ -18338,8 +16264,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym2076 := z.EncBinary()
-					_ = yym2076
 					if false {
 					} else {
 						z.F.EncMapInt64Uint8V(x.FMapInt64Uint8, e)
@@ -18352,8 +16276,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym2077 := z.EncBinary()
-					_ = yym2077
 					if false {
 					} else {
 						z.F.EncMapInt64Uint8V(x.FMapInt64Uint8, e)
@@ -18376,8 +16298,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2079 := *x.FptrMapInt64Uint8
-						yym2080 := z.EncBinary()
-						_ = yym2080
 						if false {
 						} else {
 							z.F.EncMapInt64Uint8V(yy2079, e)
@@ -18395,8 +16315,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2081 := *x.FptrMapInt64Uint8
-						yym2082 := z.EncBinary()
-						_ = yym2082
 						if false {
 						} else {
 							z.F.EncMapInt64Uint8V(yy2081, e)
@@ -18409,8 +16327,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym2084 := z.EncBinary()
-					_ = yym2084
 					if false {
 					} else {
 						z.F.EncMapInt64Uint16V(x.FMapInt64Uint16, e)
@@ -18423,8 +16339,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym2085 := z.EncBinary()
-					_ = yym2085
 					if false {
 					} else {
 						z.F.EncMapInt64Uint16V(x.FMapInt64Uint16, e)
@@ -18447,8 +16361,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2087 := *x.FptrMapInt64Uint16
-						yym2088 := z.EncBinary()
-						_ = yym2088
 						if false {
 						} else {
 							z.F.EncMapInt64Uint16V(yy2087, e)
@@ -18466,8 +16378,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2089 := *x.FptrMapInt64Uint16
-						yym2090 := z.EncBinary()
-						_ = yym2090
 						if false {
 						} else {
 							z.F.EncMapInt64Uint16V(yy2089, e)
@@ -18480,8 +16390,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2092 := z.EncBinary()
-					_ = yym2092
 					if false {
 					} else {
 						z.F.EncMapInt64Uint32V(x.FMapInt64Uint32, e)
@@ -18494,8 +16402,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2093 := z.EncBinary()
-					_ = yym2093
 					if false {
 					} else {
 						z.F.EncMapInt64Uint32V(x.FMapInt64Uint32, e)
@@ -18518,8 +16424,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2095 := *x.FptrMapInt64Uint32
-						yym2096 := z.EncBinary()
-						_ = yym2096
 						if false {
 						} else {
 							z.F.EncMapInt64Uint32V(yy2095, e)
@@ -18537,8 +16441,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2097 := *x.FptrMapInt64Uint32
-						yym2098 := z.EncBinary()
-						_ = yym2098
 						if false {
 						} else {
 							z.F.EncMapInt64Uint32V(yy2097, e)
@@ -18551,8 +16453,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2100 := z.EncBinary()
-					_ = yym2100
 					if false {
 					} else {
 						z.F.EncMapInt64Uint64V(x.FMapInt64Uint64, e)
@@ -18565,8 +16465,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2101 := z.EncBinary()
-					_ = yym2101
 					if false {
 					} else {
 						z.F.EncMapInt64Uint64V(x.FMapInt64Uint64, e)
@@ -18589,8 +16487,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2103 := *x.FptrMapInt64Uint64
-						yym2104 := z.EncBinary()
-						_ = yym2104
 						if false {
 						} else {
 							z.F.EncMapInt64Uint64V(yy2103, e)
@@ -18608,8 +16504,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2105 := *x.FptrMapInt64Uint64
-						yym2106 := z.EncBinary()
-						_ = yym2106
 						if false {
 						} else {
 							z.F.EncMapInt64Uint64V(yy2105, e)
@@ -18622,8 +16516,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym2108 := z.EncBinary()
-					_ = yym2108
 					if false {
 					} else {
 						z.F.EncMapInt64UintptrV(x.FMapInt64Uintptr, e)
@@ -18636,8 +16528,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Uintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym2109 := z.EncBinary()
-					_ = yym2109
 					if false {
 					} else {
 						z.F.EncMapInt64UintptrV(x.FMapInt64Uintptr, e)
@@ -18660,8 +16550,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2111 := *x.FptrMapInt64Uintptr
-						yym2112 := z.EncBinary()
-						_ = yym2112
 						if false {
 						} else {
 							z.F.EncMapInt64UintptrV(yy2111, e)
@@ -18679,8 +16567,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2113 := *x.FptrMapInt64Uintptr
-						yym2114 := z.EncBinary()
-						_ = yym2114
 						if false {
 						} else {
 							z.F.EncMapInt64UintptrV(yy2113, e)
@@ -18693,8 +16579,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Int == nil {
 					r.EncodeNil()
 				} else {
-					yym2116 := z.EncBinary()
-					_ = yym2116
 					if false {
 					} else {
 						z.F.EncMapInt64IntV(x.FMapInt64Int, e)
@@ -18707,8 +16591,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Int == nil {
 					r.EncodeNil()
 				} else {
-					yym2117 := z.EncBinary()
-					_ = yym2117
 					if false {
 					} else {
 						z.F.EncMapInt64IntV(x.FMapInt64Int, e)
@@ -18731,8 +16613,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2119 := *x.FptrMapInt64Int
-						yym2120 := z.EncBinary()
-						_ = yym2120
 						if false {
 						} else {
 							z.F.EncMapInt64IntV(yy2119, e)
@@ -18750,8 +16630,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2121 := *x.FptrMapInt64Int
-						yym2122 := z.EncBinary()
-						_ = yym2122
 						if false {
 						} else {
 							z.F.EncMapInt64IntV(yy2121, e)
@@ -18764,8 +16642,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym2124 := z.EncBinary()
-					_ = yym2124
 					if false {
 					} else {
 						z.F.EncMapInt64Int8V(x.FMapInt64Int8, e)
@@ -18778,8 +16654,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Int8 == nil {
 					r.EncodeNil()
 				} else {
-					yym2125 := z.EncBinary()
-					_ = yym2125
 					if false {
 					} else {
 						z.F.EncMapInt64Int8V(x.FMapInt64Int8, e)
@@ -18802,8 +16676,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2127 := *x.FptrMapInt64Int8
-						yym2128 := z.EncBinary()
-						_ = yym2128
 						if false {
 						} else {
 							z.F.EncMapInt64Int8V(yy2127, e)
@@ -18821,8 +16693,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2129 := *x.FptrMapInt64Int8
-						yym2130 := z.EncBinary()
-						_ = yym2130
 						if false {
 						} else {
 							z.F.EncMapInt64Int8V(yy2129, e)
@@ -18835,8 +16705,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym2132 := z.EncBinary()
-					_ = yym2132
 					if false {
 					} else {
 						z.F.EncMapInt64Int16V(x.FMapInt64Int16, e)
@@ -18849,8 +16717,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Int16 == nil {
 					r.EncodeNil()
 				} else {
-					yym2133 := z.EncBinary()
-					_ = yym2133
 					if false {
 					} else {
 						z.F.EncMapInt64Int16V(x.FMapInt64Int16, e)
@@ -18873,8 +16739,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2135 := *x.FptrMapInt64Int16
-						yym2136 := z.EncBinary()
-						_ = yym2136
 						if false {
 						} else {
 							z.F.EncMapInt64Int16V(yy2135, e)
@@ -18892,8 +16756,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2137 := *x.FptrMapInt64Int16
-						yym2138 := z.EncBinary()
-						_ = yym2138
 						if false {
 						} else {
 							z.F.EncMapInt64Int16V(yy2137, e)
@@ -18906,8 +16768,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2140 := z.EncBinary()
-					_ = yym2140
 					if false {
 					} else {
 						z.F.EncMapInt64Int32V(x.FMapInt64Int32, e)
@@ -18920,8 +16780,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Int32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2141 := z.EncBinary()
-					_ = yym2141
 					if false {
 					} else {
 						z.F.EncMapInt64Int32V(x.FMapInt64Int32, e)
@@ -18944,8 +16802,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2143 := *x.FptrMapInt64Int32
-						yym2144 := z.EncBinary()
-						_ = yym2144
 						if false {
 						} else {
 							z.F.EncMapInt64Int32V(yy2143, e)
@@ -18963,8 +16819,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2145 := *x.FptrMapInt64Int32
-						yym2146 := z.EncBinary()
-						_ = yym2146
 						if false {
 						} else {
 							z.F.EncMapInt64Int32V(yy2145, e)
@@ -18977,8 +16831,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2148 := z.EncBinary()
-					_ = yym2148
 					if false {
 					} else {
 						z.F.EncMapInt64Int64V(x.FMapInt64Int64, e)
@@ -18991,8 +16843,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Int64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2149 := z.EncBinary()
-					_ = yym2149
 					if false {
 					} else {
 						z.F.EncMapInt64Int64V(x.FMapInt64Int64, e)
@@ -19015,8 +16865,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2151 := *x.FptrMapInt64Int64
-						yym2152 := z.EncBinary()
-						_ = yym2152
 						if false {
 						} else {
 							z.F.EncMapInt64Int64V(yy2151, e)
@@ -19034,8 +16882,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2153 := *x.FptrMapInt64Int64
-						yym2154 := z.EncBinary()
-						_ = yym2154
 						if false {
 						} else {
 							z.F.EncMapInt64Int64V(yy2153, e)
@@ -19048,8 +16894,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2156 := z.EncBinary()
-					_ = yym2156
 					if false {
 					} else {
 						z.F.EncMapInt64Float32V(x.FMapInt64Float32, e)
@@ -19062,8 +16906,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Float32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2157 := z.EncBinary()
-					_ = yym2157
 					if false {
 					} else {
 						z.F.EncMapInt64Float32V(x.FMapInt64Float32, e)
@@ -19086,8 +16928,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2159 := *x.FptrMapInt64Float32
-						yym2160 := z.EncBinary()
-						_ = yym2160
 						if false {
 						} else {
 							z.F.EncMapInt64Float32V(yy2159, e)
@@ -19105,8 +16945,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2161 := *x.FptrMapInt64Float32
-						yym2162 := z.EncBinary()
-						_ = yym2162
 						if false {
 						} else {
 							z.F.EncMapInt64Float32V(yy2161, e)
@@ -19119,8 +16957,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2164 := z.EncBinary()
-					_ = yym2164
 					if false {
 					} else {
 						z.F.EncMapInt64Float64V(x.FMapInt64Float64, e)
@@ -19133,8 +16969,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Float64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2165 := z.EncBinary()
-					_ = yym2165
 					if false {
 					} else {
 						z.F.EncMapInt64Float64V(x.FMapInt64Float64, e)
@@ -19157,8 +16991,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2167 := *x.FptrMapInt64Float64
-						yym2168 := z.EncBinary()
-						_ = yym2168
 						if false {
 						} else {
 							z.F.EncMapInt64Float64V(yy2167, e)
@@ -19176,8 +17008,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2169 := *x.FptrMapInt64Float64
-						yym2170 := z.EncBinary()
-						_ = yym2170
 						if false {
 						} else {
 							z.F.EncMapInt64Float64V(yy2169, e)
@@ -19190,8 +17020,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym2172 := z.EncBinary()
-					_ = yym2172
 					if false {
 					} else {
 						z.F.EncMapInt64BoolV(x.FMapInt64Bool, e)
@@ -19204,8 +17032,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapInt64Bool == nil {
 					r.EncodeNil()
 				} else {
-					yym2173 := z.EncBinary()
-					_ = yym2173
 					if false {
 					} else {
 						z.F.EncMapInt64BoolV(x.FMapInt64Bool, e)
@@ -19228,8 +17054,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2175 := *x.FptrMapInt64Bool
-						yym2176 := z.EncBinary()
-						_ = yym2176
 						if false {
 						} else {
 							z.F.EncMapInt64BoolV(yy2175, e)
@@ -19247,8 +17071,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2177 := *x.FptrMapInt64Bool
-						yym2178 := z.EncBinary()
-						_ = yym2178
 						if false {
 						} else {
 							z.F.EncMapInt64BoolV(yy2177, e)
@@ -19261,8 +17083,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym2180 := z.EncBinary()
-					_ = yym2180
 					if false {
 					} else {
 						z.F.EncMapBoolIntfV(x.FMapBoolIntf, e)
@@ -19275,8 +17095,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolIntf == nil {
 					r.EncodeNil()
 				} else {
-					yym2181 := z.EncBinary()
-					_ = yym2181
 					if false {
 					} else {
 						z.F.EncMapBoolIntfV(x.FMapBoolIntf, e)
@@ -19299,8 +17117,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2183 := *x.FptrMapBoolIntf
-						yym2184 := z.EncBinary()
-						_ = yym2184
 						if false {
 						} else {
 							z.F.EncMapBoolIntfV(yy2183, e)
@@ -19318,8 +17134,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2185 := *x.FptrMapBoolIntf
-						yym2186 := z.EncBinary()
-						_ = yym2186
 						if false {
 						} else {
 							z.F.EncMapBoolIntfV(yy2185, e)
@@ -19332,8 +17146,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolString == nil {
 					r.EncodeNil()
 				} else {
-					yym2188 := z.EncBinary()
-					_ = yym2188
 					if false {
 					} else {
 						z.F.EncMapBoolStringV(x.FMapBoolString, e)
@@ -19346,8 +17158,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolString == nil {
 					r.EncodeNil()
 				} else {
-					yym2189 := z.EncBinary()
-					_ = yym2189
 					if false {
 					} else {
 						z.F.EncMapBoolStringV(x.FMapBoolString, e)
@@ -19370,8 +17180,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2191 := *x.FptrMapBoolString
-						yym2192 := z.EncBinary()
-						_ = yym2192
 						if false {
 						} else {
 							z.F.EncMapBoolStringV(yy2191, e)
@@ -19389,8 +17197,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2193 := *x.FptrMapBoolString
-						yym2194 := z.EncBinary()
-						_ = yym2194
 						if false {
 						} else {
 							z.F.EncMapBoolStringV(yy2193, e)
@@ -19403,8 +17209,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUint == nil {
 					r.EncodeNil()
 				} else {
-					yym2196 := z.EncBinary()
-					_ = yym2196
 					if false {
 					} else {
 						z.F.EncMapBoolUintV(x.FMapBoolUint, e)
@@ -19417,8 +17221,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUint == nil {
 					r.EncodeNil()
 				} else {
-					yym2197 := z.EncBinary()
-					_ = yym2197
 					if false {
 					} else {
 						z.F.EncMapBoolUintV(x.FMapBoolUint, e)
@@ -19441,8 +17243,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2199 := *x.FptrMapBoolUint
-						yym2200 := z.EncBinary()
-						_ = yym2200
 						if false {
 						} else {
 							z.F.EncMapBoolUintV(yy2199, e)
@@ -19460,8 +17260,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2201 := *x.FptrMapBoolUint
-						yym2202 := z.EncBinary()
-						_ = yym2202
 						if false {
 						} else {
 							z.F.EncMapBoolUintV(yy2201, e)
@@ -19474,8 +17272,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym2204 := z.EncBinary()
-					_ = yym2204
 					if false {
 					} else {
 						z.F.EncMapBoolUint8V(x.FMapBoolUint8, e)
@@ -19488,8 +17284,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUint8 == nil {
 					r.EncodeNil()
 				} else {
-					yym2205 := z.EncBinary()
-					_ = yym2205
 					if false {
 					} else {
 						z.F.EncMapBoolUint8V(x.FMapBoolUint8, e)
@@ -19512,8 +17306,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2207 := *x.FptrMapBoolUint8
-						yym2208 := z.EncBinary()
-						_ = yym2208
 						if false {
 						} else {
 							z.F.EncMapBoolUint8V(yy2207, e)
@@ -19531,8 +17323,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2209 := *x.FptrMapBoolUint8
-						yym2210 := z.EncBinary()
-						_ = yym2210
 						if false {
 						} else {
 							z.F.EncMapBoolUint8V(yy2209, e)
@@ -19545,8 +17335,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym2212 := z.EncBinary()
-					_ = yym2212
 					if false {
 					} else {
 						z.F.EncMapBoolUint16V(x.FMapBoolUint16, e)
@@ -19559,8 +17347,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUint16 == nil {
 					r.EncodeNil()
 				} else {
-					yym2213 := z.EncBinary()
-					_ = yym2213
 					if false {
 					} else {
 						z.F.EncMapBoolUint16V(x.FMapBoolUint16, e)
@@ -19583,8 +17369,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2215 := *x.FptrMapBoolUint16
-						yym2216 := z.EncBinary()
-						_ = yym2216
 						if false {
 						} else {
 							z.F.EncMapBoolUint16V(yy2215, e)
@@ -19602,8 +17386,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2217 := *x.FptrMapBoolUint16
-						yym2218 := z.EncBinary()
-						_ = yym2218
 						if false {
 						} else {
 							z.F.EncMapBoolUint16V(yy2217, e)
@@ -19616,8 +17398,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2220 := z.EncBinary()
-					_ = yym2220
 					if false {
 					} else {
 						z.F.EncMapBoolUint32V(x.FMapBoolUint32, e)
@@ -19630,8 +17410,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUint32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2221 := z.EncBinary()
-					_ = yym2221
 					if false {
 					} else {
 						z.F.EncMapBoolUint32V(x.FMapBoolUint32, e)
@@ -19654,8 +17432,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2223 := *x.FptrMapBoolUint32
-						yym2224 := z.EncBinary()
-						_ = yym2224
 						if false {
 						} else {
 							z.F.EncMapBoolUint32V(yy2223, e)
@@ -19673,8 +17449,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2225 := *x.FptrMapBoolUint32
-						yym2226 := z.EncBinary()
-						_ = yym2226
 						if false {
 						} else {
 							z.F.EncMapBoolUint32V(yy2225, e)
@@ -19687,8 +17461,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2228 := z.EncBinary()
-					_ = yym2228
 					if false {
 					} else {
 						z.F.EncMapBoolUint64V(x.FMapBoolUint64, e)
@@ -19701,8 +17473,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUint64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2229 := z.EncBinary()
-					_ = yym2229
 					if false {
 					} else {
 						z.F.EncMapBoolUint64V(x.FMapBoolUint64, e)
@@ -19725,8 +17495,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2231 := *x.FptrMapBoolUint64
-						yym2232 := z.EncBinary()
-						_ = yym2232
 						if false {
 						} else {
 							z.F.EncMapBoolUint64V(yy2231, e)
@@ -19744,8 +17512,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2233 := *x.FptrMapBoolUint64
-						yym2234 := z.EncBinary()
-						_ = yym2234
 						if false {
 						} else {
 							z.F.EncMapBoolUint64V(yy2233, e)
@@ -19758,8 +17524,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym2236 := z.EncBinary()
-					_ = yym2236
 					if false {
 					} else {
 						z.F.EncMapBoolUintptrV(x.FMapBoolUintptr, e)
@@ -19772,8 +17536,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolUintptr == nil {
 					r.EncodeNil()
 				} else {
-					yym2237 := z.EncBinary()
-					_ = yym2237
 					if false {
 					} else {
 						z.F.EncMapBoolUintptrV(x.FMapBoolUintptr, e)
@@ -19796,8 +17558,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2239 := *x.FptrMapBoolUintptr
-						yym2240 := z.EncBinary()
-						_ = yym2240
 						if false {
 						} else {
 							z.F.EncMapBoolUintptrV(yy2239, e)
@@ -19815,8 +17575,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2241 := *x.FptrMapBoolUintptr
-						yym2242 := z.EncBinary()
-						_ = yym2242
 						if false {
 						} else {
 							z.F.EncMapBoolUintptrV(yy2241, e)
@@ -19829,8 +17587,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolInt == nil {
 					r.EncodeNil()
 				} else {
-					yym2244 := z.EncBinary()
-					_ = yym2244
 					if false {
 					} else {
 						z.F.EncMapBoolIntV(x.FMapBoolInt, e)
@@ -19843,8 +17599,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolInt == nil {
 					r.EncodeNil()
 				} else {
-					yym2245 := z.EncBinary()
-					_ = yym2245
 					if false {
 					} else {
 						z.F.EncMapBoolIntV(x.FMapBoolInt, e)
@@ -19867,8 +17621,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2247 := *x.FptrMapBoolInt
-						yym2248 := z.EncBinary()
-						_ = yym2248
 						if false {
 						} else {
 							z.F.EncMapBoolIntV(yy2247, e)
@@ -19886,8 +17638,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2249 := *x.FptrMapBoolInt
-						yym2250 := z.EncBinary()
-						_ = yym2250
 						if false {
 						} else {
 							z.F.EncMapBoolIntV(yy2249, e)
@@ -19900,8 +17650,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym2252 := z.EncBinary()
-					_ = yym2252
 					if false {
 					} else {
 						z.F.EncMapBoolInt8V(x.FMapBoolInt8, e)
@@ -19914,8 +17662,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolInt8 == nil {
 					r.EncodeNil()
 				} else {
-					yym2253 := z.EncBinary()
-					_ = yym2253
 					if false {
 					} else {
 						z.F.EncMapBoolInt8V(x.FMapBoolInt8, e)
@@ -19938,8 +17684,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2255 := *x.FptrMapBoolInt8
-						yym2256 := z.EncBinary()
-						_ = yym2256
 						if false {
 						} else {
 							z.F.EncMapBoolInt8V(yy2255, e)
@@ -19957,8 +17701,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2257 := *x.FptrMapBoolInt8
-						yym2258 := z.EncBinary()
-						_ = yym2258
 						if false {
 						} else {
 							z.F.EncMapBoolInt8V(yy2257, e)
@@ -19971,8 +17713,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym2260 := z.EncBinary()
-					_ = yym2260
 					if false {
 					} else {
 						z.F.EncMapBoolInt16V(x.FMapBoolInt16, e)
@@ -19985,8 +17725,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolInt16 == nil {
 					r.EncodeNil()
 				} else {
-					yym2261 := z.EncBinary()
-					_ = yym2261
 					if false {
 					} else {
 						z.F.EncMapBoolInt16V(x.FMapBoolInt16, e)
@@ -20009,8 +17747,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2263 := *x.FptrMapBoolInt16
-						yym2264 := z.EncBinary()
-						_ = yym2264
 						if false {
 						} else {
 							z.F.EncMapBoolInt16V(yy2263, e)
@@ -20028,8 +17764,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2265 := *x.FptrMapBoolInt16
-						yym2266 := z.EncBinary()
-						_ = yym2266
 						if false {
 						} else {
 							z.F.EncMapBoolInt16V(yy2265, e)
@@ -20042,8 +17776,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2268 := z.EncBinary()
-					_ = yym2268
 					if false {
 					} else {
 						z.F.EncMapBoolInt32V(x.FMapBoolInt32, e)
@@ -20056,8 +17788,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolInt32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2269 := z.EncBinary()
-					_ = yym2269
 					if false {
 					} else {
 						z.F.EncMapBoolInt32V(x.FMapBoolInt32, e)
@@ -20080,8 +17810,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2271 := *x.FptrMapBoolInt32
-						yym2272 := z.EncBinary()
-						_ = yym2272
 						if false {
 						} else {
 							z.F.EncMapBoolInt32V(yy2271, e)
@@ -20099,8 +17827,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2273 := *x.FptrMapBoolInt32
-						yym2274 := z.EncBinary()
-						_ = yym2274
 						if false {
 						} else {
 							z.F.EncMapBoolInt32V(yy2273, e)
@@ -20113,8 +17839,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2276 := z.EncBinary()
-					_ = yym2276
 					if false {
 					} else {
 						z.F.EncMapBoolInt64V(x.FMapBoolInt64, e)
@@ -20127,8 +17851,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolInt64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2277 := z.EncBinary()
-					_ = yym2277
 					if false {
 					} else {
 						z.F.EncMapBoolInt64V(x.FMapBoolInt64, e)
@@ -20151,8 +17873,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2279 := *x.FptrMapBoolInt64
-						yym2280 := z.EncBinary()
-						_ = yym2280
 						if false {
 						} else {
 							z.F.EncMapBoolInt64V(yy2279, e)
@@ -20170,8 +17890,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2281 := *x.FptrMapBoolInt64
-						yym2282 := z.EncBinary()
-						_ = yym2282
 						if false {
 						} else {
 							z.F.EncMapBoolInt64V(yy2281, e)
@@ -20184,8 +17902,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2284 := z.EncBinary()
-					_ = yym2284
 					if false {
 					} else {
 						z.F.EncMapBoolFloat32V(x.FMapBoolFloat32, e)
@@ -20198,8 +17914,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					yym2285 := z.EncBinary()
-					_ = yym2285
 					if false {
 					} else {
 						z.F.EncMapBoolFloat32V(x.FMapBoolFloat32, e)
@@ -20222,8 +17936,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2287 := *x.FptrMapBoolFloat32
-						yym2288 := z.EncBinary()
-						_ = yym2288
 						if false {
 						} else {
 							z.F.EncMapBoolFloat32V(yy2287, e)
@@ -20241,8 +17953,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2289 := *x.FptrMapBoolFloat32
-						yym2290 := z.EncBinary()
-						_ = yym2290
 						if false {
 						} else {
 							z.F.EncMapBoolFloat32V(yy2289, e)
@@ -20255,8 +17965,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2292 := z.EncBinary()
-					_ = yym2292
 					if false {
 					} else {
 						z.F.EncMapBoolFloat64V(x.FMapBoolFloat64, e)
@@ -20269,8 +17977,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					yym2293 := z.EncBinary()
-					_ = yym2293
 					if false {
 					} else {
 						z.F.EncMapBoolFloat64V(x.FMapBoolFloat64, e)
@@ -20293,8 +17999,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2295 := *x.FptrMapBoolFloat64
-						yym2296 := z.EncBinary()
-						_ = yym2296
 						if false {
 						} else {
 							z.F.EncMapBoolFloat64V(yy2295, e)
@@ -20312,8 +18016,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2297 := *x.FptrMapBoolFloat64
-						yym2298 := z.EncBinary()
-						_ = yym2298
 						if false {
 						} else {
 							z.F.EncMapBoolFloat64V(yy2297, e)
@@ -20326,8 +18028,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolBool == nil {
 					r.EncodeNil()
 				} else {
-					yym2300 := z.EncBinary()
-					_ = yym2300
 					if false {
 					} else {
 						z.F.EncMapBoolBoolV(x.FMapBoolBool, e)
@@ -20340,8 +18040,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				if x.FMapBoolBool == nil {
 					r.EncodeNil()
 				} else {
-					yym2301 := z.EncBinary()
-					_ = yym2301
 					if false {
 					} else {
 						z.F.EncMapBoolBoolV(x.FMapBoolBool, e)
@@ -20364,8 +18062,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2303 := *x.FptrMapBoolBool
-						yym2304 := z.EncBinary()
-						_ = yym2304
 						if false {
 						} else {
 							z.F.EncMapBoolBoolV(yy2303, e)
@@ -20383,8 +18079,6 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						r.EncodeNil()
 					} else {
 						yy2305 := *x.FptrMapBoolBool
-						yym2306 := z.EncBinary()
-						_ = yym2306
 						if false {
 						} else {
 							z.F.EncMapBoolBoolV(yy2305, e)
@@ -20405,8 +18099,6 @@ func (x *TestMammoth2) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	yym1 := z.DecBinary()
-	_ = yym1
 	if false {
 	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 		z.DecExtension(x, yyxt1)
@@ -20456,8 +18148,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FIntf = nil
 			} else {
 				yyv4 := &x.FIntf
-				yym5 := z.DecBinary()
-				_ = yym5
 				if false {
 				} else {
 					z.DecFallback(yyv4, true)
@@ -20475,8 +18165,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrIntf == nil {
 					x.FptrIntf = new(interface{})
 				}
-				yym7 := z.DecBinary()
-				_ = yym7
 				if false {
 				} else {
 					z.DecFallback(x.FptrIntf, true)
@@ -20487,8 +18175,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FString = ""
 			} else {
 				yyv8 := &x.FString
-				yym9 := z.DecBinary()
-				_ = yym9
 				if false {
 				} else {
 					*((*string)(yyv8)) = r.DecodeString()
@@ -20506,8 +18192,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrString == nil {
 					x.FptrString = new(string)
 				}
-				yym11 := z.DecBinary()
-				_ = yym11
 				if false {
 				} else {
 					*((*string)(x.FptrString)) = r.DecodeString()
@@ -20518,8 +18202,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FFloat32 = 0
 			} else {
 				yyv12 := &x.FFloat32
-				yym13 := z.DecBinary()
-				_ = yym13
 				if false {
 				} else {
 					*((*float32)(yyv12)) = float32(r.DecodeFloat32As64())
@@ -20537,8 +18219,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrFloat32 == nil {
 					x.FptrFloat32 = new(float32)
 				}
-				yym15 := z.DecBinary()
-				_ = yym15
 				if false {
 				} else {
 					*((*float32)(x.FptrFloat32)) = float32(r.DecodeFloat32As64())
@@ -20549,8 +18229,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FFloat64 = 0
 			} else {
 				yyv16 := &x.FFloat64
-				yym17 := z.DecBinary()
-				_ = yym17
 				if false {
 				} else {
 					*((*float64)(yyv16)) = r.DecodeFloat64()
@@ -20568,8 +18246,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrFloat64 == nil {
 					x.FptrFloat64 = new(float64)
 				}
-				yym19 := z.DecBinary()
-				_ = yym19
 				if false {
 				} else {
 					*((*float64)(x.FptrFloat64)) = r.DecodeFloat64()
@@ -20580,8 +18256,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FUint = 0
 			} else {
 				yyv20 := &x.FUint
-				yym21 := z.DecBinary()
-				_ = yym21
 				if false {
 				} else {
 					*((*uint)(yyv20)) = uint(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
@@ -20599,8 +18273,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUint == nil {
 					x.FptrUint = new(uint)
 				}
-				yym23 := z.DecBinary()
-				_ = yym23
 				if false {
 				} else {
 					*((*uint)(x.FptrUint)) = uint(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
@@ -20611,8 +18283,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FUint8 = 0
 			} else {
 				yyv24 := &x.FUint8
-				yym25 := z.DecBinary()
-				_ = yym25
 				if false {
 				} else {
 					*((*uint8)(yyv24)) = uint8(z.c.UintV(r.DecodeUint64(), 8))
@@ -20630,8 +18300,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUint8 == nil {
 					x.FptrUint8 = new(uint8)
 				}
-				yym27 := z.DecBinary()
-				_ = yym27
 				if false {
 				} else {
 					*((*uint8)(x.FptrUint8)) = uint8(z.c.UintV(r.DecodeUint64(), 8))
@@ -20642,8 +18310,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FUint16 = 0
 			} else {
 				yyv28 := &x.FUint16
-				yym29 := z.DecBinary()
-				_ = yym29
 				if false {
 				} else {
 					*((*uint16)(yyv28)) = uint16(z.c.UintV(r.DecodeUint64(), 16))
@@ -20661,8 +18327,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUint16 == nil {
 					x.FptrUint16 = new(uint16)
 				}
-				yym31 := z.DecBinary()
-				_ = yym31
 				if false {
 				} else {
 					*((*uint16)(x.FptrUint16)) = uint16(z.c.UintV(r.DecodeUint64(), 16))
@@ -20673,8 +18337,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FUint32 = 0
 			} else {
 				yyv32 := &x.FUint32
-				yym33 := z.DecBinary()
-				_ = yym33
 				if false {
 				} else {
 					*((*uint32)(yyv32)) = uint32(z.c.UintV(r.DecodeUint64(), 32))
@@ -20692,8 +18354,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUint32 == nil {
 					x.FptrUint32 = new(uint32)
 				}
-				yym35 := z.DecBinary()
-				_ = yym35
 				if false {
 				} else {
 					*((*uint32)(x.FptrUint32)) = uint32(z.c.UintV(r.DecodeUint64(), 32))
@@ -20704,8 +18364,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FUint64 = 0
 			} else {
 				yyv36 := &x.FUint64
-				yym37 := z.DecBinary()
-				_ = yym37
 				if false {
 				} else {
 					*((*uint64)(yyv36)) = uint64(r.DecodeUint64())
@@ -20723,8 +18381,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUint64 == nil {
 					x.FptrUint64 = new(uint64)
 				}
-				yym39 := z.DecBinary()
-				_ = yym39
 				if false {
 				} else {
 					*((*uint64)(x.FptrUint64)) = uint64(r.DecodeUint64())
@@ -20735,8 +18391,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FUintptr = 0
 			} else {
 				yyv40 := &x.FUintptr
-				yym41 := z.DecBinary()
-				_ = yym41
 				if false {
 				} else {
 					*((*uintptr)(yyv40)) = uintptr(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
@@ -20754,8 +18408,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUintptr == nil {
 					x.FptrUintptr = new(uintptr)
 				}
-				yym43 := z.DecBinary()
-				_ = yym43
 				if false {
 				} else {
 					*((*uintptr)(x.FptrUintptr)) = uintptr(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
@@ -20766,8 +18418,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FInt = 0
 			} else {
 				yyv44 := &x.FInt
-				yym45 := z.DecBinary()
-				_ = yym45
 				if false {
 				} else {
 					*((*int)(yyv44)) = int(z.c.IntV(r.DecodeInt64(), codecSelferBitsize19781))
@@ -20785,8 +18435,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrInt == nil {
 					x.FptrInt = new(int)
 				}
-				yym47 := z.DecBinary()
-				_ = yym47
 				if false {
 				} else {
 					*((*int)(x.FptrInt)) = int(z.c.IntV(r.DecodeInt64(), codecSelferBitsize19781))
@@ -20797,8 +18445,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FInt8 = 0
 			} else {
 				yyv48 := &x.FInt8
-				yym49 := z.DecBinary()
-				_ = yym49
 				if false {
 				} else {
 					*((*int8)(yyv48)) = int8(z.c.IntV(r.DecodeInt64(), 8))
@@ -20816,8 +18462,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrInt8 == nil {
 					x.FptrInt8 = new(int8)
 				}
-				yym51 := z.DecBinary()
-				_ = yym51
 				if false {
 				} else {
 					*((*int8)(x.FptrInt8)) = int8(z.c.IntV(r.DecodeInt64(), 8))
@@ -20828,8 +18472,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FInt16 = 0
 			} else {
 				yyv52 := &x.FInt16
-				yym53 := z.DecBinary()
-				_ = yym53
 				if false {
 				} else {
 					*((*int16)(yyv52)) = int16(z.c.IntV(r.DecodeInt64(), 16))
@@ -20847,8 +18489,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrInt16 == nil {
 					x.FptrInt16 = new(int16)
 				}
-				yym55 := z.DecBinary()
-				_ = yym55
 				if false {
 				} else {
 					*((*int16)(x.FptrInt16)) = int16(z.c.IntV(r.DecodeInt64(), 16))
@@ -20859,8 +18499,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FInt32 = 0
 			} else {
 				yyv56 := &x.FInt32
-				yym57 := z.DecBinary()
-				_ = yym57
 				if false {
 				} else {
 					*((*int32)(yyv56)) = int32(z.c.IntV(r.DecodeInt64(), 32))
@@ -20878,8 +18516,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrInt32 == nil {
 					x.FptrInt32 = new(int32)
 				}
-				yym59 := z.DecBinary()
-				_ = yym59
 				if false {
 				} else {
 					*((*int32)(x.FptrInt32)) = int32(z.c.IntV(r.DecodeInt64(), 32))
@@ -20890,8 +18526,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FInt64 = 0
 			} else {
 				yyv60 := &x.FInt64
-				yym61 := z.DecBinary()
-				_ = yym61
 				if false {
 				} else {
 					*((*int64)(yyv60)) = int64(r.DecodeInt64())
@@ -20909,8 +18543,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrInt64 == nil {
 					x.FptrInt64 = new(int64)
 				}
-				yym63 := z.DecBinary()
-				_ = yym63
 				if false {
 				} else {
 					*((*int64)(x.FptrInt64)) = int64(r.DecodeInt64())
@@ -20921,8 +18553,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FBool = false
 			} else {
 				yyv64 := &x.FBool
-				yym65 := z.DecBinary()
-				_ = yym65
 				if false {
 				} else {
 					*((*bool)(yyv64)) = r.DecodeBool()
@@ -20940,8 +18570,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrBool == nil {
 					x.FptrBool = new(bool)
 				}
-				yym67 := z.DecBinary()
-				_ = yym67
 				if false {
 				} else {
 					*((*bool)(x.FptrBool)) = r.DecodeBool()
@@ -20952,8 +18580,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceIntf = nil
 			} else {
 				yyv68 := &x.FSliceIntf
-				yym69 := z.DecBinary()
-				_ = yym69
 				if false {
 				} else {
 					z.F.DecSliceIntfX(yyv68, d)
@@ -20971,8 +18597,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceIntf == nil {
 					x.FptrSliceIntf = new([]interface{})
 				}
-				yym71 := z.DecBinary()
-				_ = yym71
 				if false {
 				} else {
 					z.F.DecSliceIntfX(x.FptrSliceIntf, d)
@@ -20983,8 +18607,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceString = nil
 			} else {
 				yyv72 := &x.FSliceString
-				yym73 := z.DecBinary()
-				_ = yym73
 				if false {
 				} else {
 					z.F.DecSliceStringX(yyv72, d)
@@ -21002,8 +18624,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceString == nil {
 					x.FptrSliceString = new([]string)
 				}
-				yym75 := z.DecBinary()
-				_ = yym75
 				if false {
 				} else {
 					z.F.DecSliceStringX(x.FptrSliceString, d)
@@ -21014,8 +18634,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceFloat32 = nil
 			} else {
 				yyv76 := &x.FSliceFloat32
-				yym77 := z.DecBinary()
-				_ = yym77
 				if false {
 				} else {
 					z.F.DecSliceFloat32X(yyv76, d)
@@ -21033,8 +18651,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceFloat32 == nil {
 					x.FptrSliceFloat32 = new([]float32)
 				}
-				yym79 := z.DecBinary()
-				_ = yym79
 				if false {
 				} else {
 					z.F.DecSliceFloat32X(x.FptrSliceFloat32, d)
@@ -21045,8 +18661,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceFloat64 = nil
 			} else {
 				yyv80 := &x.FSliceFloat64
-				yym81 := z.DecBinary()
-				_ = yym81
 				if false {
 				} else {
 					z.F.DecSliceFloat64X(yyv80, d)
@@ -21064,8 +18678,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceFloat64 == nil {
 					x.FptrSliceFloat64 = new([]float64)
 				}
-				yym83 := z.DecBinary()
-				_ = yym83
 				if false {
 				} else {
 					z.F.DecSliceFloat64X(x.FptrSliceFloat64, d)
@@ -21076,8 +18688,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceUint = nil
 			} else {
 				yyv84 := &x.FSliceUint
-				yym85 := z.DecBinary()
-				_ = yym85
 				if false {
 				} else {
 					z.F.DecSliceUintX(yyv84, d)
@@ -21095,8 +18705,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceUint == nil {
 					x.FptrSliceUint = new([]uint)
 				}
-				yym87 := z.DecBinary()
-				_ = yym87
 				if false {
 				} else {
 					z.F.DecSliceUintX(x.FptrSliceUint, d)
@@ -21107,8 +18715,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceUint8 = nil
 			} else {
 				yyv88 := &x.FSliceUint8
-				yym89 := z.DecBinary()
-				_ = yym89
 				if false {
 				} else {
 					*yyv88 = r.DecodeBytes(*(*[]byte)(yyv88), false)
@@ -21126,8 +18732,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceUint8 == nil {
 					x.FptrSliceUint8 = new([]uint8)
 				}
-				yym91 := z.DecBinary()
-				_ = yym91
 				if false {
 				} else {
 					*x.FptrSliceUint8 = r.DecodeBytes(*(*[]byte)(x.FptrSliceUint8), false)
@@ -21138,8 +18742,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceUint16 = nil
 			} else {
 				yyv92 := &x.FSliceUint16
-				yym93 := z.DecBinary()
-				_ = yym93
 				if false {
 				} else {
 					z.F.DecSliceUint16X(yyv92, d)
@@ -21157,8 +18759,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceUint16 == nil {
 					x.FptrSliceUint16 = new([]uint16)
 				}
-				yym95 := z.DecBinary()
-				_ = yym95
 				if false {
 				} else {
 					z.F.DecSliceUint16X(x.FptrSliceUint16, d)
@@ -21169,8 +18769,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceUint32 = nil
 			} else {
 				yyv96 := &x.FSliceUint32
-				yym97 := z.DecBinary()
-				_ = yym97
 				if false {
 				} else {
 					z.F.DecSliceUint32X(yyv96, d)
@@ -21188,8 +18786,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceUint32 == nil {
 					x.FptrSliceUint32 = new([]uint32)
 				}
-				yym99 := z.DecBinary()
-				_ = yym99
 				if false {
 				} else {
 					z.F.DecSliceUint32X(x.FptrSliceUint32, d)
@@ -21200,8 +18796,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceUint64 = nil
 			} else {
 				yyv100 := &x.FSliceUint64
-				yym101 := z.DecBinary()
-				_ = yym101
 				if false {
 				} else {
 					z.F.DecSliceUint64X(yyv100, d)
@@ -21219,8 +18813,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceUint64 == nil {
 					x.FptrSliceUint64 = new([]uint64)
 				}
-				yym103 := z.DecBinary()
-				_ = yym103
 				if false {
 				} else {
 					z.F.DecSliceUint64X(x.FptrSliceUint64, d)
@@ -21231,8 +18823,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceUintptr = nil
 			} else {
 				yyv104 := &x.FSliceUintptr
-				yym105 := z.DecBinary()
-				_ = yym105
 				if false {
 				} else {
 					z.F.DecSliceUintptrX(yyv104, d)
@@ -21250,8 +18840,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceUintptr == nil {
 					x.FptrSliceUintptr = new([]uintptr)
 				}
-				yym107 := z.DecBinary()
-				_ = yym107
 				if false {
 				} else {
 					z.F.DecSliceUintptrX(x.FptrSliceUintptr, d)
@@ -21262,8 +18850,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceInt = nil
 			} else {
 				yyv108 := &x.FSliceInt
-				yym109 := z.DecBinary()
-				_ = yym109
 				if false {
 				} else {
 					z.F.DecSliceIntX(yyv108, d)
@@ -21281,8 +18867,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceInt == nil {
 					x.FptrSliceInt = new([]int)
 				}
-				yym111 := z.DecBinary()
-				_ = yym111
 				if false {
 				} else {
 					z.F.DecSliceIntX(x.FptrSliceInt, d)
@@ -21293,8 +18877,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceInt8 = nil
 			} else {
 				yyv112 := &x.FSliceInt8
-				yym113 := z.DecBinary()
-				_ = yym113
 				if false {
 				} else {
 					z.F.DecSliceInt8X(yyv112, d)
@@ -21312,8 +18894,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceInt8 == nil {
 					x.FptrSliceInt8 = new([]int8)
 				}
-				yym115 := z.DecBinary()
-				_ = yym115
 				if false {
 				} else {
 					z.F.DecSliceInt8X(x.FptrSliceInt8, d)
@@ -21324,8 +18904,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceInt16 = nil
 			} else {
 				yyv116 := &x.FSliceInt16
-				yym117 := z.DecBinary()
-				_ = yym117
 				if false {
 				} else {
 					z.F.DecSliceInt16X(yyv116, d)
@@ -21343,8 +18921,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceInt16 == nil {
 					x.FptrSliceInt16 = new([]int16)
 				}
-				yym119 := z.DecBinary()
-				_ = yym119
 				if false {
 				} else {
 					z.F.DecSliceInt16X(x.FptrSliceInt16, d)
@@ -21355,8 +18931,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceInt32 = nil
 			} else {
 				yyv120 := &x.FSliceInt32
-				yym121 := z.DecBinary()
-				_ = yym121
 				if false {
 				} else {
 					z.F.DecSliceInt32X(yyv120, d)
@@ -21374,8 +18948,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceInt32 == nil {
 					x.FptrSliceInt32 = new([]int32)
 				}
-				yym123 := z.DecBinary()
-				_ = yym123
 				if false {
 				} else {
 					z.F.DecSliceInt32X(x.FptrSliceInt32, d)
@@ -21386,8 +18958,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceInt64 = nil
 			} else {
 				yyv124 := &x.FSliceInt64
-				yym125 := z.DecBinary()
-				_ = yym125
 				if false {
 				} else {
 					z.F.DecSliceInt64X(yyv124, d)
@@ -21405,8 +18975,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceInt64 == nil {
 					x.FptrSliceInt64 = new([]int64)
 				}
-				yym127 := z.DecBinary()
-				_ = yym127
 				if false {
 				} else {
 					z.F.DecSliceInt64X(x.FptrSliceInt64, d)
@@ -21417,8 +18985,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FSliceBool = nil
 			} else {
 				yyv128 := &x.FSliceBool
-				yym129 := z.DecBinary()
-				_ = yym129
 				if false {
 				} else {
 					z.F.DecSliceBoolX(yyv128, d)
@@ -21436,8 +19002,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceBool == nil {
 					x.FptrSliceBool = new([]bool)
 				}
-				yym131 := z.DecBinary()
-				_ = yym131
 				if false {
 				} else {
 					z.F.DecSliceBoolX(x.FptrSliceBool, d)
@@ -21448,8 +19012,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfIntf = nil
 			} else {
 				yyv132 := &x.FMapIntfIntf
-				yym133 := z.DecBinary()
-				_ = yym133
 				if false {
 				} else {
 					z.F.DecMapIntfIntfX(yyv132, d)
@@ -21467,8 +19029,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfIntf == nil {
 					x.FptrMapIntfIntf = new(map[interface{}]interface{})
 				}
-				yym135 := z.DecBinary()
-				_ = yym135
 				if false {
 				} else {
 					z.F.DecMapIntfIntfX(x.FptrMapIntfIntf, d)
@@ -21479,8 +19039,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfString = nil
 			} else {
 				yyv136 := &x.FMapIntfString
-				yym137 := z.DecBinary()
-				_ = yym137
 				if false {
 				} else {
 					z.F.DecMapIntfStringX(yyv136, d)
@@ -21498,8 +19056,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfString == nil {
 					x.FptrMapIntfString = new(map[interface{}]string)
 				}
-				yym139 := z.DecBinary()
-				_ = yym139
 				if false {
 				} else {
 					z.F.DecMapIntfStringX(x.FptrMapIntfString, d)
@@ -21510,8 +19066,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfUint = nil
 			} else {
 				yyv140 := &x.FMapIntfUint
-				yym141 := z.DecBinary()
-				_ = yym141
 				if false {
 				} else {
 					z.F.DecMapIntfUintX(yyv140, d)
@@ -21529,8 +19083,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfUint == nil {
 					x.FptrMapIntfUint = new(map[interface{}]uint)
 				}
-				yym143 := z.DecBinary()
-				_ = yym143
 				if false {
 				} else {
 					z.F.DecMapIntfUintX(x.FptrMapIntfUint, d)
@@ -21541,8 +19093,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfUint8 = nil
 			} else {
 				yyv144 := &x.FMapIntfUint8
-				yym145 := z.DecBinary()
-				_ = yym145
 				if false {
 				} else {
 					z.F.DecMapIntfUint8X(yyv144, d)
@@ -21560,8 +19110,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfUint8 == nil {
 					x.FptrMapIntfUint8 = new(map[interface{}]uint8)
 				}
-				yym147 := z.DecBinary()
-				_ = yym147
 				if false {
 				} else {
 					z.F.DecMapIntfUint8X(x.FptrMapIntfUint8, d)
@@ -21572,8 +19120,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfUint16 = nil
 			} else {
 				yyv148 := &x.FMapIntfUint16
-				yym149 := z.DecBinary()
-				_ = yym149
 				if false {
 				} else {
 					z.F.DecMapIntfUint16X(yyv148, d)
@@ -21591,8 +19137,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfUint16 == nil {
 					x.FptrMapIntfUint16 = new(map[interface{}]uint16)
 				}
-				yym151 := z.DecBinary()
-				_ = yym151
 				if false {
 				} else {
 					z.F.DecMapIntfUint16X(x.FptrMapIntfUint16, d)
@@ -21603,8 +19147,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfUint32 = nil
 			} else {
 				yyv152 := &x.FMapIntfUint32
-				yym153 := z.DecBinary()
-				_ = yym153
 				if false {
 				} else {
 					z.F.DecMapIntfUint32X(yyv152, d)
@@ -21622,8 +19164,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfUint32 == nil {
 					x.FptrMapIntfUint32 = new(map[interface{}]uint32)
 				}
-				yym155 := z.DecBinary()
-				_ = yym155
 				if false {
 				} else {
 					z.F.DecMapIntfUint32X(x.FptrMapIntfUint32, d)
@@ -21634,8 +19174,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfUint64 = nil
 			} else {
 				yyv156 := &x.FMapIntfUint64
-				yym157 := z.DecBinary()
-				_ = yym157
 				if false {
 				} else {
 					z.F.DecMapIntfUint64X(yyv156, d)
@@ -21653,8 +19191,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfUint64 == nil {
 					x.FptrMapIntfUint64 = new(map[interface{}]uint64)
 				}
-				yym159 := z.DecBinary()
-				_ = yym159
 				if false {
 				} else {
 					z.F.DecMapIntfUint64X(x.FptrMapIntfUint64, d)
@@ -21665,8 +19201,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfUintptr = nil
 			} else {
 				yyv160 := &x.FMapIntfUintptr
-				yym161 := z.DecBinary()
-				_ = yym161
 				if false {
 				} else {
 					z.F.DecMapIntfUintptrX(yyv160, d)
@@ -21684,8 +19218,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfUintptr == nil {
 					x.FptrMapIntfUintptr = new(map[interface{}]uintptr)
 				}
-				yym163 := z.DecBinary()
-				_ = yym163
 				if false {
 				} else {
 					z.F.DecMapIntfUintptrX(x.FptrMapIntfUintptr, d)
@@ -21696,8 +19228,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfInt = nil
 			} else {
 				yyv164 := &x.FMapIntfInt
-				yym165 := z.DecBinary()
-				_ = yym165
 				if false {
 				} else {
 					z.F.DecMapIntfIntX(yyv164, d)
@@ -21715,8 +19245,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfInt == nil {
 					x.FptrMapIntfInt = new(map[interface{}]int)
 				}
-				yym167 := z.DecBinary()
-				_ = yym167
 				if false {
 				} else {
 					z.F.DecMapIntfIntX(x.FptrMapIntfInt, d)
@@ -21727,8 +19255,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfInt8 = nil
 			} else {
 				yyv168 := &x.FMapIntfInt8
-				yym169 := z.DecBinary()
-				_ = yym169
 				if false {
 				} else {
 					z.F.DecMapIntfInt8X(yyv168, d)
@@ -21746,8 +19272,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfInt8 == nil {
 					x.FptrMapIntfInt8 = new(map[interface{}]int8)
 				}
-				yym171 := z.DecBinary()
-				_ = yym171
 				if false {
 				} else {
 					z.F.DecMapIntfInt8X(x.FptrMapIntfInt8, d)
@@ -21758,8 +19282,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfInt16 = nil
 			} else {
 				yyv172 := &x.FMapIntfInt16
-				yym173 := z.DecBinary()
-				_ = yym173
 				if false {
 				} else {
 					z.F.DecMapIntfInt16X(yyv172, d)
@@ -21777,8 +19299,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfInt16 == nil {
 					x.FptrMapIntfInt16 = new(map[interface{}]int16)
 				}
-				yym175 := z.DecBinary()
-				_ = yym175
 				if false {
 				} else {
 					z.F.DecMapIntfInt16X(x.FptrMapIntfInt16, d)
@@ -21789,8 +19309,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfInt32 = nil
 			} else {
 				yyv176 := &x.FMapIntfInt32
-				yym177 := z.DecBinary()
-				_ = yym177
 				if false {
 				} else {
 					z.F.DecMapIntfInt32X(yyv176, d)
@@ -21808,8 +19326,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfInt32 == nil {
 					x.FptrMapIntfInt32 = new(map[interface{}]int32)
 				}
-				yym179 := z.DecBinary()
-				_ = yym179
 				if false {
 				} else {
 					z.F.DecMapIntfInt32X(x.FptrMapIntfInt32, d)
@@ -21820,8 +19336,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfInt64 = nil
 			} else {
 				yyv180 := &x.FMapIntfInt64
-				yym181 := z.DecBinary()
-				_ = yym181
 				if false {
 				} else {
 					z.F.DecMapIntfInt64X(yyv180, d)
@@ -21839,8 +19353,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfInt64 == nil {
 					x.FptrMapIntfInt64 = new(map[interface{}]int64)
 				}
-				yym183 := z.DecBinary()
-				_ = yym183
 				if false {
 				} else {
 					z.F.DecMapIntfInt64X(x.FptrMapIntfInt64, d)
@@ -21851,8 +19363,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfFloat32 = nil
 			} else {
 				yyv184 := &x.FMapIntfFloat32
-				yym185 := z.DecBinary()
-				_ = yym185
 				if false {
 				} else {
 					z.F.DecMapIntfFloat32X(yyv184, d)
@@ -21870,8 +19380,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfFloat32 == nil {
 					x.FptrMapIntfFloat32 = new(map[interface{}]float32)
 				}
-				yym187 := z.DecBinary()
-				_ = yym187
 				if false {
 				} else {
 					z.F.DecMapIntfFloat32X(x.FptrMapIntfFloat32, d)
@@ -21882,8 +19390,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfFloat64 = nil
 			} else {
 				yyv188 := &x.FMapIntfFloat64
-				yym189 := z.DecBinary()
-				_ = yym189
 				if false {
 				} else {
 					z.F.DecMapIntfFloat64X(yyv188, d)
@@ -21901,8 +19407,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfFloat64 == nil {
 					x.FptrMapIntfFloat64 = new(map[interface{}]float64)
 				}
-				yym191 := z.DecBinary()
-				_ = yym191
 				if false {
 				} else {
 					z.F.DecMapIntfFloat64X(x.FptrMapIntfFloat64, d)
@@ -21913,8 +19417,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntfBool = nil
 			} else {
 				yyv192 := &x.FMapIntfBool
-				yym193 := z.DecBinary()
-				_ = yym193
 				if false {
 				} else {
 					z.F.DecMapIntfBoolX(yyv192, d)
@@ -21932,8 +19434,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntfBool == nil {
 					x.FptrMapIntfBool = new(map[interface{}]bool)
 				}
-				yym195 := z.DecBinary()
-				_ = yym195
 				if false {
 				} else {
 					z.F.DecMapIntfBoolX(x.FptrMapIntfBool, d)
@@ -21944,8 +19444,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringIntf = nil
 			} else {
 				yyv196 := &x.FMapStringIntf
-				yym197 := z.DecBinary()
-				_ = yym197
 				if false {
 				} else {
 					z.F.DecMapStringIntfX(yyv196, d)
@@ -21963,8 +19461,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringIntf == nil {
 					x.FptrMapStringIntf = new(map[string]interface{})
 				}
-				yym199 := z.DecBinary()
-				_ = yym199
 				if false {
 				} else {
 					z.F.DecMapStringIntfX(x.FptrMapStringIntf, d)
@@ -21975,8 +19471,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringString = nil
 			} else {
 				yyv200 := &x.FMapStringString
-				yym201 := z.DecBinary()
-				_ = yym201
 				if false {
 				} else {
 					z.F.DecMapStringStringX(yyv200, d)
@@ -21994,8 +19488,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringString == nil {
 					x.FptrMapStringString = new(map[string]string)
 				}
-				yym203 := z.DecBinary()
-				_ = yym203
 				if false {
 				} else {
 					z.F.DecMapStringStringX(x.FptrMapStringString, d)
@@ -22006,8 +19498,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringUint = nil
 			} else {
 				yyv204 := &x.FMapStringUint
-				yym205 := z.DecBinary()
-				_ = yym205
 				if false {
 				} else {
 					z.F.DecMapStringUintX(yyv204, d)
@@ -22025,8 +19515,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringUint == nil {
 					x.FptrMapStringUint = new(map[string]uint)
 				}
-				yym207 := z.DecBinary()
-				_ = yym207
 				if false {
 				} else {
 					z.F.DecMapStringUintX(x.FptrMapStringUint, d)
@@ -22037,8 +19525,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringUint8 = nil
 			} else {
 				yyv208 := &x.FMapStringUint8
-				yym209 := z.DecBinary()
-				_ = yym209
 				if false {
 				} else {
 					z.F.DecMapStringUint8X(yyv208, d)
@@ -22056,8 +19542,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringUint8 == nil {
 					x.FptrMapStringUint8 = new(map[string]uint8)
 				}
-				yym211 := z.DecBinary()
-				_ = yym211
 				if false {
 				} else {
 					z.F.DecMapStringUint8X(x.FptrMapStringUint8, d)
@@ -22068,8 +19552,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringUint16 = nil
 			} else {
 				yyv212 := &x.FMapStringUint16
-				yym213 := z.DecBinary()
-				_ = yym213
 				if false {
 				} else {
 					z.F.DecMapStringUint16X(yyv212, d)
@@ -22087,8 +19569,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringUint16 == nil {
 					x.FptrMapStringUint16 = new(map[string]uint16)
 				}
-				yym215 := z.DecBinary()
-				_ = yym215
 				if false {
 				} else {
 					z.F.DecMapStringUint16X(x.FptrMapStringUint16, d)
@@ -22099,8 +19579,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringUint32 = nil
 			} else {
 				yyv216 := &x.FMapStringUint32
-				yym217 := z.DecBinary()
-				_ = yym217
 				if false {
 				} else {
 					z.F.DecMapStringUint32X(yyv216, d)
@@ -22118,8 +19596,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringUint32 == nil {
 					x.FptrMapStringUint32 = new(map[string]uint32)
 				}
-				yym219 := z.DecBinary()
-				_ = yym219
 				if false {
 				} else {
 					z.F.DecMapStringUint32X(x.FptrMapStringUint32, d)
@@ -22130,8 +19606,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringUint64 = nil
 			} else {
 				yyv220 := &x.FMapStringUint64
-				yym221 := z.DecBinary()
-				_ = yym221
 				if false {
 				} else {
 					z.F.DecMapStringUint64X(yyv220, d)
@@ -22149,8 +19623,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringUint64 == nil {
 					x.FptrMapStringUint64 = new(map[string]uint64)
 				}
-				yym223 := z.DecBinary()
-				_ = yym223
 				if false {
 				} else {
 					z.F.DecMapStringUint64X(x.FptrMapStringUint64, d)
@@ -22161,8 +19633,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringUintptr = nil
 			} else {
 				yyv224 := &x.FMapStringUintptr
-				yym225 := z.DecBinary()
-				_ = yym225
 				if false {
 				} else {
 					z.F.DecMapStringUintptrX(yyv224, d)
@@ -22180,8 +19650,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringUintptr == nil {
 					x.FptrMapStringUintptr = new(map[string]uintptr)
 				}
-				yym227 := z.DecBinary()
-				_ = yym227
 				if false {
 				} else {
 					z.F.DecMapStringUintptrX(x.FptrMapStringUintptr, d)
@@ -22192,8 +19660,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringInt = nil
 			} else {
 				yyv228 := &x.FMapStringInt
-				yym229 := z.DecBinary()
-				_ = yym229
 				if false {
 				} else {
 					z.F.DecMapStringIntX(yyv228, d)
@@ -22211,8 +19677,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringInt == nil {
 					x.FptrMapStringInt = new(map[string]int)
 				}
-				yym231 := z.DecBinary()
-				_ = yym231
 				if false {
 				} else {
 					z.F.DecMapStringIntX(x.FptrMapStringInt, d)
@@ -22223,8 +19687,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringInt8 = nil
 			} else {
 				yyv232 := &x.FMapStringInt8
-				yym233 := z.DecBinary()
-				_ = yym233
 				if false {
 				} else {
 					z.F.DecMapStringInt8X(yyv232, d)
@@ -22242,8 +19704,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringInt8 == nil {
 					x.FptrMapStringInt8 = new(map[string]int8)
 				}
-				yym235 := z.DecBinary()
-				_ = yym235
 				if false {
 				} else {
 					z.F.DecMapStringInt8X(x.FptrMapStringInt8, d)
@@ -22254,8 +19714,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringInt16 = nil
 			} else {
 				yyv236 := &x.FMapStringInt16
-				yym237 := z.DecBinary()
-				_ = yym237
 				if false {
 				} else {
 					z.F.DecMapStringInt16X(yyv236, d)
@@ -22273,8 +19731,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringInt16 == nil {
 					x.FptrMapStringInt16 = new(map[string]int16)
 				}
-				yym239 := z.DecBinary()
-				_ = yym239
 				if false {
 				} else {
 					z.F.DecMapStringInt16X(x.FptrMapStringInt16, d)
@@ -22285,8 +19741,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringInt32 = nil
 			} else {
 				yyv240 := &x.FMapStringInt32
-				yym241 := z.DecBinary()
-				_ = yym241
 				if false {
 				} else {
 					z.F.DecMapStringInt32X(yyv240, d)
@@ -22304,8 +19758,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringInt32 == nil {
 					x.FptrMapStringInt32 = new(map[string]int32)
 				}
-				yym243 := z.DecBinary()
-				_ = yym243
 				if false {
 				} else {
 					z.F.DecMapStringInt32X(x.FptrMapStringInt32, d)
@@ -22316,8 +19768,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringInt64 = nil
 			} else {
 				yyv244 := &x.FMapStringInt64
-				yym245 := z.DecBinary()
-				_ = yym245
 				if false {
 				} else {
 					z.F.DecMapStringInt64X(yyv244, d)
@@ -22335,8 +19785,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringInt64 == nil {
 					x.FptrMapStringInt64 = new(map[string]int64)
 				}
-				yym247 := z.DecBinary()
-				_ = yym247
 				if false {
 				} else {
 					z.F.DecMapStringInt64X(x.FptrMapStringInt64, d)
@@ -22347,8 +19795,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringFloat32 = nil
 			} else {
 				yyv248 := &x.FMapStringFloat32
-				yym249 := z.DecBinary()
-				_ = yym249
 				if false {
 				} else {
 					z.F.DecMapStringFloat32X(yyv248, d)
@@ -22366,8 +19812,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringFloat32 == nil {
 					x.FptrMapStringFloat32 = new(map[string]float32)
 				}
-				yym251 := z.DecBinary()
-				_ = yym251
 				if false {
 				} else {
 					z.F.DecMapStringFloat32X(x.FptrMapStringFloat32, d)
@@ -22378,8 +19822,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringFloat64 = nil
 			} else {
 				yyv252 := &x.FMapStringFloat64
-				yym253 := z.DecBinary()
-				_ = yym253
 				if false {
 				} else {
 					z.F.DecMapStringFloat64X(yyv252, d)
@@ -22397,8 +19839,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringFloat64 == nil {
 					x.FptrMapStringFloat64 = new(map[string]float64)
 				}
-				yym255 := z.DecBinary()
-				_ = yym255
 				if false {
 				} else {
 					z.F.DecMapStringFloat64X(x.FptrMapStringFloat64, d)
@@ -22409,8 +19849,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapStringBool = nil
 			} else {
 				yyv256 := &x.FMapStringBool
-				yym257 := z.DecBinary()
-				_ = yym257
 				if false {
 				} else {
 					z.F.DecMapStringBoolX(yyv256, d)
@@ -22428,8 +19866,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringBool == nil {
 					x.FptrMapStringBool = new(map[string]bool)
 				}
-				yym259 := z.DecBinary()
-				_ = yym259
 				if false {
 				} else {
 					z.F.DecMapStringBoolX(x.FptrMapStringBool, d)
@@ -22440,8 +19876,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Intf = nil
 			} else {
 				yyv260 := &x.FMapFloat32Intf
-				yym261 := z.DecBinary()
-				_ = yym261
 				if false {
 				} else {
 					z.F.DecMapFloat32IntfX(yyv260, d)
@@ -22459,8 +19893,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Intf == nil {
 					x.FptrMapFloat32Intf = new(map[float32]interface{})
 				}
-				yym263 := z.DecBinary()
-				_ = yym263
 				if false {
 				} else {
 					z.F.DecMapFloat32IntfX(x.FptrMapFloat32Intf, d)
@@ -22471,8 +19903,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32String = nil
 			} else {
 				yyv264 := &x.FMapFloat32String
-				yym265 := z.DecBinary()
-				_ = yym265
 				if false {
 				} else {
 					z.F.DecMapFloat32StringX(yyv264, d)
@@ -22490,8 +19920,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32String == nil {
 					x.FptrMapFloat32String = new(map[float32]string)
 				}
-				yym267 := z.DecBinary()
-				_ = yym267
 				if false {
 				} else {
 					z.F.DecMapFloat32StringX(x.FptrMapFloat32String, d)
@@ -22502,8 +19930,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Uint = nil
 			} else {
 				yyv268 := &x.FMapFloat32Uint
-				yym269 := z.DecBinary()
-				_ = yym269
 				if false {
 				} else {
 					z.F.DecMapFloat32UintX(yyv268, d)
@@ -22521,8 +19947,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Uint == nil {
 					x.FptrMapFloat32Uint = new(map[float32]uint)
 				}
-				yym271 := z.DecBinary()
-				_ = yym271
 				if false {
 				} else {
 					z.F.DecMapFloat32UintX(x.FptrMapFloat32Uint, d)
@@ -22533,8 +19957,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Uint8 = nil
 			} else {
 				yyv272 := &x.FMapFloat32Uint8
-				yym273 := z.DecBinary()
-				_ = yym273
 				if false {
 				} else {
 					z.F.DecMapFloat32Uint8X(yyv272, d)
@@ -22552,8 +19974,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Uint8 == nil {
 					x.FptrMapFloat32Uint8 = new(map[float32]uint8)
 				}
-				yym275 := z.DecBinary()
-				_ = yym275
 				if false {
 				} else {
 					z.F.DecMapFloat32Uint8X(x.FptrMapFloat32Uint8, d)
@@ -22564,8 +19984,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Uint16 = nil
 			} else {
 				yyv276 := &x.FMapFloat32Uint16
-				yym277 := z.DecBinary()
-				_ = yym277
 				if false {
 				} else {
 					z.F.DecMapFloat32Uint16X(yyv276, d)
@@ -22583,8 +20001,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Uint16 == nil {
 					x.FptrMapFloat32Uint16 = new(map[float32]uint16)
 				}
-				yym279 := z.DecBinary()
-				_ = yym279
 				if false {
 				} else {
 					z.F.DecMapFloat32Uint16X(x.FptrMapFloat32Uint16, d)
@@ -22595,8 +20011,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Uint32 = nil
 			} else {
 				yyv280 := &x.FMapFloat32Uint32
-				yym281 := z.DecBinary()
-				_ = yym281
 				if false {
 				} else {
 					z.F.DecMapFloat32Uint32X(yyv280, d)
@@ -22614,8 +20028,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Uint32 == nil {
 					x.FptrMapFloat32Uint32 = new(map[float32]uint32)
 				}
-				yym283 := z.DecBinary()
-				_ = yym283
 				if false {
 				} else {
 					z.F.DecMapFloat32Uint32X(x.FptrMapFloat32Uint32, d)
@@ -22626,8 +20038,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Uint64 = nil
 			} else {
 				yyv284 := &x.FMapFloat32Uint64
-				yym285 := z.DecBinary()
-				_ = yym285
 				if false {
 				} else {
 					z.F.DecMapFloat32Uint64X(yyv284, d)
@@ -22645,8 +20055,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Uint64 == nil {
 					x.FptrMapFloat32Uint64 = new(map[float32]uint64)
 				}
-				yym287 := z.DecBinary()
-				_ = yym287
 				if false {
 				} else {
 					z.F.DecMapFloat32Uint64X(x.FptrMapFloat32Uint64, d)
@@ -22657,8 +20065,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Uintptr = nil
 			} else {
 				yyv288 := &x.FMapFloat32Uintptr
-				yym289 := z.DecBinary()
-				_ = yym289
 				if false {
 				} else {
 					z.F.DecMapFloat32UintptrX(yyv288, d)
@@ -22676,8 +20082,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Uintptr == nil {
 					x.FptrMapFloat32Uintptr = new(map[float32]uintptr)
 				}
-				yym291 := z.DecBinary()
-				_ = yym291
 				if false {
 				} else {
 					z.F.DecMapFloat32UintptrX(x.FptrMapFloat32Uintptr, d)
@@ -22688,8 +20092,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Int = nil
 			} else {
 				yyv292 := &x.FMapFloat32Int
-				yym293 := z.DecBinary()
-				_ = yym293
 				if false {
 				} else {
 					z.F.DecMapFloat32IntX(yyv292, d)
@@ -22707,8 +20109,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Int == nil {
 					x.FptrMapFloat32Int = new(map[float32]int)
 				}
-				yym295 := z.DecBinary()
-				_ = yym295
 				if false {
 				} else {
 					z.F.DecMapFloat32IntX(x.FptrMapFloat32Int, d)
@@ -22719,8 +20119,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Int8 = nil
 			} else {
 				yyv296 := &x.FMapFloat32Int8
-				yym297 := z.DecBinary()
-				_ = yym297
 				if false {
 				} else {
 					z.F.DecMapFloat32Int8X(yyv296, d)
@@ -22738,8 +20136,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Int8 == nil {
 					x.FptrMapFloat32Int8 = new(map[float32]int8)
 				}
-				yym299 := z.DecBinary()
-				_ = yym299
 				if false {
 				} else {
 					z.F.DecMapFloat32Int8X(x.FptrMapFloat32Int8, d)
@@ -22750,8 +20146,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Int16 = nil
 			} else {
 				yyv300 := &x.FMapFloat32Int16
-				yym301 := z.DecBinary()
-				_ = yym301
 				if false {
 				} else {
 					z.F.DecMapFloat32Int16X(yyv300, d)
@@ -22769,8 +20163,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Int16 == nil {
 					x.FptrMapFloat32Int16 = new(map[float32]int16)
 				}
-				yym303 := z.DecBinary()
-				_ = yym303
 				if false {
 				} else {
 					z.F.DecMapFloat32Int16X(x.FptrMapFloat32Int16, d)
@@ -22781,8 +20173,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Int32 = nil
 			} else {
 				yyv304 := &x.FMapFloat32Int32
-				yym305 := z.DecBinary()
-				_ = yym305
 				if false {
 				} else {
 					z.F.DecMapFloat32Int32X(yyv304, d)
@@ -22800,8 +20190,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Int32 == nil {
 					x.FptrMapFloat32Int32 = new(map[float32]int32)
 				}
-				yym307 := z.DecBinary()
-				_ = yym307
 				if false {
 				} else {
 					z.F.DecMapFloat32Int32X(x.FptrMapFloat32Int32, d)
@@ -22812,8 +20200,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Int64 = nil
 			} else {
 				yyv308 := &x.FMapFloat32Int64
-				yym309 := z.DecBinary()
-				_ = yym309
 				if false {
 				} else {
 					z.F.DecMapFloat32Int64X(yyv308, d)
@@ -22831,8 +20217,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Int64 == nil {
 					x.FptrMapFloat32Int64 = new(map[float32]int64)
 				}
-				yym311 := z.DecBinary()
-				_ = yym311
 				if false {
 				} else {
 					z.F.DecMapFloat32Int64X(x.FptrMapFloat32Int64, d)
@@ -22843,8 +20227,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Float32 = nil
 			} else {
 				yyv312 := &x.FMapFloat32Float32
-				yym313 := z.DecBinary()
-				_ = yym313
 				if false {
 				} else {
 					z.F.DecMapFloat32Float32X(yyv312, d)
@@ -22862,8 +20244,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Float32 == nil {
 					x.FptrMapFloat32Float32 = new(map[float32]float32)
 				}
-				yym315 := z.DecBinary()
-				_ = yym315
 				if false {
 				} else {
 					z.F.DecMapFloat32Float32X(x.FptrMapFloat32Float32, d)
@@ -22874,8 +20254,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Float64 = nil
 			} else {
 				yyv316 := &x.FMapFloat32Float64
-				yym317 := z.DecBinary()
-				_ = yym317
 				if false {
 				} else {
 					z.F.DecMapFloat32Float64X(yyv316, d)
@@ -22893,8 +20271,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Float64 == nil {
 					x.FptrMapFloat32Float64 = new(map[float32]float64)
 				}
-				yym319 := z.DecBinary()
-				_ = yym319
 				if false {
 				} else {
 					z.F.DecMapFloat32Float64X(x.FptrMapFloat32Float64, d)
@@ -22905,8 +20281,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat32Bool = nil
 			} else {
 				yyv320 := &x.FMapFloat32Bool
-				yym321 := z.DecBinary()
-				_ = yym321
 				if false {
 				} else {
 					z.F.DecMapFloat32BoolX(yyv320, d)
@@ -22924,8 +20298,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat32Bool == nil {
 					x.FptrMapFloat32Bool = new(map[float32]bool)
 				}
-				yym323 := z.DecBinary()
-				_ = yym323
 				if false {
 				} else {
 					z.F.DecMapFloat32BoolX(x.FptrMapFloat32Bool, d)
@@ -22936,8 +20308,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Intf = nil
 			} else {
 				yyv324 := &x.FMapFloat64Intf
-				yym325 := z.DecBinary()
-				_ = yym325
 				if false {
 				} else {
 					z.F.DecMapFloat64IntfX(yyv324, d)
@@ -22955,8 +20325,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Intf == nil {
 					x.FptrMapFloat64Intf = new(map[float64]interface{})
 				}
-				yym327 := z.DecBinary()
-				_ = yym327
 				if false {
 				} else {
 					z.F.DecMapFloat64IntfX(x.FptrMapFloat64Intf, d)
@@ -22967,8 +20335,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64String = nil
 			} else {
 				yyv328 := &x.FMapFloat64String
-				yym329 := z.DecBinary()
-				_ = yym329
 				if false {
 				} else {
 					z.F.DecMapFloat64StringX(yyv328, d)
@@ -22986,8 +20352,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64String == nil {
 					x.FptrMapFloat64String = new(map[float64]string)
 				}
-				yym331 := z.DecBinary()
-				_ = yym331
 				if false {
 				} else {
 					z.F.DecMapFloat64StringX(x.FptrMapFloat64String, d)
@@ -22998,8 +20362,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Uint = nil
 			} else {
 				yyv332 := &x.FMapFloat64Uint
-				yym333 := z.DecBinary()
-				_ = yym333
 				if false {
 				} else {
 					z.F.DecMapFloat64UintX(yyv332, d)
@@ -23017,8 +20379,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Uint == nil {
 					x.FptrMapFloat64Uint = new(map[float64]uint)
 				}
-				yym335 := z.DecBinary()
-				_ = yym335
 				if false {
 				} else {
 					z.F.DecMapFloat64UintX(x.FptrMapFloat64Uint, d)
@@ -23029,8 +20389,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Uint8 = nil
 			} else {
 				yyv336 := &x.FMapFloat64Uint8
-				yym337 := z.DecBinary()
-				_ = yym337
 				if false {
 				} else {
 					z.F.DecMapFloat64Uint8X(yyv336, d)
@@ -23048,8 +20406,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Uint8 == nil {
 					x.FptrMapFloat64Uint8 = new(map[float64]uint8)
 				}
-				yym339 := z.DecBinary()
-				_ = yym339
 				if false {
 				} else {
 					z.F.DecMapFloat64Uint8X(x.FptrMapFloat64Uint8, d)
@@ -23060,8 +20416,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Uint16 = nil
 			} else {
 				yyv340 := &x.FMapFloat64Uint16
-				yym341 := z.DecBinary()
-				_ = yym341
 				if false {
 				} else {
 					z.F.DecMapFloat64Uint16X(yyv340, d)
@@ -23079,8 +20433,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Uint16 == nil {
 					x.FptrMapFloat64Uint16 = new(map[float64]uint16)
 				}
-				yym343 := z.DecBinary()
-				_ = yym343
 				if false {
 				} else {
 					z.F.DecMapFloat64Uint16X(x.FptrMapFloat64Uint16, d)
@@ -23091,8 +20443,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Uint32 = nil
 			} else {
 				yyv344 := &x.FMapFloat64Uint32
-				yym345 := z.DecBinary()
-				_ = yym345
 				if false {
 				} else {
 					z.F.DecMapFloat64Uint32X(yyv344, d)
@@ -23110,8 +20460,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Uint32 == nil {
 					x.FptrMapFloat64Uint32 = new(map[float64]uint32)
 				}
-				yym347 := z.DecBinary()
-				_ = yym347
 				if false {
 				} else {
 					z.F.DecMapFloat64Uint32X(x.FptrMapFloat64Uint32, d)
@@ -23122,8 +20470,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Uint64 = nil
 			} else {
 				yyv348 := &x.FMapFloat64Uint64
-				yym349 := z.DecBinary()
-				_ = yym349
 				if false {
 				} else {
 					z.F.DecMapFloat64Uint64X(yyv348, d)
@@ -23141,8 +20487,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Uint64 == nil {
 					x.FptrMapFloat64Uint64 = new(map[float64]uint64)
 				}
-				yym351 := z.DecBinary()
-				_ = yym351
 				if false {
 				} else {
 					z.F.DecMapFloat64Uint64X(x.FptrMapFloat64Uint64, d)
@@ -23153,8 +20497,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Uintptr = nil
 			} else {
 				yyv352 := &x.FMapFloat64Uintptr
-				yym353 := z.DecBinary()
-				_ = yym353
 				if false {
 				} else {
 					z.F.DecMapFloat64UintptrX(yyv352, d)
@@ -23172,8 +20514,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Uintptr == nil {
 					x.FptrMapFloat64Uintptr = new(map[float64]uintptr)
 				}
-				yym355 := z.DecBinary()
-				_ = yym355
 				if false {
 				} else {
 					z.F.DecMapFloat64UintptrX(x.FptrMapFloat64Uintptr, d)
@@ -23184,8 +20524,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Int = nil
 			} else {
 				yyv356 := &x.FMapFloat64Int
-				yym357 := z.DecBinary()
-				_ = yym357
 				if false {
 				} else {
 					z.F.DecMapFloat64IntX(yyv356, d)
@@ -23203,8 +20541,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Int == nil {
 					x.FptrMapFloat64Int = new(map[float64]int)
 				}
-				yym359 := z.DecBinary()
-				_ = yym359
 				if false {
 				} else {
 					z.F.DecMapFloat64IntX(x.FptrMapFloat64Int, d)
@@ -23215,8 +20551,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Int8 = nil
 			} else {
 				yyv360 := &x.FMapFloat64Int8
-				yym361 := z.DecBinary()
-				_ = yym361
 				if false {
 				} else {
 					z.F.DecMapFloat64Int8X(yyv360, d)
@@ -23234,8 +20568,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Int8 == nil {
 					x.FptrMapFloat64Int8 = new(map[float64]int8)
 				}
-				yym363 := z.DecBinary()
-				_ = yym363
 				if false {
 				} else {
 					z.F.DecMapFloat64Int8X(x.FptrMapFloat64Int8, d)
@@ -23246,8 +20578,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Int16 = nil
 			} else {
 				yyv364 := &x.FMapFloat64Int16
-				yym365 := z.DecBinary()
-				_ = yym365
 				if false {
 				} else {
 					z.F.DecMapFloat64Int16X(yyv364, d)
@@ -23265,8 +20595,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Int16 == nil {
 					x.FptrMapFloat64Int16 = new(map[float64]int16)
 				}
-				yym367 := z.DecBinary()
-				_ = yym367
 				if false {
 				} else {
 					z.F.DecMapFloat64Int16X(x.FptrMapFloat64Int16, d)
@@ -23277,8 +20605,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Int32 = nil
 			} else {
 				yyv368 := &x.FMapFloat64Int32
-				yym369 := z.DecBinary()
-				_ = yym369
 				if false {
 				} else {
 					z.F.DecMapFloat64Int32X(yyv368, d)
@@ -23296,8 +20622,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Int32 == nil {
 					x.FptrMapFloat64Int32 = new(map[float64]int32)
 				}
-				yym371 := z.DecBinary()
-				_ = yym371
 				if false {
 				} else {
 					z.F.DecMapFloat64Int32X(x.FptrMapFloat64Int32, d)
@@ -23308,8 +20632,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Int64 = nil
 			} else {
 				yyv372 := &x.FMapFloat64Int64
-				yym373 := z.DecBinary()
-				_ = yym373
 				if false {
 				} else {
 					z.F.DecMapFloat64Int64X(yyv372, d)
@@ -23327,8 +20649,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Int64 == nil {
 					x.FptrMapFloat64Int64 = new(map[float64]int64)
 				}
-				yym375 := z.DecBinary()
-				_ = yym375
 				if false {
 				} else {
 					z.F.DecMapFloat64Int64X(x.FptrMapFloat64Int64, d)
@@ -23339,8 +20659,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Float32 = nil
 			} else {
 				yyv376 := &x.FMapFloat64Float32
-				yym377 := z.DecBinary()
-				_ = yym377
 				if false {
 				} else {
 					z.F.DecMapFloat64Float32X(yyv376, d)
@@ -23358,8 +20676,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Float32 == nil {
 					x.FptrMapFloat64Float32 = new(map[float64]float32)
 				}
-				yym379 := z.DecBinary()
-				_ = yym379
 				if false {
 				} else {
 					z.F.DecMapFloat64Float32X(x.FptrMapFloat64Float32, d)
@@ -23370,8 +20686,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Float64 = nil
 			} else {
 				yyv380 := &x.FMapFloat64Float64
-				yym381 := z.DecBinary()
-				_ = yym381
 				if false {
 				} else {
 					z.F.DecMapFloat64Float64X(yyv380, d)
@@ -23389,8 +20703,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Float64 == nil {
 					x.FptrMapFloat64Float64 = new(map[float64]float64)
 				}
-				yym383 := z.DecBinary()
-				_ = yym383
 				if false {
 				} else {
 					z.F.DecMapFloat64Float64X(x.FptrMapFloat64Float64, d)
@@ -23401,8 +20713,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapFloat64Bool = nil
 			} else {
 				yyv384 := &x.FMapFloat64Bool
-				yym385 := z.DecBinary()
-				_ = yym385
 				if false {
 				} else {
 					z.F.DecMapFloat64BoolX(yyv384, d)
@@ -23420,8 +20730,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapFloat64Bool == nil {
 					x.FptrMapFloat64Bool = new(map[float64]bool)
 				}
-				yym387 := z.DecBinary()
-				_ = yym387
 				if false {
 				} else {
 					z.F.DecMapFloat64BoolX(x.FptrMapFloat64Bool, d)
@@ -23432,8 +20740,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintIntf = nil
 			} else {
 				yyv388 := &x.FMapUintIntf
-				yym389 := z.DecBinary()
-				_ = yym389
 				if false {
 				} else {
 					z.F.DecMapUintIntfX(yyv388, d)
@@ -23451,8 +20757,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintIntf == nil {
 					x.FptrMapUintIntf = new(map[uint]interface{})
 				}
-				yym391 := z.DecBinary()
-				_ = yym391
 				if false {
 				} else {
 					z.F.DecMapUintIntfX(x.FptrMapUintIntf, d)
@@ -23463,8 +20767,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintString = nil
 			} else {
 				yyv392 := &x.FMapUintString
-				yym393 := z.DecBinary()
-				_ = yym393
 				if false {
 				} else {
 					z.F.DecMapUintStringX(yyv392, d)
@@ -23482,8 +20784,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintString == nil {
 					x.FptrMapUintString = new(map[uint]string)
 				}
-				yym395 := z.DecBinary()
-				_ = yym395
 				if false {
 				} else {
 					z.F.DecMapUintStringX(x.FptrMapUintString, d)
@@ -23494,8 +20794,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintUint = nil
 			} else {
 				yyv396 := &x.FMapUintUint
-				yym397 := z.DecBinary()
-				_ = yym397
 				if false {
 				} else {
 					z.F.DecMapUintUintX(yyv396, d)
@@ -23513,8 +20811,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintUint == nil {
 					x.FptrMapUintUint = new(map[uint]uint)
 				}
-				yym399 := z.DecBinary()
-				_ = yym399
 				if false {
 				} else {
 					z.F.DecMapUintUintX(x.FptrMapUintUint, d)
@@ -23525,8 +20821,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintUint8 = nil
 			} else {
 				yyv400 := &x.FMapUintUint8
-				yym401 := z.DecBinary()
-				_ = yym401
 				if false {
 				} else {
 					z.F.DecMapUintUint8X(yyv400, d)
@@ -23544,8 +20838,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintUint8 == nil {
 					x.FptrMapUintUint8 = new(map[uint]uint8)
 				}
-				yym403 := z.DecBinary()
-				_ = yym403
 				if false {
 				} else {
 					z.F.DecMapUintUint8X(x.FptrMapUintUint8, d)
@@ -23556,8 +20848,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintUint16 = nil
 			} else {
 				yyv404 := &x.FMapUintUint16
-				yym405 := z.DecBinary()
-				_ = yym405
 				if false {
 				} else {
 					z.F.DecMapUintUint16X(yyv404, d)
@@ -23575,8 +20865,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintUint16 == nil {
 					x.FptrMapUintUint16 = new(map[uint]uint16)
 				}
-				yym407 := z.DecBinary()
-				_ = yym407
 				if false {
 				} else {
 					z.F.DecMapUintUint16X(x.FptrMapUintUint16, d)
@@ -23587,8 +20875,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintUint32 = nil
 			} else {
 				yyv408 := &x.FMapUintUint32
-				yym409 := z.DecBinary()
-				_ = yym409
 				if false {
 				} else {
 					z.F.DecMapUintUint32X(yyv408, d)
@@ -23606,8 +20892,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintUint32 == nil {
 					x.FptrMapUintUint32 = new(map[uint]uint32)
 				}
-				yym411 := z.DecBinary()
-				_ = yym411
 				if false {
 				} else {
 					z.F.DecMapUintUint32X(x.FptrMapUintUint32, d)
@@ -23618,8 +20902,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintUint64 = nil
 			} else {
 				yyv412 := &x.FMapUintUint64
-				yym413 := z.DecBinary()
-				_ = yym413
 				if false {
 				} else {
 					z.F.DecMapUintUint64X(yyv412, d)
@@ -23637,8 +20919,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintUint64 == nil {
 					x.FptrMapUintUint64 = new(map[uint]uint64)
 				}
-				yym415 := z.DecBinary()
-				_ = yym415
 				if false {
 				} else {
 					z.F.DecMapUintUint64X(x.FptrMapUintUint64, d)
@@ -23649,8 +20929,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintUintptr = nil
 			} else {
 				yyv416 := &x.FMapUintUintptr
-				yym417 := z.DecBinary()
-				_ = yym417
 				if false {
 				} else {
 					z.F.DecMapUintUintptrX(yyv416, d)
@@ -23668,8 +20946,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintUintptr == nil {
 					x.FptrMapUintUintptr = new(map[uint]uintptr)
 				}
-				yym419 := z.DecBinary()
-				_ = yym419
 				if false {
 				} else {
 					z.F.DecMapUintUintptrX(x.FptrMapUintUintptr, d)
@@ -23680,8 +20956,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintInt = nil
 			} else {
 				yyv420 := &x.FMapUintInt
-				yym421 := z.DecBinary()
-				_ = yym421
 				if false {
 				} else {
 					z.F.DecMapUintIntX(yyv420, d)
@@ -23699,8 +20973,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintInt == nil {
 					x.FptrMapUintInt = new(map[uint]int)
 				}
-				yym423 := z.DecBinary()
-				_ = yym423
 				if false {
 				} else {
 					z.F.DecMapUintIntX(x.FptrMapUintInt, d)
@@ -23711,8 +20983,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintInt8 = nil
 			} else {
 				yyv424 := &x.FMapUintInt8
-				yym425 := z.DecBinary()
-				_ = yym425
 				if false {
 				} else {
 					z.F.DecMapUintInt8X(yyv424, d)
@@ -23730,8 +21000,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintInt8 == nil {
 					x.FptrMapUintInt8 = new(map[uint]int8)
 				}
-				yym427 := z.DecBinary()
-				_ = yym427
 				if false {
 				} else {
 					z.F.DecMapUintInt8X(x.FptrMapUintInt8, d)
@@ -23742,8 +21010,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintInt16 = nil
 			} else {
 				yyv428 := &x.FMapUintInt16
-				yym429 := z.DecBinary()
-				_ = yym429
 				if false {
 				} else {
 					z.F.DecMapUintInt16X(yyv428, d)
@@ -23761,8 +21027,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintInt16 == nil {
 					x.FptrMapUintInt16 = new(map[uint]int16)
 				}
-				yym431 := z.DecBinary()
-				_ = yym431
 				if false {
 				} else {
 					z.F.DecMapUintInt16X(x.FptrMapUintInt16, d)
@@ -23773,8 +21037,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintInt32 = nil
 			} else {
 				yyv432 := &x.FMapUintInt32
-				yym433 := z.DecBinary()
-				_ = yym433
 				if false {
 				} else {
 					z.F.DecMapUintInt32X(yyv432, d)
@@ -23792,8 +21054,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintInt32 == nil {
 					x.FptrMapUintInt32 = new(map[uint]int32)
 				}
-				yym435 := z.DecBinary()
-				_ = yym435
 				if false {
 				} else {
 					z.F.DecMapUintInt32X(x.FptrMapUintInt32, d)
@@ -23804,8 +21064,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintInt64 = nil
 			} else {
 				yyv436 := &x.FMapUintInt64
-				yym437 := z.DecBinary()
-				_ = yym437
 				if false {
 				} else {
 					z.F.DecMapUintInt64X(yyv436, d)
@@ -23823,8 +21081,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintInt64 == nil {
 					x.FptrMapUintInt64 = new(map[uint]int64)
 				}
-				yym439 := z.DecBinary()
-				_ = yym439
 				if false {
 				} else {
 					z.F.DecMapUintInt64X(x.FptrMapUintInt64, d)
@@ -23835,8 +21091,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintFloat32 = nil
 			} else {
 				yyv440 := &x.FMapUintFloat32
-				yym441 := z.DecBinary()
-				_ = yym441
 				if false {
 				} else {
 					z.F.DecMapUintFloat32X(yyv440, d)
@@ -23854,8 +21108,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintFloat32 == nil {
 					x.FptrMapUintFloat32 = new(map[uint]float32)
 				}
-				yym443 := z.DecBinary()
-				_ = yym443
 				if false {
 				} else {
 					z.F.DecMapUintFloat32X(x.FptrMapUintFloat32, d)
@@ -23866,8 +21118,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintFloat64 = nil
 			} else {
 				yyv444 := &x.FMapUintFloat64
-				yym445 := z.DecBinary()
-				_ = yym445
 				if false {
 				} else {
 					z.F.DecMapUintFloat64X(yyv444, d)
@@ -23885,8 +21135,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintFloat64 == nil {
 					x.FptrMapUintFloat64 = new(map[uint]float64)
 				}
-				yym447 := z.DecBinary()
-				_ = yym447
 				if false {
 				} else {
 					z.F.DecMapUintFloat64X(x.FptrMapUintFloat64, d)
@@ -23897,8 +21145,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintBool = nil
 			} else {
 				yyv448 := &x.FMapUintBool
-				yym449 := z.DecBinary()
-				_ = yym449
 				if false {
 				} else {
 					z.F.DecMapUintBoolX(yyv448, d)
@@ -23916,8 +21162,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintBool == nil {
 					x.FptrMapUintBool = new(map[uint]bool)
 				}
-				yym451 := z.DecBinary()
-				_ = yym451
 				if false {
 				} else {
 					z.F.DecMapUintBoolX(x.FptrMapUintBool, d)
@@ -23928,8 +21172,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Intf = nil
 			} else {
 				yyv452 := &x.FMapUint8Intf
-				yym453 := z.DecBinary()
-				_ = yym453
 				if false {
 				} else {
 					z.F.DecMapUint8IntfX(yyv452, d)
@@ -23947,8 +21189,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Intf == nil {
 					x.FptrMapUint8Intf = new(map[uint8]interface{})
 				}
-				yym455 := z.DecBinary()
-				_ = yym455
 				if false {
 				} else {
 					z.F.DecMapUint8IntfX(x.FptrMapUint8Intf, d)
@@ -23959,8 +21199,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8String = nil
 			} else {
 				yyv456 := &x.FMapUint8String
-				yym457 := z.DecBinary()
-				_ = yym457
 				if false {
 				} else {
 					z.F.DecMapUint8StringX(yyv456, d)
@@ -23978,8 +21216,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8String == nil {
 					x.FptrMapUint8String = new(map[uint8]string)
 				}
-				yym459 := z.DecBinary()
-				_ = yym459
 				if false {
 				} else {
 					z.F.DecMapUint8StringX(x.FptrMapUint8String, d)
@@ -23990,8 +21226,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Uint = nil
 			} else {
 				yyv460 := &x.FMapUint8Uint
-				yym461 := z.DecBinary()
-				_ = yym461
 				if false {
 				} else {
 					z.F.DecMapUint8UintX(yyv460, d)
@@ -24009,8 +21243,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Uint == nil {
 					x.FptrMapUint8Uint = new(map[uint8]uint)
 				}
-				yym463 := z.DecBinary()
-				_ = yym463
 				if false {
 				} else {
 					z.F.DecMapUint8UintX(x.FptrMapUint8Uint, d)
@@ -24021,8 +21253,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Uint8 = nil
 			} else {
 				yyv464 := &x.FMapUint8Uint8
-				yym465 := z.DecBinary()
-				_ = yym465
 				if false {
 				} else {
 					z.F.DecMapUint8Uint8X(yyv464, d)
@@ -24040,8 +21270,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Uint8 == nil {
 					x.FptrMapUint8Uint8 = new(map[uint8]uint8)
 				}
-				yym467 := z.DecBinary()
-				_ = yym467
 				if false {
 				} else {
 					z.F.DecMapUint8Uint8X(x.FptrMapUint8Uint8, d)
@@ -24052,8 +21280,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Uint16 = nil
 			} else {
 				yyv468 := &x.FMapUint8Uint16
-				yym469 := z.DecBinary()
-				_ = yym469
 				if false {
 				} else {
 					z.F.DecMapUint8Uint16X(yyv468, d)
@@ -24071,8 +21297,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Uint16 == nil {
 					x.FptrMapUint8Uint16 = new(map[uint8]uint16)
 				}
-				yym471 := z.DecBinary()
-				_ = yym471
 				if false {
 				} else {
 					z.F.DecMapUint8Uint16X(x.FptrMapUint8Uint16, d)
@@ -24083,8 +21307,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Uint32 = nil
 			} else {
 				yyv472 := &x.FMapUint8Uint32
-				yym473 := z.DecBinary()
-				_ = yym473
 				if false {
 				} else {
 					z.F.DecMapUint8Uint32X(yyv472, d)
@@ -24102,8 +21324,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Uint32 == nil {
 					x.FptrMapUint8Uint32 = new(map[uint8]uint32)
 				}
-				yym475 := z.DecBinary()
-				_ = yym475
 				if false {
 				} else {
 					z.F.DecMapUint8Uint32X(x.FptrMapUint8Uint32, d)
@@ -24114,8 +21334,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Uint64 = nil
 			} else {
 				yyv476 := &x.FMapUint8Uint64
-				yym477 := z.DecBinary()
-				_ = yym477
 				if false {
 				} else {
 					z.F.DecMapUint8Uint64X(yyv476, d)
@@ -24133,8 +21351,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Uint64 == nil {
 					x.FptrMapUint8Uint64 = new(map[uint8]uint64)
 				}
-				yym479 := z.DecBinary()
-				_ = yym479
 				if false {
 				} else {
 					z.F.DecMapUint8Uint64X(x.FptrMapUint8Uint64, d)
@@ -24145,8 +21361,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Uintptr = nil
 			} else {
 				yyv480 := &x.FMapUint8Uintptr
-				yym481 := z.DecBinary()
-				_ = yym481
 				if false {
 				} else {
 					z.F.DecMapUint8UintptrX(yyv480, d)
@@ -24164,8 +21378,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Uintptr == nil {
 					x.FptrMapUint8Uintptr = new(map[uint8]uintptr)
 				}
-				yym483 := z.DecBinary()
-				_ = yym483
 				if false {
 				} else {
 					z.F.DecMapUint8UintptrX(x.FptrMapUint8Uintptr, d)
@@ -24176,8 +21388,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Int = nil
 			} else {
 				yyv484 := &x.FMapUint8Int
-				yym485 := z.DecBinary()
-				_ = yym485
 				if false {
 				} else {
 					z.F.DecMapUint8IntX(yyv484, d)
@@ -24195,8 +21405,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Int == nil {
 					x.FptrMapUint8Int = new(map[uint8]int)
 				}
-				yym487 := z.DecBinary()
-				_ = yym487
 				if false {
 				} else {
 					z.F.DecMapUint8IntX(x.FptrMapUint8Int, d)
@@ -24207,8 +21415,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Int8 = nil
 			} else {
 				yyv488 := &x.FMapUint8Int8
-				yym489 := z.DecBinary()
-				_ = yym489
 				if false {
 				} else {
 					z.F.DecMapUint8Int8X(yyv488, d)
@@ -24226,8 +21432,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Int8 == nil {
 					x.FptrMapUint8Int8 = new(map[uint8]int8)
 				}
-				yym491 := z.DecBinary()
-				_ = yym491
 				if false {
 				} else {
 					z.F.DecMapUint8Int8X(x.FptrMapUint8Int8, d)
@@ -24238,8 +21442,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Int16 = nil
 			} else {
 				yyv492 := &x.FMapUint8Int16
-				yym493 := z.DecBinary()
-				_ = yym493
 				if false {
 				} else {
 					z.F.DecMapUint8Int16X(yyv492, d)
@@ -24257,8 +21459,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Int16 == nil {
 					x.FptrMapUint8Int16 = new(map[uint8]int16)
 				}
-				yym495 := z.DecBinary()
-				_ = yym495
 				if false {
 				} else {
 					z.F.DecMapUint8Int16X(x.FptrMapUint8Int16, d)
@@ -24269,8 +21469,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Int32 = nil
 			} else {
 				yyv496 := &x.FMapUint8Int32
-				yym497 := z.DecBinary()
-				_ = yym497
 				if false {
 				} else {
 					z.F.DecMapUint8Int32X(yyv496, d)
@@ -24288,8 +21486,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Int32 == nil {
 					x.FptrMapUint8Int32 = new(map[uint8]int32)
 				}
-				yym499 := z.DecBinary()
-				_ = yym499
 				if false {
 				} else {
 					z.F.DecMapUint8Int32X(x.FptrMapUint8Int32, d)
@@ -24300,8 +21496,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Int64 = nil
 			} else {
 				yyv500 := &x.FMapUint8Int64
-				yym501 := z.DecBinary()
-				_ = yym501
 				if false {
 				} else {
 					z.F.DecMapUint8Int64X(yyv500, d)
@@ -24319,8 +21513,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Int64 == nil {
 					x.FptrMapUint8Int64 = new(map[uint8]int64)
 				}
-				yym503 := z.DecBinary()
-				_ = yym503
 				if false {
 				} else {
 					z.F.DecMapUint8Int64X(x.FptrMapUint8Int64, d)
@@ -24331,8 +21523,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Float32 = nil
 			} else {
 				yyv504 := &x.FMapUint8Float32
-				yym505 := z.DecBinary()
-				_ = yym505
 				if false {
 				} else {
 					z.F.DecMapUint8Float32X(yyv504, d)
@@ -24350,8 +21540,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Float32 == nil {
 					x.FptrMapUint8Float32 = new(map[uint8]float32)
 				}
-				yym507 := z.DecBinary()
-				_ = yym507
 				if false {
 				} else {
 					z.F.DecMapUint8Float32X(x.FptrMapUint8Float32, d)
@@ -24362,8 +21550,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Float64 = nil
 			} else {
 				yyv508 := &x.FMapUint8Float64
-				yym509 := z.DecBinary()
-				_ = yym509
 				if false {
 				} else {
 					z.F.DecMapUint8Float64X(yyv508, d)
@@ -24381,8 +21567,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Float64 == nil {
 					x.FptrMapUint8Float64 = new(map[uint8]float64)
 				}
-				yym511 := z.DecBinary()
-				_ = yym511
 				if false {
 				} else {
 					z.F.DecMapUint8Float64X(x.FptrMapUint8Float64, d)
@@ -24393,8 +21577,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint8Bool = nil
 			} else {
 				yyv512 := &x.FMapUint8Bool
-				yym513 := z.DecBinary()
-				_ = yym513
 				if false {
 				} else {
 					z.F.DecMapUint8BoolX(yyv512, d)
@@ -24412,8 +21594,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Bool == nil {
 					x.FptrMapUint8Bool = new(map[uint8]bool)
 				}
-				yym515 := z.DecBinary()
-				_ = yym515
 				if false {
 				} else {
 					z.F.DecMapUint8BoolX(x.FptrMapUint8Bool, d)
@@ -24424,8 +21604,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Intf = nil
 			} else {
 				yyv516 := &x.FMapUint16Intf
-				yym517 := z.DecBinary()
-				_ = yym517
 				if false {
 				} else {
 					z.F.DecMapUint16IntfX(yyv516, d)
@@ -24443,8 +21621,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Intf == nil {
 					x.FptrMapUint16Intf = new(map[uint16]interface{})
 				}
-				yym519 := z.DecBinary()
-				_ = yym519
 				if false {
 				} else {
 					z.F.DecMapUint16IntfX(x.FptrMapUint16Intf, d)
@@ -24455,8 +21631,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16String = nil
 			} else {
 				yyv520 := &x.FMapUint16String
-				yym521 := z.DecBinary()
-				_ = yym521
 				if false {
 				} else {
 					z.F.DecMapUint16StringX(yyv520, d)
@@ -24474,8 +21648,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16String == nil {
 					x.FptrMapUint16String = new(map[uint16]string)
 				}
-				yym523 := z.DecBinary()
-				_ = yym523
 				if false {
 				} else {
 					z.F.DecMapUint16StringX(x.FptrMapUint16String, d)
@@ -24486,8 +21658,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Uint = nil
 			} else {
 				yyv524 := &x.FMapUint16Uint
-				yym525 := z.DecBinary()
-				_ = yym525
 				if false {
 				} else {
 					z.F.DecMapUint16UintX(yyv524, d)
@@ -24505,8 +21675,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Uint == nil {
 					x.FptrMapUint16Uint = new(map[uint16]uint)
 				}
-				yym527 := z.DecBinary()
-				_ = yym527
 				if false {
 				} else {
 					z.F.DecMapUint16UintX(x.FptrMapUint16Uint, d)
@@ -24517,8 +21685,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Uint8 = nil
 			} else {
 				yyv528 := &x.FMapUint16Uint8
-				yym529 := z.DecBinary()
-				_ = yym529
 				if false {
 				} else {
 					z.F.DecMapUint16Uint8X(yyv528, d)
@@ -24536,8 +21702,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Uint8 == nil {
 					x.FptrMapUint16Uint8 = new(map[uint16]uint8)
 				}
-				yym531 := z.DecBinary()
-				_ = yym531
 				if false {
 				} else {
 					z.F.DecMapUint16Uint8X(x.FptrMapUint16Uint8, d)
@@ -24548,8 +21712,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Uint16 = nil
 			} else {
 				yyv532 := &x.FMapUint16Uint16
-				yym533 := z.DecBinary()
-				_ = yym533
 				if false {
 				} else {
 					z.F.DecMapUint16Uint16X(yyv532, d)
@@ -24567,8 +21729,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Uint16 == nil {
 					x.FptrMapUint16Uint16 = new(map[uint16]uint16)
 				}
-				yym535 := z.DecBinary()
-				_ = yym535
 				if false {
 				} else {
 					z.F.DecMapUint16Uint16X(x.FptrMapUint16Uint16, d)
@@ -24579,8 +21739,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Uint32 = nil
 			} else {
 				yyv536 := &x.FMapUint16Uint32
-				yym537 := z.DecBinary()
-				_ = yym537
 				if false {
 				} else {
 					z.F.DecMapUint16Uint32X(yyv536, d)
@@ -24598,8 +21756,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Uint32 == nil {
 					x.FptrMapUint16Uint32 = new(map[uint16]uint32)
 				}
-				yym539 := z.DecBinary()
-				_ = yym539
 				if false {
 				} else {
 					z.F.DecMapUint16Uint32X(x.FptrMapUint16Uint32, d)
@@ -24610,8 +21766,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Uint64 = nil
 			} else {
 				yyv540 := &x.FMapUint16Uint64
-				yym541 := z.DecBinary()
-				_ = yym541
 				if false {
 				} else {
 					z.F.DecMapUint16Uint64X(yyv540, d)
@@ -24629,8 +21783,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Uint64 == nil {
 					x.FptrMapUint16Uint64 = new(map[uint16]uint64)
 				}
-				yym543 := z.DecBinary()
-				_ = yym543
 				if false {
 				} else {
 					z.F.DecMapUint16Uint64X(x.FptrMapUint16Uint64, d)
@@ -24641,8 +21793,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Uintptr = nil
 			} else {
 				yyv544 := &x.FMapUint16Uintptr
-				yym545 := z.DecBinary()
-				_ = yym545
 				if false {
 				} else {
 					z.F.DecMapUint16UintptrX(yyv544, d)
@@ -24660,8 +21810,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Uintptr == nil {
 					x.FptrMapUint16Uintptr = new(map[uint16]uintptr)
 				}
-				yym547 := z.DecBinary()
-				_ = yym547
 				if false {
 				} else {
 					z.F.DecMapUint16UintptrX(x.FptrMapUint16Uintptr, d)
@@ -24672,8 +21820,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Int = nil
 			} else {
 				yyv548 := &x.FMapUint16Int
-				yym549 := z.DecBinary()
-				_ = yym549
 				if false {
 				} else {
 					z.F.DecMapUint16IntX(yyv548, d)
@@ -24691,8 +21837,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Int == nil {
 					x.FptrMapUint16Int = new(map[uint16]int)
 				}
-				yym551 := z.DecBinary()
-				_ = yym551
 				if false {
 				} else {
 					z.F.DecMapUint16IntX(x.FptrMapUint16Int, d)
@@ -24703,8 +21847,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Int8 = nil
 			} else {
 				yyv552 := &x.FMapUint16Int8
-				yym553 := z.DecBinary()
-				_ = yym553
 				if false {
 				} else {
 					z.F.DecMapUint16Int8X(yyv552, d)
@@ -24722,8 +21864,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Int8 == nil {
 					x.FptrMapUint16Int8 = new(map[uint16]int8)
 				}
-				yym555 := z.DecBinary()
-				_ = yym555
 				if false {
 				} else {
 					z.F.DecMapUint16Int8X(x.FptrMapUint16Int8, d)
@@ -24734,8 +21874,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Int16 = nil
 			} else {
 				yyv556 := &x.FMapUint16Int16
-				yym557 := z.DecBinary()
-				_ = yym557
 				if false {
 				} else {
 					z.F.DecMapUint16Int16X(yyv556, d)
@@ -24753,8 +21891,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Int16 == nil {
 					x.FptrMapUint16Int16 = new(map[uint16]int16)
 				}
-				yym559 := z.DecBinary()
-				_ = yym559
 				if false {
 				} else {
 					z.F.DecMapUint16Int16X(x.FptrMapUint16Int16, d)
@@ -24765,8 +21901,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Int32 = nil
 			} else {
 				yyv560 := &x.FMapUint16Int32
-				yym561 := z.DecBinary()
-				_ = yym561
 				if false {
 				} else {
 					z.F.DecMapUint16Int32X(yyv560, d)
@@ -24784,8 +21918,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Int32 == nil {
 					x.FptrMapUint16Int32 = new(map[uint16]int32)
 				}
-				yym563 := z.DecBinary()
-				_ = yym563
 				if false {
 				} else {
 					z.F.DecMapUint16Int32X(x.FptrMapUint16Int32, d)
@@ -24796,8 +21928,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Int64 = nil
 			} else {
 				yyv564 := &x.FMapUint16Int64
-				yym565 := z.DecBinary()
-				_ = yym565
 				if false {
 				} else {
 					z.F.DecMapUint16Int64X(yyv564, d)
@@ -24815,8 +21945,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Int64 == nil {
 					x.FptrMapUint16Int64 = new(map[uint16]int64)
 				}
-				yym567 := z.DecBinary()
-				_ = yym567
 				if false {
 				} else {
 					z.F.DecMapUint16Int64X(x.FptrMapUint16Int64, d)
@@ -24827,8 +21955,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Float32 = nil
 			} else {
 				yyv568 := &x.FMapUint16Float32
-				yym569 := z.DecBinary()
-				_ = yym569
 				if false {
 				} else {
 					z.F.DecMapUint16Float32X(yyv568, d)
@@ -24846,8 +21972,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Float32 == nil {
 					x.FptrMapUint16Float32 = new(map[uint16]float32)
 				}
-				yym571 := z.DecBinary()
-				_ = yym571
 				if false {
 				} else {
 					z.F.DecMapUint16Float32X(x.FptrMapUint16Float32, d)
@@ -24858,8 +21982,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Float64 = nil
 			} else {
 				yyv572 := &x.FMapUint16Float64
-				yym573 := z.DecBinary()
-				_ = yym573
 				if false {
 				} else {
 					z.F.DecMapUint16Float64X(yyv572, d)
@@ -24877,8 +21999,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Float64 == nil {
 					x.FptrMapUint16Float64 = new(map[uint16]float64)
 				}
-				yym575 := z.DecBinary()
-				_ = yym575
 				if false {
 				} else {
 					z.F.DecMapUint16Float64X(x.FptrMapUint16Float64, d)
@@ -24889,8 +22009,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint16Bool = nil
 			} else {
 				yyv576 := &x.FMapUint16Bool
-				yym577 := z.DecBinary()
-				_ = yym577
 				if false {
 				} else {
 					z.F.DecMapUint16BoolX(yyv576, d)
@@ -24908,8 +22026,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint16Bool == nil {
 					x.FptrMapUint16Bool = new(map[uint16]bool)
 				}
-				yym579 := z.DecBinary()
-				_ = yym579
 				if false {
 				} else {
 					z.F.DecMapUint16BoolX(x.FptrMapUint16Bool, d)
@@ -24920,8 +22036,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Intf = nil
 			} else {
 				yyv580 := &x.FMapUint32Intf
-				yym581 := z.DecBinary()
-				_ = yym581
 				if false {
 				} else {
 					z.F.DecMapUint32IntfX(yyv580, d)
@@ -24939,8 +22053,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Intf == nil {
 					x.FptrMapUint32Intf = new(map[uint32]interface{})
 				}
-				yym583 := z.DecBinary()
-				_ = yym583
 				if false {
 				} else {
 					z.F.DecMapUint32IntfX(x.FptrMapUint32Intf, d)
@@ -24951,8 +22063,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32String = nil
 			} else {
 				yyv584 := &x.FMapUint32String
-				yym585 := z.DecBinary()
-				_ = yym585
 				if false {
 				} else {
 					z.F.DecMapUint32StringX(yyv584, d)
@@ -24970,8 +22080,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32String == nil {
 					x.FptrMapUint32String = new(map[uint32]string)
 				}
-				yym587 := z.DecBinary()
-				_ = yym587
 				if false {
 				} else {
 					z.F.DecMapUint32StringX(x.FptrMapUint32String, d)
@@ -24982,8 +22090,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Uint = nil
 			} else {
 				yyv588 := &x.FMapUint32Uint
-				yym589 := z.DecBinary()
-				_ = yym589
 				if false {
 				} else {
 					z.F.DecMapUint32UintX(yyv588, d)
@@ -25001,8 +22107,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Uint == nil {
 					x.FptrMapUint32Uint = new(map[uint32]uint)
 				}
-				yym591 := z.DecBinary()
-				_ = yym591
 				if false {
 				} else {
 					z.F.DecMapUint32UintX(x.FptrMapUint32Uint, d)
@@ -25013,8 +22117,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Uint8 = nil
 			} else {
 				yyv592 := &x.FMapUint32Uint8
-				yym593 := z.DecBinary()
-				_ = yym593
 				if false {
 				} else {
 					z.F.DecMapUint32Uint8X(yyv592, d)
@@ -25032,8 +22134,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Uint8 == nil {
 					x.FptrMapUint32Uint8 = new(map[uint32]uint8)
 				}
-				yym595 := z.DecBinary()
-				_ = yym595
 				if false {
 				} else {
 					z.F.DecMapUint32Uint8X(x.FptrMapUint32Uint8, d)
@@ -25044,8 +22144,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Uint16 = nil
 			} else {
 				yyv596 := &x.FMapUint32Uint16
-				yym597 := z.DecBinary()
-				_ = yym597
 				if false {
 				} else {
 					z.F.DecMapUint32Uint16X(yyv596, d)
@@ -25063,8 +22161,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Uint16 == nil {
 					x.FptrMapUint32Uint16 = new(map[uint32]uint16)
 				}
-				yym599 := z.DecBinary()
-				_ = yym599
 				if false {
 				} else {
 					z.F.DecMapUint32Uint16X(x.FptrMapUint32Uint16, d)
@@ -25075,8 +22171,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Uint32 = nil
 			} else {
 				yyv600 := &x.FMapUint32Uint32
-				yym601 := z.DecBinary()
-				_ = yym601
 				if false {
 				} else {
 					z.F.DecMapUint32Uint32X(yyv600, d)
@@ -25094,8 +22188,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Uint32 == nil {
 					x.FptrMapUint32Uint32 = new(map[uint32]uint32)
 				}
-				yym603 := z.DecBinary()
-				_ = yym603
 				if false {
 				} else {
 					z.F.DecMapUint32Uint32X(x.FptrMapUint32Uint32, d)
@@ -25106,8 +22198,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Uint64 = nil
 			} else {
 				yyv604 := &x.FMapUint32Uint64
-				yym605 := z.DecBinary()
-				_ = yym605
 				if false {
 				} else {
 					z.F.DecMapUint32Uint64X(yyv604, d)
@@ -25125,8 +22215,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Uint64 == nil {
 					x.FptrMapUint32Uint64 = new(map[uint32]uint64)
 				}
-				yym607 := z.DecBinary()
-				_ = yym607
 				if false {
 				} else {
 					z.F.DecMapUint32Uint64X(x.FptrMapUint32Uint64, d)
@@ -25137,8 +22225,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Uintptr = nil
 			} else {
 				yyv608 := &x.FMapUint32Uintptr
-				yym609 := z.DecBinary()
-				_ = yym609
 				if false {
 				} else {
 					z.F.DecMapUint32UintptrX(yyv608, d)
@@ -25156,8 +22242,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Uintptr == nil {
 					x.FptrMapUint32Uintptr = new(map[uint32]uintptr)
 				}
-				yym611 := z.DecBinary()
-				_ = yym611
 				if false {
 				} else {
 					z.F.DecMapUint32UintptrX(x.FptrMapUint32Uintptr, d)
@@ -25168,8 +22252,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Int = nil
 			} else {
 				yyv612 := &x.FMapUint32Int
-				yym613 := z.DecBinary()
-				_ = yym613
 				if false {
 				} else {
 					z.F.DecMapUint32IntX(yyv612, d)
@@ -25187,8 +22269,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Int == nil {
 					x.FptrMapUint32Int = new(map[uint32]int)
 				}
-				yym615 := z.DecBinary()
-				_ = yym615
 				if false {
 				} else {
 					z.F.DecMapUint32IntX(x.FptrMapUint32Int, d)
@@ -25199,8 +22279,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Int8 = nil
 			} else {
 				yyv616 := &x.FMapUint32Int8
-				yym617 := z.DecBinary()
-				_ = yym617
 				if false {
 				} else {
 					z.F.DecMapUint32Int8X(yyv616, d)
@@ -25218,8 +22296,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Int8 == nil {
 					x.FptrMapUint32Int8 = new(map[uint32]int8)
 				}
-				yym619 := z.DecBinary()
-				_ = yym619
 				if false {
 				} else {
 					z.F.DecMapUint32Int8X(x.FptrMapUint32Int8, d)
@@ -25230,8 +22306,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Int16 = nil
 			} else {
 				yyv620 := &x.FMapUint32Int16
-				yym621 := z.DecBinary()
-				_ = yym621
 				if false {
 				} else {
 					z.F.DecMapUint32Int16X(yyv620, d)
@@ -25249,8 +22323,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Int16 == nil {
 					x.FptrMapUint32Int16 = new(map[uint32]int16)
 				}
-				yym623 := z.DecBinary()
-				_ = yym623
 				if false {
 				} else {
 					z.F.DecMapUint32Int16X(x.FptrMapUint32Int16, d)
@@ -25261,8 +22333,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Int32 = nil
 			} else {
 				yyv624 := &x.FMapUint32Int32
-				yym625 := z.DecBinary()
-				_ = yym625
 				if false {
 				} else {
 					z.F.DecMapUint32Int32X(yyv624, d)
@@ -25280,8 +22350,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Int32 == nil {
 					x.FptrMapUint32Int32 = new(map[uint32]int32)
 				}
-				yym627 := z.DecBinary()
-				_ = yym627
 				if false {
 				} else {
 					z.F.DecMapUint32Int32X(x.FptrMapUint32Int32, d)
@@ -25292,8 +22360,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Int64 = nil
 			} else {
 				yyv628 := &x.FMapUint32Int64
-				yym629 := z.DecBinary()
-				_ = yym629
 				if false {
 				} else {
 					z.F.DecMapUint32Int64X(yyv628, d)
@@ -25311,8 +22377,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Int64 == nil {
 					x.FptrMapUint32Int64 = new(map[uint32]int64)
 				}
-				yym631 := z.DecBinary()
-				_ = yym631
 				if false {
 				} else {
 					z.F.DecMapUint32Int64X(x.FptrMapUint32Int64, d)
@@ -25323,8 +22387,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Float32 = nil
 			} else {
 				yyv632 := &x.FMapUint32Float32
-				yym633 := z.DecBinary()
-				_ = yym633
 				if false {
 				} else {
 					z.F.DecMapUint32Float32X(yyv632, d)
@@ -25342,8 +22404,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Float32 == nil {
 					x.FptrMapUint32Float32 = new(map[uint32]float32)
 				}
-				yym635 := z.DecBinary()
-				_ = yym635
 				if false {
 				} else {
 					z.F.DecMapUint32Float32X(x.FptrMapUint32Float32, d)
@@ -25354,8 +22414,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Float64 = nil
 			} else {
 				yyv636 := &x.FMapUint32Float64
-				yym637 := z.DecBinary()
-				_ = yym637
 				if false {
 				} else {
 					z.F.DecMapUint32Float64X(yyv636, d)
@@ -25373,8 +22431,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Float64 == nil {
 					x.FptrMapUint32Float64 = new(map[uint32]float64)
 				}
-				yym639 := z.DecBinary()
-				_ = yym639
 				if false {
 				} else {
 					z.F.DecMapUint32Float64X(x.FptrMapUint32Float64, d)
@@ -25385,8 +22441,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint32Bool = nil
 			} else {
 				yyv640 := &x.FMapUint32Bool
-				yym641 := z.DecBinary()
-				_ = yym641
 				if false {
 				} else {
 					z.F.DecMapUint32BoolX(yyv640, d)
@@ -25404,8 +22458,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint32Bool == nil {
 					x.FptrMapUint32Bool = new(map[uint32]bool)
 				}
-				yym643 := z.DecBinary()
-				_ = yym643
 				if false {
 				} else {
 					z.F.DecMapUint32BoolX(x.FptrMapUint32Bool, d)
@@ -25416,8 +22468,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Intf = nil
 			} else {
 				yyv644 := &x.FMapUint64Intf
-				yym645 := z.DecBinary()
-				_ = yym645
 				if false {
 				} else {
 					z.F.DecMapUint64IntfX(yyv644, d)
@@ -25435,8 +22485,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Intf == nil {
 					x.FptrMapUint64Intf = new(map[uint64]interface{})
 				}
-				yym647 := z.DecBinary()
-				_ = yym647
 				if false {
 				} else {
 					z.F.DecMapUint64IntfX(x.FptrMapUint64Intf, d)
@@ -25447,8 +22495,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64String = nil
 			} else {
 				yyv648 := &x.FMapUint64String
-				yym649 := z.DecBinary()
-				_ = yym649
 				if false {
 				} else {
 					z.F.DecMapUint64StringX(yyv648, d)
@@ -25466,8 +22512,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64String == nil {
 					x.FptrMapUint64String = new(map[uint64]string)
 				}
-				yym651 := z.DecBinary()
-				_ = yym651
 				if false {
 				} else {
 					z.F.DecMapUint64StringX(x.FptrMapUint64String, d)
@@ -25478,8 +22522,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Uint = nil
 			} else {
 				yyv652 := &x.FMapUint64Uint
-				yym653 := z.DecBinary()
-				_ = yym653
 				if false {
 				} else {
 					z.F.DecMapUint64UintX(yyv652, d)
@@ -25497,8 +22539,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Uint == nil {
 					x.FptrMapUint64Uint = new(map[uint64]uint)
 				}
-				yym655 := z.DecBinary()
-				_ = yym655
 				if false {
 				} else {
 					z.F.DecMapUint64UintX(x.FptrMapUint64Uint, d)
@@ -25509,8 +22549,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Uint8 = nil
 			} else {
 				yyv656 := &x.FMapUint64Uint8
-				yym657 := z.DecBinary()
-				_ = yym657
 				if false {
 				} else {
 					z.F.DecMapUint64Uint8X(yyv656, d)
@@ -25528,8 +22566,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Uint8 == nil {
 					x.FptrMapUint64Uint8 = new(map[uint64]uint8)
 				}
-				yym659 := z.DecBinary()
-				_ = yym659
 				if false {
 				} else {
 					z.F.DecMapUint64Uint8X(x.FptrMapUint64Uint8, d)
@@ -25540,8 +22576,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Uint16 = nil
 			} else {
 				yyv660 := &x.FMapUint64Uint16
-				yym661 := z.DecBinary()
-				_ = yym661
 				if false {
 				} else {
 					z.F.DecMapUint64Uint16X(yyv660, d)
@@ -25559,8 +22593,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Uint16 == nil {
 					x.FptrMapUint64Uint16 = new(map[uint64]uint16)
 				}
-				yym663 := z.DecBinary()
-				_ = yym663
 				if false {
 				} else {
 					z.F.DecMapUint64Uint16X(x.FptrMapUint64Uint16, d)
@@ -25571,8 +22603,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Uint32 = nil
 			} else {
 				yyv664 := &x.FMapUint64Uint32
-				yym665 := z.DecBinary()
-				_ = yym665
 				if false {
 				} else {
 					z.F.DecMapUint64Uint32X(yyv664, d)
@@ -25590,8 +22620,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Uint32 == nil {
 					x.FptrMapUint64Uint32 = new(map[uint64]uint32)
 				}
-				yym667 := z.DecBinary()
-				_ = yym667
 				if false {
 				} else {
 					z.F.DecMapUint64Uint32X(x.FptrMapUint64Uint32, d)
@@ -25602,8 +22630,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Uint64 = nil
 			} else {
 				yyv668 := &x.FMapUint64Uint64
-				yym669 := z.DecBinary()
-				_ = yym669
 				if false {
 				} else {
 					z.F.DecMapUint64Uint64X(yyv668, d)
@@ -25621,8 +22647,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Uint64 == nil {
 					x.FptrMapUint64Uint64 = new(map[uint64]uint64)
 				}
-				yym671 := z.DecBinary()
-				_ = yym671
 				if false {
 				} else {
 					z.F.DecMapUint64Uint64X(x.FptrMapUint64Uint64, d)
@@ -25633,8 +22657,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Uintptr = nil
 			} else {
 				yyv672 := &x.FMapUint64Uintptr
-				yym673 := z.DecBinary()
-				_ = yym673
 				if false {
 				} else {
 					z.F.DecMapUint64UintptrX(yyv672, d)
@@ -25652,8 +22674,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Uintptr == nil {
 					x.FptrMapUint64Uintptr = new(map[uint64]uintptr)
 				}
-				yym675 := z.DecBinary()
-				_ = yym675
 				if false {
 				} else {
 					z.F.DecMapUint64UintptrX(x.FptrMapUint64Uintptr, d)
@@ -25664,8 +22684,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Int = nil
 			} else {
 				yyv676 := &x.FMapUint64Int
-				yym677 := z.DecBinary()
-				_ = yym677
 				if false {
 				} else {
 					z.F.DecMapUint64IntX(yyv676, d)
@@ -25683,8 +22701,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Int == nil {
 					x.FptrMapUint64Int = new(map[uint64]int)
 				}
-				yym679 := z.DecBinary()
-				_ = yym679
 				if false {
 				} else {
 					z.F.DecMapUint64IntX(x.FptrMapUint64Int, d)
@@ -25695,8 +22711,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Int8 = nil
 			} else {
 				yyv680 := &x.FMapUint64Int8
-				yym681 := z.DecBinary()
-				_ = yym681
 				if false {
 				} else {
 					z.F.DecMapUint64Int8X(yyv680, d)
@@ -25714,8 +22728,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Int8 == nil {
 					x.FptrMapUint64Int8 = new(map[uint64]int8)
 				}
-				yym683 := z.DecBinary()
-				_ = yym683
 				if false {
 				} else {
 					z.F.DecMapUint64Int8X(x.FptrMapUint64Int8, d)
@@ -25726,8 +22738,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Int16 = nil
 			} else {
 				yyv684 := &x.FMapUint64Int16
-				yym685 := z.DecBinary()
-				_ = yym685
 				if false {
 				} else {
 					z.F.DecMapUint64Int16X(yyv684, d)
@@ -25745,8 +22755,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Int16 == nil {
 					x.FptrMapUint64Int16 = new(map[uint64]int16)
 				}
-				yym687 := z.DecBinary()
-				_ = yym687
 				if false {
 				} else {
 					z.F.DecMapUint64Int16X(x.FptrMapUint64Int16, d)
@@ -25757,8 +22765,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Int32 = nil
 			} else {
 				yyv688 := &x.FMapUint64Int32
-				yym689 := z.DecBinary()
-				_ = yym689
 				if false {
 				} else {
 					z.F.DecMapUint64Int32X(yyv688, d)
@@ -25776,8 +22782,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Int32 == nil {
 					x.FptrMapUint64Int32 = new(map[uint64]int32)
 				}
-				yym691 := z.DecBinary()
-				_ = yym691
 				if false {
 				} else {
 					z.F.DecMapUint64Int32X(x.FptrMapUint64Int32, d)
@@ -25788,8 +22792,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Int64 = nil
 			} else {
 				yyv692 := &x.FMapUint64Int64
-				yym693 := z.DecBinary()
-				_ = yym693
 				if false {
 				} else {
 					z.F.DecMapUint64Int64X(yyv692, d)
@@ -25807,8 +22809,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Int64 == nil {
 					x.FptrMapUint64Int64 = new(map[uint64]int64)
 				}
-				yym695 := z.DecBinary()
-				_ = yym695
 				if false {
 				} else {
 					z.F.DecMapUint64Int64X(x.FptrMapUint64Int64, d)
@@ -25819,8 +22819,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Float32 = nil
 			} else {
 				yyv696 := &x.FMapUint64Float32
-				yym697 := z.DecBinary()
-				_ = yym697
 				if false {
 				} else {
 					z.F.DecMapUint64Float32X(yyv696, d)
@@ -25838,8 +22836,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Float32 == nil {
 					x.FptrMapUint64Float32 = new(map[uint64]float32)
 				}
-				yym699 := z.DecBinary()
-				_ = yym699
 				if false {
 				} else {
 					z.F.DecMapUint64Float32X(x.FptrMapUint64Float32, d)
@@ -25850,8 +22846,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Float64 = nil
 			} else {
 				yyv700 := &x.FMapUint64Float64
-				yym701 := z.DecBinary()
-				_ = yym701
 				if false {
 				} else {
 					z.F.DecMapUint64Float64X(yyv700, d)
@@ -25869,8 +22863,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Float64 == nil {
 					x.FptrMapUint64Float64 = new(map[uint64]float64)
 				}
-				yym703 := z.DecBinary()
-				_ = yym703
 				if false {
 				} else {
 					z.F.DecMapUint64Float64X(x.FptrMapUint64Float64, d)
@@ -25881,8 +22873,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUint64Bool = nil
 			} else {
 				yyv704 := &x.FMapUint64Bool
-				yym705 := z.DecBinary()
-				_ = yym705
 				if false {
 				} else {
 					z.F.DecMapUint64BoolX(yyv704, d)
@@ -25900,8 +22890,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Bool == nil {
 					x.FptrMapUint64Bool = new(map[uint64]bool)
 				}
-				yym707 := z.DecBinary()
-				_ = yym707
 				if false {
 				} else {
 					z.F.DecMapUint64BoolX(x.FptrMapUint64Bool, d)
@@ -25912,8 +22900,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrIntf = nil
 			} else {
 				yyv708 := &x.FMapUintptrIntf
-				yym709 := z.DecBinary()
-				_ = yym709
 				if false {
 				} else {
 					z.F.DecMapUintptrIntfX(yyv708, d)
@@ -25931,8 +22917,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrIntf == nil {
 					x.FptrMapUintptrIntf = new(map[uintptr]interface{})
 				}
-				yym711 := z.DecBinary()
-				_ = yym711
 				if false {
 				} else {
 					z.F.DecMapUintptrIntfX(x.FptrMapUintptrIntf, d)
@@ -25943,8 +22927,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrString = nil
 			} else {
 				yyv712 := &x.FMapUintptrString
-				yym713 := z.DecBinary()
-				_ = yym713
 				if false {
 				} else {
 					z.F.DecMapUintptrStringX(yyv712, d)
@@ -25962,8 +22944,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrString == nil {
 					x.FptrMapUintptrString = new(map[uintptr]string)
 				}
-				yym715 := z.DecBinary()
-				_ = yym715
 				if false {
 				} else {
 					z.F.DecMapUintptrStringX(x.FptrMapUintptrString, d)
@@ -25974,8 +22954,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrUint = nil
 			} else {
 				yyv716 := &x.FMapUintptrUint
-				yym717 := z.DecBinary()
-				_ = yym717
 				if false {
 				} else {
 					z.F.DecMapUintptrUintX(yyv716, d)
@@ -25993,8 +22971,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrUint == nil {
 					x.FptrMapUintptrUint = new(map[uintptr]uint)
 				}
-				yym719 := z.DecBinary()
-				_ = yym719
 				if false {
 				} else {
 					z.F.DecMapUintptrUintX(x.FptrMapUintptrUint, d)
@@ -26005,8 +22981,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrUint8 = nil
 			} else {
 				yyv720 := &x.FMapUintptrUint8
-				yym721 := z.DecBinary()
-				_ = yym721
 				if false {
 				} else {
 					z.F.DecMapUintptrUint8X(yyv720, d)
@@ -26024,8 +22998,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrUint8 == nil {
 					x.FptrMapUintptrUint8 = new(map[uintptr]uint8)
 				}
-				yym723 := z.DecBinary()
-				_ = yym723
 				if false {
 				} else {
 					z.F.DecMapUintptrUint8X(x.FptrMapUintptrUint8, d)
@@ -26036,8 +23008,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrUint16 = nil
 			} else {
 				yyv724 := &x.FMapUintptrUint16
-				yym725 := z.DecBinary()
-				_ = yym725
 				if false {
 				} else {
 					z.F.DecMapUintptrUint16X(yyv724, d)
@@ -26055,8 +23025,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrUint16 == nil {
 					x.FptrMapUintptrUint16 = new(map[uintptr]uint16)
 				}
-				yym727 := z.DecBinary()
-				_ = yym727
 				if false {
 				} else {
 					z.F.DecMapUintptrUint16X(x.FptrMapUintptrUint16, d)
@@ -26067,8 +23035,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrUint32 = nil
 			} else {
 				yyv728 := &x.FMapUintptrUint32
-				yym729 := z.DecBinary()
-				_ = yym729
 				if false {
 				} else {
 					z.F.DecMapUintptrUint32X(yyv728, d)
@@ -26086,8 +23052,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrUint32 == nil {
 					x.FptrMapUintptrUint32 = new(map[uintptr]uint32)
 				}
-				yym731 := z.DecBinary()
-				_ = yym731
 				if false {
 				} else {
 					z.F.DecMapUintptrUint32X(x.FptrMapUintptrUint32, d)
@@ -26098,8 +23062,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrUint64 = nil
 			} else {
 				yyv732 := &x.FMapUintptrUint64
-				yym733 := z.DecBinary()
-				_ = yym733
 				if false {
 				} else {
 					z.F.DecMapUintptrUint64X(yyv732, d)
@@ -26117,8 +23079,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrUint64 == nil {
 					x.FptrMapUintptrUint64 = new(map[uintptr]uint64)
 				}
-				yym735 := z.DecBinary()
-				_ = yym735
 				if false {
 				} else {
 					z.F.DecMapUintptrUint64X(x.FptrMapUintptrUint64, d)
@@ -26129,8 +23089,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrUintptr = nil
 			} else {
 				yyv736 := &x.FMapUintptrUintptr
-				yym737 := z.DecBinary()
-				_ = yym737
 				if false {
 				} else {
 					z.F.DecMapUintptrUintptrX(yyv736, d)
@@ -26148,8 +23106,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrUintptr == nil {
 					x.FptrMapUintptrUintptr = new(map[uintptr]uintptr)
 				}
-				yym739 := z.DecBinary()
-				_ = yym739
 				if false {
 				} else {
 					z.F.DecMapUintptrUintptrX(x.FptrMapUintptrUintptr, d)
@@ -26160,8 +23116,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrInt = nil
 			} else {
 				yyv740 := &x.FMapUintptrInt
-				yym741 := z.DecBinary()
-				_ = yym741
 				if false {
 				} else {
 					z.F.DecMapUintptrIntX(yyv740, d)
@@ -26179,8 +23133,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrInt == nil {
 					x.FptrMapUintptrInt = new(map[uintptr]int)
 				}
-				yym743 := z.DecBinary()
-				_ = yym743
 				if false {
 				} else {
 					z.F.DecMapUintptrIntX(x.FptrMapUintptrInt, d)
@@ -26191,8 +23143,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrInt8 = nil
 			} else {
 				yyv744 := &x.FMapUintptrInt8
-				yym745 := z.DecBinary()
-				_ = yym745
 				if false {
 				} else {
 					z.F.DecMapUintptrInt8X(yyv744, d)
@@ -26210,8 +23160,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrInt8 == nil {
 					x.FptrMapUintptrInt8 = new(map[uintptr]int8)
 				}
-				yym747 := z.DecBinary()
-				_ = yym747
 				if false {
 				} else {
 					z.F.DecMapUintptrInt8X(x.FptrMapUintptrInt8, d)
@@ -26222,8 +23170,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrInt16 = nil
 			} else {
 				yyv748 := &x.FMapUintptrInt16
-				yym749 := z.DecBinary()
-				_ = yym749
 				if false {
 				} else {
 					z.F.DecMapUintptrInt16X(yyv748, d)
@@ -26241,8 +23187,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrInt16 == nil {
 					x.FptrMapUintptrInt16 = new(map[uintptr]int16)
 				}
-				yym751 := z.DecBinary()
-				_ = yym751
 				if false {
 				} else {
 					z.F.DecMapUintptrInt16X(x.FptrMapUintptrInt16, d)
@@ -26253,8 +23197,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrInt32 = nil
 			} else {
 				yyv752 := &x.FMapUintptrInt32
-				yym753 := z.DecBinary()
-				_ = yym753
 				if false {
 				} else {
 					z.F.DecMapUintptrInt32X(yyv752, d)
@@ -26272,8 +23214,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrInt32 == nil {
 					x.FptrMapUintptrInt32 = new(map[uintptr]int32)
 				}
-				yym755 := z.DecBinary()
-				_ = yym755
 				if false {
 				} else {
 					z.F.DecMapUintptrInt32X(x.FptrMapUintptrInt32, d)
@@ -26284,8 +23224,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrInt64 = nil
 			} else {
 				yyv756 := &x.FMapUintptrInt64
-				yym757 := z.DecBinary()
-				_ = yym757
 				if false {
 				} else {
 					z.F.DecMapUintptrInt64X(yyv756, d)
@@ -26303,8 +23241,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrInt64 == nil {
 					x.FptrMapUintptrInt64 = new(map[uintptr]int64)
 				}
-				yym759 := z.DecBinary()
-				_ = yym759
 				if false {
 				} else {
 					z.F.DecMapUintptrInt64X(x.FptrMapUintptrInt64, d)
@@ -26315,8 +23251,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrFloat32 = nil
 			} else {
 				yyv760 := &x.FMapUintptrFloat32
-				yym761 := z.DecBinary()
-				_ = yym761
 				if false {
 				} else {
 					z.F.DecMapUintptrFloat32X(yyv760, d)
@@ -26334,8 +23268,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrFloat32 == nil {
 					x.FptrMapUintptrFloat32 = new(map[uintptr]float32)
 				}
-				yym763 := z.DecBinary()
-				_ = yym763
 				if false {
 				} else {
 					z.F.DecMapUintptrFloat32X(x.FptrMapUintptrFloat32, d)
@@ -26346,8 +23278,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrFloat64 = nil
 			} else {
 				yyv764 := &x.FMapUintptrFloat64
-				yym765 := z.DecBinary()
-				_ = yym765
 				if false {
 				} else {
 					z.F.DecMapUintptrFloat64X(yyv764, d)
@@ -26365,8 +23295,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrFloat64 == nil {
 					x.FptrMapUintptrFloat64 = new(map[uintptr]float64)
 				}
-				yym767 := z.DecBinary()
-				_ = yym767
 				if false {
 				} else {
 					z.F.DecMapUintptrFloat64X(x.FptrMapUintptrFloat64, d)
@@ -26377,8 +23305,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapUintptrBool = nil
 			} else {
 				yyv768 := &x.FMapUintptrBool
-				yym769 := z.DecBinary()
-				_ = yym769
 				if false {
 				} else {
 					z.F.DecMapUintptrBoolX(yyv768, d)
@@ -26396,8 +23322,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintptrBool == nil {
 					x.FptrMapUintptrBool = new(map[uintptr]bool)
 				}
-				yym771 := z.DecBinary()
-				_ = yym771
 				if false {
 				} else {
 					z.F.DecMapUintptrBoolX(x.FptrMapUintptrBool, d)
@@ -26408,8 +23332,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntIntf = nil
 			} else {
 				yyv772 := &x.FMapIntIntf
-				yym773 := z.DecBinary()
-				_ = yym773
 				if false {
 				} else {
 					z.F.DecMapIntIntfX(yyv772, d)
@@ -26427,8 +23349,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntIntf == nil {
 					x.FptrMapIntIntf = new(map[int]interface{})
 				}
-				yym775 := z.DecBinary()
-				_ = yym775
 				if false {
 				} else {
 					z.F.DecMapIntIntfX(x.FptrMapIntIntf, d)
@@ -26439,8 +23359,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntString = nil
 			} else {
 				yyv776 := &x.FMapIntString
-				yym777 := z.DecBinary()
-				_ = yym777
 				if false {
 				} else {
 					z.F.DecMapIntStringX(yyv776, d)
@@ -26458,8 +23376,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntString == nil {
 					x.FptrMapIntString = new(map[int]string)
 				}
-				yym779 := z.DecBinary()
-				_ = yym779
 				if false {
 				} else {
 					z.F.DecMapIntStringX(x.FptrMapIntString, d)
@@ -26470,8 +23386,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntUint = nil
 			} else {
 				yyv780 := &x.FMapIntUint
-				yym781 := z.DecBinary()
-				_ = yym781
 				if false {
 				} else {
 					z.F.DecMapIntUintX(yyv780, d)
@@ -26489,8 +23403,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntUint == nil {
 					x.FptrMapIntUint = new(map[int]uint)
 				}
-				yym783 := z.DecBinary()
-				_ = yym783
 				if false {
 				} else {
 					z.F.DecMapIntUintX(x.FptrMapIntUint, d)
@@ -26501,8 +23413,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntUint8 = nil
 			} else {
 				yyv784 := &x.FMapIntUint8
-				yym785 := z.DecBinary()
-				_ = yym785
 				if false {
 				} else {
 					z.F.DecMapIntUint8X(yyv784, d)
@@ -26520,8 +23430,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntUint8 == nil {
 					x.FptrMapIntUint8 = new(map[int]uint8)
 				}
-				yym787 := z.DecBinary()
-				_ = yym787
 				if false {
 				} else {
 					z.F.DecMapIntUint8X(x.FptrMapIntUint8, d)
@@ -26532,8 +23440,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntUint16 = nil
 			} else {
 				yyv788 := &x.FMapIntUint16
-				yym789 := z.DecBinary()
-				_ = yym789
 				if false {
 				} else {
 					z.F.DecMapIntUint16X(yyv788, d)
@@ -26551,8 +23457,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntUint16 == nil {
 					x.FptrMapIntUint16 = new(map[int]uint16)
 				}
-				yym791 := z.DecBinary()
-				_ = yym791
 				if false {
 				} else {
 					z.F.DecMapIntUint16X(x.FptrMapIntUint16, d)
@@ -26563,8 +23467,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntUint32 = nil
 			} else {
 				yyv792 := &x.FMapIntUint32
-				yym793 := z.DecBinary()
-				_ = yym793
 				if false {
 				} else {
 					z.F.DecMapIntUint32X(yyv792, d)
@@ -26582,8 +23484,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntUint32 == nil {
 					x.FptrMapIntUint32 = new(map[int]uint32)
 				}
-				yym795 := z.DecBinary()
-				_ = yym795
 				if false {
 				} else {
 					z.F.DecMapIntUint32X(x.FptrMapIntUint32, d)
@@ -26594,8 +23494,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntUint64 = nil
 			} else {
 				yyv796 := &x.FMapIntUint64
-				yym797 := z.DecBinary()
-				_ = yym797
 				if false {
 				} else {
 					z.F.DecMapIntUint64X(yyv796, d)
@@ -26613,8 +23511,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntUint64 == nil {
 					x.FptrMapIntUint64 = new(map[int]uint64)
 				}
-				yym799 := z.DecBinary()
-				_ = yym799
 				if false {
 				} else {
 					z.F.DecMapIntUint64X(x.FptrMapIntUint64, d)
@@ -26625,8 +23521,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntUintptr = nil
 			} else {
 				yyv800 := &x.FMapIntUintptr
-				yym801 := z.DecBinary()
-				_ = yym801
 				if false {
 				} else {
 					z.F.DecMapIntUintptrX(yyv800, d)
@@ -26644,8 +23538,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntUintptr == nil {
 					x.FptrMapIntUintptr = new(map[int]uintptr)
 				}
-				yym803 := z.DecBinary()
-				_ = yym803
 				if false {
 				} else {
 					z.F.DecMapIntUintptrX(x.FptrMapIntUintptr, d)
@@ -26656,8 +23548,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntInt = nil
 			} else {
 				yyv804 := &x.FMapIntInt
-				yym805 := z.DecBinary()
-				_ = yym805
 				if false {
 				} else {
 					z.F.DecMapIntIntX(yyv804, d)
@@ -26675,8 +23565,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntInt == nil {
 					x.FptrMapIntInt = new(map[int]int)
 				}
-				yym807 := z.DecBinary()
-				_ = yym807
 				if false {
 				} else {
 					z.F.DecMapIntIntX(x.FptrMapIntInt, d)
@@ -26687,8 +23575,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntInt8 = nil
 			} else {
 				yyv808 := &x.FMapIntInt8
-				yym809 := z.DecBinary()
-				_ = yym809
 				if false {
 				} else {
 					z.F.DecMapIntInt8X(yyv808, d)
@@ -26706,8 +23592,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntInt8 == nil {
 					x.FptrMapIntInt8 = new(map[int]int8)
 				}
-				yym811 := z.DecBinary()
-				_ = yym811
 				if false {
 				} else {
 					z.F.DecMapIntInt8X(x.FptrMapIntInt8, d)
@@ -26718,8 +23602,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntInt16 = nil
 			} else {
 				yyv812 := &x.FMapIntInt16
-				yym813 := z.DecBinary()
-				_ = yym813
 				if false {
 				} else {
 					z.F.DecMapIntInt16X(yyv812, d)
@@ -26737,8 +23619,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntInt16 == nil {
 					x.FptrMapIntInt16 = new(map[int]int16)
 				}
-				yym815 := z.DecBinary()
-				_ = yym815
 				if false {
 				} else {
 					z.F.DecMapIntInt16X(x.FptrMapIntInt16, d)
@@ -26749,8 +23629,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntInt32 = nil
 			} else {
 				yyv816 := &x.FMapIntInt32
-				yym817 := z.DecBinary()
-				_ = yym817
 				if false {
 				} else {
 					z.F.DecMapIntInt32X(yyv816, d)
@@ -26768,8 +23646,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntInt32 == nil {
 					x.FptrMapIntInt32 = new(map[int]int32)
 				}
-				yym819 := z.DecBinary()
-				_ = yym819
 				if false {
 				} else {
 					z.F.DecMapIntInt32X(x.FptrMapIntInt32, d)
@@ -26780,8 +23656,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntInt64 = nil
 			} else {
 				yyv820 := &x.FMapIntInt64
-				yym821 := z.DecBinary()
-				_ = yym821
 				if false {
 				} else {
 					z.F.DecMapIntInt64X(yyv820, d)
@@ -26799,8 +23673,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntInt64 == nil {
 					x.FptrMapIntInt64 = new(map[int]int64)
 				}
-				yym823 := z.DecBinary()
-				_ = yym823
 				if false {
 				} else {
 					z.F.DecMapIntInt64X(x.FptrMapIntInt64, d)
@@ -26811,8 +23683,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntFloat32 = nil
 			} else {
 				yyv824 := &x.FMapIntFloat32
-				yym825 := z.DecBinary()
-				_ = yym825
 				if false {
 				} else {
 					z.F.DecMapIntFloat32X(yyv824, d)
@@ -26830,8 +23700,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntFloat32 == nil {
 					x.FptrMapIntFloat32 = new(map[int]float32)
 				}
-				yym827 := z.DecBinary()
-				_ = yym827
 				if false {
 				} else {
 					z.F.DecMapIntFloat32X(x.FptrMapIntFloat32, d)
@@ -26842,8 +23710,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntFloat64 = nil
 			} else {
 				yyv828 := &x.FMapIntFloat64
-				yym829 := z.DecBinary()
-				_ = yym829
 				if false {
 				} else {
 					z.F.DecMapIntFloat64X(yyv828, d)
@@ -26861,8 +23727,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntFloat64 == nil {
 					x.FptrMapIntFloat64 = new(map[int]float64)
 				}
-				yym831 := z.DecBinary()
-				_ = yym831
 				if false {
 				} else {
 					z.F.DecMapIntFloat64X(x.FptrMapIntFloat64, d)
@@ -26873,8 +23737,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapIntBool = nil
 			} else {
 				yyv832 := &x.FMapIntBool
-				yym833 := z.DecBinary()
-				_ = yym833
 				if false {
 				} else {
 					z.F.DecMapIntBoolX(yyv832, d)
@@ -26892,8 +23754,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntBool == nil {
 					x.FptrMapIntBool = new(map[int]bool)
 				}
-				yym835 := z.DecBinary()
-				_ = yym835
 				if false {
 				} else {
 					z.F.DecMapIntBoolX(x.FptrMapIntBool, d)
@@ -26904,8 +23764,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Intf = nil
 			} else {
 				yyv836 := &x.FMapInt8Intf
-				yym837 := z.DecBinary()
-				_ = yym837
 				if false {
 				} else {
 					z.F.DecMapInt8IntfX(yyv836, d)
@@ -26923,8 +23781,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Intf == nil {
 					x.FptrMapInt8Intf = new(map[int8]interface{})
 				}
-				yym839 := z.DecBinary()
-				_ = yym839
 				if false {
 				} else {
 					z.F.DecMapInt8IntfX(x.FptrMapInt8Intf, d)
@@ -26935,8 +23791,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8String = nil
 			} else {
 				yyv840 := &x.FMapInt8String
-				yym841 := z.DecBinary()
-				_ = yym841
 				if false {
 				} else {
 					z.F.DecMapInt8StringX(yyv840, d)
@@ -26954,8 +23808,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8String == nil {
 					x.FptrMapInt8String = new(map[int8]string)
 				}
-				yym843 := z.DecBinary()
-				_ = yym843
 				if false {
 				} else {
 					z.F.DecMapInt8StringX(x.FptrMapInt8String, d)
@@ -26966,8 +23818,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Uint = nil
 			} else {
 				yyv844 := &x.FMapInt8Uint
-				yym845 := z.DecBinary()
-				_ = yym845
 				if false {
 				} else {
 					z.F.DecMapInt8UintX(yyv844, d)
@@ -26985,8 +23835,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Uint == nil {
 					x.FptrMapInt8Uint = new(map[int8]uint)
 				}
-				yym847 := z.DecBinary()
-				_ = yym847
 				if false {
 				} else {
 					z.F.DecMapInt8UintX(x.FptrMapInt8Uint, d)
@@ -26997,8 +23845,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Uint8 = nil
 			} else {
 				yyv848 := &x.FMapInt8Uint8
-				yym849 := z.DecBinary()
-				_ = yym849
 				if false {
 				} else {
 					z.F.DecMapInt8Uint8X(yyv848, d)
@@ -27016,8 +23862,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Uint8 == nil {
 					x.FptrMapInt8Uint8 = new(map[int8]uint8)
 				}
-				yym851 := z.DecBinary()
-				_ = yym851
 				if false {
 				} else {
 					z.F.DecMapInt8Uint8X(x.FptrMapInt8Uint8, d)
@@ -27028,8 +23872,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Uint16 = nil
 			} else {
 				yyv852 := &x.FMapInt8Uint16
-				yym853 := z.DecBinary()
-				_ = yym853
 				if false {
 				} else {
 					z.F.DecMapInt8Uint16X(yyv852, d)
@@ -27047,8 +23889,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Uint16 == nil {
 					x.FptrMapInt8Uint16 = new(map[int8]uint16)
 				}
-				yym855 := z.DecBinary()
-				_ = yym855
 				if false {
 				} else {
 					z.F.DecMapInt8Uint16X(x.FptrMapInt8Uint16, d)
@@ -27059,8 +23899,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Uint32 = nil
 			} else {
 				yyv856 := &x.FMapInt8Uint32
-				yym857 := z.DecBinary()
-				_ = yym857
 				if false {
 				} else {
 					z.F.DecMapInt8Uint32X(yyv856, d)
@@ -27078,8 +23916,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Uint32 == nil {
 					x.FptrMapInt8Uint32 = new(map[int8]uint32)
 				}
-				yym859 := z.DecBinary()
-				_ = yym859
 				if false {
 				} else {
 					z.F.DecMapInt8Uint32X(x.FptrMapInt8Uint32, d)
@@ -27090,8 +23926,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Uint64 = nil
 			} else {
 				yyv860 := &x.FMapInt8Uint64
-				yym861 := z.DecBinary()
-				_ = yym861
 				if false {
 				} else {
 					z.F.DecMapInt8Uint64X(yyv860, d)
@@ -27109,8 +23943,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Uint64 == nil {
 					x.FptrMapInt8Uint64 = new(map[int8]uint64)
 				}
-				yym863 := z.DecBinary()
-				_ = yym863
 				if false {
 				} else {
 					z.F.DecMapInt8Uint64X(x.FptrMapInt8Uint64, d)
@@ -27121,8 +23953,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Uintptr = nil
 			} else {
 				yyv864 := &x.FMapInt8Uintptr
-				yym865 := z.DecBinary()
-				_ = yym865
 				if false {
 				} else {
 					z.F.DecMapInt8UintptrX(yyv864, d)
@@ -27140,8 +23970,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Uintptr == nil {
 					x.FptrMapInt8Uintptr = new(map[int8]uintptr)
 				}
-				yym867 := z.DecBinary()
-				_ = yym867
 				if false {
 				} else {
 					z.F.DecMapInt8UintptrX(x.FptrMapInt8Uintptr, d)
@@ -27152,8 +23980,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Int = nil
 			} else {
 				yyv868 := &x.FMapInt8Int
-				yym869 := z.DecBinary()
-				_ = yym869
 				if false {
 				} else {
 					z.F.DecMapInt8IntX(yyv868, d)
@@ -27171,8 +23997,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Int == nil {
 					x.FptrMapInt8Int = new(map[int8]int)
 				}
-				yym871 := z.DecBinary()
-				_ = yym871
 				if false {
 				} else {
 					z.F.DecMapInt8IntX(x.FptrMapInt8Int, d)
@@ -27183,8 +24007,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Int8 = nil
 			} else {
 				yyv872 := &x.FMapInt8Int8
-				yym873 := z.DecBinary()
-				_ = yym873
 				if false {
 				} else {
 					z.F.DecMapInt8Int8X(yyv872, d)
@@ -27202,8 +24024,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Int8 == nil {
 					x.FptrMapInt8Int8 = new(map[int8]int8)
 				}
-				yym875 := z.DecBinary()
-				_ = yym875
 				if false {
 				} else {
 					z.F.DecMapInt8Int8X(x.FptrMapInt8Int8, d)
@@ -27214,8 +24034,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Int16 = nil
 			} else {
 				yyv876 := &x.FMapInt8Int16
-				yym877 := z.DecBinary()
-				_ = yym877
 				if false {
 				} else {
 					z.F.DecMapInt8Int16X(yyv876, d)
@@ -27233,8 +24051,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Int16 == nil {
 					x.FptrMapInt8Int16 = new(map[int8]int16)
 				}
-				yym879 := z.DecBinary()
-				_ = yym879
 				if false {
 				} else {
 					z.F.DecMapInt8Int16X(x.FptrMapInt8Int16, d)
@@ -27245,8 +24061,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Int32 = nil
 			} else {
 				yyv880 := &x.FMapInt8Int32
-				yym881 := z.DecBinary()
-				_ = yym881
 				if false {
 				} else {
 					z.F.DecMapInt8Int32X(yyv880, d)
@@ -27264,8 +24078,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Int32 == nil {
 					x.FptrMapInt8Int32 = new(map[int8]int32)
 				}
-				yym883 := z.DecBinary()
-				_ = yym883
 				if false {
 				} else {
 					z.F.DecMapInt8Int32X(x.FptrMapInt8Int32, d)
@@ -27276,8 +24088,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Int64 = nil
 			} else {
 				yyv884 := &x.FMapInt8Int64
-				yym885 := z.DecBinary()
-				_ = yym885
 				if false {
 				} else {
 					z.F.DecMapInt8Int64X(yyv884, d)
@@ -27295,8 +24105,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Int64 == nil {
 					x.FptrMapInt8Int64 = new(map[int8]int64)
 				}
-				yym887 := z.DecBinary()
-				_ = yym887
 				if false {
 				} else {
 					z.F.DecMapInt8Int64X(x.FptrMapInt8Int64, d)
@@ -27307,8 +24115,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Float32 = nil
 			} else {
 				yyv888 := &x.FMapInt8Float32
-				yym889 := z.DecBinary()
-				_ = yym889
 				if false {
 				} else {
 					z.F.DecMapInt8Float32X(yyv888, d)
@@ -27326,8 +24132,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Float32 == nil {
 					x.FptrMapInt8Float32 = new(map[int8]float32)
 				}
-				yym891 := z.DecBinary()
-				_ = yym891
 				if false {
 				} else {
 					z.F.DecMapInt8Float32X(x.FptrMapInt8Float32, d)
@@ -27338,8 +24142,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Float64 = nil
 			} else {
 				yyv892 := &x.FMapInt8Float64
-				yym893 := z.DecBinary()
-				_ = yym893
 				if false {
 				} else {
 					z.F.DecMapInt8Float64X(yyv892, d)
@@ -27357,8 +24159,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Float64 == nil {
 					x.FptrMapInt8Float64 = new(map[int8]float64)
 				}
-				yym895 := z.DecBinary()
-				_ = yym895
 				if false {
 				} else {
 					z.F.DecMapInt8Float64X(x.FptrMapInt8Float64, d)
@@ -27369,8 +24169,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt8Bool = nil
 			} else {
 				yyv896 := &x.FMapInt8Bool
-				yym897 := z.DecBinary()
-				_ = yym897
 				if false {
 				} else {
 					z.F.DecMapInt8BoolX(yyv896, d)
@@ -27388,8 +24186,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt8Bool == nil {
 					x.FptrMapInt8Bool = new(map[int8]bool)
 				}
-				yym899 := z.DecBinary()
-				_ = yym899
 				if false {
 				} else {
 					z.F.DecMapInt8BoolX(x.FptrMapInt8Bool, d)
@@ -27400,8 +24196,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Intf = nil
 			} else {
 				yyv900 := &x.FMapInt16Intf
-				yym901 := z.DecBinary()
-				_ = yym901
 				if false {
 				} else {
 					z.F.DecMapInt16IntfX(yyv900, d)
@@ -27419,8 +24213,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Intf == nil {
 					x.FptrMapInt16Intf = new(map[int16]interface{})
 				}
-				yym903 := z.DecBinary()
-				_ = yym903
 				if false {
 				} else {
 					z.F.DecMapInt16IntfX(x.FptrMapInt16Intf, d)
@@ -27431,8 +24223,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16String = nil
 			} else {
 				yyv904 := &x.FMapInt16String
-				yym905 := z.DecBinary()
-				_ = yym905
 				if false {
 				} else {
 					z.F.DecMapInt16StringX(yyv904, d)
@@ -27450,8 +24240,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16String == nil {
 					x.FptrMapInt16String = new(map[int16]string)
 				}
-				yym907 := z.DecBinary()
-				_ = yym907
 				if false {
 				} else {
 					z.F.DecMapInt16StringX(x.FptrMapInt16String, d)
@@ -27462,8 +24250,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Uint = nil
 			} else {
 				yyv908 := &x.FMapInt16Uint
-				yym909 := z.DecBinary()
-				_ = yym909
 				if false {
 				} else {
 					z.F.DecMapInt16UintX(yyv908, d)
@@ -27481,8 +24267,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Uint == nil {
 					x.FptrMapInt16Uint = new(map[int16]uint)
 				}
-				yym911 := z.DecBinary()
-				_ = yym911
 				if false {
 				} else {
 					z.F.DecMapInt16UintX(x.FptrMapInt16Uint, d)
@@ -27493,8 +24277,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Uint8 = nil
 			} else {
 				yyv912 := &x.FMapInt16Uint8
-				yym913 := z.DecBinary()
-				_ = yym913
 				if false {
 				} else {
 					z.F.DecMapInt16Uint8X(yyv912, d)
@@ -27512,8 +24294,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Uint8 == nil {
 					x.FptrMapInt16Uint8 = new(map[int16]uint8)
 				}
-				yym915 := z.DecBinary()
-				_ = yym915
 				if false {
 				} else {
 					z.F.DecMapInt16Uint8X(x.FptrMapInt16Uint8, d)
@@ -27524,8 +24304,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Uint16 = nil
 			} else {
 				yyv916 := &x.FMapInt16Uint16
-				yym917 := z.DecBinary()
-				_ = yym917
 				if false {
 				} else {
 					z.F.DecMapInt16Uint16X(yyv916, d)
@@ -27543,8 +24321,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Uint16 == nil {
 					x.FptrMapInt16Uint16 = new(map[int16]uint16)
 				}
-				yym919 := z.DecBinary()
-				_ = yym919
 				if false {
 				} else {
 					z.F.DecMapInt16Uint16X(x.FptrMapInt16Uint16, d)
@@ -27555,8 +24331,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Uint32 = nil
 			} else {
 				yyv920 := &x.FMapInt16Uint32
-				yym921 := z.DecBinary()
-				_ = yym921
 				if false {
 				} else {
 					z.F.DecMapInt16Uint32X(yyv920, d)
@@ -27574,8 +24348,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Uint32 == nil {
 					x.FptrMapInt16Uint32 = new(map[int16]uint32)
 				}
-				yym923 := z.DecBinary()
-				_ = yym923
 				if false {
 				} else {
 					z.F.DecMapInt16Uint32X(x.FptrMapInt16Uint32, d)
@@ -27586,8 +24358,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Uint64 = nil
 			} else {
 				yyv924 := &x.FMapInt16Uint64
-				yym925 := z.DecBinary()
-				_ = yym925
 				if false {
 				} else {
 					z.F.DecMapInt16Uint64X(yyv924, d)
@@ -27605,8 +24375,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Uint64 == nil {
 					x.FptrMapInt16Uint64 = new(map[int16]uint64)
 				}
-				yym927 := z.DecBinary()
-				_ = yym927
 				if false {
 				} else {
 					z.F.DecMapInt16Uint64X(x.FptrMapInt16Uint64, d)
@@ -27617,8 +24385,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Uintptr = nil
 			} else {
 				yyv928 := &x.FMapInt16Uintptr
-				yym929 := z.DecBinary()
-				_ = yym929
 				if false {
 				} else {
 					z.F.DecMapInt16UintptrX(yyv928, d)
@@ -27636,8 +24402,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Uintptr == nil {
 					x.FptrMapInt16Uintptr = new(map[int16]uintptr)
 				}
-				yym931 := z.DecBinary()
-				_ = yym931
 				if false {
 				} else {
 					z.F.DecMapInt16UintptrX(x.FptrMapInt16Uintptr, d)
@@ -27648,8 +24412,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Int = nil
 			} else {
 				yyv932 := &x.FMapInt16Int
-				yym933 := z.DecBinary()
-				_ = yym933
 				if false {
 				} else {
 					z.F.DecMapInt16IntX(yyv932, d)
@@ -27667,8 +24429,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Int == nil {
 					x.FptrMapInt16Int = new(map[int16]int)
 				}
-				yym935 := z.DecBinary()
-				_ = yym935
 				if false {
 				} else {
 					z.F.DecMapInt16IntX(x.FptrMapInt16Int, d)
@@ -27679,8 +24439,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Int8 = nil
 			} else {
 				yyv936 := &x.FMapInt16Int8
-				yym937 := z.DecBinary()
-				_ = yym937
 				if false {
 				} else {
 					z.F.DecMapInt16Int8X(yyv936, d)
@@ -27698,8 +24456,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Int8 == nil {
 					x.FptrMapInt16Int8 = new(map[int16]int8)
 				}
-				yym939 := z.DecBinary()
-				_ = yym939
 				if false {
 				} else {
 					z.F.DecMapInt16Int8X(x.FptrMapInt16Int8, d)
@@ -27710,8 +24466,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Int16 = nil
 			} else {
 				yyv940 := &x.FMapInt16Int16
-				yym941 := z.DecBinary()
-				_ = yym941
 				if false {
 				} else {
 					z.F.DecMapInt16Int16X(yyv940, d)
@@ -27729,8 +24483,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Int16 == nil {
 					x.FptrMapInt16Int16 = new(map[int16]int16)
 				}
-				yym943 := z.DecBinary()
-				_ = yym943
 				if false {
 				} else {
 					z.F.DecMapInt16Int16X(x.FptrMapInt16Int16, d)
@@ -27741,8 +24493,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Int32 = nil
 			} else {
 				yyv944 := &x.FMapInt16Int32
-				yym945 := z.DecBinary()
-				_ = yym945
 				if false {
 				} else {
 					z.F.DecMapInt16Int32X(yyv944, d)
@@ -27760,8 +24510,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Int32 == nil {
 					x.FptrMapInt16Int32 = new(map[int16]int32)
 				}
-				yym947 := z.DecBinary()
-				_ = yym947
 				if false {
 				} else {
 					z.F.DecMapInt16Int32X(x.FptrMapInt16Int32, d)
@@ -27772,8 +24520,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Int64 = nil
 			} else {
 				yyv948 := &x.FMapInt16Int64
-				yym949 := z.DecBinary()
-				_ = yym949
 				if false {
 				} else {
 					z.F.DecMapInt16Int64X(yyv948, d)
@@ -27791,8 +24537,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Int64 == nil {
 					x.FptrMapInt16Int64 = new(map[int16]int64)
 				}
-				yym951 := z.DecBinary()
-				_ = yym951
 				if false {
 				} else {
 					z.F.DecMapInt16Int64X(x.FptrMapInt16Int64, d)
@@ -27803,8 +24547,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Float32 = nil
 			} else {
 				yyv952 := &x.FMapInt16Float32
-				yym953 := z.DecBinary()
-				_ = yym953
 				if false {
 				} else {
 					z.F.DecMapInt16Float32X(yyv952, d)
@@ -27822,8 +24564,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Float32 == nil {
 					x.FptrMapInt16Float32 = new(map[int16]float32)
 				}
-				yym955 := z.DecBinary()
-				_ = yym955
 				if false {
 				} else {
 					z.F.DecMapInt16Float32X(x.FptrMapInt16Float32, d)
@@ -27834,8 +24574,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Float64 = nil
 			} else {
 				yyv956 := &x.FMapInt16Float64
-				yym957 := z.DecBinary()
-				_ = yym957
 				if false {
 				} else {
 					z.F.DecMapInt16Float64X(yyv956, d)
@@ -27853,8 +24591,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Float64 == nil {
 					x.FptrMapInt16Float64 = new(map[int16]float64)
 				}
-				yym959 := z.DecBinary()
-				_ = yym959
 				if false {
 				} else {
 					z.F.DecMapInt16Float64X(x.FptrMapInt16Float64, d)
@@ -27865,8 +24601,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt16Bool = nil
 			} else {
 				yyv960 := &x.FMapInt16Bool
-				yym961 := z.DecBinary()
-				_ = yym961
 				if false {
 				} else {
 					z.F.DecMapInt16BoolX(yyv960, d)
@@ -27884,8 +24618,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt16Bool == nil {
 					x.FptrMapInt16Bool = new(map[int16]bool)
 				}
-				yym963 := z.DecBinary()
-				_ = yym963
 				if false {
 				} else {
 					z.F.DecMapInt16BoolX(x.FptrMapInt16Bool, d)
@@ -27896,8 +24628,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Intf = nil
 			} else {
 				yyv964 := &x.FMapInt32Intf
-				yym965 := z.DecBinary()
-				_ = yym965
 				if false {
 				} else {
 					z.F.DecMapInt32IntfX(yyv964, d)
@@ -27915,8 +24645,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Intf == nil {
 					x.FptrMapInt32Intf = new(map[int32]interface{})
 				}
-				yym967 := z.DecBinary()
-				_ = yym967
 				if false {
 				} else {
 					z.F.DecMapInt32IntfX(x.FptrMapInt32Intf, d)
@@ -27927,8 +24655,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32String = nil
 			} else {
 				yyv968 := &x.FMapInt32String
-				yym969 := z.DecBinary()
-				_ = yym969
 				if false {
 				} else {
 					z.F.DecMapInt32StringX(yyv968, d)
@@ -27946,8 +24672,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32String == nil {
 					x.FptrMapInt32String = new(map[int32]string)
 				}
-				yym971 := z.DecBinary()
-				_ = yym971
 				if false {
 				} else {
 					z.F.DecMapInt32StringX(x.FptrMapInt32String, d)
@@ -27958,8 +24682,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Uint = nil
 			} else {
 				yyv972 := &x.FMapInt32Uint
-				yym973 := z.DecBinary()
-				_ = yym973
 				if false {
 				} else {
 					z.F.DecMapInt32UintX(yyv972, d)
@@ -27977,8 +24699,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Uint == nil {
 					x.FptrMapInt32Uint = new(map[int32]uint)
 				}
-				yym975 := z.DecBinary()
-				_ = yym975
 				if false {
 				} else {
 					z.F.DecMapInt32UintX(x.FptrMapInt32Uint, d)
@@ -27989,8 +24709,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Uint8 = nil
 			} else {
 				yyv976 := &x.FMapInt32Uint8
-				yym977 := z.DecBinary()
-				_ = yym977
 				if false {
 				} else {
 					z.F.DecMapInt32Uint8X(yyv976, d)
@@ -28008,8 +24726,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Uint8 == nil {
 					x.FptrMapInt32Uint8 = new(map[int32]uint8)
 				}
-				yym979 := z.DecBinary()
-				_ = yym979
 				if false {
 				} else {
 					z.F.DecMapInt32Uint8X(x.FptrMapInt32Uint8, d)
@@ -28020,8 +24736,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Uint16 = nil
 			} else {
 				yyv980 := &x.FMapInt32Uint16
-				yym981 := z.DecBinary()
-				_ = yym981
 				if false {
 				} else {
 					z.F.DecMapInt32Uint16X(yyv980, d)
@@ -28039,8 +24753,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Uint16 == nil {
 					x.FptrMapInt32Uint16 = new(map[int32]uint16)
 				}
-				yym983 := z.DecBinary()
-				_ = yym983
 				if false {
 				} else {
 					z.F.DecMapInt32Uint16X(x.FptrMapInt32Uint16, d)
@@ -28051,8 +24763,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Uint32 = nil
 			} else {
 				yyv984 := &x.FMapInt32Uint32
-				yym985 := z.DecBinary()
-				_ = yym985
 				if false {
 				} else {
 					z.F.DecMapInt32Uint32X(yyv984, d)
@@ -28070,8 +24780,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Uint32 == nil {
 					x.FptrMapInt32Uint32 = new(map[int32]uint32)
 				}
-				yym987 := z.DecBinary()
-				_ = yym987
 				if false {
 				} else {
 					z.F.DecMapInt32Uint32X(x.FptrMapInt32Uint32, d)
@@ -28082,8 +24790,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Uint64 = nil
 			} else {
 				yyv988 := &x.FMapInt32Uint64
-				yym989 := z.DecBinary()
-				_ = yym989
 				if false {
 				} else {
 					z.F.DecMapInt32Uint64X(yyv988, d)
@@ -28101,8 +24807,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Uint64 == nil {
 					x.FptrMapInt32Uint64 = new(map[int32]uint64)
 				}
-				yym991 := z.DecBinary()
-				_ = yym991
 				if false {
 				} else {
 					z.F.DecMapInt32Uint64X(x.FptrMapInt32Uint64, d)
@@ -28113,8 +24817,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Uintptr = nil
 			} else {
 				yyv992 := &x.FMapInt32Uintptr
-				yym993 := z.DecBinary()
-				_ = yym993
 				if false {
 				} else {
 					z.F.DecMapInt32UintptrX(yyv992, d)
@@ -28132,8 +24834,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Uintptr == nil {
 					x.FptrMapInt32Uintptr = new(map[int32]uintptr)
 				}
-				yym995 := z.DecBinary()
-				_ = yym995
 				if false {
 				} else {
 					z.F.DecMapInt32UintptrX(x.FptrMapInt32Uintptr, d)
@@ -28144,8 +24844,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Int = nil
 			} else {
 				yyv996 := &x.FMapInt32Int
-				yym997 := z.DecBinary()
-				_ = yym997
 				if false {
 				} else {
 					z.F.DecMapInt32IntX(yyv996, d)
@@ -28163,8 +24861,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Int == nil {
 					x.FptrMapInt32Int = new(map[int32]int)
 				}
-				yym999 := z.DecBinary()
-				_ = yym999
 				if false {
 				} else {
 					z.F.DecMapInt32IntX(x.FptrMapInt32Int, d)
@@ -28175,8 +24871,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Int8 = nil
 			} else {
 				yyv1000 := &x.FMapInt32Int8
-				yym1001 := z.DecBinary()
-				_ = yym1001
 				if false {
 				} else {
 					z.F.DecMapInt32Int8X(yyv1000, d)
@@ -28194,8 +24888,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Int8 == nil {
 					x.FptrMapInt32Int8 = new(map[int32]int8)
 				}
-				yym1003 := z.DecBinary()
-				_ = yym1003
 				if false {
 				} else {
 					z.F.DecMapInt32Int8X(x.FptrMapInt32Int8, d)
@@ -28206,8 +24898,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Int16 = nil
 			} else {
 				yyv1004 := &x.FMapInt32Int16
-				yym1005 := z.DecBinary()
-				_ = yym1005
 				if false {
 				} else {
 					z.F.DecMapInt32Int16X(yyv1004, d)
@@ -28225,8 +24915,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Int16 == nil {
 					x.FptrMapInt32Int16 = new(map[int32]int16)
 				}
-				yym1007 := z.DecBinary()
-				_ = yym1007
 				if false {
 				} else {
 					z.F.DecMapInt32Int16X(x.FptrMapInt32Int16, d)
@@ -28237,8 +24925,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Int32 = nil
 			} else {
 				yyv1008 := &x.FMapInt32Int32
-				yym1009 := z.DecBinary()
-				_ = yym1009
 				if false {
 				} else {
 					z.F.DecMapInt32Int32X(yyv1008, d)
@@ -28256,8 +24942,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Int32 == nil {
 					x.FptrMapInt32Int32 = new(map[int32]int32)
 				}
-				yym1011 := z.DecBinary()
-				_ = yym1011
 				if false {
 				} else {
 					z.F.DecMapInt32Int32X(x.FptrMapInt32Int32, d)
@@ -28268,8 +24952,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Int64 = nil
 			} else {
 				yyv1012 := &x.FMapInt32Int64
-				yym1013 := z.DecBinary()
-				_ = yym1013
 				if false {
 				} else {
 					z.F.DecMapInt32Int64X(yyv1012, d)
@@ -28287,8 +24969,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Int64 == nil {
 					x.FptrMapInt32Int64 = new(map[int32]int64)
 				}
-				yym1015 := z.DecBinary()
-				_ = yym1015
 				if false {
 				} else {
 					z.F.DecMapInt32Int64X(x.FptrMapInt32Int64, d)
@@ -28299,8 +24979,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Float32 = nil
 			} else {
 				yyv1016 := &x.FMapInt32Float32
-				yym1017 := z.DecBinary()
-				_ = yym1017
 				if false {
 				} else {
 					z.F.DecMapInt32Float32X(yyv1016, d)
@@ -28318,8 +24996,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Float32 == nil {
 					x.FptrMapInt32Float32 = new(map[int32]float32)
 				}
-				yym1019 := z.DecBinary()
-				_ = yym1019
 				if false {
 				} else {
 					z.F.DecMapInt32Float32X(x.FptrMapInt32Float32, d)
@@ -28330,8 +25006,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Float64 = nil
 			} else {
 				yyv1020 := &x.FMapInt32Float64
-				yym1021 := z.DecBinary()
-				_ = yym1021
 				if false {
 				} else {
 					z.F.DecMapInt32Float64X(yyv1020, d)
@@ -28349,8 +25023,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Float64 == nil {
 					x.FptrMapInt32Float64 = new(map[int32]float64)
 				}
-				yym1023 := z.DecBinary()
-				_ = yym1023
 				if false {
 				} else {
 					z.F.DecMapInt32Float64X(x.FptrMapInt32Float64, d)
@@ -28361,8 +25033,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt32Bool = nil
 			} else {
 				yyv1024 := &x.FMapInt32Bool
-				yym1025 := z.DecBinary()
-				_ = yym1025
 				if false {
 				} else {
 					z.F.DecMapInt32BoolX(yyv1024, d)
@@ -28380,8 +25050,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt32Bool == nil {
 					x.FptrMapInt32Bool = new(map[int32]bool)
 				}
-				yym1027 := z.DecBinary()
-				_ = yym1027
 				if false {
 				} else {
 					z.F.DecMapInt32BoolX(x.FptrMapInt32Bool, d)
@@ -28392,8 +25060,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Intf = nil
 			} else {
 				yyv1028 := &x.FMapInt64Intf
-				yym1029 := z.DecBinary()
-				_ = yym1029
 				if false {
 				} else {
 					z.F.DecMapInt64IntfX(yyv1028, d)
@@ -28411,8 +25077,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Intf == nil {
 					x.FptrMapInt64Intf = new(map[int64]interface{})
 				}
-				yym1031 := z.DecBinary()
-				_ = yym1031
 				if false {
 				} else {
 					z.F.DecMapInt64IntfX(x.FptrMapInt64Intf, d)
@@ -28423,8 +25087,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64String = nil
 			} else {
 				yyv1032 := &x.FMapInt64String
-				yym1033 := z.DecBinary()
-				_ = yym1033
 				if false {
 				} else {
 					z.F.DecMapInt64StringX(yyv1032, d)
@@ -28442,8 +25104,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64String == nil {
 					x.FptrMapInt64String = new(map[int64]string)
 				}
-				yym1035 := z.DecBinary()
-				_ = yym1035
 				if false {
 				} else {
 					z.F.DecMapInt64StringX(x.FptrMapInt64String, d)
@@ -28454,8 +25114,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Uint = nil
 			} else {
 				yyv1036 := &x.FMapInt64Uint
-				yym1037 := z.DecBinary()
-				_ = yym1037
 				if false {
 				} else {
 					z.F.DecMapInt64UintX(yyv1036, d)
@@ -28473,8 +25131,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Uint == nil {
 					x.FptrMapInt64Uint = new(map[int64]uint)
 				}
-				yym1039 := z.DecBinary()
-				_ = yym1039
 				if false {
 				} else {
 					z.F.DecMapInt64UintX(x.FptrMapInt64Uint, d)
@@ -28485,8 +25141,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Uint8 = nil
 			} else {
 				yyv1040 := &x.FMapInt64Uint8
-				yym1041 := z.DecBinary()
-				_ = yym1041
 				if false {
 				} else {
 					z.F.DecMapInt64Uint8X(yyv1040, d)
@@ -28504,8 +25158,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Uint8 == nil {
 					x.FptrMapInt64Uint8 = new(map[int64]uint8)
 				}
-				yym1043 := z.DecBinary()
-				_ = yym1043
 				if false {
 				} else {
 					z.F.DecMapInt64Uint8X(x.FptrMapInt64Uint8, d)
@@ -28516,8 +25168,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Uint16 = nil
 			} else {
 				yyv1044 := &x.FMapInt64Uint16
-				yym1045 := z.DecBinary()
-				_ = yym1045
 				if false {
 				} else {
 					z.F.DecMapInt64Uint16X(yyv1044, d)
@@ -28535,8 +25185,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Uint16 == nil {
 					x.FptrMapInt64Uint16 = new(map[int64]uint16)
 				}
-				yym1047 := z.DecBinary()
-				_ = yym1047
 				if false {
 				} else {
 					z.F.DecMapInt64Uint16X(x.FptrMapInt64Uint16, d)
@@ -28547,8 +25195,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Uint32 = nil
 			} else {
 				yyv1048 := &x.FMapInt64Uint32
-				yym1049 := z.DecBinary()
-				_ = yym1049
 				if false {
 				} else {
 					z.F.DecMapInt64Uint32X(yyv1048, d)
@@ -28566,8 +25212,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Uint32 == nil {
 					x.FptrMapInt64Uint32 = new(map[int64]uint32)
 				}
-				yym1051 := z.DecBinary()
-				_ = yym1051
 				if false {
 				} else {
 					z.F.DecMapInt64Uint32X(x.FptrMapInt64Uint32, d)
@@ -28578,8 +25222,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Uint64 = nil
 			} else {
 				yyv1052 := &x.FMapInt64Uint64
-				yym1053 := z.DecBinary()
-				_ = yym1053
 				if false {
 				} else {
 					z.F.DecMapInt64Uint64X(yyv1052, d)
@@ -28597,8 +25239,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Uint64 == nil {
 					x.FptrMapInt64Uint64 = new(map[int64]uint64)
 				}
-				yym1055 := z.DecBinary()
-				_ = yym1055
 				if false {
 				} else {
 					z.F.DecMapInt64Uint64X(x.FptrMapInt64Uint64, d)
@@ -28609,8 +25249,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Uintptr = nil
 			} else {
 				yyv1056 := &x.FMapInt64Uintptr
-				yym1057 := z.DecBinary()
-				_ = yym1057
 				if false {
 				} else {
 					z.F.DecMapInt64UintptrX(yyv1056, d)
@@ -28628,8 +25266,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Uintptr == nil {
 					x.FptrMapInt64Uintptr = new(map[int64]uintptr)
 				}
-				yym1059 := z.DecBinary()
-				_ = yym1059
 				if false {
 				} else {
 					z.F.DecMapInt64UintptrX(x.FptrMapInt64Uintptr, d)
@@ -28640,8 +25276,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Int = nil
 			} else {
 				yyv1060 := &x.FMapInt64Int
-				yym1061 := z.DecBinary()
-				_ = yym1061
 				if false {
 				} else {
 					z.F.DecMapInt64IntX(yyv1060, d)
@@ -28659,8 +25293,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Int == nil {
 					x.FptrMapInt64Int = new(map[int64]int)
 				}
-				yym1063 := z.DecBinary()
-				_ = yym1063
 				if false {
 				} else {
 					z.F.DecMapInt64IntX(x.FptrMapInt64Int, d)
@@ -28671,8 +25303,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Int8 = nil
 			} else {
 				yyv1064 := &x.FMapInt64Int8
-				yym1065 := z.DecBinary()
-				_ = yym1065
 				if false {
 				} else {
 					z.F.DecMapInt64Int8X(yyv1064, d)
@@ -28690,8 +25320,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Int8 == nil {
 					x.FptrMapInt64Int8 = new(map[int64]int8)
 				}
-				yym1067 := z.DecBinary()
-				_ = yym1067
 				if false {
 				} else {
 					z.F.DecMapInt64Int8X(x.FptrMapInt64Int8, d)
@@ -28702,8 +25330,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Int16 = nil
 			} else {
 				yyv1068 := &x.FMapInt64Int16
-				yym1069 := z.DecBinary()
-				_ = yym1069
 				if false {
 				} else {
 					z.F.DecMapInt64Int16X(yyv1068, d)
@@ -28721,8 +25347,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Int16 == nil {
 					x.FptrMapInt64Int16 = new(map[int64]int16)
 				}
-				yym1071 := z.DecBinary()
-				_ = yym1071
 				if false {
 				} else {
 					z.F.DecMapInt64Int16X(x.FptrMapInt64Int16, d)
@@ -28733,8 +25357,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Int32 = nil
 			} else {
 				yyv1072 := &x.FMapInt64Int32
-				yym1073 := z.DecBinary()
-				_ = yym1073
 				if false {
 				} else {
 					z.F.DecMapInt64Int32X(yyv1072, d)
@@ -28752,8 +25374,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Int32 == nil {
 					x.FptrMapInt64Int32 = new(map[int64]int32)
 				}
-				yym1075 := z.DecBinary()
-				_ = yym1075
 				if false {
 				} else {
 					z.F.DecMapInt64Int32X(x.FptrMapInt64Int32, d)
@@ -28764,8 +25384,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Int64 = nil
 			} else {
 				yyv1076 := &x.FMapInt64Int64
-				yym1077 := z.DecBinary()
-				_ = yym1077
 				if false {
 				} else {
 					z.F.DecMapInt64Int64X(yyv1076, d)
@@ -28783,8 +25401,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Int64 == nil {
 					x.FptrMapInt64Int64 = new(map[int64]int64)
 				}
-				yym1079 := z.DecBinary()
-				_ = yym1079
 				if false {
 				} else {
 					z.F.DecMapInt64Int64X(x.FptrMapInt64Int64, d)
@@ -28795,8 +25411,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Float32 = nil
 			} else {
 				yyv1080 := &x.FMapInt64Float32
-				yym1081 := z.DecBinary()
-				_ = yym1081
 				if false {
 				} else {
 					z.F.DecMapInt64Float32X(yyv1080, d)
@@ -28814,8 +25428,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Float32 == nil {
 					x.FptrMapInt64Float32 = new(map[int64]float32)
 				}
-				yym1083 := z.DecBinary()
-				_ = yym1083
 				if false {
 				} else {
 					z.F.DecMapInt64Float32X(x.FptrMapInt64Float32, d)
@@ -28826,8 +25438,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Float64 = nil
 			} else {
 				yyv1084 := &x.FMapInt64Float64
-				yym1085 := z.DecBinary()
-				_ = yym1085
 				if false {
 				} else {
 					z.F.DecMapInt64Float64X(yyv1084, d)
@@ -28845,8 +25455,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Float64 == nil {
 					x.FptrMapInt64Float64 = new(map[int64]float64)
 				}
-				yym1087 := z.DecBinary()
-				_ = yym1087
 				if false {
 				} else {
 					z.F.DecMapInt64Float64X(x.FptrMapInt64Float64, d)
@@ -28857,8 +25465,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapInt64Bool = nil
 			} else {
 				yyv1088 := &x.FMapInt64Bool
-				yym1089 := z.DecBinary()
-				_ = yym1089
 				if false {
 				} else {
 					z.F.DecMapInt64BoolX(yyv1088, d)
@@ -28876,8 +25482,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Bool == nil {
 					x.FptrMapInt64Bool = new(map[int64]bool)
 				}
-				yym1091 := z.DecBinary()
-				_ = yym1091
 				if false {
 				} else {
 					z.F.DecMapInt64BoolX(x.FptrMapInt64Bool, d)
@@ -28888,8 +25492,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolIntf = nil
 			} else {
 				yyv1092 := &x.FMapBoolIntf
-				yym1093 := z.DecBinary()
-				_ = yym1093
 				if false {
 				} else {
 					z.F.DecMapBoolIntfX(yyv1092, d)
@@ -28907,8 +25509,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolIntf == nil {
 					x.FptrMapBoolIntf = new(map[bool]interface{})
 				}
-				yym1095 := z.DecBinary()
-				_ = yym1095
 				if false {
 				} else {
 					z.F.DecMapBoolIntfX(x.FptrMapBoolIntf, d)
@@ -28919,8 +25519,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolString = nil
 			} else {
 				yyv1096 := &x.FMapBoolString
-				yym1097 := z.DecBinary()
-				_ = yym1097
 				if false {
 				} else {
 					z.F.DecMapBoolStringX(yyv1096, d)
@@ -28938,8 +25536,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolString == nil {
 					x.FptrMapBoolString = new(map[bool]string)
 				}
-				yym1099 := z.DecBinary()
-				_ = yym1099
 				if false {
 				} else {
 					z.F.DecMapBoolStringX(x.FptrMapBoolString, d)
@@ -28950,8 +25546,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolUint = nil
 			} else {
 				yyv1100 := &x.FMapBoolUint
-				yym1101 := z.DecBinary()
-				_ = yym1101
 				if false {
 				} else {
 					z.F.DecMapBoolUintX(yyv1100, d)
@@ -28969,8 +25563,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolUint == nil {
 					x.FptrMapBoolUint = new(map[bool]uint)
 				}
-				yym1103 := z.DecBinary()
-				_ = yym1103
 				if false {
 				} else {
 					z.F.DecMapBoolUintX(x.FptrMapBoolUint, d)
@@ -28981,8 +25573,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolUint8 = nil
 			} else {
 				yyv1104 := &x.FMapBoolUint8
-				yym1105 := z.DecBinary()
-				_ = yym1105
 				if false {
 				} else {
 					z.F.DecMapBoolUint8X(yyv1104, d)
@@ -29000,8 +25590,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolUint8 == nil {
 					x.FptrMapBoolUint8 = new(map[bool]uint8)
 				}
-				yym1107 := z.DecBinary()
-				_ = yym1107
 				if false {
 				} else {
 					z.F.DecMapBoolUint8X(x.FptrMapBoolUint8, d)
@@ -29012,8 +25600,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolUint16 = nil
 			} else {
 				yyv1108 := &x.FMapBoolUint16
-				yym1109 := z.DecBinary()
-				_ = yym1109
 				if false {
 				} else {
 					z.F.DecMapBoolUint16X(yyv1108, d)
@@ -29031,8 +25617,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolUint16 == nil {
 					x.FptrMapBoolUint16 = new(map[bool]uint16)
 				}
-				yym1111 := z.DecBinary()
-				_ = yym1111
 				if false {
 				} else {
 					z.F.DecMapBoolUint16X(x.FptrMapBoolUint16, d)
@@ -29043,8 +25627,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolUint32 = nil
 			} else {
 				yyv1112 := &x.FMapBoolUint32
-				yym1113 := z.DecBinary()
-				_ = yym1113
 				if false {
 				} else {
 					z.F.DecMapBoolUint32X(yyv1112, d)
@@ -29062,8 +25644,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolUint32 == nil {
 					x.FptrMapBoolUint32 = new(map[bool]uint32)
 				}
-				yym1115 := z.DecBinary()
-				_ = yym1115
 				if false {
 				} else {
 					z.F.DecMapBoolUint32X(x.FptrMapBoolUint32, d)
@@ -29074,8 +25654,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolUint64 = nil
 			} else {
 				yyv1116 := &x.FMapBoolUint64
-				yym1117 := z.DecBinary()
-				_ = yym1117
 				if false {
 				} else {
 					z.F.DecMapBoolUint64X(yyv1116, d)
@@ -29093,8 +25671,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolUint64 == nil {
 					x.FptrMapBoolUint64 = new(map[bool]uint64)
 				}
-				yym1119 := z.DecBinary()
-				_ = yym1119
 				if false {
 				} else {
 					z.F.DecMapBoolUint64X(x.FptrMapBoolUint64, d)
@@ -29105,8 +25681,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolUintptr = nil
 			} else {
 				yyv1120 := &x.FMapBoolUintptr
-				yym1121 := z.DecBinary()
-				_ = yym1121
 				if false {
 				} else {
 					z.F.DecMapBoolUintptrX(yyv1120, d)
@@ -29124,8 +25698,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolUintptr == nil {
 					x.FptrMapBoolUintptr = new(map[bool]uintptr)
 				}
-				yym1123 := z.DecBinary()
-				_ = yym1123
 				if false {
 				} else {
 					z.F.DecMapBoolUintptrX(x.FptrMapBoolUintptr, d)
@@ -29136,8 +25708,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolInt = nil
 			} else {
 				yyv1124 := &x.FMapBoolInt
-				yym1125 := z.DecBinary()
-				_ = yym1125
 				if false {
 				} else {
 					z.F.DecMapBoolIntX(yyv1124, d)
@@ -29155,8 +25725,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolInt == nil {
 					x.FptrMapBoolInt = new(map[bool]int)
 				}
-				yym1127 := z.DecBinary()
-				_ = yym1127
 				if false {
 				} else {
 					z.F.DecMapBoolIntX(x.FptrMapBoolInt, d)
@@ -29167,8 +25735,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolInt8 = nil
 			} else {
 				yyv1128 := &x.FMapBoolInt8
-				yym1129 := z.DecBinary()
-				_ = yym1129
 				if false {
 				} else {
 					z.F.DecMapBoolInt8X(yyv1128, d)
@@ -29186,8 +25752,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolInt8 == nil {
 					x.FptrMapBoolInt8 = new(map[bool]int8)
 				}
-				yym1131 := z.DecBinary()
-				_ = yym1131
 				if false {
 				} else {
 					z.F.DecMapBoolInt8X(x.FptrMapBoolInt8, d)
@@ -29198,8 +25762,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolInt16 = nil
 			} else {
 				yyv1132 := &x.FMapBoolInt16
-				yym1133 := z.DecBinary()
-				_ = yym1133
 				if false {
 				} else {
 					z.F.DecMapBoolInt16X(yyv1132, d)
@@ -29217,8 +25779,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolInt16 == nil {
 					x.FptrMapBoolInt16 = new(map[bool]int16)
 				}
-				yym1135 := z.DecBinary()
-				_ = yym1135
 				if false {
 				} else {
 					z.F.DecMapBoolInt16X(x.FptrMapBoolInt16, d)
@@ -29229,8 +25789,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolInt32 = nil
 			} else {
 				yyv1136 := &x.FMapBoolInt32
-				yym1137 := z.DecBinary()
-				_ = yym1137
 				if false {
 				} else {
 					z.F.DecMapBoolInt32X(yyv1136, d)
@@ -29248,8 +25806,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolInt32 == nil {
 					x.FptrMapBoolInt32 = new(map[bool]int32)
 				}
-				yym1139 := z.DecBinary()
-				_ = yym1139
 				if false {
 				} else {
 					z.F.DecMapBoolInt32X(x.FptrMapBoolInt32, d)
@@ -29260,8 +25816,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolInt64 = nil
 			} else {
 				yyv1140 := &x.FMapBoolInt64
-				yym1141 := z.DecBinary()
-				_ = yym1141
 				if false {
 				} else {
 					z.F.DecMapBoolInt64X(yyv1140, d)
@@ -29279,8 +25833,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolInt64 == nil {
 					x.FptrMapBoolInt64 = new(map[bool]int64)
 				}
-				yym1143 := z.DecBinary()
-				_ = yym1143
 				if false {
 				} else {
 					z.F.DecMapBoolInt64X(x.FptrMapBoolInt64, d)
@@ -29291,8 +25843,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolFloat32 = nil
 			} else {
 				yyv1144 := &x.FMapBoolFloat32
-				yym1145 := z.DecBinary()
-				_ = yym1145
 				if false {
 				} else {
 					z.F.DecMapBoolFloat32X(yyv1144, d)
@@ -29310,8 +25860,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolFloat32 == nil {
 					x.FptrMapBoolFloat32 = new(map[bool]float32)
 				}
-				yym1147 := z.DecBinary()
-				_ = yym1147
 				if false {
 				} else {
 					z.F.DecMapBoolFloat32X(x.FptrMapBoolFloat32, d)
@@ -29322,8 +25870,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolFloat64 = nil
 			} else {
 				yyv1148 := &x.FMapBoolFloat64
-				yym1149 := z.DecBinary()
-				_ = yym1149
 				if false {
 				} else {
 					z.F.DecMapBoolFloat64X(yyv1148, d)
@@ -29341,8 +25887,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolFloat64 == nil {
 					x.FptrMapBoolFloat64 = new(map[bool]float64)
 				}
-				yym1151 := z.DecBinary()
-				_ = yym1151
 				if false {
 				} else {
 					z.F.DecMapBoolFloat64X(x.FptrMapBoolFloat64, d)
@@ -29353,8 +25897,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.FMapBoolBool = nil
 			} else {
 				yyv1152 := &x.FMapBoolBool
-				yym1153 := z.DecBinary()
-				_ = yym1153
 				if false {
 				} else {
 					z.F.DecMapBoolBoolX(yyv1152, d)
@@ -29372,8 +25914,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapBoolBool == nil {
 					x.FptrMapBoolBool = new(map[bool]bool)
 				}
-				yym1155 := z.DecBinary()
-				_ = yym1155
 				if false {
 				} else {
 					z.F.DecMapBoolBoolX(x.FptrMapBoolBool, d)
@@ -29408,8 +25948,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FIntf = nil
 	} else {
 		yyv1157 := &x.FIntf
-		yym1158 := z.DecBinary()
-		_ = yym1158
 		if false {
 		} else {
 			z.DecFallback(yyv1157, true)
@@ -29437,8 +25975,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrIntf == nil {
 			x.FptrIntf = new(interface{})
 		}
-		yym1160 := z.DecBinary()
-		_ = yym1160
 		if false {
 		} else {
 			z.DecFallback(x.FptrIntf, true)
@@ -29459,8 +25995,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FString = ""
 	} else {
 		yyv1161 := &x.FString
-		yym1162 := z.DecBinary()
-		_ = yym1162
 		if false {
 		} else {
 			*((*string)(yyv1161)) = r.DecodeString()
@@ -29488,8 +26022,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrString == nil {
 			x.FptrString = new(string)
 		}
-		yym1164 := z.DecBinary()
-		_ = yym1164
 		if false {
 		} else {
 			*((*string)(x.FptrString)) = r.DecodeString()
@@ -29510,8 +26042,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FFloat32 = 0
 	} else {
 		yyv1165 := &x.FFloat32
-		yym1166 := z.DecBinary()
-		_ = yym1166
 		if false {
 		} else {
 			*((*float32)(yyv1165)) = float32(r.DecodeFloat32As64())
@@ -29539,8 +26069,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrFloat32 == nil {
 			x.FptrFloat32 = new(float32)
 		}
-		yym1168 := z.DecBinary()
-		_ = yym1168
 		if false {
 		} else {
 			*((*float32)(x.FptrFloat32)) = float32(r.DecodeFloat32As64())
@@ -29561,8 +26089,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FFloat64 = 0
 	} else {
 		yyv1169 := &x.FFloat64
-		yym1170 := z.DecBinary()
-		_ = yym1170
 		if false {
 		} else {
 			*((*float64)(yyv1169)) = r.DecodeFloat64()
@@ -29590,8 +26116,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrFloat64 == nil {
 			x.FptrFloat64 = new(float64)
 		}
-		yym1172 := z.DecBinary()
-		_ = yym1172
 		if false {
 		} else {
 			*((*float64)(x.FptrFloat64)) = r.DecodeFloat64()
@@ -29612,8 +26136,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FUint = 0
 	} else {
 		yyv1173 := &x.FUint
-		yym1174 := z.DecBinary()
-		_ = yym1174
 		if false {
 		} else {
 			*((*uint)(yyv1173)) = uint(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
@@ -29641,8 +26163,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUint == nil {
 			x.FptrUint = new(uint)
 		}
-		yym1176 := z.DecBinary()
-		_ = yym1176
 		if false {
 		} else {
 			*((*uint)(x.FptrUint)) = uint(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
@@ -29663,8 +26183,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FUint8 = 0
 	} else {
 		yyv1177 := &x.FUint8
-		yym1178 := z.DecBinary()
-		_ = yym1178
 		if false {
 		} else {
 			*((*uint8)(yyv1177)) = uint8(z.c.UintV(r.DecodeUint64(), 8))
@@ -29692,8 +26210,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUint8 == nil {
 			x.FptrUint8 = new(uint8)
 		}
-		yym1180 := z.DecBinary()
-		_ = yym1180
 		if false {
 		} else {
 			*((*uint8)(x.FptrUint8)) = uint8(z.c.UintV(r.DecodeUint64(), 8))
@@ -29714,8 +26230,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FUint16 = 0
 	} else {
 		yyv1181 := &x.FUint16
-		yym1182 := z.DecBinary()
-		_ = yym1182
 		if false {
 		} else {
 			*((*uint16)(yyv1181)) = uint16(z.c.UintV(r.DecodeUint64(), 16))
@@ -29743,8 +26257,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUint16 == nil {
 			x.FptrUint16 = new(uint16)
 		}
-		yym1184 := z.DecBinary()
-		_ = yym1184
 		if false {
 		} else {
 			*((*uint16)(x.FptrUint16)) = uint16(z.c.UintV(r.DecodeUint64(), 16))
@@ -29765,8 +26277,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FUint32 = 0
 	} else {
 		yyv1185 := &x.FUint32
-		yym1186 := z.DecBinary()
-		_ = yym1186
 		if false {
 		} else {
 			*((*uint32)(yyv1185)) = uint32(z.c.UintV(r.DecodeUint64(), 32))
@@ -29794,8 +26304,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUint32 == nil {
 			x.FptrUint32 = new(uint32)
 		}
-		yym1188 := z.DecBinary()
-		_ = yym1188
 		if false {
 		} else {
 			*((*uint32)(x.FptrUint32)) = uint32(z.c.UintV(r.DecodeUint64(), 32))
@@ -29816,8 +26324,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FUint64 = 0
 	} else {
 		yyv1189 := &x.FUint64
-		yym1190 := z.DecBinary()
-		_ = yym1190
 		if false {
 		} else {
 			*((*uint64)(yyv1189)) = uint64(r.DecodeUint64())
@@ -29845,8 +26351,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUint64 == nil {
 			x.FptrUint64 = new(uint64)
 		}
-		yym1192 := z.DecBinary()
-		_ = yym1192
 		if false {
 		} else {
 			*((*uint64)(x.FptrUint64)) = uint64(r.DecodeUint64())
@@ -29867,8 +26371,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FUintptr = 0
 	} else {
 		yyv1193 := &x.FUintptr
-		yym1194 := z.DecBinary()
-		_ = yym1194
 		if false {
 		} else {
 			*((*uintptr)(yyv1193)) = uintptr(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
@@ -29896,8 +26398,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUintptr == nil {
 			x.FptrUintptr = new(uintptr)
 		}
-		yym1196 := z.DecBinary()
-		_ = yym1196
 		if false {
 		} else {
 			*((*uintptr)(x.FptrUintptr)) = uintptr(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
@@ -29918,8 +26418,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FInt = 0
 	} else {
 		yyv1197 := &x.FInt
-		yym1198 := z.DecBinary()
-		_ = yym1198
 		if false {
 		} else {
 			*((*int)(yyv1197)) = int(z.c.IntV(r.DecodeInt64(), codecSelferBitsize19781))
@@ -29947,8 +26445,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrInt == nil {
 			x.FptrInt = new(int)
 		}
-		yym1200 := z.DecBinary()
-		_ = yym1200
 		if false {
 		} else {
 			*((*int)(x.FptrInt)) = int(z.c.IntV(r.DecodeInt64(), codecSelferBitsize19781))
@@ -29969,8 +26465,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FInt8 = 0
 	} else {
 		yyv1201 := &x.FInt8
-		yym1202 := z.DecBinary()
-		_ = yym1202
 		if false {
 		} else {
 			*((*int8)(yyv1201)) = int8(z.c.IntV(r.DecodeInt64(), 8))
@@ -29998,8 +26492,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrInt8 == nil {
 			x.FptrInt8 = new(int8)
 		}
-		yym1204 := z.DecBinary()
-		_ = yym1204
 		if false {
 		} else {
 			*((*int8)(x.FptrInt8)) = int8(z.c.IntV(r.DecodeInt64(), 8))
@@ -30020,8 +26512,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FInt16 = 0
 	} else {
 		yyv1205 := &x.FInt16
-		yym1206 := z.DecBinary()
-		_ = yym1206
 		if false {
 		} else {
 			*((*int16)(yyv1205)) = int16(z.c.IntV(r.DecodeInt64(), 16))
@@ -30049,8 +26539,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrInt16 == nil {
 			x.FptrInt16 = new(int16)
 		}
-		yym1208 := z.DecBinary()
-		_ = yym1208
 		if false {
 		} else {
 			*((*int16)(x.FptrInt16)) = int16(z.c.IntV(r.DecodeInt64(), 16))
@@ -30071,8 +26559,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FInt32 = 0
 	} else {
 		yyv1209 := &x.FInt32
-		yym1210 := z.DecBinary()
-		_ = yym1210
 		if false {
 		} else {
 			*((*int32)(yyv1209)) = int32(z.c.IntV(r.DecodeInt64(), 32))
@@ -30100,8 +26586,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrInt32 == nil {
 			x.FptrInt32 = new(int32)
 		}
-		yym1212 := z.DecBinary()
-		_ = yym1212
 		if false {
 		} else {
 			*((*int32)(x.FptrInt32)) = int32(z.c.IntV(r.DecodeInt64(), 32))
@@ -30122,8 +26606,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FInt64 = 0
 	} else {
 		yyv1213 := &x.FInt64
-		yym1214 := z.DecBinary()
-		_ = yym1214
 		if false {
 		} else {
 			*((*int64)(yyv1213)) = int64(r.DecodeInt64())
@@ -30151,8 +26633,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrInt64 == nil {
 			x.FptrInt64 = new(int64)
 		}
-		yym1216 := z.DecBinary()
-		_ = yym1216
 		if false {
 		} else {
 			*((*int64)(x.FptrInt64)) = int64(r.DecodeInt64())
@@ -30173,8 +26653,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FBool = false
 	} else {
 		yyv1217 := &x.FBool
-		yym1218 := z.DecBinary()
-		_ = yym1218
 		if false {
 		} else {
 			*((*bool)(yyv1217)) = r.DecodeBool()
@@ -30202,8 +26680,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrBool == nil {
 			x.FptrBool = new(bool)
 		}
-		yym1220 := z.DecBinary()
-		_ = yym1220
 		if false {
 		} else {
 			*((*bool)(x.FptrBool)) = r.DecodeBool()
@@ -30224,8 +26700,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceIntf = nil
 	} else {
 		yyv1221 := &x.FSliceIntf
-		yym1222 := z.DecBinary()
-		_ = yym1222
 		if false {
 		} else {
 			z.F.DecSliceIntfX(yyv1221, d)
@@ -30253,8 +26727,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceIntf == nil {
 			x.FptrSliceIntf = new([]interface{})
 		}
-		yym1224 := z.DecBinary()
-		_ = yym1224
 		if false {
 		} else {
 			z.F.DecSliceIntfX(x.FptrSliceIntf, d)
@@ -30275,8 +26747,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceString = nil
 	} else {
 		yyv1225 := &x.FSliceString
-		yym1226 := z.DecBinary()
-		_ = yym1226
 		if false {
 		} else {
 			z.F.DecSliceStringX(yyv1225, d)
@@ -30304,8 +26774,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceString == nil {
 			x.FptrSliceString = new([]string)
 		}
-		yym1228 := z.DecBinary()
-		_ = yym1228
 		if false {
 		} else {
 			z.F.DecSliceStringX(x.FptrSliceString, d)
@@ -30326,8 +26794,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceFloat32 = nil
 	} else {
 		yyv1229 := &x.FSliceFloat32
-		yym1230 := z.DecBinary()
-		_ = yym1230
 		if false {
 		} else {
 			z.F.DecSliceFloat32X(yyv1229, d)
@@ -30355,8 +26821,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceFloat32 == nil {
 			x.FptrSliceFloat32 = new([]float32)
 		}
-		yym1232 := z.DecBinary()
-		_ = yym1232
 		if false {
 		} else {
 			z.F.DecSliceFloat32X(x.FptrSliceFloat32, d)
@@ -30377,8 +26841,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceFloat64 = nil
 	} else {
 		yyv1233 := &x.FSliceFloat64
-		yym1234 := z.DecBinary()
-		_ = yym1234
 		if false {
 		} else {
 			z.F.DecSliceFloat64X(yyv1233, d)
@@ -30406,8 +26868,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceFloat64 == nil {
 			x.FptrSliceFloat64 = new([]float64)
 		}
-		yym1236 := z.DecBinary()
-		_ = yym1236
 		if false {
 		} else {
 			z.F.DecSliceFloat64X(x.FptrSliceFloat64, d)
@@ -30428,8 +26888,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceUint = nil
 	} else {
 		yyv1237 := &x.FSliceUint
-		yym1238 := z.DecBinary()
-		_ = yym1238
 		if false {
 		} else {
 			z.F.DecSliceUintX(yyv1237, d)
@@ -30457,8 +26915,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceUint == nil {
 			x.FptrSliceUint = new([]uint)
 		}
-		yym1240 := z.DecBinary()
-		_ = yym1240
 		if false {
 		} else {
 			z.F.DecSliceUintX(x.FptrSliceUint, d)
@@ -30479,8 +26935,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceUint8 = nil
 	} else {
 		yyv1241 := &x.FSliceUint8
-		yym1242 := z.DecBinary()
-		_ = yym1242
 		if false {
 		} else {
 			*yyv1241 = r.DecodeBytes(*(*[]byte)(yyv1241), false)
@@ -30508,8 +26962,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceUint8 == nil {
 			x.FptrSliceUint8 = new([]uint8)
 		}
-		yym1244 := z.DecBinary()
-		_ = yym1244
 		if false {
 		} else {
 			*x.FptrSliceUint8 = r.DecodeBytes(*(*[]byte)(x.FptrSliceUint8), false)
@@ -30530,8 +26982,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceUint16 = nil
 	} else {
 		yyv1245 := &x.FSliceUint16
-		yym1246 := z.DecBinary()
-		_ = yym1246
 		if false {
 		} else {
 			z.F.DecSliceUint16X(yyv1245, d)
@@ -30559,8 +27009,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceUint16 == nil {
 			x.FptrSliceUint16 = new([]uint16)
 		}
-		yym1248 := z.DecBinary()
-		_ = yym1248
 		if false {
 		} else {
 			z.F.DecSliceUint16X(x.FptrSliceUint16, d)
@@ -30581,8 +27029,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceUint32 = nil
 	} else {
 		yyv1249 := &x.FSliceUint32
-		yym1250 := z.DecBinary()
-		_ = yym1250
 		if false {
 		} else {
 			z.F.DecSliceUint32X(yyv1249, d)
@@ -30610,8 +27056,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceUint32 == nil {
 			x.FptrSliceUint32 = new([]uint32)
 		}
-		yym1252 := z.DecBinary()
-		_ = yym1252
 		if false {
 		} else {
 			z.F.DecSliceUint32X(x.FptrSliceUint32, d)
@@ -30632,8 +27076,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceUint64 = nil
 	} else {
 		yyv1253 := &x.FSliceUint64
-		yym1254 := z.DecBinary()
-		_ = yym1254
 		if false {
 		} else {
 			z.F.DecSliceUint64X(yyv1253, d)
@@ -30661,8 +27103,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceUint64 == nil {
 			x.FptrSliceUint64 = new([]uint64)
 		}
-		yym1256 := z.DecBinary()
-		_ = yym1256
 		if false {
 		} else {
 			z.F.DecSliceUint64X(x.FptrSliceUint64, d)
@@ -30683,8 +27123,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceUintptr = nil
 	} else {
 		yyv1257 := &x.FSliceUintptr
-		yym1258 := z.DecBinary()
-		_ = yym1258
 		if false {
 		} else {
 			z.F.DecSliceUintptrX(yyv1257, d)
@@ -30712,8 +27150,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceUintptr == nil {
 			x.FptrSliceUintptr = new([]uintptr)
 		}
-		yym1260 := z.DecBinary()
-		_ = yym1260
 		if false {
 		} else {
 			z.F.DecSliceUintptrX(x.FptrSliceUintptr, d)
@@ -30734,8 +27170,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceInt = nil
 	} else {
 		yyv1261 := &x.FSliceInt
-		yym1262 := z.DecBinary()
-		_ = yym1262
 		if false {
 		} else {
 			z.F.DecSliceIntX(yyv1261, d)
@@ -30763,8 +27197,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceInt == nil {
 			x.FptrSliceInt = new([]int)
 		}
-		yym1264 := z.DecBinary()
-		_ = yym1264
 		if false {
 		} else {
 			z.F.DecSliceIntX(x.FptrSliceInt, d)
@@ -30785,8 +27217,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceInt8 = nil
 	} else {
 		yyv1265 := &x.FSliceInt8
-		yym1266 := z.DecBinary()
-		_ = yym1266
 		if false {
 		} else {
 			z.F.DecSliceInt8X(yyv1265, d)
@@ -30814,8 +27244,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceInt8 == nil {
 			x.FptrSliceInt8 = new([]int8)
 		}
-		yym1268 := z.DecBinary()
-		_ = yym1268
 		if false {
 		} else {
 			z.F.DecSliceInt8X(x.FptrSliceInt8, d)
@@ -30836,8 +27264,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceInt16 = nil
 	} else {
 		yyv1269 := &x.FSliceInt16
-		yym1270 := z.DecBinary()
-		_ = yym1270
 		if false {
 		} else {
 			z.F.DecSliceInt16X(yyv1269, d)
@@ -30865,8 +27291,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceInt16 == nil {
 			x.FptrSliceInt16 = new([]int16)
 		}
-		yym1272 := z.DecBinary()
-		_ = yym1272
 		if false {
 		} else {
 			z.F.DecSliceInt16X(x.FptrSliceInt16, d)
@@ -30887,8 +27311,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceInt32 = nil
 	} else {
 		yyv1273 := &x.FSliceInt32
-		yym1274 := z.DecBinary()
-		_ = yym1274
 		if false {
 		} else {
 			z.F.DecSliceInt32X(yyv1273, d)
@@ -30916,8 +27338,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceInt32 == nil {
 			x.FptrSliceInt32 = new([]int32)
 		}
-		yym1276 := z.DecBinary()
-		_ = yym1276
 		if false {
 		} else {
 			z.F.DecSliceInt32X(x.FptrSliceInt32, d)
@@ -30938,8 +27358,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceInt64 = nil
 	} else {
 		yyv1277 := &x.FSliceInt64
-		yym1278 := z.DecBinary()
-		_ = yym1278
 		if false {
 		} else {
 			z.F.DecSliceInt64X(yyv1277, d)
@@ -30967,8 +27385,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceInt64 == nil {
 			x.FptrSliceInt64 = new([]int64)
 		}
-		yym1280 := z.DecBinary()
-		_ = yym1280
 		if false {
 		} else {
 			z.F.DecSliceInt64X(x.FptrSliceInt64, d)
@@ -30989,8 +27405,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FSliceBool = nil
 	} else {
 		yyv1281 := &x.FSliceBool
-		yym1282 := z.DecBinary()
-		_ = yym1282
 		if false {
 		} else {
 			z.F.DecSliceBoolX(yyv1281, d)
@@ -31018,8 +27432,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceBool == nil {
 			x.FptrSliceBool = new([]bool)
 		}
-		yym1284 := z.DecBinary()
-		_ = yym1284
 		if false {
 		} else {
 			z.F.DecSliceBoolX(x.FptrSliceBool, d)
@@ -31040,8 +27452,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfIntf = nil
 	} else {
 		yyv1285 := &x.FMapIntfIntf
-		yym1286 := z.DecBinary()
-		_ = yym1286
 		if false {
 		} else {
 			z.F.DecMapIntfIntfX(yyv1285, d)
@@ -31069,8 +27479,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfIntf == nil {
 			x.FptrMapIntfIntf = new(map[interface{}]interface{})
 		}
-		yym1288 := z.DecBinary()
-		_ = yym1288
 		if false {
 		} else {
 			z.F.DecMapIntfIntfX(x.FptrMapIntfIntf, d)
@@ -31091,8 +27499,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfString = nil
 	} else {
 		yyv1289 := &x.FMapIntfString
-		yym1290 := z.DecBinary()
-		_ = yym1290
 		if false {
 		} else {
 			z.F.DecMapIntfStringX(yyv1289, d)
@@ -31120,8 +27526,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfString == nil {
 			x.FptrMapIntfString = new(map[interface{}]string)
 		}
-		yym1292 := z.DecBinary()
-		_ = yym1292
 		if false {
 		} else {
 			z.F.DecMapIntfStringX(x.FptrMapIntfString, d)
@@ -31142,8 +27546,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfUint = nil
 	} else {
 		yyv1293 := &x.FMapIntfUint
-		yym1294 := z.DecBinary()
-		_ = yym1294
 		if false {
 		} else {
 			z.F.DecMapIntfUintX(yyv1293, d)
@@ -31171,8 +27573,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfUint == nil {
 			x.FptrMapIntfUint = new(map[interface{}]uint)
 		}
-		yym1296 := z.DecBinary()
-		_ = yym1296
 		if false {
 		} else {
 			z.F.DecMapIntfUintX(x.FptrMapIntfUint, d)
@@ -31193,8 +27593,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfUint8 = nil
 	} else {
 		yyv1297 := &x.FMapIntfUint8
-		yym1298 := z.DecBinary()
-		_ = yym1298
 		if false {
 		} else {
 			z.F.DecMapIntfUint8X(yyv1297, d)
@@ -31222,8 +27620,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfUint8 == nil {
 			x.FptrMapIntfUint8 = new(map[interface{}]uint8)
 		}
-		yym1300 := z.DecBinary()
-		_ = yym1300
 		if false {
 		} else {
 			z.F.DecMapIntfUint8X(x.FptrMapIntfUint8, d)
@@ -31244,8 +27640,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfUint16 = nil
 	} else {
 		yyv1301 := &x.FMapIntfUint16
-		yym1302 := z.DecBinary()
-		_ = yym1302
 		if false {
 		} else {
 			z.F.DecMapIntfUint16X(yyv1301, d)
@@ -31273,8 +27667,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfUint16 == nil {
 			x.FptrMapIntfUint16 = new(map[interface{}]uint16)
 		}
-		yym1304 := z.DecBinary()
-		_ = yym1304
 		if false {
 		} else {
 			z.F.DecMapIntfUint16X(x.FptrMapIntfUint16, d)
@@ -31295,8 +27687,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfUint32 = nil
 	} else {
 		yyv1305 := &x.FMapIntfUint32
-		yym1306 := z.DecBinary()
-		_ = yym1306
 		if false {
 		} else {
 			z.F.DecMapIntfUint32X(yyv1305, d)
@@ -31324,8 +27714,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfUint32 == nil {
 			x.FptrMapIntfUint32 = new(map[interface{}]uint32)
 		}
-		yym1308 := z.DecBinary()
-		_ = yym1308
 		if false {
 		} else {
 			z.F.DecMapIntfUint32X(x.FptrMapIntfUint32, d)
@@ -31346,8 +27734,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfUint64 = nil
 	} else {
 		yyv1309 := &x.FMapIntfUint64
-		yym1310 := z.DecBinary()
-		_ = yym1310
 		if false {
 		} else {
 			z.F.DecMapIntfUint64X(yyv1309, d)
@@ -31375,8 +27761,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfUint64 == nil {
 			x.FptrMapIntfUint64 = new(map[interface{}]uint64)
 		}
-		yym1312 := z.DecBinary()
-		_ = yym1312
 		if false {
 		} else {
 			z.F.DecMapIntfUint64X(x.FptrMapIntfUint64, d)
@@ -31397,8 +27781,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfUintptr = nil
 	} else {
 		yyv1313 := &x.FMapIntfUintptr
-		yym1314 := z.DecBinary()
-		_ = yym1314
 		if false {
 		} else {
 			z.F.DecMapIntfUintptrX(yyv1313, d)
@@ -31426,8 +27808,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfUintptr == nil {
 			x.FptrMapIntfUintptr = new(map[interface{}]uintptr)
 		}
-		yym1316 := z.DecBinary()
-		_ = yym1316
 		if false {
 		} else {
 			z.F.DecMapIntfUintptrX(x.FptrMapIntfUintptr, d)
@@ -31448,8 +27828,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfInt = nil
 	} else {
 		yyv1317 := &x.FMapIntfInt
-		yym1318 := z.DecBinary()
-		_ = yym1318
 		if false {
 		} else {
 			z.F.DecMapIntfIntX(yyv1317, d)
@@ -31477,8 +27855,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfInt == nil {
 			x.FptrMapIntfInt = new(map[interface{}]int)
 		}
-		yym1320 := z.DecBinary()
-		_ = yym1320
 		if false {
 		} else {
 			z.F.DecMapIntfIntX(x.FptrMapIntfInt, d)
@@ -31499,8 +27875,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfInt8 = nil
 	} else {
 		yyv1321 := &x.FMapIntfInt8
-		yym1322 := z.DecBinary()
-		_ = yym1322
 		if false {
 		} else {
 			z.F.DecMapIntfInt8X(yyv1321, d)
@@ -31528,8 +27902,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfInt8 == nil {
 			x.FptrMapIntfInt8 = new(map[interface{}]int8)
 		}
-		yym1324 := z.DecBinary()
-		_ = yym1324
 		if false {
 		} else {
 			z.F.DecMapIntfInt8X(x.FptrMapIntfInt8, d)
@@ -31550,8 +27922,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfInt16 = nil
 	} else {
 		yyv1325 := &x.FMapIntfInt16
-		yym1326 := z.DecBinary()
-		_ = yym1326
 		if false {
 		} else {
 			z.F.DecMapIntfInt16X(yyv1325, d)
@@ -31579,8 +27949,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfInt16 == nil {
 			x.FptrMapIntfInt16 = new(map[interface{}]int16)
 		}
-		yym1328 := z.DecBinary()
-		_ = yym1328
 		if false {
 		} else {
 			z.F.DecMapIntfInt16X(x.FptrMapIntfInt16, d)
@@ -31601,8 +27969,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfInt32 = nil
 	} else {
 		yyv1329 := &x.FMapIntfInt32
-		yym1330 := z.DecBinary()
-		_ = yym1330
 		if false {
 		} else {
 			z.F.DecMapIntfInt32X(yyv1329, d)
@@ -31630,8 +27996,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfInt32 == nil {
 			x.FptrMapIntfInt32 = new(map[interface{}]int32)
 		}
-		yym1332 := z.DecBinary()
-		_ = yym1332
 		if false {
 		} else {
 			z.F.DecMapIntfInt32X(x.FptrMapIntfInt32, d)
@@ -31652,8 +28016,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfInt64 = nil
 	} else {
 		yyv1333 := &x.FMapIntfInt64
-		yym1334 := z.DecBinary()
-		_ = yym1334
 		if false {
 		} else {
 			z.F.DecMapIntfInt64X(yyv1333, d)
@@ -31681,8 +28043,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfInt64 == nil {
 			x.FptrMapIntfInt64 = new(map[interface{}]int64)
 		}
-		yym1336 := z.DecBinary()
-		_ = yym1336
 		if false {
 		} else {
 			z.F.DecMapIntfInt64X(x.FptrMapIntfInt64, d)
@@ -31703,8 +28063,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfFloat32 = nil
 	} else {
 		yyv1337 := &x.FMapIntfFloat32
-		yym1338 := z.DecBinary()
-		_ = yym1338
 		if false {
 		} else {
 			z.F.DecMapIntfFloat32X(yyv1337, d)
@@ -31732,8 +28090,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfFloat32 == nil {
 			x.FptrMapIntfFloat32 = new(map[interface{}]float32)
 		}
-		yym1340 := z.DecBinary()
-		_ = yym1340
 		if false {
 		} else {
 			z.F.DecMapIntfFloat32X(x.FptrMapIntfFloat32, d)
@@ -31754,8 +28110,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfFloat64 = nil
 	} else {
 		yyv1341 := &x.FMapIntfFloat64
-		yym1342 := z.DecBinary()
-		_ = yym1342
 		if false {
 		} else {
 			z.F.DecMapIntfFloat64X(yyv1341, d)
@@ -31783,8 +28137,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfFloat64 == nil {
 			x.FptrMapIntfFloat64 = new(map[interface{}]float64)
 		}
-		yym1344 := z.DecBinary()
-		_ = yym1344
 		if false {
 		} else {
 			z.F.DecMapIntfFloat64X(x.FptrMapIntfFloat64, d)
@@ -31805,8 +28157,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntfBool = nil
 	} else {
 		yyv1345 := &x.FMapIntfBool
-		yym1346 := z.DecBinary()
-		_ = yym1346
 		if false {
 		} else {
 			z.F.DecMapIntfBoolX(yyv1345, d)
@@ -31834,8 +28184,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntfBool == nil {
 			x.FptrMapIntfBool = new(map[interface{}]bool)
 		}
-		yym1348 := z.DecBinary()
-		_ = yym1348
 		if false {
 		} else {
 			z.F.DecMapIntfBoolX(x.FptrMapIntfBool, d)
@@ -31856,8 +28204,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringIntf = nil
 	} else {
 		yyv1349 := &x.FMapStringIntf
-		yym1350 := z.DecBinary()
-		_ = yym1350
 		if false {
 		} else {
 			z.F.DecMapStringIntfX(yyv1349, d)
@@ -31885,8 +28231,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringIntf == nil {
 			x.FptrMapStringIntf = new(map[string]interface{})
 		}
-		yym1352 := z.DecBinary()
-		_ = yym1352
 		if false {
 		} else {
 			z.F.DecMapStringIntfX(x.FptrMapStringIntf, d)
@@ -31907,8 +28251,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringString = nil
 	} else {
 		yyv1353 := &x.FMapStringString
-		yym1354 := z.DecBinary()
-		_ = yym1354
 		if false {
 		} else {
 			z.F.DecMapStringStringX(yyv1353, d)
@@ -31936,8 +28278,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringString == nil {
 			x.FptrMapStringString = new(map[string]string)
 		}
-		yym1356 := z.DecBinary()
-		_ = yym1356
 		if false {
 		} else {
 			z.F.DecMapStringStringX(x.FptrMapStringString, d)
@@ -31958,8 +28298,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringUint = nil
 	} else {
 		yyv1357 := &x.FMapStringUint
-		yym1358 := z.DecBinary()
-		_ = yym1358
 		if false {
 		} else {
 			z.F.DecMapStringUintX(yyv1357, d)
@@ -31987,8 +28325,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringUint == nil {
 			x.FptrMapStringUint = new(map[string]uint)
 		}
-		yym1360 := z.DecBinary()
-		_ = yym1360
 		if false {
 		} else {
 			z.F.DecMapStringUintX(x.FptrMapStringUint, d)
@@ -32009,8 +28345,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringUint8 = nil
 	} else {
 		yyv1361 := &x.FMapStringUint8
-		yym1362 := z.DecBinary()
-		_ = yym1362
 		if false {
 		} else {
 			z.F.DecMapStringUint8X(yyv1361, d)
@@ -32038,8 +28372,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringUint8 == nil {
 			x.FptrMapStringUint8 = new(map[string]uint8)
 		}
-		yym1364 := z.DecBinary()
-		_ = yym1364
 		if false {
 		} else {
 			z.F.DecMapStringUint8X(x.FptrMapStringUint8, d)
@@ -32060,8 +28392,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringUint16 = nil
 	} else {
 		yyv1365 := &x.FMapStringUint16
-		yym1366 := z.DecBinary()
-		_ = yym1366
 		if false {
 		} else {
 			z.F.DecMapStringUint16X(yyv1365, d)
@@ -32089,8 +28419,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringUint16 == nil {
 			x.FptrMapStringUint16 = new(map[string]uint16)
 		}
-		yym1368 := z.DecBinary()
-		_ = yym1368
 		if false {
 		} else {
 			z.F.DecMapStringUint16X(x.FptrMapStringUint16, d)
@@ -32111,8 +28439,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringUint32 = nil
 	} else {
 		yyv1369 := &x.FMapStringUint32
-		yym1370 := z.DecBinary()
-		_ = yym1370
 		if false {
 		} else {
 			z.F.DecMapStringUint32X(yyv1369, d)
@@ -32140,8 +28466,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringUint32 == nil {
 			x.FptrMapStringUint32 = new(map[string]uint32)
 		}
-		yym1372 := z.DecBinary()
-		_ = yym1372
 		if false {
 		} else {
 			z.F.DecMapStringUint32X(x.FptrMapStringUint32, d)
@@ -32162,8 +28486,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringUint64 = nil
 	} else {
 		yyv1373 := &x.FMapStringUint64
-		yym1374 := z.DecBinary()
-		_ = yym1374
 		if false {
 		} else {
 			z.F.DecMapStringUint64X(yyv1373, d)
@@ -32191,8 +28513,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringUint64 == nil {
 			x.FptrMapStringUint64 = new(map[string]uint64)
 		}
-		yym1376 := z.DecBinary()
-		_ = yym1376
 		if false {
 		} else {
 			z.F.DecMapStringUint64X(x.FptrMapStringUint64, d)
@@ -32213,8 +28533,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringUintptr = nil
 	} else {
 		yyv1377 := &x.FMapStringUintptr
-		yym1378 := z.DecBinary()
-		_ = yym1378
 		if false {
 		} else {
 			z.F.DecMapStringUintptrX(yyv1377, d)
@@ -32242,8 +28560,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringUintptr == nil {
 			x.FptrMapStringUintptr = new(map[string]uintptr)
 		}
-		yym1380 := z.DecBinary()
-		_ = yym1380
 		if false {
 		} else {
 			z.F.DecMapStringUintptrX(x.FptrMapStringUintptr, d)
@@ -32264,8 +28580,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringInt = nil
 	} else {
 		yyv1381 := &x.FMapStringInt
-		yym1382 := z.DecBinary()
-		_ = yym1382
 		if false {
 		} else {
 			z.F.DecMapStringIntX(yyv1381, d)
@@ -32293,8 +28607,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringInt == nil {
 			x.FptrMapStringInt = new(map[string]int)
 		}
-		yym1384 := z.DecBinary()
-		_ = yym1384
 		if false {
 		} else {
 			z.F.DecMapStringIntX(x.FptrMapStringInt, d)
@@ -32315,8 +28627,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringInt8 = nil
 	} else {
 		yyv1385 := &x.FMapStringInt8
-		yym1386 := z.DecBinary()
-		_ = yym1386
 		if false {
 		} else {
 			z.F.DecMapStringInt8X(yyv1385, d)
@@ -32344,8 +28654,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringInt8 == nil {
 			x.FptrMapStringInt8 = new(map[string]int8)
 		}
-		yym1388 := z.DecBinary()
-		_ = yym1388
 		if false {
 		} else {
 			z.F.DecMapStringInt8X(x.FptrMapStringInt8, d)
@@ -32366,8 +28674,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringInt16 = nil
 	} else {
 		yyv1389 := &x.FMapStringInt16
-		yym1390 := z.DecBinary()
-		_ = yym1390
 		if false {
 		} else {
 			z.F.DecMapStringInt16X(yyv1389, d)
@@ -32395,8 +28701,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringInt16 == nil {
 			x.FptrMapStringInt16 = new(map[string]int16)
 		}
-		yym1392 := z.DecBinary()
-		_ = yym1392
 		if false {
 		} else {
 			z.F.DecMapStringInt16X(x.FptrMapStringInt16, d)
@@ -32417,8 +28721,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringInt32 = nil
 	} else {
 		yyv1393 := &x.FMapStringInt32
-		yym1394 := z.DecBinary()
-		_ = yym1394
 		if false {
 		} else {
 			z.F.DecMapStringInt32X(yyv1393, d)
@@ -32446,8 +28748,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringInt32 == nil {
 			x.FptrMapStringInt32 = new(map[string]int32)
 		}
-		yym1396 := z.DecBinary()
-		_ = yym1396
 		if false {
 		} else {
 			z.F.DecMapStringInt32X(x.FptrMapStringInt32, d)
@@ -32468,8 +28768,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringInt64 = nil
 	} else {
 		yyv1397 := &x.FMapStringInt64
-		yym1398 := z.DecBinary()
-		_ = yym1398
 		if false {
 		} else {
 			z.F.DecMapStringInt64X(yyv1397, d)
@@ -32497,8 +28795,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringInt64 == nil {
 			x.FptrMapStringInt64 = new(map[string]int64)
 		}
-		yym1400 := z.DecBinary()
-		_ = yym1400
 		if false {
 		} else {
 			z.F.DecMapStringInt64X(x.FptrMapStringInt64, d)
@@ -32519,8 +28815,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringFloat32 = nil
 	} else {
 		yyv1401 := &x.FMapStringFloat32
-		yym1402 := z.DecBinary()
-		_ = yym1402
 		if false {
 		} else {
 			z.F.DecMapStringFloat32X(yyv1401, d)
@@ -32548,8 +28842,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringFloat32 == nil {
 			x.FptrMapStringFloat32 = new(map[string]float32)
 		}
-		yym1404 := z.DecBinary()
-		_ = yym1404
 		if false {
 		} else {
 			z.F.DecMapStringFloat32X(x.FptrMapStringFloat32, d)
@@ -32570,8 +28862,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringFloat64 = nil
 	} else {
 		yyv1405 := &x.FMapStringFloat64
-		yym1406 := z.DecBinary()
-		_ = yym1406
 		if false {
 		} else {
 			z.F.DecMapStringFloat64X(yyv1405, d)
@@ -32599,8 +28889,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringFloat64 == nil {
 			x.FptrMapStringFloat64 = new(map[string]float64)
 		}
-		yym1408 := z.DecBinary()
-		_ = yym1408
 		if false {
 		} else {
 			z.F.DecMapStringFloat64X(x.FptrMapStringFloat64, d)
@@ -32621,8 +28909,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapStringBool = nil
 	} else {
 		yyv1409 := &x.FMapStringBool
-		yym1410 := z.DecBinary()
-		_ = yym1410
 		if false {
 		} else {
 			z.F.DecMapStringBoolX(yyv1409, d)
@@ -32650,8 +28936,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringBool == nil {
 			x.FptrMapStringBool = new(map[string]bool)
 		}
-		yym1412 := z.DecBinary()
-		_ = yym1412
 		if false {
 		} else {
 			z.F.DecMapStringBoolX(x.FptrMapStringBool, d)
@@ -32672,8 +28956,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Intf = nil
 	} else {
 		yyv1413 := &x.FMapFloat32Intf
-		yym1414 := z.DecBinary()
-		_ = yym1414
 		if false {
 		} else {
 			z.F.DecMapFloat32IntfX(yyv1413, d)
@@ -32701,8 +28983,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Intf == nil {
 			x.FptrMapFloat32Intf = new(map[float32]interface{})
 		}
-		yym1416 := z.DecBinary()
-		_ = yym1416
 		if false {
 		} else {
 			z.F.DecMapFloat32IntfX(x.FptrMapFloat32Intf, d)
@@ -32723,8 +29003,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32String = nil
 	} else {
 		yyv1417 := &x.FMapFloat32String
-		yym1418 := z.DecBinary()
-		_ = yym1418
 		if false {
 		} else {
 			z.F.DecMapFloat32StringX(yyv1417, d)
@@ -32752,8 +29030,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32String == nil {
 			x.FptrMapFloat32String = new(map[float32]string)
 		}
-		yym1420 := z.DecBinary()
-		_ = yym1420
 		if false {
 		} else {
 			z.F.DecMapFloat32StringX(x.FptrMapFloat32String, d)
@@ -32774,8 +29050,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Uint = nil
 	} else {
 		yyv1421 := &x.FMapFloat32Uint
-		yym1422 := z.DecBinary()
-		_ = yym1422
 		if false {
 		} else {
 			z.F.DecMapFloat32UintX(yyv1421, d)
@@ -32803,8 +29077,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Uint == nil {
 			x.FptrMapFloat32Uint = new(map[float32]uint)
 		}
-		yym1424 := z.DecBinary()
-		_ = yym1424
 		if false {
 		} else {
 			z.F.DecMapFloat32UintX(x.FptrMapFloat32Uint, d)
@@ -32825,8 +29097,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Uint8 = nil
 	} else {
 		yyv1425 := &x.FMapFloat32Uint8
-		yym1426 := z.DecBinary()
-		_ = yym1426
 		if false {
 		} else {
 			z.F.DecMapFloat32Uint8X(yyv1425, d)
@@ -32854,8 +29124,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Uint8 == nil {
 			x.FptrMapFloat32Uint8 = new(map[float32]uint8)
 		}
-		yym1428 := z.DecBinary()
-		_ = yym1428
 		if false {
 		} else {
 			z.F.DecMapFloat32Uint8X(x.FptrMapFloat32Uint8, d)
@@ -32876,8 +29144,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Uint16 = nil
 	} else {
 		yyv1429 := &x.FMapFloat32Uint16
-		yym1430 := z.DecBinary()
-		_ = yym1430
 		if false {
 		} else {
 			z.F.DecMapFloat32Uint16X(yyv1429, d)
@@ -32905,8 +29171,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Uint16 == nil {
 			x.FptrMapFloat32Uint16 = new(map[float32]uint16)
 		}
-		yym1432 := z.DecBinary()
-		_ = yym1432
 		if false {
 		} else {
 			z.F.DecMapFloat32Uint16X(x.FptrMapFloat32Uint16, d)
@@ -32927,8 +29191,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Uint32 = nil
 	} else {
 		yyv1433 := &x.FMapFloat32Uint32
-		yym1434 := z.DecBinary()
-		_ = yym1434
 		if false {
 		} else {
 			z.F.DecMapFloat32Uint32X(yyv1433, d)
@@ -32956,8 +29218,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Uint32 == nil {
 			x.FptrMapFloat32Uint32 = new(map[float32]uint32)
 		}
-		yym1436 := z.DecBinary()
-		_ = yym1436
 		if false {
 		} else {
 			z.F.DecMapFloat32Uint32X(x.FptrMapFloat32Uint32, d)
@@ -32978,8 +29238,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Uint64 = nil
 	} else {
 		yyv1437 := &x.FMapFloat32Uint64
-		yym1438 := z.DecBinary()
-		_ = yym1438
 		if false {
 		} else {
 			z.F.DecMapFloat32Uint64X(yyv1437, d)
@@ -33007,8 +29265,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Uint64 == nil {
 			x.FptrMapFloat32Uint64 = new(map[float32]uint64)
 		}
-		yym1440 := z.DecBinary()
-		_ = yym1440
 		if false {
 		} else {
 			z.F.DecMapFloat32Uint64X(x.FptrMapFloat32Uint64, d)
@@ -33029,8 +29285,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Uintptr = nil
 	} else {
 		yyv1441 := &x.FMapFloat32Uintptr
-		yym1442 := z.DecBinary()
-		_ = yym1442
 		if false {
 		} else {
 			z.F.DecMapFloat32UintptrX(yyv1441, d)
@@ -33058,8 +29312,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Uintptr == nil {
 			x.FptrMapFloat32Uintptr = new(map[float32]uintptr)
 		}
-		yym1444 := z.DecBinary()
-		_ = yym1444
 		if false {
 		} else {
 			z.F.DecMapFloat32UintptrX(x.FptrMapFloat32Uintptr, d)
@@ -33080,8 +29332,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Int = nil
 	} else {
 		yyv1445 := &x.FMapFloat32Int
-		yym1446 := z.DecBinary()
-		_ = yym1446
 		if false {
 		} else {
 			z.F.DecMapFloat32IntX(yyv1445, d)
@@ -33109,8 +29359,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Int == nil {
 			x.FptrMapFloat32Int = new(map[float32]int)
 		}
-		yym1448 := z.DecBinary()
-		_ = yym1448
 		if false {
 		} else {
 			z.F.DecMapFloat32IntX(x.FptrMapFloat32Int, d)
@@ -33131,8 +29379,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Int8 = nil
 	} else {
 		yyv1449 := &x.FMapFloat32Int8
-		yym1450 := z.DecBinary()
-		_ = yym1450
 		if false {
 		} else {
 			z.F.DecMapFloat32Int8X(yyv1449, d)
@@ -33160,8 +29406,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Int8 == nil {
 			x.FptrMapFloat32Int8 = new(map[float32]int8)
 		}
-		yym1452 := z.DecBinary()
-		_ = yym1452
 		if false {
 		} else {
 			z.F.DecMapFloat32Int8X(x.FptrMapFloat32Int8, d)
@@ -33182,8 +29426,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Int16 = nil
 	} else {
 		yyv1453 := &x.FMapFloat32Int16
-		yym1454 := z.DecBinary()
-		_ = yym1454
 		if false {
 		} else {
 			z.F.DecMapFloat32Int16X(yyv1453, d)
@@ -33211,8 +29453,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Int16 == nil {
 			x.FptrMapFloat32Int16 = new(map[float32]int16)
 		}
-		yym1456 := z.DecBinary()
-		_ = yym1456
 		if false {
 		} else {
 			z.F.DecMapFloat32Int16X(x.FptrMapFloat32Int16, d)
@@ -33233,8 +29473,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Int32 = nil
 	} else {
 		yyv1457 := &x.FMapFloat32Int32
-		yym1458 := z.DecBinary()
-		_ = yym1458
 		if false {
 		} else {
 			z.F.DecMapFloat32Int32X(yyv1457, d)
@@ -33262,8 +29500,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Int32 == nil {
 			x.FptrMapFloat32Int32 = new(map[float32]int32)
 		}
-		yym1460 := z.DecBinary()
-		_ = yym1460
 		if false {
 		} else {
 			z.F.DecMapFloat32Int32X(x.FptrMapFloat32Int32, d)
@@ -33284,8 +29520,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Int64 = nil
 	} else {
 		yyv1461 := &x.FMapFloat32Int64
-		yym1462 := z.DecBinary()
-		_ = yym1462
 		if false {
 		} else {
 			z.F.DecMapFloat32Int64X(yyv1461, d)
@@ -33313,8 +29547,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Int64 == nil {
 			x.FptrMapFloat32Int64 = new(map[float32]int64)
 		}
-		yym1464 := z.DecBinary()
-		_ = yym1464
 		if false {
 		} else {
 			z.F.DecMapFloat32Int64X(x.FptrMapFloat32Int64, d)
@@ -33335,8 +29567,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Float32 = nil
 	} else {
 		yyv1465 := &x.FMapFloat32Float32
-		yym1466 := z.DecBinary()
-		_ = yym1466
 		if false {
 		} else {
 			z.F.DecMapFloat32Float32X(yyv1465, d)
@@ -33364,8 +29594,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Float32 == nil {
 			x.FptrMapFloat32Float32 = new(map[float32]float32)
 		}
-		yym1468 := z.DecBinary()
-		_ = yym1468
 		if false {
 		} else {
 			z.F.DecMapFloat32Float32X(x.FptrMapFloat32Float32, d)
@@ -33386,8 +29614,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Float64 = nil
 	} else {
 		yyv1469 := &x.FMapFloat32Float64
-		yym1470 := z.DecBinary()
-		_ = yym1470
 		if false {
 		} else {
 			z.F.DecMapFloat32Float64X(yyv1469, d)
@@ -33415,8 +29641,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Float64 == nil {
 			x.FptrMapFloat32Float64 = new(map[float32]float64)
 		}
-		yym1472 := z.DecBinary()
-		_ = yym1472
 		if false {
 		} else {
 			z.F.DecMapFloat32Float64X(x.FptrMapFloat32Float64, d)
@@ -33437,8 +29661,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat32Bool = nil
 	} else {
 		yyv1473 := &x.FMapFloat32Bool
-		yym1474 := z.DecBinary()
-		_ = yym1474
 		if false {
 		} else {
 			z.F.DecMapFloat32BoolX(yyv1473, d)
@@ -33466,8 +29688,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat32Bool == nil {
 			x.FptrMapFloat32Bool = new(map[float32]bool)
 		}
-		yym1476 := z.DecBinary()
-		_ = yym1476
 		if false {
 		} else {
 			z.F.DecMapFloat32BoolX(x.FptrMapFloat32Bool, d)
@@ -33488,8 +29708,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Intf = nil
 	} else {
 		yyv1477 := &x.FMapFloat64Intf
-		yym1478 := z.DecBinary()
-		_ = yym1478
 		if false {
 		} else {
 			z.F.DecMapFloat64IntfX(yyv1477, d)
@@ -33517,8 +29735,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Intf == nil {
 			x.FptrMapFloat64Intf = new(map[float64]interface{})
 		}
-		yym1480 := z.DecBinary()
-		_ = yym1480
 		if false {
 		} else {
 			z.F.DecMapFloat64IntfX(x.FptrMapFloat64Intf, d)
@@ -33539,8 +29755,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64String = nil
 	} else {
 		yyv1481 := &x.FMapFloat64String
-		yym1482 := z.DecBinary()
-		_ = yym1482
 		if false {
 		} else {
 			z.F.DecMapFloat64StringX(yyv1481, d)
@@ -33568,8 +29782,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64String == nil {
 			x.FptrMapFloat64String = new(map[float64]string)
 		}
-		yym1484 := z.DecBinary()
-		_ = yym1484
 		if false {
 		} else {
 			z.F.DecMapFloat64StringX(x.FptrMapFloat64String, d)
@@ -33590,8 +29802,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Uint = nil
 	} else {
 		yyv1485 := &x.FMapFloat64Uint
-		yym1486 := z.DecBinary()
-		_ = yym1486
 		if false {
 		} else {
 			z.F.DecMapFloat64UintX(yyv1485, d)
@@ -33619,8 +29829,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Uint == nil {
 			x.FptrMapFloat64Uint = new(map[float64]uint)
 		}
-		yym1488 := z.DecBinary()
-		_ = yym1488
 		if false {
 		} else {
 			z.F.DecMapFloat64UintX(x.FptrMapFloat64Uint, d)
@@ -33641,8 +29849,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Uint8 = nil
 	} else {
 		yyv1489 := &x.FMapFloat64Uint8
-		yym1490 := z.DecBinary()
-		_ = yym1490
 		if false {
 		} else {
 			z.F.DecMapFloat64Uint8X(yyv1489, d)
@@ -33670,8 +29876,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Uint8 == nil {
 			x.FptrMapFloat64Uint8 = new(map[float64]uint8)
 		}
-		yym1492 := z.DecBinary()
-		_ = yym1492
 		if false {
 		} else {
 			z.F.DecMapFloat64Uint8X(x.FptrMapFloat64Uint8, d)
@@ -33692,8 +29896,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Uint16 = nil
 	} else {
 		yyv1493 := &x.FMapFloat64Uint16
-		yym1494 := z.DecBinary()
-		_ = yym1494
 		if false {
 		} else {
 			z.F.DecMapFloat64Uint16X(yyv1493, d)
@@ -33721,8 +29923,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Uint16 == nil {
 			x.FptrMapFloat64Uint16 = new(map[float64]uint16)
 		}
-		yym1496 := z.DecBinary()
-		_ = yym1496
 		if false {
 		} else {
 			z.F.DecMapFloat64Uint16X(x.FptrMapFloat64Uint16, d)
@@ -33743,8 +29943,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Uint32 = nil
 	} else {
 		yyv1497 := &x.FMapFloat64Uint32
-		yym1498 := z.DecBinary()
-		_ = yym1498
 		if false {
 		} else {
 			z.F.DecMapFloat64Uint32X(yyv1497, d)
@@ -33772,8 +29970,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Uint32 == nil {
 			x.FptrMapFloat64Uint32 = new(map[float64]uint32)
 		}
-		yym1500 := z.DecBinary()
-		_ = yym1500
 		if false {
 		} else {
 			z.F.DecMapFloat64Uint32X(x.FptrMapFloat64Uint32, d)
@@ -33794,8 +29990,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Uint64 = nil
 	} else {
 		yyv1501 := &x.FMapFloat64Uint64
-		yym1502 := z.DecBinary()
-		_ = yym1502
 		if false {
 		} else {
 			z.F.DecMapFloat64Uint64X(yyv1501, d)
@@ -33823,8 +30017,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Uint64 == nil {
 			x.FptrMapFloat64Uint64 = new(map[float64]uint64)
 		}
-		yym1504 := z.DecBinary()
-		_ = yym1504
 		if false {
 		} else {
 			z.F.DecMapFloat64Uint64X(x.FptrMapFloat64Uint64, d)
@@ -33845,8 +30037,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Uintptr = nil
 	} else {
 		yyv1505 := &x.FMapFloat64Uintptr
-		yym1506 := z.DecBinary()
-		_ = yym1506
 		if false {
 		} else {
 			z.F.DecMapFloat64UintptrX(yyv1505, d)
@@ -33874,8 +30064,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Uintptr == nil {
 			x.FptrMapFloat64Uintptr = new(map[float64]uintptr)
 		}
-		yym1508 := z.DecBinary()
-		_ = yym1508
 		if false {
 		} else {
 			z.F.DecMapFloat64UintptrX(x.FptrMapFloat64Uintptr, d)
@@ -33896,8 +30084,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Int = nil
 	} else {
 		yyv1509 := &x.FMapFloat64Int
-		yym1510 := z.DecBinary()
-		_ = yym1510
 		if false {
 		} else {
 			z.F.DecMapFloat64IntX(yyv1509, d)
@@ -33925,8 +30111,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Int == nil {
 			x.FptrMapFloat64Int = new(map[float64]int)
 		}
-		yym1512 := z.DecBinary()
-		_ = yym1512
 		if false {
 		} else {
 			z.F.DecMapFloat64IntX(x.FptrMapFloat64Int, d)
@@ -33947,8 +30131,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Int8 = nil
 	} else {
 		yyv1513 := &x.FMapFloat64Int8
-		yym1514 := z.DecBinary()
-		_ = yym1514
 		if false {
 		} else {
 			z.F.DecMapFloat64Int8X(yyv1513, d)
@@ -33976,8 +30158,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Int8 == nil {
 			x.FptrMapFloat64Int8 = new(map[float64]int8)
 		}
-		yym1516 := z.DecBinary()
-		_ = yym1516
 		if false {
 		} else {
 			z.F.DecMapFloat64Int8X(x.FptrMapFloat64Int8, d)
@@ -33998,8 +30178,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Int16 = nil
 	} else {
 		yyv1517 := &x.FMapFloat64Int16
-		yym1518 := z.DecBinary()
-		_ = yym1518
 		if false {
 		} else {
 			z.F.DecMapFloat64Int16X(yyv1517, d)
@@ -34027,8 +30205,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Int16 == nil {
 			x.FptrMapFloat64Int16 = new(map[float64]int16)
 		}
-		yym1520 := z.DecBinary()
-		_ = yym1520
 		if false {
 		} else {
 			z.F.DecMapFloat64Int16X(x.FptrMapFloat64Int16, d)
@@ -34049,8 +30225,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Int32 = nil
 	} else {
 		yyv1521 := &x.FMapFloat64Int32
-		yym1522 := z.DecBinary()
-		_ = yym1522
 		if false {
 		} else {
 			z.F.DecMapFloat64Int32X(yyv1521, d)
@@ -34078,8 +30252,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Int32 == nil {
 			x.FptrMapFloat64Int32 = new(map[float64]int32)
 		}
-		yym1524 := z.DecBinary()
-		_ = yym1524
 		if false {
 		} else {
 			z.F.DecMapFloat64Int32X(x.FptrMapFloat64Int32, d)
@@ -34100,8 +30272,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Int64 = nil
 	} else {
 		yyv1525 := &x.FMapFloat64Int64
-		yym1526 := z.DecBinary()
-		_ = yym1526
 		if false {
 		} else {
 			z.F.DecMapFloat64Int64X(yyv1525, d)
@@ -34129,8 +30299,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Int64 == nil {
 			x.FptrMapFloat64Int64 = new(map[float64]int64)
 		}
-		yym1528 := z.DecBinary()
-		_ = yym1528
 		if false {
 		} else {
 			z.F.DecMapFloat64Int64X(x.FptrMapFloat64Int64, d)
@@ -34151,8 +30319,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Float32 = nil
 	} else {
 		yyv1529 := &x.FMapFloat64Float32
-		yym1530 := z.DecBinary()
-		_ = yym1530
 		if false {
 		} else {
 			z.F.DecMapFloat64Float32X(yyv1529, d)
@@ -34180,8 +30346,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Float32 == nil {
 			x.FptrMapFloat64Float32 = new(map[float64]float32)
 		}
-		yym1532 := z.DecBinary()
-		_ = yym1532
 		if false {
 		} else {
 			z.F.DecMapFloat64Float32X(x.FptrMapFloat64Float32, d)
@@ -34202,8 +30366,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Float64 = nil
 	} else {
 		yyv1533 := &x.FMapFloat64Float64
-		yym1534 := z.DecBinary()
-		_ = yym1534
 		if false {
 		} else {
 			z.F.DecMapFloat64Float64X(yyv1533, d)
@@ -34231,8 +30393,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Float64 == nil {
 			x.FptrMapFloat64Float64 = new(map[float64]float64)
 		}
-		yym1536 := z.DecBinary()
-		_ = yym1536
 		if false {
 		} else {
 			z.F.DecMapFloat64Float64X(x.FptrMapFloat64Float64, d)
@@ -34253,8 +30413,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapFloat64Bool = nil
 	} else {
 		yyv1537 := &x.FMapFloat64Bool
-		yym1538 := z.DecBinary()
-		_ = yym1538
 		if false {
 		} else {
 			z.F.DecMapFloat64BoolX(yyv1537, d)
@@ -34282,8 +30440,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapFloat64Bool == nil {
 			x.FptrMapFloat64Bool = new(map[float64]bool)
 		}
-		yym1540 := z.DecBinary()
-		_ = yym1540
 		if false {
 		} else {
 			z.F.DecMapFloat64BoolX(x.FptrMapFloat64Bool, d)
@@ -34304,8 +30460,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintIntf = nil
 	} else {
 		yyv1541 := &x.FMapUintIntf
-		yym1542 := z.DecBinary()
-		_ = yym1542
 		if false {
 		} else {
 			z.F.DecMapUintIntfX(yyv1541, d)
@@ -34333,8 +30487,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintIntf == nil {
 			x.FptrMapUintIntf = new(map[uint]interface{})
 		}
-		yym1544 := z.DecBinary()
-		_ = yym1544
 		if false {
 		} else {
 			z.F.DecMapUintIntfX(x.FptrMapUintIntf, d)
@@ -34355,8 +30507,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintString = nil
 	} else {
 		yyv1545 := &x.FMapUintString
-		yym1546 := z.DecBinary()
-		_ = yym1546
 		if false {
 		} else {
 			z.F.DecMapUintStringX(yyv1545, d)
@@ -34384,8 +30534,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintString == nil {
 			x.FptrMapUintString = new(map[uint]string)
 		}
-		yym1548 := z.DecBinary()
-		_ = yym1548
 		if false {
 		} else {
 			z.F.DecMapUintStringX(x.FptrMapUintString, d)
@@ -34406,8 +30554,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintUint = nil
 	} else {
 		yyv1549 := &x.FMapUintUint
-		yym1550 := z.DecBinary()
-		_ = yym1550
 		if false {
 		} else {
 			z.F.DecMapUintUintX(yyv1549, d)
@@ -34435,8 +30581,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintUint == nil {
 			x.FptrMapUintUint = new(map[uint]uint)
 		}
-		yym1552 := z.DecBinary()
-		_ = yym1552
 		if false {
 		} else {
 			z.F.DecMapUintUintX(x.FptrMapUintUint, d)
@@ -34457,8 +30601,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintUint8 = nil
 	} else {
 		yyv1553 := &x.FMapUintUint8
-		yym1554 := z.DecBinary()
-		_ = yym1554
 		if false {
 		} else {
 			z.F.DecMapUintUint8X(yyv1553, d)
@@ -34486,8 +30628,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintUint8 == nil {
 			x.FptrMapUintUint8 = new(map[uint]uint8)
 		}
-		yym1556 := z.DecBinary()
-		_ = yym1556
 		if false {
 		} else {
 			z.F.DecMapUintUint8X(x.FptrMapUintUint8, d)
@@ -34508,8 +30648,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintUint16 = nil
 	} else {
 		yyv1557 := &x.FMapUintUint16
-		yym1558 := z.DecBinary()
-		_ = yym1558
 		if false {
 		} else {
 			z.F.DecMapUintUint16X(yyv1557, d)
@@ -34537,8 +30675,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintUint16 == nil {
 			x.FptrMapUintUint16 = new(map[uint]uint16)
 		}
-		yym1560 := z.DecBinary()
-		_ = yym1560
 		if false {
 		} else {
 			z.F.DecMapUintUint16X(x.FptrMapUintUint16, d)
@@ -34559,8 +30695,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintUint32 = nil
 	} else {
 		yyv1561 := &x.FMapUintUint32
-		yym1562 := z.DecBinary()
-		_ = yym1562
 		if false {
 		} else {
 			z.F.DecMapUintUint32X(yyv1561, d)
@@ -34588,8 +30722,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintUint32 == nil {
 			x.FptrMapUintUint32 = new(map[uint]uint32)
 		}
-		yym1564 := z.DecBinary()
-		_ = yym1564
 		if false {
 		} else {
 			z.F.DecMapUintUint32X(x.FptrMapUintUint32, d)
@@ -34610,8 +30742,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintUint64 = nil
 	} else {
 		yyv1565 := &x.FMapUintUint64
-		yym1566 := z.DecBinary()
-		_ = yym1566
 		if false {
 		} else {
 			z.F.DecMapUintUint64X(yyv1565, d)
@@ -34639,8 +30769,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintUint64 == nil {
 			x.FptrMapUintUint64 = new(map[uint]uint64)
 		}
-		yym1568 := z.DecBinary()
-		_ = yym1568
 		if false {
 		} else {
 			z.F.DecMapUintUint64X(x.FptrMapUintUint64, d)
@@ -34661,8 +30789,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintUintptr = nil
 	} else {
 		yyv1569 := &x.FMapUintUintptr
-		yym1570 := z.DecBinary()
-		_ = yym1570
 		if false {
 		} else {
 			z.F.DecMapUintUintptrX(yyv1569, d)
@@ -34690,8 +30816,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintUintptr == nil {
 			x.FptrMapUintUintptr = new(map[uint]uintptr)
 		}
-		yym1572 := z.DecBinary()
-		_ = yym1572
 		if false {
 		} else {
 			z.F.DecMapUintUintptrX(x.FptrMapUintUintptr, d)
@@ -34712,8 +30836,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintInt = nil
 	} else {
 		yyv1573 := &x.FMapUintInt
-		yym1574 := z.DecBinary()
-		_ = yym1574
 		if false {
 		} else {
 			z.F.DecMapUintIntX(yyv1573, d)
@@ -34741,8 +30863,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintInt == nil {
 			x.FptrMapUintInt = new(map[uint]int)
 		}
-		yym1576 := z.DecBinary()
-		_ = yym1576
 		if false {
 		} else {
 			z.F.DecMapUintIntX(x.FptrMapUintInt, d)
@@ -34763,8 +30883,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintInt8 = nil
 	} else {
 		yyv1577 := &x.FMapUintInt8
-		yym1578 := z.DecBinary()
-		_ = yym1578
 		if false {
 		} else {
 			z.F.DecMapUintInt8X(yyv1577, d)
@@ -34792,8 +30910,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintInt8 == nil {
 			x.FptrMapUintInt8 = new(map[uint]int8)
 		}
-		yym1580 := z.DecBinary()
-		_ = yym1580
 		if false {
 		} else {
 			z.F.DecMapUintInt8X(x.FptrMapUintInt8, d)
@@ -34814,8 +30930,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintInt16 = nil
 	} else {
 		yyv1581 := &x.FMapUintInt16
-		yym1582 := z.DecBinary()
-		_ = yym1582
 		if false {
 		} else {
 			z.F.DecMapUintInt16X(yyv1581, d)
@@ -34843,8 +30957,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintInt16 == nil {
 			x.FptrMapUintInt16 = new(map[uint]int16)
 		}
-		yym1584 := z.DecBinary()
-		_ = yym1584
 		if false {
 		} else {
 			z.F.DecMapUintInt16X(x.FptrMapUintInt16, d)
@@ -34865,8 +30977,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintInt32 = nil
 	} else {
 		yyv1585 := &x.FMapUintInt32
-		yym1586 := z.DecBinary()
-		_ = yym1586
 		if false {
 		} else {
 			z.F.DecMapUintInt32X(yyv1585, d)
@@ -34894,8 +31004,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintInt32 == nil {
 			x.FptrMapUintInt32 = new(map[uint]int32)
 		}
-		yym1588 := z.DecBinary()
-		_ = yym1588
 		if false {
 		} else {
 			z.F.DecMapUintInt32X(x.FptrMapUintInt32, d)
@@ -34916,8 +31024,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintInt64 = nil
 	} else {
 		yyv1589 := &x.FMapUintInt64
-		yym1590 := z.DecBinary()
-		_ = yym1590
 		if false {
 		} else {
 			z.F.DecMapUintInt64X(yyv1589, d)
@@ -34945,8 +31051,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintInt64 == nil {
 			x.FptrMapUintInt64 = new(map[uint]int64)
 		}
-		yym1592 := z.DecBinary()
-		_ = yym1592
 		if false {
 		} else {
 			z.F.DecMapUintInt64X(x.FptrMapUintInt64, d)
@@ -34967,8 +31071,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintFloat32 = nil
 	} else {
 		yyv1593 := &x.FMapUintFloat32
-		yym1594 := z.DecBinary()
-		_ = yym1594
 		if false {
 		} else {
 			z.F.DecMapUintFloat32X(yyv1593, d)
@@ -34996,8 +31098,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintFloat32 == nil {
 			x.FptrMapUintFloat32 = new(map[uint]float32)
 		}
-		yym1596 := z.DecBinary()
-		_ = yym1596
 		if false {
 		} else {
 			z.F.DecMapUintFloat32X(x.FptrMapUintFloat32, d)
@@ -35018,8 +31118,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintFloat64 = nil
 	} else {
 		yyv1597 := &x.FMapUintFloat64
-		yym1598 := z.DecBinary()
-		_ = yym1598
 		if false {
 		} else {
 			z.F.DecMapUintFloat64X(yyv1597, d)
@@ -35047,8 +31145,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintFloat64 == nil {
 			x.FptrMapUintFloat64 = new(map[uint]float64)
 		}
-		yym1600 := z.DecBinary()
-		_ = yym1600
 		if false {
 		} else {
 			z.F.DecMapUintFloat64X(x.FptrMapUintFloat64, d)
@@ -35069,8 +31165,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintBool = nil
 	} else {
 		yyv1601 := &x.FMapUintBool
-		yym1602 := z.DecBinary()
-		_ = yym1602
 		if false {
 		} else {
 			z.F.DecMapUintBoolX(yyv1601, d)
@@ -35098,8 +31192,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintBool == nil {
 			x.FptrMapUintBool = new(map[uint]bool)
 		}
-		yym1604 := z.DecBinary()
-		_ = yym1604
 		if false {
 		} else {
 			z.F.DecMapUintBoolX(x.FptrMapUintBool, d)
@@ -35120,8 +31212,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Intf = nil
 	} else {
 		yyv1605 := &x.FMapUint8Intf
-		yym1606 := z.DecBinary()
-		_ = yym1606
 		if false {
 		} else {
 			z.F.DecMapUint8IntfX(yyv1605, d)
@@ -35149,8 +31239,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Intf == nil {
 			x.FptrMapUint8Intf = new(map[uint8]interface{})
 		}
-		yym1608 := z.DecBinary()
-		_ = yym1608
 		if false {
 		} else {
 			z.F.DecMapUint8IntfX(x.FptrMapUint8Intf, d)
@@ -35171,8 +31259,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8String = nil
 	} else {
 		yyv1609 := &x.FMapUint8String
-		yym1610 := z.DecBinary()
-		_ = yym1610
 		if false {
 		} else {
 			z.F.DecMapUint8StringX(yyv1609, d)
@@ -35200,8 +31286,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8String == nil {
 			x.FptrMapUint8String = new(map[uint8]string)
 		}
-		yym1612 := z.DecBinary()
-		_ = yym1612
 		if false {
 		} else {
 			z.F.DecMapUint8StringX(x.FptrMapUint8String, d)
@@ -35222,8 +31306,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Uint = nil
 	} else {
 		yyv1613 := &x.FMapUint8Uint
-		yym1614 := z.DecBinary()
-		_ = yym1614
 		if false {
 		} else {
 			z.F.DecMapUint8UintX(yyv1613, d)
@@ -35251,8 +31333,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Uint == nil {
 			x.FptrMapUint8Uint = new(map[uint8]uint)
 		}
-		yym1616 := z.DecBinary()
-		_ = yym1616
 		if false {
 		} else {
 			z.F.DecMapUint8UintX(x.FptrMapUint8Uint, d)
@@ -35273,8 +31353,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Uint8 = nil
 	} else {
 		yyv1617 := &x.FMapUint8Uint8
-		yym1618 := z.DecBinary()
-		_ = yym1618
 		if false {
 		} else {
 			z.F.DecMapUint8Uint8X(yyv1617, d)
@@ -35302,8 +31380,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Uint8 == nil {
 			x.FptrMapUint8Uint8 = new(map[uint8]uint8)
 		}
-		yym1620 := z.DecBinary()
-		_ = yym1620
 		if false {
 		} else {
 			z.F.DecMapUint8Uint8X(x.FptrMapUint8Uint8, d)
@@ -35324,8 +31400,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Uint16 = nil
 	} else {
 		yyv1621 := &x.FMapUint8Uint16
-		yym1622 := z.DecBinary()
-		_ = yym1622
 		if false {
 		} else {
 			z.F.DecMapUint8Uint16X(yyv1621, d)
@@ -35353,8 +31427,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Uint16 == nil {
 			x.FptrMapUint8Uint16 = new(map[uint8]uint16)
 		}
-		yym1624 := z.DecBinary()
-		_ = yym1624
 		if false {
 		} else {
 			z.F.DecMapUint8Uint16X(x.FptrMapUint8Uint16, d)
@@ -35375,8 +31447,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Uint32 = nil
 	} else {
 		yyv1625 := &x.FMapUint8Uint32
-		yym1626 := z.DecBinary()
-		_ = yym1626
 		if false {
 		} else {
 			z.F.DecMapUint8Uint32X(yyv1625, d)
@@ -35404,8 +31474,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Uint32 == nil {
 			x.FptrMapUint8Uint32 = new(map[uint8]uint32)
 		}
-		yym1628 := z.DecBinary()
-		_ = yym1628
 		if false {
 		} else {
 			z.F.DecMapUint8Uint32X(x.FptrMapUint8Uint32, d)
@@ -35426,8 +31494,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Uint64 = nil
 	} else {
 		yyv1629 := &x.FMapUint8Uint64
-		yym1630 := z.DecBinary()
-		_ = yym1630
 		if false {
 		} else {
 			z.F.DecMapUint8Uint64X(yyv1629, d)
@@ -35455,8 +31521,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Uint64 == nil {
 			x.FptrMapUint8Uint64 = new(map[uint8]uint64)
 		}
-		yym1632 := z.DecBinary()
-		_ = yym1632
 		if false {
 		} else {
 			z.F.DecMapUint8Uint64X(x.FptrMapUint8Uint64, d)
@@ -35477,8 +31541,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Uintptr = nil
 	} else {
 		yyv1633 := &x.FMapUint8Uintptr
-		yym1634 := z.DecBinary()
-		_ = yym1634
 		if false {
 		} else {
 			z.F.DecMapUint8UintptrX(yyv1633, d)
@@ -35506,8 +31568,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Uintptr == nil {
 			x.FptrMapUint8Uintptr = new(map[uint8]uintptr)
 		}
-		yym1636 := z.DecBinary()
-		_ = yym1636
 		if false {
 		} else {
 			z.F.DecMapUint8UintptrX(x.FptrMapUint8Uintptr, d)
@@ -35528,8 +31588,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Int = nil
 	} else {
 		yyv1637 := &x.FMapUint8Int
-		yym1638 := z.DecBinary()
-		_ = yym1638
 		if false {
 		} else {
 			z.F.DecMapUint8IntX(yyv1637, d)
@@ -35557,8 +31615,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Int == nil {
 			x.FptrMapUint8Int = new(map[uint8]int)
 		}
-		yym1640 := z.DecBinary()
-		_ = yym1640
 		if false {
 		} else {
 			z.F.DecMapUint8IntX(x.FptrMapUint8Int, d)
@@ -35579,8 +31635,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Int8 = nil
 	} else {
 		yyv1641 := &x.FMapUint8Int8
-		yym1642 := z.DecBinary()
-		_ = yym1642
 		if false {
 		} else {
 			z.F.DecMapUint8Int8X(yyv1641, d)
@@ -35608,8 +31662,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Int8 == nil {
 			x.FptrMapUint8Int8 = new(map[uint8]int8)
 		}
-		yym1644 := z.DecBinary()
-		_ = yym1644
 		if false {
 		} else {
 			z.F.DecMapUint8Int8X(x.FptrMapUint8Int8, d)
@@ -35630,8 +31682,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Int16 = nil
 	} else {
 		yyv1645 := &x.FMapUint8Int16
-		yym1646 := z.DecBinary()
-		_ = yym1646
 		if false {
 		} else {
 			z.F.DecMapUint8Int16X(yyv1645, d)
@@ -35659,8 +31709,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Int16 == nil {
 			x.FptrMapUint8Int16 = new(map[uint8]int16)
 		}
-		yym1648 := z.DecBinary()
-		_ = yym1648
 		if false {
 		} else {
 			z.F.DecMapUint8Int16X(x.FptrMapUint8Int16, d)
@@ -35681,8 +31729,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Int32 = nil
 	} else {
 		yyv1649 := &x.FMapUint8Int32
-		yym1650 := z.DecBinary()
-		_ = yym1650
 		if false {
 		} else {
 			z.F.DecMapUint8Int32X(yyv1649, d)
@@ -35710,8 +31756,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Int32 == nil {
 			x.FptrMapUint8Int32 = new(map[uint8]int32)
 		}
-		yym1652 := z.DecBinary()
-		_ = yym1652
 		if false {
 		} else {
 			z.F.DecMapUint8Int32X(x.FptrMapUint8Int32, d)
@@ -35732,8 +31776,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Int64 = nil
 	} else {
 		yyv1653 := &x.FMapUint8Int64
-		yym1654 := z.DecBinary()
-		_ = yym1654
 		if false {
 		} else {
 			z.F.DecMapUint8Int64X(yyv1653, d)
@@ -35761,8 +31803,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Int64 == nil {
 			x.FptrMapUint8Int64 = new(map[uint8]int64)
 		}
-		yym1656 := z.DecBinary()
-		_ = yym1656
 		if false {
 		} else {
 			z.F.DecMapUint8Int64X(x.FptrMapUint8Int64, d)
@@ -35783,8 +31823,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Float32 = nil
 	} else {
 		yyv1657 := &x.FMapUint8Float32
-		yym1658 := z.DecBinary()
-		_ = yym1658
 		if false {
 		} else {
 			z.F.DecMapUint8Float32X(yyv1657, d)
@@ -35812,8 +31850,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Float32 == nil {
 			x.FptrMapUint8Float32 = new(map[uint8]float32)
 		}
-		yym1660 := z.DecBinary()
-		_ = yym1660
 		if false {
 		} else {
 			z.F.DecMapUint8Float32X(x.FptrMapUint8Float32, d)
@@ -35834,8 +31870,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Float64 = nil
 	} else {
 		yyv1661 := &x.FMapUint8Float64
-		yym1662 := z.DecBinary()
-		_ = yym1662
 		if false {
 		} else {
 			z.F.DecMapUint8Float64X(yyv1661, d)
@@ -35863,8 +31897,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Float64 == nil {
 			x.FptrMapUint8Float64 = new(map[uint8]float64)
 		}
-		yym1664 := z.DecBinary()
-		_ = yym1664
 		if false {
 		} else {
 			z.F.DecMapUint8Float64X(x.FptrMapUint8Float64, d)
@@ -35885,8 +31917,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint8Bool = nil
 	} else {
 		yyv1665 := &x.FMapUint8Bool
-		yym1666 := z.DecBinary()
-		_ = yym1666
 		if false {
 		} else {
 			z.F.DecMapUint8BoolX(yyv1665, d)
@@ -35914,8 +31944,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Bool == nil {
 			x.FptrMapUint8Bool = new(map[uint8]bool)
 		}
-		yym1668 := z.DecBinary()
-		_ = yym1668
 		if false {
 		} else {
 			z.F.DecMapUint8BoolX(x.FptrMapUint8Bool, d)
@@ -35936,8 +31964,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Intf = nil
 	} else {
 		yyv1669 := &x.FMapUint16Intf
-		yym1670 := z.DecBinary()
-		_ = yym1670
 		if false {
 		} else {
 			z.F.DecMapUint16IntfX(yyv1669, d)
@@ -35965,8 +31991,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Intf == nil {
 			x.FptrMapUint16Intf = new(map[uint16]interface{})
 		}
-		yym1672 := z.DecBinary()
-		_ = yym1672
 		if false {
 		} else {
 			z.F.DecMapUint16IntfX(x.FptrMapUint16Intf, d)
@@ -35987,8 +32011,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16String = nil
 	} else {
 		yyv1673 := &x.FMapUint16String
-		yym1674 := z.DecBinary()
-		_ = yym1674
 		if false {
 		} else {
 			z.F.DecMapUint16StringX(yyv1673, d)
@@ -36016,8 +32038,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16String == nil {
 			x.FptrMapUint16String = new(map[uint16]string)
 		}
-		yym1676 := z.DecBinary()
-		_ = yym1676
 		if false {
 		} else {
 			z.F.DecMapUint16StringX(x.FptrMapUint16String, d)
@@ -36038,8 +32058,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Uint = nil
 	} else {
 		yyv1677 := &x.FMapUint16Uint
-		yym1678 := z.DecBinary()
-		_ = yym1678
 		if false {
 		} else {
 			z.F.DecMapUint16UintX(yyv1677, d)
@@ -36067,8 +32085,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Uint == nil {
 			x.FptrMapUint16Uint = new(map[uint16]uint)
 		}
-		yym1680 := z.DecBinary()
-		_ = yym1680
 		if false {
 		} else {
 			z.F.DecMapUint16UintX(x.FptrMapUint16Uint, d)
@@ -36089,8 +32105,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Uint8 = nil
 	} else {
 		yyv1681 := &x.FMapUint16Uint8
-		yym1682 := z.DecBinary()
-		_ = yym1682
 		if false {
 		} else {
 			z.F.DecMapUint16Uint8X(yyv1681, d)
@@ -36118,8 +32132,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Uint8 == nil {
 			x.FptrMapUint16Uint8 = new(map[uint16]uint8)
 		}
-		yym1684 := z.DecBinary()
-		_ = yym1684
 		if false {
 		} else {
 			z.F.DecMapUint16Uint8X(x.FptrMapUint16Uint8, d)
@@ -36140,8 +32152,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Uint16 = nil
 	} else {
 		yyv1685 := &x.FMapUint16Uint16
-		yym1686 := z.DecBinary()
-		_ = yym1686
 		if false {
 		} else {
 			z.F.DecMapUint16Uint16X(yyv1685, d)
@@ -36169,8 +32179,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Uint16 == nil {
 			x.FptrMapUint16Uint16 = new(map[uint16]uint16)
 		}
-		yym1688 := z.DecBinary()
-		_ = yym1688
 		if false {
 		} else {
 			z.F.DecMapUint16Uint16X(x.FptrMapUint16Uint16, d)
@@ -36191,8 +32199,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Uint32 = nil
 	} else {
 		yyv1689 := &x.FMapUint16Uint32
-		yym1690 := z.DecBinary()
-		_ = yym1690
 		if false {
 		} else {
 			z.F.DecMapUint16Uint32X(yyv1689, d)
@@ -36220,8 +32226,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Uint32 == nil {
 			x.FptrMapUint16Uint32 = new(map[uint16]uint32)
 		}
-		yym1692 := z.DecBinary()
-		_ = yym1692
 		if false {
 		} else {
 			z.F.DecMapUint16Uint32X(x.FptrMapUint16Uint32, d)
@@ -36242,8 +32246,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Uint64 = nil
 	} else {
 		yyv1693 := &x.FMapUint16Uint64
-		yym1694 := z.DecBinary()
-		_ = yym1694
 		if false {
 		} else {
 			z.F.DecMapUint16Uint64X(yyv1693, d)
@@ -36271,8 +32273,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Uint64 == nil {
 			x.FptrMapUint16Uint64 = new(map[uint16]uint64)
 		}
-		yym1696 := z.DecBinary()
-		_ = yym1696
 		if false {
 		} else {
 			z.F.DecMapUint16Uint64X(x.FptrMapUint16Uint64, d)
@@ -36293,8 +32293,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Uintptr = nil
 	} else {
 		yyv1697 := &x.FMapUint16Uintptr
-		yym1698 := z.DecBinary()
-		_ = yym1698
 		if false {
 		} else {
 			z.F.DecMapUint16UintptrX(yyv1697, d)
@@ -36322,8 +32320,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Uintptr == nil {
 			x.FptrMapUint16Uintptr = new(map[uint16]uintptr)
 		}
-		yym1700 := z.DecBinary()
-		_ = yym1700
 		if false {
 		} else {
 			z.F.DecMapUint16UintptrX(x.FptrMapUint16Uintptr, d)
@@ -36344,8 +32340,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Int = nil
 	} else {
 		yyv1701 := &x.FMapUint16Int
-		yym1702 := z.DecBinary()
-		_ = yym1702
 		if false {
 		} else {
 			z.F.DecMapUint16IntX(yyv1701, d)
@@ -36373,8 +32367,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Int == nil {
 			x.FptrMapUint16Int = new(map[uint16]int)
 		}
-		yym1704 := z.DecBinary()
-		_ = yym1704
 		if false {
 		} else {
 			z.F.DecMapUint16IntX(x.FptrMapUint16Int, d)
@@ -36395,8 +32387,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Int8 = nil
 	} else {
 		yyv1705 := &x.FMapUint16Int8
-		yym1706 := z.DecBinary()
-		_ = yym1706
 		if false {
 		} else {
 			z.F.DecMapUint16Int8X(yyv1705, d)
@@ -36424,8 +32414,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Int8 == nil {
 			x.FptrMapUint16Int8 = new(map[uint16]int8)
 		}
-		yym1708 := z.DecBinary()
-		_ = yym1708
 		if false {
 		} else {
 			z.F.DecMapUint16Int8X(x.FptrMapUint16Int8, d)
@@ -36446,8 +32434,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Int16 = nil
 	} else {
 		yyv1709 := &x.FMapUint16Int16
-		yym1710 := z.DecBinary()
-		_ = yym1710
 		if false {
 		} else {
 			z.F.DecMapUint16Int16X(yyv1709, d)
@@ -36475,8 +32461,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Int16 == nil {
 			x.FptrMapUint16Int16 = new(map[uint16]int16)
 		}
-		yym1712 := z.DecBinary()
-		_ = yym1712
 		if false {
 		} else {
 			z.F.DecMapUint16Int16X(x.FptrMapUint16Int16, d)
@@ -36497,8 +32481,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Int32 = nil
 	} else {
 		yyv1713 := &x.FMapUint16Int32
-		yym1714 := z.DecBinary()
-		_ = yym1714
 		if false {
 		} else {
 			z.F.DecMapUint16Int32X(yyv1713, d)
@@ -36526,8 +32508,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Int32 == nil {
 			x.FptrMapUint16Int32 = new(map[uint16]int32)
 		}
-		yym1716 := z.DecBinary()
-		_ = yym1716
 		if false {
 		} else {
 			z.F.DecMapUint16Int32X(x.FptrMapUint16Int32, d)
@@ -36548,8 +32528,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Int64 = nil
 	} else {
 		yyv1717 := &x.FMapUint16Int64
-		yym1718 := z.DecBinary()
-		_ = yym1718
 		if false {
 		} else {
 			z.F.DecMapUint16Int64X(yyv1717, d)
@@ -36577,8 +32555,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Int64 == nil {
 			x.FptrMapUint16Int64 = new(map[uint16]int64)
 		}
-		yym1720 := z.DecBinary()
-		_ = yym1720
 		if false {
 		} else {
 			z.F.DecMapUint16Int64X(x.FptrMapUint16Int64, d)
@@ -36599,8 +32575,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Float32 = nil
 	} else {
 		yyv1721 := &x.FMapUint16Float32
-		yym1722 := z.DecBinary()
-		_ = yym1722
 		if false {
 		} else {
 			z.F.DecMapUint16Float32X(yyv1721, d)
@@ -36628,8 +32602,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Float32 == nil {
 			x.FptrMapUint16Float32 = new(map[uint16]float32)
 		}
-		yym1724 := z.DecBinary()
-		_ = yym1724
 		if false {
 		} else {
 			z.F.DecMapUint16Float32X(x.FptrMapUint16Float32, d)
@@ -36650,8 +32622,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Float64 = nil
 	} else {
 		yyv1725 := &x.FMapUint16Float64
-		yym1726 := z.DecBinary()
-		_ = yym1726
 		if false {
 		} else {
 			z.F.DecMapUint16Float64X(yyv1725, d)
@@ -36679,8 +32649,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Float64 == nil {
 			x.FptrMapUint16Float64 = new(map[uint16]float64)
 		}
-		yym1728 := z.DecBinary()
-		_ = yym1728
 		if false {
 		} else {
 			z.F.DecMapUint16Float64X(x.FptrMapUint16Float64, d)
@@ -36701,8 +32669,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint16Bool = nil
 	} else {
 		yyv1729 := &x.FMapUint16Bool
-		yym1730 := z.DecBinary()
-		_ = yym1730
 		if false {
 		} else {
 			z.F.DecMapUint16BoolX(yyv1729, d)
@@ -36730,8 +32696,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint16Bool == nil {
 			x.FptrMapUint16Bool = new(map[uint16]bool)
 		}
-		yym1732 := z.DecBinary()
-		_ = yym1732
 		if false {
 		} else {
 			z.F.DecMapUint16BoolX(x.FptrMapUint16Bool, d)
@@ -36752,8 +32716,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Intf = nil
 	} else {
 		yyv1733 := &x.FMapUint32Intf
-		yym1734 := z.DecBinary()
-		_ = yym1734
 		if false {
 		} else {
 			z.F.DecMapUint32IntfX(yyv1733, d)
@@ -36781,8 +32743,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Intf == nil {
 			x.FptrMapUint32Intf = new(map[uint32]interface{})
 		}
-		yym1736 := z.DecBinary()
-		_ = yym1736
 		if false {
 		} else {
 			z.F.DecMapUint32IntfX(x.FptrMapUint32Intf, d)
@@ -36803,8 +32763,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32String = nil
 	} else {
 		yyv1737 := &x.FMapUint32String
-		yym1738 := z.DecBinary()
-		_ = yym1738
 		if false {
 		} else {
 			z.F.DecMapUint32StringX(yyv1737, d)
@@ -36832,8 +32790,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32String == nil {
 			x.FptrMapUint32String = new(map[uint32]string)
 		}
-		yym1740 := z.DecBinary()
-		_ = yym1740
 		if false {
 		} else {
 			z.F.DecMapUint32StringX(x.FptrMapUint32String, d)
@@ -36854,8 +32810,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Uint = nil
 	} else {
 		yyv1741 := &x.FMapUint32Uint
-		yym1742 := z.DecBinary()
-		_ = yym1742
 		if false {
 		} else {
 			z.F.DecMapUint32UintX(yyv1741, d)
@@ -36883,8 +32837,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Uint == nil {
 			x.FptrMapUint32Uint = new(map[uint32]uint)
 		}
-		yym1744 := z.DecBinary()
-		_ = yym1744
 		if false {
 		} else {
 			z.F.DecMapUint32UintX(x.FptrMapUint32Uint, d)
@@ -36905,8 +32857,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Uint8 = nil
 	} else {
 		yyv1745 := &x.FMapUint32Uint8
-		yym1746 := z.DecBinary()
-		_ = yym1746
 		if false {
 		} else {
 			z.F.DecMapUint32Uint8X(yyv1745, d)
@@ -36934,8 +32884,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Uint8 == nil {
 			x.FptrMapUint32Uint8 = new(map[uint32]uint8)
 		}
-		yym1748 := z.DecBinary()
-		_ = yym1748
 		if false {
 		} else {
 			z.F.DecMapUint32Uint8X(x.FptrMapUint32Uint8, d)
@@ -36956,8 +32904,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Uint16 = nil
 	} else {
 		yyv1749 := &x.FMapUint32Uint16
-		yym1750 := z.DecBinary()
-		_ = yym1750
 		if false {
 		} else {
 			z.F.DecMapUint32Uint16X(yyv1749, d)
@@ -36985,8 +32931,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Uint16 == nil {
 			x.FptrMapUint32Uint16 = new(map[uint32]uint16)
 		}
-		yym1752 := z.DecBinary()
-		_ = yym1752
 		if false {
 		} else {
 			z.F.DecMapUint32Uint16X(x.FptrMapUint32Uint16, d)
@@ -37007,8 +32951,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Uint32 = nil
 	} else {
 		yyv1753 := &x.FMapUint32Uint32
-		yym1754 := z.DecBinary()
-		_ = yym1754
 		if false {
 		} else {
 			z.F.DecMapUint32Uint32X(yyv1753, d)
@@ -37036,8 +32978,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Uint32 == nil {
 			x.FptrMapUint32Uint32 = new(map[uint32]uint32)
 		}
-		yym1756 := z.DecBinary()
-		_ = yym1756
 		if false {
 		} else {
 			z.F.DecMapUint32Uint32X(x.FptrMapUint32Uint32, d)
@@ -37058,8 +32998,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Uint64 = nil
 	} else {
 		yyv1757 := &x.FMapUint32Uint64
-		yym1758 := z.DecBinary()
-		_ = yym1758
 		if false {
 		} else {
 			z.F.DecMapUint32Uint64X(yyv1757, d)
@@ -37087,8 +33025,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Uint64 == nil {
 			x.FptrMapUint32Uint64 = new(map[uint32]uint64)
 		}
-		yym1760 := z.DecBinary()
-		_ = yym1760
 		if false {
 		} else {
 			z.F.DecMapUint32Uint64X(x.FptrMapUint32Uint64, d)
@@ -37109,8 +33045,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Uintptr = nil
 	} else {
 		yyv1761 := &x.FMapUint32Uintptr
-		yym1762 := z.DecBinary()
-		_ = yym1762
 		if false {
 		} else {
 			z.F.DecMapUint32UintptrX(yyv1761, d)
@@ -37138,8 +33072,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Uintptr == nil {
 			x.FptrMapUint32Uintptr = new(map[uint32]uintptr)
 		}
-		yym1764 := z.DecBinary()
-		_ = yym1764
 		if false {
 		} else {
 			z.F.DecMapUint32UintptrX(x.FptrMapUint32Uintptr, d)
@@ -37160,8 +33092,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Int = nil
 	} else {
 		yyv1765 := &x.FMapUint32Int
-		yym1766 := z.DecBinary()
-		_ = yym1766
 		if false {
 		} else {
 			z.F.DecMapUint32IntX(yyv1765, d)
@@ -37189,8 +33119,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Int == nil {
 			x.FptrMapUint32Int = new(map[uint32]int)
 		}
-		yym1768 := z.DecBinary()
-		_ = yym1768
 		if false {
 		} else {
 			z.F.DecMapUint32IntX(x.FptrMapUint32Int, d)
@@ -37211,8 +33139,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Int8 = nil
 	} else {
 		yyv1769 := &x.FMapUint32Int8
-		yym1770 := z.DecBinary()
-		_ = yym1770
 		if false {
 		} else {
 			z.F.DecMapUint32Int8X(yyv1769, d)
@@ -37240,8 +33166,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Int8 == nil {
 			x.FptrMapUint32Int8 = new(map[uint32]int8)
 		}
-		yym1772 := z.DecBinary()
-		_ = yym1772
 		if false {
 		} else {
 			z.F.DecMapUint32Int8X(x.FptrMapUint32Int8, d)
@@ -37262,8 +33186,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Int16 = nil
 	} else {
 		yyv1773 := &x.FMapUint32Int16
-		yym1774 := z.DecBinary()
-		_ = yym1774
 		if false {
 		} else {
 			z.F.DecMapUint32Int16X(yyv1773, d)
@@ -37291,8 +33213,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Int16 == nil {
 			x.FptrMapUint32Int16 = new(map[uint32]int16)
 		}
-		yym1776 := z.DecBinary()
-		_ = yym1776
 		if false {
 		} else {
 			z.F.DecMapUint32Int16X(x.FptrMapUint32Int16, d)
@@ -37313,8 +33233,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Int32 = nil
 	} else {
 		yyv1777 := &x.FMapUint32Int32
-		yym1778 := z.DecBinary()
-		_ = yym1778
 		if false {
 		} else {
 			z.F.DecMapUint32Int32X(yyv1777, d)
@@ -37342,8 +33260,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Int32 == nil {
 			x.FptrMapUint32Int32 = new(map[uint32]int32)
 		}
-		yym1780 := z.DecBinary()
-		_ = yym1780
 		if false {
 		} else {
 			z.F.DecMapUint32Int32X(x.FptrMapUint32Int32, d)
@@ -37364,8 +33280,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Int64 = nil
 	} else {
 		yyv1781 := &x.FMapUint32Int64
-		yym1782 := z.DecBinary()
-		_ = yym1782
 		if false {
 		} else {
 			z.F.DecMapUint32Int64X(yyv1781, d)
@@ -37393,8 +33307,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Int64 == nil {
 			x.FptrMapUint32Int64 = new(map[uint32]int64)
 		}
-		yym1784 := z.DecBinary()
-		_ = yym1784
 		if false {
 		} else {
 			z.F.DecMapUint32Int64X(x.FptrMapUint32Int64, d)
@@ -37415,8 +33327,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Float32 = nil
 	} else {
 		yyv1785 := &x.FMapUint32Float32
-		yym1786 := z.DecBinary()
-		_ = yym1786
 		if false {
 		} else {
 			z.F.DecMapUint32Float32X(yyv1785, d)
@@ -37444,8 +33354,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Float32 == nil {
 			x.FptrMapUint32Float32 = new(map[uint32]float32)
 		}
-		yym1788 := z.DecBinary()
-		_ = yym1788
 		if false {
 		} else {
 			z.F.DecMapUint32Float32X(x.FptrMapUint32Float32, d)
@@ -37466,8 +33374,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Float64 = nil
 	} else {
 		yyv1789 := &x.FMapUint32Float64
-		yym1790 := z.DecBinary()
-		_ = yym1790
 		if false {
 		} else {
 			z.F.DecMapUint32Float64X(yyv1789, d)
@@ -37495,8 +33401,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Float64 == nil {
 			x.FptrMapUint32Float64 = new(map[uint32]float64)
 		}
-		yym1792 := z.DecBinary()
-		_ = yym1792
 		if false {
 		} else {
 			z.F.DecMapUint32Float64X(x.FptrMapUint32Float64, d)
@@ -37517,8 +33421,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint32Bool = nil
 	} else {
 		yyv1793 := &x.FMapUint32Bool
-		yym1794 := z.DecBinary()
-		_ = yym1794
 		if false {
 		} else {
 			z.F.DecMapUint32BoolX(yyv1793, d)
@@ -37546,8 +33448,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint32Bool == nil {
 			x.FptrMapUint32Bool = new(map[uint32]bool)
 		}
-		yym1796 := z.DecBinary()
-		_ = yym1796
 		if false {
 		} else {
 			z.F.DecMapUint32BoolX(x.FptrMapUint32Bool, d)
@@ -37568,8 +33468,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Intf = nil
 	} else {
 		yyv1797 := &x.FMapUint64Intf
-		yym1798 := z.DecBinary()
-		_ = yym1798
 		if false {
 		} else {
 			z.F.DecMapUint64IntfX(yyv1797, d)
@@ -37597,8 +33495,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Intf == nil {
 			x.FptrMapUint64Intf = new(map[uint64]interface{})
 		}
-		yym1800 := z.DecBinary()
-		_ = yym1800
 		if false {
 		} else {
 			z.F.DecMapUint64IntfX(x.FptrMapUint64Intf, d)
@@ -37619,8 +33515,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64String = nil
 	} else {
 		yyv1801 := &x.FMapUint64String
-		yym1802 := z.DecBinary()
-		_ = yym1802
 		if false {
 		} else {
 			z.F.DecMapUint64StringX(yyv1801, d)
@@ -37648,8 +33542,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64String == nil {
 			x.FptrMapUint64String = new(map[uint64]string)
 		}
-		yym1804 := z.DecBinary()
-		_ = yym1804
 		if false {
 		} else {
 			z.F.DecMapUint64StringX(x.FptrMapUint64String, d)
@@ -37670,8 +33562,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Uint = nil
 	} else {
 		yyv1805 := &x.FMapUint64Uint
-		yym1806 := z.DecBinary()
-		_ = yym1806
 		if false {
 		} else {
 			z.F.DecMapUint64UintX(yyv1805, d)
@@ -37699,8 +33589,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Uint == nil {
 			x.FptrMapUint64Uint = new(map[uint64]uint)
 		}
-		yym1808 := z.DecBinary()
-		_ = yym1808
 		if false {
 		} else {
 			z.F.DecMapUint64UintX(x.FptrMapUint64Uint, d)
@@ -37721,8 +33609,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Uint8 = nil
 	} else {
 		yyv1809 := &x.FMapUint64Uint8
-		yym1810 := z.DecBinary()
-		_ = yym1810
 		if false {
 		} else {
 			z.F.DecMapUint64Uint8X(yyv1809, d)
@@ -37750,8 +33636,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Uint8 == nil {
 			x.FptrMapUint64Uint8 = new(map[uint64]uint8)
 		}
-		yym1812 := z.DecBinary()
-		_ = yym1812
 		if false {
 		} else {
 			z.F.DecMapUint64Uint8X(x.FptrMapUint64Uint8, d)
@@ -37772,8 +33656,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Uint16 = nil
 	} else {
 		yyv1813 := &x.FMapUint64Uint16
-		yym1814 := z.DecBinary()
-		_ = yym1814
 		if false {
 		} else {
 			z.F.DecMapUint64Uint16X(yyv1813, d)
@@ -37801,8 +33683,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Uint16 == nil {
 			x.FptrMapUint64Uint16 = new(map[uint64]uint16)
 		}
-		yym1816 := z.DecBinary()
-		_ = yym1816
 		if false {
 		} else {
 			z.F.DecMapUint64Uint16X(x.FptrMapUint64Uint16, d)
@@ -37823,8 +33703,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Uint32 = nil
 	} else {
 		yyv1817 := &x.FMapUint64Uint32
-		yym1818 := z.DecBinary()
-		_ = yym1818
 		if false {
 		} else {
 			z.F.DecMapUint64Uint32X(yyv1817, d)
@@ -37852,8 +33730,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Uint32 == nil {
 			x.FptrMapUint64Uint32 = new(map[uint64]uint32)
 		}
-		yym1820 := z.DecBinary()
-		_ = yym1820
 		if false {
 		} else {
 			z.F.DecMapUint64Uint32X(x.FptrMapUint64Uint32, d)
@@ -37874,8 +33750,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Uint64 = nil
 	} else {
 		yyv1821 := &x.FMapUint64Uint64
-		yym1822 := z.DecBinary()
-		_ = yym1822
 		if false {
 		} else {
 			z.F.DecMapUint64Uint64X(yyv1821, d)
@@ -37903,8 +33777,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Uint64 == nil {
 			x.FptrMapUint64Uint64 = new(map[uint64]uint64)
 		}
-		yym1824 := z.DecBinary()
-		_ = yym1824
 		if false {
 		} else {
 			z.F.DecMapUint64Uint64X(x.FptrMapUint64Uint64, d)
@@ -37925,8 +33797,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Uintptr = nil
 	} else {
 		yyv1825 := &x.FMapUint64Uintptr
-		yym1826 := z.DecBinary()
-		_ = yym1826
 		if false {
 		} else {
 			z.F.DecMapUint64UintptrX(yyv1825, d)
@@ -37954,8 +33824,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Uintptr == nil {
 			x.FptrMapUint64Uintptr = new(map[uint64]uintptr)
 		}
-		yym1828 := z.DecBinary()
-		_ = yym1828
 		if false {
 		} else {
 			z.F.DecMapUint64UintptrX(x.FptrMapUint64Uintptr, d)
@@ -37976,8 +33844,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Int = nil
 	} else {
 		yyv1829 := &x.FMapUint64Int
-		yym1830 := z.DecBinary()
-		_ = yym1830
 		if false {
 		} else {
 			z.F.DecMapUint64IntX(yyv1829, d)
@@ -38005,8 +33871,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Int == nil {
 			x.FptrMapUint64Int = new(map[uint64]int)
 		}
-		yym1832 := z.DecBinary()
-		_ = yym1832
 		if false {
 		} else {
 			z.F.DecMapUint64IntX(x.FptrMapUint64Int, d)
@@ -38027,8 +33891,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Int8 = nil
 	} else {
 		yyv1833 := &x.FMapUint64Int8
-		yym1834 := z.DecBinary()
-		_ = yym1834
 		if false {
 		} else {
 			z.F.DecMapUint64Int8X(yyv1833, d)
@@ -38056,8 +33918,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Int8 == nil {
 			x.FptrMapUint64Int8 = new(map[uint64]int8)
 		}
-		yym1836 := z.DecBinary()
-		_ = yym1836
 		if false {
 		} else {
 			z.F.DecMapUint64Int8X(x.FptrMapUint64Int8, d)
@@ -38078,8 +33938,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Int16 = nil
 	} else {
 		yyv1837 := &x.FMapUint64Int16
-		yym1838 := z.DecBinary()
-		_ = yym1838
 		if false {
 		} else {
 			z.F.DecMapUint64Int16X(yyv1837, d)
@@ -38107,8 +33965,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Int16 == nil {
 			x.FptrMapUint64Int16 = new(map[uint64]int16)
 		}
-		yym1840 := z.DecBinary()
-		_ = yym1840
 		if false {
 		} else {
 			z.F.DecMapUint64Int16X(x.FptrMapUint64Int16, d)
@@ -38129,8 +33985,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Int32 = nil
 	} else {
 		yyv1841 := &x.FMapUint64Int32
-		yym1842 := z.DecBinary()
-		_ = yym1842
 		if false {
 		} else {
 			z.F.DecMapUint64Int32X(yyv1841, d)
@@ -38158,8 +34012,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Int32 == nil {
 			x.FptrMapUint64Int32 = new(map[uint64]int32)
 		}
-		yym1844 := z.DecBinary()
-		_ = yym1844
 		if false {
 		} else {
 			z.F.DecMapUint64Int32X(x.FptrMapUint64Int32, d)
@@ -38180,8 +34032,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Int64 = nil
 	} else {
 		yyv1845 := &x.FMapUint64Int64
-		yym1846 := z.DecBinary()
-		_ = yym1846
 		if false {
 		} else {
 			z.F.DecMapUint64Int64X(yyv1845, d)
@@ -38209,8 +34059,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Int64 == nil {
 			x.FptrMapUint64Int64 = new(map[uint64]int64)
 		}
-		yym1848 := z.DecBinary()
-		_ = yym1848
 		if false {
 		} else {
 			z.F.DecMapUint64Int64X(x.FptrMapUint64Int64, d)
@@ -38231,8 +34079,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Float32 = nil
 	} else {
 		yyv1849 := &x.FMapUint64Float32
-		yym1850 := z.DecBinary()
-		_ = yym1850
 		if false {
 		} else {
 			z.F.DecMapUint64Float32X(yyv1849, d)
@@ -38260,8 +34106,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Float32 == nil {
 			x.FptrMapUint64Float32 = new(map[uint64]float32)
 		}
-		yym1852 := z.DecBinary()
-		_ = yym1852
 		if false {
 		} else {
 			z.F.DecMapUint64Float32X(x.FptrMapUint64Float32, d)
@@ -38282,8 +34126,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Float64 = nil
 	} else {
 		yyv1853 := &x.FMapUint64Float64
-		yym1854 := z.DecBinary()
-		_ = yym1854
 		if false {
 		} else {
 			z.F.DecMapUint64Float64X(yyv1853, d)
@@ -38311,8 +34153,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Float64 == nil {
 			x.FptrMapUint64Float64 = new(map[uint64]float64)
 		}
-		yym1856 := z.DecBinary()
-		_ = yym1856
 		if false {
 		} else {
 			z.F.DecMapUint64Float64X(x.FptrMapUint64Float64, d)
@@ -38333,8 +34173,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUint64Bool = nil
 	} else {
 		yyv1857 := &x.FMapUint64Bool
-		yym1858 := z.DecBinary()
-		_ = yym1858
 		if false {
 		} else {
 			z.F.DecMapUint64BoolX(yyv1857, d)
@@ -38362,8 +34200,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Bool == nil {
 			x.FptrMapUint64Bool = new(map[uint64]bool)
 		}
-		yym1860 := z.DecBinary()
-		_ = yym1860
 		if false {
 		} else {
 			z.F.DecMapUint64BoolX(x.FptrMapUint64Bool, d)
@@ -38384,8 +34220,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrIntf = nil
 	} else {
 		yyv1861 := &x.FMapUintptrIntf
-		yym1862 := z.DecBinary()
-		_ = yym1862
 		if false {
 		} else {
 			z.F.DecMapUintptrIntfX(yyv1861, d)
@@ -38413,8 +34247,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrIntf == nil {
 			x.FptrMapUintptrIntf = new(map[uintptr]interface{})
 		}
-		yym1864 := z.DecBinary()
-		_ = yym1864
 		if false {
 		} else {
 			z.F.DecMapUintptrIntfX(x.FptrMapUintptrIntf, d)
@@ -38435,8 +34267,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrString = nil
 	} else {
 		yyv1865 := &x.FMapUintptrString
-		yym1866 := z.DecBinary()
-		_ = yym1866
 		if false {
 		} else {
 			z.F.DecMapUintptrStringX(yyv1865, d)
@@ -38464,8 +34294,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrString == nil {
 			x.FptrMapUintptrString = new(map[uintptr]string)
 		}
-		yym1868 := z.DecBinary()
-		_ = yym1868
 		if false {
 		} else {
 			z.F.DecMapUintptrStringX(x.FptrMapUintptrString, d)
@@ -38486,8 +34314,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrUint = nil
 	} else {
 		yyv1869 := &x.FMapUintptrUint
-		yym1870 := z.DecBinary()
-		_ = yym1870
 		if false {
 		} else {
 			z.F.DecMapUintptrUintX(yyv1869, d)
@@ -38515,8 +34341,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrUint == nil {
 			x.FptrMapUintptrUint = new(map[uintptr]uint)
 		}
-		yym1872 := z.DecBinary()
-		_ = yym1872
 		if false {
 		} else {
 			z.F.DecMapUintptrUintX(x.FptrMapUintptrUint, d)
@@ -38537,8 +34361,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrUint8 = nil
 	} else {
 		yyv1873 := &x.FMapUintptrUint8
-		yym1874 := z.DecBinary()
-		_ = yym1874
 		if false {
 		} else {
 			z.F.DecMapUintptrUint8X(yyv1873, d)
@@ -38566,8 +34388,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrUint8 == nil {
 			x.FptrMapUintptrUint8 = new(map[uintptr]uint8)
 		}
-		yym1876 := z.DecBinary()
-		_ = yym1876
 		if false {
 		} else {
 			z.F.DecMapUintptrUint8X(x.FptrMapUintptrUint8, d)
@@ -38588,8 +34408,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrUint16 = nil
 	} else {
 		yyv1877 := &x.FMapUintptrUint16
-		yym1878 := z.DecBinary()
-		_ = yym1878
 		if false {
 		} else {
 			z.F.DecMapUintptrUint16X(yyv1877, d)
@@ -38617,8 +34435,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrUint16 == nil {
 			x.FptrMapUintptrUint16 = new(map[uintptr]uint16)
 		}
-		yym1880 := z.DecBinary()
-		_ = yym1880
 		if false {
 		} else {
 			z.F.DecMapUintptrUint16X(x.FptrMapUintptrUint16, d)
@@ -38639,8 +34455,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrUint32 = nil
 	} else {
 		yyv1881 := &x.FMapUintptrUint32
-		yym1882 := z.DecBinary()
-		_ = yym1882
 		if false {
 		} else {
 			z.F.DecMapUintptrUint32X(yyv1881, d)
@@ -38668,8 +34482,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrUint32 == nil {
 			x.FptrMapUintptrUint32 = new(map[uintptr]uint32)
 		}
-		yym1884 := z.DecBinary()
-		_ = yym1884
 		if false {
 		} else {
 			z.F.DecMapUintptrUint32X(x.FptrMapUintptrUint32, d)
@@ -38690,8 +34502,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrUint64 = nil
 	} else {
 		yyv1885 := &x.FMapUintptrUint64
-		yym1886 := z.DecBinary()
-		_ = yym1886
 		if false {
 		} else {
 			z.F.DecMapUintptrUint64X(yyv1885, d)
@@ -38719,8 +34529,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrUint64 == nil {
 			x.FptrMapUintptrUint64 = new(map[uintptr]uint64)
 		}
-		yym1888 := z.DecBinary()
-		_ = yym1888
 		if false {
 		} else {
 			z.F.DecMapUintptrUint64X(x.FptrMapUintptrUint64, d)
@@ -38741,8 +34549,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrUintptr = nil
 	} else {
 		yyv1889 := &x.FMapUintptrUintptr
-		yym1890 := z.DecBinary()
-		_ = yym1890
 		if false {
 		} else {
 			z.F.DecMapUintptrUintptrX(yyv1889, d)
@@ -38770,8 +34576,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrUintptr == nil {
 			x.FptrMapUintptrUintptr = new(map[uintptr]uintptr)
 		}
-		yym1892 := z.DecBinary()
-		_ = yym1892
 		if false {
 		} else {
 			z.F.DecMapUintptrUintptrX(x.FptrMapUintptrUintptr, d)
@@ -38792,8 +34596,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrInt = nil
 	} else {
 		yyv1893 := &x.FMapUintptrInt
-		yym1894 := z.DecBinary()
-		_ = yym1894
 		if false {
 		} else {
 			z.F.DecMapUintptrIntX(yyv1893, d)
@@ -38821,8 +34623,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrInt == nil {
 			x.FptrMapUintptrInt = new(map[uintptr]int)
 		}
-		yym1896 := z.DecBinary()
-		_ = yym1896
 		if false {
 		} else {
 			z.F.DecMapUintptrIntX(x.FptrMapUintptrInt, d)
@@ -38843,8 +34643,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrInt8 = nil
 	} else {
 		yyv1897 := &x.FMapUintptrInt8
-		yym1898 := z.DecBinary()
-		_ = yym1898
 		if false {
 		} else {
 			z.F.DecMapUintptrInt8X(yyv1897, d)
@@ -38872,8 +34670,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrInt8 == nil {
 			x.FptrMapUintptrInt8 = new(map[uintptr]int8)
 		}
-		yym1900 := z.DecBinary()
-		_ = yym1900
 		if false {
 		} else {
 			z.F.DecMapUintptrInt8X(x.FptrMapUintptrInt8, d)
@@ -38894,8 +34690,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrInt16 = nil
 	} else {
 		yyv1901 := &x.FMapUintptrInt16
-		yym1902 := z.DecBinary()
-		_ = yym1902
 		if false {
 		} else {
 			z.F.DecMapUintptrInt16X(yyv1901, d)
@@ -38923,8 +34717,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrInt16 == nil {
 			x.FptrMapUintptrInt16 = new(map[uintptr]int16)
 		}
-		yym1904 := z.DecBinary()
-		_ = yym1904
 		if false {
 		} else {
 			z.F.DecMapUintptrInt16X(x.FptrMapUintptrInt16, d)
@@ -38945,8 +34737,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrInt32 = nil
 	} else {
 		yyv1905 := &x.FMapUintptrInt32
-		yym1906 := z.DecBinary()
-		_ = yym1906
 		if false {
 		} else {
 			z.F.DecMapUintptrInt32X(yyv1905, d)
@@ -38974,8 +34764,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrInt32 == nil {
 			x.FptrMapUintptrInt32 = new(map[uintptr]int32)
 		}
-		yym1908 := z.DecBinary()
-		_ = yym1908
 		if false {
 		} else {
 			z.F.DecMapUintptrInt32X(x.FptrMapUintptrInt32, d)
@@ -38996,8 +34784,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrInt64 = nil
 	} else {
 		yyv1909 := &x.FMapUintptrInt64
-		yym1910 := z.DecBinary()
-		_ = yym1910
 		if false {
 		} else {
 			z.F.DecMapUintptrInt64X(yyv1909, d)
@@ -39025,8 +34811,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrInt64 == nil {
 			x.FptrMapUintptrInt64 = new(map[uintptr]int64)
 		}
-		yym1912 := z.DecBinary()
-		_ = yym1912
 		if false {
 		} else {
 			z.F.DecMapUintptrInt64X(x.FptrMapUintptrInt64, d)
@@ -39047,8 +34831,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrFloat32 = nil
 	} else {
 		yyv1913 := &x.FMapUintptrFloat32
-		yym1914 := z.DecBinary()
-		_ = yym1914
 		if false {
 		} else {
 			z.F.DecMapUintptrFloat32X(yyv1913, d)
@@ -39076,8 +34858,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrFloat32 == nil {
 			x.FptrMapUintptrFloat32 = new(map[uintptr]float32)
 		}
-		yym1916 := z.DecBinary()
-		_ = yym1916
 		if false {
 		} else {
 			z.F.DecMapUintptrFloat32X(x.FptrMapUintptrFloat32, d)
@@ -39098,8 +34878,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrFloat64 = nil
 	} else {
 		yyv1917 := &x.FMapUintptrFloat64
-		yym1918 := z.DecBinary()
-		_ = yym1918
 		if false {
 		} else {
 			z.F.DecMapUintptrFloat64X(yyv1917, d)
@@ -39127,8 +34905,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrFloat64 == nil {
 			x.FptrMapUintptrFloat64 = new(map[uintptr]float64)
 		}
-		yym1920 := z.DecBinary()
-		_ = yym1920
 		if false {
 		} else {
 			z.F.DecMapUintptrFloat64X(x.FptrMapUintptrFloat64, d)
@@ -39149,8 +34925,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapUintptrBool = nil
 	} else {
 		yyv1921 := &x.FMapUintptrBool
-		yym1922 := z.DecBinary()
-		_ = yym1922
 		if false {
 		} else {
 			z.F.DecMapUintptrBoolX(yyv1921, d)
@@ -39178,8 +34952,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintptrBool == nil {
 			x.FptrMapUintptrBool = new(map[uintptr]bool)
 		}
-		yym1924 := z.DecBinary()
-		_ = yym1924
 		if false {
 		} else {
 			z.F.DecMapUintptrBoolX(x.FptrMapUintptrBool, d)
@@ -39200,8 +34972,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntIntf = nil
 	} else {
 		yyv1925 := &x.FMapIntIntf
-		yym1926 := z.DecBinary()
-		_ = yym1926
 		if false {
 		} else {
 			z.F.DecMapIntIntfX(yyv1925, d)
@@ -39229,8 +34999,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntIntf == nil {
 			x.FptrMapIntIntf = new(map[int]interface{})
 		}
-		yym1928 := z.DecBinary()
-		_ = yym1928
 		if false {
 		} else {
 			z.F.DecMapIntIntfX(x.FptrMapIntIntf, d)
@@ -39251,8 +35019,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntString = nil
 	} else {
 		yyv1929 := &x.FMapIntString
-		yym1930 := z.DecBinary()
-		_ = yym1930
 		if false {
 		} else {
 			z.F.DecMapIntStringX(yyv1929, d)
@@ -39280,8 +35046,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntString == nil {
 			x.FptrMapIntString = new(map[int]string)
 		}
-		yym1932 := z.DecBinary()
-		_ = yym1932
 		if false {
 		} else {
 			z.F.DecMapIntStringX(x.FptrMapIntString, d)
@@ -39302,8 +35066,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntUint = nil
 	} else {
 		yyv1933 := &x.FMapIntUint
-		yym1934 := z.DecBinary()
-		_ = yym1934
 		if false {
 		} else {
 			z.F.DecMapIntUintX(yyv1933, d)
@@ -39331,8 +35093,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntUint == nil {
 			x.FptrMapIntUint = new(map[int]uint)
 		}
-		yym1936 := z.DecBinary()
-		_ = yym1936
 		if false {
 		} else {
 			z.F.DecMapIntUintX(x.FptrMapIntUint, d)
@@ -39353,8 +35113,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntUint8 = nil
 	} else {
 		yyv1937 := &x.FMapIntUint8
-		yym1938 := z.DecBinary()
-		_ = yym1938
 		if false {
 		} else {
 			z.F.DecMapIntUint8X(yyv1937, d)
@@ -39382,8 +35140,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntUint8 == nil {
 			x.FptrMapIntUint8 = new(map[int]uint8)
 		}
-		yym1940 := z.DecBinary()
-		_ = yym1940
 		if false {
 		} else {
 			z.F.DecMapIntUint8X(x.FptrMapIntUint8, d)
@@ -39404,8 +35160,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntUint16 = nil
 	} else {
 		yyv1941 := &x.FMapIntUint16
-		yym1942 := z.DecBinary()
-		_ = yym1942
 		if false {
 		} else {
 			z.F.DecMapIntUint16X(yyv1941, d)
@@ -39433,8 +35187,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntUint16 == nil {
 			x.FptrMapIntUint16 = new(map[int]uint16)
 		}
-		yym1944 := z.DecBinary()
-		_ = yym1944
 		if false {
 		} else {
 			z.F.DecMapIntUint16X(x.FptrMapIntUint16, d)
@@ -39455,8 +35207,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntUint32 = nil
 	} else {
 		yyv1945 := &x.FMapIntUint32
-		yym1946 := z.DecBinary()
-		_ = yym1946
 		if false {
 		} else {
 			z.F.DecMapIntUint32X(yyv1945, d)
@@ -39484,8 +35234,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntUint32 == nil {
 			x.FptrMapIntUint32 = new(map[int]uint32)
 		}
-		yym1948 := z.DecBinary()
-		_ = yym1948
 		if false {
 		} else {
 			z.F.DecMapIntUint32X(x.FptrMapIntUint32, d)
@@ -39506,8 +35254,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntUint64 = nil
 	} else {
 		yyv1949 := &x.FMapIntUint64
-		yym1950 := z.DecBinary()
-		_ = yym1950
 		if false {
 		} else {
 			z.F.DecMapIntUint64X(yyv1949, d)
@@ -39535,8 +35281,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntUint64 == nil {
 			x.FptrMapIntUint64 = new(map[int]uint64)
 		}
-		yym1952 := z.DecBinary()
-		_ = yym1952
 		if false {
 		} else {
 			z.F.DecMapIntUint64X(x.FptrMapIntUint64, d)
@@ -39557,8 +35301,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntUintptr = nil
 	} else {
 		yyv1953 := &x.FMapIntUintptr
-		yym1954 := z.DecBinary()
-		_ = yym1954
 		if false {
 		} else {
 			z.F.DecMapIntUintptrX(yyv1953, d)
@@ -39586,8 +35328,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntUintptr == nil {
 			x.FptrMapIntUintptr = new(map[int]uintptr)
 		}
-		yym1956 := z.DecBinary()
-		_ = yym1956
 		if false {
 		} else {
 			z.F.DecMapIntUintptrX(x.FptrMapIntUintptr, d)
@@ -39608,8 +35348,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntInt = nil
 	} else {
 		yyv1957 := &x.FMapIntInt
-		yym1958 := z.DecBinary()
-		_ = yym1958
 		if false {
 		} else {
 			z.F.DecMapIntIntX(yyv1957, d)
@@ -39637,8 +35375,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntInt == nil {
 			x.FptrMapIntInt = new(map[int]int)
 		}
-		yym1960 := z.DecBinary()
-		_ = yym1960
 		if false {
 		} else {
 			z.F.DecMapIntIntX(x.FptrMapIntInt, d)
@@ -39659,8 +35395,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntInt8 = nil
 	} else {
 		yyv1961 := &x.FMapIntInt8
-		yym1962 := z.DecBinary()
-		_ = yym1962
 		if false {
 		} else {
 			z.F.DecMapIntInt8X(yyv1961, d)
@@ -39688,8 +35422,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntInt8 == nil {
 			x.FptrMapIntInt8 = new(map[int]int8)
 		}
-		yym1964 := z.DecBinary()
-		_ = yym1964
 		if false {
 		} else {
 			z.F.DecMapIntInt8X(x.FptrMapIntInt8, d)
@@ -39710,8 +35442,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntInt16 = nil
 	} else {
 		yyv1965 := &x.FMapIntInt16
-		yym1966 := z.DecBinary()
-		_ = yym1966
 		if false {
 		} else {
 			z.F.DecMapIntInt16X(yyv1965, d)
@@ -39739,8 +35469,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntInt16 == nil {
 			x.FptrMapIntInt16 = new(map[int]int16)
 		}
-		yym1968 := z.DecBinary()
-		_ = yym1968
 		if false {
 		} else {
 			z.F.DecMapIntInt16X(x.FptrMapIntInt16, d)
@@ -39761,8 +35489,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntInt32 = nil
 	} else {
 		yyv1969 := &x.FMapIntInt32
-		yym1970 := z.DecBinary()
-		_ = yym1970
 		if false {
 		} else {
 			z.F.DecMapIntInt32X(yyv1969, d)
@@ -39790,8 +35516,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntInt32 == nil {
 			x.FptrMapIntInt32 = new(map[int]int32)
 		}
-		yym1972 := z.DecBinary()
-		_ = yym1972
 		if false {
 		} else {
 			z.F.DecMapIntInt32X(x.FptrMapIntInt32, d)
@@ -39812,8 +35536,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntInt64 = nil
 	} else {
 		yyv1973 := &x.FMapIntInt64
-		yym1974 := z.DecBinary()
-		_ = yym1974
 		if false {
 		} else {
 			z.F.DecMapIntInt64X(yyv1973, d)
@@ -39841,8 +35563,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntInt64 == nil {
 			x.FptrMapIntInt64 = new(map[int]int64)
 		}
-		yym1976 := z.DecBinary()
-		_ = yym1976
 		if false {
 		} else {
 			z.F.DecMapIntInt64X(x.FptrMapIntInt64, d)
@@ -39863,8 +35583,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntFloat32 = nil
 	} else {
 		yyv1977 := &x.FMapIntFloat32
-		yym1978 := z.DecBinary()
-		_ = yym1978
 		if false {
 		} else {
 			z.F.DecMapIntFloat32X(yyv1977, d)
@@ -39892,8 +35610,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntFloat32 == nil {
 			x.FptrMapIntFloat32 = new(map[int]float32)
 		}
-		yym1980 := z.DecBinary()
-		_ = yym1980
 		if false {
 		} else {
 			z.F.DecMapIntFloat32X(x.FptrMapIntFloat32, d)
@@ -39914,8 +35630,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntFloat64 = nil
 	} else {
 		yyv1981 := &x.FMapIntFloat64
-		yym1982 := z.DecBinary()
-		_ = yym1982
 		if false {
 		} else {
 			z.F.DecMapIntFloat64X(yyv1981, d)
@@ -39943,8 +35657,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntFloat64 == nil {
 			x.FptrMapIntFloat64 = new(map[int]float64)
 		}
-		yym1984 := z.DecBinary()
-		_ = yym1984
 		if false {
 		} else {
 			z.F.DecMapIntFloat64X(x.FptrMapIntFloat64, d)
@@ -39965,8 +35677,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapIntBool = nil
 	} else {
 		yyv1985 := &x.FMapIntBool
-		yym1986 := z.DecBinary()
-		_ = yym1986
 		if false {
 		} else {
 			z.F.DecMapIntBoolX(yyv1985, d)
@@ -39994,8 +35704,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntBool == nil {
 			x.FptrMapIntBool = new(map[int]bool)
 		}
-		yym1988 := z.DecBinary()
-		_ = yym1988
 		if false {
 		} else {
 			z.F.DecMapIntBoolX(x.FptrMapIntBool, d)
@@ -40016,8 +35724,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Intf = nil
 	} else {
 		yyv1989 := &x.FMapInt8Intf
-		yym1990 := z.DecBinary()
-		_ = yym1990
 		if false {
 		} else {
 			z.F.DecMapInt8IntfX(yyv1989, d)
@@ -40045,8 +35751,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Intf == nil {
 			x.FptrMapInt8Intf = new(map[int8]interface{})
 		}
-		yym1992 := z.DecBinary()
-		_ = yym1992
 		if false {
 		} else {
 			z.F.DecMapInt8IntfX(x.FptrMapInt8Intf, d)
@@ -40067,8 +35771,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8String = nil
 	} else {
 		yyv1993 := &x.FMapInt8String
-		yym1994 := z.DecBinary()
-		_ = yym1994
 		if false {
 		} else {
 			z.F.DecMapInt8StringX(yyv1993, d)
@@ -40096,8 +35798,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8String == nil {
 			x.FptrMapInt8String = new(map[int8]string)
 		}
-		yym1996 := z.DecBinary()
-		_ = yym1996
 		if false {
 		} else {
 			z.F.DecMapInt8StringX(x.FptrMapInt8String, d)
@@ -40118,8 +35818,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Uint = nil
 	} else {
 		yyv1997 := &x.FMapInt8Uint
-		yym1998 := z.DecBinary()
-		_ = yym1998
 		if false {
 		} else {
 			z.F.DecMapInt8UintX(yyv1997, d)
@@ -40147,8 +35845,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Uint == nil {
 			x.FptrMapInt8Uint = new(map[int8]uint)
 		}
-		yym2000 := z.DecBinary()
-		_ = yym2000
 		if false {
 		} else {
 			z.F.DecMapInt8UintX(x.FptrMapInt8Uint, d)
@@ -40169,8 +35865,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Uint8 = nil
 	} else {
 		yyv2001 := &x.FMapInt8Uint8
-		yym2002 := z.DecBinary()
-		_ = yym2002
 		if false {
 		} else {
 			z.F.DecMapInt8Uint8X(yyv2001, d)
@@ -40198,8 +35892,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Uint8 == nil {
 			x.FptrMapInt8Uint8 = new(map[int8]uint8)
 		}
-		yym2004 := z.DecBinary()
-		_ = yym2004
 		if false {
 		} else {
 			z.F.DecMapInt8Uint8X(x.FptrMapInt8Uint8, d)
@@ -40220,8 +35912,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Uint16 = nil
 	} else {
 		yyv2005 := &x.FMapInt8Uint16
-		yym2006 := z.DecBinary()
-		_ = yym2006
 		if false {
 		} else {
 			z.F.DecMapInt8Uint16X(yyv2005, d)
@@ -40249,8 +35939,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Uint16 == nil {
 			x.FptrMapInt8Uint16 = new(map[int8]uint16)
 		}
-		yym2008 := z.DecBinary()
-		_ = yym2008
 		if false {
 		} else {
 			z.F.DecMapInt8Uint16X(x.FptrMapInt8Uint16, d)
@@ -40271,8 +35959,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Uint32 = nil
 	} else {
 		yyv2009 := &x.FMapInt8Uint32
-		yym2010 := z.DecBinary()
-		_ = yym2010
 		if false {
 		} else {
 			z.F.DecMapInt8Uint32X(yyv2009, d)
@@ -40300,8 +35986,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Uint32 == nil {
 			x.FptrMapInt8Uint32 = new(map[int8]uint32)
 		}
-		yym2012 := z.DecBinary()
-		_ = yym2012
 		if false {
 		} else {
 			z.F.DecMapInt8Uint32X(x.FptrMapInt8Uint32, d)
@@ -40322,8 +36006,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Uint64 = nil
 	} else {
 		yyv2013 := &x.FMapInt8Uint64
-		yym2014 := z.DecBinary()
-		_ = yym2014
 		if false {
 		} else {
 			z.F.DecMapInt8Uint64X(yyv2013, d)
@@ -40351,8 +36033,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Uint64 == nil {
 			x.FptrMapInt8Uint64 = new(map[int8]uint64)
 		}
-		yym2016 := z.DecBinary()
-		_ = yym2016
 		if false {
 		} else {
 			z.F.DecMapInt8Uint64X(x.FptrMapInt8Uint64, d)
@@ -40373,8 +36053,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Uintptr = nil
 	} else {
 		yyv2017 := &x.FMapInt8Uintptr
-		yym2018 := z.DecBinary()
-		_ = yym2018
 		if false {
 		} else {
 			z.F.DecMapInt8UintptrX(yyv2017, d)
@@ -40402,8 +36080,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Uintptr == nil {
 			x.FptrMapInt8Uintptr = new(map[int8]uintptr)
 		}
-		yym2020 := z.DecBinary()
-		_ = yym2020
 		if false {
 		} else {
 			z.F.DecMapInt8UintptrX(x.FptrMapInt8Uintptr, d)
@@ -40424,8 +36100,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Int = nil
 	} else {
 		yyv2021 := &x.FMapInt8Int
-		yym2022 := z.DecBinary()
-		_ = yym2022
 		if false {
 		} else {
 			z.F.DecMapInt8IntX(yyv2021, d)
@@ -40453,8 +36127,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Int == nil {
 			x.FptrMapInt8Int = new(map[int8]int)
 		}
-		yym2024 := z.DecBinary()
-		_ = yym2024
 		if false {
 		} else {
 			z.F.DecMapInt8IntX(x.FptrMapInt8Int, d)
@@ -40475,8 +36147,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Int8 = nil
 	} else {
 		yyv2025 := &x.FMapInt8Int8
-		yym2026 := z.DecBinary()
-		_ = yym2026
 		if false {
 		} else {
 			z.F.DecMapInt8Int8X(yyv2025, d)
@@ -40504,8 +36174,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Int8 == nil {
 			x.FptrMapInt8Int8 = new(map[int8]int8)
 		}
-		yym2028 := z.DecBinary()
-		_ = yym2028
 		if false {
 		} else {
 			z.F.DecMapInt8Int8X(x.FptrMapInt8Int8, d)
@@ -40526,8 +36194,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Int16 = nil
 	} else {
 		yyv2029 := &x.FMapInt8Int16
-		yym2030 := z.DecBinary()
-		_ = yym2030
 		if false {
 		} else {
 			z.F.DecMapInt8Int16X(yyv2029, d)
@@ -40555,8 +36221,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Int16 == nil {
 			x.FptrMapInt8Int16 = new(map[int8]int16)
 		}
-		yym2032 := z.DecBinary()
-		_ = yym2032
 		if false {
 		} else {
 			z.F.DecMapInt8Int16X(x.FptrMapInt8Int16, d)
@@ -40577,8 +36241,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Int32 = nil
 	} else {
 		yyv2033 := &x.FMapInt8Int32
-		yym2034 := z.DecBinary()
-		_ = yym2034
 		if false {
 		} else {
 			z.F.DecMapInt8Int32X(yyv2033, d)
@@ -40606,8 +36268,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Int32 == nil {
 			x.FptrMapInt8Int32 = new(map[int8]int32)
 		}
-		yym2036 := z.DecBinary()
-		_ = yym2036
 		if false {
 		} else {
 			z.F.DecMapInt8Int32X(x.FptrMapInt8Int32, d)
@@ -40628,8 +36288,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Int64 = nil
 	} else {
 		yyv2037 := &x.FMapInt8Int64
-		yym2038 := z.DecBinary()
-		_ = yym2038
 		if false {
 		} else {
 			z.F.DecMapInt8Int64X(yyv2037, d)
@@ -40657,8 +36315,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Int64 == nil {
 			x.FptrMapInt8Int64 = new(map[int8]int64)
 		}
-		yym2040 := z.DecBinary()
-		_ = yym2040
 		if false {
 		} else {
 			z.F.DecMapInt8Int64X(x.FptrMapInt8Int64, d)
@@ -40679,8 +36335,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Float32 = nil
 	} else {
 		yyv2041 := &x.FMapInt8Float32
-		yym2042 := z.DecBinary()
-		_ = yym2042
 		if false {
 		} else {
 			z.F.DecMapInt8Float32X(yyv2041, d)
@@ -40708,8 +36362,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Float32 == nil {
 			x.FptrMapInt8Float32 = new(map[int8]float32)
 		}
-		yym2044 := z.DecBinary()
-		_ = yym2044
 		if false {
 		} else {
 			z.F.DecMapInt8Float32X(x.FptrMapInt8Float32, d)
@@ -40730,8 +36382,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Float64 = nil
 	} else {
 		yyv2045 := &x.FMapInt8Float64
-		yym2046 := z.DecBinary()
-		_ = yym2046
 		if false {
 		} else {
 			z.F.DecMapInt8Float64X(yyv2045, d)
@@ -40759,8 +36409,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Float64 == nil {
 			x.FptrMapInt8Float64 = new(map[int8]float64)
 		}
-		yym2048 := z.DecBinary()
-		_ = yym2048
 		if false {
 		} else {
 			z.F.DecMapInt8Float64X(x.FptrMapInt8Float64, d)
@@ -40781,8 +36429,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt8Bool = nil
 	} else {
 		yyv2049 := &x.FMapInt8Bool
-		yym2050 := z.DecBinary()
-		_ = yym2050
 		if false {
 		} else {
 			z.F.DecMapInt8BoolX(yyv2049, d)
@@ -40810,8 +36456,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt8Bool == nil {
 			x.FptrMapInt8Bool = new(map[int8]bool)
 		}
-		yym2052 := z.DecBinary()
-		_ = yym2052
 		if false {
 		} else {
 			z.F.DecMapInt8BoolX(x.FptrMapInt8Bool, d)
@@ -40832,8 +36476,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Intf = nil
 	} else {
 		yyv2053 := &x.FMapInt16Intf
-		yym2054 := z.DecBinary()
-		_ = yym2054
 		if false {
 		} else {
 			z.F.DecMapInt16IntfX(yyv2053, d)
@@ -40861,8 +36503,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Intf == nil {
 			x.FptrMapInt16Intf = new(map[int16]interface{})
 		}
-		yym2056 := z.DecBinary()
-		_ = yym2056
 		if false {
 		} else {
 			z.F.DecMapInt16IntfX(x.FptrMapInt16Intf, d)
@@ -40883,8 +36523,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16String = nil
 	} else {
 		yyv2057 := &x.FMapInt16String
-		yym2058 := z.DecBinary()
-		_ = yym2058
 		if false {
 		} else {
 			z.F.DecMapInt16StringX(yyv2057, d)
@@ -40912,8 +36550,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16String == nil {
 			x.FptrMapInt16String = new(map[int16]string)
 		}
-		yym2060 := z.DecBinary()
-		_ = yym2060
 		if false {
 		} else {
 			z.F.DecMapInt16StringX(x.FptrMapInt16String, d)
@@ -40934,8 +36570,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Uint = nil
 	} else {
 		yyv2061 := &x.FMapInt16Uint
-		yym2062 := z.DecBinary()
-		_ = yym2062
 		if false {
 		} else {
 			z.F.DecMapInt16UintX(yyv2061, d)
@@ -40963,8 +36597,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Uint == nil {
 			x.FptrMapInt16Uint = new(map[int16]uint)
 		}
-		yym2064 := z.DecBinary()
-		_ = yym2064
 		if false {
 		} else {
 			z.F.DecMapInt16UintX(x.FptrMapInt16Uint, d)
@@ -40985,8 +36617,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Uint8 = nil
 	} else {
 		yyv2065 := &x.FMapInt16Uint8
-		yym2066 := z.DecBinary()
-		_ = yym2066
 		if false {
 		} else {
 			z.F.DecMapInt16Uint8X(yyv2065, d)
@@ -41014,8 +36644,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Uint8 == nil {
 			x.FptrMapInt16Uint8 = new(map[int16]uint8)
 		}
-		yym2068 := z.DecBinary()
-		_ = yym2068
 		if false {
 		} else {
 			z.F.DecMapInt16Uint8X(x.FptrMapInt16Uint8, d)
@@ -41036,8 +36664,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Uint16 = nil
 	} else {
 		yyv2069 := &x.FMapInt16Uint16
-		yym2070 := z.DecBinary()
-		_ = yym2070
 		if false {
 		} else {
 			z.F.DecMapInt16Uint16X(yyv2069, d)
@@ -41065,8 +36691,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Uint16 == nil {
 			x.FptrMapInt16Uint16 = new(map[int16]uint16)
 		}
-		yym2072 := z.DecBinary()
-		_ = yym2072
 		if false {
 		} else {
 			z.F.DecMapInt16Uint16X(x.FptrMapInt16Uint16, d)
@@ -41087,8 +36711,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Uint32 = nil
 	} else {
 		yyv2073 := &x.FMapInt16Uint32
-		yym2074 := z.DecBinary()
-		_ = yym2074
 		if false {
 		} else {
 			z.F.DecMapInt16Uint32X(yyv2073, d)
@@ -41116,8 +36738,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Uint32 == nil {
 			x.FptrMapInt16Uint32 = new(map[int16]uint32)
 		}
-		yym2076 := z.DecBinary()
-		_ = yym2076
 		if false {
 		} else {
 			z.F.DecMapInt16Uint32X(x.FptrMapInt16Uint32, d)
@@ -41138,8 +36758,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Uint64 = nil
 	} else {
 		yyv2077 := &x.FMapInt16Uint64
-		yym2078 := z.DecBinary()
-		_ = yym2078
 		if false {
 		} else {
 			z.F.DecMapInt16Uint64X(yyv2077, d)
@@ -41167,8 +36785,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Uint64 == nil {
 			x.FptrMapInt16Uint64 = new(map[int16]uint64)
 		}
-		yym2080 := z.DecBinary()
-		_ = yym2080
 		if false {
 		} else {
 			z.F.DecMapInt16Uint64X(x.FptrMapInt16Uint64, d)
@@ -41189,8 +36805,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Uintptr = nil
 	} else {
 		yyv2081 := &x.FMapInt16Uintptr
-		yym2082 := z.DecBinary()
-		_ = yym2082
 		if false {
 		} else {
 			z.F.DecMapInt16UintptrX(yyv2081, d)
@@ -41218,8 +36832,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Uintptr == nil {
 			x.FptrMapInt16Uintptr = new(map[int16]uintptr)
 		}
-		yym2084 := z.DecBinary()
-		_ = yym2084
 		if false {
 		} else {
 			z.F.DecMapInt16UintptrX(x.FptrMapInt16Uintptr, d)
@@ -41240,8 +36852,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Int = nil
 	} else {
 		yyv2085 := &x.FMapInt16Int
-		yym2086 := z.DecBinary()
-		_ = yym2086
 		if false {
 		} else {
 			z.F.DecMapInt16IntX(yyv2085, d)
@@ -41269,8 +36879,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Int == nil {
 			x.FptrMapInt16Int = new(map[int16]int)
 		}
-		yym2088 := z.DecBinary()
-		_ = yym2088
 		if false {
 		} else {
 			z.F.DecMapInt16IntX(x.FptrMapInt16Int, d)
@@ -41291,8 +36899,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Int8 = nil
 	} else {
 		yyv2089 := &x.FMapInt16Int8
-		yym2090 := z.DecBinary()
-		_ = yym2090
 		if false {
 		} else {
 			z.F.DecMapInt16Int8X(yyv2089, d)
@@ -41320,8 +36926,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Int8 == nil {
 			x.FptrMapInt16Int8 = new(map[int16]int8)
 		}
-		yym2092 := z.DecBinary()
-		_ = yym2092
 		if false {
 		} else {
 			z.F.DecMapInt16Int8X(x.FptrMapInt16Int8, d)
@@ -41342,8 +36946,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Int16 = nil
 	} else {
 		yyv2093 := &x.FMapInt16Int16
-		yym2094 := z.DecBinary()
-		_ = yym2094
 		if false {
 		} else {
 			z.F.DecMapInt16Int16X(yyv2093, d)
@@ -41371,8 +36973,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Int16 == nil {
 			x.FptrMapInt16Int16 = new(map[int16]int16)
 		}
-		yym2096 := z.DecBinary()
-		_ = yym2096
 		if false {
 		} else {
 			z.F.DecMapInt16Int16X(x.FptrMapInt16Int16, d)
@@ -41393,8 +36993,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Int32 = nil
 	} else {
 		yyv2097 := &x.FMapInt16Int32
-		yym2098 := z.DecBinary()
-		_ = yym2098
 		if false {
 		} else {
 			z.F.DecMapInt16Int32X(yyv2097, d)
@@ -41422,8 +37020,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Int32 == nil {
 			x.FptrMapInt16Int32 = new(map[int16]int32)
 		}
-		yym2100 := z.DecBinary()
-		_ = yym2100
 		if false {
 		} else {
 			z.F.DecMapInt16Int32X(x.FptrMapInt16Int32, d)
@@ -41444,8 +37040,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Int64 = nil
 	} else {
 		yyv2101 := &x.FMapInt16Int64
-		yym2102 := z.DecBinary()
-		_ = yym2102
 		if false {
 		} else {
 			z.F.DecMapInt16Int64X(yyv2101, d)
@@ -41473,8 +37067,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Int64 == nil {
 			x.FptrMapInt16Int64 = new(map[int16]int64)
 		}
-		yym2104 := z.DecBinary()
-		_ = yym2104
 		if false {
 		} else {
 			z.F.DecMapInt16Int64X(x.FptrMapInt16Int64, d)
@@ -41495,8 +37087,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Float32 = nil
 	} else {
 		yyv2105 := &x.FMapInt16Float32
-		yym2106 := z.DecBinary()
-		_ = yym2106
 		if false {
 		} else {
 			z.F.DecMapInt16Float32X(yyv2105, d)
@@ -41524,8 +37114,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Float32 == nil {
 			x.FptrMapInt16Float32 = new(map[int16]float32)
 		}
-		yym2108 := z.DecBinary()
-		_ = yym2108
 		if false {
 		} else {
 			z.F.DecMapInt16Float32X(x.FptrMapInt16Float32, d)
@@ -41546,8 +37134,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Float64 = nil
 	} else {
 		yyv2109 := &x.FMapInt16Float64
-		yym2110 := z.DecBinary()
-		_ = yym2110
 		if false {
 		} else {
 			z.F.DecMapInt16Float64X(yyv2109, d)
@@ -41575,8 +37161,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Float64 == nil {
 			x.FptrMapInt16Float64 = new(map[int16]float64)
 		}
-		yym2112 := z.DecBinary()
-		_ = yym2112
 		if false {
 		} else {
 			z.F.DecMapInt16Float64X(x.FptrMapInt16Float64, d)
@@ -41597,8 +37181,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt16Bool = nil
 	} else {
 		yyv2113 := &x.FMapInt16Bool
-		yym2114 := z.DecBinary()
-		_ = yym2114
 		if false {
 		} else {
 			z.F.DecMapInt16BoolX(yyv2113, d)
@@ -41626,8 +37208,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt16Bool == nil {
 			x.FptrMapInt16Bool = new(map[int16]bool)
 		}
-		yym2116 := z.DecBinary()
-		_ = yym2116
 		if false {
 		} else {
 			z.F.DecMapInt16BoolX(x.FptrMapInt16Bool, d)
@@ -41648,8 +37228,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Intf = nil
 	} else {
 		yyv2117 := &x.FMapInt32Intf
-		yym2118 := z.DecBinary()
-		_ = yym2118
 		if false {
 		} else {
 			z.F.DecMapInt32IntfX(yyv2117, d)
@@ -41677,8 +37255,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Intf == nil {
 			x.FptrMapInt32Intf = new(map[int32]interface{})
 		}
-		yym2120 := z.DecBinary()
-		_ = yym2120
 		if false {
 		} else {
 			z.F.DecMapInt32IntfX(x.FptrMapInt32Intf, d)
@@ -41699,8 +37275,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32String = nil
 	} else {
 		yyv2121 := &x.FMapInt32String
-		yym2122 := z.DecBinary()
-		_ = yym2122
 		if false {
 		} else {
 			z.F.DecMapInt32StringX(yyv2121, d)
@@ -41728,8 +37302,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32String == nil {
 			x.FptrMapInt32String = new(map[int32]string)
 		}
-		yym2124 := z.DecBinary()
-		_ = yym2124
 		if false {
 		} else {
 			z.F.DecMapInt32StringX(x.FptrMapInt32String, d)
@@ -41750,8 +37322,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Uint = nil
 	} else {
 		yyv2125 := &x.FMapInt32Uint
-		yym2126 := z.DecBinary()
-		_ = yym2126
 		if false {
 		} else {
 			z.F.DecMapInt32UintX(yyv2125, d)
@@ -41779,8 +37349,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Uint == nil {
 			x.FptrMapInt32Uint = new(map[int32]uint)
 		}
-		yym2128 := z.DecBinary()
-		_ = yym2128
 		if false {
 		} else {
 			z.F.DecMapInt32UintX(x.FptrMapInt32Uint, d)
@@ -41801,8 +37369,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Uint8 = nil
 	} else {
 		yyv2129 := &x.FMapInt32Uint8
-		yym2130 := z.DecBinary()
-		_ = yym2130
 		if false {
 		} else {
 			z.F.DecMapInt32Uint8X(yyv2129, d)
@@ -41830,8 +37396,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Uint8 == nil {
 			x.FptrMapInt32Uint8 = new(map[int32]uint8)
 		}
-		yym2132 := z.DecBinary()
-		_ = yym2132
 		if false {
 		} else {
 			z.F.DecMapInt32Uint8X(x.FptrMapInt32Uint8, d)
@@ -41852,8 +37416,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Uint16 = nil
 	} else {
 		yyv2133 := &x.FMapInt32Uint16
-		yym2134 := z.DecBinary()
-		_ = yym2134
 		if false {
 		} else {
 			z.F.DecMapInt32Uint16X(yyv2133, d)
@@ -41881,8 +37443,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Uint16 == nil {
 			x.FptrMapInt32Uint16 = new(map[int32]uint16)
 		}
-		yym2136 := z.DecBinary()
-		_ = yym2136
 		if false {
 		} else {
 			z.F.DecMapInt32Uint16X(x.FptrMapInt32Uint16, d)
@@ -41903,8 +37463,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Uint32 = nil
 	} else {
 		yyv2137 := &x.FMapInt32Uint32
-		yym2138 := z.DecBinary()
-		_ = yym2138
 		if false {
 		} else {
 			z.F.DecMapInt32Uint32X(yyv2137, d)
@@ -41932,8 +37490,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Uint32 == nil {
 			x.FptrMapInt32Uint32 = new(map[int32]uint32)
 		}
-		yym2140 := z.DecBinary()
-		_ = yym2140
 		if false {
 		} else {
 			z.F.DecMapInt32Uint32X(x.FptrMapInt32Uint32, d)
@@ -41954,8 +37510,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Uint64 = nil
 	} else {
 		yyv2141 := &x.FMapInt32Uint64
-		yym2142 := z.DecBinary()
-		_ = yym2142
 		if false {
 		} else {
 			z.F.DecMapInt32Uint64X(yyv2141, d)
@@ -41983,8 +37537,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Uint64 == nil {
 			x.FptrMapInt32Uint64 = new(map[int32]uint64)
 		}
-		yym2144 := z.DecBinary()
-		_ = yym2144
 		if false {
 		} else {
 			z.F.DecMapInt32Uint64X(x.FptrMapInt32Uint64, d)
@@ -42005,8 +37557,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Uintptr = nil
 	} else {
 		yyv2145 := &x.FMapInt32Uintptr
-		yym2146 := z.DecBinary()
-		_ = yym2146
 		if false {
 		} else {
 			z.F.DecMapInt32UintptrX(yyv2145, d)
@@ -42034,8 +37584,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Uintptr == nil {
 			x.FptrMapInt32Uintptr = new(map[int32]uintptr)
 		}
-		yym2148 := z.DecBinary()
-		_ = yym2148
 		if false {
 		} else {
 			z.F.DecMapInt32UintptrX(x.FptrMapInt32Uintptr, d)
@@ -42056,8 +37604,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Int = nil
 	} else {
 		yyv2149 := &x.FMapInt32Int
-		yym2150 := z.DecBinary()
-		_ = yym2150
 		if false {
 		} else {
 			z.F.DecMapInt32IntX(yyv2149, d)
@@ -42085,8 +37631,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Int == nil {
 			x.FptrMapInt32Int = new(map[int32]int)
 		}
-		yym2152 := z.DecBinary()
-		_ = yym2152
 		if false {
 		} else {
 			z.F.DecMapInt32IntX(x.FptrMapInt32Int, d)
@@ -42107,8 +37651,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Int8 = nil
 	} else {
 		yyv2153 := &x.FMapInt32Int8
-		yym2154 := z.DecBinary()
-		_ = yym2154
 		if false {
 		} else {
 			z.F.DecMapInt32Int8X(yyv2153, d)
@@ -42136,8 +37678,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Int8 == nil {
 			x.FptrMapInt32Int8 = new(map[int32]int8)
 		}
-		yym2156 := z.DecBinary()
-		_ = yym2156
 		if false {
 		} else {
 			z.F.DecMapInt32Int8X(x.FptrMapInt32Int8, d)
@@ -42158,8 +37698,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Int16 = nil
 	} else {
 		yyv2157 := &x.FMapInt32Int16
-		yym2158 := z.DecBinary()
-		_ = yym2158
 		if false {
 		} else {
 			z.F.DecMapInt32Int16X(yyv2157, d)
@@ -42187,8 +37725,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Int16 == nil {
 			x.FptrMapInt32Int16 = new(map[int32]int16)
 		}
-		yym2160 := z.DecBinary()
-		_ = yym2160
 		if false {
 		} else {
 			z.F.DecMapInt32Int16X(x.FptrMapInt32Int16, d)
@@ -42209,8 +37745,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Int32 = nil
 	} else {
 		yyv2161 := &x.FMapInt32Int32
-		yym2162 := z.DecBinary()
-		_ = yym2162
 		if false {
 		} else {
 			z.F.DecMapInt32Int32X(yyv2161, d)
@@ -42238,8 +37772,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Int32 == nil {
 			x.FptrMapInt32Int32 = new(map[int32]int32)
 		}
-		yym2164 := z.DecBinary()
-		_ = yym2164
 		if false {
 		} else {
 			z.F.DecMapInt32Int32X(x.FptrMapInt32Int32, d)
@@ -42260,8 +37792,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Int64 = nil
 	} else {
 		yyv2165 := &x.FMapInt32Int64
-		yym2166 := z.DecBinary()
-		_ = yym2166
 		if false {
 		} else {
 			z.F.DecMapInt32Int64X(yyv2165, d)
@@ -42289,8 +37819,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Int64 == nil {
 			x.FptrMapInt32Int64 = new(map[int32]int64)
 		}
-		yym2168 := z.DecBinary()
-		_ = yym2168
 		if false {
 		} else {
 			z.F.DecMapInt32Int64X(x.FptrMapInt32Int64, d)
@@ -42311,8 +37839,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Float32 = nil
 	} else {
 		yyv2169 := &x.FMapInt32Float32
-		yym2170 := z.DecBinary()
-		_ = yym2170
 		if false {
 		} else {
 			z.F.DecMapInt32Float32X(yyv2169, d)
@@ -42340,8 +37866,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Float32 == nil {
 			x.FptrMapInt32Float32 = new(map[int32]float32)
 		}
-		yym2172 := z.DecBinary()
-		_ = yym2172
 		if false {
 		} else {
 			z.F.DecMapInt32Float32X(x.FptrMapInt32Float32, d)
@@ -42362,8 +37886,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Float64 = nil
 	} else {
 		yyv2173 := &x.FMapInt32Float64
-		yym2174 := z.DecBinary()
-		_ = yym2174
 		if false {
 		} else {
 			z.F.DecMapInt32Float64X(yyv2173, d)
@@ -42391,8 +37913,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Float64 == nil {
 			x.FptrMapInt32Float64 = new(map[int32]float64)
 		}
-		yym2176 := z.DecBinary()
-		_ = yym2176
 		if false {
 		} else {
 			z.F.DecMapInt32Float64X(x.FptrMapInt32Float64, d)
@@ -42413,8 +37933,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt32Bool = nil
 	} else {
 		yyv2177 := &x.FMapInt32Bool
-		yym2178 := z.DecBinary()
-		_ = yym2178
 		if false {
 		} else {
 			z.F.DecMapInt32BoolX(yyv2177, d)
@@ -42442,8 +37960,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt32Bool == nil {
 			x.FptrMapInt32Bool = new(map[int32]bool)
 		}
-		yym2180 := z.DecBinary()
-		_ = yym2180
 		if false {
 		} else {
 			z.F.DecMapInt32BoolX(x.FptrMapInt32Bool, d)
@@ -42464,8 +37980,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Intf = nil
 	} else {
 		yyv2181 := &x.FMapInt64Intf
-		yym2182 := z.DecBinary()
-		_ = yym2182
 		if false {
 		} else {
 			z.F.DecMapInt64IntfX(yyv2181, d)
@@ -42493,8 +38007,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Intf == nil {
 			x.FptrMapInt64Intf = new(map[int64]interface{})
 		}
-		yym2184 := z.DecBinary()
-		_ = yym2184
 		if false {
 		} else {
 			z.F.DecMapInt64IntfX(x.FptrMapInt64Intf, d)
@@ -42515,8 +38027,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64String = nil
 	} else {
 		yyv2185 := &x.FMapInt64String
-		yym2186 := z.DecBinary()
-		_ = yym2186
 		if false {
 		} else {
 			z.F.DecMapInt64StringX(yyv2185, d)
@@ -42544,8 +38054,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64String == nil {
 			x.FptrMapInt64String = new(map[int64]string)
 		}
-		yym2188 := z.DecBinary()
-		_ = yym2188
 		if false {
 		} else {
 			z.F.DecMapInt64StringX(x.FptrMapInt64String, d)
@@ -42566,8 +38074,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Uint = nil
 	} else {
 		yyv2189 := &x.FMapInt64Uint
-		yym2190 := z.DecBinary()
-		_ = yym2190
 		if false {
 		} else {
 			z.F.DecMapInt64UintX(yyv2189, d)
@@ -42595,8 +38101,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Uint == nil {
 			x.FptrMapInt64Uint = new(map[int64]uint)
 		}
-		yym2192 := z.DecBinary()
-		_ = yym2192
 		if false {
 		} else {
 			z.F.DecMapInt64UintX(x.FptrMapInt64Uint, d)
@@ -42617,8 +38121,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Uint8 = nil
 	} else {
 		yyv2193 := &x.FMapInt64Uint8
-		yym2194 := z.DecBinary()
-		_ = yym2194
 		if false {
 		} else {
 			z.F.DecMapInt64Uint8X(yyv2193, d)
@@ -42646,8 +38148,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Uint8 == nil {
 			x.FptrMapInt64Uint8 = new(map[int64]uint8)
 		}
-		yym2196 := z.DecBinary()
-		_ = yym2196
 		if false {
 		} else {
 			z.F.DecMapInt64Uint8X(x.FptrMapInt64Uint8, d)
@@ -42668,8 +38168,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Uint16 = nil
 	} else {
 		yyv2197 := &x.FMapInt64Uint16
-		yym2198 := z.DecBinary()
-		_ = yym2198
 		if false {
 		} else {
 			z.F.DecMapInt64Uint16X(yyv2197, d)
@@ -42697,8 +38195,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Uint16 == nil {
 			x.FptrMapInt64Uint16 = new(map[int64]uint16)
 		}
-		yym2200 := z.DecBinary()
-		_ = yym2200
 		if false {
 		} else {
 			z.F.DecMapInt64Uint16X(x.FptrMapInt64Uint16, d)
@@ -42719,8 +38215,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Uint32 = nil
 	} else {
 		yyv2201 := &x.FMapInt64Uint32
-		yym2202 := z.DecBinary()
-		_ = yym2202
 		if false {
 		} else {
 			z.F.DecMapInt64Uint32X(yyv2201, d)
@@ -42748,8 +38242,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Uint32 == nil {
 			x.FptrMapInt64Uint32 = new(map[int64]uint32)
 		}
-		yym2204 := z.DecBinary()
-		_ = yym2204
 		if false {
 		} else {
 			z.F.DecMapInt64Uint32X(x.FptrMapInt64Uint32, d)
@@ -42770,8 +38262,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Uint64 = nil
 	} else {
 		yyv2205 := &x.FMapInt64Uint64
-		yym2206 := z.DecBinary()
-		_ = yym2206
 		if false {
 		} else {
 			z.F.DecMapInt64Uint64X(yyv2205, d)
@@ -42799,8 +38289,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Uint64 == nil {
 			x.FptrMapInt64Uint64 = new(map[int64]uint64)
 		}
-		yym2208 := z.DecBinary()
-		_ = yym2208
 		if false {
 		} else {
 			z.F.DecMapInt64Uint64X(x.FptrMapInt64Uint64, d)
@@ -42821,8 +38309,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Uintptr = nil
 	} else {
 		yyv2209 := &x.FMapInt64Uintptr
-		yym2210 := z.DecBinary()
-		_ = yym2210
 		if false {
 		} else {
 			z.F.DecMapInt64UintptrX(yyv2209, d)
@@ -42850,8 +38336,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Uintptr == nil {
 			x.FptrMapInt64Uintptr = new(map[int64]uintptr)
 		}
-		yym2212 := z.DecBinary()
-		_ = yym2212
 		if false {
 		} else {
 			z.F.DecMapInt64UintptrX(x.FptrMapInt64Uintptr, d)
@@ -42872,8 +38356,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Int = nil
 	} else {
 		yyv2213 := &x.FMapInt64Int
-		yym2214 := z.DecBinary()
-		_ = yym2214
 		if false {
 		} else {
 			z.F.DecMapInt64IntX(yyv2213, d)
@@ -42901,8 +38383,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Int == nil {
 			x.FptrMapInt64Int = new(map[int64]int)
 		}
-		yym2216 := z.DecBinary()
-		_ = yym2216
 		if false {
 		} else {
 			z.F.DecMapInt64IntX(x.FptrMapInt64Int, d)
@@ -42923,8 +38403,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Int8 = nil
 	} else {
 		yyv2217 := &x.FMapInt64Int8
-		yym2218 := z.DecBinary()
-		_ = yym2218
 		if false {
 		} else {
 			z.F.DecMapInt64Int8X(yyv2217, d)
@@ -42952,8 +38430,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Int8 == nil {
 			x.FptrMapInt64Int8 = new(map[int64]int8)
 		}
-		yym2220 := z.DecBinary()
-		_ = yym2220
 		if false {
 		} else {
 			z.F.DecMapInt64Int8X(x.FptrMapInt64Int8, d)
@@ -42974,8 +38450,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Int16 = nil
 	} else {
 		yyv2221 := &x.FMapInt64Int16
-		yym2222 := z.DecBinary()
-		_ = yym2222
 		if false {
 		} else {
 			z.F.DecMapInt64Int16X(yyv2221, d)
@@ -43003,8 +38477,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Int16 == nil {
 			x.FptrMapInt64Int16 = new(map[int64]int16)
 		}
-		yym2224 := z.DecBinary()
-		_ = yym2224
 		if false {
 		} else {
 			z.F.DecMapInt64Int16X(x.FptrMapInt64Int16, d)
@@ -43025,8 +38497,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Int32 = nil
 	} else {
 		yyv2225 := &x.FMapInt64Int32
-		yym2226 := z.DecBinary()
-		_ = yym2226
 		if false {
 		} else {
 			z.F.DecMapInt64Int32X(yyv2225, d)
@@ -43054,8 +38524,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Int32 == nil {
 			x.FptrMapInt64Int32 = new(map[int64]int32)
 		}
-		yym2228 := z.DecBinary()
-		_ = yym2228
 		if false {
 		} else {
 			z.F.DecMapInt64Int32X(x.FptrMapInt64Int32, d)
@@ -43076,8 +38544,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Int64 = nil
 	} else {
 		yyv2229 := &x.FMapInt64Int64
-		yym2230 := z.DecBinary()
-		_ = yym2230
 		if false {
 		} else {
 			z.F.DecMapInt64Int64X(yyv2229, d)
@@ -43105,8 +38571,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Int64 == nil {
 			x.FptrMapInt64Int64 = new(map[int64]int64)
 		}
-		yym2232 := z.DecBinary()
-		_ = yym2232
 		if false {
 		} else {
 			z.F.DecMapInt64Int64X(x.FptrMapInt64Int64, d)
@@ -43127,8 +38591,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Float32 = nil
 	} else {
 		yyv2233 := &x.FMapInt64Float32
-		yym2234 := z.DecBinary()
-		_ = yym2234
 		if false {
 		} else {
 			z.F.DecMapInt64Float32X(yyv2233, d)
@@ -43156,8 +38618,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Float32 == nil {
 			x.FptrMapInt64Float32 = new(map[int64]float32)
 		}
-		yym2236 := z.DecBinary()
-		_ = yym2236
 		if false {
 		} else {
 			z.F.DecMapInt64Float32X(x.FptrMapInt64Float32, d)
@@ -43178,8 +38638,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Float64 = nil
 	} else {
 		yyv2237 := &x.FMapInt64Float64
-		yym2238 := z.DecBinary()
-		_ = yym2238
 		if false {
 		} else {
 			z.F.DecMapInt64Float64X(yyv2237, d)
@@ -43207,8 +38665,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Float64 == nil {
 			x.FptrMapInt64Float64 = new(map[int64]float64)
 		}
-		yym2240 := z.DecBinary()
-		_ = yym2240
 		if false {
 		} else {
 			z.F.DecMapInt64Float64X(x.FptrMapInt64Float64, d)
@@ -43229,8 +38685,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapInt64Bool = nil
 	} else {
 		yyv2241 := &x.FMapInt64Bool
-		yym2242 := z.DecBinary()
-		_ = yym2242
 		if false {
 		} else {
 			z.F.DecMapInt64BoolX(yyv2241, d)
@@ -43258,8 +38712,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Bool == nil {
 			x.FptrMapInt64Bool = new(map[int64]bool)
 		}
-		yym2244 := z.DecBinary()
-		_ = yym2244
 		if false {
 		} else {
 			z.F.DecMapInt64BoolX(x.FptrMapInt64Bool, d)
@@ -43280,8 +38732,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolIntf = nil
 	} else {
 		yyv2245 := &x.FMapBoolIntf
-		yym2246 := z.DecBinary()
-		_ = yym2246
 		if false {
 		} else {
 			z.F.DecMapBoolIntfX(yyv2245, d)
@@ -43309,8 +38759,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolIntf == nil {
 			x.FptrMapBoolIntf = new(map[bool]interface{})
 		}
-		yym2248 := z.DecBinary()
-		_ = yym2248
 		if false {
 		} else {
 			z.F.DecMapBoolIntfX(x.FptrMapBoolIntf, d)
@@ -43331,8 +38779,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolString = nil
 	} else {
 		yyv2249 := &x.FMapBoolString
-		yym2250 := z.DecBinary()
-		_ = yym2250
 		if false {
 		} else {
 			z.F.DecMapBoolStringX(yyv2249, d)
@@ -43360,8 +38806,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolString == nil {
 			x.FptrMapBoolString = new(map[bool]string)
 		}
-		yym2252 := z.DecBinary()
-		_ = yym2252
 		if false {
 		} else {
 			z.F.DecMapBoolStringX(x.FptrMapBoolString, d)
@@ -43382,8 +38826,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolUint = nil
 	} else {
 		yyv2253 := &x.FMapBoolUint
-		yym2254 := z.DecBinary()
-		_ = yym2254
 		if false {
 		} else {
 			z.F.DecMapBoolUintX(yyv2253, d)
@@ -43411,8 +38853,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolUint == nil {
 			x.FptrMapBoolUint = new(map[bool]uint)
 		}
-		yym2256 := z.DecBinary()
-		_ = yym2256
 		if false {
 		} else {
 			z.F.DecMapBoolUintX(x.FptrMapBoolUint, d)
@@ -43433,8 +38873,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolUint8 = nil
 	} else {
 		yyv2257 := &x.FMapBoolUint8
-		yym2258 := z.DecBinary()
-		_ = yym2258
 		if false {
 		} else {
 			z.F.DecMapBoolUint8X(yyv2257, d)
@@ -43462,8 +38900,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolUint8 == nil {
 			x.FptrMapBoolUint8 = new(map[bool]uint8)
 		}
-		yym2260 := z.DecBinary()
-		_ = yym2260
 		if false {
 		} else {
 			z.F.DecMapBoolUint8X(x.FptrMapBoolUint8, d)
@@ -43484,8 +38920,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolUint16 = nil
 	} else {
 		yyv2261 := &x.FMapBoolUint16
-		yym2262 := z.DecBinary()
-		_ = yym2262
 		if false {
 		} else {
 			z.F.DecMapBoolUint16X(yyv2261, d)
@@ -43513,8 +38947,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolUint16 == nil {
 			x.FptrMapBoolUint16 = new(map[bool]uint16)
 		}
-		yym2264 := z.DecBinary()
-		_ = yym2264
 		if false {
 		} else {
 			z.F.DecMapBoolUint16X(x.FptrMapBoolUint16, d)
@@ -43535,8 +38967,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolUint32 = nil
 	} else {
 		yyv2265 := &x.FMapBoolUint32
-		yym2266 := z.DecBinary()
-		_ = yym2266
 		if false {
 		} else {
 			z.F.DecMapBoolUint32X(yyv2265, d)
@@ -43564,8 +38994,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolUint32 == nil {
 			x.FptrMapBoolUint32 = new(map[bool]uint32)
 		}
-		yym2268 := z.DecBinary()
-		_ = yym2268
 		if false {
 		} else {
 			z.F.DecMapBoolUint32X(x.FptrMapBoolUint32, d)
@@ -43586,8 +39014,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolUint64 = nil
 	} else {
 		yyv2269 := &x.FMapBoolUint64
-		yym2270 := z.DecBinary()
-		_ = yym2270
 		if false {
 		} else {
 			z.F.DecMapBoolUint64X(yyv2269, d)
@@ -43615,8 +39041,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolUint64 == nil {
 			x.FptrMapBoolUint64 = new(map[bool]uint64)
 		}
-		yym2272 := z.DecBinary()
-		_ = yym2272
 		if false {
 		} else {
 			z.F.DecMapBoolUint64X(x.FptrMapBoolUint64, d)
@@ -43637,8 +39061,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolUintptr = nil
 	} else {
 		yyv2273 := &x.FMapBoolUintptr
-		yym2274 := z.DecBinary()
-		_ = yym2274
 		if false {
 		} else {
 			z.F.DecMapBoolUintptrX(yyv2273, d)
@@ -43666,8 +39088,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolUintptr == nil {
 			x.FptrMapBoolUintptr = new(map[bool]uintptr)
 		}
-		yym2276 := z.DecBinary()
-		_ = yym2276
 		if false {
 		} else {
 			z.F.DecMapBoolUintptrX(x.FptrMapBoolUintptr, d)
@@ -43688,8 +39108,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolInt = nil
 	} else {
 		yyv2277 := &x.FMapBoolInt
-		yym2278 := z.DecBinary()
-		_ = yym2278
 		if false {
 		} else {
 			z.F.DecMapBoolIntX(yyv2277, d)
@@ -43717,8 +39135,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolInt == nil {
 			x.FptrMapBoolInt = new(map[bool]int)
 		}
-		yym2280 := z.DecBinary()
-		_ = yym2280
 		if false {
 		} else {
 			z.F.DecMapBoolIntX(x.FptrMapBoolInt, d)
@@ -43739,8 +39155,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolInt8 = nil
 	} else {
 		yyv2281 := &x.FMapBoolInt8
-		yym2282 := z.DecBinary()
-		_ = yym2282
 		if false {
 		} else {
 			z.F.DecMapBoolInt8X(yyv2281, d)
@@ -43768,8 +39182,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolInt8 == nil {
 			x.FptrMapBoolInt8 = new(map[bool]int8)
 		}
-		yym2284 := z.DecBinary()
-		_ = yym2284
 		if false {
 		} else {
 			z.F.DecMapBoolInt8X(x.FptrMapBoolInt8, d)
@@ -43790,8 +39202,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolInt16 = nil
 	} else {
 		yyv2285 := &x.FMapBoolInt16
-		yym2286 := z.DecBinary()
-		_ = yym2286
 		if false {
 		} else {
 			z.F.DecMapBoolInt16X(yyv2285, d)
@@ -43819,8 +39229,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolInt16 == nil {
 			x.FptrMapBoolInt16 = new(map[bool]int16)
 		}
-		yym2288 := z.DecBinary()
-		_ = yym2288
 		if false {
 		} else {
 			z.F.DecMapBoolInt16X(x.FptrMapBoolInt16, d)
@@ -43841,8 +39249,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolInt32 = nil
 	} else {
 		yyv2289 := &x.FMapBoolInt32
-		yym2290 := z.DecBinary()
-		_ = yym2290
 		if false {
 		} else {
 			z.F.DecMapBoolInt32X(yyv2289, d)
@@ -43870,8 +39276,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolInt32 == nil {
 			x.FptrMapBoolInt32 = new(map[bool]int32)
 		}
-		yym2292 := z.DecBinary()
-		_ = yym2292
 		if false {
 		} else {
 			z.F.DecMapBoolInt32X(x.FptrMapBoolInt32, d)
@@ -43892,8 +39296,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolInt64 = nil
 	} else {
 		yyv2293 := &x.FMapBoolInt64
-		yym2294 := z.DecBinary()
-		_ = yym2294
 		if false {
 		} else {
 			z.F.DecMapBoolInt64X(yyv2293, d)
@@ -43921,8 +39323,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolInt64 == nil {
 			x.FptrMapBoolInt64 = new(map[bool]int64)
 		}
-		yym2296 := z.DecBinary()
-		_ = yym2296
 		if false {
 		} else {
 			z.F.DecMapBoolInt64X(x.FptrMapBoolInt64, d)
@@ -43943,8 +39343,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolFloat32 = nil
 	} else {
 		yyv2297 := &x.FMapBoolFloat32
-		yym2298 := z.DecBinary()
-		_ = yym2298
 		if false {
 		} else {
 			z.F.DecMapBoolFloat32X(yyv2297, d)
@@ -43972,8 +39370,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolFloat32 == nil {
 			x.FptrMapBoolFloat32 = new(map[bool]float32)
 		}
-		yym2300 := z.DecBinary()
-		_ = yym2300
 		if false {
 		} else {
 			z.F.DecMapBoolFloat32X(x.FptrMapBoolFloat32, d)
@@ -43994,8 +39390,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolFloat64 = nil
 	} else {
 		yyv2301 := &x.FMapBoolFloat64
-		yym2302 := z.DecBinary()
-		_ = yym2302
 		if false {
 		} else {
 			z.F.DecMapBoolFloat64X(yyv2301, d)
@@ -44023,8 +39417,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolFloat64 == nil {
 			x.FptrMapBoolFloat64 = new(map[bool]float64)
 		}
-		yym2304 := z.DecBinary()
-		_ = yym2304
 		if false {
 		} else {
 			z.F.DecMapBoolFloat64X(x.FptrMapBoolFloat64, d)
@@ -44045,8 +39437,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.FMapBoolBool = nil
 	} else {
 		yyv2305 := &x.FMapBoolBool
-		yym2306 := z.DecBinary()
-		_ = yym2306
 		if false {
 		} else {
 			z.F.DecMapBoolBoolX(yyv2305, d)
@@ -44074,8 +39464,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapBoolBool == nil {
 			x.FptrMapBoolBool = new(map[bool]bool)
 		}
-		yym2308 := z.DecBinary()
-		_ = yym2308
 		if false {
 		} else {
 			z.F.DecMapBoolBoolX(x.FptrMapBoolBool, d)
@@ -44101,12 +39489,10 @@ func (x testMammoth2Binary) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	yym1 := z.EncBinary()
-	_ = yym1
 	if false {
 	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 		z.EncExtension(x, yyxt1)
-	} else if yym1 {
+	} else if z.EncBinary() {
 		z.EncBinaryMarshal(x)
 	} else {
 		r.EncodeUint(uint64(x))
@@ -44117,12 +39503,10 @@ func (x *testMammoth2Binary) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	yym1 := z.DecBinary()
-	_ = yym1
 	if false {
 	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 		z.DecExtension(x, yyxt1)
-	} else if yym1 {
+	} else if z.DecBinary() {
 		z.DecBinaryUnmarshal(x)
 	} else {
 		*((*uint64)(x)) = uint64(r.DecodeUint64())
@@ -44133,12 +39517,10 @@ func (x testMammoth2Text) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	yym1 := z.EncBinary()
-	_ = yym1
 	if false {
 	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 		z.EncExtension(x, yyxt1)
-	} else if !yym1 {
+	} else if !z.EncBinary() {
 		z.EncTextMarshal(x)
 	} else {
 		r.EncodeUint(uint64(x))
@@ -44149,12 +39531,10 @@ func (x *testMammoth2Text) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	yym1 := z.DecBinary()
-	_ = yym1
 	if false {
 	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 		z.DecExtension(x, yyxt1)
-	} else if !yym1 {
+	} else if !z.DecBinary() {
 		z.DecTextUnmarshal(x)
 	} else {
 		*((*uint64)(x)) = uint64(r.DecodeUint64())
@@ -44165,12 +39545,10 @@ func (x testMammoth2Json) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	yym1 := z.EncBinary()
-	_ = yym1
 	if false {
 	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 		z.EncExtension(x, yyxt1)
-	} else if !yym1 && z.IsJSONHandle() {
+	} else if !z.EncBinary() && z.IsJSONHandle() {
 		z.EncJSONMarshal(x)
 	} else {
 		r.EncodeUint(uint64(x))
@@ -44181,12 +39559,10 @@ func (x *testMammoth2Json) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	yym1 := z.DecBinary()
-	_ = yym1
 	if false {
 	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 		z.DecExtension(x, yyxt1)
-	} else if !yym1 && z.IsJSONHandle() {
+	} else if !z.DecBinary() && z.IsJSONHandle() {
 		z.DecJSONUnmarshal(x)
 	} else {
 		*((*uint64)(x)) = uint64(r.DecodeUint64())
@@ -44200,8 +39576,6 @@ func (x *testMammoth2Basic) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yym1 := z.EncBinary()
-		_ = yym1
 		if false {
 		} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 			z.EncExtension(x, yyxt1)
@@ -44215,8 +39589,6 @@ func (x *testMammoth2Basic) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	yym1 := z.DecBinary()
-	_ = yym1
 	if false {
 	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 		z.DecExtension(x, yyxt1)
@@ -44232,8 +39604,6 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yym1 := z.EncBinary()
-		_ = yym1
 		if false {
 		} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 			z.EncExtension(x, yyxt1)
@@ -44241,7 +39611,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			yysep2 := !z.EncBinary()
 			yy2arr2 := z.EncBasicHandle().StructToArray
 			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false
+			const yyr2 bool = false // struct tag has 'toArray'
 			if yyr2 || yy2arr2 {
 				r.WriteArrayStart(8)
 			} else {
@@ -44301,8 +39671,6 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				if x.M == nil {
 					r.EncodeNil()
 				} else {
-					yym23 := z.EncBinary()
-					_ = yym23
 					if false {
 					} else {
 						h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
@@ -44315,8 +39683,6 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				if x.M == nil {
 					r.EncodeNil()
 				} else {
-					yym24 := z.EncBinary()
-					_ = yym24
 					if false {
 					} else {
 						h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
@@ -44328,8 +39694,6 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				if x.L == nil {
 					r.EncodeNil()
 				} else {
-					yym26 := z.EncBinary()
-					_ = yym26
 					if false {
 					} else {
 						h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
@@ -44342,8 +39706,6 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				if x.L == nil {
 					r.EncodeNil()
 				} else {
-					yym27 := z.EncBinary()
-					_ = yym27
 					if false {
 					} else {
 						h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
@@ -44353,8 +39715,6 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			if yyr2 || yy2arr2 {
 				r.WriteArrayElem()
 				yy29 := &x.A
-				yym30 := z.EncBinary()
-				_ = yym30
 				if false {
 				} else {
 					h.encArray4int64((*[4]int64)(yy29), e)
@@ -44364,8 +39724,6 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncStructFieldKey(codecSelferValueTypeString19781, `A`)
 				r.WriteMapElemValue()
 				yy31 := &x.A
-				yym32 := z.EncBinary()
-				_ = yym32
 				if false {
 				} else {
 					h.encArray4int64((*[4]int64)(yy31), e)
@@ -44384,8 +39742,6 @@ func (x *TestMammoth2Wrapper) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	yym1 := z.DecBinary()
-	_ = yym1
 	if false {
 	} else if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
 		z.DecExtension(x, yyxt1)
@@ -44470,8 +39826,6 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.M = nil
 			} else {
 				yyv9 := &x.M
-				yym10 := z.DecBinary()
-				_ = yym10
 				if false {
 				} else {
 					h.decMaptestMammoth2BasicTestMammoth2((*map[testMammoth2Basic]TestMammoth2)(yyv9), d)
@@ -44482,8 +39836,6 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.L = nil
 			} else {
 				yyv11 := &x.L
-				yym12 := z.DecBinary()
-				_ = yym12
 				if false {
 				} else {
 					h.decSliceTestMammoth2((*[]TestMammoth2)(yyv11), d)
@@ -44494,8 +39846,6 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.A = [4]int64{}
 			} else {
 				yyv13 := &x.A
-				yym14 := z.DecBinary()
-				_ = yym14
 				if false {
 				} else {
 					h.decArray4int64((*[4]int64)(yyv13), d)
@@ -44615,8 +39965,6 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.M = nil
 	} else {
 		yyv21 := &x.M
-		yym22 := z.DecBinary()
-		_ = yym22
 		if false {
 		} else {
 			h.decMaptestMammoth2BasicTestMammoth2((*map[testMammoth2Basic]TestMammoth2)(yyv21), d)
@@ -44637,8 +39985,6 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.L = nil
 	} else {
 		yyv23 := &x.L
-		yym24 := z.DecBinary()
-		_ = yym24
 		if false {
 		} else {
 			h.decSliceTestMammoth2((*[]TestMammoth2)(yyv23), d)
@@ -44659,8 +40005,6 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.A = [4]int64{}
 	} else {
 		yyv25 := &x.A
-		yym26 := z.DecBinary()
-		_ = yym26
 		if false {
 		} else {
 			h.decArray4int64((*[4]int64)(yyv25), d)
@@ -44689,8 +40033,6 @@ func (x codecSelfer19781) enctestMammoth2Basic(v *testMammoth2Basic, e *Encoder)
 	r.WriteArrayStart(len(v))
 	for _, yyv1 := range v {
 		r.WriteArrayElem()
-		yym2 := z.EncBinary()
-		_ = yym2
 		if false {
 		} else {
 			r.EncodeUint(uint64(yyv1))
@@ -44734,8 +40076,6 @@ func (x codecSelfer19781) dectestMammoth2Basic(v *testMammoth2Basic, d *Decoder)
 					yyv1[yyj1] = 0
 				} else {
 					yyv2 := &yyv1[yyj1]
-					yym3 := z.DecBinary()
-					_ = yym3
 					if false {
 					} else {
 						*((*uint64)(yyv2)) = uint64(r.DecodeUint64())
@@ -44930,8 +40270,6 @@ func (x codecSelfer19781) encArray4int64(v *[4]int64, e *Encoder) {
 	r.WriteArrayStart(len(v))
 	for _, yyv1 := range v {
 		r.WriteArrayElem()
-		yym2 := z.EncBinary()
-		_ = yym2
 		if false {
 		} else {
 			r.EncodeInt(int64(yyv1))
@@ -44975,8 +40313,6 @@ func (x codecSelfer19781) decArray4int64(v *[4]int64, d *Decoder) {
 					yyv1[yyj1] = 0
 				} else {
 					yyv2 := &yyv1[yyj1]
-					yym3 := z.DecBinary()
-					_ = yym3
 					if false {
 					} else {
 						*((*int64)(yyv2)) = int64(r.DecodeInt64())
