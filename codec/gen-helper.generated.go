@@ -87,6 +87,7 @@ func (x genHelperDecDriver) DecodeFloat32As64() (f float64) {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 type genHelperEncoder struct {
+	m must
 	e *Encoder
 	F fastpathT
 }

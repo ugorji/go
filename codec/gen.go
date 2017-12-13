@@ -244,10 +244,14 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	}
 	sort.Strings(imKeys)
 	for _, k := range imKeys { // for k, _ := range x.im {
-		x.linef("%s \"%s\"", x.imn[k], k)
+		if k == x.imn[k] {
+			x.linef("\"%s\"", k)
+		} else {
+			x.linef("%s \"%s\"", x.imn[k], k)
+		}
 	}
 	// add required packages
-	for _, k := range [...]string{"reflect", "runtime", "fmt", "errors"} {
+	for _, k := range [...]string{"runtime", "errors", "strconv"} { // "reflect", "fmt"
 		if _, ok := x.im[k]; !ok {
 			x.line("\"" + k + "\"")
 		}
@@ -275,9 +279,10 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	// x.linef("codecSelferKcontainerMapEnd%s = %v", x.xs, int64(containerMapEnd))
 	// x.linef("codecSelferKcontainerArrayElem%s = %v", x.xs, int64(containerArrayElem))
 	// x.linef("codecSelferKcontainerArrayEnd%s = %v", x.xs, int64(containerArrayEnd))
+	x.linef("codecSelferBitsize%s = uint8(strconv.IntSize) // uint8(32 << (^uint(0) >> 63))", x.xs)
 	x.line(")")
 	x.line("var (")
-	x.line("codecSelferBitsize" + x.xs + " = uint8(reflect.TypeOf(uint(0)).Bits())")
+	// x.line("codecSelferBitsize" + x.xs + " = uint8(reflect.TypeOf(uint(0)).Bits())")
 	x.line("errCodecSelferOnlyMapOrArrayEncodeToStruct" + x.xs + " = errors.New(`only encoded map or array can be decoded into a struct`)")
 	x.line(")")
 	x.line("")
@@ -290,11 +295,12 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.line("func init() {")
 	x.linef("if %sGenVersion != %v {", x.cpfx, genVersion)
 	x.line("_, file, _, _ := runtime.Caller(0)")
-	x.line(`err := fmt.Errorf("codecgen version mismatch: current: %v, need %v. Re-generate file: %v", `)
-	x.linef(`%v, %sGenVersion, file)`, genVersion, x.cpfx)
-	x.line("panic(err)")
+	x.outf(`panic("codecgen version mismatch: current: %v, need " + strconv.FormatInt(int64(%sGenVersion), 10) + ". Re-generate file: " + file)`, genVersion, x.cpfx)
+	// x.out(`panic(fmt.Errorf("codecgen version mismatch: current: %v, need %v. Re-generate file: %v", `)
+	// x.linef(`%v, %sGenVersion, file))`, genVersion, x.cpfx)
 	x.linef("}")
 	x.line("if false { // reference the types, but skip this branch at build/run time")
+	// x.line("_ = strconv.ParseInt")
 	var n int
 	// for k, t := range x.im {
 	for _, k := range imKeys {
@@ -1040,8 +1046,20 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 			x.linef("if %s[%v] {", numfieldsvar, j)
 		}
 		x.line("r.WriteMapElemKey()") // x.linef("z.EncSendContainerState(codecSelferKcontainerMapKey%s)", x.xs)
+
 		// x.line("r.EncodeString(codecSelferCcUTF8" + x.xs + ", `" + si.encName + "`)")
-		x.linef("r.EncStructFieldKey(codecSelferValueType%s%s, `%s`)", ti.keyType.String(), x.xs, si.encName)
+		// emulate EncStructFieldKey
+		switch ti.keyType {
+		case valueTypeInt:
+			x.linef("r.EncodeInt(z.m.Int(strconv.ParseInt(`%s`, 10, 64)))", si.encName)
+		case valueTypeUint:
+			x.linef("r.EncodeUint(z.m.Uint(strconv.ParseUint(`%s`, 10, 64)))", si.encName)
+		case valueTypeFloat:
+			x.linef("r.EncodeFloat64(z.m.Float(strconv.ParseFloat(`%s`, 64)))", si.encName)
+		default: // string
+			x.linef("r.EncodeString(codecSelferCcUTF8%s, `%s`)", x.xs, si.encName)
+		}
+		// x.linef("r.EncStructFieldKey(codecSelferValueType%s%s, `%s`)", ti.keyType.String(), x.xs, si.encName)
 		x.line("r.WriteMapElemValue()") // x.linef("z.EncSendContainerState(codecSelferKcontainerMapValue%s)", x.xs)
 		if labelUsed {
 			x.line("if " + isNilVarName + " { r.EncodeNil() } else { ")
@@ -1580,8 +1598,20 @@ func (x *genRunner) decStructMap(varname, lenvarname string, rtid uintptr, t ref
 	// x.line(kName + "Slc = r.DecodeStringAsBytes()")
 	// let string be scoped to this loop alone, so it doesn't escape.
 	// x.line(kName + " := string(" + kName + "Slc)")
-	x.linef("%s := z.StringView(r.DecStructFieldKey(codecSelferValueType%s%s, z.DecScratchArrayBuffer()))",
-		kName, ti.keyType.String(), x.xs)
+
+	// emulate decstructfieldkey
+	switch ti.keyType {
+	case valueTypeInt:
+		x.linef("%s := z.StringView(strconv.AppendInt(z.DecScratchArrayBuffer()[:0], r.DecodeInt64(), 10))", kName)
+	case valueTypeUint:
+		x.linef("%s := z.StringView(strconv.AppendUint(z.DecScratchArrayBuffer()[:0], r.DecodeUint64(), 10))", kName)
+	case valueTypeFloat:
+		x.linef("%s := z.StringView(strconv.AppendFloat(z.DecScratchArrayBuffer()[:0], r.DecodeFloat64(), 'f', -1, 64))", kName)
+	default: // string
+		x.linef("%s := z.StringView(r.DecodeStringAsBytes())", kName)
+	}
+	// x.linef("%s := z.StringView(r.DecStructFieldKey(codecSelferValueType%s%s, z.DecScratchArrayBuffer()))", kName, ti.keyType.String(), x.xs)
+
 	x.line("r.ReadMapElemValue()") // f("z.DecSendContainerState(codecSelferKcontainerMapValue%s)", x.xs)
 	x.decStructMapSwitch(kName, varname, rtid, t)
 
