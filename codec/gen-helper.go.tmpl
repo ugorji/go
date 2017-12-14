@@ -57,7 +57,7 @@ func (x genHelperEncDriver) EncodeSymbol(s string) {
 
 type genHelperDecDriver struct {
 	decDriver
-	c checkOverflow
+	C checkOverflow
 }
 
 func (x genHelperDecDriver) DecodeBuiltin(rt uintptr, v interface{}) {}
@@ -65,10 +65,10 @@ func (x genHelperDecDriver) DecStructFieldKey(keyType valueType, buf *[scratchBy
 	return decStructFieldKey(x.decDriver, keyType, buf)
 }
 func (x genHelperDecDriver) DecodeInt(bitsize uint8) (i int64) {
-	return x.c.IntV(x.decDriver.DecodeInt64(), bitsize)
+	return x.C.IntV(x.decDriver.DecodeInt64(), bitsize)
 }
 func (x genHelperDecDriver) DecodeUint(bitsize uint8) (ui uint64) {
-	return x.c.UintV(x.decDriver.DecodeUint64(), bitsize)
+	return x.C.UintV(x.decDriver.DecodeUint64(), bitsize)
 }
 func (x genHelperDecDriver) DecodeFloat(chkOverflow32 bool) (f float64) {
 	f = x.DecodeFloat64()
@@ -87,14 +87,14 @@ func (x genHelperDecDriver) DecodeFloat32As64() (f float64) {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 type genHelperEncoder struct {
-	m must
+	M must
 	e *Encoder
 	F fastpathT 
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 type genHelperDecoder struct {
-	c checkOverflow
+	C checkOverflow
 	d *Decoder
 	F fastpathT 
 }

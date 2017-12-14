@@ -18255,7 +18255,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				yyv20 := &x.FUint
 				if false {
 				} else {
-					*((*uint)(yyv20)) = uint(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
+					*((*uint)(yyv20)) = uint(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 				}
 			}
 		case "FptrUint":
@@ -18272,7 +18272,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 				if false {
 				} else {
-					*((*uint)(x.FptrUint)) = uint(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
+					*((*uint)(x.FptrUint)) = uint(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 				}
 			}
 		case "FUint8":
@@ -18282,7 +18282,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				yyv24 := &x.FUint8
 				if false {
 				} else {
-					*((*uint8)(yyv24)) = uint8(z.c.UintV(r.DecodeUint64(), 8))
+					*((*uint8)(yyv24)) = uint8(z.C.UintV(r.DecodeUint64(), 8))
 				}
 			}
 		case "FptrUint8":
@@ -18299,7 +18299,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 				if false {
 				} else {
-					*((*uint8)(x.FptrUint8)) = uint8(z.c.UintV(r.DecodeUint64(), 8))
+					*((*uint8)(x.FptrUint8)) = uint8(z.C.UintV(r.DecodeUint64(), 8))
 				}
 			}
 		case "FUint16":
@@ -18309,7 +18309,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				yyv28 := &x.FUint16
 				if false {
 				} else {
-					*((*uint16)(yyv28)) = uint16(z.c.UintV(r.DecodeUint64(), 16))
+					*((*uint16)(yyv28)) = uint16(z.C.UintV(r.DecodeUint64(), 16))
 				}
 			}
 		case "FptrUint16":
@@ -18326,7 +18326,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 				if false {
 				} else {
-					*((*uint16)(x.FptrUint16)) = uint16(z.c.UintV(r.DecodeUint64(), 16))
+					*((*uint16)(x.FptrUint16)) = uint16(z.C.UintV(r.DecodeUint64(), 16))
 				}
 			}
 		case "FUint32":
@@ -18336,7 +18336,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				yyv32 := &x.FUint32
 				if false {
 				} else {
-					*((*uint32)(yyv32)) = uint32(z.c.UintV(r.DecodeUint64(), 32))
+					*((*uint32)(yyv32)) = uint32(z.C.UintV(r.DecodeUint64(), 32))
 				}
 			}
 		case "FptrUint32":
@@ -18353,7 +18353,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 				if false {
 				} else {
-					*((*uint32)(x.FptrUint32)) = uint32(z.c.UintV(r.DecodeUint64(), 32))
+					*((*uint32)(x.FptrUint32)) = uint32(z.C.UintV(r.DecodeUint64(), 32))
 				}
 			}
 		case "FUint64":
@@ -18390,7 +18390,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				yyv40 := &x.FUintptr
 				if false {
 				} else {
-					*((*uintptr)(yyv40)) = uintptr(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
+					*((*uintptr)(yyv40)) = uintptr(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 				}
 			}
 		case "FptrUintptr":
@@ -18407,7 +18407,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 				if false {
 				} else {
-					*((*uintptr)(x.FptrUintptr)) = uintptr(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
+					*((*uintptr)(x.FptrUintptr)) = uintptr(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 				}
 			}
 		case "FInt":
@@ -18417,7 +18417,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				yyv44 := &x.FInt
 				if false {
 				} else {
-					*((*int)(yyv44)) = int(z.c.IntV(r.DecodeInt64(), codecSelferBitsize19781))
+					*((*int)(yyv44)) = int(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
 				}
 			}
 		case "FptrInt":
@@ -18434,7 +18434,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 				if false {
 				} else {
-					*((*int)(x.FptrInt)) = int(z.c.IntV(r.DecodeInt64(), codecSelferBitsize19781))
+					*((*int)(x.FptrInt)) = int(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
 				}
 			}
 		case "FInt8":
@@ -18444,7 +18444,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				yyv48 := &x.FInt8
 				if false {
 				} else {
-					*((*int8)(yyv48)) = int8(z.c.IntV(r.DecodeInt64(), 8))
+					*((*int8)(yyv48)) = int8(z.C.IntV(r.DecodeInt64(), 8))
 				}
 			}
 		case "FptrInt8":
@@ -18461,7 +18461,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 				if false {
 				} else {
-					*((*int8)(x.FptrInt8)) = int8(z.c.IntV(r.DecodeInt64(), 8))
+					*((*int8)(x.FptrInt8)) = int8(z.C.IntV(r.DecodeInt64(), 8))
 				}
 			}
 		case "FInt16":
@@ -18471,7 +18471,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				yyv52 := &x.FInt16
 				if false {
 				} else {
-					*((*int16)(yyv52)) = int16(z.c.IntV(r.DecodeInt64(), 16))
+					*((*int16)(yyv52)) = int16(z.C.IntV(r.DecodeInt64(), 16))
 				}
 			}
 		case "FptrInt16":
@@ -18488,7 +18488,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 				if false {
 				} else {
-					*((*int16)(x.FptrInt16)) = int16(z.c.IntV(r.DecodeInt64(), 16))
+					*((*int16)(x.FptrInt16)) = int16(z.C.IntV(r.DecodeInt64(), 16))
 				}
 			}
 		case "FInt32":
@@ -18498,7 +18498,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				yyv56 := &x.FInt32
 				if false {
 				} else {
-					*((*int32)(yyv56)) = int32(z.c.IntV(r.DecodeInt64(), 32))
+					*((*int32)(yyv56)) = int32(z.C.IntV(r.DecodeInt64(), 32))
 				}
 			}
 		case "FptrInt32":
@@ -18515,7 +18515,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 				if false {
 				} else {
-					*((*int32)(x.FptrInt32)) = int32(z.c.IntV(r.DecodeInt64(), 32))
+					*((*int32)(x.FptrInt32)) = int32(z.C.IntV(r.DecodeInt64(), 32))
 				}
 			}
 		case "FInt64":
@@ -26135,7 +26135,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		yyv1173 := &x.FUint
 		if false {
 		} else {
-			*((*uint)(yyv1173)) = uint(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
+			*((*uint)(yyv1173)) = uint(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 		}
 	}
 	if x.FptrUint == nil {
@@ -26162,7 +26162,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		if false {
 		} else {
-			*((*uint)(x.FptrUint)) = uint(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
+			*((*uint)(x.FptrUint)) = uint(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 		}
 	}
 	yyj1156++
@@ -26182,7 +26182,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		yyv1177 := &x.FUint8
 		if false {
 		} else {
-			*((*uint8)(yyv1177)) = uint8(z.c.UintV(r.DecodeUint64(), 8))
+			*((*uint8)(yyv1177)) = uint8(z.C.UintV(r.DecodeUint64(), 8))
 		}
 	}
 	if x.FptrUint8 == nil {
@@ -26209,7 +26209,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		if false {
 		} else {
-			*((*uint8)(x.FptrUint8)) = uint8(z.c.UintV(r.DecodeUint64(), 8))
+			*((*uint8)(x.FptrUint8)) = uint8(z.C.UintV(r.DecodeUint64(), 8))
 		}
 	}
 	yyj1156++
@@ -26229,7 +26229,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		yyv1181 := &x.FUint16
 		if false {
 		} else {
-			*((*uint16)(yyv1181)) = uint16(z.c.UintV(r.DecodeUint64(), 16))
+			*((*uint16)(yyv1181)) = uint16(z.C.UintV(r.DecodeUint64(), 16))
 		}
 	}
 	if x.FptrUint16 == nil {
@@ -26256,7 +26256,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		if false {
 		} else {
-			*((*uint16)(x.FptrUint16)) = uint16(z.c.UintV(r.DecodeUint64(), 16))
+			*((*uint16)(x.FptrUint16)) = uint16(z.C.UintV(r.DecodeUint64(), 16))
 		}
 	}
 	yyj1156++
@@ -26276,7 +26276,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		yyv1185 := &x.FUint32
 		if false {
 		} else {
-			*((*uint32)(yyv1185)) = uint32(z.c.UintV(r.DecodeUint64(), 32))
+			*((*uint32)(yyv1185)) = uint32(z.C.UintV(r.DecodeUint64(), 32))
 		}
 	}
 	if x.FptrUint32 == nil {
@@ -26303,7 +26303,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		if false {
 		} else {
-			*((*uint32)(x.FptrUint32)) = uint32(z.c.UintV(r.DecodeUint64(), 32))
+			*((*uint32)(x.FptrUint32)) = uint32(z.C.UintV(r.DecodeUint64(), 32))
 		}
 	}
 	yyj1156++
@@ -26370,7 +26370,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		yyv1193 := &x.FUintptr
 		if false {
 		} else {
-			*((*uintptr)(yyv1193)) = uintptr(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
+			*((*uintptr)(yyv1193)) = uintptr(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 		}
 	}
 	if x.FptrUintptr == nil {
@@ -26397,7 +26397,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		if false {
 		} else {
-			*((*uintptr)(x.FptrUintptr)) = uintptr(z.c.UintV(r.DecodeUint64(), codecSelferBitsize19781))
+			*((*uintptr)(x.FptrUintptr)) = uintptr(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 		}
 	}
 	yyj1156++
@@ -26417,7 +26417,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		yyv1197 := &x.FInt
 		if false {
 		} else {
-			*((*int)(yyv1197)) = int(z.c.IntV(r.DecodeInt64(), codecSelferBitsize19781))
+			*((*int)(yyv1197)) = int(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
 		}
 	}
 	if x.FptrInt == nil {
@@ -26444,7 +26444,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		if false {
 		} else {
-			*((*int)(x.FptrInt)) = int(z.c.IntV(r.DecodeInt64(), codecSelferBitsize19781))
+			*((*int)(x.FptrInt)) = int(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
 		}
 	}
 	yyj1156++
@@ -26464,7 +26464,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		yyv1201 := &x.FInt8
 		if false {
 		} else {
-			*((*int8)(yyv1201)) = int8(z.c.IntV(r.DecodeInt64(), 8))
+			*((*int8)(yyv1201)) = int8(z.C.IntV(r.DecodeInt64(), 8))
 		}
 	}
 	if x.FptrInt8 == nil {
@@ -26491,7 +26491,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		if false {
 		} else {
-			*((*int8)(x.FptrInt8)) = int8(z.c.IntV(r.DecodeInt64(), 8))
+			*((*int8)(x.FptrInt8)) = int8(z.C.IntV(r.DecodeInt64(), 8))
 		}
 	}
 	yyj1156++
@@ -26511,7 +26511,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		yyv1205 := &x.FInt16
 		if false {
 		} else {
-			*((*int16)(yyv1205)) = int16(z.c.IntV(r.DecodeInt64(), 16))
+			*((*int16)(yyv1205)) = int16(z.C.IntV(r.DecodeInt64(), 16))
 		}
 	}
 	if x.FptrInt16 == nil {
@@ -26538,7 +26538,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		if false {
 		} else {
-			*((*int16)(x.FptrInt16)) = int16(z.c.IntV(r.DecodeInt64(), 16))
+			*((*int16)(x.FptrInt16)) = int16(z.C.IntV(r.DecodeInt64(), 16))
 		}
 	}
 	yyj1156++
@@ -26558,7 +26558,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		yyv1209 := &x.FInt32
 		if false {
 		} else {
-			*((*int32)(yyv1209)) = int32(z.c.IntV(r.DecodeInt64(), 32))
+			*((*int32)(yyv1209)) = int32(z.C.IntV(r.DecodeInt64(), 32))
 		}
 	}
 	if x.FptrInt32 == nil {
@@ -26585,7 +26585,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		if false {
 		} else {
-			*((*int32)(x.FptrInt32)) = int32(z.c.IntV(r.DecodeInt64(), 32))
+			*((*int32)(x.FptrInt32)) = int32(z.C.IntV(r.DecodeInt64(), 32))
 		}
 	}
 	yyj1156++
