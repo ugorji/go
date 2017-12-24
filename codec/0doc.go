@@ -231,14 +231,14 @@ package codec
 //     will be inlined, giving a performance bump for that typical case.
 //     However, it will only  be inlined if mid-stack inlining is enabled,
 //     as we call panic to raise errors, and panic currently prevents inlining.
-//   - Clean up comments in the codebase
-//     Remove all unnecesssary comments, so code is clean.
 //
 // PUNTED:
 //   - To make Handle comparable, make extHandle in BasicHandle a non-embedded pointer,
 //     and use overlay methods on *BasicHandle to call through to extHandle after initializing
 //     the "xh *extHandle" to point to a real slice.
-//   - Before each release, look through and fix padding for each type, to eliminate false sharing
+//
+// BEFORE EACH RELEASE:
+//   - Look through and fix padding for each type, to eliminate false sharing
 //     - pooled objects: decNaked, codecFner, typeInfoLoadArray, typeInfo,
 //     - small objects that we allocate and modify much (should be in owned cache lines)
 //     - Objects used a lot (must live in own cache lines)
