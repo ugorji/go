@@ -652,7 +652,11 @@ func (d *jsonDecDriver) CheckBreak() bool {
 	return d.tok == '}' || d.tok == ']'
 }
 
+// For the ReadXXX methods below, we could just delegate to readContainerStateXXX.
+// Instead, we write these explicitly to save on the extra function call.
+
 func (d *jsonDecDriver) ReadArrayElem() {
+	// readContainerState(containerArrayElem, ',', d.c != containerArrayStart)
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
@@ -716,7 +720,7 @@ func (d *jsonDecDriver) ReadMapEnd() {
 	d.c = containerMapEnd
 }
 
-// func (d *jsonDecDriver) readContainerState(c containerState, xc uint8, check bool) {
+// func (d *jsonDecDriver) readContainerStateCheck(c containerState, xc uint8, check bool) {
 // 	if d.tok == 0 {
 // 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 // 	}
@@ -726,6 +730,17 @@ func (d *jsonDecDriver) ReadMapEnd() {
 // 		}
 // 		d.tok = 0
 // 	}
+// 	d.c = c
+// }
+
+// func (d *jsonDecDriver) readContainerState(c containerState, xc uint8) {
+// 	if d.tok == 0 {
+// 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+// 	}
+// 	if d.tok != xc {
+// 		d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
+// 	}
+// 	d.tok = 0
 // 	d.c = c
 // }
 
@@ -830,19 +845,33 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 
 func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 	bs := d.decNumBytes()
-	u, err := strconv.ParseUint(stringView(bs), 10, 64)
-	if err != nil {
-		d.d.errorf("decode uint from %s: %v", bs, err)
-		return
+	n, neg, badsyntax, overflow := jsonParseInteger(bs)
+	if overflow {
+		d.d.errorf("overflow parsing integer: %s", bs)
+	} else if neg || badsyntax {
+		d.d.errorf("invalid syntax for integer: %s", bs)
 	}
-	return
+	return n
 }
 
 func (d *jsonDecDriver) DecodeInt64() (i int64) {
+	const cutoff = uint64(1 << uint(64-1))
 	bs := d.decNumBytes()
-	i, err := strconv.ParseInt(stringView(bs), 10, 64)
-	if err != nil {
-		d.d.errorv(err)
+	n, neg, badsyntax, overflow := jsonParseInteger(bs)
+	if overflow {
+		d.d.errorf("overflow parsing integer: %s", bs)
+	} else if badsyntax {
+		d.d.errorf("invalid syntax for integer: %s", bs)
+	} else if neg {
+		if n > cutoff {
+			d.d.errorf("overflow parsing integer: %s", bs)
+		}
+		i = -(int64(n))
+	} else {
+		if n >= cutoff {
+			d.d.errorf("overflow parsing integer: %s", bs)
+		}
+		i = int64(n)
 	}
 	return
 }
@@ -1008,11 +1037,12 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 			var r rune
 			var rr uint32
 			if len(cs) < i+4 { // may help reduce bounds-checking
-				d.d.errorf(`json: need at least 4 more bytes for unicode sequence`)
+				d.d.errorf("need at least 4 more bytes for unicode sequence")
 			}
 			// c = cs[i+4] // may help reduce bounds-checking
 			for j := 1; j < 5; j++ {
-				// best to use this, as others involve memory loads, array lookup with bounds checks, etc
+				// best to use explicit if-else
+				// - not a table, etc which involve memory loads, array lookup with bounds checks, etc
 				c = cs[i+j]
 				if c >= '0' && c <= '9' {
 					rr = rr*16 + uint32(c-jsonU4Chk2)
@@ -1034,7 +1064,6 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 					// c = cs[i+4] // may help reduce bounds-checking
 					var rr1 uint32
 					for j := 1; j < 5; j++ {
-						// best to use this, as others involve memory loads, array lookup with bounds checks, etc
 						c = cs[i+j]
 						if c >= '0' && c <= '9' {
 							rr = rr*16 + uint32(c-jsonU4Chk2)
@@ -1068,23 +1097,37 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 }
 
 func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
-	// if d.h.PreferFloat || bytes.ContainsAny(bs, ".eE") {
-	if d.h.PreferFloat || jsonIsFloatBytesB3(bs) { // bytes.IndexByte(bs, '.') != -1 ||...
-		z.v = valueTypeFloat
-		z.f, err = strconv.ParseFloat(stringView(bs), 64)
-	} else if d.h.SignedInteger || bs[0] == '-' {
+	var n uint64
+	var neg, badsyntax, overflow bool
+
+	if d.h.PreferFloat {
+		goto F
+	}
+	n, neg, badsyntax, overflow = jsonParseInteger(bs)
+	if badsyntax || overflow {
+		goto F
+	}
+	const cutoff = uint64(1 << uint(64-1))
+	if neg {
+		if n > cutoff {
+			goto F
+		}
 		z.v = valueTypeInt
-		z.i, err = strconv.ParseInt(stringView(bs), 10, 64)
+		z.i = -(int64(n))
+	} else if d.h.SignedInteger {
+		if n >= cutoff {
+			goto F
+		}
+		z.v = valueTypeInt
+		z.i = int64(n)
 	} else {
 		z.v = valueTypeUint
-		z.u, err = strconv.ParseUint(stringView(bs), 10, 64)
+		z.u = n
 	}
-	if err != nil && z.v != valueTypeFloat {
-		if v, ok := err.(*strconv.NumError); ok && (v.Err == strconv.ErrRange || v.Err == strconv.ErrSyntax) {
-			z.v = valueTypeFloat
-			z.f, err = strconv.ParseFloat(stringView(bs), 64)
-		}
-	}
+	return
+F:
+	z.v = valueTypeFloat
+	z.f, err = strconv.ParseFloat(stringView(bs), 64)
 	return
 }
 
@@ -1252,7 +1295,6 @@ func (h *JsonHandle) recreateEncDriver(ed encDriver) (v bool) {
 // SetInterfaceExt sets an extension
 func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
 	return h.SetExt(rt, tag, &extWrapper{bytesExtFailer{}, ext})
-	// return h.SetExt(rt, tag, &setExtWrapper{i: ext})
 }
 
 type jsonEncDriverTypicalImpl struct {
@@ -1277,19 +1319,12 @@ func (x *jsonEncDriverGenericImpl) reset() {
 }
 
 func (h *JsonHandle) newEncDriver(e *Encoder) (ee encDriver) {
-	// var hd jsonEncDriver
-	// hd.e = e
-	// hd.h = h
-	// hd.bs = hd.b[:0]
-	// hd.reset()
 	var hd *jsonEncDriver
 	if h.typical() {
-		// println(">>>>>>> typical enc driver")
 		var v jsonEncDriverTypicalImpl
 		ee = &v
 		hd = &v.jsonEncDriver
 	} else {
-		// println(">>>>>>> generic enc driver")
 		var v jsonEncDriverGenericImpl
 		ee = &v
 		hd = &v.jsonEncDriver
@@ -1327,27 +1362,6 @@ func (d *jsonDecDriver) reset() {
 	// d.n.reset()
 }
 
-// func jsonIsFloatBytes(bs []byte) bool {
-// 	for _, v := range bs {
-// 		// if v == '.' || v == 'e' || v == 'E' {
-// 		if jsonIsFloatSet.isset(v) {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
-
-// func jsonIsFloatBytesB2(bs []byte) bool {
-// 	return bytes.IndexByte(bs, '.') != -1 ||
-// 		bytes.IndexByte(bs, 'E') != -1
-// }
-
-func jsonIsFloatBytesB3(bs []byte) bool {
-	return bytes.IndexByte(bs, '.') != -1 ||
-		bytes.IndexByte(bs, 'E') != -1 ||
-		bytes.IndexByte(bs, 'e') != -1
-}
-
 func jsonFloatStrconvFmtPrec(f float64) (fmt byte, prec int) {
 	prec = -1
 	var abs = math.Abs(f)
@@ -1365,6 +1379,45 @@ func jsonFloatStrconvFmtPrec(f float64) (fmt byte, prec int) {
 		} else if _, mod := math.Modf(abs); mod == 0 {
 			prec = 1
 		}
+	}
+	return
+}
+
+// custom-fitted version of strconv.Parse(Ui|I)nt.
+// Also ensures we don't have to search for .eE to determine if a float or not.
+func jsonParseInteger(s []byte) (n uint64, neg, badSyntax, overflow bool) {
+	const maxUint64 = (1<<64 - 1)
+	const cutoff = maxUint64/10 + 1
+
+	if len(s) == 0 {
+		badSyntax = true
+		return
+	}
+	switch s[0] {
+	case '+':
+		s = s[1:]
+	case '-':
+		s = s[1:]
+		neg = true
+	}
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			badSyntax = true
+			return
+		}
+		// unsigned integers don't overflow well on multiplication, so check cutoff here
+		// e.g. (maxUint64-5)*10 doesn't overflow well ...
+		if n >= cutoff {
+			overflow = true
+			return
+		}
+		n *= 10
+		n1 := n + uint64(c-'0')
+		if n1 < n || n1 > maxUint64 {
+			overflow = true
+			return
+		}
+		n = n1
 	}
 	return
 }
