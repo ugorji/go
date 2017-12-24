@@ -1097,6 +1097,7 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 }
 
 func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
+	const cutoff = uint64(1 << uint(64-1))
 	var n uint64
 	var neg, badsyntax, overflow bool
 
@@ -1107,7 +1108,6 @@ func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
 	if badsyntax || overflow {
 		goto F
 	}
-	const cutoff = uint64(1 << uint(64-1))
 	if neg {
 		if n > cutoff {
 			goto F
