@@ -233,3 +233,15 @@ package codec
 //     as we call panic to raise errors, and panic currently prevents inlining.
 //   - Clean up comments in the codebase
 //     Remove all unnecesssary comments, so code is clean.
+//
+// PUNTED:
+//   - To make Handle comparable, make extHandle in BasicHandle a non-embedded pointer,
+//     and use overlay methods on *BasicHandle to call through to extHandle after initializing
+//     the "xh *extHandle" to point to a real slice.
+//   - Before each release, look through and fix padding for each type, to eliminate false sharing
+//     - pooled objects: decNaked, codecFner, typeInfoLoadArray, typeInfo,
+//     - small objects that we allocate and modify much (should be in owned cache lines)
+//     - Objects used a lot (must live in own cache lines)
+//       Decoder, Encoder, etc
+//     - In all above, arrange values modified together to be close to each other.
+//     Note: we MOSTLY care about the bottom part.

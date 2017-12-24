@@ -274,21 +274,23 @@ func (x *wrapBytesExt) UpdateExt(dest interface{}, v interface{}) {
 
 // ----
 
+// timeExt is an extension handler for time.Time, that uses binc model for encoding/decoding time.
+// we used binc model, as that is the only custom time representation that we designed ourselves.
 type timeExt struct{}
 
 func (x timeExt) WriteExt(v interface{}) (bs []byte) {
 	switch v2 := v.(type) {
 	case time.Time:
-		bs = encodeTime(v2)
+		bs = bincEncodeTime(v2)
 	case *time.Time:
-		bs = encodeTime(*v2)
+		bs = bincEncodeTime(*v2)
 	default:
 		panic(fmt.Errorf("unsupported format for time conversion: expecting time.Time; got %T", v2))
 	}
 	return
 }
 func (x timeExt) ReadExt(v interface{}, bs []byte) {
-	tt, err := decodeTime(bs)
+	tt, err := bincDecodeTime(bs)
 	if err != nil {
 		panic(err)
 	}

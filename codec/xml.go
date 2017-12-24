@@ -501,7 +501,7 @@ func (h *XMLHandle) newDecDriver(d *Decoder) decDriver {
 }
 
 func (h *XMLHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
-	return h.SetExt(rt, tag, &setExtWrapper{i: ext})
+	return h.SetExt(rt, tag, &extWrapper{bytesExtFailer{}, ext})
 }
 
 var _ decDriver = (*xmlDecDriver)(nil)

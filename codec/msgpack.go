@@ -291,10 +291,6 @@ func (e *msgpackEncDriver) EncodeString(c charEncoding, s string) {
 	}
 }
 
-// func (e *msgpackEncDriver) EncodeSymbol(v string) {
-// 	e.EncodeString(cUTF8, v)
-// }
-
 func (e *msgpackEncDriver) EncodeStringBytes(c charEncoding, bs []byte) {
 	if bs == nil {
 		e.EncodeNil()
@@ -600,28 +596,12 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 	case valueTypeArray:
 		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		return
-		// clen = d.readContainerLen(msgpackContainerList)
-		// // ensure everything after is one byte each
-		// for i := 0; i < clen; i++ {
-		// 	d.readNextBd()
-		// 	if d.bd == mpNil {
-		// 		bs = append(bs, 0)
-		// 	} else if d.bd == mpUint8 {
-		// 		bs = append(bs, d.r.readn1())
-		// 	} else {
-		// 		d.d.errorf("cannot read non-byte into a byte array")
-		// 		return
-		// 	}
-		// }
-		// d.bdRead = false
-		// return bs
 	default:
 		d.d.errorf("invalid container type: expecting bin|str|array, got: 0x%x", uint8(vt))
 		return
 	}
 
 	// these are (bin|str)(8|16|32)
-	// println("DecodeBytes: clen: ", clen)
 	d.bdRead = false
 	// bytes may be nil, so handle it. if nil, clen=-1.
 	if clen < 0 {
@@ -868,6 +848,7 @@ type MsgpackHandle struct {
 	// type is provided (e.g. decoding into a nil interface{}), you get back
 	// a []byte or string based on the setting of RawToString.
 	WriteExt bool
+
 	binaryEncodingType
 	noElemSeparators
 }
@@ -877,7 +858,7 @@ func (h *MsgpackHandle) Name() string { return "msgpack" }
 
 // SetBytesExt sets an extension
 func (h *MsgpackHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
-	return h.SetExt(rt, tag, &setExtWrapper{b: ext})
+	return h.SetExt(rt, tag, &extWrapper{ext, interfaceExtFailer{}})
 }
 
 func (h *MsgpackHandle) newEncDriver(e *Encoder) encDriver {

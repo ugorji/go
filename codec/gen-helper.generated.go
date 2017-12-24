@@ -106,7 +106,12 @@ func (f genHelperEncoder) EncBasicHandle() *BasicHandle {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncBinary() bool {
-	return f.e.cf.be // f.e.hh.isBinaryEncoding()
+	return f.e.be // f.e.hh.isBinaryEncoding()
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) IsJSONHandle() bool {
+	return f.e.js
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -148,11 +153,6 @@ func (f genHelperEncoder) TimeRtidIfBinc() (v uintptr) { return }
 // 		return timeTypId
 // 	}
 // }
-
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperEncoder) IsJSONHandle() bool {
-	return f.e.cf.js
-}
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) I2Rtid(v interface{}) uintptr {
