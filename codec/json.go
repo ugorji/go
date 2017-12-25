@@ -17,16 +17,6 @@ package codec
 // Note:
 //   - we cannot use strconv.Quote and strconv.Unquote because json quotes/unquotes differently.
 //     We implement it here.
-//   - Also, strconv.ParseXXX for floats and integers
-//     - only works on strings resulting in unnecessary allocation and []byte-string conversion.
-//     - it does a lot of redundant checks, because json numbers are simpler that what it supports.
-//   - We parse numbers (floats and integers) directly here.
-//     We only delegate parsing floats if it is a hairy float which could cause a loss of precision.
-//     In that case, we delegate to strconv.ParseFloat.
-//
-// Note:
-//   - encode does not beautify. There is no whitespace when encoding.
-//   - rpc calls which take single integer arguments or write single numeric arguments will need care.
 
 // Top-level methods of json(End|Dec)Driver (which are implementations of (en|de)cDriver
 // MUST not call one-another.
@@ -46,15 +36,9 @@ import (
 //--------------------------------
 
 var jsonLiterals = [...]byte{
-	'"',
-	't', 'r', 'u', 'e',
-	'"',
-	'"',
-	'f', 'a', 'l', 's', 'e',
-	'"',
-	'"',
-	'n', 'u', 'l', 'l',
-	'"',
+	'"', 't', 'r', 'u', 'e', '"',
+	'"', 'f', 'a', 'l', 's', 'e', '"',
+	'"', 'n', 'u', 'l', 'l', '"',
 }
 
 const (
@@ -85,8 +69,6 @@ const (
 
 	jsonSpacesOrTabsLen = 128
 
-	jsonU4SetErrVal = 128
-
 	jsonAlwaysReturnInternString = false
 )
 
@@ -98,7 +80,6 @@ var (
 	jsonCharSafeSet       bitset128
 	jsonCharWhitespaceSet bitset256
 	jsonNumSet            bitset256
-	// jsonIsFloatSet        bitset256
 )
 
 func init() {
@@ -652,16 +633,21 @@ func (d *jsonDecDriver) CheckBreak() bool {
 	return d.tok == '}' || d.tok == ']'
 }
 
-// For the ReadXXX methods below, we could just delegate to readContainerStateXXX.
-// Instead, we write these explicitly to save on the extra function call.
+// For the ReadXXX methods below, we could just delegate to helper functions
+// readContainerState(c containerState, xc uint8, check bool)
+// - ReadArrayElem would become:
+//   readContainerState(containerArrayElem, ',', d.c != containerArrayStart)
+//
+// However, until mid-stack inlining (go 1.10?) comes, supporting inlining of
+// oneliners, we explicitly write them all 5 out to elide the extra func call.
+// TODO: For Go 1.10, if inlined, consider consolidating these.
 
 func (d *jsonDecDriver) ReadArrayElem() {
-	// readContainerState(containerArrayElem, ',', d.c != containerArrayStart)
+	const xc uint8 = ','
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
 	if d.c != containerArrayStart {
-		const xc uint8 = ','
 		if d.tok != xc {
 			d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 		}
@@ -671,10 +657,10 @@ func (d *jsonDecDriver) ReadArrayElem() {
 }
 
 func (d *jsonDecDriver) ReadArrayEnd() {
+	const xc uint8 = ']'
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
-	const xc uint8 = ']'
 	if d.tok != xc {
 		d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 	}
@@ -683,11 +669,11 @@ func (d *jsonDecDriver) ReadArrayEnd() {
 }
 
 func (d *jsonDecDriver) ReadMapElemKey() {
+	const xc uint8 = ','
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
 	if d.c != containerMapStart {
-		const xc uint8 = ','
 		if d.tok != xc {
 			d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 		}
@@ -697,10 +683,10 @@ func (d *jsonDecDriver) ReadMapElemKey() {
 }
 
 func (d *jsonDecDriver) ReadMapElemValue() {
+	const xc uint8 = ':'
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
-	const xc uint8 = ':'
 	if d.tok != xc {
 		d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 	}
@@ -709,40 +695,16 @@ func (d *jsonDecDriver) ReadMapElemValue() {
 }
 
 func (d *jsonDecDriver) ReadMapEnd() {
+	const xc uint8 = '}'
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
-	const xc uint8 = '}'
 	if d.tok != xc {
 		d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
 	}
 	d.tok = 0
 	d.c = containerMapEnd
 }
-
-// func (d *jsonDecDriver) readContainerStateCheck(c containerState, xc uint8, check bool) {
-// 	if d.tok == 0 {
-// 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-// 	}
-// 	if check {
-// 		if d.tok != xc {
-// 			d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
-// 		}
-// 		d.tok = 0
-// 	}
-// 	d.c = c
-// }
-
-// func (d *jsonDecDriver) readContainerState(c containerState, xc uint8) {
-// 	if d.tok == 0 {
-// 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-// 	}
-// 	if d.tok != xc {
-// 		d.d.errorf("expect char '%c' but got char '%c'", xc, d.tok)
-// 	}
-// 	d.tok = 0
-// 	d.c = c
-// }
 
 func (d *jsonDecDriver) readLit(length, fromIdx uint8) {
 	bs := d.r.readx(int(length))
@@ -847,9 +809,12 @@ func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 	bs := d.decNumBytes()
 	n, neg, badsyntax, overflow := jsonParseInteger(bs)
 	if overflow {
-		d.d.errorf("overflow parsing integer: %s", bs)
-	} else if neg || badsyntax {
-		d.d.errorf("invalid syntax for integer: %s", bs)
+		d.d.errorf("overflow parsing unsigned integer: %s", bs)
+	} else if neg {
+		d.d.errorf("minus found parsing unsigned integer: %s", bs)
+	} else if badsyntax {
+		// fallback: try to decode as float, and cast
+		n = d.decUint64ViaFloat(stringView(bs))
 	}
 	return n
 }
@@ -861,8 +826,15 @@ func (d *jsonDecDriver) DecodeInt64() (i int64) {
 	if overflow {
 		d.d.errorf("overflow parsing integer: %s", bs)
 	} else if badsyntax {
-		d.d.errorf("invalid syntax for integer: %s", bs)
-	} else if neg {
+		// d.d.errorf("invalid syntax for integer: %s", bs)
+		// fallback: try to decode as float, and cast
+		if neg {
+			n = d.decUint64ViaFloat(stringView(bs[1:]))
+		} else {
+			n = d.decUint64ViaFloat(stringView(bs))
+		}
+	}
+	if neg {
 		if n > cutoff {
 			d.d.errorf("overflow parsing integer: %s", bs)
 		}
@@ -874,6 +846,21 @@ func (d *jsonDecDriver) DecodeInt64() (i int64) {
 		i = int64(n)
 	}
 	return
+}
+
+func (d *jsonDecDriver) decUint64ViaFloat(s string) (u uint64) {
+	f, err := strconv.ParseFloat(s, 64)
+	if err != nil {
+		d.d.errorf("invalid syntax for integer: %s", s)
+		// d.d.errorv(err)
+	}
+	fi, ff := math.Modf(f)
+	if ff > 0 {
+		d.d.errorf("fractional part found parsing integer: %s", s)
+	} else if fi > float64(math.MaxUint64) {
+		d.d.errorf("overflow parsing integer: %s", s)
+	}
+	return uint64(fi)
 }
 
 func (d *jsonDecDriver) DecodeFloat64() (f float64) {
@@ -1209,22 +1196,23 @@ func (d *jsonDecDriver) DecodeNaked() {
 //
 // Json is comprehensively supported:
 //    - decodes numbers into interface{} as int, uint or float64
+//      based on how the number looks and some config parameters e.g. PreferFloat, SignedInt, etc.
+//    - decode integers from float formatted numbers e.g. 1.27e+8
+//    - decode any json value (numbers, bool, etc) from quoted strings
 //    - configurable way to encode/decode []byte .
 //      by default, encodes and decodes []byte using base64 Std Encoding
 //    - UTF-8 support for encoding and decoding
 //
 // It has better performance than the json library in the standard library,
-// by leveraging the performance improvements of the codec library and
-// minimizing allocations.
+// by leveraging the performance improvements of the codec library.
 //
 // In addition, it doesn't read more bytes than necessary during a decode, which allows
 // reading multiple values from a stream containing json and non-json content.
 // For example, a user can read a json value, then a cbor value, then a msgpack value,
 // all from the same stream in sequence.
 //
-// Note that, when decoding quoted strings, invalid UTF-8 or invalid UTF-16 surrogate pairs
-// are not treated as an error.
-// Instead, they are replaced by the Unicode replacement character U+FFFD.
+// Note that, when decoding quoted strings, invalid UTF-8 or invalid UTF-16 surrogate pairs are
+// not treated as an error. Instead, they are replaced by the Unicode replacement character U+FFFD.
 type JsonHandle struct {
 	textEncodingType
 	BasicHandle
@@ -1245,7 +1233,7 @@ type JsonHandle struct {
 	//   - if 'A', then encode all integers as a json string
 	//             containing the exact integer representation as a decimal.
 	//   - else    encode all integers as a json number (default)
-	IntegerAsString uint8
+	IntegerAsString byte
 
 	// HTMLCharsAsIs controls how to encode some special characters to html: < > &
 	//
@@ -1272,6 +1260,7 @@ type JsonHandle struct {
 	MapKeyAsString bool
 
 	// ---- cache line
+	// Note: below, we store hardly-used items e.g. RawBytesExt is cached in the (en|de)cDriver.
 
 	// RawBytesExt, if configured, is used to encode and decode raw bytes in a custom way.
 	// If not configured, raw bytes are encoded to/from base64 text.
@@ -1423,11 +1412,6 @@ func jsonParseInteger(s []byte) (n uint64, neg, badSyntax, overflow bool) {
 	}
 	return
 }
-
-// // jsonU4SetChk returns 0, 1, 2 or 3
-// func jsonU4SetChk(b byte) (v byte) {
-// 	return json2U4Set.get(b)
-// }
 
 var _ decDriver = (*jsonDecDriver)(nil)
 var _ encDriver = (*jsonEncDriverGenericImpl)(nil)
