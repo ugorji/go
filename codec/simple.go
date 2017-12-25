@@ -232,13 +232,17 @@ func (d *simpleDecDriver) ContainerType() (vt valueType) {
 	switch d.bd {
 	case simpleVdNil:
 		return valueTypeNil
-	case simpleVdByteArray, simpleVdByteArray + 1, simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
+	case simpleVdByteArray, simpleVdByteArray + 1,
+		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		return valueTypeBytes
-	case simpleVdString, simpleVdString + 1, simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
+	case simpleVdString, simpleVdString + 1,
+		simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
 		return valueTypeString
-	case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2, simpleVdArray + 3, simpleVdArray + 4:
+	case simpleVdArray, simpleVdArray + 1,
+		simpleVdArray + 2, simpleVdArray + 3, simpleVdArray + 4:
 		return valueTypeArray
-	case simpleVdMap, simpleVdMap + 1, simpleVdMap + 2, simpleVdMap + 3, simpleVdMap + 4:
+	case simpleVdMap, simpleVdMap + 1,
+		simpleVdMap + 2, simpleVdMap + 3, simpleVdMap + 4:
 		return valueTypeMap
 		// case simpleVdTime:
 		// 	return valueTypeTime
@@ -286,7 +290,7 @@ func (d *simpleDecDriver) decCheckInteger() (ui uint64, neg bool) {
 		ui = uint64(bigen.Uint64(d.r.readx(8)))
 		neg = true
 	default:
-		d.d.errorf("decIntAny: Integer only valid from pos/neg integer1..8. Invalid descriptor: %v", d.bd)
+		d.d.errorf("Integer only valid from pos/neg integer1..8. Invalid descriptor: %v", d.bd)
 		return
 	}
 	// don't do this check, because callers may only want the unsigned value.
@@ -506,10 +510,11 @@ func (d *simpleDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs [
 			return
 		}
 		xbs = d.r.readx(l)
-	case simpleVdByteArray, simpleVdByteArray + 1, simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
+	case simpleVdByteArray, simpleVdByteArray + 1,
+		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		xbs = d.DecodeBytes(nil, true)
 	default:
-		d.d.errorf("Invalid descriptor for extensions (Expecting extensions or byte array). Got: 0x%x", d.bd)
+		d.d.errorf("Invalid descriptor - expecting extensions/bytearray, got: 0x%x", d.bd)
 		return
 	}
 	d.bdRead = false
@@ -553,10 +558,12 @@ func (d *simpleDecDriver) DecodeNaked() {
 	case simpleVdTime:
 		n.v = valueTypeTime
 		n.t = d.DecodeTime()
-	case simpleVdString, simpleVdString + 1, simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
+	case simpleVdString, simpleVdString + 1,
+		simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
 		n.v = valueTypeString
 		n.s = d.DecodeString()
-	case simpleVdByteArray, simpleVdByteArray + 1, simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
+	case simpleVdByteArray, simpleVdByteArray + 1,
+		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		n.v = valueTypeBytes
 		n.l = d.DecodeBytes(nil, false)
 	case simpleVdExt, simpleVdExt + 1, simpleVdExt + 2, simpleVdExt + 3, simpleVdExt + 4:
@@ -564,7 +571,8 @@ func (d *simpleDecDriver) DecodeNaked() {
 		l := d.decLen()
 		n.u = uint64(d.r.readn1())
 		n.l = d.r.readx(l)
-	case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2, simpleVdArray + 3, simpleVdArray + 4:
+	case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2,
+		simpleVdArray + 3, simpleVdArray + 4:
 		n.v = valueTypeArray
 		decodeFurther = true
 	case simpleVdMap, simpleVdMap + 1, simpleVdMap + 2, simpleVdMap + 3, simpleVdMap + 4:

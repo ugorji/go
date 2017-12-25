@@ -388,7 +388,7 @@ type Selfer interface {
 	CodecDecodeSelf(*Decoder)
 }
 
-// MapBySlice is a tag interface that denotes a slice which should be encoded as a map in the stream.
+// MapBySlice is a tag interface that denotes wrapped slice should encode as a map in the stream.
 // The slice contains a sequence of key-value pairs.
 // This affords storing a map in a specific sequence in the stream.
 //
@@ -463,20 +463,24 @@ type Handle interface {
 
 // Raw represents raw formatted bytes.
 // We "blindly" store it during encode and retrieve the raw bytes during decode.
-// Note: it is dangerous during encode, so we may gate the behaviour behind an Encode flag which must be explicitly set.
+// Note: it is dangerous during encode, so we may gate the behaviour
+// behind an Encode flag which must be explicitly set.
 type Raw []byte
 
 // RawExt represents raw unprocessed extension data.
-// Some codecs will decode extension data as a *RawExt if there is no registered extension for the tag.
+// Some codecs will decode extension data as a *RawExt
+// if there is no registered extension for the tag.
 //
-// Only one of Data or Value is nil. If Data is nil, then the content of the RawExt is in the Value.
+// Only one of Data or Value is nil.
+// If Data is nil, then the content of the RawExt is in the Value.
 type RawExt struct {
 	Tag uint64
-	// Data is the []byte which represents the raw ext. If Data is nil, ext is exposed in Value.
-	// Data is used by codecs (e.g. binc, msgpack, simple) which do custom serialization of the types
+	// Data is the []byte which represents the raw ext. If nil, ext is exposed in Value.
+	// Data is used by codecs (e.g. binc, msgpack, simple) which do custom serialization of types
 	Data []byte
 	// Value represents the extension, if Data is nil.
-	// Value is used by codecs (e.g. cbor, json) which use the format to do custom serialization of the types.
+	// Value is used by codecs (e.g. cbor, json) which leverage the format to do
+	// custom serialization of the types.
 	Value interface{}
 }
 
@@ -485,24 +489,30 @@ type RawExt struct {
 type BytesExt interface {
 	// WriteExt converts a value to a []byte.
 	//
-	// Note: v *may* be a pointer to the extension type, if the extension type was a struct or array.
+	// Note: v is a pointer iff the registered extension type is a struct or array kind.
 	WriteExt(v interface{}) []byte
 
 	// ReadExt updates a value from a []byte.
+	//
+	// Note: dst is always a pointer kind to the registered extension type.
 	ReadExt(dst interface{}, src []byte)
 }
 
 // InterfaceExt handles custom (de)serialization of types to/from another interface{} value.
 // The Encoder or Decoder will then handle the further (de)serialization of that known type.
 //
-// It is used by codecs (e.g. cbor, json) which use the format to do custom serialization of the types.
+// It is used by codecs (e.g. cbor, json) which use the format to do custom serialization of types.
 type InterfaceExt interface {
-	// ConvertExt converts a value into a simpler interface for easy encoding e.g. convert time.Time to int64.
+	// ConvertExt converts a value into a simpler interface for easy encoding
+	// e.g. convert time.Time to int64.
 	//
-	// Note: v *may* be a pointer to the extension type, if the extension type was a struct or array.
+	// Note: v is a pointer iff the registered extension type is a struct or array kind.
 	ConvertExt(v interface{}) interface{}
 
-	// UpdateExt updates a value from a simpler interface for easy decoding e.g. convert int64 to time.Time.
+	// UpdateExt updates a value from a simpler interface for easy decoding
+	// e.g. convert int64 to time.Time.
+	//
+	// Note: dst is always a pointer kind to the registered extension type.
 	UpdateExt(dst interface{}, src interface{})
 }
 
@@ -1169,7 +1179,8 @@ func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
 	//       and iteration using equals is faster than maps there
 	flen := rt.NumField()
 	if flen > (1<<maxLevelsEmbedding - 1) {
-		panicv.errorf("codec: types with more than %v fields are not supported - has %v fields", (1<<maxLevelsEmbedding - 1), flen)
+		panicv.errorf("codec: types with > %v fields are not supported - has %v fields",
+			(1<<maxLevelsEmbedding - 1), flen)
 	}
 LOOP:
 	for j, jlen := uint16(0), uint16(flen); j < jlen; j++ {
@@ -1266,7 +1277,8 @@ LOOP:
 
 		// si.ikind = int(f.Type.Kind())
 		if len(indexstack) > maxLevelsEmbedding-1 {
-			panicv.errorf("codec: only supports up to %v depth of embedding - type has %v depth", maxLevelsEmbedding-1, len(indexstack))
+			panicv.errorf("codec: only supports up to %v depth of embedding - type has %v depth",
+				maxLevelsEmbedding-1, len(indexstack))
 		}
 		si.nis = uint8(len(indexstack)) + 1
 		copy(si.is[:], indexstack)
@@ -1389,45 +1401,7 @@ func panicValToErr(h errstrDecorator, v interface{}, err *error) {
 
 func isImmutableKind(k reflect.Kind) (v bool) {
 	return immutableKindsSet[k]
-	// return false ||
-	// 	k == reflect.Int ||
-	// 	k == reflect.Int8 ||
-	// 	k == reflect.Int16 ||
-	// 	k == reflect.Int32 ||
-	// 	k == reflect.Int64 ||
-	// 	k == reflect.Uint ||
-	// 	k == reflect.Uint8 ||
-	// 	k == reflect.Uint16 ||
-	// 	k == reflect.Uint32 ||
-	// 	k == reflect.Uint64 ||
-	// 	k == reflect.Uintptr ||
-	// 	k == reflect.Float32 ||
-	// 	k == reflect.Float64 ||
-	// 	k == reflect.Bool ||
-	// 	k == reflect.String
 }
-
-// func timeLocUTCName(tzint int16) string {
-// 	if tzint == 0 {
-// 		return "UTC"
-// 	}
-// 	var tzname = []byte("UTC+00:00")
-// 	//tzname := fmt.Sprintf("UTC%s%02d:%02d", tzsign, tz/60, tz%60) //perf issue using Sprintf. inline below.
-// 	//tzhr, tzmin := tz/60, tz%60 //faster if u convert to int first
-// 	var tzhr, tzmin int16
-// 	if tzint < 0 {
-// 		tzname[3] = '-' // (TODO: verify. this works here)
-// 		tzhr, tzmin = -tzint/60, (-tzint)%60
-// 	} else {
-// 		tzhr, tzmin = tzint/60, tzint%60
-// 	}
-// 	tzname[4] = timeDigits[tzhr/10]
-// 	tzname[5] = timeDigits[tzhr%10]
-// 	tzname[7] = timeDigits[tzmin/10]
-// 	tzname[8] = timeDigits[tzmin%10]
-// 	return string(tzname)
-// 	//return time.FixedZone(string(tzname), int(tzint)*60)
-// }
 
 // ----
 
@@ -2203,3 +2177,44 @@ func (must) Float(s float64, err error) float64 {
 	}
 	return s
 }
+
+// func isImmutableKind(k reflect.Kind) (v bool) {
+// 	return false ||
+// 		k == reflect.Int ||
+// 		k == reflect.Int8 ||
+// 		k == reflect.Int16 ||
+// 		k == reflect.Int32 ||
+// 		k == reflect.Int64 ||
+// 		k == reflect.Uint ||
+// 		k == reflect.Uint8 ||
+// 		k == reflect.Uint16 ||
+// 		k == reflect.Uint32 ||
+// 		k == reflect.Uint64 ||
+// 		k == reflect.Uintptr ||
+// 		k == reflect.Float32 ||
+// 		k == reflect.Float64 ||
+// 		k == reflect.Bool ||
+// 		k == reflect.String
+// }
+
+// func timeLocUTCName(tzint int16) string {
+// 	if tzint == 0 {
+// 		return "UTC"
+// 	}
+// 	var tzname = []byte("UTC+00:00")
+// 	//tzname := fmt.Sprintf("UTC%s%02d:%02d", tzsign, tz/60, tz%60) //perf issue using Sprintf. inline below.
+// 	//tzhr, tzmin := tz/60, tz%60 //faster if u convert to int first
+// 	var tzhr, tzmin int16
+// 	if tzint < 0 {
+// 		tzname[3] = '-' // (TODO: verify. this works here)
+// 		tzhr, tzmin = -tzint/60, (-tzint)%60
+// 	} else {
+// 		tzhr, tzmin = tzint/60, tzint%60
+// 	}
+// 	tzname[4] = timeDigits[tzhr/10]
+// 	tzname[5] = timeDigits[tzhr%10]
+// 	tzname[7] = timeDigits[tzmin/10]
+// 	tzname[8] = timeDigits[tzmin%10]
+// 	return string(tzname)
+// 	//return time.FixedZone(string(tzname), int(tzint)*60)
+// }

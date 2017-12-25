@@ -120,9 +120,12 @@ func (h *noopDrv) ReadArrayStart() int { h.start(false); return h.m(10) }
 
 func (h *noopDrv) ContainerType() (vt valueType) {
 	// return h.m(2) == 0
-	// handle kStruct, which will bomb is it calls this and doesn't get back a map or array.
-	// consequently, if the return value is not map or array, reset it to one of them based on h.m(7) % 2
-	// for kstruct: at least one out of every 2 times, return one of valueTypeMap or Array (else kstruct bombs)
+	// handle kStruct, which will bomb is it calls this and
+	// doesn't get back a map or array.
+	// consequently, if the return value is not map or array,
+	// reset it to one of them based on h.m(7) % 2
+	// for kstruct: at least one out of every 2 times,
+	// return one of valueTypeMap or Array (else kstruct bombs)
 	// however, every 10th time it is called, we just return something else.
 	var vals = [...]valueType{valueTypeArray, valueTypeMap}
 	//  ------------ TAKE ------------
@@ -151,7 +154,8 @@ func (h *noopDrv) ContainerType() (vt valueType) {
 	// }
 	// return valueTypeUnset
 	// TODO: may need to tweak this so it works.
-	// if h.ct == valueTypeMap && vt == valueTypeArray || h.ct == valueTypeArray && vt == valueTypeMap {
+	// if h.ct == valueTypeMap && vt == valueTypeArray ||
+	// 	h.ct == valueTypeArray && vt == valueTypeMap {
 	// 	h.cb = !h.cb
 	// 	h.ct = vt
 	// 	return h.cb

@@ -146,11 +146,12 @@ type DecodeOptions struct {
 	// If nil (unset), we default to []interface{} for all formats.
 	SliceType reflect.Type
 
-	// MaxInitLen defines the maxinum initial length that we "make" a collection (string, slice, map, chan).
-	// If 0 or negative, we default to a sensible value based on the size of an element in the collection.
+	// MaxInitLen defines the maxinum initial length that we "make" a collection
+	// (string, slice, map, chan). If 0 or negative, we default to a sensible value
+	// based on the size of an element in the collection.
 	//
 	// For example, when decoding, a stream may say that it has 2^64 elements.
-	// We should not auto-matically provision a slice of that length, to prevent Out-Of-Memory crash.
+	// We should not auto-matically provision a slice of that size, to prevent Out-Of-Memory crash.
 	// Instead, we provision up to MaxInitLen, fill that up, and start appending after that.
 	MaxInitLen int
 
@@ -1190,7 +1191,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			} else {
 				d.structFieldNotFound(-1, rvkencname)
 			}
-			// keepAlive4StringView(rvkencnameB) // maintain ref 4 stringView // not needed, as reference is outside loop
+			// keepAlive4StringView(rvkencnameB) // not needed, as reference is outside loop
 		}
 		dd.ReadMapEnd()
 	} else if ctyp == valueTypeArray {
@@ -1244,7 +1245,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 		// you can only decode bytes or string in the stream into a slice or array of bytes
 		if !(ti.rtid == uint8SliceTypId || rtelem0.Kind() == reflect.Uint8) {
-			d.errorf("bytes or string in the stream must be decoded into a slice or array of bytes, not %v", ti.rt)
+			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		if f.seq == seqTypeChan {
 			bs2 := dd.DecodeBytes(nil, true)
@@ -1393,10 +1394,11 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 					d.arrayCannotExpand(rvlen, j+1)
 					decodeIntoBlank = true
 				} else { // if f.seq == seqTypeSlice
-					// rv = reflect.Append(rv, reflect.Zero(rtelem0)) // uses append logic, plus varargs
+					// rv = reflect.Append(rv, reflect.Zero(rtelem0)) // append logic + varargs
 					var rvcap2 int
 					var rvErrmsg2 string
-					rv9, rvcap2, rvChanged, rvErrmsg2 = expandSliceRV(rv, ti.rt, rvCanset, rtelem0Size, 1, rvlen, rvcap)
+					rv9, rvcap2, rvChanged, rvErrmsg2 =
+						expandSliceRV(rv, ti.rt, rvCanset, rtelem0Size, 1, rvlen, rvcap)
 					if rvErrmsg2 != "" {
 						d.errorf(rvErrmsg2)
 					}

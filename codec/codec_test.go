@@ -211,18 +211,8 @@ func (x *testUnixNanoTimeExt) ReadExt(v interface{}, bs []byte) {
 	*v2 = time.Unix(0, int64(ui)).UTC()
 }
 func (x *testUnixNanoTimeExt) ConvertExt(v interface{}) interface{} {
-	v2 := v.(*time.Time) // structs are encoded by passing the value
+	v2 := v.(*time.Time) // structs are encoded by passing the ptr
 	return v2.UTC().UnixNano()
-	// return x.ts
-	// switch v2 := v.(type) {
-	// case time.Time:
-	// 	x.ts = v2.UTC().UnixNano()
-	// case *time.Time:
-	// 	x.ts = v2.UTC().UnixNano()
-	// default:
-	// 	panic(fmt.Sprintf("unsupported format for time conversion: expecting time.Time; got %T", v))
-	// }
-	// return &x.ts
 }
 
 func (x *testUnixNanoTimeExt) UpdateExt(dest interface{}, v interface{}) {

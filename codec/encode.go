@@ -258,25 +258,8 @@ func (e *Encoder) rawExt(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) ext(f *codecFnInfo, rv reflect.Value) {
-	// if this is a struct|array and it was addressable, then pass the address directly (not the value)
-	// if k := rv.Kind(); (k == reflect.Struct || k == reflect.Array) && rv.CanAddr() {
-	// 	rv = rv.Addr()
-	// }
 	e.e.EncodeExt(rv2i(rv), f.xfTag, f.xfFn, e)
 }
-
-// func rviptr(rv reflect.Value) (v interface{}) {
-// 	// If a non-pointer was passed to Encode(), then that value is not addressable.
-// 	// Take addr if addressable, else copy value to an addressable value.
-// 	if rv.CanAddr() {
-// 		v = rv2i(rv.Addr())
-// 	} else {
-// 		rv2 := reflect.New(rv.Type())
-// 		rv2.Elem().Set(rv)
-// 		v = rv2i(rv2)
-// 	}
-// 	return v
-// }
 
 func (e *Encoder) selferMarshal(f *codecFnInfo, rv reflect.Value) {
 	rv2i(rv).(Selfer).CodecEncodeSelf(e)
@@ -1037,7 +1020,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // However, there are instances where the encoded stream has mapping keys encoded as numbers.
 // For example, some cbor streams have keys as integer codes in the stream, but they should map
 // to fields in a structured object. Consequently, a struct is the natural representation in code.
-// For these, you can configure the struct to encode/decode the keys as numbers (instead of string).
+// For these, configure the struct to encode/decode the keys as numbers (instead of string).
 // This is done with the int,uint or float option on the _struct field (see above).
 //
 // However, struct values may encode as arrays. This happens when:
@@ -1083,7 +1066,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // The mode of encoding is based on the type of the value. When a value is seen:
 //   - If a Selfer, call its CodecEncodeSelf method
 //   - If an extension is registered for it, call that extension function
-//   - If it implements encoding.(Binary|Text|JSON)Marshaler, call its Marshal(Binary|Text|JSON) method
+//   - If implements encoding.(Binary|Text|JSON)Marshaler, call Marshal(Binary|Text|JSON) method
 //   - Else encode it based on its reflect.Kind
 //
 // Note that struct field names and keys in map[string]XXX will be treated as symbols.

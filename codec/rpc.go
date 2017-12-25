@@ -211,7 +211,7 @@ type goRpc struct{}
 //   var clientCodec = GoRpc.ClientCodec(conn, handle)
 //
 // Example 2: you can also explicitly create a buffered connection yourself,
-//            and not worry about configuring the buffer sizes in the Handle.
+// and not worry about configuring the buffer sizes in the Handle.
 //   var handle codec.Handle     // codec handle
 //   var conn io.ReadWriteCloser // connection got from a socket
 //   var bufconn = struct {      // bufconn here is a buffered io.ReadWriteCloser

@@ -98,10 +98,18 @@ type msgpackContainerType struct {
 }
 
 var (
-	msgpackContainerStr  = msgpackContainerType{32, mpFixStrMin, mpStr8, mpStr16, mpStr32, true, true, false}
-	msgpackContainerBin  = msgpackContainerType{0, 0, mpBin8, mpBin16, mpBin32, false, true, true}
-	msgpackContainerList = msgpackContainerType{16, mpFixArrayMin, 0, mpArray16, mpArray32, true, false, false}
-	msgpackContainerMap  = msgpackContainerType{16, mpFixMapMin, 0, mpMap16, mpMap32, true, false, false}
+	msgpackContainerStr = msgpackContainerType{
+		32, mpFixStrMin, mpStr8, mpStr16, mpStr32, true, true, false,
+	}
+	msgpackContainerBin = msgpackContainerType{
+		0, 0, mpBin8, mpBin16, mpBin32, false, true, true,
+	}
+	msgpackContainerList = msgpackContainerType{
+		16, mpFixArrayMin, 0, mpArray16, mpArray32, true, false, false,
+	}
+	msgpackContainerMap = msgpackContainerType{
+		16, mpFixMapMin, 0, mpMap16, mpMap32, true, false, false,
+	}
 )
 
 //---------------------------------------------
@@ -763,7 +771,7 @@ func (d *msgpackDecDriver) DecodeTime() (t time.Time) {
 		} else if d.bd == mpExt8 && b2 == 12 && d.r.readn1() == mpTimeExtTagU {
 			clen = 12
 		} else {
-			d.d.errorf("invalid sequence of bytes for decoding time as an extension: got 0x%x, 0x%x", d.bd, b2)
+			d.d.errorf("invalid bytes for decoding time as extension: got 0x%x, 0x%x", d.bd, b2)
 			return
 		}
 	}
@@ -965,7 +973,8 @@ func (c *msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint
 		err = c.read(&b)
 		if err == nil {
 			if b != expectTypeByte {
-				err = fmt.Errorf("Unexpected byte descriptor in header. Expecting %v. Received %v", expectTypeByte, b)
+				err = fmt.Errorf("Unexpected byte descriptor. Expecting %v; Received %v",
+					expectTypeByte, b)
 			} else {
 				err = c.read(msgid)
 				if err == nil {

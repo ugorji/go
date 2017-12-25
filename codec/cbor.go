@@ -440,7 +440,8 @@ func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 			break
 		}
 		if major := d.bd >> 5; major != cborMajorBytes && major != cborMajorText {
-			d.d.errorf("expect bytes or string major type in indefinite string/bytes; got: %v, byte: %v", major, d.bd)
+			d.d.errorf("expect bytes/string major type in indefinite string/bytes;"+
+				" got: %v, byte: %v", major, d.bd)
 			return nil
 		}
 		n := d.decLen()
@@ -537,7 +538,8 @@ func (d *cborDecDriver) decodeTime(xtag uint64) (t time.Time) {
 		case d.bd == cborBdFloat64:
 			f1, f2 := math.Modf(d.DecodeFloat64())
 			t = time.Unix(int64(f1), int64(f2*1e9))
-		case d.bd >= cborBaseUint && d.bd < cborBaseNegInt, d.bd >= cborBaseNegInt && d.bd < cborBaseBytes:
+		case d.bd >= cborBaseUint && d.bd < cborBaseNegInt,
+			d.bd >= cborBaseNegInt && d.bd < cborBaseBytes:
 			t = time.Unix(d.DecodeInt64(), 0)
 		default:
 			d.d.errorf("time.Time can only be decoded from a number (or RFC3339 string)")

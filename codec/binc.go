@@ -501,7 +501,7 @@ func (d *bincDecDriver) decCheckInteger() (ui uint64, neg bool) {
 			return
 		}
 	} else {
-		d.d.errorf("number can only be decoded from uint or int values. d.bd: 0x%x, d.vd: 0x%x", d.bd, d.vd)
+		d.d.errorf("integer can only be decoded from int/uint. d.bd: 0x%x, d.vd: 0x%x", d.bd, d.vd)
 		return
 	}
 	return
@@ -621,7 +621,8 @@ func (d *bincDecDriver) decLenNumber() (v uint64) {
 	return
 }
 
-func (d *bincDecDriver) decStringAndBytes(bs []byte, withString, zerocopy bool) (bs2 []byte, s string) {
+func (d *bincDecDriver) decStringAndBytes(bs []byte, withString, zerocopy bool) (
+	bs2 []byte, s string) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
