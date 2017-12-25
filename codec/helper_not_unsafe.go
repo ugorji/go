@@ -83,7 +83,7 @@ func i2rtid(i interface{}) uintptr {
 // }
 
 // --------------------------
-type atomicTypeInfoSlice struct {
+type atomicTypeInfoSlice struct { // expected to be 2 words
 	v atomic.Value
 }
 

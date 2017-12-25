@@ -74,17 +74,6 @@ const (
 	jsonScratchArrayLen = 64
 )
 
-var (
-	// jsonTabs and jsonSpaces are used as caches for indents
-	jsonTabs, jsonSpaces string
-
-	jsonCharHtmlSafeSet   bitset128
-	jsonCharSafeSet       bitset128
-	jsonCharWhitespaceSet bitset256
-	jsonNumSet            bitset256
-	// jsonIsFloatSet        bitset256
-)
-
 const (
 	// If !jsonValidateSymbols, decoding will be faster, by skipping some checks:
 	//   - If we see first character of null, false or true,
@@ -101,17 +90,22 @@ const (
 	jsonAlwaysReturnInternString = false
 )
 
-func init() {
-	var bs [jsonSpacesOrTabsLen]byte
-	for i := 0; i < jsonSpacesOrTabsLen; i++ {
-		bs[i] = ' '
-	}
-	jsonSpaces = string(bs[:])
+var (
+	// jsonTabs and jsonSpaces are used as caches for indents
+	jsonTabs, jsonSpaces [jsonSpacesOrTabsLen]byte
 
+	jsonCharHtmlSafeSet   bitset128
+	jsonCharSafeSet       bitset128
+	jsonCharWhitespaceSet bitset256
+	jsonNumSet            bitset256
+	// jsonIsFloatSet        bitset256
+)
+
+func init() {
 	for i := 0; i < jsonSpacesOrTabsLen; i++ {
-		bs[i] = '\t'
+		jsonSpaces[i] = ' '
+		jsonTabs[i] = '\t'
 	}
-	jsonTabs = string(bs[:])
 
 	// populate the safe values as true: note: ASCII control characters are (0-31)
 	// jsonCharSafeSet:     all true except (0-31) " \
@@ -230,16 +224,18 @@ func (e *jsonEncDriverTypical) atEndOfEncode() {
 // ----------------
 
 type jsonEncDriverGeneric struct {
-	w  encWriter // encWriter // *encWriterSwitch
-	b  *[jsonScratchArrayLen]byte
-	ds string // indent string
-	d  bool   // indent
-	dt bool   // indent using tabs
-	dl uint16 // indent level
-	ks bool   // map key as string
-	is byte   // integer as string
-	tw bool   // term white space
-	c  containerState
+	w encWriter // encWriter // *encWriterSwitch
+	b *[jsonScratchArrayLen]byte
+	c containerState
+	// ds string // indent string
+	di int8    // indent per
+	d  bool    // indenting?
+	dt bool    // indent using tabs
+	dl uint16  // indent level
+	ks bool    // map key as string
+	is byte    // integer as string
+	tw bool    // term white space
+	_  [7]byte // padding
 }
 
 // indent is done as below:
@@ -252,15 +248,15 @@ func (e *jsonEncDriverGeneric) reset(ee *jsonEncDriver) {
 	e.b = &ee.b
 	e.tw = ee.h.TermWhitespace
 	e.c = 0
-	e.d, e.dt, e.dl, e.ds = false, false, 0, ""
+	e.d, e.dt, e.dl, e.di = false, false, 0, 0
 	h := ee.h
 	if h.Indent > 0 {
 		e.d = true
-		e.ds = jsonSpaces[:h.Indent]
+		e.di = int8(h.Indent)
 	} else if h.Indent < 0 {
 		e.d = true
 		e.dt = true
-		e.ds = jsonTabs[:-(h.Indent)]
+		e.di = int8(-h.Indent)
 	}
 	e.ks = h.MapKeyAsString
 	e.is = h.IntegerAsString
@@ -335,16 +331,19 @@ func (e *jsonEncDriverGeneric) WriteMapEnd() {
 
 func (e *jsonEncDriverGeneric) writeIndent() {
 	e.w.writen1('\n')
-	if x := len(e.ds) * int(e.dl); x <= jsonSpacesOrTabsLen {
-		if e.dt {
-			e.w.writestr(jsonTabs[:x])
-		} else {
-			e.w.writestr(jsonSpaces[:x])
+	x := int(e.di) * int(e.dl)
+	if e.dt {
+		for x > jsonSpacesOrTabsLen {
+			e.w.writeb(jsonTabs[:])
+			x -= jsonSpacesOrTabsLen
 		}
+		e.w.writeb(jsonTabs[:x])
 	} else {
-		for i := uint16(0); i < e.dl; i++ {
-			e.w.writestr(e.ds)
+		for x > jsonSpacesOrTabsLen {
+			e.w.writeb(jsonSpaces[:])
+			x -= jsonSpacesOrTabsLen
 		}
+		e.w.writeb(jsonSpaces[:x])
 	}
 }
 
@@ -604,6 +603,7 @@ type jsonDecDriver struct {
 	b  [jsonScratchArrayLen]byte // scratch 1, used for parsing strings or numbers or time.Time
 	b2 [jsonScratchArrayLen]byte // scratch 2, used only for readUntil, decNumBytes
 
+	_ [3 * 8]byte // padding
 	// n jsonNum
 }
 
@@ -1229,10 +1229,6 @@ type JsonHandle struct {
 	textEncodingType
 	BasicHandle
 
-	// RawBytesExt, if configured, is used to encode and decode raw bytes in a custom way.
-	// If not configured, raw bytes are encoded to/from base64 text.
-	RawBytesExt InterfaceExt
-
 	// Indent indicates how a value is encoded.
 	//   - If positive, indent by that number of spaces.
 	//   - If negative, indent by that number of tabs.
@@ -1274,6 +1270,12 @@ type JsonHandle struct {
 	// Use this to enforce strict json output.
 	// The only caveat is that nil value is ALWAYS written as null (never as "null")
 	MapKeyAsString bool
+
+	// ---- cache line
+
+	// RawBytesExt, if configured, is used to encode and decode raw bytes in a custom way.
+	// If not configured, raw bytes are encoded to/from base64 text.
+	RawBytesExt InterfaceExt
 }
 
 // Name returns the name of the handle: json

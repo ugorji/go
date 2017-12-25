@@ -70,6 +70,7 @@ type cborEncDriver struct {
 	w encWriter
 	h *CborHandle
 	x [8]byte
+	_ [3 * 8]byte // padding
 }
 
 func (e *cborEncDriver) EncodeNil() {
@@ -242,16 +243,17 @@ func (e *cborEncDriver) encStringBytesS(bb byte, v string) {
 // ----------------------
 
 type cborDecDriver struct {
-	d      *Decoder
-	h      *CborHandle
-	r      decReader
-	b      [scratchByteArrayLen]byte
+	d *Decoder
+	h *CborHandle
+	r decReader
+	// b      [scratchByteArrayLen]byte
 	br     bool // bytes reader
 	bdRead bool
 	bd     byte
 	noBuiltInTypes
 	// decNoSeparator
 	decDriverNoopContainerReader
+	_ [3 * 8]byte // padding
 }
 
 func (d *cborDecDriver) readNextBd() {
@@ -470,6 +472,9 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 		d.bdRead = false
 		if bs == nil {
+			if zerocopy {
+				return d.decAppendIndefiniteBytes(d.d.b[:0])
+			}
 			return d.decAppendIndefiniteBytes(zeroByteSlice)
 		}
 		return d.decAppendIndefiniteBytes(bs[:0])
@@ -485,18 +490,18 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		if d.br {
 			return d.r.readx(clen)
 		} else if len(bs) == 0 {
-			bs = d.b[:]
+			bs = d.d.b[:]
 		}
 	}
-	return decByteSlice(d.r, clen, d.d.h.MaxInitLen, bs)
+	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
 }
 
 func (d *cborDecDriver) DecodeString() (s string) {
-	return string(d.DecodeBytes(d.b[:], true))
+	return string(d.DecodeBytes(d.d.b[:], true))
 }
 
 func (d *cborDecDriver) DecodeStringAsBytes() (s []byte) {
-	return d.DecodeBytes(d.b[:], true)
+	return d.DecodeBytes(d.d.b[:], true)
 }
 
 func (d *cborDecDriver) DecodeTime() (t time.Time) {

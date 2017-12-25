@@ -1138,7 +1138,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 	rv.Set(rvn2)
 }
 
-func decStructFieldKey(dd decDriver, keyType valueType, b *[scratchByteArrayLen]byte) (rvkencname []byte) {
+func decStructFieldKey(dd decDriver, keyType valueType, b *[decScratchByteArrayLen]byte) (rvkencname []byte) {
 	// use if-else-if, not switch (which compiles to binary-search)
 	// since keyType is typically valueTypeString, branch prediction is pretty good.
 
@@ -1681,7 +1681,7 @@ type decNaked struct {
 	// ---- cpu cache line boundary?
 	ri, rf, rl, rs, rt, rb reflect.Value // mapping to the primitives above
 
-	// _ [6 * wordSize]byte // padding // TODO: ??? too big padding???
+	_ [6 * 8]byte // padding // TODO: ??? too big padding???
 }
 
 func (n *decNaked) init() {
@@ -1800,6 +1800,8 @@ type decReaderSwitch struct {
 // 	return z.ri.readUntil(in, stop)
 // }
 
+const decScratchByteArrayLen = cacheLineSize - 8
+
 // A Decoder reads and decodes an object from an input stream in the codec format.
 type Decoder struct {
 	panicHdl
@@ -1827,9 +1829,8 @@ type Decoder struct {
 	err error
 
 	// ---- cpu cache line boundary?
-	b  [scratchByteArrayLen]byte
-	is map[string]string                             // used for interning strings
-	_  [cacheLineSize - 8 - scratchByteArrayLen]byte // padding
+	b  [decScratchByteArrayLen]byte // scratch buffer, used by Decoder and xxxEncDrivers
+	is map[string]string            // used for interning strings
 
 	// padding - false sharing help // modify 232 if Decoder struct changes.
 	// _ [cacheLineSize - 232%cacheLineSize]byte

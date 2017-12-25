@@ -61,7 +61,7 @@ type genHelperDecDriver struct {
 }
 
 func (x genHelperDecDriver) DecodeBuiltin(rt uintptr, v interface{}) {}
-func (x genHelperDecDriver) DecStructFieldKey(keyType valueType, buf *[scratchByteArrayLen]byte) []byte {
+func (x genHelperDecDriver) DecStructFieldKey(keyType valueType, buf *[decScratchByteArrayLen]byte) []byte {
 	return decStructFieldKey(x.decDriver, keyType, buf)
 }
 func (x genHelperDecDriver) DecodeInt(bitsize uint8) (i int64) {
@@ -210,7 +210,7 @@ func (f genHelperDecoder) DecScratchBuffer() []byte {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperDecoder) DecScratchArrayBuffer() *[scratchByteArrayLen]byte {
+func (f genHelperDecoder) DecScratchArrayBuffer() *[decScratchByteArrayLen]byte {
 	return &f.d.b
 }
 

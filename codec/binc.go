@@ -60,8 +60,8 @@ type bincEncDriver struct {
 	h *BincHandle
 	w encWriter
 	m map[string]uint16 // symbols
-	b [scratchByteArrayLen]byte
-	s uint16 // symbols sequencer
+	b [16]byte          // scratch, used for encoding numbers - bigendian style
+	s uint16            // symbols sequencer
 	// c containerState
 	encDriverTrackContainerWriter
 	noBuiltInTypes
@@ -328,6 +328,9 @@ type bincDecSymbol struct {
 }
 
 type bincDecDriver struct {
+	decDriverNoopContainerReader
+	noBuiltInTypes
+
 	d      *Decoder
 	h      *BincHandle
 	r      decReader
@@ -336,15 +339,14 @@ type bincDecDriver struct {
 	bd     byte
 	vd     byte
 	vs     byte
-	// noStreamingCodec
-	// decNoSeparator
-	b [scratchByteArrayLen]byte
-
+	_      [3]byte // padding
 	// linear searching on this slice is ok,
 	// because we typically expect < 32 symbols in each stream.
 	s []bincDecSymbol
-	decDriverNoopContainerReader
-	noBuiltInTypes
+
+	// noStreamingCodec
+	// decNoSeparator
+	b [8 * 8]byte // scratch
 }
 
 func (d *bincDecDriver) readNextBd() {

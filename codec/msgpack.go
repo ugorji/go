@@ -114,6 +114,7 @@ type msgpackEncDriver struct {
 	w encWriter
 	h *MsgpackHandle
 	x [8]byte
+	_ [3 * 8]byte // padding
 }
 
 func (e *msgpackEncDriver) EncodeNil() {
@@ -324,10 +325,10 @@ func (e *msgpackEncDriver) writeContainerLen(ct msgpackContainerType, l int) {
 //---------------------------------------------
 
 type msgpackDecDriver struct {
-	d      *Decoder
-	r      decReader // *Decoder decReader decReaderT
-	h      *MsgpackHandle
-	b      [scratchByteArrayLen]byte
+	d *Decoder
+	r decReader // *Decoder decReader decReaderT
+	h *MsgpackHandle
+	// b      [scratchByteArrayLen]byte
 	bd     byte
 	bdRead bool
 	br     bool // bytes reader
@@ -335,6 +336,7 @@ type msgpackDecDriver struct {
 	// noStreamingCodec
 	// decNoSeparator
 	decDriverNoopContainerReader
+	_ [3 * 8]byte // padding
 }
 
 // Note: This returns either a primitive (int, bool, etc) for non-containers,
@@ -594,6 +596,9 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 	case valueTypeString:
 		clen = d.readContainerLen(msgpackContainerStr)
 	case valueTypeArray:
+		if zerocopy && len(bs) == 0 {
+			bs = d.d.b[:]
+		}
 		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		return
 	default:
@@ -611,18 +616,18 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 		if d.br {
 			return d.r.readx(clen)
 		} else if len(bs) == 0 {
-			bs = d.b[:]
+			bs = d.d.b[:]
 		}
 	}
-	return decByteSlice(d.r, clen, d.d.h.MaxInitLen, bs)
+	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
 }
 
 func (d *msgpackDecDriver) DecodeString() (s string) {
-	return string(d.DecodeBytes(d.b[:], true))
+	return string(d.DecodeBytes(d.d.b[:], true))
 }
 
 func (d *msgpackDecDriver) DecodeStringAsBytes() (s []byte) {
-	return d.DecodeBytes(d.b[:], true)
+	return d.DecodeBytes(d.d.b[:], true)
 }
 
 func (d *msgpackDecDriver) readNextBd() {

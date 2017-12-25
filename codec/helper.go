@@ -266,7 +266,7 @@ type typeInfoLoadArray struct {
 	etypes   [typeInfoLoadArrayLen]uintptr
 	sfis     [typeInfoLoadArrayLen]*structFieldInfo
 	sfiidx   [typeInfoLoadArrayLen]sfiIdx
-	_        [32]bool // padding
+	_        [32]byte // padding
 }
 
 // mirror json.Marshaler and json.Unmarshaler here,
@@ -411,6 +411,9 @@ type MapBySlice interface {
 //
 // Deprecated: DO NOT USE DIRECTLY. EXPORTED FOR GODOC BENEFIT. WILL BE REMOVED.
 type BasicHandle struct {
+	// BasicHandle is always a part of a different type.
+	// It doesn't have to fit into it own cache lines.
+
 	// TypeInfos is used to get the type info for any type.
 	//
 	// If not configured, the default TypeInfos is used, which uses struct tag keys: codec, json
@@ -423,7 +426,7 @@ type BasicHandle struct {
 	EncodeOptions
 	DecodeOptions
 	RPCOptions
-	noBuiltInTypeChecker
+	// noBuiltInTypeChecker
 }
 
 func (x *BasicHandle) getBasicHandle() *BasicHandle {
@@ -450,7 +453,7 @@ type Handle interface {
 	newDecDriver(r *Decoder) decDriver
 	isBinary() bool
 	hasElemSeparators() bool
-	IsBuiltinType(rtid uintptr) bool
+	// IsBuiltinType(rtid uintptr) bool
 }
 
 // Raw represents raw formatted bytes.
@@ -568,11 +571,11 @@ func (textEncodingType) isBinary() bool { return false }
 // noBuiltInTypes is embedded into many types which do not support builtins
 // e.g. msgpack, simple, cbor.
 
-type noBuiltInTypeChecker struct{}
+// type noBuiltInTypeChecker struct{}
+// func (noBuiltInTypeChecker) IsBuiltinType(rt uintptr) bool { return false }
+// type noBuiltInTypes struct{ noBuiltInTypeChecker }
 
-func (noBuiltInTypeChecker) IsBuiltinType(rt uintptr) bool { return false }
-
-type noBuiltInTypes struct{ noBuiltInTypeChecker }
+type noBuiltInTypes struct{}
 
 func (noBuiltInTypes) EncodeBuiltin(rt uintptr, v interface{}) {}
 func (noBuiltInTypes) DecodeBuiltin(rt uintptr, v interface{}) {}
@@ -622,9 +625,9 @@ type extHandle []extTypeTagFn
 // To deregister an Ext, call AddExt with nil encfn and/or nil decfn.
 //
 // Deprecated: Use SetBytesExt or SetInterfaceExt on the Handle instead.
-func (o *extHandle) AddExt(
-	rt reflect.Type, tag byte,
-	encfn func(reflect.Value) ([]byte, error), decfn func(reflect.Value, []byte) error) (err error) {
+func (o *extHandle) AddExt(rt reflect.Type, tag byte,
+	encfn func(reflect.Value) ([]byte, error),
+	decfn func(reflect.Value, []byte) error) (err error) {
 	if encfn == nil || decfn == nil {
 		return o.SetExt(rt, uint64(tag), nil)
 	}
@@ -924,22 +927,22 @@ type typeInfo struct {
 	// ---- cpu cache line boundary?
 	// format of marshal type fields below: [btj][mu]p? OR csp?
 
-	bm  bool    // T is a binaryMarshaler
-	bmp bool    // *T is a binaryMarshaler
-	bu  bool    // T is a binaryUnmarshaler
-	bup bool    // *T is a binaryUnmarshaler
-	tm  bool    // T is a textMarshaler
-	tmp bool    // *T is a textMarshaler
-	tu  bool    // T is a textUnmarshaler
-	tup bool    // *T is a textUnmarshaler
-	jm  bool    // T is a jsonMarshaler
-	jmp bool    // *T is a jsonMarshaler
-	ju  bool    // T is a jsonUnmarshaler
-	jup bool    // *T is a jsonUnmarshaler
-	cs  bool    // T is a Selfer
-	csp bool    // *T is a Selfer
-	_   [3]byte // padding
-
+	bm  bool        // T is a binaryMarshaler
+	bmp bool        // *T is a binaryMarshaler
+	bu  bool        // T is a binaryUnmarshaler
+	bup bool        // *T is a binaryUnmarshaler
+	tm  bool        // T is a textMarshaler
+	tmp bool        // *T is a textMarshaler
+	tu  bool        // T is a textUnmarshaler
+	tup bool        // *T is a textUnmarshaler
+	jm  bool        // T is a jsonMarshaler
+	jmp bool        // *T is a jsonMarshaler
+	ju  bool        // T is a jsonUnmarshaler
+	jup bool        // *T is a jsonUnmarshaler
+	cs  bool        // T is a Selfer
+	csp bool        // *T is a Selfer
+	_   [3]byte     // padding
+	_   [4 * 8]byte // padding
 }
 
 // define length beyond which we do a binary search instead of a linear search.
@@ -985,9 +988,11 @@ type rtid2ti struct {
 // It is configured with a set of tag keys, which are used to get
 // configuration for the type.
 type TypeInfos struct {
-	infos atomicTypeInfoSlice // formerly map[uintptr]*typeInfo, now *[]rtid2ti
+	// infos: formerly map[uintptr]*typeInfo, now *[]rtid2ti, 2 words expected
+	infos atomicTypeInfoSlice
 	mu    sync.Mutex
 	tags  []string
+	_     [16]byte // padding
 }
 
 // NewTypeInfos creates a TypeInfos given a set of struct tags keys.
@@ -1396,6 +1401,7 @@ type codecFn struct {
 	i  codecFnInfo
 	fe func(*Encoder, *codecFnInfo, reflect.Value)
 	fd func(*Decoder, *codecFnInfo, reflect.Value)
+	_  [8]byte // padding
 }
 
 type codecRtidFn struct {
@@ -1409,6 +1415,8 @@ type codecFner struct {
 	s  []codecRtidFn
 	be bool
 	js bool
+	_  [6]byte     // padding
+	_  [3 * 8]byte // padding
 }
 
 func (c *codecFner) reset(hh Handle) {

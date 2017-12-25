@@ -232,6 +232,9 @@ package codec
 //     However, it will only  be inlined if mid-stack inlining is enabled,
 //     as we call panic to raise errors, and panic currently prevents inlining.
 //
+//   - Unexport BasicHandle.
+//     If godoc can now show the embedded options, then unexport it.
+// 
 // PUNTED:
 //   - To make Handle comparable, make extHandle in BasicHandle a non-embedded pointer,
 //     and use overlay methods on *BasicHandle to call through to extHandle after initializing
@@ -239,9 +242,22 @@ package codec
 //
 // BEFORE EACH RELEASE:
 //   - Look through and fix padding for each type, to eliminate false sharing
-//     - pooled objects: decNaked, codecFner, typeInfoLoadArray, typeInfo,
-//     - small objects that we allocate and modify much (should be in owned cache lines)
-//     - Objects used a lot (must live in own cache lines)
-//       Decoder, Encoder, etc
+//     - critical shared objects that are read many times
+//       TypeInfos
+//     - pooled objects:
+//       decNaked, decNakedContainers, codecFner, typeInfoLoadArray, 
+//     - small objects allocated independently, that we read/use much across threads:
+//       codecFn, typeInfo
+//     - Objects allocated independently and used a lot
+//       Decoder, Encoder,
+//       xxxHandle, xxxEncDriver, xxxDecDriver (xxx = json, msgpack, cbor, binc, simple)
 //     - In all above, arrange values modified together to be close to each other.
-//     Note: we MOSTLY care about the bottom part.
+//
+//     For all of these, either ensure that they occupy full cache lines,
+//     or ensure that the things just past the cache line boundary are hardly read/written
+//     e.g. JsonHandle.RawBytesExt - which is copied into json(En|De)cDriver at init
+//
+//     Occupying full cache lines means they occupy 8*N words (where N is an integer).
+//     Check this out by running: ./run.sh -z
+//     - look at those tagged ****, meaning they are not occupying full cache lines
+//     - look at those tagged <<<<, meaning they are larger than 32 words (something to watch)

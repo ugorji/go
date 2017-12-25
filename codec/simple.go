@@ -41,6 +41,7 @@ type simpleEncDriver struct {
 	// c containerState
 	encDriverTrackContainerWriter
 	// encDriverNoopContainerWriter
+	_ [2 * 8]byte // padding
 }
 
 func (e *simpleEncDriver) EncodeNil() {
@@ -205,10 +206,11 @@ type simpleDecDriver struct {
 	bd     byte
 	br     bool // a bytes reader?
 	c      containerState
-	b      [scratchByteArrayLen]byte
+	// b      [scratchByteArrayLen]byte
 	noBuiltInTypes
 	// noStreamingCodec
 	decDriverNoopContainerReader
+	_ [3 * 8]byte // padding
 }
 
 func (d *simpleDecDriver) readNextBd() {
@@ -417,11 +419,11 @@ func (d *simpleDecDriver) decLen() int {
 }
 
 func (d *simpleDecDriver) DecodeString() (s string) {
-	return string(d.DecodeBytes(d.b[:], true))
+	return string(d.DecodeBytes(d.d.b[:], true))
 }
 
 func (d *simpleDecDriver) DecodeStringAsBytes() (s []byte) {
-	return d.DecodeBytes(d.b[:], true)
+	return d.DecodeBytes(d.d.b[:], true)
 }
 
 func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
@@ -434,6 +436,9 @@ func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
 	if d.bd >= simpleVdArray && d.bd <= simpleVdMap+4 {
+		if len(bs) == 0 && zerocopy {
+			bs = d.d.b[:]
+		}
 		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		return
 	}
@@ -444,7 +449,7 @@ func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		if d.br {
 			return d.r.readx(clen)
 		} else if len(bs) == 0 {
-			bs = d.b[:]
+			bs = d.d.b[:]
 		}
 	}
 	return decByteSlice(d.r, clen, d.d.h.MaxInitLen, bs)
