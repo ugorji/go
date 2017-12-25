@@ -39,9 +39,8 @@ Rich Feature Set includes:
   - Careful selected use of 'unsafe' for targeted performance gains.
     100% mode exists where 'unsafe' is not used at all.
   - Lock-free (sans mutex) concurrency for scaling to 100's of cores
-  - Multiple conversions:
-    Package coerces types where appropriate
-    e.g. decode an int in the stream into a float, etc.
+  - Coerce types where appropriate
+    e.g. decode an int in the stream into a float, decode numbers from formatted strings, etc
   - Corner Cases:
     Overflows, nil maps/slices, nil values in streams are handled correctly
   - Standard field renaming via tags
@@ -50,9 +49,13 @@ Rich Feature Set includes:
     (struct, slice, map, primitives, pointers, interface{}, etc)
   - Extensions to support efficient encoding/decoding of any named types
   - Support encoding.(Binary|Text)(M|Unm)arshaler interfaces
+  - Support IsZero() bool to determine if a value is a zero value.
+    Analogous to time.Time.IsZero() bool.
   - Decoding without a schema (into a interface{}).
     Includes Options to configure what specific map or slice type to use
     when decoding an encoded list or map into a nil interface{}
+  - Mapping a non-interface type to an interface, so we can decode appropriately
+    into any interface type with a correctly configured non-interface value.
   - Encode a struct as an array, and decode struct from an array in the data stream
   - Option to encode struct keys as numbers (instead of strings)
     (to support structured streams with fields encoded as numeric codes)
@@ -210,8 +213,8 @@ Struct fields matching the following are ignored during encoding and decoding
     - struct tag value set to -
     - func, complex numbers, unsafe pointers
     - unexported and not embedded
-    - unexported embedded non-struct
-    - unexported embedded pointers (from go1.10)
+    - unexported and embedded and not struct kind
+    - unexported and embedded pointers (from go1.10)
 
 Every other field in a struct will be encoded/decoded.
 
@@ -240,6 +243,8 @@ package codec
 //     and use overlay methods on *BasicHandle to call through to extHandle after initializing
 //     the "xh *extHandle" to point to a real slice.
 //
+//   - Allow mapping a concrete type to an interface, for use during decoding.
+//
 // BEFORE EACH RELEASE:
 //   - Look through and fix padding for each type, to eliminate false sharing
 //     - critical shared objects that are read many times
@@ -261,3 +266,4 @@ package codec
 //     Check this out by running: ./run.sh -z
 //     - look at those tagged ****, meaning they are not occupying full cache lines
 //     - look at those tagged <<<<, meaning they are larger than 32 words (something to watch)
+//   - Run "golint -min_confidence 0.81"

@@ -952,7 +952,6 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 		return
 	}
 	// We cannot decode non-nil stream value into nil interface with methods (e.g. io.Reader).
-	// if num := f.ti.rt.NumMethod(); num > 0 {
 	if f.ti.numMeth > 0 {
 		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 		return
@@ -1098,24 +1097,25 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 
 	// every interface passed here MUST be settable.
 	var rvn reflect.Value
-	if rv.IsNil() {
-		if rvn = d.kInterfaceNaked(f); rvn.IsValid() {
-			rv.Set(rvn)
-		}
-		return
-	}
-	if d.h.InterfaceReset {
-		if rvn = d.kInterfaceNaked(f); rvn.IsValid() {
+	if rv.IsNil() || d.h.InterfaceReset {
+		// check if mapping to a type: if so, initialize it and move on
+		rvn = d.h.intf2impl(f.ti.rtid)
+		if rvn.IsValid() {
 			rv.Set(rvn)
 		} else {
-			// reset to zero value based on current type in there.
-			rv.Set(reflect.Zero(rv.Elem().Type()))
+			rvn = d.kInterfaceNaked(f)
+			if rvn.IsValid() {
+				rv.Set(rvn)
+			} else if d.h.InterfaceReset {
+				// reset to zero value based on current type in there.
+				rv.Set(reflect.Zero(rv.Elem().Type()))
+			}
+			return
 		}
-		return
+	} else {
+		// now we have a non-nil interface value, meaning it contains a type
+		rvn = rv.Elem()
 	}
-
-	// now we have a non-nil interface value, meaning it contains a type
-	rvn = rv.Elem()
 	if d.d.TryDecodeAsNil() {
 		rv.Set(reflect.Zero(rvn.Type()))
 		return

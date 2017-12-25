@@ -48,20 +48,16 @@ func stringView(v []byte) string {
 	if len(v) == 0 {
 		return ""
 	}
-
 	bx := (*unsafeSlice)(unsafe.Pointer(&v))
-	sx := unsafeString{bx.Data, bx.Len}
-	return *(*string)(unsafe.Pointer(&sx))
+	return *(*string)(unsafe.Pointer(&unsafeString{bx.Data, bx.Len}))
 }
 
 func bytesView(v string) []byte {
 	if len(v) == 0 {
 		return zeroByteSlice
 	}
-
 	sx := (*unsafeString)(unsafe.Pointer(&v))
-	bx := unsafeSlice{sx.Data, sx.Len, sx.Len}
-	return *(*[]byte)(unsafe.Pointer(&bx))
+	return *(*[]byte)(unsafe.Pointer(&unsafeSlice{sx.Data, sx.Len, sx.Len}))
 }
 
 func definitelyNil(v interface{}) bool {
@@ -78,43 +74,23 @@ func definitelyNil(v interface{}) bool {
 	//                 except it's a method value (e.g. r.Read, which implies that it is a Func)
 
 	return ((*unsafeIntf)(unsafe.Pointer(&v))).word == nil
-
-	// var ui *unsafeIntf = (*unsafeIntf)(unsafe.Pointer(&v))
-	// if ui.word == nil {
-	// 	return true
-	// }
-	// var tk = reflect.TypeOf(v).Kind()
-	// return (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.word) == nil
-	// fmt.Printf(">>>> definitely nil: isnil: %v, TYPE: \t%T, word: %v, *word: %v, type: %v, nil: %v\n",
-	// v == nil, v, word, *((*unsafe.Pointer)(word)), ui.typ, nil)
 }
 
-// func keepAlive4BytesView(v string) {
-// 	runtime.KeepAlive(v)
-// }
-
-// func keepAlive4StringView(v []byte) {
-// 	runtime.KeepAlive(v)
-// }
-
-// TODO: consider a more generally-known optimization for reflect.Value ==> Interface
-//
-// Currently, we use this fragile method that taps into implememtation details from
-// the source go stdlib reflect/value.go, and trims the implementation.
 func rv2i(rv reflect.Value) interface{} {
+	// TODO: consider a more generally-known optimization for reflect.Value ==> Interface
+	//
+	// Currently, we use this fragile method that taps into implememtation details from
+	// the source go stdlib reflect/value.go, and trims the implementation.
+
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	// true references (map, func, chan, ptr - NOT slice) may be double-referenced as flagIndir
 	var ptr unsafe.Pointer
-	// kk := reflect.Kind(urv.flag & (1<<5 - 1))
-	// if (kk == reflect.Map || kk == reflect.Ptr || kk == reflect.Chan || kk == reflect.Func) && urv.flag&unsafeFlagIndir != 0 {
 	if refBitset.isset(byte(urv.flag&(1<<5-1))) && urv.flag&unsafeFlagIndir != 0 {
 		ptr = *(*unsafe.Pointer)(urv.ptr)
 	} else {
 		ptr = urv.ptr
 	}
 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: ptr}))
-	// return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: *(*unsafe.Pointer)(urv.ptr), typ: urv.typ}))
-	// return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: urv.ptr, typ: urv.typ}))
 }
 
 func rt2id(rt reflect.Type) uintptr {
@@ -129,14 +105,8 @@ func i2rtid(i interface{}) uintptr {
 	return uintptr(((*unsafeIntf)(unsafe.Pointer(&i))).typ)
 }
 
-// func rv0t(rt reflect.Type) reflect.Value {
-// 	ut := (*unsafeIntf)(unsafe.Pointer(&rt))
-// 	// we need to determine whether ifaceIndir, and then whether to just pass 0 as the ptr
-// 	uv := unsafeReflectValue{ut.word, &zeroRTv, flag(rt.Kind())}
-// 	return *(*reflect.Value)(unsafe.Pointer(&uv})
-// }
-
 // --------------------------
+
 type atomicTypeInfoSlice struct { // expected to be 2 words
 	v unsafe.Pointer
 	_ [8]byte // padding
@@ -153,9 +123,6 @@ func (x *atomicTypeInfoSlice) store(p *[]rtid2ti) {
 // --------------------------
 func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	// if urv.flag&unsafeFlagIndir != 0 {
-	// 	urv.ptr = *(*unsafe.Pointer)(urv.ptr)
-	// }
 	*(*[]byte)(urv.ptr) = d.rawBytes()
 }
 
@@ -326,6 +293,56 @@ func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 }
 
 // ------------
+
+// func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
+// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+// 	// if urv.flag&unsafeFlagIndir != 0 {
+// 	// 	urv.ptr = *(*unsafe.Pointer)(urv.ptr)
+// 	// }
+// 	*(*[]byte)(urv.ptr) = d.rawBytes()
+// }
+
+// func rv0t(rt reflect.Type) reflect.Value {
+// 	ut := (*unsafeIntf)(unsafe.Pointer(&rt))
+// 	// we need to determine whether ifaceIndir, and then whether to just pass 0 as the ptr
+// 	uv := unsafeReflectValue{ut.word, &zeroRTv, flag(rt.Kind())}
+// 	return *(*reflect.Value)(unsafe.Pointer(&uv})
+// }
+
+// func rv2i(rv reflect.Value) interface{} {
+// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+// 	// true references (map, func, chan, ptr - NOT slice) may be double-referenced as flagIndir
+// 	var ptr unsafe.Pointer
+// 	// kk := reflect.Kind(urv.flag & (1<<5 - 1))
+// 	// if (kk == reflect.Map || kk == reflect.Ptr || kk == reflect.Chan || kk == reflect.Func) && urv.flag&unsafeFlagIndir != 0 {
+// 	if refBitset.isset(byte(urv.flag&(1<<5-1))) && urv.flag&unsafeFlagIndir != 0 {
+// 		ptr = *(*unsafe.Pointer)(urv.ptr)
+// 	} else {
+// 		ptr = urv.ptr
+// 	}
+// 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: ptr}))
+// 	// return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: *(*unsafe.Pointer)(urv.ptr), typ: urv.typ}))
+// 	// return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: urv.ptr, typ: urv.typ}))
+// }
+
+// func definitelyNil(v interface{}) bool {
+// 	var ui *unsafeIntf = (*unsafeIntf)(unsafe.Pointer(&v))
+// 	if ui.word == nil {
+// 		return true
+// 	}
+// 	var tk = reflect.TypeOf(v).Kind()
+// 	return (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.word) == nil
+// 	fmt.Printf(">>>> definitely nil: isnil: %v, TYPE: \t%T, word: %v, *word: %v, type: %v, nil: %v\n",
+// 	v == nil, v, word, *((*unsafe.Pointer)(word)), ui.typ, nil)
+// }
+
+// func keepAlive4BytesView(v string) {
+// 	runtime.KeepAlive(v)
+// }
+
+// func keepAlive4StringView(v []byte) {
+// 	runtime.KeepAlive(v)
+// }
 
 // func rt2id(rt reflect.Type) uintptr {
 // 	return uintptr(((*unsafeIntf)(unsafe.Pointer(&rt))).word)

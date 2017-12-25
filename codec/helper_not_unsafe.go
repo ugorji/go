@@ -35,28 +35,9 @@ func bytesView(v string) []byte {
 
 func definitelyNil(v interface{}) bool {
 	// this is a best-effort option.
-	// We just return false, so we don't unneessarily incur the cost of reflection this early.
+	// We just return false, so we don't unnecessarily incur the cost of reflection this early.
 	return false
-	// rv := reflect.ValueOf(v)
-	// switch rv.Kind() {
-	// case reflect.Invalid:
-	// 	return true
-	// case reflect.Ptr, reflect.Interface, reflect.Chan, reflect.Slice, reflect.Map, reflect.Func:
-	// 	return rv.IsNil()
-	// default:
-	// 	return false
-	// }
 }
-
-// // keepAlive4BytesView maintains a reference to the input parameter for bytesView.
-// //
-// // Usage: call this at point where done with the bytes view.
-// func keepAlive4BytesView(v string) {}
-
-// // keepAlive4BytesView maintains a reference to the input parameter for stringView.
-// //
-// // Usage: call this at point where done with the string view.
-// func keepAlive4StringView(v []byte) {}
 
 func rv2i(rv reflect.Value) interface{} {
 	return rv.Interface()
@@ -237,3 +218,25 @@ func (e *Encoder) kUint64(f *codecFnInfo, rv reflect.Value) {
 func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(rv.Uint())
 }
+
+// // keepAlive4BytesView maintains a reference to the input parameter for bytesView.
+// //
+// // Usage: call this at point where done with the bytes view.
+// func keepAlive4BytesView(v string) {}
+
+// // keepAlive4BytesView maintains a reference to the input parameter for stringView.
+// //
+// // Usage: call this at point where done with the string view.
+// func keepAlive4StringView(v []byte) {}
+
+// func definitelyNil(v interface{}) bool {
+// 	rv := reflect.ValueOf(v)
+// 	switch rv.Kind() {
+// 	case reflect.Invalid:
+// 		return true
+// 	case reflect.Ptr, reflect.Interface, reflect.Chan, reflect.Slice, reflect.Map, reflect.Func:
+// 		return rv.IsNil()
+// 	default:
+// 		return false
+// 	}
+// }

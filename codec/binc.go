@@ -918,7 +918,7 @@ type BincHandle struct {
 	// - 0: default: library uses best judgement
 	// - 1: use symbols
 	// - 2: do not use symbols
-	AsSymbols byte
+	AsSymbols uint8
 
 	// AsSymbols: may later on introduce more options ...
 	// - m: map keys

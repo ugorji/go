@@ -17,6 +17,7 @@ type Rpc interface {
 	ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.ClientCodec
 }
 
+// RPCOptions holds options specific to rpc functionality
 type RPCOptions struct {
 	// RPCNoBuffer configures whether we attempt to buffer reads and writes during RPC calls.
 	//

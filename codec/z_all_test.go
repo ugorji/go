@@ -229,6 +229,11 @@ func testCodecGroup(t *testing.T) {
 	t.Run("TestMsgpackScalars", TestMsgpackScalars)
 	t.Run("TestBincScalars", TestBincScalars)
 	t.Run("TestSimpleScalars", TestSimpleScalars)
+	t.Run("TestJsonIntfMapping", TestJsonIntfMapping)
+	t.Run("TestCborIntfMapping", TestCborIntfMapping)
+	t.Run("TestMsgpackIntfMapping", TestMsgpackIntfMapping)
+	t.Run("TestBincIntfMapping", TestBincIntfMapping)
+	t.Run("TestSimpleIntfMapping", TestSimpleIntfMapping)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
@@ -260,6 +265,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonUintToInt", TestJsonUintToInt)
 	t.Run("TestJsonDifferentMapOrSliceType", TestJsonDifferentMapOrSliceType)
 	t.Run("TestJsonScalars", TestJsonScalars)
+	t.Run("TestJsonIntfMapping", TestJsonIntfMapping)
 }
 
 func testBincGroup(t *testing.T) {

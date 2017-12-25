@@ -46,6 +46,24 @@ type testMbsCustStrT []testCustomStringT
 
 func (testMbsCustStrT) MapBySlice() {}
 
+type testIntfMapI interface {
+	GetIntfMapV() string
+}
+
+type testIntfMapT1 struct {
+	IntfMapV string
+}
+
+func (x *testIntfMapT1) GetIntfMapV() string { return x.IntfMapV }
+
+type testIntfMapT2 struct {
+	IntfMapV string
+}
+
+func (x testIntfMapT2) GetIntfMapV() string { return x.IntfMapV }
+
+// ----
+
 type testVerifyFlag uint8
 
 const (
@@ -2251,6 +2269,30 @@ func doTestScalars(t *testing.T, name string, h Handle) {
 	}
 }
 
+func doTestIntfMapping(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
+	rti := reflect.TypeOf((*testIntfMapI)(nil)).Elem()
+	defer func() { h.getBasicHandle().Intf2Impl(rti, nil) }()
+
+	type T9 struct {
+		I testIntfMapI
+	}
+
+	for i, v := range []testIntfMapI{
+		&testIntfMapT1{"ABC"},
+		testIntfMapT2{"DEF"},
+	} {
+		if err := h.getBasicHandle().Intf2Impl(rti, reflect.TypeOf(v)); err != nil {
+			failT(t, "Error mapping %v to %T", rti, v)
+		}
+		var v1, v2 T9
+		v1 = T9{v}
+		b := testMarshalErr(v1, h, t, name+"-enc-"+strconv.Itoa(i))
+		testUnmarshalErr(&v2, b, h, t, name+"-dec-"+strconv.Itoa(i))
+		testDeepEqualErr(v1, v2, t, name+"-dec-eq-"+strconv.Itoa(i))
+	}
+}
+
 // -----------------
 
 func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
@@ -2886,6 +2928,26 @@ func TestBincScalars(t *testing.T) {
 
 func TestSimpleScalars(t *testing.T) {
 	doTestScalars(t, "simple", testSimpleH)
+}
+
+func TestJsonIntfMapping(t *testing.T) {
+	doTestIntfMapping(t, "json", testJsonH)
+}
+
+func TestCborIntfMapping(t *testing.T) {
+	doTestIntfMapping(t, "cbor", testCborH)
+}
+
+func TestMsgpackIntfMapping(t *testing.T) {
+	doTestIntfMapping(t, "msgpack", testMsgpackH)
+}
+
+func TestBincIntfMapping(t *testing.T) {
+	doTestIntfMapping(t, "binc", testBincH)
+}
+
+func TestSimpleIntfMapping(t *testing.T) {
+	doTestIntfMapping(t, "simple", testSimpleH)
 }
 
 // TODO:

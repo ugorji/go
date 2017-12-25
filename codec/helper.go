@@ -136,7 +136,9 @@ const (
 	cacheLineSize = 64
 
 	wordSizeBits = strconv.IntSize
-	wordSize     = strconv.IntSize / 8
+	wordSize     = wordSizeBits / 8
+
+	maxLevelsEmbedding = 15 // use this, so structFieldInfo fits into 8 bytes
 )
 
 var (
@@ -420,6 +422,9 @@ type BasicHandle struct {
 	TypeInfos *TypeInfos
 
 	extHandle
+
+	intf2impls
+
 	// xh *extHandle // consider making this a pointer, if needed for all handles to be comparable
 	// xha [2]extTypeTagFn // init of xh. DONT DO THIS - makes this struct bigger by len*7 words
 
@@ -658,9 +663,9 @@ func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 		// all natively supported type, so cannot have an extension
 		return // TODO: should we silently ignore, or return an error???
 	}
-	if o == nil {
-		return errors.New("codec.Handle.SetExt: extHandle not initialized")
-	}
+	// if o == nil {
+	// 	return errors.New("codec.Handle.SetExt: extHandle not initialized")
+	// }
 	o2 := *o
 	// if o2 == nil {
 	// 	return errors.New("codec.Handle.SetExt: extHandle not initialized")
@@ -699,7 +704,51 @@ func (o extHandle) getExtForTag(tag uint64) *extTypeTagFn {
 	return nil
 }
 
-const maxLevelsEmbedding = 15 // use this, so structFieldInfo fits into 8 bytes
+type intf2impl struct {
+	rtid uintptr // for intf
+	impl reflect.Type
+}
+
+type intf2impls []intf2impl
+
+// Intf2Impl maps an interface to an implementing type.
+// This allows us support infering the concrete type
+// and populating it when passed an interface.
+// e.g. var v io.Reader can be decoded as a bytes.Buffer, etc.
+//
+// Passing a nil impl will clear the mapping.
+func (o *intf2impls) Intf2Impl(intf, impl reflect.Type) (err error) {
+	if impl != nil && !impl.Implements(intf) {
+		return fmt.Errorf("Intf2Impl: %v does not implement %v", impl, intf)
+	}
+	rtid := rt2id(intf)
+	o2 := *o
+	for i := range o2 {
+		v := &o2[i]
+		if v.rtid == rtid {
+			v.impl = impl
+			return
+		}
+	}
+	*o = append(o2, intf2impl{rtid, impl})
+	return
+}
+
+func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
+	for i := range o {
+		v := &o[i]
+		if v.rtid == rtid {
+			if v.impl == nil {
+				return
+			}
+			if v.impl.Kind() == reflect.Ptr {
+				return reflect.New(v.impl.Elem())
+			}
+			return reflect.New(v.impl).Elem()
+		}
+	}
+	return
+}
 
 type structFieldInfo struct {
 	encName   string // encode name

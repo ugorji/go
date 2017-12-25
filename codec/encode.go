@@ -162,10 +162,6 @@ type EncodeOptions struct {
 
 // ---------------------------------------------
 
-type simpleIoEncWriter struct {
-	io.Writer
-}
-
 // ioEncWriter implements encWriter and can write to an io.Writer implementation
 type ioEncWriter struct {
 	w  io.Writer
@@ -916,8 +912,9 @@ type Encoder struct {
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 
 	// ---- cpu cache line boundary?
-	b [scratchByteArrayLen]byte                 // used for encoding a chan or (non-addressable) array of bytes
-	_ [cacheLineSize - scratchByteArrayLen]byte // padding
+	// b [scratchByteArrayLen]byte
+	// _ [cacheLineSize - scratchByteArrayLen]byte // padding
+	b [cacheLineSize - 0]byte // used for encoding a chan or (non-addressable) array of bytes
 }
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
@@ -1125,11 +1122,10 @@ func (e *Encoder) encode(iv interface{}) {
 		return
 	}
 
+	// a switch with only concrete types can be optimized.
+	// consequently, we deal with nil and interfaces outside.
+
 	switch v := iv.(type) {
-	// case nil:
-	// 	e.e.EncodeNil()
-	// case Selfer:
-	// 	v.CodecEncodeSelf(e)
 	case Raw:
 		e.rawBytes(v)
 	case reflect.Value:
