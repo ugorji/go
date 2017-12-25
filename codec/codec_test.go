@@ -2023,7 +2023,9 @@ func testRandomFillRV(v reflect.Value) {
 	case reflect.Float32, reflect.Float64:
 		v.SetFloat(float64(fneg()) * float64(rand.Float32()))
 	case reflect.String:
-		v.SetString(strings.Repeat(strconv.FormatInt(rand.Int63n(99), 10), rand.Intn(8)))
+		// ensure this string can test the extent of json string decoding
+		v.SetString(strings.Repeat(strconv.FormatInt(rand.Int63n(99), 10), rand.Intn(8)) +
+			"- ABC \x41=\x42 \u2318 - \r \b \f - \u2028 and \u2029 .")
 	default:
 		panic(fmt.Errorf("testRandomFillRV: unsupported type: %v", v.Kind()))
 	}
@@ -2279,7 +2281,8 @@ func doTestIntfMapping(t *testing.T, name string, h Handle) {
 	}
 
 	for i, v := range []testIntfMapI{
-		&testIntfMapT1{"ABC"},
+		// Use a valid string to test some extents of json string decoding
+		&testIntfMapT1{"ABC \x41=\x42 \u2318 - \r \b \f - \u2028 and \u2029 ."},
 		testIntfMapT2{"DEF"},
 	} {
 		if err := h.getBasicHandle().Intf2Impl(rti, reflect.TypeOf(v)); err != nil {
