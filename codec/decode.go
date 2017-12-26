@@ -1169,7 +1169,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			dd.ReadMapEnd()
 			return
 		}
-		tisfi := fti.sfi
+		tisfi := fti.sfiSort
 		hasLen := containerLen >= 0
 
 		var rvkencname string
@@ -1203,7 +1203,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		// Not much gain from doing it two ways for array.
 		// Arrays are not used as much for structs.
 		hasLen := containerLen >= 0
-		for j, si := range fti.sfip {
+		for j, si := range fti.sfiSrc {
 			if (hasLen && j == containerLen) || (!hasLen && dd.CheckBreak()) {
 				break
 			}
@@ -1216,9 +1216,9 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				d.decodeValue(sfn.field(si), nil, true)
 			}
 		}
-		if containerLen > len(fti.sfip) {
+		if containerLen > len(fti.sfiSrc) {
 			// read remaining values and throw away
-			for j := len(fti.sfip); j < containerLen; j++ {
+			for j := len(fti.sfiSrc); j < containerLen; j++ {
 				if elemsep {
 					dd.ReadArrayElem()
 				}

@@ -128,9 +128,6 @@ const (
 	// allowing zero-alloc initialization.
 	arrayCacheLen = 8
 
-	// always set xDebug = false before releasing software
-	xDebug = true
-
 	// size of the cacheline: defaulting to value for archs: amd64, arm64, 386
 	// should use "runtime/internal/sys".CacheLineSize, but that is not exposed.
 	cacheLineSize = 64
@@ -252,23 +249,29 @@ type sfiIdx struct {
 const rgetMaxRecursion = 2
 
 // Anecdotally, we believe most types have <= 12 fields.
-// Java's PMD rules set TooManyFields threshold to 15.
-const typeInfoLoadArrayLen = 12
+// - even Java's PMD rules set TooManyFields threshold to 15.
+// However, go has embedded fields, which should be regarded as
+// top level, allowing structs to possibly double or triple.
+// In addition, we don't want to keep creating transient arrays,
+// especially for the sfiidx tracking, and the evtypes tracking.
+//
+// So - try to keep typeInfoLoadArray within 2K bytes
+const typeInfoLoadArrayLen = 16
 
 type typeInfoLoad struct {
-	fNames   []string
-	encNames []string
-	etypes   []uintptr
-	sfis     []*structFieldInfo
+	// fNames   []string
+	// encNames []string
+	etypes []uintptr
+	sfis   []structFieldInfo
 }
 
 type typeInfoLoadArray struct {
-	fNames   [typeInfoLoadArrayLen]string
-	encNames [typeInfoLoadArrayLen]string
-	etypes   [typeInfoLoadArrayLen]uintptr
-	sfis     [typeInfoLoadArrayLen]*structFieldInfo
-	sfiidx   [typeInfoLoadArrayLen]sfiIdx
-	_        [32]byte // padding
+	// fNames   [typeInfoLoadArrayLen]string
+	// encNames [typeInfoLoadArrayLen]string
+	sfis   [typeInfoLoadArrayLen]structFieldInfo
+	sfiidx [8 * 112]byte
+	etypes [12]uintptr
+	b      [8 * 4]byte // scratch - used for struct field names
 }
 
 // mirror json.Marshaler and json.Unmarshaler here,
@@ -421,16 +424,21 @@ type BasicHandle struct {
 	// If not configured, the default TypeInfos is used, which uses struct tag keys: codec, json
 	TypeInfos *TypeInfos
 
+	// Note: BasicHandle is not comparable, due to these slices here (extHandle, intf2impls).
+	// If *[]T is used instead, this becomes comparable, at the cost of extra indirection.
+	// Thses slices are used all the time, so keep as slices (not pointers).
+
 	extHandle
 
 	intf2impls
 
-	// xh *extHandle // consider making this a pointer, if needed for all handles to be comparable
-	// xha [2]extTypeTagFn // init of xh. DONT DO THIS - makes this struct bigger by len*7 words
-
-	EncodeOptions
-	DecodeOptions
 	RPCOptions
+
+	// ---- cache line
+	DecodeOptions
+
+	// ---- cache line
+	EncodeOptions
 	// noBuiltInTypeChecker
 }
 
@@ -632,6 +640,7 @@ type extTypeTagFn struct {
 	rt      reflect.Type
 	tag     uint64
 	ext     Ext
+	_       [8]byte // padding
 }
 
 type extHandle []extTypeTagFn
@@ -688,7 +697,7 @@ func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 		}
 	}
 	rtidptr := rt2id(reflect.PtrTo(rt))
-	*o = append(o2, extTypeTagFn{rtid, rtidptr, rt, tag, ext})
+	*o = append(o2, extTypeTagFn{rtid, rtidptr, rt, tag, ext, [8]byte{}})
 	return
 }
 
@@ -717,6 +726,7 @@ func (o extHandle) getExtForTag(tag uint64) *extTypeTagFn {
 type intf2impl struct {
 	rtid uintptr // for intf
 	impl reflect.Type
+	// _    [8]byte // padding // not-needed, as *intf2impl is never returned.
 }
 
 type intf2impls []intf2impl
@@ -760,13 +770,41 @@ func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
 	return
 }
 
+type structFieldInfoFlag uint8
+
+const (
+	_ structFieldInfoFlag = 1 << iota
+	structFieldInfoFlagReady
+	structFieldInfoFlagOmitEmpty
+)
+
+func (x *structFieldInfoFlag) flagSet(f structFieldInfoFlag) {
+	*x = *x | f
+}
+
+func (x *structFieldInfoFlag) flagClr(f structFieldInfoFlag) {
+	*x = *x &^ f
+}
+
+func (x structFieldInfoFlag) flagGet(f structFieldInfoFlag) bool {
+	return x&f != 0
+}
+
+func (x structFieldInfoFlag) omitEmpty() bool {
+	return x.flagGet(structFieldInfoFlagOmitEmpty)
+}
+
+func (x structFieldInfoFlag) ready() bool {
+	return x.flagGet(structFieldInfoFlagReady)
+}
+
 type structFieldInfo struct {
 	encName   string // encode name
 	fieldName string // field name
 
-	is        [maxLevelsEmbedding]uint16 // (recursive/embedded) field index in struct
-	nis       uint8                      // num levels of embedding. if 1, then it's not embedded.
-	omitEmpty bool
+	is  [maxLevelsEmbedding]uint16 // (recursive/embedded) field index in struct
+	nis uint8                      // num levels of embedding. if 1, then it's not embedded.
+	structFieldInfoFlag
 }
 
 func (si *structFieldInfo) setToZeroValue(v reflect.Value) {
@@ -826,11 +864,10 @@ func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
 	return
 }
 
-func parseStructFieldInfo(fname string, stag string) (si *structFieldInfo) {
+func (si *structFieldInfo) parseTag(stag string) {
 	// if fname == "" {
 	// 	panic(errNoFieldNameToStructFieldInfo)
 	// }
-	si = &structFieldInfo{encName: fname}
 
 	if stag == "" {
 		return
@@ -843,13 +880,13 @@ func parseStructFieldInfo(fname string, stag string) (si *structFieldInfo) {
 		} else {
 			switch s {
 			case "omitempty":
-				si.omitEmpty = true
+				si.flagSet(structFieldInfoFlagOmitEmpty)
+				// si.omitEmpty = true
 				// case "toarray":
 				// 	si.toArray = true
 			}
 		}
 	}
-	return
 }
 
 type sfiSortedByEncName []*structFieldInfo
@@ -965,12 +1002,14 @@ func baseStructRv(v reflect.Value, update bool) (v2 reflect.Value, valid bool) {
 //   - If type is text(M/Unm)arshaler, call Text(M/Unm)arshal method
 //   - Else decode appropriately based on the reflect.Kind
 type typeInfo struct {
-	sfi  []*structFieldInfo // sorted. Used when enc/dec struct to map.
-	sfip []*structFieldInfo // unsorted. Used when enc/dec struct to array.
-
-	rt reflect.Type
+	sfiSort []*structFieldInfo // sorted. Used when enc/dec struct to map.
+	sfiSrc  []*structFieldInfo // unsorted. Used when enc/dec struct to array.
+	rt      reflect.Type
 
 	// ---- cpu cache line boundary?
+	// sfis         []structFieldInfo // all sfi, in src order, as created.
+	sfiNamesSort []string // all sorted names
+
 	rtid uintptr
 	// rv0  reflect.Value // saved zero value, used if immutableKind
 
@@ -1001,7 +1040,7 @@ type typeInfo struct {
 	cs  bool        // T is a Selfer
 	csp bool        // *T is a Selfer
 	_   [3]byte     // padding
-	_   [4 * 8]byte // padding
+	_   [1 * 8]byte // padding
 }
 
 // define length beyond which we do a binary search instead of a linear search.
@@ -1011,27 +1050,26 @@ const indexForEncNameBinarySearchThreshold = 8
 
 func (ti *typeInfo) indexForEncName(name string) int {
 	// NOTE: name may be a stringView, so don't pass it to another function.
-	//tisfi := ti.sfi
-	sfilen := len(ti.sfi)
-	if sfilen < indexForEncNameBinarySearchThreshold {
-		for i, si := range ti.sfi {
-			if si.encName == name {
+	x := ti.sfiNamesSort
+	if len(x) < indexForEncNameBinarySearchThreshold {
+		for i, sn := range x {
+			if sn == name {
 				return i
 			}
 		}
 		return -1
 	}
 	// binary search. adapted from sort/search.go.
-	h, i, j := 0, 0, sfilen
+	h, i, j := 0, 0, len(x)
 	for i < j {
 		h = i + (j-i)/2
-		if ti.sfi[h].encName < name {
+		if x[h] < name {
 			i = h + 1
 		} else {
 			j = h
 		}
 	}
-	if i < sfilen && ti.sfi[i].encName == name {
+	if i < len(x) && x[i] == name {
 		return i
 	}
 	return -1
@@ -1074,12 +1112,12 @@ func (x *TypeInfos) structTag(t reflect.StructTag) (s string) {
 	return
 }
 
-func (x *TypeInfos) find(sp *[]rtid2ti, rtid uintptr) (idx int, ti *typeInfo) {
+func (x *TypeInfos) find(s []rtid2ti, rtid uintptr) (idx int, ti *typeInfo) {
 	// binary search. adapted from sort/search.go.
 	// if sp == nil {
 	// 	return -1, nil
 	// }
-	s := *sp
+	// s := *sp
 	h, i, j := 0, 0, len(s)
 	for i < j {
 		h = i + (j-i)/2
@@ -1099,7 +1137,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	sp := x.infos.load()
 	var idx int
 	if sp != nil {
-		idx, pti = x.find(sp, rtid)
+		idx, pti = x.find(*sp, rtid)
 		if pti != nil {
 			return
 		}
@@ -1140,12 +1178,14 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		pp, pi := pool.tiLoad()
 		pv := pi.(*typeInfoLoadArray)
 		pv.etypes[0] = ti.rtid
-		vv := typeInfoLoad{pv.fNames[:0], pv.encNames[:0], pv.etypes[:1], pv.sfis[:0]}
+		// vv := typeInfoLoad{pv.fNames[:0], pv.encNames[:0], pv.etypes[:1], pv.sfis[:0]}
+		vv := typeInfoLoad{pv.etypes[:1], pv.sfis[:0]}
 		x.rget(rt, rtid, omitEmpty, nil, &vv)
-		ti.sfip, ti.sfi, ti.anyOmitEmpty = rgetResolveSFI(vv.sfis, pv.sfiidx[:0])
+		// ti.sfis = vv.sfis
+		ti.sfiSrc, ti.sfiSort, ti.sfiNamesSort, ti.anyOmitEmpty = rgetResolveSFI(rt, vv.sfis, pv)
 		pp.Put(pi)
 	}
-	// sfi = sfip
+	// sfi = sfiSrc
 
 	x.mu.Lock()
 	sp = x.infos.load()
@@ -1154,7 +1194,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		vs := append(make([]rtid2ti, 0, 16), rtid2ti{rtid, pti})
 		x.infos.store(&vs)
 	} else {
-		idx, pti = x.find(sp, rtid)
+		idx, pti = x.find(*sp, rtid)
 		if pti == nil {
 			pti = &ti
 			vs := append(*sp, rtid2ti{})
@@ -1182,6 +1222,7 @@ func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
 		panicv.errorf("codec: types with > %v fields are not supported - has %v fields",
 			(1<<maxLevelsEmbedding - 1), flen)
 	}
+	// pv.sfis = make([]structFieldInfo, flen)
 LOOP:
 	for j, jlen := uint16(0), uint16(flen); j < jlen; j++ {
 		f := rt.Field(int(j))
@@ -1200,7 +1241,8 @@ LOOP:
 		if stag == "-" {
 			continue
 		}
-		var si *structFieldInfo
+		var si structFieldInfo
+		var parsed bool
 		// if anonymous and no struct tag (or it's blank),
 		// and a struct (or pointer to struct), inline it.
 		if f.Anonymous && fkind != reflect.Interface {
@@ -1221,7 +1263,8 @@ LOOP:
 			}
 			doInline := stag == ""
 			if !doInline {
-				si = parseStructFieldInfo("", stag)
+				si.parseTag(stag)
+				parsed = true
 				doInline = si.encName == ""
 				// doInline = si.isZero()
 			}
@@ -1264,16 +1307,20 @@ LOOP:
 			panic(errNoFieldNameToStructFieldInfo)
 		}
 
-		pv.fNames = append(pv.fNames, f.Name)
+		// pv.fNames = append(pv.fNames, f.Name)
+		// if si.encName == "" {
 
-		if si == nil {
-			si = parseStructFieldInfo(f.Name, stag)
+		if !parsed {
+			si.encName = f.Name
+			si.parseTag(stag)
+			parsed = true
 		} else if si.encName == "" {
 			si.encName = f.Name
 		}
 		si.fieldName = f.Name
+		si.flagSet(structFieldInfoFlagReady)
 
-		pv.encNames = append(pv.encNames, si.encName)
+		// pv.encNames = append(pv.encNames, si.encName)
 
 		// si.ikind = int(f.Type.Kind())
 		if len(indexstack) > maxLevelsEmbedding-1 {
@@ -1285,7 +1332,7 @@ LOOP:
 		si.is[len(indexstack)] = j
 
 		if omitEmpty {
-			si.omitEmpty = true
+			si.flagSet(structFieldInfoFlagOmitEmpty)
 		}
 		pv.sfis = append(pv.sfis, si)
 	}
@@ -1293,53 +1340,83 @@ LOOP:
 
 // resolves the struct field info got from a call to rget.
 // Returns a trimmed, unsorted and sorted []*structFieldInfo.
-func rgetResolveSFI(x []*structFieldInfo, pv []sfiIdx) (y, z []*structFieldInfo, anyOmitEmpty bool) {
-	var n int
-	for i, v := range x {
-		xn := v.encName // fieldName or encName? use encName for now.
-		var found bool
-		for j, k := range pv {
-			if k.name == xn {
-				// one of them must be reset to nil, and the index updated appropriately to the other one
-				if v.nis == x[k.index].nis {
-				} else if v.nis < x[k.index].nis {
-					pv[j].index = i
-					if x[k.index] != nil {
-						x[k.index] = nil
-						n++
-					}
-				} else {
-					if x[i] != nil {
-						x[i] = nil
-						n++
-					}
+func rgetResolveSFI(rt reflect.Type, x []structFieldInfo, pv *typeInfoLoadArray) (
+	y, z []*structFieldInfo, ss []string, anyOmitEmpty bool) {
+	const sep byte = 0xff // 0xff 0 '|' // prefer 0xff to 0, as index 255 is rare
+	sa := pv.sfiidx[:1]
+	sa[0] = sep
+	sn := pv.b[:]
+	n := len(x)
+	for i := range x {
+		ui := uint16(i)
+		xn := x[i].encName // fieldName or encName? use encName for now.
+		if len(xn)+2 > cap(pv.b) {
+			sn = make([]byte, len(xn)+2)
+		} else {
+			sn = sn[:len(xn)+2]
+		}
+		sn[0], sn[len(sn)-1] = sep, sep
+		copy(sn[1:], xn)
+		j := bytes.Index(sa, sn)
+		if j == -1 {
+			sa = append(sa, xn...)
+			sa = append(sa, sep, byte(ui>>8), byte(ui), sep)
+		} else {
+			index := uint16(sa[j+len(sn)+1]) | uint16(sa[j+len(sn)])<<8
+			// one of them must be reset to nil,
+			// and the index updated appropriately to the other one
+			if x[i].nis == x[index].nis {
+			} else if x[i].nis < x[index].nis {
+				sa[j+len(sn)], sa[j+len(sn)+1] = byte(ui>>8), byte(ui)
+				if x[index].ready() {
+					x[index].flagClr(structFieldInfoFlagReady)
+					n--
 				}
-				found = true
-				break
+			} else {
+				if x[i].ready() {
+					x[i].flagClr(structFieldInfoFlagReady)
+					n--
+				}
 			}
 		}
-		if !found {
-			pv = append(pv, sfiIdx{xn, i})
-		}
+
+	}
+	var w []structFieldInfo
+	sharingArray := len(x) <= typeInfoLoadArrayLen // sharing array with typeInfoLoadArray
+	if sharingArray {
+		w = make([]structFieldInfo, n)
 	}
 
-	// remove all the nils
-	y = make([]*structFieldInfo, len(x)-n)
+	// remove all the nils (non-ready)
+	y = make([]*structFieldInfo, n)
 	n = 0
-	for _, v := range x {
-		if v == nil {
+	for i := range x {
+		if !x[i].ready() {
 			continue
 		}
-		if !anyOmitEmpty && v.omitEmpty {
+		if !anyOmitEmpty && x[i].omitEmpty() {
 			anyOmitEmpty = true
 		}
-		y[n] = v
+		if sharingArray {
+			w[n] = x[i]
+			y[n] = &w[n]
+		} else {
+			y[n] = &x[i]
+		}
 		n++
+	}
+	if n != len(y) {
+		panicv.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d",
+			rt, len(y), len(x), n)
 	}
 
 	z = make([]*structFieldInfo, len(y))
 	copy(z, y)
 	sort.Sort(sfiSortedByEncName(z))
+	ss = make([]string, len(y))
+	for i := range z {
+		ss[i] = z[i].encName
+	}
 	return
 }
 
@@ -2176,6 +2253,16 @@ func (must) Float(s float64, err error) float64 {
 		panicv.errorv(err)
 	}
 	return s
+}
+
+// xdebugf prints the message in red on the terminal.
+// Use it in place of fmt.Printf (which it calls internally)
+func xdebugf(pattern string, args ...interface{}) {
+	var delim string
+	if len(pattern) > 0 && pattern[len(pattern)-1] != '\n' {
+		delim = "\n"
+	}
+	fmt.Printf("\033[1;31m"+pattern+delim+"\033[0m", args...)
 }
 
 // func isImmutableKind(k reflect.Kind) (v bool) {

@@ -885,7 +885,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	x.linef("_, _ = %s, %s", sepVarname, struct2arrvar)
 	x.linef("const %s bool = %v // struct tag has 'toArray'", ti2arrayvar, ti.toArray)
 
-	tisfi := ti.sfip // always use sequence from file. decStruct expects same thing.
+	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
 
 	// var nn int
 	// due to omitEmpty, we need to calculate the
@@ -897,7 +897,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 
 		for j, si := range tisfi {
 			_ = j
-			if !si.omitEmpty {
+			if !si.omitEmpty() {
 				// x.linef("%s[%v] = true // %s", numfieldsvar, j, si.fieldName)
 				x.linef("true, // %s", si.fieldName)
 				// nn++
@@ -990,11 +990,11 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 			x.linef("if %s { r.WriteArrayElem(); r.EncodeNil() } else { ", isNilVarName)
 		}
 		x.line("r.WriteArrayElem()")
-		if si.omitEmpty {
+		if si.omitEmpty() {
 			x.linef("if %s[%v] {", numfieldsvar, j)
 		}
 		x.encVar(varname+"."+t2.Name, t2.Type)
-		if si.omitEmpty {
+		if si.omitEmpty() {
 			x.linef("} else {")
 			x.encZero(t2.Type)
 			x.linef("}")
@@ -1005,7 +1005,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 
 		x.linef("} else {") // if not ti.toArray
 
-		if si.omitEmpty {
+		if si.omitEmpty() {
 			x.linef("if %s[%v] {", numfieldsvar, j)
 		}
 		x.line("r.WriteMapElemKey()")
@@ -1031,7 +1031,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		} else {
 			x.encVar(varname+"."+t2.Name, t2.Type)
 		}
-		if si.omitEmpty {
+		if si.omitEmpty() {
 			x.line("}")
 		}
 		x.linef("} ") // end if/else ti.toArray
@@ -1475,7 +1475,7 @@ func (x *genRunner) decMapFallback(varname string, rtid uintptr, t reflect.Type)
 
 func (x *genRunner) decStructMapSwitch(kName string, varname string, rtid uintptr, t reflect.Type) {
 	ti := x.ti.get(rtid, t)
-	tisfi := ti.sfip // always use sequence from file. decStruct expects same thing.
+	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
 	x.line("switch (" + kName + ") {")
 	for _, si := range tisfi {
 		x.line("case \"" + si.encName + "\":")
@@ -1551,7 +1551,7 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 	tpfx := genTempVarPfx
 	i := x.varsfx()
 	ti := x.ti.get(rtid, t)
-	tisfi := ti.sfip // always use sequence from file. decStruct expects same thing.
+	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
 	x.linef("var %sj%s int", tpfx, i)
 	x.linef("var %sb%s bool", tpfx, i)                        // break
 	x.linef("var %shl%s bool = %s >= 0", tpfx, i, lenvarname) // has length

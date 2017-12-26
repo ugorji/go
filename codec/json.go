@@ -1259,12 +1259,15 @@ type JsonHandle struct {
 	// The only caveat is that nil value is ALWAYS written as null (never as "null")
 	MapKeyAsString bool
 
-	// ---- cache line
+	_ [2]byte // padding
+
 	// Note: below, we store hardly-used items e.g. RawBytesExt is cached in the (en|de)cDriver.
 
 	// RawBytesExt, if configured, is used to encode and decode raw bytes in a custom way.
 	// If not configured, raw bytes are encoded to/from base64 text.
 	RawBytesExt InterfaceExt
+
+	_ [3 * 8]byte // padding
 }
 
 // Name returns the name of the handle: json

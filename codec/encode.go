@@ -410,10 +410,10 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	fti := f.ti
 	elemsep := e.esep
-	tisfi := fti.sfip
+	tisfi := fti.sfiSrc
 	toMap := !(fti.toArray || e.h.StructToArray)
 	if toMap {
-		tisfi = fti.sfi
+		tisfi = fti.sfiSort
 	}
 	ee := e.e
 
@@ -474,13 +474,13 @@ func encStructFieldKey(ee encDriver, keyType valueType, s string) {
 func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	fti := f.ti
 	elemsep := e.esep
-	tisfi := fti.sfip
+	tisfi := fti.sfiSrc
 	toMap := !(fti.toArray || e.h.StructToArray)
 	// if toMap, use the sorted array. If toArray, use unsorted array (to match sequence in struct)
 	if toMap {
-		tisfi = fti.sfi
+		tisfi = fti.sfiSort
 	}
-	newlen := len(fti.sfi)
+	newlen := len(fti.sfiSort)
 	ee := e.e
 
 	// Use sync.Pool to reduce allocating slices unnecessarily.
@@ -526,14 +526,14 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		// kv.r = si.field(rv, false)
 		kv.r = sfn.field(si)
 		if toMap {
-			if si.omitEmpty && isEmptyValue(kv.r, recur, recur) {
+			if si.omitEmpty() && isEmptyValue(kv.r, recur, recur) {
 				continue
 			}
 			kv.v = si.encName
 		} else {
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
-			if si.omitEmpty && isEmptyValue(kv.r, recur, recur) {
+			if si.omitEmpty() && isEmptyValue(kv.r, recur, recur) {
 				switch kv.r.Kind() {
 				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array, reflect.Map, reflect.Slice:
 					kv.r = reflect.Value{} //encode as nil

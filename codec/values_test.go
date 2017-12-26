@@ -6,7 +6,8 @@
 package codec
 
 // This file contains values used by tests and benchmarks.
-// The benchmarks will test performance against other libraries (encoding/json, json-iterator, bson, gob, etc).
+// The benchmarks will test performance against other libraries
+// (encoding/json, json-iterator, bson, gob, etc).
 // Consequently, we only use values that will parse well in all engines,
 // and only leverage features that work across multiple libraries for a truer comparison.
 // For example,
@@ -19,6 +20,11 @@ import (
 	"math"
 	"strings"
 )
+
+// func init() {
+// 	rt := reflect.TypeOf((*TestStruc)(nil)).Elem()
+// 	defTypeInfos.get(rt2id(rt), rt)
+// }
 
 type wrapSliceUint64 []uint64
 type wrapSliceString []string
@@ -55,37 +61,26 @@ type AnonInTestStruc struct {
 	AMSU16E     map[string]uint16
 }
 
+// testSimpleFields is a sub-set of TestStrucCommon
 type testSimpleFields struct {
 	S string
 
 	I64 int64
-	I32 int32
-	I16 int16
 	I8  int8
 
-	I64n int64
-	I32n int32
-	I16n int16
-	I8n  int8
-
 	Ui64 uint64
-	Ui32 uint32
-	Ui16 uint16
 	Ui8  uint8
 
 	F64 float64
 	F32 float32
 
-	B  bool
-	By uint8 // byte: msgp doesn't like byte
+	B bool
 
 	Sslice    []string
-	I64slice  []int64
 	I16slice  []int16
 	Ui64slice []uint64
 	Ui8slice  []uint8
 	Bslice    []bool
-	Byslice   []byte
 
 	Iptrslice []*int64
 
@@ -307,33 +302,22 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			S: strRpt(n, `some really really cool names that are nigerian and american like "ugorji melody nwoke" - get it? `),
 
 			// set the numbers close to the limits
-			I8:   math.MaxInt8 * 2 / 3,  // 8,
-			I8n:  math.MinInt8 * 2 / 3,  // 8,
-			I16:  math.MaxInt16 * 2 / 3, // 16,
-			I16n: math.MinInt16 * 2 / 3, // 16,
-			I32:  math.MaxInt32 * 2 / 3, // 32,
-			I32n: math.MinInt32 * 2 / 3, // 32,
-			I64:  math.MaxInt64 * 2 / 3, // 64,
-			I64n: math.MinInt64 * 2 / 3, // 64,
+			I8:  math.MaxInt8 * 2 / 3,  // 8,
+			I64: math.MaxInt64 * 2 / 3, // 64,
 
 			Ui64: math.MaxUint64 * 2 / 3, // 64
-			Ui32: math.MaxUint32 * 2 / 3, // 32
-			Ui16: math.MaxUint16 * 2 / 3, // 16
 			Ui8:  math.MaxUint8 * 2 / 3,  // 8
 
 			F32: 3.402823e+38, // max representable float32 without losing precision
 			F64: 3.40281991833838838338e+53,
 
-			B:  true,
-			By: 5,
+			B: true,
 
 			Sslice:    []string{strRpt(n, "one"), strRpt(n, "two"), strRpt(n, "three")},
-			I64slice:  []int64{1111, 2222, 3333},
 			I16slice:  []int16{44, 55, 66},
 			Ui64slice: []uint64{12121212, 34343434, 56565656},
 			Ui8slice:  []uint8{210, 211, 212},
 			Bslice:    []bool{true, false, true, false},
-			Byslice:   []byte{13, 14, 15},
 
 			Msi64: map[string]int64{
 				strRpt(n, "one"):       1,
