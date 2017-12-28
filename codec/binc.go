@@ -346,6 +346,7 @@ type bincDecDriver struct {
 
 	// noStreamingCodec
 	// decNoSeparator
+
 	b [8 * 8]byte // scratch
 }
 
@@ -926,6 +927,8 @@ type BincHandle struct {
 	// - s: struct fields
 	// - n: none
 	// - a: all: same as m, s, ...
+
+	_ [1]uint64 // padding
 }
 
 // Name returns the name of the handle: binc

@@ -584,7 +584,7 @@ type jsonDecDriver struct {
 	b  [jsonScratchArrayLen]byte // scratch 1, used for parsing strings or numbers or time.Time
 	b2 [jsonScratchArrayLen]byte // scratch 2, used only for readUntil, decNumBytes
 
-	_ [3 * 8]byte // padding
+	_ [3]uint64 // padding
 	// n jsonNum
 }
 
@@ -1259,7 +1259,7 @@ type JsonHandle struct {
 	// The only caveat is that nil value is ALWAYS written as null (never as "null")
 	MapKeyAsString bool
 
-	_ [2]byte // padding
+	// _ [2]byte // padding
 
 	// Note: below, we store hardly-used items e.g. RawBytesExt is cached in the (en|de)cDriver.
 
@@ -1267,7 +1267,7 @@ type JsonHandle struct {
 	// If not configured, raw bytes are encoded to/from base64 text.
 	RawBytesExt InterfaceExt
 
-	_ [3 * 8]byte // padding
+	_ [3]uint64 // padding
 }
 
 // Name returns the name of the handle: json
@@ -1294,7 +1294,7 @@ func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceE
 type jsonEncDriverTypicalImpl struct {
 	jsonEncDriver
 	jsonEncDriverTypical
-	_ [8]byte // padding
+	_ [1]uint64 // padding
 }
 
 func (x *jsonEncDriverTypicalImpl) reset() {

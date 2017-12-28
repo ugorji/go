@@ -122,7 +122,7 @@ type msgpackEncDriver struct {
 	w encWriter
 	h *MsgpackHandle
 	x [8]byte
-	_ [3 * 8]byte // padding
+	_ [3]uint64 // padding
 }
 
 func (e *msgpackEncDriver) EncodeNil() {
@@ -344,7 +344,7 @@ type msgpackDecDriver struct {
 	// noStreamingCodec
 	// decNoSeparator
 	decDriverNoopContainerReader
-	_ [3 * 8]byte // padding
+	_ [3]uint64 // padding
 }
 
 // Note: This returns either a primitive (int, bool, etc) for non-containers,
@@ -864,6 +864,8 @@ type MsgpackHandle struct {
 
 	binaryEncodingType
 	noElemSeparators
+
+	_ [1]uint64 // padding
 }
 
 // Name returns the name of the handle: msgpack

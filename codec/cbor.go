@@ -70,7 +70,7 @@ type cborEncDriver struct {
 	w encWriter
 	h *CborHandle
 	x [8]byte
-	_ [3 * 8]byte // padding
+	_ [3]uint64 // padding
 }
 
 func (e *cborEncDriver) EncodeNil() {
@@ -253,7 +253,7 @@ type cborDecDriver struct {
 	noBuiltInTypes
 	// decNoSeparator
 	decDriverNoopContainerReader
-	_ [3 * 8]byte // padding
+	_ [3]uint64 // padding
 }
 
 func (d *cborDecDriver) readNextBd() {
@@ -683,6 +683,8 @@ type CborHandle struct {
 	// TimeRFC3339 says to encode time.Time using RFC3339 format.
 	// If unset, we encode time.Time using seconds past epoch.
 	TimeRFC3339 bool
+
+	_ [1]uint64 // padding
 }
 
 // Name returns the name of the handle: cbor

@@ -41,7 +41,7 @@ type simpleEncDriver struct {
 	// c containerState
 	encDriverTrackContainerWriter
 	// encDriverNoopContainerWriter
-	_ [2 * 8]byte // padding
+	_ [2]uint64 // padding
 }
 
 func (e *simpleEncDriver) EncodeNil() {
@@ -210,7 +210,7 @@ type simpleDecDriver struct {
 	noBuiltInTypes
 	// noStreamingCodec
 	decDriverNoopContainerReader
-	_ [3 * 8]byte // padding
+	_ [3]uint64 // padding
 }
 
 func (d *simpleDecDriver) readNextBd() {
@@ -615,6 +615,8 @@ type SimpleHandle struct {
 	noElemSeparators
 	// EncZeroValuesAsNil says to encode zero values for numbers, bool, string, etc as nil
 	EncZeroValuesAsNil bool
+
+	_ [1]uint64 // padding
 }
 
 // Name returns the name of the handle: simple
