@@ -107,6 +107,74 @@ func i2rtid(i interface{}) uintptr {
 
 // --------------------------
 
+func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) bool {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	if urv.flag == 0 {
+		return true
+	}
+	switch v.Kind() {
+	case reflect.Invalid:
+		return true
+	case reflect.String:
+		return (*unsafeString)(urv.ptr).Len == 0
+	case reflect.Slice:
+		return (*unsafeSlice)(urv.ptr).Len == 0
+	case reflect.Bool:
+		return !*(*bool)(urv.ptr)
+	case reflect.Int:
+		return *(*int)(urv.ptr) == 0
+	case reflect.Int8:
+		return *(*int8)(urv.ptr) == 0
+	case reflect.Int16:
+		return *(*int16)(urv.ptr) == 0
+	case reflect.Int32:
+		return *(*int32)(urv.ptr) == 0
+	case reflect.Int64:
+		return *(*int64)(urv.ptr) == 0
+	case reflect.Uint:
+		return *(*uint)(urv.ptr) == 0
+	case reflect.Uint8:
+		return *(*uint8)(urv.ptr) == 0
+	case reflect.Uint16:
+		return *(*uint16)(urv.ptr) == 0
+	case reflect.Uint32:
+		return *(*uint32)(urv.ptr) == 0
+	case reflect.Uint64:
+		return *(*uint64)(urv.ptr) == 0
+	case reflect.Uintptr:
+		return *(*uintptr)(urv.ptr) == 0
+	case reflect.Float32:
+		return *(*float32)(urv.ptr) == 0
+	case reflect.Float64:
+		return *(*float64)(urv.ptr) == 0
+	case reflect.Interface:
+		isnil := urv.ptr == nil || *(*unsafe.Pointer)(urv.ptr) == nil
+		if deref {
+			if isnil {
+				return true
+			}
+			return isEmptyValue(v.Elem(), tinfos, deref, checkStruct)
+		}
+		return isnil
+	case reflect.Ptr:
+		isnil := urv.ptr == nil
+		if deref {
+			if isnil {
+				return true
+			}
+			return isEmptyValue(v.Elem(), tinfos, deref, checkStruct)
+		}
+		return isnil
+	case reflect.Struct:
+		return isEmptyStruct(v, tinfos, deref, checkStruct)
+	case reflect.Map, reflect.Array, reflect.Chan:
+		return v.Len() == 0
+	}
+	return false
+}
+
+// --------------------------
+
 type atomicTypeInfoSlice struct { // expected to be 2 words
 	v unsafe.Pointer
 	_ [8]byte // padding

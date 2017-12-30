@@ -1236,11 +1236,11 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	// A slice can be set from a map or array in stream.
 	// This way, the order can be kept (as order is lost with map).
 	ti := f.ti
-	if f.seq == seqTypeChan && ti.rt.ChanDir()&reflect.SendDir == 0 {
+	if f.seq == seqTypeChan && ti.chandir&uint8(reflect.SendDir) == 0 {
 		d.errorf("receive-only channel cannot be used for sending byte(s)")
 	}
 	dd := d.d
-	rtelem0 := ti.rt.Elem()
+	rtelem0 := ti.elem
 	ctyp := dd.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 		// you can only decode bytes or string in the stream into a slice or array of bytes
@@ -1475,12 +1475,13 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 
-	ktype, vtype := ti.rt.Key(), ti.rt.Elem()
+	ktype, vtype := ti.key, ti.elem
 	ktypeId := rt2id(ktype)
 	vtypeKind := vtype.Kind()
 
 	var keyFn, valFn *codecFn
 	var ktypeLo, vtypeLo reflect.Type
+
 	for ktypeLo = ktype; ktypeLo.Kind() == reflect.Ptr; ktypeLo = ktypeLo.Elem() {
 	}
 

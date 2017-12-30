@@ -55,20 +55,33 @@ import (
 )
 
 func CodecGenTempWrite{{ .RandString }}() {
+	os.Remove("{{ .OutFile }}")
 	fout, err := os.Create("{{ .OutFile }}")
 	if err != nil {
 		panic(err)
 	}
 	defer fout.Close()
-	var out bytes.Buffer
 	
-	var typs []reflect.Type 
+	var typs []reflect.Type
+	var typ reflect.Type
+	var numfields int
 {{ range $index, $element := .Types }}
 	var t{{ $index }} {{ . }}
-	typs = append(typs, reflect.TypeOf(t{{ $index }}))
+typ = reflect.TypeOf(t{{ $index }})
+	typs = append(typs, typ)
+	if typ.Kind() == reflect.Struct { numfields += typ.NumField() } else { numfields += 1 }
 {{ end }}
-	{{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}Gen(&out, "{{ .BuildTag }}", "{{ .PackageName }}", "{{ .RandString }}", {{ .NoExtensions }}, {{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}NewTypeInfos(strings.Split("{{ .StructTags }}", ",")), typs...)
+
+	// println("initializing {{ .OutFile }}, buf size: {{ .AllFilesSize }}*16",
+	// 	{{ .AllFilesSize }}*16, "num fields: ", numfields)
+	var out = bytes.NewBuffer(make([]byte, 0, numfields*1024)) // {{ .AllFilesSize }}*16
+	{{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}Gen(out,
+		"{{ .BuildTag }}", "{{ .PackageName }}", "{{ .RandString }}", {{ .NoExtensions }},
+		{{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}NewTypeInfos(strings.Split("{{ .StructTags }}", ",")),
+		 typs...)
+
 	bout, err := format.Source(out.Bytes())
+	// println("... lengths: before formatting: ", len(out.Bytes()), ", after formatting", len(bout))
 	if err != nil {
 		fout.Write(out.Bytes())
 		panic(err)
@@ -129,6 +142,7 @@ func Generate(outfile, buildTag, codecPkgPath string,
 		BuildTag        string
 		StructTags      string
 		Types           []string
+		AllFilesSize    int64
 		CodecPkgFiles   bool
 		NoExtensions    bool
 	}
@@ -150,11 +164,17 @@ func Generate(outfile, buildTag, codecPkgPath string,
 		tv.ImportPath = stripVendor(tv.ImportPath)
 	}
 	astfiles := make([]*ast.File, len(infiles))
+	var fi os.FileInfo
 	for i, infile := range infiles {
 		if filepath.Dir(infile) != lastdir {
 			err = errors.New("in files must all be in same directory as outfile")
 			return
 		}
+		if fi, err = os.Stat(infile); err != nil {
+			return
+		}
+		tv.AllFilesSize += fi.Size()
+
 		fset := token.NewFileSet()
 		astfiles[i], err = parser.ParseFile(fset, infile, nil, 0)
 		if err != nil {
@@ -295,6 +315,7 @@ func gen1(frunName, tmplStr string, tv interface{}) (frun *os.File, err error) {
 	}
 	bw := bufio.NewWriter(frun)
 	if err = t.Execute(bw, tv); err != nil {
+		bw.Flush()
 		return
 	}
 	if err = bw.Flush(); err != nil {

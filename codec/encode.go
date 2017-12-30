@@ -311,12 +311,12 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			return
 		}
 	}
-	if f.seq == seqTypeChan && ti.rt.ChanDir()&reflect.RecvDir == 0 {
+	if f.seq == seqTypeChan && ti.chandir&uint8(reflect.RecvDir) == 0 {
 		e.errorf("send-only channel cannot be used for receiving byte(s)")
 	}
 	elemsep := e.esep
 	l := rv.Len()
-	rtelem := ti.rt.Elem()
+	rtelem := ti.elem
 	rtelemIsByte := uint8TypId == rt2id(rtelem) // NOT rtelem.Kind() == reflect.Uint8
 	// if a slice, array or chan of bytes, treat specially
 	if rtelemIsByte {
@@ -526,14 +526,14 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		// kv.r = si.field(rv, false)
 		kv.r = sfn.field(si)
 		if toMap {
-			if si.omitEmpty() && isEmptyValue(kv.r, recur, recur) {
+			if si.omitEmpty() && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
 				continue
 			}
 			kv.v = si.encName
 		} else {
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
-			if si.omitEmpty() && isEmptyValue(kv.r, recur, recur) {
+			if si.omitEmpty() && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
 				switch kv.r.Kind() {
 				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array, reflect.Map, reflect.Slice:
 					kv.r = reflect.Value{} //encode as nil
@@ -611,9 +611,9 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	// a concrete type and kInterface will bomb.
 	var keyFn, valFn *codecFn
 	ti := f.ti
-	rtkey0 := ti.rt.Key()
+	rtkey0 := ti.key
 	rtkey := rtkey0
-	rtval0 := ti.rt.Elem()
+	rtval0 := ti.elem
 	rtval := rtval0
 	// rtkeyid := rt2id(rtkey0)
 	for rtval.Kind() == reflect.Ptr {
