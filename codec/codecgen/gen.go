@@ -116,8 +116,7 @@ func Generate(outfile, buildTag, codecPkgPath string,
 	}
 	if uid < 0 {
 		uid = -uid
-	}
-	if uid == 0 {
+	} else if uid == 0 {
 		rr := rand.New(rand.NewSource(time.Now().UnixNano()))
 		uid = 101 + rr.Int63n(9777)
 	}

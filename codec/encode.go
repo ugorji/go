@@ -1088,7 +1088,7 @@ func (e *Encoder) MustEncode(v interface{}) {
 	e.encode(v)
 	e.e.atEndOfEncode()
 	e.w.atEndOfEncode()
-	e.alwaysAtEnd() // TODO: why does this cause test failures???
+	e.alwaysAtEnd()
 }
 
 // func (e *Encoder) alwaysAtEnd() {

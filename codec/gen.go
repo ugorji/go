@@ -100,6 +100,8 @@ import (
 // v4: Removed separator support from (en|de)cDriver, and refactored codec(gen)
 // v5: changes to support faster json decoding. Let encoder/decoder maintain state of collections.
 // v6: removed unsafe from gen, and now uses codecgen.exec tag
+// v7:
+// v8: current - we now maintain compatibility with old generated code.
 const genVersion = 8
 
 const (
@@ -1190,14 +1192,6 @@ func (x *genRunner) decVarMain(varname, rand string, t reflect.Type, checkNotNil
 	if t.Kind() != reflect.Ptr {
 		if t.PkgPath() != "" || !x.decTryAssignPrimitive(varname, t, false) {
 			x.dec(varname, t, false)
-			// TODO: should we create temp var if a struct or slice/map indexing?
-			// if strings.IndexByte(varname, '.') != -1 {
-			// 	x.dec(varname, t, false)
-			// } else {
-			// 	varname2 = genTempVarPfx + "v" + rand
-			// 	x.line(varname2 + " := &" + varname)
-			// 	x.dec(varname2, t, true)
-			// }
 		}
 	} else {
 		if checkNotNil {
@@ -1213,13 +1207,7 @@ func (x *genRunner) decVarMain(varname, rand string, t reflect.Type, checkNotNil
 					ptrPfx, varname, ptrPfx, varname, x.genTypeName(t))
 			}
 		}
-		// TODO: Should we create temp var if a slice/map indexing?
-		// // if varname has [ in it, then create temp variable for this ptr thingie
-		// if strings.IndexByte(varname, '[') != -1 {
-		// 	varname2 = genTempVarPfx + "w" + rand
-		// 	x.line(varname2 + " := " + varname)
-		// 	varname = varname2
-		// }
+		// Should we create temp var if a slice/map indexing? No. dec(...) can now handle it.
 
 		if ptrPfx == "" {
 			x.dec(varname, t, true)
@@ -1351,6 +1339,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	if x.decTryAssignPrimitive(varname, t, isptr) {
 		return
 	}
+
 	switch t.Kind() {
 	case reflect.Array, reflect.Chan:
 		x.xtraSM(varname, t, false, isptr)
@@ -1363,11 +1352,9 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		if rtid == uint8SliceTypId {
 			x.linef("%s%s = r.DecodeBytes(%s(%s[]byte)(%s), false)",
 				ptrPfx, varname, ptrPfx, ptrPfx, varname)
-			// x.line("*" + varname + " = r.DecodeBytes(*(*[]byte)(" + varname + "), false)")
 		} else if fastpathAV.index(rtid) != -1 {
 			g := x.newGenV(t)
 			x.linef("z.F.%sX(%s%s, d)", g.MethodNamePfx("Dec", false), addrPfx, varname)
-			// x.line("z.F." + g.MethodNamePfx("Dec", false) + "X(" + varname + ", d)")
 		} else {
 			x.xtraSM(varname, t, false, isptr)
 			// x.decListFallback(varname, rtid, false, t)
@@ -1380,18 +1367,19 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		if fastpathAV.index(rtid) != -1 {
 			g := x.newGenV(t)
 			x.linef("z.F.%sX(%s%s, d)", g.MethodNamePfx("Dec", false), addrPfx, varname)
-			// x.line("z.F." + g.MethodNamePfx("Dec", false) + "X(" + varname + ", d)")
 		} else {
 			x.xtraSM(varname, t, false, isptr)
 			// x.decMapFallback(varname, rtid, t)
 		}
 	case reflect.Struct:
 		if inlist {
-			if isptr {
+			// no need to create temp variable if isptr, or x.F or x[F]
+			if isptr || strings.IndexByte(varname, '.') != -1 || strings.IndexByte(varname, '[') != -1 {
 				x.decStruct(varname, rtid, t)
 			} else {
-				// TODO: create temp variable, and call pass to decStruct
-
+				varname2 := genTempVarPfx + "j" + mi
+				x.line(varname2 + " := &" + varname)
+				x.decStruct(varname2, rtid, t)
 			}
 		} else {
 			// delete(x.td, rtid)
@@ -1481,10 +1469,6 @@ func (x *genRunner) decListFallback(varname string, rtid uintptr, t reflect.Type
 		x.decVar(varname, "", telem, false, true)
 		return ""
 	}
-	// funcs["decLine"] = func(pfx string) string {
-	// 	x.decVar(ts.TempVar+pfx+ts.Rand, "", reflect.PtrTo(telem), false)
-	// 	return ""
-	// }
 	funcs["var"] = func(s string) string {
 		return ts.TempVar + s + ts.Rand
 	}
@@ -1547,14 +1531,6 @@ func (x *genRunner) decMapFallback(varname string, rtid uintptr, t reflect.Type)
 		x.decVar(varname, decodedNilVarname, telem, false, true)
 		return ""
 	}
-	// funcs["decLineK"] = func(pfx string) string {
-	// 	x.decVar(ts.TempVar+pfx+ts.Rand, reflect.PtrTo(tkey), false)
-	// 	return ""
-	// }
-	// funcs["decLine"] = func(pfx string) string {
-	// 	x.decVar(ts.TempVar+pfx+ts.Rand, reflect.PtrTo(telem), false)
-	// 	return ""
-	// }
 	funcs["var"] = func(s string) string {
 		return ts.TempVar + s + ts.Rand
 	}
@@ -1662,8 +1638,7 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 }
 
 func (x *genRunner) decStruct(varname string, rtid uintptr, t reflect.Type) {
-	// if container is map
-	// varname MUST be a ptr.
+	// varname MUST be a ptr, or a struct field or a slice element.
 	i := x.varsfx()
 	x.linef("%sct%s := r.ContainerType()", genTempVarPfx, i)
 	x.linef("if %sct%s == codecSelferValueTypeMap%s {", genTempVarPfx, i, x.xs)
