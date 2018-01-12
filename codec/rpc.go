@@ -96,8 +96,15 @@ func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2 bool) (err error) {
 		if writeObj2 {
 			err = c.enc.Encode(obj2)
 		}
-		if err == nil && c.f != nil {
+		// if err == nil && c.f != nil {
+		// 	err = c.f.Flush()
+		// }
+	}
+	if c.f != nil {
+		if err == nil {
 			err = c.f.Flush()
+		} else {
+			c.f.Flush()
 		}
 	}
 	return
@@ -137,15 +144,16 @@ func (c *rpcCodec) Close() error {
 	}
 	c.clsmu.Lock()
 	c.cls = true
-	var fErr error
-	if c.f != nil {
-		fErr = c.f.Flush()
-	}
-	_ = fErr
+	// var fErr error
+	// if c.f != nil {
+	// 	fErr = c.f.Flush()
+	// }
+	// _ = fErr
+	// c.clsErr = c.c.Close()
+	// if c.clsErr == nil && fErr != nil {
+	// 	c.clsErr = fErr
+	// }
 	c.clsErr = c.c.Close()
-	if c.clsErr == nil && fErr != nil {
-		c.clsErr = fErr
-	}
 	c.clsmu.Unlock()
 	return c.clsErr
 }
