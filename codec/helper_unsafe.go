@@ -23,12 +23,12 @@ const safeMode = false
 const unsafeFlagIndir = 1 << 7 // keep in sync with GO_ROOT/src/reflect/value.go
 
 type unsafeString struct {
-	Data uintptr
+	Data unsafe.Pointer
 	Len  int
 }
 
 type unsafeSlice struct {
-	Data uintptr
+	Data unsafe.Pointer
 	Len  int
 	Cap  int
 }
@@ -176,16 +176,24 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) b
 // --------------------------
 
 type atomicTypeInfoSlice struct { // expected to be 2 words
-	v unsafe.Pointer
-	_ [8]byte // padding
+	v unsafe.Pointer // data array - Pointer (not uintptr) to maintain GC reference
+	l int64          // length of the data array
 }
 
-func (x *atomicTypeInfoSlice) load() *[]rtid2ti {
-	return (*[]rtid2ti)(atomic.LoadPointer(&x.v))
+func (x *atomicTypeInfoSlice) load() []rtid2ti {
+	l := int(atomic.LoadInt64(&x.l))
+	if l == 0 {
+		return nil
+	}
+	return *(*[]rtid2ti)(unsafe.Pointer(&unsafeSlice{Data: atomic.LoadPointer(&x.v), Len: l, Cap: l}))
+	// return (*[]rtid2ti)(atomic.LoadPointer(&x.v))
 }
 
-func (x *atomicTypeInfoSlice) store(p *[]rtid2ti) {
-	atomic.StorePointer(&x.v, unsafe.Pointer(p))
+func (x *atomicTypeInfoSlice) store(p []rtid2ti) {
+	s := (*unsafeSlice)(unsafe.Pointer(&p))
+	atomic.StorePointer(&x.v, s.Data)
+	atomic.StoreInt64(&x.l, int64(s.Len))
+	// atomic.StorePointer(&x.v, unsafe.Pointer(p))
 }
 
 // --------------------------

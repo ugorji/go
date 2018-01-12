@@ -98,15 +98,15 @@ type atomicTypeInfoSlice struct { // expected to be 2 words
 	v atomic.Value
 }
 
-func (x *atomicTypeInfoSlice) load() *[]rtid2ti {
+func (x *atomicTypeInfoSlice) load() []rtid2ti {
 	i := x.v.Load()
 	if i == nil {
 		return nil
 	}
-	return i.(*[]rtid2ti)
+	return i.([]rtid2ti)
 }
 
-func (x *atomicTypeInfoSlice) store(p *[]rtid2ti) {
+func (x *atomicTypeInfoSlice) store(p []rtid2ti) {
 	x.v.Store(p)
 }
 
