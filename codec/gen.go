@@ -278,7 +278,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 		x.linef("codecSelferValueType%s%s = %v", vt.String(), x.xs, int64(vt))
 	}
 
-	x.linef("codecSelferBitsize%s = uint8(strconv.IntSize) // uint8(32 << (^uint(0) >> 63))", x.xs)
+	x.linef("codecSelferBitsize%s = uint8(32 << (^uint(0) >> 63))", x.xs)
 	x.line(")")
 	x.line("var (")
 	x.line("errCodecSelferOnlyMapOrArrayEncodeToStruct" + x.xs + " = errors.New(`only encoded map or array can be decoded into a struct`)")

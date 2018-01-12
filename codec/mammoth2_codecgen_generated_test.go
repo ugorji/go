@@ -21,7 +21,7 @@ const (
 	codecSelferValueTypeInt19781    = 2
 	codecSelferValueTypeUint19781   = 3
 	codecSelferValueTypeFloat19781  = 4
-	codecSelferBitsize19781         = uint8(strconv.IntSize) // uint8(32 << (^uint(0) >> 63))
+	codecSelferBitsize19781         = uint8(32 << (^uint(0) >> 63))
 )
 
 var (
