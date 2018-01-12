@@ -235,15 +235,10 @@ package codec
 //     However, it will only  be inlined if mid-stack inlining is enabled,
 //     as we call panic to raise errors, and panic currently prevents inlining.
 //
-//   - Unexport BasicHandle.
-//     If godoc can now show the embedded options, then unexport it.
-// 
 // PUNTED:
 //   - To make Handle comparable, make extHandle in BasicHandle a non-embedded pointer,
 //     and use overlay methods on *BasicHandle to call through to extHandle after initializing
 //     the "xh *extHandle" to point to a real slice.
-//
-//   - Allow mapping a concrete type to an interface, for use during decoding.
 //
 // BEFORE EACH RELEASE:
 //   - Look through and fix padding for each type, to eliminate false sharing
