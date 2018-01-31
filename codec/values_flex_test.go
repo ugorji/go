@@ -40,10 +40,6 @@ type SstructbigMapBySlice struct {
 	Sptr      *Sstructbig
 }
 
-type Sinterface interface {
-	Noop()
-}
-
 // small struct for testing that codecgen works for unexported types
 type tLowerFirstLetter struct {
 	I int
