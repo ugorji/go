@@ -1874,12 +1874,13 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		0, 1,
 		math.MaxInt8, math.MaxInt8 + 4, math.MaxInt8 - 4,
 		math.MaxInt16, math.MaxInt16 + 4, math.MaxInt16 - 4,
-		math.MaxInt32, math.MaxInt32 + 4, math.MaxInt32 - 4,
-		math.MaxInt64, math.MaxInt64 - 4,
+		math.MaxInt32, math.MaxInt32 - 4,
+		// math.MaxInt32 + 4, // bombs on 32-bit
+		// math.MaxInt64, math.MaxInt64 - 4, // bombs on 32-bit
 
 		math.MaxUint8, math.MaxUint8 + 4, math.MaxUint8 - 4,
 		math.MaxUint16, math.MaxUint16 + 4, math.MaxUint16 - 4,
-		math.MaxUint32, math.MaxUint32 + 4, math.MaxUint32 - 4,
+		// math.MaxUint32, math.MaxUint32 + 4, math.MaxUint32 - 4, // bombs on 32-bit
 	} {
 		m[i] = make([]struct{}, i)
 	}
