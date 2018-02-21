@@ -176,8 +176,8 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) b
 // --------------------------
 
 type atomicTypeInfoSlice struct { // expected to be 2 words
+	l int64          // length of the data array (must be first in struct, for 64-bit alignment necessary for 386)
 	v unsafe.Pointer // data array - Pointer (not uintptr) to maintain GC reference
-	l int64          // length of the data array
 }
 
 func (x *atomicTypeInfoSlice) load() []rtid2ti {
