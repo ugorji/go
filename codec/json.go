@@ -638,9 +638,10 @@ func (d *jsonDecDriver) CheckBreak() bool {
 // - ReadArrayElem would become:
 //   readContainerState(containerArrayElem, ',', d.c != containerArrayStart)
 //
-// However, until mid-stack inlining (go 1.10?) comes, supporting inlining of
-// oneliners, we explicitly write them all 5 out to elide the extra func call.
-// TODO: For Go 1.10, if inlined, consider consolidating these.
+// However, until mid-stack inlining comes in go1.11 which supports inlining of
+// one-liners, we explicitly write them all 5 out to elide the extra func call.
+//
+// TODO: For Go 1.11, if inlined, consider consolidating these.
 
 func (d *jsonDecDriver) ReadArrayElem() {
 	const xc uint8 = ','

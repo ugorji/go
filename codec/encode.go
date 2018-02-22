@@ -314,7 +314,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		}
 	}
 	if f.seq == seqTypeChan && ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorf("send-only channel cannot be used for receiving byte(s)")
+		e.errorf("send-only channel cannot be encoded")
 	}
 	elemsep := e.esep
 	l := rv.Len()
@@ -837,7 +837,7 @@ type encWriterSwitch struct {
 	isas bool // whether e.as != nil
 }
 
-// // TODO: Uncomment after mid-stack inlining enabled in go 1.10
+// // TODO: Uncomment after mid-stack inlining enabled in go 1.11
 
 // func (z *encWriterSwitch) writeb(s []byte) {
 // 	if z.wx {

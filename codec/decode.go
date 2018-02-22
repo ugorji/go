@@ -1237,7 +1237,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	// This way, the order can be kept (as order is lost with map).
 	ti := f.ti
 	if f.seq == seqTypeChan && ti.chandir&uint8(reflect.SendDir) == 0 {
-		d.errorf("receive-only channel cannot be used for sending byte(s)")
+		d.errorf("receive-only channel cannot be decoded")
 	}
 	dd := d.d
 	rtelem0 := ti.elem
@@ -1734,7 +1734,7 @@ type decReaderSwitch struct {
 	esep  bool // has elem separators
 }
 
-// TODO: Uncomment after mid-stack inlining enabled in go 1.10
+// TODO: Uncomment after mid-stack inlining enabled in go 1.11
 //
 // func (z *decReaderSwitch) unreadn1() {
 // 	if z.bytes {
