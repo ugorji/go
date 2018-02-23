@@ -20,6 +20,10 @@ const (
 	msgDecCannotExpandArr = "cannot expand go array from %v to stream length: %v"
 )
 
+const decDefSliceCap = 8
+const decDefChanCap = 64 // should be large, as cap cannot be expanded
+const decScratchByteArrayLen = cacheLineSize - 8
+
 var (
 	errstrOnlyMapOrArrayCanDecodeIntoStruct = "only encoded map or array can be decoded into a struct"
 	errstrCannotDecodeIntoNil               = "cannot decode into nil"
@@ -1356,14 +1360,17 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		if j == 0 && (f.seq == seqTypeSlice || f.seq == seqTypeChan) && rv.IsNil() {
 			if hasLen {
 				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, rtelem0Size)
+			} else if f.seq == seqTypeSlice {
+				rvlen = decDefSliceCap
 			} else {
-				rvlen = 8
+				rvlen = decDefChanCap
 			}
 			if rvCanset {
 				if f.seq == seqTypeSlice {
 					rv = reflect.MakeSlice(ti.rt, rvlen, rvlen)
 					rvChanged = true
 				} else { // chan
+					// xdebugf(">>>>>> haslen = %v, make chan of type '%v' with length: %v", hasLen, ti.rt, rvlen)
 					rv = reflect.MakeChan(ti.rt, rvlen)
 					rvChanged = true
 				}
@@ -1385,6 +1392,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				fn = d.cf.get(rtelem, true, true)
 			}
 			d.decodeValue(rv9, fn, true)
+			// xdebugf(">>>> rv9 sent on %v during decode: %v, with len=%v, cap=%v", rv.Type(), rv9, rv.Len(), rv.Cap())
 			rv.Send(rv9)
 		} else {
 			// if indefinite, etc, then expand the slice if necessary
@@ -1799,8 +1807,6 @@ type decReaderSwitch struct {
 // 	}
 // 	return z.ri.readUntil(in, stop)
 // }
-
-const decScratchByteArrayLen = cacheLineSize - 8
 
 // A Decoder reads and decodes an object from an input stream in the codec format.
 type Decoder struct {

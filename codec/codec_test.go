@@ -881,7 +881,7 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	} else {
 		logT(t, "------- b: size: %v, value: %s", len(b), b1)
 	}
-	ts2 := new(TestStrucFlex)
+	ts2 := emptyTestStrucFlex()
 	testUnmarshalErr(ts2, b, h, t, "pointer-to-struct")
 	if ts2.I64 != math.MaxInt64*2/3 {
 		logT(t, "------- Unmarshal wrong. Expect I64 = 64. Got: %v", ts2.I64)

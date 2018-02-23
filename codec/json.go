@@ -1268,7 +1268,7 @@ type JsonHandle struct {
 	// If not configured, raw bytes are encoded to/from base64 text.
 	RawBytesExt InterfaceExt
 
-	_ [3]uint64 // padding
+	_ [2]uint64 // padding
 }
 
 // Name returns the name of the handle: json
