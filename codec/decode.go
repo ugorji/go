@@ -2008,9 +2008,7 @@ func (d *Decoder) naked() *decNaked {
 // Note: we allow nil values in the stream anywhere except for map keys.
 // A nil value in the encoded stream where a map key is expected is treated as an error.
 func (d *Decoder) Decode(v interface{}) (err error) {
-	// need to call defer directly, else it seems the recover is not fully handled
-	defer panicToErrs2(d, &d.err, &err)
-	defer d.alwaysAtEnd()
+	defer d.deferred(&err)
 	d.MustDecode(v)
 	return
 }
@@ -2031,11 +2029,15 @@ func (d *Decoder) MustDecode(v interface{}) {
 	// xprintf(">>>>>>>> >>>>>>>> num decFns: %v\n", d.cf.sn)
 }
 
-// // this is not a smart swallow, as it allocates objects and does unnecessary work.
-// func (d *Decoder) swallowViaHammer() {
-// 	var blank interface{}
-// 	d.decodeValueNoFn(reflect.ValueOf(&blank).Elem())
-// }
+func (d *Decoder) deferred(err1 *error) {
+	d.alwaysAtEnd()
+	if recoverPanicToErr {
+		if x := recover(); x != nil {
+			panicValToErr(d, x, err1)
+			panicValToErr(d, x, &d.err)
+		}
+	}
+}
 
 func (d *Decoder) alwaysAtEnd() {
 	if d.n != nil {
@@ -2045,6 +2047,12 @@ func (d *Decoder) alwaysAtEnd() {
 	}
 	d.codecFnPooler.alwaysAtEnd()
 }
+
+// // this is not a smart swallow, as it allocates objects and does unnecessary work.
+// func (d *Decoder) swallowViaHammer() {
+// 	var blank interface{}
+// 	d.decodeValueNoFn(reflect.ValueOf(&blank).Elem())
+// }
 
 func (d *Decoder) swallow() {
 	// smarter decode that just swallows the content

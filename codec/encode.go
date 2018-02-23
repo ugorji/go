@@ -1063,9 +1063,12 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // Encode writes an object into a stream.
 //
 // Encoding can be configured via the struct tag for the fields.
-// The "codec" key in struct field's tag value is the key name,
+// The key (in the struct tags) that we look at is configurable.
+//
+// By default, we look up the "codec" key in the struct field's tags,
+// and fall bak to the "json" key if "codec" is absent.
+// That key in struct field's tag value is the key name,
 // followed by an optional comma and options.
-// Note that the "json" key is used in the absence of the "codec" key.
 //
 // To set an option on all fields (e.g. omitempty on all fields), you
 // can create a field called _struct, and set flags on it. The options
@@ -1141,8 +1144,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // Some formats support symbols (e.g. binc) and will properly encode the string
 // only once in the stream, and use a tag to refer to it thereafter.
 func (e *Encoder) Encode(v interface{}) (err error) {
-	defer panicToErrs2(e, &e.err, &err)
-	defer e.alwaysAtEnd()
+	defer e.deferred(&err)
 	e.MustEncode(v)
 	return
 }
@@ -1157,6 +1159,16 @@ func (e *Encoder) MustEncode(v interface{}) {
 	e.e.atEndOfEncode()
 	e.w.atEndOfEncode()
 	e.alwaysAtEnd()
+}
+
+func (e *Encoder) deferred(err1 *error) {
+	e.alwaysAtEnd()
+	if recoverPanicToErr {
+		if x := recover(); x != nil {
+			panicValToErr(e, x, err1)
+			panicValToErr(e, x, &e.err)
+		}
+	}
 }
 
 // func (e *Encoder) alwaysAtEnd() {
