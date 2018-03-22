@@ -1317,6 +1317,8 @@ type U2 struct {
 var _ UnknownFieldHandler = (*U2)(nil)
 
 func doTestEncUnknownFields(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
+
 	u2 := U2{
 		UBase: UBase{
 			S: "t1",
