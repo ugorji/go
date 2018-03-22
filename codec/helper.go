@@ -2318,37 +2318,37 @@ func (x *bitset32) set(pos byte) {
 // ------------
 
 type pooler struct {
-	dn                                          sync.Pool // for decNaked
-	cfn                                         sync.Pool // for codecFner
-	tiload                                      sync.Pool
-	strRv8, strRv16, strRv32, strRv64, strRv128 sync.Pool // for stringRV
+	dn                           sync.Pool // for decNaked
+	cfn                          sync.Pool // for codecFner
+	tiload                       sync.Pool
+	sf8, sf16, sf32, sf64, sf128 sync.Pool // for structField
 }
 
 func (p *pooler) init() {
-	p.strRv8.New = func() interface{} { return new([8]stringRv) }
-	p.strRv16.New = func() interface{} { return new([16]stringRv) }
-	p.strRv32.New = func() interface{} { return new([32]stringRv) }
-	p.strRv64.New = func() interface{} { return new([64]stringRv) }
-	p.strRv128.New = func() interface{} { return new([128]stringRv) }
+	p.sf8.New = func() interface{} { return new([8]structField) }
+	p.sf16.New = func() interface{} { return new([16]structField) }
+	p.sf32.New = func() interface{} { return new([32]structField) }
+	p.sf64.New = func() interface{} { return new([64]structField) }
+	p.sf128.New = func() interface{} { return new([128]structField) }
 	p.dn.New = func() interface{} { x := new(decNaked); x.init(); return x }
 	p.tiload.New = func() interface{} { return new(typeInfoLoadArray) }
 	p.cfn.New = func() interface{} { return new(codecFner) }
 }
 
-func (p *pooler) stringRv8() (sp *sync.Pool, v interface{}) {
-	return &p.strRv8, p.strRv8.Get()
+func (p *pooler) structField8() (sp *sync.Pool, v interface{}) {
+	return &p.sf8, p.sf8.Get()
 }
-func (p *pooler) stringRv16() (sp *sync.Pool, v interface{}) {
-	return &p.strRv16, p.strRv16.Get()
+func (p *pooler) structField16() (sp *sync.Pool, v interface{}) {
+	return &p.sf16, p.sf16.Get()
 }
-func (p *pooler) stringRv32() (sp *sync.Pool, v interface{}) {
-	return &p.strRv32, p.strRv32.Get()
+func (p *pooler) structField32() (sp *sync.Pool, v interface{}) {
+	return &p.sf32, p.sf32.Get()
 }
-func (p *pooler) stringRv64() (sp *sync.Pool, v interface{}) {
-	return &p.strRv64, p.strRv64.Get()
+func (p *pooler) structField64() (sp *sync.Pool, v interface{}) {
+	return &p.sf64, p.sf64.Get()
 }
-func (p *pooler) stringRv128() (sp *sync.Pool, v interface{}) {
-	return &p.strRv128, p.strRv128.Get()
+func (p *pooler) structField128() (sp *sync.Pool, v interface{}) {
+	return &p.sf128, p.sf128.Get()
 }
 func (p *pooler) decNaked() (sp *sync.Pool, v interface{}) {
 	return &p.dn, p.dn.Get()
