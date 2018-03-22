@@ -152,6 +152,11 @@ type EncodeOptions struct {
 	// If unset, we error out.
 	Raw bool
 
+	// If EncodeUnknownFields, then when encoding a struct
+	// implementing UnknownFieldHandler, also encode the unknown
+	// fields.
+	EncodeUnknownFields bool
+
 	// // AsSymbols defines what should be encoded as symbols.
 	// //
 	// // Encoding as symbols can reduce the encoded size significantly.

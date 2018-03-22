@@ -330,6 +330,8 @@ var (
 	selferTyp = reflect.TypeOf((*Selfer)(nil)).Elem()
 	iszeroTyp = reflect.TypeOf((*isZeroer)(nil)).Elem()
 
+	unknownFieldHandlerTyp = reflect.TypeOf((*UnknownFieldHandler)(nil)).Elem()
+
 	uint8TypId      = rt2id(uint8Typ)
 	uint8SliceTypId = rt2id(uint8SliceTyp)
 	rawExtTypId     = rt2id(rawExtTyp)
@@ -398,6 +400,62 @@ var immutableKindsSet = [32]bool{
 type Selfer interface {
 	CodecEncodeSelf(*Encoder)
 	CodecDecodeSelf(*Decoder)
+}
+
+// An UnknownFieldSet holds information about unknown fields
+// encountered during decoding. The zero value is an empty
+// set.
+type UnknownFieldSet struct {
+	// Map from field name to encoded value.
+	fields map[string][]byte
+}
+
+func (ufs *UnknownFieldSet) add(name string, encodedVal []byte) {
+	if ufs.fields == nil {
+		ufs.fields = make(map[string][]byte)
+	} else {
+		if _, ok := ufs.fields[name]; ok {
+			panic(fmt.Errorf("Duplicate unknown field with name %q",
+				name))
+		}
+	}
+	// In general, encodedVal is a slice into a buffer, so we need
+	// to store a copy. Consistently allocate a new slice even
+	// when encodedVal has length 0 so that reflect.DeepEquals
+	// works. (Consistently storing nil would also work.)
+	encodedValCopy := make([]byte, len(encodedVal))
+	copy(encodedValCopy, encodedVal)
+	ufs.fields[name] = encodedValCopy
+}
+
+// UnknownFieldHandler defines methods by which a value can store
+// unknown fields encountered during decoding.
+type UnknownFieldHandler interface {
+	// CodecSetUnknownFields is called exactly once during
+	// decoding with the set of all unknown fields encountered.
+	CodecSetUnknownFields(UnknownFieldSet)
+	// CodecGetUnknownFields is called exactly once during
+	// encoding to get the set of unknown fields to include in the
+	// encoding. Encoding must be done with the same handle type
+	// as what was used when decoding.
+	CodecGetUnknownFields() UnknownFieldSet
+}
+
+// UnknownFieldSetHandler is an implementation of UnknownFieldHandler
+// that uses an underlying UnknownFieldSet, so you can just embed it
+// in a struct type and it will automatically preserve unknown fields.
+type UnknownFieldSetHandler struct {
+	ufs UnknownFieldSet
+}
+
+var _ UnknownFieldHandler = (*UnknownFieldSetHandler)(nil)
+
+func (ufsh *UnknownFieldSetHandler) CodecSetUnknownFields(other UnknownFieldSet) {
+	ufsh.ufs = other
+}
+
+func (ufsh UnknownFieldSetHandler) CodecGetUnknownFields() UnknownFieldSet {
+	return ufsh.ufs
 }
 
 // MapBySlice is a tag interface that denotes wrapped slice should encode as a map in the stream.
@@ -1064,6 +1122,9 @@ type typeInfo struct {
 	cs  bool // T is a Selfer
 	csp bool // *T is a Selfer
 
+	ufh  bool // T is an UnknownFieldHandler
+	ufhp bool // *T is an UnknownFieldHandler
+
 	// other flags, with individual bits representing if set.
 	flags typeInfoFlag
 
@@ -1182,6 +1243,8 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	ti.jm, ti.jmp = implIntf(rt, jsonMarshalerTyp)
 	ti.ju, ti.jup = implIntf(rt, jsonUnmarshalerTyp)
 	ti.cs, ti.csp = implIntf(rt, selferTyp)
+
+	ti.ufh, ti.ufhp = implIntf(rt, unknownFieldHandlerTyp)
 
 	b1, b2 := implIntf(rt, iszeroTyp)
 	if b1 {

@@ -164,6 +164,13 @@ type DecodeOptions struct {
 	// if > 0, we use a smart buffer internally for performance purposes.
 	ReaderBufferSize int
 
+	// If DecodeUnknownFields, then when decoding a map from a
+	// codec stream into a struct implementing
+	// UnknownFieldHandler, and no matching struct field is found,
+	// keep track of the unknown fields and pass them into
+	// CodecSetUnknownFields().
+	DecodeUnknownFields bool
+
 	// If ErrorIfNoField, return an error when decoding a map
 	// from a codec stream into a struct, and no matching struct field is found.
 	ErrorIfNoField bool
