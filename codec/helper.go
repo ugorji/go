@@ -1903,6 +1903,14 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 				// taking a pointer value, which is
 				// needed for unknown field handling.
 				fi.addrD = true
+				if !ti.ufh && ti.ufhp {
+					// If *T and not T is an
+					// UnknownFieldHandler, then
+					// mark (*Decoder).kStruct as
+					// requiring taking a pointer
+					// value.
+					fi.addrF = true
+				}
 				fn.fd = (*Decoder).kStruct
 			case reflect.Map:
 				fn.fe = (*Encoder).kMap

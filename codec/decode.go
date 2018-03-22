@@ -28,6 +28,8 @@ var (
 	errstrOnlyMapOrArrayCanDecodeIntoStruct = "only encoded map or array can be decoded into a struct"
 	errstrCannotDecodeIntoNil               = "cannot decode into nil"
 
+	errstrUnknownFieldHandlerOnlyWithMap = "can use UnknownFieldHandler only when decoding into a map"
+
 	errmsgExpandSliceOverflow     = "expand slice: slice overflow"
 	errmsgExpandSliceCannotChange = "expand slice: cannot change"
 
@@ -1178,6 +1180,20 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	}
 	sfn := structFieldNode{v: rvs, update: true}
 	ctyp := dd.ContainerType()
+
+	var ufh UnknownFieldHandler
+	var ufs UnknownFieldSet
+	if d.h.DecodeUnknownFields && (fti.ufh || fti.ufhp) {
+		if ctyp != valueTypeMap {
+			d.errorstr(errstrUnknownFieldHandlerOnlyWithMap)
+		}
+		if fti.ufh {
+			ufh = rv2i(rvs).(UnknownFieldHandler)
+		} else { // fti.ufhp
+			ufh = rv2i(rv).(UnknownFieldHandler)
+		}
+	}
+
 	if ctyp == valueTypeMap {
 		containerLen := dd.ReadMapStart()
 		if containerLen == 0 {
@@ -1203,12 +1219,20 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				} else {
 					d.decodeValue(sfn.field(si), nil, true)
 				}
+			} else if ufh != nil {
+				// Need to do this before calling
+				// d.nextValueBytes().
+				nameCopy := string(rvkencname)
+				ufs.add(nameCopy, d.nextValueBytes())
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
 			}
 			// keepAlive4StringView(rvkencnameB) // not needed, as reference is outside loop
 		}
 		dd.ReadMapEnd()
+		if ufh != nil {
+			ufh.CodecSetUnknownFields(ufs)
+		}
 	} else if ctyp == valueTypeArray {
 		containerLen := dd.ReadArrayStart()
 		if containerLen == 0 {
