@@ -1172,7 +1172,11 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	fti := f.ti
 	dd := d.d
 	elemsep := d.esep
-	sfn := structFieldNode{v: rv, update: true}
+	rvs := rv
+	if rv.Kind() == reflect.Ptr {
+		rvs = rv.Elem()
+	}
+	sfn := structFieldNode{v: rvs, update: true}
 	ctyp := dd.ContainerType()
 	if ctyp == valueTypeMap {
 		containerLen := dd.ReadMapStart()
@@ -1195,7 +1199,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			if k := fti.indexForEncName(rvkencname); k > -1 {
 				si := tisfi[k]
 				if dd.TryDecodeAsNil() {
-					si.setToZeroValue(rv)
+					si.setToZeroValue(rvs)
 				} else {
 					d.decodeValue(sfn.field(si), nil, true)
 				}

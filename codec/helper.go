@@ -1899,6 +1899,10 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 				} else {
 					fn.fe = (*Encoder).kStructNoOmitempty
 				}
+				// Mark (*Decoder).kStruct as maybe
+				// taking a pointer value, which is
+				// needed for unknown field handling.
+				fi.addrD = true
 				fn.fd = (*Decoder).kStruct
 			case reflect.Map:
 				fn.fe = (*Encoder).kMap
