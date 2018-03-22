@@ -330,6 +330,8 @@ var (
 	selferTyp = reflect.TypeOf((*Selfer)(nil)).Elem()
 	iszeroTyp = reflect.TypeOf((*isZeroer)(nil)).Elem()
 
+	unknownFieldHandlerTyp = reflect.TypeOf((*UnknownFieldHandler)(nil)).Elem()
+
 	uint8TypId      = rt2id(uint8Typ)
 	uint8SliceTypId = rt2id(uint8SliceTyp)
 	rawExtTypId     = rt2id(rawExtTyp)
@@ -398,6 +400,62 @@ var immutableKindsSet = [32]bool{
 type Selfer interface {
 	CodecEncodeSelf(*Encoder)
 	CodecDecodeSelf(*Decoder)
+}
+
+// An UnknownFieldSet holds information about unknown fields
+// encountered during decoding. The zero value is an empty
+// set.
+type UnknownFieldSet struct {
+	// Map from field name to encoded value.
+	fields map[string][]byte
+}
+
+func (ufs *UnknownFieldSet) add(name string, encodedVal []byte) {
+	if ufs.fields == nil {
+		ufs.fields = make(map[string][]byte)
+	} else {
+		if _, ok := ufs.fields[name]; ok {
+			panic(fmt.Errorf("Duplicate unknown field with name %q",
+				name))
+		}
+	}
+	// In general, encodedVal is a slice into a buffer, so we need
+	// to store a copy. Consistently allocate a new slice even
+	// when encodedVal has length 0 so that reflect.DeepEquals
+	// works. (Consistently storing nil would also work.)
+	encodedValCopy := make([]byte, len(encodedVal))
+	copy(encodedValCopy, encodedVal)
+	ufs.fields[name] = encodedValCopy
+}
+
+// UnknownFieldHandler defines methods by which a value can store
+// unknown fields encountered during decoding.
+type UnknownFieldHandler interface {
+	// CodecSetUnknownFields is called exactly once during
+	// decoding with the set of all unknown fields encountered.
+	CodecSetUnknownFields(UnknownFieldSet)
+	// CodecGetUnknownFields is called exactly once during
+	// encoding to get the set of unknown fields to include in the
+	// encoding. Encoding must be done with the same handle type
+	// as what was used when decoding.
+	CodecGetUnknownFields() UnknownFieldSet
+}
+
+// UnknownFieldSetHandler is an implementation of UnknownFieldHandler
+// that uses an underlying UnknownFieldSet, so you can just embed it
+// in a struct type and it will automatically preserve unknown fields.
+type UnknownFieldSetHandler struct {
+	ufs UnknownFieldSet
+}
+
+var _ UnknownFieldHandler = (*UnknownFieldSetHandler)(nil)
+
+func (ufsh *UnknownFieldSetHandler) CodecSetUnknownFields(other UnknownFieldSet) {
+	ufsh.ufs = other
+}
+
+func (ufsh UnknownFieldSetHandler) CodecGetUnknownFields() UnknownFieldSet {
+	return ufsh.ufs
 }
 
 // MapBySlice is a tag interface that denotes wrapped slice should encode as a map in the stream.
@@ -1064,6 +1122,9 @@ type typeInfo struct {
 	cs  bool // T is a Selfer
 	csp bool // *T is a Selfer
 
+	ufh  bool // T is an UnknownFieldHandler
+	ufhp bool // *T is an UnknownFieldHandler
+
 	// other flags, with individual bits representing if set.
 	flags typeInfoFlag
 
@@ -1182,6 +1243,8 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	ti.jm, ti.jmp = implIntf(rt, jsonMarshalerTyp)
 	ti.ju, ti.jup = implIntf(rt, jsonUnmarshalerTyp)
 	ti.cs, ti.csp = implIntf(rt, selferTyp)
+
+	ti.ufh, ti.ufhp = implIntf(rt, unknownFieldHandlerTyp)
 
 	b1, b2 := implIntf(rt, iszeroTyp)
 	if b1 {
@@ -1831,10 +1894,28 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 				}
 				// fn.fd = (*Decoder).kArray
 			case reflect.Struct:
-				if ti.anyOmitEmpty {
+				if ti.anyOmitEmpty || ti.ufh || ti.ufhp {
+					// Mark (*Encoder).kStruct as
+					// taking a pointer value,
+					// which is needed for unknown
+					// field handling when ufhp is
+					// true.
+					fi.addrE = true
 					fn.fe = (*Encoder).kStruct
 				} else {
-					fn.fe = (*Encoder).kStructNoOmitempty
+					fn.fe = (*Encoder).kStructNoOmitemptyOrUnknownFields
+				}
+				// Mark (*Decoder).kStruct as maybe
+				// taking a pointer value, which is
+				// needed for unknown field handling.
+				fi.addrD = true
+				if !ti.ufh && ti.ufhp {
+					// If *T and not T is an
+					// UnknownFieldHandler, then
+					// mark (*Decoder).kStruct as
+					// requiring taking a pointer
+					// value.
+					fi.addrF = true
 				}
 				fn.fd = (*Decoder).kStruct
 			case reflect.Map:
@@ -2237,37 +2318,37 @@ func (x *bitset32) set(pos byte) {
 // ------------
 
 type pooler struct {
-	dn                                          sync.Pool // for decNaked
-	cfn                                         sync.Pool // for codecFner
-	tiload                                      sync.Pool
-	strRv8, strRv16, strRv32, strRv64, strRv128 sync.Pool // for stringRV
+	dn                           sync.Pool // for decNaked
+	cfn                          sync.Pool // for codecFner
+	tiload                       sync.Pool
+	sf8, sf16, sf32, sf64, sf128 sync.Pool // for structField
 }
 
 func (p *pooler) init() {
-	p.strRv8.New = func() interface{} { return new([8]stringRv) }
-	p.strRv16.New = func() interface{} { return new([16]stringRv) }
-	p.strRv32.New = func() interface{} { return new([32]stringRv) }
-	p.strRv64.New = func() interface{} { return new([64]stringRv) }
-	p.strRv128.New = func() interface{} { return new([128]stringRv) }
+	p.sf8.New = func() interface{} { return new([8]structField) }
+	p.sf16.New = func() interface{} { return new([16]structField) }
+	p.sf32.New = func() interface{} { return new([32]structField) }
+	p.sf64.New = func() interface{} { return new([64]structField) }
+	p.sf128.New = func() interface{} { return new([128]structField) }
 	p.dn.New = func() interface{} { x := new(decNaked); x.init(); return x }
 	p.tiload.New = func() interface{} { return new(typeInfoLoadArray) }
 	p.cfn.New = func() interface{} { return new(codecFner) }
 }
 
-func (p *pooler) stringRv8() (sp *sync.Pool, v interface{}) {
-	return &p.strRv8, p.strRv8.Get()
+func (p *pooler) structField8() (sp *sync.Pool, v interface{}) {
+	return &p.sf8, p.sf8.Get()
 }
-func (p *pooler) stringRv16() (sp *sync.Pool, v interface{}) {
-	return &p.strRv16, p.strRv16.Get()
+func (p *pooler) structField16() (sp *sync.Pool, v interface{}) {
+	return &p.sf16, p.sf16.Get()
 }
-func (p *pooler) stringRv32() (sp *sync.Pool, v interface{}) {
-	return &p.strRv32, p.strRv32.Get()
+func (p *pooler) structField32() (sp *sync.Pool, v interface{}) {
+	return &p.sf32, p.sf32.Get()
 }
-func (p *pooler) stringRv64() (sp *sync.Pool, v interface{}) {
-	return &p.strRv64, p.strRv64.Get()
+func (p *pooler) structField64() (sp *sync.Pool, v interface{}) {
+	return &p.sf64, p.sf64.Get()
 }
-func (p *pooler) stringRv128() (sp *sync.Pool, v interface{}) {
-	return &p.strRv128, p.strRv128.Get()
+func (p *pooler) structField128() (sp *sync.Pool, v interface{}) {
+	return &p.sf128, p.sf128.Get()
 }
 func (p *pooler) decNaked() (sp *sync.Pool, v interface{}) {
 	return &p.dn, p.dn.Get()
