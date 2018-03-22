@@ -1894,10 +1894,16 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 				}
 				// fn.fd = (*Decoder).kArray
 			case reflect.Struct:
-				if ti.anyOmitEmpty {
+				if ti.anyOmitEmpty || ti.ufh || ti.ufhp {
+					// Mark (*Encoder).kStruct as
+					// taking a pointer value,
+					// which is needed for unknown
+					// field handling when ufhp is
+					// true.
+					fi.addrE = true
 					fn.fe = (*Encoder).kStruct
 				} else {
-					fn.fe = (*Encoder).kStructNoOmitempty
+					fn.fe = (*Encoder).kStructNoOmitemptyOrUnknownFields
 				}
 				// Mark (*Decoder).kStruct as maybe
 				// taking a pointer value, which is
