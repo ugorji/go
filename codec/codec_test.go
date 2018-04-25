@@ -2548,6 +2548,172 @@ func TestJsonInvalidUnicode(t *testing.T) {
 	}
 }
 
+type UBase struct {
+	S string
+	B bool
+	I int
+}
+
+type U1 struct {
+	UBase
+
+	UnknownFieldSetHandler
+}
+
+var _ UnknownFieldHandler = (*U1)(nil)
+
+type U2 struct {
+	UBase
+
+	S2 string
+	B2 bool
+	I2 int
+
+	UnknownFieldSetHandler
+}
+
+var _ UnknownFieldHandler = (*U2)(nil)
+
+func doTestEncUnknownFields(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
+
+	u2 := U2{
+		UBase: UBase{
+			S: "t1",
+			B: true,
+			I: 5,
+		},
+		S2: "t2",
+		B2: false,
+		I2: 3,
+	}
+
+	// Encode a U2.
+	var bs2 []byte
+	err := NewEncoderBytes(&bs2, h).Encode(&u2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Decode it into a map.
+	var m map[string]interface{}
+	err = NewDecoderBytes(bs2, h).Decode(&m)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectedM := map[string]interface{}{
+		"S":  "t1",
+		"B":  true,
+		"I":  int64(5),
+		"S2": "t2",
+		"B2": false,
+		"I2": int64(3),
+	}
+
+	// Decoded map should have all fields except for
+	// UnknownFieldSet.
+	if !reflect.DeepEqual(expectedM, m) {
+		t.Fatalf("expectedM=%+v != m=%+v", expectedM, m)
+	}
+
+	// Decode it into a U1, with and without unknown fields.
+
+	var u1 U1
+	h.getBasicHandle().DecodeUnknownFields = false
+	err = NewDecoderBytes(bs2, h).Decode(&u1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var u1WithUnknown U1
+	h.getBasicHandle().DecodeUnknownFields = true
+	err = NewDecoderBytes(bs2, h).Decode(&u1WithUnknown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Both decoded U1s should have the same known fields as the
+	// encoded U2.
+	if !reflect.DeepEqual(u2.UBase, u1.UBase) {
+		t.Fatalf("u2.UBase=%+v != u1.UBase=%+v", u2.UBase, u1.UBase)
+	}
+	if !reflect.DeepEqual(u2.UBase, u1WithUnknown.UBase) {
+		t.Fatalf("u2.UBase=%+v != u1WithUnknown.UBase=%+v",
+			u2.UBase, u1WithUnknown.UBase)
+	}
+
+	// u1 should have no unknown fields.
+	u1UnknownFieldCount := len(u1.CodecGetUnknownFields().fields)
+	if u1UnknownFieldCount != 0 {
+		t.Fatalf("u1UnknownFieldCount=%d != 0", u1UnknownFieldCount)
+	}
+
+	// u1WithUnknown should have the U2-only fields as unknown.
+
+	expectedUfs := UnknownFieldSet{
+		fields: map[string][]byte{
+			// msgpack-encoded
+			"B2": []byte{0xc2},           // false
+			"I2": []byte{0x03},           // 3
+			"S2": []byte{0xa2, 't', '2'}, // "t2"
+		},
+	}
+	ufs := u1WithUnknown.CodecGetUnknownFields()
+	if !reflect.DeepEqual(expectedUfs, ufs) {
+		t.Fatalf("expectedUfs=%+v != ufs=%+v", expectedUfs, ufs)
+	}
+
+	// Encode u1WithUnknown, with and without unknown fields.
+
+	var bs1 []byte
+	h.getBasicHandle().EncodeUnknownFields = false
+	err = NewEncoderBytes(&bs1, h).Encode(&u1WithUnknown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var bs1WithUnknown []byte
+	h.getBasicHandle().EncodeUnknownFields = true
+	err = NewEncoderBytes(&bs1WithUnknown, h).Encode(&u1WithUnknown)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// u1WithUnknown encoded without unknown fields should encode
+	// into the same bytes as u1.
+
+	var bs3 []byte
+	h.getBasicHandle().EncodeUnknownFields = true
+	err = NewEncoderBytes(&bs3, h).Encode(&u1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(bs3, bs1) {
+		t.Fatalf("bs3=%+v != bs1WithUnknown=%+v", bs3, bs1)
+	}
+
+	// u1WithUnknown encoded with unknown fields should encode
+	// into the same bytes as the U2.
+	if !reflect.DeepEqual(bs2, bs1WithUnknown) {
+		t.Fatalf("bs2=%+v != bs1WithUnknown=%+v", bs2, bs1WithUnknown)
+	}
+
+	// Decode into another U2.
+	var u3 U2
+	err = NewDecoderBytes(bs1WithUnknown, h).Decode(&u3)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Second U2 should have the same known and unknown fields
+	// (i.e., none) as the first U2.
+	if !reflect.DeepEqual(u3, u2) {
+		t.Fatalf("u3=%+v != u2=%+v", u3, u2)
+	}
+}
+
 // ----------
 
 func TestBincCodecsTable(t *testing.T) {
@@ -2687,6 +2853,10 @@ func TestAllEncCircularRef(t *testing.T) {
 
 func TestAllAnonCycle(t *testing.T) {
 	doTestAnonCycle(t, "cbor", testCborH)
+}
+
+func TestAllEncUnknownFields(t *testing.T) {
+	doTestEncUnknownFields(t, testMsgpackH)
 }
 
 // ----- RPC -----
