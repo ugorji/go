@@ -63,6 +63,7 @@ type AnonInTestStrucIntf struct {
 	Ms     map[string]interface{}
 	Nintf  interface{} //don't set this, so we can test for nil
 	T      time.Time
+	Tptr   *time.Time
 }
 
 var testWRepeated512 wrapBytes
