@@ -1055,7 +1055,7 @@ func testCodecChan(t *testing.T, h Handle) {
 		type testBytesT []byte
 		sl1 := make([]testBytesT, 4)
 		for i := range sl1 {
-			var j = []byte(strings.Repeat(strconv.FormatInt(int64(i), 10), i))
+			var j = []byte(strings.Repeat(strconv.Itoa(i), i))
 			sl1[i] = j
 		}
 		ch1 := make(chan testBytesT, 4)
@@ -1082,7 +1082,7 @@ func testCodecChan(t *testing.T, h Handle) {
 		type testBytesT byte
 		sl1 := make([]testBytesT, 4)
 		for i := range sl1 {
-			var j = strconv.FormatInt(int64(i), 10)[0]
+			var j = strconv.Itoa(i)[0]
 			sl1[i] = testBytesT(j)
 		}
 		ch1 := make(chan testBytesT, 4)
@@ -1108,7 +1108,7 @@ func testCodecChan(t *testing.T, h Handle) {
 		logT(t, "*[]byte")
 		sl1 := make([]byte, 4)
 		for i := range sl1 {
-			var j = strconv.FormatInt(int64(i), 10)[0]
+			var j = strconv.Itoa(i)[0]
 			sl1[i] = byte(j)
 		}
 		ch1 := make(chan byte, 4)
@@ -2131,9 +2131,9 @@ func doTestDifferentMapOrSliceType(t *testing.T, name string, h Handle) {
 			vv = string(v.([]byte))
 		}
 		vs = append(vs, vv)
-		v2i = append(v2i, v, strconv.FormatInt(int64(i+1), 10))
-		v2s = append(v2s, vv, strconv.FormatInt(int64(i+1), 10))
-		v2ss = append(v2ss, testCustomStringT(vv), testCustomStringT(strconv.FormatInt(int64(i+1), 10)))
+		v2i = append(v2i, v, strconv.Itoa(i+1))
+		v2s = append(v2s, vv, strconv.Itoa(i+1))
+		v2ss = append(v2ss, testCustomStringT(vv), testCustomStringT(strconv.Itoa(i+1)))
 	}
 
 	var v2d interface{}
@@ -2325,7 +2325,7 @@ after the new line
 		}
 		// v3 = v2
 		v.Sl = append(v.Sl, &v3)
-		v.Mm[strconv.FormatInt(int64(i), 10)] = &v3
+		v.Mm[strconv.Itoa(i)] = &v3
 	}
 	oldcan := testJsonH.Canonical
 	oldIndent := testJsonH.Indent

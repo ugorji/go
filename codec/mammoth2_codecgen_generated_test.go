@@ -33,7 +33,7 @@ type codecSelfer19781 struct{}
 func init() {
 	if GenVersion != 8 {
 		_, file, _, _ := runtime.Caller(0)
-		panic("codecgen version mismatch: current: 8, need " + strconv.FormatInt(int64(GenVersion), 10) + ". Re-generate file: " + file)
+		panic("codecgen version mismatch: current: 8, need " + strconv.Itoa(GenVersion) + ". Re-generate file: " + file)
 	}
 	if false { // reference the types, but skip this branch at build/run time
 	}
