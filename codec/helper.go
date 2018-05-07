@@ -844,6 +844,7 @@ const (
 	_ structFieldInfoFlag = 1 << iota
 	structFieldInfoFlagReady
 	structFieldInfoFlagOmitEmpty
+	structFieldInfoFlagRecursiveEmptyCheck
 )
 
 func (x *structFieldInfoFlag) flagSet(f structFieldInfoFlag) {
@@ -860,6 +861,10 @@ func (x structFieldInfoFlag) flagGet(f structFieldInfoFlag) bool {
 
 func (x structFieldInfoFlag) omitEmpty() bool {
 	return x.flagGet(structFieldInfoFlagOmitEmpty)
+}
+
+func (x structFieldInfoFlag) recursiveEmptyCheck() bool {
+	return x.flagGet(structFieldInfoFlagRecursiveEmptyCheck)
 }
 
 func (x structFieldInfoFlag) ready() bool {
@@ -903,7 +908,7 @@ func (si *structFieldInfo) field(v reflect.Value, update bool) (rv2 reflect.Valu
 // 	return v
 // }
 
-func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
+func parseStructInfo(stag string) (toArray, omitEmpty, recursiveEmptyCheck bool, keytype valueType) {
 	keytype = valueTypeString // default
 	if stag == "" {
 		return
@@ -914,6 +919,8 @@ func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
 			switch s {
 			case "omitempty":
 				omitEmpty = true
+			case "omitemptyrecursive":
+				recursiveEmptyCheck = true
 			case "toarray":
 				toArray = true
 			case "int":
@@ -949,6 +956,9 @@ func (si *structFieldInfo) parseTag(stag string) {
 			switch s {
 			case "omitempty":
 				si.flagSet(structFieldInfoFlagOmitEmpty)
+			case "omitemptyrecursive":
+				si.flagSet(structFieldInfoFlagOmitEmpty)
+				si.flagSet(structFieldInfoFlagRecursiveEmptyCheck)
 				// si.omitEmpty = true
 				// case "toarray":
 				// 	si.toArray = true
@@ -1259,9 +1269,9 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 
 	switch rk {
 	case reflect.Struct:
-		var omitEmpty bool
+		var omitEmpty, recursiveEmptyCheck bool
 		if f, ok := rt.FieldByName(structInfoFieldName); ok {
-			ti.toArray, omitEmpty, ti.keyType = parseStructInfo(x.structTag(f.Tag))
+			ti.toArray, omitEmpty, recursiveEmptyCheck, ti.keyType = parseStructInfo(x.structTag(f.Tag))
 		} else {
 			ti.keyType = valueTypeString
 		}
@@ -1270,7 +1280,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		pv.etypes[0] = ti.rtid
 		// vv := typeInfoLoad{pv.fNames[:0], pv.encNames[:0], pv.etypes[:1], pv.sfis[:0]}
 		vv := typeInfoLoad{pv.etypes[:1], pv.sfis[:0]}
-		x.rget(rt, rtid, omitEmpty, nil, &vv)
+		x.rget(rt, rtid, omitEmpty, recursiveEmptyCheck, nil, &vv)
 		// ti.sfis = vv.sfis
 		ti.sfiSrc, ti.sfiSort, ti.sfiNamesSort, ti.anyOmitEmpty = rgetResolveSFI(rt, vv.sfis, pv)
 		pp.Put(pi)
@@ -1309,7 +1319,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	return
 }
 
-func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
+func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty, recursiveEmptyCheck bool,
 	indexstack []uint16, pv *typeInfoLoad) {
 	// Read up fields and store how to access the value.
 	//
@@ -1394,7 +1404,7 @@ LOOP:
 					copy(indexstack2, indexstack)
 					indexstack2[len(indexstack)] = j
 					// indexstack2 := append(append(make([]int, 0, len(indexstack)+4), indexstack...), j)
-					x.rget(ft, ftid, omitEmpty, indexstack2, pv)
+					x.rget(ft, ftid, omitEmpty, recursiveEmptyCheck, indexstack2, pv)
 				}
 				continue
 			}
@@ -1435,6 +1445,9 @@ LOOP:
 
 		if omitEmpty {
 			si.flagSet(structFieldInfoFlagOmitEmpty)
+		}
+		if recursiveEmptyCheck {
+			si.flagSet(structFieldInfoFlagRecursiveEmptyCheck)
 		}
 		pv.sfis = append(pv.sfis, si)
 	}

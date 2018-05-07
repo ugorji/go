@@ -2307,6 +2307,135 @@ func doTestOmitempty(t *testing.T, name string, h Handle) {
 	testDeepEqualErr(b1, b2, t, name+"-omitempty-cmp")
 }
 
+func doTestOmitemptyRecursive(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
+	if h.getBasicHandle().StructToArray {
+		t.Skipf("Skipping OmitEmptyRecursive test when StructToArray=true")
+	}
+	type S struct {
+		A int
+	}
+	type T1 struct {
+		A1 int  `codec:"a1"`
+		A2 int  `codec:"a2"`
+		A3 *int `codec:"a3"`
+		A4 *int `codec:"a4"`
+		A5 *int `codec:"a5"`
+
+		B1 int  `codec:"b1,omitempty"`
+		B2 int  `codec:"b2,omitempty"`
+		B3 *int `codec:"b3,omitempty"`
+		B4 *int `codec:"b4,omitempty"`
+		B5 *int `codec:"b5,omitempty"`
+
+		C1 int  `codec:"c1,omitemptyrecursive"`
+		C2 int  `codec:"c2,omitemptyrecursive"`
+		C3 *int `codec:"c3,omitemptyrecursive"`
+		C4 *int `codec:"c4,omitemptyrecursive"`
+		C5 *int `codec:"c5,omitemptyrecursive"`
+
+		D1 S  `codec:"d1"`
+		D2 S  `codec:"d2"`
+		D3 *S `codec:"d3"`
+		D4 *S `codec:"d4"`
+		D5 *S `codec:"d5"`
+
+		E1 S  `codec:"e1,omitempty"`
+		E2 S  `codec:"e2,omitempty"`
+		E3 *S `codec:"e3,omitempty"`
+		E4 *S `codec:"e4,omitempty"`
+		E5 *S `codec:"e5,omitempty"`
+
+		F1 S  `codec:"f1,omitemptyrecursive"`
+		F2 S  `codec:"f2,omitemptyrecursive"`
+		F3 *S `codec:"f3,omitemptyrecursive"`
+		F4 *S `codec:"f4,omitemptyrecursive"`
+		F5 *S `codec:"f5,omitemptyrecursive"`
+	}
+	type T2 struct {
+		A1 int  `codec:"a1"`
+		A2 int  `codec:"a2"`
+		A3 *int `codec:"a3"`
+		A4 *int `codec:"a4"`
+		A5 *int `codec:"a5"`
+
+		B2 int  `codec:"b2,omitempty"`
+		B4 *int `codec:"b4,omitempty"`
+		B5 *int `codec:"b5,omitempty"`
+
+		C2 int  `codec:"c2,omitemptyrecursive"`
+		C5 *int `codec:"c5,omitemptyrecursive"`
+
+		D1 S  `codec:"d1"`
+		D2 S  `codec:"d2"`
+		D3 *S `codec:"d3"`
+		D4 *S `codec:"d4"`
+		D5 *S `codec:"d5"`
+
+		E2 S  `codec:"e2,omitempty"`
+		E4 *S `codec:"e4,omitempty"`
+		E5 *S `codec:"e5,omitempty"`
+
+		F2 S  `codec:"f2,omitemptyrecursive"`
+		F5 *S `codec:"f5,omitemptyrecursive"`
+	}
+	var i1 int
+	i2 := 5
+	var s1 S
+	s2 := S{A: 5}
+	v1 := T1{
+		A2: i2,
+		A4: &i1,
+		A5: &i2,
+
+		B2: i2,
+		B4: &i1,
+		B5: &i2,
+
+		C2: i2,
+		C4: &i1,
+		C5: &i2,
+
+		D2: s2,
+		D4: &s1,
+		D5: &s2,
+
+		E2: s2,
+		E4: &s1,
+		E5: &s2,
+
+		F2: s2,
+		F4: &s1,
+		F5: &s2,
+	}
+	v2 := T2{
+		A2: i2,
+		A4: &i1,
+		A5: &i2,
+
+		B2: i2,
+		B4: &i1,
+		B5: &i2,
+
+		C2: i2,
+		C5: &i2,
+
+		D2: s2,
+		D4: &s1,
+		D5: &s2,
+
+		E2: s2,
+		E4: &s1,
+		E5: &s2,
+
+		F2: s2,
+		F5: &s2,
+	}
+	b1 := testMarshalErr(v1, h, t, name+"-omitemptyrecursive")
+	b2 := testMarshalErr(v2, h, t, name+"-no-omitemptyrecursive-trunc")
+	testDeepEqualErr(b1, b2, t, name+"-omitemptyrecursive-cmp")
+}
+
 // -----------------
 
 func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
@@ -3132,6 +3261,26 @@ func TestBincOmitempty(t *testing.T) {
 
 func TestSimpleOmitempty(t *testing.T) {
 	doTestOmitempty(t, "simple", testSimpleH)
+}
+
+func TestJsonOmitemptyRecursive(t *testing.T) {
+	doTestOmitemptyRecursive(t, "json", testJsonH)
+}
+
+func TestCborOmitemptyRecursive(t *testing.T) {
+	doTestOmitemptyRecursive(t, "cbor", testCborH)
+}
+
+func TestMsgpackOmitemptyRecursive(t *testing.T) {
+	doTestOmitemptyRecursive(t, "msgpack", testMsgpackH)
+}
+
+func TestBincOmitemptyRecursive(t *testing.T) {
+	doTestOmitemptyRecursive(t, "binc", testBincH)
+}
+
+func TestSimpleOmitemptyRecursive(t *testing.T) {
+	doTestOmitemptyRecursive(t, "simple", testSimpleH)
 }
 
 func TestJsonIntfMapping(t *testing.T) {

@@ -143,6 +143,12 @@ type EncodeOptions struct {
 	// when checking if a value is empty.
 	//
 	// Note that this may make OmitEmpty more expensive, as it incurs a lot more reflect calls.
+	//
+	// This is also available as the tag 'omitemptyrecursive', so
+	// that one can turn it on only for certain fields. This can
+	// be for performance reasons or control reasons; for example
+	// one might only want to recursively descend into pointers
+	// for some fields.
 	RecursiveEmptyCheck bool
 
 	// Raw controls whether we encode Raw values.
@@ -627,9 +633,9 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 
 	newlen = 0
 	var sf structField
-	recur := e.h.RecursiveEmptyCheck
 	sfn := structFieldNode{v: rvs, update: false}
 	for _, si := range tisfi {
+		recur := e.h.RecursiveEmptyCheck || si.recursiveEmptyCheck()
 		sf.known = true
 		// sv.fal = si.field(rvs, false)
 		sf.val = sfn.field(si)
