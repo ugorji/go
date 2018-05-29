@@ -1150,7 +1150,7 @@ func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs
 	}
 	srv := rpc.NewServer()
 	srv.Register(testRpcInt)
-	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	ln, err := net.Listen("tcp", ":0")
 	// log("listener: %v", ln.Addr())
 	checkErrT(t, err)
 	port = (ln.Addr().(*net.TCPAddr)).Port
