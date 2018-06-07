@@ -565,7 +565,7 @@ func testTableVerify(f testVerifyFlag, h Handle) (av []interface{}) {
 
 func testVerifyValInt(v int64, isMsgp bool) (v2 interface{}) {
 	if isMsgp {
-		if v >= 0 && v <= 127 {
+		if v >= 0 {
 			v2 = uint64(v)
 		} else {
 			v2 = int64(v)
