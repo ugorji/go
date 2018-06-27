@@ -1169,10 +1169,12 @@ func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs
 			// }
 			if atomic.LoadUint64(&serverExitFlag) == 1 {
 				serverExitChan <- true
-				conn1.Close()
+				if conn1 != nil {
+					conn1.Close()
+				}
 				return // exit serverFn goroutine
 			}
-			if err1 == nil {
+			if err1 == nil && conn1 != nil {
 				sc := rr.ServerCodec(testReadWriteCloser(conn1), h)
 				srv.ServeCodec(sc)
 			}

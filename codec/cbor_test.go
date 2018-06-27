@@ -149,7 +149,7 @@ func TestCborGoldens(t *testing.T) {
 		}
 		bs, err := hex.DecodeString(g.Hex)
 		if err != nil {
-			logT(t, "[%v] error hex decoding %s [%v]: %v", i, g.Hex, err)
+			logT(t, "[%v] error hex decoding %s [%v]: %v", i, g.Hex, g.Hex, err)
 			failT(t)
 		}
 		var v interface{}
