@@ -808,6 +808,9 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 
 func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 	bs := d.decNumBytes()
+	if len(bs) == 0 {
+		return
+	}
 	n, neg, badsyntax, overflow := jsonParseInteger(bs)
 	if overflow {
 		d.d.errorf("overflow parsing unsigned integer: %s", bs)
@@ -823,6 +826,9 @@ func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 func (d *jsonDecDriver) DecodeInt64() (i int64) {
 	const cutoff = uint64(1 << uint(64-1))
 	bs := d.decNumBytes()
+	if len(bs) == 0 {
+		return
+	}
 	n, neg, badsyntax, overflow := jsonParseInteger(bs)
 	if overflow {
 		d.d.errorf("overflow parsing integer: %s", bs)
@@ -850,6 +856,9 @@ func (d *jsonDecDriver) DecodeInt64() (i int64) {
 }
 
 func (d *jsonDecDriver) decUint64ViaFloat(s string) (u uint64) {
+	if len(s) == 0 {
+		return
+	}
 	f, err := strconv.ParseFloat(s, 64)
 	if err != nil {
 		d.d.errorf("invalid syntax for integer: %s", s)
@@ -866,6 +875,9 @@ func (d *jsonDecDriver) decUint64ViaFloat(s string) (u uint64) {
 
 func (d *jsonDecDriver) DecodeFloat64() (f float64) {
 	bs := d.decNumBytes()
+	if len(bs) == 0 {
+		return
+	}
 	f, err := strconv.ParseFloat(stringView(bs), 64)
 	if err != nil {
 		d.d.errorv(err)
@@ -1086,9 +1098,23 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 
 func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
 	const cutoff = uint64(1 << uint(64-1))
+
 	var n uint64
 	var neg, badsyntax, overflow bool
 
+	if len(bs) == 0 {
+		if d.h.PreferFloat {
+			z.v = valueTypeFloat
+			z.f = 0
+		} else if d.h.SignedInteger {
+			z.v = valueTypeInt
+			z.i = 0
+		} else {
+			z.v = valueTypeUint
+			z.u = 0
+		}
+		return
+	}
 	if d.h.PreferFloat {
 		goto F
 	}
@@ -1380,14 +1406,16 @@ func jsonFloatStrconvFmtPrec(f float64) (fmt byte, prec int) {
 
 // custom-fitted version of strconv.Parse(Ui|I)nt.
 // Also ensures we don't have to search for .eE to determine if a float or not.
+// Note: s CANNOT be a zero-length slice.
 func jsonParseInteger(s []byte) (n uint64, neg, badSyntax, overflow bool) {
 	const maxUint64 = (1<<64 - 1)
 	const cutoff = maxUint64/10 + 1
 
-	if len(s) == 0 {
-		badSyntax = true
-		return
-	}
+	// if len(s) == 0 {
+	// 	// treat empty string as zero value
+	// 	// badSyntax = true
+	// 	return
+	// }
 	switch s[0] {
 	case '+':
 		s = s[1:]
