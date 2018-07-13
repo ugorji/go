@@ -25,7 +25,3 @@ Install using:
 
     go get github.com/ugorji/go/codec
 
-TODO:
-
-  - [x] 2018-04-09 - Release v1.1.1 containing 32-bit fixes, etc
-
