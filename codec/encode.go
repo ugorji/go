@@ -492,14 +492,14 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 			for _, si := range tisfi {
 				ee.WriteMapElemKey()
 				// ee.EncodeString(cUTF8, si.encName)
-				encStructFieldKey(ee, fti.keyType, si.encName)
+				e.kStructFieldKey(fti.keyType, si)
 				ee.WriteMapElemValue()
 				e.encodeValue(sfn.field(si), nil, true)
 			}
 		} else {
 			for _, si := range tisfi {
 				// ee.EncodeString(cUTF8, si.encName)
-				encStructFieldKey(ee, fti.keyType, si.encName)
+				e.kStructFieldKey(fti.keyType, si)
 				e.encodeValue(sfn.field(si), nil, true)
 			}
 		}
@@ -520,22 +520,24 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 
-func encStructFieldKey(ee encDriver, keyType valueType, s string) {
+func (e *Encoder) kStructFieldKey(keyType valueType, s *structFieldInfo) {
 	var m must
-
 	// use if-else-if, not switch (which compiles to binary-search)
 	// since keyType is typically valueTypeString, branch prediction is pretty good.
-
 	if keyType == valueTypeString {
-		ee.EncodeString(cUTF8, s)
+		if e.js && s.encNameAsciiAlphaNum { // keyType == valueTypeString
+			e.w.writen1('"')
+			e.w.writestr(s.encName)
+			e.w.writen1('"')
+		} else { // keyType == valueTypeString
+			e.e.EncodeString(cUTF8, s.encName)
+		}
 	} else if keyType == valueTypeInt {
-		ee.EncodeInt(m.Int(strconv.ParseInt(s, 10, 64)))
+		e.e.EncodeInt(m.Int(strconv.ParseInt(s.encName, 10, 64)))
 	} else if keyType == valueTypeUint {
-		ee.EncodeUint(m.Uint(strconv.ParseUint(s, 10, 64)))
+		e.e.EncodeUint(m.Uint(strconv.ParseUint(s.encName, 10, 64)))
 	} else if keyType == valueTypeFloat {
-		ee.EncodeFloat64(m.Float(strconv.ParseFloat(s, 64)))
-	} else {
-		ee.EncodeString(cUTF8, s)
+		e.e.EncodeFloat64(m.Float(strconv.ParseFloat(s.encName, 64)))
 	}
 }
 
@@ -565,29 +567,29 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 
 	var spool *sync.Pool
 	var poolv interface{}
-	var fkvs []stringRv
+	var fkvs []sfiRv
 	// fmt.Printf(">>>>>>>>>>>>>> encode.kStruct: newlen: %d\n", newlen)
 	if newlen <= 8 {
-		spool, poolv = pool.stringRv8()
-		fkvs = poolv.(*[8]stringRv)[:newlen]
+		spool, poolv = pool.sfiRv8()
+		fkvs = poolv.(*[8]sfiRv)[:newlen]
 	} else if newlen <= 16 {
-		spool, poolv = pool.stringRv16()
-		fkvs = poolv.(*[16]stringRv)[:newlen]
+		spool, poolv = pool.sfiRv16()
+		fkvs = poolv.(*[16]sfiRv)[:newlen]
 	} else if newlen <= 32 {
-		spool, poolv = pool.stringRv32()
-		fkvs = poolv.(*[32]stringRv)[:newlen]
+		spool, poolv = pool.sfiRv32()
+		fkvs = poolv.(*[32]sfiRv)[:newlen]
 	} else if newlen <= 64 {
-		spool, poolv = pool.stringRv64()
-		fkvs = poolv.(*[64]stringRv)[:newlen]
+		spool, poolv = pool.sfiRv64()
+		fkvs = poolv.(*[64]sfiRv)[:newlen]
 	} else if newlen <= 128 {
-		spool, poolv = pool.stringRv128()
-		fkvs = poolv.(*[128]stringRv)[:newlen]
+		spool, poolv = pool.sfiRv128()
+		fkvs = poolv.(*[128]sfiRv)[:newlen]
 	} else {
-		fkvs = make([]stringRv, newlen)
+		fkvs = make([]sfiRv, newlen)
 	}
 
 	newlen = 0
-	var kv stringRv
+	var kv sfiRv
 	recur := e.h.RecursiveEmptyCheck
 	sfn := structFieldNode{v: rv, update: false}
 	for _, si := range tisfi {
@@ -597,7 +599,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			if si.omitEmpty() && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
 				continue
 			}
-			kv.v = si.encName
+			kv.v = si // si.encName
 		} else {
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
@@ -619,7 +621,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				kv = fkvs[j]
 				ee.WriteMapElemKey()
 				// ee.EncodeString(cUTF8, kv.v)
-				encStructFieldKey(ee, fti.keyType, kv.v)
+				e.kStructFieldKey(fti.keyType, kv.v)
 				ee.WriteMapElemValue()
 				e.encodeValue(kv.r, nil, true)
 			}
@@ -627,7 +629,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			for j := 0; j < newlen; j++ {
 				kv = fkvs[j]
 				// ee.EncodeString(cUTF8, kv.v)
-				encStructFieldKey(ee, fti.keyType, kv.v)
+				e.kStructFieldKey(fti.keyType, kv.v)
 				e.encodeValue(kv.r, nil, true)
 			}
 		}
