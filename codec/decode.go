@@ -1745,6 +1745,8 @@ type decReaderSwitch struct {
 	bufio bool // is this a bufioDecReader?
 }
 
+/*
+
 func (z *decReaderSwitch) unreadn1() {
 	if z.bytes {
 		z.rb.unreadn1()
@@ -1829,6 +1831,8 @@ func (z *decReaderSwitch) readUntil(in []byte, stop byte) (out []byte) {
 	return z.ri.readUntil(in, stop)
 }
 
+*/
+
 // A Decoder reads and decodes an object from an input stream in the codec format.
 type Decoder struct {
 	panicHdl
@@ -1838,8 +1842,7 @@ type Decoder struct {
 	d decDriver
 	// NOTE: Decoder shouldn't call it's read methods,
 	// as the handler MAY need to do some coordination.
-	r *decReaderSwitch // formerly decReader
-	h *BasicHandle
+	r decReader
 	// bi *bufioDecReader
 	// cache the mapTypeId and sliceTypeId for faster comparisons
 	mtid uintptr
@@ -1856,6 +1859,7 @@ type Decoder struct {
 	// cr containerStateRecv
 	err error
 
+	h *BasicHandle
 	_ [1]uint64 // padding
 
 	// ---- cpu cache line boundary?
@@ -1906,7 +1910,7 @@ func newDecoder(h Handle) *Decoder {
 }
 
 func (d *Decoder) resetCommon() {
-	d.r = &d.decReaderSwitch
+	// d.r = &d.decReaderSwitch
 	d.n.reset()
 	d.d.reset()
 	d.err = nil
@@ -1940,6 +1944,7 @@ func (d *Decoder) Reset(r io.Reader) {
 			d.bi.buf = d.bi.buf[:0]
 		}
 		d.bi.reset(r)
+		d.r = d.bi
 		d.bufio = true
 	} else {
 		// d.ri.x = &d.b
@@ -1948,7 +1953,7 @@ func (d *Decoder) Reset(r io.Reader) {
 			d.ri = new(ioDecReader)
 		}
 		d.ri.reset(r)
-		// d.r = d.ri
+		d.r = d.ri
 		d.bufio = false
 	}
 	d.resetCommon()
@@ -1962,7 +1967,7 @@ func (d *Decoder) ResetBytes(in []byte) {
 	}
 	d.bytes = true
 	d.rb.reset(in)
-	// d.r = &d.rb
+	d.r = &d.rb
 	d.resetCommon()
 }
 
@@ -2462,7 +2467,7 @@ func (x decSliceHelper) ElemContainerState(index int) {
 	}
 }
 
-func decByteSlice(r *decReaderSwitch, clen, maxInitLen int, bs []byte) (bsOut []byte) {
+func decByteSlice(r decReader, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 	if clen == 0 {
 		return zeroByteSlice
 	}

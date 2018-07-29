@@ -897,8 +897,7 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 // // --------------------------------------------------
 
 type encWriterSwitch struct {
-	wi *ioEncWriter
-	// wb bytesEncWriter
+	wi   *ioEncWriter
 	wb   bytesEncAppender
 	wx   bool      // if bytes, wx=true
 	esep bool      // whether it has elem separators
@@ -908,6 +907,8 @@ type encWriterSwitch struct {
 	_    [3]byte   // padding
 	_    [2]uint64 // padding
 }
+
+/*
 
 func (z *encWriterSwitch) writeb(s []byte) {
 	if z.wx {
@@ -945,6 +946,8 @@ func (z *encWriterSwitch) atEndOfEncode() {
 	}
 }
 
+*/
+
 // An Encoder writes an object to an output stream in the codec format.
 type Encoder struct {
 	panicHdl
@@ -952,9 +955,8 @@ type Encoder struct {
 	e encDriver
 	// NOTE: Encoder shouldn't call it's write methods,
 	// as the handler MAY need to do some coordination.
-	w *encWriterSwitch // formerly encWriter
+	w encWriter
 
-	h *BasicHandle
 	// bw *bufio.Writer
 	as encDriverAsis
 
@@ -964,6 +966,7 @@ type Encoder struct {
 	encWriterSwitch
 
 	// ---- cpu cache line boundary?
+	h *BasicHandle
 	codecFnPooler
 	ci set
 
@@ -973,7 +976,6 @@ type Encoder struct {
 	// b [scratchByteArrayLen]byte
 	// _ [cacheLineSize - scratchByteArrayLen]byte // padding
 	b [cacheLineSize - 0]byte // used for encoding a chan or (non-addressable) array of bytes
-	_ [1]uint64               // padding
 }
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
@@ -1005,7 +1007,7 @@ func newEncoder(h Handle) *Encoder {
 }
 
 func (e *Encoder) resetCommon() {
-	e.w = &e.encWriterSwitch
+	// e.w = &e.encWriterSwitch
 	if e.e == nil || e.hh.recreateEncDriver(e.e) {
 		e.e = e.hh.newEncDriver(e)
 		e.as, e.isas = e.e.(encDriverAsis)
@@ -1047,7 +1049,7 @@ func (e *Encoder) Reset(w io.Writer) {
 		e.wi.fw, _ = w.(ioFlusher)
 		e.wi.ww = w
 	}
-	// e.w = e.wi
+	e.w = e.wi
 	e.resetCommon()
 }
 
@@ -1065,7 +1067,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 	}
 	e.wx = true
 	e.wb.reset(in, out)
-	// e.w = &e.wb
+	e.w = &e.wb
 	e.resetCommon()
 }
 

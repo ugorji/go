@@ -102,7 +102,7 @@ func bincdesc(vd, vs byte) string {
 type bincEncDriver struct {
 	e *Encoder
 	h *BincHandle
-	w *encWriterSwitch
+	w encWriter
 	m map[string]uint16 // symbols
 	b [16]byte          // scratch, used for encoding numbers - bigendian style
 	s uint16            // symbols sequencer
@@ -110,7 +110,6 @@ type bincEncDriver struct {
 	encDriverTrackContainerWriter
 	noBuiltInTypes
 	// encNoSeparator
-	_ [1]uint64 // padding
 }
 
 func (e *bincEncDriver) EncodeNil() {
@@ -378,7 +377,7 @@ type bincDecDriver struct {
 
 	d      *Decoder
 	h      *BincHandle
-	r      *decReaderSwitch
+	r      decReader
 	br     bool // bytes reader
 	bdRead bool
 	bd     byte
@@ -393,7 +392,6 @@ type bincDecDriver struct {
 	// decNoSeparator
 
 	b [8 * 8]byte // scratch
-	_ [1]uint64   // padding
 }
 
 func (d *bincDecDriver) readNextBd() {

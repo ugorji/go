@@ -115,7 +115,7 @@ func init() {
 // ----------------
 
 type jsonEncDriverTypical struct {
-	w  *encWriterSwitch
+	w  encWriter
 	b  *[jsonScratchArrayLen]byte
 	tw bool // term white space
 	c  containerState
@@ -125,7 +125,6 @@ func (e *jsonEncDriverTypical) typical() {}
 
 func (e *jsonEncDriverTypical) reset(ee *jsonEncDriver) {
 	e.w = ee.ew
-	// e.w = &ee.e.encWriterSwitch
 	e.b = &ee.b
 	e.tw = ee.h.TermWhitespace
 	e.c = 0
@@ -204,7 +203,7 @@ func (e *jsonEncDriverTypical) atEndOfEncode() {
 // ----------------
 
 type jsonEncDriverGeneric struct {
-	w *encWriterSwitch
+	w encWriter
 	b *[jsonScratchArrayLen]byte
 	c containerState
 	// ds string // indent string
@@ -406,7 +405,7 @@ type jsonEncDriver struct {
 	noBuiltInTypes
 	e  *Encoder
 	h  *JsonHandle
-	ew *encWriterSwitch
+	ew encWriter
 	se extWrapper
 	// ---- cpu cache line boundary?
 	bs []byte // scratch
@@ -569,7 +568,7 @@ type jsonDecDriver struct {
 	noBuiltInTypes
 	d  *Decoder
 	h  *JsonHandle
-	r  *decReaderSwitch // decReader
+	r  decReader
 	se extWrapper
 
 	// ---- writable fields during execution --- *try* to keep in sep cache line
@@ -584,7 +583,7 @@ type jsonDecDriver struct {
 	b  [jsonScratchArrayLen]byte // scratch 1, used for parsing strings or numbers or time.Time
 	b2 [jsonScratchArrayLen]byte // scratch 2, used only for readUntil, decNumBytes
 
-	// _ [3]uint64 // padding
+	_ [3]uint64 // padding
 	// n jsonNum
 }
 
@@ -1321,7 +1320,7 @@ func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceE
 type jsonEncDriverTypicalImpl struct {
 	jsonEncDriver
 	jsonEncDriverTypical
-	_ [1]uint64 // padding
+	_ [3]uint64 // padding
 }
 
 func (x *jsonEncDriverTypicalImpl) reset() {
@@ -1332,6 +1331,7 @@ func (x *jsonEncDriverTypicalImpl) reset() {
 type jsonEncDriverGenericImpl struct {
 	jsonEncDriver
 	jsonEncDriverGeneric
+	_ [2]uint64 // padding
 }
 
 func (x *jsonEncDriverGenericImpl) reset() {
@@ -1366,7 +1366,7 @@ func (h *JsonHandle) newDecDriver(d *Decoder) decDriver {
 }
 
 func (e *jsonEncDriver) reset() {
-	e.ew = e.e.w // e.e.w // &e.e.encWriterSwitch
+	e.ew = e.e.w
 	e.se.InterfaceExt = e.h.RawBytesExt
 	if e.bs != nil {
 		e.bs = e.bs[:0]
@@ -1374,7 +1374,7 @@ func (e *jsonEncDriver) reset() {
 }
 
 func (d *jsonDecDriver) reset() {
-	d.r = d.d.r // &d.d.decReaderSwitch // d.d.r
+	d.r = d.d.r
 	d.se.InterfaceExt = d.h.RawBytesExt
 	if d.bs != nil {
 		d.bs = d.bs[:0]

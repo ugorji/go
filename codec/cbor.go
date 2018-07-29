@@ -105,9 +105,8 @@ func cbordesc(bd byte) string {
 type cborEncDriver struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
-	// encNoSeparator
 	e *Encoder
-	w *encWriterSwitch
+	w encWriter
 	h *CborHandle
 	x [8]byte
 	// _ [3]uint64 // padding
@@ -285,10 +284,9 @@ func (e *cborEncDriver) encStringBytesS(bb byte, v string) {
 // ----------------------
 
 type cborDecDriver struct {
-	d *Decoder
-	h *CborHandle
-	r *decReaderSwitch
-	// b      [scratchByteArrayLen]byte
+	d      *Decoder
+	h      *CborHandle
+	r      decReader
 	br     bool // bytes reader
 	bdRead bool
 	bd     byte

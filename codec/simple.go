@@ -36,7 +36,7 @@ type simpleEncDriver struct {
 	// encNoSeparator
 	e *Encoder
 	h *SimpleHandle
-	w *encWriterSwitch
+	w encWriter
 	b [8]byte
 	// c containerState
 	encDriverTrackContainerWriter
@@ -201,7 +201,7 @@ func (e *simpleEncDriver) EncodeTime(t time.Time) {
 type simpleDecDriver struct {
 	d      *Decoder
 	h      *SimpleHandle
-	r      *decReaderSwitch
+	r      decReader
 	bdRead bool
 	bd     byte
 	br     bool // a bytes reader?
