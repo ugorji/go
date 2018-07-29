@@ -135,7 +135,7 @@ const (
 	wordSizeBits = 32 << (^uint(0) >> 63) // strconv.IntSize
 	wordSize     = wordSizeBits / 8
 
-	maxLevelsEmbedding = 15 // use this, so structFieldInfo fits into 8 bytes
+	maxLevelsEmbedding = 14 // use this, so structFieldInfo fits into 8 bytes
 )
 
 var (
@@ -628,7 +628,7 @@ func (noElemSeparators) recreateEncDriver(e encDriver) (v bool) { return }
 // Users must already slice the x completely, because we will not reslice.
 type bigenHelper struct {
 	x []byte // must be correctly sliced to appropriate len. slicing is a cost.
-	w encWriter
+	w *encWriterSwitch
 }
 
 func (z bigenHelper) writeUint16(v uint16) {
@@ -817,6 +817,7 @@ type structFieldInfo struct {
 
 	encNameAsciiAlphaNum bool // the encName only contains ascii alphabet and numbers
 	structFieldInfoFlag
+	_ [1]byte // padding
 }
 
 func (si *structFieldInfo) setToZeroValue(v reflect.Value) {

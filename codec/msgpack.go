@@ -199,10 +199,10 @@ type msgpackEncDriver struct {
 	encDriverNoopContainerWriter
 	// encNoSeparator
 	e *Encoder
-	w encWriter
+	w *encWriterSwitch
 	h *MsgpackHandle
 	x [8]byte
-	_ [3]uint64 // padding
+	// _ [3]uint64 // padding
 }
 
 func (e *msgpackEncDriver) EncodeNil() {
@@ -414,7 +414,7 @@ func (e *msgpackEncDriver) writeContainerLen(ct msgpackContainerType, l int) {
 
 type msgpackDecDriver struct {
 	d *Decoder
-	r decReader // *Decoder decReader decReaderT
+	r *decReaderSwitch
 	h *MsgpackHandle
 	// b      [scratchByteArrayLen]byte
 	bd     byte
@@ -424,7 +424,7 @@ type msgpackDecDriver struct {
 	// noStreamingCodec
 	// decNoSeparator
 	decDriverNoopContainerReader
-	_ [3]uint64 // padding
+	// _ [3]uint64 // padding
 }
 
 // Note: This returns either a primitive (int, bool, etc) for non-containers,

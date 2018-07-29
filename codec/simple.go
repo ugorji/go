@@ -36,12 +36,12 @@ type simpleEncDriver struct {
 	// encNoSeparator
 	e *Encoder
 	h *SimpleHandle
-	w encWriter
+	w *encWriterSwitch
 	b [8]byte
 	// c containerState
 	encDriverTrackContainerWriter
 	// encDriverNoopContainerWriter
-	_ [2]uint64 // padding
+	_ [3]uint64 // padding
 }
 
 func (e *simpleEncDriver) EncodeNil() {
@@ -201,7 +201,7 @@ func (e *simpleEncDriver) EncodeTime(t time.Time) {
 type simpleDecDriver struct {
 	d      *Decoder
 	h      *SimpleHandle
-	r      decReader
+	r      *decReaderSwitch
 	bdRead bool
 	bd     byte
 	br     bool // a bytes reader?
@@ -210,7 +210,7 @@ type simpleDecDriver struct {
 	noBuiltInTypes
 	// noStreamingCodec
 	decDriverNoopContainerReader
-	_ [3]uint64 // padding
+	// _ [3]uint64 // padding
 }
 
 func (d *simpleDecDriver) readNextBd() {

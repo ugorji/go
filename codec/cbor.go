@@ -107,10 +107,10 @@ type cborEncDriver struct {
 	encDriverNoopContainerWriter
 	// encNoSeparator
 	e *Encoder
-	w encWriter
+	w *encWriterSwitch
 	h *CborHandle
 	x [8]byte
-	_ [3]uint64 // padding
+	// _ [3]uint64 // padding
 }
 
 func (e *cborEncDriver) EncodeNil() {
@@ -287,7 +287,7 @@ func (e *cborEncDriver) encStringBytesS(bb byte, v string) {
 type cborDecDriver struct {
 	d *Decoder
 	h *CborHandle
-	r decReader
+	r *decReaderSwitch
 	// b      [scratchByteArrayLen]byte
 	br     bool // bytes reader
 	bdRead bool
@@ -295,7 +295,7 @@ type cborDecDriver struct {
 	noBuiltInTypes
 	// decNoSeparator
 	decDriverNoopContainerReader
-	_ [3]uint64 // padding
+	// _ [3]uint64 // padding
 }
 
 func (d *cborDecDriver) readNextBd() {

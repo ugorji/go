@@ -900,41 +900,50 @@ type encWriterSwitch struct {
 	wi *ioEncWriter
 	// wb bytesEncWriter
 	wb   bytesEncAppender
-	wx   bool // if bytes, wx=true
-	esep bool // whether it has elem separators
-	isas bool // whether e.as != nil
+	wx   bool      // if bytes, wx=true
+	esep bool      // whether it has elem separators
+	isas bool      // whether e.as != nil
+	js   bool      // here, so that no need to piggy back on *codecFner for this
+	be   bool      // here, so that no need to piggy back on *codecFner for this
+	_    [3]byte   // padding
+	_    [2]uint64 // padding
 }
 
-// // TODO: Uncomment after mid-stack inlining enabled in go 1.11
-
-// func (z *encWriterSwitch) writeb(s []byte) {
-// 	if z.wx {
-// 		z.wb.writeb(s)
-// 	} else {
-// 		z.wi.writeb(s)
-// 	}
-// }
-// func (z *encWriterSwitch) writestr(s string) {
-// 	if z.wx {
-// 		z.wb.writestr(s)
-// 	} else {
-// 		z.wi.writestr(s)
-// 	}
-// }
-// func (z *encWriterSwitch) writen1(b1 byte) {
-// 	if z.wx {
-// 		z.wb.writen1(b1)
-// 	} else {
-// 		z.wi.writen1(b1)
-// 	}
-// }
-// func (z *encWriterSwitch) writen2(b1, b2 byte) {
-// 	if z.wx {
-// 		z.wb.writen2(b1, b2)
-// 	} else {
-// 		z.wi.writen2(b1, b2)
-// 	}
-// }
+func (z *encWriterSwitch) writeb(s []byte) {
+	if z.wx {
+		z.wb.writeb(s)
+	} else {
+		z.wi.writeb(s)
+	}
+}
+func (z *encWriterSwitch) writestr(s string) {
+	if z.wx {
+		z.wb.writestr(s)
+	} else {
+		z.wi.writestr(s)
+	}
+}
+func (z *encWriterSwitch) writen1(b1 byte) {
+	if z.wx {
+		z.wb.writen1(b1)
+	} else {
+		z.wi.writen1(b1)
+	}
+}
+func (z *encWriterSwitch) writen2(b1, b2 byte) {
+	if z.wx {
+		z.wb.writen2(b1, b2)
+	} else {
+		z.wi.writen2(b1, b2)
+	}
+}
+func (z *encWriterSwitch) atEndOfEncode() {
+	if z.wx {
+		z.wb.atEndOfEncode()
+	} else {
+		z.wi.atEndOfEncode()
+	}
+}
 
 // An Encoder writes an object to an output stream in the codec format.
 type Encoder struct {
@@ -943,24 +952,20 @@ type Encoder struct {
 	e encDriver
 	// NOTE: Encoder shouldn't call it's write methods,
 	// as the handler MAY need to do some coordination.
-	w encWriter
+	w *encWriterSwitch // formerly encWriter
 
-	h  *BasicHandle
-	bw *bufio.Writer
+	h *BasicHandle
+	// bw *bufio.Writer
 	as encDriverAsis
 
-	// ---- cpu cache line boundary?
+	err error
 
 	// ---- cpu cache line boundary?
 	encWriterSwitch
-	err error
 
 	// ---- cpu cache line boundary?
 	codecFnPooler
 	ci set
-	js bool    // here, so that no need to piggy back on *codecFner for this
-	be bool    // here, so that no need to piggy back on *codecFner for this
-	_  [6]byte // padding
 
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 
@@ -968,6 +973,7 @@ type Encoder struct {
 	// b [scratchByteArrayLen]byte
 	// _ [cacheLineSize - scratchByteArrayLen]byte // padding
 	b [cacheLineSize - 0]byte // used for encoding a chan or (non-addressable) array of bytes
+	_ [1]uint64               // padding
 }
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
@@ -999,6 +1005,7 @@ func newEncoder(h Handle) *Encoder {
 }
 
 func (e *Encoder) resetCommon() {
+	e.w = &e.encWriterSwitch
 	if e.e == nil || e.hh.recreateEncDriver(e.e) {
 		e.e = e.hh.newEncDriver(e)
 		e.as, e.isas = e.e.(encDriverAsis)
@@ -1025,11 +1032,11 @@ func (e *Encoder) Reset(w io.Writer) {
 	e.wx = false
 	e.wi.w = w
 	if e.h.WriterBufferSize > 0 {
-		e.bw = bufio.NewWriterSize(w, e.h.WriterBufferSize)
-		e.wi.bw = e.bw
-		e.wi.sw = e.bw
-		e.wi.fw = e.bw
-		e.wi.ww = e.bw
+		bw := bufio.NewWriterSize(w, e.h.WriterBufferSize)
+		e.wi.bw = bw
+		e.wi.sw = bw
+		e.wi.fw = bw
+		e.wi.ww = bw
 	} else {
 		if e.wi.bw, ok = w.(io.ByteWriter); !ok {
 			e.wi.bw = e.wi
@@ -1040,7 +1047,7 @@ func (e *Encoder) Reset(w io.Writer) {
 		e.wi.fw, _ = w.(ioFlusher)
 		e.wi.ww = w
 	}
-	e.w = e.wi
+	// e.w = e.wi
 	e.resetCommon()
 }
 
@@ -1058,7 +1065,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 	}
 	e.wx = true
 	e.wb.reset(in, out)
-	e.w = &e.wb
+	// e.w = &e.wb
 	e.resetCommon()
 }
 

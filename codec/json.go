@@ -115,8 +115,7 @@ func init() {
 // ----------------
 
 type jsonEncDriverTypical struct {
-	w encWriter
-	// w  *encWriterSwitch
+	w  *encWriterSwitch
 	b  *[jsonScratchArrayLen]byte
 	tw bool // term white space
 	c  containerState
@@ -205,7 +204,7 @@ func (e *jsonEncDriverTypical) atEndOfEncode() {
 // ----------------
 
 type jsonEncDriverGeneric struct {
-	w encWriter // encWriter // *encWriterSwitch
+	w *encWriterSwitch
 	b *[jsonScratchArrayLen]byte
 	c containerState
 	// ds string // indent string
@@ -407,12 +406,13 @@ type jsonEncDriver struct {
 	noBuiltInTypes
 	e  *Encoder
 	h  *JsonHandle
-	ew encWriter // encWriter // *encWriterSwitch
+	ew *encWriterSwitch
 	se extWrapper
 	// ---- cpu cache line boundary?
 	bs []byte // scratch
 	// ---- cpu cache line boundary?
 	b [jsonScratchArrayLen]byte // scratch (encode time,
+	_ [2]uint64                 // padding
 }
 
 func (e *jsonEncDriver) EncodeNil() {
@@ -569,7 +569,7 @@ type jsonDecDriver struct {
 	noBuiltInTypes
 	d  *Decoder
 	h  *JsonHandle
-	r  decReader // *decReaderSwitch // decReader
+	r  *decReaderSwitch // decReader
 	se extWrapper
 
 	// ---- writable fields during execution --- *try* to keep in sep cache line
@@ -584,7 +584,7 @@ type jsonDecDriver struct {
 	b  [jsonScratchArrayLen]byte // scratch 1, used for parsing strings or numbers or time.Time
 	b2 [jsonScratchArrayLen]byte // scratch 2, used only for readUntil, decNumBytes
 
-	_ [3]uint64 // padding
+	// _ [3]uint64 // padding
 	// n jsonNum
 }
 
