@@ -1656,9 +1656,12 @@ func (c *codecFner) reset(hh Handle) {
 		c.h, bh = bh, c.h // swap both
 		_, c.js = hh.(*JsonHandle)
 		c.be = hh.isBinary()
-		for i := range c.s {
-			c.s[i].fn.i.ready = false
+		if len(c.s) > 0 {
+			c.s = c.s[:0]
 		}
+		// for i := range c.s {
+		// 	c.s[i].fn.i.ready = false
+		// }
 	}
 }
 
