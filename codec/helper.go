@@ -2423,11 +2423,14 @@ func (panicHdl) errorf(format string, params ...interface{}) {
 
 type errstrDecorator interface {
 	wrapErrstr(interface{}, *error)
+	wrapErr(error) error
 }
 
 type errstrDecoratorDef struct{}
 
 func (errstrDecoratorDef) wrapErrstr(v interface{}, e *error) { *e = fmt.Errorf("%v", v) }
+
+func (errstrDecoratorDef) wrapErr(err error) error { return err }
 
 type must struct{}
 
