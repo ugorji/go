@@ -1564,7 +1564,7 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) 
 // 	return t
 // }
 
-func panicToErr(h errstrDecorator, err *error) {
+func panicToErr(h errDecorator, err *error) {
 	// Note: This method MUST be called directly from defer i.e. defer panicToErr ...
 	// else it seems the recover is not fully handled
 	if recoverPanicToErr {
@@ -1576,7 +1576,7 @@ func panicToErr(h errstrDecorator, err *error) {
 	}
 }
 
-func panicValToErr(h errstrDecorator, v interface{}, err *error) {
+func panicValToErr(h errDecorator, v interface{}, err *error) {
 	switch xerr := v.(type) {
 	case nil:
 	case error:
@@ -1586,18 +1586,18 @@ func panicValToErr(h errstrDecorator, v interface{}, err *error) {
 			// treat as special (bubble up)
 			*err = xerr
 		default:
-			h.wrapErrstr(xerr.Error(), err)
+			*err = h.wrapErr(xerr)
 		}
 	case string:
 		if xerr != "" {
-			h.wrapErrstr(xerr, err)
+			*err = h.wrapErr(errors.New(xerr))
 		}
 	case fmt.Stringer:
 		if xerr != nil {
-			h.wrapErrstr(xerr.String(), err)
+			*err = h.wrapErr(errors.New(xerr.String()))
 		}
 	default:
-		h.wrapErrstr(v, err)
+		*err = h.wrapErr(fmt.Errorf("%v", v))
 	}
 }
 
@@ -2353,16 +2353,13 @@ func (panicHdl) errorf(format string, params ...interface{}) {
 	}
 }
 
-type errstrDecorator interface {
-	wrapErrstr(interface{}, *error)
+type errDecorator interface {
 	wrapErr(error) error
 }
 
-type errstrDecoratorDef struct{}
+type errDecoratorDef struct{}
 
-func (errstrDecoratorDef) wrapErrstr(v interface{}, e *error) { *e = fmt.Errorf("%v", v) }
-
-func (errstrDecoratorDef) wrapErr(err error) error { return err }
+func (errDecoratorDef) wrapErr(err error) error { return err }
 
 type must struct{}
 
