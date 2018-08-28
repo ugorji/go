@@ -1449,3 +1449,17 @@ func (e *Encoder) rawBytes(vv Raw) {
 func (e *Encoder) wrapErrstr(v interface{}, err *error) {
 	*err = fmt.Errorf("%s encode error: %v", e.hh.Name(), v)
 }
+
+// EncodeError wraps any error encountered during encoding.
+type EncodeError struct {
+	Name string
+	Err  error
+}
+
+func (e EncodeError) Error() string {
+	return fmt.Sprintf("%s encode error: %v", e.Name, e.Err)
+}
+
+func (e *Encoder) wrapErr(err error) error {
+	return EncodeError{Name: e.hh.Name(), Err: err}
+}
