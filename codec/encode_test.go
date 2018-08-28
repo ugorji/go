@@ -9,6 +9,16 @@ import (
 	"testing"
 )
 
+func TestEncodeErrorCause(t *testing.T) {
+	err := errors.New("test error")
+	wrappedErr := EncodeError{Err: err}
+
+	cause := wrappedErr.Cause()
+	if !reflect.DeepEqual(err, cause) {
+		t.Fatalf("expected %v, got %v", err, cause)
+	}
+}
+
 func TestEncoderWrapErr(t *testing.T) {
 	var h JsonHandle
 	e := NewEncoderBytes(nil, &h)

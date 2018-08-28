@@ -9,6 +9,16 @@ import (
 	"testing"
 )
 
+func TestDecodeErrorCause(t *testing.T) {
+	err := errors.New("test error")
+	wrappedErr := DecodeError{Name: "name", Pos: 0, Err: err}
+
+	cause := wrappedErr.Cause()
+	if !reflect.DeepEqual(err, cause) {
+		t.Fatalf("expected %v, got %v", err, cause)
+	}
+}
+
 func TestDecoderWrapErr(t *testing.T) {
 	var h JsonHandle
 	d := NewDecoderBytes([]byte{}, &h)
