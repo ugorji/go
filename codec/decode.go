@@ -2417,6 +2417,21 @@ func (d *Decoder) wrapErrstr(v interface{}, err *error) {
 	*err = fmt.Errorf("%s decode error [pos %d]: %v", d.hh.Name(), d.r.numread(), v)
 }
 
+// DecodeError wraps any error encountered during decoding.
+type DecodeError struct {
+	Name string
+	Pos  int
+	Err  error
+}
+
+func (d DecodeError) Error() string {
+	return fmt.Sprintf("%s decode error [pos %d]: %v", d.Name, d.Pos, d.Err)
+}
+
+func (d *Decoder) wrapErr(err error) error {
+	return DecodeError{Name: d.hh.Name(), Pos: d.r.numread(), Err: err}
+}
+
 func (d *Decoder) NumBytesRead() int {
 	return d.r.numread()
 }

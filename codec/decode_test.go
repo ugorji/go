@@ -9,14 +9,14 @@ import (
 	"testing"
 )
 
-func TestEncoderWrapErr(t *testing.T) {
+func TestDecoderWrapErr(t *testing.T) {
 	var h JsonHandle
-	e := NewEncoderBytes(nil, &h)
+	d := NewDecoderBytes([]byte{}, &h)
 
 	err := errors.New("test error")
-	wrappedErr := e.wrapErr(err)
+	wrappedErr := d.wrapErr(err)
 
-	expectedErr := EncodeError{Name: h.Name(), Err: err}
+	expectedErr := DecodeError{Name: h.Name(), Pos: 0, Err: err}
 	if !reflect.DeepEqual(expectedErr, wrappedErr) {
 		t.Fatalf("expected %v, got %v", expectedErr, wrappedErr)
 	}
