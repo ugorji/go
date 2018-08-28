@@ -1571,34 +1571,35 @@ func panicToErr(h errDecorator, err *error) {
 		if x := recover(); x != nil {
 			// fmt.Printf("panic'ing with: %v\n", x)
 			// debug.PrintStack()
-			panicValToErr(h, x, err)
+			*err = panicValToErr(h, x)
 		}
 	}
 }
 
-func panicValToErr(h errDecorator, v interface{}, err *error) {
+func panicValToErr(h errDecorator, v interface{}) error {
 	switch xerr := v.(type) {
 	case nil:
+		return nil
 	case error:
 		switch xerr {
 		case nil:
+			return nil
 		case io.EOF, io.ErrUnexpectedEOF, errEncoderNotInitialized, errDecoderNotInitialized:
 			// treat as special (bubble up)
-			*err = xerr
+			return xerr
 		default:
-			*err = h.wrapErr(xerr)
+			return h.wrapErr(xerr)
 		}
 	case string:
 		if xerr != "" {
-			*err = h.wrapErr(errors.New(xerr))
+			return h.wrapErr(errors.New(xerr))
 		}
 	case fmt.Stringer:
 		if xerr != nil {
-			*err = h.wrapErr(errors.New(xerr.String()))
+			return h.wrapErr(errors.New(xerr.String()))
 		}
-	default:
-		*err = h.wrapErr(fmt.Errorf("%v", v))
 	}
+	return h.wrapErr(fmt.Errorf("%v", v))
 }
 
 func isImmutableKind(k reflect.Kind) (v bool) {

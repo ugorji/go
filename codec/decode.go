@@ -2068,8 +2068,8 @@ func (d *Decoder) deferred(err1 *error) {
 	d.alwaysAtEnd()
 	if recoverPanicToErr {
 		if x := recover(); x != nil {
-			panicValToErr(d, x, err1)
-			panicValToErr(d, x, &d.err)
+			*err1 = panicValToErr(d, x)
+			d.err = *err1
 		}
 	}
 }
