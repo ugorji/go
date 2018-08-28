@@ -1241,8 +1241,8 @@ func (e *Encoder) deferred(err1 *error) {
 	e.alwaysAtEnd()
 	if recoverPanicToErr {
 		if x := recover(); x != nil {
-			panicValToErr(e, x, err1)
-			panicValToErr(e, x, &e.err)
+			*err1 = panicValToErr(e, x)
+			e.err = *err1
 		}
 	}
 }
