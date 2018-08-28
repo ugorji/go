@@ -2413,10 +2413,6 @@ func (d *Decoder) rawBytes() []byte {
 	return bs2
 }
 
-func (d *Decoder) wrapErrstr(v interface{}, err *error) {
-	*err = fmt.Errorf("%s decode error [pos %d]: %v", d.hh.Name(), d.r.numread(), v)
-}
-
 // DecodeError wraps any error encountered during decoding.
 type DecodeError struct {
 	Name string
