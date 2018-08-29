@@ -1391,7 +1391,7 @@ func (e EncodeError) Error() string {
 	return fmt.Sprintf("%s encode error: %v", e.Name, e.Err)
 }
 
-// Cause implements pkg/errors.causer.
+// Cause implements github.com/pkg/errors.causer.
 func (e EncodeError) Cause() error {
 	return e.Err
 }

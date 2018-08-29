@@ -2424,7 +2424,7 @@ func (d DecodeError) Error() string {
 	return fmt.Sprintf("%s decode error [pos %d]: %v", d.Name, d.Pos, d.Err)
 }
 
-// Cause implements pkg/errors.causer.
+// Cause implements github.com/pkg/errors.causer.
 func (d DecodeError) Cause() error {
 	return d.Err
 }
