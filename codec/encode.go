@@ -66,6 +66,14 @@ type encDriverAsis interface {
 	EncodeAsis(v []byte)
 }
 
+type encodeError struct {
+	codecError
+}
+
+func (e encodeError) Error() string {
+	return fmt.Sprintf("%s encode error: %v", e.name, e.err)
+}
+
 type encDriverNoopContainerWriter struct{}
 
 func (encDriverNoopContainerWriter) WriteArrayStart(length int) {}
@@ -1436,6 +1444,6 @@ func (e *Encoder) rawBytes(vv Raw) {
 	e.asis(v)
 }
 
-func (e *Encoder) wrapErrstr(v interface{}, err *error) {
-	*err = fmt.Errorf("%s encode error: %v", e.hh.Name(), v)
+func (e *Encoder) wrapErr(v interface{}, err *error) {
+	*err = encodeError{codecError{name: e.hh.Name(), err: v}}
 }
