@@ -1231,8 +1231,8 @@ func (e *Encoder) deferred(err1 *error) {
 	e.alwaysAtEnd()
 	if recoverPanicToErr {
 		if x := recover(); x != nil {
-			panicValToErr(e, x, err1)
-			panicValToErr(e, x, &e.err)
+			*err1 = panicValToErr(e, x)
+			e.err = *err1
 		}
 	}
 }
@@ -1436,6 +1436,21 @@ func (e *Encoder) rawBytes(vv Raw) {
 	e.asis(v)
 }
 
-func (e *Encoder) wrapErrstr(v interface{}, err *error) {
-	*err = fmt.Errorf("%s encode error: %v", e.hh.Name(), v)
+// EncodeError wraps any error encountered during encoding.
+type EncodeError struct {
+	Name string
+	Err  error
+}
+
+func (e EncodeError) Error() string {
+	return fmt.Sprintf("%s encode error: %v", e.Name, e.Err)
+}
+
+// Cause implements github.com/pkg/errors.causer.
+func (e EncodeError) Cause() error {
+	return e.Err
+}
+
+func (e *Encoder) wrapErr(err error) error {
+	return EncodeError{Name: e.hh.Name(), Err: err}
 }

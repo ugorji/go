@@ -2088,8 +2088,8 @@ func (d *Decoder) deferred(err1 *error) {
 	d.alwaysAtEnd()
 	if recoverPanicToErr {
 		if x := recover(); x != nil {
-			panicValToErr(d, x, err1)
-			panicValToErr(d, x, &d.err)
+			*err1 = panicValToErr(d, x)
+			d.err = *err1
 		}
 	}
 }
@@ -2433,8 +2433,24 @@ func (d *Decoder) rawBytes() []byte {
 	return bs2
 }
 
-func (d *Decoder) wrapErrstr(v interface{}, err *error) {
-	*err = fmt.Errorf("%s decode error [pos %d]: %v", d.hh.Name(), d.r.numread(), v)
+// DecodeError wraps any error encountered during decoding.
+type DecodeError struct {
+	Name string
+	Pos  int
+	Err  error
+}
+
+func (d DecodeError) Error() string {
+	return fmt.Sprintf("%s decode error [pos %d]: %v", d.Name, d.Pos, d.Err)
+}
+
+// Cause implements github.com/pkg/errors.causer.
+func (d DecodeError) Cause() error {
+	return d.Err
+}
+
+func (d *Decoder) wrapErr(err error) error {
+	return DecodeError{Name: d.hh.Name(), Pos: d.r.numread(), Err: err}
 }
 
 // NumBytesRead returns the number of bytes read
