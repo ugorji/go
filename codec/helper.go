@@ -143,6 +143,8 @@ var (
 	zeroByteSlice = oneByteArr[:0:0]
 )
 
+var codecgen bool
+
 var refBitset bitset32
 var pool pooler
 var panicv panicHdl
@@ -327,8 +329,9 @@ var (
 	jsonMarshalerTyp   = reflect.TypeOf((*jsonMarshaler)(nil)).Elem()
 	jsonUnmarshalerTyp = reflect.TypeOf((*jsonUnmarshaler)(nil)).Elem()
 
-	selferTyp = reflect.TypeOf((*Selfer)(nil)).Elem()
-	iszeroTyp = reflect.TypeOf((*isZeroer)(nil)).Elem()
+	selferTyp         = reflect.TypeOf((*Selfer)(nil)).Elem()
+	missingFielderTyp = reflect.TypeOf((*MissingFielder)(nil)).Elem()
+	iszeroTyp         = reflect.TypeOf((*isZeroer)(nil)).Elem()
 
 	uint8TypId      = rt2id(uint8Typ)
 	uint8SliceTypId = rt2id(uint8SliceTyp)
@@ -398,6 +401,31 @@ var immutableKindsSet = [32]bool{
 type Selfer interface {
 	CodecEncodeSelf(*Encoder)
 	CodecDecodeSelf(*Decoder)
+}
+
+// MissingFieldPair is a convenience value composed of the field name and the value of the field.
+type MissingFieldPair struct {
+	Field string
+	Value interface{}
+}
+
+// MissingFielder defines the interface allowing structs to internally decode or encode
+// values which do not map to struct fields.
+//
+// We expect that this interface is bound to a pointer type (so the mutation function works).
+//
+// A use-case is if a version of a type unexports a field, but you want compatibility between
+// both versions during encoding and decoding.
+//
+// Note that the interface is completely ignored during codecgen.
+type MissingFielder interface {
+	// CodecMissingField is called to set a missing field and value pair.
+	//
+	// It returns true if the missing field was set on the struct.
+	CodecMissingField(field []byte, value interface{}) bool
+
+	// CodecMissingFields returns the set of fields which are not struct fields
+	CodecMissingFields() []MissingFieldPair
 }
 
 // MapBySlice is a tag interface that denotes wrapped slice should encode as a map in the stream.
@@ -1066,12 +1094,15 @@ type typeInfo struct {
 	jup bool // *T is a jsonUnmarshaler
 	cs  bool // T is a Selfer
 	csp bool // *T is a Selfer
+	mf  bool // T is a MissingFielder
+	mfp bool // *T is a MissingFielder
 
 	// other flags, with individual bits representing if set.
-	flags typeInfoFlag
+	flags              typeInfoFlag
+	infoFieldOmitempty bool
 
-	// _ [2]byte   // padding
-	_ [3]uint64 // padding
+	_ [6]byte   // padding
+	_ [2]uint64 // padding
 }
 
 func (ti *typeInfo) isFlag(f typeInfoFlag) bool {
@@ -1191,6 +1222,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	ti.jm, ti.jmp = implIntf(rt, jsonMarshalerTyp)
 	ti.ju, ti.jup = implIntf(rt, jsonUnmarshalerTyp)
 	ti.cs, ti.csp = implIntf(rt, selferTyp)
+	ti.mf, ti.mfp = implIntf(rt, missingFielderTyp)
 
 	b1, b2 := implIntf(rt, iszeroTyp)
 	if b1 {
@@ -1208,6 +1240,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		var omitEmpty bool
 		if f, ok := rt.FieldByName(structInfoFieldName); ok {
 			ti.toArray, omitEmpty, ti.keyType = parseStructInfo(x.structTag(f.Tag))
+			ti.infoFieldOmitempty = omitEmpty
 		} else {
 			ti.keyType = valueTypeString
 		}
@@ -1852,7 +1885,7 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 				}
 				// fn.fd = (*Decoder).kArray
 			case reflect.Struct:
-				if ti.anyOmitEmpty {
+				if ti.anyOmitEmpty || ti.mf || ti.mfp {
 					fn.fe = (*Encoder).kStruct
 				} else {
 					fn.fe = (*Encoder).kStructNoOmitempty
