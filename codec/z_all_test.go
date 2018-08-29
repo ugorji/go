@@ -239,6 +239,11 @@ func testCodecGroup(t *testing.T) {
 	t.Run("TestMsgpackIntfMapping", TestMsgpackIntfMapping)
 	t.Run("TestBincIntfMapping", TestBincIntfMapping)
 	t.Run("TestSimpleIntfMapping", TestSimpleIntfMapping)
+	t.Run("TestJsonMissingFields", TestJsonMissingFields)
+	t.Run("TestCborMissingFields", TestCborMissingFields)
+	t.Run("TestMsgpackMissingFields", TestMsgpackMissingFields)
+	t.Run("TestBincMissingFields", TestBincMissingFields)
+	t.Run("TestSimpleMissingFields", TestSimpleMissingFields)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
@@ -272,6 +277,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonScalars", TestJsonScalars)
 	t.Run("TestJsonOmitempty", TestJsonOmitempty)
 	t.Run("TestJsonIntfMapping", TestJsonIntfMapping)
+	t.Run("TestJsonMissingFields", TestJsonMissingFields)
 }
 
 func testBincGroup(t *testing.T) {
@@ -297,6 +303,7 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincScalars", TestBincScalars)
 	t.Run("TestBincOmitempty", TestBincOmitempty)
 	t.Run("TestBincIntfMapping", TestBincIntfMapping)
+	t.Run("TestBincMissingFields", TestBincMissingFields)
 }
 
 func testCborGroup(t *testing.T) {
@@ -323,6 +330,7 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborScalars", TestCborScalars)
 	t.Run("TestCborOmitempty", TestCborOmitempty)
 	t.Run("TestCborIntfMapping", TestCborIntfMapping)
+	t.Run("TestCborMissingFields", TestCborMissingFields)
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 }
 
@@ -348,6 +356,7 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackScalars", TestMsgpackScalars)
 	t.Run("TestMsgpackOmitempty", TestMsgpackOmitempty)
 	t.Run("TestMsgpackIntfMapping", TestMsgpackIntfMapping)
+	t.Run("TestMsgpackMissingFields", TestMsgpackMissingFields)
 }
 
 func testSimpleGroup(t *testing.T) {
@@ -371,6 +380,7 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleScalars", TestSimpleScalars)
 	t.Run("TestSimpleOmitempty", TestSimpleOmitempty)
 	t.Run("TestSimpleIntfMapping", TestSimpleIntfMapping)
+	t.Run("TestSimpleMissingFields", TestSimpleMissingFields)
 }
 
 func testSimpleMammothGroup(t *testing.T) {

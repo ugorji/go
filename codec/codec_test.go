@@ -2310,6 +2310,27 @@ func doTestOmitempty(t *testing.T, name string, h Handle) {
 	testDeepEqualErr(b1, b2, t, name+"-omitempty-cmp")
 }
 
+func doTestMissingFields(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
+	if codecgen {
+		t.Skipf("Skipping Missing Fields tests as it is not honored by codecgen")
+	}
+	if h.getBasicHandle().StructToArray {
+		t.Skipf("Skipping Missing Fields test when StructToArray=true")
+	}
+	// encode missingFielderT2, decode into missingFielderT1, encode it out again, decode into new missingFielderT2, compare
+	v1 := missingFielderT2{S: "true seven eight", B: true, F: 777.0, I: -888}
+	b1 := testMarshalErr(v1, h, t, name+"-missing-enc-2")
+	// xdebugf("b1: %s", b1)
+	var v2 missingFielderT1
+	testUnmarshalErr(&v2, b1, h, t, name+"-missing-dec-1")
+	// xdebugf("unmarshal worked")
+	b2 := testMarshalErr(&v2, h, t, name+"-missing-enc-1")
+	var v3 missingFielderT2
+	testUnmarshalErr(&v3, b2, h, t, name+"-missing-dec-2")
+	testDeepEqualErr(v1, v3, t, name+"-missing-cmp-2")
+}
+
 // -----------------
 
 func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
@@ -2985,6 +3006,26 @@ func TestBincIntfMapping(t *testing.T) {
 
 func TestSimpleIntfMapping(t *testing.T) {
 	doTestIntfMapping(t, "simple", testSimpleH)
+}
+
+func TestJsonMissingFields(t *testing.T) {
+	doTestMissingFields(t, "json", testJsonH)
+}
+
+func TestCborMissingFields(t *testing.T) {
+	doTestMissingFields(t, "cbor", testCborH)
+}
+
+func TestMsgpackMissingFields(t *testing.T) {
+	doTestMissingFields(t, "msgpack", testMsgpackH)
+}
+
+func TestBincMissingFields(t *testing.T) {
+	doTestMissingFields(t, "binc", testBincH)
+}
+
+func TestSimpleMissingFields(t *testing.T) {
+	doTestMissingFields(t, "simple", testSimpleH)
 }
 
 // TODO:
