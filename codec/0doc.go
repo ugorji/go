@@ -21,8 +21,26 @@ To install:
 This package will carefully use 'unsafe' for performance reasons in specific places.
 You can build without unsafe use by passing the safe or appengine tag
 i.e. 'go install -tags=safe ...'. Note that unsafe is only supported for the last 3
-go sdk versions e.g. current go release is go 1.9, so we support unsafe use only from
-go 1.7+ . This is because supporting unsafe requires knowledge of implementation details.
+go sdk versions e.g. current go release is go 1.11, so we support unsafe use only from
+go 1.9+ . This is because supporting unsafe requires knowledge of implementation details.
+
+This package tries to reuse of values passed to decode steps. This means that, when passing
+variables with the same type, the package will try to reuse everything he saw from past calls
+with that type, so if you pass a map whose fields change from call to call for example, some
+old keys may appear on the new map because of that reuse. The same may happen to slices, too.
+To disable such reuse behavior, look into the options MapValueReset,
+DeleteOnNilMapValue and SliceElementReset of the DecodeOptions struct when creating a Handle.
+With JsonHandle, for example, you may disable such behavior by creating the handle like that:
+
+    var handler codec.Handle = &codec.JsonHandle{
+        BasicHandle: codec.BasicHandle{
+            DecodeOptions: codec.DecodeOptions{
+                MapValueReset:       true,
+                DeleteOnNilMapValue: true,
+                SliceElementReset:   true,
+            },
+        },
+    }
 
 For detailed usage information, read the primer at http://ugorji.net/blog/go-codec-primer .
 
@@ -245,7 +263,7 @@ package codec
 //     - critical shared objects that are read many times
 //       TypeInfos
 //     - pooled objects:
-//       decNaked, decNakedContainers, codecFner, typeInfoLoadArray, 
+//       decNaked, decNakedContainers, codecFner, typeInfoLoadArray,
 //     - small objects allocated independently, that we read/use much across threads:
 //       codecFn, typeInfo
 //     - Objects allocated independently and used a lot
