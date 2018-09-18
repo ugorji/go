@@ -2053,7 +2053,8 @@ func (d *Decoder) naked() *decNaked {
 //   - Else decode it based on its reflect.Kind
 //
 // There are some special rules when decoding into containers (slice/array/map/struct).
-// Decode will typically use the stream contents to UPDATE the container.
+// Decode will typically use the stream contents to UPDATE the container i.e. the values
+// in these containers will not be zero'ed before decoding.
 //   - A map can be decoded from a stream map, by updating matching keys.
 //   - A slice can be decoded from a stream array,
 //     by updating the first n elements, where n is length of the stream.
@@ -2063,7 +2064,15 @@ func (d *Decoder) naked() *decNaked {
 //   - A struct can be decoded from a stream array,
 //     by updating fields as they occur in the struct (by index).
 //
-// When decoding a stream map or array with length of 0 into a nil map or slice,
+// This in-place update maintains consistency in the decoding philosophy (i.e. we ALWAYS update
+// in place by default). However, the consequence of this is that values in slices or maps
+// which are not zero'ed before hand, will have part of the prior values in place after decode
+// if the stream doesn't contain an update for those parts.
+//
+// This in-place update can be disabled by configuring the MapValueReset and SliceElementReset
+// decode options available on every handle.
+//
+// Furthermore, when decoding a stream map or array with length of 0 into a nil map or slice,
 // we reset the destination map or slice to a zero-length value.
 //
 // However, when decoding a stream nil, we reset the destination container
