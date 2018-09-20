@@ -2379,7 +2379,7 @@ func (d *Decoder) arrayCannotExpand(sliceLen, streamLen int) {
 func isDecodeable(rv reflect.Value) (rv2 reflect.Value, canDecode bool) {
 	switch rv.Kind() {
 	case reflect.Array:
-		return rv, true
+		return rv, rv.CanAddr()
 	case reflect.Ptr:
 		if !rv.IsNil() {
 			return rv.Elem(), true
