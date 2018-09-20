@@ -110,6 +110,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unsafe"
 )
 
 const (
@@ -1905,7 +1906,18 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 				fi.addrD = false
 				rt2 := reflect.SliceOf(ti.elem)
 				fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
-					d.cfer().get(rt2, true, false).fd(d, xf, xrv.Slice(0, xrv.Len()))
+					var s reflect.Value
+					if xrv.CanAddr() {
+						s = xrv.Slice(0, xrv.Len())
+					} else {
+						urv := (*unsafeReflectValue)(unsafe.Pointer(&xrv))
+						s = reflect.Zero(reflect.SliceOf(xrv.Type().Elem()))
+						shead := (*reflect.SliceHeader)((*unsafeReflectValue)(unsafe.Pointer(&s)).ptr)
+						shead.Data = uintptr(urv.ptr)
+						shead.Len = xrv.Len()
+						shead.Cap = xrv.Len()
+					}
+					d.cfer().get(rt2, true, false).fd(d, xf, s)
 				}
 				// fn.fd = (*Decoder).kArray
 			case reflect.Struct:

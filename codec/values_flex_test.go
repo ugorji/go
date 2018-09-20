@@ -23,6 +23,7 @@ type Sstring string
 type Sstructsmall struct {
 	A int
 }
+type Aarray [1]string
 
 type Sstructbig struct {
 	A int
@@ -110,6 +111,8 @@ type TestStrucFlex struct {
 	Mts        map[string]TestStrucFlex
 	Its        []*TestStrucFlex
 	Nteststruc *TestStrucFlex
+
+	ASinterface []interface{}
 }
 
 func emptyTestStrucFlex() *TestStrucFlex {
@@ -171,6 +174,8 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 		},
 		Ui64array:   [4]uint64{4, 16, 64, 256},
 		ArrStrUi64T: [4]stringUint64T{{"4", 4}, {"3", 3}, {"2", 2}, {"1", 1}},
+
+		ASinterface: []interface{}{Aarray{"s"}},
 	}
 
 	numChanSend := cap(ts.Chstr) / 4 // 8
