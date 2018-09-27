@@ -495,6 +495,18 @@ type BasicHandle struct {
 
 	RPCOptions
 
+	// TimeNotBuiltin configures whether time.Time should be treated as a builtin type.
+	//
+	// All Handlers should know how to encode/decode time.Time as part of the core
+	// format specification, or as a standard extension defined by the format.
+	//
+	// However, users can elect to handle time.Time as a custom extension, or via the
+	// standard library's encoding.Binary(M|Unm)arshaler or Text(M|Unm)arshaler interface.
+	// To elect this behavior, users can set TimeNotBuiltin=true.
+	// Note: Setting TimeNotBuiltin=true can be used to enable the legacy behavior
+	// (for Cbor and Msgpack), where time.Time was not a builtin supported type.
+	TimeNotBuiltin bool
+
 	// ---- cache line
 
 	DecodeOptions
@@ -1763,7 +1775,7 @@ func (c *codecFner) get(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (
 		fi.addrF = true
 		fi.addrD = ti.csp
 		fi.addrE = ti.csp
-	} else if rtid == timeTypId {
+	} else if rtid == timeTypId && !c.h.TimeNotBuiltin {
 		fn.fe = (*Encoder).kTime
 		fn.fd = (*Decoder).kTime
 	} else if rtid == rawTypId {
