@@ -57,8 +57,8 @@ func (t *missingFielderT1) CodecMissingField(field []byte, value interface{}) bo
 	return true
 }
 
-func (t *missingFielderT1) CodecMissingFields() []MissingFieldPair {
-	return []MissingFieldPair{{"F", t.f}, {"I", t.i}}
+func (t *missingFielderT1) CodecMissingFields() map[string]interface{} {
+	return map[string]interface{}{"F": t.f, "I": t.i}
 }
 
 type missingFielderT2 struct {
