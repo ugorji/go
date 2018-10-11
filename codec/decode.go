@@ -44,7 +44,6 @@ var (
 // read from an io.Reader or directly off a byte slice with zero-copying.
 type decReader interface {
 	unreadn1()
-
 	// readx will use the implementation scratch buffer if possible i.e. n < len(scratchbuf), OR
 	// just return a view of the []byte being decoded from.
 	// Ensure you call detachZeroCopyBytes later if this needs to be sent outside codec control.
@@ -2534,6 +2533,13 @@ func decByteSlice(r decReader, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 	}
 	return
 }
+
+// func decByteSliceZeroCopy(r decReader, clen, maxInitLen int, bs []byte) (bsOut []byte) {
+// 	if _, ok := r.(*bytesDecReader); ok && clen <= maxInitLen {
+// 		return r.readx(clen)
+// 	}
+// 	return decByteSlice(r, clen, maxInitLen, bs)
+// }
 
 func detachZeroCopyBytes(isBytesReader bool, dest []byte, in []byte) (out []byte) {
 	if xlen := len(in); xlen > 0 {
