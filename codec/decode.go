@@ -1505,7 +1505,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	elemsep := d.esep
 	ti := f.ti
 	if rv.IsNil() {
-		rv.Set(makeMapReflect(ti.rt, containerLen))
+		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.key.Size()+ti.elem.Size()))
+		rv.Set(makeMapReflect(ti.rt, rvlen))
 	}
 
 	if containerLen == 0 {
