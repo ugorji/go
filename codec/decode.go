@@ -20,9 +20,11 @@ const (
 	msgDecCannotExpandArr = "cannot expand go array from %v to stream length: %v"
 )
 
-const decDefSliceCap = 8
-const decDefChanCap = 64 // should be large, as cap cannot be expanded
-const decScratchByteArrayLen = cacheLineSize - 8
+const (
+	decDefSliceCap         = 8
+	decDefChanCap          = 64 // should be large, as cap cannot be expanded
+	decScratchByteArrayLen = cacheLineSize - 8
+)
 
 var (
 	errstrOnlyMapOrArrayCanDecodeIntoStruct = "only encoded map or array can be decoded into a struct"
@@ -64,12 +66,13 @@ type decReader interface {
 type decDriver interface {
 	// this will check if the next token is a break.
 	CheckBreak() bool
+	// TryDecodeAsNil tries to decode as nil.
 	// Note: TryDecodeAsNil should be careful not to share any temporary []byte with
 	// the rest of the decDriver. This is because sometimes, we optimize by holding onto
 	// a transient []byte, and ensuring the only other call we make to the decDriver
 	// during that time is maybe a TryDecodeAsNil() call.
 	TryDecodeAsNil() bool
-	// vt is one of: Bytes, String, Nil, Slice or Map. Return unSet if not known.
+	// ContainerType returns one of: Bytes, String, Nil, Slice or Map. Return unSet if not known.
 	ContainerType() (vt valueType)
 	// IsBuiltinType(rt uintptr) bool
 
@@ -1399,7 +1402,6 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 					rv = reflect.MakeSlice(ti.rt, rvlen, rvlen)
 					rvChanged = true
 				} else { // chan
-					// xdebugf(">>>>>> haslen = %v, make chan of type '%v' with length: %v", hasLen, ti.rt, rvlen)
 					rv = reflect.MakeChan(ti.rt, rvlen)
 					rvChanged = true
 				}
@@ -1421,7 +1423,6 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				fn = d.cf.get(rtelem, true, true)
 			}
 			d.decodeValue(rv9, fn, true)
-			// xdebugf(">>>> rv9 sent on %v during decode: %v, with len=%v, cap=%v", rv.Type(), rv9, rv.Len(), rv.Cap())
 			rv.Send(rv9)
 		} else {
 			// if indefinite, etc, then expand the slice if necessary
@@ -1458,9 +1459,9 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 						rtelem0Zero = reflect.Zero(rtelem0)
 					}
 					rv9.Set(rtelem0Zero)
-				}
-				if decodeAsNil {
-					continue
+					if decodeAsNil {
+						continue
+					}
 				}
 
 				if fn == nil {
@@ -1558,13 +1559,14 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		if elemsep {
 			dd.ReadMapElemKey()
 		}
-		if false && dd.TryDecodeAsNil() { // nil cannot be a map key, so disregard this block
-			// Previously, if a nil key, we just ignored the mapped value and continued.
-			// However, that makes the result of encoding and then decoding map[intf]intf{nil:nil}
-			// to be an empty map.
-			// Instead, we treat a nil key as the zero value of the type.
-			rvk.Set(reflect.Zero(ktype))
-		} else if ktypeIsString {
+		// if false && dd.TryDecodeAsNil() { // nil cannot be a map key, so disregard this block
+		// 	// Previously, if a nil key, we just ignored the mapped value and continued.
+		// 	// However, that makes the result of encoding and then decoding map[intf]intf{nil:nil}
+		// 	// to be an empty map.
+		// 	// Instead, we treat a nil key as the zero value of the type.
+		// 	rvk.Set(reflect.Zero(ktype))
+		// } else if ktypeIsString {
+		if ktypeIsString {
 			kstrbs = dd.DecodeStringAsBytes()
 			rvk.SetString(stringView(kstrbs))
 			// NOTE: if doing an insert, you MUST use a real string (not stringview)
