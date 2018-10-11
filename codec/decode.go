@@ -21,6 +21,7 @@ const (
 )
 
 const (
+	decDefMaxDepth         = 1024 // maximum depth
 	decDefSliceCap         = 8
 	decDefChanCap          = 64 // should be large, as cap cannot be expanded
 	decScratchByteArrayLen = cacheLineSize - 8
@@ -38,6 +39,7 @@ var (
 	errDecUnreadByteNothingToRead   = errors.New("cannot unread - nothing has been read")
 	errDecUnreadByteLastByteNotRead = errors.New("cannot unread - last byte has not been read")
 	errDecUnreadByteUnknown         = errors.New("cannot unread - reason unknown")
+	errMaxDepthExceeded             = errors.New("maximum decoding depth exceeded")
 )
 
 // decReader abstracts the reading source, allowing implementations that can
@@ -170,6 +172,9 @@ type DecodeOptions struct {
 	// Instead, we provision up to MaxInitLen, fill that up, and start appending after that.
 	MaxInitLen int
 
+	// MaxDepth defines the maximum depth when decoding nested
+	// maps and slices. If 0 or negative, we default to a suitably large number (currently 1024).
+	MaxDepth int16
 	// ReaderBufferSize is the size of the buffer used when reading.
 	//
 	// if > 0, we use a smart buffer internally for performance purposes.
@@ -1190,6 +1195,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			dd.ReadMapEnd()
 			return
 		}
+		d.depthIncr()
 		tisfi := fti.sfiSort
 		hasLen := containerLen >= 0
 
@@ -1221,12 +1227,14 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			// keepAlive4StringView(rvkencnameB) // not needed, as reference is outside loop
 		}
 		dd.ReadMapEnd()
+		d.depthDecr()
 	} else if ctyp == valueTypeArray {
 		containerLen := dd.ReadArrayStart()
 		if containerLen == 0 {
 			dd.ReadArrayEnd()
 			return
 		}
+		d.depthIncr()
 		// Not much gain from doing it two ways for array.
 		// Arrays are not used as much for structs.
 		hasLen := containerLen >= 0
@@ -1261,6 +1269,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			}
 		}
 		dd.ReadArrayEnd()
+		d.depthDecr()
 	} else {
 		d.errorstr(errstrOnlyMapOrArrayCanDecodeIntoStruct)
 		return
@@ -1329,6 +1338,8 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		slh.End()
 		return
 	}
+
+	d.depthIncr()
 
 	rtelem0Size := int(rtelem0.Size())
 	rtElem0Kind := rtelem0.Kind()
@@ -1491,6 +1502,8 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if rvChanged { // infers rvCanset=true, so it can be reset
 		rv0.Set(rv)
 	}
+
+	d.depthDecr()
 }
 
 // func (d *Decoder) kArray(f *codecFnInfo, rv reflect.Value) {
@@ -1512,6 +1525,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		dd.ReadMapEnd()
 		return
 	}
+
+	d.depthIncr()
 
 	ktype, vtype := ti.key, ti.elem
 	ktypeId := rt2id(ktype)
@@ -1655,6 +1670,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	dd.ReadMapEnd()
+
+	d.depthDecr()
 }
 
 // decNaked is used to keep track of the primitives decoded.
@@ -1891,7 +1908,10 @@ type Decoder struct {
 	err error
 
 	h *BasicHandle
-	_ [1]uint64 // padding
+
+	depth    int16
+	maxdepth int16
+	_        [4]uint8 // padding
 
 	// ---- cpu cache line boundary?
 	b  [decScratchByteArrayLen]byte // scratch buffer, used by Decoder and xxxEncDrivers
@@ -1945,6 +1965,11 @@ func (d *Decoder) resetCommon() {
 	d.n.reset()
 	d.d.reset()
 	d.err = nil
+	d.depth = 0
+	d.maxdepth = d.h.MaxDepth
+	if d.maxdepth <= 0 {
+		d.maxdepth = decDefMaxDepth
+	}
 	// reset all things which were cached from the Handle, but could change
 	d.mtid, d.stid = 0, 0
 	d.mtr, d.str = false, false
@@ -2417,6 +2442,17 @@ func (d *Decoder) ensureDecodeable(rv reflect.Value) (rv2 reflect.Value) {
 	rvk := rv.Kind()
 	d.errorf("cannot decode into value of kind: %v, type: %T, %v", rvk, rvi, rvi)
 	return
+}
+
+func (d *Decoder) depthIncr() {
+	d.depth++
+	if d.depth >= d.maxdepth {
+		panic(errMaxDepthExceeded)
+	}
+}
+
+func (d *Decoder) depthDecr() {
+	d.depth--
 }
 
 // Possibly get an interned version of a string
