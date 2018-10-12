@@ -2331,6 +2331,77 @@ func doTestMissingFields(t *testing.T, name string, h Handle) {
 	testDeepEqualErr(v1, v3, t, name+"-missing-cmp-2")
 }
 
+func doTestMaxDepth(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
+	type T struct {
+		I interface{} // value to encode
+		M int16       // maxdepth
+		E interface{} // error to find
+	}
+	var table []T
+	var sfunc = func(n int) (s [1]interface{}, s1 *[1]interface{}) {
+		s1 = &s
+		for i := 0; i < n; i++ {
+			var s0 [1]interface{}
+			s1[0] = &s0
+			s1 = &s0
+		}
+		// xdebugf("sfunc s: %v", s)
+		return
+		// var s []interface{}
+		// s = append(s, []interface{})
+		// s[0] = append(s[0], []interface{})
+		// s[0][0] = append(s[0][0], []interface{})
+		// s[0][0][0] = append(s[0][0][0], []interface{})
+		// s[0][0][0][0] = append(s[0][0][0][0], []interface{})
+		// return s
+	}
+	var mfunc = func(n int) (m map[string]interface{}, mlast map[string]interface{}) {
+		m = make(map[string]interface{})
+		mlast = make(map[string]interface{})
+		m["0"] = mlast
+		for i := 1; i < n; i++ {
+			m0 := make(map[string]interface{})
+			mlast[strconv.FormatInt(int64(i), 10)] = m0
+			mlast = m0
+		}
+		// xdebugf("mfunc m: %v", m)
+		return
+	}
+	s, s1 := sfunc(5)
+	m, _ := mfunc(5)
+	s1[0] = m
+
+	table = append(table, T{s, 0, nil})
+	table = append(table, T{s, 256, nil})
+	table = append(table, T{s, 7, errMaxDepthExceeded})
+	table = append(table, T{s, 15, nil})
+
+	defer func(n int16, b bool) {
+		h.getBasicHandle().MaxDepth = n
+		testUseMust = b
+	}(h.getBasicHandle().MaxDepth, testUseMust)
+
+	testUseMust = false
+	for i, v := range table {
+		h.getBasicHandle().MaxDepth = v.M
+		b1 := testMarshalErr(v.I, h, t, name+"-maxdepth-enc"+strconv.FormatInt(int64(i), 10))
+		// xdebugf("b1: %s", b1)
+		var v2 interface{}
+		err := testUnmarshal(&v2, b1, h)
+		if err1, ok := err.(decodeError); ok {
+			err = err1.codecError
+		}
+		var err0 interface{} = err
+		if err1, ok := err.(codecError); ok {
+			err0 = err1.err
+		}
+		if err0 != v.E {
+			failT(t, "Unexpected error testing max depth for depth %d: expected %v, received %v", v.M, v.E, err)
+		}
+	}
+}
+
 // -----------------
 
 func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
@@ -3026,6 +3097,26 @@ func TestBincMissingFields(t *testing.T) {
 
 func TestSimpleMissingFields(t *testing.T) {
 	doTestMissingFields(t, "simple", testSimpleH)
+}
+
+func TestJsonMaxDepth(t *testing.T) {
+	doTestMaxDepth(t, "json", testJsonH)
+}
+
+func TestCborMaxDepth(t *testing.T) {
+	doTestMaxDepth(t, "cbor", testCborH)
+}
+
+func TestMsgpackMaxDepth(t *testing.T) {
+	doTestMaxDepth(t, "msgpack", testMsgpackH)
+}
+
+func TestBincMaxDepth(t *testing.T) {
+	doTestMaxDepth(t, "binc", testBincH)
+}
+
+func TestSimpleMaxDepth(t *testing.T) {
+	doTestMaxDepth(t, "simple", testSimpleH)
 }
 
 // TODO:
