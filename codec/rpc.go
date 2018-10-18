@@ -8,7 +8,6 @@ import (
 	"errors"
 	"io"
 	"net/rpc"
-	"sync"
 )
 
 var errRpcJsonNeedsTermWhitespace = errors.New("rpc requires a JsonHandle with TermWhitespace set to true")
@@ -40,8 +39,7 @@ type rpcCodec struct {
 	enc *Encoder
 	// bw  *bufio.Writer
 	// br  *bufio.Reader
-	mu sync.Mutex
-	h  Handle
+	h Handle
 
 	cls atomicClsErr
 }
@@ -160,15 +158,10 @@ type goRpcCodec struct {
 }
 
 func (c *goRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
-	// Must protect for concurrent access as per API
-	c.mu.Lock()
-	defer c.mu.Unlock()
 	return c.write(r, body, true)
 }
 
 func (c *goRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 	return c.write(r, body, true)
 }
 
