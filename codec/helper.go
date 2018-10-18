@@ -158,6 +158,11 @@ func init() {
 	refBitset.set(byte(reflect.Chan))
 }
 
+type clsErr struct {
+	closed    bool  // is it closed?
+	errClosed error // error on closing
+}
+
 type charEncoding uint8
 
 const (
