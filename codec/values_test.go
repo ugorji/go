@@ -38,36 +38,6 @@ type stringUint64T struct {
 	U uint64
 }
 
-type missingFielderT1 struct {
-	S string
-	B bool
-	f float64
-	i int64
-}
-
-func (t *missingFielderT1) CodecMissingField(field []byte, value interface{}) bool {
-	switch string(field) {
-	case "F":
-		t.f = value.(float64)
-	case "I":
-		t.i = value.(int64)
-	default:
-		return false
-	}
-	return true
-}
-
-func (t *missingFielderT1) CodecMissingFields() map[string]interface{} {
-	return map[string]interface{}{"F": t.f, "I": t.i}
-}
-
-type missingFielderT2 struct {
-	S string
-	B bool
-	F float64
-	I int64
-}
-
 type AnonInTestStruc struct {
 	AS         string
 	AI64       int64
