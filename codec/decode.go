@@ -2164,6 +2164,7 @@ func (d *Decoder) swallow() {
 	switch dd.ContainerType() {
 	case valueTypeMap:
 		containerLen := dd.ReadMapStart()
+		d.depthIncr()
 		hasLen := containerLen >= 0
 		for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
 			// if clenGtEqualZero {if j >= containerLen {break} } else if dd.CheckBreak() {break}
@@ -2177,8 +2178,10 @@ func (d *Decoder) swallow() {
 			d.swallow()
 		}
 		dd.ReadMapEnd()
+		d.depthDecr()
 	case valueTypeArray:
 		containerLen := dd.ReadArrayStart()
+		d.depthIncr()
 		hasLen := containerLen >= 0
 		for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
 			if elemsep {
@@ -2187,6 +2190,7 @@ func (d *Decoder) swallow() {
 			d.swallow()
 		}
 		dd.ReadArrayEnd()
+		d.depthDecr()
 	case valueTypeBytes:
 		dd.DecodeBytes(d.b[:], true)
 	case valueTypeString:

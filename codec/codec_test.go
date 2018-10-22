@@ -2336,7 +2336,11 @@ func doTestMaxDepth(t *testing.T, name string, h Handle) {
 	type T struct {
 		I interface{} // value to encode
 		M int16       // maxdepth
+		S bool        // use swallow (decode into typed struct with only A1)
 		E interface{} // error to find
+	}
+	type T1 struct {
+		A1 *T1
 	}
 	var table []T
 	var sfunc = func(n int) (s [1]interface{}, s1 *[1]interface{}) {
@@ -2359,10 +2363,10 @@ func doTestMaxDepth(t *testing.T, name string, h Handle) {
 	var mfunc = func(n int) (m map[string]interface{}, mlast map[string]interface{}) {
 		m = make(map[string]interface{})
 		mlast = make(map[string]interface{})
-		m["0"] = mlast
+		m["A0"] = mlast
 		for i := 1; i < n; i++ {
 			m0 := make(map[string]interface{})
-			mlast[strconv.FormatInt(int64(i), 10)] = m0
+			mlast["A"+strconv.FormatInt(int64(i), 10)] = m0
 			mlast = m0
 		}
 		// xdebugf("mfunc m: %v", m)
@@ -2370,12 +2374,16 @@ func doTestMaxDepth(t *testing.T, name string, h Handle) {
 	}
 	s, s1 := sfunc(5)
 	m, _ := mfunc(5)
+	m99, _ := mfunc(99)
+
 	s1[0] = m
 
-	table = append(table, T{s, 0, nil})
-	table = append(table, T{s, 256, nil})
-	table = append(table, T{s, 7, errMaxDepthExceeded})
-	table = append(table, T{s, 15, nil})
+	table = append(table, T{s, 0, false, nil})
+	table = append(table, T{s, 256, false, nil})
+	table = append(table, T{s, 7, false, errMaxDepthExceeded})
+	table = append(table, T{s, 15, false, nil})
+	table = append(table, T{m99, 15, true, errMaxDepthExceeded})
+	table = append(table, T{m99, 215, true, nil})
 
 	defer func(n int16, b bool) {
 		h.getBasicHandle().MaxDepth = n
@@ -2387,8 +2395,14 @@ func doTestMaxDepth(t *testing.T, name string, h Handle) {
 		h.getBasicHandle().MaxDepth = v.M
 		b1 := testMarshalErr(v.I, h, t, name+"-maxdepth-enc"+strconv.FormatInt(int64(i), 10))
 		// xdebugf("b1: %s", b1)
-		var v2 interface{}
-		err := testUnmarshal(&v2, b1, h)
+		var err error
+		if v.S {
+			var v2 T1
+			err = testUnmarshal(&v2, b1, h)
+		} else {
+			var v2 interface{}
+			err = testUnmarshal(&v2, b1, h)
+		}
 		if err1, ok := err.(decodeError); ok {
 			err = err1.codecError
 		}
@@ -2399,6 +2413,8 @@ func doTestMaxDepth(t *testing.T, name string, h Handle) {
 		if err0 != v.E {
 			failT(t, "Unexpected error testing max depth for depth %d: expected %v, received %v", v.M, v.E, err)
 		}
+
+		// decode into something that just triggers swallow
 	}
 }
 
