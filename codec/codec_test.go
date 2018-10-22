@@ -2659,6 +2659,26 @@ func TestJsonInvalidUnicode(t *testing.T) {
 	}
 }
 
+func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
+	fn := func(t *testing.T, b []byte, v interface{}) {
+		if err := NewDecoderBytes(b, testMsgpackH).Decode(v); err != io.EOF && err != io.ErrUnexpectedEOF {
+			t.Fatalf("expected EOF or ErrUnexpectedEOF, got %v", err)
+		}
+	}
+
+	// a map claiming to have 0x10eeeeee KV pairs, but only has 1.
+	var b = []byte{0xdf, 0x10, 0xee, 0xee, 0xee, 0x1, 0xa1, 0x1}
+	var m1 map[int]string
+	var m2 map[int][]byte
+	fn(t, b, &m1)
+	fn(t, b, &m2)
+
+	// an extension claiming to have 0x7fffffff bytes, but only has 1.
+	b = []byte{0xc9, 0x7f, 0xff, 0xff, 0xff, 0xda, 0x1}
+	var a interface{}
+	fn(t, b, &a)
+}
+
 // ----------
 
 func TestBincCodecsTable(t *testing.T) {
