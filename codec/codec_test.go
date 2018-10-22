@@ -46,6 +46,15 @@ type testMbsCustStrT []testCustomStringT
 
 func (testMbsCustStrT) MapBySlice() {}
 
+// type testSelferRecur struct{}
+
+// func (s *testSelferRecur) CodecEncodeSelf(e *Encoder) {
+// 	e.MustEncode(s)
+// }
+// func (s *testSelferRecur) CodecDecodeSelf(d *Decoder) {
+// 	d.MustDecode(s)
+// }
+
 type testIntfMapI interface {
 	GetIntfMapV() string
 }
@@ -2677,6 +2686,10 @@ func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
 	b = []byte{0xc9, 0x7f, 0xff, 0xff, 0xff, 0xda, 0x1}
 	var a interface{}
 	fn(t, b, &a)
+
+	// b = []byte{0x00}
+	// var s testSelferRecur
+	// fn(t, b, &s)
 }
 
 // ----------
