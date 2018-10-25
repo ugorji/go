@@ -1203,7 +1203,7 @@ func (d *jsonDecDriver) DecodeNaked() {
 	default: // number
 		bs := d.decNumBytes()
 		if len(bs) == 0 {
-			d.d.errorf("decode number from empty string")
+			d.d.errorf("decode number from empty string. key: %s", d.bsToString())
 			return
 		}
 		if err := d.nakedNum(z, bs); err != nil {
