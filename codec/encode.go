@@ -1224,7 +1224,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // Some formats support symbols (e.g. binc) and will properly encode the string
 // only once in the stream, and use a tag to refer to it thereafter.
 func (e *Encoder) Encode(v interface{}) (err error) {
-	defer e.deferred(&err)
+	defer func() { e.deferred(&err) }() // put in closure, as runtime optimizes defer with no params
 	e.MustEncode(v)
 	return
 }
