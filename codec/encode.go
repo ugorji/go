@@ -1224,7 +1224,9 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // Some formats support symbols (e.g. binc) and will properly encode the string
 // only once in the stream, and use a tag to refer to it thereafter.
 func (e *Encoder) Encode(v interface{}) (err error) {
-	defer func() { e.deferred(&err) }() // put in closure, as runtime optimizes defer with no params
+	defer e.deferred(&err)
+	// defer func() { e.deferred(&err) }() } // use closure, as runtime optimizes defer with no params
+	// { x := e; y := &err; defer func() { x.deferred(y) }() } // https://github.com/golang/go/issues/14939#issuecomment-417836139
 	e.MustEncode(v)
 	return
 }

@@ -2402,7 +2402,9 @@ func (d *Decoder) naked() *decNaked {
 // Note: we allow nil values in the stream anywhere except for map keys.
 // A nil value in the encoded stream where a map key is expected is treated as an error.
 func (d *Decoder) Decode(v interface{}) (err error) {
-	defer func() { d.deferred(&err) }() // put in closure, as runtime optimizes defer with no params
+	defer d.deferred(&err)
+	// defer func() { d.deferred(&err) }() // use closure, as runtime optimizes defer with no params
+	// { x := d; y := &err; defer func() { x.deferred(y) }() } // https://github.com/golang/go/issues/14939#issuecomment-417836139
 	d.MustDecode(v)
 	return
 }
