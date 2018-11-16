@@ -351,6 +351,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 		// ts.Iptrslice = nil
 	}
 	if !useStringKeyOnly {
+		var _ byte = 0 // so this empty branch doesn't flag a warning
 		// ts.AnonInTestStruc.AMU32F64 = map[uint32]float64{1: 1, 2: 2, 3: 3} // Json/Bson barf
 	}
 }
