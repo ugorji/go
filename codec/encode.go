@@ -287,8 +287,9 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int) {
 	z.w = w
 	z.n = 0
 	if bufsize == 0 {
-		z.buf = make([]byte, 256)
-	} else if cap(z.buf) < bufsize {
+		bufsize = 256
+	}
+	if cap(z.buf) < bufsize {
 		z.buf = make([]byte, bufsize)
 	} else {
 		z.buf = z.buf[:bufsize]
@@ -335,6 +336,7 @@ LOOP:
 	z.n += copy(z.buf[z.n:], s)
 }
 
+//go:noinline // TODO: allow this be inlined once mid-stack inlining done
 func (z *bufioEncWriter) writen1(b1 byte) {
 	if 1 > len(z.buf)-z.n {
 		z.flush()
