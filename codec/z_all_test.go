@@ -68,6 +68,7 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testUseMust = true
 	testInternStr = true
 	testUseIoEncDec = 0
+	// xdebugf("setting StructToArray=true")
 	testStructToArray = true
 	testCheckCircRef = true
 	testUseReset = true
@@ -76,6 +77,8 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testReinit()
 	t.Run("optionsTrue", f)
 
+	// xdebugf("setting StructToArray=false")
+	testStructToArray = false
 	testDepth = 6
 	testReinit()
 	t.Run("optionsTrue-deepstruct", f)

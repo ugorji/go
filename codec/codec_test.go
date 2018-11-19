@@ -2330,13 +2330,15 @@ func doTestMissingFields(t *testing.T, name string, h Handle) {
 	// encode missingFielderT2, decode into missingFielderT1, encode it out again, decode into new missingFielderT2, compare
 	v1 := missingFielderT2{S: "true seven eight", B: true, F: 777.0, I: -888}
 	b1 := testMarshalErr(v1, h, t, name+"-missing-enc-2")
-	// xdebugf("b1: %s", b1)
+	// xdebugf("marshal into b1: %s", b1)
 	var v2 missingFielderT1
 	testUnmarshalErr(&v2, b1, h, t, name+"-missing-dec-1")
-	// xdebugf("unmarshal worked")
+	// xdebugf("unmarshal into v2: %v", v2)
 	b2 := testMarshalErr(&v2, h, t, name+"-missing-enc-1")
+	// xdebugf("marshal into b2: %s", b2)
 	var v3 missingFielderT2
 	testUnmarshalErr(&v3, b2, h, t, name+"-missing-dec-2")
+	// xdebugf("unmarshal into v3: %v", v3)
 	testDeepEqualErr(v1, v3, t, name+"-missing-cmp-2")
 }
 

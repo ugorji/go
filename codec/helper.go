@@ -163,6 +163,15 @@ type clsErr struct {
 	errClosed error // error on closing
 }
 
+// type entryType uint8
+
+// const (
+// 	entryTypeBytes entryType = iota // make this 0, so a comparison is cheap
+// 	entryTypeIo
+// 	entryTypeBufio
+// 	entryTypeUnset = 255
+// )
+
 type charEncoding uint8
 
 const (
@@ -2342,8 +2351,9 @@ func (x *bitset32) set(pos byte) {
 type pooler struct {
 	dn                                          sync.Pool // for decNaked
 	cfn                                         sync.Pool // for codecFner
-	tiload                                      sync.Pool
+	tiload                                      sync.Pool // for type info loading
 	strRv8, strRv16, strRv32, strRv64, strRv128 sync.Pool // for stringRV
+	buf64, buf128, buf256, buf512, buf1024      sync.Pool // for [...]byte
 }
 
 func (p *pooler) init() {
@@ -2352,8 +2362,17 @@ func (p *pooler) init() {
 	p.strRv32.New = func() interface{} { return new([32]sfiRv) }
 	p.strRv64.New = func() interface{} { return new([64]sfiRv) }
 	p.strRv128.New = func() interface{} { return new([128]sfiRv) }
+
+	p.buf64.New = func() interface{} { return new([64]byte) }
+	p.buf128.New = func() interface{} { return new([128]byte) }
+	p.buf256.New = func() interface{} { return new([256]byte) }
+	p.buf512.New = func() interface{} { return new([512]byte) }
+	p.buf1024.New = func() interface{} { return new([1024]byte) }
+
 	p.dn.New = func() interface{} { x := new(decNaked); x.init(); return x }
+
 	p.tiload.New = func() interface{} { return new(typeInfoLoadArray) }
+
 	p.cfn.New = func() interface{} { return new(codecFner) }
 }
 
@@ -2372,6 +2391,23 @@ func (p *pooler) sfiRv64() (sp *sync.Pool, v interface{}) {
 func (p *pooler) sfiRv128() (sp *sync.Pool, v interface{}) {
 	return &p.strRv128, p.strRv128.Get()
 }
+
+func (p *pooler) bytes64() (sp *sync.Pool, v interface{}) {
+	return &p.buf64, p.buf64.Get()
+}
+func (p *pooler) bytes128() (sp *sync.Pool, v interface{}) {
+	return &p.buf128, p.buf128.Get()
+}
+func (p *pooler) bytes256() (sp *sync.Pool, v interface{}) {
+	return &p.buf256, p.buf256.Get()
+}
+func (p *pooler) bytes512() (sp *sync.Pool, v interface{}) {
+	return &p.buf512, p.buf512.Get()
+}
+func (p *pooler) bytes1024() (sp *sync.Pool, v interface{}) {
+	return &p.buf1024, p.buf1024.Get()
+}
+
 func (p *pooler) decNaked() (sp *sync.Pool, v interface{}) {
 	return &p.dn, p.dn.Get()
 }
@@ -2406,6 +2442,8 @@ func (p *pooler) tiLoad() (sp *sync.Pool, v interface{}) {
 // 	p.tiload.Put(v)
 // }
 
+// ----------------------------------------------------
+
 type panicHdl struct{}
 
 func (panicHdl) errorv(err error) {
@@ -2429,6 +2467,8 @@ func (panicHdl) errorf(format string, params ...interface{}) {
 	}
 }
 
+// ----------------------------------------------------
+
 type errDecorator interface {
 	wrapErr(in interface{}, out *error)
 }
@@ -2436,6 +2476,8 @@ type errDecorator interface {
 type errDecoratorDef struct{}
 
 func (errDecoratorDef) wrapErr(v interface{}, e *error) { *e = fmt.Errorf("%v", v) }
+
+// ----------------------------------------------------
 
 type must struct{}
 
