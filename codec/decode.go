@@ -16,8 +16,8 @@ import (
 
 // Some tagging information for error messages.
 const (
-	msgBadDesc            = "unrecognized descriptor byte"
-	msgDecCannotExpandArr = "cannot expand go array from %v to stream length: %v"
+	msgBadDesc = "unrecognized descriptor byte"
+	// msgDecCannotExpandArr = "cannot expand go array from %v to stream length: %v"
 )
 
 const (
@@ -42,11 +42,13 @@ var (
 	errMaxDepthExceeded             = errors.New("maximum decoding depth exceeded")
 )
 
+/*
+
 // decReader abstracts the reading source, allowing implementations that can
 // read from an io.Reader or directly off a byte slice with zero-copying.
 //
 // Deprecated: Use decReaderSwitch instead.
-type __decReader interface {
+type decReader interface {
 	unreadn1()
 	// readx will use the implementation scratch buffer if possible i.e. n < len(scratchbuf), OR
 	// just return a view of the []byte being decoded from.
@@ -65,6 +67,8 @@ type __decReader interface {
 	// readUntil will read, only stopping once it matches the 'stop' byte.
 	readUntil(in []byte, stop byte) (out []byte)
 }
+
+*/
 
 type decDriver interface {
 	// this will check if the next token is a break.
@@ -263,6 +267,8 @@ type bufioDecReader struct {
 	c   int // cursor
 	buf []byte
 	err error
+
+	_ [3]uint64 // padding
 }
 
 func (z *bufioDecReader) reset(r io.Reader) {
@@ -615,6 +621,7 @@ type ioDecReader struct {
 	br io.ByteScanner
 
 	x [scratchByteArrayLen]byte // for: get struct field name, swallow valueTypeBytes, etc
+	_ [1]uint64                 // padding
 }
 
 func (z *ioDecReader) reset(r io.Reader) {
@@ -864,7 +871,6 @@ func (z *bytesDecReader) unreadn1() {
 	}
 	z.c--
 	// z.a++
-	return
 }
 
 // // go:noinline
@@ -1926,10 +1932,10 @@ func (n *decNaked) reset() {
 	n.li, n.lm, n.ln, n.ls = 0, 0, 0, 0
 }
 
-type rtid2rv struct {
-	rtid uintptr
-	rv   reflect.Value
-}
+// type rtid2rv struct {
+// 	rtid uintptr
+// 	rv   reflect.Value
+// }
 
 // --------------
 
@@ -2198,7 +2204,14 @@ func (z *decReaderSwitch) readUntilIO(in []byte, stop byte) (out []byte) {
 	return z.ri.readUntil(in, stop)
 }
 
-// A Decoder reads and decodes an object from an input stream in the codec format.
+// Decoder reads and decodes an object from an input stream in a supported format.
+//
+// Decoder is NOT safe for concurrent use i.e. a Decoder cannot be used
+// concurrently in multiple goroutines.
+//
+// However, as Decoder could be allocation heavy to initialize, a Reset method is provided
+// so its state can be reused to decode new input streams repeatedly.
+// This is the idiomatic way to use.
 type Decoder struct {
 	panicHdl
 	// hopefully, reduce derefencing cost by laying the decReader inside the Decoder.
@@ -2259,7 +2272,7 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 	return d
 }
 
-var defaultDecNaked decNaked
+// var defaultDecNaked decNaked
 
 func newDecoder(h Handle) *Decoder {
 	d := &Decoder{h: h.getBasicHandle(), err: errDecoderNotInitialized}

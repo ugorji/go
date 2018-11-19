@@ -19,17 +19,21 @@ const defEncByteBufSize = 1 << 6 // 4:16, 6:64, 8:256, 10:1024
 
 var errEncoderNotInitialized = errors.New("Encoder not initialized")
 
+/*
+
 // encWriter abstracts writing to a byte array or to an io.Writer.
 //
 //
 // Deprecated: Use encWriterSwitch instead.
-type __encWriter interface {
+type encWriter interface {
 	writeb([]byte)
 	writestr(string)
 	writen1(byte)
 	writen2(byte, byte)
 	atEndOfEncode()
 }
+
+*/
 
 // encDriver abstracts the actual codec (binc vs msgpack, etc)
 type encDriver interface {
@@ -1214,7 +1218,14 @@ func (z *encWriterSwitch) atEndOfEncode() {
 
 */
 
-// An Encoder writes an object to an output stream in the codec format.
+// Encoder writes an object to an output stream in a supported format.
+//
+// Encoder is NOT safe for concurrent use i.e. a Encoder cannot be used
+// concurrently in multiple goroutines.
+//
+// However, as Encoder could be allocation heavy to initialize, a Reset method is provided
+// so its state can be reused to decode new input streams repeatedly.
+// This is the idiomatic way to use.
 type Encoder struct {
 	panicHdl
 	// hopefully, reduce derefencing cost by laying the encWriter inside the Encoder

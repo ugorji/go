@@ -47,9 +47,9 @@ func rt2id(rt reflect.Type) uintptr {
 	return reflect.ValueOf(rt).Pointer()
 }
 
-func rv2rtid(rv reflect.Value) uintptr {
-	return reflect.ValueOf(rv.Type()).Pointer()
-}
+// func rv2rtid(rv reflect.Value) uintptr {
+// 	return reflect.ValueOf(rv.Type()).Pointer()
+// }
 
 func i2rtid(i interface{}) uintptr {
 	return reflect.ValueOf(reflect.TypeOf(i)).Pointer()

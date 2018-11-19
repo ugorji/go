@@ -389,7 +389,7 @@ var (
 	intBitsize  = uint8(intTyp.Bits())
 	uintBitsize = uint8(uintTyp.Bits())
 
-	bsAll0x00 = []byte{0, 0, 0, 0, 0, 0, 0, 0}
+	// bsAll0x00 = []byte{0, 0, 0, 0, 0, 0, 0, 0}
 	bsAll0xff = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 
 	chkOvf checkOverflow
@@ -546,11 +546,18 @@ func (x *BasicHandle) getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo)
 	return x.TypeInfos.get(rtid, rt)
 }
 
-// Handle is the interface for a specific encoding format.
+// Handle defines a specific encoding format. It also stores any runtime state
+// used during an Encoding or Decoding session e.g. stored state about Types, etc.
 //
-// Typically, a Handle is pre-configured before first time use,
-// and not modified while in use. Such a pre-configured Handle
-// is safe for concurrent access.
+// Once a handle is configured, it can be shared across multiple Encoders and Decoders.
+//
+// Note that a Handle is NOT safe for concurrent modification.
+// Consequently, do not modify it after it is configured if shared among
+// multiple Encoders and Decoders in different goroutines.
+//
+// Consequently, the typical usage model is that a Handle is pre-configured
+// before first time use, and not modified while in use.
+// Such a pre-configured Handle is safe for concurrent access.
 type Handle interface {
 	Name() string
 	getBasicHandle() *BasicHandle
@@ -1242,7 +1249,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	sp := x.infos.load()
 	var idx int
 	if sp != nil {
-		idx, pti = x.find(sp, rtid)
+		_, pti = x.find(sp, rtid)
 		if pti != nil {
 			return
 		}
@@ -1740,6 +1747,7 @@ func (c *codecFner) reset(hh Handle) {
 	if !hhSame {
 		// c.hh = hh
 		c.h, bh = bh, c.h // swap both
+		_ = bh
 		_, c.js = hh.(*JsonHandle)
 		c.be = hh.isBinary()
 		if len(c.s) > 0 {
@@ -2293,9 +2301,11 @@ type bitset256 [32]byte
 func (x *bitset256) isset(pos byte) bool {
 	return x[pos>>3]&(1<<(pos&7)) != 0
 }
-func (x *bitset256) issetv(pos byte) byte {
-	return x[pos>>3] & (1 << (pos & 7))
-}
+
+// func (x *bitset256) issetv(pos byte) byte {
+// 	return x[pos>>3] & (1 << (pos & 7))
+// }
+
 func (x *bitset256) set(pos byte) {
 	x[pos>>3] |= (1 << (pos & 7))
 }
@@ -2353,7 +2363,7 @@ type pooler struct {
 	cfn                                         sync.Pool // for codecFner
 	tiload                                      sync.Pool // for type info loading
 	strRv8, strRv16, strRv32, strRv64, strRv128 sync.Pool // for stringRV
-	buf64, buf128, buf256, buf512, buf1024      sync.Pool // for [...]byte
+	// buf64, buf128, buf256, buf512, buf1024      sync.Pool // for [...]byte
 }
 
 func (p *pooler) init() {
@@ -2363,11 +2373,11 @@ func (p *pooler) init() {
 	p.strRv64.New = func() interface{} { return new([64]sfiRv) }
 	p.strRv128.New = func() interface{} { return new([128]sfiRv) }
 
-	p.buf64.New = func() interface{} { return new([64]byte) }
-	p.buf128.New = func() interface{} { return new([128]byte) }
-	p.buf256.New = func() interface{} { return new([256]byte) }
-	p.buf512.New = func() interface{} { return new([512]byte) }
-	p.buf1024.New = func() interface{} { return new([1024]byte) }
+	// p.buf64.New = func() interface{} { return new([64]byte) }
+	// p.buf128.New = func() interface{} { return new([128]byte) }
+	// p.buf256.New = func() interface{} { return new([256]byte) }
+	// p.buf512.New = func() interface{} { return new([512]byte) }
+	// p.buf1024.New = func() interface{} { return new([1024]byte) }
 
 	p.dn.New = func() interface{} { x := new(decNaked); x.init(); return x }
 
@@ -2392,21 +2402,21 @@ func (p *pooler) sfiRv128() (sp *sync.Pool, v interface{}) {
 	return &p.strRv128, p.strRv128.Get()
 }
 
-func (p *pooler) bytes64() (sp *sync.Pool, v interface{}) {
-	return &p.buf64, p.buf64.Get()
-}
-func (p *pooler) bytes128() (sp *sync.Pool, v interface{}) {
-	return &p.buf128, p.buf128.Get()
-}
-func (p *pooler) bytes256() (sp *sync.Pool, v interface{}) {
-	return &p.buf256, p.buf256.Get()
-}
-func (p *pooler) bytes512() (sp *sync.Pool, v interface{}) {
-	return &p.buf512, p.buf512.Get()
-}
-func (p *pooler) bytes1024() (sp *sync.Pool, v interface{}) {
-	return &p.buf1024, p.buf1024.Get()
-}
+// func (p *pooler) bytes64() (sp *sync.Pool, v interface{}) {
+// 	return &p.buf64, p.buf64.Get()
+// }
+// func (p *pooler) bytes128() (sp *sync.Pool, v interface{}) {
+// 	return &p.buf128, p.buf128.Get()
+// }
+// func (p *pooler) bytes256() (sp *sync.Pool, v interface{}) {
+// 	return &p.buf256, p.buf256.Get()
+// }
+// func (p *pooler) bytes512() (sp *sync.Pool, v interface{}) {
+// 	return &p.buf512, p.buf512.Get()
+// }
+// func (p *pooler) bytes1024() (sp *sync.Pool, v interface{}) {
+// 	return &p.buf1024, p.buf1024.Get()
+// }
 
 func (p *pooler) decNaked() (sp *sync.Pool, v interface{}) {
 	return &p.dn, p.dn.Get()

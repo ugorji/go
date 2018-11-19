@@ -46,8 +46,8 @@ const (
 	jsonLitTrue   = 1
 	jsonLitFalseQ = 6
 	jsonLitFalse  = 7
-	jsonLitNullQ  = 13
-	jsonLitNull   = 14
+	// jsonLitNullQ  = 13
+	jsonLitNull = 14
 )
 
 const (
@@ -1240,7 +1240,6 @@ func (d *jsonDecDriver) DecodeNaked() {
 	// if decodeFurther {
 	// 	d.s.sc.retryRead()
 	// }
-	return
 }
 
 //----------------------

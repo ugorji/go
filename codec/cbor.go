@@ -705,7 +705,6 @@ func (d *cborDecDriver) DecodeNaked() {
 	if !decodeFurther {
 		d.bdRead = false
 	}
-	return
 }
 
 // -------------------------

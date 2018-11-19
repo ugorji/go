@@ -557,7 +557,6 @@ func (d *msgpackDecDriver) DecodeNaked() {
 		n.v = valueTypeInt
 		n.i = int64(n.u)
 	}
-	return
 }
 
 // int can be decoded from msgpack type: intXXX or uintXXX

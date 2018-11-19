@@ -97,9 +97,9 @@ func rt2id(rt reflect.Type) uintptr {
 	return uintptr(((*unsafeIntf)(unsafe.Pointer(&rt))).word)
 }
 
-func rv2rtid(rv reflect.Value) uintptr {
-	return uintptr((*unsafeReflectValue)(unsafe.Pointer(&rv)).typ)
-}
+// func rv2rtid(rv reflect.Value) uintptr {
+// 	return uintptr((*unsafeReflectValue)(unsafe.Pointer(&rv)).typ)
+// }
 
 func i2rtid(i interface{}) uintptr {
 	return uintptr(((*unsafeIntf)(unsafe.Pointer(&i))).typ)

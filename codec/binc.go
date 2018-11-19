@@ -110,6 +110,7 @@ type bincEncDriver struct {
 	encDriverTrackContainerWriter
 	noBuiltInTypes
 	// encNoSeparator
+	_ [1]uint64 // padding
 }
 
 func (e *bincEncDriver) EncodeNil() {
@@ -182,7 +183,7 @@ func (e *bincEncDriver) encIntegerPrune(bd byte, pos bool, v uint64, lim uint8) 
 }
 
 func (e *bincEncDriver) EncodeInt(v int64) {
-	const nbd byte = bincVdNegInt << 4
+	// const nbd byte = bincVdNegInt << 4
 	if v >= 0 {
 		e.encUint(bincVdPosInt<<4, true, uint64(v))
 	} else if v == -1 {
@@ -966,7 +967,6 @@ func (d *bincDecDriver) DecodeNaked() {
 		n.v = valueTypeInt
 		n.i = int64(n.u)
 	}
-	return
 }
 
 //------------------------------------

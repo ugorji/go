@@ -601,7 +601,6 @@ func (d *simpleDecDriver) DecodeNaked() {
 	if !decodeFurther {
 		d.bdRead = false
 	}
-	return
 }
 
 //------------------------------------
