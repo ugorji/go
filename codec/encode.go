@@ -15,7 +15,9 @@ import (
 	"time"
 )
 
-const defEncByteBufSize = 1 << 6 // 4:16, 6:64, 8:256, 10:1024
+// defEncByteBufSize is the default size of []byte used
+// for bufio buffer or []byte (when nil passed)
+const defEncByteBufSize = 1 << 10 // 4:16, 6:64, 8:256, 10:1024
 
 var errEncoderNotInitialized = errors.New("Encoder not initialized")
 
@@ -287,7 +289,7 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int) {
 	z.w = w
 	z.n = 0
 	if bufsize == 0 {
-		bufsize = 256
+		bufsize = defEncByteBufSize
 	}
 	if cap(z.buf) < bufsize {
 		z.buf = make([]byte, bufsize)
@@ -1260,8 +1262,8 @@ type Encoder struct {
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
 //
-// For efficiency, Users are encouraged to pass in a memory buffered writer
-// (eg bufio.Writer, bytes.Buffer).
+// For efficiency, Users are encouraged to configure WriterBufferSize on the handle
+// OR pass in a memory buffered writer (eg bufio.Writer, bytes.Buffer).
 func NewEncoder(w io.Writer, h Handle) *Encoder {
 	e := newEncoder(h)
 	e.Reset(w)
