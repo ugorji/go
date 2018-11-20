@@ -259,319 +259,7 @@ type DecodeOptions struct {
 	DeleteOnNilMapValue bool
 }
 
-// ------------------------------------
-
-type bufioDecReader struct {
-	ioDecReaderCommon
-
-	c   int // cursor
-	buf []byte
-	err error
-
-	_ [3]uint64 // padding
-}
-
-func (z *bufioDecReader) reset(r io.Reader) {
-	z.ioDecReaderCommon.reset(r)
-	z.c, z.err = 0, nil
-}
-
-func (z *bufioDecReader) Read(p []byte) (n int, err error) {
-	if z.err != nil {
-		return 0, z.err
-	}
-	p0 := p
-	n = copy(p, z.buf[z.c:])
-	z.c += n
-	if z.c == len(z.buf) {
-		z.c = 0
-	}
-	z.n += n
-	if len(p) == n {
-		if z.c == 0 {
-			z.buf = z.buf[:1]
-			z.buf[0] = p[len(p)-1]
-			z.c = 1
-		}
-		if z.trb {
-			z.tr = append(z.tr, p0[:n]...)
-		}
-		return
-	}
-	p = p[n:]
-	var n2 int
-	// if we are here, then z.buf is all read
-	if len(p) > len(z.buf) {
-		n2, err = decReadFull(z.r, p)
-		n += n2
-		z.n += n2
-		z.err = err
-		// don't return EOF if some bytes were read. keep for next time.
-		if n > 0 && err == io.EOF {
-			err = nil
-		}
-		// always keep last byte in z.buf
-		z.buf = z.buf[:1]
-		z.buf[0] = p[len(p)-1]
-		z.c = 1
-		if z.trb {
-			z.tr = append(z.tr, p0[:n]...)
-		}
-		return
-	}
-	// z.c is now 0, and len(p) <= len(z.buf)
-	for len(p) > 0 && z.err == nil {
-		// println("len(p) loop starting ... ")
-		z.c = 0
-		z.buf = z.buf[0:cap(z.buf)]
-		n2, err = z.r.Read(z.buf)
-		if n2 > 0 {
-			if err == io.EOF {
-				err = nil
-			}
-			z.buf = z.buf[:n2]
-			n2 = copy(p, z.buf)
-			z.c = n2
-			n += n2
-			z.n += n2
-			p = p[n2:]
-		}
-		z.err = err
-		// println("... len(p) loop done")
-	}
-	if z.c == 0 {
-		z.buf = z.buf[:1]
-		z.buf[0] = p[len(p)-1]
-		z.c = 1
-	}
-	if z.trb {
-		z.tr = append(z.tr, p0[:n]...)
-	}
-	return
-}
-
-func (z *bufioDecReader) ReadByte() (b byte, err error) {
-	// z.b[0] = 0 // unnecessary, as err is returned if problem
-	_, err = z.Read(z.b[:1])
-	b = z.b[0]
-	return
-}
-
-func (z *bufioDecReader) UnreadByte() (err error) {
-	if z.err != nil {
-		return z.err
-	}
-	if z.c > 0 {
-		z.c--
-		z.n--
-		if z.trb {
-			z.tr = z.tr[:len(z.tr)-1]
-		}
-		return
-	}
-	return errDecUnreadByteNothingToRead
-}
-
-func (z *bufioDecReader) readx(n int) (bs []byte) {
-	if n <= 0 {
-		return
-	}
-	if z.err != nil {
-		panic(z.err)
-	}
-	if z.c+n <= len(z.buf) {
-		bs = z.buf[z.c : z.c+n]
-		z.n += n
-		z.c += n
-		if z.trb {
-			z.tr = append(z.tr, bs...)
-		}
-		return
-	}
-	bs = make([]byte, n)
-	_, err := z.Read(bs)
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-func (z *bufioDecReader) readb(bs []byte) {
-	_, err := z.Read(bs)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func (z *bufioDecReader) readn1() (b uint8) {
-	b, err := z.ReadByte()
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-// func (z *bufioDecReader) readn1eof() (b uint8, eof bool) {
-// 	b, err := z.ReadByte()
-// 	if err != nil {
-// 		if err == io.EOF {
-// 			eof = true
-// 		} else {
-// 			panic(err)
-// 		}
-// 	}
-// 	return
-// }
-
-func (z *bufioDecReader) skipLoopFn(i int) {
-	z.n += (i - z.c) - 1
-	i++
-	if z.trb {
-		z.tr = append(z.tr, z.buf[z.c:i]...)
-	}
-	z.c = i
-}
-
-func (z *bufioDecReader) skip(accept *bitset256) (token byte) {
-	// token, _ = z.search(nil, accept, 0, 1); return
-	for i := z.c; i < len(z.buf); i++ {
-		if token = z.buf[i]; !accept.isset(token) {
-			z.skipLoopFn(i)
-			return
-		}
-	}
-	z.n += len(z.buf) - z.c
-	if z.trb {
-		z.tr = append(z.tr, z.buf[z.c:]...)
-	}
-	var n2 int
-	for {
-		if z.err != nil {
-			panic(z.err)
-		}
-		z.c = 0
-		z.buf = z.buf[0:cap(z.buf)]
-		n2, z.err = z.r.Read(z.buf)
-		z.buf = z.buf[:n2]
-		for i := 0; i < n2; i++ {
-			if token = z.buf[i]; !accept.isset(token) {
-				z.skipLoopFn(i)
-				return
-			}
-		}
-		z.n += n2
-		if z.trb {
-			z.tr = append(z.tr, z.buf[:n2]...)
-		}
-	}
-}
-
-func (z *bufioDecReader) readToLoopFn(i int, out0 []byte) (out []byte) {
-	z.n += (i - z.c) - 1
-	if out0 == nil {
-		out = z.buf[z.c:i]
-	} else {
-		out = append(out0, z.buf[z.c:i]...)
-	}
-	if z.trb {
-		z.tr = append(z.tr, z.buf[z.c:i]...)
-	}
-	z.c = i
-	return
-}
-
-func (z *bufioDecReader) readTo(in []byte, accept *bitset256) (out []byte) {
-	// _, out = z.search(in, accept, 0, 2); return
-	for i := z.c; i < len(z.buf); i++ {
-		if !accept.isset(z.buf[i]) {
-			return z.readToLoopFn(i, nil)
-		}
-	}
-	z.n += len(z.buf) - z.c
-	out = append(in, z.buf[z.c:]...)
-	if z.trb {
-		z.tr = append(z.tr, z.buf[z.c:]...)
-	}
-	var n2 int
-	for {
-		if z.err != nil {
-			if z.err == io.EOF {
-				return // readTo should read until it matches or end is reached
-			}
-			panic(z.err)
-		}
-		z.c = 0
-		z.buf = z.buf[0:cap(z.buf)]
-		n2, z.err = z.r.Read(z.buf)
-		z.buf = z.buf[:n2]
-		for i := 0; i < n2; i++ {
-			if !accept.isset(z.buf[i]) {
-				return z.readToLoopFn(i, out)
-			}
-		}
-		out = append(out, z.buf[:n2]...)
-		z.n += n2
-		if z.trb {
-			z.tr = append(z.tr, z.buf[:n2]...)
-		}
-	}
-}
-
-func (z *bufioDecReader) readUntilLoopFn(i int, out0 []byte) (out []byte) {
-	z.n += (i - z.c) - 1
-	i++
-	if out0 == nil {
-		out = z.buf[z.c:i]
-	} else {
-		out = append(out0, z.buf[z.c:i]...)
-	}
-	if z.trb {
-		z.tr = append(z.tr, z.buf[z.c:i]...)
-	}
-	z.c = i
-	return
-}
-
-func (z *bufioDecReader) readUntil(in []byte, stop byte) (out []byte) {
-	// _, out = z.search(in, nil, stop, 4); return
-	for i := z.c; i < len(z.buf); i++ {
-		if z.buf[i] == stop {
-			return z.readUntilLoopFn(i, nil)
-		}
-	}
-	z.n += len(z.buf) - z.c
-	out = append(in, z.buf[z.c:]...)
-	if z.trb {
-		z.tr = append(z.tr, z.buf[z.c:]...)
-	}
-	var n2 int
-	for {
-		if z.err != nil {
-			panic(z.err)
-		}
-		z.c = 0
-		z.buf = z.buf[0:cap(z.buf)]
-		n2, z.err = z.r.Read(z.buf)
-		z.buf = z.buf[:n2]
-		for i := 0; i < n2; i++ {
-			if z.buf[i] == stop {
-				return z.readUntilLoopFn(i, out)
-			}
-		}
-		out = append(out, z.buf[:n2]...)
-		z.n += n2
-		if z.trb {
-			z.tr = append(z.tr, z.buf[:n2]...)
-		}
-	}
-}
-
-func (z *bufioDecReader) unreadn1() {
-	err := z.UnreadByte()
-	if err != nil {
-		panic(err)
-	}
-}
+// ------------------------------------------------
 
 type ioDecReaderCommon struct {
 	r io.Reader // the reader passed in
@@ -610,6 +298,8 @@ func (z *ioDecReaderCommon) stopTrack() (bs []byte) {
 	z.trb = false
 	return z.tr
 }
+
+// ------------------------------------------
 
 // ioDecReader is a decReader that reads off an io.Reader.
 //
@@ -839,6 +529,331 @@ func (z *ioDecReader) unreadn1() {
 		if l := len(z.tr) - 1; l >= 0 {
 			z.tr = z.tr[:l]
 		}
+	}
+}
+
+// ------------------------------------
+
+type bufioDecReader struct {
+	ioDecReaderCommon
+
+	c   int // cursor
+	buf []byte
+	err error
+
+	_ [3]uint64 // padding
+}
+
+func (z *bufioDecReader) reset(r io.Reader) {
+	z.ioDecReaderCommon.reset(r)
+	z.c, z.err = 0, nil
+}
+
+func (z *bufioDecReader) Read(p []byte) (n int, err error) {
+	if z.err != nil {
+		return 0, z.err
+	}
+	p0 := p
+	n = copy(p, z.buf[z.c:])
+	z.c += n
+	if z.c == len(z.buf) {
+		z.c = 0
+	}
+	z.n += n
+	if len(p) == n {
+		if z.c == 0 {
+			z.buf = z.buf[:1]
+			z.buf[0] = p[len(p)-1]
+			z.c = 1
+		}
+		if z.trb {
+			z.tr = append(z.tr, p0[:n]...)
+		}
+		return
+	}
+	p = p[n:]
+	var n2 int
+	// if we are here, then z.buf is all read
+	if len(p) > len(z.buf) {
+		n2, err = decReadFull(z.r, p)
+		n += n2
+		z.n += n2
+		z.err = err
+		// don't return EOF if some bytes were read. keep for next time.
+		if n > 0 && err == io.EOF {
+			err = nil
+		}
+		// always keep last byte in z.buf
+		z.buf = z.buf[:1]
+		z.buf[0] = p[len(p)-1]
+		z.c = 1
+		if z.trb {
+			z.tr = append(z.tr, p0[:n]...)
+		}
+		return
+	}
+	// z.c is now 0, and len(p) <= len(z.buf)
+	for len(p) > 0 && z.err == nil {
+		// println("len(p) loop starting ... ")
+		z.c = 0
+		z.buf = z.buf[0:cap(z.buf)]
+		n2, err = z.r.Read(z.buf)
+		if n2 > 0 {
+			if err == io.EOF {
+				err = nil
+			}
+			z.buf = z.buf[:n2]
+			n2 = copy(p, z.buf)
+			z.c = n2
+			n += n2
+			z.n += n2
+			p = p[n2:]
+		}
+		z.err = err
+		// println("... len(p) loop done")
+	}
+	if z.c == 0 {
+		z.buf = z.buf[:1]
+		z.buf[0] = p[len(p)-1]
+		z.c = 1
+	}
+	if z.trb {
+		z.tr = append(z.tr, p0[:n]...)
+	}
+	return
+}
+
+func (z *bufioDecReader) ReadByte() (b byte, err error) {
+	// fast-path, so we elide calling into Read() most of the time
+	// if z.err == nil && z.c < (len(z.buf)-1) {
+	if z.c < (len(z.buf) - 1) { // means z.err == nil, and we don't read to end of buf
+		b = z.buf[z.c]
+		z.c++
+		z.n++
+		if z.trb {
+			z.tr = append(z.tr, b)
+		}
+		return
+	}
+	// z.b[0] = 0 // unnecessary, as err is returned if problem
+	_, err = z.Read(z.b[:1])
+	b = z.b[0]
+	return
+}
+
+func (z *bufioDecReader) UnreadByte() (err error) {
+	if z.err != nil {
+		return z.err
+	}
+	if z.c > 0 {
+		z.c--
+		z.n--
+		if z.trb {
+			z.tr = z.tr[:len(z.tr)-1]
+		}
+		return
+	}
+	return errDecUnreadByteNothingToRead
+}
+
+func (z *bufioDecReader) readx(n int) (bs []byte) {
+	if n <= 0 {
+		return
+	}
+	if z.err != nil {
+		panic(z.err)
+	}
+	if z.c+n <= len(z.buf) {
+		bs = z.buf[z.c : z.c+n]
+		z.n += n
+		z.c += n
+		if z.trb {
+			z.tr = append(z.tr, bs...)
+		}
+		return
+	}
+	bs = make([]byte, n)
+	_, err := z.Read(bs)
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+func (z *bufioDecReader) readb(bs []byte) {
+	_, err := z.Read(bs)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (z *bufioDecReader) readn1() (b uint8) {
+	b, err := z.ReadByte()
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+// func (z *bufioDecReader) readn1eof() (b uint8, eof bool) {
+// 	b, err := z.ReadByte()
+// 	if err != nil {
+// 		if err == io.EOF {
+// 			eof = true
+// 		} else {
+// 			panic(err)
+// 		}
+// 	}
+// 	return
+// }
+
+func (z *bufioDecReader) skipLoopFn(i int) {
+	z.n += (i - z.c) - 1
+	i++
+	if z.trb {
+		z.tr = append(z.tr, z.buf[z.c:i]...)
+	}
+	z.c = i
+}
+
+func (z *bufioDecReader) skip(accept *bitset256) (token byte) {
+	// token, _ = z.search(nil, accept, 0, 1); return
+	for i := z.c; i < len(z.buf); i++ {
+		if token = z.buf[i]; !accept.isset(token) {
+			z.skipLoopFn(i)
+			return
+		}
+	}
+	z.n += len(z.buf) - z.c
+	if z.trb {
+		z.tr = append(z.tr, z.buf[z.c:]...)
+	}
+	var n2 int
+	for {
+		if z.err != nil {
+			panic(z.err)
+		}
+		z.c = 0
+		z.buf = z.buf[0:cap(z.buf)]
+		n2, z.err = z.r.Read(z.buf)
+		z.buf = z.buf[:n2]
+		for i := 0; i < n2; i++ {
+			if token = z.buf[i]; !accept.isset(token) {
+				z.skipLoopFn(i)
+				return
+			}
+		}
+		z.n += n2
+		if z.trb {
+			z.tr = append(z.tr, z.buf[:n2]...)
+		}
+	}
+}
+
+func (z *bufioDecReader) readToLoopFn(i int, out0 []byte) (out []byte) {
+	z.n += (i - z.c) - 1
+	if out0 == nil {
+		out = z.buf[z.c:i]
+	} else {
+		out = append(out0, z.buf[z.c:i]...)
+	}
+	if z.trb {
+		z.tr = append(z.tr, z.buf[z.c:i]...)
+	}
+	z.c = i
+	return
+}
+
+func (z *bufioDecReader) readTo(in []byte, accept *bitset256) (out []byte) {
+	// _, out = z.search(in, accept, 0, 2); return
+	for i := z.c; i < len(z.buf); i++ {
+		if !accept.isset(z.buf[i]) {
+			return z.readToLoopFn(i, nil)
+		}
+	}
+	z.n += len(z.buf) - z.c
+	out = append(in, z.buf[z.c:]...)
+	if z.trb {
+		z.tr = append(z.tr, z.buf[z.c:]...)
+	}
+	var n2 int
+	for {
+		if z.err != nil {
+			if z.err == io.EOF {
+				return // readTo should read until it matches or end is reached
+			}
+			panic(z.err)
+		}
+		z.c = 0
+		z.buf = z.buf[0:cap(z.buf)]
+		n2, z.err = z.r.Read(z.buf)
+		z.buf = z.buf[:n2]
+		for i := 0; i < n2; i++ {
+			if !accept.isset(z.buf[i]) {
+				return z.readToLoopFn(i, out)
+			}
+		}
+		out = append(out, z.buf[:n2]...)
+		z.n += n2
+		if z.trb {
+			z.tr = append(z.tr, z.buf[:n2]...)
+		}
+	}
+}
+
+func (z *bufioDecReader) readUntilLoopFn(i int, out0 []byte) (out []byte) {
+	z.n += (i - z.c) - 1
+	i++
+	if out0 == nil {
+		out = z.buf[z.c:i]
+	} else {
+		out = append(out0, z.buf[z.c:i]...)
+	}
+	if z.trb {
+		z.tr = append(z.tr, z.buf[z.c:i]...)
+	}
+	z.c = i
+	return
+}
+
+func (z *bufioDecReader) readUntil(in []byte, stop byte) (out []byte) {
+	// _, out = z.search(in, nil, stop, 4); return
+	for i := z.c; i < len(z.buf); i++ {
+		if z.buf[i] == stop {
+			return z.readUntilLoopFn(i, nil)
+		}
+	}
+	z.n += len(z.buf) - z.c
+	out = append(in, z.buf[z.c:]...)
+	if z.trb {
+		z.tr = append(z.tr, z.buf[z.c:]...)
+	}
+	var n2 int
+	for {
+		if z.err != nil {
+			panic(z.err)
+		}
+		z.c = 0
+		z.buf = z.buf[0:cap(z.buf)]
+		n2, z.err = z.r.Read(z.buf)
+		z.buf = z.buf[:n2]
+		for i := 0; i < n2; i++ {
+			if z.buf[i] == stop {
+				return z.readUntilLoopFn(i, out)
+			}
+		}
+		out = append(out, z.buf[:n2]...)
+		z.n += n2
+		if z.trb {
+			z.tr = append(z.tr, z.buf[:n2]...)
+		}
+	}
+}
+
+func (z *bufioDecReader) unreadn1() {
+	err := z.UnreadByte()
+	if err != nil {
+		panic(err)
 	}
 }
 
