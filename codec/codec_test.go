@@ -2569,7 +2569,7 @@ func TestBufioDecReader(t *testing.T) {
 	var r = strings.NewReader(s)
 	var br = &bufioDecReader{buf: make([]byte, 0, 13)}
 	br.r = r
-	b, err := ioutil.ReadAll(br)
+	b, err := ioutil.ReadAll(br.r)
 	if err != nil {
 		panic(err)
 	}
@@ -2613,7 +2613,7 @@ func TestBufioDecReader(t *testing.T) {
 		out = br.readUntil(nil, '0')
 		testDeepEqualErr(string(out), `      0`, t, "-")
 		// fmt.Printf("readUntil: out: `%s`\n", out)
-		br.UnreadByte()
+		br.unreadn1()
 	}
 	br = &bufioDecReader{buf: make([]byte, 0, 7)}
 	br.r = strings.NewReader(s)
@@ -2625,7 +2625,7 @@ func TestBufioDecReader(t *testing.T) {
 		token = br.skip(&jsonCharWhitespaceSet)
 		testDeepEqualErr(token, byte('0'), t, "-")
 		// fmt.Printf("skip: token: '%c'\n", token)
-		br.UnreadByte()
+		br.unreadn1()
 	}
 	// println()
 }

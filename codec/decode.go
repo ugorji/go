@@ -549,12 +549,12 @@ func (z *bufioDecReader) reset(r io.Reader) {
 	z.c, z.err = 0, nil
 }
 
-func (z *bufioDecReader) Read(p []byte) (n int, err error) {
+func (z *bufioDecReader) readb(p []byte) {
 	if z.err != nil {
-		return 0, z.err
+		panic(z.err)
 	}
 	p0 := p
-	n = copy(p, z.buf[z.c:])
+	n := copy(p, z.buf[z.c:])
 	z.c += n
 	if z.c == len(z.buf) {
 		z.c = 0
@@ -574,15 +574,13 @@ func (z *bufioDecReader) Read(p []byte) (n int, err error) {
 	p = p[n:]
 	var n2 int
 	// if we are here, then z.buf is all read
-	if len(p) > len(z.buf) {
-		n2, err = decReadFull(z.r, p)
+	if len(p) > cap(z.buf) {
+		n2, z.err = decReadFull(z.r, p)
+		if z.err != nil {
+			panic(z.err)
+		}
 		n += n2
 		z.n += n2
-		z.err = err
-		// don't return EOF if some bytes were read. keep for next time.
-		if n > 0 && err == io.EOF {
-			err = nil
-		}
 		// always keep last byte in z.buf
 		z.buf = z.buf[:1]
 		z.buf[0] = p[len(p)-1]
@@ -592,15 +590,14 @@ func (z *bufioDecReader) Read(p []byte) (n int, err error) {
 		}
 		return
 	}
-	// z.c is now 0, and len(p) <= len(z.buf)
+	// z.c is now 0, and len(p) <= cap(z.buf)
 	for len(p) > 0 && z.err == nil {
-		// println("len(p) loop starting ... ")
 		z.c = 0
 		z.buf = z.buf[0:cap(z.buf)]
-		n2, err = z.r.Read(z.buf)
+		n2, z.err = z.r.Read(z.buf)
 		if n2 > 0 {
-			if err == io.EOF {
-				err = nil
+			if z.err == io.EOF { // only have z.err=EOF iff n==0
+				z.err = nil
 			}
 			z.buf = z.buf[:n2]
 			n2 = copy(p, z.buf)
@@ -609,8 +606,6 @@ func (z *bufioDecReader) Read(p []byte) (n int, err error) {
 			z.n += n2
 			p = p[n2:]
 		}
-		z.err = err
-		// println("... len(p) loop done")
 	}
 	if z.c == 0 {
 		z.buf = z.buf[:1]
@@ -620,13 +615,15 @@ func (z *bufioDecReader) Read(p []byte) (n int, err error) {
 	if z.trb {
 		z.tr = append(z.tr, p0[:n]...)
 	}
-	return
+	if len(p) > 0 && z.err != nil {
+		panic(z.err)
+	}
 }
 
-func (z *bufioDecReader) ReadByte() (b byte, err error) {
+func (z *bufioDecReader) readn1() (b byte) {
 	// fast-path, so we elide calling into Read() most of the time
 	// if z.err == nil && z.c < (len(z.buf)-1) {
-	if z.c < (len(z.buf) - 1) { // means z.err == nil, and we don't read to end of buf
+	if z.c < len(z.buf) { // means z.err == nil, and we don't read to end of buf
 		b = z.buf[z.c]
 		z.c++
 		z.n++
@@ -635,25 +632,22 @@ func (z *bufioDecReader) ReadByte() (b byte, err error) {
 		}
 		return
 	}
-	// z.b[0] = 0 // unnecessary, as err is returned if problem
-	_, err = z.Read(z.b[:1])
-	b = z.b[0]
-	return
+	z.readb(z.b[:1])
+	return z.b[0]
 }
 
-func (z *bufioDecReader) UnreadByte() (err error) {
+func (z *bufioDecReader) unreadn1() {
 	if z.err != nil {
-		return z.err
+		panic(z.err)
 	}
-	if z.c > 0 {
-		z.c--
-		z.n--
-		if z.trb {
-			z.tr = z.tr[:len(z.tr)-1]
-		}
-		return
+	if z.c == 0 {
+		panic(errDecUnreadByteNothingToRead)
 	}
-	return errDecUnreadByteNothingToRead
+	z.c--
+	z.n--
+	if z.trb {
+		z.tr = z.tr[:len(z.tr)-1]
+	}
 }
 
 func (z *bufioDecReader) readx(n int) (bs []byte) {
@@ -673,39 +667,9 @@ func (z *bufioDecReader) readx(n int) (bs []byte) {
 		return
 	}
 	bs = make([]byte, n)
-	_, err := z.Read(bs)
-	if err != nil {
-		panic(err)
-	}
+	z.readb(bs)
 	return
 }
-
-func (z *bufioDecReader) readb(bs []byte) {
-	_, err := z.Read(bs)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func (z *bufioDecReader) readn1() (b uint8) {
-	b, err := z.ReadByte()
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-// func (z *bufioDecReader) readn1eof() (b uint8, eof bool) {
-// 	b, err := z.ReadByte()
-// 	if err != nil {
-// 		if err == io.EOF {
-// 			eof = true
-// 		} else {
-// 			panic(err)
-// 		}
-// 	}
-// 	return
-// }
 
 func (z *bufioDecReader) skipLoopFn(i int) {
 	z.n += (i - z.c) - 1
@@ -847,13 +811,6 @@ func (z *bufioDecReader) readUntil(in []byte, stop byte) (out []byte) {
 		if z.trb {
 			z.tr = append(z.tr, z.buf[:n2]...)
 		}
-	}
-}
-
-func (z *bufioDecReader) unreadn1() {
-	err := z.UnreadByte()
-	if err != nil {
-		panic(err)
 	}
 }
 
@@ -3031,7 +2988,7 @@ func decReadFull(r io.Reader, bs []byte) (n int, err error) {
 			n += nn
 		}
 	}
-
+	// xdebugf("decReadFull: len(bs): %v, n: %v, err: %v", len(bs), n, err)
 	// do not do this - it serves no purpose
 	// if n != len(bs) && err == io.EOF { err = io.ErrUnexpectedEOF }
 	return
