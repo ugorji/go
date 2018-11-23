@@ -261,7 +261,7 @@ func (z *ioEncWriter) writen2(b1, b2 byte) {
 // 	}
 // }
 
-//go:noinline (so *encWriterSwitch.XXX has the bytesEncAppender.XXX inlined)
+//go:noinline - so *encWriterSwitch.XXX has the bytesEncAppender.XXX inlined
 func (z *ioEncWriter) atEndOfEncode() {
 	if z.fw != nil {
 		if err := z.fw.Flush(); err != nil {
@@ -298,7 +298,7 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int) {
 	}
 }
 
-//go:noinline
+//go:noinline - flush only called intermittently
 func (z *bufioEncWriter) flush() {
 	n, err := z.w.Write(z.buf[:z.n])
 	z.n -= n
@@ -338,7 +338,6 @@ LOOP:
 	z.n += copy(z.buf[z.n:], s)
 }
 
-//go:noinline // TODO: allow this be inlined once mid-stack inlining done
 func (z *bufioEncWriter) writen1(b1 byte) {
 	if 1 > len(z.buf)-z.n {
 		z.flush()
