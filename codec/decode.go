@@ -967,11 +967,12 @@ func (z *bytesDecReader) readn1() (v uint8) {
 // }
 
 func (z *bytesDecReader) skip(accept *bitset256) (token byte) {
-	i := z.c
-	if z.c == len(z.b) {
-		goto END
-		// panic(io.EOF)
-	}
+	i := uint(z.c)
+	// if i == len(z.b) {
+	// 	goto END
+	// 	// panic(io.EOF)
+	// }
+
 	// Replace loop with goto construct, so that this can be inlined
 	// for i := z.c; i < blen; i++ {
 	// 	if !accept.isset(z.b[i]) {
@@ -985,17 +986,17 @@ func (z *bytesDecReader) skip(accept *bitset256) (token byte) {
 
 	// i := z.c
 LOOP:
-	if i < len(z.b) {
+	if i < uint(len(z.b)) {
 		token = z.b[i]
 		i++
 		if accept.isset(token) {
 			goto LOOP
 		}
 		// z.a -= (i - z.c)
-		z.c = i
+		z.c = int(i)
 		return
 	}
-END:
+	// END:
 	panic(io.EOF)
 	// // z.a = 0
 	// z.c = blen
@@ -1007,8 +1008,7 @@ func (z *bytesDecReader) readTo(_ []byte, accept *bitset256) (out []byte) {
 }
 
 func (z *bytesDecReader) readToNoInput(accept *bitset256) (out []byte) {
-	i := z.c
-	if i == len(z.b) {
+	if z.c == len(z.b) {
 		panic(io.EOF)
 	}
 
@@ -1044,8 +1044,9 @@ func (z *bytesDecReader) readToNoInput(accept *bitset256) (out []byte) {
 	// 	return
 
 	// c := i
+	i := uint(z.c)
 LOOP:
-	if i < len(z.b) {
+	if i < uint(len(z.b)) {
 		if accept.isset(z.b[i]) {
 			i++
 			goto LOOP
@@ -1054,7 +1055,7 @@ LOOP:
 
 	out = z.b[z.c:i]
 	// z.a -= (i - z.c)
-	z.c = i
+	z.c = int(i)
 	return // z.b[c:i]
 	// z.c, i = i, z.c
 	// return z.b[i:z.c]
@@ -1065,10 +1066,11 @@ func (z *bytesDecReader) readUntil(_ []byte, stop byte) (out []byte) {
 }
 
 func (z *bytesDecReader) readUntilNoInput(stop byte) (out []byte) {
-	i := z.c
-	if i == len(z.b) {
-		panic(io.EOF)
-	}
+	i := uint(z.c)
+	// if i == len(z.b) {
+	// 	panic(io.EOF)
+	// }
+
 	// Replace loop with goto construct, so that this can be inlined
 	// for i := z.c; i < blen; i++ {
 	// 	if z.b[i] == stop {
@@ -1080,12 +1082,12 @@ func (z *bytesDecReader) readUntilNoInput(stop byte) (out []byte) {
 	// 	}
 	// }
 LOOP:
-	if i < len(z.b) {
+	if i < uint(len(z.b)) {
 		if z.b[i] == stop {
 			i++
 			out = z.b[z.c:i]
 			// z.a -= (i - z.c)
-			z.c = i
+			z.c = int(i)
 			return
 		}
 		i++

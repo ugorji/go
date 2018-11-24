@@ -145,7 +145,7 @@ var (
 
 var codecgen bool
 
-var refBitset bitset32
+var refBitset bitset256
 var pool pooler
 var panicv panicHdl
 
@@ -1172,7 +1172,7 @@ func (ti *typeInfo) isFlag(f typeInfoFlag) bool {
 func (ti *typeInfo) indexForEncName(name []byte) (index int16) {
 	var sn []byte
 	if len(name)+2 <= 32 {
-		var buf [32]byte // should not escape
+		var buf [32]byte // should not escape to heap
 		sn = buf[:len(name)+2]
 	} else {
 		sn = make([]byte, len(name)+2)
@@ -1459,7 +1459,7 @@ LOOP:
 			si.encName = f.Name
 		}
 		si.encNameAsciiAlphaNum = true
-		for i := len(si.encName) - 1; i >= 0; i-- {
+		for i := len(si.encName) - 1; i >= 0; i-- { // bounds-check elimination
 			b := si.encName[i]
 			if (b >= '0' && b <= '9') || (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') {
 				continue
@@ -1695,7 +1695,9 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 }
 
 func isImmutableKind(k reflect.Kind) (v bool) {
-	return immutableKindsSet[k]
+	// return immutableKindsSet[k]
+	// since we know reflect.Kind is in range 0..31, then use the k%32 == k constraint
+	return immutableKindsSet[k%reflect.Kind(len(immutableKindsSet))] // bounds-check-elimination
 }
 
 // ----
@@ -2292,7 +2294,12 @@ func (s *set) remove(v uintptr) (exists bool) {
 
 // bitset types are better than [256]bool, because they permit the whole
 // bitset array being on a single cache line and use less memory.
-
+//
+// Also, since pos is a byte (0-255), there's no bounds checks on indexing (cheap).
+//
+// We previously had bitset128 [16]byte, and bitset32 [4]byte, but those introduces
+// bounds checking, so we discarded them, and everyone uses bitset256.
+//
 // given x > 0 and n > 0 and x is exactly 2^n, then pos/x === pos>>n AND pos%x === pos&(x-1).
 // consequently, pos/32 === pos>>5, pos/16 === pos>>4, pos/8 === pos>>3, pos%8 == pos&7
 
@@ -2311,32 +2318,6 @@ func (x *bitset256) set(pos byte) {
 }
 
 // func (x *bitset256) unset(pos byte) {
-// 	x[pos>>3] &^= (1 << (pos & 7))
-// }
-
-type bitset128 [16]byte
-
-func (x *bitset128) isset(pos byte) bool {
-	return x[pos>>3]&(1<<(pos&7)) != 0
-}
-func (x *bitset128) set(pos byte) {
-	x[pos>>3] |= (1 << (pos & 7))
-}
-
-// func (x *bitset128) unset(pos byte) {
-// 	x[pos>>3] &^= (1 << (pos & 7))
-// }
-
-type bitset32 [4]byte
-
-func (x *bitset32) isset(pos byte) bool {
-	return x[pos>>3]&(1<<(pos&7)) != 0
-}
-func (x *bitset32) set(pos byte) {
-	x[pos>>3] |= (1 << (pos & 7))
-}
-
-// func (x *bitset32) unset(pos byte) {
 // 	x[pos>>3] &^= (1 << (pos & 7))
 // }
 

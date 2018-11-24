@@ -268,16 +268,17 @@ func (e *cborEncDriver) encStringBytesS(bb byte, v string) {
 		} else {
 			e.w.writen1(cborBdIndefiniteString)
 		}
-		blen := len(v) / 4
+		var vlen uint = uint(len(v))
+		blen := vlen / 4
 		if blen == 0 {
 			blen = 64
 		} else if blen > 1024 {
 			blen = 1024
 		}
-		for i := 0; i < len(v); {
+		for i := uint(0); i < vlen; {
 			var v2 string
 			i2 := i + blen
-			if i2 < len(v) {
+			if i2 < vlen {
 				v2 = v[i:i2]
 			} else {
 				v2 = v[i:]

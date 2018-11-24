@@ -440,8 +440,8 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v []{{ .Elem }}, canChange 
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, {{ .Size }})

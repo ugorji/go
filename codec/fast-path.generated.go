@@ -17774,8 +17774,8 @@ func (_ fastpathT) DecSliceIntfV(v []interface{}, canChange bool, d *Decoder) (_
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
@@ -17872,8 +17872,8 @@ func (_ fastpathT) DecSliceStringV(v []string, canChange bool, d *Decoder) (_ []
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
@@ -17970,8 +17970,8 @@ func (_ fastpathT) DecSliceFloat32V(v []float32, canChange bool, d *Decoder) (_ 
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
@@ -18068,8 +18068,8 @@ func (_ fastpathT) DecSliceFloat64V(v []float64, canChange bool, d *Decoder) (_ 
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
@@ -18166,8 +18166,8 @@ func (_ fastpathT) DecSliceUintV(v []uint, canChange bool, d *Decoder) (_ []uint
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
@@ -18264,8 +18264,8 @@ func (_ fastpathT) DecSliceUint8V(v []uint8, canChange bool, d *Decoder) (_ []ui
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
@@ -18362,8 +18362,8 @@ func (_ fastpathT) DecSliceUint16V(v []uint16, canChange bool, d *Decoder) (_ []
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 2)
@@ -18460,8 +18460,8 @@ func (_ fastpathT) DecSliceUint32V(v []uint32, canChange bool, d *Decoder) (_ []
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
@@ -18558,8 +18558,8 @@ func (_ fastpathT) DecSliceUint64V(v []uint64, canChange bool, d *Decoder) (_ []
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
@@ -18656,8 +18656,8 @@ func (_ fastpathT) DecSliceUintptrV(v []uintptr, canChange bool, d *Decoder) (_ 
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
@@ -18754,8 +18754,8 @@ func (_ fastpathT) DecSliceIntV(v []int, canChange bool, d *Decoder) (_ []int, c
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
@@ -18852,8 +18852,8 @@ func (_ fastpathT) DecSliceInt8V(v []int8, canChange bool, d *Decoder) (_ []int8
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
@@ -18950,8 +18950,8 @@ func (_ fastpathT) DecSliceInt16V(v []int16, canChange bool, d *Decoder) (_ []in
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 2)
@@ -19048,8 +19048,8 @@ func (_ fastpathT) DecSliceInt32V(v []int32, canChange bool, d *Decoder) (_ []in
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
@@ -19146,8 +19146,8 @@ func (_ fastpathT) DecSliceInt64V(v []int64, canChange bool, d *Decoder) (_ []in
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
@@ -19244,8 +19244,8 @@ func (_ fastpathT) DecSliceBoolV(v []bool, canChange bool, d *Decoder) (_ []bool
 			changed = true
 		}
 	}
-	j := 0
-	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)

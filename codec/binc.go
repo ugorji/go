@@ -534,9 +534,9 @@ func (d *bincDecDriver) decUint() (v uint64) {
 		d.r.readb(d.b[4:8])
 		v = uint64(bigen.Uint32(d.b[4:8]))
 	case 4, 5, 6:
-		lim := int(7 - d.vs)
+		lim := 7 - d.vs
 		d.r.readb(d.b[lim:8])
-		for i := 0; i < lim; i++ {
+		for i := uint8(0); i < lim; i++ {
 			d.b[i] = 0
 		}
 		v = uint64(bigen.Uint64(d.b[:8]))
