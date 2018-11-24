@@ -459,7 +459,7 @@ func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	d.bdRead = false
 	if zerocopy {
 		if d.br {
-			return d.r.readx(clen)
+			return d.r.readx(uint(clen))
 		} else if len(bs) == 0 {
 			bs = d.d.b[:]
 		}
@@ -481,7 +481,7 @@ func (d *simpleDecDriver) DecodeTime() (t time.Time) {
 	}
 	d.bdRead = false
 	clen := int(d.r.readn1())
-	b := d.r.readx(clen)
+	b := d.r.readx(uint(clen))
 	if err := (&t).UnmarshalBinary(b); err != nil {
 		d.d.errorv(err)
 	}
@@ -518,7 +518,7 @@ func (d *simpleDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs [
 			return
 		}
 		if d.br {
-			xbs = d.r.readx(l)
+			xbs = d.r.readx(uint(l))
 		} else {
 			xbs = decByteSlice(d.r, l, d.d.h.MaxInitLen, d.d.b[:])
 		}
@@ -583,7 +583,7 @@ func (d *simpleDecDriver) DecodeNaked() {
 		l := d.decLen()
 		n.u = uint64(d.r.readn1())
 		if d.br {
-			n.l = d.r.readx(l)
+			n.l = d.r.readx(uint(l))
 		} else {
 			n.l = decByteSlice(d.r, l, d.d.h.MaxInitLen, d.d.b[:])
 		}

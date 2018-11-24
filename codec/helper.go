@@ -1224,30 +1224,36 @@ func (x *TypeInfos) structTag(t reflect.StructTag) (s string) {
 	return
 }
 
-func (x *TypeInfos) find(s []rtid2ti, rtid uintptr) (idx int, ti *typeInfo) {
+func (x *TypeInfos) find(s []rtid2ti, rtid uintptr) (i uint, ti *typeInfo) {
 	// binary search. adapted from sort/search.go.
+	// Note: we use goto (instead of for loop) so this can be inlined.
+
 	// if sp == nil {
 	// 	return -1, nil
 	// }
 	// s := *sp
-	h, i, j := 0, 0, len(s)
-	for i < j {
+
+	// h, i, j := 0, 0, len(s)
+	var h uint // var h, i uint
+	var j = uint(len(s))
+LOOP:
+	if i < j {
 		h = i + (j-i)/2
 		if s[h].rtid < rtid {
 			i = h + 1
 		} else {
 			j = h
 		}
+		goto LOOP
 	}
-	if i < len(s) && s[i].rtid == rtid {
-		return i, s[i].ti
+	if i < uint(len(s)) && s[i].rtid == rtid {
+		ti = s[i].ti
 	}
-	return i, nil
+	return
 }
 
 func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	sp := x.infos.load()
-	var idx int
 	if sp != nil {
 		_, pti = x.find(sp, rtid)
 		if pti != nil {
@@ -1334,6 +1340,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		vs := []rtid2ti{{rtid, pti}}
 		x.infos.store(vs)
 	} else {
+		var idx uint
 		idx, pti = x.find(sp, rtid)
 		if pti == nil {
 			pti = &ti

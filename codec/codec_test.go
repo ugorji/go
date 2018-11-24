@@ -1686,7 +1686,7 @@ func doTestSwallowAndZero(t *testing.T, h Handle) {
 	e1.MustEncode(v1)
 	d1 := NewDecoderBytes(b1, h)
 	d1.swallow()
-	if d1.r.numread() != len(b1) {
+	if d1.r.numread() != uint(len(b1)) {
 		logT(t, "swallow didn't consume all encoded bytes: %v out of %v", d1.r.numread(), len(b1))
 		failT(t)
 	}
