@@ -178,7 +178,8 @@ _clean() {
 _usage() {
     cat <<EOF
 primary usage: $0 
-    -[tmpfxnle] for [tests, make, prebuild (force) (external), inlining diagnostics, mid-stack inlining, race detector]
+    -[tmpfxnle] -> [tests, make, prebuild (force) (external), inlining diagnostics, mid-stack inlining, race detector]
+    -v          -> verbose
 EOF
     if [[ "$(type -t _usage_run)" = "function" ]]; then _usage_run ; fi
 }
@@ -189,11 +190,12 @@ _main() {
     unset zforce zexternal
     zargs=()
     zbenchdepth=1
-    while getopts ":ctbqjmnrgupfxlzed:" flag
+    while getopts ":ctbqjmnrgupfvxlzed:" flag
     do
         case "x$flag" in
             'xf') zforce=1 ;;
             'xx') zexternal=1 ;;
+            'xv') zverbose=1 ;;
             'xl') zargs+=("-gcflags"); zargs+=("-l=4") ;;
             'xn') zargs+=("-gcflags"); zargs+=("-m=2") ;;
             'xe') zargs+=("-race") ;;
