@@ -1116,7 +1116,7 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 			i += 4
 			if utf16.IsSurrogate(r) {
 				if len(cs) >= int(i+6) {
-					var cx = cs[i+1 : i+7 : i+7][:6] // [:6] affords bounds-check-elimination
+					var cx = cs[i+1:][:6:6] // [:6] affords bounds-check-elimination
 					if cx[0] == '\\' && cx[1] == 'u' {
 						i += 2
 						var rr1 uint32
@@ -1468,11 +1468,11 @@ func jsonParseInteger(s []byte) (n uint64, neg, badSyntax, overflow bool) {
 	const maxUint64 = (1<<64 - 1)
 	const cutoff = maxUint64/10 + 1
 
-	// if len(s) == 0 {
-	// 	// treat empty string as zero value
-	// 	// badSyntax = true
-	// 	return
-	// }
+	if len(s) == 0 { // bounds-check-elimination
+		// treat empty string as zero value
+		// badSyntax = true
+		return
+	}
 	switch s[0] {
 	case '+':
 		s = s[1:]
