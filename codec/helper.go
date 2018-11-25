@@ -992,17 +992,9 @@ func (si *structFieldInfo) parseTag(stag string) {
 
 type sfiSortedByEncName []*structFieldInfo
 
-func (p sfiSortedByEncName) Len() int {
-	return len(p)
-}
-
-func (p sfiSortedByEncName) Less(i, j int) bool {
-	return p[i].encName < p[j].encName
-}
-
-func (p sfiSortedByEncName) Swap(i, j int) {
-	p[i], p[j] = p[j], p[i]
-}
+func (p sfiSortedByEncName) Len() int           { return len(p) }
+func (p sfiSortedByEncName) Less(i, j int) bool { return p[uint(i)].encName < p[uint(j)].encName }
+func (p sfiSortedByEncName) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 const structFieldNodeNumToCache = 4
 
@@ -2114,34 +2106,34 @@ type stringSlice []string
 // type bytesSlice [][]byte
 
 func (p intSlice) Len() int           { return len(p) }
-func (p intSlice) Less(i, j int) bool { return p[i] < p[j] }
-func (p intSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p intSlice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
+func (p intSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 func (p uintSlice) Len() int           { return len(p) }
-func (p uintSlice) Less(i, j int) bool { return p[i] < p[j] }
-func (p uintSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p uintSlice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
+func (p uintSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 // func (p uintptrSlice) Len() int           { return len(p) }
-// func (p uintptrSlice) Less(i, j int) bool { return p[i] < p[j] }
-// func (p uintptrSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+// func (p uintptrSlice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
+// func (p uintptrSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 func (p floatSlice) Len() int { return len(p) }
 func (p floatSlice) Less(i, j int) bool {
-	return p[i] < p[j] || isNaN(p[i]) && !isNaN(p[j])
+	return p[uint(i)] < p[uint(j)] || isNaN(p[uint(i)]) && !isNaN(p[uint(j)])
 }
-func (p floatSlice) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+func (p floatSlice) Swap(i, j int) { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 func (p stringSlice) Len() int           { return len(p) }
-func (p stringSlice) Less(i, j int) bool { return p[i] < p[j] }
-func (p stringSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p stringSlice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
+func (p stringSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 // func (p bytesSlice) Len() int           { return len(p) }
-// func (p bytesSlice) Less(i, j int) bool { return bytes.Compare(p[i], p[j]) == -1 }
-// func (p bytesSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+// func (p bytesSlice) Less(i, j int) bool { return bytes.Compare(p[uint(i)], p[uint(j)]) == -1 }
+// func (p bytesSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 func (p boolSlice) Len() int           { return len(p) }
-func (p boolSlice) Less(i, j int) bool { return !p[i] && p[j] }
-func (p boolSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p boolSlice) Less(i, j int) bool { return !p[uint(i)] && p[uint(j)] }
+func (p boolSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 // ---------------------
 
@@ -2187,34 +2179,34 @@ type timeRv struct {
 type timeRvSlice []timeRv
 
 func (p intRvSlice) Len() int           { return len(p) }
-func (p intRvSlice) Less(i, j int) bool { return p[i].v < p[j].v }
-func (p intRvSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p intRvSlice) Less(i, j int) bool { return p[uint(i)].v < p[uint(j)].v }
+func (p intRvSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 func (p uintRvSlice) Len() int           { return len(p) }
-func (p uintRvSlice) Less(i, j int) bool { return p[i].v < p[j].v }
-func (p uintRvSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p uintRvSlice) Less(i, j int) bool { return p[uint(i)].v < p[uint(j)].v }
+func (p uintRvSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 func (p floatRvSlice) Len() int { return len(p) }
 func (p floatRvSlice) Less(i, j int) bool {
-	return p[i].v < p[j].v || isNaN(p[i].v) && !isNaN(p[j].v)
+	return p[uint(i)].v < p[uint(j)].v || isNaN(p[uint(i)].v) && !isNaN(p[uint(j)].v)
 }
-func (p floatRvSlice) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
+func (p floatRvSlice) Swap(i, j int) { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 func (p stringRvSlice) Len() int           { return len(p) }
-func (p stringRvSlice) Less(i, j int) bool { return p[i].v < p[j].v }
-func (p stringRvSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p stringRvSlice) Less(i, j int) bool { return p[uint(i)].v < p[uint(j)].v }
+func (p stringRvSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 func (p bytesRvSlice) Len() int           { return len(p) }
-func (p bytesRvSlice) Less(i, j int) bool { return bytes.Compare(p[i].v, p[j].v) == -1 }
-func (p bytesRvSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p bytesRvSlice) Less(i, j int) bool { return bytes.Compare(p[uint(i)].v, p[uint(j)].v) == -1 }
+func (p bytesRvSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 func (p boolRvSlice) Len() int           { return len(p) }
-func (p boolRvSlice) Less(i, j int) bool { return !p[i].v && p[j].v }
-func (p boolRvSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p boolRvSlice) Less(i, j int) bool { return !p[uint(i)].v && p[uint(j)].v }
+func (p boolRvSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 func (p timeRvSlice) Len() int           { return len(p) }
-func (p timeRvSlice) Less(i, j int) bool { return p[i].v.Before(p[j].v) }
-func (p timeRvSlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p timeRvSlice) Less(i, j int) bool { return p[uint(i)].v.Before(p[uint(j)].v) }
+func (p timeRvSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 // -----------------
 
@@ -2226,8 +2218,8 @@ type bytesI struct {
 type bytesISlice []bytesI
 
 func (p bytesISlice) Len() int           { return len(p) }
-func (p bytesISlice) Less(i, j int) bool { return bytes.Compare(p[i].v, p[j].v) == -1 }
-func (p bytesISlice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+func (p bytesISlice) Less(i, j int) bool { return bytes.Compare(p[uint(i)].v, p[uint(j)].v) == -1 }
+func (p bytesISlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 
 // -----------------
 

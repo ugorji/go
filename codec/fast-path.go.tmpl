@@ -75,22 +75,21 @@ LOOP:
 type fastpathAslice []fastpathE
 
 func (x fastpathAslice) Len() int { return len(x) }
-func (x fastpathAslice) Less(i, j int) bool { return x[i].rtid < x[j].rtid }
-func (x fastpathAslice) Swap(i, j int) { x[i], x[j] = x[j], x[i] }
+func (x fastpathAslice) Less(i, j int) bool { return x[uint(i)].rtid < x[uint(j)].rtid }
+func (x fastpathAslice) Swap(i, j int) { x[uint(i)], x[uint(j)] = x[uint(j)], x[uint(i)] }
 
 var fastpathAV fastpathA
 
 // due to possible initialization loop error, make fastpath in an init()
 func init() {
-	i := 0
+	var i uint = 0
 	fn := func(v interface{},
 		fe func(*Encoder, *codecFnInfo, reflect.Value),
-		fd func(*Decoder, *codecFnInfo, reflect.Value)) (f fastpathE) {
+		fd func(*Decoder, *codecFnInfo, reflect.Value)) {
 		xrt := reflect.TypeOf(v)
 		xptr := rt2id(xrt)
 		fastpathAV[i] = fastpathE{xptr, xrt, fe, fd}
 		i++
-		return
 	}
 	{{/* do not register []uint8 in fast-path */}}
 	{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}{{if ne .Elem "uint8"}}
