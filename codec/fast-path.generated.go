@@ -37,6 +37,8 @@ import (
 
 const fastpathEnabled = true
 
+const fastpathMapBySliceErrMsg = "mapBySlice requires even slice length, but got %v"
+
 type fastpathT struct{}
 
 var fastpathTV fastpathT
@@ -1498,7 +1500,7 @@ func (_ fastpathT) EncSliceIntfV(v []interface{}, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceIntfV(v []interface{}, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -1548,7 +1550,7 @@ func (_ fastpathT) EncSliceStringV(v []string, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceStringV(v []string, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -1598,7 +1600,7 @@ func (_ fastpathT) EncSliceFloat32V(v []float32, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceFloat32V(v []float32, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -1648,7 +1650,7 @@ func (_ fastpathT) EncSliceFloat64V(v []float64, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceFloat64V(v []float64, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -1698,7 +1700,7 @@ func (_ fastpathT) EncSliceUintV(v []uint, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceUintV(v []uint, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -1748,7 +1750,7 @@ func (_ fastpathT) EncSliceUint8V(v []uint8, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceUint8V(v []uint8, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -1798,7 +1800,7 @@ func (_ fastpathT) EncSliceUint16V(v []uint16, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceUint16V(v []uint16, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -1848,7 +1850,7 @@ func (_ fastpathT) EncSliceUint32V(v []uint32, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceUint32V(v []uint32, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -1898,7 +1900,7 @@ func (_ fastpathT) EncSliceUint64V(v []uint64, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceUint64V(v []uint64, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -1948,7 +1950,7 @@ func (_ fastpathT) EncSliceUintptrV(v []uintptr, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceUintptrV(v []uintptr, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -1998,7 +2000,7 @@ func (_ fastpathT) EncSliceIntV(v []int, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceIntV(v []int, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -2048,7 +2050,7 @@ func (_ fastpathT) EncSliceInt8V(v []int8, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceInt8V(v []int8, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -2098,7 +2100,7 @@ func (_ fastpathT) EncSliceInt16V(v []int16, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceInt16V(v []int16, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -2148,7 +2150,7 @@ func (_ fastpathT) EncSliceInt32V(v []int32, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceInt32V(v []int32, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -2198,7 +2200,7 @@ func (_ fastpathT) EncSliceInt64V(v []int64, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceInt64V(v []int64, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
@@ -2248,7 +2250,7 @@ func (_ fastpathT) EncSliceBoolV(v []bool, e *Encoder) {
 func (_ fastpathT) EncAsMapSliceBoolV(v []bool, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)

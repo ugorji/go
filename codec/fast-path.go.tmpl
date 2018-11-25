@@ -37,6 +37,8 @@ import (
 
 const fastpathEnabled = true
 
+const fastpathMapBySliceErrMsg = "mapBySlice requires even slice length, but got %v"
+
 type fastpathT struct {}
 
 var fastpathTV fastpathT
@@ -208,7 +210,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *Encoder
 func (_ fastpathT) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *Encoder) {
 	ee, esep := e.e, e.hh.hasElemSeparators()
 	if len(v)%2 == 1 {
-		e.errorf("mapBySlice requires even slice length, but got %v", len(v))
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
 	ee.WriteMapStart(len(v) / 2)
