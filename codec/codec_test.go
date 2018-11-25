@@ -3176,14 +3176,14 @@ func TestSimpleMaxDepth(t *testing.T) {
 
 // TODO:
 //
-// Add Tests for:
+// Add Tests for the following:
 // - struct tags: on anonymous fields, _struct (all fields), etc
 // - chan to encode and decode (with support for codecgen also)
 //
 // Add negative tests for failure conditions:
 // - bad input with large array length prefix
 //
-// decode.go (standalone)
+// Add tests for decode.go (standalone)
 // - UnreadByte: only 2 states (z.ls = 2 and z.ls = 1) (0 --> 2 --> 1)
 // - track: z.trb: track, stop track, check
 // - PreferArrayOverSlice???
@@ -3194,5 +3194,5 @@ func TestSimpleMaxDepth(t *testing.T) {
 // - decnaked: n.l == nil
 // - ensureDecodeable (try to decode into a non-decodeable thing e.g. a nil interface{},
 //
-// encode.go (standalone)
+// Add tests for encode.go (standalone)
 // - nil and 0-len slices and maps for non-fastpath things
