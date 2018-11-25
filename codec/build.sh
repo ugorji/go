@@ -178,8 +178,8 @@ _clean() {
 _usage() {
     cat <<EOF
 primary usage: $0 
-    -[tmpfxnle] -> [tests, make, prebuild (force) (external), inlining diagnostics, mid-stack inlining, race detector]
-    -v          -> verbose
+    -[tmpfxnle]           -> [tests, make, prebuild (force) (external), inlining diagnostics, mid-stack inlining, race detector]
+    -v                    -> verbose
 EOF
     if [[ "$(type -t _usage_run)" = "function" ]]; then _usage_run ; fi
 }
@@ -189,8 +189,9 @@ _main() {
     local x
     unset zforce zexternal
     zargs=()
-    zbenchdepth=1
-    while getopts ":ctbqjmnrgupfvxlzed:" flag
+    zbenchflags=""
+    OPTIND=1
+    while getopts ":ctmnrgupfvxlzeb:" flag
     do
         case "x$flag" in
             'xf') zforce=1 ;;
@@ -199,7 +200,7 @@ _main() {
             'xl') zargs+=("-gcflags"); zargs+=("-l=4") ;;
             'xn') zargs+=("-gcflags"); zargs+=("-m=2") ;;
             'xe') zargs+=("-race") ;;
-            'xd') zbenchdepth=${OPTARG} ;;
+            'xb') x='b'; zbenchflags=${OPTARG} ;;
             x\?) _usage; return 1 ;;
             *) x=$flag ;;
         esac
@@ -207,9 +208,6 @@ _main() {
     shift $((OPTIND-1))
     case "x$x" in
         'xt') _tests "$@" ;;
-        'xq') _benchquick "$@" ;;
-        'xj') _benchquickjson "$@" ;;
-        'xb') _bench "$@" ;;
         'xm') _make "$@" ;;
         'xr') _release "$@" ;;
         'xg') _go ;;
@@ -217,6 +215,7 @@ _main() {
         'xp') _prebuild "$@" ;;
         'xc') _clean "$@" ;;
         'xz') _analyze "$@" ;;
+        'xb') _bench "$@" ;;
     esac
     unset zforce zexternal 
 }
