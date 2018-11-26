@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"runtime"
 	"strconv"
 	"sync"
 	"time"
@@ -547,14 +548,24 @@ type bufioDecReader struct {
 
 	c   uint // cursor
 	buf []byte
+
+	bytesBufPooler
+
 	// err error
-	_ [1]uint64 // padding
-	// _[4]uint64 // padding
+
+	_ [2]uint64 // padding
 }
 
-func (z *bufioDecReader) reset(r io.Reader) {
+func (z *bufioDecReader) reset(r io.Reader, bufsize int) {
 	z.ioDecReaderCommon.reset(r)
 	z.c = 0
+	if cap(z.buf) >= bufsize {
+		z.buf = z.buf[:0]
+	} else {
+		z.bytesBufPooler.end() // potentially return old one to pool
+		z.buf = z.bytesBufPooler.get(bufsize)[:0]
+		// z.buf = make([]byte, 0, bufsize)
+	}
 }
 
 func (z *bufioDecReader) readb(p []byte) {
@@ -2016,6 +2027,37 @@ func (n *decNaked) reset() {
 	n.li, n.lm, n.ln, n.ls = 0, 0, 0, 0
 }
 
+type decNakedPooler struct {
+	n   *decNaked
+	nsp *sync.Pool
+}
+
+// naked must be called before each call to .DecodeNaked, as they will use it.
+func (d *decNakedPooler) naked() *decNaked {
+	if d.n == nil {
+		// consider one of:
+		//   - get from sync.Pool  (if GC is frequent, there's no value here)
+		//   - new alloc           (safest. only init'ed if it a naked decode will be done)
+		//   - field in Decoder    (makes the Decoder struct very big)
+		// To support using a decoder where a DecodeNaked is not needed,
+		// we prefer #1 or #2.
+		// d.n = new(decNaked) // &d.nv // new(decNaked) // grab from a sync.Pool
+		// d.n.init()
+		var v interface{}
+		d.nsp, v = pool.decNaked()
+		d.n = v.(*decNaked)
+	}
+	return d.n
+}
+
+func (d *decNakedPooler) end() {
+	if d.n != nil {
+		// if n != nil, then nsp != nil (they are always set together)
+		d.nsp.Put(d.n)
+		d.n, d.nsp = nil, nil
+	}
+}
+
 // type rtid2rv struct {
 // 	rtid uintptr
 // 	rv   reflect.Value
@@ -2307,8 +2349,7 @@ type Decoder struct {
 	mtid uintptr
 	stid uintptr
 
-	n   *decNaked
-	nsp *sync.Pool
+	decNakedPooler
 
 	h *BasicHandle
 
@@ -2355,6 +2396,11 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 
 func newDecoder(h Handle) *Decoder {
 	d := &Decoder{h: h.getBasicHandle(), err: errDecoderNotInitialized}
+	d.bytes = true
+	if useFinalizers {
+		runtime.SetFinalizer(d, (*Decoder).finalize)
+		// xdebugf(">>>> new(Decoder) with finalizer")
+	}
 	d.r = &d.decReaderSwitch
 	d.hh = h
 	d.be = h.isBinary()
@@ -2408,12 +2454,7 @@ func (d *Decoder) Reset(r io.Reader) {
 		if d.bi == nil {
 			d.bi = new(bufioDecReader)
 		}
-		if cap(d.bi.buf) < d.h.ReaderBufferSize {
-			d.bi.buf = make([]byte, 0, d.h.ReaderBufferSize)
-		} else {
-			d.bi.buf = d.bi.buf[:0]
-		}
-		d.bi.reset(r)
+		d.bi.reset(r, d.h.ReaderBufferSize)
 		// d.r = d.bi
 		// d.typ = entryTypeBufio
 		d.bufio = true
@@ -2443,25 +2484,6 @@ func (d *Decoder) ResetBytes(in []byte) {
 	d.rb.reset(in)
 	// d.r = &d.rb
 	d.resetCommon()
-}
-
-// naked must be called before each call to .DecodeNaked,
-// as they will use it.
-func (d *Decoder) naked() *decNaked {
-	if d.n == nil {
-		// consider one of:
-		//   - get from sync.Pool  (if GC is frequent, there's no value here)
-		//   - new alloc           (safest. only init'ed if it a naked decode will be done)
-		//   - field in Decoder    (makes the Decoder struct very big)
-		// To support using a decoder where a DecodeNaked is not needed,
-		// we prefer #1 or #2.
-		// d.n = new(decNaked) // &d.nv // new(decNaked) // grab from a sync.Pool
-		// d.n.init()
-		var v interface{}
-		d.nsp, v = pool.decNaked()
-		d.n = v.(*decNaked)
-	}
-	return d.n
 }
 
 // Decode decodes the stream from reader and stores the result in the
@@ -2531,44 +2553,73 @@ func (d *Decoder) Decode(v interface{}) (err error) {
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
 	// defer func() { d.deferred(&err) }()
 	// { x, y := d, &err; defer func() { x.deferred(y) }() }
-	defer d.deferred(&err)
-	d.MustDecode(v)
+	if d.err != nil {
+		return d.err
+	}
+	if recoverPanicToErr {
+		defer func() {
+			if x := recover(); x != nil {
+				panicValToErr(d, x, &d.err)
+				err = d.err
+			}
+		}()
+	}
+
+	// defer d.deferred(&err)
+	d.mustDecode(v)
 	return
 }
 
 // MustDecode is like Decode, but panics if unable to Decode.
 // This provides insight to the code location that triggered the error.
 func (d *Decoder) MustDecode(v interface{}) {
-	// TODO: Top-level: ensure that v is a pointer and not nil.
 	if d.err != nil {
 		panic(d.err)
 	}
+	d.mustDecode(v)
+}
+
+// MustDecode is like Decode, but panics if unable to Decode.
+// This provides insight to the code location that triggered the error.
+func (d *Decoder) mustDecode(v interface{}) {
+	// TODO: Top-level: ensure that v is a pointer and not nil.
 	if d.d.TryDecodeAsNil() {
 		setZero(v)
 	} else {
 		d.decode(v)
 	}
-	d.alwaysAtEnd()
 	// xprintf(">>>>>>>> >>>>>>>> num decFns: %v\n", d.cf.sn)
 }
 
-func (d *Decoder) deferred(err1 *error) {
-	d.alwaysAtEnd()
-	if recoverPanicToErr {
-		if x := recover(); x != nil {
-			panicValToErr(d, x, err1)
-			panicValToErr(d, x, &d.err)
-		}
-	}
+// func (d *Decoder) deferred(err1 *error) {
+// 	if recoverPanicToErr {
+// 		if x := recover(); x != nil {
+// 			panicValToErr(d, x, err1)
+// 			panicValToErr(d, x, &d.err)
+// 		}
+// 	}
+// }
+
+//go:noinline -- as it is run by finalizer
+func (d *Decoder) finalize() {
+	// xdebugf("finalizing Decoder")
+	d.Close()
 }
 
-func (d *Decoder) alwaysAtEnd() {
-	if d.n != nil {
-		// if n != nil, then nsp != nil (they are always set together)
-		d.nsp.Put(d.n)
-		d.n, d.nsp = nil, nil
+// Close releases shared (pooled) resources.
+//
+// It is important to call Close() when done with a Decoder, so those resources
+// are released instantly for use by subsequently created Decoders.
+func (d *Decoder) Close() {
+	if useFinalizers && removeFinalizerOnClose {
+		runtime.SetFinalizer(d, nil)
 	}
-	d.codecFnPooler.alwaysAtEnd()
+	if d.bi != nil && d.bi.bytesBufPooler.pool != nil {
+		d.bi.buf = nil
+		d.bi.bytesBufPooler.end()
+	}
+	d.decNakedPooler.end()
+	d.codecFnPooler.end()
 }
 
 // // this is not a smart swallow, as it allocates objects and does unnecessary work.

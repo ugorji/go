@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"runtime"
 	"sort"
 	"strconv"
 	"sync"
@@ -32,7 +33,7 @@ type encWriter interface {
 	writestr(string)
 	writen1(byte)
 	writen2(byte, byte)
-	atEndOfEncode()
+	end()
 }
 
 */
@@ -262,7 +263,7 @@ func (z *ioEncWriter) writen2(b1, b2 byte) {
 // }
 
 //go:noinline - so *encWriterSwitch.XXX has the bytesEncAppender.XXX inlined
-func (z *ioEncWriter) atEndOfEncode() {
+func (z *ioEncWriter) end() {
 	if z.fw != nil {
 		if err := z.fw.Flush(); err != nil {
 			panic(err)
@@ -279,7 +280,10 @@ type bufioEncWriter struct {
 	buf []byte
 	w   io.Writer
 	n   int
-	// _   [2]uint64 // padding
+
+	bytesBufPooler
+
+	_ [3]uint64 // padding
 	// a int
 	// b   [4]byte
 	// err
@@ -288,13 +292,15 @@ type bufioEncWriter struct {
 func (z *bufioEncWriter) reset(w io.Writer, bufsize int) {
 	z.w = w
 	z.n = 0
-	if bufsize == 0 {
+	if bufsize <= 0 {
 		bufsize = defEncByteBufSize
 	}
-	if cap(z.buf) < bufsize {
-		z.buf = make([]byte, bufsize)
+	if cap(z.buf) >= bufsize {
+		z.buf = z.buf[:cap(z.buf)]
 	} else {
-		z.buf = z.buf[:bufsize]
+		z.bytesBufPooler.end() // potentially return old one to pool
+		z.buf = z.bytesBufPooler.get(bufsize)
+		// z.buf = make([]byte, bufsize)
 	}
 }
 
@@ -355,7 +361,7 @@ func (z *bufioEncWriter) writen2(b1, b2 byte) {
 	z.n += 2
 }
 
-func (z *bufioEncWriter) atEndOfEncode() {
+func (z *bufioEncWriter) end() {
 	if z.n > 0 {
 		z.flush()
 	}
@@ -381,7 +387,7 @@ func (z *bytesEncAppender) writen1(b1 byte) {
 func (z *bytesEncAppender) writen2(b1, b2 byte) {
 	z.b = append(z.b, b1, b2)
 }
-func (z *bytesEncAppender) atEndOfEncode() {
+func (z *bytesEncAppender) end() {
 	*(z.out) = z.b
 }
 func (z *bytesEncAppender) reset(in []byte, out *[]byte) {
@@ -1083,52 +1089,52 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 
 type encWriterSwitch struct {
 	// wi   *ioEncWriter
-	wf bufioEncWriter
 	wb bytesEncAppender
+	wf *bufioEncWriter
 	// typ  entryType
-	wx   bool    // if bytes, wx=true
-	esep bool    // whether it has elem separators
-	isas bool    // whether e.as != nil
-	js   bool    // captured here, so that no need to piggy back on *codecFner for this
-	be   bool    // captured here, so that no need to piggy back on *codecFner for this
-	_    [2]byte // padding
+	bytes bool    // encoding to []byte
+	esep  bool    // whether it has elem separators
+	isas  bool    // whether e.as != nil
+	js    bool    // captured here, so that no need to piggy back on *codecFner for this
+	be    bool    // captured here, so that no need to piggy back on *codecFner for this
+	_     [2]byte // padding
 	// _    [2]uint64 // padding
 	// _    uint64    // padding
 }
 
 func (z *encWriterSwitch) writeb(s []byte) {
-	if z.wx {
+	if z.bytes {
 		z.wb.writeb(s)
 	} else {
 		z.wf.writeb(s)
 	}
 }
 func (z *encWriterSwitch) writestr(s string) {
-	if z.wx {
+	if z.bytes {
 		z.wb.writestr(s)
 	} else {
 		z.wf.writestr(s)
 	}
 }
 func (z *encWriterSwitch) writen1(b1 byte) {
-	if z.wx {
+	if z.bytes {
 		z.wb.writen1(b1)
 	} else {
 		z.wf.writen1(b1)
 	}
 }
 func (z *encWriterSwitch) writen2(b1, b2 byte) {
-	if z.wx {
+	if z.bytes {
 		z.wb.writen2(b1, b2)
 	} else {
 		z.wf.writen2(b1, b2)
 	}
 }
-func (z *encWriterSwitch) atEndOfEncode() {
-	if z.wx {
-		z.wb.atEndOfEncode()
+func (z *encWriterSwitch) end() {
+	if z.bytes {
+		z.wb.end()
 	} else {
-		z.wf.atEndOfEncode()
+		z.wf.end()
 	}
 }
 
@@ -1175,51 +1181,51 @@ func (z *encWriterSwitch) writen2(b1, b2 byte) {
 		z.wf.writen2(b1, b2)
 	}
 }
-func (z *encWriterSwitch) atEndOfEncode() {
+func (z *encWriterSwitch) end() {
 	switch z.typ {
 	case entryTypeBytes:
-		z.wb.atEndOfEncode()
+		z.wb.end()
 	case entryTypeIo:
-		z.wi.atEndOfEncode()
+		z.wi.end()
 	default:
-		z.wf.atEndOfEncode()
+		z.wf.end()
 	}
 }
 
 // ------------------------------------------
 func (z *encWriterSwitch) writeb(s []byte) {
-	if z.wx {
+	if z.bytes {
 		z.wb.writeb(s)
 	} else {
 		z.wi.writeb(s)
 	}
 }
 func (z *encWriterSwitch) writestr(s string) {
-	if z.wx {
+	if z.bytes {
 		z.wb.writestr(s)
 	} else {
 		z.wi.writestr(s)
 	}
 }
 func (z *encWriterSwitch) writen1(b1 byte) {
-	if z.wx {
+	if z.bytes {
 		z.wb.writen1(b1)
 	} else {
 		z.wi.writen1(b1)
 	}
 }
 func (z *encWriterSwitch) writen2(b1, b2 byte) {
-	if z.wx {
+	if z.bytes {
 		z.wb.writen2(b1, b2)
 	} else {
 		z.wi.writen2(b1, b2)
 	}
 }
-func (z *encWriterSwitch) atEndOfEncode() {
-	if z.wx {
-		z.wb.atEndOfEncode()
+func (z *encWriterSwitch) end() {
+	if z.bytes {
+		z.wb.end()
 	} else {
-		z.wi.atEndOfEncode()
+		z.wi.end()
 	}
 }
 
@@ -1252,15 +1258,17 @@ type Encoder struct {
 	// ---- cpu cache line boundary? + 3
 	encWriterSwitch
 
-	codecFnPooler
 	ci set
+	codecFnPooler
+
+	b [3 * 8]byte // for encoding chan or (non-addressable) [N]byte
 
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 
 	// ---- cpu cache line boundary?
 	// b [scratchByteArrayLen]byte
 	// _ [cacheLineSize - scratchByteArrayLen]byte // padding
-	b [cacheLineSize - (8 * 2)]byte // used for encoding a chan or (non-addressable) array of bytes
+	// b [cacheLineSize - (8 * 0)]byte // used for encoding a chan or (non-addressable) array of bytes
 }
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
@@ -1286,9 +1294,15 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 
 func newEncoder(h Handle) *Encoder {
 	e := &Encoder{h: h.getBasicHandle(), err: errEncoderNotInitialized}
+	e.bytes = true
+	if useFinalizers {
+		runtime.SetFinalizer(e, (*Encoder).finalize)
+		// xdebugf(">>>> new(Encoder) with finalizer")
+	}
 	e.w = &e.encWriterSwitch
 	e.hh = h
 	e.esep = h.hasElemSeparators()
+
 	return e
 }
 
@@ -1314,7 +1328,10 @@ func (e *Encoder) Reset(w io.Writer) {
 		return
 	}
 	// var ok bool
-	e.wx = false
+	e.bytes = false
+	if e.wf == nil {
+		e.wf = new(bufioEncWriter)
+	}
 	// e.typ = entryTypeUnset
 	// if e.h.WriterBufferSize > 0 {
 	// 	// bw := bufio.NewWriterSize(w, e.h.WriterBufferSize)
@@ -1353,7 +1370,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 	if in == nil {
 		in = make([]byte, defEncByteBufSize)
 	}
-	e.wx = true
+	e.bytes = true
 	// e.typ = entryTypeBytes
 	e.wb.reset(in, out)
 	// e.w = &e.wb
@@ -1449,8 +1466,21 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
 	// defer func() { e.deferred(&err) }() }
 	// { x, y := e, &err; defer func() { x.deferred(y) }() }
-	defer e.deferred(&err)
-	e.MustEncode(v)
+	if e.err != nil {
+		return e.err
+	}
+	if recoverPanicToErr {
+		defer func() {
+			e.w.end()
+			if x := recover(); x != nil {
+				panicValToErr(e, x, &e.err)
+				err = e.err
+			}
+		}()
+	}
+
+	// defer e.deferred(&err)
+	e.mustEncode(v)
 	return
 }
 
@@ -1460,25 +1490,45 @@ func (e *Encoder) MustEncode(v interface{}) {
 	if e.err != nil {
 		panic(e.err)
 	}
+	e.mustEncode(v)
+}
+
+func (e *Encoder) mustEncode(v interface{}) {
 	e.encode(v)
 	e.e.atEndOfEncode()
-	e.w.atEndOfEncode()
-	e.alwaysAtEnd()
+	e.w.end()
 }
 
-func (e *Encoder) deferred(err1 *error) {
-	e.alwaysAtEnd()
-	if recoverPanicToErr {
-		if x := recover(); x != nil {
-			panicValToErr(e, x, err1)
-			panicValToErr(e, x, &e.err)
-		}
-	}
-}
-
-// func (e *Encoder) alwaysAtEnd() {
-// 	e.codecFnPooler.alwaysAtEnd()
+// func (e *Encoder) deferred(err1 *error) {
+// 	e.w.end()
+// 	if recoverPanicToErr {
+// 		if x := recover(); x != nil {
+// 			panicValToErr(e, x, err1)
+// 			panicValToErr(e, x, &e.err)
+// 		}
+// 	}
 // }
+
+//go:noinline -- as it is run by finalizer
+func (e *Encoder) finalize() {
+	xdebugf("finalizing Encoder")
+	e.Close()
+}
+
+// Close releases shared (pooled) resources.
+//
+// It is important to call Close() when done with an Encoder, so those resources
+// are released instantly for use by subsequently created Encoders.
+func (e *Encoder) Close() {
+	if useFinalizers && removeFinalizerOnClose {
+		runtime.SetFinalizer(e, nil)
+	}
+	if e.wf != nil {
+		e.wf.buf = nil
+		e.wf.bytesBufPooler.end()
+	}
+	e.codecFnPooler.end()
+}
 
 func (e *Encoder) encode(iv interface{}) {
 	if iv == nil || definitelyNil(iv) {

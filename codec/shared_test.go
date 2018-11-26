@@ -235,6 +235,9 @@ func sTestCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer
 		bs = buf.Bytes()
 		bh.WriterBufferSize = oldWriteBufferSize
 	}
+	if !testUseReset {
+		e.Close()
+	}
 	return
 }
 
@@ -266,6 +269,9 @@ func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err
 	}
 	if testUseIoEncDec >= 0 {
 		bh.ReaderBufferSize = oldReadBufferSize
+	}
+	if !testUseReset {
+		d.Close()
 	}
 	return
 }

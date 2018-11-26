@@ -206,6 +206,7 @@ _main() {
         esac
     done
     shift $((OPTIND-1))
+    # echo ">>>> _main: extra args: $@"
     case "x$x" in
         'xt') _tests "$@" ;;
         'xm') _make "$@" ;;

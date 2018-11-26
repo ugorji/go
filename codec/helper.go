@@ -135,13 +135,25 @@ const (
 	wordSizeBits = 32 << (^uint(0) >> 63) // strconv.IntSize
 	wordSize     = wordSizeBits / 8
 
-	maxLevelsEmbedding = 14 // use this, so structFieldInfo fits into 8 bytes
+	// so structFieldInfo fits into 8 bytes
+	maxLevelsEmbedding = 14
+
+	// finalizers are used? to Close Encoder/Decoder when they are GC'ed
+	// so that their pooled resources are returned.
+	//
+	// Note that calling SetFinalizer is always expensive,
+	// as code must be run on the systemstack even for SetFinalizer(t, nil).
+	//
+	// We document that folks SHOULD call Close() when done, or can explicitly
+	// call SetFinalizer themselves e.g.
+	//    runtime.SetFinalizer(e, (*Encoder).Close)
+	//    runtime.SetFinalizer(d, (*Decoder).Close)
+	useFinalizers          = false
+	removeFinalizerOnClose = false
 )
 
-var (
-	oneByteArr    = [1]byte{0}
-	zeroByteSlice = oneByteArr[:0:0]
-)
+var oneByteArr [1]byte
+var zeroByteSlice = oneByteArr[:0:0]
 
 var codecgen bool
 
@@ -1986,7 +1998,7 @@ func (d *codecFnPooler) cfer() *codecFner {
 	return d.cf
 }
 
-func (d *codecFnPooler) alwaysAtEnd() {
+func (d *codecFnPooler) end() {
 	if d.cf != nil {
 		d.cfp.Put(d.cf)
 		d.cf, d.cfp = nil, nil
@@ -2339,29 +2351,34 @@ func (x *bitset256) set(pos byte) {
 // ------------
 
 type pooler struct {
-	dn                                          sync.Pool // for decNaked
-	cfn                                         sync.Pool // for codecFner
+	// function-scoped pooled resources
 	tiload                                      sync.Pool // for type info loading
 	strRv8, strRv16, strRv32, strRv64, strRv128 sync.Pool // for stringRV
-	// buf64, buf128, buf256, buf512, buf1024      sync.Pool // for [...]byte
+
+	// lifetime-scoped pooled resources
+	dn                                 sync.Pool // for decNaked
+	cfn                                sync.Pool // for codecFner
+	buf1k, buf2k, buf4k, buf8k, buf16k sync.Pool // for [N]byte
 }
 
 func (p *pooler) init() {
+	// function-scoped pooled resources
+	p.tiload.New = func() interface{} { return new(typeInfoLoadArray) }
+
 	p.strRv8.New = func() interface{} { return new([8]sfiRv) }
 	p.strRv16.New = func() interface{} { return new([16]sfiRv) }
 	p.strRv32.New = func() interface{} { return new([32]sfiRv) }
 	p.strRv64.New = func() interface{} { return new([64]sfiRv) }
 	p.strRv128.New = func() interface{} { return new([128]sfiRv) }
 
-	// p.buf64.New = func() interface{} { return new([64]byte) }
-	// p.buf128.New = func() interface{} { return new([128]byte) }
-	// p.buf256.New = func() interface{} { return new([256]byte) }
-	// p.buf512.New = func() interface{} { return new([512]byte) }
-	// p.buf1024.New = func() interface{} { return new([1024]byte) }
+	// lifetime-scoped pooled resources
+	p.buf1k.New = func() interface{} { return new([1 * 1024]byte) }
+	p.buf2k.New = func() interface{} { return new([2 * 1024]byte) }
+	p.buf4k.New = func() interface{} { return new([4 * 1024]byte) }
+	p.buf8k.New = func() interface{} { return new([8 * 1024]byte) }
+	p.buf16k.New = func() interface{} { return new([16 * 1024]byte) }
 
 	p.dn.New = func() interface{} { x := new(decNaked); x.init(); return x }
-
-	p.tiload.New = func() interface{} { return new(typeInfoLoadArray) }
 
 	p.cfn.New = func() interface{} { return new(codecFner) }
 }
@@ -2382,21 +2399,21 @@ func (p *pooler) sfiRv128() (sp *sync.Pool, v interface{}) {
 	return &p.strRv128, p.strRv128.Get()
 }
 
-// func (p *pooler) bytes64() (sp *sync.Pool, v interface{}) {
-// 	return &p.buf64, p.buf64.Get()
-// }
-// func (p *pooler) bytes128() (sp *sync.Pool, v interface{}) {
-// 	return &p.buf128, p.buf128.Get()
-// }
-// func (p *pooler) bytes256() (sp *sync.Pool, v interface{}) {
-// 	return &p.buf256, p.buf256.Get()
-// }
-// func (p *pooler) bytes512() (sp *sync.Pool, v interface{}) {
-// 	return &p.buf512, p.buf512.Get()
-// }
-// func (p *pooler) bytes1024() (sp *sync.Pool, v interface{}) {
-// 	return &p.buf1024, p.buf1024.Get()
-// }
+func (p *pooler) bytes1k() (sp *sync.Pool, v interface{}) {
+	return &p.buf1k, p.buf1k.Get()
+}
+func (p *pooler) bytes2k() (sp *sync.Pool, v interface{}) {
+	return &p.buf2k, p.buf2k.Get()
+}
+func (p *pooler) bytes4k() (sp *sync.Pool, v interface{}) {
+	return &p.buf4k, p.buf4k.Get()
+}
+func (p *pooler) bytes8k() (sp *sync.Pool, v interface{}) {
+	return &p.buf8k, p.buf8k.Get()
+}
+func (p *pooler) bytes16k() (sp *sync.Pool, v interface{}) {
+	return &p.buf16k, p.buf16k.Get()
+}
 
 func (p *pooler) decNaked() (sp *sync.Pool, v interface{}) {
 	return &p.dn, p.dn.Get()
@@ -2494,6 +2511,40 @@ func (must) Float(s float64, err error) float64 {
 		panicv.errorv(err)
 	}
 	return s
+}
+
+// -------------------
+
+type bytesBufPooler struct {
+	pool    *sync.Pool
+	poolbuf interface{}
+}
+
+func (z *bytesBufPooler) end() {
+	if z.pool != nil {
+		z.pool.Put(z.poolbuf)
+		z.pool, z.poolbuf = nil, nil
+	}
+}
+
+func (z *bytesBufPooler) get(bufsize int) (buf []byte) {
+	if bufsize <= 1*1024 {
+		z.pool, z.poolbuf = pool.bytes1k()
+		buf = z.poolbuf.(*[1 * 1024]byte)[:]
+	} else if bufsize <= 2*1024 {
+		z.pool, z.poolbuf = pool.bytes2k()
+		buf = z.poolbuf.(*[2 * 1024]byte)[:]
+	} else if bufsize <= 4*1024 {
+		z.pool, z.poolbuf = pool.bytes4k()
+		buf = z.poolbuf.(*[4 * 1024]byte)[:]
+	} else if bufsize <= 8*1024 {
+		z.pool, z.poolbuf = pool.bytes8k()
+		buf = z.poolbuf.(*[8 * 1024]byte)[:]
+	} else {
+		z.pool, z.poolbuf = pool.bytes16k()
+		buf = z.poolbuf.(*[16 * 1024]byte)[:]
+	}
+	return
 }
 
 // xdebugf prints the message in red on the terminal.
