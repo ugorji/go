@@ -697,18 +697,18 @@ func (z *bufioDecReader) skip(accept *bitset256) (token byte) {
 	i := z.c
 LOOP:
 	if i < uint(len(z.buf)) {
-		if token = z.buf[i]; !accept.isset(token) {
-			// z.skipLoopFn(i) // inline below so cost is within inline budget
-			z.n += (i - z.c) - 1
-			i++
-			if z.trb {
-				z.doTrack(i)
-			}
-			z.c = i
-			return
-		}
+		// inline z.skipLoopFn(i) and refactor, so cost is within inline budget
+		token = z.buf[i]
 		i++
-		goto LOOP
+		if accept.isset(token) {
+			goto LOOP
+		}
+		z.n += i - 2 - z.c
+		if z.trb {
+			z.doTrack(i)
+		}
+		z.c = i
+		return
 	}
 	return z.skipFill(accept)
 }
@@ -952,19 +952,38 @@ func (z *bytesDecReader) readx(n uint) (bs []byte) {
 	// }
 	// return
 
-	if n == 0 {
-		return
+	if n != 0 {
+		z.c += n
+		if z.c > uint(len(z.b)) {
+			z.c = uint(len(z.b))
+			panic(io.EOF)
+		}
+		bs = z.b[z.c-n : z.c]
 	}
-	if z.c == uint(len(z.b)) {
-		panic(io.EOF)
-	}
-	if z.c+n > uint(len(z.b)) {
-		panic(io.ErrUnexpectedEOF)
-	}
+	return
 
-	// z.a -= n
-	z.c += n
-	return z.b[z.c-n : z.c]
+	// if n == 0 {
+	// } else if z.c+n > uint(len(z.b)) {
+	// 	z.c = uint(len(z.b))
+	// 	panic(io.EOF)
+	// } else {
+	// 	z.c += n
+	// 	bs = z.b[z.c-n : z.c]
+	// }
+	// return
+
+	// if n == 0 {
+	// 	return
+	// }
+	// if z.c == uint(len(z.b)) {
+	// 	panic(io.EOF)
+	// }
+	// if z.c+n > uint(len(z.b)) {
+	// 	panic(io.ErrUnexpectedEOF)
+	// }
+	// // z.a -= n
+	// z.c += n
+	// return z.b[z.c-n : z.c]
 }
 
 func (z *bytesDecReader) readb(bs []byte) {
