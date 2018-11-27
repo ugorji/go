@@ -144,8 +144,8 @@ const (
 	// Note that calling SetFinalizer is always expensive,
 	// as code must be run on the systemstack even for SetFinalizer(t, nil).
 	//
-	// We document that folks SHOULD call Close() when done, or can explicitly
-	// call SetFinalizer themselves e.g.
+	// We document that folks SHOULD call Close() when done, or they can
+	// explicitly call SetFinalizer themselves e.g.
 	//    runtime.SetFinalizer(e, (*Encoder).Close)
 	//    runtime.SetFinalizer(d, (*Decoder).Close)
 	useFinalizers          = false
@@ -535,6 +535,23 @@ type BasicHandle struct {
 	// Note: Setting TimeNotBuiltin=true can be used to enable the legacy behavior
 	// (for Cbor and Msgpack), where time.Time was not a builtin supported type.
 	TimeNotBuiltin bool
+
+	// DoNotClose configures whether Close() is implicitly called after an encode or
+	// decode call.
+	//
+	// If you will hold onto an Encoder or Decoder for re-use, by calling Reset(...)
+	// on it, then you do not want it to be implicitly closed after each Encode/Decode call.
+	// Doing so will unnecessarily return resources to the shared pool, only for you to
+	// grab them right after again to do another Encode/Decode call.
+	//
+	// Instead, you configure DoNotClose=true, and you explicitly call Close() when
+	// you are truly done.
+	//
+	// As an alternative, you can explicitly set a finalizer - so its resources
+	// are returned to the shared pool before it is garbage-collected. Do it as below:
+	//    runtime.SetFinalizer(e, (*Encoder).Close)
+	//    runtime.SetFinalizer(d, (*Decoder).Close)
+	DoNotClose bool
 
 	// ---- cache line
 

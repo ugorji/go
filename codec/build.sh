@@ -178,7 +178,7 @@ _clean() {
 _usage() {
     cat <<EOF
 primary usage: $0 
-    -[tmpfxnle]           -> [tests, make, prebuild (force) (external), inlining diagnostics, mid-stack inlining, race detector]
+    -[tmpfxnld]           -> [tests, make, prebuild (force) (external), inlining diagnostics, mid-stack inlining, race detector]
     -v                    -> verbose
 EOF
     if [[ "$(type -t _usage_run)" = "function" ]]; then _usage_run ; fi
@@ -191,7 +191,7 @@ _main() {
     zargs=()
     zbenchflags=""
     OPTIND=1
-    while getopts ":ctmnrgupfvxlzeb:" flag
+    while getopts ":ctmnrgupfvxlzdb:" flag
     do
         case "x$flag" in
             'xf') zforce=1 ;;
@@ -199,7 +199,7 @@ _main() {
             'xv') zverbose=1 ;;
             'xl') zargs+=("-gcflags"); zargs+=("-l=4") ;;
             'xn') zargs+=("-gcflags"); zargs+=("-m=2") ;;
-            'xe') zargs+=("-race") ;;
+            'xd') zargs+=("-race") ;;
             'xb') x='b'; zbenchflags=${OPTARG} ;;
             x\?) _usage; return 1 ;;
             *) x=$flag ;;

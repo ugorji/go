@@ -1261,7 +1261,12 @@ type Encoder struct {
 	ci set
 	codecFnPooler
 
-	b [3 * 8]byte // for encoding chan or (non-addressable) [N]byte
+	// Extensions can call Encode() within a current Encode() call.
+	// We need to know when the top level Encode() call returns,
+	// so we can decide whether to Close() or not.
+	calls uint16 // what depth in mustEncode are we in now.
+
+	b [(3 * 8) - 2]byte // for encoding chan or (non-addressable) [N]byte
 
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 
@@ -1317,6 +1322,7 @@ func (e *Encoder) resetCommon() {
 	_, e.js = e.hh.(*JsonHandle)
 	e.e.reset()
 	e.err = nil
+	e.calls = 0
 }
 
 // Reset resets the Encoder with a new output stream.
@@ -1494,9 +1500,14 @@ func (e *Encoder) MustEncode(v interface{}) {
 }
 
 func (e *Encoder) mustEncode(v interface{}) {
+	e.calls++
 	e.encode(v)
 	e.e.atEndOfEncode()
 	e.w.end()
+	e.calls--
+	if !e.h.DoNotClose && e.calls == 0 {
+		e.Close()
+	}
 }
 
 // func (e *Encoder) deferred(err1 *error) {

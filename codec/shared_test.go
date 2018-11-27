@@ -139,8 +139,14 @@ func init() {
 	testHEDs = make([]testHED, 0, 32)
 	testHandles = append(testHandles,
 		// testNoopH,
-		testMsgpackH, testBincH, testSimpleH,
-		testCborH, testJsonH)
+		testMsgpackH, testBincH, testSimpleH, testCborH, testJsonH)
+	// set DoNotClose on each handle
+	testMsgpackH.DoNotClose = true
+	testBincH.DoNotClose = true
+	testSimpleH.DoNotClose = true
+	testCborH.DoNotClose = true
+	testJsonH.DoNotClose = true
+
 	testInitFlags()
 	benchInitFlags()
 }

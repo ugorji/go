@@ -2363,7 +2363,13 @@ type Decoder struct {
 
 	depth    int16
 	maxdepth int16
-	_        [4]uint8 // padding
+
+	// Extensions can call Decode() within a current Decode() call.
+	// We need to know when the top level Decode() call returns,
+	// so we can decide whether to Close() or not.
+	calls uint16 // what depth in mustDecode are we in now.
+
+	_ [2]uint8 // padding
 
 	is map[string]string // used for interning strings
 
@@ -2424,6 +2430,7 @@ func (d *Decoder) resetCommon() {
 	d.n.reset()
 	d.d.reset()
 	d.err = nil
+	d.calls = 0
 	d.depth = 0
 	d.maxdepth = d.h.MaxDepth
 	if d.maxdepth <= 0 {
@@ -2583,12 +2590,17 @@ func (d *Decoder) MustDecode(v interface{}) {
 // This provides insight to the code location that triggered the error.
 func (d *Decoder) mustDecode(v interface{}) {
 	// TODO: Top-level: ensure that v is a pointer and not nil.
+	d.calls++
 	if d.d.TryDecodeAsNil() {
 		setZero(v)
 	} else {
 		d.decode(v)
 	}
 	// xprintf(">>>>>>>> >>>>>>>> num decFns: %v\n", d.cf.sn)
+	d.calls--
+	if !d.h.DoNotClose && d.calls == 0 {
+		d.Close()
+	}
 }
 
 // func (d *Decoder) deferred(err1 *error) {
