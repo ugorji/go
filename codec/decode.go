@@ -24,8 +24,8 @@ const (
 const (
 	decDefMaxDepth         = 1024 // maximum depth
 	decDefSliceCap         = 8
-	decDefChanCap          = 64            // should be large, as cap cannot be expanded
-	decScratchByteArrayLen = cacheLineSize // - (8 * 1)
+	decDefChanCap          = 64                      // should be large, as cap cannot be expanded
+	decScratchByteArrayLen = cacheLineSize + (8 * 2) // - (8 * 1)
 )
 
 var (
@@ -528,6 +528,7 @@ LOOP:
 	goto LOOP
 }
 
+//go:noinline
 func (z *ioDecReader) unreadn1() {
 	err := z.br.UnreadByte()
 	if err != nil {
@@ -1654,7 +1655,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	var rtelem0ZeroValid bool
 	var decodeAsNil bool
 	var j int
-	d.cfer()
+
 	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 && (f.seq == seqTypeSlice || f.seq == seqTypeChan) && rv.IsNil() {
 			if hasLen {
@@ -1687,7 +1688,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				rv9 = reflect.New(rtelem0).Elem()
 			}
 			if fn == nil {
-				fn = d.cf.get(rtelem, true, true)
+				fn = d.h.fn(rtelem, true, true)
 			}
 			d.decodeValue(rv9, fn, true)
 			rv.Send(rv9)
@@ -1732,7 +1733,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				}
 
 				if fn == nil {
-					fn = d.cf.get(rtelem, true, true)
+					fn = d.h.fn(rtelem, true, true)
 				}
 				d.decodeValue(rv9, fn, true)
 			}
@@ -1822,7 +1823,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	ktypeIsIntf := ktypeId == intfTypId
 	hasLen := containerLen > 0
 	var kstrbs []byte
-	d.cfer()
+
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
 		if rvkMut || !rvkp.IsValid() {
 			rvkp = reflect.New(ktype)
@@ -1844,7 +1845,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			// NOTE: if doing an insert, you MUST use a real string (not stringview)
 		} else {
 			if keyFn == nil {
-				keyFn = d.cf.get(ktypeLo, true, true)
+				keyFn = d.h.fn(ktypeLo, true, true)
 			}
 			d.decodeValue(rvk, keyFn, true)
 		}
@@ -1914,7 +1915,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			rvk.SetString(d.string(kstrbs))
 		}
 		if valFn == nil {
-			valFn = d.cf.get(vtypeLo, true, true)
+			valFn = d.h.fn(vtypeLo, true, true)
 		}
 		d.decodeValue(rvv, valFn, true)
 		// d.decodeValueFn(rvv, valFn)
@@ -2227,34 +2228,44 @@ func (z *decReaderSwitch) stopTrack() []byte {
 	}
 }
 
+// func (z *decReaderSwitch) unreadn1() {
+// 	if z.bytes {
+// 		z.rb.unreadn1()
+// 	} else {
+// 		z.unreadn1IO()
+// 	}
+// }
+// func (z *decReaderSwitch) unreadn1IO() {
+// 	if z.bufio {
+// 		z.bi.unreadn1()
+// 	} else {
+// 		z.ri.unreadn1()
+// 	}
+// }
+
 func (z *decReaderSwitch) unreadn1() {
 	if z.bytes {
 		z.rb.unreadn1()
+	} else if z.bufio {
+		z.bi.unreadn1()
 	} else {
-		z.unreadn1IO()
+		z.ri.unreadn1() // not inlined
 	}
 }
 
-func (z *decReaderSwitch) unreadn1IO() {
-	if z.bufio {
-		z.bi.unreadn1()
-	} else {
-		z.ri.unreadn1()
-	}
-}
 func (z *decReaderSwitch) readx(n uint) []byte {
 	if z.bytes {
 		return z.rb.readx(n)
 	}
 	return z.readxIO(n)
 }
-
 func (z *decReaderSwitch) readxIO(n uint) []byte {
 	if z.bufio {
 		return z.bi.readx(n)
 	}
 	return z.ri.readx(n)
 }
+
 func (z *decReaderSwitch) readb(s []byte) {
 	if z.bytes {
 		z.rb.readb(s)
@@ -2271,32 +2282,33 @@ func (z *decReaderSwitch) readbIO(s []byte) {
 		z.ri.readb(s)
 	}
 }
+
 func (z *decReaderSwitch) readn1() uint8 {
 	if z.bytes {
 		return z.rb.readn1()
 	}
 	return z.readn1IO()
 }
-
 func (z *decReaderSwitch) readn1IO() uint8 {
 	if z.bufio {
 		return z.bi.readn1()
 	}
 	return z.ri.readn1()
 }
+
 func (z *decReaderSwitch) skip(accept *bitset256) (token byte) {
 	if z.bytes {
 		return z.rb.skip(accept)
 	}
 	return z.skipIO(accept)
 }
-
 func (z *decReaderSwitch) skipIO(accept *bitset256) (token byte) {
 	if z.bufio {
 		return z.bi.skip(accept)
 	}
 	return z.ri.skip(accept)
 }
+
 func (z *decReaderSwitch) readTo(in []byte, accept *bitset256) (out []byte) {
 	if z.bytes {
 		return z.rb.readToNoInput(accept) // z.rb.readTo(in, accept)
@@ -2351,13 +2363,12 @@ type Decoder struct {
 
 	decNakedPooler
 
-	h *BasicHandle
-
+	h  *BasicHandle
+	hh Handle
 	// ---- cpu cache line boundary?
 	decReaderSwitch
 
 	// ---- cpu cache line boundary?
-	codecFnPooler
 	// cr containerStateRecv
 	err error
 
@@ -2401,7 +2412,7 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 // var defaultDecNaked decNaked
 
 func newDecoder(h Handle) *Decoder {
-	d := &Decoder{h: h.getBasicHandle(), err: errDecoderNotInitialized}
+	d := &Decoder{h: basicHandle(h), err: errDecoderNotInitialized}
 	d.bytes = true
 	if useFinalizers {
 		runtime.SetFinalizer(d, (*Decoder).finalize)
@@ -2631,7 +2642,6 @@ func (d *Decoder) Close() {
 		d.bi.bytesBufPooler.end()
 	}
 	d.decNakedPooler.end()
-	d.codecFnPooler.end()
 }
 
 // // this is not a smart swallow, as it allocates objects and does unnecessary work.
@@ -2855,7 +2865,7 @@ func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn, chkAll bool) {
 
 	if fn == nil {
 		// always pass checkCodecSelfer=true, in case T or ****T is passed, where *T is a Selfer
-		fn = d.cfer().get(rv.Type(), chkAll, true) // chkAll, chkAll)
+		fn = d.h.fn(rv.Type(), chkAll, true) // chkAll, chkAll)
 	}
 	if fn.i.addrD {
 		if rvpValid {

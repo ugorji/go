@@ -98,12 +98,11 @@ type atomicClsErr struct {
 	v atomic.Value
 }
 
-func (x *atomicClsErr) load() clsErr {
-	i := x.v.Load()
-	if i == nil {
-		return clsErr{}
+func (x *atomicClsErr) load() (e clsErr) {
+	if i := x.v.Load(); i != nil {
+		e = i.(clsErr)
 	}
-	return i.(clsErr)
+	return
 }
 
 func (x *atomicClsErr) store(p clsErr) {
@@ -115,15 +114,30 @@ type atomicTypeInfoSlice struct { // expected to be 2 words
 	v atomic.Value
 }
 
-func (x *atomicTypeInfoSlice) load() []rtid2ti {
-	i := x.v.Load()
-	if i == nil {
-		return nil
+func (x *atomicTypeInfoSlice) load() (e []rtid2ti) {
+	if i := x.v.Load(); i != nil {
+		e = i.([]rtid2ti)
 	}
-	return i.([]rtid2ti)
+	return
 }
 
 func (x *atomicTypeInfoSlice) store(p []rtid2ti) {
+	x.v.Store(p)
+}
+
+// --------------------------
+type atomicRtidFnSlice struct { // expected to be 2 words
+	v atomic.Value
+}
+
+func (x *atomicRtidFnSlice) load() (e []codecRtidFn) {
+	if i := x.v.Load(); i != nil {
+		e = i.([]codecRtidFn)
+	}
+	return
+}
+
+func (x *atomicRtidFnSlice) store(p []codecRtidFn) {
 	x.v.Store(p)
 }
 

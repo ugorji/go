@@ -584,7 +584,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		// encoding type, because preEncodeValue may break it down to
 		// a concrete type and kInterface will bomb.
 		if rtelem.Kind() != reflect.Interface {
-			fn = e.cfer().get(rtelem, true, true)
+			fn = e.h.fn(rtelem, true, true)
 		}
 		for j := 0; j < l; j++ {
 			if elemsep {
@@ -881,7 +881,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		rtval = rtval.Elem()
 	}
 	if rtval.Kind() != reflect.Interface {
-		valFn = e.cfer().get(rtval, true, true)
+		valFn = e.h.fn(rtval, true, true)
 	}
 	mks := rv.MapKeys()
 
@@ -898,7 +898,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 		if rtkey.Kind() != reflect.Interface {
 			// rtkeyid = rt2id(rtkey)
-			keyFn = e.cfer().get(rtkey, true, true)
+			keyFn = e.h.fn(rtkey, true, true)
 		}
 	}
 
@@ -1095,8 +1095,8 @@ type encWriterSwitch struct {
 	bytes bool    // encoding to []byte
 	esep  bool    // whether it has elem separators
 	isas  bool    // whether e.as != nil
-	js    bool    // captured here, so that no need to piggy back on *codecFner for this
-	be    bool    // captured here, so that no need to piggy back on *codecFner for this
+	js    bool    // is json encoder?
+	be    bool    // is binary encoder?
 	_     [2]byte // padding
 	// _    [2]uint64 // padding
 	// _    uint64    // padding
@@ -1253,20 +1253,19 @@ type Encoder struct {
 
 	err error
 
-	h *BasicHandle
-
+	h  *BasicHandle
+	hh Handle
 	// ---- cpu cache line boundary? + 3
 	encWriterSwitch
 
 	ci set
-	codecFnPooler
 
 	// Extensions can call Encode() within a current Encode() call.
 	// We need to know when the top level Encode() call returns,
 	// so we can decide whether to Close() or not.
 	calls uint16 // what depth in mustEncode are we in now.
 
-	b [(3 * 8) - 2]byte // for encoding chan or (non-addressable) [N]byte
+	b [(5 * 8) - 2]byte // for encoding chan or (non-addressable) [N]byte
 
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 
@@ -1298,7 +1297,7 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 }
 
 func newEncoder(h Handle) *Encoder {
-	e := &Encoder{h: h.getBasicHandle(), err: errEncoderNotInitialized}
+	e := &Encoder{h: basicHandle(h), err: errEncoderNotInitialized}
 	e.bytes = true
 	if useFinalizers {
 		runtime.SetFinalizer(e, (*Encoder).finalize)
@@ -1369,10 +1368,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 	if out == nil {
 		return
 	}
-	var in []byte
-	if out != nil {
-		in = *out
-	}
+	var in []byte = *out
 	if in == nil {
 		in = make([]byte, defEncByteBufSize)
 	}
@@ -1538,7 +1534,6 @@ func (e *Encoder) Close() {
 		e.wf.buf = nil
 		e.wf.bytesBufPooler.end()
 	}
-	e.codecFnPooler.end()
 }
 
 func (e *Encoder) encode(iv interface{}) {
@@ -1687,7 +1682,7 @@ TOP:
 	if fn == nil {
 		rt := rv.Type()
 		// always pass checkCodecSelfer=true, in case T or ****T is passed, where *T is a Selfer
-		fn = e.cfer().get(rt, checkFastpath, true)
+		fn = e.h.fn(rt, checkFastpath, true)
 	}
 	if fn.i.addrE {
 		if rvpValid {

@@ -140,6 +140,9 @@ func init() {
 	testHandles = append(testHandles,
 		// testNoopH,
 		testMsgpackH, testBincH, testSimpleH, testCborH, testJsonH)
+	for _, h := range testHandles {
+		_ = basicHandle(h) // ensure all basic handles are initialized
+	}
 	// set DoNotClose on each handle
 	testMsgpackH.DoNotClose = true
 	testBincH.DoNotClose = true

@@ -176,46 +176,65 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) b
 
 // --------------------------
 
-// atomicTypeInfoSlice contains length and pointer to the array for a slice.
-// It is expected to be 2 words.
+// atomicXXX is expected to be 2 words (for symmetry with atomic.Value)
 //
-// Previously, we atomically loaded and stored the length and array pointer separately,
-// which could lead to some races.
-// We now just atomically store and load the pointer to the value directly.
+// Note that we do not atomically load/store length and data pointer separately,
+// as this could lead to some races. Instead, we atomically load/store cappedSlice.
+//
+// Note: with atomic.(Load|Store)Pointer, we MUST work with an unsafe.Pointer directly.
 
-type atomicTypeInfoSlice struct { // expected to be 2 words
-	l int            // length of data array (must be first in struct, for 64-bit alignment in i386)
-	v unsafe.Pointer // data array - Pointer (not uintptr) to maintain GC reference
+// ----------------------
+type atomicTypeInfoSlice struct {
+	v unsafe.Pointer // *[]rtid2ti
+	_ uintptr        // padding (atomicXXX expected to be 2 words)
 }
 
-func (x *atomicTypeInfoSlice) load() []rtid2ti {
-	xp := unsafe.Pointer(x)
-	x2 := *(*atomicTypeInfoSlice)(atomic.LoadPointer(&xp))
-	if x2.l == 0 {
-		return nil
+func (x *atomicTypeInfoSlice) load() (s []rtid2ti) {
+	x2 := atomic.LoadPointer(&x.v)
+	if x2 != nil {
+		s = *(*[]rtid2ti)(x2)
 	}
-	return *(*[]rtid2ti)(unsafe.Pointer(&unsafeSlice{Data: x2.v, Len: x2.l, Cap: x2.l}))
+	return
 }
 
 func (x *atomicTypeInfoSlice) store(p []rtid2ti) {
-	s := (*unsafeSlice)(unsafe.Pointer(&p))
-	xp := unsafe.Pointer(x)
-	atomic.StorePointer(&xp, unsafe.Pointer(&atomicTypeInfoSlice{l: s.Len, v: s.Data}))
+	atomic.StorePointer(&x.v, unsafe.Pointer(&p))
+}
+
+// --------------------------
+type atomicRtidFnSlice struct {
+	v unsafe.Pointer // *[]codecRtidFn
+	_ uintptr        // padding (atomicXXX expected to be 2 words)
+}
+
+func (x *atomicRtidFnSlice) load() (s []codecRtidFn) {
+	x2 := atomic.LoadPointer(&x.v)
+	if x2 != nil {
+		s = *(*[]codecRtidFn)(x2)
+	}
+	return
+}
+
+func (x *atomicRtidFnSlice) store(p []codecRtidFn) {
+	atomic.StorePointer(&x.v, unsafe.Pointer(&p))
 }
 
 // --------------------------
 type atomicClsErr struct {
-	v clsErr
+	v unsafe.Pointer // *clsErr
+	_ uintptr        // padding (atomicXXX expected to be 2 words)
 }
 
-func (x *atomicClsErr) load() clsErr {
-	xp := unsafe.Pointer(&x.v)
-	return *(*clsErr)(atomic.LoadPointer(&xp))
+func (x *atomicClsErr) load() (e clsErr) {
+	x2 := (*clsErr)(atomic.LoadPointer(&x.v))
+	if x2 != nil {
+		e = *x2
+	}
+	return
 }
 
 func (x *atomicClsErr) store(p clsErr) {
-	xp := unsafe.Pointer(&x.v)
-	atomic.StorePointer(&xp, unsafe.Pointer(&p))
+	atomic.StorePointer(&x.v, unsafe.Pointer(&p))
 }
 
 // --------------------------
