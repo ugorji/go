@@ -532,9 +532,8 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	// if chan, consume chan into a slice, and work off that slice.
-	var rvcs reflect.Value
 	if f.seq == seqTypeChan {
-		rvcs = reflect.Zero(reflect.SliceOf(rtelem))
+		rvcs := reflect.Zero(reflect.SliceOf(rtelem))
 		timeout := e.h.ChanRecvTimeout
 		if timeout < 0 { // consume until close
 			for {
@@ -611,18 +610,18 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	fti := f.ti
-	elemsep := e.esep
 	tisfi := fti.sfiSrc
 	toMap := !(fti.toArray || e.h.StructToArray)
 	if toMap {
 		tisfi = fti.sfiSort
 	}
+
 	ee := e.e
 
 	sfn := structFieldNode{v: rv, update: false}
 	if toMap {
 		ee.WriteMapStart(len(tisfi))
-		if elemsep {
+		if e.esep {
 			for _, si := range tisfi {
 				ee.WriteMapElemKey()
 				// ee.EncodeStringEnc(cUTF8, si.encName)
@@ -640,7 +639,7 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 		ee.WriteMapEnd()
 	} else {
 		ee.WriteArrayStart(len(tisfi))
-		if elemsep {
+		if e.esep {
 			for _, si := range tisfi {
 				ee.WriteArrayElem()
 				e.encodeValue(sfn.field(si), nil, true)
@@ -857,7 +856,6 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	l := rv.Len()
 	ee.WriteMapStart(l)
-	elemsep := e.esep
 	if l == 0 {
 		ee.WriteMapEnd()
 		return
@@ -904,7 +902,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	// for j, lmks := 0, len(mks); j < lmks; j++ {
 	for j := range mks {
-		if elemsep {
+		if e.esep {
 			ee.WriteMapElemKey()
 		}
 		if keyTypeIsString {
@@ -912,7 +910,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		} else {
 			e.encodeValue(mks[j], keyFn, true)
 		}
-		if elemsep {
+		if e.esep {
 			ee.WriteMapElemValue()
 		}
 		e.encodeValue(rv.MapIndex(mks[j]), valFn, true)
