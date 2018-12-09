@@ -2398,7 +2398,7 @@ type Decoder struct {
 
 	// Extensions can call Decode() within a current Decode() call.
 	// We need to know when the top level Decode() call returns,
-	// so we can decide whether to Close() or not.
+	// so we can decide whether to Release() or not.
 	calls uint16 // what depth in mustDecode are we in now.
 
 	_ [2]uint8 // padding
@@ -2630,8 +2630,8 @@ func (d *Decoder) mustDecode(v interface{}) {
 	}
 	// xprintf(">>>>>>>> >>>>>>>> num decFns: %v\n", d.cf.sn)
 	d.calls--
-	if !d.h.DoNotClose && d.calls == 0 {
-		d.Close()
+	if !d.h.ExplicitRelease && d.calls == 0 {
+		d.Release()
 	}
 }
 
@@ -2647,17 +2647,17 @@ func (d *Decoder) mustDecode(v interface{}) {
 //go:noinline -- as it is run by finalizer
 func (d *Decoder) finalize() {
 	// xdebugf("finalizing Decoder")
-	d.Close()
+	d.Release()
 }
 
-// Close releases shared (pooled) resources.
+// Release releases shared (pooled) resources.
 //
-// It is important to call Close() when done with a Decoder, so those resources
+// It is important to call Release() when done with a Decoder, so those resources
 // are released instantly for use by subsequently created Decoders.
 //
-// By default, Close() is automatically called unless the option DoNotClose is set.
-func (d *Decoder) Close() {
-	if useFinalizers && removeFinalizerOnClose {
+// By default, Release() is automatically called unless the option ExplicitRelease is set.
+func (d *Decoder) Release() {
+	if useFinalizers && removeFinalizerOnRelease {
 		runtime.SetFinalizer(d, nil)
 	}
 	if d.bi != nil && d.bi.bytesBufPooler.pool != nil {

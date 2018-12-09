@@ -1260,7 +1260,7 @@ type Encoder struct {
 
 	// Extensions can call Encode() within a current Encode() call.
 	// We need to know when the top level Encode() call returns,
-	// so we can decide whether to Close() or not.
+	// so we can decide whether to Release() or not.
 	calls uint16 // what depth in mustEncode are we in now.
 
 	b [(5 * 8) - 2]byte // for encoding chan or (non-addressable) [N]byte
@@ -1499,8 +1499,8 @@ func (e *Encoder) mustEncode(v interface{}) {
 	e.e.atEndOfEncode()
 	e.w.end()
 	e.calls--
-	if !e.h.DoNotClose && e.calls == 0 {
-		e.Close()
+	if !e.h.ExplicitRelease && e.calls == 0 {
+		e.Release()
 	}
 }
 
@@ -1516,16 +1516,16 @@ func (e *Encoder) mustEncode(v interface{}) {
 
 //go:noinline -- as it is run by finalizer
 func (e *Encoder) finalize() {
-	xdebugf("finalizing Encoder")
-	e.Close()
+	// xdebugf("finalizing Encoder")
+	e.Release()
 }
 
-// Close releases shared (pooled) resources.
+// Release releases shared (pooled) resources.
 //
-// It is important to call Close() when done with an Encoder, so those resources
+// It is important to call Release() when done with an Encoder, so those resources
 // are released instantly for use by subsequently created Encoders.
-func (e *Encoder) Close() {
-	if useFinalizers && removeFinalizerOnClose {
+func (e *Encoder) Release() {
+	if useFinalizers && removeFinalizerOnRelease {
 		runtime.SetFinalizer(e, nil)
 	}
 	if e.wf != nil {

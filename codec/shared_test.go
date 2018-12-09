@@ -140,12 +140,12 @@ func init() {
 	testHandles = append(testHandles,
 		// testNoopH,
 		testMsgpackH, testBincH, testSimpleH, testCborH, testJsonH)
-	// set DoNotClose on each handle
-	testMsgpackH.DoNotClose = true
-	testBincH.DoNotClose = true
-	testSimpleH.DoNotClose = true
-	testCborH.DoNotClose = true
-	testJsonH.DoNotClose = true
+	// set ExplicitRelease on each handle
+	testMsgpackH.ExplicitRelease = true
+	testBincH.ExplicitRelease = true
+	testSimpleH.ExplicitRelease = true
+	testCborH.ExplicitRelease = true
+	testJsonH.ExplicitRelease = true
 
 	testInitFlags()
 	benchInitFlags()
@@ -242,7 +242,7 @@ func sTestCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer
 		bh.WriterBufferSize = oldWriteBufferSize
 	}
 	if !testUseReset {
-		e.Close()
+		e.Release()
 	}
 	return
 }
@@ -277,7 +277,7 @@ func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err
 		bh.ReaderBufferSize = oldReadBufferSize
 	}
 	if !testUseReset {
-		d.Close()
+		d.Release()
 	}
 	return
 }
