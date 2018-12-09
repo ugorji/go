@@ -625,15 +625,16 @@ LOOP:
 	return
 }
 
-func (c *BasicHandle) fn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (fn *codecFn) {
+func (x *BasicHandle) fn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (fn *codecFn) {
 	rtid := rt2id(rt)
-	sp := c.rtidFns.load()
+	sp := x.rtidFns.load()
 	if sp != nil {
 		if _, fn = findFn(sp, rtid); fn != nil {
 			// xdebugf("<<<< %c: found fn for %v in rtidfns of size: %v", c.n, rt, len(sp))
 			return
 		}
 	}
+	c := x
 	// xdebugf("#### for %c: load fn for %v in rtidfns of size: %v", c.n, rt, len(sp))
 	fn = new(codecFn)
 	fi := &(fn.i)
