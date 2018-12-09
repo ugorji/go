@@ -1228,7 +1228,6 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 		return
 	}
 	// var useRvn bool
-	var idx uint8
 	switch n.v {
 	case valueTypeMap:
 		// if json, default to a map type with string keys
@@ -1241,43 +1240,13 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			}
 		}
 		if mtid == mapIntfIntfTypId {
-			n.initContainers()
-			idx = n.lm
-			if idx < arrayCacheLen {
-				ptr := &n.ma[idx]
-				*ptr = nil
-				rvn = n.rma[idx]
-				if !rvn.IsValid() {
-					rvn = reflect.ValueOf(ptr).Elem()
-					n.rma[idx] = rvn
-				}
-				n.lm++
-				d.decode(ptr)
-				n.lm--
-			} else {
-				var v2 map[interface{}]interface{}
-				d.decode(&v2)
-				rvn = reflect.ValueOf(&v2).Elem()
-			}
+			var v2 map[interface{}]interface{}
+			d.decode(&v2)
+			rvn = reflect.ValueOf(&v2).Elem()
 		} else if mtid == mapStrIntfTypId { // for json performance
-			n.initContainers()
-			idx = n.ln
-			if idx < arrayCacheLen {
-				ptr := &n.na[idx]
-				*ptr = nil
-				rvn = n.rna[idx]
-				if !rvn.IsValid() {
-					rvn = reflect.ValueOf(ptr).Elem()
-					n.rna[idx] = rvn
-				}
-				n.ln++
-				d.decode(ptr)
-				n.ln--
-			} else {
-				var v2 map[string]interface{}
-				d.decode(&v2)
-				rvn = reflect.ValueOf(&v2).Elem()
-			}
+			var v2 map[string]interface{}
+			d.decode(&v2)
+			rvn = reflect.ValueOf(&v2).Elem()
 		} else {
 			if d.mtr {
 				rvn = reflect.New(d.h.MapType)
@@ -1290,24 +1259,9 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 		}
 	case valueTypeArray:
 		if d.stid == 0 || d.stid == intfSliceTypId {
-			n.initContainers()
-			idx = n.ls
-			if idx < arrayCacheLen {
-				ptr := &n.sa[idx]
-				*ptr = nil
-				rvn = n.rsa[idx]
-				if !rvn.IsValid() {
-					rvn = reflect.ValueOf(ptr).Elem()
-					n.rsa[idx] = rvn
-				}
-				n.ls++
-				d.decode(ptr)
-				n.ls--
-			} else {
-				var v2 []interface{}
-				d.decode(&v2)
-				rvn = reflect.ValueOf(&v2).Elem()
-			}
+			var v2 []interface{}
+			d.decode(&v2)
+			rvn = reflect.ValueOf(&v2).Elem()
 			if reflectArrayOfSupported && d.stid == 0 && d.h.PreferArrayOverSlice {
 				rvn2 := reflect.New(reflectArrayOf(rvn.Len(), intfTyp)).Elem()
 				reflect.Copy(rvn2, rvn)
@@ -1327,20 +1281,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 		var v interface{}
 		tag, bytes := n.u, n.l // calling decode below might taint the values
 		if bytes == nil {
-			n.initContainers()
-			idx = n.li
-			if idx < arrayCacheLen {
-				ptr := &n.ia[idx]
-				*ptr = nil
-				n.li++
-				d.decode(ptr)
-				// v = *(&n.ia[l])
-				v = *ptr
-				*ptr = nil
-				n.li--
-			} else {
-				d.decode(&v)
-			}
+			d.decode(&v)
 		}
 		bfn := d.h.getExtForTag(tag)
 		if bfn == nil {
@@ -1972,27 +1913,6 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 // kInterfaceNaked will ensure that there is no allocation for the common
 // uses.
 
-type decNakedContainers struct {
-	// array/stacks for reducing allocation
-	// keep arrays at the bottom? Chance is that they are not used much.
-	ia [arrayCacheLen]interface{}
-	ma [arrayCacheLen]map[interface{}]interface{}
-	na [arrayCacheLen]map[string]interface{}
-	sa [arrayCacheLen][]interface{}
-
-	// ria [arrayCacheLen]reflect.Value // not needed, as we decode directly into &ia[n]
-	rma, rna, rsa [arrayCacheLen]reflect.Value // reflect.Value mapping to above
-}
-
-// func (n *decNakedContainers) init() {
-// 	for i := 0; i < arrayCacheLen; i++ {
-// 		// n.ria[i] = reflect.ValueOf(&(n.ia[i])).Elem()
-// 		n.rma[i] = reflect.ValueOf(&(n.ma[i])).Elem()
-// 		n.rna[i] = reflect.ValueOf(&(n.na[i])).Elem()
-// 		n.rsa[i] = reflect.ValueOf(&(n.sa[i])).Elem()
-// 	}
-// }
-
 type decNaked struct {
 	// r RawExt // used for RawExt, uint, []byte.
 
@@ -2011,12 +1931,11 @@ type decNaked struct {
 	v              valueType
 	li, lm, ln, ls uint8
 	inited         bool
-
-	*decNakedContainers
+	_              bool // padding
 
 	ru, ri, rf, rl, rs, rb, rt reflect.Value // mapping to the primitives above
 
-	_ [2]uint64 // padding
+	_ [3]uint64 // padding
 }
 
 func (n *decNaked) init() {
@@ -2033,13 +1952,6 @@ func (n *decNaked) init() {
 
 	n.inited = true
 	// n.rr[] = reflect.ValueOf(&n.)
-}
-
-func (n *decNaked) initContainers() {
-	if n.decNakedContainers == nil {
-		n.decNakedContainers = new(decNakedContainers)
-		// n.decNakedContainers.init()
-	}
 }
 
 func (n *decNaked) reset() {
@@ -2720,19 +2632,8 @@ func (d *Decoder) swallow() {
 		n := d.naked()
 		dd.DecodeNaked()
 		if n.v == valueTypeExt && n.l == nil {
-			n.initContainers()
-			idx := n.li
-			if idx < arrayCacheLen {
-				ptr := &n.ia[idx]
-				*ptr = nil
-				n.li++
-				d.decode(ptr)
-				*ptr = nil
-				n.li--
-			} else {
-				var v2 interface{}
-				d.decode(&v2)
-			}
+			var v2 interface{}
+			d.decode(&v2)
 		}
 	}
 }
