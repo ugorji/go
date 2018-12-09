@@ -2792,21 +2792,17 @@ func setZero(iv interface{}) {
 }
 
 func (d *Decoder) decode(iv interface{}) {
-	// check nil and interfaces explicitly,
-	// so that type switches just have a run of constant non-interface types.
+	// a switch with only concrete types can be optimized.
+	// consequently, we deal with nil and interfaces outside the switch.
+
 	if iv == nil {
 		d.errorstr(errstrCannotDecodeIntoNil)
-		return
-	}
-	if v, ok := iv.(Selfer); ok {
-		v.CodecDecodeSelf(d)
 		return
 	}
 
 	switch v := iv.(type) {
 	// case nil:
 	// case Selfer:
-
 	case reflect.Value:
 		v = d.ensureDecodeable(v)
 		d.decodeValue(v, nil, true)
@@ -2860,7 +2856,9 @@ func (d *Decoder) decode(iv interface{}) {
 		// d.decodeValueNotNil(reflect.ValueOf(iv).Elem())
 
 	default:
-		if !fastpathDecodeTypeSwitch(iv, d) {
+		if v, ok := iv.(Selfer); ok {
+			v.CodecDecodeSelf(d)
+		} else if !fastpathDecodeTypeSwitch(iv, d) {
 			v := reflect.ValueOf(iv)
 			v = d.ensureDecodeable(v)
 			d.decodeValue(v, nil, false)

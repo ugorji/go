@@ -1535,19 +1535,17 @@ func (e *Encoder) Close() {
 }
 
 func (e *Encoder) encode(iv interface{}) {
+	// a switch with only concrete types can be optimized.
+	// consequently, we deal with nil and interfaces outside the switch.
+
 	if iv == nil || definitelyNil(iv) {
 		e.e.EncodeNil()
 		return
 	}
-	if v, ok := iv.(Selfer); ok {
-		v.CodecEncodeSelf(e)
-		return
-	}
-
-	// a switch with only concrete types can be optimized.
-	// consequently, we deal with nil and interfaces outside.
 
 	switch v := iv.(type) {
+	// case nil:
+	// case Selfer:
 	case Raw:
 		e.rawBytes(v)
 	case reflect.Value:
@@ -1628,7 +1626,9 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.EncodeStringBytesRaw(*v)
 
 	default:
-		if !fastpathEncodeTypeSwitch(iv, e) {
+		if v, ok := iv.(Selfer); ok {
+			v.CodecEncodeSelf(e)
+		} else if !fastpathEncodeTypeSwitch(iv, e) {
 			// checkfastpath=true (not false), as underlying slice/map type may be fast-path
 			e.encodeValue(reflect.ValueOf(iv), nil, true)
 		}
