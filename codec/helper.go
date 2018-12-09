@@ -2374,12 +2374,11 @@ type pooler struct {
 	strRv8, strRv16, strRv32, strRv64, strRv128 sync.Pool // for stringRV
 
 	// lifetime-scoped pooled resources
-	dn                                 sync.Pool // for decNaked
+	// dn                                 sync.Pool // for decNaked
 	buf1k, buf2k, buf4k, buf8k, buf16k sync.Pool // for [N]byte
 }
 
 func (p *pooler) init() {
-	// function-scoped pooled resources
 	p.tiload.New = func() interface{} { return new(typeInfoLoadArray) }
 
 	p.strRv8.New = func() interface{} { return new([8]sfiRv) }
@@ -2388,14 +2387,14 @@ func (p *pooler) init() {
 	p.strRv64.New = func() interface{} { return new([64]sfiRv) }
 	p.strRv128.New = func() interface{} { return new([128]sfiRv) }
 
-	// lifetime-scoped pooled resources
+	// p.dn.New = func() interface{} { x := new(decNaked); x.init(); return x }
+
 	p.buf1k.New = func() interface{} { return new([1 * 1024]byte) }
 	p.buf2k.New = func() interface{} { return new([2 * 1024]byte) }
 	p.buf4k.New = func() interface{} { return new([4 * 1024]byte) }
 	p.buf8k.New = func() interface{} { return new([8 * 1024]byte) }
 	p.buf16k.New = func() interface{} { return new([16 * 1024]byte) }
 
-	p.dn.New = func() interface{} { x := new(decNaked); x.init(); return x }
 }
 
 func (p *pooler) sfiRv8() (sp *sync.Pool, v interface{}) {
@@ -2429,13 +2428,13 @@ func (p *pooler) bytes8k() (sp *sync.Pool, v interface{}) {
 func (p *pooler) bytes16k() (sp *sync.Pool, v interface{}) {
 	return &p.buf16k, p.buf16k.Get()
 }
-
-func (p *pooler) decNaked() (sp *sync.Pool, v interface{}) {
-	return &p.dn, p.dn.Get()
-}
 func (p *pooler) tiLoad() (sp *sync.Pool, v interface{}) {
 	return &p.tiload, p.tiload.Get()
 }
+
+// func (p *pooler) decNaked() (sp *sync.Pool, v interface{}) {
+// 	return &p.dn, p.dn.Get()
+// }
 
 // func (p *pooler) decNaked() (v *decNaked, f func(*decNaked) ) {
 // 	sp := &(p.dn)

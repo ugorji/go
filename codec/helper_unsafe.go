@@ -238,6 +238,73 @@ func (x *atomicClsErr) store(p clsErr) {
 }
 
 // --------------------------
+
+// to create a reflect.Value for each member field of decNaked,
+// we first create a global decNaked, and create reflect.Value
+// for them all.
+// This way, we have the flags and type in the reflect.Value.
+// Then, when a reflect.Value is called, we just copy it,
+// update the ptr to the decNaked's, and return it.
+
+type unsafeDecNakedWrapper struct {
+	decNaked
+	ru, ri, rf, rl, rs, rb, rt reflect.Value // mapping to the primitives above
+}
+
+func (n *unsafeDecNakedWrapper) init() {
+	n.ru = reflect.ValueOf(&n.u).Elem()
+	n.ri = reflect.ValueOf(&n.i).Elem()
+	n.rf = reflect.ValueOf(&n.f).Elem()
+	n.rl = reflect.ValueOf(&n.l).Elem()
+	n.rs = reflect.ValueOf(&n.s).Elem()
+	n.rt = reflect.ValueOf(&n.t).Elem()
+	n.rb = reflect.ValueOf(&n.b).Elem()
+	// n.rr[] = reflect.ValueOf(&n.)
+}
+
+var defUnsafeDecNakedWrapper unsafeDecNakedWrapper
+
+func init() {
+	defUnsafeDecNakedWrapper.init()
+}
+
+func (n *decNaked) ru() (v reflect.Value) {
+	v = defUnsafeDecNakedWrapper.ru
+	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.u)
+	return
+}
+func (n *decNaked) ri() (v reflect.Value) {
+	v = defUnsafeDecNakedWrapper.ri
+	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.i)
+	return
+}
+func (n *decNaked) rf() (v reflect.Value) {
+	v = defUnsafeDecNakedWrapper.rf
+	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.f)
+	return
+}
+func (n *decNaked) rl() (v reflect.Value) {
+	v = defUnsafeDecNakedWrapper.rl
+	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.l)
+	return
+}
+func (n *decNaked) rs() (v reflect.Value) {
+	v = defUnsafeDecNakedWrapper.rs
+	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.s)
+	return
+}
+func (n *decNaked) rt() (v reflect.Value) {
+	v = defUnsafeDecNakedWrapper.rt
+	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.t)
+	return
+}
+func (n *decNaked) rb() (v reflect.Value) {
+	v = defUnsafeDecNakedWrapper.rb
+	((*unsafeReflectValue)(unsafe.Pointer(&v))).ptr = unsafe.Pointer(&n.b)
+	return
+}
+
+// --------------------------
 func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	*(*[]byte)(urv.ptr) = d.rawBytes()

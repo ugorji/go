@@ -11,7 +11,6 @@ import (
 	"reflect"
 	"runtime"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -24,8 +23,8 @@ const (
 const (
 	decDefMaxDepth         = 1024 // maximum depth
 	decDefSliceCap         = 8
-	decDefChanCap          = 64                      // should be large, as cap cannot be expanded
-	decScratchByteArrayLen = cacheLineSize + (8 * 2) // - (8 * 1)
+	decDefChanCap          = 64            // should be large, as cap cannot be expanded
+	decScratchByteArrayLen = cacheLineSize // + (8 * 2) // - (8 * 1)
 )
 
 var (
@@ -1302,19 +1301,19 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 	case valueTypeNil:
 		// no-op
 	case valueTypeInt:
-		rvn = n.ri
+		rvn = n.ri()
 	case valueTypeUint:
-		rvn = n.ru
+		rvn = n.ru()
 	case valueTypeFloat:
-		rvn = n.rf
+		rvn = n.rf()
 	case valueTypeBool:
-		rvn = n.rb
+		rvn = n.rb()
 	case valueTypeString, valueTypeSymbol:
-		rvn = n.rs
+		rvn = n.rs()
 	case valueTypeBytes:
-		rvn = n.rl
+		rvn = n.rl()
 	case valueTypeTime:
-		rvn = n.rt
+		rvn = n.rt()
 	default:
 		panicv.errorf("kInterfaceNaked: unexpected valueType: %d", n.v)
 	}
@@ -1928,69 +1927,55 @@ type decNaked struct {
 	b bool
 
 	// state
-	v              valueType
-	li, lm, ln, ls uint8
-	inited         bool
-	_              bool // padding
+	v valueType
+	_ [6]bool // padding
 
-	ru, ri, rf, rl, rs, rb, rt reflect.Value // mapping to the primitives above
-
-	_ [3]uint64 // padding
+	// ru, ri, rf, rl, rs, rb, rt reflect.Value // mapping to the primitives above
+	//
+	// _ [3]uint64 // padding
 }
 
-func (n *decNaked) init() {
-	if n.inited {
-		return
-	}
-	n.ru = reflect.ValueOf(&n.u).Elem()
-	n.ri = reflect.ValueOf(&n.i).Elem()
-	n.rf = reflect.ValueOf(&n.f).Elem()
-	n.rl = reflect.ValueOf(&n.l).Elem()
-	n.rs = reflect.ValueOf(&n.s).Elem()
-	n.rt = reflect.ValueOf(&n.t).Elem()
-	n.rb = reflect.ValueOf(&n.b).Elem()
+// func (n *decNaked) init() {
+// 	n.ru = reflect.ValueOf(&n.u).Elem()
+// 	n.ri = reflect.ValueOf(&n.i).Elem()
+// 	n.rf = reflect.ValueOf(&n.f).Elem()
+// 	n.rl = reflect.ValueOf(&n.l).Elem()
+// 	n.rs = reflect.ValueOf(&n.s).Elem()
+// 	n.rt = reflect.ValueOf(&n.t).Elem()
+// 	n.rb = reflect.ValueOf(&n.b).Elem()
+// 	// n.rr[] = reflect.ValueOf(&n.)
+// }
 
-	n.inited = true
-	// n.rr[] = reflect.ValueOf(&n.)
-}
+// type decNakedPooler struct {
+// 	n   *decNaked
+// 	nsp *sync.Pool
+// }
 
-func (n *decNaked) reset() {
-	if n == nil {
-		return
-	}
-	n.li, n.lm, n.ln, n.ls = 0, 0, 0, 0
-}
+// // naked must be called before each call to .DecodeNaked, as they will use it.
+// func (d *decNakedPooler) naked() *decNaked {
+// 	if d.n == nil {
+// 		// consider one of:
+// 		//   - get from sync.Pool  (if GC is frequent, there's no value here)
+// 		//   - new alloc           (safest. only init'ed if it a naked decode will be done)
+// 		//   - field in Decoder    (makes the Decoder struct very big)
+// 		// To support using a decoder where a DecodeNaked is not needed,
+// 		// we prefer #1 or #2.
+// 		// d.n = new(decNaked) // &d.nv // new(decNaked) // grab from a sync.Pool
+// 		// d.n.init()
+// 		var v interface{}
+// 		d.nsp, v = pool.decNaked()
+// 		d.n = v.(*decNaked)
+// 	}
+// 	return d.n
+// }
 
-type decNakedPooler struct {
-	n   *decNaked
-	nsp *sync.Pool
-}
-
-// naked must be called before each call to .DecodeNaked, as they will use it.
-func (d *decNakedPooler) naked() *decNaked {
-	if d.n == nil {
-		// consider one of:
-		//   - get from sync.Pool  (if GC is frequent, there's no value here)
-		//   - new alloc           (safest. only init'ed if it a naked decode will be done)
-		//   - field in Decoder    (makes the Decoder struct very big)
-		// To support using a decoder where a DecodeNaked is not needed,
-		// we prefer #1 or #2.
-		// d.n = new(decNaked) // &d.nv // new(decNaked) // grab from a sync.Pool
-		// d.n.init()
-		var v interface{}
-		d.nsp, v = pool.decNaked()
-		d.n = v.(*decNaked)
-	}
-	return d.n
-}
-
-func (d *decNakedPooler) end() {
-	if d.n != nil {
-		// if n != nil, then nsp != nil (they are always set together)
-		d.nsp.Put(d.n)
-		d.n, d.nsp = nil, nil
-	}
-}
+// func (d *decNakedPooler) end() {
+// 	if d.n != nil {
+// 		// if n != nil, then nsp != nil (they are always set together)
+// 		d.nsp.Put(d.n)
+// 		d.n, d.nsp = nil, nil
+// 	}
+// }
 
 // type rtid2rv struct {
 // 	rtid uintptr
@@ -2294,14 +2279,15 @@ type Decoder struct {
 	mtid uintptr
 	stid uintptr
 
-	decNakedPooler
-
-	h  *BasicHandle
 	hh Handle
+	h  *BasicHandle
+
 	// ---- cpu cache line boundary?
 	decReaderSwitch
 
 	// ---- cpu cache line boundary?
+	n decNaked
+
 	// cr containerStateRecv
 	err error
 
@@ -2371,7 +2357,6 @@ func newDecoder(h Handle) *Decoder {
 
 func (d *Decoder) resetCommon() {
 	// d.r = &d.decReaderSwitch
-	d.n.reset()
 	d.d.reset()
 	d.err = nil
 	d.calls = 0
@@ -2435,6 +2420,10 @@ func (d *Decoder) ResetBytes(in []byte) {
 	d.rb.reset(in)
 	// d.r = &d.rb
 	d.resetCommon()
+}
+
+func (d *Decoder) naked() *decNaked {
+	return &d.n
 }
 
 // Decode decodes the stream from reader and stores the result in the
@@ -2576,7 +2565,7 @@ func (d *Decoder) Release() {
 		d.bi.buf = nil
 		d.bi.bytesBufPooler.end()
 	}
-	d.decNakedPooler.end()
+	// d.decNakedPooler.end()
 }
 
 // // this is not a smart swallow, as it allocates objects and does unnecessary work.
