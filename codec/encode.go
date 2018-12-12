@@ -12,7 +12,6 @@ import (
 	"runtime"
 	"sort"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -731,30 +730,9 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	// The cost is that of locking sometimes, but sync.Pool is efficient
 	// enough to reduce thread contention.
 
-	var spool *sync.Pool
-	var poolv interface{}
-	var fkvs []sfiRv
 	// fmt.Printf(">>>>>>>>>>>>>> encode.kStruct: newlen: %d\n", newlen)
-	if newlen < 0 { // bounds-check-elimination
-		// cannot happen // here for bounds-check-elimination
-	} else if newlen <= 8 {
-		spool, poolv = pool.sfiRv8()
-		fkvs = poolv.(*[8]sfiRv)[:newlen]
-	} else if newlen <= 16 {
-		spool, poolv = pool.sfiRv16()
-		fkvs = poolv.(*[16]sfiRv)[:newlen]
-	} else if newlen <= 32 {
-		spool, poolv = pool.sfiRv32()
-		fkvs = poolv.(*[32]sfiRv)[:newlen]
-	} else if newlen <= 64 {
-		spool, poolv = pool.sfiRv64()
-		fkvs = poolv.(*[64]sfiRv)[:newlen]
-	} else if newlen <= 128 {
-		spool, poolv = pool.sfiRv128()
-		fkvs = poolv.(*[128]sfiRv)[:newlen]
-	} else {
-		fkvs = make([]sfiRv, newlen)
-	}
+	var spool sfiRvPooler
+	var fkvs = spool.get(newlen)
 
 	var kv sfiRv
 	recur := e.h.RecursiveEmptyCheck
@@ -773,7 +751,8 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			// if a reference or struct, set to nil (so you do not output too much)
 			if si.omitEmpty() && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
 				switch kv.r.Kind() {
-				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array, reflect.Map, reflect.Slice:
+				case reflect.Struct, reflect.Interface, reflect.Ptr,
+					reflect.Array, reflect.Map, reflect.Slice:
 					kv.r = reflect.Value{} //encode as nil
 				}
 			}
@@ -842,9 +821,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	// do not use defer. Instead, use explicit pool return at end of function.
 	// defer has a cost we are trying to avoid.
 	// If there is a panic and these slices are not returned, it is ok.
-	if spool != nil {
-		spool.Put(poolv)
-	}
+	spool.end()
 }
 
 func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
