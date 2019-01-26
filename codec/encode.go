@@ -294,7 +294,9 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int) {
 	if bufsize <= 0 {
 		bufsize = defEncByteBufSize
 	}
-	if cap(z.buf) >= bufsize {
+	if z.buf == nil {
+		z.buf = z.bytesBufPooler.get(bufsize)
+	} else if cap(z.buf) >= bufsize {
 		z.buf = z.buf[:cap(z.buf)]
 	} else {
 		z.bytesBufPooler.end() // potentially return old one to pool
@@ -1471,11 +1473,21 @@ func (e *Encoder) MustEncode(v interface{}) {
 }
 
 func (e *Encoder) mustEncode(v interface{}) {
+	// ensure the bufioEncWriter buffer is not nil (e.g. if Release() was called)
+	if e.wf != nil && e.wf.buf == nil {
+		if e.h.WriterBufferSize > 0 {
+			e.wf.buf = e.wf.bytesBufPooler.get(e.h.WriterBufferSize)
+		} else {
+			e.wf.buf = e.wf.bytesBufPooler.get(defEncByteBufSize)
+		}
+	}
+
 	e.calls++
 	e.encode(v)
 	e.e.atEndOfEncode()
 	e.w.end()
 	e.calls--
+
 	if !e.h.ExplicitRelease && e.calls == 0 {
 		e.Release()
 	}

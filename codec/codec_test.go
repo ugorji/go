@@ -2429,6 +2429,25 @@ func doTestMaxDepth(t *testing.T, name string, h Handle) {
 	}
 }
 
+func doTestMultipleEncDec(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
+	// encode a string multiple times.
+	// decode it multiple times.
+	// ensure we get the value each time
+	var s1 = "ugorji"
+	var s2 = "nwoke"
+	var s11, s21 string
+	var buf bytes.Buffer
+	e := NewEncoder(&buf, h)
+	e.MustEncode(s1)
+	e.MustEncode(s2)
+	d := NewDecoder(&buf, h)
+	d.MustDecode(&s11)
+	d.MustDecode(&s21)
+	testDeepEqualErr(s1, s11, t, name+"-multiple-encode")
+	testDeepEqualErr(s2, s21, t, name+"-multiple-encode")
+}
+
 // -----------------
 
 func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
@@ -3216,6 +3235,10 @@ func TestBincMaxDepth(t *testing.T) {
 
 func TestSimpleMaxDepth(t *testing.T) {
 	doTestMaxDepth(t, "simple", testSimpleH)
+}
+
+func TestMultipleEncDec(t *testing.T) {
+	doTestMultipleEncDec(t, "json", testJsonH)
 }
 
 // TODO:

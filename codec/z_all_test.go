@@ -304,6 +304,7 @@ func testNonHandlesGroup(t *testing.T) {
 	t.Run("TestAtomic", TestAtomic)
 	t.Run("TestAllEncCircularRef", TestAllEncCircularRef)
 	t.Run("TestAllAnonCycle", TestAllAnonCycle)
+	t.Run("TestMultipleEncDec", TestMultipleEncDec)
 }
 
 func TestCodecSuite(t *testing.T) {
