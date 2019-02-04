@@ -1,4 +1,4 @@
-[![Sourcegraph](https://sourcegraph.com/github.com/ugorji/go/-/badge.svg?v=2)](https://sourcegraph.com/github.com/ugorji/go/-/tree/codec)
+[![Sourcegraph](https://sourcegraph.com/github.com/ugorji/go/codec/-/badge.svg?v=3)](https://sourcegraph.com/github.com/ugorji/go/-/tree/codec?badge)
 [![Build Status](https://travis-ci.org/ugorji/go.svg?branch=master)](https://travis-ci.org/ugorji/go)
 [![codecov](https://codecov.io/gh/ugorji/go/branch/master/graph/badge.svg?v=2)](https://codecov.io/gh/ugorji/go)
 [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/ugorji/go/codec)
