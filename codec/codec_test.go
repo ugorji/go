@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -70,6 +71,14 @@ type testIntfMapT2 struct {
 }
 
 func (x testIntfMapT2) GetIntfMapV() string { return x.IntfMapV }
+
+var testErrWriterErr = errors.New("testErrWriterErr")
+
+type testErrWriter struct{}
+
+func (x *testErrWriter) Write(p []byte) (int, error) {
+	return 0, testErrWriterErr
+}
 
 // ----
 
@@ -1417,6 +1426,22 @@ func doTestAnonCycle(t *testing.T, name string, h Handle) {
 	rtid := rt2id(rt)
 	pti := basicHandle(h).getTypeInfo(rtid, rt)
 	logT(t, "pti: %v", pti)
+}
+
+func doTestErrWriter(t *testing.T, name string, h Handle) {
+	var ew testErrWriter
+	w := bufio.NewWriterSize(&ew, 4)
+	enc := NewEncoder(w, h)
+	for i := 0; i < 4; i++ {
+		err := enc.Encode("ugorji")
+		if ev, ok := err.(encodeError); ok {
+			err = ev.Cause()
+		}
+		if err != testErrWriterErr {
+			logT(t, "%s: expecting err: %v, received: %v", name, testErrWriterErr, err)
+			failT(t)
+		}
+	}
 }
 
 func doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
@@ -2900,6 +2925,11 @@ func TestAllEncCircularRef(t *testing.T) {
 
 func TestAllAnonCycle(t *testing.T) {
 	doTestAnonCycle(t, "cbor", testCborH)
+}
+
+func TestAllErrWriter(t *testing.T) {
+	doTestErrWriter(t, "cbor", testCborH)
+	doTestErrWriter(t, "json", testJsonH)
 }
 
 // ----- RPC -----

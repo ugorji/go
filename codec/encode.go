@@ -318,16 +318,20 @@ func (z *bufioEncWriter) release() {
 }
 
 //go:noinline - flush only called intermittently
-func (z *bufioEncWriter) flush() {
+func (z *bufioEncWriter) flushErr() (err error) {
 	n, err := z.w.Write(z.buf[:z.n])
 	z.n -= n
 	if z.n > 0 && err == nil {
 		err = io.ErrShortWrite
 	}
-	if err != nil {
-		if n > 0 && z.n > 0 {
-			copy(z.buf, z.buf[n:z.n+n])
-		}
+	if n > 0 && z.n > 0 {
+		copy(z.buf, z.buf[n:z.n+n])
+	}
+	return err
+}
+
+func (z *bufioEncWriter) flush() {
+	if err := z.flushErr(); err != nil {
 		panic(err)
 	}
 }
@@ -374,10 +378,11 @@ func (z *bufioEncWriter) writen2(b1, b2 byte) {
 	z.n += 2
 }
 
-func (z *bufioEncWriter) end() {
+func (z *bufioEncWriter) endErr() (err error) {
 	if z.n > 0 {
-		z.flush()
+		err = z.flushErr()
 	}
+	return
 }
 
 // ---------------------------------------------
@@ -400,8 +405,9 @@ func (z *bytesEncAppender) writen1(b1 byte) {
 func (z *bytesEncAppender) writen2(b1, b2 byte) {
 	z.b = append(z.b, b1, b2)
 }
-func (z *bytesEncAppender) end() {
+func (z *bytesEncAppender) endErr() error {
 	*(z.out) = z.b
+	return nil
 }
 func (z *bytesEncAppender) reset(in []byte, out *[]byte) {
 	z.b = in[:0]
@@ -1119,11 +1125,16 @@ func (z *encWriterSwitch) writen2(b1, b2 byte) {
 		z.wf.writen2(b1, b2)
 	}
 }
-func (z *encWriterSwitch) end() {
+func (z *encWriterSwitch) endErr() error {
 	if z.bytes {
-		z.wb.end()
-	} else {
-		z.wf.end()
+		return z.wb.endErr()
+	}
+	return z.wf.endErr()
+}
+
+func (z *encWriterSwitch) end() {
+	if err := z.endErr(); err != nil {
+		panic(err)
 	}
 }
 
@@ -1456,8 +1467,13 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 	}
 	if recoverPanicToErr {
 		defer func() {
-			e.w.end()
-			if x := recover(); x != nil {
+			// if error occurred during encoding, return that error;
+			// else if error occurred on end'ing (i.e. during flush), return that error.
+			err = e.w.endErr()
+			x := recover()
+			if x == nil {
+				e.err = err
+			} else {
 				panicValToErr(e, x, &e.err)
 				err = e.err
 			}
