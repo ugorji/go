@@ -384,7 +384,7 @@ func testInit() {
 		bh.MaxInitLen = testMaxInitLen
 	}
 
-	testMsgpackH.RawToString = true
+	testMsgpackH.WriteExt = true
 
 	var tTimeExt timeExt
 	var tBytesExt wrapBytesExt
@@ -826,14 +826,12 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	tableTestNilVerify := testTableVerify(testVerifyDoNil|testVerifyMapTypeStrIntf, h)
 	switch v := h.(type) {
 	case *MsgpackHandle:
-		var oldWriteExt, oldRawToString bool
-		_, _ = oldWriteExt, oldRawToString
-		oldWriteExt, v.WriteExt = v.WriteExt, true
-		oldRawToString, v.RawToString = v.RawToString, true
-		// defer func() { v.WriteExt, v.RawToString = oldWriteExt, oldRawToString }()
+		var oldWriteExt bool
+		_ = oldWriteExt
+		oldWriteExt = v.WriteExt
+		v.WriteExt = true
 		doTestCodecTableOne(t, false, h, table, tableVerify)
 		v.WriteExt = oldWriteExt
-		v.RawToString = oldRawToString
 	case *JsonHandle:
 		//skip []interface{} containing time.Time, as it encodes as a number, but cannot decode back to time.Time.
 		//As there is no real support for extension tags in json, this must be skipped.
@@ -1176,7 +1174,6 @@ func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs
 	// var opts *DecoderOptions
 	// opts := testDecOpts
 	// opts.MapType = mapStrIntfTyp
-	// opts.RawToString = false
 	serverExitChan := make(chan bool, 1)
 	var serverExitFlag uint64
 	serverFn := func() {
@@ -3091,9 +3088,8 @@ func TestCborMammothMapsAndSlices(t *testing.T) {
 }
 
 func TestMsgpackMammothMapsAndSlices(t *testing.T) {
-	old1, old2 := testMsgpackH.RawToString, testMsgpackH.WriteExt
-	defer func() { testMsgpackH.RawToString, testMsgpackH.WriteExt = old1, old2 }()
-	testMsgpackH.RawToString = true
+	old1 := testMsgpackH.WriteExt
+	defer func() { testMsgpackH.WriteExt = old1 }()
 	testMsgpackH.WriteExt = true
 
 	doTestMammothMapsAndSlices(t, testMsgpackH)

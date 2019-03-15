@@ -521,16 +521,15 @@ func (d *msgpackDecDriver) DecodeNaked() {
 			n.v = valueTypeInt
 			n.i = int64(int8(bd))
 		case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
-			if d.h.RawToString {
+			if d.h.WriteExt {
 				n.v = valueTypeString
-				n.s = string(d.DecodeBytes(d.d.b[:], true))
+				n.s = d.DecodeString()
 			} else {
 				n.v = valueTypeBytes
 				n.l = d.DecodeBytes(nil, false)
 			}
 		case bd == mpBin8, bd == mpBin16, bd == mpBin32:
-			n.v = valueTypeBytes
-			n.l = d.DecodeBytes(nil, false)
+			decNakedReadRawBytes(d, d.d, n, d.h.RawToString)
 		case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
 			n.v = valueTypeArray
 			decodeFurther = true
@@ -768,10 +767,10 @@ func (d *msgpackDecDriver) ContainerType() (vt valueType) {
 	} else if bd == mpBin8 || bd == mpBin16 || bd == mpBin32 {
 		return valueTypeBytes
 	} else if bd == mpStr8 || bd == mpStr16 || bd == mpStr32 || (bd >= mpFixStrMin && bd <= mpFixStrMax) {
-		if d.h.RawToString {
+		if d.h.WriteExt { // UTF-8 string (new spec)
 			return valueTypeString
 		}
-		return valueTypeBytes
+		return valueTypeBytes // raw (old spec)
 	} else if bd == mpArray16 || bd == mpArray32 || (bd >= mpFixArrayMin && bd <= mpFixArrayMax) {
 		return valueTypeArray
 	} else if bd == mpMap16 || bd == mpMap32 || (bd >= mpFixMapMin && bd <= mpFixMapMax) {
@@ -956,11 +955,6 @@ func (d *msgpackDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs 
 //MsgpackHandle is a Handle for the Msgpack Schema-Free Encoding Format.
 type MsgpackHandle struct {
 	BasicHandle
-
-	// RawToString controls how raw bytes in a stream are decoded into a nil interface{}.
-	// By default, they are decoded as []byte,
-	// but can be decoded as string (if configured).
-	RawToString bool
 
 	// NoFixedNum says to output all signed integers as 2-bytes, never as 1-byte fixednum.
 	NoFixedNum bool
