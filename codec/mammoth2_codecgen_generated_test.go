@@ -135,7 +135,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteArrayElem()
 				if false {
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819781, string(x.FString))
+					if z.EncBasicHandle().StringToRaw {
+						r.EncodeStringBytesRaw(z.BytesView(string(x.FString)))
+					} else {
+						r.EncodeStringEnc(codecSelferCcUTF819781, string(x.FString))
+					}
 				}
 			} else {
 				r.WriteMapElemKey()
@@ -147,7 +151,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.WriteMapElemValue()
 				if false {
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819781, string(x.FString))
+					if z.EncBasicHandle().StringToRaw {
+						r.EncodeStringBytesRaw(z.BytesView(string(x.FString)))
+					} else {
+						r.EncodeStringEnc(codecSelferCcUTF819781, string(x.FString))
+					}
 				}
 			}
 			var yyn14 bool
@@ -168,7 +176,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						yy15 := *x.FptrString
 						if false {
 						} else {
-							r.EncodeStringEnc(codecSelferCcUTF819781, string(yy15))
+							if z.EncBasicHandle().StringToRaw {
+								r.EncodeStringBytesRaw(z.BytesView(string(yy15)))
+							} else {
+								r.EncodeStringEnc(codecSelferCcUTF819781, string(yy15))
+							}
 						}
 					}
 				}
@@ -189,7 +201,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 						yy17 := *x.FptrString
 						if false {
 						} else {
-							r.EncodeStringEnc(codecSelferCcUTF819781, string(yy17))
+							if z.EncBasicHandle().StringToRaw {
+								r.EncodeStringBytesRaw(z.BytesView(string(yy17)))
+							} else {
+								r.EncodeStringEnc(codecSelferCcUTF819781, string(yy17))
+							}
 						}
 					}
 				}

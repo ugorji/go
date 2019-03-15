@@ -158,7 +158,7 @@ func (e *simpleEncDriver) WriteMapStart(length int) {
 }
 
 // func (e *simpleEncDriver) EncodeSymbol(v string) {
-// 	e.EncodeString(cUTF8, v)
+// 	e.EncodeStringEnc(cUTF8, v)
 // }
 
 func (e *simpleEncDriver) EncodeStringEnc(c charEncoding, v string) {

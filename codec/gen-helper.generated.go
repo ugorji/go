@@ -186,6 +186,9 @@ func (f genHelperEncoder) WriteStr(s string) {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) BytesView(v string) []byte { return bytesView(v) }
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 //
 // Deprecated: No longer used,
 // but leave in-place so that old generated files continue to work without regeneration.

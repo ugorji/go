@@ -48,13 +48,12 @@ type encDriver interface {
 	// encodeExtPreamble(xtag byte, length int)
 	EncodeRawExt(re *RawExt, e *Encoder)
 	EncodeExt(v interface{}, xtag uint64, ext Ext, e *Encoder)
-	// Deprecated: try to use EncodeStringEnc instead
+	// Deprecated: use EncodeStringEnc instead
 	EncodeString(c charEncoding, v string)
-	// c cannot be cRAW
-	EncodeStringEnc(c charEncoding, v string)
-	// EncodeSymbol(v string)
-	// Deprecated: try to use EncodeStringBytesRaw instead
+	// Deprecated: use EncodeStringBytesRaw instead
 	EncodeStringBytes(c charEncoding, v []byte)
+	EncodeStringEnc(c charEncoding, v string) // c cannot be cRAW
+	// EncodeSymbol(v string)
 	EncodeStringBytesRaw(v []byte)
 	EncodeTime(time.Time)
 	//encBignum(f *big.Int)
@@ -168,6 +167,11 @@ type EncodeOptions struct {
 	// if they are a correct representation of a value in that format.
 	// If unset, we error out.
 	Raw bool
+
+	// StringToRaw controls how strings are encoded -
+	// by default, they are encoded as UTF-8,
+	// but can be treated as []byte during an encode.
+	StringToRaw bool
 
 	// // AsSymbols defines what should be encoded as symbols.
 	// //
@@ -644,14 +648,14 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 			for _, si := range tisfi {
 				ee.WriteMapElemKey()
 				// ee.EncodeStringEnc(cUTF8, si.encName)
-				e.kStructFieldKey(fti.keyType, si)
+				e.kStructFieldKey(fti.keyType, si.encNameAsciiAlphaNum, si.encName)
 				ee.WriteMapElemValue()
 				e.encodeValue(sfn.field(si), nil, true)
 			}
 		} else {
 			for _, si := range tisfi {
 				// ee.EncodeStringEnc(cUTF8, si.encName)
-				e.kStructFieldKey(fti.keyType, si)
+				e.kStructFieldKey(fti.keyType, si.encNameAsciiAlphaNum, si.encName)
 				e.encodeValue(sfn.field(si), nil, true)
 			}
 		}
@@ -672,33 +676,18 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 
-func (e *Encoder) kStructFieldKey(keyType valueType, s *structFieldInfo) {
+func (e *Encoder) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
 	var m must
 	// use if-else-if, not switch (which compiles to binary-search)
 	// since keyType is typically valueTypeString, branch prediction is pretty good.
 	if keyType == valueTypeString {
-		if e.js && s.encNameAsciiAlphaNum { // keyType == valueTypeString
+		if e.js && encNameAsciiAlphaNum { // keyType == valueTypeString
 			e.w.writen1('"')
-			e.w.writestr(s.encName)
+			e.w.writestr(encName)
 			e.w.writen1('"')
 		} else { // keyType == valueTypeString
-			e.e.EncodeStringEnc(cUTF8, s.encName)
+			e.e.EncodeStringEnc(cUTF8, encName)
 		}
-	} else if keyType == valueTypeInt {
-		e.e.EncodeInt(m.Int(strconv.ParseInt(s.encName, 10, 64)))
-	} else if keyType == valueTypeUint {
-		e.e.EncodeUint(m.Uint(strconv.ParseUint(s.encName, 10, 64)))
-	} else if keyType == valueTypeFloat {
-		e.e.EncodeFloat64(m.Float(strconv.ParseFloat(s.encName, 64)))
-	}
-}
-
-func (e *Encoder) kStructFieldKeyName(keyType valueType, encName string) {
-	var m must
-	// use if-else-if, not switch (which compiles to binary-search)
-	// since keyType is typically valueTypeString, branch prediction is pretty good.
-	if keyType == valueTypeString {
-		e.e.EncodeStringEnc(cUTF8, encName)
 	} else if keyType == valueTypeInt {
 		e.e.EncodeInt(m.Int(strconv.ParseInt(encName, 10, 64)))
 	} else if keyType == valueTypeUint {
@@ -803,7 +792,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				kv = fkvs[j]
 				ee.WriteMapElemKey()
 				// ee.EncodeStringEnc(cUTF8, kv.v)
-				e.kStructFieldKey(fti.keyType, kv.v)
+				e.kStructFieldKey(fti.keyType, kv.v.encNameAsciiAlphaNum, kv.v.encName)
 				ee.WriteMapElemValue()
 				e.encodeValue(kv.r, nil, true)
 			}
@@ -811,14 +800,14 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			for j = 0; j < len(fkvs); j++ {
 				kv = fkvs[j]
 				// ee.EncodeStringEnc(cUTF8, kv.v)
-				e.kStructFieldKey(fti.keyType, kv.v)
+				e.kStructFieldKey(fti.keyType, kv.v.encNameAsciiAlphaNum, kv.v.encName)
 				e.encodeValue(kv.r, nil, true)
 			}
 		}
 		// now, add the others
 		for k, v := range mf {
 			ee.WriteMapElemKey()
-			e.kStructFieldKeyName(fti.keyType, k)
+			e.kStructFieldKey(fti.keyType, false, k)
 			ee.WriteMapElemValue()
 			e.encode(v)
 		}
@@ -903,7 +892,11 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			ee.WriteMapElemKey()
 		}
 		if keyTypeIsString {
-			ee.EncodeStringEnc(cUTF8, mks[j].String())
+			if e.h.StringToRaw {
+				ee.EncodeStringBytesRaw(bytesView(mks[j].String()))
+			} else {
+				ee.EncodeStringEnc(cUTF8, mks[j].String())
+			}
 		} else {
 			e.encodeValue(mks[j], keyFn, true)
 		}
@@ -953,7 +946,11 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 			if elemsep {
 				ee.WriteMapElemKey()
 			}
-			ee.EncodeStringEnc(cUTF8, mksv[i].v)
+			if e.h.StringToRaw {
+				ee.EncodeStringBytesRaw(bytesView(mksv[i].v))
+			} else {
+				ee.EncodeStringEnc(cUTF8, mksv[i].v)
+			}
 			if elemsep {
 				ee.WriteMapElemValue()
 			}
@@ -1562,7 +1559,11 @@ func (e *Encoder) encode(iv interface{}) {
 		e.encodeValue(v, nil, true)
 
 	case string:
-		e.e.EncodeStringEnc(cUTF8, v)
+		if e.h.StringToRaw {
+			e.e.EncodeStringBytesRaw(bytesView(v))
+		} else {
+			e.e.EncodeStringEnc(cUTF8, v)
+		}
 	case bool:
 		e.e.EncodeBool(v)
 	case int:
@@ -1600,7 +1601,11 @@ func (e *Encoder) encode(iv interface{}) {
 		e.rawBytes(*v)
 
 	case *string:
-		e.e.EncodeStringEnc(cUTF8, *v)
+		if e.h.StringToRaw {
+			e.e.EncodeStringBytesRaw(bytesView(*v))
+		} else {
+			e.e.EncodeStringEnc(cUTF8, *v)
+		}
 	case *bool:
 		e.e.EncodeBool(*v)
 	case *int:
@@ -1719,7 +1724,7 @@ TOP:
 // 	} else if asis {
 // 		e.asis(bs)
 // 	} else {
-// 		e.e.EncodeStringBytes(c, bs)
+// 		e.e.EncodeStringBytesRaw(bs)
 // 	}
 // }
 
@@ -1775,3 +1780,11 @@ func (e *Encoder) rawBytes(vv Raw) {
 func (e *Encoder) wrapErr(v interface{}, err *error) {
 	*err = encodeError{codecError{name: e.hh.Name(), err: v}}
 }
+
+// func encStringAsRawBytesMaybe(ee encDriver, s string, stringToRaw bool) {
+// 	if stringToRaw {
+// 		ee.EncodeStringBytesRaw(bytesView(s))
+// 	} else {
+// 		ee.EncodeStringEnc(cUTF8, s)
+// 	}
+// }
