@@ -168,9 +168,17 @@ type EncodeOptions struct {
 	// If unset, we error out.
 	Raw bool
 
-	// StringToRaw controls how strings are encoded -
-	// by default, they are encoded as UTF-8,
+	// StringToRaw controls how strings are encoded.
+	//
+	// As a go string is just an (immutable) sequence of bytes,
+	// it can be encoded either as raw bytes or as a UTF string.
+	//
+	// By default, strings are encoded as UTF-8.
 	// but can be treated as []byte during an encode.
+	//
+	// Note that things which we know (by definition) to be UTF-8
+	// are ALWAYS encoded as UTF-8 strings.
+	// These include encoding.TextMarshaler, time.Format calls, struct field names, etc.
 	StringToRaw bool
 
 	// // AsSymbols defines what should be encoded as symbols.
@@ -647,14 +655,12 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 		if e.esep {
 			for _, si := range tisfi {
 				ee.WriteMapElemKey()
-				// ee.EncodeStringEnc(cUTF8, si.encName)
 				e.kStructFieldKey(fti.keyType, si.encNameAsciiAlphaNum, si.encName)
 				ee.WriteMapElemValue()
 				e.encodeValue(sfn.field(si), nil, true)
 			}
 		} else {
 			for _, si := range tisfi {
-				// ee.EncodeStringEnc(cUTF8, si.encName)
 				e.kStructFieldKey(fti.keyType, si.encNameAsciiAlphaNum, si.encName)
 				e.encodeValue(sfn.field(si), nil, true)
 			}
@@ -677,24 +683,7 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-	var m must
-	// use if-else-if, not switch (which compiles to binary-search)
-	// since keyType is typically valueTypeString, branch prediction is pretty good.
-	if keyType == valueTypeString {
-		if e.js && encNameAsciiAlphaNum { // keyType == valueTypeString
-			e.w.writen1('"')
-			e.w.writestr(encName)
-			e.w.writen1('"')
-		} else { // keyType == valueTypeString
-			e.e.EncodeStringEnc(cUTF8, encName)
-		}
-	} else if keyType == valueTypeInt {
-		e.e.EncodeInt(m.Int(strconv.ParseInt(encName, 10, 64)))
-	} else if keyType == valueTypeUint {
-		e.e.EncodeUint(m.Uint(strconv.ParseUint(encName, 10, 64)))
-	} else if keyType == valueTypeFloat {
-		e.e.EncodeFloat64(m.Float(strconv.ParseFloat(encName, 64)))
-	}
+	encStructFieldKey(encName, e.e, e.w, keyType, encNameAsciiAlphaNum, e.js)
 }
 
 func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
@@ -791,7 +780,6 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			for j = 0; j < len(fkvs); j++ {
 				kv = fkvs[j]
 				ee.WriteMapElemKey()
-				// ee.EncodeStringEnc(cUTF8, kv.v)
 				e.kStructFieldKey(fti.keyType, kv.v.encNameAsciiAlphaNum, kv.v.encName)
 				ee.WriteMapElemValue()
 				e.encodeValue(kv.r, nil, true)
@@ -799,7 +787,6 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		} else {
 			for j = 0; j < len(fkvs); j++ {
 				kv = fkvs[j]
-				// ee.EncodeStringEnc(cUTF8, kv.v)
 				e.kStructFieldKey(fti.keyType, kv.v.encNameAsciiAlphaNum, kv.v.encName)
 				e.encodeValue(kv.r, nil, true)
 			}
@@ -1779,6 +1766,37 @@ func (e *Encoder) rawBytes(vv Raw) {
 
 func (e *Encoder) wrapErr(v interface{}, err *error) {
 	*err = encodeError{codecError{name: e.hh.Name(), err: v}}
+}
+
+func encStructFieldKey(encName string, ee encDriver, w *encWriterSwitch,
+	keyType valueType, encNameAsciiAlphaNum bool, js bool) {
+	var m must
+	// use if-else-if, not switch (which compiles to binary-search)
+	// since keyType is typically valueTypeString, branch prediction is pretty good.
+	if keyType == valueTypeString {
+		if js && encNameAsciiAlphaNum { // keyType == valueTypeString
+			// w.writen1('"')
+			// w.writestr(encName)
+			// w.writen1('"')
+			// ----
+			// w.writestr(`"` + encName + `"`)
+			// ----
+			// do concat myself, so it is faster than the generic string concat
+			b := make([]byte, len(encName)+2)
+			copy(b[1:], encName)
+			b[0] = '"'
+			b[len(b)-1] = '"'
+			w.writeb(b)
+		} else { // keyType == valueTypeString
+			ee.EncodeStringEnc(cUTF8, encName)
+		}
+	} else if keyType == valueTypeInt {
+		ee.EncodeInt(m.Int(strconv.ParseInt(encName, 10, 64)))
+	} else if keyType == valueTypeUint {
+		ee.EncodeUint(m.Uint(strconv.ParseUint(encName, 10, 64)))
+	} else if keyType == valueTypeFloat {
+		ee.EncodeFloat64(m.Float(strconv.ParseFloat(encName, 64)))
+	}
 }
 
 // func encStringAsRawBytesMaybe(ee encDriver, s string, stringToRaw bool) {
