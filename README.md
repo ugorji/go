@@ -5,7 +5,7 @@
 [![rcard](https://goreportcard.com/badge/github.com/ugorji/go/codec?v=4)](https://goreportcard.com/report/github.com/ugorji/go/codec)
 [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/ugorji/go/master/LICENSE)
 
-# go/codec
+# go-codec
 
 This repository contains the `go-codec` library,
 a High Performance and Feature-Rich Idiomatic encode/decode and rpc library for
@@ -24,4 +24,22 @@ For more information:
 Install using:
 
     go get github.com/ugorji/go/codec
+
+# Import Path
+
+The name of the github repo is being changed from `go` to `go-codec`.
+This clarifies that this repo is only for the `go-codec`.
+
+However, this package has always had a stable import path of "github.com/ugorji/go/codec".
+We CANNOT change that without negatively affecting all our users.
+
+Consequently, we enforce this import path by specifying it in the following files:
+
+  - `go.mod`
+  - `codec/0_importpath.go`
+
+If you have a fork and want to change the package path, you will need to modify the above files.
+
+
+
 
