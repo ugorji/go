@@ -27,10 +27,7 @@ Install using:
 
 # Import Path
 
-The name of the github repo is being changed from `go` to `go-codec`.
-This clarifies that this repo is only for the `go-codec`.
-
-However, this package has always had a stable import path of "github.com/ugorji/go/codec".
+This package has always had a stable import path of "github.com/ugorji/go/codec".
 We CANNOT change that without negatively affecting all our users.
 
 Consequently, we enforce this import path by specifying it in the following files:
@@ -39,7 +36,3 @@ Consequently, we enforce this import path by specifying it in the following file
   - `codec/0_importpath.go`
 
 If you have a fork and want to change the package path, you will need to modify the above files.
-
-
-
-
