@@ -132,14 +132,15 @@ _codegenerators() {
     # Note: ensure you run the codecgen for this codebase/directory i.e. ./codecgen/codecgen
     local c9="codecgen-scratch.go"
     local c7="$zmydir/codecgen"
+    local c8="$c7/__codecgen"
     true &&
         echo "codecgen ... " &&
-        if [[ $zforce || ! -f "$c7/codecgen" || "$c7/gen.go" -nt "$c7/codecgen" ]]; then
-            echo "rebuilding codecgen ... " && ( cd codecgen && go build -o codecgen ${zargs[*]} . )
+        if [[ $zforce || ! -f "$c8" || "$c7/gen.go" -nt "$c8" ]]; then
+            echo "rebuilding codecgen ... " && ( cd codecgen && go build -o $c8 ${zargs[*]} . )
         fi &&
-        $c7/codecgen -rt codecgen -t 'codecgen generated' -o values_codecgen${zsfx} -d 19780 $zfin $zfin2 &&
+        $c8 -rt codecgen -t 'codecgen generated' -o values_codecgen${zsfx} -d 19780 $zfin $zfin2 &&
         cp mammoth2_generated_test.go $c9 &&
-        $c7/codecgen -t '!notfastpath' -o mammoth2_codecgen${zsfx} -d 19781 mammoth2_generated_test.go &&
+        $c8 -t '!notfastpath' -o mammoth2_codecgen${zsfx} -d 19781 mammoth2_generated_test.go &&
         rm -f $c9 &&
         echo "generators done!" 
 }
@@ -150,9 +151,9 @@ _prebuild() {
     zfin="test_values.generated.go"
     zfin2="test_values_flex.generated.go"
     zsfx="_generated_test.go"
-    # zpkg="ugorji.net/codec"
-    zpkg=${zmydir##*/src/}
-    zgobase=${zmydir%%/src/*}
+    zpkg="github.com/ugorji/go/codec"
+    # zpkg=${zmydir##*/src/}
+    # zgobase=${zmydir%%/src/*}
     # rm -f *_generated_test.go 
     rm -f codecgen-*.go &&
         _build &&
