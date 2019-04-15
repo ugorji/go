@@ -51,8 +51,6 @@ import (
 	"testing"
 )
 
-// DO NOT REMOVE - replacement line for go-codec-bench import declaration tag //
-
 type testHED struct {
 	H Handle
 	E *Encoder
