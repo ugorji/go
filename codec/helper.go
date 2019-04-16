@@ -582,10 +582,24 @@ type BasicHandle struct {
 // basicHandle returns an initialized BasicHandle from the Handle.
 func basicHandle(hh Handle) (x *BasicHandle) {
 	x = hh.getBasicHandle()
-	if atomic.CompareAndSwapUint32(&x.inited, 0, 1) {
-		x.be = hh.isBinary()
-		_, x.js = hh.(*JsonHandle)
-		x.n = hh.Name()[0]
+	// ** We need to simulate once.Do, to ensure no data race within the block.
+	// ** Consequently, below would not work.
+	// if atomic.CompareAndSwapUint32(&x.inited, 0, 1) {
+	// 	x.be = hh.isBinary()
+	// 	_, x.js = hh.(*JsonHandle)
+	// 	x.n = hh.Name()[0]
+	// }
+
+	// simulate once.Do using our own stored flag and mutex
+	if atomic.LoadUint32(&x.inited) == 0 {
+		x.mu.Lock()
+		if x.inited == 0 {
+			x.be = hh.isBinary()
+			_, x.js = hh.(*JsonHandle)
+			x.n = hh.Name()[0]
+			atomic.StoreUint32(&x.inited, 1)
+		}
+		x.mu.Unlock()
 	}
 	return
 }
