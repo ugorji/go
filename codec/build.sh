@@ -146,7 +146,7 @@ _codegenerators() {
 }
 
 _prebuild() {
-    echo "prebuild: zforce: $zforce , zexternal: $zexternal"
+    echo "prebuild: zforce: $zforce"
     zmydir=`pwd`
     zfin="test_values.generated.go"
     zfin2="test_values_flex.generated.go"
@@ -168,9 +168,8 @@ _prebuild() {
 
 _make() {
     zforce=1
-    zexternal=1
     (cd codecgen && go install ${zargs[*]} .) && _prebuild && go install ${zargs[*]} .
-    unset zforce zexternal
+    unset zforce
 }
 
 _clean() {
@@ -227,15 +226,14 @@ EOF
 _main() {
     if [[ -z "$1" ]]; then _usage; return 1; fi
     local x
-    unset zforce zexternal
+    unset zforce
     zargs=()
     zbenchflags=""
     OPTIND=1
-    while getopts ":ctmnrgupfvxlzdb:" flag
+    while getopts ":ctmnrgpfvlzdb:" flag
     do
         case "x$flag" in
             'xf') zforce=1 ;;
-            'xx') zexternal=1 ;;
             'xv') zverbose=1 ;;
             'xl') zargs+=("-gcflags"); zargs+=("-l=4") ;;
             'xn') zargs+=("-gcflags"); zargs+=("-m=2") ;;
@@ -252,13 +250,12 @@ _main() {
         'xm') _make "$@" ;;
         'xr') _release "$@" ;;
         'xg') _go ;;
-        'xu') _githubupdate ;;
         'xp') _prebuild "$@" ;;
         'xc') _clean "$@" ;;
         'xz') _analyze "$@" ;;
         'xb') _bench "$@" ;;
     esac
-    unset zforce zexternal 
+    unset zforce
 }
 
 [ "." = `dirname $0` ] && _main "$@"

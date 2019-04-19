@@ -590,18 +590,26 @@ func basicHandle(hh Handle) (x *BasicHandle) {
 	// 	x.n = hh.Name()[0]
 	// }
 
-	// simulate once.Do using our own stored flag and mutex
+	// simulate once.Do using our own stored flag and mutex as a CompareAndSwap
+	// is not sufficient, since a race condition can occur within init(Handle) function.
+	// init is made noinline, so that this function can be inlined by its caller.
 	if atomic.LoadUint32(&x.inited) == 0 {
-		x.mu.Lock()
-		if x.inited == 0 {
-			x.be = hh.isBinary()
-			_, x.js = hh.(*JsonHandle)
-			x.n = hh.Name()[0]
-			atomic.StoreUint32(&x.inited, 1)
-		}
-		x.mu.Unlock()
+		x.init(hh)
 	}
 	return
+}
+
+//go:noinline
+func (x *BasicHandle) init(hh Handle) {
+	// make it uninlineable, as it is called at most once
+	x.mu.Lock()
+	if x.inited == 0 {
+		x.be = hh.isBinary()
+		_, x.js = hh.(*JsonHandle)
+		x.n = hh.Name()[0]
+		atomic.StoreUint32(&x.inited, 1)
+	}
+	x.mu.Unlock()
 }
 
 func (x *BasicHandle) getBasicHandle() *BasicHandle {
