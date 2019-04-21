@@ -23,13 +23,11 @@ codec/encoding library for binc, msgpack, cbor, json.
 
 Supported Serialization formats are:
 
-```
     - msgpack: https://github.com/msgpack/msgpack
     - binc:    http://github.com/ugorji/binc
     - cbor:    http://cbor.io http://tools.ietf.org/html/rfc7049
     - json:    http://json.org http://tools.ietf.org/html/rfc7159
     - simple:
-```
 
 This package will carefully use 'unsafe' for performance reasons in specific
 places. You can build without unsafe use by passing the safe or appengine
@@ -46,7 +44,6 @@ standard library (ie json, xml, gob, etc).
 
 Rich Feature Set includes:
 
-```
     - Simple but extremely powerful and feature-rich API
     - Support for go1.4 and above, while selectively using newer APIs for later releases
     - Excellent code coverage ( > 90% )
@@ -97,7 +94,6 @@ Rich Feature Set includes:
       - For messagepack, provide rpc server/client codec to support
         msgpack-rpc protocol defined at:
         https://github.com/msgpack-rpc/msgpack-rpc/blob/master/spec.md
-```
 
 
 ## Extension Support
@@ -126,14 +122,12 @@ these however you like.
 This package maintains symmetry in the encoding and decoding halfs. We
 determine how to encode or decode by walking this decision tree
 
-```
     - is type a codec.Selfer?
     - is there an extension registered for the type?
     - is format binary, and is type a encoding.BinaryMarshaler and BinaryUnmarshaler?
     - is format specifically json, and is type a encoding/json.Marshaler and Unmarshaler?
     - is format text-based, and type an encoding.TextMarshaler and TextUnmarshaler?
     - else we use a pair of functions based on the "kind" of the type e.g. map, slice, int64, etc
-```
 
 This symmetry is important to reduce chances of issues happening because the
 encoding and decoding sides are out of sync e.g. decoded via very specific
@@ -159,7 +153,6 @@ The Encoder and Decoder are NOT safe for concurrent use.
 
 Consequently, the usage model is basically:
 
-```
     - Create and initialize the Handle before any use.
       Once created, DO NOT modify it.
     - Multiple Encoders or Decoders can now use the Handle concurrently.
@@ -167,7 +160,6 @@ Consequently, the usage model is basically:
     - However, each Encoder or Decoder MUST not be used concurrently
     - To re-use an Encoder/Decoder, call Reset(...) on it first.
       This allows you use state maintained on the Encoder/Decoder.
-```
 
 Sample usage model:
 
@@ -251,13 +243,11 @@ Please see http://github.com/ugorji/go-codec-bench .
 Struct fields matching the following are ignored during encoding and
 decoding
 
-```
     - struct tag value set to -
     - func, complex numbers, unsafe pointers
     - unexported and not embedded
     - unexported and embedded and not struct kind
     - unexported and embedded pointers (from go1.10)
-```
 
 Every other field in a struct will be encoded/decoded.
 
