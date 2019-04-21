@@ -51,7 +51,7 @@ import (
 	"testing"
 )
 
-// __DO_NOT_REMOVE__NEEDED_FOR_REPLACING__IMPORT_PATH__FOR_CODEC_BENCH__
+import . "github.com/ugorji/go/codec"
 
 type testHED struct {
 	H Handle

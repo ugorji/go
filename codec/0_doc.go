@@ -14,10 +14,6 @@ Supported Serialization formats are:
   - json:    http://json.org http://tools.ietf.org/html/rfc7159
   - simple:
 
-To install:
-
-    go get github.com/ugorji/go/codec
-
 This package will carefully use 'unsafe' for performance reasons in specific places.
 You can build without unsafe use by passing the safe or appengine tag
 i.e. 'go install -tags=safe ...'. Note that unsafe is only supported for the last 3

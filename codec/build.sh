@@ -119,6 +119,9 @@ run("mammoth2-test.go.tmpl", "mammoth2_generated_test.go")
 }
 EOF
 
+    sed -e 's+// __DO_NOT_REMOVE__NEEDED_FOR_REPLACING__IMPORT_PATH__FOR_CODEC_BENCH__+import . "github.com/ugorji/go/codec"+' \
+        shared_test.go > bench/shared_test.go
+    
     # explicitly return 0 if this passes, else return 1
     go run -tags "notfastpath safe codecgen.exec" gen-from-tmpl.generated.go &&
         rm -f gen-from-tmpl.*generated.go &&
@@ -127,43 +130,45 @@ EOF
 }
 
 _codegenerators() {
-    if ! [[ $zforce || $(_ng "values_codecgen${zsfx}") ]]; then return 0; fi
-
-    # Note: ensure you run the codecgen for this codebase/directory i.e. ./codecgen/codecgen
-    local c9="codecgen-scratch.go"
-    local c7="$zmydir/codecgen"
+    local c5="_generated_test.go"
+    local c7="$PWD/codecgen"
     local c8="$c7/__codecgen"
+    local c9="codecgen-scratch.go"
+
+    if ! [[ $zforce || $(_ng "values_codecgen${c5}") ]]; then return 0; fi
+    
+    # Note: ensure you run the codecgen for this codebase/directory i.e. ./codecgen/codecgen
     true &&
         echo "codecgen ... " &&
         if [[ $zforce || ! -f "$c8" || "$c7/gen.go" -nt "$c8" ]]; then
             echo "rebuilding codecgen ... " && ( cd codecgen && go build -o $c8 ${zargs[*]} . )
         fi &&
-        $c8 -rt codecgen -t 'codecgen generated' -o values_codecgen${zsfx} -d 19780 $zfin $zfin2 &&
+        $c8 -rt codecgen -t 'codecgen generated' -o values_codecgen${c5} -d 19780 $zfin $zfin2 &&
         cp mammoth2_generated_test.go $c9 &&
-        $c8 -t '!notfastpath' -o mammoth2_codecgen${zsfx} -d 19781 mammoth2_generated_test.go &&
+        $c8 -t '!notfastpath' -o mammoth2_codecgen${c5} -d 19781 mammoth2_generated_test.go &&
         rm -f $c9 &&
         echo "generators done!" 
 }
 
 _prebuild() {
     echo "prebuild: zforce: $zforce"
-    zmydir=`pwd`
+    local d="$PWD"
     zfin="test_values.generated.go"
     zfin2="test_values_flex.generated.go"
-    zsfx="_generated_test.go"
     zpkg="github.com/ugorji/go/codec"
-    # zpkg=${zmydir##*/src/}
-    # zgobase=${zmydir%%/src/*}
+    # zpkg=${d##*/src/}
+    # zgobase=${d%%/src/*}
     # rm -f *_generated_test.go 
     rm -f codecgen-*.go &&
         _build &&
-        cp $zmydir/values_test.go $zmydir/$zfin &&
-        cp $zmydir/values_flex_test.go $zmydir/$zfin2 &&
+        cp $d/values_test.go $d/$zfin &&
+        cp $d/values_flex_test.go $d/$zfin2 &&
         _codegenerators &&
         if [[ "$(type -t _codegenerators_external )" = "function" ]]; then _codegenerators_external ; fi &&
         if [[ $zforce ]]; then go install ${zargs[*]} .; fi &&
         echo "prebuild done successfully"
-    rm -f $zmydir/$zfin $zmydir/$zfin2 
+    rm -f $d/$zfin $d/$zfin2
+    unset zfin zfin2 zpkg
 }
 
 _make() {
@@ -255,7 +260,7 @@ _main() {
         'xz') _analyze "$@" ;;
         'xb') _bench "$@" ;;
     esac
-    unset zforce
+    unset zforce zargs zbenchflags
 }
 
 [ "." = `dirname $0` ] && _main "$@"
