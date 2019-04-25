@@ -2667,7 +2667,7 @@ func (z *sfiRvPooler) get(newlen int) (fkvs []sfiRv) {
 	return
 }
 
-// xdebugf prints the message in red on the terminal.
+// xdebugf printf. the message in red on the terminal.
 // Use it in place of fmt.Printf (which it calls internally)
 func xdebugf(pattern string, args ...interface{}) {
 	var delim string
@@ -2701,7 +2701,7 @@ func xdebugf(pattern string, args ...interface{}) {
 // 		return "UTC"
 // 	}
 // 	var tzname = []byte("UTC+00:00")
-// 	//tzname := fmt.Sprintf("UTC%s%02d:%02d", tzsign, tz/60, tz%60) //perf issue using Sprintf. inline below.
+// 	//tzname := fmt.Sprintf("UTC%s%02d:%02d", tzsign, tz/60, tz%60) //perf issue using Sprintf.. inline below.
 // 	//tzhr, tzmin := tz/60, tz%60 //faster if u convert to int first
 // 	var tzhr, tzmin int16
 // 	if tzint < 0 {

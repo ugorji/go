@@ -1173,7 +1173,7 @@ func bincDecodeTime(bs []byte) (tt time.Time, err error) {
 		return
 	}
 	// In stdlib time.Parse, when a date is parsed without a zone name, it uses "" as zone name.
-	// However, we need name here, so it can be shown when time is printed.
+	// However, we need name here, so it can be shown when time is printf.d.
 	// Zone name is in form: UTC-08:00.
 	// Note that Go Libs do not give access to dst flag, so we ignore dst bits
 

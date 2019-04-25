@@ -1012,7 +1012,7 @@ func testCodecEmbeddedPointer(t *testing.T, h Handle) {
 func testCodecUnderlyingType(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 	// Manual Test.
-	// Run by hand, with accompanying print statements in fast-path.go
+	// Run by hand, with accompanying printf.statements in fast-path.go
 	// to ensure that the fast functions are called.
 	type T1 map[string]string
 	v := T1{"1": "1s", "2": "2s"}

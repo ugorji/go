@@ -2544,7 +2544,7 @@ func (d *Decoder) mustDecode(v interface{}) {
 
 	d.bi.calls++
 	d.decode(v)
-	// xprintf(">>>>>>>> >>>>>>>> num decFns: %v\n", d.cf.sn)
+	// xprintf.(">>>>>>>> >>>>>>>> num decFns: %v\n", d.cf.sn)
 	d.bi.calls--
 	if !d.h.ExplicitRelease && d.bi.calls == 0 {
 		d.bi.release()
