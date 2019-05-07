@@ -1492,13 +1492,15 @@ func (e *Encoder) mustEncode(v interface{}) {
 	e.wf.calls++
 
 	e.encode(v)
-	e.e.atEndOfEncode()
-	e.w.end()
 
 	e.wf.calls--
 
-	if !e.h.ExplicitRelease && e.wf.calls == 0 {
-		e.wf.release()
+	if e.wf.calls == 0 {
+		e.e.atEndOfEncode()
+		e.w.end()
+		if !e.h.ExplicitRelease {
+			e.wf.release()
+		}
 	}
 }
 
