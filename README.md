@@ -29,12 +29,12 @@ Supported Serialization formats are:
   - json:    http://json.org http://tools.ietf.org/html/rfc7159
   - simple:
 
-This package will carefully use 'unsafe' for performance reasons in specific
-places. You can build without unsafe use by passing the safe or appengine
-tag i.e. 'go install -tags=safe ...'. Note that unsafe is only supported for
-the last 3 go sdk versions e.g. current go release is go 1.9, so we support
-unsafe use only from go 1.7+ . This is because supporting unsafe requires
-knowledge of implementation details.
+This package will carefully use 'package unsafe' for performance reasons in
+specific places. You can build without unsafe use by passing the safe or
+appengine tag i.e. 'go install -tags=safe ...'. Note that unsafe is only
+supported for the last 4 go releases e.g. current go release is go 1.12, so
+we support unsafe use only from go 1.9+ . This is because supporting unsafe
+requires knowledge of implementation details.
 
 For detailed usage information, read the primer at
 http://ugorji.net/blog/go-codec-primer .
@@ -232,10 +232,36 @@ You can run the tag 'safe' to run tests or build in safe mode. e.g.
     go test -tags "alltests safe" -run Suite
 ```
 
-
 ## Running Benchmarks
 
+```
+    cd bench
+    go test -bench . -benchmem -benchtime 1s
+```
+
 Please see http://github.com/ugorji/go-codec-bench .
+
+
+## Managing Binary Size
+
+This package could add up to 10MB to the size of your binaries.
+
+This is because we include some a auto-generated file:
+`fast-path.generated.go` to help with performance when encoding/decoding
+slices and maps of built in numeric, boolean, string and interface{} types.
+
+You can override this by building (or running tests and benchmarks) with the
+tag: `notfastpath`.
+
+```
+    go install -tags notfastpath
+    go build -tags notfastpath
+    go test -tags notfastpath
+```
+
+Be aware that, at least in our representative microbenchmarks for cbor (for
+example), we see up to 33% increase in decoding and 50% increase in encoding
+speeds. YMMV.
 
 
 ## Caveats
