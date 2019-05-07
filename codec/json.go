@@ -585,11 +585,19 @@ func (e *jsonEncDriver) quoteStr(s string) {
 }
 
 func (e *jsonEncDriver) atEndOfEncode() {
-	if e.c == 0 { // scalar written
-		e.w.writen1(' ')
-	} else if e.h.TermWhitespace {
-		e.w.writen1('\n')
+	// if e.c == 0 { // scalar written, output space
+	// 	e.w.writen1(' ')
+	// } else if e.h.TermWhitespace { // container written, output new-line
+	// 	e.w.writen1('\n')
+	// }
+	if e.h.TermWhitespace {
+		if e.c == 0 { // scalar written, output space
+			e.w.writen1(' ')
+		} else { // container written, output new-line
+			e.w.writen1('\n')
+		}
 	}
+
 	// e.c = 0
 }
 

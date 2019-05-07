@@ -1460,7 +1460,8 @@ func doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
 	// then decode, and validate that the correct value was decoded.
 	fnStrChk := func() {
 		// check that output started with ", and ended with " true
-		if !(len(b) >= 7 && b[0] == '"' && string(b[len(b)-7:]) == `" true `) {
+		// if !(len(b) >= 7 && b[0] == '"' && string(b[len(b)-7:]) == `" true `) {
+		if !(len(b) >= 5 && b[0] == '"' && string(b[len(b)-5:]) == `"true`) {
 			logT(t, "Expecting a JSON string, got: '%s'", b)
 			failT(t)
 		}
