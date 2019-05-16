@@ -123,6 +123,15 @@ const (
 	//
 	// From testing, it didn't make much difference in runtime, so keep as true (one function only)
 	genUseOneFunctionForDecStructMap = true
+
+	// genFastpathCanonical configures whether we support Canonical in fast path.
+	// The savings is not much.
+	//
+	// NOTE: This MUST ALWAYS BE TRUE. fast-path.go.tmp doesn't handle it being false.
+	genFastpathCanonical = true // MUST be true
+
+	// genFastpathTrimTypes configures whether we trim uncommon fastpath types.
+	genFastpathTrimTypes = true
 )
 
 type genStructMapStyle uint8
@@ -814,7 +823,7 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 		if rtid == uint8SliceTypId {
 			x.line("r.EncodeStringBytesRaw([]byte(" + varname + "))")
 		} else if fastpathAV.index(rtid) != -1 {
-			g := x.newGenV(t)
+			g := x.newFastpathGenV(t)
 			x.line("z.F." + g.MethodNamePfx("Enc", false) + "V(" + varname + ", e)")
 		} else {
 			x.xtraSM(varname, t, true, false)
@@ -828,7 +837,7 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 		// - else call Encoder.encode(XXX) on it.
 		// x.line("if " + varname + " == nil { \nr.EncodeNil()\n } else { ")
 		if fastpathAV.index(rtid) != -1 {
-			g := x.newGenV(t)
+			g := x.newFastpathGenV(t)
 			x.line("z.F." + g.MethodNamePfx("Enc", false) + "V(" + varname + ", e)")
 		} else {
 			x.xtraSM(varname, t, true, false)
@@ -1382,7 +1391,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 			x.linef("%s%s = r.DecodeBytes(%s(%s[]byte)(%s), false)",
 				ptrPfx, varname, ptrPfx, ptrPfx, varname)
 		} else if fastpathAV.index(rtid) != -1 {
-			g := x.newGenV(t)
+			g := x.newFastpathGenV(t)
 			x.linef("z.F.%sX(%s%s, d)", g.MethodNamePfx("Dec", false), addrPfx, varname)
 		} else {
 			x.xtraSM(varname, t, false, isptr)
@@ -1394,7 +1403,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		// - if elements are primitives or Selfers, call dedicated function on each member.
 		// - else call Encoder.encode(XXX) on it.
 		if fastpathAV.index(rtid) != -1 {
-			g := x.newGenV(t)
+			g := x.newFastpathGenV(t)
 			x.linef("z.F.%sX(%s%s, d)", g.MethodNamePfx("Dec", false), addrPfx, varname)
 		} else {
 			x.xtraSM(varname, t, false, isptr)
@@ -1701,15 +1710,17 @@ func (x *genRunner) decStruct(varname string, rtid uintptr, t reflect.Type) {
 
 // --------
 
-type genV struct {
-	// genV is either a primitive (Primitive != "") or a map (MapKey != "") or a slice
-	MapKey    string
-	Elem      string
-	Primitive string
-	Size      int
+type fastpathGenV struct {
+	// fastpathGenV is either a primitive (Primitive != "") or a map (MapKey != "") or a slice
+	MapKey      string
+	Elem        string
+	Primitive   string
+	Size        int
+	NoCanonical bool
 }
 
-func (x *genRunner) newGenV(t reflect.Type) (v genV) {
+func (x *genRunner) newFastpathGenV(t reflect.Type) (v fastpathGenV) {
+	v.NoCanonical = !genFastpathCanonical
 	switch t.Kind() {
 	case reflect.Slice, reflect.Array:
 		te := t.Elem()
@@ -1721,12 +1732,12 @@ func (x *genRunner) newGenV(t reflect.Type) (v genV) {
 		v.MapKey = x.genTypeName(tk)
 		v.Size = int(te.Size() + tk.Size())
 	default:
-		panic("unexpected type for newGenV. Requires map or slice type")
+		panic("unexpected type for newFastpathGenV. Requires map or slice type")
 	}
 	return
 }
 
-func (x *genV) MethodNamePfx(prefix string, prim bool) string {
+func (x *fastpathGenV) MethodNamePfx(prefix string, prim bool) string {
 	var name []byte
 	if prefix != "" {
 		name = append(name, prefix...)
@@ -1878,7 +1889,7 @@ func genIsImmutable(t reflect.Type) (v bool) {
 
 type genInternal struct {
 	Version int
-	Values  []genV
+	Values  []fastpathGenV
 }
 
 func (x genInternal) FastpathLen() (l int) {
@@ -1931,9 +1942,13 @@ func genInternalNonZeroValue(s string) string {
 
 func genInternalEncCommandAsString(s string, vname string) string {
 	switch s {
-	case "uint", "uint8", "uint16", "uint32", "uint64":
+	case "uint64":
+		return "ee.EncodeUint(" + vname + ")"
+	case "uint", "uint8", "uint16", "uint32":
 		return "ee.EncodeUint(uint64(" + vname + "))"
-	case "int", "int8", "int16", "int32", "int64":
+	case "int64":
+		return "ee.EncodeInt(" + vname + ")"
+	case "int", "int8", "int16", "int32":
 		return "ee.EncodeInt(int64(" + vname + "))"
 	case "string":
 		return "if e.h.StringToRaw { ee.EncodeStringBytesRaw(bytesView(" + vname + ")) " +
@@ -1992,12 +2007,11 @@ func genInternalDecCommandAsString(s string) string {
 func genInternalSortType(s string, elem bool) string {
 	for _, v := range [...]string{"int", "uint", "float", "bool", "string"} {
 		if strings.HasPrefix(s, v) {
+			if v == "int" || v == "uint" || v == "float" {
+				v += "64"
+			}
 			if elem {
-				if v == "int" || v == "uint" || v == "float" {
-					return v + "64"
-				} else {
-					return v
-				}
+				return v
 			}
 			return v + "Slice"
 		}
@@ -2024,47 +2038,9 @@ var genInternalTmplFuncs template.FuncMap
 var genInternalOnce sync.Once
 
 func genInternalInit() {
-	types := [...]string{
-		"interface{}",
-		"string",
-		"float32",
-		"float64",
-		"uint",
-		"uint8",
-		"uint16",
-		"uint32",
-		"uint64",
-		"uintptr",
-		"int",
-		"int8",
-		"int16",
-		"int32",
-		"int64",
-		"bool",
-	}
-	// keep as slice, so it is in specific iteration order.
-	// Initial order was uint64, string, interface{}, int, int64
-	mapvaltypes := [...]string{
-		"interface{}",
-		"string",
-		"uint",
-		"uint8",
-		"uint16",
-		"uint32",
-		"uint64",
-		"uintptr",
-		"int",
-		"int8",
-		"int16",
-		"int32",
-		"int64",
-		"float32",
-		"float64",
-		"bool",
-	}
 	wordSizeBytes := int(intBitsize) / 8
 
-	mapvaltypes2 := map[string]int{
+	typesizes := map[string]int{
 		"interface{}": 2 * wordSizeBytes,
 		"string":      2 * wordSizeBytes,
 		"uint":        1 * wordSizeBytes,
@@ -2082,20 +2058,110 @@ func genInternalInit() {
 		"float64":     8,
 		"bool":        1,
 	}
+
+	// keep as slice, so it is in specific iteration order.
+	// Initial order was uint64, string, interface{}, int, int64, ...
+
+	var types = [...]string{
+		"interface{}",
+		"string",
+		"float32",
+		"float64",
+		"uint",
+		"uint8",
+		"uint16",
+		"uint32",
+		"uint64",
+		"uintptr",
+		"int",
+		"int8",
+		"int16",
+		"int32",
+		"int64",
+		"bool",
+	}
+
+	var primitivetypes, slicetypes, mapkeytypes, mapvaltypes []string
+
+	primitivetypes = types[:]
+	slicetypes = types[:]
+	mapkeytypes = types[:]
+	mapvaltypes = types[:]
+
+	if genFastpathTrimTypes {
+		mapkeytypes = []string{
+			//"interface{}",
+			"string",
+			//"float32",
+			//"float64",
+			"uint",
+			"uint8",
+			//"uint16",
+			//"uint32",
+			"uint64",
+			"uintptr",
+			"int",
+			//"int8",
+			//"int16",
+			//"int32",
+			"int64",
+			// "bool",
+		}
+
+		mapvaltypes = []string{
+			"interface{}",
+			"string",
+			"uint",
+			"uint8",
+			//"uint16",
+			//"uint32",
+			"uint64",
+			"uintptr",
+			"int",
+			//"int8",
+			//"int16",
+			//"int32",
+			"int64",
+			"float32",
+			"float64",
+			"bool",
+		}
+	}
+
+	// var mapkeytypes [len(&types) - 1]string // skip bool
+	// copy(mapkeytypes[:], types[:])
+
+	// var mb []byte
+	// mb = append(mb, '|')
+	// for _, s := range mapkeytypes {
+	// 	mb = append(mb, s...)
+	// 	mb = append(mb, '|')
+	// }
+	// var mapkeytypestr = string(mb)
+
 	var gt = genInternal{Version: genVersion}
 
 	// For each slice or map type, there must be a (symmetrical) Encode and Decode fast-path function
-	for _, s := range types {
-		gt.Values = append(gt.Values, genV{Primitive: s, Size: mapvaltypes2[s]})
+
+	for _, s := range primitivetypes {
+		gt.Values = append(gt.Values,
+			fastpathGenV{Primitive: s, Size: typesizes[s], NoCanonical: !genFastpathCanonical})
+	}
+	for _, s := range slicetypes {
 		// if s != "uint8" { // do not generate fast path for slice of bytes. Treat specially already.
-		// 	gt.Values = append(gt.Values, genV{Elem: s, Size: mapvaltypes2[s]})
+		// 	gt.Values = append(gt.Values, fastpathGenV{Elem: s, Size: typesizes[s]})
 		// }
-		gt.Values = append(gt.Values, genV{Elem: s, Size: mapvaltypes2[s]})
-		if _, ok := mapvaltypes2[s]; !ok {
-			gt.Values = append(gt.Values, genV{MapKey: s, Elem: s, Size: 2 * mapvaltypes2[s]})
-		}
+		gt.Values = append(gt.Values,
+			fastpathGenV{Elem: s, Size: typesizes[s], NoCanonical: !genFastpathCanonical})
+	}
+	for _, s := range mapkeytypes {
+		// if _, ok := typesizes[s]; !ok {
+		// if strings.Contains(mapkeytypestr, "|"+s+"|") {
+		// 	gt.Values = append(gt.Values, fastpathGenV{MapKey: s, Elem: s, Size: 2 * typesizes[s]})
+		// }
 		for _, ms := range mapvaltypes {
-			gt.Values = append(gt.Values, genV{MapKey: s, Elem: ms, Size: mapvaltypes2[s] + mapvaltypes2[ms]})
+			gt.Values = append(gt.Values,
+				fastpathGenV{MapKey: s, Elem: ms, Size: typesizes[s] + typesizes[ms], NoCanonical: !genFastpathCanonical})
 		}
 	}
 

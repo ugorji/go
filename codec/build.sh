@@ -116,17 +116,18 @@ run("fast-path.go.tmpl", "fast-path.generated.go")
 run("gen-helper.go.tmpl", "gen-helper.generated.go")
 run("mammoth-test.go.tmpl", "mammoth_generated_test.go")
 run("mammoth2-test.go.tmpl", "mammoth2_generated_test.go")
+// run("sort-slice.go.tmpl", "sort-slice.generated.go")
 }
 EOF
 
     sed -e 's+// __DO_NOT_REMOVE__NEEDED_FOR_REPLACING__IMPORT_PATH__FOR_CODEC_BENCH__+import . "github.com/ugorji/go/codec"+' \
         shared_test.go > bench/shared_test.go
-    
+
     # explicitly return 0 if this passes, else return 1
-    go run -tags "notfastpath safe codecgen.exec" gen-from-tmpl.generated.go &&
-        rm -f gen-from-tmpl.*generated.go &&
-        return 0
-    return 1
+    go run -tags "prebuild" prebuild.go || return 1
+    go run -tags "notfastpath safe codecgen.exec" gen-from-tmpl.generated.go || return 1
+    rm -f gen-from-tmpl.*generated.go
+    return 0
 }
 
 _codegenerators() {

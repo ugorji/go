@@ -650,7 +650,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
 					}
 				}
 			} else {
@@ -666,7 +666,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
 					}
 				}
 			}
@@ -752,7 +752,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16N, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
 					}
 				}
 			} else {
@@ -768,7 +768,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16N, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
 					}
 				}
 			}
@@ -779,7 +779,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16E, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
 					}
 				}
 			} else {
@@ -795,7 +795,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16E, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
 					}
 				}
 			}
@@ -931,7 +931,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16), d)
 				}
 			}
 		case "AI64arr0":
@@ -967,7 +967,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16N, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16N), d)
 				}
 			}
 		case "AMSU16E":
@@ -976,7 +976,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16E, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16E), d)
 				}
 			}
 		default:
@@ -1168,7 +1168,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16), d)
 		}
 	}
 	yyj30++
@@ -1244,7 +1244,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16N, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16N), d)
 		}
 	}
 	yyj30++
@@ -1263,7 +1263,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16E, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16E), d)
 		}
 	}
 	for {
@@ -3100,7 +3100,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
 					}
 				}
 			} else {
@@ -3116,7 +3116,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
 					}
 				}
 			}
@@ -3202,7 +3202,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16N, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
 					}
 				}
 			} else {
@@ -3218,7 +3218,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16N, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
 					}
 				}
 			}
@@ -3229,7 +3229,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16E, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
 					}
 				}
 			} else {
@@ -3245,7 +3245,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16E, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
 					}
 				}
 			}
@@ -3704,7 +3704,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16), d)
 				}
 			}
 		case "AI64arr0":
@@ -3740,7 +3740,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16N, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16N), d)
 				}
 			}
 		case "AMSU16E":
@@ -3749,7 +3749,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16E, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16E), d)
 				}
 			}
 		case "NotAnon":
@@ -4490,7 +4490,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16), d)
 		}
 	}
 	yyj77++
@@ -4566,7 +4566,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16N, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16N), d)
 		}
 	}
 	yyj77++
@@ -4585,7 +4585,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16E, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16E), d)
 		}
 	}
 	yyj77++
@@ -5587,7 +5587,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
 					}
 				}
 			} else {
@@ -5603,7 +5603,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
 					}
 				}
 			}
@@ -5689,7 +5689,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16N, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
 					}
 				}
 			} else {
@@ -5705,7 +5705,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16N, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
 					}
 				}
 			}
@@ -5716,7 +5716,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16E, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
 					}
 				}
 			} else {
@@ -5732,7 +5732,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 				} else {
 					if false {
 					} else {
-						z.F.EncMapStringUint16V(x.AMSU16E, e)
+						h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
 					}
 				}
 			}
@@ -6308,7 +6308,7 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16), d)
 				}
 			}
 		case "AI64arr0":
@@ -6344,7 +6344,7 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16N, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16N), d)
 				}
 			}
 		case "AMSU16E":
@@ -6353,7 +6353,7 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16E, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16E), d)
 				}
 			}
 		case "NotAnon":
@@ -7133,7 +7133,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16), d)
 		}
 	}
 	yyj84++
@@ -7209,7 +7209,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16N, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16N), d)
 		}
 	}
 	yyj84++
@@ -7228,7 +7228,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16E, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16E), d)
 		}
 	}
 	yyj84++
@@ -10877,7 +10877,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					} else {
 						if false {
 						} else {
-							z.F.EncMapStringUint16V(x.AMSU16, e)
+							h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
 						}
 					}
 				} else {
@@ -10897,7 +10897,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					} else {
 						if false {
 						} else {
-							z.F.EncMapStringUint16V(x.AMSU16, e)
+							h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
 						}
 					}
 				}
@@ -11003,7 +11003,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					} else {
 						if false {
 						} else {
-							z.F.EncMapStringUint16V(x.AMSU16N, e)
+							h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
 						}
 					}
 				} else {
@@ -11023,7 +11023,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					} else {
 						if false {
 						} else {
-							z.F.EncMapStringUint16V(x.AMSU16N, e)
+							h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
 						}
 					}
 				}
@@ -11036,7 +11036,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					} else {
 						if false {
 						} else {
-							z.F.EncMapStringUint16V(x.AMSU16E, e)
+							h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
 						}
 					}
 				} else {
@@ -11056,7 +11056,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					} else {
 						if false {
 						} else {
-							z.F.EncMapStringUint16V(x.AMSU16E, e)
+							h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
 						}
 					}
 				}
@@ -12420,7 +12420,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16), d)
 				}
 			}
 		case "AI64arr0":
@@ -12456,7 +12456,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16N, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16N), d)
 				}
 			}
 		case "AMSU16E":
@@ -12465,7 +12465,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				if false {
 				} else {
-					z.F.DecMapStringUint16X(&x.AMSU16E, d)
+					h.decMapstringuint16((*map[string]uint16)(&x.AMSU16E), d)
 				}
 			}
 		case "NotAnon":
@@ -13471,7 +13471,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16), d)
 		}
 	}
 	yyj123++
@@ -13547,7 +13547,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16N, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16N), d)
 		}
 	}
 	yyj123++
@@ -13566,7 +13566,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		if false {
 		} else {
-			z.F.DecMapStringUint16X(&x.AMSU16E, d)
+			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16E), d)
 		}
 	}
 	yyj123++
@@ -14549,6 +14549,83 @@ func (x codecSelfer19780) decwrapStringSlice(v *wrapStringSlice, d *Decoder) {
 	if yyc1 {
 		*v = yyv1
 	}
+}
+
+func (x codecSelfer19780) encMapstringuint16(v map[string]uint16, e *Encoder) {
+	var h codecSelfer19780
+	z, r := GenHelperEncoder(e)
+	_, _, _ = h, z, r
+	r.WriteMapStart(len(v))
+	for yyk1, yyv1 := range v {
+		r.WriteMapElemKey()
+		if false {
+		} else {
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(yyk1)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(yyk1))
+			}
+		}
+		r.WriteMapElemValue()
+		if false {
+		} else {
+			r.EncodeUint(uint64(yyv1))
+		}
+	}
+	r.WriteMapEnd()
+}
+
+func (x codecSelfer19780) decMapstringuint16(v *map[string]uint16, d *Decoder) {
+	var h codecSelfer19780
+	z, r := GenHelperDecoder(d)
+	_, _, _ = h, z, r
+
+	yyv1 := *v
+	yyl1 := r.ReadMapStart()
+	yybh1 := z.DecBasicHandle()
+	if yyv1 == nil {
+		yyrl1 := z.DecInferLen(yyl1, yybh1.MaxInitLen, 18)
+		yyv1 = make(map[string]uint16, yyrl1)
+		*v = yyv1
+	}
+	var yymk1 string
+	var yymv1 uint16
+	var yymg1, yymdn1 bool
+	if yybh1.MapValueReset {
+	}
+	if yyl1 != 0 {
+		yyhl1 := yyl1 > 0
+		for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			r.ReadMapElemKey()
+			if r.TryDecodeAsNil() {
+				yymk1 = ""
+			} else {
+				yymk1 = (string)(r.DecodeString())
+			}
+
+			if yymg1 {
+				yymv1 = yyv1[yymk1]
+			}
+			r.ReadMapElemValue()
+			yymdn1 = false
+			if r.TryDecodeAsNil() {
+				yymdn1 = true
+			} else {
+				yymv1 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
+			}
+
+			if yymdn1 {
+				if yybh1.DeleteOnNilMapValue {
+					delete(yyv1, yymk1)
+				} else {
+					yyv1[yymk1] = 0
+				}
+			} else if yyv1 != nil {
+				yyv1[yymk1] = yymv1
+			}
+		}
+	} // else len==0: TODO: Should we clear map entries?
+	r.ReadMapEnd()
 }
 
 func (x codecSelfer19780) encArray0int64(v *[0]int64, e *Encoder) {

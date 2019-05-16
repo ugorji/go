@@ -226,13 +226,13 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Ele
 	if v == nil { e.e.EncodeNil(); return }
 	ee, esep := e.e, e.hh.hasElemSeparators() 
 	ee.WriteMapStart(len(v))
-	if e.h.Canonical {
+	if e.h.Canonical { {{/* need to figure out .NoCanonical */}}
 		{{if eq .MapKey "interface{}"}}{{/* out of band 
 		*/}}var mksv []byte = make([]byte, 0, len(v)*16) // temporary byte slice for the encoding
 		e2 := NewEncoderBytes(&mksv, e.hh)
-		v2 := make([]bytesI, len(v))
+		v2 := make([]bytesIntf, len(v))
 		var i, l uint
-		var vp *bytesI {{/* put loop variables outside. seems currently needed for better perf */}}
+		var vp *bytesIntf {{/* put loop variables outside. seems currently needed for better perf */}}
 		for k2 := range v {
 			l = uint(len(mksv))
 			e2.MustEncode(k2)
@@ -241,7 +241,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Ele
 			vp.i = k2 
 			i++
 		}
-		sort.Sort(bytesISlice(v2))
+		sort.Sort(bytesIntfSlice(v2))
 		for j := range v2 {
 			if esep { ee.WriteMapElemKey() }
 			e.asis(v2[j].v)
@@ -250,17 +250,17 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Ele
 		} {{else}}{{ $x := sorttype .MapKey true}}v2 := make([]{{ $x }}, len(v))
 		var i uint
 		for k := range v {
-			v2[i] = {{ $x }}(k)
+			v2[i] = {{if eq $x .MapKey}}k{{else}}{{ $x }}(k){{end}}
 			i++
 		}
 		sort.Sort({{ sorttype .MapKey false}}(v2))
 		for _, k2 := range v2 {
 			if esep { ee.WriteMapElemKey() }
-			{{if eq .MapKey "string"}} if e.h.StringToRaw {ee.EncodeStringBytesRaw(bytesView(k2))} else {ee.EncodeStringEnc(cUTF8, k2)} {{else}}{{ $y := printf "%s(k2)" .MapKey }}{{ encmd .MapKey $y }}{{end}}
+			{{if eq .MapKey "string"}} if e.h.StringToRaw {ee.EncodeStringBytesRaw(bytesView(k2))} else {ee.EncodeStringEnc(cUTF8, k2)} {{else}}{{ $y := printf "%s(k2)" .MapKey }}{{if eq $x .MapKey }}{{ $y = "k2" }}{{end}}{{ encmd .MapKey $y }}{{end}}
 			if esep { ee.WriteMapElemValue() }
-			{{ $y := printf "v[%s(k2)]" .MapKey }}{{ encmd .Elem $y }}
+			{{ $y := printf "v[%s(k2)]" .MapKey }}{{if eq $x .MapKey }}{{ $y = "v[k2]" }}{{end}}{{ encmd .Elem $y }}
 		} {{end}}
-	} else {
+	} else { 
 		for k2, v2 := range v {
 			if esep { ee.WriteMapElemKey() }
 			{{if eq .MapKey "string"}} if e.h.StringToRaw {ee.EncodeStringBytesRaw(bytesView(k2))} else {ee.EncodeStringEnc(cUTF8, k2)} {{else}}{{ encmd .MapKey "k2"}}{{end}}

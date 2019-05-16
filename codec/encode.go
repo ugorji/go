@@ -944,13 +944,13 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 			e.encodeValue(rv.MapIndex(mksv[i].r), valFn, true)
 		}
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
-		mksv := make([]uintRv, len(mks))
+		mksv := make([]uint64Rv, len(mks))
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
 			v.v = k.Uint()
 		}
-		sort.Sort(uintRvSlice(mksv))
+		sort.Sort(uint64RvSlice(mksv))
 		for i := range mksv {
 			if elemsep {
 				ee.WriteMapElemKey()
@@ -962,13 +962,13 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 			e.encodeValue(rv.MapIndex(mksv[i].r), valFn, true)
 		}
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		mksv := make([]intRv, len(mks))
+		mksv := make([]int64Rv, len(mks))
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
 			v.v = k.Int()
 		}
-		sort.Sort(intRvSlice(mksv))
+		sort.Sort(int64RvSlice(mksv))
 		for i := range mksv {
 			if elemsep {
 				ee.WriteMapElemKey()
@@ -980,13 +980,13 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 			e.encodeValue(rv.MapIndex(mksv[i].r), valFn, true)
 		}
 	case reflect.Float32:
-		mksv := make([]floatRv, len(mks))
+		mksv := make([]float64Rv, len(mks))
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
 			v.v = k.Float()
 		}
-		sort.Sort(floatRvSlice(mksv))
+		sort.Sort(float64RvSlice(mksv))
 		for i := range mksv {
 			if elemsep {
 				ee.WriteMapElemKey()
@@ -998,13 +998,13 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 			e.encodeValue(rv.MapIndex(mksv[i].r), valFn, true)
 		}
 	case reflect.Float64:
-		mksv := make([]floatRv, len(mks))
+		mksv := make([]float64Rv, len(mks))
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
 			v.v = k.Float()
 		}
-		sort.Sort(floatRvSlice(mksv))
+		sort.Sort(float64RvSlice(mksv))
 		for i := range mksv {
 			if elemsep {
 				ee.WriteMapElemKey()
