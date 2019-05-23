@@ -166,10 +166,11 @@ func (x *genBuf) reset() {
 
 // genRunner holds some state used during a Gen run.
 type genRunner struct {
-	w io.Writer      // output
-	c uint64         // counter used for generating varsfx
-	t []reflect.Type // list of types to run selfer on
+	w io.Writer // output
+	c uint64    // counter used for generating varsfx
+	f uint64    // counter used for saying false
 
+	t  []reflect.Type   // list of types to run selfer on
 	tc reflect.Type     // currently running selfer on this type
 	te map[uintptr]bool // types for which the encoder has been created
 	td map[uintptr]bool // types for which the decoder has been created
@@ -301,7 +302,8 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.hn = "codecSelfer" + x.xs
 	x.line("type " + x.hn + " struct{}")
 	x.line("")
-
+	x.linef("func %sFalse() bool { return false }", x.hn)
+	x.line("")
 	x.varsfxreset()
 	x.line("func init() {")
 	x.linef("if %sGenVersion != %v {", x.cpfx, genVersion)
@@ -429,6 +431,15 @@ func (x *genRunner) genRefPkgs(t reflect.Type) {
 			}
 		}
 	}
+}
+
+// sayFalse will either say "false" or use a function call that returns false.
+func (x *genRunner) sayFalse() string {
+	x.f++
+	if x.f%2 == 0 {
+		return x.hn + "False()"
+	}
+	return "false"
 }
 
 func (x *genRunner) varsfx() string {
@@ -877,6 +888,11 @@ func (x *genRunner) encZero(t reflect.Type) {
 	}
 }
 
+func (x *genRunner) doEncOmitEmptyLine(t2 reflect.StructField, varname string, buf *genBuf) {
+	x.f = 0
+	x.encOmitEmptyLine(t2, varname, buf)
+}
+
 func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf *genBuf) {
 	// smartly check omitEmpty on a struct type, as it may contain uncomparable map/slice/etc.
 	// also, for maps/slices/arrays, check if len ! 0 (not if == zero value)
@@ -899,7 +915,7 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 			break
 		}
 		// buf.s("(")
-		buf.s("false")
+		buf.s(x.sayFalse()) // buf.s("false")
 		for i, n := 0, t2.Type.NumField(); i < n; i++ {
 			f := t2.Type.Field(i)
 			if f.PkgPath != "" { // unexported
@@ -977,7 +993,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 					}
 				}
 			}
-			x.encOmitEmptyLine(t2, varname, &omitline)
+			x.doEncOmitEmptyLine(t2, varname, &omitline)
 			x.linef("%s, // %s", omitline.v(), si.fieldName)
 		}
 		x.line("}")

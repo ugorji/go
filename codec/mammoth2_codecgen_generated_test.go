@@ -30,6 +30,8 @@ var (
 
 type codecSelfer19781 struct{}
 
+func codecSelfer19781False() bool { return false }
+
 func init() {
 	if GenVersion != 10 {
 		_, file, _, _ := runtime.Caller(0)
