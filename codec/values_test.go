@@ -48,11 +48,11 @@ type codecgenC struct {
 	DD []byte
 }
 
-type codecgenG struct {
-	G int
+type TestCodecgenG struct {
+	TestCodecgenG int
 }
 type codecgenH struct {
-	codecgenG
+	TestCodecgenG
 }
 type codecgenI struct {
 	codecgenH

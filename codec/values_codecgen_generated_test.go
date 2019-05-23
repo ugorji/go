@@ -676,7 +676,7 @@ func (x *codecgenC) codecDecodeSelfFromArray(l int, d *Decoder) {
 	r.ReadArrayEnd()
 }
 
-func (x *codecgenG) CodecEncodeSelf(e *Encoder) {
+func (x *TestCodecgenG) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
@@ -700,19 +700,19 @@ func (x *codecgenG) CodecEncodeSelf(e *Encoder) {
 				r.WriteArrayElem()
 				if false {
 				} else {
-					r.EncodeInt(int64(x.G))
+					r.EncodeInt(int64(x.TestCodecgenG))
 				}
 			} else {
 				r.WriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"G\"")
+					z.WriteStr("\"TestCodecgenG\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `G`)
+					r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
 				}
 				r.WriteMapElemValue()
 				if false {
 				} else {
-					r.EncodeInt(int64(x.G))
+					r.EncodeInt(int64(x.TestCodecgenG))
 				}
 			}
 			if yyr2 || yy2arr2 {
@@ -724,7 +724,7 @@ func (x *codecgenG) CodecEncodeSelf(e *Encoder) {
 	}
 }
 
-func (x *codecgenG) CodecDecodeSelf(d *Decoder) {
+func (x *TestCodecgenG) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
@@ -753,7 +753,7 @@ func (x *codecgenG) CodecDecodeSelf(d *Decoder) {
 	}
 }
 
-func (x *codecgenG) codecDecodeSelfFromMap(l int, d *Decoder) {
+func (x *TestCodecgenG) codecDecodeSelfFromMap(l int, d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
@@ -772,11 +772,11 @@ func (x *codecgenG) codecDecodeSelfFromMap(l int, d *Decoder) {
 		yys3 := z.StringView(r.DecodeStringAsBytes())
 		r.ReadMapElemValue()
 		switch yys3 {
-		case "G":
+		case "TestCodecgenG":
 			if r.TryDecodeAsNil() {
-				x.G = 0
+				x.TestCodecgenG = 0
 			} else {
-				x.G = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+				x.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 			}
 		default:
 			z.DecStructFieldNotFound(-1, yys3)
@@ -785,7 +785,7 @@ func (x *codecgenG) codecDecodeSelfFromMap(l int, d *Decoder) {
 	r.ReadMapEnd()
 }
 
-func (x *codecgenG) codecDecodeSelfFromArray(l int, d *Decoder) {
+func (x *TestCodecgenG) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
@@ -804,9 +804,9 @@ func (x *codecgenG) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	r.ReadArrayElem()
 	if r.TryDecodeAsNil() {
-		x.G = 0
+		x.TestCodecgenG = 0
 	} else {
-		x.G = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+		x.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 	}
 	for {
 		yyj5++
@@ -848,19 +848,19 @@ func (x *codecgenH) CodecEncodeSelf(e *Encoder) {
 				r.WriteArrayElem()
 				if false {
 				} else {
-					r.EncodeInt(int64(x.codecgenG.G))
+					r.EncodeInt(int64(x.TestCodecgenG.TestCodecgenG))
 				}
 			} else {
 				r.WriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"G\"")
+					z.WriteStr("\"TestCodecgenG\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `G`)
+					r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
 				}
 				r.WriteMapElemValue()
 				if false {
 				} else {
-					r.EncodeInt(int64(x.codecgenG.G))
+					r.EncodeInt(int64(x.TestCodecgenG.TestCodecgenG))
 				}
 			}
 			if yyr2 || yy2arr2 {
@@ -920,11 +920,11 @@ func (x *codecgenH) codecDecodeSelfFromMap(l int, d *Decoder) {
 		yys3 := z.StringView(r.DecodeStringAsBytes())
 		r.ReadMapElemValue()
 		switch yys3 {
-		case "G":
+		case "TestCodecgenG":
 			if r.TryDecodeAsNil() {
-				x.codecgenG.G = 0
+				x.TestCodecgenG.TestCodecgenG = 0
 			} else {
-				x.codecgenG.G = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+				x.TestCodecgenG.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 			}
 		default:
 			z.DecStructFieldNotFound(-1, yys3)
@@ -952,9 +952,9 @@ func (x *codecgenH) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	r.ReadArrayElem()
 	if r.TryDecodeAsNil() {
-		x.codecgenG.G = 0
+		x.TestCodecgenG.TestCodecgenG = 0
 	} else {
-		x.codecgenG.G = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+		x.TestCodecgenG.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 	}
 	for {
 		yyj5++
@@ -996,19 +996,19 @@ func (x *codecgenI) CodecEncodeSelf(e *Encoder) {
 				r.WriteArrayElem()
 				if false {
 				} else {
-					r.EncodeInt(int64(x.codecgenH.codecgenG.G))
+					r.EncodeInt(int64(x.codecgenH.TestCodecgenG.TestCodecgenG))
 				}
 			} else {
 				r.WriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"G\"")
+					z.WriteStr("\"TestCodecgenG\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `G`)
+					r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
 				}
 				r.WriteMapElemValue()
 				if false {
 				} else {
-					r.EncodeInt(int64(x.codecgenH.codecgenG.G))
+					r.EncodeInt(int64(x.codecgenH.TestCodecgenG.TestCodecgenG))
 				}
 			}
 			if yyr2 || yy2arr2 {
@@ -1068,11 +1068,11 @@ func (x *codecgenI) codecDecodeSelfFromMap(l int, d *Decoder) {
 		yys3 := z.StringView(r.DecodeStringAsBytes())
 		r.ReadMapElemValue()
 		switch yys3 {
-		case "G":
+		case "TestCodecgenG":
 			if r.TryDecodeAsNil() {
-				x.codecgenH.codecgenG.G = 0
+				x.codecgenH.TestCodecgenG.TestCodecgenG = 0
 			} else {
-				x.codecgenH.codecgenG.G = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+				x.codecgenH.TestCodecgenG.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 			}
 		default:
 			z.DecStructFieldNotFound(-1, yys3)
@@ -1100,9 +1100,9 @@ func (x *codecgenI) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	r.ReadArrayElem()
 	if r.TryDecodeAsNil() {
-		x.codecgenH.codecgenG.G = 0
+		x.codecgenH.TestCodecgenG.TestCodecgenG = 0
 	} else {
-		x.codecgenH.codecgenG.G = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+		x.codecgenH.TestCodecgenG.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 	}
 	for {
 		yyj5++
