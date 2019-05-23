@@ -235,22 +235,8 @@ func (e *cborEncDriver) WriteArrayEnd() {
 	}
 }
 
-func (e *cborEncDriver) EncodeString(c charEncoding, v string) {
-	e.encStringBytesS(cborBaseString, v)
-}
-
 func (e *cborEncDriver) EncodeStringEnc(c charEncoding, v string) {
 	e.encStringBytesS(cborBaseString, v)
-}
-
-func (e *cborEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
-	if v == nil {
-		e.EncodeNil()
-	} else if c == cRAW {
-		e.encStringBytesS(cborBaseBytes, stringView(v))
-	} else {
-		e.encStringBytesS(cborBaseString, stringView(v))
-	}
 }
 
 func (e *cborEncDriver) EncodeStringBytesRaw(v []byte) {

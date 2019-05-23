@@ -308,18 +308,6 @@ func (e *bincEncDriver) EncodeSymbol(v string) {
 	}
 }
 
-func (e *bincEncDriver) EncodeString(c charEncoding, v string) {
-	if e.c == containerMapKey && c == cUTF8 && (e.h.AsSymbols == 0 || e.h.AsSymbols == 1) {
-		e.EncodeSymbol(v)
-		return
-	}
-	l := uint64(len(v))
-	e.encBytesLen(c, l)
-	if l > 0 {
-		e.w.writestr(v)
-	}
-}
-
 func (e *bincEncDriver) EncodeStringEnc(c charEncoding, v string) {
 	if e.c == containerMapKey && c == cUTF8 && (e.h.AsSymbols == 0 || e.h.AsSymbols == 1) {
 		e.EncodeSymbol(v)
@@ -331,18 +319,6 @@ func (e *bincEncDriver) EncodeStringEnc(c charEncoding, v string) {
 		e.w.writestr(v)
 	}
 
-}
-
-func (e *bincEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
-	if v == nil {
-		e.EncodeNil()
-		return
-	}
-	l := uint64(len(v))
-	e.encBytesLen(c, l)
-	if l > 0 {
-		e.w.writeb(v)
-	}
 }
 
 func (e *bincEncDriver) EncodeStringBytesRaw(v []byte) {

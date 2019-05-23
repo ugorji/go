@@ -105,8 +105,9 @@ import (
 // v7:
 // v8: current - we now maintain compatibility with old generated code.
 // v9: skipped
-// v10: modified encDriver and decDriver interfaces. Remove deprecated methods after Jan 1, 2019
-const genVersion = 10
+// v10: modified encDriver and decDriver interfaces.
+// v11: remove deprecated methods of encDriver and decDriver.
+const genVersion = 11
 
 const (
 	genCodecPkg        = "codec1978"

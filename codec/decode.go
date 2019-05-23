@@ -96,10 +96,6 @@ type decDriver interface {
 	// kInterface will extract the detached byte slice if it has to pass it outside its realm.
 	DecodeNaked()
 
-	// Deprecated: use DecodeInt64 and DecodeUint64 instead
-	// DecodeInt(bitsize uint8) (i int64)
-	// DecodeUint(bitsize uint8) (ui uint64)
-
 	DecodeInt64() (i int64)
 	DecodeUint64() (ui uint64)
 

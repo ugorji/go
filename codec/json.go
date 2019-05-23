@@ -450,39 +450,8 @@ func (e *jsonEncDriver) EncodeRawExt(re *RawExt, en *Encoder) {
 	}
 }
 
-func (e *jsonEncDriver) EncodeString(c charEncoding, v string) {
-	e.quoteStr(v)
-}
-
 func (e *jsonEncDriver) EncodeStringEnc(c charEncoding, v string) {
 	e.quoteStr(v)
-}
-
-func (e *jsonEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
-	// if encoding raw bytes and RawBytesExt is configured, use it to encode
-	if v == nil {
-		e.EncodeNil()
-		return
-	}
-	if c == cRAW {
-		if e.se.InterfaceExt != nil {
-			e.EncodeExt(v, 0, &e.se, e.e)
-			return
-		}
-
-		slen := base64.StdEncoding.EncodedLen(len(v)) + 2
-		if cap(e.bs) >= slen {
-			e.bs = e.bs[:slen]
-		} else {
-			e.bs = make([]byte, slen)
-		}
-		e.bs[0] = '"'
-		base64.StdEncoding.Encode(e.bs[1:], v)
-		e.bs[slen-1] = '"'
-		e.w.writeb(e.bs)
-	} else {
-		e.quoteStr(stringView(v))
-	}
 }
 
 func (e *jsonEncDriver) EncodeStringBytesRaw(v []byte) {

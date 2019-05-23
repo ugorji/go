@@ -49,10 +49,6 @@ type encDriver interface {
 	// encodeExtPreamble(xtag byte, length int)
 	EncodeRawExt(re *RawExt, e *Encoder)
 	EncodeExt(v interface{}, xtag uint64, ext Ext, e *Encoder)
-	// Deprecated: use EncodeStringEnc instead
-	EncodeString(c charEncoding, v string)
-	// Deprecated: use EncodeStringBytesRaw instead
-	EncodeStringBytes(c charEncoding, v []byte)
 	EncodeStringEnc(c charEncoding, v string) // c cannot be cRAW
 	// EncodeSymbol(v string)
 	EncodeStringBytesRaw(v []byte)

@@ -370,18 +370,6 @@ func (e *msgpackEncDriver) WriteMapStart(length int) {
 	e.writeContainerLen(msgpackContainerMap, length)
 }
 
-func (e *msgpackEncDriver) EncodeString(c charEncoding, s string) {
-	slen := len(s)
-	if c == cRAW && e.h.WriteExt {
-		e.writeContainerLen(msgpackContainerBin, slen)
-	} else {
-		e.writeContainerLen(msgpackContainerRawLegacy, slen)
-	}
-	if slen > 0 {
-		e.w.writestr(s)
-	}
-}
-
 func (e *msgpackEncDriver) EncodeStringEnc(c charEncoding, s string) {
 	slen := len(s)
 	if e.h.WriteExt {
@@ -391,22 +379,6 @@ func (e *msgpackEncDriver) EncodeStringEnc(c charEncoding, s string) {
 	}
 	if slen > 0 {
 		e.w.writestr(s)
-	}
-}
-
-func (e *msgpackEncDriver) EncodeStringBytes(c charEncoding, bs []byte) {
-	if bs == nil {
-		e.EncodeNil()
-		return
-	}
-	slen := len(bs)
-	if c == cRAW && e.h.WriteExt {
-		e.writeContainerLen(msgpackContainerBin, slen)
-	} else {
-		e.writeContainerLen(msgpackContainerRawLegacy, slen)
-	}
-	if slen > 0 {
-		e.w.writeb(bs)
 	}
 }
 

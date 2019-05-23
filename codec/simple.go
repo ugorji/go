@@ -170,14 +170,6 @@ func (e *simpleEncDriver) EncodeStringEnc(c charEncoding, v string) {
 	e.w.writestr(v)
 }
 
-func (e *simpleEncDriver) EncodeString(c charEncoding, v string) {
-	e.EncodeStringEnc(c, v)
-}
-
-func (e *simpleEncDriver) EncodeStringBytes(c charEncoding, v []byte) {
-	e.EncodeStringBytesRaw(v)
-}
-
 func (e *simpleEncDriver) EncodeStringBytesRaw(v []byte) {
 	// if e.h.EncZeroValuesAsNil && e.c != containerMapKey && v == nil {
 	if v == nil {
