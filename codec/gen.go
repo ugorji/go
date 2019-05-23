@@ -658,7 +658,7 @@ func (x *genRunner) registerXtraT(t reflect.Type) {
 // encVar will encode a variable.
 // The parameter, t, is the reflect.Type of the variable itself
 func (x *genRunner) encVar(varname string, t reflect.Type) {
-	// fmt.Printf(">>>>>> varname: %s, t: %v\n", varname, t)
+	// xdebugf("varname: %s, t: %v", varname, t)
 	var checkNil bool
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map, reflect.Chan:
@@ -935,6 +935,7 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 }
 
 func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
+	// xdebug2f("encStruct, varname: %s, t: %s", varname, t)
 	// Use knowledge from structfieldinfo (mbs, encodable fields. Ignore omitempty. )
 	// replicate code in kStruct i.e. for each field, deref type to non-pointer, and call x.enc on it
 
@@ -1020,9 +1021,9 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		isNilVarName := genTempVarPfx + "n" + i
 		var labelUsed bool
 		var t2 reflect.StructField
+		varname3 := varname
 		{
 			t2typ := t
-			varname3 := varname
 			for ij, ix := range si.is {
 				if uint8(ij) == si.nis {
 					break
@@ -1059,7 +1060,8 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		if si.omitEmpty() {
 			x.linef("if %s[%v] {", numfieldsvar, j)
 		}
-		x.encVar(varname+"."+t2.Name, t2.Type)
+		// xdebug2f("varname: %s, t2.Type: %s", varname3, t2.Type)
+		x.encVar(varname3, t2.Type)
 		if si.omitEmpty() {
 			x.linef("} else {")
 			x.encZero(t2.Type)
@@ -1097,10 +1099,10 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		x.line("r.WriteMapElemValue()")
 		if labelUsed {
 			x.line("if " + isNilVarName + " { r.EncodeNil() } else { ")
-			x.encVar(varname+"."+t2.Name, t2.Type)
+			x.encVar(varname3, t2.Type)
 			x.line("}")
 		} else {
-			x.encVar(varname+"."+t2.Name, t2.Type)
+			x.encVar(varname3, t2.Type)
 		}
 		if si.omitEmpty() {
 			x.line("}")
@@ -1175,11 +1177,11 @@ func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 }
 
 func (x *genRunner) decVarInitPtr(varname, nilvar string, t reflect.Type, si *structFieldInfo,
-	newbuf, nilbuf *genBuf) (t2 reflect.StructField) {
+	newbuf, nilbuf *genBuf) (varname3 string, t2 reflect.StructField) {
 	//we must accommodate anonymous fields, where the embedded field is a nil pointer in the value.
 	// t2 = t.FieldByIndex(si.is)
+	varname3 = varname
 	t2typ := t
-	varname3 := varname
 	t2kind := t2typ.Kind()
 	var nilbufed bool
 	if si != nil {
@@ -1231,7 +1233,7 @@ func (x *genRunner) decVarInitPtr(varname, nilvar string, t reflect.Type, si *st
 			nilbuf.s("}")
 		}
 	}
-	return t2
+	return
 }
 
 // decVar takes a variable called varname, of type t
@@ -1607,9 +1609,9 @@ func (x *genRunner) decStructMapSwitch(kName string, varname string, rtid uintpt
 		x.line("case \"" + si.encName + "\":")
 		newbuf.reset()
 		nilbuf.reset()
-		t2 := x.decVarInitPtr(varname, "", t, si, &newbuf, &nilbuf)
+		varname3, t2 := x.decVarInitPtr(varname, "", t, si, &newbuf, &nilbuf)
 		x.linef("if r.TryDecodeAsNil() { %s } else { %s", nilbuf.buf, newbuf.buf)
-		x.decVarMain(varname+"."+t2.Name, x.varsfx(), t2.Type, false)
+		x.decVarMain(varname3, x.varsfx(), t2.Type, false)
 		x.line("}")
 	}
 	x.line("default:")
@@ -1674,9 +1676,9 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 		x.line("r.ReadArrayElem()")
 		newbuf.reset()
 		nilbuf.reset()
-		t2 := x.decVarInitPtr(varname, "", t, si, &newbuf, &nilbuf)
+		varname3, t2 := x.decVarInitPtr(varname, "", t, si, &newbuf, &nilbuf)
 		x.linef("if r.TryDecodeAsNil() { %s } else { %s", nilbuf.buf, newbuf.buf)
-		x.decVarMain(varname+"."+t2.Name, x.varsfx(), t2.Type, false)
+		x.decVarMain(varname3, x.varsfx(), t2.Type, false)
 		x.line("}")
 	}
 	// read remaining values and throw away.
