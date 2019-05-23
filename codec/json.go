@@ -61,7 +61,7 @@ const (
 	jsonU4Chk1 = 'a' - 10
 	jsonU4Chk0 = 'A' - 10
 
-	jsonScratchArrayLen = 64
+	jsonScratchArrayLen = cacheLineSize // 64
 )
 
 const (
@@ -122,6 +122,7 @@ func init() {
 
 type jsonEncDriverTypical struct {
 	jsonEncDriver
+	_ uint64 // padding
 }
 
 func (e *jsonEncDriverTypical) typical() {}
@@ -201,14 +202,14 @@ func (e *jsonEncDriverTypical) EncodeFloat32(f float32) {
 type jsonEncDriverGeneric struct {
 	jsonEncDriver
 	// ds string // indent string
-	di int8      // indent per
-	d  bool      // indenting?
-	dt bool      // indent using tabs
-	dl uint16    // indent level
-	ks bool      // map key as string
-	is byte      // integer as string
-	_  byte      // padding
-	_  [2]uint64 // padding
+	di int8   // indent per
+	d  bool   // indenting?
+	dt bool   // indent using tabs
+	dl uint16 // indent level
+	ks bool   // map key as string
+	is byte   // integer as string
+	// _  byte      // padding
+	// _  [2]uint64 // padding
 }
 
 // indent is done as below:
@@ -393,18 +394,16 @@ func (e *jsonEncDriverGeneric) EncodeFloat32(f float32) {
 
 type jsonEncDriver struct {
 	noBuiltInTypes
+	bs []byte // for encoding strings
+	// scratch: encode time, numbers, etc. Note: leave 1 byte for containerState
+	b [jsonScratchArrayLen - 24 - 1]byte // leave space for bs(len,cap), containerState
+	c containerState
+	// _ [2]uint64                 // padding
+	// ---- cpu cache line boundary?
 	e  *Encoder
 	h  *JsonHandle
 	w  *encWriterSwitch
 	se extWrapper
-	// ---- cpu cache line boundary?
-	bs []byte // scratch
-	// ---- cpu cache line boundary?
-	// scratch: encode time, etc.
-	// include scratch buffer and padding, but leave space for containerstate
-	b [jsonScratchArrayLen + 8 + 8 - 1]byte
-	c containerState
-	// _ [2]uint64                 // padding
 }
 
 func (e *jsonEncDriver) EncodeNil() {
@@ -610,15 +609,16 @@ type jsonDecDriver struct {
 
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 
-	c containerState
-	// tok is used to store the token read right after skipWhiteSpace.
-	tok   uint8
-	fnull bool    // found null from appendStringAsBytes
-	bs    []byte  // scratch. Initialized from b. Used for parsing strings or numbers.
-	bstr  [8]byte // scratch used for string \UXXX parsing
 	// ---- cpu cache line boundary?
-	b  [jsonScratchArrayLen]byte // scratch 1, used for parsing strings or numbers or time.Time
-	b2 [jsonScratchArrayLen]byte // scratch 2, used only for readUntil, decNumBytes
+	bs []byte                         // scratch, initialized from b. For parsing strings or numbers.
+	b  [jsonScratchArrayLen - 16]byte // scratch 1, used for parsing strings or numbers or time.Time
+	// ---- cpu cache line boundary?
+	c     containerState
+	tok   uint8                         // used to store the token read right after skipWhiteSpace
+	fnull bool                          // found null from appendStringAsBytes
+	_     byte                          // padding
+	bstr  [4]byte                       // scratch used for string \UXXX parsing
+	b2    [jsonScratchArrayLen - 8]byte // scratch 2, used only for readUntil, decNumBytes
 
 	// _ [3]uint64 // padding
 	// n jsonNum
@@ -1346,15 +1346,16 @@ type JsonHandle struct {
 	// The only caveat is that nil value is ALWAYS written as null (never as "null")
 	MapKeyAsString bool
 
-	// _ [2]byte // padding
+	// _ uint64 // padding (cache line)
 
-	// Note: below, we store hardly-used items e.g. RawBytesExt is cached in the (en|de)cDriver.
+	// Note: below, we store hardly-used items
+	// e.g. RawBytesExt (which is already cached in the (en|de)cDriver).
 
 	// RawBytesExt, if configured, is used to encode and decode raw bytes in a custom way.
 	// If not configured, raw bytes are encoded to/from base64 text.
 	RawBytesExt InterfaceExt
 
-	_ [2]uint64 // padding
+	// _ [2]uint64 // padding
 }
 
 // Name returns the name of the handle: json
@@ -1407,7 +1408,9 @@ func (h *JsonHandle) newDecDriver(d *Decoder) decDriver {
 func (e *jsonEncDriver) reset() {
 	e.w = e.e.w
 	e.se.InterfaceExt = e.h.RawBytesExt
-	if e.bs != nil {
+	if e.bs == nil {
+		e.bs = e.b[:0]
+	} else {
 		e.bs = e.bs[:0]
 	}
 	e.c = 0

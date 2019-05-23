@@ -110,7 +110,7 @@ type bincEncDriver struct {
 	encDriverTrackContainerWriter
 	noBuiltInTypes
 	// encNoSeparator
-	_ [1]uint64 // padding
+	// _ [1]uint64 // padding
 }
 
 func (e *bincEncDriver) EncodeNil() {
@@ -409,7 +409,7 @@ type bincDecDriver struct {
 	bd     byte
 	vd     byte
 	vs     byte
-	_      [3]byte // padding
+	// _      [3]byte // padding
 	// linear searching on this slice is ok,
 	// because we typically expect < 32 symbols in each stream.
 	s []bincDecSymbol
@@ -1007,7 +1007,7 @@ type BincHandle struct {
 	// - n: none
 	// - a: all: same as m, s, ...
 
-	// _ [1]uint64 // padding
+	_ [1]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: binc

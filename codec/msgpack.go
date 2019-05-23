@@ -705,9 +705,11 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 		return
 	} else if bd == mpBin8 || bd == mpBin16 || bd == mpBin32 {
 		clen = d.readContainerLen(msgpackContainerBin) // binary
-	} else if bd == mpStr8 || bd == mpStr16 || bd == mpStr32 || (bd >= mpFixStrMin && bd <= mpFixStrMax) {
+	} else if bd == mpStr8 || bd == mpStr16 || bd == mpStr32 ||
+		(bd >= mpFixStrMin && bd <= mpFixStrMax) {
 		clen = d.readContainerLen(msgpackContainerStr) // string/raw
-	} else if bd == mpArray16 || bd == mpArray32 || (bd >= mpFixArrayMin && bd <= mpFixArrayMax) {
+	} else if bd == mpArray16 || bd == mpArray32 ||
+		(bd >= mpFixArrayMin && bd <= mpFixArrayMax) {
 		// check if an "array" of uint8's
 		if zerocopy && len(bs) == 0 {
 			bs = d.d.b[:]
@@ -759,9 +761,11 @@ func (d *msgpackDecDriver) ContainerType() (vt valueType) {
 	// 	// nil
 	// } else if bd == mpBin8 || bd == mpBin16 || bd == mpBin32 {
 	// 	// binary
-	// } else if bd == mpStr8 || bd == mpStr16 || bd == mpStr32 || (bd >= mpFixStrMin && bd <= mpFixStrMax) {
+	// } else if bd == mpStr8 || bd == mpStr16 || bd == mpStr32 ||
+	// (bd >= mpFixStrMin && bd <= mpFixStrMax) {
 	// 	// string/raw
-	// } else if bd == mpArray16 || bd == mpArray32 || (bd >= mpFixArrayMin && bd <= mpFixArrayMax) {
+	// } else if bd == mpArray16 || bd == mpArray32 ||
+	// (bd >= mpFixArrayMin && bd <= mpFixArrayMax) {
 	// 	// array
 	// } else if bd == mpMap16 || bd == mpMap32 || (bd >= mpFixMapMin && bd <= mpFixMapMax) {
 	// 	// map
@@ -770,7 +774,8 @@ func (d *msgpackDecDriver) ContainerType() (vt valueType) {
 		return valueTypeNil
 	} else if bd == mpBin8 || bd == mpBin16 || bd == mpBin32 {
 		return valueTypeBytes
-	} else if bd == mpStr8 || bd == mpStr16 || bd == mpStr32 || (bd >= mpFixStrMin && bd <= mpFixStrMax) {
+	} else if bd == mpStr8 || bd == mpStr16 || bd == mpStr32 ||
+		(bd >= mpFixStrMin && bd <= mpFixStrMax) {
 		if d.h.WriteExt || d.h.RawToString { // UTF-8 string (new spec)
 			return valueTypeString
 		}
@@ -870,7 +875,8 @@ func (d *msgpackDecDriver) DecodeTime() (t time.Time) {
 		return
 	} else if bd == mpBin8 || bd == mpBin16 || bd == mpBin32 {
 		clen = d.readContainerLen(msgpackContainerBin) // binary
-	} else if bd == mpStr8 || bd == mpStr16 || bd == mpStr32 || (bd >= mpFixStrMin && bd <= mpFixStrMax) {
+	} else if bd == mpStr8 || bd == mpStr16 || bd == mpStr32 ||
+		(bd >= mpFixStrMin && bd <= mpFixStrMax) {
 		clen = d.readContainerLen(msgpackContainerStr) // string/raw
 	} else {
 		// expect to see mpFixExt4,-1 OR mpFixExt8,-1 OR mpExt8,12,-1
@@ -983,7 +989,7 @@ type MsgpackHandle struct {
 	binaryEncodingType
 	noElemSeparators
 
-	// _ [1]uint64 // padding
+	_ [1]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: msgpack

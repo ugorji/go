@@ -154,9 +154,9 @@ _codegenerators() {
 _prebuild() {
     echo "prebuild: zforce: $zforce"
     local d="$PWD"
-    zfin="test_values.generated.go"
-    zfin2="test_values_flex.generated.go"
-    zpkg="github.com/ugorji/go/codec"
+    local zfin="test_values.generated.go"
+    local zfin2="test_values_flex.generated.go"
+    local zpkg="github.com/ugorji/go/codec"
     # zpkg=${d##*/src/}
     # zgobase=${d%%/src/*}
     # rm -f *_generated_test.go 
@@ -169,13 +169,14 @@ _prebuild() {
         if [[ $zforce ]]; then go install ${zargs[*]} .; fi &&
         echo "prebuild done successfully"
     rm -f $d/$zfin $d/$zfin2
-    unset zfin zfin2 zpkg
+    # unset zfin zfin2 zpkg
 }
 
 _make() {
+    local makeforce=${zforce}
     zforce=1
     (cd codecgen && go install ${zargs[*]} .) && _prebuild && go install ${zargs[*]} .
-    unset zforce
+    zforce=${makeforce}
 }
 
 _clean() {
@@ -200,6 +201,7 @@ _release() {
 EOF
     # # go 1.6 and below kept giving memory errors on Mac OS X during SDK build or go run execution,
     # # that is fine, as we only explicitly test the last 3 releases and tip (2 years).
+    local makeforce=${zforce}
     zforce=1
     for i in 1.10 1.11 1.12 master
     do
@@ -216,7 +218,7 @@ EOF
             _tests "$@"
         if [[ "$?" != 0 ]]; then return 1; fi
     done
-    unset zforce
+    zforce=${makeforce}
     echo "++++++++ RELEASE TEST SUITES ALL PASSED ++++++++"
 }
 
@@ -232,7 +234,10 @@ EOF
 _main() {
     if [[ -z "$1" ]]; then _usage; return 1; fi
     local x
-    unset zforce
+    local zforce
+    local zargs
+    local zbenchflags
+    # unset zforce
     zargs=()
     zbenchflags=""
     OPTIND=1
@@ -261,7 +266,7 @@ _main() {
         'xz') _analyze "$@" ;;
         'xb') _bench "$@" ;;
     esac
-    unset zforce zargs zbenchflags
+    # unset zforce zargs zbenchflags
 }
 
 [ "." = `dirname $0` ] && _main "$@"

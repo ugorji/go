@@ -170,6 +170,14 @@ func init() {
 	refBitset.set(byte(reflect.Chan))
 }
 
+type handleFlag uint8
+
+const (
+	initedHandleFlag handleFlag = 1 << iota
+	binaryHandleFlag
+	jsonHandleFlag
+)
+
 type clsErr struct {
 	closed    bool  // is it closed?
 	errClosed error // error on closing
@@ -293,6 +301,7 @@ const (
 	typeInfoLoadArrayBLen      = 8 * 4
 )
 
+// typeInfoLoad is a transient object used while loading up a typeInfo.
 type typeInfoLoad struct {
 	// fNames   []string
 	// encNames []string
@@ -300,6 +309,8 @@ type typeInfoLoad struct {
 	sfis   []structFieldInfo
 }
 
+// typeInfoLoadArray is a cache object used to efficiently load up a typeInfo without
+// much allocation.
 type typeInfoLoadArray struct {
 	// fNames   [typeInfoLoadArrayLen]string
 	// encNames [typeInfoLoadArrayLen]string
@@ -308,6 +319,12 @@ type typeInfoLoadArray struct {
 	etypes [typeInfoLoadArrayEtypesLen]uintptr
 	b      [typeInfoLoadArrayBLen]byte // scratch - used for struct field names
 }
+
+// // cacheLineSafer denotes that a type is safe for cache-line access.
+// // This could mean that
+// type cacheLineSafer interface {
+// 	cacheLineSafe()
+// }
 
 // mirror json.Marshaler and json.Unmarshaler here,
 // so we don't import the encoding/json package
@@ -522,10 +539,9 @@ type BasicHandle struct {
 
 	intf2impls
 
-	inited uint32
-	_      uint32 // padding
+	EncodeOptions
 
-	// ---- cache line
+	DecodeOptions
 
 	RPCOptions
 
@@ -559,23 +575,21 @@ type BasicHandle struct {
 	//    runtime.SetFinalizer(d, (*Decoder).Release)
 	ExplicitRelease bool
 
-	be bool   // is handle a binary encoding?
-	js bool   // is handle javascript handler?
-	n  byte   // first letter of handle name
-	_  uint16 // padding
+	// flags handleFlag // holds flag for if binaryEncoding, jsonHandler, etc
+	// be    bool       // is handle a binary encoding?
+	// js    bool       // is handle javascript handler?
+	// n  byte // first letter of handle name
+	// _  uint16 // padding
 
 	// ---- cache line
-
-	DecodeOptions
-
-	// ---- cache line
-
-	EncodeOptions
 
 	// noBuiltInTypeChecker
 
+	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
+	mu     sync.Mutex
+	// _      uint32 // padding
 	rtidFns atomicRtidFnSlice
-	mu      sync.Mutex
+
 	// r []uintptr     // rtids mapped to s above
 }
 
@@ -599,15 +613,29 @@ func basicHandle(hh Handle) (x *BasicHandle) {
 	return
 }
 
+func (x *BasicHandle) isJs() bool {
+	return handleFlag(x.inited)&jsonHandleFlag != 0
+}
+
+func (x *BasicHandle) isBe() bool {
+	return handleFlag(x.inited)&binaryHandleFlag != 0
+}
+
 //go:noinline
 func (x *BasicHandle) init(hh Handle) {
 	// make it uninlineable, as it is called at most once
 	x.mu.Lock()
 	if x.inited == 0 {
-		x.be = hh.isBinary()
-		_, x.js = hh.(*JsonHandle)
-		x.n = hh.Name()[0]
-		atomic.StoreUint32(&x.inited, 1)
+		var f = initedHandleFlag
+		if hh.isBinary() {
+			f |= binaryHandleFlag
+		}
+		if _, b := hh.(*JsonHandle); b {
+			f |= jsonHandleFlag
+		}
+		// _, x.js = hh.(*JsonHandle)
+		// x.n = hh.Name()[0]
+		atomic.StoreUint32(&x.inited, uint32(f))
 	}
 	x.mu.Unlock()
 }
@@ -691,20 +719,21 @@ func (x *BasicHandle) fn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) 
 		if rk == reflect.Struct || rk == reflect.Array {
 			fi.addrE = true
 		}
-	} else if supportMarshalInterfaces && c.be && (ti.bm || ti.bmp) && (ti.bu || ti.bup) {
+	} else if supportMarshalInterfaces && c.isBe() && (ti.bm || ti.bmp) && (ti.bu || ti.bup) {
 		fn.fe = (*Encoder).binaryMarshal
 		fn.fd = (*Decoder).binaryUnmarshal
 		fi.addrF = true
 		fi.addrD = ti.bup
 		fi.addrE = ti.bmp
-	} else if supportMarshalInterfaces && !c.be && c.js && (ti.jm || ti.jmp) && (ti.ju || ti.jup) {
+	} else if supportMarshalInterfaces && !c.isBe() && c.isJs() &&
+		(ti.jm || ti.jmp) && (ti.ju || ti.jup) {
 		//If JSON, we should check JSONMarshal before textMarshal
 		fn.fe = (*Encoder).jsonMarshal
 		fn.fd = (*Decoder).jsonUnmarshal
 		fi.addrF = true
 		fi.addrD = ti.jup
 		fi.addrE = ti.jmp
-	} else if supportMarshalInterfaces && !c.be && (ti.tm || ti.tmp) && (ti.tu || ti.tup) {
+	} else if supportMarshalInterfaces && !c.isBe() && (ti.tm || ti.tmp) && (ti.tu || ti.tup) {
 		fn.fe = (*Encoder).textMarshal
 		fn.fd = (*Decoder).textUnmarshal
 		fi.addrF = true
@@ -1057,7 +1086,7 @@ type extTypeTagFn struct {
 	rt      reflect.Type
 	tag     uint64
 	ext     Ext
-	_       [1]uint64 // padding
+	// _       [1]uint64 // padding
 }
 
 type extHandle []extTypeTagFn
@@ -1114,7 +1143,7 @@ func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 		}
 	}
 	rtidptr := rt2id(reflect.PtrTo(rt))
-	*o = append(o2, extTypeTagFn{rtid, rtidptr, rt, tag, ext, [1]uint64{}})
+	*o = append(o2, extTypeTagFn{rtid, rtidptr, rt, tag, ext}) // , [1]uint64{}})
 	return
 }
 
@@ -1222,7 +1251,7 @@ type structFieldInfo struct {
 
 	encNameAsciiAlphaNum bool // the encName only contains ascii alphabet and numbers
 	structFieldInfoFlag
-	_ [1]byte // padding
+	// _ [1]byte // padding
 }
 
 func (si *structFieldInfo) setToZeroValue(v reflect.Value) {
@@ -1411,7 +1440,8 @@ const (
 	typeInfoFlagIsZeroerPtr
 )
 
-// typeInfo keeps information about each (non-ptr) type referenced in the encode/decode sequence.
+// typeInfo keeps static (non-changing readonly)information
+// about each (non-ptr) type referenced in the encode/decode sequence.
 //
 // During an encode/decode sequence, we work as below:
 //   - If base is a built in type, en/decode base value
@@ -1470,8 +1500,8 @@ type typeInfo struct {
 	flags              typeInfoFlag
 	infoFieldOmitempty bool
 
-	_ [6]byte   // padding
-	_ [2]uint64 // padding
+	// _ [6]byte   // padding
+	// _ [2]uint64 // padding
 }
 
 func (ti *typeInfo) isFlag(f typeInfoFlag) bool {
@@ -1509,8 +1539,9 @@ type TypeInfos struct {
 	// infos: formerly map[uintptr]*typeInfo, now *[]rtid2ti, 2 words expected
 	infos atomicTypeInfoSlice
 	mu    sync.Mutex
+	_     uint64 // padding (cache-aligned)
 	tags  []string
-	_     [2]uint64 // padding
+	_     uint64 // padding (cache-aligned)
 }
 
 // NewTypeInfos creates a TypeInfos given a set of struct tags keys.
@@ -2037,7 +2068,7 @@ type codecFn struct {
 	i  codecFnInfo
 	fe func(*Encoder, *codecFnInfo, reflect.Value)
 	fd func(*Decoder, *codecFnInfo, reflect.Value)
-	_  [1]uint64 // padding
+	_  [1]uint64 // padding (cache-aligned)
 }
 
 type codecRtidFn struct {
@@ -2161,6 +2192,8 @@ type set []uintptr
 func (s *set) add(v uintptr) (exists bool) {
 	// e.ci is always nil, or len >= 1
 	x := *s
+	// defer func() { xdebugf("set.add: len: %d", len(x)) }()
+
 	if x == nil {
 		x = make([]uintptr, 1, 8)
 		x[0] = v
@@ -2556,6 +2589,16 @@ func xdebugf(pattern string, args ...interface{}) {
 		delim = "\n"
 	}
 	fmt.Printf("\033[1;31m"+pattern+delim+"\033[0m", args...)
+}
+
+// xdebug2f printf. the message in blue on the terminal.
+// Use it in place of fmt.Printf (which it calls internally)
+func xdebug2f(pattern string, args ...interface{}) {
+	var delim string
+	if len(pattern) > 0 && pattern[len(pattern)-1] != '\n' {
+		delim = "\n"
+	}
+	fmt.Printf("\033[1;34m"+pattern+delim+"\033[0m", args...)
 }
 
 // func isImmutableKind(k reflect.Kind) (v bool) {

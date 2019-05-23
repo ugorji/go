@@ -41,7 +41,7 @@ type simpleEncDriver struct {
 	// c containerState
 	encDriverTrackContainerWriter
 	// encDriverNoopContainerWriter
-	_ [3]uint64 // padding
+	_ [2]uint64 // padding (cache-aligned)
 }
 
 func (e *simpleEncDriver) EncodeNil() {
@@ -630,7 +630,7 @@ type SimpleHandle struct {
 	// EncZeroValuesAsNil says to encode zero values for numbers, bool, string, etc as nil
 	EncZeroValuesAsNil bool
 
-	// _ [1]uint64 // padding
+	_ [1]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: simple
