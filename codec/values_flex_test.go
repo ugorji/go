@@ -17,7 +17,44 @@ const teststrucflexChanCap = 64
 // that other engines may not support or may barf upon
 // e.g. custom extensions for wrapped types, maps with non-string keys, etc.
 
+// some funky types to test codecgen
+
+type codecgenA struct {
+	ZZ []byte
+}
+type codecgenB struct {
+	AA codecgenA
+}
+type codecgenC struct {
+	_struct struct{} `codec:",omitempty"`
+	BB      codecgenB
+}
+
+type TestCodecgenG struct {
+	TestCodecgenG int
+}
+type codecgenH struct {
+	TestCodecgenG
+}
+type codecgenI struct {
+	codecgenH
+}
+
+type codecgenK struct {
+	X int
+	Y string
+}
+type codecgenL struct {
+	X int
+	Y uint32
+}
+type codecgenM struct {
+	codecgenK
+	codecgenL
+}
+
 // Some unused types just stored here
+
 type Bbool bool
 type Aarray [1]string
 type Sstring string
