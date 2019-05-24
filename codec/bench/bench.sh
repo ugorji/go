@@ -12,6 +12,7 @@ _go_get() {
        gopkg.in/mgo.v2/bson \
        gopkg.in/vmihailenco/msgpack.v2 \
        github.com/json-iterator/go \
+       github.com/mongodb/mongo-go-driver/bson \
        github.com/mailru/easyjson/...
 }
 

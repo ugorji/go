@@ -11,9 +11,10 @@ import (
 
 	gcbor "bitbucket.org/bodhisnarkva/cbor/go" // gcbor "code.google.com/p/cbor/go"
 	"github.com/Sereal/Sereal/Go/sereal"
-	"github.com/davecgh/go-xdr/xdr2"
-	"github.com/json-iterator/go"
-	"gopkg.in/mgo.v2/bson"                     //"labix.org/v2/mgo/bson"
+	xdr "github.com/davecgh/go-xdr/xdr2"
+	jsoniter "github.com/json-iterator/go"
+	"github.com/mongodb/mongo-go-driver/bson"
+	mgobson "gopkg.in/mgo.v2/bson"             //"labix.org/v2/mgo/bson"
 	vmsgpack "gopkg.in/vmihailenco/msgpack.v2" //"github.com/vmihailenco/msgpack"
 )
 
@@ -36,6 +37,7 @@ import (
 
 func init() {
 	testPreInitFns = append(testPreInitFns, benchXPreInit)
+	_ = bson.NewDecoder
 }
 
 func benchXPreInit() {
@@ -43,6 +45,7 @@ func benchXPreInit() {
 		benchChecker{"json-iter", fnJsonIterEncodeFn, fnJsonIterDecodeFn},
 		benchChecker{"v-msgpack", fnVMsgpackEncodeFn, fnVMsgpackDecodeFn},
 		benchChecker{"bson", fnBsonEncodeFn, fnBsonDecodeFn},
+		benchChecker{"mgobson", fnMgobsonEncodeFn, fnMgobsonDecodeFn},
 		// place codecs with issues at the end, so as not to make results too ugly
 		benchChecker{"gcbor", fnGcborEncodeFn, fnGcborDecodeFn}, // this logs fat ugly message, but we log.SetOutput(ioutil.Discard)
 		benchChecker{"xdr", fnXdrEncodeFn, fnXdrDecodeFn},
@@ -72,6 +75,14 @@ func fnBsonEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
 
 func fnBsonDecodeFn(buf []byte, ts interface{}) error {
 	return bson.Unmarshal(buf, ts)
+}
+
+func fnMgobsonEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
+	return mgobson.Marshal(ts)
+}
+
+func fnMgobsonDecodeFn(buf []byte, ts interface{}) error {
+	return mgobson.Unmarshal(buf, ts)
 }
 
 func fnJsonIterEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
@@ -128,6 +139,14 @@ func Benchmark__JsonIter___Decode(b *testing.B) {
 }
 
 // Place codecs with issues at the bottom, so as not to make results look too ugly.
+
+func Benchmark__Mgobson____Encode(b *testing.B) {
+	fnBenchmarkEncode(b, "mgobson", benchTs, fnMgobsonEncodeFn)
+}
+
+func Benchmark__Mgobson____Decode(b *testing.B) {
+	fnBenchmarkDecode(b, "mgobson", benchTs, fnMgobsonEncodeFn, fnMgobsonDecodeFn, fnBenchNewTs)
+}
 
 func Benchmark__Bson_______Encode(b *testing.B) {
 	fnBenchmarkEncode(b, "bson", benchTs, fnBsonEncodeFn)
