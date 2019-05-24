@@ -36,16 +36,14 @@ type wrapStringSlice []wrapString
 // some funky types to stretch codecgen
 
 type codecgenA struct {
+	ZZ []byte
+}
+type codecgenB struct {
+	AA codecgenA
+}
+type codecgenC struct {
 	_struct struct{} `codec:",omitempty"`
 	BB      codecgenB
-}
-
-type codecgenB struct {
-	CC codecgenC
-}
-
-type codecgenC struct {
-	DD []byte
 }
 
 type TestCodecgenG struct {
@@ -56,6 +54,19 @@ type codecgenH struct {
 }
 type codecgenI struct {
 	codecgenH
+}
+
+type codecgenK struct {
+	X int
+	Y string
+}
+type codecgenL struct {
+	X int
+	Y uint32
+}
+type codecgenM struct {
+	codecgenK
+	codecgenL
 }
 
 // some other types
