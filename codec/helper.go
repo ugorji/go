@@ -1864,7 +1864,7 @@ func rgetResolveSFI(rt reflect.Type, x []structFieldInfo, pv *typeInfoLoadArray)
 	for i := range x {
 		ui = uint16(i)
 		xn = x[i].encName // fieldName or encName? use encName for now.
-		if len(xn)+2 > cap(pv.b) {
+		if len(xn)+2 > cap(sn) {
 			sn = make([]byte, len(xn)+2)
 		} else {
 			sn = sn[:len(xn)+2]
@@ -1881,24 +1881,22 @@ func rgetResolveSFI(rt reflect.Type, x []structFieldInfo, pv *typeInfoLoadArray)
 			sa = append(sa, 0xff, byte(ui>>8), byte(ui))
 		} else {
 			index := uint16(sa[j+len(sn)+1]) | uint16(sa[j+len(sn)])<<8
-			// one of them must be reset to nil,
-			// and the index updated appropriately to the other one
-			if x[i].nis == x[index].nis {
-			} else if x[i].nis < x[index].nis {
+			// one of them must be cleared (reset to nil),
+			// and the index updated appropriately
+			i2clear := ui                // index to be cleared
+			if x[i].nis < x[index].nis { // this one is shallower
+				// update the index to point to this later one.
 				sa[j+len(sn)], sa[j+len(sn)+1] = byte(ui>>8), byte(ui)
-				if x[index].ready() {
-					x[index].flagClr(structFieldInfoFlagReady)
-					n--
-				}
-			} else {
-				if x[i].ready() {
-					x[i].flagClr(structFieldInfoFlagReady)
-					n--
-				}
+				// clear the earlier one, as this later one is shallower.
+				i2clear = index
+			}
+			if x[i2clear].ready() {
+				x[i2clear].flagClr(structFieldInfoFlagReady)
+				n--
 			}
 		}
-
 	}
+
 	var w []structFieldInfo
 	sharingArray := len(x) <= typeInfoLoadArraySfisLen // sharing array with typeInfoLoadArray
 	if sharingArray {
