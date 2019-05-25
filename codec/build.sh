@@ -235,7 +235,8 @@ _main() {
     if [[ -z "$1" ]]; then _usage; return 1; fi
     local x
     local zforce
-    local zargs
+    local zargs=()
+    local zverbose=()
     local zbenchflags
     # unset zforce
     zargs=()
@@ -245,7 +246,7 @@ _main() {
     do
         case "x$flag" in
             'xf') zforce=1 ;;
-            'xv') zverbose=1 ;;
+            'xv') zverbose+=(1) ;;
             'xl') zargs+=("-gcflags"); zargs+=("-l=4") ;;
             'xn') zargs+=("-gcflags"); zargs+=("-m=2") ;;
             'xd') zargs+=("-race") ;;
