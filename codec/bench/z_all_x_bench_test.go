@@ -100,9 +100,14 @@ func benchmarkAllJsonDecodeGroup(t *testing.B) {
 	t.Run("Benchmark__JsonIter___Decode", Benchmark__JsonIter___Decode)
 }
 
+func BenchmarkCodecVeryQuickAllJsonSuite(t *testing.B) {
+	benchmarkVeryQuickSuite(t, "json-all", benchmarkAllJsonEncodeGroup, benchmarkAllJsonDecodeGroup)
+}
+
 func BenchmarkCodecQuickAllJsonSuite(t *testing.B) {
-	benchmarkQuickSuite(t, "json-all", benchmarkAllJsonEncodeGroup)
-	benchmarkQuickSuite(t, "json-all", benchmarkAllJsonDecodeGroup)
+	benchmarkQuickSuite(t, "json-all", benchmarkAllJsonEncodeGroup, benchmarkAllJsonDecodeGroup)
+	// benchmarkQuickSuite(t, "json-all", benchmarkAllJsonEncodeGroup)
+	// benchmarkQuickSuite(t, "json-all", benchmarkAllJsonDecodeGroup)
 
 	// depths := [...]int{1, 4}
 	// for _, d := range depths {

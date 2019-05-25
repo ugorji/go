@@ -149,11 +149,9 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 	// benchVerify = false
 }
 
-func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
+func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
 	benchmarkDivider()
 	benchmarkGroupOnce.Do(benchmarkGroupInitAll)
-	f := benchmarkOneFn(fns)
-
 	benchmarkGroupReset()
 
 	// bd=1 2 | ti=-1, 1024 |
@@ -163,20 +161,25 @@ func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
 	testReinit()
 	benchReinit()
 
-	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"........", f)
+	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"........", benchmarkOneFn(fns))
+	benchmarkGroupReset()
+}
+
+func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
+	benchmarkVeryQuickSuite(t, name, fns...)
 
 	// encoded size of TestStruc is between 20K and 30K for bd=1 // consider buffer=1024 * 16 * benchDepth
 	testUseIoEncDec = 1024 // (value of defEncByteBufSize): use smaller buffer, and more flushes - it's ok.
 	// benchDepth = depth
 	testReinit()
 	benchReinit()
-	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"-buf"+strconv.Itoa(testUseIoEncDec), f)
+	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"-buf"+strconv.Itoa(testUseIoEncDec), benchmarkOneFn(fns))
 
 	testUseIoEncDec = 0
 	// benchDepth = depth
 	testReinit()
 	benchReinit()
-	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"-io.....", f)
+	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"-io.....", benchmarkOneFn(fns))
 
 	benchmarkGroupReset()
 }

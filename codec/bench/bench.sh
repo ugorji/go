@@ -64,12 +64,16 @@ _gen() {
 _suite() {
     local t="alltests x"
     local a=( "" "safe"  "notfastpath" "notfastpath safe" "codecgen" "codecgen safe")
-    local b=( "generated" "generated safe")
     for i in "${a[@]}"
     do
         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecXSuite"
         go test -run Nothing -tags "$t $i" -bench BenchmarkCodecXSuite -benchmem "$@"
     done
+}
+
+_suite_gen() {
+    local t="alltests x"
+    local b=( "generated" "generated safe")
     for i in "${b[@]}"
     do
         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecXGenSuite"
@@ -77,25 +81,46 @@ _suite() {
     done
 }
 
+_suite_json() {
+    local t="alltests x"
+    local a=( "" "safe"  "notfastpath" "notfastpath safe" "codecgen" "codecgen safe")
+    for i in "${a[@]}"
+    do
+        echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecQuickAllJsonSuite"
+        go test -run Nothing -tags "$t $i" -bench BenchmarkCodecQuickAllJsonSuite -benchmem "$@"
+    done
+}
+
+_suite_very_quick_json() {
+    echo ">>>> bench TAGS: 'alltests x' SUITE: BenchmarkCodecQuickAllJsonSuite"
+    go test -run Nothing -tags "alltests x" -bench BenchmarkCodecVeryQuickAllJsonSuite -benchmem "$@"
+}
+
 _usage() {
-    echo "usage: bench.sh -[dcs] for [download, code-generate and suite-of-tests] respectively"
+    echo "usage: bench.sh -[dcsjq] for [download, code-generate, suite-of-tests, json-suite, quick-json-suite] respectively"
 }
 
 _main() {
-    if [[ "$1" == "" ]]
+    if [[ "$1" == "" || "$1" == "-h" || "$1" == "-?" ]]
     then
         _usage
         return 1
     fi
-    while getopts "dcs" flag
+    local args=()
+    while getopts "dcsjq" flag
     do
-        case "x$flag" in
-            'xd') shift; _go_get "$@" ;;
-            'xc') shift; _gen "$@" ;;
-            'xs') shift; _suite "$@" ;;
-            *) shift; _usage; return 1 ;;
+        case "$flag" in
+            d|c|s|j|q) args+=( "$flag" ) ;;
+            *) _usage; return 1 ;;
         esac
     done
+    shift "$((OPTIND-1))"
+    
+    [[ " ${args[*]} " == *"d"* ]] && _go_get "$@"
+    [[ " ${args[*]} " == *"c"*  ]] && _gen "$@"
+    [[ " ${args[*]} " == *"s"* ]] && _suite "$@" && _suite_gen "$@" 
+    [[ " ${args[*]} " == *"j"* ]] && _suite_json "$@"
+    [[ " ${args[*]} " == *"q"* ]] && _suite_very_quick_json "$@"
     # shift $((OPTIND-1))
 }
 
