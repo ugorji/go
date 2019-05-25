@@ -1962,24 +1962,24 @@ func genInternalNonZeroValue(s string) string {
 func genInternalEncCommandAsString(s string, vname string) string {
 	switch s {
 	case "uint64":
-		return "ee.EncodeUint(" + vname + ")"
+		return "e.e.EncodeUint(" + vname + ")"
 	case "uint", "uint8", "uint16", "uint32":
-		return "ee.EncodeUint(uint64(" + vname + "))"
+		return "e.e.EncodeUint(uint64(" + vname + "))"
 	case "int64":
-		return "ee.EncodeInt(" + vname + ")"
+		return "e.e.EncodeInt(" + vname + ")"
 	case "int", "int8", "int16", "int32":
-		return "ee.EncodeInt(int64(" + vname + "))"
+		return "e.e.EncodeInt(int64(" + vname + "))"
 	case "string":
-		return "if e.h.StringToRaw { ee.EncodeStringBytesRaw(bytesView(" + vname + ")) " +
-			"} else { ee.EncodeStringEnc(cUTF8, " + vname + ") }"
+		return "if e.h.StringToRaw { e.e.EncodeStringBytesRaw(bytesView(" + vname + ")) " +
+			"} else { e.e.EncodeStringEnc(cUTF8, " + vname + ") }"
 	case "float32":
-		return "ee.EncodeFloat32(" + vname + ")"
+		return "e.e.EncodeFloat32(" + vname + ")"
 	case "float64":
-		return "ee.EncodeFloat64(" + vname + ")"
+		return "e.e.EncodeFloat64(" + vname + ")"
 	case "bool":
-		return "ee.EncodeBool(" + vname + ")"
+		return "e.e.EncodeBool(" + vname + ")"
 	// case "symbol":
-	// 	return "ee.EncodeSymbol(" + vname + ")"
+	// 	return "e.e.EncodeSymbol(" + vname + ")"
 	default:
 		return "e.encode(" + vname + ")"
 	}
@@ -1988,36 +1988,36 @@ func genInternalEncCommandAsString(s string, vname string) string {
 func genInternalDecCommandAsString(s string) string {
 	switch s {
 	case "uint":
-		return "uint(chkOvf.UintV(dd.DecodeUint64(), uintBitsize))"
+		return "uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))"
 	case "uint8":
-		return "uint8(chkOvf.UintV(dd.DecodeUint64(), 8))"
+		return "uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))"
 	case "uint16":
-		return "uint16(chkOvf.UintV(dd.DecodeUint64(), 16))"
+		return "uint16(chkOvf.UintV(d.d.DecodeUint64(), 16))"
 	case "uint32":
-		return "uint32(chkOvf.UintV(dd.DecodeUint64(), 32))"
+		return "uint32(chkOvf.UintV(d.d.DecodeUint64(), 32))"
 	case "uint64":
-		return "dd.DecodeUint64()"
+		return "d.d.DecodeUint64()"
 	case "uintptr":
-		return "uintptr(chkOvf.UintV(dd.DecodeUint64(), uintBitsize))"
+		return "uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))"
 	case "int":
-		return "int(chkOvf.IntV(dd.DecodeInt64(), intBitsize))"
+		return "int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))"
 	case "int8":
-		return "int8(chkOvf.IntV(dd.DecodeInt64(), 8))"
+		return "int8(chkOvf.IntV(d.d.DecodeInt64(), 8))"
 	case "int16":
-		return "int16(chkOvf.IntV(dd.DecodeInt64(), 16))"
+		return "int16(chkOvf.IntV(d.d.DecodeInt64(), 16))"
 	case "int32":
-		return "int32(chkOvf.IntV(dd.DecodeInt64(), 32))"
+		return "int32(chkOvf.IntV(d.d.DecodeInt64(), 32))"
 	case "int64":
-		return "dd.DecodeInt64()"
+		return "d.d.DecodeInt64()"
 
 	case "string":
-		return "dd.DecodeString()"
+		return "d.d.DecodeString()"
 	case "float32":
-		return "float32(chkOvf.Float32V(dd.DecodeFloat64()))"
+		return "float32(chkOvf.Float32V(d.d.DecodeFloat64()))"
 	case "float64":
-		return "dd.DecodeFloat64()"
+		return "d.d.DecodeFloat64()"
 	case "bool":
-		return "dd.DecodeBool()"
+		return "d.d.DecodeBool()"
 	default:
 		panic(errors.New("gen internal: unknown type for decode: " + s))
 	}

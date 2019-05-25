@@ -187,34 +187,32 @@ func (e *Encoder) {{ .MethodNamePfx "fastpathEnc" false }}R(f *codecFnInfo, rv r
 		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(rv2i(rv).([]{{ .Elem }}), e)
 	}
 }
-func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *Encoder) {
+func (fastpathT) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *Encoder) {
 	if v == nil { e.e.EncodeNil(); return }
-	ee, esep := e.e, e.hh.hasElemSeparators()
-	ee.WriteArrayStart(len(v))
+	e.e.WriteArrayStart(len(v))
 	for _, v2 := range v {
-		if esep { ee.WriteArrayElem() }
+		if e.esep { e.e.WriteArrayElem() }
 		{{ encmd .Elem "v2"}}
 	} 
-	ee.WriteArrayEnd()
+	e.e.WriteArrayEnd()
 }
-func (_ fastpathT) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *Encoder) {
-	ee, esep := e.e, e.hh.hasElemSeparators()
+func (fastpathT) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *Encoder) {
 	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 		return
 	}
-	ee.WriteMapStart(len(v) / 2)
+	e.e.WriteMapStart(len(v) / 2)
 	for j, v2 := range v {
-		if esep {
+		if e.esep {
 			if j%2 == 0 {
-				ee.WriteMapElemKey()
+				e.e.WriteMapElemKey()
 			} else {
-				ee.WriteMapElemValue()
+				e.e.WriteMapElemValue()
 			}
 		}
 		{{ encmd .Elem "v2"}}
 	}
-	ee.WriteMapEnd()
+	e.e.WriteMapEnd()
 }
 {{end}}{{end}}{{end}}
 
@@ -222,10 +220,9 @@ func (_ fastpathT) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *En
 func (e *Encoder) {{ .MethodNamePfx "fastpathEnc" false }}R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.{{ .MethodNamePfx "Enc" false }}V(rv2i(rv).(map[{{ .MapKey }}]{{ .Elem }}), e)
 }
-func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Elem }}, e *Encoder) {
+func (fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Elem }}, e *Encoder) {
 	if v == nil { e.e.EncodeNil(); return }
-	ee, esep := e.e, e.hh.hasElemSeparators() 
-	ee.WriteMapStart(len(v))
+	e.e.WriteMapStart(len(v))
 	if e.h.Canonical { {{/* need to figure out .NoCanonical */}}
 		{{if eq .MapKey "interface{}"}}{{/* out of band 
 		*/}}var mksv []byte = make([]byte, 0, len(v)*16) // temporary byte slice for the encoding
@@ -243,9 +240,9 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Ele
 		}
 		sort.Sort(bytesIntfSlice(v2))
 		for j := range v2 {
-			if esep { ee.WriteMapElemKey() }
+			if e.esep { e.e.WriteMapElemKey() }
 			e.asis(v2[j].v)
-			if esep { ee.WriteMapElemValue() }
+			if e.esep { e.e.WriteMapElemValue() }
 			e.encode(v[v2[j].i])
 		} {{else}}{{ $x := sorttype .MapKey true}}v2 := make([]{{ $x }}, len(v))
 		var i uint
@@ -255,20 +252,20 @@ func (_ fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Ele
 		}
 		sort.Sort({{ sorttype .MapKey false}}(v2))
 		for _, k2 := range v2 {
-			if esep { ee.WriteMapElemKey() }
-			{{if eq .MapKey "string"}} if e.h.StringToRaw {ee.EncodeStringBytesRaw(bytesView(k2))} else {ee.EncodeStringEnc(cUTF8, k2)} {{else}}{{ $y := printf "%s(k2)" .MapKey }}{{if eq $x .MapKey }}{{ $y = "k2" }}{{end}}{{ encmd .MapKey $y }}{{end}}
-			if esep { ee.WriteMapElemValue() }
+			if e.esep { e.e.WriteMapElemKey() }
+			{{if eq .MapKey "string"}} if e.h.StringToRaw {e.e.EncodeStringBytesRaw(bytesView(k2))} else {e.e.EncodeStringEnc(cUTF8, k2)} {{else}}{{ $y := printf "%s(k2)" .MapKey }}{{if eq $x .MapKey }}{{ $y = "k2" }}{{end}}{{ encmd .MapKey $y }}{{end}}
+			if e.esep { e.e.WriteMapElemValue() }
 			{{ $y := printf "v[%s(k2)]" .MapKey }}{{if eq $x .MapKey }}{{ $y = "v[k2]" }}{{end}}{{ encmd .Elem $y }}
 		} {{end}}
 	} else { 
 		for k2, v2 := range v {
-			if esep { ee.WriteMapElemKey() }
-			{{if eq .MapKey "string"}} if e.h.StringToRaw {ee.EncodeStringBytesRaw(bytesView(k2))} else {ee.EncodeStringEnc(cUTF8, k2)} {{else}}{{ encmd .MapKey "k2"}}{{end}}
-			if esep { ee.WriteMapElemValue() }
+			if e.esep { e.e.WriteMapElemKey() }
+			{{if eq .MapKey "string"}} if e.h.StringToRaw {e.e.EncodeStringBytesRaw(bytesView(k2))} else {e.e.EncodeStringEnc(cUTF8, k2)} {{else}}{{ encmd .MapKey "k2"}}{{end}}
+			if e.esep { e.e.WriteMapElemValue() }
 			{{ encmd .Elem "v2"}}
 		}
 	}
-	ee.WriteMapEnd()
+	e.e.WriteMapEnd()
 }
 {{end}}{{end}}{{end}}
 
@@ -353,10 +350,10 @@ func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *[]{{ .Elem }}, d *Decod
 	v, changed := f.{{ .MethodNamePfx "Dec" false }}V(*vp, true, d)
 	if changed { *vp = v }
 }
-func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v []{{ .Elem }}, canChange bool, d *Decoder) (_ []{{ .Elem }}, changed bool) {
-	dd := d.d{{/*
-		// if dd.isContainerType(valueTypeNil) { dd.TryDecodeAsNil()
-	*/}}
+func (fastpathT) {{ .MethodNamePfx "Dec" false }}V(v []{{ .Elem }}, canChange bool, d *Decoder) (_ []{{ .Elem }}, changed bool) {
+	{{/* dd := d.d
+		// if d.d.isContainerType(valueTypeNil) { d.d.TryDecodeAsNil() }
+	 */ -}}
 	slh, containerLenS := d.decSliceHelperStart()
 	if containerLenS == 0 {
 		if canChange {
@@ -384,7 +381,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v []{{ .Elem }}, canChange 
 		}
 	}
 	var j int
-	for j = 0; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j == 0 && len(v) == 0 && canChange {
 			if hasLen {
 				xlen = decInferLen(containerLenS, d.h.MaxInitLen, {{ .Size }})
@@ -408,7 +405,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v []{{ .Elem }}, canChange 
 		slh.ElemContainerState(j)
 		if decodeIntoBlank {
 			d.swallow()
-		} else if dd.TryDecodeAsNil() {
+		} else if d.d.TryDecodeAsNil() {
 			v[uint(j)] = {{ zerocmd .Elem }}
 		} else {
 			{{ if eq .Elem "interface{}" }}d.decode(&v[uint(j)]){{ else }}v[uint(j)] = {{ decmd .Elem }}{{ end }}
@@ -448,19 +445,19 @@ func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{{ .E
 	v, changed := f.{{ .MethodNamePfx "Dec" false }}V(*vp, true, d)
 	if changed { *vp = v }
 }
-func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v map[{{ .MapKey }}]{{ .Elem }}, canChange bool, 
+func (fastpathT) {{ .MethodNamePfx "Dec" false }}V(v map[{{ .MapKey }}]{{ .Elem }}, canChange bool, 
 	d *Decoder) (_ map[{{ .MapKey }}]{{ .Elem }}, changed bool) {
-	dd, esep := d.d, d.hh.hasElemSeparators(){{/*
-		// if dd.isContainerType(valueTypeNil) {dd.TryDecodeAsNil()
-	*/}}
-	containerLen := dd.ReadMapStart()
+    {{/*
+		// if d.d.isContainerType(valueTypeNil) {d.d.TryDecodeAsNil()
+	*/ -}}
+	containerLen := d.d.ReadMapStart()
 	if canChange && v == nil {
 		xlen := decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }})
 		v = make(map[{{ .MapKey }}]{{ .Elem }}, xlen)
 		changed = true
 	}
 	if containerLen == 0 {
-		dd.ReadMapEnd()
+		d.d.ReadMapEnd()
 		return v, changed
 	}
 	d.depthIncr()
@@ -468,15 +465,15 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v map[{{ .MapKey }}]{{ .Ele
 	{{end}}var mk {{ .MapKey }}
 	var mv {{ .Elem }}
 	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
-		if esep { dd.ReadMapElemKey() }
+	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
+		if d.esep { d.d.ReadMapElemKey() }
 		{{ if eq .MapKey "interface{}" }}mk = nil 
 		d.decode(&mk)
 		if bv, bok := mk.([]byte); bok {
 			mk = d.string(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
 		}{{ else }}mk = {{ decmd .MapKey }}{{ end }}
-		if esep { dd.ReadMapElemValue() }
-		if dd.TryDecodeAsNil() {
+		if d.esep { d.d.ReadMapElemValue() }
+		if d.d.TryDecodeAsNil() {
 			if v == nil {} else if d.h.DeleteOnNilMapValue { delete(v, mk) } else { v[mk] = {{ zerocmd .Elem }} }
 			continue 
 		}
@@ -484,7 +481,7 @@ func (_ fastpathT) {{ .MethodNamePfx "Dec" false }}V(v map[{{ .MapKey }}]{{ .Ele
 		d.decode(&mv){{ else }}mv = {{ decmd .Elem }}{{ end }}
 		if v != nil { v[mk] = mv }
 	}
-	dd.ReadMapEnd()
+	d.d.ReadMapEnd()
 	d.depthDecr()
 	return v, changed
 }

@@ -1106,18 +1106,18 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []refl
 // // --------------------------------------------------
 
 type encWriterSwitch struct {
+	esep  bool // whether it has elem separators
+	bytes bool // encoding to []byte
+	isas  bool // whether e.as != nil
+	js    bool // is json encoder?
+	be    bool // is binary encoder?
+	// _    [3]byte // padding
+	// _    [2]uint64 // padding
+	// _    uint64    // padding
 	// wi   *ioEncWriter
 	wb bytesEncAppender
 	wf *bufioEncWriter
 	// typ  entryType
-	bytes bool // encoding to []byte
-	esep  bool // whether it has elem separators
-	isas  bool // whether e.as != nil
-	js    bool // is json encoder?
-	be    bool // is binary encoder?
-	// _     [2]byte // padding
-	// _    [2]uint64 // padding
-	// _    uint64    // padding
 }
 
 func (z *encWriterSwitch) writeb(s []byte) {
@@ -1284,7 +1284,7 @@ type Encoder struct {
 	h  *BasicHandle
 	hh Handle
 
-	// ---- cpu cache line boundary? + 3
+	// ---- cpu cache line boundary
 	encWriterSwitch
 
 	err error

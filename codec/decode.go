@@ -1996,21 +1996,20 @@ type decNaked struct {
 // --------------
 
 type decReaderSwitch struct {
-	rb bytesDecReader
-	// ---- cpu cache line boundary?
-	ri *ioDecReader
-	bi *bufioDecReader
-
+	esep     bool // has elem separators
 	mtr, str bool // whether maptype or slicetype are known types
 
 	be   bool // is binary encoding
 	js   bool // is json handle
 	jsms bool // is json handle, and MapKeyAsString
-	esep bool // has elem separators
 
 	// typ   entryType
 	bytes bool // is bytes reader
 	bufio bool // is this a bufioDecReader?
+
+	rb bytesDecReader
+	ri *ioDecReader
+	bi *bufioDecReader
 }
 
 // numread, track and stopTrack are always inlined, as they just check int fields, etc.
@@ -2290,8 +2289,8 @@ type Decoder struct {
 	mtid uintptr
 	stid uintptr
 
-	hh Handle
 	h  *BasicHandle
+	hh Handle
 
 	// ---- cpu cache line boundary?
 	decReaderSwitch

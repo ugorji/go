@@ -633,7 +633,7 @@ func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (e
 	return h.SetExt(rt, tag, &extWrapper{ext, interfaceExtFailer{}})
 }
 
-func (h *SimpleHandle) hasElemSeparators() bool { return true } // as it implements Write(Map|Array)XXX
+// func (h *SimpleHandle) hasElemSeparators() bool { return true } // as it implements Write(Map|Array)XXX
 
 func (h *SimpleHandle) newEncDriver(e *Encoder) encDriver {
 	return &simpleEncDriver{e: e, w: e.w, h: h}
