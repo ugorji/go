@@ -140,6 +140,8 @@ func init() {
 	testHandles = append(testHandles,
 		// testNoopH,
 		testMsgpackH, testBincH, testSimpleH, testCborH, testJsonH)
+	// JSON should do HTMLCharsAsIs by default
+	testJsonH.HTMLCharsAsIs = true
 	// set ExplicitRelease on each handle
 	testMsgpackH.ExplicitRelease = true
 	testBincH.ExplicitRelease = true

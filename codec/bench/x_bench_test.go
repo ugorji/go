@@ -13,7 +13,7 @@ import (
 	"github.com/Sereal/Sereal/Go/sereal"
 	xdr "github.com/davecgh/go-xdr/xdr2"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/mongodb/mongo-go-driver/bson"
+	"go.mongodb.org/mongo-driver/bson"         // "github.com/mongodb/mongo-go-driver/bson"
 	mgobson "gopkg.in/mgo.v2/bson"             //"labix.org/v2/mgo/bson"
 	vmsgpack "gopkg.in/vmihailenco/msgpack.v2" //"github.com/vmihailenco/msgpack"
 )

@@ -326,12 +326,8 @@ func (d *Decoder) kTime(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (d *Decoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
-	fv := d.d.DecodeFloat64()
-	if chkOvf.Float32(fv) {
-		d.errorf("float32 overflow: %v", fv)
-	}
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*float32)(urv.ptr) = float32(fv)
+	*(*float32)(urv.ptr) = float32(d.decodeFloat32())
 }
 
 func (d *Decoder) kFloat64(f *codecFnInfo, rv reflect.Value) {

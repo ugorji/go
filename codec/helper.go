@@ -265,11 +265,11 @@ type containerState uint8
 const (
 	_ containerState = iota
 
-	containerMapStart // slot left open, since Driver method already covers it
+	containerMapStart
 	containerMapKey
 	containerMapValue
 	containerMapEnd
-	containerArrayStart // slot left open, since Driver methods already cover it
+	containerArrayStart
 	containerArrayElem
 	containerArrayEnd
 )
@@ -1004,11 +1004,6 @@ func (x addExtWrapper) UpdateExt(dest interface{}, v interface{}) {
 	x.ReadExt(dest, v.([]byte))
 }
 
-type extWrapper struct {
-	BytesExt
-	InterfaceExt
-}
-
 type bytesExtFailer struct{}
 
 func (bytesExtFailer) WriteExt(v interface{}) []byte {
@@ -1027,6 +1022,21 @@ func (interfaceExtFailer) ConvertExt(v interface{}) interface{} {
 }
 func (interfaceExtFailer) UpdateExt(dest interface{}, v interface{}) {
 	panicv.errorstr("InterfaceExt.UpdateExt is not supported")
+}
+
+// type extWrapper struct {
+// 	BytesExt
+// 	InterfaceExt
+// }
+
+type bytesExtWrapper struct {
+	interfaceExtFailer
+	BytesExt
+}
+
+type interfaceExtWrapper struct {
+	bytesExtFailer
+	InterfaceExt
 }
 
 type binaryEncodingType struct{}

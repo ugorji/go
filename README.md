@@ -289,7 +289,7 @@ some caveats. See Encode documentation.
 
 ```go
 const CborStreamBytes byte = 0x5f ...
-const GenVersion = 11
+const GenVersion = 12
 var GoRpc goRpc
 var MsgpackSpecRpc msgpackSpecRpc
 func GenHelperDecoder(d *Decoder) (gd genHelperDecoder, dd genHelperDecDriver)

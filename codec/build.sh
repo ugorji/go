@@ -146,7 +146,7 @@ _codegenerators() {
         fi &&
         $c8 -rt codecgen -t 'codecgen generated' -o values_codecgen${c5} -d 19780 $zfin $zfin2 &&
         cp mammoth2_generated_test.go $c9 &&
-        $c8 -t '!notfastpath' -o mammoth2_codecgen${c5} -d 19781 mammoth2_generated_test.go &&
+        $c8 -t 'codecgen,!notfastpath generated,!notfastpath' -o mammoth2_codecgen${c5} -d 19781 mammoth2_generated_test.go &&
         rm -f $c9 &&
         echo "generators done!" 
 }

@@ -10,7 +10,7 @@ package codec
 // Fast path functions try to create a fast path encode or decode implementation
 // for common maps and slices.
 //
-// We define the functions and register then in this single file
+// We define the functions and register them in this single file
 // so as not to pollute the encode.go and decode.go, and create a dependency in there.
 // This file can be omitted without causing a build failure.
 //
@@ -18,9 +18,10 @@ package codec
 //	  - Many calls bypass reflection altogether
 //
 // Currently support
-//	  - slice of all builtin types,
-//	  - map of all builtin types to string or interface value
-//	  - symmetrical maps of all builtin types (e.g. str-str, uint8-uint8)
+//	  - slice of all builtin types (numeric, bool, string, []byte)
+//    - maps of builtin types to builtin or interface{} type, EXCEPT FOR
+//      keys of type uintptr, int8/16/32, uint16/32, float32/64, bool, interface{}
+//      AND values of type type int8/16/32, uint16/32
 // This should provide adequate "typical" implementations.
 //
 // Note that fast track decode functions must handle values for which an address cannot be obtained.
@@ -50,7 +51,7 @@ type fastpathE struct {
 	decfn func(*Decoder, *codecFnInfo, reflect.Value)
 }
 
-type fastpathA [92]fastpathE
+type fastpathA [88]fastpathE
 
 func (x *fastpathA) index(rtid uintptr) int {
 	// use binary search to grab the index (adapted from sort/search.go)
@@ -96,6 +97,7 @@ func init() {
 
 	fn([]interface{}(nil), (*Encoder).fastpathEncSliceIntfR, (*Decoder).fastpathDecSliceIntfR)
 	fn([]string(nil), (*Encoder).fastpathEncSliceStringR, (*Decoder).fastpathDecSliceStringR)
+	fn([][]byte(nil), (*Encoder).fastpathEncSliceBytesR, (*Decoder).fastpathDecSliceBytesR)
 	fn([]float32(nil), (*Encoder).fastpathEncSliceFloat32R, (*Decoder).fastpathDecSliceFloat32R)
 	fn([]float64(nil), (*Encoder).fastpathEncSliceFloat64R, (*Decoder).fastpathDecSliceFloat64R)
 	fn([]uint(nil), (*Encoder).fastpathEncSliceUintR, (*Decoder).fastpathDecSliceUintR)
@@ -112,6 +114,7 @@ func init() {
 
 	fn(map[string]interface{}(nil), (*Encoder).fastpathEncMapStringIntfR, (*Decoder).fastpathDecMapStringIntfR)
 	fn(map[string]string(nil), (*Encoder).fastpathEncMapStringStringR, (*Decoder).fastpathDecMapStringStringR)
+	fn(map[string][]byte(nil), (*Encoder).fastpathEncMapStringBytesR, (*Decoder).fastpathDecMapStringBytesR)
 	fn(map[string]uint(nil), (*Encoder).fastpathEncMapStringUintR, (*Decoder).fastpathDecMapStringUintR)
 	fn(map[string]uint8(nil), (*Encoder).fastpathEncMapStringUint8R, (*Decoder).fastpathDecMapStringUint8R)
 	fn(map[string]uint64(nil), (*Encoder).fastpathEncMapStringUint64R, (*Decoder).fastpathDecMapStringUint64R)
@@ -123,6 +126,7 @@ func init() {
 	fn(map[string]bool(nil), (*Encoder).fastpathEncMapStringBoolR, (*Decoder).fastpathDecMapStringBoolR)
 	fn(map[uint]interface{}(nil), (*Encoder).fastpathEncMapUintIntfR, (*Decoder).fastpathDecMapUintIntfR)
 	fn(map[uint]string(nil), (*Encoder).fastpathEncMapUintStringR, (*Decoder).fastpathDecMapUintStringR)
+	fn(map[uint][]byte(nil), (*Encoder).fastpathEncMapUintBytesR, (*Decoder).fastpathDecMapUintBytesR)
 	fn(map[uint]uint(nil), (*Encoder).fastpathEncMapUintUintR, (*Decoder).fastpathDecMapUintUintR)
 	fn(map[uint]uint8(nil), (*Encoder).fastpathEncMapUintUint8R, (*Decoder).fastpathDecMapUintUint8R)
 	fn(map[uint]uint64(nil), (*Encoder).fastpathEncMapUintUint64R, (*Decoder).fastpathDecMapUintUint64R)
@@ -134,6 +138,7 @@ func init() {
 	fn(map[uint]bool(nil), (*Encoder).fastpathEncMapUintBoolR, (*Decoder).fastpathDecMapUintBoolR)
 	fn(map[uint8]interface{}(nil), (*Encoder).fastpathEncMapUint8IntfR, (*Decoder).fastpathDecMapUint8IntfR)
 	fn(map[uint8]string(nil), (*Encoder).fastpathEncMapUint8StringR, (*Decoder).fastpathDecMapUint8StringR)
+	fn(map[uint8][]byte(nil), (*Encoder).fastpathEncMapUint8BytesR, (*Decoder).fastpathDecMapUint8BytesR)
 	fn(map[uint8]uint(nil), (*Encoder).fastpathEncMapUint8UintR, (*Decoder).fastpathDecMapUint8UintR)
 	fn(map[uint8]uint8(nil), (*Encoder).fastpathEncMapUint8Uint8R, (*Decoder).fastpathDecMapUint8Uint8R)
 	fn(map[uint8]uint64(nil), (*Encoder).fastpathEncMapUint8Uint64R, (*Decoder).fastpathDecMapUint8Uint64R)
@@ -145,6 +150,7 @@ func init() {
 	fn(map[uint8]bool(nil), (*Encoder).fastpathEncMapUint8BoolR, (*Decoder).fastpathDecMapUint8BoolR)
 	fn(map[uint64]interface{}(nil), (*Encoder).fastpathEncMapUint64IntfR, (*Decoder).fastpathDecMapUint64IntfR)
 	fn(map[uint64]string(nil), (*Encoder).fastpathEncMapUint64StringR, (*Decoder).fastpathDecMapUint64StringR)
+	fn(map[uint64][]byte(nil), (*Encoder).fastpathEncMapUint64BytesR, (*Decoder).fastpathDecMapUint64BytesR)
 	fn(map[uint64]uint(nil), (*Encoder).fastpathEncMapUint64UintR, (*Decoder).fastpathDecMapUint64UintR)
 	fn(map[uint64]uint8(nil), (*Encoder).fastpathEncMapUint64Uint8R, (*Decoder).fastpathDecMapUint64Uint8R)
 	fn(map[uint64]uint64(nil), (*Encoder).fastpathEncMapUint64Uint64R, (*Decoder).fastpathDecMapUint64Uint64R)
@@ -154,19 +160,9 @@ func init() {
 	fn(map[uint64]float32(nil), (*Encoder).fastpathEncMapUint64Float32R, (*Decoder).fastpathDecMapUint64Float32R)
 	fn(map[uint64]float64(nil), (*Encoder).fastpathEncMapUint64Float64R, (*Decoder).fastpathDecMapUint64Float64R)
 	fn(map[uint64]bool(nil), (*Encoder).fastpathEncMapUint64BoolR, (*Decoder).fastpathDecMapUint64BoolR)
-	fn(map[uintptr]interface{}(nil), (*Encoder).fastpathEncMapUintptrIntfR, (*Decoder).fastpathDecMapUintptrIntfR)
-	fn(map[uintptr]string(nil), (*Encoder).fastpathEncMapUintptrStringR, (*Decoder).fastpathDecMapUintptrStringR)
-	fn(map[uintptr]uint(nil), (*Encoder).fastpathEncMapUintptrUintR, (*Decoder).fastpathDecMapUintptrUintR)
-	fn(map[uintptr]uint8(nil), (*Encoder).fastpathEncMapUintptrUint8R, (*Decoder).fastpathDecMapUintptrUint8R)
-	fn(map[uintptr]uint64(nil), (*Encoder).fastpathEncMapUintptrUint64R, (*Decoder).fastpathDecMapUintptrUint64R)
-	fn(map[uintptr]uintptr(nil), (*Encoder).fastpathEncMapUintptrUintptrR, (*Decoder).fastpathDecMapUintptrUintptrR)
-	fn(map[uintptr]int(nil), (*Encoder).fastpathEncMapUintptrIntR, (*Decoder).fastpathDecMapUintptrIntR)
-	fn(map[uintptr]int64(nil), (*Encoder).fastpathEncMapUintptrInt64R, (*Decoder).fastpathDecMapUintptrInt64R)
-	fn(map[uintptr]float32(nil), (*Encoder).fastpathEncMapUintptrFloat32R, (*Decoder).fastpathDecMapUintptrFloat32R)
-	fn(map[uintptr]float64(nil), (*Encoder).fastpathEncMapUintptrFloat64R, (*Decoder).fastpathDecMapUintptrFloat64R)
-	fn(map[uintptr]bool(nil), (*Encoder).fastpathEncMapUintptrBoolR, (*Decoder).fastpathDecMapUintptrBoolR)
 	fn(map[int]interface{}(nil), (*Encoder).fastpathEncMapIntIntfR, (*Decoder).fastpathDecMapIntIntfR)
 	fn(map[int]string(nil), (*Encoder).fastpathEncMapIntStringR, (*Decoder).fastpathDecMapIntStringR)
+	fn(map[int][]byte(nil), (*Encoder).fastpathEncMapIntBytesR, (*Decoder).fastpathDecMapIntBytesR)
 	fn(map[int]uint(nil), (*Encoder).fastpathEncMapIntUintR, (*Decoder).fastpathDecMapIntUintR)
 	fn(map[int]uint8(nil), (*Encoder).fastpathEncMapIntUint8R, (*Decoder).fastpathDecMapIntUint8R)
 	fn(map[int]uint64(nil), (*Encoder).fastpathEncMapIntUint64R, (*Decoder).fastpathDecMapIntUint64R)
@@ -178,6 +174,7 @@ func init() {
 	fn(map[int]bool(nil), (*Encoder).fastpathEncMapIntBoolR, (*Decoder).fastpathDecMapIntBoolR)
 	fn(map[int64]interface{}(nil), (*Encoder).fastpathEncMapInt64IntfR, (*Decoder).fastpathDecMapInt64IntfR)
 	fn(map[int64]string(nil), (*Encoder).fastpathEncMapInt64StringR, (*Decoder).fastpathDecMapInt64StringR)
+	fn(map[int64][]byte(nil), (*Encoder).fastpathEncMapInt64BytesR, (*Decoder).fastpathDecMapInt64BytesR)
 	fn(map[int64]uint(nil), (*Encoder).fastpathEncMapInt64UintR, (*Decoder).fastpathDecMapInt64UintR)
 	fn(map[int64]uint8(nil), (*Encoder).fastpathEncMapInt64Uint8R, (*Decoder).fastpathDecMapInt64Uint8R)
 	fn(map[int64]uint64(nil), (*Encoder).fastpathEncMapInt64Uint64R, (*Decoder).fastpathDecMapInt64Uint64R)
@@ -205,6 +202,10 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 		fastpathTV.EncSliceStringV(v, e)
 	case *[]string:
 		fastpathTV.EncSliceStringV(*v, e)
+	case [][]byte:
+		fastpathTV.EncSliceBytesV(v, e)
+	case *[][]byte:
+		fastpathTV.EncSliceBytesV(*v, e)
 	case []float32:
 		fastpathTV.EncSliceFloat32V(v, e)
 	case *[]float32:
@@ -266,6 +267,10 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 		fastpathTV.EncMapStringStringV(v, e)
 	case *map[string]string:
 		fastpathTV.EncMapStringStringV(*v, e)
+	case map[string][]byte:
+		fastpathTV.EncMapStringBytesV(v, e)
+	case *map[string][]byte:
+		fastpathTV.EncMapStringBytesV(*v, e)
 	case map[string]uint:
 		fastpathTV.EncMapStringUintV(v, e)
 	case *map[string]uint:
@@ -310,6 +315,10 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 		fastpathTV.EncMapUintStringV(v, e)
 	case *map[uint]string:
 		fastpathTV.EncMapUintStringV(*v, e)
+	case map[uint][]byte:
+		fastpathTV.EncMapUintBytesV(v, e)
+	case *map[uint][]byte:
+		fastpathTV.EncMapUintBytesV(*v, e)
 	case map[uint]uint:
 		fastpathTV.EncMapUintUintV(v, e)
 	case *map[uint]uint:
@@ -354,6 +363,10 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 		fastpathTV.EncMapUint8StringV(v, e)
 	case *map[uint8]string:
 		fastpathTV.EncMapUint8StringV(*v, e)
+	case map[uint8][]byte:
+		fastpathTV.EncMapUint8BytesV(v, e)
+	case *map[uint8][]byte:
+		fastpathTV.EncMapUint8BytesV(*v, e)
 	case map[uint8]uint:
 		fastpathTV.EncMapUint8UintV(v, e)
 	case *map[uint8]uint:
@@ -398,6 +411,10 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 		fastpathTV.EncMapUint64StringV(v, e)
 	case *map[uint64]string:
 		fastpathTV.EncMapUint64StringV(*v, e)
+	case map[uint64][]byte:
+		fastpathTV.EncMapUint64BytesV(v, e)
+	case *map[uint64][]byte:
+		fastpathTV.EncMapUint64BytesV(*v, e)
 	case map[uint64]uint:
 		fastpathTV.EncMapUint64UintV(v, e)
 	case *map[uint64]uint:
@@ -434,50 +451,6 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 		fastpathTV.EncMapUint64BoolV(v, e)
 	case *map[uint64]bool:
 		fastpathTV.EncMapUint64BoolV(*v, e)
-	case map[uintptr]interface{}:
-		fastpathTV.EncMapUintptrIntfV(v, e)
-	case *map[uintptr]interface{}:
-		fastpathTV.EncMapUintptrIntfV(*v, e)
-	case map[uintptr]string:
-		fastpathTV.EncMapUintptrStringV(v, e)
-	case *map[uintptr]string:
-		fastpathTV.EncMapUintptrStringV(*v, e)
-	case map[uintptr]uint:
-		fastpathTV.EncMapUintptrUintV(v, e)
-	case *map[uintptr]uint:
-		fastpathTV.EncMapUintptrUintV(*v, e)
-	case map[uintptr]uint8:
-		fastpathTV.EncMapUintptrUint8V(v, e)
-	case *map[uintptr]uint8:
-		fastpathTV.EncMapUintptrUint8V(*v, e)
-	case map[uintptr]uint64:
-		fastpathTV.EncMapUintptrUint64V(v, e)
-	case *map[uintptr]uint64:
-		fastpathTV.EncMapUintptrUint64V(*v, e)
-	case map[uintptr]uintptr:
-		fastpathTV.EncMapUintptrUintptrV(v, e)
-	case *map[uintptr]uintptr:
-		fastpathTV.EncMapUintptrUintptrV(*v, e)
-	case map[uintptr]int:
-		fastpathTV.EncMapUintptrIntV(v, e)
-	case *map[uintptr]int:
-		fastpathTV.EncMapUintptrIntV(*v, e)
-	case map[uintptr]int64:
-		fastpathTV.EncMapUintptrInt64V(v, e)
-	case *map[uintptr]int64:
-		fastpathTV.EncMapUintptrInt64V(*v, e)
-	case map[uintptr]float32:
-		fastpathTV.EncMapUintptrFloat32V(v, e)
-	case *map[uintptr]float32:
-		fastpathTV.EncMapUintptrFloat32V(*v, e)
-	case map[uintptr]float64:
-		fastpathTV.EncMapUintptrFloat64V(v, e)
-	case *map[uintptr]float64:
-		fastpathTV.EncMapUintptrFloat64V(*v, e)
-	case map[uintptr]bool:
-		fastpathTV.EncMapUintptrBoolV(v, e)
-	case *map[uintptr]bool:
-		fastpathTV.EncMapUintptrBoolV(*v, e)
 	case map[int]interface{}:
 		fastpathTV.EncMapIntIntfV(v, e)
 	case *map[int]interface{}:
@@ -486,6 +459,10 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 		fastpathTV.EncMapIntStringV(v, e)
 	case *map[int]string:
 		fastpathTV.EncMapIntStringV(*v, e)
+	case map[int][]byte:
+		fastpathTV.EncMapIntBytesV(v, e)
+	case *map[int][]byte:
+		fastpathTV.EncMapIntBytesV(*v, e)
 	case map[int]uint:
 		fastpathTV.EncMapIntUintV(v, e)
 	case *map[int]uint:
@@ -530,6 +507,10 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 		fastpathTV.EncMapInt64StringV(v, e)
 	case *map[int64]string:
 		fastpathTV.EncMapInt64StringV(*v, e)
+	case map[int64][]byte:
+		fastpathTV.EncMapInt64BytesV(v, e)
+	case *map[int64][]byte:
+		fastpathTV.EncMapInt64BytesV(*v, e)
 	case map[int64]uint:
 		fastpathTV.EncMapInt64UintV(v, e)
 	case *map[int64]uint:
@@ -588,32 +569,30 @@ func (fastpathT) EncSliceIntfV(v []interface{}, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.encode(v2)
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.encode(v[j])
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceIntfV(v []interface{}, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.encode(v[j])
 		}
-		e.encode(v2)
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceStringR(f *codecFnInfo, rv reflect.Value) {
@@ -628,40 +607,76 @@ func (fastpathT) EncSliceStringV(v []string, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
 		if e.h.StringToRaw {
-			e.e.EncodeStringBytesRaw(bytesView(v2))
+			e.e.EncodeStringBytesRaw(bytesView(v[j]))
 		} else {
-			e.e.EncodeStringEnc(cUTF8, v2)
+			e.e.EncodeStringEnc(cUTF8, v[j])
 		}
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceStringV(v []string, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
+			}
+			if e.h.StringToRaw {
+				e.e.EncodeStringBytesRaw(bytesView(v[j]))
+			} else {
+				e.e.EncodeStringEnc(cUTF8, v[j])
 			}
 		}
-		if e.h.StringToRaw {
-			e.e.EncodeStringBytesRaw(bytesView(v2))
-		} else {
-			e.e.EncodeStringEnc(cUTF8, v2)
-		}
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
+}
+
+func (e *Encoder) fastpathEncSliceBytesR(f *codecFnInfo, rv reflect.Value) {
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceBytesV(rv2i(rv).([][]byte), e)
+	} else {
+		fastpathTV.EncSliceBytesV(rv2i(rv).([][]byte), e)
+	}
+}
+func (fastpathT) EncSliceBytesV(v [][]byte, e *Encoder) {
+	if v == nil {
+		e.e.EncodeNil()
+		return
+	}
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeStringBytesRaw(v[j])
+	}
+	e.arrayEnd()
+}
+func (fastpathT) EncAsMapSliceBytesV(v [][]byte, e *Encoder) {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
+		e.errorf(fastpathMapBySliceErrMsg, len(v))
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
+			if j%2 == 0 {
+				e.mapElemKey()
+			} else {
+				e.mapElemValue()
+			}
+			e.e.EncodeStringBytesRaw(v[j])
+		}
+		e.mapEnd()
+	}
 }
 
 func (e *Encoder) fastpathEncSliceFloat32R(f *codecFnInfo, rv reflect.Value) {
@@ -676,32 +691,30 @@ func (fastpathT) EncSliceFloat32V(v []float32, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeFloat32(v2)
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeFloat32(v[j])
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceFloat32V(v []float32, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeFloat32(v[j])
 		}
-		e.e.EncodeFloat32(v2)
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceFloat64R(f *codecFnInfo, rv reflect.Value) {
@@ -716,32 +729,30 @@ func (fastpathT) EncSliceFloat64V(v []float64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeFloat64(v2)
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeFloat64(v[j])
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceFloat64V(v []float64, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeFloat64(v[j])
 		}
-		e.e.EncodeFloat64(v2)
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceUintR(f *codecFnInfo, rv reflect.Value) {
@@ -756,32 +767,30 @@ func (fastpathT) EncSliceUintV(v []uint, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeUint(uint64(v2))
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeUint(uint64(v[j]))
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceUintV(v []uint, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeUint(uint64(v[j]))
 		}
-		e.e.EncodeUint(uint64(v2))
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceUint8R(f *codecFnInfo, rv reflect.Value) {
@@ -796,32 +805,30 @@ func (fastpathT) EncSliceUint8V(v []uint8, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeUint(uint64(v2))
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeUint(uint64(v[j]))
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceUint8V(v []uint8, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeUint(uint64(v[j]))
 		}
-		e.e.EncodeUint(uint64(v2))
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceUint16R(f *codecFnInfo, rv reflect.Value) {
@@ -836,32 +843,30 @@ func (fastpathT) EncSliceUint16V(v []uint16, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeUint(uint64(v2))
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeUint(uint64(v[j]))
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceUint16V(v []uint16, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeUint(uint64(v[j]))
 		}
-		e.e.EncodeUint(uint64(v2))
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceUint32R(f *codecFnInfo, rv reflect.Value) {
@@ -876,32 +881,30 @@ func (fastpathT) EncSliceUint32V(v []uint32, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeUint(uint64(v2))
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeUint(uint64(v[j]))
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceUint32V(v []uint32, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeUint(uint64(v[j]))
 		}
-		e.e.EncodeUint(uint64(v2))
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceUint64R(f *codecFnInfo, rv reflect.Value) {
@@ -916,32 +919,30 @@ func (fastpathT) EncSliceUint64V(v []uint64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeUint(v2)
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeUint(v[j])
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceUint64V(v []uint64, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeUint(v[j])
 		}
-		e.e.EncodeUint(v2)
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceUintptrR(f *codecFnInfo, rv reflect.Value) {
@@ -956,32 +957,30 @@ func (fastpathT) EncSliceUintptrV(v []uintptr, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.encode(v2)
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.encode(v[j])
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceUintptrV(v []uintptr, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.encode(v[j])
 		}
-		e.encode(v2)
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceIntR(f *codecFnInfo, rv reflect.Value) {
@@ -996,32 +995,30 @@ func (fastpathT) EncSliceIntV(v []int, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeInt(int64(v2))
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeInt(int64(v[j]))
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceIntV(v []int, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeInt(int64(v[j]))
 		}
-		e.e.EncodeInt(int64(v2))
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceInt8R(f *codecFnInfo, rv reflect.Value) {
@@ -1036,32 +1033,30 @@ func (fastpathT) EncSliceInt8V(v []int8, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeInt(int64(v2))
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeInt(int64(v[j]))
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceInt8V(v []int8, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeInt(int64(v[j]))
 		}
-		e.e.EncodeInt(int64(v2))
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceInt16R(f *codecFnInfo, rv reflect.Value) {
@@ -1076,32 +1071,30 @@ func (fastpathT) EncSliceInt16V(v []int16, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeInt(int64(v2))
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeInt(int64(v[j]))
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceInt16V(v []int16, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeInt(int64(v[j]))
 		}
-		e.e.EncodeInt(int64(v2))
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceInt32R(f *codecFnInfo, rv reflect.Value) {
@@ -1116,32 +1109,30 @@ func (fastpathT) EncSliceInt32V(v []int32, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeInt(int64(v2))
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeInt(int64(v[j]))
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceInt32V(v []int32, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeInt(int64(v[j]))
 		}
-		e.e.EncodeInt(int64(v2))
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceInt64R(f *codecFnInfo, rv reflect.Value) {
@@ -1156,32 +1147,30 @@ func (fastpathT) EncSliceInt64V(v []int64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeInt(v2)
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeInt(v[j])
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceInt64V(v []int64, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeInt(v[j])
 		}
-		e.e.EncodeInt(v2)
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncSliceBoolR(f *codecFnInfo, rv reflect.Value) {
@@ -1196,32 +1185,30 @@ func (fastpathT) EncSliceBoolV(v []bool, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteArrayStart(len(v))
-	for _, v2 := range v {
-		if e.esep {
-			e.e.WriteArrayElem()
-		}
-		e.e.EncodeBool(v2)
+	e.arrayStart(len(v))
+	for j := range v {
+		e.arrayElem()
+		e.e.EncodeBool(v[j])
 	}
-	e.e.WriteArrayEnd()
+	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceBoolV(v []bool, e *Encoder) {
-	if len(v)%2 == 1 {
+	if v == nil {
+		e.e.EncodeNil()
+	} else if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
-		return
-	}
-	e.e.WriteMapStart(len(v) / 2)
-	for j, v2 := range v {
-		if e.esep {
+	} else {
+		e.mapStart(len(v) / 2)
+		for j := range v {
 			if j%2 == 0 {
-				e.e.WriteMapElemKey()
+				e.mapElemKey()
 			} else {
-				e.e.WriteMapElemValue()
+				e.mapElemValue()
 			}
+			e.e.EncodeBool(v[j])
 		}
-		e.e.EncodeBool(v2)
+		e.mapEnd()
 	}
-	e.e.WriteMapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringIntfR(f *codecFnInfo, rv reflect.Value) {
@@ -1232,7 +1219,7 @@ func (fastpathT) EncMapStringIntfV(v map[string]interface{}, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1242,36 +1229,28 @@ func (fastpathT) EncMapStringIntfV(v map[string]interface{}, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringStringR(f *codecFnInfo, rv reflect.Value) {
@@ -1282,7 +1261,7 @@ func (fastpathT) EncMapStringStringV(v map[string]string, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1292,17 +1271,13 @@ func (fastpathT) EncMapStringStringV(v map[string]string, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v[k2]))
 			} else {
@@ -1311,17 +1286,13 @@ func (fastpathT) EncMapStringStringV(v map[string]string, e *Encoder) {
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v2))
 			} else {
@@ -1329,7 +1300,49 @@ func (fastpathT) EncMapStringStringV(v map[string]string, e *Encoder) {
 			}
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
+}
+
+func (e *Encoder) fastpathEncMapStringBytesR(f *codecFnInfo, rv reflect.Value) {
+	fastpathTV.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
+}
+func (fastpathT) EncMapStringBytesV(v map[string][]byte, e *Encoder) {
+	if v == nil {
+		e.e.EncodeNil()
+		return
+	}
+	e.mapStart(len(v))
+	if e.h.Canonical {
+		v2 := make([]string, len(v))
+		var i uint
+		for k := range v {
+			v2[i] = k
+			i++
+		}
+		sort.Sort(stringSlice(v2))
+		for _, k2 := range v2 {
+			e.mapElemKey()
+			if e.h.StringToRaw {
+				e.e.EncodeStringBytesRaw(bytesView(k2))
+			} else {
+				e.e.EncodeStringEnc(cUTF8, k2)
+			}
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v[k2])
+		}
+	} else {
+		for k2, v2 := range v {
+			e.mapElemKey()
+			if e.h.StringToRaw {
+				e.e.EncodeStringBytesRaw(bytesView(k2))
+			} else {
+				e.e.EncodeStringEnc(cUTF8, k2)
+			}
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v2)
+		}
+	}
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringUintR(f *codecFnInfo, rv reflect.Value) {
@@ -1340,7 +1353,7 @@ func (fastpathT) EncMapStringUintV(v map[string]uint, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1350,36 +1363,28 @@ func (fastpathT) EncMapStringUintV(v map[string]uint, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringUint8R(f *codecFnInfo, rv reflect.Value) {
@@ -1390,7 +1395,7 @@ func (fastpathT) EncMapStringUint8V(v map[string]uint8, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1400,36 +1405,28 @@ func (fastpathT) EncMapStringUint8V(v map[string]uint8, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringUint64R(f *codecFnInfo, rv reflect.Value) {
@@ -1440,7 +1437,7 @@ func (fastpathT) EncMapStringUint64V(v map[string]uint64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1450,36 +1447,28 @@ func (fastpathT) EncMapStringUint64V(v map[string]uint64, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringUintptrR(f *codecFnInfo, rv reflect.Value) {
@@ -1490,7 +1479,7 @@ func (fastpathT) EncMapStringUintptrV(v map[string]uintptr, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1500,36 +1489,28 @@ func (fastpathT) EncMapStringUintptrV(v map[string]uintptr, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringIntR(f *codecFnInfo, rv reflect.Value) {
@@ -1540,7 +1521,7 @@ func (fastpathT) EncMapStringIntV(v map[string]int, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1550,36 +1531,28 @@ func (fastpathT) EncMapStringIntV(v map[string]int, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringInt64R(f *codecFnInfo, rv reflect.Value) {
@@ -1590,7 +1563,7 @@ func (fastpathT) EncMapStringInt64V(v map[string]int64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1600,36 +1573,28 @@ func (fastpathT) EncMapStringInt64V(v map[string]int64, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringFloat32R(f *codecFnInfo, rv reflect.Value) {
@@ -1640,7 +1605,7 @@ func (fastpathT) EncMapStringFloat32V(v map[string]float32, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1650,36 +1615,28 @@ func (fastpathT) EncMapStringFloat32V(v map[string]float32, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringFloat64R(f *codecFnInfo, rv reflect.Value) {
@@ -1690,7 +1647,7 @@ func (fastpathT) EncMapStringFloat64V(v map[string]float64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1700,36 +1657,28 @@ func (fastpathT) EncMapStringFloat64V(v map[string]float64, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapStringBoolR(f *codecFnInfo, rv reflect.Value) {
@@ -1740,7 +1689,7 @@ func (fastpathT) EncMapStringBoolV(v map[string]bool, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
 		var i uint
@@ -1750,36 +1699,28 @@ func (fastpathT) EncMapStringBoolV(v map[string]bool, e *Encoder) {
 		}
 		sort.Sort(stringSlice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(k2))
 			} else {
 				e.e.EncodeStringEnc(cUTF8, k2)
 			}
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintIntfR(f *codecFnInfo, rv reflect.Value) {
@@ -1790,7 +1731,7 @@ func (fastpathT) EncMapUintIntfV(v map[uint]interface{}, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -1800,28 +1741,20 @@ func (fastpathT) EncMapUintIntfV(v map[uint]interface{}, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[uint(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintStringR(f *codecFnInfo, rv reflect.Value) {
@@ -1832,7 +1765,7 @@ func (fastpathT) EncMapUintStringV(v map[uint]string, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -1842,13 +1775,9 @@ func (fastpathT) EncMapUintStringV(v map[uint]string, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v[uint(k2)]))
 			} else {
@@ -1857,13 +1786,9 @@ func (fastpathT) EncMapUintStringV(v map[uint]string, e *Encoder) {
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v2))
 			} else {
@@ -1871,7 +1796,41 @@ func (fastpathT) EncMapUintStringV(v map[uint]string, e *Encoder) {
 			}
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
+}
+
+func (e *Encoder) fastpathEncMapUintBytesR(f *codecFnInfo, rv reflect.Value) {
+	fastpathTV.EncMapUintBytesV(rv2i(rv).(map[uint][]byte), e)
+}
+func (fastpathT) EncMapUintBytesV(v map[uint][]byte, e *Encoder) {
+	if v == nil {
+		e.e.EncodeNil()
+		return
+	}
+	e.mapStart(len(v))
+	if e.h.Canonical {
+		v2 := make([]uint64, len(v))
+		var i uint
+		for k := range v {
+			v2[i] = uint64(k)
+			i++
+		}
+		sort.Sort(uint64Slice(v2))
+		for _, k2 := range v2 {
+			e.mapElemKey()
+			e.e.EncodeUint(uint64(uint(k2)))
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v[uint(k2)])
+		}
+	} else {
+		for k2, v2 := range v {
+			e.mapElemKey()
+			e.e.EncodeUint(uint64(k2))
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v2)
+		}
+	}
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintUintR(f *codecFnInfo, rv reflect.Value) {
@@ -1882,7 +1841,7 @@ func (fastpathT) EncMapUintUintV(v map[uint]uint, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -1892,28 +1851,20 @@ func (fastpathT) EncMapUintUintV(v map[uint]uint, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[uint(k2)]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintUint8R(f *codecFnInfo, rv reflect.Value) {
@@ -1924,7 +1875,7 @@ func (fastpathT) EncMapUintUint8V(v map[uint]uint8, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -1934,28 +1885,20 @@ func (fastpathT) EncMapUintUint8V(v map[uint]uint8, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[uint(k2)]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintUint64R(f *codecFnInfo, rv reflect.Value) {
@@ -1966,7 +1909,7 @@ func (fastpathT) EncMapUintUint64V(v map[uint]uint64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -1976,28 +1919,20 @@ func (fastpathT) EncMapUintUint64V(v map[uint]uint64, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v[uint(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintUintptrR(f *codecFnInfo, rv reflect.Value) {
@@ -2008,7 +1943,7 @@ func (fastpathT) EncMapUintUintptrV(v map[uint]uintptr, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2018,28 +1953,20 @@ func (fastpathT) EncMapUintUintptrV(v map[uint]uintptr, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[uint(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintIntR(f *codecFnInfo, rv reflect.Value) {
@@ -2050,7 +1977,7 @@ func (fastpathT) EncMapUintIntV(v map[uint]int, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2060,28 +1987,20 @@ func (fastpathT) EncMapUintIntV(v map[uint]int, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v[uint(k2)]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintInt64R(f *codecFnInfo, rv reflect.Value) {
@@ -2092,7 +2011,7 @@ func (fastpathT) EncMapUintInt64V(v map[uint]int64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2102,28 +2021,20 @@ func (fastpathT) EncMapUintInt64V(v map[uint]int64, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v[uint(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintFloat32R(f *codecFnInfo, rv reflect.Value) {
@@ -2134,7 +2045,7 @@ func (fastpathT) EncMapUintFloat32V(v map[uint]float32, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2144,28 +2055,20 @@ func (fastpathT) EncMapUintFloat32V(v map[uint]float32, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v[uint(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintFloat64R(f *codecFnInfo, rv reflect.Value) {
@@ -2176,7 +2079,7 @@ func (fastpathT) EncMapUintFloat64V(v map[uint]float64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2186,28 +2089,20 @@ func (fastpathT) EncMapUintFloat64V(v map[uint]float64, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v[uint(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUintBoolR(f *codecFnInfo, rv reflect.Value) {
@@ -2218,7 +2113,7 @@ func (fastpathT) EncMapUintBoolV(v map[uint]bool, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2228,28 +2123,20 @@ func (fastpathT) EncMapUintBoolV(v map[uint]bool, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v[uint(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8IntfR(f *codecFnInfo, rv reflect.Value) {
@@ -2260,7 +2147,7 @@ func (fastpathT) EncMapUint8IntfV(v map[uint8]interface{}, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2270,28 +2157,20 @@ func (fastpathT) EncMapUint8IntfV(v map[uint8]interface{}, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[uint8(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8StringR(f *codecFnInfo, rv reflect.Value) {
@@ -2302,7 +2181,7 @@ func (fastpathT) EncMapUint8StringV(v map[uint8]string, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2312,13 +2191,9 @@ func (fastpathT) EncMapUint8StringV(v map[uint8]string, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v[uint8(k2)]))
 			} else {
@@ -2327,13 +2202,9 @@ func (fastpathT) EncMapUint8StringV(v map[uint8]string, e *Encoder) {
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v2))
 			} else {
@@ -2341,7 +2212,41 @@ func (fastpathT) EncMapUint8StringV(v map[uint8]string, e *Encoder) {
 			}
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
+}
+
+func (e *Encoder) fastpathEncMapUint8BytesR(f *codecFnInfo, rv reflect.Value) {
+	fastpathTV.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
+}
+func (fastpathT) EncMapUint8BytesV(v map[uint8][]byte, e *Encoder) {
+	if v == nil {
+		e.e.EncodeNil()
+		return
+	}
+	e.mapStart(len(v))
+	if e.h.Canonical {
+		v2 := make([]uint64, len(v))
+		var i uint
+		for k := range v {
+			v2[i] = uint64(k)
+			i++
+		}
+		sort.Sort(uint64Slice(v2))
+		for _, k2 := range v2 {
+			e.mapElemKey()
+			e.e.EncodeUint(uint64(uint8(k2)))
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v[uint8(k2)])
+		}
+	} else {
+		for k2, v2 := range v {
+			e.mapElemKey()
+			e.e.EncodeUint(uint64(k2))
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v2)
+		}
+	}
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8UintR(f *codecFnInfo, rv reflect.Value) {
@@ -2352,7 +2257,7 @@ func (fastpathT) EncMapUint8UintV(v map[uint8]uint, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2362,28 +2267,20 @@ func (fastpathT) EncMapUint8UintV(v map[uint8]uint, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[uint8(k2)]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8Uint8R(f *codecFnInfo, rv reflect.Value) {
@@ -2394,7 +2291,7 @@ func (fastpathT) EncMapUint8Uint8V(v map[uint8]uint8, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2404,28 +2301,20 @@ func (fastpathT) EncMapUint8Uint8V(v map[uint8]uint8, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[uint8(k2)]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8Uint64R(f *codecFnInfo, rv reflect.Value) {
@@ -2436,7 +2325,7 @@ func (fastpathT) EncMapUint8Uint64V(v map[uint8]uint64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2446,28 +2335,20 @@ func (fastpathT) EncMapUint8Uint64V(v map[uint8]uint64, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v[uint8(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8UintptrR(f *codecFnInfo, rv reflect.Value) {
@@ -2478,7 +2359,7 @@ func (fastpathT) EncMapUint8UintptrV(v map[uint8]uintptr, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2488,28 +2369,20 @@ func (fastpathT) EncMapUint8UintptrV(v map[uint8]uintptr, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[uint8(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8IntR(f *codecFnInfo, rv reflect.Value) {
@@ -2520,7 +2393,7 @@ func (fastpathT) EncMapUint8IntV(v map[uint8]int, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2530,28 +2403,20 @@ func (fastpathT) EncMapUint8IntV(v map[uint8]int, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v[uint8(k2)]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8Int64R(f *codecFnInfo, rv reflect.Value) {
@@ -2562,7 +2427,7 @@ func (fastpathT) EncMapUint8Int64V(v map[uint8]int64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2572,28 +2437,20 @@ func (fastpathT) EncMapUint8Int64V(v map[uint8]int64, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v[uint8(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8Float32R(f *codecFnInfo, rv reflect.Value) {
@@ -2604,7 +2461,7 @@ func (fastpathT) EncMapUint8Float32V(v map[uint8]float32, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2614,28 +2471,20 @@ func (fastpathT) EncMapUint8Float32V(v map[uint8]float32, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v[uint8(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8Float64R(f *codecFnInfo, rv reflect.Value) {
@@ -2646,7 +2495,7 @@ func (fastpathT) EncMapUint8Float64V(v map[uint8]float64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2656,28 +2505,20 @@ func (fastpathT) EncMapUint8Float64V(v map[uint8]float64, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v[uint8(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint8BoolR(f *codecFnInfo, rv reflect.Value) {
@@ -2688,7 +2529,7 @@ func (fastpathT) EncMapUint8BoolV(v map[uint8]bool, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2698,28 +2539,20 @@ func (fastpathT) EncMapUint8BoolV(v map[uint8]bool, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(uint8(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v[uint8(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64IntfR(f *codecFnInfo, rv reflect.Value) {
@@ -2730,7 +2563,7 @@ func (fastpathT) EncMapUint64IntfV(v map[uint64]interface{}, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2740,28 +2573,20 @@ func (fastpathT) EncMapUint64IntfV(v map[uint64]interface{}, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64StringR(f *codecFnInfo, rv reflect.Value) {
@@ -2772,7 +2597,7 @@ func (fastpathT) EncMapUint64StringV(v map[uint64]string, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2782,13 +2607,9 @@ func (fastpathT) EncMapUint64StringV(v map[uint64]string, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v[k2]))
 			} else {
@@ -2797,13 +2618,9 @@ func (fastpathT) EncMapUint64StringV(v map[uint64]string, e *Encoder) {
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v2))
 			} else {
@@ -2811,7 +2628,41 @@ func (fastpathT) EncMapUint64StringV(v map[uint64]string, e *Encoder) {
 			}
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
+}
+
+func (e *Encoder) fastpathEncMapUint64BytesR(f *codecFnInfo, rv reflect.Value) {
+	fastpathTV.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
+}
+func (fastpathT) EncMapUint64BytesV(v map[uint64][]byte, e *Encoder) {
+	if v == nil {
+		e.e.EncodeNil()
+		return
+	}
+	e.mapStart(len(v))
+	if e.h.Canonical {
+		v2 := make([]uint64, len(v))
+		var i uint
+		for k := range v {
+			v2[i] = k
+			i++
+		}
+		sort.Sort(uint64Slice(v2))
+		for _, k2 := range v2 {
+			e.mapElemKey()
+			e.e.EncodeUint(k2)
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v[k2])
+		}
+	} else {
+		for k2, v2 := range v {
+			e.mapElemKey()
+			e.e.EncodeUint(k2)
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v2)
+		}
+	}
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64UintR(f *codecFnInfo, rv reflect.Value) {
@@ -2822,7 +2673,7 @@ func (fastpathT) EncMapUint64UintV(v map[uint64]uint, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2832,28 +2683,20 @@ func (fastpathT) EncMapUint64UintV(v map[uint64]uint, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64Uint8R(f *codecFnInfo, rv reflect.Value) {
@@ -2864,7 +2707,7 @@ func (fastpathT) EncMapUint64Uint8V(v map[uint64]uint8, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2874,28 +2717,20 @@ func (fastpathT) EncMapUint64Uint8V(v map[uint64]uint8, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64Uint64R(f *codecFnInfo, rv reflect.Value) {
@@ -2906,7 +2741,7 @@ func (fastpathT) EncMapUint64Uint64V(v map[uint64]uint64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2916,28 +2751,20 @@ func (fastpathT) EncMapUint64Uint64V(v map[uint64]uint64, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64UintptrR(f *codecFnInfo, rv reflect.Value) {
@@ -2948,7 +2775,7 @@ func (fastpathT) EncMapUint64UintptrV(v map[uint64]uintptr, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -2958,28 +2785,20 @@ func (fastpathT) EncMapUint64UintptrV(v map[uint64]uintptr, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64IntR(f *codecFnInfo, rv reflect.Value) {
@@ -2990,7 +2809,7 @@ func (fastpathT) EncMapUint64IntV(v map[uint64]int, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -3000,28 +2819,20 @@ func (fastpathT) EncMapUint64IntV(v map[uint64]int, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64Int64R(f *codecFnInfo, rv reflect.Value) {
@@ -3032,7 +2843,7 @@ func (fastpathT) EncMapUint64Int64V(v map[uint64]int64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -3042,28 +2853,20 @@ func (fastpathT) EncMapUint64Int64V(v map[uint64]int64, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64Float32R(f *codecFnInfo, rv reflect.Value) {
@@ -3074,7 +2877,7 @@ func (fastpathT) EncMapUint64Float32V(v map[uint64]float32, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -3084,28 +2887,20 @@ func (fastpathT) EncMapUint64Float32V(v map[uint64]float32, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64Float64R(f *codecFnInfo, rv reflect.Value) {
@@ -3116,7 +2911,7 @@ func (fastpathT) EncMapUint64Float64V(v map[uint64]float64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -3126,28 +2921,20 @@ func (fastpathT) EncMapUint64Float64V(v map[uint64]float64, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapUint64BoolR(f *codecFnInfo, rv reflect.Value) {
@@ -3158,7 +2945,7 @@ func (fastpathT) EncMapUint64BoolV(v map[uint64]bool, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
 		var i uint
@@ -3168,498 +2955,20 @@ func (fastpathT) EncMapUint64BoolV(v map[uint64]bool, e *Encoder) {
 		}
 		sort.Sort(uint64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeUint(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v2)
 		}
 	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrIntfR(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrIntfV(rv2i(rv).(map[uintptr]interface{}), e)
-}
-func (fastpathT) EncMapUintptrIntfV(v map[uintptr]interface{}, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.encode(v[uintptr(k2)])
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.encode(v2)
-		}
-	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrStringR(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrStringV(rv2i(rv).(map[uintptr]string), e)
-}
-func (fastpathT) EncMapUintptrStringV(v map[uintptr]string, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			if e.h.StringToRaw {
-				e.e.EncodeStringBytesRaw(bytesView(v[uintptr(k2)]))
-			} else {
-				e.e.EncodeStringEnc(cUTF8, v[uintptr(k2)])
-			}
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			if e.h.StringToRaw {
-				e.e.EncodeStringBytesRaw(bytesView(v2))
-			} else {
-				e.e.EncodeStringEnc(cUTF8, v2)
-			}
-		}
-	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrUintR(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrUintV(rv2i(rv).(map[uintptr]uint), e)
-}
-func (fastpathT) EncMapUintptrUintV(v map[uintptr]uint, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeUint(uint64(v[uintptr(k2)]))
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeUint(uint64(v2))
-		}
-	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrUint8R(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrUint8V(rv2i(rv).(map[uintptr]uint8), e)
-}
-func (fastpathT) EncMapUintptrUint8V(v map[uintptr]uint8, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeUint(uint64(v[uintptr(k2)]))
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeUint(uint64(v2))
-		}
-	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrUint64R(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrUint64V(rv2i(rv).(map[uintptr]uint64), e)
-}
-func (fastpathT) EncMapUintptrUint64V(v map[uintptr]uint64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeUint(v[uintptr(k2)])
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeUint(v2)
-		}
-	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrUintptrR(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrUintptrV(rv2i(rv).(map[uintptr]uintptr), e)
-}
-func (fastpathT) EncMapUintptrUintptrV(v map[uintptr]uintptr, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.encode(v[uintptr(k2)])
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.encode(v2)
-		}
-	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrIntR(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrIntV(rv2i(rv).(map[uintptr]int), e)
-}
-func (fastpathT) EncMapUintptrIntV(v map[uintptr]int, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeInt(int64(v[uintptr(k2)]))
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeInt(int64(v2))
-		}
-	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrInt64R(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrInt64V(rv2i(rv).(map[uintptr]int64), e)
-}
-func (fastpathT) EncMapUintptrInt64V(v map[uintptr]int64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeInt(v[uintptr(k2)])
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeInt(v2)
-		}
-	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrFloat32R(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrFloat32V(rv2i(rv).(map[uintptr]float32), e)
-}
-func (fastpathT) EncMapUintptrFloat32V(v map[uintptr]float32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeFloat32(v[uintptr(k2)])
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeFloat32(v2)
-		}
-	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrFloat64R(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrFloat64V(rv2i(rv).(map[uintptr]float64), e)
-}
-func (fastpathT) EncMapUintptrFloat64V(v map[uintptr]float64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeFloat64(v[uintptr(k2)])
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeFloat64(v2)
-		}
-	}
-	e.e.WriteMapEnd()
-}
-
-func (e *Encoder) fastpathEncMapUintptrBoolR(f *codecFnInfo, rv reflect.Value) {
-	fastpathTV.EncMapUintptrBoolV(rv2i(rv).(map[uintptr]bool), e)
-}
-func (fastpathT) EncMapUintptrBoolV(v map[uintptr]bool, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
-	e.e.WriteMapStart(len(v))
-	if e.h.Canonical {
-		v2 := make([]uint64, len(v))
-		var i uint
-		for k := range v {
-			v2[i] = uint64(k)
-			i++
-		}
-		sort.Sort(uint64Slice(v2))
-		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(uintptr(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeBool(v[uintptr(k2)])
-		}
-	} else {
-		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
-			e.encode(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
-			e.e.EncodeBool(v2)
-		}
-	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntIntfR(f *codecFnInfo, rv reflect.Value) {
@@ -3670,7 +2979,7 @@ func (fastpathT) EncMapIntIntfV(v map[int]interface{}, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -3680,28 +2989,20 @@ func (fastpathT) EncMapIntIntfV(v map[int]interface{}, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[int(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntStringR(f *codecFnInfo, rv reflect.Value) {
@@ -3712,7 +3013,7 @@ func (fastpathT) EncMapIntStringV(v map[int]string, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -3722,13 +3023,9 @@ func (fastpathT) EncMapIntStringV(v map[int]string, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v[int(k2)]))
 			} else {
@@ -3737,13 +3034,9 @@ func (fastpathT) EncMapIntStringV(v map[int]string, e *Encoder) {
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v2))
 			} else {
@@ -3751,7 +3044,41 @@ func (fastpathT) EncMapIntStringV(v map[int]string, e *Encoder) {
 			}
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
+}
+
+func (e *Encoder) fastpathEncMapIntBytesR(f *codecFnInfo, rv reflect.Value) {
+	fastpathTV.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
+}
+func (fastpathT) EncMapIntBytesV(v map[int][]byte, e *Encoder) {
+	if v == nil {
+		e.e.EncodeNil()
+		return
+	}
+	e.mapStart(len(v))
+	if e.h.Canonical {
+		v2 := make([]int64, len(v))
+		var i uint
+		for k := range v {
+			v2[i] = int64(k)
+			i++
+		}
+		sort.Sort(int64Slice(v2))
+		for _, k2 := range v2 {
+			e.mapElemKey()
+			e.e.EncodeInt(int64(int(k2)))
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v[int(k2)])
+		}
+	} else {
+		for k2, v2 := range v {
+			e.mapElemKey()
+			e.e.EncodeInt(int64(k2))
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v2)
+		}
+	}
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntUintR(f *codecFnInfo, rv reflect.Value) {
@@ -3762,7 +3089,7 @@ func (fastpathT) EncMapIntUintV(v map[int]uint, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -3772,28 +3099,20 @@ func (fastpathT) EncMapIntUintV(v map[int]uint, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[int(k2)]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntUint8R(f *codecFnInfo, rv reflect.Value) {
@@ -3804,7 +3123,7 @@ func (fastpathT) EncMapIntUint8V(v map[int]uint8, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -3814,28 +3133,20 @@ func (fastpathT) EncMapIntUint8V(v map[int]uint8, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[int(k2)]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntUint64R(f *codecFnInfo, rv reflect.Value) {
@@ -3846,7 +3157,7 @@ func (fastpathT) EncMapIntUint64V(v map[int]uint64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -3856,28 +3167,20 @@ func (fastpathT) EncMapIntUint64V(v map[int]uint64, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v[int(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntUintptrR(f *codecFnInfo, rv reflect.Value) {
@@ -3888,7 +3191,7 @@ func (fastpathT) EncMapIntUintptrV(v map[int]uintptr, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -3898,28 +3201,20 @@ func (fastpathT) EncMapIntUintptrV(v map[int]uintptr, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[int(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntIntR(f *codecFnInfo, rv reflect.Value) {
@@ -3930,7 +3225,7 @@ func (fastpathT) EncMapIntIntV(v map[int]int, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -3940,28 +3235,20 @@ func (fastpathT) EncMapIntIntV(v map[int]int, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v[int(k2)]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntInt64R(f *codecFnInfo, rv reflect.Value) {
@@ -3972,7 +3259,7 @@ func (fastpathT) EncMapIntInt64V(v map[int]int64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -3982,28 +3269,20 @@ func (fastpathT) EncMapIntInt64V(v map[int]int64, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v[int(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntFloat32R(f *codecFnInfo, rv reflect.Value) {
@@ -4014,7 +3293,7 @@ func (fastpathT) EncMapIntFloat32V(v map[int]float32, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4024,28 +3303,20 @@ func (fastpathT) EncMapIntFloat32V(v map[int]float32, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v[int(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntFloat64R(f *codecFnInfo, rv reflect.Value) {
@@ -4056,7 +3327,7 @@ func (fastpathT) EncMapIntFloat64V(v map[int]float64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4066,28 +3337,20 @@ func (fastpathT) EncMapIntFloat64V(v map[int]float64, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v[int(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapIntBoolR(f *codecFnInfo, rv reflect.Value) {
@@ -4098,7 +3361,7 @@ func (fastpathT) EncMapIntBoolV(v map[int]bool, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4108,28 +3371,20 @@ func (fastpathT) EncMapIntBoolV(v map[int]bool, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(int(k2)))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v[int(k2)])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64IntfR(f *codecFnInfo, rv reflect.Value) {
@@ -4140,7 +3395,7 @@ func (fastpathT) EncMapInt64IntfV(v map[int64]interface{}, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4150,28 +3405,20 @@ func (fastpathT) EncMapInt64IntfV(v map[int64]interface{}, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64StringR(f *codecFnInfo, rv reflect.Value) {
@@ -4182,7 +3429,7 @@ func (fastpathT) EncMapInt64StringV(v map[int64]string, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4192,13 +3439,9 @@ func (fastpathT) EncMapInt64StringV(v map[int64]string, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v[k2]))
 			} else {
@@ -4207,13 +3450,9 @@ func (fastpathT) EncMapInt64StringV(v map[int64]string, e *Encoder) {
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			if e.h.StringToRaw {
 				e.e.EncodeStringBytesRaw(bytesView(v2))
 			} else {
@@ -4221,7 +3460,41 @@ func (fastpathT) EncMapInt64StringV(v map[int64]string, e *Encoder) {
 			}
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
+}
+
+func (e *Encoder) fastpathEncMapInt64BytesR(f *codecFnInfo, rv reflect.Value) {
+	fastpathTV.EncMapInt64BytesV(rv2i(rv).(map[int64][]byte), e)
+}
+func (fastpathT) EncMapInt64BytesV(v map[int64][]byte, e *Encoder) {
+	if v == nil {
+		e.e.EncodeNil()
+		return
+	}
+	e.mapStart(len(v))
+	if e.h.Canonical {
+		v2 := make([]int64, len(v))
+		var i uint
+		for k := range v {
+			v2[i] = k
+			i++
+		}
+		sort.Sort(int64Slice(v2))
+		for _, k2 := range v2 {
+			e.mapElemKey()
+			e.e.EncodeInt(k2)
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v[k2])
+		}
+	} else {
+		for k2, v2 := range v {
+			e.mapElemKey()
+			e.e.EncodeInt(k2)
+			e.mapElemValue()
+			e.e.EncodeStringBytesRaw(v2)
+		}
+	}
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64UintR(f *codecFnInfo, rv reflect.Value) {
@@ -4232,7 +3505,7 @@ func (fastpathT) EncMapInt64UintV(v map[int64]uint, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4242,28 +3515,20 @@ func (fastpathT) EncMapInt64UintV(v map[int64]uint, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64Uint8R(f *codecFnInfo, rv reflect.Value) {
@@ -4274,7 +3539,7 @@ func (fastpathT) EncMapInt64Uint8V(v map[int64]uint8, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4284,28 +3549,20 @@ func (fastpathT) EncMapInt64Uint8V(v map[int64]uint8, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v[k2]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(uint64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64Uint64R(f *codecFnInfo, rv reflect.Value) {
@@ -4316,7 +3573,7 @@ func (fastpathT) EncMapInt64Uint64V(v map[int64]uint64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4326,28 +3583,20 @@ func (fastpathT) EncMapInt64Uint64V(v map[int64]uint64, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeUint(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64UintptrR(f *codecFnInfo, rv reflect.Value) {
@@ -4358,7 +3607,7 @@ func (fastpathT) EncMapInt64UintptrV(v map[int64]uintptr, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4368,28 +3617,20 @@ func (fastpathT) EncMapInt64UintptrV(v map[int64]uintptr, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.encode(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64IntR(f *codecFnInfo, rv reflect.Value) {
@@ -4400,7 +3641,7 @@ func (fastpathT) EncMapInt64IntV(v map[int64]int, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4410,28 +3651,20 @@ func (fastpathT) EncMapInt64IntV(v map[int64]int, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v[k2]))
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(int64(v2))
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64Int64R(f *codecFnInfo, rv reflect.Value) {
@@ -4442,7 +3675,7 @@ func (fastpathT) EncMapInt64Int64V(v map[int64]int64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4452,28 +3685,20 @@ func (fastpathT) EncMapInt64Int64V(v map[int64]int64, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeInt(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64Float32R(f *codecFnInfo, rv reflect.Value) {
@@ -4484,7 +3709,7 @@ func (fastpathT) EncMapInt64Float32V(v map[int64]float32, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4494,28 +3719,20 @@ func (fastpathT) EncMapInt64Float32V(v map[int64]float32, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat32(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64Float64R(f *codecFnInfo, rv reflect.Value) {
@@ -4526,7 +3743,7 @@ func (fastpathT) EncMapInt64Float64V(v map[int64]float64, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4536,28 +3753,20 @@ func (fastpathT) EncMapInt64Float64V(v map[int64]float64, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeFloat64(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 func (e *Encoder) fastpathEncMapInt64BoolR(f *codecFnInfo, rv reflect.Value) {
@@ -4568,7 +3777,7 @@ func (fastpathT) EncMapInt64BoolV(v map[int64]bool, e *Encoder) {
 		e.e.EncodeNil()
 		return
 	}
-	e.e.WriteMapStart(len(v))
+	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
 		var i uint
@@ -4578,28 +3787,20 @@ func (fastpathT) EncMapInt64BoolV(v map[int64]bool, e *Encoder) {
 		}
 		sort.Sort(int64Slice(v2))
 		for _, k2 := range v2 {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v[k2])
 		}
 	} else {
 		for k2, v2 := range v {
-			if e.esep {
-				e.e.WriteMapElemKey()
-			}
+			e.mapElemKey()
 			e.e.EncodeInt(k2)
-			if e.esep {
-				e.e.WriteMapElemValue()
-			}
+			e.mapElemValue()
 			e.e.EncodeBool(v2)
 		}
 	}
-	e.e.WriteMapEnd()
+	e.mapEnd()
 }
 
 // -- decode
@@ -4630,6 +3831,18 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 	case *[]string:
 		var v2 []string
 		v2, changed = fastpathTV.DecSliceStringV(*v, true, d)
+		if changed {
+			*v = v2
+		}
+	case [][]byte:
+		var v2 [][]byte
+		v2, changed = fastpathTV.DecSliceBytesV(v, false, d)
+		if changed && len(v) > 0 && len(v2) > 0 && !(len(v2) == len(v) && &v2[0] == &v[0]) {
+			copy(v, v2)
+		}
+	case *[][]byte:
+		var v2 [][]byte
+		v2, changed = fastpathTV.DecSliceBytesV(*v, true, d)
 		if changed {
 			*v = v2
 		}
@@ -4806,6 +4019,14 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 		if changed {
 			*v = v2
 		}
+	case map[string][]byte:
+		fastpathTV.DecMapStringBytesV(v, false, d)
+	case *map[string][]byte:
+		var v2 map[string][]byte
+		v2, changed = fastpathTV.DecMapStringBytesV(*v, true, d)
+		if changed {
+			*v = v2
+		}
 	case map[string]uint:
 		fastpathTV.DecMapStringUintV(v, false, d)
 	case *map[string]uint:
@@ -4891,6 +4112,14 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 	case *map[uint]string:
 		var v2 map[uint]string
 		v2, changed = fastpathTV.DecMapUintStringV(*v, true, d)
+		if changed {
+			*v = v2
+		}
+	case map[uint][]byte:
+		fastpathTV.DecMapUintBytesV(v, false, d)
+	case *map[uint][]byte:
+		var v2 map[uint][]byte
+		v2, changed = fastpathTV.DecMapUintBytesV(*v, true, d)
 		if changed {
 			*v = v2
 		}
@@ -4982,6 +4211,14 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 		if changed {
 			*v = v2
 		}
+	case map[uint8][]byte:
+		fastpathTV.DecMapUint8BytesV(v, false, d)
+	case *map[uint8][]byte:
+		var v2 map[uint8][]byte
+		v2, changed = fastpathTV.DecMapUint8BytesV(*v, true, d)
+		if changed {
+			*v = v2
+		}
 	case map[uint8]uint:
 		fastpathTV.DecMapUint8UintV(v, false, d)
 	case *map[uint8]uint:
@@ -5070,6 +4307,14 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 		if changed {
 			*v = v2
 		}
+	case map[uint64][]byte:
+		fastpathTV.DecMapUint64BytesV(v, false, d)
+	case *map[uint64][]byte:
+		var v2 map[uint64][]byte
+		v2, changed = fastpathTV.DecMapUint64BytesV(*v, true, d)
+		if changed {
+			*v = v2
+		}
 	case map[uint64]uint:
 		fastpathTV.DecMapUint64UintV(v, false, d)
 	case *map[uint64]uint:
@@ -5142,94 +4387,6 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 		if changed {
 			*v = v2
 		}
-	case map[uintptr]interface{}:
-		fastpathTV.DecMapUintptrIntfV(v, false, d)
-	case *map[uintptr]interface{}:
-		var v2 map[uintptr]interface{}
-		v2, changed = fastpathTV.DecMapUintptrIntfV(*v, true, d)
-		if changed {
-			*v = v2
-		}
-	case map[uintptr]string:
-		fastpathTV.DecMapUintptrStringV(v, false, d)
-	case *map[uintptr]string:
-		var v2 map[uintptr]string
-		v2, changed = fastpathTV.DecMapUintptrStringV(*v, true, d)
-		if changed {
-			*v = v2
-		}
-	case map[uintptr]uint:
-		fastpathTV.DecMapUintptrUintV(v, false, d)
-	case *map[uintptr]uint:
-		var v2 map[uintptr]uint
-		v2, changed = fastpathTV.DecMapUintptrUintV(*v, true, d)
-		if changed {
-			*v = v2
-		}
-	case map[uintptr]uint8:
-		fastpathTV.DecMapUintptrUint8V(v, false, d)
-	case *map[uintptr]uint8:
-		var v2 map[uintptr]uint8
-		v2, changed = fastpathTV.DecMapUintptrUint8V(*v, true, d)
-		if changed {
-			*v = v2
-		}
-	case map[uintptr]uint64:
-		fastpathTV.DecMapUintptrUint64V(v, false, d)
-	case *map[uintptr]uint64:
-		var v2 map[uintptr]uint64
-		v2, changed = fastpathTV.DecMapUintptrUint64V(*v, true, d)
-		if changed {
-			*v = v2
-		}
-	case map[uintptr]uintptr:
-		fastpathTV.DecMapUintptrUintptrV(v, false, d)
-	case *map[uintptr]uintptr:
-		var v2 map[uintptr]uintptr
-		v2, changed = fastpathTV.DecMapUintptrUintptrV(*v, true, d)
-		if changed {
-			*v = v2
-		}
-	case map[uintptr]int:
-		fastpathTV.DecMapUintptrIntV(v, false, d)
-	case *map[uintptr]int:
-		var v2 map[uintptr]int
-		v2, changed = fastpathTV.DecMapUintptrIntV(*v, true, d)
-		if changed {
-			*v = v2
-		}
-	case map[uintptr]int64:
-		fastpathTV.DecMapUintptrInt64V(v, false, d)
-	case *map[uintptr]int64:
-		var v2 map[uintptr]int64
-		v2, changed = fastpathTV.DecMapUintptrInt64V(*v, true, d)
-		if changed {
-			*v = v2
-		}
-	case map[uintptr]float32:
-		fastpathTV.DecMapUintptrFloat32V(v, false, d)
-	case *map[uintptr]float32:
-		var v2 map[uintptr]float32
-		v2, changed = fastpathTV.DecMapUintptrFloat32V(*v, true, d)
-		if changed {
-			*v = v2
-		}
-	case map[uintptr]float64:
-		fastpathTV.DecMapUintptrFloat64V(v, false, d)
-	case *map[uintptr]float64:
-		var v2 map[uintptr]float64
-		v2, changed = fastpathTV.DecMapUintptrFloat64V(*v, true, d)
-		if changed {
-			*v = v2
-		}
-	case map[uintptr]bool:
-		fastpathTV.DecMapUintptrBoolV(v, false, d)
-	case *map[uintptr]bool:
-		var v2 map[uintptr]bool
-		v2, changed = fastpathTV.DecMapUintptrBoolV(*v, true, d)
-		if changed {
-			*v = v2
-		}
 	case map[int]interface{}:
 		fastpathTV.DecMapIntIntfV(v, false, d)
 	case *map[int]interface{}:
@@ -5243,6 +4400,14 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 	case *map[int]string:
 		var v2 map[int]string
 		v2, changed = fastpathTV.DecMapIntStringV(*v, true, d)
+		if changed {
+			*v = v2
+		}
+	case map[int][]byte:
+		fastpathTV.DecMapIntBytesV(v, false, d)
+	case *map[int][]byte:
+		var v2 map[int][]byte
+		v2, changed = fastpathTV.DecMapIntBytesV(*v, true, d)
 		if changed {
 			*v = v2
 		}
@@ -5334,6 +4499,14 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 		if changed {
 			*v = v2
 		}
+	case map[int64][]byte:
+		fastpathTV.DecMapInt64BytesV(v, false, d)
+	case *map[int64][]byte:
+		var v2 map[int64][]byte
+		v2, changed = fastpathTV.DecMapInt64BytesV(*v, true, d)
+		if changed {
+			*v = v2
+		}
 	case map[int64]uint:
 		fastpathTV.DecMapInt64UintV(v, false, d)
 	case *map[int64]uint:
@@ -5420,6 +4593,8 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 		*v = nil
 	case *[]string:
 		*v = nil
+	case *[][]byte:
+		*v = nil
 	case *[]float32:
 		*v = nil
 	case *[]float64:
@@ -5453,6 +4628,8 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 		*v = nil
 	case *map[string]string:
 		*v = nil
+	case *map[string][]byte:
+		*v = nil
 	case *map[string]uint:
 		*v = nil
 	case *map[string]uint8:
@@ -5474,6 +4651,8 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 	case *map[uint]interface{}:
 		*v = nil
 	case *map[uint]string:
+		*v = nil
+	case *map[uint][]byte:
 		*v = nil
 	case *map[uint]uint:
 		*v = nil
@@ -5497,6 +4676,8 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 		*v = nil
 	case *map[uint8]string:
 		*v = nil
+	case *map[uint8][]byte:
+		*v = nil
 	case *map[uint8]uint:
 		*v = nil
 	case *map[uint8]uint8:
@@ -5519,6 +4700,8 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 		*v = nil
 	case *map[uint64]string:
 		*v = nil
+	case *map[uint64][]byte:
+		*v = nil
 	case *map[uint64]uint:
 		*v = nil
 	case *map[uint64]uint8:
@@ -5537,31 +4720,11 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 		*v = nil
 	case *map[uint64]bool:
 		*v = nil
-	case *map[uintptr]interface{}:
-		*v = nil
-	case *map[uintptr]string:
-		*v = nil
-	case *map[uintptr]uint:
-		*v = nil
-	case *map[uintptr]uint8:
-		*v = nil
-	case *map[uintptr]uint64:
-		*v = nil
-	case *map[uintptr]uintptr:
-		*v = nil
-	case *map[uintptr]int:
-		*v = nil
-	case *map[uintptr]int64:
-		*v = nil
-	case *map[uintptr]float32:
-		*v = nil
-	case *map[uintptr]float64:
-		*v = nil
-	case *map[uintptr]bool:
-		*v = nil
 	case *map[int]interface{}:
 		*v = nil
 	case *map[int]string:
+		*v = nil
+	case *map[int][]byte:
 		*v = nil
 	case *map[int]uint:
 		*v = nil
@@ -5584,6 +4747,8 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 	case *map[int64]interface{}:
 		*v = nil
 	case *map[int64]string:
+		*v = nil
+	case *map[int64][]byte:
 		*v = nil
 	case *map[int64]uint:
 		*v = nil
@@ -5615,8 +4780,7 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 func (d *Decoder) fastpathDecSliceIntfR(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]interface{})
-		v, changed := fastpathTV.DecSliceIntfV(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceIntfV(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -5628,8 +4792,7 @@ func (d *Decoder) fastpathDecSliceIntfR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceIntfX(vp *[]interface{}, d *Decoder) {
-	v, changed := f.DecSliceIntfV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceIntfV(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -5647,7 +4810,6 @@ func (fastpathT) DecSliceIntfV(v []interface{}, canChange bool, d *Decoder) (_ [
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -5675,7 +4837,6 @@ func (fastpathT) DecSliceIntfV(v []interface{}, canChange bool, d *Decoder) (_ [
 			v = make([]interface{}, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -5705,15 +4866,13 @@ func (fastpathT) DecSliceIntfV(v []interface{}, canChange bool, d *Decoder) (_ [
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceStringR(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]string)
-		v, changed := fastpathTV.DecSliceStringV(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceStringV(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -5725,8 +4884,7 @@ func (d *Decoder) fastpathDecSliceStringR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceStringX(vp *[]string, d *Decoder) {
-	v, changed := f.DecSliceStringV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceStringV(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -5744,7 +4902,6 @@ func (fastpathT) DecSliceStringV(v []string, canChange bool, d *Decoder) (_ []st
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -5772,7 +4929,6 @@ func (fastpathT) DecSliceStringV(v []string, canChange bool, d *Decoder) (_ []st
 			v = make([]string, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -5802,15 +4958,105 @@ func (fastpathT) DecSliceStringV(v []string, canChange bool, d *Decoder) (_ []st
 		}
 	}
 	slh.End()
-	d.depthDecr()
+	return v, changed
+}
+
+func (d *Decoder) fastpathDecSliceBytesR(f *codecFnInfo, rv reflect.Value) {
+	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
+		vp := rv2i(rv).(*[][]byte)
+		if v, changed := fastpathTV.DecSliceBytesV(*vp, !array, d); changed {
+			*vp = v
+		}
+	} else {
+		v := rv2i(rv).([][]byte)
+		v2, changed := fastpathTV.DecSliceBytesV(v, !array, d)
+		if changed && len(v) > 0 && len(v2) > 0 && !(len(v2) == len(v) && &v2[0] == &v[0]) {
+			copy(v, v2)
+		}
+	}
+}
+func (f fastpathT) DecSliceBytesX(vp *[][]byte, d *Decoder) {
+	if v, changed := f.DecSliceBytesV(*vp, true, d); changed {
+		*vp = v
+	}
+}
+func (fastpathT) DecSliceBytesV(v [][]byte, canChange bool, d *Decoder) (_ [][]byte, changed bool) {
+	slh, containerLenS := d.decSliceHelperStart()
+	if containerLenS == 0 {
+		if canChange {
+			if v == nil {
+				v = [][]byte{}
+			} else if len(v) != 0 {
+				v = v[:0]
+			}
+			changed = true
+		}
+		slh.End()
+		return v, changed
+	}
+	hasLen := containerLenS > 0
+	var xlen int
+	if hasLen && canChange {
+		if containerLenS > cap(v) {
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 24)
+			if xlen <= cap(v) {
+				v = v[:uint(xlen)]
+			} else {
+				v = make([][]byte, uint(xlen))
+			}
+			changed = true
+		} else if containerLenS != len(v) {
+			v = v[:containerLenS]
+			changed = true
+		}
+	}
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
+		if j == 0 && len(v) == 0 && canChange {
+			if hasLen {
+				xlen = decInferLen(containerLenS, d.h.MaxInitLen, 24)
+			} else {
+				xlen = 8
+			}
+			v = make([][]byte, uint(xlen))
+			changed = true
+		}
+		var decodeIntoBlank bool
+		if j >= len(v) {
+			if canChange {
+				v = append(v, nil)
+				changed = true
+			} else {
+				d.arrayCannotExpand(len(v), j+1)
+				decodeIntoBlank = true
+			}
+		}
+		slh.ElemContainerState(j)
+		if decodeIntoBlank {
+			d.swallow()
+		} else if d.d.TryDecodeAsNil() {
+			v[uint(j)] = nil
+		} else {
+			v[uint(j)] = d.d.DecodeBytes(nil, false)
+		}
+	}
+	if canChange {
+		if j < len(v) {
+			v = v[:uint(j)]
+			changed = true
+		} else if j == 0 && v == nil {
+			v = make([][]byte, 0)
+			changed = true
+		}
+	}
+	slh.End()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceFloat32R(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]float32)
-		v, changed := fastpathTV.DecSliceFloat32V(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceFloat32V(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -5822,8 +5068,7 @@ func (d *Decoder) fastpathDecSliceFloat32R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceFloat32X(vp *[]float32, d *Decoder) {
-	v, changed := f.DecSliceFloat32V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceFloat32V(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -5841,7 +5086,6 @@ func (fastpathT) DecSliceFloat32V(v []float32, canChange bool, d *Decoder) (_ []
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -5869,7 +5113,6 @@ func (fastpathT) DecSliceFloat32V(v []float32, canChange bool, d *Decoder) (_ []
 			v = make([]float32, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -5886,7 +5129,7 @@ func (fastpathT) DecSliceFloat32V(v []float32, canChange bool, d *Decoder) (_ []
 		} else if d.d.TryDecodeAsNil() {
 			v[uint(j)] = 0
 		} else {
-			v[uint(j)] = float32(chkOvf.Float32V(d.d.DecodeFloat64()))
+			v[uint(j)] = float32(d.decodeFloat32())
 		}
 	}
 	if canChange {
@@ -5899,15 +5142,13 @@ func (fastpathT) DecSliceFloat32V(v []float32, canChange bool, d *Decoder) (_ []
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceFloat64R(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]float64)
-		v, changed := fastpathTV.DecSliceFloat64V(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceFloat64V(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -5919,8 +5160,7 @@ func (d *Decoder) fastpathDecSliceFloat64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceFloat64X(vp *[]float64, d *Decoder) {
-	v, changed := f.DecSliceFloat64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceFloat64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -5938,7 +5178,6 @@ func (fastpathT) DecSliceFloat64V(v []float64, canChange bool, d *Decoder) (_ []
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -5966,7 +5205,6 @@ func (fastpathT) DecSliceFloat64V(v []float64, canChange bool, d *Decoder) (_ []
 			v = make([]float64, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -5996,15 +5234,13 @@ func (fastpathT) DecSliceFloat64V(v []float64, canChange bool, d *Decoder) (_ []
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceUintR(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]uint)
-		v, changed := fastpathTV.DecSliceUintV(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceUintV(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6016,8 +5252,7 @@ func (d *Decoder) fastpathDecSliceUintR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceUintX(vp *[]uint, d *Decoder) {
-	v, changed := f.DecSliceUintV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceUintV(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -6035,7 +5270,6 @@ func (fastpathT) DecSliceUintV(v []uint, canChange bool, d *Decoder) (_ []uint, 
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -6063,7 +5297,6 @@ func (fastpathT) DecSliceUintV(v []uint, canChange bool, d *Decoder) (_ []uint, 
 			v = make([]uint, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -6093,15 +5326,13 @@ func (fastpathT) DecSliceUintV(v []uint, canChange bool, d *Decoder) (_ []uint, 
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceUint8R(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]uint8)
-		v, changed := fastpathTV.DecSliceUint8V(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceUint8V(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6113,8 +5344,7 @@ func (d *Decoder) fastpathDecSliceUint8R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceUint8X(vp *[]uint8, d *Decoder) {
-	v, changed := f.DecSliceUint8V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceUint8V(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -6132,7 +5362,6 @@ func (fastpathT) DecSliceUint8V(v []uint8, canChange bool, d *Decoder) (_ []uint
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -6160,7 +5389,6 @@ func (fastpathT) DecSliceUint8V(v []uint8, canChange bool, d *Decoder) (_ []uint
 			v = make([]uint8, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -6190,15 +5418,13 @@ func (fastpathT) DecSliceUint8V(v []uint8, canChange bool, d *Decoder) (_ []uint
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceUint16R(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]uint16)
-		v, changed := fastpathTV.DecSliceUint16V(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceUint16V(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6210,8 +5436,7 @@ func (d *Decoder) fastpathDecSliceUint16R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceUint16X(vp *[]uint16, d *Decoder) {
-	v, changed := f.DecSliceUint16V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceUint16V(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -6229,7 +5454,6 @@ func (fastpathT) DecSliceUint16V(v []uint16, canChange bool, d *Decoder) (_ []ui
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -6257,7 +5481,6 @@ func (fastpathT) DecSliceUint16V(v []uint16, canChange bool, d *Decoder) (_ []ui
 			v = make([]uint16, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -6287,15 +5510,13 @@ func (fastpathT) DecSliceUint16V(v []uint16, canChange bool, d *Decoder) (_ []ui
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceUint32R(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]uint32)
-		v, changed := fastpathTV.DecSliceUint32V(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceUint32V(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6307,8 +5528,7 @@ func (d *Decoder) fastpathDecSliceUint32R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceUint32X(vp *[]uint32, d *Decoder) {
-	v, changed := f.DecSliceUint32V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceUint32V(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -6326,7 +5546,6 @@ func (fastpathT) DecSliceUint32V(v []uint32, canChange bool, d *Decoder) (_ []ui
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -6354,7 +5573,6 @@ func (fastpathT) DecSliceUint32V(v []uint32, canChange bool, d *Decoder) (_ []ui
 			v = make([]uint32, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -6384,15 +5602,13 @@ func (fastpathT) DecSliceUint32V(v []uint32, canChange bool, d *Decoder) (_ []ui
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceUint64R(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]uint64)
-		v, changed := fastpathTV.DecSliceUint64V(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceUint64V(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6404,8 +5620,7 @@ func (d *Decoder) fastpathDecSliceUint64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceUint64X(vp *[]uint64, d *Decoder) {
-	v, changed := f.DecSliceUint64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceUint64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -6423,7 +5638,6 @@ func (fastpathT) DecSliceUint64V(v []uint64, canChange bool, d *Decoder) (_ []ui
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -6451,7 +5665,6 @@ func (fastpathT) DecSliceUint64V(v []uint64, canChange bool, d *Decoder) (_ []ui
 			v = make([]uint64, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -6481,15 +5694,13 @@ func (fastpathT) DecSliceUint64V(v []uint64, canChange bool, d *Decoder) (_ []ui
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceUintptrR(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]uintptr)
-		v, changed := fastpathTV.DecSliceUintptrV(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceUintptrV(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6501,8 +5712,7 @@ func (d *Decoder) fastpathDecSliceUintptrR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceUintptrX(vp *[]uintptr, d *Decoder) {
-	v, changed := f.DecSliceUintptrV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceUintptrV(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -6520,7 +5730,6 @@ func (fastpathT) DecSliceUintptrV(v []uintptr, canChange bool, d *Decoder) (_ []
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -6548,7 +5757,6 @@ func (fastpathT) DecSliceUintptrV(v []uintptr, canChange bool, d *Decoder) (_ []
 			v = make([]uintptr, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -6578,15 +5786,13 @@ func (fastpathT) DecSliceUintptrV(v []uintptr, canChange bool, d *Decoder) (_ []
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceIntR(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]int)
-		v, changed := fastpathTV.DecSliceIntV(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceIntV(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6598,8 +5804,7 @@ func (d *Decoder) fastpathDecSliceIntR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceIntX(vp *[]int, d *Decoder) {
-	v, changed := f.DecSliceIntV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceIntV(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -6617,7 +5822,6 @@ func (fastpathT) DecSliceIntV(v []int, canChange bool, d *Decoder) (_ []int, cha
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -6645,7 +5849,6 @@ func (fastpathT) DecSliceIntV(v []int, canChange bool, d *Decoder) (_ []int, cha
 			v = make([]int, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -6675,15 +5878,13 @@ func (fastpathT) DecSliceIntV(v []int, canChange bool, d *Decoder) (_ []int, cha
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceInt8R(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]int8)
-		v, changed := fastpathTV.DecSliceInt8V(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceInt8V(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6695,8 +5896,7 @@ func (d *Decoder) fastpathDecSliceInt8R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceInt8X(vp *[]int8, d *Decoder) {
-	v, changed := f.DecSliceInt8V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceInt8V(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -6714,7 +5914,6 @@ func (fastpathT) DecSliceInt8V(v []int8, canChange bool, d *Decoder) (_ []int8, 
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -6742,7 +5941,6 @@ func (fastpathT) DecSliceInt8V(v []int8, canChange bool, d *Decoder) (_ []int8, 
 			v = make([]int8, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -6772,15 +5970,13 @@ func (fastpathT) DecSliceInt8V(v []int8, canChange bool, d *Decoder) (_ []int8, 
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceInt16R(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]int16)
-		v, changed := fastpathTV.DecSliceInt16V(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceInt16V(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6792,8 +5988,7 @@ func (d *Decoder) fastpathDecSliceInt16R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceInt16X(vp *[]int16, d *Decoder) {
-	v, changed := f.DecSliceInt16V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceInt16V(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -6811,7 +6006,6 @@ func (fastpathT) DecSliceInt16V(v []int16, canChange bool, d *Decoder) (_ []int1
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -6839,7 +6033,6 @@ func (fastpathT) DecSliceInt16V(v []int16, canChange bool, d *Decoder) (_ []int1
 			v = make([]int16, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -6869,15 +6062,13 @@ func (fastpathT) DecSliceInt16V(v []int16, canChange bool, d *Decoder) (_ []int1
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceInt32R(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]int32)
-		v, changed := fastpathTV.DecSliceInt32V(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceInt32V(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6889,8 +6080,7 @@ func (d *Decoder) fastpathDecSliceInt32R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceInt32X(vp *[]int32, d *Decoder) {
-	v, changed := f.DecSliceInt32V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceInt32V(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -6908,7 +6098,6 @@ func (fastpathT) DecSliceInt32V(v []int32, canChange bool, d *Decoder) (_ []int3
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -6936,7 +6125,6 @@ func (fastpathT) DecSliceInt32V(v []int32, canChange bool, d *Decoder) (_ []int3
 			v = make([]int32, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -6966,15 +6154,13 @@ func (fastpathT) DecSliceInt32V(v []int32, canChange bool, d *Decoder) (_ []int3
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceInt64R(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]int64)
-		v, changed := fastpathTV.DecSliceInt64V(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceInt64V(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -6986,8 +6172,7 @@ func (d *Decoder) fastpathDecSliceInt64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceInt64X(vp *[]int64, d *Decoder) {
-	v, changed := f.DecSliceInt64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceInt64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -7005,7 +6190,6 @@ func (fastpathT) DecSliceInt64V(v []int64, canChange bool, d *Decoder) (_ []int6
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -7033,7 +6217,6 @@ func (fastpathT) DecSliceInt64V(v []int64, canChange bool, d *Decoder) (_ []int6
 			v = make([]int64, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -7063,15 +6246,13 @@ func (fastpathT) DecSliceInt64V(v []int64, canChange bool, d *Decoder) (_ []int6
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecSliceBoolR(f *codecFnInfo, rv reflect.Value) {
 	if array := f.seq == seqTypeArray; !array && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]bool)
-		v, changed := fastpathTV.DecSliceBoolV(*vp, !array, d)
-		if changed {
+		if v, changed := fastpathTV.DecSliceBoolV(*vp, !array, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7083,8 +6264,7 @@ func (d *Decoder) fastpathDecSliceBoolR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecSliceBoolX(vp *[]bool, d *Decoder) {
-	v, changed := f.DecSliceBoolV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecSliceBoolV(*vp, true, d); changed {
 		*vp = v
 	}
 }
@@ -7102,7 +6282,6 @@ func (fastpathT) DecSliceBoolV(v []bool, canChange bool, d *Decoder) (_ []bool, 
 		slh.End()
 		return v, changed
 	}
-	d.depthIncr()
 	hasLen := containerLenS > 0
 	var xlen int
 	if hasLen && canChange {
@@ -7130,7 +6309,6 @@ func (fastpathT) DecSliceBoolV(v []bool, canChange bool, d *Decoder) (_ []bool, 
 			v = make([]bool, uint(xlen))
 			changed = true
 		}
-		// if indefinite, etc, then expand the slice if necessary
 		var decodeIntoBlank bool
 		if j >= len(v) {
 			if canChange {
@@ -7160,15 +6338,13 @@ func (fastpathT) DecSliceBoolV(v []bool, canChange bool, d *Decoder) (_ []bool, 
 		}
 	}
 	slh.End()
-	d.depthDecr()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringIntfR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]interface{})
-		v, changed := fastpathTV.DecMapStringIntfV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringIntfV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7176,36 +6352,29 @@ func (d *Decoder) fastpathDecMapStringIntfR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapStringIntfX(vp *map[string]interface{}, d *Decoder) {
-	v, changed := f.DecMapStringIntfV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringIntfV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringIntfV(v map[string]interface{}, canChange bool,
 	d *Decoder) (_ map[string]interface{}, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 32)
-		v = make(map[string]interface{}, xlen)
+		v = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk string
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7225,16 +6394,14 @@ func (fastpathT) DecMapStringIntfV(v map[string]interface{}, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringStringR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]string)
-		v, changed := fastpathTV.DecMapStringStringV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringStringV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7242,35 +6409,28 @@ func (d *Decoder) fastpathDecMapStringStringR(f *codecFnInfo, rv reflect.Value) 
 	}
 }
 func (f fastpathT) DecMapStringStringX(vp *map[string]string, d *Decoder) {
-	v, changed := f.DecMapStringStringV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringStringV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringStringV(v map[string]string, canChange bool,
 	d *Decoder) (_ map[string]string, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 32)
-		v = make(map[string]string, xlen)
+		v = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk string
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7285,16 +6445,71 @@ func (fastpathT) DecMapStringStringV(v map[string]string, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
+	return v, changed
+}
+
+func (d *Decoder) fastpathDecMapStringBytesR(f *codecFnInfo, rv reflect.Value) {
+	if rv.Kind() == reflect.Ptr {
+		vp := rv2i(rv).(*map[string][]byte)
+		if v, changed := fastpathTV.DecMapStringBytesV(*vp, true, d); changed {
+			*vp = v
+		}
+	} else {
+		fastpathTV.DecMapStringBytesV(rv2i(rv).(map[string][]byte), false, d)
+	}
+}
+func (f fastpathT) DecMapStringBytesX(vp *map[string][]byte, d *Decoder) {
+	if v, changed := f.DecMapStringBytesV(*vp, true, d); changed {
+		*vp = v
+	}
+}
+func (fastpathT) DecMapStringBytesV(v map[string][]byte, canChange bool,
+	d *Decoder) (_ map[string][]byte, changed bool) {
+	containerLen := d.mapStart()
+	if canChange && v == nil {
+		v = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
+		changed = true
+	}
+	if containerLen == 0 {
+		d.mapEnd()
+		return v, changed
+	}
+	mapGet := v != nil && !d.h.MapValueReset
+	var mk string
+	var mv []byte
+	hasLen := containerLen > 0
+	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
+		d.mapElemKey()
+		mk = d.d.DecodeString()
+		d.mapElemValue()
+		if d.d.TryDecodeAsNil() {
+			if v == nil {
+			} else if d.h.DeleteOnNilMapValue {
+				delete(v, mk)
+			} else {
+				v[mk] = nil
+			}
+			continue
+		}
+		if mapGet {
+			mv = v[mk]
+		} else {
+			mv = nil
+		}
+		mv = d.d.DecodeBytes(mv, false)
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringUintR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]uint)
-		v, changed := fastpathTV.DecMapStringUintV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringUintV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7302,35 +6517,28 @@ func (d *Decoder) fastpathDecMapStringUintR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapStringUintX(vp *map[string]uint, d *Decoder) {
-	v, changed := f.DecMapStringUintV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringUintV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringUintV(v map[string]uint, canChange bool,
 	d *Decoder) (_ map[string]uint, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[string]uint, xlen)
+		v = make(map[string]uint, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk string
 	var mv uint
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7345,16 +6553,14 @@ func (fastpathT) DecMapStringUintV(v map[string]uint, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringUint8R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]uint8)
-		v, changed := fastpathTV.DecMapStringUint8V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringUint8V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7362,35 +6568,28 @@ func (d *Decoder) fastpathDecMapStringUint8R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapStringUint8X(vp *map[string]uint8, d *Decoder) {
-	v, changed := f.DecMapStringUint8V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringUint8V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringUint8V(v map[string]uint8, canChange bool,
 	d *Decoder) (_ map[string]uint8, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 17)
-		v = make(map[string]uint8, xlen)
+		v = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk string
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7405,16 +6604,14 @@ func (fastpathT) DecMapStringUint8V(v map[string]uint8, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringUint64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]uint64)
-		v, changed := fastpathTV.DecMapStringUint64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringUint64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7422,35 +6619,28 @@ func (d *Decoder) fastpathDecMapStringUint64R(f *codecFnInfo, rv reflect.Value) 
 	}
 }
 func (f fastpathT) DecMapStringUint64X(vp *map[string]uint64, d *Decoder) {
-	v, changed := f.DecMapStringUint64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringUint64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringUint64V(v map[string]uint64, canChange bool,
 	d *Decoder) (_ map[string]uint64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[string]uint64, xlen)
+		v = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk string
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7465,16 +6655,14 @@ func (fastpathT) DecMapStringUint64V(v map[string]uint64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringUintptrR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]uintptr)
-		v, changed := fastpathTV.DecMapStringUintptrV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringUintptrV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7482,35 +6670,28 @@ func (d *Decoder) fastpathDecMapStringUintptrR(f *codecFnInfo, rv reflect.Value)
 	}
 }
 func (f fastpathT) DecMapStringUintptrX(vp *map[string]uintptr, d *Decoder) {
-	v, changed := f.DecMapStringUintptrV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringUintptrV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringUintptrV(v map[string]uintptr, canChange bool,
 	d *Decoder) (_ map[string]uintptr, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[string]uintptr, xlen)
+		v = make(map[string]uintptr, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk string
 	var mv uintptr
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7525,16 +6706,14 @@ func (fastpathT) DecMapStringUintptrV(v map[string]uintptr, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringIntR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]int)
-		v, changed := fastpathTV.DecMapStringIntV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringIntV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7542,35 +6721,28 @@ func (d *Decoder) fastpathDecMapStringIntR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapStringIntX(vp *map[string]int, d *Decoder) {
-	v, changed := f.DecMapStringIntV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringIntV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringIntV(v map[string]int, canChange bool,
 	d *Decoder) (_ map[string]int, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[string]int, xlen)
+		v = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk string
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7585,16 +6757,14 @@ func (fastpathT) DecMapStringIntV(v map[string]int, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringInt64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]int64)
-		v, changed := fastpathTV.DecMapStringInt64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringInt64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7602,35 +6772,28 @@ func (d *Decoder) fastpathDecMapStringInt64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapStringInt64X(vp *map[string]int64, d *Decoder) {
-	v, changed := f.DecMapStringInt64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringInt64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringInt64V(v map[string]int64, canChange bool,
 	d *Decoder) (_ map[string]int64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[string]int64, xlen)
+		v = make(map[string]int64, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk string
 	var mv int64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7645,16 +6808,14 @@ func (fastpathT) DecMapStringInt64V(v map[string]int64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringFloat32R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]float32)
-		v, changed := fastpathTV.DecMapStringFloat32V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringFloat32V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7662,35 +6823,28 @@ func (d *Decoder) fastpathDecMapStringFloat32R(f *codecFnInfo, rv reflect.Value)
 	}
 }
 func (f fastpathT) DecMapStringFloat32X(vp *map[string]float32, d *Decoder) {
-	v, changed := f.DecMapStringFloat32V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringFloat32V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringFloat32V(v map[string]float32, canChange bool,
 	d *Decoder) (_ map[string]float32, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 20)
-		v = make(map[string]float32, xlen)
+		v = make(map[string]float32, decInferLen(containerLen, d.h.MaxInitLen, 20))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk string
 	var mv float32
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7700,21 +6854,19 @@ func (fastpathT) DecMapStringFloat32V(v map[string]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(chkOvf.Float32V(d.d.DecodeFloat64()))
+		mv = float32(d.decodeFloat32())
 		if v != nil {
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringFloat64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]float64)
-		v, changed := fastpathTV.DecMapStringFloat64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringFloat64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7722,35 +6874,28 @@ func (d *Decoder) fastpathDecMapStringFloat64R(f *codecFnInfo, rv reflect.Value)
 	}
 }
 func (f fastpathT) DecMapStringFloat64X(vp *map[string]float64, d *Decoder) {
-	v, changed := f.DecMapStringFloat64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringFloat64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringFloat64V(v map[string]float64, canChange bool,
 	d *Decoder) (_ map[string]float64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[string]float64, xlen)
+		v = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk string
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7765,16 +6910,14 @@ func (fastpathT) DecMapStringFloat64V(v map[string]float64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapStringBoolR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[string]bool)
-		v, changed := fastpathTV.DecMapStringBoolV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapStringBoolV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7782,35 +6925,28 @@ func (d *Decoder) fastpathDecMapStringBoolR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapStringBoolX(vp *map[string]bool, d *Decoder) {
-	v, changed := f.DecMapStringBoolV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapStringBoolV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapStringBoolV(v map[string]bool, canChange bool,
 	d *Decoder) (_ map[string]bool, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 17)
-		v = make(map[string]bool, xlen)
+		v = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk string
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeString()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7825,16 +6961,14 @@ func (fastpathT) DecMapStringBoolV(v map[string]bool, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintIntfR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]interface{})
-		v, changed := fastpathTV.DecMapUintIntfV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintIntfV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7842,36 +6976,29 @@ func (d *Decoder) fastpathDecMapUintIntfR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintIntfX(vp *map[uint]interface{}, d *Decoder) {
-	v, changed := f.DecMapUintIntfV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintIntfV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintIntfV(v map[uint]interface{}, canChange bool,
 	d *Decoder) (_ map[uint]interface{}, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[uint]interface{}, xlen)
+		v = make(map[uint]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk uint
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7891,16 +7018,14 @@ func (fastpathT) DecMapUintIntfV(v map[uint]interface{}, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintStringR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]string)
-		v, changed := fastpathTV.DecMapUintStringV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintStringV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7908,35 +7033,28 @@ func (d *Decoder) fastpathDecMapUintStringR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintStringX(vp *map[uint]string, d *Decoder) {
-	v, changed := f.DecMapUintStringV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintStringV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintStringV(v map[uint]string, canChange bool,
 	d *Decoder) (_ map[uint]string, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[uint]string, xlen)
+		v = make(map[uint]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -7951,16 +7069,71 @@ func (fastpathT) DecMapUintStringV(v map[uint]string, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
+	return v, changed
+}
+
+func (d *Decoder) fastpathDecMapUintBytesR(f *codecFnInfo, rv reflect.Value) {
+	if rv.Kind() == reflect.Ptr {
+		vp := rv2i(rv).(*map[uint][]byte)
+		if v, changed := fastpathTV.DecMapUintBytesV(*vp, true, d); changed {
+			*vp = v
+		}
+	} else {
+		fastpathTV.DecMapUintBytesV(rv2i(rv).(map[uint][]byte), false, d)
+	}
+}
+func (f fastpathT) DecMapUintBytesX(vp *map[uint][]byte, d *Decoder) {
+	if v, changed := f.DecMapUintBytesV(*vp, true, d); changed {
+		*vp = v
+	}
+}
+func (fastpathT) DecMapUintBytesV(v map[uint][]byte, canChange bool,
+	d *Decoder) (_ map[uint][]byte, changed bool) {
+	containerLen := d.mapStart()
+	if canChange && v == nil {
+		v = make(map[uint][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		changed = true
+	}
+	if containerLen == 0 {
+		d.mapEnd()
+		return v, changed
+	}
+	mapGet := v != nil && !d.h.MapValueReset
+	var mk uint
+	var mv []byte
+	hasLen := containerLen > 0
+	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
+		d.mapElemKey()
+		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
+		d.mapElemValue()
+		if d.d.TryDecodeAsNil() {
+			if v == nil {
+			} else if d.h.DeleteOnNilMapValue {
+				delete(v, mk)
+			} else {
+				v[mk] = nil
+			}
+			continue
+		}
+		if mapGet {
+			mv = v[mk]
+		} else {
+			mv = nil
+		}
+		mv = d.d.DecodeBytes(mv, false)
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintUintR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]uint)
-		v, changed := fastpathTV.DecMapUintUintV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintUintV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -7968,35 +7141,28 @@ func (d *Decoder) fastpathDecMapUintUintR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintUintX(vp *map[uint]uint, d *Decoder) {
-	v, changed := f.DecMapUintUintV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintUintV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintUintV(v map[uint]uint, canChange bool,
 	d *Decoder) (_ map[uint]uint, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint]uint, xlen)
+		v = make(map[uint]uint, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint
 	var mv uint
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8011,16 +7177,14 @@ func (fastpathT) DecMapUintUintV(v map[uint]uint, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintUint8R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]uint8)
-		v, changed := fastpathTV.DecMapUintUint8V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintUint8V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8028,35 +7192,28 @@ func (d *Decoder) fastpathDecMapUintUint8R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintUint8X(vp *map[uint]uint8, d *Decoder) {
-	v, changed := f.DecMapUintUint8V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintUint8V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintUint8V(v map[uint]uint8, canChange bool,
 	d *Decoder) (_ map[uint]uint8, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uint]uint8, xlen)
+		v = make(map[uint]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8071,16 +7228,14 @@ func (fastpathT) DecMapUintUint8V(v map[uint]uint8, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintUint64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]uint64)
-		v, changed := fastpathTV.DecMapUintUint64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintUint64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8088,35 +7243,28 @@ func (d *Decoder) fastpathDecMapUintUint64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintUint64X(vp *map[uint]uint64, d *Decoder) {
-	v, changed := f.DecMapUintUint64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintUint64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintUint64V(v map[uint]uint64, canChange bool,
 	d *Decoder) (_ map[uint]uint64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint]uint64, xlen)
+		v = make(map[uint]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8131,16 +7279,14 @@ func (fastpathT) DecMapUintUint64V(v map[uint]uint64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintUintptrR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]uintptr)
-		v, changed := fastpathTV.DecMapUintUintptrV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintUintptrV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8148,35 +7294,28 @@ func (d *Decoder) fastpathDecMapUintUintptrR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintUintptrX(vp *map[uint]uintptr, d *Decoder) {
-	v, changed := f.DecMapUintUintptrV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintUintptrV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintUintptrV(v map[uint]uintptr, canChange bool,
 	d *Decoder) (_ map[uint]uintptr, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint]uintptr, xlen)
+		v = make(map[uint]uintptr, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint
 	var mv uintptr
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8191,16 +7330,14 @@ func (fastpathT) DecMapUintUintptrV(v map[uint]uintptr, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintIntR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]int)
-		v, changed := fastpathTV.DecMapUintIntV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintIntV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8208,35 +7345,28 @@ func (d *Decoder) fastpathDecMapUintIntR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintIntX(vp *map[uint]int, d *Decoder) {
-	v, changed := f.DecMapUintIntV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintIntV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintIntV(v map[uint]int, canChange bool,
 	d *Decoder) (_ map[uint]int, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint]int, xlen)
+		v = make(map[uint]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8251,16 +7381,14 @@ func (fastpathT) DecMapUintIntV(v map[uint]int, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintInt64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]int64)
-		v, changed := fastpathTV.DecMapUintInt64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintInt64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8268,35 +7396,28 @@ func (d *Decoder) fastpathDecMapUintInt64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintInt64X(vp *map[uint]int64, d *Decoder) {
-	v, changed := f.DecMapUintInt64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintInt64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintInt64V(v map[uint]int64, canChange bool,
 	d *Decoder) (_ map[uint]int64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint]int64, xlen)
+		v = make(map[uint]int64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint
 	var mv int64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8311,16 +7432,14 @@ func (fastpathT) DecMapUintInt64V(v map[uint]int64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintFloat32R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]float32)
-		v, changed := fastpathTV.DecMapUintFloat32V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintFloat32V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8328,35 +7447,28 @@ func (d *Decoder) fastpathDecMapUintFloat32R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintFloat32X(vp *map[uint]float32, d *Decoder) {
-	v, changed := f.DecMapUintFloat32V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintFloat32V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintFloat32V(v map[uint]float32, canChange bool,
 	d *Decoder) (_ map[uint]float32, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 12)
-		v = make(map[uint]float32, xlen)
+		v = make(map[uint]float32, decInferLen(containerLen, d.h.MaxInitLen, 12))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint
 	var mv float32
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8366,21 +7478,19 @@ func (fastpathT) DecMapUintFloat32V(v map[uint]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(chkOvf.Float32V(d.d.DecodeFloat64()))
+		mv = float32(d.decodeFloat32())
 		if v != nil {
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintFloat64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]float64)
-		v, changed := fastpathTV.DecMapUintFloat64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintFloat64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8388,35 +7498,28 @@ func (d *Decoder) fastpathDecMapUintFloat64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintFloat64X(vp *map[uint]float64, d *Decoder) {
-	v, changed := f.DecMapUintFloat64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintFloat64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintFloat64V(v map[uint]float64, canChange bool,
 	d *Decoder) (_ map[uint]float64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint]float64, xlen)
+		v = make(map[uint]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8431,16 +7534,14 @@ func (fastpathT) DecMapUintFloat64V(v map[uint]float64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUintBoolR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint]bool)
-		v, changed := fastpathTV.DecMapUintBoolV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUintBoolV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8448,35 +7549,28 @@ func (d *Decoder) fastpathDecMapUintBoolR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUintBoolX(vp *map[uint]bool, d *Decoder) {
-	v, changed := f.DecMapUintBoolV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUintBoolV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUintBoolV(v map[uint]bool, canChange bool,
 	d *Decoder) (_ map[uint]bool, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uint]bool, xlen)
+		v = make(map[uint]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8491,16 +7585,14 @@ func (fastpathT) DecMapUintBoolV(v map[uint]bool, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8IntfR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]interface{})
-		v, changed := fastpathTV.DecMapUint8IntfV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8IntfV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8508,36 +7600,29 @@ func (d *Decoder) fastpathDecMapUint8IntfR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint8IntfX(vp *map[uint8]interface{}, d *Decoder) {
-	v, changed := f.DecMapUint8IntfV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8IntfV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8IntfV(v map[uint8]interface{}, canChange bool,
 	d *Decoder) (_ map[uint8]interface{}, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 17)
-		v = make(map[uint8]interface{}, xlen)
+		v = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk uint8
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8557,16 +7642,14 @@ func (fastpathT) DecMapUint8IntfV(v map[uint8]interface{}, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8StringR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]string)
-		v, changed := fastpathTV.DecMapUint8StringV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8StringV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8574,35 +7657,28 @@ func (d *Decoder) fastpathDecMapUint8StringR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint8StringX(vp *map[uint8]string, d *Decoder) {
-	v, changed := f.DecMapUint8StringV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8StringV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8StringV(v map[uint8]string, canChange bool,
 	d *Decoder) (_ map[uint8]string, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 17)
-		v = make(map[uint8]string, xlen)
+		v = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint8
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8617,16 +7693,71 @@ func (fastpathT) DecMapUint8StringV(v map[uint8]string, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
+	return v, changed
+}
+
+func (d *Decoder) fastpathDecMapUint8BytesR(f *codecFnInfo, rv reflect.Value) {
+	if rv.Kind() == reflect.Ptr {
+		vp := rv2i(rv).(*map[uint8][]byte)
+		if v, changed := fastpathTV.DecMapUint8BytesV(*vp, true, d); changed {
+			*vp = v
+		}
+	} else {
+		fastpathTV.DecMapUint8BytesV(rv2i(rv).(map[uint8][]byte), false, d)
+	}
+}
+func (f fastpathT) DecMapUint8BytesX(vp *map[uint8][]byte, d *Decoder) {
+	if v, changed := f.DecMapUint8BytesV(*vp, true, d); changed {
+		*vp = v
+	}
+}
+func (fastpathT) DecMapUint8BytesV(v map[uint8][]byte, canChange bool,
+	d *Decoder) (_ map[uint8][]byte, changed bool) {
+	containerLen := d.mapStart()
+	if canChange && v == nil {
+		v = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
+		changed = true
+	}
+	if containerLen == 0 {
+		d.mapEnd()
+		return v, changed
+	}
+	mapGet := v != nil && !d.h.MapValueReset
+	var mk uint8
+	var mv []byte
+	hasLen := containerLen > 0
+	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
+		d.mapElemKey()
+		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
+		d.mapElemValue()
+		if d.d.TryDecodeAsNil() {
+			if v == nil {
+			} else if d.h.DeleteOnNilMapValue {
+				delete(v, mk)
+			} else {
+				v[mk] = nil
+			}
+			continue
+		}
+		if mapGet {
+			mv = v[mk]
+		} else {
+			mv = nil
+		}
+		mv = d.d.DecodeBytes(mv, false)
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8UintR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]uint)
-		v, changed := fastpathTV.DecMapUint8UintV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8UintV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8634,35 +7765,28 @@ func (d *Decoder) fastpathDecMapUint8UintR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint8UintX(vp *map[uint8]uint, d *Decoder) {
-	v, changed := f.DecMapUint8UintV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8UintV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8UintV(v map[uint8]uint, canChange bool,
 	d *Decoder) (_ map[uint8]uint, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uint8]uint, xlen)
+		v = make(map[uint8]uint, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint8
 	var mv uint
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8677,16 +7801,14 @@ func (fastpathT) DecMapUint8UintV(v map[uint8]uint, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8Uint8R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]uint8)
-		v, changed := fastpathTV.DecMapUint8Uint8V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8Uint8V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8694,35 +7816,28 @@ func (d *Decoder) fastpathDecMapUint8Uint8R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint8Uint8X(vp *map[uint8]uint8, d *Decoder) {
-	v, changed := f.DecMapUint8Uint8V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8Uint8V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8Uint8V(v map[uint8]uint8, canChange bool,
 	d *Decoder) (_ map[uint8]uint8, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 2)
-		v = make(map[uint8]uint8, xlen)
+		v = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint8
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8737,16 +7852,14 @@ func (fastpathT) DecMapUint8Uint8V(v map[uint8]uint8, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8Uint64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]uint64)
-		v, changed := fastpathTV.DecMapUint8Uint64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8Uint64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8754,35 +7867,28 @@ func (d *Decoder) fastpathDecMapUint8Uint64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint8Uint64X(vp *map[uint8]uint64, d *Decoder) {
-	v, changed := f.DecMapUint8Uint64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8Uint64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8Uint64V(v map[uint8]uint64, canChange bool,
 	d *Decoder) (_ map[uint8]uint64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uint8]uint64, xlen)
+		v = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint8
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8797,16 +7903,14 @@ func (fastpathT) DecMapUint8Uint64V(v map[uint8]uint64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8UintptrR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]uintptr)
-		v, changed := fastpathTV.DecMapUint8UintptrV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8UintptrV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8814,35 +7918,28 @@ func (d *Decoder) fastpathDecMapUint8UintptrR(f *codecFnInfo, rv reflect.Value) 
 	}
 }
 func (f fastpathT) DecMapUint8UintptrX(vp *map[uint8]uintptr, d *Decoder) {
-	v, changed := f.DecMapUint8UintptrV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8UintptrV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8UintptrV(v map[uint8]uintptr, canChange bool,
 	d *Decoder) (_ map[uint8]uintptr, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uint8]uintptr, xlen)
+		v = make(map[uint8]uintptr, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint8
 	var mv uintptr
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8857,16 +7954,14 @@ func (fastpathT) DecMapUint8UintptrV(v map[uint8]uintptr, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8IntR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]int)
-		v, changed := fastpathTV.DecMapUint8IntV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8IntV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8874,35 +7969,28 @@ func (d *Decoder) fastpathDecMapUint8IntR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint8IntX(vp *map[uint8]int, d *Decoder) {
-	v, changed := f.DecMapUint8IntV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8IntV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8IntV(v map[uint8]int, canChange bool,
 	d *Decoder) (_ map[uint8]int, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uint8]int, xlen)
+		v = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint8
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8917,16 +8005,14 @@ func (fastpathT) DecMapUint8IntV(v map[uint8]int, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8Int64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]int64)
-		v, changed := fastpathTV.DecMapUint8Int64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8Int64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8934,35 +8020,28 @@ func (d *Decoder) fastpathDecMapUint8Int64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint8Int64X(vp *map[uint8]int64, d *Decoder) {
-	v, changed := f.DecMapUint8Int64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8Int64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8Int64V(v map[uint8]int64, canChange bool,
 	d *Decoder) (_ map[uint8]int64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uint8]int64, xlen)
+		v = make(map[uint8]int64, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint8
 	var mv int64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -8977,16 +8056,14 @@ func (fastpathT) DecMapUint8Int64V(v map[uint8]int64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8Float32R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]float32)
-		v, changed := fastpathTV.DecMapUint8Float32V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8Float32V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -8994,35 +8071,28 @@ func (d *Decoder) fastpathDecMapUint8Float32R(f *codecFnInfo, rv reflect.Value) 
 	}
 }
 func (f fastpathT) DecMapUint8Float32X(vp *map[uint8]float32, d *Decoder) {
-	v, changed := f.DecMapUint8Float32V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8Float32V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8Float32V(v map[uint8]float32, canChange bool,
 	d *Decoder) (_ map[uint8]float32, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 5)
-		v = make(map[uint8]float32, xlen)
+		v = make(map[uint8]float32, decInferLen(containerLen, d.h.MaxInitLen, 5))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint8
 	var mv float32
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9032,21 +8102,19 @@ func (fastpathT) DecMapUint8Float32V(v map[uint8]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(chkOvf.Float32V(d.d.DecodeFloat64()))
+		mv = float32(d.decodeFloat32())
 		if v != nil {
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8Float64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]float64)
-		v, changed := fastpathTV.DecMapUint8Float64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8Float64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9054,35 +8122,28 @@ func (d *Decoder) fastpathDecMapUint8Float64R(f *codecFnInfo, rv reflect.Value) 
 	}
 }
 func (f fastpathT) DecMapUint8Float64X(vp *map[uint8]float64, d *Decoder) {
-	v, changed := f.DecMapUint8Float64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8Float64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8Float64V(v map[uint8]float64, canChange bool,
 	d *Decoder) (_ map[uint8]float64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uint8]float64, xlen)
+		v = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint8
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9097,16 +8158,14 @@ func (fastpathT) DecMapUint8Float64V(v map[uint8]float64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint8BoolR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint8]bool)
-		v, changed := fastpathTV.DecMapUint8BoolV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint8BoolV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9114,35 +8173,28 @@ func (d *Decoder) fastpathDecMapUint8BoolR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint8BoolX(vp *map[uint8]bool, d *Decoder) {
-	v, changed := f.DecMapUint8BoolV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint8BoolV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint8BoolV(v map[uint8]bool, canChange bool,
 	d *Decoder) (_ map[uint8]bool, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 2)
-		v = make(map[uint8]bool, xlen)
+		v = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint8
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9157,16 +8209,14 @@ func (fastpathT) DecMapUint8BoolV(v map[uint8]bool, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64IntfR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]interface{})
-		v, changed := fastpathTV.DecMapUint64IntfV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64IntfV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9174,36 +8224,29 @@ func (d *Decoder) fastpathDecMapUint64IntfR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint64IntfX(vp *map[uint64]interface{}, d *Decoder) {
-	v, changed := f.DecMapUint64IntfV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64IntfV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64IntfV(v map[uint64]interface{}, canChange bool,
 	d *Decoder) (_ map[uint64]interface{}, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[uint64]interface{}, xlen)
+		v = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk uint64
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9223,16 +8266,14 @@ func (fastpathT) DecMapUint64IntfV(v map[uint64]interface{}, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64StringR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]string)
-		v, changed := fastpathTV.DecMapUint64StringV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64StringV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9240,35 +8281,28 @@ func (d *Decoder) fastpathDecMapUint64StringR(f *codecFnInfo, rv reflect.Value) 
 	}
 }
 func (f fastpathT) DecMapUint64StringX(vp *map[uint64]string, d *Decoder) {
-	v, changed := f.DecMapUint64StringV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64StringV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64StringV(v map[uint64]string, canChange bool,
 	d *Decoder) (_ map[uint64]string, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[uint64]string, xlen)
+		v = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint64
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9283,16 +8317,71 @@ func (fastpathT) DecMapUint64StringV(v map[uint64]string, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
+	return v, changed
+}
+
+func (d *Decoder) fastpathDecMapUint64BytesR(f *codecFnInfo, rv reflect.Value) {
+	if rv.Kind() == reflect.Ptr {
+		vp := rv2i(rv).(*map[uint64][]byte)
+		if v, changed := fastpathTV.DecMapUint64BytesV(*vp, true, d); changed {
+			*vp = v
+		}
+	} else {
+		fastpathTV.DecMapUint64BytesV(rv2i(rv).(map[uint64][]byte), false, d)
+	}
+}
+func (f fastpathT) DecMapUint64BytesX(vp *map[uint64][]byte, d *Decoder) {
+	if v, changed := f.DecMapUint64BytesV(*vp, true, d); changed {
+		*vp = v
+	}
+}
+func (fastpathT) DecMapUint64BytesV(v map[uint64][]byte, canChange bool,
+	d *Decoder) (_ map[uint64][]byte, changed bool) {
+	containerLen := d.mapStart()
+	if canChange && v == nil {
+		v = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		changed = true
+	}
+	if containerLen == 0 {
+		d.mapEnd()
+		return v, changed
+	}
+	mapGet := v != nil && !d.h.MapValueReset
+	var mk uint64
+	var mv []byte
+	hasLen := containerLen > 0
+	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
+		d.mapElemKey()
+		mk = d.d.DecodeUint64()
+		d.mapElemValue()
+		if d.d.TryDecodeAsNil() {
+			if v == nil {
+			} else if d.h.DeleteOnNilMapValue {
+				delete(v, mk)
+			} else {
+				v[mk] = nil
+			}
+			continue
+		}
+		if mapGet {
+			mv = v[mk]
+		} else {
+			mv = nil
+		}
+		mv = d.d.DecodeBytes(mv, false)
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64UintR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]uint)
-		v, changed := fastpathTV.DecMapUint64UintV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64UintV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9300,35 +8389,28 @@ func (d *Decoder) fastpathDecMapUint64UintR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint64UintX(vp *map[uint64]uint, d *Decoder) {
-	v, changed := f.DecMapUint64UintV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64UintV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64UintV(v map[uint64]uint, canChange bool,
 	d *Decoder) (_ map[uint64]uint, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint64]uint, xlen)
+		v = make(map[uint64]uint, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint64
 	var mv uint
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9343,16 +8425,14 @@ func (fastpathT) DecMapUint64UintV(v map[uint64]uint, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64Uint8R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]uint8)
-		v, changed := fastpathTV.DecMapUint64Uint8V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64Uint8V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9360,35 +8440,28 @@ func (d *Decoder) fastpathDecMapUint64Uint8R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint64Uint8X(vp *map[uint64]uint8, d *Decoder) {
-	v, changed := f.DecMapUint64Uint8V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64Uint8V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64Uint8V(v map[uint64]uint8, canChange bool,
 	d *Decoder) (_ map[uint64]uint8, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uint64]uint8, xlen)
+		v = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint64
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9403,16 +8476,14 @@ func (fastpathT) DecMapUint64Uint8V(v map[uint64]uint8, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64Uint64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]uint64)
-		v, changed := fastpathTV.DecMapUint64Uint64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64Uint64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9420,35 +8491,28 @@ func (d *Decoder) fastpathDecMapUint64Uint64R(f *codecFnInfo, rv reflect.Value) 
 	}
 }
 func (f fastpathT) DecMapUint64Uint64X(vp *map[uint64]uint64, d *Decoder) {
-	v, changed := f.DecMapUint64Uint64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64Uint64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64Uint64V(v map[uint64]uint64, canChange bool,
 	d *Decoder) (_ map[uint64]uint64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint64]uint64, xlen)
+		v = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint64
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9463,16 +8527,14 @@ func (fastpathT) DecMapUint64Uint64V(v map[uint64]uint64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64UintptrR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]uintptr)
-		v, changed := fastpathTV.DecMapUint64UintptrV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64UintptrV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9480,35 +8542,28 @@ func (d *Decoder) fastpathDecMapUint64UintptrR(f *codecFnInfo, rv reflect.Value)
 	}
 }
 func (f fastpathT) DecMapUint64UintptrX(vp *map[uint64]uintptr, d *Decoder) {
-	v, changed := f.DecMapUint64UintptrV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64UintptrV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64UintptrV(v map[uint64]uintptr, canChange bool,
 	d *Decoder) (_ map[uint64]uintptr, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint64]uintptr, xlen)
+		v = make(map[uint64]uintptr, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint64
 	var mv uintptr
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9523,16 +8578,14 @@ func (fastpathT) DecMapUint64UintptrV(v map[uint64]uintptr, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64IntR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]int)
-		v, changed := fastpathTV.DecMapUint64IntV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64IntV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9540,35 +8593,28 @@ func (d *Decoder) fastpathDecMapUint64IntR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint64IntX(vp *map[uint64]int, d *Decoder) {
-	v, changed := f.DecMapUint64IntV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64IntV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64IntV(v map[uint64]int, canChange bool,
 	d *Decoder) (_ map[uint64]int, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint64]int, xlen)
+		v = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint64
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9583,16 +8629,14 @@ func (fastpathT) DecMapUint64IntV(v map[uint64]int, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64Int64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]int64)
-		v, changed := fastpathTV.DecMapUint64Int64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64Int64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9600,35 +8644,28 @@ func (d *Decoder) fastpathDecMapUint64Int64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint64Int64X(vp *map[uint64]int64, d *Decoder) {
-	v, changed := f.DecMapUint64Int64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64Int64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64Int64V(v map[uint64]int64, canChange bool,
 	d *Decoder) (_ map[uint64]int64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint64]int64, xlen)
+		v = make(map[uint64]int64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint64
 	var mv int64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9643,16 +8680,14 @@ func (fastpathT) DecMapUint64Int64V(v map[uint64]int64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64Float32R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]float32)
-		v, changed := fastpathTV.DecMapUint64Float32V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64Float32V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9660,35 +8695,28 @@ func (d *Decoder) fastpathDecMapUint64Float32R(f *codecFnInfo, rv reflect.Value)
 	}
 }
 func (f fastpathT) DecMapUint64Float32X(vp *map[uint64]float32, d *Decoder) {
-	v, changed := f.DecMapUint64Float32V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64Float32V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64Float32V(v map[uint64]float32, canChange bool,
 	d *Decoder) (_ map[uint64]float32, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 12)
-		v = make(map[uint64]float32, xlen)
+		v = make(map[uint64]float32, decInferLen(containerLen, d.h.MaxInitLen, 12))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint64
 	var mv float32
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9698,21 +8726,19 @@ func (fastpathT) DecMapUint64Float32V(v map[uint64]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(chkOvf.Float32V(d.d.DecodeFloat64()))
+		mv = float32(d.decodeFloat32())
 		if v != nil {
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64Float64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]float64)
-		v, changed := fastpathTV.DecMapUint64Float64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64Float64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9720,35 +8746,28 @@ func (d *Decoder) fastpathDecMapUint64Float64R(f *codecFnInfo, rv reflect.Value)
 	}
 }
 func (f fastpathT) DecMapUint64Float64X(vp *map[uint64]float64, d *Decoder) {
-	v, changed := f.DecMapUint64Float64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64Float64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64Float64V(v map[uint64]float64, canChange bool,
 	d *Decoder) (_ map[uint64]float64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uint64]float64, xlen)
+		v = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint64
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9763,16 +8782,14 @@ func (fastpathT) DecMapUint64Float64V(v map[uint64]float64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapUint64BoolR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[uint64]bool)
-		v, changed := fastpathTV.DecMapUint64BoolV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapUint64BoolV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -9780,35 +8797,28 @@ func (d *Decoder) fastpathDecMapUint64BoolR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapUint64BoolX(vp *map[uint64]bool, d *Decoder) {
-	v, changed := f.DecMapUint64BoolV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapUint64BoolV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapUint64BoolV(v map[uint64]bool, canChange bool,
 	d *Decoder) (_ map[uint64]bool, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uint64]bool, xlen)
+		v = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk uint64
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeUint64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -9823,682 +8833,14 @@ func (fastpathT) DecMapUint64BoolV(v map[uint64]bool, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrIntfR(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]interface{})
-		v, changed := fastpathTV.DecMapUintptrIntfV(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrIntfV(rv2i(rv).(map[uintptr]interface{}), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrIntfX(vp *map[uintptr]interface{}, d *Decoder) {
-	v, changed := f.DecMapUintptrIntfV(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrIntfV(v map[uintptr]interface{}, canChange bool,
-	d *Decoder) (_ map[uintptr]interface{}, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[uintptr]interface{}, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
-	var mk uintptr
-	var mv interface{}
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = nil
-			}
-			continue
-		}
-		if mapGet {
-			mv = v[mk]
-		} else {
-			mv = nil
-		}
-		d.decode(&mv)
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrStringR(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]string)
-		v, changed := fastpathTV.DecMapUintptrStringV(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrStringV(rv2i(rv).(map[uintptr]string), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrStringX(vp *map[uintptr]string, d *Decoder) {
-	v, changed := f.DecMapUintptrStringV(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrStringV(v map[uintptr]string, canChange bool,
-	d *Decoder) (_ map[uintptr]string, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[uintptr]string, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	var mk uintptr
-	var mv string
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = ""
-			}
-			continue
-		}
-		mv = d.d.DecodeString()
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrUintR(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]uint)
-		v, changed := fastpathTV.DecMapUintptrUintV(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrUintV(rv2i(rv).(map[uintptr]uint), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrUintX(vp *map[uintptr]uint, d *Decoder) {
-	v, changed := f.DecMapUintptrUintV(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrUintV(v map[uintptr]uint, canChange bool,
-	d *Decoder) (_ map[uintptr]uint, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uintptr]uint, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	var mk uintptr
-	var mv uint
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = 0
-			}
-			continue
-		}
-		mv = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrUint8R(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]uint8)
-		v, changed := fastpathTV.DecMapUintptrUint8V(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrUint8V(rv2i(rv).(map[uintptr]uint8), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrUint8X(vp *map[uintptr]uint8, d *Decoder) {
-	v, changed := f.DecMapUintptrUint8V(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrUint8V(v map[uintptr]uint8, canChange bool,
-	d *Decoder) (_ map[uintptr]uint8, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uintptr]uint8, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	var mk uintptr
-	var mv uint8
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = 0
-			}
-			continue
-		}
-		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrUint64R(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]uint64)
-		v, changed := fastpathTV.DecMapUintptrUint64V(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrUint64V(rv2i(rv).(map[uintptr]uint64), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrUint64X(vp *map[uintptr]uint64, d *Decoder) {
-	v, changed := f.DecMapUintptrUint64V(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrUint64V(v map[uintptr]uint64, canChange bool,
-	d *Decoder) (_ map[uintptr]uint64, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uintptr]uint64, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	var mk uintptr
-	var mv uint64
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = 0
-			}
-			continue
-		}
-		mv = d.d.DecodeUint64()
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrUintptrR(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]uintptr)
-		v, changed := fastpathTV.DecMapUintptrUintptrV(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrUintptrV(rv2i(rv).(map[uintptr]uintptr), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrUintptrX(vp *map[uintptr]uintptr, d *Decoder) {
-	v, changed := f.DecMapUintptrUintptrV(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrUintptrV(v map[uintptr]uintptr, canChange bool,
-	d *Decoder) (_ map[uintptr]uintptr, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uintptr]uintptr, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	var mk uintptr
-	var mv uintptr
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = 0
-			}
-			continue
-		}
-		mv = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrIntR(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]int)
-		v, changed := fastpathTV.DecMapUintptrIntV(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrIntV(rv2i(rv).(map[uintptr]int), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrIntX(vp *map[uintptr]int, d *Decoder) {
-	v, changed := f.DecMapUintptrIntV(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrIntV(v map[uintptr]int, canChange bool,
-	d *Decoder) (_ map[uintptr]int, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uintptr]int, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	var mk uintptr
-	var mv int
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = 0
-			}
-			continue
-		}
-		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrInt64R(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]int64)
-		v, changed := fastpathTV.DecMapUintptrInt64V(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrInt64V(rv2i(rv).(map[uintptr]int64), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrInt64X(vp *map[uintptr]int64, d *Decoder) {
-	v, changed := f.DecMapUintptrInt64V(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrInt64V(v map[uintptr]int64, canChange bool,
-	d *Decoder) (_ map[uintptr]int64, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uintptr]int64, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	var mk uintptr
-	var mv int64
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = 0
-			}
-			continue
-		}
-		mv = d.d.DecodeInt64()
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrFloat32R(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]float32)
-		v, changed := fastpathTV.DecMapUintptrFloat32V(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrFloat32V(rv2i(rv).(map[uintptr]float32), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrFloat32X(vp *map[uintptr]float32, d *Decoder) {
-	v, changed := f.DecMapUintptrFloat32V(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrFloat32V(v map[uintptr]float32, canChange bool,
-	d *Decoder) (_ map[uintptr]float32, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 12)
-		v = make(map[uintptr]float32, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	var mk uintptr
-	var mv float32
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = 0
-			}
-			continue
-		}
-		mv = float32(chkOvf.Float32V(d.d.DecodeFloat64()))
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrFloat64R(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]float64)
-		v, changed := fastpathTV.DecMapUintptrFloat64V(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrFloat64V(rv2i(rv).(map[uintptr]float64), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrFloat64X(vp *map[uintptr]float64, d *Decoder) {
-	v, changed := f.DecMapUintptrFloat64V(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrFloat64V(v map[uintptr]float64, canChange bool,
-	d *Decoder) (_ map[uintptr]float64, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[uintptr]float64, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	var mk uintptr
-	var mv float64
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = 0
-			}
-			continue
-		}
-		mv = d.d.DecodeFloat64()
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
-	return v, changed
-}
-
-func (d *Decoder) fastpathDecMapUintptrBoolR(f *codecFnInfo, rv reflect.Value) {
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[uintptr]bool)
-		v, changed := fastpathTV.DecMapUintptrBoolV(*vp, true, d)
-		if changed {
-			*vp = v
-		}
-	} else {
-		fastpathTV.DecMapUintptrBoolV(rv2i(rv).(map[uintptr]bool), false, d)
-	}
-}
-func (f fastpathT) DecMapUintptrBoolX(vp *map[uintptr]bool, d *Decoder) {
-	v, changed := f.DecMapUintptrBoolV(*vp, true, d)
-	if changed {
-		*vp = v
-	}
-}
-func (fastpathT) DecMapUintptrBoolV(v map[uintptr]bool, canChange bool,
-	d *Decoder) (_ map[uintptr]bool, changed bool) {
-	containerLen := d.d.ReadMapStart()
-	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[uintptr]bool, xlen)
-		changed = true
-	}
-	if containerLen == 0 {
-		d.d.ReadMapEnd()
-		return v, changed
-	}
-	d.depthIncr()
-	var mk uintptr
-	var mv bool
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
-		mk = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
-		if d.d.TryDecodeAsNil() {
-			if v == nil {
-			} else if d.h.DeleteOnNilMapValue {
-				delete(v, mk)
-			} else {
-				v[mk] = false
-			}
-			continue
-		}
-		mv = d.d.DecodeBool()
-		if v != nil {
-			v[mk] = mv
-		}
-	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntIntfR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]interface{})
-		v, changed := fastpathTV.DecMapIntIntfV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntIntfV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -10506,36 +8848,29 @@ func (d *Decoder) fastpathDecMapIntIntfR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntIntfX(vp *map[int]interface{}, d *Decoder) {
-	v, changed := f.DecMapIntIntfV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntIntfV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntIntfV(v map[int]interface{}, canChange bool,
 	d *Decoder) (_ map[int]interface{}, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[int]interface{}, xlen)
+		v = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk int
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -10555,16 +8890,14 @@ func (fastpathT) DecMapIntIntfV(v map[int]interface{}, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntStringR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]string)
-		v, changed := fastpathTV.DecMapIntStringV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntStringV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -10572,35 +8905,28 @@ func (d *Decoder) fastpathDecMapIntStringR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntStringX(vp *map[int]string, d *Decoder) {
-	v, changed := f.DecMapIntStringV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntStringV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntStringV(v map[int]string, canChange bool,
 	d *Decoder) (_ map[int]string, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[int]string, xlen)
+		v = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -10615,16 +8941,71 @@ func (fastpathT) DecMapIntStringV(v map[int]string, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
+	return v, changed
+}
+
+func (d *Decoder) fastpathDecMapIntBytesR(f *codecFnInfo, rv reflect.Value) {
+	if rv.Kind() == reflect.Ptr {
+		vp := rv2i(rv).(*map[int][]byte)
+		if v, changed := fastpathTV.DecMapIntBytesV(*vp, true, d); changed {
+			*vp = v
+		}
+	} else {
+		fastpathTV.DecMapIntBytesV(rv2i(rv).(map[int][]byte), false, d)
+	}
+}
+func (f fastpathT) DecMapIntBytesX(vp *map[int][]byte, d *Decoder) {
+	if v, changed := f.DecMapIntBytesV(*vp, true, d); changed {
+		*vp = v
+	}
+}
+func (fastpathT) DecMapIntBytesV(v map[int][]byte, canChange bool,
+	d *Decoder) (_ map[int][]byte, changed bool) {
+	containerLen := d.mapStart()
+	if canChange && v == nil {
+		v = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		changed = true
+	}
+	if containerLen == 0 {
+		d.mapEnd()
+		return v, changed
+	}
+	mapGet := v != nil && !d.h.MapValueReset
+	var mk int
+	var mv []byte
+	hasLen := containerLen > 0
+	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
+		d.mapElemKey()
+		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
+		d.mapElemValue()
+		if d.d.TryDecodeAsNil() {
+			if v == nil {
+			} else if d.h.DeleteOnNilMapValue {
+				delete(v, mk)
+			} else {
+				v[mk] = nil
+			}
+			continue
+		}
+		if mapGet {
+			mv = v[mk]
+		} else {
+			mv = nil
+		}
+		mv = d.d.DecodeBytes(mv, false)
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntUintR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]uint)
-		v, changed := fastpathTV.DecMapIntUintV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntUintV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -10632,35 +9013,28 @@ func (d *Decoder) fastpathDecMapIntUintR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntUintX(vp *map[int]uint, d *Decoder) {
-	v, changed := f.DecMapIntUintV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntUintV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntUintV(v map[int]uint, canChange bool,
 	d *Decoder) (_ map[int]uint, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int]uint, xlen)
+		v = make(map[int]uint, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int
 	var mv uint
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -10675,16 +9049,14 @@ func (fastpathT) DecMapIntUintV(v map[int]uint, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntUint8R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]uint8)
-		v, changed := fastpathTV.DecMapIntUint8V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntUint8V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -10692,35 +9064,28 @@ func (d *Decoder) fastpathDecMapIntUint8R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntUint8X(vp *map[int]uint8, d *Decoder) {
-	v, changed := f.DecMapIntUint8V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntUint8V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntUint8V(v map[int]uint8, canChange bool,
 	d *Decoder) (_ map[int]uint8, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[int]uint8, xlen)
+		v = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -10735,16 +9100,14 @@ func (fastpathT) DecMapIntUint8V(v map[int]uint8, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntUint64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]uint64)
-		v, changed := fastpathTV.DecMapIntUint64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntUint64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -10752,35 +9115,28 @@ func (d *Decoder) fastpathDecMapIntUint64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntUint64X(vp *map[int]uint64, d *Decoder) {
-	v, changed := f.DecMapIntUint64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntUint64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntUint64V(v map[int]uint64, canChange bool,
 	d *Decoder) (_ map[int]uint64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int]uint64, xlen)
+		v = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -10795,16 +9151,14 @@ func (fastpathT) DecMapIntUint64V(v map[int]uint64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntUintptrR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]uintptr)
-		v, changed := fastpathTV.DecMapIntUintptrV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntUintptrV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -10812,35 +9166,28 @@ func (d *Decoder) fastpathDecMapIntUintptrR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntUintptrX(vp *map[int]uintptr, d *Decoder) {
-	v, changed := f.DecMapIntUintptrV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntUintptrV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntUintptrV(v map[int]uintptr, canChange bool,
 	d *Decoder) (_ map[int]uintptr, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int]uintptr, xlen)
+		v = make(map[int]uintptr, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int
 	var mv uintptr
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -10855,16 +9202,14 @@ func (fastpathT) DecMapIntUintptrV(v map[int]uintptr, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntIntR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]int)
-		v, changed := fastpathTV.DecMapIntIntV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntIntV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -10872,35 +9217,28 @@ func (d *Decoder) fastpathDecMapIntIntR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntIntX(vp *map[int]int, d *Decoder) {
-	v, changed := f.DecMapIntIntV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntIntV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntIntV(v map[int]int, canChange bool,
 	d *Decoder) (_ map[int]int, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int]int, xlen)
+		v = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -10915,16 +9253,14 @@ func (fastpathT) DecMapIntIntV(v map[int]int, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntInt64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]int64)
-		v, changed := fastpathTV.DecMapIntInt64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntInt64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -10932,35 +9268,28 @@ func (d *Decoder) fastpathDecMapIntInt64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntInt64X(vp *map[int]int64, d *Decoder) {
-	v, changed := f.DecMapIntInt64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntInt64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntInt64V(v map[int]int64, canChange bool,
 	d *Decoder) (_ map[int]int64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int]int64, xlen)
+		v = make(map[int]int64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int
 	var mv int64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -10975,16 +9304,14 @@ func (fastpathT) DecMapIntInt64V(v map[int]int64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntFloat32R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]float32)
-		v, changed := fastpathTV.DecMapIntFloat32V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntFloat32V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -10992,35 +9319,28 @@ func (d *Decoder) fastpathDecMapIntFloat32R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntFloat32X(vp *map[int]float32, d *Decoder) {
-	v, changed := f.DecMapIntFloat32V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntFloat32V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntFloat32V(v map[int]float32, canChange bool,
 	d *Decoder) (_ map[int]float32, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 12)
-		v = make(map[int]float32, xlen)
+		v = make(map[int]float32, decInferLen(containerLen, d.h.MaxInitLen, 12))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int
 	var mv float32
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11030,21 +9350,19 @@ func (fastpathT) DecMapIntFloat32V(v map[int]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(chkOvf.Float32V(d.d.DecodeFloat64()))
+		mv = float32(d.decodeFloat32())
 		if v != nil {
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntFloat64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]float64)
-		v, changed := fastpathTV.DecMapIntFloat64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntFloat64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11052,35 +9370,28 @@ func (d *Decoder) fastpathDecMapIntFloat64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntFloat64X(vp *map[int]float64, d *Decoder) {
-	v, changed := f.DecMapIntFloat64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntFloat64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntFloat64V(v map[int]float64, canChange bool,
 	d *Decoder) (_ map[int]float64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int]float64, xlen)
+		v = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11095,16 +9406,14 @@ func (fastpathT) DecMapIntFloat64V(v map[int]float64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapIntBoolR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int]bool)
-		v, changed := fastpathTV.DecMapIntBoolV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapIntBoolV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11112,35 +9421,28 @@ func (d *Decoder) fastpathDecMapIntBoolR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapIntBoolX(vp *map[int]bool, d *Decoder) {
-	v, changed := f.DecMapIntBoolV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapIntBoolV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapIntBoolV(v map[int]bool, canChange bool,
 	d *Decoder) (_ map[int]bool, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[int]bool, xlen)
+		v = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11155,16 +9457,14 @@ func (fastpathT) DecMapIntBoolV(v map[int]bool, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64IntfR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]interface{})
-		v, changed := fastpathTV.DecMapInt64IntfV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64IntfV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11172,36 +9472,29 @@ func (d *Decoder) fastpathDecMapInt64IntfR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapInt64IntfX(vp *map[int64]interface{}, d *Decoder) {
-	v, changed := f.DecMapInt64IntfV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64IntfV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64IntfV(v map[int64]interface{}, canChange bool,
 	d *Decoder) (_ map[int64]interface{}, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[int64]interface{}, xlen)
+		v = make(map[int64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk int64
 	var mv interface{}
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11221,16 +9514,14 @@ func (fastpathT) DecMapInt64IntfV(v map[int64]interface{}, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64StringR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]string)
-		v, changed := fastpathTV.DecMapInt64StringV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64StringV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11238,35 +9529,28 @@ func (d *Decoder) fastpathDecMapInt64StringR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapInt64StringX(vp *map[int64]string, d *Decoder) {
-	v, changed := f.DecMapInt64StringV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64StringV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64StringV(v map[int64]string, canChange bool,
 	d *Decoder) (_ map[int64]string, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 24)
-		v = make(map[int64]string, xlen)
+		v = make(map[int64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int64
 	var mv string
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11281,16 +9565,71 @@ func (fastpathT) DecMapInt64StringV(v map[int64]string, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
+	return v, changed
+}
+
+func (d *Decoder) fastpathDecMapInt64BytesR(f *codecFnInfo, rv reflect.Value) {
+	if rv.Kind() == reflect.Ptr {
+		vp := rv2i(rv).(*map[int64][]byte)
+		if v, changed := fastpathTV.DecMapInt64BytesV(*vp, true, d); changed {
+			*vp = v
+		}
+	} else {
+		fastpathTV.DecMapInt64BytesV(rv2i(rv).(map[int64][]byte), false, d)
+	}
+}
+func (f fastpathT) DecMapInt64BytesX(vp *map[int64][]byte, d *Decoder) {
+	if v, changed := f.DecMapInt64BytesV(*vp, true, d); changed {
+		*vp = v
+	}
+}
+func (fastpathT) DecMapInt64BytesV(v map[int64][]byte, canChange bool,
+	d *Decoder) (_ map[int64][]byte, changed bool) {
+	containerLen := d.mapStart()
+	if canChange && v == nil {
+		v = make(map[int64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+		changed = true
+	}
+	if containerLen == 0 {
+		d.mapEnd()
+		return v, changed
+	}
+	mapGet := v != nil && !d.h.MapValueReset
+	var mk int64
+	var mv []byte
+	hasLen := containerLen > 0
+	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
+		d.mapElemKey()
+		mk = d.d.DecodeInt64()
+		d.mapElemValue()
+		if d.d.TryDecodeAsNil() {
+			if v == nil {
+			} else if d.h.DeleteOnNilMapValue {
+				delete(v, mk)
+			} else {
+				v[mk] = nil
+			}
+			continue
+		}
+		if mapGet {
+			mv = v[mk]
+		} else {
+			mv = nil
+		}
+		mv = d.d.DecodeBytes(mv, false)
+		if v != nil {
+			v[mk] = mv
+		}
+	}
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64UintR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]uint)
-		v, changed := fastpathTV.DecMapInt64UintV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64UintV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11298,35 +9637,28 @@ func (d *Decoder) fastpathDecMapInt64UintR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapInt64UintX(vp *map[int64]uint, d *Decoder) {
-	v, changed := f.DecMapInt64UintV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64UintV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64UintV(v map[int64]uint, canChange bool,
 	d *Decoder) (_ map[int64]uint, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int64]uint, xlen)
+		v = make(map[int64]uint, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int64
 	var mv uint
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11341,16 +9673,14 @@ func (fastpathT) DecMapInt64UintV(v map[int64]uint, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64Uint8R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]uint8)
-		v, changed := fastpathTV.DecMapInt64Uint8V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64Uint8V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11358,35 +9688,28 @@ func (d *Decoder) fastpathDecMapInt64Uint8R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapInt64Uint8X(vp *map[int64]uint8, d *Decoder) {
-	v, changed := f.DecMapInt64Uint8V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64Uint8V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64Uint8V(v map[int64]uint8, canChange bool,
 	d *Decoder) (_ map[int64]uint8, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[int64]uint8, xlen)
+		v = make(map[int64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int64
 	var mv uint8
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11401,16 +9724,14 @@ func (fastpathT) DecMapInt64Uint8V(v map[int64]uint8, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64Uint64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]uint64)
-		v, changed := fastpathTV.DecMapInt64Uint64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64Uint64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11418,35 +9739,28 @@ func (d *Decoder) fastpathDecMapInt64Uint64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapInt64Uint64X(vp *map[int64]uint64, d *Decoder) {
-	v, changed := f.DecMapInt64Uint64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64Uint64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64Uint64V(v map[int64]uint64, canChange bool,
 	d *Decoder) (_ map[int64]uint64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int64]uint64, xlen)
+		v = make(map[int64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int64
 	var mv uint64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11461,16 +9775,14 @@ func (fastpathT) DecMapInt64Uint64V(v map[int64]uint64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64UintptrR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]uintptr)
-		v, changed := fastpathTV.DecMapInt64UintptrV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64UintptrV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11478,35 +9790,28 @@ func (d *Decoder) fastpathDecMapInt64UintptrR(f *codecFnInfo, rv reflect.Value) 
 	}
 }
 func (f fastpathT) DecMapInt64UintptrX(vp *map[int64]uintptr, d *Decoder) {
-	v, changed := f.DecMapInt64UintptrV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64UintptrV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64UintptrV(v map[int64]uintptr, canChange bool,
 	d *Decoder) (_ map[int64]uintptr, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int64]uintptr, xlen)
+		v = make(map[int64]uintptr, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int64
 	var mv uintptr
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11521,16 +9826,14 @@ func (fastpathT) DecMapInt64UintptrV(v map[int64]uintptr, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64IntR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]int)
-		v, changed := fastpathTV.DecMapInt64IntV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64IntV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11538,35 +9841,28 @@ func (d *Decoder) fastpathDecMapInt64IntR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapInt64IntX(vp *map[int64]int, d *Decoder) {
-	v, changed := f.DecMapInt64IntV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64IntV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64IntV(v map[int64]int, canChange bool,
 	d *Decoder) (_ map[int64]int, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int64]int, xlen)
+		v = make(map[int64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int64
 	var mv int
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11581,16 +9877,14 @@ func (fastpathT) DecMapInt64IntV(v map[int64]int, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64Int64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]int64)
-		v, changed := fastpathTV.DecMapInt64Int64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64Int64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11598,35 +9892,28 @@ func (d *Decoder) fastpathDecMapInt64Int64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapInt64Int64X(vp *map[int64]int64, d *Decoder) {
-	v, changed := f.DecMapInt64Int64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64Int64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64Int64V(v map[int64]int64, canChange bool,
 	d *Decoder) (_ map[int64]int64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int64]int64, xlen)
+		v = make(map[int64]int64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int64
 	var mv int64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11641,16 +9928,14 @@ func (fastpathT) DecMapInt64Int64V(v map[int64]int64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64Float32R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]float32)
-		v, changed := fastpathTV.DecMapInt64Float32V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64Float32V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11658,35 +9943,28 @@ func (d *Decoder) fastpathDecMapInt64Float32R(f *codecFnInfo, rv reflect.Value) 
 	}
 }
 func (f fastpathT) DecMapInt64Float32X(vp *map[int64]float32, d *Decoder) {
-	v, changed := f.DecMapInt64Float32V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64Float32V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64Float32V(v map[int64]float32, canChange bool,
 	d *Decoder) (_ map[int64]float32, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 12)
-		v = make(map[int64]float32, xlen)
+		v = make(map[int64]float32, decInferLen(containerLen, d.h.MaxInitLen, 12))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int64
 	var mv float32
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11696,21 +9974,19 @@ func (fastpathT) DecMapInt64Float32V(v map[int64]float32, canChange bool,
 			}
 			continue
 		}
-		mv = float32(chkOvf.Float32V(d.d.DecodeFloat64()))
+		mv = float32(d.decodeFloat32())
 		if v != nil {
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64Float64R(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]float64)
-		v, changed := fastpathTV.DecMapInt64Float64V(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64Float64V(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11718,35 +9994,28 @@ func (d *Decoder) fastpathDecMapInt64Float64R(f *codecFnInfo, rv reflect.Value) 
 	}
 }
 func (f fastpathT) DecMapInt64Float64X(vp *map[int64]float64, d *Decoder) {
-	v, changed := f.DecMapInt64Float64V(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64Float64V(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64Float64V(v map[int64]float64, canChange bool,
 	d *Decoder) (_ map[int64]float64, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 16)
-		v = make(map[int64]float64, xlen)
+		v = make(map[int64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int64
 	var mv float64
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11761,16 +10030,14 @@ func (fastpathT) DecMapInt64Float64V(v map[int64]float64, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }
 
 func (d *Decoder) fastpathDecMapInt64BoolR(f *codecFnInfo, rv reflect.Value) {
 	if rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*map[int64]bool)
-		v, changed := fastpathTV.DecMapInt64BoolV(*vp, true, d)
-		if changed {
+		if v, changed := fastpathTV.DecMapInt64BoolV(*vp, true, d); changed {
 			*vp = v
 		}
 	} else {
@@ -11778,35 +10045,28 @@ func (d *Decoder) fastpathDecMapInt64BoolR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (f fastpathT) DecMapInt64BoolX(vp *map[int64]bool, d *Decoder) {
-	v, changed := f.DecMapInt64BoolV(*vp, true, d)
-	if changed {
+	if v, changed := f.DecMapInt64BoolV(*vp, true, d); changed {
 		*vp = v
 	}
 }
 func (fastpathT) DecMapInt64BoolV(v map[int64]bool, canChange bool,
 	d *Decoder) (_ map[int64]bool, changed bool) {
-	containerLen := d.d.ReadMapStart()
+	containerLen := d.mapStart()
 	if canChange && v == nil {
-		xlen := decInferLen(containerLen, d.h.MaxInitLen, 9)
-		v = make(map[int64]bool, xlen)
+		v = make(map[int64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
 		changed = true
 	}
 	if containerLen == 0 {
-		d.d.ReadMapEnd()
+		d.mapEnd()
 		return v, changed
 	}
-	d.depthIncr()
 	var mk int64
 	var mv bool
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-		if d.esep {
-			d.d.ReadMapElemKey()
-		}
+		d.mapElemKey()
 		mk = d.d.DecodeInt64()
-		if d.esep {
-			d.d.ReadMapElemValue()
-		}
+		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
 			} else if d.h.DeleteOnNilMapValue {
@@ -11821,7 +10081,6 @@ func (fastpathT) DecMapInt64BoolV(v map[int64]bool, canChange bool,
 			v[mk] = mv
 		}
 	}
-	d.d.ReadMapEnd()
-	d.depthDecr()
+	d.mapEnd()
 	return v, changed
 }

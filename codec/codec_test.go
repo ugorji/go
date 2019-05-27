@@ -1709,8 +1709,8 @@ func doTestSwallowAndZero(t *testing.T, h Handle) {
 	e1.MustEncode(v1)
 	d1 := NewDecoderBytes(b1, h)
 	d1.swallow()
-	if d1.r.numread() != uint(len(b1)) {
-		logT(t, "swallow didn't consume all encoded bytes: %v out of %v", d1.r.numread(), len(b1))
+	if d1.r().numread() != uint(len(b1)) {
+		logT(t, "swallow didn't consume all encoded bytes: %v out of %v", d1.r().numread(), len(b1))
 		failT(t)
 	}
 	setZero(v1)
@@ -2064,12 +2064,13 @@ func testMammoth(t *testing.T, name string, h Handle) {
 	var m, m2 TestMammoth
 	testRandomFillRV(reflect.ValueOf(&m).Elem())
 	b = testMarshalErr(&m, h, t, "mammoth-"+name)
+	// xdebugf("%s", b)
 	testUnmarshalErr(&m2, b, h, t, "mammoth-"+name)
 	testDeepEqualErr(&m, &m2, t, "mammoth-"+name)
-
 	var mm, mm2 TestMammoth2Wrapper
 	testRandomFillRV(reflect.ValueOf(&mm).Elem())
 	b = testMarshalErr(&mm, h, t, "mammoth2-"+name)
+	// os.Stderr.Write([]byte("\n\n\n\n" + string(b) + "\n\n\n\n"))
 	testUnmarshalErr(&mm2, b, h, t, "mammoth2-"+name)
 	testDeepEqualErr(&mm, &mm2, t, "mammoth2-"+name)
 	// testMammoth2(t, name, h)

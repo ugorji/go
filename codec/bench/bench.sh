@@ -12,7 +12,7 @@ _go_get() {
        gopkg.in/mgo.v2/bson \
        gopkg.in/vmihailenco/msgpack.v2 \
        github.com/json-iterator/go \
-       github.com/mongodb/mongo-go-driver/bson \
+       go.mongodb.org/mongo-driver/bson \
        github.com/mailru/easyjson/...
 }
 
@@ -91,10 +91,34 @@ _suite_json() {
     done
 }
 
-_suite_very_quick_json() {
-    echo ">>>> bench TAGS: 'alltests x' SUITE: BenchmarkCodecQuickAllJsonSuite"
-    go test -run Nothing -tags "alltests x" -bench BenchmarkCodecVeryQuickAllJsonSuite -benchmem "$@"
+_suite_very_quick_json_only_profile() {
+    go test -run Nothing -tags "alltests" -bench "__Json____.*${1}" \
+       -benchmem -benchtime 4s \
+       -cpuprofile cpu.out -memprofile mem.out -memprofilerate 1
 }
+
+_suite_very_quick_json() {
+    # Quickly get numbers for json, stdjson, jsoniter and json (codecgen)"
+    echo ">>>> very quick json bench: hanging (middle) results is for codecgen"
+    local x=2
+    if [[ "$x" = 1 ]]; then
+        go test -run Nothing -tags "alltests x" -bench BenchmarkCodecVeryQuickAllJsonSuite -benchmem "$@"
+        echo
+        go test -run Nothing -tags "alltests codecgen" -bench "__Json____" -benchmem "$@"
+        return
+    fi
+    for j in "En" "De"; do
+        go test -run Nothing -tags "alltests x" -bench "__(Json|Std_Json|JsonIter).*${j}" -benchmem "$@"
+        echo
+        go test -run Nothing -tags "alltests codecgen" -bench "__Json____.*${j}" -benchmem "$@"
+        echo
+    done
+}
+
+_suite_very_quick_json_trim_output() {
+    _suite_very_quick_json  | grep -v -E "^(goos:|goarch:|pkg:|PASS|ok)"
+}
+
 
 _usage() {
     echo "usage: bench.sh -[dcsjq] for [download, code-generate, suite-of-tests, json-suite, quick-json-suite] respectively"
@@ -107,10 +131,10 @@ _main() {
         return 1
     fi
     local args=()
-    while getopts "dcsjq" flag
+    while getopts "dcsjqp" flag
     do
         case "$flag" in
-            d|c|s|j|q) args+=( "$flag" ) ;;
+            d|c|s|j|q|p) args+=( "$flag" ) ;;
             *) _usage; return 1 ;;
         esac
     done
@@ -120,7 +144,8 @@ _main() {
     [[ " ${args[*]} " == *"c"*  ]] && _gen "$@"
     [[ " ${args[*]} " == *"s"* ]] && _suite "$@" && _suite_gen "$@" 
     [[ " ${args[*]} " == *"j"* ]] && _suite_json "$@"
-    [[ " ${args[*]} " == *"q"* ]] && _suite_very_quick_json "$@"
+    [[ " ${args[*]} " == *"q"* ]] && _suite_very_quick_json_trim_output "$@"
+    [[ " ${args[*]} " == *"p"* ]] && _suite_very_quick_json_only_profile "$@"
     # shift $((OPTIND-1))
 }
 
