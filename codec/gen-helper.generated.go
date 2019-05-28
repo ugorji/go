@@ -18,12 +18,6 @@ const GenVersion = 12
 // This file is used to generate helper code for codecgen.
 // The values here i.e. genHelper(En|De)coder are not to be used directly by
 // library users. They WILL change continuously and without notice.
-//
-// To help enforce this, we create an unexported type with exported members.
-// The only way to get the type is via the one exported type that we control (somewhat).
-//
-// When static codecs are created for types, they will use this value
-// to perform encoding or decoding of primitives or known slice or map types.
 
 // GenHelperEncoder is exported so that it can be used externally by codecgen.
 //
@@ -54,15 +48,15 @@ type genHelperDecDriver struct {
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 type genHelperEncoder struct {
 	M must
-	e *Encoder
 	F fastpathT
+	e *Encoder
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 type genHelperDecoder struct {
 	C checkOverflow
-	d *Decoder
 	F fastpathT
+	d *Decoder
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -82,7 +76,6 @@ func (f genHelperEncoder) IsJSONHandle() bool {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncFallback(iv interface{}) {
-	// println(">>>>>>>>> EncFallback")
 	// f.e.encodeI(iv, false, false)
 	f.e.encodeValue(reflect.ValueOf(iv), nil, false)
 }
@@ -179,13 +172,11 @@ func (f genHelperDecoder) DecScratchArrayBuffer() *[decScratchByteArrayLen]byte 
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecFallback(iv interface{}, chkPtr bool) {
-	// println(">>>>>>>>> DecFallback")
 	rv := reflect.ValueOf(iv)
 	if chkPtr {
 		rv = f.d.ensureDecodeable(rv)
 	}
 	f.d.decodeValue(rv, nil, false)
-	// f.d.decodeValueFallback(rv)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -205,8 +196,7 @@ func (f genHelperDecoder) DecArrayCannotExpand(sliceLen, streamLen int) {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecTextUnmarshal(tm encoding.TextUnmarshaler) {
-	fnerr := tm.UnmarshalText(f.d.d.DecodeStringAsBytes())
-	if fnerr != nil {
+	if fnerr := tm.UnmarshalText(f.d.d.DecodeStringAsBytes()); fnerr != nil {
 		panic(fnerr)
 	}
 }
@@ -215,16 +205,14 @@ func (f genHelperDecoder) DecTextUnmarshal(tm encoding.TextUnmarshaler) {
 func (f genHelperDecoder) DecJSONUnmarshal(tm jsonUnmarshaler) {
 	// bs := f.dd.DecodeStringAsBytes()
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
-	fnerr := tm.UnmarshalJSON(f.d.nextValueBytes())
-	if fnerr != nil {
+	if fnerr := tm.UnmarshalJSON(f.d.nextValueBytes()); fnerr != nil {
 		panic(fnerr)
 	}
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecBinaryUnmarshal(bm encoding.BinaryUnmarshaler) {
-	fnerr := bm.UnmarshalBinary(f.d.d.DecodeBytes(nil, true))
-	if fnerr != nil {
+	if fnerr := bm.UnmarshalBinary(f.d.d.DecodeBytes(nil, true)); fnerr != nil {
 		panic(fnerr)
 	}
 }
