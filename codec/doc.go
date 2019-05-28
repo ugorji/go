@@ -207,30 +207,6 @@ Running Benchmarks
     
 Please see http://github.com/ugorji/go-codec-bench .
 
-Managing Binary Size
-
-This package adds some size to any binary that depends on it.
-This is because we include an auto-generated file: `fast-path.generated.go`
-to help with performance when encoding/decoding slices and maps of
-built in numeric, boolean, string and interface{} types.
-
-Prior to 2019-05-16, this package could add about 11MB to the size of your binaries.
-We have now trimmed that in half, and the package contributes about 5.5MB.
-
-You can override this by building (or running tests and benchmarks)
-with the tag: `notfastpath`.
-
-    go install -tags notfastpath
-    go build -tags notfastpath
-    go test -tags notfastpath
-
-With the tag `notfastpath`, we trim that size to about 2.9MB.
-
-Be aware that, at least in our representative microbenchmarks for cbor (for example),
-passing `notfastpath` tag causes up to 33% increase in decoding and
-50% increase in encoding speeds.
-YMMV.
-
 Caveats
 
 Struct fields matching the following are ignored during encoding and decoding
