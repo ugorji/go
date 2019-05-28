@@ -164,10 +164,6 @@ func (e *jsonEncDriverTypical) EncodeBool(b bool) {
 	}
 }
 
-func (e *jsonEncDriverTypical) EncodeFloat64(f float64) {
-	e.encodeFloat(f, 64)
-}
-
 func (e *jsonEncDriverTypical) EncodeInt(v int64) {
 	e.w.writeb(strconv.AppendInt(e.b[:0], v, 10))
 }
@@ -176,14 +172,21 @@ func (e *jsonEncDriverTypical) EncodeUint(v uint64) {
 	e.w.writeb(strconv.AppendUint(e.b[:0], v, 10))
 }
 
-func (e *jsonEncDriverTypical) EncodeFloat32(f float32) {
-	e.encodeFloat(float64(f), 32)
+func (e *jsonEncDriverTypical) EncodeFloat64(f float64) {
+	fmt, prec := jsonFloatStrconvFmtPrec64(f)
+	e.w.writeb(strconv.AppendFloat(e.b[:0], f, fmt, int(prec), 64))
+	// e.w.writeb(strconv.AppendFloat(e.b[:0], f, jsonFloatStrconvFmtPrec64(f), 64))
 }
 
-func (e *jsonEncDriverTypical) encodeFloat(f float64, bitsize uint8) {
-	fmt, prec := jsonFloatStrconvFmtPrec(f)
-	e.w.writeb(strconv.AppendFloat(e.b[:0], f, fmt, prec, int(bitsize)))
+func (e *jsonEncDriverTypical) EncodeFloat32(f float32) {
+	fmt, prec := jsonFloatStrconvFmtPrec32(f)
+	e.w.writeb(strconv.AppendFloat(e.b[:0], float64(f), fmt, int(prec), 32))
 }
+
+// func (e *jsonEncDriverTypical) encodeFloat(f float64, bitsize uint8) {
+// 	fmt, prec := jsonFloatStrconvFmtPrec(f, bitsize == 32)
+// 	e.w.writeb(strconv.AppendFloat(e.b[:0], f, fmt, prec, int(bitsize)))
+// }
 
 // func (e *jsonEncDriverTypical) atEndOfEncode() {
 // 	if e.tw {
@@ -269,19 +272,26 @@ func (e *jsonEncDriverGeneric) EncodeBool(b bool) {
 	}
 }
 
-func (e *jsonEncDriverGeneric) EncodeFloat64(f float64) {
-	// instead of using 'g', specify whether to use 'e' or 'f'
-	fmt, prec := jsonFloatStrconvFmtPrec(f)
-
+func (e *jsonEncDriverGeneric) encodeFloat(f float64, bitsize, fmt byte, prec int8) {
 	var blen int
 	if e.ks && e.e.c == containerMapKey {
-		blen = 2 + len(strconv.AppendFloat(e.b[1:1], f, fmt, prec, 64))
+		blen = 2 + len(strconv.AppendFloat(e.b[1:1], f, fmt, int(prec), int(bitsize)))
 		e.b[0] = '"'
 		e.b[blen-1] = '"'
 	} else {
-		blen = len(strconv.AppendFloat(e.b[:0], f, fmt, prec, 64))
+		blen = len(strconv.AppendFloat(e.b[:0], f, fmt, int(prec), int(bitsize)))
 	}
 	e.w.writeb(e.b[:blen])
+}
+
+func (e *jsonEncDriverGeneric) EncodeFloat64(f float64) {
+	fmt, prec := jsonFloatStrconvFmtPrec64(f)
+	e.encodeFloat(f, 64, fmt, prec)
+}
+
+func (e *jsonEncDriverGeneric) EncodeFloat32(f float32) {
+	fmt, prec := jsonFloatStrconvFmtPrec32(f)
+	e.encodeFloat(float64(f), 32, fmt, prec)
 }
 
 func (e *jsonEncDriverGeneric) EncodeInt(v int64) {
@@ -308,13 +318,13 @@ func (e *jsonEncDriverGeneric) EncodeUint(v uint64) {
 	e.w.writeb(strconv.AppendUint(e.b[:0], v, 10))
 }
 
-func (e *jsonEncDriverGeneric) EncodeFloat32(f float32) {
-	// e.encodeFloat(float64(f), 32)
-	// always encode all floats as IEEE 64-bit floating point.
-	// It also ensures that we can decode in full precision even if into a float32,
-	// as what is written is always to float64 precision.
-	e.EncodeFloat64(float64(f))
-}
+// func (e *jsonEncDriverGeneric) EncodeFloat32(f float32) {
+// 	// e.encodeFloat(float64(f), 32)
+// 	// always encode all floats as IEEE 64-bit floating point.
+// 	// It also ensures that we can decode in full precision even if into a float32,
+// 	// as what is written is always to float64 precision.
+// 	e.EncodeFloat64(float64(f))
+// }
 
 // func (e *jsonEncDriverGeneric) atEndOfEncode() {
 // 	if e.tw {
@@ -896,12 +906,12 @@ func (d *jsonDecDriver) decUint64ViaFloat(s string) (u uint64) {
 	return uint64(fi)
 }
 
-func (d *jsonDecDriver) decodeFloat(bitsize uint8) (f float64) {
+func (d *jsonDecDriver) decodeFloat(bitsize int) (f float64) {
 	bs := d.decNumBytes()
 	if len(bs) == 0 {
 		return
 	}
-	f, err := strconv.ParseFloat(stringView(bs), int(bitsize))
+	f, err := strconv.ParseFloat(stringView(bs), bitsize)
 	if err != nil {
 		d.d.errorv(err)
 	}
@@ -1396,41 +1406,52 @@ func (d *jsonDecDriver) reset() {
 	// d.n.reset()
 }
 
-func jsonFloatStrconvFmtPrec(f float64) (fmt byte, prec int) {
-	// set prec to 1 iff mod is 0.
-	//     better than using jsonIsFloatBytesB2 to check if a . or E in the float bytes.
-	// this ensures that every float has an e or .0 in it.
+// jsonFloatStrconvFmtPrec ...
+//
+// ensure that every float has an 'e' or '.' in it,/ for easy differentiation from integers.
+// this is better/faster than checking if  encoded value has [e.] and appending if needed.
 
+// func jsonFloatStrconvFmtPrec(f float64, bits32 bool) (fmt byte, prec int) {
+// 	fmt = 'f'
+// 	prec = -1
+// 	var abs = math.Abs(f)
+// 	if abs == 0 || abs == 1 {
+// 		prec = 1
+// 	} else if !bits32 && (abs < 1e-6 || abs >= 1e21) ||
+// 		bits32 && (float32(abs) < 1e-6 || float32(abs) >= 1e21) {
+// 		fmt = 'e'
+// 	} else if _, frac := math.Modf(abs); frac == 0 {
+// 		// ensure that floats have a .0 at the end, for easy identification as floats
+// 		prec = 1
+// 	}
+// 	return
+// }
+
+func jsonFloatStrconvFmtPrec64(f float64) (fmt byte, prec int8) {
+	fmt = 'f'
+	prec = -1
 	var abs = math.Abs(f)
 	if abs == 0 || abs == 1 {
-		fmt = 'f'
 		prec = 1
 	} else if abs < 1e-6 || abs >= 1e21 {
 		fmt = 'e'
-		prec = -1
-	} else if abs < 0 {
-		fmt = 'f'
-		prec = -1
-	} else if _, mod := math.Modf(abs); mod == 0 {
-		fmt = 'f'
+	} else if noFrac64(abs) { // _, frac := math.Modf(abs); frac == 0 {
 		prec = 1
-	} else {
-		fmt = 'f'
-		prec = -1
 	}
+	return
+}
 
-	// prec = -1
-	// if abs != 0 && (abs < 1e-6 || abs >= 1e21) {
-	// 	fmt = 'e'
-	// } else {
-	// 	fmt = 'f'
-	// 	if abs == 0 || abs == 1 {
-	// 		prec = 1
-	// 	} else if abs < 0 {
-	// 	} else if _, mod := math.Modf(abs); mod == 0 {
-	// 		prec = 1
-	// 	}
-	// }
+func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
+	fmt = 'f'
+	prec = -1
+	var abs = abs32(f)
+	if abs == 0 || abs == 1 {
+		prec = 1
+	} else if abs < 1e-6 || abs >= 1e21 {
+		fmt = 'e'
+	} else if noFrac32(abs) { // _, frac := math.Modf(abs); frac == 0 {
+		prec = 1
+	}
 	return
 }
 

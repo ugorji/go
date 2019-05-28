@@ -2166,11 +2166,51 @@ func (x checkOverflow) SignedIntV(v uint64) int64 {
 	return int64(v)
 }
 
-// ------------------ SORT -----------------
+// ------------------ FLOATING POINT -----------------
 
-// func isNaN(f float64) bool   { return f != f }
 func isNaN64(f float64) bool { return f != f }
 func isNaN32(f float32) bool { return f != f }
+func abs32(f float32) float32 {
+	return math.Float32frombits(math.Float32bits(f) &^ (1 << 31))
+}
+
+// Per go spec, floats are represented in memory as
+// IEEE single or double precision floating point values.
+//
+// We also looked at the source for stdlib math/modf.go,
+// reviewed https://github.com/chewxy/math32
+// and read wikipedia documents describing the formats.
+//
+// It became clear that we could easily look at the bits to determine
+// whether any fraction exists.
+//
+// This is all we need for now.
+
+func noFrac64(f float64) (v bool) {
+	x := math.Float64bits(f)
+	e := uint64(x>>52)&0x7FF - 1023 // uint(x>>shift)&mask - bias
+	// clear top 12+e bits, the integer part; if the rest is 0, then no fraction.
+	if e < 52 {
+		// return x&((1<<64-1)>>(12+e)) == 0
+		return x<<(12+e) == 0
+	}
+	return
+}
+func noFrac32(f float32) (v bool) {
+	x := math.Float32bits(f)
+	e := uint32(x>>23)&0xFF - 127 // uint(x>>shift)&mask - bias
+	// clear top 9+e bits, the integer part; if the rest is 0, then no fraction.
+	if e < 23 {
+		// return x&((1<<32-1)>>(9+e)) == 0
+		return x<<(9+e) == 0
+	}
+	return
+}
+
+// func noFrac(f float64) bool {
+// 	_, frac := math.Modf(float64(f))
+// 	return frac == 0
+// }
 
 // -----------------------
 

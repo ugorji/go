@@ -2965,25 +2965,23 @@ func (d *Decoder) arrayEnd() {
 // decSliceHelper assists when decoding into a slice, from a map or an array in the stream.
 // A slice can be set from a map or array in stream. This supports the MapBySlice interface.
 type decSliceHelper struct {
-	d *Decoder
-	// ct valueType
+	d     *Decoder
+	ct    valueType
 	array bool
 }
 
 func (d *Decoder) decSliceHelperStart() (x decSliceHelper, clen int) {
-	dd := d.d
-	ctyp := dd.ContainerType()
-	switch ctyp {
+	x.ct = d.d.ContainerType()
+	x.d = d
+	switch x.ct {
 	case valueTypeArray:
 		x.array = true
 		clen = d.arrayStart()
 	case valueTypeMap:
 		clen = d.mapStart() * 2
 	default:
-		d.errorf("only encoded map or array can be decoded into a slice (%d)", ctyp)
+		d.errorf("only encoded map or array can be decoded into a slice (%d)", x.ct)
 	}
-	// x.ct = ctyp
-	x.d = d
 	return
 }
 
