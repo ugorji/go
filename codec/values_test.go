@@ -226,12 +226,12 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			math.MaxFloat64, math.SmallestNonzeroFloat64,
 		},
 		AF32slice: []float32{
-			11.11e-11, -11.11e+11,
-			2.222E+12, -2.222E-12,
-			-555.55E-5, 555.55E+5,
-			666.66E-6, -666.66E+6,
-			7777.7777E-7, -7777.7777E-7,
-			-8888.8888E+8, 8888.8888E+8,
+			11.11e-1, -11.11e+1,
+			2.222E+2, -2.222E-2,
+			-55.55E-5, 55.55E+5,
+			66.66E-6, -66.66E+6,
+			777.777E-7, -777.777E-7,
+			-8.88E+8, 8.88E-8,
 			-99999.9999E+9, 99999.9999E+9,
 			// these below are hairy enough to need strconv.ParseFloat
 			33.33E-33, -33.33E+33,
