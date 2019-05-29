@@ -1217,10 +1217,10 @@ type Encoder struct {
 
 	// ---- cpu cache line boundary
 	// ---- writable fields during execution --- *try* to keep in sep cache line
-	ci    set        // holds set of addresses found during an encoding (if CheckCircularRef=true)
-	cidef [1]uintptr // default ci
+	ci set // holds set of addresses found during an encoding (if CheckCircularRef=true)
+	// cidef [1]interface{} // default ci
 
-	b [(4 * 8)]byte // for encoding chan byte, (non-addressable) [N]byte, etc
+	b [(5 * 8)]byte // for encoding chan byte, (non-addressable) [N]byte, etc
 
 	// ---- cpu cache line boundary?
 	// b [scratchByteArrayLen]byte
@@ -1276,7 +1276,7 @@ func (e *Encoder) resetCommon() {
 	}
 
 	if e.ci == nil {
-		e.ci = (set)(e.cidef[:0])
+		// e.ci = (set)(e.cidef[:0])
 	} else {
 		e.ci = e.ci[:0]
 	}
@@ -1635,7 +1635,13 @@ func (e *Encoder) encode(iv interface{}) {
 
 func (e *Encoder) encodeValue(rv reflect.Value, fn *codecFn, checkFastpath bool) {
 	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
-	var sptr uintptr
+
+	// We considered using a uintptr (a pointer) retrievable via rv.UnsafeAddr.
+	// However, it is possible for the same pointer to point to 2 different types e.g.
+	//    type T struct { tHelper }
+	//    Here, for var v T; &v and &v.tHelper are the same pointer.
+	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
+	var sptr interface{} // uintptr
 	var rvp reflect.Value
 	var rvpValid bool
 TOP:
@@ -1649,8 +1655,7 @@ TOP:
 		rvp = rv
 		rv = rv.Elem()
 		if e.h.CheckCircularRef && rv.Kind() == reflect.Struct {
-			// TODO: Movable pointers will be an issue here. Future problem.
-			sptr = rv.UnsafeAddr()
+			sptr = rv2i(rvp) // rv.UnsafeAddr()
 			break TOP
 		}
 		goto TOP
@@ -1671,8 +1676,9 @@ TOP:
 		return
 	}
 
-	if sptr != 0 && (&e.ci).add(sptr) {
-		e.errorf("circular reference found: # %d", sptr)
+	if sptr != nil && (&e.ci).add(sptr) {
+		// e.errorf("circular reference found: # %d", sptr)
+		e.errorf("circular reference found: # %p, %T", sptr, sptr)
 	}
 
 	if fn == nil {

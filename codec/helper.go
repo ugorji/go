@@ -2235,15 +2235,15 @@ type sfiRv struct {
 
 // -----------------
 
-type set []uintptr
+type set []interface{}
 
-func (s *set) add(v uintptr) (exists bool) {
+func (s *set) add(v interface{}) (exists bool) {
 	// e.ci is always nil, or len >= 1
 	x := *s
 	// defer func() { xdebugf("set.add: len: %d", len(x)) }()
 
 	if x == nil {
-		x = make([]uintptr, 1, 8)
+		x = make([]interface{}, 1, 8)
 		x[0] = v
 		*s = x
 		return
@@ -2280,7 +2280,7 @@ func (s *set) add(v uintptr) (exists bool) {
 	return
 }
 
-func (s *set) remove(v uintptr) (exists bool) {
+func (s *set) remove(v interface{}) (exists bool) {
 	x := *s
 	if len(x) == 0 {
 		return
