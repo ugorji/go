@@ -479,6 +479,7 @@ func (e *Encoder) rawExt(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) ext(f *codecFnInfo, rv reflect.Value) {
+	// xdebugf("*Encoder.ext: rv: %v, rv2i: %T, %v", rv, rv2i(rv), rv2i(rv))
 	e.e.EncodeExt(rv2i(rv), f.xfTag, f.xfFn, e)
 }
 

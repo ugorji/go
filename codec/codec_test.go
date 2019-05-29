@@ -132,6 +132,7 @@ var (
 
 var wrapInt64Typ = reflect.TypeOf(wrapInt64(0))
 var wrapBytesTyp = reflect.TypeOf(wrapBytes(nil))
+var testSelfExtTyp = reflect.TypeOf((*TestSelfExtImpl)(nil)).Elem()
 
 func testByteBuf(in []byte) *bytes.Buffer {
 	return bytes.NewBuffer(in)
@@ -422,6 +423,13 @@ func testInit() {
 	chkErr(testMsgpackH.SetBytesExt(timeTyp, 1, timeExt{}))
 	chkErr(testCborH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{}))
 	// testJsonH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
+
+	// Add extensions for the testSelfExt
+	chkErr(testSimpleH.SetBytesExt(testSelfExtTyp, 78, NewSelfBytesExt(testSimpleH, 128)))
+	chkErr(testMsgpackH.SetBytesExt(testSelfExtTyp, 78, NewSelfBytesExt(testMsgpackH, 128)))
+	chkErr(testBincH.SetBytesExt(testSelfExtTyp, 78, NewSelfBytesExt(testBincH, 128)))
+	chkErr(testJsonH.SetInterfaceExt(testSelfExtTyp, 78, GlobalSelfInterfaceExt))
+	chkErr(testCborH.SetInterfaceExt(testSelfExtTyp, 78, GlobalSelfInterfaceExt))
 
 	// Now, add extensions for the type wrapInt64 and wrapBytes,
 	// so we can execute the Encode/Decode Ext paths.
@@ -2472,6 +2480,22 @@ func doTestMultipleEncDec(t *testing.T, name string, h Handle) {
 	testDeepEqualErr(s2, s21, t, name+"-multiple-encode")
 }
 
+func doTestSelfExt(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
+	// encode a string multiple times.
+	// decode it multiple times.
+	// ensure we get the value each time
+	var ts TestSelfExtImpl
+	ts.S = "ugorji"
+	ts.I = 5678
+	ts.B = true
+	var ts2 TestSelfExtImpl
+
+	bs := testMarshalErr(&ts, h, t, name)
+	testUnmarshalErr(&ts2, bs, h, t, name)
+	testDeepEqualErr(&ts, &ts2, t, name)
+}
+
 // -----------------
 
 func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
@@ -3263,6 +3287,26 @@ func TestBincMaxDepth(t *testing.T) {
 
 func TestSimpleMaxDepth(t *testing.T) {
 	doTestMaxDepth(t, "simple", testSimpleH)
+}
+
+func TestJsonSelfExt(t *testing.T) {
+	doTestSelfExt(t, "json", testJsonH)
+}
+
+func TestCborSelfExt(t *testing.T) {
+	doTestSelfExt(t, "cbor", testCborH)
+}
+
+func TestMsgpackSelfExt(t *testing.T) {
+	doTestSelfExt(t, "msgpack", testMsgpackH)
+}
+
+func TestBincSelfExt(t *testing.T) {
+	doTestSelfExt(t, "binc", testBincH)
+}
+
+func TestSimpleSelfExt(t *testing.T) {
+	doTestSelfExt(t, "simple", testSimpleH)
 }
 
 func TestMultipleEncDec(t *testing.T) {

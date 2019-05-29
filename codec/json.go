@@ -946,6 +946,9 @@ func (d *jsonDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxta
 		d.d.decode(&re.Value)
 	} else {
 		var v interface{}
+		if v2, ok := rv.(SelfExt); ok {
+			v = v2.CodecConvertExt()
+		}
 		d.d.decode(&v)
 		ext.UpdateExt(rv, v)
 	}

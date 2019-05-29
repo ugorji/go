@@ -116,6 +116,9 @@ as an empty map because it has no exported fields, while UUID would be
 encoded as a string. However, with extension support, you can encode any of
 these however you like.
 
+There is also seamless support provided for registering an extension (with a
+tag) but letting the encoding mechanism default to the standard way.
+
 
 ## Custom Encoding and Decoding
 
@@ -267,6 +270,7 @@ var GoRpc goRpc
 var MsgpackSpecRpc msgpackSpecRpc
 func GenHelperDecoder(d *Decoder) (gd genHelperDecoder, dd genHelperDecDriver)
 func GenHelperEncoder(e *Encoder) (ge genHelperEncoder, ee genHelperEncDriver)
+func NewSelfBytesExt(h Handle, bufcap int) *selfBytesExt
 type BasicHandle struct{ ... }
 type BincHandle struct{ ... }
 type BytesExt interface{ ... }
@@ -282,6 +286,7 @@ type Encoder struct{ ... }
 type Ext interface{ ... }
 type Handle interface{ ... }
 type InterfaceExt interface{ ... }
+    var GlobalSelfInterfaceExt InterfaceExt = selfInterfaceExt{}
 type JsonHandle struct{ ... }
 type MapBySlice interface{ ... }
 type MissingFielder interface{ ... }
@@ -291,6 +296,7 @@ type RPCOptions struct{ ... }
 type Raw []byte
 type RawExt struct{ ... }
 type Rpc interface{ ... }
+type SelfExt interface{ ... }
 type Selfer interface{ ... }
 type SimpleHandle struct{ ... }
 type TypeInfos struct{ ... }

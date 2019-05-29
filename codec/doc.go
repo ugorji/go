@@ -96,6 +96,9 @@ encoded as an empty map because it has no exported fields, while UUID
 would be encoded as a string. However, with extension support, you can
 encode any of these however you like.
 
+There is also seamless support provided for registering an extension (with a tag)
+but letting the encoding mechanism default to the standard way.
+
 Custom Encoding and Decoding
 
 This package maintains symmetry in the encoding and decoding halfs.
