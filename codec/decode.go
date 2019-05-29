@@ -2900,11 +2900,11 @@ func (d *Decoder) NumBytesRead() int {
 // else if will call DecodeFloat64 and ensure the value doesn't overflow.
 //
 // Note that we return float64 to reduce unnecessary conversions
-func (d *Decoder) decodeFloat32() float64 {
+func (d *Decoder) decodeFloat32() float32 {
 	if d.js {
 		return d.jdec.DecodeFloat32() // custom implementation for 32-bit
 	}
-	return chkOvf.Float32V(d.d.DecodeFloat64())
+	return float32(chkOvf.Float32V(d.d.DecodeFloat64()))
 }
 
 // ---- container tracking

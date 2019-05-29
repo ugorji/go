@@ -851,7 +851,7 @@ func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 		d.d.errorf("minus found parsing unsigned integer: %s", bs)
 	} else if badsyntax {
 		// fallback: try to decode as float, and cast
-		n = d.decUint64ViaFloat(stringView(bs))
+		n = d.decUint64ViaFloat(bs)
 	}
 	return n
 }
@@ -869,9 +869,9 @@ func (d *jsonDecDriver) DecodeInt64() (i int64) {
 		// d.d.errorf("invalid syntax for integer: %s", bs)
 		// fallback: try to decode as float, and cast
 		if neg {
-			n = d.decUint64ViaFloat(stringView(bs[1:]))
+			n = d.decUint64ViaFloat(bs[1:])
 		} else {
-			n = d.decUint64ViaFloat(stringView(bs))
+			n = d.decUint64ViaFloat(bs)
 		}
 	}
 	if neg {
@@ -888,11 +888,11 @@ func (d *jsonDecDriver) DecodeInt64() (i int64) {
 	return
 }
 
-func (d *jsonDecDriver) decUint64ViaFloat(s string) (u uint64) {
+func (d *jsonDecDriver) decUint64ViaFloat(s []byte) (u uint64) {
 	if len(s) == 0 {
 		return
 	}
-	f, err := strconv.ParseFloat(s, 64)
+	f, err := parseFloat64(s)
 	if err != nil {
 		d.d.errorf("invalid syntax for integer: %s", s)
 		// d.d.errorv(err)
@@ -906,24 +906,37 @@ func (d *jsonDecDriver) decUint64ViaFloat(s string) (u uint64) {
 	return uint64(fi)
 }
 
-func (d *jsonDecDriver) decodeFloat(bitsize int) (f float64) {
-	bs := d.decNumBytes()
-	if len(bs) == 0 {
-		return
-	}
-	f, err := strconv.ParseFloat(stringView(bs), bitsize)
-	if err != nil {
-		d.d.errorv(err)
+// func (d *jsonDecDriver) decodeFloat(bitsize int) (f float64) {
+// 	bs := d.decNumBytes()
+// 	if len(bs) == 0 {
+// 		return
+// 	}
+// 	f, err := parseFloat(bs, bitsize)
+// 	if err != nil {
+// 		d.d.errorv(err)
+// 	}
+// 	return
+// }
+
+func (d *jsonDecDriver) DecodeFloat64() (f float64) {
+	// return d.decodeFloat(64)
+	var err error
+	if bs := d.decNumBytes(); len(bs) > 0 {
+		if f, err = parseFloat64(bs); err != nil {
+			d.d.errorv(err)
+		}
 	}
 	return
 }
 
-func (d *jsonDecDriver) DecodeFloat64() (f float64) {
-	return d.decodeFloat(64)
-}
-
-func (d *jsonDecDriver) DecodeFloat32() (f float64) {
-	return d.decodeFloat(32)
+func (d *jsonDecDriver) DecodeFloat32() (f float32) {
+	var err error
+	if bs := d.decNumBytes(); len(bs) > 0 {
+		if f, err = parseFloat32(bs); err != nil {
+			d.d.errorv(err)
+		}
+	}
+	return
 }
 
 func (d *jsonDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxtag uint64) {
@@ -1183,7 +1196,7 @@ func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
 	return
 F:
 	z.v = valueTypeFloat
-	z.f, err = strconv.ParseFloat(stringView(bs), 64)
+	z.f, err = parseFloat64(bs)
 	return
 }
 

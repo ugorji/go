@@ -327,7 +327,7 @@ func (d *Decoder) kTime(f *codecFnInfo, rv reflect.Value) {
 
 func (d *Decoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*float32)(urv.ptr) = float32(d.decodeFloat32())
+	*(*float32)(urv.ptr) = d.decodeFloat32()
 }
 
 func (d *Decoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
