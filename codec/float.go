@@ -91,6 +91,8 @@ var fi64 = floatinfo{52, 11, -1023, 22, 15, 19} // maxMantDigits = 19
 const fMax64 = 1e15
 const fMax32 = 1e7
 
+const fBase = 10
+
 func parseFloatErr(b []byte) error {
 	return &strconv.NumError{
 		Func: "ParseFloat",
@@ -100,7 +102,7 @@ func parseFloatErr(b []byte) error {
 }
 
 func parseFloat32_custom(b []byte) (f float32, err error) {
-	mantissa, exp, i16, neg, _, bad, ok := readFloat(b, fi32)
+	mantissa, exp, neg, _, bad, ok := readFloat(b, fi32)
 	if bad {
 		return 0, parseFloatErr(b)
 	}
@@ -110,19 +112,20 @@ func parseFloat32_custom(b []byte) (f float32, err error) {
 		if neg {
 			f = -f
 		}
-		if exp == 0 {
-		} else if exp < 0 { // int / 10^k
-			f /= float32pow10[-exp]
-		} else { // exp > 0
-			i16 = int16(fi32.exactPow10)
-			if exp > i16 {
-				f *= float32pow10[exp-i16]
-				exp = i16
+		if exp != 0 {
+			indx := fExpIndx(exp)
+			if exp < 0 { // int / 10^k
+				f /= float32pow10[indx]
+			} else { // exp > 0
+				if exp > fi32.exactPow10 {
+					f *= float32pow10[exp-fi32.exactPow10]
+					if f < -fMax32 || f > fMax32 { // exponent too large - outside range
+						goto FALLBACK
+					}
+					indx = uint8(fi32.exactPow10)
+				}
+				f *= float32pow10[indx]
 			}
-			if f < -fMax32 || f > fMax32 { // exponent may be too large - outside range
-				goto FALLBACK
-			}
-			f *= float32pow10[exp]
 		}
 		return
 	}
@@ -131,29 +134,29 @@ FALLBACK:
 }
 
 func parseFloat64_custom(b []byte) (f float64, err error) {
-	mantissa, exp, i16, neg, _, bad, ok := readFloat(b, fi64)
+	mantissa, exp, neg, _, bad, ok := readFloat(b, fi64)
 	if bad {
 		return 0, parseFloatErr(b)
 	}
-	// defer parseFloatDebug(b, 64, &trunc, exp, trunc, ok)
 	if ok {
 		f = float64(mantissa)
 		if neg {
 			f = -f
 		}
-		if exp == 0 {
-		} else if exp < 0 { // int / 10^k
-			f /= float64pow10[-exp]
-		} else { // exp > 0
-			i16 = int16(fi64.exactPow10)
-			if exp > i16 {
-				f *= float64pow10[exp-i16]
-				exp = i16
+		if exp != 0 {
+			indx := fExpIndx(exp)
+			if exp < 0 { // int / 10^k
+				f /= float64pow10[indx]
+			} else { // exp > 0
+				if exp > fi64.exactPow10 {
+					f *= float64pow10[exp-fi64.exactPow10]
+					if f < -fMax64 || f > fMax64 { // exponent too large - outside range
+						goto FALLBACK
+					}
+					indx = uint8(fi64.exactPow10)
+				}
+				f *= float64pow10[indx]
 			}
-			if f < -fMax64 || f > fMax64 { // exponent may be too large - outside range
-				goto FALLBACK
-			}
-			f *= float64pow10[exp]
 		}
 		return
 	}
@@ -161,9 +164,17 @@ FALLBACK:
 	return parseFloat64_strconv(b)
 }
 
-func readFloat(s []byte, y floatinfo) (mantissa uint64, exp, i16 int16, neg, trunc, bad, ok bool) {
-	var i int
-	if len(s) == 0 {
+func fExpIndx(v int8) uint8 {
+	if v < 0 {
+		return uint8(-v)
+	}
+	return uint8(v)
+}
+
+func readFloat(s []byte, y floatinfo) (mantissa uint64, exp int8, neg, trunc, bad, ok bool) {
+	var i uint // make it uint, so that we eliminate bounds checking
+	var slen = uint(len(s))
+	if slen == 0 {
 		bad = true
 		return
 	}
@@ -178,13 +189,11 @@ func readFloat(s []byte, y floatinfo) (mantissa uint64, exp, i16 int16, neg, tru
 	// we considered punting early if string has length > maxMantDigits, but this doesn't account
 	// for trailing 0's e.g. 700000000000000000000 can be encoded exactly as it is 7e20
 
-	const base = 10
-
 	// var sawdot, sawdigits, sawexp bool
-	var sawdot bool
+	var sawdot, sawexp bool
 	var nd, ndMant, dp int8
 L:
-	for ; i < len(s); i++ {
+	for ; i < slen; i++ {
 		switch s[i] {
 		case '.':
 			if sawdot {
@@ -200,54 +209,25 @@ L:
 			}
 			nd++
 			if ndMant < y.maxMantDigits {
-				mantissa *= base
+				// mantissa = (mantissa << 1) + (mantissa << 3)
+				mantissa *= fBase
 				ndMant++
 			}
 		case '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			// sawdigits = true
 			nd++
 			if ndMant < y.maxMantDigits {
-				mantissa *= base
-				mantissa += uint64(s[i] - '0')
+				// mantissa = (mantissa << 1) + (mantissa << 3) + uint64(s[i]-'0')
+				mantissa = mantissa*fBase + uint64(s[i]-'0')
+				// mantissa *= fBase
+				// mantissa += uint64(s[i] - '0')
 				ndMant++
 			} else {
 				trunc = true
 				return // break L
 			}
 		case 'e', 'E':
-			// sawexp = true
-			i++
-			if i == len(s) {
-				break L
-			}
-			var eneg bool
-			if s[i] == '+' {
-				i++
-			} else if s[i] == '-' {
-				i++
-				eneg = true
-			}
-			if i == len(s) {
-				break L
-			}
-			// for exact match, exponent is in single or double digits (-22 to 37 for float64).
-			// exit quick if exponent is more than 2 digits.
-			if len(s)-i > 2 {
-				return
-			}
-			var e int8
-			for ; i < len(s); i++ {
-				if s[i] < '0' || s[i] > '9' {
-					bad = true
-					return
-				}
-				e = e*base + int8(s[i]-'0')
-			}
-			if eneg {
-				dp -= e
-			} else {
-				dp += e
-			}
+			sawexp = true
 			break L
 		default:
 			bad = true
@@ -262,16 +242,64 @@ L:
 		dp = nd
 	}
 
+	if sawexp {
+		i++
+		if i < slen {
+			var eneg bool
+			if s[i] == '+' {
+				i++
+			} else if s[i] == '-' {
+				i++
+				eneg = true
+			}
+			if i < slen {
+				// for exact match, exponent is 1 or 2 digits (float64: -22 to 37, float32: -1 to 17).
+				// exit quick if exponent is more than 2 digits.
+				if i+2 < slen {
+					return
+				}
+
+				var e int8
+
+				if s[i] < '0' || s[i] > '9' {
+					bad = true
+					return
+				}
+				e = e*fBase + int8(s[i]-'0') // (e << 1) + (e << 3) + int8(s[i]-'0')
+				i++
+
+				if i < slen {
+					if s[i] < '0' || s[i] > '9' {
+						bad = true
+						return
+					}
+					e = e*fBase + int8(s[i]-'0') // (e << 1) + (e << 3) + int8(s[i]-'0')
+					i++
+				}
+
+				if eneg {
+					dp -= e
+				} else {
+					dp += e
+				}
+			}
+		}
+	}
+
 	if mantissa != 0 {
-		nd = dp - ndMant
-		if nd < -y.exactPow10 || nd > y.exactInts+y.exactPow10 { // cannot handle it
+		if mantissa>>y.mantbits != 0 {
 			return
 		}
-		exp = int16(nd)
+		exp = dp - ndMant
+		if exp < -y.exactPow10 || exp > y.exactInts+y.exactPow10 { // cannot handle it
+			return
+		}
 	}
-	ok = true && !trunc && mantissa>>y.mantbits == 0
+	ok = true // && !trunc // if trunc=true, we return early (so here trunc=false)
 	return
 }
+
+// fMul10ShiftU64
 
 // func parseFloatDebug(b []byte, bitsize int, strconv *bool, exp int16, trunc, ok bool) {
 // 	if false && bitsize == 64 {

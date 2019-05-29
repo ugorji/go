@@ -41,7 +41,7 @@ type simpleEncDriver struct {
 	b [8]byte
 	// c containerState
 	// encDriverTrackContainerWriter
-	_ [2]uint64 // padding (cache-aligned)
+	// _ [2]uint64 // padding (cache-aligned)
 }
 
 func (e *simpleEncDriver) EncodeNil() {
