@@ -782,8 +782,16 @@ func (d *bincDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
 	if d.vd == bincVdArray {
-		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
-		return
+		if zerocopy && len(bs) == 0 {
+			bs = d.d.b[:]
+		}
+		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
+		slen := d.ReadArrayStart()
+		bs = usableByteSlice(bs, slen)
+		for i := 0; i < slen; i++ {
+			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
+		}
+		return bs
 	}
 	var clen int
 	if d.vd == bincVdString || d.vd == bincVdByteArray {

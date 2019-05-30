@@ -2056,6 +2056,17 @@ func isImmutableKind(k reflect.Kind) (v bool) {
 	return immutableKindsSet[k%reflect.Kind(len(immutableKindsSet))] // bounds-check-elimination
 }
 
+func usableByteSlice(bs []byte, slen int) []byte {
+	if cap(bs) >= slen {
+		if bs == nil {
+			return []byte{}
+		} else {
+			return bs[:slen]
+		}
+	}
+	return make([]byte, slen)
+}
+
 // ----
 
 type codecFnInfo struct {
@@ -2196,6 +2207,7 @@ func noFrac64(f float64) (v bool) {
 	}
 	return
 }
+
 func noFrac32(f float32) (v bool) {
 	x := math.Float32bits(f)
 	e := uint32(x>>23)&0xFF - 127 // uint(x>>shift)&mask - bias

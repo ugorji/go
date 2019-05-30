@@ -2482,9 +2482,6 @@ func doTestMultipleEncDec(t *testing.T, name string, h Handle) {
 
 func doTestSelfExt(t *testing.T, name string, h Handle) {
 	testOnce.Do(testInitAll)
-	// encode a string multiple times.
-	// decode it multiple times.
-	// ensure we get the value each time
 	var ts TestSelfExtImpl
 	ts.S = "ugorji"
 	ts.I = 5678
@@ -2494,6 +2491,27 @@ func doTestSelfExt(t *testing.T, name string, h Handle) {
 	bs := testMarshalErr(&ts, h, t, name)
 	testUnmarshalErr(&ts2, bs, h, t, name)
 	testDeepEqualErr(&ts, &ts2, t, name)
+}
+
+func doTestBytesEncodedAsArray(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
+	// Need to test edge case where bytes are encoded as an array
+	// (not using optimized []byte native format)
+
+	// encode []int8 (or int32 or any numeric type) with all positive numbers
+	// decode it into []uint8
+	var in = make([]int32, 128)
+	var un = make([]uint8, 128)
+	for i := range in {
+		in[i] = int32(i)
+		un[i] = uint8(i)
+	}
+	var out []byte
+	bs := testMarshalErr(&in, h, t, name)
+	testUnmarshalErr(&out, bs, h, t, name)
+	// xdebugf("in:  %v", in)
+	// xdebug2f("out: %v\n", out)
+	testDeepEqualErr(un, out, t, name)
 }
 
 // -----------------
@@ -3307,6 +3325,26 @@ func TestBincSelfExt(t *testing.T) {
 
 func TestSimpleSelfExt(t *testing.T) {
 	doTestSelfExt(t, "simple", testSimpleH)
+}
+
+func TestJsonBytesEncodedAsArray(t *testing.T) {
+	doTestBytesEncodedAsArray(t, "json", testJsonH)
+}
+
+func TestCborBytesEncodedAsArray(t *testing.T) {
+	doTestBytesEncodedAsArray(t, "cbor", testCborH)
+}
+
+func TestMsgpackBytesEncodedAsArray(t *testing.T) {
+	doTestBytesEncodedAsArray(t, "msgpack", testMsgpackH)
+}
+
+func TestBincBytesEncodedAsArray(t *testing.T) {
+	doTestBytesEncodedAsArray(t, "binc", testBincH)
+}
+
+func TestSimpleBytesEncodedAsArray(t *testing.T) {
+	doTestBytesEncodedAsArray(t, "simple", testSimpleH)
 }
 
 func TestMultipleEncDec(t *testing.T) {

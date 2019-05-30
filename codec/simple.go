@@ -419,8 +419,13 @@ func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		if len(bs) == 0 && zerocopy {
 			bs = d.d.b[:]
 		}
-		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
-		return
+		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
+		slen := d.ReadArrayStart()
+		bs = usableByteSlice(bs, slen)
+		for i := 0; i < slen; i++ {
+			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
+		}
+		return bs
 	}
 
 	clen := d.decLen()

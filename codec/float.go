@@ -102,12 +102,13 @@ func parseFloatErr(b []byte) error {
 }
 
 func parseFloat32_custom(b []byte) (f float32, err error) {
-	mantissa, exp, neg, _, bad, ok := readFloat(b, fi32)
+	mantissa, exp, neg, trunc, bad, ok := readFloat(b, fi32)
+	_ = trunc
 	if bad {
 		return 0, parseFloatErr(b)
 	}
-	// defer parseFloatDebug(b, 32, &trunc, exp, trunc, ok)
 	if ok {
+		// parseFloatDebug(b, 32, false, exp, trunc, ok)
 		f = float32(mantissa)
 		if neg {
 			f = -f
@@ -130,11 +131,13 @@ func parseFloat32_custom(b []byte) (f float32, err error) {
 		return
 	}
 FALLBACK:
+	// parseFloatDebug(b, 32, true, exp, trunc, ok)
 	return parseFloat32_strconv(b)
 }
 
 func parseFloat64_custom(b []byte) (f float64, err error) {
-	mantissa, exp, neg, _, bad, ok := readFloat(b, fi64)
+	mantissa, exp, neg, trunc, bad, ok := readFloat(b, fi64)
+	_ = trunc
 	if bad {
 		return 0, parseFloatErr(b)
 	}
@@ -301,13 +304,10 @@ L:
 
 // fMul10ShiftU64
 
-// func parseFloatDebug(b []byte, bitsize int, strconv *bool, exp int16, trunc, ok bool) {
-// 	if false && bitsize == 64 {
-// 		return
-// 	}
-// 	if *strconv {
-// 		xdebugf("parseFloat%d: delegating: %s, exp: %d, trunc: %v, ok: %v", bitsize, b, exp, trunc, ok)
-// 	} else {
-// 		xdebug2f("parseFloat%d: attempting: %s, exp: %d, trunc: %v, ok: %v", bitsize, b, exp, trunc, ok)
-// 	}
-// }
+func parseFloatDebug(b []byte, bitsize int, strconv bool, exp int8, trunc, ok bool) {
+	if strconv {
+		xdebugf("parseFloat%d: delegating: %s, exp: %d, trunc: %v, ok: %v", bitsize, b, exp, trunc, ok)
+	} else {
+		xdebug2f("parseFloat%d: attempting: %s, exp: %d, trunc: %v, ok: %v", bitsize, b, exp, trunc, ok)
+	}
+}

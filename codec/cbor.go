@@ -340,15 +340,15 @@ func (d *cborDecDriver) TryDecodeAsNil() bool {
 	return false
 }
 
-func (d *cborDecDriver) CheckBreak() bool {
+func (d *cborDecDriver) CheckBreak() (v bool) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
 	if d.bd == cborBdBreak {
 		d.bdRead = false
-		return true
+		v = true
 	}
-	return false
+	return
 }
 
 func (d *cborDecDriver) decUint() (ui uint64) {
@@ -475,11 +475,9 @@ func (d *cborDecDriver) decLen() int {
 
 func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 	d.bdRead = false
-	for {
-		if d.CheckBreak() {
-			break
-		}
-		if major := d.bd >> 5; major != cborMajorBytes && major != cborMajorText {
+	for !d.CheckBreak() {
+		major := d.bd >> 5
+		if major != cborMajorBytes && major != cborMajorText {
 			d.d.errorf("expect bytes/string major type in indefinite string/bytes;"+
 				" got major %v from descriptor %x/%x", major, d.bd, cbordesc(d.bd))
 			return nil
@@ -521,9 +519,36 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		return d.decAppendIndefiniteBytes(bs[:0])
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
-	if d.bd == cborBdIndefiniteArray || (d.bd >= cborBaseArray && d.bd < cborBaseMap) {
-		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
-		return
+	// if d.bd == cborBdIndefiniteArray || (d.bd >= cborBaseArray && d.bd < cborBaseMap) {
+	// 	bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
+	// 	return
+	// }
+	if d.bd == cborBdIndefiniteArray {
+		d.bdRead = false
+		if zerocopy && len(bs) == 0 {
+			bs = d.d.b[:]
+		}
+		if bs == nil {
+			bs = []byte{}
+		} else {
+			bs = bs[:0]
+		}
+		for !d.CheckBreak() {
+			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
+		}
+		return bs
+	}
+	if d.bd >= cborBaseArray && d.bd < cborBaseMap {
+		d.bdRead = false
+		if zerocopy && len(bs) == 0 {
+			bs = d.d.b[:]
+		}
+		slen := d.decLen()
+		bs = usableByteSlice(bs, slen)
+		for i := 0; i < slen; i++ {
+			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
+		}
+		return bs
 	}
 	clen := d.decLen()
 	d.bdRead = false

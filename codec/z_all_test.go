@@ -172,6 +172,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonMissingFields", TestJsonMissingFields)
 	t.Run("TestJsonMaxDepth", TestJsonMaxDepth)
 	t.Run("TestJsonSelfExt", TestJsonSelfExt)
+	t.Run("TestJsonBytesEncodedAsArray", TestJsonBytesEncodedAsArray)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 }
@@ -202,6 +203,7 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincMissingFields", TestBincMissingFields)
 	t.Run("TestBincMaxDepth", TestBincMaxDepth)
 	t.Run("TestBincSelfExt", TestBincSelfExt)
+	t.Run("TestBincBytesEncodedAsArray", TestBincBytesEncodedAsArray)
 }
 
 func testCborGroup(t *testing.T) {
@@ -231,6 +233,7 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborMissingFields", TestCborMissingFields)
 	t.Run("TestCborMaxDepth", TestCborMaxDepth)
 	t.Run("TestCborSelfExt", TestCborSelfExt)
+	t.Run("TestCborBytesEncodedAsArray", TestCborBytesEncodedAsArray)
 
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 }
@@ -260,6 +263,7 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackMissingFields", TestMsgpackMissingFields)
 	t.Run("TestMsgpackMaxDepth", TestMsgpackMaxDepth)
 	t.Run("TestMsgpackSelfExt", TestMsgpackSelfExt)
+	t.Run("TestMsgpackBytesEncodedAsArray", TestMsgpackBytesEncodedAsArray)
 
 	t.Run("TestMsgpackDecodeMapAndExtSizeMismatch", TestMsgpackDecodeMapAndExtSizeMismatch)
 }
@@ -288,6 +292,7 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleMissingFields", TestSimpleMissingFields)
 	t.Run("TestSimpleMaxDepth", TestSimpleMaxDepth)
 	t.Run("TestSimpleSelfExt", TestSimpleSelfExt)
+	t.Run("TestSimpleBytesEncodedAsArray", TestSimpleBytesEncodedAsArray)
 }
 
 func testSimpleMammothGroup(t *testing.T) {

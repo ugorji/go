@@ -75,16 +75,12 @@ type TestMammoth2 struct {
 	FptrSliceFloat64 *[]float64
 	FSliceUint       []uint
 	FptrSliceUint    *[]uint
-	FSliceUint8      []uint8
-	FptrSliceUint8   *[]uint8
 	FSliceUint16     []uint16
 	FptrSliceUint16  *[]uint16
 	FSliceUint32     []uint32
 	FptrSliceUint32  *[]uint32
 	FSliceUint64     []uint64
 	FptrSliceUint64  *[]uint64
-	FSliceUintptr    []uintptr
-	FptrSliceUintptr *[]uintptr
 	FSliceInt        []int
 	FptrSliceInt     *[]int
 	FSliceInt8       []int8
@@ -110,8 +106,6 @@ type TestMammoth2 struct {
 	FptrMapStringUint8   *map[string]uint8
 	FMapStringUint64     map[string]uint64
 	FptrMapStringUint64  *map[string]uint64
-	FMapStringUintptr    map[string]uintptr
-	FptrMapStringUintptr *map[string]uintptr
 	FMapStringInt        map[string]int
 	FptrMapStringInt     *map[string]int
 	FMapStringInt64      map[string]int64
@@ -134,8 +128,6 @@ type TestMammoth2 struct {
 	FptrMapUintUint8     *map[uint]uint8
 	FMapUintUint64       map[uint]uint64
 	FptrMapUintUint64    *map[uint]uint64
-	FMapUintUintptr      map[uint]uintptr
-	FptrMapUintUintptr   *map[uint]uintptr
 	FMapUintInt          map[uint]int
 	FptrMapUintInt       *map[uint]int
 	FMapUintInt64        map[uint]int64
@@ -158,8 +150,6 @@ type TestMammoth2 struct {
 	FptrMapUint8Uint8    *map[uint8]uint8
 	FMapUint8Uint64      map[uint8]uint64
 	FptrMapUint8Uint64   *map[uint8]uint64
-	FMapUint8Uintptr     map[uint8]uintptr
-	FptrMapUint8Uintptr  *map[uint8]uintptr
 	FMapUint8Int         map[uint8]int
 	FptrMapUint8Int      *map[uint8]int
 	FMapUint8Int64       map[uint8]int64
@@ -182,8 +172,6 @@ type TestMammoth2 struct {
 	FptrMapUint64Uint8   *map[uint64]uint8
 	FMapUint64Uint64     map[uint64]uint64
 	FptrMapUint64Uint64  *map[uint64]uint64
-	FMapUint64Uintptr    map[uint64]uintptr
-	FptrMapUint64Uintptr *map[uint64]uintptr
 	FMapUint64Int        map[uint64]int
 	FptrMapUint64Int     *map[uint64]int
 	FMapUint64Int64      map[uint64]int64
@@ -206,8 +194,6 @@ type TestMammoth2 struct {
 	FptrMapIntUint8      *map[int]uint8
 	FMapIntUint64        map[int]uint64
 	FptrMapIntUint64     *map[int]uint64
-	FMapIntUintptr       map[int]uintptr
-	FptrMapIntUintptr    *map[int]uintptr
 	FMapIntInt           map[int]int
 	FptrMapIntInt        *map[int]int
 	FMapIntInt64         map[int]int64
@@ -230,8 +216,6 @@ type TestMammoth2 struct {
 	FptrMapInt64Uint8    *map[int64]uint8
 	FMapInt64Uint64      map[int64]uint64
 	FptrMapInt64Uint64   *map[int64]uint64
-	FMapInt64Uintptr     map[int64]uintptr
-	FptrMapInt64Uintptr  *map[int64]uintptr
 	FMapInt64Int         map[int64]int
 	FptrMapInt64Int      *map[int64]int
 	FMapInt64Int64       map[int64]int64

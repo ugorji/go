@@ -1998,10 +1998,13 @@ func genInternalZeroValue(s string) string {
 }
 
 var genInternalNonZeroValueIdx [6]uint64
-var genInternalNonZeroValueStrs = [2][6]string{
-	{`"string-is-an-interface"`, "true", `"some-string"`, `[]byte("some-string")`, "11.1", "33"},
-	{`"string-is-an-interface-2"`, "true", `"some-string-2"`, `[]byte("some-string-2")`, "22.2", "44"},
+var genInternalNonZeroValueStrs = [...][6]string{
+	{`"string-is-an-interface-1"`, "true", `"some-string-1"`, `[]byte("some-string-1")`, "11.1", "111"},
+	{`"string-is-an-interface-2"`, "false", `"some-string-2"`, `[]byte("some-string-2")`, "22.2", "77"},
+	{`"string-is-an-interface-3"`, "true", `"some-string-3"`, `[]byte("some-string-3")`, "33.3e3", "127"},
 }
+
+// Note: last numbers must be in range: 0-127 (as they may be put into a int8, uint8, etc)
 
 func genInternalNonZeroValue(s string) string {
 	var i int
@@ -2020,7 +2023,9 @@ func genInternalNonZeroValue(s string) string {
 		i = 5
 	}
 	genInternalNonZeroValueIdx[i]++
-	return genInternalNonZeroValueStrs[genInternalNonZeroValueIdx[i]%2][i] // return string, to remove ambiguity
+	idx := genInternalNonZeroValueIdx[i]
+	slen := uint64(len(genInternalNonZeroValueStrs))
+	return genInternalNonZeroValueStrs[idx%slen][i] // return string, to remove ambiguity
 }
 
 func genInternalEncCommandAsString(s string, vname string) string {
@@ -2185,6 +2190,26 @@ func genInternalInit() {
 	mapvaltypes = types[:]
 
 	if genFastpathTrimTypes {
+		slicetypes = []string{
+			"interface{}",
+			"string",
+			"[]byte",
+			"float32",
+			"float64",
+			"uint",
+			// "uint8", // no need for fastpath of []uint8, as it is handled specially
+			"uint16",
+			"uint32",
+			"uint64",
+			// "uintptr",
+			"int",
+			"int8",
+			"int16",
+			"int32",
+			"int64",
+			"bool",
+		}
+
 		mapkeytypes = []string{
 			//"interface{}",
 			"string",
@@ -2214,7 +2239,7 @@ func genInternalInit() {
 			//"uint16",
 			//"uint32",
 			"uint64",
-			"uintptr",
+			// "uintptr",
 			"int",
 			//"int8",
 			//"int16",

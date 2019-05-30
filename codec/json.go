@@ -967,8 +967,29 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
 	if d.tok == '[' {
-		bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
-		return
+		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
+		if zerocopy && len(bs) == 0 {
+			bs = d.d.b[:]
+		}
+		if bs == nil {
+			bs = []byte{}
+		} else {
+			bs = bs[:0]
+		}
+		d.tok = 0
+		bs = append(bs, uint8(d.DecodeUint64()))
+		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+		for d.tok != ']' {
+			if d.tok != ',' {
+				d.d.errorf("read array element - expect char '%c' but got char '%c'", ',', d.tok)
+			}
+			d.tok = 0
+			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
+			d.tok = d.r.skip(&jsonCharWhitespaceSet)
+		}
+		d.tok = 0
+		// xdebug2f("bytes from array: returning: %v", bs)
+		return bs
 	}
 	d.appendStringAsBytes()
 	// base64 encodes []byte{} as "", and we encode nil []byte as null.

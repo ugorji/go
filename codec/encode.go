@@ -536,6 +536,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	}
 	mbs := f.ti.mbs
 	rtelem := f.ti.elem
+
 	// if a slice, array or chan of bytes, treat specially
 	if !mbs && uint8TypId == rt2id(rtelem) { // NOT rtelem.Kind() == reflect.Uint8
 		e.kSliceBytes(rv, f.seq)
