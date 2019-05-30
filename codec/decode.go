@@ -1292,26 +1292,38 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			}
 		}
 	case valueTypeExt:
-		var v interface{}
 		tag, bytes := n.u, n.l // calling decode below might taint the values
-		if bytes == nil {
-			d.decode(&v)
-		}
 		bfn := d.h.getExtForTag(tag)
-		if bfn == nil {
-			var re RawExt
-			re.Tag = tag
-			re.Data = detachZeroCopyBytes(d.bytes, nil, bytes)
-			re.Value = v
-			rvn = reflect.ValueOf(&re).Elem()
-		} else {
-			rvnA := reflect.New(bfn.rt)
-			if bytes != nil {
-				bfn.ext.ReadExt(rv2i(rvnA), bytes)
+		var re = RawExt{Tag: tag}
+		if bytes == nil {
+			// it is one of the InterfaceExt ones: json and cbor
+			// almost definitely cbor, as json naked decoding never reveals valueTypeExt (no tagging support).
+			if bfn == nil {
+				d.decode(&re.Value)
+				rvn = reflect.ValueOf(&re).Elem()
 			} else {
-				bfn.ext.UpdateExt(rv2i(rvnA), v)
+				rvn = reflect.New(bfn.rt)
+				if bfn.ext == SelfExt {
+					d.decodeValue(rvn, d.h.fnNoExt(rvn.Type().Elem()))
+				} else {
+					d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
+				}
+				rvn = rvn.Elem()
 			}
-			rvn = rvnA.Elem()
+		} else {
+			// one of the BytesExt ones: binc, msgpack, simple
+			if bfn == nil {
+				re.Data = detachZeroCopyBytes(d.bytes, nil, bytes)
+				rvn = reflect.ValueOf(&re).Elem()
+			} else {
+				rvn = reflect.New(bfn.rt)
+				if bfn.ext == SelfExt {
+					d.sideDecode(rv2i(rvn), bytes)
+				} else {
+					bfn.ext.ReadExt(rv2i(rvn), bytes)
+				}
+				rvn = rvn.Elem()
+			}
 		}
 	case valueTypeNil:
 		// no-op

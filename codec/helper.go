@@ -683,26 +683,26 @@ LOOP:
 	return
 }
 
-func (c *BasicHandle) fn(rt reflect.Type) (fn *codecFn) {
-	return c.fnVia(rt, &c.rtidFns, true)
+func (x *BasicHandle) fn(rt reflect.Type) (fn *codecFn) {
+	return x.fnVia(rt, &x.rtidFns, true)
 }
 
-func (c *BasicHandle) fnNoExt(rt reflect.Type) (fn *codecFn) {
-	return c.fnVia(rt, &c.rtidFnsNoExt, false)
+func (x *BasicHandle) fnNoExt(rt reflect.Type) (fn *codecFn) {
+	return x.fnVia(rt, &x.rtidFnsNoExt, false)
 }
 
-func (c *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt bool) (fn *codecFn) {
+func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt bool) (fn *codecFn) {
 	// xdebug2f("fnVia: rt: %v, checkExt: %v", rt, checkExt)
 	rtid := rt2id(rt)
 	sp := fs.load()
 	if sp != nil {
 		if _, fn = findFn(sp, rtid); fn != nil {
-			// xdebugf("<<<< %c: found fn for %v in rtidfns of size: %v", c.n, rt, len(sp))
+			// xdebugf("<<<< %c: found fn for %v in rtidfns of size: %v", x.n, rt, len(sp))
 			return
 		}
 	}
-	fn = c.fnLoad(rt, rtid, checkExt)
-	c.mu.Lock()
+	fn = x.fnLoad(rt, rtid, checkExt)
+	x.mu.Lock()
 	var sp2 []codecRtidFn
 	sp = fs.load()
 	if sp == nil {
@@ -717,27 +717,27 @@ func (c *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt boo
 			copy(sp2, sp[:idx])
 			copy(sp2[idx+1:], sp[idx:])
 			sp2[idx] = codecRtidFn{rtid, fn}
-			c.rtidFns.store(sp2)
+			x.rtidFns.store(sp2)
 			// xdebugf(">>>> adding rt: %v to rtidfns of size: %v", rt, len(sp2))
 
 		}
 	}
-	c.mu.Unlock()
+	x.mu.Unlock()
 	return
 }
 
-func (c *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *codecFn) {
-	// xdebugf("#### for %c: load fn for %v in rtidfns of size: %v", c.n, rt, len(sp))
+func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *codecFn) {
+	// xdebugf("#### for %c: load fn for %v in rtidfns of size: %v", x.n, rt, len(sp))
 	fn = new(codecFn)
 	fi := &(fn.i)
-	ti := c.getTypeInfo(rtid, rt)
+	ti := x.getTypeInfo(rtid, rt)
 	fi.ti = ti
 
 	rk := reflect.Kind(ti.kind)
 
 	// anything can be an extension except the built-in ones: time, raw and rawext
 
-	if rtid == timeTypId && !c.TimeNotBuiltin {
+	if rtid == timeTypId && !x.TimeNotBuiltin {
 		fn.fe = (*Encoder).kTime
 		fn.fd = (*Decoder).kTime
 	} else if rtid == rawTypId {
@@ -749,7 +749,7 @@ func (c *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 		fi.addrF = true
 		fi.addrD = true
 		fi.addrE = true
-	} else if xfFn := c.getExt(rtid, checkExt); xfFn != nil {
+	} else if xfFn := x.getExt(rtid, checkExt); xfFn != nil {
 		fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 		fn.fe = (*Encoder).ext
 		fn.fd = (*Decoder).ext
@@ -764,13 +764,13 @@ func (c *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 		fi.addrF = true
 		fi.addrD = ti.csp
 		fi.addrE = ti.csp
-	} else if supportMarshalInterfaces && c.isBe() && (ti.bm || ti.bmp) && (ti.bu || ti.bup) {
+	} else if supportMarshalInterfaces && x.isBe() && (ti.bm || ti.bmp) && (ti.bu || ti.bup) {
 		fn.fe = (*Encoder).binaryMarshal
 		fn.fd = (*Decoder).binaryUnmarshal
 		fi.addrF = true
 		fi.addrD = ti.bup
 		fi.addrE = ti.bmp
-	} else if supportMarshalInterfaces && !c.isBe() && c.isJs() &&
+	} else if supportMarshalInterfaces && !x.isBe() && x.isJs() &&
 		(ti.jm || ti.jmp) && (ti.ju || ti.jup) {
 		//If JSON, we should check JSONMarshal before textMarshal
 		fn.fe = (*Encoder).jsonMarshal
@@ -778,7 +778,7 @@ func (c *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 		fi.addrF = true
 		fi.addrD = ti.jup
 		fi.addrE = ti.jmp
-	} else if supportMarshalInterfaces && !c.isBe() && (ti.tm || ti.tmp) && (ti.tu || ti.tup) {
+	} else if supportMarshalInterfaces && !x.isBe() && (ti.tm || ti.tmp) && (ti.tu || ti.tup) {
 		fn.fe = (*Encoder).textMarshal
 		fn.fd = (*Decoder).textUnmarshal
 		fi.addrF = true
@@ -2091,9 +2091,8 @@ func usableByteSlice(bs []byte, slen int) []byte {
 	if cap(bs) >= slen {
 		if bs == nil {
 			return []byte{}
-		} else {
-			return bs[:slen]
 		}
+		return bs[:slen]
 	}
 	return make([]byte, slen)
 }

@@ -145,11 +145,6 @@ type TestSelfExtImpl struct {
 	testSelfExtHelper
 }
 
-func (t *TestSelfExtImpl) CodecConvertExt() interface{} {
-	return &t.testSelfExtHelper
-}
-func (t *TestSelfExtImpl) CodecUpdateExt(v interface{}) {}
-
 var testWRepeated512 wrapBytes
 var testStrucTime = time.Date(2012, 2, 2, 2, 2, 2, 2000, time.UTC).UTC()
 

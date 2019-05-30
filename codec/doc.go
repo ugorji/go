@@ -16,9 +16,7 @@ Supported Serialization formats are:
 
 This package will carefully use 'package unsafe' for performance reasons in specific places.
 You can build without unsafe use by passing the safe or appengine tag
-i.e. 'go install -tags=safe ...'. Note that unsafe is only supported for the last 4
-go releases e.g. current go release is go 1.12, so we support unsafe use only from
-go 1.9+ . This is because supporting unsafe requires knowledge of implementation details.
+i.e. 'go install -tags=safe ...'.
 
 For detailed usage information, read the primer at http://ugorji.net/blog/go-codec-primer .
 
