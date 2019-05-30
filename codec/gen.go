@@ -810,12 +810,14 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 		return
 	}
 	if t == rawExtTyp {
-		x.linef("%s r.EncodeRawExt(%s, e)", hasIf.c(true), varname)
+		x.linef("%s r.EncodeRawExt(%s)", hasIf.c(true), varname)
 		return
 	}
-	// only check for extensions if the type is named, and has a packagePath.
+	// only check for extensions if extensions are configured,
+	// and the type is named, and has a packagePath,
+	// and this is not the CodecEncodeSelf or CodecDecodeSelf method (i.e. it is not a Selfer)
 	var arrayOrStruct = tk == reflect.Array || tk == reflect.Struct // meaning varname if of type *T
-	if !x.nx && genImportPath(t) != "" && t.Name() != "" {
+	if !x.nx && varname != genTopLevelVarName && genImportPath(t) != "" && t.Name() != "" {
 		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
 		x.linef("%s %s := z.Extension(z.I2Rtid(%s)); %s != nil { z.EncExtension(%s, %s) ",
 			hasIf.c(false), yy, varname, yy, varname, yy)
@@ -1435,8 +1437,10 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		return
 	}
 
-	// only check for extensions if the type is named, and has a packagePath.
-	if !x.nx && genImportPath(t) != "" && t.Name() != "" {
+	// only check for extensions if extensions are configured,
+	// and the type is named, and has a packagePath,
+	// and this is not the CodecEncodeSelf or CodecDecodeSelf method (i.e. it is not a Selfer)
+	if !x.nx && varname != genTopLevelVarName && genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion
 		// x.linef("} else if z.HasExtensions() && z.DecExt(%s) {", varname)
 		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)

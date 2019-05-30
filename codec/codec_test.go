@@ -425,11 +425,11 @@ func testInit() {
 	// testJsonH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
 
 	// Add extensions for the testSelfExt
-	chkErr(testSimpleH.SetBytesExt(testSelfExtTyp, 78, NewSelfBytesExt(testSimpleH, 128)))
-	chkErr(testMsgpackH.SetBytesExt(testSelfExtTyp, 78, NewSelfBytesExt(testMsgpackH, 128)))
-	chkErr(testBincH.SetBytesExt(testSelfExtTyp, 78, NewSelfBytesExt(testBincH, 128)))
-	chkErr(testJsonH.SetInterfaceExt(testSelfExtTyp, 78, GlobalSelfInterfaceExt))
-	chkErr(testCborH.SetInterfaceExt(testSelfExtTyp, 78, GlobalSelfInterfaceExt))
+	chkErr(testSimpleH.SetBytesExt(testSelfExtTyp, 78, SelfExt))
+	chkErr(testMsgpackH.SetBytesExt(testSelfExtTyp, 78, SelfExt))
+	chkErr(testBincH.SetBytesExt(testSelfExtTyp, 78, SelfExt))
+	chkErr(testJsonH.SetInterfaceExt(testSelfExtTyp, 78, SelfExt))
+	chkErr(testCborH.SetInterfaceExt(testSelfExtTyp, 78, SelfExt))
 
 	// Now, add extensions for the type wrapInt64 and wrapBytes,
 	// so we can execute the Encode/Decode Ext paths.

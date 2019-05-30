@@ -215,17 +215,28 @@ func (e *bincEncDriver) encUint(bd byte, pos bool, v uint64) {
 	}
 }
 
-func (e *bincEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext, _ *Encoder) {
-	bs := ext.WriteExt(rv)
+func (e *bincEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext) {
+	var bs []byte
+	var bufp bytesBufPooler
+	if ext == SelfExt {
+		bs = bufp.get(1024)[:0]
+		e.e.sideEncode(v, &bs)
+		// xdebugf("binc EncodeExt: xbs: len: %d, %v", len(bs), bs)
+	} else {
+		bs = ext.WriteExt(v)
+	}
 	if bs == nil {
 		e.EncodeNil()
 		return
 	}
 	e.encodeExtPreamble(uint8(xtag), len(bs))
 	e.w.writeb(bs)
+	if ext == SelfExt {
+		bufp.end()
+	}
 }
 
-func (e *bincEncDriver) EncodeRawExt(re *RawExt, _ *Encoder) {
+func (e *bincEncDriver) EncodeRawExt(re *RawExt) {
 	e.encodeExtPreamble(uint8(re.Tag), len(re.Data))
 	e.w.writeb(re.Data)
 }
@@ -818,10 +829,13 @@ func (d *bincDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxta
 	}
 	realxtag1, xbs := d.decodeExtV(ext != nil, uint8(xtag))
 	realxtag = uint64(realxtag1)
+	// xdebugf("binc DecodeExt: xbs: len: %d, %v", len(xbs), xbs)
 	if ext == nil {
 		re := rv.(*RawExt)
 		re.Tag = realxtag
 		re.Data = detachZeroCopyBytes(d.br, re.Data, xbs)
+	} else if ext == SelfExt {
+		d.d.sideDecode(rv, xbs)
 	} else {
 		ext.ReadExt(rv, xbs)
 	}
@@ -998,7 +1012,7 @@ func (h *BincHandle) Name() string { return "binc" }
 
 // SetBytesExt sets an extension
 func (h *BincHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
-	return h.SetExt(rt, tag, &bytesExtWrapper{BytesExt: ext})
+	return h.SetExt(rt, tag, makeExt(ext))
 }
 
 func (h *BincHandle) newEncDriver(e *Encoder) encDriver {

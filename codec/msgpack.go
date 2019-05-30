@@ -318,8 +318,15 @@ func (e *msgpackEncDriver) EncodeTime(t time.Time) {
 	}
 }
 
-func (e *msgpackEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext, _ *Encoder) {
-	bs := ext.WriteExt(v)
+func (e *msgpackEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext) {
+	var bs []byte
+	var bufp bytesBufPooler
+	if ext == SelfExt {
+		bs = bufp.get(1024)[:0]
+		e.e.sideEncode(v, &bs)
+	} else {
+		bs = ext.WriteExt(v)
+	}
 	if bs == nil {
 		e.EncodeNil()
 		return
@@ -330,9 +337,12 @@ func (e *msgpackEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext, _ *Enc
 	} else {
 		e.EncodeStringBytesRaw(bs)
 	}
+	if ext == SelfExt {
+		bufp.end()
+	}
 }
 
-func (e *msgpackEncDriver) EncodeRawExt(re *RawExt, _ *Encoder) {
+func (e *msgpackEncDriver) EncodeRawExt(re *RawExt) {
 	e.encodeExtPreamble(uint8(re.Tag), len(re.Data))
 	e.w.writeb(re.Data)
 }
@@ -904,6 +914,8 @@ func (d *msgpackDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (real
 		re := rv.(*RawExt)
 		re.Tag = realxtag
 		re.Data = detachZeroCopyBytes(d.br, re.Data, xbs)
+	} else if ext == SelfExt {
+		d.d.sideDecode(rv, xbs)
 	} else {
 		ext.ReadExt(rv, xbs)
 	}
@@ -974,7 +986,7 @@ func (h *MsgpackHandle) Name() string { return "msgpack" }
 
 // SetBytesExt sets an extension
 func (h *MsgpackHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
-	return h.SetExt(rt, tag, &bytesExtWrapper{BytesExt: ext})
+	return h.SetExt(rt, tag, makeExt(ext))
 }
 
 func (h *MsgpackHandle) newEncDriver(e *Encoder) encDriver {

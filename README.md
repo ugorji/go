@@ -266,11 +266,11 @@ some caveats. See Encode documentation.
 ```go
 const CborStreamBytes byte = 0x5f ...
 const GenVersion = 12
+var SelfExt = &extFailWrapper{}
 var GoRpc goRpc
 var MsgpackSpecRpc msgpackSpecRpc
 func GenHelperDecoder(d *Decoder) (gd genHelperDecoder, dd genHelperDecDriver)
 func GenHelperEncoder(e *Encoder) (ge genHelperEncoder, ee genHelperEncDriver)
-func NewSelfBytesExt(h Handle, bufcap int) *selfBytesExt
 type BasicHandle struct{ ... }
 type BincHandle struct{ ... }
 type BytesExt interface{ ... }
@@ -286,7 +286,6 @@ type Encoder struct{ ... }
 type Ext interface{ ... }
 type Handle interface{ ... }
 type InterfaceExt interface{ ... }
-    var GlobalSelfInterfaceExt InterfaceExt = selfInterfaceExt{}
 type JsonHandle struct{ ... }
 type MapBySlice interface{ ... }
 type MissingFielder interface{ ... }
@@ -296,7 +295,6 @@ type RPCOptions struct{ ... }
 type Raw []byte
 type RawExt struct{ ... }
 type Rpc interface{ ... }
-type SelfExt interface{ ... }
 type Selfer interface{ ... }
 type SimpleHandle struct{ ... }
 type TypeInfos struct{ ... }

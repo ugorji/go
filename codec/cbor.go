@@ -185,23 +185,27 @@ func (e *cborEncDriver) EncodeTime(t time.Time) {
 	}
 }
 
-func (e *cborEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext, en *Encoder) {
+func (e *cborEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext) {
+	// xdebugf("cbor EncodeExt: v: %T, %v, ext: %T, %v, ==Self: %v", rv, rv, ext, ext, ext == SelfExt)
 	e.encUint(uint64(xtag), cborBaseTag)
-	if v := ext.ConvertExt(rv); v == nil {
+	if ext == SelfExt {
+		rv2 := baseRV(rv)
+		e.e.encodeValue(rv2, e.h.fnNoExt(rv2.Type()))
+	} else if v := ext.ConvertExt(rv); v == nil {
 		e.EncodeNil()
 	} else {
-		en.encode(v)
+		e.e.encode(v)
 	}
 }
 
-func (e *cborEncDriver) EncodeRawExt(re *RawExt, en *Encoder) {
+func (e *cborEncDriver) EncodeRawExt(re *RawExt) {
 	e.encUint(uint64(re.Tag), cborBaseTag)
 	// only encodes re.Value (never re.Data)
 	// if false && re.Data != nil {
 	// 	en.encode(re.Data)
 	// } else if re.Value != nil {
 	if re.Value != nil {
-		en.encode(re.Value)
+		e.e.encode(re.Value)
 	} else {
 		e.EncodeNil()
 	}
@@ -617,6 +621,7 @@ func (d *cborDecDriver) decodeTime(xtag uint64) (t time.Time) {
 }
 
 func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxtag uint64) {
+	// xdebugf("cbor DecodeExt: v: %T, %v", rv, rv)
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -630,13 +635,11 @@ func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxta
 	} else if xtag != realxtag {
 		d.d.errorf("Wrong extension tag. Got %b. Expecting: %v", realxtag, xtag)
 		return
+	} else if ext == SelfExt {
+		rv2 := baseRV(rv)
+		d.d.decodeValue(rv2, d.h.fnNoExt(rv2.Type()))
 	} else {
-		var v interface{}
-		if v2, ok := rv.(SelfExt); ok {
-			v = v2.CodecConvertExt()
-		}
-		d.d.decode(&v)
-		ext.UpdateExt(rv, v)
+		d.d.interfaceExtConvertAndDecode(rv, ext)
 	}
 	d.bdRead = false
 	return
@@ -757,7 +760,7 @@ func (h *CborHandle) Name() string { return "cbor" }
 
 // SetInterfaceExt sets an extension
 func (h *CborHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
-	return h.SetExt(rt, tag, &interfaceExtWrapper{InterfaceExt: ext})
+	return h.SetExt(rt, tag, makeExt(ext))
 }
 
 func (h *CborHandle) newEncDriver(e *Encoder) encDriver {

@@ -458,6 +458,15 @@ var immutableKindsSet = [32]bool{
 	// reflect.UnsafePointer
 }
 
+// SelfExt is a sentinel extension signifying that types
+// registered with it SHOULD be encoded and decoded
+// based on the naive mode of the format.
+//
+// This allows users to define a tag for an extension,
+// but signify that the types should be encoded/decoded as the native encoding.
+// This way, users need not also define how to encode or decode the extension.
+var SelfExt = &extFailWrapper{}
+
 // Selfer defines methods by which a value can encode or decode itself.
 //
 // Any type which implements Selfer will be able to encode or decode itself.
@@ -588,8 +597,8 @@ type BasicHandle struct {
 	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
 	mu     sync.Mutex
 	// _      uint32 // padding
-	rtidFns atomicRtidFnSlice
-
+	rtidFns      atomicRtidFnSlice
+	rtidFnsNoExt atomicRtidFnSlice
 	// r []uintptr     // rtids mapped to s above
 }
 
@@ -674,16 +683,50 @@ LOOP:
 	return
 }
 
-func (x *BasicHandle) fn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) (fn *codecFn) {
+func (c *BasicHandle) fn(rt reflect.Type) (fn *codecFn) {
+	return c.fnVia(rt, &c.rtidFns, true)
+}
+
+func (c *BasicHandle) fnNoExt(rt reflect.Type) (fn *codecFn) {
+	return c.fnVia(rt, &c.rtidFnsNoExt, false)
+}
+
+func (c *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt bool) (fn *codecFn) {
+	// xdebug2f("fnVia: rt: %v, checkExt: %v", rt, checkExt)
 	rtid := rt2id(rt)
-	sp := x.rtidFns.load()
+	sp := fs.load()
 	if sp != nil {
 		if _, fn = findFn(sp, rtid); fn != nil {
 			// xdebugf("<<<< %c: found fn for %v in rtidfns of size: %v", c.n, rt, len(sp))
 			return
 		}
 	}
-	c := x
+	fn = c.fnLoad(rt, rtid, checkExt)
+	c.mu.Lock()
+	var sp2 []codecRtidFn
+	sp = fs.load()
+	if sp == nil {
+		sp2 = []codecRtidFn{{rtid, fn}}
+		fs.store(sp2)
+		// xdebugf(">>>> adding rt: %v to rtidfns of size: %v", rt, len(sp2))
+		// xdebugf(">>>> loading stored rtidfns of size: %v", len(fs.load()))
+	} else {
+		idx, fn2 := findFn(sp, rtid)
+		if fn2 == nil {
+			sp2 = make([]codecRtidFn, len(sp)+1)
+			copy(sp2, sp[:idx])
+			copy(sp2[idx+1:], sp[idx:])
+			sp2[idx] = codecRtidFn{rtid, fn}
+			c.rtidFns.store(sp2)
+			// xdebugf(">>>> adding rt: %v to rtidfns of size: %v", rt, len(sp2))
+
+		}
+	}
+	c.mu.Unlock()
+	return
+}
+
+func (c *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *codecFn) {
 	// xdebugf("#### for %c: load fn for %v in rtidfns of size: %v", c.n, rt, len(sp))
 	fn = new(codecFn)
 	fi := &(fn.i)
@@ -692,13 +735,9 @@ func (x *BasicHandle) fn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) 
 
 	rk := reflect.Kind(ti.kind)
 
-	if checkCodecSelfer && (ti.cs || ti.csp) {
-		fn.fe = (*Encoder).selferMarshal
-		fn.fd = (*Decoder).selferUnmarshal
-		fi.addrF = true
-		fi.addrD = ti.csp
-		fi.addrE = ti.csp
-	} else if rtid == timeTypId && !c.TimeNotBuiltin {
+	// anything can be an extension except the built-in ones: time, raw and rawext
+
+	if rtid == timeTypId && !c.TimeNotBuiltin {
 		fn.fe = (*Encoder).kTime
 		fn.fd = (*Decoder).kTime
 	} else if rtid == rawTypId {
@@ -710,7 +749,7 @@ func (x *BasicHandle) fn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) 
 		fi.addrF = true
 		fi.addrD = true
 		fi.addrE = true
-	} else if xfFn := c.getExt(rtid); xfFn != nil {
+	} else if xfFn := c.getExt(rtid, checkExt); xfFn != nil {
 		fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 		fn.fe = (*Encoder).ext
 		fn.fd = (*Decoder).ext
@@ -719,6 +758,12 @@ func (x *BasicHandle) fn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) 
 		if rk == reflect.Struct || rk == reflect.Array {
 			fi.addrE = true
 		}
+	} else if ti.cs || ti.csp {
+		fn.fe = (*Encoder).selferMarshal
+		fn.fd = (*Decoder).selferUnmarshal
+		fi.addrF = true
+		fi.addrD = ti.csp
+		fi.addrE = ti.csp
 	} else if supportMarshalInterfaces && c.isBe() && (ti.bm || ti.bmp) && (ti.bu || ti.bup) {
 		fn.fe = (*Encoder).binaryMarshal
 		fn.fd = (*Decoder).binaryUnmarshal
@@ -740,7 +785,7 @@ func (x *BasicHandle) fn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) 
 		fi.addrD = ti.tup
 		fi.addrE = ti.tmp
 	} else {
-		if fastpathEnabled && checkFastpath && (rk == reflect.Map || rk == reflect.Slice) {
+		if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice) {
 			if ti.pkgpath == "" { // un-named slice or map
 				if idx := fastpathAV.index(rtid); idx != -1 {
 					fn.fe = fastpathAV[idx].encfn
@@ -841,7 +886,7 @@ func (x *BasicHandle) fn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) 
 				fi.addrD = false
 				rt2 := reflect.SliceOf(ti.elem)
 				fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
-					d.h.fn(rt2, true, false).fd(d, xf, xrv.Slice(0, xrv.Len()))
+					d.h.fn(rt2).fd(d, xf, xrv.Slice(0, xrv.Len()))
 				}
 				// fn.fd = (*Decoder).kArray
 			case reflect.Struct:
@@ -865,28 +910,6 @@ func (x *BasicHandle) fn(rt reflect.Type, checkFastpath, checkCodecSelfer bool) 
 			}
 		}
 	}
-
-	c.mu.Lock()
-	var sp2 []codecRtidFn
-	sp = c.rtidFns.load()
-	if sp == nil {
-		sp2 = []codecRtidFn{{rtid, fn}}
-		c.rtidFns.store(sp2)
-		// xdebugf(">>>> adding rt: %v to rtidfns of size: %v", rt, len(sp2))
-		// xdebugf(">>>> loading stored rtidfns of size: %v", len(c.rtidFns.load()))
-	} else {
-		idx, fn2 := findFn(sp, rtid)
-		if fn2 == nil {
-			sp2 = make([]codecRtidFn, len(sp)+1)
-			copy(sp2, sp[:idx])
-			copy(sp2[idx+1:], sp[idx:])
-			sp2[idx] = codecRtidFn{rtid, fn}
-			c.rtidFns.store(sp2)
-			// xdebugf(">>>> adding rt: %v to rtidfns of size: %v", rt, len(sp2))
-
-		}
-	}
-	c.mu.Unlock()
 	return
 }
 
@@ -1039,6 +1062,11 @@ type interfaceExtWrapper struct {
 	InterfaceExt
 }
 
+type extFailWrapper struct {
+	bytesExtFailer
+	interfaceExtFailer
+}
+
 type binaryEncodingType struct{}
 
 func (binaryEncodingType) isBinary() bool { return true }
@@ -1157,7 +1185,10 @@ func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 	return
 }
 
-func (o extHandle) getExt(rtid uintptr) (v *extTypeTagFn) {
+func (o extHandle) getExt(rtid uintptr, check bool) (v *extTypeTagFn) {
+	if !check {
+		return
+	}
 	for i := range o {
 		v = &o[i]
 		if v.rtid == rtid || v.rtidptr == rtid {
@@ -2093,6 +2124,29 @@ type codecFn struct {
 type codecRtidFn struct {
 	rtid uintptr
 	fn   *codecFn
+}
+
+func makeExt(ext interface{}) Ext {
+	if ext == nil {
+		return &extFailWrapper{}
+	}
+	switch t := ext.(type) {
+	case nil:
+		return &extFailWrapper{}
+	case Ext:
+		return t
+	case BytesExt:
+		return &bytesExtWrapper{BytesExt: t}
+	case InterfaceExt:
+		return &interfaceExtWrapper{InterfaceExt: t}
+	}
+	return &extFailWrapper{}
+}
+
+func baseRV(v interface{}) (rv reflect.Value) {
+	for rv = reflect.ValueOf(v); rv.Kind() == reflect.Ptr; rv = rv.Elem() {
+	}
+	return
 }
 
 // ----

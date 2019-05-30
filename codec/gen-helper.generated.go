@@ -77,7 +77,7 @@ func (f genHelperEncoder) IsJSONHandle() bool {
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncFallback(iv interface{}) {
 	// f.e.encodeI(iv, false, false)
-	f.e.encodeValue(reflect.ValueOf(iv), nil, false)
+	f.e.encodeValue(reflect.ValueOf(iv), nil)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -108,12 +108,12 @@ func (f genHelperEncoder) I2Rtid(v interface{}) uintptr {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) Extension(rtid uintptr) (xfn *extTypeTagFn) {
-	return f.e.h.getExt(rtid)
+	return f.e.h.getExt(rtid, true)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncExtension(v interface{}, xfFn *extTypeTagFn) {
-	f.e.e.EncodeExt(v, xfFn.tag, xfFn.ext, f.e)
+	f.e.e.EncodeExt(v, xfFn.tag, xfFn.ext)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -176,7 +176,7 @@ func (f genHelperDecoder) DecFallback(iv interface{}, chkPtr bool) {
 	if chkPtr {
 		rv = f.d.ensureDecodeable(rv)
 	}
-	f.d.decodeValue(rv, nil, false)
+	f.d.decodeValue(rv, nil)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -232,7 +232,7 @@ func (f genHelperDecoder) I2Rtid(v interface{}) uintptr {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) Extension(rtid uintptr) (xfn *extTypeTagFn) {
-	return f.d.h.getExt(rtid)
+	return f.d.h.getExt(rtid, true)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*

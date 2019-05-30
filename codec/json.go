@@ -439,20 +439,23 @@ func (e *jsonEncDriver) EncodeTime(t time.Time) {
 	// v, err := t.MarshalJSON(); if err != nil { e.e.error(err) } e.w.writeb(v)
 }
 
-func (e *jsonEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext, en *Encoder) {
-	if v := ext.ConvertExt(rv); v == nil {
+func (e *jsonEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext) {
+	if ext == SelfExt {
+		rv2 := baseRV(rv)
+		e.e.encodeValue(rv2, e.h.fnNoExt(rv2.Type()))
+	} else if v := ext.ConvertExt(rv); v == nil {
 		e.EncodeNil()
 	} else {
-		en.encode(v)
+		e.e.encode(v)
 	}
 }
 
-func (e *jsonEncDriver) EncodeRawExt(re *RawExt, en *Encoder) {
+func (e *jsonEncDriver) EncodeRawExt(re *RawExt) {
 	// only encodes re.Value (never re.Data)
 	if re.Value == nil {
 		e.EncodeNil()
 	} else {
-		en.encode(re.Value)
+		e.e.encode(re.Value)
 	}
 }
 
@@ -467,7 +470,7 @@ func (e *jsonEncDriver) EncodeStringBytesRaw(v []byte) {
 		return
 	}
 	if e.se.InterfaceExt != nil {
-		e.EncodeExt(v, 0, &e.se, e.e)
+		e.EncodeExt(v, 0, &e.se)
 		return
 	}
 
@@ -576,7 +579,6 @@ func (e *jsonEncDriver) atEndOfEncode() {
 			e.w.writen1('\n')
 		}
 	}
-
 }
 
 type jsonDecDriver struct {
@@ -944,13 +946,11 @@ func (d *jsonDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxta
 		re := rv.(*RawExt)
 		re.Tag = xtag
 		d.d.decode(&re.Value)
+	} else if ext == SelfExt {
+		rv2 := baseRV(rv)
+		d.d.decodeValue(rv2, d.h.fnNoExt(rv2.Type()))
 	} else {
-		var v interface{}
-		if v2, ok := rv.(SelfExt); ok {
-			v = v2.CodecConvertExt()
-		}
-		d.d.decode(&v)
-		ext.UpdateExt(rv, v)
+		d.d.interfaceExtConvertAndDecode(rv, ext)
 	}
 	return
 }
@@ -1390,7 +1390,7 @@ func (h *JsonHandle) recreateEncDriver(ed encDriver) (v bool) {
 
 // SetInterfaceExt sets an extension
 func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
-	return h.SetExt(rt, tag, &interfaceExtWrapper{InterfaceExt: ext})
+	return h.SetExt(rt, tag, makeExt(ext))
 }
 
 func (h *JsonHandle) newEncDriver(e *Encoder) (ee encDriver) {

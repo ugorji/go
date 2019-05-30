@@ -52,11 +52,7 @@ func (x wrapSliceUint64) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			h.encwrapSliceUint64((wrapSliceUint64)(x), e)
-		}
+		h.encwrapSliceUint64((wrapSliceUint64)(x), e)
 	}
 }
 
@@ -64,11 +60,7 @@ func (x *wrapSliceUint64) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		h.decwrapSliceUint64((*wrapSliceUint64)(x), d)
-	}
+	h.decwrapSliceUint64((*wrapSliceUint64)(x), d)
 }
 
 func (x wrapSliceString) CodecEncodeSelf(e *Encoder) {
@@ -78,11 +70,7 @@ func (x wrapSliceString) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			h.encwrapSliceString((wrapSliceString)(x), e)
-		}
+		h.encwrapSliceString((wrapSliceString)(x), e)
 	}
 }
 
@@ -90,47 +78,31 @@ func (x *wrapSliceString) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		h.decwrapSliceString((*wrapSliceString)(x), d)
-	}
+	h.decwrapSliceString((*wrapSliceString)(x), d)
 }
 
 func (x wrapUint64) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.EncExtension(x, yyxt1)
-	} else {
-		r.EncodeUint(uint64(x))
-	}
+	r.EncodeUint(uint64(x))
 }
 
 func (x *wrapUint64) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		*x = (wrapUint64)(r.DecodeUint64())
-	}
+	*x = (wrapUint64)(r.DecodeUint64())
 }
 
 func (x wrapString) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.EncExtension(x, yyxt1)
+	if z.EncBasicHandle().StringToRaw {
+		r.EncodeStringBytesRaw(z.BytesView(string(x)))
 	} else {
-		if z.EncBasicHandle().StringToRaw {
-			r.EncodeStringBytesRaw(z.BytesView(string(x)))
-		} else {
-			r.EncodeStringEnc(codecSelferCcUTF819780, string(x))
-		}
+		r.EncodeStringEnc(codecSelferCcUTF819780, string(x))
 	}
 }
 
@@ -138,11 +110,7 @@ func (x *wrapString) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		*x = (wrapString)(r.DecodeString())
-	}
+	*x = (wrapString)(r.DecodeString())
 }
 
 func (x wrapUint64Slice) CodecEncodeSelf(e *Encoder) {
@@ -152,11 +120,7 @@ func (x wrapUint64Slice) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			h.encwrapUint64Slice((wrapUint64Slice)(x), e)
-		}
+		h.encwrapUint64Slice((wrapUint64Slice)(x), e)
 	}
 }
 
@@ -164,11 +128,7 @@ func (x *wrapUint64Slice) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		h.decwrapUint64Slice((*wrapUint64Slice)(x), d)
-	}
+	h.decwrapUint64Slice((*wrapUint64Slice)(x), d)
 }
 
 func (x wrapStringSlice) CodecEncodeSelf(e *Encoder) {
@@ -178,11 +138,7 @@ func (x wrapStringSlice) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			h.encwrapStringSlice((wrapStringSlice)(x), e)
-		}
+		h.encwrapStringSlice((wrapStringSlice)(x), e)
 	}
 }
 
@@ -190,11 +146,7 @@ func (x *wrapStringSlice) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		h.decwrapStringSlice((*wrapStringSlice)(x), d)
-	}
+	h.decwrapStringSlice((*wrapStringSlice)(x), d)
 }
 
 func (x *stringUint64T) CodecEncodeSelf(e *Encoder) {
@@ -204,48 +156,44 @@ func (x *stringUint64T) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(2)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.U))
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(2)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
 			} else {
-				z.EncWriteMapStart(2)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"S\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"U\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `U`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.U))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
 			}
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.U))
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(2)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"S\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"U\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `U`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.U))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -254,27 +202,23 @@ func (x *stringUint64T) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -378,180 +322,176 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(15)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.AS)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AS))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.AI64))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.AI16))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.AUi64))
-				z.EncWriteArrayElem()
-				z.F.EncSliceStringV(x.ASslice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt64V(x.AI64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceUint64V(x.AUi64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceFloat64V(x.AF64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceFloat32V(x.AF32slice, e)
-				z.EncWriteArrayElem()
-				h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
-				z.EncWriteArrayElem()
-				yy28 := &x.AI64arr0
-				h.encArray0int64((*[0]int64)(yy28), e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt64V(x.A164slice0, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceUint64V(x.AUi64sliceN, e)
-				z.EncWriteArrayElem()
-				h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
-				z.EncWriteArrayElem()
-				h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(15)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.AS)))
 			} else {
-				z.EncWriteMapStart(15)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AS\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.AS)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AS))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.AI64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI16\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.AI16))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AUi64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.AUi64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"ASslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceStringV(x.ASslice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt64V(x.AI64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AUi64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceUint64V(x.AUi64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AF64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceFloat64V(x.AF64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AF32slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceFloat32V(x.AF32slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI64arr0\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
-				}
-				z.EncWriteMapElemValue()
-				yy44 := &x.AI64arr0
-				h.encArray0int64((*[0]int64)(yy44), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"A164slice0\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `A164slice0`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt64V(x.A164slice0, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AUi64sliceN\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceUint64V(x.AUi64sliceN, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16N\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16E\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AS))
 			}
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.AI64))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.AI16))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.AUi64))
+			z.EncWriteArrayElem()
+			z.F.EncSliceStringV(x.ASslice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt64V(x.AI64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceUint64V(x.AUi64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceFloat64V(x.AF64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceFloat32V(x.AF32slice, e)
+			z.EncWriteArrayElem()
+			h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
+			z.EncWriteArrayElem()
+			yy28 := &x.AI64arr0
+			h.encArray0int64((*[0]int64)(yy28), e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt64V(x.A164slice0, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceUint64V(x.AUi64sliceN, e)
+			z.EncWriteArrayElem()
+			h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
+			z.EncWriteArrayElem()
+			h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(15)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AS\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.AS)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AS))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.AI64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI16\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.AI16))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AUi64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.AUi64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"ASslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceStringV(x.ASslice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt64V(x.AI64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AUi64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceUint64V(x.AUi64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AF64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceFloat64V(x.AF64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AF32slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceFloat32V(x.AF32slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AMSU16\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringuint16((map[string]uint16)(x.AMSU16), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI64arr0\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
+			}
+			z.EncWriteMapElemValue()
+			yy44 := &x.AI64arr0
+			h.encArray0int64((*[0]int64)(yy44), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"A164slice0\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `A164slice0`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt64V(x.A164slice0, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AUi64sliceN\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceUint64V(x.AUi64sliceN, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AMSU16N\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringuint16((map[string]uint16)(x.AMSU16N), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AMSU16E\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringuint16((map[string]uint16)(x.AMSU16E), e)
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -560,27 +500,23 @@ func (x *AnonInTestStruc) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -970,198 +906,194 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(17)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I64))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I8))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.Ui64))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.Ui8))
-				z.EncWriteArrayElem()
-				r.EncodeFloat64(float64(x.F64))
-				z.EncWriteArrayElem()
-				r.EncodeFloat32(float32(x.F32))
-				z.EncWriteArrayElem()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteArrayElem()
-				z.F.EncSliceStringV(x.Sslice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt16V(x.I16slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceUint64V(x.Ui64slice, e)
-				z.EncWriteArrayElem()
-				r.EncodeStringBytesRaw([]byte(x.Ui8slice))
-				z.EncWriteArrayElem()
-				z.F.EncSliceBoolV(x.Bslice, e)
-				z.EncWriteArrayElem()
-				h.encSlicePtrtoint64(([]*int64)(x.Iptrslice), e)
-				z.EncWriteArrayElem()
-				x.WrapSliceInt64.CodecEncodeSelf(e)
-				z.EncWriteArrayElem()
-				x.WrapSliceString.CodecEncodeSelf(e)
-				z.EncWriteArrayElem()
-				z.F.EncMapStringInt64V(x.Msi64, e)
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(17)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
 			} else {
-				z.EncWriteMapStart(17)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"S\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I8\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I8))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.Ui64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui8\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.Ui8))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"F64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeFloat64(float64(x.F64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"F32\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeFloat32(float32(x.F32))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Sslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceStringV(x.Sslice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I16slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt16V(x.I16slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceUint64V(x.Ui64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui8slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeStringBytesRaw([]byte(x.Ui8slice))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Bslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceBoolV(x.Bslice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Iptrslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
-				}
-				z.EncWriteMapElemValue()
-				h.encSlicePtrtoint64(([]*int64)(x.Iptrslice), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"WrapSliceInt64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
-				}
-				z.EncWriteMapElemValue()
-				x.WrapSliceInt64.CodecEncodeSelf(e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"WrapSliceString\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
-				}
-				z.EncWriteMapElemValue()
-				x.WrapSliceString.CodecEncodeSelf(e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Msi64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncMapStringInt64V(x.Msi64, e)
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
 			}
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I64))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I8))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.Ui64))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.Ui8))
+			z.EncWriteArrayElem()
+			r.EncodeFloat64(float64(x.F64))
+			z.EncWriteArrayElem()
+			r.EncodeFloat32(float32(x.F32))
+			z.EncWriteArrayElem()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteArrayElem()
+			z.F.EncSliceStringV(x.Sslice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt16V(x.I16slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceUint64V(x.Ui64slice, e)
+			z.EncWriteArrayElem()
+			r.EncodeStringBytesRaw([]byte(x.Ui8slice))
+			z.EncWriteArrayElem()
+			z.F.EncSliceBoolV(x.Bslice, e)
+			z.EncWriteArrayElem()
+			h.encSlicePtrtoint64(([]*int64)(x.Iptrslice), e)
+			z.EncWriteArrayElem()
+			x.WrapSliceInt64.CodecEncodeSelf(e)
+			z.EncWriteArrayElem()
+			x.WrapSliceString.CodecEncodeSelf(e)
+			z.EncWriteArrayElem()
+			z.F.EncMapStringInt64V(x.Msi64, e)
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(17)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"S\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I8\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I8))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.Ui64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui8\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.Ui8))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"F64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeFloat64(float64(x.F64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"F32\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeFloat32(float32(x.F32))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"B\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Sslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceStringV(x.Sslice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I16slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt16V(x.I16slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceUint64V(x.Ui64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui8slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeStringBytesRaw([]byte(x.Ui8slice))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Bslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceBoolV(x.Bslice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Iptrslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
+			}
+			z.EncWriteMapElemValue()
+			h.encSlicePtrtoint64(([]*int64)(x.Iptrslice), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"WrapSliceInt64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
+			}
+			z.EncWriteMapElemValue()
+			x.WrapSliceInt64.CodecEncodeSelf(e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"WrapSliceString\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
+			}
+			z.EncWriteMapElemValue()
+			x.WrapSliceString.CodecEncodeSelf(e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Msi64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncMapStringInt64V(x.Msi64, e)
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -1170,27 +1102,23 @@ func (x *testSimpleFields) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -1624,564 +1552,560 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			var yyn53 bool = x.Nint64 == nil
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(51)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I64))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I32))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I16))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I8))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I64n))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I32n))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I16n))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I8n))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.Ui64))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.Ui32))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.Ui16))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.Ui8))
-				z.EncWriteArrayElem()
-				r.EncodeFloat64(float64(x.F64))
-				z.EncWriteArrayElem()
-				r.EncodeFloat32(float32(x.F32))
-				z.EncWriteArrayElem()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.By))
-				z.EncWriteArrayElem()
-				z.F.EncSliceStringV(x.Sslice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt64V(x.I64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt16V(x.I16slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceUint64V(x.Ui64slice, e)
-				z.EncWriteArrayElem()
-				r.EncodeStringBytesRaw([]byte(x.Ui8slice))
-				z.EncWriteArrayElem()
-				z.F.EncSliceBoolV(x.Bslice, e)
-				z.EncWriteArrayElem()
-				r.EncodeStringBytesRaw([]byte(x.Byslice))
-				z.EncWriteArrayElem()
-				z.F.EncSliceBytesV(x.BytesSlice, e)
-				z.EncWriteArrayElem()
-				h.encSlicePtrtoint64(([]*int64)(x.Iptrslice), e)
-				z.EncWriteArrayElem()
-				x.WrapSliceInt64.CodecEncodeSelf(e)
-				z.EncWriteArrayElem()
-				x.WrapSliceString.CodecEncodeSelf(e)
-				z.EncWriteArrayElem()
-				z.F.EncMapStringInt64V(x.Msi64, e)
-				z.EncWriteArrayElem()
-				z.F.EncMapStringBytesV(x.Msbytes, e)
-				z.EncWriteArrayElem()
-				yy84 := &x.Simplef
-				yy84.CodecEncodeSelf(e)
-				z.EncWriteArrayElem()
-				h.encSlicestringUint64T(([]stringUint64T)(x.SstrUi64T), e)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.AnonInTestStruc.AS)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AnonInTestStruc.AS))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.AnonInTestStruc.AI64))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.AnonInTestStruc.AI16))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.AnonInTestStruc.AUi64))
-				z.EncWriteArrayElem()
-				z.F.EncSliceStringV(x.AnonInTestStruc.ASslice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt64V(x.AnonInTestStruc.AI64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceUint64V(x.AnonInTestStruc.AUi64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceFloat64V(x.AnonInTestStruc.AF64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceFloat32V(x.AnonInTestStruc.AF32slice, e)
-				z.EncWriteArrayElem()
-				h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16), e)
-				z.EncWriteArrayElem()
-				yy97 := &x.AnonInTestStruc.AI64arr0
-				h.encArray0int64((*[0]int64)(yy97), e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt64V(x.AnonInTestStruc.A164slice0, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceUint64V(x.AnonInTestStruc.AUi64sliceN, e)
-				z.EncWriteArrayElem()
-				h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16N), e)
-				z.EncWriteArrayElem()
-				h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16E), e)
-				z.EncWriteArrayElem()
-				yy103 := &x.NotAnon
-				yy103.CodecEncodeSelf(e)
-				z.EncWriteArrayElem()
-				z.F.EncMapStringBoolV(x.Nmap, e)
-				z.EncWriteArrayElem()
-				r.EncodeStringBytesRaw([]byte(x.Nslice))
-				if yyn53 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					yy107 := *x.Nint64
-					r.EncodeInt(int64(yy107))
-				}
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		var yyn53 bool = x.Nint64 == nil
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(51)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
 			} else {
-				z.EncWriteMapStart(51)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"S\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I32\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I32`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I32))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I16\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I16`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I16))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I8\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I8))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I64n\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I64n`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I64n))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I32n\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I32n`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I32n))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I16n\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I16n`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I16n))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I8n\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I8n`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I8n))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.Ui64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui32\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui32`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.Ui32))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui16\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui16`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.Ui16))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui8\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.Ui8))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"F64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeFloat64(float64(x.F64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"F32\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeFloat32(float32(x.F32))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"By\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `By`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.By))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Sslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceStringV(x.Sslice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt64V(x.I64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I16slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt16V(x.I16slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceUint64V(x.Ui64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui8slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeStringBytesRaw([]byte(x.Ui8slice))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Bslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceBoolV(x.Bslice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Byslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Byslice`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeStringBytesRaw([]byte(x.Byslice))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"BytesSlice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `BytesSlice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceBytesV(x.BytesSlice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Iptrslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
-				}
-				z.EncWriteMapElemValue()
-				h.encSlicePtrtoint64(([]*int64)(x.Iptrslice), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"WrapSliceInt64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
-				}
-				z.EncWriteMapElemValue()
-				x.WrapSliceInt64.CodecEncodeSelf(e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"WrapSliceString\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
-				}
-				z.EncWriteMapElemValue()
-				x.WrapSliceString.CodecEncodeSelf(e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Msi64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncMapStringInt64V(x.Msi64, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Msbytes\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Msbytes`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncMapStringBytesV(x.Msbytes, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Simplef\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Simplef`)
-				}
-				z.EncWriteMapElemValue()
-				yy139 := &x.Simplef
-				yy139.CodecEncodeSelf(e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"SstrUi64T\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `SstrUi64T`)
-				}
-				z.EncWriteMapElemValue()
-				h.encSlicestringUint64T(([]stringUint64T)(x.SstrUi64T), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AS\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.AnonInTestStruc.AS)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AnonInTestStruc.AS))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.AnonInTestStruc.AI64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI16\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.AnonInTestStruc.AI16))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AUi64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.AnonInTestStruc.AUi64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"ASslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceStringV(x.AnonInTestStruc.ASslice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt64V(x.AnonInTestStruc.AI64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AUi64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceUint64V(x.AnonInTestStruc.AUi64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AF64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceFloat64V(x.AnonInTestStruc.AF64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AF32slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceFloat32V(x.AnonInTestStruc.AF32slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI64arr0\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
-				}
-				z.EncWriteMapElemValue()
-				yy152 := &x.AnonInTestStruc.AI64arr0
-				h.encArray0int64((*[0]int64)(yy152), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"A164slice0\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `A164slice0`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt64V(x.AnonInTestStruc.A164slice0, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AUi64sliceN\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceUint64V(x.AnonInTestStruc.AUi64sliceN, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16N\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16N), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16E\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16E), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"NotAnon\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `NotAnon`)
-				}
-				z.EncWriteMapElemValue()
-				yy158 := &x.NotAnon
-				yy158.CodecEncodeSelf(e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Nmap\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nmap`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncMapStringBoolV(x.Nmap, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Nslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nslice`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeStringBytesRaw([]byte(x.Nslice))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Nint64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nint64`)
-				}
-				z.EncWriteMapElemValue()
-				if yyn53 {
-					r.EncodeNil()
-				} else {
-					yy162 := *x.Nint64
-					r.EncodeInt(int64(yy162))
-				}
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
 			}
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I64))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I32))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I16))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I8))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I64n))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I32n))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I16n))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I8n))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.Ui64))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.Ui32))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.Ui16))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.Ui8))
+			z.EncWriteArrayElem()
+			r.EncodeFloat64(float64(x.F64))
+			z.EncWriteArrayElem()
+			r.EncodeFloat32(float32(x.F32))
+			z.EncWriteArrayElem()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.By))
+			z.EncWriteArrayElem()
+			z.F.EncSliceStringV(x.Sslice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt64V(x.I64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt16V(x.I16slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceUint64V(x.Ui64slice, e)
+			z.EncWriteArrayElem()
+			r.EncodeStringBytesRaw([]byte(x.Ui8slice))
+			z.EncWriteArrayElem()
+			z.F.EncSliceBoolV(x.Bslice, e)
+			z.EncWriteArrayElem()
+			r.EncodeStringBytesRaw([]byte(x.Byslice))
+			z.EncWriteArrayElem()
+			z.F.EncSliceBytesV(x.BytesSlice, e)
+			z.EncWriteArrayElem()
+			h.encSlicePtrtoint64(([]*int64)(x.Iptrslice), e)
+			z.EncWriteArrayElem()
+			x.WrapSliceInt64.CodecEncodeSelf(e)
+			z.EncWriteArrayElem()
+			x.WrapSliceString.CodecEncodeSelf(e)
+			z.EncWriteArrayElem()
+			z.F.EncMapStringInt64V(x.Msi64, e)
+			z.EncWriteArrayElem()
+			z.F.EncMapStringBytesV(x.Msbytes, e)
+			z.EncWriteArrayElem()
+			yy84 := &x.Simplef
+			yy84.CodecEncodeSelf(e)
+			z.EncWriteArrayElem()
+			h.encSlicestringUint64T(([]stringUint64T)(x.SstrUi64T), e)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.AnonInTestStruc.AS)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AnonInTestStruc.AS))
+			}
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.AnonInTestStruc.AI64))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.AnonInTestStruc.AI16))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.AnonInTestStruc.AUi64))
+			z.EncWriteArrayElem()
+			z.F.EncSliceStringV(x.AnonInTestStruc.ASslice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt64V(x.AnonInTestStruc.AI64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceUint64V(x.AnonInTestStruc.AUi64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceFloat64V(x.AnonInTestStruc.AF64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceFloat32V(x.AnonInTestStruc.AF32slice, e)
+			z.EncWriteArrayElem()
+			h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16), e)
+			z.EncWriteArrayElem()
+			yy97 := &x.AnonInTestStruc.AI64arr0
+			h.encArray0int64((*[0]int64)(yy97), e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt64V(x.AnonInTestStruc.A164slice0, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceUint64V(x.AnonInTestStruc.AUi64sliceN, e)
+			z.EncWriteArrayElem()
+			h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16N), e)
+			z.EncWriteArrayElem()
+			h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16E), e)
+			z.EncWriteArrayElem()
+			yy103 := &x.NotAnon
+			yy103.CodecEncodeSelf(e)
+			z.EncWriteArrayElem()
+			z.F.EncMapStringBoolV(x.Nmap, e)
+			z.EncWriteArrayElem()
+			r.EncodeStringBytesRaw([]byte(x.Nslice))
+			if yyn53 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				yy107 := *x.Nint64
+				r.EncodeInt(int64(yy107))
+			}
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(51)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"S\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I32\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I32`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I32))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I16\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I16`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I16))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I8\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I8))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I64n\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I64n`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I64n))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I32n\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I32n`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I32n))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I16n\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I16n`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I16n))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I8n\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I8n`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I8n))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.Ui64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui32\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui32`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.Ui32))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui16\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui16`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.Ui16))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui8\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.Ui8))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"F64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeFloat64(float64(x.F64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"F32\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeFloat32(float32(x.F32))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"B\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"By\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `By`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.By))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Sslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceStringV(x.Sslice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt64V(x.I64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I16slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt16V(x.I16slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceUint64V(x.Ui64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui8slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeStringBytesRaw([]byte(x.Ui8slice))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Bslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceBoolV(x.Bslice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Byslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Byslice`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeStringBytesRaw([]byte(x.Byslice))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"BytesSlice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `BytesSlice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceBytesV(x.BytesSlice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Iptrslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
+			}
+			z.EncWriteMapElemValue()
+			h.encSlicePtrtoint64(([]*int64)(x.Iptrslice), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"WrapSliceInt64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
+			}
+			z.EncWriteMapElemValue()
+			x.WrapSliceInt64.CodecEncodeSelf(e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"WrapSliceString\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
+			}
+			z.EncWriteMapElemValue()
+			x.WrapSliceString.CodecEncodeSelf(e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Msi64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncMapStringInt64V(x.Msi64, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Msbytes\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Msbytes`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncMapStringBytesV(x.Msbytes, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Simplef\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Simplef`)
+			}
+			z.EncWriteMapElemValue()
+			yy139 := &x.Simplef
+			yy139.CodecEncodeSelf(e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"SstrUi64T\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `SstrUi64T`)
+			}
+			z.EncWriteMapElemValue()
+			h.encSlicestringUint64T(([]stringUint64T)(x.SstrUi64T), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AS\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.AnonInTestStruc.AS)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AnonInTestStruc.AS))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.AnonInTestStruc.AI64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI16\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.AnonInTestStruc.AI16))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AUi64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.AnonInTestStruc.AUi64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"ASslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceStringV(x.AnonInTestStruc.ASslice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt64V(x.AnonInTestStruc.AI64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AUi64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceUint64V(x.AnonInTestStruc.AUi64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AF64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceFloat64V(x.AnonInTestStruc.AF64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AF32slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceFloat32V(x.AnonInTestStruc.AF32slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AMSU16\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI64arr0\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
+			}
+			z.EncWriteMapElemValue()
+			yy152 := &x.AnonInTestStruc.AI64arr0
+			h.encArray0int64((*[0]int64)(yy152), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"A164slice0\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `A164slice0`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt64V(x.AnonInTestStruc.A164slice0, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AUi64sliceN\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceUint64V(x.AnonInTestStruc.AUi64sliceN, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AMSU16N\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16N), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AMSU16E\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringuint16((map[string]uint16)(x.AnonInTestStruc.AMSU16E), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"NotAnon\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `NotAnon`)
+			}
+			z.EncWriteMapElemValue()
+			yy158 := &x.NotAnon
+			yy158.CodecEncodeSelf(e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Nmap\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Nmap`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncMapStringBoolV(x.Nmap, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Nslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Nslice`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeStringBytesRaw([]byte(x.Nslice))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Nint64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Nint64`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn53 {
+				r.EncodeNil()
+			} else {
+				yy162 := *x.Nint64
+				r.EncodeInt(int64(yy162))
+			}
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -2190,27 +2114,23 @@ func (x *TestStrucCommon) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -3404,614 +3324,610 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			var yyn53 bool = x.TestStrucCommon.Nint64 == nil
-			var yyn57 bool = x.Nteststruc == nil
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(55)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestStrucCommon.I64))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestStrucCommon.I32))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestStrucCommon.I16))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestStrucCommon.I8))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestStrucCommon.I64n))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestStrucCommon.I32n))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestStrucCommon.I16n))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestStrucCommon.I8n))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.TestStrucCommon.Ui64))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.TestStrucCommon.Ui32))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.TestStrucCommon.Ui16))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.TestStrucCommon.Ui8))
-				z.EncWriteArrayElem()
-				r.EncodeFloat64(float64(x.TestStrucCommon.F64))
-				z.EncWriteArrayElem()
-				r.EncodeFloat32(float32(x.TestStrucCommon.F32))
-				z.EncWriteArrayElem()
-				r.EncodeBool(bool(x.TestStrucCommon.B))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.TestStrucCommon.By))
-				z.EncWriteArrayElem()
-				z.F.EncSliceStringV(x.TestStrucCommon.Sslice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt64V(x.TestStrucCommon.I64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceUint64V(x.TestStrucCommon.Ui64slice, e)
-				z.EncWriteArrayElem()
-				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Ui8slice))
-				z.EncWriteArrayElem()
-				z.F.EncSliceBoolV(x.TestStrucCommon.Bslice, e)
-				z.EncWriteArrayElem()
-				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Byslice))
-				z.EncWriteArrayElem()
-				z.F.EncSliceBytesV(x.TestStrucCommon.BytesSlice, e)
-				z.EncWriteArrayElem()
-				h.encSlicePtrtoint64(([]*int64)(x.TestStrucCommon.Iptrslice), e)
-				z.EncWriteArrayElem()
-				x.TestStrucCommon.WrapSliceInt64.CodecEncodeSelf(e)
-				z.EncWriteArrayElem()
-				x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
-				z.EncWriteArrayElem()
-				z.F.EncMapStringInt64V(x.TestStrucCommon.Msi64, e)
-				z.EncWriteArrayElem()
-				z.F.EncMapStringBytesV(x.TestStrucCommon.Msbytes, e)
-				z.EncWriteArrayElem()
-				yy88 := &x.TestStrucCommon.Simplef
-				yy88.CodecEncodeSelf(e)
-				z.EncWriteArrayElem()
-				h.encSlicestringUint64T(([]stringUint64T)(x.TestStrucCommon.SstrUi64T), e)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI16))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.TestStrucCommon.AnonInTestStruc.AUi64))
-				z.EncWriteArrayElem()
-				z.F.EncSliceStringV(x.TestStrucCommon.AnonInTestStruc.ASslice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.AI64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceFloat64V(x.TestStrucCommon.AnonInTestStruc.AF64slice, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
-				z.EncWriteArrayElem()
-				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16), e)
-				z.EncWriteArrayElem()
-				yy101 := &x.TestStrucCommon.AnonInTestStruc.AI64arr0
-				h.encArray0int64((*[0]int64)(yy101), e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.A164slice0, e)
-				z.EncWriteArrayElem()
-				z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, e)
-				z.EncWriteArrayElem()
-				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16N), e)
-				z.EncWriteArrayElem()
-				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16E), e)
-				z.EncWriteArrayElem()
-				yy107 := &x.TestStrucCommon.NotAnon
-				yy107.CodecEncodeSelf(e)
-				z.EncWriteArrayElem()
-				z.F.EncMapStringBoolV(x.TestStrucCommon.Nmap, e)
-				z.EncWriteArrayElem()
-				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Nslice))
-				if yyn53 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					yy111 := *x.TestStrucCommon.Nint64
-					r.EncodeInt(int64(yy111))
-				}
-				z.EncWriteArrayElem()
-				h.encMapstringPtrtoTestStruc((map[string]*TestStruc)(x.Mtsptr), e)
-				z.EncWriteArrayElem()
-				h.encMapstringTestStruc((map[string]TestStruc)(x.Mts), e)
-				z.EncWriteArrayElem()
-				h.encSlicePtrtoTestStruc(([]*TestStruc)(x.Its), e)
-				if yyn57 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					x.Nteststruc.CodecEncodeSelf(e)
-				}
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		var yyn53 bool = x.TestStrucCommon.Nint64 == nil
+		var yyn57 bool = x.Nteststruc == nil
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(55)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
 			} else {
-				z.EncWriteMapStart(55)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"S\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestStrucCommon.I64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I32\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I32`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestStrucCommon.I32))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I16\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I16`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestStrucCommon.I16))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I8\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestStrucCommon.I8))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I64n\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I64n`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestStrucCommon.I64n))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I32n\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I32n`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestStrucCommon.I32n))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I16n\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I16n`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestStrucCommon.I16n))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I8n\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I8n`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestStrucCommon.I8n))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.TestStrucCommon.Ui64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui32\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui32`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.TestStrucCommon.Ui32))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui16\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui16`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.TestStrucCommon.Ui16))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui8\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.TestStrucCommon.Ui8))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"F64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeFloat64(float64(x.TestStrucCommon.F64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"F32\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeFloat32(float32(x.TestStrucCommon.F32))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeBool(bool(x.TestStrucCommon.B))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"By\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `By`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.TestStrucCommon.By))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Sslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceStringV(x.TestStrucCommon.Sslice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt64V(x.TestStrucCommon.I64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I16slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceUint64V(x.TestStrucCommon.Ui64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ui8slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Ui8slice))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Bslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceBoolV(x.TestStrucCommon.Bslice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Byslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Byslice`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Byslice))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"BytesSlice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `BytesSlice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceBytesV(x.TestStrucCommon.BytesSlice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Iptrslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
-				}
-				z.EncWriteMapElemValue()
-				h.encSlicePtrtoint64(([]*int64)(x.TestStrucCommon.Iptrslice), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"WrapSliceInt64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
-				}
-				z.EncWriteMapElemValue()
-				x.TestStrucCommon.WrapSliceInt64.CodecEncodeSelf(e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"WrapSliceString\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
-				}
-				z.EncWriteMapElemValue()
-				x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Msi64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncMapStringInt64V(x.TestStrucCommon.Msi64, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Msbytes\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Msbytes`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncMapStringBytesV(x.TestStrucCommon.Msbytes, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Simplef\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Simplef`)
-				}
-				z.EncWriteMapElemValue()
-				yy147 := &x.TestStrucCommon.Simplef
-				yy147.CodecEncodeSelf(e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"SstrUi64T\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `SstrUi64T`)
-				}
-				z.EncWriteMapElemValue()
-				h.encSlicestringUint64T(([]stringUint64T)(x.TestStrucCommon.SstrUi64T), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AS\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI16\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI16))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AUi64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.TestStrucCommon.AnonInTestStruc.AUi64))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"ASslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceStringV(x.TestStrucCommon.AnonInTestStruc.ASslice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.AI64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AUi64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AF64slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceFloat64V(x.TestStrucCommon.AnonInTestStruc.AF64slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AF32slice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AI64arr0\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
-				}
-				z.EncWriteMapElemValue()
-				yy160 := &x.TestStrucCommon.AnonInTestStruc.AI64arr0
-				h.encArray0int64((*[0]int64)(yy160), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"A164slice0\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `A164slice0`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.A164slice0, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AUi64sliceN\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16N\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16N), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16E\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16E), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"NotAnon\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `NotAnon`)
-				}
-				z.EncWriteMapElemValue()
-				yy166 := &x.TestStrucCommon.NotAnon
-				yy166.CodecEncodeSelf(e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Nmap\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nmap`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncMapStringBoolV(x.TestStrucCommon.Nmap, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Nslice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nslice`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Nslice))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Nint64\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nint64`)
-				}
-				z.EncWriteMapElemValue()
-				if yyn53 {
-					r.EncodeNil()
-				} else {
-					yy170 := *x.TestStrucCommon.Nint64
-					r.EncodeInt(int64(yy170))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Mtsptr\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Mtsptr`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringPtrtoTestStruc((map[string]*TestStruc)(x.Mtsptr), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Mts\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Mts`)
-				}
-				z.EncWriteMapElemValue()
-				h.encMapstringTestStruc((map[string]TestStruc)(x.Mts), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Its\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Its`)
-				}
-				z.EncWriteMapElemValue()
-				h.encSlicePtrtoTestStruc(([]*TestStruc)(x.Its), e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Nteststruc\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nteststruc`)
-				}
-				z.EncWriteMapElemValue()
-				if yyn57 {
-					r.EncodeNil()
-				} else {
-					x.Nteststruc.CodecEncodeSelf(e)
-				}
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
 			}
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestStrucCommon.I64))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestStrucCommon.I32))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestStrucCommon.I16))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestStrucCommon.I8))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestStrucCommon.I64n))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestStrucCommon.I32n))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestStrucCommon.I16n))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestStrucCommon.I8n))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.TestStrucCommon.Ui64))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.TestStrucCommon.Ui32))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.TestStrucCommon.Ui16))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.TestStrucCommon.Ui8))
+			z.EncWriteArrayElem()
+			r.EncodeFloat64(float64(x.TestStrucCommon.F64))
+			z.EncWriteArrayElem()
+			r.EncodeFloat32(float32(x.TestStrucCommon.F32))
+			z.EncWriteArrayElem()
+			r.EncodeBool(bool(x.TestStrucCommon.B))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.TestStrucCommon.By))
+			z.EncWriteArrayElem()
+			z.F.EncSliceStringV(x.TestStrucCommon.Sslice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt64V(x.TestStrucCommon.I64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceUint64V(x.TestStrucCommon.Ui64slice, e)
+			z.EncWriteArrayElem()
+			r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Ui8slice))
+			z.EncWriteArrayElem()
+			z.F.EncSliceBoolV(x.TestStrucCommon.Bslice, e)
+			z.EncWriteArrayElem()
+			r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Byslice))
+			z.EncWriteArrayElem()
+			z.F.EncSliceBytesV(x.TestStrucCommon.BytesSlice, e)
+			z.EncWriteArrayElem()
+			h.encSlicePtrtoint64(([]*int64)(x.TestStrucCommon.Iptrslice), e)
+			z.EncWriteArrayElem()
+			x.TestStrucCommon.WrapSliceInt64.CodecEncodeSelf(e)
+			z.EncWriteArrayElem()
+			x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
+			z.EncWriteArrayElem()
+			z.F.EncMapStringInt64V(x.TestStrucCommon.Msi64, e)
+			z.EncWriteArrayElem()
+			z.F.EncMapStringBytesV(x.TestStrucCommon.Msbytes, e)
+			z.EncWriteArrayElem()
+			yy88 := &x.TestStrucCommon.Simplef
+			yy88.CodecEncodeSelf(e)
+			z.EncWriteArrayElem()
+			h.encSlicestringUint64T(([]stringUint64T)(x.TestStrucCommon.SstrUi64T), e)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
+			}
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI16))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.TestStrucCommon.AnonInTestStruc.AUi64))
+			z.EncWriteArrayElem()
+			z.F.EncSliceStringV(x.TestStrucCommon.AnonInTestStruc.ASslice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.AI64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceFloat64V(x.TestStrucCommon.AnonInTestStruc.AF64slice, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
+			z.EncWriteArrayElem()
+			h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16), e)
+			z.EncWriteArrayElem()
+			yy101 := &x.TestStrucCommon.AnonInTestStruc.AI64arr0
+			h.encArray0int64((*[0]int64)(yy101), e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.A164slice0, e)
+			z.EncWriteArrayElem()
+			z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, e)
+			z.EncWriteArrayElem()
+			h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16N), e)
+			z.EncWriteArrayElem()
+			h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16E), e)
+			z.EncWriteArrayElem()
+			yy107 := &x.TestStrucCommon.NotAnon
+			yy107.CodecEncodeSelf(e)
+			z.EncWriteArrayElem()
+			z.F.EncMapStringBoolV(x.TestStrucCommon.Nmap, e)
+			z.EncWriteArrayElem()
+			r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Nslice))
+			if yyn53 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				yy111 := *x.TestStrucCommon.Nint64
+				r.EncodeInt(int64(yy111))
+			}
+			z.EncWriteArrayElem()
+			h.encMapstringPtrtoTestStruc((map[string]*TestStruc)(x.Mtsptr), e)
+			z.EncWriteArrayElem()
+			h.encMapstringTestStruc((map[string]TestStruc)(x.Mts), e)
+			z.EncWriteArrayElem()
+			h.encSlicePtrtoTestStruc(([]*TestStruc)(x.Its), e)
+			if yyn57 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				x.Nteststruc.CodecEncodeSelf(e)
+			}
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(55)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"S\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestStrucCommon.I64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I32\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I32`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestStrucCommon.I32))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I16\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I16`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestStrucCommon.I16))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I8\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestStrucCommon.I8))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I64n\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I64n`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestStrucCommon.I64n))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I32n\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I32n`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestStrucCommon.I32n))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I16n\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I16n`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestStrucCommon.I16n))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I8n\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I8n`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestStrucCommon.I8n))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.TestStrucCommon.Ui64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui32\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui32`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.TestStrucCommon.Ui32))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui16\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui16`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.TestStrucCommon.Ui16))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui8\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.TestStrucCommon.Ui8))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"F64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeFloat64(float64(x.TestStrucCommon.F64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"F32\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeFloat32(float32(x.TestStrucCommon.F32))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"B\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeBool(bool(x.TestStrucCommon.B))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"By\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `By`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.TestStrucCommon.By))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Sslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceStringV(x.TestStrucCommon.Sslice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt64V(x.TestStrucCommon.I64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I16slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceUint64V(x.TestStrucCommon.Ui64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ui8slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Ui8slice))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Bslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceBoolV(x.TestStrucCommon.Bslice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Byslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Byslice`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Byslice))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"BytesSlice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `BytesSlice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceBytesV(x.TestStrucCommon.BytesSlice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Iptrslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
+			}
+			z.EncWriteMapElemValue()
+			h.encSlicePtrtoint64(([]*int64)(x.TestStrucCommon.Iptrslice), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"WrapSliceInt64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
+			}
+			z.EncWriteMapElemValue()
+			x.TestStrucCommon.WrapSliceInt64.CodecEncodeSelf(e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"WrapSliceString\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
+			}
+			z.EncWriteMapElemValue()
+			x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Msi64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncMapStringInt64V(x.TestStrucCommon.Msi64, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Msbytes\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Msbytes`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncMapStringBytesV(x.TestStrucCommon.Msbytes, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Simplef\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Simplef`)
+			}
+			z.EncWriteMapElemValue()
+			yy147 := &x.TestStrucCommon.Simplef
+			yy147.CodecEncodeSelf(e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"SstrUi64T\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `SstrUi64T`)
+			}
+			z.EncWriteMapElemValue()
+			h.encSlicestringUint64T(([]stringUint64T)(x.TestStrucCommon.SstrUi64T), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AS\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI16\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI16))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AUi64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.TestStrucCommon.AnonInTestStruc.AUi64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"ASslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceStringV(x.TestStrucCommon.AnonInTestStruc.ASslice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.AI64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AUi64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AF64slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceFloat64V(x.TestStrucCommon.AnonInTestStruc.AF64slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AF32slice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AMSU16\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AI64arr0\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
+			}
+			z.EncWriteMapElemValue()
+			yy160 := &x.TestStrucCommon.AnonInTestStruc.AI64arr0
+			h.encArray0int64((*[0]int64)(yy160), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"A164slice0\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `A164slice0`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.A164slice0, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AUi64sliceN\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AMSU16N\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16N), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AMSU16E\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16E), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"NotAnon\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `NotAnon`)
+			}
+			z.EncWriteMapElemValue()
+			yy166 := &x.TestStrucCommon.NotAnon
+			yy166.CodecEncodeSelf(e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Nmap\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Nmap`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncMapStringBoolV(x.TestStrucCommon.Nmap, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Nslice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Nslice`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Nslice))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Nint64\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Nint64`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn53 {
+				r.EncodeNil()
+			} else {
+				yy170 := *x.TestStrucCommon.Nint64
+				r.EncodeInt(int64(yy170))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Mtsptr\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Mtsptr`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringPtrtoTestStruc((map[string]*TestStruc)(x.Mtsptr), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Mts\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Mts`)
+			}
+			z.EncWriteMapElemValue()
+			h.encMapstringTestStruc((map[string]TestStruc)(x.Mts), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Its\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Its`)
+			}
+			z.EncWriteMapElemValue()
+			h.encSlicePtrtoTestStruc(([]*TestStruc)(x.Its), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Nteststruc\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Nteststruc`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn57 {
+				r.EncodeNil()
+			} else {
+				x.Nteststruc.CodecEncodeSelf(e)
+			}
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -4020,27 +3936,23 @@ func (x *TestStruc) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -5334,30 +5246,26 @@ func (x *codecgenA) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(1)
+			z.EncWriteArrayElem()
+			r.EncodeStringBytesRaw([]byte(x.ZZ))
+			z.EncWriteArrayEnd()
 		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(1)
-				z.EncWriteArrayElem()
-				r.EncodeStringBytesRaw([]byte(x.ZZ))
-				z.EncWriteArrayEnd()
+			z.EncWriteMapStart(1)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"ZZ\"")
 			} else {
-				z.EncWriteMapStart(1)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"ZZ\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `ZZ`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeStringBytesRaw([]byte(x.ZZ))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, `ZZ`)
 			}
+			z.EncWriteMapElemValue()
+			r.EncodeStringBytesRaw([]byte(x.ZZ))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -5366,27 +5274,23 @@ func (x *codecgenA) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -5468,32 +5372,28 @@ func (x *codecgenB) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(1)
+			z.EncWriteArrayElem()
+			yy4 := &x.AA
+			yy4.CodecEncodeSelf(e)
+			z.EncWriteArrayEnd()
 		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(1)
-				z.EncWriteArrayElem()
-				yy4 := &x.AA
-				yy4.CodecEncodeSelf(e)
-				z.EncWriteArrayEnd()
+			z.EncWriteMapStart(1)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"AA\"")
 			} else {
-				z.EncWriteMapStart(1)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"AA\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AA`)
-				}
-				z.EncWriteMapElemValue()
-				yy6 := &x.AA
-				yy6.CodecEncodeSelf(e)
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, `AA`)
 			}
+			z.EncWriteMapElemValue()
+			yy6 := &x.AA
+			yy6.CodecEncodeSelf(e)
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -5502,27 +5402,23 @@ func (x *codecgenB) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -5604,49 +5500,45 @@ func (x *codecgenC) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			var yyq2 = [1]bool{     // should field at this index be written?
-				false || codecSelfer19780False() || len(x.BB.AA.ZZ) != 0, // BB
-			}
-			_ = yyq2
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(1)
-				z.EncWriteArrayElem()
-				if yyq2[0] {
-					yy4 := &x.BB
-					yy4.CodecEncodeSelf(e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		var yyq2 = [1]bool{     // should field at this index be written?
+			false || codecSelfer19780False() || len(x.BB.AA.ZZ) != 0, // BB
+		}
+		_ = yyq2
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(1)
+			z.EncWriteArrayElem()
+			if yyq2[0] {
+				yy4 := &x.BB
+				yy4.CodecEncodeSelf(e)
 			} else {
-				var yynn2 int
-				for _, b := range yyq2 {
-					if b {
-						yynn2++
-					}
-				}
-				z.EncWriteMapStart(yynn2)
-				yynn2 = 0
-				if yyq2[0] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"BB\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `BB`)
-					}
-					z.EncWriteMapElemValue()
-					yy6 := &x.BB
-					yy6.CodecEncodeSelf(e)
-				}
-				z.EncWriteMapEnd()
+				r.EncodeNil()
 			}
+			z.EncWriteArrayEnd()
+		} else {
+			var yynn2 int
+			for _, b := range yyq2 {
+				if b {
+					yynn2++
+				}
+			}
+			z.EncWriteMapStart(yynn2)
+			yynn2 = 0
+			if yyq2[0] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"BB\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `BB`)
+				}
+				z.EncWriteMapElemValue()
+				yy6 := &x.BB
+				yy6.CodecEncodeSelf(e)
+			}
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -5655,27 +5547,23 @@ func (x *codecgenC) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -5757,30 +5645,26 @@ func (x *TestCodecgenG) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(1)
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestCodecgenG))
+			z.EncWriteArrayEnd()
 		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(1)
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestCodecgenG))
-				z.EncWriteArrayEnd()
+			z.EncWriteMapStart(1)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"TestCodecgenG\"")
 			} else {
-				z.EncWriteMapStart(1)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"TestCodecgenG\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestCodecgenG))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
 			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestCodecgenG))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -5789,27 +5673,23 @@ func (x *TestCodecgenG) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -5891,30 +5771,26 @@ func (x *codecgenH) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(1)
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.TestCodecgenG.TestCodecgenG))
+			z.EncWriteArrayEnd()
 		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(1)
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.TestCodecgenG.TestCodecgenG))
-				z.EncWriteArrayEnd()
+			z.EncWriteMapStart(1)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"TestCodecgenG\"")
 			} else {
-				z.EncWriteMapStart(1)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"TestCodecgenG\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.TestCodecgenG.TestCodecgenG))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
 			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.TestCodecgenG.TestCodecgenG))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -5923,27 +5799,23 @@ func (x *codecgenH) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -6025,30 +5897,26 @@ func (x *codecgenI) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(1)
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.codecgenH.TestCodecgenG.TestCodecgenG))
+			z.EncWriteArrayEnd()
 		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(1)
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.codecgenH.TestCodecgenG.TestCodecgenG))
-				z.EncWriteArrayEnd()
+			z.EncWriteMapStart(1)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"TestCodecgenG\"")
 			} else {
-				z.EncWriteMapStart(1)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"TestCodecgenG\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.codecgenH.TestCodecgenG.TestCodecgenG))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
 			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.codecgenH.TestCodecgenG.TestCodecgenG))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -6057,27 +5925,23 @@ func (x *codecgenI) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -6159,48 +6023,44 @@ func (x *codecgenK) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(2)
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.X))
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.Y)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.Y))
-				}
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(2)
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.X))
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.Y)))
 			} else {
-				z.EncWriteMapStart(2)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"X\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `X`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.X))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Y\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Y`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.Y)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.Y))
-				}
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.Y))
 			}
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(2)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"X\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `X`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.X))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Y\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Y`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.Y)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.Y))
+			}
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -6209,27 +6069,23 @@ func (x *codecgenK) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -6333,40 +6189,36 @@ func (x *codecgenL) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(2)
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.X))
+			z.EncWriteArrayElem()
+			r.EncodeUint(uint64(x.Y))
+			z.EncWriteArrayEnd()
 		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(2)
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.X))
-				z.EncWriteArrayElem()
-				r.EncodeUint(uint64(x.Y))
-				z.EncWriteArrayEnd()
+			z.EncWriteMapStart(2)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"X\"")
 			} else {
-				z.EncWriteMapStart(2)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"X\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `X`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.X))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Y\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Y`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeUint(uint64(x.Y))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, `X`)
 			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.X))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Y\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Y`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeUint(uint64(x.Y))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -6375,27 +6227,23 @@ func (x *codecgenL) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -6499,48 +6347,44 @@ func (x *codecgenM) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(2)
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.codecgenK.X))
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.codecgenK.Y)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.codecgenK.Y))
-				}
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(2)
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.codecgenK.X))
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.codecgenK.Y)))
 			} else {
-				z.EncWriteMapStart(2)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"X\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `X`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.codecgenK.X))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Y\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Y`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.codecgenK.Y)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.codecgenK.Y))
-				}
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.codecgenK.Y))
 			}
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(2)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"X\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `X`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.codecgenK.X))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Y\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Y`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.codecgenK.Y)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.codecgenK.Y))
+			}
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -6549,27 +6393,23 @@ func (x *codecgenM) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -6670,22 +6510,14 @@ func (x Bbool) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.EncExtension(x, yyxt1)
-	} else {
-		r.EncodeBool(bool(x))
-	}
+	r.EncodeBool(bool(x))
 }
 
 func (x *Bbool) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		*x = (Bbool)(r.DecodeBool())
-	}
+	*x = (Bbool)(r.DecodeBool())
 }
 
 func (x *Aarray) CodecEncodeSelf(e *Encoder) {
@@ -6695,11 +6527,7 @@ func (x *Aarray) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			h.encAarray((*Aarray)(x), e)
-		}
+		h.encAarray((*Aarray)(x), e)
 	}
 }
 
@@ -6707,25 +6535,17 @@ func (x *Aarray) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		h.decAarray((*Aarray)(x), d)
-	}
+	h.decAarray((*Aarray)(x), d)
 }
 
 func (x Sstring) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.EncExtension(x, yyxt1)
+	if z.EncBasicHandle().StringToRaw {
+		r.EncodeStringBytesRaw(z.BytesView(string(x)))
 	} else {
-		if z.EncBasicHandle().StringToRaw {
-			r.EncodeStringBytesRaw(z.BytesView(string(x)))
-		} else {
-			r.EncodeStringEnc(codecSelferCcUTF819780, string(x))
-		}
+		r.EncodeStringEnc(codecSelferCcUTF819780, string(x))
 	}
 }
 
@@ -6733,11 +6553,7 @@ func (x *Sstring) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		*x = (Sstring)(r.DecodeString())
-	}
+	*x = (Sstring)(r.DecodeString())
 }
 
 func (x *Sstructsmall) CodecEncodeSelf(e *Encoder) {
@@ -6747,30 +6563,26 @@ func (x *Sstructsmall) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(1)
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.A))
+			z.EncWriteArrayEnd()
 		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(1)
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.A))
-				z.EncWriteArrayEnd()
+			z.EncWriteMapStart(1)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"A\"")
 			} else {
-				z.EncWriteMapStart(1)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"A\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `A`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.A))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, `A`)
 			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.A))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -6779,27 +6591,23 @@ func (x *Sstructsmall) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -6881,100 +6689,96 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			var yyn5 bool = x.Ssmallptr == nil
-			var yyn6 bool = x.Ssmall == nil
-			var yyn7 bool = x.Sptr == nil
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(5)
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		var yyn5 bool = x.Ssmallptr == nil
+		var yyn6 bool = x.Ssmall == nil
+		var yyn7 bool = x.Sptr == nil
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(5)
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.A))
+			z.EncWriteArrayElem()
+			r.EncodeBool(bool(x.B))
+			if yyn5 {
 				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.A))
-				z.EncWriteArrayElem()
-				r.EncodeBool(bool(x.B))
-				if yyn5 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					x.Ssmallptr.CodecEncodeSelf(e)
-				}
-				if yyn6 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					x.Ssmall.CodecEncodeSelf(e)
-				}
-				if yyn7 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					x.Sptr.CodecEncodeSelf(e)
-				}
-				z.EncWriteArrayEnd()
+				r.EncodeNil()
 			} else {
-				z.EncWriteMapStart(5)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"A\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `A`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.A))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ssmallptr\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmallptr`)
-				}
-				z.EncWriteMapElemValue()
-				if yyn5 {
-					r.EncodeNil()
-				} else {
-					x.Ssmallptr.CodecEncodeSelf(e)
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ssmall\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmall`)
-				}
-				z.EncWriteMapElemValue()
-				if yyn6 {
-					r.EncodeNil()
-				} else {
-					x.Ssmall.CodecEncodeSelf(e)
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Sptr\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Sptr`)
-				}
-				z.EncWriteMapElemValue()
-				if yyn7 {
-					r.EncodeNil()
-				} else {
-					x.Sptr.CodecEncodeSelf(e)
-				}
-				z.EncWriteMapEnd()
+				z.EncWriteArrayElem()
+				x.Ssmallptr.CodecEncodeSelf(e)
 			}
+			if yyn6 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				x.Ssmall.CodecEncodeSelf(e)
+			}
+			if yyn7 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				x.Sptr.CodecEncodeSelf(e)
+			}
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(5)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"A\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `A`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.A))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"B\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ssmallptr\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmallptr`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn5 {
+				r.EncodeNil()
+			} else {
+				x.Ssmallptr.CodecEncodeSelf(e)
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ssmall\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmall`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn6 {
+				r.EncodeNil()
+			} else {
+				x.Ssmall.CodecEncodeSelf(e)
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Sptr\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Sptr`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn7 {
+				r.EncodeNil()
+			} else {
+				x.Sptr.CodecEncodeSelf(e)
+			}
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -6983,27 +6787,23 @@ func (x *Sstructbig) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -7209,100 +7009,96 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = true // struct tag has 'toArray'
-			var yyn5 bool = x.Ssmallptr == nil
-			var yyn6 bool = x.Ssmall == nil
-			var yyn7 bool = x.Sptr == nil
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(5)
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = true // struct tag has 'toArray'
+		var yyn5 bool = x.Ssmallptr == nil
+		var yyn6 bool = x.Ssmall == nil
+		var yyn7 bool = x.Sptr == nil
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(5)
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.A))
+			z.EncWriteArrayElem()
+			r.EncodeBool(bool(x.B))
+			if yyn5 {
 				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.A))
-				z.EncWriteArrayElem()
-				r.EncodeBool(bool(x.B))
-				if yyn5 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					x.Ssmallptr.CodecEncodeSelf(e)
-				}
-				if yyn6 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					x.Ssmall.CodecEncodeSelf(e)
-				}
-				if yyn7 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					x.Sptr.CodecEncodeSelf(e)
-				}
-				z.EncWriteArrayEnd()
+				r.EncodeNil()
 			} else {
-				z.EncWriteMapStart(5)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"A\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `A`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.A))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ssmallptr\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmallptr`)
-				}
-				z.EncWriteMapElemValue()
-				if yyn5 {
-					r.EncodeNil()
-				} else {
-					x.Ssmallptr.CodecEncodeSelf(e)
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ssmall\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmall`)
-				}
-				z.EncWriteMapElemValue()
-				if yyn6 {
-					r.EncodeNil()
-				} else {
-					x.Ssmall.CodecEncodeSelf(e)
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Sptr\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Sptr`)
-				}
-				z.EncWriteMapElemValue()
-				if yyn7 {
-					r.EncodeNil()
-				} else {
-					x.Sptr.CodecEncodeSelf(e)
-				}
-				z.EncWriteMapEnd()
+				z.EncWriteArrayElem()
+				x.Ssmallptr.CodecEncodeSelf(e)
 			}
+			if yyn6 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				x.Ssmall.CodecEncodeSelf(e)
+			}
+			if yyn7 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				x.Sptr.CodecEncodeSelf(e)
+			}
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(5)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"A\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `A`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.A))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"B\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ssmallptr\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmallptr`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn5 {
+				r.EncodeNil()
+			} else {
+				x.Ssmallptr.CodecEncodeSelf(e)
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ssmall\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmall`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn6 {
+				r.EncodeNil()
+			} else {
+				x.Ssmall.CodecEncodeSelf(e)
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Sptr\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Sptr`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn7 {
+				r.EncodeNil()
+			} else {
+				x.Sptr.CodecEncodeSelf(e)
+			}
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -7311,27 +7107,23 @@ func (x *SstructbigMapBySlice) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -7537,48 +7329,44 @@ func (x *tLowerFirstLetter) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(2)
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I))
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(2)
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I))
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
 			} else {
-				z.EncWriteMapStart(2)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"S\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
 			}
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(2)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"S\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
+			}
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -7587,27 +7375,23 @@ func (x *tLowerFirstLetter) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -7708,44 +7492,28 @@ func (x wrapInt64) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.EncExtension(x, yyxt1)
-	} else {
-		r.EncodeInt(int64(x))
-	}
+	r.EncodeInt(int64(x))
 }
 
 func (x *wrapInt64) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		*x = (wrapInt64)(r.DecodeInt64())
-	}
+	*x = (wrapInt64)(r.DecodeInt64())
 }
 
 func (x wrapUint8) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.EncExtension(x, yyxt1)
-	} else {
-		r.EncodeUint(uint64(x))
-	}
+	r.EncodeUint(uint64(x))
 }
 
 func (x *wrapUint8) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		*x = (wrapUint8)(z.C.UintV(r.DecodeUint64(), 8))
-	}
+	*x = (wrapUint8)(z.C.UintV(r.DecodeUint64(), 8))
 }
 
 func (x wrapBytes) CodecEncodeSelf(e *Encoder) {
@@ -7755,11 +7523,7 @@ func (x wrapBytes) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			h.encwrapBytes((wrapBytes)(x), e)
-		}
+		h.encwrapBytes((wrapBytes)(x), e)
 	}
 }
 
@@ -7767,11 +7531,7 @@ func (x *wrapBytes) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		h.decwrapBytes((*wrapBytes)(x), d)
-	}
+	h.decwrapBytes((*wrapBytes)(x), d)
 }
 
 func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
@@ -7781,122 +7541,118 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			var yyn7 bool = x.Tptr == nil
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(5)
-				z.EncWriteArrayElem()
-				z.F.EncSliceIntfV(x.Islice, e)
-				z.EncWriteArrayElem()
-				z.F.EncMapStringIntfV(x.Ms, e)
-				z.EncWriteArrayElem()
-				z.EncFallback(x.Nintf)
-				z.EncWriteArrayElem()
-				if !z.EncBasicHandle().TimeNotBuiltin {
-					r.EncodeTime(x.T)
-				} else if yyxt11 := z.Extension(z.I2Rtid(x.T)); yyxt11 != nil {
-					z.EncExtension(x.T, yyxt11)
-				} else if z.EncBinary() {
-					z.EncBinaryMarshal(x.T)
-				} else if !z.EncBinary() && z.IsJSONHandle() {
-					z.EncJSONMarshal(x.T)
-				} else {
-					z.EncFallback(x.T)
-				}
-				if yyn7 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					yy12 := *x.Tptr
-					if !z.EncBasicHandle().TimeNotBuiltin {
-						r.EncodeTime(yy12)
-					} else if yyxt13 := z.Extension(z.I2Rtid(yy12)); yyxt13 != nil {
-						z.EncExtension(yy12, yyxt13)
-					} else if z.EncBinary() {
-						z.EncBinaryMarshal(yy12)
-					} else if !z.EncBinary() && z.IsJSONHandle() {
-						z.EncJSONMarshal(yy12)
-					} else {
-						z.EncFallback(yy12)
-					}
-				}
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		var yyn7 bool = x.Tptr == nil
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(5)
+			z.EncWriteArrayElem()
+			z.F.EncSliceIntfV(x.Islice, e)
+			z.EncWriteArrayElem()
+			z.F.EncMapStringIntfV(x.Ms, e)
+			z.EncWriteArrayElem()
+			z.EncFallback(x.Nintf)
+			z.EncWriteArrayElem()
+			if !z.EncBasicHandle().TimeNotBuiltin {
+				r.EncodeTime(x.T)
+			} else if yyxt11 := z.Extension(z.I2Rtid(x.T)); yyxt11 != nil {
+				z.EncExtension(x.T, yyxt11)
+			} else if z.EncBinary() {
+				z.EncBinaryMarshal(x.T)
+			} else if !z.EncBinary() && z.IsJSONHandle() {
+				z.EncJSONMarshal(x.T)
 			} else {
-				z.EncWriteMapStart(5)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Islice\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Islice`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncSliceIntfV(x.Islice, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Ms\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ms`)
-				}
-				z.EncWriteMapElemValue()
-				z.F.EncMapStringIntfV(x.Ms, e)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Nintf\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nintf`)
-				}
-				z.EncWriteMapElemValue()
-				z.EncFallback(x.Nintf)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"T\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `T`)
-				}
-				z.EncWriteMapElemValue()
-				if !z.EncBasicHandle().TimeNotBuiltin {
-					r.EncodeTime(x.T)
-				} else if yyxt17 := z.Extension(z.I2Rtid(x.T)); yyxt17 != nil {
-					z.EncExtension(x.T, yyxt17)
-				} else if z.EncBinary() {
-					z.EncBinaryMarshal(x.T)
-				} else if !z.EncBinary() && z.IsJSONHandle() {
-					z.EncJSONMarshal(x.T)
-				} else {
-					z.EncFallback(x.T)
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"Tptr\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Tptr`)
-				}
-				z.EncWriteMapElemValue()
-				if yyn7 {
-					r.EncodeNil()
-				} else {
-					yy18 := *x.Tptr
-					if !z.EncBasicHandle().TimeNotBuiltin {
-						r.EncodeTime(yy18)
-					} else if yyxt19 := z.Extension(z.I2Rtid(yy18)); yyxt19 != nil {
-						z.EncExtension(yy18, yyxt19)
-					} else if z.EncBinary() {
-						z.EncBinaryMarshal(yy18)
-					} else if !z.EncBinary() && z.IsJSONHandle() {
-						z.EncJSONMarshal(yy18)
-					} else {
-						z.EncFallback(yy18)
-					}
-				}
-				z.EncWriteMapEnd()
+				z.EncFallback(x.T)
 			}
+			if yyn7 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				yy12 := *x.Tptr
+				if !z.EncBasicHandle().TimeNotBuiltin {
+					r.EncodeTime(yy12)
+				} else if yyxt13 := z.Extension(z.I2Rtid(yy12)); yyxt13 != nil {
+					z.EncExtension(yy12, yyxt13)
+				} else if z.EncBinary() {
+					z.EncBinaryMarshal(yy12)
+				} else if !z.EncBinary() && z.IsJSONHandle() {
+					z.EncJSONMarshal(yy12)
+				} else {
+					z.EncFallback(yy12)
+				}
+			}
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(5)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Islice\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Islice`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncSliceIntfV(x.Islice, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Ms\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Ms`)
+			}
+			z.EncWriteMapElemValue()
+			z.F.EncMapStringIntfV(x.Ms, e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Nintf\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Nintf`)
+			}
+			z.EncWriteMapElemValue()
+			z.EncFallback(x.Nintf)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"T\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `T`)
+			}
+			z.EncWriteMapElemValue()
+			if !z.EncBasicHandle().TimeNotBuiltin {
+				r.EncodeTime(x.T)
+			} else if yyxt17 := z.Extension(z.I2Rtid(x.T)); yyxt17 != nil {
+				z.EncExtension(x.T, yyxt17)
+			} else if z.EncBinary() {
+				z.EncBinaryMarshal(x.T)
+			} else if !z.EncBinary() && z.IsJSONHandle() {
+				z.EncJSONMarshal(x.T)
+			} else {
+				z.EncFallback(x.T)
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Tptr\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `Tptr`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn7 {
+				r.EncodeNil()
+			} else {
+				yy18 := *x.Tptr
+				if !z.EncBasicHandle().TimeNotBuiltin {
+					r.EncodeTime(yy18)
+				} else if yyxt19 := z.Extension(z.I2Rtid(yy18)); yyxt19 != nil {
+					z.EncExtension(yy18, yyxt19)
+				} else if z.EncBinary() {
+					z.EncBinaryMarshal(yy18)
+				} else if !z.EncBinary() && z.IsJSONHandle() {
+					z.EncJSONMarshal(yy18)
+				} else {
+					z.EncFallback(yy18)
+				}
+			}
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -7905,27 +7661,23 @@ func (x *AnonInTestStrucIntf) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -8147,48 +7899,44 @@ func (x *missingFielderT1) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(2)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(2)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
 			} else {
-				z.EncWriteMapStart(2)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"S\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
 			}
+			z.EncWriteArrayElem()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(2)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"S\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"B\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -8197,27 +7945,23 @@ func (x *missingFielderT1) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -8321,68 +8065,64 @@ func (x *missingFielderT2) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(4)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteArrayElem()
-				r.EncodeFloat64(float64(x.F))
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I))
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(4)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
 			} else {
-				z.EncWriteMapStart(4)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"S\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"F\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `F`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeFloat64(float64(x.F))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
 			}
+			z.EncWriteArrayElem()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteArrayElem()
+			r.EncodeFloat64(float64(x.F))
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I))
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(4)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"S\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"B\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"F\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `F`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeFloat64(float64(x.F))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -8391,27 +8131,23 @@ func (x *missingFielderT2) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -8559,58 +8295,54 @@ func (x *testSelfExtHelper) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(3)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.I))
-				z.EncWriteArrayElem()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(3)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
 			} else {
-				z.EncWriteMapStart(3)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"S\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.I))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeBool(bool(x.B))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
 			}
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.I))
+			z.EncWriteArrayElem()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(3)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"S\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.I))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"B\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeBool(bool(x.B))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -8619,27 +8351,23 @@ func (x *testSelfExtHelper) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -8765,58 +8493,54 @@ func (x *TestSelfExtImpl) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(3)
-				z.EncWriteArrayElem()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.testSelfExtHelper.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.testSelfExtHelper.S))
-				}
-				z.EncWriteArrayElem()
-				r.EncodeInt(int64(x.testSelfExtHelper.I))
-				z.EncWriteArrayElem()
-				r.EncodeBool(bool(x.testSelfExtHelper.B))
-				z.EncWriteArrayEnd()
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(3)
+			z.EncWriteArrayElem()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.testSelfExtHelper.S)))
 			} else {
-				z.EncWriteMapStart(3)
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"S\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
-				}
-				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.testSelfExtHelper.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.testSelfExtHelper.S))
-				}
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"I\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeInt(int64(x.testSelfExtHelper.I))
-				z.EncWriteMapElemKey()
-				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
-				}
-				z.EncWriteMapElemValue()
-				r.EncodeBool(bool(x.testSelfExtHelper.B))
-				z.EncWriteMapEnd()
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.testSelfExtHelper.S))
 			}
+			z.EncWriteArrayElem()
+			r.EncodeInt(int64(x.testSelfExtHelper.I))
+			z.EncWriteArrayElem()
+			r.EncodeBool(bool(x.testSelfExtHelper.B))
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(3)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"S\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+			}
+			z.EncWriteMapElemValue()
+			if z.EncBasicHandle().StringToRaw {
+				r.EncodeStringBytesRaw(z.BytesView(string(x.testSelfExtHelper.S)))
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.testSelfExtHelper.S))
+			}
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"I\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeInt(int64(x.testSelfExtHelper.I))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"B\"")
+			} else {
+				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeBool(bool(x.testSelfExtHelper.B))
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -8825,27 +8549,23 @@ func (x *TestSelfExtImpl) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 
@@ -8971,1453 +8691,1449 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-			z.EncExtension(x, yyxt1)
-		} else {
-			yysep2 := !z.EncBinary()
-			yy2arr2 := z.EncBasicHandle().StructToArray
-			_, _ = yysep2, yy2arr2
-			const yyr2 bool = false // struct tag has 'toArray'
-			var yyq2 = [75]bool{    // should field at this index be written?
-				x.S != "",                   // S
-				x.I64 != 0,                  // I64
-				x.I32 != 0,                  // I32
-				x.I16 != 0,                  // I16
-				x.I8 != 0,                   // I8
-				x.I64n != 0,                 // I64n
-				x.I32n != 0,                 // I32n
-				x.I16n != 0,                 // I16n
-				x.I8n != 0,                  // I8n
-				x.Ui64 != 0,                 // Ui64
-				x.Ui32 != 0,                 // Ui32
-				x.Ui16 != 0,                 // Ui16
-				x.Ui8 != 0,                  // Ui8
-				x.F64 != 0,                  // F64
-				x.F32 != 0,                  // F32
-				x.B,                         // B
-				x.By != 0,                   // By
-				len(x.Sslice) != 0,          // Sslice
-				len(x.I64slice) != 0,        // I64slice
-				len(x.I16slice) != 0,        // I16slice
-				len(x.Ui64slice) != 0,       // Ui64slice
-				len(x.Ui8slice) != 0,        // Ui8slice
-				len(x.Bslice) != 0,          // Bslice
-				len(x.Byslice) != 0,         // Byslice
-				len(x.BytesSlice) != 0,      // BytesSlice
-				len(x.Iptrslice) != 0,       // Iptrslice
-				len(x.WrapSliceInt64) != 0,  // WrapSliceInt64
-				len(x.WrapSliceString) != 0, // WrapSliceString
-				len(x.Msi64) != 0,           // Msi64
-				len(x.Msbytes) != 0,         // Msbytes
-				false || x.Simplef.S != "" || x.Simplef.I64 != 0 || x.Simplef.I8 != 0 || x.Simplef.Ui64 != 0 || x.Simplef.Ui8 != 0 || x.Simplef.F64 != 0 || x.Simplef.F32 != 0 || x.Simplef.B || len(x.Simplef.Sslice) != 0 || len(x.Simplef.I16slice) != 0 || len(x.Simplef.Ui64slice) != 0 || len(x.Simplef.Ui8slice) != 0 || len(x.Simplef.Bslice) != 0 || len(x.Simplef.Iptrslice) != 0 || len(x.Simplef.WrapSliceInt64) != 0 || len(x.Simplef.WrapSliceString) != 0 || len(x.Simplef.Msi64) != 0, // Simplef
-				len(x.SstrUi64T) != 0,   // SstrUi64T
-				x.AS != "",              // AS
-				x.AI64 != 0,             // AI64
-				x.AI16 != 0,             // AI16
-				x.AUi64 != 0,            // AUi64
-				len(x.ASslice) != 0,     // ASslice
-				len(x.AI64slice) != 0,   // AI64slice
-				len(x.AUi64slice) != 0,  // AUi64slice
-				len(x.AF64slice) != 0,   // AF64slice
-				len(x.AF32slice) != 0,   // AF32slice
-				len(x.AMSU16) != 0,      // AMSU16
-				len(x.AI64arr0) != 0,    // AI64arr0
-				len(x.A164slice0) != 0,  // A164slice0
-				len(x.AUi64sliceN) != 0, // AUi64sliceN
-				len(x.AMSU16N) != 0,     // AMSU16N
-				len(x.AMSU16E) != 0,     // AMSU16E
-				false || x.NotAnon.AS != "" || x.NotAnon.AI64 != 0 || x.NotAnon.AI16 != 0 || x.NotAnon.AUi64 != 0 || len(x.NotAnon.ASslice) != 0 || len(x.NotAnon.AI64slice) != 0 || len(x.NotAnon.AUi64slice) != 0 || len(x.NotAnon.AF64slice) != 0 || len(x.NotAnon.AF32slice) != 0 || len(x.NotAnon.AMSU16) != 0 || len(x.NotAnon.AI64arr0) != 0 || len(x.NotAnon.A164slice0) != 0 || len(x.NotAnon.AUi64sliceN) != 0 || len(x.NotAnon.AMSU16N) != 0 || len(x.NotAnon.AMSU16E) != 0, // NotAnon
-				len(x.Nmap) != 0,           // Nmap
-				len(x.Nslice) != 0,         // Nslice
-				x.Nint64 != nil,            // Nint64
-				len(x.Chstr) != 0,          // Chstr
-				len(x.Mis) != 0,            // Mis
-				len(x.Mbu64) != 0,          // Mbu64
-				len(x.Miwu64s) != 0,        // Miwu64s
-				len(x.Mfwss) != 0,          // Mfwss
-				len(x.Mf32wss) != 0,        // Mf32wss
-				len(x.Mui2wss) != 0,        // Mui2wss
-				len(x.Msu2wss) != 0,        // Msu2wss
-				x.Ci64 != 0,                // Ci64
-				len(x.Swrapbytes) != 0,     // Swrapbytes
-				len(x.Swrapuint8) != 0,     // Swrapuint8
-				len(x.ArrStrUi64T) != 0,    // ArrStrUi64T
-				len(x.Ui64array) != 0,      // Ui64array
-				len(x.Ui64slicearray) != 0, // Ui64slicearray
-				len(x.SintfAarray) != 0,    // SintfAarray
-				x.AnonInTestStrucIntf != nil && len(x.Islice) != 0, // Islice
-				x.AnonInTestStrucIntf != nil && len(x.Ms) != 0,     // Ms
-				x.AnonInTestStrucIntf != nil && x.Nintf != nil,     // Nintf
-				x.AnonInTestStrucIntf != nil && !(x.T.IsZero()),    // T
-				x.AnonInTestStrucIntf != nil && x.Tptr != nil,      // Tptr
-				len(x.Mtsptr) != 0,  // Mtsptr
-				len(x.Mts) != 0,     // Mts
-				len(x.Its) != 0,     // Its
-				x.Nteststruc != nil, // Nteststruc
-			}
-			_ = yyq2
-			var yyn53 bool = x.TestStrucCommon.Nint64 == nil
-			var yyn69 bool = x.AnonInTestStrucIntf == nil
-			var yyn70 bool = x.AnonInTestStrucIntf == nil
-			var yyn71 bool = x.AnonInTestStrucIntf == nil
-			var yyn72 bool = x.AnonInTestStrucIntf == nil
-			var yyn73 bool = x.AnonInTestStrucIntf == nil || x.AnonInTestStrucIntf.Tptr == nil
-			var yyn77 bool = x.Nteststruc == nil
-			if yyr2 || yy2arr2 {
-				z.EncWriteArrayStart(75)
-				z.EncWriteArrayElem()
-				if yyq2[0] {
-					if z.EncBasicHandle().StringToRaw {
-						r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
-					}
-				} else {
-					if z.EncBasicHandle().StringToRaw {
-						r.EncodeStringBytesRaw([]byte{})
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, "")
-					}
-				}
-				z.EncWriteArrayElem()
-				if yyq2[1] {
-					r.EncodeInt(int64(x.TestStrucCommon.I64))
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[2] {
-					r.EncodeInt(int64(x.TestStrucCommon.I32))
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[3] {
-					r.EncodeInt(int64(x.TestStrucCommon.I16))
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[4] {
-					r.EncodeInt(int64(x.TestStrucCommon.I8))
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[5] {
-					r.EncodeInt(int64(x.TestStrucCommon.I64n))
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[6] {
-					r.EncodeInt(int64(x.TestStrucCommon.I32n))
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[7] {
-					r.EncodeInt(int64(x.TestStrucCommon.I16n))
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[8] {
-					r.EncodeInt(int64(x.TestStrucCommon.I8n))
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[9] {
-					r.EncodeUint(uint64(x.TestStrucCommon.Ui64))
-				} else {
-					r.EncodeUint(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[10] {
-					r.EncodeUint(uint64(x.TestStrucCommon.Ui32))
-				} else {
-					r.EncodeUint(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[11] {
-					r.EncodeUint(uint64(x.TestStrucCommon.Ui16))
-				} else {
-					r.EncodeUint(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[12] {
-					r.EncodeUint(uint64(x.TestStrucCommon.Ui8))
-				} else {
-					r.EncodeUint(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[13] {
-					r.EncodeFloat64(float64(x.TestStrucCommon.F64))
-				} else {
-					r.EncodeFloat64(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[14] {
-					r.EncodeFloat32(float32(x.TestStrucCommon.F32))
-				} else {
-					r.EncodeFloat32(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[15] {
-					r.EncodeBool(bool(x.TestStrucCommon.B))
-				} else {
-					r.EncodeBool(false)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[16] {
-					r.EncodeUint(uint64(x.TestStrucCommon.By))
-				} else {
-					r.EncodeUint(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[17] {
-					z.F.EncSliceStringV(x.TestStrucCommon.Sslice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[18] {
-					z.F.EncSliceInt64V(x.TestStrucCommon.I64slice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[19] {
-					z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[20] {
-					z.F.EncSliceUint64V(x.TestStrucCommon.Ui64slice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[21] {
-					r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Ui8slice))
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[22] {
-					z.F.EncSliceBoolV(x.TestStrucCommon.Bslice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[23] {
-					r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Byslice))
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[24] {
-					z.F.EncSliceBytesV(x.TestStrucCommon.BytesSlice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[25] {
-					h.encSlicePtrtoint64(([]*int64)(x.TestStrucCommon.Iptrslice), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[26] {
-					x.TestStrucCommon.WrapSliceInt64.CodecEncodeSelf(e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[27] {
-					x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[28] {
-					z.F.EncMapStringInt64V(x.TestStrucCommon.Msi64, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[29] {
-					z.F.EncMapStringBytesV(x.TestStrucCommon.Msbytes, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[30] {
-					yy108 := &x.TestStrucCommon.Simplef
-					yy108.CodecEncodeSelf(e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[31] {
-					h.encSlicestringUint64T(([]stringUint64T)(x.TestStrucCommon.SstrUi64T), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[32] {
-					if z.EncBasicHandle().StringToRaw {
-						r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
-					}
-				} else {
-					if z.EncBasicHandle().StringToRaw {
-						r.EncodeStringBytesRaw([]byte{})
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, "")
-					}
-				}
-				z.EncWriteArrayElem()
-				if yyq2[33] {
-					r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[34] {
-					r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI16))
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[35] {
-					r.EncodeUint(uint64(x.TestStrucCommon.AnonInTestStruc.AUi64))
-				} else {
-					r.EncodeUint(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[36] {
-					z.F.EncSliceStringV(x.TestStrucCommon.AnonInTestStruc.ASslice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[37] {
-					z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.AI64slice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[38] {
-					z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64slice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[39] {
-					z.F.EncSliceFloat64V(x.TestStrucCommon.AnonInTestStruc.AF64slice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[40] {
-					z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[41] {
-					h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[42] {
-					yy121 := &x.TestStrucCommon.AnonInTestStruc.AI64arr0
-					h.encArray0int64((*[0]int64)(yy121), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[43] {
-					z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.A164slice0, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[44] {
-					z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[45] {
-					h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16N), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[46] {
-					h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16E), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[47] {
-					yy127 := &x.TestStrucCommon.NotAnon
-					yy127.CodecEncodeSelf(e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[48] {
-					z.F.EncMapStringBoolV(x.TestStrucCommon.Nmap, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[49] {
-					r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Nslice))
-				} else {
-					r.EncodeNil()
-				}
-				if yyn53 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					if yyq2[50] {
-						yy131 := *x.TestStrucCommon.Nint64
-						r.EncodeInt(int64(yy131))
-					} else {
-						r.EncodeNil()
-					}
-				}
-				z.EncWriteArrayElem()
-				if yyq2[51] {
-					h.encChanstring((chan string)(x.Chstr), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[52] {
-					z.F.EncMapIntStringV(x.Mis, e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[53] {
-					h.encMapboolc3RydWN0IHt9((map[bool]struct{})(x.Mbu64), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[54] {
-					h.encMapintwrapUint64Slice((map[int]wrapUint64Slice)(x.Miwu64s), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[55] {
-					h.encMapfloat64wrapStringSlice((map[float64]wrapStringSlice)(x.Mfwss), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[56] {
-					h.encMapfloat32wrapStringSlice((map[float32]wrapStringSlice)(x.Mf32wss), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[57] {
-					h.encMapuint64wrapStringSlice((map[uint64]wrapStringSlice)(x.Mui2wss), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[58] {
-					h.encMapstringUint64TwrapStringSlice((map[stringUint64T]wrapStringSlice)(x.Msu2wss), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[59] {
-					x.Ci64.CodecEncodeSelf(e)
-				} else {
-					r.EncodeInt(0)
-				}
-				z.EncWriteArrayElem()
-				if yyq2[60] {
-					h.encSlicewrapBytes(([]wrapBytes)(x.Swrapbytes), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[61] {
-					h.encSlicewrapUint8(([]wrapUint8)(x.Swrapuint8), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[62] {
-					yy144 := &x.ArrStrUi64T
-					h.encArray4stringUint64T((*[4]stringUint64T)(yy144), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[63] {
-					yy146 := &x.Ui64array
-					h.encArray4uint64((*[4]uint64)(yy146), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[64] {
-					h.encSlicePtrtoArray4uint64(([]*[4]uint64)(x.Ui64slicearray), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[65] {
-					z.F.EncSliceIntfV(x.SintfAarray, e)
-				} else {
-					r.EncodeNil()
-				}
-				if yyn69 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					if yyq2[66] {
-						z.F.EncSliceIntfV(x.AnonInTestStrucIntf.Islice, e)
-					} else {
-						r.EncodeNil()
-					}
-				}
-				if yyn70 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					if yyq2[67] {
-						z.F.EncMapStringIntfV(x.AnonInTestStrucIntf.Ms, e)
-					} else {
-						r.EncodeNil()
-					}
-				}
-				if yyn71 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					if yyq2[68] {
-						z.EncFallback(x.AnonInTestStrucIntf.Nintf)
-					} else {
-						r.EncodeNil()
-					}
-				}
-				if yyn72 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					if yyq2[69] {
-						if !z.EncBasicHandle().TimeNotBuiltin {
-							r.EncodeTime(x.AnonInTestStrucIntf.T)
-						} else if yyxt153 := z.Extension(z.I2Rtid(x.AnonInTestStrucIntf.T)); yyxt153 != nil {
-							z.EncExtension(x.AnonInTestStrucIntf.T, yyxt153)
-						} else if z.EncBinary() {
-							z.EncBinaryMarshal(x.AnonInTestStrucIntf.T)
-						} else if !z.EncBinary() && z.IsJSONHandle() {
-							z.EncJSONMarshal(x.AnonInTestStrucIntf.T)
-						} else {
-							z.EncFallback(x.AnonInTestStrucIntf.T)
-						}
-					} else {
-						r.EncodeNil()
-					}
-				}
-				if yyn73 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					if yyq2[70] {
-						yy154 := *x.AnonInTestStrucIntf.Tptr
-						if !z.EncBasicHandle().TimeNotBuiltin {
-							r.EncodeTime(yy154)
-						} else if yyxt155 := z.Extension(z.I2Rtid(yy154)); yyxt155 != nil {
-							z.EncExtension(yy154, yyxt155)
-						} else if z.EncBinary() {
-							z.EncBinaryMarshal(yy154)
-						} else if !z.EncBinary() && z.IsJSONHandle() {
-							z.EncJSONMarshal(yy154)
-						} else {
-							z.EncFallback(yy154)
-						}
-					} else {
-						r.EncodeNil()
-					}
-				}
-				z.EncWriteArrayElem()
-				if yyq2[71] {
-					h.encMapstringPtrtoTestStrucFlex((map[string]*TestStrucFlex)(x.Mtsptr), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[72] {
-					h.encMapstringTestStrucFlex((map[string]TestStrucFlex)(x.Mts), e)
-				} else {
-					r.EncodeNil()
-				}
-				z.EncWriteArrayElem()
-				if yyq2[73] {
-					h.encSlicePtrtoTestStrucFlex(([]*TestStrucFlex)(x.Its), e)
-				} else {
-					r.EncodeNil()
-				}
-				if yyn77 {
-					z.EncWriteArrayElem()
-					r.EncodeNil()
-				} else {
-					z.EncWriteArrayElem()
-					if yyq2[74] {
-						x.Nteststruc.CodecEncodeSelf(e)
-					} else {
-						r.EncodeNil()
-					}
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		var yyq2 = [75]bool{    // should field at this index be written?
+			x.S != "",                   // S
+			x.I64 != 0,                  // I64
+			x.I32 != 0,                  // I32
+			x.I16 != 0,                  // I16
+			x.I8 != 0,                   // I8
+			x.I64n != 0,                 // I64n
+			x.I32n != 0,                 // I32n
+			x.I16n != 0,                 // I16n
+			x.I8n != 0,                  // I8n
+			x.Ui64 != 0,                 // Ui64
+			x.Ui32 != 0,                 // Ui32
+			x.Ui16 != 0,                 // Ui16
+			x.Ui8 != 0,                  // Ui8
+			x.F64 != 0,                  // F64
+			x.F32 != 0,                  // F32
+			x.B,                         // B
+			x.By != 0,                   // By
+			len(x.Sslice) != 0,          // Sslice
+			len(x.I64slice) != 0,        // I64slice
+			len(x.I16slice) != 0,        // I16slice
+			len(x.Ui64slice) != 0,       // Ui64slice
+			len(x.Ui8slice) != 0,        // Ui8slice
+			len(x.Bslice) != 0,          // Bslice
+			len(x.Byslice) != 0,         // Byslice
+			len(x.BytesSlice) != 0,      // BytesSlice
+			len(x.Iptrslice) != 0,       // Iptrslice
+			len(x.WrapSliceInt64) != 0,  // WrapSliceInt64
+			len(x.WrapSliceString) != 0, // WrapSliceString
+			len(x.Msi64) != 0,           // Msi64
+			len(x.Msbytes) != 0,         // Msbytes
+			false || x.Simplef.S != "" || x.Simplef.I64 != 0 || x.Simplef.I8 != 0 || x.Simplef.Ui64 != 0 || x.Simplef.Ui8 != 0 || x.Simplef.F64 != 0 || x.Simplef.F32 != 0 || x.Simplef.B || len(x.Simplef.Sslice) != 0 || len(x.Simplef.I16slice) != 0 || len(x.Simplef.Ui64slice) != 0 || len(x.Simplef.Ui8slice) != 0 || len(x.Simplef.Bslice) != 0 || len(x.Simplef.Iptrslice) != 0 || len(x.Simplef.WrapSliceInt64) != 0 || len(x.Simplef.WrapSliceString) != 0 || len(x.Simplef.Msi64) != 0, // Simplef
+			len(x.SstrUi64T) != 0,   // SstrUi64T
+			x.AS != "",              // AS
+			x.AI64 != 0,             // AI64
+			x.AI16 != 0,             // AI16
+			x.AUi64 != 0,            // AUi64
+			len(x.ASslice) != 0,     // ASslice
+			len(x.AI64slice) != 0,   // AI64slice
+			len(x.AUi64slice) != 0,  // AUi64slice
+			len(x.AF64slice) != 0,   // AF64slice
+			len(x.AF32slice) != 0,   // AF32slice
+			len(x.AMSU16) != 0,      // AMSU16
+			len(x.AI64arr0) != 0,    // AI64arr0
+			len(x.A164slice0) != 0,  // A164slice0
+			len(x.AUi64sliceN) != 0, // AUi64sliceN
+			len(x.AMSU16N) != 0,     // AMSU16N
+			len(x.AMSU16E) != 0,     // AMSU16E
+			false || x.NotAnon.AS != "" || x.NotAnon.AI64 != 0 || x.NotAnon.AI16 != 0 || x.NotAnon.AUi64 != 0 || len(x.NotAnon.ASslice) != 0 || len(x.NotAnon.AI64slice) != 0 || len(x.NotAnon.AUi64slice) != 0 || len(x.NotAnon.AF64slice) != 0 || len(x.NotAnon.AF32slice) != 0 || len(x.NotAnon.AMSU16) != 0 || len(x.NotAnon.AI64arr0) != 0 || len(x.NotAnon.A164slice0) != 0 || len(x.NotAnon.AUi64sliceN) != 0 || len(x.NotAnon.AMSU16N) != 0 || len(x.NotAnon.AMSU16E) != 0, // NotAnon
+			len(x.Nmap) != 0,           // Nmap
+			len(x.Nslice) != 0,         // Nslice
+			x.Nint64 != nil,            // Nint64
+			len(x.Chstr) != 0,          // Chstr
+			len(x.Mis) != 0,            // Mis
+			len(x.Mbu64) != 0,          // Mbu64
+			len(x.Miwu64s) != 0,        // Miwu64s
+			len(x.Mfwss) != 0,          // Mfwss
+			len(x.Mf32wss) != 0,        // Mf32wss
+			len(x.Mui2wss) != 0,        // Mui2wss
+			len(x.Msu2wss) != 0,        // Msu2wss
+			x.Ci64 != 0,                // Ci64
+			len(x.Swrapbytes) != 0,     // Swrapbytes
+			len(x.Swrapuint8) != 0,     // Swrapuint8
+			len(x.ArrStrUi64T) != 0,    // ArrStrUi64T
+			len(x.Ui64array) != 0,      // Ui64array
+			len(x.Ui64slicearray) != 0, // Ui64slicearray
+			len(x.SintfAarray) != 0,    // SintfAarray
+			x.AnonInTestStrucIntf != nil && len(x.Islice) != 0, // Islice
+			x.AnonInTestStrucIntf != nil && len(x.Ms) != 0,     // Ms
+			x.AnonInTestStrucIntf != nil && x.Nintf != nil,     // Nintf
+			x.AnonInTestStrucIntf != nil && !(x.T.IsZero()),    // T
+			x.AnonInTestStrucIntf != nil && x.Tptr != nil,      // Tptr
+			len(x.Mtsptr) != 0,  // Mtsptr
+			len(x.Mts) != 0,     // Mts
+			len(x.Its) != 0,     // Its
+			x.Nteststruc != nil, // Nteststruc
+		}
+		_ = yyq2
+		var yyn53 bool = x.TestStrucCommon.Nint64 == nil
+		var yyn69 bool = x.AnonInTestStrucIntf == nil
+		var yyn70 bool = x.AnonInTestStrucIntf == nil
+		var yyn71 bool = x.AnonInTestStrucIntf == nil
+		var yyn72 bool = x.AnonInTestStrucIntf == nil
+		var yyn73 bool = x.AnonInTestStrucIntf == nil || x.AnonInTestStrucIntf.Tptr == nil
+		var yyn77 bool = x.Nteststruc == nil
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(75)
+			z.EncWriteArrayElem()
+			if yyq2[0] {
+				if z.EncBasicHandle().StringToRaw {
+					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
 				}
-				z.EncWriteArrayEnd()
 			} else {
-				var yynn2 int
-				for _, b := range yyq2 {
-					if b {
-						yynn2++
-					}
+				if z.EncBasicHandle().StringToRaw {
+					r.EncodeStringBytesRaw([]byte{})
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, "")
 				}
-				z.EncWriteMapStart(yynn2)
-				yynn2 = 0
-				if yyq2[0] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"S\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
-					}
-					z.EncWriteMapElemValue()
-					if z.EncBasicHandle().StringToRaw {
-						r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
-					}
-				}
-				if yyq2[1] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"I64\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeInt(int64(x.TestStrucCommon.I64))
-				}
-				if yyq2[2] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"I32\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `I32`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeInt(int64(x.TestStrucCommon.I32))
-				}
-				if yyq2[3] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"I16\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `I16`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeInt(int64(x.TestStrucCommon.I16))
-				}
-				if yyq2[4] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"I8\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeInt(int64(x.TestStrucCommon.I8))
-				}
-				if yyq2[5] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"I64n\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `I64n`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeInt(int64(x.TestStrucCommon.I64n))
-				}
-				if yyq2[6] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"I32n\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `I32n`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeInt(int64(x.TestStrucCommon.I32n))
-				}
-				if yyq2[7] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"I16n\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `I16n`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeInt(int64(x.TestStrucCommon.I16n))
-				}
-				if yyq2[8] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"I8n\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `I8n`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeInt(int64(x.TestStrucCommon.I8n))
-				}
-				if yyq2[9] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Ui64\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeUint(uint64(x.TestStrucCommon.Ui64))
-				}
-				if yyq2[10] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Ui32\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Ui32`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeUint(uint64(x.TestStrucCommon.Ui32))
-				}
-				if yyq2[11] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Ui16\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Ui16`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeUint(uint64(x.TestStrucCommon.Ui16))
-				}
-				if yyq2[12] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Ui8\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeUint(uint64(x.TestStrucCommon.Ui8))
-				}
-				if yyq2[13] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"F64\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeFloat64(float64(x.TestStrucCommon.F64))
-				}
-				if yyq2[14] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"F32\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeFloat32(float32(x.TestStrucCommon.F32))
-				}
-				if yyq2[15] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"B\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeBool(bool(x.TestStrucCommon.B))
-				}
-				if yyq2[16] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"By\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `By`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeUint(uint64(x.TestStrucCommon.By))
-				}
-				if yyq2[17] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Sslice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceStringV(x.TestStrucCommon.Sslice, e)
-				}
-				if yyq2[18] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"I64slice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `I64slice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceInt64V(x.TestStrucCommon.I64slice, e)
-				}
-				if yyq2[19] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"I16slice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
-				}
-				if yyq2[20] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Ui64slice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceUint64V(x.TestStrucCommon.Ui64slice, e)
-				}
-				if yyq2[21] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Ui8slice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Ui8slice))
-				}
-				if yyq2[22] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Bslice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceBoolV(x.TestStrucCommon.Bslice, e)
-				}
-				if yyq2[23] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Byslice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Byslice`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Byslice))
-				}
-				if yyq2[24] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"BytesSlice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `BytesSlice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceBytesV(x.TestStrucCommon.BytesSlice, e)
-				}
-				if yyq2[25] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Iptrslice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
-					}
-					z.EncWriteMapElemValue()
-					h.encSlicePtrtoint64(([]*int64)(x.TestStrucCommon.Iptrslice), e)
-				}
-				if yyq2[26] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"WrapSliceInt64\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
-					}
-					z.EncWriteMapElemValue()
-					x.TestStrucCommon.WrapSliceInt64.CodecEncodeSelf(e)
-				}
-				if yyq2[27] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"WrapSliceString\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
-					}
-					z.EncWriteMapElemValue()
-					x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
-				}
-				if yyq2[28] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Msi64\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncMapStringInt64V(x.TestStrucCommon.Msi64, e)
-				}
-				if yyq2[29] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Msbytes\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Msbytes`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncMapStringBytesV(x.TestStrucCommon.Msbytes, e)
-				}
-				if yyq2[30] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Simplef\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Simplef`)
-					}
-					z.EncWriteMapElemValue()
-					yy190 := &x.TestStrucCommon.Simplef
-					yy190.CodecEncodeSelf(e)
-				}
-				if yyq2[31] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"SstrUi64T\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `SstrUi64T`)
-					}
-					z.EncWriteMapElemValue()
-					h.encSlicestringUint64T(([]stringUint64T)(x.TestStrucCommon.SstrUi64T), e)
-				}
-				if yyq2[32] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AS\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
-					}
-					z.EncWriteMapElemValue()
-					if z.EncBasicHandle().StringToRaw {
-						r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
-					}
-				}
-				if yyq2[33] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AI64\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
-				}
-				if yyq2[34] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AI16\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI16))
-				}
-				if yyq2[35] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AUi64\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeUint(uint64(x.TestStrucCommon.AnonInTestStruc.AUi64))
-				}
-				if yyq2[36] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"ASslice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceStringV(x.TestStrucCommon.AnonInTestStruc.ASslice, e)
-				}
-				if yyq2[37] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AI64slice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.AI64slice, e)
-				}
-				if yyq2[38] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AUi64slice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64slice, e)
-				}
-				if yyq2[39] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AF64slice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceFloat64V(x.TestStrucCommon.AnonInTestStruc.AF64slice, e)
-				}
-				if yyq2[40] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AF32slice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
-				}
-				if yyq2[41] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AMSU16\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16), e)
-				}
-				if yyq2[42] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AI64arr0\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
-					}
-					z.EncWriteMapElemValue()
-					yy203 := &x.TestStrucCommon.AnonInTestStruc.AI64arr0
-					h.encArray0int64((*[0]int64)(yy203), e)
-				}
-				if yyq2[43] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"A164slice0\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `A164slice0`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.A164slice0, e)
-				}
-				if yyq2[44] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AUi64sliceN\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, e)
-				}
-				if yyq2[45] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AMSU16N\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16N), e)
-				}
-				if yyq2[46] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"AMSU16E\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16E), e)
-				}
-				if yyq2[47] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"NotAnon\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `NotAnon`)
-					}
-					z.EncWriteMapElemValue()
-					yy209 := &x.TestStrucCommon.NotAnon
-					yy209.CodecEncodeSelf(e)
-				}
-				if yyq2[48] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Nmap\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Nmap`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncMapStringBoolV(x.TestStrucCommon.Nmap, e)
-				}
-				if yyq2[49] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Nslice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Nslice`)
-					}
-					z.EncWriteMapElemValue()
-					r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Nslice))
-				}
-				if yyq2[50] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Nint64\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Nint64`)
-					}
-					z.EncWriteMapElemValue()
-					if yyn53 {
-						r.EncodeNil()
-					} else {
-						yy213 := *x.TestStrucCommon.Nint64
-						r.EncodeInt(int64(yy213))
-					}
-				}
-				if yyq2[51] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Chstr\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Chstr`)
-					}
-					z.EncWriteMapElemValue()
-					h.encChanstring((chan string)(x.Chstr), e)
-				}
-				if yyq2[52] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Mis\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Mis`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncMapIntStringV(x.Mis, e)
-				}
-				if yyq2[53] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Mbu64\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Mbu64`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapboolc3RydWN0IHt9((map[bool]struct{})(x.Mbu64), e)
-				}
-				if yyq2[54] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Miwu64s\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Miwu64s`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapintwrapUint64Slice((map[int]wrapUint64Slice)(x.Miwu64s), e)
-				}
-				if yyq2[55] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Mfwss\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Mfwss`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapfloat64wrapStringSlice((map[float64]wrapStringSlice)(x.Mfwss), e)
-				}
-				if yyq2[56] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Mf32wss\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Mf32wss`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapfloat32wrapStringSlice((map[float32]wrapStringSlice)(x.Mf32wss), e)
-				}
-				if yyq2[57] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Mui2wss\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Mui2wss`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapuint64wrapStringSlice((map[uint64]wrapStringSlice)(x.Mui2wss), e)
-				}
-				if yyq2[58] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Msu2wss\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Msu2wss`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapstringUint64TwrapStringSlice((map[stringUint64T]wrapStringSlice)(x.Msu2wss), e)
-				}
-				if yyq2[59] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Ci64\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Ci64`)
-					}
-					z.EncWriteMapElemValue()
-					x.Ci64.CodecEncodeSelf(e)
-				}
-				if yyq2[60] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Swrapbytes\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Swrapbytes`)
-					}
-					z.EncWriteMapElemValue()
-					h.encSlicewrapBytes(([]wrapBytes)(x.Swrapbytes), e)
-				}
-				if yyq2[61] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Swrapuint8\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Swrapuint8`)
-					}
-					z.EncWriteMapElemValue()
-					h.encSlicewrapUint8(([]wrapUint8)(x.Swrapuint8), e)
-				}
-				if yyq2[62] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"ArrStrUi64T\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `ArrStrUi64T`)
-					}
-					z.EncWriteMapElemValue()
-					yy226 := &x.ArrStrUi64T
-					h.encArray4stringUint64T((*[4]stringUint64T)(yy226), e)
-				}
-				if yyq2[63] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Ui64array\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64array`)
-					}
-					z.EncWriteMapElemValue()
-					yy228 := &x.Ui64array
-					h.encArray4uint64((*[4]uint64)(yy228), e)
-				}
-				if yyq2[64] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Ui64slicearray\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slicearray`)
-					}
-					z.EncWriteMapElemValue()
-					h.encSlicePtrtoArray4uint64(([]*[4]uint64)(x.Ui64slicearray), e)
-				}
-				if yyq2[65] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"SintfAarray\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `SintfAarray`)
-					}
-					z.EncWriteMapElemValue()
-					z.F.EncSliceIntfV(x.SintfAarray, e)
-				}
-				if yyq2[66] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Islice\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Islice`)
-					}
-					z.EncWriteMapElemValue()
-					if yyn69 {
-						r.EncodeNil()
-					} else {
-						z.F.EncSliceIntfV(x.AnonInTestStrucIntf.Islice, e)
-					}
-				}
-				if yyq2[67] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Ms\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Ms`)
-					}
-					z.EncWriteMapElemValue()
-					if yyn70 {
-						r.EncodeNil()
-					} else {
-						z.F.EncMapStringIntfV(x.AnonInTestStrucIntf.Ms, e)
-					}
-				}
-				if yyq2[68] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Nintf\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Nintf`)
-					}
-					z.EncWriteMapElemValue()
-					if yyn71 {
-						r.EncodeNil()
-					} else {
-						z.EncFallback(x.AnonInTestStrucIntf.Nintf)
-					}
-				}
-				if yyq2[69] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"T\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `T`)
-					}
-					z.EncWriteMapElemValue()
-					if yyn72 {
-						r.EncodeNil()
-					} else {
-						if !z.EncBasicHandle().TimeNotBuiltin {
-							r.EncodeTime(x.AnonInTestStrucIntf.T)
-						} else if yyxt235 := z.Extension(z.I2Rtid(x.AnonInTestStrucIntf.T)); yyxt235 != nil {
-							z.EncExtension(x.AnonInTestStrucIntf.T, yyxt235)
-						} else if z.EncBinary() {
-							z.EncBinaryMarshal(x.AnonInTestStrucIntf.T)
-						} else if !z.EncBinary() && z.IsJSONHandle() {
-							z.EncJSONMarshal(x.AnonInTestStrucIntf.T)
-						} else {
-							z.EncFallback(x.AnonInTestStrucIntf.T)
-						}
-					}
-				}
-				if yyq2[70] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Tptr\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Tptr`)
-					}
-					z.EncWriteMapElemValue()
-					if yyn73 {
-						r.EncodeNil()
-					} else {
-						yy236 := *x.AnonInTestStrucIntf.Tptr
-						if !z.EncBasicHandle().TimeNotBuiltin {
-							r.EncodeTime(yy236)
-						} else if yyxt237 := z.Extension(z.I2Rtid(yy236)); yyxt237 != nil {
-							z.EncExtension(yy236, yyxt237)
-						} else if z.EncBinary() {
-							z.EncBinaryMarshal(yy236)
-						} else if !z.EncBinary() && z.IsJSONHandle() {
-							z.EncJSONMarshal(yy236)
-						} else {
-							z.EncFallback(yy236)
-						}
-					}
-				}
-				if yyq2[71] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Mtsptr\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Mtsptr`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapstringPtrtoTestStrucFlex((map[string]*TestStrucFlex)(x.Mtsptr), e)
-				}
-				if yyq2[72] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Mts\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Mts`)
-					}
-					z.EncWriteMapElemValue()
-					h.encMapstringTestStrucFlex((map[string]TestStrucFlex)(x.Mts), e)
-				}
-				if yyq2[73] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Its\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Its`)
-					}
-					z.EncWriteMapElemValue()
-					h.encSlicePtrtoTestStrucFlex(([]*TestStrucFlex)(x.Its), e)
-				}
-				if yyq2[74] {
-					z.EncWriteMapElemKey()
-					if z.IsJSONHandle() {
-						z.WriteStr("\"Nteststruc\"")
-					} else {
-						r.EncodeStringEnc(codecSelferCcUTF819780, `Nteststruc`)
-					}
-					z.EncWriteMapElemValue()
-					if yyn77 {
-						r.EncodeNil()
-					} else {
-						x.Nteststruc.CodecEncodeSelf(e)
-					}
-				}
-				z.EncWriteMapEnd()
 			}
+			z.EncWriteArrayElem()
+			if yyq2[1] {
+				r.EncodeInt(int64(x.TestStrucCommon.I64))
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[2] {
+				r.EncodeInt(int64(x.TestStrucCommon.I32))
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[3] {
+				r.EncodeInt(int64(x.TestStrucCommon.I16))
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[4] {
+				r.EncodeInt(int64(x.TestStrucCommon.I8))
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[5] {
+				r.EncodeInt(int64(x.TestStrucCommon.I64n))
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[6] {
+				r.EncodeInt(int64(x.TestStrucCommon.I32n))
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[7] {
+				r.EncodeInt(int64(x.TestStrucCommon.I16n))
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[8] {
+				r.EncodeInt(int64(x.TestStrucCommon.I8n))
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[9] {
+				r.EncodeUint(uint64(x.TestStrucCommon.Ui64))
+			} else {
+				r.EncodeUint(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[10] {
+				r.EncodeUint(uint64(x.TestStrucCommon.Ui32))
+			} else {
+				r.EncodeUint(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[11] {
+				r.EncodeUint(uint64(x.TestStrucCommon.Ui16))
+			} else {
+				r.EncodeUint(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[12] {
+				r.EncodeUint(uint64(x.TestStrucCommon.Ui8))
+			} else {
+				r.EncodeUint(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[13] {
+				r.EncodeFloat64(float64(x.TestStrucCommon.F64))
+			} else {
+				r.EncodeFloat64(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[14] {
+				r.EncodeFloat32(float32(x.TestStrucCommon.F32))
+			} else {
+				r.EncodeFloat32(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[15] {
+				r.EncodeBool(bool(x.TestStrucCommon.B))
+			} else {
+				r.EncodeBool(false)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[16] {
+				r.EncodeUint(uint64(x.TestStrucCommon.By))
+			} else {
+				r.EncodeUint(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[17] {
+				z.F.EncSliceStringV(x.TestStrucCommon.Sslice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[18] {
+				z.F.EncSliceInt64V(x.TestStrucCommon.I64slice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[19] {
+				z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[20] {
+				z.F.EncSliceUint64V(x.TestStrucCommon.Ui64slice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[21] {
+				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Ui8slice))
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[22] {
+				z.F.EncSliceBoolV(x.TestStrucCommon.Bslice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[23] {
+				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Byslice))
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[24] {
+				z.F.EncSliceBytesV(x.TestStrucCommon.BytesSlice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[25] {
+				h.encSlicePtrtoint64(([]*int64)(x.TestStrucCommon.Iptrslice), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[26] {
+				x.TestStrucCommon.WrapSliceInt64.CodecEncodeSelf(e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[27] {
+				x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[28] {
+				z.F.EncMapStringInt64V(x.TestStrucCommon.Msi64, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[29] {
+				z.F.EncMapStringBytesV(x.TestStrucCommon.Msbytes, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[30] {
+				yy108 := &x.TestStrucCommon.Simplef
+				yy108.CodecEncodeSelf(e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[31] {
+				h.encSlicestringUint64T(([]stringUint64T)(x.TestStrucCommon.SstrUi64T), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[32] {
+				if z.EncBasicHandle().StringToRaw {
+					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
+				}
+			} else {
+				if z.EncBasicHandle().StringToRaw {
+					r.EncodeStringBytesRaw([]byte{})
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, "")
+				}
+			}
+			z.EncWriteArrayElem()
+			if yyq2[33] {
+				r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[34] {
+				r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI16))
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[35] {
+				r.EncodeUint(uint64(x.TestStrucCommon.AnonInTestStruc.AUi64))
+			} else {
+				r.EncodeUint(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[36] {
+				z.F.EncSliceStringV(x.TestStrucCommon.AnonInTestStruc.ASslice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[37] {
+				z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.AI64slice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[38] {
+				z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64slice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[39] {
+				z.F.EncSliceFloat64V(x.TestStrucCommon.AnonInTestStruc.AF64slice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[40] {
+				z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[41] {
+				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[42] {
+				yy121 := &x.TestStrucCommon.AnonInTestStruc.AI64arr0
+				h.encArray0int64((*[0]int64)(yy121), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[43] {
+				z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.A164slice0, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[44] {
+				z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[45] {
+				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16N), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[46] {
+				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16E), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[47] {
+				yy127 := &x.TestStrucCommon.NotAnon
+				yy127.CodecEncodeSelf(e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[48] {
+				z.F.EncMapStringBoolV(x.TestStrucCommon.Nmap, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[49] {
+				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Nslice))
+			} else {
+				r.EncodeNil()
+			}
+			if yyn53 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				if yyq2[50] {
+					yy131 := *x.TestStrucCommon.Nint64
+					r.EncodeInt(int64(yy131))
+				} else {
+					r.EncodeNil()
+				}
+			}
+			z.EncWriteArrayElem()
+			if yyq2[51] {
+				h.encChanstring((chan string)(x.Chstr), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[52] {
+				z.F.EncMapIntStringV(x.Mis, e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[53] {
+				h.encMapboolc3RydWN0IHt9((map[bool]struct{})(x.Mbu64), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[54] {
+				h.encMapintwrapUint64Slice((map[int]wrapUint64Slice)(x.Miwu64s), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[55] {
+				h.encMapfloat64wrapStringSlice((map[float64]wrapStringSlice)(x.Mfwss), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[56] {
+				h.encMapfloat32wrapStringSlice((map[float32]wrapStringSlice)(x.Mf32wss), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[57] {
+				h.encMapuint64wrapStringSlice((map[uint64]wrapStringSlice)(x.Mui2wss), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[58] {
+				h.encMapstringUint64TwrapStringSlice((map[stringUint64T]wrapStringSlice)(x.Msu2wss), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[59] {
+				x.Ci64.CodecEncodeSelf(e)
+			} else {
+				r.EncodeInt(0)
+			}
+			z.EncWriteArrayElem()
+			if yyq2[60] {
+				h.encSlicewrapBytes(([]wrapBytes)(x.Swrapbytes), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[61] {
+				h.encSlicewrapUint8(([]wrapUint8)(x.Swrapuint8), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[62] {
+				yy144 := &x.ArrStrUi64T
+				h.encArray4stringUint64T((*[4]stringUint64T)(yy144), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[63] {
+				yy146 := &x.Ui64array
+				h.encArray4uint64((*[4]uint64)(yy146), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[64] {
+				h.encSlicePtrtoArray4uint64(([]*[4]uint64)(x.Ui64slicearray), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[65] {
+				z.F.EncSliceIntfV(x.SintfAarray, e)
+			} else {
+				r.EncodeNil()
+			}
+			if yyn69 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				if yyq2[66] {
+					z.F.EncSliceIntfV(x.AnonInTestStrucIntf.Islice, e)
+				} else {
+					r.EncodeNil()
+				}
+			}
+			if yyn70 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				if yyq2[67] {
+					z.F.EncMapStringIntfV(x.AnonInTestStrucIntf.Ms, e)
+				} else {
+					r.EncodeNil()
+				}
+			}
+			if yyn71 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				if yyq2[68] {
+					z.EncFallback(x.AnonInTestStrucIntf.Nintf)
+				} else {
+					r.EncodeNil()
+				}
+			}
+			if yyn72 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				if yyq2[69] {
+					if !z.EncBasicHandle().TimeNotBuiltin {
+						r.EncodeTime(x.AnonInTestStrucIntf.T)
+					} else if yyxt153 := z.Extension(z.I2Rtid(x.AnonInTestStrucIntf.T)); yyxt153 != nil {
+						z.EncExtension(x.AnonInTestStrucIntf.T, yyxt153)
+					} else if z.EncBinary() {
+						z.EncBinaryMarshal(x.AnonInTestStrucIntf.T)
+					} else if !z.EncBinary() && z.IsJSONHandle() {
+						z.EncJSONMarshal(x.AnonInTestStrucIntf.T)
+					} else {
+						z.EncFallback(x.AnonInTestStrucIntf.T)
+					}
+				} else {
+					r.EncodeNil()
+				}
+			}
+			if yyn73 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				if yyq2[70] {
+					yy154 := *x.AnonInTestStrucIntf.Tptr
+					if !z.EncBasicHandle().TimeNotBuiltin {
+						r.EncodeTime(yy154)
+					} else if yyxt155 := z.Extension(z.I2Rtid(yy154)); yyxt155 != nil {
+						z.EncExtension(yy154, yyxt155)
+					} else if z.EncBinary() {
+						z.EncBinaryMarshal(yy154)
+					} else if !z.EncBinary() && z.IsJSONHandle() {
+						z.EncJSONMarshal(yy154)
+					} else {
+						z.EncFallback(yy154)
+					}
+				} else {
+					r.EncodeNil()
+				}
+			}
+			z.EncWriteArrayElem()
+			if yyq2[71] {
+				h.encMapstringPtrtoTestStrucFlex((map[string]*TestStrucFlex)(x.Mtsptr), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[72] {
+				h.encMapstringTestStrucFlex((map[string]TestStrucFlex)(x.Mts), e)
+			} else {
+				r.EncodeNil()
+			}
+			z.EncWriteArrayElem()
+			if yyq2[73] {
+				h.encSlicePtrtoTestStrucFlex(([]*TestStrucFlex)(x.Its), e)
+			} else {
+				r.EncodeNil()
+			}
+			if yyn77 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				if yyq2[74] {
+					x.Nteststruc.CodecEncodeSelf(e)
+				} else {
+					r.EncodeNil()
+				}
+			}
+			z.EncWriteArrayEnd()
+		} else {
+			var yynn2 int
+			for _, b := range yyq2 {
+				if b {
+					yynn2++
+				}
+			}
+			z.EncWriteMapStart(yynn2)
+			yynn2 = 0
+			if yyq2[0] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"S\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+				}
+				z.EncWriteMapElemValue()
+				if z.EncBasicHandle().StringToRaw {
+					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
+				}
+			}
+			if yyq2[1] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"I64\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.TestStrucCommon.I64))
+			}
+			if yyq2[2] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"I32\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `I32`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.TestStrucCommon.I32))
+			}
+			if yyq2[3] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"I16\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `I16`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.TestStrucCommon.I16))
+			}
+			if yyq2[4] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"I8\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.TestStrucCommon.I8))
+			}
+			if yyq2[5] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"I64n\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `I64n`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.TestStrucCommon.I64n))
+			}
+			if yyq2[6] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"I32n\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `I32n`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.TestStrucCommon.I32n))
+			}
+			if yyq2[7] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"I16n\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `I16n`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.TestStrucCommon.I16n))
+			}
+			if yyq2[8] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"I8n\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `I8n`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.TestStrucCommon.I8n))
+			}
+			if yyq2[9] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Ui64\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.TestStrucCommon.Ui64))
+			}
+			if yyq2[10] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Ui32\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui32`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.TestStrucCommon.Ui32))
+			}
+			if yyq2[11] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Ui16\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui16`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.TestStrucCommon.Ui16))
+			}
+			if yyq2[12] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Ui8\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.TestStrucCommon.Ui8))
+			}
+			if yyq2[13] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"F64\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeFloat64(float64(x.TestStrucCommon.F64))
+			}
+			if yyq2[14] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"F32\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeFloat32(float32(x.TestStrucCommon.F32))
+			}
+			if yyq2[15] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"B\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeBool(bool(x.TestStrucCommon.B))
+			}
+			if yyq2[16] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"By\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `By`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.TestStrucCommon.By))
+			}
+			if yyq2[17] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Sslice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceStringV(x.TestStrucCommon.Sslice, e)
+			}
+			if yyq2[18] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"I64slice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `I64slice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceInt64V(x.TestStrucCommon.I64slice, e)
+			}
+			if yyq2[19] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"I16slice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
+			}
+			if yyq2[20] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Ui64slice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceUint64V(x.TestStrucCommon.Ui64slice, e)
+			}
+			if yyq2[21] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Ui8slice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Ui8slice))
+			}
+			if yyq2[22] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Bslice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceBoolV(x.TestStrucCommon.Bslice, e)
+			}
+			if yyq2[23] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Byslice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Byslice`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Byslice))
+			}
+			if yyq2[24] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"BytesSlice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `BytesSlice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceBytesV(x.TestStrucCommon.BytesSlice, e)
+			}
+			if yyq2[25] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Iptrslice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
+				}
+				z.EncWriteMapElemValue()
+				h.encSlicePtrtoint64(([]*int64)(x.TestStrucCommon.Iptrslice), e)
+			}
+			if yyq2[26] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"WrapSliceInt64\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
+				}
+				z.EncWriteMapElemValue()
+				x.TestStrucCommon.WrapSliceInt64.CodecEncodeSelf(e)
+			}
+			if yyq2[27] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"WrapSliceString\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
+				}
+				z.EncWriteMapElemValue()
+				x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
+			}
+			if yyq2[28] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Msi64\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncMapStringInt64V(x.TestStrucCommon.Msi64, e)
+			}
+			if yyq2[29] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Msbytes\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Msbytes`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncMapStringBytesV(x.TestStrucCommon.Msbytes, e)
+			}
+			if yyq2[30] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Simplef\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Simplef`)
+				}
+				z.EncWriteMapElemValue()
+				yy190 := &x.TestStrucCommon.Simplef
+				yy190.CodecEncodeSelf(e)
+			}
+			if yyq2[31] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"SstrUi64T\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `SstrUi64T`)
+				}
+				z.EncWriteMapElemValue()
+				h.encSlicestringUint64T(([]stringUint64T)(x.TestStrucCommon.SstrUi64T), e)
+			}
+			if yyq2[32] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AS\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
+				}
+				z.EncWriteMapElemValue()
+				if z.EncBasicHandle().StringToRaw {
+					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
+				}
+			}
+			if yyq2[33] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AI64\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
+			}
+			if yyq2[34] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AI16\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI16))
+			}
+			if yyq2[35] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AUi64\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.TestStrucCommon.AnonInTestStruc.AUi64))
+			}
+			if yyq2[36] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"ASslice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceStringV(x.TestStrucCommon.AnonInTestStruc.ASslice, e)
+			}
+			if yyq2[37] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AI64slice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.AI64slice, e)
+			}
+			if yyq2[38] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AUi64slice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64slice, e)
+			}
+			if yyq2[39] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AF64slice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceFloat64V(x.TestStrucCommon.AnonInTestStruc.AF64slice, e)
+			}
+			if yyq2[40] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AF32slice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
+			}
+			if yyq2[41] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AMSU16\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16), e)
+			}
+			if yyq2[42] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AI64arr0\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
+				}
+				z.EncWriteMapElemValue()
+				yy203 := &x.TestStrucCommon.AnonInTestStruc.AI64arr0
+				h.encArray0int64((*[0]int64)(yy203), e)
+			}
+			if yyq2[43] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"A164slice0\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `A164slice0`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceInt64V(x.TestStrucCommon.AnonInTestStruc.A164slice0, e)
+			}
+			if yyq2[44] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AUi64sliceN\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, e)
+			}
+			if yyq2[45] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AMSU16N\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16N), e)
+			}
+			if yyq2[46] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"AMSU16E\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapstringuint16((map[string]uint16)(x.TestStrucCommon.AnonInTestStruc.AMSU16E), e)
+			}
+			if yyq2[47] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"NotAnon\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `NotAnon`)
+				}
+				z.EncWriteMapElemValue()
+				yy209 := &x.TestStrucCommon.NotAnon
+				yy209.CodecEncodeSelf(e)
+			}
+			if yyq2[48] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Nmap\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Nmap`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncMapStringBoolV(x.TestStrucCommon.Nmap, e)
+			}
+			if yyq2[49] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Nslice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Nslice`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeStringBytesRaw([]byte(x.TestStrucCommon.Nslice))
+			}
+			if yyq2[50] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Nint64\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Nint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn53 {
+					r.EncodeNil()
+				} else {
+					yy213 := *x.TestStrucCommon.Nint64
+					r.EncodeInt(int64(yy213))
+				}
+			}
+			if yyq2[51] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Chstr\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Chstr`)
+				}
+				z.EncWriteMapElemValue()
+				h.encChanstring((chan string)(x.Chstr), e)
+			}
+			if yyq2[52] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Mis\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Mis`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncMapIntStringV(x.Mis, e)
+			}
+			if yyq2[53] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Mbu64\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Mbu64`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapboolc3RydWN0IHt9((map[bool]struct{})(x.Mbu64), e)
+			}
+			if yyq2[54] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Miwu64s\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Miwu64s`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapintwrapUint64Slice((map[int]wrapUint64Slice)(x.Miwu64s), e)
+			}
+			if yyq2[55] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Mfwss\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Mfwss`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapfloat64wrapStringSlice((map[float64]wrapStringSlice)(x.Mfwss), e)
+			}
+			if yyq2[56] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Mf32wss\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Mf32wss`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapfloat32wrapStringSlice((map[float32]wrapStringSlice)(x.Mf32wss), e)
+			}
+			if yyq2[57] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Mui2wss\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Mui2wss`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapuint64wrapStringSlice((map[uint64]wrapStringSlice)(x.Mui2wss), e)
+			}
+			if yyq2[58] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Msu2wss\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Msu2wss`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapstringUint64TwrapStringSlice((map[stringUint64T]wrapStringSlice)(x.Msu2wss), e)
+			}
+			if yyq2[59] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Ci64\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Ci64`)
+				}
+				z.EncWriteMapElemValue()
+				x.Ci64.CodecEncodeSelf(e)
+			}
+			if yyq2[60] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Swrapbytes\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Swrapbytes`)
+				}
+				z.EncWriteMapElemValue()
+				h.encSlicewrapBytes(([]wrapBytes)(x.Swrapbytes), e)
+			}
+			if yyq2[61] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Swrapuint8\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Swrapuint8`)
+				}
+				z.EncWriteMapElemValue()
+				h.encSlicewrapUint8(([]wrapUint8)(x.Swrapuint8), e)
+			}
+			if yyq2[62] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"ArrStrUi64T\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `ArrStrUi64T`)
+				}
+				z.EncWriteMapElemValue()
+				yy226 := &x.ArrStrUi64T
+				h.encArray4stringUint64T((*[4]stringUint64T)(yy226), e)
+			}
+			if yyq2[63] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Ui64array\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64array`)
+				}
+				z.EncWriteMapElemValue()
+				yy228 := &x.Ui64array
+				h.encArray4uint64((*[4]uint64)(yy228), e)
+			}
+			if yyq2[64] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Ui64slicearray\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slicearray`)
+				}
+				z.EncWriteMapElemValue()
+				h.encSlicePtrtoArray4uint64(([]*[4]uint64)(x.Ui64slicearray), e)
+			}
+			if yyq2[65] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"SintfAarray\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `SintfAarray`)
+				}
+				z.EncWriteMapElemValue()
+				z.F.EncSliceIntfV(x.SintfAarray, e)
+			}
+			if yyq2[66] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Islice\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Islice`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn69 {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceIntfV(x.AnonInTestStrucIntf.Islice, e)
+				}
+			}
+			if yyq2[67] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Ms\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Ms`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn70 {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringIntfV(x.AnonInTestStrucIntf.Ms, e)
+				}
+			}
+			if yyq2[68] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Nintf\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Nintf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn71 {
+					r.EncodeNil()
+				} else {
+					z.EncFallback(x.AnonInTestStrucIntf.Nintf)
+				}
+			}
+			if yyq2[69] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"T\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `T`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn72 {
+					r.EncodeNil()
+				} else {
+					if !z.EncBasicHandle().TimeNotBuiltin {
+						r.EncodeTime(x.AnonInTestStrucIntf.T)
+					} else if yyxt235 := z.Extension(z.I2Rtid(x.AnonInTestStrucIntf.T)); yyxt235 != nil {
+						z.EncExtension(x.AnonInTestStrucIntf.T, yyxt235)
+					} else if z.EncBinary() {
+						z.EncBinaryMarshal(x.AnonInTestStrucIntf.T)
+					} else if !z.EncBinary() && z.IsJSONHandle() {
+						z.EncJSONMarshal(x.AnonInTestStrucIntf.T)
+					} else {
+						z.EncFallback(x.AnonInTestStrucIntf.T)
+					}
+				}
+			}
+			if yyq2[70] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Tptr\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Tptr`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn73 {
+					r.EncodeNil()
+				} else {
+					yy236 := *x.AnonInTestStrucIntf.Tptr
+					if !z.EncBasicHandle().TimeNotBuiltin {
+						r.EncodeTime(yy236)
+					} else if yyxt237 := z.Extension(z.I2Rtid(yy236)); yyxt237 != nil {
+						z.EncExtension(yy236, yyxt237)
+					} else if z.EncBinary() {
+						z.EncBinaryMarshal(yy236)
+					} else if !z.EncBinary() && z.IsJSONHandle() {
+						z.EncJSONMarshal(yy236)
+					} else {
+						z.EncFallback(yy236)
+					}
+				}
+			}
+			if yyq2[71] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Mtsptr\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Mtsptr`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapstringPtrtoTestStrucFlex((map[string]*TestStrucFlex)(x.Mtsptr), e)
+			}
+			if yyq2[72] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Mts\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Mts`)
+				}
+				z.EncWriteMapElemValue()
+				h.encMapstringTestStrucFlex((map[string]TestStrucFlex)(x.Mts), e)
+			}
+			if yyq2[73] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Its\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Its`)
+				}
+				z.EncWriteMapElemValue()
+				h.encSlicePtrtoTestStrucFlex(([]*TestStrucFlex)(x.Its), e)
+			}
+			if yyq2[74] {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Nteststruc\"")
+				} else {
+					r.EncodeStringEnc(codecSelferCcUTF819780, `Nteststruc`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn77 {
+					r.EncodeNil()
+				} else {
+					x.Nteststruc.CodecEncodeSelf(e)
+				}
+			}
+			z.EncWriteMapEnd()
 		}
 	}
 }
@@ -10426,27 +10142,23 @@ func (x *TestStrucFlex) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
-	if yyxt1 := z.Extension(z.I2Rtid(x)); yyxt1 != nil {
-		z.DecExtension(x, yyxt1)
-	} else {
-		yyct2 := r.ContainerType()
-		if yyct2 == codecSelferValueTypeMap19780 {
-			yyl2 := z.DecReadMapStart()
-			if yyl2 == 0 {
-				z.DecReadMapEnd()
-			} else {
-				x.codecDecodeSelfFromMap(yyl2, d)
-			}
-		} else if yyct2 == codecSelferValueTypeArray19780 {
-			yyl2 := z.DecReadArrayStart()
-			if yyl2 == 0 {
-				z.DecReadArrayEnd()
-			} else {
-				x.codecDecodeSelfFromArray(yyl2, d)
-			}
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+			z.DecReadMapEnd()
 		} else {
-			panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 == 0 {
+			z.DecReadArrayEnd()
+		} else {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
 	}
 }
 

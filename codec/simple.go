@@ -127,17 +127,27 @@ func (e *simpleEncDriver) encLen(bd byte, length int) {
 	}
 }
 
-func (e *simpleEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext, _ *Encoder) {
-	bs := ext.WriteExt(rv)
+func (e *simpleEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext) {
+	var bs []byte
+	var bufp bytesBufPooler
+	if ext == SelfExt {
+		bs = bufp.get(1024)[:0]
+		e.e.sideEncode(v, &bs)
+	} else {
+		bs = ext.WriteExt(v)
+	}
 	if bs == nil {
 		e.EncodeNil()
 		return
 	}
 	e.encodeExtPreamble(uint8(xtag), len(bs))
 	e.w.writeb(bs)
+	if ext == SelfExt {
+		bufp.end()
+	}
 }
 
-func (e *simpleEncDriver) EncodeRawExt(re *RawExt, _ *Encoder) {
+func (e *simpleEncDriver) EncodeRawExt(re *RawExt) {
 	e.encodeExtPreamble(uint8(re.Tag), len(re.Data))
 	e.w.writeb(re.Data)
 }
@@ -472,6 +482,8 @@ func (d *simpleDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realx
 		re := rv.(*RawExt)
 		re.Tag = realxtag
 		re.Data = detachZeroCopyBytes(d.br, re.Data, xbs)
+	} else if ext == SelfExt {
+		d.d.sideDecode(rv, xbs)
 	} else {
 		ext.ReadExt(rv, xbs)
 	}
@@ -611,7 +623,7 @@ func (h *SimpleHandle) Name() string { return "simple" }
 
 // SetBytesExt sets an extension
 func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
-	return h.SetExt(rt, tag, &bytesExtWrapper{BytesExt: ext})
+	return h.SetExt(rt, tag, makeExt(ext))
 }
 
 // func (h *SimpleHandle) hasElemSeparators() bool { return true } // as it implements Write(Map|Array)XXX

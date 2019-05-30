@@ -131,10 +131,10 @@ _main() {
         return 1
     fi
     local args=()
-    while getopts "dcsjqp" flag
+    while getopts "dcsjqpg" flag
     do
         case "$flag" in
-            d|c|s|j|q|p) args+=( "$flag" ) ;;
+            d|c|s|j|q|p|g) args+=( "$flag" ) ;;
             *) _usage; return 1 ;;
         esac
     done
@@ -143,6 +143,7 @@ _main() {
     [[ " ${args[*]} " == *"d"* ]] && _go_get "$@"
     [[ " ${args[*]} " == *"c"*  ]] && _gen "$@"
     [[ " ${args[*]} " == *"s"* ]] && _suite "$@" && _suite_gen "$@" 
+    [[ " ${args[*]} " == *"g"* ]] && _suite_gen "$@" 
     [[ " ${args[*]} " == *"j"* ]] && _suite_json "$@"
     [[ " ${args[*]} " == *"q"* ]] && _suite_very_quick_json_trim_output "$@"
     [[ " ${args[*]} " == *"p"* ]] && _suite_very_quick_json_only_profile "$@"
