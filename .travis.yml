@@ -1,18 +1,18 @@
 language: go
 sudo: false
 go:
-    - 1.7.x  # go testing suite support, which we use, was introduced in go 1.7
-    - 1.8.x
-    - 1.9.x
-    - 1.10.x
-    - 1.11.x
-    - 1.12.x
-    - tip
+  - master
+  - 1.12.x
+  - 1.11.x
+  - 1.10.x
+  - 1.9.x
+  - 1.8.x
+  - 1.7.x  # go testing suite support, which we use, was introduced in go 1.7
 script:
-    - go test -tags "alltests" -run Suite -coverprofile coverage.txt github.com/ugorji/go/codec
-    - go test -tags "alltests safe" -run Suite -coverprofile coverage.safe.txt github.com/ugorji/go/codec
-    - go test -tags "alltests codecgen" -run Suite -coverprofile coverage.codecgen.txt github.com/ugorji/go/codec
-    - GOARCH=386 go test -tags "alltests" -run Suite -coverprofile coverage.386.txt github.com/ugorji/go/codec
-    - go test -race -tags "alltests" -run Suite -coverprofile coverage.race.txt github.com/ugorji/go/codec
+  - go test -tags "alltests" -run Suite -coverprofile coverage.txt github.com/ugorji/go/codec
+  - go test -tags "alltests safe" -run Suite -coverprofile coverage.safe.txt github.com/ugorji/go/codec
+  - go test -tags "alltests codecgen" -run Suite -coverprofile coverage.codecgen.txt github.com/ugorji/go/codec
+  - GOARCH=386 go test -tags "alltests" -run Suite -coverprofile coverage.386.txt github.com/ugorji/go/codec
+  - [ "${TRAVIS_GO_VERSION}" = "master" ] && go test "-race" -tags "alltests" -run Suite -coverprofile coverage.race.txt github.com/ugorji/go/codec
 after_success:
-    - bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash)
