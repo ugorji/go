@@ -7,7 +7,6 @@
 
 # go-codec
 
-
 This repository contains the `go-codec` library.
 
 To install:
@@ -123,8 +122,8 @@ tag) but letting the encoding mechanism default to the standard way.
 This package maintains symmetry in the encoding and decoding halfs. We
 determine how to encode or decode by walking this decision tree
 
-  - is type a codec.Selfer?
   - is there an extension registered for the type?
+  - is type a codec.Selfer?
   - is format binary, and is type a encoding.BinaryMarshaler and BinaryUnmarshaler?
   - is format specifically json, and is type a encoding/json.Marshaler and Unmarshaler?
   - is format text-based, and type an encoding.TextMarshaler and TextUnmarshaler?
