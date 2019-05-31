@@ -170,7 +170,7 @@ func (e *simpleEncDriver) WriteMapStart(length int) {
 // }
 
 func (e *simpleEncDriver) EncodeStringEnc(c charEncoding, v string) {
-	if false && e.h.EncZeroValuesAsNil && e.e.c != containerMapKey && v == "" {
+	if e.h.EncZeroValuesAsNil && e.e.c != containerMapKey && v == "" {
 		e.EncodeNil()
 		return
 	}
