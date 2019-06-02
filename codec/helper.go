@@ -2417,6 +2417,14 @@ func (x *bitset256) set(pos byte) {
 
 // ------------
 
+type strBytes struct {
+	s string
+	b []byte
+	// i uint16
+}
+
+// ------------
+
 type pooler struct {
 	// function-scoped pooled resources
 	tiload                                      sync.Pool // for type info loading
@@ -2425,6 +2433,8 @@ type pooler struct {
 	// lifetime-scoped pooled resources
 	// dn                                 sync.Pool // for decNaked
 	buf1k, buf2k, buf4k, buf8k, buf16k, buf32k, buf64k sync.Pool // for [N]byte
+
+	mapStrU16, mapU16Str, mapU16Bytes, mapU16StrBytes sync.Pool // for Binc
 }
 
 func (p *pooler) init() {
@@ -2446,6 +2456,10 @@ func (p *pooler) init() {
 	p.buf32k.New = func() interface{} { return new([32 * 1024]byte) }
 	p.buf64k.New = func() interface{} { return new([64 * 1024]byte) }
 
+	p.mapStrU16.New = func() interface{} { return make(map[string]uint16, 16) }
+	p.mapU16Str.New = func() interface{} { return make(map[uint16]string, 16) }
+	p.mapU16Bytes.New = func() interface{} { return make(map[uint16][]byte, 16) }
+	p.mapU16StrBytes.New = func() interface{} { return make(map[uint16]strBytes, 16) }
 }
 
 // func (p *pooler) sfiRv8() (sp *sync.Pool, v interface{}) {
@@ -2529,12 +2543,13 @@ func (panicHdl) errorstr(message string) {
 }
 
 func (panicHdl) errorf(format string, params ...interface{}) {
-	if format == "" {
-	} else if len(params) == 0 {
-		panic(format)
-	} else {
+	if len(params) != 0 {
 		panic(fmt.Sprintf(format, params...))
 	}
+	if len(params) == 0 {
+		panic(format)
+	}
+	panic("undefined error")
 }
 
 // ----------------------------------------------------
