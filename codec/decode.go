@@ -126,6 +126,7 @@ type decDriver interface {
 	ReadMapEnd()
 
 	reset()
+	atEndOfDecode()
 	uncacheRead()
 }
 
@@ -151,6 +152,7 @@ func (x decDriverNoopContainerReader) ReadArrayEnd()           {}
 func (x decDriverNoopContainerReader) ReadMapStart() (v int)   { return }
 func (x decDriverNoopContainerReader) ReadMapEnd()             {}
 func (x decDriverNoopContainerReader) CheckBreak() (v bool)    { return }
+func (x decDriverNoopContainerReader) atEndOfDecode()          {}
 
 // func (x decDriverNoopContainerReader) ReadArrayElem()          {}
 // func (x decDriverNoopContainerReader) ReadMapElemKey()         {}
@@ -2545,6 +2547,7 @@ func (d *Decoder) mustDecode(v interface{}) {
 
 	d.bi.calls++
 	d.decode(v)
+	d.d.atEndOfDecode()
 	// xprintf.(">>>>>>>> >>>>>>>> num decFns: %v\n", d.cf.sn)
 	d.bi.calls--
 	if !d.h.ExplicitRelease && d.bi.calls == 0 {

@@ -1443,6 +1443,8 @@ func (d *jsonDecDriver) reset() {
 	// d.n.reset()
 }
 
+func (d *jsonDecDriver) atEndOfDecode() {}
+
 // jsonFloatStrconvFmtPrec ...
 //
 // ensure that every float has an 'e' or '.' in it,/ for easy differentiation from integers.
