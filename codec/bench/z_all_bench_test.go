@@ -22,7 +22,6 @@ var benchmarkGroupOnce sync.Once
 var benchmarkGroupSave struct {
 	testUseIoEncDec int
 	testUseReset    bool
-	testInternStr   bool
 
 	benchDepth            int
 	benchMapStringKeyOnly bool
@@ -36,7 +35,6 @@ func benchmarkGroupInitAll() {
 	testInitAll() // calls flag.Parse
 	benchmarkGroupSave.testUseIoEncDec = testUseIoEncDec
 	benchmarkGroupSave.testUseReset = testUseReset
-	benchmarkGroupSave.testInternStr = testInternStr
 
 	benchmarkGroupSave.benchDepth = benchDepth
 	benchmarkGroupSave.benchMapStringKeyOnly = benchMapStringKeyOnly
@@ -49,7 +47,6 @@ func benchmarkGroupInitAll() {
 func benchmarkGroupReset() {
 	testUseIoEncDec = benchmarkGroupSave.testUseIoEncDec
 	testUseReset = benchmarkGroupSave.testUseReset
-	testInternStr = benchmarkGroupSave.testInternStr
 
 	benchDepth = benchmarkGroupSave.benchDepth
 	benchMapStringKeyOnly = benchmarkGroupSave.benchMapStringKeyOnly
@@ -60,7 +57,7 @@ func benchmarkGroupReset() {
 }
 
 func benchmarkDivider() {
-	// logT(nil, "-------------------------------\n")
+	// logTv(nil, "-------------------------------\n")
 	println()
 }
 
@@ -133,13 +130,6 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 	t.Run("reset-enc-dec...", f)
 
 	benchmarkGroupReset()
-
-	// intern string only applies to binc: don't do a full run of it
-	// testInternStr = true
-	// testReinit()
-	// benchReinit()
-	// t.Run("intern-strings", f)
-	// testInternStr = false
 
 	// benchVerify is kinda lame - serves no real purpose.
 	// benchVerify = true

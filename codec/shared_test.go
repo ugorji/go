@@ -94,22 +94,19 @@ var (
 
 // flag variables used by tests (and bench)
 var (
+	testVerbose bool
+
 	testDepth int
 
-	testVerbose       bool
-	testInitDebug     bool
-	testStructToArray bool
-	testCanonical     bool
-	testUseReset      bool
-	testSkipIntf      bool
-	testInternStr     bool
-	testUseMust       bool
-	testCheckCircRef  bool
+	testMaxInitLen int
+
+	testInitDebug bool
+	testUseReset  bool
+	testSkipIntf  bool
+	testUseMust   bool
 
 	testUseIoEncDec  int
 	testUseIoWrapper bool
-
-	testMaxInitLen int
 
 	testNumRepeatString int
 
@@ -155,20 +152,18 @@ func init() {
 
 func testInitFlags() {
 	// delete(testDecOpts.ExtFuncs, timeTyp)
+	flag.BoolVar(&testVerbose, "tv", false, "Text Extra Verbose Logging if -v if set")
 	flag.IntVar(&testDepth, "tsd", 0, "Test Struc Depth")
-	flag.BoolVar(&testVerbose, "tv", false, "Test Verbose (no longer used - here for compatibility)")
 	flag.BoolVar(&testInitDebug, "tg", false, "Test Init Debug")
 	flag.IntVar(&testUseIoEncDec, "ti", -1, "Use IO Reader/Writer for Marshal/Unmarshal ie >= 0")
 	flag.BoolVar(&testUseIoWrapper, "tiw", false, "Wrap the IO Reader/Writer with a base pass-through reader/writer")
-	flag.BoolVar(&testStructToArray, "ts", false, "Set StructToArray option")
-	flag.BoolVar(&testCanonical, "tc", false, "Set Canonical option")
-	flag.BoolVar(&testInternStr, "te", false, "Set InternStr option")
+
 	flag.BoolVar(&testSkipIntf, "tf", false, "Skip Interfaces")
 	flag.BoolVar(&testUseReset, "tr", false, "Use Reset")
 	flag.IntVar(&testNumRepeatString, "trs", 8, "Create string variables by repeating a string N times")
-	flag.IntVar(&testMaxInitLen, "tx", 0, "Max Init Len")
 	flag.BoolVar(&testUseMust, "tm", true, "Use Must(En|De)code")
-	flag.BoolVar(&testCheckCircRef, "tl", false, "Use Check Circular Ref")
+
+	flag.IntVar(&testMaxInitLen, "tx", 0, "Max Init Len")
 }
 
 func benchInitFlags() {
@@ -286,16 +281,60 @@ func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err
 
 // --- functions below are used by both benchmarks and tests
 
+// log message only when testVerbose = true (ie go test ... -- -tv).
+//
+// These are for intormational messages that do not necessarily
+// help with diagnosing a failure, or which are too large.
+func logTv(x interface{}, format string, args ...interface{}) {
+	if testVerbose {
+		logT(x, format, args...)
+	}
+}
+
+// logT logs messages when running as go test -v
+//
+// Use it for diagnostics messages that help diagnost failure,
+// and when the output is not too long ie shorter than like 100 characters.
+//
+// In general, any logT followed by failT should call this.
 func logT(x interface{}, format string, args ...interface{}) {
-	if t, ok := x.(*testing.T); ok && t != nil {
-		t.Logf(format, args...)
-	} else if b, ok := x.(*testing.B); ok && b != nil {
-		b.Logf(format, args...)
-	} else { // if testing.Verbose() { // if testVerbose {
+	if x == nil {
 		if len(format) == 0 || format[len(format)-1] != '\n' {
 			format = format + "\n"
 		}
 		fmt.Printf(format, args...)
+		return
+	}
+	switch t := x.(type) {
+	case *testing.T:
+		// TODO: use conditional build files containing logT and failT
+		// t.Helper() // only available from go 1.9
+		t.Logf(format, args...)
+	case *testing.B:
+		// t.Helper() // only available from go 1.9
+		t.Logf(format, args...)
+	}
+}
+
+func failT(x interface{}, args ...interface{}) {
+	// switch t := x.(type) {
+	// case *testing.T:
+	// 	t.Helper() // only available from go 1.9
+	// case *testing.B:
+	// 	t.Helper()
+	// }
+
+	if len(args) > 0 {
+		if format, ok := args[0].(string); ok {
+			logT(x, format, args[1:]...)
+		} else if len(args) == 1 {
+			logT(x, "%v", args[0])
+		} else {
+			logT(x, "%v", args)
+		}
+	}
+	if t, ok := x.(interface{ FailNow() }); ok {
+		t.FailNow()
 	}
 }
 

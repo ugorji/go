@@ -4,6 +4,7 @@
 # This helps ensure that nothing gets broken.
 
 _tests() {
+    local vet="" # TODO: make it off
     local gover=$( go version | cut -f 3 -d ' ' )
     # note that codecgen requires fastpath, so you cannot do "codecgen notfastpath"
     local a=( "" "safe"  "notfastpath" "notfastpath safe" "codecgen" "codecgen safe" )
@@ -13,9 +14,9 @@ _tests() {
         local i2=${i:-default}
         case $gover in
             go1.[0-6]*) go vet -printfuncs "errorf" "$@" &&
-                              go test ${zargs[*]} -vet off -tags "$i" "$@" ;;
+                              go test ${zargs[*]} -vet "$vet" -tags "$i" "$@" ;;
             *) go vet -printfuncs "errorf" "$@" &&
-                     go test ${zargs[*]} -vet off -tags "alltests $i" -run "Suite" -coverprofile "${i2// /-}.cov.out" "$@" ;;
+                     go test ${zargs[*]} -vet "$vet" -tags "alltests $i" -run "Suite" -coverprofile "${i2// /-}.cov.out" "$@" ;;
         esac
         if [[ "$?" != 0 ]]; then return 1; fi 
     done

@@ -34,20 +34,15 @@ import "testing"
 
 func testGroupResetFlags() {
 	testUseMust = false
-	testCanonical = false
-	testUseMust = false
-	testInternStr = false
 	testUseIoEncDec = -1
-	testStructToArray = false
-	testCheckCircRef = false
 	testUseReset = false
 	testMaxInitLen = 0
 	testUseIoWrapper = false
 	testNumRepeatString = 8
-	testEncodeOptions.RecursiveEmptyCheck = false
-	testDecodeOptions.MapValueReset = false
 	testUseIoEncDec = -1
 	testDepth = 0
+	testDecodeOptions = DecodeOptions{}
+	testEncodeOptions = EncodeOptions{}
 }
 
 func testSuite(t *testing.T, f func(t *testing.T)) {
@@ -56,29 +51,37 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 
 	testReinit() // so flag.Parse() is called first, and never called again
 
-	testDecodeOptions = DecodeOptions{}
-	testEncodeOptions = EncodeOptions{}
-
 	testGroupResetFlags()
 
 	testReinit()
 	t.Run("optionsFalse", f)
 
-	testCanonical = true
 	testUseMust = true
-	testInternStr = true
 	testUseIoEncDec = 0
 	// xdebugf("setting StructToArray=true")
-	testStructToArray = true
-	testCheckCircRef = true
 	testUseReset = true
+
+	testDecodeOptions.InternString = true
 	testDecodeOptions.MapValueReset = true
+	// testDecodeOptions.SignedInteger = true
+	// testDecodeOptions.SliceElementReset = true
+	// testDecodeOptions.InterfaceReset = true
+	// testDecodeOptions.PreferArrayOverSlice = true
+	// testDecodeOptions.DeleteOnNilMapValue = true
+	// testDecodeOptions.RawToString = true
+
+	testEncodeOptions.StructToArray = true
+	testEncodeOptions.Canonical = true
+	testEncodeOptions.CheckCircularRef = true
 	testEncodeOptions.RecursiveEmptyCheck = true
+	// testEncodeOptions.Raw = true
+	// testEncodeOptions.StringToRaw = true
+
 	testReinit()
 	t.Run("optionsTrue", f)
 
 	// xdebugf("setting StructToArray=false")
-	testStructToArray = false
+	testEncodeOptions.StructToArray = false
 	testDepth = 6
 	testReinit()
 	t.Run("optionsTrue-deepstruct", f)
@@ -346,11 +349,9 @@ func TestCodecSuite(t *testing.T) {
 		oldIndent, oldCharsAsis, oldPreferFloat, oldMapKeyAsString
 
 	oldIndefLen := testCborH.IndefiniteLength
-
 	testCborH.IndefiniteLength = true
 	testReinit()
 	t.Run("cbor-indefinitelength", testCborGroup)
-
 	testCborH.IndefiniteLength = oldIndefLen
 
 	oldTimeRFC3339 := testCborH.TimeRFC3339
@@ -358,6 +359,12 @@ func TestCodecSuite(t *testing.T) {
 	testReinit()
 	t.Run("cbor-rfc3339", testCborGroup)
 	testCborH.TimeRFC3339 = oldTimeRFC3339
+
+	oldSkipUnexpectedTags := testCborH.SkipUnexpectedTags
+	testCborH.SkipUnexpectedTags = !testCborH.SkipUnexpectedTags
+	testReinit()
+	t.Run("cbor-skip-tags", testCborGroup)
+	testCborH.SkipUnexpectedTags = oldSkipUnexpectedTags
 
 	oldSymbols := testBincH.AsSymbols
 

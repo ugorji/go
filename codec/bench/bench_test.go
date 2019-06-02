@@ -71,25 +71,25 @@ func benchPostInit() {
 }
 
 func runBenchInit() {
-	// logT(nil, "..............................................")
-	logT(nil, "BENCHMARK INIT: %v", time.Now())
-	// logT(nil, "To run full benchmark comparing encodings, use: \"go test -bench=.\"")
-	logT(nil, "Benchmark: ")
-	logT(nil, "\tStruct recursive Depth:             %d", benchDepth)
+	// logTv(nil, "..............................................")
+	logTv(nil, "BENCHMARK INIT: %v", time.Now())
+	// logTv(nil, "To run full benchmark comparing encodings, use: \"go test -bench=.\"")
+	logTv(nil, "Benchmark: ")
+	logTv(nil, "\tStruct recursive Depth:             %d", benchDepth)
 	if approxSize > 0 {
-		logT(nil, "\tApproxDeepSize Of benchmark Struct: %d bytes", approxSize)
+		logTv(nil, "\tApproxDeepSize Of benchmark Struct: %d bytes", approxSize)
 	}
 	if benchUnscientificRes {
-		logT(nil, "Benchmark One-Pass Run (with Unscientific Encode/Decode times): ")
+		logTv(nil, "Benchmark One-Pass Run (with Unscientific Encode/Decode times): ")
 	} else {
-		logT(nil, "Benchmark One-Pass Run:")
+		logTv(nil, "Benchmark One-Pass Run:")
 	}
 	for _, bc := range benchCheckers {
 		doBenchCheck(bc.name, bc.encodefn, bc.decodefn)
 	}
-	logT(nil, "..............................................")
+	logTv(nil, "..............................................")
 	if benchInitDebug {
-		logT(nil, "<<<<====>>>> depth: %v, ts: %#v\n", benchDepth, benchTs)
+		logTv(nil, "<<<<====>>>> depth: %v, ts: %#v\n", benchDepth, benchTs)
 	}
 	runtime.GC()
 	time.Sleep(100 * time.Millisecond)
@@ -107,33 +107,33 @@ func fnBenchNewTs() interface{} {
 
 func benchRecoverPanic(t interface{}) {
 	if r := recover(); r != nil {
-		logT(t, "panic: %v\n", r)
+		logT(t, "(recovered) panic: %v\n", r)
 	}
 }
 
 func doBenchCheck(name string, encfn benchEncFn, decfn benchDecFn) {
 	// if benchUnscientificRes {
-	// 	logT(nil, "-------------- %s ----------------", name)
+	// 	logTv(nil, "-------------- %s ----------------", name)
 	// }
 	defer benchRecoverPanic(nil)
 	runtime.GC()
 	tnow := time.Now()
 	buf, err := encfn(benchTs, nil)
 	if err != nil {
-		logT(nil, "\t%10s: **** Error encoding benchTs: %v", name, err)
+		logTv(nil, "\t%10s: **** Error encoding benchTs: %v", name, err)
 		return
 	}
 	encDur := time.Since(tnow)
 	encLen := len(buf)
 	runtime.GC()
 	if !benchUnscientificRes {
-		logT(nil, "\t%10s: len: %d bytes\n", name, encLen)
+		logTv(nil, "\t%10s: len: %d bytes\n", name, encLen)
 		return
 	}
 	tnow = time.Now()
 	var ts2 TestStruc
 	if err = decfn(buf, &ts2); err != nil {
-		logT(nil, "\t%10s: **** Error decoding into new TestStruc: %v", name, err)
+		logTv(nil, "\t%10s: **** Error decoding into new TestStruc: %v", name, err)
 		return
 	}
 	decDur := time.Since(tnow)
@@ -141,9 +141,9 @@ func doBenchCheck(name string, encfn benchEncFn, decfn benchDecFn) {
 	if benchVerify {
 		err = deepEqual(benchTs, &ts2)
 		if err == nil {
-			logT(nil, "\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded = decoded", name, encLen, encDur, decDur)
+			logTv(nil, "\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded = decoded", name, encLen, encDur, decDur)
 		} else {
-			logT(nil, "\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded != decoded: %v", name, encLen, encDur, decDur, err)
+			logTv(nil, "\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded != decoded: %v", name, encLen, encDur, decDur, err)
 			// if strings.Contains(name, "json") {
 			// 	println(">>>>>")
 			// 	f1, _ := os.Create("1.out")
@@ -162,16 +162,16 @@ func doBenchCheck(name string, encfn benchEncFn, decfn benchDecFn) {
 			// 	f2.Close()
 			// 	f3.Close()
 			// }
-			// logT(nil, "\t: err: %v,\n benchTs: %#v\n\n, ts2: %#v\n\n", err, benchTs, ts2) // TODO: remove
-			// logT(nil, "BenchVerify: Error comparing en|decoded TestStruc: %v", err)
+			// logTv(nil, "\t: err: %v,\n benchTs: %#v\n\n, ts2: %#v\n\n", err, benchTs, ts2) // TODO: remove
+			// logTv(nil, "BenchVerify: Error comparing en|decoded TestStruc: %v", err)
 			// return
-			// logT(nil, "BenchVerify: Error comparing benchTs: %v\n--------\n%v\n--------\n%v", err, benchTs, ts2)
+			// logTv(nil, "BenchVerify: Error comparing benchTs: %v\n--------\n%v\n--------\n%v", err, benchTs, ts2)
 			// if strings.Contains(name, "json") {
-			// 	logT(nil, "\n\tDECODED FROM\n--------\n%s", buf)
+			// 	logTv(nil, "\n\tDECODED FROM\n--------\n%s", buf)
 			// }
 		}
 	} else {
-		logT(nil, "\t%10s: len: %d bytes,\t encode: %v,\t decode: %v", name, encLen, encDur, decDur)
+		logTv(nil, "\t%10s: len: %d bytes,\t encode: %v,\t decode: %v", name, encLen, encDur, decDur)
 	}
 	return
 }
@@ -189,8 +189,7 @@ func fnBenchmarkEncode(b *testing.B, encName string, ts interface{}, encfn bench
 		}
 	}
 	if err != nil {
-		logT(b, "Error encoding benchTs: %s: %v", encName, err)
-		b.FailNow()
+		failT(b, "Error encoding benchTs: %s: %v", encName, err)
 	}
 }
 
@@ -202,20 +201,17 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 	bs := make([]byte, 0, approxSize)
 	buf, err := encfn(ts, bs)
 	if err != nil {
-		logT(b, "Error encoding benchTs: %s: %v", encName, err)
-		b.FailNow()
+		failT(b, "Error encoding benchTs: %s: %v", encName, err)
 	}
 	if false && benchVerify { // do not do benchVerify during decode
 		// ts2 := newfn()
 		ts1 := ts.(*TestStruc)
 		ts2 := new(TestStruc)
 		if err = decfn(buf, ts2); err != nil {
-			logT(b, "BenchVerify: Error decoding benchTs: %s: %v", encName, err)
-			b.FailNow()
+			failT(b, "BenchVerify: Error decoding benchTs: %s: %v", encName, err)
 		}
 		if err = deepEqual(ts1, ts2); err != nil {
-			logT(b, "BenchVerify: Error comparing benchTs: %s: %v", encName, err)
-			b.FailNow()
+			failT(b, "BenchVerify: Error comparing benchTs: %s: %v", encName, err)
 		}
 	}
 	runtime.GC()
@@ -227,8 +223,7 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 		}
 	}
 	if err != nil {
-		logT(b, "Error decoding into new TestStruc: %s: %v", encName, err)
-		b.FailNow()
+		failT(b, "Error decoding into new TestStruc: %s: %v", encName, err)
 	}
 }
 

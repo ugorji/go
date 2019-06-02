@@ -81,8 +81,8 @@ func TestCborIndefiniteLength(t *testing.T) {
 	NewDecoderBytes(buf.Bytes(), testCborH).MustDecode(&vv)
 	if err := deepEqual(v, vv); err != nil {
 		logT(t, "-------- Before and After marshal do not match: Error: %v", err)
-		logT(t, "    ....... GOLDEN:  (%T) %#v", v, v)
-		logT(t, "    ....... DECODED: (%T) %#v", vv, vv)
+		logTv(t, "    ....... GOLDEN:  (%T) %#v", v, v)
+		logTv(t, "    ....... DECODED: (%T) %#v", vv, vv)
 		failT(t)
 	}
 }
@@ -134,7 +134,7 @@ func TestCborGoldens(t *testing.T) {
 		// skip tags or simple or those with prefix, as we can't verify them.
 		if g.Skip || strings.HasPrefix(g.Diagnostic, "simple(") || tagregex.MatchString(g.Diagnostic) {
 			// fmt.Printf("%v: skipped\n", i)
-			logT(t, "[%v] skipping because skip=true OR unsupported simple value or Tag Value", i)
+			logTv(t, "[%v] skipping because skip=true OR unsupported simple value or Tag Value", i)
 			continue
 		}
 		// println("++++++++++++", i, "g.Diagnostic", g.Diagnostic)
@@ -187,14 +187,14 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 	}
 	if err != nil {
 		logT(t, "[%v] deepEqual error: %v", i, err)
-		logT(t, "    ....... GOLDEN:  (%T) %#v", v0, v0)
-		logT(t, "    ....... DECODED: (%T) %#v", v1, v1)
+		logTv(t, "    ....... GOLDEN:  (%T) %#v", v0, v0)
+		logTv(t, "    ....... DECODED: (%T) %#v", v1, v1)
 		failT(t)
 	}
 	if equal != nil && !*equal {
 		logT(t, "[%v] values not equal", i)
-		logT(t, "    ....... GOLDEN:  (%T) %#v", v0, v0)
-		logT(t, "    ....... DECODED: (%T) %#v", v1, v1)
+		logTv(t, "    ....... GOLDEN:  (%T) %#v", v0, v0)
+		logTv(t, "    ....... DECODED: (%T) %#v", v1, v1)
 		failT(t)
 	}
 	// fmt.Printf("%v testCborError passed (checks passed)\n", i)
@@ -222,7 +222,7 @@ func TestCborHalfFloat(t *testing.T) {
 		bigen.PutUint16(ba[1:], k)
 		testUnmarshalErr(&res, ba[:3], testCborH, t, "-")
 		if res == v {
-			logT(t, "equal floats: from %x %b, %v", k, k, v)
+			logTv(t, "equal floats: from %x %b, %v", k, k, v)
 		} else {
 			failT(t, "unequal floats: from %x %b, %v != %v", k, k, res, v)
 		}
