@@ -274,7 +274,8 @@ func (e *bincEncDriver) EncodeSymbol(v string) {
 		return
 	}
 	if e.m == nil {
-		e.m = make(map[string]uint16, 16)
+		e.m = pool.mapStrU16.Get().(map[string]uint16)
+		// xdebug2f("creating e.m: %v, isnil: %v", e.m, e.m == nil)
 	}
 	ui, ok := e.m[v]
 	if ok {
@@ -377,11 +378,11 @@ func (e *bincEncDriver) encLenNumber(bd byte, v uint64) {
 
 //------------------------------------
 
-type bincDecSymbol struct {
-	s string
-	b []byte
-	i uint16
-}
+// type bincDecSymbol struct {
+// 	s string
+// 	b []byte
+// 	// i uint16
+// }
 
 type bincDecDriver struct {
 	decDriverNoopContainerReader
@@ -398,7 +399,7 @@ type bincDecDriver struct {
 	// _      [3]byte // padding
 	// linear searching on this slice is ok,
 	// because we typically expect < 32 symbols in each stream.
-	s []bincDecSymbol
+	s map[uint16]strBytes // []bincDecSymbol
 
 	// noStreamingCodec
 	// decNoSeparator
@@ -725,23 +726,31 @@ func (d *bincDecDriver) decStringAndBytes(bs []byte, withString, zerocopy bool) 
 			symbol = uint16(bigen.Uint16(d.r.readx(2)))
 		}
 		if d.s == nil {
-			d.s = make([]bincDecSymbol, 0, 16)
+			d.s = pool.mapU16StrBytes.Get().(map[uint16]strBytes) // make([]bincDecSymbol, 0, 16)
 		}
 
 		if vs&0x4 == 0 {
-			for i := range d.s {
-				j := &d.s[i]
-				if j.i == symbol {
-					bs2 = j.b
-					if withString {
-						if j.s == "" && bs2 != nil {
-							j.s = string(bs2)
-						}
-						s = j.s
-					}
-					break
+			ss := d.s[symbol]
+			bs2 = ss.b
+			if withString {
+				if ss.s == "" && len(ss.b) > 0 {
+					ss.s = string(ss.b)
 				}
+				s = ss.s
 			}
+			// for i := range d.s {
+			// 	j := &d.s[i]
+			// 	if j.i == symbol {
+			// 		bs2 = j.b
+			// 		if withString {
+			// 			if j.s == "" && bs2 != nil {
+			// 				j.s = string(bs2)
+			// 			}
+			// 			s = j.s
+			// 		}
+			// 		break
+			// 	}
+			// }
 		} else {
 			switch vs & 0x3 {
 			case 0:
@@ -760,7 +769,8 @@ func (d *bincDecDriver) decStringAndBytes(bs []byte, withString, zerocopy bool) 
 			if withString {
 				s = string(bs2)
 			}
-			d.s = append(d.s, bincDecSymbol{i: symbol, s: s, b: bs2})
+			d.s[symbol] = strBytes{s: s, b: bs2}
+			// d.s = append(d.s, bincDecSymbol{i: symbol, s: s, b: bs2})
 		}
 	default:
 		d.d.errorf("string/bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
@@ -1024,15 +1034,39 @@ func (h *BincHandle) newDecDriver(d *Decoder) decDriver {
 }
 
 func (e *bincEncDriver) reset() {
+	// xdebugf("bincEncDriver: reset: e.m: %v, isnil: %v", e.m, e.m == nil)
 	e.w = e.e.w()
 	e.s = 0
 	e.m = nil
 }
 
+func (e *bincEncDriver) atEndOfEncode() {
+	if e.m != nil {
+		// xdebug2f("bincEncDriver: reset: len: %d", len(e.m))
+		for k := range e.m {
+			delete(e.m, k)
+		}
+		pool.mapStrU16.Put(e.m)
+		e.m = nil
+	}
+}
+
 func (d *bincDecDriver) reset() {
+	// xdebugf("bincDecDriver: reset")
 	d.r, d.br = d.d.r(), d.d.bytes
 	d.s = nil
 	d.bd, d.bdRead, d.vd, d.vs = 0, false, 0, 0
+}
+
+func (d *bincDecDriver) atEndOfDecode() {
+	if d.s != nil {
+		// xdebug2f("bincDecDriver: reset: len: %d", len(d.s))
+		for k := range d.s {
+			delete(d.s, k)
+		}
+		pool.mapU16StrBytes.Put(d.s)
+		d.s = nil
+	}
 }
 
 // var timeDigits = [...]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
