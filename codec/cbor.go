@@ -366,6 +366,9 @@ func (d *cborDecDriver) ContainerType() (vt valueType) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
+	if d.st {
+		d.skipTags()
+	}
 	if d.bd == cborBdNil {
 		return valueTypeNil
 	} else if d.bd == cborBdIndefiniteBytes || (d.bd>>5 == cborMajorBytes) {
@@ -740,6 +743,8 @@ func (d *cborDecDriver) DecodeNaked() {
 	n := d.d.naked()
 	var decodeFurther bool
 
+	// xdebug2f("DecodeNaked: bd: %x, bd >> 5: %x", d.bd, d.bd>>5)
+
 	switch d.bd >> 5 {
 	case cborMajorUint:
 		if d.h.SignedInteger {
@@ -772,9 +777,10 @@ func (d *cborDecDriver) DecodeNaked() {
 			n.v = valueTypeTime
 			n.t = d.decodeTime(n.u)
 		} else if d.st && d.h.getExtForTag(n.u) == nil {
-			d.skipTags()
+			// d.skipTags() // no need to call this - tags already skipped
+			d.bdRead = false
 			d.DecodeNaked()
-			goto FINISH
+			return // return when done (as true recursive function)
 		}
 		// d.bdRead = false
 		// d.d.decode(&re.Value) // handled by decode itself.
@@ -809,7 +815,6 @@ func (d *cborDecDriver) DecodeNaked() {
 	default: // should never happen
 		d.d.errorf("decodeNaked: Unrecognized d.bd: 0x%x", d.bd)
 	}
-FINISH:
 	if !decodeFurther {
 		d.bdRead = false
 	}

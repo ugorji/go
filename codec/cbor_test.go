@@ -228,3 +228,134 @@ func TestCborHalfFloat(t *testing.T) {
 		}
 	}
 }
+
+func TestCborSkipTags(t *testing.T) {
+	type Tcbortags struct {
+		A string
+		M map[string]interface{}
+		// A []interface{}
+	}
+	var b8 [8]byte
+	var w bytesEncAppender
+	w.b = []byte{}
+
+	// To make it easier,
+	//    - use tags between math.MaxUint8 and math.MaxUint16 (incl SelfDesc)
+	//    - use 1 char strings for key names
+	//    - use 3-6 char strings for map keys
+	//    - use integers that fit in 2 bytes (between 0x20 and 0xff)
+
+	var tags = [...]uint64{math.MaxUint8 * 2, math.MaxUint8 * 8, 55799, math.MaxUint16 / 2}
+	var tagIdx int
+	var doAddTag bool
+	addTagFn8To16 := func() {
+		if !doAddTag {
+			return
+		}
+		// writes a tag between MaxUint8 and MaxUint16 (culled from cborEncDriver.encUint)
+		w.writen1(cborBaseTag + 0x19)
+		// bigenHelper.writeUint16
+		bigen.PutUint16(b8[:2], uint16(tags[tagIdx%len(tags)]))
+		w.writeb(b8[:2])
+		tagIdx++
+	}
+
+	var v Tcbortags
+	v.A = "cbor"
+	v.M = make(map[string]interface{})
+	v.M["111"] = uint64(111)
+	v.M["111.11"] = 111.11
+	v.M["true"] = true
+	// v.A = append(v.A, 222, 22.22, "true")
+
+	// make stream manually (interspacing tags around it)
+	// WriteMapStart - e.encLen(cborBaseMap, length) - encUint(length, bd)
+	// EncodeStringEnc - e.encStringBytesS(cborBaseString, v)
+
+	fnEncode := func() {
+		w.b = w.b[:0]
+		addTagFn8To16()
+		// write v (Tcbortags, with 3 fields = map with 3 entries)
+		w.writen1(2 + cborBaseMap) // 3 fields = 3 entries
+		// write v.A
+		var s = "A"
+		w.writen1(byte(len(s)) + cborBaseString)
+		w.writestr(s)
+		w.writen1(byte(len(v.A)) + cborBaseString)
+		w.writestr(v.A)
+		//w.writen1(0)
+
+		addTagFn8To16()
+		s = "M"
+		w.writen1(byte(len(s)) + cborBaseString)
+		w.writestr(s)
+
+		addTagFn8To16()
+		w.writen1(byte(len(v.M)) + cborBaseMap)
+
+		addTagFn8To16()
+		s = "111"
+		w.writen1(byte(len(s)) + cborBaseString)
+		w.writestr(s)
+		w.writen2(cborBaseUint+0x18, uint8(111))
+
+		addTagFn8To16()
+		s = "111.11"
+		w.writen1(byte(len(s)) + cborBaseString)
+		w.writestr(s)
+		w.writen1(cborBdFloat64)
+		bigen.PutUint64(b8[:8], math.Float64bits(111.11))
+		w.writeb(b8[:8])
+
+		addTagFn8To16()
+		s = "true"
+		w.writen1(byte(len(s)) + cborBaseString)
+		w.writestr(s)
+		w.writen1(cborBdTrue)
+	}
+
+	var h CborHandle
+	h.SkipUnexpectedTags = true
+	h.Canonical = true
+
+	var gold []byte
+	NewEncoderBytes(&gold, &h).MustEncode(v)
+
+	// xdebug2f("encoded:    gold: %v", gold)
+
+	// w.b is the encoded bytes
+	var v2 Tcbortags
+	doAddTag = false
+	fnEncode()
+	// xdebug2f("manual:  no-tags: %v", w.b)
+
+	testDeepEqualErr(gold, w.b, t, "cbor-skip-tags--bytes---")
+	NewDecoderBytes(w.b, &h).MustDecode(&v2)
+	testDeepEqualErr(v, v2, t, "cbor-skip-tags--no-tags-")
+
+	// Now, decode that stream into it.
+	var v3 Tcbortags
+	doAddTag = true
+	fnEncode()
+	// xdebug2f("manual: has-tags: %v", w.b)
+	NewDecoderBytes(w.b, &h).MustDecode(&v3)
+	testDeepEqualErr(v, v2, t, "cbor-skip-tags--has-tags")
+
+	// Then get bytes with tags added, decode that stream, and check against golden v
+
+	// Github 300 - tests naked path
+	{
+		expected := []interface{}{"x", uint64(0x0)}
+		toDecode := []byte{0x82, 0x61, 0x78, 0x00}
+
+		var raw interface{}
+
+		NewDecoderBytes(toDecode, &h).MustDecode(&raw)
+		testDeepEqualErr(expected, raw, t, "cbor-skip-tags--gh-300---no-skips")
+
+		toDecode = []byte{0xd9, 0xd9, 0xf7, 0x82, 0x61, 0x78, 0x00}
+		raw = nil
+		NewDecoderBytes(toDecode, &h).MustDecode(&raw)
+		testDeepEqualErr(expected, raw, t, "cbor-skip-tags--gh-300--has-skips")
+	}
+}
