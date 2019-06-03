@@ -130,9 +130,9 @@ _suite_very_quick_json_non_suite() {
     echo ">>>> very quick json bench"
     for j in "En" "De"; do
         echo "---- codecgen ----"
-        go test -run Nothing -tags "alltests codecgen" -bench "__Json____.*${j}" -benchmem "$@"
+        go test -run Nothing -tags "alltests x generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
         echo "---- no codecgen ----"
-        go test -run Nothing -tags "alltests x" -bench "__(Json|Std_Json|JsonIter).*${j}" -benchmem "$@"
+        go test -run Nothing -tags "alltests x" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
         echo
     done
 }
