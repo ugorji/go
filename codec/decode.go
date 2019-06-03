@@ -2536,22 +2536,29 @@ func (d *Decoder) MustDecode(v interface{}) {
 // This provides insight to the code location that triggered the error.
 func (d *Decoder) mustDecode(v interface{}) {
 	// TODO: Top-level: ensure that v is a pointer and not nil.
-	if d.d.TryDecodeAsNil() {
-		setZero(v)
-		return
-	}
+
 	if d.bi == nil {
-		d.decode(v)
+		if d.d.TryDecodeAsNil() {
+			setZero(v)
+		} else {
+			d.decode(v)
+		}
+		d.d.atEndOfDecode()
 		return
 	}
 
-	d.bi.calls++
-	d.decode(v)
-	d.d.atEndOfDecode()
-	// xprintf.(">>>>>>>> >>>>>>>> num decFns: %v\n", d.cf.sn)
-	d.bi.calls--
-	if !d.h.ExplicitRelease && d.bi.calls == 0 {
-		d.bi.release()
+	if d.d.TryDecodeAsNil() {
+		setZero(v)
+	} else {
+		d.bi.calls++
+		d.decode(v)
+		d.bi.calls--
+	}
+	if d.bi.calls == 0 {
+		d.d.atEndOfDecode()
+		if !d.h.ExplicitRelease {
+			d.bi.release()
+		}
 	}
 }
 
