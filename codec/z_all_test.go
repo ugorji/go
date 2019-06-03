@@ -239,6 +239,7 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborBytesEncodedAsArray", TestCborBytesEncodedAsArray)
 
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
+	t.Run("TestCborSkipTags", TestCborSkipTags)
 }
 
 func testMsgpackGroup(t *testing.T) {
