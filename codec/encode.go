@@ -855,10 +855,9 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	if rtval.Kind() != reflect.Interface {
 		valFn = e.h.fn(rtval)
 	}
-	mks := rv.MapKeys()
 
 	if e.h.Canonical {
-		e.kMapCanonical(f.ti.key, rv, mks, valFn)
+		e.kMapCanonical(f.ti.key, rv, valFn)
 		e.mapEnd()
 		return
 	}
@@ -875,27 +874,30 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 	}
 
-	// for j, lmks := 0, len(mks); j < lmks; j++ {
-	for j := range mks {
+	it := mapRange(rv)
+	for it.Next() {
 		e.mapElemKey()
 		if keyTypeIsString {
 			if e.h.StringToRaw {
-				e.e.EncodeStringBytesRaw(bytesView(mks[j].String()))
+				e.e.EncodeStringBytesRaw(bytesView(it.Key().String()))
 			} else {
-				e.e.EncodeStringEnc(cUTF8, mks[j].String())
+				e.e.EncodeStringEnc(cUTF8, it.Key().String())
 			}
 		} else {
-			e.encodeValue(mks[j], keyFn)
+			e.encodeValue(it.Key(), keyFn)
 		}
 		e.mapElemValue()
-		e.encodeValue(rv.MapIndex(mks[j]), valFn)
+		e.encodeValue(it.Value(), valFn)
 	}
+
 	e.mapEnd()
 }
 
-func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, mks []reflect.Value, valFn *codecFn) {
+func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, valFn *codecFn) {
 	// we previously did out-of-band if an extension was registered.
 	// This is not necessary, as the natural kind is sufficient for ordering.
+
+	mks := rv.MapKeys()
 
 	switch rtkey.Kind() {
 	case reflect.Bool:
