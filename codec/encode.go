@@ -1487,11 +1487,8 @@ func (e *Encoder) mustEncode(v interface{}) {
 		e.wf.buf = e.wf.bytesBufPooler.get(e.wf.sz)
 	}
 	e.wf.calls++
-
 	e.encode(v)
-
 	e.wf.calls--
-
 	if e.wf.calls == 0 {
 		e.e.atEndOfEncode()
 		e.w().end()

@@ -320,7 +320,6 @@ func TestCborSkipTags(t *testing.T) {
 
 	var gold []byte
 	NewEncoderBytes(&gold, &h).MustEncode(v)
-
 	// xdebug2f("encoded:    gold: %v", gold)
 
 	// w.b is the encoded bytes
@@ -333,15 +332,12 @@ func TestCborSkipTags(t *testing.T) {
 	NewDecoderBytes(w.b, &h).MustDecode(&v2)
 	testDeepEqualErr(v, v2, t, "cbor-skip-tags--no-tags-")
 
-	// Now, decode that stream into it.
 	var v3 Tcbortags
 	doAddTag = true
 	fnEncode()
 	// xdebug2f("manual: has-tags: %v", w.b)
 	NewDecoderBytes(w.b, &h).MustDecode(&v3)
 	testDeepEqualErr(v, v2, t, "cbor-skip-tags--has-tags")
-
-	// Then get bytes with tags added, decode that stream, and check against golden v
 
 	// Github 300 - tests naked path
 	{
