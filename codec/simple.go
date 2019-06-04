@@ -408,10 +408,6 @@ func (d *simpleDecDriver) decLen() int {
 	return -1
 }
 
-func (d *simpleDecDriver) DecodeString() (s string) {
-	return string(d.DecodeBytes(d.d.b[:], true))
-}
-
 func (d *simpleDecDriver) DecodeStringAsBytes() (s []byte) {
 	return d.DecodeBytes(d.d.b[:], true)
 }
@@ -558,7 +554,7 @@ func (d *simpleDecDriver) DecodeNaked() {
 	case simpleVdString, simpleVdString + 1,
 		simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
 		n.v = valueTypeString
-		n.s = d.DecodeString()
+		n.s = string(d.DecodeStringAsBytes())
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		decNakedReadRawBytes(d, d.d, n, d.h.RawToString)

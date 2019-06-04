@@ -46,11 +46,20 @@ const (
 	jsonLitTrue   = 1
 	jsonLitFalseQ = 6
 	jsonLitFalse  = 7
-	// jsonLitNullQ  = 13
-	jsonLitNull = 14
+	jsonLitNullQ  = 13
+	jsonLitNull   = 14
 )
 
 var (
+	jsonLiteralTrueQ  = jsonLiterals[jsonLitTrueQ : jsonLitTrueQ+6]
+	jsonLiteralFalseQ = jsonLiterals[jsonLitFalseQ : jsonLitFalseQ+7]
+	jsonLiteralNullQ  = jsonLiterals[jsonLitNullQ : jsonLitNullQ+6]
+
+	jsonLiteralTrue  = jsonLiterals[jsonLitTrue : jsonLitTrue+4]
+	jsonLiteralFalse = jsonLiterals[jsonLitFalse : jsonLitFalse+5]
+	jsonLiteralNull  = jsonLiterals[jsonLitNull : jsonLitNull+4]
+
+	// these are used, after consuming the first char
 	jsonLiteral4True  = jsonLiterals[jsonLitTrue+1 : jsonLitTrue+4]
 	jsonLiteral4False = jsonLiterals[jsonLitFalse+1 : jsonLitFalse+5]
 	jsonLiteral4Null  = jsonLiterals[jsonLitNull+1 : jsonLitNull+4]
@@ -259,15 +268,15 @@ func (e *jsonEncDriverGeneric) WriteMapEnd() {
 func (e *jsonEncDriverGeneric) EncodeBool(b bool) {
 	if e.ks && e.e.c == containerMapKey {
 		if b {
-			e.w.writeb(jsonLiterals[jsonLitTrueQ : jsonLitTrueQ+6])
+			e.w.writeb(jsonLiteralTrueQ)
 		} else {
-			e.w.writeb(jsonLiterals[jsonLitFalseQ : jsonLitFalseQ+7])
+			e.w.writeb(jsonLiteralFalseQ)
 		}
 	} else {
 		if b {
-			e.w.writeb(jsonLiterals[jsonLitTrue : jsonLitTrue+4])
+			e.w.writeb(jsonLiteralTrue)
 		} else {
-			e.w.writeb(jsonLiterals[jsonLitFalse : jsonLitFalse+5])
+			e.w.writeb(jsonLiteralFalse)
 		}
 	}
 }
@@ -1022,10 +1031,10 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	return
 }
 
-func (d *jsonDecDriver) DecodeString() (s string) {
-	d.appendStringAsBytes()
-	return d.bsToString()
-}
+// func (d *jsonDecDriver) DecodeString() (s string) {
+// 	d.appendStringAsBytes()
+// 	return d.bsToString()
+// }
 
 func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 	d.appendStringAsBytes()
@@ -1259,16 +1268,15 @@ func (d *jsonDecDriver) DecodeNaked() {
 		// if a string, and MapKeyAsString, then try to decode it as a nil, bool or number first
 		d.appendStringAsBytes()
 		if len(d.bs) > 0 && d.d.c == containerMapKey && d.h.MapKeyAsString {
-			switch stringView(d.bs) {
-			case "null":
+			if bytes.Equal(d.bs, jsonLiteralNull) {
 				z.v = valueTypeNil
-			case "true":
+			} else if bytes.Equal(d.bs, jsonLiteralTrue) {
 				z.v = valueTypeBool
 				z.b = true
-			case "false":
+			} else if bytes.Equal(d.bs, jsonLiteralFalse) {
 				z.v = valueTypeBool
 				z.b = false
-			default:
+			} else {
 				// check if a number: float, int or uint
 				if err := d.nakedNum(z, d.bs); err != nil {
 					z.v = valueTypeString

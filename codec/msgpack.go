@@ -509,7 +509,7 @@ func (d *msgpackDecDriver) DecodeNaked() {
 		case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
 			if d.h.WriteExt || d.h.RawToString {
 				n.v = valueTypeString
-				n.s = d.DecodeString()
+				n.s = string(d.DecodeStringAsBytes())
 			} else {
 				n.v = valueTypeBytes
 				n.l = d.DecodeBytes(nil, false)
@@ -717,10 +717,6 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 		}
 	}
 	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
-}
-
-func (d *msgpackDecDriver) DecodeString() (s string) {
-	return string(d.DecodeBytes(d.d.b[:], true))
 }
 
 func (d *msgpackDecDriver) DecodeStringAsBytes() (s []byte) {

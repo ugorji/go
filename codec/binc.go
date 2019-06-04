@@ -399,7 +399,7 @@ type bincDecDriver struct {
 	// _      [3]byte // padding
 	// linear searching on this slice is ok,
 	// because we typically expect < 32 symbols in each stream.
-	s map[uint16]strBytes // []bincDecSymbol
+	s map[uint16][]byte // []bincDecSymbol
 
 	// noStreamingCodec
 	// decNoSeparator
@@ -682,8 +682,7 @@ func (d *bincDecDriver) decLenNumber() (v uint64) {
 	return
 }
 
-func (d *bincDecDriver) decStringAndBytes(bs []byte, withString, zerocopy bool) (
-	bs2 []byte, s string) {
+func (d *bincDecDriver) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -707,9 +706,6 @@ func (d *bincDecDriver) decStringAndBytes(bs []byte, withString, zerocopy bool) 
 		} else {
 			bs2 = decByteSlice(d.r, slen, d.d.h.MaxInitLen, bs)
 		}
-		if withString {
-			s = string(bs2)
-		}
 	case bincVdSymbol:
 		// zerocopy doesn't apply for symbols,
 		// as the values must be stored in a table for later use.
@@ -726,31 +722,11 @@ func (d *bincDecDriver) decStringAndBytes(bs []byte, withString, zerocopy bool) 
 			symbol = uint16(bigen.Uint16(d.r.readx(2)))
 		}
 		if d.s == nil {
-			d.s = pool.mapU16StrBytes.Get().(map[uint16]strBytes) // make([]bincDecSymbol, 0, 16)
+			d.s = pool.mapU16Bytes.Get().(map[uint16][]byte) // make([]bincDecSymbol, 0, 16)
 		}
 
 		if vs&0x4 == 0 {
-			ss := d.s[symbol]
-			bs2 = ss.b
-			if withString {
-				if ss.s == "" && len(ss.b) > 0 {
-					ss.s = string(ss.b)
-				}
-				s = ss.s
-			}
-			// for i := range d.s {
-			// 	j := &d.s[i]
-			// 	if j.i == symbol {
-			// 		bs2 = j.b
-			// 		if withString {
-			// 			if j.s == "" && bs2 != nil {
-			// 				j.s = string(bs2)
-			// 			}
-			// 			s = j.s
-			// 		}
-			// 		break
-			// 	}
-			// }
+			bs2 = d.s[symbol]
 		} else {
 			switch vs & 0x3 {
 			case 0:
@@ -766,10 +742,7 @@ func (d *bincDecDriver) decStringAndBytes(bs []byte, withString, zerocopy bool) 
 			// the parameter bs in the map, as it might be a shared buffer.
 			// bs2 = decByteSlice(d.r, slen, bs)
 			bs2 = decByteSlice(d.r, slen, d.d.h.MaxInitLen, nil)
-			if withString {
-				s = string(bs2)
-			}
-			d.s[symbol] = strBytes{s: s, b: bs2}
+			d.s[symbol] = bs2
 			// d.s = append(d.s, bincDecSymbol{i: symbol, s: s, b: bs2})
 		}
 	default:
@@ -780,17 +753,8 @@ func (d *bincDecDriver) decStringAndBytes(bs []byte, withString, zerocopy bool) 
 	return
 }
 
-func (d *bincDecDriver) DecodeString() (s string) {
-	// DecodeBytes does not accommodate symbols, whose impl stores string version in map.
-	// Use decStringAndBytes directly.
-	// return string(d.DecodeBytes(d.b[:], true, true))
-	_, s = d.decStringAndBytes(d.b[:], true, true)
-	return
-}
-
 func (d *bincDecDriver) DecodeStringAsBytes() (s []byte) {
-	s, _ = d.decStringAndBytes(d.b[:], false, true)
-	return
+	return d.decStringBytes(d.b[:], true)
 }
 
 func (d *bincDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
@@ -934,10 +898,10 @@ func (d *bincDecDriver) DecodeNaked() {
 		n.f = d.decFloat()
 	case bincVdSymbol:
 		n.v = valueTypeSymbol
-		n.s = d.DecodeString()
+		n.s = string(d.DecodeStringAsBytes())
 	case bincVdString:
 		n.v = valueTypeString
-		n.s = d.DecodeString()
+		n.s = string(d.DecodeStringAsBytes())
 	case bincVdByteArray:
 		decNakedReadRawBytes(d, d.d, n, d.h.RawToString)
 	case bincVdTimestamp:
@@ -1064,7 +1028,7 @@ func (d *bincDecDriver) atEndOfDecode() {
 		for k := range d.s {
 			delete(d.s, k)
 		}
-		pool.mapU16StrBytes.Put(d.s)
+		pool.mapU16Bytes.Put(d.s)
 		d.s = nil
 	}
 }

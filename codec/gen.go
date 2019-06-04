@@ -108,7 +108,8 @@ import (
 // v10: modified encDriver and decDriver interfaces.
 // v11: remove deprecated methods of encDriver and decDriver.
 // v12: removed deprecated methods from genHelper and changed container tracking logic
-const genVersion = 12
+// v13: 20190603 removed DecodeString - use DecodeStringAsBytes instead
+const genVersion = 13
 
 const (
 	genCodecPkg        = "codec1978"
@@ -1557,7 +1558,7 @@ func (x *genRunner) decTryAssignPrimitive(varname string, t reflect.Type, isptr 
 	case reflect.Bool:
 		x.linef("%s%s = (%s)(r.DecodeBool())", ptr, varname, x.genTypeName(t))
 	case reflect.String:
-		x.linef("%s%s = (%s)(r.DecodeString())", ptr, varname, x.genTypeName(t))
+		x.linef("%s%s = (%s)(string(r.DecodeStringAsBytes()))", ptr, varname, x.genTypeName(t))
 	default:
 		return false
 	}
@@ -2086,7 +2087,7 @@ func genInternalDecCommandAsString(s string) string {
 		return "d.d.DecodeInt64()"
 
 	case "string":
-		return "d.d.DecodeString()"
+		return "string(d.d.DecodeStringAsBytes())"
 	case "[]byte", "[]uint8", "bytes":
 		return "d.d.DecodeBytes(nil, false)"
 	case "float32":

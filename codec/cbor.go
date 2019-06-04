@@ -649,10 +649,6 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
 }
 
-func (d *cborDecDriver) DecodeString() (s string) {
-	return string(d.DecodeBytes(d.d.b[:], true))
-}
-
 func (d *cborDecDriver) DecodeStringAsBytes() (s []byte) {
 	return d.DecodeBytes(d.d.b[:], true)
 }
@@ -761,7 +757,7 @@ func (d *cborDecDriver) DecodeNaked() {
 		decNakedReadRawBytes(d, d.d, n, d.h.RawToString)
 	case cborMajorString:
 		n.v = valueTypeString
-		n.s = d.DecodeString()
+		n.s = string(d.DecodeStringAsBytes())
 	case cborMajorArray:
 		n.v = valueTypeArray
 		decodeFurther = true
@@ -802,7 +798,7 @@ func (d *cborDecDriver) DecodeNaked() {
 			decNakedReadRawBytes(d, d.d, n, d.h.RawToString)
 		case cborBdIndefiniteString:
 			n.v = valueTypeString
-			n.s = d.DecodeString()
+			n.s = string(d.DecodeStringAsBytes())
 		case cborBdIndefiniteArray:
 			n.v = valueTypeArray
 			decodeFurther = true

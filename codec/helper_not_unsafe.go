@@ -170,7 +170,7 @@ func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (d *Decoder) kString(f *codecFnInfo, rv reflect.Value) {
-	rv.SetString(d.d.DecodeString())
+	rv.SetString(string(d.d.DecodeStringAsBytes()))
 }
 
 func (d *Decoder) kBool(f *codecFnInfo, rv reflect.Value) {
