@@ -18,6 +18,7 @@ package codec
 
 import (
 	"math"
+	"strconv"
 	"strings"
 )
 
@@ -25,6 +26,8 @@ import (
 // 	rt := reflect.TypeOf((*TestStruc)(nil)).Elem()
 // 	defTypeInfos.get(rt2id(rt), rt)
 // }
+
+const numStrUi64T = 4 // TODO: prefer 32
 
 type wrapSliceUint64 []uint64
 type wrapSliceString []string
@@ -138,6 +141,7 @@ type TestStrucCommon struct {
 	Simplef testSimpleFields
 
 	SstrUi64T []stringUint64T
+	MstrUi64T map[string]*stringUint64T
 
 	AnonInTestStruc
 
@@ -302,14 +306,6 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 		// R: Raw([]byte("goodbye")),
 		// Rext: RawExt{ 120, []byte("hello"), }, // TODO: don't set this - it's hard to test
 
-		// DecodeNaked bombs here, because the stringUint64T is decoded as a map,
-		// and a map cannot be the key type of a map.
-		// Thus, don't initialize this here.
-		// Msu2wss: map[stringUint64T]wrapStringSlice{
-		// 	{"5", 5}: []wrapString{"1", "2", "3", "4", "5"},
-		// 	{"3", 3}: []wrapString{"1", "2", "3"},
-		// },
-
 		// make Simplef same as top-level
 		// TODO: should this have slightly different values???
 		Simplef: testSimpleFields{
@@ -343,9 +339,16 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			WrapSliceString: []string{strRpt(n, "4"), strRpt(n, "16"), strRpt(n, "64"), strRpt(n, "256")},
 		},
 
-		SstrUi64T:       []stringUint64T{{"1", 1}, {"2", 2}, {"3", 3}, {"4", 4}},
+		SstrUi64T:       make([]stringUint64T, numStrUi64T), // {{"1", 1}, {"2", 2}, {"3", 3}, {"4", 4}},
+		MstrUi64T:       make(map[string]*stringUint64T, numStrUi64T),
 		AnonInTestStruc: a,
 		NotAnon:         a,
+	}
+
+	for i := uint64(0); i < numStrUi64T; i++ {
+		ss := strings.Repeat(strconv.FormatUint(i, 10), 4)
+		ts.SstrUi64T[i] = stringUint64T{S: ss, U: i}
+		ts.MstrUi64T[ss] = &ts.SstrUi64T[i]
 	}
 
 	if bench {

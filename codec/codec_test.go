@@ -751,6 +751,18 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 	for i, v0 := range vs {
 		logTv(t, "..............................................")
 		logTv(t, "         Testing: #%d:, %T, %#v\n", i, v0, v0)
+		// if a TestStrucFlex and we are doing a testNil,
+		// ensure the fields which are not encodeable are set to nil appropriately
+		// i.e. MstrUi64TSelf
+		var mapMstrUi64TSelf map[stringUint64T]*stringUint64T
+		var mapMsu2wss map[stringUint64T]wrapStringSlice
+		tsflex, _ := v0.(*TestStrucFlex)
+		if testNil && tsflex != nil {
+			mapMstrUi64TSelf = tsflex.MstrUi64TSelf
+			mapMsu2wss = tsflex.Msu2wss
+			tsflex.MstrUi64TSelf = nil
+			tsflex.Msu2wss = nil
+		}
 		b0 := testMarshalErr(v0, h, t, "v0")
 		var b1 = b0
 		if len(b1) > 256 {
@@ -766,6 +778,10 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 		var err error
 		if testNil {
 			err = testUnmarshal(&v1, b0, h)
+			if tsflex != nil {
+				tsflex.MstrUi64TSelf = mapMstrUi64TSelf
+				tsflex.Msu2wss = mapMsu2wss
+			}
 		} else {
 			if v0 != nil {
 				v0rt := reflect.TypeOf(v0) // ptr

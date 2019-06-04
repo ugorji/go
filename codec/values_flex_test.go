@@ -6,6 +6,7 @@
 package codec
 
 import (
+	"strconv"
 	"strings"
 	"time"
 )
@@ -168,6 +169,10 @@ type TestStrucFlex struct {
 	Mfwss   map[float64]wrapStringSlice
 	Mf32wss map[float32]wrapStringSlice
 	Mui2wss map[uint64]wrapStringSlice
+
+	// DecodeNaked bombs because stringUint64T is decoded as a map,
+	// and a map cannot be the key type of a map.
+	// Ensure this is set to nil if decoding into a nil interface{}.
 	Msu2wss map[stringUint64T]wrapStringSlice
 
 	Ci64       wrapInt64
@@ -180,6 +185,9 @@ type TestStrucFlex struct {
 	Ui64slicearray []*[4]uint64
 
 	SintfAarray []interface{}
+
+	// Ensure this is set to nil if decoding into a nil interface{}.
+	MstrUi64TSelf map[stringUint64T]*stringUint64T
 
 	// make this a ptr, so that it could be set or not.
 	// for comparison (e.g. with msgp), give it a struct tag (so it is not inlined),
@@ -227,6 +235,15 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 			5.0: []wrapString{"1.0", "2.0", "3.0", "4.0", "5.0"},
 			3.0: []wrapString{"1.0", "2.0", "3.0"},
 		},
+
+		// DecodeNaked bombs here, because the stringUint64T is decoded as a map,
+		// and a map cannot be the key type of a map.
+		// Ensure this is set to nil if decoding into a nil interface{}.
+		Msu2wss: map[stringUint64T]wrapStringSlice{
+			{"5", 5}: []wrapString{"1", "2", "3", "4", "5"},
+			{"3", 3}: []wrapString{"1", "2", "3"},
+		},
+
 		Mis: map[int]string{
 			1:   "one",
 			22:  "twenty two",
@@ -250,9 +267,16 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 		Swrapuint8: []wrapUint8{
 			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
 		},
-		Ui64array:   [4]uint64{4, 16, 64, 256},
-		ArrStrUi64T: [4]stringUint64T{{"4", 4}, {"3", 3}, {"2", 2}, {"1", 1}},
-		SintfAarray: []interface{}{Aarray{"s"}},
+		Ui64array:     [4]uint64{4, 16, 64, 256},
+		ArrStrUi64T:   [4]stringUint64T{{"4", 4}, {"3", 3}, {"2", 2}, {"1", 1}},
+		SintfAarray:   []interface{}{Aarray{"s"}},
+		MstrUi64TSelf: make(map[stringUint64T]*stringUint64T, numStrUi64T),
+	}
+
+	for i := uint64(0); i < numStrUi64T; i++ {
+		ss := stringUint64T{S: strings.Repeat(strconv.FormatUint(i, 10), 4), U: i}
+		// Ensure this is set to nil if decoding into a nil interface{}.
+		ts.MstrUi64TSelf[ss] = &ss
 	}
 
 	numChanSend := cap(ts.Chstr) / 4 // 8
