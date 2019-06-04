@@ -4381,7 +4381,7 @@ func (fastpathT) DecSliceStringY(v []string, d *Decoder) (_ []string, changed bo
 		if d.d.TryDecodeAsNil() {
 			v[uint(j)] = ""
 		} else {
-			v[uint(j)] = d.d.DecodeString()
+			v[uint(j)] = string(d.d.DecodeStringAsBytes())
 		}
 	}
 	if j < len(v) {
@@ -4416,7 +4416,7 @@ func (fastpathT) DecSliceStringN(v []string, d *Decoder) {
 		if d.d.TryDecodeAsNil() {
 			v[uint(j)] = ""
 		} else {
-			v[uint(j)] = d.d.DecodeString()
+			v[uint(j)] = string(d.d.DecodeStringAsBytes())
 		}
 	}
 	slh.End()
@@ -5777,7 +5777,7 @@ func (fastpathT) DecMapStringIntfL(v map[string]interface{}, containerLen int, d
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -5829,7 +5829,7 @@ func (fastpathT) DecMapStringStringL(v map[string]string, containerLen int, d *D
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -5840,7 +5840,7 @@ func (fastpathT) DecMapStringStringL(v map[string]string, containerLen int, d *D
 			}
 			continue
 		}
-		mv = d.d.DecodeString()
+		mv = string(d.d.DecodeStringAsBytes())
 		if v != nil {
 			v[mk] = mv
 		}
@@ -5877,7 +5877,7 @@ func (fastpathT) DecMapStringBytesL(v map[string][]byte, containerLen int, d *De
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -5929,7 +5929,7 @@ func (fastpathT) DecMapStringUintL(v map[string]uint, containerLen int, d *Decod
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -5976,7 +5976,7 @@ func (fastpathT) DecMapStringUint8L(v map[string]uint8, containerLen int, d *Dec
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -6023,7 +6023,7 @@ func (fastpathT) DecMapStringUint64L(v map[string]uint64, containerLen int, d *D
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -6070,7 +6070,7 @@ func (fastpathT) DecMapStringIntL(v map[string]int, containerLen int, d *Decoder
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -6117,7 +6117,7 @@ func (fastpathT) DecMapStringInt64L(v map[string]int64, containerLen int, d *Dec
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -6164,7 +6164,7 @@ func (fastpathT) DecMapStringFloat32L(v map[string]float32, containerLen int, d 
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -6211,7 +6211,7 @@ func (fastpathT) DecMapStringFloat64L(v map[string]float64, containerLen int, d 
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -6258,7 +6258,7 @@ func (fastpathT) DecMapStringBoolL(v map[string]bool, containerLen int, d *Decod
 	hasLen := containerLen > 0
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
 		d.mapElemKey()
-		mk = d.d.DecodeString()
+		mk = string(d.d.DecodeStringAsBytes())
 		d.mapElemValue()
 		if d.d.TryDecodeAsNil() {
 			if v == nil {
@@ -6369,7 +6369,7 @@ func (fastpathT) DecMapUintStringL(v map[uint]string, containerLen int, d *Decod
 			}
 			continue
 		}
-		mv = d.d.DecodeString()
+		mv = string(d.d.DecodeStringAsBytes())
 		if v != nil {
 			v[mk] = mv
 		}
@@ -6898,7 +6898,7 @@ func (fastpathT) DecMapUint8StringL(v map[uint8]string, containerLen int, d *Dec
 			}
 			continue
 		}
-		mv = d.d.DecodeString()
+		mv = string(d.d.DecodeStringAsBytes())
 		if v != nil {
 			v[mk] = mv
 		}
@@ -7427,7 +7427,7 @@ func (fastpathT) DecMapUint64StringL(v map[uint64]string, containerLen int, d *D
 			}
 			continue
 		}
-		mv = d.d.DecodeString()
+		mv = string(d.d.DecodeStringAsBytes())
 		if v != nil {
 			v[mk] = mv
 		}
@@ -7956,7 +7956,7 @@ func (fastpathT) DecMapIntStringL(v map[int]string, containerLen int, d *Decoder
 			}
 			continue
 		}
-		mv = d.d.DecodeString()
+		mv = string(d.d.DecodeStringAsBytes())
 		if v != nil {
 			v[mk] = mv
 		}
@@ -8485,7 +8485,7 @@ func (fastpathT) DecMapInt64StringL(v map[int64]string, containerLen int, d *Dec
 			}
 			continue
 		}
-		mv = d.d.DecodeString()
+		mv = string(d.d.DecodeStringAsBytes())
 		if v != nil {
 			v[mk] = mv
 		}

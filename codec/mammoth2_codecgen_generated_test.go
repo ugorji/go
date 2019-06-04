@@ -33,10 +33,10 @@ type codecSelfer19781 struct{}
 func codecSelfer19781False() bool { return false }
 
 func init() {
-	if GenVersion != 12 {
+	if GenVersion != 13 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic("codecgen version mismatch: current: 12, need " + ver + ". Re-generate file: " + file)
+		panic("codecgen version mismatch: current: 13, need " + ver + ". Re-generate file: " + file)
 	}
 }
 
@@ -3278,7 +3278,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 			if r.TryDecodeAsNil() {
 				x.FString = ""
 			} else {
-				x.FString = (string)(r.DecodeString())
+				x.FString = (string)(string(r.DecodeStringAsBytes()))
 			}
 		case "FptrString":
 			if r.TryDecodeAsNil() {
@@ -3290,7 +3290,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 					x.FptrString = new(string)
 				}
 
-				*x.FptrString = (string)(r.DecodeString())
+				*x.FptrString = (string)(string(r.DecodeStringAsBytes()))
 			}
 		case "FBytes":
 			if r.TryDecodeAsNil() {
@@ -5086,7 +5086,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if r.TryDecodeAsNil() {
 		x.FString = ""
 	} else {
-		x.FString = (string)(r.DecodeString())
+		x.FString = (string)(string(r.DecodeStringAsBytes()))
 	}
 	yyj381++
 	if yyhl381 {
@@ -5108,7 +5108,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 			x.FptrString = new(string)
 		}
 
-		*x.FptrString = (string)(r.DecodeString())
+		*x.FptrString = (string)(string(r.DecodeStringAsBytes()))
 	}
 	yyj381++
 	if yyhl381 {
