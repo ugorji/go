@@ -101,12 +101,13 @@ type decDriver interface {
 
 	DecodeFloat64() (f float64)
 	DecodeBool() (b bool)
-	// DecodeString can also decode symbols.
-	// It looks redundant as DecodeBytes is available.
-	// However, some codecs (e.g. binc) support symbols and can
-	// return a pre-stored string value, meaning that it can bypass
-	// the cost of []byte->string conversion.
-	DecodeString() (s string)
+
+	// DecodeStringAsBytes returns the bytes representing a string.
+	// By definition, it will return a view into a scratch buffer.
+	//
+	// Note: This can also decode symbols, if supported.
+	//
+	// Users should consume it right away and not store it for later use.
 	DecodeStringAsBytes() (v []byte)
 
 	// DecodeBytes may be called directly, without going through reflection.
@@ -114,7 +115,7 @@ type decDriver interface {
 	DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte)
 	// DecodeBytes(bs []byte, isstring, zerocopy bool) (bsOut []byte)
 
-	// decodeExt will decode into a *RawExt or into an extension.
+	// DecodeExt will decode into a *RawExt or into an extension.
 	DecodeExt(v interface{}, xtag uint64, ext Ext) (realxtag uint64)
 	// decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte)
 
@@ -1610,7 +1611,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			} else {
 				d.errorf("cannot decode into non-settable slice")
 			}
-			if rvChanged && oldRvlenGtZero && !isImmutableKind(rtelem0.Kind()) {
+			if rvChanged && oldRvlenGtZero && rtelem0Mut { // !isImmutableKind(rtelem0.Kind()) {
 				reflect.Copy(rv, rv0) // only copy up to length NOT cap i.e. rv0.Slice(0, rvcap)
 			}
 		} else if containerLenS != rvlen {
@@ -1761,7 +1762,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	ktype, vtype := ti.key, ti.elem
 	ktypeId := rt2id(ktype)
 	vtypeKind := vtype.Kind()
-
+	ktypeKind := ktype.Kind()
 	var keyFn, valFn *codecFn
 	var ktypeLo, vtypeLo reflect.Type
 
@@ -1771,63 +1772,71 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	for vtypeLo = vtype; vtypeLo.Kind() == reflect.Ptr; vtypeLo = vtypeLo.Elem() {
 	}
 
+	rvvMut := !isImmutableKind(vtypeKind)
+
 	var mapGet, mapSet bool
-	rvvImmut := isImmutableKind(vtypeKind)
 	if !d.h.MapValueReset {
-		// if pointer, mapGet = true
-		// if interface, mapGet = true if !DecodeNakedAlways (else false)
-		// if builtin, mapGet = false
-		// else mapGet = true
-		if vtypeKind == reflect.Ptr {
-			mapGet = true
-		} else if vtypeKind == reflect.Interface {
-			if !d.h.InterfaceReset {
+		if rvvMut {
+			if vtypeKind == reflect.Interface {
+				if !d.h.InterfaceReset {
+					mapGet = true
+				}
+			} else {
 				mapGet = true
 			}
-		} else if !rvvImmut {
-			mapGet = true
 		}
 	}
 
-	var rvk, rvkp, rvv, rvz reflect.Value
+	var rvk, rvkn, rvv, rvvn, rvvz reflect.Value
 	rvkMut := !isImmutableKind(ktype.Kind()) // if ktype is immutable, then re-use the same rvk.
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
 	hasLen := containerLen > 0
 	var kstrbs []byte
 
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
-		if rvkMut || !rvkp.IsValid() {
-			rvkp = reflect.New(ktype)
-			rvk = rvkp.Elem()
+	vNew := func(t reflect.Type, k reflect.Kind) reflect.Value {
+		if k == reflect.Ptr {
+			return reflect.New(t.Elem())
 		}
+		return reflect.New(t).Elem()
+	}
+
+	for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
+		if j == 0 {
+			// rvvz = reflect.Zero(vtype)
+			// rvkz = reflect.Zero(ktype)
+			if !rvkMut {
+				rvkn = vNew(ktype, ktypeKind)
+			}
+			if !rvvMut {
+				rvvn = vNew(vtype, vtypeKind)
+			}
+		}
+
+		if rvkMut {
+			rvk = vNew(ktype, ktypeKind)
+		} else {
+			rvk = rvkn
+		}
+
 		d.mapElemKey()
-		// if false && dd.TryDecodeAsNil() { // nil cannot be a map key, so disregard this block
-		// 	// Previously, if a nil key, we just ignored the mapped value and continued.
-		// 	// However, that makes the result of encoding and then decoding map[intf]intf{nil:nil}
-		// 	// to be an empty map.
-		// 	// Instead, we treat a nil key as the zero value of the type.
-		// 	rvk.Set(reflect.Zero(ktype))
-		// } else if ktypeIsString {
+
 		if ktypeIsString {
 			kstrbs = dd.DecodeStringAsBytes()
-			rvk.SetString(stringView(kstrbs))
-			// NOTE: if doing an insert, you MUST use a real string (not stringview)
+			rvk.SetString(stringView(kstrbs)) // NOTE: if doing an insert, use real string (not stringview)
 		} else {
 			if keyFn == nil {
 				keyFn = d.h.fn(ktypeLo)
 			}
 			d.decodeValue(rvk, keyFn)
 		}
-		// special case if a byte array.
+
+		// special case if interface wrapping a byte array.
 		if ktypeIsIntf {
-			if rvk2 := rvk.Elem(); rvk2.IsValid() {
-				if rvk2.Type() == uint8SliceTyp {
-					rvk = reflect.ValueOf(d.string(rvk2.Bytes()))
-				} else {
-					rvk = rvk2
-				}
+			if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
+				rvk.Set(reflect.ValueOf(d.string(rvk2.Bytes())))
 			}
+			// NOTE: consider failing early if map/slice/func
 		}
 
 		d.mapElemValue()
@@ -1835,58 +1844,54 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		// Brittle, but OK per TryDecodeAsNil() contract.
 		// i.e. TryDecodeAsNil never shares slices with other decDriver procedures
 		if dd.TryDecodeAsNil() {
-			if ktypeIsString {
-				rvk.SetString(d.string(kstrbs))
-			}
 			if d.h.DeleteOnNilMapValue {
 				rv.SetMapIndex(rvk, reflect.Value{})
 			} else {
-				rv.SetMapIndex(rvk, reflect.Zero(vtype))
+				if ktypeIsString { // set to a real string (not string view)
+					rvk.SetString(d.string(kstrbs))
+				}
+				if !rvvz.IsValid() {
+					rvvz = reflect.Zero(vtype)
+				}
+				rv.SetMapIndex(rvk, rvvz)
 			}
 			continue
 		}
 
 		mapSet = true // set to false if u do a get, and its a non-nil pointer
 		if mapGet {
-			// mapGet true only in case where kind=Ptr|Interface or kind is otherwise mutable.
 			rvv = rv.MapIndex(rvk)
-			if !rvv.IsValid() {
-				rvv = reflect.New(vtype).Elem()
-			} else if vtypeKind == reflect.Ptr {
-				if rvv.IsNil() {
-					rvv = reflect.New(vtype).Elem()
-				} else {
+			if vtypeKind == reflect.Ptr {
+				if rvv.IsValid() && !rvv.IsNil() {
 					mapSet = false
+				} else {
+					rvv = reflect.New(vtype.Elem())
 				}
-			} else if vtypeKind == reflect.Interface {
-				// not addressable, and thus not settable.
-				// e MUST create a settable/addressable variant
-				rvv2 := reflect.New(rvv.Type()).Elem()
-				if !rvv.IsNil() {
-					rvv2.Set(rvv)
-				}
-				rvv = rvv2
+			} else if rvv.IsValid() && vtypeKind == reflect.Interface && !rvv.IsNil() {
+				rvvn = reflect.New(vtype).Elem()
+				rvvn.Set(rvv)
+				rvv = rvvn
+			} else if rvvMut {
+				rvv = reflect.New(vtype).Elem()
+			} else {
+				rvv = rvvn
 			}
-			// else it is ~mutable, and we can just decode into it directly
-		} else if rvvImmut {
-			if !rvz.IsValid() {
-				rvz = reflect.New(vtype).Elem()
-			}
-			rvv = rvz
+		} else if rvvMut {
+			rvv = vNew(vtype, vtypeKind)
 		} else {
-			rvv = reflect.New(vtype).Elem()
+			rvv = rvvn
+		}
+
+		if valFn == nil {
+			valFn = d.h.fn(vtypeLo)
 		}
 
 		// We MUST be done with the stringview of the key, before decoding the value
 		// so that we don't bastardize the reused byte array.
-		if mapSet && ktypeIsString {
+		if mapSet && ktypeIsString { // set to a real string (not string view)
 			rvk.SetString(d.string(kstrbs))
 		}
-		if valFn == nil {
-			valFn = d.h.fn(vtypeLo)
-		}
 		d.decodeValue(rvv, valFn)
-		// d.decodeValueFn(rvv, valFn)
 		if mapSet {
 			rv.SetMapIndex(rvk, rvv)
 		}
@@ -2709,7 +2714,7 @@ func (d *Decoder) decode(iv interface{}) {
 		d.decodeValue(v, nil)
 
 	case *string:
-		*v = d.d.DecodeString()
+		*v = string(d.d.DecodeStringAsBytes())
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
