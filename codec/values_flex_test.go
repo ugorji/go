@@ -145,6 +145,16 @@ type TestSelfExtImpl struct {
 	testSelfExtHelper
 }
 
+type TestSelfExtImpl2 struct {
+	M string
+	O bool
+}
+
+type TestTwoNakedInterfaces struct {
+	A interface{}
+	B interface{}
+}
+
 var testWRepeated512 wrapBytes
 var testStrucTime = time.Date(2012, 2, 2, 2, 2, 2, 2000, time.UTC).UTC()
 

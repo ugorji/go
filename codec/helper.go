@@ -717,7 +717,7 @@ func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt boo
 			copy(sp2, sp[:idx])
 			copy(sp2[idx+1:], sp[idx:])
 			sp2[idx] = codecRtidFn{rtid, fn}
-			x.rtidFns.store(sp2)
+			fs.store(sp2)
 			// xdebugf(">>>> adding rt: %v to rtidfns of size: %v", rt, len(sp2))
 
 		}
