@@ -133,6 +133,7 @@ var (
 var wrapInt64Typ = reflect.TypeOf(wrapInt64(0))
 var wrapBytesTyp = reflect.TypeOf(wrapBytes(nil))
 var testSelfExtTyp = reflect.TypeOf((*TestSelfExtImpl)(nil)).Elem()
+var testSelfExt2Typ = reflect.TypeOf((*TestSelfExtImpl2)(nil)).Elem()
 
 func testByteBuf(in []byte) *bytes.Buffer {
 	return bytes.NewBuffer(in)
@@ -417,6 +418,12 @@ func testInit() {
 	chkErr(testBincH.SetBytesExt(testSelfExtTyp, 78, SelfExt))
 	chkErr(testJsonH.SetInterfaceExt(testSelfExtTyp, 78, SelfExt))
 	chkErr(testCborH.SetInterfaceExt(testSelfExtTyp, 78, SelfExt))
+
+	chkErr(testSimpleH.SetBytesExt(testSelfExt2Typ, 79, SelfExt))
+	chkErr(testMsgpackH.SetBytesExt(testSelfExt2Typ, 79, SelfExt))
+	chkErr(testBincH.SetBytesExt(testSelfExt2Typ, 79, SelfExt))
+	chkErr(testJsonH.SetInterfaceExt(testSelfExt2Typ, 79, SelfExt))
+	chkErr(testCborH.SetInterfaceExt(testSelfExt2Typ, 79, SelfExt))
 
 	// Now, add extensions for the type wrapInt64 and wrapBytes,
 	// so we can execute the Encode/Decode Ext paths.
@@ -2456,6 +2463,20 @@ func doTestSelfExt(t *testing.T, name string, h Handle) {
 	bs := testMarshalErr(&ts, h, t, name)
 	testUnmarshalErr(&ts2, bs, h, t, name)
 	testDeepEqualErr(&ts, &ts2, t, name)
+
+	var ts3 TestSelfExtImpl2
+	ts3.M = "moo"
+	ts3.O = true
+
+	s := TestTwoNakedInterfaces{
+		A: ts,
+		B: ts3,
+	}
+	var s2 TestTwoNakedInterfaces
+
+	bs = testMarshalErr(&s, h, t, name)
+	testUnmarshalErr(&s2, bs, h, t, name)
+	testDeepEqualErr(&s, &s2, t, name)
 }
 
 func doTestBytesEncodedAsArray(t *testing.T, name string, h Handle) {
