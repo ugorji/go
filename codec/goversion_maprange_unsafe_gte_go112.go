@@ -122,10 +122,6 @@ func mapAddressableRV(t reflect.Type) (r reflect.Value) {
 //go:noescape
 func mapiterkey(it unsafe.Pointer) (key unsafe.Pointer)
 
-//go:linkname mapiterelem reflect.mapiterelem
-//go:noescape
-func mapiterelem(it unsafe.Pointer) (elem unsafe.Pointer)
-
 //go:linkname mapaccess reflect.mapaccess
 //go:noescape
 func mapaccess(rtype unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer)

@@ -23,9 +23,10 @@ func (t *mapIter) Next() (r bool) {
 			t.k.Set(t.keys[t.j])
 		}
 		if t.vOk {
-			t.v.Set(t.rv.MapIndex(t.keys[t.j]))
+			t.v.Set(t.m.MapIndex(t.keys[t.j]))
 		}
 	}
+	return
 }
 
 func (t *mapIter) Key() reflect.Value {
@@ -42,14 +43,17 @@ func (t *mapIter) Value() (r reflect.Value) {
 	if t.vOk {
 		return t.v
 	}
-	return t.rv.MapIndex(t.keys[t.j])
+	return t.m.MapIndex(t.keys[t.j])
 }
 
 func mapRange(m, k, v reflect.Value, values bool) *mapIter {
-	return &mapIter{m: m, k: k, v: v,
-		kOk: k.CanSet(), vOk: values && v.CanSet(),
-		keys: rv.MapKeys(), j: -1,
+	return &mapIter{
+		m: m, k: k, v: v,
+		kOk:    k.CanSet(),
+		vOk:    values && v.CanSet(),
+		keys:   m.MapKeys(),
 		values: values,
+		j:      -1,
 	}
 }
 
