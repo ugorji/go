@@ -53,7 +53,7 @@ const (
 var (
 	jsonLiteralTrueQ  = jsonLiterals[jsonLitTrueQ : jsonLitTrueQ+6]
 	jsonLiteralFalseQ = jsonLiterals[jsonLitFalseQ : jsonLitFalseQ+7]
-	jsonLiteralNullQ  = jsonLiterals[jsonLitNullQ : jsonLitNullQ+6]
+	// jsonLiteralNullQ  = jsonLiterals[jsonLitNullQ : jsonLitNullQ+6]
 
 	jsonLiteralTrue  = jsonLiterals[jsonLitTrue : jsonLitTrue+4]
 	jsonLiteralFalse = jsonLiterals[jsonLitFalse : jsonLitFalse+5]
@@ -167,9 +167,9 @@ func (e *jsonEncDriverTypical) WriteMapEnd() {
 
 func (e *jsonEncDriverTypical) EncodeBool(b bool) {
 	if b {
-		e.w.writeb(jsonLiterals[jsonLitTrue : jsonLitTrue+4])
+		e.w.writeb(jsonLiteralTrue)
 	} else {
-		e.w.writeb(jsonLiterals[jsonLitFalse : jsonLitFalse+5])
+		e.w.writeb(jsonLiteralFalse)
 	}
 }
 
@@ -304,8 +304,7 @@ func (e *jsonEncDriverGeneric) EncodeFloat32(f float32) {
 }
 
 func (e *jsonEncDriverGeneric) EncodeInt(v int64) {
-	x := e.is
-	if x == 'A' || x == 'L' && (v > 1<<53 || v < -(1<<53)) || (e.ks && e.e.c == containerMapKey) {
+	if e.is == 'A' || e.is == 'L' && (v > 1<<53 || v < -(1<<53)) || (e.ks && e.e.c == containerMapKey) {
 		blen := 2 + len(strconv.AppendInt(e.b[1:1], v, 10))
 		e.b[0] = '"'
 		e.b[blen-1] = '"'
@@ -316,8 +315,7 @@ func (e *jsonEncDriverGeneric) EncodeInt(v int64) {
 }
 
 func (e *jsonEncDriverGeneric) EncodeUint(v uint64) {
-	x := e.is
-	if x == 'A' || x == 'L' && v > 1<<53 || (e.ks && e.e.c == containerMapKey) {
+	if e.is == 'A' || e.is == 'L' && v > 1<<53 || (e.ks && e.e.c == containerMapKey) {
 		blen := 2 + len(strconv.AppendUint(e.b[1:1], v, 10))
 		e.b[0] = '"'
 		e.b[blen-1] = '"'
@@ -395,7 +393,6 @@ func (e *jsonEncDriver) writeIndent() {
 }
 
 func (e *jsonEncDriver) WriteArrayElem() {
-	// xdebugf("WriteArrayElem: e.e.c: %d", e.e.c)
 	if e.e.c != containerArrayStart {
 		e.w.writen1(',')
 	}
@@ -425,7 +422,7 @@ func (e *jsonEncDriver) EncodeNil() {
 	// We always encode nil as just null (never in quotes)
 	// This allows us to easily decode if a nil in the json stream
 	// ie if initial token is n.
-	e.w.writeb(jsonLiterals[jsonLitNull : jsonLitNull+4])
+	e.w.writeb(jsonLiteralNull)
 
 	// if e.h.MapKeyAsString && e.e.c == containerMapKey {
 	// 	e.w.writeb(jsonLiterals[jsonLitNullQ : jsonLitNullQ+6])
@@ -672,7 +669,6 @@ func (d *jsonDecDriver) ReadArrayElem() {
 	if d.tok == 0 {
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
-	// xdebugf("ReadArrayElem: d.d.c: %d, token: %c", d.d.c, d.tok)
 	if d.d.c != containerArrayStart {
 		if d.tok != xc {
 			d.d.errorf("read array element - expect char '%c' but got char '%c'", xc, d.tok)
@@ -997,7 +993,6 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 			d.tok = d.r.skip(&jsonCharWhitespaceSet)
 		}
 		d.tok = 0
-		// xdebug2f("bytes from array: returning: %v", bs)
 		return bs
 	}
 	d.appendStringAsBytes()
@@ -1381,7 +1376,7 @@ type JsonHandle struct {
 	// If not configured, raw bytes are encoded to/from base64 text.
 	RawBytesExt InterfaceExt
 
-	// _ [2]uint64 // padding
+	_ [5]uint64 // padding (cache line)
 }
 
 // Name returns the name of the handle: json
