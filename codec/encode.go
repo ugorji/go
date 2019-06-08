@@ -452,7 +452,9 @@ func (z *bytesEncAppender) writeqstr(s string) {
 	// z.writen1('"')
 	// z.writestr(s)
 	// z.writen1('"')
+
 	z.b = append(append(append(z.b, '"'), s...), '"')
+
 	// z.b = append(z.b, '"')
 	// z.b = append(z.b, s...)
 	// z.b = append(z.b, '"')
@@ -479,7 +481,6 @@ func (e *Encoder) rawExt(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) ext(f *codecFnInfo, rv reflect.Value) {
-	// xdebugf("*Encoder.ext: rv: %v, rv2i: %T, %v", rv, rv2i(rv), rv2i(rv))
 	e.e.EncodeExt(rv2i(rv), f.xfTag, f.xfFn)
 }
 
@@ -619,7 +620,6 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kSliceBytes(rv reflect.Value, seq seqType) {
-	// xdebugf("kSliceBytes: seq: %d, rvType: %v", seq, rv.Type())
 	switch seq {
 	case seqTypeSlice:
 		e.e.EncodeStringBytesRaw(rv.Bytes())
@@ -857,7 +857,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	if e.h.Canonical {
-		e.kMapCanonical(f.ti.key, rv, valFn)
+		e.kMapCanonical(f.ti.key, f.ti.elem, rv, valFn)
 		e.mapEnd()
 		return
 	}
@@ -874,7 +874,11 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 	}
 
-	it := mapRange(rv)
+	var rvk = mapAddressableRV(f.ti.key)  //, f.ti.key.Kind())
+	var rvv = mapAddressableRV(f.ti.elem) //, f.ti.elem.Kind())
+
+	it := mapRange(rv, rvk, rvv, true)
+
 	for it.Next() {
 		e.mapElemKey()
 		if keyTypeIsString {
@@ -884,21 +888,23 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				e.e.EncodeStringEnc(cUTF8, it.Key().String())
 			}
 		} else {
-			e.encodeValue(it.Key(), keyFn)
+			e.encodeValue(it.Key(), keyFn) //
 		}
 		e.mapElemValue()
-		e.encodeValue(it.Value(), valFn)
+		iv := it.Value()
+		e.encodeValue(iv, valFn)
 	}
 
 	e.mapEnd()
 }
 
-func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, valFn *codecFn) {
+func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, valFn *codecFn) {
 	// we previously did out-of-band if an extension was registered.
 	// This is not necessary, as the natural kind is sufficient for ordering.
 
-	mks := rv.MapKeys()
+	rvv := mapAddressableRV(rtval)
 
+	mks := rv.MapKeys()
 	switch rtkey.Kind() {
 	case reflect.Bool:
 		mksv := make([]boolRv, len(mks))
@@ -912,7 +918,7 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, valFn *cod
 			e.mapElemKey()
 			e.e.EncodeBool(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.String:
 		mksv := make([]stringRv, len(mks))
@@ -930,7 +936,7 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, valFn *cod
 				e.e.EncodeStringEnc(cUTF8, mksv[i].v)
 			}
 			e.mapElemValue()
-			e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
 		mksv := make([]uint64Rv, len(mks))
@@ -944,7 +950,7 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, valFn *cod
 			e.mapElemKey()
 			e.e.EncodeUint(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		mksv := make([]int64Rv, len(mks))
@@ -958,7 +964,7 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, valFn *cod
 			e.mapElemKey()
 			e.e.EncodeInt(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Float32:
 		mksv := make([]float64Rv, len(mks))
@@ -972,7 +978,7 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, valFn *cod
 			e.mapElemKey()
 			e.e.EncodeFloat32(float32(mksv[i].v))
 			e.mapElemValue()
-			e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Float64:
 		mksv := make([]float64Rv, len(mks))
@@ -986,7 +992,7 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, valFn *cod
 			e.mapElemKey()
 			e.e.EncodeFloat64(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Struct:
 		if rv.Type() == timeTyp {
@@ -1001,7 +1007,7 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, valFn *cod
 				e.mapElemKey()
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
-				e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+				e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 			}
 			break
 		}
@@ -1025,7 +1031,7 @@ func (e *Encoder) kMapCanonical(rtkey reflect.Type, rv reflect.Value, valFn *cod
 			e.mapElemKey()
 			e.asis(mksbv[j].v)
 			e.mapElemValue()
-			e.encodeValue(rv.MapIndex(mksbv[j].r), valFn)
+			e.encodeValue(mapIndex(rv, mksbv[j].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksbv[j].r), valFn)
 		}
 		bufp.end()
 	}
@@ -1259,7 +1265,6 @@ func newEncoder(h Handle) *Encoder {
 	e.bytes = true
 	if useFinalizers {
 		runtime.SetFinalizer(e, (*Encoder).finalize)
-		// xdebugf(">>>> new(Encoder) with finalizer")
 	}
 	// e.w = &e.encWriterSwitch
 	e.hh = h
@@ -1512,7 +1517,6 @@ func (e *Encoder) mustEncode(v interface{}) {
 
 //go:noinline -- as it is run by finalizer
 func (e *Encoder) finalize() {
-	// xdebugf("finalizing Encoder")
 	e.Release()
 }
 
@@ -1826,7 +1830,6 @@ func (e *Encoder) sideEncode(v interface{}, bs *[]byte) {
 	e2.encodeValue(rv, e.h.fnNoExt(rv.Type()))
 	e2.e.atEndOfEncode()
 	e2.w().end()
-	// xdebugf("sideEncode: xbs: len: %d, %v, v: %v", len(*bs), *bs, v)
 }
 
 func encStructFieldKey(encName string, ee encDriver, w *encWriterSwitch,

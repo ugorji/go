@@ -428,7 +428,7 @@ func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		slen := d.ReadArrayStart()
 		bs = usableByteSlice(bs, slen)
-		for i := 0; i < slen; i++ {
+		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		return bs
@@ -605,13 +605,13 @@ func (d *simpleDecDriver) DecodeNaked() {
 //
 // The full spec will be published soon.
 type SimpleHandle struct {
-	BasicHandle
 	binaryEncodingType
 	noElemSeparators
+	BasicHandle
 	// EncZeroValuesAsNil says to encode zero values for numbers, bool, string, etc as nil
 	EncZeroValuesAsNil bool
 
-	_ [1]uint64 // padding (cache-aligned)
+	_ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: simple

@@ -197,7 +197,6 @@ func (e *cborEncDriver) EncodeTime(t time.Time) {
 }
 
 func (e *cborEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext) {
-	// xdebugf("cbor EncodeExt: v: %T, %v, ext: %T, %v, ==Self: %v", rv, rv, ext, ext, ext == SelfExt)
 	e.encUint(uint64(xtag), cborBaseTag)
 	if ext == SelfExt {
 		rv2 := baseRV(rv)
@@ -279,7 +278,7 @@ func (e *cborEncDriver) encStringBytesS(bb byte, v string) {
 		for i := uint(0); i < vlen; {
 			var v2 string
 			i2 := i + blen
-			if i2 < vlen {
+			if i2 >= i && i2 < vlen {
 				v2 = v[i:i2]
 			} else {
 				v2 = v[i:]
@@ -495,7 +494,8 @@ func (d *cborDecDriver) DecodeFloat64() (f float64) {
 		} else if major == cborMajorNegInt {
 			f = float64(cborDecInt64(d.decUint(), true))
 		} else {
-			d.d.errorf("float only valid from float16/32/64 - invalid descriptor %x/%s", d.bd, cbordesc(d.bd))
+			d.d.errorf("invalid float descriptor; got %d/%s, expected float16/32/64 or (-)int",
+				d.bd, cbordesc(d.bd))
 		}
 	}
 	d.bdRead = false
@@ -533,7 +533,8 @@ func (d *cborDecDriver) ReadMapStart() (length int) {
 		return -1
 	}
 	if d.bd>>5 != cborMajorMap {
-		d.d.errorf("error reading map; got major type: %x, expected: %x/%s", d.bd>>5, cborMajorMap, cbordesc(d.bd))
+		d.d.errorf("error reading map; got major type: %x, expected %x/%s",
+			d.bd>>5, cborMajorMap, cbordesc(d.bd))
 	}
 	return d.decLen()
 }
@@ -550,7 +551,8 @@ func (d *cborDecDriver) ReadArrayStart() (length int) {
 		return -1
 	}
 	if d.bd>>5 != cborMajorArray {
-		d.d.errorf("error reading array; got major type: %x, expect: %x/%s", d.bd>>5, cborMajorArray, cbordesc(d.bd))
+		d.d.errorf("invalid array; got major type: %x, expect: %x/%s",
+			d.bd>>5, cborMajorArray, cbordesc(d.bd))
 	}
 	return d.decLen()
 }
@@ -563,14 +565,14 @@ func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 	d.bdRead = false
 	for !d.CheckBreak() {
 		if major := d.bd >> 5; major != cborMajorBytes && major != cborMajorString {
-			d.d.errorf("error reading indefinite string/bytes;"+
-				" got major %v, expected %x/%s", major, d.bd, cbordesc(d.bd))
+			d.d.errorf("invalid indefinite string/bytes; got major %v, expected %x/%s",
+				major, d.bd, cbordesc(d.bd))
 		}
-		n := d.decLen()
-		oldLen := len(bs)
+		n := uint(d.decLen())
+		oldLen := uint(len(bs))
 		newLen := oldLen + n
-		if newLen > cap(bs) {
-			bs2 := make([]byte, newLen, 2*cap(bs)+n)
+		if newLen > uint(cap(bs)) {
+			bs2 := make([]byte, newLen, 2*uint(cap(bs))+n)
 			copy(bs2, bs)
 			bs = bs2
 		} else {
@@ -632,7 +634,7 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		}
 		slen := d.decLen()
 		bs = usableByteSlice(bs, slen)
-		for i := 0; i < slen; i++ {
+		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		return bs
@@ -704,7 +706,6 @@ func (d *cborDecDriver) decodeTime(xtag uint64) (t time.Time) {
 }
 
 func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxtag uint64) {
-	// xdebugf("cbor DecodeExt: v: %T, %v", rv, rv)
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -738,8 +739,6 @@ func (d *cborDecDriver) DecodeNaked() {
 
 	n := d.d.naked()
 	var decodeFurther bool
-
-	// xdebug2f("DecodeNaked: bd: %x, bd >> 5: %x", d.bd, d.bd>>5)
 
 	switch d.bd >> 5 {
 	case cborMajorUint:
@@ -851,7 +850,7 @@ type CborHandle struct {
 	// Furthermore, this allows the skipping over of the Self Describing Tag 0xd9d9f7.
 	SkipUnexpectedTags bool
 
-	_ [1]uint64 // padding (cache-aligned)
+	_ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: cbor

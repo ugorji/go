@@ -150,6 +150,9 @@ const (
 	//    runtime.SetFinalizer(e, (*Encoder).Release)
 	//    runtime.SetFinalizer(d, (*Decoder).Release)
 	useFinalizers = false
+
+	// xdebug controls whether xdebugf prints any output
+	xdebug = true
 )
 
 var oneByteArr [1]byte
@@ -168,6 +171,7 @@ func init() {
 	refBitset.set(byte(reflect.Ptr))
 	refBitset.set(byte(reflect.Func))
 	refBitset.set(byte(reflect.Chan))
+	refBitset.set(byte(reflect.UnsafePointer))
 }
 
 type handleFlag uint8
@@ -546,11 +550,21 @@ type BasicHandle struct {
 
 	extHandle
 
-	intf2impls
+	rtidFns      atomicRtidFnSlice
+	rtidFnsNoExt atomicRtidFnSlice
+
+	// ---- cache line
+
+	DecodeOptions
+
+	// ---- cache line
 
 	EncodeOptions
 
-	DecodeOptions
+	intf2impls
+
+	mu     sync.Mutex
+	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
 
 	RPCOptions
 
@@ -594,11 +608,7 @@ type BasicHandle struct {
 
 	// noBuiltInTypeChecker
 
-	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
-	mu     sync.Mutex
 	// _      uint32 // padding
-	rtidFns      atomicRtidFnSlice
-	rtidFnsNoExt atomicRtidFnSlice
 	// r []uintptr     // rtids mapped to s above
 }
 
@@ -692,12 +702,10 @@ func (x *BasicHandle) fnNoExt(rt reflect.Type) (fn *codecFn) {
 }
 
 func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt bool) (fn *codecFn) {
-	// xdebug2f("fnVia: rt: %v, checkExt: %v", rt, checkExt)
 	rtid := rt2id(rt)
 	sp := fs.load()
 	if sp != nil {
 		if _, fn = findFn(sp, rtid); fn != nil {
-			// xdebugf("<<<< %c: found fn for %v in rtidfns of size: %v", x.n, rt, len(sp))
 			return
 		}
 	}
@@ -708,8 +716,6 @@ func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt boo
 	if sp == nil {
 		sp2 = []codecRtidFn{{rtid, fn}}
 		fs.store(sp2)
-		// xdebugf(">>>> adding rt: %v to rtidfns of size: %v", rt, len(sp2))
-		// xdebugf(">>>> loading stored rtidfns of size: %v", len(fs.load()))
 	} else {
 		idx, fn2 := findFn(sp, rtid)
 		if fn2 == nil {
@@ -718,8 +724,6 @@ func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt boo
 			copy(sp2[idx+1:], sp[idx:])
 			sp2[idx] = codecRtidFn{rtid, fn}
 			fs.store(sp2)
-			// xdebugf(">>>> adding rt: %v to rtidfns of size: %v", rt, len(sp2))
-
 		}
 	}
 	x.mu.Unlock()
@@ -727,7 +731,6 @@ func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt boo
 }
 
 func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *codecFn) {
-	// xdebugf("#### for %c: load fn for %v in rtidfns of size: %v", x.n, rt, len(sp))
 	fn = new(codecFn)
 	fi := &(fn.i)
 	ti := x.getTypeInfo(rtid, rt)
@@ -2148,6 +2151,17 @@ func baseRV(v interface{}) (rv reflect.Value) {
 	return
 }
 
+// func newAddressableRV(t reflect.Type, k reflect.Kind) reflect.Value {
+// 	if k == reflect.Ptr {
+// 		return reflect.New(t.Elem()) // this is not addressable???
+// 	}
+// 	return reflect.New(t).Elem()
+// }
+
+// func newAddressableRV(t reflect.Type) reflect.Value {
+// 	return reflect.New(t).Elem()
+// }
+
 // ----
 
 // these "checkOverflow" functions must be inlinable, and not call anybody.
@@ -2305,7 +2319,6 @@ type set []interface{}
 func (s *set) add(v interface{}) (exists bool) {
 	// e.ci is always nil, or len >= 1
 	x := *s
-	// defer func() { xdebugf("set.add: len: %d", len(x)) }()
 
 	if x == nil {
 		x = make([]interface{}, 1, 8)
@@ -2417,11 +2430,11 @@ func (x *bitset256) set(pos byte) {
 
 // ------------
 
-type strBytes struct {
-	s string
-	b []byte
-	// i uint16
-}
+// type strBytes struct {
+// 	s string
+// 	b []byte
+// 	// i uint16
+// }
 
 // ------------
 
@@ -2434,7 +2447,8 @@ type pooler struct {
 	// dn                                 sync.Pool // for decNaked
 	buf1k, buf2k, buf4k, buf8k, buf16k, buf32k, buf64k sync.Pool // for [N]byte
 
-	mapStrU16, mapU16Str, mapU16Bytes, mapU16StrBytes sync.Pool // for Binc
+	mapStrU16, mapU16Str, mapU16Bytes sync.Pool // for Binc
+	// mapU16StrBytes sync.Pool // for Binc
 }
 
 func (p *pooler) init() {
@@ -2459,7 +2473,7 @@ func (p *pooler) init() {
 	p.mapStrU16.New = func() interface{} { return make(map[string]uint16, 16) }
 	p.mapU16Str.New = func() interface{} { return make(map[uint16]string, 16) }
 	p.mapU16Bytes.New = func() interface{} { return make(map[uint16][]byte, 16) }
-	p.mapU16StrBytes.New = func() interface{} { return make(map[uint16]strBytes, 16) }
+	// p.mapU16StrBytes.New = func() interface{} { return make(map[uint16]strBytes, 16) }
 }
 
 // func (p *pooler) sfiRv8() (sp *sync.Pool, v interface{}) {
@@ -2712,22 +2726,31 @@ func (z *sfiRvPooler) get(newlen int) (fkvs []sfiRv) {
 // xdebugf printf. the message in red on the terminal.
 // Use it in place of fmt.Printf (which it calls internally)
 func xdebugf(pattern string, args ...interface{}) {
-	var delim string
-	if len(pattern) > 0 && pattern[len(pattern)-1] != '\n' {
-		delim = "\n"
-	}
-	fmt.Printf("\033[1;31m"+pattern+delim+"\033[0m", args...)
+	xdebugAnyf("31", pattern, args...)
 }
 
 // xdebug2f printf. the message in blue on the terminal.
 // Use it in place of fmt.Printf (which it calls internally)
 func xdebug2f(pattern string, args ...interface{}) {
+	xdebugAnyf("34", pattern, args...)
+}
+
+func xdebugAnyf(colorcode, pattern string, args ...interface{}) {
+	if !xdebug {
+		return
+	}
 	var delim string
 	if len(pattern) > 0 && pattern[len(pattern)-1] != '\n' {
 		delim = "\n"
 	}
-	fmt.Printf("\033[1;34m"+pattern+delim+"\033[0m", args...)
+	fmt.Printf("\033[1;"+colorcode+"m"+pattern+delim+"\033[0m", args...)
+	// os.Stderr.Flush()
 }
+
+// register these here, so that staticcheck stops barfing
+var _ = xdebug2f
+var _ = xdebugf
+var _ = isNaN32
 
 // func isImmutableKind(k reflect.Kind) (v bool) {
 // 	return false ||

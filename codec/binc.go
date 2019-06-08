@@ -221,7 +221,6 @@ func (e *bincEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext) {
 	if ext == SelfExt {
 		bs = bufp.get(1024)[:0]
 		e.e.sideEncode(v, &bs)
-		// xdebugf("binc EncodeExt: xbs: len: %d, %v", len(bs), bs)
 	} else {
 		bs = ext.WriteExt(v)
 	}
@@ -275,7 +274,6 @@ func (e *bincEncDriver) EncodeSymbol(v string) {
 	}
 	if e.m == nil {
 		e.m = pool.mapStrU16.Get().(map[string]uint16)
-		// xdebug2f("creating e.m: %v, isnil: %v", e.m, e.m == nil)
 	}
 	ui, ok := e.m[v]
 	if ok {
@@ -404,7 +402,7 @@ type bincDecDriver struct {
 	// noStreamingCodec
 	// decNoSeparator
 
-	b [(8 + 1) * 8]byte // scratch
+	b [3 * 8]byte // scratch
 }
 
 func (d *bincDecDriver) readNextBd() {
@@ -699,7 +697,7 @@ func (d *bincDecDriver) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
 			if d.br {
 				bs2 = d.r.readx(uint(slen))
 			} else if len(bs) == 0 {
-				bs2 = decByteSlice(d.r, slen, d.d.h.MaxInitLen, d.b[:])
+				bs2 = decByteSlice(d.r, slen, d.d.h.MaxInitLen, d.d.b[:])
 			} else {
 				bs2 = decByteSlice(d.r, slen, d.d.h.MaxInitLen, bs)
 			}
@@ -754,7 +752,7 @@ func (d *bincDecDriver) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
 }
 
 func (d *bincDecDriver) DecodeStringAsBytes() (s []byte) {
-	return d.decStringBytes(d.b[:], true)
+	return d.decStringBytes(d.d.b[:], true)
 }
 
 func (d *bincDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
@@ -790,7 +788,7 @@ func (d *bincDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		if d.br {
 			return d.r.readx(uint(clen))
 		} else if len(bs) == 0 {
-			bs = d.b[:]
+			bs = d.d.b[:]
 		}
 	}
 	return decByteSlice(d.r, clen, d.d.h.MaxInitLen, bs)
@@ -803,7 +801,6 @@ func (d *bincDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxta
 	}
 	realxtag1, xbs := d.decodeExtV(ext != nil, uint8(xtag))
 	realxtag = uint64(realxtag1)
-	// xdebugf("binc DecodeExt: xbs: len: %d, %v", len(xbs), xbs)
 	if ext == nil {
 		re := rv.(*RawExt)
 		re.Tag = realxtag
@@ -978,7 +975,7 @@ type BincHandle struct {
 	// - n: none
 	// - a: all: same as m, s, ...
 
-	_ [1]uint64 // padding (cache-aligned)
+	_ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: binc
@@ -998,7 +995,6 @@ func (h *BincHandle) newDecDriver(d *Decoder) decDriver {
 }
 
 func (e *bincEncDriver) reset() {
-	// xdebugf("bincEncDriver: reset: e.m: %v, isnil: %v", e.m, e.m == nil)
 	e.w = e.e.w()
 	e.s = 0
 	e.m = nil
@@ -1006,7 +1002,6 @@ func (e *bincEncDriver) reset() {
 
 func (e *bincEncDriver) atEndOfEncode() {
 	if e.m != nil {
-		// xdebug2f("bincEncDriver: reset: len: %d", len(e.m))
 		for k := range e.m {
 			delete(e.m, k)
 		}
@@ -1016,7 +1011,6 @@ func (e *bincEncDriver) atEndOfEncode() {
 }
 
 func (d *bincDecDriver) reset() {
-	// xdebugf("bincDecDriver: reset")
 	d.r, d.br = d.d.r(), d.d.bytes
 	d.s = nil
 	d.bd, d.bdRead, d.vd, d.vs = 0, false, 0, 0
@@ -1024,7 +1018,6 @@ func (d *bincDecDriver) reset() {
 
 func (d *bincDecDriver) atEndOfDecode() {
 	if d.s != nil {
-		// xdebug2f("bincDecDriver: reset: len: %d", len(d.s))
 		for k := range d.s {
 			delete(d.s, k)
 		}

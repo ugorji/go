@@ -113,7 +113,6 @@ type missingFielderT1 struct {
 }
 
 func (t *missingFielderT1) CodecMissingField(field []byte, value interface{}) bool {
-	// xdebugf(">> calling CodecMissingField with field: %s, value: %v", field, value)
 	switch string(field) {
 	case "F":
 		t.f = value.(float64)

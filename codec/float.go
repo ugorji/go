@@ -304,10 +304,10 @@ L:
 
 // fMul10ShiftU64
 
-func parseFloatDebug(b []byte, bitsize int, strconv bool, exp int8, trunc, ok bool) {
-	if strconv {
-		xdebugf("parseFloat%d: delegating: %s, exp: %d, trunc: %v, ok: %v", bitsize, b, exp, trunc, ok)
-	} else {
-		xdebug2f("parseFloat%d: attempting: %s, exp: %d, trunc: %v, ok: %v", bitsize, b, exp, trunc, ok)
-	}
-}
+// func parseFloatDebug(b []byte, bitsize int, strconv bool, exp int8, trunc, ok bool) {
+// 	if strconv {
+// 		xdebugf("parseFloat%d: delegating: %s, exp: %d, trunc: %v, ok: %v", bitsize, b, exp, trunc, ok)
+// 	} else {
+// 		xdebug2f("parseFloat%d: attempting: %s, exp: %d, trunc: %v, ok: %v", bitsize, b, exp, trunc, ok)
+// 	}
+// }

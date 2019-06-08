@@ -358,7 +358,7 @@ func checkEqualT(t *testing.T, v1 interface{}, v2 interface{}, desc string) {
 func testInit() {
 	gob.Register(new(TestStrucFlex))
 	if testInitDebug {
-		ts0 := newTestStrucFlex(2, testNumRepeatString, false, !testSkipIntf, false)
+		ts0 := newTestStrucFlex(2, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
 		logTv(nil, "====> depth: %v, ts: %#v\n", 2, ts0)
 	}
 
@@ -529,7 +529,7 @@ ugorji
 	table = append(table, primitives)
 	table = append(table, testMbsT(primitives))
 	table = append(table, maps...)
-	table = append(table, newTestStrucFlex(0, testNumRepeatString, false, !testSkipIntf, false))
+	table = append(table, newTestStrucFlex(0, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly))
 
 }
 
@@ -899,7 +899,7 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	}
 
 	// func TestMsgpackDecodePtr(t *testing.T) {
-	ts := newTestStrucFlex(testDepth, testNumRepeatString, false, !testSkipIntf, false)
+	ts := newTestStrucFlex(testDepth, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
 	b = testMarshalErr(ts, h, t, "pointer-to-struct")
 	if len(b) < 40 {
 		failT(t, "------- Size must be > 40. Size: %d", len(b))
@@ -1692,7 +1692,7 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 
 func doTestSwallowAndZero(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
-	v1 := newTestStrucFlex(testDepth, testNumRepeatString, false, false, false)
+	v1 := newTestStrucFlex(testDepth, testNumRepeatString, false, false, testMapStringKeyOnly)
 	var b1 []byte
 
 	e1 := NewEncoderBytes(&b1, h)
@@ -2463,20 +2463,6 @@ func doTestSelfExt(t *testing.T, name string, h Handle) {
 	bs := testMarshalErr(&ts, h, t, name)
 	testUnmarshalErr(&ts2, bs, h, t, name)
 	testDeepEqualErr(&ts, &ts2, t, name)
-
-	var ts3 TestSelfExtImpl2
-	ts3.M = "moo"
-	ts3.O = true
-
-	s := TestTwoNakedInterfaces{
-		A: ts,
-		B: ts3,
-	}
-	var s2 TestTwoNakedInterfaces
-
-	bs = testMarshalErr(&s, h, t, name)
-	testUnmarshalErr(&s2, bs, h, t, name)
-	testDeepEqualErr(&s, &s2, t, name)
 }
 
 func doTestBytesEncodedAsArray(t *testing.T, name string, h Handle) {
@@ -2806,6 +2792,99 @@ func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
 	// b = []byte{0x00}
 	// var s testSelferRecur
 	// fn(t, b, &s)
+}
+
+func TestMapRangeIndex(t *testing.T) {
+	// t.Skip()
+	type T struct {
+		I int
+		S string
+		B bool
+		M map[int]T
+	}
+
+	t1 := T{I: 1, B: true, S: "11", M: map[int]T{11: T{I: 11}}}
+	t2 := T{I: 1, B: true, S: "12", M: map[int]T{12: T{I: 12}}}
+
+	// ------
+
+	var m1 = map[string]*T{
+		"11": &t1,
+		"12": &t2,
+	}
+	var m1c = make(map[string]T)
+	for k, v := range m1 {
+		m1c[k] = *v
+	}
+
+	mt := reflect.TypeOf(m1)
+	it := mapRange(reflect.ValueOf(m1), mapAddressableRV(mt.Key()), mapAddressableRV(mt.Elem()), true)
+	for it.Next() {
+		k := it.Key().Interface().(string)
+		v := it.Value().Interface().(*T)
+		testDeepEqualErr(m1[k], v, t, "map-key-eq-it-key")
+		if _, ok := m1c[k]; ok {
+			delete(m1c, k)
+		} else {
+			failT(t, "unexpected key in map: %v", k)
+		}
+	}
+	testDeepEqualErr(len(m1c), 0, t, "all-keys-not-consumed")
+
+	// ------
+
+	var m2 = map[*T]T{
+		&t1: t1,
+		&t2: t2,
+	}
+	var m2c = make(map[*T]*T)
+	for k, _ := range m2 {
+		m2c[k] = k
+	}
+
+	mt = reflect.TypeOf(m2)
+	it = mapRange(reflect.ValueOf(m2), mapAddressableRV(mt.Key()), mapAddressableRV(mt.Elem()), true)
+	for it.Next() {
+		k := it.Key().Interface().(*T)
+		v := it.Value().Interface().(T)
+		testDeepEqualErr(m2[k], v, t, "map-key-eq-it-key")
+		if _, ok := m2c[k]; ok {
+			delete(m2c, k)
+		} else {
+			failT(t, "unexpected key in map: %v", k)
+		}
+	}
+	testDeepEqualErr(len(m2c), 0, t, "all-keys-not-consumed")
+
+	// ---- test mapIndex
+
+	fnTestMapIndex := func(mi ...interface{}) {
+		for _, m0 := range mi {
+			m := reflect.ValueOf(m0)
+			rvv := mapAddressableRV(m.Type().Elem())
+			for _, k := range m.MapKeys() {
+				testDeepEqualErr(m.MapIndex(k).Interface(), mapIndex(m, k, rvv).Interface(), t, "map-index-eq")
+			}
+		}
+	}
+
+	fnTestMapIndex(m1, m1c, m2, m2c)
+
+	// var s string = "hello"
+	// var tt = &T{I: 3}
+	// ttTyp := reflect.TypeOf(tt)
+	// _, _ = tt, ttTyp
+	// mv := reflect.ValueOf(m)
+	// it := mapRange(mv, reflect.ValueOf(&s).Elem(), reflect.ValueOf(&tt).Elem(), true) //ok
+	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(reflect.TypeOf(T{})).Elem(), true) // ok
+	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(ttTyp.Elem()), true) // !ok
+	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(reflect.TypeOf(T{})), true) !ok
+	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(reflect.TypeOf(T{})).Elem(), true) // ok
+
+	// fmt.Printf("key: %#v\n", it.Key())
+	// fmt.Printf("exp: %#v\n", mv.MapIndex(it.Key()))
+	// fmt.Printf("val: %#v\n", it.Value())
+	// testDeepEqualErr(mv.MapIndex(it.Key()), it.Value().Interface()
 }
 
 // ----------

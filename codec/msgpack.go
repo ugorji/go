@@ -699,7 +699,7 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		slen := d.ReadArrayStart()
 		bs = usableByteSlice(bs, slen)
-		for i := 0; i < slen; i++ {
+		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		return bs
@@ -949,6 +949,8 @@ func (d *msgpackDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs 
 
 //MsgpackHandle is a Handle for the Msgpack Schema-Free Encoding Format.
 type MsgpackHandle struct {
+	binaryEncodingType
+	noElemSeparators
 	BasicHandle
 
 	// NoFixedNum says to output all signed integers as 2-bytes, never as 1-byte fixednum.
@@ -971,10 +973,7 @@ type MsgpackHandle struct {
 	// PositiveIntUnsigned says to encode positive integers as unsigned.
 	PositiveIntUnsigned bool
 
-	binaryEncodingType
-	noElemSeparators
-
-	_ [1]uint64 // padding (cache-aligned)
+	_ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: msgpack

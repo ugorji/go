@@ -698,7 +698,6 @@ func (z *bufioDecReader) readx(n uint) (bs []byte) {
 	return
 }
 
-//go:noinline - track called by Decoder.nextValueBytes() (called by jsonUnmarshal,rawBytes)
 func (z *bufioDecReader) doTrack(y uint) {
 	z.tr = append(z.tr, z.buf[z.c:y]...) // cost=14???
 }
@@ -1299,8 +1298,8 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 		bfn := d.h.getExtForTag(tag)
 		var re = RawExt{Tag: tag}
 		if bytes == nil {
-			// it is one of the InterfaceExt ones: json and cbor
-			// almost definitely cbor, as json naked decoding never reveals valueTypeExt (no tagging support).
+			// it is one of the InterfaceExt ones: json and cbor.
+			// most likely cbor, as json decoding never reveals valueTypeExt (no tagging support)
 			if bfn == nil {
 				d.decode(&re.Value)
 				rvn = reflect.ValueOf(&re).Elem()
@@ -1457,9 +1456,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				copy(rvkencname, name2)
 
 				var f interface{}
-				// xdebugf("kStruct: mf != nil: before decode: rvkencname: %s", rvkencname)
 				d.decode(&f)
-				// xdebugf("kStruct: mf != nil: after decode: rvkencname: %s", rvkencname)
 				if !mf.CodecMissingField(rvkencname, f) && d.h.ErrorIfNoField {
 					d.errorf("no matching struct field found when decoding stream map with key: %s ",
 						stringView(rvkencname))
@@ -1762,7 +1759,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	ktype, vtype := ti.key, ti.elem
 	ktypeId := rt2id(ktype)
 	vtypeKind := vtype.Kind()
-	ktypeKind := ktype.Kind()
+	// ktypeKind := ktype.Kind()
 	var keyFn, valFn *codecFn
 	var ktypeLo, vtypeLo reflect.Type
 
@@ -1774,6 +1771,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	rvvMut := !isImmutableKind(vtypeKind)
 
+	// we do a mapGet if kind is mutable, and InterfaceReset=true if interface
 	var mapGet, mapSet bool
 	if !d.h.MapValueReset {
 		if rvvMut {
@@ -1787,34 +1785,28 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 	}
 
-	var rvk, rvkn, rvv, rvvn, rvvz reflect.Value
+	var rvk, rvkn, rvv, rvvn, rvva, rvvz reflect.Value
+	var rvvaSet bool
 	rvkMut := !isImmutableKind(ktype.Kind()) // if ktype is immutable, then re-use the same rvk.
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
 	hasLen := containerLen > 0
 	var kstrbs []byte
 
-	vNew := func(t reflect.Type, k reflect.Kind) reflect.Value {
-		if k == reflect.Ptr {
-			return reflect.New(t.Elem())
-		}
-		return reflect.New(t).Elem()
-	}
-
 	for j := 0; (hasLen && j < containerLen) || !(hasLen || dd.CheckBreak()); j++ {
 		if j == 0 {
 			// rvvz = reflect.Zero(vtype)
 			// rvkz = reflect.Zero(ktype)
 			if !rvkMut {
-				rvkn = vNew(ktype, ktypeKind)
+				rvkn = reflect.New(ktype).Elem() //, ktypeKind)
 			}
 			if !rvvMut {
-				rvvn = vNew(vtype, vtypeKind)
+				rvvn = reflect.New(vtype).Elem() //, vtypeKind)
 			}
 		}
 
 		if rvkMut {
-			rvk = vNew(ktype, ktypeKind)
+			rvk = reflect.New(ktype).Elem() //, ktypeKind)
 		} else {
 			rvk = rvkn
 		}
@@ -1860,7 +1852,11 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 		mapSet = true // set to false if u do a get, and its a non-nil pointer
 		if mapGet {
-			rvv = rv.MapIndex(rvk)
+			if !rvvaSet {
+				rvva = mapAddressableRV(vtype)
+				rvvaSet = true
+			}
+			rvv = mapIndex(rv, rvk, rvva) // reflect.Value{})
 			if vtypeKind == reflect.Ptr {
 				if rvv.IsValid() && !rvv.IsNil() {
 					mapSet = false
@@ -1877,7 +1873,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				rvv = rvvn
 			}
 		} else if rvvMut {
-			rvv = vNew(vtype, vtypeKind)
+			rvv = reflect.New(vtype).Elem() //, vtypeKind)
 		} else {
 			rvv = rvvn
 		}
@@ -1886,8 +1882,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			valFn = d.h.fn(vtypeLo)
 		}
 
-		// We MUST be done with the stringview of the key, before decoding the value
-		// so that we don't bastardize the reused byte array.
+		// We MUST be done with the stringview of the key, BEFORE decoding the value (rvv)
+		// so that we don't unknowingly reuse the rvk backing buffer during rvv decode.
 		if mapSet && ktypeIsString { // set to a real string (not string view)
 			rvk.SetString(d.string(kstrbs))
 		}
@@ -2313,7 +2309,7 @@ type Decoder struct {
 	depth    int16
 	c        containerState
 	_        [3]byte                      // padding
-	b        [decScratchByteArrayLen]byte // scratch buffer, used by Decoder and xxxEncDrivers
+	b        [decScratchByteArrayLen]byte // scratch buffer, used by Decoder and xxxDecDrivers
 
 	// padding - false sharing help // modify 232 if Decoder struct changes.
 	// _ [cacheLineSize - 232%cacheLineSize]byte
@@ -2344,7 +2340,6 @@ func newDecoder(h Handle) *Decoder {
 	d.bytes = true
 	if useFinalizers {
 		runtime.SetFinalizer(d, (*Decoder).finalize)
-		// xdebugf(">>>> new(Decoder) with finalizer")
 	}
 	// d.r = &d.decReaderSwitch
 	d.hh = h
@@ -2578,7 +2573,6 @@ func (d *Decoder) mustDecode(v interface{}) {
 
 //go:noinline -- as it is run by finalizer
 func (d *Decoder) finalize() {
-	// xdebugf("finalizing Decoder")
 	d.Release()
 }
 
@@ -3125,9 +3119,20 @@ func detachZeroCopyBytes(isBytesReader bool, dest []byte, in []byte) (out []byte
 //      if <= 0, it is unset, and we infer it based on the unit size
 //    - unit: number of bytes for each element of the collection
 func decInferLen(clen, maxlen, unit int) (rvlen int) {
+	const maxLenIfUnset = 8 // 64
 	// handle when maxlen is not set i.e. <= 0
-	if clen <= 0 {
+
+	// clen==0:           use 0
+	// maxlen<=0, clen<0: use default
+	// maxlen> 0, clen<0: use default
+	// maxlen<=0, clen>0: infer maxlen, and cap on it
+	// maxlen> 0, clen>0: cap at maxlen
+
+	if clen == 0 {
 		return
+	}
+	if clen < 0 {
+		return maxLenIfUnset
 	}
 	if unit == 0 {
 		return clen
@@ -3143,6 +3148,9 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 		} else {
 			maxlen = 4 * 1024
 		}
+		// if maxlen > maxLenIfUnset {
+		// 	maxlen = maxLenIfUnset
+		// }
 	}
 	if clen > maxlen {
 		rvlen = maxlen
@@ -3195,7 +3203,6 @@ func decReadFull(r io.Reader, bs []byte) (n uint, err error) {
 			n += uint(nn)
 		}
 	}
-	// xdebugf("decReadFull: len(bs): %v, n: %v, err: %v", len(bs), n, err)
 	// do not do this - it serves no purpose
 	// if n != len(bs) && err == io.EOF { err = io.ErrUnexpectedEOF }
 	return
@@ -3210,3 +3217,7 @@ func decNakedReadRawBytes(dr decDriver, d *Decoder, n *decNaked, rawToString boo
 		n.l = dr.DecodeBytes(nil, false)
 	}
 }
+
+// register these here, so that staticcheck stops barfing
+var _ = (*bytesDecReader).readTo
+var _ = (*bytesDecReader).readUntil

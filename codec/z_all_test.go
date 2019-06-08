@@ -58,9 +58,9 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 
 	testUseMust = true
 	testUseIoEncDec = 0
-	// xdebugf("setting StructToArray=true")
 	testUseReset = true
 
+	// xdebugf("with StructToArray=true")
 	testDecodeOptions.InternString = true
 	testDecodeOptions.MapValueReset = true
 	// testDecodeOptions.SignedInteger = true
@@ -320,6 +320,7 @@ func testNonHandlesGroup(t *testing.T) {
 	t.Run("TestAllAnonCycle", TestAllAnonCycle)
 	t.Run("TestMultipleEncDec", TestMultipleEncDec)
 	t.Run("TestAllErrWriter", TestAllErrWriter)
+	t.Run("TestMapRangeIndex", TestMapRangeIndex)
 }
 
 func TestCodecSuite(t *testing.T) {

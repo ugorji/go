@@ -27,7 +27,7 @@ import (
 // 	defTypeInfos.get(rt2id(rt), rt)
 // }
 
-const numStrUi64T = 4 // TODO: prefer 32
+const numStrUi64T = 32 // use 8, prefer 32, test with 1024
 
 type wrapSliceUint64 []uint64
 type wrapSliceString []string
@@ -346,7 +346,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 	}
 
 	for i := uint64(0); i < numStrUi64T; i++ {
-		ss := strings.Repeat(strconv.FormatUint(i, 10), 4)
+		ss := strings.Repeat(strconv.FormatUint(i, 10), int(i)) // 4)
 		ts.SstrUi64T[i] = stringUint64T{S: ss, U: i}
 		ts.MstrUi64T[ss] = &ts.SstrUi64T[i]
 	}

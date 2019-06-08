@@ -696,7 +696,6 @@ func (x *genRunner) registerXtraT(t reflect.Type) {
 // encVar will encode a variable.
 // The parameter, t, is the reflect.Type of the variable itself
 func (x *genRunner) encVar(varname string, t reflect.Type) {
-	// xdebugf("varname: %s, t: %v", varname, t)
 	var checkNil bool
 	switch t.Kind() {
 	case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map, reflect.Chan:
@@ -979,7 +978,6 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 }
 
 func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
-	// xdebug2f("encStruct, varname: %s, t: %s", varname, t)
 	// Use knowledge from structfieldinfo (mbs, encodable fields. Ignore omitempty. )
 	// replicate code in kStruct i.e. for each field, deref type to non-pointer, and call x.enc on it
 
@@ -1112,7 +1110,6 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		if si.omitEmpty() {
 			x.linef("if %s[%v] {", numfieldsvar, j)
 		}
-		// xdebug2f("varname: %s, t2.Type: %s", varname3, t2.Type)
 		x.encVarChkNil(q.fqname, q.sf.Type, false)
 		if si.omitEmpty() {
 			x.linef("} else {")

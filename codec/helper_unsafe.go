@@ -20,7 +20,13 @@ import (
 // var zeroRTv [4]uintptr
 
 const safeMode = false
-const unsafeFlagIndir = 1 << 7 // keep in sync with GO_ROOT/src/reflect/value.go
+
+// keep in sync with GO_ROOT/src/reflect/value.go
+const (
+	unsafeFlagIndir    = 1 << 7
+	unsafeFlagKindMask = (1 << 5) - 1 // 5 bits for 27 kinds (up to 31)
+	// unsafeTypeKindDirectIface = 1 << 5
+)
 
 type unsafeString struct {
 	Data unsafe.Pointer
@@ -76,6 +82,17 @@ func definitelyNil(v interface{}) bool {
 	return ((*unsafeIntf)(unsafe.Pointer(&v))).word == nil
 }
 
+func rv2ptr(urv *unsafeReflectValue) (ptr unsafe.Pointer) {
+	// true references (map, func, chan, ptr - NOT slice) may be double-referenced? as flagIndir
+	// rv := *((*reflect.Value)(unsafe.Pointer(urv)))
+	if refBitset.isset(byte(urv.flag&unsafeFlagKindMask)) && urv.flag&unsafeFlagIndir != 0 {
+		ptr = *(*unsafe.Pointer)(urv.ptr)
+	} else {
+		ptr = urv.ptr
+	}
+	return
+}
+
 func rv2i(rv reflect.Value) interface{} {
 	// TODO: consider a more generally-known optimization for reflect.Value ==> Interface
 	//
@@ -83,14 +100,7 @@ func rv2i(rv reflect.Value) interface{} {
 	// the source go stdlib reflect/value.go, and trims the implementation.
 
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	// true references (map, func, chan, ptr - NOT slice) may be double-referenced as flagIndir
-	var ptr unsafe.Pointer
-	if refBitset.isset(byte(urv.flag&(1<<5-1))) && urv.flag&unsafeFlagIndir != 0 {
-		ptr = *(*unsafe.Pointer)(urv.ptr)
-	} else {
-		ptr = urv.ptr
-	}
-	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: ptr}))
+	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: rv2ptr(urv)}))
 }
 
 func rt2id(rt reflect.Type) uintptr {
@@ -204,7 +214,7 @@ func (x *atomicTypeInfoSlice) store(p []rtid2ti) {
 // --------------------------
 type atomicRtidFnSlice struct {
 	v unsafe.Pointer // *[]codecRtidFn
-	// _ uint64         // padding (atomicXXX expected to be 2 words) (make 1 word so JsonHandle fits)
+	_ uint64         // padding (atomicXXX expected to be 2 words) (make 1 word so JsonHandle fits)
 }
 
 func (x *atomicRtidFnSlice) load() (s []codecRtidFn) {
