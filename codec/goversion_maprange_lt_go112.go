@@ -8,64 +8,33 @@ package codec
 import "reflect"
 
 type mapIter struct {
-	m, k, v  reflect.Value
-	keys     []reflect.Value
-	j        int
-	kOk, vOk bool
-	values   bool
+	m      reflect.Value
+	keys   []reflect.Value
+	j      int
+	values bool
 }
 
 func (t *mapIter) Next() (r bool) {
 	t.j++
-	r = t.j < len(t.keys)
-	if r {
-		if t.kOk {
-			t.k.Set(t.keys[t.j])
-		}
-		if t.vOk {
-			t.v.Set(t.m.MapIndex(t.keys[t.j]))
-		}
-	}
-	return
+	return t.j < len(t.keys)
 }
 
 func (t *mapIter) Key() reflect.Value {
-	if t.kOk {
-		return t.k
-	}
 	return t.keys[t.j]
 }
 
 func (t *mapIter) Value() (r reflect.Value) {
-	if !t.values {
-		return
-	}
-	if t.vOk {
-		return t.v
-	}
-	return t.m.MapIndex(t.keys[t.j])
-}
-
-func mapRange(m, k, v reflect.Value, values bool) *mapIter {
-	return &mapIter{
-		m: m, k: k, v: v,
-		kOk:    k.CanSet(),
-		vOk:    values && v.CanSet(),
-		keys:   m.MapKeys(),
-		values: values,
-		j:      -1,
-	}
-}
-
-func mapIndex(m, k, v reflect.Value) (vv reflect.Value) {
-	vv = m.MapIndex(k)
-	if vv.IsValid() && v.CanSet() {
-		v.Set(vv)
+	if t.values {
+		return t.m.MapIndex(t.keys[t.j])
 	}
 	return
 }
 
-// return an addressable reflect value that can be used in mapRange and mapIndex operations.
-func mapAddressableRV(t reflect.Type) (r reflect.Value) {
-	return // reflect.New(t).Elem()
+func mapRange(m, k, v reflect.Value, values bool) *mapIter {
+	return &mapIter{
+		m:      m,
+		keys:   m.MapKeys(),
+		values: values,
+		j:      -1,
+	}
 }

@@ -304,6 +304,23 @@ func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(rv.Uint())
 }
 
+// ------------ map range and map indexing ----------
+
+func mapIndex(m, k, v reflect.Value) (vv reflect.Value) {
+	return m.MapIndex(k)
+	// if vv.IsValid() && v.CanSet() {
+	// 	v.Set(vv)
+	// }
+	// return
+}
+
+// return an addressable reflect value that can be used in mapRange and mapIndex operations.
+//
+// all calls to mapIndex or mapRange will call here to get an addressable reflect.Value.
+func mapAddressableRV(t reflect.Type) (r reflect.Value) {
+	return // reflect.New(t).Elem()
+}
+
 // // keepAlive4BytesView maintains a reference to the input parameter for bytesView.
 // //
 // // Usage: call this at point where done with the bytes view.

@@ -487,7 +487,154 @@ func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(*(*uintptr)(v.ptr)))
 }
 
-// ------------
+// ------------ map range and map indexing ----------
+
+// unsafeMapHashIter
+//
+// go 1.4+ has runtime/hashmap.go or runtime/map.go which has a
+// hIter struct with the first 2 values being key and value
+// of the current iteration.
+//
+// This *hIter is passed to mapiterinit, mapiternext, mapiterkey, mapiterelem.
+// We bypass the reflect wrapper functions and just use the *hIter directly.
+//
+// Though *hIter has many fields, we only care about the first 2.
+type unsafeMapHashIter struct {
+	key, value unsafe.Pointer
+	// other fields are ignored
+}
+
+// type unsafeReflectMapIter struct {
+// 	m  unsafeReflectValue
+// 	it unsafe.Pointer
+// }
+
+type unsafeMapIter struct {
+	it               *unsafeMapHashIter
+	k, v             reflect.Value
+	mtyp, ktyp, vtyp unsafe.Pointer
+	mptr, kptr, vptr unsafe.Pointer
+	kisref, visref   bool
+	mapvalues        bool
+	done             bool
+
+	// _ [2]uint64 // padding (cache-aligned)
+}
+
+func (t *unsafeMapIter) Next() (r bool) {
+	if t.done {
+		return
+	}
+	if t.it == nil {
+		t.it = (*unsafeMapHashIter)(mapiterinit(t.mtyp, t.mptr))
+	} else {
+		mapiternext((unsafe.Pointer)(t.it))
+	}
+	t.done = t.it.key == nil
+	if t.done {
+		return
+	}
+	unsafeMapSet(t.kptr, t.ktyp, t.it.key, t.kisref)
+	if t.mapvalues {
+		unsafeMapSet(t.vptr, t.vtyp, t.it.value, t.visref)
+	}
+	return true
+}
+
+func (t *unsafeMapIter) Key() reflect.Value {
+	return t.k
+}
+
+func (t *unsafeMapIter) Value() (r reflect.Value) {
+	if t.mapvalues {
+		return t.v
+	}
+	return
+}
+
+func unsafeMapSet(p, ptyp, p2 unsafe.Pointer, isref bool) {
+	if isref {
+		*(*unsafe.Pointer)(p) = *(*unsafe.Pointer)(p2) // p2
+	} else {
+		typedmemmove(ptyp, p, p2) // *(*unsafe.Pointer)(p2)) // p2)
+	}
+}
+
+func mapRange(m, k, v reflect.Value, mapvalues bool) *unsafeMapIter {
+	if m.IsNil() {
+		return &unsafeMapIter{done: true}
+	}
+	t := &unsafeMapIter{
+		k: k, v: v,
+		mapvalues: mapvalues,
+	}
+
+	var urv *unsafeReflectValue
+
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
+	t.mtyp = urv.typ
+	t.mptr = rv2ptr(urv)
+
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+	t.ktyp = urv.typ
+	t.kptr = urv.ptr
+	t.kisref = refBitset.isset(byte(k.Kind()))
+
+	if mapvalues {
+		urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
+		t.vtyp = urv.typ
+		t.vptr = urv.ptr
+		t.visref = refBitset.isset(byte(v.Kind()))
+	}
+
+	return t
+}
+
+func mapIndex(m, k, v reflect.Value) (vv reflect.Value) {
+	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+	var kptr unsafe.Pointer
+	if urv.flag&unsafeFlagIndir == 0 {
+		kptr = unsafe.Pointer(&urv.ptr)
+	} else {
+		kptr = urv.ptr
+	}
+
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
+
+	vvptr := mapaccess(urv.typ, rv2ptr(urv), kptr)
+	if vvptr == nil {
+		return
+	}
+	// vvptr = *(*unsafe.Pointer)(vvptr)
+
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
+
+	unsafeMapSet(urv.ptr, urv.typ, vvptr, refBitset.isset(byte(v.Kind())))
+	return v
+}
+
+// return an addressable reflect value that can be used in mapRange and mapIndex operations.
+//
+// all calls to mapIndex or mapRange will call here to get an addressable reflect.Value.
+func mapAddressableRV(t reflect.Type) (r reflect.Value) {
+	return reflect.New(t).Elem()
+}
+
+//go:linkname mapiterinit reflect.mapiterinit
+//go:noescape
+func mapiterinit(typ unsafe.Pointer, it unsafe.Pointer) (key unsafe.Pointer)
+
+//go:linkname mapiternext reflect.mapiternext
+//go:noescape
+func mapiternext(it unsafe.Pointer) (key unsafe.Pointer)
+
+//go:linkname mapaccess reflect.mapaccess
+//go:noescape
+func mapaccess(rtype unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer)
+
+//go:linkname typedmemmove reflect.typedmemmove
+//go:noescape
+func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
 
 // func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
 // 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
