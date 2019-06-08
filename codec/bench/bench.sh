@@ -73,7 +73,7 @@ _suite_any() {
     if [[ "$g" = "g" ]]; then a=( "generated" "generated safe"); fi
     for i in "${a[@]}"; do
         echo ">>>> bench TAGS: 'alltests $x $i' SUITE: $b"
-        go test -run Nothing -tags "alltests $x $i" -bench "$b" -benchmem "$@"
+        go test -tags "alltests $x $i" -bench "$b" -benchmem "$@"
     done 
 }
 

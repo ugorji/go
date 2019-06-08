@@ -23,12 +23,8 @@ var benchmarkGroupSave struct {
 	testUseIoEncDec int
 	testUseReset    bool
 
-	benchDepth            int
-	benchMapStringKeyOnly bool
-	benchInitDebug        bool
-	benchVerify           bool
-	benchDoInitBench      bool
-	benchUnscientificRes  bool
+	testDepth            int
+	testMapStringKeyOnly bool
 }
 
 func benchmarkGroupInitAll() {
@@ -36,24 +32,16 @@ func benchmarkGroupInitAll() {
 	benchmarkGroupSave.testUseIoEncDec = testUseIoEncDec
 	benchmarkGroupSave.testUseReset = testUseReset
 
-	benchmarkGroupSave.benchDepth = benchDepth
-	benchmarkGroupSave.benchMapStringKeyOnly = benchMapStringKeyOnly
-	benchmarkGroupSave.benchInitDebug = benchInitDebug
-	benchmarkGroupSave.benchVerify = benchVerify
-	benchmarkGroupSave.benchDoInitBench = benchDoInitBench
-	benchmarkGroupSave.benchUnscientificRes = benchUnscientificRes
+	benchmarkGroupSave.testDepth = testDepth
+	benchmarkGroupSave.testMapStringKeyOnly = testMapStringKeyOnly
 }
 
 func benchmarkGroupReset() {
 	testUseIoEncDec = benchmarkGroupSave.testUseIoEncDec
 	testUseReset = benchmarkGroupSave.testUseReset
 
-	benchDepth = benchmarkGroupSave.benchDepth
-	benchMapStringKeyOnly = benchmarkGroupSave.benchMapStringKeyOnly
-	benchInitDebug = benchmarkGroupSave.benchInitDebug
-	benchVerify = benchmarkGroupSave.benchVerify
-	benchDoInitBench = benchmarkGroupSave.benchDoInitBench
-	benchUnscientificRes = benchmarkGroupSave.benchUnscientificRes
+	testDepth = benchmarkGroupSave.testDepth
+	testMapStringKeyOnly = benchmarkGroupSave.testMapStringKeyOnly
 }
 
 func benchmarkDivider() {
@@ -98,19 +86,6 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 
 	benchmarkGroupReset()
 
-	benchVerify = true
-	benchDoInitBench = true
-	benchUnscientificRes = true
-	testReinit()
-	benchReinit()
-	t.Run("init-metrics....", func(t *testing.B) { t.Run("Benchmark__Noop.............", benchmarkSuiteNoop) })
-
-	benchmarkGroupReset()
-
-	benchVerify = false
-	benchDoInitBench = false
-	benchUnscientificRes = false
-
 	testReinit()
 	benchReinit()
 	t.Run("options-false...", f)
@@ -130,13 +105,6 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 	t.Run("reset-enc-dec...", f)
 
 	benchmarkGroupReset()
-
-	// benchVerify is kinda lame - serves no real purpose.
-	// benchVerify = true
-	// testReinit()
-	// benchReinit()
-	// t.Run("verify-on-decode", f)
-	// benchVerify = false
 }
 
 func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
@@ -147,29 +115,29 @@ func benchmarkVeryQuickSuite(t *testing.B, name string, fns ...func(t *testing.B
 	// bd=1 2 | ti=-1, 1024 |
 
 	testUseIoEncDec = -1
-	// benchDepth = depth
+	// testDepth = depth
 	testReinit()
 	benchReinit()
 
-	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"........", benchmarkOneFn(fns))
+	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"........", benchmarkOneFn(fns))
 	benchmarkGroupReset()
 }
 
 func benchmarkQuickSuite(t *testing.B, name string, fns ...func(t *testing.B)) {
 	benchmarkVeryQuickSuite(t, name, fns...)
 
-	// encoded size of TestStruc is between 20K and 30K for bd=1 // consider buffer=1024 * 16 * benchDepth
+	// encoded size of TestStruc is between 20K and 30K for bd=1 // consider buffer=1024 * 16 * testDepth
 	testUseIoEncDec = 1024 // (value of defEncByteBufSize): use smaller buffer, and more flushes - it's ok.
-	// benchDepth = depth
+	// testDepth = depth
 	testReinit()
 	benchReinit()
-	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"-buf"+strconv.Itoa(testUseIoEncDec), benchmarkOneFn(fns))
+	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"-buf"+strconv.Itoa(testUseIoEncDec), benchmarkOneFn(fns))
 
 	testUseIoEncDec = 0
-	// benchDepth = depth
+	// testDepth = depth
 	testReinit()
 	benchReinit()
-	t.Run(name+"-bd"+strconv.Itoa(benchDepth)+"-io.....", benchmarkOneFn(fns))
+	t.Run(name+"-bd"+strconv.Itoa(testDepth)+"-io.....", benchmarkOneFn(fns))
 
 	benchmarkGroupReset()
 }
