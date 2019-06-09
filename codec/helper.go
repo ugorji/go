@@ -830,7 +830,11 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				fn.fe = (*Encoder).kBool
 				fn.fd = (*Decoder).kBool
 			case reflect.String:
-				fn.fe = (*Encoder).kString
+				if x.StringToRaw {
+					fn.fe = (*Encoder).kStringToRaw
+				} else {
+					fn.fe = (*Encoder).kStringEnc
+				}
 				fn.fd = (*Decoder).kString
 			case reflect.Int:
 				fn.fd = (*Decoder).kInt

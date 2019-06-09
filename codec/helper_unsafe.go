@@ -444,14 +444,16 @@ func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeTime(*(*time.Time)(v.ptr))
 }
 
-func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
+func (e *Encoder) kStringToRaw(f *codecFnInfo, rv reflect.Value) {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	s := *(*string)(v.ptr)
-	if e.h.StringToRaw {
-		e.e.EncodeStringBytesRaw(bytesView(s))
-	} else {
-		e.e.EncodeStringEnc(cUTF8, s)
-	}
+	e.e.EncodeStringBytesRaw(bytesView(s))
+}
+
+func (e *Encoder) kStringEnc(f *codecFnInfo, rv reflect.Value) {
+	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	s := *(*string)(v.ptr)
+	e.e.EncodeStringEnc(cUTF8, s)
 }
 
 func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
