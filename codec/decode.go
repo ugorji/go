@@ -1358,7 +1358,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 
 	// every interface passed here MUST be settable.
 	var rvn reflect.Value
-	if rv.IsNil() || d.h.InterfaceReset {
+	if rvisnil(rv) || d.h.InterfaceReset {
 		// check if mapping to a type: if so, initialize it and move on
 		rvn = d.h.intf2impl(f.ti.rtid)
 		if rvn.IsValid() {
@@ -1558,13 +1558,13 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if containerLenS == 0 {
 		if rv.CanSet() {
 			if f.seq == seqTypeSlice {
-				if rv.IsNil() {
+				if rvisnil(rv) {
 					rv.Set(reflect.MakeSlice(frt, 0, 0))
 				} else {
-					rv.SetLen(0)
+					rvssetlen(rv, 0)
 				}
 			} else if f.seq == seqTypeChan {
-				if rv.IsNil() {
+				if rvisnil(rv) {
 					rv.Set(reflect.MakeChan(frt, 0))
 				}
 			}
@@ -1599,7 +1599,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(rtelem0.Size()))
 			if rvlen <= rvcap {
 				if rvCanset {
-					rv.SetLen(rvlen)
+					rvssetlen(rv, rvlen)
 				}
 			} else if rvCanset {
 				rv = reflect.MakeSlice(frt, rvlen, rvlen)
@@ -1614,7 +1614,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		} else if containerLenS != rvlen {
 			rvlen = containerLenS
 			if rvCanset {
-				rv.SetLen(rvlen)
+				rvssetlen(rv, rvlen)
 			}
 			// else {
 			// rv = rv.Slice(0, rvlen)
@@ -1631,7 +1631,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	var j int
 
 	for ; (hasLen && j < containerLenS) || !(hasLen || dd.CheckBreak()); j++ {
-		if j == 0 && (f.seq == seqTypeSlice || f.seq == seqTypeChan) && rv.IsNil() {
+		if j == 0 && (f.seq == seqTypeSlice || f.seq == seqTypeChan) && rvisnil(rv) {
 			if hasLen {
 				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, rtelem0Size)
 			} else if f.seq == seqTypeSlice {
@@ -1658,7 +1658,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				rv.Send(reflect.Zero(rtelem0))
 				continue
 			}
-			if rtelem0Mut || !rv9.IsValid() { // || (rtElem0Kind == reflect.Ptr && rv9.IsNil()) {
+			if rtelem0Mut || !rv9.IsValid() { // || (rtElem0Kind == reflect.Ptr && rvisnil(rv9)) {
 				rv9 = reflect.New(rtelem0).Elem()
 			}
 			if fn == nil {
@@ -1716,13 +1716,13 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if f.seq == seqTypeSlice {
 		if j < rvlen {
 			if rv.CanSet() {
-				rv.SetLen(j)
+				rvssetlen(rv, j)
 			} else if rvCanset {
 				rv = rv.Slice(0, j)
 				rvChanged = true
 			} // else { d.errorf("kSlice: cannot change non-settable slice") }
 			rvlen = j
-		} else if j == 0 && rv.IsNil() {
+		} else if j == 0 && rvisnil(rv) {
 			if rvCanset {
 				rv = reflect.MakeSlice(frt, 0, 0)
 				rvChanged = true
@@ -1746,7 +1746,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	dd := d.d
 	containerLen := d.mapStart()
 	ti := f.ti
-	if rv.IsNil() {
+	if rvisnil(rv) {
 		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.key.Size()+ti.elem.Size()))
 		rv.Set(makeMapReflect(ti.rt, rvlen))
 	}
@@ -1858,12 +1858,12 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			}
 			rvv = mapIndex(rv, rvk, rvva) // reflect.Value{})
 			if vtypeKind == reflect.Ptr {
-				if rvv.IsValid() && !rvv.IsNil() {
+				if rvv.IsValid() && !rvisnil(rvv) {
 					mapSet = false
 				} else {
 					rvv = reflect.New(vtype.Elem())
 				}
-			} else if rvv.IsValid() && vtypeKind == reflect.Interface && !rvv.IsNil() {
+			} else if rvv.IsValid() && vtypeKind == reflect.Interface && !rvisnil(rvv) {
 				rvvn = reflect.New(vtype).Elem()
 				rvvn.Set(rvv)
 				rvv = rvvn
@@ -2771,7 +2771,7 @@ func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn) {
 	if rv.Kind() == reflect.Ptr {
 		rvpValid = true
 		for {
-			if rv.IsNil() {
+			if rvisnil(rv) {
 				rv.Set(reflect.New(rv.Type().Elem()))
 			}
 			rvp = rv
@@ -2826,11 +2826,11 @@ func isDecodeable(rv reflect.Value) (rv2 reflect.Value, canDecode bool) {
 	case reflect.Array:
 		return rv, rv.CanAddr()
 	case reflect.Ptr:
-		if !rv.IsNil() {
+		if !rvisnil(rv) {
 			return rv.Elem(), true
 		}
 	case reflect.Slice, reflect.Chan, reflect.Map:
-		if !rv.IsNil() {
+		if !rvisnil(rv) {
 			return rv, true
 		}
 	}
@@ -3169,7 +3169,7 @@ func expandSliceRV(s reflect.Value, st reflect.Type, canChange bool, stElemSize,
 	}
 	if l1 <= scap {
 		if s.CanSet() {
-			s.SetLen(l1)
+			rvssetlen(s, l1)
 		} else if canChange {
 			s2 = s.Slice(0, l1)
 			scap2 = scap

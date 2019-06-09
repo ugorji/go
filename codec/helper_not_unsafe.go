@@ -43,13 +43,29 @@ func rv2i(rv reflect.Value) interface{} {
 	return rv.Interface()
 }
 
-func rt2id(rt reflect.Type) uintptr {
-	return reflect.ValueOf(rt).Pointer()
+func rvisnil(rv reflect.Value) bool {
+	return rv.IsNil()
 }
+
+func rvssetlen(rv reflect.Value, length int) {
+	rv.SetLen(length)
+}
+
+// func rvisnilref(rv reflect.Value) bool {
+// 	return rv.IsNil()
+// }
+
+// func rvslen(rv reflect.Value) int {
+// 	return rv.Len()
+// }
 
 // func rv2rtid(rv reflect.Value) uintptr {
 // 	return reflect.ValueOf(rv.Type()).Pointer()
 // }
+
+func rt2id(rt reflect.Type) uintptr {
+	return reflect.ValueOf(rt).Pointer()
+}
 
 func i2rtid(i interface{}) uintptr {
 	return reflect.ValueOf(reflect.TypeOf(i)).Pointer()
@@ -320,16 +336,6 @@ func mapIndex(m, k, v reflect.Value) (vv reflect.Value) {
 func mapAddressableRV(t reflect.Type) (r reflect.Value) {
 	return // reflect.New(t).Elem()
 }
-
-// // keepAlive4BytesView maintains a reference to the input parameter for bytesView.
-// //
-// // Usage: call this at point where done with the bytes view.
-// func keepAlive4BytesView(v string) {}
-
-// // keepAlive4BytesView maintains a reference to the input parameter for stringView.
-// //
-// // Usage: call this at point where done with the string view.
-// func keepAlive4StringView(v []byte) {}
 
 // func definitelyNil(v interface{}) bool {
 // 	rv := reflect.ValueOf(v)

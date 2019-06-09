@@ -17,6 +17,16 @@ import (
 // This file has unsafe variants of some helper methods.
 // NOTE: See helper_not_unsafe.go for the usage information.
 
+// For reflect.Value code, we decided to do the following:
+//    - if we know the kind, we can elide conditional checks for
+//      - SetXXX (Int, Uint, String, Bool, etc)
+//      - SetLen
+//
+// We can also optimize
+//      - IsNil
+//
+// We cannot do the same for Cap, Len if we still have to do conditional.
+
 // var zeroRTv [4]uintptr
 
 const safeMode = false
@@ -103,13 +113,35 @@ func rv2i(rv reflect.Value) interface{} {
 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: rv2ptr(urv)}))
 }
 
-func rt2id(rt reflect.Type) uintptr {
-	return uintptr(((*unsafeIntf)(unsafe.Pointer(&rt))).word)
+func rvisnil(rv reflect.Value) bool {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	if urv.flag&unsafeFlagIndir != 0 {
+		return *(*unsafe.Pointer)(urv.ptr) == nil
+	}
+	return urv.ptr == nil
 }
+
+func rvssetlen(rv reflect.Value, length int) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	(*unsafeString)(urv.ptr).Len = length
+}
+
+// func rvisnilref(rv reflect.Value) bool {
+// 	return (*unsafeReflectValue)(unsafe.Pointer(&rv)).ptr == nil
+// }
+
+// func rvslen(rv reflect.Value) int {
+// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+// 	return (*unsafeString)(urv.ptr).Len
+// }
 
 // func rv2rtid(rv reflect.Value) uintptr {
 // 	return uintptr((*unsafeReflectValue)(unsafe.Pointer(&rv)).typ)
 // }
+
+func rt2id(rt reflect.Type) uintptr {
+	return uintptr(((*unsafeIntf)(unsafe.Pointer(&rt))).word)
+}
 
 func i2rtid(i interface{}) uintptr {
 	return uintptr(((*unsafeIntf)(unsafe.Pointer(&i))).typ)
@@ -636,37 +668,6 @@ func mapaccess(rtype unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val 
 //go:noescape
 func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
 
-// func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
-// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-// 	// if urv.flag&unsafeFlagIndir != 0 {
-// 	// 	urv.ptr = *(*unsafe.Pointer)(urv.ptr)
-// 	// }
-// 	*(*[]byte)(urv.ptr) = d.rawBytes()
-// }
-
-// func rv0t(rt reflect.Type) reflect.Value {
-// 	ut := (*unsafeIntf)(unsafe.Pointer(&rt))
-// 	// we need to determine whether ifaceIndir, and then whether to just pass 0 as the ptr
-// 	uv := unsafeReflectValue{ut.word, &zeroRTv, flag(rt.Kind())}
-// 	return *(*reflect.Value)(unsafe.Pointer(&uv})
-// }
-
-// func rv2i(rv reflect.Value) interface{} {
-// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-// 	// true references (map, func, chan, ptr - NOT slice) may be double-referenced as flagIndir
-// 	var ptr unsafe.Pointer
-// 	// kk := reflect.Kind(urv.flag & (1<<5 - 1))
-// 	// if (kk == reflect.Map || kk == reflect.Ptr || kk == reflect.Chan || kk == reflect.Func) && urv.flag&unsafeFlagIndir != 0 {
-// 	if refBitset.isset(byte(urv.flag&(1<<5-1))) && urv.flag&unsafeFlagIndir != 0 {
-// 		ptr = *(*unsafe.Pointer)(urv.ptr)
-// 	} else {
-// 		ptr = urv.ptr
-// 	}
-// 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: ptr}))
-// 	// return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: *(*unsafe.Pointer)(urv.ptr), typ: urv.typ}))
-// 	// return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: urv.ptr, typ: urv.typ}))
-// }
-
 // func definitelyNil(v interface{}) bool {
 // 	var ui *unsafeIntf = (*unsafeIntf)(unsafe.Pointer(&v))
 // 	if ui.word == nil {
@@ -676,223 +677,4 @@ func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
 // 	return (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.word) == nil
 // 	fmt.Printf(">>>> definitely nil: isnil: %v, TYPE: \t%T, word: %v, *word: %v, type: %v, nil: %v\n",
 // 	v == nil, v, word, *((*unsafe.Pointer)(word)), ui.typ, nil)
-// }
-
-// func keepAlive4BytesView(v string) {
-// 	runtime.KeepAlive(v)
-// }
-
-// func keepAlive4StringView(v []byte) {
-// 	runtime.KeepAlive(v)
-// }
-
-// func rt2id(rt reflect.Type) uintptr {
-// 	return uintptr(((*unsafeIntf)(unsafe.Pointer(&rt))).word)
-// 	// var i interface{} = rt
-// 	// // ui := (*unsafeIntf)(unsafe.Pointer(&i))
-// 	// return ((*unsafeIntf)(unsafe.Pointer(&i))).word
-// }
-
-// func rv2i(rv reflect.Value) interface{} {
-// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-// 	// non-reference type: already indir
-// 	// reference type: depend on flagIndir property ('cos maybe was double-referenced)
-// 	// const (unsafeRvFlagKindMask    = 1<<5 - 1 , unsafeRvFlagIndir       = 1 << 7 )
-// 	// rvk := reflect.Kind(urv.flag & (1<<5 - 1))
-// 	// if (rvk == reflect.Chan ||
-// 	// 	rvk == reflect.Func ||
-// 	// 	rvk == reflect.Interface ||
-// 	// 	rvk == reflect.Map ||
-// 	// 	rvk == reflect.Ptr ||
-// 	// 	rvk == reflect.UnsafePointer) && urv.flag&(1<<8) != 0 {
-// 	// 	fmt.Printf(">>>>> ---- double indirect reference: %v, %v\n", rvk, rv.Type())
-// 	// 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: *(*unsafe.Pointer)(urv.ptr), typ: urv.typ}))
-// 	// }
-// 	if urv.flag&(1<<5-1) == uintptr(reflect.Map) && urv.flag&(1<<7) != 0 {
-// 		// fmt.Printf(">>>>> ---- double indirect reference: %v, %v\n", rvk, rv.Type())
-// 		return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: *(*unsafe.Pointer)(urv.ptr), typ: urv.typ}))
-// 	}
-// 	// fmt.Printf(">>>>> ++++ direct reference: %v, %v\n", rvk, rv.Type())
-// 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: urv.ptr, typ: urv.typ}))
-// }
-
-// const (
-// 	unsafeRvFlagKindMask    = 1<<5 - 1
-// 	unsafeRvKindDirectIface = 1 << 5
-// 	unsafeRvFlagIndir       = 1 << 7
-// 	unsafeRvFlagAddr        = 1 << 8
-// 	unsafeRvFlagMethod      = 1 << 9
-
-// 	_USE_RV_INTERFACE bool = false
-// 	_UNSAFE_RV_DEBUG       = true
-// )
-
-// type unsafeRtype struct {
-// 	_    [2]uintptr
-// 	_    uint32
-// 	_    uint8
-// 	_    uint8
-// 	_    uint8
-// 	kind uint8
-// 	_    [2]uintptr
-// 	_    int32
-// }
-
-// func _rv2i(rv reflect.Value) interface{} {
-// 	// Note: From use,
-// 	//   - it's never an interface
-// 	//   - the only calls here are for ifaceIndir types.
-// 	//     (though that conditional is wrong)
-// 	//     To know for sure, we need the value of t.kind (which is not exposed).
-// 	//
-// 	// Need to validate the path: type is indirect ==> only value is indirect ==> default (value is direct)
-// 	//    - Type indirect, Value indirect: ==> numbers, boolean, slice, struct, array, string
-// 	//    - Type Direct,   Value indirect: ==> map???
-// 	//    - Type Direct,   Value direct:   ==> pointers, unsafe.Pointer, func, chan, map
-// 	//
-// 	// TRANSLATES TO:
-// 	//    if typeIndirect { } else if valueIndirect { } else { }
-// 	//
-// 	// Since we don't deal with funcs, then "flagNethod" is unset, and can be ignored.
-
-// 	if _USE_RV_INTERFACE {
-// 		return rv.Interface()
-// 	}
-// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-
-// 	// if urv.flag&unsafeRvFlagMethod != 0 || urv.flag&unsafeRvFlagKindMask == uintptr(reflect.Interface) {
-// 	// 	println("***** IS flag method or interface: delegating to rv.Interface()")
-// 	// 	return rv.Interface()
-// 	// }
-
-// 	// if urv.flag&unsafeRvFlagKindMask == uintptr(reflect.Interface) {
-// 	// 	println("***** IS Interface: delegate to rv.Interface")
-// 	// 	return rv.Interface()
-// 	// }
-// 	// if urv.flag&unsafeRvFlagKindMask&unsafeRvKindDirectIface == 0 {
-// 	// 	if urv.flag&unsafeRvFlagAddr == 0 {
-// 	// 		println("***** IS ifaceIndir typ")
-// 	// 		// ui := unsafeIntf{word: urv.ptr, typ: urv.typ}
-// 	// 		// return *(*interface{})(unsafe.Pointer(&ui))
-// 	// 		// return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: urv.ptr, typ: urv.typ}))
-// 	// 	}
-// 	// } else if urv.flag&unsafeRvFlagIndir != 0 {
-// 	// 	println("***** IS flagindir")
-// 	// 	// return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: *(*unsafe.Pointer)(urv.ptr), typ: urv.typ}))
-// 	// } else {
-// 	// 	println("***** NOT flagindir")
-// 	// 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: urv.ptr, typ: urv.typ}))
-// 	// }
-// 	// println("***** default: delegate to rv.Interface")
-
-// 	urt := (*unsafeRtype)(unsafe.Pointer(urv.typ))
-// 	if _UNSAFE_RV_DEBUG {
-// 		fmt.Printf(">>>> start: %v: ", rv.Type())
-// 		fmt.Printf("%v - %v\n", *urv, *urt)
-// 	}
-// 	if urt.kind&unsafeRvKindDirectIface == 0 {
-// 		if _UNSAFE_RV_DEBUG {
-// 			fmt.Printf("**** +ifaceIndir type: %v\n", rv.Type())
-// 		}
-// 		// println("***** IS ifaceIndir typ")
-// 		// if true || urv.flag&unsafeRvFlagAddr == 0 {
-// 		// 	// println("    ***** IS NOT addr")
-// 		return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: urv.ptr, typ: urv.typ}))
-// 		// }
-// 	} else if urv.flag&unsafeRvFlagIndir != 0 {
-// 		if _UNSAFE_RV_DEBUG {
-// 			fmt.Printf("**** +flagIndir type: %v\n", rv.Type())
-// 		}
-// 		// println("***** IS flagindir")
-// 		return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: *(*unsafe.Pointer)(urv.ptr), typ: urv.typ}))
-// 	} else {
-// 		if _UNSAFE_RV_DEBUG {
-// 			fmt.Printf("**** -flagIndir type: %v\n", rv.Type())
-// 		}
-// 		// println("***** NOT flagindir")
-// 		return *(*interface{})(unsafe.Pointer(&unsafeIntf{word: urv.ptr, typ: urv.typ}))
-// 	}
-// 	// println("***** default: delegating to rv.Interface()")
-// 	// return rv.Interface()
-// }
-
-// var staticM0 = make(map[string]uint64)
-// var staticI0 = (int32)(-5)
-
-// func staticRv2iTest() {
-// 	i0 := (int32)(-5)
-// 	m0 := make(map[string]uint16)
-// 	m0["1"] = 1
-// 	for _, i := range []interface{}{
-// 		(int)(7),
-// 		(uint)(8),
-// 		(int16)(-9),
-// 		(uint16)(19),
-// 		(uintptr)(77),
-// 		(bool)(true),
-// 		float32(-32.7),
-// 		float64(64.9),
-// 		complex(float32(19), 5),
-// 		complex(float64(-32), 7),
-// 		[4]uint64{1, 2, 3, 4},
-// 		(chan<- int)(nil), // chan,
-// 		rv2i,              // func
-// 		io.Writer(ioutil.Discard),
-// 		make(map[string]uint),
-// 		(map[string]uint)(nil),
-// 		staticM0,
-// 		m0,
-// 		&m0,
-// 		i0,
-// 		&i0,
-// 		&staticI0,
-// 		&staticM0,
-// 		[]uint32{6, 7, 8},
-// 		"abc",
-// 		Raw{},
-// 		RawExt{},
-// 		&Raw{},
-// 		&RawExt{},
-// 		unsafe.Pointer(&i0),
-// 	} {
-// 		i2 := rv2i(reflect.ValueOf(i))
-// 		eq := reflect.DeepEqual(i, i2)
-// 		fmt.Printf(">>>> %v == %v? %v\n", i, i2, eq)
-// 	}
-// 	// os.Exit(0)
-// }
-
-// func init() {
-// 	staticRv2iTest()
-// }
-
-// func rv2i(rv reflect.Value) interface{} {
-// 	if _USE_RV_INTERFACE || rv.Kind() == reflect.Interface || rv.CanAddr() {
-// 		return rv.Interface()
-// 	}
-// 	// var i interface{}
-// 	// ui := (*unsafeIntf)(unsafe.Pointer(&i))
-// 	var ui unsafeIntf
-// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-// 	// fmt.Printf("urv: flag: %b, typ: %b, ptr: %b\n", urv.flag, uintptr(urv.typ), uintptr(urv.ptr))
-// 	if (urv.flag&unsafeRvFlagKindMask)&unsafeRvKindDirectIface == 0 {
-// 		if urv.flag&unsafeRvFlagAddr != 0 {
-// 			println("***** indirect and addressable! Needs typed move - delegate to rv.Interface()")
-// 			return rv.Interface()
-// 		}
-// 		println("****** indirect type/kind")
-// 		ui.word = urv.ptr
-// 	} else if urv.flag&unsafeRvFlagIndir != 0 {
-// 		println("****** unsafe rv flag indir")
-// 		ui.word = *(*unsafe.Pointer)(urv.ptr)
-// 	} else {
-// 		println("****** default: assign prt to word directly")
-// 		ui.word = urv.ptr
-// 	}
-// 	// ui.word = urv.ptr
-// 	ui.typ = urv.typ
-// 	// fmt.Printf("(pointers) ui.typ: %p, word: %p\n", ui.typ, ui.word)
-// 	// fmt.Printf("(binary)   ui.typ: %b, word: %b\n", uintptr(ui.typ), uintptr(ui.word))
-// 	return *(*interface{})(unsafe.Pointer(&ui))
-// 	// return i
 // }

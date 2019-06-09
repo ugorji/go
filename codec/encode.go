@@ -521,7 +521,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	// E.g. type struct S{B [2]byte};
 	//   Encode(S{}) will bomb on "panic: slice of unaddressable array".
 	if f.seq != seqTypeArray {
-		if rv.IsNil() {
+		if rvisnil(rv) {
 			e.e.EncodeNil()
 			return
 		}
@@ -576,7 +576,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		rv = rvcs // TODO: ensure this doesn't mess up anywhere that rv of kind chan is expected
 	}
 
-	var l = rv.Len()
+	var l = rv.Len() // rv may be slice or array
 	if mbs {
 		if l%2 == 1 {
 			e.errorf("mapBySlice requires even slice length, but got %v", l)
@@ -643,7 +643,7 @@ func (e *Encoder) kSliceBytes(rv reflect.Value, seq seqType) {
 		// for b := range rv2i(rv).(<-chan byte) { bs = append(bs, b) }
 		// ch := rv2i(rv).(<-chan byte) // fix error - that this is a chan byte, not a <-chan byte.
 
-		if rv.IsNil() {
+		if rvisnil(rv) {
 			e.e.EncodeNil()
 			break
 		}
@@ -827,7 +827,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
-	if rv.IsNil() {
+	if rvisnil(rv) {
 		e.e.EncodeNil()
 		return
 	}
@@ -1653,7 +1653,7 @@ func (e *Encoder) encodeValue(rv reflect.Value, fn *codecFn) {
 TOP:
 	switch rv.Kind() {
 	case reflect.Ptr:
-		if rv.IsNil() {
+		if rvisnil(rv) {
 			e.e.EncodeNil()
 			return
 		}
@@ -1666,14 +1666,14 @@ TOP:
 		}
 		goto TOP
 	case reflect.Interface:
-		if rv.IsNil() {
+		if rvisnil(rv) {
 			e.e.EncodeNil()
 			return
 		}
 		rv = rv.Elem()
 		goto TOP
 	case reflect.Slice, reflect.Map:
-		if rv.IsNil() {
+		if rvisnil(rv) {
 			e.e.EncodeNil()
 			return
 		}

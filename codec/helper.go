@@ -1465,7 +1465,7 @@ func (x *structFieldNode) field(si *structFieldInfo) (fv reflect.Value) {
 
 func baseStructRv(v reflect.Value, update bool) (v2 reflect.Value, valid bool) {
 	for v.Kind() == reflect.Ptr {
-		if v.IsNil() {
+		if rvisnil(v) {
 			if !update {
 				return
 			}
