@@ -1215,3 +1215,7 @@ func (z *decReaderSwitch) readUntilIO(in []byte, stop byte) (out []byte) {
 	}
 	return z.ri.readUntil(in, stop)
 }
+
+// register these here, so that staticcheck stops barfing
+var _ = (*bytesDecReader).readTo
+var _ = (*bytesDecReader).readUntil

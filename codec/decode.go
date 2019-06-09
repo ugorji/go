@@ -2006,7 +2006,3 @@ func decNakedReadRawBytes(dr decDriver, d *Decoder, n *decNaked, rawToString boo
 		n.l = dr.DecodeBytes(nil, false)
 	}
 }
-
-// register these here, so that staticcheck stops barfing
-var _ = (*bytesDecReader).readTo
-var _ = (*bytesDecReader).readUntil
