@@ -2856,14 +2856,14 @@ func TestMapRangeIndex(t *testing.T) {
 	}
 	testDeepEqualErr(len(m2c), 0, t, "all-keys-not-consumed")
 
-	// ---- test mapIndex
+	// ---- test mapGet
 
 	fnTestMapIndex := func(mi ...interface{}) {
 		for _, m0 := range mi {
 			m := reflect.ValueOf(m0)
 			rvv := mapAddressableRV(m.Type().Elem())
 			for _, k := range m.MapKeys() {
-				testDeepEqualErr(m.MapIndex(k).Interface(), mapIndex(m, k, rvv).Interface(), t, "map-index-eq")
+				testDeepEqualErr(m.MapIndex(k).Interface(), mapGet(m, k, rvv).Interface(), t, "map-index-eq")
 			}
 		}
 	}

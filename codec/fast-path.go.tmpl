@@ -161,6 +161,7 @@ func (fastpathT) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *Enco
 	} else {
 		e.mapStart(len(v) / 2)
 		for j := range v {
+			{{/* e.mapElemKeyOrValue(uint8(j)%2) */ -}}
 			if j%2 == 0 {
 				e.mapElemKey()
 			} else {

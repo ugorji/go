@@ -619,7 +619,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 			e.mapElemKey()
 			e.e.EncodeBool(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.String:
 		mksv := make([]stringRv, len(mks))
@@ -637,7 +637,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 				e.e.EncodeStringEnc(cUTF8, mksv[i].v)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
 		mksv := make([]uint64Rv, len(mks))
@@ -651,7 +651,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 			e.mapElemKey()
 			e.e.EncodeUint(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		mksv := make([]int64Rv, len(mks))
@@ -665,7 +665,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 			e.mapElemKey()
 			e.e.EncodeInt(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Float32:
 		mksv := make([]float64Rv, len(mks))
@@ -679,7 +679,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 			e.mapElemKey()
 			e.e.EncodeFloat32(float32(mksv[i].v))
 			e.mapElemValue()
-			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Float64:
 		mksv := make([]float64Rv, len(mks))
@@ -693,7 +693,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 			e.mapElemKey()
 			e.e.EncodeFloat64(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Struct:
 		if rv.Type() == timeTyp {
@@ -708,7 +708,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 				e.mapElemKey()
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
-				e.encodeValue(mapIndex(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+				e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 			}
 			break
 		}
@@ -732,7 +732,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 			e.mapElemKey()
 			e.asis(mksbv[j].v)
 			e.mapElemValue()
-			e.encodeValue(mapIndex(rv, mksbv[j].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksbv[j].r), valFn)
+			e.encodeValue(mapGet(rv, mksbv[j].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksbv[j].r), valFn)
 		}
 		bufp.end()
 	}
@@ -1338,6 +1338,21 @@ func (e *Encoder) mapElemValue() {
 	}
 	e.c = containerMapValue
 }
+
+// // Note: This is harder to inline, as there are 2 function calls inside.
+// func (e *Encoder) mapElemKeyOrValue(j uint8) {
+// 	if j == 0 {
+// 		if e.js {
+// 			e.jenc.WriteMapElemKey()
+// 		}
+// 		e.c = containerMapKey
+// 	} else {
+// 		if e.js {
+// 			e.jenc.WriteMapElemValue()
+// 		}
+// 		e.c = containerMapValue
+// 	}
+// }
 
 func (e *Encoder) mapEnd() {
 	e.e.WriteMapEnd()

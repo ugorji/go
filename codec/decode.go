@@ -832,16 +832,16 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	rvvMut := !isImmutableKind(vtypeKind)
 
-	// we do a mapGet if kind is mutable, and InterfaceReset=true if interface
-	var mapGet, mapSet bool
+	// we do a doMapGet if kind is mutable, and InterfaceReset=true if interface
+	var doMapGet, doMapSet bool
 	if !d.h.MapValueReset {
 		if rvvMut {
 			if vtypeKind == reflect.Interface {
 				if !d.h.InterfaceReset {
-					mapGet = true
+					doMapGet = true
 				}
 			} else {
-				mapGet = true
+				doMapGet = true
 			}
 		}
 	}
@@ -898,7 +898,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		// i.e. TryDecodeAsNil never shares slices with other decDriver procedures
 		if dd.TryDecodeAsNil() {
 			if d.h.DeleteOnNilMapValue {
-				rv.SetMapIndex(rvk, reflect.Value{})
+				mapDelete(rv, rvk)
 			} else {
 				if ktypeIsString { // set to a real string (not string view)
 					rvk.SetString(d.string(kstrbs))
@@ -906,21 +906,21 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				if !rvvz.IsValid() {
 					rvvz = reflect.Zero(vtype)
 				}
-				rv.SetMapIndex(rvk, rvvz)
+				mapSet(rv, rvk, rvvz)
 			}
 			continue
 		}
 
-		mapSet = true // set to false if u do a get, and its a non-nil pointer
-		if mapGet {
+		doMapSet = true // set to false if u do a get, and its a non-nil pointer
+		if doMapGet {
 			if !rvvaSet {
 				rvva = mapAddressableRV(vtype)
 				rvvaSet = true
 			}
-			rvv = mapIndex(rv, rvk, rvva) // reflect.Value{})
+			rvv = mapGet(rv, rvk, rvva) // reflect.Value{})
 			if vtypeKind == reflect.Ptr {
 				if rvv.IsValid() && !rvisnil(rvv) {
-					mapSet = false
+					doMapSet = false
 				} else {
 					rvv = reflect.New(vtype.Elem())
 				}
@@ -945,12 +945,12 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 		// We MUST be done with the stringview of the key, BEFORE decoding the value (rvv)
 		// so that we don't unknowingly reuse the rvk backing buffer during rvv decode.
-		if mapSet && ktypeIsString { // set to a real string (not string view)
+		if doMapSet && ktypeIsString { // set to a real string (not string view)
 			rvk.SetString(d.string(kstrbs))
 		}
 		d.decodeValue(rvv, valFn)
-		if mapSet {
-			rv.SetMapIndex(rvk, rvv)
+		if doMapSet {
+			mapSet(rv, rvk, rvv)
 		}
 		// if ktypeIsString {
 		// 	// keepAlive4StringView(kstrbs) // not needed, as reference is outside loop

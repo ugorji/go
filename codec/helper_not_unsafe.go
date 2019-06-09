@@ -323,17 +323,21 @@ func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 
 // ------------ map range and map indexing ----------
 
-func mapIndex(m, k, v reflect.Value) (vv reflect.Value) {
+func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
 	return m.MapIndex(k)
-	// if vv.IsValid() && v.CanSet() {
-	// 	v.Set(vv)
-	// }
-	// return
 }
 
-// return an addressable reflect value that can be used in mapRange and mapIndex operations.
+func mapSet(m, k, v reflect.Value) {
+	m.SetMapIndex(k, v)
+}
+
+func mapDelete(m, k reflect.Value) {
+	m.SetMapIndex(k, reflect.Value{})
+}
+
+// return an addressable reflect value that can be used in mapRange and mapGet operations.
 //
-// all calls to mapIndex or mapRange will call here to get an addressable reflect.Value.
+// all calls to mapGet or mapRange will call here to get an addressable reflect.Value.
 func mapAddressableRV(t reflect.Type) (r reflect.Value) {
 	return // reflect.New(t).Elem()
 }

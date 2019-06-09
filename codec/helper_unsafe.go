@@ -568,9 +568,9 @@ func (t *unsafeMapIter) Next() (r bool) {
 	if t.done {
 		return
 	}
-	unsafeMapSet(t.kptr, t.ktyp, t.it.key, t.kisref)
+	unsafeSet(t.kptr, t.ktyp, t.it.key, t.kisref)
 	if t.mapvalues {
-		unsafeMapSet(t.vptr, t.vtyp, t.it.value, t.visref)
+		unsafeSet(t.vptr, t.vtyp, t.it.value, t.visref)
 	}
 	return true
 }
@@ -586,7 +586,7 @@ func (t *unsafeMapIter) Value() (r reflect.Value) {
 	return
 }
 
-func unsafeMapSet(p, ptyp, p2 unsafe.Pointer, isref bool) {
+func unsafeSet(p, ptyp, p2 unsafe.Pointer, isref bool) {
 	if isref {
 		*(*unsafe.Pointer)(p) = *(*unsafe.Pointer)(p2) // p2
 	} else {
@@ -624,14 +624,16 @@ func mapRange(m, k, v reflect.Value, mapvalues bool) *unsafeMapIter {
 	return t
 }
 
-func mapIndex(m, k, v reflect.Value) (vv reflect.Value) {
-	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
-	var kptr unsafe.Pointer
+func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
 	if urv.flag&unsafeFlagIndir == 0 {
-		kptr = unsafe.Pointer(&urv.ptr)
-	} else {
-		kptr = urv.ptr
+		return unsafe.Pointer(&urv.ptr)
 	}
+	return urv.ptr
+}
+
+func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
+	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+	var kptr = unsafeMapKVPtr(urv)
 
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
 
@@ -643,13 +645,29 @@ func mapIndex(m, k, v reflect.Value) (vv reflect.Value) {
 
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
 
-	unsafeMapSet(urv.ptr, urv.typ, vvptr, refBitset.isset(byte(v.Kind())))
+	unsafeSet(urv.ptr, urv.typ, vvptr, refBitset.isset(byte(v.Kind())))
 	return v
 }
 
-// return an addressable reflect value that can be used in mapRange and mapIndex operations.
+func mapSet(m, k, v reflect.Value) {
+	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+	var kptr = unsafeMapKVPtr(urv)
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
+	var vptr = unsafeMapKVPtr(urv)
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
+	mapassign(urv.typ, rv2ptr(urv), kptr, vptr)
+}
+
+func mapDelete(m, k reflect.Value) {
+	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+	var kptr = unsafeMapKVPtr(urv)
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
+	mapdelete(urv.typ, rv2ptr(urv), kptr)
+}
+
+// return an addressable reflect value that can be used in mapRange and mapGet operations.
 //
-// all calls to mapIndex or mapRange will call here to get an addressable reflect.Value.
+// all calls to mapGet or mapRange will call here to get an addressable reflect.Value.
 func mapAddressableRV(t reflect.Type) (r reflect.Value) {
 	return reflect.New(t).Elem()
 }
@@ -664,7 +682,15 @@ func mapiternext(it unsafe.Pointer) (key unsafe.Pointer)
 
 //go:linkname mapaccess reflect.mapaccess
 //go:noescape
-func mapaccess(rtype unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer)
+func mapaccess(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer)
+
+//go:linkname mapassign reflect.mapassign
+//go:noescape
+func mapassign(typ unsafe.Pointer, m unsafe.Pointer, key, val unsafe.Pointer)
+
+//go:linkname mapdelete reflect.mapdelete
+//go:noescape
+func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
 
 //go:linkname typedmemmove reflect.typedmemmove
 //go:noescape
