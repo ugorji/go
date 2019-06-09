@@ -243,7 +243,7 @@ _main() {
     zargs=()
     zbenchflags=""
     OPTIND=1
-    while getopts ":ctmnrgpfvlzdb:" flag
+    while getopts ":ctmnrgpfvlyzdb:" flag
     do
         case "x$flag" in
             'xf') zforce=1 ;;
@@ -265,6 +265,7 @@ _main() {
         'xg') _go ;;
         'xp') _prebuild "$@" ;;
         'xc') _clean "$@" ;;
+        'xy') _analyze_extra "$@" ;;
         'xz') _analyze "$@" ;;
         'xb') _bench "$@" ;;
     esac
