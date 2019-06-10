@@ -60,7 +60,7 @@ type AnonInTestStruc struct {
 
 	// use these to test 0-len or nil slices/maps/arrays
 	AI64arr0    [0]int64
-	A164slice0  []int64
+	AI64slice0  []int64
 	AUi64sliceN []uint64
 	AMSU16N     map[string]uint16
 	AMSU16E     map[string]uint16
@@ -245,7 +245,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			math.MaxFloat32, math.SmallestNonzeroFloat32,
 		},
 
-		A164slice0:  []int64{},
+		AI64slice0:  []int64{},
 		AUi64sliceN: nil,
 		AMSU16N:     nil,
 		AMSU16E:     map[string]uint16{},

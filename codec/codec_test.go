@@ -530,7 +530,7 @@ ugorji
 	table = append(table, testMbsT(primitives))
 	table = append(table, maps...)
 	table = append(table, newTestStrucFlex(0, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly))
-
+	// table = append(table, newTestStrucFlex(0, testNumRepeatString, true, !testSkipIntf, testMapStringKeyOnly))
 }
 
 func testTableVerify(f testVerifyFlag, h Handle) (av []interface{}) {
@@ -734,7 +734,7 @@ func testDeepEqualErr(v1, v2 interface{}, t *testing.T, name string) {
 	if err := deepEqual(v1, v2); err == nil {
 		logTv(t, "%s: values equal", name)
 	} else {
-		failT(t, "%s: values not equal: %v. 1: %v, 2: %v", name, err, v1, v2)
+		failT(t, "%s: values not equal: %v. 1: %#v, 2: %#v", name, err, v1, v2)
 	}
 }
 
@@ -2486,6 +2486,27 @@ func doTestBytesEncodedAsArray(t *testing.T, name string, h Handle) {
 	testDeepEqualErr(un, out, t, name)
 }
 
+func doTestStrucEncDec(t *testing.T, name string, h Handle) {
+	testOnce.Do(testInitAll)
+	{
+		var ts1 = newTestStruc(2, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
+		var ts2 TestStruc
+		bs := testMarshalErr(ts1, h, t, name)
+		testUnmarshalErr(&ts2, bs, h, t, name)
+		testDeepEqualErr(ts1, &ts2, t, name)
+	}
+	// Note: We cannot use TestStrucFlex because it has omitempty values,
+	// Meaning that sometimes, encoded and decoded will not be same.
+	// {
+	// 	var ts1 = newTestStrucFlex(2, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
+	// 	var ts2 TestStrucFlex
+	// 	bs := testMarshalErr(ts1, h, t, name)
+	// 	fmt.Printf("\n\n%s\n\n", bs)
+	// 	testUnmarshalErr(&ts2, bs, h, t, name)
+	// 	testDeepEqualErr(ts1, &ts2, t, name)
+	// }
+}
+
 // -----------------
 
 func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
@@ -2838,7 +2859,7 @@ func TestMapRangeIndex(t *testing.T) {
 		&t2: t2,
 	}
 	var m2c = make(map[*T]*T)
-	for k, _ := range m2 {
+	for k := range m2 {
 		m2c[k] = k
 	}
 
@@ -3406,6 +3427,28 @@ func TestBincBytesEncodedAsArray(t *testing.T) {
 func TestSimpleBytesEncodedAsArray(t *testing.T) {
 	doTestBytesEncodedAsArray(t, "simple", testSimpleH)
 }
+
+func TestJsonStrucEncDec(t *testing.T) {
+	doTestStrucEncDec(t, "json", testJsonH)
+}
+
+func TestCborStrucEncDec(t *testing.T) {
+	doTestStrucEncDec(t, "cbor", testCborH)
+}
+
+func TestMsgpackStrucEncDec(t *testing.T) {
+	doTestStrucEncDec(t, "msgpack", testMsgpackH)
+}
+
+func TestBincStrucEncDec(t *testing.T) {
+	doTestStrucEncDec(t, "binc", testBincH)
+}
+
+func TestSimpleStrucEncDec(t *testing.T) {
+	doTestStrucEncDec(t, "simple", testSimpleH)
+}
+
+// --------
 
 func TestMultipleEncDec(t *testing.T) {
 	doTestMultipleEncDec(t, "json", testJsonH)
