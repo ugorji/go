@@ -708,7 +708,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 				e.mapElemKey()
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
-				e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
+				e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn)
 			}
 			break
 		}
@@ -732,7 +732,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 			e.mapElemKey()
 			e.asis(mksbv[j].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksbv[j].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksbv[j].r), valFn)
+			e.encodeValue(mapGet(rv, mksbv[j].r, rvv), valFn)
 		}
 		bufp.end()
 	}

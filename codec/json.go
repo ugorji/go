@@ -304,7 +304,8 @@ func (e *jsonEncDriverGeneric) EncodeFloat32(f float32) {
 }
 
 func (e *jsonEncDriverGeneric) EncodeInt(v int64) {
-	if e.is == 'A' || e.is == 'L' && (v > 1<<53 || v < -(1<<53)) || (e.ks && e.e.c == containerMapKey) {
+	if e.is == 'A' || e.is == 'L' && (v > 1<<53 || v < -(1<<53)) ||
+		(e.ks && e.e.c == containerMapKey) {
 		blen := 2 + len(strconv.AppendInt(e.b[1:1], v, 10))
 		e.b[0] = '"'
 		e.b[blen-1] = '"'

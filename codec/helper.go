@@ -152,7 +152,7 @@ const (
 	useFinalizers = false
 
 	// xdebug controls whether xdebugf prints any output
-	xdebug = true
+	xdebug = false
 )
 
 var oneByteArr [1]byte
