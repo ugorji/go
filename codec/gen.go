@@ -1176,6 +1176,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 }
 
 func (x *genRunner) encListFallback(varname string, t reflect.Type) {
+	x.linef("if %s == nil { r.EncodeNil(); return }", varname)
 	elemBytes := t.Elem().Kind() == reflect.Uint8
 	if t.AssignableTo(uint8SliceTyp) {
 		x.linef("r.EncodeStringBytesRaw([]byte(%s))", varname)
@@ -1222,6 +1223,7 @@ func (x *genRunner) encListFallback(varname string, t reflect.Type) {
 }
 
 func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
+	x.linef("if %s == nil { r.EncodeNil(); return }", varname)
 	// TODO: expand this to handle canonical.
 	i := x.varsfx()
 	x.line("z.EncWriteMapStart(len(" + varname + "))")
