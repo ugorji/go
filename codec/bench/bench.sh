@@ -62,13 +62,33 @@ _gen() {
 # go test -tags "alltests x safe codecgen generated" -bench "CodecSuite or AllSuite or XSuite" -benchmem
 #
 
+_suite_tests() {
+    if [[ "${do_x}" = "1" ]]; then
+        printf "\n==== X Baseline ====\n"
+        go test -tags x -v
+    else
+        printf "\n==== Baseline ====\n"
+        go test -v
+    fi
+    if [[ "${do_x}" = "1" ]]; then
+        printf "\n==== X Generated ====\n"
+        go test -tags "x generated" -v
+    else
+        printf "\n==== Generated ====\n"
+        go test -tags "generated" -v
+    fi
+}
+
+_suite_tests_strip_file_line() {
+    # sed -e 's/^\([^a-zA-Z0-9]\+\)[a-zA-Z0-9_]\+\.go:[0-9]\+:/\1/'
+    sed -e 's/[a-zA-Z0-9_]*.go:[0-9]*://g'
+}
+
 _suite_any() {
     local x="$1"
     local g="$2"
     local b="$3"
-    shift
-    shift
-    shift
+    shift; shift; shift
     local a=( "" "safe"  "notfastpath" "notfastpath safe" "codecgen" "codecgen safe")
     if [[ "$g" = "g" ]]; then a=( "generated" "generated safe"); fi
     for i in "${a[@]}"; do
@@ -83,7 +103,7 @@ _suite_any() {
 #     for i in "${a[@]}"
 #     do
 #         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecXSuite"
-#         go test -run Nothing -tags "$t $i" -bench BenchmarkCodecXSuite -benchmem "$@"
+#         go test -tags "$t $i" -bench BenchmarkCodecXSuite -benchmem "$@"
 #     done
 # }
 
@@ -93,7 +113,7 @@ _suite_any() {
 #     for i in "${b[@]}"
 #     do
 #         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecXGenSuite"
-#         go test -run Nothing -tags "$t $i" -bench BenchmarkCodecXGenSuite -benchmem "$@"
+#         go test -tags "$t $i" -bench BenchmarkCodecXGenSuite -benchmem "$@"
 #     done
 # }
 
@@ -103,26 +123,26 @@ _suite_any() {
 #     for i in "${a[@]}"
 #     do
 #         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecQuickAllJsonSuite"
-#         go test -run Nothing -tags "$t $i" -bench BenchmarkCodecQuickAllJsonSuite -benchmem "$@"
+#         go test -tags "$t $i" -bench BenchmarkCodecQuickAllJsonSuite -benchmem "$@"
 #     done
 # }
 
 # _suite_very_quick_json() {
 #     # Quickly get numbers for json, stdjson, jsoniter and json (codecgen)"
 #     echo ">>>> very quick json bench"
-#     go test -run Nothing -tags "alltests x" -bench "__(Json|Std_Json|JsonIter)__" -benchmem "$@"
+#     go test -tags "alltests x" -bench "__(Json|Std_Json|JsonIter)__" -benchmem "$@"
 #     echo
-#     go test -run Nothing -tags "alltests codecgen" -bench "__Json____" -benchmem "$@"
+#     go test -tags "alltests codecgen" -bench "__Json____" -benchmem "$@"
 # }
 
 _suite_very_quick_json_via_suite() {
     # Quickly get numbers for json, stdjson, jsoniter and json (codecgen)"
     echo ">>>> very quick json bench"
     local prefix="BenchmarkCodecVeryQuickAllJsonSuite/json-all-bd1......../"
-    go test -run Nothing -tags "alltests x" -bench BenchmarkCodecVeryQuickAllJsonSuite -benchmem "$@" |
+    go test -tags "alltests x" -bench BenchmarkCodecVeryQuickAllJsonSuite -benchmem "$@" |
         sed -e "s+^$prefix++"
     echo "---- CODECGEN RESULTS ----"
-    go test -run Nothing -tags "alltests codecgen" -bench "__Json____" -benchmem "$@"
+    go test -tags "x generated" -bench "__(Json|Easyjson)__" -benchmem "$@"
 }
 
 _suite_very_quick_json_non_suite() {
@@ -130,9 +150,11 @@ _suite_very_quick_json_non_suite() {
     echo ">>>> very quick json bench"
     for j in "En" "De"; do
         echo "---- codecgen ----"
-        go test -run Nothing -tags "alltests x generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
+        # go test -tags "generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
+        go test -tags "x generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
         echo "---- no codecgen ----"
-        go test -run Nothing -tags "alltests x" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
+        # go test -tags "" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
+        go test -tags "x" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
         echo
     done
 }
@@ -141,20 +163,21 @@ _suite_very_quick_json_only_profile() {
     local a="${1:-Json}"
     shift
     local b="${1}"
-    go test -run Nothing -tags "alltests" -bench "__${a}__.*${b}" \
+    go test -tags "alltests" -bench "__${a}__.*${b}" \
        -benchmem -benchtime 4s \
        -cpuprofile cpu.out -memprofile mem.out -memprofilerate 1
 }
 
 _suite_trim_output() {
-    grep -v -E "^(goos:|goarch:|pkg:|PASS|ok)"
+    grep -v -E "^(goos:|goarch:|pkg:|PASS|ok|=== RUN|--- PASS)"
 }
 
 _usage() {
     printf "usage: bench.sh -[dcbsgjqp] for \n"
     printf "\t-d download\n"
     printf "\t-c code-generate\n"
-    printf "\t-bsgjqp run suite of tests for [codec, codec and x, codec and x (generated), json, json-quick, json-profile]\n"
+    printf "\t-tx tests (show stats for each format and whether encoded == decoded); if x, do external also\n"
+    printf "\t-bsgjqp run test suite for [codec, codec and x, codec and x (generated), json, json-quick, json-profile]\n"
 }
 
 _main() {
@@ -164,15 +187,17 @@ _main() {
         return 1
     fi
     local args=()
-    while getopts "dcbsjqpg" flag
+    local do_x="0"
+    while getopts "dcbsjqpgtx" flag
     do
         case "$flag" in
-            d|c|b|s|j|q|p|g) args+=( "$flag" ) ;;
+            d|c|b|s|j|q|p|g|t|x) args+=( "$flag" ) ;;
             *) _usage; return 1 ;;
         esac
     done
     shift "$((OPTIND-1))"
     
+    [[ " ${args[*]} " == *"x"* ]] && do_x="1"
     [[ " ${args[*]} " == *"d"* ]] && _go_get "$@"
     [[ " ${args[*]} " == *"c"* ]] && _gen "$@"
     [[ " ${args[*]} " == *"b"* ]] && _suite_any - - BenchmarkCodecSuite "$@" | _suite_trim_output
@@ -181,6 +206,7 @@ _main() {
     [[ " ${args[*]} " == *"j"* ]] && _suite_any x - BenchmarkCodecQuickAllJsonSuite "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"q"* ]] && _suite_very_quick_json_non_suite "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"p"* ]] && _suite_very_quick_json_only_profile "$@" | _suite_trim_output
+    [[ " ${args[*]} " == *"t"* ]] && _suite_tests "$@" | _suite_trim_output | _suite_tests_strip_file_line
     true
     # shift $((OPTIND-1))
 }

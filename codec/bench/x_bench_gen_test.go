@@ -42,7 +42,7 @@ func benchXGenPreInit() {
 
 func fnEasyjsonEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
 	ts2, ok := ts.(easyjson.Marshaler)
-	if !ok {
+	if !ok || ts2 == nil {
 		return nil, errors.New("easyjson: input is not a easyjson.Marshaler")
 	}
 	if testUseIoEncDec >= 0 {
