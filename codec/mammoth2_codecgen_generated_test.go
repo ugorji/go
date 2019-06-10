@@ -9218,6 +9218,10 @@ func (x codecSelfer19781) enctestMammoth2Basic(v *testMammoth2Basic, e *Encoder)
 	var h codecSelfer19781
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
+	if v == nil {
+		r.EncodeNil()
+		return
+	}
 	z.EncWriteArrayStart(len(v))
 	for _, yyv1 := range v {
 		z.EncWriteArrayElem()
@@ -9264,6 +9268,10 @@ func (x codecSelfer19781) encMaptestMammoth2BasicTestMammoth2(v map[testMammoth2
 	var h codecSelfer19781
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
+	if v == nil {
+		r.EncodeNil()
+		return
+	}
 	z.EncWriteMapStart(len(v))
 	for yyk1, yyv1 := range v {
 		z.EncWriteMapElemKey()
@@ -9334,6 +9342,10 @@ func (x codecSelfer19781) encSliceTestMammoth2(v []TestMammoth2, e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
+	if v == nil {
+		r.EncodeNil()
+		return
+	}
 	z.EncWriteArrayStart(len(v))
 	for _, yyv1 := range v {
 		z.EncWriteArrayElem()
@@ -9423,6 +9435,10 @@ func (x codecSelfer19781) encArray4int64(v *[4]int64, e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
+	if v == nil {
+		r.EncodeNil()
+		return
+	}
 	z.EncWriteArrayStart(len(v))
 	for _, yyv1 := range v {
 		z.EncWriteArrayElem()
