@@ -161,6 +161,7 @@ var zeroByteSlice = oneByteArr[:0:0]
 var codecgen bool
 
 var refBitset bitset256
+var isnilBitset bitset256
 var pool pooler
 var panicv panicHdl
 
@@ -172,6 +173,14 @@ func init() {
 	refBitset.set(byte(reflect.Func))
 	refBitset.set(byte(reflect.Chan))
 	refBitset.set(byte(reflect.UnsafePointer))
+
+	isnilBitset.set(byte(reflect.Map))
+	isnilBitset.set(byte(reflect.Ptr))
+	isnilBitset.set(byte(reflect.Func))
+	isnilBitset.set(byte(reflect.Chan))
+	isnilBitset.set(byte(reflect.UnsafePointer))
+	isnilBitset.set(byte(reflect.Interface))
+	isnilBitset.set(byte(reflect.Slice))
 }
 
 type handleFlag uint8

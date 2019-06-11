@@ -1427,7 +1427,10 @@ func (d *Decoder) swallow() {
 }
 
 func setZero(iv interface{}) {
-	if iv == nil || definitelyNil(iv) {
+	if iv == nil {
+		return
+	}
+	if _, ok := isNilRef(iv); ok {
 		return
 	}
 	var canDecode bool

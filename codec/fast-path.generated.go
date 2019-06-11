@@ -187,329 +187,713 @@ func init() {
 func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 	switch v := iv.(type) {
 	case []interface{}:
-		fastpathTV.EncSliceIntfV(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceIntfV(v, e)
+		}
 	case *[]interface{}:
-		fastpathTV.EncSliceIntfV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceIntfV(*v, e)
+		}
 	case []string:
-		fastpathTV.EncSliceStringV(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceStringV(v, e)
+		}
 	case *[]string:
-		fastpathTV.EncSliceStringV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceStringV(*v, e)
+		}
 	case [][]byte:
-		fastpathTV.EncSliceBytesV(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceBytesV(v, e)
+		}
 	case *[][]byte:
-		fastpathTV.EncSliceBytesV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceBytesV(*v, e)
+		}
 	case []float32:
-		fastpathTV.EncSliceFloat32V(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceFloat32V(v, e)
+		}
 	case *[]float32:
-		fastpathTV.EncSliceFloat32V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceFloat32V(*v, e)
+		}
 	case []float64:
-		fastpathTV.EncSliceFloat64V(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceFloat64V(v, e)
+		}
 	case *[]float64:
-		fastpathTV.EncSliceFloat64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceFloat64V(*v, e)
+		}
 	case []uint:
-		fastpathTV.EncSliceUintV(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceUintV(v, e)
+		}
 	case *[]uint:
-		fastpathTV.EncSliceUintV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceUintV(*v, e)
+		}
 	case []uint16:
-		fastpathTV.EncSliceUint16V(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceUint16V(v, e)
+		}
 	case *[]uint16:
-		fastpathTV.EncSliceUint16V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceUint16V(*v, e)
+		}
 	case []uint32:
-		fastpathTV.EncSliceUint32V(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceUint32V(v, e)
+		}
 	case *[]uint32:
-		fastpathTV.EncSliceUint32V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceUint32V(*v, e)
+		}
 	case []uint64:
-		fastpathTV.EncSliceUint64V(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceUint64V(v, e)
+		}
 	case *[]uint64:
-		fastpathTV.EncSliceUint64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceUint64V(*v, e)
+		}
 	case []int:
-		fastpathTV.EncSliceIntV(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceIntV(v, e)
+		}
 	case *[]int:
-		fastpathTV.EncSliceIntV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceIntV(*v, e)
+		}
 	case []int8:
-		fastpathTV.EncSliceInt8V(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceInt8V(v, e)
+		}
 	case *[]int8:
-		fastpathTV.EncSliceInt8V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceInt8V(*v, e)
+		}
 	case []int16:
-		fastpathTV.EncSliceInt16V(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceInt16V(v, e)
+		}
 	case *[]int16:
-		fastpathTV.EncSliceInt16V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceInt16V(*v, e)
+		}
 	case []int32:
-		fastpathTV.EncSliceInt32V(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceInt32V(v, e)
+		}
 	case *[]int32:
-		fastpathTV.EncSliceInt32V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceInt32V(*v, e)
+		}
 	case []int64:
-		fastpathTV.EncSliceInt64V(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceInt64V(v, e)
+		}
 	case *[]int64:
-		fastpathTV.EncSliceInt64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceInt64V(*v, e)
+		}
 	case []bool:
-		fastpathTV.EncSliceBoolV(v, e)
+		if v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceBoolV(v, e)
+		}
 	case *[]bool:
-		fastpathTV.EncSliceBoolV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceBoolV(*v, e)
+		}
 	case map[string]interface{}:
 		fastpathTV.EncMapStringIntfV(v, e)
 	case *map[string]interface{}:
-		fastpathTV.EncMapStringIntfV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringIntfV(*v, e)
+		}
 	case map[string]string:
 		fastpathTV.EncMapStringStringV(v, e)
 	case *map[string]string:
-		fastpathTV.EncMapStringStringV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringStringV(*v, e)
+		}
 	case map[string][]byte:
 		fastpathTV.EncMapStringBytesV(v, e)
 	case *map[string][]byte:
-		fastpathTV.EncMapStringBytesV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringBytesV(*v, e)
+		}
 	case map[string]uint:
 		fastpathTV.EncMapStringUintV(v, e)
 	case *map[string]uint:
-		fastpathTV.EncMapStringUintV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringUintV(*v, e)
+		}
 	case map[string]uint8:
 		fastpathTV.EncMapStringUint8V(v, e)
 	case *map[string]uint8:
-		fastpathTV.EncMapStringUint8V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringUint8V(*v, e)
+		}
 	case map[string]uint64:
 		fastpathTV.EncMapStringUint64V(v, e)
 	case *map[string]uint64:
-		fastpathTV.EncMapStringUint64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringUint64V(*v, e)
+		}
 	case map[string]int:
 		fastpathTV.EncMapStringIntV(v, e)
 	case *map[string]int:
-		fastpathTV.EncMapStringIntV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringIntV(*v, e)
+		}
 	case map[string]int64:
 		fastpathTV.EncMapStringInt64V(v, e)
 	case *map[string]int64:
-		fastpathTV.EncMapStringInt64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringInt64V(*v, e)
+		}
 	case map[string]float32:
 		fastpathTV.EncMapStringFloat32V(v, e)
 	case *map[string]float32:
-		fastpathTV.EncMapStringFloat32V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringFloat32V(*v, e)
+		}
 	case map[string]float64:
 		fastpathTV.EncMapStringFloat64V(v, e)
 	case *map[string]float64:
-		fastpathTV.EncMapStringFloat64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringFloat64V(*v, e)
+		}
 	case map[string]bool:
 		fastpathTV.EncMapStringBoolV(v, e)
 	case *map[string]bool:
-		fastpathTV.EncMapStringBoolV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapStringBoolV(*v, e)
+		}
 	case map[uint]interface{}:
 		fastpathTV.EncMapUintIntfV(v, e)
 	case *map[uint]interface{}:
-		fastpathTV.EncMapUintIntfV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintIntfV(*v, e)
+		}
 	case map[uint]string:
 		fastpathTV.EncMapUintStringV(v, e)
 	case *map[uint]string:
-		fastpathTV.EncMapUintStringV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintStringV(*v, e)
+		}
 	case map[uint][]byte:
 		fastpathTV.EncMapUintBytesV(v, e)
 	case *map[uint][]byte:
-		fastpathTV.EncMapUintBytesV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintBytesV(*v, e)
+		}
 	case map[uint]uint:
 		fastpathTV.EncMapUintUintV(v, e)
 	case *map[uint]uint:
-		fastpathTV.EncMapUintUintV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintUintV(*v, e)
+		}
 	case map[uint]uint8:
 		fastpathTV.EncMapUintUint8V(v, e)
 	case *map[uint]uint8:
-		fastpathTV.EncMapUintUint8V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintUint8V(*v, e)
+		}
 	case map[uint]uint64:
 		fastpathTV.EncMapUintUint64V(v, e)
 	case *map[uint]uint64:
-		fastpathTV.EncMapUintUint64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintUint64V(*v, e)
+		}
 	case map[uint]int:
 		fastpathTV.EncMapUintIntV(v, e)
 	case *map[uint]int:
-		fastpathTV.EncMapUintIntV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintIntV(*v, e)
+		}
 	case map[uint]int64:
 		fastpathTV.EncMapUintInt64V(v, e)
 	case *map[uint]int64:
-		fastpathTV.EncMapUintInt64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintInt64V(*v, e)
+		}
 	case map[uint]float32:
 		fastpathTV.EncMapUintFloat32V(v, e)
 	case *map[uint]float32:
-		fastpathTV.EncMapUintFloat32V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintFloat32V(*v, e)
+		}
 	case map[uint]float64:
 		fastpathTV.EncMapUintFloat64V(v, e)
 	case *map[uint]float64:
-		fastpathTV.EncMapUintFloat64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintFloat64V(*v, e)
+		}
 	case map[uint]bool:
 		fastpathTV.EncMapUintBoolV(v, e)
 	case *map[uint]bool:
-		fastpathTV.EncMapUintBoolV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUintBoolV(*v, e)
+		}
 	case map[uint8]interface{}:
 		fastpathTV.EncMapUint8IntfV(v, e)
 	case *map[uint8]interface{}:
-		fastpathTV.EncMapUint8IntfV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8IntfV(*v, e)
+		}
 	case map[uint8]string:
 		fastpathTV.EncMapUint8StringV(v, e)
 	case *map[uint8]string:
-		fastpathTV.EncMapUint8StringV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8StringV(*v, e)
+		}
 	case map[uint8][]byte:
 		fastpathTV.EncMapUint8BytesV(v, e)
 	case *map[uint8][]byte:
-		fastpathTV.EncMapUint8BytesV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8BytesV(*v, e)
+		}
 	case map[uint8]uint:
 		fastpathTV.EncMapUint8UintV(v, e)
 	case *map[uint8]uint:
-		fastpathTV.EncMapUint8UintV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8UintV(*v, e)
+		}
 	case map[uint8]uint8:
 		fastpathTV.EncMapUint8Uint8V(v, e)
 	case *map[uint8]uint8:
-		fastpathTV.EncMapUint8Uint8V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8Uint8V(*v, e)
+		}
 	case map[uint8]uint64:
 		fastpathTV.EncMapUint8Uint64V(v, e)
 	case *map[uint8]uint64:
-		fastpathTV.EncMapUint8Uint64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8Uint64V(*v, e)
+		}
 	case map[uint8]int:
 		fastpathTV.EncMapUint8IntV(v, e)
 	case *map[uint8]int:
-		fastpathTV.EncMapUint8IntV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8IntV(*v, e)
+		}
 	case map[uint8]int64:
 		fastpathTV.EncMapUint8Int64V(v, e)
 	case *map[uint8]int64:
-		fastpathTV.EncMapUint8Int64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8Int64V(*v, e)
+		}
 	case map[uint8]float32:
 		fastpathTV.EncMapUint8Float32V(v, e)
 	case *map[uint8]float32:
-		fastpathTV.EncMapUint8Float32V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8Float32V(*v, e)
+		}
 	case map[uint8]float64:
 		fastpathTV.EncMapUint8Float64V(v, e)
 	case *map[uint8]float64:
-		fastpathTV.EncMapUint8Float64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8Float64V(*v, e)
+		}
 	case map[uint8]bool:
 		fastpathTV.EncMapUint8BoolV(v, e)
 	case *map[uint8]bool:
-		fastpathTV.EncMapUint8BoolV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint8BoolV(*v, e)
+		}
 	case map[uint64]interface{}:
 		fastpathTV.EncMapUint64IntfV(v, e)
 	case *map[uint64]interface{}:
-		fastpathTV.EncMapUint64IntfV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64IntfV(*v, e)
+		}
 	case map[uint64]string:
 		fastpathTV.EncMapUint64StringV(v, e)
 	case *map[uint64]string:
-		fastpathTV.EncMapUint64StringV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64StringV(*v, e)
+		}
 	case map[uint64][]byte:
 		fastpathTV.EncMapUint64BytesV(v, e)
 	case *map[uint64][]byte:
-		fastpathTV.EncMapUint64BytesV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64BytesV(*v, e)
+		}
 	case map[uint64]uint:
 		fastpathTV.EncMapUint64UintV(v, e)
 	case *map[uint64]uint:
-		fastpathTV.EncMapUint64UintV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64UintV(*v, e)
+		}
 	case map[uint64]uint8:
 		fastpathTV.EncMapUint64Uint8V(v, e)
 	case *map[uint64]uint8:
-		fastpathTV.EncMapUint64Uint8V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64Uint8V(*v, e)
+		}
 	case map[uint64]uint64:
 		fastpathTV.EncMapUint64Uint64V(v, e)
 	case *map[uint64]uint64:
-		fastpathTV.EncMapUint64Uint64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64Uint64V(*v, e)
+		}
 	case map[uint64]int:
 		fastpathTV.EncMapUint64IntV(v, e)
 	case *map[uint64]int:
-		fastpathTV.EncMapUint64IntV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64IntV(*v, e)
+		}
 	case map[uint64]int64:
 		fastpathTV.EncMapUint64Int64V(v, e)
 	case *map[uint64]int64:
-		fastpathTV.EncMapUint64Int64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64Int64V(*v, e)
+		}
 	case map[uint64]float32:
 		fastpathTV.EncMapUint64Float32V(v, e)
 	case *map[uint64]float32:
-		fastpathTV.EncMapUint64Float32V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64Float32V(*v, e)
+		}
 	case map[uint64]float64:
 		fastpathTV.EncMapUint64Float64V(v, e)
 	case *map[uint64]float64:
-		fastpathTV.EncMapUint64Float64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64Float64V(*v, e)
+		}
 	case map[uint64]bool:
 		fastpathTV.EncMapUint64BoolV(v, e)
 	case *map[uint64]bool:
-		fastpathTV.EncMapUint64BoolV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapUint64BoolV(*v, e)
+		}
 	case map[int]interface{}:
 		fastpathTV.EncMapIntIntfV(v, e)
 	case *map[int]interface{}:
-		fastpathTV.EncMapIntIntfV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntIntfV(*v, e)
+		}
 	case map[int]string:
 		fastpathTV.EncMapIntStringV(v, e)
 	case *map[int]string:
-		fastpathTV.EncMapIntStringV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntStringV(*v, e)
+		}
 	case map[int][]byte:
 		fastpathTV.EncMapIntBytesV(v, e)
 	case *map[int][]byte:
-		fastpathTV.EncMapIntBytesV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntBytesV(*v, e)
+		}
 	case map[int]uint:
 		fastpathTV.EncMapIntUintV(v, e)
 	case *map[int]uint:
-		fastpathTV.EncMapIntUintV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntUintV(*v, e)
+		}
 	case map[int]uint8:
 		fastpathTV.EncMapIntUint8V(v, e)
 	case *map[int]uint8:
-		fastpathTV.EncMapIntUint8V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntUint8V(*v, e)
+		}
 	case map[int]uint64:
 		fastpathTV.EncMapIntUint64V(v, e)
 	case *map[int]uint64:
-		fastpathTV.EncMapIntUint64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntUint64V(*v, e)
+		}
 	case map[int]int:
 		fastpathTV.EncMapIntIntV(v, e)
 	case *map[int]int:
-		fastpathTV.EncMapIntIntV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntIntV(*v, e)
+		}
 	case map[int]int64:
 		fastpathTV.EncMapIntInt64V(v, e)
 	case *map[int]int64:
-		fastpathTV.EncMapIntInt64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntInt64V(*v, e)
+		}
 	case map[int]float32:
 		fastpathTV.EncMapIntFloat32V(v, e)
 	case *map[int]float32:
-		fastpathTV.EncMapIntFloat32V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntFloat32V(*v, e)
+		}
 	case map[int]float64:
 		fastpathTV.EncMapIntFloat64V(v, e)
 	case *map[int]float64:
-		fastpathTV.EncMapIntFloat64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntFloat64V(*v, e)
+		}
 	case map[int]bool:
 		fastpathTV.EncMapIntBoolV(v, e)
 	case *map[int]bool:
-		fastpathTV.EncMapIntBoolV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapIntBoolV(*v, e)
+		}
 	case map[int64]interface{}:
 		fastpathTV.EncMapInt64IntfV(v, e)
 	case *map[int64]interface{}:
-		fastpathTV.EncMapInt64IntfV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64IntfV(*v, e)
+		}
 	case map[int64]string:
 		fastpathTV.EncMapInt64StringV(v, e)
 	case *map[int64]string:
-		fastpathTV.EncMapInt64StringV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64StringV(*v, e)
+		}
 	case map[int64][]byte:
 		fastpathTV.EncMapInt64BytesV(v, e)
 	case *map[int64][]byte:
-		fastpathTV.EncMapInt64BytesV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64BytesV(*v, e)
+		}
 	case map[int64]uint:
 		fastpathTV.EncMapInt64UintV(v, e)
 	case *map[int64]uint:
-		fastpathTV.EncMapInt64UintV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64UintV(*v, e)
+		}
 	case map[int64]uint8:
 		fastpathTV.EncMapInt64Uint8V(v, e)
 	case *map[int64]uint8:
-		fastpathTV.EncMapInt64Uint8V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64Uint8V(*v, e)
+		}
 	case map[int64]uint64:
 		fastpathTV.EncMapInt64Uint64V(v, e)
 	case *map[int64]uint64:
-		fastpathTV.EncMapInt64Uint64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64Uint64V(*v, e)
+		}
 	case map[int64]int:
 		fastpathTV.EncMapInt64IntV(v, e)
 	case *map[int64]int:
-		fastpathTV.EncMapInt64IntV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64IntV(*v, e)
+		}
 	case map[int64]int64:
 		fastpathTV.EncMapInt64Int64V(v, e)
 	case *map[int64]int64:
-		fastpathTV.EncMapInt64Int64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64Int64V(*v, e)
+		}
 	case map[int64]float32:
 		fastpathTV.EncMapInt64Float32V(v, e)
 	case *map[int64]float32:
-		fastpathTV.EncMapInt64Float32V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64Float32V(*v, e)
+		}
 	case map[int64]float64:
 		fastpathTV.EncMapInt64Float64V(v, e)
 	case *map[int64]float64:
-		fastpathTV.EncMapInt64Float64V(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64Float64V(*v, e)
+		}
 	case map[int64]bool:
 		fastpathTV.EncMapInt64BoolV(v, e)
 	case *map[int64]bool:
-		fastpathTV.EncMapInt64BoolV(*v, e)
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncMapInt64BoolV(*v, e)
+		}
 	default:
 		_ = v // workaround https://github.com/golang/go/issues/12927 seen in go1.4
 		return false
@@ -526,10 +910,6 @@ func (e *Encoder) fastpathEncSliceIntfR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceIntfV(v []interface{}, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -538,9 +918,7 @@ func (fastpathT) EncSliceIntfV(v []interface{}, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceIntfV(v []interface{}, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -563,10 +941,6 @@ func (e *Encoder) fastpathEncSliceStringR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceStringV(v []string, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -579,9 +953,7 @@ func (fastpathT) EncSliceStringV(v []string, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceStringV(v []string, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -608,10 +980,6 @@ func (e *Encoder) fastpathEncSliceBytesR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceBytesV(v [][]byte, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -620,9 +988,7 @@ func (fastpathT) EncSliceBytesV(v [][]byte, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceBytesV(v [][]byte, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -645,10 +1011,6 @@ func (e *Encoder) fastpathEncSliceFloat32R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceFloat32V(v []float32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -657,9 +1019,7 @@ func (fastpathT) EncSliceFloat32V(v []float32, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceFloat32V(v []float32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -682,10 +1042,6 @@ func (e *Encoder) fastpathEncSliceFloat64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceFloat64V(v []float64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -694,9 +1050,7 @@ func (fastpathT) EncSliceFloat64V(v []float64, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceFloat64V(v []float64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -719,10 +1073,6 @@ func (e *Encoder) fastpathEncSliceUintR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceUintV(v []uint, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -731,9 +1081,7 @@ func (fastpathT) EncSliceUintV(v []uint, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceUintV(v []uint, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -756,10 +1104,6 @@ func (e *Encoder) fastpathEncSliceUint16R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceUint16V(v []uint16, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -768,9 +1112,7 @@ func (fastpathT) EncSliceUint16V(v []uint16, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceUint16V(v []uint16, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -793,10 +1135,6 @@ func (e *Encoder) fastpathEncSliceUint32R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceUint32V(v []uint32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -805,9 +1143,7 @@ func (fastpathT) EncSliceUint32V(v []uint32, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceUint32V(v []uint32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -830,10 +1166,6 @@ func (e *Encoder) fastpathEncSliceUint64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceUint64V(v []uint64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -842,9 +1174,7 @@ func (fastpathT) EncSliceUint64V(v []uint64, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceUint64V(v []uint64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -867,10 +1197,6 @@ func (e *Encoder) fastpathEncSliceIntR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceIntV(v []int, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -879,9 +1205,7 @@ func (fastpathT) EncSliceIntV(v []int, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceIntV(v []int, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -904,10 +1228,6 @@ func (e *Encoder) fastpathEncSliceInt8R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceInt8V(v []int8, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -916,9 +1236,7 @@ func (fastpathT) EncSliceInt8V(v []int8, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceInt8V(v []int8, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -941,10 +1259,6 @@ func (e *Encoder) fastpathEncSliceInt16R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceInt16V(v []int16, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -953,9 +1267,7 @@ func (fastpathT) EncSliceInt16V(v []int16, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceInt16V(v []int16, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -978,10 +1290,6 @@ func (e *Encoder) fastpathEncSliceInt32R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceInt32V(v []int32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -990,9 +1298,7 @@ func (fastpathT) EncSliceInt32V(v []int32, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceInt32V(v []int32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -1015,10 +1321,6 @@ func (e *Encoder) fastpathEncSliceInt64R(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceInt64V(v []int64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -1027,9 +1329,7 @@ func (fastpathT) EncSliceInt64V(v []int64, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceInt64V(v []int64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -1052,10 +1352,6 @@ func (e *Encoder) fastpathEncSliceBoolR(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 func (fastpathT) EncSliceBoolV(v []bool, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
@@ -1064,9 +1360,7 @@ func (fastpathT) EncSliceBoolV(v []bool, e *Encoder) {
 	e.arrayEnd()
 }
 func (fastpathT) EncAsMapSliceBoolV(v []bool, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-	} else if len(v)%2 == 1 {
+	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	} else {
 		e.mapStart(len(v) / 2)
@@ -1085,10 +1379,6 @@ func (e *Encoder) fastpathEncMapStringIntfR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
 }
 func (fastpathT) EncMapStringIntfV(v map[string]interface{}, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1126,10 +1416,6 @@ func (e *Encoder) fastpathEncMapStringStringR(f *codecFnInfo, rv reflect.Value) 
 	fastpathTV.EncMapStringStringV(rv2i(rv).(map[string]string), e)
 }
 func (fastpathT) EncMapStringStringV(v map[string]string, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1175,10 +1461,6 @@ func (e *Encoder) fastpathEncMapStringBytesR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
 }
 func (fastpathT) EncMapStringBytesV(v map[string][]byte, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1216,10 +1498,6 @@ func (e *Encoder) fastpathEncMapStringUintR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapStringUintV(rv2i(rv).(map[string]uint), e)
 }
 func (fastpathT) EncMapStringUintV(v map[string]uint, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1257,10 +1535,6 @@ func (e *Encoder) fastpathEncMapStringUint8R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
 }
 func (fastpathT) EncMapStringUint8V(v map[string]uint8, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1298,10 +1572,6 @@ func (e *Encoder) fastpathEncMapStringUint64R(f *codecFnInfo, rv reflect.Value) 
 	fastpathTV.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
 }
 func (fastpathT) EncMapStringUint64V(v map[string]uint64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1339,10 +1609,6 @@ func (e *Encoder) fastpathEncMapStringIntR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapStringIntV(rv2i(rv).(map[string]int), e)
 }
 func (fastpathT) EncMapStringIntV(v map[string]int, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1380,10 +1646,6 @@ func (e *Encoder) fastpathEncMapStringInt64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapStringInt64V(rv2i(rv).(map[string]int64), e)
 }
 func (fastpathT) EncMapStringInt64V(v map[string]int64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1421,10 +1683,6 @@ func (e *Encoder) fastpathEncMapStringFloat32R(f *codecFnInfo, rv reflect.Value)
 	fastpathTV.EncMapStringFloat32V(rv2i(rv).(map[string]float32), e)
 }
 func (fastpathT) EncMapStringFloat32V(v map[string]float32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1462,10 +1720,6 @@ func (e *Encoder) fastpathEncMapStringFloat64R(f *codecFnInfo, rv reflect.Value)
 	fastpathTV.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
 }
 func (fastpathT) EncMapStringFloat64V(v map[string]float64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1503,10 +1757,6 @@ func (e *Encoder) fastpathEncMapStringBoolR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
 }
 func (fastpathT) EncMapStringBoolV(v map[string]bool, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]string, len(v))
@@ -1544,10 +1794,6 @@ func (e *Encoder) fastpathEncMapUintIntfR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintIntfV(rv2i(rv).(map[uint]interface{}), e)
 }
 func (fastpathT) EncMapUintIntfV(v map[uint]interface{}, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1577,10 +1823,6 @@ func (e *Encoder) fastpathEncMapUintStringR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintStringV(rv2i(rv).(map[uint]string), e)
 }
 func (fastpathT) EncMapUintStringV(v map[uint]string, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1618,10 +1860,6 @@ func (e *Encoder) fastpathEncMapUintBytesR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintBytesV(rv2i(rv).(map[uint][]byte), e)
 }
 func (fastpathT) EncMapUintBytesV(v map[uint][]byte, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1651,10 +1889,6 @@ func (e *Encoder) fastpathEncMapUintUintR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintUintV(rv2i(rv).(map[uint]uint), e)
 }
 func (fastpathT) EncMapUintUintV(v map[uint]uint, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1684,10 +1918,6 @@ func (e *Encoder) fastpathEncMapUintUint8R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintUint8V(rv2i(rv).(map[uint]uint8), e)
 }
 func (fastpathT) EncMapUintUint8V(v map[uint]uint8, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1717,10 +1947,6 @@ func (e *Encoder) fastpathEncMapUintUint64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintUint64V(rv2i(rv).(map[uint]uint64), e)
 }
 func (fastpathT) EncMapUintUint64V(v map[uint]uint64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1750,10 +1976,6 @@ func (e *Encoder) fastpathEncMapUintIntR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintIntV(rv2i(rv).(map[uint]int), e)
 }
 func (fastpathT) EncMapUintIntV(v map[uint]int, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1783,10 +2005,6 @@ func (e *Encoder) fastpathEncMapUintInt64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintInt64V(rv2i(rv).(map[uint]int64), e)
 }
 func (fastpathT) EncMapUintInt64V(v map[uint]int64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1816,10 +2034,6 @@ func (e *Encoder) fastpathEncMapUintFloat32R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintFloat32V(rv2i(rv).(map[uint]float32), e)
 }
 func (fastpathT) EncMapUintFloat32V(v map[uint]float32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1849,10 +2063,6 @@ func (e *Encoder) fastpathEncMapUintFloat64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintFloat64V(rv2i(rv).(map[uint]float64), e)
 }
 func (fastpathT) EncMapUintFloat64V(v map[uint]float64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1882,10 +2092,6 @@ func (e *Encoder) fastpathEncMapUintBoolR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUintBoolV(rv2i(rv).(map[uint]bool), e)
 }
 func (fastpathT) EncMapUintBoolV(v map[uint]bool, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1915,10 +2121,6 @@ func (e *Encoder) fastpathEncMapUint8IntfR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
 }
 func (fastpathT) EncMapUint8IntfV(v map[uint8]interface{}, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1948,10 +2150,6 @@ func (e *Encoder) fastpathEncMapUint8StringR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
 }
 func (fastpathT) EncMapUint8StringV(v map[uint8]string, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -1989,10 +2187,6 @@ func (e *Encoder) fastpathEncMapUint8BytesR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
 }
 func (fastpathT) EncMapUint8BytesV(v map[uint8][]byte, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2022,10 +2216,6 @@ func (e *Encoder) fastpathEncMapUint8UintR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint8UintV(rv2i(rv).(map[uint8]uint), e)
 }
 func (fastpathT) EncMapUint8UintV(v map[uint8]uint, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2055,10 +2245,6 @@ func (e *Encoder) fastpathEncMapUint8Uint8R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
 }
 func (fastpathT) EncMapUint8Uint8V(v map[uint8]uint8, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2088,10 +2274,6 @@ func (e *Encoder) fastpathEncMapUint8Uint64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
 }
 func (fastpathT) EncMapUint8Uint64V(v map[uint8]uint64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2121,10 +2303,6 @@ func (e *Encoder) fastpathEncMapUint8IntR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
 }
 func (fastpathT) EncMapUint8IntV(v map[uint8]int, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2154,10 +2332,6 @@ func (e *Encoder) fastpathEncMapUint8Int64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint8Int64V(rv2i(rv).(map[uint8]int64), e)
 }
 func (fastpathT) EncMapUint8Int64V(v map[uint8]int64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2187,10 +2361,6 @@ func (e *Encoder) fastpathEncMapUint8Float32R(f *codecFnInfo, rv reflect.Value) 
 	fastpathTV.EncMapUint8Float32V(rv2i(rv).(map[uint8]float32), e)
 }
 func (fastpathT) EncMapUint8Float32V(v map[uint8]float32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2220,10 +2390,6 @@ func (e *Encoder) fastpathEncMapUint8Float64R(f *codecFnInfo, rv reflect.Value) 
 	fastpathTV.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
 }
 func (fastpathT) EncMapUint8Float64V(v map[uint8]float64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2253,10 +2419,6 @@ func (e *Encoder) fastpathEncMapUint8BoolR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
 }
 func (fastpathT) EncMapUint8BoolV(v map[uint8]bool, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2286,10 +2448,6 @@ func (e *Encoder) fastpathEncMapUint64IntfR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
 }
 func (fastpathT) EncMapUint64IntfV(v map[uint64]interface{}, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2319,10 +2477,6 @@ func (e *Encoder) fastpathEncMapUint64StringR(f *codecFnInfo, rv reflect.Value) 
 	fastpathTV.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
 }
 func (fastpathT) EncMapUint64StringV(v map[uint64]string, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2360,10 +2514,6 @@ func (e *Encoder) fastpathEncMapUint64BytesR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
 }
 func (fastpathT) EncMapUint64BytesV(v map[uint64][]byte, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2393,10 +2543,6 @@ func (e *Encoder) fastpathEncMapUint64UintR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint64UintV(rv2i(rv).(map[uint64]uint), e)
 }
 func (fastpathT) EncMapUint64UintV(v map[uint64]uint, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2426,10 +2572,6 @@ func (e *Encoder) fastpathEncMapUint64Uint8R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
 }
 func (fastpathT) EncMapUint64Uint8V(v map[uint64]uint8, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2459,10 +2601,6 @@ func (e *Encoder) fastpathEncMapUint64Uint64R(f *codecFnInfo, rv reflect.Value) 
 	fastpathTV.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
 }
 func (fastpathT) EncMapUint64Uint64V(v map[uint64]uint64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2492,10 +2630,6 @@ func (e *Encoder) fastpathEncMapUint64IntR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
 }
 func (fastpathT) EncMapUint64IntV(v map[uint64]int, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2525,10 +2659,6 @@ func (e *Encoder) fastpathEncMapUint64Int64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint64Int64V(rv2i(rv).(map[uint64]int64), e)
 }
 func (fastpathT) EncMapUint64Int64V(v map[uint64]int64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2558,10 +2688,6 @@ func (e *Encoder) fastpathEncMapUint64Float32R(f *codecFnInfo, rv reflect.Value)
 	fastpathTV.EncMapUint64Float32V(rv2i(rv).(map[uint64]float32), e)
 }
 func (fastpathT) EncMapUint64Float32V(v map[uint64]float32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2591,10 +2717,6 @@ func (e *Encoder) fastpathEncMapUint64Float64R(f *codecFnInfo, rv reflect.Value)
 	fastpathTV.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
 }
 func (fastpathT) EncMapUint64Float64V(v map[uint64]float64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2624,10 +2746,6 @@ func (e *Encoder) fastpathEncMapUint64BoolR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
 }
 func (fastpathT) EncMapUint64BoolV(v map[uint64]bool, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]uint64, len(v))
@@ -2657,10 +2775,6 @@ func (e *Encoder) fastpathEncMapIntIntfR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
 }
 func (fastpathT) EncMapIntIntfV(v map[int]interface{}, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -2690,10 +2804,6 @@ func (e *Encoder) fastpathEncMapIntStringR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntStringV(rv2i(rv).(map[int]string), e)
 }
 func (fastpathT) EncMapIntStringV(v map[int]string, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -2731,10 +2841,6 @@ func (e *Encoder) fastpathEncMapIntBytesR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
 }
 func (fastpathT) EncMapIntBytesV(v map[int][]byte, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -2764,10 +2870,6 @@ func (e *Encoder) fastpathEncMapIntUintR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntUintV(rv2i(rv).(map[int]uint), e)
 }
 func (fastpathT) EncMapIntUintV(v map[int]uint, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -2797,10 +2899,6 @@ func (e *Encoder) fastpathEncMapIntUint8R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
 }
 func (fastpathT) EncMapIntUint8V(v map[int]uint8, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -2830,10 +2928,6 @@ func (e *Encoder) fastpathEncMapIntUint64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
 }
 func (fastpathT) EncMapIntUint64V(v map[int]uint64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -2863,10 +2957,6 @@ func (e *Encoder) fastpathEncMapIntIntR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntIntV(rv2i(rv).(map[int]int), e)
 }
 func (fastpathT) EncMapIntIntV(v map[int]int, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -2896,10 +2986,6 @@ func (e *Encoder) fastpathEncMapIntInt64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntInt64V(rv2i(rv).(map[int]int64), e)
 }
 func (fastpathT) EncMapIntInt64V(v map[int]int64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -2929,10 +3015,6 @@ func (e *Encoder) fastpathEncMapIntFloat32R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntFloat32V(rv2i(rv).(map[int]float32), e)
 }
 func (fastpathT) EncMapIntFloat32V(v map[int]float32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -2962,10 +3044,6 @@ func (e *Encoder) fastpathEncMapIntFloat64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
 }
 func (fastpathT) EncMapIntFloat64V(v map[int]float64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -2995,10 +3073,6 @@ func (e *Encoder) fastpathEncMapIntBoolR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
 }
 func (fastpathT) EncMapIntBoolV(v map[int]bool, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3028,10 +3102,6 @@ func (e *Encoder) fastpathEncMapInt64IntfR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapInt64IntfV(rv2i(rv).(map[int64]interface{}), e)
 }
 func (fastpathT) EncMapInt64IntfV(v map[int64]interface{}, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3061,10 +3131,6 @@ func (e *Encoder) fastpathEncMapInt64StringR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapInt64StringV(rv2i(rv).(map[int64]string), e)
 }
 func (fastpathT) EncMapInt64StringV(v map[int64]string, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3102,10 +3168,6 @@ func (e *Encoder) fastpathEncMapInt64BytesR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapInt64BytesV(rv2i(rv).(map[int64][]byte), e)
 }
 func (fastpathT) EncMapInt64BytesV(v map[int64][]byte, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3135,10 +3197,6 @@ func (e *Encoder) fastpathEncMapInt64UintR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapInt64UintV(rv2i(rv).(map[int64]uint), e)
 }
 func (fastpathT) EncMapInt64UintV(v map[int64]uint, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3168,10 +3226,6 @@ func (e *Encoder) fastpathEncMapInt64Uint8R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapInt64Uint8V(rv2i(rv).(map[int64]uint8), e)
 }
 func (fastpathT) EncMapInt64Uint8V(v map[int64]uint8, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3201,10 +3255,6 @@ func (e *Encoder) fastpathEncMapInt64Uint64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapInt64Uint64V(rv2i(rv).(map[int64]uint64), e)
 }
 func (fastpathT) EncMapInt64Uint64V(v map[int64]uint64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3234,10 +3284,6 @@ func (e *Encoder) fastpathEncMapInt64IntR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapInt64IntV(rv2i(rv).(map[int64]int), e)
 }
 func (fastpathT) EncMapInt64IntV(v map[int64]int, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3267,10 +3313,6 @@ func (e *Encoder) fastpathEncMapInt64Int64R(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapInt64Int64V(rv2i(rv).(map[int64]int64), e)
 }
 func (fastpathT) EncMapInt64Int64V(v map[int64]int64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3300,10 +3342,6 @@ func (e *Encoder) fastpathEncMapInt64Float32R(f *codecFnInfo, rv reflect.Value) 
 	fastpathTV.EncMapInt64Float32V(rv2i(rv).(map[int64]float32), e)
 }
 func (fastpathT) EncMapInt64Float32V(v map[int64]float32, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3333,10 +3371,6 @@ func (e *Encoder) fastpathEncMapInt64Float64R(f *codecFnInfo, rv reflect.Value) 
 	fastpathTV.EncMapInt64Float64V(rv2i(rv).(map[int64]float64), e)
 }
 func (fastpathT) EncMapInt64Float64V(v map[int64]float64, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))
@@ -3366,10 +3400,6 @@ func (e *Encoder) fastpathEncMapInt64BoolR(f *codecFnInfo, rv reflect.Value) {
 	fastpathTV.EncMapInt64BoolV(rv2i(rv).(map[int64]bool), e)
 }
 func (fastpathT) EncMapInt64BoolV(v map[int64]bool, e *Encoder) {
-	if v == nil {
-		e.e.EncodeNil()
-		return
-	}
 	e.mapStart(len(v))
 	if e.h.Canonical {
 		v2 := make([]int64, len(v))

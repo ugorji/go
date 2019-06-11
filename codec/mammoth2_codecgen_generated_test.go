@@ -46,7 +46,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 	_, _, _ = h, z, r
 	if x == nil {
 		r.EncodeNil()
-	} else {
+	} else { // checkNil=true
 		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
 		_, _ = yysep2, yy2arr2
@@ -180,14 +180,22 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 			}
 			z.EncWriteArrayElem()
-			r.EncodeStringBytesRaw([]byte(x.FBytes))
+			if x.FBytes == nil {
+				r.EncodeNil()
+			} else {
+				r.EncodeStringBytesRaw([]byte(x.FBytes))
+			} // end block: if x.FBytes slice == nil
 			if yyn8 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy206 := *x.FptrBytes
-				r.EncodeStringBytesRaw([]byte(yy206))
+				if yy206 == nil {
+					r.EncodeNil()
+				} else {
+					r.EncodeStringBytesRaw([]byte(yy206))
+				} // end block: if yy206 slice == nil
 			}
 			z.EncWriteArrayElem()
 			r.EncodeFloat32(float32(x.FFloat32))
@@ -330,814 +338,1462 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeBool(bool(yy248))
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceIntfV(x.FSliceIntf, e)
+			if x.FSliceIntf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceIntfV(x.FSliceIntf, e)
+			} // end block: if x.FSliceIntf slice == nil
 			if yyn38 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy251 := *x.FptrSliceIntf
-				z.F.EncSliceIntfV(yy251, e)
+				if yy251 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceIntfV(yy251, e)
+				} // end block: if yy251 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceStringV(x.FSliceString, e)
+			if x.FSliceString == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceStringV(x.FSliceString, e)
+			} // end block: if x.FSliceString slice == nil
 			if yyn40 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy254 := *x.FptrSliceString
-				z.F.EncSliceStringV(yy254, e)
+				if yy254 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceStringV(yy254, e)
+				} // end block: if yy254 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceBytesV(x.FSliceBytes, e)
+			if x.FSliceBytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceBytesV(x.FSliceBytes, e)
+			} // end block: if x.FSliceBytes slice == nil
 			if yyn42 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy257 := *x.FptrSliceBytes
-				z.F.EncSliceBytesV(yy257, e)
+				if yy257 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceBytesV(yy257, e)
+				} // end block: if yy257 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceFloat32V(x.FSliceFloat32, e)
+			if x.FSliceFloat32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceFloat32V(x.FSliceFloat32, e)
+			} // end block: if x.FSliceFloat32 slice == nil
 			if yyn44 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy260 := *x.FptrSliceFloat32
-				z.F.EncSliceFloat32V(yy260, e)
+				if yy260 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceFloat32V(yy260, e)
+				} // end block: if yy260 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceFloat64V(x.FSliceFloat64, e)
+			if x.FSliceFloat64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceFloat64V(x.FSliceFloat64, e)
+			} // end block: if x.FSliceFloat64 slice == nil
 			if yyn46 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy263 := *x.FptrSliceFloat64
-				z.F.EncSliceFloat64V(yy263, e)
+				if yy263 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceFloat64V(yy263, e)
+				} // end block: if yy263 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceUintV(x.FSliceUint, e)
+			if x.FSliceUint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceUintV(x.FSliceUint, e)
+			} // end block: if x.FSliceUint slice == nil
 			if yyn48 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy266 := *x.FptrSliceUint
-				z.F.EncSliceUintV(yy266, e)
+				if yy266 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceUintV(yy266, e)
+				} // end block: if yy266 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceUint16V(x.FSliceUint16, e)
+			if x.FSliceUint16 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceUint16V(x.FSliceUint16, e)
+			} // end block: if x.FSliceUint16 slice == nil
 			if yyn50 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy269 := *x.FptrSliceUint16
-				z.F.EncSliceUint16V(yy269, e)
+				if yy269 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceUint16V(yy269, e)
+				} // end block: if yy269 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceUint32V(x.FSliceUint32, e)
+			if x.FSliceUint32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceUint32V(x.FSliceUint32, e)
+			} // end block: if x.FSliceUint32 slice == nil
 			if yyn52 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy272 := *x.FptrSliceUint32
-				z.F.EncSliceUint32V(yy272, e)
+				if yy272 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceUint32V(yy272, e)
+				} // end block: if yy272 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceUint64V(x.FSliceUint64, e)
+			if x.FSliceUint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceUint64V(x.FSliceUint64, e)
+			} // end block: if x.FSliceUint64 slice == nil
 			if yyn54 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy275 := *x.FptrSliceUint64
-				z.F.EncSliceUint64V(yy275, e)
+				if yy275 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceUint64V(yy275, e)
+				} // end block: if yy275 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceIntV(x.FSliceInt, e)
+			if x.FSliceInt == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceIntV(x.FSliceInt, e)
+			} // end block: if x.FSliceInt slice == nil
 			if yyn56 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy278 := *x.FptrSliceInt
-				z.F.EncSliceIntV(yy278, e)
+				if yy278 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceIntV(yy278, e)
+				} // end block: if yy278 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceInt8V(x.FSliceInt8, e)
+			if x.FSliceInt8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceInt8V(x.FSliceInt8, e)
+			} // end block: if x.FSliceInt8 slice == nil
 			if yyn58 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy281 := *x.FptrSliceInt8
-				z.F.EncSliceInt8V(yy281, e)
+				if yy281 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceInt8V(yy281, e)
+				} // end block: if yy281 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceInt16V(x.FSliceInt16, e)
+			if x.FSliceInt16 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceInt16V(x.FSliceInt16, e)
+			} // end block: if x.FSliceInt16 slice == nil
 			if yyn60 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy284 := *x.FptrSliceInt16
-				z.F.EncSliceInt16V(yy284, e)
+				if yy284 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceInt16V(yy284, e)
+				} // end block: if yy284 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceInt32V(x.FSliceInt32, e)
+			if x.FSliceInt32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceInt32V(x.FSliceInt32, e)
+			} // end block: if x.FSliceInt32 slice == nil
 			if yyn62 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy287 := *x.FptrSliceInt32
-				z.F.EncSliceInt32V(yy287, e)
+				if yy287 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceInt32V(yy287, e)
+				} // end block: if yy287 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceInt64V(x.FSliceInt64, e)
+			if x.FSliceInt64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceInt64V(x.FSliceInt64, e)
+			} // end block: if x.FSliceInt64 slice == nil
 			if yyn64 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy290 := *x.FptrSliceInt64
-				z.F.EncSliceInt64V(yy290, e)
+				if yy290 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceInt64V(yy290, e)
+				} // end block: if yy290 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncSliceBoolV(x.FSliceBool, e)
+			if x.FSliceBool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceBoolV(x.FSliceBool, e)
+			} // end block: if x.FSliceBool slice == nil
 			if yyn66 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy293 := *x.FptrSliceBool
-				z.F.EncSliceBoolV(yy293, e)
+				if yy293 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceBoolV(yy293, e)
+				} // end block: if yy293 slice == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringIntfV(x.FMapStringIntf, e)
+			if x.FMapStringIntf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringIntfV(x.FMapStringIntf, e)
+			} // end block: if x.FMapStringIntf map == nil
 			if yyn68 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy296 := *x.FptrMapStringIntf
-				z.F.EncMapStringIntfV(yy296, e)
+				if yy296 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringIntfV(yy296, e)
+				} // end block: if yy296 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringStringV(x.FMapStringString, e)
+			if x.FMapStringString == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringStringV(x.FMapStringString, e)
+			} // end block: if x.FMapStringString map == nil
 			if yyn70 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy299 := *x.FptrMapStringString
-				z.F.EncMapStringStringV(yy299, e)
+				if yy299 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringStringV(yy299, e)
+				} // end block: if yy299 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringBytesV(x.FMapStringBytes, e)
+			if x.FMapStringBytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringBytesV(x.FMapStringBytes, e)
+			} // end block: if x.FMapStringBytes map == nil
 			if yyn72 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy302 := *x.FptrMapStringBytes
-				z.F.EncMapStringBytesV(yy302, e)
+				if yy302 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringBytesV(yy302, e)
+				} // end block: if yy302 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringUintV(x.FMapStringUint, e)
+			if x.FMapStringUint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringUintV(x.FMapStringUint, e)
+			} // end block: if x.FMapStringUint map == nil
 			if yyn74 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy305 := *x.FptrMapStringUint
-				z.F.EncMapStringUintV(yy305, e)
+				if yy305 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringUintV(yy305, e)
+				} // end block: if yy305 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringUint8V(x.FMapStringUint8, e)
+			if x.FMapStringUint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringUint8V(x.FMapStringUint8, e)
+			} // end block: if x.FMapStringUint8 map == nil
 			if yyn76 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy308 := *x.FptrMapStringUint8
-				z.F.EncMapStringUint8V(yy308, e)
+				if yy308 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringUint8V(yy308, e)
+				} // end block: if yy308 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringUint64V(x.FMapStringUint64, e)
+			if x.FMapStringUint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringUint64V(x.FMapStringUint64, e)
+			} // end block: if x.FMapStringUint64 map == nil
 			if yyn78 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy311 := *x.FptrMapStringUint64
-				z.F.EncMapStringUint64V(yy311, e)
+				if yy311 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringUint64V(yy311, e)
+				} // end block: if yy311 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringIntV(x.FMapStringInt, e)
+			if x.FMapStringInt == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringIntV(x.FMapStringInt, e)
+			} // end block: if x.FMapStringInt map == nil
 			if yyn80 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy314 := *x.FptrMapStringInt
-				z.F.EncMapStringIntV(yy314, e)
+				if yy314 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringIntV(yy314, e)
+				} // end block: if yy314 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringInt64V(x.FMapStringInt64, e)
+			if x.FMapStringInt64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringInt64V(x.FMapStringInt64, e)
+			} // end block: if x.FMapStringInt64 map == nil
 			if yyn82 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy317 := *x.FptrMapStringInt64
-				z.F.EncMapStringInt64V(yy317, e)
+				if yy317 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringInt64V(yy317, e)
+				} // end block: if yy317 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringFloat32V(x.FMapStringFloat32, e)
+			if x.FMapStringFloat32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringFloat32V(x.FMapStringFloat32, e)
+			} // end block: if x.FMapStringFloat32 map == nil
 			if yyn84 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy320 := *x.FptrMapStringFloat32
-				z.F.EncMapStringFloat32V(yy320, e)
+				if yy320 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringFloat32V(yy320, e)
+				} // end block: if yy320 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringFloat64V(x.FMapStringFloat64, e)
+			if x.FMapStringFloat64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringFloat64V(x.FMapStringFloat64, e)
+			} // end block: if x.FMapStringFloat64 map == nil
 			if yyn86 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy323 := *x.FptrMapStringFloat64
-				z.F.EncMapStringFloat64V(yy323, e)
+				if yy323 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringFloat64V(yy323, e)
+				} // end block: if yy323 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapStringBoolV(x.FMapStringBool, e)
+			if x.FMapStringBool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringBoolV(x.FMapStringBool, e)
+			} // end block: if x.FMapStringBool map == nil
 			if yyn88 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy326 := *x.FptrMapStringBool
-				z.F.EncMapStringBoolV(yy326, e)
+				if yy326 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringBoolV(yy326, e)
+				} // end block: if yy326 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintIntfV(x.FMapUintIntf, e)
+			if x.FMapUintIntf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintIntfV(x.FMapUintIntf, e)
+			} // end block: if x.FMapUintIntf map == nil
 			if yyn90 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy329 := *x.FptrMapUintIntf
-				z.F.EncMapUintIntfV(yy329, e)
+				if yy329 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintIntfV(yy329, e)
+				} // end block: if yy329 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintStringV(x.FMapUintString, e)
+			if x.FMapUintString == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintStringV(x.FMapUintString, e)
+			} // end block: if x.FMapUintString map == nil
 			if yyn92 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy332 := *x.FptrMapUintString
-				z.F.EncMapUintStringV(yy332, e)
+				if yy332 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintStringV(yy332, e)
+				} // end block: if yy332 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintBytesV(x.FMapUintBytes, e)
+			if x.FMapUintBytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintBytesV(x.FMapUintBytes, e)
+			} // end block: if x.FMapUintBytes map == nil
 			if yyn94 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy335 := *x.FptrMapUintBytes
-				z.F.EncMapUintBytesV(yy335, e)
+				if yy335 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintBytesV(yy335, e)
+				} // end block: if yy335 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintUintV(x.FMapUintUint, e)
+			if x.FMapUintUint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintUintV(x.FMapUintUint, e)
+			} // end block: if x.FMapUintUint map == nil
 			if yyn96 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy338 := *x.FptrMapUintUint
-				z.F.EncMapUintUintV(yy338, e)
+				if yy338 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintUintV(yy338, e)
+				} // end block: if yy338 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintUint8V(x.FMapUintUint8, e)
+			if x.FMapUintUint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintUint8V(x.FMapUintUint8, e)
+			} // end block: if x.FMapUintUint8 map == nil
 			if yyn98 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy341 := *x.FptrMapUintUint8
-				z.F.EncMapUintUint8V(yy341, e)
+				if yy341 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintUint8V(yy341, e)
+				} // end block: if yy341 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintUint64V(x.FMapUintUint64, e)
+			if x.FMapUintUint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintUint64V(x.FMapUintUint64, e)
+			} // end block: if x.FMapUintUint64 map == nil
 			if yyn100 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy344 := *x.FptrMapUintUint64
-				z.F.EncMapUintUint64V(yy344, e)
+				if yy344 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintUint64V(yy344, e)
+				} // end block: if yy344 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintIntV(x.FMapUintInt, e)
+			if x.FMapUintInt == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintIntV(x.FMapUintInt, e)
+			} // end block: if x.FMapUintInt map == nil
 			if yyn102 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy347 := *x.FptrMapUintInt
-				z.F.EncMapUintIntV(yy347, e)
+				if yy347 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintIntV(yy347, e)
+				} // end block: if yy347 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintInt64V(x.FMapUintInt64, e)
+			if x.FMapUintInt64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintInt64V(x.FMapUintInt64, e)
+			} // end block: if x.FMapUintInt64 map == nil
 			if yyn104 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy350 := *x.FptrMapUintInt64
-				z.F.EncMapUintInt64V(yy350, e)
+				if yy350 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintInt64V(yy350, e)
+				} // end block: if yy350 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintFloat32V(x.FMapUintFloat32, e)
+			if x.FMapUintFloat32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintFloat32V(x.FMapUintFloat32, e)
+			} // end block: if x.FMapUintFloat32 map == nil
 			if yyn106 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy353 := *x.FptrMapUintFloat32
-				z.F.EncMapUintFloat32V(yy353, e)
+				if yy353 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintFloat32V(yy353, e)
+				} // end block: if yy353 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintFloat64V(x.FMapUintFloat64, e)
+			if x.FMapUintFloat64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintFloat64V(x.FMapUintFloat64, e)
+			} // end block: if x.FMapUintFloat64 map == nil
 			if yyn108 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy356 := *x.FptrMapUintFloat64
-				z.F.EncMapUintFloat64V(yy356, e)
+				if yy356 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintFloat64V(yy356, e)
+				} // end block: if yy356 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUintBoolV(x.FMapUintBool, e)
+			if x.FMapUintBool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintBoolV(x.FMapUintBool, e)
+			} // end block: if x.FMapUintBool map == nil
 			if yyn110 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy359 := *x.FptrMapUintBool
-				z.F.EncMapUintBoolV(yy359, e)
+				if yy359 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintBoolV(yy359, e)
+				} // end block: if yy359 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8IntfV(x.FMapUint8Intf, e)
+			if x.FMapUint8Intf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8IntfV(x.FMapUint8Intf, e)
+			} // end block: if x.FMapUint8Intf map == nil
 			if yyn112 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy362 := *x.FptrMapUint8Intf
-				z.F.EncMapUint8IntfV(yy362, e)
+				if yy362 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8IntfV(yy362, e)
+				} // end block: if yy362 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8StringV(x.FMapUint8String, e)
+			if x.FMapUint8String == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8StringV(x.FMapUint8String, e)
+			} // end block: if x.FMapUint8String map == nil
 			if yyn114 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy365 := *x.FptrMapUint8String
-				z.F.EncMapUint8StringV(yy365, e)
+				if yy365 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8StringV(yy365, e)
+				} // end block: if yy365 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8BytesV(x.FMapUint8Bytes, e)
+			if x.FMapUint8Bytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8BytesV(x.FMapUint8Bytes, e)
+			} // end block: if x.FMapUint8Bytes map == nil
 			if yyn116 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy368 := *x.FptrMapUint8Bytes
-				z.F.EncMapUint8BytesV(yy368, e)
+				if yy368 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8BytesV(yy368, e)
+				} // end block: if yy368 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8UintV(x.FMapUint8Uint, e)
+			if x.FMapUint8Uint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8UintV(x.FMapUint8Uint, e)
+			} // end block: if x.FMapUint8Uint map == nil
 			if yyn118 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy371 := *x.FptrMapUint8Uint
-				z.F.EncMapUint8UintV(yy371, e)
+				if yy371 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8UintV(yy371, e)
+				} // end block: if yy371 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8Uint8V(x.FMapUint8Uint8, e)
+			if x.FMapUint8Uint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8Uint8V(x.FMapUint8Uint8, e)
+			} // end block: if x.FMapUint8Uint8 map == nil
 			if yyn120 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy374 := *x.FptrMapUint8Uint8
-				z.F.EncMapUint8Uint8V(yy374, e)
+				if yy374 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Uint8V(yy374, e)
+				} // end block: if yy374 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8Uint64V(x.FMapUint8Uint64, e)
+			if x.FMapUint8Uint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8Uint64V(x.FMapUint8Uint64, e)
+			} // end block: if x.FMapUint8Uint64 map == nil
 			if yyn122 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy377 := *x.FptrMapUint8Uint64
-				z.F.EncMapUint8Uint64V(yy377, e)
+				if yy377 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Uint64V(yy377, e)
+				} // end block: if yy377 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8IntV(x.FMapUint8Int, e)
+			if x.FMapUint8Int == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8IntV(x.FMapUint8Int, e)
+			} // end block: if x.FMapUint8Int map == nil
 			if yyn124 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy380 := *x.FptrMapUint8Int
-				z.F.EncMapUint8IntV(yy380, e)
+				if yy380 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8IntV(yy380, e)
+				} // end block: if yy380 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8Int64V(x.FMapUint8Int64, e)
+			if x.FMapUint8Int64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8Int64V(x.FMapUint8Int64, e)
+			} // end block: if x.FMapUint8Int64 map == nil
 			if yyn126 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy383 := *x.FptrMapUint8Int64
-				z.F.EncMapUint8Int64V(yy383, e)
+				if yy383 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Int64V(yy383, e)
+				} // end block: if yy383 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8Float32V(x.FMapUint8Float32, e)
+			if x.FMapUint8Float32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8Float32V(x.FMapUint8Float32, e)
+			} // end block: if x.FMapUint8Float32 map == nil
 			if yyn128 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy386 := *x.FptrMapUint8Float32
-				z.F.EncMapUint8Float32V(yy386, e)
+				if yy386 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Float32V(yy386, e)
+				} // end block: if yy386 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8Float64V(x.FMapUint8Float64, e)
+			if x.FMapUint8Float64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8Float64V(x.FMapUint8Float64, e)
+			} // end block: if x.FMapUint8Float64 map == nil
 			if yyn130 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy389 := *x.FptrMapUint8Float64
-				z.F.EncMapUint8Float64V(yy389, e)
+				if yy389 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Float64V(yy389, e)
+				} // end block: if yy389 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint8BoolV(x.FMapUint8Bool, e)
+			if x.FMapUint8Bool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8BoolV(x.FMapUint8Bool, e)
+			} // end block: if x.FMapUint8Bool map == nil
 			if yyn132 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy392 := *x.FptrMapUint8Bool
-				z.F.EncMapUint8BoolV(yy392, e)
+				if yy392 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8BoolV(yy392, e)
+				} // end block: if yy392 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64IntfV(x.FMapUint64Intf, e)
+			if x.FMapUint64Intf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64IntfV(x.FMapUint64Intf, e)
+			} // end block: if x.FMapUint64Intf map == nil
 			if yyn134 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy395 := *x.FptrMapUint64Intf
-				z.F.EncMapUint64IntfV(yy395, e)
+				if yy395 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64IntfV(yy395, e)
+				} // end block: if yy395 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64StringV(x.FMapUint64String, e)
+			if x.FMapUint64String == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64StringV(x.FMapUint64String, e)
+			} // end block: if x.FMapUint64String map == nil
 			if yyn136 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy398 := *x.FptrMapUint64String
-				z.F.EncMapUint64StringV(yy398, e)
+				if yy398 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64StringV(yy398, e)
+				} // end block: if yy398 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64BytesV(x.FMapUint64Bytes, e)
+			if x.FMapUint64Bytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64BytesV(x.FMapUint64Bytes, e)
+			} // end block: if x.FMapUint64Bytes map == nil
 			if yyn138 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy401 := *x.FptrMapUint64Bytes
-				z.F.EncMapUint64BytesV(yy401, e)
+				if yy401 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64BytesV(yy401, e)
+				} // end block: if yy401 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64UintV(x.FMapUint64Uint, e)
+			if x.FMapUint64Uint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64UintV(x.FMapUint64Uint, e)
+			} // end block: if x.FMapUint64Uint map == nil
 			if yyn140 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy404 := *x.FptrMapUint64Uint
-				z.F.EncMapUint64UintV(yy404, e)
+				if yy404 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64UintV(yy404, e)
+				} // end block: if yy404 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64Uint8V(x.FMapUint64Uint8, e)
+			if x.FMapUint64Uint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64Uint8V(x.FMapUint64Uint8, e)
+			} // end block: if x.FMapUint64Uint8 map == nil
 			if yyn142 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy407 := *x.FptrMapUint64Uint8
-				z.F.EncMapUint64Uint8V(yy407, e)
+				if yy407 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Uint8V(yy407, e)
+				} // end block: if yy407 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64Uint64V(x.FMapUint64Uint64, e)
+			if x.FMapUint64Uint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64Uint64V(x.FMapUint64Uint64, e)
+			} // end block: if x.FMapUint64Uint64 map == nil
 			if yyn144 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy410 := *x.FptrMapUint64Uint64
-				z.F.EncMapUint64Uint64V(yy410, e)
+				if yy410 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Uint64V(yy410, e)
+				} // end block: if yy410 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64IntV(x.FMapUint64Int, e)
+			if x.FMapUint64Int == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64IntV(x.FMapUint64Int, e)
+			} // end block: if x.FMapUint64Int map == nil
 			if yyn146 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy413 := *x.FptrMapUint64Int
-				z.F.EncMapUint64IntV(yy413, e)
+				if yy413 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64IntV(yy413, e)
+				} // end block: if yy413 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64Int64V(x.FMapUint64Int64, e)
+			if x.FMapUint64Int64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64Int64V(x.FMapUint64Int64, e)
+			} // end block: if x.FMapUint64Int64 map == nil
 			if yyn148 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy416 := *x.FptrMapUint64Int64
-				z.F.EncMapUint64Int64V(yy416, e)
+				if yy416 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Int64V(yy416, e)
+				} // end block: if yy416 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64Float32V(x.FMapUint64Float32, e)
+			if x.FMapUint64Float32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64Float32V(x.FMapUint64Float32, e)
+			} // end block: if x.FMapUint64Float32 map == nil
 			if yyn150 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy419 := *x.FptrMapUint64Float32
-				z.F.EncMapUint64Float32V(yy419, e)
+				if yy419 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Float32V(yy419, e)
+				} // end block: if yy419 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64Float64V(x.FMapUint64Float64, e)
+			if x.FMapUint64Float64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64Float64V(x.FMapUint64Float64, e)
+			} // end block: if x.FMapUint64Float64 map == nil
 			if yyn152 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy422 := *x.FptrMapUint64Float64
-				z.F.EncMapUint64Float64V(yy422, e)
+				if yy422 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Float64V(yy422, e)
+				} // end block: if yy422 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapUint64BoolV(x.FMapUint64Bool, e)
+			if x.FMapUint64Bool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64BoolV(x.FMapUint64Bool, e)
+			} // end block: if x.FMapUint64Bool map == nil
 			if yyn154 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy425 := *x.FptrMapUint64Bool
-				z.F.EncMapUint64BoolV(yy425, e)
+				if yy425 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64BoolV(yy425, e)
+				} // end block: if yy425 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntIntfV(x.FMapIntIntf, e)
+			if x.FMapIntIntf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntIntfV(x.FMapIntIntf, e)
+			} // end block: if x.FMapIntIntf map == nil
 			if yyn156 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy428 := *x.FptrMapIntIntf
-				z.F.EncMapIntIntfV(yy428, e)
+				if yy428 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntIntfV(yy428, e)
+				} // end block: if yy428 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntStringV(x.FMapIntString, e)
+			if x.FMapIntString == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntStringV(x.FMapIntString, e)
+			} // end block: if x.FMapIntString map == nil
 			if yyn158 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy431 := *x.FptrMapIntString
-				z.F.EncMapIntStringV(yy431, e)
+				if yy431 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntStringV(yy431, e)
+				} // end block: if yy431 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntBytesV(x.FMapIntBytes, e)
+			if x.FMapIntBytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntBytesV(x.FMapIntBytes, e)
+			} // end block: if x.FMapIntBytes map == nil
 			if yyn160 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy434 := *x.FptrMapIntBytes
-				z.F.EncMapIntBytesV(yy434, e)
+				if yy434 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntBytesV(yy434, e)
+				} // end block: if yy434 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntUintV(x.FMapIntUint, e)
+			if x.FMapIntUint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntUintV(x.FMapIntUint, e)
+			} // end block: if x.FMapIntUint map == nil
 			if yyn162 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy437 := *x.FptrMapIntUint
-				z.F.EncMapIntUintV(yy437, e)
+				if yy437 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntUintV(yy437, e)
+				} // end block: if yy437 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntUint8V(x.FMapIntUint8, e)
+			if x.FMapIntUint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntUint8V(x.FMapIntUint8, e)
+			} // end block: if x.FMapIntUint8 map == nil
 			if yyn164 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy440 := *x.FptrMapIntUint8
-				z.F.EncMapIntUint8V(yy440, e)
+				if yy440 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntUint8V(yy440, e)
+				} // end block: if yy440 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntUint64V(x.FMapIntUint64, e)
+			if x.FMapIntUint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntUint64V(x.FMapIntUint64, e)
+			} // end block: if x.FMapIntUint64 map == nil
 			if yyn166 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy443 := *x.FptrMapIntUint64
-				z.F.EncMapIntUint64V(yy443, e)
+				if yy443 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntUint64V(yy443, e)
+				} // end block: if yy443 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntIntV(x.FMapIntInt, e)
+			if x.FMapIntInt == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntIntV(x.FMapIntInt, e)
+			} // end block: if x.FMapIntInt map == nil
 			if yyn168 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy446 := *x.FptrMapIntInt
-				z.F.EncMapIntIntV(yy446, e)
+				if yy446 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntIntV(yy446, e)
+				} // end block: if yy446 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntInt64V(x.FMapIntInt64, e)
+			if x.FMapIntInt64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntInt64V(x.FMapIntInt64, e)
+			} // end block: if x.FMapIntInt64 map == nil
 			if yyn170 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy449 := *x.FptrMapIntInt64
-				z.F.EncMapIntInt64V(yy449, e)
+				if yy449 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntInt64V(yy449, e)
+				} // end block: if yy449 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntFloat32V(x.FMapIntFloat32, e)
+			if x.FMapIntFloat32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntFloat32V(x.FMapIntFloat32, e)
+			} // end block: if x.FMapIntFloat32 map == nil
 			if yyn172 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy452 := *x.FptrMapIntFloat32
-				z.F.EncMapIntFloat32V(yy452, e)
+				if yy452 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntFloat32V(yy452, e)
+				} // end block: if yy452 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntFloat64V(x.FMapIntFloat64, e)
+			if x.FMapIntFloat64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntFloat64V(x.FMapIntFloat64, e)
+			} // end block: if x.FMapIntFloat64 map == nil
 			if yyn174 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy455 := *x.FptrMapIntFloat64
-				z.F.EncMapIntFloat64V(yy455, e)
+				if yy455 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntFloat64V(yy455, e)
+				} // end block: if yy455 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapIntBoolV(x.FMapIntBool, e)
+			if x.FMapIntBool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntBoolV(x.FMapIntBool, e)
+			} // end block: if x.FMapIntBool map == nil
 			if yyn176 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy458 := *x.FptrMapIntBool
-				z.F.EncMapIntBoolV(yy458, e)
+				if yy458 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntBoolV(yy458, e)
+				} // end block: if yy458 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64IntfV(x.FMapInt64Intf, e)
+			if x.FMapInt64Intf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64IntfV(x.FMapInt64Intf, e)
+			} // end block: if x.FMapInt64Intf map == nil
 			if yyn178 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy461 := *x.FptrMapInt64Intf
-				z.F.EncMapInt64IntfV(yy461, e)
+				if yy461 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64IntfV(yy461, e)
+				} // end block: if yy461 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64StringV(x.FMapInt64String, e)
+			if x.FMapInt64String == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64StringV(x.FMapInt64String, e)
+			} // end block: if x.FMapInt64String map == nil
 			if yyn180 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy464 := *x.FptrMapInt64String
-				z.F.EncMapInt64StringV(yy464, e)
+				if yy464 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64StringV(yy464, e)
+				} // end block: if yy464 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64BytesV(x.FMapInt64Bytes, e)
+			if x.FMapInt64Bytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64BytesV(x.FMapInt64Bytes, e)
+			} // end block: if x.FMapInt64Bytes map == nil
 			if yyn182 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy467 := *x.FptrMapInt64Bytes
-				z.F.EncMapInt64BytesV(yy467, e)
+				if yy467 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64BytesV(yy467, e)
+				} // end block: if yy467 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64UintV(x.FMapInt64Uint, e)
+			if x.FMapInt64Uint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64UintV(x.FMapInt64Uint, e)
+			} // end block: if x.FMapInt64Uint map == nil
 			if yyn184 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy470 := *x.FptrMapInt64Uint
-				z.F.EncMapInt64UintV(yy470, e)
+				if yy470 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64UintV(yy470, e)
+				} // end block: if yy470 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64Uint8V(x.FMapInt64Uint8, e)
+			if x.FMapInt64Uint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64Uint8V(x.FMapInt64Uint8, e)
+			} // end block: if x.FMapInt64Uint8 map == nil
 			if yyn186 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy473 := *x.FptrMapInt64Uint8
-				z.F.EncMapInt64Uint8V(yy473, e)
+				if yy473 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64Uint8V(yy473, e)
+				} // end block: if yy473 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64Uint64V(x.FMapInt64Uint64, e)
+			if x.FMapInt64Uint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64Uint64V(x.FMapInt64Uint64, e)
+			} // end block: if x.FMapInt64Uint64 map == nil
 			if yyn188 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy476 := *x.FptrMapInt64Uint64
-				z.F.EncMapInt64Uint64V(yy476, e)
+				if yy476 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64Uint64V(yy476, e)
+				} // end block: if yy476 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64IntV(x.FMapInt64Int, e)
+			if x.FMapInt64Int == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64IntV(x.FMapInt64Int, e)
+			} // end block: if x.FMapInt64Int map == nil
 			if yyn190 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy479 := *x.FptrMapInt64Int
-				z.F.EncMapInt64IntV(yy479, e)
+				if yy479 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64IntV(yy479, e)
+				} // end block: if yy479 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64Int64V(x.FMapInt64Int64, e)
+			if x.FMapInt64Int64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64Int64V(x.FMapInt64Int64, e)
+			} // end block: if x.FMapInt64Int64 map == nil
 			if yyn192 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy482 := *x.FptrMapInt64Int64
-				z.F.EncMapInt64Int64V(yy482, e)
+				if yy482 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64Int64V(yy482, e)
+				} // end block: if yy482 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64Float32V(x.FMapInt64Float32, e)
+			if x.FMapInt64Float32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64Float32V(x.FMapInt64Float32, e)
+			} // end block: if x.FMapInt64Float32 map == nil
 			if yyn194 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy485 := *x.FptrMapInt64Float32
-				z.F.EncMapInt64Float32V(yy485, e)
+				if yy485 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64Float32V(yy485, e)
+				} // end block: if yy485 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64Float64V(x.FMapInt64Float64, e)
+			if x.FMapInt64Float64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64Float64V(x.FMapInt64Float64, e)
+			} // end block: if x.FMapInt64Float64 map == nil
 			if yyn196 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy488 := *x.FptrMapInt64Float64
-				z.F.EncMapInt64Float64V(yy488, e)
+				if yy488 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64Float64V(yy488, e)
+				} // end block: if yy488 map == nil
 			}
 			z.EncWriteArrayElem()
-			z.F.EncMapInt64BoolV(x.FMapInt64Bool, e)
+			if x.FMapInt64Bool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64BoolV(x.FMapInt64Bool, e)
+			} // end block: if x.FMapInt64Bool map == nil
 			if yyn198 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
 				yy491 := *x.FptrMapInt64Bool
-				z.F.EncMapInt64BoolV(yy491, e)
+				if yy491 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64BoolV(yy491, e)
+				} // end block: if yy491 map == nil
 			}
 			z.EncWriteArrayEnd()
 		} else {
@@ -1199,7 +1855,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FBytes`)
 			}
 			z.EncWriteMapElemValue()
-			r.EncodeStringBytesRaw([]byte(x.FBytes))
+			if x.FBytes == nil {
+				r.EncodeNil()
+			} else {
+				r.EncodeStringBytesRaw([]byte(x.FBytes))
+			} // end block: if x.FBytes slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrBytes\"")
@@ -1211,7 +1871,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy500 := *x.FptrBytes
-				r.EncodeStringBytesRaw([]byte(yy500))
+				if yy500 == nil {
+					r.EncodeNil()
+				} else {
+					r.EncodeStringBytesRaw([]byte(yy500))
+				} // end block: if yy500 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1514,7 +2178,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceIntf`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceIntfV(x.FSliceIntf, e)
+			if x.FSliceIntf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceIntfV(x.FSliceIntf, e)
+			} // end block: if x.FSliceIntf slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceIntf\"")
@@ -1526,7 +2194,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy545 := *x.FptrSliceIntf
-				z.F.EncSliceIntfV(yy545, e)
+				if yy545 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceIntfV(yy545, e)
+				} // end block: if yy545 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1535,7 +2207,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceString`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceStringV(x.FSliceString, e)
+			if x.FSliceString == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceStringV(x.FSliceString, e)
+			} // end block: if x.FSliceString slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceString\"")
@@ -1547,7 +2223,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy548 := *x.FptrSliceString
-				z.F.EncSliceStringV(yy548, e)
+				if yy548 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceStringV(yy548, e)
+				} // end block: if yy548 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1556,7 +2236,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceBytes`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceBytesV(x.FSliceBytes, e)
+			if x.FSliceBytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceBytesV(x.FSliceBytes, e)
+			} // end block: if x.FSliceBytes slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceBytes\"")
@@ -1568,7 +2252,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy551 := *x.FptrSliceBytes
-				z.F.EncSliceBytesV(yy551, e)
+				if yy551 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceBytesV(yy551, e)
+				} // end block: if yy551 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1577,7 +2265,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceFloat32`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceFloat32V(x.FSliceFloat32, e)
+			if x.FSliceFloat32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceFloat32V(x.FSliceFloat32, e)
+			} // end block: if x.FSliceFloat32 slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceFloat32\"")
@@ -1589,7 +2281,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy554 := *x.FptrSliceFloat32
-				z.F.EncSliceFloat32V(yy554, e)
+				if yy554 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceFloat32V(yy554, e)
+				} // end block: if yy554 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1598,7 +2294,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceFloat64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceFloat64V(x.FSliceFloat64, e)
+			if x.FSliceFloat64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceFloat64V(x.FSliceFloat64, e)
+			} // end block: if x.FSliceFloat64 slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceFloat64\"")
@@ -1610,7 +2310,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy557 := *x.FptrSliceFloat64
-				z.F.EncSliceFloat64V(yy557, e)
+				if yy557 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceFloat64V(yy557, e)
+				} // end block: if yy557 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1619,7 +2323,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceUint`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceUintV(x.FSliceUint, e)
+			if x.FSliceUint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceUintV(x.FSliceUint, e)
+			} // end block: if x.FSliceUint slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceUint\"")
@@ -1631,7 +2339,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy560 := *x.FptrSliceUint
-				z.F.EncSliceUintV(yy560, e)
+				if yy560 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceUintV(yy560, e)
+				} // end block: if yy560 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1640,7 +2352,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceUint16`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceUint16V(x.FSliceUint16, e)
+			if x.FSliceUint16 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceUint16V(x.FSliceUint16, e)
+			} // end block: if x.FSliceUint16 slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceUint16\"")
@@ -1652,7 +2368,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy563 := *x.FptrSliceUint16
-				z.F.EncSliceUint16V(yy563, e)
+				if yy563 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceUint16V(yy563, e)
+				} // end block: if yy563 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1661,7 +2381,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceUint32`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceUint32V(x.FSliceUint32, e)
+			if x.FSliceUint32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceUint32V(x.FSliceUint32, e)
+			} // end block: if x.FSliceUint32 slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceUint32\"")
@@ -1673,7 +2397,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy566 := *x.FptrSliceUint32
-				z.F.EncSliceUint32V(yy566, e)
+				if yy566 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceUint32V(yy566, e)
+				} // end block: if yy566 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1682,7 +2410,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceUint64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceUint64V(x.FSliceUint64, e)
+			if x.FSliceUint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceUint64V(x.FSliceUint64, e)
+			} // end block: if x.FSliceUint64 slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceUint64\"")
@@ -1694,7 +2426,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy569 := *x.FptrSliceUint64
-				z.F.EncSliceUint64V(yy569, e)
+				if yy569 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceUint64V(yy569, e)
+				} // end block: if yy569 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1703,7 +2439,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceInt`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceIntV(x.FSliceInt, e)
+			if x.FSliceInt == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceIntV(x.FSliceInt, e)
+			} // end block: if x.FSliceInt slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceInt\"")
@@ -1715,7 +2455,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy572 := *x.FptrSliceInt
-				z.F.EncSliceIntV(yy572, e)
+				if yy572 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceIntV(yy572, e)
+				} // end block: if yy572 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1724,7 +2468,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceInt8`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceInt8V(x.FSliceInt8, e)
+			if x.FSliceInt8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceInt8V(x.FSliceInt8, e)
+			} // end block: if x.FSliceInt8 slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceInt8\"")
@@ -1736,7 +2484,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy575 := *x.FptrSliceInt8
-				z.F.EncSliceInt8V(yy575, e)
+				if yy575 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceInt8V(yy575, e)
+				} // end block: if yy575 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1745,7 +2497,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceInt16`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceInt16V(x.FSliceInt16, e)
+			if x.FSliceInt16 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceInt16V(x.FSliceInt16, e)
+			} // end block: if x.FSliceInt16 slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceInt16\"")
@@ -1757,7 +2513,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy578 := *x.FptrSliceInt16
-				z.F.EncSliceInt16V(yy578, e)
+				if yy578 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceInt16V(yy578, e)
+				} // end block: if yy578 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1766,7 +2526,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceInt32`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceInt32V(x.FSliceInt32, e)
+			if x.FSliceInt32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceInt32V(x.FSliceInt32, e)
+			} // end block: if x.FSliceInt32 slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceInt32\"")
@@ -1778,7 +2542,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy581 := *x.FptrSliceInt32
-				z.F.EncSliceInt32V(yy581, e)
+				if yy581 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceInt32V(yy581, e)
+				} // end block: if yy581 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1787,7 +2555,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceInt64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceInt64V(x.FSliceInt64, e)
+			if x.FSliceInt64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceInt64V(x.FSliceInt64, e)
+			} // end block: if x.FSliceInt64 slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceInt64\"")
@@ -1799,7 +2571,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy584 := *x.FptrSliceInt64
-				z.F.EncSliceInt64V(yy584, e)
+				if yy584 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceInt64V(yy584, e)
+				} // end block: if yy584 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1808,7 +2584,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FSliceBool`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncSliceBoolV(x.FSliceBool, e)
+			if x.FSliceBool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncSliceBoolV(x.FSliceBool, e)
+			} // end block: if x.FSliceBool slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrSliceBool\"")
@@ -1820,7 +2600,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy587 := *x.FptrSliceBool
-				z.F.EncSliceBoolV(yy587, e)
+				if yy587 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceBoolV(yy587, e)
+				} // end block: if yy587 slice == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1829,7 +2613,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringIntf`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringIntfV(x.FMapStringIntf, e)
+			if x.FMapStringIntf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringIntfV(x.FMapStringIntf, e)
+			} // end block: if x.FMapStringIntf map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringIntf\"")
@@ -1841,7 +2629,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy590 := *x.FptrMapStringIntf
-				z.F.EncMapStringIntfV(yy590, e)
+				if yy590 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringIntfV(yy590, e)
+				} // end block: if yy590 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1850,7 +2642,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringString`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringStringV(x.FMapStringString, e)
+			if x.FMapStringString == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringStringV(x.FMapStringString, e)
+			} // end block: if x.FMapStringString map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringString\"")
@@ -1862,7 +2658,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy593 := *x.FptrMapStringString
-				z.F.EncMapStringStringV(yy593, e)
+				if yy593 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringStringV(yy593, e)
+				} // end block: if yy593 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1871,7 +2671,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringBytes`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringBytesV(x.FMapStringBytes, e)
+			if x.FMapStringBytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringBytesV(x.FMapStringBytes, e)
+			} // end block: if x.FMapStringBytes map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringBytes\"")
@@ -1883,7 +2687,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy596 := *x.FptrMapStringBytes
-				z.F.EncMapStringBytesV(yy596, e)
+				if yy596 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringBytesV(yy596, e)
+				} // end block: if yy596 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1892,7 +2700,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringUint`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringUintV(x.FMapStringUint, e)
+			if x.FMapStringUint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringUintV(x.FMapStringUint, e)
+			} // end block: if x.FMapStringUint map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringUint\"")
@@ -1904,7 +2716,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy599 := *x.FptrMapStringUint
-				z.F.EncMapStringUintV(yy599, e)
+				if yy599 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringUintV(yy599, e)
+				} // end block: if yy599 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1913,7 +2729,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringUint8`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringUint8V(x.FMapStringUint8, e)
+			if x.FMapStringUint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringUint8V(x.FMapStringUint8, e)
+			} // end block: if x.FMapStringUint8 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringUint8\"")
@@ -1925,7 +2745,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy602 := *x.FptrMapStringUint8
-				z.F.EncMapStringUint8V(yy602, e)
+				if yy602 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringUint8V(yy602, e)
+				} // end block: if yy602 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1934,7 +2758,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringUint64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringUint64V(x.FMapStringUint64, e)
+			if x.FMapStringUint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringUint64V(x.FMapStringUint64, e)
+			} // end block: if x.FMapStringUint64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringUint64\"")
@@ -1946,7 +2774,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy605 := *x.FptrMapStringUint64
-				z.F.EncMapStringUint64V(yy605, e)
+				if yy605 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringUint64V(yy605, e)
+				} // end block: if yy605 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1955,7 +2787,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringInt`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringIntV(x.FMapStringInt, e)
+			if x.FMapStringInt == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringIntV(x.FMapStringInt, e)
+			} // end block: if x.FMapStringInt map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringInt\"")
@@ -1967,7 +2803,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy608 := *x.FptrMapStringInt
-				z.F.EncMapStringIntV(yy608, e)
+				if yy608 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringIntV(yy608, e)
+				} // end block: if yy608 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1976,7 +2816,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringInt64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringInt64V(x.FMapStringInt64, e)
+			if x.FMapStringInt64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringInt64V(x.FMapStringInt64, e)
+			} // end block: if x.FMapStringInt64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringInt64\"")
@@ -1988,7 +2832,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy611 := *x.FptrMapStringInt64
-				z.F.EncMapStringInt64V(yy611, e)
+				if yy611 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringInt64V(yy611, e)
+				} // end block: if yy611 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1997,7 +2845,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringFloat32`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringFloat32V(x.FMapStringFloat32, e)
+			if x.FMapStringFloat32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringFloat32V(x.FMapStringFloat32, e)
+			} // end block: if x.FMapStringFloat32 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringFloat32\"")
@@ -2009,7 +2861,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy614 := *x.FptrMapStringFloat32
-				z.F.EncMapStringFloat32V(yy614, e)
+				if yy614 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringFloat32V(yy614, e)
+				} // end block: if yy614 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2018,7 +2874,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringFloat64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringFloat64V(x.FMapStringFloat64, e)
+			if x.FMapStringFloat64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringFloat64V(x.FMapStringFloat64, e)
+			} // end block: if x.FMapStringFloat64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringFloat64\"")
@@ -2030,7 +2890,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy617 := *x.FptrMapStringFloat64
-				z.F.EncMapStringFloat64V(yy617, e)
+				if yy617 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringFloat64V(yy617, e)
+				} // end block: if yy617 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2039,7 +2903,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapStringBool`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapStringBoolV(x.FMapStringBool, e)
+			if x.FMapStringBool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapStringBoolV(x.FMapStringBool, e)
+			} // end block: if x.FMapStringBool map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapStringBool\"")
@@ -2051,7 +2919,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy620 := *x.FptrMapStringBool
-				z.F.EncMapStringBoolV(yy620, e)
+				if yy620 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringBoolV(yy620, e)
+				} // end block: if yy620 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2060,7 +2932,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintIntf`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintIntfV(x.FMapUintIntf, e)
+			if x.FMapUintIntf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintIntfV(x.FMapUintIntf, e)
+			} // end block: if x.FMapUintIntf map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintIntf\"")
@@ -2072,7 +2948,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy623 := *x.FptrMapUintIntf
-				z.F.EncMapUintIntfV(yy623, e)
+				if yy623 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintIntfV(yy623, e)
+				} // end block: if yy623 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2081,7 +2961,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintString`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintStringV(x.FMapUintString, e)
+			if x.FMapUintString == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintStringV(x.FMapUintString, e)
+			} // end block: if x.FMapUintString map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintString\"")
@@ -2093,7 +2977,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy626 := *x.FptrMapUintString
-				z.F.EncMapUintStringV(yy626, e)
+				if yy626 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintStringV(yy626, e)
+				} // end block: if yy626 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2102,7 +2990,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintBytes`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintBytesV(x.FMapUintBytes, e)
+			if x.FMapUintBytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintBytesV(x.FMapUintBytes, e)
+			} // end block: if x.FMapUintBytes map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintBytes\"")
@@ -2114,7 +3006,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy629 := *x.FptrMapUintBytes
-				z.F.EncMapUintBytesV(yy629, e)
+				if yy629 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintBytesV(yy629, e)
+				} // end block: if yy629 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2123,7 +3019,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintUint`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintUintV(x.FMapUintUint, e)
+			if x.FMapUintUint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintUintV(x.FMapUintUint, e)
+			} // end block: if x.FMapUintUint map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintUint\"")
@@ -2135,7 +3035,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy632 := *x.FptrMapUintUint
-				z.F.EncMapUintUintV(yy632, e)
+				if yy632 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintUintV(yy632, e)
+				} // end block: if yy632 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2144,7 +3048,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintUint8`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintUint8V(x.FMapUintUint8, e)
+			if x.FMapUintUint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintUint8V(x.FMapUintUint8, e)
+			} // end block: if x.FMapUintUint8 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintUint8\"")
@@ -2156,7 +3064,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy635 := *x.FptrMapUintUint8
-				z.F.EncMapUintUint8V(yy635, e)
+				if yy635 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintUint8V(yy635, e)
+				} // end block: if yy635 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2165,7 +3077,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintUint64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintUint64V(x.FMapUintUint64, e)
+			if x.FMapUintUint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintUint64V(x.FMapUintUint64, e)
+			} // end block: if x.FMapUintUint64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintUint64\"")
@@ -2177,7 +3093,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy638 := *x.FptrMapUintUint64
-				z.F.EncMapUintUint64V(yy638, e)
+				if yy638 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintUint64V(yy638, e)
+				} // end block: if yy638 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2186,7 +3106,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintInt`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintIntV(x.FMapUintInt, e)
+			if x.FMapUintInt == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintIntV(x.FMapUintInt, e)
+			} // end block: if x.FMapUintInt map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintInt\"")
@@ -2198,7 +3122,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy641 := *x.FptrMapUintInt
-				z.F.EncMapUintIntV(yy641, e)
+				if yy641 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintIntV(yy641, e)
+				} // end block: if yy641 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2207,7 +3135,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintInt64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintInt64V(x.FMapUintInt64, e)
+			if x.FMapUintInt64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintInt64V(x.FMapUintInt64, e)
+			} // end block: if x.FMapUintInt64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintInt64\"")
@@ -2219,7 +3151,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy644 := *x.FptrMapUintInt64
-				z.F.EncMapUintInt64V(yy644, e)
+				if yy644 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintInt64V(yy644, e)
+				} // end block: if yy644 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2228,7 +3164,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintFloat32`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintFloat32V(x.FMapUintFloat32, e)
+			if x.FMapUintFloat32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintFloat32V(x.FMapUintFloat32, e)
+			} // end block: if x.FMapUintFloat32 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintFloat32\"")
@@ -2240,7 +3180,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy647 := *x.FptrMapUintFloat32
-				z.F.EncMapUintFloat32V(yy647, e)
+				if yy647 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintFloat32V(yy647, e)
+				} // end block: if yy647 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2249,7 +3193,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintFloat64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintFloat64V(x.FMapUintFloat64, e)
+			if x.FMapUintFloat64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintFloat64V(x.FMapUintFloat64, e)
+			} // end block: if x.FMapUintFloat64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintFloat64\"")
@@ -2261,7 +3209,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy650 := *x.FptrMapUintFloat64
-				z.F.EncMapUintFloat64V(yy650, e)
+				if yy650 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintFloat64V(yy650, e)
+				} // end block: if yy650 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2270,7 +3222,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUintBool`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUintBoolV(x.FMapUintBool, e)
+			if x.FMapUintBool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUintBoolV(x.FMapUintBool, e)
+			} // end block: if x.FMapUintBool map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUintBool\"")
@@ -2282,7 +3238,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy653 := *x.FptrMapUintBool
-				z.F.EncMapUintBoolV(yy653, e)
+				if yy653 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUintBoolV(yy653, e)
+				} // end block: if yy653 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2291,7 +3251,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8Intf`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8IntfV(x.FMapUint8Intf, e)
+			if x.FMapUint8Intf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8IntfV(x.FMapUint8Intf, e)
+			} // end block: if x.FMapUint8Intf map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8Intf\"")
@@ -2303,7 +3267,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy656 := *x.FptrMapUint8Intf
-				z.F.EncMapUint8IntfV(yy656, e)
+				if yy656 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8IntfV(yy656, e)
+				} // end block: if yy656 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2312,7 +3280,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8String`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8StringV(x.FMapUint8String, e)
+			if x.FMapUint8String == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8StringV(x.FMapUint8String, e)
+			} // end block: if x.FMapUint8String map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8String\"")
@@ -2324,7 +3296,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy659 := *x.FptrMapUint8String
-				z.F.EncMapUint8StringV(yy659, e)
+				if yy659 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8StringV(yy659, e)
+				} // end block: if yy659 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2333,7 +3309,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8Bytes`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8BytesV(x.FMapUint8Bytes, e)
+			if x.FMapUint8Bytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8BytesV(x.FMapUint8Bytes, e)
+			} // end block: if x.FMapUint8Bytes map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8Bytes\"")
@@ -2345,7 +3325,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy662 := *x.FptrMapUint8Bytes
-				z.F.EncMapUint8BytesV(yy662, e)
+				if yy662 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8BytesV(yy662, e)
+				} // end block: if yy662 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2354,7 +3338,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8Uint`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8UintV(x.FMapUint8Uint, e)
+			if x.FMapUint8Uint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8UintV(x.FMapUint8Uint, e)
+			} // end block: if x.FMapUint8Uint map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8Uint\"")
@@ -2366,7 +3354,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy665 := *x.FptrMapUint8Uint
-				z.F.EncMapUint8UintV(yy665, e)
+				if yy665 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8UintV(yy665, e)
+				} // end block: if yy665 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2375,7 +3367,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8Uint8`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8Uint8V(x.FMapUint8Uint8, e)
+			if x.FMapUint8Uint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8Uint8V(x.FMapUint8Uint8, e)
+			} // end block: if x.FMapUint8Uint8 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8Uint8\"")
@@ -2387,7 +3383,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy668 := *x.FptrMapUint8Uint8
-				z.F.EncMapUint8Uint8V(yy668, e)
+				if yy668 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Uint8V(yy668, e)
+				} // end block: if yy668 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2396,7 +3396,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8Uint64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8Uint64V(x.FMapUint8Uint64, e)
+			if x.FMapUint8Uint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8Uint64V(x.FMapUint8Uint64, e)
+			} // end block: if x.FMapUint8Uint64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8Uint64\"")
@@ -2408,7 +3412,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy671 := *x.FptrMapUint8Uint64
-				z.F.EncMapUint8Uint64V(yy671, e)
+				if yy671 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Uint64V(yy671, e)
+				} // end block: if yy671 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2417,7 +3425,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8Int`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8IntV(x.FMapUint8Int, e)
+			if x.FMapUint8Int == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8IntV(x.FMapUint8Int, e)
+			} // end block: if x.FMapUint8Int map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8Int\"")
@@ -2429,7 +3441,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy674 := *x.FptrMapUint8Int
-				z.F.EncMapUint8IntV(yy674, e)
+				if yy674 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8IntV(yy674, e)
+				} // end block: if yy674 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2438,7 +3454,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8Int64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8Int64V(x.FMapUint8Int64, e)
+			if x.FMapUint8Int64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8Int64V(x.FMapUint8Int64, e)
+			} // end block: if x.FMapUint8Int64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8Int64\"")
@@ -2450,7 +3470,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy677 := *x.FptrMapUint8Int64
-				z.F.EncMapUint8Int64V(yy677, e)
+				if yy677 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Int64V(yy677, e)
+				} // end block: if yy677 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2459,7 +3483,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8Float32`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8Float32V(x.FMapUint8Float32, e)
+			if x.FMapUint8Float32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8Float32V(x.FMapUint8Float32, e)
+			} // end block: if x.FMapUint8Float32 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8Float32\"")
@@ -2471,7 +3499,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy680 := *x.FptrMapUint8Float32
-				z.F.EncMapUint8Float32V(yy680, e)
+				if yy680 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Float32V(yy680, e)
+				} // end block: if yy680 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2480,7 +3512,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8Float64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8Float64V(x.FMapUint8Float64, e)
+			if x.FMapUint8Float64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8Float64V(x.FMapUint8Float64, e)
+			} // end block: if x.FMapUint8Float64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8Float64\"")
@@ -2492,7 +3528,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy683 := *x.FptrMapUint8Float64
-				z.F.EncMapUint8Float64V(yy683, e)
+				if yy683 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Float64V(yy683, e)
+				} // end block: if yy683 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2501,7 +3541,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint8Bool`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint8BoolV(x.FMapUint8Bool, e)
+			if x.FMapUint8Bool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint8BoolV(x.FMapUint8Bool, e)
+			} // end block: if x.FMapUint8Bool map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint8Bool\"")
@@ -2513,7 +3557,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy686 := *x.FptrMapUint8Bool
-				z.F.EncMapUint8BoolV(yy686, e)
+				if yy686 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8BoolV(yy686, e)
+				} // end block: if yy686 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2522,7 +3570,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64Intf`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64IntfV(x.FMapUint64Intf, e)
+			if x.FMapUint64Intf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64IntfV(x.FMapUint64Intf, e)
+			} // end block: if x.FMapUint64Intf map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64Intf\"")
@@ -2534,7 +3586,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy689 := *x.FptrMapUint64Intf
-				z.F.EncMapUint64IntfV(yy689, e)
+				if yy689 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64IntfV(yy689, e)
+				} // end block: if yy689 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2543,7 +3599,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64String`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64StringV(x.FMapUint64String, e)
+			if x.FMapUint64String == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64StringV(x.FMapUint64String, e)
+			} // end block: if x.FMapUint64String map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64String\"")
@@ -2555,7 +3615,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy692 := *x.FptrMapUint64String
-				z.F.EncMapUint64StringV(yy692, e)
+				if yy692 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64StringV(yy692, e)
+				} // end block: if yy692 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2564,7 +3628,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64Bytes`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64BytesV(x.FMapUint64Bytes, e)
+			if x.FMapUint64Bytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64BytesV(x.FMapUint64Bytes, e)
+			} // end block: if x.FMapUint64Bytes map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64Bytes\"")
@@ -2576,7 +3644,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy695 := *x.FptrMapUint64Bytes
-				z.F.EncMapUint64BytesV(yy695, e)
+				if yy695 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64BytesV(yy695, e)
+				} // end block: if yy695 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2585,7 +3657,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64Uint`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64UintV(x.FMapUint64Uint, e)
+			if x.FMapUint64Uint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64UintV(x.FMapUint64Uint, e)
+			} // end block: if x.FMapUint64Uint map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64Uint\"")
@@ -2597,7 +3673,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy698 := *x.FptrMapUint64Uint
-				z.F.EncMapUint64UintV(yy698, e)
+				if yy698 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64UintV(yy698, e)
+				} // end block: if yy698 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2606,7 +3686,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64Uint8`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64Uint8V(x.FMapUint64Uint8, e)
+			if x.FMapUint64Uint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64Uint8V(x.FMapUint64Uint8, e)
+			} // end block: if x.FMapUint64Uint8 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64Uint8\"")
@@ -2618,7 +3702,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy701 := *x.FptrMapUint64Uint8
-				z.F.EncMapUint64Uint8V(yy701, e)
+				if yy701 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Uint8V(yy701, e)
+				} // end block: if yy701 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2627,7 +3715,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64Uint64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64Uint64V(x.FMapUint64Uint64, e)
+			if x.FMapUint64Uint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64Uint64V(x.FMapUint64Uint64, e)
+			} // end block: if x.FMapUint64Uint64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64Uint64\"")
@@ -2639,7 +3731,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy704 := *x.FptrMapUint64Uint64
-				z.F.EncMapUint64Uint64V(yy704, e)
+				if yy704 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Uint64V(yy704, e)
+				} // end block: if yy704 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2648,7 +3744,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64Int`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64IntV(x.FMapUint64Int, e)
+			if x.FMapUint64Int == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64IntV(x.FMapUint64Int, e)
+			} // end block: if x.FMapUint64Int map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64Int\"")
@@ -2660,7 +3760,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy707 := *x.FptrMapUint64Int
-				z.F.EncMapUint64IntV(yy707, e)
+				if yy707 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64IntV(yy707, e)
+				} // end block: if yy707 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2669,7 +3773,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64Int64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64Int64V(x.FMapUint64Int64, e)
+			if x.FMapUint64Int64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64Int64V(x.FMapUint64Int64, e)
+			} // end block: if x.FMapUint64Int64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64Int64\"")
@@ -2681,7 +3789,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy710 := *x.FptrMapUint64Int64
-				z.F.EncMapUint64Int64V(yy710, e)
+				if yy710 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Int64V(yy710, e)
+				} // end block: if yy710 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2690,7 +3802,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64Float32`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64Float32V(x.FMapUint64Float32, e)
+			if x.FMapUint64Float32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64Float32V(x.FMapUint64Float32, e)
+			} // end block: if x.FMapUint64Float32 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64Float32\"")
@@ -2702,7 +3818,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy713 := *x.FptrMapUint64Float32
-				z.F.EncMapUint64Float32V(yy713, e)
+				if yy713 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Float32V(yy713, e)
+				} // end block: if yy713 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2711,7 +3831,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64Float64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64Float64V(x.FMapUint64Float64, e)
+			if x.FMapUint64Float64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64Float64V(x.FMapUint64Float64, e)
+			} // end block: if x.FMapUint64Float64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64Float64\"")
@@ -2723,7 +3847,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy716 := *x.FptrMapUint64Float64
-				z.F.EncMapUint64Float64V(yy716, e)
+				if yy716 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Float64V(yy716, e)
+				} // end block: if yy716 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2732,7 +3860,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapUint64Bool`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapUint64BoolV(x.FMapUint64Bool, e)
+			if x.FMapUint64Bool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapUint64BoolV(x.FMapUint64Bool, e)
+			} // end block: if x.FMapUint64Bool map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapUint64Bool\"")
@@ -2744,7 +3876,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy719 := *x.FptrMapUint64Bool
-				z.F.EncMapUint64BoolV(yy719, e)
+				if yy719 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64BoolV(yy719, e)
+				} // end block: if yy719 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2753,7 +3889,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntIntf`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntIntfV(x.FMapIntIntf, e)
+			if x.FMapIntIntf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntIntfV(x.FMapIntIntf, e)
+			} // end block: if x.FMapIntIntf map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntIntf\"")
@@ -2765,7 +3905,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy722 := *x.FptrMapIntIntf
-				z.F.EncMapIntIntfV(yy722, e)
+				if yy722 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntIntfV(yy722, e)
+				} // end block: if yy722 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2774,7 +3918,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntString`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntStringV(x.FMapIntString, e)
+			if x.FMapIntString == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntStringV(x.FMapIntString, e)
+			} // end block: if x.FMapIntString map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntString\"")
@@ -2786,7 +3934,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy725 := *x.FptrMapIntString
-				z.F.EncMapIntStringV(yy725, e)
+				if yy725 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntStringV(yy725, e)
+				} // end block: if yy725 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2795,7 +3947,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntBytes`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntBytesV(x.FMapIntBytes, e)
+			if x.FMapIntBytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntBytesV(x.FMapIntBytes, e)
+			} // end block: if x.FMapIntBytes map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntBytes\"")
@@ -2807,7 +3963,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy728 := *x.FptrMapIntBytes
-				z.F.EncMapIntBytesV(yy728, e)
+				if yy728 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntBytesV(yy728, e)
+				} // end block: if yy728 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2816,7 +3976,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntUint`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntUintV(x.FMapIntUint, e)
+			if x.FMapIntUint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntUintV(x.FMapIntUint, e)
+			} // end block: if x.FMapIntUint map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntUint\"")
@@ -2828,7 +3992,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy731 := *x.FptrMapIntUint
-				z.F.EncMapIntUintV(yy731, e)
+				if yy731 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntUintV(yy731, e)
+				} // end block: if yy731 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2837,7 +4005,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntUint8`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntUint8V(x.FMapIntUint8, e)
+			if x.FMapIntUint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntUint8V(x.FMapIntUint8, e)
+			} // end block: if x.FMapIntUint8 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntUint8\"")
@@ -2849,7 +4021,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy734 := *x.FptrMapIntUint8
-				z.F.EncMapIntUint8V(yy734, e)
+				if yy734 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntUint8V(yy734, e)
+				} // end block: if yy734 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2858,7 +4034,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntUint64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntUint64V(x.FMapIntUint64, e)
+			if x.FMapIntUint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntUint64V(x.FMapIntUint64, e)
+			} // end block: if x.FMapIntUint64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntUint64\"")
@@ -2870,7 +4050,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy737 := *x.FptrMapIntUint64
-				z.F.EncMapIntUint64V(yy737, e)
+				if yy737 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntUint64V(yy737, e)
+				} // end block: if yy737 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2879,7 +4063,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntInt`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntIntV(x.FMapIntInt, e)
+			if x.FMapIntInt == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntIntV(x.FMapIntInt, e)
+			} // end block: if x.FMapIntInt map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntInt\"")
@@ -2891,7 +4079,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy740 := *x.FptrMapIntInt
-				z.F.EncMapIntIntV(yy740, e)
+				if yy740 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntIntV(yy740, e)
+				} // end block: if yy740 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2900,7 +4092,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntInt64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntInt64V(x.FMapIntInt64, e)
+			if x.FMapIntInt64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntInt64V(x.FMapIntInt64, e)
+			} // end block: if x.FMapIntInt64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntInt64\"")
@@ -2912,7 +4108,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy743 := *x.FptrMapIntInt64
-				z.F.EncMapIntInt64V(yy743, e)
+				if yy743 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntInt64V(yy743, e)
+				} // end block: if yy743 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2921,7 +4121,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntFloat32`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntFloat32V(x.FMapIntFloat32, e)
+			if x.FMapIntFloat32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntFloat32V(x.FMapIntFloat32, e)
+			} // end block: if x.FMapIntFloat32 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntFloat32\"")
@@ -2933,7 +4137,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy746 := *x.FptrMapIntFloat32
-				z.F.EncMapIntFloat32V(yy746, e)
+				if yy746 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntFloat32V(yy746, e)
+				} // end block: if yy746 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2942,7 +4150,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntFloat64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntFloat64V(x.FMapIntFloat64, e)
+			if x.FMapIntFloat64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntFloat64V(x.FMapIntFloat64, e)
+			} // end block: if x.FMapIntFloat64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntFloat64\"")
@@ -2954,7 +4166,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy749 := *x.FptrMapIntFloat64
-				z.F.EncMapIntFloat64V(yy749, e)
+				if yy749 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntFloat64V(yy749, e)
+				} // end block: if yy749 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2963,7 +4179,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapIntBool`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapIntBoolV(x.FMapIntBool, e)
+			if x.FMapIntBool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapIntBoolV(x.FMapIntBool, e)
+			} // end block: if x.FMapIntBool map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapIntBool\"")
@@ -2975,7 +4195,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy752 := *x.FptrMapIntBool
-				z.F.EncMapIntBoolV(yy752, e)
+				if yy752 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntBoolV(yy752, e)
+				} // end block: if yy752 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2984,7 +4208,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64Intf`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64IntfV(x.FMapInt64Intf, e)
+			if x.FMapInt64Intf == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64IntfV(x.FMapInt64Intf, e)
+			} // end block: if x.FMapInt64Intf map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64Intf\"")
@@ -2996,7 +4224,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy755 := *x.FptrMapInt64Intf
-				z.F.EncMapInt64IntfV(yy755, e)
+				if yy755 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64IntfV(yy755, e)
+				} // end block: if yy755 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3005,7 +4237,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64String`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64StringV(x.FMapInt64String, e)
+			if x.FMapInt64String == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64StringV(x.FMapInt64String, e)
+			} // end block: if x.FMapInt64String map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64String\"")
@@ -3017,7 +4253,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy758 := *x.FptrMapInt64String
-				z.F.EncMapInt64StringV(yy758, e)
+				if yy758 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64StringV(yy758, e)
+				} // end block: if yy758 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3026,7 +4266,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64Bytes`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64BytesV(x.FMapInt64Bytes, e)
+			if x.FMapInt64Bytes == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64BytesV(x.FMapInt64Bytes, e)
+			} // end block: if x.FMapInt64Bytes map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64Bytes\"")
@@ -3038,7 +4282,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy761 := *x.FptrMapInt64Bytes
-				z.F.EncMapInt64BytesV(yy761, e)
+				if yy761 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64BytesV(yy761, e)
+				} // end block: if yy761 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3047,7 +4295,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64Uint`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64UintV(x.FMapInt64Uint, e)
+			if x.FMapInt64Uint == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64UintV(x.FMapInt64Uint, e)
+			} // end block: if x.FMapInt64Uint map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64Uint\"")
@@ -3059,7 +4311,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy764 := *x.FptrMapInt64Uint
-				z.F.EncMapInt64UintV(yy764, e)
+				if yy764 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64UintV(yy764, e)
+				} // end block: if yy764 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3068,7 +4324,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64Uint8`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64Uint8V(x.FMapInt64Uint8, e)
+			if x.FMapInt64Uint8 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64Uint8V(x.FMapInt64Uint8, e)
+			} // end block: if x.FMapInt64Uint8 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64Uint8\"")
@@ -3080,7 +4340,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy767 := *x.FptrMapInt64Uint8
-				z.F.EncMapInt64Uint8V(yy767, e)
+				if yy767 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64Uint8V(yy767, e)
+				} // end block: if yy767 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3089,7 +4353,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64Uint64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64Uint64V(x.FMapInt64Uint64, e)
+			if x.FMapInt64Uint64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64Uint64V(x.FMapInt64Uint64, e)
+			} // end block: if x.FMapInt64Uint64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64Uint64\"")
@@ -3101,7 +4369,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy770 := *x.FptrMapInt64Uint64
-				z.F.EncMapInt64Uint64V(yy770, e)
+				if yy770 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64Uint64V(yy770, e)
+				} // end block: if yy770 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3110,7 +4382,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64Int`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64IntV(x.FMapInt64Int, e)
+			if x.FMapInt64Int == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64IntV(x.FMapInt64Int, e)
+			} // end block: if x.FMapInt64Int map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64Int\"")
@@ -3122,7 +4398,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy773 := *x.FptrMapInt64Int
-				z.F.EncMapInt64IntV(yy773, e)
+				if yy773 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64IntV(yy773, e)
+				} // end block: if yy773 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3131,7 +4411,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64Int64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64Int64V(x.FMapInt64Int64, e)
+			if x.FMapInt64Int64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64Int64V(x.FMapInt64Int64, e)
+			} // end block: if x.FMapInt64Int64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64Int64\"")
@@ -3143,7 +4427,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy776 := *x.FptrMapInt64Int64
-				z.F.EncMapInt64Int64V(yy776, e)
+				if yy776 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64Int64V(yy776, e)
+				} // end block: if yy776 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3152,7 +4440,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64Float32`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64Float32V(x.FMapInt64Float32, e)
+			if x.FMapInt64Float32 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64Float32V(x.FMapInt64Float32, e)
+			} // end block: if x.FMapInt64Float32 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64Float32\"")
@@ -3164,7 +4456,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy779 := *x.FptrMapInt64Float32
-				z.F.EncMapInt64Float32V(yy779, e)
+				if yy779 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64Float32V(yy779, e)
+				} // end block: if yy779 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3173,7 +4469,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64Float64`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64Float64V(x.FMapInt64Float64, e)
+			if x.FMapInt64Float64 == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64Float64V(x.FMapInt64Float64, e)
+			} // end block: if x.FMapInt64Float64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64Float64\"")
@@ -3185,7 +4485,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy782 := *x.FptrMapInt64Float64
-				z.F.EncMapInt64Float64V(yy782, e)
+				if yy782 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64Float64V(yy782, e)
+				} // end block: if yy782 map == nil
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3194,7 +4498,11 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `FMapInt64Bool`)
 			}
 			z.EncWriteMapElemValue()
-			z.F.EncMapInt64BoolV(x.FMapInt64Bool, e)
+			if x.FMapInt64Bool == nil {
+				r.EncodeNil()
+			} else {
+				z.F.EncMapInt64BoolV(x.FMapInt64Bool, e)
+			} // end block: if x.FMapInt64Bool map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FptrMapInt64Bool\"")
@@ -3206,11 +4514,15 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy785 := *x.FptrMapInt64Bool
-				z.F.EncMapInt64BoolV(yy785, e)
+				if yy785 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt64BoolV(yy785, e)
+				} // end block: if yy785 map == nil
 			}
 			z.EncWriteMapEnd()
 		}
-	}
+	} // checkNil=true
 }
 
 func (x *TestMammoth2) CodecDecodeSelf(d *Decoder) {
@@ -3221,17 +4533,16 @@ func (x *TestMammoth2) CodecDecodeSelf(d *Decoder) {
 	if yyct2 == codecSelferValueTypeMap19781 {
 		yyl2 := z.DecReadMapStart()
 		if yyl2 == 0 {
-			z.DecReadMapEnd()
 		} else {
 			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+		z.DecReadMapEnd()
 	} else if yyct2 == codecSelferValueTypeArray19781 {
 		yyl2 := z.DecReadArrayStart()
-		if yyl2 == 0 {
-			z.DecReadArrayEnd()
-		} else {
+		if yyl2 != 0 {
 			x.codecDecodeSelfFromArray(yyl2, d)
 		}
+		z.DecReadArrayEnd()
 	} else {
 		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19781)
 	}
@@ -5024,7 +6335,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 			z.DecStructFieldNotFound(-1, yys3)
 		} // end switch yys3
 	} // end for yyj3
-	z.DecReadMapEnd()
 }
 
 func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
@@ -8771,7 +10081,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj381-1, "")
 	}
-	z.DecReadArrayEnd()
 }
 
 func (x testMammoth2Binary) CodecEncodeSelf(e *Encoder) {
@@ -8846,9 +10155,9 @@ func (x *testMammoth2Basic) CodecEncodeSelf(e *Encoder) {
 	_, _, _ = h, z, r
 	if x == nil {
 		r.EncodeNil()
-	} else {
+	} else { // checkNil=true
 		h.enctestMammoth2Basic((*testMammoth2Basic)(x), e)
-	}
+	} // checkNil=true
 }
 
 func (x *testMammoth2Basic) CodecDecodeSelf(d *Decoder) {
@@ -8864,7 +10173,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 	_, _, _ = h, z, r
 	if x == nil {
 		r.EncodeNil()
-	} else {
+	} else { // checkNil=true
 		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
 		_, _ = yysep2, yy2arr2
@@ -8884,9 +10193,17 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			yy16 := &x.C
 			yy16.CodecEncodeSelf(e)
 			z.EncWriteArrayElem()
-			h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
+			if x.M == nil {
+				r.EncodeNil()
+			} else {
+				h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
+			} // end block: if x.M map == nil
 			z.EncWriteArrayElem()
-			h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
+			if x.L == nil {
+				r.EncodeNil()
+			} else {
+				h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
+			} // end block: if x.L slice == nil
 			z.EncWriteArrayElem()
 			yy20 := &x.A
 			h.encArray4int64((*[4]int64)(yy20), e)
@@ -8942,7 +10259,11 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `M`)
 			}
 			z.EncWriteMapElemValue()
-			h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
+			if x.M == nil {
+				r.EncodeNil()
+			} else {
+				h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
+			} // end block: if x.M map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"L\"")
@@ -8950,7 +10271,11 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeStringEnc(codecSelferCcUTF819781, `L`)
 			}
 			z.EncWriteMapElemValue()
-			h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
+			if x.L == nil {
+				r.EncodeNil()
+			} else {
+				h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
+			} // end block: if x.L slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"A\"")
@@ -8962,7 +10287,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			h.encArray4int64((*[4]int64)(yy31), e)
 			z.EncWriteMapEnd()
 		}
-	}
+	} // checkNil=true
 }
 
 func (x *TestMammoth2Wrapper) CodecDecodeSelf(d *Decoder) {
@@ -8973,17 +10298,16 @@ func (x *TestMammoth2Wrapper) CodecDecodeSelf(d *Decoder) {
 	if yyct2 == codecSelferValueTypeMap19781 {
 		yyl2 := z.DecReadMapStart()
 		if yyl2 == 0 {
-			z.DecReadMapEnd()
 		} else {
 			x.codecDecodeSelfFromMap(yyl2, d)
 		}
+		z.DecReadMapEnd()
 	} else if yyct2 == codecSelferValueTypeArray19781 {
 		yyl2 := z.DecReadArrayStart()
-		if yyl2 == 0 {
-			z.DecReadArrayEnd()
-		} else {
+		if yyl2 != 0 {
 			x.codecDecodeSelfFromArray(yyl2, d)
 		}
+		z.DecReadArrayEnd()
 	} else {
 		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19781)
 	}
@@ -9060,7 +10384,6 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 			z.DecStructFieldNotFound(-1, yys3)
 		} // end switch yys3
 	} // end for yyj3
-	z.DecReadMapEnd()
 }
 
 func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
@@ -9211,7 +10534,6 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj15-1, "")
 	}
-	z.DecReadArrayEnd()
 }
 
 func (x codecSelfer19781) enctestMammoth2Basic(v *testMammoth2Basic, e *Encoder) {

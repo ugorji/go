@@ -76,20 +76,19 @@ func bytesView(v string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&unsafeSlice{sx.Data, sx.Len, sx.Len}))
 }
 
-func definitelyNil(v interface{}) bool {
+// isNilRef says whether the interface is a nil reference or not.
+//
+// A reference here is a pointer-sized reference i.e. map, ptr, chan, func, unsafepointer.
+// It is optional to extend this to also check if slices or interfaces are nil also.
+func isNilRef(v interface{}) (rv reflect.Value, isnil bool) {
 	// There is no global way of checking if an interface is nil.
 	// For true references (map, ptr, func, chan), you can just look
-	// at the word of the interface. However, for slices, you have to dereference
+	// at the word of the interface.
+	// However, for slices, you have to dereference
 	// the word, and get a pointer to the 3-word interface value.
-	//
-	// However, the following are cheap calls
-	// - TypeOf(interface): cheap 2-line call.
-	// - ValueOf(interface{}): expensive
-	// - type.Kind: cheap call through an interface
-	// - Value.Type(): cheap call
-	//                 except it's a method value (e.g. r.Read, which implies that it is a Func)
 
-	return ((*unsafeIntf)(unsafe.Pointer(&v))).word == nil
+	isnil = ((*unsafeIntf)(unsafe.Pointer(&v))).word == nil
+	return
 }
 
 func rv2ptr(urv *unsafeReflectValue) (ptr unsafe.Pointer) {

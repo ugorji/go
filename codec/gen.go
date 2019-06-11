@@ -697,8 +697,10 @@ func (x *genRunner) registerXtraT(t reflect.Type) {
 // The parameter, t, is the reflect.Type of the variable itself
 func (x *genRunner) encVar(varname string, t reflect.Type) {
 	var checkNil bool
+	// case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map, reflect.Chan:
+	// do not include checkNil for slice and maps, as we already checkNil below it
 	switch t.Kind() {
-	case reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map, reflect.Chan:
+	case reflect.Ptr, reflect.Interface, reflect.Chan:
 		checkNil = true
 	}
 	x.encVarChkNil(varname, t, checkNil)
@@ -706,7 +708,7 @@ func (x *genRunner) encVar(varname string, t reflect.Type) {
 
 func (x *genRunner) encVarChkNil(varname string, t reflect.Type, checkNil bool) {
 	if checkNil {
-		x.linef("if %s == nil { r.EncodeNil() } else { ", varname)
+		x.linef("if %s == nil { r.EncodeNil() } else {", varname)
 	}
 
 	switch t.Kind() {
@@ -874,6 +876,7 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 		// else write encode function in-line.
 		// - if elements are primitives or Selfers, call dedicated function on each member.
 		// - else call Encoder.encode(XXX) on it.
+		x.linef("if %s == nil { r.EncodeNil() } else {", varname)
 		if rtid == uint8SliceTypId {
 			x.line("r.EncodeStringBytesRaw([]byte(" + varname + "))")
 		} else if fastpathAV.index(rtid) != -1 {
@@ -883,13 +886,14 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 			x.xtraSM(varname, t, true, false)
 			// x.encListFallback(varname, rtid, t)
 		}
+		x.linef("} // end block: if %s slice == nil", varname)
 	case reflect.Map:
 		// if nil, call dedicated function
 		// if a known fastpath map, call dedicated function
 		// else write encode function in-line.
 		// - if elements are primitives or Selfers, call dedicated function on each member.
 		// - else call Encoder.encode(XXX) on it.
-		// x.line("if " + varname + " == nil { \nr.EncodeNil()\n } else { ")
+		x.linef("if %s == nil { r.EncodeNil() } else {", varname)
 		if fastpathAV.index(rtid) != -1 {
 			g := x.newFastpathGenV(t)
 			x.line("z.F." + g.MethodNamePfx("Enc", false) + "V(" + varname + ", e)")
@@ -897,6 +901,7 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 			x.xtraSM(varname, t, true, false)
 			// x.encMapFallback(varname, rtid, t)
 		}
+		x.linef("} // end block: if %s map == nil", varname)
 	case reflect.Struct:
 		if !inlist {
 			delete(x.te, rtid)
@@ -1722,7 +1727,7 @@ func (x *genRunner) decStructMap(varname, lenvarname string, rtid uintptr, t ref
 	x.decStructMapSwitch(kName, varname, rtid, t)
 
 	x.line("} // end for " + tpfx + "j" + i)
-	x.line("z.DecReadMapEnd()")
+	// x.line("z.DecReadMapEnd()")
 }
 
 func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid uintptr, t reflect.Type) {
@@ -1756,7 +1761,7 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 	x.line("z.DecReadArrayElem()")
 	x.linef(`z.DecStructFieldNotFound(%sj%s - 1, "")`, tpfx, i)
 	x.line("}")
-	x.line("z.DecReadArrayEnd()")
+	// x.line("z.DecReadArrayEnd()")
 }
 
 func (x *genRunner) decStruct(varname string, rtid uintptr, t reflect.Type) {
@@ -1766,7 +1771,6 @@ func (x *genRunner) decStruct(varname string, rtid uintptr, t reflect.Type) {
 	x.linef("if %sct%s == codecSelferValueTypeMap%s {", genTempVarPfx, i, x.xs)
 	x.line(genTempVarPfx + "l" + i + " := z.DecReadMapStart()")
 	x.linef("if %sl%s == 0 {", genTempVarPfx, i)
-	x.line("z.DecReadMapEnd()")
 	if genUseOneFunctionForDecStructMap {
 		x.line("} else { ")
 		x.linef("%s.codecDecodeSelfFromMap(%sl%s, d)", varname, genTempVarPfx, i)
@@ -1777,15 +1781,15 @@ func (x *genRunner) decStruct(varname string, rtid uintptr, t reflect.Type) {
 		x.line(varname + ".codecDecodeSelfFromMapCheckBreak(" + genTempVarPfx + "l" + i + ", d)")
 	}
 	x.line("}")
+	x.line("z.DecReadMapEnd()")
 
 	// else if container is array
 	x.linef("} else if %sct%s == codecSelferValueTypeArray%s {", genTempVarPfx, i, x.xs)
 	x.line(genTempVarPfx + "l" + i + " := z.DecReadArrayStart()")
-	x.linef("if %sl%s == 0 {", genTempVarPfx, i)
-	x.line("z.DecReadArrayEnd()")
-	x.line("} else { ")
+	x.linef("if %sl%s != 0 {", genTempVarPfx, i)
 	x.linef("%s.codecDecodeSelfFromArray(%sl%s, d)", varname, genTempVarPfx, i)
 	x.line("}")
+	x.line("z.DecReadArrayEnd()")
 	// else panic
 	x.line("} else { ")
 	x.line("panic(errCodecSelferOnlyMapOrArrayEncodeToStruct" + x.xs + ")")
