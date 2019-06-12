@@ -152,7 +152,7 @@ const (
 	useFinalizers = false
 
 	// xdebug controls whether xdebugf prints any output
-	xdebug = false
+	xdebug = true
 )
 
 var oneByteArr [1]byte
@@ -162,6 +162,7 @@ var codecgen bool
 
 var refBitset bitset256
 var isnilBitset bitset256
+var scalarBitset bitset256
 var pool pooler
 var panicv panicHdl
 
@@ -181,6 +182,25 @@ func init() {
 	isnilBitset.set(byte(reflect.UnsafePointer))
 	isnilBitset.set(byte(reflect.Interface))
 	isnilBitset.set(byte(reflect.Slice))
+
+	scalarBitset.set(byte(reflect.Bool))
+	scalarBitset.set(byte(reflect.Int))
+	scalarBitset.set(byte(reflect.Int8))
+	scalarBitset.set(byte(reflect.Int16))
+	scalarBitset.set(byte(reflect.Int32))
+	scalarBitset.set(byte(reflect.Int64))
+	scalarBitset.set(byte(reflect.Uint))
+	scalarBitset.set(byte(reflect.Uint8))
+	scalarBitset.set(byte(reflect.Uint16))
+	scalarBitset.set(byte(reflect.Uint32))
+	scalarBitset.set(byte(reflect.Uint64))
+	scalarBitset.set(byte(reflect.Uintptr))
+	scalarBitset.set(byte(reflect.Float32))
+	scalarBitset.set(byte(reflect.Float64))
+	scalarBitset.set(byte(reflect.Complex64))
+	scalarBitset.set(byte(reflect.Complex128))
+	scalarBitset.set(byte(reflect.String))
+
 }
 
 type handleFlag uint8
@@ -770,32 +790,37 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 		if rk == reflect.Struct || rk == reflect.Array {
 			fi.addrE = true
 		}
-	} else if ti.cs || ti.csp {
+	} else if ti.isFlag(tiflagSelfer) || ti.isFlag(tiflagSelferPtr) {
 		fn.fe = (*Encoder).selferMarshal
 		fn.fd = (*Decoder).selferUnmarshal
 		fi.addrF = true
-		fi.addrD = ti.csp
-		fi.addrE = ti.csp
-	} else if supportMarshalInterfaces && x.isBe() && (ti.bm || ti.bmp) && (ti.bu || ti.bup) {
+		fi.addrD = ti.isFlag(tiflagSelferPtr)
+		fi.addrE = ti.isFlag(tiflagSelferPtr)
+	} else if supportMarshalInterfaces && x.isBe() &&
+		(ti.isFlag(tiflagBinaryMarshaler) || ti.isFlag(tiflagBinaryMarshalerPtr)) &&
+		(ti.isFlag(tiflagBinaryUnmarshaler) || ti.isFlag(tiflagBinaryUnmarshalerPtr)) {
 		fn.fe = (*Encoder).binaryMarshal
 		fn.fd = (*Decoder).binaryUnmarshal
 		fi.addrF = true
-		fi.addrD = ti.bup
-		fi.addrE = ti.bmp
+		fi.addrD = ti.isFlag(tiflagBinaryUnmarshalerPtr)
+		fi.addrE = ti.isFlag(tiflagBinaryMarshalerPtr)
 	} else if supportMarshalInterfaces && !x.isBe() && x.isJs() &&
-		(ti.jm || ti.jmp) && (ti.ju || ti.jup) {
+		(ti.isFlag(tiflagJsonMarshaler) || ti.isFlag(tiflagJsonMarshalerPtr)) &&
+		(ti.isFlag(tiflagJsonUnmarshaler) || ti.isFlag(tiflagJsonUnmarshalerPtr)) {
 		//If JSON, we should check JSONMarshal before textMarshal
 		fn.fe = (*Encoder).jsonMarshal
 		fn.fd = (*Decoder).jsonUnmarshal
 		fi.addrF = true
-		fi.addrD = ti.jup
-		fi.addrE = ti.jmp
-	} else if supportMarshalInterfaces && !x.isBe() && (ti.tm || ti.tmp) && (ti.tu || ti.tup) {
+		fi.addrD = ti.isFlag(tiflagJsonUnmarshalerPtr)
+		fi.addrE = ti.isFlag(tiflagJsonMarshalerPtr)
+	} else if supportMarshalInterfaces && !x.isBe() &&
+		(ti.isFlag(tiflagTextMarshaler) || ti.isFlag(tiflagTextMarshalerPtr)) &&
+		(ti.isFlag(tiflagTextUnmarshaler) || ti.isFlag(tiflagTextUnmarshalerPtr)) {
 		fn.fe = (*Encoder).textMarshal
 		fn.fd = (*Decoder).textUnmarshal
 		fi.addrF = true
-		fi.addrD = ti.tup
-		fi.addrE = ti.tmp
+		fi.addrD = ti.isFlag(tiflagTextUnmarshalerPtr)
+		fi.addrE = ti.isFlag(tiflagTextMarshalerPtr)
 	} else {
 		if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice) {
 			if ti.pkgpath == "" { // un-named slice or map
@@ -890,7 +915,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 			case reflect.Chan:
 				fi.seq = seqTypeChan
 				fn.fe = (*Encoder).kSlice
-				fn.fd = (*Decoder).kSlice
+				fn.fd = (*Decoder).kSliceForChan
 			case reflect.Slice:
 				fi.seq = seqTypeSlice
 				fn.fe = (*Encoder).kSlice
@@ -906,7 +931,9 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				}
 				// fn.fd = (*Decoder).kArray
 			case reflect.Struct:
-				if ti.anyOmitEmpty || ti.mf || ti.mfp {
+				if ti.anyOmitEmpty ||
+					ti.isFlag(tiflagMissingFielder) ||
+					ti.isFlag(tiflagMissingFielderPtr) {
 					fn.fe = (*Encoder).kStruct
 				} else {
 					fn.fe = (*Encoder).kStructNoOmitempty
@@ -1489,12 +1516,46 @@ func baseStructRv(v reflect.Value, update bool) (v2 reflect.Value, valid bool) {
 	return v, true
 }
 
-type typeInfoFlag uint8
+type tiflag uint32
 
 const (
-	typeInfoFlagComparable = 1 << iota
-	typeInfoFlagIsZeroer
-	typeInfoFlagIsZeroerPtr
+	_ tiflag = 1 << iota
+
+	tiflagComparable
+
+	tiflagIsZeroer
+	tiflagIsZeroerPtr
+
+	tiflagBinaryMarshaler
+	tiflagBinaryMarshalerPtr
+
+	tiflagBinaryUnmarshaler
+	tiflagBinaryUnmarshalerPtr
+
+	tiflagTextMarshaler
+	tiflagTextMarshalerPtr
+
+	tiflagTextUnmarshaler
+	tiflagTextUnmarshalerPtr
+
+	tiflagJsonMarshaler
+	tiflagJsonMarshalerPtr
+
+	tiflagJsonUnmarshaler
+	tiflagJsonUnmarshalerPtr
+
+	tiflagSelfer
+	tiflagSelferPtr
+
+	tiflagMissingFielder
+	tiflagMissingFielderPtr
+
+	// tiflag
+	// tiflag
+	// tiflag
+	// tiflag
+	// tiflag
+	// tiflag
 )
 
 // typeInfo keeps static (non-changing readonly)information
@@ -1533,36 +1594,50 @@ type typeInfo struct {
 	// sfis         []structFieldInfo // all sfi, in src order, as created.
 	sfiNamesSort []byte // all names, with indexes into the sfiSort
 
+	// rv0 is the zero value for the type.
+	// It is mostly beneficial for all non-reference kinds
+	// i.e. all but map/chan/func/ptr/unsafe.pointer
+	// so beneficial for intXX, bool, slices, structs, etc
+	rv0 reflect.Value
+
 	// format of marshal type fields below: [btj][mu]p? OR csp?
 
-	bm  bool // T is a binaryMarshaler
-	bmp bool // *T is a binaryMarshaler
-	bu  bool // T is a binaryUnmarshaler
-	bup bool // *T is a binaryUnmarshaler
-	tm  bool // T is a textMarshaler
-	tmp bool // *T is a textMarshaler
-	tu  bool // T is a textUnmarshaler
-	tup bool // *T is a textUnmarshaler
+	// bm  bool // T is a binaryMarshaler
+	// bmp bool // *T is a binaryMarshaler
+	// bu  bool // T is a binaryUnmarshaler
+	// bup bool // *T is a binaryUnmarshaler
+	// tm  bool // T is a textMarshaler
+	// tmp bool // *T is a textMarshaler
+	// tu  bool // T is a textUnmarshaler
+	// tup bool // *T is a textUnmarshaler
 
-	jm  bool // T is a jsonMarshaler
-	jmp bool // *T is a jsonMarshaler
-	ju  bool // T is a jsonUnmarshaler
-	jup bool // *T is a jsonUnmarshaler
-	cs  bool // T is a Selfer
-	csp bool // *T is a Selfer
-	mf  bool // T is a MissingFielder
-	mfp bool // *T is a MissingFielder
+	// jm  bool // T is a jsonMarshaler
+	// jmp bool // *T is a jsonMarshaler
+	// ju  bool // T is a jsonUnmarshaler
+	// jup bool // *T is a jsonUnmarshaler
+	// cs  bool // T is a Selfer
+	// csp bool // *T is a Selfer
+	// mf  bool // T is a MissingFielder
+	// mfp bool // *T is a MissingFielder
 
 	// other flags, with individual bits representing if set.
-	flags              typeInfoFlag
+	flags tiflag
+
 	infoFieldOmitempty bool
 
-	// _ [6]byte   // padding
-	// _ [2]uint64 // padding
+	_ [3]byte   // padding
+	_ [1]uint64 // padding
 }
 
-func (ti *typeInfo) isFlag(f typeInfoFlag) bool {
+func (ti *typeInfo) isFlag(f tiflag) bool {
 	return ti.flags&f != 0
+}
+
+func (ti *typeInfo) flag(when bool, f tiflag) *typeInfo {
+	if when {
+		ti.flags |= f
+	}
+	return ti
 }
 
 func (ti *typeInfo) indexForEncName(name []byte) (index int16) {
@@ -1673,30 +1748,32 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		pkgpath: rt.PkgPath(),
 		keyType: valueTypeString, // default it - so it's never 0
 	}
-	// ti.rv0 = reflect.Zero(rt)
+	ti.rv0 = reflect.Zero(rt)
 
 	// ti.comparable = rt.Comparable()
 	ti.numMeth = uint16(rt.NumMethod())
 
-	ti.bm, ti.bmp = implIntf(rt, binaryMarshalerTyp)
-	ti.bu, ti.bup = implIntf(rt, binaryUnmarshalerTyp)
-	ti.tm, ti.tmp = implIntf(rt, textMarshalerTyp)
-	ti.tu, ti.tup = implIntf(rt, textUnmarshalerTyp)
-	ti.jm, ti.jmp = implIntf(rt, jsonMarshalerTyp)
-	ti.ju, ti.jup = implIntf(rt, jsonUnmarshalerTyp)
-	ti.cs, ti.csp = implIntf(rt, selferTyp)
-	ti.mf, ti.mfp = implIntf(rt, missingFielderTyp)
-
-	b1, b2 := implIntf(rt, iszeroTyp)
-	if b1 {
-		ti.flags |= typeInfoFlagIsZeroer
-	}
-	if b2 {
-		ti.flags |= typeInfoFlagIsZeroerPtr
-	}
-	if rt.Comparable() {
-		ti.flags |= typeInfoFlagComparable
-	}
+	var b1, b2 bool
+	b1, b2 = implIntf(rt, binaryMarshalerTyp)
+	ti.flag(b1, tiflagBinaryMarshaler).flag(b2, tiflagBinaryMarshalerPtr)
+	b1, b2 = implIntf(rt, binaryUnmarshalerTyp)
+	ti.flag(b1, tiflagBinaryUnmarshaler).flag(b2, tiflagBinaryUnmarshalerPtr)
+	b1, b2 = implIntf(rt, textMarshalerTyp)
+	ti.flag(b1, tiflagTextMarshaler).flag(b2, tiflagTextMarshalerPtr)
+	b1, b2 = implIntf(rt, textUnmarshalerTyp)
+	ti.flag(b1, tiflagTextUnmarshaler).flag(b2, tiflagTextUnmarshalerPtr)
+	b1, b2 = implIntf(rt, jsonMarshalerTyp)
+	ti.flag(b1, tiflagJsonMarshaler).flag(b2, tiflagJsonMarshalerPtr)
+	b1, b2 = implIntf(rt, jsonUnmarshalerTyp)
+	ti.flag(b1, tiflagJsonUnmarshaler).flag(b2, tiflagJsonUnmarshalerPtr)
+	b1, b2 = implIntf(rt, selferTyp)
+	ti.flag(b1, tiflagSelfer).flag(b2, tiflagSelferPtr)
+	b1, b2 = implIntf(rt, missingFielderTyp)
+	ti.flag(b1, tiflagMissingFielder).flag(b2, tiflagMissingFielderPtr)
+	b1, b2 = implIntf(rt, iszeroTyp)
+	ti.flag(b1, tiflagIsZeroer).flag(b2, tiflagIsZeroerPtr)
+	b1 = rt.Comparable()
+	ti.flag(b1, tiflagComparable)
 
 	switch rk {
 	case reflect.Struct:
@@ -2029,13 +2106,13 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) 
 	if ti.rtid == timeTypId {
 		return rv2i(v).(time.Time).IsZero()
 	}
-	if ti.isFlag(typeInfoFlagIsZeroerPtr) && v.CanAddr() {
+	if ti.isFlag(tiflagIsZeroerPtr) && v.CanAddr() {
 		return rv2i(v.Addr()).(isZeroer).IsZero()
 	}
-	if ti.isFlag(typeInfoFlagIsZeroer) {
+	if ti.isFlag(tiflagIsZeroer) {
 		return rv2i(v).(isZeroer).IsZero()
 	}
-	if ti.isFlag(typeInfoFlagComparable) {
+	if ti.isFlag(tiflagComparable) {
 		return rv2i(v) == rv2i(reflect.Zero(vt))
 	}
 	if !checkStruct {

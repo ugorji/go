@@ -172,7 +172,7 @@ func (f genHelperDecoder) DecScratchArrayBuffer() *[decScratchByteArrayLen]byte 
 func (f genHelperDecoder) DecFallback(iv interface{}, chkPtr bool) {
 	rv := reflect.ValueOf(iv)
 	if chkPtr {
-		rv = f.d.ensureDecodeable(rv)
+		f.d.ensureDecodeable(rv)
 	}
 	f.d.decodeValue(rv, nil)
 }

@@ -76,19 +76,33 @@ func bytesView(v string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&unsafeSlice{sx.Data, sx.Len, sx.Len}))
 }
 
-// isNilRef says whether the interface is a nil reference or not.
-//
-// A reference here is a pointer-sized reference i.e. map, ptr, chan, func, unsafepointer.
-// It is optional to extend this to also check if slices or interfaces are nil also.
-func isNilRef(v interface{}) (rv reflect.Value, isnil bool) {
-	// There is no global way of checking if an interface is nil.
-	// For true references (map, ptr, func, chan), you can just look
-	// at the word of the interface.
-	// However, for slices, you have to dereference
-	// the word, and get a pointer to the 3-word interface value.
+// // isNilRef says whether the interface is a nil reference or not.
+// //
+// // A reference here is a pointer-sized reference i.e. map, ptr, chan, func, unsafepointer.
+// // It is optional to extend this to also check if slices or interfaces are nil also.
+// //
+// // NOTE: There is no global way of checking if an interface is nil.
+// // For true references (map, ptr, func, chan), you can just look
+// // at the word of the interface.
+// // However, for slices, you have to dereference
+// // the word, and get a pointer to the 3-word interface value.
+// func isNilRef(v interface{}) (rv reflect.Value, isnil bool) {
+// 	isnil = ((*unsafeIntf)(unsafe.Pointer(&v))).word == nil
+// 	return
+// }
 
-	isnil = ((*unsafeIntf)(unsafe.Pointer(&v))).word == nil
+func isNil(v interface{}) (rv reflect.Value, isnil bool) {
+	var ui *unsafeIntf = (*unsafeIntf)(unsafe.Pointer(&v))
+	if ui.word == nil {
+		isnil = true
+		return
+	}
+	rv = reflect.ValueOf(v) // reflect.value is cheap and inline'able
+	tk := rv.Kind()
+	isnil = (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.word) == nil
 	return
+	// fmt.Printf(">>>> definitely nil: isnil: %v, TYPE: \t%T, word: %v, *word: %v, type: %v, nil: %v\n",
+	// 	v == nil, v, word, *((*unsafe.Pointer)(word)), ui.typ, nil)
 }
 
 func rv2ptr(urv *unsafeReflectValue) (ptr unsafe.Pointer) {
@@ -694,14 +708,3 @@ func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
 //go:linkname typedmemmove reflect.typedmemmove
 //go:noescape
 func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
-
-// func definitelyNil(v interface{}) bool {
-// 	var ui *unsafeIntf = (*unsafeIntf)(unsafe.Pointer(&v))
-// 	if ui.word == nil {
-// 		return true
-// 	}
-// 	var tk = reflect.TypeOf(v).Kind()
-// 	return (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.word) == nil
-// 	fmt.Printf(">>>> definitely nil: isnil: %v, TYPE: \t%T, word: %v, *word: %v, type: %v, nil: %v\n",
-// 	v == nil, v, word, *((*unsafe.Pointer)(word)), ui.typ, nil)
-// }

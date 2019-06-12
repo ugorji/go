@@ -304,6 +304,7 @@ type cborDecDriver struct {
 	bdRead bool
 	bd     byte
 	st     bool // skip tags
+	fnil   bool // found nil
 	noBuiltInTypes
 	// decNoSeparator
 	decDriverNoopContainerReader
@@ -340,6 +341,19 @@ func (d *cborDecDriver) readNextBd() {
 	d.bdRead = true
 }
 
+func (d *cborDecDriver) advanceNil() (null bool) {
+	d.fnil = false
+	if !d.bdRead {
+		d.readNextBd()
+	}
+	if d.bd == cborBdNil || d.bd == cborBdUndefined {
+		d.bdRead = false
+		d.fnil = true
+		null = true
+	}
+	return
+}
+
 // skipTags is called to skip any tags in the stream.
 //
 // Since any value can be tagged, then we should call skipTags
@@ -362,6 +376,7 @@ func (d *cborDecDriver) uncacheRead() {
 }
 
 func (d *cborDecDriver) ContainerType() (vt valueType) {
+	d.fnil = false
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -369,6 +384,8 @@ func (d *cborDecDriver) ContainerType() (vt valueType) {
 		d.skipTags()
 	}
 	if d.bd == cborBdNil {
+		d.bdRead = false // always consume nil after seeing it in container type
+		d.fnil = true
 		return valueTypeNil
 	} else if d.bd == cborBdIndefiniteBytes || (d.bd>>5 == cborMajorBytes) {
 		return valueTypeBytes
@@ -385,16 +402,12 @@ func (d *cborDecDriver) ContainerType() (vt valueType) {
 	return valueTypeUnset
 }
 
-func (d *cborDecDriver) TryDecodeAsNil() bool {
-	if !d.bdRead {
-		d.readNextBd()
-	}
-	// treat Nil and Undefined as nil values
-	if d.bd == cborBdNil || d.bd == cborBdUndefined {
-		d.bdRead = false
-		return true
-	}
-	return false
+func (d *cborDecDriver) Nil() bool {
+	return d.fnil
+}
+
+func (d *cborDecDriver) TryNil() bool {
+	return d.advanceNil()
 }
 
 func (d *cborDecDriver) CheckBreak() (v bool) {
@@ -430,9 +443,6 @@ func (d *cborDecDriver) decUint() (ui uint64) {
 }
 
 func (d *cborDecDriver) decCheckInteger() (neg bool) {
-	if !d.bdRead {
-		d.readNextBd()
-	}
 	if d.st {
 		d.skipTags()
 	}
@@ -447,13 +457,6 @@ func (d *cborDecDriver) decCheckInteger() (neg bool) {
 	return
 }
 
-func (d *cborDecDriver) DecodeInt64() (i int64) {
-	neg := d.decCheckInteger()
-	ui := d.decUint()
-	d.bdRead = false
-	return cborDecInt64(ui, neg)
-}
-
 func cborDecInt64(ui uint64, neg bool) (i int64) {
 	// check if this number can be converted to an int without overflow
 	if neg {
@@ -462,99 +465,6 @@ func cborDecInt64(ui uint64, neg bool) (i int64) {
 		i = chkOvf.SignedIntV(ui)
 	}
 	return
-}
-
-func (d *cborDecDriver) DecodeUint64() (ui uint64) {
-	if d.decCheckInteger() {
-		d.d.errorf("cannot assign negative signed value to unsigned type")
-	}
-	ui = d.decUint()
-	d.bdRead = false
-	return
-}
-
-func (d *cborDecDriver) DecodeFloat64() (f float64) {
-	if !d.bdRead {
-		d.readNextBd()
-	}
-	if d.st {
-		d.skipTags()
-	}
-	switch d.bd {
-	case cborBdFloat16:
-		f = float64(math.Float32frombits(halfFloatToFloatBits(bigen.Uint16(d.r.readx(2)))))
-	case cborBdFloat32:
-		f = float64(math.Float32frombits(bigen.Uint32(d.r.readx(4))))
-	case cborBdFloat64:
-		f = math.Float64frombits(bigen.Uint64(d.r.readx(8)))
-	default:
-		major := d.bd >> 5
-		if major == cborMajorUint {
-			f = float64(cborDecInt64(d.decUint(), false))
-		} else if major == cborMajorNegInt {
-			f = float64(cborDecInt64(d.decUint(), true))
-		} else {
-			d.d.errorf("invalid float descriptor; got %d/%s, expected float16/32/64 or (-)int",
-				d.bd, cbordesc(d.bd))
-		}
-	}
-	d.bdRead = false
-	return
-}
-
-// bool can be decoded from bool only (single byte).
-func (d *cborDecDriver) DecodeBool() (b bool) {
-	if !d.bdRead {
-		d.readNextBd()
-	}
-	if d.st {
-		d.skipTags()
-	}
-	if d.bd == cborBdTrue {
-		b = true
-	} else if d.bd == cborBdFalse {
-	} else {
-		d.d.errorf("not bool - %s %x/%s", msgBadDesc, d.bd, cbordesc(d.bd))
-		return
-	}
-	d.bdRead = false
-	return
-}
-
-func (d *cborDecDriver) ReadMapStart() (length int) {
-	if !d.bdRead {
-		d.readNextBd()
-	}
-	if d.st {
-		d.skipTags()
-	}
-	d.bdRead = false
-	if d.bd == cborBdIndefiniteMap {
-		return -1
-	}
-	if d.bd>>5 != cborMajorMap {
-		d.d.errorf("error reading map; got major type: %x, expected %x/%s",
-			d.bd>>5, cborMajorMap, cbordesc(d.bd))
-	}
-	return d.decLen()
-}
-
-func (d *cborDecDriver) ReadArrayStart() (length int) {
-	if !d.bdRead {
-		d.readNextBd()
-	}
-	if d.st {
-		d.skipTags()
-	}
-	d.bdRead = false
-	if d.bd == cborBdIndefiniteArray {
-		return -1
-	}
-	if d.bd>>5 != cborMajorArray {
-		d.d.errorf("invalid array; got major type: %x, expect: %x/%s",
-			d.bd>>5, cborMajorArray, cbordesc(d.bd))
-	}
-	return d.decLen()
 }
 
 func (d *cborDecDriver) decLen() int {
@@ -586,16 +496,118 @@ func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 	return bs
 }
 
-func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
-	if !d.bdRead {
-		d.readNextBd()
+func (d *cborDecDriver) DecodeInt64() (i int64) {
+	if d.advanceNil() {
+		return
+	}
+	neg := d.decCheckInteger()
+	ui := d.decUint()
+	d.bdRead = false
+	return cborDecInt64(ui, neg)
+}
+
+func (d *cborDecDriver) DecodeUint64() (ui uint64) {
+	if d.advanceNil() {
+		return
+	}
+	if d.decCheckInteger() {
+		d.d.errorf("cannot assign negative signed value to unsigned type")
+	}
+	ui = d.decUint()
+	d.bdRead = false
+	return
+}
+
+func (d *cborDecDriver) DecodeFloat64() (f float64) {
+	if d.advanceNil() {
+		return
 	}
 	if d.st {
 		d.skipTags()
 	}
-	if d.bd == cborBdNil || d.bd == cborBdUndefined {
-		d.bdRead = false
-		return nil
+	switch d.bd {
+	case cborBdFloat16:
+		f = float64(math.Float32frombits(halfFloatToFloatBits(bigen.Uint16(d.r.readx(2)))))
+	case cborBdFloat32:
+		f = float64(math.Float32frombits(bigen.Uint32(d.r.readx(4))))
+	case cborBdFloat64:
+		f = math.Float64frombits(bigen.Uint64(d.r.readx(8)))
+	default:
+		major := d.bd >> 5
+		if major == cborMajorUint {
+			f = float64(cborDecInt64(d.decUint(), false))
+		} else if major == cborMajorNegInt {
+			f = float64(cborDecInt64(d.decUint(), true))
+		} else {
+			d.d.errorf("invalid float descriptor; got %d/%s, expected float16/32/64 or (-)int",
+				d.bd, cbordesc(d.bd))
+		}
+	}
+	d.bdRead = false
+	return
+}
+
+// bool can be decoded from bool only (single byte).
+func (d *cborDecDriver) DecodeBool() (b bool) {
+	if d.advanceNil() {
+		return
+	}
+	if d.st {
+		d.skipTags()
+	}
+	if d.bd == cborBdTrue {
+		b = true
+	} else if d.bd == cborBdFalse {
+	} else {
+		d.d.errorf("not bool - %s %x/%s", msgBadDesc, d.bd, cbordesc(d.bd))
+		return
+	}
+	d.bdRead = false
+	return
+}
+
+func (d *cborDecDriver) ReadMapStart() (length int) {
+	if d.advanceNil() {
+		return decContainerLenNil
+	}
+	if d.st {
+		d.skipTags()
+	}
+	d.bdRead = false
+	if d.bd == cborBdIndefiniteMap {
+		return decContainerLenUnknown
+	}
+	if d.bd>>5 != cborMajorMap {
+		d.d.errorf("error reading map; got major type: %x, expected %x/%s",
+			d.bd>>5, cborMajorMap, cbordesc(d.bd))
+	}
+	return d.decLen()
+}
+
+func (d *cborDecDriver) ReadArrayStart() (length int) {
+	if d.advanceNil() {
+		return decContainerLenNil
+	}
+	if d.st {
+		d.skipTags()
+	}
+	d.bdRead = false
+	if d.bd == cborBdIndefiniteArray {
+		return decContainerLenUnknown
+	}
+	if d.bd>>5 != cborMajorArray {
+		d.d.errorf("invalid array; got major type: %x, expect: %x/%s",
+			d.bd>>5, cborMajorArray, cbordesc(d.bd))
+	}
+	return d.decLen()
+}
+
+func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
+	if d.advanceNil() {
+		return
+	}
+	if d.st {
+		d.skipTags()
 	}
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 		d.bdRead = false
@@ -656,11 +668,7 @@ func (d *cborDecDriver) DecodeStringAsBytes() (s []byte) {
 }
 
 func (d *cborDecDriver) DecodeTime() (t time.Time) {
-	if !d.bdRead {
-		d.readNextBd()
-	}
-	if d.bd == cborBdNil || d.bd == cborBdUndefined {
-		d.bdRead = false
+	if d.advanceNil() {
 		return
 	}
 	if d.bd>>5 != cborMajorTag {
@@ -705,16 +713,15 @@ func (d *cborDecDriver) decodeTime(xtag uint64) (t time.Time) {
 	return
 }
 
-func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxtag uint64) {
-	if !d.bdRead {
-		d.readNextBd()
+func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
+	if d.advanceNil() {
+		return
 	}
 	if d.bd>>5 != cborMajorTag {
 		d.d.errorf("error reading tag; expected major type: %x, got: %x", cborMajorTag, d.bd>>5)
 	}
-	u := d.decUint()
+	realxtag := d.decUint()
 	d.bdRead = false
-	realxtag = u
 	if ext == nil {
 		re := rv.(*RawExt)
 		re.Tag = realxtag
@@ -729,7 +736,6 @@ func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxta
 		d.d.interfaceExtConvertAndDecode(rv, ext)
 	}
 	d.bdRead = false
-	return
 }
 
 func (d *cborDecDriver) DecodeNaked() {
@@ -737,6 +743,7 @@ func (d *cborDecDriver) DecodeNaked() {
 		d.readNextBd()
 	}
 
+	d.fnil = false
 	n := d.d.naked()
 	var decodeFurther bool
 
@@ -782,8 +789,9 @@ func (d *cborDecDriver) DecodeNaked() {
 		// decodeFurther = true
 	case cborMajorSimpleOrFloat:
 		switch d.bd {
-		case cborBdNil:
+		case cborBdNil, cborBdUndefined:
 			n.v = valueTypeNil
+			d.fnil = true
 		case cborBdFalse:
 			n.v = valueTypeBool
 			n.b = false
@@ -875,7 +883,9 @@ func (e *cborEncDriver) reset() {
 
 func (d *cborDecDriver) reset() {
 	d.r, d.br = d.d.r(), d.d.bytes
-	d.bd, d.bdRead = 0, false
+	d.bd = 0
+	d.bdRead = false
+	d.fnil = false
 	d.st = d.h.SkipUnexpectedTags
 }
 

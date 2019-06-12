@@ -216,11 +216,43 @@ func (e *Encoder) kErr(f *codecFnInfo, rv reflect.Value) {
 	e.errorf("unsupported kind %s, for %#v", rv.Kind(), rv)
 }
 
+func chanToSlice(rv reflect.Value, rtelem reflect.Type, timeout time.Duration) (rvcs reflect.Value) {
+	// TODO: ensure this doesn't mess up anywhere that rv of kind chan is expected
+	rvcs = reflect.Zero(reflect.SliceOf(rtelem))
+	if timeout < 0 { // consume until close
+		for {
+			recv, recvOk := rv.Recv()
+			if !recvOk {
+				break
+			}
+			rvcs = reflect.Append(rvcs, recv)
+		}
+	} else {
+		cases := make([]reflect.SelectCase, 2)
+		cases[0] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: rv}
+		if timeout == 0 {
+			cases[1] = reflect.SelectCase{Dir: reflect.SelectDefault}
+		} else {
+			tt := time.NewTimer(timeout)
+			cases[1] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(tt.C)}
+		}
+		for {
+			chosen, recv, recvOk := reflect.Select(cases)
+			if chosen == 1 || !recvOk {
+				break
+			}
+			rvcs = reflect.Append(rvcs, recv)
+		}
+	}
+	return
+}
+
 func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	// array may be non-addressable, so we have to manage with care
 	//   (don't call rv.Bytes, rv.Slice, etc).
 	// E.g. type struct S{B [2]byte};
 	//   Encode(S{}) will bomb on "panic: slice of unaddressable array".
+	mbs := f.ti.mbs
 	if f.seq != seqTypeArray {
 		if rvisnil(rv) {
 			e.e.EncodeNil()
@@ -228,7 +260,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		}
 		// If in this method, then there was no extension function defined.
 		// So it's okay to treat as []byte.
-		if f.ti.rtid == uint8SliceTypId {
+		if !mbs && f.ti.rtid == uint8SliceTypId {
 			e.e.EncodeStringBytesRaw(rv.Bytes())
 			return
 		}
@@ -236,48 +268,40 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if f.seq == seqTypeChan && f.ti.chandir&uint8(reflect.RecvDir) == 0 {
 		e.errorf("send-only channel cannot be encoded")
 	}
-	mbs := f.ti.mbs
 	rtelem := f.ti.elem
 
+	var l int
 	// if a slice, array or chan of bytes, treat specially
 	if !mbs && uint8TypId == rt2id(rtelem) { // NOT rtelem.Kind() == reflect.Uint8
-		e.kSliceBytes(rv, f.seq)
+		switch f.seq {
+		case seqTypeSlice:
+			e.e.EncodeStringBytesRaw(rv.Bytes())
+		case seqTypeArray:
+			l = rv.Len()
+			if rv.CanAddr() {
+				e.e.EncodeStringBytesRaw(rv.Slice(0, l).Bytes())
+			} else {
+				var bs []byte
+				if l <= cap(e.b) {
+					bs = e.b[:l]
+				} else {
+					bs = make([]byte, l)
+				}
+				reflect.Copy(reflect.ValueOf(bs), rv)
+				e.e.EncodeStringBytesRaw(bs)
+			}
+		case seqTypeChan:
+			e.kSliceBytesChan(rv)
+		}
 		return
 	}
 
 	// if chan, consume chan into a slice, and work off that slice.
 	if f.seq == seqTypeChan {
-		rvcs := reflect.Zero(reflect.SliceOf(rtelem))
-		timeout := e.h.ChanRecvTimeout
-		if timeout < 0 { // consume until close
-			for {
-				recv, recvOk := rv.Recv()
-				if !recvOk {
-					break
-				}
-				rvcs = reflect.Append(rvcs, recv)
-			}
-		} else {
-			cases := make([]reflect.SelectCase, 2)
-			cases[0] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: rv}
-			if timeout == 0 {
-				cases[1] = reflect.SelectCase{Dir: reflect.SelectDefault}
-			} else {
-				tt := time.NewTimer(timeout)
-				cases[1] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(tt.C)}
-			}
-			for {
-				chosen, recv, recvOk := reflect.Select(cases)
-				if chosen == 1 || !recvOk {
-					break
-				}
-				rvcs = reflect.Append(rvcs, recv)
-			}
-		}
-		rv = rvcs // TODO: ensure this doesn't mess up anywhere that rv of kind chan is expected
+		rv = chanToSlice(rv, rtelem, e.h.ChanRecvTimeout)
 	}
 
-	var l = rv.Len() // rv may be slice or array
+	l = rv.Len() // rv may be slice or array
 	if mbs {
 		if l%2 == 1 {
 			e.errorf("mapBySlice requires even slice length, but got %v", l)
@@ -320,71 +344,53 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 
-func (e *Encoder) kSliceBytes(rv reflect.Value, seq seqType) {
-	switch seq {
-	case seqTypeSlice:
-		e.e.EncodeStringBytesRaw(rv.Bytes())
-	case seqTypeArray:
-		var l = rv.Len()
-		if rv.CanAddr() {
-			e.e.EncodeStringBytesRaw(rv.Slice(0, l).Bytes())
-		} else {
-			var bs []byte
-			if l <= cap(e.b) {
-				bs = e.b[:l]
-			} else {
-				bs = make([]byte, l)
-			}
-			reflect.Copy(reflect.ValueOf(bs), rv)
-			e.e.EncodeStringBytesRaw(bs)
-		}
-	case seqTypeChan:
-		// do not use range, so that the number of elements encoded
-		// does not change, and encoding does not hang waiting on someone to close chan.
-		// for b := range rv2i(rv).(<-chan byte) { bs = append(bs, b) }
-		// ch := rv2i(rv).(<-chan byte) // fix error - that this is a chan byte, not a <-chan byte.
+func (e *Encoder) kSliceBytesChan(rv reflect.Value) {
+	// do not use range, so that the number of elements encoded
+	// does not change, and encoding does not hang waiting on someone to close chan.
+	// for b := range rv2i(rv).(<-chan byte) { bs = append(bs, b) }
+	// ch := rv2i(rv).(<-chan byte) // fix error - that this is a chan byte, not a <-chan byte.
 
-		if rvisnil(rv) {
-			e.e.EncodeNil()
-			break
-		}
-		bs := e.b[:0]
-		irv := rv2i(rv)
-		ch, ok := irv.(<-chan byte)
-		if !ok {
-			ch = irv.(chan byte)
-		}
+	// if rvisnil(rv) {
+	// 	e.e.EncodeNil()
+	// 	return
+	// }
 
-	L1:
-		switch timeout := e.h.ChanRecvTimeout; {
-		case timeout == 0: // only consume available
-			for {
-				select {
-				case b := <-ch:
-					bs = append(bs, b)
-				default:
-					break L1
-				}
-			}
-		case timeout > 0: // consume until timeout
-			tt := time.NewTimer(timeout)
-			for {
-				select {
-				case b := <-ch:
-					bs = append(bs, b)
-				case <-tt.C:
-					// close(tt.C)
-					break L1
-				}
-			}
-		default: // consume until close
-			for b := range ch {
-				bs = append(bs, b)
-			}
-		}
-
-		e.e.EncodeStringBytesRaw(bs)
+	bs := e.b[:0]
+	irv := rv2i(rv)
+	ch, ok := irv.(<-chan byte)
+	if !ok {
+		ch = irv.(chan byte)
 	}
+
+L1:
+	switch timeout := e.h.ChanRecvTimeout; {
+	case timeout == 0: // only consume available
+		for {
+			select {
+			case b := <-ch:
+				bs = append(bs, b)
+			default:
+				break L1
+			}
+		}
+	case timeout > 0: // consume until timeout
+		tt := time.NewTimer(timeout)
+		for {
+			select {
+			case b := <-ch:
+				bs = append(bs, b)
+			case <-tt.C:
+				// close(tt.C)
+				break L1
+			}
+		}
+	default: // consume until close
+		for b := range ch {
+			bs = append(bs, b)
+		}
+	}
+
+	e.e.EncodeStringBytesRaw(bs)
 }
 
 func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
@@ -416,11 +422,11 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	var newlen int
 	toMap := !(f.ti.toArray || e.h.StructToArray)
 	var mf map[string]interface{}
-	if f.ti.mf {
+	if f.ti.isFlag(tiflagMissingFielder) {
 		mf = rv2i(rv).(MissingFielder).CodecMissingFields()
 		toMap = true
 		newlen += len(mf)
-	} else if f.ti.mfp {
+	} else if f.ti.isFlag(tiflagMissingFielderPtr) {
 		if rv.CanAddr() {
 			mf = rv2i(rv.Addr()).(MissingFielder).CodecMissingFields()
 		} else {
@@ -1080,7 +1086,7 @@ func (e *Encoder) encode(iv interface{}) {
 		return
 	}
 
-	rv, ok := isNilRef(iv)
+	rv, ok := isNil(iv)
 	if ok {
 		e.e.EncodeNil()
 		return
@@ -1133,11 +1139,7 @@ func (e *Encoder) encode(iv interface{}) {
 	case time.Time:
 		e.e.EncodeTime(v)
 	case []uint8:
-		if v == nil {
-			e.e.EncodeNil()
-		} else {
-			e.e.EncodeStringBytesRaw(v)
-		}
+		e.e.EncodeStringBytesRaw(v)
 	case *Raw:
 		e.rawBytes(*v)
 	case *string:

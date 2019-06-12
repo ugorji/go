@@ -13,7 +13,7 @@ import (
 )
 
 // GenVersion is the current version of codecgen.
-const GenVersion = 13
+const GenVersion = 14
 
 // This file is used to generate helper code for codecgen.
 // The values here i.e. genHelper(En|De)coder are not to be used directly by
@@ -174,7 +174,7 @@ func (f genHelperDecoder) DecScratchArrayBuffer() *[decScratchByteArrayLen]byte 
 func (f genHelperDecoder) DecFallback(iv interface{}, chkPtr bool) {
 	rv := reflect.ValueOf(iv)
 	if chkPtr {
-		rv = f.d.ensureDecodeable(rv)
+		f.d.ensureDecodeable(rv)
 	}
 	f.d.decodeValue(rv, nil)
 }

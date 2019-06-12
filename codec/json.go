@@ -602,11 +602,11 @@ type jsonDecDriver struct {
 	b [jsonScratchArrayLen]byte // scratch 1, used for parsing strings or numbers or time.Time
 	// ---- cpu cache line boundary?
 	// c     containerState
-	tok   uint8                         // used to store the token read right after skipWhiteSpace
-	fnull bool                          // found null from appendStringAsBytes
-	_     [2]byte                       // padding
-	bstr  [4]byte                       // scratch used for string \UXXX parsing
-	b2    [jsonScratchArrayLen - 8]byte // scratch 2, used only for readUntil, decNumBytes
+	tok  uint8                         // used to store the token read right after skipWhiteSpace
+	fnil bool                          // found null
+	_    [2]byte                       // padding
+	bstr [4]byte                       // scratch used for string \UXXX parsing
+	b2   [jsonScratchArrayLen - 8]byte // scratch 2, used only for readUntil, decNumBytes
 
 	// _ [3]uint64 // padding
 	// n jsonNum
@@ -625,33 +625,33 @@ func (d *jsonDecDriver) uncacheRead() {
 }
 
 func (d *jsonDecDriver) ReadMapStart() int {
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+	d.advance()
+	if d.tok == 'n' {
+		d.readLit4Null()
+		return decContainerLenNil
 	}
-	const xc uint8 = '{'
-	if d.tok != xc {
-		d.d.errorf("read map - expect char '%c' but got char '%c'", xc, d.tok)
+	if d.tok != '{' {
+		d.d.errorf("read map - expect char '%c' but got char '%c'", '{', d.tok)
 	}
 	d.tok = 0
-	return -1
+	return decContainerLenUnknown
 }
 
 func (d *jsonDecDriver) ReadArrayStart() int {
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+	d.advance()
+	if d.tok == 'n' {
+		d.readLit4Null()
+		return decContainerLenNil
 	}
-	const xc uint8 = '['
-	if d.tok != xc {
-		d.d.errorf("read array - expect char '%c' but got char '%c'", xc, d.tok)
+	if d.tok != '[' {
+		d.d.errorf("read array - expect char '%c' but got char '%c'", '[', d.tok)
 	}
 	d.tok = 0
-	return -1
+	return decContainerLenUnknown
 }
 
 func (d *jsonDecDriver) CheckBreak() bool {
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 	return d.tok == '}' || d.tok == ']'
 }
 
@@ -667,9 +667,7 @@ func (d *jsonDecDriver) CheckBreak() bool {
 
 func (d *jsonDecDriver) ReadArrayElem() {
 	const xc uint8 = ','
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 	if d.d.c != containerArrayStart {
 		if d.tok != xc {
 			d.d.errorf("read array element - expect char '%c' but got char '%c'", xc, d.tok)
@@ -680,9 +678,7 @@ func (d *jsonDecDriver) ReadArrayElem() {
 
 func (d *jsonDecDriver) ReadArrayEnd() {
 	const xc uint8 = ']'
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 	if d.tok != xc {
 		d.d.errorf("read array end - expect char '%c' but got char '%c'", xc, d.tok)
 	}
@@ -691,9 +687,7 @@ func (d *jsonDecDriver) ReadArrayEnd() {
 
 func (d *jsonDecDriver) ReadMapElemKey() {
 	const xc uint8 = ','
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 	if d.d.c != containerMapStart {
 		if d.tok != xc {
 			d.d.errorf("read map key - expect char '%c' but got char '%c'", xc, d.tok)
@@ -704,9 +698,7 @@ func (d *jsonDecDriver) ReadMapElemKey() {
 
 func (d *jsonDecDriver) ReadMapElemValue() {
 	const xc uint8 = ':'
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 	if d.tok != xc {
 		d.d.errorf("read map value - expect char '%c' but got char '%c'", xc, d.tok)
 	}
@@ -715,9 +707,7 @@ func (d *jsonDecDriver) ReadMapElemValue() {
 
 func (d *jsonDecDriver) ReadMapEnd() {
 	const xc uint8 = '}'
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 	if d.tok != xc {
 		d.d.errorf("read map end - expect char '%c' but got char '%c'", xc, d.tok)
 	}
@@ -755,13 +745,19 @@ func (d *jsonDecDriver) readLit4Null() {
 	if jsonValidateSymbols && !bytes.Equal(bs, jsonLiteral4Null) {
 		d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs)
 	}
+	d.fnil = true
 }
 
-func (d *jsonDecDriver) TryDecodeAsNil() bool {
+func (d *jsonDecDriver) advance() {
 	if d.tok == 0 {
+		d.fnil = false
 		d.tok = d.r.skip(&jsonCharWhitespaceSet)
 	}
-	// we shouldn't try to see if "null" was here, right?
+}
+
+func (d *jsonDecDriver) TryNil() bool {
+	d.advance()
+	// we shouldn't try to see if quoted "null" was here, right?
 	// only the plain string: `null` denotes a nil (ie not quotes)
 	if d.tok == 'n' {
 		d.readLit4Null()
@@ -770,9 +766,15 @@ func (d *jsonDecDriver) TryDecodeAsNil() bool {
 	return false
 }
 
+func (d *jsonDecDriver) Nil() bool {
+	return d.fnil
+}
+
 func (d *jsonDecDriver) DecodeBool() (v bool) {
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+	d.advance()
+	if d.tok == 'n' {
+		d.readLit4Null()
+		return
 	}
 	fquot := d.d.c == containerMapKey && d.tok == '"'
 	if fquot {
@@ -798,7 +800,7 @@ func (d *jsonDecDriver) DecodeBool() (v bool) {
 func (d *jsonDecDriver) DecodeTime() (t time.Time) {
 	// read string, and pass the string into json.unmarshal
 	d.appendStringAsBytes()
-	if d.fnull {
+	if d.fnil {
 		return
 	}
 	t, err := time.Parse(time.RFC3339, stringView(d.bs))
@@ -810,22 +812,21 @@ func (d *jsonDecDriver) DecodeTime() (t time.Time) {
 
 func (d *jsonDecDriver) ContainerType() (vt valueType) {
 	// check container type by checking the first char
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 
 	// optimize this, so we don't do 4 checks but do one computation.
 	// return jsonContainerSet[d.tok]
 
 	// ContainerType is mostly called for Map and Array,
 	// so this conditional is good enough (max 2 checks typically)
-	if b := d.tok; b == '{' {
+	if d.tok == '{' {
 		return valueTypeMap
-	} else if b == '[' {
+	} else if d.tok == '[' {
 		return valueTypeArray
-	} else if b == 'n' {
+	} else if d.tok == 'n' {
+		d.readLit4Null()
 		return valueTypeNil
-	} else if b == '"' {
+	} else if d.tok == '"' {
 		return valueTypeString
 	}
 	return valueTypeUnset
@@ -833,18 +834,18 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 
 func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 	// stores num bytes in d.bs
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 	if d.tok == '"' {
 		bs = d.r.readUntil(d.b2[:0], '"')
 		bs = bs[:len(bs)-1]
+	} else if d.tok == 'n' {
+		d.readLit4Null()
 	} else {
 		d.r.unreadn1()
 		bs = d.r.readTo(d.bs[:0], &jsonNumSet)
 	}
 	d.tok = 0
-	return bs
+	return
 }
 
 func (d *jsonDecDriver) DecodeUint64() (u uint64) {
@@ -947,7 +948,12 @@ func (d *jsonDecDriver) DecodeFloat32() (f float32) {
 	return
 }
 
-func (d *jsonDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxtag uint64) {
+func (d *jsonDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
+	d.advance()
+	if d.tok == 'n' {
+		d.readLit4Null()
+		return
+	}
 	if ext == nil {
 		re := rv.(*RawExt)
 		re.Tag = xtag
@@ -958,7 +964,6 @@ func (d *jsonDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) (realxta
 	} else {
 		d.d.interfaceExtConvertAndDecode(rv, ext)
 	}
-	return
 }
 
 func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
@@ -968,9 +973,7 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		d.DecodeExt(&bsOut, 0, &d.se)
 		return
 	}
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
 	if d.tok == '[' {
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
@@ -1000,11 +1003,11 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	// base64 encodes []byte{} as "", and we encode nil []byte as null.
 	// Consequently, base64 should decode null as a nil []byte, and "" as an empty []byte{}.
 	// appendStringAsBytes returns a zero-len slice for both, so as not to reset d.bs.
-	// However, it sets a fnull field to true, so we can check if a null was found.
+	// However, it sets a fnil field to true, so we can check if a null was found.
+	if d.fnil {
+		return nil
+	}
 	if len(d.bs) == 0 {
-		if d.fnull {
-			return nil
-		}
 		return []byte{}
 	}
 	bs0 := d.bs
@@ -1033,16 +1036,18 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 // }
 
 func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
+	// defer func() { xdebug2f("DecodeStringAsBytes: %s", s) }()
 	d.appendStringAsBytes()
+	if d.fnil {
+		return nil
+	}
 	return d.bs
 }
 
 func (d *jsonDecDriver) appendStringAsBytes() {
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 
-	d.fnull = false
+	// xdebug2f("appendStringAsBytes: found: '%c'", d.tok)
 	if d.tok != '"' {
 		// d.d.errorf("expect char '%c' but got char '%c'", '"', d.tok)
 		// handle non-string scalar: null, true, false or a number
@@ -1050,7 +1055,6 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 		case 'n':
 			d.readLit4Null()
 			d.bs = d.bs[:0]
-			d.fnull = true
 		case 'f':
 			d.readLit4False()
 			d.bs = d.bs[:5]
@@ -1241,9 +1245,7 @@ func (d *jsonDecDriver) DecodeNaked() {
 	z := d.d.naked()
 	// var decodeFurther bool
 
-	if d.tok == 0 {
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
-	}
+	d.advance()
 	switch d.tok {
 	case 'n':
 		d.readLit4Null()
@@ -1444,6 +1446,7 @@ func (d *jsonDecDriver) reset() {
 		d.bs = d.bs[:0]
 	}
 	d.tok = 0
+	d.fnil = false
 	// d.n.reset()
 }
 

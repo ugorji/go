@@ -10,22 +10,24 @@ package codec
 const genDecMapTmpl = `
 {{var "v"}} := *{{ .Varname }}
 {{var "l"}} := z.DecReadMapStart()
-{{var "bh"}} := z.DecBasicHandle()
+if {{var "l"}} == codecSelferDecContainerLenNil{{xs}} {
+	*{{ .Varname }} = nil
+} else {
 if {{var "v"}} == nil {
-	{{var "rl"}} := z.DecInferLen({{var "l"}}, {{var "bh"}}.MaxInitLen, {{ .Size }})
+	{{var "rl"}} := z.DecInferLen({{var "l"}}, z.DecBasicHandle().MaxInitLen, {{ .Size }})
 	{{var "v"}} = make(map[{{ .KTyp }}]{{ .Typ }}, {{var "rl"}})
 	*{{ .Varname }} = {{var "v"}}
 }
 var {{var "mk"}} {{ .KTyp }}
 var {{var "mv"}} {{ .Typ }}
 var {{var "mg"}}, {{var "mdn"}} {{if decElemKindPtr}}, {{var "ms"}}, {{var "mok"}}{{end}} bool
-if {{var "bh"}}.MapValueReset {
+if z.DecBasicHandle().MapValueReset {
 	{{if decElemKindPtr}}{{var "mg"}} = true
-	{{else if decElemKindIntf}}if !{{var "bh"}}.InterfaceReset { {{var "mg"}} = true }
+	{{else if decElemKindIntf}}if !z.DecBasicHandle().InterfaceReset { {{var "mg"}} = true }
 	{{else if not decElemKindImmutable}}{{var "mg"}} = true
 	{{end}} }
 if {{var "l"}} != 0 {
-{{var "hl"}} := {{var "l"}} > 0 
+	{{var "hl"}} := {{var "l"}} > 0 
 	for {{var "j"}} := 0; ({{var "hl"}} && {{var "j"}} < {{var "l"}}) || !({{var "hl"}} || r.CheckBreak()); {{var "j"}}++ {
 	z.DecReadMapElemKey() {{/* z.DecSendContainerState(codecSelfer_containerMapKey{{ .Sfx }}) */}}
 	{{ $x := printf "%vmk%v" .TempVar .Rand }}{{ decLineVarK $x -}}
@@ -51,22 +53,31 @@ if {{var "l"}} != 0 {
 	{{var "mdn"}} = false
 	{{ $x := printf "%vmv%v" .TempVar .Rand }}{{ $y := printf "%vmdn%v" .TempVar .Rand }}{{ decLineVar $x $y -}}
 	if {{var "mdn"}} {
-		if {{ var "bh" }}.DeleteOnNilMapValue { delete({{var "v"}}, {{var "mk"}}) } else { {{var "v"}}[{{var "mk"}}] = {{decElemZero}} }
+		if z.DecBasicHandle().DeleteOnNilMapValue { delete({{var "v"}}, {{var "mk"}}) } else { {{var "v"}}[{{var "mk"}}] = {{decElemZero}} }
 	} else if {{if decElemKindPtr}} {{var "ms"}} && {{end}} {{var "v"}} != nil {
 		{{var "v"}}[{{var "mk"}}] = {{var "mv"}}
 	}
 }
 } // else len==0: TODO: Should we clear map entries?
 z.DecReadMapEnd() {{/* z.DecSendContainerState(codecSelfer_containerMapEnd{{ .Sfx }}) */}}
+}
 `
 
 const genDecListTmpl = `
 {{var "v"}} := {{if not isArray}}*{{end}}{{ .Varname }}
-{{var "h"}}, {{var "l"}} := z.DecSliceHelperStart() {{/* // helper, containerLenS */}}{{if not isArray}}
+{{var "h"}}, {{var "l"}} := z.DecSliceHelperStart() {{/* // helper, containerLenS */}}
+{{if not isArray -}}
 var {{var "c"}} bool {{/* // changed */}}
-_ = {{var "c"}}{{end}}
+_ = {{var "c"}}
+if {{var "h"}}.IsNil {
+	if {{var "v"}} != nil {
+		{{var "v"}} = nil
+		{{var "c"}} = true
+	}
+} else {{end -}}
 if {{var "l"}} == 0 {
-	{{if isSlice }}if {{var "v"}} == nil {
+	{{if isSlice -}}
+	if {{var "v"}} == nil {
 		{{var "v"}} = []{{ .Typ }}{}
 		{{var "c"}} = true
 	} else if len({{var "v"}}) != 0 {

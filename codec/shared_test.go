@@ -276,12 +276,13 @@ func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err
 // These are for intormational messages that do not necessarily
 // help with diagnosing a failure, or which are too large.
 func logTv(x interface{}, format string, args ...interface{}) {
-	if testVerbose {
-		if t, ok := x.(testing.TB); ok { // only available from go 1.9
-			t.Helper()
-		}
-		logT(x, format, args...)
+	if !testVerbose {
+		return
 	}
+	if t, ok := x.(testing.TB); ok { // only available from go 1.9
+		t.Helper()
+	}
+	logT(x, format, args...)
 }
 
 // logT logs messages when running as go test -v
@@ -304,12 +305,22 @@ func logT(x interface{}, format string, args ...interface{}) {
 	}
 }
 
-func failT(x interface{}, args ...interface{}) {
-	t, ok := x.(testing.TB) // only available from go 1.9
-	if ok {
-		t.Helper()
+func failTv(x testing.TB, args ...interface{}) {
+	x.Helper()
+	if testVerbose {
+		failTMsg(x, args...)
 	}
+	x.FailNow()
+}
 
+func failT(x testing.TB, args ...interface{}) {
+	x.Helper()
+	failTMsg(x, args...)
+	x.FailNow()
+}
+
+func failTMsg(x testing.TB, args ...interface{}) {
+	x.Helper()
 	if len(args) > 0 {
 		if format, ok := args[0].(string); ok {
 			logT(x, format, args[1:]...)
@@ -318,9 +329,6 @@ func failT(x interface{}, args ...interface{}) {
 		} else {
 			logT(x, "%v", args)
 		}
-	}
-	if ok {
-		t.FailNow()
 	}
 }
 

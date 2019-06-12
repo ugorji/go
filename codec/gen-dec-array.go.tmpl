@@ -1,9 +1,17 @@
 {{var "v"}} := {{if not isArray}}*{{end}}{{ .Varname }}
-{{var "h"}}, {{var "l"}} := z.DecSliceHelperStart() {{/* // helper, containerLenS */}}{{if not isArray}}
+{{var "h"}}, {{var "l"}} := z.DecSliceHelperStart() {{/* // helper, containerLenS */}}
+{{if not isArray -}}
 var {{var "c"}} bool {{/* // changed */}}
-_ = {{var "c"}}{{end}}
+_ = {{var "c"}}
+if {{var "h"}}.IsNil {
+	if {{var "v"}} != nil {
+		{{var "v"}} = nil
+		{{var "c"}} = true
+	}
+} else {{end -}}
 if {{var "l"}} == 0 {
-	{{if isSlice }}if {{var "v"}} == nil {
+	{{if isSlice -}}
+	if {{var "v"}} == nil {
 		{{var "v"}} = []{{ .Typ }}{}
 		{{var "c"}} = true
 	} else if len({{var "v"}}) != 0 {

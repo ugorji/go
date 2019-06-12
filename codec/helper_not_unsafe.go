@@ -33,25 +33,15 @@ func bytesView(v string) []byte {
 	return []byte(v)
 }
 
-// isNilRef says whether the interface is a nil reference or not.
-//
-// A reference here is a pointer-sized reference i.e. map, ptr, chan, func, unsafepointer.
-// It is optional to extend this to also check if slices or interfaces are nil also.
-func isNilRef(v interface{}) (rv reflect.Value, isnil bool) {
-	// this is a best-effort option - you should not pay any cost for this.
-	// It is ok to return false, so we don't unnecessarily pay for reflection this early.
-
+// isNil says whether the value v is nil.
+// This applies to references like map/ptr/unsafepointer/chan/func,
+// and non-reference values like interface/slice.
+func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	rv = reflect.ValueOf(v)
 	if isnilBitset.isset(byte(rv.Kind())) {
 		isnil = rv.IsNil()
 	}
 	return
-
-	// switch rv.Kind() {
-	// case reflect.Invalid, reflect.Ptr, reflect.Interface, reflect.Slice, reflect.Map, reflect.Func, reflect.Chan:
-	// 	return rv.IsNil()
-	// }
-	// return false
 }
 
 func rv2i(rv reflect.Value) interface{} {

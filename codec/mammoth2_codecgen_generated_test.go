@@ -15,13 +15,15 @@ const (
 	codecSelferCcUTF819781 = 1
 	codecSelferCcRAW19781  = 255
 	// ----- value types used ----
-	codecSelferValueTypeArray19781  = 10
-	codecSelferValueTypeMap19781    = 9
-	codecSelferValueTypeString19781 = 6
-	codecSelferValueTypeInt19781    = 2
-	codecSelferValueTypeUint19781   = 3
-	codecSelferValueTypeFloat19781  = 4
-	codecSelferBitsize19781         = uint8(32 << (^uint(0) >> 63))
+	codecSelferValueTypeArray19781     = 10
+	codecSelferValueTypeMap19781       = 9
+	codecSelferValueTypeString19781    = 6
+	codecSelferValueTypeInt19781       = 2
+	codecSelferValueTypeUint19781      = 3
+	codecSelferValueTypeFloat19781     = 4
+	codecSelferValueTypeNil19781       = 1
+	codecSelferBitsize19781            = uint8(32 << (^uint(0) >> 63))
+	codecSelferDecContainerLenNil19781 = -2147483648
 )
 
 var (
@@ -33,10 +35,10 @@ type codecSelfer19781 struct{}
 func codecSelfer19781False() bool { return false }
 
 func init() {
-	if GenVersion != 13 {
+	if GenVersion != 14 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic("codecgen version mismatch: current: 13, need " + ver + ". Re-generate file: " + file)
+		panic("codecgen version mismatch: current: 14, need " + ver + ". Re-generate file: " + file)
 	}
 }
 
@@ -46,7 +48,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 	_, _, _ = h, z, r
 	if x == nil {
 		r.EncodeNil()
-	} else { // checkNil=true
+	} else {
 		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
 		_, _ = yysep2, yy2arr2
@@ -4522,7 +4524,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteMapEnd()
 		}
-	} // checkNil=true
+	}
 }
 
 func (x *TestMammoth2) CodecDecodeSelf(d *Decoder) {
@@ -4530,7 +4532,9 @@ func (x *TestMammoth2) CodecDecodeSelf(d *Decoder) {
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
 	yyct2 := r.ContainerType()
-	if yyct2 == codecSelferValueTypeMap19781 {
+	if yyct2 == codecSelferValueTypeNil19781 {
+		*(x) = TestMammoth2{}
+	} else if yyct2 == codecSelferValueTypeMap19781 {
 		yyl2 := z.DecReadMapStart()
 		if yyl2 == 0 {
 		} else {
@@ -4568,13 +4572,9 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 		z.DecReadMapElemValue()
 		switch yys3 {
 		case "FIntf":
-			if r.TryDecodeAsNil() {
-				x.FIntf = nil
-			} else {
-				z.DecFallback(&x.FIntf, true)
-			}
+			z.DecFallback(&x.FIntf, true)
 		case "FptrIntf":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrIntf != nil { // remove the if-true
 					x.FptrIntf = nil
 				}
@@ -4582,17 +4582,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrIntf == nil {
 					x.FptrIntf = new(interface{})
 				}
-
 				z.DecFallback(x.FptrIntf, true)
 			}
 		case "FString":
-			if r.TryDecodeAsNil() {
-				x.FString = ""
-			} else {
-				x.FString = (string)(string(r.DecodeStringAsBytes()))
-			}
+			x.FString = (string)(string(r.DecodeStringAsBytes()))
 		case "FptrString":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrString != nil { // remove the if-true
 					x.FptrString = nil
 				}
@@ -4600,17 +4595,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrString == nil {
 					x.FptrString = new(string)
 				}
-
 				*x.FptrString = (string)(string(r.DecodeStringAsBytes()))
 			}
 		case "FBytes":
-			if r.TryDecodeAsNil() {
-				x.FBytes = nil
-			} else {
-				x.FBytes = r.DecodeBytes(([]byte)(x.FBytes), false)
-			}
+			x.FBytes = r.DecodeBytes(([]byte)(x.FBytes), false)
 		case "FptrBytes":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrBytes != nil { // remove the if-true
 					x.FptrBytes = nil
 				}
@@ -4618,17 +4608,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrBytes == nil {
 					x.FptrBytes = new([]uint8)
 				}
-
 				*x.FptrBytes = r.DecodeBytes(*(*[]byte)(x.FptrBytes), false)
 			}
 		case "FFloat32":
-			if r.TryDecodeAsNil() {
-				x.FFloat32 = 0
-			} else {
-				x.FFloat32 = (float32)(z.DecDecodeFloat32())
-			}
+			x.FFloat32 = (float32)(z.DecDecodeFloat32())
 		case "FptrFloat32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrFloat32 != nil { // remove the if-true
 					x.FptrFloat32 = nil
 				}
@@ -4636,17 +4621,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrFloat32 == nil {
 					x.FptrFloat32 = new(float32)
 				}
-
 				*x.FptrFloat32 = (float32)(z.DecDecodeFloat32())
 			}
 		case "FFloat64":
-			if r.TryDecodeAsNil() {
-				x.FFloat64 = 0
-			} else {
-				x.FFloat64 = (float64)(r.DecodeFloat64())
-			}
+			x.FFloat64 = (float64)(r.DecodeFloat64())
 		case "FptrFloat64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrFloat64 != nil { // remove the if-true
 					x.FptrFloat64 = nil
 				}
@@ -4654,17 +4634,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrFloat64 == nil {
 					x.FptrFloat64 = new(float64)
 				}
-
 				*x.FptrFloat64 = (float64)(r.DecodeFloat64())
 			}
 		case "FUint":
-			if r.TryDecodeAsNil() {
-				x.FUint = 0
-			} else {
-				x.FUint = (uint)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
-			}
+			x.FUint = (uint)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 		case "FptrUint":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrUint != nil { // remove the if-true
 					x.FptrUint = nil
 				}
@@ -4672,17 +4647,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUint == nil {
 					x.FptrUint = new(uint)
 				}
-
 				*x.FptrUint = (uint)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 			}
 		case "FUint8":
-			if r.TryDecodeAsNil() {
-				x.FUint8 = 0
-			} else {
-				x.FUint8 = (uint8)(z.C.UintV(r.DecodeUint64(), 8))
-			}
+			x.FUint8 = (uint8)(z.C.UintV(r.DecodeUint64(), 8))
 		case "FptrUint8":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrUint8 != nil { // remove the if-true
 					x.FptrUint8 = nil
 				}
@@ -4690,17 +4660,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUint8 == nil {
 					x.FptrUint8 = new(uint8)
 				}
-
 				*x.FptrUint8 = (uint8)(z.C.UintV(r.DecodeUint64(), 8))
 			}
 		case "FUint16":
-			if r.TryDecodeAsNil() {
-				x.FUint16 = 0
-			} else {
-				x.FUint16 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
-			}
+			x.FUint16 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
 		case "FptrUint16":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrUint16 != nil { // remove the if-true
 					x.FptrUint16 = nil
 				}
@@ -4708,17 +4673,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUint16 == nil {
 					x.FptrUint16 = new(uint16)
 				}
-
 				*x.FptrUint16 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
 			}
 		case "FUint32":
-			if r.TryDecodeAsNil() {
-				x.FUint32 = 0
-			} else {
-				x.FUint32 = (uint32)(z.C.UintV(r.DecodeUint64(), 32))
-			}
+			x.FUint32 = (uint32)(z.C.UintV(r.DecodeUint64(), 32))
 		case "FptrUint32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrUint32 != nil { // remove the if-true
 					x.FptrUint32 = nil
 				}
@@ -4726,17 +4686,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUint32 == nil {
 					x.FptrUint32 = new(uint32)
 				}
-
 				*x.FptrUint32 = (uint32)(z.C.UintV(r.DecodeUint64(), 32))
 			}
 		case "FUint64":
-			if r.TryDecodeAsNil() {
-				x.FUint64 = 0
-			} else {
-				x.FUint64 = (uint64)(r.DecodeUint64())
-			}
+			x.FUint64 = (uint64)(r.DecodeUint64())
 		case "FptrUint64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrUint64 != nil { // remove the if-true
 					x.FptrUint64 = nil
 				}
@@ -4744,17 +4699,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUint64 == nil {
 					x.FptrUint64 = new(uint64)
 				}
-
 				*x.FptrUint64 = (uint64)(r.DecodeUint64())
 			}
 		case "FUintptr":
-			if r.TryDecodeAsNil() {
-				x.FUintptr = 0
-			} else {
-				x.FUintptr = (uintptr)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
-			}
+			x.FUintptr = (uintptr)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 		case "FptrUintptr":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrUintptr != nil { // remove the if-true
 					x.FptrUintptr = nil
 				}
@@ -4762,17 +4712,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrUintptr == nil {
 					x.FptrUintptr = new(uintptr)
 				}
-
 				*x.FptrUintptr = (uintptr)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 			}
 		case "FInt":
-			if r.TryDecodeAsNil() {
-				x.FInt = 0
-			} else {
-				x.FInt = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
-			}
+			x.FInt = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
 		case "FptrInt":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrInt != nil { // remove the if-true
 					x.FptrInt = nil
 				}
@@ -4780,17 +4725,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrInt == nil {
 					x.FptrInt = new(int)
 				}
-
 				*x.FptrInt = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
 			}
 		case "FInt8":
-			if r.TryDecodeAsNil() {
-				x.FInt8 = 0
-			} else {
-				x.FInt8 = (int8)(z.C.IntV(r.DecodeInt64(), 8))
-			}
+			x.FInt8 = (int8)(z.C.IntV(r.DecodeInt64(), 8))
 		case "FptrInt8":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrInt8 != nil { // remove the if-true
 					x.FptrInt8 = nil
 				}
@@ -4798,17 +4738,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrInt8 == nil {
 					x.FptrInt8 = new(int8)
 				}
-
 				*x.FptrInt8 = (int8)(z.C.IntV(r.DecodeInt64(), 8))
 			}
 		case "FInt16":
-			if r.TryDecodeAsNil() {
-				x.FInt16 = 0
-			} else {
-				x.FInt16 = (int16)(z.C.IntV(r.DecodeInt64(), 16))
-			}
+			x.FInt16 = (int16)(z.C.IntV(r.DecodeInt64(), 16))
 		case "FptrInt16":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrInt16 != nil { // remove the if-true
 					x.FptrInt16 = nil
 				}
@@ -4816,17 +4751,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrInt16 == nil {
 					x.FptrInt16 = new(int16)
 				}
-
 				*x.FptrInt16 = (int16)(z.C.IntV(r.DecodeInt64(), 16))
 			}
 		case "FInt32":
-			if r.TryDecodeAsNil() {
-				x.FInt32 = 0
-			} else {
-				x.FInt32 = (int32)(z.C.IntV(r.DecodeInt64(), 32))
-			}
+			x.FInt32 = (int32)(z.C.IntV(r.DecodeInt64(), 32))
 		case "FptrInt32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrInt32 != nil { // remove the if-true
 					x.FptrInt32 = nil
 				}
@@ -4834,17 +4764,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrInt32 == nil {
 					x.FptrInt32 = new(int32)
 				}
-
 				*x.FptrInt32 = (int32)(z.C.IntV(r.DecodeInt64(), 32))
 			}
 		case "FInt64":
-			if r.TryDecodeAsNil() {
-				x.FInt64 = 0
-			} else {
-				x.FInt64 = (int64)(r.DecodeInt64())
-			}
+			x.FInt64 = (int64)(r.DecodeInt64())
 		case "FptrInt64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrInt64 != nil { // remove the if-true
 					x.FptrInt64 = nil
 				}
@@ -4852,17 +4777,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrInt64 == nil {
 					x.FptrInt64 = new(int64)
 				}
-
 				*x.FptrInt64 = (int64)(r.DecodeInt64())
 			}
 		case "FBool":
-			if r.TryDecodeAsNil() {
-				x.FBool = false
-			} else {
-				x.FBool = (bool)(r.DecodeBool())
-			}
+			x.FBool = (bool)(r.DecodeBool())
 		case "FptrBool":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrBool != nil { // remove the if-true
 					x.FptrBool = nil
 				}
@@ -4870,17 +4790,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrBool == nil {
 					x.FptrBool = new(bool)
 				}
-
 				*x.FptrBool = (bool)(r.DecodeBool())
 			}
 		case "FSliceIntf":
-			if r.TryDecodeAsNil() {
-				x.FSliceIntf = nil
-			} else {
-				z.F.DecSliceIntfX(&x.FSliceIntf, d)
-			}
+			z.F.DecSliceIntfX(&x.FSliceIntf, d)
 		case "FptrSliceIntf":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceIntf != nil { // remove the if-true
 					x.FptrSliceIntf = nil
 				}
@@ -4888,17 +4803,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceIntf == nil {
 					x.FptrSliceIntf = new([]interface{})
 				}
-
 				z.F.DecSliceIntfX(x.FptrSliceIntf, d)
 			}
 		case "FSliceString":
-			if r.TryDecodeAsNil() {
-				x.FSliceString = nil
-			} else {
-				z.F.DecSliceStringX(&x.FSliceString, d)
-			}
+			z.F.DecSliceStringX(&x.FSliceString, d)
 		case "FptrSliceString":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceString != nil { // remove the if-true
 					x.FptrSliceString = nil
 				}
@@ -4906,17 +4816,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceString == nil {
 					x.FptrSliceString = new([]string)
 				}
-
 				z.F.DecSliceStringX(x.FptrSliceString, d)
 			}
 		case "FSliceBytes":
-			if r.TryDecodeAsNil() {
-				x.FSliceBytes = nil
-			} else {
-				z.F.DecSliceBytesX(&x.FSliceBytes, d)
-			}
+			z.F.DecSliceBytesX(&x.FSliceBytes, d)
 		case "FptrSliceBytes":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceBytes != nil { // remove the if-true
 					x.FptrSliceBytes = nil
 				}
@@ -4924,17 +4829,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceBytes == nil {
 					x.FptrSliceBytes = new([][]uint8)
 				}
-
 				z.F.DecSliceBytesX(x.FptrSliceBytes, d)
 			}
 		case "FSliceFloat32":
-			if r.TryDecodeAsNil() {
-				x.FSliceFloat32 = nil
-			} else {
-				z.F.DecSliceFloat32X(&x.FSliceFloat32, d)
-			}
+			z.F.DecSliceFloat32X(&x.FSliceFloat32, d)
 		case "FptrSliceFloat32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceFloat32 != nil { // remove the if-true
 					x.FptrSliceFloat32 = nil
 				}
@@ -4942,17 +4842,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceFloat32 == nil {
 					x.FptrSliceFloat32 = new([]float32)
 				}
-
 				z.F.DecSliceFloat32X(x.FptrSliceFloat32, d)
 			}
 		case "FSliceFloat64":
-			if r.TryDecodeAsNil() {
-				x.FSliceFloat64 = nil
-			} else {
-				z.F.DecSliceFloat64X(&x.FSliceFloat64, d)
-			}
+			z.F.DecSliceFloat64X(&x.FSliceFloat64, d)
 		case "FptrSliceFloat64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceFloat64 != nil { // remove the if-true
 					x.FptrSliceFloat64 = nil
 				}
@@ -4960,17 +4855,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceFloat64 == nil {
 					x.FptrSliceFloat64 = new([]float64)
 				}
-
 				z.F.DecSliceFloat64X(x.FptrSliceFloat64, d)
 			}
 		case "FSliceUint":
-			if r.TryDecodeAsNil() {
-				x.FSliceUint = nil
-			} else {
-				z.F.DecSliceUintX(&x.FSliceUint, d)
-			}
+			z.F.DecSliceUintX(&x.FSliceUint, d)
 		case "FptrSliceUint":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceUint != nil { // remove the if-true
 					x.FptrSliceUint = nil
 				}
@@ -4978,17 +4868,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceUint == nil {
 					x.FptrSliceUint = new([]uint)
 				}
-
 				z.F.DecSliceUintX(x.FptrSliceUint, d)
 			}
 		case "FSliceUint16":
-			if r.TryDecodeAsNil() {
-				x.FSliceUint16 = nil
-			} else {
-				z.F.DecSliceUint16X(&x.FSliceUint16, d)
-			}
+			z.F.DecSliceUint16X(&x.FSliceUint16, d)
 		case "FptrSliceUint16":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceUint16 != nil { // remove the if-true
 					x.FptrSliceUint16 = nil
 				}
@@ -4996,17 +4881,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceUint16 == nil {
 					x.FptrSliceUint16 = new([]uint16)
 				}
-
 				z.F.DecSliceUint16X(x.FptrSliceUint16, d)
 			}
 		case "FSliceUint32":
-			if r.TryDecodeAsNil() {
-				x.FSliceUint32 = nil
-			} else {
-				z.F.DecSliceUint32X(&x.FSliceUint32, d)
-			}
+			z.F.DecSliceUint32X(&x.FSliceUint32, d)
 		case "FptrSliceUint32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceUint32 != nil { // remove the if-true
 					x.FptrSliceUint32 = nil
 				}
@@ -5014,17 +4894,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceUint32 == nil {
 					x.FptrSliceUint32 = new([]uint32)
 				}
-
 				z.F.DecSliceUint32X(x.FptrSliceUint32, d)
 			}
 		case "FSliceUint64":
-			if r.TryDecodeAsNil() {
-				x.FSliceUint64 = nil
-			} else {
-				z.F.DecSliceUint64X(&x.FSliceUint64, d)
-			}
+			z.F.DecSliceUint64X(&x.FSliceUint64, d)
 		case "FptrSliceUint64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceUint64 != nil { // remove the if-true
 					x.FptrSliceUint64 = nil
 				}
@@ -5032,17 +4907,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceUint64 == nil {
 					x.FptrSliceUint64 = new([]uint64)
 				}
-
 				z.F.DecSliceUint64X(x.FptrSliceUint64, d)
 			}
 		case "FSliceInt":
-			if r.TryDecodeAsNil() {
-				x.FSliceInt = nil
-			} else {
-				z.F.DecSliceIntX(&x.FSliceInt, d)
-			}
+			z.F.DecSliceIntX(&x.FSliceInt, d)
 		case "FptrSliceInt":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceInt != nil { // remove the if-true
 					x.FptrSliceInt = nil
 				}
@@ -5050,17 +4920,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceInt == nil {
 					x.FptrSliceInt = new([]int)
 				}
-
 				z.F.DecSliceIntX(x.FptrSliceInt, d)
 			}
 		case "FSliceInt8":
-			if r.TryDecodeAsNil() {
-				x.FSliceInt8 = nil
-			} else {
-				z.F.DecSliceInt8X(&x.FSliceInt8, d)
-			}
+			z.F.DecSliceInt8X(&x.FSliceInt8, d)
 		case "FptrSliceInt8":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceInt8 != nil { // remove the if-true
 					x.FptrSliceInt8 = nil
 				}
@@ -5068,17 +4933,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceInt8 == nil {
 					x.FptrSliceInt8 = new([]int8)
 				}
-
 				z.F.DecSliceInt8X(x.FptrSliceInt8, d)
 			}
 		case "FSliceInt16":
-			if r.TryDecodeAsNil() {
-				x.FSliceInt16 = nil
-			} else {
-				z.F.DecSliceInt16X(&x.FSliceInt16, d)
-			}
+			z.F.DecSliceInt16X(&x.FSliceInt16, d)
 		case "FptrSliceInt16":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceInt16 != nil { // remove the if-true
 					x.FptrSliceInt16 = nil
 				}
@@ -5086,17 +4946,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceInt16 == nil {
 					x.FptrSliceInt16 = new([]int16)
 				}
-
 				z.F.DecSliceInt16X(x.FptrSliceInt16, d)
 			}
 		case "FSliceInt32":
-			if r.TryDecodeAsNil() {
-				x.FSliceInt32 = nil
-			} else {
-				z.F.DecSliceInt32X(&x.FSliceInt32, d)
-			}
+			z.F.DecSliceInt32X(&x.FSliceInt32, d)
 		case "FptrSliceInt32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceInt32 != nil { // remove the if-true
 					x.FptrSliceInt32 = nil
 				}
@@ -5104,17 +4959,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceInt32 == nil {
 					x.FptrSliceInt32 = new([]int32)
 				}
-
 				z.F.DecSliceInt32X(x.FptrSliceInt32, d)
 			}
 		case "FSliceInt64":
-			if r.TryDecodeAsNil() {
-				x.FSliceInt64 = nil
-			} else {
-				z.F.DecSliceInt64X(&x.FSliceInt64, d)
-			}
+			z.F.DecSliceInt64X(&x.FSliceInt64, d)
 		case "FptrSliceInt64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceInt64 != nil { // remove the if-true
 					x.FptrSliceInt64 = nil
 				}
@@ -5122,17 +4972,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceInt64 == nil {
 					x.FptrSliceInt64 = new([]int64)
 				}
-
 				z.F.DecSliceInt64X(x.FptrSliceInt64, d)
 			}
 		case "FSliceBool":
-			if r.TryDecodeAsNil() {
-				x.FSliceBool = nil
-			} else {
-				z.F.DecSliceBoolX(&x.FSliceBool, d)
-			}
+			z.F.DecSliceBoolX(&x.FSliceBool, d)
 		case "FptrSliceBool":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrSliceBool != nil { // remove the if-true
 					x.FptrSliceBool = nil
 				}
@@ -5140,17 +4985,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrSliceBool == nil {
 					x.FptrSliceBool = new([]bool)
 				}
-
 				z.F.DecSliceBoolX(x.FptrSliceBool, d)
 			}
 		case "FMapStringIntf":
-			if r.TryDecodeAsNil() {
-				x.FMapStringIntf = nil
-			} else {
-				z.F.DecMapStringIntfX(&x.FMapStringIntf, d)
-			}
+			z.F.DecMapStringIntfX(&x.FMapStringIntf, d)
 		case "FptrMapStringIntf":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringIntf != nil { // remove the if-true
 					x.FptrMapStringIntf = nil
 				}
@@ -5158,17 +4998,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringIntf == nil {
 					x.FptrMapStringIntf = new(map[string]interface{})
 				}
-
 				z.F.DecMapStringIntfX(x.FptrMapStringIntf, d)
 			}
 		case "FMapStringString":
-			if r.TryDecodeAsNil() {
-				x.FMapStringString = nil
-			} else {
-				z.F.DecMapStringStringX(&x.FMapStringString, d)
-			}
+			z.F.DecMapStringStringX(&x.FMapStringString, d)
 		case "FptrMapStringString":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringString != nil { // remove the if-true
 					x.FptrMapStringString = nil
 				}
@@ -5176,17 +5011,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringString == nil {
 					x.FptrMapStringString = new(map[string]string)
 				}
-
 				z.F.DecMapStringStringX(x.FptrMapStringString, d)
 			}
 		case "FMapStringBytes":
-			if r.TryDecodeAsNil() {
-				x.FMapStringBytes = nil
-			} else {
-				z.F.DecMapStringBytesX(&x.FMapStringBytes, d)
-			}
+			z.F.DecMapStringBytesX(&x.FMapStringBytes, d)
 		case "FptrMapStringBytes":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringBytes != nil { // remove the if-true
 					x.FptrMapStringBytes = nil
 				}
@@ -5194,17 +5024,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringBytes == nil {
 					x.FptrMapStringBytes = new(map[string][]uint8)
 				}
-
 				z.F.DecMapStringBytesX(x.FptrMapStringBytes, d)
 			}
 		case "FMapStringUint":
-			if r.TryDecodeAsNil() {
-				x.FMapStringUint = nil
-			} else {
-				z.F.DecMapStringUintX(&x.FMapStringUint, d)
-			}
+			z.F.DecMapStringUintX(&x.FMapStringUint, d)
 		case "FptrMapStringUint":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringUint != nil { // remove the if-true
 					x.FptrMapStringUint = nil
 				}
@@ -5212,17 +5037,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringUint == nil {
 					x.FptrMapStringUint = new(map[string]uint)
 				}
-
 				z.F.DecMapStringUintX(x.FptrMapStringUint, d)
 			}
 		case "FMapStringUint8":
-			if r.TryDecodeAsNil() {
-				x.FMapStringUint8 = nil
-			} else {
-				z.F.DecMapStringUint8X(&x.FMapStringUint8, d)
-			}
+			z.F.DecMapStringUint8X(&x.FMapStringUint8, d)
 		case "FptrMapStringUint8":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringUint8 != nil { // remove the if-true
 					x.FptrMapStringUint8 = nil
 				}
@@ -5230,17 +5050,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringUint8 == nil {
 					x.FptrMapStringUint8 = new(map[string]uint8)
 				}
-
 				z.F.DecMapStringUint8X(x.FptrMapStringUint8, d)
 			}
 		case "FMapStringUint64":
-			if r.TryDecodeAsNil() {
-				x.FMapStringUint64 = nil
-			} else {
-				z.F.DecMapStringUint64X(&x.FMapStringUint64, d)
-			}
+			z.F.DecMapStringUint64X(&x.FMapStringUint64, d)
 		case "FptrMapStringUint64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringUint64 != nil { // remove the if-true
 					x.FptrMapStringUint64 = nil
 				}
@@ -5248,17 +5063,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringUint64 == nil {
 					x.FptrMapStringUint64 = new(map[string]uint64)
 				}
-
 				z.F.DecMapStringUint64X(x.FptrMapStringUint64, d)
 			}
 		case "FMapStringInt":
-			if r.TryDecodeAsNil() {
-				x.FMapStringInt = nil
-			} else {
-				z.F.DecMapStringIntX(&x.FMapStringInt, d)
-			}
+			z.F.DecMapStringIntX(&x.FMapStringInt, d)
 		case "FptrMapStringInt":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringInt != nil { // remove the if-true
 					x.FptrMapStringInt = nil
 				}
@@ -5266,17 +5076,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringInt == nil {
 					x.FptrMapStringInt = new(map[string]int)
 				}
-
 				z.F.DecMapStringIntX(x.FptrMapStringInt, d)
 			}
 		case "FMapStringInt64":
-			if r.TryDecodeAsNil() {
-				x.FMapStringInt64 = nil
-			} else {
-				z.F.DecMapStringInt64X(&x.FMapStringInt64, d)
-			}
+			z.F.DecMapStringInt64X(&x.FMapStringInt64, d)
 		case "FptrMapStringInt64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringInt64 != nil { // remove the if-true
 					x.FptrMapStringInt64 = nil
 				}
@@ -5284,17 +5089,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringInt64 == nil {
 					x.FptrMapStringInt64 = new(map[string]int64)
 				}
-
 				z.F.DecMapStringInt64X(x.FptrMapStringInt64, d)
 			}
 		case "FMapStringFloat32":
-			if r.TryDecodeAsNil() {
-				x.FMapStringFloat32 = nil
-			} else {
-				z.F.DecMapStringFloat32X(&x.FMapStringFloat32, d)
-			}
+			z.F.DecMapStringFloat32X(&x.FMapStringFloat32, d)
 		case "FptrMapStringFloat32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringFloat32 != nil { // remove the if-true
 					x.FptrMapStringFloat32 = nil
 				}
@@ -5302,17 +5102,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringFloat32 == nil {
 					x.FptrMapStringFloat32 = new(map[string]float32)
 				}
-
 				z.F.DecMapStringFloat32X(x.FptrMapStringFloat32, d)
 			}
 		case "FMapStringFloat64":
-			if r.TryDecodeAsNil() {
-				x.FMapStringFloat64 = nil
-			} else {
-				z.F.DecMapStringFloat64X(&x.FMapStringFloat64, d)
-			}
+			z.F.DecMapStringFloat64X(&x.FMapStringFloat64, d)
 		case "FptrMapStringFloat64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringFloat64 != nil { // remove the if-true
 					x.FptrMapStringFloat64 = nil
 				}
@@ -5320,17 +5115,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringFloat64 == nil {
 					x.FptrMapStringFloat64 = new(map[string]float64)
 				}
-
 				z.F.DecMapStringFloat64X(x.FptrMapStringFloat64, d)
 			}
 		case "FMapStringBool":
-			if r.TryDecodeAsNil() {
-				x.FMapStringBool = nil
-			} else {
-				z.F.DecMapStringBoolX(&x.FMapStringBool, d)
-			}
+			z.F.DecMapStringBoolX(&x.FMapStringBool, d)
 		case "FptrMapStringBool":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapStringBool != nil { // remove the if-true
 					x.FptrMapStringBool = nil
 				}
@@ -5338,17 +5128,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapStringBool == nil {
 					x.FptrMapStringBool = new(map[string]bool)
 				}
-
 				z.F.DecMapStringBoolX(x.FptrMapStringBool, d)
 			}
 		case "FMapUintIntf":
-			if r.TryDecodeAsNil() {
-				x.FMapUintIntf = nil
-			} else {
-				z.F.DecMapUintIntfX(&x.FMapUintIntf, d)
-			}
+			z.F.DecMapUintIntfX(&x.FMapUintIntf, d)
 		case "FptrMapUintIntf":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintIntf != nil { // remove the if-true
 					x.FptrMapUintIntf = nil
 				}
@@ -5356,17 +5141,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintIntf == nil {
 					x.FptrMapUintIntf = new(map[uint]interface{})
 				}
-
 				z.F.DecMapUintIntfX(x.FptrMapUintIntf, d)
 			}
 		case "FMapUintString":
-			if r.TryDecodeAsNil() {
-				x.FMapUintString = nil
-			} else {
-				z.F.DecMapUintStringX(&x.FMapUintString, d)
-			}
+			z.F.DecMapUintStringX(&x.FMapUintString, d)
 		case "FptrMapUintString":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintString != nil { // remove the if-true
 					x.FptrMapUintString = nil
 				}
@@ -5374,17 +5154,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintString == nil {
 					x.FptrMapUintString = new(map[uint]string)
 				}
-
 				z.F.DecMapUintStringX(x.FptrMapUintString, d)
 			}
 		case "FMapUintBytes":
-			if r.TryDecodeAsNil() {
-				x.FMapUintBytes = nil
-			} else {
-				z.F.DecMapUintBytesX(&x.FMapUintBytes, d)
-			}
+			z.F.DecMapUintBytesX(&x.FMapUintBytes, d)
 		case "FptrMapUintBytes":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintBytes != nil { // remove the if-true
 					x.FptrMapUintBytes = nil
 				}
@@ -5392,17 +5167,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintBytes == nil {
 					x.FptrMapUintBytes = new(map[uint][]uint8)
 				}
-
 				z.F.DecMapUintBytesX(x.FptrMapUintBytes, d)
 			}
 		case "FMapUintUint":
-			if r.TryDecodeAsNil() {
-				x.FMapUintUint = nil
-			} else {
-				z.F.DecMapUintUintX(&x.FMapUintUint, d)
-			}
+			z.F.DecMapUintUintX(&x.FMapUintUint, d)
 		case "FptrMapUintUint":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintUint != nil { // remove the if-true
 					x.FptrMapUintUint = nil
 				}
@@ -5410,17 +5180,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintUint == nil {
 					x.FptrMapUintUint = new(map[uint]uint)
 				}
-
 				z.F.DecMapUintUintX(x.FptrMapUintUint, d)
 			}
 		case "FMapUintUint8":
-			if r.TryDecodeAsNil() {
-				x.FMapUintUint8 = nil
-			} else {
-				z.F.DecMapUintUint8X(&x.FMapUintUint8, d)
-			}
+			z.F.DecMapUintUint8X(&x.FMapUintUint8, d)
 		case "FptrMapUintUint8":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintUint8 != nil { // remove the if-true
 					x.FptrMapUintUint8 = nil
 				}
@@ -5428,17 +5193,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintUint8 == nil {
 					x.FptrMapUintUint8 = new(map[uint]uint8)
 				}
-
 				z.F.DecMapUintUint8X(x.FptrMapUintUint8, d)
 			}
 		case "FMapUintUint64":
-			if r.TryDecodeAsNil() {
-				x.FMapUintUint64 = nil
-			} else {
-				z.F.DecMapUintUint64X(&x.FMapUintUint64, d)
-			}
+			z.F.DecMapUintUint64X(&x.FMapUintUint64, d)
 		case "FptrMapUintUint64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintUint64 != nil { // remove the if-true
 					x.FptrMapUintUint64 = nil
 				}
@@ -5446,17 +5206,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintUint64 == nil {
 					x.FptrMapUintUint64 = new(map[uint]uint64)
 				}
-
 				z.F.DecMapUintUint64X(x.FptrMapUintUint64, d)
 			}
 		case "FMapUintInt":
-			if r.TryDecodeAsNil() {
-				x.FMapUintInt = nil
-			} else {
-				z.F.DecMapUintIntX(&x.FMapUintInt, d)
-			}
+			z.F.DecMapUintIntX(&x.FMapUintInt, d)
 		case "FptrMapUintInt":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintInt != nil { // remove the if-true
 					x.FptrMapUintInt = nil
 				}
@@ -5464,17 +5219,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintInt == nil {
 					x.FptrMapUintInt = new(map[uint]int)
 				}
-
 				z.F.DecMapUintIntX(x.FptrMapUintInt, d)
 			}
 		case "FMapUintInt64":
-			if r.TryDecodeAsNil() {
-				x.FMapUintInt64 = nil
-			} else {
-				z.F.DecMapUintInt64X(&x.FMapUintInt64, d)
-			}
+			z.F.DecMapUintInt64X(&x.FMapUintInt64, d)
 		case "FptrMapUintInt64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintInt64 != nil { // remove the if-true
 					x.FptrMapUintInt64 = nil
 				}
@@ -5482,17 +5232,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintInt64 == nil {
 					x.FptrMapUintInt64 = new(map[uint]int64)
 				}
-
 				z.F.DecMapUintInt64X(x.FptrMapUintInt64, d)
 			}
 		case "FMapUintFloat32":
-			if r.TryDecodeAsNil() {
-				x.FMapUintFloat32 = nil
-			} else {
-				z.F.DecMapUintFloat32X(&x.FMapUintFloat32, d)
-			}
+			z.F.DecMapUintFloat32X(&x.FMapUintFloat32, d)
 		case "FptrMapUintFloat32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintFloat32 != nil { // remove the if-true
 					x.FptrMapUintFloat32 = nil
 				}
@@ -5500,17 +5245,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintFloat32 == nil {
 					x.FptrMapUintFloat32 = new(map[uint]float32)
 				}
-
 				z.F.DecMapUintFloat32X(x.FptrMapUintFloat32, d)
 			}
 		case "FMapUintFloat64":
-			if r.TryDecodeAsNil() {
-				x.FMapUintFloat64 = nil
-			} else {
-				z.F.DecMapUintFloat64X(&x.FMapUintFloat64, d)
-			}
+			z.F.DecMapUintFloat64X(&x.FMapUintFloat64, d)
 		case "FptrMapUintFloat64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintFloat64 != nil { // remove the if-true
 					x.FptrMapUintFloat64 = nil
 				}
@@ -5518,17 +5258,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintFloat64 == nil {
 					x.FptrMapUintFloat64 = new(map[uint]float64)
 				}
-
 				z.F.DecMapUintFloat64X(x.FptrMapUintFloat64, d)
 			}
 		case "FMapUintBool":
-			if r.TryDecodeAsNil() {
-				x.FMapUintBool = nil
-			} else {
-				z.F.DecMapUintBoolX(&x.FMapUintBool, d)
-			}
+			z.F.DecMapUintBoolX(&x.FMapUintBool, d)
 		case "FptrMapUintBool":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUintBool != nil { // remove the if-true
 					x.FptrMapUintBool = nil
 				}
@@ -5536,17 +5271,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUintBool == nil {
 					x.FptrMapUintBool = new(map[uint]bool)
 				}
-
 				z.F.DecMapUintBoolX(x.FptrMapUintBool, d)
 			}
 		case "FMapUint8Intf":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8Intf = nil
-			} else {
-				z.F.DecMapUint8IntfX(&x.FMapUint8Intf, d)
-			}
+			z.F.DecMapUint8IntfX(&x.FMapUint8Intf, d)
 		case "FptrMapUint8Intf":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8Intf != nil { // remove the if-true
 					x.FptrMapUint8Intf = nil
 				}
@@ -5554,17 +5284,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Intf == nil {
 					x.FptrMapUint8Intf = new(map[uint8]interface{})
 				}
-
 				z.F.DecMapUint8IntfX(x.FptrMapUint8Intf, d)
 			}
 		case "FMapUint8String":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8String = nil
-			} else {
-				z.F.DecMapUint8StringX(&x.FMapUint8String, d)
-			}
+			z.F.DecMapUint8StringX(&x.FMapUint8String, d)
 		case "FptrMapUint8String":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8String != nil { // remove the if-true
 					x.FptrMapUint8String = nil
 				}
@@ -5572,17 +5297,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8String == nil {
 					x.FptrMapUint8String = new(map[uint8]string)
 				}
-
 				z.F.DecMapUint8StringX(x.FptrMapUint8String, d)
 			}
 		case "FMapUint8Bytes":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8Bytes = nil
-			} else {
-				z.F.DecMapUint8BytesX(&x.FMapUint8Bytes, d)
-			}
+			z.F.DecMapUint8BytesX(&x.FMapUint8Bytes, d)
 		case "FptrMapUint8Bytes":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8Bytes != nil { // remove the if-true
 					x.FptrMapUint8Bytes = nil
 				}
@@ -5590,17 +5310,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Bytes == nil {
 					x.FptrMapUint8Bytes = new(map[uint8][]uint8)
 				}
-
 				z.F.DecMapUint8BytesX(x.FptrMapUint8Bytes, d)
 			}
 		case "FMapUint8Uint":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8Uint = nil
-			} else {
-				z.F.DecMapUint8UintX(&x.FMapUint8Uint, d)
-			}
+			z.F.DecMapUint8UintX(&x.FMapUint8Uint, d)
 		case "FptrMapUint8Uint":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8Uint != nil { // remove the if-true
 					x.FptrMapUint8Uint = nil
 				}
@@ -5608,17 +5323,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Uint == nil {
 					x.FptrMapUint8Uint = new(map[uint8]uint)
 				}
-
 				z.F.DecMapUint8UintX(x.FptrMapUint8Uint, d)
 			}
 		case "FMapUint8Uint8":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8Uint8 = nil
-			} else {
-				z.F.DecMapUint8Uint8X(&x.FMapUint8Uint8, d)
-			}
+			z.F.DecMapUint8Uint8X(&x.FMapUint8Uint8, d)
 		case "FptrMapUint8Uint8":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8Uint8 != nil { // remove the if-true
 					x.FptrMapUint8Uint8 = nil
 				}
@@ -5626,17 +5336,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Uint8 == nil {
 					x.FptrMapUint8Uint8 = new(map[uint8]uint8)
 				}
-
 				z.F.DecMapUint8Uint8X(x.FptrMapUint8Uint8, d)
 			}
 		case "FMapUint8Uint64":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8Uint64 = nil
-			} else {
-				z.F.DecMapUint8Uint64X(&x.FMapUint8Uint64, d)
-			}
+			z.F.DecMapUint8Uint64X(&x.FMapUint8Uint64, d)
 		case "FptrMapUint8Uint64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8Uint64 != nil { // remove the if-true
 					x.FptrMapUint8Uint64 = nil
 				}
@@ -5644,17 +5349,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Uint64 == nil {
 					x.FptrMapUint8Uint64 = new(map[uint8]uint64)
 				}
-
 				z.F.DecMapUint8Uint64X(x.FptrMapUint8Uint64, d)
 			}
 		case "FMapUint8Int":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8Int = nil
-			} else {
-				z.F.DecMapUint8IntX(&x.FMapUint8Int, d)
-			}
+			z.F.DecMapUint8IntX(&x.FMapUint8Int, d)
 		case "FptrMapUint8Int":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8Int != nil { // remove the if-true
 					x.FptrMapUint8Int = nil
 				}
@@ -5662,17 +5362,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Int == nil {
 					x.FptrMapUint8Int = new(map[uint8]int)
 				}
-
 				z.F.DecMapUint8IntX(x.FptrMapUint8Int, d)
 			}
 		case "FMapUint8Int64":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8Int64 = nil
-			} else {
-				z.F.DecMapUint8Int64X(&x.FMapUint8Int64, d)
-			}
+			z.F.DecMapUint8Int64X(&x.FMapUint8Int64, d)
 		case "FptrMapUint8Int64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8Int64 != nil { // remove the if-true
 					x.FptrMapUint8Int64 = nil
 				}
@@ -5680,17 +5375,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Int64 == nil {
 					x.FptrMapUint8Int64 = new(map[uint8]int64)
 				}
-
 				z.F.DecMapUint8Int64X(x.FptrMapUint8Int64, d)
 			}
 		case "FMapUint8Float32":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8Float32 = nil
-			} else {
-				z.F.DecMapUint8Float32X(&x.FMapUint8Float32, d)
-			}
+			z.F.DecMapUint8Float32X(&x.FMapUint8Float32, d)
 		case "FptrMapUint8Float32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8Float32 != nil { // remove the if-true
 					x.FptrMapUint8Float32 = nil
 				}
@@ -5698,17 +5388,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Float32 == nil {
 					x.FptrMapUint8Float32 = new(map[uint8]float32)
 				}
-
 				z.F.DecMapUint8Float32X(x.FptrMapUint8Float32, d)
 			}
 		case "FMapUint8Float64":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8Float64 = nil
-			} else {
-				z.F.DecMapUint8Float64X(&x.FMapUint8Float64, d)
-			}
+			z.F.DecMapUint8Float64X(&x.FMapUint8Float64, d)
 		case "FptrMapUint8Float64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8Float64 != nil { // remove the if-true
 					x.FptrMapUint8Float64 = nil
 				}
@@ -5716,17 +5401,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Float64 == nil {
 					x.FptrMapUint8Float64 = new(map[uint8]float64)
 				}
-
 				z.F.DecMapUint8Float64X(x.FptrMapUint8Float64, d)
 			}
 		case "FMapUint8Bool":
-			if r.TryDecodeAsNil() {
-				x.FMapUint8Bool = nil
-			} else {
-				z.F.DecMapUint8BoolX(&x.FMapUint8Bool, d)
-			}
+			z.F.DecMapUint8BoolX(&x.FMapUint8Bool, d)
 		case "FptrMapUint8Bool":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint8Bool != nil { // remove the if-true
 					x.FptrMapUint8Bool = nil
 				}
@@ -5734,17 +5414,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint8Bool == nil {
 					x.FptrMapUint8Bool = new(map[uint8]bool)
 				}
-
 				z.F.DecMapUint8BoolX(x.FptrMapUint8Bool, d)
 			}
 		case "FMapUint64Intf":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64Intf = nil
-			} else {
-				z.F.DecMapUint64IntfX(&x.FMapUint64Intf, d)
-			}
+			z.F.DecMapUint64IntfX(&x.FMapUint64Intf, d)
 		case "FptrMapUint64Intf":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64Intf != nil { // remove the if-true
 					x.FptrMapUint64Intf = nil
 				}
@@ -5752,17 +5427,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Intf == nil {
 					x.FptrMapUint64Intf = new(map[uint64]interface{})
 				}
-
 				z.F.DecMapUint64IntfX(x.FptrMapUint64Intf, d)
 			}
 		case "FMapUint64String":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64String = nil
-			} else {
-				z.F.DecMapUint64StringX(&x.FMapUint64String, d)
-			}
+			z.F.DecMapUint64StringX(&x.FMapUint64String, d)
 		case "FptrMapUint64String":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64String != nil { // remove the if-true
 					x.FptrMapUint64String = nil
 				}
@@ -5770,17 +5440,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64String == nil {
 					x.FptrMapUint64String = new(map[uint64]string)
 				}
-
 				z.F.DecMapUint64StringX(x.FptrMapUint64String, d)
 			}
 		case "FMapUint64Bytes":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64Bytes = nil
-			} else {
-				z.F.DecMapUint64BytesX(&x.FMapUint64Bytes, d)
-			}
+			z.F.DecMapUint64BytesX(&x.FMapUint64Bytes, d)
 		case "FptrMapUint64Bytes":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64Bytes != nil { // remove the if-true
 					x.FptrMapUint64Bytes = nil
 				}
@@ -5788,17 +5453,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Bytes == nil {
 					x.FptrMapUint64Bytes = new(map[uint64][]uint8)
 				}
-
 				z.F.DecMapUint64BytesX(x.FptrMapUint64Bytes, d)
 			}
 		case "FMapUint64Uint":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64Uint = nil
-			} else {
-				z.F.DecMapUint64UintX(&x.FMapUint64Uint, d)
-			}
+			z.F.DecMapUint64UintX(&x.FMapUint64Uint, d)
 		case "FptrMapUint64Uint":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64Uint != nil { // remove the if-true
 					x.FptrMapUint64Uint = nil
 				}
@@ -5806,17 +5466,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Uint == nil {
 					x.FptrMapUint64Uint = new(map[uint64]uint)
 				}
-
 				z.F.DecMapUint64UintX(x.FptrMapUint64Uint, d)
 			}
 		case "FMapUint64Uint8":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64Uint8 = nil
-			} else {
-				z.F.DecMapUint64Uint8X(&x.FMapUint64Uint8, d)
-			}
+			z.F.DecMapUint64Uint8X(&x.FMapUint64Uint8, d)
 		case "FptrMapUint64Uint8":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64Uint8 != nil { // remove the if-true
 					x.FptrMapUint64Uint8 = nil
 				}
@@ -5824,17 +5479,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Uint8 == nil {
 					x.FptrMapUint64Uint8 = new(map[uint64]uint8)
 				}
-
 				z.F.DecMapUint64Uint8X(x.FptrMapUint64Uint8, d)
 			}
 		case "FMapUint64Uint64":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64Uint64 = nil
-			} else {
-				z.F.DecMapUint64Uint64X(&x.FMapUint64Uint64, d)
-			}
+			z.F.DecMapUint64Uint64X(&x.FMapUint64Uint64, d)
 		case "FptrMapUint64Uint64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64Uint64 != nil { // remove the if-true
 					x.FptrMapUint64Uint64 = nil
 				}
@@ -5842,17 +5492,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Uint64 == nil {
 					x.FptrMapUint64Uint64 = new(map[uint64]uint64)
 				}
-
 				z.F.DecMapUint64Uint64X(x.FptrMapUint64Uint64, d)
 			}
 		case "FMapUint64Int":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64Int = nil
-			} else {
-				z.F.DecMapUint64IntX(&x.FMapUint64Int, d)
-			}
+			z.F.DecMapUint64IntX(&x.FMapUint64Int, d)
 		case "FptrMapUint64Int":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64Int != nil { // remove the if-true
 					x.FptrMapUint64Int = nil
 				}
@@ -5860,17 +5505,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Int == nil {
 					x.FptrMapUint64Int = new(map[uint64]int)
 				}
-
 				z.F.DecMapUint64IntX(x.FptrMapUint64Int, d)
 			}
 		case "FMapUint64Int64":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64Int64 = nil
-			} else {
-				z.F.DecMapUint64Int64X(&x.FMapUint64Int64, d)
-			}
+			z.F.DecMapUint64Int64X(&x.FMapUint64Int64, d)
 		case "FptrMapUint64Int64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64Int64 != nil { // remove the if-true
 					x.FptrMapUint64Int64 = nil
 				}
@@ -5878,17 +5518,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Int64 == nil {
 					x.FptrMapUint64Int64 = new(map[uint64]int64)
 				}
-
 				z.F.DecMapUint64Int64X(x.FptrMapUint64Int64, d)
 			}
 		case "FMapUint64Float32":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64Float32 = nil
-			} else {
-				z.F.DecMapUint64Float32X(&x.FMapUint64Float32, d)
-			}
+			z.F.DecMapUint64Float32X(&x.FMapUint64Float32, d)
 		case "FptrMapUint64Float32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64Float32 != nil { // remove the if-true
 					x.FptrMapUint64Float32 = nil
 				}
@@ -5896,17 +5531,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Float32 == nil {
 					x.FptrMapUint64Float32 = new(map[uint64]float32)
 				}
-
 				z.F.DecMapUint64Float32X(x.FptrMapUint64Float32, d)
 			}
 		case "FMapUint64Float64":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64Float64 = nil
-			} else {
-				z.F.DecMapUint64Float64X(&x.FMapUint64Float64, d)
-			}
+			z.F.DecMapUint64Float64X(&x.FMapUint64Float64, d)
 		case "FptrMapUint64Float64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64Float64 != nil { // remove the if-true
 					x.FptrMapUint64Float64 = nil
 				}
@@ -5914,17 +5544,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Float64 == nil {
 					x.FptrMapUint64Float64 = new(map[uint64]float64)
 				}
-
 				z.F.DecMapUint64Float64X(x.FptrMapUint64Float64, d)
 			}
 		case "FMapUint64Bool":
-			if r.TryDecodeAsNil() {
-				x.FMapUint64Bool = nil
-			} else {
-				z.F.DecMapUint64BoolX(&x.FMapUint64Bool, d)
-			}
+			z.F.DecMapUint64BoolX(&x.FMapUint64Bool, d)
 		case "FptrMapUint64Bool":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapUint64Bool != nil { // remove the if-true
 					x.FptrMapUint64Bool = nil
 				}
@@ -5932,17 +5557,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapUint64Bool == nil {
 					x.FptrMapUint64Bool = new(map[uint64]bool)
 				}
-
 				z.F.DecMapUint64BoolX(x.FptrMapUint64Bool, d)
 			}
 		case "FMapIntIntf":
-			if r.TryDecodeAsNil() {
-				x.FMapIntIntf = nil
-			} else {
-				z.F.DecMapIntIntfX(&x.FMapIntIntf, d)
-			}
+			z.F.DecMapIntIntfX(&x.FMapIntIntf, d)
 		case "FptrMapIntIntf":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntIntf != nil { // remove the if-true
 					x.FptrMapIntIntf = nil
 				}
@@ -5950,17 +5570,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntIntf == nil {
 					x.FptrMapIntIntf = new(map[int]interface{})
 				}
-
 				z.F.DecMapIntIntfX(x.FptrMapIntIntf, d)
 			}
 		case "FMapIntString":
-			if r.TryDecodeAsNil() {
-				x.FMapIntString = nil
-			} else {
-				z.F.DecMapIntStringX(&x.FMapIntString, d)
-			}
+			z.F.DecMapIntStringX(&x.FMapIntString, d)
 		case "FptrMapIntString":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntString != nil { // remove the if-true
 					x.FptrMapIntString = nil
 				}
@@ -5968,17 +5583,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntString == nil {
 					x.FptrMapIntString = new(map[int]string)
 				}
-
 				z.F.DecMapIntStringX(x.FptrMapIntString, d)
 			}
 		case "FMapIntBytes":
-			if r.TryDecodeAsNil() {
-				x.FMapIntBytes = nil
-			} else {
-				z.F.DecMapIntBytesX(&x.FMapIntBytes, d)
-			}
+			z.F.DecMapIntBytesX(&x.FMapIntBytes, d)
 		case "FptrMapIntBytes":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntBytes != nil { // remove the if-true
 					x.FptrMapIntBytes = nil
 				}
@@ -5986,17 +5596,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntBytes == nil {
 					x.FptrMapIntBytes = new(map[int][]uint8)
 				}
-
 				z.F.DecMapIntBytesX(x.FptrMapIntBytes, d)
 			}
 		case "FMapIntUint":
-			if r.TryDecodeAsNil() {
-				x.FMapIntUint = nil
-			} else {
-				z.F.DecMapIntUintX(&x.FMapIntUint, d)
-			}
+			z.F.DecMapIntUintX(&x.FMapIntUint, d)
 		case "FptrMapIntUint":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntUint != nil { // remove the if-true
 					x.FptrMapIntUint = nil
 				}
@@ -6004,17 +5609,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntUint == nil {
 					x.FptrMapIntUint = new(map[int]uint)
 				}
-
 				z.F.DecMapIntUintX(x.FptrMapIntUint, d)
 			}
 		case "FMapIntUint8":
-			if r.TryDecodeAsNil() {
-				x.FMapIntUint8 = nil
-			} else {
-				z.F.DecMapIntUint8X(&x.FMapIntUint8, d)
-			}
+			z.F.DecMapIntUint8X(&x.FMapIntUint8, d)
 		case "FptrMapIntUint8":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntUint8 != nil { // remove the if-true
 					x.FptrMapIntUint8 = nil
 				}
@@ -6022,17 +5622,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntUint8 == nil {
 					x.FptrMapIntUint8 = new(map[int]uint8)
 				}
-
 				z.F.DecMapIntUint8X(x.FptrMapIntUint8, d)
 			}
 		case "FMapIntUint64":
-			if r.TryDecodeAsNil() {
-				x.FMapIntUint64 = nil
-			} else {
-				z.F.DecMapIntUint64X(&x.FMapIntUint64, d)
-			}
+			z.F.DecMapIntUint64X(&x.FMapIntUint64, d)
 		case "FptrMapIntUint64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntUint64 != nil { // remove the if-true
 					x.FptrMapIntUint64 = nil
 				}
@@ -6040,17 +5635,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntUint64 == nil {
 					x.FptrMapIntUint64 = new(map[int]uint64)
 				}
-
 				z.F.DecMapIntUint64X(x.FptrMapIntUint64, d)
 			}
 		case "FMapIntInt":
-			if r.TryDecodeAsNil() {
-				x.FMapIntInt = nil
-			} else {
-				z.F.DecMapIntIntX(&x.FMapIntInt, d)
-			}
+			z.F.DecMapIntIntX(&x.FMapIntInt, d)
 		case "FptrMapIntInt":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntInt != nil { // remove the if-true
 					x.FptrMapIntInt = nil
 				}
@@ -6058,17 +5648,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntInt == nil {
 					x.FptrMapIntInt = new(map[int]int)
 				}
-
 				z.F.DecMapIntIntX(x.FptrMapIntInt, d)
 			}
 		case "FMapIntInt64":
-			if r.TryDecodeAsNil() {
-				x.FMapIntInt64 = nil
-			} else {
-				z.F.DecMapIntInt64X(&x.FMapIntInt64, d)
-			}
+			z.F.DecMapIntInt64X(&x.FMapIntInt64, d)
 		case "FptrMapIntInt64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntInt64 != nil { // remove the if-true
 					x.FptrMapIntInt64 = nil
 				}
@@ -6076,17 +5661,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntInt64 == nil {
 					x.FptrMapIntInt64 = new(map[int]int64)
 				}
-
 				z.F.DecMapIntInt64X(x.FptrMapIntInt64, d)
 			}
 		case "FMapIntFloat32":
-			if r.TryDecodeAsNil() {
-				x.FMapIntFloat32 = nil
-			} else {
-				z.F.DecMapIntFloat32X(&x.FMapIntFloat32, d)
-			}
+			z.F.DecMapIntFloat32X(&x.FMapIntFloat32, d)
 		case "FptrMapIntFloat32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntFloat32 != nil { // remove the if-true
 					x.FptrMapIntFloat32 = nil
 				}
@@ -6094,17 +5674,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntFloat32 == nil {
 					x.FptrMapIntFloat32 = new(map[int]float32)
 				}
-
 				z.F.DecMapIntFloat32X(x.FptrMapIntFloat32, d)
 			}
 		case "FMapIntFloat64":
-			if r.TryDecodeAsNil() {
-				x.FMapIntFloat64 = nil
-			} else {
-				z.F.DecMapIntFloat64X(&x.FMapIntFloat64, d)
-			}
+			z.F.DecMapIntFloat64X(&x.FMapIntFloat64, d)
 		case "FptrMapIntFloat64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntFloat64 != nil { // remove the if-true
 					x.FptrMapIntFloat64 = nil
 				}
@@ -6112,17 +5687,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntFloat64 == nil {
 					x.FptrMapIntFloat64 = new(map[int]float64)
 				}
-
 				z.F.DecMapIntFloat64X(x.FptrMapIntFloat64, d)
 			}
 		case "FMapIntBool":
-			if r.TryDecodeAsNil() {
-				x.FMapIntBool = nil
-			} else {
-				z.F.DecMapIntBoolX(&x.FMapIntBool, d)
-			}
+			z.F.DecMapIntBoolX(&x.FMapIntBool, d)
 		case "FptrMapIntBool":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapIntBool != nil { // remove the if-true
 					x.FptrMapIntBool = nil
 				}
@@ -6130,17 +5700,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapIntBool == nil {
 					x.FptrMapIntBool = new(map[int]bool)
 				}
-
 				z.F.DecMapIntBoolX(x.FptrMapIntBool, d)
 			}
 		case "FMapInt64Intf":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64Intf = nil
-			} else {
-				z.F.DecMapInt64IntfX(&x.FMapInt64Intf, d)
-			}
+			z.F.DecMapInt64IntfX(&x.FMapInt64Intf, d)
 		case "FptrMapInt64Intf":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64Intf != nil { // remove the if-true
 					x.FptrMapInt64Intf = nil
 				}
@@ -6148,17 +5713,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Intf == nil {
 					x.FptrMapInt64Intf = new(map[int64]interface{})
 				}
-
 				z.F.DecMapInt64IntfX(x.FptrMapInt64Intf, d)
 			}
 		case "FMapInt64String":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64String = nil
-			} else {
-				z.F.DecMapInt64StringX(&x.FMapInt64String, d)
-			}
+			z.F.DecMapInt64StringX(&x.FMapInt64String, d)
 		case "FptrMapInt64String":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64String != nil { // remove the if-true
 					x.FptrMapInt64String = nil
 				}
@@ -6166,17 +5726,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64String == nil {
 					x.FptrMapInt64String = new(map[int64]string)
 				}
-
 				z.F.DecMapInt64StringX(x.FptrMapInt64String, d)
 			}
 		case "FMapInt64Bytes":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64Bytes = nil
-			} else {
-				z.F.DecMapInt64BytesX(&x.FMapInt64Bytes, d)
-			}
+			z.F.DecMapInt64BytesX(&x.FMapInt64Bytes, d)
 		case "FptrMapInt64Bytes":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64Bytes != nil { // remove the if-true
 					x.FptrMapInt64Bytes = nil
 				}
@@ -6184,17 +5739,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Bytes == nil {
 					x.FptrMapInt64Bytes = new(map[int64][]uint8)
 				}
-
 				z.F.DecMapInt64BytesX(x.FptrMapInt64Bytes, d)
 			}
 		case "FMapInt64Uint":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64Uint = nil
-			} else {
-				z.F.DecMapInt64UintX(&x.FMapInt64Uint, d)
-			}
+			z.F.DecMapInt64UintX(&x.FMapInt64Uint, d)
 		case "FptrMapInt64Uint":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64Uint != nil { // remove the if-true
 					x.FptrMapInt64Uint = nil
 				}
@@ -6202,17 +5752,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Uint == nil {
 					x.FptrMapInt64Uint = new(map[int64]uint)
 				}
-
 				z.F.DecMapInt64UintX(x.FptrMapInt64Uint, d)
 			}
 		case "FMapInt64Uint8":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64Uint8 = nil
-			} else {
-				z.F.DecMapInt64Uint8X(&x.FMapInt64Uint8, d)
-			}
+			z.F.DecMapInt64Uint8X(&x.FMapInt64Uint8, d)
 		case "FptrMapInt64Uint8":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64Uint8 != nil { // remove the if-true
 					x.FptrMapInt64Uint8 = nil
 				}
@@ -6220,17 +5765,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Uint8 == nil {
 					x.FptrMapInt64Uint8 = new(map[int64]uint8)
 				}
-
 				z.F.DecMapInt64Uint8X(x.FptrMapInt64Uint8, d)
 			}
 		case "FMapInt64Uint64":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64Uint64 = nil
-			} else {
-				z.F.DecMapInt64Uint64X(&x.FMapInt64Uint64, d)
-			}
+			z.F.DecMapInt64Uint64X(&x.FMapInt64Uint64, d)
 		case "FptrMapInt64Uint64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64Uint64 != nil { // remove the if-true
 					x.FptrMapInt64Uint64 = nil
 				}
@@ -6238,17 +5778,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Uint64 == nil {
 					x.FptrMapInt64Uint64 = new(map[int64]uint64)
 				}
-
 				z.F.DecMapInt64Uint64X(x.FptrMapInt64Uint64, d)
 			}
 		case "FMapInt64Int":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64Int = nil
-			} else {
-				z.F.DecMapInt64IntX(&x.FMapInt64Int, d)
-			}
+			z.F.DecMapInt64IntX(&x.FMapInt64Int, d)
 		case "FptrMapInt64Int":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64Int != nil { // remove the if-true
 					x.FptrMapInt64Int = nil
 				}
@@ -6256,17 +5791,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Int == nil {
 					x.FptrMapInt64Int = new(map[int64]int)
 				}
-
 				z.F.DecMapInt64IntX(x.FptrMapInt64Int, d)
 			}
 		case "FMapInt64Int64":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64Int64 = nil
-			} else {
-				z.F.DecMapInt64Int64X(&x.FMapInt64Int64, d)
-			}
+			z.F.DecMapInt64Int64X(&x.FMapInt64Int64, d)
 		case "FptrMapInt64Int64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64Int64 != nil { // remove the if-true
 					x.FptrMapInt64Int64 = nil
 				}
@@ -6274,17 +5804,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Int64 == nil {
 					x.FptrMapInt64Int64 = new(map[int64]int64)
 				}
-
 				z.F.DecMapInt64Int64X(x.FptrMapInt64Int64, d)
 			}
 		case "FMapInt64Float32":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64Float32 = nil
-			} else {
-				z.F.DecMapInt64Float32X(&x.FMapInt64Float32, d)
-			}
+			z.F.DecMapInt64Float32X(&x.FMapInt64Float32, d)
 		case "FptrMapInt64Float32":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64Float32 != nil { // remove the if-true
 					x.FptrMapInt64Float32 = nil
 				}
@@ -6292,17 +5817,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Float32 == nil {
 					x.FptrMapInt64Float32 = new(map[int64]float32)
 				}
-
 				z.F.DecMapInt64Float32X(x.FptrMapInt64Float32, d)
 			}
 		case "FMapInt64Float64":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64Float64 = nil
-			} else {
-				z.F.DecMapInt64Float64X(&x.FMapInt64Float64, d)
-			}
+			z.F.DecMapInt64Float64X(&x.FMapInt64Float64, d)
 		case "FptrMapInt64Float64":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64Float64 != nil { // remove the if-true
 					x.FptrMapInt64Float64 = nil
 				}
@@ -6310,17 +5830,12 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Float64 == nil {
 					x.FptrMapInt64Float64 = new(map[int64]float64)
 				}
-
 				z.F.DecMapInt64Float64X(x.FptrMapInt64Float64, d)
 			}
 		case "FMapInt64Bool":
-			if r.TryDecodeAsNil() {
-				x.FMapInt64Bool = nil
-			} else {
-				z.F.DecMapInt64BoolX(&x.FMapInt64Bool, d)
-			}
+			z.F.DecMapInt64BoolX(&x.FMapInt64Bool, d)
 		case "FptrMapInt64Bool":
-			if r.TryDecodeAsNil() {
+			if r.TryNil() {
 				if x.FptrMapInt64Bool != nil { // remove the if-true
 					x.FptrMapInt64Bool = nil
 				}
@@ -6328,7 +5843,6 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrMapInt64Bool == nil {
 					x.FptrMapInt64Bool = new(map[int64]bool)
 				}
-
 				z.F.DecMapInt64BoolX(x.FptrMapInt64Bool, d)
 			}
 		default:
@@ -6355,11 +5869,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FIntf = nil
-	} else {
-		z.DecFallback(&x.FIntf, true)
-	}
+	z.DecFallback(&x.FIntf, true)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6371,7 +5881,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrIntf != nil { // remove the if-true
 			x.FptrIntf = nil
 		}
@@ -6379,7 +5889,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrIntf == nil {
 			x.FptrIntf = new(interface{})
 		}
-
 		z.DecFallback(x.FptrIntf, true)
 	}
 	yyj381++
@@ -6393,11 +5902,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FString = ""
-	} else {
-		x.FString = (string)(string(r.DecodeStringAsBytes()))
-	}
+	x.FString = (string)(string(r.DecodeStringAsBytes()))
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6409,7 +5914,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrString != nil { // remove the if-true
 			x.FptrString = nil
 		}
@@ -6417,7 +5922,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrString == nil {
 			x.FptrString = new(string)
 		}
-
 		*x.FptrString = (string)(string(r.DecodeStringAsBytes()))
 	}
 	yyj381++
@@ -6431,11 +5935,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FBytes = nil
-	} else {
-		x.FBytes = r.DecodeBytes(([]byte)(x.FBytes), false)
-	}
+	x.FBytes = r.DecodeBytes(([]byte)(x.FBytes), false)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6447,7 +5947,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrBytes != nil { // remove the if-true
 			x.FptrBytes = nil
 		}
@@ -6455,7 +5955,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrBytes == nil {
 			x.FptrBytes = new([]uint8)
 		}
-
 		*x.FptrBytes = r.DecodeBytes(*(*[]byte)(x.FptrBytes), false)
 	}
 	yyj381++
@@ -6469,11 +5968,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FFloat32 = 0
-	} else {
-		x.FFloat32 = (float32)(z.DecDecodeFloat32())
-	}
+	x.FFloat32 = (float32)(z.DecDecodeFloat32())
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6485,7 +5980,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrFloat32 != nil { // remove the if-true
 			x.FptrFloat32 = nil
 		}
@@ -6493,7 +5988,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrFloat32 == nil {
 			x.FptrFloat32 = new(float32)
 		}
-
 		*x.FptrFloat32 = (float32)(z.DecDecodeFloat32())
 	}
 	yyj381++
@@ -6507,11 +6001,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FFloat64 = 0
-	} else {
-		x.FFloat64 = (float64)(r.DecodeFloat64())
-	}
+	x.FFloat64 = (float64)(r.DecodeFloat64())
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6523,7 +6013,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrFloat64 != nil { // remove the if-true
 			x.FptrFloat64 = nil
 		}
@@ -6531,7 +6021,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrFloat64 == nil {
 			x.FptrFloat64 = new(float64)
 		}
-
 		*x.FptrFloat64 = (float64)(r.DecodeFloat64())
 	}
 	yyj381++
@@ -6545,11 +6034,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FUint = 0
-	} else {
-		x.FUint = (uint)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
-	}
+	x.FUint = (uint)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6561,7 +6046,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrUint != nil { // remove the if-true
 			x.FptrUint = nil
 		}
@@ -6569,7 +6054,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUint == nil {
 			x.FptrUint = new(uint)
 		}
-
 		*x.FptrUint = (uint)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 	}
 	yyj381++
@@ -6583,11 +6067,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FUint8 = 0
-	} else {
-		x.FUint8 = (uint8)(z.C.UintV(r.DecodeUint64(), 8))
-	}
+	x.FUint8 = (uint8)(z.C.UintV(r.DecodeUint64(), 8))
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6599,7 +6079,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrUint8 != nil { // remove the if-true
 			x.FptrUint8 = nil
 		}
@@ -6607,7 +6087,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUint8 == nil {
 			x.FptrUint8 = new(uint8)
 		}
-
 		*x.FptrUint8 = (uint8)(z.C.UintV(r.DecodeUint64(), 8))
 	}
 	yyj381++
@@ -6621,11 +6100,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FUint16 = 0
-	} else {
-		x.FUint16 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
-	}
+	x.FUint16 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6637,7 +6112,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrUint16 != nil { // remove the if-true
 			x.FptrUint16 = nil
 		}
@@ -6645,7 +6120,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUint16 == nil {
 			x.FptrUint16 = new(uint16)
 		}
-
 		*x.FptrUint16 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
 	}
 	yyj381++
@@ -6659,11 +6133,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FUint32 = 0
-	} else {
-		x.FUint32 = (uint32)(z.C.UintV(r.DecodeUint64(), 32))
-	}
+	x.FUint32 = (uint32)(z.C.UintV(r.DecodeUint64(), 32))
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6675,7 +6145,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrUint32 != nil { // remove the if-true
 			x.FptrUint32 = nil
 		}
@@ -6683,7 +6153,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUint32 == nil {
 			x.FptrUint32 = new(uint32)
 		}
-
 		*x.FptrUint32 = (uint32)(z.C.UintV(r.DecodeUint64(), 32))
 	}
 	yyj381++
@@ -6697,11 +6166,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FUint64 = 0
-	} else {
-		x.FUint64 = (uint64)(r.DecodeUint64())
-	}
+	x.FUint64 = (uint64)(r.DecodeUint64())
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6713,7 +6178,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrUint64 != nil { // remove the if-true
 			x.FptrUint64 = nil
 		}
@@ -6721,7 +6186,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUint64 == nil {
 			x.FptrUint64 = new(uint64)
 		}
-
 		*x.FptrUint64 = (uint64)(r.DecodeUint64())
 	}
 	yyj381++
@@ -6735,11 +6199,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FUintptr = 0
-	} else {
-		x.FUintptr = (uintptr)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
-	}
+	x.FUintptr = (uintptr)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6751,7 +6211,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrUintptr != nil { // remove the if-true
 			x.FptrUintptr = nil
 		}
@@ -6759,7 +6219,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrUintptr == nil {
 			x.FptrUintptr = new(uintptr)
 		}
-
 		*x.FptrUintptr = (uintptr)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 	}
 	yyj381++
@@ -6773,11 +6232,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FInt = 0
-	} else {
-		x.FInt = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
-	}
+	x.FInt = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6789,7 +6244,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrInt != nil { // remove the if-true
 			x.FptrInt = nil
 		}
@@ -6797,7 +6252,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrInt == nil {
 			x.FptrInt = new(int)
 		}
-
 		*x.FptrInt = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
 	}
 	yyj381++
@@ -6811,11 +6265,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FInt8 = 0
-	} else {
-		x.FInt8 = (int8)(z.C.IntV(r.DecodeInt64(), 8))
-	}
+	x.FInt8 = (int8)(z.C.IntV(r.DecodeInt64(), 8))
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6827,7 +6277,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrInt8 != nil { // remove the if-true
 			x.FptrInt8 = nil
 		}
@@ -6835,7 +6285,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrInt8 == nil {
 			x.FptrInt8 = new(int8)
 		}
-
 		*x.FptrInt8 = (int8)(z.C.IntV(r.DecodeInt64(), 8))
 	}
 	yyj381++
@@ -6849,11 +6298,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FInt16 = 0
-	} else {
-		x.FInt16 = (int16)(z.C.IntV(r.DecodeInt64(), 16))
-	}
+	x.FInt16 = (int16)(z.C.IntV(r.DecodeInt64(), 16))
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6865,7 +6310,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrInt16 != nil { // remove the if-true
 			x.FptrInt16 = nil
 		}
@@ -6873,7 +6318,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrInt16 == nil {
 			x.FptrInt16 = new(int16)
 		}
-
 		*x.FptrInt16 = (int16)(z.C.IntV(r.DecodeInt64(), 16))
 	}
 	yyj381++
@@ -6887,11 +6331,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FInt32 = 0
-	} else {
-		x.FInt32 = (int32)(z.C.IntV(r.DecodeInt64(), 32))
-	}
+	x.FInt32 = (int32)(z.C.IntV(r.DecodeInt64(), 32))
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6903,7 +6343,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrInt32 != nil { // remove the if-true
 			x.FptrInt32 = nil
 		}
@@ -6911,7 +6351,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrInt32 == nil {
 			x.FptrInt32 = new(int32)
 		}
-
 		*x.FptrInt32 = (int32)(z.C.IntV(r.DecodeInt64(), 32))
 	}
 	yyj381++
@@ -6925,11 +6364,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FInt64 = 0
-	} else {
-		x.FInt64 = (int64)(r.DecodeInt64())
-	}
+	x.FInt64 = (int64)(r.DecodeInt64())
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6941,7 +6376,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrInt64 != nil { // remove the if-true
 			x.FptrInt64 = nil
 		}
@@ -6949,7 +6384,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrInt64 == nil {
 			x.FptrInt64 = new(int64)
 		}
-
 		*x.FptrInt64 = (int64)(r.DecodeInt64())
 	}
 	yyj381++
@@ -6963,11 +6397,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FBool = false
-	} else {
-		x.FBool = (bool)(r.DecodeBool())
-	}
+	x.FBool = (bool)(r.DecodeBool())
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -6979,7 +6409,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrBool != nil { // remove the if-true
 			x.FptrBool = nil
 		}
@@ -6987,7 +6417,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrBool == nil {
 			x.FptrBool = new(bool)
 		}
-
 		*x.FptrBool = (bool)(r.DecodeBool())
 	}
 	yyj381++
@@ -7001,11 +6430,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceIntf = nil
-	} else {
-		z.F.DecSliceIntfX(&x.FSliceIntf, d)
-	}
+	z.F.DecSliceIntfX(&x.FSliceIntf, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7017,7 +6442,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceIntf != nil { // remove the if-true
 			x.FptrSliceIntf = nil
 		}
@@ -7025,7 +6450,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceIntf == nil {
 			x.FptrSliceIntf = new([]interface{})
 		}
-
 		z.F.DecSliceIntfX(x.FptrSliceIntf, d)
 	}
 	yyj381++
@@ -7039,11 +6463,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceString = nil
-	} else {
-		z.F.DecSliceStringX(&x.FSliceString, d)
-	}
+	z.F.DecSliceStringX(&x.FSliceString, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7055,7 +6475,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceString != nil { // remove the if-true
 			x.FptrSliceString = nil
 		}
@@ -7063,7 +6483,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceString == nil {
 			x.FptrSliceString = new([]string)
 		}
-
 		z.F.DecSliceStringX(x.FptrSliceString, d)
 	}
 	yyj381++
@@ -7077,11 +6496,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceBytes = nil
-	} else {
-		z.F.DecSliceBytesX(&x.FSliceBytes, d)
-	}
+	z.F.DecSliceBytesX(&x.FSliceBytes, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7093,7 +6508,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceBytes != nil { // remove the if-true
 			x.FptrSliceBytes = nil
 		}
@@ -7101,7 +6516,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceBytes == nil {
 			x.FptrSliceBytes = new([][]uint8)
 		}
-
 		z.F.DecSliceBytesX(x.FptrSliceBytes, d)
 	}
 	yyj381++
@@ -7115,11 +6529,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceFloat32 = nil
-	} else {
-		z.F.DecSliceFloat32X(&x.FSliceFloat32, d)
-	}
+	z.F.DecSliceFloat32X(&x.FSliceFloat32, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7131,7 +6541,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceFloat32 != nil { // remove the if-true
 			x.FptrSliceFloat32 = nil
 		}
@@ -7139,7 +6549,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceFloat32 == nil {
 			x.FptrSliceFloat32 = new([]float32)
 		}
-
 		z.F.DecSliceFloat32X(x.FptrSliceFloat32, d)
 	}
 	yyj381++
@@ -7153,11 +6562,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceFloat64 = nil
-	} else {
-		z.F.DecSliceFloat64X(&x.FSliceFloat64, d)
-	}
+	z.F.DecSliceFloat64X(&x.FSliceFloat64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7169,7 +6574,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceFloat64 != nil { // remove the if-true
 			x.FptrSliceFloat64 = nil
 		}
@@ -7177,7 +6582,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceFloat64 == nil {
 			x.FptrSliceFloat64 = new([]float64)
 		}
-
 		z.F.DecSliceFloat64X(x.FptrSliceFloat64, d)
 	}
 	yyj381++
@@ -7191,11 +6595,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceUint = nil
-	} else {
-		z.F.DecSliceUintX(&x.FSliceUint, d)
-	}
+	z.F.DecSliceUintX(&x.FSliceUint, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7207,7 +6607,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceUint != nil { // remove the if-true
 			x.FptrSliceUint = nil
 		}
@@ -7215,7 +6615,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceUint == nil {
 			x.FptrSliceUint = new([]uint)
 		}
-
 		z.F.DecSliceUintX(x.FptrSliceUint, d)
 	}
 	yyj381++
@@ -7229,11 +6628,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceUint16 = nil
-	} else {
-		z.F.DecSliceUint16X(&x.FSliceUint16, d)
-	}
+	z.F.DecSliceUint16X(&x.FSliceUint16, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7245,7 +6640,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceUint16 != nil { // remove the if-true
 			x.FptrSliceUint16 = nil
 		}
@@ -7253,7 +6648,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceUint16 == nil {
 			x.FptrSliceUint16 = new([]uint16)
 		}
-
 		z.F.DecSliceUint16X(x.FptrSliceUint16, d)
 	}
 	yyj381++
@@ -7267,11 +6661,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceUint32 = nil
-	} else {
-		z.F.DecSliceUint32X(&x.FSliceUint32, d)
-	}
+	z.F.DecSliceUint32X(&x.FSliceUint32, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7283,7 +6673,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceUint32 != nil { // remove the if-true
 			x.FptrSliceUint32 = nil
 		}
@@ -7291,7 +6681,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceUint32 == nil {
 			x.FptrSliceUint32 = new([]uint32)
 		}
-
 		z.F.DecSliceUint32X(x.FptrSliceUint32, d)
 	}
 	yyj381++
@@ -7305,11 +6694,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceUint64 = nil
-	} else {
-		z.F.DecSliceUint64X(&x.FSliceUint64, d)
-	}
+	z.F.DecSliceUint64X(&x.FSliceUint64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7321,7 +6706,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceUint64 != nil { // remove the if-true
 			x.FptrSliceUint64 = nil
 		}
@@ -7329,7 +6714,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceUint64 == nil {
 			x.FptrSliceUint64 = new([]uint64)
 		}
-
 		z.F.DecSliceUint64X(x.FptrSliceUint64, d)
 	}
 	yyj381++
@@ -7343,11 +6727,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceInt = nil
-	} else {
-		z.F.DecSliceIntX(&x.FSliceInt, d)
-	}
+	z.F.DecSliceIntX(&x.FSliceInt, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7359,7 +6739,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceInt != nil { // remove the if-true
 			x.FptrSliceInt = nil
 		}
@@ -7367,7 +6747,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceInt == nil {
 			x.FptrSliceInt = new([]int)
 		}
-
 		z.F.DecSliceIntX(x.FptrSliceInt, d)
 	}
 	yyj381++
@@ -7381,11 +6760,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceInt8 = nil
-	} else {
-		z.F.DecSliceInt8X(&x.FSliceInt8, d)
-	}
+	z.F.DecSliceInt8X(&x.FSliceInt8, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7397,7 +6772,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceInt8 != nil { // remove the if-true
 			x.FptrSliceInt8 = nil
 		}
@@ -7405,7 +6780,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceInt8 == nil {
 			x.FptrSliceInt8 = new([]int8)
 		}
-
 		z.F.DecSliceInt8X(x.FptrSliceInt8, d)
 	}
 	yyj381++
@@ -7419,11 +6793,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceInt16 = nil
-	} else {
-		z.F.DecSliceInt16X(&x.FSliceInt16, d)
-	}
+	z.F.DecSliceInt16X(&x.FSliceInt16, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7435,7 +6805,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceInt16 != nil { // remove the if-true
 			x.FptrSliceInt16 = nil
 		}
@@ -7443,7 +6813,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceInt16 == nil {
 			x.FptrSliceInt16 = new([]int16)
 		}
-
 		z.F.DecSliceInt16X(x.FptrSliceInt16, d)
 	}
 	yyj381++
@@ -7457,11 +6826,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceInt32 = nil
-	} else {
-		z.F.DecSliceInt32X(&x.FSliceInt32, d)
-	}
+	z.F.DecSliceInt32X(&x.FSliceInt32, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7473,7 +6838,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceInt32 != nil { // remove the if-true
 			x.FptrSliceInt32 = nil
 		}
@@ -7481,7 +6846,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceInt32 == nil {
 			x.FptrSliceInt32 = new([]int32)
 		}
-
 		z.F.DecSliceInt32X(x.FptrSliceInt32, d)
 	}
 	yyj381++
@@ -7495,11 +6859,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceInt64 = nil
-	} else {
-		z.F.DecSliceInt64X(&x.FSliceInt64, d)
-	}
+	z.F.DecSliceInt64X(&x.FSliceInt64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7511,7 +6871,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceInt64 != nil { // remove the if-true
 			x.FptrSliceInt64 = nil
 		}
@@ -7519,7 +6879,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceInt64 == nil {
 			x.FptrSliceInt64 = new([]int64)
 		}
-
 		z.F.DecSliceInt64X(x.FptrSliceInt64, d)
 	}
 	yyj381++
@@ -7533,11 +6892,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FSliceBool = nil
-	} else {
-		z.F.DecSliceBoolX(&x.FSliceBool, d)
-	}
+	z.F.DecSliceBoolX(&x.FSliceBool, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7549,7 +6904,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrSliceBool != nil { // remove the if-true
 			x.FptrSliceBool = nil
 		}
@@ -7557,7 +6912,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrSliceBool == nil {
 			x.FptrSliceBool = new([]bool)
 		}
-
 		z.F.DecSliceBoolX(x.FptrSliceBool, d)
 	}
 	yyj381++
@@ -7571,11 +6925,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringIntf = nil
-	} else {
-		z.F.DecMapStringIntfX(&x.FMapStringIntf, d)
-	}
+	z.F.DecMapStringIntfX(&x.FMapStringIntf, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7587,7 +6937,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringIntf != nil { // remove the if-true
 			x.FptrMapStringIntf = nil
 		}
@@ -7595,7 +6945,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringIntf == nil {
 			x.FptrMapStringIntf = new(map[string]interface{})
 		}
-
 		z.F.DecMapStringIntfX(x.FptrMapStringIntf, d)
 	}
 	yyj381++
@@ -7609,11 +6958,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringString = nil
-	} else {
-		z.F.DecMapStringStringX(&x.FMapStringString, d)
-	}
+	z.F.DecMapStringStringX(&x.FMapStringString, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7625,7 +6970,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringString != nil { // remove the if-true
 			x.FptrMapStringString = nil
 		}
@@ -7633,7 +6978,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringString == nil {
 			x.FptrMapStringString = new(map[string]string)
 		}
-
 		z.F.DecMapStringStringX(x.FptrMapStringString, d)
 	}
 	yyj381++
@@ -7647,11 +6991,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringBytes = nil
-	} else {
-		z.F.DecMapStringBytesX(&x.FMapStringBytes, d)
-	}
+	z.F.DecMapStringBytesX(&x.FMapStringBytes, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7663,7 +7003,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringBytes != nil { // remove the if-true
 			x.FptrMapStringBytes = nil
 		}
@@ -7671,7 +7011,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringBytes == nil {
 			x.FptrMapStringBytes = new(map[string][]uint8)
 		}
-
 		z.F.DecMapStringBytesX(x.FptrMapStringBytes, d)
 	}
 	yyj381++
@@ -7685,11 +7024,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringUint = nil
-	} else {
-		z.F.DecMapStringUintX(&x.FMapStringUint, d)
-	}
+	z.F.DecMapStringUintX(&x.FMapStringUint, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7701,7 +7036,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringUint != nil { // remove the if-true
 			x.FptrMapStringUint = nil
 		}
@@ -7709,7 +7044,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringUint == nil {
 			x.FptrMapStringUint = new(map[string]uint)
 		}
-
 		z.F.DecMapStringUintX(x.FptrMapStringUint, d)
 	}
 	yyj381++
@@ -7723,11 +7057,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringUint8 = nil
-	} else {
-		z.F.DecMapStringUint8X(&x.FMapStringUint8, d)
-	}
+	z.F.DecMapStringUint8X(&x.FMapStringUint8, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7739,7 +7069,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringUint8 != nil { // remove the if-true
 			x.FptrMapStringUint8 = nil
 		}
@@ -7747,7 +7077,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringUint8 == nil {
 			x.FptrMapStringUint8 = new(map[string]uint8)
 		}
-
 		z.F.DecMapStringUint8X(x.FptrMapStringUint8, d)
 	}
 	yyj381++
@@ -7761,11 +7090,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringUint64 = nil
-	} else {
-		z.F.DecMapStringUint64X(&x.FMapStringUint64, d)
-	}
+	z.F.DecMapStringUint64X(&x.FMapStringUint64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7777,7 +7102,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringUint64 != nil { // remove the if-true
 			x.FptrMapStringUint64 = nil
 		}
@@ -7785,7 +7110,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringUint64 == nil {
 			x.FptrMapStringUint64 = new(map[string]uint64)
 		}
-
 		z.F.DecMapStringUint64X(x.FptrMapStringUint64, d)
 	}
 	yyj381++
@@ -7799,11 +7123,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringInt = nil
-	} else {
-		z.F.DecMapStringIntX(&x.FMapStringInt, d)
-	}
+	z.F.DecMapStringIntX(&x.FMapStringInt, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7815,7 +7135,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringInt != nil { // remove the if-true
 			x.FptrMapStringInt = nil
 		}
@@ -7823,7 +7143,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringInt == nil {
 			x.FptrMapStringInt = new(map[string]int)
 		}
-
 		z.F.DecMapStringIntX(x.FptrMapStringInt, d)
 	}
 	yyj381++
@@ -7837,11 +7156,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringInt64 = nil
-	} else {
-		z.F.DecMapStringInt64X(&x.FMapStringInt64, d)
-	}
+	z.F.DecMapStringInt64X(&x.FMapStringInt64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7853,7 +7168,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringInt64 != nil { // remove the if-true
 			x.FptrMapStringInt64 = nil
 		}
@@ -7861,7 +7176,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringInt64 == nil {
 			x.FptrMapStringInt64 = new(map[string]int64)
 		}
-
 		z.F.DecMapStringInt64X(x.FptrMapStringInt64, d)
 	}
 	yyj381++
@@ -7875,11 +7189,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringFloat32 = nil
-	} else {
-		z.F.DecMapStringFloat32X(&x.FMapStringFloat32, d)
-	}
+	z.F.DecMapStringFloat32X(&x.FMapStringFloat32, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7891,7 +7201,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringFloat32 != nil { // remove the if-true
 			x.FptrMapStringFloat32 = nil
 		}
@@ -7899,7 +7209,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringFloat32 == nil {
 			x.FptrMapStringFloat32 = new(map[string]float32)
 		}
-
 		z.F.DecMapStringFloat32X(x.FptrMapStringFloat32, d)
 	}
 	yyj381++
@@ -7913,11 +7222,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringFloat64 = nil
-	} else {
-		z.F.DecMapStringFloat64X(&x.FMapStringFloat64, d)
-	}
+	z.F.DecMapStringFloat64X(&x.FMapStringFloat64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7929,7 +7234,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringFloat64 != nil { // remove the if-true
 			x.FptrMapStringFloat64 = nil
 		}
@@ -7937,7 +7242,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringFloat64 == nil {
 			x.FptrMapStringFloat64 = new(map[string]float64)
 		}
-
 		z.F.DecMapStringFloat64X(x.FptrMapStringFloat64, d)
 	}
 	yyj381++
@@ -7951,11 +7255,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapStringBool = nil
-	} else {
-		z.F.DecMapStringBoolX(&x.FMapStringBool, d)
-	}
+	z.F.DecMapStringBoolX(&x.FMapStringBool, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -7967,7 +7267,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapStringBool != nil { // remove the if-true
 			x.FptrMapStringBool = nil
 		}
@@ -7975,7 +7275,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapStringBool == nil {
 			x.FptrMapStringBool = new(map[string]bool)
 		}
-
 		z.F.DecMapStringBoolX(x.FptrMapStringBool, d)
 	}
 	yyj381++
@@ -7989,11 +7288,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintIntf = nil
-	} else {
-		z.F.DecMapUintIntfX(&x.FMapUintIntf, d)
-	}
+	z.F.DecMapUintIntfX(&x.FMapUintIntf, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8005,7 +7300,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintIntf != nil { // remove the if-true
 			x.FptrMapUintIntf = nil
 		}
@@ -8013,7 +7308,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintIntf == nil {
 			x.FptrMapUintIntf = new(map[uint]interface{})
 		}
-
 		z.F.DecMapUintIntfX(x.FptrMapUintIntf, d)
 	}
 	yyj381++
@@ -8027,11 +7321,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintString = nil
-	} else {
-		z.F.DecMapUintStringX(&x.FMapUintString, d)
-	}
+	z.F.DecMapUintStringX(&x.FMapUintString, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8043,7 +7333,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintString != nil { // remove the if-true
 			x.FptrMapUintString = nil
 		}
@@ -8051,7 +7341,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintString == nil {
 			x.FptrMapUintString = new(map[uint]string)
 		}
-
 		z.F.DecMapUintStringX(x.FptrMapUintString, d)
 	}
 	yyj381++
@@ -8065,11 +7354,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintBytes = nil
-	} else {
-		z.F.DecMapUintBytesX(&x.FMapUintBytes, d)
-	}
+	z.F.DecMapUintBytesX(&x.FMapUintBytes, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8081,7 +7366,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintBytes != nil { // remove the if-true
 			x.FptrMapUintBytes = nil
 		}
@@ -8089,7 +7374,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintBytes == nil {
 			x.FptrMapUintBytes = new(map[uint][]uint8)
 		}
-
 		z.F.DecMapUintBytesX(x.FptrMapUintBytes, d)
 	}
 	yyj381++
@@ -8103,11 +7387,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintUint = nil
-	} else {
-		z.F.DecMapUintUintX(&x.FMapUintUint, d)
-	}
+	z.F.DecMapUintUintX(&x.FMapUintUint, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8119,7 +7399,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintUint != nil { // remove the if-true
 			x.FptrMapUintUint = nil
 		}
@@ -8127,7 +7407,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintUint == nil {
 			x.FptrMapUintUint = new(map[uint]uint)
 		}
-
 		z.F.DecMapUintUintX(x.FptrMapUintUint, d)
 	}
 	yyj381++
@@ -8141,11 +7420,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintUint8 = nil
-	} else {
-		z.F.DecMapUintUint8X(&x.FMapUintUint8, d)
-	}
+	z.F.DecMapUintUint8X(&x.FMapUintUint8, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8157,7 +7432,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintUint8 != nil { // remove the if-true
 			x.FptrMapUintUint8 = nil
 		}
@@ -8165,7 +7440,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintUint8 == nil {
 			x.FptrMapUintUint8 = new(map[uint]uint8)
 		}
-
 		z.F.DecMapUintUint8X(x.FptrMapUintUint8, d)
 	}
 	yyj381++
@@ -8179,11 +7453,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintUint64 = nil
-	} else {
-		z.F.DecMapUintUint64X(&x.FMapUintUint64, d)
-	}
+	z.F.DecMapUintUint64X(&x.FMapUintUint64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8195,7 +7465,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintUint64 != nil { // remove the if-true
 			x.FptrMapUintUint64 = nil
 		}
@@ -8203,7 +7473,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintUint64 == nil {
 			x.FptrMapUintUint64 = new(map[uint]uint64)
 		}
-
 		z.F.DecMapUintUint64X(x.FptrMapUintUint64, d)
 	}
 	yyj381++
@@ -8217,11 +7486,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintInt = nil
-	} else {
-		z.F.DecMapUintIntX(&x.FMapUintInt, d)
-	}
+	z.F.DecMapUintIntX(&x.FMapUintInt, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8233,7 +7498,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintInt != nil { // remove the if-true
 			x.FptrMapUintInt = nil
 		}
@@ -8241,7 +7506,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintInt == nil {
 			x.FptrMapUintInt = new(map[uint]int)
 		}
-
 		z.F.DecMapUintIntX(x.FptrMapUintInt, d)
 	}
 	yyj381++
@@ -8255,11 +7519,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintInt64 = nil
-	} else {
-		z.F.DecMapUintInt64X(&x.FMapUintInt64, d)
-	}
+	z.F.DecMapUintInt64X(&x.FMapUintInt64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8271,7 +7531,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintInt64 != nil { // remove the if-true
 			x.FptrMapUintInt64 = nil
 		}
@@ -8279,7 +7539,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintInt64 == nil {
 			x.FptrMapUintInt64 = new(map[uint]int64)
 		}
-
 		z.F.DecMapUintInt64X(x.FptrMapUintInt64, d)
 	}
 	yyj381++
@@ -8293,11 +7552,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintFloat32 = nil
-	} else {
-		z.F.DecMapUintFloat32X(&x.FMapUintFloat32, d)
-	}
+	z.F.DecMapUintFloat32X(&x.FMapUintFloat32, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8309,7 +7564,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintFloat32 != nil { // remove the if-true
 			x.FptrMapUintFloat32 = nil
 		}
@@ -8317,7 +7572,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintFloat32 == nil {
 			x.FptrMapUintFloat32 = new(map[uint]float32)
 		}
-
 		z.F.DecMapUintFloat32X(x.FptrMapUintFloat32, d)
 	}
 	yyj381++
@@ -8331,11 +7585,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintFloat64 = nil
-	} else {
-		z.F.DecMapUintFloat64X(&x.FMapUintFloat64, d)
-	}
+	z.F.DecMapUintFloat64X(&x.FMapUintFloat64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8347,7 +7597,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintFloat64 != nil { // remove the if-true
 			x.FptrMapUintFloat64 = nil
 		}
@@ -8355,7 +7605,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintFloat64 == nil {
 			x.FptrMapUintFloat64 = new(map[uint]float64)
 		}
-
 		z.F.DecMapUintFloat64X(x.FptrMapUintFloat64, d)
 	}
 	yyj381++
@@ -8369,11 +7618,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUintBool = nil
-	} else {
-		z.F.DecMapUintBoolX(&x.FMapUintBool, d)
-	}
+	z.F.DecMapUintBoolX(&x.FMapUintBool, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8385,7 +7630,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUintBool != nil { // remove the if-true
 			x.FptrMapUintBool = nil
 		}
@@ -8393,7 +7638,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUintBool == nil {
 			x.FptrMapUintBool = new(map[uint]bool)
 		}
-
 		z.F.DecMapUintBoolX(x.FptrMapUintBool, d)
 	}
 	yyj381++
@@ -8407,11 +7651,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8Intf = nil
-	} else {
-		z.F.DecMapUint8IntfX(&x.FMapUint8Intf, d)
-	}
+	z.F.DecMapUint8IntfX(&x.FMapUint8Intf, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8423,7 +7663,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8Intf != nil { // remove the if-true
 			x.FptrMapUint8Intf = nil
 		}
@@ -8431,7 +7671,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Intf == nil {
 			x.FptrMapUint8Intf = new(map[uint8]interface{})
 		}
-
 		z.F.DecMapUint8IntfX(x.FptrMapUint8Intf, d)
 	}
 	yyj381++
@@ -8445,11 +7684,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8String = nil
-	} else {
-		z.F.DecMapUint8StringX(&x.FMapUint8String, d)
-	}
+	z.F.DecMapUint8StringX(&x.FMapUint8String, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8461,7 +7696,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8String != nil { // remove the if-true
 			x.FptrMapUint8String = nil
 		}
@@ -8469,7 +7704,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8String == nil {
 			x.FptrMapUint8String = new(map[uint8]string)
 		}
-
 		z.F.DecMapUint8StringX(x.FptrMapUint8String, d)
 	}
 	yyj381++
@@ -8483,11 +7717,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8Bytes = nil
-	} else {
-		z.F.DecMapUint8BytesX(&x.FMapUint8Bytes, d)
-	}
+	z.F.DecMapUint8BytesX(&x.FMapUint8Bytes, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8499,7 +7729,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8Bytes != nil { // remove the if-true
 			x.FptrMapUint8Bytes = nil
 		}
@@ -8507,7 +7737,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Bytes == nil {
 			x.FptrMapUint8Bytes = new(map[uint8][]uint8)
 		}
-
 		z.F.DecMapUint8BytesX(x.FptrMapUint8Bytes, d)
 	}
 	yyj381++
@@ -8521,11 +7750,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8Uint = nil
-	} else {
-		z.F.DecMapUint8UintX(&x.FMapUint8Uint, d)
-	}
+	z.F.DecMapUint8UintX(&x.FMapUint8Uint, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8537,7 +7762,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8Uint != nil { // remove the if-true
 			x.FptrMapUint8Uint = nil
 		}
@@ -8545,7 +7770,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Uint == nil {
 			x.FptrMapUint8Uint = new(map[uint8]uint)
 		}
-
 		z.F.DecMapUint8UintX(x.FptrMapUint8Uint, d)
 	}
 	yyj381++
@@ -8559,11 +7783,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8Uint8 = nil
-	} else {
-		z.F.DecMapUint8Uint8X(&x.FMapUint8Uint8, d)
-	}
+	z.F.DecMapUint8Uint8X(&x.FMapUint8Uint8, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8575,7 +7795,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8Uint8 != nil { // remove the if-true
 			x.FptrMapUint8Uint8 = nil
 		}
@@ -8583,7 +7803,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Uint8 == nil {
 			x.FptrMapUint8Uint8 = new(map[uint8]uint8)
 		}
-
 		z.F.DecMapUint8Uint8X(x.FptrMapUint8Uint8, d)
 	}
 	yyj381++
@@ -8597,11 +7816,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8Uint64 = nil
-	} else {
-		z.F.DecMapUint8Uint64X(&x.FMapUint8Uint64, d)
-	}
+	z.F.DecMapUint8Uint64X(&x.FMapUint8Uint64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8613,7 +7828,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8Uint64 != nil { // remove the if-true
 			x.FptrMapUint8Uint64 = nil
 		}
@@ -8621,7 +7836,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Uint64 == nil {
 			x.FptrMapUint8Uint64 = new(map[uint8]uint64)
 		}
-
 		z.F.DecMapUint8Uint64X(x.FptrMapUint8Uint64, d)
 	}
 	yyj381++
@@ -8635,11 +7849,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8Int = nil
-	} else {
-		z.F.DecMapUint8IntX(&x.FMapUint8Int, d)
-	}
+	z.F.DecMapUint8IntX(&x.FMapUint8Int, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8651,7 +7861,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8Int != nil { // remove the if-true
 			x.FptrMapUint8Int = nil
 		}
@@ -8659,7 +7869,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Int == nil {
 			x.FptrMapUint8Int = new(map[uint8]int)
 		}
-
 		z.F.DecMapUint8IntX(x.FptrMapUint8Int, d)
 	}
 	yyj381++
@@ -8673,11 +7882,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8Int64 = nil
-	} else {
-		z.F.DecMapUint8Int64X(&x.FMapUint8Int64, d)
-	}
+	z.F.DecMapUint8Int64X(&x.FMapUint8Int64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8689,7 +7894,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8Int64 != nil { // remove the if-true
 			x.FptrMapUint8Int64 = nil
 		}
@@ -8697,7 +7902,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Int64 == nil {
 			x.FptrMapUint8Int64 = new(map[uint8]int64)
 		}
-
 		z.F.DecMapUint8Int64X(x.FptrMapUint8Int64, d)
 	}
 	yyj381++
@@ -8711,11 +7915,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8Float32 = nil
-	} else {
-		z.F.DecMapUint8Float32X(&x.FMapUint8Float32, d)
-	}
+	z.F.DecMapUint8Float32X(&x.FMapUint8Float32, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8727,7 +7927,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8Float32 != nil { // remove the if-true
 			x.FptrMapUint8Float32 = nil
 		}
@@ -8735,7 +7935,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Float32 == nil {
 			x.FptrMapUint8Float32 = new(map[uint8]float32)
 		}
-
 		z.F.DecMapUint8Float32X(x.FptrMapUint8Float32, d)
 	}
 	yyj381++
@@ -8749,11 +7948,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8Float64 = nil
-	} else {
-		z.F.DecMapUint8Float64X(&x.FMapUint8Float64, d)
-	}
+	z.F.DecMapUint8Float64X(&x.FMapUint8Float64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8765,7 +7960,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8Float64 != nil { // remove the if-true
 			x.FptrMapUint8Float64 = nil
 		}
@@ -8773,7 +7968,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Float64 == nil {
 			x.FptrMapUint8Float64 = new(map[uint8]float64)
 		}
-
 		z.F.DecMapUint8Float64X(x.FptrMapUint8Float64, d)
 	}
 	yyj381++
@@ -8787,11 +7981,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint8Bool = nil
-	} else {
-		z.F.DecMapUint8BoolX(&x.FMapUint8Bool, d)
-	}
+	z.F.DecMapUint8BoolX(&x.FMapUint8Bool, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8803,7 +7993,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint8Bool != nil { // remove the if-true
 			x.FptrMapUint8Bool = nil
 		}
@@ -8811,7 +8001,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint8Bool == nil {
 			x.FptrMapUint8Bool = new(map[uint8]bool)
 		}
-
 		z.F.DecMapUint8BoolX(x.FptrMapUint8Bool, d)
 	}
 	yyj381++
@@ -8825,11 +8014,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64Intf = nil
-	} else {
-		z.F.DecMapUint64IntfX(&x.FMapUint64Intf, d)
-	}
+	z.F.DecMapUint64IntfX(&x.FMapUint64Intf, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8841,7 +8026,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64Intf != nil { // remove the if-true
 			x.FptrMapUint64Intf = nil
 		}
@@ -8849,7 +8034,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Intf == nil {
 			x.FptrMapUint64Intf = new(map[uint64]interface{})
 		}
-
 		z.F.DecMapUint64IntfX(x.FptrMapUint64Intf, d)
 	}
 	yyj381++
@@ -8863,11 +8047,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64String = nil
-	} else {
-		z.F.DecMapUint64StringX(&x.FMapUint64String, d)
-	}
+	z.F.DecMapUint64StringX(&x.FMapUint64String, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8879,7 +8059,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64String != nil { // remove the if-true
 			x.FptrMapUint64String = nil
 		}
@@ -8887,7 +8067,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64String == nil {
 			x.FptrMapUint64String = new(map[uint64]string)
 		}
-
 		z.F.DecMapUint64StringX(x.FptrMapUint64String, d)
 	}
 	yyj381++
@@ -8901,11 +8080,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64Bytes = nil
-	} else {
-		z.F.DecMapUint64BytesX(&x.FMapUint64Bytes, d)
-	}
+	z.F.DecMapUint64BytesX(&x.FMapUint64Bytes, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8917,7 +8092,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64Bytes != nil { // remove the if-true
 			x.FptrMapUint64Bytes = nil
 		}
@@ -8925,7 +8100,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Bytes == nil {
 			x.FptrMapUint64Bytes = new(map[uint64][]uint8)
 		}
-
 		z.F.DecMapUint64BytesX(x.FptrMapUint64Bytes, d)
 	}
 	yyj381++
@@ -8939,11 +8113,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64Uint = nil
-	} else {
-		z.F.DecMapUint64UintX(&x.FMapUint64Uint, d)
-	}
+	z.F.DecMapUint64UintX(&x.FMapUint64Uint, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8955,7 +8125,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64Uint != nil { // remove the if-true
 			x.FptrMapUint64Uint = nil
 		}
@@ -8963,7 +8133,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Uint == nil {
 			x.FptrMapUint64Uint = new(map[uint64]uint)
 		}
-
 		z.F.DecMapUint64UintX(x.FptrMapUint64Uint, d)
 	}
 	yyj381++
@@ -8977,11 +8146,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64Uint8 = nil
-	} else {
-		z.F.DecMapUint64Uint8X(&x.FMapUint64Uint8, d)
-	}
+	z.F.DecMapUint64Uint8X(&x.FMapUint64Uint8, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -8993,7 +8158,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64Uint8 != nil { // remove the if-true
 			x.FptrMapUint64Uint8 = nil
 		}
@@ -9001,7 +8166,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Uint8 == nil {
 			x.FptrMapUint64Uint8 = new(map[uint64]uint8)
 		}
-
 		z.F.DecMapUint64Uint8X(x.FptrMapUint64Uint8, d)
 	}
 	yyj381++
@@ -9015,11 +8179,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64Uint64 = nil
-	} else {
-		z.F.DecMapUint64Uint64X(&x.FMapUint64Uint64, d)
-	}
+	z.F.DecMapUint64Uint64X(&x.FMapUint64Uint64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9031,7 +8191,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64Uint64 != nil { // remove the if-true
 			x.FptrMapUint64Uint64 = nil
 		}
@@ -9039,7 +8199,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Uint64 == nil {
 			x.FptrMapUint64Uint64 = new(map[uint64]uint64)
 		}
-
 		z.F.DecMapUint64Uint64X(x.FptrMapUint64Uint64, d)
 	}
 	yyj381++
@@ -9053,11 +8212,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64Int = nil
-	} else {
-		z.F.DecMapUint64IntX(&x.FMapUint64Int, d)
-	}
+	z.F.DecMapUint64IntX(&x.FMapUint64Int, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9069,7 +8224,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64Int != nil { // remove the if-true
 			x.FptrMapUint64Int = nil
 		}
@@ -9077,7 +8232,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Int == nil {
 			x.FptrMapUint64Int = new(map[uint64]int)
 		}
-
 		z.F.DecMapUint64IntX(x.FptrMapUint64Int, d)
 	}
 	yyj381++
@@ -9091,11 +8245,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64Int64 = nil
-	} else {
-		z.F.DecMapUint64Int64X(&x.FMapUint64Int64, d)
-	}
+	z.F.DecMapUint64Int64X(&x.FMapUint64Int64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9107,7 +8257,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64Int64 != nil { // remove the if-true
 			x.FptrMapUint64Int64 = nil
 		}
@@ -9115,7 +8265,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Int64 == nil {
 			x.FptrMapUint64Int64 = new(map[uint64]int64)
 		}
-
 		z.F.DecMapUint64Int64X(x.FptrMapUint64Int64, d)
 	}
 	yyj381++
@@ -9129,11 +8278,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64Float32 = nil
-	} else {
-		z.F.DecMapUint64Float32X(&x.FMapUint64Float32, d)
-	}
+	z.F.DecMapUint64Float32X(&x.FMapUint64Float32, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9145,7 +8290,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64Float32 != nil { // remove the if-true
 			x.FptrMapUint64Float32 = nil
 		}
@@ -9153,7 +8298,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Float32 == nil {
 			x.FptrMapUint64Float32 = new(map[uint64]float32)
 		}
-
 		z.F.DecMapUint64Float32X(x.FptrMapUint64Float32, d)
 	}
 	yyj381++
@@ -9167,11 +8311,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64Float64 = nil
-	} else {
-		z.F.DecMapUint64Float64X(&x.FMapUint64Float64, d)
-	}
+	z.F.DecMapUint64Float64X(&x.FMapUint64Float64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9183,7 +8323,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64Float64 != nil { // remove the if-true
 			x.FptrMapUint64Float64 = nil
 		}
@@ -9191,7 +8331,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Float64 == nil {
 			x.FptrMapUint64Float64 = new(map[uint64]float64)
 		}
-
 		z.F.DecMapUint64Float64X(x.FptrMapUint64Float64, d)
 	}
 	yyj381++
@@ -9205,11 +8344,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapUint64Bool = nil
-	} else {
-		z.F.DecMapUint64BoolX(&x.FMapUint64Bool, d)
-	}
+	z.F.DecMapUint64BoolX(&x.FMapUint64Bool, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9221,7 +8356,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapUint64Bool != nil { // remove the if-true
 			x.FptrMapUint64Bool = nil
 		}
@@ -9229,7 +8364,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapUint64Bool == nil {
 			x.FptrMapUint64Bool = new(map[uint64]bool)
 		}
-
 		z.F.DecMapUint64BoolX(x.FptrMapUint64Bool, d)
 	}
 	yyj381++
@@ -9243,11 +8377,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntIntf = nil
-	} else {
-		z.F.DecMapIntIntfX(&x.FMapIntIntf, d)
-	}
+	z.F.DecMapIntIntfX(&x.FMapIntIntf, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9259,7 +8389,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntIntf != nil { // remove the if-true
 			x.FptrMapIntIntf = nil
 		}
@@ -9267,7 +8397,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntIntf == nil {
 			x.FptrMapIntIntf = new(map[int]interface{})
 		}
-
 		z.F.DecMapIntIntfX(x.FptrMapIntIntf, d)
 	}
 	yyj381++
@@ -9281,11 +8410,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntString = nil
-	} else {
-		z.F.DecMapIntStringX(&x.FMapIntString, d)
-	}
+	z.F.DecMapIntStringX(&x.FMapIntString, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9297,7 +8422,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntString != nil { // remove the if-true
 			x.FptrMapIntString = nil
 		}
@@ -9305,7 +8430,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntString == nil {
 			x.FptrMapIntString = new(map[int]string)
 		}
-
 		z.F.DecMapIntStringX(x.FptrMapIntString, d)
 	}
 	yyj381++
@@ -9319,11 +8443,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntBytes = nil
-	} else {
-		z.F.DecMapIntBytesX(&x.FMapIntBytes, d)
-	}
+	z.F.DecMapIntBytesX(&x.FMapIntBytes, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9335,7 +8455,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntBytes != nil { // remove the if-true
 			x.FptrMapIntBytes = nil
 		}
@@ -9343,7 +8463,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntBytes == nil {
 			x.FptrMapIntBytes = new(map[int][]uint8)
 		}
-
 		z.F.DecMapIntBytesX(x.FptrMapIntBytes, d)
 	}
 	yyj381++
@@ -9357,11 +8476,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntUint = nil
-	} else {
-		z.F.DecMapIntUintX(&x.FMapIntUint, d)
-	}
+	z.F.DecMapIntUintX(&x.FMapIntUint, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9373,7 +8488,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntUint != nil { // remove the if-true
 			x.FptrMapIntUint = nil
 		}
@@ -9381,7 +8496,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntUint == nil {
 			x.FptrMapIntUint = new(map[int]uint)
 		}
-
 		z.F.DecMapIntUintX(x.FptrMapIntUint, d)
 	}
 	yyj381++
@@ -9395,11 +8509,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntUint8 = nil
-	} else {
-		z.F.DecMapIntUint8X(&x.FMapIntUint8, d)
-	}
+	z.F.DecMapIntUint8X(&x.FMapIntUint8, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9411,7 +8521,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntUint8 != nil { // remove the if-true
 			x.FptrMapIntUint8 = nil
 		}
@@ -9419,7 +8529,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntUint8 == nil {
 			x.FptrMapIntUint8 = new(map[int]uint8)
 		}
-
 		z.F.DecMapIntUint8X(x.FptrMapIntUint8, d)
 	}
 	yyj381++
@@ -9433,11 +8542,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntUint64 = nil
-	} else {
-		z.F.DecMapIntUint64X(&x.FMapIntUint64, d)
-	}
+	z.F.DecMapIntUint64X(&x.FMapIntUint64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9449,7 +8554,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntUint64 != nil { // remove the if-true
 			x.FptrMapIntUint64 = nil
 		}
@@ -9457,7 +8562,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntUint64 == nil {
 			x.FptrMapIntUint64 = new(map[int]uint64)
 		}
-
 		z.F.DecMapIntUint64X(x.FptrMapIntUint64, d)
 	}
 	yyj381++
@@ -9471,11 +8575,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntInt = nil
-	} else {
-		z.F.DecMapIntIntX(&x.FMapIntInt, d)
-	}
+	z.F.DecMapIntIntX(&x.FMapIntInt, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9487,7 +8587,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntInt != nil { // remove the if-true
 			x.FptrMapIntInt = nil
 		}
@@ -9495,7 +8595,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntInt == nil {
 			x.FptrMapIntInt = new(map[int]int)
 		}
-
 		z.F.DecMapIntIntX(x.FptrMapIntInt, d)
 	}
 	yyj381++
@@ -9509,11 +8608,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntInt64 = nil
-	} else {
-		z.F.DecMapIntInt64X(&x.FMapIntInt64, d)
-	}
+	z.F.DecMapIntInt64X(&x.FMapIntInt64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9525,7 +8620,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntInt64 != nil { // remove the if-true
 			x.FptrMapIntInt64 = nil
 		}
@@ -9533,7 +8628,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntInt64 == nil {
 			x.FptrMapIntInt64 = new(map[int]int64)
 		}
-
 		z.F.DecMapIntInt64X(x.FptrMapIntInt64, d)
 	}
 	yyj381++
@@ -9547,11 +8641,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntFloat32 = nil
-	} else {
-		z.F.DecMapIntFloat32X(&x.FMapIntFloat32, d)
-	}
+	z.F.DecMapIntFloat32X(&x.FMapIntFloat32, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9563,7 +8653,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntFloat32 != nil { // remove the if-true
 			x.FptrMapIntFloat32 = nil
 		}
@@ -9571,7 +8661,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntFloat32 == nil {
 			x.FptrMapIntFloat32 = new(map[int]float32)
 		}
-
 		z.F.DecMapIntFloat32X(x.FptrMapIntFloat32, d)
 	}
 	yyj381++
@@ -9585,11 +8674,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntFloat64 = nil
-	} else {
-		z.F.DecMapIntFloat64X(&x.FMapIntFloat64, d)
-	}
+	z.F.DecMapIntFloat64X(&x.FMapIntFloat64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9601,7 +8686,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntFloat64 != nil { // remove the if-true
 			x.FptrMapIntFloat64 = nil
 		}
@@ -9609,7 +8694,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntFloat64 == nil {
 			x.FptrMapIntFloat64 = new(map[int]float64)
 		}
-
 		z.F.DecMapIntFloat64X(x.FptrMapIntFloat64, d)
 	}
 	yyj381++
@@ -9623,11 +8707,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapIntBool = nil
-	} else {
-		z.F.DecMapIntBoolX(&x.FMapIntBool, d)
-	}
+	z.F.DecMapIntBoolX(&x.FMapIntBool, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9639,7 +8719,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapIntBool != nil { // remove the if-true
 			x.FptrMapIntBool = nil
 		}
@@ -9647,7 +8727,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapIntBool == nil {
 			x.FptrMapIntBool = new(map[int]bool)
 		}
-
 		z.F.DecMapIntBoolX(x.FptrMapIntBool, d)
 	}
 	yyj381++
@@ -9661,11 +8740,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64Intf = nil
-	} else {
-		z.F.DecMapInt64IntfX(&x.FMapInt64Intf, d)
-	}
+	z.F.DecMapInt64IntfX(&x.FMapInt64Intf, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9677,7 +8752,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64Intf != nil { // remove the if-true
 			x.FptrMapInt64Intf = nil
 		}
@@ -9685,7 +8760,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Intf == nil {
 			x.FptrMapInt64Intf = new(map[int64]interface{})
 		}
-
 		z.F.DecMapInt64IntfX(x.FptrMapInt64Intf, d)
 	}
 	yyj381++
@@ -9699,11 +8773,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64String = nil
-	} else {
-		z.F.DecMapInt64StringX(&x.FMapInt64String, d)
-	}
+	z.F.DecMapInt64StringX(&x.FMapInt64String, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9715,7 +8785,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64String != nil { // remove the if-true
 			x.FptrMapInt64String = nil
 		}
@@ -9723,7 +8793,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64String == nil {
 			x.FptrMapInt64String = new(map[int64]string)
 		}
-
 		z.F.DecMapInt64StringX(x.FptrMapInt64String, d)
 	}
 	yyj381++
@@ -9737,11 +8806,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64Bytes = nil
-	} else {
-		z.F.DecMapInt64BytesX(&x.FMapInt64Bytes, d)
-	}
+	z.F.DecMapInt64BytesX(&x.FMapInt64Bytes, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9753,7 +8818,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64Bytes != nil { // remove the if-true
 			x.FptrMapInt64Bytes = nil
 		}
@@ -9761,7 +8826,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Bytes == nil {
 			x.FptrMapInt64Bytes = new(map[int64][]uint8)
 		}
-
 		z.F.DecMapInt64BytesX(x.FptrMapInt64Bytes, d)
 	}
 	yyj381++
@@ -9775,11 +8839,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64Uint = nil
-	} else {
-		z.F.DecMapInt64UintX(&x.FMapInt64Uint, d)
-	}
+	z.F.DecMapInt64UintX(&x.FMapInt64Uint, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9791,7 +8851,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64Uint != nil { // remove the if-true
 			x.FptrMapInt64Uint = nil
 		}
@@ -9799,7 +8859,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Uint == nil {
 			x.FptrMapInt64Uint = new(map[int64]uint)
 		}
-
 		z.F.DecMapInt64UintX(x.FptrMapInt64Uint, d)
 	}
 	yyj381++
@@ -9813,11 +8872,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64Uint8 = nil
-	} else {
-		z.F.DecMapInt64Uint8X(&x.FMapInt64Uint8, d)
-	}
+	z.F.DecMapInt64Uint8X(&x.FMapInt64Uint8, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9829,7 +8884,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64Uint8 != nil { // remove the if-true
 			x.FptrMapInt64Uint8 = nil
 		}
@@ -9837,7 +8892,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Uint8 == nil {
 			x.FptrMapInt64Uint8 = new(map[int64]uint8)
 		}
-
 		z.F.DecMapInt64Uint8X(x.FptrMapInt64Uint8, d)
 	}
 	yyj381++
@@ -9851,11 +8905,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64Uint64 = nil
-	} else {
-		z.F.DecMapInt64Uint64X(&x.FMapInt64Uint64, d)
-	}
+	z.F.DecMapInt64Uint64X(&x.FMapInt64Uint64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9867,7 +8917,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64Uint64 != nil { // remove the if-true
 			x.FptrMapInt64Uint64 = nil
 		}
@@ -9875,7 +8925,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Uint64 == nil {
 			x.FptrMapInt64Uint64 = new(map[int64]uint64)
 		}
-
 		z.F.DecMapInt64Uint64X(x.FptrMapInt64Uint64, d)
 	}
 	yyj381++
@@ -9889,11 +8938,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64Int = nil
-	} else {
-		z.F.DecMapInt64IntX(&x.FMapInt64Int, d)
-	}
+	z.F.DecMapInt64IntX(&x.FMapInt64Int, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9905,7 +8950,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64Int != nil { // remove the if-true
 			x.FptrMapInt64Int = nil
 		}
@@ -9913,7 +8958,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Int == nil {
 			x.FptrMapInt64Int = new(map[int64]int)
 		}
-
 		z.F.DecMapInt64IntX(x.FptrMapInt64Int, d)
 	}
 	yyj381++
@@ -9927,11 +8971,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64Int64 = nil
-	} else {
-		z.F.DecMapInt64Int64X(&x.FMapInt64Int64, d)
-	}
+	z.F.DecMapInt64Int64X(&x.FMapInt64Int64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9943,7 +8983,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64Int64 != nil { // remove the if-true
 			x.FptrMapInt64Int64 = nil
 		}
@@ -9951,7 +8991,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Int64 == nil {
 			x.FptrMapInt64Int64 = new(map[int64]int64)
 		}
-
 		z.F.DecMapInt64Int64X(x.FptrMapInt64Int64, d)
 	}
 	yyj381++
@@ -9965,11 +9004,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64Float32 = nil
-	} else {
-		z.F.DecMapInt64Float32X(&x.FMapInt64Float32, d)
-	}
+	z.F.DecMapInt64Float32X(&x.FMapInt64Float32, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -9981,7 +9016,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64Float32 != nil { // remove the if-true
 			x.FptrMapInt64Float32 = nil
 		}
@@ -9989,7 +9024,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Float32 == nil {
 			x.FptrMapInt64Float32 = new(map[int64]float32)
 		}
-
 		z.F.DecMapInt64Float32X(x.FptrMapInt64Float32, d)
 	}
 	yyj381++
@@ -10003,11 +9037,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64Float64 = nil
-	} else {
-		z.F.DecMapInt64Float64X(&x.FMapInt64Float64, d)
-	}
+	z.F.DecMapInt64Float64X(&x.FMapInt64Float64, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -10019,7 +9049,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64Float64 != nil { // remove the if-true
 			x.FptrMapInt64Float64 = nil
 		}
@@ -10027,7 +9057,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Float64 == nil {
 			x.FptrMapInt64Float64 = new(map[int64]float64)
 		}
-
 		z.F.DecMapInt64Float64X(x.FptrMapInt64Float64, d)
 	}
 	yyj381++
@@ -10041,11 +9070,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.FMapInt64Bool = nil
-	} else {
-		z.F.DecMapInt64BoolX(&x.FMapInt64Bool, d)
-	}
+	z.F.DecMapInt64BoolX(&x.FMapInt64Bool, d)
 	yyj381++
 	if yyhl381 {
 		yyb381 = yyj381 > l
@@ -10057,7 +9082,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
+	if r.TryNil() {
 		if x.FptrMapInt64Bool != nil { // remove the if-true
 			x.FptrMapInt64Bool = nil
 		}
@@ -10065,7 +9090,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrMapInt64Bool == nil {
 			x.FptrMapInt64Bool = new(map[int64]bool)
 		}
-
 		z.F.DecMapInt64BoolX(x.FptrMapInt64Bool, d)
 	}
 	for {
@@ -10155,9 +9179,9 @@ func (x *testMammoth2Basic) CodecEncodeSelf(e *Encoder) {
 	_, _, _ = h, z, r
 	if x == nil {
 		r.EncodeNil()
-	} else { // checkNil=true
+	} else {
 		h.enctestMammoth2Basic((*testMammoth2Basic)(x), e)
-	} // checkNil=true
+	}
 }
 
 func (x *testMammoth2Basic) CodecDecodeSelf(d *Decoder) {
@@ -10173,7 +9197,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 	_, _, _ = h, z, r
 	if x == nil {
 		r.EncodeNil()
-	} else { // checkNil=true
+	} else {
 		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
 		_, _ = yysep2, yy2arr2
@@ -10287,7 +9311,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			h.encArray4int64((*[4]int64)(yy31), e)
 			z.EncWriteMapEnd()
 		}
-	} // checkNil=true
+	}
 }
 
 func (x *TestMammoth2Wrapper) CodecDecodeSelf(d *Decoder) {
@@ -10295,7 +9319,9 @@ func (x *TestMammoth2Wrapper) CodecDecodeSelf(d *Decoder) {
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
 	yyct2 := r.ContainerType()
-	if yyct2 == codecSelferValueTypeMap19781 {
+	if yyct2 == codecSelferValueTypeNil19781 {
+		*(x) = TestMammoth2Wrapper{}
+	} else if yyct2 == codecSelferValueTypeMap19781 {
 		yyl2 := z.DecReadMapStart()
 		if yyl2 == 0 {
 		} else {
@@ -10333,53 +9359,21 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 		z.DecReadMapElemValue()
 		switch yys3 {
 		case "V":
-			if r.TryDecodeAsNil() {
-				x.V = TestMammoth2{}
-			} else {
-				x.V.CodecDecodeSelf(d)
-			}
+			x.V.CodecDecodeSelf(d)
 		case "T":
-			if r.TryDecodeAsNil() {
-				x.T = 0
-			} else {
-				x.T.CodecDecodeSelf(d)
-			}
+			x.T.CodecDecodeSelf(d)
 		case "B":
-			if r.TryDecodeAsNil() {
-				x.B = 0
-			} else {
-				x.B.CodecDecodeSelf(d)
-			}
+			x.B.CodecDecodeSelf(d)
 		case "J":
-			if r.TryDecodeAsNil() {
-				x.J = 0
-			} else {
-				x.J.CodecDecodeSelf(d)
-			}
+			x.J.CodecDecodeSelf(d)
 		case "C":
-			if r.TryDecodeAsNil() {
-				x.C = testMammoth2Basic{}
-			} else {
-				x.C.CodecDecodeSelf(d)
-			}
+			x.C.CodecDecodeSelf(d)
 		case "M":
-			if r.TryDecodeAsNil() {
-				x.M = nil
-			} else {
-				h.decMaptestMammoth2BasicTestMammoth2((*map[testMammoth2Basic]TestMammoth2)(&x.M), d)
-			}
+			h.decMaptestMammoth2BasicTestMammoth2((*map[testMammoth2Basic]TestMammoth2)(&x.M), d)
 		case "L":
-			if r.TryDecodeAsNil() {
-				x.L = nil
-			} else {
-				h.decSliceTestMammoth2((*[]TestMammoth2)(&x.L), d)
-			}
+			h.decSliceTestMammoth2((*[]TestMammoth2)(&x.L), d)
 		case "A":
-			if r.TryDecodeAsNil() {
-				x.A = [4]int64{}
-			} else {
-				h.decArray4int64((*[4]int64)(&x.A), d)
-			}
+			h.decArray4int64((*[4]int64)(&x.A), d)
 		default:
 			z.DecStructFieldNotFound(-1, yys3)
 		} // end switch yys3
@@ -10404,11 +9398,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.V = TestMammoth2{}
-	} else {
-		x.V.CodecDecodeSelf(d)
-	}
+	x.V.CodecDecodeSelf(d)
 	yyj15++
 	if yyhl15 {
 		yyb15 = yyj15 > l
@@ -10420,11 +9410,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.T = 0
-	} else {
-		x.T.CodecDecodeSelf(d)
-	}
+	x.T.CodecDecodeSelf(d)
 	yyj15++
 	if yyhl15 {
 		yyb15 = yyj15 > l
@@ -10436,11 +9422,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.B = 0
-	} else {
-		x.B.CodecDecodeSelf(d)
-	}
+	x.B.CodecDecodeSelf(d)
 	yyj15++
 	if yyhl15 {
 		yyb15 = yyj15 > l
@@ -10452,11 +9434,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.J = 0
-	} else {
-		x.J.CodecDecodeSelf(d)
-	}
+	x.J.CodecDecodeSelf(d)
 	yyj15++
 	if yyhl15 {
 		yyb15 = yyj15 > l
@@ -10468,11 +9446,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.C = testMammoth2Basic{}
-	} else {
-		x.C.CodecDecodeSelf(d)
-	}
+	x.C.CodecDecodeSelf(d)
 	yyj15++
 	if yyhl15 {
 		yyb15 = yyj15 > l
@@ -10484,11 +9458,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.M = nil
-	} else {
-		h.decMaptestMammoth2BasicTestMammoth2((*map[testMammoth2Basic]TestMammoth2)(&x.M), d)
-	}
+	h.decMaptestMammoth2BasicTestMammoth2((*map[testMammoth2Basic]TestMammoth2)(&x.M), d)
 	yyj15++
 	if yyhl15 {
 		yyb15 = yyj15 > l
@@ -10500,11 +9470,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.L = nil
-	} else {
-		h.decSliceTestMammoth2((*[]TestMammoth2)(&x.L), d)
-	}
+	h.decSliceTestMammoth2((*[]TestMammoth2)(&x.L), d)
 	yyj15++
 	if yyhl15 {
 		yyb15 = yyj15 > l
@@ -10516,11 +9482,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryDecodeAsNil() {
-		x.A = [4]int64{}
-	} else {
-		h.decArray4int64((*[4]int64)(&x.A), d)
-	}
+	h.decArray4int64((*[4]int64)(&x.A), d)
 	for {
 		yyj15++
 		if yyhl15 {
@@ -10575,11 +9537,7 @@ func (x codecSelfer19781) dectestMammoth2Basic(v *testMammoth2Basic, d *Decoder)
 			if yydb1 {
 				z.DecSwallow()
 			} else {
-				if r.TryDecodeAsNil() {
-					yyv1[yyj1] = 0
-				} else {
-					yyv1[yyj1] = (uint64)(r.DecodeUint64())
-				}
+				yyv1[yyj1] = (uint64)(r.DecodeUint64())
 			}
 		}
 	}
@@ -10613,51 +9571,46 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 
 	yyv1 := *v
 	yyl1 := z.DecReadMapStart()
-	yybh1 := z.DecBasicHandle()
-	if yyv1 == nil {
-		yyrl1 := z.DecInferLen(yyl1, yybh1.MaxInitLen, 1872)
-		yyv1 = make(map[testMammoth2Basic]TestMammoth2, yyrl1)
-		*v = yyv1
-	}
-	var yymk1 testMammoth2Basic
-	var yymv1 TestMammoth2
-	var yymg1, yymdn1 bool
-	if yybh1.MapValueReset {
-		yymg1 = true
-	}
-	if yyl1 != 0 {
-		yyhl1 := yyl1 > 0
-		for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
-			z.DecReadMapElemKey()
-			if r.TryDecodeAsNil() {
-				yymk1 = testMammoth2Basic{}
-			} else {
-				yymk1.CodecDecodeSelf(d)
-			}
-			if yymg1 {
-				yymv1 = yyv1[yymk1]
-			} else {
-				yymv1 = TestMammoth2{}
-			}
-			z.DecReadMapElemValue()
-			yymdn1 = false
-			if r.TryDecodeAsNil() {
-				yymdn1 = true
-			} else {
-				yymv1.CodecDecodeSelf(d)
-			}
-			if yymdn1 {
-				if yybh1.DeleteOnNilMapValue {
-					delete(yyv1, yymk1)
-				} else {
-					yyv1[yymk1] = TestMammoth2{}
-				}
-			} else if yyv1 != nil {
-				yyv1[yymk1] = yymv1
-			}
+	if yyl1 == codecSelferDecContainerLenNil19781 {
+		*v = nil
+	} else {
+		if yyv1 == nil {
+			yyrl1 := z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 1872)
+			yyv1 = make(map[testMammoth2Basic]TestMammoth2, yyrl1)
+			*v = yyv1
 		}
-	} // else len==0: TODO: Should we clear map entries?
-	z.DecReadMapEnd()
+		var yymk1 testMammoth2Basic
+		var yymv1 TestMammoth2
+		var yymg1, yymdn1 bool
+		if z.DecBasicHandle().MapValueReset {
+			yymg1 = true
+		}
+		if yyl1 != 0 {
+			yyhl1 := yyl1 > 0
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+				z.DecReadMapElemKey()
+				yymk1.CodecDecodeSelf(d)
+				if yymg1 {
+					yymv1 = yyv1[yymk1]
+				} else {
+					yymv1 = TestMammoth2{}
+				}
+				z.DecReadMapElemValue()
+				yymdn1 = false
+				yymv1.CodecDecodeSelf(d)
+				if yymdn1 {
+					if z.DecBasicHandle().DeleteOnNilMapValue {
+						delete(yyv1, yymk1)
+					} else {
+						yyv1[yymk1] = TestMammoth2{}
+					}
+				} else if yyv1 != nil {
+					yyv1[yymk1] = yymv1
+				}
+			}
+		} // else len==0: TODO: Should we clear map entries?
+		z.DecReadMapEnd()
+	}
 }
 
 func (x codecSelfer19781) encSliceTestMammoth2(v []TestMammoth2, e *Encoder) {
@@ -10686,7 +9639,12 @@ func (x codecSelfer19781) decSliceTestMammoth2(v *[]TestMammoth2, d *Decoder) {
 	yyh1, yyl1 := z.DecSliceHelperStart()
 	var yyc1 bool
 	_ = yyc1
-	if yyl1 == 0 {
+	if yyh1.IsNil {
+		if yyv1 != nil {
+			yyv1 = nil
+			yyc1 = true
+		}
+	} else if yyl1 == 0 {
 		if yyv1 == nil {
 			yyv1 = []TestMammoth2{}
 			yyc1 = true
@@ -10732,11 +9690,7 @@ func (x codecSelfer19781) decSliceTestMammoth2(v *[]TestMammoth2, d *Decoder) {
 			if yydb1 {
 				z.DecSwallow()
 			} else {
-				if r.TryDecodeAsNil() {
-					yyv1[yyj1] = TestMammoth2{}
-				} else {
-					yyv1[yyj1].CodecDecodeSelf(d)
-				}
+				yyv1[yyj1].CodecDecodeSelf(d)
 			}
 		}
 		if yyj1 < len(yyv1) {
@@ -10792,11 +9746,7 @@ func (x codecSelfer19781) decArray4int64(v *[4]int64, d *Decoder) {
 			if yydb1 {
 				z.DecSwallow()
 			} else {
-				if r.TryDecodeAsNil() {
-					yyv1[yyj1] = 0
-				} else {
-					yyv1[yyj1] = (int64)(r.DecodeInt64())
-				}
+				yyv1[yyj1] = (int64)(r.DecodeInt64())
 			}
 		}
 	}

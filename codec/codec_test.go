@@ -717,24 +717,30 @@ func testMarshal(v interface{}, h Handle) (bs []byte, err error) {
 }
 
 func testMarshalErr(v interface{}, h Handle, t *testing.T, name string) (bs []byte) {
+	t.Helper()
 	bs, err := testMarshal(v, h)
 	if err != nil {
+		logT("%s: marshal failed: %v", name, err)
 		failT(t, "Error encoding %s: %v, Err: %v", name, v, err)
 	}
 	return
 }
 
 func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name string) {
+	t.Helper()
 	if err := testUnmarshal(v, data, h); err != nil {
-		failT(t, "Error Decoding into %s: %v, Err: %v", name, v, err)
+		logT("%s: unmarshal failed: %v", name, err)
+		failTv(t, "Error Decoding into %s: %v, Err: %v", name, v, err)
 	}
 }
 
 func testDeepEqualErr(v1, v2 interface{}, t *testing.T, name string) {
+	t.Helper()
 	if err := deepEqual(v1, v2); err == nil {
 		logTv(t, "%s: values equal", name)
 	} else {
-		failT(t, "%s: values not equal: %v. 1: %#v, 2: %#v", name, err, v1, v2)
+		logT(t, "%s: values not equal: %v", name, err)
+		failTv(t, "%s: values not equal: %v. 1: %#v, 2: %#v", name, err, v1, v2)
 	}
 }
 
@@ -778,7 +784,7 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 		if h.isBinary() {
 			logTv(t, "         Encoded bytes: len: %v, %v\n", len(b0), b1)
 		} else {
-			logTv(t, "         Encoded string: len: %v, %v\n", len(b0), string(b1))
+			logTv(t, "         Encoded string: len: %v, %s\n", len(b0), b0)
 			// println("########### encoded string: " + string(b0))
 		}
 		var v1 interface{}
