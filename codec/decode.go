@@ -35,6 +35,17 @@ const (
 	// decContainerLenNil is length returned from Read(Map|Array)Len
 	// when a 'nil' was encountered in the stream.
 	decContainerLenNil = math.MinInt32
+
+	// decFailNonEmptyIntf configures whether we error when decoding naked into a non-empty interface.
+	//
+	// Typically, we cannot decode non-nil stream value into nil interface with methods (e.g. io.Reader).
+	// However, in some scenarios, this should be allowed:
+	//   - MapType
+	//   - SliceType
+	//   - Extensions
+	//
+	// Consequently, we should relax this. Put it behind a const flag for now.
+	decFailNonEmptyIntf = false
 )
 
 var (
@@ -336,8 +347,15 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 	// if n.v == valueTypeNil {
 	// 	return
 	// }
+
 	// We cannot decode non-nil stream value into nil interface with methods (e.g. io.Reader).
-	if f.ti.numMeth > 0 {
+	// Howver, it is possible that the user has ways to pass in a type for a given interface
+	//   - MapType
+	//   - SliceType
+	//   - Extensions
+	//
+	// Consequently, we should relax this. Put it behind a const flag for now.
+	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
 		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 		return
 	}
