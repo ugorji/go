@@ -160,47 +160,52 @@ var zeroByteSlice = oneByteArr[:0:0]
 
 var codecgen bool
 
-var refBitset bitset256
-var isnilBitset bitset256
-var scalarBitset bitset256
 var pool pooler
 var panicv panicHdl
+
+var refBitset bitset32
+var isnilBitset bitset32
+var scalarBitset bitset32
 
 func init() {
 	pool.init()
 
-	refBitset.set(byte(reflect.Map))
-	refBitset.set(byte(reflect.Ptr))
-	refBitset.set(byte(reflect.Func))
-	refBitset.set(byte(reflect.Chan))
-	refBitset.set(byte(reflect.UnsafePointer))
+	refBitset = refBitset.
+		set(byte(reflect.Map)).
+		set(byte(reflect.Ptr)).
+		set(byte(reflect.Func)).
+		set(byte(reflect.Chan)).
+		set(byte(reflect.UnsafePointer))
 
-	isnilBitset.set(byte(reflect.Map))
-	isnilBitset.set(byte(reflect.Ptr))
-	isnilBitset.set(byte(reflect.Func))
-	isnilBitset.set(byte(reflect.Chan))
-	isnilBitset.set(byte(reflect.UnsafePointer))
-	isnilBitset.set(byte(reflect.Interface))
-	isnilBitset.set(byte(reflect.Slice))
+	isnilBitset = isnilBitset.
+		set(byte(reflect.Map)).
+		set(byte(reflect.Ptr)).
+		set(byte(reflect.Func)).
+		set(byte(reflect.Chan)).
+		set(byte(reflect.UnsafePointer)).
+		set(byte(reflect.Interface)).
+		set(byte(reflect.Slice))
 
-	scalarBitset.set(byte(reflect.Bool))
-	scalarBitset.set(byte(reflect.Int))
-	scalarBitset.set(byte(reflect.Int8))
-	scalarBitset.set(byte(reflect.Int16))
-	scalarBitset.set(byte(reflect.Int32))
-	scalarBitset.set(byte(reflect.Int64))
-	scalarBitset.set(byte(reflect.Uint))
-	scalarBitset.set(byte(reflect.Uint8))
-	scalarBitset.set(byte(reflect.Uint16))
-	scalarBitset.set(byte(reflect.Uint32))
-	scalarBitset.set(byte(reflect.Uint64))
-	scalarBitset.set(byte(reflect.Uintptr))
-	scalarBitset.set(byte(reflect.Float32))
-	scalarBitset.set(byte(reflect.Float64))
-	scalarBitset.set(byte(reflect.Complex64))
-	scalarBitset.set(byte(reflect.Complex128))
-	scalarBitset.set(byte(reflect.String))
+	scalarBitset = scalarBitset.
+		set(byte(reflect.Bool)).
+		set(byte(reflect.Int)).
+		set(byte(reflect.Int8)).
+		set(byte(reflect.Int16)).
+		set(byte(reflect.Int32)).
+		set(byte(reflect.Int64)).
+		set(byte(reflect.Uint)).
+		set(byte(reflect.Uint8)).
+		set(byte(reflect.Uint16)).
+		set(byte(reflect.Uint32)).
+		set(byte(reflect.Uint64)).
+		set(byte(reflect.Uintptr)).
+		set(byte(reflect.Float32)).
+		set(byte(reflect.Float64)).
+		set(byte(reflect.Complex64)).
+		set(byte(reflect.Complex128)).
+		set(byte(reflect.String))
 
+	// xdebugf("bitsets: ref: %b, isnil: %b, scalar: %b", refBitset, isnilBitset, scalarBitset)
 }
 
 type handleFlag uint8
@@ -2496,6 +2501,15 @@ func (x *bitset256) isset(pos byte) bool {
 
 func (x *bitset256) set(pos byte) {
 	x[pos>>3] |= (1 << (pos & 7))
+}
+
+type bitset32 uint32
+
+func (x bitset32) set(pos byte) bitset32 {
+	return x | (1 << pos)
+}
+func (x bitset32) isset(pos byte) bool {
+	return x&(1<<pos) != 0
 }
 
 // func (x *bitset256) unset(pos byte) {
