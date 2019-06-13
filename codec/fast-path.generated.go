@@ -4408,15 +4408,8 @@ func (fastpathT) DecSliceIntfN(v []interface{}, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		d.decode(&v[uint(j)])
@@ -4512,15 +4505,8 @@ func (fastpathT) DecSliceStringN(v []string, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = string(d.d.DecodeStringAsBytes())
@@ -4616,15 +4602,8 @@ func (fastpathT) DecSliceBytesN(v [][]byte, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = d.d.DecodeBytes(nil, false)
@@ -4720,15 +4699,8 @@ func (fastpathT) DecSliceFloat32N(v []float32, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = float32(d.decodeFloat32())
@@ -4824,15 +4796,8 @@ func (fastpathT) DecSliceFloat64N(v []float64, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = d.d.DecodeFloat64()
@@ -4928,15 +4893,8 @@ func (fastpathT) DecSliceUintN(v []uint, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
@@ -5032,15 +4990,8 @@ func (fastpathT) DecSliceUint16N(v []uint16, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = uint16(chkOvf.UintV(d.d.DecodeUint64(), 16))
@@ -5136,15 +5087,8 @@ func (fastpathT) DecSliceUint32N(v []uint32, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = uint32(chkOvf.UintV(d.d.DecodeUint64(), 32))
@@ -5240,15 +5184,8 @@ func (fastpathT) DecSliceUint64N(v []uint64, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = d.d.DecodeUint64()
@@ -5344,15 +5281,8 @@ func (fastpathT) DecSliceIntN(v []int, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
@@ -5448,15 +5378,8 @@ func (fastpathT) DecSliceInt8N(v []int8, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = int8(chkOvf.IntV(d.d.DecodeInt64(), 8))
@@ -5552,15 +5475,8 @@ func (fastpathT) DecSliceInt16N(v []int16, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = int16(chkOvf.IntV(d.d.DecodeInt64(), 16))
@@ -5656,15 +5572,8 @@ func (fastpathT) DecSliceInt32N(v []int32, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
@@ -5760,15 +5669,8 @@ func (fastpathT) DecSliceInt64N(v []int64, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = d.d.DecodeInt64()
@@ -5864,21 +5766,26 @@ func (fastpathT) DecSliceBoolN(v []bool, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j >= len(v) {
-			d.arrayCannotExpand(len(v), j+1)
-			slh.ElemContainerState(j)
-			d.swallow()
-			j++
-			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-				slh.ElemContainerState(j)
-				d.swallow()
-			}
-			break
+			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			return
 		}
 		slh.ElemContainerState(j)
 		v[uint(j)] = d.d.DecodeBool()
 	}
 	slh.End()
 }
+func fastpathDecArrayCannotExpand(slh decSliceHelper, hasLen bool, lenv, j, containerLenS int) {
+	slh.d.arrayCannotExpand(lenv, j+1)
+	slh.ElemContainerState(j)
+	slh.d.swallow()
+	j++
+	for ; (hasLen && j < containerLenS) || !(hasLen || slh.d.d.CheckBreak()); j++ {
+		slh.ElemContainerState(j)
+		slh.d.swallow()
+	}
+	slh.End()
+}
+
 func (d *Decoder) fastpathDecMapStringIntfR(f *codecFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart()
 	if containerLen == decContainerLenNil {
