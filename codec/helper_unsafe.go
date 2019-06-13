@@ -536,6 +536,12 @@ func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 
 // ------------ map range and map indexing ----------
 
+// regular calls to map via reflection: MapKeys, MapIndex, MapRange/MapIter etc
+// will always allocate for each map key or value.
+//
+// It is more performant to provide a value that the map entry is set into,
+// and that elides the allocation.
+
 // unsafeMapHashIter
 //
 // go 1.4+ has runtime/hashmap.go or runtime/map.go which has a
@@ -607,6 +613,13 @@ func unsafeSet(p, ptyp, p2 unsafe.Pointer, isref bool) {
 	}
 }
 
+func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
+	if urv.flag&unsafeFlagIndir == 0 {
+		return unsafe.Pointer(&urv.ptr)
+	}
+	return urv.ptr
+}
+
 func mapRange(m, k, v reflect.Value, mapvalues bool) *unsafeMapIter {
 	if m.IsNil() {
 		return &unsafeMapIter{done: true}
@@ -635,13 +648,6 @@ func mapRange(m, k, v reflect.Value, mapvalues bool) *unsafeMapIter {
 	}
 
 	return t
-}
-
-func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
-	if urv.flag&unsafeFlagIndir == 0 {
-		return unsafe.Pointer(&urv.ptr)
-	}
-	return urv.ptr
 }
 
 func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
