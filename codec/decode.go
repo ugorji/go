@@ -770,52 +770,47 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			}
 		}
 		slh.ElemContainerState(j)
-		// var decodeAsNil = d.d.TryDecodeAsNil()
 		// if indefinite, etc, then expand the slice if necessary
-		var decodeIntoBlank bool
 		if j >= rvlen {
 			if f.seq == seqTypeArray {
 				d.arrayCannotExpand(rvlen, j+1)
-				decodeIntoBlank = true
-			} else { // if f.seq == seqTypeSlice
-				// rv = reflect.Append(rv, reflect.Zero(rtelem0)) // append logic + varargs
-				var rvcap2 int
-				var rvErrmsg2 string
-				rv9, rvcap2, rvChanged, rvErrmsg2 =
-					expandSliceRV(rv, f.ti.rt, rvCanset, rtelem0Size, 1, rvlen, rvcap)
-				if rvErrmsg2 != "" {
-					d.errorf(rvErrmsg2)
+				// drain completely and return
+				d.swallow()
+				j++
+				for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
+					slh.ElemContainerState(j)
+					d.swallow()
 				}
-				rvlen++
-				if rvChanged {
-					rv = rv9
-					rvcap = rvcap2
-				}
+				slh.End()
+				return
+			}
+			// rv = reflect.Append(rv, reflect.Zero(rtelem0)) // append logic + varargs
+			var rvcap2 int
+			var rvErrmsg2 string
+			rv9, rvcap2, rvChanged, rvErrmsg2 =
+				expandSliceRV(rv, f.ti.rt, rvCanset, rtelem0Size, 1, rvlen, rvcap)
+			if rvErrmsg2 != "" {
+				d.errorf(rvErrmsg2)
+			}
+			rvlen++
+			if rvChanged {
+				rv = rv9
+				rvcap = rvcap2
 			}
 		}
-		if decodeIntoBlank {
-			// if !decodeAsNil {
-			// 	d.swallow()
-			// }
-			d.swallow()
-		} else {
-			rv9 = rv.Index(j)
-			if d.h.SliceElementReset { // || decodeAsNil {
-				if !rtelem0ZeroValid {
-					rtelem0ZeroValid = true
-					rtelem0Zero = reflect.Zero(rtelem0)
-				}
-				rv9.Set(rtelem0Zero)
-				// if decodeAsNil {
-				// 	continue
-				// }
+		rv9 = rv.Index(j)
+		if d.h.SliceElementReset {
+			if !rtelem0ZeroValid {
+				rtelem0ZeroValid = true
+				rtelem0Zero = reflect.Zero(rtelem0)
 			}
+			rv9.Set(rtelem0Zero)
+		}
 
-			if fn == nil {
-				fn = d.h.fn(rtelem)
-			}
-			d.decodeValue(rv9, fn)
+		if fn == nil {
+			fn = d.h.fn(rtelem)
 		}
+		d.decodeValue(rv9, fn)
 	}
 	if j < rvlen {
 		if rv.CanSet() {

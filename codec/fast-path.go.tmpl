@@ -44,11 +44,9 @@ DecSliceIntfX  (called by codecgen) (calls Y below)
 DecSliceIntfY  (delegate when slice CAN be updated)
 DecSliceIntfN  (delegate when slice CANNOT be updated e.g. from array or non-addressable slice)
 
-fastpathDecMap...R (called by fastpath...switch) (calls L below)
+fastpathDecMap...R (called by fastpath...switch) (calls L or X? below)
 DecMap...X  (called by codecgen)
 DecMap...L  (delegated to by both above)
-    (update: let both handle when containerLen == 0 or decContainerLenNil)
-    (L doesn't do mapStart or mapEnd - just the meat)
 */ -}}
 
 import (
@@ -266,26 +264,36 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 	case *[]{{ .Elem }}:
 		var v2 []{{ .Elem }}
 		if v2, changed = fastpathTV.{{ .MethodNamePfx "Dec" false }}Y(*v, d); changed {
-			*v = v2 
+			*v = v2
 		}
 {{end}}{{end}}{{end}}{{end -}}
 {{range .Values}}{{if not .Primitive}}{{if .MapKey }}{{/*
 // maps only change if nil, and in that case, there's no point copying
 */ -}}
 	case map[{{ .MapKey }}]{{ .Elem }}:
-		if containerLen = d.mapStart(); containerLen != decContainerLenNil {
-			fastpathTV.{{ .MethodNamePfx "Dec" false }}L(v, containerLen, d)
+		containerLen = d.mapStart()
+		if containerLen != decContainerLenNil {
+			if containerLen != 0 {
+				fastpathTV.{{ .MethodNamePfx "Dec" false }}L(v, containerLen, d)
+			}
+			d.mapEnd()
 		}
 	case *map[{{ .MapKey }}]{{ .Elem }}:
+		{{/*
 		containerLen = d.mapStart()
-		if containerLen == decContainerLenNil {
+		if containerLen == 0 {
+			d.mapEnd()
+		} else if containerLen == decContainerLenNil {
 			*v = nil
-			break
+		} else {
+			if *v == nil {
+				*v = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
+			}
+			fastpathTV.{{ .MethodNamePfx "Dec" false }}L(*v, containerLen, d)
 		}
-		if *v == nil {
-			*v = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
-		}
-		fastpathTV.{{ .MethodNamePfx "Dec" false }}L(*v, containerLen, d)
+		// consider delegating fully to X - encoding *map is uncommon, so ok to pay small function call cost
+		*/ -}}
+		fastpathTV.{{ .MethodNamePfx "Dec" false }}X(v, d)
 {{end}}{{end}}{{end -}}
 	default:
 		_ = v // workaround https://github.com/golang/go/issues/12927 seen in go1.4
@@ -320,6 +328,7 @@ Slices can change if they
 - are settable (e.g. contained in an interface{})
 */}}
 func (d *Decoder) {{ .MethodNamePfx "fastpathDec" false }}R(f *codecFnInfo, rv reflect.Value) {
+	{{/* xdebugf("{{ .MethodNamePfx "fastpathDec" false }}R: f.seq: %v", f.seq) */ -}}
 	if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
 		vp := rv2i(rv).(*[]{{ .Elem }})
 		if v, changed := fastpathTV.{{ .MethodNamePfx "Dec" false }}Y(*vp, d); changed { *vp = v }
@@ -408,6 +417,7 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}N(v []{{ .Elem }}, d *Decoder) 
 			d.arrayCannotExpand(len(v), j+1)
 			slh.ElemContainerState(j)
 			d.swallow()
+			j++
 			for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 				slh.ElemContainerState(j)
 				d.swallow()
@@ -421,7 +431,11 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}N(v []{{ .Elem }}, d *Decoder) 
 		} else {
 			{{ if eq .Elem "interface{}" }}d.decode(&v[uint(j)]){{ else }}v[uint(j)] = {{ decmd .Elem }}{{ end }}
 		} */ -}}
-		{{ if eq .Elem "interface{}" }}d.decode(&v[uint(j)]){{ else }}v[uint(j)] = {{ decmd .Elem }}{{ end }}
+		{{ if eq .Elem "interface{}" -}}
+		d.decode(&v[uint(j)])
+		{{- else -}}
+		v[uint(j)] = {{ decmd .Elem }}
+		{{- end }}
 	}
 	slh.End()
 }
@@ -435,30 +449,38 @@ Maps can change if they are
 */ -}}
 func (d *Decoder) {{ .MethodNamePfx "fastpathDec" false }}R(f *codecFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart()
-	if rv.Kind() == reflect.Ptr {
-		vp := rv2i(rv).(*map[{{ .MapKey }}]{{ .Elem }})
-		if containerLen == decContainerLenNil {
-			*vp = nil
-			return
+	if containerLen == decContainerLenNil {
+		if rv.Kind() == reflect.Ptr {
+			*(rv2i(rv).(*map[{{ .MapKey }}]{{ .Elem }})) = nil
 		}
-		if *vp == nil {
-			*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
+	} else {
+		if rv.Kind() == reflect.Ptr {
+			vp, _ := rv2i(rv).(*map[{{ .MapKey }}]{{ .Elem }})
+			if *vp == nil {
+				*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
+			}
+			if containerLen != 0 {
+				fastpathTV.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
+			}
+		} else if containerLen != 0 {
+			fastpathTV.{{ .MethodNamePfx "Dec" false }}L(rv2i(rv).(map[{{ .MapKey }}]{{ .Elem }}), containerLen, d)
 		}
-		fastpathTV.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
-	} else if containerLen != decContainerLenNil {
-		fastpathTV.{{ .MethodNamePfx "Dec" false }}L(rv2i(rv).(map[{{ .MapKey }}]{{ .Elem }}), containerLen, d)
+		d.mapEnd()
 	}
 }
 func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{{ .Elem }}, d *Decoder) {
 	containerLen := d.mapStart()
 	if containerLen == decContainerLenNil {
 		*vp = nil
-		return
+	} else {
+		if *vp == nil {
+			*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
+		}
+		if containerLen != 0 {
+			f.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
+		}
+		d.mapEnd()
 	}
-	if *vp == nil {
-		*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
-	}
-	f.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
 }
 {{/*
 func (f fastpathT) {{ .MethodNamePfx "Dec" false }}Y(v map[{{ .MapKey }}]{{ .Elem }}, d *Decoder) (_ map[{{ .MapKey }}]{{ .Elem }}, changed bool) {
@@ -479,11 +501,11 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem 
 	if containerLen == decContainerLenNil {
 		return
 	}
-	*/ -}}
 	if containerLen == 0 {
 		d.mapEnd()
 		return
 	}
+	*/ -}}
 	{{if eq .Elem "interface{}" }}mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
     {{else if eq .Elem "bytes" "[]byte" }}mapGet := v != nil && !d.h.MapValueReset
     {{end -}}
@@ -516,6 +538,8 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem 
 		{{ end -}}
 		if v != nil { v[mk] = mv }
 	}
+	{{- /*
 	d.mapEnd()
+	*/}}
 }
 {{end}}{{end}}{{end}}
