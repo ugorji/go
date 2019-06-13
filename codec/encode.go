@@ -702,7 +702,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, val
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
 	case reflect.Struct:
-		if rv.Type() == timeTyp {
+		if rtkey == timeTyp {
 			mksv := make([]timeRv, len(mks))
 			for i, k := range mks {
 				v := &mksv[i]

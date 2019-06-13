@@ -1302,6 +1302,11 @@ func doTestMapEncodeForCanonical(t *testing.T, name string, h Handle) {
 				false: 0,
 				true:  1,
 			},
+			"c/t": map[time.Time]int64{
+				time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC): time.Date(2019, 1, 1, 0, 0, 0, 0, time.UTC).UnixNano(),
+				time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC): time.Date(2018, 1, 1, 0, 0, 0, 0, time.UTC).UnixNano(),
+				time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC): time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC).UnixNano(),
+			},
 		},
 	}
 	var v2 map[stringUint64T]interface{}
