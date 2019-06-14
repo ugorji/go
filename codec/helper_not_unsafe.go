@@ -264,15 +264,21 @@ func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeTime(rv2i(rv).(time.Time))
 }
 
-func (e *Encoder) kStringToRaw(f *codecFnInfo, rv reflect.Value) {
-	s := rv.String()
-	e.e.EncodeStringBytesRaw(bytesView(s))
+func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
+	if e.h.StringToRaw {
+		e.e.EncodeStringBytesRaw(bytesView(rv.String()))
+	} else {
+		e.e.EncodeStringEnc(cUTF8, rv.String())
+	}
 }
 
-func (e *Encoder) kStringEnc(f *codecFnInfo, rv reflect.Value) {
-	s := rv.String()
-	e.e.EncodeStringEnc(cUTF8, s)
-}
+// func (e *Encoder) kStringToRaw(f *codecFnInfo, rv reflect.Value) {
+// 	e.e.EncodeStringBytesRaw(bytesView(rv.String()))
+// }
+
+// func (e *Encoder) kStringEnc(f *codecFnInfo, rv reflect.Value) {
+// 	e.e.EncodeStringEnc(cUTF8, rv.String())
+// }
 
 func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeFloat64(rv.Float())

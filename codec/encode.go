@@ -208,6 +208,14 @@ func (e *Encoder) raw(f *codecFnInfo, rv reflect.Value) {
 	e.rawBytes(rv2i(rv).(Raw))
 }
 
+// func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
+// 	if e.h.StringToRaw {
+// 		e.kStringToRaw(f, rv)
+// 	} else {
+// 		e.kStringEnc(f, rv)
+// 	}
+// }
+
 func (e *Encoder) kInvalid(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeNil()
 }
