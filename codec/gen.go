@@ -277,9 +277,9 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 		}
 		x.genRefPkgs(t)
 	}
+	x.line("// +build go1.6")
 	if buildTags != "" {
 		x.line("// +build " + buildTags)
-		x.line("")
 	}
 	x.line(`
 
