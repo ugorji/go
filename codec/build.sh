@@ -13,8 +13,7 @@ _tests() {
         echo ">>>> TAGS: $i"
         local i2=${i:-default}
         case $gover in
-            go1.[0-6]*) go vet -printfuncs "errorf" "$@" &&
-                              go test ${zargs[*]} -vet "$vet" -tags "$i" "$@" ;;
+            go1.[0-6]*) go test ${zargs[*]} -tags "$i" "$@" ;;
             *) go vet -printfuncs "errorf" "$@" &&
                      go test ${zargs[*]} -vet "$vet" -tags "alltests $i" -run "Suite" -coverprofile "${i2// /-}.cov.out" "$@" ;;
         esac
