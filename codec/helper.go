@@ -610,8 +610,14 @@ type BasicHandle struct {
 	// However, users can elect to handle time.Time as a custom extension, or via the
 	// standard library's encoding.Binary(M|Unm)arshaler or Text(M|Unm)arshaler interface.
 	// To elect this behavior, users can set TimeNotBuiltin=true.
+	//
 	// Note: Setting TimeNotBuiltin=true can be used to enable the legacy behavior
 	// (for Cbor and Msgpack), where time.Time was not a builtin supported type.
+	//
+	// Note: DO NOT CHANGE AFTER FIRST USE.
+	//
+	// Once a Handle has been used, do not modify this option.
+	// It will lead to unexpected behaviour during encoding and decoding.
 	TimeNotBuiltin bool
 
 	// ExplicitRelease configures whether Release() is implicitly called after an encode or
@@ -869,11 +875,15 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				fn.fe = (*Encoder).kBool
 				fn.fd = (*Decoder).kBool
 			case reflect.String:
-				if x.StringToRaw {
-					fn.fe = (*Encoder).kStringToRaw
-				} else {
-					fn.fe = (*Encoder).kStringEnc
-				}
+				// Do not check this here, as it will statically set the function for a string
+				// type, and if the Handle is modified thereafter, behaviour is non-deterministic.
+				//
+				// if x.StringToRaw {
+				// 	fn.fe = (*Encoder).kStringToRaw
+				// } else {
+				// 	fn.fe = (*Encoder).kStringEnc
+				// }
+				fn.fe = (*Encoder).kString
 				fn.fd = (*Decoder).kString
 			case reflect.Int:
 				fn.fd = (*Decoder).kInt
@@ -967,8 +977,11 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 // Once a handle is configured, it can be shared across multiple Encoders and Decoders.
 //
 // Note that a Handle is NOT safe for concurrent modification.
-// Consequently, do not modify it after it is configured if shared among
-// multiple Encoders and Decoders in different goroutines.
+//
+// A Handle also should not be modified after it is configured and has
+// been used at least once. This is because stored state may be out of sync with the
+// new configuration, and a data race can occur when multiple goroutines access it.
+// i.e. multiple Encoders or Decoders in different goroutines.
 //
 // Consequently, the typical usage model is that a Handle is pre-configured
 // before first time use, and not modified while in use.
