@@ -54,6 +54,29 @@ type codecgenM struct {
 	codecgenL
 }
 
+// some types to test struct keytype
+
+type testStrucKeyTypeT0 struct {
+	_struct struct{}
+	F       int
+}
+type testStrucKeyTypeT1 struct {
+	_struct struct{} `codec:",string"`
+	F       int      `codec:"FFFF"`
+}
+type testStrucKeyTypeT2 struct {
+	_struct struct{} `codec:",int"`
+	F       int      `codec:"-1"`
+}
+type testStrucKeyTypeT3 struct {
+	_struct struct{} `codec:",uint"`
+	F       int      `codec:"1"`
+}
+type testStrucKeyTypeT4 struct {
+	_struct struct{} `codec:",float"`
+	F       int      `codec:"2.5"`
+}
+
 // Some unused types just stored here
 
 type Bbool bool

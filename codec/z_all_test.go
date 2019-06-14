@@ -177,6 +177,9 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonSelfExt", TestJsonSelfExt)
 	t.Run("TestJsonBytesEncodedAsArray", TestJsonBytesEncodedAsArray)
 	t.Run("TestJsonStrucEncDec", TestJsonStrucEncDec)
+	t.Run("TestJsonMapEncodeForCanonical", TestJsonMapEncodeForCanonical)
+	t.Run("TestJsonRawToStringToRawEtc", TestJsonRawToStringToRawEtc)
+	t.Run("TestJsonStructKeyType", TestJsonStructKeyType)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 }
@@ -209,13 +212,15 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincSelfExt", TestBincSelfExt)
 	t.Run("TestBincBytesEncodedAsArray", TestBincBytesEncodedAsArray)
 	t.Run("TestBincStrucEncDec", TestBincStrucEncDec)
+	t.Run("TestBincMapEncodeForCanonical", TestBincMapEncodeForCanonical)
+	t.Run("TestBincRawToStringToRawEtc", TestBincRawToStringToRawEtc)
+	t.Run("TestBincStructKeyType", TestBincStructKeyType)
 }
 
 func testCborGroup(t *testing.T) {
 	t.Run("TestCborCodecsTable", TestCborCodecsTable)
 	t.Run("TestCborCodecsMisc", TestCborCodecsMisc)
 	t.Run("TestCborCodecsEmbeddedPointer", TestCborCodecsEmbeddedPointer)
-	t.Run("TestCborMapEncodeForCanonical", TestCborMapEncodeForCanonical)
 	t.Run("TestCborCodecChan", TestCborCodecChan)
 	t.Run("TestCborStdEncIntf", TestCborStdEncIntf)
 	t.Run("TestCborMammoth", TestCborMammoth)
@@ -240,6 +245,9 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborSelfExt", TestCborSelfExt)
 	t.Run("TestCborBytesEncodedAsArray", TestCborBytesEncodedAsArray)
 	t.Run("TestCborStrucEncDec", TestCborStrucEncDec)
+	t.Run("TestCborMapEncodeForCanonical", TestCborMapEncodeForCanonical)
+	t.Run("TestCborRawToStringToRawEtc", TestCborRawToStringToRawEtc)
+	t.Run("TestCborStructKeyType", TestCborStructKeyType)
 
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 	t.Run("TestCborSkipTags", TestCborSkipTags)
@@ -271,7 +279,10 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackMaxDepth", TestMsgpackMaxDepth)
 	t.Run("TestMsgpackSelfExt", TestMsgpackSelfExt)
 	t.Run("TestMsgpackBytesEncodedAsArray", TestMsgpackBytesEncodedAsArray)
-	t.Run("TestCborStrucEncDec", TestCborStrucEncDec)
+	t.Run("TestMsgpackStrucEncDec", TestMsgpackStrucEncDec)
+	t.Run("TestMsgpackMapEncodeForCanonical", TestMsgpackMapEncodeForCanonical)
+	t.Run("TestMsgpackRawToStringToRawEtc", TestMsgpackRawToStringToRawEtc)
+	t.Run("TestMsgpackStructKeyType", TestMsgpackStructKeyType)
 
 	t.Run("TestMsgpackDecodeMapAndExtSizeMismatch", TestMsgpackDecodeMapAndExtSizeMismatch)
 }
@@ -302,6 +313,9 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleSelfExt", TestSimpleSelfExt)
 	t.Run("TestSimpleBytesEncodedAsArray", TestSimpleBytesEncodedAsArray)
 	t.Run("TestSimpleStrucEncDec", TestSimpleStrucEncDec)
+	t.Run("TestSimpleMapEncodeForCanonical", TestSimpleMapEncodeForCanonical)
+	t.Run("TestSimpleRawToStringToRawEtc", TestSimpleRawToStringToRawEtc)
+	t.Run("TestSimpleStructKeyType", TestSimpleStructKeyType)
 }
 
 func testSimpleMammothGroup(t *testing.T) {
