@@ -26,7 +26,7 @@ the standard library (ie json, xml, gob, etc).
 Rich Feature Set includes:
 
   - Simple but extremely powerful and feature-rich API
-  - Support for go1.4 and above, while selectively using newer APIs for later releases
+  - Support for go 1.4 and above, while selectively using newer APIs for later releases
   - Excellent code coverage ( > 90% )
   - Very High Performance.
     Our extensive benchmarks show us outperforming Gob, Json, Bson, etc by 2-4X.
@@ -56,7 +56,7 @@ Rich Feature Set includes:
     (to support structured streams with fields encoded as numeric codes)
   - Comprehensive support for anonymous fields
   - Fast (no-reflection) encoding/decoding of common maps and slices
-  - Code-generation for faster performance.
+  - Code-generation for faster performance, supported in go 1.6+
   - Support binary (e.g. messagepack, cbor) and text (e.g. json) formats
   - Support indefinite-length formats to enable true streaming
     (for formats which support it e.g. json, cbor)
