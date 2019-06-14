@@ -272,8 +272,8 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 		// and a map cannot be the key type of a map.
 		// Ensure this is set to nil if decoding into a nil interface{}.
 		Msu2wss: map[stringUint64T]wrapStringSlice{
-			{"5", 5}: []wrapString{"1", "2", "3", "4", "5"},
-			{"3", 3}: []wrapString{"1", "2", "3"},
+			stringUint64T{"5", 5}: []wrapString{"1", "2", "3", "4", "5"},
+			stringUint64T{"3", 3}: []wrapString{"1", "2", "3"},
 		},
 
 		Mis: map[int]string{

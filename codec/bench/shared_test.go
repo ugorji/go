@@ -43,12 +43,10 @@ package codec
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"sync"
-	"testing"
 )
 
 import . "github.com/ugorji/go/codec"
@@ -269,68 +267,68 @@ func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err
 	return
 }
 
-// --- functions below are used by both benchmarks and tests
+// // --- functions below are used by both benchmarks and tests
 
-// log message only when testVerbose = true (ie go test ... -- -tv).
-//
-// These are for intormational messages that do not necessarily
-// help with diagnosing a failure, or which are too large.
-func logTv(x interface{}, format string, args ...interface{}) {
-	if !testVerbose {
-		return
-	}
-	if t, ok := x.(testing.TB); ok { // only available from go 1.9
-		t.Helper()
-	}
-	logT(x, format, args...)
-}
+// // log message only when testVerbose = true (ie go test ... -- -tv).
+// //
+// // These are for intormational messages that do not necessarily
+// // help with diagnosing a failure, or which are too large.
+// func logTv(x interface{}, format string, args ...interface{}) {
+// 	if !testVerbose {
+// 		return
+// 	}
+// 	if t, ok := x.(testing.TB); ok { // only available from go 1.9
+// 		t.Helper()
+// 	}
+// 	logT(x, format, args...)
+// }
 
-// logT logs messages when running as go test -v
-//
-// Use it for diagnostics messages that help diagnost failure,
-// and when the output is not too long ie shorter than like 100 characters.
-//
-// In general, any logT followed by failT should call this.
-func logT(x interface{}, format string, args ...interface{}) {
-	if x == nil {
-		if len(format) == 0 || format[len(format)-1] != '\n' {
-			format = format + "\n"
-		}
-		fmt.Printf(format, args...)
-		return
-	}
-	if t, ok := x.(testing.TB); ok { // only available from go 1.9
-		t.Helper()
-		t.Logf(format, args...)
-	}
-}
+// // logT logs messages when running as go test -v
+// //
+// // Use it for diagnostics messages that help diagnost failure,
+// // and when the output is not too long ie shorter than like 100 characters.
+// //
+// // In general, any logT followed by failT should call this.
+// func logT(x interface{}, format string, args ...interface{}) {
+// 	if x == nil {
+// 		if len(format) == 0 || format[len(format)-1] != '\n' {
+// 			format = format + "\n"
+// 		}
+// 		fmt.Printf(format, args...)
+// 		return
+// 	}
+// 	if t, ok := x.(testing.TB); ok { // only available from go 1.9
+// 		t.Helper()
+// 		t.Logf(format, args...)
+// 	}
+// }
 
-func failTv(x testing.TB, args ...interface{}) {
-	x.Helper()
-	if testVerbose {
-		failTMsg(x, args...)
-	}
-	x.FailNow()
-}
+// func failTv(x testing.TB, args ...interface{}) {
+// 	x.Helper()
+// 	if testVerbose {
+// 		failTMsg(x, args...)
+// 	}
+// 	x.FailNow()
+// }
 
-func failT(x testing.TB, args ...interface{}) {
-	x.Helper()
-	failTMsg(x, args...)
-	x.FailNow()
-}
+// func failT(x testing.TB, args ...interface{}) {
+// 	x.Helper()
+// 	failTMsg(x, args...)
+// 	x.FailNow()
+// }
 
-func failTMsg(x testing.TB, args ...interface{}) {
-	x.Helper()
-	if len(args) > 0 {
-		if format, ok := args[0].(string); ok {
-			logT(x, format, args[1:]...)
-		} else if len(args) == 1 {
-			logT(x, "%v", args[0])
-		} else {
-			logT(x, "%v", args)
-		}
-	}
-}
+// func failTMsg(x testing.TB, args ...interface{}) {
+// 	x.Helper()
+// 	if len(args) > 0 {
+// 		if format, ok := args[0].(string); ok {
+// 			logT(x, format, args[1:]...)
+// 		} else if len(args) == 1 {
+// 			logT(x, "%v", args[0])
+// 		} else {
+// 			logT(x, "%v", args)
+// 		}
+// 	}
+// }
 
 // --- functions below are used only by benchmarks alone
 
