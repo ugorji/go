@@ -160,8 +160,10 @@ _suite_very_quick_json_non_suite() {
 }
 
 _suite_very_quick_json_only_profile() {
-    local a="${1:-Json}"
-    shift
+    local a="Json"
+    case "$1" in
+        Json|Cbor|Msgpack|Simple|Binc) a="${1}"; shift ;;
+    esac
     local b="${1}"
     go test -tags "alltests" -bench "__${a}__.*${b}" \
        -benchmem -benchtime 4s \
