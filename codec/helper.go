@@ -2579,7 +2579,7 @@ type pooler struct {
 
 	// lifetime-scoped pooled resources
 	// dn                                 sync.Pool // for decNaked
-	buf1k, buf2k, buf4k, buf8k, buf16k, buf32k, buf64k sync.Pool // for [N]byte
+	buf256, buf1k, buf2k, buf4k, buf8k, buf16k, buf32k sync.Pool // for [N]byte
 
 	mapStrU16, mapU16Str, mapU16Bytes sync.Pool // for Binc
 	// mapU16StrBytes sync.Pool // for Binc
@@ -2596,13 +2596,14 @@ func (p *pooler) init() {
 
 	// p.dn.New = func() interface{} { x := new(decNaked); x.init(); return x }
 
+	p.buf256.New = func() interface{} { return new([256]byte) }
 	p.buf1k.New = func() interface{} { return new([1 * 1024]byte) }
 	p.buf2k.New = func() interface{} { return new([2 * 1024]byte) }
 	p.buf4k.New = func() interface{} { return new([4 * 1024]byte) }
 	p.buf8k.New = func() interface{} { return new([8 * 1024]byte) }
 	p.buf16k.New = func() interface{} { return new([16 * 1024]byte) }
 	p.buf32k.New = func() interface{} { return new([32 * 1024]byte) }
-	p.buf64k.New = func() interface{} { return new([64 * 1024]byte) }
+	// p.buf64k.New = func() interface{} { return new([64 * 1024]byte) }
 
 	p.mapStrU16.New = func() interface{} { return make(map[string]uint16, 16) }
 	p.mapU16Str.New = func() interface{} { return make(map[uint16]string, 16) }
@@ -2754,8 +2755,40 @@ func (z *bytesBufPooler) end() {
 }
 
 func (z *bytesBufPooler) get(bufsize int) (buf []byte) {
-	// ensure an end is called first (if necessary)
 	if z.pool != nil {
+		switch z.pool {
+		case &pool.buf256:
+			if bufsize <= 256 {
+				buf = z.poolbuf.(*[256]byte)[:bufsize]
+			}
+		case &pool.buf1k:
+			if bufsize <= 1*1024 {
+				buf = z.poolbuf.(*[1 * 1024]byte)[:bufsize]
+			}
+		case &pool.buf2k:
+			if bufsize <= 2*1024 {
+				buf = z.poolbuf.(*[2 * 1024]byte)[:bufsize]
+			}
+		case &pool.buf4k:
+			if bufsize <= 4*1024 {
+				buf = z.poolbuf.(*[4 * 1024]byte)[:bufsize]
+			}
+		case &pool.buf8k:
+			if bufsize <= 8*1024 {
+				buf = z.poolbuf.(*[8 * 1024]byte)[:bufsize]
+			}
+		case &pool.buf16k:
+			if bufsize <= 16*1024 {
+				buf = z.poolbuf.(*[16 * 1024]byte)[:bufsize]
+			}
+		case &pool.buf32k:
+			if bufsize <= 32*1024 {
+				buf = z.poolbuf.(*[32 * 1024]byte)[:bufsize]
+			}
+		}
+		if buf != nil {
+			return
+		}
 		z.pool.Put(z.poolbuf)
 		z.pool, z.poolbuf = nil, nil
 	}
@@ -2794,27 +2827,30 @@ func (z *bytesBufPooler) get(bufsize int) (buf []byte) {
 	// }
 	// return
 
-	if bufsize <= 1*1024 {
+	if bufsize <= 256 {
+		z.pool, z.poolbuf = &pool.buf256, pool.buf256.Get() // pool.bytes1k()
+		buf = z.poolbuf.(*[256]byte)[:bufsize]
+	} else if bufsize <= 1*1024 {
 		z.pool, z.poolbuf = &pool.buf1k, pool.buf1k.Get() // pool.bytes1k()
-		buf = z.poolbuf.(*[1 * 1024]byte)[:]
+		buf = z.poolbuf.(*[1 * 1024]byte)[:bufsize]
 	} else if bufsize <= 2*1024 {
 		z.pool, z.poolbuf = &pool.buf2k, pool.buf2k.Get() // pool.bytes2k()
-		buf = z.poolbuf.(*[2 * 1024]byte)[:]
+		buf = z.poolbuf.(*[2 * 1024]byte)[:bufsize]
 	} else if bufsize <= 4*1024 {
 		z.pool, z.poolbuf = &pool.buf4k, pool.buf4k.Get() // pool.bytes4k()
-		buf = z.poolbuf.(*[4 * 1024]byte)[:]
+		buf = z.poolbuf.(*[4 * 1024]byte)[:bufsize]
 	} else if bufsize <= 8*1024 {
 		z.pool, z.poolbuf = &pool.buf8k, pool.buf8k.Get() // pool.bytes8k()
-		buf = z.poolbuf.(*[8 * 1024]byte)[:]
+		buf = z.poolbuf.(*[8 * 1024]byte)[:bufsize]
 	} else if bufsize <= 16*1024 {
 		z.pool, z.poolbuf = &pool.buf16k, pool.buf16k.Get() // pool.bytes16k()
-		buf = z.poolbuf.(*[16 * 1024]byte)[:]
-	} else if bufsize <= 32*1024 {
+		buf = z.poolbuf.(*[16 * 1024]byte)[:bufsize]
+	} else { // if bufsize <= 32*1024 {
 		z.pool, z.poolbuf = &pool.buf32k, pool.buf32k.Get() // pool.bytes32k()
-		buf = z.poolbuf.(*[32 * 1024]byte)[:]
-	} else {
-		z.pool, z.poolbuf = &pool.buf64k, pool.buf64k.Get() // pool.bytes64k()
-		buf = z.poolbuf.(*[64 * 1024]byte)[:]
+		buf = z.poolbuf.(*[32 * 1024]byte)[:32*1024]
+		// } else {
+		// 	z.pool, z.poolbuf = &pool.buf64k, pool.buf64k.Get() // pool.bytes64k()
+		// 	buf = z.poolbuf.(*[64 * 1024]byte)[:]
 	}
 	return
 }

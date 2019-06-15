@@ -1053,6 +1053,7 @@ func (e *Encoder) mustEncode(v interface{}) {
 
 	if e.wf.buf == nil {
 		e.wf.buf = e.wf.bytesBufPooler.get(e.wf.sz)
+		e.wf.buf = e.wf.buf[:cap(e.wf.buf)]
 	}
 	e.wf.calls++
 	e.encode(v)

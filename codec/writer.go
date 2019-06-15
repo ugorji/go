@@ -164,6 +164,7 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int) {
 		z.buf = z.b[:]
 	} else {
 		z.buf = z.bytesBufPooler.get(bufsize)
+		z.buf = z.buf[:cap(z.buf)]
 		// z.buf = make([]byte, bufsize)
 	}
 }

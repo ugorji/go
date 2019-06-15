@@ -70,7 +70,7 @@ const (
 	jsonU4Chk1 = 'a' - 10
 	jsonU4Chk0 = 'A' - 10
 
-	jsonScratchArrayLen = cacheLineSize // 64
+	// jsonScratchArrayLen = cacheLineSize + 32 // 96
 )
 
 const (
@@ -366,7 +366,7 @@ type jsonEncDriver struct {
 
 	s *bitset256 // safe set for characters (taking h.HTMLAsIs into consideration)
 	// scratch: encode time, numbers, etc. Note: leave 1 byte for containerState
-	b [jsonScratchArrayLen - 16]byte // leave space for bs(len,cap), containerState
+	b [cacheLineSize - 16]byte // leave space for bs(len,cap), containerState
 }
 
 // Keep writeIndent, WriteArrayElem, WriteMapElemKey, WriteMapElemValue
@@ -591,23 +591,28 @@ func (e *jsonEncDriver) atEndOfEncode() {
 
 type jsonDecDriver struct {
 	noBuiltInTypes
-	d  *Decoder
-	h  *JsonHandle
-	r  *decReaderSwitch
+	d *Decoder
+	h *JsonHandle
+	r *decReaderSwitch
+
+	tok  uint8   // used to store the token read right after skipWhiteSpace
+	fnil bool    // found null
+	_    [2]byte // padding
+	bstr [4]byte // scratch used for string \UXXX parsing
+	// c     containerState
+
+	// ---- cpu cache line boundary (half - way)
+	// b [jsonScratchArrayLen]byte // scratch 1, used for parsing strings or numbers or time.Time
+	// ---- cpu cache line boundary?
+	// ---- writable fields during execution --- *try* to keep in sep cache line
+	bs []byte // scratch - for parsing strings, bytes
 	se interfaceExtWrapper
 
-	bs []byte // scratch, initialized from b. For parsing strings or numbers.
-	// ---- writable fields during execution --- *try* to keep in sep cache line
+	bp bytesBufPooler
 
 	// ---- cpu cache line boundary?
-	b [jsonScratchArrayLen]byte // scratch 1, used for parsing strings or numbers or time.Time
-	// ---- cpu cache line boundary?
-	// c     containerState
-	tok  uint8                         // used to store the token read right after skipWhiteSpace
-	fnil bool                          // found null
-	_    [2]byte                       // padding
-	bstr [4]byte                       // scratch used for string \UXXX parsing
-	b2   [jsonScratchArrayLen - 8]byte // scratch 2, used only for readUntil, decNumBytes
+
+	b2 [cacheLineSize + 32]byte // scratch 2, used only for readUntil, decNumBytes
 
 	// _ [3]uint64 // padding
 	// n jsonNum
@@ -834,7 +839,6 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 }
 
 func (d *jsonDecDriver) decNumBytes() (bs []byte) {
-	// stores num bytes in d.bs
 	d.advance()
 	if d.tok == '"' {
 		bs = d.r.readUntil(d.b2[:0], '"')
@@ -843,7 +847,7 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 		d.readLit4Null()
 	} else {
 		d.r.unreadn1()
-		bs = d.r.readTo(d.bs[:0], &jsonNumSet)
+		bs = d.r.readTo(d.b2[:0], &jsonNumSet)
 	}
 	d.tok = 0
 	return
@@ -1000,29 +1004,56 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		d.tok = 0
 		return bs
 	}
-	d.appendStringAsBytes()
+
 	// base64 encodes []byte{} as "", and we encode nil []byte as null.
 	// Consequently, base64 should decode null as a nil []byte, and "" as an empty []byte{}.
 	// appendStringAsBytes returns a zero-len slice for both, so as not to reset d.bs.
 	// However, it sets a fnil field to true, so we can check if a null was found.
-	if d.fnil {
+
+	// d.appendStringAsBytes()
+	// if d.fnil {
+	// 	return nil
+	// }
+
+	if d.tok == 'n' {
+		d.readLit4Null()
 		return nil
 	}
-	if len(d.bs) == 0 {
+
+	if d.tok != '"' {
+		d.d.errorf("json bytes MUST be a base64 encoded string")
+		return
+	}
+
+	bs1 := d.r.readUntil(d.b2[:0], '"')
+	bs1 = bs1[:len(bs1)-1]
+	d.tok = 0
+
+	if len(bs1) == 0 {
 		return []byte{}
 	}
-	bs0 := d.bs
-	slen := base64.StdEncoding.DecodedLen(len(bs0))
+
+	slen := base64.StdEncoding.DecodedLen(len(bs1))
+	// TODO: what if slen == 0?
 	if slen <= cap(bs) {
 		bsOut = bs[:slen]
-	} else if zerocopy && slen <= cap(d.b2) {
-		bsOut = d.b2[:slen]
+	} else if zerocopy {
+		// if d.bs == nil {
+		// 	d.bs = d.bp.get(slen)
+		// }
+		if slen <= cap(d.bs) {
+			bsOut = d.bs[:slen]
+		} else {
+			d.bs = d.bp.get(slen)
+			bsOut = d.bs
+			// bsOut = make([]byte, slen) // TODO: should i check pool? how to return it back?
+		}
 	} else {
 		bsOut = make([]byte, slen)
 	}
-	slen2, err := base64.StdEncoding.Decode(bsOut, bs0)
+	slen2, err := base64.StdEncoding.Decode(bsOut, bs1)
 	if err != nil {
-		d.d.errorf("error decoding base64 binary '%s': %v", bs0, err)
+		d.d.errorf("error decoding base64 binary '%s': %v", bs1, err)
 		return nil
 	}
 	if slen != slen2 {
@@ -1047,7 +1078,9 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 
 func (d *jsonDecDriver) appendStringAsBytes() {
 	d.advance()
-
+	if d.bs == nil {
+		d.bs = d.bp.get(256)
+	}
 	// xdebug2f("appendStringAsBytes: found: '%c'", d.tok)
 	if d.tok != '"' {
 		// d.d.errorf("expect char '%c' but got char '%c'", '"', d.tok)
@@ -1236,7 +1269,7 @@ F:
 
 func (d *jsonDecDriver) bsToString() string {
 	// if x := d.s.sc; x != nil && x.so && x.st == '}' { // map key
-	if jsonAlwaysReturnInternString || d.d.c == containerMapKey {
+	if d.d.is != nil && (jsonAlwaysReturnInternString || d.d.c == containerMapKey) {
 		return d.d.string(d.bs)
 	}
 	return string(d.bs)
@@ -1411,7 +1444,8 @@ func (h *JsonHandle) newEncDriver(e *Encoder) (ee encDriver) {
 		ee = &v
 		hd = &v.jsonEncDriver
 	}
-	hd.e, hd.h, hd.bs = e, h, hd.b[:0]
+	hd.e, hd.h = e, h
+	// hd.bs = hd.b[:0]
 	ee.reset()
 	return
 }
@@ -1419,7 +1453,7 @@ func (h *JsonHandle) newEncDriver(e *Encoder) (ee encDriver) {
 func (h *JsonHandle) newDecDriver(d *Decoder) decDriver {
 	// d := jsonDecDriver{r: r.(*bytesDecReader), h: h}
 	hd := jsonDecDriver{d: d, h: h}
-	hd.bs = hd.b[:0]
+	// hd.bs = hd.b[:0]
 	hd.reset()
 	return &hd
 }
@@ -1451,7 +1485,12 @@ func (d *jsonDecDriver) reset() {
 	// d.n.reset()
 }
 
-func (d *jsonDecDriver) atEndOfDecode() {}
+func (d *jsonDecDriver) atEndOfDecode() {
+	if d.bs != nil {
+		d.bs = nil
+		d.bp.end()
+	}
+}
 
 // jsonFloatStrconvFmtPrec ...
 //
