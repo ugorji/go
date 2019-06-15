@@ -282,15 +282,16 @@ func (e *jsonEncDriverGeneric) EncodeBool(b bool) {
 }
 
 func (e *jsonEncDriverGeneric) encodeFloat(f float64, bitsize, fmt byte, prec int8) {
-	var blen int
+	var blen uint
 	if e.ks && e.e.c == containerMapKey {
-		blen = 2 + len(strconv.AppendFloat(e.b[1:1], f, fmt, int(prec), int(bitsize)))
+		blen = 2 + uint(len(strconv.AppendFloat(e.b[1:1], f, fmt, int(prec), int(bitsize))))
+		// _ = e.b[:blen]
 		e.b[0] = '"'
 		e.b[blen-1] = '"'
+		e.w.writeb(e.b[:blen])
 	} else {
-		blen = len(strconv.AppendFloat(e.b[:0], f, fmt, int(prec), int(bitsize)))
+		e.w.writeb(strconv.AppendFloat(e.b[:0], f, fmt, int(prec), int(bitsize)))
 	}
-	e.w.writeb(e.b[:blen])
 }
 
 func (e *jsonEncDriverGeneric) EncodeFloat64(f float64) {
@@ -1485,7 +1486,9 @@ func (d *jsonDecDriver) reset() {
 	// d.n.reset()
 }
 
-func (d *jsonDecDriver) atEndOfDecode() {
+func (d *jsonDecDriver) atEndOfDecode() {}
+
+func (d *jsonDecDriver) release() {
 	if d.bs != nil {
 		d.bs = nil
 		d.bp.end()

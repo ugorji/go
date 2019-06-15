@@ -1495,6 +1495,12 @@ func (d *Decoder) mustDecode(v interface{}) {
 		// }
 		d.decode(v)
 		d.d.atEndOfDecode()
+		// release
+		if !d.h.ExplicitRelease {
+			if d.jdec != nil {
+				d.jdec.release()
+			}
+		}
 		return
 	}
 
@@ -1510,8 +1516,12 @@ func (d *Decoder) mustDecode(v interface{}) {
 	d.bi.calls--
 	if d.bi.calls == 0 {
 		d.d.atEndOfDecode()
+		// release
 		if !d.h.ExplicitRelease {
 			d.bi.release()
+			if d.jdec != nil {
+				d.jdec.release()
+			}
 		}
 	}
 }
@@ -1539,6 +1549,9 @@ func (d *Decoder) finalize() {
 func (d *Decoder) Release() {
 	if d.bi != nil {
 		d.bi.release()
+	}
+	if d.jdec != nil {
+		d.jdec.release()
 	}
 	// d.decNakedPooler.end()
 }
