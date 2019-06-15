@@ -553,6 +553,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		e.mapEnd()
 		return
 	}
+
 	// var asSymbols bool
 	// determine the underlying key and val encFn's for the map.
 	// This eliminates some work which is done for each loop iteration i.e.
@@ -562,17 +563,25 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	// encoding type, because preEncodeValue may break it down to
 	// a concrete type and kInterface will bomb.
 	var keyFn, valFn *codecFn
-	rtval := f.ti.elem
+
 	// rtkeyid := rt2id(f.ti.key)
-	for rtval.Kind() == reflect.Ptr {
+	ktypeKind := f.ti.key.Kind()
+	vtypeKind := f.ti.elem.Kind()
+
+	rtval := f.ti.elem
+	rtvalkind := vtypeKind
+	for rtvalkind == reflect.Ptr {
 		rtval = rtval.Elem()
+		rtvalkind = rtval.Kind()
 	}
-	if rtval.Kind() != reflect.Interface {
+	if rtvalkind != reflect.Interface {
 		valFn = e.h.fn(rtval)
 	}
 
+	var rvv = mapAddressableRV(f.ti.elem, vtypeKind)
+
 	if e.h.Canonical {
-		e.kMapCanonical(f.ti.key, f.ti.elem, rv, valFn)
+		e.kMapCanonical(f.ti.key, f.ti.elem, rv, rvv, valFn)
 		e.mapEnd()
 		return
 	}
@@ -589,11 +598,9 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 	}
 
-	var rvk = mapAddressableRV(f.ti.key)  //, f.ti.key.Kind())
-	var rvv = mapAddressableRV(f.ti.elem) //, f.ti.elem.Kind())
+	var rvk = mapAddressableRV(f.ti.key, ktypeKind)
 
 	it := mapRange(rv, rvk, rvv, true)
-
 	for it.Next() {
 		e.mapElemKey()
 		if keyTypeIsString {
@@ -603,21 +610,20 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				e.e.EncodeStringEnc(cUTF8, it.Key().String())
 			}
 		} else {
-			e.encodeValue(it.Key(), keyFn) //
+			e.encodeValue(it.Key(), keyFn)
 		}
 		e.mapElemValue()
 		iv := it.Value()
 		e.encodeValue(iv, valFn)
 	}
+	it.Done()
 
 	e.mapEnd()
 }
 
-func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv reflect.Value, valFn *codecFn) {
+func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value, valFn *codecFn) {
 	// we previously did out-of-band if an extension was registered.
 	// This is not necessary, as the natural kind is sufficient for ordering.
-
-	rvv := mapAddressableRV(rtval)
 
 	mks := rv.MapKeys()
 	switch rtkey.Kind() {

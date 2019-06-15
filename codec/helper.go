@@ -155,17 +155,24 @@ const (
 	xdebug = true
 )
 
-var oneByteArr [1]byte
-var zeroByteSlice = oneByteArr[:0:0]
+var (
+	oneByteArr    [1]byte
+	zeroByteSlice = oneByteArr[:0:0]
 
-var codecgen bool
+	codecgen bool
 
-var pool pooler
-var panicv panicHdl
+	pool   pooler
+	panicv panicHdl
 
-var refBitset bitset32
-var isnilBitset bitset32
-var scalarBitset bitset32
+	refBitset    bitset32
+	isnilBitset  bitset32
+	scalarBitset bitset32
+)
+
+var (
+	errMapTypeNotMapKind     = errors.New("MapType MUST be of Map Kind")
+	errSliceTypeNotSliceKind = errors.New("SliceType MUST be of Slice Kind")
+)
 
 func init() {
 	pool.init()
@@ -695,6 +702,13 @@ func (x *BasicHandle) init(hh Handle) {
 		// _, x.js = hh.(*JsonHandle)
 		// x.n = hh.Name()[0]
 		atomic.StoreUint32(&x.inited, uint32(f))
+		// ensure MapType and SliceType are of correct type
+		if x.MapType != nil && x.MapType.Kind() != reflect.Map {
+			panic(errMapTypeNotMapKind)
+		}
+		if x.SliceType != nil && x.SliceType.Kind() != reflect.Slice {
+			panic(errSliceTypeNotSliceKind)
+		}
 	}
 	x.mu.Unlock()
 }
@@ -854,16 +868,18 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 					xfnf := fastpathAV[idx].encfn
 					xrt := fastpathAV[idx].rt
 					fn.fe = func(e *Encoder, xf *codecFnInfo, xrv reflect.Value) {
-						xfnf(e, xf, xrv.Convert(xrt))
+						xfnf(e, xf, rvconvert(xrv, xrt))
 					}
 					fi.addrD = true
 					fi.addrF = false // meaning it can be an address(ptr) or a value
 					xfnf2 := fastpathAV[idx].decfn
+					xptr2rt := reflect.PtrTo(xrt)
 					fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
+						// xdebug2f("fd: convert from %v to %v", xrv.Type(), xrt)
 						if xrv.Kind() == reflect.Ptr {
-							xfnf2(d, xf, xrv.Convert(reflect.PtrTo(xrt)))
+							xfnf2(d, xf, rvconvert(xrv, xptr2rt))
 						} else {
-							xfnf2(d, xf, xrv.Convert(xrt))
+							xfnf2(d, xf, rvconvert(xrv, xrt))
 						}
 					}
 				}
@@ -1307,10 +1323,11 @@ func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
 			if v.impl == nil {
 				return
 			}
-			if v.impl.Kind() == reflect.Ptr {
+			vkind := v.impl.Kind()
+			if vkind == reflect.Ptr {
 				return reflect.New(v.impl.Elem())
 			}
-			return reflect.New(v.impl).Elem()
+			return rvzeroaddrk(v.impl, vkind)
 		}
 	}
 	return

@@ -9,6 +9,7 @@ package codec
 
 import (
 	"reflect"
+	"sync"
 	"sync/atomic"
 	"time"
 	"unsafe"
@@ -34,6 +35,7 @@ const safeMode = false
 // keep in sync with GO_ROOT/src/reflect/value.go
 const (
 	unsafeFlagIndir    = 1 << 7
+	unsafeFlagAddr     = 1 << 8
 	unsafeFlagKindMask = (1 << 5) - 1 // 5 bits for 27 kinds (up to 31)
 	// unsafeTypeKindDirectIface = 1 << 5
 )
@@ -92,7 +94,7 @@ func bytesView(v string) []byte {
 // }
 
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
-	var ui *unsafeIntf = (*unsafeIntf)(unsafe.Pointer(&v))
+	var ui = (*unsafeIntf)(unsafe.Pointer(&v))
 	if ui.word == nil {
 		isnil = true
 		return
@@ -137,6 +139,33 @@ func rvisnil(rv reflect.Value) bool {
 func rvssetlen(rv reflect.Value, length int) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	(*unsafeString)(urv.ptr).Len = length
+}
+
+// func rvzeroaddr(t reflect.Type) (rv reflect.Value) {
+// 	// return reflect.New(t).Elem()
+// 	var ui = (*unsafeIntf)(unsafe.Pointer(&t))
+// 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+// 	urv.typ = ui.word
+// 	urv.flag = uintptr(t.Kind()) | unsafeFlagIndir | unsafeFlagAddr
+// 	urv.ptr = unsafe_New(ui.word)
+// 	return
+// }
+
+func rvzeroaddrk(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+	// return reflect.New(t).Elem()
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
+	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).word
+	urv.ptr = unsafe_New(urv.typ)
+	return
+}
+
+func rvconvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
+	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	*urv = *uv
+	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).word
+	return
 }
 
 // func rvisnilref(rv reflect.Value) bool {
@@ -583,8 +612,18 @@ type unsafeMapIter struct {
 	// _ [2]uint64 // padding (cache-aligned)
 }
 
+// pprof show that 13% of cbor encode time taken in
+// allocation of unsafeMapIter.
+// Options are to try to alloc on stack, or pool it.
+// Easiest to pool it.
+const unsafeMapIterUsePool = true
+
+var unsafeMapIterPool = sync.Pool{
+	New: func() interface{} { return new(unsafeMapIter) },
+}
+
 func (t *unsafeMapIter) Next() (r bool) {
-	if t.done {
+	if t == nil || t.done {
 		return
 	}
 	if t.it == nil {
@@ -614,6 +653,13 @@ func (t *unsafeMapIter) Value() (r reflect.Value) {
 	return
 }
 
+func (t *unsafeMapIter) Done() {
+	if unsafeMapIterUsePool && t != nil {
+		*t = unsafeMapIter{}
+		unsafeMapIterPool.Put(t)
+	}
+}
+
 func unsafeSet(p, ptyp, p2 unsafe.Pointer, isref bool) {
 	if isref {
 		*(*unsafe.Pointer)(p) = *(*unsafe.Pointer)(p2) // p2
@@ -629,14 +675,19 @@ func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
 	return urv.ptr
 }
 
-func mapRange(m, k, v reflect.Value, mapvalues bool) *unsafeMapIter {
-	if m.IsNil() {
-		return &unsafeMapIter{done: true}
+func mapRange(m, k, v reflect.Value, mapvalues bool) (t *unsafeMapIter) {
+	if rvisnil(m) {
+		// return &unsafeMapIter{done: true}
+		return
 	}
-	t := &unsafeMapIter{
-		k: k, v: v,
-		mapvalues: mapvalues,
+	if unsafeMapIterUsePool {
+		t = unsafeMapIterPool.Get().(*unsafeMapIter)
+	} else {
+		t = new(unsafeMapIter)
 	}
+	t.k = k
+	t.v = v
+	t.mapvalues = mapvalues
 
 	var urv *unsafeReflectValue
 
@@ -656,7 +707,7 @@ func mapRange(m, k, v reflect.Value, mapvalues bool) *unsafeMapIter {
 		t.visref = refBitset.isset(byte(v.Kind()))
 	}
 
-	return t
+	return
 }
 
 func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
@@ -696,8 +747,9 @@ func mapDelete(m, k reflect.Value) {
 // return an addressable reflect value that can be used in mapRange and mapGet operations.
 //
 // all calls to mapGet or mapRange will call here to get an addressable reflect.Value.
-func mapAddressableRV(t reflect.Type) (r reflect.Value) {
-	return reflect.New(t).Elem()
+func mapAddressableRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
+	// return reflect.New(t).Elem()
+	return rvzeroaddrk(t, k)
 }
 
 //go:linkname mapiterinit reflect.mapiterinit
@@ -723,3 +775,7 @@ func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
 //go:linkname typedmemmove reflect.typedmemmove
 //go:noescape
 func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
+
+//go:linkname unsafe_New reflect.unsafe_New
+//go:noescape
+func unsafe_New(typ unsafe.Pointer) unsafe.Pointer

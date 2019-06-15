@@ -31,6 +31,8 @@ func (t *mapIter) Value() (r reflect.Value) {
 	return
 }
 
+func (t *mapIter) Done() {}
+
 func mapRange(m, k, v reflect.Value, values bool) *mapIter {
 	return &mapIter{
 		m:      m,

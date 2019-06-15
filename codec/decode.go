@@ -385,7 +385,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 				d.decode(rv2i(rvn))
 				rvn = rvn.Elem()
 			} else {
-				rvn = reflect.New(d.h.MapType).Elem()
+				rvn = rvzeroaddrk(d.h.MapType, reflect.Map)
 				d.decodeValue(rvn, nil)
 			}
 		}
@@ -395,7 +395,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			d.decode(&v2)
 			rvn = reflect.ValueOf(&v2).Elem()
 			if reflectArrayOfSupported && d.stid == 0 && d.h.PreferArrayOverSlice {
-				rvn2 := reflect.New(reflectArrayOf(rvn.Len(), intfTyp)).Elem()
+				rvn2 := rvzeroaddrk(reflectArrayOf(rvn.Len(), intfTyp), reflect.Array)
 				reflect.Copy(rvn2, rvn)
 				rvn = rvn2
 			}
@@ -405,7 +405,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 				d.decode(rv2i(rvn))
 				rvn = rvn.Elem()
 			} else {
-				rvn = reflect.New(d.h.SliceType).Elem()
+				rvn = rvzeroaddrk(d.h.SliceType, reflect.Slice)
 				d.decodeValue(rvn, nil)
 			}
 		}
@@ -420,11 +420,11 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 				d.decode(&re.Value)
 				rvn = reflect.ValueOf(&re).Elem()
 			} else {
-				rvn = reflect.New(bfn.rt)
 				if bfn.ext == SelfExt {
-					rvn = rvn.Elem()
-					d.decodeValue(rvn, d.h.fnNoExt(rvn.Type()))
+					rvn = rvzeroaddrk(bfn.rt, bfn.rt.Kind())
+					d.decodeValue(rvn, d.h.fnNoExt(bfn.rt))
 				} else {
+					rvn = reflect.New(bfn.rt)
 					d.interfaceExtConvertAndDecode(rv2i(rvn), bfn.ext)
 					rvn = rvn.Elem()
 				}
@@ -518,7 +518,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 
-	rvn2 := reflect.New(rvn.Type()).Elem()
+	rvn2 := rvzeroaddrk(rvn.Type(), rvn.Kind())
 	rvn2.Set(rvn)
 	d.decodeValue(rvn2, nil)
 	rv.Set(rvn2)
@@ -931,7 +931,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 		// 	continue
 		// }
 		if rtelem0Mut || !rv9.IsValid() { // || (rtElem0Kind == reflect.Ptr && rvisnil(rv9)) {
-			rv9 = reflect.New(rtelem0).Elem()
+			rv9 = rvzeroaddrk(rtelem0, rtElem0Kind)
 		}
 		if fn == nil {
 			fn = d.h.fn(rtelem)
@@ -972,7 +972,10 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	ktype, vtype := ti.key, ti.elem
 	ktypeId := rt2id(ktype)
 	vtypeKind := vtype.Kind()
-	// ktypeKind := ktype.Kind()
+	ktypeKind := ktype.Kind()
+
+	var vtypeElem reflect.Type
+
 	var keyFn, valFn *codecFn
 	var ktypeLo, vtypeLo reflect.Type
 
@@ -1011,15 +1014,15 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			// rvvz = reflect.Zero(vtype)
 			// rvkz = reflect.Zero(ktype)
 			if !rvkMut {
-				rvkn = reflect.New(ktype).Elem() //, ktypeKind)
+				rvkn = rvzeroaddrk(ktype, ktypeKind)
 			}
 			if !rvvMut {
-				rvvn = reflect.New(vtype).Elem() //, vtypeKind)
+				rvvn = rvzeroaddrk(vtype, vtypeKind)
 			}
 		}
 
 		if rvkMut {
-			rvk = reflect.New(ktype).Elem() //, ktypeKind)
+			rvk = rvzeroaddrk(ktype, ktypeKind)
 		} else {
 			rvk = rvkn
 		}
@@ -1066,7 +1069,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		doMapSet = true // set to false if u do a get, and its a non-nil pointer
 		if doMapGet {
 			if !rvvaSet {
-				rvva = mapAddressableRV(vtype)
+				rvva = mapAddressableRV(vtype, vtypeKind)
 				rvvaSet = true
 			}
 			rvv = mapGet(rv, rvk, rvva) // reflect.Value{})
@@ -1074,19 +1077,22 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				if rvv.IsValid() && !rvisnil(rvv) {
 					doMapSet = false
 				} else {
-					rvv = reflect.New(vtype.Elem())
+					if vtypeElem == nil {
+						vtypeElem = vtype.Elem()
+					}
+					rvv = reflect.New(vtypeElem) // TODO: use rvzeroaddr?
 				}
 			} else if rvv.IsValid() && vtypeKind == reflect.Interface && !rvisnil(rvv) {
-				rvvn = reflect.New(vtype).Elem()
+				rvvn = rvzeroaddrk(vtype, vtypeKind)
 				rvvn.Set(rvv)
 				rvv = rvvn
 			} else if rvvMut {
-				rvv = reflect.New(vtype).Elem()
+				rvv = rvzeroaddrk(vtype, vtypeKind)
 			} else {
 				rvv = rvvn
 			}
 		} else if rvvMut {
-			rvv = reflect.New(vtype).Elem() //, vtypeKind)
+			rvv = rvzeroaddrk(vtype, vtypeKind)
 		} else {
 			rvv = rvvn
 		}
@@ -1986,7 +1992,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext Ext) {
 			rv2 = reflect.New(rv.Type().Elem())
 			rv2.Set(rv)
 		} else {
-			rv2 = reflect.New(rv.Type()).Elem()
+			rv2 = rvzeroaddrk(rv.Type(), rv.Kind())
 			rv2.Set(rv)
 		}
 		rv = rv2

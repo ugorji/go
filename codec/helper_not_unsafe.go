@@ -56,6 +56,18 @@ func rvssetlen(rv reflect.Value, length int) {
 	rv.SetLen(length)
 }
 
+// func rvzeroaddr(t reflect.Type) reflect.Value {
+// 	return reflect.New(t).Elem()
+// }
+
+func rvzeroaddrk(t reflect.Type, k reflect.Kind) reflect.Value {
+	return reflect.New(t).Elem()
+}
+
+func rvconvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
+	return v.Convert(t)
+}
+
 // func rvisnilref(rv reflect.Value) bool {
 // 	return rv.IsNil()
 // }
@@ -349,6 +361,6 @@ func mapDelete(m, k reflect.Value) {
 // return an addressable reflect value that can be used in mapRange and mapGet operations.
 //
 // all calls to mapGet or mapRange will call here to get an addressable reflect.Value.
-func mapAddressableRV(t reflect.Type) (r reflect.Value) {
+func mapAddressableRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 	return // reflect.New(t).Elem()
 }

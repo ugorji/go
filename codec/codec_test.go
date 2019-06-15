@@ -3223,7 +3223,10 @@ func TestMapRangeIndex(t *testing.T) {
 	}
 
 	mt := reflect.TypeOf(m1)
-	it := mapRange(reflect.ValueOf(m1), mapAddressableRV(mt.Key()), mapAddressableRV(mt.Elem()), true)
+	it := mapRange(reflect.ValueOf(m1),
+		mapAddressableRV(mt.Key(), mt.Key().Kind()),
+		mapAddressableRV(mt.Elem(), mt.Elem().Kind()),
+		true)
 	for it.Next() {
 		k := it.Key().Interface().(string)
 		v := it.Value().Interface().(*T)
@@ -3235,6 +3238,7 @@ func TestMapRangeIndex(t *testing.T) {
 			t.FailNow()
 		}
 	}
+	it.Done()
 	testDeepEqualErr(len(m1c), 0, t, "all-keys-not-consumed")
 
 	// ------
@@ -3249,7 +3253,10 @@ func TestMapRangeIndex(t *testing.T) {
 	}
 
 	mt = reflect.TypeOf(m2)
-	it = mapRange(reflect.ValueOf(m2), mapAddressableRV(mt.Key()), mapAddressableRV(mt.Elem()), true)
+	it = mapRange(reflect.ValueOf(m2),
+		mapAddressableRV(mt.Key(), mt.Key().Kind()),
+		mapAddressableRV(mt.Elem(), mt.Elem().Kind()),
+		true)
 	for it.Next() {
 		k := it.Key().Interface().(*T)
 		v := it.Value().Interface().(T)
@@ -3261,6 +3268,7 @@ func TestMapRangeIndex(t *testing.T) {
 			t.FailNow()
 		}
 	}
+	it.Done()
 	testDeepEqualErr(len(m2c), 0, t, "all-keys-not-consumed")
 
 	// ---- test mapGet
@@ -3268,7 +3276,7 @@ func TestMapRangeIndex(t *testing.T) {
 	fnTestMapIndex := func(mi ...interface{}) {
 		for _, m0 := range mi {
 			m := reflect.ValueOf(m0)
-			rvv := mapAddressableRV(m.Type().Elem())
+			rvv := mapAddressableRV(m.Type().Elem(), m.Type().Elem().Kind())
 			for _, k := range m.MapKeys() {
 				testDeepEqualErr(m.MapIndex(k).Interface(), mapGet(m, k, rvv).Interface(), t, "map-index-eq")
 			}
