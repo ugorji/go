@@ -65,17 +65,17 @@ _gen() {
 _suite_tests() {
     if [[ "${do_x}" = "1" ]]; then
         printf "\n==== X Baseline ====\n"
-        go test -tags x -v
+        go test "${zargs[@]}" -tags x -v
     else
         printf "\n==== Baseline ====\n"
-        go test -v
+        go test "${zargs[@]}" -v
     fi
     if [[ "${do_x}" = "1" ]]; then
         printf "\n==== X Generated ====\n"
-        go test -tags "x generated" -v
+        go test "${zargs[@]}" -tags "x generated" -v
     else
         printf "\n==== Generated ====\n"
-        go test -tags "generated" -v
+        go test "${zargs[@]}" -tags "generated" -v
     fi
 }
 
@@ -93,7 +93,7 @@ _suite_any() {
     if [[ "$g" = "g" ]]; then a=( "generated" "generated safe"); fi
     for i in "${a[@]}"; do
         echo ">>>> bench TAGS: 'alltests $x $i' SUITE: $b"
-        go test -tags "alltests $x $i" -bench "$b" -benchmem "$@"
+        go test "${zargs[@]}" -tags "alltests $x $i" -bench "$b" -benchmem "$@"
     done 
 }
 
@@ -103,7 +103,7 @@ _suite_any() {
 #     for i in "${a[@]}"
 #     do
 #         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecXSuite"
-#         go test -tags "$t $i" -bench BenchmarkCodecXSuite -benchmem "$@"
+#         go test "${zargs[@]}" -tags "$t $i" -bench BenchmarkCodecXSuite -benchmem "$@"
 #     done
 # }
 
@@ -113,7 +113,7 @@ _suite_any() {
 #     for i in "${b[@]}"
 #     do
 #         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecXGenSuite"
-#         go test -tags "$t $i" -bench BenchmarkCodecXGenSuite -benchmem "$@"
+#         go test "${zargs[@]}" -tags "$t $i" -bench BenchmarkCodecXGenSuite -benchmem "$@"
 #     done
 # }
 
@@ -123,26 +123,26 @@ _suite_any() {
 #     for i in "${a[@]}"
 #     do
 #         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecQuickAllJsonSuite"
-#         go test -tags "$t $i" -bench BenchmarkCodecQuickAllJsonSuite -benchmem "$@"
+#         go test "${zargs[@]}" -tags "$t $i" -bench BenchmarkCodecQuickAllJsonSuite -benchmem "$@"
 #     done
 # }
 
 # _suite_very_quick_json() {
 #     # Quickly get numbers for json, stdjson, jsoniter and json (codecgen)"
 #     echo ">>>> very quick json bench"
-#     go test -tags "alltests x" -bench "__(Json|Std_Json|JsonIter)__" -benchmem "$@"
+#     go test "${zargs[@]}" -tags "alltests x" -bench "__(Json|Std_Json|JsonIter)__" -benchmem "$@"
 #     echo
-#     go test -tags "alltests codecgen" -bench "__Json____" -benchmem "$@"
+#     go test "${zargs[@]}" -tags "alltests codecgen" -bench "__Json____" -benchmem "$@"
 # }
 
 _suite_very_quick_json_via_suite() {
     # Quickly get numbers for json, stdjson, jsoniter and json (codecgen)"
     echo ">>>> very quick json bench"
     local prefix="BenchmarkCodecVeryQuickAllJsonSuite/json-all-bd1......../"
-    go test -tags "alltests x" -bench BenchmarkCodecVeryQuickAllJsonSuite -benchmem "$@" |
+    go test "${zargs[@]}" -tags "alltests x" -bench BenchmarkCodecVeryQuickAllJsonSuite -benchmem "$@" |
         sed -e "s+^$prefix++"
     echo "---- CODECGEN RESULTS ----"
-    go test -tags "x generated" -bench "__(Json|Easyjson)__" -benchmem "$@"
+    go test "${zargs[@]}" -tags "x generated" -bench "__(Json|Easyjson)__" -benchmem "$@"
 }
 
 _suite_very_quick_json_non_suite() {
@@ -150,11 +150,11 @@ _suite_very_quick_json_non_suite() {
     echo ">>>> very quick json bench"
     for j in "En" "De"; do
         echo "---- codecgen ----"
-        # go test -tags "generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
-        go test -tags "x generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
+        # go test "${zargs[@]}" -tags "generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
+        go test "${zargs[@]}" -tags "x generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
         echo "---- no codecgen ----"
-        # go test -tags "" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
-        go test -tags "x" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
+        # go test "${zargs[@]}" -tags "" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
+        go test "${zargs[@]}" -tags "x" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
         echo
     done
 }
@@ -165,7 +165,7 @@ _suite_very_quick_json_only_profile() {
         Json|Cbor|Msgpack|Simple|Binc) a="${1}"; shift ;;
     esac
     local b="${1}"
-    go test -tags "alltests" -bench "__${a}__.*${b}" \
+    go test "${zargs[@]}" -tags "alltests" -bench "__${a}__.*${b}" \
        -benchmem -benchtime 4s \
        -cpuprofile cpu.out -memprofile mem.out -memprofilerate 1
 }
@@ -188,18 +188,21 @@ _main() {
         _usage
         return 1
     fi
+    local zargs=("-count" "1")
     local args=()
     local do_x="0"
-    while getopts "dcbsjqpgtx" flag
+    while getopts "dcbsjqpgtxkl" flag
     do
         case "$flag" in
-            d|c|b|s|j|q|p|g|t|x) args+=( "$flag" ) ;;
+            d|c|b|s|j|q|p|g|t|x|k|l) args+=( "$flag" ) ;;
             *) _usage; return 1 ;;
         esac
     done
     shift "$((OPTIND-1))"
     
     [[ " ${args[*]} " == *"x"* ]] && do_x="1"
+    [[ " ${args[*]} " == *"k"* ]] && zargs+=("-gcflags" "all=-B")
+    [[ " ${args[*]} " == *"l"* ]] && zargs+=("-gcflags" "all=-l=4")
     [[ " ${args[*]} " == *"d"* ]] && _go_get "$@"
     [[ " ${args[*]} " == *"c"* ]] && _gen "$@"
     [[ " ${args[*]} " == *"b"* ]] && _suite_any - - BenchmarkCodecSuite "$@" | _suite_trim_output
