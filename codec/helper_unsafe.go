@@ -99,7 +99,7 @@ func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 		isnil = true
 		return
 	}
-	rv = reflect.ValueOf(v) // reflect.value is cheap and inline'able
+	rv = rv4i(v) // reflect.value is cheap and inline'able
 	tk := rv.Kind()
 	isnil = (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.word) == nil
 	return
@@ -116,6 +116,17 @@ func rv2ptr(urv *unsafeReflectValue) (ptr unsafe.Pointer) {
 		ptr = urv.ptr
 	}
 	return
+}
+
+func rv4i(i interface{}) (rv reflect.Value) {
+	// Unfortunately, we cannot get the "kind" of the interface directly here.
+	// We need the 'rtype', whose structure changes in different go versions.
+	// Finally, it's not clear that there is benefit to reimplementin it,
+	// as the "escapes(i)" is not clearly expensive.
+	//
+	// urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	// ui := (*unsafeIntf)(unsafe.Pointer(&i))
+	return reflect.ValueOf(i)
 }
 
 func rv2i(rv reflect.Value) interface{} {
@@ -336,14 +347,14 @@ type unsafeDecNakedWrapper struct {
 }
 
 func (n *unsafeDecNakedWrapper) init() {
-	n.ru = reflect.ValueOf(&n.u).Elem()
-	n.ri = reflect.ValueOf(&n.i).Elem()
-	n.rf = reflect.ValueOf(&n.f).Elem()
-	n.rl = reflect.ValueOf(&n.l).Elem()
-	n.rs = reflect.ValueOf(&n.s).Elem()
-	n.rt = reflect.ValueOf(&n.t).Elem()
-	n.rb = reflect.ValueOf(&n.b).Elem()
-	// n.rr[] = reflect.ValueOf(&n.)
+	n.ru = rv4i(&n.u).Elem()
+	n.ri = rv4i(&n.i).Elem()
+	n.rf = rv4i(&n.f).Elem()
+	n.rl = rv4i(&n.l).Elem()
+	n.rs = rv4i(&n.s).Elem()
+	n.rt = rv4i(&n.t).Elem()
+	n.rb = rv4i(&n.b).Elem()
+	// n.rr[] = rv4i(&n.)
 }
 
 var defUnsafeDecNakedWrapper unsafeDecNakedWrapper

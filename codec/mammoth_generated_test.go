@@ -7,7 +7,6 @@ package codec
 
 import "testing"
 import "fmt"
-import "reflect"
 
 // TestMammoth has all the different paths optimized in fast-path
 // It has all the primitives, slices and maps.
@@ -364,7 +363,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v17v2 = make([]interface{}, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v17v2), bs17, h, t, "dec-slice-v17-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v17v2), bs17, h, t, "dec-slice-v17-noaddr") // non-addressable value
 			testDeepEqualErr(v17v1, v17v2, t, "equal-slice-v17-noaddr")
 		}
 		// ...
@@ -430,7 +429,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v18v2 = make([]string, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v18v2), bs18, h, t, "dec-slice-v18-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v18v2), bs18, h, t, "dec-slice-v18-noaddr") // non-addressable value
 			testDeepEqualErr(v18v1, v18v2, t, "equal-slice-v18-noaddr")
 		}
 		// ...
@@ -496,7 +495,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v19v2 = make([][]byte, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v19v2), bs19, h, t, "dec-slice-v19-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v19v2), bs19, h, t, "dec-slice-v19-noaddr") // non-addressable value
 			testDeepEqualErr(v19v1, v19v2, t, "equal-slice-v19-noaddr")
 		}
 		// ...
@@ -562,7 +561,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v20v2 = make([]float32, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v20v2), bs20, h, t, "dec-slice-v20-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v20v2), bs20, h, t, "dec-slice-v20-noaddr") // non-addressable value
 			testDeepEqualErr(v20v1, v20v2, t, "equal-slice-v20-noaddr")
 		}
 		// ...
@@ -628,7 +627,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v21v2 = make([]float64, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v21v2), bs21, h, t, "dec-slice-v21-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v21v2), bs21, h, t, "dec-slice-v21-noaddr") // non-addressable value
 			testDeepEqualErr(v21v1, v21v2, t, "equal-slice-v21-noaddr")
 		}
 		// ...
@@ -694,7 +693,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v22v2 = make([]uint, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v22v2), bs22, h, t, "dec-slice-v22-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v22v2), bs22, h, t, "dec-slice-v22-noaddr") // non-addressable value
 			testDeepEqualErr(v22v1, v22v2, t, "equal-slice-v22-noaddr")
 		}
 		// ...
@@ -760,7 +759,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v23v2 = make([]uint16, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v23v2), bs23, h, t, "dec-slice-v23-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v23v2), bs23, h, t, "dec-slice-v23-noaddr") // non-addressable value
 			testDeepEqualErr(v23v1, v23v2, t, "equal-slice-v23-noaddr")
 		}
 		// ...
@@ -826,7 +825,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v24v2 = make([]uint32, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v24v2), bs24, h, t, "dec-slice-v24-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v24v2), bs24, h, t, "dec-slice-v24-noaddr") // non-addressable value
 			testDeepEqualErr(v24v1, v24v2, t, "equal-slice-v24-noaddr")
 		}
 		// ...
@@ -892,7 +891,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v25v2 = make([]uint64, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v25v2), bs25, h, t, "dec-slice-v25-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v25v2), bs25, h, t, "dec-slice-v25-noaddr") // non-addressable value
 			testDeepEqualErr(v25v1, v25v2, t, "equal-slice-v25-noaddr")
 		}
 		// ...
@@ -958,7 +957,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v26v2 = make([]int, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v26v2), bs26, h, t, "dec-slice-v26-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v26v2), bs26, h, t, "dec-slice-v26-noaddr") // non-addressable value
 			testDeepEqualErr(v26v1, v26v2, t, "equal-slice-v26-noaddr")
 		}
 		// ...
@@ -1024,7 +1023,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v27v2 = make([]int8, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v27v2), bs27, h, t, "dec-slice-v27-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v27v2), bs27, h, t, "dec-slice-v27-noaddr") // non-addressable value
 			testDeepEqualErr(v27v1, v27v2, t, "equal-slice-v27-noaddr")
 		}
 		// ...
@@ -1090,7 +1089,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v28v2 = make([]int16, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v28v2), bs28, h, t, "dec-slice-v28-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v28v2), bs28, h, t, "dec-slice-v28-noaddr") // non-addressable value
 			testDeepEqualErr(v28v1, v28v2, t, "equal-slice-v28-noaddr")
 		}
 		// ...
@@ -1156,7 +1155,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v29v2 = make([]int32, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v29v2), bs29, h, t, "dec-slice-v29-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v29v2), bs29, h, t, "dec-slice-v29-noaddr") // non-addressable value
 			testDeepEqualErr(v29v1, v29v2, t, "equal-slice-v29-noaddr")
 		}
 		// ...
@@ -1222,7 +1221,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v30v2 = make([]int64, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v30v2), bs30, h, t, "dec-slice-v30-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v30v2), bs30, h, t, "dec-slice-v30-noaddr") // non-addressable value
 			testDeepEqualErr(v30v1, v30v2, t, "equal-slice-v30-noaddr")
 		}
 		// ...
@@ -1288,7 +1287,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			} else {
 				v31v2 = make([]bool, len(v))
 			}
-			testUnmarshalErr(reflect.ValueOf(v31v2), bs31, h, t, "dec-slice-v31-noaddr") // non-addressable value
+			testUnmarshalErr(rv4i(v31v2), bs31, h, t, "dec-slice-v31-noaddr") // non-addressable value
 			testDeepEqualErr(v31v1, v31v2, t, "equal-slice-v31-noaddr")
 		}
 		// ...
@@ -1358,7 +1357,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v32v2 = make(map[string]interface{}, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v32v2), bs32, h, t, "dec-map-v32-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v32v2), bs32, h, t, "dec-map-v32-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v32v1, v32v2, t, "equal-map-v32-noaddr")
 		}
 		if v == nil {
@@ -1406,7 +1405,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v33v2 = make(map[string]string, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v33v2), bs33, h, t, "dec-map-v33-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v33v2), bs33, h, t, "dec-map-v33-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v33v1, v33v2, t, "equal-map-v33-noaddr")
 		}
 		if v == nil {
@@ -1454,7 +1453,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v34v2 = make(map[string][]byte, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v34v2), bs34, h, t, "dec-map-v34-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v34v2), bs34, h, t, "dec-map-v34-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v34v1, v34v2, t, "equal-map-v34-noaddr")
 		}
 		if v == nil {
@@ -1502,7 +1501,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v35v2 = make(map[string]uint, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v35v2), bs35, h, t, "dec-map-v35-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v35v2), bs35, h, t, "dec-map-v35-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v35v1, v35v2, t, "equal-map-v35-noaddr")
 		}
 		if v == nil {
@@ -1550,7 +1549,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v36v2 = make(map[string]uint8, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v36v2), bs36, h, t, "dec-map-v36-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v36v2), bs36, h, t, "dec-map-v36-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v36v1, v36v2, t, "equal-map-v36-noaddr")
 		}
 		if v == nil {
@@ -1598,7 +1597,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v37v2 = make(map[string]uint64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v37v2), bs37, h, t, "dec-map-v37-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v37v2), bs37, h, t, "dec-map-v37-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v37v1, v37v2, t, "equal-map-v37-noaddr")
 		}
 		if v == nil {
@@ -1646,7 +1645,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v38v2 = make(map[string]int, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v38v2), bs38, h, t, "dec-map-v38-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v38v2), bs38, h, t, "dec-map-v38-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v38v1, v38v2, t, "equal-map-v38-noaddr")
 		}
 		if v == nil {
@@ -1694,7 +1693,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v39v2 = make(map[string]int64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v39v2), bs39, h, t, "dec-map-v39-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v39v2), bs39, h, t, "dec-map-v39-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v39v1, v39v2, t, "equal-map-v39-noaddr")
 		}
 		if v == nil {
@@ -1742,7 +1741,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v40v2 = make(map[string]float32, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v40v2), bs40, h, t, "dec-map-v40-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v40v2), bs40, h, t, "dec-map-v40-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v40v1, v40v2, t, "equal-map-v40-noaddr")
 		}
 		if v == nil {
@@ -1790,7 +1789,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v41v2 = make(map[string]float64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v41v2), bs41, h, t, "dec-map-v41-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v41v2), bs41, h, t, "dec-map-v41-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v41v1, v41v2, t, "equal-map-v41-noaddr")
 		}
 		if v == nil {
@@ -1838,7 +1837,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v42v2 = make(map[string]bool, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v42v2), bs42, h, t, "dec-map-v42-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v42v2), bs42, h, t, "dec-map-v42-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v42v1, v42v2, t, "equal-map-v42-noaddr")
 		}
 		if v == nil {
@@ -1886,7 +1885,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v43v2 = make(map[uint]interface{}, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v43v2), bs43, h, t, "dec-map-v43-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v43v2), bs43, h, t, "dec-map-v43-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v43v1, v43v2, t, "equal-map-v43-noaddr")
 		}
 		if v == nil {
@@ -1934,7 +1933,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v44v2 = make(map[uint]string, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v44v2), bs44, h, t, "dec-map-v44-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v44v2), bs44, h, t, "dec-map-v44-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v44v1, v44v2, t, "equal-map-v44-noaddr")
 		}
 		if v == nil {
@@ -1982,7 +1981,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v45v2 = make(map[uint][]byte, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v45v2), bs45, h, t, "dec-map-v45-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v45v2), bs45, h, t, "dec-map-v45-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v45v1, v45v2, t, "equal-map-v45-noaddr")
 		}
 		if v == nil {
@@ -2030,7 +2029,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v46v2 = make(map[uint]uint, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v46v2), bs46, h, t, "dec-map-v46-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v46v2), bs46, h, t, "dec-map-v46-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v46v1, v46v2, t, "equal-map-v46-noaddr")
 		}
 		if v == nil {
@@ -2078,7 +2077,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v47v2 = make(map[uint]uint8, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v47v2), bs47, h, t, "dec-map-v47-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v47v2), bs47, h, t, "dec-map-v47-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v47v1, v47v2, t, "equal-map-v47-noaddr")
 		}
 		if v == nil {
@@ -2126,7 +2125,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v48v2 = make(map[uint]uint64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v48v2), bs48, h, t, "dec-map-v48-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v48v2), bs48, h, t, "dec-map-v48-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v48v1, v48v2, t, "equal-map-v48-noaddr")
 		}
 		if v == nil {
@@ -2174,7 +2173,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v49v2 = make(map[uint]int, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v49v2), bs49, h, t, "dec-map-v49-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v49v2), bs49, h, t, "dec-map-v49-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v49v1, v49v2, t, "equal-map-v49-noaddr")
 		}
 		if v == nil {
@@ -2222,7 +2221,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v50v2 = make(map[uint]int64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v50v2), bs50, h, t, "dec-map-v50-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v50v2), bs50, h, t, "dec-map-v50-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v50v1, v50v2, t, "equal-map-v50-noaddr")
 		}
 		if v == nil {
@@ -2270,7 +2269,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v51v2 = make(map[uint]float32, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v51v2), bs51, h, t, "dec-map-v51-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v51v2), bs51, h, t, "dec-map-v51-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v51v1, v51v2, t, "equal-map-v51-noaddr")
 		}
 		if v == nil {
@@ -2318,7 +2317,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v52v2 = make(map[uint]float64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v52v2), bs52, h, t, "dec-map-v52-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v52v2), bs52, h, t, "dec-map-v52-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v52v1, v52v2, t, "equal-map-v52-noaddr")
 		}
 		if v == nil {
@@ -2366,7 +2365,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v53v2 = make(map[uint]bool, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v53v2), bs53, h, t, "dec-map-v53-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v53v2), bs53, h, t, "dec-map-v53-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v53v1, v53v2, t, "equal-map-v53-noaddr")
 		}
 		if v == nil {
@@ -2414,7 +2413,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v54v2 = make(map[uint8]interface{}, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v54v2), bs54, h, t, "dec-map-v54-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v54v2), bs54, h, t, "dec-map-v54-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v54v1, v54v2, t, "equal-map-v54-noaddr")
 		}
 		if v == nil {
@@ -2462,7 +2461,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v55v2 = make(map[uint8]string, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v55v2), bs55, h, t, "dec-map-v55-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v55v2), bs55, h, t, "dec-map-v55-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v55v1, v55v2, t, "equal-map-v55-noaddr")
 		}
 		if v == nil {
@@ -2510,7 +2509,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v56v2 = make(map[uint8][]byte, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v56v2), bs56, h, t, "dec-map-v56-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v56v2), bs56, h, t, "dec-map-v56-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v56v1, v56v2, t, "equal-map-v56-noaddr")
 		}
 		if v == nil {
@@ -2558,7 +2557,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v57v2 = make(map[uint8]uint, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v57v2), bs57, h, t, "dec-map-v57-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v57v2), bs57, h, t, "dec-map-v57-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v57v1, v57v2, t, "equal-map-v57-noaddr")
 		}
 		if v == nil {
@@ -2606,7 +2605,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v58v2 = make(map[uint8]uint8, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v58v2), bs58, h, t, "dec-map-v58-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v58v2), bs58, h, t, "dec-map-v58-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v58v1, v58v2, t, "equal-map-v58-noaddr")
 		}
 		if v == nil {
@@ -2654,7 +2653,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v59v2 = make(map[uint8]uint64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v59v2), bs59, h, t, "dec-map-v59-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v59v2), bs59, h, t, "dec-map-v59-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v59v1, v59v2, t, "equal-map-v59-noaddr")
 		}
 		if v == nil {
@@ -2702,7 +2701,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v60v2 = make(map[uint8]int, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v60v2), bs60, h, t, "dec-map-v60-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v60v2), bs60, h, t, "dec-map-v60-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v60v1, v60v2, t, "equal-map-v60-noaddr")
 		}
 		if v == nil {
@@ -2750,7 +2749,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v61v2 = make(map[uint8]int64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v61v2), bs61, h, t, "dec-map-v61-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v61v2), bs61, h, t, "dec-map-v61-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v61v1, v61v2, t, "equal-map-v61-noaddr")
 		}
 		if v == nil {
@@ -2798,7 +2797,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v62v2 = make(map[uint8]float32, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v62v2), bs62, h, t, "dec-map-v62-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v62v2), bs62, h, t, "dec-map-v62-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v62v1, v62v2, t, "equal-map-v62-noaddr")
 		}
 		if v == nil {
@@ -2846,7 +2845,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v63v2 = make(map[uint8]float64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v63v2), bs63, h, t, "dec-map-v63-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v63v2), bs63, h, t, "dec-map-v63-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v63v1, v63v2, t, "equal-map-v63-noaddr")
 		}
 		if v == nil {
@@ -2894,7 +2893,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v64v2 = make(map[uint8]bool, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v64v2), bs64, h, t, "dec-map-v64-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v64v2), bs64, h, t, "dec-map-v64-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v64v1, v64v2, t, "equal-map-v64-noaddr")
 		}
 		if v == nil {
@@ -2942,7 +2941,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v65v2 = make(map[uint64]interface{}, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v65v2), bs65, h, t, "dec-map-v65-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v65v2), bs65, h, t, "dec-map-v65-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v65v1, v65v2, t, "equal-map-v65-noaddr")
 		}
 		if v == nil {
@@ -2990,7 +2989,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v66v2 = make(map[uint64]string, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v66v2), bs66, h, t, "dec-map-v66-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v66v2), bs66, h, t, "dec-map-v66-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v66v1, v66v2, t, "equal-map-v66-noaddr")
 		}
 		if v == nil {
@@ -3038,7 +3037,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v67v2 = make(map[uint64][]byte, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v67v2), bs67, h, t, "dec-map-v67-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v67v2), bs67, h, t, "dec-map-v67-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v67v1, v67v2, t, "equal-map-v67-noaddr")
 		}
 		if v == nil {
@@ -3086,7 +3085,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v68v2 = make(map[uint64]uint, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v68v2), bs68, h, t, "dec-map-v68-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v68v2), bs68, h, t, "dec-map-v68-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v68v1, v68v2, t, "equal-map-v68-noaddr")
 		}
 		if v == nil {
@@ -3134,7 +3133,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v69v2 = make(map[uint64]uint8, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v69v2), bs69, h, t, "dec-map-v69-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v69v2), bs69, h, t, "dec-map-v69-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v69v1, v69v2, t, "equal-map-v69-noaddr")
 		}
 		if v == nil {
@@ -3182,7 +3181,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v70v2 = make(map[uint64]uint64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v70v2), bs70, h, t, "dec-map-v70-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v70v2), bs70, h, t, "dec-map-v70-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v70v1, v70v2, t, "equal-map-v70-noaddr")
 		}
 		if v == nil {
@@ -3230,7 +3229,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v71v2 = make(map[uint64]int, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v71v2), bs71, h, t, "dec-map-v71-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v71v2), bs71, h, t, "dec-map-v71-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v71v1, v71v2, t, "equal-map-v71-noaddr")
 		}
 		if v == nil {
@@ -3278,7 +3277,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v72v2 = make(map[uint64]int64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v72v2), bs72, h, t, "dec-map-v72-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v72v2), bs72, h, t, "dec-map-v72-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v72v1, v72v2, t, "equal-map-v72-noaddr")
 		}
 		if v == nil {
@@ -3326,7 +3325,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v73v2 = make(map[uint64]float32, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v73v2), bs73, h, t, "dec-map-v73-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v73v2), bs73, h, t, "dec-map-v73-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v73v1, v73v2, t, "equal-map-v73-noaddr")
 		}
 		if v == nil {
@@ -3374,7 +3373,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v74v2 = make(map[uint64]float64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v74v2), bs74, h, t, "dec-map-v74-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v74v2), bs74, h, t, "dec-map-v74-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v74v1, v74v2, t, "equal-map-v74-noaddr")
 		}
 		if v == nil {
@@ -3422,7 +3421,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v75v2 = make(map[uint64]bool, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v75v2), bs75, h, t, "dec-map-v75-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v75v2), bs75, h, t, "dec-map-v75-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v75v1, v75v2, t, "equal-map-v75-noaddr")
 		}
 		if v == nil {
@@ -3470,7 +3469,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v76v2 = make(map[int]interface{}, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v76v2), bs76, h, t, "dec-map-v76-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v76v2), bs76, h, t, "dec-map-v76-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v76v1, v76v2, t, "equal-map-v76-noaddr")
 		}
 		if v == nil {
@@ -3518,7 +3517,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v77v2 = make(map[int]string, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v77v2), bs77, h, t, "dec-map-v77-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v77v2), bs77, h, t, "dec-map-v77-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v77v1, v77v2, t, "equal-map-v77-noaddr")
 		}
 		if v == nil {
@@ -3566,7 +3565,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v78v2 = make(map[int][]byte, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v78v2), bs78, h, t, "dec-map-v78-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v78v2), bs78, h, t, "dec-map-v78-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v78v1, v78v2, t, "equal-map-v78-noaddr")
 		}
 		if v == nil {
@@ -3614,7 +3613,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v79v2 = make(map[int]uint, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v79v2), bs79, h, t, "dec-map-v79-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v79v2), bs79, h, t, "dec-map-v79-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v79v1, v79v2, t, "equal-map-v79-noaddr")
 		}
 		if v == nil {
@@ -3662,7 +3661,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v80v2 = make(map[int]uint8, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v80v2), bs80, h, t, "dec-map-v80-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v80v2), bs80, h, t, "dec-map-v80-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v80v1, v80v2, t, "equal-map-v80-noaddr")
 		}
 		if v == nil {
@@ -3710,7 +3709,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v81v2 = make(map[int]uint64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v81v2), bs81, h, t, "dec-map-v81-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v81v2), bs81, h, t, "dec-map-v81-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v81v1, v81v2, t, "equal-map-v81-noaddr")
 		}
 		if v == nil {
@@ -3758,7 +3757,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v82v2 = make(map[int]int, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v82v2), bs82, h, t, "dec-map-v82-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v82v2), bs82, h, t, "dec-map-v82-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v82v1, v82v2, t, "equal-map-v82-noaddr")
 		}
 		if v == nil {
@@ -3806,7 +3805,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v83v2 = make(map[int]int64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v83v2), bs83, h, t, "dec-map-v83-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v83v2), bs83, h, t, "dec-map-v83-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v83v1, v83v2, t, "equal-map-v83-noaddr")
 		}
 		if v == nil {
@@ -3854,7 +3853,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v84v2 = make(map[int]float32, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v84v2), bs84, h, t, "dec-map-v84-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v84v2), bs84, h, t, "dec-map-v84-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v84v1, v84v2, t, "equal-map-v84-noaddr")
 		}
 		if v == nil {
@@ -3902,7 +3901,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v85v2 = make(map[int]float64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v85v2), bs85, h, t, "dec-map-v85-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v85v2), bs85, h, t, "dec-map-v85-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v85v1, v85v2, t, "equal-map-v85-noaddr")
 		}
 		if v == nil {
@@ -3950,7 +3949,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v86v2 = make(map[int]bool, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v86v2), bs86, h, t, "dec-map-v86-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v86v2), bs86, h, t, "dec-map-v86-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v86v1, v86v2, t, "equal-map-v86-noaddr")
 		}
 		if v == nil {
@@ -3998,7 +3997,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v87v2 = make(map[int64]interface{}, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v87v2), bs87, h, t, "dec-map-v87-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v87v2), bs87, h, t, "dec-map-v87-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v87v1, v87v2, t, "equal-map-v87-noaddr")
 		}
 		if v == nil {
@@ -4046,7 +4045,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v88v2 = make(map[int64]string, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v88v2), bs88, h, t, "dec-map-v88-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v88v2), bs88, h, t, "dec-map-v88-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v88v1, v88v2, t, "equal-map-v88-noaddr")
 		}
 		if v == nil {
@@ -4094,7 +4093,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v89v2 = make(map[int64][]byte, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v89v2), bs89, h, t, "dec-map-v89-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v89v2), bs89, h, t, "dec-map-v89-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v89v1, v89v2, t, "equal-map-v89-noaddr")
 		}
 		if v == nil {
@@ -4142,7 +4141,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v90v2 = make(map[int64]uint, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v90v2), bs90, h, t, "dec-map-v90-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v90v2), bs90, h, t, "dec-map-v90-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v90v1, v90v2, t, "equal-map-v90-noaddr")
 		}
 		if v == nil {
@@ -4190,7 +4189,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v91v2 = make(map[int64]uint8, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v91v2), bs91, h, t, "dec-map-v91-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v91v2), bs91, h, t, "dec-map-v91-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v91v1, v91v2, t, "equal-map-v91-noaddr")
 		}
 		if v == nil {
@@ -4238,7 +4237,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v92v2 = make(map[int64]uint64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v92v2), bs92, h, t, "dec-map-v92-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v92v2), bs92, h, t, "dec-map-v92-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v92v1, v92v2, t, "equal-map-v92-noaddr")
 		}
 		if v == nil {
@@ -4286,7 +4285,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v93v2 = make(map[int64]int, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v93v2), bs93, h, t, "dec-map-v93-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v93v2), bs93, h, t, "dec-map-v93-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v93v1, v93v2, t, "equal-map-v93-noaddr")
 		}
 		if v == nil {
@@ -4334,7 +4333,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v94v2 = make(map[int64]int64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v94v2), bs94, h, t, "dec-map-v94-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v94v2), bs94, h, t, "dec-map-v94-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v94v1, v94v2, t, "equal-map-v94-noaddr")
 		}
 		if v == nil {
@@ -4382,7 +4381,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v95v2 = make(map[int64]float32, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v95v2), bs95, h, t, "dec-map-v95-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v95v2), bs95, h, t, "dec-map-v95-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v95v1, v95v2, t, "equal-map-v95-noaddr")
 		}
 		if v == nil {
@@ -4430,7 +4429,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v96v2 = make(map[int64]float64, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v96v2), bs96, h, t, "dec-map-v96-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v96v2), bs96, h, t, "dec-map-v96-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v96v1, v96v2, t, "equal-map-v96-noaddr")
 		}
 		if v == nil {
@@ -4478,7 +4477,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			} else {
 				v97v2 = make(map[int64]bool, len(v))
 			} // reset map
-			testUnmarshalErr(reflect.ValueOf(v97v2), bs97, h, t, "dec-map-v97-noaddr") // decode into non-addressable map value
+			testUnmarshalErr(rv4i(v97v2), bs97, h, t, "dec-map-v97-noaddr") // decode into non-addressable map value
 			testDeepEqualErr(v97v1, v97v2, t, "equal-map-v97-noaddr")
 		}
 		if v == nil {

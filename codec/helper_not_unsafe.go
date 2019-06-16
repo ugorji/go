@@ -37,11 +37,15 @@ func bytesView(v string) []byte {
 // This applies to references like map/ptr/unsafepointer/chan/func,
 // and non-reference values like interface/slice.
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
-	rv = reflect.ValueOf(v)
+	rv = rv4i(v)
 	if isnilBitset.isset(byte(rv.Kind())) {
 		isnil = rv.IsNil()
 	}
 	return
+}
+
+func rv4i(i interface{}) reflect.Value {
+	return reflect.ValueOf(i)
 }
 
 func rv2i(rv reflect.Value) interface{} {
@@ -77,15 +81,15 @@ func rvconvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
 // }
 
 // func rv2rtid(rv reflect.Value) uintptr {
-// 	return reflect.ValueOf(rv.Type()).Pointer()
+// 	return rv4i(rv.Type()).Pointer()
 // }
 
 func rt2id(rt reflect.Type) uintptr {
-	return reflect.ValueOf(rt).Pointer()
+	return rv4i(rt).Pointer()
 }
 
 func i2rtid(i interface{}) uintptr {
-	return reflect.ValueOf(reflect.TypeOf(i)).Pointer()
+	return rv4i(reflect.TypeOf(i)).Pointer()
 }
 
 // --------------------------
@@ -123,7 +127,7 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) b
 
 // func (*ptrToRvMap) init() {}
 // func (*ptrToRvMap) get(i interface{}) reflect.Value {
-// 	return reflect.ValueOf(i).Elem()
+// 	return rv4i(i).Elem()
 // }
 
 // --------------------------
@@ -176,25 +180,25 @@ func (x *atomicRtidFnSlice) store(p []codecRtidFn) {
 
 // --------------------------
 func (n *decNaked) ru() reflect.Value {
-	return reflect.ValueOf(&n.u).Elem()
+	return rv4i(&n.u).Elem()
 }
 func (n *decNaked) ri() reflect.Value {
-	return reflect.ValueOf(&n.i).Elem()
+	return rv4i(&n.i).Elem()
 }
 func (n *decNaked) rf() reflect.Value {
-	return reflect.ValueOf(&n.f).Elem()
+	return rv4i(&n.f).Elem()
 }
 func (n *decNaked) rl() reflect.Value {
-	return reflect.ValueOf(&n.l).Elem()
+	return rv4i(&n.l).Elem()
 }
 func (n *decNaked) rs() reflect.Value {
-	return reflect.ValueOf(&n.s).Elem()
+	return rv4i(&n.s).Elem()
 }
 func (n *decNaked) rt() reflect.Value {
-	return reflect.ValueOf(&n.t).Elem()
+	return rv4i(&n.t).Elem()
 }
 func (n *decNaked) rb() reflect.Value {
-	return reflect.ValueOf(&n.b).Elem()
+	return rv4i(&n.b).Elem()
 }
 
 // --------------------------
@@ -211,7 +215,7 @@ func rvSetBool(rv reflect.Value, v bool) {
 }
 
 func rvSetTime(rv reflect.Value, v time.Time) {
-	rv.Set(reflect.ValueOf(v))
+	rv.Set(rv4i(v))
 }
 
 func rvSetFloat32(rv reflect.Value, v float32) {

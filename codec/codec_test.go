@@ -832,7 +832,7 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 					rv1 := reflect.New(v0rt)
 					err = testUnmarshal(rv1.Interface(), b0, h)
 					v1 = rv1.Elem().Interface()
-					// v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface()
+					// v1 = reflect.Indirect(rv4i(v1)).Interface()
 				}
 			}
 		}
@@ -843,7 +843,7 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 		// if v1 != nil {
 		//	t.Logf("         v1 returned: %T, %#v", v1, v1)
 		//	//we always indirect, because ptr to typed value may be passed (if not testNil)
-		//	v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface()
+		//	v1 = reflect.Indirect(rv4i(v1)).Interface()
 		// }
 		if err != nil {
 			t.Logf("-------- Error: %v. Partial return: %v", err, v1)
@@ -1710,7 +1710,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 			continue
 		}
 		//no need to indirect, because we pass a nil ptr, so we already have the value
-		//if v1 != nil { v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface() }
+		//if v1 != nil { v1 = reflect.Indirect(rv4i(v1)).Interface() }
 		if err = deepEqual(v, v1); err == nil {
 			if testVerbose {
 				t.Logf("++++++++ Objects match: %T, %v", v, v)
@@ -1719,8 +1719,8 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 			t.Logf("-------- FAIL: Objects do not match: %v. Source: %T. Decoded: %T", err, v, v1)
 			if testVerbose {
 				t.Logf("--------   GOLDEN: %#v", v)
-				// t.Logf("--------   DECODED: %#v <====> %#v", v1, reflect.Indirect(reflect.ValueOf(v1)).Interface())
-				t.Logf("--------   DECODED: %#v <====> %#v", v1, reflect.Indirect(reflect.ValueOf(v1)).Interface())
+				// t.Logf("--------   DECODED: %#v <====> %#v", v1, reflect.Indirect(rv4i(v1)).Interface())
+				t.Logf("--------   DECODED: %#v <====> %#v", v1, reflect.Indirect(rv4i(v1)).Interface())
 			}
 			t.FailNow()
 		}
@@ -1737,7 +1737,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 		} else {
 			t.Logf("???????? FAIL: Bytes do not match. %v.", err)
 			xs := "--------"
-			if reflect.ValueOf(v).Kind() == reflect.Map {
+			if rv4i(v).Kind() == reflect.Map {
 				xs = "        "
 				t.Logf("%s It's a map. Ok that they don't match (dependent on ordering).", xs)
 			} else {
@@ -2115,7 +2115,7 @@ func testRandomFillRV(v reflect.Value) {
 		testRandomFillRV(v.Elem())
 	case reflect.Interface:
 		if v.IsNil() {
-			v.Set(reflect.ValueOf("nothing"))
+			v.Set(rv4i("nothing"))
 		} else {
 			testRandomFillRV(v.Elem())
 		}
@@ -2173,13 +2173,13 @@ func testMammoth(t *testing.T, h Handle) {
 	var b []byte
 
 	var m, m2 TestMammoth
-	testRandomFillRV(reflect.ValueOf(&m).Elem())
+	testRandomFillRV(rv4i(&m).Elem())
 	b = testMarshalErr(&m, h, t, "mammoth-"+name)
 	// xdebugf("%s", b)
 	testUnmarshalErr(&m2, b, h, t, "mammoth-"+name)
 	testDeepEqualErr(&m, &m2, t, "mammoth-"+name)
 	var mm, mm2 TestMammoth2Wrapper
-	testRandomFillRV(reflect.ValueOf(&mm).Elem())
+	testRandomFillRV(rv4i(&mm).Elem())
 	b = testMarshalErr(&mm, h, t, "mammoth2-"+name)
 	// os.Stderr.Write([]byte("\n\n\n\n" + string(b) + "\n\n\n\n"))
 	testUnmarshalErr(&mm2, b, h, t, "mammoth2-"+name)
@@ -3223,7 +3223,7 @@ func TestMapRangeIndex(t *testing.T) {
 	}
 
 	mt := reflect.TypeOf(m1)
-	it := mapRange(reflect.ValueOf(m1),
+	it := mapRange(rv4i(m1),
 		mapAddressableRV(mt.Key(), mt.Key().Kind()),
 		mapAddressableRV(mt.Elem(), mt.Elem().Kind()),
 		true)
@@ -3253,7 +3253,7 @@ func TestMapRangeIndex(t *testing.T) {
 	}
 
 	mt = reflect.TypeOf(m2)
-	it = mapRange(reflect.ValueOf(m2),
+	it = mapRange(rv4i(m2),
 		mapAddressableRV(mt.Key(), mt.Key().Kind()),
 		mapAddressableRV(mt.Elem(), mt.Elem().Kind()),
 		true)
@@ -3275,7 +3275,7 @@ func TestMapRangeIndex(t *testing.T) {
 
 	fnTestMapIndex := func(mi ...interface{}) {
 		for _, m0 := range mi {
-			m := reflect.ValueOf(m0)
+			m := rv4i(m0)
 			rvv := mapAddressableRV(m.Type().Elem(), m.Type().Elem().Kind())
 			for _, k := range m.MapKeys() {
 				testDeepEqualErr(m.MapIndex(k).Interface(), mapGet(m, k, rvv).Interface(), t, "map-index-eq")
@@ -3289,8 +3289,8 @@ func TestMapRangeIndex(t *testing.T) {
 	// var tt = &T{I: 3}
 	// ttTyp := reflect.TypeOf(tt)
 	// _, _ = tt, ttTyp
-	// mv := reflect.ValueOf(m)
-	// it := mapRange(mv, reflect.ValueOf(&s).Elem(), reflect.ValueOf(&tt).Elem(), true) //ok
+	// mv := rv4i(m)
+	// it := mapRange(mv, rv4i(&s).Elem(), rv4i(&tt).Elem(), true) //ok
 	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(reflect.TypeOf(T{})).Elem(), true) // ok
 	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(ttTyp.Elem()), true) // !ok
 	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(reflect.TypeOf(T{})), true) !ok

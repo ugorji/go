@@ -442,11 +442,11 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 		if mtid == mapIntfIntfTypId {
 			var v2 map[interface{}]interface{}
 			d.decode(&v2)
-			rvn = reflect.ValueOf(&v2).Elem()
+			rvn = rv4i(&v2).Elem()
 		} else if mtid == mapStrIntfTypId { // for json performance
 			var v2 map[string]interface{}
 			d.decode(&v2)
-			rvn = reflect.ValueOf(&v2).Elem()
+			rvn = rv4i(&v2).Elem()
 		} else {
 			if d.mtr {
 				rvn = reflect.New(d.h.MapType)
@@ -461,7 +461,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 		if d.stid == 0 || d.stid == intfSliceTypId {
 			var v2 []interface{}
 			d.decode(&v2)
-			rvn = reflect.ValueOf(&v2).Elem()
+			rvn = rv4i(&v2).Elem()
 			if reflectArrayOfSupported && d.stid == 0 && d.h.PreferArrayOverSlice {
 				rvn2 := rvzeroaddrk(reflectArrayOf(rvn.Len(), intfTyp), reflect.Array)
 				reflect.Copy(rvn2, rvn)
@@ -486,7 +486,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			// most likely cbor, as json decoding never reveals valueTypeExt (no tagging support)
 			if bfn == nil {
 				d.decode(&re.Value)
-				rvn = reflect.ValueOf(&re).Elem()
+				rvn = rv4i(&re).Elem()
 			} else {
 				if bfn.ext == SelfExt {
 					rvn = rvzeroaddrk(bfn.rt, bfn.rt.Kind())
@@ -501,7 +501,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			// one of the BytesExt ones: binc, msgpack, simple
 			if bfn == nil {
 				re.Data = detachZeroCopyBytes(d.bytes, nil, bytes)
-				rvn = reflect.ValueOf(&re).Elem()
+				rvn = rv4i(&re).Elem()
 			} else {
 				rvn = reflect.New(bfn.rt)
 				if bfn.ext == SelfExt {
@@ -1110,7 +1110,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		// special case if interface wrapping a byte array.
 		if ktypeIsIntf {
 			if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
-				rvk.Set(reflect.ValueOf(d.string(rvk2.Bytes())))
+				rvk.Set(rv4i(d.string(rvk2.Bytes())))
 			}
 			// NOTE: consider failing early if map/slice/func
 		}
@@ -1230,14 +1230,14 @@ type decNaked struct {
 }
 
 // func (n *decNaked) init() {
-// 	n.ru = reflect.ValueOf(&n.u).Elem()
-// 	n.ri = reflect.ValueOf(&n.i).Elem()
-// 	n.rf = reflect.ValueOf(&n.f).Elem()
-// 	n.rl = reflect.ValueOf(&n.l).Elem()
-// 	n.rs = reflect.ValueOf(&n.s).Elem()
-// 	n.rt = reflect.ValueOf(&n.t).Elem()
-// 	n.rb = reflect.ValueOf(&n.b).Elem()
-// 	// n.rr[] = reflect.ValueOf(&n.)
+// 	n.ru = rv4i(&n.u).Elem()
+// 	n.ri = rv4i(&n.i).Elem()
+// 	n.rf = rv4i(&n.f).Elem()
+// 	n.rl = rv4i(&n.l).Elem()
+// 	n.rs = rv4i(&n.s).Elem()
+// 	n.rt = rv4i(&n.t).Elem()
+// 	n.rb = rv4i(&n.b).Elem()
+// 	// n.rr[] = rv4i(&n.)
 // }
 
 // type decNakedPooler struct {
@@ -1627,7 +1627,7 @@ func (d *Decoder) Release() {
 // // this is not a smart swallow, as it allocates objects and does unnecessary work.
 // func (d *Decoder) swallowViaHammer() {
 // 	var blank interface{}
-// 	d.decodeValueNoFn(reflect.ValueOf(&blank).Elem())
+// 	d.decodeValueNoFn(rv4i(&blank).Elem())
 // }
 
 func (d *Decoder) swallow() {
@@ -1719,7 +1719,7 @@ func setZero(iv interface{}) {
 		setZeroRV(v)
 	default:
 		if !fastpathDecodeSetZeroTypeSwitch(iv) {
-			setZeroRV(reflect.ValueOf(iv))
+			setZeroRV(rv4i(iv))
 		}
 	}
 }
@@ -1792,15 +1792,15 @@ func (d *Decoder) decode(iv interface{}) {
 		*v = d.rawBytes()
 
 	case *interface{}:
-		d.decodeValue(reflect.ValueOf(iv), nil)
-		// d.decodeValue(reflect.ValueOf(iv).Elem(), nil)
-		// d.decodeValueNotNil(reflect.ValueOf(iv).Elem())
+		d.decodeValue(rv4i(iv), nil)
+		// d.decodeValue(rv4i(iv).Elem(), nil)
+		// d.decodeValueNotNil(rv4i(iv).Elem())
 
 	default:
 		if v, ok := iv.(Selfer); ok {
 			v.CodecDecodeSelf(d)
 		} else if !fastpathDecodeTypeSwitch(iv, d) {
-			v := reflect.ValueOf(iv)
+			v := rv4i(iv)
 			d.ensureDecodeable(v)
 			d.decodeValue(v, nil) // TODO: find a way to say: no fast path??? Not necessary???
 			// d.decodeValueFallback(v)
@@ -2059,7 +2059,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext Ext) {
 	// - return the interface for passing into UpdateExt.
 	// - interface should be a pointer if struct|array, else a value
 	var s interface{}
-	rv := reflect.ValueOf(v)
+	rv := rv4i(v)
 	rv2 := rv.Elem()
 	rvk := rv2.Kind()
 	if rvk == reflect.Struct || rvk == reflect.Array {
@@ -2067,7 +2067,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext Ext) {
 	} else {
 		s = ext.ConvertExt(rv2i(rv2))
 	}
-	rv = reflect.ValueOf(s)
+	rv = rv4i(s)
 	if !rv.CanAddr() {
 		if rv.Kind() == reflect.Ptr {
 			rv2 = reflect.New(rv.Type().Elem())

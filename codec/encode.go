@@ -318,7 +318,7 @@ func chanToSlice(rv reflect.Value, rtelem reflect.Type, timeout time.Duration) (
 			cases[1] = reflect.SelectCase{Dir: reflect.SelectDefault}
 		} else {
 			tt := time.NewTimer(timeout)
-			cases[1] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(tt.C)}
+			cases[1] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: rv4i(tt.C)}
 		}
 		for {
 			chosen, recv, recvOk := reflect.Select(cases)
@@ -371,7 +371,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				} else {
 					bs = make([]byte, l)
 				}
-				reflect.Copy(reflect.ValueOf(bs), rv)
+				reflect.Copy(rv4i(bs), rv)
 				e.e.EncodeStringBytesRaw(bs)
 			}
 		case seqTypeChan:
@@ -563,7 +563,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				delete(mf, k)
 				continue
 			}
-			if f.ti.infoFieldOmitempty && isEmptyValue(reflect.ValueOf(v), e.h.TypeInfos, recur, recur) {
+			if f.ti.infoFieldOmitempty && isEmptyValue(rv4i(v), e.h.TypeInfos, recur, recur) {
 				delete(mf, k)
 				continue
 			}
@@ -1280,7 +1280,7 @@ func (e *Encoder) encode(iv interface{}) {
 			vself.CodecEncodeSelf(e)
 		} else if !fastpathEncodeTypeSwitch(iv, e) {
 			if !rv.IsValid() {
-				rv = reflect.ValueOf(iv)
+				rv = rv4i(iv)
 			}
 			e.encodeValue(rv, nil)
 		}
@@ -1537,7 +1537,7 @@ func encStructFieldKey(encName string, ee encDriver, w *encWriterSwitch,
 // 	var bufp bytesBufPooler
 // 	if ext == SelfExt {
 // 		bs = bufp.get(1024)[:0]
-// 		rv2 := reflect.ValueOf(v)
+// 		rv2 := rv4i(v)
 // 		NewEncoderBytes(&bs, h).encodeValue(rv2, h.fnNoExt(rv2.Type()))
 // 	} else {
 // 		bs = ext.WriteExt(v)

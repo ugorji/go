@@ -1083,7 +1083,7 @@ type addExtWrapper struct {
 }
 
 func (x addExtWrapper) WriteExt(v interface{}) []byte {
-	bs, err := x.encFn(reflect.ValueOf(v))
+	bs, err := x.encFn(rv4i(v))
 	if err != nil {
 		panic(err)
 	}
@@ -1091,7 +1091,7 @@ func (x addExtWrapper) WriteExt(v interface{}) []byte {
 }
 
 func (x addExtWrapper) ReadExt(v interface{}, bs []byte) {
-	if err := x.decFn(reflect.ValueOf(v), bs); err != nil {
+	if err := x.decFn(rv4i(v), bs); err != nil {
 		panic(err)
 	}
 }
@@ -2271,7 +2271,7 @@ func makeExt(ext interface{}) Ext {
 }
 
 func baseRV(v interface{}) (rv reflect.Value) {
-	for rv = reflect.ValueOf(v); rv.Kind() == reflect.Ptr; rv = rv.Elem() {
+	for rv = rv4i(v); rv.Kind() == reflect.Ptr; rv = rv.Elem() {
 	}
 	return
 }

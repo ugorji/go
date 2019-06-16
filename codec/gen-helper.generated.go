@@ -7,10 +7,7 @@
 
 package codec
 
-import (
-	"encoding"
-	"reflect"
-)
+import "encoding"
 
 // GenVersion is the current version of codecgen.
 const GenVersion = 14
@@ -77,7 +74,7 @@ func (f genHelperEncoder) IsJSONHandle() bool {
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncFallback(iv interface{}) {
 	// f.e.encodeI(iv, false, false)
-	f.e.encodeValue(reflect.ValueOf(iv), nil)
+	f.e.encodeValue(rv4i(iv), nil)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -172,7 +169,7 @@ func (f genHelperDecoder) DecScratchArrayBuffer() *[decScratchByteArrayLen]byte 
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecFallback(iv interface{}, chkPtr bool) {
-	rv := reflect.ValueOf(iv)
+	rv := rv4i(iv)
 	if chkPtr {
 		f.d.ensureDecodeable(rv)
 	}
