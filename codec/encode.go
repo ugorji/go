@@ -208,6 +208,22 @@ func (e *Encoder) raw(f *codecFnInfo, rv reflect.Value) {
 	e.rawBytes(rv2i(rv).(Raw))
 }
 
+func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeBool(rvGetBool(rv))
+}
+
+func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeTime(rvGetTime(rv))
+}
+
+func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
+	if e.h.StringToRaw {
+		e.e.EncodeStringBytesRaw(bytesView(rvGetString(rv)))
+	} else {
+		e.e.EncodeStringEnc(cUTF8, rvGetString(rv))
+	}
+}
+
 // func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
 // 	if e.h.StringToRaw {
 // 		e.kStringToRaw(f, rv)
@@ -215,6 +231,66 @@ func (e *Encoder) raw(f *codecFnInfo, rv reflect.Value) {
 // 		e.kStringEnc(f, rv)
 // 	}
 // }
+
+// func (e *Encoder) kStringToRaw(f *codecFnInfo, rv reflect.Value) {
+// 	e.e.EncodeStringBytesRaw(bytesView(rvGetString(rv)))
+// }
+
+// func (e *Encoder) kStringEnc(f *codecFnInfo, rv reflect.Value) {
+// 	e.e.EncodeStringEnc(cUTF8, rvGetString(rv))
+// }
+
+func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeFloat64(rvGetFloat64(rv))
+}
+
+func (e *Encoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeFloat32(rvGetFloat32(rv))
+}
+
+func (e *Encoder) kInt(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeInt(int64(rvGetInt(rv)))
+}
+
+func (e *Encoder) kInt8(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeInt(int64(rvGetInt8(rv)))
+}
+
+func (e *Encoder) kInt16(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeInt(int64(rvGetInt16(rv)))
+}
+
+func (e *Encoder) kInt32(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeInt(int64(rvGetInt32(rv)))
+}
+
+func (e *Encoder) kInt64(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeInt(int64(rvGetInt64(rv)))
+}
+
+func (e *Encoder) kUint(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(uint64(rvGetUint(rv)))
+}
+
+func (e *Encoder) kUint8(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(uint64(rvGetUint8(rv)))
+}
+
+func (e *Encoder) kUint16(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(uint64(rvGetUint16(rv)))
+}
+
+func (e *Encoder) kUint32(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(uint64(rvGetUint32(rv)))
+}
+
+func (e *Encoder) kUint64(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(uint64(rvGetUint64(rv)))
+}
+
+func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
+}
 
 func (e *Encoder) kInvalid(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeNil()

@@ -389,187 +389,171 @@ func (n *decNaked) rb() (v reflect.Value) {
 }
 
 // --------------------------
-func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
+func rvSetBytes(rv reflect.Value, v []byte) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*[]byte)(urv.ptr) = d.rawBytes()
+	*(*[]byte)(urv.ptr) = v
 }
 
-func (d *Decoder) kString(f *codecFnInfo, rv reflect.Value) {
+func rvSetString(rv reflect.Value, v string) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*string)(urv.ptr) = string(d.d.DecodeStringAsBytes())
+	*(*string)(urv.ptr) = v
 }
 
-func (d *Decoder) kBool(f *codecFnInfo, rv reflect.Value) {
+func rvSetBool(rv reflect.Value, v bool) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*bool)(urv.ptr) = d.d.DecodeBool()
+	*(*bool)(urv.ptr) = v
 }
 
-func (d *Decoder) kTime(f *codecFnInfo, rv reflect.Value) {
+func rvSetTime(rv reflect.Value, v time.Time) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*time.Time)(urv.ptr) = d.d.DecodeTime()
+	*(*time.Time)(urv.ptr) = v
 }
 
-func (d *Decoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
+func rvSetFloat32(rv reflect.Value, v float32) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*float32)(urv.ptr) = d.decodeFloat32()
+	*(*float32)(urv.ptr) = v
 }
 
-func (d *Decoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
+func rvSetFloat64(rv reflect.Value, v float64) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*float64)(urv.ptr) = d.d.DecodeFloat64()
+	*(*float64)(urv.ptr) = v
 }
 
-func (d *Decoder) kInt(f *codecFnInfo, rv reflect.Value) {
+func rvSetInt(rv reflect.Value, v int) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int)(urv.ptr) = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
+	*(*int)(urv.ptr) = v
 }
 
-func (d *Decoder) kInt8(f *codecFnInfo, rv reflect.Value) {
+func rvSetInt8(rv reflect.Value, v int8) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int8)(urv.ptr) = int8(chkOvf.IntV(d.d.DecodeInt64(), 8))
+	*(*int8)(urv.ptr) = v
 }
 
-func (d *Decoder) kInt16(f *codecFnInfo, rv reflect.Value) {
+func rvSetInt16(rv reflect.Value, v int16) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int16)(urv.ptr) = int16(chkOvf.IntV(d.d.DecodeInt64(), 16))
+	*(*int16)(urv.ptr) = v
 }
 
-func (d *Decoder) kInt32(f *codecFnInfo, rv reflect.Value) {
+func rvSetInt32(rv reflect.Value, v int32) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int32)(urv.ptr) = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
+	*(*int32)(urv.ptr) = v
 }
 
-func (d *Decoder) kInt64(f *codecFnInfo, rv reflect.Value) {
+func rvSetInt64(rv reflect.Value, v int64) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*int64)(urv.ptr) = d.d.DecodeInt64()
+	*(*int64)(urv.ptr) = v
 }
 
-func (d *Decoder) kUint(f *codecFnInfo, rv reflect.Value) {
+func rvSetUint(rv reflect.Value, v uint) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint)(urv.ptr) = uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
+	*(*uint)(urv.ptr) = v
 }
 
-func (d *Decoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
+func rvSetUintptr(rv reflect.Value, v uintptr) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uintptr)(urv.ptr) = uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
+	*(*uintptr)(urv.ptr) = v
 }
 
-func (d *Decoder) kUint8(f *codecFnInfo, rv reflect.Value) {
+func rvSetUint8(rv reflect.Value, v uint8) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint8)(urv.ptr) = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
+	*(*uint8)(urv.ptr) = v
 }
 
-func (d *Decoder) kUint16(f *codecFnInfo, rv reflect.Value) {
+func rvSetUint16(rv reflect.Value, v uint16) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint16)(urv.ptr) = uint16(chkOvf.UintV(d.d.DecodeUint64(), 16))
+	*(*uint16)(urv.ptr) = v
 }
 
-func (d *Decoder) kUint32(f *codecFnInfo, rv reflect.Value) {
+func rvSetUint32(rv reflect.Value, v uint32) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint32)(urv.ptr) = uint32(chkOvf.UintV(d.d.DecodeUint64(), 32))
+	*(*uint32)(urv.ptr) = v
 }
 
-func (d *Decoder) kUint64(f *codecFnInfo, rv reflect.Value) {
+func rvSetUint64(rv reflect.Value, v uint64) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	*(*uint64)(urv.ptr) = d.d.DecodeUint64()
+	*(*uint64)(urv.ptr) = v
 }
 
 // ------------
 
-func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
+func rvGetBool(rv reflect.Value) bool {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeBool(*(*bool)(v.ptr))
+	return *(*bool)(v.ptr)
 }
 
-func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
+func rvGetTime(rv reflect.Value) time.Time {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeTime(*(*time.Time)(v.ptr))
+	return *(*time.Time)(v.ptr)
 }
 
-func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
+func rvGetString(rv reflect.Value) string {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	if e.h.StringToRaw {
-		e.e.EncodeStringBytesRaw(bytesView(*(*string)(v.ptr)))
-	} else {
-		e.e.EncodeStringEnc(cUTF8, *(*string)(v.ptr))
-	}
+	return *(*string)(v.ptr)
 }
 
-// func (e *Encoder) kStringToRaw(f *codecFnInfo, rv reflect.Value) {
-// 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-// 	s := *(*string)(v.ptr)
-// 	e.e.EncodeStringBytesRaw(bytesView(s))
-// }
-
-// func (e *Encoder) kStringEnc(f *codecFnInfo, rv reflect.Value) {
-// 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-// 	s := *(*string)(v.ptr)
-// 	e.e.EncodeStringEnc(cUTF8, s)
-// }
-
-func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
+func rvGetFloat64(rv reflect.Value) float64 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeFloat64(*(*float64)(v.ptr))
+	return *(*float64)(v.ptr)
 }
 
-func (e *Encoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
+func rvGetFloat32(rv reflect.Value) float32 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeFloat32(*(*float32)(v.ptr))
+	return *(*float32)(v.ptr)
 }
 
-func (e *Encoder) kInt(f *codecFnInfo, rv reflect.Value) {
+func rvGetInt(rv reflect.Value) int {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeInt(int64(*(*int)(v.ptr)))
+	return *(*int)(v.ptr)
 }
 
-func (e *Encoder) kInt8(f *codecFnInfo, rv reflect.Value) {
+func rvGetInt8(rv reflect.Value) int8 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeInt(int64(*(*int8)(v.ptr)))
+	return *(*int8)(v.ptr)
 }
 
-func (e *Encoder) kInt16(f *codecFnInfo, rv reflect.Value) {
+func rvGetInt16(rv reflect.Value) int16 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeInt(int64(*(*int16)(v.ptr)))
+	return *(*int16)(v.ptr)
 }
 
-func (e *Encoder) kInt32(f *codecFnInfo, rv reflect.Value) {
+func rvGetInt32(rv reflect.Value) int32 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeInt(int64(*(*int32)(v.ptr)))
+	return *(*int32)(v.ptr)
 }
 
-func (e *Encoder) kInt64(f *codecFnInfo, rv reflect.Value) {
+func rvGetInt64(rv reflect.Value) int64 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeInt(int64(*(*int64)(v.ptr)))
+	return *(*int64)(v.ptr)
 }
 
-func (e *Encoder) kUint(f *codecFnInfo, rv reflect.Value) {
+func rvGetUint(rv reflect.Value) uint {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeUint(uint64(*(*uint)(v.ptr)))
+	return *(*uint)(v.ptr)
 }
 
-func (e *Encoder) kUint8(f *codecFnInfo, rv reflect.Value) {
+func rvGetUint8(rv reflect.Value) uint8 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeUint(uint64(*(*uint8)(v.ptr)))
+	return *(*uint8)(v.ptr)
 }
 
-func (e *Encoder) kUint16(f *codecFnInfo, rv reflect.Value) {
+func rvGetUint16(rv reflect.Value) uint16 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeUint(uint64(*(*uint16)(v.ptr)))
+	return *(*uint16)(v.ptr)
 }
 
-func (e *Encoder) kUint32(f *codecFnInfo, rv reflect.Value) {
+func rvGetUint32(rv reflect.Value) uint32 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeUint(uint64(*(*uint32)(v.ptr)))
+	return *(*uint32)(v.ptr)
 }
 
-func (e *Encoder) kUint64(f *codecFnInfo, rv reflect.Value) {
+func rvGetUint64(rv reflect.Value) uint64 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeUint(uint64(*(*uint64)(v.ptr)))
+	return *(*uint64)(v.ptr)
 }
 
-func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
+func rvGetUintptr(rv reflect.Value) uintptr {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	e.e.EncodeUint(uint64(*(*uintptr)(v.ptr)))
+	return *(*uintptr)(v.ptr)
 }
 
 // ------------ map range and map indexing ----------

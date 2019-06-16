@@ -336,6 +336,74 @@ func (d *Decoder) kErr(f *codecFnInfo, rv reflect.Value) {
 	d.errorf("no decoding function defined for kind %v", rv.Kind())
 }
 
+func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
+	rvSetBytes(rv, d.rawBytes())
+}
+
+func (d *Decoder) kString(f *codecFnInfo, rv reflect.Value) {
+	rvSetString(rv, string(d.d.DecodeStringAsBytes()))
+}
+
+func (d *Decoder) kBool(f *codecFnInfo, rv reflect.Value) {
+	rvSetBool(rv, d.d.DecodeBool())
+}
+
+func (d *Decoder) kTime(f *codecFnInfo, rv reflect.Value) {
+	rvSetTime(rv, d.d.DecodeTime())
+}
+
+func (d *Decoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
+	rvSetFloat32(rv, d.decodeFloat32())
+}
+
+func (d *Decoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
+	rvSetFloat64(rv, d.d.DecodeFloat64())
+}
+
+func (d *Decoder) kInt(f *codecFnInfo, rv reflect.Value) {
+	rvSetInt(rv, int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize)))
+}
+
+func (d *Decoder) kInt8(f *codecFnInfo, rv reflect.Value) {
+	rvSetInt8(rv, int8(chkOvf.IntV(d.d.DecodeInt64(), 8)))
+}
+
+func (d *Decoder) kInt16(f *codecFnInfo, rv reflect.Value) {
+	rvSetInt16(rv, int16(chkOvf.IntV(d.d.DecodeInt64(), 16)))
+}
+
+func (d *Decoder) kInt32(f *codecFnInfo, rv reflect.Value) {
+	rvSetInt32(rv, int32(chkOvf.IntV(d.d.DecodeInt64(), 32)))
+}
+
+func (d *Decoder) kInt64(f *codecFnInfo, rv reflect.Value) {
+	rvSetInt64(rv, d.d.DecodeInt64())
+}
+
+func (d *Decoder) kUint(f *codecFnInfo, rv reflect.Value) {
+	rvSetUint(rv, uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize)))
+}
+
+func (d *Decoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
+	rvSetUintptr(rv, uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize)))
+}
+
+func (d *Decoder) kUint8(f *codecFnInfo, rv reflect.Value) {
+	rvSetUint8(rv, uint8(chkOvf.UintV(d.d.DecodeUint64(), 8)))
+}
+
+func (d *Decoder) kUint16(f *codecFnInfo, rv reflect.Value) {
+	rvSetUint16(rv, uint16(chkOvf.UintV(d.d.DecodeUint64(), 16)))
+}
+
+func (d *Decoder) kUint32(f *codecFnInfo, rv reflect.Value) {
+	rvSetUint32(rv, uint32(chkOvf.UintV(d.d.DecodeUint64(), 32)))
+}
+
+func (d *Decoder) kUint64(f *codecFnInfo, rv reflect.Value) {
+	rvSetUint64(rv, d.d.DecodeUint64())
+}
+
 // var kIntfCtr uint64
 
 func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {

@@ -198,150 +198,146 @@ func (n *decNaked) rb() reflect.Value {
 }
 
 // --------------------------
-func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
-	rv.SetBytes(d.rawBytes())
+func rvSetBytes(rv reflect.Value, v []byte) {
+	rv.SetBytes(v)
 }
 
-func (d *Decoder) kString(f *codecFnInfo, rv reflect.Value) {
-	rv.SetString(string(d.d.DecodeStringAsBytes()))
+func rvSetString(rv reflect.Value, v string) {
+	rv.SetString(v)
 }
 
-func (d *Decoder) kBool(f *codecFnInfo, rv reflect.Value) {
-	rv.SetBool(d.d.DecodeBool())
+func rvSetBool(rv reflect.Value, v bool) {
+	rv.SetBool(v)
 }
 
-func (d *Decoder) kTime(f *codecFnInfo, rv reflect.Value) {
-	rv.Set(reflect.ValueOf(d.d.DecodeTime()))
+func rvSetTime(rv reflect.Value, v time.Time) {
+	rv.Set(reflect.ValueOf(v))
 }
 
-func (d *Decoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
-	rv.SetFloat(float64(d.decodeFloat32()))
+func rvSetFloat32(rv reflect.Value, v float32) {
+	rv.SetFloat(float64(v))
 }
 
-func (d *Decoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
-	rv.SetFloat(d.d.DecodeFloat64())
+func rvSetFloat64(rv reflect.Value, v float64) {
+	rv.SetFloat(v)
 }
 
-func (d *Decoder) kInt(f *codecFnInfo, rv reflect.Value) {
-	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
+func rvSetInt(rv reflect.Value, v int) {
+	rv.SetInt(int64(v))
 }
 
-func (d *Decoder) kInt8(f *codecFnInfo, rv reflect.Value) {
-	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), 8))
+func rvSetInt8(rv reflect.Value, v int8) {
+	rv.SetInt(int64(v))
 }
 
-func (d *Decoder) kInt16(f *codecFnInfo, rv reflect.Value) {
-	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), 16))
+func rvSetInt16(rv reflect.Value, v int16) {
+	rv.SetInt(int64(v))
 }
 
-func (d *Decoder) kInt32(f *codecFnInfo, rv reflect.Value) {
-	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), 32))
+func rvSetInt32(rv reflect.Value, v int32) {
+	rv.SetInt(int64(v))
 }
 
-func (d *Decoder) kInt64(f *codecFnInfo, rv reflect.Value) {
-	rv.SetInt(d.d.DecodeInt64())
+func rvSetInt64(rv reflect.Value, v int64) {
+	rv.SetInt(v)
 }
 
-func (d *Decoder) kUint(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
+func rvSetUint(rv reflect.Value, v uint) {
+	rv.SetUint(uint64(v))
 }
 
-func (d *Decoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
+func rvSetUintptr(rv reflect.Value, v uintptr) {
+	rv.SetUint(uint64(v))
 }
 
-func (d *Decoder) kUint8(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), 8))
+func rvSetUint8(rv reflect.Value, v uint8) {
+	rv.SetUint(uint64(v))
 }
 
-func (d *Decoder) kUint16(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), 16))
+func rvSetUint16(rv reflect.Value, v uint16) {
+	rv.SetUint(uint64(v))
 }
 
-func (d *Decoder) kUint32(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), 32))
+func rvSetUint32(rv reflect.Value, v uint32) {
+	rv.SetUint(uint64(v))
 }
 
-func (d *Decoder) kUint64(f *codecFnInfo, rv reflect.Value) {
-	rv.SetUint(d.d.DecodeUint64())
+func rvSetUint64(rv reflect.Value, v uint64) {
+	rv.SetUint(v)
 }
 
 // ----------------
 
-func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeBool(rv.Bool())
+func rvGetBool(rv reflect.Value) bool {
+	return rv.Bool()
 }
 
-func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeTime(rv2i(rv).(time.Time))
+func rvGetTime(rv reflect.Value) time.Time {
+	return rv2i(rv).(time.Time)
 }
 
-func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
-	if e.h.StringToRaw {
-		e.e.EncodeStringBytesRaw(bytesView(rv.String()))
-	} else {
-		e.e.EncodeStringEnc(cUTF8, rv.String())
-	}
+func rvGetString(rv reflect.Value) string {
+	return rv.String()
 }
 
-// func (e *Encoder) kStringToRaw(f *codecFnInfo, rv reflect.Value) {
+// func rvGetStringToRaw(rv reflect.Value) {
 // 	e.e.EncodeStringBytesRaw(bytesView(rv.String()))
 // }
 
-// func (e *Encoder) kStringEnc(f *codecFnInfo, rv reflect.Value) {
+// func rvGetStringEnc(rv reflect.Value) {
 // 	e.e.EncodeStringEnc(cUTF8, rv.String())
 // }
 
-func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeFloat64(rv.Float())
+func rvGetFloat64(rv reflect.Value) float64 {
+	return rv.Float()
 }
 
-func (e *Encoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeFloat32(float32(rv.Float()))
+func rvGetFloat32(rv reflect.Value) float32 {
+	return float32(rv.Float())
 }
 
-func (e *Encoder) kInt(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeInt(rv.Int())
+func rvGetInt(rv reflect.Value) int {
+	return int(rv.Int())
 }
 
-func (e *Encoder) kInt8(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeInt(rv.Int())
+func rvGetInt8(rv reflect.Value) int8 {
+	return int8(rv.Int())
 }
 
-func (e *Encoder) kInt16(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeInt(rv.Int())
+func rvGetInt16(rv reflect.Value) int16 {
+	return int16(rv.Int())
 }
 
-func (e *Encoder) kInt32(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeInt(rv.Int())
+func rvGetInt32(rv reflect.Value) int32 {
+	return int32(rv.Int())
 }
 
-func (e *Encoder) kInt64(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeInt(rv.Int())
+func rvGetInt64(rv reflect.Value) int64 {
+	return rv.Int()
 }
 
-func (e *Encoder) kUint(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeUint(rv.Uint())
+func rvGetUint(rv reflect.Value) uint {
+	return uint(rv.Uint())
 }
 
-func (e *Encoder) kUint8(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeUint(rv.Uint())
+func rvGetUint8(rv reflect.Value) uint8 {
+	return uint8(rv.Uint())
 }
 
-func (e *Encoder) kUint16(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeUint(rv.Uint())
+func rvGetUint16(rv reflect.Value) uint16 {
+	return uint16(rv.Uint())
 }
 
-func (e *Encoder) kUint32(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeUint(rv.Uint())
+func rvGetUint32(rv reflect.Value) uint32 {
+	return uint32(rv.Uint())
 }
 
-func (e *Encoder) kUint64(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeUint(rv.Uint())
+func rvGetUint64(rv reflect.Value) uint64 {
+	return rv.Uint()
 }
 
-func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeUint(rv.Uint())
+func rvGetUintptr(rv reflect.Value) uintptr {
+	return uintptr(rv.Uint())
 }
 
 // ------------ map range and map indexing ----------
