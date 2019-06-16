@@ -237,10 +237,7 @@ _main() {
     local zforce
     local zargs=()
     local zverbose=()
-    local zbenchflags
-    # unset zforce
-    zargs=()
-    zbenchflags=""
+    local zbenchflags=""
     OPTIND=1
     while getopts ":ctmnrgpfvlyzdb:" flag
     do
