@@ -868,7 +868,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 					xfnf := fastpathAV[idx].encfn
 					xrt := fastpathAV[idx].rt
 					fn.fe = func(e *Encoder, xf *codecFnInfo, xrv reflect.Value) {
-						xfnf(e, xf, rvconvert(xrv, xrt))
+						xfnf(e, xf, rvConvert(xrv, xrt))
 					}
 					fi.addrD = true
 					fi.addrF = false // meaning it can be an address(ptr) or a value
@@ -877,9 +877,9 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 					fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
 						// xdebug2f("fd: convert from %v to %v", xrv.Type(), xrt)
 						if xrv.Kind() == reflect.Ptr {
-							xfnf2(d, xf, rvconvert(xrv, xptr2rt))
+							xfnf2(d, xf, rvConvert(xrv, xptr2rt))
 						} else {
-							xfnf2(d, xf, rvconvert(xrv, xrt))
+							xfnf2(d, xf, rvConvert(xrv, xrt))
 						}
 					}
 				}
@@ -1327,7 +1327,7 @@ func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
 			if vkind == reflect.Ptr {
 				return reflect.New(v.impl.Elem())
 			}
-			return rvzeroaddrk(v.impl, vkind)
+			return rvZeroAddrK(v.impl, vkind)
 		}
 	}
 	return
@@ -1540,7 +1540,7 @@ func (x *structFieldNode) field(si *structFieldInfo) (fv reflect.Value) {
 
 func baseStructRv(v reflect.Value, update bool) (v2 reflect.Value, valid bool) {
 	for v.Kind() == reflect.Ptr {
-		if rvisnil(v) {
+		if rvIsNil(v) {
 			if !update {
 				return
 			}

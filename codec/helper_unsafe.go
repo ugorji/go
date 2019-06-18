@@ -139,7 +139,7 @@ func rv2i(rv reflect.Value) interface{} {
 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: rv2ptr(urv)}))
 }
 
-func rvisnil(rv reflect.Value) bool {
+func rvIsNil(rv reflect.Value) bool {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	if urv.flag&unsafeFlagIndir != 0 {
 		return *(*unsafe.Pointer)(urv.ptr) == nil
@@ -147,7 +147,7 @@ func rvisnil(rv reflect.Value) bool {
 	return urv.ptr == nil
 }
 
-func rvssetlen(rv reflect.Value, length int) {
+func rvSetSliceLen(rv reflect.Value, length int) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	(*unsafeString)(urv.ptr).Len = length
 }
@@ -162,7 +162,7 @@ func rvssetlen(rv reflect.Value, length int) {
 // 	return
 // }
 
-func rvzeroaddrk(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	// return reflect.New(t).Elem()
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
@@ -171,7 +171,7 @@ func rvzeroaddrk(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return
 }
 
-func rvconvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
+func rvConvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	*urv = *uv
@@ -499,23 +499,8 @@ func rvSetDirect(rv reflect.Value, v reflect.Value) {
 
 }
 
-// ------------
-
-func rvSliceLen(rv reflect.Value) int {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return (*unsafeSlice)(urv.ptr).Len
-}
-
-func rvSliceCap(rv reflect.Value) int {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	return (*unsafeSlice)(urv.ptr).Cap
-}
-
 // rvSlice returns a slice of the slice of lenth
 func rvSlice(rv reflect.Value, length int) (v reflect.Value) {
-	if false {
-		return rv.Slice(0, length)
-	}
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	*uv = *urv
@@ -526,6 +511,18 @@ func rvSlice(rv reflect.Value, length int) (v reflect.Value) {
 	// xdebugf("length: %d, slice: from: %#v, to: %#v",
 	// 	length, *(*unsafeSlice)(urv.ptr), *(*unsafeSlice)(uv.ptr))
 	return
+}
+
+// ------------
+
+func rvGetSliceLen(rv reflect.Value) int {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	return (*unsafeSlice)(urv.ptr).Len
+}
+
+func rvGetSliceCap(rv reflect.Value) int {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	return (*unsafeSlice)(urv.ptr).Cap
 }
 
 // ------------
@@ -719,7 +716,7 @@ func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
 }
 
 func mapRange(m, k, v reflect.Value, mapvalues bool) (t *unsafeMapIter) {
-	if rvisnil(m) {
+	if rvIsNil(m) {
 		// return &unsafeMapIter{done: true}
 		return
 	}
@@ -792,7 +789,7 @@ func mapDelete(m, k reflect.Value) {
 // all calls to mapGet or mapRange will call here to get an addressable reflect.Value.
 func mapAddressableRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 	// return reflect.New(t).Elem()
-	return rvzeroaddrk(t, k)
+	return rvZeroAddrK(t, k)
 }
 
 //go:linkname mapiterinit reflect.mapiterinit

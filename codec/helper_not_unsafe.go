@@ -52,11 +52,11 @@ func rv2i(rv reflect.Value) interface{} {
 	return rv.Interface()
 }
 
-func rvisnil(rv reflect.Value) bool {
+func rvIsNil(rv reflect.Value) bool {
 	return rv.IsNil()
 }
 
-func rvssetlen(rv reflect.Value, length int) {
+func rvSetSliceLen(rv reflect.Value, length int) {
 	rv.SetLen(length)
 }
 
@@ -64,11 +64,11 @@ func rvssetlen(rv reflect.Value, length int) {
 // 	return reflect.New(t).Elem()
 // }
 
-func rvzeroaddrk(t reflect.Type, k reflect.Kind) reflect.Value {
+func rvZeroAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
 	return reflect.New(t).Elem()
 }
 
-func rvconvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
+func rvConvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
 	return v.Convert(t)
 }
 
@@ -277,22 +277,20 @@ func rvSetDirect(rv reflect.Value, v reflect.Value) {
 	rv.Set(v)
 }
 
-// ----------------
-
-func rvSliceLen(rv reflect.Value) int {
-	return rv.Len()
-}
-
-func rvSliceCap(rv reflect.Value) int {
-	return rv.Cap()
-}
-
 // rvSlice returns a slice of the slice of lenth
 func rvSlice(rv reflect.Value, length int) reflect.Value {
 	return rv.Slice(0, length)
 }
 
 // ----------------
+
+func rvGetSliceLen(rv reflect.Value) int {
+	return rv.Len()
+}
+
+func rvGetSliceCap(rv reflect.Value) int {
+	return rv.Cap()
+}
 
 func rvGetBool(rv reflect.Value) bool {
 	return rv.Bool()

@@ -338,7 +338,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	//   Encode(S{}) will bomb on "panic: slice of unaddressable array".
 	mbs := f.ti.mbs
 	if f.seq != seqTypeArray {
-		if rvisnil(rv) {
+		if rvIsNil(rv) {
 			e.e.EncodeNil()
 			return
 		}
@@ -434,7 +434,7 @@ func (e *Encoder) kSliceBytesChan(rv reflect.Value) {
 	// for b := range rv2i(rv).(<-chan byte) { bs = append(bs, b) }
 	// ch := rv2i(rv).(<-chan byte) // fix error - that this is a chan byte, not a <-chan byte.
 
-	// if rvisnil(rv) {
+	// if rvIsNil(rv) {
 	// 	e.e.EncodeNil()
 	// 	return
 	// }
@@ -618,7 +618,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
-	if rvisnil(rv) {
+	if rvIsNil(rv) {
 		e.e.EncodeNil()
 		return
 	}
@@ -1301,7 +1301,7 @@ func (e *Encoder) encodeValue(rv reflect.Value, fn *codecFn) {
 TOP:
 	switch rv.Kind() {
 	case reflect.Ptr:
-		if rvisnil(rv) {
+		if rvIsNil(rv) {
 			e.e.EncodeNil()
 			return
 		}
@@ -1314,14 +1314,14 @@ TOP:
 		}
 		goto TOP
 	case reflect.Interface:
-		if rvisnil(rv) {
+		if rvIsNil(rv) {
 			e.e.EncodeNil()
 			return
 		}
 		rv = rv.Elem()
 		goto TOP
 	case reflect.Slice, reflect.Map:
-		if rvisnil(rv) {
+		if rvIsNil(rv) {
 			e.e.EncodeNil()
 			return
 		}

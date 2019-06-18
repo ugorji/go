@@ -453,7 +453,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 				d.decode(rv2i(rvn))
 				rvn = rvn.Elem()
 			} else {
-				rvn = rvzeroaddrk(d.h.MapType, reflect.Map)
+				rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
 				d.decodeValue(rvn, nil)
 			}
 		}
@@ -463,7 +463,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			d.decode(&v2)
 			rvn = rv4i(&v2).Elem()
 			if reflectArrayOfSupported && d.stid == 0 && d.h.PreferArrayOverSlice {
-				rvn2 := rvzeroaddrk(reflectArrayOf(rvSliceLen(rvn), intfTyp), reflect.Array)
+				rvn2 := rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rvn), intfTyp), reflect.Array)
 				reflect.Copy(rvn2, rvn)
 				rvn = rvn2
 			}
@@ -473,7 +473,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 				d.decode(rv2i(rvn))
 				rvn = rvn.Elem()
 			} else {
-				rvn = rvzeroaddrk(d.h.SliceType, reflect.Slice)
+				rvn = rvZeroAddrK(d.h.SliceType, reflect.Slice)
 				d.decodeValue(rvn, nil)
 			}
 		}
@@ -489,7 +489,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 				rvn = rv4i(&re).Elem()
 			} else {
 				if bfn.ext == SelfExt {
-					rvn = rvzeroaddrk(bfn.rt, bfn.rt.Kind())
+					rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
 					d.decodeValue(rvn, d.h.fnNoExt(bfn.rt))
 				} else {
 					rvn = reflect.New(bfn.rt)
@@ -545,7 +545,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 	// every interface passed here MUST be settable.
 	// xdebugf("kInterface: 0")
 	var rvn reflect.Value
-	if rvisnil(rv) || d.h.InterfaceReset {
+	if rvIsNil(rv) || d.h.InterfaceReset {
 		// check if mapping to a type: if so, initialize it and move on
 		rvn = d.h.intf2impl(f.ti.rtid)
 		if rvn.IsValid() {
@@ -586,7 +586,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 
-	rvn2 := rvzeroaddrk(rvn.Type(), rvn.Kind())
+	rvn2 := rvZeroAddrK(rvn.Type(), rvn.Kind())
 	rvSetDirect(rvn2, rvn)
 	// rvn2.Set(rvn)
 	d.decodeValue(rvn2, nil)
@@ -750,7 +750,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	// // handle if nil
 	// if slh.IsNil {
-	// 	if rv.CanSet() && !rvisnil(rv) {
+	// 	if rv.CanSet() && !rvIsNil(rv) {
 	// 		// rv.Set(reflect.New(f.ti.rt).Elem())
 	// 		rv.Set(reflect.Zero(f.ti.rt))
 	// 	}
@@ -760,10 +760,10 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	// an array can never return a nil slice. so no need to check f.array here.
 	if containerLenS == 0 {
 		if rv.CanSet() {
-			if rvisnil(rv) {
+			if rvIsNil(rv) {
 				rvSetDirect(rv, reflect.MakeSlice(f.ti.rt, 0, 0))
 			} else {
-				rvssetlen(rv, 0)
+				rvSetSliceLen(rv, 0)
 			}
 		}
 		slh.End()
@@ -787,8 +787,8 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	var rv0 = rv
 	var rv9 reflect.Value
 
-	rvlen := rvSliceLen(rv)
-	rvcap := rvSliceCap(rv)
+	rvlen := rvGetSliceLen(rv)
+	rvcap := rvGetSliceCap(rv)
 	hasLen := containerLenS > 0
 	if hasLen {
 		if containerLenS > rvcap {
@@ -796,7 +796,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(rtelem0.Size()))
 			if rvlen <= rvcap {
 				if rvCanset {
-					rvssetlen(rv, rvlen)
+					rvSetSliceLen(rv, rvlen)
 				}
 			} else if rvCanset {
 				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvlen)
@@ -811,7 +811,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		} else if containerLenS != rvlen {
 			rvlen = containerLenS
 			if rvCanset {
-				rvssetlen(rv, rvlen)
+				rvSetSliceLen(rv, rvlen)
 			}
 			// else {
 			// rv = rv.Slice(0, rvlen)
@@ -828,7 +828,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	// xdebug2f("0: rvcap: %d, rvlen: %d", rvcap, rvlen)
 	for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-		if j == 0 && f.seq == seqTypeSlice && rvisnil(rv) {
+		if j == 0 && f.seq == seqTypeSlice && rvIsNil(rv) {
 			if hasLen {
 				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, rtelem0Size)
 			} else {
@@ -865,7 +865,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			// xdebug2f("rvcap: %d, rvlen: %d", rvcap, rvlen)
 			if rvlen < rvcap {
 				if rv.CanSet() {
-					rvssetlen(rv, rvcap)
+					rvSetSliceLen(rv, rvcap)
 					// xdebugf("after rvssetlen rv.Len: %d", rv.Len())
 				} else if rvCanset {
 					rv = rvSlice(rv, rvcap)
@@ -922,13 +922,13 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	}
 	if j < rvlen {
 		if rv.CanSet() {
-			rvssetlen(rv, j)
+			rvSetSliceLen(rv, j)
 		} else if rvCanset {
 			rv = rvSlice(rv, j)
 			rvChanged = true
 		} // else { d.errorf("kSlice: cannot change non-settable slice") }
 		rvlen = j
-	} else if j == 0 && rvisnil(rv) {
+	} else if j == 0 && rvIsNil(rv) {
 		if rvCanset {
 			rv = reflect.MakeSlice(f.ti.rt, 0, 0)
 			rvChanged = true
@@ -978,7 +978,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 	slh, containerLenS := d.decSliceHelperStart()
 	// // handle if nil
 	// if slh.IsNil {
-	// 	if rv.CanSet() && !rvisnil(rv) {
+	// 	if rv.CanSet() && !rvIsNil(rv) {
 	// 		rvSetDirect(rv, reflect.Zero(f.ti.rt))
 	// 	}
 	// 	return
@@ -986,7 +986,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 
 	// an array can never return a nil slice. so no need to check f.array here.
 	if containerLenS == 0 {
-		if rv.CanSet() && rvisnil(rv) {
+		if rv.CanSet() && rvIsNil(rv) {
 			rvSetDirect(rv, reflect.MakeChan(f.ti.rt, 0))
 		}
 		slh.End()
@@ -1020,7 +1020,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 	var j int
 
 	for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
-		if j == 0 && rvisnil(rv) {
+		if j == 0 && rvIsNil(rv) {
 			if hasLen {
 				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, rtelem0Size)
 			} else {
@@ -1038,8 +1038,8 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 		// 	// rv.Send(reflect.Zero(rtelem0))
 		// 	continue
 		// }
-		if rtelem0Mut || !rv9.IsValid() { // || (rtElem0Kind == reflect.Ptr && rvisnil(rv9)) {
-			rv9 = rvzeroaddrk(rtelem0, rtElem0Kind)
+		if rtelem0Mut || !rv9.IsValid() { // || (rtElem0Kind == reflect.Ptr && rvIsNil(rv9)) {
+			rv9 = rvZeroAddrK(rtelem0, rtElem0Kind)
 		}
 		if fn == nil {
 			fn = d.h.fn(rtelem)
@@ -1067,7 +1067,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 	ti := f.ti
-	if rvisnil(rv) {
+	if rvIsNil(rv) {
 		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.key.Size()+ti.elem.Size()))
 		rvSetDirect(rv, makeMapReflect(ti.rt, rvlen))
 	}
@@ -1122,15 +1122,15 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			// rvvz = reflect.Zero(vtype)
 			// rvkz = reflect.Zero(ktype)
 			if !rvkMut {
-				rvkn = rvzeroaddrk(ktype, ktypeKind)
+				rvkn = rvZeroAddrK(ktype, ktypeKind)
 			}
 			if !rvvMut {
-				rvvn = rvzeroaddrk(vtype, vtypeKind)
+				rvvn = rvZeroAddrK(vtype, vtypeKind)
 			}
 		}
 
 		if rvkMut {
-			rvk = rvzeroaddrk(ktype, ktypeKind)
+			rvk = rvZeroAddrK(ktype, ktypeKind)
 		} else {
 			rvk = rvkn
 		}
@@ -1182,7 +1182,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			}
 			rvv = mapGet(rv, rvk, rvva) // reflect.Value{})
 			if vtypeKind == reflect.Ptr {
-				if rvv.IsValid() && !rvisnil(rvv) {
+				if rvv.IsValid() && !rvIsNil(rvv) {
 					doMapSet = false
 				} else {
 					if vtypeElem == nil {
@@ -1190,17 +1190,17 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 					}
 					rvv = reflect.New(vtypeElem) // TODO: use rvzeroaddr?
 				}
-			} else if rvv.IsValid() && vtypeKind == reflect.Interface && !rvisnil(rvv) {
-				rvvn = rvzeroaddrk(vtype, vtypeKind)
+			} else if rvv.IsValid() && vtypeKind == reflect.Interface && !rvIsNil(rvv) {
+				rvvn = rvZeroAddrK(vtype, vtypeKind)
 				rvvn.Set(rvv)
 				rvv = rvvn
 			} else if rvvMut {
-				rvv = rvzeroaddrk(vtype, vtypeKind)
+				rvv = rvZeroAddrK(vtype, vtypeKind)
 			} else {
 				rvv = rvvn
 			}
 		} else if rvvMut {
-			rvv = rvzeroaddrk(vtype, vtypeKind)
+			rvv = rvZeroAddrK(vtype, vtypeKind)
 		} else {
 			rvv = rvvn
 		}
@@ -1867,7 +1867,7 @@ func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn) {
 		}
 		rvpValid = true
 		for rv.Kind() == reflect.Ptr {
-			if rvisnil(rv) {
+			if rvIsNil(rv) {
 				rvSetDirect(rv, reflect.New(rv.Type().Elem()))
 			}
 			rvp = rv
@@ -1926,11 +1926,11 @@ func isDecodeable(rv reflect.Value) (canDecode bool) {
 	case reflect.Array:
 		return rv.CanAddr()
 	case reflect.Ptr:
-		if !rvisnil(rv) {
+		if !rvIsNil(rv) {
 			return true
 		}
 	case reflect.Slice, reflect.Chan, reflect.Map:
-		if !rvisnil(rv) {
+		if !rvIsNil(rv) {
 			return true
 		}
 	}
@@ -2112,7 +2112,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext Ext) {
 		if rv.Kind() == reflect.Ptr {
 			rv2 = reflect.New(rv.Type().Elem())
 		} else {
-			rv2 = rvzeroaddrk(rv.Type(), rv.Kind())
+			rv2 = rvZeroAddrK(rv.Type(), rv.Kind())
 		}
 		rvSetDirect(rv2, rv)
 		rv = rv2
@@ -2279,7 +2279,7 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 // 	l1 := slen + num // new slice length
 // 	if l1 <= scap {
 // 		if s.CanSet() {
-// 			rvssetlen(s, l1)
+// 			rvSetSliceLen(s, l1)
 // 		} else if canChange {
 // 			s2 = rvSlice(s, l1)
 // 			scap2 = scap
