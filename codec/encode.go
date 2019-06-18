@@ -345,7 +345,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		// If in this method, then there was no extension function defined.
 		// So it's okay to treat as []byte.
 		if !mbs && f.ti.rtid == uint8SliceTypId {
-			e.e.EncodeStringBytesRaw(rv.Bytes())
+			e.e.EncodeStringBytesRaw(rvGetBytes(rv))
 			return
 		}
 	}
@@ -359,11 +359,11 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if !mbs && uint8TypId == rt2id(rtelem) { // NOT rtelem.Kind() == reflect.Uint8
 		switch f.seq {
 		case seqTypeSlice:
-			e.e.EncodeStringBytesRaw(rv.Bytes())
+			e.e.EncodeStringBytesRaw(rvGetBytes(rv))
 		case seqTypeArray:
 			l = rv.Len()
 			if rv.CanAddr() {
-				e.e.EncodeStringBytesRaw(rv.Slice(0, l).Bytes())
+				e.e.EncodeStringBytesRaw(rvGetBytes(rv.Slice(0, l)))
 			} else {
 				var bs []byte
 				if l <= cap(e.b) {
@@ -516,7 +516,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		} else {
 			// make a new addressable value of same one, and use it
 			rv2 := reflect.New(rv.Type())
-			rv2.Elem().Set(rv)
+			rvSetDirect(rv2.Elem(), rv)
 			mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
 		}
 		toMap = true
@@ -1335,8 +1335,9 @@ TOP:
 		e.errorf("circular reference found: # %p, %T", sptr, sptr)
 	}
 
+	var rt reflect.Type
 	if fn == nil {
-		rt := rv.Type()
+		rt = rv.Type()
 		fn = e.h.fn(rt)
 	}
 	if fn.i.addrE {
@@ -1345,8 +1346,11 @@ TOP:
 		} else if rv.CanAddr() {
 			fn.fe(e, &fn.i, rv.Addr())
 		} else {
-			rv2 := reflect.New(rv.Type())
-			rv2.Elem().Set(rv)
+			if rt == nil {
+				rt = rv.Type()
+			}
+			rv2 := reflect.New(rt)
+			rvSetDirect(rv2.Elem(), rv)
 			fn.fe(e, &fn.i, rv2)
 		}
 	} else {

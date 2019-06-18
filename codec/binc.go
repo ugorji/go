@@ -1087,7 +1087,7 @@ func (d *bincDecDriver) atEndOfDecode() {
 //       Bits 13..0 = timezone offset in minutes. It is a signed integer in Big Endian format.
 //
 func bincEncodeTime(t time.Time) []byte {
-	//t := rv.Interface().(time.Time)
+	//t := rv2i(rv).(time.Time)
 	tsecs, tnsecs := t.Unix(), t.Nanosecond()
 	var (
 		bd   byte

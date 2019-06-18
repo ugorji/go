@@ -1544,7 +1544,7 @@ func baseStructRv(v reflect.Value, update bool) (v2 reflect.Value, valid bool) {
 			if !update {
 				return
 			}
-			v.Set(reflect.New(v.Type().Elem()))
+			rvSetDirect(v, reflect.New(v.Type().Elem()))
 		}
 		v = v.Elem()
 	}

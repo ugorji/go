@@ -272,8 +272,34 @@ func rvSetUint64(rv reflect.Value, v uint64) {
 
 // ----------------
 
+// rvSetDirect is rv.Set for all kinds except reflect.Interface
+func rvSetDirect(rv reflect.Value, v reflect.Value) {
+	rv.Set(v)
+}
+
+// ----------------
+
+func rvSliceLen(rv reflect.Value) int {
+	return rv.Len()
+}
+
+func rvSliceCap(rv reflect.Value) int {
+	return rv.Cap()
+}
+
+// rvSlice returns a slice of the slice of lenth
+func rvSlice(rv reflect.Value, length int) reflect.Value {
+	return rv.Slice(0, length)
+}
+
+// ----------------
+
 func rvGetBool(rv reflect.Value) bool {
 	return rv.Bool()
+}
+
+func rvGetBytes(rv reflect.Value) []byte {
+	return rv.Bytes()
 }
 
 func rvGetTime(rv reflect.Value) time.Time {

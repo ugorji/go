@@ -463,7 +463,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			d.decode(&v2)
 			rvn = rv4i(&v2).Elem()
 			if reflectArrayOfSupported && d.stid == 0 && d.h.PreferArrayOverSlice {
-				rvn2 := rvzeroaddrk(reflectArrayOf(rvn.Len(), intfTyp), reflect.Array)
+				rvn2 := rvzeroaddrk(reflectArrayOf(rvSliceLen(rvn), intfTyp), reflect.Array)
 				reflect.Copy(rvn2, rvn)
 				rvn = rvn2
 			}
@@ -587,7 +587,8 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	rvn2 := rvzeroaddrk(rvn.Type(), rvn.Kind())
-	rvn2.Set(rvn)
+	rvSetDirect(rvn2, rvn)
+	// rvn2.Set(rvn)
 	d.decodeValue(rvn2, nil)
 	rv.Set(rvn2)
 }
@@ -615,7 +616,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	ctyp := d.d.ContainerType()
 	// xdebugf("kStruct: rv: %#v", rv)
 	if ctyp == valueTypeNil {
-		rv.Set(f.ti.rv0)
+		rvSetDirect(rv, f.ti.rv0)
 		return
 	}
 	var mf MissingFielder
@@ -713,13 +714,15 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	// A slice can be set from a map or array in stream.
 	// This way, the order can be kept (as order is lost with map).
 
+	// Note: rv is a slice type here - guaranteed
+
 	rtelem0 := f.ti.elem
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeNil {
 		// xdebug2f("rv: %v, type: %v, canset: %v", rv, rv.Type(), rv.CanSet())
 		// rv.Set(reflect.New(f.ti.rt).Elem())
 		if rv.CanSet() {
-			rv.Set(f.ti.rv0)
+			rvSetDirect(rv, f.ti.rv0)
 		}
 		return
 	}
@@ -728,12 +731,12 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		if !(f.ti.rtid == uint8SliceTypId || rtelem0.Kind() == reflect.Uint8) {
 			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", f.ti.rt)
 		}
-		rvbs := rv.Bytes()
+		rvbs := rvGetBytes(rv)
 		bs2 := d.d.DecodeBytes(rvbs, false)
 		// if rvbs == nil && bs2 != nil || rvbs != nil && bs2 == nil || len(bs2) != len(rvbs) {
 		if !(len(bs2) > 0 && len(bs2) == len(rvbs) && &bs2[0] == &rvbs[0]) {
 			if rv.CanSet() {
-				rv.SetBytes(bs2)
+				rvSetBytes(rv, bs2)
 			} else if len(rvbs) > 0 && len(bs2) > 0 {
 				copy(rvbs, bs2)
 			}
@@ -758,7 +761,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if containerLenS == 0 {
 		if rv.CanSet() {
 			if rvisnil(rv) {
-				rv.Set(reflect.MakeSlice(f.ti.rt, 0, 0))
+				rvSetDirect(rv, reflect.MakeSlice(f.ti.rt, 0, 0))
 			} else {
 				rvssetlen(rv, 0)
 			}
@@ -784,8 +787,8 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	var rv0 = rv
 	var rv9 reflect.Value
 
-	rvlen := rv.Len()
-	rvcap := rv.Cap()
+	rvlen := rvSliceLen(rv)
+	rvcap := rvSliceCap(rv)
 	hasLen := containerLenS > 0
 	if hasLen {
 		if containerLenS > rvcap {
@@ -823,6 +826,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	var rtelem0ZeroValid bool
 	var j int
 
+	// xdebug2f("0: rvcap: %d, rvlen: %d", rvcap, rvlen)
 	for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
 		if j == 0 && f.seq == seqTypeSlice && rvisnil(rv) {
 			if hasLen {
@@ -832,6 +836,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			}
 			if rvCanset {
 				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvlen)
+				rvcap = rvlen
 				rvChanged = true
 			} else {
 				d.errorf("cannot decode into non-settable slice")
@@ -853,19 +858,54 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				return
 			}
 			// rv = reflect.Append(rv, reflect.Zero(rtelem0)) // append logic + varargs
-			var rvcap2 int
-			var rvErrmsg2 string
-			rv9, rvcap2, rvChanged, rvErrmsg2 =
-				expandSliceRV(rv, f.ti.rt, rvCanset, rtelem0Size, 1, rvlen, rvcap)
-			if rvErrmsg2 != "" {
-				d.errorf(rvErrmsg2)
-			}
-			rvlen++
-			if rvChanged {
+
+			// expand the slice up to the cap.
+			// Note that we did, so we have to reset it later.
+
+			// xdebug2f("rvcap: %d, rvlen: %d", rvcap, rvlen)
+			if rvlen < rvcap {
+				if rv.CanSet() {
+					rvssetlen(rv, rvcap)
+					// xdebugf("after rvssetlen rv.Len: %d", rv.Len())
+				} else if rvCanset {
+					rv = rvSlice(rv, rvcap)
+					// xdebugf("after rvCanset rv.Len: %d", rv.Len())
+					rvChanged = true
+				} else {
+					d.errorf(errmsgExpandSliceCannotChange)
+					return
+				}
+				rvlen = rvcap
+			} else {
+				if !rvCanset {
+					d.errorf(errmsgExpandSliceCannotChange)
+					return
+				}
+				// xdebugf("else: before growCap: rvcap: %d", rvcap)
+				rvcap = growCap(rvcap, rtelem0Size, rvcap)
+				// rvcap = growCap(rvcap, rtelem0Size, rvcap+1+(rvcap*1/3))
+				rv9 = reflect.MakeSlice(f.ti.rt, rvcap, rvcap)
+				// xdebugf("else: rv9.Len: %d, rvcap: %d", rv9.Len(), rvcap)
+				reflect.Copy(rv9, rv)
 				rv = rv9
-				rvcap = rvcap2
+				rvChanged = true
+				rvlen = rvcap
 			}
+
+			// var rvcap2 int
+			// var rvErrmsg2 string
+			// rv9, rvcap2, rvChanged, rvErrmsg2 =
+			// 	expandSliceRV(rv, f.ti.rt, rvCanset, rtelem0Size, 1, rvlen, rvcap)
+			// if rvErrmsg2 != "" {
+			// 	d.errorf(rvErrmsg2)
+			// }
+			// rvlen++
+			// if rvChanged {
+			// 	rv = rv9
+			// 	rvcap = rvcap2
+			// }
 		}
+		// xdebugf("rv.Len: %d, j: %d", rv.Len(), j)
 		rv9 = rv.Index(j)
 		if d.h.SliceElementReset {
 			if !rtelem0ZeroValid {
@@ -884,7 +924,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		if rv.CanSet() {
 			rvssetlen(rv, j)
 		} else if rvCanset {
-			rv = rv.Slice(0, j)
+			rv = rvSlice(rv, j)
 			rvChanged = true
 		} // else { d.errorf("kSlice: cannot change non-settable slice") }
 		rvlen = j
@@ -912,7 +952,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 	rtelem0 := f.ti.elem
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeNil {
-		rv.Set(f.ti.rv0)
+		rvSetDirect(rv, f.ti.rv0)
 		return
 	}
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
@@ -939,7 +979,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 	// // handle if nil
 	// if slh.IsNil {
 	// 	if rv.CanSet() && !rvisnil(rv) {
-	// 		rv.Set(reflect.Zero(f.ti.rt))
+	// 		rvSetDirect(rv, reflect.Zero(f.ti.rt))
 	// 	}
 	// 	return
 	// }
@@ -947,7 +987,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 	// an array can never return a nil slice. so no need to check f.array here.
 	if containerLenS == 0 {
 		if rv.CanSet() && rvisnil(rv) {
-			rv.Set(reflect.MakeChan(f.ti.rt, 0))
+			rvSetDirect(rv, reflect.MakeChan(f.ti.rt, 0))
 		}
 		slh.End()
 		return
@@ -1023,13 +1063,13 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart()
 	if containerLen == decContainerLenNil {
-		rv.Set(f.ti.rv0)
+		rvSetDirect(rv, f.ti.rv0)
 		return
 	}
 	ti := f.ti
 	if rvisnil(rv) {
 		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.key.Size()+ti.elem.Size()))
-		rv.Set(makeMapReflect(ti.rt, rvlen))
+		rvSetDirect(rv, makeMapReflect(ti.rt, rvlen))
 	}
 
 	if containerLen == 0 {
@@ -1110,7 +1150,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		// special case if interface wrapping a byte array.
 		if ktypeIsIntf {
 			if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
-				rvk.Set(rv4i(d.string(rvk2.Bytes())))
+				rvk.Set(rv4i(d.string(rvGetBytes(rvk2))))
 			}
 			// NOTE: consider failing early if map/slice/func
 		}
@@ -1828,7 +1868,7 @@ func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn) {
 		rvpValid = true
 		for rv.Kind() == reflect.Ptr {
 			if rvisnil(rv) {
-				rv.Set(reflect.New(rv.Type().Elem()))
+				rvSetDirect(rv, reflect.New(rv.Type().Elem()))
 			}
 			rvp = rv
 			rv = rv.Elem()
@@ -2071,11 +2111,10 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext Ext) {
 	if !rv.CanAddr() {
 		if rv.Kind() == reflect.Ptr {
 			rv2 = reflect.New(rv.Type().Elem())
-			rv2.Set(rv)
 		} else {
 			rv2 = rvzeroaddrk(rv.Type(), rv.Kind())
-			rv2.Set(rv)
 		}
+		rvSetDirect(rv2, rv)
 		rv = rv2
 	}
 	d.decodeValue(rv, nil)
@@ -2235,36 +2274,32 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 	return
 }
 
-func expandSliceRV(s reflect.Value, st reflect.Type, canChange bool, stElemSize, num, slen, scap int) (
-	s2 reflect.Value, scap2 int, changed bool, err string) {
-	l1 := slen + num // new slice length
-	if l1 < slen {
-		err = errmsgExpandSliceOverflow
-		return
-	}
-	if l1 <= scap {
-		if s.CanSet() {
-			rvssetlen(s, l1)
-		} else if canChange {
-			s2 = s.Slice(0, l1)
-			scap2 = scap
-			changed = true
-		} else {
-			err = errmsgExpandSliceCannotChange
-			return
-		}
-		return
-	}
-	if !canChange {
-		err = errmsgExpandSliceCannotChange
-		return
-	}
-	scap2 = growCap(scap, stElemSize, num)
-	s2 = reflect.MakeSlice(st, l1, scap2)
-	changed = true
-	reflect.Copy(s2, s)
-	return
-}
+// func expandSliceRV(s reflect.Value, st reflect.Type, canChange bool, stElemSize, num, slen, scap int) (
+// 	s2 reflect.Value, scap2 int, changed bool, err string) {
+// 	l1 := slen + num // new slice length
+// 	if l1 <= scap {
+// 		if s.CanSet() {
+// 			rvssetlen(s, l1)
+// 		} else if canChange {
+// 			s2 = rvSlice(s, l1)
+// 			scap2 = scap
+// 			changed = true
+// 		} else {
+// 			err = errmsgExpandSliceCannotChange
+// 			return
+// 		}
+// 		return
+// 	}
+// 	if !canChange {
+// 		err = errmsgExpandSliceCannotChange
+// 		return
+// 	}
+// 	scap2 = growCap(scap, stElemSize, num)
+// 	s2 = reflect.MakeSlice(st, l1, scap2)
+// 	changed = true
+// 	reflect.Copy(s2, s)
+// 	return
+// }
 
 func decReadFull(r io.Reader, bs []byte) (n uint, err error) {
 	var nn int

@@ -485,11 +485,59 @@ func rvSetUint64(rv reflect.Value, v uint64) {
 	*(*uint64)(urv.ptr) = v
 }
 
+// ----------------
+
+// rvSetDirect is rv.Set for all kinds except reflect.Interface
+func rvSetDirect(rv reflect.Value, v reflect.Value) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	if uv.flag&unsafeFlagIndir == 0 {
+		*(*unsafe.Pointer)(urv.ptr) = uv.ptr
+	} else {
+		typedmemmove(urv.typ, urv.ptr, uv.ptr)
+	}
+
+}
+
+// ------------
+
+func rvSliceLen(rv reflect.Value) int {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	return (*unsafeSlice)(urv.ptr).Len
+}
+
+func rvSliceCap(rv reflect.Value) int {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	return (*unsafeSlice)(urv.ptr).Cap
+}
+
+// rvSlice returns a slice of the slice of lenth
+func rvSlice(rv reflect.Value, length int) (v reflect.Value) {
+	if false {
+		return rv.Slice(0, length)
+	}
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	*uv = *urv
+	var x []unsafe.Pointer
+	uv.ptr = unsafe.Pointer(&x)
+	*(*unsafeSlice)(uv.ptr) = *(*unsafeSlice)(urv.ptr)
+	(*unsafeSlice)(uv.ptr).Len = length
+	// xdebugf("length: %d, slice: from: %#v, to: %#v",
+	// 	length, *(*unsafeSlice)(urv.ptr), *(*unsafeSlice)(uv.ptr))
+	return
+}
+
 // ------------
 
 func rvGetBool(rv reflect.Value) bool {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	return *(*bool)(v.ptr)
+}
+
+func rvGetBytes(rv reflect.Value) []byte {
+	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	return *(*[]byte)(v.ptr)
 }
 
 func rvGetTime(rv reflect.Value) time.Time {
@@ -630,9 +678,9 @@ func (t *unsafeMapIter) Next() (r bool) {
 	if t.done {
 		return
 	}
-	unsafeSet(t.kptr, t.ktyp, t.it.key, t.kisref)
+	unsafeMapSet(t.kptr, t.ktyp, t.it.key, t.kisref)
 	if t.mapvalues {
-		unsafeSet(t.vptr, t.vtyp, t.it.value, t.visref)
+		unsafeMapSet(t.vptr, t.vtyp, t.it.value, t.visref)
 	}
 	return true
 }
@@ -655,7 +703,7 @@ func (t *unsafeMapIter) Done() {
 	}
 }
 
-func unsafeSet(p, ptyp, p2 unsafe.Pointer, isref bool) {
+func unsafeMapSet(p, ptyp, p2 unsafe.Pointer, isref bool) {
 	if isref {
 		*(*unsafe.Pointer)(p) = *(*unsafe.Pointer)(p2) // p2
 	} else {
@@ -719,7 +767,7 @@ func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
 
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
 
-	unsafeSet(urv.ptr, urv.typ, vvptr, refBitset.isset(byte(v.Kind())))
+	unsafeMapSet(urv.ptr, urv.typ, vvptr, refBitset.isset(byte(v.Kind())))
 	return v
 }
 
