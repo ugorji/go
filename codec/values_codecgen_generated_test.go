@@ -13104,7 +13104,6 @@ func (x codecSelfer19780) decChanstring(v *chan string, d *Decoder) {
 			var yyvcx1 string
 			yyvcx1 = (string)(string(r.DecodeStringAsBytes()))
 			yyv1 <- yyvcx1
-			// println(">>>> sending ", yyvcx1, " into ", yyv1) // TODO: remove this
 		}
 	}
 	yyh1.End()

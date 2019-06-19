@@ -103,7 +103,7 @@ func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	tk := rv.Kind()
 	isnil = (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.word) == nil
 	return
-	// fmt.Printf(">>>> definitely nil: isnil: %v, TYPE: \t%T, word: %v, *word: %v, type: %v, nil: %v\n",
+	// fmt.Printf(">>>> isNil: isnil: %v, TYPE: %T, word: %v, *word: %v, type: %v, nil: %v\n",
 	// 	v == nil, v, word, *((*unsafe.Pointer)(word)), ui.typ, nil)
 }
 

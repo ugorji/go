@@ -39,7 +39,6 @@ func testGroupResetFlags() {
 	testMaxInitLen = 0
 	testUseIoWrapper = false
 	testNumRepeatString = 8
-	testUseIoEncDec = -1
 	testDepth = 0
 	testDecodeOptions = DecodeOptions{}
 	testEncodeOptions = EncodeOptions{}
@@ -92,7 +91,7 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testReinit()
 	t.Run("optionsTrue-ioWrapper", f)
 
-	testUseIoEncDec = -1
+	// testUseIoEncDec = -1
 
 	// make buffer small enough so that we have to re-fill multiple times.
 	testSkipRPCTests = true
@@ -152,7 +151,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonCodecsEmbeddedPointer", TestJsonCodecsEmbeddedPointer)
 	t.Run("TestJsonCodecChan", TestJsonCodecChan)
 	t.Run("TestJsonStdEncIntf", TestJsonStdEncIntf)
-	t.Run("TestJsonMammoth", TestJsonMammoth)
+	t.Run("TestJsonMammothA", TestJsonMammothA)
 	t.Run("TestJsonRaw", TestJsonRaw)
 	t.Run("TestJsonRpcGo", TestJsonRpcGo)
 	t.Run("TestJsonLargeInteger", TestJsonLargeInteger)

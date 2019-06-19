@@ -125,7 +125,6 @@ if {{var "l"}} == 0 {
         {{if isChan}}{{ $x := printf "%[1]vvcx%[2]v" .TempVar .Rand }}var {{$x}} {{ .Typ }}
 		{{ decLineVar $x -}}
 		{{var "v"}} <- {{ $x }}
-        // println(">>>> sending ", {{ $x }}, " into ", {{var "v"}}) // TODO: remove this
         {{else}}{{/* // if indefinite, etc, then expand the slice if necessary */ -}}
 		var {{var "db"}} bool
 		if {{var "j"}} >= len({{var "v"}}) {

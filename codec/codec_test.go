@@ -1130,6 +1130,9 @@ func testCodecChan(t *testing.T, h Handle) {
 		}
 		if err := deepEqual(sl1, sl2); err != nil {
 			t.Logf("FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
+			if testVerbose {
+				t.Logf("sl1: %#v, sl2: %#v", sl1, sl2)
+			}
 			t.FailNow()
 		}
 	}
@@ -1160,6 +1163,9 @@ func testCodecChan(t *testing.T, h Handle) {
 		}
 		if err := deepEqual(sl1, sl2); err != nil {
 			t.Logf("FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
+			if testVerbose {
+				t.Logf("sl1: %#v, sl2: %#v", sl1, sl2)
+			}
 			t.FailNow()
 		}
 	}
@@ -3012,14 +3018,17 @@ after the new line
 	}
 }
 
-func TestBufioDecReader(t *testing.T) {
+func doTestBufioDecReader(t *testing.T, bufsize int) {
 	testOnce.Do(testInitAll)
+	bufsizehalf := (bufsize + 1) / 2
+	// TODO: add testing when the buffer size is smaller than the string length.
+
 	// try to read 85 bytes in chunks of 7 at a time.
 	var s = strings.Repeat("01234'56789      ", 5)
 	// fmt.Printf("s: %s\n", s)
 	var r = strings.NewReader(s)
-	var br = &bufioDecReader{buf: make([]byte, 0, 13)}
-	br.r = r
+	var br bufioDecReader
+	br.reset(r, bufsize)
 	b, err := ioutil.ReadAll(br.r)
 	if err != nil {
 		panic(err)
@@ -3035,8 +3044,7 @@ func TestBufioDecReader(t *testing.T) {
 	// readUntil: see: 56789
 	var out []byte
 	var token byte
-	br = &bufioDecReader{buf: make([]byte, 0, 7)}
-	br.r = strings.NewReader(s)
+	br.reset(strings.NewReader(s), bufsizehalf)
 	// println()
 	for _, v2 := range [...]string{
 		`01234'`,
@@ -3044,33 +3052,31 @@ func TestBufioDecReader(t *testing.T) {
 		`56789      01234'`,
 		`56789      01234'`,
 	} {
-		out = br.readUntil(nil, '\'')
+		out = br.readUntil('\'')
 		testDeepEqualErr(string(out), v2, t, "-")
 		// fmt.Printf("readUntil: out: `%s`\n", out)
 	}
-	br = &bufioDecReader{buf: make([]byte, 0, 7)}
-	br.r = strings.NewReader(s)
+	br.reset(strings.NewReader(s), bufsizehalf)
 	// println()
 	for range [4]struct{}{} {
-		out = br.readTo(nil, &jsonNumSet)
+		out = br.readTo(&jsonNumSet)
 		testDeepEqualErr(string(out), `01234`, t, "-")
 		// fmt.Printf("readTo: out: `%s`\n", out)
-		out = br.readUntil(nil, '\'')
+		out = br.readUntil('\'')
 		testDeepEqualErr(string(out), "'", t, "-")
 		// fmt.Printf("readUntil: out: `%s`\n", out)
-		out = br.readTo(nil, &jsonNumSet)
+		out = br.readTo(&jsonNumSet)
 		testDeepEqualErr(string(out), `56789`, t, "-")
 		// fmt.Printf("readTo: out: `%s`\n", out)
-		out = br.readUntil(nil, '0')
+		out = br.readUntil('0')
 		testDeepEqualErr(string(out), `      0`, t, "-")
 		// fmt.Printf("readUntil: out: `%s`\n", out)
 		br.unreadn1()
 	}
-	br = &bufioDecReader{buf: make([]byte, 0, 7)}
-	br.r = strings.NewReader(s)
+	br.reset(strings.NewReader(s), bufsizehalf)
 	// println()
 	for range [4]struct{}{} {
-		out = br.readUntil(nil, ' ')
+		out = br.readUntil(' ')
 		testDeepEqualErr(string(out), `01234'56789 `, t, "-")
 		// fmt.Printf("readUntil: out: |%s|\n", out)
 		token = br.skip(&jsonCharWhitespaceSet)
@@ -3079,6 +3085,13 @@ func TestBufioDecReader(t *testing.T) {
 		br.unreadn1()
 	}
 	// println()
+}
+
+func TestBufioDecReader(t *testing.T) {
+	doTestBufioDecReader(t, 13)
+	doTestBufioDecReader(t, 3)
+	doTestBufioDecReader(t, 5)
+	doTestBufioDecReader(t, 127)
 }
 
 func TestAtomic(t *testing.T) {
@@ -3408,7 +3421,7 @@ func TestJsonStdEncIntf(t *testing.T) {
 	doTestStdEncIntf(t, testJsonH)
 }
 
-func TestJsonMammoth(t *testing.T) {
+func TestJsonMammothA(t *testing.T) {
 	testMammoth(t, testJsonH)
 }
 

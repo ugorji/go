@@ -1373,11 +1373,11 @@ type structFieldInfo struct {
 	// _ [1]byte // padding
 }
 
-func (si *structFieldInfo) setToZeroValue(v reflect.Value) {
-	if v, valid := si.field(v, false); valid {
-		v.Set(reflect.Zero(v.Type()))
-	}
-}
+// func (si *structFieldInfo) setToZeroValue(v reflect.Value) {
+// 	if v, valid := si.field(v, false); valid {
+// 		v.Set(reflect.Zero(v.Type()))
+// 	}
+// }
 
 // rv returns the field of the struct.
 // If anonymous, it returns an Invalid
@@ -2742,6 +2742,8 @@ func (must) Float(s float64, err error) float64 {
 
 // -------------------
 
+const bytesBufPoolerMaxSize = 32 * 1024
+
 type bytesBufPooler struct {
 	pool    *sync.Pool
 	poolbuf interface{}
@@ -2754,44 +2756,106 @@ func (z *bytesBufPooler) end() {
 	}
 }
 
-func (z *bytesBufPooler) get(bufsize int) (buf []byte) {
-	if z.pool != nil {
-		switch z.pool {
-		case &pool.buf256:
-			if bufsize <= 256 {
-				buf = z.poolbuf.(*[256]byte)[:bufsize]
-			}
-		case &pool.buf1k:
-			if bufsize <= 1*1024 {
-				buf = z.poolbuf.(*[1 * 1024]byte)[:bufsize]
-			}
-		case &pool.buf2k:
-			if bufsize <= 2*1024 {
-				buf = z.poolbuf.(*[2 * 1024]byte)[:bufsize]
-			}
-		case &pool.buf4k:
-			if bufsize <= 4*1024 {
-				buf = z.poolbuf.(*[4 * 1024]byte)[:bufsize]
-			}
-		case &pool.buf8k:
-			if bufsize <= 8*1024 {
-				buf = z.poolbuf.(*[8 * 1024]byte)[:bufsize]
-			}
-		case &pool.buf16k:
-			if bufsize <= 16*1024 {
-				buf = z.poolbuf.(*[16 * 1024]byte)[:bufsize]
-			}
-		case &pool.buf32k:
-			if bufsize <= 32*1024 {
-				buf = z.poolbuf.(*[32 * 1024]byte)[:bufsize]
-			}
-		}
-		if buf != nil {
-			return
-		}
-		z.pool.Put(z.poolbuf)
-		z.pool, z.poolbuf = nil, nil
+func (z *bytesBufPooler) capacity() (c int) {
+	switch z.pool {
+	case nil:
+	case &pool.buf256:
+		c = 256
+	case &pool.buf1k:
+		c = 1024
+	case &pool.buf2k:
+		c = 2 * 1024
+	case &pool.buf4k:
+		c = 4 * 1024
+	case &pool.buf8k:
+		c = 8 * 1024
+	case &pool.buf16k:
+		c = 16 * 1024
+	case &pool.buf32k:
+		c = 32 * 1024
 	}
+	return
+}
+
+// func (z *bytesBufPooler) ensureCap(newcap int, bs []byte) (bs2 []byte) {
+// 	if z.pool == nil {
+// 		bs2 = z.get(newcap)[:len(bs)]
+// 		copy(bs2, bs)
+// 		return
+// 	}
+// 	var bp2 bytesBufPooler
+// 	bs2 = bp2.get(newcap)[:len(bs)]
+// 	copy(bs2, bs)
+// 	z.end()
+// 	*z = bp2
+// 	return
+// }
+
+// func (z *bytesBufPooler) buf() (buf []byte) {
+// 	switch z.pool {
+// 	case nil:
+// 	case &pool.buf256:
+// 		buf = z.poolbuf.(*[256]byte)[:]
+// 	case &pool.buf1k:
+// 		buf = z.poolbuf.(*[1 * 1024]byte)[:]
+// 	case &pool.buf2k:
+// 		buf = z.poolbuf.(*[2 * 1024]byte)[:]
+// 	case &pool.buf4k:
+// 		buf = z.poolbuf.(*[4 * 1024]byte)[:]
+// 	case &pool.buf8k:
+// 		buf = z.poolbuf.(*[8 * 1024]byte)[:]
+// 	case &pool.buf16k:
+// 		buf = z.poolbuf.(*[16 * 1024]byte)[:]
+// 	case &pool.buf32k:
+// 		buf = z.poolbuf.(*[32 * 1024]byte)[:]
+// 	}
+// 	return
+// }
+
+func (z *bytesBufPooler) get(bufsize int) (buf []byte) {
+	if bufsize > bytesBufPoolerMaxSize {
+		z.end()
+		return make([]byte, bufsize)
+	}
+
+	switch z.pool {
+	case nil:
+		goto NEW
+	case &pool.buf256:
+		if bufsize <= 256 {
+			buf = z.poolbuf.(*[256]byte)[:bufsize]
+		}
+	case &pool.buf1k:
+		if bufsize <= 1*1024 {
+			buf = z.poolbuf.(*[1 * 1024]byte)[:bufsize]
+		}
+	case &pool.buf2k:
+		if bufsize <= 2*1024 {
+			buf = z.poolbuf.(*[2 * 1024]byte)[:bufsize]
+		}
+	case &pool.buf4k:
+		if bufsize <= 4*1024 {
+			buf = z.poolbuf.(*[4 * 1024]byte)[:bufsize]
+		}
+	case &pool.buf8k:
+		if bufsize <= 8*1024 {
+			buf = z.poolbuf.(*[8 * 1024]byte)[:bufsize]
+		}
+	case &pool.buf16k:
+		if bufsize <= 16*1024 {
+			buf = z.poolbuf.(*[16 * 1024]byte)[:bufsize]
+		}
+	case &pool.buf32k:
+		if bufsize <= 32*1024 {
+			buf = z.poolbuf.(*[32 * 1024]byte)[:bufsize]
+		}
+	}
+	if buf != nil {
+		return
+	}
+	z.end()
+
+NEW:
 
 	// // Try to use binary search.
 	// // This is not optimal, as most folks select 1k or 2k buffers
@@ -2845,14 +2909,80 @@ func (z *bytesBufPooler) get(bufsize int) (buf []byte) {
 	} else if bufsize <= 16*1024 {
 		z.pool, z.poolbuf = &pool.buf16k, pool.buf16k.Get() // pool.bytes16k()
 		buf = z.poolbuf.(*[16 * 1024]byte)[:bufsize]
-	} else { // if bufsize <= 32*1024 {
+	} else if bufsize <= 32*1024 {
 		z.pool, z.poolbuf = &pool.buf32k, pool.buf32k.Get() // pool.bytes32k()
-		buf = z.poolbuf.(*[32 * 1024]byte)[:32*1024]
+		buf = z.poolbuf.(*[32 * 1024]byte)[:bufsize]
 		// } else {
 		// 	z.pool, z.poolbuf = &pool.buf64k, pool.buf64k.Get() // pool.bytes64k()
 		// 	buf = z.poolbuf.(*[64 * 1024]byte)[:]
 	}
 	return
+}
+
+// ----------------
+
+type bytesBufPoolerPlus struct {
+	bytesBufPooler
+	buf []byte
+}
+
+func (z *bytesBufPoolerPlus) ensureExtraCap(num int) {
+	if cap(z.buf) < len(z.buf)+num {
+		z.ensureCap(len(z.buf) + num)
+	}
+}
+
+func (z *bytesBufPoolerPlus) ensureCap(newcap int) {
+	if cap(z.buf) >= newcap {
+		return
+	}
+	var bs2 []byte
+	if z.pool == nil {
+		bs2 = z.bytesBufPooler.get(newcap)[:len(z.buf)]
+		if z.buf == nil {
+			z.buf = bs2
+		} else {
+			copy(bs2, z.buf)
+			z.buf = bs2
+		}
+		return
+	}
+	var bp2 bytesBufPooler
+	if newcap > bytesBufPoolerMaxSize {
+		bs2 = make([]byte, newcap)
+	} else {
+		bs2 = bp2.get(newcap)
+	}
+	bs2 = bs2[:len(z.buf)]
+	copy(bs2, z.buf)
+	z.end()
+	z.buf = bs2
+	z.bytesBufPooler = bp2
+}
+
+func (z *bytesBufPoolerPlus) get(length int) {
+	z.buf = z.bytesBufPooler.get(length)
+}
+
+func (z *bytesBufPoolerPlus) append(b byte) {
+	z.ensureExtraCap(1)
+	z.buf = append(z.buf, b)
+}
+
+func (z *bytesBufPoolerPlus) appends(b []byte) {
+	z.ensureExtraCap(len(b))
+	z.buf = append(z.buf, b...)
+}
+
+func (z *bytesBufPoolerPlus) end() {
+	z.bytesBufPooler.end()
+	z.buf = nil
+}
+
+func (z *bytesBufPoolerPlus) resetBuf() {
+	if z.buf != nil {
+		z.buf = z.buf[:0]
+	}
 }
 
 // ----------------

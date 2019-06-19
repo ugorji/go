@@ -36,9 +36,11 @@ const (
 	// when a 'nil' was encountered in the stream.
 	decContainerLenNil = math.MinInt32
 
-	// decFailNonEmptyIntf configures whether we error when decoding naked into a non-empty interface.
+	// decFailNonEmptyIntf configures whether we error
+	// when decoding naked into a non-empty interface.
 	//
-	// Typically, we cannot decode non-nil stream value into nil interface with methods (e.g. io.Reader).
+	// Typically, we cannot decode non-nil stream value into
+	// nil interface with methods (e.g. io.Reader).
 	// However, in some scenarios, this should be allowed:
 	//   - MapType
 	//   - SliceType
@@ -782,9 +784,9 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	var fn *codecFn
 
-	var rvCanset = rv.CanSet()
-	var rvChanged bool
 	var rv0 = rv
+	var rvChanged bool
+	var rvCanset = rv.CanSet()
 	var rv9 reflect.Value
 
 	rvlen := rvGetSliceLen(rv)
@@ -1362,9 +1364,15 @@ type Decoder struct {
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 	maxdepth int16
 	depth    int16
-	c        containerState
-	_        [3]byte                      // padding
-	b        [decScratchByteArrayLen]byte // scratch buffer, used by Decoder and xxxDecDrivers
+
+	// Extensions can call Decode() within a current Decode() call.
+	// We need to know when the top level Decode() call returns,
+	// so we can decide whether to Release() or not.
+	calls uint16 // what depth in mustDecode are we in now.
+
+	c containerState
+	_ [1]byte                      // padding
+	b [decScratchByteArrayLen]byte // scratch buffer, used by Decoder and xxxDecDrivers
 
 	// padding - false sharing help // modify 232 if Decoder struct changes.
 	// _ [cacheLineSize - 232%cacheLineSize]byte
@@ -1427,6 +1435,7 @@ func (d *Decoder) resetCommon() {
 	d.d.reset()
 	d.err = nil
 	d.depth = 0
+	d.calls = 0
 	d.maxdepth = d.h.MaxDepth
 	if d.maxdepth <= 0 {
 		d.maxdepth = decDefMaxDepth
@@ -1595,22 +1604,22 @@ func (d *Decoder) mustDecode(v interface{}) {
 	// xdebug2f(".... mustDecode: v: %#v", v)
 	// TODO: Top-level: ensure that v is a pointer and not nil.
 
-	if d.bi == nil {
-		// if d.d.TryDecodeAsNil() {
-		// 	setZero(v)
-		// } else {
-		// 	d.decode(v)
-		// }
-		d.decode(v)
-		d.d.atEndOfDecode()
-		// release
-		if !d.h.ExplicitRelease {
-			if d.jdec != nil {
-				d.jdec.release()
-			}
-		}
-		return
-	}
+	// if d.bi == nil {
+	// 	// if d.d.TryDecodeAsNil() {
+	// 	// 	setZero(v)
+	// 	// } else {
+	// 	// 	d.decode(v)
+	// 	// }
+	// 	d.decode(v)
+	// 	d.d.atEndOfDecode()
+	// 	// release
+	// 	if !d.h.ExplicitRelease {
+	// 		if d.jdec != nil {
+	// 			d.jdec.release()
+	// 		}
+	// 	}
+	// 	return
+	// }
 
 	// if d.d.TryDecodeAsNil() {
 	// 	setZero(v)
@@ -1619,14 +1628,14 @@ func (d *Decoder) mustDecode(v interface{}) {
 	// 	d.decode(v)
 	// 	d.bi.calls--
 	// }
-	d.bi.calls++
+	d.calls++
 	d.decode(v)
-	d.bi.calls--
-	if d.bi.calls == 0 {
+	d.calls--
+	if d.calls == 0 {
 		d.d.atEndOfDecode()
 		// release
 		if !d.h.ExplicitRelease {
-			d.bi.release()
+			d.decReaderSwitch.release()
 			if d.jdec != nil {
 				d.jdec.release()
 			}
