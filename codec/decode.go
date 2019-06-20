@@ -269,6 +269,7 @@ type DecodeOptions struct {
 	// PreferArrayOverSlice controls whether to decode to an array or a slice.
 	//
 	// This only impacts decoding into a nil interface{}.
+	//
 	// Consequently, it has no effect on codecgen.
 	//
 	// *Note*: This only applies if using go1.5 and above,
@@ -464,9 +465,6 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			var v2 []interface{}
 			d.decode(&v2)
 			rvn = rv4i(&v2).Elem()
-			if reflectArrayOfSupported && d.stid == 0 && d.h.PreferArrayOverSlice {
-				rvn = rvGetArray4Slice(rvn)
-			}
 		} else {
 			if d.str {
 				rvn = reflect.New(d.h.SliceType)
@@ -476,6 +474,11 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 				rvn = rvZeroAddrK(d.h.SliceType, reflect.Slice)
 				d.decodeValue(rvn, nil)
 			}
+		}
+		if reflectArrayOfSupported && d.h.PreferArrayOverSlice {
+			// xdebugf("before: rvn: %#v", rvn)
+			rvn = rvGetArray4Slice(rvn)
+			// xdebugf("after:  rvn: %#v", rvn)
 		}
 	case valueTypeExt:
 		tag, bytes := n.u, n.l // calling decode below might taint the values

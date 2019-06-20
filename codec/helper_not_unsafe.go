@@ -308,8 +308,10 @@ func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
 }
 
 func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
-	v = rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rv), intfTyp), reflect.Array)
+	v = rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rv), rv.Type().Elem()), reflect.Array)
+	// xdebugf("rvGetArray4Slice: b4 copy: rv: %#v, v: %#v", rv, v)
 	reflect.Copy(v, rv)
+	// xdebugf("rvGetArray4Slice: after copy: v: %#v", v)
 	return
 }
 

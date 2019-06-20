@@ -3087,7 +3087,33 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 	// println()
 }
 
+func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
+	// encode a slice, decode it with PreferArrayOverSlice
+	// if codecgen, skip the test (as codecgen doesn't work with PreferArrayOverSlice)
+	if codecgen {
+		t.Skip()
+	}
+	bh := basicHandle(h)
+	paos := bh.PreferArrayOverSlice
+	styp := bh.SliceType
+	defer func() {
+		bh.PreferArrayOverSlice = paos
+		bh.SliceType = styp
+	}()
+	bh.PreferArrayOverSlice = true
+	bh.SliceType = reflect.TypeOf(([]bool)(nil))
+
+	s2 := [4]bool{true, false, true, false}
+	s := s2[:]
+	var v interface{}
+	bs := testMarshalErr(s, h, t, t.Name())
+	testUnmarshalErr(&v, bs, h, t, t.Name())
+	testDeepEqualErr(s2, v, t, t.Name())
+}
+
 func TestBufioDecReader(t *testing.T) {
+	testOnce.Do(testInitAll)
 	doTestBufioDecReader(t, 13)
 	doTestBufioDecReader(t, 3)
 	doTestBufioDecReader(t, 5)
@@ -3914,6 +3940,26 @@ func TestBincStructKeyType(t *testing.T) {
 
 func TestSimpleStructKeyType(t *testing.T) {
 	doTestStructKeyType(t, testSimpleH)
+}
+
+func TestJsonPreferArrayOverSlice(t *testing.T) {
+	doTestPreferArrayOverSlice(t, testJsonH)
+}
+
+func TestCborPreferArrayOverSlice(t *testing.T) {
+	doTestPreferArrayOverSlice(t, testCborH)
+}
+
+func TestMsgpackPreferArrayOverSlice(t *testing.T) {
+	doTestPreferArrayOverSlice(t, testMsgpackH)
+}
+
+func TestBincPreferArrayOverSlice(t *testing.T) {
+	doTestPreferArrayOverSlice(t, testBincH)
+}
+
+func TestSimplePreferArrayOverSlice(t *testing.T) {
+	doTestPreferArrayOverSlice(t, testSimpleH)
 }
 
 // --------

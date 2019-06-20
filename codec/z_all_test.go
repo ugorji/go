@@ -179,6 +179,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonMapEncodeForCanonical", TestJsonMapEncodeForCanonical)
 	t.Run("TestJsonRawToStringToRawEtc", TestJsonRawToStringToRawEtc)
 	t.Run("TestJsonStructKeyType", TestJsonStructKeyType)
+	t.Run("TestJsonPreferArrayOverSlice", TestJsonPreferArrayOverSlice)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 }
@@ -214,6 +215,7 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincMapEncodeForCanonical", TestBincMapEncodeForCanonical)
 	t.Run("TestBincRawToStringToRawEtc", TestBincRawToStringToRawEtc)
 	t.Run("TestBincStructKeyType", TestBincStructKeyType)
+	t.Run("TestBincPreferArrayOverSlice", TestBincPreferArrayOverSlice)
 }
 
 func testCborGroup(t *testing.T) {
@@ -247,6 +249,7 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborMapEncodeForCanonical", TestCborMapEncodeForCanonical)
 	t.Run("TestCborRawToStringToRawEtc", TestCborRawToStringToRawEtc)
 	t.Run("TestCborStructKeyType", TestCborStructKeyType)
+	t.Run("TestCborPreferArrayOverSlice", TestCborPreferArrayOverSlice)
 
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 	t.Run("TestCborSkipTags", TestCborSkipTags)
@@ -282,6 +285,7 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackMapEncodeForCanonical", TestMsgpackMapEncodeForCanonical)
 	t.Run("TestMsgpackRawToStringToRawEtc", TestMsgpackRawToStringToRawEtc)
 	t.Run("TestMsgpackStructKeyType", TestMsgpackStructKeyType)
+	t.Run("TestMsgpackPreferArrayOverSlice", TestMsgpackPreferArrayOverSlice)
 
 	t.Run("TestMsgpackDecodeMapAndExtSizeMismatch", TestMsgpackDecodeMapAndExtSizeMismatch)
 }
@@ -315,6 +319,7 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleMapEncodeForCanonical", TestSimpleMapEncodeForCanonical)
 	t.Run("TestSimpleRawToStringToRawEtc", TestSimpleRawToStringToRawEtc)
 	t.Run("TestSimpleStructKeyType", TestSimpleStructKeyType)
+	t.Run("TestSimplePreferArrayOverSlice", TestSimplePreferArrayOverSlice)
 }
 
 func testSimpleMammothGroup(t *testing.T) {
