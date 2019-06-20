@@ -465,9 +465,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			d.decode(&v2)
 			rvn = rv4i(&v2).Elem()
 			if reflectArrayOfSupported && d.stid == 0 && d.h.PreferArrayOverSlice {
-				rvn2 := rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rvn), intfTyp), reflect.Array)
-				reflect.Copy(rvn2, rvn)
-				rvn = rvn2
+				rvn = rvGetArray4Slice(rvn)
 			}
 		} else {
 			if d.str {
@@ -808,7 +806,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				d.errorf("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut { // !isImmutableKind(rtelem0.Kind()) {
-				reflect.Copy(rv, rv0) // only copy up to length NOT cap i.e. rv0.Slice(0, rvcap)
+				rvCopySlice(rv, rv0) // only copy up to length NOT cap i.e. rv0.Slice(0, rvcap)
 			}
 		} else if containerLenS != rvlen {
 			rvlen = containerLenS
@@ -888,7 +886,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				// rvcap = growCap(rvcap, rtelem0Size, rvcap+1+(rvcap*1/3))
 				rv9 = reflect.MakeSlice(f.ti.rt, rvcap, rvcap)
 				// xdebugf("else: rv9.Len: %d, rvcap: %d", rv9.Len(), rvcap)
-				reflect.Copy(rv9, rv)
+				rvCopySlice(rv9, rv)
 				rv = rv9
 				rvChanged = true
 				rvlen = rvcap
@@ -2306,7 +2304,7 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 // 	scap2 = growCap(scap, stElemSize, num)
 // 	s2 = reflect.MakeSlice(st, l1, scap2)
 // 	changed = true
-// 	reflect.Copy(s2, s)
+// 	rvCopySlice(s2, s)
 // 	return
 // }
 

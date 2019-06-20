@@ -525,6 +525,32 @@ func rvGetSliceCap(rv reflect.Value) int {
 	return (*unsafeSlice)(urv.ptr).Cap
 }
 
+func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
+	l := rv.Len()
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	bx := (*unsafeSlice)(unsafe.Pointer(&bs))
+	bx.Data = urv.ptr
+	bx.Len, bx.Cap = l, l
+	return
+}
+
+func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
+	v = rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rv), intfTyp), reflect.Array)
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	uv.ptr = *(*unsafe.Pointer)(urv.ptr) // slice rv has a ptr to the slice.
+	return
+}
+
+func rvCopySlice(dest, src reflect.Value) {
+	var i interface{} = dest.Type().Elem()
+	ui := (*unsafeIntf)(unsafe.Pointer(&i))
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&dest))
+	destPtr := urv.ptr
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&src))
+	typedslicecopy(ui.word, *(*unsafeSlice)(destPtr), *(*unsafeSlice)(urv.ptr))
+}
+
 // ------------
 
 func rvGetBool(rv reflect.Value) bool {
@@ -819,3 +845,7 @@ func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
 //go:linkname unsafe_New reflect.unsafe_New
 //go:noescape
 func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
+
+//go:linkname typedslicecopy reflect.typedslicecopy
+//go:noescape
+func typedslicecopy(elemType unsafe.Pointer, dst, src unsafeSlice) int

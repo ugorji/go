@@ -361,19 +361,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		case seqTypeSlice:
 			e.e.EncodeStringBytesRaw(rvGetBytes(rv))
 		case seqTypeArray:
-			l = rv.Len()
-			if rv.CanAddr() {
-				e.e.EncodeStringBytesRaw(rvGetBytes(rv.Slice(0, l)))
-			} else {
-				var bs []byte
-				if l <= cap(e.b) {
-					bs = e.b[:l]
-				} else {
-					bs = make([]byte, l)
-				}
-				reflect.Copy(rv4i(bs), rv)
-				e.e.EncodeStringBytesRaw(bs)
-			}
+			e.e.EncodeStringBytesRaw(rvGetArrayBytesRO(rv, e.b[:]))
 		case seqTypeChan:
 			e.kSliceBytesChan(rv)
 		}

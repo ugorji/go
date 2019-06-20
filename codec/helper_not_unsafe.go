@@ -292,6 +292,33 @@ func rvGetSliceCap(rv reflect.Value) int {
 	return rv.Cap()
 }
 
+func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
+	l := rv.Len()
+	if rv.CanAddr() {
+		return rvGetBytes(rv.Slice(0, l))
+	}
+
+	if l <= cap(scratch) {
+		bs = scratch[:l]
+	} else {
+		bs = make([]byte, l)
+	}
+	reflect.Copy(rv4i(bs), rv)
+	return
+}
+
+func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
+	v = rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rv), intfTyp), reflect.Array)
+	reflect.Copy(v, rv)
+	return
+}
+
+func rvCopySlice(dest, src reflect.Value) {
+	reflect.Copy(dest, src)
+}
+
+// ------------
+
 func rvGetBool(rv reflect.Value) bool {
 	return rv.Bool()
 }
