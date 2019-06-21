@@ -25,7 +25,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"math"
-	"reflect"
 	"strconv"
 	"time"
 	"unicode"
@@ -1455,11 +1454,6 @@ func (h *JsonHandle) typical() bool {
 func (h *JsonHandle) recreateEncDriver(ed encDriver) (v bool) {
 	_, v = ed.(*jsonEncDriverTypical)
 	return v != h.typical()
-}
-
-// SetInterfaceExt sets an extension
-func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
-	return h.SetExt(rt, tag, makeExt(ext))
 }
 
 func (h *JsonHandle) newEncDriver(e *Encoder) (ee encDriver) {

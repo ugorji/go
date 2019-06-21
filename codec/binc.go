@@ -5,7 +5,6 @@ package codec
 
 import (
 	"math"
-	"reflect"
 	"time"
 )
 
@@ -988,11 +987,6 @@ type BincHandle struct {
 
 // Name returns the name of the handle: binc
 func (h *BincHandle) Name() string { return "binc" }
-
-// SetBytesExt sets an extension
-func (h *BincHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
-	return h.SetExt(rt, tag, makeExt(ext))
-}
 
 func (h *BincHandle) newEncDriver(e *Encoder) encDriver {
 	return &bincEncDriver{e: e, h: h, w: e.w()}

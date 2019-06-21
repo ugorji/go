@@ -5,7 +5,6 @@ package codec
 
 import (
 	"math"
-	"reflect"
 	"time"
 )
 
@@ -863,11 +862,6 @@ type CborHandle struct {
 
 // Name returns the name of the handle: cbor
 func (h *CborHandle) Name() string { return "cbor" }
-
-// SetInterfaceExt sets an extension
-func (h *CborHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
-	return h.SetExt(rt, tag, makeExt(ext))
-}
 
 func (h *CborHandle) newEncDriver(e *Encoder) encDriver {
 	return &cborEncDriver{e: e, w: e.w(), h: h}

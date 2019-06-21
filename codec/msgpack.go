@@ -24,7 +24,6 @@ import (
 	"io"
 	"math"
 	"net/rpc"
-	"reflect"
 	"time"
 )
 
@@ -970,11 +969,6 @@ type MsgpackHandle struct {
 
 // Name returns the name of the handle: msgpack
 func (h *MsgpackHandle) Name() string { return "msgpack" }
-
-// SetBytesExt sets an extension
-func (h *MsgpackHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
-	return h.SetExt(rt, tag, makeExt(ext))
-}
 
 func (h *MsgpackHandle) newEncDriver(e *Encoder) encDriver {
 	return &msgpackEncDriver{e: e, w: e.w(), h: h}
