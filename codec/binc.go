@@ -272,7 +272,7 @@ func (e *bincEncDriver) EncodeSymbol(v string) {
 		return
 	}
 	if e.m == nil {
-		e.m = pool.mapStrU16.Get().(map[string]uint16)
+		e.m = pool4mapStrU16.Get().(map[string]uint16)
 	}
 	ui, ok := e.m[v]
 	if ok {
@@ -730,7 +730,7 @@ func (d *bincDecDriver) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
 			symbol = uint16(bigen.Uint16(d.r.readx(2)))
 		}
 		if d.s == nil {
-			d.s = pool.mapU16Bytes.Get().(map[uint16][]byte) // make([]bincDecSymbol, 0, 16)
+			d.s = pool4mapU16Bytes.Get().(map[uint16][]byte) // make([]bincDecSymbol, 0, 16)
 		}
 
 		if vs&0x4 == 0 {
@@ -1007,7 +1007,7 @@ func (e *bincEncDriver) atEndOfEncode() {
 		for k := range e.m {
 			delete(e.m, k)
 		}
-		pool.mapStrU16.Put(e.m)
+		pool4mapStrU16.Put(e.m)
 		e.m = nil
 	}
 }
@@ -1024,7 +1024,7 @@ func (d *bincDecDriver) atEndOfDecode() {
 		for k := range d.s {
 			delete(d.s, k)
 		}
-		pool.mapU16Bytes.Put(d.s)
+		pool4mapU16Bytes.Put(d.s)
 		d.s = nil
 	}
 }
