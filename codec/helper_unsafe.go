@@ -496,7 +496,6 @@ func rvSetDirect(rv reflect.Value, v reflect.Value) {
 	} else {
 		typedmemmove(urv.typ, urv.ptr, uv.ptr)
 	}
-
 }
 
 // rvSlice returns a slice of the slice of lenth
@@ -544,13 +543,29 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	return
 }
 
+func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
+	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+
+	var x []unsafe.Pointer
+
+	uv.ptr = unsafe.Pointer(&x)
+	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&tslice))).word
+	uv.flag = unsafeFlagIndir | uintptr(reflect.Slice)
+
+	s := (*unsafeSlice)(uv.ptr)
+	s.Data = ((*unsafeReflectValue)(unsafe.Pointer(&rv))).ptr
+	s.Len = rv.Len()
+	s.Cap = s.Len
+	return
+}
+
 func rvCopySlice(dest, src reflect.Value) {
-	var i interface{} = dest.Type().Elem()
-	ui := (*unsafeIntf)(unsafe.Pointer(&i))
+	t := dest.Type().Elem()
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&dest))
 	destPtr := urv.ptr
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&src))
-	typedslicecopy(ui.word, *(*unsafeSlice)(destPtr), *(*unsafeSlice)(urv.ptr))
+	typedslicecopy((*unsafeIntf)(unsafe.Pointer(&t)).word,
+		*(*unsafeSlice)(destPtr), *(*unsafeSlice)(urv.ptr))
 }
 
 // ------------

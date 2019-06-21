@@ -315,6 +315,10 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	return
 }
 
+func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
+	return rv.Slice(0, rv.Len())
+}
+
 func rvCopySlice(dest, src reflect.Value) {
 	reflect.Copy(dest, src)
 }
