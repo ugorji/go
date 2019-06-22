@@ -28,16 +28,6 @@ package codec
 // Some streams also are text-based, and use explicit separators to denote the
 // end/beginning of different values.
 //
-// During encode, we use a high-level condition to determine how to iterate through
-// the container. That decision is based on whether the container is text-based (with
-// separators) or binary (without separators). If binary, we do not even call the
-// encoding of separators.
-//
-// During decode, we use a different high-level condition to determine how to iterate
-// through the containers. That decision is based on whether the stream contained
-// a length prefix, or if it used explicit breaks. If length-prefixed, we assume that
-// it has to be binary, and we do not even try to read separators.
-//
 // Philosophy
 // ------------
 // On decode, this codec will update containers appropriately:
@@ -85,16 +75,20 @@ package codec
 // and we don't have to keep sending the error value along with each call
 // or storing it in the En|Decoder and checking it constantly along the way.
 //
-// The disadvantage is that small functions which use panics cannot be inlined.
-// The code accounts for that by only using panics behind an interface;
-// since interface calls cannot be inlined, this is irrelevant.
-//
 // We considered storing the error is En|Decoder.
 //   - once it has its err field set, it cannot be used again.
 //   - panicing will be optional, controlled by const flag.
 //   - code should always check error first and return early.
+//
 // We eventually decided against it as it makes the code clumsier to always
 // check for these error conditions.
+//
+// ------------------------------------------
+// We use sync.Pool only for the aid of long-lived objects shared across multiple goroutines.
+// Encoder, Decoder, enc|decDriver, reader|writer, etc do not fall into this bucket.
+//
+// Also, GC is much better now, eliminating some of the reasons to use a shared pool structure.
+// Instead, the short-lived objects use free-lists that live as long as the object exists.
 
 import (
 	"bytes"
