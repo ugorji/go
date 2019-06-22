@@ -182,26 +182,26 @@ var (
 var (
 	pool4tiload = sync.Pool{New: func() interface{} { return new(typeInfoLoadArray) }}
 
-	pool4sfiRv8   = sync.Pool{New: func() interface{} { return new([8]sfiRv) }}
-	pool4sfiRv16  = sync.Pool{New: func() interface{} { return new([16]sfiRv) }}
-	pool4sfiRv32  = sync.Pool{New: func() interface{} { return new([32]sfiRv) }}
-	pool4sfiRv64  = sync.Pool{New: func() interface{} { return new([64]sfiRv) }}
-	pool4sfiRv128 = sync.Pool{New: func() interface{} { return new([128]sfiRv) }}
+	// pool4sfiRv8   = sync.Pool{New: func() interface{} { return new([8]sfiRv) }}
+	// pool4sfiRv16  = sync.Pool{New: func() interface{} { return new([16]sfiRv) }}
+	// pool4sfiRv32  = sync.Pool{New: func() interface{} { return new([32]sfiRv) }}
+	// pool4sfiRv64  = sync.Pool{New: func() interface{} { return new([64]sfiRv) }}
+	// pool4sfiRv128 = sync.Pool{New: func() interface{} { return new([128]sfiRv) }}
 
-	// dn = sync.Pool{ New: func() interface{} { x := new(decNaked); x.init(); return x } }
+	// // dn = sync.Pool{ New: func() interface{} { x := new(decNaked); x.init(); return x } }
 
-	pool4buf256 = sync.Pool{New: func() interface{} { return new([256]byte) }}
-	pool4buf1k  = sync.Pool{New: func() interface{} { return new([1 * 1024]byte) }}
-	pool4buf2k  = sync.Pool{New: func() interface{} { return new([2 * 1024]byte) }}
-	pool4buf4k  = sync.Pool{New: func() interface{} { return new([4 * 1024]byte) }}
-	pool4buf8k  = sync.Pool{New: func() interface{} { return new([8 * 1024]byte) }}
-	pool4buf16k = sync.Pool{New: func() interface{} { return new([16 * 1024]byte) }}
-	pool4buf32k = sync.Pool{New: func() interface{} { return new([32 * 1024]byte) }}
-	pool4buf64k = sync.Pool{New: func() interface{} { return new([64 * 1024]byte) }}
+	// pool4buf256 = sync.Pool{New: func() interface{} { return new([256]byte) }}
+	// pool4buf1k  = sync.Pool{New: func() interface{} { return new([1 * 1024]byte) }}
+	// pool4buf2k  = sync.Pool{New: func() interface{} { return new([2 * 1024]byte) }}
+	// pool4buf4k  = sync.Pool{New: func() interface{} { return new([4 * 1024]byte) }}
+	// pool4buf8k  = sync.Pool{New: func() interface{} { return new([8 * 1024]byte) }}
+	// pool4buf16k = sync.Pool{New: func() interface{} { return new([16 * 1024]byte) }}
+	// pool4buf32k = sync.Pool{New: func() interface{} { return new([32 * 1024]byte) }}
+	// pool4buf64k = sync.Pool{New: func() interface{} { return new([64 * 1024]byte) }}
 
-	pool4mapStrU16 = sync.Pool{New: func() interface{} { return make(map[string]uint16, 16) }}
+	// pool4mapStrU16 = sync.Pool{New: func() interface{} { return make(map[string]uint16, 16) }}
 	// pool4mapU16Str   = sync.Pool{New: func() interface{} { return make(map[uint16]string, 16) }}
-	pool4mapU16Bytes = sync.Pool{New: func() interface{} { return make(map[uint16][]byte, 16) }}
+	// pool4mapU16Bytes = sync.Pool{New: func() interface{} { return make(map[uint16][]byte, 16) }}
 )
 
 func init() {
