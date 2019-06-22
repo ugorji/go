@@ -673,6 +673,10 @@ type BasicHandle struct {
 	// are returned to the shared pool before it is garbage-collected. Do it as below:
 	//    runtime.SetFinalizer(e, (*Encoder).Release)
 	//    runtime.SetFinalizer(d, (*Decoder).Release)
+	//
+	// Deprecated: This is not longer used as pools are only used for long-lived objects
+	// which are shared across goroutines.
+	// Setting this value has no effect. It is maintained for backward compatibility.
 	ExplicitRelease bool
 
 	// flags handleFlag // holds flag for if binaryEncoding, jsonHandler, etc
