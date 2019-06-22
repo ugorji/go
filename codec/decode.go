@@ -1375,6 +1375,8 @@ type Decoder struct {
 	_ [1]byte                      // padding
 	b [decScratchByteArrayLen]byte // scratch buffer, used by Decoder and xxxDecDrivers
 
+	blist bytesFreelist
+
 	// padding - false sharing help // modify 232 if Decoder struct changes.
 	// _ [cacheLineSize - 232%cacheLineSize]byte
 }
@@ -1466,7 +1468,7 @@ func (d *Decoder) Reset(r io.Reader) {
 		if d.bi == nil {
 			d.bi = new(bufioDecReader)
 		}
-		d.bi.reset(r, d.h.ReaderBufferSize)
+		d.bi.reset(r, d.h.ReaderBufferSize, &d.blist)
 		// d.r = d.bi
 		// d.typ = entryTypeBufio
 		d.bufio = true
@@ -1476,7 +1478,7 @@ func (d *Decoder) Reset(r io.Reader) {
 		if d.ri == nil {
 			d.ri = new(ioDecReader)
 		}
-		d.ri.reset(r)
+		d.ri.reset(r, &d.blist)
 		// d.r = d.ri
 		// d.typ = entryTypeIo
 		d.bufio = false
@@ -1635,12 +1637,12 @@ func (d *Decoder) mustDecode(v interface{}) {
 	if d.calls == 0 {
 		d.d.atEndOfDecode()
 		// release
-		if !d.h.ExplicitRelease {
-			d.decReaderSwitch.release()
-			if d.jdec != nil {
-				d.jdec.release()
-			}
-		}
+		// if !d.h.ExplicitRelease {
+		// 	d.decReaderSwitch.release()
+		// 	// if d.jdec != nil {
+		// 	// 	d.jdec.release()
+		// 	// }
+		// }
 	}
 }
 
@@ -1665,12 +1667,12 @@ func (d *Decoder) finalize() {
 //
 // By default, Release() is automatically called unless the option ExplicitRelease is set.
 func (d *Decoder) Release() {
-	if d.bi != nil {
-		d.bi.release()
-	}
-	if d.jdec != nil {
-		d.jdec.release()
-	}
+	// if d.bi != nil {
+	// 	d.bi.release()
+	// }
+	// if d.jdec != nil {
+	// 	d.jdec.release()
+	// }
 	// d.decNakedPooler.end()
 }
 

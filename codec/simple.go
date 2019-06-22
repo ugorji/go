@@ -128,9 +128,8 @@ func (e *simpleEncDriver) encLen(bd byte, length int) {
 
 func (e *simpleEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext) {
 	var bs []byte
-	var bufp bytesBufPooler
 	if ext == SelfExt {
-		bs = bufp.get(1024)[:0]
+		bs = e.e.blist.get(1024)[:0]
 		e.e.sideEncode(v, &bs)
 	} else {
 		bs = ext.WriteExt(v)
@@ -142,7 +141,7 @@ func (e *simpleEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext) {
 	e.encodeExtPreamble(uint8(xtag), len(bs))
 	e.w.writeb(bs)
 	if ext == SelfExt {
-		bufp.end()
+		e.e.blist.put(bs)
 	}
 }
 

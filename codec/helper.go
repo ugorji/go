@@ -2772,6 +2772,8 @@ func (must) Float(s float64, err error) float64 {
 
 // -------------------
 
+/*
+
 type pooler struct {
 	pool  *sync.Pool
 	poolv interface{}
@@ -2961,18 +2963,18 @@ NEW:
 
 // ----------------
 
-type bytesBufPoolerPlus struct {
+type bytesBufSlicePooler struct {
 	bytesBufPooler
 	buf []byte
 }
 
-func (z *bytesBufPoolerPlus) ensureExtraCap(num int) {
+func (z *bytesBufSlicePooler) ensureExtraCap(num int) {
 	if cap(z.buf) < len(z.buf)+num {
 		z.ensureCap(len(z.buf) + num)
 	}
 }
 
-func (z *bytesBufPoolerPlus) ensureCap(newcap int) {
+func (z *bytesBufSlicePooler) ensureCap(newcap int) {
 	if cap(z.buf) >= newcap {
 		return
 	}
@@ -3000,26 +3002,26 @@ func (z *bytesBufPoolerPlus) ensureCap(newcap int) {
 	z.bytesBufPooler = bp2
 }
 
-func (z *bytesBufPoolerPlus) get(length int) {
+func (z *bytesBufSlicePooler) get(length int) {
 	z.buf = z.bytesBufPooler.get(length)
 }
 
-func (z *bytesBufPoolerPlus) append(b byte) {
+func (z *bytesBufSlicePooler) append(b byte) {
 	z.ensureExtraCap(1)
 	z.buf = append(z.buf, b)
 }
 
-func (z *bytesBufPoolerPlus) appends(b []byte) {
+func (z *bytesBufSlicePooler) appends(b []byte) {
 	z.ensureExtraCap(len(b))
 	z.buf = append(z.buf, b...)
 }
 
-func (z *bytesBufPoolerPlus) end() {
+func (z *bytesBufSlicePooler) end() {
 	z.bytesBufPooler.end()
 	z.buf = nil
 }
 
-func (z *bytesBufPoolerPlus) resetBuf() {
+func (z *bytesBufSlicePooler) resetBuf() {
 	if z.buf != nil {
 		z.buf = z.buf[:0]
 	}
@@ -3054,6 +3056,91 @@ func (z *sfiRvPooler) get(newlen int) (fkvs []sfiRv) {
 	}
 	return
 }
+
+*/
+
+// ----------------
+
+func freelistCapacity(length int) (capacity int) {
+	for capacity = 8; capacity < length; capacity *= 2 {
+	}
+	return
+}
+
+type bytesFreelist [][]byte
+
+func (x *bytesFreelist) get(length int) (out []byte) {
+	var j int = -1
+	for i := 0; i < len(*x); i++ {
+		if cap((*x)[i]) >= length && (j == -1 || cap((*x)[j]) > cap((*x)[i])) {
+			j = i
+		}
+	}
+	if j == -1 {
+		return make([]byte, length, freelistCapacity(length))
+	}
+	out = (*x)[j][:length]
+	(*x)[j] = nil
+	for i := 0; i < len(out); i++ {
+		out[i] = 0
+	}
+	return
+}
+
+func (x *bytesFreelist) put(v []byte) {
+	if len(v) == 0 {
+		return
+	}
+	for i := 0; i < len(*x); i++ {
+		if cap((*x)[i]) == 0 {
+			(*x)[i] = v
+			return
+		}
+	}
+	*x = append(*x, v)
+}
+
+func (x *bytesFreelist) check(v []byte, length int) (out []byte) {
+	if cap(v) < length {
+		x.put(v)
+		return x.get(length)
+	}
+	return v[:length]
+}
+
+// -------------------------
+
+type sfiRvFreelist [][]sfiRv
+
+func (x *sfiRvFreelist) get(length int) (out []sfiRv) {
+	var j int = -1
+	for i := 0; i < len(*x); i++ {
+		if cap((*x)[i]) >= length && (j == -1 || cap((*x)[j]) > cap((*x)[i])) {
+			j = i
+		}
+	}
+	if j == -1 {
+		return make([]sfiRv, length, freelistCapacity(length))
+	}
+	out = (*x)[j][:length]
+	(*x)[j] = nil
+	for i := 0; i < len(out); i++ {
+		out[i] = sfiRv{}
+	}
+	return
+}
+
+func (x *sfiRvFreelist) put(v []sfiRv) {
+	for i := 0; i < len(*x); i++ {
+		if cap((*x)[i]) == 0 {
+			(*x)[i] = v
+			return
+		}
+	}
+	*x = append(*x, v)
+}
+
+// -----------
 
 // xdebugf printf. the message in red on the terminal.
 // Use it in place of fmt.Printf (which it calls internally)

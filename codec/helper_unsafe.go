@@ -699,7 +699,7 @@ type unsafeMapIter struct {
 // allocation of unsafeMapIter.
 // Options are to try to alloc on stack, or pool it.
 // Easiest to pool it.
-const unsafeMapIterUsePool = true
+const unsafeMapIterUsePool = false
 
 var unsafeMapIterPool = sync.Pool{
 	New: func() interface{} { return new(unsafeMapIter) },

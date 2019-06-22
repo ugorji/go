@@ -319,9 +319,9 @@ func (e *msgpackEncDriver) EncodeTime(t time.Time) {
 
 func (e *msgpackEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext) {
 	var bs []byte
-	var bufp bytesBufPooler
+	// var bufp bytesBufPooler
 	if ext == SelfExt {
-		bs = bufp.get(1024)[:0]
+		bs = e.e.blist.get(1024)[:0] // bufp.get(1024)[:0]
 		e.e.sideEncode(v, &bs)
 	} else {
 		bs = ext.WriteExt(v)
@@ -337,7 +337,7 @@ func (e *msgpackEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext) {
 		e.EncodeStringBytesRaw(bs)
 	}
 	if ext == SelfExt {
-		bufp.end()
+		e.e.blist.put(bs) // bufp.end()
 	}
 }
 

@@ -607,8 +607,8 @@ type jsonDecDriver struct {
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 	// bs []byte // scratch - for parsing strings, bytes
 
-	bp bytesBufPoolerPlus
-	se interfaceExtWrapper
+	buf []byte
+	se  interfaceExtWrapper
 
 	// _ [4]uint64 // padding
 
@@ -1015,7 +1015,7 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 
 	// base64 encodes []byte{} as "", and we encode nil []byte as null.
 	// Consequently, base64 should decode null as a nil []byte, and "" as an empty []byte{}.
-	// appendStringAsBytes returns a zero-len slice for both, so as not to reset d.bp.buf.
+	// appendStringAsBytes returns a zero-len slice for both, so as not to reset d.buf.
 	// However, it sets a fnil field to true, so we can check if a null was found.
 
 	// d.appendStringAsBytes()
@@ -1035,16 +1035,18 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	} else if slen <= cap(bs) {
 		bsOut = bs[:slen]
 	} else if zerocopy {
-		// if d.bp.buf == nil {
-		// 	d.bp.buf = d.bp.get(slen)
+		// if d.buf == nil {
+		// 	d.buf = d.bp.get(slen)
 		// }
-		if slen <= cap(d.bp.buf) {
-			bsOut = d.bp.buf[:slen]
-		} else {
-			d.bp.get(slen)
-			bsOut = d.bp.buf
-			// bsOut = make([]byte, slen) // TODO: should i check pool? how to return it back?
-		}
+		d.buf = d.d.blist.check(d.buf, slen)
+		bsOut = d.buf
+		// if slen <= cap(d.buf) {
+		// 	bsOut = d.buf[:slen]
+		// } else {
+		// 	d.bp.get(slen)
+		// 	bsOut = d.buf
+		// 	// bsOut = make([]byte, slen) // TODO: should i check pool? how to return it back?
+		// }
 	} else {
 		bsOut = make([]byte, slen)
 	}
@@ -1106,8 +1108,8 @@ func (d *jsonDecDriver) readString() (bs []byte) {
 func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
 	// xdebug2f("appendStringAsBytes: found: '%c'", d.tok)
 
-	if d.bp.buf != nil {
-		d.bp.buf = d.bp.buf[:0]
+	if d.buf != nil {
+		d.buf = d.buf[:0]
 	}
 	d.tok = 0
 
@@ -1126,9 +1128,9 @@ func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
 	var i, cursor uint
 	for {
 		if i == cslen {
-			d.bp.appends(cs[cursor:])
+			// d.bp.appends(cs[cursor:])
 			// d.bp.ensureExtraCap(int(cslen - cursor))
-			// d.bp.buf = append(d.bp.buf, cs[cursor:]...)
+			d.buf = append(d.buf, cs[cursor:]...)
 			cs = d.r.readUntil('"')
 			// xdebugf("appendStringAsBytes: len: %d, cs: %s", len(cs), cs)
 			cslen = uint(len(cs))
@@ -1136,10 +1138,10 @@ func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
 		}
 		c = cs[i]
 		if c == '"' {
-			if len(d.bp.buf) > 0 {
-				d.bp.appends(cs[cursor:i])
+			if len(d.buf) > 0 {
+				// d.bp.appends(cs[cursor:i])
 				// d.bp.ensureExtraCap(int(i - cursor))
-				// d.bp.buf = append(d.bp.buf, cs[cursor:i]...)
+				d.buf = append(d.buf, cs[cursor:i]...)
 			}
 			break
 		}
@@ -1147,25 +1149,25 @@ func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
 			i++
 			continue
 		}
-		d.bp.appends(cs[cursor:i])
+		// d.bp.appends(cs[cursor:i])
 		// d.bp.ensureExtraCap(int(i - cursor))
-		// d.bp.buf = append(d.bp.buf, cs[cursor:i]...)
-		d.bp.ensureExtraCap(4) // NOTE: 1 is sufficient, but say 4 for now
+		d.buf = append(d.buf, cs[cursor:i]...)
+		// d.bp.ensureExtraCap(4) // NOTE: 1 is sufficient, but say 4 for now
 		i++
 		c = cs[i]
 		switch c {
 		case '"', '\\', '/', '\'':
-			d.bp.buf = append(d.bp.buf, c)
+			d.buf = append(d.buf, c)
 		case 'b':
-			d.bp.buf = append(d.bp.buf, '\b')
+			d.buf = append(d.buf, '\b')
 		case 'f':
-			d.bp.buf = append(d.bp.buf, '\f')
+			d.buf = append(d.buf, '\f')
 		case 'n':
-			d.bp.buf = append(d.bp.buf, '\n')
+			d.buf = append(d.buf, '\n')
 		case 'r':
-			d.bp.buf = append(d.bp.buf, '\r')
+			d.buf = append(d.buf, '\r')
 		case 't':
-			d.bp.buf = append(d.bp.buf, '\t')
+			d.buf = append(d.buf, '\t')
 		case 'u':
 			var r rune
 			var rr uint32
@@ -1219,15 +1221,14 @@ func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
 			}
 		encode_rune:
 			w2 := utf8.EncodeRune(d.bstr[:], r)
-			d.bp.appends(d.bstr[:w2])
-			// d.bp.buf = append(d.bp.buf, d.bstr[:w2]...)
+			d.buf = append(d.buf, d.bstr[:w2]...)
 		default:
 			d.d.errorf("unsupported escaped value: %c", c)
 		}
 		i++
 		cursor = i
 	}
-	if len(d.bp.buf) == 0 {
+	if len(d.buf) == 0 {
 		// return cs[:len(cs)-1]
 		// returning cs was failing for bufio, as it seems bufio needs the buffer for other things.
 		// only return cs if bytesDecReader
@@ -1235,14 +1236,14 @@ func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
 		if d.d.bytes {
 			return cs
 		}
-		d.bp.ensureExtraCap(len(cs))
-		d.bp.buf = d.bp.buf[:len(cs)]
-		copy(d.bp.buf, cs)
-		// xdebugf("cs: '%s', d.bp.buf: '%s'", cs, d.bp.buf)
-		return d.bp.buf
+		// d.bp.ensureExtraCap(len(cs))
+		d.buf = d.d.blist.check(d.buf, len(cs))
+		copy(d.buf, cs)
+		// xdebugf("cs: '%s', d.buf: '%s'", cs, d.buf)
+		return d.buf
 	}
-	// xdebug2f("returning d.bp.buf: %s", d.bp.buf)
-	return d.bp.buf
+	// xdebug2f("returning d.buf: %s", d.buf)
+	return d.buf
 }
 
 func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
@@ -1498,21 +1499,22 @@ func (e *jsonEncDriver) reset() {
 func (d *jsonDecDriver) reset() {
 	d.r = d.d.r()
 	d.se.InterfaceExt = d.h.RawBytesExt
-	if d.bp.buf != nil {
-		d.bp.buf = d.bp.buf[:0]
-	}
+	d.buf = d.d.blist.check(d.buf, 256)[:0]
+	// if d.buf != nil {
+	// 	d.buf = d.buf[:0]
+	// }
 	d.tok = 0
 	d.fnil = false
 }
 
 func (d *jsonDecDriver) atEndOfDecode() {}
 
-func (d *jsonDecDriver) release() {
-	l := d.bp.capacity()
-	if l > 0 {
-		d.bp.end()
-	}
-}
+// func (d *jsonDecDriver) release() {
+// 	l := d.bp.capacity()
+// 	if l > 0 {
+// 		d.bp.end()
+// 	}
+// }
 
 // jsonFloatStrconvFmtPrec ...
 //

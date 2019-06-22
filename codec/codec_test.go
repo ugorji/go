@@ -3028,7 +3028,8 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 	// fmt.Printf("s: %s\n", s)
 	var r = strings.NewReader(s)
 	var br bufioDecReader
-	br.reset(r, bufsize)
+	var blist bytesFreelist
+	br.reset(r, bufsize, &blist)
 	b, err := ioutil.ReadAll(br.r)
 	if err != nil {
 		panic(err)
@@ -3044,7 +3045,7 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 	// readUntil: see: 56789
 	var out []byte
 	var token byte
-	br.reset(strings.NewReader(s), bufsizehalf)
+	br.reset(strings.NewReader(s), bufsizehalf, &blist)
 	// println()
 	for _, v2 := range [...]string{
 		`01234'`,
@@ -3056,7 +3057,7 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 		testDeepEqualErr(string(out), v2, t, "-")
 		// fmt.Printf("readUntil: out: `%s`\n", out)
 	}
-	br.reset(strings.NewReader(s), bufsizehalf)
+	br.reset(strings.NewReader(s), bufsizehalf, &blist)
 	// println()
 	for range [4]struct{}{} {
 		out = br.readTo(&jsonNumSet)
@@ -3073,7 +3074,7 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 		// fmt.Printf("readUntil: out: `%s`\n", out)
 		br.unreadn1()
 	}
-	br.reset(strings.NewReader(s), bufsizehalf)
+	br.reset(strings.NewReader(s), bufsizehalf, &blist)
 	// println()
 	for range [4]struct{}{} {
 		out = br.readUntil(' ')

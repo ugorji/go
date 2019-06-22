@@ -129,50 +129,68 @@ type bufioEncWriter struct {
 
 	n int
 
-	// Extensions can call Encode() within a current Encode() call.
-	// We need to know when the top level Encode() call returns,
-	// so we can decide whether to Release() or not.
-	calls uint16 // what depth in mustDecode are we in now.
+	// // Extensions can call Encode() within a current Encode() call.
+	// // We need to know when the top level Encode() call returns,
+	// // so we can decide whether to Release() or not.
+	// calls uint16 // what depth in mustDecode are we in now.
 
-	sz int // buf size
+	// sz int // buf size
 	// _ uint64 // padding (cache-aligned)
 
 	// ---- cache line
 
 	// write-most fields below
 
-	// less used fields
-	bytesBufPooler
+	// // less used fields
+	// bytesBufPooler
 
-	b [40]byte // scratch buffer and padding (cache-aligned)
+	b [16]byte // scratch buffer and padding (cache-aligned)
 	// a int
 	// b   [4]byte
 	// err
 }
 
-func (z *bufioEncWriter) reset(w io.Writer, bufsize int) {
+func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
 	z.w = w
 	z.n = 0
-	z.calls = 0
+	// z.calls = 0
 	if bufsize <= 0 {
 		bufsize = defEncByteBufSize
 	}
-	z.sz = bufsize
-	if cap(z.buf) >= bufsize {
-		z.buf = z.buf[:cap(z.buf)]
-	} else if bufsize <= len(z.b) {
-		z.buf = z.b[:]
-	} else {
-		z.buf = z.bytesBufPooler.get(bufsize)
-		z.buf = z.buf[:cap(z.buf)]
-		// z.buf = make([]byte, bufsize)
+	// z.sz = bufsize
+	if cap(z.buf) < bufsize {
+		if len(z.buf) > 0 && &z.buf[0] != &z.b[0] {
+			blist.put(z.buf)
+		}
+		if len(z.b) > bufsize {
+			z.buf = z.b[:]
+		} else {
+			z.buf = blist.get(bufsize)
+		}
 	}
+	z.buf = z.buf[:cap(z.buf)]
+	// if bufsize <= cap(z.buf) {
+	// 	z.buf = z.buf[:cap(z.buf)]
+	// } else {
+	// } else if bufsize <= len(z.b) {
+	// 	if len(z.buf) > 0 && &z.buf[0] != &z.b[0] {
+	// 		blist.put(z.buf)
+	// 	}
+	// 	z.buf = z.b[:]
+	// } else {
+	// 	// z.buf = z.bytesBufPooler.get(bufsize)
+	// 	// z.buf = z.buf[:cap(z.buf)]
+	// 	if len(z.buf) > 0 && &z.buf[0] != &z.b[0] {
+	// 		blist.put(z.buf)
+	// 	}
+	// 	z.buf = blist.get(bufsize)
+	// }
 }
 
-func (z *bufioEncWriter) release() {
-	z.buf = nil
-	z.bytesBufPooler.end()
-}
+// func (z *bufioEncWriter) release() {
+// 	z.buf = nil
+// 	z.bytesBufPooler.end()
+// }
 
 //go:noinline - flush only called intermittently
 func (z *bufioEncWriter) flushErr() (err error) {
@@ -315,6 +333,9 @@ type encWriterSwitch struct {
 	be    bool // is binary encoder?
 
 	c containerState
+
+	calls uint16
+
 	// _    [3]byte // padding
 	// _    [2]uint64 // padding
 	// _    uint64    // padding

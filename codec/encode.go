@@ -525,8 +525,8 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	// enough to reduce thread contention.
 
 	// fmt.Printf(">>>>>>>>>>>>>> encode.kStruct: newlen: %d\n", newlen)
-	var spool sfiRvPooler
-	var fkvs = spool.get(newlen)
+	// var spool sfiRvPooler
+	var fkvs = e.slist.get(newlen)
 
 	recur := e.h.RecursiveEmptyCheck
 	sfn := structFieldNode{v: rv, update: false}
@@ -602,7 +602,8 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	// do not use defer. Instead, use explicit pool return at end of function.
 	// defer has a cost we are trying to avoid.
 	// If there is a panic and these slices are not returned, it is ok.
-	spool.end()
+	// spool.end()
+	e.slist.put(fkvs)
 }
 
 func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
@@ -800,8 +801,10 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 	default:
 		// out-of-band
 		// first encode each key to a []byte first, then sort them, then record
-		var bufp bytesBufPooler
-		var mksv []byte = bufp.get(len(mks) * 16)[:0]
+		// var bufp bytesBufPooler
+		// var mksv []byte = bufp.get(len(mks) * 16)[:0]
+		// var mksv []byte = make([]byte, 0, len(mks)*16)
+		var mksv []byte = e.blist.get(len(mks) * 16)[:0]
 		e2 := NewEncoderBytes(&mksv, e.hh)
 		mksbv := make([]bytesRv, len(mks))
 		for i, k := range mks {
@@ -818,7 +821,8 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksbv[j].r, rvv), valFn)
 		}
-		bufp.end()
+		// bufp.end()
+		e.blist.put(mksv)
 	}
 }
 
@@ -858,7 +862,11 @@ type Encoder struct {
 
 	b [(5 * 8)]byte // for encoding chan byte, (non-addressable) [N]byte, etc
 
+	slist sfiRvFreelist
+	blist bytesFreelist
+
 	// ---- cpu cache line boundary?
+
 	// b [scratchByteArrayLen]byte
 	// _ [cacheLineSize - scratchByteArrayLen]byte // padding
 	// b [cacheLineSize - (8 * 0)]byte // used for encoding a chan or (non-addressable) array of bytes
@@ -959,7 +967,7 @@ func (e *Encoder) Reset(w io.Writer) {
 	// 	e.wi.reset(w)
 	// 	e.typ = entryTypeIo
 	// }
-	e.wf.reset(w, e.h.WriterBufferSize)
+	e.wf.reset(w, e.h.WriterBufferSize, &e.blist)
 	// e.typ = entryTypeBufio
 
 	// e.w = e.wi
@@ -1108,25 +1116,25 @@ func (e *Encoder) MustEncode(v interface{}) {
 }
 
 func (e *Encoder) mustEncode(v interface{}) {
-	if e.wf == nil {
-		e.encode(v)
-		e.e.atEndOfEncode()
-		e.w().end()
-		return
-	}
+	// if e.wf == nil {
+	// 	e.encode(v)
+	// 	e.e.atEndOfEncode()
+	// 	e.w().end()
+	// 	return
+	// }
 
-	if e.wf.buf == nil {
-		e.wf.buf = e.wf.bytesBufPooler.get(e.wf.sz)
-		e.wf.buf = e.wf.buf[:cap(e.wf.buf)]
-	}
-	e.wf.calls++
+	// if e.wf.buf == nil {
+	// 	e.wf.buf = e.wf.bytesBufPooler.get(e.wf.sz)
+	// 	e.wf.buf = e.wf.buf[:cap(e.wf.buf)]
+	// }
+	e.calls++
 	e.encode(v)
-	e.wf.calls--
-	if e.wf.calls == 0 {
+	e.calls--
+	if e.calls == 0 {
 		e.e.atEndOfEncode()
 		e.w().end()
 		if !e.h.ExplicitRelease {
-			e.wf.release()
+			e.Release()
 		}
 	}
 }
@@ -1151,9 +1159,9 @@ func (e *Encoder) finalize() {
 // It is important to call Release() when done with an Encoder, so those resources
 // are released instantly for use by subsequently created Encoders.
 func (e *Encoder) Release() {
-	if e.wf != nil {
-		e.wf.release()
-	}
+	// if e.wf != nil {
+	// 	e.wf.release()
+	// }
 }
 
 func (e *Encoder) encode(iv interface{}) {
