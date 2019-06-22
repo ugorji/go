@@ -10,7 +10,7 @@ import "io"
 // decReader abstracts the reading source, allowing implementations that can
 // read from an io.Reader or directly off a byte slice with zero-copying.
 //
-// Deprecated: Use decReaderSwitch instead.
+// Deprecated: Use decRd instead.
 type decReader interface {
 	unreadn1()
 	// readx will use the implementation scratch buffer if possible i.e. n < len(scratchbuf), OR
@@ -970,7 +970,7 @@ func (z *bytesDecReader) stopTrack() (bs []byte) {
 
 // --------------
 
-type decReaderSwitch struct {
+type decRd struct {
 	esep     bool // has elem separators
 	mtr, str bool // whether maptype or slicetype are known types
 
@@ -990,7 +990,7 @@ type decReaderSwitch struct {
 // numread, track and stopTrack are always inlined, as they just check int fields, etc.
 
 /*
-func (z *decReaderSwitch) numread() int {
+func (z *decRd) numread() int {
 	switch z.typ {
 	case entryTypeBytes:
 		return z.rb.numread()
@@ -1000,7 +1000,7 @@ func (z *decReaderSwitch) numread() int {
 		return z.bi.numread()
 	}
 }
-func (z *decReaderSwitch) track() {
+func (z *decRd) track() {
 	switch z.typ {
 	case entryTypeBytes:
 		z.rb.track()
@@ -1010,7 +1010,7 @@ func (z *decReaderSwitch) track() {
 		z.bi.track()
 	}
 }
-func (z *decReaderSwitch) stopTrack() []byte {
+func (z *decRd) stopTrack() []byte {
 	switch z.typ {
 	case entryTypeBytes:
 		return z.rb.stopTrack()
@@ -1021,7 +1021,7 @@ func (z *decReaderSwitch) stopTrack() []byte {
 	}
 }
 
-func (z *decReaderSwitch) unreadn1() {
+func (z *decRd) unreadn1() {
 	switch z.typ {
 	case entryTypeBytes:
 		z.rb.unreadn1()
@@ -1031,7 +1031,7 @@ func (z *decReaderSwitch) unreadn1() {
 		z.bi.unreadn1()
 	}
 }
-func (z *decReaderSwitch) readx(n int) []byte {
+func (z *decRd) readx(n int) []byte {
 	switch z.typ {
 	case entryTypeBytes:
 		return z.rb.readx(n)
@@ -1041,7 +1041,7 @@ func (z *decReaderSwitch) readx(n int) []byte {
 		return z.bi.readx(n)
 	}
 }
-func (z *decReaderSwitch) readb(s []byte) {
+func (z *decRd) readb(s []byte) {
 	switch z.typ {
 	case entryTypeBytes:
 		z.rb.readb(s)
@@ -1051,7 +1051,7 @@ func (z *decReaderSwitch) readb(s []byte) {
 		z.bi.readb(s)
 	}
 }
-func (z *decReaderSwitch) readn1() uint8 {
+func (z *decRd) readn1() uint8 {
 	switch z.typ {
 	case entryTypeBytes:
 		return z.rb.readn1()
@@ -1061,7 +1061,7 @@ func (z *decReaderSwitch) readn1() uint8 {
 		return z.bi.readn1()
 	}
 }
-func (z *decReaderSwitch) skip(accept *bitset256) (token byte) {
+func (z *decRd) skip(accept *bitset256) (token byte) {
 	switch z.typ {
 	case entryTypeBytes:
 		return z.rb.skip(accept)
@@ -1071,7 +1071,7 @@ func (z *decReaderSwitch) skip(accept *bitset256) (token byte) {
 		return z.bi.skip(accept)
 	}
 }
-func (z *decReaderSwitch) readTo(accept *bitset256) (out []byte) {
+func (z *decRd) readTo(accept *bitset256) (out []byte) {
 	switch z.typ {
 	case entryTypeBytes:
 		return z.rb.readTo(accept)
@@ -1081,7 +1081,7 @@ func (z *decReaderSwitch) readTo(accept *bitset256) (out []byte) {
 		return z.bi.readTo(accept)
 	}
 }
-func (z *decReaderSwitch) readUntil(stop byte) (out []byte) {
+func (z *decRd) readUntil(stop byte) (out []byte) {
 	switch z.typ {
 	case entryTypeBytes:
 		return z.rb.readUntil(stop)
@@ -1099,11 +1099,11 @@ func (z *decReaderSwitch) readUntil(stop byte) (out []byte) {
 // Best to only do an if fast-path else block (so fast-path is inlined).
 // This is irrespective of inlineExtraCallCost set in $GOROOT/src/cmd/compile/internal/gc/inl.go
 //
-// In decReaderSwitch methods below, we delegate all IO functions into their own methods.
+// In decRd methods below, we delegate all IO functions into their own methods.
 // This allows for the inlining of the common path when z.bytes=true.
 // Go 1.12+ supports inlining methods with up to 1 inlined function (or 2 if no other constructs).
 
-// func (z *decReaderSwitch) release() {
+// func (z *decRd) release() {
 // 	if z.bytes {
 // 	} else if z.bufio {
 // 		z.bi.release()
@@ -1111,7 +1111,7 @@ func (z *decReaderSwitch) readUntil(stop byte) (out []byte) {
 // 		z.ri.release()
 // 	}
 // }
-func (z *decReaderSwitch) numread() uint {
+func (z *decRd) numread() uint {
 	if z.bytes {
 		return z.rb.numread()
 	} else if z.bufio {
@@ -1120,7 +1120,7 @@ func (z *decReaderSwitch) numread() uint {
 		return z.ri.numread()
 	}
 }
-func (z *decReaderSwitch) track() {
+func (z *decRd) track() {
 	if z.bytes {
 		z.rb.track()
 	} else if z.bufio {
@@ -1129,7 +1129,7 @@ func (z *decReaderSwitch) track() {
 		z.ri.track()
 	}
 }
-func (z *decReaderSwitch) stopTrack() []byte {
+func (z *decRd) stopTrack() []byte {
 	if z.bytes {
 		return z.rb.stopTrack()
 	} else if z.bufio {
@@ -1139,14 +1139,14 @@ func (z *decReaderSwitch) stopTrack() []byte {
 	}
 }
 
-// func (z *decReaderSwitch) unreadn1() {
+// func (z *decRd) unreadn1() {
 // 	if z.bytes {
 // 		z.rb.unreadn1()
 // 	} else {
 // 		z.unreadn1IO()
 // 	}
 // }
-// func (z *decReaderSwitch) unreadn1IO() {
+// func (z *decRd) unreadn1IO() {
 // 	if z.bufio {
 // 		z.bi.unreadn1()
 // 	} else {
@@ -1154,7 +1154,7 @@ func (z *decReaderSwitch) stopTrack() []byte {
 // 	}
 // }
 
-func (z *decReaderSwitch) unreadn1() {
+func (z *decRd) unreadn1() {
 	if z.bytes {
 		z.rb.unreadn1()
 	} else if z.bufio {
@@ -1164,20 +1164,20 @@ func (z *decReaderSwitch) unreadn1() {
 	}
 }
 
-func (z *decReaderSwitch) readx(n uint) []byte {
+func (z *decRd) readx(n uint) []byte {
 	if z.bytes {
 		return z.rb.readx(n)
 	}
 	return z.readxIO(n)
 }
-func (z *decReaderSwitch) readxIO(n uint) []byte {
+func (z *decRd) readxIO(n uint) []byte {
 	if z.bufio {
 		return z.bi.readx(n)
 	}
 	return z.ri.readx(n)
 }
 
-func (z *decReaderSwitch) readb(s []byte) {
+func (z *decRd) readb(s []byte) {
 	if z.bytes {
 		z.rb.readb(s)
 	} else {
@@ -1186,7 +1186,7 @@ func (z *decReaderSwitch) readb(s []byte) {
 }
 
 //go:noinline - fallback for io, ensures z.bytes path is inlined
-func (z *decReaderSwitch) readbIO(s []byte) {
+func (z *decRd) readbIO(s []byte) {
 	if z.bufio {
 		z.bi.readb(s)
 	} else {
@@ -1194,33 +1194,33 @@ func (z *decReaderSwitch) readbIO(s []byte) {
 	}
 }
 
-func (z *decReaderSwitch) readn1() uint8 {
+func (z *decRd) readn1() uint8 {
 	if z.bytes {
 		return z.rb.readn1()
 	}
 	return z.readn1IO()
 }
-func (z *decReaderSwitch) readn1IO() uint8 {
+func (z *decRd) readn1IO() uint8 {
 	if z.bufio {
 		return z.bi.readn1()
 	}
 	return z.ri.readn1()
 }
 
-func (z *decReaderSwitch) skip(accept *bitset256) (token byte) {
+func (z *decRd) skip(accept *bitset256) (token byte) {
 	if z.bytes {
 		return z.rb.skip(accept)
 	}
 	return z.skipIO(accept)
 }
-func (z *decReaderSwitch) skipIO(accept *bitset256) (token byte) {
+func (z *decRd) skipIO(accept *bitset256) (token byte) {
 	if z.bufio {
 		return z.bi.skip(accept)
 	}
 	return z.ri.skip(accept)
 }
 
-func (z *decReaderSwitch) readTo(accept *bitset256) (out []byte) {
+func (z *decRd) readTo(accept *bitset256) (out []byte) {
 	if z.bytes {
 		return z.rb.readTo(accept)
 	}
@@ -1228,20 +1228,20 @@ func (z *decReaderSwitch) readTo(accept *bitset256) (out []byte) {
 }
 
 //go:noinline - fallback for io, ensures z.bytes path is inlined
-func (z *decReaderSwitch) readToIO(accept *bitset256) (out []byte) {
+func (z *decRd) readToIO(accept *bitset256) (out []byte) {
 	if z.bufio {
 		return z.bi.readTo(accept)
 	}
 	return z.ri.readTo(accept)
 }
-func (z *decReaderSwitch) readUntil(stop byte) (out []byte) {
+func (z *decRd) readUntil(stop byte) (out []byte) {
 	if z.bytes {
 		return z.rb.readUntil(stop)
 	}
 	return z.readUntilIO(stop)
 }
 
-func (z *decReaderSwitch) readUntilIO(stop byte) (out []byte) {
+func (z *decRd) readUntilIO(stop byte) (out []byte) {
 	if z.bufio {
 		return z.bi.readUntil(stop)
 	}

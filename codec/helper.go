@@ -1205,7 +1205,7 @@ func (noElemSeparators) recreateEncDriver(e encDriver) (v bool) { return }
 // Users must already slice the x completely, because we will not reslice.
 type bigenHelper struct {
 	x []byte // must be correctly sliced to appropriate len. slicing is a cost.
-	w *encWriterSwitch
+	w *encWr
 }
 
 func (z bigenHelper) writeUint16(v uint16) {

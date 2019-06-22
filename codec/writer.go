@@ -10,7 +10,7 @@ import "io"
 // encWriter abstracts writing to a byte array or to an io.Writer.
 //
 //
-// Deprecated: Use encWriterSwitch instead.
+// Deprecated: Use encWr instead.
 type encWriter interface {
 	writeb([]byte)
 	writestr(string)
@@ -108,7 +108,7 @@ func (z *ioEncWriter) writen2(b1, b2 byte) {
 // 	}
 // }
 
-//go:noinline - so *encWriterSwitch.XXX has the bytesEncAppender.XXX inlined
+//go:noinline - so *encWr.XXX has the bytesEncAppender.XXX inlined
 func (z *ioEncWriter) end() {
 	if z.fw != nil {
 		if err := z.fw.Flush(); err != nil {
@@ -325,7 +325,7 @@ func (z *bytesEncAppender) reset(in []byte, out *[]byte) {
 
 // --------------------------------------------------
 
-type encWriterSwitch struct {
+type encWr struct {
 	esep  bool // whether it has elem separators
 	bytes bool // encoding to []byte
 	isas  bool // whether e.as != nil
@@ -345,49 +345,49 @@ type encWriterSwitch struct {
 	// typ  entryType
 }
 
-func (z *encWriterSwitch) writeb(s []byte) {
+func (z *encWr) writeb(s []byte) {
 	if z.bytes {
 		z.wb.writeb(s)
 	} else {
 		z.wf.writeb(s)
 	}
 }
-func (z *encWriterSwitch) writeqstr(s string) {
+func (z *encWr) writeqstr(s string) {
 	if z.bytes {
 		z.wb.writeqstr(s)
 	} else {
 		z.wf.writeqstr(s)
 	}
 }
-func (z *encWriterSwitch) writestr(s string) {
+func (z *encWr) writestr(s string) {
 	if z.bytes {
 		z.wb.writestr(s)
 	} else {
 		z.wf.writestr(s)
 	}
 }
-func (z *encWriterSwitch) writen1(b1 byte) {
+func (z *encWr) writen1(b1 byte) {
 	if z.bytes {
 		z.wb.writen1(b1)
 	} else {
 		z.wf.writen1(b1)
 	}
 }
-func (z *encWriterSwitch) writen2(b1, b2 byte) {
+func (z *encWr) writen2(b1, b2 byte) {
 	if z.bytes {
 		z.wb.writen2(b1, b2)
 	} else {
 		z.wf.writen2(b1, b2)
 	}
 }
-func (z *encWriterSwitch) endErr() error {
+func (z *encWr) endErr() error {
 	if z.bytes {
 		return z.wb.endErr()
 	}
 	return z.wf.endErr()
 }
 
-func (z *encWriterSwitch) end() {
+func (z *encWr) end() {
 	if err := z.endErr(); err != nil {
 		panic(err)
 	}
@@ -396,7 +396,7 @@ func (z *encWriterSwitch) end() {
 /*
 
 // ------------------------------------------
-func (z *encWriterSwitch) writeb(s []byte) {
+func (z *encWr) writeb(s []byte) {
 	switch z.typ {
 	case entryTypeBytes:
 		z.wb.writeb(s)
@@ -406,7 +406,7 @@ func (z *encWriterSwitch) writeb(s []byte) {
 		z.wf.writeb(s)
 	}
 }
-func (z *encWriterSwitch) writestr(s string) {
+func (z *encWr) writestr(s string) {
 	switch z.typ {
 	case entryTypeBytes:
 		z.wb.writestr(s)
@@ -416,7 +416,7 @@ func (z *encWriterSwitch) writestr(s string) {
 		z.wf.writestr(s)
 	}
 }
-func (z *encWriterSwitch) writen1(b1 byte) {
+func (z *encWr) writen1(b1 byte) {
 	switch z.typ {
 	case entryTypeBytes:
 		z.wb.writen1(b1)
@@ -426,7 +426,7 @@ func (z *encWriterSwitch) writen1(b1 byte) {
 		z.wf.writen1(b1)
 	}
 }
-func (z *encWriterSwitch) writen2(b1, b2 byte) {
+func (z *encWr) writen2(b1, b2 byte) {
 	switch z.typ {
 	case entryTypeBytes:
 		z.wb.writen2(b1, b2)
@@ -436,7 +436,7 @@ func (z *encWriterSwitch) writen2(b1, b2 byte) {
 		z.wf.writen2(b1, b2)
 	}
 }
-func (z *encWriterSwitch) end() {
+func (z *encWr) end() {
 	switch z.typ {
 	case entryTypeBytes:
 		z.wb.end()
@@ -448,35 +448,35 @@ func (z *encWriterSwitch) end() {
 }
 
 // ------------------------------------------
-func (z *encWriterSwitch) writeb(s []byte) {
+func (z *encWr) writeb(s []byte) {
 	if z.bytes {
 		z.wb.writeb(s)
 	} else {
 		z.wi.writeb(s)
 	}
 }
-func (z *encWriterSwitch) writestr(s string) {
+func (z *encWr) writestr(s string) {
 	if z.bytes {
 		z.wb.writestr(s)
 	} else {
 		z.wi.writestr(s)
 	}
 }
-func (z *encWriterSwitch) writen1(b1 byte) {
+func (z *encWr) writen1(b1 byte) {
 	if z.bytes {
 		z.wb.writen1(b1)
 	} else {
 		z.wi.writen1(b1)
 	}
 }
-func (z *encWriterSwitch) writen2(b1, b2 byte) {
+func (z *encWr) writen2(b1, b2 byte) {
 	if z.bytes {
 		z.wb.writen2(b1, b2)
 	} else {
 		z.wi.writen2(b1, b2)
 	}
 }
-func (z *encWriterSwitch) end() {
+func (z *encWr) end() {
 	if z.bytes {
 		z.wb.end()
 	} else {

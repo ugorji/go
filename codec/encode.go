@@ -847,7 +847,7 @@ type Encoder struct {
 
 	// NOTE: Encoder shouldn't call it's write methods,
 	// as the handler MAY need to do some coordination.
-	// w *encWriterSwitch
+	// w *encWr
 
 	// bw *bufio.Writer
 	as encDriverAsis
@@ -857,7 +857,7 @@ type Encoder struct {
 	hh   Handle
 
 	// ---- cpu cache line boundary
-	encWriterSwitch
+	encWr
 
 	err error
 
@@ -906,19 +906,19 @@ func newEncoder(h Handle) *Encoder {
 	if useFinalizers {
 		runtime.SetFinalizer(e, (*Encoder).finalize)
 	}
-	// e.w = &e.encWriterSwitch
+	// e.w = &e.encWr
 	e.hh = h
 	e.esep = h.hasElemSeparators()
 
 	return e
 }
 
-func (e *Encoder) w() *encWriterSwitch {
-	return &e.encWriterSwitch
+func (e *Encoder) w() *encWr {
+	return &e.encWr
 }
 
 func (e *Encoder) resetCommon() {
-	// e.w = &e.encWriterSwitch
+	// e.w = &e.encWr
 	if e.e == nil || e.hh.recreateEncDriver(e.e) {
 		e.e = e.hh.newEncDriver(e)
 		e.as, e.isas = e.e.(encDriverAsis)
@@ -1502,7 +1502,7 @@ func (e *Encoder) sideEncode(v interface{}, bs *[]byte) {
 	e2.w().end()
 }
 
-func encStructFieldKey(encName string, ee encDriver, w *encWriterSwitch,
+func encStructFieldKey(encName string, ee encDriver, w *encWr,
 	keyType valueType, encNameAsciiAlphaNum bool, js bool) {
 	var m must
 	// use if-else-if, not switch (which compiles to binary-search)

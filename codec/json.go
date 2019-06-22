@@ -348,7 +348,7 @@ func (e *jsonEncDriverGeneric) EncodeUint(v uint64) {
 
 type jsonEncDriver struct {
 	noBuiltInTypes
-	w *encWriterSwitch
+	w *encWr
 	e *Encoder
 	h *JsonHandle
 
@@ -593,7 +593,7 @@ type jsonDecDriver struct {
 	noBuiltInTypes
 	d *Decoder
 	h *JsonHandle
-	r *decReaderSwitch
+	r *decRd
 
 	tok  uint8   // used to store the token read right after skipWhiteSpace
 	fnil bool    // found null

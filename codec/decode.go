@@ -1336,7 +1336,7 @@ type Decoder struct {
 
 	// NOTE: Decoder shouldn't call its read methods,
 	// as the handler MAY need to do some coordination.
-	// r *decReaderSwitch
+	// r *decRd
 
 	// bi *bufioDecReader
 	// cache the mapTypeId and sliceTypeId for faster comparisons
@@ -1348,7 +1348,7 @@ type Decoder struct {
 	hh   Handle
 
 	// ---- cpu cache line boundary?
-	decReaderSwitch
+	decRd
 
 	// ---- cpu cache line boundary?
 	n decNaked
@@ -1409,7 +1409,7 @@ func newDecoder(h Handle) *Decoder {
 	if useFinalizers {
 		runtime.SetFinalizer(d, (*Decoder).finalize)
 	}
-	// d.r = &d.decReaderSwitch
+	// d.r = &d.decRd
 	d.hh = h
 	d.be = h.isBinary()
 	// NOTE: do not initialize d.n here. It is lazily initialized in d.naked()
@@ -1431,12 +1431,12 @@ func newDecoder(h Handle) *Decoder {
 	return d
 }
 
-func (d *Decoder) r() *decReaderSwitch {
-	return &d.decReaderSwitch
+func (d *Decoder) r() *decRd {
+	return &d.decRd
 }
 
 func (d *Decoder) resetCommon() {
-	// d.r = &d.decReaderSwitch
+	// d.r = &d.decRd
 	d.d.reset()
 	d.err = nil
 	d.depth = 0
@@ -1640,7 +1640,7 @@ func (d *Decoder) mustDecode(v interface{}) {
 		d.d.atEndOfDecode()
 		// release
 		// if !d.h.ExplicitRelease {
-		// 	d.decReaderSwitch.release()
+		// 	d.decRd.release()
 		// 	// if d.jdec != nil {
 		// 	// 	d.jdec.release()
 		// 	// }
@@ -2189,7 +2189,7 @@ func (x decSliceHelper) ElemContainerState(index int) {
 	}
 }
 
-func decByteSlice(r *decReaderSwitch, clen, maxInitLen int, bs []byte) (bsOut []byte) {
+func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 	if clen == 0 {
 		return zeroByteSlice
 	}

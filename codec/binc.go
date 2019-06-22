@@ -102,7 +102,7 @@ type bincEncDriver struct {
 	encDriverNoopContainerWriter
 	e *Encoder
 	h *BincHandle
-	w *encWriterSwitch
+	w *encWr
 	m map[string]uint16 // symbols
 	b [16]byte          // scratch, used for encoding numbers - bigendian style
 	s uint16            // symbols sequencer
@@ -388,7 +388,7 @@ type bincDecDriver struct {
 
 	d      *Decoder
 	h      *BincHandle
-	r      *decReaderSwitch
+	r      *decRd
 	br     bool // bytes reader
 	bdRead bool
 	bd     byte

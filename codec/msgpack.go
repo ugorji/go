@@ -201,7 +201,7 @@ type msgpackEncDriver struct {
 	encDriverNoopContainerWriter
 	// encNoSeparator
 	e *Encoder
-	w *encWriterSwitch
+	w *encWr
 	h *MsgpackHandle
 	x [8]byte
 	// _ [3]uint64 // padding
@@ -425,7 +425,7 @@ func (e *msgpackEncDriver) writeContainerLen(ct msgpackContainerType, l int) {
 
 type msgpackDecDriver struct {
 	d *Decoder
-	r *decReaderSwitch
+	r *decRd
 	h *MsgpackHandle
 	// b      [scratchByteArrayLen]byte
 	bd     byte
