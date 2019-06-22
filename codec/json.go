@@ -133,72 +133,72 @@ type jsonEncDriverTypical struct {
 }
 
 func (e *jsonEncDriverTypical) WriteArrayStart(length int) {
-	e.w.writen1('[')
+	e.e.encWr.writen1('[')
 }
 
 func (e *jsonEncDriverTypical) WriteArrayElem() {
 	if e.e.c != containerArrayStart {
-		e.w.writen1(',')
+		e.e.encWr.writen1(',')
 	}
 }
 
 func (e *jsonEncDriverTypical) WriteArrayEnd() {
-	e.w.writen1(']')
+	e.e.encWr.writen1(']')
 }
 
 func (e *jsonEncDriverTypical) WriteMapStart(length int) {
-	e.w.writen1('{')
+	e.e.encWr.writen1('{')
 }
 
 func (e *jsonEncDriverTypical) WriteMapElemKey() {
 	if e.e.c != containerMapStart {
-		e.w.writen1(',')
+		e.e.encWr.writen1(',')
 	}
 }
 
 func (e *jsonEncDriverTypical) WriteMapElemValue() {
-	e.w.writen1(':')
+	e.e.encWr.writen1(':')
 }
 
 func (e *jsonEncDriverTypical) WriteMapEnd() {
-	e.w.writen1('}')
+	e.e.encWr.writen1('}')
 }
 
 func (e *jsonEncDriverTypical) EncodeBool(b bool) {
 	if b {
-		e.w.writeb(jsonLiteralTrue)
+		e.e.encWr.writeb(jsonLiteralTrue)
 	} else {
-		e.w.writeb(jsonLiteralFalse)
+		e.e.encWr.writeb(jsonLiteralFalse)
 	}
 }
 
 func (e *jsonEncDriverTypical) EncodeInt(v int64) {
-	e.w.writeb(strconv.AppendInt(e.b[:0], v, 10))
+	e.e.encWr.writeb(strconv.AppendInt(e.b[:0], v, 10))
 }
 
 func (e *jsonEncDriverTypical) EncodeUint(v uint64) {
-	e.w.writeb(strconv.AppendUint(e.b[:0], v, 10))
+	e.e.encWr.writeb(strconv.AppendUint(e.b[:0], v, 10))
 }
 
 func (e *jsonEncDriverTypical) EncodeFloat64(f float64) {
 	fmt, prec := jsonFloatStrconvFmtPrec64(f)
-	e.w.writeb(strconv.AppendFloat(e.b[:0], f, fmt, int(prec), 64))
-	// e.w.writeb(strconv.AppendFloat(e.b[:0], f, jsonFloatStrconvFmtPrec64(f), 64))
+	e.e.encWr.writeb(strconv.AppendFloat(e.b[:0], f, fmt, int(prec), 64))
+	// e.e.encWr.writeb(strconv.AppendFloat(e.b[:0], f, jsonFloatStrconvFmtPrec64(f), 64))
 }
 
 func (e *jsonEncDriverTypical) EncodeFloat32(f float32) {
 	fmt, prec := jsonFloatStrconvFmtPrec32(f)
-	e.w.writeb(strconv.AppendFloat(e.b[:0], float64(f), fmt, int(prec), 32))
+	e.e.encWr.writeb(strconv.AppendFloat(e.b[:0], float64(f), fmt, int(prec), 32))
 }
 
 // func (e *jsonEncDriverTypical) encodeFloat(f float64, bitsize uint8) {
 // 	fmt, prec := jsonFloatStrconvFmtPrec(f, bitsize == 32)
-// 	e.w.writeb(strconv.AppendFloat(e.b[:0], f, fmt, prec, int(bitsize)))
+// 	e.e.encWr.writeb(strconv.AppendFloat(e.b[:0], f, fmt, prec, int(bitsize)))
 // }
 
 // func (e *jsonEncDriverTypical) atEndOfEncode() {
 // 	if e.tw {
-// 		e.w.writen1(' ')
+// 		e.e.encWr.writen1(' ')
 // 	}
 // }
 
@@ -236,7 +236,7 @@ func (e *jsonEncDriverGeneric) WriteArrayStart(length int) {
 	if e.d {
 		e.dl++
 	}
-	e.w.writen1('[')
+	e.e.encWr.writen1('[')
 }
 
 func (e *jsonEncDriverGeneric) WriteArrayEnd() {
@@ -244,14 +244,14 @@ func (e *jsonEncDriverGeneric) WriteArrayEnd() {
 		e.dl--
 		e.writeIndent()
 	}
-	e.w.writen1(']')
+	e.e.encWr.writen1(']')
 }
 
 func (e *jsonEncDriverGeneric) WriteMapStart(length int) {
 	if e.d {
 		e.dl++
 	}
-	e.w.writen1('{')
+	e.e.encWr.writen1('{')
 }
 
 func (e *jsonEncDriverGeneric) WriteMapEnd() {
@@ -261,21 +261,21 @@ func (e *jsonEncDriverGeneric) WriteMapEnd() {
 			e.writeIndent()
 		}
 	}
-	e.w.writen1('}')
+	e.e.encWr.writen1('}')
 }
 
 func (e *jsonEncDriverGeneric) EncodeBool(b bool) {
 	if e.ks && e.e.c == containerMapKey {
 		if b {
-			e.w.writeb(jsonLiteralTrueQ)
+			e.e.encWr.writeb(jsonLiteralTrueQ)
 		} else {
-			e.w.writeb(jsonLiteralFalseQ)
+			e.e.encWr.writeb(jsonLiteralFalseQ)
 		}
 	} else {
 		if b {
-			e.w.writeb(jsonLiteralTrue)
+			e.e.encWr.writeb(jsonLiteralTrue)
 		} else {
-			e.w.writeb(jsonLiteralFalse)
+			e.e.encWr.writeb(jsonLiteralFalse)
 		}
 	}
 }
@@ -287,9 +287,9 @@ func (e *jsonEncDriverGeneric) encodeFloat(f float64, bitsize, fmt byte, prec in
 		// _ = e.b[:blen]
 		e.b[0] = '"'
 		e.b[blen-1] = '"'
-		e.w.writeb(e.b[:blen])
+		e.e.encWr.writeb(e.b[:blen])
 	} else {
-		e.w.writeb(strconv.AppendFloat(e.b[:0], f, fmt, int(prec), int(bitsize)))
+		e.e.encWr.writeb(strconv.AppendFloat(e.b[:0], f, fmt, int(prec), int(bitsize)))
 	}
 }
 
@@ -309,10 +309,10 @@ func (e *jsonEncDriverGeneric) EncodeInt(v int64) {
 		blen := 2 + len(strconv.AppendInt(e.b[1:1], v, 10))
 		e.b[0] = '"'
 		e.b[blen-1] = '"'
-		e.w.writeb(e.b[:blen])
+		e.e.encWr.writeb(e.b[:blen])
 		return
 	}
-	e.w.writeb(strconv.AppendInt(e.b[:0], v, 10))
+	e.e.encWr.writeb(strconv.AppendInt(e.b[:0], v, 10))
 }
 
 func (e *jsonEncDriverGeneric) EncodeUint(v uint64) {
@@ -320,10 +320,10 @@ func (e *jsonEncDriverGeneric) EncodeUint(v uint64) {
 		blen := 2 + len(strconv.AppendUint(e.b[1:1], v, 10))
 		e.b[0] = '"'
 		e.b[blen-1] = '"'
-		e.w.writeb(e.b[:blen])
+		e.e.encWr.writeb(e.b[:blen])
 		return
 	}
-	e.w.writeb(strconv.AppendUint(e.b[:0], v, 10))
+	e.e.encWr.writeb(strconv.AppendUint(e.b[:0], v, 10))
 }
 
 // func (e *jsonEncDriverGeneric) EncodeFloat32(f float32) {
@@ -337,9 +337,9 @@ func (e *jsonEncDriverGeneric) EncodeUint(v uint64) {
 // func (e *jsonEncDriverGeneric) atEndOfEncode() {
 // 	if e.tw {
 // 		if e.d {
-// 			e.w.writen1('\n')
+// 			e.e.encWr.writen1('\n')
 // 		} else {
-// 			e.w.writen1(' ')
+// 			e.e.encWr.writen1(' ')
 // 		}
 // 	}
 // }
@@ -348,11 +348,11 @@ func (e *jsonEncDriverGeneric) EncodeUint(v uint64) {
 
 type jsonEncDriver struct {
 	noBuiltInTypes
-	w *encWr
+	// w *encWr
 	e *Encoder
 	h *JsonHandle
 
-	bs []byte // for encoding strings
+	// bs []byte // for encoding strings
 	se interfaceExtWrapper
 
 	// ---- cpu cache line boundary?
@@ -366,7 +366,7 @@ type jsonEncDriver struct {
 
 	s *bitset256 // safe set for characters (taking h.HTMLAsIs into consideration)
 	// scratch: encode time, numbers, etc. Note: leave 1 byte for containerState
-	b [cacheLineSize - 16]byte // leave space for bs(len,cap), containerState
+	b [cacheLineSize + 16]byte // buffer for encoding numbers and time
 }
 
 // Keep writeIndent, WriteArrayElem, WriteMapElemKey, WriteMapElemValue
@@ -375,27 +375,27 @@ type jsonEncDriver struct {
 func (e *jsonEncDriver) getJsonEncDriver() *jsonEncDriver { return e }
 
 func (e *jsonEncDriver) writeIndent() {
-	e.w.writen1('\n')
+	e.e.encWr.writen1('\n')
 	x := int(e.di) * int(e.dl)
 	if e.di < 0 {
 		x = -x
 		for x > jsonSpacesOrTabsLen {
-			e.w.writeb(jsonTabs[:])
+			e.e.encWr.writeb(jsonTabs[:])
 			x -= jsonSpacesOrTabsLen
 		}
-		e.w.writeb(jsonTabs[:x])
+		e.e.encWr.writeb(jsonTabs[:x])
 	} else {
 		for x > jsonSpacesOrTabsLen {
-			e.w.writeb(jsonSpaces[:])
+			e.e.encWr.writeb(jsonSpaces[:])
 			x -= jsonSpacesOrTabsLen
 		}
-		e.w.writeb(jsonSpaces[:x])
+		e.e.encWr.writeb(jsonSpaces[:x])
 	}
 }
 
 func (e *jsonEncDriver) WriteArrayElem() {
 	if e.e.c != containerArrayStart {
-		e.w.writen1(',')
+		e.e.encWr.writen1(',')
 	}
 	if e.d {
 		e.writeIndent()
@@ -404,7 +404,7 @@ func (e *jsonEncDriver) WriteArrayElem() {
 
 func (e *jsonEncDriver) WriteMapElemKey() {
 	if e.e.c != containerMapStart {
-		e.w.writen1(',')
+		e.e.encWr.writen1(',')
 	}
 	if e.d {
 		e.writeIndent()
@@ -413,9 +413,9 @@ func (e *jsonEncDriver) WriteMapElemKey() {
 
 func (e *jsonEncDriver) WriteMapElemValue() {
 	if e.d {
-		e.w.writen2(':', ' ')
+		e.e.encWr.writen2(':', ' ')
 	} else {
-		e.w.writen1(':')
+		e.e.encWr.writen1(':')
 	}
 }
 
@@ -423,12 +423,12 @@ func (e *jsonEncDriver) EncodeNil() {
 	// We always encode nil as just null (never in quotes)
 	// This allows us to easily decode if a nil in the json stream
 	// ie if initial token is n.
-	e.w.writeb(jsonLiteralNull)
+	e.e.encWr.writeb(jsonLiteralNull)
 
 	// if e.h.MapKeyAsString && e.e.c == containerMapKey {
-	// 	e.w.writeb(jsonLiterals[jsonLitNullQ : jsonLitNullQ+6])
+	// 	e.e.encWr.writeb(jsonLiterals[jsonLitNullQ : jsonLitNullQ+6])
 	// } else {
-	// 	e.w.writeb(jsonLiterals[jsonLitNull : jsonLitNull+4])
+	// 	e.e.encWr.writeb(jsonLiterals[jsonLitNull : jsonLitNull+4])
 	// }
 }
 
@@ -442,9 +442,9 @@ func (e *jsonEncDriver) EncodeTime(t time.Time) {
 		// b := t.AppendFormat(e.b[1:1], time.RFC3339Nano)
 		b := fmtTime(t, e.b[1:1])
 		e.b[len(b)+1] = '"'
-		e.w.writeb(e.b[:len(b)+2])
+		e.e.encWr.writeb(e.b[:len(b)+2])
 	}
-	// v, err := t.MarshalJSON(); if err != nil { e.e.error(err) } e.w.writeb(v)
+	// v, err := t.MarshalJSON(); if err != nil { e.e.error(err) } e.e.encWr.writeb(v)
 }
 
 func (e *jsonEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext) {
@@ -483,25 +483,34 @@ func (e *jsonEncDriver) EncodeStringBytesRaw(v []byte) {
 	}
 
 	slen := base64.StdEncoding.EncodedLen(len(v)) + 2
-	if cap(e.bs) >= slen {
-		e.bs = e.bs[:slen]
+	var bs []byte
+	if len(e.b) < slen {
+		bs = e.e.blist.get(slen)
 	} else {
-		e.bs = make([]byte, slen)
+		bs = e.b[:slen]
 	}
-	e.bs[0] = '"'
-	base64.StdEncoding.Encode(e.bs[1:], v)
-	e.bs[slen-1] = '"'
-	e.w.writeb(e.bs)
+	// if cap(e.bs) >= slen {
+	// 	e.bs = e.bs[:slen]
+	// } else {
+	// 	e.bs = make([]byte, slen)
+	// }
+	bs[0] = '"'
+	base64.StdEncoding.Encode(bs[1:], v)
+	bs[slen-1] = '"'
+	e.e.encWr.writeb(bs)
+	if len(e.b) < slen {
+		e.e.blist.put(bs)
+	}
 }
 
 func (e *jsonEncDriver) EncodeAsis(v []byte) {
-	e.w.writeb(v)
+	e.e.encWr.writeb(v)
 }
 
 func (e *jsonEncDriver) quoteStr(s string) {
 	// adapted from std pkg encoding/json
 	const hex = "0123456789abcdef"
-	w := e.w
+	w := &e.e.encWr
 	w.writen1('"')
 	var start int
 	for i := 0; i < len(s); {
@@ -576,15 +585,15 @@ func (e *jsonEncDriver) quoteStr(s string) {
 
 func (e *jsonEncDriver) atEndOfEncode() {
 	// if e.e.c == 0 { // scalar written, output space
-	// 	e.w.writen1(' ')
+	// 	e.e.encWr.writen1(' ')
 	// } else if e.h.TermWhitespace { // container written, output new-line
-	// 	e.w.writen1('\n')
+	// 	e.e.encWr.writen1('\n')
 	// }
 	if e.h.TermWhitespace {
 		if e.e.c == 0 { // scalar written, output space
-			e.w.writen1(' ')
+			e.e.encWr.writen1(' ')
 		} else { // container written, output new-line
-			e.w.writen1('\n')
+			e.e.encWr.writen1('\n')
 		}
 	}
 }
@@ -593,7 +602,7 @@ type jsonDecDriver struct {
 	noBuiltInTypes
 	d *Decoder
 	h *JsonHandle
-	r *decRd
+	// r *decRd
 
 	tok  uint8   // used to store the token read right after skipWhiteSpace
 	fnil bool    // found null
@@ -626,7 +635,7 @@ type jsonDecDriver struct {
 
 func (d *jsonDecDriver) uncacheRead() {
 	if d.tok != 0 {
-		d.r.unreadn1()
+		d.d.decRd.unreadn1()
 		d.tok = 0
 	}
 }
@@ -723,7 +732,7 @@ func (d *jsonDecDriver) ReadMapEnd() {
 
 // func (d *jsonDecDriver) readLit(length, fromIdx uint8) {
 // 	// length here is always less than 8 (literals are: null, true, false)
-// 	bs := d.r.readx(int(length))
+// 	bs := d.d.decRd.readx(int(length))
 // 	d.tok = 0
 // 	if jsonValidateSymbols && !bytes.Equal(bs, jsonLiterals[fromIdx:fromIdx+length]) {
 // 		d.d.errorf("expecting %s: got %s", jsonLiterals[fromIdx:fromIdx+length], bs)
@@ -731,7 +740,7 @@ func (d *jsonDecDriver) ReadMapEnd() {
 // }
 
 func (d *jsonDecDriver) readLit4True() {
-	bs := d.r.readx(3)
+	bs := d.d.decRd.readx(3)
 	d.tok = 0
 	if jsonValidateSymbols && !bytes.Equal(bs, jsonLiteral4True) {
 		d.d.errorf("expecting %s: got %s", jsonLiteral4True, bs)
@@ -739,7 +748,7 @@ func (d *jsonDecDriver) readLit4True() {
 }
 
 func (d *jsonDecDriver) readLit4False() {
-	bs := d.r.readx(4)
+	bs := d.d.decRd.readx(4)
 	d.tok = 0
 	if jsonValidateSymbols && !bytes.Equal(bs, jsonLiteral4False) {
 		d.d.errorf("expecting %s: got %s", jsonLiteral4False, bs)
@@ -747,7 +756,7 @@ func (d *jsonDecDriver) readLit4False() {
 }
 
 func (d *jsonDecDriver) readLit4Null() {
-	bs := d.r.readx(3)
+	bs := d.d.decRd.readx(3)
 	d.tok = 0
 	if jsonValidateSymbols && !bytes.Equal(bs, jsonLiteral4Null) {
 		d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs)
@@ -758,7 +767,7 @@ func (d *jsonDecDriver) readLit4Null() {
 func (d *jsonDecDriver) advance() {
 	if d.tok == 0 {
 		d.fnil = false
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+		d.tok = d.d.decRd.skip(&jsonCharWhitespaceSet)
 	}
 }
 
@@ -785,7 +794,7 @@ func (d *jsonDecDriver) DecodeBool() (v bool) {
 	}
 	fquot := d.d.c == containerMapKey && d.tok == '"'
 	if fquot {
-		d.tok = d.r.readn1()
+		d.tok = d.d.decRd.readn1()
 	}
 	switch d.tok {
 	case 'f':
@@ -799,7 +808,7 @@ func (d *jsonDecDriver) DecodeBool() (v bool) {
 		// v = false // "unreachable"
 	}
 	if fquot {
-		d.r.readn1()
+		d.d.decRd.readn1()
 	}
 	return
 }
@@ -844,13 +853,13 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 	d.advance()
 	if d.tok == '"' {
-		bs = d.r.readUntil('"')
+		bs = d.d.decRd.readUntil('"')
 		bs = bs[:len(bs)-1]
 	} else if d.tok == 'n' {
 		d.readLit4Null()
 	} else {
-		d.r.unreadn1()
-		bs = d.r.readTo(&jsonNumSet)
+		d.d.decRd.unreadn1()
+		bs = d.d.decRd.readTo(&jsonNumSet)
 	}
 	// xdebugf("decNumBytes: %s", bs)
 	d.tok = 0
@@ -983,14 +992,14 @@ func (d *jsonDecDriver) decBytesFromArray(bs []byte) []byte {
 	}
 	d.tok = 0
 	bs = append(bs, uint8(d.DecodeUint64()))
-	d.tok = d.r.skip(&jsonCharWhitespaceSet)
+	d.tok = d.d.decRd.skip(&jsonCharWhitespaceSet)
 	for d.tok != ']' {
 		if d.tok != ',' {
 			d.d.errorf("read array element - expect char '%c' but got char '%c'", ',', d.tok)
 		}
 		d.tok = 0
 		bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
-		d.tok = d.r.skip(&jsonCharWhitespaceSet)
+		d.tok = d.d.decRd.skip(&jsonCharWhitespaceSet)
 	}
 	d.tok = 0
 	return bs
@@ -1099,7 +1108,7 @@ func (d *jsonDecDriver) readString() (bs []byte) {
 		return
 	}
 
-	bs = d.r.readUntil('"')
+	bs = d.d.decRd.readUntil('"')
 	bs = bs[:len(bs)-1]
 	d.tok = 0
 	return
@@ -1114,7 +1123,7 @@ func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
 	d.tok = 0
 
 	// xdebug2f("start")
-	var cs = d.r.readUntil('"')
+	var cs = d.d.decRd.readUntil('"')
 	// xdebugf("appendStringAsBytes: len: %d, cs: %s", len(cs), cs)
 
 	// append on each byte seen can be expensive, so we just
@@ -1131,7 +1140,7 @@ func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
 			// d.bp.appends(cs[cursor:])
 			// d.bp.ensureExtraCap(int(cslen - cursor))
 			d.buf = append(d.buf, cs[cursor:]...)
-			cs = d.r.readUntil('"')
+			cs = d.d.decRd.readUntil('"')
 			// xdebugf("appendStringAsBytes: len: %d, cs: %s", len(cs), cs)
 			cslen = uint(len(cs))
 			i, cursor = 0, 0
@@ -1481,7 +1490,7 @@ func (h *JsonHandle) newDecDriver(d *Decoder) decDriver {
 }
 
 func (e *jsonEncDriver) reset() {
-	e.w = e.e.w()
+	// e.w = e.e.w()
 	// (htmlasis && jsonCharSafeSet.isset(b)) || jsonCharHtmlSafeSet.isset(b)
 	if e.h.HTMLCharsAsIs {
 		e.s = &jsonCharSafeSet
@@ -1489,15 +1498,15 @@ func (e *jsonEncDriver) reset() {
 		e.s = &jsonCharHtmlSafeSet
 	}
 	e.se.InterfaceExt = e.h.RawBytesExt
-	if e.bs == nil {
-		e.bs = e.b[:0]
-	} else {
-		e.bs = e.bs[:0]
-	}
+	// if e.bs == nil {
+	// 	e.bs = e.b[:0]
+	// } else {
+	// 	e.bs = e.bs[:0]
+	// }
 }
 
 func (d *jsonDecDriver) reset() {
-	d.r = d.d.r()
+	// d.r = d.d.r()
 	d.se.InterfaceExt = d.h.RawBytesExt
 	d.buf = d.d.blist.check(d.buf, 256)[:0]
 	// if d.buf != nil {

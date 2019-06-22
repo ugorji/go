@@ -99,16 +99,16 @@ func bincdesc(vd, vs byte) string {
 }
 
 type bincEncDriver struct {
+	noBuiltInTypes
 	encDriverNoopContainerWriter
 	e *Encoder
 	h *BincHandle
 	w *encWr
 	m map[string]uint16 // symbols
-	b [16]byte          // scratch, used for encoding numbers - bigendian style
+	b [8]byte           // scratch, used for encoding numbers - bigendian style
 	s uint16            // symbols sequencer
 	// c containerState
 	// encDriverTrackContainerWriter
-	noBuiltInTypes
 	// encNoSeparator
 	// _ [1]uint64 // padding
 }
@@ -404,7 +404,7 @@ type bincDecDriver struct {
 	// noStreamingCodec
 	// decNoSeparator
 
-	b [3 * 8]byte // scratch
+	b [8]byte // scratch for decoding numbers - big endian style
 }
 
 func (d *bincDecDriver) readNextBd() {

@@ -89,6 +89,14 @@ package codec
 //
 // Also, GC is much better now, eliminating some of the reasons to use a shared pool structure.
 // Instead, the short-lived objects use free-lists that live as long as the object exists.
+//
+// ------------------------------------------
+// Be careful about pointer-chasing, as it has a clear impact on performance.
+// To alleviate this:
+//    - Prefer non-pointer values in a struct field
+//    - Refer to these directly within helper classes
+//      e.g. json.go refers directly to d.d.decRd
+//
 
 import (
 	"bytes"

@@ -10,7 +10,6 @@ import (
 	"io"
 	"math"
 	"reflect"
-	"runtime"
 	"strconv"
 	"time"
 )
@@ -1407,7 +1406,7 @@ func newDecoder(h Handle) *Decoder {
 	d := &Decoder{h: basicHandle(h), err: errDecoderNotInitialized}
 	d.bytes = true
 	if useFinalizers {
-		runtime.SetFinalizer(d, (*Decoder).finalize)
+		// runtime.SetFinalizer(d, (*Decoder).finalize)
 	}
 	// d.r = &d.decRd
 	d.hh = h
@@ -1657,10 +1656,10 @@ func (d *Decoder) mustDecode(v interface{}) {
 // 	}
 // }
 
-//go:noinline -- as it is run by finalizer
-func (d *Decoder) finalize() {
-	d.Release()
-}
+// //go:noinline -- as it is run by finalizer
+// func (d *Decoder) finalize() {
+// 	d.Release()
+// }
 
 // Release releases shared (pooled) resources.
 //
@@ -1668,6 +1667,9 @@ func (d *Decoder) finalize() {
 // are released instantly for use by subsequently created Decoders.
 //
 // By default, Release() is automatically called unless the option ExplicitRelease is set.
+//
+// Deprecated: Release is a no-op as pooled resources are not used with an Decoder.
+// This method is kept for compatibility reasons only.
 func (d *Decoder) Release() {
 	// if d.bi != nil {
 	// 	d.bi.release()

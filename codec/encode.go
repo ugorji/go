@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"runtime"
 	"sort"
 	"strconv"
 	"time"
@@ -904,7 +903,7 @@ func newEncoder(h Handle) *Encoder {
 	e := &Encoder{h: basicHandle(h), err: errEncoderNotInitialized}
 	e.bytes = true
 	if useFinalizers {
-		runtime.SetFinalizer(e, (*Encoder).finalize)
+		// runtime.SetFinalizer(e, (*Encoder).finalize)
 	}
 	// e.w = &e.encWr
 	e.hh = h
@@ -1140,9 +1139,9 @@ func (e *Encoder) mustEncode(v interface{}) {
 	if e.calls == 0 {
 		e.e.atEndOfEncode()
 		e.w().end()
-		if !e.h.ExplicitRelease {
-			e.Release()
-		}
+		// if !e.h.ExplicitRelease {
+		// 	e.Release()
+		// }
 	}
 }
 
@@ -1156,15 +1155,18 @@ func (e *Encoder) mustEncode(v interface{}) {
 // 	}
 // }
 
-//go:noinline -- as it is run by finalizer
-func (e *Encoder) finalize() {
-	e.Release()
-}
+// //go:noinline -- as it is run by finalizer
+// func (e *Encoder) finalize() {
+// 	e.Release()
+// }
 
 // Release releases shared (pooled) resources.
 //
 // It is important to call Release() when done with an Encoder, so those resources
 // are released instantly for use by subsequently created Encoders.
+//
+// Deprecated: Release is a no-op as pooled resources are not used with an Encoder.
+// This method is kept for compatibility reasons only.
 func (e *Encoder) Release() {
 	// if e.wf != nil {
 	// 	e.wf.release()
