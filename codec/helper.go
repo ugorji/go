@@ -151,10 +151,10 @@ const (
 	//    runtime.SetFinalizer(d, (*Decoder).Release)
 	useFinalizers = false
 
-	// usePool controls whether we use sync.Pool or not.
-	//
-	// sync.Pool can help manage memory use, but it may come at a performance cost.
-	usePool = false
+	// // usePool controls whether we use sync.Pool or not.
+	// //
+	// // sync.Pool can help manage memory use, but it may come at a performance cost.
+	// usePool = false
 
 	// xdebug controls whether xdebugf prints any output
 	xdebug = true

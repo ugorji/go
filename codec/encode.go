@@ -666,20 +666,26 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	var rvk = mapAddressableRV(f.ti.key, ktypeKind)
 
 	it := mapRange(rv, rvk, rvv, true)
+	var vx reflect.Value
 	for it.Next() {
 		e.mapElemKey()
+		if vx = it.Key(); !vx.IsValid() {
+			vx = rvk
+		}
 		if keyTypeIsString {
 			if e.h.StringToRaw {
-				e.e.EncodeStringBytesRaw(bytesView(it.Key().String()))
+				e.e.EncodeStringBytesRaw(bytesView(vx.String()))
 			} else {
-				e.e.EncodeStringEnc(cUTF8, it.Key().String())
+				e.e.EncodeStringEnc(cUTF8, vx.String())
 			}
 		} else {
-			e.encodeValue(it.Key(), keyFn)
+			e.encodeValue(vx, keyFn)
 		}
 		e.mapElemValue()
-		iv := it.Value()
-		e.encodeValue(iv, valFn)
+		if vx = it.Value(); !vx.IsValid() {
+			vx = rvv
+		}
+		e.encodeValue(vx, valFn)
 	}
 	it.Done()
 

@@ -9,7 +9,6 @@ package codec
 
 import (
 	"reflect"
-	"sync"
 	"sync/atomic"
 	"time"
 	"unsafe"
@@ -684,8 +683,8 @@ type unsafeMapHashIter struct {
 // }
 
 type unsafeMapIter struct {
-	it               *unsafeMapHashIter
-	k, v             reflect.Value
+	it *unsafeMapHashIter
+	// k, v             reflect.Value
 	mtyp, ktyp, vtyp unsafe.Pointer
 	mptr, kptr, vptr unsafe.Pointer
 	kisref, visref   bool
@@ -695,15 +694,15 @@ type unsafeMapIter struct {
 	// _ [2]uint64 // padding (cache-aligned)
 }
 
-// pprof show that 13% of cbor encode time taken in
-// allocation of unsafeMapIter.
-// Options are to try to alloc on stack, or pool it.
-// Easiest to pool it.
-const unsafeMapIterUsePool = false
+// // pprof show that 13% of cbor encode time taken in
+// // allocation of unsafeMapIter.
+// // Options are to try to alloc on stack, or pool it.
+// // Easiest to pool it.
+// const unsafeMapIterUsePool = false
 
-var unsafeMapIterPool = sync.Pool{
-	New: func() interface{} { return new(unsafeMapIter) },
-}
+// var unsafeMapIterPool = sync.Pool{
+// 	New: func() interface{} { return new(unsafeMapIter) },
+// }
 
 func (t *unsafeMapIter) Next() (r bool) {
 	if t == nil || t.done {
@@ -725,22 +724,23 @@ func (t *unsafeMapIter) Next() (r bool) {
 	return true
 }
 
-func (t *unsafeMapIter) Key() reflect.Value {
-	return t.k
+func (t *unsafeMapIter) Key() (r reflect.Value) {
+	// return t.k
+	return
 }
 
 func (t *unsafeMapIter) Value() (r reflect.Value) {
-	if t.mapvalues {
-		return t.v
-	}
+	// if t.mapvalues {
+	// 	return t.v
+	// }
 	return
 }
 
 func (t *unsafeMapIter) Done() {
-	if unsafeMapIterUsePool && t != nil {
-		*t = unsafeMapIter{}
-		unsafeMapIterPool.Put(t)
-	}
+	// if unsafeMapIterUsePool && t != nil {
+	// 	*t = unsafeMapIter{}
+	// 	unsafeMapIterPool.Put(t)
+	// }
 }
 
 func unsafeMapSet(p, ptyp, p2 unsafe.Pointer, isref bool) {
@@ -763,13 +763,14 @@ func mapRange(m, k, v reflect.Value, mapvalues bool) (t *unsafeMapIter) {
 		// return &unsafeMapIter{done: true}
 		return
 	}
-	if unsafeMapIterUsePool {
-		t = unsafeMapIterPool.Get().(*unsafeMapIter)
-	} else {
-		t = new(unsafeMapIter)
-	}
-	t.k = k
-	t.v = v
+	// if unsafeMapIterUsePool {
+	// 	t = unsafeMapIterPool.Get().(*unsafeMapIter)
+	// } else {
+	//	t = new(unsafeMapIter)
+	// }
+	t = new(unsafeMapIter)
+	// t.k = k
+	// t.v = v
 	t.mapvalues = mapvalues
 
 	var urv *unsafeReflectValue

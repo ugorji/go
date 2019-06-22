@@ -3262,14 +3262,22 @@ func TestMapRangeIndex(t *testing.T) {
 		m1c[k] = *v
 	}
 
+	fnrv := func(r1, r2 reflect.Value) reflect.Value {
+		if r1.IsValid() {
+			return r1
+		}
+		return r2
+	}
+
+	// var vx reflect.Value
+
 	mt := reflect.TypeOf(m1)
-	it := mapRange(rv4i(m1),
-		mapAddressableRV(mt.Key(), mt.Key().Kind()),
-		mapAddressableRV(mt.Elem(), mt.Elem().Kind()),
-		true)
+	rvk := mapAddressableRV(mt.Key(), mt.Key().Kind())
+	rvv := mapAddressableRV(mt.Elem(), mt.Elem().Kind())
+	it := mapRange(rv4i(m1), rvk, rvv, true)
 	for it.Next() {
-		k := it.Key().Interface().(string)
-		v := it.Value().Interface().(*T)
+		k := fnrv(it.Key(), rvk).Interface().(string)
+		v := fnrv(it.Value(), rvv).Interface().(*T)
 		testDeepEqualErr(m1[k], v, t, "map-key-eq-it-key")
 		if _, ok := m1c[k]; ok {
 			delete(m1c, k)
@@ -3293,13 +3301,12 @@ func TestMapRangeIndex(t *testing.T) {
 	}
 
 	mt = reflect.TypeOf(m2)
-	it = mapRange(rv4i(m2),
-		mapAddressableRV(mt.Key(), mt.Key().Kind()),
-		mapAddressableRV(mt.Elem(), mt.Elem().Kind()),
-		true)
+	rvk = mapAddressableRV(mt.Key(), mt.Key().Kind())
+	rvv = mapAddressableRV(mt.Elem(), mt.Elem().Kind())
+	it = mapRange(rv4i(m2), rvk, rvv, true)
 	for it.Next() {
-		k := it.Key().Interface().(*T)
-		v := it.Value().Interface().(T)
+		k := fnrv(it.Key(), rvk).Interface().(*T)
+		v := fnrv(it.Value(), rvv).Interface().(T)
 		testDeepEqualErr(m2[k], v, t, "map-key-eq-it-key")
 		if _, ok := m2c[k]; ok {
 			delete(m2c, k)
