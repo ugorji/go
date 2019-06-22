@@ -312,7 +312,10 @@ func (z *bytesEncAppender) writen1(b1 byte) {
 	z.b = append(z.b, b1)
 }
 func (z *bytesEncAppender) writen2(b1, b2 byte) {
-	z.b = append(z.b, b1, b2)
+	z.b = append(z.b, b1, b2) // cost: 81
+	// z.b = append(z.b, b1, b2, b1, b2, b1, b2) // cost: 85
+	// z.b = append(z.b, []byte{b1, b2}...) // cost: 83
+	// z.b = append(append(z.b, b1), b2) // cost 82
 }
 func (z *bytesEncAppender) endErr() error {
 	*(z.out) = z.b

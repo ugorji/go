@@ -196,6 +196,18 @@ func (z *ioDecReader) UnreadByte() (err error) {
 	return
 }
 
+func (z *ioDecReader) readn3() (bs [3]byte) {
+	z.readb(bs[:])
+	// copy(bs[:], z.readx(3))
+	return
+}
+
+func (z *ioDecReader) readn4() (bs [4]byte) {
+	z.readb(bs[:])
+	// copy(bs[:], z.readx(4))
+	return
+}
+
 func (z *ioDecReader) readx(n uint) (bs []byte) {
 	if n == 0 {
 		return
@@ -389,7 +401,6 @@ func (z *bufioDecReader) readb(p []byte) {
 	}
 }
 
-//go:noinline - fallback when z.buf is consumed
 func (z *bufioDecReader) readbFill(p0 []byte, n uint) {
 	// at this point, there's nothing in z.buf to read (z.buf is fully consumed)
 	p := p0[n:]
@@ -465,6 +476,17 @@ func (z *bufioDecReader) unreadn1() {
 	if z.trb {
 		z.tr = z.tr[:len(z.tr)-1]
 	}
+}
+
+func (z *bufioDecReader) readn3() (bs [3]byte) {
+	z.readb(bs[:])
+	return
+}
+
+func (z *bufioDecReader) readn4() (bs [4]byte) {
+	z.readb(bs[:])
+	// copy(bs[:], z.readx(4))
+	return
 }
 
 func (z *bufioDecReader) readx(n uint) (bs []byte) {
@@ -816,12 +838,38 @@ func (z *bytesDecReader) readb(bs []byte) {
 }
 
 func (z *bytesDecReader) readn1() (v uint8) {
-	if z.c == uint(len(z.b)) {
+	if z.c >= uint(len(z.b)) {
 		panic(io.EOF)
 	}
 	v = z.b[z.c]
 	z.c++
 	// z.a--
+	return
+	// return
+}
+
+func (z *bytesDecReader) readn3() (bs [3]byte) {
+	if z.c+2 >= uint(len(z.b)) {
+		panic(io.EOF)
+	}
+	// copy(bs[:], z.b[z.c:z.c+3])
+	bs[2] = z.b[z.c+2]
+	bs[1] = z.b[z.c+1]
+	bs[0] = z.b[z.c]
+	z.c += 3
+	return
+}
+
+func (z *bytesDecReader) readn4() (bs [4]byte) {
+	if z.c+3 >= uint(len(z.b)) {
+		panic(io.EOF)
+	}
+	// copy(bs[:], z.b[z.c:z.c+4])
+	bs[3] = z.b[z.c+3]
+	bs[2] = z.b[z.c+2]
+	bs[1] = z.b[z.c+1]
+	bs[0] = z.b[z.c]
+	z.c += 4
 	return
 }
 
@@ -1164,6 +1212,32 @@ func (z *decRd) unreadn1() {
 	}
 }
 
+func (z *decRd) readn3() [3]byte {
+	if z.bytes {
+		return z.rb.readn3()
+	}
+	return z.readn3IO()
+}
+func (z *decRd) readn3IO() [3]byte {
+	if z.bufio {
+		return z.bi.readn3()
+	}
+	return z.ri.readn3()
+}
+
+func (z *decRd) readn4() [4]byte {
+	if z.bytes {
+		return z.rb.readn4()
+	}
+	return z.readn4IO()
+}
+func (z *decRd) readn4IO() [4]byte {
+	if z.bufio {
+		return z.bi.readn4()
+	}
+	return z.ri.readn4()
+}
+
 func (z *decRd) readx(n uint) []byte {
 	if z.bytes {
 		return z.rb.readx(n)
@@ -1185,7 +1259,6 @@ func (z *decRd) readb(s []byte) {
 	}
 }
 
-//go:noinline - fallback for io, ensures z.bytes path is inlined
 func (z *decRd) readbIO(s []byte) {
 	if z.bufio {
 		z.bi.readb(s)
@@ -1226,21 +1299,19 @@ func (z *decRd) readTo(accept *bitset256) (out []byte) {
 	}
 	return z.readToIO(accept)
 }
-
-//go:noinline - fallback for io, ensures z.bytes path is inlined
 func (z *decRd) readToIO(accept *bitset256) (out []byte) {
 	if z.bufio {
 		return z.bi.readTo(accept)
 	}
 	return z.ri.readTo(accept)
 }
+
 func (z *decRd) readUntil(stop byte) (out []byte) {
 	if z.bytes {
 		return z.rb.readUntil(stop)
 	}
 	return z.readUntilIO(stop)
 }
-
 func (z *decRd) readUntilIO(stop byte) (out []byte) {
 	if z.bufio {
 		return z.bi.readUntil(stop)
