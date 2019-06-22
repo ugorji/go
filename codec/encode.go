@@ -862,11 +862,12 @@ type Encoder struct {
 	err error
 
 	// ---- cpu cache line boundary
+
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 	ci set // holds set of addresses found during an encoding (if CheckCircularRef=true)
 	// cidef [1]interface{} // default ci
 
-	b [(5 * 8)]byte // for encoding chan byte, (non-addressable) [N]byte, etc
+	b [(7 * 8)]byte // for encoding chan byte, (non-addressable) [N]byte, etc
 
 	slist sfiRvFreelist
 	blist bytesFreelist

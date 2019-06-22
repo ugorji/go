@@ -114,7 +114,7 @@ import (
 )
 
 const (
-	scratchByteArrayLen = 32
+	scratchByteArrayLen = 64
 	// initCollectionCap   = 16 // 32 is defensive. 16 is preferred.
 
 	// Support encoding.(Binary|Text)(Unm|M)arshaler.
