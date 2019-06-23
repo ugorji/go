@@ -44,7 +44,6 @@ type encDriver interface {
 
 	reset()
 	atEndOfEncode()
-	// encoder() *Encoder
 }
 
 type encDriverContainerTracker interface {
@@ -908,9 +907,15 @@ func newEncoder(h Handle) *Encoder {
 	}
 	// e.w = &e.encWr
 	e.hh = h
-	e.esep = h.hasElemSeparators()
+	// e.esep = h.hasElemSeparators()
 	e.e = e.hh.newEncDriver(e)
 	e.as, e.isas = e.e.(encDriverAsis)
+	e.be = e.hh.isBinary()
+	e.jenc = nil
+	_, e.js = e.hh.(*JsonHandle)
+	if e.js {
+		e.jenc = e.e.(*jsonEncDriver)
+	}
 	return e
 }
 
@@ -919,26 +924,12 @@ func (e *Encoder) w() *encWr {
 }
 
 func (e *Encoder) resetCommon() {
-	// e.w = &e.encWr
-	// if e.e == nil || e.hh.recreateEncDriver(e.e) {
-	// 	e.e = e.hh.newEncDriver(e)
-	// 	e.as, e.isas = e.e.(encDriverAsis)
-	// 	// e.cr, _ = e.e.(containerStateRecv)
-	// }
-
+	e.e.reset()
 	if e.ci == nil {
 		// e.ci = (set)(e.cidef[:0])
 	} else {
 		e.ci = e.ci[:0]
 	}
-
-	e.be = e.hh.isBinary()
-	e.jenc = nil
-	_, e.js = e.hh.(*JsonHandle)
-	if e.js {
-		e.jenc = e.e.(*jsonEncDriver)
-	}
-	e.e.reset()
 	e.c = 0
 	e.err = nil
 }

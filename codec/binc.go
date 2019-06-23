@@ -962,7 +962,7 @@ func (d *bincDecDriver) DecodeNaked() {
 type BincHandle struct {
 	BasicHandle
 	binaryEncodingType
-	noElemSeparators
+	// noElemSeparators
 
 	// AsSymbols defines what should be encoded as symbols.
 	//

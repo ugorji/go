@@ -1052,7 +1052,7 @@ type Handle interface {
 	newEncDriver(w *Encoder) encDriver
 	newDecDriver(r *Decoder) decDriver
 	isBinary() bool
-	hasElemSeparators() bool
+	// hasElemSeparators() bool
 	// IsBuiltinType(rtid uintptr) bool
 }
 
@@ -1209,10 +1209,10 @@ func (noBuiltInTypes) DecodeBuiltin(rt uintptr, v interface{}) {}
 // func (noStreamingCodec) CheckBreak() bool { return false }
 // func (noStreamingCodec) hasElemSeparators() bool { return false }
 
-type noElemSeparators struct{}
+// type noElemSeparators struct{}
 
-func (noElemSeparators) hasElemSeparators() (v bool)            { return }
-func (noElemSeparators) recreateEncDriver(e encDriver) (v bool) { return }
+// func (noElemSeparators) hasElemSeparators() (v bool)            { return }
+// func (noElemSeparators) recreateEncDriver(e encDriver) (v bool) { return }
 
 // bigenHelper.
 // Users must already slice the x completely, because we will not reslice.

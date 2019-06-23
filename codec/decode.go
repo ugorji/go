@@ -1423,7 +1423,7 @@ func newDecoder(h Handle) *Decoder {
 	if d.js {
 		d.jsms = jh.MapKeyAsString
 	}
-	d.esep = d.hh.hasElemSeparators()
+	// d.esep = d.hh.hasElemSeparators()
 	if d.h.InternString {
 		d.is = make(map[string]string, 32)
 	}

@@ -614,7 +614,7 @@ func (d *simpleDecDriver) DecodeNaked() {
 // The full spec will be published soon.
 type SimpleHandle struct {
 	binaryEncodingType
-	noElemSeparators
+	// noElemSeparators
 	BasicHandle
 	// EncZeroValuesAsNil says to encode zero values for numbers, bool, string, etc as nil
 	EncZeroValuesAsNil bool

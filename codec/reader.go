@@ -1008,8 +1008,9 @@ func (z *bytesDecReader) stopTrack() (bs []byte) {
 // --------------
 
 type decRd struct {
-	esep     bool // has elem separators
-	mtr, str bool // whether maptype or slicetype are known types
+	// esep     bool // has elem separators
+	mtr bool // is maptype a known type?
+	str bool // is slicetype a known type?
 
 	be   bool // is binary encoding
 	js   bool // is json handle

@@ -339,7 +339,7 @@ func (z *bytesEncAppender) reset(in []byte, out *[]byte) {
 // --------------------------------------------------
 
 type encWr struct {
-	esep  bool // whether it has elem separators
+	// esep  bool // whether it has elem separators
 	bytes bool // encoding to []byte
 	isas  bool // whether e.as != nil
 	js    bool // is json encoder?

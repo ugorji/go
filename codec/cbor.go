@@ -841,7 +841,7 @@ func (d *cborDecDriver) DecodeNaked() {
 //   - Encoded Text (e.g. URL, regexp, base64, MIME Message), etc.
 type CborHandle struct {
 	binaryEncodingType
-	noElemSeparators
+	// noElemSeparators
 	BasicHandle
 
 	// IndefiniteLength=true, means that we encode using indefinitelength
