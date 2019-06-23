@@ -5,12 +5,7 @@ package codec
 
 import "io"
 
-/*
-
 // encWriter abstracts writing to a byte array or to an io.Writer.
-//
-//
-// Deprecated: Use encWr instead.
 type encWriter interface {
 	writeb([]byte)
 	writestr(string)
@@ -19,8 +14,6 @@ type encWriter interface {
 	writen2(byte, byte)
 	end()
 }
-
-*/
 
 // type ioEncWriterWriter interface {
 // 	WriteByte(c byte) error
@@ -488,3 +481,5 @@ func (z *encWr) end() {
 }
 
 */
+
+var _ encWriter = (*encWr)(nil)

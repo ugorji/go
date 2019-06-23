@@ -5,20 +5,18 @@ package codec
 
 import "io"
 
-/*
-
 // decReader abstracts the reading source, allowing implementations that can
 // read from an io.Reader or directly off a byte slice with zero-copying.
-//
-// Deprecated: Use decRd instead.
 type decReader interface {
 	unreadn1()
 	// readx will use the implementation scratch buffer if possible i.e. n < len(scratchbuf), OR
 	// just return a view of the []byte being decoded from.
 	// Ensure you call detachZeroCopyBytes later if this needs to be sent outside codec control.
-	readx(n int) []byte
+	readx(n uint) []byte
 	readb([]byte)
 	readn1() uint8
+	readn3() [3]byte
+	readn4() [4]byte
 	numread() uint // number of bytes read
 	track()
 	stopTrack() []byte
@@ -30,8 +28,6 @@ type decReader interface {
 	// readUntil will read, only stopping once it matches the 'stop' byte.
 	readUntil(stop byte) (out []byte)
 }
-
-*/
 
 // ------------------------------------------------
 
@@ -1327,6 +1323,7 @@ func (z *decRd) readUntilIO(stop byte) (out []byte) {
 	return z.ri.readUntil(stop)
 }
 
+var _ decReader = (*decRd)(nil)
+
 // // register these here, so that staticcheck stops barfing
-// var _ = (*bytesDecReader).readTo
 // var _ = (*bytesDecReader).readUntil
