@@ -12,6 +12,8 @@ type encWriter interface {
 	writeqstr(string) // write string wrapped in quotes ie "..."
 	writen1(byte)
 	writen2(byte, byte)
+	// writen will write up to 6 bytes at a time.
+	writen(b [6]byte, num uint8)
 	end()
 }
 
@@ -150,6 +152,10 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
 	if bufsize <= 0 {
 		bufsize = defEncByteBufSize
 	}
+	// bufsize must be >= 8, to accomodate writen methods (where n <= 8)
+	if bufsize <= 8 {
+		bufsize = 8
+	}
 	// z.sz = bufsize
 	if cap(z.buf) < bufsize {
 		if len(z.buf) > 0 && &z.buf[0] != &z.b[0] {
@@ -269,6 +275,14 @@ func (z *bufioEncWriter) writen2(b1, b2 byte) {
 	z.n += 2
 }
 
+func (z *bufioEncWriter) writen(b [6]byte, num uint8) {
+	if int(num) > len(z.buf)-z.n {
+		z.flush()
+	}
+	copy(z.buf[z.n:], b[:num])
+	z.n += int(num)
+}
+
 func (z *bufioEncWriter) endErr() (err error) {
 	if z.n > 0 {
 		err = z.flushErr()
@@ -309,6 +323,9 @@ func (z *bytesEncAppender) writen2(b1, b2 byte) {
 	// z.b = append(z.b, b1, b2, b1, b2, b1, b2) // cost: 85
 	// z.b = append(z.b, []byte{b1, b2}...) // cost: 83
 	// z.b = append(append(z.b, b1), b2) // cost 82
+}
+func (z *bytesEncAppender) writen(s [6]byte, num uint8) {
+	z.b = append(z.b, s[:num]...)
 }
 func (z *bytesEncAppender) endErr() error {
 	*(z.out) = z.b
@@ -374,6 +391,13 @@ func (z *encWr) writen2(b1, b2 byte) {
 		z.wb.writen2(b1, b2)
 	} else {
 		z.wf.writen2(b1, b2)
+	}
+}
+func (z *encWr) writen(b [6]byte, num uint8) {
+	if z.bytes {
+		z.wb.writen(b, num)
+	} else {
+		z.wf.writen(b, num)
 	}
 }
 func (z *encWr) endErr() error {

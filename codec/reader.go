@@ -15,8 +15,7 @@ type decReader interface {
 	readx(n uint) []byte
 	readb([]byte)
 	readn1() uint8
-	readn3() [3]byte
-	readn4() [4]byte
+	readn(num uint8) (v [6]byte)
 	numread() uint // number of bytes read
 	track()
 	stopTrack() []byte
@@ -192,15 +191,9 @@ func (z *ioDecReader) UnreadByte() (err error) {
 	return
 }
 
-func (z *ioDecReader) readn3() (bs [3]byte) {
-	z.readb(bs[:])
-	// copy(bs[:], z.readx(3))
-	return
-}
-
-func (z *ioDecReader) readn4() (bs [4]byte) {
-	z.readb(bs[:])
-	// copy(bs[:], z.readx(4))
+func (z *ioDecReader) readn(num uint8) (bs [6]byte) {
+	z.readb(bs[:num])
+	// copy(bs[:], z.readx(uint(num)))
 	return
 }
 
@@ -474,14 +467,9 @@ func (z *bufioDecReader) unreadn1() {
 	}
 }
 
-func (z *bufioDecReader) readn3() (bs [3]byte) {
-	z.readb(bs[:])
-	return
-}
-
-func (z *bufioDecReader) readn4() (bs [4]byte) {
-	z.readb(bs[:])
-	// copy(bs[:], z.readx(4))
+func (z *bufioDecReader) readn(num uint8) (bs [6]byte) {
+	z.readb(bs[:num])
+	// copy(bs[:], z.readx(uint(num)))
 	return
 }
 
@@ -849,32 +837,29 @@ func (z *bytesDecReader) readn1() (v uint8) {
 	return
 }
 
-func (z *bytesDecReader) readn3() (bs [3]byte) {
+func (z *bytesDecReader) readn(num uint8) (bs [6]byte) {
 	// if z.c+2 >= uint(len(z.b)) {
 	// 	panic(io.EOF)
 	// }
 
-	// copy(bs[:], z.b[z.c:z.c+3])
-	bs[2] = z.b[z.c+2]
-	bs[1] = z.b[z.c+1]
-	bs[0] = z.b[z.c]
-	z.c += 3
+	copy(bs[:], z.b[z.c:z.c+uint(num)])
+	z.c += uint(num)
 	return
 }
 
-func (z *bytesDecReader) readn4() (bs [4]byte) {
-	// if z.c+3 >= uint(len(z.b)) {
-	// 	panic(io.EOF)
-	// }
+// func (z *bytesDecReader) readn4() (bs [4]byte) {
+// 	// if z.c+3 >= uint(len(z.b)) {
+// 	// 	panic(io.EOF)
+// 	// }
 
-	// copy(bs[:], z.b[z.c:z.c+4])
-	bs[3] = z.b[z.c+3]
-	bs[2] = z.b[z.c+2]
-	bs[1] = z.b[z.c+1]
-	bs[0] = z.b[z.c]
-	z.c += 4
-	return
-}
+// 	// copy(bs[:], z.b[z.c:z.c+4])
+// 	bs[3] = z.b[z.c+3]
+// 	bs[2] = z.b[z.c+2]
+// 	bs[1] = z.b[z.c+1]
+// 	bs[0] = z.b[z.c]
+// 	z.c += 4
+// 	return
+// }
 
 // func (z *bytesDecReader) readn1eof() (v uint8, eof bool) {
 // 	if z.a == 0 {
@@ -1215,30 +1200,17 @@ func (z *decRd) unreadn1() {
 	}
 }
 
-func (z *decRd) readn3() [3]byte {
+func (z *decRd) readn(num uint8) [6]byte {
 	if z.bytes {
-		return z.rb.readn3()
+		return z.rb.readn(num)
 	}
-	return z.readn3IO()
+	return z.readnIO(num)
 }
-func (z *decRd) readn3IO() [3]byte {
+func (z *decRd) readnIO(num uint8) [6]byte {
 	if z.bufio {
-		return z.bi.readn3()
+		return z.bi.readn(num)
 	}
-	return z.ri.readn3()
-}
-
-func (z *decRd) readn4() [4]byte {
-	if z.bytes {
-		return z.rb.readn4()
-	}
-	return z.readn4IO()
-}
-func (z *decRd) readn4IO() [4]byte {
-	if z.bufio {
-		return z.bi.readn4()
-	}
-	return z.ri.readn4()
+	return z.ri.readn(num)
 }
 
 func (z *decRd) readx(n uint) []byte {

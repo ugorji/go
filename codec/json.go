@@ -166,9 +166,11 @@ func (e *jsonEncDriverTypical) WriteMapEnd() {
 
 func (e *jsonEncDriverTypical) EncodeBool(b bool) {
 	if b {
-		e.e.encWr.writeb(jsonLiteralTrue)
+		// e.e.encWr.writeb(jsonLiteralTrue)
+		e.e.encWr.writen([6]byte{'t', 'r', 'u', 'e'}, 4)
 	} else {
-		e.e.encWr.writeb(jsonLiteralFalse)
+		// e.e.encWr.writeb(jsonLiteralFalse)
+		e.e.encWr.writen([6]byte{'f', 'a', 'l', 's', 'e'}, 5)
 	}
 }
 
@@ -423,7 +425,9 @@ func (e *jsonEncDriver) EncodeNil() {
 	// We always encode nil as just null (never in quotes)
 	// This allows us to easily decode if a nil in the json stream
 	// ie if initial token is n.
-	e.e.encWr.writeb(jsonLiteralNull)
+
+	// e.e.encWr.writeb(jsonLiteralNull)
+	e.e.encWr.writen([6]byte{'n', 'u', 'l', 'l'}, 4)
 
 	// if e.h.MapKeyAsString && e.e.c == containerMapKey {
 	// 	e.e.encWr.writeb(jsonLiterals[jsonLitNullQ : jsonLitNullQ+6])
@@ -740,25 +744,25 @@ func (d *jsonDecDriver) ReadMapEnd() {
 // }
 
 func (d *jsonDecDriver) readLit4True() {
-	bs := d.d.decRd.readn3()
+	bs := d.d.decRd.readn(3)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [3]byte{'r', 'u', 'e'} { // !bytes.Equal(bs, jsonLiteral4True)
+	if jsonValidateSymbols && bs != [6]byte{'r', 'u', 'e'} { // !bytes.Equal(bs, jsonLiteral4True)
 		d.d.errorf("expecting %s: got %s", jsonLiteral4True, bs)
 	}
 }
 
 func (d *jsonDecDriver) readLit4False() {
-	bs := d.d.decRd.readn4()
+	bs := d.d.decRd.readn(4)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [4]byte{'a', 'l', 's', 'e'} { // !bytes.Equal(bs, jsonLiteral4False)
+	if jsonValidateSymbols && bs != [6]byte{'a', 'l', 's', 'e'} { // !bytes.Equal(bs, jsonLiteral4False)
 		d.d.errorf("expecting %s: got %s", jsonLiteral4False, bs)
 	}
 }
 
 func (d *jsonDecDriver) readLit4Null() {
-	bs := d.d.decRd.readn3() // readx(3)
+	bs := d.d.decRd.readn(3) // readx(3)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [3]byte{'u', 'l', 'l'} { // !bytes.Equal(bs, jsonLiteral4Null)
+	if jsonValidateSymbols && bs != [6]byte{'u', 'l', 'l'} { // !bytes.Equal(bs, jsonLiteral4Null)
 		d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs)
 	}
 	d.fnil = true
