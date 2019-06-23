@@ -21,10 +21,11 @@ const (
 )
 
 const (
-	decDefMaxDepth         = 1024 // maximum depth
-	decDefSliceCap         = 8
-	decDefChanCap          = 64                      // should be large, as cap cannot be expanded
-	decScratchByteArrayLen = cacheLineSize + (5 * 8) // - 5 // + (8 * 2) // - (8 * 1)
+	decDefMaxDepth = 1024 // maximum depth
+	decDefSliceCap = 8
+	decDefChanCap  = 64 // should be large, as cap cannot be expanded
+	// decScratchByteArrayLen = cacheLineSize + (5 * 8) // - 5 // + (8 * 2) // - (8 * 1)
+	decScratchByteArrayLen = (5 * 8) // - 5 // + (8 * 2) // - (8 * 1)
 
 	// decContainerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.
@@ -1374,7 +1375,11 @@ type Decoder struct {
 	_ [1]byte // padding
 
 	// ---- cpu cache line boundary?
-	b [decScratchByteArrayLen]byte // scratch buffer, used by Decoder and xxxDecDrivers
+
+	// b is an always-available scratch buffer used by Decoder and decDrivers.
+	// By being always-available, it can be used for one-off things without
+	// having to get from freelist, use, and return back to freelist.
+	b [decScratchByteArrayLen]byte
 
 	blist bytesFreelist
 
