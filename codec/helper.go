@@ -91,8 +91,13 @@ package codec
 // Instead, the short-lived objects use free-lists that live as long as the object exists.
 //
 // ------------------------------------------
-// Be careful about pointer-chasing, as it has a clear impact on performance.
-// To alleviate this:
+// Performance is affected by the following:
+//    - Bounds Checking
+//    - Inlining
+//    - Pointer chasing
+// This package tries hard to manage the performance impact of these.
+//
+// To alleviate performance due to pointer-chasing:
 //    - Prefer non-pointer values in a struct field
 //    - Refer to these directly within helper classes
 //      e.g. json.go refers directly to d.d.decRd
@@ -1043,7 +1048,7 @@ type Handle interface {
 	// return the basic handle. It may not have been inited.
 	// Prefer to use basicHandle() helper function that ensures it has been inited.
 	getBasicHandle() *BasicHandle
-	recreateEncDriver(encDriver) bool
+	// recreateEncDriver(encDriver) bool
 	newEncDriver(w *Encoder) encDriver
 	newDecDriver(r *Decoder) decDriver
 	isBinary() bool
