@@ -2220,7 +2220,13 @@ func panicToErr(h errDecorator, err *error) {
 	}
 }
 
+func isSliceBoundsError(s string) bool {
+	return strings.Index(s, "index out of range") != -1 ||
+		strings.Index(s, "slice bounds out of range") != -1
+}
+
 func panicValToErr(h errDecorator, v interface{}, err *error) {
+	d, dok := h.(*Decoder)
 	switch xerr := v.(type) {
 	case nil:
 	case error:
@@ -2230,11 +2236,19 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 			// treat as special (bubble up)
 			*err = xerr
 		default:
-			h.wrapErr(xerr, err)
+			if dok && d.bytes && isSliceBoundsError(xerr.Error()) {
+				*err = io.EOF
+			} else {
+				h.wrapErr(xerr, err)
+			}
 		}
 	case string:
 		if xerr != "" {
-			h.wrapErr(xerr, err)
+			if dok && d.bytes && isSliceBoundsError(xerr) {
+				*err = io.EOF
+			} else {
+				h.wrapErr(xerr, err)
+			}
 		}
 	case fmt.Stringer:
 		if xerr != nil {

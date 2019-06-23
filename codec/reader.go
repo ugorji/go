@@ -799,15 +799,18 @@ func (z *bytesDecReader) readx(n uint) (bs []byte) {
 	// }
 	// return
 
-	if n != 0 {
-		z.c += n
-		if z.c > uint(len(z.b)) {
-			z.c = uint(len(z.b))
-			panic(io.EOF)
-		}
-		bs = z.b[z.c-n : z.c]
-	}
-	return
+	// if n == 0 {
+	// 	return
+	// }
+	z.c += n
+	// if z.c > uint(len(z.b)) {
+	// 	z.c = uint(len(z.b))
+	// 	panic(io.EOF)
+	// }
+
+	// bs = z.b[z.c-n : z.c]
+	// return
+	return z.b[z.c-n : z.c]
 
 	// if n == 0 {
 	// } else if z.c+n > uint(len(z.b)) {
@@ -838,20 +841,23 @@ func (z *bytesDecReader) readb(bs []byte) {
 }
 
 func (z *bytesDecReader) readn1() (v uint8) {
-	if z.c >= uint(len(z.b)) {
-		panic(io.EOF)
-	}
+	// if z.c >= uint(len(z.b)) {
+	// 	panic(io.EOF)
+	// }
+
 	v = z.b[z.c]
 	z.c++
+	// v = z.b[z.c] // cost = 7
+	// z.c++ // cost = 4
 	// z.a--
 	return
-	// return
 }
 
 func (z *bytesDecReader) readn3() (bs [3]byte) {
-	if z.c+2 >= uint(len(z.b)) {
-		panic(io.EOF)
-	}
+	// if z.c+2 >= uint(len(z.b)) {
+	// 	panic(io.EOF)
+	// }
+
 	// copy(bs[:], z.b[z.c:z.c+3])
 	bs[2] = z.b[z.c+2]
 	bs[1] = z.b[z.c+1]
@@ -861,9 +867,10 @@ func (z *bytesDecReader) readn3() (bs [3]byte) {
 }
 
 func (z *bytesDecReader) readn4() (bs [4]byte) {
-	if z.c+3 >= uint(len(z.b)) {
-		panic(io.EOF)
-	}
+	// if z.c+3 >= uint(len(z.b)) {
+	// 	panic(io.EOF)
+	// }
+
 	// copy(bs[:], z.b[z.c:z.c+4])
 	bs[3] = z.b[z.c+3]
 	bs[2] = z.b[z.c+2]
@@ -904,18 +911,18 @@ func (z *bytesDecReader) skip(accept *bitset256) (token byte) {
 
 	// i := z.c
 LOOP:
-	if i < uint(len(z.b)) {
-		token = z.b[i]
-		i++
-		if accept.isset(token) {
-			goto LOOP
-		}
-		// z.a -= (i - z.c)
-		z.c = i
-		return
+	// if i < uint(len(z.b)) {
+	token = z.b[i]
+	i++
+	if accept.isset(token) {
+		goto LOOP
 	}
+	// z.a -= (i - z.c)
+	z.c = i
+	return
+	// }
 	// END:
-	panic(io.EOF)
+	// panic(io.EOF)
 	// // z.a = 0
 	// z.c = blen
 	// return
@@ -923,9 +930,9 @@ LOOP:
 
 func (z *bytesDecReader) readTo(accept *bitset256) (out []byte) {
 	i := z.c
-	if i == uint(len(z.b)) {
-		panic(io.EOF)
-	}
+	// if i == uint(len(z.b)) {
+	// 	panic(io.EOF)
+	// }
 
 	// Replace loop with goto construct, so that this can be inlined
 	// for i := z.c; i < blen; i++ {
@@ -992,20 +999,20 @@ func (z *bytesDecReader) readUntil(stop byte) (out []byte) {
 	// 	}
 	// }
 LOOP:
-	if i < uint(len(z.b)) {
-		if z.b[i] == stop {
-			i++
-			out = z.b[z.c:i]
-			// z.a -= (i - z.c)
-			z.c = i
-			return
-		}
+	// if i < uint(len(z.b)) {
+	if z.b[i] == stop {
 		i++
-		goto LOOP
+		out = z.b[z.c:i]
+		// z.a -= (i - z.c)
+		z.c = i
+		return
 	}
+	i++
+	goto LOOP
+	// }
 	// z.a = 0
 	// z.c = blen
-	panic(io.EOF)
+	// panic(io.EOF)
 }
 
 func (z *bytesDecReader) track() {
@@ -1286,6 +1293,7 @@ func (z *decRd) skip(accept *bitset256) (token byte) {
 	}
 	return z.skipIO(accept)
 }
+
 func (z *decRd) skipIO(accept *bitset256) (token byte) {
 	if z.bufio {
 		return z.bi.skip(accept)
