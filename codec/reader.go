@@ -15,7 +15,8 @@ type decReader interface {
 	readx(n uint) []byte
 	readb([]byte)
 	readn1() uint8
-	readn(num uint8) (v [6]byte)
+	// read up to 7 bytes at a time
+	readn(num uint8) (v [7]byte)
 	numread() uint // number of bytes read
 	track()
 	stopTrack() []byte
@@ -191,7 +192,7 @@ func (z *ioDecReader) UnreadByte() (err error) {
 	return
 }
 
-func (z *ioDecReader) readn(num uint8) (bs [6]byte) {
+func (z *ioDecReader) readn(num uint8) (bs [7]byte) {
 	z.readb(bs[:num])
 	// copy(bs[:], z.readx(uint(num)))
 	return
@@ -467,7 +468,7 @@ func (z *bufioDecReader) unreadn1() {
 	}
 }
 
-func (z *bufioDecReader) readn(num uint8) (bs [6]byte) {
+func (z *bufioDecReader) readn(num uint8) (bs [7]byte) {
 	z.readb(bs[:num])
 	// copy(bs[:], z.readx(uint(num)))
 	return
@@ -837,7 +838,7 @@ func (z *bytesDecReader) readn1() (v uint8) {
 	return
 }
 
-func (z *bytesDecReader) readn(num uint8) (bs [6]byte) {
+func (z *bytesDecReader) readn(num uint8) (bs [7]byte) {
 	// if z.c+2 >= uint(len(z.b)) {
 	// 	panic(io.EOF)
 	// }
@@ -1200,13 +1201,13 @@ func (z *decRd) unreadn1() {
 	}
 }
 
-func (z *decRd) readn(num uint8) [6]byte {
+func (z *decRd) readn(num uint8) [7]byte {
 	if z.bytes {
 		return z.rb.readn(num)
 	}
 	return z.readnIO(num)
 }
-func (z *decRd) readnIO(num uint8) [6]byte {
+func (z *decRd) readnIO(num uint8) [7]byte {
 	if z.bufio {
 		return z.bi.readn(num)
 	}
