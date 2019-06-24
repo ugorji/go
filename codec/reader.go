@@ -1030,6 +1030,248 @@ type decRd struct {
 
 // numread, track and stopTrack are always inlined, as they just check int fields, etc.
 
+// the if/else-if/else block is expensive to inline.
+// Each node of this construct costs a lot and dominates the budget.
+// Best to only do an if fast-path else block (so fast-path is inlined).
+// This is irrespective of inlineExtraCallCost set in $GOROOT/src/cmd/compile/internal/gc/inl.go
+//
+// In decRd methods below, we delegate all IO functions into their own methods.
+// This allows for the inlining of the common path when z.bytes=true.
+// Go 1.12+ supports inlining methods with up to 1 inlined function (or 2 if no other constructs).
+//
+// However, up through Go 1.13, decRd's readXXX, skip and unreadXXX methods are not inlined.
+// Consequently, there is no benefit to do the xxxIO methods for decRd at this time.
+// Instead, we have a if/else-if/else block so that IO calls do not have to jump through
+// a second unnecessary function call.
+
+// func (z *decRd) release() {
+// 	if z.bytes {
+// 	} else if z.bufio {
+// 		z.bi.release()
+// 	} else {
+// 		z.ri.release()
+// 	}
+// }
+func (z *decRd) numread() uint {
+	if z.bytes {
+		return z.rb.numread()
+	} else if z.bufio {
+		return z.bi.numread()
+	} else {
+		return z.ri.numread()
+	}
+}
+func (z *decRd) track() {
+	if z.bytes {
+		z.rb.track()
+	} else if z.bufio {
+		z.bi.track()
+	} else {
+		z.ri.track()
+	}
+}
+func (z *decRd) stopTrack() []byte {
+	if z.bytes {
+		return z.rb.stopTrack()
+	} else if z.bufio {
+		return z.bi.stopTrack()
+	} else {
+		return z.ri.stopTrack()
+	}
+}
+
+func (z *decRd) unreadn1() {
+	if z.bytes {
+		z.rb.unreadn1()
+	} else if z.bufio {
+		z.bi.unreadn1()
+	} else {
+		z.ri.unreadn1() // not inlined
+	}
+}
+
+func (z *decRd) readn(num uint8) [7]byte {
+	if z.bytes {
+		return z.rb.readn(num)
+	}
+	if z.bufio {
+		return z.bi.readn(num)
+	}
+	return z.ri.readn(num)
+}
+
+func (z *decRd) readx(n uint) []byte {
+	if z.bytes {
+		return z.rb.readx(n)
+	}
+	if z.bufio {
+		return z.bi.readx(n)
+	}
+	return z.ri.readx(n)
+}
+
+func (z *decRd) readb(s []byte) {
+	if z.bytes {
+		z.rb.readb(s)
+	} else if z.bufio {
+		z.bi.readb(s)
+	} else {
+		z.ri.readb(s)
+	}
+}
+
+func (z *decRd) readn1() uint8 {
+	if z.bytes {
+		return z.rb.readn1()
+	}
+	if z.bufio {
+		return z.bi.readn1()
+	}
+	return z.ri.readn1()
+}
+
+func (z *decRd) skip(accept *bitset256) (token byte) {
+	if z.bytes {
+		return z.rb.skip(accept)
+	}
+	if z.bufio {
+		return z.bi.skip(accept)
+	}
+	return z.ri.skip(accept)
+}
+
+func (z *decRd) readTo(accept *bitset256) (out []byte) {
+	if z.bytes {
+		return z.rb.readTo(accept)
+	}
+	if z.bufio {
+		return z.bi.readTo(accept)
+	}
+	return z.ri.readTo(accept)
+}
+
+func (z *decRd) readUntil(stop byte) (out []byte) {
+	if z.bytes {
+		return z.rb.readUntil(stop)
+	}
+	if z.bufio {
+		return z.bi.readUntil(stop)
+	}
+	return z.ri.readUntil(stop)
+}
+
+/*
+func (z *decRd) unreadn1() {
+	if z.bytes {
+		z.rb.unreadn1()
+	} else {
+		z.unreadn1IO()
+	}
+}
+func (z *decRd) unreadn1IO() {
+	if z.bufio {
+		z.bi.unreadn1()
+	} else {
+		z.ri.unreadn1()
+	}
+}
+
+func (z *decRd) readn(num uint8) [7]byte {
+	if z.bytes {
+		return z.rb.readn(num)
+	}
+	return z.readnIO(num)
+}
+func (z *decRd) readnIO(num uint8) [7]byte {
+	if z.bufio {
+		return z.bi.readn(num)
+	}
+	return z.ri.readn(num)
+}
+
+func (z *decRd) readx(n uint) []byte {
+	if z.bytes {
+		return z.rb.readx(n)
+	}
+	return z.readxIO(n)
+}
+func (z *decRd) readxIO(n uint) []byte {
+	if z.bufio {
+		return z.bi.readx(n)
+	}
+	return z.ri.readx(n)
+}
+
+func (z *decRd) readb(s []byte) {
+	if z.bytes {
+		z.rb.readb(s)
+	} else {
+		z.readbIO(s)
+	}
+}
+
+func (z *decRd) readbIO(s []byte) {
+	if z.bufio {
+		z.bi.readb(s)
+	} else {
+		z.ri.readb(s)
+	}
+}
+
+func (z *decRd) readn1() uint8 {
+	if z.bytes {
+		return z.rb.readn1()
+	}
+	return z.readn1IO()
+}
+func (z *decRd) readn1IO() uint8 {
+	if z.bufio {
+		return z.bi.readn1()
+	}
+	return z.ri.readn1()
+}
+
+func (z *decRd) skip(accept *bitset256) (token byte) {
+	if z.bytes {
+		return z.rb.skip(accept)
+	}
+	return z.skipIO(accept)
+}
+
+func (z *decRd) skipIO(accept *bitset256) (token byte) {
+	if z.bufio {
+		return z.bi.skip(accept)
+	}
+	return z.ri.skip(accept)
+}
+
+func (z *decRd) readTo(accept *bitset256) (out []byte) {
+	if z.bytes {
+		return z.rb.readTo(accept)
+	}
+	return z.readToIO(accept)
+}
+func (z *decRd) readToIO(accept *bitset256) (out []byte) {
+	if z.bufio {
+		return z.bi.readTo(accept)
+	}
+	return z.ri.readTo(accept)
+}
+
+func (z *decRd) readUntil(stop byte) (out []byte) {
+	if z.bytes {
+		return z.rb.readUntil(stop)
+	}
+	return z.readUntilIO(stop)
+}
+func (z *decRd) readUntilIO(stop byte) (out []byte) {
+	if z.bufio {
+		return z.bi.readUntil(stop)
+	}
+	return z.ri.readUntil(stop)
+}
+*/
+
 /*
 func (z *decRd) numread() int {
 	switch z.typ {
@@ -1134,171 +1376,6 @@ func (z *decRd) readUntil(stop byte) (out []byte) {
 }
 
 */
-
-// the if/else-if/else block is expensive to inline.
-// Each node of this construct costs a lot and dominates the budget.
-// Best to only do an if fast-path else block (so fast-path is inlined).
-// This is irrespective of inlineExtraCallCost set in $GOROOT/src/cmd/compile/internal/gc/inl.go
-//
-// In decRd methods below, we delegate all IO functions into their own methods.
-// This allows for the inlining of the common path when z.bytes=true.
-// Go 1.12+ supports inlining methods with up to 1 inlined function (or 2 if no other constructs).
-
-// func (z *decRd) release() {
-// 	if z.bytes {
-// 	} else if z.bufio {
-// 		z.bi.release()
-// 	} else {
-// 		z.ri.release()
-// 	}
-// }
-func (z *decRd) numread() uint {
-	if z.bytes {
-		return z.rb.numread()
-	} else if z.bufio {
-		return z.bi.numread()
-	} else {
-		return z.ri.numread()
-	}
-}
-func (z *decRd) track() {
-	if z.bytes {
-		z.rb.track()
-	} else if z.bufio {
-		z.bi.track()
-	} else {
-		z.ri.track()
-	}
-}
-func (z *decRd) stopTrack() []byte {
-	if z.bytes {
-		return z.rb.stopTrack()
-	} else if z.bufio {
-		return z.bi.stopTrack()
-	} else {
-		return z.ri.stopTrack()
-	}
-}
-
-// func (z *decRd) unreadn1() {
-// 	if z.bytes {
-// 		z.rb.unreadn1()
-// 	} else {
-// 		z.unreadn1IO()
-// 	}
-// }
-// func (z *decRd) unreadn1IO() {
-// 	if z.bufio {
-// 		z.bi.unreadn1()
-// 	} else {
-// 		z.ri.unreadn1()
-// 	}
-// }
-
-func (z *decRd) unreadn1() {
-	if z.bytes {
-		z.rb.unreadn1()
-	} else if z.bufio {
-		z.bi.unreadn1()
-	} else {
-		z.ri.unreadn1() // not inlined
-	}
-}
-
-func (z *decRd) readn(num uint8) [7]byte {
-	if z.bytes {
-		return z.rb.readn(num)
-	}
-	return z.readnIO(num)
-}
-func (z *decRd) readnIO(num uint8) [7]byte {
-	if z.bufio {
-		return z.bi.readn(num)
-	}
-	return z.ri.readn(num)
-}
-
-func (z *decRd) readx(n uint) []byte {
-	if z.bytes {
-		return z.rb.readx(n)
-	}
-	return z.readxIO(n)
-}
-func (z *decRd) readxIO(n uint) []byte {
-	if z.bufio {
-		return z.bi.readx(n)
-	}
-	return z.ri.readx(n)
-}
-
-func (z *decRd) readb(s []byte) {
-	if z.bytes {
-		z.rb.readb(s)
-	} else {
-		z.readbIO(s)
-	}
-}
-
-func (z *decRd) readbIO(s []byte) {
-	if z.bufio {
-		z.bi.readb(s)
-	} else {
-		z.ri.readb(s)
-	}
-}
-
-func (z *decRd) readn1() uint8 {
-	if z.bytes {
-		return z.rb.readn1()
-	}
-	return z.readn1IO()
-}
-func (z *decRd) readn1IO() uint8 {
-	if z.bufio {
-		return z.bi.readn1()
-	}
-	return z.ri.readn1()
-}
-
-func (z *decRd) skip(accept *bitset256) (token byte) {
-	if z.bytes {
-		return z.rb.skip(accept)
-	}
-	return z.skipIO(accept)
-}
-
-func (z *decRd) skipIO(accept *bitset256) (token byte) {
-	if z.bufio {
-		return z.bi.skip(accept)
-	}
-	return z.ri.skip(accept)
-}
-
-func (z *decRd) readTo(accept *bitset256) (out []byte) {
-	if z.bytes {
-		return z.rb.readTo(accept)
-	}
-	return z.readToIO(accept)
-}
-func (z *decRd) readToIO(accept *bitset256) (out []byte) {
-	if z.bufio {
-		return z.bi.readTo(accept)
-	}
-	return z.ri.readTo(accept)
-}
-
-func (z *decRd) readUntil(stop byte) (out []byte) {
-	if z.bytes {
-		return z.rb.readUntil(stop)
-	}
-	return z.readUntilIO(stop)
-}
-func (z *decRd) readUntilIO(stop byte) (out []byte) {
-	if z.bufio {
-		return z.bi.readUntil(stop)
-	}
-	return z.ri.readUntil(stop)
-}
 
 var _ decReader = (*decRd)(nil)
 
