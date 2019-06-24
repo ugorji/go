@@ -555,7 +555,8 @@ func (z *bufioDecReader) skipFill(accept *bitset256) (token byte) {
 		}
 		z.buf = z.buf[:n2]
 		for i, token = range z.buf {
-			if !accept.isset(token) {
+			// if !accept.isset(token) {
+			if accept.check(token) == 0 {
 				z.n += (uint(i) - z.c) - 1
 				z.loopFn(uint(i + 1))
 				return
@@ -606,7 +607,8 @@ func (z *bufioDecReader) readTo(accept *bitset256) (out []byte) {
 	i := z.c
 LOOP:
 	if i < uint(len(z.buf)) {
-		if !accept.isset(z.buf[i]) {
+		// if !accept.isset(z.buf[i]) {
+		if accept.check(z.buf[i]) == 0 {
 			// return z.readToLoopFn(i, nil)
 			// inline readToLoopFn here (for performance)
 			z.n += (i - z.c) - 1
@@ -644,7 +646,8 @@ func (z *bufioDecReader) readToFill(accept *bitset256) []byte {
 		}
 		z.buf = z.buf[:n2]
 		for i, token := range z.buf {
-			if !accept.isset(token) {
+			// if !accept.isset(token) {
+			if accept.check(token) == 0 {
 				z.n += (uint(i) - z.c) - 1
 				z.bufr = append(z.bufr, z.buf[z.c:i]...)
 				z.loopFn(uint(i))

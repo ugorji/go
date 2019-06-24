@@ -2581,8 +2581,13 @@ func (s *set) remove(v interface{}) (exists bool) {
 
 type bitset256 [32]byte
 
+func (x *bitset256) check(pos byte) uint8 {
+	return x[pos>>3] & (1 << (pos & 7))
+}
+
 func (x *bitset256) isset(pos byte) bool {
-	return x[pos>>3]&(1<<(pos&7)) != 0
+	return x.check(pos) != 0
+	// return x[pos>>3]&(1<<(pos&7)) != 0
 }
 
 // func (x *bitset256) issetv(pos byte) byte {
@@ -2598,8 +2603,13 @@ type bitset32 uint32
 func (x bitset32) set(pos byte) bitset32 {
 	return x | (1 << pos)
 }
+
+func (x bitset32) check(pos byte) uint32 {
+	return uint32(x) & (1 << pos)
+}
 func (x bitset32) isset(pos byte) bool {
-	return x&(1<<pos) != 0
+	return x.check(pos) != 0
+	// return x&(1<<pos) != 0
 }
 
 // func (x *bitset256) unset(pos byte) {
