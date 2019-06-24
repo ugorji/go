@@ -131,7 +131,6 @@ func init() {
 type jsonEncDriver struct {
 	noBuiltInTypes
 	// w *encWr
-	e *Encoder
 	h *JsonHandle
 
 	// bs []byte // for encoding strings
@@ -150,13 +149,15 @@ type jsonEncDriver struct {
 
 	s *bitset256 // safe set for characters (taking h.HTMLAsIs into consideration)
 	// scratch: encode time, numbers, etc. Note: leave 1 byte for containerState
-	b [cacheLineSize + 16]byte // buffer for encoding numbers and time
+	b [cacheLineSize + 24]byte // buffer for encoding numbers and time
+
+	e Encoder
 }
 
 // Keep writeIndent, WriteArrayElem, WriteMapElemKey, WriteMapElemValue
 // in jsonEncDriver, so that *Encoder can directly call them
 
-// func (e *jsonEncDriver) getJsonEncDriver() *jsonEncDriver { return e }
+func (e *jsonEncDriver) encoder() *Encoder { return &e.e }
 
 func (e *jsonEncDriver) writeIndent() {
 	e.e.encWr.writen1('\n')
@@ -407,7 +408,7 @@ func (e *jsonEncDriver) WriteMapEnd() {
 func (e *jsonEncDriver) quoteStr(s string) {
 	// adapted from std pkg encoding/json
 	const hex = "0123456789abcdef"
-	w := &e.e.encWr
+	w := e.e.w()
 	w.writen1('"')
 	var start int
 	for i := 0; i < len(s); {
@@ -578,7 +579,6 @@ func (e *jsonEncDriverTypical) EncodeFloat32(f float32) {
 
 type jsonDecDriver struct {
 	noBuiltInTypes
-	d *Decoder
 	h *JsonHandle
 	// r *decRd
 
@@ -597,19 +597,26 @@ type jsonDecDriver struct {
 	buf []byte
 	se  interfaceExtWrapper
 
-	// _ [4]uint64 // padding
+	_ uint64 // padding
 
 	// ---- cpu cache line boundary?
 
 	// b2 [cacheLineSize + 32]byte // scratch 2, used only for readUntil, decNumBytes
 
 	// n jsonNum
+
+	// ---- cpu cache line boundary?
+	d Decoder
 }
 
 // func jsonIsWS(b byte) bool {
 // 	// return b == ' ' || b == '\t' || b == '\r' || b == '\n'
 // 	return jsonCharWhitespaceSet.isset(b)
 // }
+
+func (d *jsonDecDriver) decoder() *Decoder {
+	return &d.d
+}
 
 func (d *jsonDecDriver) uncacheRead() {
 	if d.tok != 0 {
@@ -1462,17 +1469,25 @@ func (h *JsonHandle) typical() bool {
 // 	return
 // }
 
-func (h *JsonHandle) newEncDriver(e *Encoder) (ee encDriver) {
-	hd := jsonEncDriver{e: e, h: h}
-	hd.reset()
-	return &hd
+func (h *JsonHandle) newEncDriver() encDriver {
+	var e = &jsonEncDriver{h: h}
+	e.e.e = e
+	e.e.jenc = e
+	e.e.js = true
+	e.e.init(h)
+	e.reset()
+	return e
 }
 
-func (h *JsonHandle) newDecDriver(d *Decoder) decDriver {
-	// d := jsonDecDriver{r: r.(*bytesDecReader), h: h}
-	hd := jsonDecDriver{d: d, h: h}
-	hd.reset()
-	return &hd
+func (h *JsonHandle) newDecDriver() decDriver {
+	var d = &jsonDecDriver{h: h}
+	d.d.d = d
+	d.d.jdec = d
+	d.d.js = true
+	d.d.jsms = h.MapKeyAsString
+	d.d.init(h)
+	d.reset()
+	return d
 }
 
 func (e *jsonEncDriver) reset() {

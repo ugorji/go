@@ -97,11 +97,16 @@ package codec
 //    - Pointer chasing
 // This package tries hard to manage the performance impact of these.
 //
+// ------------------------------------------
 // To alleviate performance due to pointer-chasing:
 //    - Prefer non-pointer values in a struct field
 //    - Refer to these directly within helper classes
 //      e.g. json.go refers directly to d.d.decRd
 //
+// We made the changes to embed En/Decoder in en/decDriver,
+// but we had to explicitly reference the fields as opposed to using a function
+// to get the better performance that we were looking for.
+// For example, we explicitly call d.d.decRd.fn() instead of d.d.r().fn().
 
 import (
 	"bytes"
@@ -1049,8 +1054,8 @@ type Handle interface {
 	// Prefer to use basicHandle() helper function that ensures it has been inited.
 	getBasicHandle() *BasicHandle
 	// recreateEncDriver(encDriver) bool
-	newEncDriver(w *Encoder) encDriver
-	newDecDriver(r *Decoder) decDriver
+	newEncDriver() encDriver
+	newDecDriver() decDriver
 	isBinary() bool
 	// hasElemSeparators() bool
 	// IsBuiltinType(rtid uintptr) bool

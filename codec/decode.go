@@ -149,6 +149,8 @@ type decDriver interface {
 	reset()
 	atEndOfDecode()
 	uncacheRead()
+
+	decoder() *Decoder
 }
 
 type decDriverContainerTracker interface {
@@ -1392,7 +1394,7 @@ type Decoder struct {
 // For efficiency, Users are encouraged to configure ReaderBufferSize on the handle
 // OR pass in a memory buffered reader (eg bufio.Reader, bytes.Buffer).
 func NewDecoder(r io.Reader, h Handle) *Decoder {
-	d := newDecoder(h)
+	d := h.newDecDriver().decoder()
 	d.Reset(r)
 	return d
 }
@@ -1400,43 +1402,32 @@ func NewDecoder(r io.Reader, h Handle) *Decoder {
 // NewDecoderBytes returns a Decoder which efficiently decodes directly
 // from a byte slice with zero copying.
 func NewDecoderBytes(in []byte, h Handle) *Decoder {
-	d := newDecoder(h)
+	d := h.newDecDriver().decoder()
 	d.ResetBytes(in)
 	return d
 }
 
 // var defaultDecNaked decNaked
 
-func newDecoder(h Handle) *Decoder {
-	d := &Decoder{h: basicHandle(h), err: errDecoderNotInitialized}
-	d.bytes = true
+func (d *Decoder) r() *decRd {
+	return &d.decRd
+}
+
+func (d *Decoder) init(h Handle) {
 	if useFinalizers {
 		// runtime.SetFinalizer(d, (*Decoder).finalize)
 	}
+	d.bytes = true
+	d.err = errDecoderNotInitialized
 	// d.r = &d.decRd
+	d.h = basicHandle(h)
 	d.hh = h
 	d.be = h.isBinary()
 	// NOTE: do not initialize d.n here. It is lazily initialized in d.naked()
-	var jh *JsonHandle
-	jh, d.js = h.(*JsonHandle)
-	d.jdec = nil
-	if d.js {
-		d.jsms = jh.MapKeyAsString
-	}
 	// d.esep = d.hh.hasElemSeparators()
 	if d.h.InternString {
 		d.is = make(map[string]string, 32)
 	}
-	d.d = h.newDecDriver(d)
-	if d.js {
-		d.jdec = d.d.(*jsonDecDriver)
-	}
-	// d.cr, _ = d.d.(containerStateRecv)
-	return d
-}
-
-func (d *Decoder) r() *decRd {
-	return &d.decRd
 }
 
 func (d *Decoder) resetCommon() {

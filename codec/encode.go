@@ -44,6 +44,7 @@ type encDriver interface {
 
 	reset()
 	atEndOfEncode()
+	encoder() *Encoder
 }
 
 type encDriverContainerTracker interface {
@@ -883,7 +884,7 @@ type Encoder struct {
 // For efficiency, Users are encouraged to configure WriterBufferSize on the handle
 // OR pass in a memory buffered writer (eg bufio.Writer, bytes.Buffer).
 func NewEncoder(w io.Writer, h Handle) *Encoder {
-	e := newEncoder(h)
+	e := h.newEncDriver().encoder()
 	e.Reset(w)
 	return e
 }
@@ -894,29 +895,23 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 // It will potentially replace the output byte slice pointed to.
 // After encoding, the out parameter contains the encoded contents.
 func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
-	e := newEncoder(h)
+	e := h.newEncDriver().encoder()
 	e.ResetBytes(out)
 	return e
 }
 
-func newEncoder(h Handle) *Encoder {
-	e := &Encoder{h: basicHandle(h), err: errEncoderNotInitialized}
+func (e *Encoder) init(h Handle) {
+	e.err = errEncoderNotInitialized
 	e.bytes = true
 	if useFinalizers {
 		// runtime.SetFinalizer(e, (*Encoder).finalize)
 	}
 	// e.w = &e.encWr
 	e.hh = h
+	e.h = basicHandle(h)
 	// e.esep = h.hasElemSeparators()
-	e.e = e.hh.newEncDriver(e)
 	e.as, e.isas = e.e.(encDriverAsis)
 	e.be = e.hh.isBinary()
-	e.jenc = nil
-	_, e.js = e.hh.(*JsonHandle)
-	if e.js {
-		e.jenc = e.e.(*jsonEncDriver)
-	}
-	return e
 }
 
 func (e *Encoder) w() *encWr {
