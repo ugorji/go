@@ -3053,7 +3053,7 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 		`56789      01234'`,
 		`56789      01234'`,
 	} {
-		out = br.readUntil('\'')
+		out = br.readUntil('\'', true)
 		testDeepEqualErr(string(out), v2, t, "-")
 		// fmt.Printf("readUntil: out: `%s`\n", out)
 	}
@@ -3063,13 +3063,13 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 		out = br.readTo(&jsonNumSet)
 		testDeepEqualErr(string(out), `01234`, t, "-")
 		// fmt.Printf("readTo: out: `%s`\n", out)
-		out = br.readUntil('\'')
+		out = br.readUntil('\'', true)
 		testDeepEqualErr(string(out), "'", t, "-")
 		// fmt.Printf("readUntil: out: `%s`\n", out)
 		out = br.readTo(&jsonNumSet)
 		testDeepEqualErr(string(out), `56789`, t, "-")
 		// fmt.Printf("readTo: out: `%s`\n", out)
-		out = br.readUntil('0')
+		out = br.readUntil('0', true)
 		testDeepEqualErr(string(out), `      0`, t, "-")
 		// fmt.Printf("readUntil: out: `%s`\n", out)
 		br.unreadn1()
@@ -3077,7 +3077,7 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 	br.reset(strings.NewReader(s), bufsizehalf, &blist)
 	// println()
 	for range [4]struct{}{} {
-		out = br.readUntil(' ')
+		out = br.readUntil(' ', true)
 		testDeepEqualErr(string(out), `01234'56789 `, t, "-")
 		// fmt.Printf("readUntil: out: |%s|\n", out)
 		token = br.skip(&jsonCharWhitespaceSet)

@@ -16,7 +16,7 @@ type decReader interface {
 	readb([]byte)
 	readn1() uint8
 	// read up to 7 bytes at a time
-	readn(num uint8) (v [7]byte)
+	readn(num uint8) (v [rwNLen]byte)
 	numread() uint // number of bytes read
 	track()
 	stopTrack() []byte
@@ -26,7 +26,7 @@ type decReader interface {
 	// readTo will read any byte that matches, stopping once no-longer matching.
 	readTo(accept *bitset256) (out []byte)
 	// readUntil will read, only stopping once it matches the 'stop' byte.
-	readUntil(stop byte) (out []byte)
+	readUntil(stop byte, includeLast bool) (out []byte)
 }
 
 // ------------------------------------------------
@@ -192,7 +192,7 @@ func (z *ioDecReader) UnreadByte() (err error) {
 	return
 }
 
-func (z *ioDecReader) readn(num uint8) (bs [7]byte) {
+func (z *ioDecReader) readn(num uint8) (bs [rwNLen]byte) {
 	z.readb(bs[:num])
 	// copy(bs[:], z.readx(uint(num)))
 	return
@@ -310,7 +310,7 @@ LOOP:
 	return z.bufr
 }
 
-func (z *ioDecReader) readUntil(stop byte) []byte {
+func (z *ioDecReader) readUntil(stop byte, includeLast bool) []byte {
 	// for {
 	// 	token, eof := z.readn1eof()
 	// 	if eof {
@@ -329,7 +329,10 @@ LOOP:
 	}
 	z.bufr = append(z.bufr, token)
 	if token == stop {
-		return z.bufr
+		if includeLast {
+			return z.bufr
+		}
+		return z.bufr[:len(z.bufr)-1]
 	}
 	goto LOOP
 }
@@ -468,7 +471,7 @@ func (z *bufioDecReader) unreadn1() {
 	}
 }
 
-func (z *bufioDecReader) readn(num uint8) (bs [7]byte) {
+func (z *bufioDecReader) readn(num uint8) (bs [rwNLen]byte) {
 	z.readb(bs[:num])
 	// copy(bs[:], z.readx(uint(num)))
 	return
@@ -672,7 +675,7 @@ func (z *bufioDecReader) readToFill(accept *bitset256) []byte {
 // 	return z.readLoopFn(i+1, out0)
 // }
 
-func (z *bufioDecReader) readUntil(stop byte) (out []byte) {
+func (z *bufioDecReader) readUntil(stop byte, includeLast bool) (out []byte) {
 	// defer func() { xdebug2f("bufio: readUntil: %s", out) }()
 	// _, out = z.search(in, nil, stop, 4); return
 
@@ -695,12 +698,17 @@ LOOP:
 				z.tr = append(z.tr, z.buf[z.c:i]...) // z.doTrack(i)
 			}
 			z.c = i
-			return
+			goto FINISH
 		}
 		i++
 		goto LOOP
 	}
-	return z.readUntilFill(stop)
+	out = z.readUntilFill(stop)
+FINISH:
+	if includeLast {
+		return
+	}
+	return out[:len(out)-1]
 }
 
 func (z *bufioDecReader) readUntilFill(stop byte) []byte {
@@ -841,7 +849,7 @@ func (z *bytesDecReader) readn1() (v uint8) {
 	return
 }
 
-func (z *bytesDecReader) readn(num uint8) (bs [7]byte) {
+func (z *bytesDecReader) readn(num uint8) (bs [rwNLen]byte) {
 	// if z.c+2 >= uint(len(z.b)) {
 	// 	panic(io.EOF)
 	// }
@@ -967,7 +975,7 @@ LOOP:
 	// return z.b[i:z.c]
 }
 
-func (z *bytesDecReader) readUntil(stop byte) (out []byte) {
+func (z *bytesDecReader) readUntil(stop byte, includeLast bool) (out []byte) {
 	i := z.c
 	// if i == len(z.b) {
 	// 	panic(io.EOF)
@@ -984,20 +992,24 @@ func (z *bytesDecReader) readUntil(stop byte) (out []byte) {
 	// 	}
 	// }
 LOOP:
-	// if i < uint(len(z.b)) {
-	if z.b[i] == stop {
+	if i < uint(len(z.b)) {
+		if z.b[i] == stop {
+			i++
+			if includeLast {
+				out = z.b[z.c:i]
+			} else {
+				out = z.b[z.c : i-1]
+			}
+			// z.a -= (i - z.c)
+			z.c = i
+			return
+		}
 		i++
-		out = z.b[z.c:i]
-		// z.a -= (i - z.c)
-		z.c = i
-		return
+		goto LOOP
 	}
-	i++
-	goto LOOP
-	// }
 	// z.a = 0
 	// z.c = blen
-	// panic(io.EOF)
+	panic(io.EOF)
 }
 
 func (z *bytesDecReader) track() {
@@ -1090,7 +1102,7 @@ func (z *decRd) unreadn1() {
 	}
 }
 
-func (z *decRd) readn(num uint8) [7]byte {
+func (z *decRd) readn(num uint8) [rwNLen]byte {
 	if z.bytes {
 		return z.rb.readn(num)
 	}
@@ -1150,14 +1162,14 @@ func (z *decRd) readTo(accept *bitset256) (out []byte) {
 	return z.ri.readTo(accept)
 }
 
-func (z *decRd) readUntil(stop byte) (out []byte) {
+func (z *decRd) readUntil(stop byte, includeLast bool) (out []byte) {
 	if z.bytes {
-		return z.rb.readUntil(stop)
+		return z.rb.readUntil(stop, includeLast)
 	}
 	if z.bufio {
-		return z.bi.readUntil(stop)
+		return z.bi.readUntil(stop, includeLast)
 	}
-	return z.ri.readUntil(stop)
+	return z.ri.readUntil(stop, includeLast)
 }
 
 /*
@@ -1176,13 +1188,13 @@ func (z *decRd) unreadn1IO() {
 	}
 }
 
-func (z *decRd) readn(num uint8) [7]byte {
+func (z *decRd) readn(num uint8) [rwNLen]byte {
 	if z.bytes {
 		return z.rb.readn(num)
 	}
 	return z.readnIO(num)
 }
-func (z *decRd) readnIO(num uint8) [7]byte {
+func (z *decRd) readnIO(num uint8) [rwNLen]byte {
 	if z.bufio {
 		return z.bi.readn(num)
 	}

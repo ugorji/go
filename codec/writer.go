@@ -13,7 +13,7 @@ type encWriter interface {
 	writen1(byte)
 	writen2(byte, byte)
 	// writen will write up to 7 bytes at a time.
-	writen(b [7]byte, num uint8)
+	writen(b [rwNLen]byte, num uint8)
 	end()
 }
 
@@ -275,7 +275,7 @@ func (z *bufioEncWriter) writen2(b1, b2 byte) {
 	z.n += 2
 }
 
-func (z *bufioEncWriter) writen(b [7]byte, num uint8) {
+func (z *bufioEncWriter) writen(b [rwNLen]byte, num uint8) {
 	if int(num) > len(z.buf)-z.n {
 		z.flush()
 	}
@@ -324,8 +324,11 @@ func (z *bytesEncAppender) writen2(b1, b2 byte) {
 	// z.b = append(z.b, []byte{b1, b2}...) // cost: 83
 	// z.b = append(append(z.b, b1), b2) // cost 82
 }
-func (z *bytesEncAppender) writen(s [7]byte, num uint8) {
-	z.b = append(z.b, s[:num]...)
+func (z *bytesEncAppender) writen(s [rwNLen]byte, num uint8) {
+	// if num <= rwNLen {
+	if int(num) <= len(s) {
+		z.b = append(z.b, s[:num]...)
+	}
 }
 func (z *bytesEncAppender) endErr() error {
 	*(z.out) = z.b
@@ -393,7 +396,7 @@ func (z *encWr) writen2(b1, b2 byte) {
 		z.wf.writen2(b1, b2)
 	}
 }
-func (z *encWr) writen(b [7]byte, num uint8) {
+func (z *encWr) writen(b [rwNLen]byte, num uint8) {
 	if z.bytes {
 		z.wb.writen(b, num)
 	} else {

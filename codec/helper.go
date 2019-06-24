@@ -126,6 +126,9 @@ import (
 )
 
 const (
+	// rvNLen is the length of the array for readn or writen calls
+	rwNLen = 7
+
 	scratchByteArrayLen = 64
 	// initCollectionCap   = 16 // 32 is defensive. 16 is preferred.
 
