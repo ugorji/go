@@ -117,7 +117,7 @@ type cborEncDriver struct {
 	encDriverNoopContainerWriter
 	h *CborHandle
 	x [8]byte
-	// _ [3]uint64 // padding
+	_ [6]uint64 // padding
 	e Encoder
 }
 
@@ -307,7 +307,7 @@ type cborDecDriver struct {
 	fnil   bool // found nil
 	noBuiltInTypes
 	// decNoSeparator
-	// _ [3]uint64 // padding
+	_ [6]uint64 // padding cache-aligned
 	d Decoder
 }
 

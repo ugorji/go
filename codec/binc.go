@@ -108,7 +108,7 @@ type bincEncDriver struct {
 	// c containerState
 	// encDriverTrackContainerWriter
 	// encNoSeparator
-	// _ [1]uint64 // padding
+	_ [4]uint64 // padding
 	e Encoder
 }
 
@@ -404,7 +404,8 @@ type bincDecDriver struct {
 	// noStreamingCodec
 	// decNoSeparator
 
-	b [8]byte // scratch for decoding numbers - big endian style
+	b [8]byte   // scratch for decoding numbers - big endian style
+	_ [4]uint64 // padding cache-aligned
 
 	d Decoder
 }

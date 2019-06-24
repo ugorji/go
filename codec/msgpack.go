@@ -202,7 +202,7 @@ type msgpackEncDriver struct {
 	// encNoSeparator
 	h *MsgpackHandle
 	x [8]byte
-	// _ [3]uint64 // padding
+	_ [6]uint64 // padding
 	e Encoder
 }
 
@@ -436,7 +436,7 @@ type msgpackDecDriver struct {
 	noBuiltInTypes
 	// noStreamingCodec
 	// decNoSeparator
-	// _ [3]uint64 // padding
+	_ [6]uint64 // padding
 	d Decoder
 }
 

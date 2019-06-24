@@ -38,7 +38,7 @@ type simpleEncDriver struct {
 	b [8]byte
 	// c containerState
 	// encDriverTrackContainerWriter
-	// _ [2]uint64 // padding (cache-aligned)
+	_ [6]uint64 // padding (cache-aligned)
 	e Encoder
 }
 
@@ -217,7 +217,7 @@ type simpleDecDriver struct {
 	noBuiltInTypes
 	// noStreamingCodec
 	decDriverNoopContainerReader
-	// _ [3]uint64 // padding
+	_ [6]uint64 // padding
 	d Decoder
 }
 
