@@ -704,6 +704,10 @@ type unsafeMapIter struct {
 // 	New: func() interface{} { return new(unsafeMapIter) },
 // }
 
+func (t *unsafeMapIter) ValidKV() (r bool) {
+	return false
+}
+
 func (t *unsafeMapIter) Next() (r bool) {
 	if t == nil || t.done {
 		return

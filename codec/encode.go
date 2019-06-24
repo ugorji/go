@@ -666,10 +666,13 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	var rvk = mapAddressableRV(f.ti.key, ktypeKind)
 
 	it := mapRange(rv, rvk, rvv, true)
+	validKV := it.ValidKV()
 	var vx reflect.Value
 	for it.Next() {
 		e.mapElemKey()
-		if vx = it.Key(); !vx.IsValid() {
+		if validKV {
+			vx = it.Key()
+		} else {
 			vx = rvk
 		}
 		if keyTypeIsString {
@@ -682,7 +685,9 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			e.encodeValue(vx, keyFn)
 		}
 		e.mapElemValue()
-		if vx = it.Value(); !vx.IsValid() {
+		if validKV {
+			vx = it.Value()
+		} else {
 			vx = rvv
 		}
 		e.encodeValue(vx, valFn)

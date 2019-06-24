@@ -14,6 +14,10 @@ type mapIter struct {
 	values bool
 }
 
+func (t *mapIter) ValidKV() (r bool) {
+	return true
+}
+
 func (t *mapIter) Next() (r bool) {
 	return t.t.Next()
 }
