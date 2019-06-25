@@ -107,6 +107,13 @@ package codec
 // but we had to explicitly reference the fields as opposed to using a function
 // to get the better performance that we were looking for.
 // For example, we explicitly call d.d.decRd.fn() instead of d.d.r().fn().
+//
+// ------------------------------------------
+// Bounds Checking
+//    - Allow bytesDecReader to incur "bounds check error", and
+//      recover that as an io.EOF.
+//      This allows the bounds check branch to always be taken by the branch predictor,
+//      giving better performance (in theory), while ensuring that the code is shorter.
 
 import (
 	"bytes"

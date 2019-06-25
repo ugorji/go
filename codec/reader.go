@@ -850,7 +850,7 @@ func (z *bytesDecReader) readn1() (v uint8) {
 }
 
 func (z *bytesDecReader) readn(num uint8) (bs [rwNLen]byte) {
-	// if z.c+2 >= uint(len(z.b)) {
+	// if z.c >= uint(len(z.b)) || z.c+uint(num) >= uint(len(z.b)) {
 	// 	panic(io.EOF)
 	// }
 
@@ -914,8 +914,9 @@ LOOP:
 	z.c = i
 	return
 	// }
-	// END:
 	// panic(io.EOF)
+
+	// END:
 	// // z.a = 0
 	// z.c = blen
 	// return
@@ -992,24 +993,24 @@ func (z *bytesDecReader) readUntil(stop byte, includeLast bool) (out []byte) {
 	// 	}
 	// }
 LOOP:
-	if i < uint(len(z.b)) {
-		if z.b[i] == stop {
-			i++
-			if includeLast {
-				out = z.b[z.c:i]
-			} else {
-				out = z.b[z.c : i-1]
-			}
-			// z.a -= (i - z.c)
-			z.c = i
-			return
-		}
+	// if i < uint(len(z.b)) {
+	if z.b[i] == stop {
 		i++
-		goto LOOP
+		if includeLast {
+			out = z.b[z.c:i]
+		} else {
+			out = z.b[z.c : i-1]
+		}
+		// z.a -= (i - z.c)
+		z.c = i
+		return
 	}
+	i++
+	goto LOOP
+	// }
+	// panic(io.EOF)
 	// z.a = 0
 	// z.c = blen
-	panic(io.EOF)
 }
 
 func (z *bytesDecReader) track() {
