@@ -31,7 +31,9 @@ type encDriver interface {
 	// encodeExtPreamble(xtag byte, length int)
 	EncodeRawExt(re *RawExt)
 	EncodeExt(v interface{}, xtag uint64, ext Ext)
-	EncodeStringEnc(c charEncoding, v string) // c cannot be cRAW
+	// EncodeString using cUTF8, honor'ing StringToRaw flag
+	EncodeString(v string)
+	// EncodeStringEnc(c charEncoding, v string) // c cannot be cRAW
 	// EncodeSymbol(v string)
 	EncodeStringBytesRaw(v []byte)
 	EncodeTime(time.Time)
@@ -217,11 +219,12 @@ func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
-	if e.h.StringToRaw {
-		e.e.EncodeStringBytesRaw(bytesView(rvGetString(rv)))
-	} else {
-		e.e.EncodeStringEnc(cUTF8, rvGetString(rv))
-	}
+	e.e.EncodeString(rvGetString(rv))
+	// if e.h.StringToRaw {
+	// 	e.e.EncodeStringBytesRaw(bytesView(rvGetString(rv)))
+	// } else {
+	// 	e.e.EncodeStringEnc(cUTF8, rvGetString(rv))
+	// }
 }
 
 // func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
@@ -676,11 +679,12 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			vx = rvk
 		}
 		if keyTypeIsString {
-			if e.h.StringToRaw {
-				e.e.EncodeStringBytesRaw(bytesView(vx.String()))
-			} else {
-				e.e.EncodeStringEnc(cUTF8, vx.String())
-			}
+			e.e.EncodeString(vx.String())
+			// if e.h.StringToRaw {
+			// 	e.e.EncodeStringBytesRaw(bytesView(vx.String()))
+			// } else {
+			// 	e.e.EncodeStringEnc(cUTF8, vx.String())
+			// }
 		} else {
 			e.encodeValue(vx, keyFn)
 		}
@@ -727,11 +731,12 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 		sort.Sort(stringRvSlice(mksv))
 		for i := range mksv {
 			e.mapElemKey()
-			if e.h.StringToRaw {
-				e.e.EncodeStringBytesRaw(bytesView(mksv[i].v))
-			} else {
-				e.e.EncodeStringEnc(cUTF8, mksv[i].v)
-			}
+			e.e.EncodeString(mksv[i].v)
+			// if e.h.StringToRaw {
+			// 	e.e.EncodeStringBytesRaw(bytesView(mksv[i].v))
+			// } else {
+			// 	e.e.EncodeStringEnc(cUTF8, mksv[i].v)
+			// }
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn) // e.encodeValue(rv.MapIndex(mksv[i].r), valFn)
 		}
@@ -1192,11 +1197,12 @@ func (e *Encoder) encode(iv interface{}) {
 		e.encodeValue(v, nil)
 
 	case string:
-		if e.h.StringToRaw {
-			e.e.EncodeStringBytesRaw(bytesView(v))
-		} else {
-			e.e.EncodeStringEnc(cUTF8, v)
-		}
+		e.e.EncodeString(v)
+		// if e.h.StringToRaw {
+		// 	e.e.EncodeStringBytesRaw(bytesView(v))
+		// } else {
+		// 	e.e.EncodeStringEnc(cUTF8, v)
+		// }
 	case bool:
 		e.e.EncodeBool(v)
 	case int:
@@ -1232,11 +1238,12 @@ func (e *Encoder) encode(iv interface{}) {
 	case *Raw:
 		e.rawBytes(*v)
 	case *string:
-		if e.h.StringToRaw {
-			e.e.EncodeStringBytesRaw(bytesView(*v))
-		} else {
-			e.e.EncodeStringEnc(cUTF8, *v)
-		}
+		e.e.EncodeString(*v)
+		// if e.h.StringToRaw {
+		// 	e.e.EncodeStringBytesRaw(bytesView(*v))
+		// } else {
+		// 	e.e.EncodeStringEnc(cUTF8, *v)
+		// }
 	case *bool:
 		e.e.EncodeBool(*v)
 	case *int:
@@ -1379,7 +1386,8 @@ func (e *Encoder) marshalUtf8(bs []byte, fnerr error) {
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
-		e.e.EncodeStringEnc(cUTF8, stringView(bs))
+		e.e.EncodeString(stringView(bs))
+		// e.e.EncodeStringEnc(cUTF8, stringView(bs))
 	}
 }
 
@@ -1519,7 +1527,7 @@ func encStructFieldKey(encName string, ee encDriver, w *encWr,
 			// b[len(b)-1] = '"'
 			// w.writeb(b)
 		} else { // keyType == valueTypeString
-			ee.EncodeStringEnc(cUTF8, encName)
+			ee.EncodeString(encName)
 		}
 	} else if keyType == valueTypeInt {
 		ee.EncodeInt(m.Int(strconv.ParseInt(encName, 10, 64)))

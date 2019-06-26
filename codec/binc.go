@@ -320,17 +320,26 @@ func (e *bincEncDriver) EncodeSymbol(v string) {
 	}
 }
 
+func (e *bincEncDriver) EncodeString(v string) {
+	if e.h.StringToRaw {
+		e.encLen(bincVdByteArray<<4, uint64(len(v))) // e.encBytesLen(c, l)
+		if len(v) > 0 {
+			e.e.encWr.writestr(v)
+		}
+		return
+	}
+	e.EncodeStringEnc(cUTF8, v)
+}
+
 func (e *bincEncDriver) EncodeStringEnc(c charEncoding, v string) {
 	if e.e.c == containerMapKey && c == cUTF8 && (e.h.AsSymbols == 0 || e.h.AsSymbols == 1) {
 		e.EncodeSymbol(v)
 		return
 	}
-	l := uint64(len(v))
-	e.encLen(bincVdString<<4, l) // e.encBytesLen(c, l)
-	if l > 0 {
+	e.encLen(bincVdString<<4, uint64(len(v))) // e.encBytesLen(c, l)
+	if len(v) > 0 {
 		e.e.encWr.writestr(v)
 	}
-
 }
 
 func (e *bincEncDriver) EncodeStringBytesRaw(v []byte) {
@@ -338,9 +347,8 @@ func (e *bincEncDriver) EncodeStringBytesRaw(v []byte) {
 		e.EncodeNil()
 		return
 	}
-	l := uint64(len(v))
-	e.encLen(bincVdByteArray<<4, l) // e.encBytesLen(c, l)
-	if l > 0 {
+	e.encLen(bincVdByteArray<<4, uint64(len(v))) // e.encBytesLen(c, l)
+	if len(v) > 0 {
 		e.e.encWr.writeb(v)
 	}
 }

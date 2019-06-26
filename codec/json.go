@@ -328,7 +328,11 @@ func (e *jsonEncDriver) EncodeUint(v uint64) {
 // 	e.EncodeFloat64(float64(f))
 // }
 
-func (e *jsonEncDriver) EncodeStringEnc(c charEncoding, v string) {
+func (e *jsonEncDriver) EncodeString(v string) {
+	if e.h.StringToRaw {
+		e.EncodeStringBytesRaw(bytesView(v))
+		return
+	}
 	e.quoteStr(v)
 }
 

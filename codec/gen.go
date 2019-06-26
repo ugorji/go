@@ -110,7 +110,8 @@ import (
 // v12: removed deprecated methods from genHelper and changed container tracking logic
 // v13: 20190603 removed DecodeString - use DecodeStringAsBytes instead
 // v14: 20190611 refactored nil handling: TryDecodeAsNil -> selective TryNil, etc
-const genVersion = 14
+// v15: 20190626 encDriver.EncodeString handles StringToRaw flag inside handle
+const genVersion = 15
 
 const (
 	genCodecPkg        = "codec1978"
@@ -888,7 +889,7 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 	case reflect.Bool:
 		x.line("r.EncodeBool(bool(" + varname + "))")
 	case reflect.String:
-		x.linef("if z.EncBasicHandle().StringToRaw { r.EncodeStringBytesRaw(z.BytesView(string(%s))) } else { r.EncodeStringEnc(codecSelferCcUTF8%s, string(%s)) }", varname, x.xs, varname)
+		x.linef("r.EncodeString(string(%s))", varname)
 	case reflect.Chan:
 		x.xtraSM(varname, t, true, false)
 		// x.encListFallback(varname, rtid, t)
@@ -955,7 +956,7 @@ func (x *genRunner) encZero(t reflect.Type) {
 	case reflect.Bool:
 		x.line("r.EncodeBool(false)")
 	case reflect.String:
-		x.linef(`if z.EncBasicHandle().StringToRaw { r.EncodeStringBytesRaw([]byte{}) } else { r.EncodeStringEnc(codecSelferCcUTF8%s, "") }`, x.xs)
+		x.linef(`r.EncodeString("")`)
 	default:
 		x.line("r.EncodeNil()")
 	}
@@ -1183,7 +1184,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 			if si.encNameAsciiAlphaNum {
 				x.linef(`if z.IsJSONHandle() { z.WriteStr("\"%s\"") } else { `, si.encName)
 			}
-			x.linef("r.EncodeStringEnc(codecSelferCcUTF8%s, `%s`)", x.xs, si.encName)
+			x.linef("r.EncodeString(`%s`)", si.encName)
 			if si.encNameAsciiAlphaNum {
 				x.linef("}")
 			}
@@ -2118,8 +2119,7 @@ func genInternalEncCommandAsString(s string, vname string) string {
 	case "[]byte", "[]uint8", "bytes":
 		return "e.e.EncodeStringBytesRaw(" + vname + ")"
 	case "string":
-		return "if e.h.StringToRaw { e.e.EncodeStringBytesRaw(bytesView(" + vname + ")) " +
-			"} else { e.e.EncodeStringEnc(cUTF8, " + vname + ") }"
+		return "e.e.EncodeString(" + vname + ")"
 	case "float32":
 		return "e.e.EncodeFloat32(" + vname + ")"
 	case "float64":

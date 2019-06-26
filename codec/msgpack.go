@@ -382,14 +382,32 @@ func (e *msgpackEncDriver) WriteMapStart(length int) {
 	e.writeContainerLen(msgpackContainerMap, length)
 }
 
-func (e *msgpackEncDriver) EncodeStringEnc(c charEncoding, s string) {
-	slen := len(s)
+func (e *msgpackEncDriver) EncodeString(s string) {
+	var ct msgpackContainerType
 	if e.h.WriteExt {
-		e.writeContainerLen(msgpackContainerStr, slen)
+		if e.h.StringToRaw {
+			ct = msgpackContainerBin
+		} else {
+			ct = msgpackContainerStr
+		}
 	} else {
-		e.writeContainerLen(msgpackContainerRawLegacy, slen)
+		ct = msgpackContainerRawLegacy
 	}
-	if slen > 0 {
+	// if e.h.StringToRaw {
+	// 	if e.h.WriteExt {
+	// 		ct = msgpackContainerBin
+	// 	} else {
+	// 		ct = msgpackContainerRawLegacy
+	// 	}
+	// } else {
+	// 	if e.h.WriteExt {
+	// 		ct = msgpackContainerStr
+	// 	} else {
+	// 		ct = msgpackContainerRawLegacy
+	// 	}
+	// }
+	e.writeContainerLen(ct, len(s))
+	if len(s) > 0 {
 		e.e.encWr.writestr(s)
 	}
 }
@@ -399,13 +417,12 @@ func (e *msgpackEncDriver) EncodeStringBytesRaw(bs []byte) {
 		e.EncodeNil()
 		return
 	}
-	slen := len(bs)
 	if e.h.WriteExt {
-		e.writeContainerLen(msgpackContainerBin, slen)
+		e.writeContainerLen(msgpackContainerBin, len(bs))
 	} else {
-		e.writeContainerLen(msgpackContainerRawLegacy, slen)
+		e.writeContainerLen(msgpackContainerRawLegacy, len(bs))
 	}
-	if slen > 0 {
+	if len(bs) > 0 {
 		e.e.encWr.writeb(bs)
 	}
 }

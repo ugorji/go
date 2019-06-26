@@ -235,14 +235,14 @@ func (fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Elem 
 		sort.Sort({{ sorttype .MapKey false}}(v2))
 		for _, k2 := range v2 {
 			e.mapElemKey()
-			{{if eq .MapKey "string"}} if e.h.StringToRaw {e.e.EncodeStringBytesRaw(bytesView(k2))} else {e.e.EncodeStringEnc(cUTF8, k2)} {{else}}{{ $y := printf "%s(k2)" .MapKey }}{{if eq $x .MapKey }}{{ $y = "k2" }}{{end}}{{ encmd .MapKey $y }}{{end}}
+			{{if eq .MapKey "string"}} e.e.EncodeString(k2) {{else}}{{ $y := printf "%s(k2)" .MapKey }}{{if eq $x .MapKey }}{{ $y = "k2" }}{{end}}{{ encmd .MapKey $y }}{{end}}
 			e.mapElemValue()
 			{{ $y := printf "v[%s(k2)]" .MapKey }}{{if eq $x .MapKey }}{{ $y = "v[k2]" }}{{end}}{{ encmd .Elem $y }}
 		} {{end}}
 	} else { 
 		for k2, v2 := range v {
 			e.mapElemKey()
-			{{if eq .MapKey "string"}} if e.h.StringToRaw {e.e.EncodeStringBytesRaw(bytesView(k2))} else {e.e.EncodeStringEnc(cUTF8, k2)} {{else}}{{ encmd .MapKey "k2"}}{{end}}
+			{{if eq .MapKey "string"}} e.e.EncodeString(k2) {{else}}{{ encmd .MapKey "k2"}}{{end}}
 			e.mapElemValue()
 			{{ encmd .Elem "v2"}}
 		}

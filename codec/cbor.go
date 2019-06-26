@@ -185,7 +185,7 @@ func (e *cborEncDriver) EncodeTime(t time.Time) {
 		e.EncodeNil()
 	} else if e.h.TimeRFC3339 {
 		e.encUint(0, cborBaseTag)
-		e.EncodeStringEnc(cUTF8, t.Format(time.RFC3339Nano))
+		e.encStringBytesS(cborBaseString, t.Format(time.RFC3339Nano))
 	} else {
 		e.encUint(1, cborBaseTag)
 		t = t.UTC().Round(time.Microsecond)
@@ -251,7 +251,11 @@ func (e *cborEncDriver) WriteArrayEnd() {
 	}
 }
 
-func (e *cborEncDriver) EncodeStringEnc(c charEncoding, v string) {
+func (e *cborEncDriver) EncodeString(v string) {
+	if e.h.StringToRaw {
+		e.EncodeStringBytesRaw(bytesView(v))
+		return
+	}
 	e.encStringBytesS(cborBaseString, v)
 }
 

@@ -170,12 +170,16 @@ func (e *simpleEncDriver) WriteMapStart(length int) {
 // 	e.EncodeStringEnc(cUTF8, v)
 // }
 
-func (e *simpleEncDriver) EncodeStringEnc(c charEncoding, v string) {
+func (e *simpleEncDriver) EncodeString(v string) {
 	if e.h.EncZeroValuesAsNil && e.e.c != containerMapKey && v == "" {
 		e.EncodeNil()
 		return
 	}
-	e.encLen(simpleVdString, len(v))
+	if e.h.StringToRaw {
+		e.encLen(simpleVdByteArray, len(v))
+	} else {
+		e.encLen(simpleVdString, len(v))
+	}
 	e.e.encWr.writestr(v)
 }
 

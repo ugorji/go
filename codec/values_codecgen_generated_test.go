@@ -37,10 +37,10 @@ type codecSelfer19780 struct{}
 func codecSelfer19780False() bool { return false }
 
 func init() {
-	if GenVersion != 14 {
+	if GenVersion != 15 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic("codecgen version mismatch: current: 14, need " + ver + ". Re-generate file: " + file)
+		panic("codecgen version mismatch: current: 15, need " + ver + ". Re-generate file: " + file)
 	}
 	if false { // reference the types, but skip this branch at build/run time
 		var _ time.Time
@@ -101,11 +101,7 @@ func (x wrapString) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	if z.EncBasicHandle().StringToRaw {
-		r.EncodeStringBytesRaw(z.BytesView(string(x)))
-	} else {
-		r.EncodeStringEnc(codecSelferCcUTF819780, string(x))
-	}
+	r.EncodeString(string(x))
 }
 
 func (x *wrapString) CodecDecodeSelf(d *Decoder) {
@@ -165,11 +161,7 @@ func (x *stringUint64T) CodecEncodeSelf(e *Encoder) {
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteArrayElem()
 			r.EncodeUint(uint64(x.U))
 			z.EncWriteArrayEnd()
@@ -179,19 +171,15 @@ func (x *stringUint64T) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"S\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+				r.EncodeString(`S`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"U\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `U`)
+				r.EncodeString(`U`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.U))
@@ -314,11 +302,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(15)
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.AS)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AS))
-			}
+			r.EncodeString(string(x.AS))
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.AI64))
 			z.EncWriteArrayElem()
@@ -395,19 +379,15 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AS\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
+				r.EncodeString(`AS`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.AS)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AS))
-			}
+			r.EncodeString(string(x.AS))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
+				r.EncodeString(`AI64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.AI64))
@@ -415,7 +395,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI16\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
+				r.EncodeString(`AI16`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.AI16))
@@ -423,7 +403,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AUi64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
+				r.EncodeString(`AUi64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.AUi64))
@@ -431,7 +411,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"ASslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
+				r.EncodeString(`ASslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.ASslice == nil {
@@ -443,7 +423,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
+				r.EncodeString(`AI64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AI64slice == nil {
@@ -455,7 +435,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AUi64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
+				r.EncodeString(`AUi64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AUi64slice == nil {
@@ -467,7 +447,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AF64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
+				r.EncodeString(`AF64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AF64slice == nil {
@@ -479,7 +459,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AF32slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
+				r.EncodeString(`AF32slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AF32slice == nil {
@@ -491,7 +471,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AMSU16\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
+				r.EncodeString(`AMSU16`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AMSU16 == nil {
@@ -503,7 +483,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64arr0\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
+				r.EncodeString(`AI64arr0`)
 			}
 			z.EncWriteMapElemValue()
 			yy44 := &x.AI64arr0
@@ -512,7 +492,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64slice0\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice0`)
+				r.EncodeString(`AI64slice0`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AI64slice0 == nil {
@@ -524,7 +504,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AUi64sliceN\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
+				r.EncodeString(`AUi64sliceN`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AUi64sliceN == nil {
@@ -536,7 +516,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AMSU16N\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
+				r.EncodeString(`AMSU16N`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AMSU16N == nil {
@@ -548,7 +528,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AMSU16E\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
+				r.EncodeString(`AMSU16E`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AMSU16E == nil {
@@ -857,11 +837,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(17)
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.I64))
 			z.EncWriteArrayElem()
@@ -929,19 +905,15 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"S\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+				r.EncodeString(`S`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
+				r.EncodeString(`I64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I64))
@@ -949,7 +921,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I8\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
+				r.EncodeString(`I8`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I8))
@@ -957,7 +929,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
+				r.EncodeString(`Ui64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.Ui64))
@@ -965,7 +937,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui8\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
+				r.EncodeString(`Ui8`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.Ui8))
@@ -973,7 +945,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"F64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
+				r.EncodeString(`F64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeFloat64(float64(x.F64))
@@ -981,7 +953,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"F32\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
+				r.EncodeString(`F32`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeFloat32(float32(x.F32))
@@ -989,7 +961,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"B\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeBool(bool(x.B))
@@ -997,7 +969,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Sslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
+				r.EncodeString(`Sslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Sslice == nil {
@@ -1009,7 +981,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I16slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
+				r.EncodeString(`I16slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.I16slice == nil {
@@ -1021,7 +993,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
+				r.EncodeString(`Ui64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Ui64slice == nil {
@@ -1033,7 +1005,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui8slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
+				r.EncodeString(`Ui8slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Ui8slice == nil {
@@ -1045,7 +1017,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Bslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
+				r.EncodeString(`Bslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Bslice == nil {
@@ -1057,7 +1029,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Iptrslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
+				r.EncodeString(`Iptrslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Iptrslice == nil {
@@ -1069,7 +1041,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"WrapSliceInt64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
+				r.EncodeString(`WrapSliceInt64`)
 			}
 			z.EncWriteMapElemValue()
 			x.WrapSliceInt64.CodecEncodeSelf(e)
@@ -1077,7 +1049,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"WrapSliceString\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
+				r.EncodeString(`WrapSliceString`)
 			}
 			z.EncWriteMapElemValue()
 			x.WrapSliceString.CodecEncodeSelf(e)
@@ -1085,7 +1057,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Msi64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
+				r.EncodeString(`Msi64`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Msi64 == nil {
@@ -1423,11 +1395,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(52)
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.I64))
 			z.EncWriteArrayElem()
@@ -1546,11 +1514,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 				h.encMapstringPtrtostringUint64T((map[string]*stringUint64T)(x.MstrUi64T), e)
 			} // end block: if x.MstrUi64T map == nil
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.AnonInTestStruc.AS)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AnonInTestStruc.AS))
-			}
+			r.EncodeString(string(x.AnonInTestStruc.AS))
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.AnonInTestStruc.AI64))
 			z.EncWriteArrayElem()
@@ -1650,19 +1614,15 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"S\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+				r.EncodeString(`S`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
+				r.EncodeString(`I64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I64))
@@ -1670,7 +1630,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I32\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I32`)
+				r.EncodeString(`I32`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I32))
@@ -1678,7 +1638,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I16\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I16`)
+				r.EncodeString(`I16`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I16))
@@ -1686,7 +1646,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I8\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
+				r.EncodeString(`I8`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I8))
@@ -1694,7 +1654,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I64n\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I64n`)
+				r.EncodeString(`I64n`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I64n))
@@ -1702,7 +1662,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I32n\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I32n`)
+				r.EncodeString(`I32n`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I32n))
@@ -1710,7 +1670,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I16n\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I16n`)
+				r.EncodeString(`I16n`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I16n))
@@ -1718,7 +1678,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I8n\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I8n`)
+				r.EncodeString(`I8n`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I8n))
@@ -1726,7 +1686,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
+				r.EncodeString(`Ui64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.Ui64))
@@ -1734,7 +1694,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui32\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui32`)
+				r.EncodeString(`Ui32`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.Ui32))
@@ -1742,7 +1702,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui16\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui16`)
+				r.EncodeString(`Ui16`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.Ui16))
@@ -1750,7 +1710,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui8\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
+				r.EncodeString(`Ui8`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.Ui8))
@@ -1758,7 +1718,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"F64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
+				r.EncodeString(`F64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeFloat64(float64(x.F64))
@@ -1766,7 +1726,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"F32\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
+				r.EncodeString(`F32`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeFloat32(float32(x.F32))
@@ -1774,7 +1734,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"B\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeBool(bool(x.B))
@@ -1782,7 +1742,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"By\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `By`)
+				r.EncodeString(`By`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.By))
@@ -1790,7 +1750,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Sslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
+				r.EncodeString(`Sslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Sslice == nil {
@@ -1802,7 +1762,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I64slice`)
+				r.EncodeString(`I64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.I64slice == nil {
@@ -1814,7 +1774,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I16slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
+				r.EncodeString(`I16slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.I16slice == nil {
@@ -1826,7 +1786,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
+				r.EncodeString(`Ui64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Ui64slice == nil {
@@ -1838,7 +1798,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui8slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
+				r.EncodeString(`Ui8slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Ui8slice == nil {
@@ -1850,7 +1810,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Bslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
+				r.EncodeString(`Bslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Bslice == nil {
@@ -1862,7 +1822,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Byslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Byslice`)
+				r.EncodeString(`Byslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Byslice == nil {
@@ -1874,7 +1834,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"BytesSlice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `BytesSlice`)
+				r.EncodeString(`BytesSlice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.BytesSlice == nil {
@@ -1886,7 +1846,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Iptrslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
+				r.EncodeString(`Iptrslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Iptrslice == nil {
@@ -1898,7 +1858,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"WrapSliceInt64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
+				r.EncodeString(`WrapSliceInt64`)
 			}
 			z.EncWriteMapElemValue()
 			x.WrapSliceInt64.CodecEncodeSelf(e)
@@ -1906,7 +1866,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"WrapSliceString\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
+				r.EncodeString(`WrapSliceString`)
 			}
 			z.EncWriteMapElemValue()
 			x.WrapSliceString.CodecEncodeSelf(e)
@@ -1914,7 +1874,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Msi64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
+				r.EncodeString(`Msi64`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Msi64 == nil {
@@ -1926,7 +1886,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Msbytes\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Msbytes`)
+				r.EncodeString(`Msbytes`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Msbytes == nil {
@@ -1938,7 +1898,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Simplef\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Simplef`)
+				r.EncodeString(`Simplef`)
 			}
 			z.EncWriteMapElemValue()
 			yy141 := &x.Simplef
@@ -1947,7 +1907,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"SstrUi64T\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `SstrUi64T`)
+				r.EncodeString(`SstrUi64T`)
 			}
 			z.EncWriteMapElemValue()
 			if x.SstrUi64T == nil {
@@ -1959,7 +1919,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"MstrUi64T\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `MstrUi64T`)
+				r.EncodeString(`MstrUi64T`)
 			}
 			z.EncWriteMapElemValue()
 			if x.MstrUi64T == nil {
@@ -1971,19 +1931,15 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AS\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
+				r.EncodeString(`AS`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.AnonInTestStruc.AS)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.AnonInTestStruc.AS))
-			}
+			r.EncodeString(string(x.AnonInTestStruc.AS))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
+				r.EncodeString(`AI64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.AnonInTestStruc.AI64))
@@ -1991,7 +1947,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI16\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
+				r.EncodeString(`AI16`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.AnonInTestStruc.AI16))
@@ -1999,7 +1955,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AUi64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
+				r.EncodeString(`AUi64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.AnonInTestStruc.AUi64))
@@ -2007,7 +1963,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"ASslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
+				r.EncodeString(`ASslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AnonInTestStruc.ASslice == nil {
@@ -2019,7 +1975,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
+				r.EncodeString(`AI64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AnonInTestStruc.AI64slice == nil {
@@ -2031,7 +1987,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AUi64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
+				r.EncodeString(`AUi64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AnonInTestStruc.AUi64slice == nil {
@@ -2043,7 +1999,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AF64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
+				r.EncodeString(`AF64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AnonInTestStruc.AF64slice == nil {
@@ -2055,7 +2011,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AF32slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
+				r.EncodeString(`AF32slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AnonInTestStruc.AF32slice == nil {
@@ -2067,7 +2023,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AMSU16\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
+				r.EncodeString(`AMSU16`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AnonInTestStruc.AMSU16 == nil {
@@ -2079,7 +2035,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64arr0\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
+				r.EncodeString(`AI64arr0`)
 			}
 			z.EncWriteMapElemValue()
 			yy155 := &x.AnonInTestStruc.AI64arr0
@@ -2088,7 +2044,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64slice0\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice0`)
+				r.EncodeString(`AI64slice0`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AnonInTestStruc.AI64slice0 == nil {
@@ -2100,7 +2056,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AUi64sliceN\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
+				r.EncodeString(`AUi64sliceN`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AnonInTestStruc.AUi64sliceN == nil {
@@ -2112,7 +2068,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AMSU16N\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
+				r.EncodeString(`AMSU16N`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AnonInTestStruc.AMSU16N == nil {
@@ -2124,7 +2080,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AMSU16E\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
+				r.EncodeString(`AMSU16E`)
 			}
 			z.EncWriteMapElemValue()
 			if x.AnonInTestStruc.AMSU16E == nil {
@@ -2136,7 +2092,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"NotAnon\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `NotAnon`)
+				r.EncodeString(`NotAnon`)
 			}
 			z.EncWriteMapElemValue()
 			yy161 := &x.NotAnon
@@ -2145,7 +2101,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Nmap\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Nmap`)
+				r.EncodeString(`Nmap`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Nmap == nil {
@@ -2157,7 +2113,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Nslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Nslice`)
+				r.EncodeString(`Nslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Nslice == nil {
@@ -2169,7 +2125,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Nint64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Nint64`)
+				r.EncodeString(`Nint64`)
 			}
 			z.EncWriteMapElemValue()
 			if yyn54 {
@@ -3017,11 +2973,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(56)
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
-			}
+			r.EncodeString(string(x.TestStrucCommon.S))
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.TestStrucCommon.I64))
 			z.EncWriteArrayElem()
@@ -3140,11 +3092,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 				h.encMapstringPtrtostringUint64T((map[string]*stringUint64T)(x.TestStrucCommon.MstrUi64T), e)
 			} // end block: if x.TestStrucCommon.MstrUi64T map == nil
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
-			}
+			r.EncodeString(string(x.TestStrucCommon.AnonInTestStruc.AS))
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
 			z.EncWriteArrayElem()
@@ -3269,19 +3217,15 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"S\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+				r.EncodeString(`S`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
-			}
+			r.EncodeString(string(x.TestStrucCommon.S))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
+				r.EncodeString(`I64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestStrucCommon.I64))
@@ -3289,7 +3233,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I32\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I32`)
+				r.EncodeString(`I32`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestStrucCommon.I32))
@@ -3297,7 +3241,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I16\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I16`)
+				r.EncodeString(`I16`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestStrucCommon.I16))
@@ -3305,7 +3249,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I8\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
+				r.EncodeString(`I8`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestStrucCommon.I8))
@@ -3313,7 +3257,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I64n\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I64n`)
+				r.EncodeString(`I64n`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestStrucCommon.I64n))
@@ -3321,7 +3265,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I32n\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I32n`)
+				r.EncodeString(`I32n`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestStrucCommon.I32n))
@@ -3329,7 +3273,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I16n\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I16n`)
+				r.EncodeString(`I16n`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestStrucCommon.I16n))
@@ -3337,7 +3281,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I8n\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I8n`)
+				r.EncodeString(`I8n`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestStrucCommon.I8n))
@@ -3345,7 +3289,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
+				r.EncodeString(`Ui64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.TestStrucCommon.Ui64))
@@ -3353,7 +3297,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui32\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui32`)
+				r.EncodeString(`Ui32`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.TestStrucCommon.Ui32))
@@ -3361,7 +3305,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui16\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui16`)
+				r.EncodeString(`Ui16`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.TestStrucCommon.Ui16))
@@ -3369,7 +3313,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui8\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
+				r.EncodeString(`Ui8`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.TestStrucCommon.Ui8))
@@ -3377,7 +3321,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"F64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
+				r.EncodeString(`F64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeFloat64(float64(x.TestStrucCommon.F64))
@@ -3385,7 +3329,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"F32\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
+				r.EncodeString(`F32`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeFloat32(float32(x.TestStrucCommon.F32))
@@ -3393,7 +3337,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"B\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeBool(bool(x.TestStrucCommon.B))
@@ -3401,7 +3345,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"By\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `By`)
+				r.EncodeString(`By`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.TestStrucCommon.By))
@@ -3409,7 +3353,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Sslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
+				r.EncodeString(`Sslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.Sslice == nil {
@@ -3421,7 +3365,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I64slice`)
+				r.EncodeString(`I64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.I64slice == nil {
@@ -3433,7 +3377,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I16slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
+				r.EncodeString(`I16slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.I16slice == nil {
@@ -3445,7 +3389,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
+				r.EncodeString(`Ui64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.Ui64slice == nil {
@@ -3457,7 +3401,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ui8slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
+				r.EncodeString(`Ui8slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.Ui8slice == nil {
@@ -3469,7 +3413,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Bslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
+				r.EncodeString(`Bslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.Bslice == nil {
@@ -3481,7 +3425,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Byslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Byslice`)
+				r.EncodeString(`Byslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.Byslice == nil {
@@ -3493,7 +3437,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"BytesSlice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `BytesSlice`)
+				r.EncodeString(`BytesSlice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.BytesSlice == nil {
@@ -3505,7 +3449,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Iptrslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
+				r.EncodeString(`Iptrslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.Iptrslice == nil {
@@ -3517,7 +3461,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"WrapSliceInt64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
+				r.EncodeString(`WrapSliceInt64`)
 			}
 			z.EncWriteMapElemValue()
 			x.TestStrucCommon.WrapSliceInt64.CodecEncodeSelf(e)
@@ -3525,7 +3469,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"WrapSliceString\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
+				r.EncodeString(`WrapSliceString`)
 			}
 			z.EncWriteMapElemValue()
 			x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
@@ -3533,7 +3477,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Msi64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
+				r.EncodeString(`Msi64`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.Msi64 == nil {
@@ -3545,7 +3489,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Msbytes\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Msbytes`)
+				r.EncodeString(`Msbytes`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.Msbytes == nil {
@@ -3557,7 +3501,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Simplef\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Simplef`)
+				r.EncodeString(`Simplef`)
 			}
 			z.EncWriteMapElemValue()
 			yy149 := &x.TestStrucCommon.Simplef
@@ -3566,7 +3510,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"SstrUi64T\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `SstrUi64T`)
+				r.EncodeString(`SstrUi64T`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.SstrUi64T == nil {
@@ -3578,7 +3522,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"MstrUi64T\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `MstrUi64T`)
+				r.EncodeString(`MstrUi64T`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.MstrUi64T == nil {
@@ -3590,19 +3534,15 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AS\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
+				r.EncodeString(`AS`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
-			}
+			r.EncodeString(string(x.TestStrucCommon.AnonInTestStruc.AS))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
+				r.EncodeString(`AI64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
@@ -3610,7 +3550,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI16\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
+				r.EncodeString(`AI16`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI16))
@@ -3618,7 +3558,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AUi64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
+				r.EncodeString(`AUi64`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.TestStrucCommon.AnonInTestStruc.AUi64))
@@ -3626,7 +3566,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"ASslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
+				r.EncodeString(`ASslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.AnonInTestStruc.ASslice == nil {
@@ -3638,7 +3578,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
+				r.EncodeString(`AI64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.AnonInTestStruc.AI64slice == nil {
@@ -3650,7 +3590,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AUi64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
+				r.EncodeString(`AUi64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.AnonInTestStruc.AUi64slice == nil {
@@ -3662,7 +3602,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AF64slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
+				r.EncodeString(`AF64slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.AnonInTestStruc.AF64slice == nil {
@@ -3674,7 +3614,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AF32slice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
+				r.EncodeString(`AF32slice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.AnonInTestStruc.AF32slice == nil {
@@ -3686,7 +3626,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AMSU16\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
+				r.EncodeString(`AMSU16`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.AnonInTestStruc.AMSU16 == nil {
@@ -3698,7 +3638,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64arr0\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
+				r.EncodeString(`AI64arr0`)
 			}
 			z.EncWriteMapElemValue()
 			yy163 := &x.TestStrucCommon.AnonInTestStruc.AI64arr0
@@ -3707,7 +3647,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64slice0\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice0`)
+				r.EncodeString(`AI64slice0`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.AnonInTestStruc.AI64slice0 == nil {
@@ -3719,7 +3659,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AUi64sliceN\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
+				r.EncodeString(`AUi64sliceN`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.AnonInTestStruc.AUi64sliceN == nil {
@@ -3731,7 +3671,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AMSU16N\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
+				r.EncodeString(`AMSU16N`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.AnonInTestStruc.AMSU16N == nil {
@@ -3743,7 +3683,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AMSU16E\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
+				r.EncodeString(`AMSU16E`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.AnonInTestStruc.AMSU16E == nil {
@@ -3755,7 +3695,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"NotAnon\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `NotAnon`)
+				r.EncodeString(`NotAnon`)
 			}
 			z.EncWriteMapElemValue()
 			yy169 := &x.TestStrucCommon.NotAnon
@@ -3764,7 +3704,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Nmap\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Nmap`)
+				r.EncodeString(`Nmap`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.Nmap == nil {
@@ -3776,7 +3716,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Nslice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Nslice`)
+				r.EncodeString(`Nslice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.TestStrucCommon.Nslice == nil {
@@ -3788,7 +3728,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Nint64\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Nint64`)
+				r.EncodeString(`Nint64`)
 			}
 			z.EncWriteMapElemValue()
 			if yyn54 {
@@ -3801,7 +3741,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Mtsptr\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Mtsptr`)
+				r.EncodeString(`Mtsptr`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Mtsptr == nil {
@@ -3813,7 +3753,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Mts\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Mts`)
+				r.EncodeString(`Mts`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Mts == nil {
@@ -3825,7 +3765,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Its\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Its`)
+				r.EncodeString(`Its`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Its == nil {
@@ -3837,7 +3777,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Nteststruc\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Nteststruc`)
+				r.EncodeString(`Nteststruc`)
 			}
 			z.EncWriteMapElemValue()
 			if yyn58 {
@@ -4768,7 +4708,7 @@ func (x *codecgenA) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"ZZ\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `ZZ`)
+				r.EncodeString(`ZZ`)
 			}
 			z.EncWriteMapElemValue()
 			if x.ZZ == nil {
@@ -4890,7 +4830,7 @@ func (x *codecgenB) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AA\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `AA`)
+				r.EncodeString(`AA`)
 			}
 			z.EncWriteMapElemValue()
 			yy6 := &x.AA
@@ -5025,7 +4965,7 @@ func (x *codecgenC) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"BB\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `BB`)
+					r.EncodeString(`BB`)
 				}
 				z.EncWriteMapElemValue()
 				yy6 := &x.BB
@@ -5144,7 +5084,7 @@ func (x *TestCodecgenG) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"TestCodecgenG\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
+				r.EncodeString(`TestCodecgenG`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestCodecgenG))
@@ -5261,7 +5201,7 @@ func (x *codecgenH) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"TestCodecgenG\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
+				r.EncodeString(`TestCodecgenG`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.TestCodecgenG.TestCodecgenG))
@@ -5378,7 +5318,7 @@ func (x *codecgenI) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"TestCodecgenG\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `TestCodecgenG`)
+				r.EncodeString(`TestCodecgenG`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.codecgenH.TestCodecgenG.TestCodecgenG))
@@ -5489,11 +5429,7 @@ func (x *codecgenK) CodecEncodeSelf(e *Encoder) {
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.X))
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.Y)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.Y))
-			}
+			r.EncodeString(string(x.Y))
 			z.EncWriteArrayEnd()
 		} else {
 			z.EncWriteMapStart(2)
@@ -5501,7 +5437,7 @@ func (x *codecgenK) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"X\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `X`)
+				r.EncodeString(`X`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.X))
@@ -5509,14 +5445,10 @@ func (x *codecgenK) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Y\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Y`)
+				r.EncodeString(`Y`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.Y)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.Y))
-			}
+			r.EncodeString(string(x.Y))
 			z.EncWriteMapEnd()
 		}
 	}
@@ -5646,7 +5578,7 @@ func (x *codecgenL) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"X\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `X`)
+				r.EncodeString(`X`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.X))
@@ -5654,7 +5586,7 @@ func (x *codecgenL) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Y\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Y`)
+				r.EncodeString(`Y`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeUint(uint64(x.Y))
@@ -5779,11 +5711,7 @@ func (x *codecgenM) CodecEncodeSelf(e *Encoder) {
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.codecgenK.X))
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.codecgenK.Y)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.codecgenK.Y))
-			}
+			r.EncodeString(string(x.codecgenK.Y))
 			z.EncWriteArrayEnd()
 		} else {
 			z.EncWriteMapStart(2)
@@ -5791,7 +5719,7 @@ func (x *codecgenM) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"X\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `X`)
+				r.EncodeString(`X`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.codecgenK.X))
@@ -5799,14 +5727,10 @@ func (x *codecgenM) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Y\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Y`)
+				r.EncodeString(`Y`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.codecgenK.Y)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.codecgenK.Y))
-			}
+			r.EncodeString(string(x.codecgenK.Y))
 			z.EncWriteMapEnd()
 		}
 	}
@@ -5934,7 +5858,7 @@ func (x *testStrucKeyTypeT0) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"F\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `F`)
+				r.EncodeString(`F`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.F))
@@ -6051,7 +5975,7 @@ func (x *testStrucKeyTypeT1) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"FFFF\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `FFFF`)
+				r.EncodeString(`FFFF`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.F))
@@ -6521,11 +6445,7 @@ func (x Sstring) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
-	if z.EncBasicHandle().StringToRaw {
-		r.EncodeStringBytesRaw(z.BytesView(string(x)))
-	} else {
-		r.EncodeStringEnc(codecSelferCcUTF819780, string(x))
-	}
+	r.EncodeString(string(x))
 }
 
 func (x *Sstring) CodecDecodeSelf(d *Decoder) {
@@ -6557,7 +6477,7 @@ func (x *Sstructsmall) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"A\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `A`)
+				r.EncodeString(`A`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.A))
@@ -6700,7 +6620,7 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"A\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `A`)
+				r.EncodeString(`A`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.A))
@@ -6708,7 +6628,7 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"B\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeBool(bool(x.B))
@@ -6716,7 +6636,7 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ssmallptr\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmallptr`)
+				r.EncodeString(`Ssmallptr`)
 			}
 			z.EncWriteMapElemValue()
 			if yyn5 {
@@ -6728,7 +6648,7 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ssmall\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmall`)
+				r.EncodeString(`Ssmall`)
 			}
 			z.EncWriteMapElemValue()
 			if yyn6 {
@@ -6740,7 +6660,7 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Sptr\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Sptr`)
+				r.EncodeString(`Sptr`)
 			}
 			z.EncWriteMapElemValue()
 			if yyn7 {
@@ -6997,7 +6917,7 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"A\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `A`)
+				r.EncodeString(`A`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.A))
@@ -7005,7 +6925,7 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"B\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeBool(bool(x.B))
@@ -7013,7 +6933,7 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ssmallptr\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmallptr`)
+				r.EncodeString(`Ssmallptr`)
 			}
 			z.EncWriteMapElemValue()
 			if yyn5 {
@@ -7025,7 +6945,7 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ssmall\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ssmall`)
+				r.EncodeString(`Ssmall`)
 			}
 			z.EncWriteMapElemValue()
 			if yyn6 {
@@ -7037,7 +6957,7 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Sptr\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Sptr`)
+				r.EncodeString(`Sptr`)
 			}
 			z.EncWriteMapElemValue()
 			if yyn7 {
@@ -7262,11 +7182,7 @@ func (x *tLowerFirstLetter) CodecEncodeSelf(e *Encoder) {
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.I))
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteArrayEnd()
 		} else {
 			z.EncWriteMapStart(2)
@@ -7274,7 +7190,7 @@ func (x *tLowerFirstLetter) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
+				r.EncodeString(`I`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I))
@@ -7282,14 +7198,10 @@ func (x *tLowerFirstLetter) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"S\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+				r.EncodeString(`S`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteMapEnd()
 		}
 	}
@@ -7506,7 +7418,7 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Islice\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Islice`)
+				r.EncodeString(`Islice`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Islice == nil {
@@ -7518,7 +7430,7 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Ms\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Ms`)
+				r.EncodeString(`Ms`)
 			}
 			z.EncWriteMapElemValue()
 			if x.Ms == nil {
@@ -7530,7 +7442,7 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Nintf\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Nintf`)
+				r.EncodeString(`Nintf`)
 			}
 			z.EncWriteMapElemValue()
 			z.EncFallback(x.Nintf)
@@ -7538,7 +7450,7 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"T\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `T`)
+				r.EncodeString(`T`)
 			}
 			z.EncWriteMapElemValue()
 			if !z.EncBasicHandle().TimeNotBuiltin {
@@ -7556,7 +7468,7 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Tptr\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `Tptr`)
+				r.EncodeString(`Tptr`)
 			}
 			z.EncWriteMapElemValue()
 			if yyn7 {
@@ -7794,11 +7706,7 @@ func (x *missingFielderT1) CodecEncodeSelf(e *Encoder) {
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteArrayElem()
 			r.EncodeBool(bool(x.B))
 			z.EncWriteArrayEnd()
@@ -7808,19 +7716,15 @@ func (x *missingFielderT1) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"S\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+				r.EncodeString(`S`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"B\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeBool(bool(x.B))
@@ -7943,11 +7847,7 @@ func (x *missingFielderT2) CodecEncodeSelf(e *Encoder) {
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(4)
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteArrayElem()
 			r.EncodeBool(bool(x.B))
 			z.EncWriteArrayElem()
@@ -7961,19 +7861,15 @@ func (x *missingFielderT2) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"S\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+				r.EncodeString(`S`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"B\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeBool(bool(x.B))
@@ -7981,7 +7877,7 @@ func (x *missingFielderT2) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"F\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `F`)
+				r.EncodeString(`F`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeFloat64(float64(x.F))
@@ -7989,7 +7885,7 @@ func (x *missingFielderT2) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
+				r.EncodeString(`I`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I))
@@ -8140,11 +8036,7 @@ func (x *testSelfExtHelper) CodecEncodeSelf(e *Encoder) {
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(3)
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.I))
 			z.EncWriteArrayElem()
@@ -8156,19 +8048,15 @@ func (x *testSelfExtHelper) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"S\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+				r.EncodeString(`S`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.S))
-			}
+			r.EncodeString(string(x.S))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
+				r.EncodeString(`I`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.I))
@@ -8176,7 +8064,7 @@ func (x *testSelfExtHelper) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"B\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeBool(bool(x.B))
@@ -8313,11 +8201,7 @@ func (x *TestSelfExtImpl) CodecEncodeSelf(e *Encoder) {
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(3)
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.testSelfExtHelper.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.testSelfExtHelper.S))
-			}
+			r.EncodeString(string(x.testSelfExtHelper.S))
 			z.EncWriteArrayElem()
 			r.EncodeInt(int64(x.testSelfExtHelper.I))
 			z.EncWriteArrayElem()
@@ -8329,19 +8213,15 @@ func (x *TestSelfExtImpl) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"S\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+				r.EncodeString(`S`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.testSelfExtHelper.S)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.testSelfExtHelper.S))
-			}
+			r.EncodeString(string(x.testSelfExtHelper.S))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"I\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `I`)
+				r.EncodeString(`I`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeInt(int64(x.testSelfExtHelper.I))
@@ -8349,7 +8229,7 @@ func (x *TestSelfExtImpl) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"B\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeBool(bool(x.testSelfExtHelper.B))
@@ -8486,11 +8366,7 @@ func (x *TestSelfExtImpl2) CodecEncodeSelf(e *Encoder) {
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.M)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.M))
-			}
+			r.EncodeString(string(x.M))
 			z.EncWriteArrayElem()
 			r.EncodeBool(bool(x.O))
 			z.EncWriteArrayEnd()
@@ -8500,19 +8376,15 @@ func (x *TestSelfExtImpl2) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"M\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `M`)
+				r.EncodeString(`M`)
 			}
 			z.EncWriteMapElemValue()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(x.M)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(x.M))
-			}
+			r.EncodeString(string(x.M))
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"O\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `O`)
+				r.EncodeString(`O`)
 			}
 			z.EncWriteMapElemValue()
 			r.EncodeBool(bool(x.O))
@@ -8645,7 +8517,7 @@ func (x *TestTwoNakedInterfaces) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"A\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `A`)
+				r.EncodeString(`A`)
 			}
 			z.EncWriteMapElemValue()
 			z.EncFallback(x.A)
@@ -8653,7 +8525,7 @@ func (x *TestTwoNakedInterfaces) CodecEncodeSelf(e *Encoder) {
 			if z.IsJSONHandle() {
 				z.WriteStr("\"B\"")
 			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
 			z.EncFallback(x.B)
@@ -8864,17 +8736,9 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			z.EncWriteArrayStart(77)
 			z.EncWriteArrayElem()
 			if yyq2[0] {
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
-				}
+				r.EncodeString(string(x.TestStrucCommon.S))
 			} else {
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw([]byte{})
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, "")
-				}
+				r.EncodeString("")
 			}
 			z.EncWriteArrayElem()
 			if yyq2[1] {
@@ -9123,17 +8987,9 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteArrayElem()
 			if yyq2[33] {
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
-				}
+				r.EncodeString(string(x.TestStrucCommon.AnonInTestStruc.AS))
 			} else {
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw([]byte{})
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, "")
-				}
+				r.EncodeString("")
 			}
 			z.EncWriteArrayElem()
 			if yyq2[34] {
@@ -9585,21 +9441,17 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"S\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `S`)
+					r.EncodeString(`S`)
 				}
 				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.S)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.S))
-				}
+				r.EncodeString(string(x.TestStrucCommon.S))
 			}
 			if yyq2[1] {
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
 					z.WriteStr("\"I64\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I64`)
+					r.EncodeString(`I64`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeInt(int64(x.TestStrucCommon.I64))
@@ -9609,7 +9461,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"I32\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I32`)
+					r.EncodeString(`I32`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeInt(int64(x.TestStrucCommon.I32))
@@ -9619,7 +9471,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"I16\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I16`)
+					r.EncodeString(`I16`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeInt(int64(x.TestStrucCommon.I16))
@@ -9629,7 +9481,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"I8\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I8`)
+					r.EncodeString(`I8`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeInt(int64(x.TestStrucCommon.I8))
@@ -9639,7 +9491,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"I64n\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I64n`)
+					r.EncodeString(`I64n`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeInt(int64(x.TestStrucCommon.I64n))
@@ -9649,7 +9501,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"I32n\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I32n`)
+					r.EncodeString(`I32n`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeInt(int64(x.TestStrucCommon.I32n))
@@ -9659,7 +9511,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"I16n\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I16n`)
+					r.EncodeString(`I16n`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeInt(int64(x.TestStrucCommon.I16n))
@@ -9669,7 +9521,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"I8n\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I8n`)
+					r.EncodeString(`I8n`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeInt(int64(x.TestStrucCommon.I8n))
@@ -9679,7 +9531,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Ui64\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64`)
+					r.EncodeString(`Ui64`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeUint(uint64(x.TestStrucCommon.Ui64))
@@ -9689,7 +9541,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Ui32\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui32`)
+					r.EncodeString(`Ui32`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeUint(uint64(x.TestStrucCommon.Ui32))
@@ -9699,7 +9551,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Ui16\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui16`)
+					r.EncodeString(`Ui16`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeUint(uint64(x.TestStrucCommon.Ui16))
@@ -9709,7 +9561,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Ui8\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8`)
+					r.EncodeString(`Ui8`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeUint(uint64(x.TestStrucCommon.Ui8))
@@ -9719,7 +9571,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"F64\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `F64`)
+					r.EncodeString(`F64`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeFloat64(float64(x.TestStrucCommon.F64))
@@ -9729,7 +9581,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"F32\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `F32`)
+					r.EncodeString(`F32`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeFloat32(float32(x.TestStrucCommon.F32))
@@ -9739,7 +9591,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"B\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `B`)
+					r.EncodeString(`B`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeBool(bool(x.TestStrucCommon.B))
@@ -9749,7 +9601,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"By\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `By`)
+					r.EncodeString(`By`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeUint(uint64(x.TestStrucCommon.By))
@@ -9759,7 +9611,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Sslice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Sslice`)
+					r.EncodeString(`Sslice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.Sslice == nil {
@@ -9773,7 +9625,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"I64slice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I64slice`)
+					r.EncodeString(`I64slice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.I64slice == nil {
@@ -9787,7 +9639,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"I16slice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `I16slice`)
+					r.EncodeString(`I16slice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.I16slice == nil {
@@ -9801,7 +9653,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Ui64slice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slice`)
+					r.EncodeString(`Ui64slice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.Ui64slice == nil {
@@ -9815,7 +9667,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Ui8slice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui8slice`)
+					r.EncodeString(`Ui8slice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.Ui8slice == nil {
@@ -9829,7 +9681,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Bslice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Bslice`)
+					r.EncodeString(`Bslice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.Bslice == nil {
@@ -9843,7 +9695,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Byslice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Byslice`)
+					r.EncodeString(`Byslice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.Byslice == nil {
@@ -9857,7 +9709,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"BytesSlice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `BytesSlice`)
+					r.EncodeString(`BytesSlice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.BytesSlice == nil {
@@ -9871,7 +9723,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Iptrslice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Iptrslice`)
+					r.EncodeString(`Iptrslice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.Iptrslice == nil {
@@ -9885,7 +9737,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"WrapSliceInt64\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceInt64`)
+					r.EncodeString(`WrapSliceInt64`)
 				}
 				z.EncWriteMapElemValue()
 				x.TestStrucCommon.WrapSliceInt64.CodecEncodeSelf(e)
@@ -9895,7 +9747,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"WrapSliceString\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `WrapSliceString`)
+					r.EncodeString(`WrapSliceString`)
 				}
 				z.EncWriteMapElemValue()
 				x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
@@ -9905,7 +9757,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Msi64\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Msi64`)
+					r.EncodeString(`Msi64`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.Msi64 == nil {
@@ -9919,7 +9771,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Msbytes\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Msbytes`)
+					r.EncodeString(`Msbytes`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.Msbytes == nil {
@@ -9933,7 +9785,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Simplef\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Simplef`)
+					r.EncodeString(`Simplef`)
 				}
 				z.EncWriteMapElemValue()
 				yy194 := &x.TestStrucCommon.Simplef
@@ -9944,7 +9796,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"SstrUi64T\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `SstrUi64T`)
+					r.EncodeString(`SstrUi64T`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.SstrUi64T == nil {
@@ -9958,7 +9810,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"MstrUi64T\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `MstrUi64T`)
+					r.EncodeString(`MstrUi64T`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.MstrUi64T == nil {
@@ -9972,21 +9824,17 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AS\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AS`)
+					r.EncodeString(`AS`)
 				}
 				z.EncWriteMapElemValue()
-				if z.EncBasicHandle().StringToRaw {
-					r.EncodeStringBytesRaw(z.BytesView(string(x.TestStrucCommon.AnonInTestStruc.AS)))
-				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, string(x.TestStrucCommon.AnonInTestStruc.AS))
-				}
+				r.EncodeString(string(x.TestStrucCommon.AnonInTestStruc.AS))
 			}
 			if yyq2[34] {
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AI64\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64`)
+					r.EncodeString(`AI64`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI64))
@@ -9996,7 +9844,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AI16\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI16`)
+					r.EncodeString(`AI16`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeInt(int64(x.TestStrucCommon.AnonInTestStruc.AI16))
@@ -10006,7 +9854,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AUi64\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64`)
+					r.EncodeString(`AUi64`)
 				}
 				z.EncWriteMapElemValue()
 				r.EncodeUint(uint64(x.TestStrucCommon.AnonInTestStruc.AUi64))
@@ -10016,7 +9864,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"ASslice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `ASslice`)
+					r.EncodeString(`ASslice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.AnonInTestStruc.ASslice == nil {
@@ -10030,7 +9878,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AI64slice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice`)
+					r.EncodeString(`AI64slice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.AnonInTestStruc.AI64slice == nil {
@@ -10044,7 +9892,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AUi64slice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64slice`)
+					r.EncodeString(`AUi64slice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.AnonInTestStruc.AUi64slice == nil {
@@ -10058,7 +9906,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AF64slice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AF64slice`)
+					r.EncodeString(`AF64slice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.AnonInTestStruc.AF64slice == nil {
@@ -10072,7 +9920,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AF32slice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AF32slice`)
+					r.EncodeString(`AF32slice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.AnonInTestStruc.AF32slice == nil {
@@ -10086,7 +9934,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AMSU16\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16`)
+					r.EncodeString(`AMSU16`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.AnonInTestStruc.AMSU16 == nil {
@@ -10100,7 +9948,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AI64arr0\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64arr0`)
+					r.EncodeString(`AI64arr0`)
 				}
 				z.EncWriteMapElemValue()
 				yy208 := &x.TestStrucCommon.AnonInTestStruc.AI64arr0
@@ -10111,7 +9959,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AI64slice0\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AI64slice0`)
+					r.EncodeString(`AI64slice0`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.AnonInTestStruc.AI64slice0 == nil {
@@ -10125,7 +9973,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AUi64sliceN\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AUi64sliceN`)
+					r.EncodeString(`AUi64sliceN`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.AnonInTestStruc.AUi64sliceN == nil {
@@ -10139,7 +9987,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AMSU16N\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16N`)
+					r.EncodeString(`AMSU16N`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.AnonInTestStruc.AMSU16N == nil {
@@ -10153,7 +10001,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"AMSU16E\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `AMSU16E`)
+					r.EncodeString(`AMSU16E`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.AnonInTestStruc.AMSU16E == nil {
@@ -10167,7 +10015,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"NotAnon\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `NotAnon`)
+					r.EncodeString(`NotAnon`)
 				}
 				z.EncWriteMapElemValue()
 				yy214 := &x.TestStrucCommon.NotAnon
@@ -10178,7 +10026,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Nmap\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nmap`)
+					r.EncodeString(`Nmap`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.Nmap == nil {
@@ -10192,7 +10040,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Nslice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nslice`)
+					r.EncodeString(`Nslice`)
 				}
 				z.EncWriteMapElemValue()
 				if x.TestStrucCommon.Nslice == nil {
@@ -10206,7 +10054,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Nint64\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nint64`)
+					r.EncodeString(`Nint64`)
 				}
 				z.EncWriteMapElemValue()
 				if yyn54 {
@@ -10221,7 +10069,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Chstr\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Chstr`)
+					r.EncodeString(`Chstr`)
 				}
 				z.EncWriteMapElemValue()
 				h.encChanstring((chan string)(x.Chstr), e)
@@ -10231,7 +10079,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Mis\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Mis`)
+					r.EncodeString(`Mis`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Mis == nil {
@@ -10245,7 +10093,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Mbu64\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Mbu64`)
+					r.EncodeString(`Mbu64`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Mbu64 == nil {
@@ -10259,7 +10107,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Miwu64s\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Miwu64s`)
+					r.EncodeString(`Miwu64s`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Miwu64s == nil {
@@ -10273,7 +10121,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Mfwss\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Mfwss`)
+					r.EncodeString(`Mfwss`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Mfwss == nil {
@@ -10287,7 +10135,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Mf32wss\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Mf32wss`)
+					r.EncodeString(`Mf32wss`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Mf32wss == nil {
@@ -10301,7 +10149,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Mui2wss\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Mui2wss`)
+					r.EncodeString(`Mui2wss`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Mui2wss == nil {
@@ -10315,7 +10163,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Msu2wss\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Msu2wss`)
+					r.EncodeString(`Msu2wss`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Msu2wss == nil {
@@ -10329,7 +10177,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Ci64\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ci64`)
+					r.EncodeString(`Ci64`)
 				}
 				z.EncWriteMapElemValue()
 				x.Ci64.CodecEncodeSelf(e)
@@ -10339,7 +10187,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Swrapbytes\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Swrapbytes`)
+					r.EncodeString(`Swrapbytes`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Swrapbytes == nil {
@@ -10353,7 +10201,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Swrapuint8\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Swrapuint8`)
+					r.EncodeString(`Swrapuint8`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Swrapuint8 == nil {
@@ -10367,7 +10215,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"ArrStrUi64T\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `ArrStrUi64T`)
+					r.EncodeString(`ArrStrUi64T`)
 				}
 				z.EncWriteMapElemValue()
 				yy231 := &x.ArrStrUi64T
@@ -10378,7 +10226,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Ui64array\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64array`)
+					r.EncodeString(`Ui64array`)
 				}
 				z.EncWriteMapElemValue()
 				yy233 := &x.Ui64array
@@ -10389,7 +10237,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Ui64slicearray\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ui64slicearray`)
+					r.EncodeString(`Ui64slicearray`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Ui64slicearray == nil {
@@ -10403,7 +10251,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"SintfAarray\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `SintfAarray`)
+					r.EncodeString(`SintfAarray`)
 				}
 				z.EncWriteMapElemValue()
 				if x.SintfAarray == nil {
@@ -10417,7 +10265,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"MstrUi64TSelf\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `MstrUi64TSelf`)
+					r.EncodeString(`MstrUi64TSelf`)
 				}
 				z.EncWriteMapElemValue()
 				if x.MstrUi64TSelf == nil {
@@ -10431,7 +10279,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Islice\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Islice`)
+					r.EncodeString(`Islice`)
 				}
 				z.EncWriteMapElemValue()
 				if yyn71 {
@@ -10449,7 +10297,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Ms\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Ms`)
+					r.EncodeString(`Ms`)
 				}
 				z.EncWriteMapElemValue()
 				if yyn72 {
@@ -10467,7 +10315,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Nintf\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nintf`)
+					r.EncodeString(`Nintf`)
 				}
 				z.EncWriteMapElemValue()
 				if yyn73 {
@@ -10481,7 +10329,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"T\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `T`)
+					r.EncodeString(`T`)
 				}
 				z.EncWriteMapElemValue()
 				if yyn74 {
@@ -10505,7 +10353,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Tptr\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Tptr`)
+					r.EncodeString(`Tptr`)
 				}
 				z.EncWriteMapElemValue()
 				if yyn75 {
@@ -10530,7 +10378,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Mtsptr\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Mtsptr`)
+					r.EncodeString(`Mtsptr`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Mtsptr == nil {
@@ -10544,7 +10392,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Mts\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Mts`)
+					r.EncodeString(`Mts`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Mts == nil {
@@ -10558,7 +10406,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Its\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Its`)
+					r.EncodeString(`Its`)
 				}
 				z.EncWriteMapElemValue()
 				if x.Its == nil {
@@ -10572,7 +10420,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if z.IsJSONHandle() {
 					z.WriteStr("\"Nteststruc\"")
 				} else {
-					r.EncodeStringEnc(codecSelferCcUTF819780, `Nteststruc`)
+					r.EncodeString(`Nteststruc`)
 				}
 				z.EncWriteMapElemValue()
 				if yyn79 {
@@ -12012,11 +11860,7 @@ func (x codecSelfer19780) encwrapSliceString(v wrapSliceString, e *Encoder) {
 	z.EncWriteArrayStart(len(v))
 	for _, yyv1 := range v {
 		z.EncWriteArrayElem()
-		if z.EncBasicHandle().StringToRaw {
-			r.EncodeStringBytesRaw(z.BytesView(string(yyv1)))
-		} else {
-			r.EncodeStringEnc(codecSelferCcUTF819780, string(yyv1))
-		}
+		r.EncodeString(string(yyv1))
 	}
 	z.EncWriteArrayEnd()
 }
@@ -12295,11 +12139,7 @@ func (x codecSelfer19780) encMapstringuint16(v map[string]uint16, e *Encoder) {
 	z.EncWriteMapStart(len(v))
 	for yyk1, yyv1 := range v {
 		z.EncWriteMapElemKey()
-		if z.EncBasicHandle().StringToRaw {
-			r.EncodeStringBytesRaw(z.BytesView(string(yyk1)))
-		} else {
-			r.EncodeStringEnc(codecSelferCcUTF819780, string(yyk1))
-		}
+		r.EncodeString(string(yyk1))
 		z.EncWriteMapElemValue()
 		r.EncodeUint(uint64(yyv1))
 	}
@@ -12608,11 +12448,7 @@ func (x codecSelfer19780) encMapstringPtrtostringUint64T(v map[string]*stringUin
 	z.EncWriteMapStart(len(v))
 	for yyk1, yyv1 := range v {
 		z.EncWriteMapElemKey()
-		if z.EncBasicHandle().StringToRaw {
-			r.EncodeStringBytesRaw(z.BytesView(string(yyk1)))
-		} else {
-			r.EncodeStringEnc(codecSelferCcUTF819780, string(yyk1))
-		}
+		r.EncodeString(string(yyk1))
 		z.EncWriteMapElemValue()
 		if yyv1 == nil {
 			r.EncodeNil()
@@ -12694,11 +12530,7 @@ func (x codecSelfer19780) encMapstringPtrtoTestStruc(v map[string]*TestStruc, e 
 	z.EncWriteMapStart(len(v))
 	for yyk1, yyv1 := range v {
 		z.EncWriteMapElemKey()
-		if z.EncBasicHandle().StringToRaw {
-			r.EncodeStringBytesRaw(z.BytesView(string(yyk1)))
-		} else {
-			r.EncodeStringEnc(codecSelferCcUTF819780, string(yyk1))
-		}
+		r.EncodeString(string(yyk1))
 		z.EncWriteMapElemValue()
 		if yyv1 == nil {
 			r.EncodeNil()
@@ -12780,11 +12612,7 @@ func (x codecSelfer19780) encMapstringTestStruc(v map[string]TestStruc, e *Encod
 	z.EncWriteMapStart(len(v))
 	for yyk1, yyv1 := range v {
 		z.EncWriteMapElemKey()
-		if z.EncBasicHandle().StringToRaw {
-			r.EncodeStringBytesRaw(z.BytesView(string(yyk1)))
-		} else {
-			r.EncodeStringEnc(codecSelferCcUTF819780, string(yyk1))
-		}
+		r.EncodeString(string(yyk1))
 		z.EncWriteMapElemValue()
 		yy3 := &yyv1
 		yy3.CodecEncodeSelf(e)
@@ -12956,11 +12784,7 @@ func (x codecSelfer19780) encAarray(v *Aarray, e *Encoder) {
 	z.EncWriteArrayStart(len(v))
 	for _, yyv1 := range v {
 		z.EncWriteArrayElem()
-		if z.EncBasicHandle().StringToRaw {
-			r.EncodeStringBytesRaw(z.BytesView(string(yyv1)))
-		} else {
-			r.EncodeStringEnc(codecSelferCcUTF819780, string(yyv1))
-		}
+		r.EncodeString(string(yyv1))
 	}
 	z.EncWriteArrayEnd()
 }
@@ -13056,11 +12880,7 @@ func (x codecSelfer19780) encChanstring(v chan string, e *Encoder) {
 		z.EncWriteArrayStart(len(sch1))
 		for _, yyv1 := range sch1 {
 			z.EncWriteArrayElem()
-			if z.EncBasicHandle().StringToRaw {
-				r.EncodeStringBytesRaw(z.BytesView(string(yyv1)))
-			} else {
-				r.EncodeStringEnc(codecSelferCcUTF819780, string(yyv1))
-			}
+			r.EncodeString(string(yyv1))
 		}
 		z.EncWriteArrayEnd()
 	}
@@ -13993,11 +13813,7 @@ func (x codecSelfer19780) encMapstringPtrtoTestStrucFlex(v map[string]*TestStruc
 	z.EncWriteMapStart(len(v))
 	for yyk1, yyv1 := range v {
 		z.EncWriteMapElemKey()
-		if z.EncBasicHandle().StringToRaw {
-			r.EncodeStringBytesRaw(z.BytesView(string(yyk1)))
-		} else {
-			r.EncodeStringEnc(codecSelferCcUTF819780, string(yyk1))
-		}
+		r.EncodeString(string(yyk1))
 		z.EncWriteMapElemValue()
 		if yyv1 == nil {
 			r.EncodeNil()
@@ -14079,11 +13895,7 @@ func (x codecSelfer19780) encMapstringTestStrucFlex(v map[string]TestStrucFlex, 
 	z.EncWriteMapStart(len(v))
 	for yyk1, yyv1 := range v {
 		z.EncWriteMapElemKey()
-		if z.EncBasicHandle().StringToRaw {
-			r.EncodeStringBytesRaw(z.BytesView(string(yyk1)))
-		} else {
-			r.EncodeStringEnc(codecSelferCcUTF819780, string(yyk1))
-		}
+		r.EncodeString(string(yyk1))
 		z.EncWriteMapElemValue()
 		yy3 := &yyv1
 		yy3.CodecEncodeSelf(e)
