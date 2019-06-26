@@ -533,12 +533,21 @@ func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
 }
 
 func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
-	v = rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rv), rv.Type().Elem()), reflect.Array)
-	// xdebugf("rvGetArray4Slice: b4 copy: rv: %#v, v: %#v", rv, v)
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	t := reflectArrayOf(rvGetSliceLen(rv), rv.Type().Elem()) // TODO: Len or Cap???
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	uv.flag = uintptr(reflect.Array) | unsafeFlagIndir | unsafeFlagAddr
+	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).word
 	uv.ptr = *(*unsafe.Pointer)(urv.ptr) // slice rv has a ptr to the slice.
-	// xdebugf("rvGetArray4Slice: after copy: v: %#v", v)
+
+	// t := reflectArrayOf(rvGetSliceLen(rv), rv.Type().Elem())
+	// v = rvZeroAddrK(t, reflect.Array)
+	// // xdebugf("rvGetArray4Slice: b4 copy: rv: %#v, v: %#v", rv, v)
+	// urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	// uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	// uv.ptr = *(*unsafe.Pointer)(urv.ptr) // slice rv has a ptr to the slice.
+	// // xdebugf("rvGetArray4Slice: after copy: v: %#v", v)
+
 	return
 }
 
