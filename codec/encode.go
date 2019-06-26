@@ -668,7 +668,8 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	var rvk = mapAddressableRV(f.ti.key, ktypeKind)
 
-	it := mapRange(rv, rvk, rvv, true)
+	var it mapIter
+	mapRange(&it, rv, rvk, rvv, true)
 	validKV := it.ValidKV()
 	var vx reflect.Value
 	for it.Next() {

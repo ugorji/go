@@ -114,6 +114,11 @@ package codec
 //      recover that as an io.EOF.
 //      This allows the bounds check branch to always be taken by the branch predictor,
 //      giving better performance (in theory), while ensuring that the code is shorter.
+//
+// ------------------------------------------
+// Escape Analysis
+//    - Prefer to return non-pointers if the value is used right away.
+//      Newly allocated values returned as pointers will be heap-allocated as they escape.
 
 import (
 	"bytes"

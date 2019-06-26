@@ -691,6 +691,10 @@ type unsafeMapHashIter struct {
 // 	it unsafe.Pointer
 // }
 
+type mapIter struct {
+	unsafeMapIter
+}
+
 type unsafeMapIter struct {
 	it *unsafeMapHashIter
 	// k, v             reflect.Value
@@ -699,7 +703,7 @@ type unsafeMapIter struct {
 	kisref, visref   bool
 	mapvalues        bool
 	done             bool
-
+	started          bool
 	// _ [2]uint64 // padding (cache-aligned)
 }
 
@@ -721,11 +725,12 @@ func (t *unsafeMapIter) Next() (r bool) {
 	if t == nil || t.done {
 		return
 	}
-	if t.it == nil {
-		t.it = (*unsafeMapHashIter)(mapiterinit(t.mtyp, t.mptr))
-	} else {
+	if t.started {
 		mapiternext((unsafe.Pointer)(t.it))
+	} else {
+		t.started = true
 	}
+
 	t.done = t.it.key == nil
 	if t.done {
 		return
@@ -771,17 +776,20 @@ func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
 	return urv.ptr
 }
 
-func mapRange(m, k, v reflect.Value, mapvalues bool) (t *unsafeMapIter) {
+func mapRange(t *mapIter, m, k, v reflect.Value, mapvalues bool) {
 	if rvIsNil(m) {
 		// return &unsafeMapIter{done: true}
+		t.done = true
 		return
 	}
+	t.done = false
+	t.started = false
 	// if unsafeMapIterUsePool {
 	// 	t = unsafeMapIterPool.Get().(*unsafeMapIter)
 	// } else {
 	//	t = new(unsafeMapIter)
 	// }
-	t = new(unsafeMapIter)
+	// t = new(unsafeMapIter)
 	// t.k = k
 	// t.v = v
 	t.mapvalues = mapvalues
@@ -791,6 +799,8 @@ func mapRange(m, k, v reflect.Value, mapvalues bool) (t *unsafeMapIter) {
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
 	t.mtyp = urv.typ
 	t.mptr = rv2ptr(urv)
+
+	t.it = (*unsafeMapHashIter)(mapiterinit(t.mtyp, t.mptr))
 
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
 	t.ktyp = urv.typ
@@ -802,6 +812,9 @@ func mapRange(m, k, v reflect.Value, mapvalues bool) (t *unsafeMapIter) {
 		t.vtyp = urv.typ
 		t.vptr = urv.ptr
 		t.visref = refBitset.isset(byte(v.Kind()))
+	} else {
+		t.vtyp = nil
+		t.vptr = nil
 	}
 
 	return

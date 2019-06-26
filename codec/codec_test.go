@@ -3274,7 +3274,8 @@ func TestMapRangeIndex(t *testing.T) {
 	mt := reflect.TypeOf(m1)
 	rvk := mapAddressableRV(mt.Key(), mt.Key().Kind())
 	rvv := mapAddressableRV(mt.Elem(), mt.Elem().Kind())
-	it := mapRange(rv4i(m1), rvk, rvv, true)
+	var it mapIter
+	mapRange(&it, rv4i(m1), rvk, rvv, true)
 	for it.Next() {
 		k := fnrv(it.Key(), rvk).Interface().(string)
 		v := fnrv(it.Value(), rvv).Interface().(*T)
@@ -3303,7 +3304,7 @@ func TestMapRangeIndex(t *testing.T) {
 	mt = reflect.TypeOf(m2)
 	rvk = mapAddressableRV(mt.Key(), mt.Key().Kind())
 	rvv = mapAddressableRV(mt.Elem(), mt.Elem().Kind())
-	it = mapRange(rv4i(m2), rvk, rvv, true)
+	mapRange(&it, rv4i(m2), rvk, rvv, true)
 	for it.Next() {
 		k := fnrv(it.Key(), rvk).Interface().(*T)
 		v := fnrv(it.Value(), rvv).Interface().(T)
