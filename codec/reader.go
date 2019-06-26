@@ -834,6 +834,9 @@ func (z *bytesDecReader) readx(n uint) (bs []byte) {
 
 func (z *bytesDecReader) readb(bs []byte) {
 	copy(bs, z.readx(uint(len(bs))))
+	// c := z.c
+	// z.c += uint(len(bs))
+	// copy(bs, z.b[c:z.c])
 }
 
 func (z *bytesDecReader) readn1() (v uint8) {
@@ -854,7 +857,31 @@ func (z *bytesDecReader) readn(num uint8) (bs [rwNLen]byte) {
 	// 	panic(io.EOF)
 	// }
 
-	copy(bs[:], z.b[z.c:z.c+uint(num)])
+	// _ = z.b[z.c:z.c+uint(num)]
+	// _ = bs[0]
+	// _ = bs[num-1]
+	// _ = z.b[z.c]
+	// _ = z.b[z.c+uint(num-1)]
+
+	// for bounds-check elimination, reslice z.b and ensure bs is within len
+	// bb := z.b[z.c:][:num]
+	bb := z.b[z.c : z.c+uint(num)]
+	_ = bs[len(bb)-1]
+	for i := 0; i < len(bb); i++ {
+		// for i := uint(0); i < uint(len(bb)); i++ {
+		bs[i] = bb[i]
+	}
+
+	// for i := uint8(0); i < num; i++ {
+	// 	bs[i] = z.b[z.c+uint(i)]
+	// }
+
+	// for i := num; i > 0; i-- {
+	// 	// xdebugf("i: %d", i)
+	// 	bs[i-1] = z.b[z.c+uint(i-1)]
+	// }
+
+	// copy(bs[:], z.b[z.c:z.c+uint(num)])
 	z.c += uint(num)
 	return
 }
