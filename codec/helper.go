@@ -1019,7 +1019,9 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				fi.addrD = false
 				rt2 := reflect.SliceOf(ti.elem)
 				fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
-					d.h.fn(rt2).fd(d, xf, rvGetSlice4Array(xrv, rt2))
+					d.h.fnVia(rt2, &x.rtidFns, true).fd(d, xf, rvGetSlice4Array(xrv, rt2))
+					// call fnVia directly, so it's not recursive, and fn(...) can be inlined
+					// d.h.fn(rt2).fd(d, xf, rvGetSlice4Array(xrv, rt2))
 				}
 				// fn.fd = (*Decoder).kArray
 			case reflect.Struct:
