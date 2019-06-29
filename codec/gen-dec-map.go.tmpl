@@ -18,7 +18,7 @@ if z.DecBasicHandle().MapValueReset {
 	{{end}} }
 if {{var "l"}} != 0 {
 	{{var "hl"}} := {{var "l"}} > 0 
-	for {{var "j"}} := 0; ({{var "hl"}} && {{var "j"}} < {{var "l"}}) || !({{var "hl"}} || r.CheckBreak()); {{var "j"}}++ {
+	for {{var "j"}} := 0; ({{var "hl"}} && {{var "j"}} < {{var "l"}}) || !({{var "hl"}} || z.DecCheckBreak()); {{var "j"}}++ {
 	z.DecReadMapElemKey() {{/* z.DecSendContainerState(codecSelfer_containerMapKey{{ .Sfx }}) */}}
 	{{ $x := printf "%vmk%v" .TempVar .Rand }}{{ decLineVarK $x -}}
 	{{ if eq .KTyp "interface{}" }}{{/* // special case if a byte array. */ -}}

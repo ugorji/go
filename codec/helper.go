@@ -166,17 +166,17 @@ const (
 	// so structFieldInfo fits into 8 bytes
 	maxLevelsEmbedding = 14
 
-	// useFinalizers=true configures finalizers to release pool'ed resources
-	// acquired by Encoder/Decoder during their GC.
-	//
-	// Note that calling SetFinalizer is always expensive,
-	// as code must be run on the systemstack even for SetFinalizer(t, nil).
-	//
-	// We document that folks SHOULD call Release() when done, or they can
-	// explicitly call SetFinalizer themselves e.g.
-	//    runtime.SetFinalizer(e, (*Encoder).Release)
-	//    runtime.SetFinalizer(d, (*Decoder).Release)
-	useFinalizers = false
+	// // useFinalizers=true configures finalizers to release pool'ed resources
+	// // acquired by Encoder/Decoder during their GC.
+	// //
+	// // Note that calling SetFinalizer is always expensive,
+	// // as code must be run on the systemstack even for SetFinalizer(t, nil).
+	// //
+	// // We document that folks SHOULD call Release() when done, or they can
+	// // explicitly call SetFinalizer themselves e.g.
+	// //    runtime.SetFinalizer(e, (*Encoder).Release)
+	// //    runtime.SetFinalizer(d, (*Decoder).Release)
+	// useFinalizers = false
 
 	// // usePool controls whether we use sync.Pool or not.
 	// //
@@ -2248,8 +2248,8 @@ func panicToErr(h errDecorator, err *error) {
 }
 
 func isSliceBoundsError(s string) bool {
-	return strings.Index(s, "index out of range") != -1 ||
-		strings.Index(s, "slice bounds out of range") != -1
+	return strings.Contains(s, "index out of range") ||
+		strings.Contains(s, "slice bounds out of range")
 }
 
 func panicValToErr(h errDecorator, v interface{}, err *error) {

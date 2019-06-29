@@ -4548,7 +4548,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -5847,7 +5847,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -5859,7 +5859,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -5880,7 +5880,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -5892,7 +5892,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -5913,7 +5913,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -5925,7 +5925,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -5946,7 +5946,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -5958,7 +5958,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -5979,7 +5979,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -5991,7 +5991,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6012,7 +6012,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6024,7 +6024,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6045,7 +6045,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6057,7 +6057,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6078,7 +6078,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6090,7 +6090,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6111,7 +6111,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6123,7 +6123,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6144,7 +6144,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6156,7 +6156,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6177,7 +6177,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6189,7 +6189,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6210,7 +6210,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6222,7 +6222,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6243,7 +6243,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6255,7 +6255,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6276,7 +6276,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6288,7 +6288,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6309,7 +6309,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6321,7 +6321,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6342,7 +6342,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6354,7 +6354,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6375,7 +6375,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6387,7 +6387,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6408,7 +6408,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6420,7 +6420,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6441,7 +6441,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6453,7 +6453,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6474,7 +6474,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6486,7 +6486,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6507,7 +6507,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6519,7 +6519,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6540,7 +6540,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6552,7 +6552,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6573,7 +6573,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6585,7 +6585,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6606,7 +6606,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6618,7 +6618,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6639,7 +6639,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6651,7 +6651,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6672,7 +6672,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6684,7 +6684,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6705,7 +6705,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6717,7 +6717,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6738,7 +6738,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6750,7 +6750,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6771,7 +6771,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6783,7 +6783,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6804,7 +6804,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6816,7 +6816,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6837,7 +6837,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6849,7 +6849,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6870,7 +6870,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6882,7 +6882,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6903,7 +6903,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6915,7 +6915,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6936,7 +6936,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6948,7 +6948,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6969,7 +6969,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -6981,7 +6981,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7002,7 +7002,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7014,7 +7014,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7035,7 +7035,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7047,7 +7047,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7068,7 +7068,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7080,7 +7080,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7101,7 +7101,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7113,7 +7113,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7134,7 +7134,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7146,7 +7146,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7167,7 +7167,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7179,7 +7179,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7200,7 +7200,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7212,7 +7212,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7233,7 +7233,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7245,7 +7245,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7266,7 +7266,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7278,7 +7278,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7299,7 +7299,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7311,7 +7311,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7332,7 +7332,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7344,7 +7344,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7365,7 +7365,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7377,7 +7377,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7398,7 +7398,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7410,7 +7410,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7431,7 +7431,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7443,7 +7443,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7464,7 +7464,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7476,7 +7476,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7497,7 +7497,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7509,7 +7509,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7530,7 +7530,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7542,7 +7542,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7563,7 +7563,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7575,7 +7575,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7596,7 +7596,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7608,7 +7608,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7629,7 +7629,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7641,7 +7641,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7662,7 +7662,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7674,7 +7674,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7695,7 +7695,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7707,7 +7707,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7728,7 +7728,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7740,7 +7740,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7761,7 +7761,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7773,7 +7773,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7794,7 +7794,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7806,7 +7806,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7827,7 +7827,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7839,7 +7839,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7860,7 +7860,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7872,7 +7872,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7893,7 +7893,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7905,7 +7905,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7926,7 +7926,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7938,7 +7938,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7959,7 +7959,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7971,7 +7971,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -7992,7 +7992,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8004,7 +8004,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8025,7 +8025,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8037,7 +8037,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8058,7 +8058,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8070,7 +8070,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8091,7 +8091,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8103,7 +8103,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8124,7 +8124,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8136,7 +8136,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8157,7 +8157,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8169,7 +8169,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8190,7 +8190,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8202,7 +8202,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8223,7 +8223,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8235,7 +8235,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8256,7 +8256,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8268,7 +8268,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8289,7 +8289,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8301,7 +8301,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8322,7 +8322,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8334,7 +8334,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8355,7 +8355,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8367,7 +8367,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8388,7 +8388,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8400,7 +8400,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8421,7 +8421,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8433,7 +8433,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8454,7 +8454,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8466,7 +8466,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8487,7 +8487,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8499,7 +8499,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8520,7 +8520,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8532,7 +8532,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8553,7 +8553,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8565,7 +8565,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8586,7 +8586,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8598,7 +8598,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8619,7 +8619,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8631,7 +8631,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8652,7 +8652,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8664,7 +8664,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8685,7 +8685,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8697,7 +8697,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8718,7 +8718,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8730,7 +8730,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8751,7 +8751,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8763,7 +8763,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8784,7 +8784,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8796,7 +8796,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8817,7 +8817,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8829,7 +8829,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8850,7 +8850,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8862,7 +8862,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8883,7 +8883,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8895,7 +8895,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8916,7 +8916,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8928,7 +8928,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8949,7 +8949,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8961,7 +8961,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8982,7 +8982,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -8994,7 +8994,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -9015,7 +9015,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -9027,7 +9027,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -9048,7 +9048,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -9060,7 +9060,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl381 {
 		yyb381 = yyj381 > l
 	} else {
-		yyb381 = r.CheckBreak()
+		yyb381 = z.DecCheckBreak()
 	}
 	if yyb381 {
 		z.DecReadArrayEnd()
@@ -9082,7 +9082,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl381 {
 			yyb381 = yyj381 > l
 		} else {
-			yyb381 = r.CheckBreak()
+			yyb381 = z.DecCheckBreak()
 		}
 		if yyb381 {
 			break
@@ -9335,7 +9335,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -9376,7 +9376,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl15 {
 		yyb15 = yyj15 > l
 	} else {
-		yyb15 = r.CheckBreak()
+		yyb15 = z.DecCheckBreak()
 	}
 	if yyb15 {
 		z.DecReadArrayEnd()
@@ -9388,7 +9388,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl15 {
 		yyb15 = yyj15 > l
 	} else {
-		yyb15 = r.CheckBreak()
+		yyb15 = z.DecCheckBreak()
 	}
 	if yyb15 {
 		z.DecReadArrayEnd()
@@ -9400,7 +9400,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl15 {
 		yyb15 = yyj15 > l
 	} else {
-		yyb15 = r.CheckBreak()
+		yyb15 = z.DecCheckBreak()
 	}
 	if yyb15 {
 		z.DecReadArrayEnd()
@@ -9412,7 +9412,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl15 {
 		yyb15 = yyj15 > l
 	} else {
-		yyb15 = r.CheckBreak()
+		yyb15 = z.DecCheckBreak()
 	}
 	if yyb15 {
 		z.DecReadArrayEnd()
@@ -9424,7 +9424,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl15 {
 		yyb15 = yyj15 > l
 	} else {
-		yyb15 = r.CheckBreak()
+		yyb15 = z.DecCheckBreak()
 	}
 	if yyb15 {
 		z.DecReadArrayEnd()
@@ -9436,7 +9436,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl15 {
 		yyb15 = yyj15 > l
 	} else {
-		yyb15 = r.CheckBreak()
+		yyb15 = z.DecCheckBreak()
 	}
 	if yyb15 {
 		z.DecReadArrayEnd()
@@ -9448,7 +9448,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl15 {
 		yyb15 = yyj15 > l
 	} else {
-		yyb15 = r.CheckBreak()
+		yyb15 = z.DecCheckBreak()
 	}
 	if yyb15 {
 		z.DecReadArrayEnd()
@@ -9460,7 +9460,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl15 {
 		yyb15 = yyj15 > l
 	} else {
-		yyb15 = r.CheckBreak()
+		yyb15 = z.DecCheckBreak()
 	}
 	if yyb15 {
 		z.DecReadArrayEnd()
@@ -9473,7 +9473,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl15 {
 			yyb15 = yyj15 > l
 		} else {
-			yyb15 = r.CheckBreak()
+			yyb15 = z.DecCheckBreak()
 		}
 		if yyb15 {
 			break
@@ -9512,7 +9512,7 @@ func (x codecSelfer19781) dectestMammoth2Basic(v *testMammoth2Basic, d *Decoder)
 		var yyrl1 int
 		_ = yyrl1
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			yyh1.ElemContainerState(yyj1)
 			var yydb1 bool
 			if yyj1 >= len(yyv1) {
@@ -9572,7 +9572,7 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1.CodecDecodeSelf(d)
 				if yymg1 {
@@ -9656,7 +9656,7 @@ func (x codecSelfer19781) decSliceTestMammoth2(v *[]TestMammoth2, d *Decoder) {
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 1840)
@@ -9721,7 +9721,7 @@ func (x codecSelfer19781) decArray4int64(v *[4]int64, d *Decoder) {
 		var yyrl1 int
 		_ = yyrl1
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			yyh1.ElemContainerState(yyj1)
 			var yydb1 bool
 			if yyj1 >= len(yyv1) {

@@ -816,8 +816,6 @@ func mapRange(t *mapIter, m, k, v reflect.Value, mapvalues bool) {
 		t.vtyp = nil
 		t.vptr = nil
 	}
-
-	return
 }
 
 func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
@@ -847,12 +845,12 @@ func mapSet(m, k, v reflect.Value) {
 	mapassign(urv.typ, rv2ptr(urv), kptr, vptr)
 }
 
-func mapDelete(m, k reflect.Value) {
-	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
-	var kptr = unsafeMapKVPtr(urv)
-	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
-	mapdelete(urv.typ, rv2ptr(urv), kptr)
-}
+// func mapDelete(m, k reflect.Value) {
+// 	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+// 	var kptr = unsafeMapKVPtr(urv)
+// 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
+// 	mapdelete(urv.typ, rv2ptr(urv), kptr)
+// }
 
 // return an addressable reflect value that can be used in mapRange and mapGet operations.
 //
@@ -893,3 +891,35 @@ func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
 //go:linkname typedslicecopy reflect.typedslicecopy
 //go:noescape
 func typedslicecopy(elemType unsafe.Pointer, dst, src unsafeSlice) int
+
+// ---------- ENCODER optimized ---------------
+
+func (e *Encoder) jsondriver() *jsonEncDriver {
+	return (*jsonEncDriver)((*unsafeIntf)(unsafe.Pointer(&e.e)).word)
+}
+
+// ---------- DECODER optimized ---------------
+
+func (d *Decoder) checkBreak() bool {
+	// jsonDecDriver.CheckBreak() CANNOT be inlined.
+	// Consequently, there's no benefit in incurring the cost of this
+	// wrapping function checkBreak.
+	//
+	// It is faster to just call the interface method directly.
+
+	// if d.js {
+	// 	return d.jsondriver().CheckBreak()
+	// }
+	// if d.cbor {
+	// 	return d.cbordriver().CheckBreak()
+	// }
+	return d.d.CheckBreak()
+}
+
+func (d *Decoder) jsondriver() *jsonDecDriver {
+	return (*jsonDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).word)
+}
+
+// func (d *Decoder) cbordriver() *cborDecDriver {
+// 	return (*cborDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).word)
+// }

@@ -1058,6 +1058,7 @@ type decRd struct {
 	be   bool // is binary encoding
 	js   bool // is json handle
 	jsms bool // is json handle, and MapKeyAsString
+	cbor bool // is cbor handle
 
 	// typ   entryType
 	bytes bool // is bytes reader

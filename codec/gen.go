@@ -1752,12 +1752,12 @@ func (x *genRunner) decStructMap(varname, lenvarname string, rtid uintptr, t ref
 	case genStructMapStyleLenPrefix:
 		x.linef("for %sj%s := 0; %sj%s < %s; %sj%s++ {", tpfx, i, tpfx, i, lenvarname, tpfx, i)
 	case genStructMapStyleCheckBreak:
-		x.linef("for %sj%s := 0; !r.CheckBreak(); %sj%s++ {", tpfx, i, tpfx, i)
+		x.linef("for %sj%s := 0; !z.DecCheckBreak(); %sj%s++ {", tpfx, i, tpfx, i)
 	default: // 0, otherwise.
 		x.linef("var %shl%s bool = %s >= 0", tpfx, i, lenvarname) // has length
 		x.linef("for %sj%s := 0; ; %sj%s++ {", tpfx, i, tpfx, i)
 		x.linef("if %shl%s { if %sj%s >= %s { break }", tpfx, i, tpfx, i, lenvarname)
-		x.line("} else { if r.CheckBreak() { break }; }")
+		x.line("} else { if z.DecCheckBreak() { break }; }")
 	}
 	x.line("z.DecReadMapElemKey()")
 
@@ -1791,7 +1791,7 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 	x.linef("var %shl%s bool = %s >= 0", tpfx, i, lenvarname) // has length
 	if !genDecStructArrayInlineLoopCheck {
 		x.linef("var %sfn%s = func() bool { ", tpfx, i)
-		x.linef("%sj%s++; if %shl%s { %sb%s = %sj%s > %s } else { %sb%s = r.CheckBreak() };",
+		x.linef("%sj%s++; if %shl%s { %sb%s = %sj%s > %s } else { %sb%s = z.DecCheckBreak() };",
 			tpfx, i, tpfx, i, tpfx, i,
 			tpfx, i, lenvarname, tpfx, i)
 		x.linef("if %sb%s { z.DecReadArrayEnd(); return true }; return false", tpfx, i)
@@ -1800,7 +1800,7 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 	var newbuf, nilbuf genBuf
 	for _, si := range tisfi {
 		if genDecStructArrayInlineLoopCheck {
-			x.linef("%sj%s++; if %shl%s { %sb%s = %sj%s > %s } else { %sb%s = r.CheckBreak() }",
+			x.linef("%sj%s++; if %shl%s { %sb%s = %sj%s > %s } else { %sb%s = z.DecCheckBreak() }",
 				tpfx, i, tpfx, i, tpfx, i,
 				tpfx, i, lenvarname, tpfx, i)
 			x.linef("if %sb%s { z.DecReadArrayEnd(); %s }", tpfx, i, breakString)
@@ -1821,7 +1821,7 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 	}
 	// read remaining values and throw away.
 	x.line("for {")
-	x.linef("%sj%s++; if %shl%s { %sb%s = %sj%s > %s } else { %sb%s = r.CheckBreak() }",
+	x.linef("%sj%s++; if %shl%s { %sb%s = %sj%s > %s } else { %sb%s = z.DecCheckBreak() }",
 		tpfx, i, tpfx, i, tpfx, i,
 		tpfx, i, lenvarname, tpfx, i)
 	x.linef("if %sb%s { break }", tpfx, i)

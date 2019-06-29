@@ -883,6 +883,7 @@ func (h *CborHandle) newEncDriver() encDriver {
 func (h *CborHandle) newDecDriver() decDriver {
 	d := &cborDecDriver{h: h, st: h.SkipUnexpectedTags}
 	d.d.d = d
+	d.d.cbor = true
 	d.d.init(h)
 	d.reset()
 	return d

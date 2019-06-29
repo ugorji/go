@@ -224,7 +224,7 @@ func (x *stringUint64T) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -253,7 +253,7 @@ func (x *stringUint64T) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -265,7 +265,7 @@ func (x *stringUint64T) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -278,7 +278,7 @@ func (x *stringUint64T) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl6 {
 			yyb6 = yyj6 > l
 		} else {
-			yyb6 = r.CheckBreak()
+			yyb6 = z.DecCheckBreak()
 		}
 		if yyb6 {
 			break
@@ -577,7 +577,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -632,7 +632,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -644,7 +644,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -656,7 +656,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -668,7 +668,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -680,7 +680,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -692,7 +692,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -704,7 +704,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -716,7 +716,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -728,7 +728,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -740,7 +740,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -752,7 +752,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -764,7 +764,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -776,7 +776,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -788,7 +788,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -800,7 +800,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl30 {
 		yyb30 = yyj30 > l
 	} else {
-		yyb30 = r.CheckBreak()
+		yyb30 = z.DecCheckBreak()
 	}
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -813,7 +813,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl30 {
 			yyb30 = yyj30 > l
 		} else {
-			yyb30 = r.CheckBreak()
+			yyb30 = z.DecCheckBreak()
 		}
 		if yyb30 {
 			break
@@ -1106,7 +1106,7 @@ func (x *testSimpleFields) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -1165,7 +1165,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1177,7 +1177,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1189,7 +1189,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1201,7 +1201,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1213,7 +1213,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1225,7 +1225,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1237,7 +1237,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1249,7 +1249,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1261,7 +1261,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1273,7 +1273,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1285,7 +1285,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1297,7 +1297,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1309,7 +1309,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1321,7 +1321,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1333,7 +1333,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1345,7 +1345,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1357,7 +1357,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl28 {
 		yyb28 = yyj28 > l
 	} else {
-		yyb28 = r.CheckBreak()
+		yyb28 = z.DecCheckBreak()
 	}
 	if yyb28 {
 		z.DecReadArrayEnd()
@@ -1370,7 +1370,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl28 {
 			yyb28 = yyj28 > l
 		} else {
-			yyb28 = r.CheckBreak()
+			yyb28 = z.DecCheckBreak()
 		}
 		if yyb28 {
 			break
@@ -2175,7 +2175,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -2313,7 +2313,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2325,7 +2325,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2337,7 +2337,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2349,7 +2349,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2361,7 +2361,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2373,7 +2373,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2385,7 +2385,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2397,7 +2397,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2409,7 +2409,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2421,7 +2421,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2433,7 +2433,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2445,7 +2445,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2457,7 +2457,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2469,7 +2469,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2481,7 +2481,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2493,7 +2493,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2505,7 +2505,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2517,7 +2517,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2529,7 +2529,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2541,7 +2541,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2553,7 +2553,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2565,7 +2565,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2577,7 +2577,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2589,7 +2589,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2601,7 +2601,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2613,7 +2613,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2625,7 +2625,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2637,7 +2637,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2649,7 +2649,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2661,7 +2661,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2673,7 +2673,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2685,7 +2685,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2697,7 +2697,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2709,7 +2709,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2721,7 +2721,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2733,7 +2733,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2745,7 +2745,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2757,7 +2757,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2769,7 +2769,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2781,7 +2781,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2793,7 +2793,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2805,7 +2805,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2817,7 +2817,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2829,7 +2829,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2841,7 +2841,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2853,7 +2853,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2865,7 +2865,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2877,7 +2877,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2889,7 +2889,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2901,7 +2901,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2913,7 +2913,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2925,7 +2925,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl83 {
 		yyb83 = yyj83 > l
 	} else {
-		yyb83 = r.CheckBreak()
+		yyb83 = z.DecCheckBreak()
 	}
 	if yyb83 {
 		z.DecReadArrayEnd()
@@ -2947,7 +2947,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl83 {
 			yyb83 = yyj83 > l
 		} else {
-			yyb83 = r.CheckBreak()
+			yyb83 = z.DecCheckBreak()
 		}
 		if yyb83 {
 			break
@@ -3826,7 +3826,7 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -3981,7 +3981,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -3993,7 +3993,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4005,7 +4005,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4017,7 +4017,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4029,7 +4029,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4041,7 +4041,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4053,7 +4053,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4065,7 +4065,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4077,7 +4077,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4089,7 +4089,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4101,7 +4101,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4113,7 +4113,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4125,7 +4125,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4137,7 +4137,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4149,7 +4149,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4161,7 +4161,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4173,7 +4173,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4185,7 +4185,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4197,7 +4197,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4209,7 +4209,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4221,7 +4221,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4233,7 +4233,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4245,7 +4245,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4257,7 +4257,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4269,7 +4269,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4281,7 +4281,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4293,7 +4293,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4305,7 +4305,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4317,7 +4317,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4329,7 +4329,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4341,7 +4341,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4353,7 +4353,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4365,7 +4365,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4377,7 +4377,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4389,7 +4389,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4401,7 +4401,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4413,7 +4413,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4425,7 +4425,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4437,7 +4437,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4449,7 +4449,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4461,7 +4461,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4473,7 +4473,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4485,7 +4485,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4497,7 +4497,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4509,7 +4509,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4521,7 +4521,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4533,7 +4533,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4545,7 +4545,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4557,7 +4557,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4569,7 +4569,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4581,7 +4581,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4593,7 +4593,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4614,7 +4614,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4626,7 +4626,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4638,7 +4638,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4650,7 +4650,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl90 {
 		yyb90 = yyj90 > l
 	} else {
-		yyb90 = r.CheckBreak()
+		yyb90 = z.DecCheckBreak()
 	}
 	if yyb90 {
 		z.DecReadArrayEnd()
@@ -4672,7 +4672,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl90 {
 			yyb90 = yyj90 > l
 		} else {
-			yyb90 = r.CheckBreak()
+			yyb90 = z.DecCheckBreak()
 		}
 		if yyb90 {
 			break
@@ -4757,7 +4757,7 @@ func (x *codecgenA) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -4784,7 +4784,7 @@ func (x *codecgenA) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -4797,7 +4797,7 @@ func (x *codecgenA) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl6 {
 			yyb6 = yyj6 > l
 		} else {
-			yyb6 = r.CheckBreak()
+			yyb6 = z.DecCheckBreak()
 		}
 		if yyb6 {
 			break
@@ -4876,7 +4876,7 @@ func (x *codecgenB) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -4903,7 +4903,7 @@ func (x *codecgenB) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -4916,7 +4916,7 @@ func (x *codecgenB) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -5012,7 +5012,7 @@ func (x *codecgenC) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -5039,7 +5039,7 @@ func (x *codecgenC) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -5052,7 +5052,7 @@ func (x *codecgenC) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -5129,7 +5129,7 @@ func (x *TestCodecgenG) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -5156,7 +5156,7 @@ func (x *TestCodecgenG) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -5169,7 +5169,7 @@ func (x *TestCodecgenG) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -5246,7 +5246,7 @@ func (x *codecgenH) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -5273,7 +5273,7 @@ func (x *codecgenH) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -5286,7 +5286,7 @@ func (x *codecgenH) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -5363,7 +5363,7 @@ func (x *codecgenI) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -5390,7 +5390,7 @@ func (x *codecgenI) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -5403,7 +5403,7 @@ func (x *codecgenI) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -5490,7 +5490,7 @@ func (x *codecgenK) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -5519,7 +5519,7 @@ func (x *codecgenK) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -5531,7 +5531,7 @@ func (x *codecgenK) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -5544,7 +5544,7 @@ func (x *codecgenK) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl6 {
 			yyb6 = yyj6 > l
 		} else {
-			yyb6 = r.CheckBreak()
+			yyb6 = z.DecCheckBreak()
 		}
 		if yyb6 {
 			break
@@ -5631,7 +5631,7 @@ func (x *codecgenL) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -5660,7 +5660,7 @@ func (x *codecgenL) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -5672,7 +5672,7 @@ func (x *codecgenL) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -5685,7 +5685,7 @@ func (x *codecgenL) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl6 {
 			yyb6 = yyj6 > l
 		} else {
-			yyb6 = r.CheckBreak()
+			yyb6 = z.DecCheckBreak()
 		}
 		if yyb6 {
 			break
@@ -5772,7 +5772,7 @@ func (x *codecgenM) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -5801,7 +5801,7 @@ func (x *codecgenM) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -5813,7 +5813,7 @@ func (x *codecgenM) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -5826,7 +5826,7 @@ func (x *codecgenM) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl6 {
 			yyb6 = yyj6 > l
 		} else {
-			yyb6 = r.CheckBreak()
+			yyb6 = z.DecCheckBreak()
 		}
 		if yyb6 {
 			break
@@ -5903,7 +5903,7 @@ func (x *testStrucKeyTypeT0) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -5930,7 +5930,7 @@ func (x *testStrucKeyTypeT0) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -5943,7 +5943,7 @@ func (x *testStrucKeyTypeT0) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -6020,7 +6020,7 @@ func (x *testStrucKeyTypeT1) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -6047,7 +6047,7 @@ func (x *testStrucKeyTypeT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -6060,7 +6060,7 @@ func (x *testStrucKeyTypeT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -6133,7 +6133,7 @@ func (x *testStrucKeyTypeT2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -6160,7 +6160,7 @@ func (x *testStrucKeyTypeT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -6173,7 +6173,7 @@ func (x *testStrucKeyTypeT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -6246,7 +6246,7 @@ func (x *testStrucKeyTypeT3) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -6273,7 +6273,7 @@ func (x *testStrucKeyTypeT3) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -6286,7 +6286,7 @@ func (x *testStrucKeyTypeT3) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -6359,7 +6359,7 @@ func (x *testStrucKeyTypeT4) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -6386,7 +6386,7 @@ func (x *testStrucKeyTypeT4) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -6399,7 +6399,7 @@ func (x *testStrucKeyTypeT4) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -6522,7 +6522,7 @@ func (x *Sstructsmall) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -6549,7 +6549,7 @@ func (x *Sstructsmall) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl5 {
 		yyb5 = yyj5 > l
 	} else {
-		yyb5 = r.CheckBreak()
+		yyb5 = z.DecCheckBreak()
 	}
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -6562,7 +6562,7 @@ func (x *Sstructsmall) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl5 {
 			yyb5 = yyj5 > l
 		} else {
-			yyb5 = r.CheckBreak()
+			yyb5 = z.DecCheckBreak()
 		}
 		if yyb5 {
 			break
@@ -6709,7 +6709,7 @@ func (x *Sstructbig) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -6771,7 +6771,7 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl9 {
 		yyb9 = yyj9 > l
 	} else {
-		yyb9 = r.CheckBreak()
+		yyb9 = z.DecCheckBreak()
 	}
 	if yyb9 {
 		z.DecReadArrayEnd()
@@ -6783,7 +6783,7 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl9 {
 		yyb9 = yyj9 > l
 	} else {
-		yyb9 = r.CheckBreak()
+		yyb9 = z.DecCheckBreak()
 	}
 	if yyb9 {
 		z.DecReadArrayEnd()
@@ -6795,7 +6795,7 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl9 {
 		yyb9 = yyj9 > l
 	} else {
-		yyb9 = r.CheckBreak()
+		yyb9 = z.DecCheckBreak()
 	}
 	if yyb9 {
 		z.DecReadArrayEnd()
@@ -6816,7 +6816,7 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl9 {
 		yyb9 = yyj9 > l
 	} else {
-		yyb9 = r.CheckBreak()
+		yyb9 = z.DecCheckBreak()
 	}
 	if yyb9 {
 		z.DecReadArrayEnd()
@@ -6837,7 +6837,7 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl9 {
 		yyb9 = yyj9 > l
 	} else {
-		yyb9 = r.CheckBreak()
+		yyb9 = z.DecCheckBreak()
 	}
 	if yyb9 {
 		z.DecReadArrayEnd()
@@ -6859,7 +6859,7 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl9 {
 			yyb9 = yyj9 > l
 		} else {
-			yyb9 = r.CheckBreak()
+			yyb9 = z.DecCheckBreak()
 		}
 		if yyb9 {
 			break
@@ -7006,7 +7006,7 @@ func (x *SstructbigMapBySlice) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -7068,7 +7068,7 @@ func (x *SstructbigMapBySlice) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl9 {
 		yyb9 = yyj9 > l
 	} else {
-		yyb9 = r.CheckBreak()
+		yyb9 = z.DecCheckBreak()
 	}
 	if yyb9 {
 		z.DecReadArrayEnd()
@@ -7080,7 +7080,7 @@ func (x *SstructbigMapBySlice) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl9 {
 		yyb9 = yyj9 > l
 	} else {
-		yyb9 = r.CheckBreak()
+		yyb9 = z.DecCheckBreak()
 	}
 	if yyb9 {
 		z.DecReadArrayEnd()
@@ -7092,7 +7092,7 @@ func (x *SstructbigMapBySlice) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl9 {
 		yyb9 = yyj9 > l
 	} else {
-		yyb9 = r.CheckBreak()
+		yyb9 = z.DecCheckBreak()
 	}
 	if yyb9 {
 		z.DecReadArrayEnd()
@@ -7113,7 +7113,7 @@ func (x *SstructbigMapBySlice) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl9 {
 		yyb9 = yyj9 > l
 	} else {
-		yyb9 = r.CheckBreak()
+		yyb9 = z.DecCheckBreak()
 	}
 	if yyb9 {
 		z.DecReadArrayEnd()
@@ -7134,7 +7134,7 @@ func (x *SstructbigMapBySlice) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl9 {
 		yyb9 = yyj9 > l
 	} else {
-		yyb9 = r.CheckBreak()
+		yyb9 = z.DecCheckBreak()
 	}
 	if yyb9 {
 		z.DecReadArrayEnd()
@@ -7156,7 +7156,7 @@ func (x *SstructbigMapBySlice) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl9 {
 			yyb9 = yyj9 > l
 		} else {
-			yyb9 = r.CheckBreak()
+			yyb9 = z.DecCheckBreak()
 		}
 		if yyb9 {
 			break
@@ -7243,7 +7243,7 @@ func (x *tLowerFirstLetter) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -7272,7 +7272,7 @@ func (x *tLowerFirstLetter) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -7284,7 +7284,7 @@ func (x *tLowerFirstLetter) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -7297,7 +7297,7 @@ func (x *tLowerFirstLetter) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl6 {
 			yyb6 = yyj6 > l
 		} else {
-			yyb6 = r.CheckBreak()
+			yyb6 = z.DecCheckBreak()
 		}
 		if yyb6 {
 			break
@@ -7528,7 +7528,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -7592,7 +7592,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl14 {
 		yyb14 = yyj14 > l
 	} else {
-		yyb14 = r.CheckBreak()
+		yyb14 = z.DecCheckBreak()
 	}
 	if yyb14 {
 		z.DecReadArrayEnd()
@@ -7604,7 +7604,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl14 {
 		yyb14 = yyj14 > l
 	} else {
-		yyb14 = r.CheckBreak()
+		yyb14 = z.DecCheckBreak()
 	}
 	if yyb14 {
 		z.DecReadArrayEnd()
@@ -7616,7 +7616,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl14 {
 		yyb14 = yyj14 > l
 	} else {
-		yyb14 = r.CheckBreak()
+		yyb14 = z.DecCheckBreak()
 	}
 	if yyb14 {
 		z.DecReadArrayEnd()
@@ -7628,7 +7628,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl14 {
 		yyb14 = yyj14 > l
 	} else {
-		yyb14 = r.CheckBreak()
+		yyb14 = z.DecCheckBreak()
 	}
 	if yyb14 {
 		z.DecReadArrayEnd()
@@ -7650,7 +7650,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl14 {
 		yyb14 = yyj14 > l
 	} else {
-		yyb14 = r.CheckBreak()
+		yyb14 = z.DecCheckBreak()
 	}
 	if yyb14 {
 		z.DecReadArrayEnd()
@@ -7682,7 +7682,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl14 {
 			yyb14 = yyj14 > l
 		} else {
-			yyb14 = r.CheckBreak()
+			yyb14 = z.DecCheckBreak()
 		}
 		if yyb14 {
 			break
@@ -7769,7 +7769,7 @@ func (x *missingFielderT1) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -7798,7 +7798,7 @@ func (x *missingFielderT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -7810,7 +7810,7 @@ func (x *missingFielderT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -7823,7 +7823,7 @@ func (x *missingFielderT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl6 {
 			yyb6 = yyj6 > l
 		} else {
-			yyb6 = r.CheckBreak()
+			yyb6 = z.DecCheckBreak()
 		}
 		if yyb6 {
 			break
@@ -7930,7 +7930,7 @@ func (x *missingFielderT2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -7963,7 +7963,7 @@ func (x *missingFielderT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl8 {
 		yyb8 = yyj8 > l
 	} else {
-		yyb8 = r.CheckBreak()
+		yyb8 = z.DecCheckBreak()
 	}
 	if yyb8 {
 		z.DecReadArrayEnd()
@@ -7975,7 +7975,7 @@ func (x *missingFielderT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl8 {
 		yyb8 = yyj8 > l
 	} else {
-		yyb8 = r.CheckBreak()
+		yyb8 = z.DecCheckBreak()
 	}
 	if yyb8 {
 		z.DecReadArrayEnd()
@@ -7987,7 +7987,7 @@ func (x *missingFielderT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl8 {
 		yyb8 = yyj8 > l
 	} else {
-		yyb8 = r.CheckBreak()
+		yyb8 = z.DecCheckBreak()
 	}
 	if yyb8 {
 		z.DecReadArrayEnd()
@@ -7999,7 +7999,7 @@ func (x *missingFielderT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl8 {
 		yyb8 = yyj8 > l
 	} else {
-		yyb8 = r.CheckBreak()
+		yyb8 = z.DecCheckBreak()
 	}
 	if yyb8 {
 		z.DecReadArrayEnd()
@@ -8012,7 +8012,7 @@ func (x *missingFielderT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl8 {
 			yyb8 = yyj8 > l
 		} else {
-			yyb8 = r.CheckBreak()
+			yyb8 = z.DecCheckBreak()
 		}
 		if yyb8 {
 			break
@@ -8109,7 +8109,7 @@ func (x *testSelfExtHelper) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -8140,7 +8140,7 @@ func (x *testSelfExtHelper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl7 {
 		yyb7 = yyj7 > l
 	} else {
-		yyb7 = r.CheckBreak()
+		yyb7 = z.DecCheckBreak()
 	}
 	if yyb7 {
 		z.DecReadArrayEnd()
@@ -8152,7 +8152,7 @@ func (x *testSelfExtHelper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl7 {
 		yyb7 = yyj7 > l
 	} else {
-		yyb7 = r.CheckBreak()
+		yyb7 = z.DecCheckBreak()
 	}
 	if yyb7 {
 		z.DecReadArrayEnd()
@@ -8164,7 +8164,7 @@ func (x *testSelfExtHelper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl7 {
 		yyb7 = yyj7 > l
 	} else {
-		yyb7 = r.CheckBreak()
+		yyb7 = z.DecCheckBreak()
 	}
 	if yyb7 {
 		z.DecReadArrayEnd()
@@ -8177,7 +8177,7 @@ func (x *testSelfExtHelper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl7 {
 			yyb7 = yyj7 > l
 		} else {
-			yyb7 = r.CheckBreak()
+			yyb7 = z.DecCheckBreak()
 		}
 		if yyb7 {
 			break
@@ -8274,7 +8274,7 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -8305,7 +8305,7 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl7 {
 		yyb7 = yyj7 > l
 	} else {
-		yyb7 = r.CheckBreak()
+		yyb7 = z.DecCheckBreak()
 	}
 	if yyb7 {
 		z.DecReadArrayEnd()
@@ -8317,7 +8317,7 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl7 {
 		yyb7 = yyj7 > l
 	} else {
-		yyb7 = r.CheckBreak()
+		yyb7 = z.DecCheckBreak()
 	}
 	if yyb7 {
 		z.DecReadArrayEnd()
@@ -8329,7 +8329,7 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl7 {
 		yyb7 = yyj7 > l
 	} else {
-		yyb7 = r.CheckBreak()
+		yyb7 = z.DecCheckBreak()
 	}
 	if yyb7 {
 		z.DecReadArrayEnd()
@@ -8342,7 +8342,7 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl7 {
 			yyb7 = yyj7 > l
 		} else {
-			yyb7 = r.CheckBreak()
+			yyb7 = z.DecCheckBreak()
 		}
 		if yyb7 {
 			break
@@ -8429,7 +8429,7 @@ func (x *TestSelfExtImpl2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -8458,7 +8458,7 @@ func (x *TestSelfExtImpl2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -8470,7 +8470,7 @@ func (x *TestSelfExtImpl2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl6 {
 		yyb6 = yyj6 > l
 	} else {
-		yyb6 = r.CheckBreak()
+		yyb6 = z.DecCheckBreak()
 	}
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -8483,7 +8483,7 @@ func (x *TestSelfExtImpl2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl6 {
 			yyb6 = yyj6 > l
 		} else {
-			yyb6 = r.CheckBreak()
+			yyb6 = z.DecCheckBreak()
 		}
 		if yyb6 {
 			break
@@ -8570,7 +8570,7 @@ func (x *TestTwoNakedInterfaces) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -8599,7 +8599,7 @@ func (x *TestTwoNakedInterfaces) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl8 {
 		yyb8 = yyj8 > l
 	} else {
-		yyb8 = r.CheckBreak()
+		yyb8 = z.DecCheckBreak()
 	}
 	if yyb8 {
 		z.DecReadArrayEnd()
@@ -8611,7 +8611,7 @@ func (x *TestTwoNakedInterfaces) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl8 {
 		yyb8 = yyj8 > l
 	} else {
-		yyb8 = r.CheckBreak()
+		yyb8 = z.DecCheckBreak()
 	}
 	if yyb8 {
 		z.DecReadArrayEnd()
@@ -8624,7 +8624,7 @@ func (x *TestTwoNakedInterfaces) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl8 {
 			yyb8 = yyj8 > l
 		} else {
-			yyb8 = r.CheckBreak()
+			yyb8 = z.DecCheckBreak()
 		}
 		if yyb8 {
 			break
@@ -10470,7 +10470,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 				break
 			}
 		} else {
-			if r.CheckBreak() {
+			if z.DecCheckBreak() {
 				break
 			}
 		}
@@ -10735,7 +10735,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10747,7 +10747,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10759,7 +10759,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10771,7 +10771,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10783,7 +10783,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10795,7 +10795,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10807,7 +10807,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10819,7 +10819,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10831,7 +10831,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10843,7 +10843,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10855,7 +10855,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10867,7 +10867,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10879,7 +10879,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10891,7 +10891,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10903,7 +10903,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10915,7 +10915,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10927,7 +10927,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10939,7 +10939,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10951,7 +10951,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10963,7 +10963,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10975,7 +10975,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10987,7 +10987,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -10999,7 +10999,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11011,7 +11011,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11023,7 +11023,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11035,7 +11035,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11047,7 +11047,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11059,7 +11059,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11071,7 +11071,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11083,7 +11083,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11095,7 +11095,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11107,7 +11107,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11119,7 +11119,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11131,7 +11131,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11143,7 +11143,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11155,7 +11155,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11167,7 +11167,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11179,7 +11179,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11191,7 +11191,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11203,7 +11203,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11215,7 +11215,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11227,7 +11227,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11239,7 +11239,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11251,7 +11251,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11263,7 +11263,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11275,7 +11275,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11287,7 +11287,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11299,7 +11299,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11311,7 +11311,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11323,7 +11323,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11335,7 +11335,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11347,7 +11347,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11368,7 +11368,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11380,7 +11380,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11392,7 +11392,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11404,7 +11404,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11416,7 +11416,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11428,7 +11428,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11440,7 +11440,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11452,7 +11452,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11464,7 +11464,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11476,7 +11476,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11488,7 +11488,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11500,7 +11500,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11512,7 +11512,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11524,7 +11524,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11536,7 +11536,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11548,7 +11548,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11560,7 +11560,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11581,7 +11581,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11602,7 +11602,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11623,7 +11623,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11654,7 +11654,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11688,7 +11688,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11700,7 +11700,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11712,7 +11712,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11724,7 +11724,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	if yyhl131 {
 		yyb131 = yyj131 > l
 	} else {
-		yyb131 = r.CheckBreak()
+		yyb131 = z.DecCheckBreak()
 	}
 	if yyb131 {
 		z.DecReadArrayEnd()
@@ -11746,7 +11746,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if yyhl131 {
 			yyb131 = yyj131 > l
 		} else {
-			yyb131 = r.CheckBreak()
+			yyb131 = z.DecCheckBreak()
 		}
 		if yyb131 {
 			break
@@ -11813,7 +11813,7 @@ func (x codecSelfer19780) decwrapSliceUint64(v *wrapSliceUint64, d *Decoder) {
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 8)
@@ -11906,7 +11906,7 @@ func (x codecSelfer19780) decwrapSliceString(v *wrapSliceString, d *Decoder) {
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 16)
@@ -11999,7 +11999,7 @@ func (x codecSelfer19780) decwrapUint64Slice(v *wrapUint64Slice, d *Decoder) {
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 8)
@@ -12092,7 +12092,7 @@ func (x codecSelfer19780) decwrapStringSlice(v *wrapStringSlice, d *Decoder) {
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 16)
@@ -12168,7 +12168,7 @@ func (x codecSelfer19780) decMapstringuint16(v *map[string]uint16, d *Decoder) {
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (string)(string(r.DecodeStringAsBytes()))
 				if yymg1 {
@@ -12221,7 +12221,7 @@ func (x codecSelfer19780) decArray0int64(v *[0]int64, d *Decoder) {
 		var yyrl1 int
 		_ = yyrl1
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			yyh1.ElemContainerState(yyj1)
 			var yydb1 bool
 			if yyj1 >= len(yyv1) {
@@ -12300,7 +12300,7 @@ func (x codecSelfer19780) decSlicePtrtoint64(v *[]*int64, d *Decoder) {
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 8)
@@ -12401,7 +12401,7 @@ func (x codecSelfer19780) decSlicestringUint64T(v *[]stringUint64T, d *Decoder) 
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 24)
@@ -12482,7 +12482,7 @@ func (x codecSelfer19780) decMapstringPtrtostringUint64T(v *map[string]*stringUi
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (string)(string(r.DecodeStringAsBytes()))
 				yyms1 = true
@@ -12564,7 +12564,7 @@ func (x codecSelfer19780) decMapstringPtrtoTestStruc(v *map[string]*TestStruc, d
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (string)(string(r.DecodeStringAsBytes()))
 				yyms1 = true
@@ -12643,7 +12643,7 @@ func (x codecSelfer19780) decMapstringTestStruc(v *map[string]TestStruc, d *Deco
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (string)(string(r.DecodeStringAsBytes()))
 				if yymg1 {
@@ -12730,7 +12730,7 @@ func (x codecSelfer19780) decSlicePtrtoTestStruc(v *[]*TestStruc, d *Decoder) {
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 8)
@@ -12802,7 +12802,7 @@ func (x codecSelfer19780) decAarray(v *Aarray, d *Decoder) {
 		var yyrl1 int
 		_ = yyrl1
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			yyh1.ElemContainerState(yyj1)
 			var yydb1 bool
 			if yyj1 >= len(yyv1) {
@@ -12910,7 +12910,7 @@ func (x codecSelfer19780) decChanstring(v *chan string, d *Decoder) {
 		var yyrl1 int
 		_ = yyrl1
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 16)
@@ -12974,7 +12974,7 @@ func (x codecSelfer19780) decMapboolc3RydWN0IHt9(v *map[bool]struct{}, d *Decode
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (bool)(r.DecodeBool())
 				if yymg1 {
@@ -13041,7 +13041,7 @@ func (x codecSelfer19780) decMapintwrapUint64Slice(v *map[int]wrapUint64Slice, d
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 				if yymg1 {
@@ -13108,7 +13108,7 @@ func (x codecSelfer19780) decMapfloat64wrapStringSlice(v *map[float64]wrapString
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (float64)(r.DecodeFloat64())
 				if yymg1 {
@@ -13175,7 +13175,7 @@ func (x codecSelfer19780) decMapfloat32wrapStringSlice(v *map[float32]wrapString
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (float32)(z.DecDecodeFloat32())
 				if yymg1 {
@@ -13242,7 +13242,7 @@ func (x codecSelfer19780) decMapuint64wrapStringSlice(v *map[uint64]wrapStringSl
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (uint64)(r.DecodeUint64())
 				if yymg1 {
@@ -13310,7 +13310,7 @@ func (x codecSelfer19780) decMapstringUint64TwrapStringSlice(v *map[stringUint64
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1.CodecDecodeSelf(d)
 				if yymg1 {
@@ -13393,7 +13393,7 @@ func (x codecSelfer19780) decSlicewrapBytes(v *[]wrapBytes, d *Decoder) {
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 24)
@@ -13486,7 +13486,7 @@ func (x codecSelfer19780) decSlicewrapUint8(v *[]wrapUint8, d *Decoder) {
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 1)
@@ -13552,7 +13552,7 @@ func (x codecSelfer19780) decArray4stringUint64T(v *[4]stringUint64T, d *Decoder
 		var yyrl1 int
 		_ = yyrl1
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			yyh1.ElemContainerState(yyj1)
 			var yydb1 bool
 			if yyj1 >= len(yyv1) {
@@ -13598,7 +13598,7 @@ func (x codecSelfer19780) decArray4uint64(v *[4]uint64, d *Decoder) {
 		var yyrl1 int
 		_ = yyrl1
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			yyh1.ElemContainerState(yyj1)
 			var yydb1 bool
 			if yyj1 >= len(yyv1) {
@@ -13676,7 +13676,7 @@ func (x codecSelfer19780) decSlicePtrtoArray4uint64(v *[]*[4]uint64, d *Decoder)
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 8)
@@ -13765,7 +13765,7 @@ func (x codecSelfer19780) decMapstringUint64TPtrtostringUint64T(v *map[stringUin
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1.CodecDecodeSelf(d)
 				yyms1 = true
@@ -13847,7 +13847,7 @@ func (x codecSelfer19780) decMapstringPtrtoTestStrucFlex(v *map[string]*TestStru
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (string)(string(r.DecodeStringAsBytes()))
 				yyms1 = true
@@ -13926,7 +13926,7 @@ func (x codecSelfer19780) decMapstringTestStrucFlex(v *map[string]TestStrucFlex,
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ {
+			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
 				yymk1 = (string)(string(r.DecodeStringAsBytes()))
 				if yymg1 {
@@ -14013,7 +14013,7 @@ func (x codecSelfer19780) decSlicePtrtoTestStrucFlex(v *[]*TestStrucFlex, d *Dec
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || r.CheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 8)

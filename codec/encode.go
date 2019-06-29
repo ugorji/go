@@ -55,9 +55,9 @@ type encDriverContainerTracker interface {
 	WriteMapElemValue()
 }
 
-type encDriverAsis interface {
-	EncodeAsis(v []byte)
-}
+// type encDriverAsis interface {
+// 	EncodeAsis(v []byte)
+// }
 
 type encodeError struct {
 	codecError
@@ -834,7 +834,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 		sort.Sort(bytesRvSlice(mksbv))
 		for j := range mksbv {
 			e.mapElemKey()
-			e.asis(mksbv[j].v)
+			e.encWr.writeb(mksbv[j].v) // e.asis(mksbv[j].v)
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksbv[j].r, rvv), valFn)
 		}
@@ -861,16 +861,18 @@ type Encoder struct {
 	// w *encWr
 
 	// bw *bufio.Writer
-	as encDriverAsis
+	// as encDriverAsis
 
-	jenc *jsonEncDriver
-	h    *BasicHandle
-	hh   Handle
+	// jenc *jsonEncDriver
+	h *BasicHandle
 
-	// ---- cpu cache line boundary
 	encWr
 
-	err error
+	// ---- cpu cache line boundary
+	hh Handle
+
+	blist bytesFreelist
+	err   error
 
 	// ---- cpu cache line boundary
 
@@ -878,10 +880,9 @@ type Encoder struct {
 	ci set // holds set of addresses found during an encoding (if CheckCircularRef=true)
 	// cidef [1]interface{} // default ci
 
-	b [(7 * 8)]byte // for encoding chan byte, (non-addressable) [N]byte, etc
-
 	slist sfiRvFreelist
-	blist bytesFreelist
+
+	b [(2 * 8)]byte // for encoding chan byte, (non-addressable) [N]byte, etc
 
 	// ---- cpu cache line boundary?
 
@@ -914,14 +915,14 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 func (e *Encoder) init(h Handle) {
 	e.err = errEncoderNotInitialized
 	e.bytes = true
-	if useFinalizers {
-		// runtime.SetFinalizer(e, (*Encoder).finalize)
-	}
+	// if useFinalizers {
+	// 	runtime.SetFinalizer(e, (*Encoder).finalize)
+	// }
 	// e.w = &e.encWr
 	e.hh = h
 	e.h = basicHandle(h)
 	// e.esep = h.hasElemSeparators()
-	e.as, e.isas = e.e.(encDriverAsis)
+	// e.as, e.isas = e.e.(encDriverAsis)
 	e.be = e.hh.isBinary()
 }
 
@@ -1399,7 +1400,7 @@ func (e *Encoder) marshalAsis(bs []byte, fnerr error) {
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
-		e.asis(bs)
+		e.encWr.writeb(bs) // e.asis(bs)
 	}
 }
 
@@ -1414,20 +1415,20 @@ func (e *Encoder) marshalRaw(bs []byte, fnerr error) {
 	}
 }
 
-func (e *Encoder) asis(v []byte) {
-	if e.isas {
-		e.as.EncodeAsis(v)
-	} else {
-		e.w().writeb(v)
-	}
-}
+// func (e *Encoder) asis(v []byte) {
+// 	if e.isas {
+// 		e.as.EncodeAsis(v)
+// 	} else {
+// 		e.w().writeb(v)
+// 	}
+// }
 
 func (e *Encoder) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
 		e.errorf("Raw values cannot be encoded: %v", v)
 	}
-	e.asis(v)
+	e.encWr.writeb(v) // e.asis(v)
 }
 
 func (e *Encoder) wrapErr(v interface{}, err *error) {
@@ -1445,14 +1446,14 @@ func (e *Encoder) mapStart(length int) {
 
 func (e *Encoder) mapElemKey() {
 	if e.js {
-		e.jenc.WriteMapElemKey()
+		e.jsondriver().WriteMapElemKey()
 	}
 	e.c = containerMapKey
 }
 
 func (e *Encoder) mapElemValue() {
 	if e.js {
-		e.jenc.WriteMapElemValue()
+		e.jsondriver().WriteMapElemValue()
 	}
 	e.c = containerMapValue
 }
@@ -1474,7 +1475,7 @@ func (e *Encoder) mapElemValue() {
 
 func (e *Encoder) mapEnd() {
 	e.e.WriteMapEnd()
-	e.c = containerMapEnd
+	// e.c = containerMapEnd
 	e.c = 0
 }
 
@@ -1485,7 +1486,7 @@ func (e *Encoder) arrayStart(length int) {
 
 func (e *Encoder) arrayElem() {
 	if e.js {
-		e.jenc.WriteArrayElem()
+		e.jsondriver().WriteArrayElem()
 	}
 	e.c = containerArrayElem
 }
@@ -1493,7 +1494,7 @@ func (e *Encoder) arrayElem() {
 func (e *Encoder) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
-	e.c = containerArrayEnd
+	// e.c = containerArrayEnd
 }
 
 // ----------

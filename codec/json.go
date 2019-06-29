@@ -50,8 +50,8 @@ const (
 )
 
 var (
-	jsonLiteralTrueQ  = jsonLiterals[jsonLitTrueQ : jsonLitTrueQ+6]
-	jsonLiteralFalseQ = jsonLiterals[jsonLitFalseQ : jsonLitFalseQ+7]
+	// jsonLiteralTrueQ  = jsonLiterals[jsonLitTrueQ : jsonLitTrueQ+6]
+	// jsonLiteralFalseQ = jsonLiterals[jsonLitFalseQ : jsonLitFalseQ+7]
 	// jsonLiteralNullQ  = jsonLiterals[jsonLitNullQ : jsonLitNullQ+6]
 
 	jsonLiteralTrue  = jsonLiterals[jsonLitTrue : jsonLitTrue+4]
@@ -368,9 +368,9 @@ func (e *jsonEncDriver) EncodeStringBytesRaw(v []byte) {
 	}
 }
 
-func (e *jsonEncDriver) EncodeAsis(v []byte) {
-	e.e.encWr.writeb(v)
-}
+// func (e *jsonEncDriver) EncodeAsis(v []byte) {
+// 	e.e.encWr.writeb(v)
+// }
 
 // indent is done as below:
 //   - newline and indent are added before each mapKey or arrayElem
@@ -732,7 +732,7 @@ func (d *jsonDecDriver) ReadMapEnd() {
 func (d *jsonDecDriver) readLit4True() {
 	bs := d.d.decRd.readn(3)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [rwNLen]byte{'r', 'u', 'e'} { // !bytes.Equal(bs, jsonLiteral4True)
+	if jsonValidateSymbols && bs != [rwNLen]byte{'r', 'u', 'e'} { // !Equal jsonLiteral4True
 		d.d.errorf("expecting %s: got %s", jsonLiteral4True, bs)
 	}
 }
@@ -740,7 +740,7 @@ func (d *jsonDecDriver) readLit4True() {
 func (d *jsonDecDriver) readLit4False() {
 	bs := d.d.decRd.readn(4)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [rwNLen]byte{'a', 'l', 's', 'e'} { // !bytes.Equal(bs, jsonLiteral4False)
+	if jsonValidateSymbols && bs != [rwNLen]byte{'a', 'l', 's', 'e'} { // !Equal jsonLiteral4False
 		d.d.errorf("expecting %s: got %s", jsonLiteral4False, bs)
 	}
 }
@@ -748,7 +748,7 @@ func (d *jsonDecDriver) readLit4False() {
 func (d *jsonDecDriver) readLit4Null() {
 	bs := d.d.decRd.readn(3) // readx(3)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [rwNLen]byte{'u', 'l', 'l'} { // !bytes.Equal(bs, jsonLiteral4Null)
+	if jsonValidateSymbols && bs != [rwNLen]byte{'u', 'l', 'l'} { // !Equal jsonLiteral4Null
 		d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs)
 	}
 	d.fnil = true
@@ -1506,7 +1506,7 @@ func (h *JsonHandle) typical() bool {
 func (h *JsonHandle) newEncDriver() encDriver {
 	var e = &jsonEncDriver{h: h}
 	e.e.e = e
-	e.e.jenc = e
+	// e.e.jenc = e
 	e.e.js = true
 	e.e.init(h)
 	e.reset()
@@ -1516,7 +1516,7 @@ func (h *JsonHandle) newEncDriver() encDriver {
 func (h *JsonHandle) newDecDriver() decDriver {
 	var d = &jsonDecDriver{h: h}
 	d.d.d = d
-	d.d.jdec = d
+	// d.d.jdec = d
 	d.d.js = true
 	d.d.jsms = h.MapKeyAsString
 	d.d.init(h)

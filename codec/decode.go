@@ -25,7 +25,7 @@ const (
 	decDefSliceCap = 8
 	decDefChanCap  = 64 // should be large, as cap cannot be expanded
 	// decScratchByteArrayLen = cacheLineSize + (5 * 8) // - 5 // + (8 * 2) // - (8 * 1)
-	decScratchByteArrayLen = (5 * 8) // - 5 // + (8 * 2) // - (8 * 1)
+	decScratchByteArrayLen = (6 * 8) // - 5 // + (8 * 2) // - (8 * 1)
 
 	// decContainerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.
@@ -54,7 +54,7 @@ var (
 	errstrOnlyMapOrArrayCanDecodeIntoStruct = "only encoded map or array can be decoded into a struct"
 	errstrCannotDecodeIntoNil               = "cannot decode into nil"
 
-	errmsgExpandSliceOverflow     = "expand slice: slice overflow"
+	// errmsgExpandSliceOverflow     = "expand slice: slice overflow"
 	errmsgExpandSliceCannotChange = "expand slice: cannot change"
 
 	errDecoderNotInitialized = errors.New("Decoder not initialized")
@@ -640,7 +640,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 
 		var rvkencname []byte
-		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
+		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
 			d.mapElemKey()
 			rvkencname = decStructFieldKey(d.d, f.ti.keyType, &d.b)
 			// xdebugf("key: '%s'", rvkencname)
@@ -686,7 +686,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			if hasLen && j == containerLen {
 				break
 			}
-			if !hasLen && d.d.CheckBreak() {
+			if !hasLen && d.checkBreak() {
 				checkbreak = true
 				break
 			}
@@ -701,7 +701,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		if (hasLen && containerLen > len(f.ti.sfiSrc)) || (!hasLen && !checkbreak) {
 			// read remaining values and throw away
 			for j := len(f.ti.sfiSrc); ; j++ {
-				if (hasLen && j == containerLen) || (!hasLen && d.d.CheckBreak()) {
+				if (hasLen && j == containerLen) || (!hasLen && d.checkBreak()) {
 					break
 				}
 				d.arrayElem()
@@ -832,7 +832,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	var j int
 
 	// xdebug2f("0: rvcap: %d, rvlen: %d", rvcap, rvlen)
-	for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
+	for ; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && f.seq == seqTypeSlice && rvIsNil(rv) {
 			if hasLen {
 				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, rtelem0Size)
@@ -855,7 +855,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				// drain completely and return
 				d.swallow()
 				j++
-				for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
+				for ; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 					slh.ElemContainerState(j)
 					d.swallow()
 				}
@@ -1024,7 +1024,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 	// var rtelem0ZeroValid bool
 	var j int
 
-	for ; (hasLen && j < containerLenS) || !(hasLen || d.d.CheckBreak()); j++ {
+	for ; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && rvIsNil(rv) {
 			if hasLen {
 				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, rtelem0Size)
@@ -1122,7 +1122,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	hasLen := containerLen > 0
 	var kstrbs []byte
 
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
+	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 {
 			// rvvz = reflect.Zero(vtype)
 			// rvkz = reflect.Zero(ktype)
@@ -1345,9 +1345,10 @@ type Decoder struct {
 	mtid uintptr
 	stid uintptr
 
-	jdec *jsonDecDriver
-	h    *BasicHandle
-	hh   Handle
+	// jdec *jsonDecDriver
+	h *BasicHandle
+
+	blist bytesFreelist
 
 	// ---- cpu cache line boundary?
 	decRd
@@ -1359,11 +1360,12 @@ type Decoder struct {
 
 	// _ [4]uint8 // padding
 
-	is map[string]string // used for interning strings
-
+	hh  Handle
 	err error
 
 	// ---- cpu cache line boundary?
+	is map[string]string // used for interning strings
+
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 	maxdepth int16
 	depth    int16
@@ -1382,8 +1384,6 @@ type Decoder struct {
 	// By being always-available, it can be used for one-off things without
 	// having to get from freelist, use, and return back to freelist.
 	b [decScratchByteArrayLen]byte
-
-	blist bytesFreelist
 
 	// padding - false sharing help // modify 232 if Decoder struct changes.
 	// _ [cacheLineSize - 232%cacheLineSize]byte
@@ -1414,9 +1414,9 @@ func (d *Decoder) r() *decRd {
 }
 
 func (d *Decoder) init(h Handle) {
-	if useFinalizers {
-		// runtime.SetFinalizer(d, (*Decoder).finalize)
-	}
+	// if useFinalizers {
+	// 	runtime.SetFinalizer(d, (*Decoder).finalize)
+	// }
 	d.bytes = true
 	d.err = errDecoderNotInitialized
 	// d.r = &d.decRd
@@ -1692,8 +1692,8 @@ func (d *Decoder) swallow() {
 	case valueTypeMap:
 		containerLen := d.mapStart()
 		hasLen := containerLen >= 0
-		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
-			// if clenGtEqualZero {if j >= containerLen {break} } else if d.d.CheckBreak() {break}
+		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
+			// if clenGtEqualZero {if j >= containerLen {break} } else if d.checkBreak() {break}
 			d.mapElemKey()
 			d.swallow()
 			d.mapElemValue()
@@ -1703,7 +1703,7 @@ func (d *Decoder) swallow() {
 	case valueTypeArray:
 		containerLen := d.arrayStart()
 		hasLen := containerLen >= 0
-		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.d.CheckBreak()); j++ {
+		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
 			d.arrayElem()
 			d.swallow()
 		}
@@ -2035,7 +2035,7 @@ func (d *Decoder) NumBytesRead() int {
 // Note that we return float64 to reduce unnecessary conversions
 func (d *Decoder) decodeFloat32() float32 {
 	if d.js {
-		return d.jdec.DecodeFloat32() // custom implementation for 32-bit
+		return d.jsondriver().DecodeFloat32() // custom implementation for 32-bit
 	}
 	return float32(chkOvf.Float32V(d.d.DecodeFloat64()))
 }
@@ -2058,14 +2058,14 @@ func (d *Decoder) mapStart() (v int) {
 
 func (d *Decoder) mapElemKey() {
 	if d.js {
-		d.jdec.ReadMapElemKey()
+		d.jsondriver().ReadMapElemKey()
 	}
 	d.c = containerMapKey
 }
 
 func (d *Decoder) mapElemValue() {
 	if d.js {
-		d.jdec.ReadMapElemValue()
+		d.jsondriver().ReadMapElemValue()
 	}
 	d.c = containerMapValue
 }
@@ -2073,20 +2073,22 @@ func (d *Decoder) mapElemValue() {
 func (d *Decoder) mapEnd() {
 	d.d.ReadMapEnd()
 	d.depthDecr()
-	d.c = containerMapEnd
+	// d.c = containerMapEnd
 	d.c = 0
 }
 
 func (d *Decoder) arrayStart() (v int) {
 	v = d.d.ReadArrayStart()
-	d.depthIncr()
-	d.c = containerArrayStart
+	if v != decContainerLenNil {
+		d.depthIncr()
+		d.c = containerArrayStart
+	}
 	return
 }
 
 func (d *Decoder) arrayElem() {
 	if d.js {
-		d.jdec.ReadArrayElem()
+		d.jsondriver().ReadArrayElem()
 	}
 	d.c = containerArrayElem
 }
@@ -2094,7 +2096,7 @@ func (d *Decoder) arrayElem() {
 func (d *Decoder) arrayEnd() {
 	d.d.ReadArrayEnd()
 	d.depthDecr()
-	d.c = containerArrayEnd
+	// d.c = containerArrayEnd
 	d.c = 0
 }
 

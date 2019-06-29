@@ -421,3 +421,19 @@ func mapDelete(m, k reflect.Value) {
 func mapAddressableRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 	return // reflect.New(t).Elem()
 }
+
+// ---------- ENCODER optimized ---------------
+
+func (e *Encoder) jsondriver() *jsonEncDriver {
+	return e.e.(*jsonEncDriver)
+}
+
+// ---------- DECODER optimized ---------------
+
+func (d *Decoder) checkBreak() bool {
+	return d.d.CheckBreak()
+}
+
+func (d *Decoder) jsondriver() *jsonDecDriver {
+	return d.d.(*jsonDecDriver)
+}
