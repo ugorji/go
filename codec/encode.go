@@ -304,7 +304,6 @@ func (e *Encoder) kErr(f *codecFnInfo, rv reflect.Value) {
 }
 
 func chanToSlice(rv reflect.Value, rtelem reflect.Type, timeout time.Duration) (rvcs reflect.Value) {
-	// TODO: ensure this doesn't mess up anywhere that rv of kind chan is expected
 	rvcs = reflect.Zero(reflect.SliceOf(rtelem))
 	if timeout < 0 { // consume until close
 		for {

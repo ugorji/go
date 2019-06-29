@@ -518,7 +518,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			}
 		}
 	case valueTypeNil:
-		// rvn = reflect.Zero(f.ti.rt) // TODO
+		// rvn = reflect.Zero(f.ti.rt)
 		// no-op
 	case valueTypeInt:
 		rvn = n.ri()
@@ -1193,7 +1193,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 					if vtypeElem == nil {
 						vtypeElem = vtype.Elem()
 					}
-					rvv = reflect.New(vtypeElem) // TODO: use rvzeroaddr?
+					rvv = reflect.New(vtypeElem)
 				}
 			} else if rvv.IsValid() && vtypeKind == reflect.Interface && !rvIsNil(rvv) {
 				rvvn = rvZeroAddrK(vtype, vtypeKind)
@@ -1602,7 +1602,7 @@ func (d *Decoder) MustDecode(v interface{}) {
 // This provides insight to the code location that triggered the error.
 func (d *Decoder) mustDecode(v interface{}) {
 	// xdebug2f(".... mustDecode: v: %#v", v)
-	// TODO: Top-level: ensure that v is a pointer and not nil.
+	// Top-level: v is a pointer and not nil.
 
 	// if d.bi == nil {
 	// 	// if d.d.TryDecodeAsNil() {
@@ -1777,6 +1777,14 @@ func setZero(iv interface{}) {
 }
 
 func setZeroRV(v reflect.Value) {
+	// It not decodeable, we do not touch it.
+	// We considered empty'ing it if not decodeable e.g.
+	//    - if chan, drain it
+	//    - if map, clear it
+	//    - if slice or array, zero all elements up to len
+	//
+	// However, we decided instead that we either will set the
+	// whole value to the zero value, or leave AS IS.
 	if isDecodeable(v) {
 		if v.Kind() == reflect.Ptr {
 			v = v.Elem()
@@ -1784,7 +1792,7 @@ func setZeroRV(v reflect.Value) {
 		if v.CanSet() {
 			v.Set(reflect.Zero(v.Type()))
 		}
-	} // TODO: else drain if chan, clear if map, set all to nil if slice???
+	}
 }
 
 func (d *Decoder) decode(iv interface{}) {
@@ -1854,8 +1862,7 @@ func (d *Decoder) decode(iv interface{}) {
 		} else if !fastpathDecodeTypeSwitch(iv, d) {
 			v := rv4i(iv)
 			d.ensureDecodeable(v)
-			d.decodeValue(v, nil) // TODO: find a way to say: no fast path??? Not necessary???
-			// d.decodeValueFallback(v)
+			d.decodeValue(v, nil)
 		}
 	}
 }
@@ -2144,6 +2151,8 @@ func (d *Decoder) sideDecode(v interface{}, bs []byte) {
 
 // decSliceHelper assists when decoding into a slice, from a map or an array in the stream.
 // A slice can be set from a map or array in stream. This supports the MapBySlice interface.
+//
+// Note: if IsNil, do not call ElemContainerState.
 type decSliceHelper struct {
 	d     *Decoder
 	ct    valueType
@@ -2179,13 +2188,24 @@ func (x decSliceHelper) End() {
 
 func (x decSliceHelper) ElemContainerState(index int) {
 	// Note: if isnil, clen=0, so we never call into ElemContainerState
-	if x.IsNil { //TODO: take out this check
-	} else if x.Array {
+
+	// if x.IsNil {
+	// } else if x.Array {
+	// 	x.d.arrayElem()
+	// } else if index%2 == 0 {
+	// 	x.d.mapElemKey()
+	// } else {
+	// 	x.d.mapElemValue()
+	// }
+
+	if x.Array {
 		x.d.arrayElem()
-	} else if index%2 == 0 {
-		x.d.mapElemKey()
 	} else {
-		x.d.mapElemValue()
+		if index%2 == 0 {
+			x.d.mapElemKey()
+		} else {
+			x.d.mapElemValue()
+		}
 	}
 }
 

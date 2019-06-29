@@ -129,11 +129,8 @@ func rv4i(i interface{}) (rv reflect.Value) {
 }
 
 func rv2i(rv reflect.Value) interface{} {
-	// TODO: consider a more generally-known optimization for reflect.Value ==> Interface
-	//
-	// Currently, we use this fragile method that taps into implememtation details from
+	// We tap into implememtation details from
 	// the source go stdlib reflect/value.go, and trims the implementation.
-
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: rv2ptr(urv)}))
 }
@@ -534,7 +531,14 @@ func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
 
 func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	t := reflectArrayOf(rvGetSliceLen(rv), rv.Type().Elem()) // TODO: Len or Cap???
+	// It is possible that this slice is based off an array with a larger
+	// len that we want (where array len == slice cap).
+	// However, it is ok to create an array type that is a subset of the full
+	// e.g. full slice is based off a *[16]byte, but we can create a *[4]byte
+	// off of it. That is ok.
+	//
+	// Consequently, we use rvGetSliceLen, not rvGetSliceCap.
+	t := reflectArrayOf(rvGetSliceLen(rv), rv.Type().Elem())
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	uv.flag = uintptr(reflect.Array) | unsafeFlagIndir | unsafeFlagAddr
 	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).word

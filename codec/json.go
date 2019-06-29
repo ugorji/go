@@ -661,22 +661,12 @@ func (d *jsonDecDriver) CheckBreak() bool {
 	return d.tok == '}' || d.tok == ']'
 }
 
-// For the ReadXXX methods below, we could just delegate to helper functions
-// readContainerState(c containerState, xc uint8, check bool)
-// - ReadArrayElem would become:
-//   readContainerState(containerArrayElem, ',', d.d.c != containerArrayStart)
-//
-// However, until mid-stack inlining comes in go1.11 which supports inlining of
-// one-liners, we explicitly write them all 5 out to elide the extra func call.
-//
-// TODO: For Go 1.11, if inlined, consider consolidating these.
-
 func (d *jsonDecDriver) ReadArrayElem() {
 	const xc uint8 = ','
-	d.advance()
 	if d.d.c != containerArrayStart {
+		d.advance()
 		if d.tok != xc {
-			d.d.errorf("read array element - expect char '%c' but got char '%c'", xc, d.tok)
+			d.readDelimError(xc)
 		}
 		d.tok = 0
 	}
@@ -686,17 +676,17 @@ func (d *jsonDecDriver) ReadArrayEnd() {
 	const xc uint8 = ']'
 	d.advance()
 	if d.tok != xc {
-		d.d.errorf("read array end - expect char '%c' but got char '%c'", xc, d.tok)
+		d.readDelimError(xc)
 	}
 	d.tok = 0
 }
 
 func (d *jsonDecDriver) ReadMapElemKey() {
 	const xc uint8 = ','
-	d.advance()
 	if d.d.c != containerMapStart {
+		d.advance()
 		if d.tok != xc {
-			d.d.errorf("read map key - expect char '%c' but got char '%c'", xc, d.tok)
+			d.readDelimError(xc)
 		}
 		d.tok = 0
 	}
@@ -706,7 +696,7 @@ func (d *jsonDecDriver) ReadMapElemValue() {
 	const xc uint8 = ':'
 	d.advance()
 	if d.tok != xc {
-		d.d.errorf("read map value - expect char '%c' but got char '%c'", xc, d.tok)
+		d.readDelimError(xc)
 	}
 	d.tok = 0
 }
@@ -715,9 +705,45 @@ func (d *jsonDecDriver) ReadMapEnd() {
 	const xc uint8 = '}'
 	d.advance()
 	if d.tok != xc {
-		d.d.errorf("read map end - expect char '%c' but got char '%c'", xc, d.tok)
+		d.readDelimError(xc)
 	}
 	d.tok = 0
+}
+
+// func (d *jsonDecDriver) readDelim(xc uint8) {
+// 	d.advance()
+// 	if d.tok != xc {
+// 		d.d.errorf("read json delimiter - expect char '%c' but got char '%c'", xc, d.tok)
+// 	}
+// 	d.tok = 0
+// }
+
+// func (d *jsonDecDriver) readDelim(xc uint8) {
+// 	d.advance()
+// 	if d.tok != xc {
+// 		d.d.errorf("read json delimiter - expect char '%c' but got char '%c'", xc, d.tok)
+// 	}
+// 	d.tok = 0
+// }
+
+// func (d *jsonDecDriver) readDelim(xc uint8) {
+// 	d.advance()
+// 	if d.tok != xc {
+// 		d.readDelimError(xc)
+// 	}
+// 	d.tok = 0
+// }
+
+// func (d *jsonDecDriver) readDelim(xc uint8) {
+// 	if d.tok != xc {
+// 		d.d.errorf("read json delimiter - expect char '%c' but got char '%c'", xc, d.tok)
+// 	}
+// 	d.tok = 0
+// }
+
+// //go:noinline
+func (d *jsonDecDriver) readDelimError(xc uint8) {
+	d.d.errorf("read json delimiter - expect char '%c' but got char '%c'", xc, d.tok)
 }
 
 // func (d *jsonDecDriver) readLit(length, fromIdx uint8) {
@@ -1043,7 +1069,7 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		// } else {
 		// 	d.bp.get(slen)
 		// 	bsOut = d.buf
-		// 	// bsOut = make([]byte, slen) // TODO: should i check pool? how to return it back?
+		// 	// bsOut = make([]byte, slen)
 		// }
 	} else {
 		bsOut = make([]byte, slen)

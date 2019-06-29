@@ -1255,7 +1255,7 @@ func (x *genRunner) encListFallback(varname string, t reflect.Type) {
 
 func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 	x.linef("if %s == nil { r.EncodeNil(); return }", varname)
-	// TODO: expand this to handle canonical.
+	// NOTE: Canonical Option is not honored
 	i := x.varsfx()
 	x.line("z.EncWriteMapStart(len(" + varname + "))")
 	// x.linef("var %sfirst%s = true", genTempVarPfx, i)

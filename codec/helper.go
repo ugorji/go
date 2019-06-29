@@ -119,6 +119,15 @@ package codec
 // Escape Analysis
 //    - Prefer to return non-pointers if the value is used right away.
 //      Newly allocated values returned as pointers will be heap-allocated as they escape.
+//
+// Prefer functions and methods that
+//    - take no parameters and
+//    - return no results and
+//    - do not allocate.
+// These are optimized by the runtime.
+// For example, in json, we have dedicated functions for ReadMapElemKey, etc
+// which do not delegate to readDelim, as readDelim takes a parameter.
+// The difference in runtime was as much as 5%.
 
 import (
 	"bytes"
@@ -1303,8 +1312,10 @@ func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 	rtid := rt2id(rt)
 	switch rtid {
 	case timeTypId, rawTypId, rawExtTypId:
-		// all natively supported type, so cannot have an extension
-		return // TODO: should we silently ignore, or return an error???
+		// all natively supported type, so cannot have an extension.
+		// However, we do not return an error for these, as we do not document that.
+		// Instead, we silently treat as a no-op, and return.
+		return
 	}
 	// if o == nil {
 	// 	return errors.New("codec.Handle.SetExt: extHandle not initialized")
@@ -3256,7 +3267,7 @@ var _ = isNaN32
 // 	//tzhr, tzmin := tz/60, tz%60 //faster if u convert to int first
 // 	var tzhr, tzmin int16
 // 	if tzint < 0 {
-// 		tzname[3] = '-' // (TODO: verify. this works here)
+// 		tzname[3] = '-'
 // 		tzhr, tzmin = -tzint/60, (-tzint)%60
 // 	} else {
 // 		tzhr, tzmin = tzint/60, tzint%60
