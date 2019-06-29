@@ -60,10 +60,6 @@ func rvSetSliceLen(rv reflect.Value, length int) {
 	rv.SetLen(length)
 }
 
-// func rvzeroaddr(t reflect.Type) reflect.Value {
-// 	return reflect.New(t).Elem()
-// }
-
 func rvZeroAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
 	return reflect.New(t).Elem()
 }
@@ -71,18 +67,6 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
 func rvConvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
 	return v.Convert(t)
 }
-
-// func rvisnilref(rv reflect.Value) bool {
-// 	return rv.IsNil()
-// }
-
-// func rvslen(rv reflect.Value) int {
-// 	return rv.Len()
-// }
-
-// func rv2rtid(rv reflect.Value) uintptr {
-// 	return rv4i(rv.Type()).Pointer()
-// }
 
 func rt2id(rt reflect.Type) uintptr {
 	return rv4i(rt).Pointer()
@@ -121,14 +105,6 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) b
 	}
 	return false
 }
-
-// --------------------------
-// type ptrToRvMap struct{}
-
-// func (*ptrToRvMap) init() {}
-// func (*ptrToRvMap) get(i interface{}) reflect.Value {
-// 	return rv4i(i).Elem()
-// }
 
 // --------------------------
 type atomicClsErr struct {
@@ -309,9 +285,7 @@ func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
 
 func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	v = rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rv), rv.Type().Elem()), reflect.Array)
-	// xdebugf("rvGetArray4Slice: b4 copy: rv: %#v, v: %#v", rv, v)
 	reflect.Copy(v, rv)
-	// xdebugf("rvGetArray4Slice: after copy: v: %#v", v)
 	return
 }
 
@@ -340,14 +314,6 @@ func rvGetTime(rv reflect.Value) time.Time {
 func rvGetString(rv reflect.Value) string {
 	return rv.String()
 }
-
-// func rvGetStringToRaw(rv reflect.Value) {
-// 	e.e.EncodeStringBytesRaw(bytesView(rv.String()))
-// }
-
-// func rvGetStringEnc(rv reflect.Value) {
-// 	e.e.EncodeStringEnc(cUTF8, rv.String())
-// }
 
 func rvGetFloat64(rv reflect.Value) float64 {
 	return rv.Float()

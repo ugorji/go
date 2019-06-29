@@ -36,10 +36,10 @@ type codecSelfer19781 struct{}
 func codecSelfer19781False() bool { return false }
 
 func init() {
-	if GenVersion != 15 {
+	if GenVersion != 16 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic("codecgen version mismatch: current: 15, need " + ver + ". Re-generate file: " + file)
+		panic("codecgen version mismatch: current: 16, need " + ver + ". Re-generate file: " + file)
 	}
 }
 

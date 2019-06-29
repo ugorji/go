@@ -111,7 +111,8 @@ import (
 // v13: 20190603 removed DecodeString - use DecodeStringAsBytes instead
 // v14: 20190611 refactored nil handling: TryDecodeAsNil -> selective TryNil, etc
 // v15: 20190626 encDriver.EncodeString handles StringToRaw flag inside handle
-const genVersion = 15
+// v16: 20190629 refactoring for v1.1.6
+const genVersion = 16
 
 const (
 	genCodecPkg        = "codec1978"
@@ -348,31 +349,13 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.line("_, file, _, _ := runtime.Caller(0)")
 	x.linef("ver := strconv.FormatInt(int64(%sGenVersion), 10)", x.cpfx)
 	x.outf(`panic("codecgen version mismatch: current: %v, need " + ver + ". Re-generate file: " + file)`, genVersion)
-	// x.out(`panic(fmt.Errorf("codecgen version mismatch: current: %v, need %v. Re-generate file: %v", `)
-	// x.linef(`%v, %sGenVersion, file))`, genVersion, x.cpfx)
 	x.linef("}")
 	if len(imKeys) > 0 {
 		x.line("if false { // reference the types, but skip this branch at build/run time")
-		// x.line("var _ byte")
-		// x.line("_ = strconv.ParseInt")
-		// var n int
-		// for k, t := range x.im {
 		for _, k := range imKeys {
 			t := x.im[k]
-			// x.linef("var v%v %s.%s", n, x.imn[k], t.Name())
-			// n++
 			x.linef("var _ %s.%s", x.imn[k], t.Name())
 		}
-		// if n > 0 {
-		// 	x.out("_")
-		// 	for i := 1; i < n; i++ {
-		// 		x.out(", _")
-		// 	}
-		// 	x.out(" = v0")
-		// 	for i := 1; i < n; i++ {
-		// 		x.outf(", v%v", i)
-		// 	}
-		// }
 		x.line("} ") // close if false
 	}
 	x.line("}") // close init
@@ -501,26 +484,12 @@ func (x *genRunner) out(s string) {
 	}
 }
 
-// func (x *genRunner) outb(s []byte) {
-// 	_, err := x.w.Write(s)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// }
-
 func (x *genRunner) outf(s string, params ...interface{}) {
 	_, err := fmt.Fprintf(x.w, s, params...)
 	if err != nil {
 		panic(err)
 	}
 }
-
-// func (x *genRunner) lineb(s []byte) {
-// 	x.outb(s)
-// 	if len(s) == 0 || s[len(s)-1] != '\n' {
-// 		x.out("\n")
-// 	}
-// }
 
 func (x *genRunner) line(s string) {
 	x.out(s)
@@ -910,7 +879,6 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 			x.line("z.F." + g.MethodNamePfx("Enc", false) + "V(" + varname + ", e)")
 		} else {
 			x.xtraSM(varname, t, true, false)
-			// x.encListFallback(varname, rtid, t)
 		}
 		x.linef("} // end block: if %s slice == nil", varname)
 	case reflect.Map:
@@ -925,7 +893,6 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 			x.line("z.F." + g.MethodNamePfx("Enc", false) + "V(" + varname + ", e)")
 		} else {
 			x.xtraSM(varname, t, true, false)
-			// x.encMapFallback(varname, rtid, t)
 		}
 		x.linef("} // end block: if %s map == nil", varname)
 	case reflect.Struct:
@@ -1019,13 +986,11 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	numfieldsvar := genTempVarPfx + "q" + i
 	ti2arrayvar := genTempVarPfx + "r" + i
 	struct2arrvar := genTempVarPfx + "2arr" + i
-	// firstvar := genTempVarPfx + "2first" + i
 
 	x.line(sepVarname + " := !z.EncBinary()")
 	x.linef("%s := z.EncBasicHandle().StructToArray", struct2arrvar)
 	x.linef("_, _ = %s, %s", sepVarname, struct2arrvar)
 	x.linef("const %s bool = %v // struct tag has 'toArray'", ti2arrayvar, ti.toArray)
-	// x.linef("var %s bool = true", firstvar)
 
 	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
 
@@ -1040,9 +1005,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		for j, si := range tisfi {
 			_ = j
 			if !si.omitEmpty() {
-				// x.linef("%s[%v] = true // %s", numfieldsvar, j, si.fieldName)
 				x.linef("true, // %s", si.fieldName)
-				// nn++
 				continue
 			}
 			var t2 reflect.StructField
@@ -1075,7 +1038,6 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		x.line("}")
 		x.linef("_ = %s", numfieldsvar)
 	}
-	// x.linef("var %snn%s int", genTempVarPfx, i)
 
 	type genFQN struct {
 		i       string
@@ -1112,11 +1074,8 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 					} else {
 						q.nilLine.f(" || %s == nil", q.fqname)
 					}
-					// x.linef("if %s == nil { %s = true; goto LABEL%d }", varname3, isNilVarName, i)
-					// "varname3 = new(" + x.genTypeName(t3.Elem()) + ") }")
 				}
 			}
-			// t2 = t.FieldByIndex(si.is)
 		}
 	}
 
@@ -1124,7 +1083,6 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		q := &genFQNs[j]
 		if q.canNil {
 			x.linef("var %s bool = %s", q.nilVar, q.nilLine.v())
-			// x.linef("if %s { %s = true }", q.nilLine.v(), q.nilVar)
 		}
 	}
 
@@ -1155,8 +1113,6 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	x.line("z.EncWriteArrayEnd()")
 	x.linef("} else {") // if not ti.toArray
 	if ti.anyOmitEmpty {
-		// nn = 0
-		// x.linef("var %snn%s = %v", genTempVarPfx, i, nn)
 		x.linef("var %snn%s int", genTempVarPfx, i)
 		x.linef("for _, b := range %s { if b { %snn%s++ } }", numfieldsvar, genTempVarPfx, i)
 		x.linef("z.EncWriteMapStart(%snn%s)", genTempVarPfx, i)
@@ -1189,7 +1145,6 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 				x.linef("}")
 			}
 		}
-		// x.linef("r.EncStructFieldKey(codecSelferValueType%s%s, `%s`)", ti.keyType.String(), x.xs, si.encName)
 		x.line("z.EncWriteMapElemValue()")
 		if q.canNil {
 			x.line("if " + q.nilVar + " { r.EncodeNil() } else { ")
@@ -1232,7 +1187,6 @@ func (x *genRunner) encListFallback(varname string, t reflect.Type) {
 		if err != nil {
 			panic(err)
 		}
-		// x.linef("%s = sch%s", varname, i)
 		if elemBytes {
 			x.linef("r.EncodeStringBytesRaw([]byte(%s))", "sch"+i)
 			x.line("}")
@@ -1258,10 +1212,8 @@ func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 	// NOTE: Canonical Option is not honored
 	i := x.varsfx()
 	x.line("z.EncWriteMapStart(len(" + varname + "))")
-	// x.linef("var %sfirst%s = true", genTempVarPfx, i)
 	x.linef("for %sk%s, %sv%s := range %s {", genTempVarPfx, i, genTempVarPfx, i, varname)
 	x.linef("z.EncWriteMapElemKey()")
-	// x.linef("%sfirst%s = false", genTempVarPfx, i)
 	x.encVar(genTempVarPfx+"k"+i, t.Key())
 	x.line("z.EncWriteMapElemValue()")
 	x.encVar(genTempVarPfx+"v"+i, t.Elem())
@@ -1309,9 +1261,6 @@ func (x *genRunner) decVarInitPtr(varname, nilvar string, t reflect.Type, si *st
 			}
 		}
 	}
-	// if t2typ.Kind() == reflect.Ptr {
-	// 	varname3 = varname3 + t2.Name
-	// }
 	if nilbuf != nil {
 		if nilbufed {
 			nilbuf.s(" { ").s("// remove the if-true\n")
@@ -1382,25 +1331,6 @@ func (x *genRunner) decVar(varname, nilvar string, t reflect.Type, canBeNil, che
 	// This could happen when decoding from a struct encoded as an array.
 	// For that, decVar should be called with canNil=true, to force true as its value.
 
-	// i := x.varsfx()
-	// if !canBeNil {
-	// 	canBeNil = genAnythingCanBeNil || !genIsImmutable(t)
-	// }
-	//
-	// if canBeNil {
-	// 	var buf genBuf
-	// 	x.decVarInitPtr(varname, nilvar, t, nil, nil, &buf)
-	// 	x.linef("if r.TryDecodeAsNil() { %s } else {", buf.buf)
-	// } else {
-	// 	x.line("// cannot be nil")
-	// }
-	// x.decVarMain(varname, i, t, checkNotNil)
-	// if canBeNil {
-	// 	x.line("} ")
-	// }
-
-	// x.decVarMain(varname, i, t, checkNotNil)
-
 	i := x.varsfx()
 	if t.Kind() == reflect.Ptr {
 		var buf genBuf
@@ -1421,7 +1351,6 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	//   - t is always a baseType T (not a *T, etc).
 	rtid := rt2id(t)
 	ti2 := x.ti.get(rtid, t)
-	// tptr := reflect.PtrTo(t)
 	if x.checkForSelfer(t, varname) {
 		if ti2.isFlag(tiflagSelfer) || ti2.isFlag(tiflagSelferPtr) {
 			x.line(varname + ".CodecDecodeSelf(d)")
@@ -1456,8 +1385,6 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	//   - the type implements (Text|JSON|Binary)(Unm|M)arshal
 
 	mi := x.varsfx()
-	// x.linef("%sm%s := z.DecBinary()", genTempVarPfx, mi)
-	// x.linef("_ = %sm%s", genTempVarPfx, mi)
 
 	var hasIf genIfClause
 	defer hasIf.end(x)
@@ -1487,7 +1414,6 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	// and this is not the CodecEncodeSelf or CodecDecodeSelf method (i.e. it is not a Selfer)
 	if !x.nx && varname != genTopLevelVarName && genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion
-		// x.linef("} else if z.HasExtensions() && z.DecExt(%s) {", varname)
 		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
 		x.linef("%s %s := z.Extension(z.I2Rtid(%s)); %s != nil { z.DecExtension(%s, %s) ", hasIf.c(false), yy, varname, yy, varname, yy)
 	}
@@ -1536,7 +1462,6 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 			x.linef("z.F.%sX(%s%s, d)", g.MethodNamePfx("Dec", false), addrPfx, varname)
 		} else {
 			x.xtraSM(varname, t, false, isptr)
-			// x.decMapFallback(varname, rtid, t)
 		}
 	case reflect.Struct:
 		if inlist {
@@ -1772,13 +1697,11 @@ func (x *genRunner) decStructMap(varname, lenvarname string, rtid uintptr, t ref
 	default: // string
 		x.linef("%s := z.StringView(r.DecodeStringAsBytes())", kName)
 	}
-	// x.linef("%s := z.StringView(r.DecStructFieldKey(codecSelferValueType%s%s, z.DecScratchArrayBuffer()))", kName, ti.keyType.String(), x.xs)
 
 	x.line("z.DecReadMapElemValue()")
 	x.decStructMapSwitch(kName, varname, rtid, t)
 
 	x.line("} // end for " + tpfx + "j" + i)
-	// x.line("z.DecReadMapEnd()")
 }
 
 func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid uintptr, t reflect.Type) {
@@ -1828,11 +1751,9 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 	x.line("z.DecReadArrayElem()")
 	x.linef(`z.DecStructFieldNotFound(%sj%s - 1, "")`, tpfx, i)
 	x.line("}")
-	// x.line("z.DecReadArrayEnd()")
 }
 
 func (x *genRunner) decStruct(varname string, rtid uintptr, t reflect.Type) {
-	// xdebugf("decStruct: t: %v", t)
 	// varname MUST be a ptr, or a struct field or a slice element.
 	i := x.varsfx()
 	x.linef("%sct%s := r.ContainerType()", genTempVarPfx, i)
@@ -2175,9 +2096,12 @@ func genInternalDecCommandAsString(s string) string {
 
 func genInternalSortType(s string, elem bool) string {
 	for _, v := range [...]string{
-		"int", "uint", "float",
+		"int",
+		"uint",
+		"float",
 		"bool",
-		"string", "bytes", "[]uint8", "[]byte",
+		"string",
+		"bytes", "[]uint8", "[]byte",
 	} {
 		if v == "[]byte" || v == "[]uint8" {
 			v = "bytes"

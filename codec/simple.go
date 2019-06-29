@@ -33,11 +33,8 @@ const (
 type simpleEncDriver struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
-	// encNoSeparator
 	h *SimpleHandle
 	b [8]byte
-	// c containerState
-	// encDriverTrackContainerWriter
 	_ [6]uint64 // padding (cache-aligned)
 	e Encoder
 }
@@ -166,10 +163,6 @@ func (e *simpleEncDriver) WriteMapStart(length int) {
 	e.encLen(simpleVdMap, length)
 }
 
-// func (e *simpleEncDriver) EncodeSymbol(v string) {
-// 	e.EncodeStringEnc(cUTF8, v)
-// }
-
 func (e *simpleEncDriver) EncodeString(v string) {
 	if e.h.EncZeroValuesAsNil && e.e.c != containerMapKey && v == "" {
 		e.EncodeNil()
@@ -216,10 +209,7 @@ type simpleDecDriver struct {
 	bdRead bool
 	bd     byte
 	fnil   bool
-	// c      containerState
-	// b      [scratchByteArrayLen]byte
 	noBuiltInTypes
-	// noStreamingCodec
 	decDriverNoopContainerReader
 	_ [6]uint64 // padding
 	d Decoder
@@ -280,12 +270,7 @@ func (d *simpleDecDriver) ContainerType() (vt valueType) {
 	case simpleVdMap, simpleVdMap + 1,
 		simpleVdMap + 2, simpleVdMap + 3, simpleVdMap + 4:
 		return valueTypeMap
-		// case simpleVdTime:
-		// 	return valueTypeTime
 	}
-	// else {
-	// d.d.errorf("isContainerType: unsupported parameter: %v", vt)
-	// }
 	return valueTypeUnset
 }
 
@@ -319,7 +304,8 @@ func (d *simpleDecDriver) decCheckInteger() (ui uint64, neg bool) {
 		d.d.errorf("integer only valid from pos/neg integer1..8. Invalid descriptor: %v", d.bd)
 		return
 	}
-	// don't do this check, because callers may only want the unsigned value.
+	// DO NOT do this check below, because callers may only want the unsigned value:
+	//
 	// if ui > math.MaxInt64 {
 	// 	d.d.errorf("decIntAny: Integer out of range for signed int64: %v", ui)
 	//		return
@@ -623,7 +609,6 @@ func (d *simpleDecDriver) DecodeNaked() {
 // The full spec will be published soon.
 type SimpleHandle struct {
 	binaryEncodingType
-	// noElemSeparators
 	BasicHandle
 	// EncZeroValuesAsNil says to encode zero values for numbers, bool, string, etc as nil
 	EncZeroValuesAsNil bool
@@ -633,8 +618,6 @@ type SimpleHandle struct {
 
 // Name returns the name of the handle: simple
 func (h *SimpleHandle) Name() string { return "simple" }
-
-// func (h *SimpleHandle) hasElemSeparators() bool { return true } // as it implements Write(Map|Array)XXX
 
 func (h *SimpleHandle) newEncDriver() encDriver {
 	var e = &simpleEncDriver{h: h}
