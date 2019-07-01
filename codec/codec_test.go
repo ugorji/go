@@ -244,17 +244,19 @@ func (x *testUnixNanoTimeExt) ConvertExt(v interface{}) interface{} {
 }
 
 func (x *testUnixNanoTimeExt) UpdateExt(dest interface{}, v interface{}) {
+	// xdebugf("testUnixNanoTimeExt: v: %#v", v)
 	tt := dest.(*time.Time)
-	switch v2 := v.(type) {
-	case int64:
-		*tt = time.Unix(0, v2).UTC()
-	case uint64:
-		*tt = time.Unix(0, int64(v2)).UTC()
-	//case float64:
-	//case string:
-	default:
-		panic(fmt.Sprintf("unsupported format for time conversion: expecting int64/uint64; got %T", v))
-	}
+	*tt = time.Unix(0, v.(int64)).UTC()
+	// switch v2 := v.(type) {
+	// case int64:
+	// 	*tt = time.Unix(0, v2).UTC()
+	// case uint64:
+	// 	*tt = time.Unix(0, int64(v2)).UTC()
+	// //case float64:
+	// //case string:
+	// default:
+	// 	panic(fmt.Sprintf("unsupported format for time conversion: expecting int64/uint64; got %T", v))
+	// }
 }
 
 // ----
