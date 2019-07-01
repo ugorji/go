@@ -50,18 +50,6 @@ type genHelperDecDriver struct {
 	decDriver
 }
 
-{{/*
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (x genHelperEncDriver) EncStructFieldKey(keyType valueType, s string) {
-	encStructFieldKey(s, x.encDriver, nil, keyType, false, false)
-}
-
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (x genHelperDecDriver) DecStructFieldKey(keyType valueType, buf *[decScratchByteArrayLen]byte) []byte {
-	return decStructFieldKey(x.decDriver, keyType, buf)
-}
-*/ -}}
-
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 type genHelperEncoder struct {
 	M must
