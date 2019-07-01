@@ -179,7 +179,8 @@ _usage() {
     printf "\t-d download\n"
     printf "\t-c code-generate\n"
     printf "\t-tx tests (show stats for each format and whether encoded == decoded); if x, do external also\n"
-    printf "\t-bsgjqp run test suite for [codec, codec and x, codec and x (generated), json, json-quick, json-profile]\n"
+    printf "\t-sgx run test suite for codec; if g, use generated files; if x, do external also\n"
+    printf "\t-jqp run test suite for [json, json-quick, json-profile]\n"
 }
 
 _main() {
@@ -191,27 +192,33 @@ _main() {
     local zargs=("-count" "1")
     local args=()
     local do_x="0"
-    while getopts "dcbsjqpgtxkl" flag
+    local do_g="0"
+    while getopts "dcbsjqptxklg" flag
     do
         case "$flag" in
-            d|c|b|s|j|q|p|g|t|x|k|l) args+=( "$flag" ) ;;
+            d|c|b|s|j|q|p|t|x|k|l|g) args+=( "$flag" ) ;;
             *) _usage; return 1 ;;
         esac
     done
     shift "$((OPTIND-1))"
     
     [[ " ${args[*]} " == *"x"* ]] && do_x="1"
+    [[ " ${args[*]} " == *"g"* ]] && do_g="1"
     [[ " ${args[*]} " == *"k"* ]] && zargs+=("-gcflags" "all=-B")
     [[ " ${args[*]} " == *"l"* ]] && zargs+=("-gcflags" "all=-l=4")
     [[ " ${args[*]} " == *"d"* ]] && _go_get "$@"
     [[ " ${args[*]} " == *"c"* ]] && _gen "$@"
-    [[ " ${args[*]} " == *"b"* ]] && _suite_any - - BenchmarkCodecSuite "$@" | _suite_trim_output
-    [[ " ${args[*]} " == *"s"* ]] && _suite_any x - BenchmarkCodecXSuite "$@" | _suite_trim_output
-    [[ " ${args[*]} " == *"g"* ]] && _suite_any x g BenchmarkCodecXGenSuite "$@" | _suite_trim_output
+    
+    [[ " ${args[*]} " == *"s"* && "${do_x}" == 0 && "${do_g}" == 0 ]] && _suite_any - - BenchmarkCodecSuite "$@" | _suite_trim_output
+    [[ " ${args[*]} " == *"s"* && "${do_x}" == 0 && "${do_g}" == 1 ]] && _suite_any - g BenchmarkCodecSuite "$@" | _suite_trim_output
+    [[ " ${args[*]} " == *"s"* && "${do_x}" == 1 && "${do_g}" == 0 ]] && _suite_any x - BenchmarkCodecXSuite "$@" | _suite_trim_output
+    [[ " ${args[*]} " == *"s"* && "${do_x}" == 1 && "${do_g}" == 1 ]] && _suite_any x g BenchmarkCodecXGenSuite "$@" | _suite_trim_output
+    
     [[ " ${args[*]} " == *"j"* ]] && _suite_any x - BenchmarkCodecQuickAllJsonSuite "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"q"* ]] && _suite_very_quick_json_non_suite "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"p"* ]] && _suite_very_quick_json_only_profile "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"t"* ]] && _suite_tests "$@" | _suite_trim_output | _suite_tests_strip_file_line
+    
     true
     # shift $((OPTIND-1))
 }
