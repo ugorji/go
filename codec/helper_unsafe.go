@@ -475,6 +475,15 @@ func rvSlice(rv reflect.Value, length int) (v reflect.Value) {
 
 // ------------
 
+func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	uv.ptr = unsafe.Pointer(uintptr(((*unsafeSlice)(urv.ptr)).Data) + (ti.elemsize * uintptr(i)))
+	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).word
+	uv.flag = uintptr(ti.elemkind) | unsafeFlagIndir | unsafeFlagAddr
+	return
+}
+
 func rvGetSliceLen(rv reflect.Value) int {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	return (*unsafeSlice)(urv.ptr).Len

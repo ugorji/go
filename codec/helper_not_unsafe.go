@@ -260,6 +260,10 @@ func rvSlice(rv reflect.Value, length int) reflect.Value {
 
 // ----------------
 
+func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) reflect.Value {
+	return rv.Index(i)
+}
+
 func rvGetSliceLen(rv reflect.Value) int {
 	return rv.Len()
 }

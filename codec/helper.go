@@ -932,7 +932,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				fn.fd = (*Decoder).kErr
 			case reflect.Chan:
 				fi.seq = seqTypeChan
-				fn.fe = (*Encoder).kSlice
+				fn.fe = (*Encoder).kChan
 				fn.fd = (*Decoder).kSliceForChan
 			case reflect.Slice:
 				fi.seq = seqTypeSlice
@@ -940,7 +940,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				fn.fd = (*Decoder).kSlice
 			case reflect.Array:
 				fi.seq = seqTypeArray
-				fn.fe = (*Encoder).kSlice
+				fn.fe = (*Encoder).kArray
 				fi.addrF = false
 				fi.addrD = false
 				rt2 := reflect.SliceOf(ti.elem)
@@ -1584,13 +1584,16 @@ type typeInfo struct {
 	// so beneficial for intXX, bool, slices, structs, etc
 	rv0 reflect.Value
 
+	elemsize uintptr
+
 	// other flags, with individual bits representing if set.
 	flags tiflag
 
 	infoFieldOmitempty bool
 
-	_ [3]byte   // padding
-	_ [1]uint64 // padding
+	elemkind uint8
+	_        [2]byte // padding
+	// _ [1]uint64 // padding
 }
 
 func (ti *typeInfo) isFlag(f tiflag) bool {
@@ -1756,10 +1759,16 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	case reflect.Slice:
 		ti.mbs, _ = implIntf(rt, mapBySliceTyp)
 		ti.elem = rt.Elem()
+		ti.elemsize = ti.elem.Size()
+		ti.elemkind = uint8(ti.elem.Kind())
 	case reflect.Chan:
 		ti.elem = rt.Elem()
 		ti.chandir = uint8(rt.ChanDir())
-	case reflect.Array, reflect.Ptr:
+	case reflect.Array:
+		ti.elem = rt.Elem()
+		ti.elemsize = ti.elem.Size()
+		ti.elemkind = uint8(ti.elem.Kind())
+	case reflect.Ptr:
 		ti.elem = rt.Elem()
 	}
 

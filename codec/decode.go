@@ -815,7 +815,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				rvlen = rvcap
 			}
 		}
-		rv9 = rv.Index(j)
+		rv9 = rvSliceIndex(rv, j, f.ti)
 		if d.h.SliceElementReset {
 			if !rtelem0ZeroValid {
 				rtelem0ZeroValid = true

@@ -256,8 +256,8 @@ func (e *Encoder) kErr(f *codecFnInfo, rv reflect.Value) {
 	e.errorf("unsupported kind %s, for %#v", rv.Kind(), rv)
 }
 
-func chanToSlice(rv reflect.Value, rtelem reflect.Type, timeout time.Duration) (rvcs reflect.Value) {
-	rvcs = reflect.Zero(reflect.SliceOf(rtelem))
+func chanToSlice(rv reflect.Value, rtslice reflect.Type, timeout time.Duration) (rvcs reflect.Value) {
+	rvcs = reflect.Zero(rtslice)
 	if timeout < 0 { // consume until close
 		for {
 			recv, recvOk := rv.Recv()
@@ -286,88 +286,139 @@ func chanToSlice(rv reflect.Value, rtelem reflect.Type, timeout time.Duration) (
 	return
 }
 
-func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
-	// array may be non-addressable, so we have to manage with care
-	//   (don't call rv.Bytes, rv.Slice, etc).
-	// E.g. type struct S{B [2]byte};
-	//   Encode(S{}) will bomb on "panic: slice of unaddressable array".
-	mbs := f.ti.mbs
-	if f.seq != seqTypeArray {
-		if rvIsNil(rv) {
-			e.e.EncodeNil()
-			return
-		}
-		// If in this method, then there was no extension function defined.
-		// So it's okay to treat as []byte.
-		if !mbs && f.ti.rtid == uint8SliceTypId {
-			e.e.EncodeStringBytesRaw(rvGetBytes(rv))
-			return
-		}
+func (e *Encoder) kSeqFn(rtelem reflect.Type) (fn *codecFn) {
+	for rtelem.Kind() == reflect.Ptr {
+		rtelem = rtelem.Elem()
 	}
-	if f.seq == seqTypeChan && f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorf("send-only channel cannot be encoded")
+	// if kind is reflect.Interface, do not pre-determine the
+	// encoding type, because preEncodeValue may break it down to
+	// a concrete type and kInterface will bomb.
+	if rtelem.Kind() != reflect.Interface {
+		fn = e.h.fn(rtelem)
 	}
-	rtelem := f.ti.elem
+	return
+}
 
-	var l int
-	// if a slice, array or chan of bytes, treat specially
-	if !mbs && uint8TypId == rt2id(rtelem) { // NOT rtelem.Kind() == reflect.Uint8
-		switch f.seq {
-		case seqTypeSlice:
-			e.e.EncodeStringBytesRaw(rvGetBytes(rv))
-		case seqTypeArray:
-			e.e.EncodeStringBytesRaw(rvGetArrayBytesRO(rv, e.b[:]))
-		case seqTypeChan:
-			e.kSliceBytesChan(rv)
-		}
-		return
-	}
-
-	// if chan, consume chan into a slice, and work off that slice.
-	if f.seq == seqTypeChan {
-		rv = chanToSlice(rv, rtelem, e.h.ChanRecvTimeout)
-	}
-
-	l = rv.Len() // rv may be slice or array
-	if mbs {
+func (e *Encoder) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
+	var l = rvGetSliceLen(rv)
+	if l == 0 {
+		e.mapStart(0)
+	} else {
 		if l%2 == 1 {
 			e.errorf("mapBySlice requires even slice length, but got %v", l)
 			return
 		}
 		e.mapStart(l / 2)
-	} else {
-		e.arrayStart(l)
-	}
-
-	if l > 0 {
-		var fn *codecFn
-		for rtelem.Kind() == reflect.Ptr {
-			rtelem = rtelem.Elem()
-		}
-		// if kind is reflect.Interface, do not pre-determine the
-		// encoding type, because preEncodeValue may break it down to
-		// a concrete type and kInterface will bomb.
-		if rtelem.Kind() != reflect.Interface {
-			fn = e.h.fn(rtelem)
-		}
+		fn := e.kSeqFn(ti.elem)
 		for j := 0; j < l; j++ {
-			if mbs {
-				if j%2 == 0 {
-					e.mapElemKey()
-				} else {
-					e.mapElemValue()
-				}
+			if j%2 == 0 {
+				e.mapElemKey()
 			} else {
-				e.arrayElem()
+				e.mapElemValue()
+			}
+			e.encodeValue(rvSliceIndex(rv, j, ti), fn)
+		}
+	}
+	e.mapEnd()
+}
+
+func (e *Encoder) kSliceW(rv reflect.Value, ti *typeInfo) {
+	var l = rvGetSliceLen(rv)
+	e.arrayStart(l)
+	if l > 0 {
+		fn := e.kSeqFn(ti.elem)
+		for j := 0; j < l; j++ {
+			e.arrayElem()
+			e.encodeValue(rvSliceIndex(rv, j, ti), fn)
+		}
+	}
+	e.arrayEnd()
+}
+
+func (e *Encoder) kSeqWMbs(rv reflect.Value, ti *typeInfo) {
+	var l = rv.Len()
+	if l == 0 {
+		e.mapStart(0)
+	} else {
+		if l%2 == 1 {
+			e.errorf("mapBySlice requires even slice length, but got %v", l)
+			return
+		}
+		e.mapStart(l / 2)
+		fn := e.kSeqFn(ti.elem)
+		for j := 0; j < l; j++ {
+			if j%2 == 0 {
+				e.mapElemKey()
+			} else {
+				e.mapElemValue()
 			}
 			e.encodeValue(rv.Index(j), fn)
 		}
 	}
+	e.mapEnd()
+}
 
-	if mbs {
-		e.mapEnd()
+func (e *Encoder) kSeqW(rv reflect.Value, ti *typeInfo) {
+	var l = rv.Len()
+	e.arrayStart(l)
+	if l > 0 {
+		fn := e.kSeqFn(ti.elem)
+		for j := 0; j < l; j++ {
+			e.arrayElem()
+			e.encodeValue(rv.Index(j), fn)
+		}
+	}
+	e.arrayEnd()
+}
+
+func (e *Encoder) kChan(f *codecFnInfo, rv reflect.Value) {
+	if rvIsNil(rv) {
+		e.e.EncodeNil()
+		return
+	}
+	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
+		e.errorf("send-only channel cannot be encoded")
+		return
+	}
+	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
+		e.kSliceBytesChan(rv)
+		return
+	}
+	rtslice := reflect.SliceOf(f.ti.elem)
+	rv = chanToSlice(rv, rtslice, e.h.ChanRecvTimeout)
+	ti := e.h.getTypeInfo(rt2id(rtslice), rtslice)
+	if f.ti.mbs {
+		e.kSliceWMbs(rv, ti)
 	} else {
-		e.arrayEnd()
+		e.kSliceW(rv, ti)
+	}
+}
+
+func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
+	if rvIsNil(rv) {
+		e.e.EncodeNil()
+		return
+	}
+	if f.ti.mbs {
+		e.kSliceWMbs(rv, f.ti)
+	} else {
+		if f.ti.rtid == uint8SliceTypId || uint8TypId == rt2id(f.ti.elem) {
+			e.e.EncodeStringBytesRaw(rvGetBytes(rv))
+		} else {
+			e.kSliceW(rv, f.ti)
+		}
+	}
+}
+
+func (e *Encoder) kArray(f *codecFnInfo, rv reflect.Value) {
+	if f.ti.mbs {
+		e.kSeqWMbs(rv, f.ti)
+	} else {
+		if uint8TypId == rt2id(f.ti.elem) {
+			e.e.EncodeStringBytesRaw(rvGetArrayBytesRO(rv, e.b[:]))
+		} else {
+			e.kSeqW(rv, f.ti)
+		}
 	}
 }
 
