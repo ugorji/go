@@ -327,7 +327,7 @@ func (e *bincEncDriver) EncodeString(v string) {
 }
 
 func (e *bincEncDriver) EncodeStringEnc(c charEncoding, v string) {
-	if e.e.c == containerMapKey && c == cUTF8 && (e.h.AsSymbols == 0 || e.h.AsSymbols == 1) {
+	if e.e.c == containerMapKey && c == cUTF8 && (e.h.AsSymbols == 1) {
 		e.EncodeSymbol(v)
 		return
 	}
