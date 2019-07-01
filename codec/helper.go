@@ -500,7 +500,7 @@ var immutableKindsSet = [32]bool{
 
 // SelfExt is a sentinel extension signifying that types
 // registered with it SHOULD be encoded and decoded
-// based on the naive mode of the format.
+// based on the native mode of the format.
 //
 // This allows users to define a tag for an extension,
 // but signify that the types should be encoded/decoded as the native encoding.
