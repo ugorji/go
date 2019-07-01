@@ -670,6 +670,9 @@ func (z *bytesDecReader) readn1() (v uint8) {
 	// 	panic(io.EOF)
 	// }
 
+	// z.c++
+	// return z.b[z.c-1]
+
 	v = z.b[z.c]
 	z.c++
 	return
@@ -685,8 +688,13 @@ func (z *bytesDecReader) readn(num uint8) (bs [rwNLen]byte) {
 	bb := z.b[z.c : z.c+uint(num)]
 	_ = bs[len(bb)-1]
 	// for i := uint(0); i < uint(len(bb)); i++ {
-	for i := 0; i < len(bb); i++ {
+	// for i := 0; i < len(bb); i++ {
+	var i int
+LOOP:
+	if i < len(bb) {
 		bs[i] = bb[i]
+		i++
+		goto LOOP
 	}
 
 	z.c += uint(num)
@@ -809,6 +817,10 @@ type decRd struct {
 // Consequently, there is no benefit to do the xxxIO methods for decRd at this time.
 // Instead, we have a if/else-if/else block so that IO calls do not have to jump through
 // a second unnecessary function call.
+//
+// If golang inlining gets better and bytesDecReader methods can be inlined,
+// then we can revert to using these 2 functions so the bytesDecReader
+// methods are inlined and the IO paths call out to a function.
 
 func (z *decRd) numread() uint {
 	if z.bytes {
@@ -819,15 +831,6 @@ func (z *decRd) numread() uint {
 		return z.ri.numread()
 	}
 }
-func (z *decRd) track() {
-	if z.bytes {
-		z.rb.track()
-	} else if z.bufio {
-		z.bi.track()
-	} else {
-		z.ri.track()
-	}
-}
 func (z *decRd) stopTrack() []byte {
 	if z.bytes {
 		return z.rb.stopTrack()
@@ -835,6 +838,16 @@ func (z *decRd) stopTrack() []byte {
 		return z.bi.stopTrack()
 	} else {
 		return z.ri.stopTrack()
+	}
+}
+
+func (z *decRd) track() {
+	if z.bytes {
+		z.rb.track()
+	} else if z.bufio {
+		z.bi.track()
+	} else {
+		z.ri.track()
 	}
 }
 
@@ -919,9 +932,20 @@ func (z *decRd) readUntil(stop byte, includeLast bool) (out []byte) {
 }
 
 /*
-// If golang inlining gets better and bytesDecReader methods can be inlined,
-// then we can revert to using these 2 functions so the bytesDecReader
-// methods are inlined and the IO paths call out to a function.
+func (z *decRd) track() {
+	if z.bytes {
+		z.rb.track()
+	} else {
+		z.trackIO()
+	}
+}
+func (z *decRd) trackIO() {
+	if z.bufio {
+		z.bi.track()
+	} else {
+		z.ri.track()
+	}
+}
 
 func (z *decRd) unreadn1() {
 	if z.bytes {
@@ -971,7 +995,6 @@ func (z *decRd) readb(s []byte) {
 		z.readbIO(s)
 	}
 }
-
 func (z *decRd) readbIO(s []byte) {
 	if z.bufio {
 		z.bi.readb(s)
@@ -999,7 +1022,6 @@ func (z *decRd) skip(accept *bitset256) (token byte) {
 	}
 	return z.skipIO(accept)
 }
-
 func (z *decRd) skipIO(accept *bitset256) (token byte) {
 	if z.bufio {
 		return z.bi.skip(accept)
@@ -1020,17 +1042,17 @@ func (z *decRd) readToIO(accept *bitset256) (out []byte) {
 	return z.ri.readTo(accept)
 }
 
-func (z *decRd) readUntil(stop byte) (out []byte) {
+func (z *decRd) readUntil(stop byte, includeLast bool) (out []byte) {
 	if z.bytes {
-		return z.rb.readUntil(stop)
+		return z.rb.readUntil(stop, includeLast)
 	}
-	return z.readUntilIO(stop)
+	return z.readUntilIO(stop, includeLast)
 }
-func (z *decRd) readUntilIO(stop byte) (out []byte) {
+func (z *decRd) readUntilIO(stop byte, includeLast bool) (out []byte) {
 	if z.bufio {
-		return z.bi.readUntil(stop)
+		return z.bi.readUntil(stop, includeLast)
 	}
-	return z.ri.readUntil(stop)
+	return z.ri.readUntil(stop, includeLast)
 }
 */
 
