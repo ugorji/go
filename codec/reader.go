@@ -60,6 +60,10 @@ type ioDecReaderCommon struct {
 	bufr []byte // buffer for readTo/readUntil
 }
 
+func (z *ioDecReaderCommon) last() byte {
+	return z.l
+}
+
 func (z *ioDecReaderCommon) reset(r io.Reader, blist *bytesFreelist) {
 	z.blist = blist
 	z.r = r
@@ -90,23 +94,24 @@ func (z *ioDecReaderCommon) stopTrack() (bs []byte) {
 type ioDecReader struct {
 	ioDecReaderCommon
 
-	rr io.Reader
+	// rr io.Reader
 	br io.ByteScanner
 
-	x [64]byte // for: get struct field name, swallow valueTypeBytes, etc
+	x [64 + 16]byte // for: get struct field name, swallow valueTypeBytes, etc
 	// _ [1]uint64                 // padding
 }
 
 func (z *ioDecReader) reset(r io.Reader, blist *bytesFreelist) {
 	z.ioDecReaderCommon.reset(r, blist)
 
-	var ok bool
-	z.rr = r
-	z.br, ok = r.(io.ByteScanner)
-	if !ok {
-		z.br = z
-		z.rr = z
-	}
+	// var ok bool
+	// z.rr = r
+	// z.br, ok = r.(io.ByteScanner)
+	// if !ok {
+	// 	z.br = z
+	// 	z.rr = z
+	// }
+	z.br, _ = r.(io.ByteScanner)
 }
 
 func (z *ioDecReader) Read(p []byte) (n int, err error) {
@@ -139,6 +144,15 @@ func (z *ioDecReader) Read(p []byte) (n int, err error) {
 }
 
 func (z *ioDecReader) ReadByte() (c byte, err error) {
+	if z.br != nil {
+		c, err = z.br.ReadByte()
+		if err == nil {
+			z.l = c
+			z.ls = unreadByteCanUnread
+		}
+		return
+	}
+
 	n, err := z.Read(z.b[:1])
 	if n == 1 {
 		c = z.b[0]
@@ -150,6 +164,14 @@ func (z *ioDecReader) ReadByte() (c byte, err error) {
 }
 
 func (z *ioDecReader) UnreadByte() (err error) {
+	if z.br != nil {
+		err = z.br.UnreadByte()
+		if err == nil {
+			z.ls = unreadByteCanRead
+		}
+		return
+	}
+
 	switch z.ls {
 	case unreadByteCanUnread:
 		z.ls = unreadByteCanRead
@@ -178,7 +200,7 @@ func (z *ioDecReader) readx(n uint) (bs []byte) {
 	} else {
 		bs = make([]byte, n)
 	}
-	if _, err := decReadFull(z.rr, bs); err != nil {
+	if _, err := decReadFull(z.r, bs); err != nil {
 		panic(err)
 	}
 	z.n += uint(len(bs))
@@ -192,7 +214,7 @@ func (z *ioDecReader) readb(bs []byte) {
 	if len(bs) == 0 {
 		return
 	}
-	if _, err := decReadFull(z.rr, bs); err != nil {
+	if _, err := decReadFull(z.r, bs); err != nil {
 		panic(err)
 	}
 	z.n += uint(len(bs))
@@ -202,7 +224,7 @@ func (z *ioDecReader) readb(bs []byte) {
 }
 
 func (z *ioDecReader) readn1eof() (b uint8, eof bool) {
-	b, err := z.br.ReadByte()
+	b, err := z.ReadByte()
 	if err == nil {
 		z.n++
 		if z.trb {
@@ -217,7 +239,7 @@ func (z *ioDecReader) readn1eof() (b uint8, eof bool) {
 }
 
 func (z *ioDecReader) readn1() (b uint8) {
-	b, err := z.br.ReadByte()
+	b, err := z.ReadByte()
 	if err == nil {
 		z.n++
 		if z.trb {
@@ -300,7 +322,7 @@ LOOP:
 
 //go:noinline
 func (z *ioDecReader) unreadn1() {
-	err := z.br.UnreadByte()
+	err := z.UnreadByte()
 	if err != nil {
 		panic(err)
 	}
@@ -392,6 +414,10 @@ LOOP:
 	if z.trb {
 		z.tr = append(z.tr, p0[:n]...)
 	}
+}
+
+func (z *bufioDecReader) last() byte {
+	return z.buf[z.c-1]
 }
 
 func (z *bufioDecReader) readn1() (b byte) {
@@ -639,6 +665,10 @@ func (z *bytesDecReader) reset(in []byte) {
 
 func (z *bytesDecReader) numread() uint {
 	return z.c
+}
+
+func (z *bytesDecReader) last() byte {
+	return z.b[z.c-1]
 }
 
 func (z *bytesDecReader) unreadn1() {
