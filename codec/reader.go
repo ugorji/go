@@ -864,21 +864,21 @@ func (z *decRd) unreadn1() {
 func (z *decRd) readn(num uint8) [rwNLen]byte {
 	if z.bytes {
 		return z.rb.readn(num)
-	}
-	if z.bufio {
+	} else if z.bufio {
 		return z.bi.readn(num)
+	} else {
+		return z.ri.readn(num)
 	}
-	return z.ri.readn(num)
 }
 
 func (z *decRd) readx(n uint) []byte {
 	if z.bytes {
 		return z.rb.readx(n)
-	}
-	if z.bufio {
+	} else if z.bufio {
 		return z.bi.readx(n)
+	} else {
+		return z.ri.readx(n)
 	}
-	return z.ri.readx(n)
 }
 
 func (z *decRd) readb(s []byte) {
@@ -894,41 +894,41 @@ func (z *decRd) readb(s []byte) {
 func (z *decRd) readn1() uint8 {
 	if z.bytes {
 		return z.rb.readn1()
-	}
-	if z.bufio {
+	} else if z.bufio {
 		return z.bi.readn1()
+	} else {
+		return z.ri.readn1()
 	}
-	return z.ri.readn1()
 }
 
 func (z *decRd) skip(accept *bitset256) (token byte) {
 	if z.bytes {
 		return z.rb.skip(accept)
-	}
-	if z.bufio {
+	} else if z.bufio {
 		return z.bi.skip(accept)
+	} else {
+		return z.ri.skip(accept)
 	}
-	return z.ri.skip(accept)
 }
 
 func (z *decRd) readTo(accept *bitset256) (out []byte) {
 	if z.bytes {
 		return z.rb.readTo(accept)
-	}
-	if z.bufio {
+	} else if z.bufio {
 		return z.bi.readTo(accept)
+	} else {
+		return z.ri.readTo(accept)
 	}
-	return z.ri.readTo(accept)
 }
 
 func (z *decRd) readUntil(stop byte, includeLast bool) (out []byte) {
 	if z.bytes {
 		return z.rb.readUntil(stop, includeLast)
-	}
-	if z.bufio {
+	} else if z.bufio {
 		return z.bi.readUntil(stop, includeLast)
+	} else {
+		return z.ri.readUntil(stop, includeLast)
 	}
-	return z.ri.readUntil(stop, includeLast)
 }
 
 /*
