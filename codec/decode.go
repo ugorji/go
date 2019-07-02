@@ -1929,17 +1929,29 @@ func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 	return
 }
 
+// detachZeroCopyBytes will copy the in bytes into dest,
+// or create a new one if not large enough.
+//
+// It is used to ensure that the []byte returned is not
+// part of the input stream or input stream buffers.
 func detachZeroCopyBytes(isBytesReader bool, dest []byte, in []byte) (out []byte) {
-	if xlen := len(in); xlen > 0 {
-		if isBytesReader || xlen <= scratchByteArrayLen {
-			if cap(dest) >= xlen {
-				out = dest[:xlen]
-			} else {
-				out = make([]byte, xlen)
-			}
-			copy(out, in)
-			return
+	if len(in) > 0 {
+		// if isBytesReader || len(in) <= scratchByteArrayLen {
+		// 	if cap(dest) >= len(in) {
+		// 		out = dest[:len(in)]
+		// 	} else {
+		// 		out = make([]byte, len(in))
+		// 	}
+		// 	copy(out, in)
+		// 	return
+		// }
+		if cap(dest) >= len(in) {
+			out = dest[:len(in)]
+		} else {
+			out = make([]byte, len(in))
 		}
+		copy(out, in)
+		return
 	}
 	return in
 }

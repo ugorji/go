@@ -93,7 +93,7 @@ type ioDecReader struct {
 	rr io.Reader
 	br io.ByteScanner
 
-	x [scratchByteArrayLen]byte // for: get struct field name, swallow valueTypeBytes, etc
+	x [64]byte // for: get struct field name, swallow valueTypeBytes, etc
 	// _ [1]uint64                 // padding
 }
 
