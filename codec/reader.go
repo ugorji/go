@@ -9,22 +9,29 @@ import "io"
 // read from an io.Reader or directly off a byte slice with zero-copying.
 type decReader interface {
 	unreadn1()
+
 	// readx will use the implementation scratch buffer if possible i.e. n < len(scratchbuf), OR
 	// just return a view of the []byte being decoded from.
 	// Ensure you call detachZeroCopyBytes later if this needs to be sent outside codec control.
 	readx(n uint) []byte
 	readb([]byte)
 	readn1() uint8
+
 	// read up to 7 bytes at a time
 	readn(num uint8) (v [rwNLen]byte)
 	numread() uint // number of bytes read
 	track()
 	stopTrack() []byte
 
+	// skip any whitespace characters, and return the first non-matching byte
+	skipWhitespace() (token byte)
+
 	// skip will skip any byte that matches, and return the first non-matching byte
-	skip(accept *bitset256) (token byte)
+	// skip(accept *bitset256) (token byte)
+
 	// readTo will read any byte that matches, stopping once no-longer matching.
 	readTo(accept *bitset256) (out []byte)
+
 	// readUntil will read, only stopping once it matches the 'stop' byte.
 	readUntil(stop byte, includeLast bool) (out []byte)
 }
@@ -243,14 +250,27 @@ func (z *ioDecReader) readn1() (b uint8) {
 	panic(err)
 }
 
-func (z *ioDecReader) skip(accept *bitset256) (token byte) {
+// func (z *ioDecReader) skip(accept *bitset256) (token byte) {
+// 	var eof bool
+// LOOP:
+// 	token, eof = z.readn1eof()
+// 	if eof {
+// 		return
+// 	}
+// 	if accept.isset(token) {
+// 		goto LOOP
+// 	}
+// 	return
+// }
+
+func (z *ioDecReader) skipWhitespace() (token byte) {
 	var eof bool
 LOOP:
 	token, eof = z.readn1eof()
 	if eof {
 		return
 	}
-	if accept.isset(token) {
+	if isWhitespace(token) {
 		goto LOOP
 	}
 	return
@@ -441,14 +461,64 @@ func (z *bufioDecReader) readx(n uint) (bs []byte) {
 	return
 }
 
-func (z *bufioDecReader) skip(accept *bitset256) (token byte) {
+// func (z *bufioDecReader) skip(accept *bitset256) (token byte) {
+// 	i := z.c
+// LOOP:
+// 	if i < uint(len(z.buf)) {
+// 		// inline z.skipLoopFn(i) and refactor, so cost is within inline budget
+// 		token = z.buf[i]
+// 		i++
+// 		if accept.isset(token) {
+// 			goto LOOP
+// 		}
+// 		z.n += i - 2 - z.c
+// 		if z.trb {
+// 			z.tr = append(z.tr, z.buf[z.c:i]...) // z.doTrack(i)
+// 		}
+// 		z.c = i
+// 		return
+// 	}
+// 	return z.skipFill(accept)
+// }
+
+// func (z *bufioDecReader) skipFill(accept *bitset256) (token byte) {
+// 	z.n += uint(len(z.buf)) - z.c
+// 	if z.trb {
+// 		z.tr = append(z.tr, z.buf[z.c:]...)
+// 	}
+// 	var i, n2 int
+// 	var err error
+// 	for {
+// 		z.c = 0
+// 		z.buf = z.buf[0:cap(z.buf)]
+// 		n2, err = z.r.Read(z.buf)
+// 		if n2 == 0 && err != nil {
+// 			panic(err)
+// 		}
+// 		z.buf = z.buf[:n2]
+// 		for i, token = range z.buf {
+// 			// if !accept.isset(token) {
+// 			if accept.isnotset(token) {
+// 				z.n += (uint(i) - z.c) - 1
+// 				z.loopFn(uint(i + 1))
+// 				return
+// 			}
+// 		}
+// 		z.n += uint(n2)
+// 		if z.trb {
+// 			z.tr = append(z.tr, z.buf...)
+// 		}
+// 	}
+// }
+
+func (z *bufioDecReader) skipWhitespace() (token byte) {
 	i := z.c
 LOOP:
 	if i < uint(len(z.buf)) {
 		// inline z.skipLoopFn(i) and refactor, so cost is within inline budget
 		token = z.buf[i]
 		i++
-		if accept.isset(token) {
+		if isWhitespace(token) {
 			goto LOOP
 		}
 		z.n += i - 2 - z.c
@@ -458,10 +528,10 @@ LOOP:
 		z.c = i
 		return
 	}
-	return z.skipFill(accept)
+	return z.skipFillWhitespace()
 }
 
-func (z *bufioDecReader) skipFill(accept *bitset256) (token byte) {
+func (z *bufioDecReader) skipFillWhitespace() (token byte) {
 	z.n += uint(len(z.buf)) - z.c
 	if z.trb {
 		z.tr = append(z.tr, z.buf[z.c:]...)
@@ -477,8 +547,7 @@ func (z *bufioDecReader) skipFill(accept *bitset256) (token byte) {
 		}
 		z.buf = z.buf[:n2]
 		for i, token = range z.buf {
-			// if !accept.isset(token) {
-			if accept.check(token) == 0 {
+			if !isWhitespace(token) {
 				z.n += (uint(i) - z.c) - 1
 				z.loopFn(uint(i + 1))
 				return
@@ -503,7 +572,7 @@ func (z *bufioDecReader) readTo(accept *bitset256) (out []byte) {
 LOOP:
 	if i < uint(len(z.buf)) {
 		// if !accept.isset(z.buf[i]) {
-		if accept.check(z.buf[i]) == 0 {
+		if accept.isnotset(z.buf[i]) {
 			// inline readToLoopFn here (for performance)
 			z.n += (i - z.c) - 1
 			out = z.buf[z.c:i]
@@ -541,7 +610,7 @@ func (z *bufioDecReader) readToFill(accept *bitset256) []byte {
 		z.buf = z.buf[:n2]
 		for i, token := range z.buf {
 			// if !accept.isset(token) {
-			if accept.check(token) == 0 {
+			if accept.isnotset(token) {
 				z.n += (uint(i) - z.c) - 1
 				z.bufr = append(z.bufr, z.buf[z.c:i]...)
 				z.loopFn(uint(i))
@@ -684,13 +753,26 @@ LOOP:
 	return
 }
 
-func (z *bytesDecReader) skip(accept *bitset256) (token byte) {
+// func (z *bytesDecReader) skip(accept *bitset256) (token byte) {
+// 	i := z.c
+// LOOP:
+// 	// if i < uint(len(z.b)) {
+// 	token = z.b[i]
+// 	i++
+// 	if accept.isset(token) {
+// 		goto LOOP
+// 	}
+// 	z.c = i
+// 	return
+// }
+
+func (z *bytesDecReader) skipWhitespace() (token byte) {
 	i := z.c
 LOOP:
 	// if i < uint(len(z.b)) {
 	token = z.b[i]
 	i++
-	if accept.isset(token) {
+	if isWhitespace(token) {
 		goto LOOP
 	}
 	z.c = i
@@ -859,15 +941,25 @@ func (z *decRd) readn1() uint8 {
 	}
 }
 
-func (z *decRd) skip(accept *bitset256) (token byte) {
+func (z *decRd) skipWhitespace() (token byte) {
 	if z.bytes {
-		return z.rb.skip(accept)
+		return z.rb.skipWhitespace()
 	} else if z.bufio {
-		return z.bi.skip(accept)
+		return z.bi.skipWhitespace()
 	} else {
-		return z.ri.skip(accept)
+		return z.ri.skipWhitespace()
 	}
 }
+
+// func (z *decRd) skip(accept *bitset256) (token byte) {
+// 	if z.bytes {
+// 		return z.rb.skip(accept)
+// 	} else if z.bufio {
+// 		return z.bi.skip(accept)
+// 	} else {
+// 		return z.ri.skip(accept)
+// 	}
+// }
 
 func (z *decRd) readTo(accept *bitset256) (out []byte) {
 	if z.bytes {

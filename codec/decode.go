@@ -1269,8 +1269,11 @@ func (d *Decoder) ResetBytes(in []byte) {
 	if in == nil {
 		return
 	}
-	d.bytes = true
 	d.bufio = false
+	d.bytes = true
+	// if d.rb == nil {
+	// 	d.rb = new(bytesDecReader)
+	// }
 	d.rb.reset(in)
 	d.resetCommon()
 }

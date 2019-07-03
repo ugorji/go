@@ -915,6 +915,9 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 		in = make([]byte, defEncByteBufSize)
 	}
 	e.bytes = true
+	// if e.wb == nil {
+	// 	e.wb = new(bytesEncAppender)
+	// }
 	e.wb.reset(in, out)
 	e.resetCommon()
 }

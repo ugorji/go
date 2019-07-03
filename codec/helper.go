@@ -144,6 +144,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode/utf8"
 )
 
 const (
@@ -190,6 +191,11 @@ var (
 	refBitset    bitset32
 	isnilBitset  bitset32
 	scalarBitset bitset32
+
+	numCharBitset        bitset256
+	whitespaceCharBitset bitset256
+
+	whitespaceCharBitset64 bitset64
 )
 
 var (
@@ -234,6 +240,17 @@ func init() {
 		set(byte(reflect.Complex64)).
 		set(byte(reflect.Complex128)).
 		set(byte(reflect.String))
+
+	var i byte
+	for i = 0; i <= utf8.RuneSelf; i++ {
+		switch i {
+		case ' ', '\t', '\r', '\n':
+			whitespaceCharBitset.set(i)
+			whitespaceCharBitset64 = whitespaceCharBitset64.set(i)
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'e', 'E', '.', '+', '-':
+			numCharBitset.set(i)
+		}
+	}
 
 }
 
@@ -2343,6 +2360,16 @@ func noFrac32(f float32) (v bool) {
 	return
 }
 
+func isWhitespace(v byte) bool {
+	// these are in order of speed below ...
+
+	// return v < 33
+	return v < 33 && whitespaceCharBitset64.isset(v)
+	// return v < 33 && (v == ' ' || v == '\n' || v == '\t' || v == '\r')
+	// return v == ' ' || v == '\n' || v == '\t' || v == '\r'
+	// return whitespaceCharBitset.isset(v)
+}
+
 // func noFrac(f float64) bool {
 // 	_, frac := math.Modf(float64(f))
 // 	return frac == 0
@@ -2451,23 +2478,32 @@ func (s *set) remove(v interface{}) (exists bool) {
 // given x > 0 and n > 0 and x is exactly 2^n, then pos/x === pos>>n AND pos%x === pos&(x-1).
 // consequently, pos/32 === pos>>5, pos/16 === pos>>4, pos/8 === pos>>3, pos%8 == pos&7
 
-type bitset256 [32]byte
+// type bitset256 [32]byte
 
-func (x *bitset256) check(pos byte) uint8 {
-	return x[pos>>3] & (1 << (pos & 7))
-}
-
-func (x *bitset256) isset(pos byte) bool {
-	return x.check(pos) != 0
-	// return x[pos>>3]&(1<<(pos&7)) != 0
-}
-
-// func (x *bitset256) issetv(pos byte) byte {
+// func (x *bitset256) set(pos byte) {
+// 	x[pos>>3] |= (1 << (pos & 7))
+// }
+// func (x *bitset256) check(pos byte) uint8 {
 // 	return x[pos>>3] & (1 << (pos & 7))
 // }
+// func (x *bitset256) isset(pos byte) bool {
+// 	return x.check(pos) != 0
+// 	// return x[pos>>3]&(1<<(pos&7)) != 0
+// }
+// func (x *bitset256) isnotset(pos byte) bool {
+// 	return x.check(pos) == 0
+// }
+
+type bitset256 [256]bool
 
 func (x *bitset256) set(pos byte) {
-	x[pos>>3] |= (1 << (pos & 7))
+	x[pos] = true
+}
+func (x *bitset256) isset(pos byte) bool {
+	return x[pos]
+}
+func (x *bitset256) isnotset(pos byte) bool {
+	return !x[pos]
 }
 
 type bitset32 uint32
@@ -2475,13 +2511,29 @@ type bitset32 uint32
 func (x bitset32) set(pos byte) bitset32 {
 	return x | (1 << pos)
 }
-
 func (x bitset32) check(pos byte) uint32 {
 	return uint32(x) & (1 << pos)
 }
 func (x bitset32) isset(pos byte) bool {
 	return x.check(pos) != 0
-	// return x&(1<<pos) != 0
+}
+func (x bitset32) isnotset(pos byte) bool {
+	return x.check(pos) == 0
+}
+
+type bitset64 uint64
+
+func (x bitset64) set(pos byte) bitset64 {
+	return x | (1 << pos)
+}
+func (x bitset64) check(pos byte) uint64 {
+	return uint64(x) & (1 << pos)
+}
+func (x bitset64) isset(pos byte) bool {
+	return x.check(pos) != 0
+}
+func (x bitset64) isnotset(pos byte) bool {
+	return x.check(pos) == 0
 }
 
 // func (x *bitset256) unset(pos byte) {

@@ -87,10 +87,8 @@ var (
 	// jsonTabs and jsonSpaces are used as caches for indents
 	jsonTabs, jsonSpaces [jsonSpacesOrTabsLen]byte
 
-	jsonCharHtmlSafeSet   bitset256
-	jsonCharSafeSet       bitset256
-	jsonCharWhitespaceSet bitset256
-	jsonNumSet            bitset256
+	jsonCharHtmlSafeSet bitset256
+	jsonCharSafeSet     bitset256
 )
 
 func init() {
@@ -111,14 +109,6 @@ func init() {
 		default:
 			jsonCharSafeSet.set(i)
 			jsonCharHtmlSafeSet.set(i)
-		}
-	}
-	for i = 0; i <= utf8.RuneSelf; i++ {
-		switch i {
-		case ' ', '\t', '\r', '\n':
-			jsonCharWhitespaceSet.set(i)
-		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'e', 'E', '.', '+', '-':
-			jsonNumSet.set(i)
 		}
 	}
 }
@@ -393,18 +383,18 @@ func (e *jsonEncDriver) quoteStr(s string) {
 
 		// if 0x20 <= b && b != '\\' && b != '"' && b != '<' && b != '>' && b != '&' {
 		// if (htmlasis && jsonCharSafeSet.isset(b)) || jsonCharHtmlSafeSet.isset(b) {
-		b := s[i]
-		if e.s.isset(b) {
+		if e.s.isset(s[i]) {
 			i++
 			continue
 		}
-		if b < utf8.RuneSelf {
+		// b := s[i]
+		if s[i] < utf8.RuneSelf {
 			if start < i {
 				w.writestr(s[start:i])
 			}
-			switch b {
+			switch s[i] {
 			case '\\', '"':
-				w.writen2('\\', b)
+				w.writen2('\\', s[i])
 			case '\n':
 				w.writen2('\\', 'n')
 			case '\r':
@@ -417,7 +407,7 @@ func (e *jsonEncDriver) quoteStr(s string) {
 				w.writen2('\\', 't')
 			default:
 				w.writestr(`\u00`)
-				w.writen2(hex[b>>4], hex[b&0xF])
+				w.writen2(hex[s[i]>>4], hex[s[i]&0xF])
 			}
 			i++
 			start = i
@@ -485,11 +475,6 @@ type jsonDecDriver struct {
 
 	d Decoder
 }
-
-// func jsonIsWS(b byte) bool {
-// 	// return b == ' ' || b == '\t' || b == '\r' || b == '\n'
-// 	return jsonCharWhitespaceSet.isset(b)
-// }
 
 func (d *jsonDecDriver) decoder() *Decoder {
 	return &d.d
@@ -622,7 +607,7 @@ func (d *jsonDecDriver) readLit4Null() {
 func (d *jsonDecDriver) advance() {
 	if d.tok == 0 {
 		d.fnil = false
-		d.tok = d.d.decRd.skip(&jsonCharWhitespaceSet)
+		d.tok = d.d.decRd.skipWhitespace() // skip(&whitespaceCharBitset)
 	}
 }
 
@@ -713,7 +698,7 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 		d.readLit4Null()
 	} else {
 		d.d.decRd.unreadn1()
-		bs = d.d.decRd.readTo(&jsonNumSet)
+		bs = d.d.decRd.readTo(&numCharBitset)
 	}
 	d.tok = 0
 	return
@@ -831,14 +816,14 @@ func (d *jsonDecDriver) decBytesFromArray(bs []byte) []byte {
 	}
 	d.tok = 0
 	bs = append(bs, uint8(d.DecodeUint64()))
-	d.tok = d.d.decRd.skip(&jsonCharWhitespaceSet)
+	d.tok = d.d.decRd.skipWhitespace() // skip(&whitespaceCharBitset)
 	for d.tok != ']' {
 		if d.tok != ',' {
 			d.d.errorf("read array element - expect char '%c' but got char '%c'", ',', d.tok)
 		}
 		d.tok = 0
 		bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
-		d.tok = d.d.decRd.skip(&jsonCharWhitespaceSet)
+		d.tok = d.d.decRd.skipWhitespace() // skip(&whitespaceCharBitset)
 	}
 	d.tok = 0
 	return bs
