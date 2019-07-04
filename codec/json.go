@@ -709,14 +709,16 @@ func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 	if len(bs) == 0 {
 		return
 	}
-	n, neg, badsyntax, overflow := jsonParseInteger(bs)
-	if overflow {
-		d.d.errorf("overflow parsing unsigned integer: %s", bs)
-	} else if neg {
-		d.d.errorf("minus found parsing unsigned integer: %s", bs)
+	n, neg, badsyntax, overflow, ok := jsonParseInteger(bs)
+	if ok {
+		if neg {
+			d.d.errorf("minus found parsing unsigned integer: %s", bs)
+		}
 	} else if badsyntax {
 		// fallback: try to decode as float, and cast
 		n = d.decUint64ViaFloat(bs)
+	} else if overflow {
+		d.d.errorf("overflow parsing unsigned integer: %s", bs)
 	}
 	return n
 }
@@ -727,9 +729,8 @@ func (d *jsonDecDriver) DecodeInt64() (i int64) {
 	if len(bs) == 0 {
 		return
 	}
-	n, neg, badsyntax, overflow := jsonParseInteger(bs)
-	if overflow {
-		d.d.errorf("overflow parsing integer: %s", bs)
+	n, neg, badsyntax, overflow, ok := jsonParseInteger(bs)
+	if ok {
 	} else if badsyntax {
 		// d.d.errorf("invalid syntax for integer: %s", bs)
 		// fallback: try to decode as float, and cast
@@ -738,6 +739,8 @@ func (d *jsonDecDriver) DecodeInt64() (i int64) {
 		} else {
 			n = d.decUint64ViaFloat(bs)
 		}
+	} else if overflow {
+		d.d.errorf("overflow parsing integer: %s", bs)
 	}
 	if neg {
 		if n > cutoff {
@@ -1058,7 +1061,7 @@ func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
 	const cutoff = uint64(1 << uint(64-1))
 
 	var n uint64
-	var neg, badsyntax, overflow bool
+	var neg, badsyntax, overflow, ok bool
 
 	if len(bs) == 0 {
 		if d.h.PreferFloat {
@@ -1076,8 +1079,9 @@ func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
 	if d.h.PreferFloat {
 		goto F
 	}
-	n, neg, badsyntax, overflow = jsonParseInteger(bs)
-	if badsyntax || overflow {
+	n, neg, badsyntax, overflow, ok = jsonParseInteger(bs)
+	if ok {
+	} else if badsyntax || overflow {
 		goto F
 	}
 	if neg {
@@ -1353,16 +1357,17 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 
 // custom-fitted version of strconv.Parse(Ui|I)nt.
 // Also ensures we don't have to search for .eE to determine if a float or not.
-// Note: s CANNOT be a zero-length slice.
-func jsonParseInteger(s []byte) (n uint64, neg, badSyntax, overflow bool) {
+func jsonParseInteger(s []byte) (n uint64, neg, badSyntax, overflow, ok bool) {
 	const maxUint64 = (1<<64 - 1)
 	const cutoff = maxUint64/10 + 1
 
 	if len(s) == 0 { // bounds-check-elimination
 		// treat empty string as zero value
 		// badSyntax = true
+		ok = true
 		return
 	}
+
 	switch s[0] {
 	case '+':
 		s = s[1:]
@@ -1389,6 +1394,7 @@ func jsonParseInteger(s []byte) (n uint64, neg, badSyntax, overflow bool) {
 		}
 		n = n1
 	}
+	ok = true
 	return
 }
 

@@ -16,6 +16,7 @@ type decReader interface {
 	readx(n uint) []byte
 	readb([]byte)
 	readn1() uint8
+	readn1eof() (v uint8, eof bool)
 
 	// read up to 7 bytes at a time
 	readn(num uint8) (v [rwNLen]byte)
@@ -349,19 +350,24 @@ func (z *bufioDecReader) readb(p []byte) {
 			z.tr = append(z.tr, p...)
 		}
 	} else {
-		z.readbFill(p, n)
+		z.readbFillMust(p, n)
 	}
 }
 
-func (z *bufioDecReader) readbFill(p0 []byte, n uint) {
+func (z *bufioDecReader) readbFillMust(p0 []byte, n uint) {
+	if err := z.readbFill(p0, n); err != nil {
+		panic(err)
+	}
+}
+
+func (z *bufioDecReader) readbFill(p0 []byte, n uint) (err error) {
 	// at this point, there's nothing in z.buf to read (z.buf is fully consumed)
 	p := p0[n:]
 	var n2 uint
-	var err error
 	if len(p) > cap(z.buf) {
 		n2, err = decReadFull(z.r, p)
 		if err != nil {
-			panic(err)
+			return
 		}
 		n += n2
 		z.n += n2
@@ -383,7 +389,7 @@ LOOP:
 		n1, err = z.r.Read(z.buf)
 		n2 = uint(n1)
 		if n2 == 0 && err != nil {
-			panic(err)
+			return
 		}
 		z.buf = z.buf[:n2]
 		n2 = uint(copy(p, z.buf))
@@ -401,13 +407,34 @@ LOOP:
 	if z.trb {
 		z.tr = append(z.tr, p0[:n]...)
 	}
+	return
 }
 
 func (z *bufioDecReader) last() byte {
 	return z.buf[z.c-1]
 }
 
+func (z *bufioDecReader) readn1eof() (b byte, eof bool) {
+	b, err := z.readn1err()
+	if err != nil {
+		if err == io.EOF {
+			eof = true
+		} else {
+			panic(err)
+		}
+	}
+	return
+}
+
 func (z *bufioDecReader) readn1() (b byte) {
+	b, err := z.readn1err()
+	if err != nil {
+		panic(err)
+	}
+	return
+}
+
+func (z *bufioDecReader) readn1err() (b byte, err error) {
 	// fast-path, so we elide calling into Read() most of the time
 	if z.c < uint(len(z.buf)) {
 		b = z.buf[z.c]
@@ -417,7 +444,10 @@ func (z *bufioDecReader) readn1() (b byte) {
 			z.tr = append(z.tr, b)
 		}
 	} else { // meaning z.c == len(z.buf) or greater ... so need to fill
-		z.readbFill(z.b[:1], 0)
+		err = z.readbFill(z.b[:1], 0)
+		if err != nil {
+			return
+		}
 		b = z.b[0]
 	}
 	return
@@ -456,7 +486,7 @@ func (z *bufioDecReader) readx(n uint) (bs []byte) {
 		n = uint(copy(bs, z.buf[z.c:]))
 		z.n += n
 		z.c += n
-		z.readbFill(bs, n)
+		z.readbFillMust(bs, n)
 	}
 	return
 }
@@ -732,6 +762,16 @@ func (z *bytesDecReader) readn1() (v uint8) {
 	return
 }
 
+func (z *bytesDecReader) readn1eof() (v uint8, eof bool) {
+	if z.c >= uint(len(z.b)) {
+		eof = true
+	} else {
+		v = z.b[z.c]
+		z.c++
+	}
+	return
+}
+
 func (z *bytesDecReader) readn(num uint8) (bs [rwNLen]byte) {
 	// if z.c >= uint(len(z.b)) || z.c+uint(num) >= uint(len(z.b)) {
 	// 	panic(io.EOF)
@@ -938,6 +978,16 @@ func (z *decRd) readn1() uint8 {
 		return z.bi.readn1()
 	} else {
 		return z.ri.readn1()
+	}
+}
+
+func (z *decRd) readn1eof() (uint8, bool) {
+	if z.bytes {
+		return z.rb.readn1eof()
+	} else if z.bufio {
+		return z.bi.readn1eof()
+	} else {
+		return z.ri.readn1eof()
 	}
 }
 

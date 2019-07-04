@@ -24,12 +24,14 @@ func parseFloat64(b []byte) (f float64, err error) {
 }
 
 func parseFloat32_strconv(b []byte) (f float32, err error) {
+	// defer func() { xdebugf("strconv float32: %s, %v, err: %v", b, f, err) }()
 	f64, err := strconv.ParseFloat(stringView(b), 32)
 	f = float32(f64)
 	return
 }
 
 func parseFloat64_strconv(b []byte) (f float64, err error) {
+	// defer func() { xdebugf("strconv float64: %s, %v, err: %v", b, f, err) }()
 	return strconv.ParseFloat(stringView(b), 64)
 }
 
@@ -63,8 +65,8 @@ func parseFloat64_strconv(b []byte) (f float64, err error) {
 // 2^52 =      4503 5996 2737 0496 (between 10^15 and 10^16) (significand bits of uint64)
 // 2^64 = 1844 6744 0737 0955 1616 (between 10^19 and 10^20) (full uint64)
 //
-// Since we only allow for up to what can comfortably fit into the significand
-// ignoring the exponent, and we only try to parse iff significand fits into the
+// Note: we only allow for up to what can comfortably fit into the significand
+// ignoring the exponent, and we only try to parse iff significand fits.
 
 // Exact powers of 10.
 var float64pow10 = [...]float64{

@@ -1723,13 +1723,13 @@ func (d *Decoder) nextValueBytes() (bs []byte) {
 	return
 }
 
-func (d *Decoder) rawBytes() []byte {
+func (d *Decoder) rawBytes() (v []byte) {
 	// ensure that this is not a view into the bytes
 	// i.e. make new copy always.
 	bs := d.nextValueBytes()
-	bs2 := make([]byte, len(bs))
-	copy(bs2, bs)
-	return bs2
+	v = make([]byte, len(bs))
+	copy(v, bs)
+	return
 }
 
 func (d *Decoder) wrapErr(v interface{}, err *error) {
