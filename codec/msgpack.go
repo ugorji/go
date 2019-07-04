@@ -750,9 +750,9 @@ func (d *msgpackDecDriver) advanceNil() (null bool) {
 	return
 }
 
-func (d *msgpackDecDriver) Nil() bool {
-	return d.fnil
-}
+// func (d *msgpackDecDriver) Nil() bool {
+// 	return d.fnil
+// }
 
 func (d *msgpackDecDriver) ContainerType() (vt valueType) {
 	if !d.bdRead {

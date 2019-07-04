@@ -437,9 +437,9 @@ func (d *bincDecDriver) advanceNil() (null bool) {
 	return
 }
 
-func (d *bincDecDriver) Nil() bool {
-	return d.fnil
-}
+// func (d *bincDecDriver) Nil() bool {
+// 	return d.fnil
+// }
 
 func (d *bincDecDriver) TryNil() bool {
 	return d.advanceNil()

@@ -244,9 +244,9 @@ func (d *simpleDecDriver) advanceNil() (null bool) {
 	return
 }
 
-func (d *simpleDecDriver) Nil() bool {
-	return d.fnil
-}
+// func (d *simpleDecDriver) Nil() bool {
+// 	return d.fnil
+// }
 
 func (d *simpleDecDriver) ContainerType() (vt valueType) {
 	if !d.bdRead {

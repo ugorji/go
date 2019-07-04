@@ -378,9 +378,9 @@ func (d *cborDecDriver) ContainerType() (vt valueType) {
 	return valueTypeUnset
 }
 
-func (d *cborDecDriver) Nil() bool {
-	return d.fnil
-}
+// func (d *cborDecDriver) Nil() bool {
+// 	return d.fnil
+// }
 
 func (d *cborDecDriver) TryNil() bool {
 	return d.advanceNil()

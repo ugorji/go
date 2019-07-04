@@ -622,9 +622,9 @@ func (d *jsonDecDriver) TryNil() bool {
 	return false
 }
 
-func (d *jsonDecDriver) Nil() bool {
-	return d.fnil
-}
+// func (d *jsonDecDriver) Nil() bool {
+// 	return d.fnil
+// }
 
 func (d *jsonDecDriver) DecodeBool() (v bool) {
 	d.advance()
