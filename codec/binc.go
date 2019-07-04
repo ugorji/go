@@ -54,7 +54,43 @@ const (
 	// others not currently supported
 )
 
-func bincdesc(vd, vs byte) string {
+// var (
+// 	bincdescSpecialVsNames = map[byte]string{
+// 		bincSpNil:       "nil",
+// 		bincSpFalse:     "false",
+// 		bincSpTrue:      "true",
+// 		bincSpNan:       "float",
+// 		bincSpPosInf:    "float",
+// 		bincSpNegInf:    "float",
+// 		bincSpZeroFloat: "float",
+// 		bincSpZero:      "uint",
+// 		bincSpNegOne:    "int",
+// 	}
+// 	bincdescVdNames = map[byte]string{
+// 		bincVdSpecial:   "special",
+// 		bincVdSmallInt:  "uint",
+// 		bincVdPosInt:    "uint",
+// 		bincVdFloat:     "float",
+// 		bincVdSymbol:    "string",
+// 		bincVdString:    "string",
+// 		bincVdByteArray: "bytes",
+// 		bincVdTimestamp: "time",
+// 		bincVdCustomExt: "ext",
+// 		bincVdArray:     "array",
+// 		bincVdMap:       "map",
+// 	}
+// )
+
+func bincdesc(vd, vs byte) (s string) {
+	// s = bincdescVdNames[vd]
+	// if s == "special" {
+	// 	s = bincdescSpecialVsNames[vs]
+	// }
+	// if s == "" {
+	// 	s = "unknown"
+	// }
+	// return
+
 	switch vd {
 	case bincVdSpecial:
 		switch vs {

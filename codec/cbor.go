@@ -69,7 +69,43 @@ const (
 // 	cborSelfDesrTag3 byte = 0xf7
 // )
 
-func cbordesc(bd byte) string {
+// var (
+// 	cbordescSimpleNames = map[byte]string{
+// 		cborBdNil:              "nil",
+// 		cborBdFalse:            "false",
+// 		cborBdTrue:             "true",
+// 		cborBdFloat16:          "float",
+// 		cborBdFloat32:          "float",
+// 		cborBdFloat64:          "float",
+// 		cborBdIndefiniteBytes:  "bytes*",
+// 		cborBdIndefiniteString: "string*",
+// 		cborBdIndefiniteArray:  "array*",
+// 		cborBdIndefiniteMap:    "map*",
+// 	}
+// 	cbordescMajorNames = map[byte]string{
+// 		cborMajorUint:          "(u)int",
+// 		cborMajorNegInt:        "int",
+// 		cborMajorBytes:         "bytes",
+// 		cborMajorString:        "string",
+// 		cborMajorArray:         "array",
+// 		cborMajorMap:           "map",
+// 		cborMajorTag:           "tag",
+// 		cborMajorSimpleOrFloat: "simple",
+// 	}
+// )
+
+func cbordesc(bd byte) (s string) {
+	// s = cbordescMajorNames[bd>>5]
+	// if s == "" {
+	// 	s = "unknown"
+	// } else if s == "simple" {
+	// 	s = cbordescMajorNames[bd]
+	// 	if s == "" {
+	// 		s = "unknown(simple)"
+	// 	}
+	// }
+	// return
+
 	switch bd >> 5 {
 	case cborMajorUint:
 		return "(u)int"
