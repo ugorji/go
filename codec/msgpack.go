@@ -730,12 +730,12 @@ func (d *msgpackDecDriver) readNextBd() {
 	d.bdRead = true
 }
 
-func (d *msgpackDecDriver) uncacheRead() {
-	if d.bdRead {
-		d.d.decRd.unreadn1()
-		d.bdRead = false
-	}
-}
+// func (d *msgpackDecDriver) uncacheRead() {
+// 	if d.bdRead {
+// 		d.d.decRd.unreadn1()
+// 		d.bdRead = false
+// 	}
+// }
 
 func (d *msgpackDecDriver) advanceNil() (null bool) {
 	d.fnil = false

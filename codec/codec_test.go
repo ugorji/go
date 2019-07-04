@@ -1437,7 +1437,7 @@ func doTestStdEncIntf(t *testing.T, h Handle) {
 				t.Logf("++++ Objects match")
 			}
 		} else {
-			t.Logf("---- FAIL: Objects do not match: y1: %v, err: %v", a[1], err)
+			t.Logf("---- FAIL: Objects do not match: y0: %v, y1: %v, err: %v", a[0], a[1], err)
 			t.FailNow()
 		}
 	}

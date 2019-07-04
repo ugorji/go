@@ -224,12 +224,12 @@ func (d *simpleDecDriver) readNextBd() {
 	d.bdRead = true
 }
 
-func (d *simpleDecDriver) uncacheRead() {
-	if d.bdRead {
-		d.d.decRd.unreadn1()
-		d.bdRead = false
-	}
-}
+// func (d *simpleDecDriver) uncacheRead() {
+// 	if d.bdRead {
+// 		d.d.decRd.unreadn1()
+// 		d.bdRead = false
+// 	}
+// }
 
 func (d *simpleDecDriver) advanceNil() (null bool) {
 	d.fnil = false

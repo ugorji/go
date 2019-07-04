@@ -132,7 +132,7 @@ type decDriver interface {
 
 	reset()
 	atEndOfDecode()
-	uncacheRead()
+	// uncacheRead()
 
 	decoder() *Decoder
 }
@@ -1716,7 +1716,10 @@ func (d *Decoder) string(v []byte) (s string) {
 
 // nextValueBytes returns the next value in the stream as a set of bytes.
 func (d *Decoder) nextValueBytes() (bs []byte) {
-	d.d.uncacheRead()
+	// d.d.uncacheRead()
+	if d.js {
+		d.jsondriver().uncacheRead()
+	}
 	d.r().track()
 	d.swallow()
 	bs = d.r().stopTrack()

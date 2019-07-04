@@ -347,12 +347,12 @@ func (d *cborDecDriver) skipTags() {
 	}
 }
 
-func (d *cborDecDriver) uncacheRead() {
-	if d.bdRead {
-		d.d.decRd.unreadn1()
-		d.bdRead = false
-	}
-}
+// func (d *cborDecDriver) uncacheRead() {
+// 	if d.bdRead {
+// 		d.d.decRd.unreadn1()
+// 		d.bdRead = false
+// 	}
+// }
 
 func (d *cborDecDriver) ContainerType() (vt valueType) {
 	d.fnil = false
