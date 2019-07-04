@@ -2363,8 +2363,8 @@ func noFrac32(f float32) (v bool) {
 func isWhitespace(v byte) bool {
 	// these are in order of speed below ...
 
-	// return v < 33
-	return v < 33 && whitespaceCharBitset64.isset(v)
+	return v < 33
+	// return v < 33 && whitespaceCharBitset64.isset(v)
 	// return v < 33 && (v == ' ' || v == '\n' || v == '\t' || v == '\r')
 	// return v == ' ' || v == '\n' || v == '\t' || v == '\r'
 	// return whitespaceCharBitset.isset(v)

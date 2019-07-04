@@ -737,9 +737,9 @@ func (z *bytesDecReader) last() byte {
 }
 
 func (z *bytesDecReader) unreadn1() {
-	if z.c == 0 || len(z.b) == 0 {
-		panic(errBytesDecReaderCannotUnread)
-	}
+	// if z.c == 0 || len(z.b) == 0 {
+	// 	panic(errBytesDecReaderCannotUnread)
+	// }
 	z.c--
 }
 
@@ -757,10 +757,23 @@ func (z *bytesDecReader) readb(bs []byte) {
 }
 
 func (z *bytesDecReader) readn1() (v uint8) {
-	v = z.b[z.c]
-	z.c++
+	v = z.b[z.c] // cost 7
+	z.c++        // cost 4
 	return
 }
+
+// func (z *bytesDecReader) readn1() uint8 {
+// 	z.c++
+// 	return z.b[z.c-1]
+// }
+
+// func (z *bytesDecReader) readn1() uint8 {
+// 	v = z.b[z.c] // cost 7
+// 	c := z.c // cost 6
+// 	z.c++    // cost 4
+// 	z.c = z.c + 1 // cost 7
+// 	return z.b[z.c-1]
+// }
 
 func (z *bytesDecReader) readn1eof() (v uint8, eof bool) {
 	if z.c >= uint(len(z.b)) {
@@ -931,13 +944,28 @@ func (z *decRd) track() {
 	}
 }
 
+// func (z *decRd) unreadn1() {
+// 	if z.bytes {
+// 		z.rb.unreadn1()
+// 	} else if z.bufio {
+// 		z.bi.unreadn1()
+// 	} else {
+// 		z.ri.unreadn1()
+// 	}
+// }
+
 func (z *decRd) unreadn1() {
 	if z.bytes {
 		z.rb.unreadn1()
-	} else if z.bufio {
+	} else {
+		z.unreadn1IO()
+	}
+}
+func (z *decRd) unreadn1IO() {
+	if z.bufio {
 		z.bi.unreadn1()
 	} else {
-		z.ri.unreadn1() // not inlined
+		z.ri.unreadn1()
 	}
 }
 
@@ -971,14 +999,33 @@ func (z *decRd) readb(s []byte) {
 	}
 }
 
+// func (z *decRd) readn1() uint8 {
+// 	if z.bytes {
+// 		return z.rb.readn1()
+// 	} else if z.bufio {
+// 		return z.bi.readn1()
+// 	} else {
+// 		return z.ri.readn1()
+// 	}
+// }
+
 func (z *decRd) readn1() uint8 {
 	if z.bytes {
-		return z.rb.readn1()
-	} else if z.bufio {
-		return z.bi.readn1()
-	} else {
-		return z.ri.readn1()
+		// unfortunately, calling the function prevents inlining it here.
+		// explicitly writing it here will allow it inline.
+		// NOTE: Keep in sync with function implementation.
+		//
+		// return z.rb.readn1()
+		z.rb.c++
+		return z.rb.b[z.rb.c-1]
 	}
+	return z.readn1IO()
+}
+func (z *decRd) readn1IO() uint8 {
+	if z.bufio {
+		return z.bi.readn1()
+	}
+	return z.ri.readn1()
 }
 
 func (z *decRd) readn1eof() (uint8, bool) {

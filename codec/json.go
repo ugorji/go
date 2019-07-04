@@ -660,7 +660,7 @@ func (d *jsonDecDriver) DecodeTime() (t time.Time) {
 		d.readLit4Null()
 		return
 	}
-	bs := d.readString()
+	bs := d.readUnescapedString()
 	t, err := time.Parse(time.RFC3339, stringView(bs))
 	if err != nil {
 		d.d.errorv(err)
@@ -710,10 +710,9 @@ func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 		return
 	}
 	n, neg, badsyntax, overflow, ok := jsonParseInteger(bs)
-	if ok {
-		if neg {
-			d.d.errorf("minus found parsing unsigned integer: %s", bs)
-		}
+	if neg {
+		d.d.errorf("minus found parsing unsigned integer: %s", bs)
+	} else if ok {
 	} else if badsyntax {
 		// fallback: try to decode as float, and cast
 		n = d.decUint64ViaFloat(bs)
@@ -761,6 +760,7 @@ func (d *jsonDecDriver) decUint64ViaFloat(s []byte) (u uint64) {
 		return
 	}
 	f, err := parseFloat64(s)
+	// f, err := parseFloat64_strconv(s)
 	if err != nil {
 		d.d.errorf("invalid syntax for integer: %s", s)
 	}
@@ -859,7 +859,7 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		return nil
 	}
 
-	bs1 := d.readString()
+	bs1 := d.readUnescapedString()
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
 		bsOut = []byte{}
@@ -899,16 +899,19 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 			return jsonLiteralTrue
 		}
 		// try to parse a valid number
-		return d.decNumBytes()
+		d.d.decRd.unreadn1()
+		d.tok = 0
+		return d.d.decRd.readTo(&numCharBitset)
 	}
-	s = d.appendStringAsBytes()
+	d.appendStringAsBytes()
 	if d.fnil {
 		return nil
 	}
+	s = d.buf
 	return
 }
 
-func (d *jsonDecDriver) readString() (bs []byte) {
+func (d *jsonDecDriver) readUnescapedString() (bs []byte) {
 	if d.tok != '"' {
 		d.d.errorf("expecting string starting with '\"'; got '%c'", d.tok)
 		return
@@ -919,45 +922,26 @@ func (d *jsonDecDriver) readString() (bs []byte) {
 	return
 }
 
-func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
+func (d *jsonDecDriver) appendStringAsBytes() {
 	if d.buf != nil {
 		d.buf = d.buf[:0]
 	}
 	d.tok = 0
 
-	// append on each byte seen can be expensive, so we just
-	// keep track of where we last read a contiguous set of
-	// non-special bytes (using cursor variable),
-	// and when we see a special byte
-	// e.g. end-of-slice, " or \,
-	// we will append the full range into the v slice before proceeding
-
-	var cs = d.d.decRd.readUntil('"', true)
 	var c uint8
-	var i, cursor uint
 	for {
-		if i >= uint(len(cs)) {
-			d.buf = append(d.buf, cs[cursor:]...)
-			cs = d.d.decRd.readUntil('"', true)
-			i, cursor = 0, 0
-			continue // this continue helps elide the cs[i] below
-		}
-		c = cs[i]
+		c = d.d.decRd.readn1()
+
 		if c == '"' {
 			break
 		}
 		if c != '\\' {
-			i++
+			d.buf = append(d.buf, c)
 			continue
 		}
 
-		d.buf = append(d.buf, cs[cursor:i]...)
-		i++
-		if i >= uint(len(cs)) {
-			d.d.errorf("need at least 1 more bytes for \\ escape sequence")
-			return // bounds-check elimination
-		}
-		c = cs[i]
+		c = d.d.decRd.readn1()
+
 		switch c {
 		case '"', '\\', '/', '\'':
 			d.buf = append(d.buf, c)
@@ -972,40 +956,21 @@ func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
 		case 't':
 			d.buf = append(d.buf, '\t')
 		case 'u':
-			i = d.appendStringAsBytesSlashU(cs, i)
+			d.appendStringAsBytesSlashU()
 		default:
 			d.d.errorf("unsupported escaped value: %c", c)
 		}
-		i++
-		cursor = i
 	}
-	if len(cs) > 0 {
-		if len(d.buf) > 0 && cursor < uint(len(cs)) {
-			d.buf = append(d.buf, cs[cursor:i]...)
-		} else {
-			// if bytes, just return the cs got from readUntil.
-			// do not do it for io, especially bufio, as the buffer is needed for other things
-			cs = cs[:i]
-			if d.d.bytes {
-				return cs
-			}
-			d.buf = d.d.blist.check(d.buf, len(cs))
-			copy(d.buf, cs)
-		}
-	}
-	return d.buf
 }
 
-func (d *jsonDecDriver) appendStringAsBytesSlashU(cs []byte, i uint) uint {
+func (d *jsonDecDriver) appendStringAsBytesSlashU() {
 	var r rune
 	var rr uint32
 	var j uint
 	var c byte
-	if uint(len(cs)) < i+4 {
-		d.d.errorf("need at least 4 more bytes for unicode sequence")
-		return 0 // bounds-check elimination
-	}
-	for _, c = range cs[i+1 : i+5] { // bounds-check-elimination
+	var cs [7]byte
+	cs = d.d.decRd.readn(4)
+	for _, c = range cs[:4] { // bounds-check-elimination
 		// best to use explicit if-else
 		// - not a table, etc which involve memory loads, array lookup with bounds checks, etc
 		if c >= '0' && c <= '9' {
@@ -1016,45 +981,35 @@ func (d *jsonDecDriver) appendStringAsBytesSlashU(cs []byte, i uint) uint {
 			rr = rr*16 + uint32(c-jsonU4Chk0)
 		} else {
 			r = unicode.ReplacementChar
-			i += 4
 			goto encode_rune
 		}
 	}
 	r = rune(rr)
-	i += 4
 	if utf16.IsSurrogate(r) {
-		if len(cs) >= int(i+6) {
-			var cx = cs[i+1:][:6:6] // [:6] affords bounds-check-elimination
-			//var cx [6]byte
-			//copy(cx[:], cs[i+1:])
-			if cx[0] == '\\' && cx[1] == 'u' {
-				i += 2
-				var rr1 uint32
-				for j = 2; j < 6; j++ {
-					c = cx[j]
-					if c >= '0' && c <= '9' {
-						rr = rr*16 + uint32(c-jsonU4Chk2)
-					} else if c >= 'a' && c <= 'f' {
-						rr = rr*16 + uint32(c-jsonU4Chk1)
-					} else if c >= 'A' && c <= 'F' {
-						rr = rr*16 + uint32(c-jsonU4Chk0)
-					} else {
-						r = unicode.ReplacementChar
-						i += 4
-						goto encode_rune
-					}
+		cs = d.d.decRd.readn(6)
+		if cs[0] == '\\' && cs[1] == 'u' {
+			var rr1 uint32
+			for j = 2; j < 6; j++ {
+				c = cs[j]
+				if c >= '0' && c <= '9' {
+					rr = rr*16 + uint32(c-jsonU4Chk2)
+				} else if c >= 'a' && c <= 'f' {
+					rr = rr*16 + uint32(c-jsonU4Chk1)
+				} else if c >= 'A' && c <= 'F' {
+					rr = rr*16 + uint32(c-jsonU4Chk0)
+				} else {
+					r = unicode.ReplacementChar
+					goto encode_rune
 				}
-				r = utf16.DecodeRune(r, rune(rr1))
-				i += 4
-				goto encode_rune
 			}
+			r = utf16.DecodeRune(r, rune(rr1))
+			goto encode_rune
 		}
 		r = unicode.ReplacementChar
 	}
 encode_rune:
 	w2 := utf8.EncodeRune(d.bstr[:], r)
 	d.buf = append(d.buf, d.bstr[:w2]...)
-	return i
 }
 
 func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
@@ -1137,7 +1092,8 @@ func (d *jsonDecDriver) DecodeNaked() {
 		z.v = valueTypeArray // don't consume. kInterfaceNaked will call ReadArrayStart
 	case '"':
 		// if a string, and MapKeyAsString, then try to decode it as a nil, bool or number first
-		bs = d.appendStringAsBytes()
+		d.appendStringAsBytes()
+		bs = d.buf
 		if len(bs) > 0 && d.d.c == containerMapKey && d.h.MapKeyAsString {
 			if bytes.Equal(bs, jsonLiteralNull) {
 				z.v = valueTypeNil
@@ -1159,7 +1115,9 @@ func (d *jsonDecDriver) DecodeNaked() {
 			z.s = d.sliceToString(bs)
 		}
 	default: // number
-		bs = d.decNumBytes()
+		d.d.decRd.unreadn1()
+		bs = d.d.decRd.readTo(&numCharBitset)
+		d.tok = 0
 		if len(bs) == 0 {
 			d.d.errorf("decode number from empty string")
 			return
@@ -1480,5 +1438,146 @@ func (e *jsonEncDriverTypical) EncodeFloat32(f float32) {
 // 		e.e.encWr.writen1(' ')
 // 	}
 // }
+
+*/
+
+/*
+func (d *jsonDecDriver) appendStringAsBytes() (bs []byte) {
+	if d.buf != nil {
+		d.buf = d.buf[:0]
+	}
+	d.tok = 0
+
+	// append on each byte seen can be expensive, so we just
+	// keep track of where we last read a contiguous set of
+	// non-special bytes (using cursor variable),
+	// and when we see a special byte
+	// e.g. end-of-slice, " or \,
+	// we will append the full range into the v slice before proceeding
+
+	var cs = d.d.decRd.readUntil('"', true)
+	var c uint8
+	var i, cursor uint
+	for {
+		if i >= uint(len(cs)) {
+			d.buf = append(d.buf, cs[cursor:]...)
+			cs = d.d.decRd.readUntil('"', true)
+			i, cursor = 0, 0
+			continue // this continue helps elide the cs[i] below
+		}
+		c = cs[i]
+		if c == '"' {
+			break
+		}
+		if c != '\\' {
+			i++
+			continue
+		}
+
+		d.buf = append(d.buf, cs[cursor:i]...)
+		i++
+		if i >= uint(len(cs)) {
+			d.d.errorf("need at least 1 more bytes for \\ escape sequence")
+			return // bounds-check elimination
+		}
+		c = cs[i]
+		switch c {
+		case '"', '\\', '/', '\'':
+			d.buf = append(d.buf, c)
+		case 'b':
+			d.buf = append(d.buf, '\b')
+		case 'f':
+			d.buf = append(d.buf, '\f')
+		case 'n':
+			d.buf = append(d.buf, '\n')
+		case 'r':
+			d.buf = append(d.buf, '\r')
+		case 't':
+			d.buf = append(d.buf, '\t')
+		case 'u':
+			i = d.appendStringAsBytesSlashU(cs, i)
+		default:
+			d.d.errorf("unsupported escaped value: %c", c)
+		}
+		i++
+		cursor = i
+	}
+	if len(cs) > 0 {
+		if len(d.buf) > 0 && cursor < uint(len(cs)) {
+			d.buf = append(d.buf, cs[cursor:i]...)
+		} else {
+			// if bytes, just return the cs got from readUntil.
+			// do not do it for io, especially bufio, as the buffer is needed for other things
+			cs = cs[:i]
+			if d.d.bytes {
+				return cs
+			}
+			d.buf = d.d.blist.check(d.buf, len(cs))
+			copy(d.buf, cs)
+		}
+	}
+	return d.buf
+}
+
+func (d *jsonDecDriver) appendStringAsBytesSlashU(cs []byte, i uint) uint {
+	var r rune
+	var rr uint32
+	var j uint
+	var c byte
+	if uint(len(cs)) < i+4 {
+		d.d.errorf("need at least 4 more bytes for unicode sequence")
+		return 0 // bounds-check elimination
+	}
+	for _, c = range cs[i+1 : i+5] { // bounds-check-elimination
+		// best to use explicit if-else
+		// - not a table, etc which involve memory loads, array lookup with bounds checks, etc
+		if c >= '0' && c <= '9' {
+			rr = rr*16 + uint32(c-jsonU4Chk2)
+		} else if c >= 'a' && c <= 'f' {
+			rr = rr*16 + uint32(c-jsonU4Chk1)
+		} else if c >= 'A' && c <= 'F' {
+			rr = rr*16 + uint32(c-jsonU4Chk0)
+		} else {
+			r = unicode.ReplacementChar
+			i += 4
+			goto encode_rune
+		}
+	}
+	r = rune(rr)
+	i += 4
+	if utf16.IsSurrogate(r) {
+		if len(cs) >= int(i+6) {
+			var cx = cs[i+1:][:6:6] // [:6] affords bounds-check-elimination
+			//var cx [6]byte
+			//copy(cx[:], cs[i+1:])
+			if cx[0] == '\\' && cx[1] == 'u' {
+				i += 2
+				var rr1 uint32
+				for j = 2; j < 6; j++ {
+					c = cx[j]
+					if c >= '0' && c <= '9' {
+						rr = rr*16 + uint32(c-jsonU4Chk2)
+					} else if c >= 'a' && c <= 'f' {
+						rr = rr*16 + uint32(c-jsonU4Chk1)
+					} else if c >= 'A' && c <= 'F' {
+						rr = rr*16 + uint32(c-jsonU4Chk0)
+					} else {
+						r = unicode.ReplacementChar
+						i += 4
+						goto encode_rune
+					}
+				}
+				r = utf16.DecodeRune(r, rune(rr1))
+				i += 4
+				goto encode_rune
+			}
+		}
+		r = unicode.ReplacementChar
+	}
+encode_rune:
+	w2 := utf8.EncodeRune(d.bstr[:], r)
+	d.buf = append(d.buf, d.bstr[:w2]...)
+	return i
+}
 
 */

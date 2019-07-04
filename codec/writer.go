@@ -218,7 +218,13 @@ func (z *encWr) writeb(s []byte) {
 }
 func (z *encWr) writeqstr(s string) {
 	if z.bytes {
-		z.wb.writeqstr(s)
+		// unfortunately, calling the function prevents inlining it here.
+		// explicitly writing it here will allow it inline.
+		// NOTE: Keep in sync with function implementation.
+		//
+		// z.wb.writeqstr(s)
+
+		z.wb.b = append(append(append(z.wb.b, '"'), s...), '"')
 	} else {
 		z.wf.writeqstr(s)
 	}
@@ -239,7 +245,12 @@ func (z *encWr) writen1(b1 byte) {
 }
 func (z *encWr) writen2(b1, b2 byte) {
 	if z.bytes {
-		z.wb.writen2(b1, b2)
+		// unfortunately, calling the function prevents inlining it here.
+		// explicitly writing it here will allow it inline.
+		// NOTE: Keep in sync with function implementation.
+		//
+		// z.wb.writen2(b1, b2)
+		z.wb.b = append(z.wb.b, b1, b2)
 	} else {
 		z.wf.writen2(b1, b2)
 	}

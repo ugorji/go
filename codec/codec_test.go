@@ -3195,6 +3195,7 @@ func TestJsonLargeInteger(t *testing.T) {
 
 func TestJsonInvalidUnicode(t *testing.T) {
 	testOnce.Do(testInitAll)
+	// t.Skipf("new json implementation does not handle bad unicode robustly")
 	var m = map[string]string{
 		`"\udc49\u0430abc"`: "\uFFFDabc",
 		`"\udc49\u0430"`:    "\uFFFD",
@@ -3204,12 +3205,29 @@ func TestJsonInvalidUnicode(t *testing.T) {
 		`"\udcG9\u0430"`:    "\uFFFD\u0430",
 		`"\uHc49abc"`:       "\uFFFDabc",
 		`"\uKc49"`:          "\uFFFD",
-		// ``: "",
 	}
+
+	// set testUseMust to true, so we can capture errors
+	if testUseMust {
+		testUseMust = false
+		defer func() { testUseMust = true }()
+	}
+
 	for k, v := range m {
-		// println("k = ", k)
 		var s string
-		testUnmarshalErr(&s, []byte(k), testJsonH, t, "-")
+
+		// call testUnmarshal directly, so we can check for EOF
+		//
+		// testUnmarshalErr(&s, []byte(k), testJsonH, t, "-")
+		err := testUnmarshal(&s, []byte(k), testJsonH)
+		if err != nil {
+			if err == io.EOF {
+				continue
+			}
+			t.Logf("%s: unmarshal failed: %v", "-", err)
+			t.FailNow()
+		}
+
 		if s != v {
 			t.Logf("not equal: %q, %q", v, s)
 			t.FailNow()
