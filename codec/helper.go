@@ -186,7 +186,7 @@ var (
 
 	codecgen bool
 
-	panicv panicHdl
+	halt panicHdl
 
 	refBitset    bitset32
 	isnilBitset  bitset32
@@ -1135,21 +1135,21 @@ func (x addExtWrapper) UpdateExt(dest interface{}, v interface{}) {
 type bytesExtFailer struct{}
 
 func (bytesExtFailer) WriteExt(v interface{}) []byte {
-	panicv.errorstr("BytesExt.WriteExt is not supported")
+	halt.errorstr("BytesExt.WriteExt is not supported")
 	return nil
 }
 func (bytesExtFailer) ReadExt(v interface{}, bs []byte) {
-	panicv.errorstr("BytesExt.ReadExt is not supported")
+	halt.errorstr("BytesExt.ReadExt is not supported")
 }
 
 type interfaceExtFailer struct{}
 
 func (interfaceExtFailer) ConvertExt(v interface{}) interface{} {
-	panicv.errorstr("InterfaceExt.ConvertExt is not supported")
+	halt.errorstr("InterfaceExt.ConvertExt is not supported")
 	return nil
 }
 func (interfaceExtFailer) UpdateExt(dest interface{}, v interface{}) {
-	panicv.errorstr("InterfaceExt.UpdateExt is not supported")
+	halt.errorstr("InterfaceExt.UpdateExt is not supported")
 }
 
 type bytesExtWrapper struct {
@@ -1742,7 +1742,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	rk := rt.Kind()
 
 	if rk == reflect.Ptr { // || (rk == reflect.Interface && rtid != intfTypId) {
-		panicv.errorf("invalid kind passed to TypeInfos.get: %v - %v", rk, rt)
+		halt.errorf("invalid kind passed to TypeInfos.get: %v - %v", rk, rt)
 	}
 
 	// do not hold lock while computing this.
@@ -1851,7 +1851,7 @@ func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
 	//       and iteration using equals is faster than maps there
 	flen := rt.NumField()
 	if flen > (1<<maxLevelsEmbedding - 1) {
-		panicv.errorf("codec: types with > %v fields are not supported - has %v fields",
+		halt.errorf("codec: types with > %v fields are not supported - has %v fields",
 			(1<<maxLevelsEmbedding - 1), flen)
 	}
 	// pv.sfis = make([]structFieldInfo, flen)
@@ -1962,7 +1962,7 @@ LOOP:
 		si.flagSet(structFieldInfoFlagReady)
 
 		if len(indexstack) > maxLevelsEmbedding-1 {
-			panicv.errorf("codec: only supports up to %v depth of embedding - type has %v depth",
+			halt.errorf("codec: only supports up to %v depth of embedding - type has %v depth",
 				maxLevelsEmbedding-1, len(indexstack))
 		}
 		si.nis = uint8(len(indexstack)) + 1
@@ -2066,7 +2066,7 @@ func rgetResolveSFI(rt reflect.Type, x []structFieldInfo, pv *typeInfoLoadArray)
 		n++
 	}
 	if n != len(y) {
-		panicv.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d",
+		halt.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d",
 			rt, len(y), len(x), n)
 	}
 
@@ -2273,7 +2273,7 @@ func baseRV(v interface{}) (rv reflect.Value) {
 type checkOverflow struct{}
 
 // func (checkOverflow) Float16(f float64) (overflow bool) {
-// 	panicv.errorf("unimplemented")
+// 	halt.errorf("unimplemented")
 // 	if f < 0 {
 // 		f = -f
 // 	}
@@ -2287,19 +2287,25 @@ func (checkOverflow) Float32(v float64) (overflow bool) {
 	return math.MaxFloat32 < v && v <= math.MaxFloat64
 }
 func (checkOverflow) Uint(v uint64, bitsize uint8) (overflow bool) {
-	if bitsize == 0 || bitsize >= 64 || v == 0 {
-		return
-	}
-	if trunc := (v << (64 - bitsize)) >> (64 - bitsize); v != trunc {
+	// if bitsize == 0 || bitsize >= 64 || v == 0 {
+	// if v == 0 {
+	// 	return
+	// }
+	// if trunc := (v << (64 - bitsize)) >> (64 - bitsize); v != trunc {
+	if v != 0 && v != (v<<(64-bitsize))>>(64-bitsize) {
 		overflow = true
 	}
 	return
 }
 func (checkOverflow) Int(v int64, bitsize uint8) (overflow bool) {
-	if bitsize == 0 || bitsize >= 64 || v == 0 {
-		return
-	}
-	if trunc := (v << (64 - bitsize)) >> (64 - bitsize); v != trunc {
+	// if bitsize == 0 || bitsize >= 64 || v == 0 {
+	// if v == 0 {
+	// 	return
+	// }
+	// if trunc := (v << (64 - bitsize)) >> (64 - bitsize); v != trunc {
+	// 	overflow = true
+	// }
+	if v != 0 && v != (v<<(64-bitsize))>>(64-bitsize) {
 		overflow = true
 	}
 	return
@@ -2327,25 +2333,25 @@ func (checkOverflow) SignedInt(v uint64) (overflow bool) {
 
 func (x checkOverflow) Float32V(v float64) float64 {
 	if x.Float32(v) {
-		panicv.errorf("float32 overflow: %v", v)
+		halt.errorf("float32 overflow: %v", v)
 	}
 	return v
 }
 func (x checkOverflow) UintV(v uint64, bitsize uint8) uint64 {
 	if x.Uint(v, bitsize) {
-		panicv.errorf("uint64 overflow: %v", v)
+		halt.errorf("uint64 overflow: %v", v)
 	}
 	return v
 }
 func (x checkOverflow) IntV(v int64, bitsize uint8) int64 {
 	if x.Int(v, bitsize) {
-		panicv.errorf("int64 overflow: %v", v)
+		halt.errorf("int64 overflow: %v", v)
 	}
 	return v
 }
 func (x checkOverflow) SignedIntV(v uint64) int64 {
 	if x.SignedInt(v) {
-		panicv.errorf("uint64 to int64 overflow: %v", v)
+		halt.errorf("uint64 to int64 overflow: %v", v)
 	}
 	return int64(v)
 }
@@ -2630,25 +2636,25 @@ type must struct{}
 
 func (must) String(s string, err error) string {
 	if err != nil {
-		panicv.errorv(err)
+		halt.errorv(err)
 	}
 	return s
 }
 func (must) Int(s int64, err error) int64 {
 	if err != nil {
-		panicv.errorv(err)
+		halt.errorv(err)
 	}
 	return s
 }
 func (must) Uint(s uint64, err error) uint64 {
 	if err != nil {
-		panicv.errorv(err)
+		halt.errorv(err)
 	}
 	return s
 }
 func (must) Float(s float64, err error) float64 {
 	if err != nil {
-		panicv.errorv(err)
+		halt.errorv(err)
 	}
 	return s
 }

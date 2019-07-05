@@ -501,7 +501,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 	case valueTypeTime:
 		rvn = n.rt()
 	default:
-		panicv.errorf("kInterfaceNaked: unexpected valueType: %d", n.v)
+		halt.errorf("kInterfaceNaked: unexpected valueType: %d", n.v)
 	}
 	return
 }
@@ -1089,7 +1089,6 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	d.mapEnd()
-
 }
 
 // Decoder reads and decodes an object from an input stream in a supported format.
@@ -1102,8 +1101,6 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 // This is the idiomatic way to use.
 type Decoder struct {
 	panicHdl
-	// hopefully, reduce derefencing cost by laying the decReader inside the Decoder.
-	// Try to put things that go together to fit within a cache line (8 words).
 
 	d decDriver
 
