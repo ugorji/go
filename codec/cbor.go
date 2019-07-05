@@ -753,7 +753,7 @@ func (d *cborDecDriver) DecodeNaked() {
 		n.v = valueTypeInt
 		n.i = d.DecodeInt64()
 	case cborMajorBytes:
-		decNakedReadRawBytes(d, &d.d, n, d.h.RawToString)
+		fauxUnionReadRawBytes(d, &d.d, n, d.h.RawToString)
 	case cborMajorString:
 		n.v = valueTypeString
 		n.s = string(d.DecodeStringAsBytes())
@@ -792,7 +792,7 @@ func (d *cborDecDriver) DecodeNaked() {
 			n.v = valueTypeFloat
 			n.f = d.DecodeFloat64()
 		case cborBdIndefiniteBytes:
-			decNakedReadRawBytes(d, &d.d, n, d.h.RawToString)
+			fauxUnionReadRawBytes(d, &d.d, n, d.h.RawToString)
 		case cborBdIndefiniteString:
 			n.v = valueTypeString
 			n.s = string(d.DecodeStringAsBytes())

@@ -965,7 +965,7 @@ encode_rune:
 	d.buf = append(d.buf, d.bstr[:w2]...)
 }
 
-func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
+func (d *jsonDecDriver) nakedNum(z *fauxUnion, bs []byte) (err error) {
 	// const cutoff = uint64(1 << uint(64-1))
 
 	if len(bs) == 0 {

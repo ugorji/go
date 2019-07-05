@@ -37,10 +37,10 @@ import (
 
 func init() {
 	testPreInitFns = append(testPreInitFns, testInit)
-	// fmt.Printf("sizeof: Decoder: %v, Encoder: %v, decNaked: %v\n",
+	// fmt.Printf("sizeof: Decoder: %v, Encoder: %v, fauxUnion: %v\n",
 	// 	reflect.TypeOf((*Decoder)(nil)).Elem().Size(),
 	// 	reflect.TypeOf((*Encoder)(nil)).Elem().Size(),
-	// 	reflect.TypeOf((*decNaked)(nil)).Elem().Size(),
+	// 	reflect.TypeOf((*fauxUnion)(nil)).Elem().Size(),
 	// )
 }
 

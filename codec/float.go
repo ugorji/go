@@ -345,7 +345,7 @@ ERROR:
 
 // parseNumber will return an integer if only composed of [-]?[0-9]+
 // Else it will return a float.
-func parseNumber(b []byte, z *decNaked, preferSignedInt bool) (err error) {
+func parseNumber(b []byte, z *fauxUnion, preferSignedInt bool) (err error) {
 	var ok, neg bool
 	var f uint64
 	if b[0] == '-' {

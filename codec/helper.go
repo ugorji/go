@@ -370,6 +370,33 @@ const (
 	typeInfoLoadArrayBLen      = 8 * 4
 )
 
+// fauxUnion is used to keep track of the primitives decoded.
+//
+// Without it, we would have to decode each primitive and wrap it
+// in an interface{}, causing an allocation.
+// In this model, the primitives are decoded in a "pseudo-atomic" fashion,
+// so we can rest assured that no other decoding happens while these
+// primitives are being decoded.
+//
+// maps and arrays are not handled by this mechanism.
+type fauxUnion struct {
+	// r RawExt // used for RawExt, uint, []byte.
+
+	// primitives below
+	u uint64
+	i int64
+	f float64
+	l []byte
+	s string
+
+	// ---- cpu cache line boundary?
+	t time.Time
+	b bool
+
+	// state
+	v valueType
+}
+
 // typeInfoLoad is a transient object used while loading up a typeInfo.
 type typeInfoLoad struct {
 	etypes []uintptr
