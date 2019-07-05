@@ -63,7 +63,7 @@ var (
 	errDecUnreadByteUnknown         = errors.New("cannot unread - reason unknown")
 	errMaxDepthExceeded             = errors.New("maximum decoding depth exceeded")
 
-	errBytesDecReaderCannotUnread = errors.New("cannot unread last byte read")
+	// errBytesDecReaderCannotUnread = errors.New("cannot unread last byte read")
 )
 
 type decDriver interface {

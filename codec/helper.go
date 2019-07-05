@@ -2277,6 +2277,11 @@ func (checkOverflow) Int(v int64, bitsize uint8) (overflow bool) {
 	}
 	return
 }
+
+func (checkOverflow) Uint2Int(v uint64, neg bool) (overflow bool) {
+	return (neg && v > 1<<63) || (!neg && v >= 1<<63)
+}
+
 func (checkOverflow) SignedInt(v uint64) (overflow bool) {
 	//e.g. -127 to 128 for int8
 	pos := (v >> 63) == 0

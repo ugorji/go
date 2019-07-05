@@ -354,7 +354,7 @@ func (z *bufioDecReader) readb(p []byte) {
 	}
 }
 
-func (z *bufioDecReader) readbFill(p0 []byte, n uint, must bool, eof bool) (err error, isEOF bool) {
+func (z *bufioDecReader) readbFill(p0 []byte, n uint, must bool, eof bool) (isEOF bool, err error) {
 	// at this point, there's nothing in z.buf to read (z.buf is fully consumed)
 	var p []byte
 	if p0 != nil {
@@ -399,7 +399,7 @@ LOOP:
 		}
 		return
 	}
-	err = nil // TODO: should i skip err if n2 > 0?
+	err = nil
 	z.buf = z.buf[:n2]
 	z.c = 0
 	if len(p) > 0 {
@@ -429,7 +429,7 @@ func (z *bufioDecReader) last() byte {
 
 func (z *bufioDecReader) readn1eof() (b byte, eof bool) {
 	if z.c >= uint(len(z.buf)) {
-		_, eof = z.readbFill(nil, 0, true, true)
+		eof, _ = z.readbFill(nil, 0, true, true)
 		if eof {
 			return
 		}

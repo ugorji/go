@@ -97,7 +97,7 @@ var (
 func cbordesc(bd byte) (s string) {
 	bm := bd >> 5
 	if bm == cborMajorSimpleOrFloat {
-		s = cbordescMajorNames[bd]
+		s = cbordescSimpleNames[bd]
 		if s == "" {
 			s = "unknown(simple)"
 		}

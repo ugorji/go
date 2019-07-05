@@ -131,14 +131,12 @@ type jsonEncDriver struct {
 	typical bool
 
 	s *bitset256 // safe set for characters (taking h.HTMLAsIs into consideration)
+
 	// scratch: encode time, numbers, etc. Note: leave 1 byte for containerState
 	b [cacheLineSize + 24]byte // buffer for encoding numbers and time
 
 	e Encoder
 }
-
-// Keep writeIndent, WriteArrayElem, WriteMapElemKey, WriteMapElemValue
-// in jsonEncDriver, so that *Encoder can directly call them
 
 func (e *jsonEncDriver) encoder() *Encoder { return &e.e }
 
@@ -709,68 +707,23 @@ func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 	if len(bs) == 0 {
 		return
 	}
-	n, neg, badsyntax, overflow, ok := jsonParseInteger(bs)
-	if neg {
-		d.d.errorf("minus found parsing unsigned integer: %s", bs)
-	} else if ok {
-	} else if badsyntax {
-		// fallback: try to decode as float, and cast
-		n = d.decUint64ViaFloat(bs)
-	} else if overflow {
-		d.d.errorf("overflow parsing unsigned integer: %s", bs)
-	}
-	return n
-}
-
-func (d *jsonDecDriver) DecodeInt64() (i int64) {
-	const cutoff = uint64(1 << uint(64-1))
-	bs := d.decNumBytes()
-	if len(bs) == 0 {
-		return
-	}
-	n, neg, badsyntax, overflow, ok := jsonParseInteger(bs)
-	if ok {
-	} else if badsyntax {
-		// d.d.errorf("invalid syntax for integer: %s", bs)
-		// fallback: try to decode as float, and cast
-		if neg {
-			n = d.decUint64ViaFloat(bs[1:])
-		} else {
-			n = d.decUint64ViaFloat(bs)
-		}
-	} else if overflow {
-		d.d.errorf("overflow parsing integer: %s", bs)
-	}
-	if neg {
-		if n > cutoff {
-			d.d.errorf("overflow parsing integer: %s", bs)
-		}
-		i = -(int64(n))
-	} else {
-		if n >= cutoff {
-			d.d.errorf("overflow parsing integer: %s", bs)
-		}
-		i = int64(n)
+	u, err := parseUint64(bs)
+	if err != nil {
+		d.d.errorv(err)
 	}
 	return
 }
 
-func (d *jsonDecDriver) decUint64ViaFloat(s []byte) (u uint64) {
-	if len(s) == 0 {
+func (d *jsonDecDriver) DecodeInt64() (i int64) {
+	bs := d.decNumBytes()
+	if len(bs) == 0 {
 		return
 	}
-	f, err := parseFloat64(s)
-	// f, err := parseFloat64_strconv(s)
+	i, err := parseInt64(bs)
 	if err != nil {
-		d.d.errorf("invalid syntax for integer: %s", s)
+		d.d.errorv(err)
 	}
-	fi, ff := math.Modf(f)
-	if ff > 0 {
-		d.d.errorf("fractional part found parsing integer: %s", s)
-	} else if fi > float64(math.MaxUint64) {
-		d.d.errorf("overflow parsing integer: %s", s)
-	}
-	return uint64(fi)
+	return
 }
 
 func (d *jsonDecDriver) DecodeFloat64() (f float64) {
@@ -1013,10 +966,7 @@ encode_rune:
 }
 
 func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
-	const cutoff = uint64(1 << uint(64-1))
-
-	var n uint64
-	var neg, badsyntax, overflow, ok bool
+	// const cutoff = uint64(1 << uint(64-1))
 
 	if len(bs) == 0 {
 		if d.h.PreferFloat {
@@ -1032,33 +982,11 @@ func (d *jsonDecDriver) nakedNum(z *decNaked, bs []byte) (err error) {
 		return
 	}
 	if d.h.PreferFloat {
-		goto F
-	}
-	n, neg, badsyntax, overflow, ok = jsonParseInteger(bs)
-	if ok {
-	} else if badsyntax || overflow {
-		goto F
-	}
-	if neg {
-		if n > cutoff {
-			goto F
-		}
-		z.v = valueTypeInt
-		z.i = -(int64(n))
-	} else if d.h.SignedInteger {
-		if n >= cutoff {
-			goto F
-		}
-		z.v = valueTypeInt
-		z.i = int64(n)
+		z.v = valueTypeFloat
+		z.f, err = parseFloat64(bs)
 	} else {
-		z.v = valueTypeUint
-		z.u = n
+		err = parseNumber(bs, z, d.h.SignedInteger)
 	}
-	return
-F:
-	z.v = valueTypeFloat
-	z.f, err = parseFloat64(bs)
 	return
 }
 
@@ -1264,27 +1192,6 @@ func (d *jsonDecDriver) reset() {
 
 func (d *jsonDecDriver) atEndOfDecode() {}
 
-// jsonFloatStrconvFmtPrec ...
-//
-// ensure that every float has an 'e' or '.' in it,/ for easy differentiation from integers.
-// this is better/faster than checking if  encoded value has [e.] and appending if needed.
-
-// func jsonFloatStrconvFmtPrec(f float64, bits32 bool) (fmt byte, prec int) {
-// 	fmt = 'f'
-// 	prec = -1
-// 	var abs = math.Abs(f)
-// 	if abs == 0 || abs == 1 {
-// 		prec = 1
-// 	} else if !bits32 && (abs < 1e-6 || abs >= 1e21) ||
-// 		bits32 && (float32(abs) < 1e-6 || float32(abs) >= 1e21) {
-// 		fmt = 'e'
-// 	} else if _, frac := math.Modf(abs); frac == 0 {
-// 		// ensure that floats have a .0 at the end, for easy identification as floats
-// 		prec = 1
-// 	}
-// 	return
-// }
-
 func jsonFloatStrconvFmtPrec64(f float64) (fmt byte, prec int8) {
 	fmt = 'f'
 	prec = -1
@@ -1310,49 +1217,6 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 	} else if noFrac32(abs) { // _, frac := math.Modf(abs); frac == 0 {
 		prec = 1
 	}
-	return
-}
-
-// custom-fitted version of strconv.Parse(Ui|I)nt.
-// Also ensures we don't have to search for .eE to determine if a float or not.
-func jsonParseInteger(s []byte) (n uint64, neg, badSyntax, overflow, ok bool) {
-	const maxUint64 = (1<<64 - 1)
-	const cutoff = maxUint64/10 + 1
-
-	if len(s) == 0 { // bounds-check-elimination
-		// treat empty string as zero value
-		// badSyntax = true
-		ok = true
-		return
-	}
-
-	switch s[0] {
-	case '+':
-		s = s[1:]
-	case '-':
-		s = s[1:]
-		neg = true
-	}
-	for _, c := range s {
-		if c < '0' || c > '9' {
-			badSyntax = true
-			return
-		}
-		// unsigned integers don't overflow well on multiplication, so check cutoff here
-		// e.g. (maxUint64-5)*10 doesn't overflow well ...
-		if n >= cutoff {
-			overflow = true
-			return
-		}
-		n *= 10
-		n1 := n + uint64(c-'0')
-		if n1 < n || n1 > maxUint64 {
-			overflow = true
-			return
-		}
-		n = n1
-	}
-	ok = true
 	return
 }
 
@@ -1579,5 +1443,29 @@ encode_rune:
 	d.buf = append(d.buf, d.bstr[:w2]...)
 	return i
 }
+
+*/
+
+/*
+// jsonFloatStrconvFmtPrec ...
+//
+// ensure that every float has an 'e' or '.' in it,/ for easy differentiation from integers.
+// this is better/faster than checking if  encoded value has [e.] and appending if needed.
+
+// func jsonFloatStrconvFmtPrec(f float64, bits32 bool) (fmt byte, prec int) {
+// 	fmt = 'f'
+// 	prec = -1
+// 	var abs = math.Abs(f)
+// 	if abs == 0 || abs == 1 {
+// 		prec = 1
+// 	} else if !bits32 && (abs < 1e-6 || abs >= 1e21) ||
+// 		bits32 && (float32(abs) < 1e-6 || float32(abs) >= 1e21) {
+// 		fmt = 'e'
+// 	} else if _, frac := math.Modf(abs); frac == 0 {
+// 		// ensure that floats have a .0 at the end, for easy identification as floats
+// 		prec = 1
+// 	}
+// 	return
+// }
 
 */
