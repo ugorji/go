@@ -123,40 +123,91 @@ var mpTimeExtTagU = uint8(mpTimeExtTag)
 // 	mpNegFixNumMax: "NegFixNumMax",
 // }
 
-func mpdesc(bd byte) string {
-	switch bd {
-	case mpNil:
-		return "nil"
-	case mpFalse:
-		return "false"
-	case mpTrue:
-		return "true"
-	case mpFloat, mpDouble:
-		return "float"
-	case mpUint8, mpUint16, mpUint32, mpUint64:
-		return "uint"
-	case mpInt8, mpInt16, mpInt32, mpInt64:
-		return "int"
-	default:
+var mpdescNames = map[byte]string{
+	mpNil:    "nil",
+	mpFalse:  "false",
+	mpTrue:   "true",
+	mpFloat:  "float",
+	mpDouble: "float",
+	mpUint8:  "uuint",
+	mpUint16: "uint",
+	mpUint32: "uint",
+	mpUint64: "uint",
+	mpInt8:   "int",
+	mpInt16:  "int",
+	mpInt32:  "int",
+	mpInt64:  "int",
+
+	mpStr8:  "string|bytes",
+	mpStr16: "string|bytes",
+	mpStr32: "string|bytes",
+
+	mpBin8:  "bytes",
+	mpBin16: "bytes",
+	mpBin32: "bytes",
+
+	mpArray16: "array",
+	mpArray32: "array",
+
+	mpMap16: "map",
+	mpMap32: "map",
+}
+
+func mpdesc(bd byte) (s string) {
+	s = mpdescNames[bd]
+	if s == "" {
 		switch {
-		case bd >= mpPosFixNumMin && bd <= mpPosFixNumMax:
-			return "int"
-		case bd >= mpNegFixNumMin && bd <= mpNegFixNumMax:
-			return "int"
-		case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
-			return "string|bytes"
-		case bd == mpBin8, bd == mpBin16, bd == mpBin32:
-			return "bytes"
-		case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
-			return "array"
-		case bd == mpMap16, bd == mpMap32, bd >= mpFixMapMin && bd <= mpFixMapMax:
-			return "map"
-		case bd >= mpFixExt1 && bd <= mpFixExt16, bd >= mpExt8 && bd <= mpExt32:
-			return "ext"
+		case bd >= mpPosFixNumMin && bd <= mpPosFixNumMax,
+			bd >= mpNegFixNumMin && bd <= mpNegFixNumMax:
+			s = "int"
+		case bd >= mpFixStrMin && bd <= mpFixStrMax:
+			s = "string|bytes"
+		case bd >= mpFixArrayMin && bd <= mpFixArrayMax:
+			s = "array"
+		case bd >= mpFixMapMin && bd <= mpFixMapMax:
+			s = "map"
+		case bd >= mpFixExt1 && bd <= mpFixExt16,
+			bd >= mpExt8 && bd <= mpExt32:
+			s = "ext"
 		default:
-			return "unknown"
+			s = "unknown"
 		}
 	}
+	return
+
+	// switch bd {
+	// case mpNil:
+	// 	return "nil"
+	// case mpFalse:
+	// 	return "false"
+	// case mpTrue:
+	// 	return "true"
+	// case mpFloat, mpDouble:
+	// 	return "float"
+	// case mpUint8, mpUint16, mpUint32, mpUint64:
+	// 	return "uint"
+	// case mpInt8, mpInt16, mpInt32, mpInt64:
+	// 	return "int"
+	// default:
+	// 	switch {
+	// 	case bd >= mpPosFixNumMin && bd <= mpPosFixNumMax:
+	// 		return "int"
+	// 	case bd >= mpNegFixNumMin && bd <= mpNegFixNumMax:
+	// 		return "int"
+	// 	case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
+	// 		return "string|bytes"
+	// 	case bd == mpBin8, bd == mpBin16, bd == mpBin32:
+	// 		return "bytes"
+	// 	case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
+	// 		return "array"
+	// 	case bd == mpMap16, bd == mpMap32, bd >= mpFixMapMin && bd <= mpFixMapMax:
+	// 		return "map"
+	// 	case bd >= mpFixExt1 && bd <= mpFixExt16, bd >= mpExt8 && bd <= mpExt32:
+	// 		return "ext"
+	// 	default:
+	// 		return "unknown"
+	// 	}
+	// }
 }
 
 // MsgpackSpecRpcMultiArgs is a special type which signifies to the MsgpackSpecRpcCodec

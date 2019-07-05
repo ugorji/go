@@ -54,84 +54,85 @@ const (
 	// others not currently supported
 )
 
-// var (
-// 	bincdescSpecialVsNames = map[byte]string{
-// 		bincSpNil:       "nil",
-// 		bincSpFalse:     "false",
-// 		bincSpTrue:      "true",
-// 		bincSpNan:       "float",
-// 		bincSpPosInf:    "float",
-// 		bincSpNegInf:    "float",
-// 		bincSpZeroFloat: "float",
-// 		bincSpZero:      "uint",
-// 		bincSpNegOne:    "int",
-// 	}
-// 	bincdescVdNames = map[byte]string{
-// 		bincVdSpecial:   "special",
-// 		bincVdSmallInt:  "uint",
-// 		bincVdPosInt:    "uint",
-// 		bincVdFloat:     "float",
-// 		bincVdSymbol:    "string",
-// 		bincVdString:    "string",
-// 		bincVdByteArray: "bytes",
-// 		bincVdTimestamp: "time",
-// 		bincVdCustomExt: "ext",
-// 		bincVdArray:     "array",
-// 		bincVdMap:       "map",
-// 	}
-// )
+var (
+	bincdescSpecialVsNames = map[byte]string{
+		bincSpNil:       "nil",
+		bincSpFalse:     "false",
+		bincSpTrue:      "true",
+		bincSpNan:       "float",
+		bincSpPosInf:    "float",
+		bincSpNegInf:    "float",
+		bincSpZeroFloat: "float",
+		bincSpZero:      "uint",
+		bincSpNegOne:    "int",
+	}
+	bincdescVdNames = map[byte]string{
+		bincVdSpecial:   "special",
+		bincVdSmallInt:  "uint",
+		bincVdPosInt:    "uint",
+		bincVdFloat:     "float",
+		bincVdSymbol:    "string",
+		bincVdString:    "string",
+		bincVdByteArray: "bytes",
+		bincVdTimestamp: "time",
+		bincVdCustomExt: "ext",
+		bincVdArray:     "array",
+		bincVdMap:       "map",
+	}
+)
 
 func bincdesc(vd, vs byte) (s string) {
-	// s = bincdescVdNames[vd]
-	// if s == "special" {
-	// 	s = bincdescSpecialVsNames[vs]
-	// }
-	// if s == "" {
-	// 	s = "unknown"
-	// }
-	// return
-
-	switch vd {
-	case bincVdSpecial:
-		switch vs {
-		case bincSpNil:
-			return "nil"
-		case bincSpFalse:
-			return "false"
-		case bincSpTrue:
-			return "true"
-		case bincSpNan, bincSpPosInf, bincSpNegInf, bincSpZeroFloat:
-			return "float"
-		case bincSpZero:
-			return "uint"
-		case bincSpNegOne:
-			return "int"
-		default:
-			return "unknown"
-		}
-	case bincVdSmallInt, bincVdPosInt:
-		return "uint"
-	case bincVdNegInt:
-		return "int"
-	case bincVdFloat:
-		return "float"
-	case bincVdSymbol:
-		return "string"
-	case bincVdString:
-		return "string"
-	case bincVdByteArray:
-		return "bytes"
-	case bincVdTimestamp:
-		return "time"
-	case bincVdCustomExt:
-		return "ext"
-	case bincVdArray:
-		return "array"
-	case bincVdMap:
-		return "map"
-	default:
-		return "unknown"
+	if vd == bincVdSpecial {
+		s = bincdescSpecialVsNames[vs]
+	} else {
+		s = bincdescVdNames[vd]
 	}
+	if s == "" {
+		s = "unknown"
+	}
+	return
+
+	// 	switch vd {
+	// 	case bincVdSpecial:
+	// 		switch vs {
+	// 		case bincSpNil:
+	// 			return "nil"
+	// 		case bincSpFalse:
+	// 			return "false"
+	// 		case bincSpTrue:
+	// 			return "true"
+	// 		case bincSpNan, bincSpPosInf, bincSpNegInf, bincSpZeroFloat:
+	// 			return "float"
+	// 		case bincSpZero:
+	// 			return "uint"
+	// 		case bincSpNegOne:
+	// 			return "int"
+	// 		default:
+	// 			return "unknown"
+	// 		}
+	// 	case bincVdSmallInt, bincVdPosInt:
+	// 		return "uint"
+	// 	case bincVdNegInt:
+	// 		return "int"
+	// 	case bincVdFloat:
+	// 		return "float"
+	// 	case bincVdSymbol:
+	// 		return "string"
+	// 	case bincVdString:
+	// 		return "string"
+	// 	case bincVdByteArray:
+	// 		return "bytes"
+	// 	case bincVdTimestamp:
+	// 		return "time"
+	// 	case bincVdCustomExt:
+	// 		return "ext"
+	// 	case bincVdArray:
+	// 		return "array"
+	// 	case bincVdMap:
+	// 		return "map"
+	// 	default:
+	// 		return "unknown"
+	// 	}
 }
 
 type bincEncDriver struct {
