@@ -350,23 +350,26 @@ func (z *bufioDecReader) readb(p []byte) {
 			z.tr = append(z.tr, p...)
 		}
 	} else {
-		z.readbFillMust(p, n)
+		z.readbFill(p, n, true, false)
 	}
 }
 
-func (z *bufioDecReader) readbFillMust(p0 []byte, n uint) {
-	if err := z.readbFill(p0, n); err != nil {
-		panic(err)
-	}
-}
-
-func (z *bufioDecReader) readbFill(p0 []byte, n uint) (err error) {
+func (z *bufioDecReader) readbFill(p0 []byte, n uint, must bool, eof bool) (err error, isEOF bool) {
 	// at this point, there's nothing in z.buf to read (z.buf is fully consumed)
-	p := p0[n:]
+	var p []byte
+	if p0 != nil {
+		p = p0[n:]
+	}
 	var n2 uint
 	if len(p) > cap(z.buf) {
 		n2, err = decReadFull(z.r, p)
 		if err != nil {
+			if err == io.EOF {
+				isEOF = true
+			}
+			if must && !(eof && isEOF) {
+				panic(err)
+			}
 			return
 		}
 		n += n2
@@ -381,30 +384,40 @@ func (z *bufioDecReader) readbFill(p0 []byte, n uint) (err error) {
 		return
 	}
 	// z.c is now 0, and len(p) <= cap(z.buf)
+	var n1 int
 LOOP:
 	// for len(p) > 0 && z.err == nil {
-	if len(p) > 0 {
-		z.buf = z.buf[0:cap(z.buf)]
-		var n1 int
-		n1, err = z.r.Read(z.buf)
-		n2 = uint(n1)
-		if n2 == 0 && err != nil {
-			return
+	z.buf = z.buf[0:cap(z.buf)]
+	n1, err = z.r.Read(z.buf)
+	n2 = uint(n1)
+	if n2 == 0 && err != nil {
+		if err == io.EOF {
+			isEOF = true
 		}
-		z.buf = z.buf[:n2]
+		if must && !(eof && isEOF) {
+			panic(err)
+		}
+		return
+	}
+	err = nil // TODO: should i skip err if n2 > 0?
+	z.buf = z.buf[:n2]
+	z.c = 0
+	if len(p) > 0 {
 		n2 = uint(copy(p, z.buf))
 		z.c = n2
 		n += n2
 		z.n += n2
 		p = p[n2:]
-		goto LOOP
+		if len(p) > 0 {
+			goto LOOP
+		}
+		if z.c == 0 {
+			z.buf = z.buf[:1]
+			z.buf[0] = p[len(p)-1]
+			z.c = 1
+		}
 	}
-	if z.c == 0 {
-		z.buf = z.buf[:1]
-		z.buf[0] = p[len(p)-1]
-		z.c = 1
-	}
-	if z.trb {
+	if z.trb && p0 != nil {
 		z.tr = append(z.tr, p0[:n]...)
 	}
 	return
@@ -415,40 +428,30 @@ func (z *bufioDecReader) last() byte {
 }
 
 func (z *bufioDecReader) readn1eof() (b byte, eof bool) {
-	b, err := z.readn1err()
-	if err != nil {
-		if err == io.EOF {
-			eof = true
-		} else {
-			panic(err)
+	if z.c >= uint(len(z.buf)) {
+		_, eof = z.readbFill(nil, 0, true, true)
+		if eof {
+			return
 		}
+	}
+	b = z.buf[z.c]
+	z.c++
+	z.n++
+	if z.trb {
+		z.tr = append(z.tr, b)
 	}
 	return
 }
 
 func (z *bufioDecReader) readn1() (b byte) {
-	b, err := z.readn1err()
-	if err != nil {
-		panic(err)
+	if z.c >= uint(len(z.buf)) {
+		z.readbFill(nil, 0, true, false)
 	}
-	return
-}
-
-func (z *bufioDecReader) readn1err() (b byte, err error) {
-	// fast-path, so we elide calling into Read() most of the time
-	if z.c < uint(len(z.buf)) {
-		b = z.buf[z.c]
-		z.c++
-		z.n++
-		if z.trb {
-			z.tr = append(z.tr, b)
-		}
-	} else { // meaning z.c == len(z.buf) or greater ... so need to fill
-		err = z.readbFill(z.b[:1], 0)
-		if err != nil {
-			return
-		}
-		b = z.b[0]
+	b = z.buf[z.c]
+	z.c++
+	z.n++
+	if z.trb {
+		z.tr = append(z.tr, b)
 	}
 	return
 }
@@ -486,7 +489,7 @@ func (z *bufioDecReader) readx(n uint) (bs []byte) {
 		n = uint(copy(bs, z.buf[z.c:]))
 		z.n += n
 		z.c += n
-		z.readbFillMust(bs, n)
+		z.readbFill(bs, n, true, false)
 	}
 	return
 }
@@ -1161,6 +1164,19 @@ func (z *decRd) readn1IO() uint8 {
 		return z.bi.readn1()
 	}
 	return z.ri.readn1()
+}
+
+func (z *decRd) readn1eof() (uint8, bool) {
+	if z.bytes {
+		return z.rb.readn1eof()
+	}
+	return z.readn1eofIO()
+}
+func (z *decRd) readn1eofIO() (uint8, bool) {
+	if z.bufio {
+		return z.bi.readn1eof()
+	}
+	return z.ri.readn1eof()
 }
 
 func (z *decRd) skip(accept *bitset256) (token byte) {
