@@ -404,7 +404,7 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}N(v []{{ .Elem }}, d *Decoder) 
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		{{/* // if indefinite, etc, then expand the slice if necessary */ -}}
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		} 
 		slh.ElemContainerState(j)
@@ -417,18 +417,6 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}N(v []{{ .Elem }}, d *Decoder) 
 	slh.End()
 }
 {{end}}{{end}}{{end -}}
-
-func fastpathDecArrayCannotExpand(slh decSliceHelper, hasLen bool, lenv, j, containerLenS int) {
-	slh.d.arrayCannotExpand(lenv, j+1)
-	slh.ElemContainerState(j)
-	slh.d.swallow()
-	j++
-	for ; (hasLen && j < containerLenS) || !(hasLen || slh.d.checkBreak()); j++ {
-		slh.ElemContainerState(j)
-		slh.d.swallow()
-	}
-	slh.End()
-}
 
 {{range .Values}}{{if not .Primitive}}{{if .MapKey -}}
 {{/*

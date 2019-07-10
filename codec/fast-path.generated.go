@@ -4264,7 +4264,7 @@ func (fastpathT) DecSliceIntfN(v []interface{}, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -4361,7 +4361,7 @@ func (fastpathT) DecSliceStringN(v []string, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -4458,7 +4458,7 @@ func (fastpathT) DecSliceBytesN(v [][]byte, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -4555,7 +4555,7 @@ func (fastpathT) DecSliceFloat32N(v []float32, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -4652,7 +4652,7 @@ func (fastpathT) DecSliceFloat64N(v []float64, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -4749,7 +4749,7 @@ func (fastpathT) DecSliceUintN(v []uint, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -4846,7 +4846,7 @@ func (fastpathT) DecSliceUint16N(v []uint16, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -4943,7 +4943,7 @@ func (fastpathT) DecSliceUint32N(v []uint32, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -5040,7 +5040,7 @@ func (fastpathT) DecSliceUint64N(v []uint64, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -5137,7 +5137,7 @@ func (fastpathT) DecSliceIntN(v []int, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -5234,7 +5234,7 @@ func (fastpathT) DecSliceInt8N(v []int8, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -5331,7 +5331,7 @@ func (fastpathT) DecSliceInt16N(v []int16, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -5428,7 +5428,7 @@ func (fastpathT) DecSliceInt32N(v []int32, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -5525,7 +5525,7 @@ func (fastpathT) DecSliceInt64N(v []int64, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -5622,7 +5622,7 @@ func (fastpathT) DecSliceBoolN(v []bool, d *Decoder) {
 	hasLen := containerLenS > 0
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j >= len(v) {
-			fastpathDecArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
 			return
 		}
 		slh.ElemContainerState(j)
@@ -5630,18 +5630,6 @@ func (fastpathT) DecSliceBoolN(v []bool, d *Decoder) {
 	}
 	slh.End()
 }
-func fastpathDecArrayCannotExpand(slh decSliceHelper, hasLen bool, lenv, j, containerLenS int) {
-	slh.d.arrayCannotExpand(lenv, j+1)
-	slh.ElemContainerState(j)
-	slh.d.swallow()
-	j++
-	for ; (hasLen && j < containerLenS) || !(hasLen || slh.d.checkBreak()); j++ {
-		slh.ElemContainerState(j)
-		slh.d.swallow()
-	}
-	slh.End()
-}
-
 func (d *Decoder) fastpathDecMapStringIntfR(f *codecFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart()
 	if containerLen == decContainerLenNil {

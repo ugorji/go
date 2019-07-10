@@ -659,6 +659,10 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
+	// if f.seq == seqTypeArray {
+	// 	xdebugf("decoder.kSlice: %v, %#v", rv.Type(), rv)
+	// }
+
 	// A slice can be set from a map or array in stream.
 	// This way, the order can be kept (as order is lost with map).
 
@@ -771,21 +775,13 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				d.errorf("cannot decode into non-settable slice")
 			}
 		}
-		slh.ElemContainerState(j)
 		// if indefinite, etc, then expand the slice if necessary
 		if j >= rvlen {
 			if f.seq == seqTypeArray {
-				d.arrayCannotExpand(rvlen, j+1)
-				// drain completely and return
-				d.swallow()
-				j++
-				for ; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
-					slh.ElemContainerState(j)
-					d.swallow()
-				}
-				slh.End()
+				decArrayCannotExpand(slh, hasLen, rvlen, j, containerLenS)
 				return
 			}
+			slh.ElemContainerState(j)
 			// rv = reflect.Append(rv, reflect.Zero(rtelem0)) // append logic + varargs
 
 			// expand the slice up to the cap.
@@ -807,13 +803,20 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 					d.errorf(errmsgExpandSliceCannotChange)
 					return
 				}
-				rvcap = growCap(rvcap, rtelem0Size, rvcap)
+				// rvcap2 := rvcap
+				rvcap = growCap(rvcap, rtelem0Size, 1)
+				// if rvcap < 32 {
+				// 	rvcap = 32
+				// }
+				// xdebugf("%v: growing cap from %v to %v (unit size: %v)", rtelem, rvcap2, rvcap, rtelem0Size)
 				rv9 = reflect.MakeSlice(f.ti.rt, rvcap, rvcap)
 				rvCopySlice(rv9, rv)
 				rv = rv9
 				rvChanged = true
 				rvlen = rvcap
 			}
+		} else {
+			slh.ElemContainerState(j)
 		}
 		rv9 = rvSliceIndex(rv, j, f.ti)
 		if d.h.SliceElementReset {
@@ -1997,4 +2000,17 @@ func fauxUnionReadRawBytes(dr decDriver, d *Decoder, n *fauxUnion, rawToString b
 		n.v = valueTypeBytes
 		n.l = dr.DecodeBytes(nil, false)
 	}
+}
+
+func decArrayCannotExpand(slh decSliceHelper, hasLen bool, lenv, j, containerLenS int) {
+	slh.d.arrayCannotExpand(lenv, j+1)
+	// drain completely and return
+	slh.ElemContainerState(j)
+	slh.d.swallow()
+	j++
+	for ; (hasLen && j < containerLenS) || !(hasLen || slh.d.checkBreak()); j++ {
+		slh.ElemContainerState(j)
+		slh.d.swallow()
+	}
+	slh.End()
 }
