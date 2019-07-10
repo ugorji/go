@@ -26,14 +26,12 @@ func parseFloat64(b []byte) (f float64, err error) {
 }
 
 func parseFloat32_strconv(b []byte) (f float32, err error) {
-	// defer func() { xdebugf("strconv float32: %s, %v, err: %v", b, f, err) }()
 	f64, err := strconv.ParseFloat(stringView(b), 32)
 	f = float32(f64)
 	return
 }
 
 func parseFloat64_strconv(b []byte) (f float64, err error) {
-	// defer func() { xdebugf("strconv float64: %s, %v, err: %v", b, f, err) }()
 	return strconv.ParseFloat(stringView(b), 64)
 }
 
@@ -70,7 +68,6 @@ func parseFloat64_strconv(b []byte) (f float64, err error) {
 // Note: we only allow for up to what can comfortably fit into the significand
 // ignoring the exponent, and we only try to parse iff significand fits.
 
-// Exact powers of 10.
 const (
 	thousand    = 1000
 	million     = thousand * thousand
@@ -80,6 +77,7 @@ const (
 	quintillion = thousand * quadrillion
 )
 
+// Exact powers of 10.
 var uint64pow10 = [...]uint64{
 	1, 10, 100,
 	1 * thousand, 10 * thousand, 100 * thousand,
@@ -100,23 +98,35 @@ var float32pow10 = [...]float32{
 
 type floatinfo struct {
 	mantbits uint8
-	expbits  uint8 // (unused)
-	bias     int16 // (unused)
 
+	// expbits uint8 // (unused)
+	// bias    int16 // (unused)
+
+	is32bit    bool
 	exactPow10 int8 // Exact powers of ten are <= 10^N (32: 10, 64: 22)
-	exactInts  int8 // Exact integers are <= 10^N
 
-	maxMantDigits int8 // 10^19 fits in uint64, while 10^9 fits in uint32
+	exactInts int8 // Exact integers are <= 10^N (for non-float, set to 0)
+	// maxMantDigits int8 // 10^19 fits in uint64, while 10^9 fits in uint32
+	// mantCutoff uint64
 }
 
-var fi32 = floatinfo{23, 8, -127, 10, 7, 9}
-var fi64 = floatinfo{52, 11, -1023, 22, 15, 19}
+// var fi32 = floatinfo{23, 8, -127, 10, 7, 9, fUint32Cutoff}
+// var fi64 = floatinfo{52, 11, -1023, 22, 15, 19, fUint64Cutoff}
 
-var fi64u = floatinfo{64, 0, -1023, 20, 15, 19}
-var fi64i = floatinfo{63, 0, -1023, 20, 15, 19}
+// var fi64u = floatinfo{64, 0, -1023, 19, 0, 19, fUint64Cutoff}
+// var fi64i = floatinfo{63, 0, -1023, 19, 0, 19, fUint64Cutoff}
 
-const fMax64 = 1e15
-const fMax32 = 1e7
+var fi32 = floatinfo{23, true, 10, 7}
+var fi64 = floatinfo{52, false, 22, 15}
+
+var fi64u = floatinfo{0, false, 19, 0}
+var fi64i = floatinfo{0, false, 19, 0}
+
+const fMaxMultiplierForExactPow10_64 = 1e15
+const fMaxMultiplierForExactPow10_32 = 1e7
+
+const fUint64Cutoff = (1<<64-1)/10 + 1
+const fUint32Cutoff = (1<<32-1)/10 + 1
 
 const fBase = 10
 
@@ -132,19 +142,19 @@ func parseFloat32_reader(r readFloatResult) (f float32, fail bool) {
 	// parseFloatDebug(b, 32, false, exp, trunc, ok)
 	f = float32(r.mantissa)
 	if r.exp != 0 {
-		indx := fExpIndx(r.exp)
 		if r.exp < 0 { // int / 10^k
-			f /= float32pow10[indx]
+			f /= float32pow10[uint8(-r.exp)]
 		} else { // exp > 0
 			if r.exp > fi32.exactPow10 {
 				f *= float32pow10[r.exp-fi32.exactPow10]
-				if f > fMax32 { // exponent too large - outside range
+				if f > fMaxMultiplierForExactPow10_32 { // exponent too large - outside range
 					fail = true
 					return // ok = false
 				}
-				indx = uint8(fi32.exactPow10)
+				f *= float32pow10[fi32.exactPow10]
+			} else {
+				f *= float32pow10[uint8(r.exp)]
 			}
-			f *= float32pow10[indx]
 		}
 	}
 	if r.neg {
@@ -159,7 +169,8 @@ func parseFloat32_custom(b []byte) (f float32, err error) {
 		return 0, strconvParseErr(b, "ParseFloat")
 	}
 	if r.ok {
-		if f, r.bad = parseFloat32_reader(r); r.bad {
+		f, r.bad = parseFloat32_reader(r)
+		if r.bad {
 			goto FALLBACK
 		}
 		return
@@ -171,19 +182,19 @@ FALLBACK:
 func parseFloat64_reader(r readFloatResult) (f float64, fail bool) {
 	f = float64(r.mantissa)
 	if r.exp != 0 {
-		indx := fExpIndx(r.exp)
 		if r.exp < 0 { // int / 10^k
-			f /= float64pow10[indx]
+			f /= float64pow10[-uint8(r.exp)]
 		} else { // exp > 0
 			if r.exp > fi64.exactPow10 {
 				f *= float64pow10[r.exp-fi64.exactPow10]
-				if f > fMax64 { // exponent too large - outside range
+				if f > fMaxMultiplierForExactPow10_64 { // exponent too large - outside range
 					fail = true
 					return
 				}
-				indx = uint8(fi64.exactPow10)
+				f *= float64pow10[fi64.exactPow10]
+			} else {
+				f *= float64pow10[uint8(r.exp)]
 			}
-			f *= float64pow10[indx]
 		}
 	}
 	if r.neg {
@@ -198,7 +209,8 @@ func parseFloat64_custom(b []byte) (f float64, err error) {
 		return 0, strconvParseErr(b, "ParseFloat")
 	}
 	if r.ok {
-		if f, r.bad = parseFloat64_reader(r); r.bad {
+		f, r.bad = parseFloat64_reader(r)
+		if r.bad {
 			goto FALLBACK
 		}
 		return
@@ -207,25 +219,29 @@ FALLBACK:
 	return parseFloat64_strconv(b)
 }
 
-const maxUint64 = (1<<64 - 1)
-const uint64Cutoff = maxUint64/10 + 1
-
 func parseUint64_simple(b []byte) (n uint64, ok bool) {
-	for _, c := range b {
+	var i int
+	var n1 uint64
+	var c uint8
+LOOP:
+	if i < len(b) {
+		c = b[i]
 		if c < '0' || c > '9' {
 			return
 		}
 		// unsigned integers don't overflow well on multiplication, so check cutoff here
 		// e.g. (maxUint64-5)*10 doesn't overflow well ...
-		if n >= uint64Cutoff {
+		if n >= fUint64Cutoff {
 			return
 		}
-		n *= 10
-		n1 := n + uint64(c-'0')
-		if n1 < n || n1 > maxUint64 {
+		n *= fBase
+		n1 = n + uint64(c-'0')
+		if n1 < n {
 			return
 		}
 		n = n1
+		i++
+		goto LOOP
 	}
 	ok = true
 	return
@@ -234,112 +250,38 @@ func parseUint64_simple(b []byte) (n uint64, ok bool) {
 func parseUint64_reader(r readFloatResult) (f uint64, fail bool) {
 	f = r.mantissa
 	if r.exp != 0 {
-		indx := fExpIndx(r.exp)
 		if r.exp < 0 { // int / 10^k
-			f /= uint64pow10[indx]
-		} else { // exp > 0
-			if r.exp > fi64u.exactPow10 {
-				f *= uint64pow10[r.exp-fi64u.exactPow10]
-				// if f > math.MaxUint64 { // exponent too large - outside range
-				// 	fail = true
-				// 	return
-				// }
-				indx = uint8(fi64u.exactPow10)
+			if f%uint64pow10[uint8(-r.exp)] != 0 {
+				fail = true
+			} else {
+				f /= uint64pow10[uint8(-r.exp)]
 			}
-			f *= uint64pow10[indx]
+		} else { // exp > 0
+			f *= uint64pow10[uint8(r.exp)]
 		}
 	}
-	return
-}
-
-func parseUint64(b []byte) (f uint64, err error) {
-	var ok bool
-	var r readFloatResult
-	if b[0] == '-' {
-		goto ERROR
-	}
-	f, ok = parseUint64_simple(b)
-	if ok {
-		return
-	}
-	r = readFloat(b, fi64u)
-	// if r.neg {
-	// 	goto ERROR
-	// }
-	if r.okInt {
-		if f, r.bad = parseUint64_reader(r); r.bad {
-			goto ERROR
-		}
-		return
-	}
-ERROR:
-	err = strconvParseErr(b, "ParseUint")
 	return
 }
 
 func parseInt64_reader(r readFloatResult) (v int64, fail bool) {
-	f := r.mantissa
-	if r.exp != 0 {
-		indx := fExpIndx(r.exp)
-		if r.exp < 0 { // int / 10^k
-			f /= uint64pow10[indx]
-		} else { // exp > 0
-			if r.exp > fi64i.exactPow10 {
-				f *= uint64pow10[r.exp-fi64i.exactPow10]
-				// if f > math.MaxInt64 { // exponent too large - outside range
-				// 	fail = true
-				// 	return
-				// }
-				indx = uint8(fi64i.exactPow10)
-			}
-			f *= uint64pow10[indx]
+	// xdebugf("parseint64_reader: r: %#v", r)
+	if r.exp == 0 {
+	} else if r.exp < 0 { // int / 10^k
+		if r.mantissa%uint64pow10[uint8(-r.exp)] != 0 {
+			// fail = true
+			return 0, true
 		}
+		r.mantissa /= uint64pow10[uint8(-r.exp)]
+	} else { // exp > 0
+		r.mantissa *= uint64pow10[uint8(r.exp)]
 	}
-	if chkOvf.Uint2Int(f, r.neg) {
+	if chkOvf.Uint2Int(r.mantissa, r.neg) {
 		fail = true
-		return
-	}
-	if r.neg {
-		v = -int64(f)
+	} else if r.neg {
+		v = -int64(r.mantissa)
 	} else {
-		v = int64(f)
+		v = int64(r.mantissa)
 	}
-	return
-}
-
-func parseInt64(b []byte) (v int64, err error) {
-	var ok, neg bool
-	var f uint64
-	var r readFloatResult
-
-	if b[0] == '-' {
-		neg = true
-		b = b[1:]
-	}
-
-	f, ok = parseUint64_simple(b)
-	if ok {
-		if chkOvf.Uint2Int(f, neg) {
-			goto ERROR
-		}
-		if neg {
-			v = -int64(f)
-		} else {
-			v = int64(f)
-		}
-		return
-	}
-
-	r = readFloat(b, fi64i)
-	if r.okInt {
-		r.neg = neg
-		if v, r.bad = parseInt64_reader(r); r.bad {
-			goto ERROR
-		}
-		return
-	}
-ERROR:
-	err = strconvParseErr(b, "ParseInt")
 	return
 }
 
@@ -348,25 +290,34 @@ ERROR:
 func parseNumber(b []byte, z *fauxUnion, preferSignedInt bool) (err error) {
 	var ok, neg bool
 	var f uint64
+
+	// var b1 []byte
+	// if b[0] == '-' {
+	// 	neg = true
+	// 	b1 = b[1:]
+	// } else {
+	// 	b1 = b
+	// }
+	// f, ok = parseUint64_simple(b1)
+
 	if b[0] == '-' {
 		neg = true
 		f, ok = parseUint64_simple(b[1:])
 	} else {
 		f, ok = parseUint64_simple(b)
 	}
+
 	if ok {
 		if neg {
 			z.v = valueTypeInt
 			if chkOvf.Uint2Int(f, neg) {
-				err = strconvParseErr(b, "ParseInt")
-				return
+				return strconvParseErr(b, "ParseInt")
 			}
 			z.i = -int64(f)
 		} else if preferSignedInt {
 			z.v = valueTypeInt
 			if chkOvf.Uint2Int(f, neg) {
-				err = strconvParseErr(b, "ParseInt")
-				return
+				return strconvParseErr(b, "ParseInt")
 			}
 			z.i = int64(f)
 		} else {
@@ -381,24 +332,22 @@ func parseNumber(b []byte, z *fauxUnion, preferSignedInt bool) (err error) {
 	return
 }
 
-func fExpIndx(v int8) uint8 {
-	if v < 0 {
-		return uint8(-v)
-	}
-	return uint8(v)
-}
-
 type readFloatResult struct {
-	mantissa                                   uint64
-	exp                                        int8
-	neg, sawdot, sawexp, trunc, bad, okInt, ok bool
+	mantissa                        uint64
+	exp                             int8
+	neg, sawdot, sawexp, trunc, bad bool
+	ok                              bool
 }
 
 func readFloat(s []byte, y floatinfo) (r readFloatResult) {
-	var i uint // make it uint, so that we eliminate bounds checking
+	// defer func() { xdebugf("readFloat: %#v", r) }()
+
+	var i uint // uint, so that we eliminate bounds checking
 	var slen = uint(len(s))
 	if slen == 0 {
-		r.bad = true
+		// read an empty string as the zero value
+		// r.bad = true
+		r.ok = true
 		return
 	}
 
@@ -410,7 +359,20 @@ func readFloat(s []byte, y floatinfo) (r readFloatResult) {
 	// we considered punting early if string has length > maxMantDigits, but this doesn't account
 	// for trailing 0's e.g. 700000000000000000000 can be encoded exactly as it is 7e20
 
+	var mantCutoffIsUint64Cutoff bool
+
+	var mantCutoff uint64
+	if y.mantbits != 0 {
+		mantCutoff = 1<<y.mantbits - 1
+	} else if y.is32bit {
+		mantCutoff = fUint32Cutoff
+	} else {
+		mantCutoffIsUint64Cutoff = true
+		mantCutoff = fUint64Cutoff
+	}
+
 	var nd, ndMant, dp int8
+	var xu uint64
 
 	var c uint8
 	for ; i < slen; i++ {
@@ -425,19 +387,36 @@ func readFloat(s []byte, y floatinfo) (r readFloatResult) {
 		} else if c == 'e' || c == 'E' {
 			r.sawexp = true
 			break
-		} else if c >= '0' && c <= '9' { // !(c < '0' || c > '9') { //
-			if c == '0' && nd == 0 {
+		} else if c == '0' {
+			if nd == 0 {
 				dp--
 				continue
 			}
 			nd++
-			if ndMant >= y.maxMantDigits {
+			if r.mantissa < mantCutoff {
+				r.mantissa *= fBase
+				ndMant++
+			}
+		} else if c >= '1' && c <= '9' { // !(c < '0' || c > '9') { //
+			nd++
+			if mantCutoffIsUint64Cutoff && r.mantissa < fUint64Cutoff {
+				// mantissa = (mantissa << 1) + (mantissa << 3) + uint64(c-'0')
+				r.mantissa *= fBase
+				xu = r.mantissa + uint64(c-'0')
+				if xu < r.mantissa {
+					r.trunc = true
+					return
+				}
+				r.mantissa = xu
+				ndMant++
+			} else if r.mantissa < mantCutoff {
+				// mantissa = (mantissa << 1) + (mantissa << 3) + uint64(c-'0')
+				r.mantissa = r.mantissa*fBase + uint64(c-'0')
+				ndMant++
+			} else {
 				r.trunc = true
 				return
 			}
-			// mantissa = (mantissa << 1) + (mantissa << 3) + uint64(c-'0')
-			r.mantissa = r.mantissa*fBase + uint64(c-'0')
-			ndMant++
 		} else {
 			r.bad = true
 			return
@@ -488,16 +467,106 @@ func readFloat(s []byte, y floatinfo) (r readFloatResult) {
 		}
 	}
 
-	r.okInt = true
-
 	if r.mantissa != 0 {
 		r.exp = dp - ndMant
+		// do not set ok=true for cases we cannot handle
 		if r.exp < -y.exactPow10 ||
 			r.exp > y.exactInts+y.exactPow10 ||
-			r.mantissa>>y.mantbits != 0 { // cannot handle it
+			y.mantbits != 0 && r.mantissa>>y.mantbits != 0 {
 			return
 		}
 	}
+
 	r.ok = true
 	return
 }
+
+/*
+
+func parseUint64(b []byte) (f uint64, err error) {
+	if b[0] == '-' {
+		return 0, strconvParseErr(b, "ParseUint")
+	}
+	f, ok := parseUint64_simple(b)
+	if !ok {
+		return parseUint64_custom(b)
+	}
+	return
+}
+
+func parseInt64(b []byte) (v int64, err error) {
+	// defer func() { xdebug2f("parseInt64: %s, return: %d, %v", b, v, err) }()
+	// xdebugf("parseInt64: %s", b)
+	var ok, neg bool
+	var f uint64
+	var r readFloatResult
+
+	if b[0] == '-' {
+		neg = true
+		b = b[1:]
+	}
+
+	f, ok = parseUint64_simple(b)
+	// xdebugf("parseuint64_simple:  %v, %v", f, ok)
+	if ok {
+		if chkOvf.Uint2Int(f, neg) {
+			goto ERROR
+		}
+		if neg {
+			v = -int64(f)
+		} else {
+			v = int64(f)
+		}
+		return
+	}
+
+	r = readFloat(b, fi64i)
+	// xdebugf("readFloat ok:  %v", r.ok)
+	if r.ok {
+		r.neg = neg
+		v, r.bad = parseInt64_reader(r)
+		if r.bad {
+			goto ERROR
+		}
+		return
+	}
+ERROR:
+	err = strconvParseErr(b, "ParseInt")
+	return
+}
+
+func parseUint64_custom(b []byte) (f uint64, err error) {
+	r := readFloat(b, fi64u)
+	if r.ok {
+		f, r.bad = parseUint64_reader(r)
+		if r.bad {
+			err = strconvParseErr(b, "ParseUint")
+		}
+		return
+	}
+	err = strconvParseErr(b, "ParseUint")
+	return
+}
+
+func parseUint64_simple(b []byte) (n uint64, ok bool) {
+	for _, c := range b {
+		if c < '0' || c > '9' {
+			return
+		}
+		// unsigned integers don't overflow well on multiplication, so check cutoff here
+		// e.g. (maxUint64-5)*10 doesn't overflow well ...
+		if n >= uint64Cutoff {
+			return
+		}
+		n *= 10
+		n1 := n + uint64(c-'0')
+		if n1 < n {
+			return
+		}
+		n = n1
+	}
+	ok = true
+	return
+}
+
+*/

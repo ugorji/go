@@ -707,41 +707,103 @@ func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 	if len(bs) == 0 {
 		return
 	}
-	u, err := parseUint64(bs)
-	if err != nil {
-		d.d.errorv(err)
+	if bs[0] == '-' {
+		d.d.errorf("negative number cannot be decoded as uint64")
 	}
+	var r readFloatResult
+	u, r.ok = parseUint64_simple(bs)
+	if r.ok {
+		return
+	}
+
+	r = readFloat(bs, fi64u)
+	if r.ok {
+		u, r.bad = parseUint64_reader(r)
+		if r.bad {
+			d.d.errorv(strconvParseErr(bs, "ParseUint"))
+		}
+		return
+	}
+	d.d.errorv(strconvParseErr(bs, "ParseUint"))
 	return
 }
 
-func (d *jsonDecDriver) DecodeInt64() (i int64) {
-	bs := d.decNumBytes()
-	if len(bs) == 0 {
+// func (d *jsonDecDriver) DecodeInt64() (i int64) {
+// 	bs := d.decNumBytes()
+// 	if len(bs) == 0 {
+// 		return
+// 	}
+// 	i, err := parseInt64(bs)
+// 	if err != nil {
+// 		d.d.errorv(err)
+// 	}
+// 	return
+// }
+
+func (d *jsonDecDriver) DecodeInt64() (v int64) {
+	b := d.decNumBytes()
+	if len(b) == 0 {
 		return
 	}
-	i, err := parseInt64(bs)
-	if err != nil {
-		d.d.errorv(err)
+
+	var r readFloatResult
+	var neg bool
+
+	if b[0] == '-' {
+		neg = true
+		b = b[1:]
 	}
+
+	r.mantissa, r.ok = parseUint64_simple(b)
+	// xdebugf("parseuint64_simple:  %v, %v", f, ok)
+	if r.ok {
+		if chkOvf.Uint2Int(r.mantissa, neg) {
+			d.d.errorf("overflow decoding number from %s", b)
+		}
+		if neg {
+			v = -int64(r.mantissa)
+		} else {
+			v = int64(r.mantissa)
+		}
+		return
+	}
+
+	r = readFloat(b, fi64i)
+	// xdebugf("readFloat ok:  %v", r.ok)
+	if r.ok {
+		r.neg = neg
+		v, r.bad = parseInt64_reader(r)
+		if r.bad {
+			d.d.errorv(strconvParseErr(b, "ParseInt"))
+		}
+		return
+	}
+	d.d.errorv(strconvParseErr(b, "ParseInt"))
 	return
 }
 
 func (d *jsonDecDriver) DecodeFloat64() (f float64) {
 	var err error
-	if bs := d.decNumBytes(); len(bs) > 0 {
-		if f, err = parseFloat64(bs); err != nil {
-			d.d.errorv(err)
-		}
+	bs := d.decNumBytes()
+	if len(bs) == 0 {
+		return
+	}
+	f, err = parseFloat64(bs)
+	if err != nil {
+		d.d.errorv(err)
 	}
 	return
 }
 
 func (d *jsonDecDriver) DecodeFloat32() (f float32) {
 	var err error
-	if bs := d.decNumBytes(); len(bs) > 0 {
-		if f, err = parseFloat32(bs); err != nil {
-			d.d.errorv(err)
-		}
+	bs := d.decNumBytes()
+	if len(bs) == 0 {
+		return
+	}
+	f, err = parseFloat32(bs)
+	if err != nil {
+		d.d.errorv(err)
 	}
 	return
 }
