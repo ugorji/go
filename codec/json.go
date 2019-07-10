@@ -695,8 +695,7 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 	} else if d.tok == 'n' {
 		d.readLit4Null()
 	} else {
-		d.d.decRd.unreadn1()
-		bs = d.d.decRd.readTo(&numCharBitset)
+		bs = d.d.decRd.readNumberWithLastByte()
 	}
 	d.tok = 0
 	return
@@ -914,9 +913,8 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 			return jsonLiteralTrue
 		}
 		// try to parse a valid number
-		d.d.decRd.unreadn1()
 		d.tok = 0
-		return d.d.decRd.readTo(&numCharBitset)
+		return d.d.decRd.readNumberWithLastByte()
 	}
 	d.appendStringAsBytes()
 	if d.fnil {
@@ -1105,8 +1103,7 @@ func (d *jsonDecDriver) DecodeNaked() {
 			z.s = d.sliceToString(bs)
 		}
 	default: // number
-		d.d.decRd.unreadn1()
-		bs = d.d.decRd.readTo(&numCharBitset)
+		bs = d.d.decRd.readNumberWithLastByte()
 		d.tok = 0
 		if len(bs) == 0 {
 			d.d.errorf("decode number from empty string")

@@ -24,6 +24,8 @@ type decReader interface {
 	track()
 	stopTrack() []byte
 
+	// readNumber(includeLastByteRead bool) []byte
+
 	// skip any whitespace characters, and return the first non-matching byte
 	skipWhitespace() (token byte)
 
@@ -271,7 +273,7 @@ LOOP:
 	if eof {
 		return
 	}
-	if isWhitespace(token) {
+	if isWhitespaceChar(token) {
 		goto LOOP
 	}
 	return
@@ -551,7 +553,7 @@ LOOP:
 		// inline z.skipLoopFn(i) and refactor, so cost is within inline budget
 		token = z.buf[i]
 		i++
-		if isWhitespace(token) {
+		if isWhitespaceChar(token) {
 			goto LOOP
 		}
 		z.n += i - 2 - z.c
@@ -580,7 +582,7 @@ func (z *bufioDecReader) skipFillWhitespace() (token byte) {
 		}
 		z.buf = z.buf[:n2]
 		for i, token = range z.buf {
-			if !isWhitespace(token) {
+			if !isWhitespaceChar(token) {
 				z.n += (uint(i) - z.c) - 1
 				z.loopFn(uint(i + 1))
 				return
@@ -828,21 +830,33 @@ LOOP:
 	// if i < uint(len(z.b)) {
 	token = z.b[i]
 	i++
-	if isWhitespace(token) {
+	if isWhitespaceChar(token) {
 		goto LOOP
 	}
 	z.c = i
 	return
 }
 
+func (z *bytesDecReader) readNumberWithLastByte() (out []byte) {
+	z.c--
+	i := z.c
+LOOP:
+	if i < uint(len(z.b)) && isNumberChar(z.b[i]) {
+		i++
+		goto LOOP
+	}
+
+	out = z.b[z.c:i]
+	z.c = i
+	return // z.b[c:i]
+}
+
 func (z *bytesDecReader) readTo(accept *bitset256) (out []byte) {
 	i := z.c
 LOOP:
-	if i < uint(len(z.b)) {
-		if accept.isset(z.b[i]) {
-			i++
-			goto LOOP
-		}
+	if i < uint(len(z.b)) && accept.isset(z.b[i]) {
+		i++
+		goto LOOP
 	}
 
 	out = z.b[z.c:i]
@@ -1078,6 +1092,15 @@ func (z *decRd) readUntil(stop byte, includeLast bool) (out []byte) {
 		return z.bi.readUntil(stop, includeLast)
 	} else {
 		return z.ri.readUntil(stop, includeLast)
+	}
+}
+
+func (z *decRd) readNumberWithLastByte() []byte {
+	if z.bytes {
+		return z.rb.readNumberWithLastByte()
+	} else {
+		z.unreadn1()
+		return z.readTo(&numCharBitset)
 	}
 }
 

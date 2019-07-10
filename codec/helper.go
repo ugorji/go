@@ -195,6 +195,8 @@ var (
 	numCharBitset        bitset256
 	whitespaceCharBitset bitset256
 
+	numCharWithExpBitset64 bitset64
+	numCharNoExpBitset64   bitset64
 	whitespaceCharBitset64 bitset64
 )
 
@@ -247,8 +249,13 @@ func init() {
 		case ' ', '\t', '\r', '\n':
 			whitespaceCharBitset.set(i)
 			whitespaceCharBitset64 = whitespaceCharBitset64.set(i)
-		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'e', 'E', '.', '+', '-':
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '+', '-':
 			numCharBitset.set(i)
+			numCharWithExpBitset64 = numCharWithExpBitset64.set(i - 42)
+			numCharNoExpBitset64 = numCharNoExpBitset64.set(i)
+		case 'e', 'E':
+			numCharBitset.set(i)
+			numCharWithExpBitset64 = numCharWithExpBitset64.set(i - 42)
 		}
 	}
 
@@ -2398,7 +2405,7 @@ func noFrac32(f float32) (v bool) {
 	return
 }
 
-func isWhitespace(v byte) bool {
+func isWhitespaceChar(v byte) bool {
 	// these are in order of speed below ...
 
 	return v < 33
@@ -2406,6 +2413,14 @@ func isWhitespace(v byte) bool {
 	// return v < 33 && (v == ' ' || v == '\n' || v == '\t' || v == '\r')
 	// return v == ' ' || v == '\n' || v == '\t' || v == '\r'
 	// return whitespaceCharBitset.isset(v)
+}
+
+func isNumberChar(v byte) bool {
+	// these are in order of speed below ...
+
+	return numCharBitset.isset(v)
+	// return v < 64 && numCharNoExpBitset64.isset(v) || v == 'e' || v == 'E'
+	// return v > 42 && v < 102 && numCharWithExpBitset64.isset(v-42)
 }
 
 // func noFrac(f float64) bool {
