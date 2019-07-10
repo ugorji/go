@@ -2229,10 +2229,12 @@ func testUintToInt(t *testing.T, h Handle) {
 		math.MaxInt32, math.MaxInt32 + 4, math.MaxInt32 - 4,
 		math.MaxInt64, math.MaxInt64 - 4,
 	}
-	var ui uint64
+	var i int64
+	var ui, ui2 uint64
 	var fi float64
 	var b []byte
-	for _, i := range golden {
+	for _, v := range golden {
+		i = v
 		ui = 0
 		b = testMarshalErr(i, h, t, "int2uint-"+name)
 		testUnmarshalErr(&ui, b, h, t, "int2uint-"+name)
@@ -2240,6 +2242,8 @@ func testUintToInt(t *testing.T, h Handle) {
 			t.Logf("%s: values not equal: %v, %v", name, ui, uint64(i))
 			t.FailNow()
 		}
+
+		ui = uint64(i)
 		i = 0
 		b = testMarshalErr(ui, h, t, "uint2int-"+name)
 		testUnmarshalErr(&i, b, h, t, "uint2int-"+name)
@@ -2247,6 +2251,20 @@ func testUintToInt(t *testing.T, h Handle) {
 			t.Logf("%s: values not equal: %v, %v", name, i, int64(ui))
 			t.FailNow()
 		}
+
+		if v == math.MaxInt64 {
+			ui = uint64(-(v - 1))
+		} else {
+			ui = uint64(-v)
+		}
+		// xdebugf("testing %x", ui)
+		b = testMarshalErr(ui, h, t, "negint2uint-"+name)
+		testUnmarshalErr(&ui2, b, h, t, "negint2uint-"+name)
+		if ui2 != ui {
+			t.Logf("%s: values not equal: %v, %v", name, ui2, ui)
+			t.FailNow()
+		}
+
 		fi = 0
 		b = testMarshalErr(i, h, t, "int2float-"+name)
 		testUnmarshalErr(&fi, b, h, t, "int2float-"+name)
@@ -3189,6 +3207,77 @@ func TestJsonLargeInteger(t *testing.T) {
 			uint(1 << 20),
 		} {
 			doTestJsonLargeInteger(t, j, i)
+		}
+	}
+
+	oldIAS := testJsonH.IntegerAsString
+	defer func() { testJsonH.IntegerAsString = oldIAS }()
+	testJsonH.IntegerAsString = 0
+
+	type tt struct {
+		s           string
+		canI, canUi bool
+		i           int64
+		ui          uint64
+	}
+
+	var i int64
+	var ui uint64
+	var err error
+	var d *Decoder = NewDecoderBytes(nil, testJsonH)
+	for _, v := range []tt{
+		{"0", true, true, 0, 0},
+		{"0000", true, true, 0, 0},
+		{"0.00e+2", true, true, 0, 0},
+		{"000e-2", true, true, 0, 0},
+		{"0.00e-2", true, true, 0, 0},
+
+		{"9223372036854775807", true, true, math.MaxInt64, math.MaxInt64},                             // maxint64
+		{"92233720368547758.07e+2", true, true, math.MaxInt64, math.MaxInt64},                         // maxint64
+		{"922337203685477580700e-2", true, true, math.MaxInt64, math.MaxInt64},                        // maxint64
+		{"9223372.036854775807E+12", true, true, math.MaxInt64, math.MaxInt64},                        // maxint64
+		{"9223372036854775807000000000000E-12", true, true, math.MaxInt64, math.MaxInt64},             // maxint64
+		{"0.9223372036854775807E+19", true, true, math.MaxInt64, math.MaxInt64},                       // maxint64
+		{"92233720368547758070000000000000000000E-19", true, true, math.MaxInt64, math.MaxInt64},      // maxint64
+		{"0.000009223372036854775807E+24", true, true, math.MaxInt64, math.MaxInt64},                  // maxint64
+		{"9223372036854775807000000000000000000000000E-24", true, true, math.MaxInt64, math.MaxInt64}, // maxint64
+
+		{"-9223372036854775808", true, false, math.MinInt64, 0},                             // minint64
+		{"-92233720368547758.08e+2", true, false, math.MinInt64, 0},                         // minint64
+		{"-922337203685477580800E-2", true, false, math.MinInt64, 0},                        // minint64
+		{"-9223372.036854775808e+12", true, false, math.MinInt64, 0},                        // minint64
+		{"-9223372036854775808000000000000E-12", true, false, math.MinInt64, 0},             // minint64
+		{"-0.9223372036854775808e+19", true, false, math.MinInt64, 0},                       // minint64
+		{"-92233720368547758080000000000000000000E-19", true, false, math.MinInt64, 0},      // minint64
+		{"-0.000009223372036854775808e+24", true, false, math.MinInt64, 0},                  // minint64
+		{"-9223372036854775808000000000000000000000000E-24", true, false, math.MinInt64, 0}, // minint64
+
+		{"18446744073709551615", false, true, 0, math.MaxUint64},                             // maxuint64
+		{"18446744.073709551615E+12", false, true, 0, math.MaxUint64},                        // maxuint64
+		{"18446744073709551615000000000000E-12", false, true, 0, math.MaxUint64},             // maxuint64
+		{"0.000018446744073709551615E+24", false, true, 0, math.MaxUint64},                   // maxuint64
+		{"18446744073709551615000000000000000000000000E-24", false, true, 0, math.MaxUint64}, // maxuint64
+		// {"", true, true},
+	} {
+		if v.s == "" {
+			continue
+		}
+		if true {
+			d.ResetBytes([]byte(v.s))
+			err = d.Decode(&ui)
+			if (v.canUi && err != nil) || (!v.canUi && err == nil) || (v.canUi && err == nil && v.ui != ui) {
+				t.Logf("Failing to decode %s (as unsigned): %v", v.s, err)
+				t.FailNow()
+			}
+		}
+
+		if true {
+			d.ResetBytes([]byte(v.s))
+			err = d.Decode(&i)
+			if (v.canI && err != nil) || (!v.canI && err == nil) || (v.canI && err == nil && v.i != i) {
+				t.Logf("Failing to decode %s (as signed): %v", v.s, err)
+				t.FailNow()
+			}
 		}
 	}
 }
