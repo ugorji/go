@@ -145,10 +145,12 @@ func (f genHelperDecoder) DecBinary() bool {
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecSwallow() { f.d.swallow() }
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperDecoder) DecScratchBuffer() []byte {
-	return f.d.b[:]
-}
+
+// // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+// func (f genHelperDecoder) DecScratchBuffer() []byte {
+// 	return f.d.b[:]
+// }
+
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecScratchArrayBuffer() *[decScratchByteArrayLen]byte {
 	return &f.d.b
@@ -176,7 +178,7 @@ func (f genHelperDecoder) DecArrayCannotExpand(sliceLen, streamLen int) {
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecTextUnmarshal(tm encoding.TextUnmarshaler) {
 	if fnerr := tm.UnmarshalText(f.d.d.DecodeStringAsBytes()); fnerr != nil {
-		panic(fnerr)
+		halt.errorv(fnerr)
 	}
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -184,13 +186,13 @@ func (f genHelperDecoder) DecJSONUnmarshal(tm jsonUnmarshaler) {
 	// bs := f.dd.DecodeStringAsBytes()
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
 	if fnerr := tm.UnmarshalJSON(f.d.nextValueBytes()); fnerr != nil {
-		panic(fnerr)
+		halt.errorv(fnerr)
 	}
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecBinaryUnmarshal(bm encoding.BinaryUnmarshaler) {
 	if fnerr := bm.UnmarshalBinary(f.d.d.DecodeBytes(nil, true)); fnerr != nil {
-		panic(fnerr)
+		halt.errorv(fnerr)
 	}
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
