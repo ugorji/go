@@ -76,9 +76,10 @@ func growCap(oldCap, unit, num int) (newCap int) {
 	// unit can be 0 e.g. for struct{}{}; handle that appropriately
 	if unit <= 0 {
 		if uint64(^uint(0)) == ^uint64(0) { // 64-bit
-			return int(1<<63 - 1) // math.MaxInt64
+			var maxInt64 uint64 = 1<<63 - 1 // prevent failure with overflow int on 32-bit (386)
+			return int(maxInt64)            // math.MaxInt64
 		}
-		return int(1<<31 - 1) //  math.MaxInt32
+		return 1<<31 - 1 //  math.MaxInt32
 	}
 
 	// handle if num < 0, cap=0, etc.
