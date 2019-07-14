@@ -3257,6 +3257,13 @@ func TestJsonLargeInteger(t *testing.T) {
 		{"18446744073709551615000000000000E-12", false, true, 0, math.MaxUint64},             // maxuint64
 		{"0.000018446744073709551615E+24", false, true, 0, math.MaxUint64},                   // maxuint64
 		{"18446744073709551615000000000000000000000000E-24", false, true, 0, math.MaxUint64}, // maxuint64
+
+		// Add test for limit of uint64 where last digit is 0
+		{"18446744073709551610", false, true, 0, math.MaxUint64 - 5},                             // maxuint64
+		{"18446744.073709551610E+12", false, true, 0, math.MaxUint64 - 5},                        // maxuint64
+		{"18446744073709551610000000000000E-12", false, true, 0, math.MaxUint64 - 5},             // maxuint64
+		{"0.000018446744073709551610E+24", false, true, 0, math.MaxUint64 - 5},                   // maxuint64
+		{"18446744073709551610000000000000000000000000E-24", false, true, 0, math.MaxUint64 - 5}, // maxuint64
 		// {"", true, true},
 	} {
 		if v.s == "" {

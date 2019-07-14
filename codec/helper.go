@@ -192,6 +192,7 @@ var (
 	isnilBitset  bitset32
 	scalarBitset bitset32
 
+	digitCharBitset      bitset256
 	numCharBitset        bitset256
 	whitespaceCharBitset bitset256
 
@@ -249,7 +250,12 @@ func init() {
 		case ' ', '\t', '\r', '\n':
 			whitespaceCharBitset.set(i)
 			whitespaceCharBitset64 = whitespaceCharBitset64.set(i)
-		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '+', '-':
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+			digitCharBitset.set(i)
+			numCharBitset.set(i)
+			numCharWithExpBitset64 = numCharWithExpBitset64.set(i - 42)
+			numCharNoExpBitset64 = numCharNoExpBitset64.set(i)
+		case '.', '+', '-':
 			numCharBitset.set(i)
 			numCharWithExpBitset64 = numCharWithExpBitset64.set(i - 42)
 			numCharNoExpBitset64 = numCharNoExpBitset64.set(i)
@@ -2423,6 +2429,13 @@ func isNumberChar(v byte) bool {
 	// return v > 42 && v < 102 && numCharWithExpBitset64.isset(v-42)
 }
 
+func isDigitChar(v byte) bool {
+	// these are in order of speed below ...
+
+	return digitCharBitset.isset(v)
+	// return v >= '0' && v <= '9'
+}
+
 // func noFrac(f float64) bool {
 // 	_, frac := math.Modf(float64(f))
 // 	return frac == 0
@@ -2542,6 +2555,21 @@ func (s *set) remove(v interface{}) (exists bool) {
 // func (x *bitset256) isset(pos byte) bool {
 // 	return x.check(pos) != 0
 // 	// return x[pos>>3]&(1<<(pos&7)) != 0
+// }
+// func (x *bitset256) isnotset(pos byte) bool {
+// 	return x.check(pos) == 0
+// }
+
+// type bitset256 [4]uint64
+
+// func (x *bitset256) set(pos byte) {
+// 	x[pos>>6] |= (1 << (pos & 63))
+// }
+// func (x *bitset256) check(pos byte) uint64 {
+// 	return x[pos>>6] & (1 << (pos & 63))
+// }
+// func (x *bitset256) isset(pos byte) bool {
+// 	return x.check(pos) != 0
 // }
 // func (x *bitset256) isnotset(pos byte) bool {
 // 	return x.check(pos) == 0

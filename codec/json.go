@@ -898,30 +898,30 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 
 func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 	d.advance()
-	if d.tok != '"' {
-		// d.d.errorf("expect char '%c' but got char '%c'", '"', d.tok)
-		// handle non-string scalar: null, true, false or a number
-		switch d.tok {
-		case 'n':
-			d.readLit4Null()
-			return []byte{}
-		case 'f':
-			d.readLit4False()
-			return jsonLiteralFalse
-		case 't':
-			d.readLit4True()
-			return jsonLiteralTrue
-		}
-		// try to parse a valid number
-		d.tok = 0
-		return d.d.decRd.readNumberWithLastByte()
+
+	// common case
+	if d.tok == '"' {
+		d.appendStringAsBytes()
+		return d.buf
 	}
-	d.appendStringAsBytes()
-	if d.fnil {
-		return nil
+	// d.d.errorf("expect char '%c' but got char '%c'", '"', d.tok)
+
+	// handle non-string scalar: null, true, false or a number
+	switch d.tok {
+	case 'n':
+		d.readLit4Null()
+		return nil // []byte{}
+	case 'f':
+		d.readLit4False()
+		return jsonLiteralFalse
+	case 't':
+		d.readLit4True()
+		return jsonLiteralTrue
 	}
-	s = d.buf
-	return
+
+	// try to parse a valid number
+	d.tok = 0
+	return d.d.decRd.readNumberWithLastByte()
 }
 
 func (d *jsonDecDriver) readUnescapedString() (bs []byte) {

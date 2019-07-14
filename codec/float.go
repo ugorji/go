@@ -107,7 +107,10 @@ type floatinfo struct {
 
 	exactInts int8 // Exact integers are <= 10^N (for non-float, set to 0)
 	// maxMantDigits int8 // 10^19 fits in uint64, while 10^9 fits in uint32
-	// mantCutoff uint64
+
+	mantCutoffIsUint64Cutoff bool
+
+	mantCutoff uint64
 }
 
 // var fi32 = floatinfo{23, 8, -127, 10, 7, 9, fUint32Cutoff}
@@ -116,11 +119,11 @@ type floatinfo struct {
 // var fi64u = floatinfo{64, 0, -1023, 19, 0, 19, fUint64Cutoff}
 // var fi64i = floatinfo{63, 0, -1023, 19, 0, 19, fUint64Cutoff}
 
-var fi32 = floatinfo{23, true, 10, 7}
-var fi64 = floatinfo{52, false, 22, 15}
+var fi32 = floatinfo{23, true, 10, 7, false, 1<<23 - 1}
+var fi64 = floatinfo{52, false, 22, 15, false, 1<<52 - 1}
 
-var fi64u = floatinfo{0, false, 19, 0}
-var fi64i = floatinfo{0, false, 19, 0}
+var fi64u = floatinfo{0, false, 19, 0, true, fUint64Cutoff}
+var fi64i = floatinfo{0, false, 19, 0, true, fUint64Cutoff}
 
 const fMaxMultiplierForExactPow10_64 = 1e15
 const fMaxMultiplierForExactPow10_32 = 1e7
@@ -141,20 +144,19 @@ func strconvParseErr(b []byte, fn string) error {
 func parseFloat32_reader(r readFloatResult) (f float32, fail bool) {
 	// parseFloatDebug(b, 32, false, exp, trunc, ok)
 	f = float32(r.mantissa)
-	if r.exp != 0 {
-		if r.exp < 0 { // int / 10^k
-			f /= float32pow10[uint8(-r.exp)]
-		} else { // exp > 0
-			if r.exp > fi32.exactPow10 {
-				f *= float32pow10[r.exp-fi32.exactPow10]
-				if f > fMaxMultiplierForExactPow10_32 { // exponent too large - outside range
-					fail = true
-					return // ok = false
-				}
-				f *= float32pow10[fi32.exactPow10]
-			} else {
-				f *= float32pow10[uint8(r.exp)]
+	if r.exp == 0 {
+	} else if r.exp < 0 { // int / 10^k
+		f /= float32pow10[uint8(-r.exp)]
+	} else { // exp > 0
+		if r.exp > fi32.exactPow10 {
+			f *= float32pow10[r.exp-fi32.exactPow10]
+			if f > fMaxMultiplierForExactPow10_32 { // exponent too large - outside range
+				fail = true
+				return // ok = false
 			}
+			f *= float32pow10[fi32.exactPow10]
+		} else {
+			f *= float32pow10[uint8(r.exp)]
 		}
 	}
 	if r.neg {
@@ -181,20 +183,19 @@ FALLBACK:
 
 func parseFloat64_reader(r readFloatResult) (f float64, fail bool) {
 	f = float64(r.mantissa)
-	if r.exp != 0 {
-		if r.exp < 0 { // int / 10^k
-			f /= float64pow10[-uint8(r.exp)]
-		} else { // exp > 0
-			if r.exp > fi64.exactPow10 {
-				f *= float64pow10[r.exp-fi64.exactPow10]
-				if f > fMaxMultiplierForExactPow10_64 { // exponent too large - outside range
-					fail = true
-					return
-				}
-				f *= float64pow10[fi64.exactPow10]
-			} else {
-				f *= float64pow10[uint8(r.exp)]
+	if r.exp == 0 {
+	} else if r.exp < 0 { // int / 10^k
+		f /= float64pow10[-uint8(r.exp)]
+	} else { // exp > 0
+		if r.exp > fi64.exactPow10 {
+			f *= float64pow10[r.exp-fi64.exactPow10]
+			if f > fMaxMultiplierForExactPow10_64 { // exponent too large - outside range
+				fail = true
+				return
 			}
+			f *= float64pow10[fi64.exactPow10]
+		} else {
+			f *= float64pow10[uint8(r.exp)]
 		}
 	}
 	if r.neg {
@@ -226,20 +227,20 @@ func parseUint64_simple(b []byte) (n uint64, ok bool) {
 LOOP:
 	if i < len(b) {
 		c = b[i]
-		if c < '0' || c > '9' {
-			return
-		}
 		// unsigned integers don't overflow well on multiplication, so check cutoff here
 		// e.g. (maxUint64-5)*10 doesn't overflow well ...
-		if n >= fUint64Cutoff {
+		// if n >= fUint64Cutoff || !isDigitChar(b[i]) { // if c < '0' || c > '9' {
+		if n >= fUint64Cutoff || c < '0' || c > '9' {
 			return
+		} else if c == '0' {
+			n *= fBase
+		} else {
+			n1 = n
+			n = n*fBase + uint64(c-'0')
+			if n < n1 {
+				return
+			}
 		}
-		n *= fBase
-		n1 = n + uint64(c-'0')
-		if n1 < n {
-			return
-		}
-		n = n1
 		i++
 		goto LOOP
 	}
@@ -247,18 +248,100 @@ LOOP:
 	return
 }
 
+// func parseUint64_simple(b []byte) (n uint64, ok bool) {
+// 	var i int
+// 	var n1 uint64
+// LOOP:
+// 	if i < len(b) {
+// 		// unsigned integers don't overflow well on multiplication, so check cutoff here
+// 		// e.g. (maxUint64-5)*10 doesn't overflow well ...
+// 		if n >= fUint64Cutoff || !isDigitChar(b[i]) { // if c < '0' || c > '9' {
+// 			return
+// 		}
+// 		n *= fBase
+// 		n1 = n + uint64(b[i]-'0')
+// 		if n1 < n {
+// 			return
+// 		}
+// 		n = n1
+// 		i++
+// 		goto LOOP
+// 	}
+// 	ok = true
+// 	return
+// }
+
+// func parseUint64_simple(b []byte) (n uint64, ok bool) {
+// 	var i int
+// 	var n1 uint64
+// LOOP:
+// 	if i < len(b) {
+// 		// unsigned integers don't overflow well on multiplication, so check cutoff here
+// 		// e.g. (maxUint64-5)*10 doesn't overflow well ...
+// 		if n >= fUint64Cutoff { // if c < '0' || c > '9' {
+// 			return
+// 		}
+// 		n *= fBase
+// 		switch b[i] {
+// 		case '0':
+// 		case '1', '2', '3', '4', '5', '6', '7', '8', '9':
+// 			n1 = n
+// 			n += uint64(b[i] - '0')
+// 			if n < n1 {
+// 				return
+// 			}
+// 		default:
+// 			return
+// 		}
+// 		i++
+// 		goto LOOP
+// 	}
+// 	ok = true
+// 	return
+// }
+
+// func parseUint64_simple(b []byte) (n uint64, ok bool) {
+// 	var i int
+// 	var n1 uint64
+// LOOP:
+// 	if i < len(b) {
+// 		// unsigned integers don't overflow well on multiplication, so check cutoff here
+// 		// e.g. (maxUint64-5)*10 doesn't overflow well ...
+// 		if n >= fUint64Cutoff { // if c < '0' || c > '9' {
+// 			return
+// 		}
+// 		switch b[i] {
+// 		case '0':
+// 			// n = n<<3 + n<<1
+// 			n *= 10
+// 		case '1', '2', '3', '4', '5', '6', '7', '8', '9':
+// 			n1 = n
+// 			// n = n<<3 + n<<1 + uint64(b[i]-'0')
+// 			n = (n * 10) + uint64(b[i]-'0')
+// 			if n < n1 {
+// 				return
+// 			}
+// 		default:
+// 			return
+// 		}
+// 		i++
+// 		goto LOOP
+// 	}
+// 	ok = true
+// 	return
+// }
+
 func parseUint64_reader(r readFloatResult) (f uint64, fail bool) {
 	f = r.mantissa
-	if r.exp != 0 {
-		if r.exp < 0 { // int / 10^k
-			if f%uint64pow10[uint8(-r.exp)] != 0 {
-				fail = true
-			} else {
-				f /= uint64pow10[uint8(-r.exp)]
-			}
-		} else { // exp > 0
-			f *= uint64pow10[uint8(r.exp)]
+	if r.exp == 0 {
+	} else if r.exp < 0 { // int / 10^k
+		if f%uint64pow10[uint8(-r.exp)] != 0 {
+			fail = true
+		} else {
+			f /= uint64pow10[uint8(-r.exp)]
 		}
+	} else { // exp > 0
+		f *= uint64pow10[uint8(r.exp)]
 	}
 	return
 }
@@ -300,6 +383,10 @@ func parseNumber(b []byte, z *fauxUnion, preferSignedInt bool) (err error) {
 	// }
 	// f, ok = parseUint64_simple(b1)
 
+	if len(b) == 0 {
+		return
+	}
+
 	if b[0] == '-' {
 		neg = true
 		f, ok = parseUint64_simple(b[1:])
@@ -337,6 +424,8 @@ type readFloatResult struct {
 	exp                             int8
 	neg, sawdot, sawexp, trunc, bad bool
 	ok                              bool
+
+	_ byte // padding
 }
 
 func readFloat(s []byte, y floatinfo) (r readFloatResult) {
@@ -359,65 +448,51 @@ func readFloat(s []byte, y floatinfo) (r readFloatResult) {
 	// we considered punting early if string has length > maxMantDigits, but this doesn't account
 	// for trailing 0's e.g. 700000000000000000000 can be encoded exactly as it is 7e20
 
-	var mantCutoffIsUint64Cutoff bool
-
-	var mantCutoff uint64
-	if y.mantbits != 0 {
-		mantCutoff = 1<<y.mantbits - 1
-	} else if y.is32bit {
-		mantCutoff = fUint32Cutoff
-	} else {
-		mantCutoffIsUint64Cutoff = true
-		mantCutoff = fUint64Cutoff
-	}
-
 	var nd, ndMant, dp int8
 	var xu uint64
 
-	var c uint8
+LOOP:
 	for ; i < slen; i++ {
-		c = s[i]
-		if c == '.' {
+		switch s[i] {
+		case '.':
 			if r.sawdot {
 				r.bad = true
 				return
 			}
 			r.sawdot = true
 			dp = nd
-		} else if c == 'e' || c == 'E' {
+		case 'e', 'E':
 			r.sawexp = true
-			break
-		} else if c == '0' {
+			break LOOP
+		case '0':
 			if nd == 0 {
 				dp--
-				continue
+				continue LOOP
 			}
 			nd++
-			if r.mantissa < mantCutoff {
+			if r.mantissa < y.mantCutoff {
 				r.mantissa *= fBase
 				ndMant++
 			}
-		} else if c >= '1' && c <= '9' { // !(c < '0' || c > '9') { //
+		case '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			nd++
-			if mantCutoffIsUint64Cutoff && r.mantissa < fUint64Cutoff {
-				// mantissa = (mantissa << 1) + (mantissa << 3) + uint64(c-'0')
+			if y.mantCutoffIsUint64Cutoff && r.mantissa < fUint64Cutoff {
 				r.mantissa *= fBase
-				xu = r.mantissa + uint64(c-'0')
+				xu = r.mantissa + uint64(s[i]-'0')
 				if xu < r.mantissa {
 					r.trunc = true
 					return
 				}
 				r.mantissa = xu
-				ndMant++
-			} else if r.mantissa < mantCutoff {
+			} else if r.mantissa < y.mantCutoff {
 				// mantissa = (mantissa << 1) + (mantissa << 3) + uint64(c-'0')
-				r.mantissa = r.mantissa*fBase + uint64(c-'0')
-				ndMant++
+				r.mantissa = r.mantissa*fBase + uint64(s[i]-'0')
 			} else {
 				r.trunc = true
 				return
 			}
-		} else {
+			ndMant++
+		default:
 			r.bad = true
 			return
 		}
@@ -444,14 +519,14 @@ func readFloat(s []byte, y floatinfo) (r readFloatResult) {
 					return
 				}
 				var e int8
-				if s[i] < '0' || s[i] > '9' {
+				if s[i] < '0' || s[i] > '9' { // !isDigitChar(s[i]) { //
 					r.bad = true
 					return
 				}
 				e = int8(s[i] - '0')
 				i++
 				if i < slen {
-					if s[i] < '0' || s[i] > '9' {
+					if s[i] < '0' || s[i] > '9' { // !isDigitChar(s[i]) { //
 						r.bad = true
 						return
 					}
@@ -566,6 +641,169 @@ func parseUint64_simple(b []byte) (n uint64, ok bool) {
 		n = n1
 	}
 	ok = true
+	return
+}
+
+func readFloat(s []byte, y floatinfo) (r readFloatResult) {
+	// defer func() { xdebugf("readFloat: %#v", r) }()
+
+	var i uint // uint, so that we eliminate bounds checking
+	var slen = uint(len(s))
+	if slen == 0 {
+		// read an empty string as the zero value
+		// r.bad = true
+		r.ok = true
+		return
+	}
+
+	if s[0] == '-' {
+		r.neg = true
+		i++
+	}
+
+	// we considered punting early if string has length > maxMantDigits, but this doesn't account
+	// for trailing 0's e.g. 700000000000000000000 can be encoded exactly as it is 7e20
+
+	// var mantCutoffIsUint64Cutoff bool
+
+	// var mantCutoff uint64
+	// if y.mantbits != 0 {
+	// 	mantCutoff = 1<<y.mantbits - 1
+	// } else if y.is32bit {
+	// 	mantCutoff = fUint32Cutoff
+	// } else {
+	// 	mantCutoffIsUint64Cutoff = true
+	// 	mantCutoff = fUint64Cutoff
+	// }
+
+	var nd, ndMant, dp int8
+	var xu uint64
+
+	var c uint8
+	for ; i < slen; i++ {
+		c = s[i]
+		if c == '.' {
+			if r.sawdot {
+				r.bad = true
+				return
+			}
+			r.sawdot = true
+			dp = nd
+		} else if c == 'e' || c == 'E' {
+			r.sawexp = true
+			break
+		} else if c == '0' {
+			if nd == 0 {
+				dp--
+				continue
+			}
+			nd++
+			if r.mantissa < y.mantCutoff {
+				r.mantissa *= fBase
+				ndMant++
+			}
+		} else if isDigitChar(c) { // c >= '1' && c <= '9' { // !(c < '0' || c > '9') { //
+			nd++
+
+			if y.mantCutoffIsUint64Cutoff && r.mantissa < fUint64Cutoff {
+				// mantissa = (mantissa << 1) + (mantissa << 3) + uint64(c-'0')
+				r.mantissa *= fBase
+				xu = r.mantissa + uint64(c-'0')
+				if xu < r.mantissa {
+					r.trunc = true
+					return
+				}
+				r.mantissa = xu
+				ndMant++
+			} else if r.mantissa < y.mantCutoff {
+				// mantissa = (mantissa << 1) + (mantissa << 3) + uint64(c-'0')
+				r.mantissa = r.mantissa*fBase + uint64(c-'0')
+				ndMant++
+			} else {
+				r.trunc = true
+				return
+			}
+
+			// if r.mantissa < y.mantCutoff {
+			// 	if y.mantCutoffIsUint64Cutoff {
+			// 		// mantissa = (mantissa << 1) + (mantissa << 3) + uint64(c-'0')
+			// 		r.mantissa *= fBase
+			// 		xu = r.mantissa + uint64(c-'0')
+			// 		if xu < r.mantissa {
+			// 			r.trunc = true
+			// 			return
+			// 		}
+			// 		r.mantissa = xu
+			// 	} else {
+			// 		// mantissa = (mantissa << 1) + (mantissa << 3) + uint64(c-'0')
+			// 		r.mantissa = r.mantissa*fBase + uint64(c-'0')
+			// 	}
+			// 	ndMant++
+			// } else {
+			// 	r.trunc = true
+			// 	return
+			// }
+		} else {
+			r.bad = true
+			return
+		}
+	}
+
+	if !r.sawdot {
+		dp = nd
+	}
+
+	if r.sawexp {
+		i++
+		if i < slen {
+			var eneg bool
+			if s[i] == '+' {
+				i++
+			} else if s[i] == '-' {
+				i++
+				eneg = true
+			}
+			if i < slen {
+				// for exact match, exponent is 1 or 2 digits (float64: -22 to 37, float32: -1 to 17).
+				// exit quick if exponent is more than 2 digits.
+				if i+2 < slen {
+					return
+				}
+				var e int8
+				if !isDigitChar(s[i]) { // s[i] < '0' || s[i] > '9' {
+					r.bad = true
+					return
+				}
+				e = int8(s[i] - '0')
+				i++
+				if i < slen {
+					if !isDigitChar(s[i]) { // s[i] < '0' || s[i] > '9' {
+						r.bad = true
+						return
+					}
+					e = e*fBase + int8(s[i]-'0') // (e << 1) + (e << 3) + int8(s[i]-'0')
+					i++
+				}
+				if eneg {
+					dp -= e
+				} else {
+					dp += e
+				}
+			}
+		}
+	}
+
+	if r.mantissa != 0 {
+		r.exp = dp - ndMant
+		// do not set ok=true for cases we cannot handle
+		if r.exp < -y.exactPow10 ||
+			r.exp > y.exactInts+y.exactPow10 ||
+			y.mantbits != 0 && r.mantissa>>y.mantbits != 0 {
+			return
+		}
+	}
+
+	r.ok = true
 	return
 }
 
