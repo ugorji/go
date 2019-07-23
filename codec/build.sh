@@ -225,7 +225,7 @@ EOF
 _usage() {
     cat <<EOF
 primary usage: $0 
-    -[tmpfxnld]           -> [tests, make, prebuild (force) (external), inlining diagnostics, mid-stack inlining, race detector]
+    -[tmpfnld]           -> [tests, make, prebuild (force), inlining diagnostics, mid-stack inlining, race detector]
     -v                    -> verbose
 EOF
     if [[ "$(type -t _usage_run)" = "function" ]]; then _usage_run ; fi
