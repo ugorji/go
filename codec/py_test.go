@@ -14,11 +14,11 @@ import (
 )
 
 func TestMsgpackPythonGenStreams(t *testing.T) {
-	doTestPythonGenStreams(t, "msgpack", testMsgpackH)
+	doTestPythonGenStreams(t, testMsgpackH)
 }
 
 func TestCborPythonGenStreams(t *testing.T) {
-	doTestPythonGenStreams(t, "cbor", testCborH)
+	doTestPythonGenStreams(t, testCborH)
 }
 
 func TestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
