@@ -586,7 +586,7 @@ func (d *msgpackDecDriver) DecodeNaked() {
 				n.v = valueTypeTime
 				n.t = d.decodeTime(clen)
 			} else if d.d.bytes {
-				n.l = d.d.decRd.readx(uint(clen))
+				n.l = d.d.decRd.rb.readx(uint(clen))
 			} else {
 				n.l = decByteSlice(d.d.r(), clen, d.d.h.MaxInitLen, d.d.b[:])
 			}
@@ -764,7 +764,7 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 	d.bdRead = false
 	if zerocopy {
 		if d.d.bytes {
-			return d.d.decRd.readx(uint(clen))
+			return d.d.decRd.rb.readx(uint(clen))
 		} else if len(bs) == 0 {
 			bs = d.d.b[:]
 		}
@@ -978,7 +978,7 @@ func (d *msgpackDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs 
 			return
 		}
 		if d.d.bytes {
-			xbs = d.d.decRd.readx(uint(clen))
+			xbs = d.d.decRd.rb.readx(uint(clen))
 		} else {
 			xbs = decByteSlice(d.d.r(), clen, d.d.h.MaxInitLen, d.d.b[:])
 		}

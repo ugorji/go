@@ -665,7 +665,7 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	d.bdRead = false
 	if zerocopy {
 		if d.d.bytes {
-			return d.d.decRd.readx(uint(clen))
+			return d.d.decRd.rb.readx(uint(clen))
 		} else if len(bs) == 0 {
 			bs = d.d.b[:]
 		}

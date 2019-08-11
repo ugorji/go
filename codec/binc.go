@@ -743,7 +743,7 @@ func (d *bincDecDriver) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
 		slen = d.decLen()
 		if zerocopy {
 			if d.d.bytes {
-				bs2 = d.d.decRd.readx(uint(slen))
+				bs2 = d.d.decRd.rb.readx(uint(slen))
 			} else if len(bs) == 0 {
 				bs2 = decByteSlice(d.d.r(), slen, d.d.h.MaxInitLen, d.d.b[:])
 			} else {
@@ -831,7 +831,7 @@ func (d *bincDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	d.bdRead = false
 	if zerocopy {
 		if d.d.bytes {
-			return d.d.decRd.readx(uint(clen))
+			return d.d.decRd.rb.readx(uint(clen))
 		} else if len(bs) == 0 {
 			bs = d.d.b[:]
 		}
@@ -869,7 +869,7 @@ func (d *bincDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs []b
 			return
 		}
 		if d.d.bytes {
-			xbs = d.d.decRd.readx(uint(l))
+			xbs = d.d.decRd.rb.readx(uint(l))
 		} else {
 			xbs = decByteSlice(d.d.r(), l, d.d.h.MaxInitLen, d.d.b[:])
 		}
@@ -959,7 +959,7 @@ func (d *bincDecDriver) DecodeNaked() {
 		l := d.decLen()
 		n.u = uint64(d.d.decRd.readn1())
 		if d.d.bytes {
-			n.l = d.d.decRd.readx(uint(l))
+			n.l = d.d.decRd.rb.readx(uint(l))
 		} else {
 			n.l = decByteSlice(d.d.r(), l, d.d.h.MaxInitLen, d.d.b[:])
 		}

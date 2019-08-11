@@ -1098,10 +1098,9 @@ func (z *decRd) readUntil(stop byte, includeLast bool) (out []byte) {
 func (z *decRd) readNumberWithLastByte() []byte {
 	if z.bytes {
 		return z.rb.readNumberWithLastByte()
-	} else {
-		z.unreadn1()
-		return z.readTo(&numCharBitset)
 	}
+	z.unreadn1()
+	return z.readTo(&numCharBitset)
 }
 
 /*
