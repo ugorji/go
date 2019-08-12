@@ -60,6 +60,7 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testUseReset = true
 
 	// xdebugf("with StructToArray=true")
+	testDecodeOptions.ZeroCopy = true
 	testDecodeOptions.InternString = true
 	testDecodeOptions.MapValueReset = true
 	// testDecodeOptions.SignedInteger = true
@@ -180,6 +181,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonRawToStringToRawEtc", TestJsonRawToStringToRawEtc)
 	t.Run("TestJsonStructKeyType", TestJsonStructKeyType)
 	t.Run("TestJsonPreferArrayOverSlice", TestJsonPreferArrayOverSlice)
+	t.Run("TestJsonZeroCopyBytes", TestJsonZeroCopyBytes)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 }
@@ -216,6 +218,7 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincRawToStringToRawEtc", TestBincRawToStringToRawEtc)
 	t.Run("TestBincStructKeyType", TestBincStructKeyType)
 	t.Run("TestBincPreferArrayOverSlice", TestBincPreferArrayOverSlice)
+	t.Run("TestBincZeroCopyBytes", TestBincZeroCopyBytes)
 }
 
 func testCborGroup(t *testing.T) {
@@ -250,6 +253,7 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborRawToStringToRawEtc", TestCborRawToStringToRawEtc)
 	t.Run("TestCborStructKeyType", TestCborStructKeyType)
 	t.Run("TestCborPreferArrayOverSlice", TestCborPreferArrayOverSlice)
+	t.Run("TestCborZeroCopyBytes", TestCborZeroCopyBytes)
 
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 	t.Run("TestCborSkipTags", TestCborSkipTags)
@@ -286,6 +290,7 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackRawToStringToRawEtc", TestMsgpackRawToStringToRawEtc)
 	t.Run("TestMsgpackStructKeyType", TestMsgpackStructKeyType)
 	t.Run("TestMsgpackPreferArrayOverSlice", TestMsgpackPreferArrayOverSlice)
+	t.Run("TestMsgpackZeroCopyBytes", TestMsgpackZeroCopyBytes)
 
 	t.Run("TestMsgpackDecodeMapAndExtSizeMismatch", TestMsgpackDecodeMapAndExtSizeMismatch)
 }
@@ -320,6 +325,7 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleRawToStringToRawEtc", TestSimpleRawToStringToRawEtc)
 	t.Run("TestSimpleStructKeyType", TestSimpleStructKeyType)
 	t.Run("TestSimplePreferArrayOverSlice", TestSimplePreferArrayOverSlice)
+	t.Run("TestSimpleZeroCopyBytes", TestSimpleZeroCopyBytes)
 }
 
 func testSimpleMammothGroup(t *testing.T) {

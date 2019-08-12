@@ -269,6 +269,19 @@ type DecodeOptions struct {
 	// RawToString controls how raw bytes in a stream are decoded into a nil interface{}.
 	// By default, they are decoded as []byte, but can be decoded as string (if configured).
 	RawToString bool
+
+	// ZeroCopy controls whether decoded values point into the
+	// input bytes passed into a NewDecoderBytes/ResetBytes(...) call.
+	//
+	// To illustrate, if ZeroCopy and decoding from a []byte (not io.Writer),
+	// then a []byte in the output result may just be a slice of (point into)
+	// the input bytes.
+	//
+	// This optimization prevents unnecessary copying.
+	//
+	// However, it is made optional, as the caller MUST ensure that the input parameter
+	// is not modified after the Decode() happens.
+	ZeroCopy bool
 }
 
 // ----------------------------------------
@@ -1818,6 +1831,16 @@ func (d *Decoder) sideDecode(v interface{}, bs []byte) {
 	rv := baseRV(v)
 	NewDecoderBytes(bs, d.hh).decodeValue(rv, d.h.fnNoExt(rv.Type()))
 }
+
+// func (d *Decoder) bytesInline(clen int, bs []byte, zerocopy bool) []byte {
+// 	if d.bytes && (zerocopy || d.h.ZeroCopy) {
+// 		return d.decRd.rb.readx(uint(clen))
+// 	}
+// 	if zerocopy && len(bs) == 0 {
+// 		bs = d.b[:]
+// 	}
+// 	return decByteSlice(d.r(), clen, d.h.MaxInitLen, bs)
+// }
 
 // --------------------------------------------------
 

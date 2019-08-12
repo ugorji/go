@@ -829,12 +829,11 @@ func (d *bincDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		return
 	}
 	d.bdRead = false
-	if zerocopy {
-		if d.d.bytes {
-			return d.d.decRd.rb.readx(uint(clen))
-		} else if len(bs) == 0 {
-			bs = d.d.b[:]
-		}
+	if d.d.bytes && (zerocopy || d.h.ZeroCopy) {
+		return d.d.decRd.rb.readx(uint(clen))
+	}
+	if zerocopy && len(bs) == 0 {
+		bs = d.d.b[:]
 	}
 	return decByteSlice(d.d.r(), clen, d.d.h.MaxInitLen, bs)
 }

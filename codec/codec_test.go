@@ -3133,6 +3133,47 @@ func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
 	testDeepEqualErr(s2, v, t, t.Name())
 }
 
+func doTestZeroCopyBytes(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
+	// jsonhandle and cborhandle with indefiniteLength do not support inline bytes, so skip them.
+	if _, ok := h.(*JsonHandle); ok { // if h == testJsonH {
+		t.Skip()
+	}
+	if ch, ok := h.(*CborHandle); ok && ch.IndefiniteLength {
+		t.Skip()
+	}
+
+	bh := basicHandle(h)
+	zc := bh.ZeroCopy
+	defer func() {
+		bh.ZeroCopy = zc
+	}()
+	bh.ZeroCopy = true
+
+	s := []byte("hello")
+	var v []byte
+	bs := testMarshalErr(s, h, t, t.Name())
+
+	// Note: this test only works for decoding from []byte, so cannot use testUnmarshalErr
+	NewDecoderBytes(bs, h).MustDecode(&v)
+	// testUnmarshalErr(&v, bs, h, t, t.Name())
+
+	// validate that bs and s points into the bs stream
+	for i := range bs {
+		if &bs[i] == &v[0] {
+			return
+		}
+	}
+
+	// if not match, then a failure happened.
+	if len(bs) > 0 && len(v) > 0 {
+		t.Logf("%s: ZeroCopy=true, but decoded (%p) is not slice of input: (%p)", h.Name(), &v[0], &bs[0])
+	} else {
+		t.Logf("%s: ZeroCopy=true, but decoded OR input slice is empty: %v, %v", h.Name(), v, bs)
+	}
+	t.FailNow()
+}
+
 func TestBufioDecReader(t *testing.T) {
 	testOnce.Do(testInitAll)
 	doTestBufioDecReader(t, 13)
@@ -4085,6 +4126,26 @@ func TestBincPreferArrayOverSlice(t *testing.T) {
 
 func TestSimplePreferArrayOverSlice(t *testing.T) {
 	doTestPreferArrayOverSlice(t, testSimpleH)
+}
+
+func TestJsonZeroCopyBytes(t *testing.T) {
+	doTestZeroCopyBytes(t, testJsonH)
+}
+
+func TestCborZeroCopyBytes(t *testing.T) {
+	doTestZeroCopyBytes(t, testCborH)
+}
+
+func TestMsgpackZeroCopyBytes(t *testing.T) {
+	doTestZeroCopyBytes(t, testMsgpackH)
+}
+
+func TestBincZeroCopyBytes(t *testing.T) {
+	doTestZeroCopyBytes(t, testBincH)
+}
+
+func TestSimpleZeroCopyBytes(t *testing.T) {
+	doTestZeroCopyBytes(t, testSimpleH)
 }
 
 // --------

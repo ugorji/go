@@ -42,6 +42,8 @@ func benchmarkGroupReset() {
 
 	testDepth = benchmarkGroupSave.testDepth
 	testMapStringKeyOnly = benchmarkGroupSave.testMapStringKeyOnly
+
+	testDecodeOptions.ZeroCopy = true
 }
 
 func benchmarkOneFn(fns []func(*testing.B)) func(*testing.B) {
