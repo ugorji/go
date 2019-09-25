@@ -412,15 +412,18 @@ func (e *jsonEncDriver) quoteStr(s string) {
 			continue
 		}
 		c, size := utf8.DecodeRuneInString(s[i:])
-		if c == utf8.RuneError {
-			if size == 1 {
-				if start < i {
-					w.writestr(s[start:i])
-				}
-				w.writestr(`\ufffd`)
-				i++
-				start = i
+		if c == utf8.RuneError && size == 1 {
+			// https://golang.org/pkg/unicode/utf8/#DecodeRuneInString
+			// c=utf8.RuneError, size=0: empty input (shouldn't happen here since i < len(s))
+			// c=utf8.RuneError, size=1: invalid encoding (handle below by skipping a byte and writing the replacement character \ufffd
+			// c=utf8.RuneError, size=2,4: shouldn't ever be returned
+			// c=utf8.RuneError, size=3: literal '\ufffd' in input, this is ok
+			if start < i {
+				w.writestr(s[start:i])
 			}
+			w.writestr(`\ufffd`)
+			i++
+			start = i
 			continue
 		}
 		// U+2028 is LINE SEPARATOR. U+2029 is PARAGRAPH SEPARATOR.

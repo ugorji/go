@@ -3372,6 +3372,17 @@ func TestJsonInvalidUnicode(t *testing.T) {
 	}
 }
 
+func TestJsonUnicodeReplacementChar(t *testing.T) {
+	s := "a�b"
+	bs, err := testMarshal(s, testJsonH)
+	if err != nil {
+		t.Errorf("bad marshal: %s", err)
+	}
+	if string(bs) != `"a�b"` {
+		t.Errorf("Bad encoding, expected %q, got %s", s, string(bs))
+	}
+}
+
 func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
 	fn := func(t *testing.T, b []byte, v interface{}) {
 		if err := NewDecoderBytes(b, testMsgpackH).Decode(v); err != io.EOF && err != io.ErrUnexpectedEOF {
