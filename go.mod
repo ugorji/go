@@ -1,4 +1,4 @@
-module github.com/ugorji/go
+module github.com/hashicorp/go-msgpack
 
 go 1.13
 
