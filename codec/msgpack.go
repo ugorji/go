@@ -571,7 +571,7 @@ func (d *msgpackDecDriver) DecodeNaked() {
 				n.l = d.DecodeBytes(nil, false)
 			}
 		case bd == mpBin8, bd == mpBin16, bd == mpBin32:
-			fauxUnionReadRawBytes(d, &d.d, n, d.h.RawToString)
+			fauxUnionReadRawBytes(d, &d.d, n, false)
 		case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
 			n.v = valueTypeArray
 			decodeFurther = true
