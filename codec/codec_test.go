@@ -3333,6 +3333,16 @@ func TestJsonLargeInteger(t *testing.T) {
 func TestJsonInvalidUnicode(t *testing.T) {
 	testOnce.Do(testInitAll)
 	// t.Skipf("new json implementation does not handle bad unicode robustly")
+
+	// set testUseMust to true, so we can capture errors
+	if testUseMust {
+		testUseMust = false
+		defer func() { testUseMust = true }()
+	}
+
+	var err error
+
+	// ---- test unmarshal ---
 	var m = map[string]string{
 		`"\udc49\u0430abc"`: "\uFFFDabc",
 		`"\udc49\u0430"`:    "\uFFFD",
@@ -3344,19 +3354,11 @@ func TestJsonInvalidUnicode(t *testing.T) {
 		`"\uKc49"`:          "\uFFFD",
 	}
 
-	// set testUseMust to true, so we can capture errors
-	if testUseMust {
-		testUseMust = false
-		defer func() { testUseMust = true }()
-	}
-
 	for k, v := range m {
-		var s string
-
 		// call testUnmarshal directly, so we can check for EOF
-		//
 		// testUnmarshalErr(&s, []byte(k), testJsonH, t, "-")
-		err := testUnmarshal(&s, []byte(k), testJsonH)
+		var s string
+		err = testUnmarshal(&s, []byte(k), testJsonH)
 		if err != nil {
 			if err == io.EOF {
 				continue
@@ -3366,7 +3368,27 @@ func TestJsonInvalidUnicode(t *testing.T) {
 		}
 
 		if s != v {
-			t.Logf("not equal: %q, %q", v, s)
+			t.Logf("unmarshal: not equal: %q, %q", v, s)
+			t.FailNow()
+		}
+	}
+
+	// ---- test marshal ---
+	var b = []byte{'"', 0xef, 0xbf, 0xbd} // this is " and unicode.ReplacementChar (as bytes)
+	var m2 = map[string][]byte{
+		string([]byte{0xef, 0xbf, 0xbd}):           append(b, '"'),
+		string([]byte{0xef, 0xbf, 0xbd, 0x0, 0x0}): append(b, `\u0000\u0000"`...),
+	}
+
+	for k, v := range m2 {
+		b, err = testMarshal(k, testJsonH)
+		if err != nil {
+			t.Logf("%s: marshal failed: %v", "-", err)
+			t.FailNow()
+		}
+
+		if !bytes.Equal(b, v) {
+			t.Logf("marshal: not equal: %q, %q", v, b)
 			t.FailNow()
 		}
 	}

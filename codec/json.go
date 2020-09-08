@@ -413,15 +413,15 @@ func (e *jsonEncDriver) quoteStr(s string) {
 		}
 		c, size := utf8.DecodeRuneInString(s[i:])
 		if c == utf8.RuneError {
-			if size == 1 {
+			if size == 1 { // meaning invalid encoding (so output as-is)
 				if start < i {
 					w.writestr(s[start:i])
 				}
 				w.writestr(`\ufffd`)
 				i++
 				start = i
+				continue
 			}
-			continue
 		}
 		// U+2028 is LINE SEPARATOR. U+2029 is PARAGRAPH SEPARATOR.
 		// Both technically valid JSON, but bomb on JSONP, so fix here unconditionally.
@@ -1001,7 +1001,7 @@ func (d *jsonDecDriver) appendStringAsBytesSlashU() {
 	if utf16.IsSurrogate(r) {
 		cs = d.d.decRd.readn(6)
 		if cs[0] == '\\' && cs[1] == 'u' {
-			var rr1 uint32
+			rr = 0
 			for j = 2; j < 6; j++ {
 				c = cs[j]
 				if c >= '0' && c <= '9' {
@@ -1015,7 +1015,7 @@ func (d *jsonDecDriver) appendStringAsBytesSlashU() {
 					goto encode_rune
 				}
 			}
-			r = utf16.DecodeRune(r, rune(rr1))
+			r = utf16.DecodeRune(r, rune(rr))
 			goto encode_rune
 		}
 		r = unicode.ReplacementChar
