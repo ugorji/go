@@ -2,6 +2,7 @@ language: go
 sudo: false
 go:
   - master
+  - 1.15.x
   - 1.14.x
   - 1.13.x
   - 1.12.x
@@ -29,6 +30,10 @@ script:
     fi
   - |
     if [[ "${TRAVIS_GO_VERSION}" == "1.14.x" ]]; then
+    echo "XXXX RACE notfastpath" && go test "-race" -tags "alltests notfastpath" -run Suite -coverprofile coverage.race.txt github.com/ugorji/go/codec;
+    fi
+  - |
+    if [[ "${TRAVIS_GO_VERSION}" == "1.15.x" ]]; then
     echo "XXXX RACE" && go test "-race" -tags "alltests" -run Suite -coverprofile coverage.race.txt github.com/ugorji/go/codec;
     fi
 
