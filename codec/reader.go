@@ -271,7 +271,7 @@ func (z *ioDecReader) skipWhitespace() (token byte) {
 LOOP:
 	token, eof = z.readn1eof()
 	if eof {
-		return
+		panic(io.EOF)
 	}
 	if isWhitespaceChar(token) {
 		goto LOOP
@@ -827,7 +827,10 @@ LOOP:
 func (z *bytesDecReader) skipWhitespace() (token byte) {
 	i := z.c
 LOOP:
-	// if i < uint(len(z.b)) {
+	if i == uint(len(z.b)) {
+		z.c = uint(len(z.b))
+		panic(io.EOF)
+	}
 	token = z.b[i]
 	i++
 	if isWhitespaceChar(token) {
