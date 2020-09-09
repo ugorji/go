@@ -282,6 +282,12 @@ type DecodeOptions struct {
 	// However, it is made optional, as the caller MUST ensure that the input parameter
 	// is not modified after the Decode() happens.
 	ZeroCopy bool
+
+	// PreferPointerForStructOrArray controls whether a struct or array
+	// is stored in a nil interface{}, or a pointer to it.
+	//
+	// This mostly impacts when we decode registered extensions.
+	PreferPointerForStructOrArray bool
 }
 
 // ----------------------------------------
@@ -494,6 +500,12 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 					bfn.ext.ReadExt(rv2i(rvn), bytes)
 				}
 				rvn = rvn.Elem()
+			}
+		}
+		// if struct/array, directly store pointer into the interface
+		if d.h.PreferPointerForStructOrArray && rvn.CanAddr() {
+			if rk := rvn.Kind(); rk == reflect.Array || rk == reflect.Struct {
+				rvn = rvn.Addr()
 			}
 		}
 	case valueTypeNil:
