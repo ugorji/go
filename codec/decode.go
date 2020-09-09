@@ -1110,7 +1110,12 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		if doMapSet && ktypeIsString { // set to a real string (not string view)
 			rvk.SetString(d.string(kstrbs))
 		}
-		d.decodeValue(rvv, valFn)
+		// since a map, we have to set zero value if needed
+		if d.d.TryNil() {
+			rvv = reflect.Zero(rvv.Type())
+		} else {
+			d.decodeValueNoCheckNil(rvv, valFn)
+		}
 		if doMapSet {
 			mapSet(rv, rvk, rvv)
 		}
@@ -1574,17 +1579,21 @@ func (d *Decoder) decode(iv interface{}) {
 // This way, we know if it is itself a pointer, and can handle nil in
 // the stream effectively.
 func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn) {
+	if rv.Kind() == reflect.Ptr && d.d.TryNil() {
+		if rvelem := rv.Elem(); rvelem.CanSet() {
+			rvelem.Set(reflect.Zero(rvelem.Type()))
+		}
+		return
+	}
+	d.decodeValueNoCheckNil(rv, fn)
+}
+
+func (d *Decoder) decodeValueNoCheckNil(rv reflect.Value, fn *codecFn) {
 	// If stream is not containing a nil value, then we can deref to the base
 	// non-pointer value, and decode into that.
 	var rvp reflect.Value
 	var rvpValid bool
 	if rv.Kind() == reflect.Ptr {
-		if d.d.TryNil() {
-			if rvelem := rv.Elem(); rvelem.CanSet() {
-				rvelem.Set(reflect.Zero(rvelem.Type()))
-			}
-			return
-		}
 		rvpValid = true
 		for rv.Kind() == reflect.Ptr {
 			if rvIsNil(rv) {

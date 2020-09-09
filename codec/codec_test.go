@@ -1976,6 +1976,44 @@ func doTestDecodeNilMapValue(t *testing.T, h Handle) {
 		t.Logf("Decoded value %#v != %#v", decoded, toEncode)
 		t.FailNow()
 	}
+
+	doTestDecodeNilMapEntryValue(t, h)
+}
+
+func doTestDecodeNilMapEntryValue(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
+
+	type Entry struct{}
+	type Entries struct {
+		Map map[string]*Entry
+	}
+
+	c := Entries{
+		Map: map[string]*Entry{
+			"nil":   nil,
+			"empty": &Entry{},
+		},
+	}
+
+	bs, err := testMarshal(&c, h)
+	if err != nil {
+		t.Logf("failed to encode: %v", err)
+		t.FailNow()
+	}
+
+	var f Entries
+	err = testUnmarshal(&f, bs, h)
+	if err != nil {
+		t.Logf("failed to decode: %v", err)
+		t.FailNow()
+	}
+
+	if !reflect.DeepEqual(c, f) {
+		t.Logf("roundtrip encoding doesn't match\nexpected: %v\nfound:    %v\n\n"+
+			"empty value: %#+v\nnil value:   %#+v",
+			c, f, f.Map["empty"], f.Map["nil"])
+		t.FailNow()
+	}
 }
 
 func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
