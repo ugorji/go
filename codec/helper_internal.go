@@ -57,7 +57,7 @@ func floatToHalfFloatBits(i uint32) (h uint16) {
 	if e <= 0 {
 		if e < -10 {
 		} else {
-			m = (m | 0x800000) >> (1 - e)
+			m = (m | 0x800000) >> uint32(1-e)
 			h32 = s | (m >> 13)
 		}
 	} else if e == 0xff-(127-15) {
