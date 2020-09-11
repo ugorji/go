@@ -74,6 +74,7 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testEncodeOptions.Canonical = true
 	testEncodeOptions.CheckCircularRef = true
 	testEncodeOptions.RecursiveEmptyCheck = true
+	testEncodeOptions.OptimumSize = true
 	// testEncodeOptions.Raw = true
 	// testEncodeOptions.StringToRaw = true
 

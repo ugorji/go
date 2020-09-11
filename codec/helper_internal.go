@@ -20,25 +20,23 @@ func pruneSignExt(v []byte, pos bool) (n int) {
 
 // validate that this function is correct ...
 // culled from OGRE (Object-Oriented Graphics Rendering Engine)
-// function: halfToFloatI (http://stderr.org/doc/ogre-doc/api/OgreBitwise_8h-source.html)
-func halfFloatToFloatBits(yy uint16) (d uint32) {
-	y := uint32(yy)
-	s := (y >> 15) & 0x01
-	e := (y >> 10) & 0x1f
-	m := y & 0x03ff
+// function: halfToFloatI https://www.ogre3d.org/docs/api/1.9/_ogre_bitwise_8h_source.html
+func halfFloatToFloatBits(h uint16) (f uint32) {
+	s := uint32((h >> 15) & 0x01)
+	m := uint32(h & 0x03ff)
+	e := int32((h >> 10) & 0x1f)
 
 	if e == 0 {
-		if m == 0 { // plu or minus 0
+		if m == 0 { // plus or minus 0
 			return s << 31
 		}
 		// Denormalized number -- renormalize it
-		for (m & 0x00000400) == 0 {
+		for (m & 0x0400) == 0 {
 			m <<= 1
 			e -= 1
 		}
 		e += 1
-		const zz uint32 = 0x0400
-		m &= ^zz
+		m &= ^uint32(0x0400)
 	} else if e == 31 {
 		if m == 0 { // Inf
 			return (s << 31) | 0x7f800000
@@ -47,7 +45,41 @@ func halfFloatToFloatBits(yy uint16) (d uint32) {
 	}
 	e = e + (127 - 15)
 	m = m << 13
-	return (s << 31) | (e << 23) | m
+	return (s << 31) | (uint32(e) << 23) | m
+}
+
+func floatToHalfFloatBits(i uint32) (h uint16) {
+	s := (i >> 16) & 0x8000
+	e := int32(((i >> 23) & 0xff) - (127 - 15))
+	m := i & 0x7fffff
+	var h32 uint32
+
+	if e <= 0 {
+		if e < -10 {
+		} else {
+			m = (m | 0x800000) >> (1 - e)
+			h32 = s | (m >> 13)
+		}
+	} else if e == 0xff-(127-15) {
+		if m == 0 { // Inf
+			h32 = s | 0x7c00
+		} else { // NAN
+			m >>= 13
+			var me uint32
+			if m == 0 {
+				me = 1
+			}
+			h32 = s | 0x7c00 | m | me
+		}
+	} else {
+		if e > 30 { // Overflow
+			h32 = s | 0x7c00
+		} else {
+			h32 = s | (uint32(e) << 10) | (m >> 13)
+		}
+	}
+	h = uint16(h32)
+	return
 }
 
 // GrowCap will return a new capacity for a slice, given the following:

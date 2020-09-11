@@ -135,6 +135,16 @@ type EncodeOptions struct {
 	// These include encoding.TextMarshaler, time.Format calls, struct field names, etc.
 	StringToRaw bool
 
+	// OptimumSize controls whether we optimize for the smallest size.
+	//
+	// Some formats will use this flag to determine whether to encode
+	// in the smallest size possible, even if it takes slightly longer.
+	//
+	// For example, some formats that support half-floats might check if it is possible
+	// to store a float64 as a half float. Doing this check has a small performance cost,
+	// but the benefit is that the encoded message will be smaller.
+	OptimumSize bool
+
 	// // AsSymbols defines what should be encoded as symbols.
 	// //
 	// // Encoding as symbols can reduce the encoded size significantly.

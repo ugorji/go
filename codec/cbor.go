@@ -177,11 +177,26 @@ func (e *cborEncDriver) EncodeBool(b bool) {
 }
 
 func (e *cborEncDriver) EncodeFloat32(f float32) {
+	b := math.Float32bits(f)
+	if e.h.OptimumSize {
+		if h := floatToHalfFloatBits(b); halfFloatToFloatBits(h) == b {
+			// fmt.Printf("no 32-16 overflow: %v\n", f)
+			e.e.encWr.writen1(cborBdFloat16)
+			bigenHelper{e.x[:2], e.e.w()}.writeUint16(h)
+			return
+		}
+	}
 	e.e.encWr.writen1(cborBdFloat32)
-	bigenHelper{e.x[:4], e.e.w()}.writeUint32(math.Float32bits(f))
+	bigenHelper{e.x[:4], e.e.w()}.writeUint32(b)
 }
 
 func (e *cborEncDriver) EncodeFloat64(f float64) {
+	if e.h.OptimumSize {
+		if f32 := float32(f); float64(f32) == f {
+			e.EncodeFloat32(f32)
+			return
+		}
+	}
 	e.e.encWr.writen1(cborBdFloat64)
 	bigenHelper{e.x[:8], e.e.w()}.writeUint64(math.Float64bits(f))
 }
