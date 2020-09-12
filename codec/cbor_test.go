@@ -366,3 +366,25 @@ func TestCborSkipTags(t *testing.T) {
 		testDeepEqualErr(expected, raw, t, "cbor-skip-tags--gh-300--has-skips")
 	}
 }
+
+func TestCborMalformed(t *testing.T) {
+	var bad = [][]byte{
+		[]byte("\x9b\x00\x00000000"),
+		[]byte("\x9b\x00\x00\x81112233"),
+	}
+
+	if testUseMust {
+		testUseMust = false
+		defer func() { testUseMust = true }()
+	}
+
+	var out interface{}
+	for _, v := range bad {
+		out = nil
+		err := testUnmarshal(&out, v, testCborH)
+		if err == nil {
+			t.Logf("missing expected error decoding malformed cbor")
+			t.FailNow()
+		}
+	}
+}
