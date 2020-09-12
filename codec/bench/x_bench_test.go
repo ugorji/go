@@ -106,10 +106,18 @@ func fnJsonIterDecodeFn(buf []byte, ts interface{}) error {
 }
 
 func fnFxcborEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
+	if testUseIoEncDec >= 0 {
+		buf := bytes.NewBuffer(bsIn[:0])
+		err := fxcbor.NewEncoder(buf).Encode(ts)
+		return buf.Bytes(), err
+	}
 	return fxcbor.Marshal(ts)
 }
 
 func fnFxcborDecodeFn(buf []byte, ts interface{}) error {
+	if testUseIoEncDec >= 0 {
+		return fxcbor.NewDecoder(bytes.NewReader(buf)).Decode(ts)
+	}
 	return fxcbor.Unmarshal(buf, ts)
 }
 
