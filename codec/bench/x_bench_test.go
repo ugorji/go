@@ -15,8 +15,9 @@ import (
 	xdr "github.com/davecgh/go-xdr/xdr2"
 	jsoniter "github.com/json-iterator/go"
 	"go.mongodb.org/mongo-driver/bson"         // "github.com/mongodb/mongo-go-driver/bson"
-	mgobson "gopkg.in/mgo.v2/bson"             //"labix.org/v2/mgo/bson"
-	vmsgpack "gopkg.in/vmihailenco/msgpack.v2" //"github.com/vmihailenco/msgpack"
+	mgobson "github.com/globalsign/mgo/bson"             //"labix.org/v2/mgo/bson"
+	vmsgpack "github.com/vmihailenco/msgpack/v4" //"github.com/vmihailenco/msgpack"
+	fxcbor "github.com/fxamacker/cbor/v2"
 )
 
 /*
@@ -26,9 +27,10 @@ import (
            github.com/Sereal/Sereal/Go/sereal \
            bitbucket.org/bodhisnarkva/cbor/go \
            github.com/davecgh/go-xdr/xdr2 \
-           gopkg.in/mgo.v2/bson \
-           gopkg.in/vmihailenco/msgpack.v2 \
+           github.com/globalsign/mgo/bson \
+           github.com/vmihailenco/msgpack/v4 /
            github.com/json-iterator/go \
+           github.com/fxamacker/cbor/v2 \
            github.com/mailru/easyjson/...
 
  Known Issues with external libraries:
@@ -47,6 +49,7 @@ func benchXPreInit() {
 		benchChecker{"v-msgpack", fnVMsgpackEncodeFn, fnVMsgpackDecodeFn},
 		benchChecker{"bson", fnBsonEncodeFn, fnBsonDecodeFn},
 		benchChecker{"mgobson", fnMgobsonEncodeFn, fnMgobsonDecodeFn},
+		benchChecker{"fxcbor", fnFxcborEncodeFn, fnFxcborDecodeFn}, 
 		// place codecs with issues at the end, so as not to make results too ugly
 		benchChecker{"gcbor", fnGcborEncodeFn, fnGcborDecodeFn}, // this logs fat ugly message, but we log.SetOutput(ioutil.Discard)
 		benchChecker{"xdr", fnXdrEncodeFn, fnXdrDecodeFn},
@@ -102,6 +105,14 @@ func fnJsonIterDecodeFn(buf []byte, ts interface{}) error {
 	return jsoniter.Unmarshal(buf, ts)
 }
 
+func fnFxcborEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
+	return fxcbor.Marshal(ts)
+}
+
+func fnFxcborDecodeFn(buf []byte, ts interface{}) error {
+	return fxcbor.Unmarshal(buf, ts)
+}
+
 func fnXdrEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
 	buf := fnBenchmarkByteBuf(bsIn)
 	i, err := xdr.Marshal(buf, ts)
@@ -137,6 +148,14 @@ func Benchmark__JsonIter___Encode(b *testing.B) {
 
 func Benchmark__JsonIter___Decode(b *testing.B) {
 	fnBenchmarkDecode(b, "jsoniter", benchTs, fnJsonIterEncodeFn, fnJsonIterDecodeFn, fnBenchNewTs)
+}
+
+func Benchmark__Fxcbor_____Encode(b *testing.B) {
+	fnBenchmarkEncode(b, "fxcbor", benchTs, fnFxcborEncodeFn)
+}
+
+func Benchmark__Fxcbor_____Decode(b *testing.B) {
+	fnBenchmarkDecode(b, "fxcbor", benchTs, fnFxcborEncodeFn, fnFxcborDecodeFn, fnBenchNewTs)
 }
 
 // Place codecs with issues at the bottom, so as not to make results look too ugly.
