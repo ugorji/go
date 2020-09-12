@@ -37,10 +37,10 @@ type codecSelfer19780 struct{}
 func codecSelfer19780False() bool { return false }
 
 func init() {
-	if GenVersion != 16 {
+	if GenVersion != 17 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic("codecgen version mismatch: current: 16, need " + ver + ". Re-generate file: " + file)
+		panic("codecgen version mismatch: current: 17, need " + ver + ". Re-generate file: " + file)
 	}
 	if false { // reference the types, but skip this branch at build/run time
 		var _ time.Time
@@ -337,7 +337,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if x.AF32slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceFloat32V(x.AF32slice, e)
+				h.encSlicefloat32(([]float32)(x.AF32slice), e)
 			} // end block: if x.AF32slice slice == nil
 			z.EncWriteArrayElem()
 			if x.AMSU16 == nil {
@@ -465,7 +465,7 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			if x.AF32slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceFloat32V(x.AF32slice, e)
+				h.encSlicefloat32(([]float32)(x.AF32slice), e)
 			} // end block: if x.AF32slice slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -602,7 +602,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "AF64slice":
 			z.F.DecSliceFloat64X(&x.AF64slice, d)
 		case "AF32slice":
-			z.F.DecSliceFloat32X(&x.AF32slice, d)
+			h.decSlicefloat32((*[]float32)(&x.AF32slice), d)
 		case "AMSU16":
 			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16), d)
 		case "AI64arr0":
@@ -735,7 +735,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecSliceFloat32X(&x.AF32slice, d)
+	h.decSlicefloat32((*[]float32)(&x.AF32slice), d)
 	yyj30++
 	if yyhl30 {
 		yyb30 = yyj30 > l
@@ -862,7 +862,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if x.I16slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceInt16V(x.I16slice, e)
+				h.encSliceint16(([]int16)(x.I16slice), e)
 			} // end block: if x.I16slice slice == nil
 			z.EncWriteArrayElem()
 			if x.Ui64slice == nil {
@@ -987,7 +987,7 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			if x.I16slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceInt16V(x.I16slice, e)
+				h.encSliceint16(([]int16)(x.I16slice), e)
 			} // end block: if x.I16slice slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -1133,7 +1133,7 @@ func (x *testSimpleFields) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Sslice":
 			z.F.DecSliceStringX(&x.Sslice, d)
 		case "I16slice":
-			z.F.DecSliceInt16X(&x.I16slice, d)
+			h.decSliceint16((*[]int16)(&x.I16slice), d)
 		case "Ui64slice":
 			z.F.DecSliceUint64X(&x.Ui64slice, d)
 		case "Ui8slice":
@@ -1280,7 +1280,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecSliceInt16X(&x.I16slice, d)
+	h.decSliceint16((*[]int16)(&x.I16slice), d)
 	yyj28++
 	if yyhl28 {
 		yyb28 = yyj28 > l
@@ -1444,7 +1444,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if x.I16slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceInt16V(x.I16slice, e)
+				h.encSliceint16(([]int16)(x.I16slice), e)
 			} // end block: if x.I16slice slice == nil
 			z.EncWriteArrayElem()
 			if x.Ui64slice == nil {
@@ -1549,7 +1549,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if x.AnonInTestStruc.AF32slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceFloat32V(x.AnonInTestStruc.AF32slice, e)
+				h.encSlicefloat32(([]float32)(x.AnonInTestStruc.AF32slice), e)
 			} // end block: if x.AnonInTestStruc.AF32slice slice == nil
 			z.EncWriteArrayElem()
 			if x.AnonInTestStruc.AMSU16 == nil {
@@ -1780,7 +1780,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if x.I16slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceInt16V(x.I16slice, e)
+				h.encSliceint16(([]int16)(x.I16slice), e)
 			} // end block: if x.I16slice slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2017,7 +2017,7 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			if x.AnonInTestStruc.AF32slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceFloat32V(x.AnonInTestStruc.AF32slice, e)
+				h.encSlicefloat32(([]float32)(x.AnonInTestStruc.AF32slice), e)
 			} // end block: if x.AnonInTestStruc.AF32slice slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -2222,7 +2222,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "I64slice":
 			z.F.DecSliceInt64X(&x.I64slice, d)
 		case "I16slice":
-			z.F.DecSliceInt16X(&x.I16slice, d)
+			h.decSliceint16((*[]int16)(&x.I16slice), d)
 		case "Ui64slice":
 			z.F.DecSliceUint64X(&x.Ui64slice, d)
 		case "Ui8slice":
@@ -2266,7 +2266,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "AF64slice":
 			z.F.DecSliceFloat64X(&x.AnonInTestStruc.AF64slice, d)
 		case "AF32slice":
-			z.F.DecSliceFloat32X(&x.AnonInTestStruc.AF32slice, d)
+			h.decSlicefloat32((*[]float32)(&x.AnonInTestStruc.AF32slice), d)
 		case "AMSU16":
 			h.decMapstringuint16((*map[string]uint16)(&x.AnonInTestStruc.AMSU16), d)
 		case "AI64arr0":
@@ -2548,7 +2548,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecSliceInt16X(&x.I16slice, d)
+	h.decSliceint16((*[]int16)(&x.I16slice), d)
 	yyj83++
 	if yyhl83 {
 		yyb83 = yyj83 > l
@@ -2812,7 +2812,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecSliceFloat32X(&x.AnonInTestStruc.AF32slice, d)
+	h.decSlicefloat32((*[]float32)(&x.AnonInTestStruc.AF32slice), d)
 	yyj83++
 	if yyhl83 {
 		yyb83 = yyj83 > l
@@ -3022,7 +3022,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if x.TestStrucCommon.I16slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
+				h.encSliceint16(([]int16)(x.TestStrucCommon.I16slice), e)
 			} // end block: if x.TestStrucCommon.I16slice slice == nil
 			z.EncWriteArrayElem()
 			if x.TestStrucCommon.Ui64slice == nil {
@@ -3127,7 +3127,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if x.TestStrucCommon.AnonInTestStruc.AF32slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
+				h.encSlicefloat32(([]float32)(x.TestStrucCommon.AnonInTestStruc.AF32slice), e)
 			} // end block: if x.TestStrucCommon.AnonInTestStruc.AF32slice slice == nil
 			z.EncWriteArrayElem()
 			if x.TestStrucCommon.AnonInTestStruc.AMSU16 == nil {
@@ -3383,7 +3383,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if x.TestStrucCommon.I16slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
+				h.encSliceint16(([]int16)(x.TestStrucCommon.I16slice), e)
 			} // end block: if x.TestStrucCommon.I16slice slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3620,7 +3620,7 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			if x.TestStrucCommon.AnonInTestStruc.AF32slice == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
+				h.encSlicefloat32(([]float32)(x.TestStrucCommon.AnonInTestStruc.AF32slice), e)
 			} // end block: if x.TestStrucCommon.AnonInTestStruc.AF32slice slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -3873,7 +3873,7 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "I64slice":
 			z.F.DecSliceInt64X(&x.TestStrucCommon.I64slice, d)
 		case "I16slice":
-			z.F.DecSliceInt16X(&x.TestStrucCommon.I16slice, d)
+			h.decSliceint16((*[]int16)(&x.TestStrucCommon.I16slice), d)
 		case "Ui64slice":
 			z.F.DecSliceUint64X(&x.TestStrucCommon.Ui64slice, d)
 		case "Ui8slice":
@@ -3917,7 +3917,7 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "AF64slice":
 			z.F.DecSliceFloat64X(&x.TestStrucCommon.AnonInTestStruc.AF64slice, d)
 		case "AF32slice":
-			z.F.DecSliceFloat32X(&x.TestStrucCommon.AnonInTestStruc.AF32slice, d)
+			h.decSlicefloat32((*[]float32)(&x.TestStrucCommon.AnonInTestStruc.AF32slice), d)
 		case "AMSU16":
 			h.decMapstringuint16((*map[string]uint16)(&x.TestStrucCommon.AnonInTestStruc.AMSU16), d)
 		case "AI64arr0":
@@ -4216,7 +4216,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecSliceInt16X(&x.TestStrucCommon.I16slice, d)
+	h.decSliceint16((*[]int16)(&x.TestStrucCommon.I16slice), d)
 	yyj90++
 	if yyhl90 {
 		yyb90 = yyj90 > l
@@ -4480,7 +4480,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecSliceFloat32X(&x.TestStrucCommon.AnonInTestStruc.AF32slice, d)
+	h.decSlicefloat32((*[]float32)(&x.TestStrucCommon.AnonInTestStruc.AF32slice), d)
 	yyj90++
 	if yyhl90 {
 		yyb90 = yyj90 > l
@@ -8861,7 +8861,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if x.TestStrucCommon.I16slice == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
+					h.encSliceint16(([]int16)(x.TestStrucCommon.I16slice), e)
 				} // end block: if x.TestStrucCommon.I16slice slice == nil
 			} else {
 				r.EncodeNil()
@@ -9054,7 +9054,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if x.TestStrucCommon.AnonInTestStruc.AF32slice == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
+					h.encSlicefloat32(([]float32)(x.TestStrucCommon.AnonInTestStruc.AF32slice), e)
 				} // end block: if x.TestStrucCommon.AnonInTestStruc.AF32slice slice == nil
 			} else {
 				r.EncodeNil()
@@ -9645,7 +9645,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if x.TestStrucCommon.I16slice == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceInt16V(x.TestStrucCommon.I16slice, e)
+					h.encSliceint16(([]int16)(x.TestStrucCommon.I16slice), e)
 				} // end block: if x.TestStrucCommon.I16slice slice == nil
 			}
 			if yyq2[20] {
@@ -9926,7 +9926,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if x.TestStrucCommon.AnonInTestStruc.AF32slice == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceFloat32V(x.TestStrucCommon.AnonInTestStruc.AF32slice, e)
+					h.encSlicefloat32(([]float32)(x.TestStrucCommon.AnonInTestStruc.AF32slice), e)
 				} // end block: if x.TestStrucCommon.AnonInTestStruc.AF32slice slice == nil
 			}
 			if yyq2[42] {
@@ -10517,7 +10517,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "I64slice":
 			z.F.DecSliceInt64X(&x.TestStrucCommon.I64slice, d)
 		case "I16slice":
-			z.F.DecSliceInt16X(&x.TestStrucCommon.I16slice, d)
+			h.decSliceint16((*[]int16)(&x.TestStrucCommon.I16slice), d)
 		case "Ui64slice":
 			z.F.DecSliceUint64X(&x.TestStrucCommon.Ui64slice, d)
 		case "Ui8slice":
@@ -10561,7 +10561,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "AF64slice":
 			z.F.DecSliceFloat64X(&x.TestStrucCommon.AnonInTestStruc.AF64slice, d)
 		case "AF32slice":
-			z.F.DecSliceFloat32X(&x.TestStrucCommon.AnonInTestStruc.AF32slice, d)
+			h.decSlicefloat32((*[]float32)(&x.TestStrucCommon.AnonInTestStruc.AF32slice), d)
 		case "AMSU16":
 			h.decMapstringuint16((*map[string]uint16)(&x.TestStrucCommon.AnonInTestStruc.AMSU16), d)
 		case "AI64arr0":
@@ -10970,7 +10970,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecSliceInt16X(&x.TestStrucCommon.I16slice, d)
+	h.decSliceint16((*[]int16)(&x.TestStrucCommon.I16slice), d)
 	yyj131++
 	if yyhl131 {
 		yyb131 = yyj131 > l
@@ -11234,7 +11234,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecSliceFloat32X(&x.TestStrucCommon.AnonInTestStruc.AF32slice, d)
+	h.decSlicefloat32((*[]float32)(&x.TestStrucCommon.AnonInTestStruc.AF32slice), d)
 	yyj131++
 	if yyhl131 {
 		yyb131 = yyj131 > l
@@ -12128,6 +12128,99 @@ func (x codecSelfer19780) decwrapStringSlice(v *wrapStringSlice, d *Decoder) {
 	}
 }
 
+func (x codecSelfer19780) encSlicefloat32(v []float32, e *Encoder) {
+	var h codecSelfer19780
+	z, r := GenHelperEncoder(e)
+	_, _, _ = h, z, r
+	if v == nil {
+		r.EncodeNil()
+		return
+	}
+	z.EncWriteArrayStart(len(v))
+	for _, yyv1 := range v {
+		z.EncWriteArrayElem()
+		r.EncodeFloat32(float32(yyv1))
+	}
+	z.EncWriteArrayEnd()
+}
+
+func (x codecSelfer19780) decSlicefloat32(v *[]float32, d *Decoder) {
+	var h codecSelfer19780
+	z, r := GenHelperDecoder(d)
+	_, _, _ = h, z, r
+
+	yyv1 := *v
+	yyh1, yyl1 := z.DecSliceHelperStart()
+	var yyc1 bool
+	_ = yyc1
+	if yyh1.IsNil {
+		if yyv1 != nil {
+			yyv1 = nil
+			yyc1 = true
+		}
+	} else if yyl1 == 0 {
+		if yyv1 == nil {
+			yyv1 = []float32{}
+			yyc1 = true
+		} else if len(yyv1) != 0 {
+			yyv1 = yyv1[:0]
+			yyc1 = true
+		}
+	} else {
+		yyhl1 := yyl1 > 0
+		var yyrl1 int
+		_ = yyrl1
+		if yyhl1 {
+			if yyl1 > cap(yyv1) {
+				yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 4)
+				if yyrl1 <= cap(yyv1) {
+					yyv1 = yyv1[:yyrl1]
+				} else {
+					yyv1 = make([]float32, yyrl1)
+				}
+				yyc1 = true
+			} else if yyl1 != len(yyv1) {
+				yyv1 = yyv1[:yyl1]
+				yyc1 = true
+			}
+		}
+		var yyj1 int
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
+			if yyj1 == 0 && yyv1 == nil {
+				if yyhl1 {
+					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 4)
+				} else {
+					yyrl1 = 8
+				}
+				yyv1 = make([]float32, yyrl1)
+				yyc1 = true
+			}
+			yyh1.ElemContainerState(yyj1)
+			var yydb1 bool
+			if yyj1 >= len(yyv1) {
+				yyv1 = append(yyv1, 0)
+				yyc1 = true
+			}
+			if yydb1 {
+				z.DecSwallow()
+			} else {
+				yyv1[yyj1] = (float32)(z.DecDecodeFloat32())
+			}
+		}
+		if yyj1 < len(yyv1) {
+			yyv1 = yyv1[:yyj1]
+			yyc1 = true
+		} else if yyj1 == 0 && yyv1 == nil {
+			yyv1 = make([]float32, 0)
+			yyc1 = true
+		}
+	}
+	yyh1.End()
+	if yyc1 {
+		*v = yyv1
+	}
+}
+
 func (x codecSelfer19780) encMapstringuint16(v map[string]uint16, e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -12236,6 +12329,99 @@ func (x codecSelfer19780) decArray0int64(v *[0]int64, d *Decoder) {
 		}
 	}
 	yyh1.End()
+}
+
+func (x codecSelfer19780) encSliceint16(v []int16, e *Encoder) {
+	var h codecSelfer19780
+	z, r := GenHelperEncoder(e)
+	_, _, _ = h, z, r
+	if v == nil {
+		r.EncodeNil()
+		return
+	}
+	z.EncWriteArrayStart(len(v))
+	for _, yyv1 := range v {
+		z.EncWriteArrayElem()
+		r.EncodeInt(int64(yyv1))
+	}
+	z.EncWriteArrayEnd()
+}
+
+func (x codecSelfer19780) decSliceint16(v *[]int16, d *Decoder) {
+	var h codecSelfer19780
+	z, r := GenHelperDecoder(d)
+	_, _, _ = h, z, r
+
+	yyv1 := *v
+	yyh1, yyl1 := z.DecSliceHelperStart()
+	var yyc1 bool
+	_ = yyc1
+	if yyh1.IsNil {
+		if yyv1 != nil {
+			yyv1 = nil
+			yyc1 = true
+		}
+	} else if yyl1 == 0 {
+		if yyv1 == nil {
+			yyv1 = []int16{}
+			yyc1 = true
+		} else if len(yyv1) != 0 {
+			yyv1 = yyv1[:0]
+			yyc1 = true
+		}
+	} else {
+		yyhl1 := yyl1 > 0
+		var yyrl1 int
+		_ = yyrl1
+		if yyhl1 {
+			if yyl1 > cap(yyv1) {
+				yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 2)
+				if yyrl1 <= cap(yyv1) {
+					yyv1 = yyv1[:yyrl1]
+				} else {
+					yyv1 = make([]int16, yyrl1)
+				}
+				yyc1 = true
+			} else if yyl1 != len(yyv1) {
+				yyv1 = yyv1[:yyl1]
+				yyc1 = true
+			}
+		}
+		var yyj1 int
+		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
+			if yyj1 == 0 && yyv1 == nil {
+				if yyhl1 {
+					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 2)
+				} else {
+					yyrl1 = 8
+				}
+				yyv1 = make([]int16, yyrl1)
+				yyc1 = true
+			}
+			yyh1.ElemContainerState(yyj1)
+			var yydb1 bool
+			if yyj1 >= len(yyv1) {
+				yyv1 = append(yyv1, 0)
+				yyc1 = true
+			}
+			if yydb1 {
+				z.DecSwallow()
+			} else {
+				yyv1[yyj1] = (int16)(z.C.IntV(r.DecodeInt64(), 16))
+			}
+		}
+		if yyj1 < len(yyv1) {
+			yyv1 = yyv1[:yyj1]
+			yyc1 = true
+		} else if yyj1 == 0 && yyv1 == nil {
+			yyv1 = make([]int16, 0)
+			yyc1 = true
+		}
+	}
+	yyh1.End()
+	if yyc1 {
+		*v = yyv1
+	}
 }
 
 func (x codecSelfer19780) encSlicePtrtoint64(v []*int64, e *Encoder) {

@@ -112,7 +112,7 @@ import (
 // v14: 20190611 refactored nil handling: TryDecodeAsNil -> selective TryNil, etc
 // v15: 20190626 encDriver.EncodeString handles StringToRaw flag inside handle
 // v16: 20190629 refactoring for v1.1.6
-const genVersion = 16
+const genVersion = 17
 
 const (
 	genCodecPkg        = "codec1978"
@@ -2191,42 +2191,45 @@ func genInternalInit() {
 	mapvaltypes = types[:]
 
 	if genFastpathTrimTypes {
+		// Note: we only create fast-paths for commonly used types.
+		// Consequently, things like int8, uint16, uint, etc are commented out.
+
 		slicetypes = []string{
 			"interface{}",
 			"string",
 			"[]byte",
-			"float32",
+			// "float32",
 			"float64",
-			"uint",
+			// "uint",
 			// "uint8", // no need for fastpath of []uint8, as it is handled specially
-			"uint16",
-			"uint32",
+			// "uint16",
+			// "uint32",
 			"uint64",
 			// "uintptr",
 			"int",
-			"int8",
-			"int16",
-			"int32",
+			// "int8",
+			// "int16",
+			"int32", // rune
 			"int64",
 			"bool",
 		}
 
 		mapkeytypes = []string{
-			//"interface{}",
+			// "interface{}",
 			"string",
-			//"[]byte",
-			//"float32",
-			//"float64",
-			"uint",
+			// "[]byte",
+			// "float32",
+			// "float64",
+			// "uint",
 			"uint8",
-			//"uint16",
-			//"uint32",
+			// "uint16",
+			// "uint32",
 			"uint64",
-			//"uintptr",
+			// "uintptr",
 			"int",
-			//"int8",
-			//"int16",
-			//"int32",
+			// "int8",
+			// "int16",
+			// "int32",
 			"int64",
 			// "bool",
 		}
@@ -2235,18 +2238,18 @@ func genInternalInit() {
 			"interface{}",
 			"string",
 			"[]byte",
-			"uint",
+			// "uint",
 			"uint8",
-			//"uint16",
-			//"uint32",
+			// "uint16",
+			// "uint32",
 			"uint64",
 			// "uintptr",
 			"int",
 			//"int8",
-			//"int16",
-			//"int32",
+			// "int16",
+			// "int32", // rune (mostly used for unicode)
 			"int64",
-			"float32",
+			// "float32",
 			"float64",
 			"bool",
 		}
