@@ -112,6 +112,7 @@ import (
 // v14: 20190611 refactored nil handling: TryDecodeAsNil -> selective TryNil, etc
 // v15: 20190626 encDriver.EncodeString handles StringToRaw flag inside handle
 // v16: 20190629 refactoring for v1.1.6
+// v17: 20200911 reduce number of types for which we generate fast path functions (v1.1.8)
 const genVersion = 17
 
 const (
