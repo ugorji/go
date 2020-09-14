@@ -10,14 +10,14 @@ import (
 	"bytes"
 	"testing"
 
-	gcbor "bitbucket.org/bodhisnarkva/cbor/go" // gcbor "code.google.com/p/cbor/go"
+	gcbor "bitbucket.org/bodhisnarkva/cbor/go"
 	"github.com/Sereal/Sereal/Go/sereal"
 	xdr "github.com/davecgh/go-xdr/xdr2"
-	jsoniter "github.com/json-iterator/go"
-	"go.mongodb.org/mongo-driver/bson"         // "github.com/mongodb/mongo-go-driver/bson"
-	mgobson "github.com/globalsign/mgo/bson"             //"labix.org/v2/mgo/bson"
-	vmsgpack "github.com/vmihailenco/msgpack/v4" //"github.com/vmihailenco/msgpack"
 	fxcbor "github.com/fxamacker/cbor/v2"
+	mgobson "github.com/globalsign/mgo/bson"
+	jsoniter "github.com/json-iterator/go"
+	vmsgpack "github.com/vmihailenco/msgpack/v4"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 /*
@@ -49,7 +49,7 @@ func benchXPreInit() {
 		benchChecker{"v-msgpack", fnVMsgpackEncodeFn, fnVMsgpackDecodeFn},
 		benchChecker{"bson", fnBsonEncodeFn, fnBsonDecodeFn},
 		benchChecker{"mgobson", fnMgobsonEncodeFn, fnMgobsonDecodeFn},
-		benchChecker{"fxcbor", fnFxcborEncodeFn, fnFxcborDecodeFn}, 
+		benchChecker{"fxcbor", fnFxcborEncodeFn, fnFxcborDecodeFn},
 		// place codecs with issues at the end, so as not to make results too ugly
 		benchChecker{"gcbor", fnGcborEncodeFn, fnGcborDecodeFn}, // this logs fat ugly message, but we log.SetOutput(ioutil.Discard)
 		benchChecker{"xdr", fnXdrEncodeFn, fnXdrDecodeFn},
