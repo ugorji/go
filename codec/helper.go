@@ -175,9 +175,6 @@ const (
 
 	// so structFieldInfo fits into 8 bytes
 	maxLevelsEmbedding = 14
-
-	// xdebug controls whether xdebugf prints any output
-	xdebug = true
 )
 
 var (
@@ -2782,34 +2779,3 @@ func (x *sfiRvFreelist) put(v []sfiRv) {
 	}
 	*x = append(*x, v)
 }
-
-// -----------
-
-// xdebugf printf. the message in red on the terminal.
-// Use it in place of fmt.Printf (which it calls internally)
-func xdebugf(pattern string, args ...interface{}) {
-	xdebugAnyf("31", pattern, args...)
-}
-
-// xdebug2f printf. the message in blue on the terminal.
-// Use it in place of fmt.Printf (which it calls internally)
-func xdebug2f(pattern string, args ...interface{}) {
-	xdebugAnyf("34", pattern, args...)
-}
-
-func xdebugAnyf(colorcode, pattern string, args ...interface{}) {
-	if !xdebug {
-		return
-	}
-	var delim string
-	if len(pattern) > 0 && pattern[len(pattern)-1] != '\n' {
-		delim = "\n"
-	}
-	fmt.Printf("\033[1;"+colorcode+"m"+pattern+delim+"\033[0m", args...)
-	// os.Stderr.Flush()
-}
-
-// register these here, so that staticcheck stops barfing
-var _ = xdebug2f
-var _ = xdebugf
-var _ = isNaN32
