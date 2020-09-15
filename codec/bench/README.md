@@ -96,8 +96,11 @@ What you should notice:
   
 See https://github.com/ugorji/go-codec-bench/blob/master/bench.out.txt for representative result from running `bench.sh` as below, as of 2020-09-11.
 ```sh
+  printf "**** STATS ****\n\n"
   ./bench.sh -tx  # (stats)
+  printf "**** SUITE ****\n\n"
   ./bench.sh -sx  # (not codecgen)
+  printf "**** SUITE (WITH CODECGEN) ****\n\n"
   ./bench.sh -sgx # (codecgen)
 ```
 
