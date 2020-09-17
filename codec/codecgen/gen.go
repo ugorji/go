@@ -40,7 +40,7 @@ import (
 	"time"
 )
 
-const genCodecPkg = "codec1978" // keep this in sync with codec.genCodecPkg
+const genCodecPkg = "codec1978" // keep in sync with ../gen.go
 
 const genFrunMainTmpl = `//+build ignore
 
@@ -177,7 +177,7 @@ func Generate(outfile, buildTag, codecPkgPath string,
 		tv.CodecPkgName = "codec"
 	} else {
 		// HACK: always handle vendoring. It should be typically on in go 1.6, 1.7
-		tv.ImportPath = stripVendor(tv.ImportPath)
+		tv.ImportPath = genStripVendor(tv.ImportPath)
 	}
 	astfiles := make([]*ast.File, len(infiles))
 	var fi os.FileInfo
@@ -346,8 +346,7 @@ func gen1(frunName, tmplStr string, tv interface{}) (frun *os.File, err error) {
 	return
 }
 
-// copied from ../gen.go (keep in sync).
-func stripVendor(s string) string {
+func genStripVendor(s string) string { // keep in sync with ../gen.go
 	// HACK: Misbehaviour occurs in go 1.5. May have to re-visit this later.
 	// if s contains /vendor/ OR startsWith vendor/, then return everything after it.
 	const vendorStart = "vendor/"

@@ -86,10 +86,8 @@ EOF
 EOF
     cat > gen-from-tmpl.codec.generated.go <<EOF
 package codec 
-import "io"
-func GenInternalGoFile(r io.Reader, w io.Writer) error {
-return genInternalGoFile(r, w)
-}
+func GenRunTmpl2Go(in, out string) { genRunTmpl2Go(in, out) }
+func GenRunSortTmpl2Go(in, out string) { genRunSortTmpl2Go(in, out) }
 EOF
     cat > gen-from-tmpl.generated.go <<EOF
 //+build ignore
@@ -97,26 +95,13 @@ EOF
 package main
 
 import "${zpkg}"
-import "os"
-
-func run(fnameIn, fnameOut string) {
-println("____ " + fnameIn + " --> " + fnameOut + " ______")
-fin, err := os.Open(fnameIn)
-if err != nil { panic(err) }
-defer fin.Close()
-fout, err := os.Create(fnameOut)
-if err != nil { panic(err) }
-defer fout.Close()
-err = codec.GenInternalGoFile(fin, fout)
-if err != nil { panic(err) }
-}
 
 func main() {
-run("fast-path.go.tmpl", "fast-path.generated.go")
-run("gen-helper.go.tmpl", "gen-helper.generated.go")
-run("mammoth-test.go.tmpl", "mammoth_generated_test.go")
-run("mammoth2-test.go.tmpl", "mammoth2_generated_test.go")
-// run("sort-slice.go.tmpl", "sort-slice.generated.go")
+codec.GenRunTmpl2Go("fast-path.go.tmpl", "fast-path.generated.go")
+codec.GenRunTmpl2Go("gen-helper.go.tmpl", "gen-helper.generated.go")
+codec.GenRunTmpl2Go("mammoth-test.go.tmpl", "mammoth_generated_test.go")
+codec.GenRunTmpl2Go("mammoth2-test.go.tmpl", "mammoth2_generated_test.go")
+codec.GenRunSortTmpl2Go("sort-slice.go.tmpl", "sort-slice.generated.go")
 }
 EOF
 
@@ -124,7 +109,6 @@ EOF
         shared_test.go > bench/shared_test.go
 
     # explicitly return 0 if this passes, else return 1
-    go run -tags "prebuild" prebuild.go || return 1
     go run -tags "notfastpath safe codecgen.exec" gen-from-tmpl.generated.go || return 1
     rm -f gen-from-tmpl.*generated.go
     return 0

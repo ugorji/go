@@ -14,6 +14,7 @@ import (
 	"io"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"reflect"
 	"regexp"
 	"sort"
@@ -116,7 +117,7 @@ import (
 const genVersion = 17
 
 const (
-	genCodecPkg        = "codec1978"
+	genCodecPkg        = "codec1978" // keep in sync with codecgen/gen.go
 	genTempVarPfx      = "yy"
 	genTopLevelVarName = "x"
 
@@ -2095,32 +2096,39 @@ func genInternalDecCommandAsString(s string) string {
 	}
 }
 
+// func genInternalSortType(s string, elem bool) string {
+// 	for _, v := range [...]string{
+// 		"int",
+// 		"uint",
+// 		"float",
+// 		"bool",
+// 		"string",
+// 		"bytes", "[]uint8", "[]byte",
+// 	} {
+// 		if v == "[]byte" || v == "[]uint8" {
+// 			v = "bytes"
+// 		}
+// 		if strings.HasPrefix(s, v) {
+// 			if v == "int" || v == "uint" || v == "float" {
+// 				v += "64"
+// 			}
+// 			if elem {
+// 				return v
+// 			}
+// 			return v + "Slice"
+// 		}
+// 	}
+// 	panic("sorttype: unexpected type: " + s)
+// }
+
 func genInternalSortType(s string, elem bool) string {
-	for _, v := range [...]string{
-		"int",
-		"uint",
-		"float",
-		"bool",
-		"string",
-		"bytes", "[]uint8", "[]byte",
-	} {
-		if v == "[]byte" || v == "[]uint8" {
-			v = "bytes"
-		}
-		if strings.HasPrefix(s, v) {
-			if v == "int" || v == "uint" || v == "float" {
-				v += "64"
-			}
-			if elem {
-				return v
-			}
-			return v + "Slice"
-		}
+	if elem {
+		return s
 	}
-	panic("sorttype: unexpected type: " + s)
+	return s + "Slice"
 }
 
-func genStripVendor(s string) string {
+func genStripVendor(s string) string { // keep in sync with codecgen/gen.go
 	// HACK: Misbehaviour occurs in go 1.5. May have to re-visit this later.
 	// if s contains /vendor/ OR startsWith vendor/, then return everything after it.
 	const vendorStart = "vendor/"
@@ -2195,65 +2203,9 @@ func genInternalInit() {
 		// Note: we only create fast-paths for commonly used types.
 		// Consequently, things like int8, uint16, uint, etc are commented out.
 
-		slicetypes = []string{
-			"interface{}",
-			"string",
-			"[]byte",
-			// "float32",
-			"float64",
-			// "uint",
-			// "uint8", // no need for fastpath of []uint8, as it is handled specially
-			// "uint16",
-			// "uint32",
-			"uint64",
-			// "uintptr",
-			"int",
-			// "int8",
-			// "int16",
-			"int32", // rune
-			"int64",
-			"bool",
-		}
-
-		mapkeytypes = []string{
-			// "interface{}",
-			"string",
-			// "[]byte",
-			// "float32",
-			// "float64",
-			// "uint",
-			"uint8",
-			// "uint16",
-			// "uint32",
-			"uint64",
-			// "uintptr",
-			"int",
-			// "int8",
-			// "int16",
-			// "int32",
-			"int64",
-			// "bool",
-		}
-
-		mapvaltypes = []string{
-			"interface{}",
-			"string",
-			"[]byte",
-			// "uint",
-			"uint8",
-			// "uint16",
-			// "uint32",
-			"uint64",
-			// "uintptr",
-			"int",
-			//"int8",
-			// "int16",
-			// "int32", // rune (mostly used for unicode)
-			"int64",
-			// "float32",
-			"float64",
-			"bool",
-		}
+		slicetypes = genInternalFastpathSliceTypes()
+		mapkeytypes = genInternalFastpathMapKeyTypes()
+		mapvaltypes = genInternalFastpathMapValueTypes()
 	}
 
 	// var mapkeytypes [len(&types) - 1]string // skip bool
@@ -2307,9 +2259,6 @@ func genInternalInit() {
 }
 
 // genInternalGoFile is used to generate source files from templates.
-// It is run by the program author alone.
-// Unfortunately, it has to be exported so that it can be called from a command line tool.
-// *** DO NOT USE ***
 func genInternalGoFile(r io.Reader, w io.Writer) (err error) {
 	genInternalOnce.Do(genInternalInit)
 
@@ -2340,4 +2289,204 @@ func genInternalGoFile(r io.Reader, w io.Writer) (err error) {
 	}
 	w.Write(bout)
 	return
+}
+
+func genInternalFastpathSliceTypes() []string {
+	return []string{
+		"interface{}",
+		"string",
+		"[]byte",
+		// "float32",
+		"float64",
+		// "uint",
+		// "uint8", // no need for fastpath of []uint8, as it is handled specially
+		// "uint16",
+		// "uint32",
+		"uint64",
+		// "uintptr",
+		"int",
+		// "int8",
+		// "int16",
+		"int32", // rune
+		"int64",
+		"bool",
+	}
+}
+
+func genInternalFastpathMapKeyTypes() []string {
+	return []string{
+		// "interface{}",
+		"string",
+		// "[]byte",
+		// "float32",
+		// "float64",
+		// "uint",
+		"uint8",
+		// "uint16",
+		// "uint32",
+		"uint64",
+		// "uintptr",
+		"int",
+		// "int8",
+		// "int16",
+		// "int32",
+		"int64",
+		// "bool",
+	}
+}
+
+func genInternalFastpathMapValueTypes() []string {
+	return []string{
+		"interface{}",
+		"string",
+		"[]byte",
+		// "uint",
+		"uint8",
+		// "uint16",
+		// "uint32",
+		"uint64",
+		// "uintptr",
+		"int",
+		//"int8",
+		// "int16",
+		// "int32", // rune (mostly used for unicode)
+		"int64",
+		// "float32",
+		"float64",
+		"bool",
+	}
+}
+
+// sort-slice ...
+// generates sort implementations for
+// various slice types and combination slice+reflect.Value types.
+//
+// The combination slice+reflect.Value types are used
+// during canonical encode, and the others are used during fast-path
+// encoding of map keys.
+
+// genInternalSortableTypes returns the types
+// that are used for fast-path canonical's encoding of maps.
+//
+// For now, we only support the highest sizes for
+// int64, uint64, float64, bool, string, bytes.
+func genInternalSortableTypes() []string {
+	return genInternalFastpathMapKeyTypes()
+	// return []string{
+	// 	"string",
+	// 	// "float32",
+	// 	"float64",
+	// 	// "uint",
+	// 	// "uint8",
+	// 	// "uint16",
+	// 	// "uint32",
+	// 	"uint64",
+	// 	"uintptr",
+	// 	// "int",
+	// 	// "int8",
+	// 	// "int16",
+	// 	// "int32",
+	// 	"int64",
+	// 	"bool",
+	// 	"time",
+	// 	"bytes",
+	// }
+}
+
+// genInternalSortablePlusTypes returns the types
+// that are used for reflection-based canonical's encoding of maps.
+//
+// For now, we only support the highest sizes for
+// int64, uint64, float64, bool, string, bytes.
+func genInternalSortablePlusTypes() []string {
+	return []string{
+		"string",
+		"float64",
+		"uint64",
+		// "uintptr",
+		"int64",
+		"bool",
+		"time",
+		"bytes",
+	}
+}
+
+func genTypeForShortName(s string) string {
+	switch s {
+	case "time":
+		return "time.Time"
+	case "bytes":
+		return "[]byte"
+	}
+	return s
+}
+
+func genArgs(args ...interface{}) map[string]interface{} {
+	m := make(map[string]interface{}, len(args)/2)
+	for i := 0; i < len(args); {
+		m[args[i].(string)] = args[i+1]
+		i += 2
+	}
+	return m
+}
+
+func genEndsWith(s0 string, sn ...string) bool {
+	for _, s := range sn {
+		if strings.HasSuffix(s0, s) {
+			return true
+		}
+	}
+	return false
+}
+
+func genCheckErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func genRunSortTmpl2Go(fnameIn, fnameOut string) {
+	var err error
+
+	funcs := make(template.FuncMap)
+	funcs["sortables"] = genInternalSortableTypes
+	funcs["sortablesplus"] = genInternalSortablePlusTypes
+	funcs["tshort"] = genTypeForShortName
+	funcs["endswith"] = genEndsWith
+	funcs["args"] = genArgs
+
+	t := template.New("").Funcs(funcs)
+	fin, err := os.Open(fnameIn)
+	genCheckErr(err)
+	defer fin.Close()
+	fout, err := os.Create(fnameOut)
+	genCheckErr(err)
+	defer fout.Close()
+	tmplstr, err := ioutil.ReadAll(fin)
+	genCheckErr(err)
+	t, err = t.Parse(string(tmplstr))
+	genCheckErr(err)
+	var out bytes.Buffer
+	err = t.Execute(&out, 0)
+	genCheckErr(err)
+	bout, err := format.Source(out.Bytes())
+	if err != nil {
+		fout.Write(out.Bytes()) // write out if error, so we can still see.
+	}
+	genCheckErr(err)
+	// write out if error, as much as possible, so we can still see.
+	_, err = fout.Write(bout)
+	genCheckErr(err)
+}
+
+func genRunTmpl2Go(fnameIn, fnameOut string) {
+	// println("____ " + fnameIn + " --> " + fnameOut + " ______")
+	fin, err := os.Open(fnameIn)
+	genCheckErr(err)
+	defer fin.Close()
+	fout, err := os.Create(fnameOut)
+	genCheckErr(err)
+	defer fout.Close()
+	err = genInternalGoFile(fin, fout)
+	genCheckErr(err)
 }
