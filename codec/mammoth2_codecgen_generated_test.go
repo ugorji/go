@@ -39,7 +39,7 @@ func init() {
 	if GenVersion != 17 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic("codecgen version mismatch: current: 17, need " + ver + ". Re-generate file: " + file)
+		panic(errors.New("codecgen version mismatch: current: 17, need " + ver + ". Re-generate file: " + file))
 	}
 }
 
@@ -7055,7 +7055,7 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }

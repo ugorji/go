@@ -50,8 +50,8 @@ const (
 )
 
 var (
-	errstrOnlyMapOrArrayCanDecodeIntoStruct = "only encoded map or array can be decoded into a struct"
-	errstrCannotDecodeIntoNil               = "cannot decode into nil"
+	errOnlyMapOrArrayCanDecodeIntoStruct = errors.New("only encoded map or array can be decoded into a struct")
+	errCannotDecodeIntoNil               = errors.New("cannot decode into nil")
 
 	// errmsgExpandSliceOverflow     = "expand slice: slice overflow"
 	errmsgExpandSliceCannotChange = "expand slice: cannot change"
@@ -132,7 +132,8 @@ type decDriver interface {
 
 	reset()
 	atEndOfDecode()
-	// uncacheRead()
+
+	nextValueBytes() []byte
 
 	decoder() *Decoder
 }
@@ -547,7 +548,6 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 			rv.Set(rvn)
 		} else {
 			rvn = d.kInterfaceNaked(f)
-			// xdebugf("kInterface: %v", rvn)
 			if rvn.IsValid() {
 				rv.Set(rvn)
 			} else if d.h.InterfaceReset {
@@ -678,16 +678,12 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		}
 		d.arrayEnd()
 	} else {
-		d.errorstr(errstrOnlyMapOrArrayCanDecodeIntoStruct)
+		d.errorv(errOnlyMapOrArrayCanDecodeIntoStruct)
 		return
 	}
 }
 
 func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
-	// if f.seq == seqTypeArray {
-	// 	xdebugf("decoder.kSlice: %v, %#v", rv.Type(), rv)
-	// }
-
 	// A slice can be set from a map or array in stream.
 	// This way, the order can be kept (as order is lost with map).
 
@@ -1508,7 +1504,7 @@ func (d *Decoder) decode(iv interface{}) {
 	// consequently, we deal with nil and interfaces outside the switch.
 
 	if iv == nil {
-		d.errorstr(errstrCannotDecodeIntoNil)
+		d.errorv(errCannotDecodeIntoNil)
 		return
 	}
 
@@ -1669,7 +1665,7 @@ func (d *Decoder) ensureDecodeable(rv reflect.Value) {
 		return
 	}
 	if !rv.IsValid() {
-		d.errorstr(errstrCannotDecodeIntoNil)
+		d.errorv(errCannotDecodeIntoNil)
 		return
 	}
 	if !rv.CanInterface() {
@@ -1713,14 +1709,7 @@ func (d *Decoder) string(v []byte) (s string) {
 
 // nextValueBytes returns the next value in the stream as a set of bytes.
 func (d *Decoder) nextValueBytes() (bs []byte) {
-	// d.d.uncacheRead()
-	if d.js {
-		d.jsondriver().uncacheRead()
-	}
-	d.r().track()
-	d.swallow()
-	bs = d.r().stopTrack()
-	return
+	return d.d.nextValueBytes()
 }
 
 func (d *Decoder) rawBytes() (v []byte) {
@@ -1852,16 +1841,6 @@ func (d *Decoder) sideDecode(v interface{}, bs []byte) {
 	rv := baseRV(v)
 	NewDecoderBytes(bs, d.hh).decodeValue(rv, d.h.fnNoExt(rv.Type()))
 }
-
-// func (d *Decoder) bytesInline(clen int, bs []byte, zerocopy bool) []byte {
-// 	if d.bytes && (zerocopy || d.h.ZeroCopy) {
-// 		return d.decRd.rb.readx(uint(clen))
-// 	}
-// 	if zerocopy && len(bs) == 0 {
-// 		bs = d.b[:]
-// 	}
-// 	return decByteSlice(d.r(), clen, d.h.MaxInitLen, bs)
-// }
 
 // --------------------------------------------------
 
@@ -2016,23 +1995,6 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 	} else {
 		rvlen = clen
 	}
-	return
-}
-
-func decReadFull(r io.Reader, bs []byte) (n uint, err error) {
-	var nn int
-	for n < uint(len(bs)) && err == nil {
-		nn, err = r.Read(bs[n:])
-		if nn > 0 {
-			if err == io.EOF {
-				// leave EOF for next time
-				err = nil
-			}
-			n += uint(nn)
-		}
-	}
-	// do not do this - it serves no purpose
-	// if n != len(bs) && err == io.EOF { err = io.ErrUnexpectedEOF }
 	return
 }
 

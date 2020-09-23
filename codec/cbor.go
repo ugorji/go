@@ -71,12 +71,15 @@ const (
 
 var (
 	cbordescSimpleNames = map[byte]string{
-		cborBdNil:              "nil",
-		cborBdFalse:            "false",
-		cborBdTrue:             "true",
-		cborBdFloat16:          "float",
-		cborBdFloat32:          "float",
-		cborBdFloat64:          "float",
+		cborBdNil:     "nil",
+		cborBdFalse:   "false",
+		cborBdTrue:    "true",
+		cborBdFloat16: "float",
+		cborBdFloat32: "float",
+		cborBdFloat64: "float",
+		cborBdBreak:   "break",
+	}
+	cbordescIndefNames = map[byte]string{
 		cborBdIndefiniteBytes:  "bytes*",
 		cborBdIndefiniteString: "string*",
 		cborBdIndefiniteArray:  "array*",
@@ -99,54 +102,18 @@ func cbordesc(bd byte) (s string) {
 	if bm == cborMajorSimpleOrFloat {
 		s = cbordescSimpleNames[bd]
 		if s == "" {
-			s = "unknown(simple)"
+			s = "unknown-simple"
 		}
 	} else {
 		s = cbordescMajorNames[bm]
+		if s == "" {
+			s = cbordescIndefNames[bd]
+		}
 		if s == "" {
 			s = "unknown"
 		}
 	}
 	return
-
-	// switch bd >> 5 {
-	// case cborMajorUint:
-	// 	return "(u)int"
-	// case cborMajorNegInt:
-	// 	return "int"
-	// case cborMajorBytes:
-	// 	return "bytes"
-	// case cborMajorString:
-	// 	return "string"
-	// case cborMajorArray:
-	// 	return "array"
-	// case cborMajorMap:
-	// 	return "map"
-	// case cborMajorTag:
-	// 	return "tag"
-	// case cborMajorSimpleOrFloat: // default
-	// 	switch bd {
-	// 	case cborBdNil:
-	// 		return "nil"
-	// 	case cborBdFalse:
-	// 		return "false"
-	// 	case cborBdTrue:
-	// 		return "true"
-	// 	case cborBdFloat16, cborBdFloat32, cborBdFloat64:
-	// 		return "float"
-	// 	case cborBdIndefiniteBytes:
-	// 		return "bytes*"
-	// 	case cborBdIndefiniteString:
-	// 		return "string*"
-	// 	case cborBdIndefiniteArray:
-	// 		return "array*"
-	// 	case cborBdIndefiniteMap:
-	// 		return "map*"
-	// 	default:
-	// 		return "unknown(simple)"
-	// 	}
-	// }
-	// return "unknown"
 }
 
 // -------------------
@@ -401,13 +368,6 @@ func (d *cborDecDriver) skipTags() {
 	}
 }
 
-// func (d *cborDecDriver) uncacheRead() {
-// 	if d.bdRead {
-// 		d.d.decRd.unreadn1()
-// 		d.bdRead = false
-// 	}
-// }
-
 func (d *cborDecDriver) ContainerType() (vt valueType) {
 	d.fnil = false
 	if !d.bdRead {
@@ -432,10 +392,6 @@ func (d *cborDecDriver) ContainerType() (vt valueType) {
 	return valueTypeUnset
 }
 
-// func (d *cborDecDriver) Nil() bool {
-// 	return d.fnil
-// }
-
 func (d *cborDecDriver) TryNil() bool {
 	return d.advanceNil()
 }
@@ -455,19 +411,16 @@ func (d *cborDecDriver) decUint() (ui uint64) {
 	v := d.bd & 0x1f
 	if v <= 0x17 {
 		ui = uint64(v)
+	} else if v == 0x18 {
+		ui = uint64(d.d.decRd.readn1())
+	} else if v == 0x19 {
+		ui = uint64(bigen.Uint16(d.d.decRd.readx(2)))
+	} else if v == 0x1a {
+		ui = uint64(bigen.Uint32(d.d.decRd.readx(4)))
+	} else if v == 0x1b {
+		ui = uint64(bigen.Uint64(d.d.decRd.readx(8)))
 	} else {
-		if v == 0x18 {
-			ui = uint64(d.d.decRd.readn1())
-		} else if v == 0x19 {
-			ui = uint64(bigen.Uint16(d.d.decRd.readx(2)))
-		} else if v == 0x1a {
-			ui = uint64(bigen.Uint32(d.d.decRd.readx(4)))
-		} else if v == 0x1b {
-			ui = uint64(bigen.Uint64(d.d.decRd.readx(8)))
-		} else {
-			d.d.errorf("invalid descriptor decoding uint: %x/%s", d.bd, cbordesc(d.bd))
-			return
-		}
+		d.d.errorf("invalid descriptor decoding uint: %x/%s", d.bd, cbordesc(d.bd))
 	}
 	return
 }
@@ -481,7 +434,7 @@ func (d *cborDecDriver) decCheckInteger() (neg bool) {
 	} else if major == cborMajorNegInt {
 		neg = true
 	} else {
-		d.d.errorf("invalid integer; got major %v from descriptor %x/%s, expected %v or %v",
+		d.d.errorf("invalid integer; got major %v from descriptor %x (%s), expected %v or %v",
 			major, d.bd, cbordesc(d.bd), cborMajorUint, cborMajorNegInt)
 	}
 	return
@@ -805,17 +758,6 @@ func (d *cborDecDriver) DecodeNaked() {
 		case cborBdFloat16, cborBdFloat32, cborBdFloat64:
 			n.v = valueTypeFloat
 			n.f = d.DecodeFloat64()
-		case cborBdIndefiniteBytes:
-			fauxUnionReadRawBytes(d, &d.d, n, d.h.RawToString)
-		case cborBdIndefiniteString:
-			n.v = valueTypeString
-			n.s = string(d.DecodeStringAsBytes())
-		case cborBdIndefiniteArray:
-			n.v = valueTypeArray
-			decodeFurther = true
-		case cborBdIndefiniteMap:
-			n.v = valueTypeMap
-			decodeFurther = true
 		default:
 			d.d.errorf("decodeNaked: Unrecognized d.bd: 0x%x", d.bd)
 		}
@@ -825,6 +767,126 @@ func (d *cborDecDriver) DecodeNaked() {
 	if !decodeFurther {
 		d.bdRead = false
 	}
+}
+
+func (d *cborDecDriver) uintBytes() (v []byte, ui uint64) {
+	switch vv := d.bd & 0x1f; vv {
+	case 0x18:
+		v = d.d.decRd.readx(1)
+		ui = uint64(v[0])
+	case 0x19:
+		v = d.d.decRd.readx(2)
+		ui = uint64(bigen.Uint16(v))
+	case 0x1a:
+		v = d.d.decRd.readx(4)
+		ui = uint64(bigen.Uint32(v))
+	case 0x1b:
+		v = d.d.decRd.readx(8)
+		ui = uint64(bigen.Uint64(v))
+	default:
+		if vv > 0x1b {
+			d.d.errorf("invalid descriptor decoding uint: %x/%s", d.bd, cbordesc(d.bd))
+		}
+		ui = uint64(vv)
+	}
+	return
+}
+
+func (d *cborDecDriver) nextValueBytes() (v []byte) {
+	v = d.d.blist.get(256)[:0]
+	v = d.nextValueBytesR(v)
+	d.bdRead = false
+	return
+}
+
+func (d *cborDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
+	d.readNextBd()
+	v = append(v0, d.bd)
+	return d.nextValueBytesBdReadR(v)
+}
+
+func (d *cborDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
+	v = v0
+	var bs []byte
+	var ui uint64
+
+	switch d.bd >> 5 {
+	case cborMajorUint, cborMajorNegInt:
+		bs, _ = d.uintBytes()
+		v = append(v, bs...)
+	case cborMajorString, cborMajorBytes:
+		if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
+			for {
+				d.readNextBd()
+				v = append(v, d.bd)
+				if d.bd == cborBdBreak {
+					break
+				}
+				bs, ui = d.uintBytes()
+				v = append(v, bs...)
+				v = append(v, d.d.decRd.readx(uint(ui))...)
+			}
+		} else {
+			bs, ui = d.uintBytes()
+			v = append(v, bs...)
+			v = append(v, d.d.decRd.readx(uint(ui))...)
+		}
+	case cborMajorArray:
+		if d.bd == cborBdIndefiniteArray {
+			for {
+				d.readNextBd()
+				v = append(v, d.bd)
+				if d.bd == cborBdBreak {
+					break
+				}
+				v = d.nextValueBytesBdReadR(v)
+			}
+		} else {
+			bs, ui = d.uintBytes()
+			v = append(v, bs...)
+			for i := uint64(0); i < ui; i++ {
+				v = d.nextValueBytesR(v)
+			}
+		}
+	case cborMajorMap:
+		if d.bd == cborBdIndefiniteMap {
+			for {
+				d.readNextBd()
+				v = append(v, d.bd)
+				if d.bd == cborBdBreak {
+					break
+				}
+				v = d.nextValueBytesBdReadR(v)
+				v = d.nextValueBytesR(v)
+			}
+		} else {
+			bs, ui = d.uintBytes()
+			v = append(v, bs...)
+			for i := uint64(0); i < ui; i++ {
+				v = d.nextValueBytesR(v)
+				v = d.nextValueBytesR(v)
+			}
+		}
+	case cborMajorTag:
+		bs, _ = d.uintBytes()
+		v = append(v, bs...)
+		v = d.nextValueBytesR(v)
+	case cborMajorSimpleOrFloat:
+		switch d.bd {
+		case cborBdNil, cborBdUndefined, cborBdFalse, cborBdTrue: // pass
+		case cborBdFloat16:
+			v = append(v, d.d.decRd.readx(2)...)
+		case cborBdFloat32:
+			v = append(v, d.d.decRd.readx(4)...)
+		case cborBdFloat64:
+			v = append(v, d.d.decRd.readx(8)...)
+		default:
+			d.d.errorf("nextValueBytes: Unrecognized d.bd: 0x%x", d.bd)
+		}
+	default: // should never happen
+		d.d.errorf("nextValueBytes: Unrecognized d.bd: 0x%x", d.bd)
+	}
+	return
 }
 
 // -------------------------

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const bincDoPrune = true // No longer needed. Needed before as C lib did not support pruning.
+const bincDoPrune = true
 
 // vd as low 4 bits (there are 16 slots)
 const (
@@ -24,10 +24,10 @@ const (
 
 	bincVdTimestamp
 	bincVdSmallInt
-	bincVdUnicodeOther
+	_ // bincVdUnicodeOther
 	bincVdSymbol
 
-	bincVdDecimal
+	_               // bincVdDecimal
 	_               // open slot
 	_               // open slot
 	bincVdCustomExt = 0x0f
@@ -46,7 +46,7 @@ const (
 )
 
 const (
-	bincFlBin16 byte = iota
+	_ byte = iota // bincFlBin16 byte = iota
 	bincFlBin32
 	_ // bincFlBin32e
 	bincFlBin64
@@ -91,48 +91,6 @@ func bincdesc(vd, vs byte) (s string) {
 		s = "unknown"
 	}
 	return
-
-	// 	switch vd {
-	// 	case bincVdSpecial:
-	// 		switch vs {
-	// 		case bincSpNil:
-	// 			return "nil"
-	// 		case bincSpFalse:
-	// 			return "false"
-	// 		case bincSpTrue:
-	// 			return "true"
-	// 		case bincSpNan, bincSpPosInf, bincSpNegInf, bincSpZeroFloat:
-	// 			return "float"
-	// 		case bincSpZero:
-	// 			return "uint"
-	// 		case bincSpNegOne:
-	// 			return "int"
-	// 		default:
-	// 			return "unknown"
-	// 		}
-	// 	case bincVdSmallInt, bincVdPosInt:
-	// 		return "uint"
-	// 	case bincVdNegInt:
-	// 		return "int"
-	// 	case bincVdFloat:
-	// 		return "float"
-	// 	case bincVdSymbol:
-	// 		return "string"
-	// 	case bincVdString:
-	// 		return "string"
-	// 	case bincVdByteArray:
-	// 		return "bytes"
-	// 	case bincVdTimestamp:
-	// 		return "time"
-	// 	case bincVdCustomExt:
-	// 		return "ext"
-	// 	case bincVdArray:
-	// 		return "array"
-	// 	case bincVdMap:
-	// 		return "map"
-	// 	default:
-	// 		return "unknown"
-	// 	}
 }
 
 type bincEncDriver struct {
@@ -386,7 +344,7 @@ func (e *bincEncDriver) EncodeStringBytesRaw(v []byte) {
 }
 
 func (e *bincEncDriver) encBytesLen(c charEncoding, length uint64) {
-	// NOTE: we currently only support UTF-8 (string) and RAW (bytearray).
+	// MARKER: we currently only support UTF-8 (string) and RAW (bytearray).
 	// We should consider supporting bincUnicodeOther.
 
 	if c == cRAW {
@@ -454,13 +412,6 @@ func (d *bincDecDriver) readNextBd() {
 	d.bdRead = true
 }
 
-// func (d *bincDecDriver) uncacheRead() {
-// 	if d.bdRead {
-// 		d.d.decRd.unreadn1()
-// 		d.bdRead = false
-// 	}
-// }
-
 func (d *bincDecDriver) advanceNil() (null bool) {
 	d.fnil = false
 	if !d.bdRead {
@@ -520,14 +471,13 @@ func (d *bincDecDriver) DecodeTime() (t time.Time) {
 	return
 }
 
-func (d *bincDecDriver) decFloatPre(vs, defaultLen byte) {
-	if vs&0x8 == 0 {
-		d.d.decRd.readb(d.b[0:defaultLen])
+func (d *bincDecDriver) decFloatPre(xlen byte) {
+	if d.vs&0x8 == 0 {
+		d.d.decRd.readb(d.b[0:xlen])
 	} else {
 		l := d.d.decRd.readn1()
 		if l > 8 {
 			d.d.errorf("cannot read float - at most 8 bytes used to represent float - received %v bytes", l)
-			return
 		}
 		for i := l; i < 8; i++ {
 			d.b[i] = 0
@@ -539,10 +489,10 @@ func (d *bincDecDriver) decFloatPre(vs, defaultLen byte) {
 func (d *bincDecDriver) decFloat() (f float64) {
 	//if true { f = math.Float64frombits(bigen.Uint64(d.d.decRd.readx(8))); break; }
 	if x := d.vs & 0x7; x == bincFlBin32 {
-		d.decFloatPre(d.vs, 4)
+		d.decFloatPre(4)
 		f = float64(math.Float32frombits(bigen.Uint32(d.b[0:4])))
 	} else if x == bincFlBin64 {
-		d.decFloatPre(d.vs, 8)
+		d.decFloatPre(8)
 		f = math.Float64frombits(bigen.Uint64(d.b[0:8]))
 	} else {
 		d.d.errorf("read float - only float32 and float64 are supported - %s %x-%x/%s",
@@ -553,32 +503,39 @@ func (d *bincDecDriver) decFloat() (f float64) {
 }
 
 func (d *bincDecDriver) decUint() (v uint64) {
-	// need to inline the code (interface conversion and type assertion expensive)
+	_, v = d.uintBytes()
+	return
+}
+
+func (d *bincDecDriver) uintBytes() (bs []byte, v uint64) {
 	switch d.vs {
 	case 0:
-		v = uint64(d.d.decRd.readn1())
+		d.b[0] = d.d.decRd.readn1()
+		v = uint64(d.b[0])
+		bs = d.b[:1]
 	case 1:
-		d.d.decRd.readb(d.b[6:8])
-		v = uint64(bigen.Uint16(d.b[6:8]))
+		bs = d.b[6:8]
+		d.d.decRd.readb(bs)
+		v = uint64(bigen.Uint16(bs))
 	case 2:
+		bs = d.b[5:8]
+		d.d.decRd.readb(bs)
 		d.b[4] = 0
-		d.d.decRd.readb(d.b[5:8])
 		v = uint64(bigen.Uint32(d.b[4:8]))
 	case 3:
-		d.d.decRd.readb(d.b[4:8])
-		v = uint64(bigen.Uint32(d.b[4:8]))
-	case 4, 5, 6:
+		bs = d.b[4:8]
+		d.d.decRd.readb(bs)
+		v = uint64(bigen.Uint32(bs))
+	case 4, 5, 6, 7:
 		lim := 7 - d.vs
-		d.d.decRd.readb(d.b[lim:8])
+		bs = d.b[lim:8]
+		d.d.decRd.readb(bs)
 		for i := uint8(0); i < lim; i++ {
 			d.b[i] = 0
 		}
 		v = uint64(bigen.Uint64(d.b[:8]))
-	case 7:
-		d.d.decRd.readb(d.b[:8])
-		v = uint64(bigen.Uint64(d.b[:8]))
 	default:
-		d.d.errorf("unsigned integers with greater than 64 bits of precision not supported")
+		d.d.errorf("unsigned integers with greater than 64 bits of precision not supported: d.vs: %v %x", d.vs, d.vs)
 		return
 	}
 	return
@@ -938,14 +895,14 @@ func (d *bincDecDriver) DecodeNaked() {
 	case bincVdFloat:
 		n.v = valueTypeFloat
 		n.f = d.decFloat()
-	case bincVdSymbol:
-		n.v = valueTypeSymbol
-		n.s = string(d.DecodeStringAsBytes())
 	case bincVdString:
 		n.v = valueTypeString
 		n.s = string(d.DecodeStringAsBytes())
 	case bincVdByteArray:
 		fauxUnionReadRawBytes(d, &d.d, n, d.h.RawToString)
+	case bincVdSymbol:
+		n.v = valueTypeSymbol
+		n.s = string(d.DecodeStringAsBytes())
 	case bincVdTimestamp:
 		n.v = valueTypeTime
 		tt, err := bincDecodeTime(d.d.decRd.readx(uint(d.vs)))
@@ -979,6 +936,116 @@ func (d *bincDecDriver) DecodeNaked() {
 		n.v = valueTypeInt
 		n.i = int64(n.u)
 	}
+}
+
+func (d *bincDecDriver) nextValueBytes() (v []byte) {
+	v = d.d.blist.get(256)[:0]
+	v = d.nextValueBytesR(v)
+	d.bdRead = false
+	return
+}
+
+func (d *bincDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
+	d.readNextBd()
+	v = append(v0, d.bd)
+
+	fnLen := func(vs byte) uint {
+		var bs []byte
+		switch vs {
+		case 0:
+			x := d.d.decRd.readn1()
+			v = append(v, x)
+			return uint(x)
+		case 1:
+			bs = d.b[6:8]
+			d.d.decRd.readb(bs)
+			v = append(v, bs...)
+			return uint(bigen.Uint16(bs))
+		case 2:
+			bs = d.b[4:8]
+			d.d.decRd.readb(bs)
+			v = append(v, bs...)
+			return uint(bigen.Uint32(bs))
+		case 3:
+			bs = d.b[:8]
+			d.d.decRd.readb(bs)
+			v = append(v, bs...)
+			return uint(bigen.Uint64(bs))
+		default:
+			return uint(vs - 4)
+		}
+	}
+
+	var clen uint
+
+	switch d.vd {
+	case bincVdSpecial:
+		switch d.vs {
+		case bincSpNil, bincSpFalse, bincSpTrue, bincSpNan, bincSpPosInf: // pass
+		case bincSpNegInf, bincSpZeroFloat, bincSpZero, bincSpNegOne: // pass
+		default:
+			d.d.errorf("cannot infer value - unrecognized special value from descriptor %x-%x/%s",
+				d.vd, d.vs, bincdesc(d.vd, d.vs))
+		}
+	case bincVdSmallInt: // pass
+	case bincVdPosInt, bincVdNegInt:
+		bs, _ := d.uintBytes()
+		v = append(v, bs...)
+	case bincVdFloat:
+		fn := func(xlen byte) {
+			if d.vs&0x8 != 0 {
+				xlen = d.d.decRd.readn1()
+				v = append(v, xlen)
+				if xlen > 8 {
+					d.d.errorf("cannot read float - at most 8 bytes used to represent float - received %v bytes", xlen)
+				}
+			}
+			d.d.decRd.readb(d.b[:xlen])
+			v = append(v, d.b[:xlen]...)
+		}
+		switch d.vs & 0x7 {
+		case bincFlBin32:
+			fn(4)
+		case bincFlBin64:
+			fn(8)
+		default:
+			d.d.errorf("read float - only float32 and float64 are supported - %s %x-%x/%s",
+				msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
+		}
+	case bincVdString, bincVdByteArray:
+		clen = fnLen(d.vs)
+		v = append(v, d.d.decRd.readx(clen)...)
+	case bincVdSymbol:
+		if d.vs&0x8 == 0 {
+			v = append(v, d.d.decRd.readn1())
+		} else {
+			v = append(v, d.d.decRd.rb.readx(2)...)
+		}
+		if d.vs&0x4 != 0 {
+			clen = fnLen(d.vs & 0x3)
+			v = append(v, d.d.decRd.readx(clen)...)
+		}
+	case bincVdTimestamp:
+		v = append(v, d.d.decRd.readx(uint(d.vs))...)
+	case bincVdCustomExt:
+		clen = fnLen(d.vs)
+		v = append(v, d.d.decRd.readn1()) // tag
+		v = append(v, d.d.decRd.rb.readx(clen)...)
+	case bincVdArray:
+		clen = fnLen(d.vs)
+		for i := uint(0); i < clen; i++ {
+			v = d.nextValueBytesR(v)
+		}
+	case bincVdMap:
+		clen = fnLen(d.vs)
+		for i := uint(0); i < clen; i++ {
+			v = d.nextValueBytesR(v)
+			v = d.nextValueBytesR(v)
+		}
+	default:
+		d.d.errorf("cannot infer value - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
+	}
+	return
 }
 
 //------------------------------------
@@ -1228,28 +1295,6 @@ func bincDecodeTime(bs []byte) (tt time.Time, err error) {
 	}
 	return
 }
-
-// func timeLocUTCName(tzint int16) string {
-// 	if tzint == 0 {
-// 		return "UTC"
-// 	}
-// 	var tzname = []byte("UTC+00:00")
-// 	//tzname := fmt.Sprintf("UTC%s%02d:%02d", tzsign, tz/60, tz%60) //perf issue using Sprintf.. inline below.
-// 	//tzhr, tzmin := tz/60, tz%60 //faster if u convert to int first
-// 	var tzhr, tzmin int16
-// 	if tzint < 0 {
-// 		tzname[3] = '-'
-// 		tzhr, tzmin = -tzint/60, (-tzint)%60
-// 	} else {
-// 		tzhr, tzmin = tzint/60, tzint%60
-// 	}
-// 	tzname[4] = timeDigits[tzhr/10]
-// 	tzname[5] = timeDigits[tzhr%10]
-// 	tzname[7] = timeDigits[tzmin/10]
-// 	tzname[8] = timeDigits[tzmin%10]
-// 	return string(tzname)
-// 	//return time.FixedZone(string(tzname), int(tzint)*60)
-// }
 
 var _ decDriver = (*bincDecDriver)(nil)
 var _ encDriver = (*bincEncDriver)(nil)

@@ -59,10 +59,10 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testUseIoEncDec = 0
 	testUseReset = true
 
-	// xdebugf("with StructToArray=true")
 	testDecodeOptions.ZeroCopy = true
 	testDecodeOptions.InternString = true
 	testDecodeOptions.MapValueReset = true
+
 	// testDecodeOptions.SignedInteger = true
 	// testDecodeOptions.SliceElementReset = true
 	// testDecodeOptions.InterfaceReset = true
@@ -75,13 +75,13 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testEncodeOptions.CheckCircularRef = true
 	testEncodeOptions.RecursiveEmptyCheck = true
 	testEncodeOptions.OptimumSize = true
+
 	// testEncodeOptions.Raw = true
 	// testEncodeOptions.StringToRaw = true
 
 	testReinit()
 	t.Run("optionsTrue", f)
 
-	// xdebugf("setting StructToArray=false")
 	testEncodeOptions.StructToArray = false
 	testDepth = 6
 	testReinit()
@@ -183,8 +183,10 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonStructKeyType", TestJsonStructKeyType)
 	t.Run("TestJsonPreferArrayOverSlice", TestJsonPreferArrayOverSlice)
 	t.Run("TestJsonZeroCopyBytes", TestJsonZeroCopyBytes)
+	t.Run("TestJsonNextValueBytes", TestJsonNextValueBytes)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
+
 }
 
 func testBincGroup(t *testing.T) {
@@ -220,6 +222,7 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincStructKeyType", TestBincStructKeyType)
 	t.Run("TestBincPreferArrayOverSlice", TestBincPreferArrayOverSlice)
 	t.Run("TestBincZeroCopyBytes", TestBincZeroCopyBytes)
+	t.Run("TestBincNextValueBytes", TestBincNextValueBytes)
 }
 
 func testCborGroup(t *testing.T) {
@@ -255,6 +258,7 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborStructKeyType", TestCborStructKeyType)
 	t.Run("TestCborPreferArrayOverSlice", TestCborPreferArrayOverSlice)
 	t.Run("TestCborZeroCopyBytes", TestCborZeroCopyBytes)
+	t.Run("TestCborNextValueBytes", TestCborNextValueBytes)
 
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 	t.Run("TestCborSkipTags", TestCborSkipTags)
@@ -292,6 +296,7 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackStructKeyType", TestMsgpackStructKeyType)
 	t.Run("TestMsgpackPreferArrayOverSlice", TestMsgpackPreferArrayOverSlice)
 	t.Run("TestMsgpackZeroCopyBytes", TestMsgpackZeroCopyBytes)
+	t.Run("TestMsgpackNextValueBytes", TestMsgpackNextValueBytes)
 
 	t.Run("TestMsgpackDecodeMapAndExtSizeMismatch", TestMsgpackDecodeMapAndExtSizeMismatch)
 }
@@ -327,6 +332,7 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleStructKeyType", TestSimpleStructKeyType)
 	t.Run("TestSimplePreferArrayOverSlice", TestSimplePreferArrayOverSlice)
 	t.Run("TestSimpleZeroCopyBytes", TestSimpleZeroCopyBytes)
+	t.Run("TestSimpleNextValueBytes", TestSimpleNextValueBytes)
 }
 
 func testSimpleMammothGroup(t *testing.T) {

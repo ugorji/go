@@ -15,7 +15,7 @@ import (
 )
 
 // This file has unsafe variants of some helper methods.
-// NOTE: See helper_not_unsafe.go for the usage information.
+// MARKER: See helper_not_unsafe.go for the usage information.
 
 // For reflect.Value code, we decided to do the following:
 //    - if we know the kind, we can elide conditional checks for
@@ -27,7 +27,7 @@ import (
 
 const safeMode = false
 
-// keep in sync with GO_ROOT/src/reflect/value.go
+// MARKER: keep in sync with GO_ROOT/src/reflect/value.go
 const (
 	unsafeFlagIndir    = 1 << 7
 	unsafeFlagAddr     = 1 << 8
@@ -72,21 +72,6 @@ func bytesView(v string) []byte {
 	sx := (*unsafeString)(unsafe.Pointer(&v))
 	return *(*[]byte)(unsafe.Pointer(&unsafeSlice{sx.Data, sx.Len, sx.Len}))
 }
-
-// // isNilRef says whether the interface is a nil reference or not.
-// //
-// // A reference here is a pointer-sized reference i.e. map, ptr, chan, func, unsafepointer.
-// // It is optional to extend this to also check if slices or interfaces are nil also.
-// //
-// // NOTE: There is no global way of checking if an interface is nil.
-// // For true references (map, ptr, func, chan), you can just look
-// // at the word of the interface.
-// // However, for slices, you have to dereference
-// // the word, and get a pointer to the 3-word interface value.
-// func isNilRef(v interface{}) (rv reflect.Value, isnil bool) {
-// 	isnil = ((*unsafeIntf)(unsafe.Pointer(&v))).word == nil
-// 	return
-// }
 
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	var ui = (*unsafeIntf)(unsafe.Pointer(&v))

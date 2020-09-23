@@ -40,7 +40,7 @@ import (
 	"time"
 )
 
-const genCodecPkg = "codec1978" // keep in sync with ../gen.go
+const genCodecPkg = "codec1978" // MARKER: keep in sync with ../gen.go
 
 const genFrunMainTmpl = `//+build ignore
 
@@ -346,7 +346,8 @@ func gen1(frunName, tmplStr string, tv interface{}) (frun *os.File, err error) {
 	return
 }
 
-func genStripVendor(s string) string { // keep in sync with ../gen.go
+// MARKER: keep in sync with ../gen.go
+func genStripVendor(s string) string {
 	// HACK: Misbehaviour occurs in go 1.5. May have to re-visit this later.
 	// if s contains /vendor/ OR startsWith vendor/, then return everything after it.
 	const vendorStart = "vendor/"

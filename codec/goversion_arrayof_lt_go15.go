@@ -5,10 +5,15 @@
 
 package codec
 
-import "reflect"
+import (
+	"errors"
+	"reflect"
+)
 
 const reflectArrayOfSupported = false
 
+var errReflectArrayOfUnsupported = errors.New("codec: reflect.ArrayOf unsupported in this go version")
+
 func reflectArrayOf(count int, elem reflect.Type) reflect.Type {
-	panic("codec: reflect.ArrayOf unsupported in this go version")
+	panic(errReflectArrayOfUnsupported)
 }

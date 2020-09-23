@@ -244,7 +244,6 @@ func (x *testUnixNanoTimeExt) ConvertExt(v interface{}) interface{} {
 }
 
 func (x *testUnixNanoTimeExt) UpdateExt(dest interface{}, v interface{}) {
-	// xdebugf("testUnixNanoTimeExt: v: %#v", v)
 	tt := dest.(*time.Time)
 	*tt = time.Unix(0, v.(int64)).UTC()
 	// switch v2 := v.(type) {
@@ -255,7 +254,7 @@ func (x *testUnixNanoTimeExt) UpdateExt(dest interface{}, v interface{}) {
 	// //case float64:
 	// //case string:
 	// default:
-	// 	panic(fmt.Sprintf("unsupported format for time conversion: expecting int64/uint64; got %T", v))
+	// 	panic(fmt.Errorf("unsupported format for time conversion: expecting int64/uint64; got %T", v))
 	// }
 }
 
@@ -305,7 +304,7 @@ func (x *wrapBytesExt) UpdateExt(dest interface{}, v interface{}) {
 	case string:
 		*v2 = wrapBytes([]byte(v3))
 	default:
-		panic("UpdateExt for wrapBytesExt expects string or []byte")
+		panic(errors.New("UpdateExt for wrapBytesExt expects string or []byte"))
 	}
 	// *v2 = wrapBytes(v.([]byte))
 }
@@ -920,7 +919,7 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	//do last map and newStruc
 	idx2 := idxMap + numMap - 1
 	doTestCodecTableOne(t, true, h, table[idx2:], tableTestNilVerify[idx2:])
-	//TODO? What is this one?
+	//TODO: What is this one? do we need to do it?
 	//doTestCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18])
 }
 
@@ -1626,7 +1625,7 @@ func doTestRawValue(t *testing.T, h Handle) {
 	e := NewEncoderBytes(&bs, h)
 	e.MustEncode(v.I)
 	if testVerbose {
-		t.Logf(">>> raw: %v\n", bs)
+		t.Logf(">>> raw: %v, %s\n", bs, bs)
 	}
 
 	v.R = Raw(bs)
@@ -1634,13 +1633,13 @@ func doTestRawValue(t *testing.T, h Handle) {
 	e.MustEncode(v)
 
 	if testVerbose {
-		t.Logf(">>> bs2: %v\n", bs2)
+		t.Logf(">>> bs2: %v, %s\n", bs2, bs2)
 	}
 	d := NewDecoderBytes(bs2, h)
 	d.MustDecode(&v2)
 	d.ResetBytes(v2.R)
 	if testVerbose {
-		t.Logf(">>> v2.R: %v\n", ([]byte)(v2.R))
+		t.Logf(">>> v2.R: %v, %s\n", ([]byte)(v2.R), ([]byte)(v2.R))
 	}
 	d.MustDecode(&i2)
 
@@ -2221,7 +2220,7 @@ func testMammoth(t *testing.T, h Handle) {
 	var m, m2 TestMammoth
 	testRandomFillRV(rv4i(&m).Elem())
 	b = testMarshalErr(&m, h, t, "mammoth-"+name)
-	// xdebugf("%s", b)
+
 	testUnmarshalErr(&m2, b, h, t, "mammoth-"+name)
 	testDeepEqualErr(&m, &m2, t, "mammoth-"+name)
 	var mm, mm2 TestMammoth2Wrapper
@@ -2295,7 +2294,7 @@ func testUintToInt(t *testing.T, h Handle) {
 		} else {
 			ui = uint64(-v)
 		}
-		// xdebugf("testing %x", ui)
+
 		b = testMarshalErr(ui, h, t, "negint2uint-"+name)
 		testUnmarshalErr(&ui2, b, h, t, "negint2uint-"+name)
 		if ui2 != ui {
@@ -2536,15 +2535,15 @@ func doTestMissingFields(t *testing.T, h Handle) {
 	// encode missingFielderT2, decode into missingFielderT1, encode it out again, decode into new missingFielderT2, compare
 	v1 := missingFielderT2{S: "true seven eight", B: true, F: 777.0, I: -888}
 	b1 := testMarshalErr(v1, h, t, name+"-missing-enc-2")
-	// xdebugf("marshal into b1: %s", b1)
+
 	var v2 missingFielderT1
 	testUnmarshalErr(&v2, b1, h, t, name+"-missing-dec-1")
-	// xdebugf("unmarshal into v2: %v", v2)
+
 	b2 := testMarshalErr(&v2, h, t, name+"-missing-enc-1")
-	// xdebugf("marshal into b2: %s", b2)
+
 	var v3 missingFielderT2
 	testUnmarshalErr(&v3, b2, h, t, name+"-missing-dec-2")
-	// xdebugf("unmarshal into v3: %v", v3)
+
 	testDeepEqualErr(v1, v3, t, name+"-missing-cmp-2")
 }
 
@@ -2568,7 +2567,7 @@ func doTestMaxDepth(t *testing.T, h Handle) {
 			s1[0] = &s0
 			s1 = &s0
 		}
-		// xdebugf("sfunc s: %v", s)
+
 		return
 		// var s []interface{}
 		// s = append(s, []interface{})
@@ -2587,7 +2586,7 @@ func doTestMaxDepth(t *testing.T, h Handle) {
 			mlast["A"+strconv.FormatInt(int64(i), 10)] = m0
 			mlast = m0
 		}
-		// xdebugf("mfunc m: %v", m)
+
 		return
 	}
 	s, s1 := sfunc(5)
@@ -2612,7 +2611,7 @@ func doTestMaxDepth(t *testing.T, h Handle) {
 	for i, v := range table {
 		basicHandle(h).MaxDepth = v.M
 		b1 := testMarshalErr(v.I, h, t, name+"-maxdepth-enc"+strconv.FormatInt(int64(i), 10))
-		// xdebugf("b1: %s", b1)
+
 		var err error
 		if v.S {
 			var v2 T1
@@ -2688,8 +2687,7 @@ func doTestBytesEncodedAsArray(t *testing.T, h Handle) {
 	var out []byte
 	bs := testMarshalErr(&in, h, t, name)
 	testUnmarshalErr(&out, bs, h, t, name)
-	// xdebugf("in:  %v", in)
-	// xdebug2f("out: %v\n", out)
+
 	testDeepEqualErr(un, out, t, name)
 }
 
@@ -2808,7 +2806,6 @@ func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
 	// - DeleteOnMapValue (skipped - no longer supported)
 
 	bh := basicHandle(h)
-	// xdebugf("[%s] maptype: %v, slice type: %v", name, bh.MapType, bh.SliceType)
 
 	r2s := bh.RawToString
 	s2r := bh.StringToRaw
@@ -2842,16 +2839,10 @@ func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
 
 	// compare encoded v1 to encoded v2, while setting StringToRaw to b
 	fne := func(v1, v2 interface{}, b bool) {
-		// xdebugf("[%s] fne: StringToRaw: %v, v1: %#v, v2: %#v", name, b, v1, v2)
 		bh.StringToRaw = b
 		bs1 = testMarshalErr(v1, h, t, "")
 		// bs1 = []byte(string(bs1))
 		bs2 = testMarshalErr(v2, h, t, "")
-		// if jok {
-		// 	xdebugf("[%s] fne: bh: %#v", name, bh.EncodeOptions)
-		// 	xdebugf("[%s] bs1: %s", name, bs1)
-		// 	xdebugf("[%s] bs2: %s", name, bs2)
-		// }
 		testDeepEqualErr(bs1, bs2, t, "")
 	}
 
@@ -3117,33 +3108,30 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 	}
 	br.reset(strings.NewReader(s), bufsizehalf, &blist)
 	// println()
-	for range [4]struct{}{} {
-		out = br.readTo(&numCharBitset)
-		testDeepEqualErr(string(out), `01234`, t, "-")
-		// fmt.Printf("readTo: out: `%s`\n", out)
-		out = br.readUntil('\'', true)
-		testDeepEqualErr(string(out), "'", t, "-")
-		// fmt.Printf("readUntil: out: `%s`\n", out)
-		out = br.readTo(&numCharBitset)
-		testDeepEqualErr(string(out), `56789`, t, "-")
-		// fmt.Printf("readTo: out: `%s`\n", out)
-		out = br.readUntil('0', true)
-		testDeepEqualErr(string(out), `      0`, t, "-")
-		// fmt.Printf("readUntil: out: `%s`\n", out)
-		br.unreadn1()
-	}
+
+	// 20200915: readTo is not longer available
+	// for range [4]struct{}{} {
+	// 	out = br.readTo(&numCharBitset)
+	// 	testDeepEqualErr(string(out), `01234`, t, "-")
+	// 	// fmt.Printf("readTo: out: `%s`\n", out)
+	// 	out = br.readUntil('\'', true)
+	// 	testDeepEqualErr(string(out), "'", t, "-")
+	// 	// fmt.Printf("readUntil: out: `%s`\n", out)
+	// 	out = br.readTo(&numCharBitset)
+	// 	testDeepEqualErr(string(out), `56789`, t, "-")
+	// 	// fmt.Printf("readTo: out: `%s`\n", out)
+	// 	out = br.readUntil('0', true)
+	// 	testDeepEqualErr(string(out), `      0`, t, "-")
+	// 	// fmt.Printf("readUntil: out: `%s`\n", out)
+	// 	br.unreadn1()
+	// }
 	br.reset(strings.NewReader(s), bufsizehalf, &blist)
-	// println()
 	for range [4]struct{}{} {
-		out = br.readUntil(' ', true)
-		testDeepEqualErr(string(out), `01234'56789 `, t, "-")
-		// fmt.Printf("readUntil: out: |%s|\n", out)
 		token = br.skipWhitespace() // br.skip(&whitespaceCharBitset)
 		testDeepEqualErr(token, byte('0'), t, "-")
-		// fmt.Printf("skip: token: '%c'\n", token)
-		br.unreadn1()
+		out = br.readUntil(' ', true)
+		testDeepEqualErr(string(out), `1234'56789 `, t, "-")
 	}
-	// println()
 }
 
 func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
@@ -3210,6 +3198,55 @@ func doTestZeroCopyBytes(t *testing.T, h Handle) {
 		t.Logf("%s: ZeroCopy=true, but decoded OR input slice is empty: %v, %v", h.Name(), v, bs)
 	}
 	t.FailNow()
+}
+
+func doTestNextValueBytes(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
+
+	// - encode uint, int, float, bool, struct, map, slice, string - all separated by nil
+	// - use nextvaluebytes to grab he's got each one, and decode it, and compare
+	var inputs = []interface{}{
+		uint64(7777),
+		int64(9999),
+		float64(12.25),
+		true,
+		map[string]uint64{"1": 1, "22": 22, "333": 333, "4444": 4444},
+		[]string{"1", "22", "333", "4444"},
+		newTestStruc(testDepth, testNumRepeatString, false, false, true),
+		"1223334444",
+	}
+	var out []byte
+
+	for i, v := range inputs {
+		_ = i
+		bs := testMarshalErr(v, h, t, "nextvaluebytes")
+		out = append(out, bs...)
+		out = append(out, testMarshalErr(nil, h, t, "nextvaluebytes")...)
+	}
+	// out = append(out, []byte("----")...)
+
+	var valueBytes = make([][]byte, len(inputs)*2)
+
+	d, oldReadBufferSize := sTestCodecDecoder(out, h, basicHandle(h))
+	for i := 0; i < len(inputs)*2; i++ {
+		bs := d.nextValueBytes()
+		valueBytes[i] = make([]byte, len(bs))
+		copy(valueBytes[i], bs)
+	}
+	if testUseIoEncDec >= 0 {
+		basicHandle(h).ReaderBufferSize = oldReadBufferSize
+	}
+
+	var result interface{}
+	for i := 0; i < len(inputs); i++ {
+		// result = reflect.New(reflect.TypeOf(inputs[i])).Elem().Interface()
+		result = reflect.Zero(reflect.TypeOf(inputs[i])).Interface()
+		testUnmarshalErr(&result, valueBytes[i*2], h, t, "nextvaluebytes")
+		testDeepEqualErr(inputs[i], result, t, "nextvaluebytes")
+		result = nil
+		testUnmarshalErr(&result, valueBytes[(i*2)+1], h, t, "nextvaluebytes")
+		testDeepEqualErr(nil, result, t, "nextvaluebytes")
+	}
 }
 
 func TestBufioDecReader(t *testing.T) {
@@ -4208,6 +4245,34 @@ func TestSimpleZeroCopyBytes(t *testing.T) {
 	doTestZeroCopyBytes(t, testSimpleH)
 }
 
+func TestJsonNextValueBytes(t *testing.T) {
+	doTestNextValueBytes(t, testJsonH)
+}
+
+func TestCborNextValueBytes(t *testing.T) {
+	// x := testCborH.IndefiniteLength
+	// defer func() { testCborH.IndefiniteLength = x }()
+
+	// xdebugf(">>>>> TestCborNextValueBytes: IndefiniteLength = false")
+	// testCborH.IndefiniteLength = false
+	// doTestNextValueBytes(t, testCborH)
+	// xdebugf(">>>>> TestCborNextValueBytes: IndefiniteLength = true")
+	// testCborH.IndefiniteLength = true
+	doTestNextValueBytes(t, testCborH)
+}
+
+func TestMsgpackNextValueBytes(t *testing.T) {
+	doTestNextValueBytes(t, testMsgpackH)
+}
+
+func TestBincNextValueBytes(t *testing.T) {
+	doTestNextValueBytes(t, testBincH)
+}
+
+func TestSimpleNextValueBytes(t *testing.T) {
+	doTestNextValueBytes(t, testSimpleH)
+}
+
 // --------
 
 func TestMultipleEncDec(t *testing.T) {
@@ -4225,7 +4290,6 @@ func TestMultipleEncDec(t *testing.T) {
 //
 // Add tests for decode.go (standalone)
 // - UnreadByte: only 2 states (z.ls = 2 and z.ls = 1) (0 --> 2 --> 1)
-// - track: z.trb: track, stop track, check
 // - PreferArrayOverSlice???
 // - InterfaceReset
 // - (chan byte) to decode []byte (with mapbyslice track)

@@ -224,13 +224,6 @@ func (d *simpleDecDriver) readNextBd() {
 	d.bdRead = true
 }
 
-// func (d *simpleDecDriver) uncacheRead() {
-// 	if d.bdRead {
-// 		d.d.decRd.unreadn1()
-// 		d.bdRead = false
-// 	}
-// }
-
 func (d *simpleDecDriver) advanceNil() (null bool) {
 	d.fnil = false
 	if !d.bdRead {
@@ -243,10 +236,6 @@ func (d *simpleDecDriver) advanceNil() (null bool) {
 	}
 	return
 }
-
-// func (d *simpleDecDriver) Nil() bool {
-// 	return d.fnil
-// }
 
 func (d *simpleDecDriver) ContainerType() (vt valueType) {
 	if !d.bdRead {
@@ -583,6 +572,94 @@ func (d *simpleDecDriver) DecodeNaked() {
 	if !decodeFurther {
 		d.bdRead = false
 	}
+}
+
+func (d *simpleDecDriver) nextValueBytes() (v []byte) {
+	v = d.d.blist.get(256)[:0]
+	v = d.nextValueBytesR(v)
+	d.bdRead = false
+	return
+}
+
+func (d *simpleDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
+	d.readNextBd()
+	c := d.bd
+	v = append(v0, c)
+
+	var x []byte
+	var length uint
+
+	switch c {
+	case simpleVdNil, simpleVdFalse, simpleVdTrue, simpleVdString, simpleVdByteArray:
+		// pass
+	case simpleVdPosInt, simpleVdNegInt:
+		v = append(v, d.d.decRd.readn1())
+	case simpleVdPosInt + 1, simpleVdNegInt + 1:
+		v = append(v, d.d.decRd.readx(2)...)
+	case simpleVdPosInt + 2, simpleVdNegInt + 2, simpleVdFloat32:
+		v = append(v, d.d.decRd.readx(4)...)
+	case simpleVdPosInt + 3, simpleVdNegInt + 3, simpleVdFloat64:
+		v = append(v, d.d.decRd.readx(8)...)
+	case simpleVdTime:
+		c = d.d.decRd.readn1()
+		v = append(v, c)
+		v = append(v, d.d.decRd.readx(uint(c))...)
+
+	default:
+		switch c % 8 {
+		case 0:
+			x = nil
+			length = 0
+		case 1:
+			x = d.d.decRd.readx(1)
+			length = uint(x[0])
+		case 2:
+			x = d.d.decRd.readx(2)
+			length = uint(bigen.Uint16(x))
+		case 3:
+			x = d.d.decRd.readx(4)
+			length = uint(bigen.Uint32(x))
+		case 4:
+			x = d.d.decRd.readx(8)
+			length = uint(bigen.Uint64(x))
+		}
+
+		if len(x) > 0 {
+			v = append(v, x...)
+		}
+
+		bExt := c >= simpleVdExt && c <= simpleVdExt+7
+		bStr := c >= simpleVdString && c <= simpleVdString+7
+		bByteArray := c >= simpleVdByteArray && c <= simpleVdByteArray+7
+		bArray := c >= simpleVdArray && c <= simpleVdArray+7
+		bMap := c >= simpleVdMap && c <= simpleVdMap+7
+
+		if !(bExt || bStr || bByteArray || bArray || bMap) {
+			d.d.errorf("cannot infer value - %s 0x%x", msgBadDesc, c)
+		}
+
+		if bExt {
+			v = append(v, d.d.decRd.readn1()) // tag
+		}
+
+		if length == 0 {
+			break
+		}
+
+		if bArray {
+			for i := uint(0); i < length; i++ {
+				v = d.nextValueBytesR(v)
+			}
+		} else if bMap {
+			for i := uint(0); i < length; i++ {
+				v = d.nextValueBytesR(v)
+				v = d.nextValueBytesR(v)
+			}
+		} else {
+			v = append(v, d.d.decRd.readx(length)...)
+		}
+	}
+	return
 }
 
 //------------------------------------

@@ -5,6 +5,8 @@
 
 package codec
 
+import "errors"
+
 // This codec package will only work for go1.4 and above.
 // This is for the following reasons:
 //   - go 1.4 was released in 2014
@@ -12,6 +14,8 @@ package codec
 //   - interface only holds pointers
 //   - reflect.Value is stabilized as 3 words
 
+var errCodecSupportedOnlyFromGo14 = errors.New("codec: go 1.3 and below are not supported")
+
 func init() {
-	panic("codec: go 1.3 and below are not supported")
+	panic(errCodecSupportedOnlyFromGo14)
 }

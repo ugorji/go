@@ -91,7 +91,7 @@ import (
 
 // GenVersion is the current version of codecgen.
 //
-// NOTE: Increment this value each time codecgen changes fundamentally.
+// MARKER: Increment this value each time codecgen changes fundamentally.
 // Fundamental changes are:
 //   - helper methods change (signature change, new ones added, some removed, etc)
 //   - codecgen command line changes
@@ -117,7 +117,7 @@ import (
 const genVersion = 17
 
 const (
-	genCodecPkg        = "codec1978" // keep in sync with codecgen/gen.go
+	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go
 	genTempVarPfx      = "yy"
 	genTopLevelVarName = "x"
 
@@ -135,7 +135,7 @@ const (
 	// genFastpathCanonical configures whether we support Canonical in fast path.
 	// The savings is not much.
 	//
-	// NOTE: This MUST ALWAYS BE TRUE. fast-path.go.tmp doesn't handle it being false.
+	// MARKER: This MUST ALWAYS BE TRUE. fast-path.go.tmp doesn't handle it being false.
 	genFastpathCanonical = true // MUST be true
 
 	// genFastpathTrimTypes configures whether we trim uncommon fastpath types.
@@ -157,8 +157,9 @@ const (
 )
 
 var (
-	errGenAllTypesSamePkg  = errors.New("All types must be in the same package")
-	errGenExpectArrayOrMap = errors.New("unexpected type. Expecting array/map/slice")
+	errGenAllTypesSamePkg        = errors.New("All types must be in the same package")
+	errGenExpectArrayOrMap       = errors.New("unexpected type - expecting array/map/slice")
+	errGenUnexpectedTypeFastpath = errors.New("fast-path: unexpected type - requires map or slice")
 
 	genBase64enc  = base64.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789__")
 	genQNameRegex = regexp.MustCompile(`[A-Za-z_.]+`)
@@ -336,7 +337,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.linef("codecSelferDecContainerLenNil%s = %d", x.xs, int64(decContainerLenNil))
 	x.line(")")
 	x.line("var (")
-	x.line("errCodecSelferOnlyMapOrArrayEncodeToStruct" + x.xs + " = " + "\nerrors.New(`only encoded map or array can be decoded into a struct`)")
+	x.line("errCodecSelferOnlyMapOrArrayEncodeToStruct" + x.xs + " = " + "errors.New(`only encoded map or array can be decoded into a struct`)")
 	x.line(")")
 	x.line("")
 
@@ -350,7 +351,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.linef("if %sGenVersion != %v {", x.cpfx, genVersion)
 	x.line("_, file, _, _ := runtime.Caller(0)")
 	x.linef("ver := strconv.FormatInt(int64(%sGenVersion), 10)", x.cpfx)
-	x.outf(`panic("codecgen version mismatch: current: %v, need " + ver + ". Re-generate file: " + file)`, genVersion)
+	x.outf(`panic(errors.New("codecgen version mismatch: current: %v, need " + ver + ". Re-generate file: " + file))`, genVersion)
 	x.linef("}")
 	if len(imKeys) > 0 {
 		x.line("if false { // reference the types, but skip this branch at build/run time")
@@ -514,8 +515,6 @@ func (x *genRunner) linef(s string, params ...interface{}) {
 }
 
 func (x *genRunner) genTypeName(t reflect.Type) (n string) {
-	// defer func() { xdebugf(">>>> ####: genTypeName: t: %v, name: '%s'\n", t, n) }()
-
 	// if the type has a PkgPath, which doesn't match the current package,
 	// then include it.
 	// We cannot depend on t.String() because it includes current package,
@@ -1211,7 +1210,7 @@ func (x *genRunner) encListFallback(varname string, t reflect.Type) {
 
 func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 	x.linef("if %s == nil { r.EncodeNil(); return }", varname)
-	// NOTE: Canonical Option is not honored
+	// MARKER: Canonical Option is not honored
 	i := x.varsfx()
 	x.line("z.EncWriteMapStart(len(" + varname + "))")
 	x.linef("for %sk%s, %sv%s := range %s {", genTempVarPfx, i, genTempVarPfx, i, varname)
@@ -1813,7 +1812,7 @@ func (x *genRunner) newFastpathGenV(t reflect.Type) (v fastpathGenV) {
 		v.MapKey = x.genTypeName(tk)
 		v.Size = int(te.Size() + tk.Size())
 	default:
-		panic("unexpected type for newFastpathGenV. Requires map or slice type")
+		panic(errGenUnexpectedTypeFastpath)
 	}
 	return
 }
@@ -2118,7 +2117,7 @@ func genInternalDecCommandAsString(s string) string {
 // 			return v + "Slice"
 // 		}
 // 	}
-// 	panic("sorttype: unexpected type: " + s)
+// 	panic(errors.New("sorttype: unexpected type: " + s))
 // }
 
 func genInternalSortType(s string, elem bool) string {
@@ -2128,7 +2127,8 @@ func genInternalSortType(s string, elem bool) string {
 	return s + "Slice"
 }
 
-func genStripVendor(s string) string { // keep in sync with codecgen/gen.go
+// MARKER: keep in sync with codecgen/gen.go
+func genStripVendor(s string) string {
 	// HACK: Misbehaviour occurs in go 1.5. May have to re-visit this later.
 	// if s contains /vendor/ OR startsWith vendor/, then return everything after it.
 	const vendorStart = "vendor/"
@@ -2372,25 +2372,6 @@ func genInternalFastpathMapValueTypes() []string {
 // int64, uint64, float64, bool, string, bytes.
 func genInternalSortableTypes() []string {
 	return genInternalFastpathMapKeyTypes()
-	// return []string{
-	// 	"string",
-	// 	// "float32",
-	// 	"float64",
-	// 	// "uint",
-	// 	// "uint8",
-	// 	// "uint16",
-	// 	// "uint32",
-	// 	"uint64",
-	// 	"uintptr",
-	// 	// "int",
-	// 	// "int8",
-	// 	// "int16",
-	// 	// "int32",
-	// 	"int64",
-	// 	"bool",
-	// 	"time",
-	// 	"bytes",
-	// }
 }
 
 // genInternalSortablePlusTypes returns the types

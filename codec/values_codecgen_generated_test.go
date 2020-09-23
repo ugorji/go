@@ -40,7 +40,7 @@ func init() {
 	if GenVersion != 17 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic("codecgen version mismatch: current: 17, need " + ver + ". Re-generate file: " + file)
+		panic(errors.New("codecgen version mismatch: current: 17, need " + ver + ". Re-generate file: " + file))
 	}
 	if false { // reference the types, but skip this branch at build/run time
 		var _ time.Time
@@ -12280,7 +12280,7 @@ func (x codecSelfer19780) decMapstringuint16(v *map[string]uint16, d *Decoder) {
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -12700,7 +12700,7 @@ func (x codecSelfer19780) decMapstringPtrtostringUint64T(v *map[string]*stringUi
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -12782,7 +12782,7 @@ func (x codecSelfer19780) decMapstringPtrtoTestStruc(v *map[string]*TestStruc, d
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -12850,7 +12850,7 @@ func (x codecSelfer19780) decMapstringTestStruc(v *map[string]TestStruc, d *Deco
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -13181,7 +13181,7 @@ func (x codecSelfer19780) decMapboolc3RydWN0IHt9(v *map[bool]struct{}, d *Decode
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -13248,7 +13248,7 @@ func (x codecSelfer19780) decMapintwrapUint64Slice(v *map[int]wrapUint64Slice, d
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -13315,7 +13315,7 @@ func (x codecSelfer19780) decMapfloat64wrapStringSlice(v *map[float64]wrapString
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -13382,7 +13382,7 @@ func (x codecSelfer19780) decMapfloat32wrapStringSlice(v *map[float32]wrapString
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -13449,7 +13449,7 @@ func (x codecSelfer19780) decMapuint64wrapStringSlice(v *map[uint64]wrapStringSl
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -13517,7 +13517,7 @@ func (x codecSelfer19780) decMapstringUint64TwrapStringSlice(v *map[stringUint64
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -13983,7 +13983,7 @@ func (x codecSelfer19780) decMapstringUint64TPtrtostringUint64T(v *map[stringUin
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -14065,7 +14065,7 @@ func (x codecSelfer19780) decMapstringPtrtoTestStrucFlex(v *map[string]*TestStru
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }
@@ -14133,7 +14133,7 @@ func (x codecSelfer19780) decMapstringTestStrucFlex(v *map[string]TestStrucFlex,
 					yyv1[yymk1] = yymv1
 				}
 			}
-		} // else len==0: TODO: Should we clear map entries?
+		} // else len==0: leave as-is (do not clear map entries)
 		z.DecReadMapEnd()
 	}
 }

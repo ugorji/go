@@ -79,50 +79,6 @@ const (
 var mpTimeExtTag int8 = -1
 var mpTimeExtTagU = uint8(mpTimeExtTag)
 
-// var mpdesc = map[byte]string{
-// 	mpPosFixNumMin: "PosFixNumMin",
-// 	mpPosFixNumMax: "PosFixNumMax",
-// 	mpFixMapMin:    "FixMapMin",
-// 	mpFixMapMax:    "FixMapMax",
-// 	mpFixArrayMin:  "FixArrayMin",
-// 	mpFixArrayMax:  "FixArrayMax",
-// 	mpFixStrMin:    "FixStrMin",
-// 	mpFixStrMax:    "FixStrMax",
-// 	mpNil:          "Nil",
-// 	mpFalse:        "False",
-// 	mpTrue:         "True",
-// 	mpFloat:        "Float",
-// 	mpDouble:       "Double",
-// 	mpUint8:        "Uint8",
-// 	mpUint16:       "Uint16",
-// 	mpUint32:       "Uint32",
-// 	mpUint64:       "Uint64",
-// 	mpInt8:         "Int8",
-// 	mpInt16:        "Int16",
-// 	mpInt32:        "Int32",
-// 	mpInt64:        "Int64",
-// 	mpBin8:         "Bin8",
-// 	mpBin16:        "Bin16",
-// 	mpBin32:        "Bin32",
-// 	mpExt8:         "Ext8",
-// 	mpExt16:        "Ext16",
-// 	mpExt32:        "Ext32",
-// 	mpFixExt1:      "FixExt1",
-// 	mpFixExt2:      "FixExt2",
-// 	mpFixExt4:      "FixExt4",
-// 	mpFixExt8:      "FixExt8",
-// 	mpFixExt16:     "FixExt16",
-// 	mpStr8:         "Str8",
-// 	mpStr16:        "Str16",
-// 	mpStr32:        "Str32",
-// 	mpArray16:      "Array16",
-// 	mpArray32:      "Array32",
-// 	mpMap16:        "Map16",
-// 	mpMap32:        "Map32",
-// 	mpNegFixNumMin: "NegFixNumMin",
-// 	mpNegFixNumMax: "NegFixNumMax",
-// }
-
 var mpdescNames = map[byte]string{
 	mpNil:    "nil",
 	mpFalse:  "false",
@@ -174,40 +130,6 @@ func mpdesc(bd byte) (s string) {
 		}
 	}
 	return
-
-	// switch bd {
-	// case mpNil:
-	// 	return "nil"
-	// case mpFalse:
-	// 	return "false"
-	// case mpTrue:
-	// 	return "true"
-	// case mpFloat, mpDouble:
-	// 	return "float"
-	// case mpUint8, mpUint16, mpUint32, mpUint64:
-	// 	return "uint"
-	// case mpInt8, mpInt16, mpInt32, mpInt64:
-	// 	return "int"
-	// default:
-	// 	switch {
-	// 	case bd >= mpPosFixNumMin && bd <= mpPosFixNumMax:
-	// 		return "int"
-	// 	case bd >= mpNegFixNumMin && bd <= mpNegFixNumMax:
-	// 		return "int"
-	// 	case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
-	// 		return "string|bytes"
-	// 	case bd == mpBin8, bd == mpBin16, bd == mpBin32:
-	// 		return "bytes"
-	// 	case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
-	// 		return "array"
-	// 	case bd == mpMap16, bd == mpMap32, bd >= mpFixMapMin && bd <= mpFixMapMax:
-	// 		return "map"
-	// 	case bd >= mpFixExt1 && bd <= mpFixExt16, bd >= mpExt8 && bd <= mpExt32:
-	// 		return "ext"
-	// 	default:
-	// 		return "unknown"
-	// 	}
-	// }
 }
 
 // MsgpackSpecRpcMultiArgs is a special type which signifies to the MsgpackSpecRpcCodec
@@ -220,8 +142,7 @@ type MsgpackSpecRpcMultiArgs []interface{}
 
 // A MsgpackContainer type specifies the different types of msgpackContainers.
 type msgpackContainerType struct {
-	fixCutoff             uint8
-	bFixMin, b8, b16, b32 byte
+	fixCutoff, bFixMin, b8, b16, b32 byte
 	// hasFixMin, has8, has8Always bool
 }
 
@@ -603,6 +524,132 @@ func (d *msgpackDecDriver) DecodeNaked() {
 	}
 }
 
+func (d *msgpackDecDriver) nextValueBytes() (v []byte) {
+	v = d.d.blist.get(256)[:0]
+	v = d.nextValueBytesR(v)
+	d.bdRead = false
+	return
+}
+
+func (d *msgpackDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
+	d.readNextBd()
+	v = append(v0, d.bd)
+	bd := d.bd
+
+	var clen uint
+	var x []byte
+
+	switch bd {
+	case mpNil, mpFalse, mpTrue: // pass
+	case mpUint8, mpInt8:
+		v = append(v, d.d.decRd.readn1())
+	case mpUint16, mpInt16:
+		v = append(v, d.d.decRd.readx(2)...)
+	case mpFloat, mpUint32, mpInt32:
+		v = append(v, d.d.decRd.readx(4)...)
+	case mpDouble, mpUint64, mpInt64:
+		v = append(v, d.d.decRd.readx(8)...)
+	case mpStr8, mpBin8:
+		clen = uint(d.d.decRd.readn1())
+		v = append(v, byte(clen))
+		v = append(v, d.d.decRd.readx(clen)...)
+	case mpStr16, mpBin16:
+		x = d.d.decRd.readx(2)
+		v = append(v, x...)
+		clen = uint(bigen.Uint16(x))
+		v = append(v, d.d.decRd.readx(clen)...)
+	case mpStr32, mpBin32:
+		x = d.d.decRd.readx(4)
+		v = append(v, x...)
+		clen = uint(bigen.Uint32(x))
+		v = append(v, d.d.decRd.readx(clen)...)
+	case mpFixExt1:
+		v = append(v, d.d.decRd.readn1()) // tag
+		v = append(v, d.d.decRd.readn1())
+	case mpFixExt2:
+		v = append(v, d.d.decRd.readn1()) // tag
+		v = append(v, d.d.decRd.readx(2)...)
+	case mpFixExt4:
+		v = append(v, d.d.decRd.readn1()) // tag
+		v = append(v, d.d.decRd.readx(4)...)
+	case mpFixExt8:
+		v = append(v, d.d.decRd.readn1()) // tag
+		v = append(v, d.d.decRd.readx(8)...)
+	case mpFixExt16:
+		v = append(v, d.d.decRd.readn1()) // tag
+		v = append(v, d.d.decRd.readx(16)...)
+	case mpExt8:
+		v = append(v, d.d.decRd.readn1()) // tag
+		clen = uint(d.d.decRd.readn1())
+		v = append(v, uint8(clen))
+		v = append(v, d.d.decRd.readx(clen)...)
+	case mpExt16:
+		v = append(v, d.d.decRd.readn1()) // tag
+		x = d.d.decRd.readx(2)
+		clen = uint(bigen.Uint16(x))
+		v = append(v, x...)
+		v = append(v, d.d.decRd.readx(clen)...)
+	case mpExt32:
+		v = append(v, d.d.decRd.readn1()) // tag
+		x = d.d.decRd.readx(4)
+		clen = uint(bigen.Uint32(x))
+		v = append(v, x...)
+		v = append(v, d.d.decRd.readx(clen)...)
+	case mpArray16:
+		x = d.d.decRd.readx(2)
+		clen = uint(bigen.Uint16(x))
+		v = append(v, x...)
+		for i := uint(0); i < clen; i++ {
+			v = d.nextValueBytesR(v)
+		}
+	case mpArray32:
+		x = d.d.decRd.readx(4)
+		clen = uint(bigen.Uint32(x))
+		v = append(v, x...)
+		for i := uint(0); i < clen; i++ {
+			v = d.nextValueBytesR(v)
+		}
+	case mpMap16:
+		x = d.d.decRd.readx(2)
+		clen = uint(bigen.Uint16(x))
+		v = append(v, x...)
+		for i := uint(0); i < clen; i++ {
+			v = d.nextValueBytesR(v)
+			v = d.nextValueBytesR(v)
+		}
+	case mpMap32:
+		x = d.d.decRd.readx(4)
+		clen = uint(bigen.Uint32(x))
+		v = append(v, x...)
+		for i := uint(0); i < clen; i++ {
+			v = d.nextValueBytesR(v)
+			v = d.nextValueBytesR(v)
+		}
+	default:
+		switch {
+		case bd >= mpPosFixNumMin && bd <= mpPosFixNumMax: // pass
+		case bd >= mpNegFixNumMin && bd <= mpNegFixNumMax: // pass
+		case bd >= mpFixStrMin && bd <= mpFixStrMax:
+			clen = uint(mpFixStrMin ^ bd)
+			v = append(v, d.d.decRd.readx(clen)...)
+		case bd >= mpFixArrayMin && bd <= mpFixArrayMax:
+			clen = uint(mpFixArrayMin ^ bd)
+			for i := uint(0); i < clen; i++ {
+				v = d.nextValueBytesR(v)
+			}
+		case bd >= mpFixMapMin && bd <= mpFixMapMax:
+			clen = uint(mpFixMapMin ^ bd)
+			for i := uint(0); i < clen; i++ {
+				v = d.nextValueBytesR(v)
+				v = d.nextValueBytesR(v)
+			}
+		default:
+			d.d.errorf("nextValueBytes: cannot infer value: %s: Ox%x/%d/%s", msgBadDesc, bd, bd, mpdesc(bd))
+		}
+	}
+	return
+}
+
 // int can be decoded from msgpack type: intXXX or uintXXX
 func (d *msgpackDecDriver) DecodeInt64() (i int64) {
 	if d.advanceNil() {
@@ -780,13 +827,6 @@ func (d *msgpackDecDriver) readNextBd() {
 	d.bdRead = true
 }
 
-// func (d *msgpackDecDriver) uncacheRead() {
-// 	if d.bdRead {
-// 		d.d.decRd.unreadn1()
-// 		d.bdRead = false
-// 	}
-// }
-
 func (d *msgpackDecDriver) advanceNil() (null bool) {
 	d.fnil = false
 	if !d.bdRead {
@@ -799,10 +839,6 @@ func (d *msgpackDecDriver) advanceNil() (null bool) {
 	}
 	return
 }
-
-// func (d *msgpackDecDriver) Nil() bool {
-// 	return d.fnil
-// }
 
 func (d *msgpackDecDriver) ContainerType() (vt valueType) {
 	if !d.bdRead {

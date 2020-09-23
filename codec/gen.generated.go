@@ -58,7 +58,7 @@ if {{var "l"}} != 0 {
 		{{var "v"}}[{{var "mk"}}] = {{var "mv"}}
 	}
 }
-} // else len==0: TODO: Should we clear map entries?
+} // else len==0: leave as-is (do not clear map entries)
 z.DecReadMapEnd()
 }
 `

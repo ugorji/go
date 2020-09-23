@@ -232,15 +232,13 @@ func sTestCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer
 	return
 }
 
-func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err error) {
-	var d *Decoder
+func sTestCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, oldReadBufferSize int) {
 	// var buf *bytes.Reader
 	if testUseReset {
 		d = testHEDGet(h).D
 	} else {
 		d = NewDecoder(nil, h)
 	}
-	var oldReadBufferSize int
 	if testUseIoEncDec >= 0 {
 		buf := bytes.NewReader(bs)
 		oldReadBufferSize = bh.ReaderBufferSize
@@ -253,6 +251,11 @@ func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err
 	} else {
 		d.ResetBytes(bs)
 	}
+	return
+}
+
+func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err error) {
+	d, oldReadBufferSize := sTestCodecDecoder(bs, h, bh)
 	if testUseMust {
 		d.MustDecode(ts)
 	} else {

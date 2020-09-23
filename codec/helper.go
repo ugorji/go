@@ -138,6 +138,7 @@ import (
 	"io"
 	"math"
 	"reflect"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -201,6 +202,13 @@ var (
 var (
 	errMapTypeNotMapKind     = errors.New("MapType MUST be of Map Kind")
 	errSliceTypeNotSliceKind = errors.New("SliceType MUST be of Slice Kind")
+
+	errExtFnWriteExtUnsupported   = errors.New("BytesExt.WriteExt is not supported")
+	errExtFnReadExtUnsupported    = errors.New("BytesExt.ReadExt is not supported")
+	errExtFnConvertExtUnsupported = errors.New("InterfaceExt.ConvertExt is not supported")
+	errExtFnUpdateExtUnsupported  = errors.New("InterfaceExt.UpdateExt is not supported")
+
+	errPanicHdlUndefinedErr = errors.New("panic: undefined error")
 )
 
 var pool4tiload = sync.Pool{New: func() interface{} { return new(typeInfoLoadArray) }}
@@ -1145,21 +1153,21 @@ func (x addExtWrapper) UpdateExt(dest interface{}, v interface{}) {
 type bytesExtFailer struct{}
 
 func (bytesExtFailer) WriteExt(v interface{}) []byte {
-	halt.errorstr("BytesExt.WriteExt is not supported")
+	halt.errorv(errExtFnWriteExtUnsupported)
 	return nil
 }
 func (bytesExtFailer) ReadExt(v interface{}, bs []byte) {
-	halt.errorstr("BytesExt.ReadExt is not supported")
+	halt.errorv(errExtFnReadExtUnsupported)
 }
 
 type interfaceExtFailer struct{}
 
 func (interfaceExtFailer) ConvertExt(v interface{}) interface{} {
-	halt.errorstr("InterfaceExt.ConvertExt is not supported")
+	halt.errorv(errExtFnConvertExtUnsupported)
 	return nil
 }
 func (interfaceExtFailer) UpdateExt(dest interface{}, v interface{}) {
-	halt.errorstr("InterfaceExt.UpdateExt is not supported")
+	halt.errorv(errExtFnUpdateExtUnsupported)
 }
 
 type bytesExtWrapper struct {
@@ -2168,14 +2176,20 @@ func panicToErr(h errDecorator, err *error) {
 }
 
 func isSliceBoundsError(s string) bool {
-	return strings.Contains(s, "index out of range") ||
-		strings.Contains(s, "slice bounds out of range")
+	return strings.Contains(s, " out of range") &&
+		(strings.Contains(s, "index") || strings.Contains(s, "slice bounds"))
 }
 
 func panicValToErr(h errDecorator, v interface{}, err *error) {
-	d, dok := h.(*Decoder)
 	switch xerr := v.(type) {
 	case nil:
+	case runtime.Error:
+		d, dok := h.(*Decoder)
+		if dok && d.bytes && isSliceBoundsError(xerr.Error()) {
+			*err = io.EOF
+		} else {
+			h.wrapErr(xerr, err)
+		}
 	case error:
 		switch xerr {
 		case nil:
@@ -2183,19 +2197,11 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 			// treat as special (bubble up)
 			*err = xerr
 		default:
-			if dok && d.bytes && isSliceBoundsError(xerr.Error()) {
-				*err = io.EOF
-			} else {
-				h.wrapErr(xerr, err)
-			}
+			h.wrapErr(xerr, err)
 		}
 	case string:
 		if xerr != "" {
-			if dok && d.bytes && isSliceBoundsError(xerr) {
-				*err = io.EOF
-			} else {
-				h.wrapErr(xerr, err)
-			}
+			h.wrapErr(xerr, err)
 		}
 	case fmt.Stringer:
 		if xerr != nil {
@@ -2541,37 +2547,6 @@ func (s *set) remove(v interface{}) (exists bool) {
 // given x > 0 and n > 0 and x is exactly 2^n, then pos/x === pos>>n AND pos%x === pos&(x-1).
 // consequently, pos/32 === pos>>5, pos/16 === pos>>4, pos/8 === pos>>3, pos%8 == pos&7
 
-// type bitset256 [32]byte
-
-// func (x *bitset256) set(pos byte) {
-// 	x[pos>>3] |= (1 << (pos & 7))
-// }
-// func (x *bitset256) check(pos byte) uint8 {
-// 	return x[pos>>3] & (1 << (pos & 7))
-// }
-// func (x *bitset256) isset(pos byte) bool {
-// 	return x.check(pos) != 0
-// 	// return x[pos>>3]&(1<<(pos&7)) != 0
-// }
-// func (x *bitset256) isnotset(pos byte) bool {
-// 	return x.check(pos) == 0
-// }
-
-// type bitset256 [4]uint64
-
-// func (x *bitset256) set(pos byte) {
-// 	x[pos>>6] |= (1 << (pos & 63))
-// }
-// func (x *bitset256) check(pos byte) uint64 {
-// 	return x[pos>>6] & (1 << (pos & 63))
-// }
-// func (x *bitset256) isset(pos byte) bool {
-// 	return x.check(pos) != 0
-// }
-// func (x *bitset256) isnotset(pos byte) bool {
-// 	return x.check(pos) == 0
-// }
-
 type bitset256 [256]bool
 
 func (x *bitset256) set(pos byte) {
@@ -2614,26 +2589,6 @@ func (x bitset64) isnotset(pos byte) bool {
 	return x.check(pos) == 0
 }
 
-// func (x *bitset256) unset(pos byte) {
-// 	x[pos>>3] &^= (1 << (pos & 7))
-// }
-
-// type bit2set256 [64]byte
-
-// func (x *bit2set256) set(pos byte, v1, v2 bool) {
-// 	var pos2 uint8 = (pos & 3) << 1 // returning 0, 2, 4 or 6
-// 	if v1 {
-// 		x[pos>>2] |= 1 << (pos2 + 1)
-// 	}
-// 	if v2 {
-// 		x[pos>>2] |= 1 << pos2
-// 	}
-// }
-// func (x *bit2set256) get(pos byte) uint8 {
-// 	var pos2 uint8 = (pos & 3) << 1     // returning 0, 2, 4 or 6
-// 	return x[pos>>2] << (6 - pos2) >> 6 // 11000000 -> 00000011
-// }
-
 // ------------
 
 type panicHdl struct{}
@@ -2644,20 +2599,14 @@ func (panicHdl) errorv(err error) {
 	}
 }
 
-func (panicHdl) errorstr(message string) {
-	if message != "" {
-		panic(message)
-	}
-}
-
 func (panicHdl) errorf(format string, params ...interface{}) {
 	if len(params) != 0 {
-		panic(fmt.Sprintf(format, params...))
+		panic(fmt.Errorf(format, params...))
 	}
-	if len(params) == 0 {
-		panic(format)
+	if len(params) == 0 && format != "" {
+		panic(errors.New(format))
 	}
-	panic("undefined error")
+	panic(errPanicHdlUndefinedErr)
 }
 
 // ----------------------------------------------------
@@ -2668,7 +2617,15 @@ type errDecorator interface {
 
 type errDecoratorDef struct{}
 
-func (errDecoratorDef) wrapErr(v interface{}, e *error) { *e = fmt.Errorf("%v", v) }
+func (errDecoratorDef) wrapErr(v interface{}, e *error) {
+	switch x := v.(type) {
+	case nil:
+	case error:
+		*e = x
+	default:
+		*e = fmt.Errorf("%v", v)
+	}
+}
 
 // ----------------------------------------------------
 

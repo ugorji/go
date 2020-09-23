@@ -11,9 +11,11 @@ type encWriter interface {
 	writestr(string)
 	writeqstr(string) // write string wrapped in quotes ie "..."
 	writen1(byte)
+
+	// add convenience functions for writing 2,4
 	writen2(byte, byte)
-	// writen will write up to 7 bytes at a time.
-	writen(b [rwNLen]byte, num uint8)
+	writen4(byte, byte, byte, byte)
+
 	end()
 }
 
@@ -53,7 +55,6 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
 	z.buf = z.buf[:cap(z.buf)]
 }
 
-//go:noinline - flush only called intermittently
 func (z *bufioEncWriter) flushErr() (err error) {
 	n, err := z.w.Write(z.buf[:z.n])
 	z.n -= n
@@ -137,12 +138,15 @@ func (z *bufioEncWriter) writen2(b1, b2 byte) {
 	z.n += 2
 }
 
-func (z *bufioEncWriter) writen(b [rwNLen]byte, num uint8) {
-	if int(num) > len(z.buf)-z.n {
+func (z *bufioEncWriter) writen4(b1, b2, b3, b4 byte) {
+	if 4 > len(z.buf)-z.n {
 		z.flush()
 	}
-	copy(z.buf[z.n:], b[:num])
-	z.n += int(num)
+	z.buf[z.n+3] = b4
+	z.buf[z.n+2] = b3
+	z.buf[z.n+1] = b2
+	z.buf[z.n] = b1
+	z.n += 4
 }
 
 func (z *bufioEncWriter) endErr() (err error) {
@@ -177,13 +181,10 @@ func (z *bytesEncAppender) writen1(b1 byte) {
 	z.b = append(z.b, b1)
 }
 func (z *bytesEncAppender) writen2(b1, b2 byte) {
-	z.b = append(z.b, b1, b2) // cost: 81
+	z.b = append(z.b, b1, b2)
 }
-func (z *bytesEncAppender) writen(s [rwNLen]byte, num uint8) {
-	// if num <= rwNLen {
-	if int(num) <= len(s) {
-		z.b = append(z.b, s[:num]...)
-	}
+func (z *bytesEncAppender) writen4(b1, b2, b3, b4 byte) {
+	z.b = append(z.b, b1, b2, b3, b4)
 }
 func (z *bytesEncAppender) endErr() error {
 	*(z.out) = z.b
@@ -218,12 +219,9 @@ func (z *encWr) writeb(s []byte) {
 }
 func (z *encWr) writeqstr(s string) {
 	if z.bytes {
-		// unfortunately, calling the function prevents inlining it here.
-		// explicitly writing it here will allow it inline.
-		// NOTE: Keep in sync with function implementation.
-		//
+		// MARKER: manually inline, else this function is not inlined.
+		// Keep in sync with bytesEncWriter.writeqstr
 		// z.wb.writeqstr(s)
-
 		z.wb.b = append(append(append(z.wb.b, '"'), s...), '"')
 	} else {
 		z.wf.writeqstr(s)
@@ -243,25 +241,27 @@ func (z *encWr) writen1(b1 byte) {
 		z.wf.writen1(b1)
 	}
 }
+
+// MARKER: manually inline bytesEncAppender.writenx methods,
+// as calling them causes encWr.writenx methods to not be inlined.
+//
+// i.e. instead of writing z.wb.writen2(b1, b2), use z.wb.b = append(z.wb.b, b1, b2)
+
 func (z *encWr) writen2(b1, b2 byte) {
 	if z.bytes {
-		// unfortunately, calling the function prevents inlining it here.
-		// explicitly writing it here will allow it inline.
-		// NOTE: Keep in sync with function implementation.
-		//
-		// z.wb.writen2(b1, b2)
 		z.wb.b = append(z.wb.b, b1, b2)
 	} else {
 		z.wf.writen2(b1, b2)
 	}
 }
-func (z *encWr) writen(b [rwNLen]byte, num uint8) {
+func (z *encWr) writen4(b1, b2, b3, b4 byte) {
 	if z.bytes {
-		z.wb.writen(b, num)
+		z.wb.b = append(z.wb.b, b1, b2, b3, b4)
 	} else {
-		z.wf.writen(b, num)
+		z.wf.writen4(b1, b2, b3, b4)
 	}
 }
+
 func (z *encWr) endErr() error {
 	if z.bytes {
 		return z.wb.endErr()
