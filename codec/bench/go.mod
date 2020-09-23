@@ -1,4 +1,4 @@
-module github.com/ugorji/go/codec/codecgen
+module github.com/ugorji/go/codec/bench
 
 go 1.11
 
