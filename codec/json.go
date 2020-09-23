@@ -620,8 +620,6 @@ func (d *jsonDecDriver) advance() {
 }
 
 func (d *jsonDecDriver) nextValueBytes() (v []byte) {
-	// defer func() { fmt.Printf(">>>> json.nextValueBytes: len: %v: %s\n", len(v), v) }()
-
 	consumeString := func() {
 		for {
 			c := d.d.decRd.readn1()
