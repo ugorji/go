@@ -8,8 +8,8 @@ to help with performance when encoding/decoding slices and maps of
 built in numeric, boolean, string and interface{} types.
 
 Prior to 2019-05-16, this package could add about `11MB` to the size of
-your binaries.  We have now trimmed that in half, and the package
-contributes about `5.5MB`.  This compares favorably to other packages like
+your binaries.  We have now trimmed that by 60%, and the package
+contributes about `4.6MB`.  This compares favorably to other packages like
 `json-iterator/go` `(3.3MB)` and `net/http` `(3.5MB)`.
 
 Furthermore, you can bypass building `fast-path.generated.go`, by building 
