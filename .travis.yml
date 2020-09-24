@@ -1,5 +1,9 @@
 language: go
 sudo: false
+env:
+  # Turn off go module support, as the go.sum files in go/ and go/codec/
+  # need to be populated with their cyclic checksums, so CI's mod=readonly will not work.
+  - GO111MODULE=off
 go:
   - master
   - 1.15.x
