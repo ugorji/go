@@ -17,11 +17,13 @@ const fastpathEnabled = false
 // This tag disables fastpath during build, allowing for faster build, test execution,
 // short-program runs, etc.
 
-func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool      { return false }
-func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool      { return false }
-func fastpathEncodeTypeSwitchSlice(iv interface{}, e *Encoder) bool { return false }
-func fastpathEncodeTypeSwitchMap(iv interface{}, e *Encoder) bool   { return false }
-func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool           { return false }
+func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool { return false }
+func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool { return false }
+
+// func fastpathEncodeTypeSwitchSlice(iv interface{}, e *Encoder) bool { return false }
+// func fastpathEncodeTypeSwitchMap(iv interface{}, e *Encoder) bool   { return false }
+
+func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool { return false }
 
 type fastpathT struct{}
 type fastpathE struct {
