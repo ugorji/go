@@ -266,11 +266,19 @@ func (e *jsonEncDriver) encodeFloat(f float64, bitsize, fmt byte, prec int8) {
 }
 
 func (e *jsonEncDriver) EncodeFloat64(f float64) {
+	if math.IsNaN(f) || math.IsInf(f, 0) {
+		e.EncodeNil()
+		return
+	}
 	fmt, prec := jsonFloatStrconvFmtPrec64(f)
 	e.encodeFloat(f, 64, fmt, prec)
 }
 
 func (e *jsonEncDriver) EncodeFloat32(f float32) {
+	if math.IsNaN(float64(f)) || math.IsInf(float64(f), 0) {
+		e.EncodeNil()
+		return
+	}
 	fmt, prec := jsonFloatStrconvFmtPrec32(f)
 	e.encodeFloat(float64(f), 32, fmt, prec)
 }
@@ -1194,6 +1202,10 @@ func (d *jsonDecDriver) DecodeNaked() {
 //
 // Note that, when decoding quoted strings, invalid UTF-8 or invalid UTF-16 surrogate pairs are
 // not treated as an error. Instead, they are replaced by the Unicode replacement character U+FFFD.
+//
+// Note also that the float values for NaN, +Inf or -Inf are encoded as null,
+// as suggested by NOTE 4 of the ECMA-262 ECMAScript Language Specification 5.1 edition.
+// see http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf .
 type JsonHandle struct {
 	textEncodingType
 	BasicHandle
