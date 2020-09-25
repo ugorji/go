@@ -1388,40 +1388,7 @@ func (d *Decoder) Release() {
 }
 
 func (d *Decoder) swallow() {
-	switch d.d.ContainerType() {
-	case valueTypeNil:
-	case valueTypeMap:
-		containerLen := d.mapStart()
-		hasLen := containerLen >= 0
-		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
-			d.mapElemKey()
-			d.swallow()
-			d.mapElemValue()
-			d.swallow()
-		}
-		d.mapEnd()
-	case valueTypeArray:
-		containerLen := d.arrayStart()
-		hasLen := containerLen >= 0
-		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
-			d.arrayElem()
-			d.swallow()
-		}
-		d.arrayEnd()
-	case valueTypeBytes:
-		d.d.DecodeBytes(d.b[:], true)
-	case valueTypeString:
-		d.d.DecodeStringAsBytes()
-	default:
-		// these are all primitives, which we can get from decodeNaked
-		// if RawExt using Value, complete the processing.
-		n := d.naked()
-		d.d.DecodeNaked()
-		if n.v == valueTypeExt && n.l == nil {
-			var v2 interface{}
-			d.decode(&v2)
-		}
-	}
+	d.d.nextValueBytes() // discard it
 }
 
 func setZero(iv interface{}) {

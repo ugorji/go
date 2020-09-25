@@ -2613,6 +2613,7 @@ func doTestMaxDepth(t *testing.T, h Handle) {
 		b1 := testMarshalErr(v.I, h, t, name+"-maxdepth-enc"+strconv.FormatInt(int64(i), 10))
 
 		var err error
+		v.S = false // MARKER: 20200925: swallow doesn't track depth anymore
 		if v.S {
 			var v2 T1
 			err = testUnmarshal(&v2, b1, h)
@@ -3268,6 +3269,8 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 		true,
 		map[string]uint64{"1": 1, "22": 22, "333": 333, "4444": 4444},
 		[]string{"1", "22", "333", "4444"},
+		// use *TestStruc, not *TestStrucFlex, as *TestStrucFlex is harder to compare with deep equal
+		// Remember: *TestStruc was separated for this reason, affording comparing against other libraries
 		newTestStruc(testDepth, testNumRepeatString, false, false, true),
 		"1223334444",
 	}
