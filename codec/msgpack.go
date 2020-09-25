@@ -579,21 +579,21 @@ func (d *msgpackDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
 		v = append(v, d.d.decRd.readn1()) // tag
 		v = append(v, d.d.decRd.readx(16)...)
 	case mpExt8:
-		v = append(v, d.d.decRd.readn1()) // tag
 		clen = uint(d.d.decRd.readn1())
 		v = append(v, uint8(clen))
+		v = append(v, d.d.decRd.readn1()) // tag
 		v = append(v, d.d.decRd.readx(clen)...)
 	case mpExt16:
-		v = append(v, d.d.decRd.readn1()) // tag
 		x = d.d.decRd.readx(2)
 		clen = uint(bigen.Uint16(x))
 		v = append(v, x...)
+		v = append(v, d.d.decRd.readn1()) // tag
 		v = append(v, d.d.decRd.readx(clen)...)
 	case mpExt32:
-		v = append(v, d.d.decRd.readn1()) // tag
 		x = d.d.decRd.readx(4)
 		clen = uint(bigen.Uint32(x))
 		v = append(v, x...)
+		v = append(v, d.d.decRd.readn1()) // tag
 		v = append(v, d.d.decRd.readx(clen)...)
 	case mpArray16:
 		x = d.d.decRd.readx(2)
