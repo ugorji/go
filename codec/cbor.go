@@ -543,7 +543,6 @@ func (d *cborDecDriver) DecodeBool() (b bool) {
 	} else if d.bd == cborBdFalse {
 	} else {
 		d.d.errorf("not bool - %s %x/%s", msgBadDesc, d.bd, cbordesc(d.bd))
-		return
 	}
 	d.bdRead = false
 	return
@@ -688,7 +687,6 @@ func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 		d.d.decode(&re.Value)
 	} else if xtag != realxtag {
 		d.d.errorf("Wrong extension tag. Got %b. Expecting: %v", realxtag, xtag)
-		return
 	} else if ext == SelfExt {
 		rv2 := baseRV(rv)
 		d.d.decodeValue(rv2, d.h.fnNoExt(rv2.Type()))

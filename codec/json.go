@@ -800,18 +800,6 @@ func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 	return
 }
 
-// func (d *jsonDecDriver) DecodeInt64() (i int64) {
-// 	bs := d.decNumBytes()
-// 	if len(bs) == 0 {
-// 		return
-// 	}
-// 	i, err := parseInt64(bs)
-// 	if err != nil {
-// 		d.d.errorv(err)
-// 	}
-// 	return
-// }
-
 func (d *jsonDecDriver) DecodeInt64() (v int64) {
 	b := d.decNumBytes()
 	if len(b) == 0 {
@@ -959,7 +947,6 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	slen2, err := base64.StdEncoding.Decode(bsOut, bs1)
 	if err != nil {
 		d.d.errorf("error decoding base64 binary '%s': %v", bs1, err)
-		return nil
 	}
 	if slen != slen2 {
 		bsOut = bsOut[:slen2]
@@ -998,7 +985,6 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 func (d *jsonDecDriver) readUnescapedString() (bs []byte) {
 	if d.tok != '"' {
 		d.d.errorf("expecting string starting with '\"'; got '%c'", d.tok)
-		return
 	}
 
 	bs = d.d.decRd.readUntil('"', false)
@@ -1178,11 +1164,9 @@ func (d *jsonDecDriver) DecodeNaked() {
 		d.tok = 0
 		if len(bs) == 0 {
 			d.d.errorf("decode number from empty string")
-			return
 		}
 		if err := d.nakedNum(z, bs); err != nil {
 			d.d.errorf("decode number from %s: %v", bs, err)
-			return
 		}
 	}
 }

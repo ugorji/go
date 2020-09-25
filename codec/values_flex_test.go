@@ -231,6 +231,9 @@ type TestStrucFlex struct {
 	Mts        map[string]TestStrucFlex
 	Its        []*TestStrucFlex
 	Nteststruc *TestStrucFlex
+
+	Ffunc       func() error // expect this to be skipped/ignored
+	Bboolignore bool         `codec:"-"` // expect this to be skipped/ignored
 }
 
 func emptyTestStrucFlex() *TestStrucFlex {

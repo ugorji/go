@@ -44,7 +44,7 @@ type genHelperDecDriver struct {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 type genHelperEncoder struct {
-	M must
+	M mustHdl
 	F fastpathT
 	e *Encoder
 }

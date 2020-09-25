@@ -2951,6 +2951,62 @@ func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
 		t.Logf("---- mismatch: %v ==> golden: %#v, decoded: %#v", err, golden, m)
 		t.FailNow()
 	}
+
+	oldMapKeyAsString := testJsonH.MapKeyAsString
+	oldPreferFloat := testJsonH.PreferFloat
+	oldSignedInteger := testJsonH.SignedInteger
+	oldHTMLCharAsIs := testJsonH.HTMLCharsAsIs
+	oldMapType := testJsonH.MapType
+
+	defer func() {
+		testJsonH.MapKeyAsString = oldMapKeyAsString
+		testJsonH.PreferFloat = oldPreferFloat
+		testJsonH.SignedInteger = oldSignedInteger
+		testJsonH.HTMLCharsAsIs = oldHTMLCharAsIs
+		testJsonH.MapType = oldMapType
+	}()
+
+	testJsonH.MapType = mapIntfIntfTyp
+	testJsonH.HTMLCharsAsIs  = false
+	testJsonH.MapKeyAsString = true
+	testJsonH.PreferFloat = false
+	testJsonH.SignedInteger = false
+
+	// Also test out decoding string values into naked interface
+	b = `{"true": true, "false": false, "null": null, "7700000000000000000": 7700000000000000000}`
+	const num = 7700000000000000000 // 77
+	var golden2 = map[interface{}]interface{}{
+		true:  true,
+		false: false,
+		nil:   nil,
+		// uint64(num):uint64(num),
+	}
+
+	fn := func() {
+		d.ResetBytes([]byte(b))
+		var mf interface{}
+		d.MustDecode(&mf)
+		if err := deepEqual(golden2, mf); err != nil {
+			t.Logf("---- mismatch: %v ==> golden: %#v, decoded: %#v", err, golden2, mf)
+			t.FailNow()
+		}
+	}
+
+	golden2[uint64(num)] = uint64(num)
+	fn()
+	delete(golden2, uint64(num))
+
+	testJsonH.SignedInteger = true
+	golden2[int64(num)] = int64(num)
+	fn()
+	delete(golden2, int64(num))
+	testJsonH.SignedInteger = false
+
+	testJsonH.PreferFloat = true
+	golden2[float64(num)] = float64(num)
+	fn()
+	delete(golden2, float64(num))
+	testJsonH.PreferFloat = false
 }
 
 func TestJsonEncodeIndent(t *testing.T) {
@@ -3385,22 +3441,18 @@ func TestJsonLargeInteger(t *testing.T) {
 		if v.s == "" {
 			continue
 		}
-		if true {
-			d.ResetBytes([]byte(v.s))
-			err = d.Decode(&ui)
-			if (v.canUi && err != nil) || (!v.canUi && err == nil) || (v.canUi && err == nil && v.ui != ui) {
-				t.Logf("Failing to decode %s (as unsigned): %v", v.s, err)
-				t.FailNow()
-			}
+		d.ResetBytes([]byte(v.s))
+		err = d.Decode(&ui)
+		if (v.canUi && err != nil) || (!v.canUi && err == nil) || (v.canUi && err == nil && v.ui != ui) {
+			t.Logf("Failing to decode %s (as unsigned): %v", v.s, err)
+			t.FailNow()
 		}
 
-		if true {
-			d.ResetBytes([]byte(v.s))
-			err = d.Decode(&i)
-			if (v.canI && err != nil) || (!v.canI && err == nil) || (v.canI && err == nil && v.i != i) {
-				t.Logf("Failing to decode %s (as signed): %v", v.s, err)
-				t.FailNow()
-			}
+		d.ResetBytes([]byte(v.s))
+		err = d.Decode(&i)
+		if (v.canI && err != nil) || (!v.canI && err == nil) || (v.canI && err == nil && v.i != i) {
+			t.Logf("Failing to decode %s (as signed): %v", v.s, err)
+			t.FailNow()
 		}
 	}
 }
@@ -3448,11 +3500,40 @@ func TestJsonInvalidUnicode(t *testing.T) {
 		}
 	}
 
+	// test some valid edge cases
+	m = map[string]string{
+		`"az\uD834\udD1E"`: "az𝄞",
+		`"n\ud834\uDD1en"`: "n\U0001D11En", // "\uf09d849e", // "\UD834DD1E" // U+1DD1E g clef
+
+		`"a\\\"\/\"\b\f\n\r\"\tz"`: "a\\\"/\"\b\f\n\r\"\tz",
+	}
+	for k, v := range m {
+		var s string
+		err = testUnmarshal(&s, []byte(k), testJsonH)
+		if err != nil {
+			t.Logf("%s: unmarshal failed: %v", "-", err)
+			t.FailNow()
+		}
+
+		if s != v {
+			t.Logf("unmarshal: not equal: %q, %q", v, s)
+			t.FailNow()
+		}
+	}
+
 	// ---- test marshal ---
 	var b = []byte{'"', 0xef, 0xbf, 0xbd} // this is " and unicode.ReplacementChar (as bytes)
 	var m2 = map[string][]byte{
 		string([]byte{0xef, 0xbf, 0xbd}):           append(b, '"'),
 		string([]byte{0xef, 0xbf, 0xbd, 0x0, 0x0}): append(b, `\u0000\u0000"`...),
+
+		"a\\\"/\"\b\f\n\r\"\tz": []byte(`"a\\\"/\"\b\f\n\r\"\tz"`),
+
+		// our encoder doesn't support encoding using only ascii ... so need to use the utf-8 version
+		// "n\U0001D11En": []byte(`"n\uD834\uDD1En"`),
+		// "az𝄞": []byte(`"az\uD834\uDD1E"`),
+		"n\U0001D11En": []byte(`"n𝄞n"`),
+		"az𝄞": []byte(`"az𝄞"`),
 	}
 
 	for k, v := range m2 {

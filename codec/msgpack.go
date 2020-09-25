@@ -680,7 +680,6 @@ func (d *msgpackDecDriver) DecodeInt64() (i int64) {
 			i = int64(int8(d.bd))
 		default:
 			d.d.errorf("cannot decode signed integer: %s: %x/%s", msgBadDesc, d.bd, mpdesc(d.bd))
-			return
 		}
 	}
 	d.bdRead = false
@@ -706,28 +705,24 @@ func (d *msgpackDecDriver) DecodeUint64() (ui uint64) {
 			ui = uint64(i)
 		} else {
 			d.d.errorf("assigning negative signed value: %v, to unsigned type", i)
-			return
 		}
 	case mpInt16:
 		if i := int64(int16(bigen.Uint16(d.d.decRd.readx(2)))); i >= 0 {
 			ui = uint64(i)
 		} else {
 			d.d.errorf("assigning negative signed value: %v, to unsigned type", i)
-			return
 		}
 	case mpInt32:
 		if i := int64(int32(bigen.Uint32(d.d.decRd.readx(4)))); i >= 0 {
 			ui = uint64(i)
 		} else {
 			d.d.errorf("assigning negative signed value: %v, to unsigned type", i)
-			return
 		}
 	case mpInt64:
 		if i := int64(bigen.Uint64(d.d.decRd.readx(8))); i >= 0 {
 			ui = uint64(i)
 		} else {
 			d.d.errorf("assigning negative signed value: %v, to unsigned type", i)
-			return
 		}
 	default:
 		switch {
@@ -735,10 +730,8 @@ func (d *msgpackDecDriver) DecodeUint64() (ui uint64) {
 			ui = uint64(d.bd)
 		case d.bd >= mpNegFixNumMin && d.bd <= mpNegFixNumMax:
 			d.d.errorf("assigning negative signed value: %v, to unsigned type", int(d.bd))
-			return
 		default:
 			d.d.errorf("cannot decode unsigned integer: %s: %x/%s", msgBadDesc, d.bd, mpdesc(d.bd))
-			return
 		}
 	}
 	d.bdRead = false
@@ -772,7 +765,6 @@ func (d *msgpackDecDriver) DecodeBool() (b bool) {
 		b = true
 	} else {
 		d.d.errorf("cannot decode bool: %s: %x/%s", msgBadDesc, d.bd, mpdesc(d.bd))
-		return
 	}
 	d.bdRead = false
 	return
@@ -805,7 +797,6 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 		return bs
 	} else {
 		d.d.errorf("invalid byte descriptor for decoding bytes, got: 0x%x", d.bd)
-		return
 	}
 
 	d.bdRead = false
@@ -882,7 +873,6 @@ func (d *msgpackDecDriver) readContainerLen(ct msgpackContainerType) (clen int) 
 		clen = int(ct.bFixMin ^ bd)
 	} else {
 		d.d.errorf("cannot read container length: %s: hex: %x, decimal: %d", msgBadDesc, bd, bd)
-		return
 	}
 	d.bdRead = false
 	return
@@ -922,7 +912,6 @@ func (d *msgpackDecDriver) readExtLen() (clen int) {
 		clen = int(bigen.Uint32(d.d.decRd.readx(4)))
 	default:
 		d.d.errorf("decoding ext bytes: found unexpected byte: %x", d.bd)
-		return
 	}
 	return
 }
@@ -951,7 +940,6 @@ func (d *msgpackDecDriver) DecodeTime() (t time.Time) {
 			clen = 12
 		} else {
 			d.d.errorf("invalid stream for decoding time as extension: got 0x%x, 0x%x", d.bd, b2)
-			return
 		}
 	}
 	return d.decodeTime(clen)
@@ -972,7 +960,6 @@ func (d *msgpackDecDriver) decodeTime(clen int) (t time.Time) {
 		t = time.Unix(int64(sec), int64(nsec)).UTC()
 	default:
 		d.d.errorf("invalid length of bytes for decoding time - expecting 4 or 8 or 12, got %d", clen)
-		return
 	}
 	return
 }
@@ -980,7 +967,6 @@ func (d *msgpackDecDriver) decodeTime(clen int) (t time.Time) {
 func (d *msgpackDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 	if xtag > 0xff {
 		d.d.errorf("ext: tag must be <= 0xff; got: %v", xtag)
-		return
 	}
 	if d.advanceNil() {
 		return
@@ -1010,7 +996,6 @@ func (d *msgpackDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs 
 		xtag = d.d.decRd.readn1()
 		if verifyTag && xtag != tag {
 			d.d.errorf("wrong extension tag - got %b, expecting %v", xtag, tag)
-			return
 		}
 		if d.d.bytes {
 			xbs = d.d.decRd.rb.readx(uint(clen))

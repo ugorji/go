@@ -184,6 +184,7 @@ var (
 
 	codecgen bool
 
+	must mustHdl
 	halt panicHdl
 
 	refBitset    bitset32
@@ -446,22 +447,11 @@ type isZeroer interface {
 
 type codecError struct {
 	name string
-	err  interface{}
+	err  error
 }
 
 func (e codecError) Cause() error {
-	switch xerr := e.err.(type) {
-	case nil:
-		return nil
-	case error:
-		return xerr
-	case string:
-		return errors.New(xerr)
-	case fmt.Stringer:
-		return errors.New(xerr.String())
-	default:
-		return fmt.Errorf("%v", e.err)
-	}
+	return e.err
 }
 
 func (e codecError) Error() string {
@@ -605,7 +595,9 @@ type MissingFielder interface {
 	// It returns true if the missing field was set on the struct.
 	CodecMissingField(field []byte, value interface{}) bool
 
-	// CodecMissingFields returns the set of fields which are not struct fields
+	// CodecMissingFields returns the set of fields which are not struct fields.
+	//
+	// Note that the returned map may be mutated by the caller.
 	CodecMissingFields() map[string]interface{}
 }
 
@@ -2199,16 +2191,9 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 		default:
 			h.wrapErr(xerr, err)
 		}
-	case string:
-		if xerr != "" {
-			h.wrapErr(xerr, err)
-		}
-	case fmt.Stringer:
-		if xerr != nil {
-			h.wrapErr(xerr, err)
-		}
 	default:
-		h.wrapErr(v, err)
+		// we don't expect this to happen (as this library always panics with an error)
+		h.wrapErr(fmt.Errorf("%v", v), err)
 	}
 }
 
@@ -2375,7 +2360,6 @@ func (x checkOverflow) SignedIntV(v uint64) int64 {
 // ------------------ FLOATING POINT -----------------
 
 func isNaN64(f float64) bool { return f != f }
-func isNaN32(f float32) bool { return f != f }
 func abs32(f float32) float32 {
 	return math.Float32frombits(math.Float32bits(f) &^ (1 << 31))
 }
@@ -2555,23 +2539,14 @@ func (x *bitset256) set(pos byte) {
 func (x *bitset256) isset(pos byte) bool {
 	return x[pos]
 }
-func (x *bitset256) isnotset(pos byte) bool {
-	return !x[pos]
-}
 
 type bitset32 uint32
 
 func (x bitset32) set(pos byte) bitset32 {
 	return x | (1 << pos)
 }
-func (x bitset32) check(pos byte) uint32 {
-	return uint32(x) & (1 << pos)
-}
 func (x bitset32) isset(pos byte) bool {
-	return x.check(pos) != 0
-}
-func (x bitset32) isnotset(pos byte) bool {
-	return x.check(pos) == 0
+	return uint32(x)&(1<<pos) != 0
 }
 
 type bitset64 uint64
@@ -2579,14 +2554,8 @@ type bitset64 uint64
 func (x bitset64) set(pos byte) bitset64 {
 	return x | (1 << pos)
 }
-func (x bitset64) check(pos byte) uint64 {
-	return uint64(x) & (1 << pos)
-}
 func (x bitset64) isset(pos byte) bool {
-	return x.check(pos) != 0
-}
-func (x bitset64) isnotset(pos byte) bool {
-	return x.check(pos) == 0
+	return uint64(x)&(1<<pos) != 0
 }
 
 // ------------
@@ -2612,47 +2581,36 @@ func (panicHdl) errorf(format string, params ...interface{}) {
 // ----------------------------------------------------
 
 type errDecorator interface {
-	wrapErr(in interface{}, out *error)
+	wrapErr(in error, out *error)
 }
 
 type errDecoratorDef struct{}
 
-func (errDecoratorDef) wrapErr(v interface{}, e *error) {
-	switch x := v.(type) {
-	case nil:
-	case error:
-		*e = x
-	default:
-		*e = fmt.Errorf("%v", v)
-	}
-}
+func (errDecoratorDef) wrapErr(v error, e *error) { *e = v }
 
 // ----------------------------------------------------
 
-type must struct{}
+type mustHdl struct{}
 
-func (must) String(s string, err error) string {
+func mustErr(err error) {
 	if err != nil {
 		halt.errorv(err)
 	}
+}
+func (mustHdl) String(s string, err error) string {
+	mustErr(err)
 	return s
 }
-func (must) Int(s int64, err error) int64 {
-	if err != nil {
-		halt.errorv(err)
-	}
+func (mustHdl) Int(s int64, err error) int64 {
+	mustErr(err)
 	return s
 }
-func (must) Uint(s uint64, err error) uint64 {
-	if err != nil {
-		halt.errorv(err)
-	}
+func (mustHdl) Uint(s uint64, err error) uint64 {
+	mustErr(err)
 	return s
 }
-func (must) Float(s float64, err error) float64 {
-	if err != nil {
-		halt.errorv(err)
-	}
+func (mustHdl) Float(s float64, err error) float64 {
+	mustErr(err)
 	return s
 }
 

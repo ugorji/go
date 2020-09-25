@@ -291,7 +291,6 @@ func (d *simpleDecDriver) decCheckInteger() (ui uint64, neg bool) {
 		neg = true
 	default:
 		d.d.errorf("integer only valid from pos/neg integer1..8. Invalid descriptor: %v", d.bd)
-		return
 	}
 	// DO NOT do this check below, because callers may only want the unsigned value:
 	//
@@ -322,7 +321,6 @@ func (d *simpleDecDriver) DecodeUint64() (ui uint64) {
 	ui, neg := d.decCheckInteger()
 	if neg {
 		d.d.errorf("assigning negative signed value to unsigned type")
-		return
 	}
 	d.bdRead = false
 	return
@@ -341,7 +339,6 @@ func (d *simpleDecDriver) DecodeFloat64() (f float64) {
 			f = float64(d.DecodeInt64())
 		} else {
 			d.d.errorf("float only valid from float32/64: Invalid descriptor: %v", d.bd)
-			return
 		}
 	}
 	d.bdRead = false
@@ -358,7 +355,6 @@ func (d *simpleDecDriver) DecodeBool() (b bool) {
 		b = true
 	} else {
 		d.d.errorf("cannot decode bool - %s: %x", msgBadDesc, d.bd)
-		return
 	}
 	d.bdRead = false
 	return
@@ -392,14 +388,12 @@ func (d *simpleDecDriver) decLen() int {
 		ui := uint64(bigen.Uint32(d.d.decRd.readx(4)))
 		if chkOvf.Uint(ui, intBitsize) {
 			d.d.errorf("overflow integer: %v", ui)
-			return 0
 		}
 		return int(ui)
 	case 4:
 		ui := bigen.Uint64(d.d.decRd.readx(8))
 		if chkOvf.Uint(ui, intBitsize) {
 			d.d.errorf("overflow integer: %v", ui)
-			return 0
 		}
 		return int(ui)
 	}
@@ -446,7 +440,6 @@ func (d *simpleDecDriver) DecodeTime() (t time.Time) {
 	}
 	if d.bd != simpleVdTime {
 		d.d.errorf("invalid descriptor for time.Time - expect 0x%x, received 0x%x", simpleVdTime, d.bd)
-		return
 	}
 	d.bdRead = false
 	clen := int(d.d.decRd.readn1())
@@ -460,7 +453,6 @@ func (d *simpleDecDriver) DecodeTime() (t time.Time) {
 func (d *simpleDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 	if xtag > 0xff {
 		d.d.errorf("ext: tag must be <= 0xff; got: %v", xtag)
-		return
 	}
 	if d.advanceNil() {
 		return
@@ -485,7 +477,6 @@ func (d *simpleDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs [
 		xtag = d.d.decRd.readn1()
 		if verifyTag && xtag != tag {
 			d.d.errorf("wrong extension tag. Got %b. Expecting: %v", xtag, tag)
-			return
 		}
 		if d.d.bytes {
 			xbs = d.d.decRd.rb.readx(uint(l))
@@ -497,7 +488,6 @@ func (d *simpleDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs [
 		xbs = d.DecodeBytes(nil, true)
 	default:
 		d.d.errorf("ext - %s - expecting extensions/bytearray, got: 0x%x", msgBadDesc, d.bd)
-		return
 	}
 	d.bdRead = false
 	return

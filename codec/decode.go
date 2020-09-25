@@ -419,7 +419,6 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 	// Consequently, we should relax this. Put it behind a const flag for now.
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
 		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
-		return
 	}
 	switch n.v {
 	case valueTypeMap:
@@ -636,8 +635,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				var f interface{}
 				d.decode(&f)
 				if !mf.CodecMissingField(rvkencname, f) && d.h.ErrorIfNoField {
-					d.errorf("no matching struct field found when decoding stream map with key: %s ",
-						stringView(rvkencname))
+					d.errorf("no matching struct field when decoding stream map with key: %s ", stringView(rvkencname))
 				}
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
@@ -816,13 +814,11 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 					rvChanged = true
 				} else {
 					d.errorf(errmsgExpandSliceCannotChange)
-					return
 				}
 				rvlen = rvcap
 			} else {
 				if !rvCanset {
 					d.errorf(errmsgExpandSliceCannotChange)
-					return
 				}
 				// rvcap2 := rvcap
 				rvcap = growCap(rvcap, rtelem0Size, 1)
@@ -1623,10 +1619,8 @@ func (d *Decoder) structFieldNotFound(index int, rvkencname string) {
 	if d.h.ErrorIfNoField {
 		if index >= 0 {
 			d.errorf("no matching struct field found when decoding stream array at index %v", index)
-			return
 		} else if rvkencname != "" {
 			d.errorf("no matching struct field found when decoding stream map with key " + rvkencname)
-			return
 		}
 	}
 	d.swallow()
@@ -1666,15 +1660,11 @@ func (d *Decoder) ensureDecodeable(rv reflect.Value) {
 	}
 	if !rv.IsValid() {
 		d.errorv(errCannotDecodeIntoNil)
-		return
 	}
 	if !rv.CanInterface() {
 		d.errorf("cannot decode into a value without an interface: %v", rv)
-		return
 	}
-	rvi := rv2i(rv)
-	rvk := rv.Kind()
-	d.errorf("cannot decode into value of kind: %v, type: %T, %#v", rvk, rvi, rvi)
+	d.errorf("cannot decode into value of kind: %v, %#v", rv.Kind(), rv2i(rv))
 }
 
 func (d *Decoder) depthIncr() {
@@ -1721,7 +1711,7 @@ func (d *Decoder) rawBytes() (v []byte) {
 	return
 }
 
-func (d *Decoder) wrapErr(v interface{}, err *error) {
+func (d *Decoder) wrapErr(v error, err *error) {
 	*err = decodeError{codecError: codecError{name: d.hh.Name(), err: v}, pos: d.NumBytesRead()}
 }
 
@@ -1927,25 +1917,25 @@ func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 // It is used to ensure that the []byte returned is not
 // part of the input stream or input stream buffers.
 func detachZeroCopyBytes(isBytesReader bool, dest []byte, in []byte) (out []byte) {
-	if len(in) > 0 {
-		// if isBytesReader || len(in) <= scratchByteArrayLen {
-		// 	if cap(dest) >= len(in) {
-		// 		out = dest[:len(in)]
-		// 	} else {
-		// 		out = make([]byte, len(in))
-		// 	}
-		// 	copy(out, in)
-		// 	return
-		// }
-		if cap(dest) >= len(in) {
-			out = dest[:len(in)]
-		} else {
-			out = make([]byte, len(in))
-		}
-		copy(out, in)
-		return
+	if len(in) == 0 {
+		return in
 	}
-	return in
+	// if isBytesReader || len(in) <= scratchByteArrayLen {
+	// 	if cap(dest) >= len(in) {
+	// 		out = dest[:len(in)]
+	// 	} else {
+	// 		out = make([]byte, len(in))
+	// 	}
+	// 	copy(out, in)
+	// 	return
+	// }
+	if cap(dest) >= len(in) {
+		out = dest[:len(in)]
+	} else {
+		out = make([]byte, len(in))
+	}
+	copy(out, in)
+	return
 }
 
 // decInferLen will infer a sensible length, given the following:
