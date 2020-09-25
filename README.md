@@ -7,7 +7,7 @@
 
 # go-codec
 
-This repository contains the `go-codec` library, the `codecgen` tool and 
+This repository contains the `go-codec` library, the `codecgen` tool and
 benchmarks for comparing against other libraries.
 
 This is a High Performance, Feature-Rich Idiomatic Go 1.4+ codec/encoding library
