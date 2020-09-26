@@ -130,18 +130,30 @@ func (e *bincEncDriver) EncodeBool(b bool) {
 	}
 }
 
-func (e *bincEncDriver) EncodeFloat32(f float32) {
+func (e *bincEncDriver) encSpFloat(f float64) (done bool) {
 	if f == 0 {
 		e.e.encWr.writen1(bincVdSpecial<<4 | bincSpZeroFloat)
+	} else if math.IsNaN(float64(f)) {
+		e.e.encWr.writen1(bincVdSpecial<<4 | bincSpNan)
+	} else if math.IsInf(float64(f), +1) {
+		e.e.encWr.writen1(bincVdSpecial<<4 | bincSpPosInf)
+	} else if math.IsInf(float64(f), -1) {
+		e.e.encWr.writen1(bincVdSpecial<<4 | bincSpNegInf)
+	} else {
 		return
 	}
-	e.e.encWr.writen1(bincVdFloat<<4 | bincFlBin32)
-	bigenHelper{e.b[:4], e.e.w()}.writeUint32(math.Float32bits(f))
+	return true
+}
+
+func (e *bincEncDriver) EncodeFloat32(f float32) {
+	if !e.encSpFloat(float64(f)) {
+		e.e.encWr.writen1(bincVdFloat<<4 | bincFlBin32)
+		bigenHelper{e.b[:4], e.e.w()}.writeUint32(math.Float32bits(f))
+	}
 }
 
 func (e *bincEncDriver) EncodeFloat64(f float64) {
-	if f == 0 {
-		e.e.encWr.writen1(bincVdSpecial<<4 | bincSpZeroFloat)
+	if e.encSpFloat(f) {
 		return
 	}
 	bigen.PutUint64(e.b[:8], math.Float64bits(f))

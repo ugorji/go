@@ -3418,6 +3418,13 @@ func doTestFloats(t *testing.T, h Handle) {
 				t.Logf("error testing float64: %v, decoded as: %v", f, w)
 				t.FailNow()
 			}
+			var wi interface{}
+			testUnmarshalErr(&wi, b, h, t, "test-floats-dec")
+			if (jok && (math.IsNaN(f64) || math.IsInf(f64, 0)) && wi != nil) ||
+				(!jok && wi.(float64) != f && !math.IsNaN(float64(f))) {
+				t.Logf("error testing float64: %v, decoded as: %v", f, wi)
+				t.FailNow()
+			}
 		}
 		{
 			f := float32(f64)
