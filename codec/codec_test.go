@@ -1555,7 +1555,7 @@ func doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
 	// below, we validate that the json string or number was encoded,
 	// then decode, and validate that the correct value was decoded.
 	fnStrChk := func() {
-		// check that output started with ", and ended with " true
+		// check that output started with '"', and ended with '"true'
 		// if !(len(b) >= 7 && b[0] == '"' && string(b[len(b)-7:]) == `" true `) {
 		if !(len(b) >= 5 && b[0] == '"' && string(b[len(b)-5:]) == `"true`) {
 			t.Logf("Expecting a JSON string, got: '%s'", b)
@@ -3308,6 +3308,130 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 	}
 }
 
+func doTestNumbers(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
+	doTestIntegers(t, h)
+	doTestFloats(t, h)
+}
+
+func doTestIntegers(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
+
+	// handle SignedInteger=true|false
+	// decode into an interface{}
+
+	bh := basicHandle(h)
+
+	oldSignedInteger := bh.SignedInteger
+	var oldPreferFloat bool
+	var oldNoFixedNum bool
+	jh, jok := h.(*JsonHandle)
+	mh, mok := h.(*MsgpackHandle)
+	if jok {
+		oldPreferFloat = jh.PreferFloat
+	}
+	if mok {
+		oldNoFixedNum = mh.NoFixedNum
+		mh.NoFixedNum  = true
+	}
+
+	defer func() {
+		bh.SignedInteger = oldSignedInteger
+		if jok {
+			jh.PreferFloat = oldPreferFloat
+		}
+		if mok {
+			mh.NoFixedNum = oldNoFixedNum
+		}
+	}()
+
+	// var vi int64
+	// var ui uint64
+	var ii interface{}
+
+	for _, v := range []uint64 {
+		// Note: use large integers, as some formats store small integers in an agnostic
+		// way, where its not clear if signed or unsigned.
+		2,
+		2048,
+		1<<63 - 4,
+		1800000000e-2,
+		18000000e+2,
+	} {
+		b := testMarshalErr(v, h, t, "test-integers")
+		if jok {
+			jh.PreferFloat = false
+		}
+		ii = nil
+		bh.SignedInteger = true
+		testUnmarshalErr(&ii, b, h, t, "test-integers")
+		testDeepEqualErr(ii, int64(v), t, "test-integers-signed")
+		ii = nil
+		bh.SignedInteger = false
+		testUnmarshalErr(&ii, b, h, t, "test-integers")
+		testDeepEqualErr(ii, uint64(v), t, "test-integers-unsigned")
+		ii = nil
+		if jok {
+			jh.PreferFloat = true
+			testUnmarshalErr(&ii, b, h, t, "test-integers")
+			testDeepEqualErr(ii, float64(v), t, "test-integers-float")
+		}
+	}
+}
+
+func doTestFloats(t *testing.T, h Handle) {
+	testOnce.Do(testInitAll)
+
+	_, jok := h.(*JsonHandle)
+
+	f64s := []float64{
+		3,
+		math.NaN(),
+		math.Inf(1),
+		math.Inf(-1),
+		0e+01234567890123456789,
+		1.7976931348623157e308,
+		-1.7976931348623157e+308,
+		1e308,
+		1e-308,
+		1.694649e-317,
+		// 1e-4294967296,
+		2.2250738585072012e-308,
+		4.630813248087435e+307,
+		1.00000000000000011102230246251565404236316680908203125,
+		1.00000000000000033306690738754696212708950042724609375,
+	}
+	const unusedVal = 9999 // use this as a marker
+
+	// marshall it, unmarshal it, compare to original
+	// Note: JSON encodes NaN, inf, -inf as null, which is decoded as zero value (ie 0).
+	for _, f64 := range f64s {
+		{
+			f := f64
+			var w float64 = unusedVal
+			b := testMarshalErr(f, h, t, "test-floats-enc")
+			testUnmarshalErr(&w, b, h, t, "test-floats-dec")
+			// we only check json for float64, as it doesn't differentiate
+			if (jok && (math.IsNaN(f64) || math.IsInf(f64, 0)) && w != 0) || 
+				(!jok && w != f && !math.IsNaN(float64(f))) {
+				t.Logf("error testing float64: %v, decoded as: %v", f, w)
+				t.FailNow()
+			}
+		}
+		{
+			f := float32(f64)
+			var w float32 = unusedVal
+			b := testMarshalErr(f, h, t, "test-floats-enc")
+			testUnmarshalErr(&w, b, h, t, "test-floats-dec")
+			if (jok && (math.IsNaN(f64) || math.IsInf(f64, 0)) && w != 0) || 
+				(!jok && w != f && !math.IsNaN(float64(f))) {
+				t.Logf("error testing float32: %v, decoded as: %v", f, w)
+				t.FailNow()
+			}
+		}
+	}
+}
+
 func TestBufioDecReader(t *testing.T) {
 	testOnce.Do(testInitAll)
 	doTestBufioDecReader(t, 13)
@@ -3380,6 +3504,8 @@ func TestJsonLargeInteger(t *testing.T) {
 			uint64(1 << 60),
 			uint(0),
 			uint(1 << 20),
+			int64(1840000e-2),
+			uint64(1840000E+2),
 		} {
 			doTestJsonLargeInteger(t, j, i)
 		}
@@ -4355,6 +4481,26 @@ func TestBincNextValueBytes(t *testing.T) {
 
 func TestSimpleNextValueBytes(t *testing.T) {
 	doTestNextValueBytes(t, testSimpleH)
+}
+
+func TestJsonNumbers(t *testing.T) {
+	doTestNumbers(t, testJsonH)
+}
+
+func TestCborNumbers(t *testing.T) {
+	doTestNumbers(t, testCborH)
+}
+
+func TestMsgpackNumbers(t *testing.T) {
+	doTestNumbers(t, testMsgpackH)
+}
+
+func TestBincNumbers(t *testing.T) {
+	doTestNumbers(t, testBincH)
+}
+
+func TestSimpleNumbers(t *testing.T) {
+	doTestNumbers(t, testSimpleH)
 }
 
 // --------
