@@ -680,7 +680,6 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		d.arrayEnd()
 	} else {
 		d.errorv(errOnlyMapOrArrayCanDecodeIntoStruct)
-		return
 	}
 }
 
@@ -1473,7 +1472,6 @@ func (d *Decoder) decode(iv interface{}) {
 
 	if iv == nil {
 		d.errorv(errCannotDecodeIntoNil)
-		return
 	}
 
 	switch v := iv.(type) {

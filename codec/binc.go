@@ -494,8 +494,7 @@ func (d *bincDecDriver) decFloat() (f float64) {
 		d.decFloatPre(8)
 		f = math.Float64frombits(bigen.Uint64(d.b[0:8]))
 	} else {
-		d.d.errorf("read float - only float32 and float64 are supported - %s %x-%x/%s",
-			msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
+		d.d.errorf("read float supports only float32/64 - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	return
 }
@@ -554,8 +553,7 @@ func (d *bincDecDriver) decCheckInteger() (ui uint64, neg bool) {
 			neg = true
 			ui = 1
 		} else {
-			d.d.errorf("integer decode fails - invalid special value from descriptor %x-%x/%s",
-				d.vd, d.vs, bincdesc(d.vd, d.vs))
+			d.d.errorf("integer decode has invalid special value %x-%x/%s", d.vd, d.vs, bincdesc(d.vd, d.vs))
 		}
 	} else {
 		d.d.errorf("integer can only be decoded from int/uint. d.bd: 0x%x, d.vd: 0x%x", d.bd, d.vd)
@@ -604,8 +602,7 @@ func (d *bincDecDriver) DecodeFloat64() (f float64) {
 		} else if vs == bincSpNegInf {
 			return math.Inf(-1)
 		} else {
-			d.d.errorf("float - invalid special value from descriptor %x-%x/%s",
-				d.vd, d.vs, bincdesc(d.vd, d.vs))
+			d.d.errorf("float - invalid special value %x-%x/%s", d.vd, d.vs, bincdesc(d.vd, d.vs))
 		}
 	} else if vd == bincVdFloat {
 		f = d.decFloat()
@@ -818,8 +815,7 @@ func (d *bincDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs []b
 	} else if d.vd == bincVdByteArray {
 		xbs = d.DecodeBytes(nil, true)
 	} else {
-		d.d.errorf("ext - expecting extensions or byte array - %s %x-%x/%s",
-			msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
+		d.d.errorf("ext expects extensions or byte array - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
 	return
@@ -865,8 +861,7 @@ func (d *bincDecDriver) DecodeNaked() {
 			n.v = valueTypeInt
 			n.i = int64(-1) // int8(-1)
 		default:
-			d.d.errorf("cannot infer value - unrecognized special value from descriptor %x-%x/%s",
-				d.vd, d.vs, bincdesc(d.vd, d.vs))
+			d.d.errorf("cannot infer value - unrecognized special value %x-%x/%s", d.vd, d.vs, bincdesc(d.vd, d.vs))
 		}
 	case bincVdSmallInt:
 		n.v = valueTypeUint
@@ -968,8 +963,7 @@ func (d *bincDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
 		case bincSpNil, bincSpFalse, bincSpTrue, bincSpNan, bincSpPosInf: // pass
 		case bincSpNegInf, bincSpZeroFloat, bincSpZero, bincSpNegOne: // pass
 		default:
-			d.d.errorf("cannot infer value - unrecognized special value from descriptor %x-%x/%s",
-				d.vd, d.vs, bincdesc(d.vd, d.vs))
+			d.d.errorf("cannot infer value - unrecognized special value %x-%x/%s", d.vd, d.vs, bincdesc(d.vd, d.vs))
 		}
 	case bincVdSmallInt: // pass
 	case bincVdPosInt, bincVdNegInt:
@@ -993,8 +987,7 @@ func (d *bincDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
 		case bincFlBin64:
 			fn(8)
 		default:
-			d.d.errorf("read float - only float32 and float64 are supported - %s %x-%x/%s",
-				msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
+			d.d.errorf("read float supports only float32/64 - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 		}
 	case bincVdString, bincVdByteArray:
 		clen = fnLen(d.vs)

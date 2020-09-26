@@ -1143,8 +1143,7 @@ func (c *msgpackSpecRpcCodec) parseCustomHeader(expectTypeByte byte, msgid *uint
 		err = c.read(&b)
 		if err == nil {
 			if b != expectTypeByte {
-				err = fmt.Errorf("%s - expecting %v but got %x/%s",
-					msgBadDesc, expectTypeByte, b, mpdesc(b))
+				err = fmt.Errorf("%s - expecting %v but got %x/%s", msgBadDesc, expectTypeByte, b, mpdesc(b))
 			} else {
 				err = c.read(msgid)
 				if err == nil {

@@ -434,8 +434,8 @@ func (d *cborDecDriver) decCheckInteger() (neg bool) {
 	} else if major == cborMajorNegInt {
 		neg = true
 	} else {
-		d.d.errorf("invalid integer; got major %v from descriptor %x (%s), expected %v or %v",
-			major, d.bd, cbordesc(d.bd), cborMajorUint, cborMajorNegInt)
+		d.d.errorf("invalid integer from descriptor %x (%s) - got major %v, expected %v or %v",
+			d.bd, cbordesc(d.bd), major, cborMajorUint, cborMajorNegInt)
 	}
 	return
 }
@@ -458,8 +458,7 @@ func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 	d.bdRead = false
 	for !d.CheckBreak() {
 		if major := d.bd >> 5; major != cborMajorBytes && major != cborMajorString {
-			d.d.errorf("invalid indefinite string/bytes; got major %v, expected %x/%s",
-				major, d.bd, cbordesc(d.bd))
+			d.d.errorf("invalid indefinite string/bytes; got major %v, expected %x/%s", major, d.bd, cbordesc(d.bd))
 		}
 		n := uint(d.decLen())
 		oldLen := uint(len(bs))
@@ -522,8 +521,7 @@ func (d *cborDecDriver) DecodeFloat64() (f float64) {
 		} else if major == cborMajorNegInt {
 			f = float64(cborDecInt64(d.decUint(), true))
 		} else {
-			d.d.errorf("invalid float descriptor; got %d/%s, expected float16/32/64 or (-)int",
-				d.bd, cbordesc(d.bd))
+			d.d.errorf("invalid float descriptor; got %d/%s, expected float16/32/64 or (-)int", d.bd, cbordesc(d.bd))
 		}
 	}
 	d.bdRead = false
@@ -560,8 +558,7 @@ func (d *cborDecDriver) ReadMapStart() (length int) {
 		return decContainerLenUnknown
 	}
 	if d.bd>>5 != cborMajorMap {
-		d.d.errorf("error reading map; got major type: %x, expected %x/%s",
-			d.bd>>5, cborMajorMap, cbordesc(d.bd))
+		d.d.errorf("error reading map; got major type: %x, expected %x/%s", d.bd>>5, cborMajorMap, cbordesc(d.bd))
 	}
 	return d.decLen()
 }
@@ -578,8 +575,7 @@ func (d *cborDecDriver) ReadArrayStart() (length int) {
 		return decContainerLenUnknown
 	}
 	if d.bd>>5 != cborMajorArray {
-		d.d.errorf("invalid array; got major type: %x, expect: %x/%s",
-			d.bd>>5, cborMajorArray, cbordesc(d.bd))
+		d.d.errorf("invalid array; got major type: %x, expect: %x/%s", d.bd>>5, cborMajorArray, cbordesc(d.bd))
 	}
 	return d.decLen()
 }
