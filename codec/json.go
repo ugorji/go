@@ -627,7 +627,8 @@ func (d *jsonDecDriver) advance() {
 	}
 }
 
-func (d *jsonDecDriver) nextValueBytes() (v []byte) {
+func (d *jsonDecDriver) nextValueBytes(start []byte) (v []byte) {
+	v = start
 	consumeString := func() {
 		for {
 			c := d.d.decRd.readn1()
@@ -645,20 +646,17 @@ func (d *jsonDecDriver) nextValueBytes() (v []byte) {
 
 	switch d.tok {
 	default:
-		v = d.d.decRd.jsonReadNum()
+		v = append(v, d.d.decRd.jsonReadNum()...)
 	case 'n':
 		d.readLit4Null()
-		v = jsonLiteralNull
+		v = append(v, jsonLiteralNull...)
 	case 'f':
 		d.readLit4False()
-		v = jsonLiteralFalse
+		v = append(v, jsonLiteralFalse...)
 	case 't':
 		d.readLit4True()
-		v = jsonLiteralTrue
+		v = append(v, jsonLiteralTrue...)
 	case '"':
-		if d.buf != nil {
-			v = d.buf[:0]
-		}
 		v = append(v, '"')
 		consumeString()
 	case '{', '[':
@@ -666,10 +664,6 @@ func (d *jsonDecDriver) nextValueBytes() (v []byte) {
 		var stack []struct{}
 
 		stack = append(stack, elem)
-
-		if d.buf != nil {
-			v = d.buf[:0]
-		}
 
 		v = append(v, d.tok)
 

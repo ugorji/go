@@ -564,9 +564,8 @@ func (d *simpleDecDriver) DecodeNaked() {
 	}
 }
 
-func (d *simpleDecDriver) nextValueBytes() (v []byte) {
-	v = d.d.blist.get(256)[:0]
-	v = d.nextValueBytesR(v)
+func (d *simpleDecDriver) nextValueBytes(start []byte) (v []byte) {
+	v = d.nextValueBytesR(start)
 	d.bdRead = false
 	return
 }

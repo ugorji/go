@@ -133,7 +133,7 @@ type decDriver interface {
 	reset()
 	atEndOfDecode()
 
-	nextValueBytes() []byte
+	nextValueBytes(start []byte) []byte
 
 	decoder() *Decoder
 }
@@ -325,7 +325,10 @@ func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(jsonUnmarshaler)
 	// bs := d.d.DecodeBytes(d.b[:], true, true)
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
-	fnerr := tm.UnmarshalJSON(d.nextValueBytes())
+	bs := d.blist.get(256)[:0]
+	bs = d.d.nextValueBytes(bs)
+	fnerr := tm.UnmarshalJSON(bs)
+	d.blist.put(bs)
 	if fnerr != nil {
 		panic(fnerr)
 	}
@@ -1388,7 +1391,9 @@ func (d *Decoder) Release() {
 }
 
 func (d *Decoder) swallow() {
-	d.d.nextValueBytes() // discard it
+	bs := d.blist.get(256)[:0]
+	bs = d.d.nextValueBytes(bs) // discard it
+	d.blist.put(bs)
 }
 
 func setZero(iv interface{}) {
@@ -1664,18 +1669,10 @@ func (d *Decoder) string(v []byte) (s string) {
 	return
 }
 
-// nextValueBytes returns the next value in the stream as a set of bytes.
-func (d *Decoder) nextValueBytes() (bs []byte) {
-	return d.d.nextValueBytes()
-}
-
 func (d *Decoder) rawBytes() (v []byte) {
 	// ensure that this is not a view into the bytes
-	// i.e. make new copy always.
-	bs := d.nextValueBytes()
-	v = make([]byte, len(bs))
-	copy(v, bs)
-	return
+	// i.e. if necessary, make new copy always.
+	return d.d.nextValueBytes(nil)
 }
 
 func (d *Decoder) wrapErr(v error, err *error) {

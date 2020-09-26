@@ -202,7 +202,11 @@ func (f genHelperDecoder) DecTextUnmarshal(tm encoding.TextUnmarshaler) {
 func (f genHelperDecoder) DecJSONUnmarshal(tm jsonUnmarshaler) {
 	// bs := f.dd.DecodeStringAsBytes()
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
-	if fnerr := tm.UnmarshalJSON(f.d.nextValueBytes()); fnerr != nil {
+	bs := f.d.blist.get(256)[:0]
+	bs = f.d.d.nextValueBytes(bs)
+	fnerr := tm.UnmarshalJSON(bs)
+	f.d.blist.put(bs)
+	if fnerr != nil {
 		halt.errorv(fnerr)
 	}
 }

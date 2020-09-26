@@ -2968,7 +2968,7 @@ func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
 	}()
 
 	testJsonH.MapType = mapIntfIntfTyp
-	testJsonH.HTMLCharsAsIs  = false
+	testJsonH.HTMLCharsAsIs = false
 	testJsonH.MapKeyAsString = true
 	testJsonH.PreferFloat = false
 	testJsonH.SignedInteger = false
@@ -3288,9 +3288,10 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 
 	d, oldReadBufferSize := sTestCodecDecoder(out, h, basicHandle(h))
 	for i := 0; i < len(inputs)*2; i++ {
-		bs := d.nextValueBytes()
-		valueBytes[i] = make([]byte, len(bs))
-		copy(valueBytes[i], bs)
+		valueBytes[i] = d.d.nextValueBytes(nil)
+		// bs := d.d.nextValueBytes(nil)
+		// valueBytes[i] = make([]byte, len(bs))
+		// copy(valueBytes[i], bs)
 	}
 	if testUseIoEncDec >= 0 {
 		basicHandle(h).ReaderBufferSize = oldReadBufferSize
@@ -3332,7 +3333,7 @@ func doTestIntegers(t *testing.T, h Handle) {
 	}
 	if mok {
 		oldNoFixedNum = mh.NoFixedNum
-		mh.NoFixedNum  = true
+		mh.NoFixedNum = true
 	}
 
 	defer func() {
@@ -3349,7 +3350,7 @@ func doTestIntegers(t *testing.T, h Handle) {
 	// var ui uint64
 	var ii interface{}
 
-	for _, v := range []uint64 {
+	for _, v := range []uint64{
 		// Note: use large integers, as some formats store small integers in an agnostic
 		// way, where its not clear if signed or unsigned.
 		2,
@@ -3412,7 +3413,7 @@ func doTestFloats(t *testing.T, h Handle) {
 			b := testMarshalErr(f, h, t, "test-floats-enc")
 			testUnmarshalErr(&w, b, h, t, "test-floats-dec")
 			// we only check json for float64, as it doesn't differentiate
-			if (jok && (math.IsNaN(f64) || math.IsInf(f64, 0)) && w != 0) || 
+			if (jok && (math.IsNaN(f64) || math.IsInf(f64, 0)) && w != 0) ||
 				(!jok && w != f && !math.IsNaN(float64(f))) {
 				t.Logf("error testing float64: %v, decoded as: %v", f, w)
 				t.FailNow()
@@ -3423,7 +3424,7 @@ func doTestFloats(t *testing.T, h Handle) {
 			var w float32 = unusedVal
 			b := testMarshalErr(f, h, t, "test-floats-enc")
 			testUnmarshalErr(&w, b, h, t, "test-floats-dec")
-			if (jok && (math.IsNaN(f64) || math.IsInf(f64, 0)) && w != 0) || 
+			if (jok && (math.IsNaN(f64) || math.IsInf(f64, 0)) && w != 0) ||
 				(!jok && w != f && !math.IsNaN(float64(f))) {
 				t.Logf("error testing float32: %v, decoded as: %v", f, w)
 				t.FailNow()
@@ -3505,7 +3506,7 @@ func TestJsonLargeInteger(t *testing.T) {
 			uint(0),
 			uint(1 << 20),
 			int64(1840000e-2),
-			uint64(1840000E+2),
+			uint64(1840000e+2),
 		} {
 			doTestJsonLargeInteger(t, j, i)
 		}
@@ -3662,7 +3663,7 @@ func TestJsonInvalidUnicode(t *testing.T) {
 		// "n\U0001D11En": []byte(`"n\uD834\uDD1En"`),
 		// "az𝄞": []byte(`"az\uD834\uDD1E"`),
 		"n\U0001D11En": []byte(`"n𝄞n"`),
-		"az𝄞": []byte(`"az𝄞"`),
+		"az𝄞":          []byte(`"az𝄞"`),
 	}
 
 	for k, v := range m2 {
