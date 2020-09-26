@@ -30,6 +30,33 @@ const (
 	simpleVdExt       = 248
 )
 
+var simpledescNames = map[byte]string{
+	simpleVdNil:     "null",
+	simpleVdFalse:   "false",
+	simpleVdTrue:    "true",
+	simpleVdFloat32: "float32",
+	simpleVdFloat64: "float64",
+
+	simpleVdPosInt: "+int",
+	simpleVdNegInt: "-int",
+
+	simpleVdTime: "time",
+
+	simpleVdString:    "string",
+	simpleVdByteArray: "binary",
+	simpleVdArray:     "array",
+	simpleVdMap:       "map",
+	simpleVdExt:       "ext",
+}
+
+func simpledesc(bd byte) (s string) {
+	s = simpledescNames[bd]
+	if s == "" {
+		s = "unknown"
+	}
+	return
+}
+
 type simpleEncDriver struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
@@ -683,6 +710,8 @@ type SimpleHandle struct {
 
 // Name returns the name of the handle: simple
 func (h *SimpleHandle) Name() string { return "simple" }
+
+func (h *SimpleHandle) desc(bd byte) string { return simpledesc(bd) }
 
 func (h *SimpleHandle) newEncDriver() encDriver {
 	var e = &simpleEncDriver{h: h}

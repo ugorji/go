@@ -1051,6 +1051,8 @@ type Handle interface {
 	newEncDriver() encDriver
 	newDecDriver() decDriver
 	isBinary() bool
+	// desc describes the current byte descriptor, or returns "unknown[XXX]" if not understood.
+	desc(bd byte) string
 }
 
 // Raw represents raw formatted bytes.

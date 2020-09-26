@@ -1077,6 +1077,8 @@ type BincHandle struct {
 // Name returns the name of the handle: binc
 func (h *BincHandle) Name() string { return "binc" }
 
+func (h *BincHandle) desc(bd byte) string { return bincdesc(bd>>4, bd&0x0f) }
+
 func (h *BincHandle) newEncDriver() encDriver {
 	var e = &bincEncDriver{h: h}
 	e.e.e = e

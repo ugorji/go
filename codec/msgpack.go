@@ -1039,6 +1039,8 @@ type MsgpackHandle struct {
 // Name returns the name of the handle: msgpack
 func (h *MsgpackHandle) Name() string { return "msgpack" }
 
+func (h *MsgpackHandle) desc(bd byte) string { return mpdesc(bd) }
+
 func (h *MsgpackHandle) newEncDriver() encDriver {
 	var e = &msgpackEncDriver{h: h}
 	e.e.e = e

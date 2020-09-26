@@ -102,7 +102,7 @@ func cbordesc(bd byte) (s string) {
 	if bm == cborMajorSimpleOrFloat {
 		s = cbordescSimpleNames[bd]
 		if s == "" {
-			s = "unknown-simple"
+			s = "unknown"
 		}
 	} else {
 		s = cbordescMajorNames[bm]
@@ -926,6 +926,8 @@ type CborHandle struct {
 
 // Name returns the name of the handle: cbor
 func (h *CborHandle) Name() string { return "cbor" }
+
+func (h *CborHandle) desc(bd byte) string { return cbordesc(bd) }
 
 func (h *CborHandle) newEncDriver() encDriver {
 	var e = &cborEncDriver{h: h}

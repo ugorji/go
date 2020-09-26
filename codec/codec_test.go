@@ -3433,6 +3433,15 @@ func doTestFloats(t *testing.T, h Handle) {
 	}
 }
 
+func doTestDesc(t *testing.T, h Handle, m map[byte]string) {
+	for k, v := range m {
+		if s := h.desc(k); s != v {
+			t.Logf("error describing descriptor: '%q' i.e. 0x%x, expected '%s', got '%s'", k, k, v, s)
+			t.FailNow()
+		}
+	}
+}
+
 func TestBufioDecReader(t *testing.T) {
 	testOnce.Do(testInitAll)
 	doTestBufioDecReader(t, 13)
@@ -4502,6 +4511,44 @@ func TestBincNumbers(t *testing.T) {
 
 func TestSimpleNumbers(t *testing.T) {
 	doTestNumbers(t, testSimpleH)
+}
+
+func TestJsonDesc(t *testing.T) {
+	doTestDesc(t, testJsonH, map[byte]string{'"': `"`, '{': `{`, '}': `}`, '[': `[`, ']': `]`})
+}
+
+func TestCborDesc(t *testing.T) {
+	m := make(map[byte]string)
+	for k, v := range cbordescMajorNames {
+		// if k == cborMajorSimpleOrFloat {
+		// 	m[k<<5] = "nil"
+		m[k<<5] = v
+	}
+	for k, v := range cbordescSimpleNames {
+		m[k] = v
+	}
+	delete(m, cborMajorSimpleOrFloat<<5)
+	doTestDesc(t, testCborH, m)
+}
+
+func TestMsgpackDesc(t *testing.T) {
+	doTestDesc(t, testMsgpackH, mpdescNames)
+}
+
+func TestBincDesc(t *testing.T) {
+	m := make(map[byte]string)
+	for k, v := range bincdescVdNames {
+		m[k<<4] = v
+	}
+	for k, v := range bincdescSpecialVsNames {
+		m[k] = v
+	}
+	delete(m, bincVdSpecial<<4)
+	doTestDesc(t, testBincH, m)
+}
+
+func TestSimpleDesc(t *testing.T) {
+	doTestDesc(t, testSimpleH, simpledescNames)
 }
 
 // --------

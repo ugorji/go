@@ -185,6 +185,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonZeroCopyBytes", TestJsonZeroCopyBytes)
 	t.Run("TestJsonNextValueBytes", TestJsonNextValueBytes)
 	t.Run("TestJsonNumbers", TestJsonNumbers)
+	t.Run("TestJsonDesc", TestJsonDesc)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 
@@ -225,6 +226,7 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincZeroCopyBytes", TestBincZeroCopyBytes)
 	t.Run("TestBincNextValueBytes", TestBincNextValueBytes)
 	t.Run("TestBincNumbers", TestBincNumbers)
+	t.Run("TestBincDesc", TestBincDesc)
 }
 
 func testCborGroup(t *testing.T) {
@@ -262,6 +264,7 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborZeroCopyBytes", TestCborZeroCopyBytes)
 	t.Run("TestCborNextValueBytes", TestCborNextValueBytes)
 	t.Run("TestCborNumbers", TestCborNumbers)
+	t.Run("TestCborDesc", TestCborDesc)
 
 	t.Run("TestCborHalfFloat", TestCborHalfFloat)
 	t.Run("TestCborSkipTags", TestCborSkipTags)
@@ -301,6 +304,7 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackZeroCopyBytes", TestMsgpackZeroCopyBytes)
 	t.Run("TestMsgpackNextValueBytes", TestMsgpackNextValueBytes)
 	t.Run("TestMsgpackNumbers", TestMsgpackNumbers)
+	t.Run("TestMsgpackDesc", TestMsgpackDesc)
 
 	t.Run("TestMsgpackDecodeMapAndExtSizeMismatch", TestMsgpackDecodeMapAndExtSizeMismatch)
 }
@@ -338,6 +342,7 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleZeroCopyBytes", TestSimpleZeroCopyBytes)
 	t.Run("TestSimpleNextValueBytes", TestSimpleNextValueBytes)
 	t.Run("TestSimpleNumbers", TestSimpleNumbers)
+	t.Run("TestSimpleDesc", TestSimpleDesc)
 }
 
 func testSimpleMammothGroup(t *testing.T) {
