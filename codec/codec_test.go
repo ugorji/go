@@ -2059,25 +2059,72 @@ func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
 
 func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
-	m := make(map[int][]struct{})
-	for i := range []int{
-		0, 1,
-		math.MaxInt8, math.MaxInt8 + 4, math.MaxInt8 - 4,
-		math.MaxInt16, math.MaxInt16 + 4, math.MaxInt16 - 4,
-		math.MaxInt32, math.MaxInt32 - 4,
-		// math.MaxInt32 + 4, // bombs on 32-bit
-		// math.MaxInt64, math.MaxInt64 - 4, // bombs on 32-bit
 
-		math.MaxUint8, math.MaxUint8 + 4, math.MaxUint8 - 4,
-		math.MaxUint16, math.MaxUint16 + 4, math.MaxUint16 - 4,
-		// math.MaxUint32, math.MaxUint32 + 4, math.MaxUint32 - 4, // bombs on 32-bit
-	} {
+	// Note that this test does not make sense for formats which do not pre-record
+	// the length, like json, or cbor with indefinite length.
+	if _, ok := h.(*JsonHandle); ok {
+		t.Skipf("skipping as json doesn't support prefixed lengths")
+	}
+	if c, ok := h.(*CborHandle); ok && c.IndefiniteLength {
+		t.Skipf("skipping as cbor Indefinite Length doesn't use prefixed lengths")
+	}
+
+	bh := basicHandle(h)
+
+	var sizes []int
+	// sizes = []int{
+	// 	0, 1,
+	// 	math.MaxInt8, math.MaxInt8 + 4, math.MaxInt8 - 4,
+	// 	math.MaxInt16, math.MaxInt16 + 4, math.MaxInt16 - 4,
+	// 	math.MaxInt32, math.MaxInt32 - 4,
+	// 	// math.MaxInt32 + 4, // bombs on 32-bit
+	// 	// math.MaxInt64, math.MaxInt64 - 4, // bombs on 32-bit
+
+	// 	math.MaxUint8, math.MaxUint8 + 4, math.MaxUint8 - 4,
+	// 	math.MaxUint16, math.MaxUint16 + 4, math.MaxUint16 - 4,
+	// 	// math.MaxUint32, math.MaxUint32 + 4, math.MaxUint32 - 4, // bombs on 32-bit
+	// }
+	sizes = []int{
+		// ensure in ascending order (as creating mm below requires it)
+		0,
+		1,
+		math.MaxInt8 + 4,
+		math.MaxInt16 + 4,
+		math.MaxUint16 + 4,
+	}
+
+	m := make(map[int][]struct{})
+	for _, i := range sizes {
 		m[i] = make([]struct{}, i)
 	}
-	bs := testMarshalErr(m, h, t, "-")
+
+	bs := testMarshalErr(m, h, t, "-slices")
 	var m2 = make(map[int][]struct{})
-	testUnmarshalErr(m2, bs, h, t, "-")
-	testDeepEqualErr(m, m2, t, "-")
+	testUnmarshalErr(m2, bs, h, t, "-slices")
+	testDeepEqualErr(m, m2, t, "-slices")
+
+	d, x := sTestCodecDecoder(bs, h, bh)
+	bs2 := d.d.nextValueBytes(nil)
+	sTestCodecDecoderAfter(d, x, bh)
+	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-slices")
+	// if len(bs2) != 0 || len(bs2) != len(bs) { }
+
+	// requires sizes to be in ascending order
+	mm := make(map[int]struct{})
+	for _, i := range sizes {
+		for j := len(mm); j < i; j++ {
+			mm[j] = struct{}{}
+		}
+		bs = testMarshalErr(mm, h, t, "-map")
+		var mm2 = make(map[int]struct{})
+		testUnmarshalErr(mm2, bs, h, t, "-map")
+		testDeepEqualErr(mm, mm2, t, "-map")
+
+		d, x = sTestCodecDecoder(bs, h, bh)
+		bs2 = d.d.nextValueBytes(nil)
+		sTestCodecDecoderAfter(d, x, bh)
+		testDeepEqualErr(bs, bs2, t, "nextvaluebytes-map")
+	}
 
 	// do same tests for large strings (encoded as symbols or not)
 	// skip if 32-bit or not using unsafe mode
@@ -2100,6 +2147,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	for i := range in {
 		in[i] = 'A'
 	}
+
 	e := NewEncoder(nil, h)
 	for _, i := range []int{
 		0, 1, 4, 8, 12, 16, 28, 32, 36,
@@ -2123,8 +2171,13 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		e.MustEncode(m1)
 		// bs, _ = testMarshalErr(m1, h, t, "-")
 		m2 = make(map[string]bool, 1)
-		testUnmarshalErr(m2, out, h, t, "no-symbols")
-		testDeepEqualErr(m1, m2, t, "no-symbols")
+		testUnmarshalErr(m2, out, h, t, "no-symbols-string")
+		testDeepEqualErr(m1, m2, t, "no-symbols-string")
+
+		d, x = sTestCodecDecoder(out, h, bh)
+		bs2 = d.d.nextValueBytes(nil)
+		sTestCodecDecoderAfter(d, x, bh)
+		testDeepEqualErr(out, bs2, t, "nextvaluebytes-no-symbols-string")
 
 		if okbinc {
 			// now, do as symbols
@@ -2134,8 +2187,13 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 			e.MustEncode(m1)
 			// bs, _ = testMarshalErr(m1, h, t, "-")
 			m2 = make(map[string]bool, 1)
-			testUnmarshalErr(m2, out, h, t, "symbols")
-			testDeepEqualErr(m1, m2, t, "symbols")
+			testUnmarshalErr(m2, out, h, t, "symbols-string")
+			testDeepEqualErr(m1, m2, t, "symbols-string")
+
+			d, x = sTestCodecDecoder(out, h, bh)
+			bs2 = d.d.nextValueBytes(nil)
+			sTestCodecDecoderAfter(d, x, bh)
+			testDeepEqualErr(out, bs2, t, "nextvaluebytes-symbols-string")
 		}
 	}
 
