@@ -178,7 +178,7 @@ func (f genHelperDecoder) DecArrayCannotExpand(sliceLen, streamLen int) {
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecTextUnmarshal(tm encoding.TextUnmarshaler) {
 	if fnerr := tm.UnmarshalText(f.d.d.DecodeStringAsBytes()); fnerr != nil {
-		halt.errorv(fnerr)
+		halt.onerror(fnerr)
 	}
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -190,13 +190,13 @@ func (f genHelperDecoder) DecJSONUnmarshal(tm jsonUnmarshaler) {
 	fnerr := tm.UnmarshalJSON(bs)
 	f.d.blist.put(bs)
 	if fnerr != nil {
-		halt.errorv(fnerr)
+		halt.onerror(fnerr)
 	}
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecBinaryUnmarshal(bm encoding.BinaryUnmarshaler) {
 	if fnerr := bm.UnmarshalBinary(f.d.d.DecodeBytes(nil, true)); fnerr != nil {
-		halt.errorv(fnerr)
+		halt.onerror(fnerr)
 	}
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*

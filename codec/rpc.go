@@ -52,7 +52,7 @@ func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
 func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 	// defensive: ensure that jsonH has TermWhitespace turned on.
 	if jsonH, ok := h.(*JsonHandle); ok && !jsonH.TermWhitespace {
-		panic(errRpcJsonNeedsTermWhitespace)
+		halt.onerror(errRpcJsonNeedsTermWhitespace)
 	}
 	// always ensure that we use a flusher, and always flush what was written to the connection.
 	// we lose nothing by using a buffered writer internally.

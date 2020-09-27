@@ -475,9 +475,7 @@ func (d *bincDecDriver) DecodeTime() (t time.Time) {
 		d.d.errorf("cannot decode time - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	t, err := bincDecodeTime(d.d.decRd.readx(uint(d.vs)))
-	if err != nil {
-		panic(err)
-	}
+	halt.onerror(err)
 	d.bdRead = false
 	return
 }
@@ -898,9 +896,7 @@ func (d *bincDecDriver) DecodeNaked() {
 	case bincVdTimestamp:
 		n.v = valueTypeTime
 		tt, err := bincDecodeTime(d.d.decRd.readx(uint(d.vs)))
-		if err != nil {
-			panic(err)
-		}
+		halt.onerror(err)
 		n.t = tt
 	case bincVdCustomExt:
 		n.v = valueTypeExt

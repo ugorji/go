@@ -278,7 +278,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	for _, t := range typ {
 		// fmt.Printf("###########: PkgPath: '%v', Name: '%s'\n", genImportPath(t), t.Name())
 		if genImportPath(t) != x.bp {
-			panic(errGenAllTypesSamePkg)
+			halt.onerror(errGenAllTypesSamePkg)
 		}
 		x.genRefPkgs(t)
 	}
@@ -383,7 +383,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 		case reflect.Map:
 			x.encMapFallback("v", t)
 		default:
-			panic(errGenExpectArrayOrMap)
+			halt.onerror(errGenExpectArrayOrMap)
 		}
 		x.line("}")
 		x.line("")
@@ -398,7 +398,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 		case reflect.Map:
 			x.decMapFallback("v", rtid, t)
 		default:
-			panic(errGenExpectArrayOrMap)
+			halt.onerror(errGenExpectArrayOrMap)
 		}
 		x.line("}")
 		x.line("")
@@ -482,16 +482,12 @@ func (x *genRunner) varsfxreset() {
 
 func (x *genRunner) out(s string) {
 	_, err := io.WriteString(x.w, s)
-	if err != nil {
-		panic(err)
-	}
+	genCheckErr(err)
 }
 
 func (x *genRunner) outf(s string, params ...interface{}) {
 	_, err := fmt.Fprintf(x.w, s, params...)
-	if err != nil {
-		panic(err)
-	}
+	genCheckErr(err)
 }
 
 func (x *genRunner) line(s string) {
@@ -1179,15 +1175,11 @@ func (x *genRunner) encListFallback(varname string, t reflect.Type) {
 			Label, Chan, Slice, Sfx string
 		}
 		tm, err := template.New("").Parse(genEncChanTmpl)
-		if err != nil {
-			panic(err)
-		}
+		genCheckErr(err)
 		x.linef("if %s == nil { r.EncodeNil() } else { ", varname)
 		x.linef("var sch%s []%s", i, x.genTypeName(t.Elem()))
 		err = tm.Execute(x.w, &ts{"Lsch" + i, varname, "sch" + i, i})
-		if err != nil {
-			panic(err)
-		}
+		genCheckErr(err)
 		if elemBytes {
 			x.linef("r.EncodeStringBytesRaw([]byte(%s))", "sch"+i)
 			x.line("}")
@@ -1582,12 +1574,8 @@ func (x *genRunner) decListFallback(varname string, rtid uintptr, t reflect.Type
 		return t.Kind() == reflect.Chan
 	}
 	tm, err := template.New("").Funcs(funcs).Parse(genDecListTmpl)
-	if err != nil {
-		panic(err)
-	}
-	if err = tm.Execute(x.w, &ts); err != nil {
-		panic(err)
-	}
+	genCheckErr(err)
+	genCheckErr(tm.Execute(x.w, &ts))
 }
 
 func (x *genRunner) decMapFallback(varname string, rtid uintptr, t reflect.Type) {
@@ -1636,12 +1624,8 @@ func (x *genRunner) decMapFallback(varname string, rtid uintptr, t reflect.Type)
 	}
 
 	tm, err := template.New("").Funcs(funcs).Parse(genDecMapTmpl)
-	if err != nil {
-		panic(err)
-	}
-	if err = tm.Execute(x.w, &ts); err != nil {
-		panic(err)
-	}
+	genCheckErr(err)
+	genCheckErr(tm.Execute(x.w, &ts))
 }
 
 func (x *genRunner) decStructMapSwitch(kName string, varname string, rtid uintptr, t reflect.Type) {
@@ -1812,7 +1796,7 @@ func (x *genRunner) newFastpathGenV(t reflect.Type) (v fastpathGenV) {
 		v.MapKey = x.genTypeName(tk)
 		v.Size = int(te.Size() + tk.Size())
 	default:
-		panic(errGenUnexpectedTypeFastpath)
+		halt.onerror(errGenUnexpectedTypeFastpath)
 	}
 	return
 }
@@ -2091,8 +2075,9 @@ func genInternalDecCommandAsString(s string) string {
 	case "bool":
 		return "d.d.DecodeBool()"
 	default:
-		panic(errors.New("gen internal: unknown type for decode: " + s))
+		halt.onerror(errors.New("gen internal: unknown type for decode: " + s))
 	}
+	return ""
 }
 
 // func genInternalSortType(s string, elem bool) string {
@@ -2117,7 +2102,7 @@ func genInternalDecCommandAsString(s string) string {
 // 			return v + "Slice"
 // 		}
 // 	}
-// 	panic(errors.New("sorttype: unexpected type: " + s))
+// 	halt.onerror(errors.New("sorttype: unexpected type: " + s))
 // }
 
 func genInternalSortType(s string, elem bool) string {
@@ -2421,9 +2406,7 @@ func genEndsWith(s0 string, sn ...string) bool {
 }
 
 func genCheckErr(err error) {
-	if err != nil {
-		panic(err)
-	}
+	halt.onerror(err)
 }
 
 func genRunSortTmpl2Go(fnameIn, fnameOut string) {

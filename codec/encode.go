@@ -1049,9 +1049,7 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 // MustEncode is like Encode, but panics if unable to Encode.
 // This provides insight to the code location that triggered the error.
 func (e *Encoder) MustEncode(v interface{}) {
-	if e.err != nil {
-		panic(e.err)
-	}
+	halt.onerror(e.err)
 	e.mustEncode(v)
 }
 
@@ -1260,9 +1258,7 @@ TOP:
 }
 
 func (e *Encoder) marshalUtf8(bs []byte, fnerr error) {
-	if fnerr != nil {
-		panic(fnerr)
-	}
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1272,9 +1268,7 @@ func (e *Encoder) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *Encoder) marshalAsis(bs []byte, fnerr error) {
-	if fnerr != nil {
-		panic(fnerr)
-	}
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1283,9 +1277,7 @@ func (e *Encoder) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *Encoder) marshalRaw(bs []byte, fnerr error) {
-	if fnerr != nil {
-		panic(fnerr)
-	}
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {

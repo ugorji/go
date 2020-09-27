@@ -744,10 +744,10 @@ func (x *BasicHandle) init(hh Handle) {
 		atomic.StoreUint32(&x.inited, uint32(f))
 		// ensure MapType and SliceType are of correct type
 		if x.MapType != nil && x.MapType.Kind() != reflect.Map {
-			panic(errMapTypeNotMapKind)
+			halt.onerror(errMapTypeNotMapKind)
 		}
 		if x.SliceType != nil && x.SliceType.Kind() != reflect.Slice {
-			panic(errSliceTypeNotSliceKind)
+			halt.onerror(errSliceTypeNotSliceKind)
 		}
 	}
 	x.mu.Unlock()
@@ -1124,16 +1124,12 @@ type addExtWrapper struct {
 
 func (x addExtWrapper) WriteExt(v interface{}) []byte {
 	bs, err := x.encFn(rv4i(v))
-	if err != nil {
-		panic(err)
-	}
+	halt.onerror(err)
 	return bs
 }
 
 func (x addExtWrapper) ReadExt(v interface{}, bs []byte) {
-	if err := x.decFn(rv4i(v), bs); err != nil {
-		panic(err)
-	}
+	halt.onerror(x.decFn(rv4i(v), bs))
 }
 
 func (x addExtWrapper) ConvertExt(v interface{}) interface{} {
@@ -1147,21 +1143,21 @@ func (x addExtWrapper) UpdateExt(dest interface{}, v interface{}) {
 type bytesExtFailer struct{}
 
 func (bytesExtFailer) WriteExt(v interface{}) []byte {
-	halt.errorv(errExtFnWriteExtUnsupported)
+	halt.onerror(errExtFnWriteExtUnsupported)
 	return nil
 }
 func (bytesExtFailer) ReadExt(v interface{}, bs []byte) {
-	halt.errorv(errExtFnReadExtUnsupported)
+	halt.onerror(errExtFnReadExtUnsupported)
 }
 
 type interfaceExtFailer struct{}
 
 func (interfaceExtFailer) ConvertExt(v interface{}) interface{} {
-	halt.errorv(errExtFnConvertExtUnsupported)
+	halt.onerror(errExtFnConvertExtUnsupported)
 	return nil
 }
 func (interfaceExtFailer) UpdateExt(dest interface{}, v interface{}) {
-	halt.errorv(errExtFnUpdateExtUnsupported)
+	halt.onerror(errExtFnUpdateExtUnsupported)
 }
 
 type bytesExtWrapper struct {
@@ -1948,7 +1944,7 @@ LOOP:
 		}
 
 		if f.Name == "" {
-			panic(errNoFieldNameToStructFieldInfo)
+			halt.onerror(errNoFieldNameToStructFieldInfo)
 		}
 
 		// pv.fNames = append(pv.fNames, f.Name)
@@ -2564,20 +2560,22 @@ func (x bitset64) isset(pos byte) bool {
 
 type panicHdl struct{}
 
-func (panicHdl) errorv(err error) {
+// errorv will panic if err is defined (not nil)
+func (panicHdl) onerror(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
+// errorf will always panic, using the parameters passed.
 func (panicHdl) errorf(format string, params ...interface{}) {
-	if len(params) != 0 {
-		panic(fmt.Errorf(format, params...))
+	if format == "" {
+		panic(errPanicHdlUndefinedErr)
 	}
-	if len(params) == 0 && format != "" {
+	if len(params) == 0 {
 		panic(errors.New(format))
 	}
-	panic(errPanicHdlUndefinedErr)
+	panic(fmt.Errorf(format, params...))
 }
 
 // ----------------------------------------------------
@@ -2594,25 +2592,20 @@ func (errDecoratorDef) wrapErr(v error, e *error) { *e = v }
 
 type mustHdl struct{}
 
-func mustErr(err error) {
-	if err != nil {
-		halt.errorv(err)
-	}
-}
 func (mustHdl) String(s string, err error) string {
-	mustErr(err)
+	halt.onerror(err)
 	return s
 }
 func (mustHdl) Int(s int64, err error) int64 {
-	mustErr(err)
+	halt.onerror(err)
 	return s
 }
 func (mustHdl) Uint(s uint64, err error) uint64 {
-	mustErr(err)
+	halt.onerror(err)
 	return s
 }
 func (mustHdl) Float(s float64, err error) float64 {
-	mustErr(err)
+	halt.onerror(err)
 	return s
 }
 

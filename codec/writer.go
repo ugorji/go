@@ -68,9 +68,7 @@ func (z *bufioEncWriter) flushErr() (err error) {
 }
 
 func (z *bufioEncWriter) flush() {
-	if err := z.flushErr(); err != nil {
-		panic(err)
-	}
+	halt.onerror(z.flushErr())
 }
 
 func (z *bufioEncWriter) writeb(s []byte) {
@@ -270,9 +268,7 @@ func (z *encWr) endErr() error {
 }
 
 func (z *encWr) end() {
-	if err := z.endErr(); err != nil {
-		panic(err)
-	}
+	halt.onerror(z.endErr())
 }
 
 var _ encWriter = (*encWr)(nil)

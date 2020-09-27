@@ -221,7 +221,7 @@ func (e *simpleEncDriver) EncodeTime(t time.Time) {
 	}
 	v, err := t.MarshalBinary()
 	if err != nil {
-		e.e.errorv(err)
+		e.e.onerror(err)
 		return
 	}
 	// time.Time marshalbinary takes about 14 bytes.
@@ -472,7 +472,7 @@ func (d *simpleDecDriver) DecodeTime() (t time.Time) {
 	clen := int(d.d.decRd.readn1())
 	b := d.d.decRd.readx(uint(clen))
 	if err := (&t).UnmarshalBinary(b); err != nil {
-		d.d.errorv(err)
+		d.d.onerror(err)
 	}
 	return
 }

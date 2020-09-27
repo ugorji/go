@@ -191,9 +191,8 @@ func (z *ioDecReader) readx(n uint) (bs []byte) {
 	} else {
 		bs = make([]byte, n)
 	}
-	if _, err := readFull(z.r, bs); err != nil {
-		panic(err)
-	}
+	_, err := readFull(z.r, bs)
+	halt.onerror(err)
 	z.n += uint(len(bs))
 	return
 }
@@ -202,19 +201,16 @@ func (z *ioDecReader) readb(bs []byte) {
 	if len(bs) == 0 {
 		return
 	}
-	if _, err := readFull(z.r, bs); err != nil {
-		panic(err)
-	}
+	_, err := readFull(z.r, bs)
+	halt.onerror(err)
 	z.n += uint(len(bs))
 }
 
 func (z *ioDecReader) readn1() (b uint8) {
 	b, err := z.ReadByte()
-	if err == nil {
-		z.n++
-		return
-	}
-	panic(err)
+	halt.onerror(err)
+	z.n++
+	return
 }
 
 func (z *ioDecReader) readn1eof() (b uint8, eof bool) {
@@ -224,7 +220,7 @@ func (z *ioDecReader) readn1eof() (b uint8, eof bool) {
 	} else if err == io.EOF {
 		eof = true
 	} else {
-		panic(err)
+		halt.onerror(err)
 	}
 	return
 }
@@ -270,9 +266,7 @@ LOOP:
 
 func (z *ioDecReader) unreadn1() {
 	err := z.UnreadByte()
-	if err != nil {
-		panic(err)
-	}
+	halt.onerror(err)
 	z.n--
 }
 
@@ -317,7 +311,7 @@ func (z *bufioDecReader) readbFill(p0 []byte, n uint, must bool, eof bool) (isEO
 				isEOF = true
 			}
 			if must && !(eof && isEOF) {
-				panic(err)
+				halt.onerror(err)
 			}
 			return
 		}
@@ -341,7 +335,7 @@ LOOP:
 			isEOF = true
 		}
 		if must && !(eof && isEOF) {
-			panic(err)
+			halt.onerror(err)
 		}
 		return
 	}
@@ -466,8 +460,8 @@ func (z *bufioDecReader) skipFillWhitespace() (token byte) {
 		z.c = 0
 		z.buf = z.buf[0:cap(z.buf)]
 		n2, err = z.r.Read(z.buf)
-		if n2 == 0 && err != nil {
-			panic(err)
+		if n2 == 0 {
+			halt.onerror(err)
 		}
 		z.buf = z.buf[:n2]
 		for i, token = range z.buf {
@@ -515,8 +509,8 @@ func (z *bufioDecReader) readUntilFill(stop byte) []byte {
 		z.c = 0
 		z.buf = z.buf[0:cap(z.buf)]
 		n1, err := z.r.Read(z.buf)
-		if n1 == 0 && err != nil {
-			panic(err)
+		if n1 == 0 {
+			halt.onerror(err)
 		}
 		n2 := uint(n1)
 		z.buf = z.buf[:n2]

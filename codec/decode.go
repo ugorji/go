@@ -308,17 +308,14 @@ func (d *Decoder) selferUnmarshal(f *codecFnInfo, rv reflect.Value) {
 func (d *Decoder) binaryUnmarshal(f *codecFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil, true)
-	if fnerr := bm.UnmarshalBinary(xbs); fnerr != nil {
-		panic(fnerr)
-	}
+	fnerr := bm.UnmarshalBinary(xbs)
+	halt.onerror(fnerr)
 }
 
 func (d *Decoder) textUnmarshal(f *codecFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
-	if fnerr != nil {
-		panic(fnerr)
-	}
+	halt.onerror(fnerr)
 }
 
 func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
@@ -329,9 +326,7 @@ func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
 	bs = d.d.nextValueBytes(bs)
 	fnerr := tm.UnmarshalJSON(bs)
 	d.blist.put(bs)
-	if fnerr != nil {
-		panic(fnerr)
-	}
+	halt.onerror(fnerr)
 }
 
 func (d *Decoder) kErr(f *codecFnInfo, rv reflect.Value) {
@@ -679,7 +674,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		}
 		d.arrayEnd()
 	} else {
-		d.errorv(errOnlyMapOrArrayCanDecodeIntoStruct)
+		d.onerror(errOnlyMapOrArrayCanDecodeIntoStruct)
 	}
 }
 
@@ -1358,9 +1353,7 @@ func (d *Decoder) Decode(v interface{}) (err error) {
 // MustDecode is like Decode, but panics if unable to Decode.
 // This provides insight to the code location that triggered the error.
 func (d *Decoder) MustDecode(v interface{}) {
-	if d.err != nil {
-		panic(d.err)
-	}
+	halt.onerror(d.err)
 	d.mustDecode(v)
 }
 
@@ -1471,7 +1464,7 @@ func (d *Decoder) decode(iv interface{}) {
 	// consequently, we deal with nil and interfaces outside the switch.
 
 	if iv == nil {
-		d.errorv(errCannotDecodeIntoNil)
+		d.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
@@ -1629,7 +1622,7 @@ func (d *Decoder) ensureDecodeable(rv reflect.Value) {
 		return
 	}
 	if !rv.IsValid() {
-		d.errorv(errCannotDecodeIntoNil)
+		d.onerror(errCannotDecodeIntoNil)
 	}
 	if !rv.CanInterface() {
 		d.errorf("cannot decode into a value without an interface: %v", rv)
@@ -1640,7 +1633,7 @@ func (d *Decoder) ensureDecodeable(rv reflect.Value) {
 func (d *Decoder) depthIncr() {
 	d.depth++
 	if d.depth >= d.maxdepth {
-		panic(errMaxDepthExceeded)
+		halt.onerror(errMaxDepthExceeded)
 	}
 }
 

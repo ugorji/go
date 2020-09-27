@@ -736,7 +736,7 @@ func (d *jsonDecDriver) DecodeTime() (t time.Time) {
 	bs := d.readUnescapedString()
 	t, err := time.Parse(time.RFC3339, stringView(bs))
 	if err != nil {
-		d.d.errorv(err)
+		d.d.onerror(err)
 	}
 	return
 }
@@ -794,11 +794,11 @@ func (d *jsonDecDriver) DecodeUint64() (u uint64) {
 	if r.ok {
 		u, r.bad = parseUint64_reader(r)
 		if r.bad {
-			d.d.errorv(strconvParseErr(bs, "ParseUint"))
+			d.d.onerror(strconvParseErr(bs, "ParseUint"))
 		}
 		return
 	}
-	d.d.errorv(strconvParseErr(bs, "ParseUint"))
+	d.d.onerror(strconvParseErr(bs, "ParseUint"))
 	return
 }
 
@@ -834,11 +834,11 @@ func (d *jsonDecDriver) DecodeInt64() (v int64) {
 		r.neg = neg
 		v, r.bad = parseInt64_reader(r)
 		if r.bad {
-			d.d.errorv(strconvParseErr(b, "ParseInt"))
+			d.d.onerror(strconvParseErr(b, "ParseInt"))
 		}
 		return
 	}
-	d.d.errorv(strconvParseErr(b, "ParseInt"))
+	d.d.onerror(strconvParseErr(b, "ParseInt"))
 	return
 }
 
@@ -850,7 +850,7 @@ func (d *jsonDecDriver) DecodeFloat64() (f float64) {
 	}
 	f, err = parseFloat64(bs)
 	if err != nil {
-		d.d.errorv(err)
+		d.d.onerror(err)
 	}
 	return
 }
@@ -863,7 +863,7 @@ func (d *jsonDecDriver) DecodeFloat32() (f float32) {
 	}
 	f, err = parseFloat32(bs)
 	if err != nil {
-		d.d.errorv(err)
+		d.d.onerror(err)
 	}
 	return
 }
