@@ -429,7 +429,7 @@ func (e *jsonEncDriver) quoteStr(s string) {
 				if start < i {
 					w.writestr(s[start:i])
 				}
-				w.writestr(`\ufffd`)
+				w.writestr(`\uFFFD`)
 				i++
 				start = i
 				continue

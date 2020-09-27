@@ -188,7 +188,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonDesc", TestJsonDesc)
 
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
-
+	t.Run("TestJsonNumberParsing", TestJsonNumberParsing)
 }
 
 func testBincGroup(t *testing.T) {

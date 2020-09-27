@@ -3350,19 +3350,11 @@ func doTestIntegers(t *testing.T, h Handle) {
 	// var ui uint64
 	var ii interface{}
 
-	for _, v := range []uint64{
-		// Note: use large integers, as some formats store small integers in an agnostic
-		// way, where its not clear if signed or unsigned.
-		2,
-		2048,
-		1<<63 - 4,
-		1800000000e-2,
-		18000000e+2,
-	} {
-		b := testMarshalErr(v, h, t, "test-integers")
+	for _, v := range testUintsToParse {
 		if jok {
 			jh.PreferFloat = false
 		}
+		b := testMarshalErr(v, h, t, "test-integers")
 		ii = nil
 		bh.SignedInteger = true
 		testUnmarshalErr(&ii, b, h, t, "test-integers")
@@ -3380,28 +3372,49 @@ func doTestIntegers(t *testing.T, h Handle) {
 	}
 }
 
+var testUintsToParse = []uint64{
+	// Note: use large integers, as some formats store small integers in an agnostic
+	// way, where its not clear if signed or unsigned.
+	2,
+	2048,
+	1<<63 - 4,
+	1800000000e-2,
+	18000000e+2,
+	4.56e+4, // tests float32 exact parsing
+	4.56e+16,
+}
+
+var testFloatsToParse = []float64{
+	3,
+	math.NaN(),
+	math.Inf(1),
+	math.Inf(-1),
+	4.56e+4,  // tests float32 exact parsing
+	4.56e+18, // float32 parsing - exp > 10
+	4.56e+10,
+	4.56e+30,
+	1.01234567890123456789e+30,
+	1.32e+5,
+	1.32e-5,
+	0e+01234567890123456789,
+	1.7976931348623157e308,
+	-1.7976931348623157e+308,
+	1e308,
+	1e-308,
+	1.694649e-317,
+	// 1e-4294967296,
+	2.2250738585072012e-308,
+	4.630813248087435e+307,
+	1.00000000000000011102230246251565404236316680908203125,
+	1.00000000000000033306690738754696212708950042724609375,
+}
+
 func doTestFloats(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 
 	_, jok := h.(*JsonHandle)
 
-	f64s := []float64{
-		3,
-		math.NaN(),
-		math.Inf(1),
-		math.Inf(-1),
-		0e+01234567890123456789,
-		1.7976931348623157e308,
-		-1.7976931348623157e+308,
-		1e308,
-		1e-308,
-		1.694649e-317,
-		// 1e-4294967296,
-		2.2250738585072012e-308,
-		4.630813248087435e+307,
-		1.00000000000000011102230246251565404236316680908203125,
-		1.00000000000000033306690738754696212708950042724609375,
-	}
+	f64s := testFloatsToParse
 	const unusedVal = 9999 // use this as a marker
 
 	// marshall it, unmarshal it, compare to original
@@ -3430,6 +3443,7 @@ func doTestFloats(t *testing.T, h Handle) {
 			f := float32(f64)
 			var w float32 = unusedVal
 			b := testMarshalErr(f, h, t, "test-floats-enc")
+			// xdebug2f("test float: of %v, encoded as: %s", f, b)
 			testUnmarshalErr(&w, b, h, t, "test-floats-dec")
 			if (jok && (math.IsNaN(f64) || math.IsInf(f64, 0)) && w != 0) ||
 				(!jok && w != f && !math.IsNaN(float64(f))) {
@@ -3680,6 +3694,8 @@ func TestJsonInvalidUnicode(t *testing.T) {
 		// "az𝄞": []byte(`"az\uD834\uDD1E"`),
 		"n\U0001D11En": []byte(`"n𝄞n"`),
 		"az𝄞":          []byte(`"az𝄞"`),
+
+		string([]byte{129, 129}): []byte(`"\uFFFD\uFFFD"`),
 	}
 
 	for k, v := range m2 {
@@ -3691,6 +3707,100 @@ func TestJsonInvalidUnicode(t *testing.T) {
 
 		if !bytes.Equal(b, v) {
 			t.Logf("marshal: not equal: %q, %q", v, b)
+			t.FailNow()
+		}
+	}
+}
+
+func TestJsonNumberParsing(t *testing.T) {
+	for _, f64 := range testFloatsToParse {
+		// using large prec might make a non-exact float ..., while small prec might make lose some precision.
+		// However, we can do a check, and only check if the (u)int64 and float64 can be converted to one another
+		// without losing any precision. Then we can use any precision for the tests.
+		var precs = [...]int{32, -1}
+		var r readFloatResult
+		var fail bool
+		var fs uint64
+		var fsi int64
+		var fint, ffrac float64
+		_ = ffrac
+		var bv []byte
+		for _, prec := range precs {
+			f := f64
+			if math.IsNaN(f64) || math.IsInf(f64, 0) {
+				goto F32
+			}
+			bv = strconv.AppendFloat(nil, f, 'E', prec, 64)
+			if fs, err := parseFloat64_custom(bv); err != nil || fs != f {
+				t.Logf("float64 -> float64 error (prec: %v) parsing '%s', got %v, expected %v: %v", prec, bv, fs, f, err)
+				t.FailNow()
+			}
+			// try decoding it a uint64 or int64
+			fint, ffrac = math.Modf(f)
+			// xdebug2f(">> fint: %v (ffrac: %v) as uint64: %v as float64: %v", fint, ffrac, uint64(fint), float64(uint64(fint)))
+			bv = strconv.AppendFloat(bv[:0], fint, 'E', prec, 64)
+			if f < 0 || fint != float64(uint64(fint)) {
+				goto F64i
+			}
+			r = readFloat(bv, fi64u)
+			fail = !r.ok
+			if r.ok {
+				fs, fail = parseUint64_reader(r)
+			}
+			if fail || fs != uint64(fint) {
+				t.Logf("float64 -> uint64 error (prec: %v, fail: %v) parsing '%s', got %v, expected %v", prec, fail, bv, fs, uint64(fint))
+				t.FailNow()
+			}
+		F64i:
+			if fint != float64(int64(fint)) {
+				goto F32
+			}
+			r = readFloat(bv, fi64i)
+			fail = !r.ok
+			if r.ok {
+				fsi, fail = parseInt64_reader(r)
+			}
+			if fail || fsi != int64(fint) {
+				t.Logf("float64 -> int64 error (prec: %v, fail: %v) parsing '%s', got %v, expected %v", prec, fail, bv, fsi, int64(fint))
+				t.FailNow()
+			}
+		F32:
+			f32 := float32(f64)
+			f64n := float64(f32)
+			if !(math.IsNaN(f64n) || math.IsInf(f64n, 0)) {
+				bv := strconv.AppendFloat(nil, f64n, 'E', prec, 32)
+				if fs, err := parseFloat32_custom(bv); err != nil || fs != f32 {
+					t.Logf("float32 -> float32 error (prec: %v) parsing '%s', got %v, expected %v: %v", prec, bv, fs, f32, err)
+					t.FailNow()
+				}
+			}
+		}
+	}
+
+	for _, v := range testUintsToParse {
+		const prec int = 32    // test with precisions of 32 so formatting doesn't truncate what doesn't fit into float
+		v = uint64(float64(v)) // use a value that when converted back and forth, remains the same
+		bv := strconv.AppendFloat(nil, float64(v), 'E', prec, 64)
+		r := readFloat(bv, fi64u)
+		if r.ok {
+			if fs, fail := parseUint64_reader(r); fail || fs != v {
+				t.Logf("uint64 -> uint64 error (prec: %v, fail: %v) parsing '%s', got %v, expected %v", prec, fail, bv, fs, v)
+				t.FailNow()
+			}
+		} else {
+			t.Logf("uint64 -> uint64 not ok (prec: %v) parsing '%s', expected %v", prec, bv, v)
+			t.FailNow()
+		}
+		vi := int64(v)
+		bv = strconv.AppendFloat(nil, float64(vi), 'E', prec, 64)
+		r = readFloat(bv, fi64i)
+		if r.ok {
+			if fs, fail := parseInt64_reader(r); fail || fs != vi {
+				t.Logf("int64 -> int64 error (prec: %v, fail: %v) parsing '%s', got %v, expected %v", prec, fail, bv, fs, vi)
+				t.FailNow()
+			}
+		} else {
+			t.Logf("int64 -> int64 not ok (prec: %v) parsing '%s', expected %v", prec, bv, vi)
 			t.FailNow()
 		}
 	}
@@ -4527,8 +4637,7 @@ func TestJsonDesc(t *testing.T) {
 func TestCborDesc(t *testing.T) {
 	m := make(map[byte]string)
 	for k, v := range cbordescMajorNames {
-		// if k == cborMajorSimpleOrFloat {
-		// 	m[k<<5] = "nil"
+		// if k == cborMajorSimpleOrFloat { m[k<<5] = "nil" }
 		m[k<<5] = v
 	}
 	for k, v := range cbordescSimpleNames {
@@ -4539,7 +4648,17 @@ func TestCborDesc(t *testing.T) {
 }
 
 func TestMsgpackDesc(t *testing.T) {
-	doTestDesc(t, testMsgpackH, mpdescNames)
+	m := make(map[byte]string)
+	for k, v := range mpdescNames {
+		m[k] = v
+	}
+	m[mpPosFixNumMin] = "int"
+	m[mpFixStrMin] = "string|bytes"
+	m[mpFixArrayMin] = "array"
+	m[mpFixMapMin] = "map"
+	m[mpFixExt1] = "ext"
+
+	doTestDesc(t, testMsgpackH, m)
 }
 
 func TestBincDesc(t *testing.T) {

@@ -136,6 +136,7 @@ func strconvParseErr(b []byte, fn string) error {
 func parseFloat32_reader(r readFloatResult) (f float32, fail bool) {
 	// parseFloatDebug(b, 32, false, exp, trunc, ok)
 	f = float32(r.mantissa)
+	// xdebugf("parsefloat32: exp: %v, mantissa: %v", r.exp, r.mantissa)
 	if r.exp == 0 {
 	} else if r.exp < 0 { // int / 10^k
 		f /= float32pow10[uint8(-r.exp)]
@@ -159,17 +160,16 @@ func parseFloat32_reader(r readFloatResult) (f float32, fail bool) {
 
 func parseFloat32_custom(b []byte) (f float32, err error) {
 	r := readFloat(b, fi32)
+	// xdebug2f("\tparsing: %s - ok: %v, bad: %v, trunc: %v, mantissa: %v, exp: %v", b, r.ok, r.bad, r.trunc, r.mantissa, r.exp)
 	if r.bad {
 		return 0, strconvParseErr(b, "ParseFloat")
 	}
 	if r.ok {
 		f, r.bad = parseFloat32_reader(r)
-		if r.bad {
-			goto FALLBACK
+		if !r.bad {
+			return
 		}
-		return
 	}
-FALLBACK:
 	return parseFloat32_strconv(b)
 }
 
@@ -203,12 +203,10 @@ func parseFloat64_custom(b []byte) (f float64, err error) {
 	}
 	if r.ok {
 		f, r.bad = parseFloat64_reader(r)
-		if r.bad {
-			goto FALLBACK
+		if !r.bad {
+			return
 		}
-		return
 	}
-FALLBACK:
 	return parseFloat64_strconv(b)
 }
 
@@ -453,7 +451,7 @@ LOOP:
 		// do not set ok=true for cases we cannot handle
 		if r.exp < -y.exactPow10 ||
 			r.exp > y.exactInts+y.exactPow10 ||
-			y.mantbits != 0 && r.mantissa>>y.mantbits != 0 {
+			(y.mantbits != 0 && r.mantissa>>y.mantbits != 0) {
 			return
 		}
 	}
