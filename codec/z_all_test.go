@@ -34,6 +34,7 @@ import "testing"
 
 func testGroupResetFlags() {
 	testUseMust = false
+	testRpcBufsize = 2048
 	testUseIoEncDec = -1
 	testUseReset = false
 	testMaxInitLen = 0
@@ -95,9 +96,12 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 
 	// testUseIoEncDec = -1
 
-	// make buffer small enough so that we have to re-fill multiple times.
+	// make buffer small enough so that we have to re-fill multiple times
+	// and also such that writing a quoted struct name e.g. "LongFieldNameXYZ"
+	// will require a re-fill, and test out bufioEncWriter.writeqstr well.
+	// Due to last requirement, we prefer 16 to 128.
 	testSkipRPCTests = true
-	testUseIoEncDec = 128
+	testUseIoEncDec = 16
 	// testDecodeOptions.ReaderBufferSize = 128
 	// testEncodeOptions.WriterBufferSize = 128
 	testReinit()
@@ -448,7 +452,8 @@ func TestCodecSuite(t *testing.T) {
 	t.Run("simple-enczeroasnil", testSimpleMammothGroup) // testSimpleGroup
 	testSimpleH.EncZeroValuesAsNil = oldEncZeroValuesAsNil
 
-	oldRpcBufsize := testRpcBufsize
+	testUseIoEncDec = 16
+	testRPCOptions.RPCNoBuffer = false
 	testRpcBufsize = 0
 	t.Run("rpc-buf-0", testRpcGroup)
 	testRpcBufsize = 0
@@ -468,7 +473,6 @@ func TestCodecSuite(t *testing.T) {
 	testRpcBufsize = 2048
 	t.Run("rpc-buf-2048-rpcNoBuffer", testRpcGroup)
 
-	testRpcBufsize = oldRpcBufsize
 	testGroupResetFlags()
 }
 
