@@ -118,6 +118,7 @@ var (
 var (
 	testEncodeOptions EncodeOptions
 	testDecodeOptions DecodeOptions
+	testRPCOptions    RPCOptions
 )
 
 func init() {
