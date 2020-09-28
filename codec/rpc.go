@@ -51,14 +51,14 @@ func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
 
 func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 	// defensive: ensure that jsonH has TermWhitespace turned on.
-	if jsonH, ok := h.(*JsonHandle); ok && !jsonH.TermWhitespace {
+	jsonH, ok := h.(*JsonHandle)
+	if ok && !jsonH.TermWhitespace {
 		halt.onerror(errRpcJsonNeedsTermWhitespace)
 	}
-	// always ensure that we use a flusher, and always flush what was written to the connection.
-	// we lose nothing by using a buffered writer internally.
-	f, ok := w.(ioFlusher)
+	var f ioFlusher
 	bh := basicHandle(h)
 	if !bh.RPCNoBuffer {
+		f, ok = w.(ioFlusher)
 		if bh.WriterBufferSize <= 0 {
 			if !ok {
 				bw := bufio.NewWriter(w)
@@ -92,16 +92,13 @@ func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2 bool) (err error) {
 		}
 	}
 	err = c.enc.Encode(obj1)
-	if err == nil {
-		if writeObj2 {
-			err = c.enc.Encode(obj2)
-		}
+	if err == nil && writeObj2 {
+		err = c.enc.Encode(obj2)
 	}
 	if c.f != nil {
-		if err == nil {
-			err = c.f.Flush()
-		} else {
-			_ = c.f.Flush() // swallow flush error, so we maintain prior error on write
+		if err2 := c.f.Flush(); err == nil {
+			// ignore flush error if another error already happened from Encode call
+			err = err2
 		}
 	}
 	return

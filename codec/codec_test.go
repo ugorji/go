@@ -378,6 +378,7 @@ func testInit() {
 		// pre-fill them first
 		bh.EncodeOptions = testEncodeOptions
 		bh.DecodeOptions = testDecodeOptions
+		bh.RPCOptions = testRPCOptions
 		// bh.InterfaceReset = true
 		// bh.PreferArrayOverSlice = true
 		// modify from flag'ish things

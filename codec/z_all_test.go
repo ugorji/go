@@ -459,8 +459,16 @@ func TestCodecSuite(t *testing.T) {
 	t.Run("rpc-buf-16", testRpcGroup)
 	testRpcBufsize = 2048
 	t.Run("rpc-buf-2048", testRpcGroup)
-	testRpcBufsize = oldRpcBufsize
 
+	testRPCOptions.RPCNoBuffer = true
+	testRpcBufsize = 0
+	t.Run("rpc-buf-0-rpcNoBuffer", testRpcGroup)
+	testRpcBufsize = 0
+	t.Run("rpc-buf-00-rpcNoBuffer", testRpcGroup)
+	testRpcBufsize = 2048
+	t.Run("rpc-buf-2048-rpcNoBuffer", testRpcGroup)
+
+	testRpcBufsize = oldRpcBufsize
 	testGroupResetFlags()
 }
 
