@@ -85,11 +85,8 @@ func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 }
 
 func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2 bool) (err error) {
-	if c.c != nil {
-		cls := c.cls.load()
-		if cls.closed {
-			return cls.errClosed
-		}
+	if closed, closederr := c.closed(); closed {
+		return closederr
 	}
 	err = c.enc.Encode(obj1)
 	if err == nil && writeObj2 {
@@ -105,11 +102,8 @@ func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2 bool) (err error) {
 }
 
 func (c *rpcCodec) read(obj interface{}) (err error) {
-	if c.c != nil {
-		cls := c.cls.load()
-		if cls.closed {
-			return cls.errClosed
-		}
+	if closed, closederr := c.closed(); closed {
+		return closederr
 	}
 	//If nil is passed in, we should read and discard
 	if obj == nil {
@@ -122,18 +116,26 @@ func (c *rpcCodec) read(obj interface{}) (err error) {
 	return c.dec.Decode(obj)
 }
 
-func (c *rpcCodec) Close() error {
-	if c.c == nil {
-		return nil
+func (c *rpcCodec) Close() (err error) {
+	if c.c != nil {
+		cls := c.cls.load()
+		if !cls.closed {
+			cls.errClosed = c.c.Close()
+			cls.closed = true
+			c.cls.store(cls)
+		}
+		err = cls.errClosed
 	}
-	cls := c.cls.load()
-	if cls.closed {
-		return cls.errClosed
+	return
+}
+
+func (c *rpcCodec) closed() (ok bool, err error) {
+	if c.c != nil {
+		cls := c.cls.load()
+		ok = cls.closed
+		err = cls.errClosed
 	}
-	cls.errClosed = c.c.Close()
-	cls.closed = true
-	c.cls.store(cls)
-	return cls.errClosed
+	return
 }
 
 func (c *rpcCodec) ReadResponseBody(body interface{}) error {
