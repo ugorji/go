@@ -221,6 +221,9 @@ type TestStrucFlex struct {
 	// Ensure this is set to nil if decoding into a nil interface{}.
 	MstrUi64TSelf map[stringUint64T]*stringUint64T
 
+	Ttime    time.Time
+	Ttimeptr *time.Time
+
 	// make this a ptr, so that it could be set or not.
 	// for comparison (e.g. with msgp), give it a struct tag (so it is not inlined),
 	// make this one omitempty (so it is excluded if nil).
@@ -306,6 +309,9 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 		ArrStrUi64T:   [4]stringUint64T{{"4", 4}, {"3", 3}, {"2", 2}, {"1", 1}},
 		SintfAarray:   []interface{}{Aarray{"s"}},
 		MstrUi64TSelf: make(map[stringUint64T]*stringUint64T, numStrUi64T),
+
+		Ttime:    testStrucTime,
+		Ttimeptr: &testStrucTime,
 	}
 
 	for i := uint64(0); i < numStrUi64T; i++ {
@@ -328,7 +334,8 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 				strRpt(n, "true"):     strRpt(n, "true"),
 				strRpt(n, "int64(9)"): false,
 			},
-			T: testStrucTime,
+			T:    testStrucTime,
+			Tptr: &testStrucTime,
 		}
 	}
 

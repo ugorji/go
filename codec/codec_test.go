@@ -2210,6 +2210,11 @@ func testRandomFillRV(v reflect.Value) {
 		return -1
 	}
 
+	if v.Type() == timeTyp {
+		v.Set(reflect.ValueOf(timeToCompare1))
+		return
+	}
+
 	switch v.Kind() {
 	case reflect.Invalid:
 	case reflect.Ptr:
@@ -2493,6 +2498,7 @@ func doTestScalars(t *testing.T, h Handle) {
 		float32(0),
 		float64(0),
 		bool(false),
+		time.Time{},
 		string(""),
 		[]byte(nil),
 	}
@@ -2525,6 +2531,7 @@ func doTestScalars(t *testing.T, h Handle) {
 		copy(b, b1)
 		b2 = testMarshalErr(vp, h, t, tname+"-enc-ptr")
 		testDeepEqualErr(b1, b2, t, tname+"-enc-eq")
+
 		setZero(vp)
 		testDeepEqualErr(rv2.Elem().Interface(), reflect.Zero(rv.Type()).Interface(), t, tname+"-enc-eq-zero-ref")
 
@@ -2532,6 +2539,20 @@ func doTestScalars(t *testing.T, h Handle) {
 		testUnmarshalErr(vp, b, h, t, tname+"-dec")
 		testDeepEqualErr(rv2.Elem().Interface(), v, t, tname+"-dec-eq")
 	}
+
+	// test setZero for *Raw and reflect.Value
+	var r0 Raw
+	var r = Raw([]byte("hello"))
+	setZero(&r)
+	testDeepEqualErr(r, r0, t, "raw-zeroed")
+
+	r = Raw([]byte("hello"))
+	var rv = reflect.ValueOf(&r)
+	setZero(rv)
+	// note: we cannot test reflect.Value because they might point to different pointers
+	// and reflect.DeepEqual doesn't honor that.
+	// testDeepEqualErr(rv, reflect.ValueOf(&r0), t, "raw-reflect-zeroed")
+	testDeepEqualErr(rv.Interface(), &r0, t, "raw-reflect-zeroed")
 }
 
 func doTestIntfMapping(t *testing.T, h Handle) {
