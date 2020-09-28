@@ -58,11 +58,13 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
 func (z *bufioEncWriter) flushErr() (err error) {
 	n, err := z.w.Write(z.buf[:z.n])
 	z.n -= n
-	if z.n > 0 && err == nil {
-		err = io.ErrShortWrite
-	}
-	if n > 0 && z.n > 0 {
-		copy(z.buf, z.buf[n:z.n+n])
+	if z.n > 0 {
+		if err == nil {
+			err = io.ErrShortWrite
+		}
+		if n > 0 {
+			copy(z.buf, z.buf[n:z.n+n])
+		}
 	}
 	return err
 }
@@ -126,7 +128,6 @@ func (z *bufioEncWriter) writen1(b1 byte) {
 	z.buf[z.n] = b1
 	z.n++
 }
-
 func (z *bufioEncWriter) writen2(b1, b2 byte) {
 	if 2 > len(z.buf)-z.n {
 		z.flush()
@@ -135,7 +136,6 @@ func (z *bufioEncWriter) writen2(b1, b2 byte) {
 	z.buf[z.n] = b1
 	z.n += 2
 }
-
 func (z *bufioEncWriter) writen4(b1, b2, b3, b4 byte) {
 	if 4 > len(z.buf)-z.n {
 		z.flush()
@@ -170,7 +170,6 @@ func (z *bytesEncAppender) writestr(s string) {
 }
 func (z *bytesEncAppender) writeqstr(s string) {
 	z.b = append(append(append(z.b, '"'), s...), '"')
-
 	// z.b = append(z.b, '"')
 	// z.b = append(z.b, s...)
 	// z.b = append(z.b, '"')
@@ -208,6 +207,11 @@ type encWr struct {
 	wf *bufioEncWriter
 }
 
+// MARKER: manually inline bytesEncAppender.writenx/writeqstr methods,
+// as calling them causes encWr.writenx/writeqstr methods to not be inlined (cost > 80).
+//
+// i.e. e.g. instead of writing z.wb.writen2(b1, b2), use z.wb.b = append(z.wb.b, b1, b2)
+
 func (z *encWr) writeb(s []byte) {
 	if z.bytes {
 		z.wb.writeb(s)
@@ -217,9 +221,7 @@ func (z *encWr) writeb(s []byte) {
 }
 func (z *encWr) writeqstr(s string) {
 	if z.bytes {
-		// MARKER: manually inline, else this function is not inlined.
-		// Keep in sync with bytesEncWriter.writeqstr
-		// z.wb.writeqstr(s)
+		// MARKER: z.wb.writeqstr(s)
 		z.wb.b = append(append(append(z.wb.b, '"'), s...), '"')
 	} else {
 		z.wf.writeqstr(s)
@@ -240,13 +242,9 @@ func (z *encWr) writen1(b1 byte) {
 	}
 }
 
-// MARKER: manually inline bytesEncAppender.writenx methods,
-// as calling them causes encWr.writenx methods to not be inlined.
-//
-// i.e. instead of writing z.wb.writen2(b1, b2), use z.wb.b = append(z.wb.b, b1, b2)
-
 func (z *encWr) writen2(b1, b2 byte) {
 	if z.bytes {
+		// MARKER: z.wb.writen2(b1, b2)
 		z.wb.b = append(z.wb.b, b1, b2)
 	} else {
 		z.wf.writen2(b1, b2)
@@ -254,6 +252,7 @@ func (z *encWr) writen2(b1, b2 byte) {
 }
 func (z *encWr) writen4(b1, b2, b3, b4 byte) {
 	if z.bytes {
+		// MARKER: z.wb.writen4(b1, b2, b3, b4)
 		z.wb.b = append(z.wb.b, b1, b2, b3, b4)
 	} else {
 		z.wf.writen4(b1, b2, b3, b4)
