@@ -592,15 +592,24 @@ func (d *simpleDecDriver) DecodeNaked() {
 }
 
 func (d *simpleDecDriver) nextValueBytes(start []byte) (v []byte) {
-	v = d.nextValueBytesR(start)
+	if !d.bdRead {
+		d.readNextBd()
+	}
+	v = append(start, d.bd)
+	v = d.nextValueBytesBdReadR(v)
 	d.bdRead = false
 	return
 }
 
 func (d *simpleDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
 	d.readNextBd()
+	v = append(v0, d.bd)
+	return d.nextValueBytesBdReadR(v)
+}
+
+func (d *simpleDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
+	v = v0
 	c := d.bd
-	v = append(v0, c)
 
 	var x []byte
 	var length uint

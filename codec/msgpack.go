@@ -525,7 +525,11 @@ func (d *msgpackDecDriver) DecodeNaked() {
 }
 
 func (d *msgpackDecDriver) nextValueBytes(start []byte) (v []byte) {
-	v = d.nextValueBytesR(start)
+	if !d.bdRead {
+		d.readNextBd()
+	}
+	v = append(start, d.bd)
+	v = d.nextValueBytesBdReadR(v)
 	d.bdRead = false
 	return
 }
@@ -533,6 +537,11 @@ func (d *msgpackDecDriver) nextValueBytes(start []byte) (v []byte) {
 func (d *msgpackDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
 	d.readNextBd()
 	v = append(v0, d.bd)
+	return d.nextValueBytesBdReadR(v)
+}
+
+func (d *msgpackDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
+	v = v0
 	bd := d.bd
 
 	var clen uint

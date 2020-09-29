@@ -927,7 +927,11 @@ func (d *bincDecDriver) DecodeNaked() {
 }
 
 func (d *bincDecDriver) nextValueBytes(start []byte) (v []byte) {
-	v = d.nextValueBytesR(start)
+	if !d.bdRead {
+		d.readNextBd()
+	}
+	v = append(start, d.bd)
+	v = d.nextValueBytesBdReadR(v)
 	d.bdRead = false
 	return
 }
@@ -935,7 +939,11 @@ func (d *bincDecDriver) nextValueBytes(start []byte) (v []byte) {
 func (d *bincDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
 	d.readNextBd()
 	v = append(v0, d.bd)
+	return d.nextValueBytesBdReadR(v)
+}
 
+func (d *bincDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
+	v = v0 
 	fnLen := func(vs byte) uint {
 		var bs []byte
 		switch vs {

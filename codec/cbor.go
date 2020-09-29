@@ -101,17 +101,14 @@ func cbordesc(bd byte) (s string) {
 	bm := bd >> 5
 	if bm == cborMajorSimpleOrFloat {
 		s = cbordescSimpleNames[bd]
-		if s == "" {
-			s = "unknown"
-		}
 	} else {
 		s = cbordescMajorNames[bm]
 		if s == "" {
 			s = cbordescIndefNames[bd]
 		}
-		if s == "" {
-			s = "unknown"
-		}
+	}
+	if s == "" {
+		s = "unknown"
 	}
 	return
 }
@@ -380,13 +377,15 @@ func (d *cborDecDriver) ContainerType() (vt valueType) {
 		d.bdRead = false // always consume nil after seeing it in container type
 		d.fnil = true
 		return valueTypeNil
-	} else if d.bd == cborBdIndefiniteBytes || (d.bd>>5 == cborMajorBytes) {
+	}
+	major := d.bd>>5
+	if major == cborMajorBytes {
 		return valueTypeBytes
-	} else if d.bd == cborBdIndefiniteString || (d.bd>>5 == cborMajorString) {
+	} else if major == cborMajorString {
 		return valueTypeString
-	} else if d.bd == cborBdIndefiniteArray || (d.bd>>5 == cborMajorArray) {
+	} else if major == cborMajorArray {
 		return valueTypeArray
-	} else if d.bd == cborBdIndefiniteMap || (d.bd>>5 == cborMajorMap) {
+	} else if major == cborMajorMap {
 		return valueTypeMap
 	}
 	return valueTypeUnset
@@ -434,7 +433,7 @@ func (d *cborDecDriver) decCheckInteger() (neg bool) {
 	} else if major == cborMajorNegInt {
 		neg = true
 	} else {
-		d.d.errorf("invalid integer from descriptor %x (%s) - got major %v, expected %v or %v",
+		d.d.errorf("invalid integer %x (%s); got major %v, expected %v or %v",
 			d.bd, cbordesc(d.bd), major, cborMajorUint, cborMajorNegInt)
 	}
 	return
@@ -458,7 +457,8 @@ func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 	d.bdRead = false
 	for !d.CheckBreak() {
 		if major := d.bd >> 5; major != cborMajorBytes && major != cborMajorString {
-			d.d.errorf("invalid indefinite string/bytes; got major %v, expected %x/%s", major, d.bd, cbordesc(d.bd))
+			d.d.errorf("invalid indefinite string/bytes %x (%s); got major %v, expected %v or %v",
+				d.bd, cbordesc(d.bd), major, cborMajorBytes, cborMajorString)
 		}
 		n := uint(d.decLen())
 		oldLen := uint(len(bs))
@@ -787,7 +787,11 @@ func (d *cborDecDriver) uintBytes() (v []byte, ui uint64) {
 }
 
 func (d *cborDecDriver) nextValueBytes(start []byte) (v []byte) {
-	v = d.nextValueBytesR(start)
+	if !d.bdRead {
+		d.readNextBd()
+	}
+	v = append(start, d.bd)
+	v = d.nextValueBytesBdReadR(v)
 	d.bdRead = false
 	return
 }
