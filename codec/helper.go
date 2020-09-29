@@ -980,9 +980,6 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 			case reflect.Float64:
 				fn.fe = (*Encoder).kFloat64
 				fn.fd = (*Decoder).kFloat64
-			case reflect.Invalid:
-				fn.fe = (*Encoder).kInvalid
-				fn.fd = (*Decoder).kErr
 			case reflect.Chan:
 				fi.seq = seqTypeChan
 				fn.fe = (*Encoder).kChan
@@ -2201,13 +2198,13 @@ func isImmutableKind(k reflect.Kind) (v bool) {
 }
 
 func usableByteSlice(bs []byte, slen int) []byte {
-	if cap(bs) >= slen {
-		if bs == nil {
-			return []byte{}
-		}
-		return bs[:slen]
+	if cap(bs) < slen {
+		return make([]byte, slen)
 	}
-	return make([]byte, slen)
+	if bs == nil {
+		return []byte{}
+	}
+	return bs[:slen]
 }
 
 // ----
@@ -2527,6 +2524,10 @@ func (s *set) remove(v interface{}) (exists bool) {
 //
 // given x > 0 and n > 0 and x is exactly 2^n, then pos/x === pos>>n AND pos%x === pos&(x-1).
 // consequently, pos/32 === pos>>5, pos/16 === pos>>4, pos/8 === pos>>3, pos%8 == pos&7
+
+// MARKER: we noticed a little performance degradation when using bitset256 as [32]byte.
+// Consequently, we are using a [256]bool only for bitset256.
+// We decided not to do the same for bitset32 and bitset64 (hence the discrepancy).
 
 type bitset256 [256]bool
 

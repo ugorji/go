@@ -258,10 +258,6 @@ func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
 }
 
-func (e *Encoder) kInvalid(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeNil()
-}
-
 func (e *Encoder) kErr(f *codecFnInfo, rv reflect.Value) {
 	e.errorf("unsupported kind %s, for %#v", rv.Kind(), rv)
 }

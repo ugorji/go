@@ -813,12 +813,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				if !rvCanset {
 					d.errorf(errmsgExpandSliceCannotChange)
 				}
-				// rvcap2 := rvcap
 				rvcap = growCap(rvcap, rtelem0Size, 1)
-				// if rvcap < 32 {
-				// 	rvcap = 32
-				// }
-				// xdebugf("%v: growing cap from %v to %v (unit size: %v)", rtelem, rvcap2, rvcap, rtelem0Size)
 				rv9 = reflect.MakeSlice(f.ti.rt, rvcap, rvcap)
 				rvCopySlice(rv9, rv)
 				rv = rv9
@@ -1913,13 +1908,10 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 	// maxlen<=0, clen>0: infer maxlen, and cap on it
 	// maxlen> 0, clen>0: cap at maxlen
 
-	if clen == 0 {
+	if clen == 0 || clen == decContainerLenNil {
 		return
 	}
 	if clen < 0 {
-		if clen == decContainerLenNil {
-			return 0
-		}
 		return maxLenIfUnset
 	}
 	if unit == 0 {

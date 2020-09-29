@@ -403,6 +403,13 @@ func (d *simpleDecDriver) ReadArrayStart() (length int) {
 	return d.decLen()
 }
 
+func (d *simpleDecDriver) uint2Len(ui uint64) int {
+	if chkOvf.Uint(ui, intBitsize) {
+		d.d.errorf("overflow integer: %v", ui)
+	}
+	return int(ui)
+}
+
 func (d *simpleDecDriver) decLen() int {
 	switch d.bd % 8 {
 	case 0:
@@ -412,17 +419,9 @@ func (d *simpleDecDriver) decLen() int {
 	case 2:
 		return int(bigen.Uint16(d.d.decRd.readx(2)))
 	case 3:
-		ui := uint64(bigen.Uint32(d.d.decRd.readx(4)))
-		if chkOvf.Uint(ui, intBitsize) {
-			d.d.errorf("overflow integer: %v", ui)
-		}
-		return int(ui)
+		return d.uint2Len(uint64(bigen.Uint32(d.d.decRd.readx(4))))
 	case 4:
-		ui := bigen.Uint64(d.d.decRd.readx(8))
-		if chkOvf.Uint(ui, intBitsize) {
-			d.d.errorf("overflow integer: %v", ui)
-		}
-		return int(ui)
+		return d.uint2Len(bigen.Uint64(d.d.decRd.readx(8)))
 	}
 	d.d.errorf("cannot read length: bd%%8 must be in range 0..4. Got: %d", d.bd%8)
 	return -1
@@ -469,11 +468,9 @@ func (d *simpleDecDriver) DecodeTime() (t time.Time) {
 		d.d.errorf("invalid descriptor for time.Time - expect 0x%x, received 0x%x", simpleVdTime, d.bd)
 	}
 	d.bdRead = false
-	clen := int(d.d.decRd.readn1())
-	b := d.d.decRd.readx(uint(clen))
-	if err := (&t).UnmarshalBinary(b); err != nil {
-		d.d.onerror(err)
-	}
+	clen := uint(d.d.decRd.readn1())
+	b := d.d.decRd.readx(clen)
+	d.d.onerror((&t).UnmarshalBinary(b))
 	return
 }
 

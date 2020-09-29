@@ -179,14 +179,12 @@ func (e *bincEncDriver) encIntegerPrune(bd byte, pos bool, v uint64, lim uint8) 
 	} else {
 		bigen.PutUint64(e.b[:lim], v)
 	}
+	var i byte
 	if bincDoPrune {
-		i := pruneSignExt(e.b[:lim], pos)
-		e.e.encWr.writen1(bd | lim - 1 - byte(i))
-		e.e.encWr.writeb(e.b[i:lim])
-	} else {
-		e.e.encWr.writen1(bd | lim - 1)
-		e.e.encWr.writeb(e.b[:lim])
+		i = byte(pruneSignExt(e.b[:lim], pos))
 	}
+	e.e.encWr.writen1(bd | lim - 1 - i)
+	e.e.encWr.writeb(e.b[i:lim])
 }
 
 func (e *bincEncDriver) EncodeInt(v int64) {
@@ -943,7 +941,7 @@ func (d *bincDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
 }
 
 func (d *bincDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
-	v = v0 
+	v = v0
 	fnLen := func(vs byte) uint {
 		var bs []byte
 		switch vs {
