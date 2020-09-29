@@ -2568,6 +2568,7 @@ func (panicHdl) onerror(err error) {
 }
 
 // errorf will always panic, using the parameters passed.
+//go:noinline
 func (panicHdl) errorf(format string, params ...interface{}) {
 	if format == "" {
 		panic(errPanicHdlUndefinedErr)
