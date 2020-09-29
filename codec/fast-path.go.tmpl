@@ -273,7 +273,7 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 */ -}}
 	case map[{{ .MapKey }}]{{ .Elem }}:
 		containerLen = d.mapStart()
-		if containerLen != decContainerLenNil {
+		if containerLen != containerLenNil {
 			if containerLen != 0 {
 				fastpathTV.{{ .MethodNamePfx "Dec" false }}L(v, containerLen, d)
 			}
@@ -284,7 +284,7 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 		containerLen = d.mapStart()
 		if containerLen == 0 {
 			d.mapEnd()
-		} else if containerLen == decContainerLenNil {
+		} else if containerLen == containerLenNil {
 			*v = nil
 		} else {
 			if *v == nil {
@@ -425,12 +425,12 @@ Maps can change if they are
 - settable (e.g. contained in an interface{})
 
 Also, these methods are called by decodeValue directly, after handling a TryNil.
-Consequently, there's no need to check for decContainerLenNil here.
+Consequently, there's no need to check for containerLenNil here.
 */ -}}
 func (d *Decoder) {{ .MethodNamePfx "fastpathDec" false }}R(f *codecFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart()
     {{/*
-	if containerLen == decContainerLenNil {
+	if containerLen == containerLenNil {
 		if rv.Kind() == reflect.Ptr {
 			*(rv2i(rv).(*map[{{ .MapKey }}]{{ .Elem }})) = nil
 		}
@@ -452,7 +452,7 @@ func (d *Decoder) {{ .MethodNamePfx "fastpathDec" false }}R(f *codecFnInfo, rv r
 }
 func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{{ .Elem }}, d *Decoder) {
 	containerLen := d.mapStart()
-	if containerLen == decContainerLenNil {
+	if containerLen == containerLenNil {
 		*vp = nil
 	} else {
 		if *vp == nil {
@@ -465,7 +465,7 @@ func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{{ .E
 	}
 }
 func (fastpathT) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem }}, containerLen int, d *Decoder) {
-	{{/* No need to check if containerLen == decContainerLenNil, as that is checked by R and L above  */ -}}
+	{{/* No need to check if containerLen == containerLenNil, as that is checked by R and L above  */ -}}
 	{{if eq .Elem "interface{}" }}mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
     {{else if eq .Elem "bytes" "[]byte" }}mapGet := v != nil && !d.h.MapValueReset
     {{end -}}

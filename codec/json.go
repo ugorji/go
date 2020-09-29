@@ -494,26 +494,26 @@ func (d *jsonDecDriver) ReadMapStart() int {
 	d.advance()
 	if d.tok == 'n' {
 		d.readLit4Null()
-		return decContainerLenNil
+		return containerLenNil
 	}
 	if d.tok != '{' {
 		d.d.errorf("read map - expect char '%c' but got char '%c'", '{', d.tok)
 	}
 	d.tok = 0
-	return decContainerLenUnknown
+	return containerLenUnknown
 }
 
 func (d *jsonDecDriver) ReadArrayStart() int {
 	d.advance()
 	if d.tok == 'n' {
 		d.readLit4Null()
-		return decContainerLenNil
+		return containerLenNil
 	}
 	if d.tok != '[' {
 		d.d.errorf("read array - expect char '%c' but got char '%c'", '[', d.tok)
 	}
 	d.tok = 0
-	return decContainerLenUnknown
+	return containerLenUnknown
 }
 
 // skipWhitespaceForCheckBreak so that CheckBreak will be inlined

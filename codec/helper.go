@@ -149,6 +149,15 @@ import (
 )
 
 const (
+	// containerLenUnknown is length returned from Read(Map|Array)Len
+	// when a format doesn't know apiori.
+	// For example, json doesn't pre-determine the length of a container (sequence/map).
+	containerLenUnknown = -1
+
+	// containerLenNil is length returned from Read(Map|Array)Len
+	// when a 'nil' was encountered in the stream.
+	containerLenNil = math.MinInt32
+
 	// rvNLen is the length of the array for readn or writen calls
 	rwNLen = 7
 

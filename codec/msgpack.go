@@ -888,14 +888,14 @@ func (d *msgpackDecDriver) readContainerLen(ct msgpackContainerType) (clen int) 
 
 func (d *msgpackDecDriver) ReadMapStart() int {
 	if d.advanceNil() {
-		return decContainerLenNil
+		return containerLenNil
 	}
 	return d.readContainerLen(msgpackContainerMap)
 }
 
 func (d *msgpackDecDriver) ReadArrayStart() int {
 	if d.advanceNil() {
-		return decContainerLenNil
+		return containerLenNil
 	}
 	return d.readContainerLen(msgpackContainerList)
 }

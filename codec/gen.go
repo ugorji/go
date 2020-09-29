@@ -97,13 +97,13 @@ import (
 //   - codecgen command line changes
 //
 // v1: Initial Version
-// v2:
+// v2: -
 // v3: Changes for Kubernetes:
 //     changes in signature of some unpublished helper methods and codecgen cmdline arguments.
 // v4: Removed separator support from (en|de)cDriver, and refactored codec(gen)
 // v5: changes to support faster json decoding. Let encoder/decoder maintain state of collections.
 // v6: removed unsafe from gen, and now uses codecgen.exec tag
-// v7:
+// v7: -
 // v8: current - we now maintain compatibility with old generated code.
 // v9: skipped
 // v10: modified encDriver and decDriver interfaces.
@@ -334,7 +334,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	}
 
 	x.linef("codecSelferBitsize%s = uint8(32 << (^uint(0) >> 63))", x.xs)
-	x.linef("codecSelferDecContainerLenNil%s = %d", x.xs, int64(decContainerLenNil))
+	x.linef("codecSelferDecContainerLenNil%s = %d", x.xs, int64(containerLenNil))
 	x.line(")")
 	x.line("var (")
 	x.line("errCodecSelferOnlyMapOrArrayEncodeToStruct" + x.xs + " = " + "errors.New(`only encoded map or array can be decoded into a struct`)")

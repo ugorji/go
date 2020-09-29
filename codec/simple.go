@@ -389,7 +389,7 @@ func (d *simpleDecDriver) DecodeBool() (b bool) {
 
 func (d *simpleDecDriver) ReadMapStart() (length int) {
 	if d.advanceNil() {
-		return decContainerLenNil
+		return containerLenNil
 	}
 	d.bdRead = false
 	return d.decLen()
@@ -397,7 +397,7 @@ func (d *simpleDecDriver) ReadMapStart() (length int) {
 
 func (d *simpleDecDriver) ReadArrayStart() (length int) {
 	if d.advanceNil() {
-		return decContainerLenNil
+		return containerLenNil
 	}
 	d.bdRead = false
 	return d.decLen()

@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math"
 	"reflect"
 	"strconv"
 	"time"
@@ -25,15 +24,6 @@ const (
 	decDefSliceCap         = 8
 	decDefChanCap          = 64      // should be large, as cap cannot be expanded
 	decScratchByteArrayLen = (6 * 8) // ??? cacheLineSize +
-
-	// decContainerLenUnknown is length returned from Read(Map|Array)Len
-	// when a format doesn't know apiori.
-	// For example, json doesn't pre-determine the length of a container (sequence/map).
-	decContainerLenUnknown = -1
-
-	// decContainerLenNil is length returned from Read(Map|Array)Len
-	// when a 'nil' was encountered in the stream.
-	decContainerLenNil = math.MinInt32
 
 	// decFailNonEmptyIntf configures whether we error
 	// when decoding naked into a non-empty interface.
@@ -119,14 +109,14 @@ type decDriver interface {
 	DecodeTime() (t time.Time)
 
 	// ReadArrayStart will return the length of the array.
-	// If the format doesn't prefix the length, it returns decContainerLenUnknown.
-	// If the expected array was a nil in the stream, it returns decContainerLenNil.
+	// If the format doesn't prefix the length, it returns containerLenUnknown.
+	// If the expected array was a nil in the stream, it returns containerLenNil.
 	ReadArrayStart() int
 	ReadArrayEnd()
 
 	// ReadMapStart will return the length of the array.
-	// If the format doesn't prefix the length, it returns decContainerLenUnknown.
-	// If the expected array was a nil in the stream, it returns decContainerLenNil.
+	// If the format doesn't prefix the length, it returns containerLenUnknown.
+	// If the expected array was a nil in the stream, it returns containerLenNil.
 	ReadMapStart() int
 	ReadMapEnd()
 
@@ -957,7 +947,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 
 func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart()
-	if containerLen == decContainerLenNil {
+	if containerLen == containerLenNil {
 		rvSetDirect(rv, f.ti.rv0)
 		return
 	}
@@ -1690,12 +1680,12 @@ func (d *Decoder) decodeFloat32() float32 {
 // Note: We update the .c after calling the callback.
 // This way, the callback can know what the last status was.
 
-// Note: if you call mapStart and it returns decContainerLenNil,
+// Note: if you call mapStart and it returns containerLenNil,
 // then do NOT call mapEnd.
 
 func (d *Decoder) mapStart() (v int) {
 	v = d.d.ReadMapStart()
-	if v != decContainerLenNil {
+	if v != containerLenNil {
 		d.depthIncr()
 		d.c = containerMapStart
 	}
@@ -1725,7 +1715,7 @@ func (d *Decoder) mapEnd() {
 
 func (d *Decoder) arrayStart() (v int) {
 	v = d.d.ReadArrayStart()
-	if v != decContainerLenNil {
+	if v != containerLenNil {
 		d.depthIncr()
 		d.c = containerArrayStart
 	}
@@ -1908,7 +1898,7 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 	// maxlen<=0, clen>0: infer maxlen, and cap on it
 	// maxlen> 0, clen>0: cap at maxlen
 
-	if clen == 0 || clen == decContainerLenNil {
+	if clen == 0 || clen == containerLenNil {
 		return
 	}
 	if clen < 0 {

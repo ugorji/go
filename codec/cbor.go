@@ -548,14 +548,14 @@ func (d *cborDecDriver) DecodeBool() (b bool) {
 
 func (d *cborDecDriver) ReadMapStart() (length int) {
 	if d.advanceNil() {
-		return decContainerLenNil
+		return containerLenNil
 	}
 	if d.st {
 		d.skipTags()
 	}
 	d.bdRead = false
 	if d.bd == cborBdIndefiniteMap {
-		return decContainerLenUnknown
+		return containerLenUnknown
 	}
 	if d.bd>>5 != cborMajorMap {
 		d.d.errorf("error reading map; got major type: %x, expected %x/%s", d.bd>>5, cborMajorMap, cbordesc(d.bd))
@@ -565,14 +565,14 @@ func (d *cborDecDriver) ReadMapStart() (length int) {
 
 func (d *cborDecDriver) ReadArrayStart() (length int) {
 	if d.advanceNil() {
-		return decContainerLenNil
+		return containerLenNil
 	}
 	if d.st {
 		d.skipTags()
 	}
 	d.bdRead = false
 	if d.bd == cborBdIndefiniteArray {
-		return decContainerLenUnknown
+		return containerLenUnknown
 	}
 	if d.bd>>5 != cborMajorArray {
 		d.d.errorf("invalid array; got major type: %x, expect: %x/%s", d.bd>>5, cborMajorArray, cbordesc(d.bd))
