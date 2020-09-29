@@ -860,7 +860,9 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 		}
 
 		if err = deepEqual(v0check, v1); err == nil {
-			t.Logf("++++++++ Before and After marshal matched\n")
+			if testVerbose {
+				t.Logf("++++++++ Before and After marshal matched\n")
+			}
 		} else {
 			// t.Logf("-------- Before and After marshal do not match: Error: %v"+
 			// 	" ====> GOLDEN: (%T) %#v, DECODED: (%T) %#v\n", err, v0check, v0check, v1, v1)
@@ -2483,6 +2485,8 @@ func doTestScalars(t *testing.T, h Handle) {
 		defer func() { bh.Canonical = false }()
 	}
 
+	var bzero = testMarshalErr(nil, h, t, "nil-enc")
+
 	vi := []interface{}{
 		int(0),
 		int8(0),
@@ -2506,6 +2510,9 @@ func doTestScalars(t *testing.T, h Handle) {
 		vi = append(vi, reflect.Zero(v.rt).Interface())
 	}
 	for _, v := range vi {
+		// rv is a the filled value
+		// rv1 is a copy of rv
+
 		rv := reflect.New(reflect.TypeOf(v)).Elem()
 		testRandomFillRV(rv)
 		v = rv.Interface()
@@ -2532,12 +2539,16 @@ func doTestScalars(t *testing.T, h Handle) {
 		b2 = testMarshalErr(vp, h, t, tname+"-enc-ptr")
 		testDeepEqualErr(b1, b2, t, tname+"-enc-eq")
 
+		// decode the nil value into rv2, and test that it is the zero value
 		setZero(vp)
 		testDeepEqualErr(rv2.Elem().Interface(), reflect.Zero(rv.Type()).Interface(), t, tname+"-enc-eq-zero-ref")
 
-		vp = rv2.Interface()
 		testUnmarshalErr(vp, b, h, t, tname+"-dec")
 		testDeepEqualErr(rv2.Elem().Interface(), v, t, tname+"-dec-eq")
+
+		// test that we can decode an encoded nil into it
+		testUnmarshalErr(vp, bzero, h, t, tname+"-dec-from-enc-nil")
+		testDeepEqualErr(rv2.Elem().Interface(), reflect.Zero(rv.Type()).Interface(), t, tname+"-dec-from-enc-nil")
 	}
 
 	// test setZero for *Raw and reflect.Value
@@ -2549,7 +2560,7 @@ func doTestScalars(t *testing.T, h Handle) {
 	r = Raw([]byte("hello"))
 	var rv = reflect.ValueOf(&r)
 	setZero(rv)
-	// note: we cannot test reflect.Value because they might point to different pointers
+	// note: we cannot test reflect.Value's because they might point to different pointers
 	// and reflect.DeepEqual doesn't honor that.
 	// testDeepEqualErr(rv, reflect.ValueOf(&r0), t, "raw-reflect-zeroed")
 	testDeepEqualErr(rv.Interface(), &r0, t, "raw-reflect-zeroed")
