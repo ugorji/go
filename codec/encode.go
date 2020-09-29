@@ -1165,6 +1165,10 @@ func (e *Encoder) encode(iv interface{}) {
 	}
 }
 
+// encodeValue will encode a value.
+//
+// Note that encodeValue will handle nil in the stream early, so that the
+// subsequent calls i.e. kXXX methods, etc do not have to handle it themselves.
 func (e *Encoder) encodeValue(rv reflect.Value, fn *codecFn) {
 	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
 
