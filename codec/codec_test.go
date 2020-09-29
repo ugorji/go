@@ -2070,6 +2070,9 @@ func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
 func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 
+	// This test can take a while if run multiple times in a loop, as it creates
+	// large maps/slices. Use t.Short() appropriately to limit its execution time.
+
 	// Note that this test does not make sense for formats which do not pre-record
 	// the length, like json, or cbor with indefinite length.
 	if _, ok := h.(*JsonHandle); ok {
@@ -2099,8 +2102,10 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		0,
 		1,
 		math.MaxInt8 + 4,
-		math.MaxInt16 + 4,
-		math.MaxUint16 + 4,
+		math.MaxUint8 + 4,
+	}
+	if !testing.Short() {
+		sizes = append(sizes, math.MaxUint16+4) // math.MaxInt16+4, math.MaxUint16+4
 	}
 
 	m := make(map[int][]struct{})
@@ -2152,21 +2157,30 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		oldAsSymbols := hbinc.AsSymbols
 		defer func() { hbinc.AsSymbols = oldAsSymbols }()
 	}
-	var out []byte = make([]byte, 0, math.MaxUint16*3/2)
-	var in []byte = make([]byte, math.MaxUint16*3/2)
+	inOutLen := math.MaxUint16 * 3 / 2
+	if testing.Short() {
+		inOutLen = math.MaxUint8 * 2 // math.MaxUint16 / 16
+	}
+	var out = make([]byte, 0, inOutLen)
+	var in []byte = make([]byte, inOutLen)
 	for i := range in {
 		in[i] = 'A'
 	}
 
 	e := NewEncoder(nil, h)
-	for _, i := range []int{
-		0, 1, 4, 8, 12, 16, 28, 32, 36,
-		math.MaxInt8, math.MaxInt8 + 4, math.MaxInt8 - 4,
-		math.MaxInt16, math.MaxInt16 + 4, math.MaxInt16 - 4,
 
+	sizes = []int{
+		0, 1, 4, 8, 12, 16, 28, 32, 36,
+		math.MaxInt8 - 4, math.MaxInt8, math.MaxInt8 + 4,
 		math.MaxUint8, math.MaxUint8 + 4, math.MaxUint8 - 4,
-		math.MaxUint16, math.MaxUint16 + 4, math.MaxUint16 - 4,
-	} {
+	}
+	if !testing.Short() {
+		sizes = append(sizes,
+			math.MaxInt16-4, math.MaxInt16, math.MaxInt16+4,
+			math.MaxUint16, math.MaxUint16+4, math.MaxUint16-4)
+	}
+
+	for _, i := range sizes {
 		var m1, m2 map[string]bool
 		m1 = make(map[string]bool, 1)
 		var s1 = stringView(in[:i])
@@ -2206,7 +2220,6 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 			testDeepEqualErr(out, bs2, t, "nextvaluebytes-symbols-string")
 		}
 	}
-
 }
 
 func testRandomFillRV(v reflect.Value) {
