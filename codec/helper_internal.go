@@ -6,16 +6,6 @@ package codec
 // All non-std package dependencies live in this file,
 // so porting to different environment is easy (just update functions).
 
-var maxArrayLen int
-
-func init() {
-	maxArrayLen = 1<<31 - 1 // math.MaxInt32
-	if uint64(^uint(0)) == ^uint64(0) { // 64-bit
-		var maxInt64 uint64 = 1<<63 - 1 // prevent failure with overflow int on 32-bit (386)
-		maxArrayLen = int(maxInt64)     // math.MaxInt64
-	}
-}
-
 func pruneSignExt(v []byte, pos bool) (n int) {
 	if len(v) < 2 {
 	} else if pos && v[0] == 0 {

@@ -183,6 +183,8 @@ const (
 	wordSizeBits = 32 << (^uint(0) >> 63) // strconv.IntSize
 	wordSize     = wordSizeBits / 8
 
+	maxArrayLen = 1<<((32<<(^uint(0)>>63))-1) - 1
+
 	// so structFieldInfo fits into 8 bytes
 	maxLevelsEmbedding = 14
 )
