@@ -374,10 +374,6 @@ func (e *Encoder) kSeqW(rv reflect.Value, ti *typeInfo) {
 }
 
 func (e *Encoder) kChan(f *codecFnInfo, rv reflect.Value) {
-	if rvIsNil(rv) {
-		e.e.EncodeNil()
-		return
-	}
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
 		e.errorf("send-only channel cannot be encoded")
 	}
@@ -396,10 +392,6 @@ func (e *Encoder) kChan(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
-	if rvIsNil(rv) {
-		e.e.EncodeNil()
-		return
-	}
 	if f.ti.mbs {
 		e.kSliceWMbs(rv, f.ti)
 	} else {
@@ -593,11 +585,6 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
-	if rvIsNil(rv) {
-		e.e.EncodeNil()
-		return
-	}
-
 	l := rv.Len()
 	e.mapStart(l)
 	if l == 0 {
@@ -1186,6 +1173,9 @@ func (e *Encoder) encodeValue(rv reflect.Value, fn *codecFn) {
 	//    type T struct { tHelper }
 	//    Here, for var v T; &v and &v.tHelper are the same pointer.
 	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
+
+	// MARKER: We check if value is nil here, so that the kXXX method do not have to.
+
 	var sptr interface{} // uintptr
 	var rvp reflect.Value
 	var rvpValid bool
@@ -1211,7 +1201,7 @@ TOP:
 		}
 		rv = rv.Elem()
 		goto TOP
-	case reflect.Slice, reflect.Map:
+	case reflect.Slice, reflect.Map, reflect.Chan:
 		if rvIsNil(rv) {
 			e.e.EncodeNil()
 			return
