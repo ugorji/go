@@ -1239,8 +1239,7 @@ func testCodecChan(t *testing.T, h Handle) {
 
 }
 
-func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration,
-) (port int) {
+func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration) (port int) {
 	testOnce.Do(testInitAll)
 	if testSkipRPCTests {
 		return
@@ -1326,7 +1325,6 @@ func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs
 
 	go serverFn()
 	runtime.Gosched()
-	//time.Sleep(100 * time.Millisecond)
 	if exitSleepMs == 0 {
 		defer ln.Close()
 		defer exitFn()
@@ -1791,8 +1789,10 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 	cmd := exec.Command("python", "test.py", "rpc-server", openPort, "4")
 	checkErrT(t, cmd.Start())
 	bs, err2 := net.Dial("tcp", ":"+openPort)
-	for i := 0; i < 10 && err2 != nil; i++ {
-		time.Sleep(50 * time.Millisecond) // time for python rpc server to start
+	maxSleepTime := 500 * time.Millisecond
+	iterSleepTime := 5 * time.Millisecond
+	for i := 0; i < int(maxSleepTime/iterSleepTime) && err2 != nil; i++ {
+		time.Sleep(iterSleepTime) // time for python rpc server to start
 		bs, err2 = net.Dial("tcp", ":"+openPort)
 	}
 	checkErrT(t, err2)
@@ -1813,8 +1813,8 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 		return
 	}
 	testOnce.Do(testInitAll)
-	port := testCodecRpcOne(t, MsgpackSpecRpc, testMsgpackH, false, 1*time.Second)
-	//time.Sleep(1000 * time.Millisecond)
+	exitSleepDur := 10 * time.Millisecond // 1*time.Second
+	port := testCodecRpcOne(t, MsgpackSpecRpc, testMsgpackH, false, exitSleepDur)
 	cmd := exec.Command("python", "test.py", "rpc-client-go-service", strconv.Itoa(port))
 	var cmdout []byte
 	var err error
