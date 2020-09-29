@@ -180,7 +180,7 @@ func (fastpathT) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *Encoder) 
 }
 func (fastpathT) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *Encoder) {
 	{{/* if v == nil { e.e.EncodeNil() } else */ -}}
-    e.haltOnMbsOddLen(len(v))
+	e.haltOnMbsOddLen(len(v))
 	{{/*
 	if len(v)%2 == 1 {
 		e.errorf(fastpathMapBySliceErrMsg, len(v))

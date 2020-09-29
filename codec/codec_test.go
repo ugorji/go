@@ -2510,9 +2510,6 @@ func doTestScalars(t *testing.T, h Handle) {
 		vi = append(vi, reflect.Zero(v.rt).Interface())
 	}
 	for _, v := range vi {
-		// rv is a the filled value
-		// rv1 is a copy of rv
-
 		rv := reflect.New(reflect.TypeOf(v)).Elem()
 		testRandomFillRV(rv)
 		v = rv.Interface()
