@@ -13,9 +13,9 @@ _tests() {
         echo ">>>> TAGS: $i"
         local i2=${i:-default}
         case $gover in
-            go1.[0-6]*) go test ${zargs[*]} -tags "$i" "$@" ;;
+            go1.[0-6]*) go test ${zargs[*]} ${ztestargs[*]} -tags "$i" "$@" ;;
             *) go vet -printfuncs "errorf" "$@" &&
-                     go test ${zargs[*]} -vet "$vet" -tags "alltests $i" -run "Suite" -coverprofile "${i2// /-}.cov.out" "$@" ;;
+                     go test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" -run "Suite" -coverprofile "${i2// /-}.cov.out" "$@" ;;
         esac
         if [[ "$?" != 0 ]]; then return 1; fi 
     done
@@ -219,14 +219,16 @@ _main() {
     if [[ -z "$1" ]]; then _usage; return 1; fi
     local x
     local zforce
+    local ztestargs=()
     local zargs=()
     local zverbose=()
     local zbenchflags=""
     OPTIND=1
-    while getopts ":ctmnrgpfvlyzdb:" flag
+    while getopts ":ctmnrgpfvlyzdsb:" flag
     do
         case "x$flag" in
             'xf') zforce=1 ;;
+            'xs') ztestargs+=("-short") ;;
             'xv') zverbose+=(1) ;;
             'xl') zargs+=("-gcflags"); zargs+=("-l=4") ;;
             'xn') zargs+=("-gcflags"); zargs+=("-m=2") ;;
