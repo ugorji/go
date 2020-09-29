@@ -777,12 +777,8 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	var j int
 
 	for ; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
-		if j == 0 && f.seq == seqTypeSlice && rvIsNil(rv) {
-			if hasLen {
-				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, rtelem0Size)
-			} else {
-				rvlen = decDefSliceCap
-			}
+		if j == 0 && f.seq == seqTypeSlice && rvIsNil(rv) { // means hasLen = false
+			rvlen = decDefSliceCap
 			if rvCanset {
 				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvlen)
 				rvcap = rvlen
@@ -1534,9 +1530,13 @@ func (d *Decoder) decode(iv interface{}) {
 // This way, we know if it is itself a pointer, and can handle nil in
 // the stream effectively.
 func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn) {
-	if rv.Kind() == reflect.Ptr && d.d.TryNil() {
-		if rvelem := rv.Elem(); rvelem.CanSet() {
-			rvelem.Set(reflect.Zero(rvelem.Type()))
+	// if rv.Kind() == reflect.Ptr && d.d.TryNil() {
+	if d.d.TryNil() {
+		if rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+		}
+		if rv.CanSet() {
+			rv.Set(reflect.Zero(rv.Type()))
 		}
 		return
 	}
@@ -1548,15 +1548,15 @@ func (d *Decoder) decodeValueNoCheckNil(rv reflect.Value, fn *codecFn) {
 	// non-pointer value, and decode into that.
 	var rvp reflect.Value
 	var rvpValid bool
+PTR:
 	if rv.Kind() == reflect.Ptr {
 		rvpValid = true
-		for rv.Kind() == reflect.Ptr {
-			if rvIsNil(rv) {
-				rvSetDirect(rv, reflect.New(rv.Type().Elem()))
-			}
-			rvp = rv
-			rv = rv.Elem()
+		if rvIsNil(rv) {
+			rvSetDirect(rv, reflect.New(rv.Type().Elem()))
 		}
+		rvp = rv
+		rv = rv.Elem()
+		goto PTR
 	}
 
 	if fn == nil {
