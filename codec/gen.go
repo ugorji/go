@@ -863,7 +863,7 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 		x.xtraSM(varname, t, true, true)
 	case reflect.Slice:
 		// if nil, call dedicated function
-		// if a []uint8, call dedicated function
+		// if a []byte, call dedicated function
 		// if a known fastpath slice, call dedicated function
 		// else write encode function in-line.
 		// - if elements are primitives or Selfers, call dedicated function on each member.
@@ -1430,7 +1430,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	case reflect.Array, reflect.Chan:
 		x.xtraSM(varname, t, false, isptr)
 	case reflect.Slice:
-		// if a []uint8, call dedicated function
+		// if a []byte, call dedicated function
 		// if a known fastpath slice, call dedicated function
 		// else write encode function in-line.
 		// - if elements are primitives or Selfers, call dedicated function on each member.

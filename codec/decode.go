@@ -1406,7 +1406,7 @@ func setZero(iv interface{}) {
 		*v = 0
 	case *float64:
 		*v = 0
-	case *[]uint8:
+	case *[]byte:
 		*v = nil
 	case *Raw:
 		*v = nil
@@ -1485,9 +1485,9 @@ func (d *Decoder) decode(iv interface{}) {
 		*v = float32(d.decodeFloat32())
 	case *float64:
 		*v = d.d.DecodeFloat64()
-	case *[]uint8:
+	case *[]byte:
 		*v = d.d.DecodeBytes(*v, false)
-	case []uint8:
+	case []byte:
 		b := d.d.DecodeBytes(v, false)
 		if !(len(b) > 0 && len(b) == len(v) && &b[0] == &v[0]) {
 			copy(v, b)

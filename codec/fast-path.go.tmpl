@@ -114,7 +114,7 @@ func init() {
 		fastpathAV[i] = fastpathE{xptr, xrt, fe, fd}
 		i++
 	}
-	{{/* do not register []uint8 in fast-path */}}
+	{{/* do not register []byte in fast-path */}}
 	{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}{{if ne .Elem "uint8" -}}
 	fn([]{{ .Elem }}(nil), (*Encoder).{{ .MethodNamePfx "fastpathEnc" false }}R, (*Decoder).{{ .MethodNamePfx "fastpathDec" false }}R)
 	{{end}}{{end}}{{end}}{{end}}

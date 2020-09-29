@@ -118,7 +118,7 @@ type tLowerFirstLetter struct {
 // Some used types
 type wrapInt64 int64
 type wrapUint8 uint8
-type wrapBytes []uint8
+type wrapBytes []byte
 
 type AnonInTestStrucIntf struct {
 	Islice []interface{}

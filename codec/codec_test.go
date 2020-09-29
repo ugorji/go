@@ -2773,7 +2773,7 @@ func doTestBytesEncodedAsArray(t *testing.T, h Handle) {
 	// (not using optimized []byte native format)
 
 	// encode []int8 (or int32 or any numeric type) with all positive numbers
-	// decode it into []uint8
+	// decode it into []byte
 	var in = make([]int32, 128)
 	var un = make([]uint8, 128)
 	for i := range in {

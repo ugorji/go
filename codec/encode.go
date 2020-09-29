@@ -1124,7 +1124,7 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.EncodeFloat64(v)
 	case time.Time:
 		e.e.EncodeTime(v)
-	case []uint8:
+	case []byte:
 		e.e.EncodeStringBytesRaw(v)
 	case *Raw:
 		e.rawBytes(*v)
@@ -1160,7 +1160,7 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.EncodeFloat64(*v)
 	case *time.Time:
 		e.e.EncodeTime(*v)
-	case *[]uint8:
+	case *[]byte:
 		if *v == nil {
 			e.e.EncodeNil()
 		} else {
