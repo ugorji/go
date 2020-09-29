@@ -587,10 +587,6 @@ func decStructFieldKey(dd decDriver, keyType valueType, b *[decScratchByteArrayL
 func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	sfn := structFieldNode{v: rv, update: true}
 	ctyp := d.d.ContainerType()
-	if ctyp == valueTypeNil {
-		rvSetDirect(rv, f.ti.rv0)
-		return
-	}
 	var mf MissingFielder
 	if f.ti.isFlag(tiflagMissingFielder) {
 		mf = rv2i(rv).(MissingFielder)
@@ -676,12 +672,6 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	rtelem0 := f.ti.elem
 	ctyp := d.d.ContainerType()
-	if ctyp == valueTypeNil {
-		if rv.CanSet() {
-			rvSetDirect(rv, f.ti.rv0)
-		}
-		return
-	}
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 		// you can only decode bytes or string in the stream into a slice or array of bytes
 		if !(f.ti.rtid == uint8SliceTypId || rtelem0.Kind() == reflect.Uint8) {
@@ -858,10 +848,6 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 	}
 	rtelem0 := f.ti.elem
 	ctyp := d.d.ContainerType()
-	if ctyp == valueTypeNil {
-		rvSetDirect(rv, f.ti.rv0)
-		return
-	}
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 		// you can only decode bytes or string in the stream into a slice or array of bytes
 		if !(f.ti.rtid == uint8SliceTypId || rtelem0.Kind() == reflect.Uint8) {
@@ -947,10 +933,6 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 
 func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart()
-	if containerLen == containerLenNil {
-		rvSetDirect(rv, f.ti.rv0)
-		return
-	}
 	ti := f.ti
 	if rvIsNil(rv) {
 		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.key.Size()+ti.elem.Size()))
@@ -1518,6 +1500,9 @@ func (d *Decoder) decode(iv interface{}) {
 //
 // This way, we know if it is itself a pointer, and can handle nil in
 // the stream effectively.
+//
+// Note that decodeValue will handle nil in the stream early, so that the
+// subsequent calls i.e. kXXX methods, etc do not have to handle it themselves.
 func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn) {
 	// if rv.Kind() == reflect.Ptr && d.d.TryNil() {
 	if d.d.TryNil() {
@@ -1680,8 +1665,7 @@ func (d *Decoder) decodeFloat32() float32 {
 // Note: We update the .c after calling the callback.
 // This way, the callback can know what the last status was.
 
-// Note: if you call mapStart and it returns containerLenNil,
-// then do NOT call mapEnd.
+// MARKER: do not call mapEnd if mapStart returns containerLenNil.
 
 func (d *Decoder) mapStart() (v int) {
 	v = d.d.ReadMapStart()
