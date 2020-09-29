@@ -1467,7 +1467,9 @@ func (d *Decoder) decode(iv interface{}) {
 	// case nil:
 	// case Selfer:
 	case reflect.Value:
-		d.ensureDecodeable(v)
+		if !isDecodeable(v) {
+			d.haltAsNotDecodeable(v)
+		}
 		d.decodeValue(v, nil)
 
 	case *string:
@@ -1518,7 +1520,9 @@ func (d *Decoder) decode(iv interface{}) {
 			v.CodecDecodeSelf(d)
 		} else if !fastpathDecodeTypeSwitch(iv, d) {
 			v := rv4i(iv)
-			d.ensureDecodeable(v)
+			if !isDecodeable(v) {
+				d.haltAsNotDecodeable(v)
+			}
 			d.decodeValue(v, nil)
 		}
 	}
@@ -1595,32 +1599,33 @@ func (d *Decoder) arrayCannotExpand(sliceLen, streamLen int) {
 	}
 }
 
+// isDecodeable checks if value can be decoded into
+//
+// decode can take any reflect.Value that is a inherently addressable i.e.
+//   - array
+//   - non-nil chan    (we will SEND to it)
+//   - non-nil slice   (we will set its elements)
+//   - non-nil map     (we will put into it)
+//   - non-nil pointer (we can "update" it)
 func isDecodeable(rv reflect.Value) (canDecode bool) {
 	switch rv.Kind() {
 	case reflect.Array:
-		return rv.CanAddr()
-	case reflect.Ptr:
+		canDecode = rv.CanAddr()
+	case reflect.Ptr, reflect.Slice, reflect.Chan, reflect.Map:
 		if !rvIsNil(rv) {
-			return true
-		}
-	case reflect.Slice, reflect.Chan, reflect.Map:
-		if !rvIsNil(rv) {
-			return true
+			canDecode = true
 		}
 	}
 	return
 }
 
-func (d *Decoder) ensureDecodeable(rv reflect.Value) {
-	// decode can take any reflect.Value that is a inherently addressable i.e.
-	//   - array
-	//   - non-nil chan    (we will SEND to it)
-	//   - non-nil slice   (we will set its elements)
-	//   - non-nil map     (we will put into it)
-	//   - non-nil pointer (we can "update" it)
-	if isDecodeable(rv) {
-		return
-	}
+// func (d *Decoder) ensureDecodeable(rv reflect.Value) {
+// 	if !isDecodeable(rv) {
+// 		d.haltAsNotDecodeable(rv)
+// 	}
+// }
+
+func (d *Decoder) haltAsNotDecodeable(rv reflect.Value) {
 	if !rv.IsValid() {
 		d.onerror(errCannotDecodeIntoNil)
 	}

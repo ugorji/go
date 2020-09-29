@@ -119,9 +119,6 @@ func (f genHelperEncoder) WriteStr(s string) {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperEncoder) BytesView(v string) []byte { return bytesView(v) }
-
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncWriteMapStart(length int) { f.e.mapStart(length) }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -170,8 +167,8 @@ func (f genHelperDecoder) DecScratchArrayBuffer() *[decScratchByteArrayLen]byte 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecFallback(iv interface{}, chkPtr bool) {
 	rv := rv4i(iv)
-	if chkPtr {
-		f.d.ensureDecodeable(rv)
+	if chkPtr && !isDecodeable(rv) {
+		f.d.haltAsNotDecodeable(rv)
 	}
 	f.d.decodeValue(rv, nil)
 }

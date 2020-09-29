@@ -270,7 +270,6 @@ func init() {
 			numCharWithExpBitset64 = numCharWithExpBitset64.set(i - 42)
 		}
 	}
-
 }
 
 type handleFlag uint8

@@ -1108,7 +1108,6 @@ func testCodecChan(t *testing.T, h Handle) {
 	// - decode a chan (ch2), with cap > len(s1) from the stream array
 	// - receive from ch2 into slice sl2
 	// - compare sl1 and sl2
-	// - do this for codecs: json, cbor (covers all types)
 
 	{
 		if testVerbose {
