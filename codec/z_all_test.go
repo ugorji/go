@@ -65,11 +65,12 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testDecodeOptions.MapValueReset = true
 
 	// testDecodeOptions.SignedInteger = true
-	// testDecodeOptions.SliceElementReset = true
+	testDecodeOptions.SliceElementReset = true
 	// testDecodeOptions.InterfaceReset = true
 	// testDecodeOptions.PreferArrayOverSlice = true
 	// testDecodeOptions.DeleteOnNilMapValue = true
 	// testDecodeOptions.RawToString = true
+	testDecodeOptions.PreferPointerForStructOrArray = true
 
 	testEncodeOptions.StructToArray = true
 	testEncodeOptions.Canonical = true
