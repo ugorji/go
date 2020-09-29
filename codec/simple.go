@@ -235,7 +235,7 @@ type simpleDecDriver struct {
 	h      *SimpleHandle
 	bdRead bool
 	bd     byte
-	fnil   bool
+	_      bool
 	noBuiltInTypes
 	decDriverNoopContainerReader
 	_ [6]uint64 // padding
@@ -252,13 +252,11 @@ func (d *simpleDecDriver) readNextBd() {
 }
 
 func (d *simpleDecDriver) advanceNil() (null bool) {
-	d.fnil = false
 	if !d.bdRead {
 		d.readNextBd()
 	}
 	if d.bd == simpleVdNil {
 		d.bdRead = false
-		d.fnil = true
 		null = true
 	}
 	return
@@ -268,11 +266,9 @@ func (d *simpleDecDriver) ContainerType() (vt valueType) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	d.fnil = false
 	switch d.bd {
 	case simpleVdNil:
 		d.bdRead = false
-		d.fnil = true
 		return valueTypeNil
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
@@ -522,14 +518,12 @@ func (d *simpleDecDriver) DecodeNaked() {
 		d.readNextBd()
 	}
 
-	d.fnil = false
 	n := d.d.naked()
 	var decodeFurther bool
 
 	switch d.bd {
 	case simpleVdNil:
 		n.v = valueTypeNil
-		d.fnil = true
 	case simpleVdFalse:
 		n.v = valueTypeBool
 		n.b = false
@@ -740,7 +734,6 @@ func (e *simpleEncDriver) reset() {
 
 func (d *simpleDecDriver) reset() {
 	d.bd, d.bdRead = 0, false
-	d.fnil = false
 }
 
 var _ decDriver = (*simpleDecDriver)(nil)

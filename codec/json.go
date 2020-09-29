@@ -472,7 +472,7 @@ type jsonDecDriver struct {
 	h *JsonHandle
 
 	tok  uint8   // used to store the token read right after skipWhiteSpace
-	fnil bool    // found null
+	_    bool    // found null
 	_    [2]byte // padding
 	bstr [4]byte // scratch used for string \UXXX parsing
 
@@ -523,7 +523,6 @@ func (d *jsonDecDriver) ReadArrayStart() int {
 //
 //go:noinline
 func (d *jsonDecDriver) skipWhitespaceForCheckBreak() {
-	d.fnil = false
 	d.tok = d.d.decRd.skipWhitespace()
 }
 
@@ -617,12 +616,10 @@ func (d *jsonDecDriver) readLit4Null() {
 	if jsonValidateSymbols && bs != [rwNLen]byte{'u', 'l', 'l'} { // !Equal jsonLiteral4Null
 		d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs)
 	}
-	d.fnil = true
 }
 
 func (d *jsonDecDriver) advance() {
 	if d.tok == 0 {
-		d.fnil = false
 		d.tok = d.d.decRd.skipWhitespace() // skip(&whitespaceCharBitset)
 	}
 }
@@ -694,10 +691,6 @@ func (d *jsonDecDriver) TryNil() bool {
 	}
 	return false
 }
-
-// func (d *jsonDecDriver) Nil() bool {
-// 	return d.fnil
-// }
 
 func (d *jsonDecDriver) DecodeBool() (v bool) {
 	d.advance()
@@ -927,7 +920,6 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	// base64 encodes []byte{} as "", and we encode nil []byte as null.
 	// Consequently, base64 should decode null as a nil []byte, and "" as an empty []byte{}.
 	// appendStringAsBytes returns a zero-len slice for both, so as not to reset d.buf.
-	// However, it sets a fnil field to true, so we can check if a null was found.
 
 	if d.tok == 'n' {
 		d.readLit4Null()
@@ -1309,7 +1301,6 @@ func (d *jsonDecDriver) reset() {
 	d.se.InterfaceExt = d.h.RawBytesExt
 	d.buf = d.d.blist.check(d.buf, 256)[:0]
 	d.tok = 0
-	d.fnil = false
 }
 
 func (d *jsonDecDriver) atEndOfDecode() {}

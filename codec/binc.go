@@ -399,7 +399,7 @@ type bincDecDriver struct {
 	vd     byte
 	vs     byte
 
-	fnil bool
+	_ bool
 	// _      [3]byte // padding
 	// linear searching on this slice is ok,
 	// because we typically expect < 32 symbols in each stream.
@@ -423,21 +423,15 @@ func (d *bincDecDriver) readNextBd() {
 }
 
 func (d *bincDecDriver) advanceNil() (null bool) {
-	d.fnil = false
 	if !d.bdRead {
 		d.readNextBd()
 	}
 	if d.bd == bincVdSpecial<<4|bincSpNil {
 		d.bdRead = false
-		d.fnil = true
 		null = true
 	}
 	return
 }
-
-// func (d *bincDecDriver) Nil() bool {
-// 	return d.fnil
-// }
 
 func (d *bincDecDriver) TryNil() bool {
 	return d.advanceNil()
@@ -447,11 +441,9 @@ func (d *bincDecDriver) ContainerType() (vt valueType) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	d.fnil = false
 	// if d.vd == bincVdSpecial && d.vs == bincSpNil {
 	if d.bd == bincVdSpecial<<4|bincSpNil {
 		d.bdRead = false
-		d.fnil = true
 		return valueTypeNil
 	} else if d.vd == bincVdByteArray {
 		return valueTypeBytes
@@ -834,7 +826,6 @@ func (d *bincDecDriver) DecodeNaked() {
 		d.readNextBd()
 	}
 
-	d.fnil = false
 	n := d.d.naked()
 	var decodeFurther bool
 
@@ -843,7 +834,6 @@ func (d *bincDecDriver) DecodeNaked() {
 		switch d.vs {
 		case bincSpNil:
 			n.v = valueTypeNil
-			d.fnil = true
 		case bincSpFalse:
 			n.v = valueTypeBool
 			n.b = false
@@ -1118,7 +1108,6 @@ func (e *bincEncDriver) atEndOfEncode() {
 func (d *bincDecDriver) reset() {
 	d.s = nil
 	d.bd, d.bdRead, d.vd, d.vs = 0, false, 0, 0
-	d.fnil = false
 }
 
 func (d *bincDecDriver) atEndOfDecode() {

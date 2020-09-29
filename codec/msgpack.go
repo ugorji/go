@@ -404,7 +404,7 @@ type msgpackDecDriver struct {
 	// b      [scratchByteArrayLen]byte
 	bd     byte
 	bdRead bool
-	fnil   bool
+	_      bool
 	noBuiltInTypes
 	_ [6]uint64 // padding
 	d Decoder
@@ -423,7 +423,6 @@ func (d *msgpackDecDriver) DecodeNaked() {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	d.fnil = false
 	bd := d.bd
 	n := d.d.naked()
 	var decodeFurther bool
@@ -432,7 +431,6 @@ func (d *msgpackDecDriver) DecodeNaked() {
 	case mpNil:
 		n.v = valueTypeNil
 		d.bdRead = false
-		d.fnil = true
 	case mpFalse:
 		n.v = valueTypeBool
 		n.b = false
@@ -827,13 +825,11 @@ func (d *msgpackDecDriver) readNextBd() {
 }
 
 func (d *msgpackDecDriver) advanceNil() (null bool) {
-	d.fnil = false
 	if !d.bdRead {
 		d.readNextBd()
 	}
 	if d.bd == mpNil {
 		d.bdRead = false
-		d.fnil = true
 		null = true
 	}
 	return
@@ -844,10 +840,8 @@ func (d *msgpackDecDriver) ContainerType() (vt valueType) {
 		d.readNextBd()
 	}
 	bd := d.bd
-	d.fnil = false
 	if bd == mpNil {
 		d.bdRead = false
-		d.fnil = true
 		return valueTypeNil
 	} else if bd == mpBin8 || bd == mpBin16 || bd == mpBin32 {
 		return valueTypeBytes
@@ -1071,7 +1065,6 @@ func (e *msgpackEncDriver) reset() {
 
 func (d *msgpackDecDriver) reset() {
 	d.bd, d.bdRead = 0, false
-	d.fnil = false
 }
 
 //--------------------------------------------------

@@ -323,7 +323,7 @@ type cborDecDriver struct {
 	bdRead bool
 	bd     byte
 	st     bool // skip tags
-	fnil   bool // found nil
+	_      bool // found nil
 	noBuiltInTypes
 	_ [6]uint64 // padding cache-aligned
 	d Decoder
@@ -339,13 +339,11 @@ func (d *cborDecDriver) readNextBd() {
 }
 
 func (d *cborDecDriver) advanceNil() (null bool) {
-	d.fnil = false
 	if !d.bdRead {
 		d.readNextBd()
 	}
 	if d.bd == cborBdNil || d.bd == cborBdUndefined {
 		d.bdRead = false
-		d.fnil = true
 		null = true
 	}
 	return
@@ -366,7 +364,6 @@ func (d *cborDecDriver) skipTags() {
 }
 
 func (d *cborDecDriver) ContainerType() (vt valueType) {
-	d.fnil = false
 	if !d.bdRead {
 		d.readNextBd()
 	}
@@ -375,10 +372,9 @@ func (d *cborDecDriver) ContainerType() (vt valueType) {
 	}
 	if d.bd == cborBdNil {
 		d.bdRead = false // always consume nil after seeing it in container type
-		d.fnil = true
 		return valueTypeNil
 	}
-	major := d.bd>>5
+	major := d.bd >> 5
 	if major == cborMajorBytes {
 		return valueTypeBytes
 	} else if major == cborMajorString {
@@ -697,7 +693,6 @@ func (d *cborDecDriver) DecodeNaked() {
 		d.readNextBd()
 	}
 
-	d.fnil = false
 	n := d.d.naked()
 	var decodeFurther bool
 
@@ -742,7 +737,6 @@ func (d *cborDecDriver) DecodeNaked() {
 		switch d.bd {
 		case cborBdNil, cborBdUndefined:
 			n.v = valueTypeNil
-			d.fnil = true
 		case cborBdFalse:
 			n.v = valueTypeBool
 			n.b = false
@@ -952,7 +946,6 @@ func (e *cborEncDriver) reset() {
 func (d *cborDecDriver) reset() {
 	d.bd = 0
 	d.bdRead = false
-	d.fnil = false
 	d.st = d.h.SkipUnexpectedTags
 }
 
