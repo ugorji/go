@@ -28,7 +28,7 @@ Please be aware of the following:
 - At least in our representative microbenchmarks for cbor (for example),
   passing `notfastpath` tag causes a clear performance loss (about 33%).  
   *YMMV*.
-- These values were got from building the test binary that gives > 85% code coverage,
+- These values were got from building the test binary that gives > 90% code coverage,
   and running `go tool nm` on it to see how much space these library symbols took.
 
 ## Resolving Module Issues
