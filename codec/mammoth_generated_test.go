@@ -267,6 +267,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr(rv4i(v17v2), bs17, h, t, "dec-slice-v17-noaddr") // non-addressable value
 			testDeepEqualErr(v17v1, v17v2, t, "equal-slice-v17-noaddr")
 		}
+		testReleaseBytes(bs17)
 		// ...
 		bs17 = testMarshalErr(&v17v1, h, t, "enc-slice-v17-p")
 		v17v2 = nil
@@ -292,6 +293,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr((&v17va)[:], bs17, h, t, "dec-slice-v17-p-cap-noaddr")
 			testDeepEqualErr(v17v1, v17va[:len(v17v1)], t, "equal-slice-v17-p-cap-noaddr")
 		}
+		testReleaseBytes(bs17)
 		// ...
 		var v17v3, v17v4 typMbsSliceIntf
 		v17v2 = nil
@@ -304,12 +306,14 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			bs17 = testMarshalErr(v17v3, h, t, "enc-slice-v17-custom")
 			testUnmarshalErr(v17v4, bs17, h, t, "dec-slice-v17-custom")
 			testDeepEqualErr(v17v3, v17v4, t, "equal-slice-v17-custom")
+			testReleaseBytes(bs17)
 		}
 		bs17 = testMarshalErr(&v17v3, h, t, "enc-slice-v17-custom-p")
 		v17v2 = nil
 		v17v4 = typMbsSliceIntf(v17v2)
 		testUnmarshalErr(&v17v4, bs17, h, t, "dec-slice-v17-custom-p")
 		testDeepEqualErr(v17v3, v17v4, t, "equal-slice-v17-custom-p")
+		testReleaseBytes(bs17)
 	}
 	var v18va [8]string
 	for _, v := range [][]string{nil, {}, {"some-string-2", "", "", "some-string-3"}} {
@@ -333,6 +337,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr(rv4i(v18v2), bs18, h, t, "dec-slice-v18-noaddr") // non-addressable value
 			testDeepEqualErr(v18v1, v18v2, t, "equal-slice-v18-noaddr")
 		}
+		testReleaseBytes(bs18)
 		// ...
 		bs18 = testMarshalErr(&v18v1, h, t, "enc-slice-v18-p")
 		v18v2 = nil
@@ -358,6 +363,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr((&v18va)[:], bs18, h, t, "dec-slice-v18-p-cap-noaddr")
 			testDeepEqualErr(v18v1, v18va[:len(v18v1)], t, "equal-slice-v18-p-cap-noaddr")
 		}
+		testReleaseBytes(bs18)
 		// ...
 		var v18v3, v18v4 typMbsSliceString
 		v18v2 = nil
@@ -370,12 +376,14 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			bs18 = testMarshalErr(v18v3, h, t, "enc-slice-v18-custom")
 			testUnmarshalErr(v18v4, bs18, h, t, "dec-slice-v18-custom")
 			testDeepEqualErr(v18v3, v18v4, t, "equal-slice-v18-custom")
+			testReleaseBytes(bs18)
 		}
 		bs18 = testMarshalErr(&v18v3, h, t, "enc-slice-v18-custom-p")
 		v18v2 = nil
 		v18v4 = typMbsSliceString(v18v2)
 		testUnmarshalErr(&v18v4, bs18, h, t, "dec-slice-v18-custom-p")
 		testDeepEqualErr(v18v3, v18v4, t, "equal-slice-v18-custom-p")
+		testReleaseBytes(bs18)
 	}
 	var v19va [8][]byte
 	for _, v := range [][][]byte{nil, {}, {[]byte("some-string-2"), nil, nil, []byte("some-string-3")}} {
@@ -399,6 +407,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr(rv4i(v19v2), bs19, h, t, "dec-slice-v19-noaddr") // non-addressable value
 			testDeepEqualErr(v19v1, v19v2, t, "equal-slice-v19-noaddr")
 		}
+		testReleaseBytes(bs19)
 		// ...
 		bs19 = testMarshalErr(&v19v1, h, t, "enc-slice-v19-p")
 		v19v2 = nil
@@ -424,6 +433,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr((&v19va)[:], bs19, h, t, "dec-slice-v19-p-cap-noaddr")
 			testDeepEqualErr(v19v1, v19va[:len(v19v1)], t, "equal-slice-v19-p-cap-noaddr")
 		}
+		testReleaseBytes(bs19)
 		// ...
 		var v19v3, v19v4 typMbsSliceBytes
 		v19v2 = nil
@@ -436,12 +446,14 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			bs19 = testMarshalErr(v19v3, h, t, "enc-slice-v19-custom")
 			testUnmarshalErr(v19v4, bs19, h, t, "dec-slice-v19-custom")
 			testDeepEqualErr(v19v3, v19v4, t, "equal-slice-v19-custom")
+			testReleaseBytes(bs19)
 		}
 		bs19 = testMarshalErr(&v19v3, h, t, "enc-slice-v19-custom-p")
 		v19v2 = nil
 		v19v4 = typMbsSliceBytes(v19v2)
 		testUnmarshalErr(&v19v4, bs19, h, t, "dec-slice-v19-custom-p")
 		testDeepEqualErr(v19v3, v19v4, t, "equal-slice-v19-custom-p")
+		testReleaseBytes(bs19)
 	}
 	var v20va [8]float64
 	for _, v := range [][]float64{nil, {}, {22.2, 0, 0, 33.3e3}} {
@@ -465,6 +477,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr(rv4i(v20v2), bs20, h, t, "dec-slice-v20-noaddr") // non-addressable value
 			testDeepEqualErr(v20v1, v20v2, t, "equal-slice-v20-noaddr")
 		}
+		testReleaseBytes(bs20)
 		// ...
 		bs20 = testMarshalErr(&v20v1, h, t, "enc-slice-v20-p")
 		v20v2 = nil
@@ -490,6 +503,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr((&v20va)[:], bs20, h, t, "dec-slice-v20-p-cap-noaddr")
 			testDeepEqualErr(v20v1, v20va[:len(v20v1)], t, "equal-slice-v20-p-cap-noaddr")
 		}
+		testReleaseBytes(bs20)
 		// ...
 		var v20v3, v20v4 typMbsSliceFloat64
 		v20v2 = nil
@@ -502,12 +516,14 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			bs20 = testMarshalErr(v20v3, h, t, "enc-slice-v20-custom")
 			testUnmarshalErr(v20v4, bs20, h, t, "dec-slice-v20-custom")
 			testDeepEqualErr(v20v3, v20v4, t, "equal-slice-v20-custom")
+			testReleaseBytes(bs20)
 		}
 		bs20 = testMarshalErr(&v20v3, h, t, "enc-slice-v20-custom-p")
 		v20v2 = nil
 		v20v4 = typMbsSliceFloat64(v20v2)
 		testUnmarshalErr(&v20v4, bs20, h, t, "dec-slice-v20-custom-p")
 		testDeepEqualErr(v20v3, v20v4, t, "equal-slice-v20-custom-p")
+		testReleaseBytes(bs20)
 	}
 	var v21va [8]uint64
 	for _, v := range [][]uint64{nil, {}, {77, 0, 0, 127}} {
@@ -531,6 +547,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr(rv4i(v21v2), bs21, h, t, "dec-slice-v21-noaddr") // non-addressable value
 			testDeepEqualErr(v21v1, v21v2, t, "equal-slice-v21-noaddr")
 		}
+		testReleaseBytes(bs21)
 		// ...
 		bs21 = testMarshalErr(&v21v1, h, t, "enc-slice-v21-p")
 		v21v2 = nil
@@ -556,6 +573,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr((&v21va)[:], bs21, h, t, "dec-slice-v21-p-cap-noaddr")
 			testDeepEqualErr(v21v1, v21va[:len(v21v1)], t, "equal-slice-v21-p-cap-noaddr")
 		}
+		testReleaseBytes(bs21)
 		// ...
 		var v21v3, v21v4 typMbsSliceUint64
 		v21v2 = nil
@@ -568,12 +586,14 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			bs21 = testMarshalErr(v21v3, h, t, "enc-slice-v21-custom")
 			testUnmarshalErr(v21v4, bs21, h, t, "dec-slice-v21-custom")
 			testDeepEqualErr(v21v3, v21v4, t, "equal-slice-v21-custom")
+			testReleaseBytes(bs21)
 		}
 		bs21 = testMarshalErr(&v21v3, h, t, "enc-slice-v21-custom-p")
 		v21v2 = nil
 		v21v4 = typMbsSliceUint64(v21v2)
 		testUnmarshalErr(&v21v4, bs21, h, t, "dec-slice-v21-custom-p")
 		testDeepEqualErr(v21v3, v21v4, t, "equal-slice-v21-custom-p")
+		testReleaseBytes(bs21)
 	}
 	var v22va [8]int
 	for _, v := range [][]int{nil, {}, {111, 0, 0, 77}} {
@@ -597,6 +617,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr(rv4i(v22v2), bs22, h, t, "dec-slice-v22-noaddr") // non-addressable value
 			testDeepEqualErr(v22v1, v22v2, t, "equal-slice-v22-noaddr")
 		}
+		testReleaseBytes(bs22)
 		// ...
 		bs22 = testMarshalErr(&v22v1, h, t, "enc-slice-v22-p")
 		v22v2 = nil
@@ -622,6 +643,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr((&v22va)[:], bs22, h, t, "dec-slice-v22-p-cap-noaddr")
 			testDeepEqualErr(v22v1, v22va[:len(v22v1)], t, "equal-slice-v22-p-cap-noaddr")
 		}
+		testReleaseBytes(bs22)
 		// ...
 		var v22v3, v22v4 typMbsSliceInt
 		v22v2 = nil
@@ -634,12 +656,14 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			bs22 = testMarshalErr(v22v3, h, t, "enc-slice-v22-custom")
 			testUnmarshalErr(v22v4, bs22, h, t, "dec-slice-v22-custom")
 			testDeepEqualErr(v22v3, v22v4, t, "equal-slice-v22-custom")
+			testReleaseBytes(bs22)
 		}
 		bs22 = testMarshalErr(&v22v3, h, t, "enc-slice-v22-custom-p")
 		v22v2 = nil
 		v22v4 = typMbsSliceInt(v22v2)
 		testUnmarshalErr(&v22v4, bs22, h, t, "dec-slice-v22-custom-p")
 		testDeepEqualErr(v22v3, v22v4, t, "equal-slice-v22-custom-p")
+		testReleaseBytes(bs22)
 	}
 	var v23va [8]int32
 	for _, v := range [][]int32{nil, {}, {127, 0, 0, 111}} {
@@ -663,6 +687,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr(rv4i(v23v2), bs23, h, t, "dec-slice-v23-noaddr") // non-addressable value
 			testDeepEqualErr(v23v1, v23v2, t, "equal-slice-v23-noaddr")
 		}
+		testReleaseBytes(bs23)
 		// ...
 		bs23 = testMarshalErr(&v23v1, h, t, "enc-slice-v23-p")
 		v23v2 = nil
@@ -688,6 +713,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr((&v23va)[:], bs23, h, t, "dec-slice-v23-p-cap-noaddr")
 			testDeepEqualErr(v23v1, v23va[:len(v23v1)], t, "equal-slice-v23-p-cap-noaddr")
 		}
+		testReleaseBytes(bs23)
 		// ...
 		var v23v3, v23v4 typMbsSliceInt32
 		v23v2 = nil
@@ -700,12 +726,14 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			bs23 = testMarshalErr(v23v3, h, t, "enc-slice-v23-custom")
 			testUnmarshalErr(v23v4, bs23, h, t, "dec-slice-v23-custom")
 			testDeepEqualErr(v23v3, v23v4, t, "equal-slice-v23-custom")
+			testReleaseBytes(bs23)
 		}
 		bs23 = testMarshalErr(&v23v3, h, t, "enc-slice-v23-custom-p")
 		v23v2 = nil
 		v23v4 = typMbsSliceInt32(v23v2)
 		testUnmarshalErr(&v23v4, bs23, h, t, "dec-slice-v23-custom-p")
 		testDeepEqualErr(v23v3, v23v4, t, "equal-slice-v23-custom-p")
+		testReleaseBytes(bs23)
 	}
 	var v24va [8]int64
 	for _, v := range [][]int64{nil, {}, {77, 0, 0, 127}} {
@@ -729,6 +757,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr(rv4i(v24v2), bs24, h, t, "dec-slice-v24-noaddr") // non-addressable value
 			testDeepEqualErr(v24v1, v24v2, t, "equal-slice-v24-noaddr")
 		}
+		testReleaseBytes(bs24)
 		// ...
 		bs24 = testMarshalErr(&v24v1, h, t, "enc-slice-v24-p")
 		v24v2 = nil
@@ -754,6 +783,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr((&v24va)[:], bs24, h, t, "dec-slice-v24-p-cap-noaddr")
 			testDeepEqualErr(v24v1, v24va[:len(v24v1)], t, "equal-slice-v24-p-cap-noaddr")
 		}
+		testReleaseBytes(bs24)
 		// ...
 		var v24v3, v24v4 typMbsSliceInt64
 		v24v2 = nil
@@ -766,12 +796,14 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			bs24 = testMarshalErr(v24v3, h, t, "enc-slice-v24-custom")
 			testUnmarshalErr(v24v4, bs24, h, t, "dec-slice-v24-custom")
 			testDeepEqualErr(v24v3, v24v4, t, "equal-slice-v24-custom")
+			testReleaseBytes(bs24)
 		}
 		bs24 = testMarshalErr(&v24v3, h, t, "enc-slice-v24-custom-p")
 		v24v2 = nil
 		v24v4 = typMbsSliceInt64(v24v2)
 		testUnmarshalErr(&v24v4, bs24, h, t, "dec-slice-v24-custom-p")
 		testDeepEqualErr(v24v3, v24v4, t, "equal-slice-v24-custom-p")
+		testReleaseBytes(bs24)
 	}
 	var v25va [8]bool
 	for _, v := range [][]bool{nil, {}, {false, false, false, true}} {
@@ -795,6 +827,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr(rv4i(v25v2), bs25, h, t, "dec-slice-v25-noaddr") // non-addressable value
 			testDeepEqualErr(v25v1, v25v2, t, "equal-slice-v25-noaddr")
 		}
+		testReleaseBytes(bs25)
 		// ...
 		bs25 = testMarshalErr(&v25v1, h, t, "enc-slice-v25-p")
 		v25v2 = nil
@@ -820,6 +853,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			testUnmarshalErr((&v25va)[:], bs25, h, t, "dec-slice-v25-p-cap-noaddr")
 			testDeepEqualErr(v25v1, v25va[:len(v25v1)], t, "equal-slice-v25-p-cap-noaddr")
 		}
+		testReleaseBytes(bs25)
 		// ...
 		var v25v3, v25v4 typMbsSliceBool
 		v25v2 = nil
@@ -832,12 +866,14 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 			bs25 = testMarshalErr(v25v3, h, t, "enc-slice-v25-custom")
 			testUnmarshalErr(v25v4, bs25, h, t, "dec-slice-v25-custom")
 			testDeepEqualErr(v25v3, v25v4, t, "equal-slice-v25-custom")
+			testReleaseBytes(bs25)
 		}
 		bs25 = testMarshalErr(&v25v3, h, t, "enc-slice-v25-custom-p")
 		v25v2 = nil
 		v25v4 = typMbsSliceBool(v25v2)
 		testUnmarshalErr(&v25v4, bs25, h, t, "dec-slice-v25-custom-p")
 		testDeepEqualErr(v25v3, v25v4, t, "equal-slice-v25-custom-p")
+		testReleaseBytes(bs25)
 	}
 
 }
@@ -872,10 +908,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v26v2, bs26, h, t, "dec-map-v26-p-len")
 		testDeepEqualErr(v26v1, v26v2, t, "equal-map-v26-p-len")
+		testReleaseBytes(bs26)
 		bs26 = testMarshalErr(&v26v1, h, t, "enc-map-v26-p")
 		v26v2 = nil
 		testUnmarshalErr(&v26v2, bs26, h, t, "dec-map-v26-p-nil")
 		testDeepEqualErr(v26v1, v26v2, t, "equal-map-v26-p-nil")
+		testReleaseBytes(bs26)
 		// ...
 		if v == nil {
 			v26v2 = nil
@@ -889,6 +927,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs26 = testMarshalErr(v26v3, h, t, "enc-map-v26-custom")
 			testUnmarshalErr(v26v4, bs26, h, t, "dec-map-v26-p-len")
 			testDeepEqualErr(v26v3, v26v4, t, "equal-map-v26-p-len")
+			testReleaseBytes(bs26)
 		}
 	}
 	for _, v := range []map[string]string{nil, {}, {"some-string-3": "", "some-string-1": "some-string-2"}} {
@@ -920,10 +959,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v27v2, bs27, h, t, "dec-map-v27-p-len")
 		testDeepEqualErr(v27v1, v27v2, t, "equal-map-v27-p-len")
+		testReleaseBytes(bs27)
 		bs27 = testMarshalErr(&v27v1, h, t, "enc-map-v27-p")
 		v27v2 = nil
 		testUnmarshalErr(&v27v2, bs27, h, t, "dec-map-v27-p-nil")
 		testDeepEqualErr(v27v1, v27v2, t, "equal-map-v27-p-nil")
+		testReleaseBytes(bs27)
 		// ...
 		if v == nil {
 			v27v2 = nil
@@ -937,6 +978,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs27 = testMarshalErr(v27v3, h, t, "enc-map-v27-custom")
 			testUnmarshalErr(v27v4, bs27, h, t, "dec-map-v27-p-len")
 			testDeepEqualErr(v27v3, v27v4, t, "equal-map-v27-p-len")
+			testReleaseBytes(bs27)
 		}
 	}
 	for _, v := range []map[string][]byte{nil, {}, {"some-string-3": nil, "some-string-1": []byte("some-string-1")}} {
@@ -968,10 +1010,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v28v2, bs28, h, t, "dec-map-v28-p-len")
 		testDeepEqualErr(v28v1, v28v2, t, "equal-map-v28-p-len")
+		testReleaseBytes(bs28)
 		bs28 = testMarshalErr(&v28v1, h, t, "enc-map-v28-p")
 		v28v2 = nil
 		testUnmarshalErr(&v28v2, bs28, h, t, "dec-map-v28-p-nil")
 		testDeepEqualErr(v28v1, v28v2, t, "equal-map-v28-p-nil")
+		testReleaseBytes(bs28)
 		// ...
 		if v == nil {
 			v28v2 = nil
@@ -985,6 +1029,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs28 = testMarshalErr(v28v3, h, t, "enc-map-v28-custom")
 			testUnmarshalErr(v28v4, bs28, h, t, "dec-map-v28-p-len")
 			testDeepEqualErr(v28v3, v28v4, t, "equal-map-v28-p-len")
+			testReleaseBytes(bs28)
 		}
 	}
 	for _, v := range []map[string]uint8{nil, {}, {"some-string-2": 0, "some-string-3": 111}} {
@@ -1016,10 +1061,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v29v2, bs29, h, t, "dec-map-v29-p-len")
 		testDeepEqualErr(v29v1, v29v2, t, "equal-map-v29-p-len")
+		testReleaseBytes(bs29)
 		bs29 = testMarshalErr(&v29v1, h, t, "enc-map-v29-p")
 		v29v2 = nil
 		testUnmarshalErr(&v29v2, bs29, h, t, "dec-map-v29-p-nil")
 		testDeepEqualErr(v29v1, v29v2, t, "equal-map-v29-p-nil")
+		testReleaseBytes(bs29)
 		// ...
 		if v == nil {
 			v29v2 = nil
@@ -1033,6 +1080,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs29 = testMarshalErr(v29v3, h, t, "enc-map-v29-custom")
 			testUnmarshalErr(v29v4, bs29, h, t, "dec-map-v29-p-len")
 			testDeepEqualErr(v29v3, v29v4, t, "equal-map-v29-p-len")
+			testReleaseBytes(bs29)
 		}
 	}
 	for _, v := range []map[string]uint64{nil, {}, {"some-string-1": 0, "some-string-2": 77}} {
@@ -1064,10 +1112,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v30v2, bs30, h, t, "dec-map-v30-p-len")
 		testDeepEqualErr(v30v1, v30v2, t, "equal-map-v30-p-len")
+		testReleaseBytes(bs30)
 		bs30 = testMarshalErr(&v30v1, h, t, "enc-map-v30-p")
 		v30v2 = nil
 		testUnmarshalErr(&v30v2, bs30, h, t, "dec-map-v30-p-nil")
 		testDeepEqualErr(v30v1, v30v2, t, "equal-map-v30-p-nil")
+		testReleaseBytes(bs30)
 		// ...
 		if v == nil {
 			v30v2 = nil
@@ -1081,6 +1131,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs30 = testMarshalErr(v30v3, h, t, "enc-map-v30-custom")
 			testUnmarshalErr(v30v4, bs30, h, t, "dec-map-v30-p-len")
 			testDeepEqualErr(v30v3, v30v4, t, "equal-map-v30-p-len")
+			testReleaseBytes(bs30)
 		}
 	}
 	for _, v := range []map[string]int{nil, {}, {"some-string-3": 0, "some-string-1": 127}} {
@@ -1112,10 +1163,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v31v2, bs31, h, t, "dec-map-v31-p-len")
 		testDeepEqualErr(v31v1, v31v2, t, "equal-map-v31-p-len")
+		testReleaseBytes(bs31)
 		bs31 = testMarshalErr(&v31v1, h, t, "enc-map-v31-p")
 		v31v2 = nil
 		testUnmarshalErr(&v31v2, bs31, h, t, "dec-map-v31-p-nil")
 		testDeepEqualErr(v31v1, v31v2, t, "equal-map-v31-p-nil")
+		testReleaseBytes(bs31)
 		// ...
 		if v == nil {
 			v31v2 = nil
@@ -1129,6 +1182,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs31 = testMarshalErr(v31v3, h, t, "enc-map-v31-custom")
 			testUnmarshalErr(v31v4, bs31, h, t, "dec-map-v31-p-len")
 			testDeepEqualErr(v31v3, v31v4, t, "equal-map-v31-p-len")
+			testReleaseBytes(bs31)
 		}
 	}
 	for _, v := range []map[string]int64{nil, {}, {"some-string-2": 0, "some-string-3": 111}} {
@@ -1160,10 +1214,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v32v2, bs32, h, t, "dec-map-v32-p-len")
 		testDeepEqualErr(v32v1, v32v2, t, "equal-map-v32-p-len")
+		testReleaseBytes(bs32)
 		bs32 = testMarshalErr(&v32v1, h, t, "enc-map-v32-p")
 		v32v2 = nil
 		testUnmarshalErr(&v32v2, bs32, h, t, "dec-map-v32-p-nil")
 		testDeepEqualErr(v32v1, v32v2, t, "equal-map-v32-p-nil")
+		testReleaseBytes(bs32)
 		// ...
 		if v == nil {
 			v32v2 = nil
@@ -1177,6 +1233,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs32 = testMarshalErr(v32v3, h, t, "enc-map-v32-custom")
 			testUnmarshalErr(v32v4, bs32, h, t, "dec-map-v32-p-len")
 			testDeepEqualErr(v32v3, v32v4, t, "equal-map-v32-p-len")
+			testReleaseBytes(bs32)
 		}
 	}
 	for _, v := range []map[string]float64{nil, {}, {"some-string-1": 0, "some-string-2": 11.1}} {
@@ -1208,10 +1265,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v33v2, bs33, h, t, "dec-map-v33-p-len")
 		testDeepEqualErr(v33v1, v33v2, t, "equal-map-v33-p-len")
+		testReleaseBytes(bs33)
 		bs33 = testMarshalErr(&v33v1, h, t, "enc-map-v33-p")
 		v33v2 = nil
 		testUnmarshalErr(&v33v2, bs33, h, t, "dec-map-v33-p-nil")
 		testDeepEqualErr(v33v1, v33v2, t, "equal-map-v33-p-nil")
+		testReleaseBytes(bs33)
 		// ...
 		if v == nil {
 			v33v2 = nil
@@ -1225,6 +1284,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs33 = testMarshalErr(v33v3, h, t, "enc-map-v33-custom")
 			testUnmarshalErr(v33v4, bs33, h, t, "dec-map-v33-p-len")
 			testDeepEqualErr(v33v3, v33v4, t, "equal-map-v33-p-len")
+			testReleaseBytes(bs33)
 		}
 	}
 	for _, v := range []map[string]bool{nil, {}, {"some-string-3": false, "some-string-1": true}} {
@@ -1256,10 +1316,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v34v2, bs34, h, t, "dec-map-v34-p-len")
 		testDeepEqualErr(v34v1, v34v2, t, "equal-map-v34-p-len")
+		testReleaseBytes(bs34)
 		bs34 = testMarshalErr(&v34v1, h, t, "enc-map-v34-p")
 		v34v2 = nil
 		testUnmarshalErr(&v34v2, bs34, h, t, "dec-map-v34-p-nil")
 		testDeepEqualErr(v34v1, v34v2, t, "equal-map-v34-p-nil")
+		testReleaseBytes(bs34)
 		// ...
 		if v == nil {
 			v34v2 = nil
@@ -1273,6 +1335,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs34 = testMarshalErr(v34v3, h, t, "enc-map-v34-custom")
 			testUnmarshalErr(v34v4, bs34, h, t, "dec-map-v34-p-len")
 			testDeepEqualErr(v34v3, v34v4, t, "equal-map-v34-p-len")
+			testReleaseBytes(bs34)
 		}
 	}
 	for _, v := range []map[uint8]interface{}{nil, {}, {77: nil, 127: "string-is-an-interface-2"}} {
@@ -1304,10 +1367,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v35v2, bs35, h, t, "dec-map-v35-p-len")
 		testDeepEqualErr(v35v1, v35v2, t, "equal-map-v35-p-len")
+		testReleaseBytes(bs35)
 		bs35 = testMarshalErr(&v35v1, h, t, "enc-map-v35-p")
 		v35v2 = nil
 		testUnmarshalErr(&v35v2, bs35, h, t, "dec-map-v35-p-nil")
 		testDeepEqualErr(v35v1, v35v2, t, "equal-map-v35-p-nil")
+		testReleaseBytes(bs35)
 		// ...
 		if v == nil {
 			v35v2 = nil
@@ -1321,6 +1386,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs35 = testMarshalErr(v35v3, h, t, "enc-map-v35-custom")
 			testUnmarshalErr(v35v4, bs35, h, t, "dec-map-v35-p-len")
 			testDeepEqualErr(v35v3, v35v4, t, "equal-map-v35-p-len")
+			testReleaseBytes(bs35)
 		}
 	}
 	for _, v := range []map[uint8]string{nil, {}, {111: "", 77: "some-string-2"}} {
@@ -1352,10 +1418,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v36v2, bs36, h, t, "dec-map-v36-p-len")
 		testDeepEqualErr(v36v1, v36v2, t, "equal-map-v36-p-len")
+		testReleaseBytes(bs36)
 		bs36 = testMarshalErr(&v36v1, h, t, "enc-map-v36-p")
 		v36v2 = nil
 		testUnmarshalErr(&v36v2, bs36, h, t, "dec-map-v36-p-nil")
 		testDeepEqualErr(v36v1, v36v2, t, "equal-map-v36-p-nil")
+		testReleaseBytes(bs36)
 		// ...
 		if v == nil {
 			v36v2 = nil
@@ -1369,6 +1437,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs36 = testMarshalErr(v36v3, h, t, "enc-map-v36-custom")
 			testUnmarshalErr(v36v4, bs36, h, t, "dec-map-v36-p-len")
 			testDeepEqualErr(v36v3, v36v4, t, "equal-map-v36-p-len")
+			testReleaseBytes(bs36)
 		}
 	}
 	for _, v := range []map[uint8][]byte{nil, {}, {127: nil, 111: []byte("some-string-2")}} {
@@ -1400,10 +1469,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v37v2, bs37, h, t, "dec-map-v37-p-len")
 		testDeepEqualErr(v37v1, v37v2, t, "equal-map-v37-p-len")
+		testReleaseBytes(bs37)
 		bs37 = testMarshalErr(&v37v1, h, t, "enc-map-v37-p")
 		v37v2 = nil
 		testUnmarshalErr(&v37v2, bs37, h, t, "dec-map-v37-p-nil")
 		testDeepEqualErr(v37v1, v37v2, t, "equal-map-v37-p-nil")
+		testReleaseBytes(bs37)
 		// ...
 		if v == nil {
 			v37v2 = nil
@@ -1417,6 +1488,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs37 = testMarshalErr(v37v3, h, t, "enc-map-v37-custom")
 			testUnmarshalErr(v37v4, bs37, h, t, "dec-map-v37-p-len")
 			testDeepEqualErr(v37v3, v37v4, t, "equal-map-v37-p-len")
+			testReleaseBytes(bs37)
 		}
 	}
 	for _, v := range []map[uint8]uint8{nil, {}, {77: 0, 127: 111}} {
@@ -1448,10 +1520,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v38v2, bs38, h, t, "dec-map-v38-p-len")
 		testDeepEqualErr(v38v1, v38v2, t, "equal-map-v38-p-len")
+		testReleaseBytes(bs38)
 		bs38 = testMarshalErr(&v38v1, h, t, "enc-map-v38-p")
 		v38v2 = nil
 		testUnmarshalErr(&v38v2, bs38, h, t, "dec-map-v38-p-nil")
 		testDeepEqualErr(v38v1, v38v2, t, "equal-map-v38-p-nil")
+		testReleaseBytes(bs38)
 		// ...
 		if v == nil {
 			v38v2 = nil
@@ -1465,6 +1539,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs38 = testMarshalErr(v38v3, h, t, "enc-map-v38-custom")
 			testUnmarshalErr(v38v4, bs38, h, t, "dec-map-v38-p-len")
 			testDeepEqualErr(v38v3, v38v4, t, "equal-map-v38-p-len")
+			testReleaseBytes(bs38)
 		}
 	}
 	for _, v := range []map[uint8]uint64{nil, {}, {77: 0, 127: 111}} {
@@ -1496,10 +1571,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v39v2, bs39, h, t, "dec-map-v39-p-len")
 		testDeepEqualErr(v39v1, v39v2, t, "equal-map-v39-p-len")
+		testReleaseBytes(bs39)
 		bs39 = testMarshalErr(&v39v1, h, t, "enc-map-v39-p")
 		v39v2 = nil
 		testUnmarshalErr(&v39v2, bs39, h, t, "dec-map-v39-p-nil")
 		testDeepEqualErr(v39v1, v39v2, t, "equal-map-v39-p-nil")
+		testReleaseBytes(bs39)
 		// ...
 		if v == nil {
 			v39v2 = nil
@@ -1513,6 +1590,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs39 = testMarshalErr(v39v3, h, t, "enc-map-v39-custom")
 			testUnmarshalErr(v39v4, bs39, h, t, "dec-map-v39-p-len")
 			testDeepEqualErr(v39v3, v39v4, t, "equal-map-v39-p-len")
+			testReleaseBytes(bs39)
 		}
 	}
 	for _, v := range []map[uint8]int{nil, {}, {77: 0, 127: 111}} {
@@ -1544,10 +1622,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v40v2, bs40, h, t, "dec-map-v40-p-len")
 		testDeepEqualErr(v40v1, v40v2, t, "equal-map-v40-p-len")
+		testReleaseBytes(bs40)
 		bs40 = testMarshalErr(&v40v1, h, t, "enc-map-v40-p")
 		v40v2 = nil
 		testUnmarshalErr(&v40v2, bs40, h, t, "dec-map-v40-p-nil")
 		testDeepEqualErr(v40v1, v40v2, t, "equal-map-v40-p-nil")
+		testReleaseBytes(bs40)
 		// ...
 		if v == nil {
 			v40v2 = nil
@@ -1561,6 +1641,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs40 = testMarshalErr(v40v3, h, t, "enc-map-v40-custom")
 			testUnmarshalErr(v40v4, bs40, h, t, "dec-map-v40-p-len")
 			testDeepEqualErr(v40v3, v40v4, t, "equal-map-v40-p-len")
+			testReleaseBytes(bs40)
 		}
 	}
 	for _, v := range []map[uint8]int64{nil, {}, {77: 0, 127: 111}} {
@@ -1592,10 +1673,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v41v2, bs41, h, t, "dec-map-v41-p-len")
 		testDeepEqualErr(v41v1, v41v2, t, "equal-map-v41-p-len")
+		testReleaseBytes(bs41)
 		bs41 = testMarshalErr(&v41v1, h, t, "enc-map-v41-p")
 		v41v2 = nil
 		testUnmarshalErr(&v41v2, bs41, h, t, "dec-map-v41-p-nil")
 		testDeepEqualErr(v41v1, v41v2, t, "equal-map-v41-p-nil")
+		testReleaseBytes(bs41)
 		// ...
 		if v == nil {
 			v41v2 = nil
@@ -1609,6 +1692,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs41 = testMarshalErr(v41v3, h, t, "enc-map-v41-custom")
 			testUnmarshalErr(v41v4, bs41, h, t, "dec-map-v41-p-len")
 			testDeepEqualErr(v41v3, v41v4, t, "equal-map-v41-p-len")
+			testReleaseBytes(bs41)
 		}
 	}
 	for _, v := range []map[uint8]float64{nil, {}, {77: 0, 127: 22.2}} {
@@ -1640,10 +1724,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v42v2, bs42, h, t, "dec-map-v42-p-len")
 		testDeepEqualErr(v42v1, v42v2, t, "equal-map-v42-p-len")
+		testReleaseBytes(bs42)
 		bs42 = testMarshalErr(&v42v1, h, t, "enc-map-v42-p")
 		v42v2 = nil
 		testUnmarshalErr(&v42v2, bs42, h, t, "dec-map-v42-p-nil")
 		testDeepEqualErr(v42v1, v42v2, t, "equal-map-v42-p-nil")
+		testReleaseBytes(bs42)
 		// ...
 		if v == nil {
 			v42v2 = nil
@@ -1657,6 +1743,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs42 = testMarshalErr(v42v3, h, t, "enc-map-v42-custom")
 			testUnmarshalErr(v42v4, bs42, h, t, "dec-map-v42-p-len")
 			testDeepEqualErr(v42v3, v42v4, t, "equal-map-v42-p-len")
+			testReleaseBytes(bs42)
 		}
 	}
 	for _, v := range []map[uint8]bool{nil, {}, {111: false, 77: false}} {
@@ -1688,10 +1775,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v43v2, bs43, h, t, "dec-map-v43-p-len")
 		testDeepEqualErr(v43v1, v43v2, t, "equal-map-v43-p-len")
+		testReleaseBytes(bs43)
 		bs43 = testMarshalErr(&v43v1, h, t, "enc-map-v43-p")
 		v43v2 = nil
 		testUnmarshalErr(&v43v2, bs43, h, t, "dec-map-v43-p-nil")
 		testDeepEqualErr(v43v1, v43v2, t, "equal-map-v43-p-nil")
+		testReleaseBytes(bs43)
 		// ...
 		if v == nil {
 			v43v2 = nil
@@ -1705,6 +1794,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs43 = testMarshalErr(v43v3, h, t, "enc-map-v43-custom")
 			testUnmarshalErr(v43v4, bs43, h, t, "dec-map-v43-p-len")
 			testDeepEqualErr(v43v3, v43v4, t, "equal-map-v43-p-len")
+			testReleaseBytes(bs43)
 		}
 	}
 	for _, v := range []map[uint64]interface{}{nil, {}, {127: nil, 111: "string-is-an-interface-3"}} {
@@ -1736,10 +1826,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v44v2, bs44, h, t, "dec-map-v44-p-len")
 		testDeepEqualErr(v44v1, v44v2, t, "equal-map-v44-p-len")
+		testReleaseBytes(bs44)
 		bs44 = testMarshalErr(&v44v1, h, t, "enc-map-v44-p")
 		v44v2 = nil
 		testUnmarshalErr(&v44v2, bs44, h, t, "dec-map-v44-p-nil")
 		testDeepEqualErr(v44v1, v44v2, t, "equal-map-v44-p-nil")
+		testReleaseBytes(bs44)
 		// ...
 		if v == nil {
 			v44v2 = nil
@@ -1753,6 +1845,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs44 = testMarshalErr(v44v3, h, t, "enc-map-v44-custom")
 			testUnmarshalErr(v44v4, bs44, h, t, "dec-map-v44-p-len")
 			testDeepEqualErr(v44v3, v44v4, t, "equal-map-v44-p-len")
+			testReleaseBytes(bs44)
 		}
 	}
 	for _, v := range []map[uint64]string{nil, {}, {77: "", 127: "some-string-3"}} {
@@ -1784,10 +1877,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v45v2, bs45, h, t, "dec-map-v45-p-len")
 		testDeepEqualErr(v45v1, v45v2, t, "equal-map-v45-p-len")
+		testReleaseBytes(bs45)
 		bs45 = testMarshalErr(&v45v1, h, t, "enc-map-v45-p")
 		v45v2 = nil
 		testUnmarshalErr(&v45v2, bs45, h, t, "dec-map-v45-p-nil")
 		testDeepEqualErr(v45v1, v45v2, t, "equal-map-v45-p-nil")
+		testReleaseBytes(bs45)
 		// ...
 		if v == nil {
 			v45v2 = nil
@@ -1801,6 +1896,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs45 = testMarshalErr(v45v3, h, t, "enc-map-v45-custom")
 			testUnmarshalErr(v45v4, bs45, h, t, "dec-map-v45-p-len")
 			testDeepEqualErr(v45v3, v45v4, t, "equal-map-v45-p-len")
+			testReleaseBytes(bs45)
 		}
 	}
 	for _, v := range []map[uint64][]byte{nil, {}, {111: nil, 77: []byte("some-string-3")}} {
@@ -1832,10 +1928,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v46v2, bs46, h, t, "dec-map-v46-p-len")
 		testDeepEqualErr(v46v1, v46v2, t, "equal-map-v46-p-len")
+		testReleaseBytes(bs46)
 		bs46 = testMarshalErr(&v46v1, h, t, "enc-map-v46-p")
 		v46v2 = nil
 		testUnmarshalErr(&v46v2, bs46, h, t, "dec-map-v46-p-nil")
 		testDeepEqualErr(v46v1, v46v2, t, "equal-map-v46-p-nil")
+		testReleaseBytes(bs46)
 		// ...
 		if v == nil {
 			v46v2 = nil
@@ -1849,6 +1947,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs46 = testMarshalErr(v46v3, h, t, "enc-map-v46-custom")
 			testUnmarshalErr(v46v4, bs46, h, t, "dec-map-v46-p-len")
 			testDeepEqualErr(v46v3, v46v4, t, "equal-map-v46-p-len")
+			testReleaseBytes(bs46)
 		}
 	}
 	for _, v := range []map[uint64]uint8{nil, {}, {127: 0, 111: 77}} {
@@ -1880,10 +1979,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v47v2, bs47, h, t, "dec-map-v47-p-len")
 		testDeepEqualErr(v47v1, v47v2, t, "equal-map-v47-p-len")
+		testReleaseBytes(bs47)
 		bs47 = testMarshalErr(&v47v1, h, t, "enc-map-v47-p")
 		v47v2 = nil
 		testUnmarshalErr(&v47v2, bs47, h, t, "dec-map-v47-p-nil")
 		testDeepEqualErr(v47v1, v47v2, t, "equal-map-v47-p-nil")
+		testReleaseBytes(bs47)
 		// ...
 		if v == nil {
 			v47v2 = nil
@@ -1897,6 +1998,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs47 = testMarshalErr(v47v3, h, t, "enc-map-v47-custom")
 			testUnmarshalErr(v47v4, bs47, h, t, "dec-map-v47-p-len")
 			testDeepEqualErr(v47v3, v47v4, t, "equal-map-v47-p-len")
+			testReleaseBytes(bs47)
 		}
 	}
 	for _, v := range []map[uint64]uint64{nil, {}, {127: 0, 111: 77}} {
@@ -1928,10 +2030,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v48v2, bs48, h, t, "dec-map-v48-p-len")
 		testDeepEqualErr(v48v1, v48v2, t, "equal-map-v48-p-len")
+		testReleaseBytes(bs48)
 		bs48 = testMarshalErr(&v48v1, h, t, "enc-map-v48-p")
 		v48v2 = nil
 		testUnmarshalErr(&v48v2, bs48, h, t, "dec-map-v48-p-nil")
 		testDeepEqualErr(v48v1, v48v2, t, "equal-map-v48-p-nil")
+		testReleaseBytes(bs48)
 		// ...
 		if v == nil {
 			v48v2 = nil
@@ -1945,6 +2049,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs48 = testMarshalErr(v48v3, h, t, "enc-map-v48-custom")
 			testUnmarshalErr(v48v4, bs48, h, t, "dec-map-v48-p-len")
 			testDeepEqualErr(v48v3, v48v4, t, "equal-map-v48-p-len")
+			testReleaseBytes(bs48)
 		}
 	}
 	for _, v := range []map[uint64]int{nil, {}, {127: 0, 111: 77}} {
@@ -1976,10 +2081,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v49v2, bs49, h, t, "dec-map-v49-p-len")
 		testDeepEqualErr(v49v1, v49v2, t, "equal-map-v49-p-len")
+		testReleaseBytes(bs49)
 		bs49 = testMarshalErr(&v49v1, h, t, "enc-map-v49-p")
 		v49v2 = nil
 		testUnmarshalErr(&v49v2, bs49, h, t, "dec-map-v49-p-nil")
 		testDeepEqualErr(v49v1, v49v2, t, "equal-map-v49-p-nil")
+		testReleaseBytes(bs49)
 		// ...
 		if v == nil {
 			v49v2 = nil
@@ -1993,6 +2100,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs49 = testMarshalErr(v49v3, h, t, "enc-map-v49-custom")
 			testUnmarshalErr(v49v4, bs49, h, t, "dec-map-v49-p-len")
 			testDeepEqualErr(v49v3, v49v4, t, "equal-map-v49-p-len")
+			testReleaseBytes(bs49)
 		}
 	}
 	for _, v := range []map[uint64]int64{nil, {}, {127: 0, 111: 77}} {
@@ -2024,10 +2132,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v50v2, bs50, h, t, "dec-map-v50-p-len")
 		testDeepEqualErr(v50v1, v50v2, t, "equal-map-v50-p-len")
+		testReleaseBytes(bs50)
 		bs50 = testMarshalErr(&v50v1, h, t, "enc-map-v50-p")
 		v50v2 = nil
 		testUnmarshalErr(&v50v2, bs50, h, t, "dec-map-v50-p-nil")
 		testDeepEqualErr(v50v1, v50v2, t, "equal-map-v50-p-nil")
+		testReleaseBytes(bs50)
 		// ...
 		if v == nil {
 			v50v2 = nil
@@ -2041,6 +2151,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs50 = testMarshalErr(v50v3, h, t, "enc-map-v50-custom")
 			testUnmarshalErr(v50v4, bs50, h, t, "dec-map-v50-p-len")
 			testDeepEqualErr(v50v3, v50v4, t, "equal-map-v50-p-len")
+			testReleaseBytes(bs50)
 		}
 	}
 	for _, v := range []map[uint64]float64{nil, {}, {127: 0, 111: 33.3e3}} {
@@ -2072,10 +2183,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v51v2, bs51, h, t, "dec-map-v51-p-len")
 		testDeepEqualErr(v51v1, v51v2, t, "equal-map-v51-p-len")
+		testReleaseBytes(bs51)
 		bs51 = testMarshalErr(&v51v1, h, t, "enc-map-v51-p")
 		v51v2 = nil
 		testUnmarshalErr(&v51v2, bs51, h, t, "dec-map-v51-p-nil")
 		testDeepEqualErr(v51v1, v51v2, t, "equal-map-v51-p-nil")
+		testReleaseBytes(bs51)
 		// ...
 		if v == nil {
 			v51v2 = nil
@@ -2089,6 +2202,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs51 = testMarshalErr(v51v3, h, t, "enc-map-v51-custom")
 			testUnmarshalErr(v51v4, bs51, h, t, "dec-map-v51-p-len")
 			testDeepEqualErr(v51v3, v51v4, t, "equal-map-v51-p-len")
+			testReleaseBytes(bs51)
 		}
 	}
 	for _, v := range []map[uint64]bool{nil, {}, {77: false, 127: true}} {
@@ -2120,10 +2234,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v52v2, bs52, h, t, "dec-map-v52-p-len")
 		testDeepEqualErr(v52v1, v52v2, t, "equal-map-v52-p-len")
+		testReleaseBytes(bs52)
 		bs52 = testMarshalErr(&v52v1, h, t, "enc-map-v52-p")
 		v52v2 = nil
 		testUnmarshalErr(&v52v2, bs52, h, t, "dec-map-v52-p-nil")
 		testDeepEqualErr(v52v1, v52v2, t, "equal-map-v52-p-nil")
+		testReleaseBytes(bs52)
 		// ...
 		if v == nil {
 			v52v2 = nil
@@ -2137,6 +2253,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs52 = testMarshalErr(v52v3, h, t, "enc-map-v52-custom")
 			testUnmarshalErr(v52v4, bs52, h, t, "dec-map-v52-p-len")
 			testDeepEqualErr(v52v3, v52v4, t, "equal-map-v52-p-len")
+			testReleaseBytes(bs52)
 		}
 	}
 	for _, v := range []map[int]interface{}{nil, {}, {111: nil, 77: "string-is-an-interface-1"}} {
@@ -2168,10 +2285,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v53v2, bs53, h, t, "dec-map-v53-p-len")
 		testDeepEqualErr(v53v1, v53v2, t, "equal-map-v53-p-len")
+		testReleaseBytes(bs53)
 		bs53 = testMarshalErr(&v53v1, h, t, "enc-map-v53-p")
 		v53v2 = nil
 		testUnmarshalErr(&v53v2, bs53, h, t, "dec-map-v53-p-nil")
 		testDeepEqualErr(v53v1, v53v2, t, "equal-map-v53-p-nil")
+		testReleaseBytes(bs53)
 		// ...
 		if v == nil {
 			v53v2 = nil
@@ -2185,6 +2304,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs53 = testMarshalErr(v53v3, h, t, "enc-map-v53-custom")
 			testUnmarshalErr(v53v4, bs53, h, t, "dec-map-v53-p-len")
 			testDeepEqualErr(v53v3, v53v4, t, "equal-map-v53-p-len")
+			testReleaseBytes(bs53)
 		}
 	}
 	for _, v := range []map[int]string{nil, {}, {127: "", 111: "some-string-1"}} {
@@ -2216,10 +2336,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v54v2, bs54, h, t, "dec-map-v54-p-len")
 		testDeepEqualErr(v54v1, v54v2, t, "equal-map-v54-p-len")
+		testReleaseBytes(bs54)
 		bs54 = testMarshalErr(&v54v1, h, t, "enc-map-v54-p")
 		v54v2 = nil
 		testUnmarshalErr(&v54v2, bs54, h, t, "dec-map-v54-p-nil")
 		testDeepEqualErr(v54v1, v54v2, t, "equal-map-v54-p-nil")
+		testReleaseBytes(bs54)
 		// ...
 		if v == nil {
 			v54v2 = nil
@@ -2233,6 +2355,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs54 = testMarshalErr(v54v3, h, t, "enc-map-v54-custom")
 			testUnmarshalErr(v54v4, bs54, h, t, "dec-map-v54-p-len")
 			testDeepEqualErr(v54v3, v54v4, t, "equal-map-v54-p-len")
+			testReleaseBytes(bs54)
 		}
 	}
 	for _, v := range []map[int][]byte{nil, {}, {77: nil, 127: []byte("some-string-1")}} {
@@ -2264,10 +2387,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v55v2, bs55, h, t, "dec-map-v55-p-len")
 		testDeepEqualErr(v55v1, v55v2, t, "equal-map-v55-p-len")
+		testReleaseBytes(bs55)
 		bs55 = testMarshalErr(&v55v1, h, t, "enc-map-v55-p")
 		v55v2 = nil
 		testUnmarshalErr(&v55v2, bs55, h, t, "dec-map-v55-p-nil")
 		testDeepEqualErr(v55v1, v55v2, t, "equal-map-v55-p-nil")
+		testReleaseBytes(bs55)
 		// ...
 		if v == nil {
 			v55v2 = nil
@@ -2281,6 +2406,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs55 = testMarshalErr(v55v3, h, t, "enc-map-v55-custom")
 			testUnmarshalErr(v55v4, bs55, h, t, "dec-map-v55-p-len")
 			testDeepEqualErr(v55v3, v55v4, t, "equal-map-v55-p-len")
+			testReleaseBytes(bs55)
 		}
 	}
 	for _, v := range []map[int]uint8{nil, {}, {111: 0, 77: 127}} {
@@ -2312,10 +2438,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v56v2, bs56, h, t, "dec-map-v56-p-len")
 		testDeepEqualErr(v56v1, v56v2, t, "equal-map-v56-p-len")
+		testReleaseBytes(bs56)
 		bs56 = testMarshalErr(&v56v1, h, t, "enc-map-v56-p")
 		v56v2 = nil
 		testUnmarshalErr(&v56v2, bs56, h, t, "dec-map-v56-p-nil")
 		testDeepEqualErr(v56v1, v56v2, t, "equal-map-v56-p-nil")
+		testReleaseBytes(bs56)
 		// ...
 		if v == nil {
 			v56v2 = nil
@@ -2329,6 +2457,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs56 = testMarshalErr(v56v3, h, t, "enc-map-v56-custom")
 			testUnmarshalErr(v56v4, bs56, h, t, "dec-map-v56-p-len")
 			testDeepEqualErr(v56v3, v56v4, t, "equal-map-v56-p-len")
+			testReleaseBytes(bs56)
 		}
 	}
 	for _, v := range []map[int]uint64{nil, {}, {111: 0, 77: 127}} {
@@ -2360,10 +2489,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v57v2, bs57, h, t, "dec-map-v57-p-len")
 		testDeepEqualErr(v57v1, v57v2, t, "equal-map-v57-p-len")
+		testReleaseBytes(bs57)
 		bs57 = testMarshalErr(&v57v1, h, t, "enc-map-v57-p")
 		v57v2 = nil
 		testUnmarshalErr(&v57v2, bs57, h, t, "dec-map-v57-p-nil")
 		testDeepEqualErr(v57v1, v57v2, t, "equal-map-v57-p-nil")
+		testReleaseBytes(bs57)
 		// ...
 		if v == nil {
 			v57v2 = nil
@@ -2377,6 +2508,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs57 = testMarshalErr(v57v3, h, t, "enc-map-v57-custom")
 			testUnmarshalErr(v57v4, bs57, h, t, "dec-map-v57-p-len")
 			testDeepEqualErr(v57v3, v57v4, t, "equal-map-v57-p-len")
+			testReleaseBytes(bs57)
 		}
 	}
 	for _, v := range []map[int]int{nil, {}, {111: 0, 77: 127}} {
@@ -2408,10 +2540,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v58v2, bs58, h, t, "dec-map-v58-p-len")
 		testDeepEqualErr(v58v1, v58v2, t, "equal-map-v58-p-len")
+		testReleaseBytes(bs58)
 		bs58 = testMarshalErr(&v58v1, h, t, "enc-map-v58-p")
 		v58v2 = nil
 		testUnmarshalErr(&v58v2, bs58, h, t, "dec-map-v58-p-nil")
 		testDeepEqualErr(v58v1, v58v2, t, "equal-map-v58-p-nil")
+		testReleaseBytes(bs58)
 		// ...
 		if v == nil {
 			v58v2 = nil
@@ -2425,6 +2559,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs58 = testMarshalErr(v58v3, h, t, "enc-map-v58-custom")
 			testUnmarshalErr(v58v4, bs58, h, t, "dec-map-v58-p-len")
 			testDeepEqualErr(v58v3, v58v4, t, "equal-map-v58-p-len")
+			testReleaseBytes(bs58)
 		}
 	}
 	for _, v := range []map[int]int64{nil, {}, {111: 0, 77: 127}} {
@@ -2456,10 +2591,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v59v2, bs59, h, t, "dec-map-v59-p-len")
 		testDeepEqualErr(v59v1, v59v2, t, "equal-map-v59-p-len")
+		testReleaseBytes(bs59)
 		bs59 = testMarshalErr(&v59v1, h, t, "enc-map-v59-p")
 		v59v2 = nil
 		testUnmarshalErr(&v59v2, bs59, h, t, "dec-map-v59-p-nil")
 		testDeepEqualErr(v59v1, v59v2, t, "equal-map-v59-p-nil")
+		testReleaseBytes(bs59)
 		// ...
 		if v == nil {
 			v59v2 = nil
@@ -2473,6 +2610,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs59 = testMarshalErr(v59v3, h, t, "enc-map-v59-custom")
 			testUnmarshalErr(v59v4, bs59, h, t, "dec-map-v59-p-len")
 			testDeepEqualErr(v59v3, v59v4, t, "equal-map-v59-p-len")
+			testReleaseBytes(bs59)
 		}
 	}
 	for _, v := range []map[int]float64{nil, {}, {111: 0, 77: 11.1}} {
@@ -2504,10 +2642,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v60v2, bs60, h, t, "dec-map-v60-p-len")
 		testDeepEqualErr(v60v1, v60v2, t, "equal-map-v60-p-len")
+		testReleaseBytes(bs60)
 		bs60 = testMarshalErr(&v60v1, h, t, "enc-map-v60-p")
 		v60v2 = nil
 		testUnmarshalErr(&v60v2, bs60, h, t, "dec-map-v60-p-nil")
 		testDeepEqualErr(v60v1, v60v2, t, "equal-map-v60-p-nil")
+		testReleaseBytes(bs60)
 		// ...
 		if v == nil {
 			v60v2 = nil
@@ -2521,6 +2661,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs60 = testMarshalErr(v60v3, h, t, "enc-map-v60-custom")
 			testUnmarshalErr(v60v4, bs60, h, t, "dec-map-v60-p-len")
 			testDeepEqualErr(v60v3, v60v4, t, "equal-map-v60-p-len")
+			testReleaseBytes(bs60)
 		}
 	}
 	for _, v := range []map[int]bool{nil, {}, {127: false, 111: true}} {
@@ -2552,10 +2693,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v61v2, bs61, h, t, "dec-map-v61-p-len")
 		testDeepEqualErr(v61v1, v61v2, t, "equal-map-v61-p-len")
+		testReleaseBytes(bs61)
 		bs61 = testMarshalErr(&v61v1, h, t, "enc-map-v61-p")
 		v61v2 = nil
 		testUnmarshalErr(&v61v2, bs61, h, t, "dec-map-v61-p-nil")
 		testDeepEqualErr(v61v1, v61v2, t, "equal-map-v61-p-nil")
+		testReleaseBytes(bs61)
 		// ...
 		if v == nil {
 			v61v2 = nil
@@ -2569,6 +2712,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs61 = testMarshalErr(v61v3, h, t, "enc-map-v61-custom")
 			testUnmarshalErr(v61v4, bs61, h, t, "dec-map-v61-p-len")
 			testDeepEqualErr(v61v3, v61v4, t, "equal-map-v61-p-len")
+			testReleaseBytes(bs61)
 		}
 	}
 	for _, v := range []map[int64]interface{}{nil, {}, {77: nil, 127: "string-is-an-interface-2"}} {
@@ -2600,10 +2744,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v62v2, bs62, h, t, "dec-map-v62-p-len")
 		testDeepEqualErr(v62v1, v62v2, t, "equal-map-v62-p-len")
+		testReleaseBytes(bs62)
 		bs62 = testMarshalErr(&v62v1, h, t, "enc-map-v62-p")
 		v62v2 = nil
 		testUnmarshalErr(&v62v2, bs62, h, t, "dec-map-v62-p-nil")
 		testDeepEqualErr(v62v1, v62v2, t, "equal-map-v62-p-nil")
+		testReleaseBytes(bs62)
 		// ...
 		if v == nil {
 			v62v2 = nil
@@ -2617,6 +2763,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs62 = testMarshalErr(v62v3, h, t, "enc-map-v62-custom")
 			testUnmarshalErr(v62v4, bs62, h, t, "dec-map-v62-p-len")
 			testDeepEqualErr(v62v3, v62v4, t, "equal-map-v62-p-len")
+			testReleaseBytes(bs62)
 		}
 	}
 	for _, v := range []map[int64]string{nil, {}, {111: "", 77: "some-string-2"}} {
@@ -2648,10 +2795,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v63v2, bs63, h, t, "dec-map-v63-p-len")
 		testDeepEqualErr(v63v1, v63v2, t, "equal-map-v63-p-len")
+		testReleaseBytes(bs63)
 		bs63 = testMarshalErr(&v63v1, h, t, "enc-map-v63-p")
 		v63v2 = nil
 		testUnmarshalErr(&v63v2, bs63, h, t, "dec-map-v63-p-nil")
 		testDeepEqualErr(v63v1, v63v2, t, "equal-map-v63-p-nil")
+		testReleaseBytes(bs63)
 		// ...
 		if v == nil {
 			v63v2 = nil
@@ -2665,6 +2814,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs63 = testMarshalErr(v63v3, h, t, "enc-map-v63-custom")
 			testUnmarshalErr(v63v4, bs63, h, t, "dec-map-v63-p-len")
 			testDeepEqualErr(v63v3, v63v4, t, "equal-map-v63-p-len")
+			testReleaseBytes(bs63)
 		}
 	}
 	for _, v := range []map[int64][]byte{nil, {}, {127: nil, 111: []byte("some-string-2")}} {
@@ -2696,10 +2846,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v64v2, bs64, h, t, "dec-map-v64-p-len")
 		testDeepEqualErr(v64v1, v64v2, t, "equal-map-v64-p-len")
+		testReleaseBytes(bs64)
 		bs64 = testMarshalErr(&v64v1, h, t, "enc-map-v64-p")
 		v64v2 = nil
 		testUnmarshalErr(&v64v2, bs64, h, t, "dec-map-v64-p-nil")
 		testDeepEqualErr(v64v1, v64v2, t, "equal-map-v64-p-nil")
+		testReleaseBytes(bs64)
 		// ...
 		if v == nil {
 			v64v2 = nil
@@ -2713,6 +2865,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs64 = testMarshalErr(v64v3, h, t, "enc-map-v64-custom")
 			testUnmarshalErr(v64v4, bs64, h, t, "dec-map-v64-p-len")
 			testDeepEqualErr(v64v3, v64v4, t, "equal-map-v64-p-len")
+			testReleaseBytes(bs64)
 		}
 	}
 	for _, v := range []map[int64]uint8{nil, {}, {77: 0, 127: 111}} {
@@ -2744,10 +2897,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v65v2, bs65, h, t, "dec-map-v65-p-len")
 		testDeepEqualErr(v65v1, v65v2, t, "equal-map-v65-p-len")
+		testReleaseBytes(bs65)
 		bs65 = testMarshalErr(&v65v1, h, t, "enc-map-v65-p")
 		v65v2 = nil
 		testUnmarshalErr(&v65v2, bs65, h, t, "dec-map-v65-p-nil")
 		testDeepEqualErr(v65v1, v65v2, t, "equal-map-v65-p-nil")
+		testReleaseBytes(bs65)
 		// ...
 		if v == nil {
 			v65v2 = nil
@@ -2761,6 +2916,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs65 = testMarshalErr(v65v3, h, t, "enc-map-v65-custom")
 			testUnmarshalErr(v65v4, bs65, h, t, "dec-map-v65-p-len")
 			testDeepEqualErr(v65v3, v65v4, t, "equal-map-v65-p-len")
+			testReleaseBytes(bs65)
 		}
 	}
 	for _, v := range []map[int64]uint64{nil, {}, {77: 0, 127: 111}} {
@@ -2792,10 +2948,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v66v2, bs66, h, t, "dec-map-v66-p-len")
 		testDeepEqualErr(v66v1, v66v2, t, "equal-map-v66-p-len")
+		testReleaseBytes(bs66)
 		bs66 = testMarshalErr(&v66v1, h, t, "enc-map-v66-p")
 		v66v2 = nil
 		testUnmarshalErr(&v66v2, bs66, h, t, "dec-map-v66-p-nil")
 		testDeepEqualErr(v66v1, v66v2, t, "equal-map-v66-p-nil")
+		testReleaseBytes(bs66)
 		// ...
 		if v == nil {
 			v66v2 = nil
@@ -2809,6 +2967,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs66 = testMarshalErr(v66v3, h, t, "enc-map-v66-custom")
 			testUnmarshalErr(v66v4, bs66, h, t, "dec-map-v66-p-len")
 			testDeepEqualErr(v66v3, v66v4, t, "equal-map-v66-p-len")
+			testReleaseBytes(bs66)
 		}
 	}
 	for _, v := range []map[int64]int{nil, {}, {77: 0, 127: 111}} {
@@ -2840,10 +2999,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v67v2, bs67, h, t, "dec-map-v67-p-len")
 		testDeepEqualErr(v67v1, v67v2, t, "equal-map-v67-p-len")
+		testReleaseBytes(bs67)
 		bs67 = testMarshalErr(&v67v1, h, t, "enc-map-v67-p")
 		v67v2 = nil
 		testUnmarshalErr(&v67v2, bs67, h, t, "dec-map-v67-p-nil")
 		testDeepEqualErr(v67v1, v67v2, t, "equal-map-v67-p-nil")
+		testReleaseBytes(bs67)
 		// ...
 		if v == nil {
 			v67v2 = nil
@@ -2857,6 +3018,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs67 = testMarshalErr(v67v3, h, t, "enc-map-v67-custom")
 			testUnmarshalErr(v67v4, bs67, h, t, "dec-map-v67-p-len")
 			testDeepEqualErr(v67v3, v67v4, t, "equal-map-v67-p-len")
+			testReleaseBytes(bs67)
 		}
 	}
 	for _, v := range []map[int64]int64{nil, {}, {77: 0, 127: 111}} {
@@ -2888,10 +3050,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v68v2, bs68, h, t, "dec-map-v68-p-len")
 		testDeepEqualErr(v68v1, v68v2, t, "equal-map-v68-p-len")
+		testReleaseBytes(bs68)
 		bs68 = testMarshalErr(&v68v1, h, t, "enc-map-v68-p")
 		v68v2 = nil
 		testUnmarshalErr(&v68v2, bs68, h, t, "dec-map-v68-p-nil")
 		testDeepEqualErr(v68v1, v68v2, t, "equal-map-v68-p-nil")
+		testReleaseBytes(bs68)
 		// ...
 		if v == nil {
 			v68v2 = nil
@@ -2905,6 +3069,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs68 = testMarshalErr(v68v3, h, t, "enc-map-v68-custom")
 			testUnmarshalErr(v68v4, bs68, h, t, "dec-map-v68-p-len")
 			testDeepEqualErr(v68v3, v68v4, t, "equal-map-v68-p-len")
+			testReleaseBytes(bs68)
 		}
 	}
 	for _, v := range []map[int64]float64{nil, {}, {77: 0, 127: 22.2}} {
@@ -2936,10 +3101,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v69v2, bs69, h, t, "dec-map-v69-p-len")
 		testDeepEqualErr(v69v1, v69v2, t, "equal-map-v69-p-len")
+		testReleaseBytes(bs69)
 		bs69 = testMarshalErr(&v69v1, h, t, "enc-map-v69-p")
 		v69v2 = nil
 		testUnmarshalErr(&v69v2, bs69, h, t, "dec-map-v69-p-nil")
 		testDeepEqualErr(v69v1, v69v2, t, "equal-map-v69-p-nil")
+		testReleaseBytes(bs69)
 		// ...
 		if v == nil {
 			v69v2 = nil
@@ -2953,6 +3120,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs69 = testMarshalErr(v69v3, h, t, "enc-map-v69-custom")
 			testUnmarshalErr(v69v4, bs69, h, t, "dec-map-v69-p-len")
 			testDeepEqualErr(v69v3, v69v4, t, "equal-map-v69-p-len")
+			testReleaseBytes(bs69)
 		}
 	}
 	for _, v := range []map[int64]bool{nil, {}, {111: false, 77: false}} {
@@ -2984,10 +3152,12 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 		} // reset map
 		testUnmarshalErr(&v70v2, bs70, h, t, "dec-map-v70-p-len")
 		testDeepEqualErr(v70v1, v70v2, t, "equal-map-v70-p-len")
+		testReleaseBytes(bs70)
 		bs70 = testMarshalErr(&v70v1, h, t, "enc-map-v70-p")
 		v70v2 = nil
 		testUnmarshalErr(&v70v2, bs70, h, t, "dec-map-v70-p-nil")
 		testDeepEqualErr(v70v1, v70v2, t, "equal-map-v70-p-nil")
+		testReleaseBytes(bs70)
 		// ...
 		if v == nil {
 			v70v2 = nil
@@ -3001,6 +3171,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 			bs70 = testMarshalErr(v70v3, h, t, "enc-map-v70-custom")
 			testUnmarshalErr(v70v4, bs70, h, t, "dec-map-v70-p-len")
 			testDeepEqualErr(v70v3, v70v4, t, "equal-map-v70-p-len")
+			testReleaseBytes(bs70)
 		}
 	}
 

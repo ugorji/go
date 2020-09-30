@@ -158,7 +158,7 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonCodecsEmbeddedPointer", TestJsonCodecsEmbeddedPointer)
 	t.Run("TestJsonCodecChan", TestJsonCodecChan)
 	t.Run("TestJsonStdEncIntf", TestJsonStdEncIntf)
-	t.Run("TestJsonMammothA", TestJsonMammothA)
+	t.Run("TestJsonMammoth", TestJsonMammoth)
 	t.Run("TestJsonRaw", TestJsonRaw)
 	t.Run("TestJsonRpcGo", TestJsonRpcGo)
 	t.Run("TestJsonLargeInteger", TestJsonLargeInteger)
