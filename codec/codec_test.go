@@ -723,7 +723,7 @@ func testUnmarshal(v interface{}, data []byte, h Handle) (err error) {
 
 func testMarshal(v interface{}, h Handle) (bs []byte, err error) {
 	// return testCodecEncode(v, nil, testByteBuf, h)
-	return testCodecEncode(v, testBytesFreeList.get(1024)[:0], testByteBuf, h)
+	return testCodecEncode(v, testBytesFreeList.get(64)[:0], testByteBuf, h)
 }
 
 func testReleaseBytes(bs []byte) {

@@ -828,7 +828,7 @@ func (e *Encoder) jsondriver() *jsonEncDriver {
 // ---------- DECODER optimized ---------------
 
 func (d *Decoder) checkBreak() bool {
-	// jsonDecDriver.CheckBreak() CANNOT be inlined.
+	// MARKER: jsonDecDriver.CheckBreak() CANNOT be inlined.
 	// Consequently, there's no benefit in incurring the cost of this
 	// wrapping function checkBreak.
 	//

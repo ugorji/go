@@ -7,7 +7,8 @@ _tests() {
     local vet="" # TODO: make it off
     local gover=$( go version | cut -f 3 -d ' ' )
     # note that codecgen requires fastpath, so you cannot do "codecgen notfastpath"
-    local a=( "" "safe"  "notfastpath" "notfastpath safe" "codecgen" "codecgen safe" )
+    # we test the following permutations: fastpath/!safe, fastpath/safe, !fastpath/safe, codecgen/!safe
+    local a=( "" "safe"  "notfastpath safe" "codecgen" )
     for i in "${a[@]}"
     do
         echo ">>>> TAGS: $i"
@@ -17,7 +18,7 @@ _tests() {
             *) go vet -printfuncs "errorf" "$@" &&
                      go test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" -run "Suite" -coverprofile "${i2// /-}.cov.out" "$@" ;;
         esac
-        if [[ "$?" != 0 ]]; then return 1; fi 
+        if [[ "$?" != 0 ]]; then return 1; fi
     done
     echo "++++++++ TEST SUITES ALL PASSED ++++++++"
 }
