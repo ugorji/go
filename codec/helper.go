@@ -172,6 +172,9 @@ const (
 	// Note that this will always cause rpc tests to fail, since they need io.EOF sent via panic.
 	recoverPanicToErr = true
 
+	// for debugging, set this to true
+	bytesFreeListNoCache = false
+
 	// arrayCacheLen is the length of the cache used in encoder or decoder for
 	// allowing zero-alloc initialization.
 	// arrayCacheLen = 8
@@ -2165,8 +2168,6 @@ func panicToErr(h errDecorator, err *error) {
 	// else it seems the recover is not fully handled
 	if recoverPanicToErr {
 		if x := recover(); x != nil {
-			// fmt.Printf("panic'ing with: %v\n", x)
-			// debug.PrintStack()
 			panicValToErr(h, x, err)
 		}
 	}
@@ -2624,7 +2625,7 @@ func (mustHdl) Float(s float64, err error) float64 {
 // -------------------
 
 func freelistCapacity(length int) (capacity int) {
-	for capacity = 8; capacity < length; capacity *= 2 {
+	for capacity = 8; capacity <= length; capacity *= 2 {
 	}
 	return
 }
@@ -2632,34 +2633,42 @@ func freelistCapacity(length int) (capacity int) {
 type bytesFreelist [][]byte
 
 func (x *bytesFreelist) get(length int) (out []byte) {
+	if bytesFreeListNoCache {
+		return make([]byte, length, freelistCapacity(length))
+	}
+	y := *x
 	var j int = -1
-	for i := 0; i < len(*x); i++ {
-		if cap((*x)[i]) >= length && (j == -1 || cap((*x)[j]) > cap((*x)[i])) {
+	for i := range y {
+		if cap(y[i]) >= length && (j == -1 || cap(y[i]) < cap(y[j])) {
 			j = i
 		}
 	}
 	if j == -1 {
 		return make([]byte, length, freelistCapacity(length))
 	}
-	out = (*x)[j][:length]
-	(*x)[j] = nil
-	for i := 0; i < len(out); i++ {
+	out = y[j][:length]
+	y[j] = nil
+	for i := range out { // memclr/memset
 		out[i] = 0
 	}
 	return
 }
 
 func (x *bytesFreelist) put(v []byte) {
-	if len(v) == 0 {
+	if bytesFreeListNoCache {
 		return
 	}
-	for i := 0; i < len(*x); i++ {
-		if cap((*x)[i]) == 0 {
-			(*x)[i] = v
+	if cap(v) == 0 {
+		return
+	}
+	y := *x
+	for i := range y {
+		if cap(y[i]) == 0 {
+			y[i] = v
 			return
 		}
 	}
-	*x = append(*x, v)
+	*x = append(y, v)
 }
 
 func (x *bytesFreelist) check(v []byte, length int) (out []byte) {
