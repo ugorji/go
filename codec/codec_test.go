@@ -2524,6 +2524,64 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 		}
 	}
 
+	// encode []byte and decode into one with len < cap.
+	// get the slices > decDefSliceCap*2, so things like json can go much higher
+	{
+		var bs1 = []byte("abcdefghijklmnopqrstuvwxyz")
+		b := testMarshalErr(bs1, h, t, "enc-bytes")
+
+		var bs2 = make([]byte, 32, 32)
+		testUnmarshalErr(bs2, b, h, t, "dec-bytes")
+		testDeepEqualErr(bs1, bs2[:len(bs1)], t, "cmp-enc-dec-bytes")
+
+		testUnmarshalErr(&bs2, b, h, t, "dec-bytes-2")
+		testDeepEqualErr(bs1, bs2, t, "cmp-enc-dec-bytes-2")
+
+		bs2 = bs2[:2:4]
+		testUnmarshalErr(&bs2, b, h, t, "dec-bytes-2")
+		testDeepEqualErr(bs1, bs2, t, "cmp-enc-dec-bytes-2")
+
+		bs2 = nil
+		testUnmarshalErr(&bs2, b, h, t, "dec-bytes-2")
+		testDeepEqualErr(bs1, bs2, t, "cmp-enc-dec-bytes-2")
+
+		bs1 = []byte{}
+		b = testMarshalErr(bs1, h, t, "enc-bytes")
+
+		bs2 = nil
+		testUnmarshalErr(&bs2, b, h, t, "dec-bytes-2")
+		testDeepEqualErr(bs1, bs2, t, "cmp-enc-dec-bytes-2")
+
+		type Ti32 int32
+		v1 := []Ti32{
+			9, 99, 999, 9999, 99999, 999999,
+			9, 99, 999, 9999, 99999, 999999,
+			9, 99, 999, 9999, 99999, 999999,
+		}
+		b = testMarshalErr(v1, h, t, "enc-Ti32")
+
+		v2 := make([]Ti32, 20, 20)
+		testUnmarshalErr(v2, b, h, t, "dec-Ti32")
+		testDeepEqualErr(v1, v2[:len(v1)], t, "cmp-enc-dec-Ti32")
+
+		testUnmarshalErr(&v2, b, h, t, "dec-Ti32-2")
+		testDeepEqualErr(v1, v2, t, "cmp-enc-dec-Ti32-2")
+
+		v2 = v2[:1:3]
+		testUnmarshalErr(&v2, b, h, t, "dec-Ti32-2")
+		testDeepEqualErr(v1, v2, t, "cmp-enc-dec-Ti32-2")
+
+		v2 = nil
+		testUnmarshalErr(&v2, b, h, t, "dec-Ti32-2")
+		testDeepEqualErr(v1, v2, t, "cmp-enc-dec-Ti32-2")
+
+		v1 = []Ti32{}
+		b = testMarshalErr(v1, h, t, "enc-Ti32")
+
+		v2 = nil
+		testUnmarshalErr(&v2, b, h, t, "dec-Ti32-2")
+		testDeepEqualErr(v1, v2, t, "cmp-enc-dec-Ti32-2")
+	}
 }
 
 func doTestScalars(t *testing.T, h Handle) {
