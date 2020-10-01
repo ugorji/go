@@ -128,6 +128,15 @@ package codec
 // For example, in json, we have dedicated functions for ReadMapElemKey, etc
 // which do not delegate to readDelim, as readDelim takes a parameter.
 // The difference in runtime was as much as 5%.
+//
+// ------------------------------------------
+// Handling Nil
+//   - In dynamic (reflection) mode, decodeValue and encodeValue handle nil at the top
+//   - Consequently, methods used with them as a parent in the chain e.g. kXXX
+//     methods do not handle nil.
+//   - Fastpath methods also do not handle nil.
+//     The switch called in (en|de)code(...) handles it so the dependent calls don't have to.
+//   - codecgen will handle nil before calling into the library for further work also.
 
 import (
 	"bytes"
