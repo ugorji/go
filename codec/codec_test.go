@@ -1686,7 +1686,9 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 	// defer func() { xdebugf("python-gen-streams: %s: took: %v", h.Name(), time.Since(time0)) }()
 
 	name := h.Name()
-	t.Logf("TestPythonGenStreams-%v", name)
+	if testVerbose {
+		t.Logf("TestPythonGenStreams-%v", name)
+	}
 	tmpdir, err := ioutil.TempDir("", "golang-"+name+"-test")
 	if err != nil {
 		t.Logf("-------- Unable to create temp directory\n")
@@ -1722,8 +1724,8 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 		//compare to output stream
 		if testVerbose {
 			t.Logf("..............................................")
+			t.Logf("         Testing: #%d: %T, %#v\n", i, v, v)
 		}
-		t.Logf("         Testing: #%d: %T, %#v\n", i, v, v)
 		var bss []byte
 		bss, err = ioutil.ReadFile(filepath.Join(tmpdir, strconv.Itoa(i)+"."+name+".golden"))
 		if err != nil {
@@ -1768,13 +1770,14 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 				t.Logf("++++++++ Bytes match")
 			}
 		} else {
-			t.Logf("???????? FAIL: Bytes do not match. %v.", err)
 			xs := "--------"
 			if rv4i(v).Kind() == reflect.Map {
 				xs = "        "
-				t.Logf("%s It's a map. Ok that they don't match (dependent on ordering).", xs)
+				if testVerbose {
+					t.Logf("%s FAIL - bytes do not match, but it's a map (ok - dependent on ordering): %v", xs, err)
+				}
 			} else {
-				t.Logf("%s It's not a map. They should match.", xs)
+				t.Logf("%s FAIL - bytes do not match and is not a map (bad): %v", xs, err)
 				t.FailNow()
 			}
 			if testVerbose {

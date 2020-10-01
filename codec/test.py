@@ -14,6 +14,8 @@
 from __future__ import print_function
 import cbor, msgpack, msgpackrpc, sys, os, threading
 
+mylocaladdr="127.0.0.1" # localhost.localdomain localhost 127.0.0.1
+
 def get_test_data_list():
     # get list with all primitive types, and a combo type
     l0 = [ 
@@ -83,7 +85,7 @@ def doRpcServer(port, stopTimeSec):
         def EchoStruct(self, msg):
             return ("%s" % msg)
     
-    addr = msgpackrpc.Address('127.0.0.1', port)
+    addr = msgpackrpc.Address(mylocaladdr, port)
     server = msgpackrpc.Server(EchoHandler())
     server.listen(addr)
     # run thread to stop it after stopTimeSec seconds if > 0
@@ -95,14 +97,14 @@ def doRpcServer(port, stopTimeSec):
     server.start()
 
 def doRpcClientToPythonSvc(port):
-    address = msgpackrpc.Address('127.0.0.1', port)
+    address = msgpackrpc.Address(mylocaladdr, port)
     client = msgpackrpc.Client(address, unpack_encoding='utf-8')
     print(client.call("Echo123", "A1", "B2", "C3"))
     print(client.call("EchoStruct", {"A" :"Aa", "B":"Bb", "C":"Cc"}))
    
 def doRpcClientToGoSvc(port):
     # print(">>>> port: ", port, " <<<<<")
-    address = msgpackrpc.Address('127.0.0.1', port)
+    address = msgpackrpc.Address(mylocaladdr, port)
     client = msgpackrpc.Client(address, unpack_encoding='utf-8')
     print(client.call("TestRpcInt.Echo123", ["A1", "B2", "C3"]))
     print(client.call("TestRpcInt.EchoStruct", {"A" :"Aa", "B":"Bb", "C":"Cc"}))
