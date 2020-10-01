@@ -670,6 +670,8 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	// Note: rv is a slice type here - guaranteed
 
+	rvCanset := rv.CanSet()
+
 	rtelem0 := f.ti.elem
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
@@ -681,7 +683,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		bs2 := d.d.DecodeBytes(rvbs, false)
 		// if rvbs == nil && bs2 != nil || rvbs != nil && bs2 == nil || len(bs2) != len(rvbs) {
 		if !(len(bs2) > 0 && len(bs2) == len(rvbs) && &bs2[0] == &rvbs[0]) {
-			if rv.CanSet() {
+			if rvCanset {
 				rvSetBytes(rv, bs2)
 			} else if len(rvbs) > 0 && len(bs2) > 0 {
 				copy(rvbs, bs2)
@@ -694,7 +696,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	// an array can never return a nil slice. so no need to check f.array here.
 	if containerLenS == 0 {
-		if rv.CanSet() {
+		if rvCanset {
 			if rvIsNil(rv) {
 				rvSetDirect(rv, reflect.MakeSlice(f.ti.rt, 0, 0))
 			} else {
@@ -717,9 +719,9 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	var fn *codecFn
 
-	var rv0 = rv
 	var rvChanged bool
-	var rvCanset = rv.CanSet()
+
+	var rv0 = rv
 	var rv9 reflect.Value
 
 	rvlen := rvGetSliceLen(rv)
@@ -728,24 +730,28 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
-			rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(rtelem0.Size()))
-			if rvlen <= rvcap {
+			rvlen1 := decInferLen(containerLenS, d.h.MaxInitLen, int(rtelem0.Size()))
+			if rvlen1 == rvlen {
+			} else if rvlen1 <= rvcap {
 				if rvCanset {
+					rvlen = rvlen1
 					rvSetSliceLen(rv, rvlen)
 				}
-			} else if rvCanset {
+			} else if rvCanset { // rvlen1 > rvcap
+				rvlen = rvlen1
 				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvlen)
+				rvCanset = rv.CanSet()
 				rvcap = rvlen
 				rvChanged = true
-			} else {
+			} else { // rvlen1 > rvcap && !canSet
 				d.errorf("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut { // !isImmutableKind(rtelem0.Kind()) {
 				rvCopySlice(rv, rv0) // only copy up to length NOT cap i.e. rv0.Slice(0, rvcap)
 			}
 		} else if containerLenS != rvlen {
-			rvlen = containerLenS
 			if rvCanset {
+				rvlen = containerLenS
 				rvSetSliceLen(rv, rvlen)
 			}
 		}
@@ -758,10 +764,11 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	for ; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && f.seq == seqTypeSlice && rvIsNil(rv) { // means hasLen = false
-			rvlen = decDefSliceCap
 			if rvCanset {
-				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvlen)
-				rvcap = rvlen
+				rvlen = decDefSliceCap
+				rvcap = rvlen * 2
+				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
+				rvCanset = rv.CanSet()
 				rvChanged = true
 			} else {
 				d.errorf("cannot decode into non-settable slice")
@@ -780,25 +787,25 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			// Note that we did, so we have to reset it later.
 
 			if rvlen < rvcap {
-				if rv.CanSet() {
-					rvSetSliceLen(rv, rvcap)
-				} else if rvCanset {
-					rv = rvSlice(rv, rvcap)
-					rvChanged = true
+				rvlen = rvcap
+				if rvCanset {
+					rvSetSliceLen(rv, rvlen)
+				} else if rvChanged {
+					rv = rvSlice(rv, rvlen)
 				} else {
 					d.errorf(errmsgExpandSliceCannotChange)
 				}
-				rvlen = rvcap
 			} else {
-				if !rvCanset {
+				if !(rvCanset || rvChanged) {
 					d.errorf(errmsgExpandSliceCannotChange)
 				}
 				rvcap = growCap(rvcap, rtelem0Size, 1)
-				rv9 = reflect.MakeSlice(f.ti.rt, rvcap, rvcap)
+				rvlen = rvcap
+				rv9 = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
 				rvCopySlice(rv9, rv)
 				rv = rv9
+				rvCanset = rv.CanSet()
 				rvChanged = true
-				rvlen = rvcap
 			}
 		} else {
 			slh.ElemContainerState(j)
@@ -818,16 +825,16 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		d.decodeValue(rv9, fn)
 	}
 	if j < rvlen {
-		if rv.CanSet() {
+		if rvCanset {
 			rvSetSliceLen(rv, j)
-		} else if rvCanset {
+		} else if rvChanged {
 			rv = rvSlice(rv, j)
-			rvChanged = true
 		}
 		rvlen = j
 	} else if j == 0 && rvIsNil(rv) {
 		if rvCanset {
 			rv = reflect.MakeSlice(f.ti.rt, 0, 0)
+			// rvCanset = rv.CanSet()
 			rvChanged = true
 		}
 	}
@@ -836,7 +843,6 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if rvChanged { // infers rvCanset=true, so it can be reset
 		rv0.Set(rv)
 	}
-
 }
 
 func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
