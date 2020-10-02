@@ -360,14 +360,14 @@ func testCodecDecode(bs []byte, ts interface{}, h Handle) (err error) {
 	return testSharedCodecDecode(bs, ts, h, basicHandle(h))
 }
 
-func checkErrT(t *testing.T, err error) {
+func testCheckErr(t *testing.T, err error) {
 	if err != nil {
 		t.Logf(err.Error())
 		t.FailNow()
 	}
 }
 
-func checkEqualT(t *testing.T, v1 interface{}, v2 interface{}, desc string) {
+func testCheckEqual(t *testing.T, v1 interface{}, v2 interface{}, desc string) {
 	if err := deepEqual(v1, v2); err != nil {
 		t.Logf("Not Equal: %s: %v. v1: %v, v2: %v", desc, err, v1, v2)
 		t.FailNow()
@@ -1005,8 +1005,8 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 	}
 
 	// log("m: %v, m2: %v, p: %v, p2: %v", m, m2, p, p2)
-	checkEqualT(t, p, p2, "p=p2")
-	checkEqualT(t, m, m2, "m=m2")
+	testCheckEqual(t, p, p2, "p=p2")
+	testCheckEqual(t, m, m2, "m=m2")
 	if err = deepEqual(p, p2); err == nil {
 		if testVerbose {
 			t.Logf("p and p2 match")
@@ -1038,7 +1038,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 	var t2 ttt
 	testUnmarshalErr(&t2, bs, h, t, "t2")
 	t3 := ttt{5, 333}
-	checkEqualT(t, t2, t3, "t2=t3")
+	testCheckEqual(t, t2, t3, "t2=t3")
 	testReleaseBytes(bs)
 
 	// println(">>>>>")
@@ -1060,7 +1060,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 		}
 		var tarr2 tarr
 		testUnmarshalErr(&tarr2, bs, h, t, "tarr2")
-		checkEqualT(t, tarr0, tarr2, "tarr0=tarr2")
+		testCheckEqual(t, tarr0, tarr2, "tarr0=tarr2")
 		testReleaseBytes(bs)
 	}
 
@@ -1105,7 +1105,7 @@ func doTestCodecEmbeddedPointer(t *testing.T, h Handle) {
 	bs := testMarshalErr(x1, h, t, "x1")
 	var x2 = new(B)
 	testUnmarshalErr(x2, bs, h, t, "x2")
-	checkEqualT(t, x1, x2, "x1=x2")
+	testCheckEqual(t, x1, x2, "x1=x2")
 	testReleaseBytes(bs)
 }
 
@@ -1284,7 +1284,7 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 		t.Logf("connFn: addr: %v, network: %v, port: %v", ln.Addr(), ln.Addr().Network(), (ln.Addr().(*net.TCPAddr)).Port)
 	}
 	// log("listener: %v", ln.Addr())
-	checkErrT(t, err)
+	testCheckErr(t, err)
 	port = (ln.Addr().(*net.TCPAddr)).Port
 	// var opts *DecoderOptions
 	// opts := testDecOpts
@@ -1319,24 +1319,24 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 		var up, sq, mult int
 		var rstr string
 		// log("Calling client")
-		checkErrT(t, cl.Call("TestRpcInt.Update", 5, &up))
+		testCheckErr(t, cl.Call("TestRpcInt.Update", 5, &up))
 		// log("Called TestRpcInt.Update")
-		checkEqualT(t, testRpcInt.i, 5, "testRpcInt.i=5")
-		checkEqualT(t, up, 5, "up=5")
-		checkErrT(t, cl.Call("TestRpcInt.Square", 1, &sq))
-		checkEqualT(t, sq, 25, "sq=25")
-		checkErrT(t, cl.Call("TestRpcInt.Mult", 20, &mult))
-		checkEqualT(t, mult, 100, "mult=100")
-		checkErrT(t, cl.Call("TestRpcInt.EchoStruct", TestRpcABC{"Aa", "Bb", "Cc"}, &rstr))
-		checkEqualT(t, rstr, fmt.Sprintf("%#v", TestRpcABC{"Aa", "Bb", "Cc"}), "rstr=")
-		checkErrT(t, cl.Call("TestRpcInt.Echo123", []string{"A1", "B2", "C3"}, &rstr))
-		checkEqualT(t, rstr, fmt.Sprintf("%#v", []string{"A1", "B2", "C3"}), "rstr=")
+		testCheckEqual(t, testRpcInt.i, 5, "testRpcInt.i=5")
+		testCheckEqual(t, up, 5, "up=5")
+		testCheckErr(t, cl.Call("TestRpcInt.Square", 1, &sq))
+		testCheckEqual(t, sq, 25, "sq=25")
+		testCheckErr(t, cl.Call("TestRpcInt.Mult", 20, &mult))
+		testCheckEqual(t, mult, 100, "mult=100")
+		testCheckErr(t, cl.Call("TestRpcInt.EchoStruct", TestRpcABC{"Aa", "Bb", "Cc"}, &rstr))
+		testCheckEqual(t, rstr, fmt.Sprintf("%#v", TestRpcABC{"Aa", "Bb", "Cc"}), "rstr=")
+		testCheckErr(t, cl.Call("TestRpcInt.Echo123", []string{"A1", "B2", "C3"}, &rstr))
+		testCheckEqual(t, rstr, fmt.Sprintf("%#v", []string{"A1", "B2", "C3"}), "rstr=")
 	}
 
 	connFn := func() (bs net.Conn) {
 		// log("calling f1")
 		bs, err2 := net.Dial(ln.Addr().Network(), ln.Addr().String())
-		checkErrT(t, err2)
+		testCheckErr(t, err2)
 		return
 	}
 
@@ -1821,7 +1821,7 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 	openPort := strconv.FormatInt(6700+r.Int63n(99), 10)
 	// openPort := "6792"
 	cmd := exec.Command("python", "test.py", "rpc-server", openPort, "4")
-	checkErrT(t, cmd.Start())
+	testCheckErr(t, cmd.Start())
 	bs, err2 := net.Dial("tcp", ":"+openPort)
 	maxSleepTime := 500 * time.Millisecond
 	iterSleepTime := 5 * time.Millisecond
@@ -1829,16 +1829,16 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 		time.Sleep(iterSleepTime) // time for python rpc server to start
 		bs, err2 = net.Dial("tcp", ":"+openPort)
 	}
-	checkErrT(t, err2)
+	testCheckErr(t, err2)
 	cc := MsgpackSpecRpc.ClientCodec(testReadWriteCloser(bs), testMsgpackH)
 	cl := rpc.NewClientWithCodec(cc)
 	defer cl.Close()
 	var rstr string
-	checkErrT(t, cl.Call("EchoStruct", TestRpcABC{"Aa", "Bb", "Cc"}, &rstr))
-	//checkEqualT(t, rstr, "{'A': 'Aa', 'B': 'Bb', 'C': 'Cc'}")
+	testCheckErr(t, cl.Call("EchoStruct", TestRpcABC{"Aa", "Bb", "Cc"}, &rstr))
+	//testCheckEqual(t, rstr, "{'A': 'Aa', 'B': 'Bb', 'C': 'Cc'}")
 	var mArgs MsgpackSpecRpcMultiArgs = []interface{}{"A1", "B2", "C3"}
-	checkErrT(t, cl.Call("Echo123", mArgs, &rstr))
-	checkEqualT(t, rstr, "1:A1 2:B2 3:C3", "rstr=")
+	testCheckErr(t, cl.Call("Echo123", mArgs, &rstr))
+	testCheckEqual(t, rstr, "1:A1 2:B2 3:C3", "rstr=")
 	cmd.Process.Kill()
 }
 
@@ -1857,7 +1857,7 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 		t.Logf("         %v", string(cmdout))
 		t.FailNow()
 	}
-	checkEqualT(t, string(cmdout),
+	testCheckEqual(t, string(cmdout),
 		fmt.Sprintf("%#v\n%#v\n", []string{"A1", "B2", "C3"}, TestRpcABC{"Aa", "Bb", "Cc"}), "cmdout=")
 }
 
