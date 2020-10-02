@@ -70,10 +70,8 @@ func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 			}
 		}
 		if bh.ReaderBufferSize <= 0 {
-			if _, ok = w.(ioPeeker); !ok {
-				if _, ok = w.(ioBuffered); !ok {
-					r = bufio.NewReader(r)
-				}
+			if _, ok = w.(ioBuffered); !ok {
+				r = bufio.NewReader(r)
 			}
 		}
 	}
