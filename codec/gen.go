@@ -707,22 +707,22 @@ func (x *genRunner) encVarChkNil(varname string, t reflect.Type, checkNil bool) 
 		telem := t.Elem()
 		tek := telem.Kind()
 		if tek == reflect.Array || (tek == reflect.Struct && telem != timeTyp) {
-			x.enc(varname, genNonPtr(t))
+			x.enc(varname, genNonPtr(t), true)
 			break
 		}
 		i := x.varsfx()
 		x.line(genTempVarPfx + i + " := *" + varname)
-		x.enc(genTempVarPfx+i, genNonPtr(t))
+		x.enc(genTempVarPfx+i, genNonPtr(t), false)
 	case reflect.Struct, reflect.Array:
 		if t == timeTyp {
-			x.enc(varname, t)
+			x.enc(varname, t, false)
 			break
 		}
 		i := x.varsfx()
 		x.line(genTempVarPfx + i + " := &" + varname)
-		x.enc(genTempVarPfx+i, t)
+		x.enc(genTempVarPfx+i, t, true)
 	default:
-		x.enc(varname, t)
+		x.enc(varname, t, false)
 	}
 
 	if checkNil {
@@ -734,7 +734,7 @@ func (x *genRunner) encVarChkNil(varname string, t reflect.Type, checkNil bool) 
 // if t is !time.Time and t is of kind reflect.Struct or reflect.Array, varname is of type *T
 // (to prevent copying),
 // else t is of type T
-func (x *genRunner) enc(varname string, t reflect.Type) {
+func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 	rtid := rt2id(t)
 	ti2 := x.ti.get(rtid, t)
 	// We call CodecEncodeSelf if one of the following are honored:
@@ -744,28 +744,55 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 
 	mi := x.varsfx()
 	// tptr := reflect.PtrTo(t)
-	tk := t.Kind()
+	// tk := t.Kind()
+
+	// check if
+	//   - type is time.Time, RawExt, Raw
+	//   - the type implements (Text|JSON|Binary)(Unm|M)arshal
+
+	var hasIf genIfClause
+	defer hasIf.end(x) // end if block (if necessary)
+
+	var ptrPfx, addrPfx string
+	if isptr {
+		ptrPfx = "*"
+	} else {
+		addrPfx = "&"
+	}
+
+	if t == timeTyp {
+		x.linef("%s !z.EncBasicHandle().TimeNotBuiltin { r.EncodeTime(%s%s)", hasIf.c(false), ptrPfx, varname)
+		// return
+	}
+	if t == rawTyp {
+		x.linef("%s z.EncRaw(%s%s)", hasIf.c(true), ptrPfx, varname)
+		return
+	}
+	if t == rawExtTyp {
+		x.linef("%s r.EncodeRawExt(%s%s)", hasIf.c(true), addrPfx, varname)
+		return
+	}
+	// only check for extensions if extensions are configured,
+	// and the type is named, and has a packagePath,
+	// and this is not the CodecEncodeSelf or CodecDecodeSelf method (i.e. it is not a Selfer)
+	if !x.nx && varname != genTopLevelVarName && genImportPath(t) != "" && t.Name() != "" {
+		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
+		x.linef("%s %s := z.Extension(z.I2Rtid(%s)); %s != nil { z.EncExtension(%s, %s) ",
+			hasIf.c(false), yy, varname, yy, varname, yy)
+	}
+
 	if x.checkForSelfer(t, varname) {
-		if tk == reflect.Array ||
-			(tk == reflect.Struct && rtid != timeTypId) { // varname is of type *T
-			// if tptr.Implements(selferTyp) || t.Implements(selferTyp) {
-			if ti2.isFlag(tiflagSelfer) || ti2.isFlag(tiflagSelferPtr) {
-				x.line(varname + ".CodecEncodeSelf(e)")
-				return
-			}
-		} else { // varname is of type T
-			if ti2.isFlag(tiflagSelfer) {
-				x.line(varname + ".CodecEncodeSelf(e)")
-				return
-			} else if ti2.isFlag(tiflagSelferPtr) {
-				x.linef("%ssf%s := &%s", genTempVarPfx, mi, varname)
-				x.linef("%ssf%s.CodecEncodeSelf(e)", genTempVarPfx, mi)
-				return
-			}
+		if ti2.isFlag(tiflagSelfer) {
+			x.linef("%s %s.CodecEncodeSelf(e)", hasIf.c(true), varname)
+			return
+		} else if ti2.isFlag(tiflagSelferPtr) {
+			x.linef("%s %ssf%s := &%s", hasIf.c(true), genTempVarPfx, mi, varname)
+			x.linef("%ssf%s.CodecEncodeSelf(e)", genTempVarPfx, mi)
+			return
 		}
 
 		if _, ok := x.te[rtid]; ok {
-			x.line(varname + ".CodecEncodeSelf(e)")
+			x.linef("%s %s.CodecEncodeSelf(e)", hasIf.c(true), varname)
 			return
 		}
 	}
@@ -788,59 +815,21 @@ func (x *genRunner) enc(varname string, t reflect.Type) {
 		rtidAdded = true
 	}
 
-	// check if
-	//   - type is time.Time, RawExt, Raw
-	//   - the type implements (Text|JSON|Binary)(Unm|M)arshal
+	if ti2.isFlag(tiflagBinaryMarshaler) {
+		x.linef("%s z.EncBinary() { z.EncBinaryMarshal(%s%v) ", hasIf.c(false), ptrPfx, varname)
+	} else if ti2.isFlag(tiflagBinaryMarshalerPtr) {
+		x.linef("%s z.EncBinary() { z.EncBinaryMarshal(%s%v) ", hasIf.c(false), addrPfx, varname)
+	}
+	if ti2.isFlag(tiflagJsonMarshaler) {
+		x.linef("%s !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(%s%v) ", hasIf.c(false), ptrPfx, varname)
+	} else if ti2.isFlag(tiflagJsonMarshalerPtr) {
+		x.linef("%s !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(%s%v) ", hasIf.c(false), addrPfx, varname)
+	} else if ti2.isFlag(tiflagTextMarshaler) {
+		x.linef("%s !z.EncBinary() { z.EncTextMarshal(%s%v) ", hasIf.c(false), ptrPfx, varname)
+	} else if ti2.isFlag(tiflagTextMarshalerPtr) {
+		x.linef("%s !z.EncBinary() { z.EncTextMarshal(%s%v) ", hasIf.c(false), addrPfx, varname)
+	}
 
-	var hasIf genIfClause
-	defer hasIf.end(x) // end if block (if necessary)
-
-	if t == timeTyp {
-		x.linef("%s !z.EncBasicHandle().TimeNotBuiltin { r.EncodeTime(%s)", hasIf.c(false), varname)
-		// return
-	}
-	if t == rawTyp {
-		x.linef("%s z.EncRaw(%s)", hasIf.c(true), varname)
-		return
-	}
-	if t == rawExtTyp {
-		x.linef("%s r.EncodeRawExt(%s)", hasIf.c(true), varname)
-		return
-	}
-	// only check for extensions if extensions are configured,
-	// and the type is named, and has a packagePath,
-	// and this is not the CodecEncodeSelf or CodecDecodeSelf method (i.e. it is not a Selfer)
-	var arrayOrStruct = tk == reflect.Array || tk == reflect.Struct // meaning varname if of type *T
-	if !x.nx && varname != genTopLevelVarName && genImportPath(t) != "" && t.Name() != "" {
-		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
-		x.linef("%s %s := z.Extension(z.I2Rtid(%s)); %s != nil { z.EncExtension(%s, %s) ",
-			hasIf.c(false), yy, varname, yy, varname, yy)
-	}
-	if arrayOrStruct { // varname is of type *T
-		if ti2.isFlag(tiflagBinaryMarshaler) || ti2.isFlag(tiflagBinaryMarshalerPtr) {
-			x.linef("%s z.EncBinary() { z.EncBinaryMarshal(%v) ", hasIf.c(false), varname)
-		}
-		if ti2.isFlag(tiflagJsonMarshaler) || ti2.isFlag(tiflagJsonMarshalerPtr) {
-			x.linef("%s !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(%v) ", hasIf.c(false), varname)
-		} else if ti2.isFlag(tiflagTextUnmarshaler) || ti2.isFlag(tiflagTextUnmarshalerPtr) {
-			x.linef("%s !z.EncBinary() { z.EncTextMarshal(%v) ", hasIf.c(false), varname)
-		}
-	} else { // varname is of type T
-		if ti2.isFlag(tiflagBinaryMarshaler) {
-			x.linef("%s z.EncBinary() { z.EncBinaryMarshal(%v) ", hasIf.c(false), varname)
-		} else if ti2.isFlag(tiflagBinaryMarshalerPtr) {
-			x.linef("%s z.EncBinary() { z.EncBinaryMarshal(&%v) ", hasIf.c(false), varname)
-		}
-		if ti2.isFlag(tiflagJsonMarshaler) {
-			x.linef("%s !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(%v) ", hasIf.c(false), varname)
-		} else if ti2.isFlag(tiflagJsonMarshalerPtr) {
-			x.linef("%s !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(&%v) ", hasIf.c(false), varname)
-		} else if ti2.isFlag(tiflagTextMarshaler) {
-			x.linef("%s !z.EncBinary() { z.EncTextMarshal(%v) ", hasIf.c(false), varname)
-		} else if ti2.isFlag(tiflagTextMarshalerPtr) {
-			x.linef("%s !z.EncBinary() { z.EncTextMarshal(&%v) ", hasIf.c(false), varname)
-		}
-	}
 	x.lineIf(hasIf.c(true))
 
 	switch t.Kind() {
@@ -964,7 +953,7 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 		}
 		//buf.s(")")
 	case reflect.Bool:
-		buf.s(varname2)
+		buf.s("bool(").s(varname2).s(")")
 	case reflect.Map, reflect.Slice, reflect.Array, reflect.Chan:
 		buf.s("len(").s(varname2).s(") != 0")
 	default:
@@ -1337,41 +1326,12 @@ func (x *genRunner) decVar(varname, nilvar string, t reflect.Type, canBeNil, che
 }
 
 // dec will decode a variable (varname) of type t or ptrTo(t) if isptr==true.
-// t is always a basetype (i.e. not of kind reflect.Ptr).
 func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	// assumptions:
 	//   - the varname is to a pointer already. No need to take address of it
 	//   - t is always a baseType T (not a *T, etc).
 	rtid := rt2id(t)
 	ti2 := x.ti.get(rtid, t)
-	if x.checkForSelfer(t, varname) {
-		if ti2.isFlag(tiflagSelfer) || ti2.isFlag(tiflagSelferPtr) {
-			x.line(varname + ".CodecDecodeSelf(d)")
-			return
-		}
-		if _, ok := x.td[rtid]; ok {
-			x.line(varname + ".CodecDecodeSelf(d)")
-			return
-		}
-	}
-
-	inlist := false
-	for _, t0 := range x.t {
-		if t == t0 {
-			inlist = true
-			if x.checkForSelfer(t, varname) {
-				x.line(varname + ".CodecDecodeSelf(d)")
-				return
-			}
-			break
-		}
-	}
-
-	var rtidAdded bool
-	if t == x.tc {
-		x.td[rtid] = true
-		rtidAdded = true
-	}
 
 	// check if
 	//   - type is time.Time, Raw, RawExt
@@ -1405,18 +1365,58 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	// only check for extensions if extensions are configured,
 	// and the type is named, and has a packagePath,
 	// and this is not the CodecEncodeSelf or CodecDecodeSelf method (i.e. it is not a Selfer)
+	// xdebugf("genRunner.dec: varname: %v, t: %v, genImportPath: %v, t.Name: %v", varname, t, genImportPath(t), t.Name())
 	if !x.nx && varname != genTopLevelVarName && genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion
 		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
-		x.linef("%s %s := z.Extension(z.I2Rtid(%s)); %s != nil { z.DecExtension(%s, %s) ", hasIf.c(false), yy, varname, yy, varname, yy)
+		x.linef("%s %s := z.Extension(z.I2Rtid(%s)); %s != nil { z.DecExtension(%s%s, %s) ", hasIf.c(false), yy, varname, yy, addrPfx, varname, yy)
 	}
 
-	if ti2.isFlag(tiflagBinaryUnmarshaler) || ti2.isFlag(tiflagBinaryUnmarshalerPtr) {
+	if x.checkForSelfer(t, varname) {
+		if ti2.isFlag(tiflagSelfer) {
+			x.linef("%s %s.CodecDecodeSelf(d)", hasIf.c(true), varname)
+			return
+		}
+		if ti2.isFlag(tiflagSelferPtr) {
+			x.linef("%s %s.CodecDecodeSelf(d)", hasIf.c(true), varname)
+			return
+		}
+		if _, ok := x.td[rtid]; ok {
+			x.linef("%s %s.CodecDecodeSelf(d)", hasIf.c(true), varname)
+			return
+		}
+	}
+
+	inlist := false
+	for _, t0 := range x.t {
+		if t == t0 {
+			inlist = true
+			if x.checkForSelfer(t, varname) {
+				x.linef("%s %s.CodecDecodeSelf(d)", hasIf.c(true), varname)
+				return
+			}
+			break
+		}
+	}
+
+	var rtidAdded bool
+	if t == x.tc {
+		x.td[rtid] = true
+		rtidAdded = true
+	}
+
+	if ti2.isFlag(tiflagBinaryUnmarshaler) {
+		x.linef("%s z.DecBinary() { z.DecBinaryUnmarshal(%s%v) ", hasIf.c(false), ptrPfx, varname)
+	} else if ti2.isFlag(tiflagBinaryUnmarshalerPtr) {
 		x.linef("%s z.DecBinary() { z.DecBinaryUnmarshal(%s%v) ", hasIf.c(false), addrPfx, varname)
 	}
-	if ti2.isFlag(tiflagJsonUnmarshaler) || ti2.isFlag(tiflagJsonUnmarshalerPtr) {
+	if ti2.isFlag(tiflagJsonUnmarshaler) {
+		x.linef("%s !z.DecBinary() && z.IsJSONHandle() { z.DecJSONUnmarshal(%s%v)", hasIf.c(false), ptrPfx, varname)
+	} else if ti2.isFlag(tiflagJsonUnmarshalerPtr) {
 		x.linef("%s !z.DecBinary() && z.IsJSONHandle() { z.DecJSONUnmarshal(%s%v)", hasIf.c(false), addrPfx, varname)
-	} else if ti2.isFlag(tiflagTextUnmarshaler) || ti2.isFlag(tiflagTextUnmarshalerPtr) {
+	} else if ti2.isFlag(tiflagTextUnmarshaler) {
+		x.linef("%s !z.DecBinary() { z.DecTextUnmarshal(%s%v)", hasIf.c(false), ptrPfx, varname)
+	} else if ti2.isFlag(tiflagTextUnmarshalerPtr) {
 		x.linef("%s !z.DecBinary() { z.DecTextUnmarshal(%s%v)", hasIf.c(false), addrPfx, varname)
 	}
 
