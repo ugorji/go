@@ -19,7 +19,7 @@ _tests() {
     for i in "${a[@]}"
     do
         local i2=${i:-default}
-        [[ "$zwait" == "1" ]] && echo "---- TAGS: '$i'"
+        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: '$i'"
         true &&
             go vet -printfuncs "errorf" "$@" &&
             go test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" \

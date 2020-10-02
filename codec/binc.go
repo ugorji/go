@@ -1011,7 +1011,7 @@ func (d *bincDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	case bincVdCustomExt:
 		clen = fnLen(d.vs)
 		v = append(v, d.d.decRd.readn1()) // tag
-		v = append(v, d.d.decRd.rb.readx(clen)...)
+		v = append(v, d.d.decRd.readx(clen)...)
 	case bincVdArray:
 		clen = fnLen(d.vs)
 		for i := uint(0); i < clen; i++ {

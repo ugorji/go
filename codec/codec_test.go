@@ -358,7 +358,11 @@ func (x timeExt) UpdateExt(v interface{}, src interface{}) {
 type testUintToBytesExt struct{}
 
 func (x testUintToBytesExt) WriteExt(v interface{}) (bs []byte) {
-	return make([]byte, v.(testUintToBytes))
+	z := uint32(v.(testUintToBytes))
+	if z == 0 {
+		return nil
+	}
+	return make([]byte, z)
 }
 func (x testUintToBytesExt) ReadExt(v interface{}, bs []byte) {
 	*(v.(*testUintToBytes)) = testUintToBytes(len(bs))
@@ -2311,12 +2315,23 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 			bs2 = d.d.nextValueBytes(nil)
 			testSharedCodecDecoderAfter(d, x, bh)
 			testDeepEqualErr(out, bs2, t, "nextvaluebytes-symbols-string")
+			hbinc.AsSymbols = 2
 		}
 	}
 
 	// test out extensions with large output
-	var xl = testUintToBytes(inOutLen)
-	var xl2 testUintToBytes
+	var xl, xl2 testUintToBytes
+	xl = testUintToBytes(inOutLen)
+	bs = testMarshalErr(xl, h, t, "-large-extension-bytes")
+	testUnmarshalErr(&xl2, bs, h, t, "-large-extension-bytes")
+	testDeepEqualErr(xl, xl2, t, "-large-extension-bytes")
+
+	d, x = testSharedCodecDecoder(bs, h, bh)
+	bs2 = d.d.nextValueBytes(nil)
+	testSharedCodecDecoderAfter(d, x, bh)
+	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-large-extension-bytes")
+
+	xl = testUintToBytes(0) // so it's WriteExt returns nil
 	bs = testMarshalErr(xl, h, t, "-large-extension-bytes")
 	testUnmarshalErr(&xl2, bs, h, t, "-large-extension-bytes")
 	testDeepEqualErr(xl, xl2, t, "-large-extension-bytes")
