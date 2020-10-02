@@ -1067,8 +1067,6 @@ func (e *Encoder) encode(iv interface{}) {
 		return
 	}
 
-	var vself Selfer
-
 	switch v := iv.(type) {
 	// case nil:
 	// case Selfer:
@@ -1152,9 +1150,18 @@ func (e *Encoder) encode(iv interface{}) {
 			e.e.EncodeStringBytesRaw(*v)
 		}
 	default:
-		if vself, ok = iv.(Selfer); ok {
-			vself.CodecEncodeSelf(e)
-		} else if !fastpathEncodeTypeSwitch(iv, e) {
+		// var vself Selfer
+		// if xfFn := e.h.getExt(i2rtid(iv), true); xfFn != nil {
+		// 	e.e.EncodeExt(iv, xfFn.tag, xfFn.ext)
+		// } else if vself, ok = iv.(Selfer); ok {
+		// 	vself.CodecEncodeSelf(e)
+		// } else if !fastpathEncodeTypeSwitch(iv, e) {
+		// 	if !rv.IsValid() {
+		// 		rv = rv4i(iv)
+		// 	}
+		// 	e.encodeValue(rv, nil)
+		// }
+		if !fastpathEncodeTypeSwitch(iv, e) {
 			if !rv.IsValid() {
 				rv = rv4i(iv)
 			}

@@ -126,6 +126,9 @@ type testMarshalAsJSON bool
 type testMarshalAsBinary []byte
 type testMarshalAsText string
 
+// some types used for extensions
+type testUintToBytes uint32
+
 func (x testMarshalAsJSON) MarshalJSON() (data []byte, err error) {
 	if x {
 		data = []byte("true")
@@ -283,6 +286,8 @@ type TestStrucFlex struct {
 	MarT testMarshalAsText
 	MarB testMarshalAsBinary
 
+	XuintToBytes testUintToBytes
+
 	Ffunc       func() error // expect this to be skipped/ignored
 	Bboolignore bool         `codec:"-"` // expect this to be skipped/ignored
 }
@@ -364,6 +369,8 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 		MarJ: true,
 		MarT: "hello string",
 		MarB: []byte("hello bytes"),
+
+		XuintToBytes: 16,
 	}
 
 	for i := uint64(0); i < numStrUi64T; i++ {

@@ -150,6 +150,8 @@ var (
 
 var wrapInt64Typ = reflect.TypeOf(wrapInt64(0))
 var wrapBytesTyp = reflect.TypeOf(wrapBytes(nil))
+
+var testUintToBytesTyp = reflect.TypeOf(testUintToBytes(0))
 var testSelfExtTyp = reflect.TypeOf((*TestSelfExtImpl)(nil)).Elem()
 var testSelfExt2Typ = reflect.TypeOf((*TestSelfExtImpl2)(nil)).Elem()
 
@@ -326,15 +328,17 @@ func (x *wrapBytesExt) UpdateExt(dest interface{}, v interface{}) {
 type timeExt struct{}
 
 func (x timeExt) WriteExt(v interface{}) (bs []byte) {
-	switch v2 := v.(type) {
-	case time.Time:
-		bs = bincEncodeTime(v2)
-	case *time.Time:
-		bs = bincEncodeTime(*v2)
-	default:
-		panic(fmt.Errorf("unsupported format for time conversion: expecting time.Time; got %T", v2))
-	}
-	return
+	return bincEncodeTime(*(v.(*time.Time)))
+	// return bincEncodeTime(v.(time.Time))
+	// switch v2 := v.(type) {
+	// case time.Time:
+	// 	bs = bincEncodeTime(v2)
+	// case *time.Time:
+	// 	bs = bincEncodeTime(*v2)
+	// default:
+	// 	panic(fmt.Errorf("unsupported format for time conversion: expecting time.Time; got %T", v2))
+	// }
+	// return
 }
 func (x timeExt) ReadExt(v interface{}, bs []byte) {
 	tt, err := bincDecodeTime(bs)
@@ -343,11 +347,26 @@ func (x timeExt) ReadExt(v interface{}, bs []byte) {
 	}
 	*(v.(*time.Time)) = tt
 }
-
 func (x timeExt) ConvertExt(v interface{}) interface{} {
 	return x.WriteExt(v)
 }
 func (x timeExt) UpdateExt(v interface{}, src interface{}) {
+	x.ReadExt(v, src.([]byte))
+}
+
+// ----
+type testUintToBytesExt struct{}
+
+func (x testUintToBytesExt) WriteExt(v interface{}) (bs []byte) {
+	return make([]byte, v.(testUintToBytes))
+}
+func (x testUintToBytesExt) ReadExt(v interface{}, bs []byte) {
+	*(v.(*testUintToBytes)) = testUintToBytes(len(bs))
+}
+func (x testUintToBytesExt) ConvertExt(v interface{}) interface{} {
+	return x.WriteExt(v)
+}
+func (x testUintToBytesExt) UpdateExt(v interface{}, src interface{}) {
 	x.ReadExt(v, src.([]byte))
 }
 
@@ -427,6 +446,7 @@ func testInit() {
 	var tTimeExt timeExt
 	var tBytesExt wrapBytesExt
 	var tI64Ext wrapInt64Ext
+	var tUintToBytesExt testUintToBytesExt
 
 	// create legacy functions suitable for deprecated AddExt functionality,
 	// and use on some places for testSimpleH e.g. for time.Time and wrapInt64
@@ -482,6 +502,12 @@ func testInit() {
 	chkErr(testBincH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt))
 	chkErr(testJsonH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt))
 	chkErr(testCborH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt))
+
+	chkErr(testSimpleH.SetBytesExt(testUintToBytesTyp, 33, &tUintToBytesExt))
+	chkErr(testMsgpackH.SetBytesExt(testUintToBytesTyp, 33, &tUintToBytesExt))
+	chkErr(testBincH.SetBytesExt(testUintToBytesTyp, 33, &tUintToBytesExt))
+	chkErr(testJsonH.SetInterfaceExt(testUintToBytesTyp, 33, &tUintToBytesExt))
+	chkErr(testCborH.SetInterfaceExt(testUintToBytesTyp, 33, &tUintToBytesExt))
 
 	chkErr(testSimpleH.AddExt(wrapInt64Typ, 16, wrapInt64ExtEncFn, wrapInt64ExtDecFn))
 	// chkErr(testSimpleH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext))
@@ -2287,6 +2313,13 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 			testDeepEqualErr(out, bs2, t, "nextvaluebytes-symbols-string")
 		}
 	}
+
+	// test out extensions with large output
+	var xl = testUintToBytes(inOutLen)
+	var xl2 testUintToBytes
+	bs = testMarshalErr(xl, h, t, "-large-extension-bytes")
+	testUnmarshalErr(&xl2, bs, h, t, "-large-extension-bytes")
+	testDeepEqualErr(xl, xl2, t, "-large-extension-bytes")
 }
 
 func testRandomFillRV(v reflect.Value) {

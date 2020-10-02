@@ -1487,9 +1487,18 @@ func (d *Decoder) decode(iv interface{}) {
 		d.decodeValue(rv4i(iv), nil)
 
 	default:
-		if v, ok := iv.(Selfer); ok {
-			v.CodecDecodeSelf(d)
-		} else if !fastpathDecodeTypeSwitch(iv, d) {
+		// if xfFn := d.h.getExt(i2rtid(iv), true); xfFn != nil {
+		// 	d.d.DecodeExt(iv, xfFn.tag, xfFn.ext)
+		// } else if v, ok := iv.(Selfer); ok {
+		// 	v.CodecDecodeSelf(d)
+		// } else if !fastpathDecodeTypeSwitch(iv, d) {
+		// 	v := rv4i(iv)
+		// 	if !isDecodeable(v) {
+		// 		d.haltAsNotDecodeable(v)
+		// 	}
+		// 	d.decodeValue(v, nil)
+		// }
+		if !fastpathDecodeTypeSwitch(iv, d) {
 			v := rv4i(iv)
 			if !isDecodeable(v) {
 				d.haltAsNotDecodeable(v)
