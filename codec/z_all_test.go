@@ -37,7 +37,6 @@ import "testing"
 // }
 
 func testGroupResetFlags() {
-	testUseMust = false
 	testRpcBufsize = 2048
 	testUseIoEncDec = -1
 	testUseReset = false
@@ -58,7 +57,6 @@ func testSuite(t *testing.T, f func(t *testing.T)) {
 	testReinit()
 	t.Run("optionsFalse", f)
 
-	testUseMust = true
 	testUseIoEncDec = 0
 	testUseReset = true
 
@@ -486,7 +484,6 @@ func TestCodecSuite(t *testing.T) {
 	// ---
 	oldEncZeroValuesAsNil := testSimpleH.EncZeroValuesAsNil
 	testSimpleH.EncZeroValuesAsNil = !testSimpleH.EncZeroValuesAsNil
-	testUseMust = true
 	testReinit()
 	t.Run("simple-enczeroasnil", testSimpleMammothGroup) // testSimpleGroup
 	testSimpleH.EncZeroValuesAsNil = oldEncZeroValuesAsNil

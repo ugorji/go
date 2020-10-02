@@ -373,11 +373,6 @@ func TestCborMalformed(t *testing.T) {
 		[]byte("\x9b\x00\x00\x81112233"),
 	}
 
-	if testUseMust {
-		testUseMust = false
-		defer func() { testUseMust = true }()
-	}
-
 	var out interface{}
 	for _, v := range bad {
 		out = nil

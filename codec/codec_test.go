@@ -355,13 +355,12 @@ func testSetup(t *testing.T) {
 	testOnce.Do(testInitAll)
 }
 
-func testCodecEncode(ts interface{}, bsIn []byte,
-	fn func([]byte) *bytes.Buffer, h Handle) (bs []byte, err error) {
-	return testSharedCodecEncode(ts, bsIn, fn, h, basicHandle(h))
+func testCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer, h Handle, useMust bool) (bs []byte, err error) {
+	return testSharedCodecEncode(ts, bsIn, fn, h, basicHandle(h), useMust)
 }
 
-func testCodecDecode(bs []byte, ts interface{}, h Handle) (err error) {
-	return testSharedCodecDecode(bs, ts, h, basicHandle(h))
+func testCodecDecode(bs []byte, ts interface{}, h Handle, useMust bool) (err error) {
+	return testSharedCodecDecode(bs, ts, h, basicHandle(h), useMust)
 }
 
 func testCheckErr(t *testing.T, err error) {
@@ -732,22 +731,22 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 	return
 }
 
-func testUnmarshal(v interface{}, data []byte, h Handle) (err error) {
-	return testCodecDecode(data, v, h)
-}
-
-func testMarshal(v interface{}, h Handle) (bs []byte, err error) {
-	// return testCodecEncode(v, nil, testByteBuf, h)
-	return testCodecEncode(v, testBytesFreeList.get(64)[:0], testByteBuf, h)
-}
-
 func testReleaseBytes(bs []byte) {
 	testBytesFreeList.put(bs)
 }
 
+func testMarshal(v interface{}, h Handle) (bs []byte, err error) {
+	// return testCodecEncode(v, nil, testByteBuf, h)
+	return testCodecEncode(v, testBytesFreeList.get(64)[:0], testByteBuf, h, false)
+}
+
+func testUnmarshal(v interface{}, data []byte, h Handle) (err error) {
+	return testCodecDecode(data, v, h, false)
+}
+
 func testMarshalErr(v interface{}, h Handle, t *testing.T, name string) (bs []byte) {
 	// t.Helper()
-	bs, err := testMarshal(v, h)
+	bs, err := testCodecEncode(v, testBytesFreeList.get(64)[:0], testByteBuf, h, true)
 	if err != nil {
 		t.Logf("%s: marshal failed: %v", name, err)
 		if testVerbose {
@@ -760,7 +759,8 @@ func testMarshalErr(v interface{}, h Handle, t *testing.T, name string) (bs []by
 
 func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name string) {
 	// t.Helper()
-	if err := testUnmarshal(v, data, h); err != nil {
+	err := testCodecDecode(data, v, h, true)
+	if err != nil {
 		t.Logf("%s: unmarshal failed: %v", name, err)
 		if testVerbose {
 			t.Logf("Error Decoding into %s: %v, Err: %v", name, v, err)
@@ -2829,12 +2829,10 @@ func doTestMaxDepth(t *testing.T, h Handle) {
 	table = append(table, T{m99, 15, true, errMaxDepthExceeded})
 	table = append(table, T{m99, 215, true, nil})
 
-	defer func(n int16, b bool) {
+	defer func(n int16) {
 		basicHandle(h).MaxDepth = n
-		testUseMust = b
-	}(basicHandle(h).MaxDepth, testUseMust)
+	}(basicHandle(h).MaxDepth)
 
-	testUseMust = false
 	for i, v := range table {
 		basicHandle(h).MaxDepth = v.M
 		b1 := testMarshalErr(v.I, h, t, name+"-maxdepth-enc"+strconv.FormatInt(int64(i), 10))
@@ -3865,12 +3863,6 @@ func TestJsonLargeInteger(t *testing.T) {
 func TestJsonInvalidUnicode(t *testing.T) {
 	testSetup(t)
 	// t.Skipf("new json implementation does not handle bad unicode robustly")
-
-	// set testUseMust to true, so we can capture errors
-	if testUseMust {
-		testUseMust = false
-		defer func() { testUseMust = true }()
-	}
 
 	var err error
 

@@ -25,43 +25,43 @@ func codecBenchPreInit() {
 // ------------ tests below
 
 func fnMsgpackEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
-	return testSharedCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testMsgpackH, &testMsgpackH.BasicHandle)
+	return testSharedCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testMsgpackH, &testMsgpackH.BasicHandle, true)
 }
 
 func fnMsgpackDecodeFn(buf []byte, ts interface{}) error {
-	return testSharedCodecDecode(buf, ts, testMsgpackH, &testMsgpackH.BasicHandle)
+	return testSharedCodecDecode(buf, ts, testMsgpackH, &testMsgpackH.BasicHandle, true)
 }
 
 func fnBincEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
-	return testSharedCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testBincH, &testBincH.BasicHandle)
+	return testSharedCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testBincH, &testBincH.BasicHandle, true)
 }
 
 func fnBincDecodeFn(buf []byte, ts interface{}) error {
-	return testSharedCodecDecode(buf, ts, testBincH, &testBincH.BasicHandle)
+	return testSharedCodecDecode(buf, ts, testBincH, &testBincH.BasicHandle, true)
 }
 
 func fnSimpleEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
-	return testSharedCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testSimpleH, &testSimpleH.BasicHandle)
+	return testSharedCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testSimpleH, &testSimpleH.BasicHandle, true)
 }
 
 func fnSimpleDecodeFn(buf []byte, ts interface{}) error {
-	return testSharedCodecDecode(buf, ts, testSimpleH, &testSimpleH.BasicHandle)
+	return testSharedCodecDecode(buf, ts, testSimpleH, &testSimpleH.BasicHandle, true)
 }
 
 func fnCborEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
-	return testSharedCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testCborH, &testCborH.BasicHandle)
+	return testSharedCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testCborH, &testCborH.BasicHandle, true)
 }
 
 func fnCborDecodeFn(buf []byte, ts interface{}) error {
-	return testSharedCodecDecode(buf, ts, testCborH, &testCborH.BasicHandle)
+	return testSharedCodecDecode(buf, ts, testCborH, &testCborH.BasicHandle, true)
 }
 
 func fnJsonEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
-	return testSharedCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testJsonH, &testJsonH.BasicHandle)
+	return testSharedCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testJsonH, &testJsonH.BasicHandle, true)
 }
 
 func fnJsonDecodeFn(buf []byte, ts interface{}) error {
-	return testSharedCodecDecode(buf, ts, testJsonH, &testJsonH.BasicHandle)
+	return testSharedCodecDecode(buf, ts, testJsonH, &testJsonH.BasicHandle, true)
 }
 
 // ----------- ENCODE ------------------

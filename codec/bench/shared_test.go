@@ -103,7 +103,6 @@ var (
 	testInitDebug bool
 	testUseReset  bool
 	testSkipIntf  bool
-	testUseMust   bool
 
 	testUseIoEncDec  int
 	testUseIoWrapper bool
@@ -141,6 +140,7 @@ func init() {
 }
 
 func testInitFlags() {
+	var bIgnore bool
 	// delete(testDecOpts.ExtFuncs, timeTyp)
 	flag.BoolVar(&testVerbose, "tv", false, "Text Extra Verbose Logging if -v if set")
 	flag.BoolVar(&testInitDebug, "tg", false, "Test Init Debug")
@@ -150,7 +150,7 @@ func testInitFlags() {
 	flag.BoolVar(&testSkipIntf, "tf", false, "Skip Interfaces")
 	flag.BoolVar(&testUseReset, "tr", false, "Use Reset")
 	flag.IntVar(&testNumRepeatString, "trs", 8, "Create string variables by repeating a string N times")
-	flag.BoolVar(&testUseMust, "tm", true, "Use Must(En|De)code")
+	flag.BoolVar(&bIgnore, "tm", true, "(Deprecated) Use Must(En|De)code")
 
 	flag.IntVar(&testMaxInitLen, "tx", 0, "Max Init Len")
 
@@ -194,7 +194,7 @@ func testInitAll() {
 }
 
 func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer,
-	h Handle, bh *BasicHandle) (bs []byte, err error) {
+	h Handle, bh *BasicHandle, useMust bool) (bs []byte, err error) {
 	// bs = make([]byte, 0, approxSize)
 	var e *Encoder
 	var buf *bytes.Buffer
@@ -218,7 +218,7 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.B
 		bs = bsIn
 		e.ResetBytes(&bs)
 	}
-	if testUseMust {
+	if useMust {
 		e.MustEncode(ts)
 	} else {
 		err = e.Encode(ts)
@@ -264,9 +264,9 @@ func testSharedCodecDecoderAfter(d *Decoder, oldReadBufferSize int, bh *BasicHan
 	}
 }
 
-func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err error) {
+func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle, useMust bool) (err error) {
 	d, oldReadBufferSize := testSharedCodecDecoder(bs, h, bh)
-	if testUseMust {
+	if useMust {
 		d.MustDecode(ts)
 	} else {
 		err = d.Decode(ts)
