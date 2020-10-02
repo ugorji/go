@@ -891,7 +891,10 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 		//	v1 = reflect.Indirect(rv4i(v1)).Interface()
 		// }
 		if err != nil {
-			t.Logf("-------- Error: %v. Partial return: %v", err, v1)
+			t.Logf("-------- Error: %v", err)
+			if testVerbose {
+				t.Logf("-------- Partial return: %v", v1)
+			}
 			t.FailNow()
 		}
 		v0check := vsVerify[i]
