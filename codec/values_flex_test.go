@@ -6,6 +6,7 @@
 package codec
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -115,10 +116,53 @@ type tLowerFirstLetter struct {
 	b []byte
 }
 
-// Some used types
+// Some wrapped types which are used as extensions
 type wrapInt64 int64
 type wrapUint8 uint8
 type wrapBytes []byte
+
+// some types that define how to marshal themselves
+type testMarshalAsJSON bool
+type testMarshalAsBinary []byte
+type testMarshalAsText string
+
+func (x testMarshalAsJSON) MarshalJSON() (data []byte, err error) {
+	if x {
+		data = []byte("true")
+	} else {
+		data = []byte("false")
+	}
+	return
+}
+func (x *testMarshalAsJSON) UnmarshalJSON(data []byte) (err error) {
+	switch string(data) {
+	case "true":
+		*x = true
+	case "false":
+		*x = false
+	default:
+		err = fmt.Errorf("testMarshalAsJSON failed to decode as bool: %s", data)
+	}
+	return
+}
+
+func (x testMarshalAsBinary) MarshalBinary() (data []byte, err error) {
+	data = []byte(x)
+	return
+}
+func (x *testMarshalAsBinary) UnmarshalBinary(data []byte) (err error) {
+	*x = data
+	return
+}
+
+func (x testMarshalAsText) MarshalText() (text []byte, err error) {
+	text = []byte(x)
+	return
+}
+func (x *testMarshalAsText) UnmarshalText(text []byte) (err error) {
+	*x = testMarshalAsText(string(text))
+	return
+}
 
 type AnonInTestStrucIntf struct {
 	Islice []interface{}
@@ -235,6 +279,10 @@ type TestStrucFlex struct {
 	Its        []*TestStrucFlex
 	Nteststruc *TestStrucFlex
 
+	MarJ testMarshalAsJSON
+	MarT testMarshalAsText
+	MarB testMarshalAsBinary
+
 	Ffunc       func() error // expect this to be skipped/ignored
 	Bboolignore bool         `codec:"-"` // expect this to be skipped/ignored
 }
@@ -312,6 +360,10 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 
 		Ttime:    testStrucTime,
 		Ttimeptr: &testStrucTime,
+
+		MarJ: true,
+		MarT: "hello string",
+		MarB: []byte("hello bytes"),
 	}
 
 	for i := uint64(0); i < numStrUi64T; i++ {
