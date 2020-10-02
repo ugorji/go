@@ -6,23 +6,31 @@
 _tests() {
     local vet="" # TODO: make it off
     local gover=$( go version | cut -f 3 -d ' ' )
+    case $gover in
+        go1.[7-9]*|go1.1[0-9]*|go2.*|devel*) true ;;
+        *) return 1
+    esac
     # note that codecgen requires fastpath, so you cannot do "codecgen notfastpath"
-    # we test the following permutations: fastpath/!safe, fastpath/safe, !fastpath/safe, codecgen/!safe
-    local a=( "" "safe"  "notfastpath safe" "codecgen" )
+    # we test the following permutations: fastpath/unsafe, !fastpath/!unsafe, codecgen/unsafe
+    ## local a=( "" "safe"  "notfastpath safe" "codecgen" )
+    echo "TestCodecSuite: (fastpath/unsafe), (!fastpath/!unsafe), (codecgen/unsafe)"
+    local a=( "" "notfastpath safe"  "codecgen" )
+    local b=()
     for i in "${a[@]}"
     do
-        echo ">>>> TAGS: $i"
         local i2=${i:-default}
-        case $gover in
-            go1.[0-6]*) go test ${zargs[*]} ${ztestargs[*]} -tags "$i" "$@" ;;
-            *) go vet -printfuncs "errorf" "$@" &&
-                     go test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" -run "Suite" -coverprofile "${i2// /-}.cov.out" "$@" ;;
-        esac
-        if [[ "$?" != 0 ]]; then return 1; fi
+        [[ "$zwait" == "1" ]] && echo "---- TAGS: '$i'"
+        true &&
+            go vet -printfuncs "errorf" "$@" &&
+            go test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" \
+               -run "TestCodecSuite" -coverprofile "${i2// /-}.cov.out" "$@" &
+        b+=("${i2// /-}.cov.out")
+        [[ "$zwait" == "1" ]] && wait
+        # if [[ "$?" != 0 ]]; then return 1; fi
     done
-    echo "++++++++ TEST SUITES ALL PASSED ++++++++"
+    wait
+    [[ "$zcover" == "1" ]] && command -v gocovmerge && gocovmerge "${b[@]}" > __merge.cov.out && go tool cover -html=__merge.cov.out
 }
-
 
 # is a generation needed?
 _ng() {
@@ -210,8 +218,8 @@ EOF
 _usage() {
     cat <<EOF
 primary usage: $0 
-    -[tmpfnld]           -> [tests, make, prebuild (force), inlining diagnostics, mid-stack inlining, race detector]
-    -v                    -> verbose
+    -[tosw m pf n l d]   -> [t=tests (o=cover, s=short, w=wait), m=make, p=prebuild (f=force), n=inlining diagnostics, l=mid-stack inlining, d=race detector]
+    -v                   -> v=verbose
 EOF
     if [[ "$(type -t _usage_run)" = "function" ]]; then _usage_run ; fi
 }
@@ -220,14 +228,18 @@ _main() {
     if [[ -z "$1" ]]; then _usage; return 1; fi
     local x
     local zforce
+    local zcover
+    local zwait
     local ztestargs=()
     local zargs=()
     local zverbose=()
     local zbenchflags=""
     OPTIND=1
-    while getopts ":ctmnrgpfvlyzdsb:" flag
+    while getopts ":ctmnrgpfvlyzdsowb:" flag
     do
         case "x$flag" in
+            'xo') zcover=1 ;;
+            'xw') zwait=1 ;;
             'xf') zforce=1 ;;
             'xs') ztestargs+=("-short") ;;
             'xv') zverbose+=(1) ;;
