@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	errRpcJsonNeedsTermWhitespace = errors.New("rpc requires JsonHandle with TermWhitespace=true")
+	errRpcJsonNeedsTermWhitespace = errors.New("rpc - requires JsonHandle with TermWhitespace=true")
 	errRpcIsClosed                = errors.New("rpc - connection has been closed")
 	errRpcNoConn                  = errors.New("rpc - no connection")
 )
@@ -96,7 +96,7 @@ func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2 bool) (err error) {
 	}
 	if c.f != nil {
 		if err2 := c.f.Flush(); err == nil {
-			// ignore flush error if another error already happened from Encode call
+			// ignore flush error if prior error occurred during Encode
 			err = err2
 		}
 	}
@@ -137,8 +137,7 @@ func (c *rpcCodec) ready() (err error) {
 	} else {
 		cls := c.cls.load()
 		if cls.closed {
-			err = cls.errClosed
-			if err == nil {
+			if err = cls.errClosed; err == nil {
 				err = errRpcIsClosed
 			}
 		}
