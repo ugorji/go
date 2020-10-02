@@ -10,7 +10,11 @@ import (
 	"net/rpc"
 )
 
-var errRpcJsonNeedsTermWhitespace = errors.New("rpc requires JsonHandle with TermWhitespace=true")
+var (
+	errRpcJsonNeedsTermWhitespace = errors.New("rpc requires JsonHandle with TermWhitespace=true")
+	errRpcIsClosed                = errors.New("rpc - connection has been closed")
+	errRpcNoConn                  = errors.New("rpc - no connection")
+)
 
 // Rpc provides a rpc Server or Client Codec for rpc communication.
 type Rpc interface {
@@ -85,8 +89,8 @@ func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 }
 
 func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2 bool) (err error) {
-	if closed, closederr := c.closed(); closed {
-		return closederr
+	if err = c.ready(); err != nil {
+		return
 	}
 	err = c.enc.Encode(obj1)
 	if err == nil && writeObj2 {
@@ -102,8 +106,8 @@ func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2 bool) (err error) {
 }
 
 func (c *rpcCodec) read(obj interface{}) (err error) {
-	if closed, closederr := c.closed(); closed {
-		return closederr
+	if err = c.ready(); err != nil {
+		return
 	}
 	//If nil is passed in, we should read and discard
 	if obj == nil {
@@ -129,11 +133,17 @@ func (c *rpcCodec) Close() (err error) {
 	return
 }
 
-func (c *rpcCodec) closed() (ok bool, err error) {
-	if c.c != nil {
+func (c *rpcCodec) ready() (err error) {
+	if c.c == nil {
+		err = errRpcNoConn
+	} else {
 		cls := c.cls.load()
-		ok = cls.closed
-		err = cls.errClosed
+		if cls.closed {
+			err = cls.errClosed
+			if err == nil {
+				err = errRpcIsClosed
+			}
+		}
 	}
 	return
 }
