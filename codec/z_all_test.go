@@ -456,7 +456,8 @@ func TestCodecSuite(t *testing.T) {
 	oldIndefLen := testCborH.IndefiniteLength
 	testCborH.IndefiniteLength = true
 	testReinit()
-	t.Run("cbor-indefinitelength", testCborGroup)
+	t.Run("cbor-indefiniteLength", testCborGroup)
+	t.Run("cbor-indefiniteLength-nextValueBytes", TestCborNextValueBytes)
 	// xdebugf("cbor-indefinitelength: %v", tt.Elapsed())
 	testCborH.IndefiniteLength = oldIndefLen
 
