@@ -193,7 +193,7 @@ func testInitAll() {
 	}
 }
 
-func sTestCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer,
+func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer,
 	h Handle, bh *BasicHandle) (bs []byte, err error) {
 	// bs = make([]byte, 0, approxSize)
 	var e *Encoder
@@ -233,7 +233,7 @@ func sTestCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.Buffer
 	return
 }
 
-func sTestCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, oldReadBufferSize int) {
+func testSharedCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, oldReadBufferSize int) {
 	// var buf *bytes.Reader
 	if testUseReset {
 		d = testHEDGet(h).D
@@ -255,7 +255,7 @@ func sTestCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, oldRea
 	return
 }
 
-func sTestCodecDecoderAfter(d *Decoder, oldReadBufferSize int, bh *BasicHandle) {
+func testSharedCodecDecoderAfter(d *Decoder, oldReadBufferSize int, bh *BasicHandle) {
 	if testUseIoEncDec >= 0 {
 		bh.ReaderBufferSize = oldReadBufferSize
 	}
@@ -264,14 +264,14 @@ func sTestCodecDecoderAfter(d *Decoder, oldReadBufferSize int, bh *BasicHandle) 
 	}
 }
 
-func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err error) {
-	d, oldReadBufferSize := sTestCodecDecoder(bs, h, bh)
+func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err error) {
+	d, oldReadBufferSize := testSharedCodecDecoder(bs, h, bh)
 	if testUseMust {
 		d.MustDecode(ts)
 	} else {
 		err = d.Decode(ts)
 	}
-	sTestCodecDecoderAfter(d, oldReadBufferSize, bh)
+	testSharedCodecDecoderAfter(d, oldReadBufferSize, bh)
 	return
 }
 

@@ -11,6 +11,17 @@ package codec
 // For now, we don't include t.Helper, so the tests can be run (without a suite)
 // in go 1.4+
 
+// NAMING CONVENTION FOR TESTS
+//
+// function and variable/const names here fit a simple naming convention
+//
+// - each test is a doTestXXX(...). TestXXX calls doTestXXX.
+// - testXXX are helper functions.
+// - doTestXXX are test functions that take an extra arg of a handle.
+// - testXXX variables and constants are only used in tests.
+// - shared functions/vars/consts are testShared...
+// - fnBenchmarkXX and fnTestXXX can be used as needed.
+
 import (
 	"bufio"
 	"bytes"
@@ -342,11 +353,11 @@ func (x timeExt) UpdateExt(v interface{}, src interface{}) {
 
 func testCodecEncode(ts interface{}, bsIn []byte,
 	fn func([]byte) *bytes.Buffer, h Handle) (bs []byte, err error) {
-	return sTestCodecEncode(ts, bsIn, fn, h, basicHandle(h))
+	return testSharedCodecEncode(ts, bsIn, fn, h, basicHandle(h))
 }
 
 func testCodecDecode(bs []byte, ts interface{}, h Handle) (err error) {
-	return sTestCodecDecode(bs, ts, h, basicHandle(h))
+	return testSharedCodecDecode(bs, ts, h, basicHandle(h))
 }
 
 func checkErrT(t *testing.T, err error) {
@@ -780,8 +791,8 @@ func testReadWriteCloser(c io.ReadWriteCloser) io.ReadWriteCloser {
 	}{c, bufio.NewReaderSize(c, testRpcBufsize), bufio.NewWriterSize(c, testRpcBufsize)}
 }
 
-// doTestCodecTableOne allows us test for different variations based on arguments passed.
-func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
+// testCodecTableOne allows us test for different variations based on arguments passed.
+func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 	vs []interface{}, vsVerify []interface{}) {
 	//if testNil, then just test for when a pointer to a nil interface{} is passed. It should work.
 	//Current setup allows us test (at least manually) the nil interface or typed interface.
@@ -879,7 +890,7 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 	}
 }
 
-func testCodecTableOne(t *testing.T, h Handle) {
+func doTestCodecTableOne(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 	// func TestMsgpackAllExperimental(t *testing.T) {
 	// dopts := testDecOpts(nil, nil, false, true, true),
@@ -895,21 +906,21 @@ func testCodecTableOne(t *testing.T, h Handle) {
 		_ = oldWriteExt
 		oldWriteExt = v.WriteExt
 		v.WriteExt = true
-		doTestCodecTableOne(t, false, h, table, tableVerify)
+		testCodecTableOne(t, false, h, table, tableVerify)
 		v.WriteExt = oldWriteExt
 	case *JsonHandle:
 		//skip []interface{} containing time.Time, as it encodes as a number, but cannot decode back to time.Time.
 		//As there is no real support for extension tags in json, this must be skipped.
-		doTestCodecTableOne(t, false, h, table[:numPrim], tableVerify[:numPrim])
-		doTestCodecTableOne(t, false, h, table[idxMap:], tableVerify[idxMap:])
+		testCodecTableOne(t, false, h, table[:numPrim], tableVerify[:numPrim])
+		testCodecTableOne(t, false, h, table[idxMap:], tableVerify[idxMap:])
 	default:
-		doTestCodecTableOne(t, false, h, table, tableVerify)
+		testCodecTableOne(t, false, h, table, tableVerify)
 	}
 	// func TestMsgpackAll(t *testing.T) {
 
 	// //skip []interface{} containing time.Time
-	// doTestCodecTableOne(t, false, h, table[:numPrim], tableVerify[:numPrim])
-	// doTestCodecTableOne(t, false, h, table[numPrim+1:], tableVerify[numPrim+1:])
+	// testCodecTableOne(t, false, h, table[:numPrim], tableVerify[:numPrim])
+	// testCodecTableOne(t, false, h, table[numPrim+1:], tableVerify[numPrim+1:])
 	// func TestMsgpackNilStringMap(t *testing.T) {
 	var oldMapType reflect.Type
 	v := basicHandle(h)
@@ -917,19 +928,19 @@ func testCodecTableOne(t *testing.T, h Handle) {
 	oldMapType, v.MapType = v.MapType, testMapStrIntfTyp
 	// defer func() { v.MapType = oldMapType }()
 	//skip time.Time, []interface{} containing time.Time, last map, and newStruc
-	doTestCodecTableOne(t, true, h, table[:idxTime], tableTestNilVerify[:idxTime])
-	doTestCodecTableOne(t, true, h, table[idxMap:idxMap+numMap-1], tableTestNilVerify[idxMap:idxMap+numMap-1]) // failing one for msgpack
+	testCodecTableOne(t, true, h, table[:idxTime], tableTestNilVerify[:idxTime])
+	testCodecTableOne(t, true, h, table[idxMap:idxMap+numMap-1], tableTestNilVerify[idxMap:idxMap+numMap-1]) // failing one for msgpack
 	v.MapType = oldMapType
 	// func TestMsgpackNilIntf(t *testing.T) {
 
 	//do last map and newStruc
 	idx2 := idxMap + numMap - 1
-	doTestCodecTableOne(t, true, h, table[idx2:], tableTestNilVerify[idx2:])
+	testCodecTableOne(t, true, h, table[idx2:], tableTestNilVerify[idx2:])
 	//TODO: What is this one? do we need to do it?
-	//doTestCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18])
+	//testCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18])
 }
 
-func testCodecMiscOne(t *testing.T, h Handle) {
+func doTestCodecMiscOne(t *testing.T, h Handle) {
 	var err error
 	testOnce.Do(testInitAll)
 	bh := basicHandle(h)
@@ -1078,7 +1089,7 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	testReleaseBytes(bs)
 }
 
-func testCodecEmbeddedPointer(t *testing.T, h Handle) {
+func doTestCodecEmbeddedPointer(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 	type Z int
 	type A struct {
@@ -1120,7 +1131,7 @@ func testCodecUnderlyingType(t *testing.T, h Handle) {
 	}
 }
 
-func testCodecChan(t *testing.T, h Handle) {
+func doTestCodecChan(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 	// - send a slice []*int64 (sl1) into an chan (ch1) with cap > len(s1)
 	// - encode ch1 as a stream array
@@ -1250,7 +1261,7 @@ func testCodecChan(t *testing.T, h Handle) {
 
 }
 
-func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration) (port int) {
+func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration) (port int) {
 	testOnce.Do(testInitAll)
 	if testSkipRPCTests {
 		return
@@ -1837,7 +1848,7 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 	}
 	testOnce.Do(testInitAll)
 	exitSleepDur := 10 * time.Millisecond // 1*time.Second
-	port := testCodecRpcOne(t, MsgpackSpecRpc, testMsgpackH, false, exitSleepDur)
+	port := doTestCodecRpcOne(t, MsgpackSpecRpc, testMsgpackH, false, exitSleepDur)
 	cmd := exec.Command("python", "test.py", "rpc-client-go-service", strconv.Itoa(port))
 	var cmdout []byte
 	var err error
@@ -2144,9 +2155,9 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testUnmarshalErr(m2, bs, h, t, "-slices")
 	testDeepEqualErr(m, m2, t, "-slices")
 
-	d, x := sTestCodecDecoder(bs, h, bh)
+	d, x := testSharedCodecDecoder(bs, h, bh)
 	bs2 := d.d.nextValueBytes(nil)
-	sTestCodecDecoderAfter(d, x, bh)
+	testSharedCodecDecoderAfter(d, x, bh)
 	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-slices")
 	// if len(bs2) != 0 || len(bs2) != len(bs) { }
 	testReleaseBytes(bs)
@@ -2162,9 +2173,9 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testUnmarshalErr(mm2, bs, h, t, "-map")
 		testDeepEqualErr(mm, mm2, t, "-map")
 
-		d, x = sTestCodecDecoder(bs, h, bh)
+		d, x = testSharedCodecDecoder(bs, h, bh)
 		bs2 = d.d.nextValueBytes(nil)
-		sTestCodecDecoderAfter(d, x, bh)
+		testSharedCodecDecoderAfter(d, x, bh)
 		testDeepEqualErr(bs, bs2, t, "nextvaluebytes-map")
 		testReleaseBytes(bs)
 	}
@@ -2226,9 +2237,9 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testUnmarshalErr(m2, out, h, t, "no-symbols-string")
 		testDeepEqualErr(m1, m2, t, "no-symbols-string")
 
-		d, x = sTestCodecDecoder(out, h, bh)
+		d, x = testSharedCodecDecoder(out, h, bh)
 		bs2 = d.d.nextValueBytes(nil)
-		sTestCodecDecoderAfter(d, x, bh)
+		testSharedCodecDecoderAfter(d, x, bh)
 		testDeepEqualErr(out, bs2, t, "nextvaluebytes-no-symbols-string")
 
 		if okbinc {
@@ -2242,9 +2253,9 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 			testUnmarshalErr(m2, out, h, t, "symbols-string")
 			testDeepEqualErr(m1, m2, t, "symbols-string")
 
-			d, x = sTestCodecDecoder(out, h, bh)
+			d, x = testSharedCodecDecoder(out, h, bh)
 			bs2 = d.d.nextValueBytes(nil)
-			sTestCodecDecoderAfter(d, x, bh)
+			testSharedCodecDecoderAfter(d, x, bh)
 			testDeepEqualErr(out, bs2, t, "nextvaluebytes-symbols-string")
 		}
 	}
@@ -2326,7 +2337,7 @@ func testRandomFillRV(v reflect.Value) {
 	}
 }
 
-func testMammoth(t *testing.T, h Handle) {
+func doTestMammoth(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 	name := h.Name()
 	var b []byte
@@ -2353,7 +2364,7 @@ func testMammoth(t *testing.T, h Handle) {
 	testReleaseBytes(b)
 }
 
-func testTime(t *testing.T, h Handle) {
+func doTestTime(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 	name := h.Name()
 	// test time which uses the time.go implementation (ie Binc)
@@ -2372,7 +2383,7 @@ func testTime(t *testing.T, h Handle) {
 	testReleaseBytes(b)
 }
 
-func testUintToInt(t *testing.T, h Handle) {
+func doTestUintToInt(t *testing.T, h Handle) {
 	testOnce.Do(testInitAll)
 	name := h.Name()
 	var golden = [...]int64{
@@ -3519,7 +3530,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 
 	var valueBytes = make([][]byte, len(inputs)*2)
 
-	d, oldReadBufferSize := sTestCodecDecoder(out, h, basicHandle(h))
+	d, oldReadBufferSize := testSharedCodecDecoder(out, h, basicHandle(h))
 	for i := 0; i < len(inputs)*2; i++ {
 		valueBytes[i] = d.d.nextValueBytes(nil)
 		// bs := d.d.nextValueBytes(nil)
@@ -4181,15 +4192,15 @@ func TestMapRangeIndex(t *testing.T) {
 // ----------
 
 func TestBincCodecsTable(t *testing.T) {
-	testCodecTableOne(t, testBincH)
+	doTestCodecTableOne(t, testBincH)
 }
 
 func TestBincCodecsMisc(t *testing.T) {
-	testCodecMiscOne(t, testBincH)
+	doTestCodecMiscOne(t, testBincH)
 }
 
 func TestBincCodecsEmbeddedPointer(t *testing.T) {
-	testCodecEmbeddedPointer(t, testBincH)
+	doTestCodecEmbeddedPointer(t, testBincH)
 }
 
 func TestBincStdEncIntf(t *testing.T) {
@@ -4197,19 +4208,19 @@ func TestBincStdEncIntf(t *testing.T) {
 }
 
 func TestBincMammoth(t *testing.T) {
-	testMammoth(t, testBincH)
+	doTestMammoth(t, testBincH)
 }
 
 func TestSimpleCodecsTable(t *testing.T) {
-	testCodecTableOne(t, testSimpleH)
+	doTestCodecTableOne(t, testSimpleH)
 }
 
 func TestSimpleCodecsMisc(t *testing.T) {
-	testCodecMiscOne(t, testSimpleH)
+	doTestCodecMiscOne(t, testSimpleH)
 }
 
 func TestSimpleCodecsEmbeddedPointer(t *testing.T) {
-	testCodecEmbeddedPointer(t, testSimpleH)
+	doTestCodecEmbeddedPointer(t, testSimpleH)
 }
 
 func TestSimpleStdEncIntf(t *testing.T) {
@@ -4217,19 +4228,19 @@ func TestSimpleStdEncIntf(t *testing.T) {
 }
 
 func TestSimpleMammoth(t *testing.T) {
-	testMammoth(t, testSimpleH)
+	doTestMammoth(t, testSimpleH)
 }
 
 func TestMsgpackCodecsTable(t *testing.T) {
-	testCodecTableOne(t, testMsgpackH)
+	doTestCodecTableOne(t, testMsgpackH)
 }
 
 func TestMsgpackCodecsMisc(t *testing.T) {
-	testCodecMiscOne(t, testMsgpackH)
+	doTestCodecMiscOne(t, testMsgpackH)
 }
 
 func TestMsgpackCodecsEmbeddedPointer(t *testing.T) {
-	testCodecEmbeddedPointer(t, testMsgpackH)
+	doTestCodecEmbeddedPointer(t, testMsgpackH)
 }
 
 func TestMsgpackStdEncIntf(t *testing.T) {
@@ -4237,23 +4248,23 @@ func TestMsgpackStdEncIntf(t *testing.T) {
 }
 
 func TestMsgpackMammoth(t *testing.T) {
-	testMammoth(t, testMsgpackH)
+	doTestMammoth(t, testMsgpackH)
 }
 
 func TestCborCodecsTable(t *testing.T) {
-	testCodecTableOne(t, testCborH)
+	doTestCodecTableOne(t, testCborH)
 }
 
 func TestCborCodecsMisc(t *testing.T) {
-	testCodecMiscOne(t, testCborH)
+	doTestCodecMiscOne(t, testCborH)
 }
 
 func TestCborCodecsEmbeddedPointer(t *testing.T) {
-	testCodecEmbeddedPointer(t, testCborH)
+	doTestCodecEmbeddedPointer(t, testCborH)
 }
 
 func TestCborCodecChan(t *testing.T) {
-	testCodecChan(t, testCborH)
+	doTestCodecChan(t, testCborH)
 }
 
 func TestCborStdEncIntf(t *testing.T) {
@@ -4261,23 +4272,23 @@ func TestCborStdEncIntf(t *testing.T) {
 }
 
 func TestCborMammoth(t *testing.T) {
-	testMammoth(t, testCborH)
+	doTestMammoth(t, testCborH)
 }
 
 func TestJsonCodecsTable(t *testing.T) {
-	testCodecTableOne(t, testJsonH)
+	doTestCodecTableOne(t, testJsonH)
 }
 
 func TestJsonCodecsMisc(t *testing.T) {
-	testCodecMiscOne(t, testJsonH)
+	doTestCodecMiscOne(t, testJsonH)
 }
 
 func TestJsonCodecsEmbeddedPointer(t *testing.T) {
-	testCodecEmbeddedPointer(t, testJsonH)
+	doTestCodecEmbeddedPointer(t, testJsonH)
 }
 
 func TestJsonCodecChan(t *testing.T) {
-	testCodecChan(t, testJsonH)
+	doTestCodecChan(t, testJsonH)
 }
 
 func TestJsonStdEncIntf(t *testing.T) {
@@ -4285,7 +4296,7 @@ func TestJsonStdEncIntf(t *testing.T) {
 }
 
 func TestJsonMammoth(t *testing.T) {
-	testMammoth(t, testJsonH)
+	doTestMammoth(t, testJsonH)
 }
 
 // ----- Raw ---------
@@ -4326,29 +4337,29 @@ func TestMsgpackRpcSpec(t *testing.T) {
 	if testMsgpackH.SliceElementReset {
 		t.Skipf("skipping ... MsgpackRpcSpec does not handle SliceElementReset - needs investigation")
 	}
-	testCodecRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, 0)
+	doTestCodecRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, 0)
 }
 
 // ----- RPC -----
 
 func TestBincRpcGo(t *testing.T) {
-	testCodecRpcOne(t, GoRpc, testBincH, true, 0)
+	doTestCodecRpcOne(t, GoRpc, testBincH, true, 0)
 }
 
 func TestSimpleRpcGo(t *testing.T) {
-	testCodecRpcOne(t, GoRpc, testSimpleH, true, 0)
+	doTestCodecRpcOne(t, GoRpc, testSimpleH, true, 0)
 }
 
 func TestMsgpackRpcGo(t *testing.T) {
-	testCodecRpcOne(t, GoRpc, testMsgpackH, true, 0)
+	doTestCodecRpcOne(t, GoRpc, testMsgpackH, true, 0)
 }
 
 func TestCborRpcGo(t *testing.T) {
-	testCodecRpcOne(t, GoRpc, testCborH, true, 0)
+	doTestCodecRpcOne(t, GoRpc, testCborH, true, 0)
 }
 
 func TestJsonRpcGo(t *testing.T) {
-	testCodecRpcOne(t, GoRpc, testJsonH, true, 0)
+	doTestCodecRpcOne(t, GoRpc, testJsonH, true, 0)
 }
 
 // ----- OTHERS -----
@@ -4523,43 +4534,43 @@ func TestSimpleMammothMapsAndSlices(t *testing.T) {
 }
 
 func TestJsonTime(t *testing.T) {
-	testTime(t, testJsonH)
+	doTestTime(t, testJsonH)
 }
 
 func TestCborTime(t *testing.T) {
-	testTime(t, testCborH)
+	doTestTime(t, testCborH)
 }
 
 func TestMsgpackTime(t *testing.T) {
-	testTime(t, testMsgpackH)
+	doTestTime(t, testMsgpackH)
 }
 
 func TestBincTime(t *testing.T) {
-	testTime(t, testBincH)
+	doTestTime(t, testBincH)
 }
 
 func TestSimpleTime(t *testing.T) {
-	testTime(t, testSimpleH)
+	doTestTime(t, testSimpleH)
 }
 
 func TestJsonUintToInt(t *testing.T) {
-	testUintToInt(t, testJsonH)
+	doTestUintToInt(t, testJsonH)
 }
 
 func TestCborUintToInt(t *testing.T) {
-	testUintToInt(t, testCborH)
+	doTestUintToInt(t, testCborH)
 }
 
 func TestMsgpackUintToInt(t *testing.T) {
-	testUintToInt(t, testMsgpackH)
+	doTestUintToInt(t, testMsgpackH)
 }
 
 func TestBincUintToInt(t *testing.T) {
-	testUintToInt(t, testBincH)
+	doTestUintToInt(t, testBincH)
 }
 
 func TestSimpleUintToInt(t *testing.T) {
-	testUintToInt(t, testSimpleH)
+	doTestUintToInt(t, testSimpleH)
 }
 
 func TestJsonDifferentMapOrSliceType(t *testing.T) {
