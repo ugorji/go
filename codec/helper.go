@@ -177,10 +177,6 @@ const (
 	// This constant flag will enable or disable it.
 	supportMarshalInterfaces = true
 
-	// for debugging, set this to false, to catch panic traces.
-	// Note that this will always cause rpc tests to fail, since they need io.EOF sent via panic.
-	recoverPanicToErr = true
-
 	// for debugging, set this to true
 	bytesFreeListNoCache = false
 
@@ -2175,10 +2171,8 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) 
 func panicToErr(h errDecorator, err *error) {
 	// Note: This method MUST be called directly from defer i.e. defer panicToErr ...
 	// else it seems the recover is not fully handled
-	if recoverPanicToErr {
-		if x := recover(); x != nil {
-			panicValToErr(h, x, err)
-		}
+	if x := recover(); x != nil {
+		panicValToErr(h, x, err)
 	}
 }
 

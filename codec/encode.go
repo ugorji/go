@@ -1003,24 +1003,22 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 	if e.err != nil {
 		return e.err
 	}
-	if recoverPanicToErr {
-		defer func() {
-			// if error occurred during encoding, return that error;
-			// else if error occurred on end'ing (i.e. during flush), return that error.
-			err = e.w().endErr()
-			x := recover()
-			if x == nil {
-				if e.err != err {
-					e.err = err
-				}
-			} else {
-				panicValToErr(e, x, &e.err)
-				if e.err != err {
-					err = e.err
-				}
+	defer func() {
+		// if error occurred during encoding, return that error;
+		// else if error occurred on end'ing (i.e. during flush), return that error.
+		err = e.w().endErr()
+		x := recover()
+		if x == nil {
+			if e.err != err {
+				e.err = err
 			}
-		}()
-	}
+		} else {
+			panicValToErr(e, x, &e.err)
+			if e.err != err {
+				err = e.err
+			}
+		}
+	}()
 
 	// defer e.deferred(&err)
 	e.mustEncode(v)

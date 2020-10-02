@@ -1303,16 +1303,14 @@ func (d *Decoder) Decode(v interface{}) (err error) {
 	if d.err != nil {
 		return d.err
 	}
-	if recoverPanicToErr {
-		defer func() {
-			if x := recover(); x != nil {
-				panicValToErr(d, x, &d.err)
-				if d.err != err {
-					err = d.err
-				}
+	defer func() {
+		if x := recover(); x != nil {
+			panicValToErr(d, x, &d.err)
+			if d.err != err {
+				err = d.err
 			}
-		}()
-	}
+		}
+	}()
 
 	// defer d.deferred(&err)
 	d.mustDecode(v)

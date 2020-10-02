@@ -1270,11 +1270,6 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 	if testSkipRPCTests {
 		return
 	}
-	// rpc needs EOF, which is sent via a panic, and so must be recovered.
-	if !recoverPanicToErr {
-		t.Logf("EXPECTED. set recoverPanicToErr=true, since rpc needs EOF")
-		t.FailNow()
-	}
 
 	if jsonH, ok := h.(*JsonHandle); ok && !jsonH.TermWhitespace {
 		jsonH.TermWhitespace = true
