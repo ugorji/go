@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
 // +build alltests
-// +build go1.7
+// +build go1.8
 
 package codec
 
@@ -27,7 +27,10 @@ package codec
 //     cut -d '(' -f 1 | cut -d ' ' -f 2 | \
 //     while read f; do echo "t.Run(\"$f\", $f)"; done
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 // func TestMain(m *testing.M) {
 // 	println("calling TestMain")
@@ -35,6 +38,18 @@ import "testing"
 // 	exitcode := m.Run()
 // 	os.Exit(exitcode)
 // }
+
+type testTimeTracker struct {
+	t time.Time
+}
+
+func (tt *testTimeTracker) Elapsed() (d time.Duration) {
+	if !tt.t.IsZero() {
+		d = time.Since(tt.t)
+	}
+	tt.t = time.Now()
+	return
+}
 
 func testGroupResetFlags() {
 	testRpcBufsize = 2048
@@ -46,56 +61,6 @@ func testGroupResetFlags() {
 	testDepth = 0
 	testDecodeOptions = DecodeOptions{}
 	testEncodeOptions = EncodeOptions{}
-}
-
-func testSuite(t *testing.T, f func(t *testing.T)) {
-	// find . -name "*_test.go" | xargs grep -e 'flag.' | cut -d '&' -f 2 | cut -d ',' -f 1 | grep -e '^test'
-	// Disregard the following: testInitDebug, testSkipIntf, testJsonIndent (Need a test for it)
-
-	testGroupResetFlags()
-
-	testReinit()
-	t.Run("optionsFalse", f)
-
-	testUseIoEncDec = 0
-	testUseReset = true
-
-	testDecodeOptions.ZeroCopy = true
-	testDecodeOptions.InternString = true
-	testDecodeOptions.MapValueReset = true
-
-	// testDecodeOptions.SignedInteger = true
-	testDecodeOptions.SliceElementReset = true
-	// testDecodeOptions.InterfaceReset = true
-	// testDecodeOptions.PreferArrayOverSlice = true
-	// testDecodeOptions.DeleteOnNilMapValue = true
-	// testDecodeOptions.RawToString = true
-	testDecodeOptions.PreferPointerForStructOrArray = true
-
-	testEncodeOptions.StructToArray = true
-	testEncodeOptions.Canonical = true
-	testEncodeOptions.CheckCircularRef = true
-	testEncodeOptions.RecursiveEmptyCheck = true
-	testEncodeOptions.OptimumSize = true
-
-	// testEncodeOptions.Raw = true
-	// testEncodeOptions.StringToRaw = true
-
-	testReinit()
-	t.Run("optionsTrue", f)
-
-	// The following here MUST be tested individually, as they create
-	// side effects i.e. the decoded value is different.
-	// testDecodeOptions.MapValueReset = true // ok - no side effects
-	// testDecodeOptions.InterfaceReset = true // error??? because we do deepEquals to verify
-	// testDecodeOptions.ErrorIfNoField = true // error, as expected, as fields not there
-	// testDecodeOptions.ErrorIfNoArrayExpand = true // no error, but no error case either
-	// testDecodeOptions.PreferArrayOverSlice = true // error??? because slice != array.
-	// .... however, update deepEqual to take this option
-	// testReinit()
-	// t.Run("optionsTrue-resetOptions", f)
-
-	// testGroupResetFlags()
 }
 
 func testCodecGroup(t *testing.T) {
@@ -361,16 +326,65 @@ func testNonHandlesGroup(t *testing.T) {
 }
 
 func TestCodecSuite(t *testing.T) {
+	var tt testTimeTracker
+	tt.Elapsed()
+
+	testGroupResetFlags()
+
 	testReinit() // so flag.Parse() is called first, and never called again
 
-	testSuite(t, testCodecGroup)
+	t.Run("optionsFalse", testCodecGroup)
+	// xdebugf("optionsFalse: %v", tt.Elapsed())
+
+	testUseIoEncDec = 0
+	testUseReset = true
+
+	testDecodeOptions.ZeroCopy = true
+	testDecodeOptions.InternString = true
+	testDecodeOptions.MapValueReset = true
+
+	// testDecodeOptions.SignedInteger = true
+	testDecodeOptions.SliceElementReset = true
+	// testDecodeOptions.InterfaceReset = true
+	// testDecodeOptions.PreferArrayOverSlice = true
+	// testDecodeOptions.DeleteOnNilMapValue = true
+	// testDecodeOptions.RawToString = true
+	testDecodeOptions.PreferPointerForStructOrArray = true
+
+	testEncodeOptions.StructToArray = true
+	testEncodeOptions.Canonical = true
+	testEncodeOptions.CheckCircularRef = true
+	testEncodeOptions.RecursiveEmptyCheck = true
+	testEncodeOptions.OptimumSize = true
+
+	// testEncodeOptions.Raw = true
+	// testEncodeOptions.StringToRaw = true
+
+	testReinit()
+	t.Run("optionsTrue", testCodecGroup)
+	// xdebugf("optionsTrue: %v", tt.Elapsed())
+
+	// The following here MUST be tested individually, as they create
+	// side effects i.e. the decoded value is different.
+	// testDecodeOptions.MapValueReset = true // ok - no side effects
+	// testDecodeOptions.InterfaceReset = true // error??? because we do deepEquals to verify
+	// testDecodeOptions.ErrorIfNoField = true // error, as expected, as fields not there
+	// testDecodeOptions.ErrorIfNoArrayExpand = true // no error, but no error case either
+	// testDecodeOptions.PreferArrayOverSlice = true // error??? because slice != array.
+	// .... however, update deepEqual to take this option
+	// testReinit()
+	// t.Run("optionsTrue-resetOptions", testCodecGroup)
 
 	testGroupResetFlags()
 
 	// ---
-	testDepth = 6
+	testDepth = 4
+	if testing.Short() {
+		testDepth = 2
+	}
 	testReinit()
 	t.Run("optionsTrue-deepstruct", testCodecGroupV)
+	// xdebugf("deepstruct: %v", tt.Elapsed())
 	testDepth = 0
 
 	// ---
@@ -378,6 +392,7 @@ func TestCodecSuite(t *testing.T) {
 	testUseIoWrapper = true
 	testReinit()
 	t.Run("optionsTrue-ioWrapper", testCodecGroupV)
+	// xdebugf("ioWrapper: %v", tt.Elapsed())
 	testUseIoWrapper = false
 
 	// testUseIoEncDec = -1
@@ -393,6 +408,7 @@ func TestCodecSuite(t *testing.T) {
 	// testEncodeOptions.WriterBufferSize = 128
 	testReinit()
 	t.Run("optionsTrue-bufio", testCodecGroupV)
+	// xdebugf("bufio: %v", tt.Elapsed())
 	// testDecodeOptions.ReaderBufferSize = 0
 	// testEncodeOptions.WriterBufferSize = 0
 	testSkipRPCTests = false
@@ -402,6 +418,7 @@ func TestCodecSuite(t *testing.T) {
 	testNumRepeatString = 32
 	testReinit()
 	t.Run("optionsTrue-largestrings", testCodecGroupV)
+	// xdebugf("largestrings: %v", tt.Elapsed())
 	testNumRepeatString = 8
 
 	testGroupResetFlags()
@@ -419,6 +436,7 @@ func TestCodecSuite(t *testing.T) {
 	// testJsonH.PreferFloat = true
 	testReinit()
 	t.Run("json-spaces-htmlcharsasis-initLen10", testJsonGroup)
+	// xdebugf("json-spaces-htmlcharsasis-initLen10: %v", tt.Elapsed())
 
 	testMaxInitLen = 10
 	testJsonH.Indent = -1
@@ -427,6 +445,7 @@ func TestCodecSuite(t *testing.T) {
 	// testJsonH.PreferFloat = false
 	testReinit()
 	t.Run("json-tabs-initLen10", testJsonGroup)
+	// xdebugf("json-tabs-initLen10: %v", tt.Elapsed())
 
 	testJsonH.Indent = oldIndent
 	testJsonH.HTMLCharsAsIs = oldCharsAsis
@@ -438,18 +457,21 @@ func TestCodecSuite(t *testing.T) {
 	testCborH.IndefiniteLength = true
 	testReinit()
 	t.Run("cbor-indefinitelength", testCborGroup)
+	// xdebugf("cbor-indefinitelength: %v", tt.Elapsed())
 	testCborH.IndefiniteLength = oldIndefLen
 
 	oldTimeRFC3339 := testCborH.TimeRFC3339
 	testCborH.TimeRFC3339 = !testCborH.TimeRFC3339
 	testReinit()
 	t.Run("cbor-rfc3339", testCborGroup)
+	// xdebugf("cbor-rfc3339: %v", tt.Elapsed())
 	testCborH.TimeRFC3339 = oldTimeRFC3339
 
 	oldSkipUnexpectedTags := testCborH.SkipUnexpectedTags
 	testCborH.SkipUnexpectedTags = !testCborH.SkipUnexpectedTags
 	testReinit()
 	t.Run("cbor-skip-tags", testCborGroup)
+	// xdebugf("cbor-skip-tags: %v", tt.Elapsed())
 	testCborH.SkipUnexpectedTags = oldSkipUnexpectedTags
 
 	// ---
@@ -458,10 +480,12 @@ func TestCodecSuite(t *testing.T) {
 	testBincH.AsSymbols = 2 // AsSymbolNone
 	testReinit()
 	t.Run("binc-no-symbols", testBincGroup)
+	// xdebugf("binc-no-symbols: %v", tt.Elapsed())
 
 	testBincH.AsSymbols = 1 // AsSymbolAll
 	testReinit()
 	t.Run("binc-all-symbols", testBincGroup)
+	// xdebugf("binc-all-symbols: %v", tt.Elapsed())
 
 	testBincH.AsSymbols = oldSymbols
 
@@ -472,12 +496,14 @@ func TestCodecSuite(t *testing.T) {
 	testMsgpackH.WriteExt = !testMsgpackH.WriteExt
 	testReinit()
 	t.Run("msgpack-inverse-writeext", testMsgpackGroup)
+	// xdebugf("msgpack-inverse-writeext: %v", tt.Elapsed())
 
 	testMsgpackH.WriteExt = oldWriteExt
 
 	testMsgpackH.NoFixedNum = !testMsgpackH.NoFixedNum
 	testReinit()
 	t.Run("msgpack-fixednum", testMsgpackGroup)
+	// xdebugf("msgpack-fixednum: %v", tt.Elapsed())
 
 	testMsgpackH.NoFixedNum = oldNoFixedNum
 
@@ -486,6 +512,7 @@ func TestCodecSuite(t *testing.T) {
 	testSimpleH.EncZeroValuesAsNil = !testSimpleH.EncZeroValuesAsNil
 	testReinit()
 	t.Run("simple-enczeroasnil", testSimpleMammothGroup) // testSimpleGroup
+	// xdebugf("simple-enczeroasnil: %v", tt.Elapsed())
 	testSimpleH.EncZeroValuesAsNil = oldEncZeroValuesAsNil
 
 	// ---
@@ -501,6 +528,7 @@ func TestCodecSuite(t *testing.T) {
 	t.Run("rpc-buf-16", testRpcGroup)
 	testRpcBufsize = 2048
 	t.Run("rpc-buf-2048", testRpcGroup)
+	// xdebugf("rpc: %v", tt.Elapsed())
 
 	testRPCOptions.RPCNoBuffer = true
 	testRpcBufsize = 0
@@ -509,6 +537,7 @@ func TestCodecSuite(t *testing.T) {
 	t.Run("rpc-buf-00-rpcNoBuffer", testRpcGroup)
 	testRpcBufsize = 2048
 	t.Run("rpc-buf-2048-rpcNoBuffer", testRpcGroup)
+	// xdebugf("rpcNoBuffer: %v", tt.Elapsed())
 
 	testGroupResetFlags()
 }
