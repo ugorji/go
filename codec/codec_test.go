@@ -351,6 +351,10 @@ func (x timeExt) UpdateExt(v interface{}, src interface{}) {
 
 // ----
 
+func testSetup(t *testing.T) {
+	testOnce.Do(testInitAll)
+}
+
 func testCodecEncode(ts interface{}, bsIn []byte,
 	fn func([]byte) *bytes.Buffer, h Handle) (bs []byte, err error) {
 	return testSharedCodecEncode(ts, bsIn, fn, h, basicHandle(h))
@@ -891,7 +895,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 }
 
 func doTestCodecTableOne(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	// func TestMsgpackAllExperimental(t *testing.T) {
 	// dopts := testDecOpts(nil, nil, false, true, true),
 
@@ -942,7 +946,7 @@ func doTestCodecTableOne(t *testing.T, h Handle) {
 
 func doTestCodecMiscOne(t *testing.T, h Handle) {
 	var err error
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	bh := basicHandle(h)
 	b := testMarshalErr(32, h, t, "32")
 	// Cannot do this nil one, because faster type assertion decoding will panic
@@ -1090,7 +1094,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 }
 
 func doTestCodecEmbeddedPointer(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	type Z int
 	type A struct {
 		AnInt int
@@ -1110,7 +1114,7 @@ func doTestCodecEmbeddedPointer(t *testing.T, h Handle) {
 }
 
 func testCodecUnderlyingType(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	// Manual Test.
 	// Run by hand, with accompanying printf.statements in fast-path.go
 	// to ensure that the fast functions are called.
@@ -1132,7 +1136,7 @@ func testCodecUnderlyingType(t *testing.T, h Handle) {
 }
 
 func doTestCodecChan(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	// - send a slice []*int64 (sl1) into an chan (ch1) with cap > len(s1)
 	// - encode ch1 as a stream array
 	// - decode a chan (ch2), with cap > len(s1) from the stream array
@@ -1262,7 +1266,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 }
 
 func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration) (port int) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	if testSkipRPCTests {
 		return
 	}
@@ -1370,7 +1374,7 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 }
 
 func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	// println("doTestMapEncodeForCanonical")
 	v1 := map[stringUint64T]interface{}{
 		stringUint64T{"a", 1}: 1,
@@ -1453,7 +1457,7 @@ func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 }
 
 func doTestStdEncIntf(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	args := [][2]interface{}{
 		{&TestABC{"A", "BB", "CCC"}, new(TestABC)},
 		{&TestABC2{"AAA", "BB", "C"}, new(TestABC2)},
@@ -1476,7 +1480,7 @@ func doTestStdEncIntf(t *testing.T, h Handle) {
 }
 
 func doTestEncCircularRef(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	type T1 struct {
 		S string
 		B bool
@@ -1535,7 +1539,7 @@ type (
 )
 
 func doTestAnonCycle(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	var x TestAnonCycleT1
 	x.S = "hello"
 	x.TestAnonCycleT2.S2 = "hello.2"
@@ -1551,7 +1555,7 @@ func doTestAnonCycle(t *testing.T, h Handle) {
 }
 
 func doTestErrWriter(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	var ew testErrWriter
 	w := bufio.NewWriterSize(&ew, 4)
@@ -1569,7 +1573,7 @@ func doTestErrWriter(t *testing.T, h Handle) {
 }
 
 func doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	if testVerbose {
 		t.Logf("Running doTestJsonLargeInteger: v: %#v, ias: %c", v, ias)
 	}
@@ -1642,7 +1646,7 @@ func doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
 }
 
 func doTestRawValue(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	bh := basicHandle(h)
 	if !bh.Raw {
 		bh.Raw = true
@@ -1691,7 +1695,7 @@ func doTestRawValue(t *testing.T, h Handle) {
 // We keep this unexported here, and put actual test in ext_dep_test.go.
 // This way, it can be excluded by excluding file completely.
 func doTestPythonGenStreams(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 
 	// time0 := time.Now()
 	// defer func() { xdebugf("python-gen-streams: %s: took: %v", h.Name(), time.Since(time0)) }()
@@ -1814,7 +1818,7 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 	if testSkipRPCTests {
 		return
 	}
-	testOnce.Do(testInitAll)
+	testSetup(t)
 
 	// openPorts are between 6700 and 6800
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -1846,7 +1850,7 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 	if testSkipRPCTests {
 		return
 	}
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	exitSleepDur := 10 * time.Millisecond // 1*time.Second
 	port := doTestCodecRpcOne(t, MsgpackSpecRpc, testMsgpackH, false, exitSleepDur)
 	cmd := exec.Command("python", "test.py", "rpc-client-go-service", strconv.Itoa(port))
@@ -1862,7 +1866,7 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 }
 
 func doTestSwallowAndZero(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	v1 := newTestStrucFlex(testDepth, testNumRepeatString, false, false, testMapStringKeyOnly)
 	var b1 []byte
 
@@ -1879,7 +1883,7 @@ func doTestSwallowAndZero(t *testing.T, h Handle) {
 }
 
 func doTestRawExt(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	var b []byte
 	var v RawExt // interface{}
 	_, isJson := h.(*JsonHandle)
@@ -1951,7 +1955,7 @@ func doTestRawExt(t *testing.T, h Handle) {
 // }
 
 func doTestMapStructKey(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	var b []byte
 	var v interface{} // map[stringUint64T]wrapUint64Slice // interface{}
 	bh := basicHandle(h)
@@ -1979,7 +1983,7 @@ func doTestMapStructKey(t *testing.T, h Handle) {
 }
 
 func doTestDecodeNilMapValue(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	type Struct struct {
 		Field map[uint16]map[uint32]struct{}
 	}
@@ -2025,7 +2029,7 @@ func doTestDecodeNilMapValue(t *testing.T, h Handle) {
 }
 
 func doTestDecodeNilMapEntryValue(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 
 	type Entry struct{}
 	type Entries struct {
@@ -2062,7 +2066,7 @@ func doTestDecodeNilMapEntryValue(t *testing.T, h Handle) {
 }
 
 func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	type Embedded struct {
 		Field byte
 	}
@@ -2105,7 +2109,7 @@ func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
 }
 
 func doTestLargeContainerLen(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 
 	// This test can take a while if run multiple times in a loop, as it creates
 	// large maps/slices. Use t.Short() appropriately to limit its execution time.
@@ -2262,7 +2266,6 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 }
 
 func testRandomFillRV(v reflect.Value) {
-	testOnce.Do(testInitAll)
 	fneg := func() int64 {
 		i := rand.Intn(1)
 		if i == 1 {
@@ -2338,7 +2341,7 @@ func testRandomFillRV(v reflect.Value) {
 }
 
 func doTestMammoth(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	var b []byte
 
@@ -2365,7 +2368,7 @@ func doTestMammoth(t *testing.T, h Handle) {
 }
 
 func doTestTime(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	// test time which uses the time.go implementation (ie Binc)
 	var tt, tt2 time.Time
@@ -2384,7 +2387,7 @@ func doTestTime(t *testing.T, h Handle) {
 }
 
 func doTestUintToInt(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	var golden = [...]int64{
 		0, 1, 22, 333, 4444, 55555, 666666,
@@ -2450,7 +2453,7 @@ func doTestUintToInt(t *testing.T, h Handle) {
 }
 
 func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 
 	// - maptype, slicetype: diff from map[string]intf, map[intf]intf or []intf, etc
@@ -2599,7 +2602,7 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 }
 
 func doTestScalars(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 
 	// for each scalar:
 	// - encode its ptr
@@ -2700,7 +2703,7 @@ func doTestScalars(t *testing.T, h Handle) {
 }
 
 func doTestIntfMapping(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	rti := reflect.TypeOf((*testIntfMapI)(nil)).Elem()
 	defer func() { basicHandle(h).Intf2Impl(rti, nil) }()
@@ -2728,7 +2731,7 @@ func doTestIntfMapping(t *testing.T, h Handle) {
 }
 
 func doTestOmitempty(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	if basicHandle(h).StructToArray {
 		t.Skipf("skipping OmitEmpty test when StructToArray=true")
@@ -2751,7 +2754,7 @@ func doTestOmitempty(t *testing.T, h Handle) {
 }
 
 func doTestMissingFields(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	if codecgen {
 		t.Skipf("skipping Missing Fields tests as it is not honored by codecgen")
@@ -2777,7 +2780,7 @@ func doTestMissingFields(t *testing.T, h Handle) {
 }
 
 func doTestMaxDepth(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	type T struct {
 		I interface{} // value to encode
@@ -2868,7 +2871,7 @@ func doTestMaxDepth(t *testing.T, h Handle) {
 }
 
 func doTestMultipleEncDec(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	// encode a string multiple times.
 	// decode it multiple times.
@@ -2888,7 +2891,7 @@ func doTestMultipleEncDec(t *testing.T, h Handle) {
 }
 
 func doTestSelfExt(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	var ts TestSelfExtImpl
 	ts.S = "ugorji"
@@ -2903,7 +2906,7 @@ func doTestSelfExt(t *testing.T, h Handle) {
 }
 
 func doTestBytesEncodedAsArray(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	// Need to test edge case where bytes are encoded as an array
 	// (not using optimized []byte native format)
@@ -2925,7 +2928,7 @@ func doTestBytesEncodedAsArray(t *testing.T, h Handle) {
 }
 
 func doTestStrucEncDec(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 	{
 		var ts1 = newTestStruc(2, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
@@ -2948,7 +2951,7 @@ func doTestStrucEncDec(t *testing.T, h Handle) {
 }
 
 func doTestStructKeyType(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	name := h.Name()
 
 	mh, mok := h.(*MsgpackHandle)
@@ -3032,7 +3035,7 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 }
 
 func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	// name := h.Name()
 
 	// Tests:
@@ -3176,7 +3179,7 @@ MAP_VALUE_RESET:
 // -----------------
 
 func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	var b = `{"s.true": "true", "b.true": true, "s.false": "false", "b.false": false, "s.10": "10", "i.10": 10, "i.-10": -10}`
 	var golden = map[string]string{"s.true": "true", "b.true": "true", "s.false": "false", "b.false": "false", "s.10": "10", "i.10": "10", "i.-10": "-10"}
 
@@ -3250,7 +3253,7 @@ func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
 }
 
 func TestJsonEncodeIndent(t *testing.T) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	v := TestSimplish{
 		Ii: -794,
 		Ss: `A Man is
@@ -3364,7 +3367,7 @@ after the new line
 }
 
 func doTestBufioDecReader(t *testing.T, bufsize int) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	bufsizehalf := (bufsize + 1) / 2
 	// TODO: add testing when the buffer size is smaller than the string length.
 
@@ -3431,7 +3434,7 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 }
 
 func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	// encode a slice, decode it with PreferArrayOverSlice
 	// if codecgen, skip the test (as codecgen doesn't work with PreferArrayOverSlice)
 	if codecgen {
@@ -3457,7 +3460,7 @@ func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
 }
 
 func doTestZeroCopyBytes(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	// jsonhandle and cborhandle with indefiniteLength do not support inline bytes, so skip them.
 	if _, ok := h.(*JsonHandle); ok { // if h == testJsonH {
 		t.Skipf("skipping ... zero copy bytes not supported by json handle")
@@ -3499,7 +3502,7 @@ func doTestZeroCopyBytes(t *testing.T, h Handle) {
 }
 
 func doTestNextValueBytes(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 
 	// - encode uint, int, float, bool, struct, map, slice, string - all separated by nil
 	// - use nextvaluebytes to grab he's got each one, and decode it, and compare
@@ -3554,13 +3557,13 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 }
 
 func doTestNumbers(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	doTestIntegers(t, h)
 	doTestFloats(t, h)
 }
 
 func doTestIntegers(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 
 	// handle SignedInteger=true|false
 	// decode into an interface{}
@@ -3655,7 +3658,7 @@ var testFloatsToParse = []float64{
 }
 
 func doTestFloats(t *testing.T, h Handle) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 
 	_, jok := h.(*JsonHandle)
 
@@ -3711,7 +3714,7 @@ func doTestDesc(t *testing.T, h Handle, m map[byte]string) {
 }
 
 func TestBufioDecReader(t *testing.T) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	doTestBufioDecReader(t, 13)
 	doTestBufioDecReader(t, 3)
 	doTestBufioDecReader(t, 5)
@@ -3719,7 +3722,7 @@ func TestBufioDecReader(t *testing.T) {
 }
 
 func TestAtomic(t *testing.T) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	// load, store, load, confirm
 	if true {
 		var a atomicTypeInfoSlice
@@ -3771,7 +3774,7 @@ func TestAtomic(t *testing.T) {
 // -----------
 
 func TestJsonLargeInteger(t *testing.T) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	for _, i := range []uint8{'L', 'A', 0} {
 		for _, j := range []interface{}{
 			int64(1 << 60),
@@ -3865,7 +3868,7 @@ func TestJsonLargeInteger(t *testing.T) {
 }
 
 func TestJsonInvalidUnicode(t *testing.T) {
-	testOnce.Do(testInitAll)
+	testSetup(t)
 	// t.Skipf("new json implementation does not handle bad unicode robustly")
 
 	// set testUseMust to true, so we can capture errors
