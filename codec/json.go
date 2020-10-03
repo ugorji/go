@@ -328,7 +328,7 @@ func (e *jsonEncDriver) EncodeStringBytesRaw(v []byte) {
 	slen := base64.StdEncoding.EncodedLen(len(v)) + 2
 	var bs []byte
 	if len(e.b) < slen {
-		bs = e.e.blist.get(slen)
+		bs = e.e.blist.get(slen)[:slen]
 	} else {
 		bs = e.b[:slen]
 	}
@@ -933,7 +933,7 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	} else if slen <= cap(bs) {
 		bsOut = bs[:slen]
 	} else if zerocopy {
-		d.buf = d.d.blist.check(d.buf, slen)
+		d.buf = d.d.blist.check(d.buf, slen)[:slen]
 		bsOut = d.buf
 	} else {
 		bsOut = make([]byte, slen)
@@ -1299,7 +1299,7 @@ func (e *jsonEncDriver) reset() {
 
 func (d *jsonDecDriver) reset() {
 	d.se.InterfaceExt = d.h.RawBytesExt
-	d.buf = d.d.blist.check(d.buf, 256)[:0]
+	d.buf = d.d.blist.check(d.buf, 256)
 	d.tok = 0
 }
 

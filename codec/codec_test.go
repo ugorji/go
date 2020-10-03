@@ -793,7 +793,7 @@ func testReleaseBytes(bs []byte) {
 
 func testMarshal(v interface{}, h Handle) (bs []byte, err error) {
 	// return testCodecEncode(v, nil, testByteBuf, h)
-	return testCodecEncode(v, testBytesFreeList.get(64)[:0], testByteBuf, h, false)
+	return testCodecEncode(v, testBytesFreeList.get(64), testByteBuf, h, false)
 }
 
 func testUnmarshal(v interface{}, data []byte, h Handle) (err error) {
@@ -802,7 +802,7 @@ func testUnmarshal(v interface{}, data []byte, h Handle) (err error) {
 
 func testMarshalErr(v interface{}, h Handle, t *testing.T, name string) (bs []byte) {
 	// t.Helper()
-	bs, err := testCodecEncode(v, testBytesFreeList.get(64)[:0], testByteBuf, h, true)
+	bs, err := testCodecEncode(v, testBytesFreeList.get(64), testByteBuf, h, true)
 	if err != nil {
 		t.Logf("%s: marshal failed: %v", name, err)
 		if testVerbose {

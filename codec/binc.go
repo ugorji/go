@@ -222,7 +222,7 @@ func (e *bincEncDriver) encUint(bd byte, pos bool, v uint64) {
 func (e *bincEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext) {
 	var bs []byte
 	if ext == SelfExt {
-		bs = e.e.blist.get(1024)[:0]
+		bs = e.e.blist.get(1024)
 		e.e.sideEncode(v, &bs)
 	} else {
 		bs = ext.WriteExt(v)

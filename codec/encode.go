@@ -776,7 +776,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 	default:
 		// out-of-band
 		// first encode each key to a []byte first, then sort them, then record
-		var mksv []byte = e.blist.get(len(mks) * 16)[:0]
+		var mksv = e.blist.get(len(mks) * 16)
 		e2 := NewEncoderBytes(&mksv, e.hh)
 		mksbv := make([]bytesRv, len(mks))
 		for i, k := range mks {
@@ -1150,21 +1150,8 @@ func (e *Encoder) encode(iv interface{}) {
 			e.e.EncodeStringBytesRaw(*v)
 		}
 	default:
-		// var vself Selfer
-		// if xfFn := e.h.getExt(i2rtid(iv), true); xfFn != nil {
-		// 	e.e.EncodeExt(iv, xfFn.tag, xfFn.ext)
-		// } else if vself, ok = iv.(Selfer); ok {
-		// 	vself.CodecEncodeSelf(e)
-		// } else if !fastpathEncodeTypeSwitch(iv, e) {
-		// 	if !rv.IsValid() {
-		// 		rv = rv4i(iv)
-		// 	}
-		// 	e.encodeValue(rv, nil)
-		// }
-		if !fastpathEncodeTypeSwitch(iv, e) {
-			if !rv.IsValid() {
-				rv = rv4i(iv)
-			}
+		// we can't check non-predefined types, as they might be a Selfer or extension.
+		if skipFastpathTypeSwitchInDirectCall || !fastpathEncodeTypeSwitch(iv, e) {
 			e.encodeValue(rv, nil)
 		}
 	}

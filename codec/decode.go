@@ -312,7 +312,7 @@ func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(jsonUnmarshaler)
 	// bs := d.d.DecodeBytes(d.b[:], true, true)
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
-	bs := d.blist.get(256)[:0]
+	bs := d.blist.get(256)
 	bs = d.d.nextValueBytes(bs)
 	fnerr := tm.UnmarshalJSON(bs)
 	d.blist.put(bs)
@@ -1350,7 +1350,7 @@ func (d *Decoder) Release() {
 }
 
 func (d *Decoder) swallow() {
-	bs := d.blist.get(256)[:0]
+	bs := d.blist.get(256)
 	bs = d.d.nextValueBytes(bs) // discard it
 	d.blist.put(bs)
 }
@@ -1359,7 +1359,8 @@ func setZero(iv interface{}) {
 	if iv == nil {
 		return
 	}
-	if _, ok := isNil(iv); ok {
+	rv, ok := isNil(iv)
+	if ok {
 		return
 	}
 	// var canDecode bool
@@ -1402,7 +1403,7 @@ func setZero(iv interface{}) {
 		setZeroRV(v)
 	default:
 		if !fastpathDecodeSetZeroTypeSwitch(iv) {
-			setZeroRV(rv4i(iv))
+			setZeroRV(rv)
 		}
 	}
 }
@@ -1442,7 +1443,6 @@ func (d *Decoder) decode(iv interface{}) {
 			d.haltAsNotDecodeable(v)
 		}
 		d.decodeValue(v, nil)
-
 	case *string:
 		*v = string(d.d.DecodeStringAsBytes())
 	case *bool:
@@ -1475,7 +1475,7 @@ func (d *Decoder) decode(iv interface{}) {
 		*v = d.d.DecodeBytes(*v, false)
 	case []byte:
 		b := d.d.DecodeBytes(v, false)
-		if !(len(b) > 0 && len(b) == len(v) && &b[0] == &v[0]) {
+		if !(len(b) > 0 && len(b) == len(v) && &b[0] == &v[0]) { // not same slice
 			copy(v, b)
 		}
 	case *time.Time:
@@ -1487,18 +1487,8 @@ func (d *Decoder) decode(iv interface{}) {
 		d.decodeValue(rv4i(iv), nil)
 
 	default:
-		// if xfFn := d.h.getExt(i2rtid(iv), true); xfFn != nil {
-		// 	d.d.DecodeExt(iv, xfFn.tag, xfFn.ext)
-		// } else if v, ok := iv.(Selfer); ok {
-		// 	v.CodecDecodeSelf(d)
-		// } else if !fastpathDecodeTypeSwitch(iv, d) {
-		// 	v := rv4i(iv)
-		// 	if !isDecodeable(v) {
-		// 		d.haltAsNotDecodeable(v)
-		// 	}
-		// 	d.decodeValue(v, nil)
-		// }
-		if !fastpathDecodeTypeSwitch(iv, d) {
+		// we can't check non-predefined types, as they might be a Selfer or extension.
+		if skipFastpathTypeSwitchInDirectCall || !fastpathDecodeTypeSwitch(iv, d) {
 			v := rv4i(iv)
 			if !isDecodeable(v) {
 				d.haltAsNotDecodeable(v)

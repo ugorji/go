@@ -195,6 +195,11 @@ const (
 
 	// so structFieldInfo fits into 8 bytes
 	maxLevelsEmbedding = 14
+
+	// determines whether to skip calling fastpath(En|De)codeTypeSwitch,
+	// since calling it here could be redundant, as if that fails, we still
+	// have to determine the function to use for values of that type.
+	skipFastpathTypeSwitchInDirectCall = false
 )
 
 var (
@@ -2633,53 +2638,52 @@ func freelistCapacity(length int) (capacity int) {
 	return
 }
 
+// bytesFreelist is a list of byte buffers, sorted by cap.
 type bytesFreelist [][]byte
 
+// return a slice of possibly non-zero'ed bytes, with len=0,
+// and with cap >= length requested.
 func (x *bytesFreelist) get(length int) (out []byte) {
 	if bytesFreeListNoCache {
-		return make([]byte, length, freelistCapacity(length))
+		return make([]byte, 0, freelistCapacity(length))
 	}
 	y := *x
-	var j int = -1
-	for i := range y {
-		if cap(y[i]) >= length && (j == -1 || cap(y[i]) < cap(y[j])) {
-			j = i
+	for i, v := range y {
+		if cap(v) >= length {
+			// *x = append(y[:i], y[i+1:]...)
+			copy(y[i:], y[i+1:])
+			*x = y[:len(y)-1]
+			return v
 		}
 	}
-	if j == -1 {
-		return make([]byte, length, freelistCapacity(length))
-	}
-	out = y[j][:length]
-	y[j] = nil
-	for i := range out { // memclr/memset
-		out[i] = 0
-	}
-	return
+	return make([]byte, 0, freelistCapacity(length))
 }
 
 func (x *bytesFreelist) put(v []byte) {
-	if bytesFreeListNoCache {
+	if bytesFreeListNoCache || cap(v) == 0 {
 		return
 	}
-	if cap(v) == 0 {
-		return
+	if len(v) != 0 {
+		v = v[:0]
 	}
-	y := *x
-	for i := range y {
-		if cap(y[i]) == 0 {
+	// append the new value, then try to put it in a better position
+	y := append(*x, v)
+	*x = y
+	for i, z := range y[:len(y)-1] {
+		if cap(z) > cap(v) {
+			copy(y[i+1:], y[i:])
 			y[i] = v
 			return
 		}
 	}
-	*x = append(y, v)
 }
 
 func (x *bytesFreelist) check(v []byte, length int) (out []byte) {
-	if cap(v) < length {
-		x.put(v)
-		return x.get(length)
+	if cap(v) >= length {
+		return v[:0]
 	}
-	return v[:length]
+	x.put(v)
+	return x.get(length)
 }
 
 // -------------------------
