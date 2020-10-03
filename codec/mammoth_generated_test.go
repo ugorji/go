@@ -251,19 +251,20 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		var bs17 []byte
 		v17v1 = v
 		bs17 = testMarshalErr(v17v1, h, t, "enc-slice-v17")
-		if v != nil {
-			if v == nil {
-				v17v2 = nil
-			} else {
-				v17v2 = make([]interface{}, len(v))
-			}
+		if v == nil {
+			v17v2 = make([]interface{}, 2)
+			testUnmarshalErr(v17v2, bs17, h, t, "dec-slice-v17")
+			testDeepEqualErr(v17v2[0], v17v2[1], t, "equal-slice-v17") // should not change
+			testDeepEqualErr(len(v17v2), 2, t, "equal-slice-v17")      // should not change
+			v17v2 = make([]interface{}, 2)
+			testUnmarshalErr(rv4i(v17v2), bs17, h, t, "dec-slice-v17-noaddr") // non-addressable value
+			testDeepEqualErr(v17v2[0], v17v2[1], t, "equal-slice-v17-noaddr") // should not change
+			testDeepEqualErr(len(v17v2), 2, t, "equal-slice-v17")             // should not change
+		} else {
+			v17v2 = make([]interface{}, len(v))
 			testUnmarshalErr(v17v2, bs17, h, t, "dec-slice-v17")
 			testDeepEqualErr(v17v1, v17v2, t, "equal-slice-v17")
-			if v == nil {
-				v17v2 = nil
-			} else {
-				v17v2 = make([]interface{}, len(v))
-			}
+			v17v2 = make([]interface{}, len(v))
 			testUnmarshalErr(rv4i(v17v2), bs17, h, t, "dec-slice-v17-noaddr") // non-addressable value
 			testDeepEqualErr(v17v1, v17v2, t, "equal-slice-v17-noaddr")
 		}
@@ -321,19 +322,20 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		var bs18 []byte
 		v18v1 = v
 		bs18 = testMarshalErr(v18v1, h, t, "enc-slice-v18")
-		if v != nil {
-			if v == nil {
-				v18v2 = nil
-			} else {
-				v18v2 = make([]string, len(v))
-			}
+		if v == nil {
+			v18v2 = make([]string, 2)
+			testUnmarshalErr(v18v2, bs18, h, t, "dec-slice-v18")
+			testDeepEqualErr(v18v2[0], v18v2[1], t, "equal-slice-v18") // should not change
+			testDeepEqualErr(len(v18v2), 2, t, "equal-slice-v18")      // should not change
+			v18v2 = make([]string, 2)
+			testUnmarshalErr(rv4i(v18v2), bs18, h, t, "dec-slice-v18-noaddr") // non-addressable value
+			testDeepEqualErr(v18v2[0], v18v2[1], t, "equal-slice-v18-noaddr") // should not change
+			testDeepEqualErr(len(v18v2), 2, t, "equal-slice-v18")             // should not change
+		} else {
+			v18v2 = make([]string, len(v))
 			testUnmarshalErr(v18v2, bs18, h, t, "dec-slice-v18")
 			testDeepEqualErr(v18v1, v18v2, t, "equal-slice-v18")
-			if v == nil {
-				v18v2 = nil
-			} else {
-				v18v2 = make([]string, len(v))
-			}
+			v18v2 = make([]string, len(v))
 			testUnmarshalErr(rv4i(v18v2), bs18, h, t, "dec-slice-v18-noaddr") // non-addressable value
 			testDeepEqualErr(v18v1, v18v2, t, "equal-slice-v18-noaddr")
 		}
@@ -391,19 +393,20 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		var bs19 []byte
 		v19v1 = v
 		bs19 = testMarshalErr(v19v1, h, t, "enc-slice-v19")
-		if v != nil {
-			if v == nil {
-				v19v2 = nil
-			} else {
-				v19v2 = make([][]byte, len(v))
-			}
+		if v == nil {
+			v19v2 = make([][]byte, 2)
+			testUnmarshalErr(v19v2, bs19, h, t, "dec-slice-v19")
+			testDeepEqualErr(v19v2[0], v19v2[1], t, "equal-slice-v19") // should not change
+			testDeepEqualErr(len(v19v2), 2, t, "equal-slice-v19")      // should not change
+			v19v2 = make([][]byte, 2)
+			testUnmarshalErr(rv4i(v19v2), bs19, h, t, "dec-slice-v19-noaddr") // non-addressable value
+			testDeepEqualErr(v19v2[0], v19v2[1], t, "equal-slice-v19-noaddr") // should not change
+			testDeepEqualErr(len(v19v2), 2, t, "equal-slice-v19")             // should not change
+		} else {
+			v19v2 = make([][]byte, len(v))
 			testUnmarshalErr(v19v2, bs19, h, t, "dec-slice-v19")
 			testDeepEqualErr(v19v1, v19v2, t, "equal-slice-v19")
-			if v == nil {
-				v19v2 = nil
-			} else {
-				v19v2 = make([][]byte, len(v))
-			}
+			v19v2 = make([][]byte, len(v))
 			testUnmarshalErr(rv4i(v19v2), bs19, h, t, "dec-slice-v19-noaddr") // non-addressable value
 			testDeepEqualErr(v19v1, v19v2, t, "equal-slice-v19-noaddr")
 		}
@@ -461,19 +464,20 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		var bs20 []byte
 		v20v1 = v
 		bs20 = testMarshalErr(v20v1, h, t, "enc-slice-v20")
-		if v != nil {
-			if v == nil {
-				v20v2 = nil
-			} else {
-				v20v2 = make([]float64, len(v))
-			}
+		if v == nil {
+			v20v2 = make([]float64, 2)
+			testUnmarshalErr(v20v2, bs20, h, t, "dec-slice-v20")
+			testDeepEqualErr(v20v2[0], v20v2[1], t, "equal-slice-v20") // should not change
+			testDeepEqualErr(len(v20v2), 2, t, "equal-slice-v20")      // should not change
+			v20v2 = make([]float64, 2)
+			testUnmarshalErr(rv4i(v20v2), bs20, h, t, "dec-slice-v20-noaddr") // non-addressable value
+			testDeepEqualErr(v20v2[0], v20v2[1], t, "equal-slice-v20-noaddr") // should not change
+			testDeepEqualErr(len(v20v2), 2, t, "equal-slice-v20")             // should not change
+		} else {
+			v20v2 = make([]float64, len(v))
 			testUnmarshalErr(v20v2, bs20, h, t, "dec-slice-v20")
 			testDeepEqualErr(v20v1, v20v2, t, "equal-slice-v20")
-			if v == nil {
-				v20v2 = nil
-			} else {
-				v20v2 = make([]float64, len(v))
-			}
+			v20v2 = make([]float64, len(v))
 			testUnmarshalErr(rv4i(v20v2), bs20, h, t, "dec-slice-v20-noaddr") // non-addressable value
 			testDeepEqualErr(v20v1, v20v2, t, "equal-slice-v20-noaddr")
 		}
@@ -531,19 +535,20 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		var bs21 []byte
 		v21v1 = v
 		bs21 = testMarshalErr(v21v1, h, t, "enc-slice-v21")
-		if v != nil {
-			if v == nil {
-				v21v2 = nil
-			} else {
-				v21v2 = make([]uint64, len(v))
-			}
+		if v == nil {
+			v21v2 = make([]uint64, 2)
+			testUnmarshalErr(v21v2, bs21, h, t, "dec-slice-v21")
+			testDeepEqualErr(v21v2[0], v21v2[1], t, "equal-slice-v21") // should not change
+			testDeepEqualErr(len(v21v2), 2, t, "equal-slice-v21")      // should not change
+			v21v2 = make([]uint64, 2)
+			testUnmarshalErr(rv4i(v21v2), bs21, h, t, "dec-slice-v21-noaddr") // non-addressable value
+			testDeepEqualErr(v21v2[0], v21v2[1], t, "equal-slice-v21-noaddr") // should not change
+			testDeepEqualErr(len(v21v2), 2, t, "equal-slice-v21")             // should not change
+		} else {
+			v21v2 = make([]uint64, len(v))
 			testUnmarshalErr(v21v2, bs21, h, t, "dec-slice-v21")
 			testDeepEqualErr(v21v1, v21v2, t, "equal-slice-v21")
-			if v == nil {
-				v21v2 = nil
-			} else {
-				v21v2 = make([]uint64, len(v))
-			}
+			v21v2 = make([]uint64, len(v))
 			testUnmarshalErr(rv4i(v21v2), bs21, h, t, "dec-slice-v21-noaddr") // non-addressable value
 			testDeepEqualErr(v21v1, v21v2, t, "equal-slice-v21-noaddr")
 		}
@@ -601,19 +606,20 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		var bs22 []byte
 		v22v1 = v
 		bs22 = testMarshalErr(v22v1, h, t, "enc-slice-v22")
-		if v != nil {
-			if v == nil {
-				v22v2 = nil
-			} else {
-				v22v2 = make([]int, len(v))
-			}
+		if v == nil {
+			v22v2 = make([]int, 2)
+			testUnmarshalErr(v22v2, bs22, h, t, "dec-slice-v22")
+			testDeepEqualErr(v22v2[0], v22v2[1], t, "equal-slice-v22") // should not change
+			testDeepEqualErr(len(v22v2), 2, t, "equal-slice-v22")      // should not change
+			v22v2 = make([]int, 2)
+			testUnmarshalErr(rv4i(v22v2), bs22, h, t, "dec-slice-v22-noaddr") // non-addressable value
+			testDeepEqualErr(v22v2[0], v22v2[1], t, "equal-slice-v22-noaddr") // should not change
+			testDeepEqualErr(len(v22v2), 2, t, "equal-slice-v22")             // should not change
+		} else {
+			v22v2 = make([]int, len(v))
 			testUnmarshalErr(v22v2, bs22, h, t, "dec-slice-v22")
 			testDeepEqualErr(v22v1, v22v2, t, "equal-slice-v22")
-			if v == nil {
-				v22v2 = nil
-			} else {
-				v22v2 = make([]int, len(v))
-			}
+			v22v2 = make([]int, len(v))
 			testUnmarshalErr(rv4i(v22v2), bs22, h, t, "dec-slice-v22-noaddr") // non-addressable value
 			testDeepEqualErr(v22v1, v22v2, t, "equal-slice-v22-noaddr")
 		}
@@ -671,19 +677,20 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		var bs23 []byte
 		v23v1 = v
 		bs23 = testMarshalErr(v23v1, h, t, "enc-slice-v23")
-		if v != nil {
-			if v == nil {
-				v23v2 = nil
-			} else {
-				v23v2 = make([]int32, len(v))
-			}
+		if v == nil {
+			v23v2 = make([]int32, 2)
+			testUnmarshalErr(v23v2, bs23, h, t, "dec-slice-v23")
+			testDeepEqualErr(v23v2[0], v23v2[1], t, "equal-slice-v23") // should not change
+			testDeepEqualErr(len(v23v2), 2, t, "equal-slice-v23")      // should not change
+			v23v2 = make([]int32, 2)
+			testUnmarshalErr(rv4i(v23v2), bs23, h, t, "dec-slice-v23-noaddr") // non-addressable value
+			testDeepEqualErr(v23v2[0], v23v2[1], t, "equal-slice-v23-noaddr") // should not change
+			testDeepEqualErr(len(v23v2), 2, t, "equal-slice-v23")             // should not change
+		} else {
+			v23v2 = make([]int32, len(v))
 			testUnmarshalErr(v23v2, bs23, h, t, "dec-slice-v23")
 			testDeepEqualErr(v23v1, v23v2, t, "equal-slice-v23")
-			if v == nil {
-				v23v2 = nil
-			} else {
-				v23v2 = make([]int32, len(v))
-			}
+			v23v2 = make([]int32, len(v))
 			testUnmarshalErr(rv4i(v23v2), bs23, h, t, "dec-slice-v23-noaddr") // non-addressable value
 			testDeepEqualErr(v23v1, v23v2, t, "equal-slice-v23-noaddr")
 		}
@@ -741,19 +748,20 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		var bs24 []byte
 		v24v1 = v
 		bs24 = testMarshalErr(v24v1, h, t, "enc-slice-v24")
-		if v != nil {
-			if v == nil {
-				v24v2 = nil
-			} else {
-				v24v2 = make([]int64, len(v))
-			}
+		if v == nil {
+			v24v2 = make([]int64, 2)
+			testUnmarshalErr(v24v2, bs24, h, t, "dec-slice-v24")
+			testDeepEqualErr(v24v2[0], v24v2[1], t, "equal-slice-v24") // should not change
+			testDeepEqualErr(len(v24v2), 2, t, "equal-slice-v24")      // should not change
+			v24v2 = make([]int64, 2)
+			testUnmarshalErr(rv4i(v24v2), bs24, h, t, "dec-slice-v24-noaddr") // non-addressable value
+			testDeepEqualErr(v24v2[0], v24v2[1], t, "equal-slice-v24-noaddr") // should not change
+			testDeepEqualErr(len(v24v2), 2, t, "equal-slice-v24")             // should not change
+		} else {
+			v24v2 = make([]int64, len(v))
 			testUnmarshalErr(v24v2, bs24, h, t, "dec-slice-v24")
 			testDeepEqualErr(v24v1, v24v2, t, "equal-slice-v24")
-			if v == nil {
-				v24v2 = nil
-			} else {
-				v24v2 = make([]int64, len(v))
-			}
+			v24v2 = make([]int64, len(v))
 			testUnmarshalErr(rv4i(v24v2), bs24, h, t, "dec-slice-v24-noaddr") // non-addressable value
 			testDeepEqualErr(v24v1, v24v2, t, "equal-slice-v24-noaddr")
 		}
@@ -811,19 +819,20 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		var bs25 []byte
 		v25v1 = v
 		bs25 = testMarshalErr(v25v1, h, t, "enc-slice-v25")
-		if v != nil {
-			if v == nil {
-				v25v2 = nil
-			} else {
-				v25v2 = make([]bool, len(v))
-			}
+		if v == nil {
+			v25v2 = make([]bool, 2)
+			testUnmarshalErr(v25v2, bs25, h, t, "dec-slice-v25")
+			testDeepEqualErr(v25v2[0], v25v2[1], t, "equal-slice-v25") // should not change
+			testDeepEqualErr(len(v25v2), 2, t, "equal-slice-v25")      // should not change
+			v25v2 = make([]bool, 2)
+			testUnmarshalErr(rv4i(v25v2), bs25, h, t, "dec-slice-v25-noaddr") // non-addressable value
+			testDeepEqualErr(v25v2[0], v25v2[1], t, "equal-slice-v25-noaddr") // should not change
+			testDeepEqualErr(len(v25v2), 2, t, "equal-slice-v25")             // should not change
+		} else {
+			v25v2 = make([]bool, len(v))
 			testUnmarshalErr(v25v2, bs25, h, t, "dec-slice-v25")
 			testDeepEqualErr(v25v1, v25v2, t, "equal-slice-v25")
-			if v == nil {
-				v25v2 = nil
-			} else {
-				v25v2 = make([]bool, len(v))
-			}
+			v25v2 = make([]bool, len(v))
 			testUnmarshalErr(rv4i(v25v2), bs25, h, t, "dec-slice-v25-noaddr") // non-addressable value
 			testDeepEqualErr(v25v1, v25v2, t, "equal-slice-v25-noaddr")
 		}
