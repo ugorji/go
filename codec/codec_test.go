@@ -867,6 +867,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 		mh.PositiveIntUnsigned = false
 	}
 
+	bh := basicHandle(h)
 	for i, v0 := range vs {
 		if testVerbose {
 			t.Logf("..............................................")
@@ -897,6 +898,12 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 				// println("########### encoded string: " + string(b0))
 			}
 		}
+
+		// TestStrucFlex has many fields which will encode differently if SignedInteger - so skip
+		if _, ok := v0.(*TestStrucFlex); ok && bh.SignedInteger {
+			continue
+		}
+
 		var v1 interface{}
 		var err error
 		if testNil {
@@ -936,7 +943,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 			t.FailNow()
 		}
 		v0check := vsVerify[i]
-		if v0check == skipVerifyVal {
+		if v0check == skipVerifyVal || bh.SignedInteger {
 			if testVerbose {
 				t.Logf("        Nil Check skipped: Decoded: %T, %#v\n", v1, v1)
 			}

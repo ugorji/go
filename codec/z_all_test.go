@@ -363,12 +363,14 @@ func TestCodecSuite(t *testing.T) {
 	testDecodeOptions.InternString = true
 	testDecodeOptions.MapValueReset = true
 
-	// testDecodeOptions.SignedInteger = true
+	// testDecodeOptions.ErrorIfNoField = true // error, as expected fields not there
+	// testDecodeOptions.ErrorIfNoArrayExpand = true // no error, but no error case either
+	// testDecodeOptions.PreferArrayOverSlice = true // error??? because slice != array.
+	testDecodeOptions.SignedInteger = true // error as deepEqual compares int64 to uint64
 	testDecodeOptions.SliceElementReset = true
 	testDecodeOptions.InterfaceReset = true
-	// testDecodeOptions.PreferArrayOverSlice = true
-	// testDecodeOptions.DeleteOnNilMapValue = true
-	// testDecodeOptions.RawToString = true
+	testDecodeOptions.DeleteOnNilMapValue = true
+	testDecodeOptions.RawToString = true
 	testDecodeOptions.PreferPointerForStructOrArray = true
 
 	testEncodeOptions.StructToArray = true
@@ -396,17 +398,6 @@ func TestCodecSuite(t *testing.T) {
 
 	testReinit()
 	fnRun("optionsTrue", testCodecGroup)
-
-	// The following here MUST be tested individually, as they create
-	// side effects i.e. the decoded value is different.
-	// testDecodeOptions.MapValueReset = true // ok - no side effects
-	// testDecodeOptions.InterfaceReset = true // error??? because we do deepEquals to verify
-	// testDecodeOptions.ErrorIfNoField = true // error, as expected, as fields not there
-	// testDecodeOptions.ErrorIfNoArrayExpand = true // no error, but no error case either
-	// testDecodeOptions.PreferArrayOverSlice = true // error??? because slice != array.
-	// .... however, update deepEqual to take this option
-	// testReinit()
-	// fnRun("optionsTrue-resetOptions", testCodecGroup)
 
 	testGroupResetFlags()
 
