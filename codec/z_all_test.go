@@ -365,7 +365,7 @@ func TestCodecSuite(t *testing.T) {
 
 	// testDecodeOptions.SignedInteger = true
 	testDecodeOptions.SliceElementReset = true
-	// testDecodeOptions.InterfaceReset = true
+	testDecodeOptions.InterfaceReset = true
 	// testDecodeOptions.PreferArrayOverSlice = true
 	// testDecodeOptions.DeleteOnNilMapValue = true
 	// testDecodeOptions.RawToString = true

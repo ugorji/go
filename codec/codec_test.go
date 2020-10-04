@@ -1008,8 +1008,8 @@ func doTestCodecTableOne(t *testing.T, h Handle) {
 }
 
 func doTestCodecMiscOne(t *testing.T, h Handle) {
-	var err error
 	defer testSetup(t)()
+	var err error
 	bh := basicHandle(h)
 	b := testMarshalErr(32, h, t, "32")
 	// Cannot do this nil one, because faster type assertion decoding will panic
@@ -1052,11 +1052,14 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 	}
 	testReleaseBytes(b)
 
-	// Note: These will not work with SliceElementReset=true, so handle that.
-	oldSliceElementReset := bh.SliceElementReset
-	defer func() { bh.SliceElementReset = oldSliceElementReset }()
+	// Note: These will not work with SliceElementReset or InterfaceReset=true, so handle that.
+	defer func(a, b bool) {
+		bh.SliceElementReset = a
+		bh.InterfaceReset = b
+	}(bh.SliceElementReset, bh.InterfaceReset)
 
 	bh.SliceElementReset = false
+	bh.InterfaceReset = false
 
 	m := map[string]int{"A": 2, "B": 3}
 	p := []interface{}{m}
@@ -1091,8 +1094,6 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 		t.FailNow()
 	}
 	testReleaseBytes(bs)
-
-	bh.SliceElementReset = oldSliceElementReset
 
 	// func TestMsgpackDecodeStructSubset(t *testing.T) {
 	// test that we can decode a subset of the stream
@@ -3038,6 +3039,8 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 	bh := basicHandle(h)
 	s2a := bh.StructToArray
 	bh.StructToArray = false
+	ir := bh.InterfaceReset
+	bh.InterfaceReset = false
 	var mfx bool
 	if mok {
 		mfx = mh.NoFixedNum
@@ -3050,6 +3053,7 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 	}
 	defer func() {
 		bh.StructToArray = s2a
+		bh.InterfaceReset = ir
 		if mok {
 			mh.NoFixedNum = mfx
 		}
@@ -3576,6 +3580,8 @@ func doTestZeroCopyBytes(t *testing.T, h Handle) {
 func doTestNextValueBytes(t *testing.T, h Handle) {
 	defer testSetup(t)()
 
+	bh := basicHandle(h)
+
 	// - encode uint, int, float, bool, struct, map, slice, string - all separated by nil
 	// - use nextvaluebytes to grab he's got each one, and decode it, and compare
 	var inputs = []interface{}{
@@ -3613,18 +3619,21 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 		// copy(valueBytes[i], bs)
 	}
 	if testUseIoEncDec >= 0 {
-		basicHandle(h).ReaderBufferSize = oldReadBufferSize
+		bh.ReaderBufferSize = oldReadBufferSize
 	}
+
+	defer func(b bool) { bh.InterfaceReset = b }(bh.InterfaceReset)
+	bh.InterfaceReset = false
 
 	var result interface{}
 	for i := 0; i < len(inputs); i++ {
 		// result = reflect.New(reflect.TypeOf(inputs[i])).Elem().Interface()
 		result = reflect.Zero(reflect.TypeOf(inputs[i])).Interface()
 		testUnmarshalErr(&result, valueBytes[i*2], h, t, "nextvaluebytes")
-		testDeepEqualErr(inputs[i], result, t, "nextvaluebytes")
+		testDeepEqualErr(inputs[i], result, t, "nextvaluebytes-1")
 		result = nil
 		testUnmarshalErr(&result, valueBytes[(i*2)+1], h, t, "nextvaluebytes")
-		testDeepEqualErr(nil, result, t, "nextvaluebytes")
+		testDeepEqualErr(nil, result, t, "nextvaluebytes-2")
 	}
 }
 
