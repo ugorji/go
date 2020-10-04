@@ -23,7 +23,7 @@ const (
 	decDefMaxDepth         = 1024 // maximum depth
 	decDefSliceCap         = 8
 	decDefChanCap          = 64      // should be large, as cap cannot be expanded
-	decScratchByteArrayLen = (6 * 8) // ??? cacheLineSize +
+	decScratchByteArrayLen = (7 * 8) // ??? cacheLineSize +
 
 	// decFailNonEmptyIntf configures whether we error
 	// when decoding naked into a non-empty interface.
@@ -1112,9 +1112,9 @@ type Decoder struct {
 	hh  Handle
 	err error
 
-	// ---- cpu cache line boundary?
 	is map[string]string // used for interning strings
 
+	// ---- cpu cache line boundary?
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 	maxdepth int16
 	depth    int16
@@ -1126,8 +1126,6 @@ type Decoder struct {
 
 	c containerState
 	_ [1]byte // padding
-
-	// ---- cpu cache line boundary?
 
 	// b is an always-available scratch buffer used by Decoder and decDrivers.
 	// By being always-available, it can be used for one-off things without
