@@ -852,7 +852,6 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 	fi := &(fn.i)
 	ti := x.getTypeInfo(rtid, rt)
 	fi.ti = ti
-
 	rk := reflect.Kind(ti.kind)
 
 	// anything can be an extension except the built-in ones: time, raw and rawext

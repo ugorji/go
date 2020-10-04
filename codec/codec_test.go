@@ -3056,7 +3056,10 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 	var m = make(map[interface{}]interface{})
 
 	fn := func(v interface{}) {
+		v1 := reflect.New(reflect.TypeOf(v)).Elem().Interface()
 		bs1 = testMarshalErr(v, h, t, "")
+		testUnmarshalErr(&v1, bs1, h, t, "")
+		testDeepEqualErr(v, v1, t, name+"")
 		bs2 = testMarshalErr(m, h, t, "")
 		// if _, ok := h.(*JsonHandle); ok {
 		// 	xdebugf("bs1: %s, bs2: %s", bs1, bs2)
@@ -3082,26 +3085,25 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 		}
 	}
 
-	m["F"] = 0
-	fn(testStrucKeyTypeT0{})
+	m["F"] = 90
+	fn(testStrucKeyTypeT0{F: 90})
 	fnclr()
 
-	m["FFFF"] = 0
-	fn(testStrucKeyTypeT1{})
+	m["FFFF"] = 100
+	fn(testStrucKeyTypeT1{F: 100})
 	fnclr()
 
-	m[int64(-1)] = 0
-	fn(testStrucKeyTypeT2{})
+	m[int64(-1)] = 200
+	fn(testStrucKeyTypeT2{F: 200})
 	fnclr()
 
-	m[int64(1)] = 0
-	fn(testStrucKeyTypeT3{})
+	m[int64(1)] = 300
+	fn(testStrucKeyTypeT3{F: 300})
 	fnclr()
 
-	m[float64(2.5)] = 0
-	fn(testStrucKeyTypeT4{})
+	m[float64(2.5)] = 400
+	fn(testStrucKeyTypeT4{F: 400})
 	fnclr()
-
 }
 
 func doTestRawToStringToRawEtc(t *testing.T, h Handle) {

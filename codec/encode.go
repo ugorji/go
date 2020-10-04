@@ -1344,6 +1344,7 @@ func encStructFieldKey(encName string, ee encDriver, w *encWr,
 	keyType valueType, encNameAsciiAlphaNum bool, js bool) {
 	// use if-else-if, not switch (which compiles to binary-search)
 	// since keyType is typically valueTypeString, branch prediction is pretty good.
+
 	if keyType == valueTypeString {
 		if js && encNameAsciiAlphaNum { // keyType == valueTypeString
 			w.writeqstr(encName)
@@ -1356,5 +1357,7 @@ func encStructFieldKey(encName string, ee encDriver, w *encWr,
 		ee.EncodeUint(must.Uint(strconv.ParseUint(encName, 10, 64)))
 	} else if keyType == valueTypeFloat {
 		ee.EncodeFloat64(must.Float(strconv.ParseFloat(encName, 64)))
+	} else {
+		halt.errorf("invalid struct key type: %v", keyType)
 	}
 }

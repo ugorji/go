@@ -579,7 +579,7 @@ func decStructFieldKey(dd decDriver, keyType valueType, b *[decScratchByteArrayL
 	} else if keyType == valueTypeFloat {
 		rvkencname = strconv.AppendFloat(b[:0], dd.DecodeFloat64(), 'f', -1, 64)
 	} else {
-		rvkencname = dd.DecodeStringAsBytes()
+		halt.errorf("invalid struct key type: %v", keyType)
 	}
 	return
 }
