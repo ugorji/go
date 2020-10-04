@@ -329,12 +329,16 @@ func TestCodecSuite(t *testing.T) {
 	var tt testTimeTracker
 	tt.Elapsed()
 
+	fnRun := func(s string, f func(t *testing.T)) {
+		t.Run(s, f)
+		// xdebugf("%s: %v", s, tt.Elapsed())
+	}
+
 	testGroupResetFlags()
 
 	testReinit() // so flag.Parse() is called first, and never called again
 
-	t.Run("optionsFalse", testCodecGroup)
-	// xdebugf("optionsFalse: %v", tt.Elapsed())
+	fnRun("optionsFalse", testCodecGroup)
 
 	testUseIoEncDec = 0
 	testUseReset = true
@@ -361,8 +365,7 @@ func TestCodecSuite(t *testing.T) {
 	// testEncodeOptions.StringToRaw = true
 
 	testReinit()
-	t.Run("optionsTrue", testCodecGroup)
-	// xdebugf("optionsTrue: %v", tt.Elapsed())
+	fnRun("optionsTrue", testCodecGroup)
 
 	// The following here MUST be tested individually, as they create
 	// side effects i.e. the decoded value is different.
@@ -373,7 +376,7 @@ func TestCodecSuite(t *testing.T) {
 	// testDecodeOptions.PreferArrayOverSlice = true // error??? because slice != array.
 	// .... however, update deepEqual to take this option
 	// testReinit()
-	// t.Run("optionsTrue-resetOptions", testCodecGroup)
+	// fnRun("optionsTrue-resetOptions", testCodecGroup)
 
 	testGroupResetFlags()
 
@@ -383,16 +386,14 @@ func TestCodecSuite(t *testing.T) {
 		testDepth = 2
 	}
 	testReinit()
-	t.Run("optionsTrue-deepstruct", testCodecGroupV)
-	// xdebugf("deepstruct: %v", tt.Elapsed())
+	fnRun("optionsTrue-deepstruct", testCodecGroupV)
 	testDepth = 0
 
 	// ---
 	// testEncodeOptions.AsSymbols = AsSymbolAll
 	testUseIoWrapper = true
 	testReinit()
-	t.Run("optionsTrue-ioWrapper", testCodecGroupV)
-	// xdebugf("ioWrapper: %v", tt.Elapsed())
+	fnRun("optionsTrue-ioWrapper", testCodecGroupV)
 	testUseIoWrapper = false
 
 	// testUseIoEncDec = -1
@@ -407,8 +408,7 @@ func TestCodecSuite(t *testing.T) {
 	// testDecodeOptions.ReaderBufferSize = 128
 	// testEncodeOptions.WriterBufferSize = 128
 	testReinit()
-	t.Run("optionsTrue-bufio", testCodecGroupV)
-	// xdebugf("bufio: %v", tt.Elapsed())
+	fnRun("optionsTrue-bufio", testCodecGroupV)
 	// testDecodeOptions.ReaderBufferSize = 0
 	// testEncodeOptions.WriterBufferSize = 0
 	testSkipRPCTests = false
@@ -417,8 +417,7 @@ func TestCodecSuite(t *testing.T) {
 	// ---
 	testNumRepeatString = 32
 	testReinit()
-	t.Run("optionsTrue-largestrings", testCodecGroupV)
-	// xdebugf("largestrings: %v", tt.Elapsed())
+	fnRun("optionsTrue-largestrings", testCodecGroupV)
 	testNumRepeatString = 8
 
 	testGroupResetFlags()
@@ -435,8 +434,7 @@ func TestCodecSuite(t *testing.T) {
 	testJsonH.MapKeyAsString = true
 	// testJsonH.PreferFloat = true
 	testReinit()
-	t.Run("json-spaces-htmlcharsasis-initLen10", testJsonGroup)
-	// xdebugf("json-spaces-htmlcharsasis-initLen10: %v", tt.Elapsed())
+	fnRun("json-spaces-htmlcharsasis-initLen10", testJsonGroup)
 
 	testMaxInitLen = 10
 	testJsonH.Indent = -1
@@ -444,8 +442,7 @@ func TestCodecSuite(t *testing.T) {
 	testJsonH.MapKeyAsString = true
 	// testJsonH.PreferFloat = false
 	testReinit()
-	t.Run("json-tabs-initLen10", testJsonGroup)
-	// xdebugf("json-tabs-initLen10: %v", tt.Elapsed())
+	fnRun("json-tabs-initLen10", testJsonGroup)
 
 	testJsonH.Indent = oldIndent
 	testJsonH.HTMLCharsAsIs = oldCharsAsis
@@ -456,23 +453,20 @@ func TestCodecSuite(t *testing.T) {
 	oldIndefLen := testCborH.IndefiniteLength
 	testCborH.IndefiniteLength = true
 	testReinit()
-	t.Run("cbor-indefiniteLength", testCborGroup)
-	t.Run("cbor-indefiniteLength-nextValueBytes", TestCborNextValueBytes)
-	// xdebugf("cbor-indefinitelength: %v", tt.Elapsed())
+	fnRun("cbor-indefiniteLength", testCborGroup)
+	fnRun("cbor-indefiniteLength-nextValueBytes", TestCborNextValueBytes)
 	testCborH.IndefiniteLength = oldIndefLen
 
 	oldTimeRFC3339 := testCborH.TimeRFC3339
 	testCborH.TimeRFC3339 = !testCborH.TimeRFC3339
 	testReinit()
-	t.Run("cbor-rfc3339", testCborGroup)
-	// xdebugf("cbor-rfc3339: %v", tt.Elapsed())
+	fnRun("cbor-rfc3339", testCborGroup)
 	testCborH.TimeRFC3339 = oldTimeRFC3339
 
 	oldSkipUnexpectedTags := testCborH.SkipUnexpectedTags
 	testCborH.SkipUnexpectedTags = !testCborH.SkipUnexpectedTags
 	testReinit()
-	t.Run("cbor-skip-tags", testCborGroup)
-	// xdebugf("cbor-skip-tags: %v", tt.Elapsed())
+	fnRun("cbor-skip-tags", testCborGroup)
 	testCborH.SkipUnexpectedTags = oldSkipUnexpectedTags
 
 	// ---
@@ -480,31 +474,29 @@ func TestCodecSuite(t *testing.T) {
 
 	testBincH.AsSymbols = 2 // AsSymbolNone
 	testReinit()
-	t.Run("binc-no-symbols", testBincGroup)
-	// xdebugf("binc-no-symbols: %v", tt.Elapsed())
+	fnRun("binc-no-symbols", testBincGroup)
 
 	testBincH.AsSymbols = 1 // AsSymbolAll
 	testReinit()
-	t.Run("binc-all-symbols", testBincGroup)
-	// xdebugf("binc-all-symbols: %v", tt.Elapsed())
+	fnRun("binc-all-symbols", testBincGroup)
 
 	testBincH.AsSymbols = oldSymbols
 
 	// ---
 	oldWriteExt := testMsgpackH.WriteExt
-	oldNoFixedNum := testMsgpackH.NoFixedNum
 
 	testMsgpackH.WriteExt = !testMsgpackH.WriteExt
 	testReinit()
-	t.Run("msgpack-inverse-writeext", testMsgpackGroup)
-	// xdebugf("msgpack-inverse-writeext: %v", tt.Elapsed())
+	fnRun("msgpack-inverse-writeext", testMsgpackGroup)
+	fnRun("msgpack-inverse-writeext", testMsgpackGroupV)
 
 	testMsgpackH.WriteExt = oldWriteExt
 
+	oldNoFixedNum := testMsgpackH.NoFixedNum
+
 	testMsgpackH.NoFixedNum = !testMsgpackH.NoFixedNum
 	testReinit()
-	t.Run("msgpack-fixednum", testMsgpackGroup)
-	// xdebugf("msgpack-fixednum: %v", tt.Elapsed())
+	fnRun("msgpack-fixednum", testMsgpackGroup)
 
 	testMsgpackH.NoFixedNum = oldNoFixedNum
 
@@ -512,33 +504,30 @@ func TestCodecSuite(t *testing.T) {
 	oldEncZeroValuesAsNil := testSimpleH.EncZeroValuesAsNil
 	testSimpleH.EncZeroValuesAsNil = !testSimpleH.EncZeroValuesAsNil
 	testReinit()
-	t.Run("simple-enczeroasnil", testSimpleMammothGroup) // testSimpleGroup
-	// xdebugf("simple-enczeroasnil: %v", tt.Elapsed())
+	fnRun("simple-enczeroasnil", testSimpleMammothGroup) // testSimpleGroup
 	testSimpleH.EncZeroValuesAsNil = oldEncZeroValuesAsNil
 
 	// ---
 	testUseIoEncDec = 16
 	testRPCOptions.RPCNoBuffer = false
 	testRpcBufsize = 0
-	t.Run("rpc-buf-0", testRpcGroup)
+	fnRun("rpc-buf-0", testRpcGroup)
 	testRpcBufsize = 0
-	t.Run("rpc-buf-00", testRpcGroup)
+	fnRun("rpc-buf-00", testRpcGroup)
 	testRpcBufsize = 0
-	t.Run("rpc-buf-000", testRpcGroup)
+	fnRun("rpc-buf-000", testRpcGroup)
 	testRpcBufsize = 16
-	t.Run("rpc-buf-16", testRpcGroup)
+	fnRun("rpc-buf-16", testRpcGroup)
 	testRpcBufsize = 2048
-	t.Run("rpc-buf-2048", testRpcGroup)
-	// xdebugf("rpc: %v", tt.Elapsed())
+	fnRun("rpc-buf-2048", testRpcGroup)
 
 	testRPCOptions.RPCNoBuffer = true
 	testRpcBufsize = 0
-	t.Run("rpc-buf-0-rpcNoBuffer", testRpcGroup)
+	fnRun("rpc-buf-0-rpcNoBuffer", testRpcGroup)
 	testRpcBufsize = 0
-	t.Run("rpc-buf-00-rpcNoBuffer", testRpcGroup)
+	fnRun("rpc-buf-00-rpcNoBuffer", testRpcGroup)
 	testRpcBufsize = 2048
-	t.Run("rpc-buf-2048-rpcNoBuffer", testRpcGroup)
-	// xdebugf("rpcNoBuffer: %v", tt.Elapsed())
+	fnRun("rpc-buf-2048-rpcNoBuffer", testRpcGroup)
 
 	testGroupResetFlags()
 }
