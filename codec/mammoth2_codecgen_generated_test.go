@@ -36,10 +36,10 @@ type codecSelfer19781 struct{}
 func codecSelfer19781False() bool { return false }
 
 func init() {
-	if GenVersion != 17 {
+	if GenVersion != 18 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic(errors.New("codecgen version mismatch: current: 17, need " + ver + ". Re-generate file: " + file))
+		panic(errors.New("codecgen version mismatch: current: 18, need " + ver + ". Re-generate file: " + file))
 	}
 }
 
@@ -6653,32 +6653,32 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			z.EncWriteArrayStart(8)
 			z.EncWriteArrayElem()
 			yy11 := &x.V
-			if yyxt12 := z.Extension(z.I2Rtid(yy11)); yyxt12 != nil {
+			if yyxt12 := z.Extension(yy11); yyxt12 != nil {
 				z.EncExtension(yy11, yyxt12)
 			} else {
 				yy11.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
-			if yyxt13 := z.Extension(z.I2Rtid(x.T)); yyxt13 != nil {
+			if yyxt13 := z.Extension(x.T); yyxt13 != nil {
 				z.EncExtension(x.T, yyxt13)
 			} else {
 				x.T.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
-			if yyxt14 := z.Extension(z.I2Rtid(x.B)); yyxt14 != nil {
+			if yyxt14 := z.Extension(x.B); yyxt14 != nil {
 				z.EncExtension(x.B, yyxt14)
 			} else {
 				x.B.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
-			if yyxt15 := z.Extension(z.I2Rtid(x.J)); yyxt15 != nil {
+			if yyxt15 := z.Extension(x.J); yyxt15 != nil {
 				z.EncExtension(x.J, yyxt15)
 			} else {
 				x.J.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
 			yy16 := &x.C
-			if yyxt17 := z.Extension(z.I2Rtid(yy16)); yyxt17 != nil {
+			if yyxt17 := z.Extension(yy16); yyxt17 != nil {
 				z.EncExtension(yy16, yyxt17)
 			} else {
 				yy16.CodecEncodeSelf(e)
@@ -6709,7 +6709,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteMapElemValue()
 			yy22 := &x.V
-			if yyxt23 := z.Extension(z.I2Rtid(yy22)); yyxt23 != nil {
+			if yyxt23 := z.Extension(yy22); yyxt23 != nil {
 				z.EncExtension(yy22, yyxt23)
 			} else {
 				yy22.CodecEncodeSelf(e)
@@ -6721,7 +6721,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`T`)
 			}
 			z.EncWriteMapElemValue()
-			if yyxt24 := z.Extension(z.I2Rtid(x.T)); yyxt24 != nil {
+			if yyxt24 := z.Extension(x.T); yyxt24 != nil {
 				z.EncExtension(x.T, yyxt24)
 			} else {
 				x.T.CodecEncodeSelf(e)
@@ -6733,7 +6733,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
-			if yyxt25 := z.Extension(z.I2Rtid(x.B)); yyxt25 != nil {
+			if yyxt25 := z.Extension(x.B); yyxt25 != nil {
 				z.EncExtension(x.B, yyxt25)
 			} else {
 				x.B.CodecEncodeSelf(e)
@@ -6745,7 +6745,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`J`)
 			}
 			z.EncWriteMapElemValue()
-			if yyxt26 := z.Extension(z.I2Rtid(x.J)); yyxt26 != nil {
+			if yyxt26 := z.Extension(x.J); yyxt26 != nil {
 				z.EncExtension(x.J, yyxt26)
 			} else {
 				x.J.CodecEncodeSelf(e)
@@ -6758,7 +6758,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteMapElemValue()
 			yy27 := &x.C
-			if yyxt28 := z.Extension(z.I2Rtid(yy27)); yyxt28 != nil {
+			if yyxt28 := z.Extension(yy27); yyxt28 != nil {
 				z.EncExtension(yy27, yyxt28)
 			} else {
 				yy27.CodecEncodeSelf(e)
@@ -6846,31 +6846,31 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 		z.DecReadMapElemValue()
 		switch yys3 {
 		case "V":
-			if yyxt5 := z.Extension(z.I2Rtid(x.V)); yyxt5 != nil {
+			if yyxt5 := z.Extension(x.V); yyxt5 != nil {
 				z.DecExtension(&x.V, yyxt5)
 			} else {
 				x.V.CodecDecodeSelf(d)
 			}
 		case "T":
-			if yyxt7 := z.Extension(z.I2Rtid(x.T)); yyxt7 != nil {
+			if yyxt7 := z.Extension(x.T); yyxt7 != nil {
 				z.DecExtension(&x.T, yyxt7)
 			} else {
 				x.T.CodecDecodeSelf(d)
 			}
 		case "B":
-			if yyxt9 := z.Extension(z.I2Rtid(x.B)); yyxt9 != nil {
+			if yyxt9 := z.Extension(x.B); yyxt9 != nil {
 				z.DecExtension(&x.B, yyxt9)
 			} else {
 				x.B.CodecDecodeSelf(d)
 			}
 		case "J":
-			if yyxt11 := z.Extension(z.I2Rtid(x.J)); yyxt11 != nil {
+			if yyxt11 := z.Extension(x.J); yyxt11 != nil {
 				z.DecExtension(&x.J, yyxt11)
 			} else {
 				x.J.CodecDecodeSelf(d)
 			}
 		case "C":
-			if yyxt13 := z.Extension(z.I2Rtid(x.C)); yyxt13 != nil {
+			if yyxt13 := z.Extension(x.C); yyxt13 != nil {
 				z.DecExtension(&x.C, yyxt13)
 			} else {
 				x.C.CodecDecodeSelf(d)
@@ -6905,7 +6905,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if yyxt22 := z.Extension(z.I2Rtid(x.V)); yyxt22 != nil {
+	if yyxt22 := z.Extension(x.V); yyxt22 != nil {
 		z.DecExtension(&x.V, yyxt22)
 	} else {
 		x.V.CodecDecodeSelf(d)
@@ -6921,7 +6921,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if yyxt24 := z.Extension(z.I2Rtid(x.T)); yyxt24 != nil {
+	if yyxt24 := z.Extension(x.T); yyxt24 != nil {
 		z.DecExtension(&x.T, yyxt24)
 	} else {
 		x.T.CodecDecodeSelf(d)
@@ -6937,7 +6937,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if yyxt26 := z.Extension(z.I2Rtid(x.B)); yyxt26 != nil {
+	if yyxt26 := z.Extension(x.B); yyxt26 != nil {
 		z.DecExtension(&x.B, yyxt26)
 	} else {
 		x.B.CodecDecodeSelf(d)
@@ -6953,7 +6953,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if yyxt28 := z.Extension(z.I2Rtid(x.J)); yyxt28 != nil {
+	if yyxt28 := z.Extension(x.J); yyxt28 != nil {
 		z.DecExtension(&x.J, yyxt28)
 	} else {
 		x.J.CodecDecodeSelf(d)
@@ -6969,7 +6969,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if yyxt30 := z.Extension(z.I2Rtid(x.C)); yyxt30 != nil {
+	if yyxt30 := z.Extension(x.C); yyxt30 != nil {
 		z.DecExtension(&x.C, yyxt30)
 	} else {
 		x.C.CodecDecodeSelf(d)
@@ -7083,14 +7083,14 @@ func (x codecSelfer19781) encMaptestMammoth2BasicTestMammoth2(v map[testMammoth2
 	for yyk1, yyv1 := range v {
 		z.EncWriteMapElemKey()
 		yy2 := &yyk1
-		if yyxt3 := z.Extension(z.I2Rtid(yy2)); yyxt3 != nil {
+		if yyxt3 := z.Extension(yy2); yyxt3 != nil {
 			z.EncExtension(yy2, yyxt3)
 		} else {
 			yy2.CodecEncodeSelf(e)
 		}
 		z.EncWriteMapElemValue()
 		yy4 := &yyv1
-		if yyxt5 := z.Extension(z.I2Rtid(yy4)); yyxt5 != nil {
+		if yyxt5 := z.Extension(yy4); yyxt5 != nil {
 			z.EncExtension(yy4, yyxt5)
 		} else {
 			yy4.CodecEncodeSelf(e)
@@ -7124,7 +7124,7 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 			yyhl1 := yyl1 > 0
 			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
-				if yyxt3 := z.Extension(z.I2Rtid(yymk1)); yyxt3 != nil {
+				if yyxt3 := z.Extension(yymk1); yyxt3 != nil {
 					z.DecExtension(&yymk1, yyxt3)
 				} else {
 					yymk1.CodecDecodeSelf(d)
@@ -7136,7 +7136,7 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 				}
 				z.DecReadMapElemValue()
 				yymdn1 = false
-				if yyxt5 := z.Extension(z.I2Rtid(yymv1)); yyxt5 != nil {
+				if yyxt5 := z.Extension(yymv1); yyxt5 != nil {
 					z.DecExtension(&yymv1, yyxt5)
 				} else {
 					yymv1.CodecDecodeSelf(d)
@@ -7168,7 +7168,7 @@ func (x codecSelfer19781) encSliceTestMammoth2(v []TestMammoth2, e *Encoder) {
 	for _, yyv1 := range v {
 		z.EncWriteArrayElem()
 		yy2 := &yyv1
-		if yyxt3 := z.Extension(z.I2Rtid(yy2)); yyxt3 != nil {
+		if yyxt3 := z.Extension(yy2); yyxt3 != nil {
 			z.EncExtension(yy2, yyxt3)
 		} else {
 			yy2.CodecEncodeSelf(e)
@@ -7237,7 +7237,7 @@ func (x codecSelfer19781) decSliceTestMammoth2(v *[]TestMammoth2, d *Decoder) {
 			if yydb1 {
 				z.DecSwallow()
 			} else {
-				if yyxt3 := z.Extension(z.I2Rtid(yyv1[yyj1])); yyxt3 != nil {
+				if yyxt3 := z.Extension(yyv1[yyj1]); yyxt3 != nil {
 					z.DecExtension(&yyv1[yyj1], yyxt3)
 				} else {
 					yyv1[yyj1].CodecDecodeSelf(d)

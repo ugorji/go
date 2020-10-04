@@ -114,7 +114,8 @@ import (
 // v15: 20190626 encDriver.EncodeString handles StringToRaw flag inside handle
 // v16: 20190629 refactoring for v1.1.6
 // v17: 20200911 reduce number of types for which we generate fast path functions (v1.1.8)
-const genVersion = 17
+// v18: 20201004 changed definition of genHelper...Extension (to take interface{}) and eliminated I2Rtid method
+const genVersion = 18
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go
@@ -136,7 +137,7 @@ const (
 	// The savings is not much.
 	//
 	// MARKER: This MUST ALWAYS BE TRUE. fast-path.go.tmp doesn't handle it being false.
-	genFastpathCanonical = true // MUST be true
+	genFastpathCanonical = true
 
 	// genFastpathTrimTypes configures whether we trim uncommon fastpath types.
 	genFastpathTrimTypes = true
@@ -777,7 +778,7 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 	// and this is not the CodecEncodeSelf or CodecDecodeSelf method (i.e. it is not a Selfer)
 	if !x.nx && varname != genTopLevelVarName && genImportPath(t) != "" && t.Name() != "" {
 		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
-		x.linef("%s %s := z.Extension(z.I2Rtid(%s)); %s != nil { z.EncExtension(%s, %s) ",
+		x.linef("%s %s := z.Extension(%s); %s != nil { z.EncExtension(%s, %s) ",
 			hasIf.c(false), yy, varname, yy, varname, yy)
 	}
 
@@ -1369,7 +1370,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	if !x.nx && varname != genTopLevelVarName && genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion
 		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
-		x.linef("%s %s := z.Extension(z.I2Rtid(%s)); %s != nil { z.DecExtension(%s%s, %s) ", hasIf.c(false), yy, varname, yy, addrPfx, varname, yy)
+		x.linef("%s %s := z.Extension(%s); %s != nil { z.DecExtension(%s%s, %s) ", hasIf.c(false), yy, varname, yy, addrPfx, varname, yy)
 	}
 
 	if x.checkForSelfer(t, varname) {

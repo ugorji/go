@@ -10,7 +10,7 @@ package codec
 import "encoding"
 
 // GenVersion is the current version of codecgen.
-const GenVersion = 17
+const GenVersion = 18
 
 // This file is used to generate helper code for codecgen.
 // The values here i.e. genHelper(En|De)coder are not to be used directly by
@@ -99,13 +99,8 @@ func (f genHelperEncoder) EncBinaryMarshal(iv encoding.BinaryMarshaler) {
 func (f genHelperEncoder) EncRaw(iv Raw) { f.e.rawBytes(iv) }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperEncoder) I2Rtid(v interface{}) uintptr {
-	return i2rtid(v)
-}
-
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperEncoder) Extension(rtid uintptr) (xfn *extTypeTagFn) {
-	return f.e.h.getExt(rtid, true)
+func (f genHelperEncoder) Extension(v interface{}) (xfn *extTypeTagFn) {
+	return f.e.h.getExtForI(v)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -223,8 +218,8 @@ func (f genHelperDecoder) I2Rtid(v interface{}) uintptr {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperDecoder) Extension(rtid uintptr) (xfn *extTypeTagFn) {
-	return f.d.h.getExt(rtid, true)
+func (f genHelperDecoder) Extension(v interface{}) (xfn *extTypeTagFn) {
+	return f.d.h.getExtForI(v)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*

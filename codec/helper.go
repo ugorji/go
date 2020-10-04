@@ -1297,6 +1297,13 @@ func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 	return
 }
 
+func (o extHandle) getExtForI(x interface{}) (v *extTypeTagFn) {
+	if len(o) > 0 {
+		v = o.getExt(i2rtid(x), true)
+	}
+	return
+}
+
 func (o extHandle) getExt(rtid uintptr, check bool) (v *extTypeTagFn) {
 	if !check {
 		return

@@ -100,12 +100,8 @@ func (f genHelperEncoder) EncBinaryMarshal(iv encoding.BinaryMarshaler) {
 func (f genHelperEncoder) EncRaw(iv Raw) { f.e.rawBytes(iv) }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperEncoder) I2Rtid(v interface{}) uintptr {
-	return i2rtid(v)
-}
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperEncoder) Extension(rtid uintptr) (xfn *extTypeTagFn) {
-	return f.e.h.getExt(rtid, true)
+func (f genHelperEncoder) Extension(v interface{}) (xfn *extTypeTagFn) {
+	return f.e.h.getExtForI(v)
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncExtension(v interface{}, xfFn *extTypeTagFn) {
@@ -206,8 +202,8 @@ func (f genHelperDecoder) I2Rtid(v interface{}) uintptr {
 	return i2rtid(v)
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperDecoder) Extension(rtid uintptr) (xfn *extTypeTagFn) {
-	return f.d.h.getExt(rtid, true)
+func (f genHelperDecoder) Extension(v interface{}) (xfn *extTypeTagFn) {
+	return f.d.h.getExtForI(v)
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecExtension(v interface{}, xfFn *extTypeTagFn) {
