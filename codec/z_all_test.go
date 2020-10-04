@@ -61,6 +61,21 @@ func testGroupResetFlags() {
 	testDepth = 0
 	testDecodeOptions = DecodeOptions{}
 	testEncodeOptions = EncodeOptions{}
+
+	testJsonH.Indent = 0 // -1?
+	testJsonH.HTMLCharsAsIs = false
+	testJsonH.MapKeyAsString = false
+	testJsonH.PreferFloat = false
+
+	testCborH.IndefiniteLength = false
+	testCborH.TimeRFC3339 = false
+	testCborH.SkipUnexpectedTags = false
+	testBincH.AsSymbols = 0 // 2? AsSymbolNone
+
+	testMsgpackH.WriteExt = false
+	testMsgpackH.NoFixedNum = false
+
+	testSimpleH.EncZeroValuesAsNil = false
 }
 
 func testCodecGroup(t *testing.T) {
@@ -364,6 +379,19 @@ func TestCodecSuite(t *testing.T) {
 	// testEncodeOptions.Raw = true
 	// testEncodeOptions.StringToRaw = true
 
+	testJsonH.HTMLCharsAsIs = true
+	// testJsonH.MapKeyAsString = true
+	// testJsonH.PreferFloat = true
+
+	testCborH.IndefiniteLength = true
+	testCborH.TimeRFC3339 = true
+	testCborH.SkipUnexpectedTags = true
+
+	testMsgpackH.WriteExt = true
+	testMsgpackH.NoFixedNum = true
+
+	// testSimpleH.EncZeroValuesAsNil = true
+
 	testReinit()
 	fnRun("optionsTrue", testCodecGroup)
 
@@ -423,51 +451,29 @@ func TestCodecSuite(t *testing.T) {
 	testGroupResetFlags()
 
 	// ---
-	oldIndent := testJsonH.Indent
-	oldCharsAsis := testJsonH.HTMLCharsAsIs
-	oldPreferFloat := testJsonH.PreferFloat
-	oldMapKeyAsString := testJsonH.MapKeyAsString
+	fnJsonReset := func(ml int, d int8, hca, mkas bool) func() {
+		return func() {
+			testMaxInitLen = ml
+			testJsonH.Indent = d
+			testJsonH.HTMLCharsAsIs = hca
+			testJsonH.MapKeyAsString = mkas
+		}
+	}(testMaxInitLen, testJsonH.Indent, testJsonH.HTMLCharsAsIs, testJsonH.MapKeyAsString)
 
 	testMaxInitLen = 10
+	testJsonH.MapKeyAsString = true
+
 	testJsonH.Indent = 8
 	testJsonH.HTMLCharsAsIs = true
-	testJsonH.MapKeyAsString = true
-	// testJsonH.PreferFloat = true
 	testReinit()
 	fnRun("json-spaces-htmlcharsasis-initLen10", testJsonGroup)
 
-	testMaxInitLen = 10
 	testJsonH.Indent = -1
 	testJsonH.HTMLCharsAsIs = false
-	testJsonH.MapKeyAsString = true
-	// testJsonH.PreferFloat = false
 	testReinit()
 	fnRun("json-tabs-initLen10", testJsonGroup)
 
-	testJsonH.Indent = oldIndent
-	testJsonH.HTMLCharsAsIs = oldCharsAsis
-	testJsonH.PreferFloat = oldPreferFloat
-	testJsonH.MapKeyAsString = oldMapKeyAsString
-
-	// ---
-	oldIndefLen := testCborH.IndefiniteLength
-	testCborH.IndefiniteLength = true
-	testReinit()
-	fnRun("cbor-indefiniteLength", testCborGroup)
-	fnRun("cbor-indefiniteLength-nextValueBytes", TestCborNextValueBytes)
-	testCborH.IndefiniteLength = oldIndefLen
-
-	oldTimeRFC3339 := testCborH.TimeRFC3339
-	testCborH.TimeRFC3339 = !testCborH.TimeRFC3339
-	testReinit()
-	fnRun("cbor-rfc3339", testCborGroup)
-	testCborH.TimeRFC3339 = oldTimeRFC3339
-
-	oldSkipUnexpectedTags := testCborH.SkipUnexpectedTags
-	testCborH.SkipUnexpectedTags = !testCborH.SkipUnexpectedTags
-	testReinit()
-	fnRun("cbor-skip-tags", testCborGroup)
-	testCborH.SkipUnexpectedTags = oldSkipUnexpectedTags
+	fnJsonReset()
 
 	// ---
 	oldSymbols := testBincH.AsSymbols
@@ -481,24 +487,6 @@ func TestCodecSuite(t *testing.T) {
 	fnRun("binc-all-symbols", testBincGroup)
 
 	testBincH.AsSymbols = oldSymbols
-
-	// ---
-	oldWriteExt := testMsgpackH.WriteExt
-
-	testMsgpackH.WriteExt = !testMsgpackH.WriteExt
-	testReinit()
-	fnRun("msgpack-inverse-writeext", testMsgpackGroup)
-	fnRun("msgpack-inverse-writeext", testMsgpackGroupV)
-
-	testMsgpackH.WriteExt = oldWriteExt
-
-	oldNoFixedNum := testMsgpackH.NoFixedNum
-
-	testMsgpackH.NoFixedNum = !testMsgpackH.NoFixedNum
-	testReinit()
-	fnRun("msgpack-fixednum", testMsgpackGroup)
-
-	testMsgpackH.NoFixedNum = oldNoFixedNum
 
 	// ---
 	oldEncZeroValuesAsNil := testSimpleH.EncZeroValuesAsNil
