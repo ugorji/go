@@ -858,10 +858,13 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 		t.Logf("================ TestNil: %v ================\n", testNil)
 	}
 
-	if _, ok := h.(*MsgpackHandle); ok {
-		bh := basicHandle(h)
-		defer func(b bool) { bh.RawToString = b }(bh.RawToString)
-		bh.RawToString = true
+	if mh, ok := h.(*MsgpackHandle); ok {
+		defer func(a, b bool) {
+			mh.RawToString = a
+			mh.PositiveIntUnsigned = b
+		}(mh.RawToString, mh.PositiveIntUnsigned)
+		mh.RawToString = true
+		mh.PositiveIntUnsigned = false
 	}
 
 	for i, v0 := range vs {

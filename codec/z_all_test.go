@@ -74,6 +74,7 @@ func testGroupResetFlags() {
 
 	testMsgpackH.WriteExt = false
 	testMsgpackH.NoFixedNum = false
+	testMsgpackH.PositiveIntUnsigned = false
 
 	testSimpleH.EncZeroValuesAsNil = false
 }
@@ -389,6 +390,7 @@ func TestCodecSuite(t *testing.T) {
 
 	testMsgpackH.WriteExt = true
 	testMsgpackH.NoFixedNum = true
+	testMsgpackH.PositiveIntUnsigned = true
 
 	// testSimpleH.EncZeroValuesAsNil = true
 
