@@ -445,8 +445,6 @@ func testInit() {
 		bh.MaxInitLen = testMaxInitLen
 	}
 
-	testMsgpackH.WriteExt = true
-
 	var tTimeExt timeExt
 	var tBytesExt wrapBytesExt
 	var tI64Ext wrapInt64Ext
@@ -859,6 +857,13 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 	if testVerbose {
 		t.Logf("================ TestNil: %v ================\n", testNil)
 	}
+
+	if _, ok := h.(*MsgpackHandle); ok {
+		bh := basicHandle(h)
+		defer func(b bool) { bh.RawToString = b }(bh.RawToString)
+		bh.RawToString = true
+	}
+
 	for i, v0 := range vs {
 		if testVerbose {
 			t.Logf("..............................................")
@@ -934,7 +939,6 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 			}
 			continue
 		}
-
 		if err = deepEqual(v0check, v1); err == nil {
 			if testVerbose {
 				t.Logf("++++++++ Before and After marshal matched\n")
@@ -960,14 +964,11 @@ func doTestCodecTableOne(t *testing.T, h Handle) {
 
 	numPrim, numMap, idxTime, idxMap := testTableNumPrimitives, testTableNumMaps, testTableIdxTime, testTableNumPrimitives+2
 
-	//println("#################")
 	tableVerify := testTableVerify(testVerifyMapTypeSame, h)
 	tableTestNilVerify := testTableVerify(testVerifyDoNil|testVerifyMapTypeStrIntf, h)
 	switch v := h.(type) {
 	case *MsgpackHandle:
-		var oldWriteExt bool
-		_ = oldWriteExt
-		oldWriteExt = v.WriteExt
+		oldWriteExt := v.WriteExt
 		v.WriteExt = true
 		testCodecTableOne(t, false, h, table, tableVerify)
 		v.WriteExt = oldWriteExt
@@ -1505,7 +1506,10 @@ func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 	}
 
 	if !bytes.Equal(b1t, b2t) {
-		t.Logf("Unequal bytes: %v VS %v", b1t, b2t)
+		t.Logf("Unequal bytes of length: %v vs %v", len(b1t), len(b2t))
+		if testVerbose {
+			t.Logf("Unequal bytes: %v VS %v", b1t, b2t)
+		}
 		t.FailNow()
 	}
 }
@@ -3123,11 +3127,7 @@ func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
 	can := bh.Canonical
 	mvr := bh.MapValueReset
 
-	var wext bool
 	mh, mok := h.(*MsgpackHandle)
-	if mok {
-		wext = mh.WriteExt
-	}
 
 	_, jok := h.(*JsonHandle)
 
@@ -3136,9 +3136,6 @@ func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
 		bh.StringToRaw = s2r
 		bh.Canonical = can
 		bh.MapValueReset = mvr
-		if mok {
-			mh.WriteExt = wext
-		}
 	}()
 
 	bh.Canonical = false
@@ -3164,7 +3161,7 @@ func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
 		bh.RawToString = br2s
 		bh.StringToRaw = bs2r
 		if mok {
-			mh.WriteExt = bwext
+			mh.RawToString = bwext
 		}
 		bs1 = testMarshalErr(v1, h, t, "")
 		var vn interface{}
@@ -4318,6 +4315,8 @@ func TestMsgpackStdEncIntf(t *testing.T) {
 }
 
 func TestMsgpackMammoth(t *testing.T) {
+	defer func(b bool) { testMsgpackH.RawToString = b }(testMsgpackH.RawToString)
+	testMsgpackH.RawToString = true
 	doTestMammoth(t, testMsgpackH)
 }
 
@@ -4588,10 +4587,8 @@ func TestCborMammothMapsAndSlices(t *testing.T) {
 }
 
 func TestMsgpackMammothMapsAndSlices(t *testing.T) {
-	old1 := testMsgpackH.WriteExt
-	defer func() { testMsgpackH.WriteExt = old1 }()
-	testMsgpackH.WriteExt = true
-
+	defer func(b bool) { testMsgpackH.RawToString = b }(testMsgpackH.RawToString)
+	testMsgpackH.RawToString = true
 	doTestMammothMapsAndSlices(t, testMsgpackH)
 }
 
@@ -4652,6 +4649,8 @@ func TestCborDifferentMapOrSliceType(t *testing.T) {
 }
 
 func TestMsgpackDifferentMapOrSliceType(t *testing.T) {
+	defer func(b bool) { testMsgpackH.RawToString = b }(testMsgpackH.RawToString)
+	testMsgpackH.RawToString = true
 	doTestDifferentMapOrSliceType(t, testMsgpackH)
 }
 
@@ -4672,6 +4671,8 @@ func TestCborScalars(t *testing.T) {
 }
 
 func TestMsgpackScalars(t *testing.T) {
+	defer func(b bool) { testMsgpackH.RawToString = b }(testMsgpackH.RawToString)
+	testMsgpackH.RawToString = true
 	doTestScalars(t, testMsgpackH)
 }
 
