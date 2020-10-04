@@ -1079,19 +1079,20 @@ encode_rune:
 func (d *jsonDecDriver) nakedNum(z *fauxUnion, bs []byte) (err error) {
 	// const cutoff = uint64(1 << uint(64-1))
 
-	if len(bs) == 0 {
-		if d.h.PreferFloat {
-			z.v = valueTypeFloat
-			z.f = 0
-		} else if d.h.SignedInteger {
-			z.v = valueTypeInt
-			z.i = 0
-		} else {
-			z.v = valueTypeUint
-			z.u = 0
-		}
-		return
-	}
+	// nakedNum is NEVER called with a zero-length []byte
+	// if len(bs) == 0 {
+	// 	if d.h.PreferFloat {
+	// 		z.v = valueTypeFloat
+	// 		z.f = 0
+	// 	} else if d.h.SignedInteger {
+	// 		z.v = valueTypeInt
+	// 		z.i = 0
+	// 	} else {
+	// 		z.v = valueTypeUint
+	// 		z.u = 0
+	// 	}
+	// 	return
+	// }
 	if d.h.PreferFloat {
 		z.v = valueTypeFloat
 		z.f, err = parseFloat64(bs)
