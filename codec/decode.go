@@ -1826,9 +1826,7 @@ func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 		bsOut = bs[:clen]
 		r.readb(bsOut)
 	} else {
-		len2 := decInferLen(clen, maxInitLen, 1)
-		bsOut = make([]byte, len2)
-		r.readb(bsOut)
+		var len2 int
 		for len2 < clen {
 			len3 := decInferLen(clen-len2, maxInitLen, 1)
 			bs3 := bsOut
