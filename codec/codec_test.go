@@ -4119,6 +4119,28 @@ func TestJsonNumberParsing(t *testing.T) {
 			t.FailNow()
 		}
 	}
+	{
+		h := testJsonH
+
+		var f64 float64 = 64.0
+		var f32 float32 = 32.0
+		var i int = 11
+		var u64 uint64 = 128
+
+		for _, s := range []string{`""`, `null`} {
+			b := []byte(s)
+			testUnmarshalErr(&f64, b, h, t, "")
+			testDeepEqualErr(f64, float64(0), t, "")
+			testUnmarshalErr(&f32, b, h, t, "")
+			testDeepEqualErr(f32, float32(0), t, "")
+			testUnmarshalErr(&i, b, h, t, "")
+			testDeepEqualErr(i, int(0), t, "")
+			testUnmarshalErr(&u64, b, h, t, "")
+			testDeepEqualErr(u64, uint64(0), t, "")
+			testUnmarshalErr(&u64, b, h, t, "")
+			testDeepEqualErr(u64, uint64(0), t, "")
+		}
+	}
 }
 
 func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
