@@ -13131,11 +13131,7 @@ func (x codecSelfer19780) decMapstringuint16(v *map[string]uint16, d *Decoder) {
 				yymdn1 = false
 				yymv1 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = 0
-					}
+					yyv1[yymk1] = 0
 				} else if yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -13567,11 +13563,7 @@ func (x codecSelfer19780) decMapstringPtrtostringUint64T(v *map[string]*stringUi
 					}
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = nil
-					}
+					yyv1[yymk1] = nil
 				} else if yyms1 && yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -13657,11 +13649,7 @@ func (x codecSelfer19780) decMapstringPtrtoTestStruc(v *map[string]*TestStruc, d
 					}
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = nil
-					}
+					yyv1[yymk1] = nil
 				} else if yyms1 && yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -13733,11 +13721,7 @@ func (x codecSelfer19780) decMapstringTestStruc(v *map[string]TestStruc, d *Deco
 					yymv1.CodecDecodeSelf(d)
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = TestStruc{}
-					}
+					yyv1[yymk1] = TestStruc{}
 				} else if yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -14090,11 +14074,7 @@ func (x codecSelfer19780) decMapboolc3RydWN0IHt9(v *map[bool]struct{}, d *Decode
 				yymdn1 = false
 				z.DecFallback(&yymv1, false)
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = struct{}{}
-					}
+					yyv1[yymk1] = struct{}{}
 				} else if yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -14165,11 +14145,7 @@ func (x codecSelfer19780) decMapintwrapUint64Slice(v *map[int]wrapUint64Slice, d
 					yymv1.CodecDecodeSelf(d)
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = nil
-					}
+					yyv1[yymk1] = nil
 				} else if yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -14240,11 +14216,7 @@ func (x codecSelfer19780) decMapfloat64wrapStringSlice(v *map[float64]wrapString
 					yymv1.CodecDecodeSelf(d)
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = nil
-					}
+					yyv1[yymk1] = nil
 				} else if yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -14315,11 +14287,7 @@ func (x codecSelfer19780) decMapfloat32wrapStringSlice(v *map[float32]wrapString
 					yymv1.CodecDecodeSelf(d)
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = nil
-					}
+					yyv1[yymk1] = nil
 				} else if yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -14390,11 +14358,7 @@ func (x codecSelfer19780) decMapuint64wrapStringSlice(v *map[uint64]wrapStringSl
 					yymv1.CodecDecodeSelf(d)
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = nil
-					}
+					yyv1[yymk1] = nil
 				} else if yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -14474,11 +14438,7 @@ func (x codecSelfer19780) decMapstringUint64TwrapStringSlice(v *map[stringUint64
 					yymv1.CodecDecodeSelf(d)
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = nil
-					}
+					yyv1[yymk1] = nil
 				} else if yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -14980,11 +14940,7 @@ func (x codecSelfer19780) decMapstringUint64TPtrtostringUint64T(v *map[stringUin
 					}
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = nil
-					}
+					yyv1[yymk1] = nil
 				} else if yyms1 && yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -15070,11 +15026,7 @@ func (x codecSelfer19780) decMapstringPtrtoTestStrucFlex(v *map[string]*TestStru
 					}
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = nil
-					}
+					yyv1[yymk1] = nil
 				} else if yyms1 && yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}
@@ -15146,11 +15098,7 @@ func (x codecSelfer19780) decMapstringTestStrucFlex(v *map[string]TestStrucFlex,
 					yymv1.CodecDecodeSelf(d)
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = TestStrucFlex{}
-					}
+					yyv1[yymk1] = TestStrucFlex{}
 				} else if yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}

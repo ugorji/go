@@ -369,7 +369,6 @@ func TestCodecSuite(t *testing.T) {
 	testDecodeOptions.SignedInteger = true // error as deepEqual compares int64 to uint64
 	testDecodeOptions.SliceElementReset = true
 	testDecodeOptions.InterfaceReset = true
-	testDecodeOptions.DeleteOnNilMapValue = true
 	testDecodeOptions.RawToString = true
 	testDecodeOptions.PreferPointerForStructOrArray = true
 

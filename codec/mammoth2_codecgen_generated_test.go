@@ -7142,11 +7142,7 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 					yymv1.CodecDecodeSelf(d)
 				}
 				if yymdn1 {
-					if z.DecBasicHandle().DeleteOnNilMapValue {
-						delete(yyv1, yymk1)
-					} else {
-						yyv1[yymk1] = TestMammoth2{}
-					}
+					yyv1[yymk1] = TestMammoth2{}
 				} else if yyv1 != nil {
 					yyv1[yymk1] = yymv1
 				}

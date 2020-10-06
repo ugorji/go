@@ -2056,15 +2056,12 @@ func doTestDecodeNilMapValue(t *testing.T, h Handle) {
 	}
 
 	bh := basicHandle(h)
-	oldMapType := bh.MapType
-	oldDeleteOnNilMapValue := bh.DeleteOnNilMapValue
-	defer func() {
-		bh.MapType = oldMapType
-		bh.DeleteOnNilMapValue = oldDeleteOnNilMapValue
-	}()
-	bh.MapType = reflect.TypeOf(map[interface{}]interface{}(nil))
-	bh.DeleteOnNilMapValue = false
+	defer func(t reflect.Type) {
+		bh.MapType = t
+	}(bh.MapType)
 
+	// this test expects that nil doesn't result in deleting entries
+	
 	_, isJsonHandle := h.(*JsonHandle)
 
 	toEncode := Struct{Field: map[uint16]map[uint32]struct{}{

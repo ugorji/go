@@ -43,7 +43,7 @@ if {{var "l"}} != 0 {
 	{{var "mdn"}} = false
 	{{ $x := printf "%vmv%v" .TempVar .Rand }}{{ $y := printf "%vmdn%v" .TempVar .Rand }}{{ decLineVar $x $y -}}
 	if {{var "mdn"}} {
-		if z.DecBasicHandle().DeleteOnNilMapValue { delete({{var "v"}}, {{var "mk"}}) } else { {{var "v"}}[{{var "mk"}}] = {{decElemZero}} }
+		{{var "v"}}[{{var "mk"}}] = {{decElemZero}}
 	} else if {{if decElemKindPtr}} {{var "ms"}} && {{end}} {{var "v"}} != nil {
 		{{var "v"}}[{{var "mk"}}] = {{var "mv"}}
 	}
