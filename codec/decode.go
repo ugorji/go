@@ -622,7 +622,6 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
 			}
-			// keepAlive4StringView(rvkencnameB) // not needed, as reference is outside loop
 		}
 		d.mapEnd()
 	} else if ctyp == valueTypeArray {
@@ -1632,7 +1631,7 @@ func (d *Decoder) string(v []byte) (s string) {
 		return
 	}
 	if d.is == nil {
-		return string(v) // don't return stringView, as we need a real string here.
+		return string(v)
 	}
 	s, ok := d.is[string(v)] // no allocation here, per go implementation
 	if !ok {
