@@ -626,15 +626,16 @@ func (d *jsonDecDriver) advance() {
 
 func (d *jsonDecDriver) nextValueBytes(start []byte) (v []byte) {
 	v = start
+	dr := &d.d.decRd
 	consumeString := func() {
 		for {
-			c := d.d.decRd.readn1()
+			c := dr.readn1()
 			v = append(v, c)
 			if c == '"' {
 				break
 			}
 			if c == '\\' {
-				v = append(v, d.d.decRd.readn1())
+				v = append(v, dr.readn1())
 			}
 		}
 	}
@@ -643,7 +644,7 @@ func (d *jsonDecDriver) nextValueBytes(start []byte) (v []byte) {
 
 	switch d.tok {
 	default:
-		v = append(v, d.d.decRd.jsonReadNum()...)
+		v = append(v, dr.jsonReadNum()...)
 	case 'n':
 		d.readLit4Null()
 		v = append(v, jsonLiteralNull...)
@@ -665,7 +666,7 @@ func (d *jsonDecDriver) nextValueBytes(start []byte) (v []byte) {
 		v = append(v, d.tok)
 
 		for len(stack) != 0 {
-			c := d.d.decRd.readn1()
+			c := dr.readn1()
 			v = append(v, c)
 			switch c {
 			case '"':
@@ -987,48 +988,49 @@ func (d *jsonDecDriver) readUnescapedString() (bs []byte) {
 }
 
 func (d *jsonDecDriver) appendStringAsBytes() {
-	if d.buf != nil {
-		d.buf = d.buf[:0]
-	}
+	// use a local buf variable, so we don't do pointer chasing within loop
+	buf := d.buf[:0]
+	dr := &d.d.decRd
 	d.tok = 0
 
 	var c uint8
 	for {
-		c = d.d.decRd.readn1()
+		c = dr.readn1()
 
 		if c == '"' {
 			break
 		}
 		if c != '\\' {
-			d.buf = append(d.buf, c)
+			buf = append(buf, c)
 			continue
 		}
 
-		c = d.d.decRd.readn1()
+		c = dr.readn1()
 
 		switch c {
 		case '"', '\\', '/', '\'':
-			d.buf = append(d.buf, c)
+			buf = append(buf, c)
 		case 'b':
-			d.buf = append(d.buf, '\b')
+			buf = append(buf, '\b')
 		case 'f':
-			d.buf = append(d.buf, '\f')
+			buf = append(buf, '\f')
 		case 'n':
-			d.buf = append(d.buf, '\n')
+			buf = append(buf, '\n')
 		case 'r':
-			d.buf = append(d.buf, '\r')
+			buf = append(buf, '\r')
 		case 't':
-			d.buf = append(d.buf, '\t')
+			buf = append(buf, '\t')
 		case 'u':
-			d.appendStringAsBytesSlashU()
+			buf = append(buf, d.bstr[:utf8.EncodeRune(d.bstr[:], d.appendStringAsBytesSlashU())]...)
 		default:
+			d.buf = buf
 			d.d.errorf("unsupported escaped value: %c", c)
 		}
 	}
+	d.buf = buf
 }
 
-func (d *jsonDecDriver) appendStringAsBytesSlashU() {
-	var r rune
+func (d *jsonDecDriver) appendStringAsBytesSlashU() (r rune) {
 	var rr uint32
 	var j uint
 	var c byte
@@ -1072,8 +1074,7 @@ func (d *jsonDecDriver) appendStringAsBytesSlashU() {
 		r = unicode.ReplacementChar
 	}
 encode_rune:
-	w2 := utf8.EncodeRune(d.bstr[:], r)
-	d.buf = append(d.buf, d.bstr[:w2]...)
+	return
 }
 
 func (d *jsonDecDriver) nakedNum(z *fauxUnion, bs []byte) (err error) {

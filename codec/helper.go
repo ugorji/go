@@ -1643,6 +1643,7 @@ type typeInfo struct {
 
 	elemkind uint8
 	_        [2]byte // padding
+	// buf      [24]byte // use this if needed
 	// _ [1]uint64 // padding
 }
 
