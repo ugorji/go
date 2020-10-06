@@ -235,7 +235,7 @@ _main() {
     local zverbose=()
     local zbenchflags=""
     OPTIND=1
-    while getopts ":ctmnrgpfvlyzdsowb:" flag
+    while getopts ":ctmnrgpfvlyzdsowxb:" flag
     do
         case "x$flag" in
             'xo') zcover=1 ;;
@@ -260,8 +260,9 @@ _main() {
         'xg') _go ;;
         'xp') _prebuild "$@" ;;
         'xc') _clean "$@" ;;
-        'xy') _analyze_extra "$@" ;;
-        'xz') _analyze "$@" ;;
+        'xx') _analyze_checks "$@" ;;
+        'xy') _analyze_debug_types "$@" ;;
+        'xz') _analyze_do_inlining_and_more "$@" ;;
         'xb') _bench "$@" ;;
     esac
     # unset zforce zargs zbenchflags

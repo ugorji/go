@@ -181,38 +181,6 @@ func doBenchCheck(t *testing.T, name string, encfn benchEncFn, decfn benchDecFn)
 			t.Logf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded == decoded", name, encLen, encDur, decDur)
 		} else {
 			t.Logf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded != decoded: %v", name, encLen, encDur, decDur, err)
-			// if benchShowJsonOnError && strings.Contains(name, "json") {
-			// 	fmt.Printf("\n\n%s\n\n", buf)
-			// 	//fmt.Printf("\n\n%#v\n\n", benchTs)
-			// 	//fmt.Printf("\n\n%#v\n\n", &ts2)
-			// 	return
-			// }
-
-			// if strings.Contains(name, "json") {
-			// 	println(">>>>>")
-			// 	f1, _ := os.Create("1.out")
-			// 	f2, _ := os.Create("2.out")
-			// 	f3, _ := os.Create("3.json")
-			// 	buf3, _ := json.MarshalIndent(&ts2, "", "\t")
-			// 	spew.Config.SortKeys = true
-			// 	spew.Config.SpewKeys = true
-			// 	println("^^^^^^^^^^^^^^")
-			// 	spew.Fdump(f1, benchTs)
-			// 	println("^^^^^^^^^^^^^^")
-			// 	spew.Fdump(f2, &ts2)
-			// 	println("^^^^^^^^^^^^^^")
-			// 	f3.Write(buf3)
-			// 	f1.Close()
-			// 	f2.Close()
-			// 	f3.Close()
-			// }
-			// t.Logf("\t: err: %v,\n benchTs: %#v\n\n, ts2: %#v\n\n", err, benchTs, ts2) // TODO: remove
-			// t.Logf("BenchVerify: Error comparing en|decoded TestStruc: %v", err)
-			// return
-			// t.Logf("BenchVerify: Error comparing benchTs: %v\n--------\n%v\n--------\n%v", err, benchTs, ts2)
-			// if strings.Contains(name, "json") {
-			// 	t.Logf("\n\tDECODED FROM\n--------\n%s", buf)
-			// }
 		}
 	} else {
 		t.Logf("\t%10s: len: %d bytes,\t encode: %v,\t decode: %v", name, encLen, encDur, decDur)

@@ -160,7 +160,6 @@ func parseFloat32_reader(r readFloatResult) (f float32, fail bool) {
 
 func parseFloat32_custom(b []byte) (f float32, err error) {
 	r := readFloat(b, fi32)
-	// xdebug2f("\tparsing: %s - ok: %v, bad: %v, trunc: %v, mantissa: %v, exp: %v", b, r.ok, r.bad, r.trunc, r.mantissa, r.exp)
 	if r.bad {
 		return 0, strconvParseErr(b, "ParseFloat")
 	}

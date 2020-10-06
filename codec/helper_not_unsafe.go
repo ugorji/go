@@ -64,6 +64,10 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
 	return reflect.New(t).Elem()
 }
 
+func rvZeroK(t reflect.Type, k reflect.Kind) reflect.Value {
+	return reflect.Zero(t)
+}
+
 func rvConvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
 	return v.Convert(t)
 }
@@ -381,14 +385,14 @@ func mapSet(m, k, v reflect.Value) {
 	m.SetMapIndex(k, v)
 }
 
-func mapDelete(m, k reflect.Value) {
-	m.SetMapIndex(k, reflect.Value{})
-}
+// func mapDelete(m, k reflect.Value) {
+// 	m.SetMapIndex(k, reflect.Value{})
+// }
 
 // return an addressable reflect value that can be used in mapRange and mapGet operations.
 //
 // all calls to mapGet or mapRange will call here to get an addressable reflect.Value.
-func mapAddressableRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
+func mapAddrLoopvarRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 	return // reflect.New(t).Elem()
 }
 

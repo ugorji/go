@@ -211,8 +211,13 @@ var (
 	must mustHdl
 	halt panicHdl
 
-	refBitset    bitset32
-	isnilBitset  bitset32
+	// refBitset sets bit for all kinds which are direct internal references
+	refBitset bitset32
+
+	// isnilBitset sets bit for all kinds which can be compared to nil
+	isnilBitset bitset32
+
+	// scalarBitset sets bit for all kinds which are scalars/primitives and thus immutable
 	scalarBitset bitset32
 
 	digitCharBitset      bitset256
@@ -239,22 +244,6 @@ var (
 var pool4tiload = sync.Pool{New: func() interface{} { return new(typeInfoLoadArray) }}
 
 func init() {
-	refBitset = refBitset.
-		set(byte(reflect.Map)).
-		set(byte(reflect.Ptr)).
-		set(byte(reflect.Func)).
-		set(byte(reflect.Chan)).
-		set(byte(reflect.UnsafePointer))
-
-	isnilBitset = isnilBitset.
-		set(byte(reflect.Map)).
-		set(byte(reflect.Ptr)).
-		set(byte(reflect.Func)).
-		set(byte(reflect.Chan)).
-		set(byte(reflect.UnsafePointer)).
-		set(byte(reflect.Interface)).
-		set(byte(reflect.Slice))
-
 	scalarBitset = scalarBitset.
 		set(byte(reflect.Bool)).
 		set(byte(reflect.Int)).
@@ -273,6 +262,19 @@ func init() {
 		set(byte(reflect.Complex64)).
 		set(byte(reflect.Complex128)).
 		set(byte(reflect.String))
+
+	// MARKER: reflect.Array is not a scalar, as its contents can be modified
+
+	refBitset = refBitset.
+		set(byte(reflect.Map)).
+		set(byte(reflect.Ptr)).
+		set(byte(reflect.Func)).
+		set(byte(reflect.Chan)).
+		set(byte(reflect.UnsafePointer))
+
+	isnilBitset = refBitset.
+		set(byte(reflect.Interface)).
+		set(byte(reflect.Slice))
 
 	var i byte
 	for i = 0; i <= utf8.RuneSelf; i++ {
@@ -542,36 +544,6 @@ var (
 )
 
 var defTypeInfos = NewTypeInfos([]string{"codec", "json"})
-
-var immutableKindsSet = [32]bool{
-	// reflect.Invalid:  ,
-	reflect.Bool:       true,
-	reflect.Int:        true,
-	reflect.Int8:       true,
-	reflect.Int16:      true,
-	reflect.Int32:      true,
-	reflect.Int64:      true,
-	reflect.Uint:       true,
-	reflect.Uint8:      true,
-	reflect.Uint16:     true,
-	reflect.Uint32:     true,
-	reflect.Uint64:     true,
-	reflect.Uintptr:    true,
-	reflect.Float32:    true,
-	reflect.Float64:    true,
-	reflect.Complex64:  true,
-	reflect.Complex128: true,
-	// reflect.Array
-	// reflect.Chan
-	// reflect.Func: true,
-	// reflect.Interface
-	// reflect.Map
-	// reflect.Ptr
-	// reflect.Slice
-	reflect.String: true,
-	// reflect.Struct
-	// reflect.UnsafePointer
-}
 
 // SelfExt is a sentinel extension signifying that types
 // registered with it SHOULD be encoded and decoded
@@ -1660,7 +1632,7 @@ type typeInfo struct {
 	// It is mostly beneficial for all non-reference kinds
 	// i.e. all but map/chan/func/ptr/unsafe.pointer
 	// so beneficial for intXX, bool, slices, structs, etc
-	rv0 reflect.Value
+	// rv0 reflect.Value
 
 	elemsize uintptr
 
@@ -1788,7 +1760,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		pkgpath: rt.PkgPath(),
 		keyType: valueTypeString, // default it - so it's never 0
 	}
-	ti.rv0 = reflect.Zero(rt)
+	// ti.rv0 = reflect.Zero(rt)
 
 	ti.numMeth = uint16(rt.NumMethod())
 
@@ -2155,7 +2127,7 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) 
 		return rv2i(v).(isZeroer).IsZero()
 	}
 	if ti.isFlag(tiflagComparable) {
-		return rv2i(v) == rv2i(reflect.Zero(vt))
+		return rv2i(v) == rv2i(rvZeroK(vt, reflect.Struct))
 	}
 	if !checkStruct {
 		return false
@@ -2218,9 +2190,7 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 }
 
 func isImmutableKind(k reflect.Kind) (v bool) {
-	// return immutableKindsSet[k]
-	// since we know reflect.Kind is in range 0..31, then use the k%32 == k constraint
-	return immutableKindsSet[k%reflect.Kind(len(immutableKindsSet))] // bounds-check-elimination
+	return scalarBitset.isset(byte(k))
 }
 
 func usableByteSlice(bs []byte, slen int) []byte {
@@ -2454,9 +2424,9 @@ type ioFlusher interface {
 	Flush() error
 }
 
-type ioPeeker interface {
-	Peek(int) ([]byte, error)
-}
+// type ioPeeker interface {
+// 	Peek(int) ([]byte, error)
+// }
 
 type ioBuffered interface {
 	Buffered() int

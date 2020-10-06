@@ -100,9 +100,8 @@ var (
 
 	testMaxInitLen int
 
-	testInitDebug bool
-	testUseReset  bool
-	testSkipIntf  bool
+	testUseReset bool
+	testSkipIntf bool
 
 	testUseIoEncDec  int
 	testUseIoWrapper bool
@@ -128,13 +127,6 @@ func init() {
 		testMsgpackH, testBincH, testSimpleH, testCborH, testJsonH)
 	// JSON should do HTMLCharsAsIs by default
 	testJsonH.HTMLCharsAsIs = true
-	// set ExplicitRelease on each handle
-	testMsgpackH.ExplicitRelease = true
-	testBincH.ExplicitRelease = true
-	testSimpleH.ExplicitRelease = true
-	testCborH.ExplicitRelease = true
-	testJsonH.ExplicitRelease = true
-
 	testInitFlags()
 	benchInitFlags()
 }
@@ -143,7 +135,6 @@ func testInitFlags() {
 	var bIgnore bool
 	// delete(testDecOpts.ExtFuncs, timeTyp)
 	flag.BoolVar(&testVerbose, "tv", false, "Text Extra Verbose Logging if -v if set")
-	flag.BoolVar(&testInitDebug, "tg", false, "Test Init Debug")
 	flag.IntVar(&testUseIoEncDec, "ti", -1, "Use IO Reader/Writer for Marshal/Unmarshal ie >= 0")
 	flag.BoolVar(&testUseIoWrapper, "tiw", false, "Wrap the IO Reader/Writer with a base pass-through reader/writer")
 
@@ -227,9 +218,6 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.B
 		bs = buf.Bytes()
 		bh.WriterBufferSize = oldWriteBufferSize
 	}
-	if !testUseReset {
-		e.Release()
-	}
 	return
 }
 
@@ -259,9 +247,6 @@ func testSharedCodecDecoderAfter(d *Decoder, oldReadBufferSize int, bh *BasicHan
 	if testUseIoEncDec >= 0 {
 		bh.ReaderBufferSize = oldReadBufferSize
 	}
-	if !testUseReset {
-		d.Release()
-	}
 }
 
 func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle, useMust bool) (err error) {
@@ -269,7 +254,7 @@ func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle,
 	if useMust {
 		d.MustDecode(ts)
 	} else {
-		err = d.Decode(ts)
+		err = d.Decode(ts) // TODO: change
 	}
 	testSharedCodecDecoderAfter(d, oldReadBufferSize, bh)
 	return

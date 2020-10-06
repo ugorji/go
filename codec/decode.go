@@ -540,7 +540,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 			} else if d.h.InterfaceReset {
 				// reset to zero value based on current type in there.
 				if rvelem := rv.Elem(); rvelem.IsValid() {
-					rv.Set(reflect.Zero(rvelem.Type()))
+					rv.Set(rvZeroK(rvelem.Type(), rvelem.Kind()))
 				}
 			}
 			return
@@ -602,24 +602,22 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		tisfi := f.ti.sfiSort
 		hasLen := containerLen >= 0
 
+		var name2 = []byte{}
 		var rvkencname []byte
 		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
 			d.mapElemKey()
 			rvkencname = decStructFieldKey(d.d, f.ti.keyType, &d.b)
 			d.mapElemValue()
-			if k := f.ti.indexForEncName(rvkencname); k > -1 {
+			if k := f.ti.indexForEncName(rvkencname); k >= 0 {
 				si := tisfi[k]
 				d.decodeValue(sfn.field(si), nil)
 			} else if mf != nil {
 				// store rvkencname in new []byte, as it previously shares Decoder.b, which is used in decode
-				name2 := rvkencname
-				rvkencname = make([]byte, len(rvkencname))
-				copy(rvkencname, name2)
-
+				name2 = append(name2[:0], rvkencname...)
 				var f interface{}
 				d.decode(&f)
-				if !mf.CodecMissingField(rvkencname, f) && d.h.ErrorIfNoField {
-					d.errorf("no matching struct field when decoding stream map with key: %s ", stringView(rvkencname))
+				if !mf.CodecMissingField(name2, f) && d.h.ErrorIfNoField {
+					d.errorf("no matching struct field when decoding stream map with key: %s ", stringView(name2))
 				}
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
@@ -740,7 +738,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			} else if rvCanset { // rvlen1 > rvcap
 				rvlen = rvlen1
 				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvlen)
-				rvCanset = rv.CanSet()
+				rvCanset = false
 				rvcap = rvlen
 				rvChanged = true
 			} else { // rvlen1 > rvcap && !canSet
@@ -768,7 +766,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				rvlen = decDefSliceCap
 				rvcap = rvlen * 2
 				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
-				rvCanset = rv.CanSet()
+				rvCanset = false
 				rvChanged = true
 			} else {
 				d.errorf("cannot decode into non-settable slice")
@@ -804,7 +802,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				rv9 = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
 				rvCopySlice(rv9, rv)
 				rv = rv9
-				rvCanset = rv.CanSet()
+				rvCanset = false
 				rvChanged = true
 			}
 		} else {
@@ -814,7 +812,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		if d.h.SliceElementReset {
 			if !rtelem0ZeroValid {
 				rtelem0ZeroValid = true
-				rtelem0Zero = reflect.Zero(rtelem0)
+				rtelem0Zero = rvZeroK(rtelem0, rtElem0Kind)
 			}
 			rv9.Set(rtelem0Zero)
 		}
@@ -834,7 +832,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	} else if j == 0 && rvIsNil(rv) {
 		if rvCanset {
 			rv = reflect.MakeSlice(f.ti.rt, 0, 0)
-			// rvCanset = rv.CanSet()
+			rvCanset = false
 			rvChanged = true
 		}
 	}
@@ -871,12 +869,14 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 
+	var rvCanset = rv.CanSet()
+
 	// only expects valueType(Array|Map - nil handled above)
 	slh, containerLenS := d.decSliceHelperStart()
 
 	// an array can never return a nil slice. so no need to check f.array here.
 	if containerLenS == 0 {
-		if rv.CanSet() && rvIsNil(rv) {
+		if rvCanset && rvIsNil(rv) {
 			rvSetDirect(rv, reflect.MakeChan(f.ti.rt, 0))
 		}
 		slh.End()
@@ -895,7 +895,6 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 
 	var fn *codecFn
 
-	var rvCanset = rv.CanSet()
 	var rvChanged bool
 	var rv0 = rv
 	var rv9 reflect.Value
@@ -967,9 +966,11 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	rvvMut := !isImmutableKind(vtypeKind)
+	rvvCanNil := isnilBitset.isset(byte(vtypeKind))
 
 	// we do a doMapGet if kind is mutable, and InterfaceReset=true if interface
 	var doMapGet, doMapSet bool
+
 	if !d.h.MapValueReset {
 		if rvvMut {
 			if vtypeKind == reflect.Interface {
@@ -983,7 +984,14 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	var rvk, rvkn, rvv, rvvn, rvva reflect.Value
-	var rvvaSet bool
+
+	if rvvMut && doMapGet {
+		rvva = mapAddrLoopvarRV(vtype, vtypeKind)
+		if vtypeKind == reflect.Ptr {
+			vtypeElem = vtype.Elem()
+		}
+	}
+
 	rvkMut := !isImmutableKind(ktype.Kind()) // if ktype is immutable, then re-use the same rvk.
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
@@ -1010,51 +1018,58 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 		if ktypeIsString {
 			kstrbs = d.d.DecodeStringAsBytes()
-			rvk.SetString(stringView(kstrbs)) // NOTE: if doing an insert, use real string (not stringview)
+			rvk.SetString(d.string(kstrbs))
 		} else {
 			if keyFn == nil {
 				keyFn = d.h.fn(ktypeLo)
 			}
 			d.decodeValue(rvk, keyFn)
-		}
 
-		// special case if interface wrapping a byte array.
-		if ktypeIsIntf {
-			if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
-				rvk.Set(rv4i(d.string(rvGetBytes(rvk2))))
+			// special case if interface wrapping a byte array.
+			if ktypeIsIntf {
+				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
+					rvk.Set(rv4i(d.string(rvGetBytes(rvk2))))
+				}
+				// NOTE: consider failing early if map/slice/func
 			}
-			// NOTE: consider failing early if map/slice/func
 		}
 
 		d.mapElemValue()
 
+		if d.d.TryNil() {
+			// since a map, we have to set zero value if needed
+			rvv = rvZeroK(vtype, vtypeKind)
+			mapSet(rv, rvk, rvv)
+			continue
+		}
+
+		// there is non-nil content in the stream to decode ...
+
 		doMapSet = true // set to false if u do a get, and its a non-nil pointer
-		if doMapGet {
-			if !rvvaSet {
-				rvva = mapAddressableRV(vtype, vtypeKind)
-				rvvaSet = true
-			}
-			rvv = mapGet(rv, rvk, rvva) // reflect.Value{})
-			if vtypeKind == reflect.Ptr {
-				if rvv.IsValid() && !rvIsNil(rvv) {
-					doMapSet = false
-				} else {
-					if vtypeElem == nil {
-						vtypeElem = vtype.Elem()
+
+		if rvvMut {
+			if doMapGet {
+				rvv = mapGet(rv, rvk, rvva) // reflect.Value{})
+				// if rvv.IsValid() && !rvIsNil(rvv) {
+				if rvv.IsValid() && (!rvvCanNil || (rvvCanNil && !rvIsNil(rvv))) {
+					if vtypeKind == reflect.Ptr {
+						doMapSet = false
+					} else if vtypeKind != reflect.Map { // ok to decode directly into map
+						// make addressable (so you can set the slice/array elements or interface, etc)
+						rvvn = rvZeroAddrK(vtype, vtypeKind)
+						rvvn.Set(rvv)
+						rvv = rvvn
 					}
-					rvv = reflect.New(vtypeElem)
+				} else {
+					if vtypeKind == reflect.Ptr {
+						rvv = reflect.New(vtypeElem)
+					} else {
+						rvv = rvZeroAddrK(vtype, vtypeKind)
+					}
 				}
-			} else if rvv.IsValid() && vtypeKind == reflect.Interface && !rvIsNil(rvv) {
-				rvvn = rvZeroAddrK(vtype, vtypeKind)
-				rvvn.Set(rvv)
-				rvv = rvvn
-			} else if rvvMut {
-				rvv = rvZeroAddrK(vtype, vtypeKind)
 			} else {
-				rvv = rvvn
+				rvv = rvZeroAddrK(vtype, vtypeKind)
 			}
-		} else if rvvMut {
-			rvv = rvZeroAddrK(vtype, vtypeKind)
 		} else {
 			rvv = rvvn
 		}
@@ -1063,17 +1078,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			valFn = d.h.fn(vtypeLo)
 		}
 
-		// We MUST be done with the stringview of the key, BEFORE decoding the value (rvv)
-		// so that we don't unknowingly reuse the rvk backing buffer during rvv decode.
-		if doMapSet && ktypeIsString { // set to a real string (not string view)
-			rvk.SetString(d.string(kstrbs))
-		}
-		// since a map, we have to set zero value if needed
-		if d.d.TryNil() {
-			rvv = reflect.Zero(rvv.Type())
-		} else {
-			d.decodeValueNoCheckNil(rvv, valFn)
-		}
+		d.decodeValueNoCheckNil(rvv, valFn)
+
 		if doMapSet {
 			mapSet(rv, rvk, rvv)
 		}
@@ -1420,7 +1426,7 @@ func setZeroRV(v reflect.Value) {
 			v = v.Elem()
 		}
 		if v.CanSet() {
-			v.Set(reflect.Zero(v.Type()))
+			v.Set(rvZeroK(v.Type(), v.Kind()))
 		}
 	}
 }
@@ -1511,7 +1517,7 @@ func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn) {
 			rv = rv.Elem()
 		}
 		if rv.CanSet() {
-			rv.Set(reflect.Zero(rv.Type()))
+			rv.Set(rvZeroK(rv.Type(), rv.Kind()))
 		}
 		return
 	}

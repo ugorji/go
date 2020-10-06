@@ -263,7 +263,7 @@ func (e *Encoder) kErr(f *codecFnInfo, rv reflect.Value) {
 }
 
 func chanToSlice(rv reflect.Value, rtslice reflect.Type, timeout time.Duration) (rvcs reflect.Value) {
-	rvcs = reflect.Zero(rtslice)
+	rvcs = rvZeroK(rtslice, rtslice.Kind())
 	if timeout < 0 { // consume until close
 		for {
 			recv, recvOk := rv.Recv()
@@ -615,7 +615,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		valFn = e.h.fn(rtval)
 	}
 
-	var rvv = mapAddressableRV(f.ti.elem, vtypeKind)
+	var rvv = mapAddrLoopvarRV(f.ti.elem, vtypeKind)
 
 	if e.h.Canonical {
 		e.kMapCanonical(f.ti.key, f.ti.elem, rv, rvv, valFn)
@@ -634,31 +634,33 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 	}
 
-	var rvk = mapAddressableRV(f.ti.key, ktypeKind)
+	var rvk = mapAddrLoopvarRV(f.ti.key, ktypeKind)
 
 	var it mapIter
 	mapRange(&it, rv, rvk, rvv, true)
-	validKV := it.ValidKV()
-	var vx reflect.Value
-	for it.Next() {
-		e.mapElemKey()
-		if validKV {
-			vx = it.Key()
-		} else {
-			vx = rvk
+
+	if it.ValidKV() {
+		for it.Next() {
+			e.mapElemKey()
+			if keyTypeIsString {
+				e.e.EncodeString(it.Key().String())
+			} else {
+				e.encodeValue(it.Key(), keyFn)
+			}
+			e.mapElemValue()
+			e.encodeValue(it.Value(), valFn)
 		}
-		if keyTypeIsString {
-			e.e.EncodeString(vx.String())
-		} else {
-			e.encodeValue(vx, keyFn)
+	} else {
+		for it.Next() {
+			e.mapElemKey()
+			if keyTypeIsString {
+				e.e.EncodeString(rvk.String())
+			} else {
+				e.encodeValue(rvk, keyFn)
+			}
+			e.mapElemValue()
+			e.encodeValue(rvv, valFn)
 		}
-		e.mapElemValue()
-		if validKV {
-			vx = it.Value()
-		} else {
-			vx = rvv
-		}
-		e.encodeValue(vx, valFn)
 	}
 	it.Done()
 

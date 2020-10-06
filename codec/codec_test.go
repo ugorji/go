@@ -3,7 +3,7 @@
 
 package codec
 
-// TODO:
+// FIXING CORRECT FILE/LINE NUMBERS IN Logf
 //
 // We get wrong file/line numbers for calls to test(Marshal|Unmarshal|DeepEqual)Err helper functions.
 // This is solved by t.Helper function, but this only exists from go1.9+.
@@ -50,7 +50,7 @@ func init() {
 	testPreInitFns = append(testPreInitFns, testInit)
 }
 
-const testRecoverPanicToErr = true
+const testRecoverPanicToErr = false // TODO: true
 
 var testBytesFreeList bytesFreelist
 
@@ -414,24 +414,23 @@ func testCodecDecode(bs []byte, ts interface{}, h Handle, useMust bool) (err err
 
 func testCheckErr(t *testing.T, err error) {
 	if err != nil {
-		t.Logf(err.Error())
+		t.Logf("err: %v", err)
 		t.FailNow()
 	}
 }
 
 func testCheckEqual(t *testing.T, v1 interface{}, v2 interface{}, desc string) {
 	if err := deepEqual(v1, v2); err != nil {
-		t.Logf("Not Equal: %s: %v. v1: %v, v2: %v", desc, err, v1, v2)
+		t.Logf("Not Equal: %s: %v", desc, err)
+		if testVerbose {
+			t.Logf("\tv1: %v, v2: %v", v1, v2)
+		}
 		t.FailNow()
 	}
 }
 
 func testInit() {
 	gob.Register(new(TestStrucFlex))
-	if testInitDebug { // TODO: fix testInit to be done on demand, and uncomment below
-		// ts0 := newTestStrucFlex(2, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
-		// logTv(nil, "====> depth: %v, ts: %#v\n", 2, ts0)
-	}
 
 	for _, v := range testHandles {
 		bh := basicHandle(v)
@@ -1010,8 +1009,7 @@ func doTestCodecTableOne(t *testing.T, h Handle) {
 	//do last map and newStruc
 	idx2 := idxMap + numMap - 1
 	testCodecTableOne(t, true, h, table[idx2:], tableTestNilVerify[idx2:])
-	//TODO: What is this one? do we need to do it?
-	//testCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18])
+	//testCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18]) // do we need this?
 }
 
 func doTestCodecMiscOne(t *testing.T, h Handle) {
@@ -3056,7 +3054,7 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 	var bcsym uint8
 	if bcok {
 		bcsym = bch.AsSymbols
-		bch.AsSymbols = 2 // TODO: should be 0 but binc symbols do not work well
+		bch.AsSymbols = 2 // MARKER: should be 0 but binc symbols do not work well
 	}
 	defer func() {
 		bh.StructToArray = s2a
@@ -3452,7 +3450,6 @@ after the new line
 func doTestBufioDecReader(t *testing.T, bufsize int) {
 	defer testSetup(t)()
 	bufsizehalf := (bufsize + 1) / 2
-	// TODO: add testing when the buffer size is smaller than the string length.
 
 	// try to read 85 bytes in chunks of 7 at a time.
 	var s = strings.Repeat("01234'56789      ", 5)
@@ -4219,8 +4216,8 @@ func TestMapRangeIndex(t *testing.T) {
 	// var vx reflect.Value
 
 	mt := reflect.TypeOf(m1)
-	rvk := mapAddressableRV(mt.Key(), mt.Key().Kind())
-	rvv := mapAddressableRV(mt.Elem(), mt.Elem().Kind())
+	rvk := mapAddrLoopvarRV(mt.Key(), mt.Key().Kind())
+	rvv := mapAddrLoopvarRV(mt.Elem(), mt.Elem().Kind())
 	var it mapIter
 	mapRange(&it, rv4i(m1), rvk, rvv, true)
 	for it.Next() {
@@ -4249,8 +4246,8 @@ func TestMapRangeIndex(t *testing.T) {
 	}
 
 	mt = reflect.TypeOf(m2)
-	rvk = mapAddressableRV(mt.Key(), mt.Key().Kind())
-	rvv = mapAddressableRV(mt.Elem(), mt.Elem().Kind())
+	rvk = mapAddrLoopvarRV(mt.Key(), mt.Key().Kind())
+	rvv = mapAddrLoopvarRV(mt.Elem(), mt.Elem().Kind())
 	mapRange(&it, rv4i(m2), rvk, rvv, true)
 	for it.Next() {
 		k := fnrv(it.Key(), rvk).Interface().(*T)
@@ -4271,7 +4268,7 @@ func TestMapRangeIndex(t *testing.T) {
 	fnTestMapIndex := func(mi ...interface{}) {
 		for _, m0 := range mi {
 			m := rv4i(m0)
-			rvv := mapAddressableRV(m.Type().Elem(), m.Type().Elem().Kind())
+			rvv := mapAddrLoopvarRV(m.Type().Elem(), m.Type().Elem().Kind())
 			for _, k := range m.MapKeys() {
 				testDeepEqualErr(m.MapIndex(k).Interface(), mapGet(m, k, rvv).Interface(), t, "map-index-eq")
 			}
@@ -4475,7 +4472,7 @@ func TestJsonRpcGo(t *testing.T) {
 // ----- OTHERS -----
 
 func TestBincMapEncodeForCanonical(t *testing.T) {
-	t.Skipf("skipping ... needs investigation") // TODO: testing fails??? Need to research
+	t.Skipf("skipping ... needs investigation") // MARKER: testing fails??? Need to research
 	doTestMapEncodeForCanonical(t, testBincH)
 }
 
@@ -5045,25 +5042,3 @@ func TestSimpleDesc(t *testing.T) {
 func TestMultipleEncDec(t *testing.T) {
 	doTestMultipleEncDec(t, testJsonH)
 }
-
-// TODO:
-//
-// Add Tests for the following:
-// - struct tags: on anonymous fields, _struct (all fields), etc
-// - chan to encode and decode (with support for codecgen also)
-//
-// Add negative tests for failure conditions:
-// - bad input with large array length prefix
-//
-// Add tests for decode.go (standalone)
-// - UnreadByte: only 2 states (z.ls = 2 and z.ls = 1) (0 --> 2 --> 1)
-// - PreferArrayOverSlice???
-// - InterfaceReset
-// - (chan byte) to decode []byte (with mapbyslice track)
-// - decode slice of len 6, 16 into slice of (len 4, cap 8) and (len ) with maxinitlen=6, 8, 16
-// - DeleteOnNilMapValue
-// - decnaked: n.l == nil
-// - ensureDecodeable (try to decode into a non-decodeable thing e.g. a nil interface{},
-//
-// Add tests for encode.go (standalone)
-// - nil and 0-len slices and maps for non-fastpath things

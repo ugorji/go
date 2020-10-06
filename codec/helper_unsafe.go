@@ -27,6 +27,8 @@ import (
 
 const safeMode = false
 
+var unsafeZeroArr [256]byte
+
 // MARKER: keep in sync with GO_ROOT/src/reflect/value.go
 const (
 	unsafeFlagIndir    = 1 << 7
@@ -129,6 +131,21 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).word
 	urv.ptr = unsafe_New(urv.typ)
+	return
+}
+
+func rvZeroK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).word
+	if refBitset.isset(byte(k)) {
+		urv.flag = uintptr(k)
+	} else if (k == reflect.Struct || k == reflect.Array) && t.Size() > uintptr(len(unsafeZeroArr)) {
+		urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
+		urv.ptr = unsafe_New(urv.typ)
+	} else {
+		urv.flag = uintptr(k) | unsafeFlagIndir
+		urv.ptr = unsafe.Pointer(&unsafeZeroArr[0])
+	}
 	return
 }
 
@@ -782,8 +799,7 @@ func mapSet(m, k, v reflect.Value) {
 // return an addressable reflect value that can be used in mapRange and mapGet operations.
 //
 // all calls to mapGet or mapRange will call here to get an addressable reflect.Value.
-func mapAddressableRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
-	// return reflect.New(t).Elem()
+func mapAddrLoopvarRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 	return rvZeroAddrK(t, k)
 }
 

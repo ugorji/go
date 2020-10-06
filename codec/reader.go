@@ -390,7 +390,7 @@ func (z *bufioDecReader) readn1eof() (b byte, eof bool) {
 
 func (z *bufioDecReader) unreadn1() {
 	if z.c == 0 {
-		panic(errDecUnreadByteNothingToRead)
+		halt.onerror(errDecUnreadByteNothingToRead)
 	}
 	z.c--
 	z.n--
