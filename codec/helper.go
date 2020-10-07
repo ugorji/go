@@ -203,13 +203,16 @@ const (
 )
 
 var (
-	oneByteArr    [1]byte
-	zeroByteSlice = oneByteArr[:0:0]
-
-	codecgen bool
-
 	must mustHdl
 	halt panicHdl
+
+	digitCharBitset      bitset256
+	numCharBitset        bitset256
+	whitespaceCharBitset bitset256
+
+	numCharWithExpBitset64 bitset64
+	numCharNoExpBitset64   bitset64
+	whitespaceCharBitset64 bitset64
 
 	// refBitset sets bit for all kinds which are direct internal references
 	refBitset bitset32
@@ -220,13 +223,10 @@ var (
 	// scalarBitset sets bit for all kinds which are scalars/primitives and thus immutable
 	scalarBitset bitset32
 
-	digitCharBitset      bitset256
-	numCharBitset        bitset256
-	whitespaceCharBitset bitset256
+	codecgen bool
 
-	numCharWithExpBitset64 bitset64
-	numCharNoExpBitset64   bitset64
-	whitespaceCharBitset64 bitset64
+	oneByteArr    [1]byte
+	zeroByteSlice = oneByteArr[:0:0]
 )
 
 var (
@@ -244,7 +244,7 @@ var (
 var pool4tiload = sync.Pool{New: func() interface{} { return new(typeInfoLoadArray) }}
 
 func init() {
-	scalarBitset = scalarBitset.
+	scalarBitset.
 		set(byte(reflect.Bool)).
 		set(byte(reflect.Int)).
 		set(byte(reflect.Int8)).
@@ -265,35 +265,36 @@ func init() {
 
 	// MARKER: reflect.Array is not a scalar, as its contents can be modified
 
-	refBitset = refBitset.
+	refBitset.
 		set(byte(reflect.Map)).
 		set(byte(reflect.Ptr)).
 		set(byte(reflect.Func)).
 		set(byte(reflect.Chan)).
 		set(byte(reflect.UnsafePointer))
 
-	isnilBitset = refBitset.
+	isnilBitset = refBitset
+
+	isnilBitset.
 		set(byte(reflect.Interface)).
 		set(byte(reflect.Slice))
 
-	var i byte
-	for i = 0; i <= utf8.RuneSelf; i++ {
+	for i := byte(0); i <= utf8.RuneSelf; i++ {
 		switch i {
 		case ' ', '\t', '\r', '\n':
 			whitespaceCharBitset.set(i)
-			whitespaceCharBitset64 = whitespaceCharBitset64.set(i)
+			whitespaceCharBitset64.set(i)
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			digitCharBitset.set(i)
 			numCharBitset.set(i)
-			numCharWithExpBitset64 = numCharWithExpBitset64.set(i - 42)
-			numCharNoExpBitset64 = numCharNoExpBitset64.set(i)
+			numCharWithExpBitset64.set(i - 42)
+			numCharNoExpBitset64.set(i)
 		case '.', '+', '-':
 			numCharBitset.set(i)
-			numCharWithExpBitset64 = numCharWithExpBitset64.set(i - 42)
-			numCharNoExpBitset64 = numCharNoExpBitset64.set(i)
+			numCharWithExpBitset64.set(i - 42)
+			numCharNoExpBitset64.set(i)
 		case 'e', 'E':
 			numCharBitset.set(i)
-			numCharWithExpBitset64 = numCharWithExpBitset64.set(i - 42)
+			numCharWithExpBitset64.set(i - 42)
 		}
 	}
 }
@@ -1825,21 +1826,20 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 
 	x.mu.Lock()
 	sp = x.infos.load()
-	var sp2 []rtid2ti
 	if sp == nil {
 		pti = &ti
-		sp2 = []rtid2ti{{rtid, pti}}
-		x.infos.store(sp2)
+		sp = make([]rtid2ti, 1, 32)
+		sp[0] = rtid2ti{rtid, pti}
+		x.infos.store(sp)
 	} else {
 		var idx uint
 		idx, pti = findTypeInfo(sp, rtid)
 		if pti == nil {
 			pti = &ti
-			sp2 = make([]rtid2ti, len(sp)+1)
-			copy(sp2, sp[:idx])
-			copy(sp2[idx+1:], sp[idx:])
-			sp2[idx] = rtid2ti{rtid, pti}
-			x.infos.store(sp2)
+			sp = append(sp, rtid2ti{})
+			copy(sp[idx+1:], sp[idx:])
+			sp[idx] = rtid2ti{rtid, pti}
+			x.infos.store(sp)
 		}
 	}
 	x.mu.Unlock()
@@ -2522,36 +2522,77 @@ func (s *set) remove(v interface{}) (exists bool) {
 // given x > 0 and n > 0 and x is exactly 2^n, then pos/x === pos>>n AND pos%x === pos&(x-1).
 // consequently, pos/32 === pos>>5, pos/16 === pos>>4, pos/8 === pos>>3, pos%8 == pos&7
 
-// MARKER: we noticed a little performance degradation when using bitset256 as [32]byte.
-// Consequently, we are using a [256]bool only for bitset256.
-// We decided not to do the same for bitset32 and bitset64 (hence the discrepancy).
+// MARKER:
+// We noticed a little performance degradation when using bitset256 as [32]byte (or bitset32 as uint32).
+// For example, json encoding went from 188K ns/op to 168K ns/op (~ 10% reduction).
+// Consequently, we are using a [NNN]bool for bitsetNNN.
+// To eliminate bounds-checking, we use x % v as that is guaranteed to be within bounds.
+
+// ----
+type bitset32 [32]bool
+
+func (x *bitset32) set(pos byte) *bitset32 {
+	x[pos%32] = true
+	return x
+}
+func (x *bitset32) isset(pos byte) bool {
+	return x[pos%32]
+}
+
+type bitset64 [64]bool
+
+func (x *bitset64) set(pos byte) *bitset64 {
+	x[pos%64] = true
+	return x
+}
+func (x *bitset64) isset(pos byte) bool {
+	return x[pos%64]
+}
 
 type bitset256 [256]bool
 
-func (x *bitset256) set(pos byte) {
+func (x *bitset256) set(pos byte) *bitset256 {
 	x[pos] = true
+	return x
 }
 func (x *bitset256) isset(pos byte) bool {
 	return x[pos]
 }
 
-type bitset32 uint32
+// ----
+// type bitset32 uint32
 
-func (x bitset32) set(pos byte) bitset32 {
-	return x | (1 << pos)
-}
-func (x bitset32) isset(pos byte) bool {
-	return uint32(x)&(1<<pos) != 0
-}
+// func (x *bitset32) set(pos byte) *bitset32 {
+// 	*x = *x | (1 << pos)
+// 	return x
+// }
+// func (x bitset32) isset(pos byte) bool {
+// 	return uint32(x)&(1<<pos) != 0
+// }
 
-type bitset64 uint64
+// type bitset64 uint64
 
-func (x bitset64) set(pos byte) bitset64 {
-	return x | (1 << pos)
-}
-func (x bitset64) isset(pos byte) bool {
-	return uint64(x)&(1<<pos) != 0
-}
+// func (x *bitset64) set(pos byte) *bitset64 {
+// 	*x = *x | (1 << pos)
+// 	return x
+// }
+// func (x bitset64) isset(pos byte) bool {
+// 	return uint64(x)&(1<<pos) != 0
+// }
+
+// type bitset256 [32]byte
+
+// func (x *bitset256) set(pos byte) *bitset256 {
+// 	x[pos>>3] |= (1 << (pos & 7))
+// 	return x
+// }
+// func (x *bitset256) check(pos byte) uint8 {
+// 	return x[pos>>3] & (1 << (pos & 7))
+// }
+// func (x *bitset256) isset(pos byte) bool {
+// 	return x.check(pos) != 0
+// 	// return x[pos>>3]&(1<<(pos&7)) != 0
+// }
 
 // ------------
 
