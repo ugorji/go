@@ -139,7 +139,6 @@ package codec
 //   - codecgen will handle nil before calling into the library for further work also.
 
 import (
-	"bytes"
 	"encoding"
 	"encoding/binary"
 	"errors"
@@ -451,10 +450,11 @@ type typeInfoLoad struct {
 // typeInfoLoadArray is a cache object used to efficiently load up a typeInfo without
 // much allocation.
 type typeInfoLoadArray struct {
-	sfis   [typeInfoLoadArraySfisLen]structFieldInfo
-	sfiidx [typeInfoLoadArraySfiidxLen]byte
-	etypes [typeInfoLoadArrayEtypesLen]uintptr
-	b      [typeInfoLoadArrayBLen]byte // scratch - used for struct field names
+	sfis [typeInfoLoadArraySfisLen]structFieldInfo
+	// sfiidx [typeInfoLoadArraySfiidxLen]byte
+	etypes   [typeInfoLoadArrayEtypesLen]uintptr
+	sfiNames map[string]uint16
+	// b      [typeInfoLoadArrayBLen]byte // scratch - used for struct field names
 }
 
 // mirror json.Marshaler and json.Unmarshaler here,
@@ -1627,7 +1627,7 @@ type typeInfo struct {
 
 	// ---- cpu cache line boundary?
 	// sfis         []structFieldInfo // all sfi, in src order, as created.
-	sfiNamesSort []byte // all names, with indexes into the sfiSort
+	// sfiNames map[string]uint16 // all names, with indexes into the sfiSort
 
 	// rv0 is the zero value for the type.
 	// It is mostly beneficial for all non-reference kinds
@@ -1659,21 +1659,87 @@ func (ti *typeInfo) flag(when bool, f tiflag) *typeInfo {
 	return ti
 }
 
-func (ti *typeInfo) indexForEncName(name []byte) (index int16) {
-	var sn []byte
-	if len(name)+2 <= 32 {
-		var buf [32]byte // should not escape to heap
-		sn = buf[:len(name)+2]
-	} else {
-		sn = make([]byte, len(name)+2)
+// func (ti *typeInfo) indexForEncName(name []byte) (index int16) {
+func (ti *typeInfo) indexForEncName(sname string) (index int16) {
+	var i, j, h, n uint16
+	n = uint16(len(ti.sfiSort))
+	j = n
+LOOP:
+	if i < j {
+		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
+		if ti.sfiSort[h].encName < sname {
+			i = h + 1
+		} else {
+			j = h
+		}
+		goto LOOP
 	}
-	copy(sn[1:], name)
-	sn[0], sn[len(sn)-1] = tiSep2(name), 0xff
-	j := bytes.Index(ti.sfiNamesSort, sn)
-	if j < 0 {
-		return -1
+	if i < n && ti.sfiSort[i].encName == sname {
+		return int16(i)
 	}
-	index = int16(uint16(ti.sfiNamesSort[j+len(sn)+1]) | uint16(ti.sfiNamesSort[j+len(sn)])<<8)
+	return -1
+}
+
+// resolves the struct field info got from a call to rget.
+// Returns a trimmed, unsorted and sorted []*structFieldInfo.
+func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
+	if len(ss) > 0 {
+		for k := range ss { // clear map
+			delete(ss, k)
+		}
+	}
+
+	n := len(x)
+
+	for i := range x {
+		ui := uint16(i)
+		xn := x[i].encName // fieldName or encName? use encName for now.
+		j, ok := ss[xn]
+		if ok {
+			i2clear := ui            // index to be cleared
+			if x[i].nis < x[j].nis { // this one is shallower
+				ss[xn] = ui
+				i2clear = j
+			}
+			if x[i2clear].ready() {
+				x[i2clear].flagClr(structFieldInfoFlagReady)
+				n--
+			}
+		} else {
+			ss[xn] = ui
+		}
+	}
+
+	var anyOmitEmpty bool
+
+	// remove all the nils (non-ready)
+	y := make([]*structFieldInfo, n)
+	n = 0
+	for i := range x {
+		if !x[i].ready() {
+			continue
+		}
+		if !anyOmitEmpty && x[i].omitEmpty() {
+			anyOmitEmpty = true
+		}
+		y[n] = &x[i]
+		n++
+	}
+	if n != len(y) {
+		halt.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d", ti.rt, len(y), len(x), n)
+	}
+
+	z := make([]*structFieldInfo, len(y))
+	copy(z, y)
+	sort.Sort(sfiSortedByEncName(z))
+
+	// for i, v := range z {
+	// 	xdebugf(">>>> i: %v, name: %s", i, v.encName)
+	// }
+
+	ti.anyOmitEmpty = anyOmitEmpty
+	ti.sfiSrc = y
+	ti.sfiSort = z
 	return
 }
 
@@ -1799,11 +1865,18 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		}
 		pp, pi := &pool4tiload, pool4tiload.Get() // pool.tiLoad()
 		pv := pi.(*typeInfoLoadArray)
+		if pv.sfiNames == nil {
+			pv.sfiNames = make(map[string]uint16)
+		}
 		pv.etypes[0] = ti.rtid
 		// vv := typeInfoLoad{pv.fNames[:0], pv.encNames[:0], pv.etypes[:1], pv.sfis[:0]}
 		vv := typeInfoLoad{pv.etypes[:1], pv.sfis[:0]}
 		x.rget(rt, rtid, omitEmpty, nil, &vv)
-		ti.sfiSrc, ti.sfiSort, ti.sfiNamesSort, ti.anyOmitEmpty = rgetResolveSFI(rt, vv.sfis, pv)
+		if len(vv.sfis) > 0 && &vv.sfis[0] == &pv.sfis[0] { // sharing sfis with typeInfoLoadArray
+			vv.sfis = make([]structFieldInfo, len(vv.sfis))
+			copy(vv.sfis, pv.sfis[:])
+		}
+		ti.init(vv.sfis, pv.sfiNames)
 		pp.Put(pi)
 	case reflect.Map:
 		ti.elem = rt.Elem()
@@ -1996,106 +2069,6 @@ func tiSep(name string) uint8 {
 
 func tiSep2(name []byte) uint8 {
 	return 0xfe - (name[0] & 63) - uint8(len(name)&63)
-}
-
-// resolves the struct field info got from a call to rget.
-// Returns a trimmed, unsorted and sorted []*structFieldInfo.
-func rgetResolveSFI(rt reflect.Type, x []structFieldInfo, pv *typeInfoLoadArray) (
-	y, z []*structFieldInfo, ss []byte, anyOmitEmpty bool) {
-	sa := pv.sfiidx[:0]
-	sn := pv.b[:]
-	n := len(x)
-
-	var xn string
-	var ui uint16
-	var sep byte
-
-	for i := range x {
-		ui = uint16(i)
-		xn = x[i].encName // fieldName or encName? use encName for now.
-		if len(xn)+2 > cap(sn) {
-			sn = make([]byte, len(xn)+2)
-		} else {
-			sn = sn[:len(xn)+2]
-		}
-		// use a custom sep, so that misses are less frequent,
-		// since the sep (first char in search) is as unique as first char in field name.
-		sep = tiSep(xn)
-		sn[0], sn[len(sn)-1] = sep, 0xff
-		copy(sn[1:], xn)
-		j := bytes.Index(sa, sn)
-		if j == -1 {
-			sa = append(sa, sep)
-			sa = append(sa, xn...)
-			sa = append(sa, 0xff, byte(ui>>8), byte(ui))
-		} else {
-			index := uint16(sa[j+len(sn)+1]) | uint16(sa[j+len(sn)])<<8
-			// one of them must be cleared (reset to nil),
-			// and the index updated appropriately
-			i2clear := ui                // index to be cleared
-			if x[i].nis < x[index].nis { // this one is shallower
-				// update the index to point to this later one.
-				sa[j+len(sn)], sa[j+len(sn)+1] = byte(ui>>8), byte(ui)
-				// clear the earlier one, as this later one is shallower.
-				i2clear = index
-			}
-			if x[i2clear].ready() {
-				x[i2clear].flagClr(structFieldInfoFlagReady)
-				n--
-			}
-		}
-	}
-
-	var w []structFieldInfo
-	sharingArray := len(x) <= typeInfoLoadArraySfisLen // sharing array with typeInfoLoadArray
-	if sharingArray {
-		w = make([]structFieldInfo, n)
-	}
-
-	// remove all the nils (non-ready)
-	y = make([]*structFieldInfo, n)
-	n = 0
-	var sslen int
-	for i := range x {
-		if !x[i].ready() {
-			continue
-		}
-		if !anyOmitEmpty && x[i].omitEmpty() {
-			anyOmitEmpty = true
-		}
-		if sharingArray {
-			w[n] = x[i]
-			y[n] = &w[n]
-		} else {
-			y[n] = &x[i]
-		}
-		sslen = sslen + len(x[i].encName) + 4
-		n++
-	}
-	if n != len(y) {
-		halt.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d",
-			rt, len(y), len(x), n)
-	}
-
-	z = make([]*structFieldInfo, len(y))
-	copy(z, y)
-	sort.Sort(sfiSortedByEncName(z))
-
-	sharingArray = len(sa) <= typeInfoLoadArraySfiidxLen
-	if sharingArray {
-		ss = make([]byte, 0, sslen)
-	} else {
-		ss = sa[:0] // reuse the newly made sa array if necessary
-	}
-	for i := range z {
-		xn = z[i].encName
-		sep = tiSep(xn)
-		ui = uint16(i)
-		ss = append(ss, sep)
-		ss = append(ss, xn...)
-		ss = append(ss, 0xff, byte(ui>>8), byte(ui))
-	}
-	return
 }
 
 func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
