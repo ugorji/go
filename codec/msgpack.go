@@ -171,7 +171,7 @@ type msgpackEncDriver struct {
 	encDriverNoopContainerWriter
 	h *MsgpackHandle
 	x [8]byte
-	_ [6]uint64 // padding
+	// _ [6]uint64 // padding
 	e Encoder
 }
 
@@ -406,7 +406,7 @@ type msgpackDecDriver struct {
 	bdRead bool
 	_      bool
 	noBuiltInTypes
-	_ [6]uint64 // padding
+	// _ [6]uint64 // padding
 	d Decoder
 }
 
@@ -830,9 +830,13 @@ func (d *msgpackDecDriver) advanceNil() (null bool) {
 	}
 	if d.bd == mpNil {
 		d.bdRead = false
-		null = true
+		return true // null = true
 	}
 	return
+}
+
+func (d *msgpackDecDriver) TryNil() (v bool) {
+	return d.advanceNil()
 }
 
 func (d *msgpackDecDriver) ContainerType() (vt valueType) {
@@ -857,10 +861,6 @@ func (d *msgpackDecDriver) ContainerType() (vt valueType) {
 		return valueTypeMap
 	}
 	return valueTypeUnset
-}
-
-func (d *msgpackDecDriver) TryNil() (v bool) {
-	return d.advanceNil()
 }
 
 func (d *msgpackDecDriver) readContainerLen(ct msgpackContainerType) (clen int) {
@@ -1036,7 +1036,7 @@ type MsgpackHandle struct {
 	// PositiveIntUnsigned says to encode positive integers as unsigned.
 	PositiveIntUnsigned bool
 
-	_ [7]uint64 // padding (cache-aligned)
+	// _ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: msgpack

@@ -62,7 +62,7 @@ type simpleEncDriver struct {
 	encDriverNoopContainerWriter
 	h *SimpleHandle
 	b [8]byte
-	_ [6]uint64 // padding (cache-aligned)
+	// _ [6]uint64 // padding (cache-aligned)
 	e Encoder
 }
 
@@ -238,7 +238,7 @@ type simpleDecDriver struct {
 	_      bool
 	noBuiltInTypes
 	decDriverNoopContainerReader
-	_ [6]uint64 // padding
+	// _ [6]uint64 // padding
 	d Decoder
 }
 
@@ -257,7 +257,7 @@ func (d *simpleDecDriver) advanceNil() (null bool) {
 	}
 	if d.bd == simpleVdNil {
 		d.bdRead = false
-		null = true
+		return true // null = true
 	}
 	return
 }
@@ -705,7 +705,7 @@ type SimpleHandle struct {
 	// EncZeroValuesAsNil says to encode zero values for numbers, bool, string, etc as nil
 	EncZeroValuesAsNil bool
 
-	_ [7]uint64 // padding (cache-aligned)
+	// _ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: simple

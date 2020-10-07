@@ -100,7 +100,7 @@ type bincEncDriver struct {
 	m map[string]uint16 // symbols
 	b [8]byte           // scratch, used for encoding numbers - bigendian style
 	s uint16            // symbols sequencer
-	_ [4]uint64         // padding
+	// _ [4]uint64         // padding
 	e Encoder
 }
 
@@ -405,8 +405,8 @@ type bincDecDriver struct {
 	// because we typically expect < 32 symbols in each stream.
 	s map[uint16][]byte // []bincDecSymbol
 
-	b [8]byte   // scratch for decoding numbers - big endian style
-	_ [4]uint64 // padding cache-aligned
+	b [8]byte // scratch for decoding numbers - big endian style
+	// _ [4]uint64 // padding cache-aligned
 
 	d Decoder
 }
@@ -428,7 +428,7 @@ func (d *bincDecDriver) advanceNil() (null bool) {
 	}
 	if d.bd == bincVdSpecial<<4|bincSpNil {
 		d.bdRead = false
-		null = true
+		return true // null = true
 	}
 	return
 }
@@ -1068,7 +1068,7 @@ type BincHandle struct {
 	// - n: none
 	// - a: all: same as m, s, ...
 
-	_ [7]uint64 // padding (cache-aligned)
+	// _ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: binc

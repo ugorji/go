@@ -120,7 +120,7 @@ type cborEncDriver struct {
 	encDriverNoopContainerWriter
 	h *CborHandle
 	x [8]byte
-	_ [6]uint64 // padding
+	// _ [6]uint64 // padding
 	e Encoder
 }
 
@@ -325,7 +325,7 @@ type cborDecDriver struct {
 	st     bool // skip tags
 	_      bool // found nil
 	noBuiltInTypes
-	_ [6]uint64 // padding cache-aligned
+	// _ [6]uint64 // padding cache-aligned
 	d Decoder
 }
 
@@ -344,9 +344,13 @@ func (d *cborDecDriver) advanceNil() (null bool) {
 	}
 	if d.bd == cborBdNil || d.bd == cborBdUndefined {
 		d.bdRead = false
-		null = true
+		return true // null = true
 	}
 	return
+}
+
+func (d *cborDecDriver) TryNil() bool {
+	return d.advanceNil()
 }
 
 // skipTags is called to skip any tags in the stream.
@@ -385,10 +389,6 @@ func (d *cborDecDriver) ContainerType() (vt valueType) {
 		return valueTypeMap
 	}
 	return valueTypeUnset
-}
-
-func (d *cborDecDriver) TryNil() bool {
-	return d.advanceNil()
 }
 
 func (d *cborDecDriver) CheckBreak() (v bool) {
@@ -915,7 +915,7 @@ type CborHandle struct {
 	// Furthermore, this allows the skipping over of the Self Describing Tag 0xd9d9f7.
 	SkipUnexpectedTags bool
 
-	_ [7]uint64 // padding (cache-aligned)
+	// _ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: cbor

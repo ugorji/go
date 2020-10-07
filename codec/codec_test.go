@@ -2061,7 +2061,7 @@ func doTestDecodeNilMapValue(t *testing.T, h Handle) {
 	}(bh.MapType)
 
 	// this test expects that nil doesn't result in deleting entries
-	
+
 	_, isJsonHandle := h.(*JsonHandle)
 
 	toEncode := Struct{Field: map[uint16]map[uint32]struct{}{

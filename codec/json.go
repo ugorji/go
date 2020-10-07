@@ -479,7 +479,7 @@ type jsonDecDriver struct {
 	buf []byte
 	se  interfaceExtWrapper
 
-	_ uint64 // padding
+	// _ uint64 // padding
 
 	// ---- cpu cache line boundary?
 
@@ -993,7 +993,7 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 	dr := &d.d.decRd
 	d.tok = 0
 
-	var c uint8
+	var c byte
 	for {
 		c = dr.readn1()
 
@@ -1249,7 +1249,7 @@ type JsonHandle struct {
 	// If not configured, raw bytes are encoded to/from base64 text.
 	RawBytesExt InterfaceExt
 
-	_ [5]uint64 // padding (cache line)
+	// _ [5]uint64 // padding (cache line)
 }
 
 // Name returns the name of the handle: json
