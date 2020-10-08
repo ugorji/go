@@ -3478,8 +3478,8 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 		`56789      01234'`,
 		`56789      01234'`,
 	} {
-		out = br.readUntil('\'', true)
-		testDeepEqualErr(string(out), v2, t, "-")
+		out = br.readUntil('\'')
+		testDeepEqualErr(string(out), v2[:len(v2)-1], t, "-")
 		// fmt.Printf("readUntil: out: `%s`\n", out)
 	}
 	br.reset(strings.NewReader(s), bufsizehalf, &blist)
@@ -3505,8 +3505,8 @@ func doTestBufioDecReader(t *testing.T, bufsize int) {
 	for range [4]struct{}{} {
 		token = br.skipWhitespace() // br.skip(&whitespaceCharBitset)
 		testDeepEqualErr(token, byte('0'), t, "-")
-		out = br.readUntil(' ', true)
-		testDeepEqualErr(string(out), `1234'56789 `, t, "-")
+		out = br.readUntil(' ')
+		testDeepEqualErr(string(out), `1234'56789`, t, "-")
 	}
 }
 

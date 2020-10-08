@@ -40,8 +40,8 @@ const (
 )
 
 var (
-	errOnlyMapOrArrayCanDecodeIntoStruct = errors.New("only encoded map or array can be decoded into a struct")
-	errCannotDecodeIntoNil               = errors.New("cannot decode into nil")
+	errNeedMapOrArrayDecodeToStruct = errors.New("only encoded map or array can decode into struct")
+	errCannotDecodeIntoNil          = errors.New("cannot decode into nil")
 
 	// errmsgExpandSliceOverflow     = "expand slice: slice overflow"
 	errmsgExpandSliceCannotChange = "expand slice: cannot change"
@@ -656,7 +656,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		}
 		d.arrayEnd()
 	} else {
-		d.onerror(errOnlyMapOrArrayCanDecodeIntoStruct)
+		d.onerror(errNeedMapOrArrayDecodeToStruct)
 	}
 }
 

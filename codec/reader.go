@@ -30,14 +30,18 @@ type decReader interface {
 	// or EOF. If it sees a non-numeric character, it will unread that.
 	jsonReadNum() []byte
 
+	// jsonReadAsisChars will read json plain characters (anything but " or \)
+	// and return a slice terminated by a non-json asis character.
+	jsonReadAsisChars() []byte
+
 	// skip will skip any byte that matches, and return the first non-matching byte
 	// skip(accept *bitset256) (token byte)
 
 	// readTo will read any byte that matches, stopping once no-longer matching.
 	// readTo(accept *bitset256) (out []byte)
 
-	// readUntil will read, only stopping once it matches the 'stop' byte.
-	readUntil(stop byte, includeLast bool) (out []byte)
+	// readUntil will read, only stopping once it matches the 'stop' byte (which it excludes).
+	readUntil(stop byte) (out []byte)
 }
 
 // ------------------------------------------------
@@ -241,6 +245,17 @@ LOOP:
 	return z.bufr
 }
 
+func (z *ioDecReader) jsonReadAsisChars() (bs []byte) {
+	z.bufr = z.blist.check(z.bufr, 256)
+LOOP:
+	i := z.readn1()
+	z.bufr = append(z.bufr, i)
+	if i == '"' || i == '\\' {
+		return z.bufr
+	}
+	goto LOOP
+}
+
 func (z *ioDecReader) skipWhitespace() (token byte) {
 LOOP:
 	token = z.readn1()
@@ -250,15 +265,12 @@ LOOP:
 	return
 }
 
-func (z *ioDecReader) readUntil(stop byte, includeLast bool) []byte {
+func (z *ioDecReader) readUntil(stop byte) []byte {
 	z.bufr = z.blist.check(z.bufr, 256)
 LOOP:
 	token := z.readn1()
 	z.bufr = append(z.bufr, token)
 	if token == stop {
-		if includeLast {
-			return z.bufr
-		}
 		return z.bufr[:len(z.bufr)-1]
 	}
 	goto LOOP
@@ -436,6 +448,17 @@ LOOP:
 	return z.bufr
 }
 
+func (z *bufioDecReader) jsonReadAsisChars() (bs []byte) {
+	z.bufr = z.blist.check(z.bufr, 256)
+LOOP:
+	i := z.readn1()
+	z.bufr = append(z.bufr, i)
+	if i == '"' || i == '\\' {
+		return z.bufr
+	}
+	goto LOOP
+}
+
 func (z *bufioDecReader) skipWhitespace() (token byte) {
 	i := z.c
 LOOP:
@@ -480,7 +503,7 @@ func (z *bufioDecReader) loopFn(i uint) {
 	z.c = i
 }
 
-func (z *bufioDecReader) readUntil(stop byte, includeLast bool) (out []byte) {
+func (z *bufioDecReader) readUntil(stop byte) (out []byte) {
 	i := z.c
 LOOP:
 	if i < uint(len(z.buf)) {
@@ -496,9 +519,6 @@ LOOP:
 	}
 	out = z.readUntilFill(stop)
 FINISH:
-	if includeLast {
-		return
-	}
 	return out[:len(out)-1]
 }
 
@@ -612,10 +632,22 @@ LOOP:
 		i++
 		goto LOOP
 	}
-
 	out = z.b[z.c:i]
 	z.c = i
 	return // z.b[c:i]
+}
+
+func (z *bytesDecReader) jsonReadAsisChars() (out []byte) {
+	i := z.c
+LOOP:
+	if z.b[i] == '"' || z.b[i] == '\\' {
+		i++
+		out = z.b[z.c:i]
+		z.c = i
+		return // z.b[c:i]
+	}
+	i++
+	goto LOOP
 }
 
 func (z *bytesDecReader) skipWhitespace() (token byte) {
@@ -628,17 +660,13 @@ LOOP:
 	return
 }
 
-func (z *bytesDecReader) readUntil(stop byte, includeLast bool) (out []byte) {
+func (z *bytesDecReader) readUntil(stop byte) (out []byte) {
 	i := z.c
 LOOP:
 	// if i < uint(len(z.b)) {
 	if z.b[i] == stop {
 		i++
-		if includeLast {
-			out = z.b[z.c:i]
-		} else {
-			out = z.b[z.c : i-1]
-		}
+		out = z.b[z.c : i-1]
 		// z.a -= (i - z.c)
 		z.c = i
 		return
@@ -755,13 +783,13 @@ func (z *decRd) skipWhitespace() (token byte) {
 	}
 }
 
-func (z *decRd) readUntil(stop byte, includeLast bool) (out []byte) {
+func (z *decRd) readUntil(stop byte) (out []byte) {
 	if z.bytes {
-		return z.rb.readUntil(stop, includeLast)
+		return z.rb.readUntil(stop)
 	} else if z.bufio {
-		return z.bi.readUntil(stop, includeLast)
+		return z.bi.readUntil(stop)
 	} else {
-		return z.ri.readUntil(stop, includeLast)
+		return z.ri.readUntil(stop)
 	}
 }
 
@@ -772,6 +800,16 @@ func (z *decRd) jsonReadNum() (bs []byte) {
 		return z.bi.jsonReadNum()
 	} else {
 		return z.ri.jsonReadNum()
+	}
+}
+
+func (z *decRd) jsonReadAsisChars() (bs []byte) {
+	if z.bytes {
+		return z.rb.jsonReadAsisChars()
+	} else if z.bufio {
+		return z.bi.jsonReadAsisChars()
+	} else {
+		return z.ri.jsonReadAsisChars()
 	}
 }
 

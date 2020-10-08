@@ -61,6 +61,16 @@ func parseFloat64_strconv(b []byte) (f float64, err error) {
 // ignoring the exponent, and we only try to parse iff significand fits.
 
 const (
+	fMaxMultiplierForExactPow10_64 = 1e15
+	fMaxMultiplierForExactPow10_32 = 1e7
+
+	fUint64Cutoff = (1<<64-1)/10 + 1
+	//  fUint32Cutoff = (1<<32-1)/10 + 1
+
+	fBase = 10
+)
+
+const (
 	thousand    = 1000
 	million     = thousand * thousand
 	billion     = thousand * million
@@ -116,14 +126,6 @@ var fi64 = floatinfo{52, false, 22, 15, false, 1<<52 - 1}
 
 var fi64u = floatinfo{0, false, 19, 0, true, fUint64Cutoff}
 var fi64i = floatinfo{0, false, 19, 0, true, fUint64Cutoff}
-
-const fMaxMultiplierForExactPow10_64 = 1e15
-const fMaxMultiplierForExactPow10_32 = 1e7
-
-const fUint64Cutoff = (1<<64-1)/10 + 1
-const fUint32Cutoff = (1<<32-1)/10 + 1
-
-const fBase = 10
 
 func strconvParseErr(b []byte, fn string) error {
 	return &strconv.NumError{

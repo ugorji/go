@@ -12,8 +12,8 @@ import (
 
 const reflectArrayOfSupported = false
 
-var errReflectArrayOfUnsupported = errors.New("codec: reflect.ArrayOf unsupported in this go version")
+var errNoReflectArrayOf = errors.New("codec: reflect.ArrayOf unsupported by this go version")
 
 func reflectArrayOf(count int, elem reflect.Type) reflect.Type {
-	panic(errReflectArrayOfUnsupported)
+	panic(errNoReflectArrayOf)
 }

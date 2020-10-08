@@ -209,9 +209,9 @@ var (
 	numCharBitset        bitset256
 	whitespaceCharBitset bitset256
 
-	numCharWithExpBitset64 bitset64
-	numCharNoExpBitset64   bitset64
-	whitespaceCharBitset64 bitset64
+	// numCharWithExpBitset64 bitset64
+	// numCharNoExpBitset64   bitset64
+	// whitespaceCharBitset64 bitset64
 
 	// refBitset sets bit for all kinds which are direct internal references
 	refBitset bitset32
@@ -281,19 +281,19 @@ func init() {
 		switch i {
 		case ' ', '\t', '\r', '\n':
 			whitespaceCharBitset.set(i)
-			whitespaceCharBitset64.set(i)
+			// whitespaceCharBitset64.set(i)
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			digitCharBitset.set(i)
 			numCharBitset.set(i)
-			numCharWithExpBitset64.set(i - 42)
-			numCharNoExpBitset64.set(i)
+			// numCharWithExpBitset64.set(i - 42)
+			// numCharNoExpBitset64.set(i)
 		case '.', '+', '-':
 			numCharBitset.set(i)
-			numCharWithExpBitset64.set(i - 42)
-			numCharNoExpBitset64.set(i)
+			// numCharWithExpBitset64.set(i - 42)
+			// numCharNoExpBitset64.set(i)
 		case 'e', 'E':
 			numCharBitset.set(i)
-			numCharWithExpBitset64.set(i - 42)
+			// numCharWithExpBitset64.set(i - 42)
 		}
 	}
 }
@@ -1740,7 +1740,6 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 	ti.anyOmitEmpty = anyOmitEmpty
 	ti.sfiSrc = y
 	ti.sfiSort = z
-	return
 }
 
 type rtid2ti struct {
@@ -2054,21 +2053,6 @@ LOOP:
 		}
 		pv.sfis = append(pv.sfis, si)
 	}
-}
-
-func tiSep(name string) uint8 {
-	// (xn[0]%64) // (between 192-255 - outside ascii BMP)
-	// Tried the following before settling on correct implementation:
-	//   return 0xfe - (name[0] & 63)
-	//   return 0xfe - (name[0] & 63) - uint8(len(name))
-	//   return 0xfe - (name[0] & 63) - uint8(len(name)&63)
-	//   return ((0xfe - (name[0] & 63)) & 0xf8) | (uint8(len(name) & 0x07))
-
-	return 0xfe - (name[0] & 63) - uint8(len(name)&63)
-}
-
-func tiSep2(name []byte) uint8 {
-	return 0xfe - (name[0] & 63) - uint8(len(name)&63)
 }
 
 func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
@@ -2512,15 +2496,15 @@ func (x *bitset32) isset(pos byte) bool {
 	return x[pos%32]
 }
 
-type bitset64 [64]bool
+// type bitset64 [64]bool
 
-func (x *bitset64) set(pos byte) *bitset64 {
-	x[pos%64] = true
-	return x
-}
-func (x *bitset64) isset(pos byte) bool {
-	return x[pos%64]
-}
+// func (x *bitset64) set(pos byte) *bitset64 {
+// 	x[pos%64] = true
+// 	return x
+// }
+// func (x *bitset64) isset(pos byte) bool {
+// 	return x[pos%64]
+// }
 
 type bitset256 [256]bool
 

@@ -760,7 +760,7 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 	d.advance()
 	if d.tok == '"' {
-		bs = d.d.decRd.readUntil('"', false)
+		bs = d.d.decRd.readUntil('"')
 	} else if d.tok == 'n' {
 		d.readLit4Null()
 	} else {
@@ -982,7 +982,7 @@ func (d *jsonDecDriver) readUnescapedString() (bs []byte) {
 		d.d.errorf("expecting string starting with '\"'; got '%c'", d.tok)
 	}
 
-	bs = d.d.decRd.readUntil('"', false)
+	bs = d.d.decRd.readUntil('"')
 	d.tok = 0
 	return
 }
@@ -995,16 +995,19 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 
 	var c byte
 	for {
-		c = dr.readn1()
+		bs := dr.jsonReadAsisChars()
+		buf = append(buf, bs[:len(bs)-1]...)
+		c = bs[len(bs)-1]
 
 		if c == '"' {
 			break
 		}
-		if c != '\\' {
-			buf = append(buf, c)
-			continue
-		}
+		// if c != '\\' {
+		// 	buf = append(buf, c)
+		// 	continue
+		// }
 
+		// c is now '\'
 		c = dr.readn1()
 
 		switch c {
