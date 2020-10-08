@@ -1635,15 +1635,15 @@ type typeInfo struct {
 	// so beneficial for intXX, bool, slices, structs, etc
 	// rv0 reflect.Value
 
-	elemsize uintptr
+	size, keysize, elemsize uint32
 
 	// other flags, with individual bits representing if set.
 	flags tiflag
 
 	infoFieldOmitempty bool
 
-	elemkind uint8
-	_        [2]byte // padding
+	keykind, elemkind uint8
+	// _        [2]byte // padding
 	// buf      [24]byte // use this if needed
 	// _ [1]uint64 // padding
 }
@@ -1824,12 +1824,12 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		rt:      rt,
 		rtid:    rtid,
 		kind:    uint8(rk),
+		size:    uint32(rt.Size()),
+		numMeth: uint16(rt.NumMethod()),
 		pkgpath: rt.PkgPath(),
 		keyType: valueTypeString, // default it - so it's never 0
 	}
 	// ti.rv0 = reflect.Zero(rt)
-
-	ti.numMeth = uint16(rt.NumMethod())
 
 	var b1, b2 bool
 	b1, b2 = implIntf(rt, binaryMarshalerTyp)
@@ -1879,21 +1879,29 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		pp.Put(pi)
 	case reflect.Map:
 		ti.elem = rt.Elem()
+		ti.elemkind = uint8(ti.elem.Kind())
+		ti.elemsize = uint32(ti.elem.Size())
 		ti.key = rt.Key()
+		ti.keykind = uint8(ti.key.Kind())
+		ti.keysize = uint32(ti.key.Size())
 	case reflect.Slice:
 		ti.mbs, _ = implIntf(rt, mapBySliceTyp)
 		ti.elem = rt.Elem()
-		ti.elemsize = ti.elem.Size()
 		ti.elemkind = uint8(ti.elem.Kind())
+		ti.elemsize = uint32(ti.elem.Size())
 	case reflect.Chan:
 		ti.elem = rt.Elem()
+		ti.elemkind = uint8(ti.elem.Kind())
+		ti.elemsize = uint32(ti.elem.Size())
 		ti.chandir = uint8(rt.ChanDir())
 	case reflect.Array:
 		ti.elem = rt.Elem()
-		ti.elemsize = ti.elem.Size()
 		ti.elemkind = uint8(ti.elem.Kind())
+		ti.elemsize = uint32(ti.elem.Size())
 	case reflect.Ptr:
 		ti.elem = rt.Elem()
+		ti.elemkind = uint8(ti.elem.Kind())
+		ti.elemsize = uint32(ti.elem.Size())
 	}
 
 	x.mu.Lock()

@@ -640,13 +640,13 @@ LOOP:
 func (z *bytesDecReader) jsonReadAsisChars() (out []byte) {
 	i := z.c
 LOOP:
-	if z.b[i] == '"' || z.b[i] == '\\' {
-		i++
+	token := z.b[i]
+	i++
+	if token == '"' || token == '\\' {
 		out = z.b[z.c:i]
 		z.c = i
 		return // z.b[c:i]
 	}
-	i++
 	goto LOOP
 }
 

@@ -134,6 +134,10 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return
 }
 
+func rvZeroAddr(t reflect.Type) reflect.Value {
+	return rvZeroAddrK(t, t.Kind())
+}
+
 func rvZeroK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).word
@@ -147,6 +151,10 @@ func rvZeroK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 		urv.ptr = unsafe.Pointer(&unsafeZeroArr[0])
 	}
 	return
+}
+
+func rvZero(t reflect.Type) reflect.Value {
+	return rvZeroK(t, t.Kind())
 }
 
 func rvConvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
@@ -480,7 +488,7 @@ func rvSlice(rv reflect.Value, length int) (v reflect.Value) {
 func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
-	uv.ptr = unsafe.Pointer(uintptr(((*unsafeSlice)(urv.ptr)).Data) + (ti.elemsize * uintptr(i)))
+	uv.ptr = unsafe.Pointer(uintptr(((*unsafeSlice)(urv.ptr)).Data) + uintptr(ti.elemsize*uint32(i)))
 	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).word
 	uv.flag = uintptr(ti.elemkind) | unsafeFlagIndir | unsafeFlagAddr
 	return

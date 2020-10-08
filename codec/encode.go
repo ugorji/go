@@ -263,7 +263,7 @@ func (e *Encoder) kErr(f *codecFnInfo, rv reflect.Value) {
 }
 
 func chanToSlice(rv reflect.Value, rtslice reflect.Type, timeout time.Duration) (rvcs reflect.Value) {
-	rvcs = rvZeroK(rtslice, rtslice.Kind())
+	rvcs = rvZero(rtslice)
 	if timeout < 0 { // consume until close
 		for {
 			recv, recvOk := rv.Recv()

@@ -467,7 +467,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 				rvn = rv4i(&re).Elem()
 			} else {
 				if bfn.ext == SelfExt {
-					rvn = rvZeroAddrK(bfn.rt, bfn.rt.Kind())
+					rvn = rvZeroAddr(bfn.rt)
 					d.decodeValue(rvn, d.h.fnNoExt(bfn.rt))
 				} else {
 					rvn = reflect.New(bfn.rt)
@@ -539,8 +539,9 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 				rv.Set(rvn)
 			} else if d.h.InterfaceReset {
 				// reset to zero value based on current type in there.
-				if rvelem := rv.Elem(); rvelem.IsValid() {
-					rv.Set(rvZeroK(rvelem.Type(), rvelem.Kind()))
+				rvelem := rv.Elem()
+				if kk := rvelem.Kind(); kk != reflect.Invalid {
+					rv.Set(rvZeroK(rvelem.Type(), kk))
 				}
 			}
 			return
@@ -668,11 +669,10 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	rvCanset := rv.CanSet()
 
-	rtelem0 := f.ti.elem
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 		// you can only decode bytes or string in the stream into a slice or array of bytes
-		if !(f.ti.rtid == uint8SliceTypId || rtelem0.Kind() == reflect.Uint8) {
+		if !(f.ti.rtid == uint8SliceTypId || f.ti.elemkind == uint8(reflect.Uint8)) {
 			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", f.ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
@@ -703,10 +703,8 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 
-	rtelem0Size := int(rtelem0.Size())
-	rtElem0Kind := rtelem0.Kind()
-	rtelem0Mut := !isImmutableKind(rtElem0Kind)
-	rtelem := rtelem0
+	rtelem0Mut := !isImmutableKind(reflect.Kind(f.ti.elemkind))
+	rtelem := f.ti.elem
 	rtelemkind := rtelem.Kind()
 	for rtelemkind == reflect.Ptr {
 		rtelem = rtelem.Elem()
@@ -726,7 +724,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if hasLen {
 		if containerLenS > rvcap {
 			oldRvlenGtZero := rvlen > 0
-			rvlen1 := decInferLen(containerLenS, d.h.MaxInitLen, int(rtelem0.Size()))
+			rvlen1 := decInferLen(containerLenS, d.h.MaxInitLen, int(f.ti.elemsize))
 			if rvlen1 == rvlen {
 			} else if rvlen1 <= rvcap {
 				if rvCanset {
@@ -755,7 +753,11 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	// consider creating new element once, and just decoding into it.
 	var rtelem0Zero reflect.Value
-	var rtelem0ZeroValid bool
+	var elemReset = d.h.SliceElementReset
+	if elemReset {
+		rtelem0Zero = rvZeroK(f.ti.elem, reflect.Kind(f.ti.elemkind))
+	}
+
 	var j int
 
 	for ; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
@@ -795,7 +797,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				if !(rvCanset || rvChanged) {
 					d.errorf(errmsgExpandSliceCannotChange)
 				}
-				rvcap = growCap(rvcap, rtelem0Size, 1)
+				rvcap = growCap(rvcap, int(f.ti.elemsize), 1)
 				rvlen = rvcap
 				rv9 = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
 				rvCopySlice(rv9, rv)
@@ -807,11 +809,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			slh.ElemContainerState(j)
 		}
 		rv9 = rvSliceIndex(rv, j, f.ti)
-		if d.h.SliceElementReset {
-			if !rtelem0ZeroValid {
-				rtelem0ZeroValid = true
-				rtelem0Zero = rvZeroK(rtelem0, rtElem0Kind)
-			}
+		if elemReset {
 			rv9.Set(rtelem0Zero)
 		}
 
@@ -848,11 +846,10 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.SendDir) == 0 {
 		d.errorf("receive-only channel cannot be decoded")
 	}
-	rtelem0 := f.ti.elem
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 		// you can only decode bytes or string in the stream into a slice or array of bytes
-		if !(f.ti.rtid == uint8SliceTypId || rtelem0.Kind() == reflect.Uint8) {
+		if !(f.ti.rtid == uint8SliceTypId || f.ti.elemkind == uint8(reflect.Uint8)) {
 			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", f.ti.rt)
 		}
 		bs2 := d.d.DecodeBytes(nil, true)
@@ -881,10 +878,8 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 
-	rtelem0Size := int(rtelem0.Size())
-	rtElem0Kind := rtelem0.Kind()
-	rtelem0Mut := !isImmutableKind(rtElem0Kind)
-	rtelem := rtelem0
+	rtelem0Mut := !isImmutableKind(reflect.Kind(f.ti.elemkind))
+	rtelem := f.ti.elem
 	rtelemkind := rtelem.Kind()
 	for rtelemkind == reflect.Ptr {
 		rtelem = rtelem.Elem()
@@ -905,7 +900,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 	for ; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && rvIsNil(rv) {
 			if hasLen {
-				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, rtelem0Size)
+				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(f.ti.elemsize))
 			} else {
 				rvlen = decDefChanCap
 			}
@@ -917,8 +912,8 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 			}
 		}
 		slh.ElemContainerState(j)
-		if rtelem0Mut || !rv9.IsValid() { // || (rtElem0Kind == reflect.Ptr && rvIsNil(rv9)) {
-			rv9 = rvZeroAddrK(rtelem0, rtElem0Kind)
+		if rtelem0Mut || !rv9.IsValid() { // || (f.ti.elemkind == reflect.Ptr && rvIsNil(rv9)) {
+			rv9 = rvZeroAddrK(f.ti.elem, reflect.Kind(f.ti.elemkind))
 		}
 		if fn == nil {
 			fn = d.h.fn(rtelem)
@@ -938,7 +933,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	containerLen := d.mapStart()
 	ti := f.ti
 	if rvIsNil(rv) {
-		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.key.Size()+ti.elem.Size()))
+		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.keysize+ti.elemsize))
 		rvSetDirect(rv, makeMapReflect(ti.rt, rvlen))
 	}
 
@@ -1420,12 +1415,16 @@ func setZeroRV(v reflect.Value) {
 	// However, we decided instead that we either will set the
 	// whole value to the zero value, or leave AS IS.
 	if isDecodeable(v) {
-		if v.Kind() == reflect.Ptr {
-			v = v.Elem()
-		}
-		if v.CanSet() {
-			v.Set(rvZeroK(v.Type(), v.Kind()))
-		}
+		doSetZeroRv(v)
+	}
+}
+
+func doSetZeroRv(v reflect.Value) {
+	if v.Kind() == reflect.Ptr {
+		v = v.Elem()
+	}
+	if v.CanSet() {
+		v.Set(rvZeroK(v.Type(), v.Kind()))
 	}
 }
 
@@ -1511,12 +1510,7 @@ func (d *Decoder) decode(iv interface{}) {
 func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn) {
 	// if rv.Kind() == reflect.Ptr && d.d.TryNil() {
 	if d.d.TryNil() {
-		if rv.Kind() == reflect.Ptr {
-			rv = rv.Elem()
-		}
-		if rv.CanSet() {
-			rv.Set(rvZeroK(rv.Type(), rv.Kind()))
-		}
+		doSetZeroRv(rv)
 		return
 	}
 	d.decodeValueNoCheckNil(rv, fn)

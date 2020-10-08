@@ -64,7 +64,15 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
 	return reflect.New(t).Elem()
 }
 
+func rvZeroAddr(t reflect.Type) reflect.Value {
+	return reflect.New(t).Elem()
+}
+
 func rvZeroK(t reflect.Type, k reflect.Kind) reflect.Value {
+	return reflect.Zero(t)
+}
+
+func rvZero(t reflect.Type) reflect.Value {
 	return reflect.Zero(t)
 }
 
