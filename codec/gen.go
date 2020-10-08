@@ -991,7 +991,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 
 		for j, si := range tisfi {
 			_ = j
-			if !si.omitEmpty() {
+			if !si.omitEmpty {
 				x.linef("true, // %s", si.fieldName)
 				continue
 			}
@@ -1083,11 +1083,11 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 			x.linef("if %s { z.EncWriteArrayElem(); r.EncodeNil() } else { ", q.nilVar)
 		}
 		x.linef("z.EncWriteArrayElem()")
-		if si.omitEmpty() {
+		if si.omitEmpty {
 			x.linef("if %s[%v] {", numfieldsvar, j)
 		}
 		x.encVarChkNil(q.fqname, q.sf.Type, false)
-		if si.omitEmpty() {
+		if si.omitEmpty {
 			x.linef("} else {")
 			x.encZero(q.sf.Type)
 			x.linef("}")
@@ -1110,7 +1110,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 
 	for j, si := range tisfi {
 		q := &genFQNs[j]
-		if si.omitEmpty() {
+		if si.omitEmpty {
 			x.linef("if %s[%v] {", numfieldsvar, j)
 		}
 		x.linef("z.EncWriteMapElemKey()")
@@ -1140,7 +1140,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		} else {
 			x.encVarChkNil(q.fqname, q.sf.Type, false)
 		}
-		if si.omitEmpty() {
+		if si.omitEmpty {
 			x.line("}")
 		}
 	}

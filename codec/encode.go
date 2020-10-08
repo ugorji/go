@@ -518,7 +518,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		newlen = 0
 		for _, si := range f.ti.sfiSort { // use sorted array
 			kv.r = sfn.field(si)
-			if si.omitEmpty() && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
+			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
 				continue
 			}
 			kv.v = si // si.encName
@@ -560,7 +560,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			kv.r = sfn.field(si)
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
-			if si.omitEmpty() && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
+			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
 				switch kv.r.Kind() {
 				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array, reflect.Map, reflect.Slice:
 					kv.r = reflect.Value{} //encode as nil

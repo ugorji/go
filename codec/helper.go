@@ -1348,34 +1348,6 @@ func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
 	return
 }
 
-type structFieldInfoFlag uint8
-
-const (
-	_ structFieldInfoFlag = 1 << iota
-	structFieldInfoFlagReady
-	structFieldInfoFlagOmitEmpty
-)
-
-func (x *structFieldInfoFlag) flagSet(f structFieldInfoFlag) {
-	*x = *x | f
-}
-
-func (x *structFieldInfoFlag) flagClr(f structFieldInfoFlag) {
-	*x = *x &^ f
-}
-
-func (x structFieldInfoFlag) flagGet(f structFieldInfoFlag) bool {
-	return x&f != 0
-}
-
-func (x structFieldInfoFlag) omitEmpty() bool {
-	return x.flagGet(structFieldInfoFlagOmitEmpty)
-}
-
-func (x structFieldInfoFlag) ready() bool {
-	return x.flagGet(structFieldInfoFlagReady)
-}
-
 type structFieldInfo struct {
 	encName   string // encode name
 	fieldName string // field name
@@ -1384,7 +1356,8 @@ type structFieldInfo struct {
 	nis uint8                      // num levels of embedding. if 1, then it's not embedded.
 
 	encNameAsciiAlphaNum bool // the encName only contains ascii alphabet and numbers
-	structFieldInfoFlag
+	ready                bool
+	omitEmpty            bool
 	// _ [1]byte // padding
 }
 
@@ -1456,7 +1429,7 @@ func (si *structFieldInfo) parseTag(stag string) {
 		} else {
 			switch s {
 			case "omitempty":
-				si.flagSet(structFieldInfoFlagOmitEmpty)
+				si.omitEmpty = true
 			}
 		}
 	}
@@ -1509,6 +1482,7 @@ func (x *structFieldNode) field(si *structFieldInfo) (fv reflect.Value) {
 
 	// Note: we only cache if nis=2 or nis=3 i.e. up to 2 levels of embedding
 	// This mostly saves us time on the repeated calls to v.Elem, v.Field, etc.
+
 	var valid bool
 	switch si.nis {
 	case 1:
@@ -1701,8 +1675,8 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 				ss[xn] = ui
 				i2clear = j
 			}
-			if x[i2clear].ready() {
-				x[i2clear].flagClr(structFieldInfoFlagReady)
+			if x[i2clear].ready {
+				x[i2clear].ready = false
 				n--
 			}
 		} else {
@@ -1716,10 +1690,10 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 	y := make([]*structFieldInfo, n)
 	n = 0
 	for i := range x {
-		if !x[i].ready() {
+		if !x[i].ready {
 			continue
 		}
-		if !anyOmitEmpty && x[i].omitEmpty() {
+		if !anyOmitEmpty && x[i].omitEmpty {
 			anyOmitEmpty = true
 		}
 		y[n] = &x[i]
@@ -2046,7 +2020,7 @@ LOOP:
 			break
 		}
 		si.fieldName = f.Name
-		si.flagSet(structFieldInfoFlagReady)
+		si.ready = true
 
 		if len(indexstack) > maxLevelsEmbedding-1 {
 			halt.errorf("codec: only supports up to %v depth of embedding - type has %v depth",
@@ -2057,7 +2031,7 @@ LOOP:
 		si.is[len(indexstack)] = j
 
 		if omitEmpty {
-			si.flagSet(structFieldInfoFlagOmitEmpty)
+			si.omitEmpty = true
 		}
 		pv.sfis = append(pv.sfis, si)
 	}
