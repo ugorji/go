@@ -1381,7 +1381,7 @@ func (si *structFieldInfo) fieldAlloc(v reflect.Value) (rv2 reflect.Value) {
 		v = si.path[i].rvField(v)
 		for j, k := uint8(0), si.path[i].numderef; j < k; j++ {
 			if rvIsNil(v) {
-				rvSetDirect(v, reflect.New(v.Type().Elem()))
+				rvSetDirect(v, reflect.New(rvType(v).Elem()))
 			}
 			v = v.Elem()
 		}
@@ -1833,7 +1833,6 @@ LOOP:
 		for xft := f.Type; xft.Kind() == reflect.Ptr; xft = xft.Elem() {
 			numderef++
 		}
-		// si.path = append(si.path, structFieldInfoPathNode{f.Type, uint16(f.Offset), j, uint8(fkind), numderef})
 
 		var parsed bool
 		// if anonymous and no struct tag (or it's blank),
@@ -1945,7 +1944,7 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) 
 	// We only check isZero on a struct kind, to reduce the amount of times
 	// that we lookup the rtid and typeInfo for each type as we walk the tree.
 
-	vt := v.Type()
+	vt := rvType(v)
 	rtid := rt2id(vt)
 	if tinfos == nil {
 		tinfos = defTypeInfos

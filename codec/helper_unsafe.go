@@ -115,6 +115,11 @@ func rv2i(rv reflect.Value) interface{} {
 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: rv2ptr(urv)}))
 }
 
+func rvType(rv reflect.Value) reflect.Type {
+	return rvPtrToType(((*unsafeReflectValue)(unsafe.Pointer(&rv))).typ)
+	// return rv.Type()
+}
+
 func rvIsNil(rv reflect.Value) bool {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	if urv.flag&unsafeFlagIndir != 0 {
@@ -524,7 +529,7 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	//
 	// Consequently, we use rvGetSliceLen, not rvGetSliceCap.
 
-	t := reflectArrayOf(rvGetSliceLen(rv), rv.Type().Elem())
+	t := reflectArrayOf(rvGetSliceLen(rv), rvType(rv).Elem())
 	// v = rvZeroAddrK(t, reflect.Array)
 
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
@@ -554,7 +559,7 @@ func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
 }
 
 func rvCopySlice(dest, src reflect.Value) {
-	t := dest.Type().Elem()
+	t := rvType(dest).Elem()
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&dest))
 	destPtr := urv.ptr
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&src))
@@ -845,6 +850,10 @@ func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
 //go:noescape
 func typedslicecopy(elemType unsafe.Pointer, dst, src unsafeSlice) int
 
+//go:linkname rvPtrToType reflect.toType
+//go:noescape
+func rvPtrToType(typ unsafe.Pointer) reflect.Type
+
 // ---------- ENCODER optimized ---------------
 
 func (e *Encoder) jsondriver() *jsonEncDriver {
@@ -883,7 +892,7 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
 	// we already know this is exported, and maybe embedded (based on what si says)
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	// TODO: clear flagEmbedRO if necessary, and inherit permission bits from v
+	// clear flagEmbedRO if necessary, and inherit permission bits from v
 	urv.flag = uv.flag&(unsafeFlagStickyRO|unsafeFlagIndir|unsafeFlagAddr) | uintptr(n.kind)
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&n.typ))).word
 	urv.ptr = unsafe.Pointer(uintptr(uv.ptr) + uintptr(n.offset))

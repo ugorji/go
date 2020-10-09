@@ -220,7 +220,7 @@ func (e *cborEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext) {
 	e.encUint(uint64(xtag), cborBaseTag)
 	if ext == SelfExt {
 		rv2 := baseRV(rv)
-		e.e.encodeValue(rv2, e.h.fnNoExt(rv2.Type()))
+		e.e.encodeValue(rv2, e.h.fnNoExt(rvType(rv2)))
 	} else if v := ext.ConvertExt(rv); v == nil {
 		e.EncodeNil()
 	} else {
@@ -681,7 +681,7 @@ func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 		d.d.errorf("Wrong extension tag. Got %b. Expecting: %v", realxtag, xtag)
 	} else if ext == SelfExt {
 		rv2 := baseRV(rv)
-		d.d.decodeValue(rv2, d.h.fnNoExt(rv2.Type()))
+		d.d.decodeValue(rv2, d.h.fnNoExt(rvType(rv2)))
 	} else {
 		d.d.interfaceExtConvertAndDecode(rv, ext)
 	}

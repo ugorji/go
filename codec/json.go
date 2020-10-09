@@ -211,7 +211,7 @@ func (e *jsonEncDriver) EncodeTime(t time.Time) {
 func (e *jsonEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext) {
 	if ext == SelfExt {
 		rv2 := baseRV(rv)
-		e.e.encodeValue(rv2, e.h.fnNoExt(rv2.Type()))
+		e.e.encodeValue(rv2, e.h.fnNoExt(rvType(rv2)))
 	} else if v := ext.ConvertExt(rv); v == nil {
 		e.EncodeNil()
 	} else {
@@ -874,7 +874,7 @@ func (d *jsonDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 		d.d.decode(&re.Value)
 	} else if ext == SelfExt {
 		rv2 := baseRV(rv)
-		d.d.decodeValue(rv2, d.h.fnNoExt(rv2.Type()))
+		d.d.decodeValue(rv2, d.h.fnNoExt(rvType(rv2)))
 	} else {
 		d.d.interfaceExtConvertAndDecode(rv, ext)
 	}

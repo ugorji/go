@@ -528,7 +528,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 
 	// every interface passed here MUST be settable.
 	var rvn reflect.Value
-	if rvIsNil(rv) || d.h.InterfaceReset {
+	if d.h.InterfaceReset || rvIsNil(rv) {
 		// check if mapping to a type: if so, initialize it and move on
 		rvn = d.h.intf2impl(f.ti.rtid)
 		if rvn.IsValid() {
@@ -541,7 +541,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 				// reset to zero value based on current type in there.
 				rvelem := rv.Elem()
 				if kk := rvelem.Kind(); kk != reflect.Invalid {
-					rv.Set(rvZeroK(rvelem.Type(), kk))
+					rv.Set(rvZeroK(rvType(rvelem), kk))
 				}
 			}
 			return
@@ -561,7 +561,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 
-	rvn2 := rvZeroAddrK(rvn.Type(), rvn.Kind())
+	rvn2 := rvZeroAddrK(rvType(rvn), rvn.Kind())
 	rvSetDirect(rvn2, rvn)
 	d.decodeValue(rvn2, nil)
 	rv.Set(rvn2)
@@ -1019,7 +1019,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 			// special case if interface wrapping a byte array.
 			if ktypeIsIntf {
-				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
+				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvType(rvk2) == uint8SliceTyp {
 					rvk.Set(rv4i(d.string(rvGetBytes(rvk2))))
 				}
 				// NOTE: consider failing early if map/slice/func
@@ -1423,7 +1423,7 @@ func doSetZeroRv(v reflect.Value) {
 		v = v.Elem()
 	}
 	if v.CanSet() {
-		v.Set(rvZeroK(v.Type(), v.Kind()))
+		v.Set(rvZeroK(rvType(v), v.Kind()))
 	}
 }
 
@@ -1524,7 +1524,7 @@ PTR:
 	if rv.Kind() == reflect.Ptr {
 		rvpValid = true
 		if rvIsNil(rv) {
-			rvSetDirect(rv, reflect.New(rv.Type().Elem()))
+			rvSetDirect(rv, reflect.New(rvType(rv).Elem()))
 		}
 		rvp = rv
 		rv = rv.Elem()
@@ -1532,7 +1532,7 @@ PTR:
 	}
 
 	if fn == nil {
-		fn = d.h.fn(rv.Type())
+		fn = d.h.fn(rvType(rv))
 	}
 	if fn.i.addrD {
 		if rvpValid {
@@ -1743,9 +1743,9 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext Ext) {
 	rv = rv4i(s)
 	if !rv.CanAddr() {
 		if rv.Kind() == reflect.Ptr {
-			rv2 = reflect.New(rv.Type().Elem())
+			rv2 = reflect.New(rvType(rv).Elem())
 		} else {
-			rv2 = rvZeroAddrK(rv.Type(), rv.Kind())
+			rv2 = rvZeroAddrK(rvType(rv), rv.Kind())
 		}
 		rvSetDirect(rv2, rv)
 		rv = rv2
@@ -1756,7 +1756,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext Ext) {
 
 func (d *Decoder) sideDecode(v interface{}, bs []byte) {
 	rv := baseRV(v)
-	NewDecoderBytes(bs, d.hh).decodeValue(rv, d.h.fnNoExt(rv.Type()))
+	NewDecoderBytes(bs, d.hh).decodeValue(rv, d.h.fnNoExt(rvType(rv)))
 }
 
 // --------------------------------------------------

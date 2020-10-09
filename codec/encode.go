@@ -497,7 +497,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			mf = rv2i(rv.Addr()).(MissingFielder).CodecMissingFields()
 		} else {
 			// make a new addressable value of same one, and use it
-			rv2 := reflect.New(rv.Type())
+			rv2 := reflect.New(rvType(rv))
 			rvSetDirect(rv2.Elem(), rv)
 			mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
 		}
@@ -1213,7 +1213,7 @@ TOP:
 
 	var rt reflect.Type
 	if fn == nil {
-		rt = rv.Type()
+		rt = rvType(rv)
 		fn = e.h.fn(rt)
 	}
 	if fn.i.addrE {
@@ -1223,7 +1223,7 @@ TOP:
 			fn.fe(e, &fn.i, rv.Addr())
 		} else if fn.i.addrEf {
 			if rt == nil {
-				rt = rv.Type()
+				rt = rvType(rv)
 			}
 			rv2 := rvZeroAddrK(rt, rv.Kind())
 			rvSetDirect(rv2, rv)
@@ -1337,7 +1337,7 @@ func (e *Encoder) haltOnMbsOddLen(length int) {
 func (e *Encoder) sideEncode(v interface{}, bs *[]byte) {
 	rv := baseRV(v)
 	e2 := NewEncoderBytes(bs, e.hh)
-	e2.encodeValue(rv, e.h.fnNoExt(rv.Type()))
+	e2.encodeValue(rv, e.h.fnNoExt(rvType(rv)))
 	e2.e.atEndOfEncode()
 	e2.w().end()
 }

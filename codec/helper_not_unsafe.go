@@ -52,6 +52,10 @@ func rv2i(rv reflect.Value) interface{} {
 	return rv.Interface()
 }
 
+func rvType(rv reflect.Value) reflect.Type {
+	return rv.Type()
+}
+
 func rvIsNil(rv reflect.Value) bool {
 	return rv.IsNil()
 }
@@ -300,7 +304,7 @@ func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
 }
 
 func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
-	v = rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rv), rv.Type().Elem()), reflect.Array)
+	v = rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rv), rvType(rv).Elem()), reflect.Array)
 	reflect.Copy(v, rv)
 	return
 }
