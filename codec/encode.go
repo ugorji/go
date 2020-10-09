@@ -1221,13 +1221,15 @@ TOP:
 			fn.fe(e, &fn.i, rvp)
 		} else if rv.CanAddr() {
 			fn.fe(e, &fn.i, rv.Addr())
-		} else {
+		} else if fn.i.addrEf {
 			if rt == nil {
 				rt = rv.Type()
 			}
-			rv2 := reflect.New(rt)
-			rvSetDirect(rv2.Elem(), rv)
-			fn.fe(e, &fn.i, rv2)
+			rv2 := rvZeroAddrK(rt, rv.Kind())
+			rvSetDirect(rv2, rv)
+			fn.fe(e, &fn.i, rv2.Addr())
+		} else {
+			fn.fe(e, &fn.i, rv)
 		}
 	} else {
 		fn.fe(e, &fn.i, rv)

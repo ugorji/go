@@ -818,6 +818,9 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 
 	// anything can be an extension except the built-in ones: time, raw and rawext
 
+	fi.addrDf = true
+	fi.addrEf = true
+
 	if rtid == timeTypId && !x.TimeNotBuiltin {
 		fn.fe = (*Encoder).kTime
 		fn.fd = (*Decoder).kTime
@@ -827,14 +830,12 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 	} else if rtid == rawExtTypId {
 		fn.fe = (*Encoder).rawExt
 		fn.fd = (*Decoder).rawExt
-		fi.addrF = true
 		fi.addrD = true
 		fi.addrE = true
 	} else if xfFn := x.getExt(rtid, checkExt); xfFn != nil {
 		fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
 		fn.fe = (*Encoder).ext
 		fn.fd = (*Decoder).ext
-		fi.addrF = true
 		fi.addrD = true
 		if rk == reflect.Struct || rk == reflect.Array {
 			fi.addrE = true
@@ -842,7 +843,6 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 	} else if ti.isFlag(tiflagSelfer) || ti.isFlag(tiflagSelferPtr) {
 		fn.fe = (*Encoder).selferMarshal
 		fn.fd = (*Decoder).selferUnmarshal
-		fi.addrF = true
 		fi.addrD = ti.isFlag(tiflagSelferPtr)
 		fi.addrE = ti.isFlag(tiflagSelferPtr)
 	} else if supportMarshalInterfaces && x.isBe() &&
@@ -850,7 +850,6 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 		(ti.isFlag(tiflagBinaryUnmarshaler) || ti.isFlag(tiflagBinaryUnmarshalerPtr)) {
 		fn.fe = (*Encoder).binaryMarshal
 		fn.fd = (*Decoder).binaryUnmarshal
-		fi.addrF = true
 		fi.addrD = ti.isFlag(tiflagBinaryUnmarshalerPtr)
 		fi.addrE = ti.isFlag(tiflagBinaryMarshalerPtr)
 	} else if supportMarshalInterfaces && !x.isBe() && x.isJs() &&
@@ -859,7 +858,6 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 		//If JSON, we should check JSONMarshal before textMarshal
 		fn.fe = (*Encoder).jsonMarshal
 		fn.fd = (*Decoder).jsonUnmarshal
-		fi.addrF = true
 		fi.addrD = ti.isFlag(tiflagJsonUnmarshalerPtr)
 		fi.addrE = ti.isFlag(tiflagJsonMarshalerPtr)
 	} else if supportMarshalInterfaces && !x.isBe() &&
@@ -867,7 +865,6 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 		(ti.isFlag(tiflagTextUnmarshaler) || ti.isFlag(tiflagTextUnmarshalerPtr)) {
 		fn.fe = (*Encoder).textMarshal
 		fn.fd = (*Decoder).textUnmarshal
-		fi.addrF = true
 		fi.addrD = ti.isFlag(tiflagTextUnmarshalerPtr)
 		fi.addrE = ti.isFlag(tiflagTextMarshalerPtr)
 	} else {
@@ -877,7 +874,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 					fn.fe = fastpathAV[idx].encfn
 					fn.fd = fastpathAV[idx].decfn
 					fi.addrD = true
-					fi.addrF = false
+					fi.addrDf = false
 				}
 			} else {
 				// use mapping for underlying type if there
@@ -895,7 +892,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 						xfnf(e, xf, rvConvert(xrv, xrt))
 					}
 					fi.addrD = true
-					fi.addrF = false // meaning it can be an address(ptr) or a value
+					fi.addrDf = false // meaning it can be an address(ptr) or a value
 					xfnf2 := fastpathAV[idx].decfn
 					xptr2rt := reflect.PtrTo(xrt)
 					fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
@@ -976,8 +973,6 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 			case reflect.Array:
 				fi.seq = seqTypeArray
 				fn.fe = (*Encoder).kArray
-				fi.addrF = false
-				fi.addrD = false
 				rt2 := reflect.SliceOf(ti.elem)
 				fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
 					// call fnVia directly, so fn(...) is not recursive, and can be inlined
@@ -2045,13 +2040,14 @@ func usableByteSlice(bs []byte, slen int) []byte {
 // ----
 
 type codecFnInfo struct {
-	ti    *typeInfo
-	xfFn  Ext
-	xfTag uint64
-	seq   seqType
-	addrD bool
-	addrF bool // force: if addrD, this says that decode function MUST take a ptr
-	addrE bool
+	ti     *typeInfo
+	xfFn   Ext
+	xfTag  uint64
+	seq    seqType
+	addrD  bool
+	addrDf bool // force: if addrD, then decode function MUST take a ptr
+	addrE  bool
+	addrEf bool // force: if addrE, then encode function MUST take a ptr
 }
 
 // codecFn encapsulates the captured variables and the encode function.

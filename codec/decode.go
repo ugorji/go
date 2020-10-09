@@ -1539,10 +1539,10 @@ PTR:
 			fn.fd(d, &fn.i, rvp)
 		} else if rv.CanAddr() {
 			fn.fd(d, &fn.i, rv.Addr())
-		} else if !fn.i.addrF {
-			fn.fd(d, &fn.i, rv)
-		} else {
+		} else if fn.i.addrDf {
 			d.errorf("cannot decode into a non-pointer value")
+		} else {
+			fn.fd(d, &fn.i, rv)
 		}
 	} else {
 		fn.fd(d, &fn.i, rv)
