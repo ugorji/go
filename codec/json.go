@@ -624,14 +624,13 @@ func (d *jsonDecDriver) nextValueBytes(start []byte) (v []byte) {
 	dr := &d.d.decRd
 	consumeString := func() {
 		for {
-			c := dr.readn1()
-			v = append(v, c)
-			if c == '"' {
+			bs := dr.jsonReadAsisChars()
+			v = append(v, bs...)
+			if bs[len(bs)-1] == '"' {
 				break
 			}
-			if c == '\\' {
-				v = append(v, dr.readn1())
-			}
+			// last char is '\', so consume next one
+			v = append(v, dr.readn1())
 		}
 	}
 
@@ -991,10 +990,6 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 		if c == '"' {
 			break
 		}
-		// if c != '\\' {
-		// 	buf = append(buf, c)
-		// 	continue
-		// }
 
 		// c is now '\'
 		c = dr.readn1()
