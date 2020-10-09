@@ -220,10 +220,7 @@ func (e *simpleEncDriver) EncodeTime(t time.Time) {
 		return
 	}
 	v, err := t.MarshalBinary()
-	if err != nil {
-		e.e.onerror(err)
-		return
-	}
+	e.e.onerror(err)
 	// time.Time marshalbinary takes about 14 bytes.
 	e.e.encWr.writen2(simpleVdTime, uint8(len(v)))
 	e.e.encWr.writeb(v)

@@ -1240,7 +1240,7 @@ TOP:
 }
 
 func (e *Encoder) marshalUtf8(bs []byte, fnerr error) {
-	halt.onerror(fnerr)
+	e.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1250,7 +1250,7 @@ func (e *Encoder) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *Encoder) marshalAsis(bs []byte, fnerr error) {
-	halt.onerror(fnerr)
+	e.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1259,7 +1259,7 @@ func (e *Encoder) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *Encoder) marshalRaw(bs []byte, fnerr error) {
-	halt.onerror(fnerr)
+	e.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {

@@ -431,16 +431,14 @@ func (e *jsonEncDriver) quoteStr(s string) {
 			continue
 		}
 		c, size := utf8.DecodeRuneInString(s[i:])
-		if c == utf8.RuneError {
-			if size == 1 { // meaning invalid encoding (so output as-is)
-				if start < i {
-					w.writestr(s[start:i])
-				}
-				w.writestr(`\uFFFD`)
-				i++
-				start = i
-				continue
+		if c == utf8.RuneError && size == 1 { // meaning invalid encoding (so output as-is)
+			if start < i {
+				w.writestr(s[start:i])
 			}
+			w.writestr(`\uFFFD`)
+			i++
+			start = i
+			continue
 		}
 		// U+2028 is LINE SEPARATOR. U+2029 is PARAGRAPH SEPARATOR.
 		// Both technically valid JSON, but bomb on JSONP, so fix here unconditionally.
@@ -736,9 +734,7 @@ func (d *jsonDecDriver) DecodeTime() (t time.Time) {
 	}
 	bs := d.readUnescapedString()
 	t, err := time.Parse(time.RFC3339, stringView(bs))
-	if err != nil {
-		d.d.onerror(err)
-	}
+	d.d.onerror(err)
 	return
 }
 
@@ -850,9 +846,7 @@ func (d *jsonDecDriver) DecodeFloat64() (f float64) {
 		return
 	}
 	f, err = parseFloat64(bs)
-	if err != nil {
-		d.d.onerror(err)
-	}
+	d.d.onerror(err)
 	return
 }
 
@@ -863,9 +857,7 @@ func (d *jsonDecDriver) DecodeFloat32() (f float32) {
 		return
 	}
 	f, err = parseFloat32(bs)
-	if err != nil {
-		d.d.onerror(err)
-	}
+	d.d.onerror(err)
 	return
 }
 

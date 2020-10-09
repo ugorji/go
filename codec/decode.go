@@ -299,13 +299,13 @@ func (d *Decoder) binaryUnmarshal(f *codecFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil, true)
 	fnerr := bm.UnmarshalBinary(xbs)
-	halt.onerror(fnerr)
+	d.onerror(fnerr)
 }
 
 func (d *Decoder) textUnmarshal(f *codecFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
-	halt.onerror(fnerr)
+	d.onerror(fnerr)
 }
 
 func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
@@ -316,7 +316,7 @@ func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
 	bs = d.d.nextValueBytes(bs)
 	fnerr := tm.UnmarshalJSON(bs)
 	d.blist.put(bs)
-	halt.onerror(fnerr)
+	d.onerror(fnerr)
 }
 
 func (d *Decoder) kErr(f *codecFnInfo, rv reflect.Value) {
@@ -1606,7 +1606,7 @@ func (d *Decoder) haltAsNotDecodeable(rv reflect.Value) {
 func (d *Decoder) depthIncr() {
 	d.depth++
 	if d.depth >= d.maxdepth {
-		halt.onerror(errMaxDepthExceeded)
+		d.onerror(errMaxDepthExceeded)
 	}
 }
 

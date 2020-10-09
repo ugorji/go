@@ -137,6 +137,10 @@ package codec
 //   - Fastpath methods also do not handle nil.
 //     The switch called in (en|de)code(...) handles it so the dependent calls don't have to.
 //   - codecgen will handle nil before calling into the library for further work also.
+//
+// ------------------------------------------
+// Passing reflect.Kind to functions that take a reflect.Value
+//   - Note that reflect.Value.Kind() is very cheap, as its fundamentally a binary AND of 2 numbers
 
 import (
 	"encoding"

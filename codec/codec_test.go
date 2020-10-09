@@ -3582,6 +3582,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 		int64(9999),
 		float64(12.25),
 		true,
+		false,
 		map[string]uint64{"1": 1, "22": 22, "333": 333, "4444": 4444},
 		[]string{"1", "22", "333", "4444"},
 		// use *TestStruc, not *TestStrucFlex, as *TestStrucFlex is harder to compare with deep equal
