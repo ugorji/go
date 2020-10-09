@@ -8221,6 +8221,123 @@ func (x *missingFielderT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *missingFielderT11) CodecEncodeSelf(e *Encoder) {
+	var h codecSelfer19780
+	z, r := GenHelperEncoder(e)
+	_, _, _ = h, z, r
+	if x == nil {
+		r.EncodeNil()
+	} else {
+		yysep2 := !z.EncBinary()
+		yy2arr2 := z.EncBasicHandle().StructToArray
+		_, _ = yysep2, yy2arr2
+		const yyr2 bool = false // struct tag has 'toArray'
+		if yyr2 || yy2arr2 {
+			z.EncWriteArrayStart(1)
+			z.EncWriteArrayElem()
+			r.EncodeString(string(x.S2))
+			z.EncWriteArrayEnd()
+		} else {
+			z.EncWriteMapStart(1)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"S2\"")
+			} else {
+				r.EncodeString(`S2`)
+			}
+			z.EncWriteMapElemValue()
+			r.EncodeString(string(x.S2))
+			z.EncWriteMapEnd()
+		}
+	}
+}
+
+func (x *missingFielderT11) CodecDecodeSelf(d *Decoder) {
+	var h codecSelfer19780
+	z, r := GenHelperDecoder(d)
+	_, _, _ = h, z, r
+	yyct2 := r.ContainerType()
+	if yyct2 == codecSelferValueTypeNil19780 {
+		*(x) = missingFielderT11{}
+	} else if yyct2 == codecSelferValueTypeMap19780 {
+		yyl2 := z.DecReadMapStart()
+		if yyl2 == 0 {
+		} else {
+			x.codecDecodeSelfFromMap(yyl2, d)
+		}
+		z.DecReadMapEnd()
+	} else if yyct2 == codecSelferValueTypeArray19780 {
+		yyl2 := z.DecReadArrayStart()
+		if yyl2 != 0 {
+			x.codecDecodeSelfFromArray(yyl2, d)
+		}
+		z.DecReadArrayEnd()
+	} else {
+		panic(errCodecSelferOnlyMapOrArrayEncodeToStruct19780)
+	}
+}
+
+func (x *missingFielderT11) codecDecodeSelfFromMap(l int, d *Decoder) {
+	var h codecSelfer19780
+	z, r := GenHelperDecoder(d)
+	_, _, _ = h, z, r
+	var yyhl3 bool = l >= 0
+	for yyj3 := 0; ; yyj3++ {
+		if yyhl3 {
+			if yyj3 >= l {
+				break
+			}
+		} else {
+			if z.DecCheckBreak() {
+				break
+			}
+		}
+		z.DecReadMapElemKey()
+		yys3 := z.StringView(r.DecodeStringAsBytes())
+		z.DecReadMapElemValue()
+		switch yys3 {
+		case "S2":
+			x.S2 = (string)(string(r.DecodeStringAsBytes()))
+		default:
+			z.DecStructFieldNotFound(-1, yys3)
+		} // end switch yys3
+	} // end for yyj3
+}
+
+func (x *missingFielderT11) codecDecodeSelfFromArray(l int, d *Decoder) {
+	var h codecSelfer19780
+	z, r := GenHelperDecoder(d)
+	_, _, _ = h, z, r
+	var yyj5 int
+	var yyb5 bool
+	var yyhl5 bool = l >= 0
+	yyj5++
+	if yyhl5 {
+		yyb5 = yyj5 > l
+	} else {
+		yyb5 = z.DecCheckBreak()
+	}
+	if yyb5 {
+		z.DecReadArrayEnd()
+		return
+	}
+	z.DecReadArrayElem()
+	x.S2 = (string)(string(r.DecodeStringAsBytes()))
+	for {
+		yyj5++
+		if yyhl5 {
+			yyb5 = yyj5 > l
+		} else {
+			yyb5 = z.DecCheckBreak()
+		}
+		if yyb5 {
+			break
+		}
+		z.DecReadArrayElem()
+		z.DecStructFieldNotFound(yyj5-1, "")
+	}
+}
+
 func (x *missingFielderT2) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)

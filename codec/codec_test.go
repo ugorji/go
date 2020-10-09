@@ -50,7 +50,7 @@ func init() {
 	testPreInitFns = append(testPreInitFns, testInit)
 }
 
-const testRecoverPanicToErr = false // TODO: true
+const testRecoverPanicToErr = true
 
 var testBytesFreeList bytesFreelist
 
@@ -2849,8 +2849,17 @@ func doTestMissingFields(t *testing.T, h Handle) {
 	testUnmarshalErr(&v3, b2, h, t, name+"-missing-dec-2")
 
 	testDeepEqualErr(v1, v3, t, name+"-missing-cmp-2")
+
 	testReleaseBytes(b1)
 	testReleaseBytes(b2)
+
+	v4 := missingFielderT11{s1: "s111", S2: "S222"}
+	b1 = testMarshalErr(v4, h, t, name+"-missing-enc-11")
+	var m4 map[string]string
+	testUnmarshalErr(&m4, b1, h, t, name+"-missing-dec-11")
+	testDeepEqualErr(m4, map[string]string{"s1": "s111", "S2": "S222"}, t, name+"-missing-cmp-11")
+
+	testReleaseBytes(b1)
 }
 
 func doTestMaxDepth(t *testing.T, h Handle) {

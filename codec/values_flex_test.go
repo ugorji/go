@@ -198,6 +198,24 @@ func (t *missingFielderT1) CodecMissingFields() map[string]interface{} {
 	return map[string]interface{}{"F": t.f, "I": t.i}
 }
 
+type missingFielderT11 struct {
+	s1 string
+	S2 string
+}
+
+func (t *missingFielderT11) CodecMissingField(field []byte, value interface{}) bool {
+	if "s1" == string(field) {
+		t.s1 = value.(string)
+		return true
+	}
+	return false
+}
+
+// missingFielderT11 implements CodecMissingFields on the value (not pointer)
+func (t missingFielderT11) CodecMissingFields() map[string]interface{} {
+	return map[string]interface{}{"s1": t.s1}
+}
+
 type missingFielderT2 struct {
 	S string
 	B bool
