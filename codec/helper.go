@@ -192,9 +192,6 @@ const (
 
 	maxArrayLen = 1<<((32<<(^uint(0)>>63))-1) - 1
 
-	// so structFieldInfo fits into 8 bytes
-	maxLevelsEmbedding = 14
-
 	// determines whether to skip calling fastpath(En|De)codeTypeSwitch,
 	// since calling it here could be redundant, as if that fails, we still
 	// have to determine the function to use for values of that type.
@@ -240,7 +237,15 @@ var (
 	errPanicHdlUndefinedErr = errors.New("panic: undefined error")
 )
 
-var pool4tiload = sync.Pool{New: func() interface{} { return new(typeInfoLoadArray) }}
+var pool4tiload = sync.Pool{
+	New: func() interface{} {
+		return &typeInfoLoad{
+			etypes:   make([]uintptr, 0, 4),
+			sfis:     make([]structFieldInfo, 0, 4),
+			sfiNames: make(map[string]uint16, 4),
+		}
+	},
+}
 
 func init() {
 	scalarBitset.
@@ -399,21 +404,6 @@ const (
 // so as not to cause an infinite loop.
 const rgetMaxRecursion = 2
 
-// Anecdotally, we believe most types have <= 12 fields.
-// - even Java's PMD rules set TooManyFields threshold to 15.
-// However, go has embedded fields, which should be regarded as
-// top level, allowing structs to possibly double or triple.
-// In addition, we don't want to keep creating transient arrays,
-// especially for the sfi index tracking, and the evtypes tracking.
-//
-// So - try to keep typeInfoLoadArray within 2K bytes
-const (
-	typeInfoLoadArraySfisLen   = 16
-	typeInfoLoadArraySfiidxLen = 8 * 112
-	typeInfoLoadArrayEtypesLen = 12
-	typeInfoLoadArrayBLen      = 8 * 4
-)
-
 // fauxUnion is used to keep track of the primitives decoded.
 //
 // Without it, we would have to decode each primitive and wrap it
@@ -443,18 +433,17 @@ type fauxUnion struct {
 
 // typeInfoLoad is a transient object used while loading up a typeInfo.
 type typeInfoLoad struct {
-	etypes []uintptr
-	sfis   []structFieldInfo
+	etypes   []uintptr
+	sfis     []structFieldInfo
+	sfiNames map[string]uint16
 }
 
-// typeInfoLoadArray is a cache object used to efficiently load up a typeInfo without
-// much allocation.
-type typeInfoLoadArray struct {
-	sfis [typeInfoLoadArraySfisLen]structFieldInfo
-	// sfiidx [typeInfoLoadArraySfiidxLen]byte
-	etypes   [typeInfoLoadArrayEtypesLen]uintptr
-	sfiNames map[string]uint16
-	// b      [typeInfoLoadArrayBLen]byte // scratch - used for struct field names
+func (x *typeInfoLoad) reset() {
+	x.etypes = x.etypes[:0]
+	x.sfis = x.sfis[:0]
+	for k := range x.sfiNames { // optimized to zero the map
+		delete(x.sfiNames, k)
+	}
 }
 
 // mirror json.Marshaler and json.Unmarshaler here,
@@ -1348,40 +1337,61 @@ func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
 	return
 }
 
+type structFieldInfoPathNode struct {
+	typ      reflect.Type
+	offset   uint16
+	index    uint16
+	kind     uint8
+	numderef uint8
+	// _ [2]byte // padding
+	// embedded bool
+	// exported bool
+}
+
 type structFieldInfo struct {
 	encName   string // encode name
-	fieldName string // field name
+	fieldName string
 
-	is  [maxLevelsEmbedding]uint16 // (recursive/embedded) field index in struct
-	nis uint8                      // num levels of embedding. if 1, then it's not embedded.
+	// root [1]structFieldInfoPathNode
 
+	path []structFieldInfoPathNode
+
+	kind                 uint8
 	encNameAsciiAlphaNum bool // the encName only contains ascii alphabet and numbers
 	ready                bool
 	omitEmpty            bool
-	// _ [1]byte // padding
+	// _ [4]byte // padding
 }
 
-// func (si *structFieldInfo) setToZeroValue(v reflect.Value) {
-// 	if v, valid := si.field(v, false); valid {
-// 		v.Set(reflect.Zero(v.Type()))
-// 	}
-// }
+// rv returns the field of the struct.
+func (si *structFieldInfo) field(v reflect.Value) (rv2 reflect.Value) {
+	lp := len(si.path) - 1
+	for i := 0; i < lp; i++ {
+		v = si.path[i].rvField(v)
+		for j, k := uint8(0), si.path[i].numderef; j < k; j++ {
+			if rvIsNil(v) {
+				return
+			}
+			v = v.Elem()
+		}
+	}
+	return si.path[lp].rvField(v)
+}
 
 // rv returns the field of the struct.
-// If anonymous, it returns an Invalid
-func (si *structFieldInfo) field(v reflect.Value, update bool) (rv2 reflect.Value, valid bool) {
-	// replicate FieldByIndex
-	for i, x := range si.is {
-		if uint8(i) == si.nis {
-			break
+// It allocates if a nil value was seen while searching.
+func (si *structFieldInfo) fieldAlloc(v reflect.Value) (rv2 reflect.Value) {
+	lp := len(si.path) - 1
+	for i := 0; i < lp; i++ {
+		v = si.path[i].rvField(v)
+		for j, k := uint8(0), si.path[i].numderef; j < k; j++ {
+			if rvIsNil(v) {
+				rvSetDirect(v, reflect.New(v.Type().Elem()))
+			}
+			v = v.Elem()
 		}
-		if v, valid = baseStructRv(v, update); !valid {
-			return
-		}
-		v = v.Field(int(x))
 	}
-
-	return v, true
+	return si.path[lp].rvField(v)
 }
 
 func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
@@ -1389,25 +1399,22 @@ func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
 	if stag == "" {
 		return
 	}
-	for i, s := range strings.Split(stag, ",") {
-		if i == 0 {
-		} else {
-			switch s {
-			case "omitempty":
-				omitEmpty = true
-			case "toarray":
-				toArray = true
-			case "int":
-				keytype = valueTypeInt
-			case "uint":
-				keytype = valueTypeUint
-			case "float":
-				keytype = valueTypeFloat
-				// case "bool":
-				// 	keytype = valueTypeBool
-			case "string":
-				keytype = valueTypeString
-			}
+	for _, s := range strings.Split(stag, ",")[1:] {
+		switch s {
+		case "omitempty":
+			omitEmpty = true
+		case "toarray":
+			toArray = true
+		case "int":
+			keytype = valueTypeInt
+		case "uint":
+			keytype = valueTypeUint
+		case "float":
+			keytype = valueTypeFloat
+			// case "bool":
+			// 	keytype = valueTypeBool
+		case "string":
+			keytype = valueTypeString
 		}
 	}
 	return
@@ -1440,98 +1447,6 @@ type sfiSortedByEncName []*structFieldInfo
 func (p sfiSortedByEncName) Len() int           { return len(p) }
 func (p sfiSortedByEncName) Less(i, j int) bool { return p[uint(i)].encName < p[uint(j)].encName }
 func (p sfiSortedByEncName) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
-
-const structFieldNodeNumToCache = 4
-
-type structFieldNodeCache struct {
-	rv  [structFieldNodeNumToCache]reflect.Value
-	idx [structFieldNodeNumToCache]uint32
-	num uint8
-}
-
-func (x *structFieldNodeCache) get(key uint32) (fv reflect.Value, valid bool) {
-	for i, k := range &x.idx {
-		if uint8(i) == x.num {
-			return // break
-		}
-		if key == k {
-			return x.rv[i], true
-		}
-	}
-	return
-}
-
-func (x *structFieldNodeCache) tryAdd(fv reflect.Value, key uint32) {
-	if x.num < structFieldNodeNumToCache {
-		x.rv[x.num] = fv
-		x.idx[x.num] = key
-		x.num++
-		return
-	}
-}
-
-type structFieldNode struct {
-	v      reflect.Value
-	cache2 structFieldNodeCache
-	cache3 structFieldNodeCache
-	update bool
-}
-
-func (x *structFieldNode) field(si *structFieldInfo) (fv reflect.Value) {
-	// return si.fieldval(x.v, x.update)
-
-	// Note: we only cache if nis=2 or nis=3 i.e. up to 2 levels of embedding
-	// This mostly saves us time on the repeated calls to v.Elem, v.Field, etc.
-
-	var valid bool
-	switch si.nis {
-	case 1:
-		fv = x.v.Field(int(si.is[0]))
-	case 2:
-		if fv, valid = x.cache2.get(uint32(si.is[0])); valid {
-			fv = fv.Field(int(si.is[1]))
-			return
-		}
-		fv = x.v.Field(int(si.is[0]))
-		if fv, valid = baseStructRv(fv, x.update); !valid {
-			return
-		}
-		x.cache2.tryAdd(fv, uint32(si.is[0]))
-		fv = fv.Field(int(si.is[1]))
-	case 3:
-		var key uint32 = uint32(si.is[0])<<16 | uint32(si.is[1])
-		if fv, valid = x.cache3.get(key); valid {
-			fv = fv.Field(int(si.is[2]))
-			return
-		}
-		fv = x.v.Field(int(si.is[0]))
-		if fv, valid = baseStructRv(fv, x.update); !valid {
-			return
-		}
-		fv = fv.Field(int(si.is[1]))
-		if fv, valid = baseStructRv(fv, x.update); !valid {
-			return
-		}
-		x.cache3.tryAdd(fv, key)
-		fv = fv.Field(int(si.is[2]))
-	default:
-		fv, _ = si.field(x.v, x.update)
-	}
-	return
-}
-
-func baseStructRv(v reflect.Value, update bool) (v2 reflect.Value, valid bool) {
-	for v.Kind() == reflect.Ptr {
-		if rvIsNil(v) {
-			if !update {
-				return
-			}
-			rvSetDirect(v, reflect.New(v.Type().Elem()))
-		}
-		v = v.Elem()
-	}
-	return v, true
-}
 
 type tiflag uint32
 
@@ -1657,12 +1572,6 @@ LOOP:
 // resolves the struct field info got from a call to rget.
 // Returns a trimmed, unsorted and sorted []*structFieldInfo.
 func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
-	if len(ss) > 0 {
-		for k := range ss { // clear map
-			delete(ss, k)
-		}
-	}
-
 	n := len(x)
 
 	for i := range x {
@@ -1670,8 +1579,8 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 		xn := x[i].encName // fieldName or encName? use encName for now.
 		j, ok := ss[xn]
 		if ok {
-			i2clear := ui            // index to be cleared
-			if x[i].nis < x[j].nis { // this one is shallower
+			i2clear := ui                        // index to be cleared
+			if len(x[i].path) < len(x[j].path) { // this one is shallower
 				ss[xn] = ui
 				i2clear = j
 			}
@@ -1837,19 +1746,13 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 			ti.keyType = valueTypeString
 		}
 		pp, pi := &pool4tiload, pool4tiload.Get() // pool.tiLoad()
-		pv := pi.(*typeInfoLoadArray)
-		if pv.sfiNames == nil {
-			pv.sfiNames = make(map[string]uint16)
-		}
-		pv.etypes[0] = ti.rtid
-		// vv := typeInfoLoad{pv.fNames[:0], pv.encNames[:0], pv.etypes[:1], pv.sfis[:0]}
-		vv := typeInfoLoad{pv.etypes[:1], pv.sfis[:0]}
-		x.rget(rt, rtid, omitEmpty, nil, &vv)
-		if len(vv.sfis) > 0 && &vv.sfis[0] == &pv.sfis[0] { // sharing sfis with typeInfoLoadArray
-			vv.sfis = make([]structFieldInfo, len(vv.sfis))
-			copy(vv.sfis, pv.sfis[:])
-		}
-		ti.init(vv.sfis, pv.sfiNames)
+		pv := pi.(*typeInfoLoad)
+		pv.reset()
+		pv.etypes = append(pv.etypes, ti.rtid)
+		x.rget(rt, rtid, omitEmpty, nil, pv)
+		vv := make([]structFieldInfo, len(pv.sfis))
+		copy(vv, pv.sfis)
+		ti.init(vv, pv.sfiNames)
 		pp.Put(pi)
 	case reflect.Map:
 		ti.elem = rt.Elem()
@@ -1901,7 +1804,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 }
 
 func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
-	indexstack []uint16, pv *typeInfoLoad) {
+	path []structFieldInfoPathNode, pv *typeInfoLoad) {
 	// Read up fields and store how to access the value.
 	//
 	// It uses go's rules for message selectors,
@@ -1911,11 +1814,6 @@ func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
 	//       Typically, types have < 16 fields,
 	//       and iteration using equals is faster than maps there
 	flen := rt.NumField()
-	if flen > (1<<maxLevelsEmbedding - 1) {
-		halt.errorf("codec: types with > %v fields are not supported - has %v fields",
-			(1<<maxLevelsEmbedding - 1), flen)
-	}
-	// pv.sfis = make([]structFieldInfo, flen)
 LOOP:
 	for j, jlen := uint16(0), uint16(flen); j < jlen; j++ {
 		f := rt.Field(int(j))
@@ -1935,6 +1833,13 @@ LOOP:
 			continue
 		}
 		var si structFieldInfo
+
+		var numderef uint8 = 0
+		for xft := f.Type; xft.Kind() == reflect.Ptr; xft = xft.Elem() {
+			numderef++
+		}
+		// si.path = append(si.path, structFieldInfoPathNode{f.Type, uint16(f.Offset), j, uint8(fkind), numderef})
+
 		var parsed bool
 		// if anonymous and no struct tag (or it's blank),
 		// and a struct (or pointer to struct), inline it.
@@ -1981,11 +1886,10 @@ LOOP:
 				}
 				if processIt {
 					pv.etypes = append(pv.etypes, ftid)
-					indexstack2 := make([]uint16, len(indexstack)+1)
-					copy(indexstack2, indexstack)
-					indexstack2[len(indexstack)] = j
-					// indexstack2 := append(append(make([]int, 0, len(indexstack)+4), indexstack...), j)
-					x.rget(ft, ftid, omitEmpty, indexstack2, pv)
+					path2 := make([]structFieldInfoPathNode, len(path)+1)
+					copy(path2, path)
+					path2[len(path)] = structFieldInfoPathNode{f.Type, uint16(f.Offset), j, uint8(fkind), numderef}
+					x.rget(ft, ftid, omitEmpty, path2, pv)
 				}
 				continue
 			}
@@ -2020,19 +1924,14 @@ LOOP:
 			break
 		}
 		si.fieldName = f.Name
+		si.kind = uint8(fkind)
 		si.ready = true
-
-		if len(indexstack) > maxLevelsEmbedding-1 {
-			halt.errorf("codec: only supports up to %v depth of embedding - type has %v depth",
-				maxLevelsEmbedding-1, len(indexstack))
-		}
-		si.nis = uint8(len(indexstack)) + 1
-		copy(si.is[:], indexstack)
-		si.is[len(indexstack)] = j
 
 		if omitEmpty {
 			si.omitEmpty = true
 		}
+
+		si.path = append(path, structFieldInfoPathNode{f.Type, uint16(f.Offset), j, uint8(fkind), numderef})
 		pv.sfis = append(pv.sfis, si)
 	}
 }
@@ -2075,8 +1974,8 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) 
 	// We only care about what we can encode/decode,
 	// so that is what we use to check omitEmpty.
 	for _, si := range ti.sfiSrc {
-		sfv, valid := si.field(v, false)
-		if valid && !isEmptyValue(sfv, tinfos, deref, checkStruct) {
+		sfv := si.field(v)
+		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, deref, checkStruct) {
 			return false
 		}
 	}
@@ -2151,7 +2050,7 @@ type codecFnInfo struct {
 	xfTag uint64
 	seq   seqType
 	addrD bool
-	addrF bool // if addrD, this says whether decode function can take a value or a ptr
+	addrF bool // force: if addrD, this says that decode function MUST take a ptr
 	addrE bool
 }
 

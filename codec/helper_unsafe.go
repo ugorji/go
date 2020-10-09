@@ -31,6 +31,8 @@ var unsafeZeroArr [256]byte
 
 // MARKER: keep in sync with GO_ROOT/src/reflect/value.go
 const (
+	unsafeFlagStickyRO = 1 << 5
+	unsafeFlagEmbedRO  = 1 << 6
 	unsafeFlagIndir    = 1 << 7
 	unsafeFlagAddr     = 1 << 8
 	unsafeFlagKindMask = (1 << 5) - 1 // 5 bits for 27 kinds (up to 31)
@@ -874,3 +876,16 @@ func (d *Decoder) jsondriver() *jsonDecDriver {
 // func (d *Decoder) cbordriver() *cborDecDriver {
 // 	return (*cborDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).word)
 // }
+
+// ---------- structFieldInfo optimized ---------------
+
+func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
+	// we already know this is exported, and maybe embedded (based on what si says)
+	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	// TODO: clear flagEmbedRO if necessary, and inherit permission bits from v
+	urv.flag = uv.flag&(unsafeFlagStickyRO|unsafeFlagIndir|unsafeFlagAddr) | uintptr(n.kind)
+	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&n.typ))).word
+	urv.ptr = unsafe.Pointer(uintptr(uv.ptr) + uintptr(n.offset))
+	return
+}

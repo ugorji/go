@@ -586,7 +586,6 @@ func decStructFieldKey(dd decDriver, keyType valueType, b *[decScratchByteArrayL
 }
 
 func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
-	sfn := structFieldNode{v: rv, update: true}
 	ctyp := d.d.ContainerType()
 	var mf MissingFielder
 	if f.ti.isFlag(tiflagMissingFielder) {
@@ -610,7 +609,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			rvkencname = decStructFieldKey(d.d, f.ti.keyType, &d.b)
 			d.mapElemValue()
 			if k := f.ti.indexForEncName(stringView(rvkencname)); k >= 0 {
-				d.decodeValue(sfn.field(tisfi[k]), nil)
+				d.decodeValue(tisfi[k].fieldAlloc(rv), nil)
 			} else if mf != nil {
 				// store rvkencname in new []byte, as it previously shares Decoder.b, which is used in decode
 				name2 = append(name2[:0], rvkencname...)
@@ -643,7 +642,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				break
 			}
 			d.arrayElem()
-			d.decodeValue(sfn.field(si), nil)
+			d.decodeValue(si.fieldAlloc(rv), nil)
 		}
 		if (hasLen && containerLen > len(f.ti.sfiSrc)) || (!hasLen && !checkbreak) {
 			// read remaining values and throw away

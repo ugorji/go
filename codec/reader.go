@@ -663,18 +663,14 @@ LOOP:
 func (z *bytesDecReader) readUntil(stop byte) (out []byte) {
 	i := z.c
 LOOP:
-	// if i < uint(len(z.b)) {
 	if z.b[i] == stop {
 		i++
 		out = z.b[z.c : i-1]
-		// z.a -= (i - z.c)
 		z.c = i
 		return
 	}
 	i++
 	goto LOOP
-	// }
-	// panic(io.EOF)
 }
 
 // --------------

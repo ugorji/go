@@ -1002,19 +1002,17 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 				varname3 := varname
 				// go through the loop, record the t2 field explicitly,
 				// and gather the omit line if embedded in pointers.
-				for ij, ix := range si.is {
-					if uint8(ij) == si.nis {
-						break
-					}
+				lp := len(si.path)
+				for ij := 0; ij < lp; ij++ {
 					for t2typ.Kind() == reflect.Ptr {
 						t2typ = t2typ.Elem()
 					}
-					t2 = t2typ.Field(int(ix))
+					t2 = t2typ.Field(int(si.path[ij].index))
 					t2typ = t2.Type
 					varname3 = varname3 + "." + t2.Name
 					// do not include actual field in the omit line.
 					// that is done subsequently (right after - below).
-					if uint8(ij+1) < si.nis && t2typ.Kind() == reflect.Ptr {
+					if ij+1 < lp && t2typ.Kind() == reflect.Ptr {
 						omitline.s(varname3).s(" != nil && ")
 					}
 				}
@@ -1044,14 +1042,12 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		q.fqname = varname
 		{
 			t2typ := t
-			for ij, ix := range si.is {
-				if uint8(ij) == si.nis {
-					break
-				}
+			lp := len(si.path)
+			for ij := 0; ij < lp; ij++ {
 				for t2typ.Kind() == reflect.Ptr {
 					t2typ = t2typ.Elem()
 				}
-				q.sf = t2typ.Field(int(ix))
+				q.sf = t2typ.Field(int(si.path[ij].index))
 				t2typ = q.sf.Type
 				q.fqname += "." + q.sf.Name
 				if t2typ.Kind() == reflect.Ptr {
@@ -1213,15 +1209,13 @@ func (x *genRunner) decVarInitPtr(varname, nilvar string, t reflect.Type, si *st
 	t2kind := t2typ.Kind()
 	var nilbufed bool
 	if si != nil {
-		for ij, ix := range si.is {
-			if uint8(ij) == si.nis {
-				break
-			}
+		lp := len(si.path)
+		for ij := 0; ij < lp; ij++ {
 			// only one-level pointers can be seen in a type
 			if t2typ.Kind() == reflect.Ptr {
 				t2typ = t2typ.Elem()
 			}
-			t2 = t2typ.Field(int(ix))
+			t2 = t2typ.Field(int(si.path[ij].index))
 			t2typ = t2.Type
 			varname3 = varname3 + "." + t2.Name
 			t2kind = t2typ.Kind()

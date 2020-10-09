@@ -419,3 +419,9 @@ func (d *Decoder) checkBreak() bool {
 func (d *Decoder) jsondriver() *jsonDecDriver {
 	return d.d.(*jsonDecDriver)
 }
+
+// ---------- structFieldInfo optimized ---------------
+
+func (n *structFieldInfoPathNode) rvField(v reflect.Value) reflect.Value {
+	return v.Field(int(n.index))
+}

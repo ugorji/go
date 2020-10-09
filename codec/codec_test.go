@@ -2068,21 +2068,13 @@ func doTestDecodeNilMapValue(t *testing.T, h Handle) {
 		1: nil,
 	}}
 
-	bs, err := testMarshal(toEncode, h)
-	if err != nil {
-		t.Logf("Error encoding: %v, Err: %v", toEncode, err)
-		t.FailNow()
-	}
+	bs := testMarshalErr(toEncode, h, t, "-")
 	if isJsonHandle && testVerbose {
 		t.Logf("json encoded: %s\n", bs)
 	}
 
 	var decoded Struct
-	err = testUnmarshal(&decoded, bs, h)
-	if err != nil {
-		t.Logf("Error decoding: %v", err)
-		t.FailNow()
-	}
+	testUnmarshalErr(&decoded, bs, h, t, "-")
 	if !reflect.DeepEqual(decoded, toEncode) {
 		t.Logf("Decoded value %#v != %#v", decoded, toEncode)
 		t.FailNow()
