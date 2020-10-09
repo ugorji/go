@@ -34,6 +34,6 @@ go get github.com/ugorji/go/codec
 
 The other modules exist for specific uses, and all require `github.com/ugorji/go/codec`
 
-- `github.com/ugorji/go` is here for [historical reasons](https://github.com/ugorji/go/issues/299)
+- `github.com/ugorji/go` is here for [historical compatibility reasons, as modules was initially introduced only at repo root](https://github.com/ugorji/go/issues/299)
 - `github.com/ugorji/go/codec/codecgen` generates high performance static encoders/decoders for given types
 - `github.com/ugorji/go/codec/bench` benchmarks codec against other popular go libraries
