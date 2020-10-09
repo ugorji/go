@@ -78,6 +78,13 @@ const (
 	// P.S. Do not expect a significant decoding boost from this.
 	jsonValidateSymbols = true
 
+	// jsonEscapeMultiByteUnicodeSep controls whether some unicode characters
+	// that are valid json but may bomb in some contexts are escaped during encoeing.
+	//
+	// U+2028 is LINE SEPARATOR. U+2029 is PARAGRAPH SEPARATOR.
+	// Both technically valid JSON, but bomb on JSONP, so fix here unconditionally.
+	jsonEscapeMultiByteUnicodeSep = true
+
 	jsonSpacesOrTabsLen = 128
 
 	jsonAlwaysReturnInternString = false
@@ -437,7 +444,7 @@ func (e *jsonEncDriver) quoteStr(s string) {
 		}
 		// U+2028 is LINE SEPARATOR. U+2029 is PARAGRAPH SEPARATOR.
 		// Both technically valid JSON, but bomb on JSONP, so fix here unconditionally.
-		if c == '\u2028' || c == '\u2029' {
+		if jsonEscapeMultiByteUnicodeSep && (c == '\u2028' || c == '\u2029') {
 			if start < i {
 				w.writestr(s[start:i])
 			}
