@@ -521,19 +521,9 @@ func (d *jsonDecDriver) ReadArrayStart() int {
 	return containerLenUnknown
 }
 
-// skipWhitespaceForCheckBreak so that CheckBreak will be inlined
-// and only incur a function call if needed.
-//
-// MARKER: keep in sync with jsonDecDriver.advance()
-//
-//go:noinline
-func (d *jsonDecDriver) skipWhitespaceForCheckBreak() {
-	d.tok = d.d.decRd.skipWhitespace()
-}
-
 func (d *jsonDecDriver) CheckBreak() bool {
 	if d.tok == 0 {
-		d.skipWhitespaceForCheckBreak()
+		d.tok = d.d.decRd.skipWhitespace()
 	}
 	return d.tok == '}' || d.tok == ']'
 }
