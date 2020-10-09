@@ -21,7 +21,6 @@ type encWriter interface {
 
 // ---------------------------------------------
 
-// bufioEncWriter
 type bufioEncWriter struct {
 	w io.Writer
 

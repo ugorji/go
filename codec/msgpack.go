@@ -171,7 +171,6 @@ type msgpackEncDriver struct {
 	encDriverNoopContainerWriter
 	h *MsgpackHandle
 	x [8]byte
-	// _ [6]uint64 // padding
 	e Encoder
 }
 
@@ -948,7 +947,6 @@ func (d *msgpackDecDriver) DecodeTime() (t time.Time) {
 }
 
 func (d *msgpackDecDriver) decodeTime(clen int) (t time.Time) {
-	// bs = d.d.decRd.readx(clen)
 	d.bdRead = false
 	switch clen {
 	case 4:
@@ -1035,8 +1033,6 @@ type MsgpackHandle struct {
 
 	// PositiveIntUnsigned says to encode positive integers as unsigned.
 	PositiveIntUnsigned bool
-
-	// _ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: msgpack

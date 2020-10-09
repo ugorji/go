@@ -41,15 +41,12 @@ type rpcCodec struct {
 
 	dec *Decoder
 	enc *Encoder
-	// bw  *bufio.Writer
-	// br  *bufio.Reader
-	h Handle
+	h   Handle
 
 	cls atomicClsErr
 }
 
 func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
-	// return newRPCCodec2(bufio.NewReader(conn), bufio.NewWriter(conn), conn, h)
 	return newRPCCodec2(conn, conn, conn, h)
 }
 

@@ -8,8 +8,5 @@ package codec
 import "reflect"
 
 func makeMapReflect(t reflect.Type, size int) reflect.Value {
-	// if size < 0 {
-	// 	return reflect.MakeMapWithSize(t, 4)
-	// }
 	return reflect.MakeMapWithSize(t, size)
 }

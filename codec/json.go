@@ -65,8 +65,6 @@ const (
 	jsonU4Chk2 = '0'
 	jsonU4Chk1 = 'a' - 10
 	jsonU4Chk0 = 'A' - 10
-
-	// jsonScratchArrayLen = cacheLineSize + 32 // 96
 )
 
 const (
@@ -441,7 +439,7 @@ func (e *jsonEncDriver) quoteStr(s string) {
 			continue
 		}
 		// U+2028 is LINE SEPARATOR. U+2029 is PARAGRAPH SEPARATOR.
-		// Both technically valid JSON, but bomb on JSONP, so fix here unconditionally.
+		// Both technically valid JSON, but bomb on JSONP, so fix here *unconditionally*.
 		if jsonEscapeMultiByteUnicodeSep && (c == '\u2028' || c == '\u2029') {
 			if start < i {
 				w.writestr(s[start:i])
@@ -483,8 +481,6 @@ type jsonDecDriver struct {
 
 	buf []byte
 	se  interfaceExtWrapper
-
-	// _ uint64 // padding
 
 	// ---- cpu cache line boundary?
 
@@ -577,14 +573,6 @@ func (d *jsonDecDriver) ReadMapEnd() {
 	d.tok = 0
 }
 
-// func (d *jsonDecDriver) readDelim(xc uint8) {
-// 	d.advance()
-// 	if d.tok != xc {
-// 		d.readDelimError(xc)
-// 	}
-// 	d.tok = 0
-// }
-
 func (d *jsonDecDriver) readDelimError(xc uint8) {
 	d.d.errorf("read json delimiter - expect char '%c' but got char '%c'", xc, d.tok)
 }
@@ -634,7 +622,7 @@ func (d *jsonDecDriver) nextValueBytes(start []byte) (v []byte) {
 		}
 	}
 
-	d.advance()
+	d.advance() // ignore leading whitespace
 
 	switch d.tok {
 	default:
@@ -945,7 +933,6 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 		d.appendStringAsBytes()
 		return d.buf
 	}
-	// d.d.errorf("expect char '%c' but got char '%c'", '"', d.tok)
 
 	// handle non-string scalar: null, true, false or a number
 	switch d.tok {
@@ -1065,22 +1052,7 @@ encode_rune:
 }
 
 func (d *jsonDecDriver) nakedNum(z *fauxUnion, bs []byte) (err error) {
-	// const cutoff = uint64(1 << uint(64-1))
-
-	// nakedNum is NEVER called with a zero-length []byte
-	// if len(bs) == 0 {
-	// 	if d.h.PreferFloat {
-	// 		z.v = valueTypeFloat
-	// 		z.f = 0
-	// 	} else if d.h.SignedInteger {
-	// 		z.v = valueTypeInt
-	// 		z.i = 0
-	// 	} else {
-	// 		z.v = valueTypeUint
-	// 		z.u = 0
-	// 	}
-	// 	return
-	// }
+	// Note: nakedNum is NEVER called with a zero-length []byte
 	if d.h.PreferFloat {
 		z.v = valueTypeFloat
 		z.f, err = parseFloat64(bs)

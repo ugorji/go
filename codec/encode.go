@@ -144,21 +144,6 @@ type EncodeOptions struct {
 	// to store a float64 as a half float. Doing this check has a small performance cost,
 	// but the benefit is that the encoded message will be smaller.
 	OptimumSize bool
-
-	// // AsSymbols defines what should be encoded as symbols.
-	// //
-	// // Encoding as symbols can reduce the encoded size significantly.
-	// //
-	// // However, during decoding, each string to be encoded as a symbol must
-	// // be checked to see if it has been seen before. Consequently, encoding time
-	// // will increase if using symbols, because string comparisons has a clear cost.
-	// //
-	// // Sample values:
-	// //   AsSymbolNone
-	// //   AsSymbolAll
-	// //   AsSymbolMapStringKeys
-	// //   AsSymbolMapStringKeysFlag | AsSymbolStructFieldNameFlag
-	// AsSymbols AsSymbolFlag
 }
 
 // ---------------------------------------------
@@ -519,7 +504,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
 				continue
 			}
-			kv.v = si // si.encName
+			kv.v = si
 			fkvs[newlen] = kv
 			newlen++
 		}
@@ -578,7 +563,6 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	// do not use defer. Instead, use explicit pool return at end of function.
 	// defer has a cost we are trying to avoid.
 	// If there is a panic and these slices are not returned, it is ok.
-	// spool.end()
 	e.slist.put(fkvs)
 }
 
@@ -789,7 +773,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 		sort.Sort(bytesRvSlice(mksbv))
 		for j := range mksbv {
 			e.mapElemKey()
-			e.encWr.writeb(mksbv[j].v) // e.asis(mksbv[j].v)
+			e.encWr.writeb(mksbv[j].v)
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksbv[j].r, rvv), valFn)
 		}
@@ -828,7 +812,7 @@ type Encoder struct {
 
 	slist sfiRvFreelist
 
-	b [(2 * 8)]byte // for encoding chan byte, (non-addressable) [N]byte, etc
+	b [2 * 8]byte // for encoding chan byte, (non-addressable) [N]byte, etc
 
 	// ---- cpu cache line boundary?
 }
@@ -903,9 +887,6 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 		in = make([]byte, defEncByteBufSize)
 	}
 	e.bytes = true
-	// if e.wb == nil {
-	// 	e.wb = new(bytesEncAppender)
-	// }
 	e.wb.reset(in, out)
 	e.resetCommon()
 }
@@ -997,8 +978,6 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
-	// defer func() { e.deferred(&err) }() }
-	// { x, y := e, &err; defer func() { x.deferred(y) }() }
 
 	if e.err != nil {
 		return e.err
@@ -1020,7 +999,6 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 		}
 	}()
 
-	// defer e.deferred(&err)
 	e.mustEncode(v)
 	return
 }
@@ -1053,7 +1031,7 @@ func (e *Encoder) Release() {
 }
 
 func (e *Encoder) encode(iv interface{}) {
-	// a switch with only concrete types can be optimized.
+	// MARKER: a switch with only concrete types can be optimized.
 	// consequently, we deal with nil and interfaces outside the switch.
 
 	if iv == nil {
@@ -1245,7 +1223,6 @@ func (e *Encoder) marshalUtf8(bs []byte, fnerr error) {
 		e.e.EncodeNil()
 	} else {
 		e.e.EncodeString(stringView(bs))
-		// e.e.EncodeStringEnc(cUTF8, stringView(bs))
 	}
 }
 
@@ -1272,7 +1249,7 @@ func (e *Encoder) rawBytes(vv Raw) {
 	if !e.h.Raw {
 		e.errorf("Raw values cannot be encoded: %v", v)
 	}
-	e.encWr.writeb(v) // e.asis(v)
+	e.encWr.writeb(v)
 }
 
 func (e *Encoder) wrapErr(v error, err *error) {
@@ -1304,7 +1281,6 @@ func (e *Encoder) mapElemValue() {
 
 func (e *Encoder) mapEnd() {
 	e.e.WriteMapEnd()
-	// e.c = containerMapEnd
 	e.c = 0
 }
 
@@ -1323,7 +1299,6 @@ func (e *Encoder) arrayElem() {
 func (e *Encoder) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
-	// e.c = containerArrayEnd
 }
 
 // ----------

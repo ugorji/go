@@ -276,10 +276,13 @@ func (x *atomicTypeInfoSlice) store(p []rtid2ti) {
 	atomic.StorePointer(&x.v, unsafe.Pointer(&p))
 }
 
+// MARKER: in safe mode, atomicXXX are atomic.Value, which contains an interface{}.
+// This is 2 words.
+// consider padding atomicXXX here with a uintptr, so they fit into 2 words also.
+
 // --------------------------
 type atomicRtidFnSlice struct {
 	v unsafe.Pointer // *[]codecRtidFn
-	// _ uint64         // padding (atomicXXX expected to be 2 words) (make 1 word so JsonHandle fits)
 }
 
 func (x *atomicRtidFnSlice) load() (s []codecRtidFn) {
@@ -297,7 +300,6 @@ func (x *atomicRtidFnSlice) store(p []codecRtidFn) {
 // --------------------------
 type atomicClsErr struct {
 	v unsafe.Pointer // *clsErr
-	// _ uint64         // padding (atomicXXX expected to be 2 words)
 }
 
 func (x *atomicClsErr) load() (e clsErr) {
@@ -690,7 +692,6 @@ type unsafeMapIter struct {
 	mapvalues        bool
 	done             bool
 	started          bool
-	// _ [2]uint64 // padding (cache-aligned)
 }
 
 func (t *unsafeMapIter) ValidKV() (r bool) {
@@ -863,7 +864,7 @@ func (e *Encoder) jsondriver() *jsonEncDriver {
 // ---------- DECODER optimized ---------------
 
 func (d *Decoder) checkBreak() bool {
-	// MARKER: jsonDecDriver.CheckBreak() CANNOT be inlined.
+	// MARKER: jsonDecDriver.CheckBreak() costs over 80, and this isn't inlined.
 	// Consequently, there's no benefit in incurring the cost of this
 	// wrapping function checkBreak.
 	//
@@ -881,10 +882,6 @@ func (d *Decoder) checkBreak() bool {
 func (d *Decoder) jsondriver() *jsonDecDriver {
 	return (*jsonDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).word)
 }
-
-// func (d *Decoder) cbordriver() *cborDecDriver {
-// 	return (*cborDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).word)
-// }
 
 // ---------- structFieldInfo optimized ---------------
 

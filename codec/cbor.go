@@ -120,7 +120,7 @@ type cborEncDriver struct {
 	encDriverNoopContainerWriter
 	h *CborHandle
 	x [8]byte
-	// _ [6]uint64 // padding
+
 	e Encoder
 }
 
@@ -144,7 +144,6 @@ func (e *cborEncDriver) EncodeFloat32(f float32) {
 	b := math.Float32bits(f)
 	if e.h.OptimumSize {
 		if h := floatToHalfFloatBits(b); halfFloatToFloatBits(h) == b {
-			// fmt.Printf("no 32-16 overflow: %v\n", f)
 			e.e.encWr.writen1(cborBdFloat16)
 			bigenHelper{e.x[:2], e.e.w()}.writeUint16(h)
 			return
@@ -325,7 +324,6 @@ type cborDecDriver struct {
 	st     bool // skip tags
 	_      bool // found nil
 	noBuiltInTypes
-	// _ [6]uint64 // padding cache-aligned
 	d Decoder
 }
 
@@ -436,7 +434,6 @@ func (d *cborDecDriver) decCheckInteger() (neg bool) {
 }
 
 func cborDecInt64(ui uint64, neg bool) (i int64) {
-	// check if this number can be converted to an int without overflow
 	if neg {
 		i = -(chkOvf.SignedIntV(ui + 1))
 	} else {
@@ -467,7 +464,6 @@ func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 			bs = bs[:newLen]
 		}
 		d.d.decRd.readb(bs[oldLen:newLen])
-		// bs = append(bs, d.d.decRd.readn()...)
 		d.bdRead = false
 	}
 	d.bdRead = false
@@ -913,8 +909,6 @@ type CborHandle struct {
 	//
 	// Furthermore, this allows the skipping over of the Self Describing Tag 0xd9d9f7.
 	SkipUnexpectedTags bool
-
-	// _ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: cbor

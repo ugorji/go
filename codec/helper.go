@@ -170,22 +170,18 @@ const (
 	// when a 'nil' was encountered in the stream.
 	containerLenNil = math.MinInt32
 
-	// rvNLen is the length of the array for readn or writen calls
+	// rvNLen is the length of the array for readn or writen calls.
+	//
+	// Note: we set it to 7, so that method calls that pass an int (for length)
+	// will keep both at 8 bytes.
 	rwNLen = 7
-
-	// scratchByteArrayLen = 64
-	// initCollectionCap   = 16 // 32 is defensive. 16 is preferred.
 
 	// Support encoding.(Binary|Text)(Unm|M)arshaler.
 	// This constant flag will enable or disable it.
 	supportMarshalInterfaces = true
 
-	// for debugging, set this to true
+	// bytesFreeListNoCache is used for debugging, when we want to skip using a cache of []byte.
 	bytesFreeListNoCache = false
-
-	// arrayCacheLen is the length of the cache used in encoder or decoder for
-	// allowing zero-alloc initialization.
-	// arrayCacheLen = 8
 
 	// size of the cacheline: defaulting to value for archs: amd64, arm64, 386
 	// should use "runtime/internal/sys".CacheLineSize, but that is not exposed.
@@ -194,6 +190,8 @@ const (
 	wordSizeBits = 32 << (^uint(0) >> 63) // strconv.IntSize
 	wordSize     = wordSizeBits / 8
 
+	// maxArrayLen is the size of uint, which determines
+	// the maximum length of any array.
 	maxArrayLen = 1<<((32<<(^uint(0)>>63))-1) - 1
 
 	// determines whether to skip calling fastpath(En|De)codeTypeSwitch,
@@ -223,6 +221,7 @@ var (
 	// scalarBitset sets bit for all kinds which are scalars/primitives and thus immutable
 	scalarBitset bitset32
 
+	// codecgen is set to true by codecgen, so that tests, etc can use this information as needed.
 	codecgen bool
 
 	oneByteArr    [1]byte
@@ -820,7 +819,9 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 	fi.ti = ti
 	rk := reflect.Kind(ti.kind)
 
-	// anything can be an extension except the built-in ones: time, raw and rawext
+	// anything can be an extension except the built-in ones: time, raw and rawext.
+	// ensure we check for these types, then if extension, before checking if
+	// it implementes one of the pre-declared interfaces.
 
 	fi.addrDf = true
 	fi.addrEf = true
@@ -979,7 +980,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				fn.fe = (*Encoder).kArray
 				rt2 := reflect.SliceOf(ti.elem)
 				fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
-					// call fnVia directly, so fn(...) is not recursive, and can be inlined
+					// call fnVia directly, so fn(...) is not recursive, and this can be inlined
 					d.h.fnVia(rt2, &x.rtidFns, true).fd(d, xf, rvGetSlice4Array(xrv, rt2))
 				}
 			case reflect.Struct:
@@ -1199,7 +1200,6 @@ type extTypeTagFn struct {
 	rt      reflect.Type
 	tag     uint64
 	ext     Ext
-	// _       [1]uint64 // padding
 }
 
 type extHandle []extTypeTagFn
@@ -1254,7 +1254,7 @@ func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 		}
 	}
 	rtidptr := rt2id(reflect.PtrTo(rt))
-	*o = append(o2, extTypeTagFn{rtid, rtidptr, rt, tag, ext}) // , [1]uint64{}})
+	*o = append(o2, extTypeTagFn{rtid, rtidptr, rt, tag, ext})
 	return
 }
 
@@ -1291,7 +1291,6 @@ func (o extHandle) getExtForTag(tag uint64) (v *extTypeTagFn) {
 type intf2impl struct {
 	rtid uintptr // for intf
 	impl reflect.Type
-	// _    [1]uint64 // padding // not-needed, as *intf2impl is never returned.
 }
 
 type intf2impls []intf2impl
@@ -1342,7 +1341,6 @@ type structFieldInfoPathNode struct {
 	index    uint16
 	kind     uint8
 	numderef uint8
-	// _ [2]byte // padding
 	// embedded bool
 	// exported bool
 }
@@ -1351,7 +1349,9 @@ type structFieldInfo struct {
 	encName   string // encode name
 	fieldName string
 
-	// root [1]structFieldInfoPathNode
+	// MARKER: leaf: consider optimizing for case where there are no embedded fields,
+	// thus keeping this within structFieldInfo makes sense.
+	// leaf [1]structFieldInfoPathNode
 
 	path []structFieldInfoPathNode
 
@@ -1359,10 +1359,9 @@ type structFieldInfo struct {
 	encNameAsciiAlphaNum bool // the encName only contains ascii alphabet and numbers
 	ready                bool
 	omitEmpty            bool
-	// _ [4]byte // padding
 }
 
-// rv returns the field of the struct.
+// field returns the field of the struct.
 func (si *structFieldInfo) field(v reflect.Value) (rv2 reflect.Value) {
 	lp := len(si.path) - 1
 	for i := 0; i < lp; i++ {
@@ -1377,7 +1376,7 @@ func (si *structFieldInfo) field(v reflect.Value) (rv2 reflect.Value) {
 	return si.path[lp].rvField(v)
 }
 
-// rv returns the field of the struct.
+// fieldAlloc returns the field of the struct.
 // It allocates if a nil value was seen while searching.
 func (si *structFieldInfo) fieldAlloc(v reflect.Value) (rv2 reflect.Value) {
 	lp := len(si.path) - 1
@@ -1420,10 +1419,6 @@ func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
 }
 
 func (si *structFieldInfo) parseTag(stag string) {
-	// if fname == "" {
-	// 	panic(errNoFieldNameToStructFieldInfo)
-	// }
-
 	if stag == "" {
 		return
 	}
@@ -1514,14 +1509,6 @@ type typeInfo struct {
 	key reflect.Type
 
 	// ---- cpu cache line boundary?
-	// sfis         []structFieldInfo // all sfi, in src order, as created.
-	// sfiNames map[string]uint16 // all names, with indexes into the sfiSort
-
-	// rv0 is the zero value for the type.
-	// It is mostly beneficial for all non-reference kinds
-	// i.e. all but map/chan/func/ptr/unsafe.pointer
-	// so beneficial for intXX, bool, slices, structs, etc
-	// rv0 reflect.Value
 
 	size, keysize, elemsize uint32
 
@@ -1531,9 +1518,6 @@ type typeInfo struct {
 	infoFieldOmitempty bool
 
 	keykind, elemkind uint8
-	// _        [2]byte // padding
-	// buf      [24]byte // use this if needed
-	// _ [1]uint64 // padding
 }
 
 func (ti *typeInfo) isFlag(f tiflag) bool {
@@ -1615,10 +1599,6 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 	copy(z, y)
 	sort.Sort(sfiSortedByEncName(z))
 
-	// for i, v := range z {
-	// 	xdebugf(">>>> i: %v, name: %s", i, v.encName)
-	// }
-
 	ti.anyOmitEmpty = anyOmitEmpty
 	ti.sfiSrc = y
 	ti.sfiSort = z
@@ -1634,7 +1614,6 @@ type rtid2ti struct {
 // It is configured with a set of tag keys, which are used to get
 // configuration for the type.
 type TypeInfos struct {
-	// infos: formerly map[uintptr]*typeInfo, now *[]rtid2ti, 2 words expected
 	infos atomicTypeInfoSlice
 	mu    sync.Mutex
 	_     uint64 // padding (cache-aligned)
@@ -1666,8 +1645,7 @@ func findTypeInfo(s []rtid2ti, rtid uintptr) (i uint, ti *typeInfo) {
 	// binary search. adapted from sort/search.go.
 	// Note: we use goto (instead of for loop) so this can be inlined.
 
-	// h, i, j := 0, 0, len(s)
-	var h uint // var h, i uint
+	var h uint
 	var j = uint(len(s))
 LOOP:
 	if i < j {
@@ -1711,7 +1689,6 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		pkgpath: rt.PkgPath(),
 		keyType: valueTypeString, // default it - so it's never 0
 	}
-	// ti.rv0 = reflect.Zero(rt)
 
 	var b1, b2 bool
 	b1, b2 = implIntf(rt, binaryMarshalerTyp)
@@ -1744,7 +1721,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		} else {
 			ti.keyType = valueTypeString
 		}
-		pp, pi := &pool4tiload, pool4tiload.Get() // pool.tiLoad()
+		pp, pi := &pool4tiload, pool4tiload.Get()
 		pv := pi.(*typeInfoLoad)
 		pv.reset()
 		pv.etypes = append(pv.etypes, ti.rtid)
@@ -1861,8 +1838,7 @@ LOOP:
 			if !doInline {
 				si.parseTag(stag)
 				parsed = true
-				doInline = si.encName == ""
-				// doInline = si.isZero()
+				doInline = si.encName == "" // si.isZero()
 			}
 			if doInline && isStruct {
 				// if etypes contains this, don't call rget again (as fields are already seen here)
@@ -1901,9 +1877,6 @@ LOOP:
 		if f.Name == "" {
 			halt.onerror(errNoFieldNameToStructFieldInfo)
 		}
-
-		// pv.fNames = append(pv.fNames, f.Name)
-		// if si.encName == "" {
 
 		if !parsed {
 			si.encName = f.Name
@@ -1979,14 +1952,6 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) 
 	}
 	return true
 }
-
-// func roundFloat(x float64) float64 {
-// 	t := math.Trunc(x)
-// 	if math.Abs(x-t) >= 0.5 {
-// 		return t + math.Copysign(1, x)
-// 	}
-// 	return t
-// }
 
 func panicToErr(h errDecorator, err *error) {
 	// Note: This method MUST be called directly from defer i.e. defer panicToErr ...
@@ -2101,14 +2066,6 @@ func baseRV(v interface{}) (rv reflect.Value) {
 
 type checkOverflow struct{}
 
-// func (checkOverflow) Float16(f float64) (overflow bool) {
-// 	halt.errorf("unimplemented")
-// 	if f < 0 {
-// 		f = -f
-// 	}
-// 	return math.MaxFloat32 < f && f <= math.MaxFloat64
-// }
-
 func (checkOverflow) Float32(v float64) (overflow bool) {
 	if v < 0 {
 		v = -v
@@ -2116,24 +2073,12 @@ func (checkOverflow) Float32(v float64) (overflow bool) {
 	return math.MaxFloat32 < v && v <= math.MaxFloat64
 }
 func (checkOverflow) Uint(v uint64, bitsize uint8) (overflow bool) {
-	// if bitsize == 0 || bitsize >= 64 || v == 0 {
-	// if v == 0 {
-	// 	return
-	// }
-	// if trunc := (v << (64 - bitsize)) >> (64 - bitsize); v != trunc {
 	if v != 0 && v != (v<<(64-bitsize))>>(64-bitsize) {
 		overflow = true
 	}
 	return
 }
 func (checkOverflow) Int(v int64, bitsize uint8) (overflow bool) {
-	// if bitsize == 0 || bitsize >= 64 || v == 0 {
-	// if v == 0 {
-	// 	return
-	// }
-	// if trunc := (v << (64 - bitsize)) >> (64 - bitsize); v != trunc {
-	// 	overflow = true
-	// }
 	if v != 0 && v != (v<<(64-bitsize))>>(64-bitsize) {
 		overflow = true
 	}
@@ -2220,7 +2165,6 @@ func noFrac32(f float32) (v bool) {
 	e := uint32(x>>23)&0xFF - 127 // uint(x>>shift)&mask - bias
 	// clear top 9+e bits, the integer part; if the rest is 0, then no fraction.
 	if e < 23 {
-		// return x&((1<<32-1)>>(9+e)) == 0
 		return x<<(9+e) == 0
 	}
 	return
@@ -2250,11 +2194,6 @@ func isDigitChar(v byte) bool {
 	return digitCharBitset.isset(v)
 	// return v >= '0' && v <= '9'
 }
-
-// func noFrac(f float64) bool {
-// 	_, frac := math.Modf(float64(f))
-// 	return frac == 0
-// }
 
 // -----------------------
 

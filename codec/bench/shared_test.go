@@ -254,7 +254,7 @@ func testSharedCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle,
 	if useMust {
 		d.MustDecode(ts)
 	} else {
-		err = d.Decode(ts) // TODO: change
+		err = d.Decode(ts)
 	}
 	testSharedCodecDecoderAfter(d, oldReadBufferSize, bh)
 	return

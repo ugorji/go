@@ -9,12 +9,10 @@ import (
 
 func parseFloat32(b []byte) (f float32, err error) {
 	return parseFloat32_custom(b)
-	// return parseFloat32_strconv(b)
 }
 
 func parseFloat64(b []byte) (f float64, err error) {
 	return parseFloat64_custom(b)
-	// return parseFloat64_strconv(b)
 }
 
 func parseFloat32_strconv(b []byte) (f float32, err error) {
@@ -29,11 +27,12 @@ func parseFloat64_strconv(b []byte) (f float64, err error) {
 
 // ------ parseFloat custom below --------
 
-// We assume that a lot of floating point numbers in json files will be
-// those that are handwritten, and with defined precision (in terms of number
-// of digits after decimal point), etc.
+// JSON really supports decimal numbers in base 10 notation, with exponent support.
 //
-// We further assume that this ones can be written in exact format.
+// We assume the following:
+//   - a lot of floating point numbers in json files will have defined precision
+//     (in terms of number of digits after decimal point), etc.
+//   - these (referenced above) can be written in exact format.
 //
 // strconv.ParseFloat has some unnecessary overhead which we can do without
 // for the common case:
@@ -65,7 +64,7 @@ const (
 	fMaxMultiplierForExactPow10_32 = 1e7
 
 	fUint64Cutoff = (1<<64-1)/10 + 1
-	//  fUint32Cutoff = (1<<32-1)/10 + 1
+	// fUint32Cutoff = (1<<32-1)/10 + 1
 
 	fBase = 10
 )
@@ -108,18 +107,13 @@ type floatinfo struct {
 	exactPow10 int8 // Exact powers of ten are <= 10^N (32: 10, 64: 22)
 
 	exactInts int8 // Exact integers are <= 10^N (for non-float, set to 0)
+
 	// maxMantDigits int8 // 10^19 fits in uint64, while 10^9 fits in uint32
 
 	mantCutoffIsUint64Cutoff bool
 
 	mantCutoff uint64
 }
-
-// var fi32 = floatinfo{23, 8, -127, 10, 7, 9, fUint32Cutoff}
-// var fi64 = floatinfo{52, 11, -1023, 22, 15, 19, fUint64Cutoff}
-
-// var fi64u = floatinfo{64, 0, -1023, 19, 0, 19, fUint64Cutoff}
-// var fi64i = floatinfo{63, 0, -1023, 19, 0, 19, fUint64Cutoff}
 
 var fi32 = floatinfo{23, true, 10, 7, false, 1<<23 - 1}
 var fi64 = floatinfo{52, false, 22, 15, false, 1<<52 - 1}
@@ -136,9 +130,7 @@ func strconvParseErr(b []byte, fn string) error {
 }
 
 func parseFloat32_reader(r readFloatResult) (f float32, fail bool) {
-	// parseFloatDebug(b, 32, false, exp, trunc, ok)
 	f = float32(r.mantissa)
-	// xdebugf("parsefloat32: exp: %v, mantissa: %v", r.exp, r.mantissa)
 	if r.exp == 0 {
 	} else if r.exp < 0 { // int / 10^k
 		f /= float32pow10[uint8(-r.exp)]
@@ -281,15 +273,6 @@ func parseNumber(b []byte, z *fauxUnion, preferSignedInt bool) (err error) {
 	var ok, neg bool
 	var f uint64
 
-	// var b1 []byte
-	// if b[0] == '-' {
-	// 	neg = true
-	// 	b1 = b[1:]
-	// } else {
-	// 	b1 = b
-	// }
-	// f, ok = parseUint64_simple(b1)
-
 	if len(b) == 0 {
 		return
 	}
@@ -331,8 +314,7 @@ type readFloatResult struct {
 	exp                             int8
 	neg, sawdot, sawexp, trunc, bad bool
 	ok                              bool
-
-	_ byte // padding
+	_                               byte // padding
 }
 
 func readFloat(s []byte, y floatinfo) (r readFloatResult) {

@@ -13,10 +13,8 @@ import (
 	"time"
 )
 
-// Some tagging information for error messages.
 const (
 	msgBadDesc = "unrecognized descriptor byte"
-	// msgDecCannotExpandArr = "cannot expand go array from %v to stream length: %v"
 )
 
 const (
@@ -43,7 +41,6 @@ var (
 	errNeedMapOrArrayDecodeToStruct = errors.New("only encoded map or array can decode into struct")
 	errCannotDecodeIntoNil          = errors.New("cannot decode into nil")
 
-	// errmsgExpandSliceOverflow     = "expand slice: slice overflow"
 	errmsgExpandSliceCannotChange = "expand slice: cannot change"
 
 	errDecoderNotInitialized = errors.New("Decoder not initialized")
@@ -52,8 +49,6 @@ var (
 	errDecUnreadByteLastByteNotRead = errors.New("cannot unread - last byte has not been read")
 	errDecUnreadByteUnknown         = errors.New("cannot unread - reason unknown")
 	errMaxDepthExceeded             = errors.New("maximum decoding depth exceeded")
-
-	// errBytesDecReaderCannotUnread = errors.New("cannot unread last byte read")
 )
 
 type decDriver interface {
@@ -61,6 +56,9 @@ type decDriver interface {
 	CheckBreak() bool
 
 	// TryNil tries to decode as nil.
+	// If a nil is in the stream, it consumes it and returns true.
+	//
+	// Note: if TryNil returns true, that must be handled.
 	TryNil() bool
 
 	// ContainerType returns one of: Bytes, String, Nil, Slice or Map.
@@ -310,7 +308,6 @@ func (d *Decoder) textUnmarshal(f *codecFnInfo, rv reflect.Value) {
 
 func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(jsonUnmarshaler)
-	// bs := d.d.DecodeBytes(d.b[:], true, true)
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
 	bs := d.blist.get(256)
 	bs = d.d.nextValueBytes(bs)
@@ -411,46 +408,36 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 	switch n.v {
 	case valueTypeMap:
 		// if json, default to a map type with string keys
-		mtid := d.mtid
-		if mtid == 0 {
-			if d.jsms {
-				mtid = mapStrIntfTypId
-			} else {
-				mtid = mapIntfIntfTypId
+		if d.mtid == 0 {
+			if d.jsms { // mapStrIntfTypId (for json performance)
+				var v2 map[string]interface{}
+				d.decode(&v2)
+				rvn = rv4i(&v2).Elem()
+			} else { // mapIntfIntfTypId
+				var v2 map[interface{}]interface{}
+				d.decode(&v2)
+				rvn = rv4i(&v2).Elem()
 			}
-		}
-		if mtid == mapIntfIntfTypId {
-			var v2 map[interface{}]interface{}
-			d.decode(&v2)
-			rvn = rv4i(&v2).Elem()
-		} else if mtid == mapStrIntfTypId { // for json performance
-			var v2 map[string]interface{}
-			d.decode(&v2)
-			rvn = rv4i(&v2).Elem()
+		} else if d.mtr {
+			rvn = reflect.New(d.h.MapType)
+			d.decode(rv2i(rvn))
+			rvn = rvn.Elem()
 		} else {
-			if d.mtr {
-				rvn = reflect.New(d.h.MapType)
-				d.decode(rv2i(rvn))
-				rvn = rvn.Elem()
-			} else {
-				rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
-				d.decodeValue(rvn, nil)
-			}
+			rvn = rvZeroAddrK(d.h.MapType, reflect.Map)
+			d.decodeValue(rvn, nil)
 		}
 	case valueTypeArray:
 		if d.stid == 0 || d.stid == intfSliceTypId {
 			var v2 []interface{}
 			d.decode(&v2)
 			rvn = rv4i(&v2).Elem()
+		} else if d.str {
+			rvn = reflect.New(d.h.SliceType)
+			d.decode(rv2i(rvn))
+			rvn = rvn.Elem()
 		} else {
-			if d.str {
-				rvn = reflect.New(d.h.SliceType)
-				d.decode(rv2i(rvn))
-				rvn = rvn.Elem()
-			} else {
-				rvn = rvZeroAddrK(d.h.SliceType, reflect.Slice)
-				d.decodeValue(rvn, nil)
-			}
+			rvn = rvZeroAddrK(d.h.SliceType, reflect.Slice)
+			d.decodeValue(rvn, nil)
 		}
 		if reflectArrayOfSupported && d.h.PreferArrayOverSlice {
 			rvn = rvGetArray4Slice(rvn)
@@ -520,8 +507,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 }
 
 func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
-	// Note:
-	// A consequence of how kInterface works, is that
+	// Note: A consequence of how kInterface works, is that
 	// if an interface already contains something, we try
 	// to decode into what was there before.
 	// We do not replace with a generic value (as got from decodeNaked).
@@ -676,7 +662,6 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		}
 		rvbs := rvGetBytes(rv)
 		bs2 := d.d.DecodeBytes(rvbs, false)
-		// if rvbs == nil && bs2 != nil || rvbs != nil && bs2 == nil || len(bs2) != len(rvbs) {
 		if !(len(bs2) > 0 && len(bs2) == len(rvbs) && &bs2[0] == &rvbs[0]) {
 			if rvCanset {
 				rvSetBytes(rv, bs2)
@@ -739,7 +724,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			} else { // rvlen1 > rvcap && !canSet
 				d.errorf("cannot decode into non-settable slice")
 			}
-			if rvChanged && oldRvlenGtZero && rtelem0Mut { // !isImmutableKind(rtelem0.Kind()) {
+			if rvChanged && oldRvlenGtZero && rtelem0Mut {
 				rvCopySlice(rv, rv0) // only copy up to length NOT cap i.e. rv0.Slice(0, rvcap)
 			}
 		} else if containerLenS != rvlen {
@@ -778,7 +763,6 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				return
 			}
 			slh.ElemContainerState(j)
-			// rv = reflect.Append(rv, reflect.Zero(rtelem0)) // append logic + varargs
 
 			// expand the slice up to the cap.
 			// Note that we did, so we have to reset it later.
@@ -1041,8 +1025,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 		if rvvMut {
 			if doMapGet {
-				rvv = mapGet(rv, rvk, rvva) // reflect.Value{})
-				// if rvv.IsValid() && !rvIsNil(rvv) {
+				rvv = mapGet(rv, rvk, rvva)
 				if rvv.IsValid() && (!rvvCanNil || (rvvCanNil && !rvIsNil(rvv))) {
 					if vtypeKind == reflect.Ptr {
 						doMapSet = false
@@ -1218,9 +1201,6 @@ func (d *Decoder) ResetBytes(in []byte) {
 	}
 	d.bufio = false
 	d.bytes = true
-	// if d.rb == nil {
-	// 	d.rb = new(bytesDecReader)
-	// }
 	d.rb.reset(in)
 	d.resetCommon()
 }
@@ -1294,8 +1274,6 @@ func (d *Decoder) Decode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
-	// defer func() { d.deferred(&err) }()
-	// { x, y := d, &err; defer func() { x.deferred(y) }() }
 	if d.err != nil {
 		return d.err
 	}
@@ -1308,7 +1286,6 @@ func (d *Decoder) Decode(v interface{}) (err error) {
 		}
 	}()
 
-	// defer d.deferred(&err)
 	d.mustDecode(v)
 	return
 }
@@ -1405,7 +1382,7 @@ func setZero(iv interface{}) {
 }
 
 func setZeroRV(v reflect.Value) {
-	// It not decodeable, we do not touch it.
+	// If not decodeable, we do not touch it.
 	// We considered empty'ing it if not decodeable e.g.
 	//    - if chan, drain it
 	//    - if map, clear it
@@ -1691,7 +1668,6 @@ func (d *Decoder) mapElemValue() {
 func (d *Decoder) mapEnd() {
 	d.d.ReadMapEnd()
 	d.depthDecr()
-	// d.c = containerMapEnd
 	d.c = 0
 }
 
@@ -1714,7 +1690,6 @@ func (d *Decoder) arrayElem() {
 func (d *Decoder) arrayEnd() {
 	d.d.ReadArrayEnd()
 	d.depthDecr()
-	// d.c = containerArrayEnd
 	d.c = 0
 }
 

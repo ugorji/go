@@ -65,17 +65,13 @@ type ioDecReaderCommon struct {
 
 	l  byte             // last byte
 	ls unreadByteStatus // last byte status
-	_  [2]byte
-	b  [4]byte // tiny buffer for reading single bytes
+
+	b [6]byte // tiny buffer for reading single bytes
 
 	blist *bytesFreelist
 
 	bufr []byte // buffer for readTo/readUntil
 }
-
-// func (z *ioDecReaderCommon) last() byte {
-// 	return z.l
-// }
 
 func (z *ioDecReaderCommon) reset(r io.Reader, blist *bytesFreelist) {
 	z.blist = blist
@@ -96,11 +92,9 @@ func (z *ioDecReaderCommon) numread() uint {
 type ioDecReader struct {
 	ioDecReaderCommon
 
-	// rr io.Reader
 	br io.ByteScanner
 
-	x [64 + 16]byte // for: get struct field name, swallow valueTypeBytes, etc
-	// _ [1]uint64                 // padding
+	x [64 + 48]byte // for: get struct field name, swallow valueTypeBytes, etc
 }
 
 func (z *ioDecReader) reset(r io.Reader, blist *bytesFreelist) {
@@ -373,10 +367,6 @@ LOOP:
 	return
 }
 
-// func (z *bufioDecReader) last() byte {
-// 	return z.buf[z.c-1]
-// }
-
 func (z *bufioDecReader) readn1() (b byte) {
 	if z.c >= uint(len(z.buf)) {
 		z.readbFill(nil, 0, true, false)
@@ -560,29 +550,16 @@ func (z *bufioDecReader) readUntilFill(stop byte) []byte {
 type bytesDecReader struct {
 	b []byte // data
 	c uint   // cursor
-	// a int    // available
 }
 
 func (z *bytesDecReader) reset(in []byte) {
-	// z.b = in
-	z.b = in[:len(in):len(in)] // so reslicing will not go past capacity
+	z.b = in[:len(in):len(in)] // reslicing must not go past capacity
 	z.c = 0
 }
 
 func (z *bytesDecReader) numread() uint {
 	return z.c
 }
-
-// func (z *bytesDecReader) last() byte {
-// 	return z.b[z.c-1]
-// }
-
-// func (z *bytesDecReader) unreadn1() {
-// 	// if z.c == 0 || len(z.b) == 0 {
-// 	// 	panic(errBytesDecReaderCannotUnread)
-// 	// }
-// 	z.c--
-// }
 
 func (z *bytesDecReader) readx(n uint) (bs []byte) {
 	// slicing from a non-constant start position is more expensive,
@@ -821,7 +798,7 @@ func readFull(r io.Reader, bs []byte) (n uint, err error) {
 			n += uint(nn)
 		}
 	}
-	// do not do this - it serves no purpose
+	// do not do this below - it serves no purpose
 	// if n != len(bs) && err == io.EOF { err = io.ErrUnexpectedEOF }
 	return
 }

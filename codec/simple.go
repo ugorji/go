@@ -62,7 +62,6 @@ type simpleEncDriver struct {
 	encDriverNoopContainerWriter
 	h *SimpleHandle
 	b [8]byte
-	// _ [6]uint64 // padding (cache-aligned)
 	e Encoder
 }
 
@@ -221,7 +220,6 @@ func (e *simpleEncDriver) EncodeTime(t time.Time) {
 	}
 	v, err := t.MarshalBinary()
 	e.e.onerror(err)
-	// time.Time marshalbinary takes about 14 bytes.
 	e.e.encWr.writen2(simpleVdTime, uint8(len(v)))
 	e.e.encWr.writeb(v)
 }
@@ -235,7 +233,6 @@ type simpleDecDriver struct {
 	_      bool
 	noBuiltInTypes
 	decDriverNoopContainerReader
-	// _ [6]uint64 // padding
 	d Decoder
 }
 
@@ -433,7 +430,6 @@ func (d *simpleDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		if len(bs) == 0 && zerocopy {
 			bs = d.d.b[:]
 		}
-		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		slen := d.ReadArrayStart()
 		bs = usableByteSlice(bs, slen)
 		for i := 0; i < len(bs); i++ {
@@ -701,8 +697,6 @@ type SimpleHandle struct {
 	BasicHandle
 	// EncZeroValuesAsNil says to encode zero values for numbers, bool, string, etc as nil
 	EncZeroValuesAsNil bool
-
-	// _ [7]uint64 // padding (cache-aligned)
 }
 
 // Name returns the name of the handle: simple

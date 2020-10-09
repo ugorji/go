@@ -2,11 +2,11 @@
 
 package codec
 
-// this file is here, to set the codecgen variable to true
+// this file sets the codecgen variable to true
 // when the build tag codecgen is set.
 //
-// this allows us do specific things e.g. skip missing fields tests,
-// when running in codecgen mode.
+// some tests depend on knowing whether in the context of codecgen or not.
+// For example, some tests should be skipped during codecgen e.g. missing fields tests.
 
 func init() {
 	codecgen = true
