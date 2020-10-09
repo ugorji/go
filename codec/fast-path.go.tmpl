@@ -81,7 +81,7 @@ func (x *fastpathA) index(rtid uintptr) int {
 	var j = uint(len(x))
 LOOP:
 	if i < j {
-		h = i + (j-i)/2
+		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
 		if x[h].rtid < rtid {
 			i = h + 1
 		} else {

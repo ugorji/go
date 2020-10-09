@@ -758,7 +758,7 @@ func findFn(s []codecRtidFn, rtid uintptr) (i uint, fn *codecFn) {
 	var j = uint(len(s))
 LOOP:
 	if i < j {
-		h = i + (j-i)/2
+		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
 		if s[h].rtid < rtid {
 			i = h + 1
 		} else {
@@ -1667,7 +1667,7 @@ func findTypeInfo(s []rtid2ti, rtid uintptr) (i uint, ti *typeInfo) {
 	var j = uint(len(s))
 LOOP:
 	if i < j {
-		h = i + (j-i)/2
+		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
 		if s[h].rtid < rtid {
 			i = h + 1
 		} else {
