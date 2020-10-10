@@ -328,9 +328,7 @@ func (e *Encoder) kSeqWMbs(rv reflect.Value, ti *typeInfo) {
 	if l == 0 {
 		e.mapStart(0)
 	} else {
-		if l%2 == 1 {
-			e.errorf("mapBySlice requires even slice length, but got %v", l)
-		}
+		e.haltOnMbsOddLen(l)
 		e.mapStart(l / 2)
 		fn := e.kSeqFn(ti.elem)
 		for j := 0; j < l; j++ {

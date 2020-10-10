@@ -56,13 +56,17 @@ var testBytesFreeList bytesFreelist
 
 type testCustomStringT string
 
-// make this a mapbyslice
+// make these mapbyslice
 type testMbsT []interface{}
-
-func (testMbsT) MapBySlice() {}
-
+type testMbsArr0T [0]interface{}
+type testMbsArr4T [4]interface{}
+type testMbsArr5T [5]interface{}
 type testMbsCustStrT []testCustomStringT
 
+func (testMbsT) MapBySlice()        {}
+func (*testMbsArr0T) MapBySlice()   {}
+func (*testMbsArr4T) MapBySlice()   {}
+func (testMbsArr5T) MapBySlice()    {}
 func (testMbsCustStrT) MapBySlice() {}
 
 // type testSelferRecur struct{}
@@ -2536,8 +2540,69 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 	//   Also, decode into map[string]string, map[string]interface{}, map[interface{}]string
 
 	bh := basicHandle(h)
-	oldM, oldS := bh.MapType, bh.SliceType
-	defer func() { bh.MapType, bh.SliceType = oldM, oldS }()
+	defer func(oldM, oldS reflect.Type) { bh.MapType, bh.SliceType = oldM, oldS }(bh.MapType, bh.SliceType)
+
+	// test for arrays first
+	fnArr := func() {
+		defer func(b1, b2 bool) { bh.StringToRaw, _ = b1, b2 }(bh.StringToRaw, false)
+		//bb := bh.StringToRaw
+		bh.StringToRaw = false
+		vi := []interface{}{
+			"hello 1",
+			float64(111.0),
+			"hello 3",
+			float64(333.0),
+			"hello 5",
+		}
+
+		var mi, mi2 map[string]float64
+		mi = make(map[string]float64)
+
+		mi[vi[0].(string)] = vi[1].(float64)
+		mi[vi[2].(string)] = vi[3].(float64)
+
+		var v4a, v4a2 testMbsArr4T
+		copy(v4a[:], vi)
+
+		b := testMarshalErr(v4a, h, t, "-")
+		testUnmarshalErr(&mi2, b, h, t, "-")
+		testDeepEqualErr(mi2, mi, t, "-")
+		testUnmarshalErr(&v4a2, b, h, t, "-")
+		testDeepEqualErr(v4a2, v4a, t, "-")
+		testReleaseBytes(b)
+
+		var v0a, v0a2 testMbsArr0T
+		copy(v0a[:], vi)
+
+		mi2 = nil
+		b = testMarshalErr(v0a, h, t, "-")
+		testUnmarshalErr(&mi2, b, h, t, "-")
+		testDeepEqualErr(mi2, map[string]float64{}, t, "-")
+		testUnmarshalErr(&v0a2, b, h, t, "-")
+		testDeepEqualErr(v0a2, v0a, t, "-")
+		testReleaseBytes(b)
+
+		if !testUseReset {
+			// TODO: something about testUseReset=true causes testMarshal that produces an error
+			// (3 lines below)to work in a way that causes a subsequent testUnmarshal to bomb
+			//
+			// This can be shown by removing testUseReset flag above and running with -tr as in
+			// go test -run DifferentMapOrSliceType -tr
+			//
+			// Investigate and fix.
+
+			var v5a testMbsArr5T
+			copy(v5a[:], vi)
+			b, err := testMarshal(v5a, h)
+			testReleaseBytes(b)
+			if err == nil || !strings.Contains(err.Error(), "mapBySlice requires even slice length") {
+				t.Logf("mapBySlice for odd length array fail: expected mapBySlice error, got: %v", err)
+				t.FailNow()
+			}
+		}
+		//bh.StringToRaw = bb
+	}
+	fnArr()
 
 	var b []byte
 
@@ -2548,9 +2613,11 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 		[]byte("hello 4"),
 		"hello 5",
 	}
+
 	var vs []string
 	var v2i, v2s testMbsT
 	var v2ss testMbsCustStrT
+
 	// encode it as a map or as a slice
 	for i, v := range vi {
 		vv, ok := v.(string)

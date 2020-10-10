@@ -589,8 +589,12 @@ type MissingFielder interface {
 	CodecMissingFields() map[string]interface{}
 }
 
-// MapBySlice is a tag interface that denotes wrapped slice should encode as a map in the stream.
-// The slice contains a sequence of key-value pairs.
+// MapBySlice is a tag interface that denotes the slice or array value should encode as a map
+// in the stream, and can be decoded from a map in the stream.
+//
+// The slice or array must contain a sequence of key-value pairs.
+// The length of the slice or array must be even (fully divisible by 2).
+//
 // This affords storing a map in a specific sequence in the stream.
 //
 // Example usage:
@@ -603,9 +607,8 @@ type MissingFielder interface {
 //    // v2 will be encoded like the map: {"KeyValues": {"one": "1", "two": "2", "three": "3"} }
 //
 // The support of MapBySlice affords the following:
-//   - A slice type which implements MapBySlice will be encoded as a map
+//   - A slice or array type which implements MapBySlice will be encoded as a map
 //   - A slice can be decoded from a map in the stream
-//   - It MUST be a slice type (not a pointer receiver) that implements MapBySlice
 type MapBySlice interface {
 	MapBySlice()
 }
@@ -1738,7 +1741,10 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		ti.keykind = uint8(ti.key.Kind())
 		ti.keysize = uint32(ti.key.Size())
 	case reflect.Slice:
-		ti.mbs, _ = implIntf(rt, mapBySliceTyp)
+		ti.mbs, b2 = implIntf(rt, mapBySliceTyp)
+		if !ti.mbs && b2 {
+			ti.mbs = b2
+		}
 		ti.elem = rt.Elem()
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
@@ -1748,6 +1754,10 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		ti.elemsize = uint32(ti.elem.Size())
 		ti.chandir = uint8(rt.ChanDir())
 	case reflect.Array:
+		ti.mbs, b2 = implIntf(rt, mapBySliceTyp)
+		if !ti.mbs && b2 {
+			ti.mbs = b2
+		}
 		ti.elem = rt.Elem()
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())

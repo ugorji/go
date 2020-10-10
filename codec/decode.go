@@ -41,7 +41,7 @@ var (
 	errNeedMapOrArrayDecodeToStruct = errors.New("only encoded map or array can decode into struct")
 	errCannotDecodeIntoNil          = errors.New("cannot decode into nil")
 
-	errmsgExpandSliceCannotChange = "expand slice: cannot change"
+	errExpandSliceCannotChange = errors.New("expand slice: cannot change")
 
 	errDecoderNotInitialized = errors.New("Decoder not initialized")
 
@@ -407,17 +407,22 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 	}
 	switch n.v {
 	case valueTypeMap:
-		// if json, default to a map type with string keys
-		if d.mtid == 0 {
-			if d.jsms { // mapStrIntfTypId (for json performance)
-				var v2 map[string]interface{}
-				d.decode(&v2)
-				rvn = rv4i(&v2).Elem()
-			} else { // mapIntfIntfTypId
-				var v2 map[interface{}]interface{}
-				d.decode(&v2)
-				rvn = rv4i(&v2).Elem()
+		mtid := d.mtid
+		if mtid == 0 {
+			if d.jsms { // if json, default to a map type with string keys
+				mtid = mapStrIntfTypId // for json performance
+			} else {
+				mtid = mapIntfIntfTypId
 			}
+		}
+		if mtid == mapStrIntfTypId {
+			var v2 map[string]interface{}
+			d.decode(&v2)
+			rvn = rv4i(&v2).Elem()
+		} else if mtid == mapIntfIntfTypId {
+			var v2 map[interface{}]interface{}
+			d.decode(&v2)
+			rvn = rv4i(&v2).Elem()
 		} else if d.mtr {
 			rvn = reflect.New(d.h.MapType)
 			d.decode(rv2i(rvn))
@@ -774,11 +779,11 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				} else if rvChanged {
 					rv = rvSlice(rv, rvlen)
 				} else {
-					d.errorf(errmsgExpandSliceCannotChange)
+					d.onerror(errExpandSliceCannotChange)
 				}
 			} else {
 				if !(rvCanset || rvChanged) {
-					d.errorf(errmsgExpandSliceCannotChange)
+					d.onerror(errExpandSliceCannotChange)
 				}
 				rvcap = growCap(rvcap, int(f.ti.elemsize), 1)
 				rvlen = rvcap
