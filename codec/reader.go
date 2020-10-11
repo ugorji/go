@@ -304,7 +304,17 @@ func (z *bufioDecReader) readb(p []byte) {
 	}
 }
 
-func (z *bufioDecReader) readbFill(p0 []byte, n uint, must bool, eof bool) (isEOF bool, err error) {
+func readbFillHandleErr(err error, must, eof bool) (isEOF bool) {
+	if err == io.EOF {
+		isEOF = true
+	}
+	if must && !(eof && isEOF) {
+		halt.onerror(err)
+	}
+	return
+}
+
+func (z *bufioDecReader) readbFill(p0 []byte, n uint, must, eof bool) (isEOF bool, err error) {
 	// at this point, there's nothing in z.buf to read (z.buf is fully consumed)
 	var p []byte
 	if p0 != nil {
@@ -314,12 +324,7 @@ func (z *bufioDecReader) readbFill(p0 []byte, n uint, must bool, eof bool) (isEO
 	if len(p) > cap(z.buf) {
 		n2, err = readFull(z.r, p)
 		if err != nil {
-			if err == io.EOF {
-				isEOF = true
-			}
-			if must && !(eof && isEOF) {
-				halt.onerror(err)
-			}
+			isEOF = readbFillHandleErr(err, must, eof)
 			return
 		}
 		n += n2
@@ -338,12 +343,7 @@ LOOP:
 	n1, err = z.r.Read(z.buf)
 	n2 = uint(n1)
 	if n2 == 0 && err != nil {
-		if err == io.EOF {
-			isEOF = true
-		}
-		if must && !(eof && isEOF) {
-			halt.onerror(err)
-		}
+		isEOF = readbFillHandleErr(err, must, eof)
 		return
 	}
 	err = nil
