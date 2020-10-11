@@ -2545,7 +2545,6 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 	// test for arrays first
 	fnArr := func() {
 		defer func(b1, b2 bool) { bh.StringToRaw, _ = b1, b2 }(bh.StringToRaw, false)
-		//bb := bh.StringToRaw
 		bh.StringToRaw = false
 		vi := []interface{}{
 			"hello 1",
@@ -2582,15 +2581,7 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 		testDeepEqualErr(v0a2, v0a, t, "-")
 		testReleaseBytes(b)
 
-		if !testUseReset {
-			// TODO: something about testUseReset=true causes testMarshal that produces an error
-			// (3 lines below)to work in a way that causes a subsequent testUnmarshal to bomb
-			//
-			// This can be shown by removing testUseReset flag above and running with -tr as in
-			// go test -run DifferentMapOrSliceType -tr
-			//
-			// Investigate and fix.
-
+		{
 			var v5a testMbsArr5T
 			copy(v5a[:], vi)
 			b, err := testMarshal(v5a, h)
@@ -2600,7 +2591,6 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 				t.FailNow()
 			}
 		}
-		//bh.StringToRaw = bb
 	}
 	fnArr()
 

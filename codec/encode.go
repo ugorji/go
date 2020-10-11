@@ -856,6 +856,7 @@ func (e *Encoder) resetCommon() {
 		e.ci = e.ci[:0]
 	}
 	e.c = 0
+	e.calls = 0
 	e.err = nil
 }
 
@@ -983,17 +984,9 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 	defer func() {
 		// if error occurred during encoding, return that error;
 		// else if error occurred on end'ing (i.e. during flush), return that error.
-		err = e.w().endErr()
-		x := recover()
-		if x == nil {
-			if e.err != err {
-				e.err = err
-			}
-		} else {
-			panicValToErr(e, x, &e.err)
-			if e.err != err {
-				err = e.err
-			}
+		if x := recover(); x != nil {
+			panicValToErr(e, x, &err)
+			e.err = err
 		}
 	}()
 
