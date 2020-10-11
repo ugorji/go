@@ -475,9 +475,16 @@ func rvSetDirect(rv reflect.Value, v reflect.Value) {
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	if uv.flag&unsafeFlagIndir == 0 {
 		*(*unsafe.Pointer)(urv.ptr) = uv.ptr
+	} else if uv.ptr == unsafe.Pointer(&unsafeZeroArr[0]) {
+		typedmemclr(urv.typ, urv.ptr)
 	} else {
 		typedmemmove(urv.typ, urv.ptr, uv.ptr)
 	}
+}
+
+func rvSetDirectZero(rv reflect.Value) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	typedmemclr(urv.typ, urv.ptr)
 }
 
 // rvSlice returns a slice of the slice of lenth
@@ -842,6 +849,10 @@ func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
 //go:linkname typedmemmove reflect.typedmemmove
 //go:noescape
 func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
+
+//go:linkname typedmemclr reflect.typedmemclr
+//go:noescape
+func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
 
 //go:linkname unsafe_New reflect.unsafe_New
 //go:noescape

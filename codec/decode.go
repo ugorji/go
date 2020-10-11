@@ -533,11 +533,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 			if rvn.IsValid() {
 				rv.Set(rvn)
 			} else if d.h.InterfaceReset {
-				// reset to zero value based on current type in there.
-				rvelem := rv.Elem()
-				if kk := rvelem.Kind(); kk != reflect.Invalid {
-					rv.Set(rvZeroK(rvType(rvelem), kk))
-				}
+				setZeroRV(rv)
 			}
 			return
 		}
@@ -749,11 +745,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	// consider creating new element once, and just decoding into it.
-	var rtelem0Zero reflect.Value
 	var elemReset = d.h.SliceElementReset
-	if elemReset {
-		rtelem0Zero = rvZeroK(f.ti.elem, reflect.Kind(f.ti.elemkind))
-	}
 
 	var j int
 
@@ -806,7 +798,8 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		}
 		rv9 = rvSliceIndex(rv, j, f.ti)
 		if elemReset {
-			rv9.Set(rtelem0Zero)
+			// rv9.Set(rtelem0Zero) // elem0Zero initialized to rvZeroK(f.ti.elem, f.ti.elemkind)
+			rvSetDirectZero(rv9)
 		}
 
 		if fn == nil {
@@ -972,7 +965,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 	}
 
-	var rvk, rvkn, rvv, rvvn, rvva reflect.Value
+	var rvk, rvkn, rvv, rvvn, rvva, rvvz reflect.Value
 
 	if rvvMut && doMapGet {
 		rvva = mapAddrLoopvarRV(vtype, vtypeKind)
@@ -1027,8 +1020,10 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 		if d.d.TryNil() {
 			// since a map, we have to set zero value if needed
-			rvv = rvZeroK(vtype, vtypeKind)
-			mapSet(rv, rvk, rvv)
+			if !rvvz.IsValid() {
+				rvvz = rvZeroK(vtype, vtypeKind)
+			}
+			mapSet(rv, rvk, rvvz)
 			continue
 		}
 
@@ -1403,7 +1398,7 @@ func setZero(iv interface{}) {
 }
 
 func setZeroRV(v reflect.Value) {
-	// If not decodeable, we do not touch it.
+	// If not decodeable (settable), we do not touch it.
 	// We considered empty'ing it if not decodeable e.g.
 	//    - if chan, drain it
 	//    - if map, clear it
@@ -1411,17 +1406,13 @@ func setZeroRV(v reflect.Value) {
 	//
 	// However, we decided instead that we either will set the
 	// whole value to the zero value, or leave AS IS.
-	if isDecodeable(v) {
-		doSetZeroRv(v)
-	}
-}
 
-func doSetZeroRv(v reflect.Value) {
-	if v.Kind() == reflect.Ptr {
+	k := v.Kind()
+	if k == reflect.Ptr || k == reflect.Interface {
 		v = v.Elem()
 	}
 	if v.CanSet() {
-		v.Set(rvZeroK(rvType(v), v.Kind()))
+		rvSetDirectZero(v)
 	}
 }
 
@@ -1506,9 +1497,8 @@ func (d *Decoder) decode(iv interface{}) {
 // Note that decodeValue will handle nil in the stream early, so that the
 // subsequent calls i.e. kXXX methods, etc do not have to handle it themselves.
 func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn) {
-	// if rv.Kind() == reflect.Ptr && d.d.TryNil() {
 	if d.d.TryNil() {
-		doSetZeroRv(rv)
+		setZeroRV(rv)
 		return
 	}
 	d.decodeValueNoCheckNil(rv, fn)

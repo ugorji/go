@@ -269,6 +269,10 @@ func rvSetDirect(rv reflect.Value, v reflect.Value) {
 	rv.Set(v)
 }
 
+func rvSetDirectZero(rv reflect.Value) {
+	rv.Set(reflect.Zero(rv.Type()))
+}
+
 // rvSlice returns a slice of the slice of lenth
 func rvSlice(rv reflect.Value, length int) reflect.Value {
 	return rv.Slice(0, length)
