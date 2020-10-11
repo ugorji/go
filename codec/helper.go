@@ -190,9 +190,10 @@ const (
 	wordSizeBits = 32 << (^uint(0) >> 63) // strconv.IntSize
 	wordSize     = wordSizeBits / 8
 
-	// determines whether to skip calling fastpath(En|De)codeTypeSwitch,
-	// since calling it here could be redundant, as if that fails, we still
-	// have to determine the function to use for values of that type.
+	// MARKER: determines whether to skip calling fastpath(En|De)codeTypeSwitch.
+	// Calling the fastpath switch in encode() or decode() could be redundant,
+	// as we still have to introspect it again within fnLoad
+	// to determine the function to use for values of that type.
 	skipFastpathTypeSwitchInDirectCall = false
 )
 
