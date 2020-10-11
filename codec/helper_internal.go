@@ -116,7 +116,7 @@ func growCap(oldCap, unit, num uint) (newCap uint) {
 
 	// unit can be 0 e.g. for struct{}{}; handle that appropriately
 	maxCap := num + (oldCap * 3 / 2)
-	if unit == 0 || maxCap > MaxArrayLen || maxCap < oldCap { // handle wraparound, etc
+	if unit == 0 || maxCap > maxArrayLen || maxCap < oldCap { // handle wraparound, etc
 		return maxArrayLen
 	}
 
