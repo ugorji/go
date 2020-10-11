@@ -174,13 +174,23 @@ _suite_trim_output() {
     grep -v -E "^(goos:|goarch:|pkg:|PASS|ok|=== RUN|--- PASS)"
 }
 
+_bench_dot_out_dot_txt() {
+  printf "**** STATS ****\n\n"
+  ./bench.sh -tx  # (stats)
+  printf "**** SUITE ****\n\n"
+  ./bench.sh -sx  # (not codecgen)
+  printf "**** SUITE (WITH CODECGEN) ****\n\n"
+  ./bench.sh -sgx # (codecgen)
+}
+
 _usage() {
-    printf "usage: bench.sh -[dcbsgjqp] for \n"
+    printf "usage: bench.sh -[dcbsgjqpz] for \n"
     printf "\t-d download\n"
     printf "\t-c code-generate\n"
     printf "\t-tx tests (show stats for each format and whether encoded == decoded); if x, do external also\n"
     printf "\t-sgx run test suite for codec; if g, use generated files; if x, do external also\n"
     printf "\t-jqp run test suite for [json, json-quick, json-profile]\n"
+    printf "\t-z run tests for bench.out.txt\n"
 }
 
 _main() {
@@ -192,10 +202,10 @@ _main() {
     local args=()
     local do_x="0"
     local do_g="0"
-    while getopts "dcbsjqptxklg" flag
+    while getopts "dcbsjqptxklgz" flag
     do
         case "$flag" in
-            d|c|b|s|j|q|p|t|x|k|l|g) args+=( "$flag" ) ;;
+            d|c|b|s|j|q|p|t|x|k|l|g|z) args+=( "$flag" ) ;;
             *) _usage; return 1 ;;
         esac
     done
@@ -217,6 +227,7 @@ _main() {
     [[ " ${args[*]} " == *"q"* ]] && _suite_very_quick_json_non_suite "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"p"* ]] && _suite_very_quick_json_only_profile "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"t"* ]] && _suite_tests "$@" | _suite_trim_output | _suite_tests_strip_file_line
+    [[ " ${args[*]} " == *"z"* ]] && _bench_dot_out_dot_txt
     
     true
     # shift $((OPTIND-1))
