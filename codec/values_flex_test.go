@@ -88,23 +88,24 @@ type Sstructsmall struct {
 }
 
 type Sstructbig struct {
-	A int
-	B bool
-	c string
+	_struct struct{}
+	A       int
+	B       bool
+	c       string
 	// Sval Sstruct
 	Ssmallptr *Sstructsmall
-	Ssmall    *Sstructsmall
+	Ssmall    Sstructsmall
 	Sptr      *Sstructbig
 }
 
-type SstructbigMapBySlice struct {
+type SstructbigToArray struct {
 	_struct struct{} `codec:",toarray"`
 	A       int
 	B       bool
 	c       string
 	// Sval Sstruct
 	Ssmallptr *Sstructsmall
-	Ssmall    *Sstructsmall
+	Ssmall    Sstructsmall
 	Sptr      *Sstructbig
 }
 

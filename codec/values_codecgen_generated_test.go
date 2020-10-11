@@ -6792,7 +6792,6 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 		_, _ = yysep2, yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		var yyn5 bool = x.Ssmallptr == nil
-		var yyn6 bool = x.Ssmall == nil
 		var yyn7 bool = x.Sptr == nil
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(5)
@@ -6811,24 +6810,20 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 					x.Ssmallptr.CodecEncodeSelf(e)
 				}
 			}
-			if yyn6 {
-				z.EncWriteArrayElem()
-				r.EncodeNil()
+			z.EncWriteArrayElem()
+			yy11 := &x.Ssmall
+			if yyxt12 := z.Extension(yy11); yyxt12 != nil {
+				z.EncExtension(yy11, yyxt12)
 			} else {
-				z.EncWriteArrayElem()
-				if yyxt11 := z.Extension(x.Ssmall); yyxt11 != nil {
-					z.EncExtension(x.Ssmall, yyxt11)
-				} else {
-					x.Ssmall.CodecEncodeSelf(e)
-				}
+				yy11.CodecEncodeSelf(e)
 			}
 			if yyn7 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
-				if yyxt12 := z.Extension(x.Sptr); yyxt12 != nil {
-					z.EncExtension(x.Sptr, yyxt12)
+				if yyxt13 := z.Extension(x.Sptr); yyxt13 != nil {
+					z.EncExtension(x.Sptr, yyxt13)
 				} else {
 					x.Sptr.CodecEncodeSelf(e)
 				}
@@ -6862,8 +6857,8 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 			if yyn5 {
 				r.EncodeNil()
 			} else {
-				if yyxt15 := z.Extension(x.Ssmallptr); yyxt15 != nil {
-					z.EncExtension(x.Ssmallptr, yyxt15)
+				if yyxt16 := z.Extension(x.Ssmallptr); yyxt16 != nil {
+					z.EncExtension(x.Ssmallptr, yyxt16)
 				} else {
 					x.Ssmallptr.CodecEncodeSelf(e)
 				}
@@ -6875,14 +6870,11 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`Ssmall`)
 			}
 			z.EncWriteMapElemValue()
-			if yyn6 {
-				r.EncodeNil()
+			yy17 := &x.Ssmall
+			if yyxt18 := z.Extension(yy17); yyxt18 != nil {
+				z.EncExtension(yy17, yyxt18)
 			} else {
-				if yyxt16 := z.Extension(x.Ssmall); yyxt16 != nil {
-					z.EncExtension(x.Ssmall, yyxt16)
-				} else {
-					x.Ssmall.CodecEncodeSelf(e)
-				}
+				yy17.CodecEncodeSelf(e)
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -6894,8 +6886,8 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 			if yyn7 {
 				r.EncodeNil()
 			} else {
-				if yyxt17 := z.Extension(x.Sptr); yyxt17 != nil {
-					z.EncExtension(x.Sptr, yyxt17)
+				if yyxt19 := z.Extension(x.Sptr); yyxt19 != nil {
+					z.EncExtension(x.Sptr, yyxt19)
 				} else {
 					x.Sptr.CodecEncodeSelf(e)
 				}
@@ -6969,19 +6961,10 @@ func (x *Sstructbig) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 			}
 		case "Ssmall":
-			if r.TryNil() {
-				if x.Ssmall != nil { // remove the if-true
-					x.Ssmall = nil
-				}
+			if yyxt9 := z.Extension(x.Ssmall); yyxt9 != nil {
+				z.DecExtension(&x.Ssmall, yyxt9)
 			} else {
-				if x.Ssmall == nil {
-					x.Ssmall = new(Sstructsmall)
-				}
-				if yyxt9 := z.Extension(x.Ssmall); yyxt9 != nil {
-					z.DecExtension(x.Ssmall, yyxt9)
-				} else {
-					x.Ssmall.CodecDecodeSelf(d)
-				}
+				x.Ssmall.CodecDecodeSelf(d)
 			}
 		case "Sptr":
 			if r.TryNil() {
@@ -7071,19 +7054,10 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryNil() {
-		if x.Ssmall != nil { // remove the if-true
-			x.Ssmall = nil
-		}
+	if yyxt18 := z.Extension(x.Ssmall); yyxt18 != nil {
+		z.DecExtension(&x.Ssmall, yyxt18)
 	} else {
-		if x.Ssmall == nil {
-			x.Ssmall = new(Sstructsmall)
-		}
-		if yyxt18 := z.Extension(x.Ssmall); yyxt18 != nil {
-			z.DecExtension(x.Ssmall, yyxt18)
-		} else {
-			x.Ssmall.CodecDecodeSelf(d)
-		}
+		x.Ssmall.CodecDecodeSelf(d)
 	}
 	yyj12++
 	if yyhl12 {
@@ -7125,7 +7099,7 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
-func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
+func (x *SstructbigToArray) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
 	_, _, _ = h, z, r
@@ -7137,7 +7111,6 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 		_, _ = yysep2, yy2arr2
 		const yyr2 bool = true // struct tag has 'toArray'
 		var yyn5 bool = x.Ssmallptr == nil
-		var yyn6 bool = x.Ssmall == nil
 		var yyn7 bool = x.Sptr == nil
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(5)
@@ -7156,24 +7129,20 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 					x.Ssmallptr.CodecEncodeSelf(e)
 				}
 			}
-			if yyn6 {
-				z.EncWriteArrayElem()
-				r.EncodeNil()
+			z.EncWriteArrayElem()
+			yy11 := &x.Ssmall
+			if yyxt12 := z.Extension(yy11); yyxt12 != nil {
+				z.EncExtension(yy11, yyxt12)
 			} else {
-				z.EncWriteArrayElem()
-				if yyxt11 := z.Extension(x.Ssmall); yyxt11 != nil {
-					z.EncExtension(x.Ssmall, yyxt11)
-				} else {
-					x.Ssmall.CodecEncodeSelf(e)
-				}
+				yy11.CodecEncodeSelf(e)
 			}
 			if yyn7 {
 				z.EncWriteArrayElem()
 				r.EncodeNil()
 			} else {
 				z.EncWriteArrayElem()
-				if yyxt12 := z.Extension(x.Sptr); yyxt12 != nil {
-					z.EncExtension(x.Sptr, yyxt12)
+				if yyxt13 := z.Extension(x.Sptr); yyxt13 != nil {
+					z.EncExtension(x.Sptr, yyxt13)
 				} else {
 					x.Sptr.CodecEncodeSelf(e)
 				}
@@ -7207,8 +7176,8 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 			if yyn5 {
 				r.EncodeNil()
 			} else {
-				if yyxt15 := z.Extension(x.Ssmallptr); yyxt15 != nil {
-					z.EncExtension(x.Ssmallptr, yyxt15)
+				if yyxt16 := z.Extension(x.Ssmallptr); yyxt16 != nil {
+					z.EncExtension(x.Ssmallptr, yyxt16)
 				} else {
 					x.Ssmallptr.CodecEncodeSelf(e)
 				}
@@ -7220,14 +7189,11 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`Ssmall`)
 			}
 			z.EncWriteMapElemValue()
-			if yyn6 {
-				r.EncodeNil()
+			yy17 := &x.Ssmall
+			if yyxt18 := z.Extension(yy17); yyxt18 != nil {
+				z.EncExtension(yy17, yyxt18)
 			} else {
-				if yyxt16 := z.Extension(x.Ssmall); yyxt16 != nil {
-					z.EncExtension(x.Ssmall, yyxt16)
-				} else {
-					x.Ssmall.CodecEncodeSelf(e)
-				}
+				yy17.CodecEncodeSelf(e)
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -7239,8 +7205,8 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 			if yyn7 {
 				r.EncodeNil()
 			} else {
-				if yyxt17 := z.Extension(x.Sptr); yyxt17 != nil {
-					z.EncExtension(x.Sptr, yyxt17)
+				if yyxt19 := z.Extension(x.Sptr); yyxt19 != nil {
+					z.EncExtension(x.Sptr, yyxt19)
 				} else {
 					x.Sptr.CodecEncodeSelf(e)
 				}
@@ -7250,13 +7216,13 @@ func (x *SstructbigMapBySlice) CodecEncodeSelf(e *Encoder) {
 	}
 }
 
-func (x *SstructbigMapBySlice) CodecDecodeSelf(d *Decoder) {
+func (x *SstructbigToArray) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
 	yyct2 := r.ContainerType()
 	if yyct2 == codecSelferValueTypeNil19780 {
-		*(x) = SstructbigMapBySlice{}
+		*(x) = SstructbigToArray{}
 	} else if yyct2 == codecSelferValueTypeMap19780 {
 		yyl2 := z.DecReadMapStart()
 		if yyl2 == 0 {
@@ -7275,7 +7241,7 @@ func (x *SstructbigMapBySlice) CodecDecodeSelf(d *Decoder) {
 	}
 }
 
-func (x *SstructbigMapBySlice) codecDecodeSelfFromMap(l int, d *Decoder) {
+func (x *SstructbigToArray) codecDecodeSelfFromMap(l int, d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
@@ -7314,19 +7280,10 @@ func (x *SstructbigMapBySlice) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 			}
 		case "Ssmall":
-			if r.TryNil() {
-				if x.Ssmall != nil { // remove the if-true
-					x.Ssmall = nil
-				}
+			if yyxt9 := z.Extension(x.Ssmall); yyxt9 != nil {
+				z.DecExtension(&x.Ssmall, yyxt9)
 			} else {
-				if x.Ssmall == nil {
-					x.Ssmall = new(Sstructsmall)
-				}
-				if yyxt9 := z.Extension(x.Ssmall); yyxt9 != nil {
-					z.DecExtension(x.Ssmall, yyxt9)
-				} else {
-					x.Ssmall.CodecDecodeSelf(d)
-				}
+				x.Ssmall.CodecDecodeSelf(d)
 			}
 		case "Sptr":
 			if r.TryNil() {
@@ -7349,7 +7306,7 @@ func (x *SstructbigMapBySlice) codecDecodeSelfFromMap(l int, d *Decoder) {
 	} // end for yyj3
 }
 
-func (x *SstructbigMapBySlice) codecDecodeSelfFromArray(l int, d *Decoder) {
+func (x *SstructbigToArray) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelperDecoder(d)
 	_, _, _ = h, z, r
@@ -7416,19 +7373,10 @@ func (x *SstructbigMapBySlice) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if r.TryNil() {
-		if x.Ssmall != nil { // remove the if-true
-			x.Ssmall = nil
-		}
+	if yyxt18 := z.Extension(x.Ssmall); yyxt18 != nil {
+		z.DecExtension(&x.Ssmall, yyxt18)
 	} else {
-		if x.Ssmall == nil {
-			x.Ssmall = new(Sstructsmall)
-		}
-		if yyxt18 := z.Extension(x.Ssmall); yyxt18 != nil {
-			z.DecExtension(x.Ssmall, yyxt18)
-		} else {
-			x.Ssmall.CodecDecodeSelf(d)
-		}
+		x.Ssmall.CodecDecodeSelf(d)
 	}
 	yyj12++
 	if yyhl12 {

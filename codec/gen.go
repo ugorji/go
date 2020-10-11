@@ -44,6 +44,8 @@ import (
 //     This is just because it has not been implemented.
 //   - MissingFielder implementation.
 //     If a type implements MissingFielder, it is completely ignored by codecgen.
+//   - CheckCircularReference.
+//     When encoding, if a circular reference is encountered, it will cause a stack overflow.
 //
 // During encode/decode, Selfer takes precedence.
 // A type implementing Selfer will know how to encode/decode itself statically.

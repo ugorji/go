@@ -1579,8 +1579,8 @@ func doTestEncCircularRef(t *testing.T, h Handle) {
 		defer func() { bh.CheckCircularRef = false }()
 	}
 	err = NewEncoderBytes(&bs, h).Encode(&t3)
-	if err == nil {
-		t.Logf("expecting error due to circular reference. found none")
+	if err == nil || !strings.Contains(err.Error(), "circular reference found") {
+		t.Logf("expect circular reference error, got: %v", err)
 		t.FailNow()
 	}
 	if x := err.Error(); strings.Contains(x, "circular") || strings.Contains(x, "cyclic") {
@@ -3845,6 +3845,57 @@ func doTestFloats(t *testing.T, h Handle) {
 	}
 }
 
+func doTestStructFieldInfoToArray(t *testing.T, h Handle) {
+	defer testSetup(t)()
+	bh := basicHandle(h)
+
+	defer func(b bool) { bh.CheckCircularRef = b }(bh.CheckCircularRef)
+	bh.CheckCircularRef = true
+
+	var vs = Sstructsmall{A: 99}
+	var vb = Sstructbig{
+		A:         77,
+		B:         true,
+		c:         "ccc 3 ccc",
+		Ssmallptr: &vs,
+		Ssmall:    vs,
+	}
+	vb.Sptr = &vb
+
+	vba := SstructbigToArray{
+		A:         vb.A,
+		B:         vb.B,
+		c:         vb.c,
+		Ssmallptr: vb.Ssmallptr,
+		Ssmall:    vb.Ssmall,
+		Sptr:      vb.Sptr,
+	}
+
+	var b []byte
+	var err error
+	if !codecgen {
+		// codecgen doesn't support CheckCircularRef, and these types are codecgen'ed
+		b, err = testMarshal(&vba, h)
+		testReleaseBytes(b)
+		if err == nil || !strings.Contains(err.Error(), "circular reference found") {
+			t.Logf("expect circular reference error, got: %v", err)
+			t.FailNow()
+		}
+	}
+
+	vb2 := vb
+	vb.Sptr = nil // so we stop having the circular reference error
+	vba.Sptr = &vb2
+
+	var ss []interface{}
+
+	// bh.CheckCircularRef = false
+	b = testMarshalErr(&vba, h, t, "-")
+	testUnmarshalErr(&ss, b, h, t, "-")
+	testDeepEqualErr(ss[1], true, t, "-")
+	testReleaseBytes(b)
+}
+
 func doTestDesc(t *testing.T, h Handle, m map[byte]string) {
 	defer testSetup(t)()
 	for k, v := range m {
@@ -5091,6 +5142,26 @@ func TestBincDesc(t *testing.T) {
 
 func TestSimpleDesc(t *testing.T) {
 	doTestDesc(t, testSimpleH, simpledescNames)
+}
+
+func TestJsonStructFieldInfoToArray(t *testing.T) {
+	doTestStructFieldInfoToArray(t, testJsonH)
+}
+
+func TestCborStructFieldInfoToArray(t *testing.T) {
+	doTestStructFieldInfoToArray(t, testCborH)
+}
+
+func TestMsgpackStructFieldInfoToArray(t *testing.T) {
+	doTestStructFieldInfoToArray(t, testMsgpackH)
+}
+
+func TestBincStructFieldInfoToArray(t *testing.T) {
+	doTestStructFieldInfoToArray(t, testBincH)
+}
+
+func TestSimpleStructFieldInfoToArray(t *testing.T) {
+	doTestStructFieldInfoToArray(t, testSimpleH)
 }
 
 // --------
