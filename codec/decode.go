@@ -785,7 +785,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				if !(rvCanset || rvChanged) {
 					d.onerror(errExpandSliceCannotChange)
 				}
-				rvcap = growCap(rvcap, int(f.ti.elemsize), 1)
+				rvcap = int(growCap(uint(rvcap), uint(f.ti.elemsize), 1))
 				rvlen = rvcap
 				rv9 = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
 				rvCopySlice(rv9, rv)
@@ -1329,6 +1329,16 @@ func (d *Decoder) swallow() {
 	bs := d.blist.get(256)
 	bs = d.d.nextValueBytes(bs) // discard it
 	d.blist.put(bs)
+}
+
+func (d *Decoder) swallowErr() (err error) {
+	bs := d.blist.get(256)
+	defer func() {
+		panicToErr(d, &err)
+		d.blist.put(bs)
+	}()
+	bs = d.d.nextValueBytes(bs) // discard it
+	return
 }
 
 func setZero(iv interface{}) {

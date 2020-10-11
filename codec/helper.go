@@ -190,10 +190,6 @@ const (
 	wordSizeBits = 32 << (^uint(0) >> 63) // strconv.IntSize
 	wordSize     = wordSizeBits / 8
 
-	// maxArrayLen is the size of uint, which determines
-	// the maximum length of any array.
-	maxArrayLen = 1<<((32<<(^uint(0)>>63))-1) - 1
-
 	// determines whether to skip calling fastpath(En|De)codeTypeSwitch,
 	// since calling it here could be redundant, as if that fails, we still
 	// have to determine the function to use for values of that type.
