@@ -207,6 +207,7 @@ var (
 	digitCharBitset      bitset256
 	numCharBitset        bitset256
 	whitespaceCharBitset bitset256
+	asciiAlphaNumBitset  bitset256
 
 	// numCharWithExpBitset64 bitset64
 	// numCharNoExpBitset64   bitset64
@@ -286,6 +287,9 @@ func init() {
 		set(byte(reflect.Slice))
 
 	for i := byte(0); i <= utf8.RuneSelf; i++ {
+		if (i >= '0' && i <= '9') || (i >= 'a' && i <= 'z') || (i >= 'A' && i <= 'Z') {
+			asciiAlphaNumBitset.set(i)
+		}
 		switch i {
 		case ' ', '\t', '\r', '\n':
 			whitespaceCharBitset.set(i)
@@ -532,8 +536,6 @@ var (
 	bsAll0xff = []byte{0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}
 
 	chkOvf checkOverflow
-
-	errNoFieldNameToStructFieldInfo = errors.New("no field name passed to parseStructFieldInfo")
 )
 
 var defTypeInfos = NewTypeInfos([]string{"codec", "json"})
@@ -1880,12 +1882,8 @@ LOOP:
 		}
 
 		// after the anonymous dance: if an unexported field, skip
-		if isUnexported {
+		if isUnexported || f.Name == "" { // f.Name cannot be "", but defensively handle it
 			continue
-		}
-
-		if f.Name == "" {
-			halt.onerror(errNoFieldNameToStructFieldInfo)
 		}
 
 		if !parsed {
@@ -1897,12 +1895,10 @@ LOOP:
 		}
 		si.encNameAsciiAlphaNum = true
 		for i := len(si.encName) - 1; i >= 0; i-- { // bounds-check elimination
-			b := si.encName[i]
-			if (b >= '0' && b <= '9') || (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z') {
-				continue
+			if !asciiAlphaNumBitset.isset(si.encName[i]) {
+				si.encNameAsciiAlphaNum = false
+				break
 			}
-			si.encNameAsciiAlphaNum = false
-			break
 		}
 		si.fieldName = f.Name
 		si.kind = uint8(fkind)
