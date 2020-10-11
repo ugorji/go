@@ -97,6 +97,10 @@ type decDriver interface {
 
 	// DecodeBytes may be called directly, without going through reflection.
 	// Consequently, it must be designed to handle possible nil.
+	//
+	// Note: DecodeBytes may decode past the length of the passed byte slice, up to the cap.
+	// Consequently, it is ok to pass a zero-len slice to DecodeBytes, as the returned
+	// byte slice will have the appropriate length.
 	DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte)
 	// DecodeBytes(bs []byte, isstring, zerocopy bool) (bsOut []byte)
 
@@ -666,6 +670,10 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", f.ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
+		if !rvCanset {
+			// not addressable byte slice, so do not decode into it past the length
+			rvbs = rvbs[:len(rvbs):len(rvbs)]
+		}
 		bs2 := d.d.DecodeBytes(rvbs, false)
 		if !(len(bs2) > 0 && len(bs2) == len(rvbs) && &bs2[0] == &rvbs[0]) {
 			if rvCanset {
@@ -1464,7 +1472,8 @@ func (d *Decoder) decode(iv interface{}) {
 	case *[]byte:
 		*v = d.d.DecodeBytes(*v, false)
 	case []byte:
-		b := d.d.DecodeBytes(v, false)
+		// not addressable byte slice, so do not decode into it past the length
+		b := d.d.DecodeBytes(v[:len(v):len(v)], false)
 		if !(len(b) > 0 && len(b) == len(v) && &b[0] == &v[0]) { // not same slice
 			copy(v, b)
 		}
