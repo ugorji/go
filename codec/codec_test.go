@@ -3950,15 +3950,15 @@ func TestAtomic(t *testing.T) {
 	if true {
 		var a atomicClsErr
 		l := a.load()
-		if l.errClosed != nil {
-			t.Logf("atomic fail: %T, expected load return clsErr = nil, received: %v", a, l.errClosed)
+		if l.err != nil {
+			t.Logf("atomic fail: %T, expected load return clsErr = nil, received: %v", a, l.err)
 			t.FailNow()
 		}
-		l.errClosed = io.EOF
+		l.err = io.EOF
 		a.store(l)
 		l = a.load()
-		if l.errClosed != io.EOF {
-			t.Logf("atomic fail: %T, expected clsErr = io.EOF, received: %v", a, l.errClosed)
+		if l.err != io.EOF {
+			t.Logf("atomic fail: %T, expected clsErr = io.EOF, received: %v", a, l.err)
 			t.FailNow()
 		}
 	}

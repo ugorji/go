@@ -316,8 +316,8 @@ const (
 )
 
 type clsErr struct {
-	closed    bool  // is it closed?
-	errClosed error // error on closing
+	err    error // error on closing
+	closed bool  // is it closed?
 }
 
 type charEncoding uint8
@@ -754,7 +754,7 @@ func (x *BasicHandle) getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo)
 	return x.TypeInfos.get(rtid, rt)
 }
 
-func findFn(s []codecRtidFn, rtid uintptr) (i uint, fn *codecFn) {
+func findRtidFn(s []codecRtidFn, rtid uintptr) (i uint, fn *codecFn) {
 	// binary search. adapted from sort/search.go.
 	// Note: we use goto (instead of for loop) so this can be inlined.
 
@@ -789,21 +789,22 @@ func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt boo
 	rtid := rt2id(rt)
 	sp := fs.load()
 	if sp != nil {
-		if _, fn = findFn(sp, rtid); fn != nil {
+		if _, fn = findRtidFn(sp, rtid); fn != nil {
 			return
 		}
 	}
 	fn = x.fnLoad(rt, rtid, checkExt)
 	x.mu.Lock()
-	var sp2 []codecRtidFn
 	sp = fs.load()
+	// since this is an atomic load/store, we MUST use a different array each time,
+	// else we have a data race when a store is happening simultaneously with a findRtidFn call.
 	if sp == nil {
-		sp2 = []codecRtidFn{{rtid, fn}}
-		fs.store(sp2)
+		sp = []codecRtidFn{{rtid, fn}}
+		fs.store(sp)
 	} else {
-		idx, fn2 := findFn(sp, rtid)
+		idx, fn2 := findRtidFn(sp, rtid)
 		if fn2 == nil {
-			sp2 = make([]codecRtidFn, len(sp)+1)
+			sp2 := make([]codecRtidFn, len(sp)+1)
 			copy(sp2, sp[:idx])
 			copy(sp2[idx+1:], sp[idx:])
 			sp2[idx] = codecRtidFn{rtid, fn}
@@ -1768,20 +1769,22 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 
 	x.mu.Lock()
 	sp = x.infos.load()
+	// since this is an atomic load/store, we MUST use a different array each time,
+	// else we have a data race when a store is happening simultaneously with a findRtidFn call.
 	if sp == nil {
 		pti = &ti
-		sp = make([]rtid2ti, 1, 32)
-		sp[0] = rtid2ti{rtid, pti}
+		sp = []rtid2ti{{rtid, pti}}
 		x.infos.store(sp)
 	} else {
 		var idx uint
 		idx, pti = findTypeInfo(sp, rtid)
 		if pti == nil {
 			pti = &ti
-			sp = append(sp, rtid2ti{})
-			copy(sp[idx+1:], sp[idx:])
-			sp[idx] = rtid2ti{rtid, pti}
-			x.infos.store(sp)
+			sp2 := make([]rtid2ti, len(sp)+1)
+			copy(sp2, sp[:idx])
+			copy(sp2[idx+1:], sp[idx:])
+			sp2[idx] = rtid2ti{rtid, pti}
+			x.infos.store(sp2)
 		}
 	}
 	x.mu.Unlock()

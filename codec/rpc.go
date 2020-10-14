@@ -119,11 +119,11 @@ func (c *rpcCodec) Close() (err error) {
 	if c.c != nil {
 		cls := c.cls.load()
 		if !cls.closed {
-			cls.errClosed = c.c.Close()
+			cls.err = c.c.Close()
 			cls.closed = true
 			c.cls.store(cls)
 		}
-		err = cls.errClosed
+		err = cls.err
 	}
 	return
 }
@@ -134,7 +134,7 @@ func (c *rpcCodec) ready() (err error) {
 	} else {
 		cls := c.cls.load()
 		if cls.closed {
-			if err = cls.errClosed; err == nil {
+			if err = cls.err; err == nil {
 				err = errRpcIsClosed
 			}
 		}
