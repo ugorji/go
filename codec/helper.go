@@ -464,6 +464,10 @@ type isZeroer interface {
 	IsZero() bool
 }
 
+type isCodecEmptyer interface {
+	IsCodecEmpty() bool
+}
+
 type codecError struct {
 	name string
 	err  error
@@ -512,6 +516,7 @@ var (
 	selferTyp         = reflect.TypeOf((*Selfer)(nil)).Elem()
 	missingFielderTyp = reflect.TypeOf((*MissingFielder)(nil)).Elem()
 	iszeroTyp         = reflect.TypeOf((*isZeroer)(nil)).Elem()
+	isCodecEmptyerTyp = reflect.TypeOf((*isCodecEmptyer)(nil)).Elem()
 
 	uint8TypId      = rt2id(uint8Typ)
 	uint8SliceTypId = rt2id(uint8SliceTyp)
@@ -1455,6 +1460,9 @@ const (
 	tiflagIsZeroer
 	tiflagIsZeroerPtr
 
+	tiflagIsCodecEmptyer
+	tiflagIsCodecEmptyerPtr
+
 	tiflagBinaryMarshaler
 	tiflagBinaryMarshalerPtr
 
@@ -1712,6 +1720,8 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	ti.flag(b1, tiflagMissingFielder).flag(b2, tiflagMissingFielderPtr)
 	b1, b2 = implIntf(rt, iszeroTyp)
 	ti.flag(b1, tiflagIsZeroer).flag(b2, tiflagIsZeroerPtr)
+	b1, b2 = implIntf(rt, isCodecEmptyerTyp)
+	ti.flag(b1, tiflagIsCodecEmptyer).flag(b2, tiflagIsCodecEmptyerPtr)
 	b1 = rt.Comparable()
 	ti.flag(b1, tiflagComparable)
 
@@ -1941,6 +1951,12 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) 
 	}
 	if ti.isFlag(tiflagIsZeroer) {
 		return rv2i(v).(isZeroer).IsZero()
+	}
+	if ti.isFlag(tiflagIsCodecEmptyerPtr) && v.CanAddr() {
+		return rv2i(v.Addr()).(isCodecEmptyer).IsCodecEmpty()
+	}
+	if ti.isFlag(tiflagIsCodecEmptyer) {
+		return rv2i(v).(isCodecEmptyer).IsCodecEmpty()
 	}
 	if ti.isFlag(tiflagComparable) {
 		return rv2i(v) == rv2i(rvZeroK(vt, reflect.Struct))
