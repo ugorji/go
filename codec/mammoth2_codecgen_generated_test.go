@@ -34,6 +34,7 @@ var (
 type codecSelfer19781 struct{}
 
 func codecSelfer19781False() bool { return false }
+func codecSelfer19781True() bool  { return true }
 
 func init() {
 	if GenVersion != 18 {
@@ -50,9 +51,8 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		var yyn4 bool = x.FptrIntf == nil
 		var yyn6 bool = x.FptrString == nil
@@ -6554,6 +6554,10 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *TestMammoth2) IsCodecEmpty() bool {
+	return !(x.FIntf != nil && x.FString != "" && len(x.FBytes) != 0 && x.FFloat32 != 0 && x.FFloat64 != 0 && x.FUint != 0 && x.FUint8 != 0 && x.FUint16 != 0 && x.FUint32 != 0 && x.FUint64 != 0 && x.FUintptr != 0 && x.FInt != 0 && x.FInt8 != 0 && x.FInt16 != 0 && x.FInt32 != 0 && x.FInt64 != 0 && bool(x.FBool) && len(x.FSliceIntf) != 0 && len(x.FSliceString) != 0 && len(x.FSliceBytes) != 0 && len(x.FSliceFloat64) != 0 && len(x.FSliceUint64) != 0 && len(x.FSliceInt) != 0 && len(x.FSliceInt32) != 0 && len(x.FSliceInt64) != 0 && len(x.FSliceBool) != 0 && len(x.FMapStringIntf) != 0 && len(x.FMapStringString) != 0 && len(x.FMapStringBytes) != 0 && len(x.FMapStringUint8) != 0 && len(x.FMapStringUint64) != 0 && len(x.FMapStringInt) != 0 && len(x.FMapStringInt64) != 0 && len(x.FMapStringFloat64) != 0 && len(x.FMapStringBool) != 0 && len(x.FMapUint8Intf) != 0 && len(x.FMapUint8String) != 0 && len(x.FMapUint8Bytes) != 0 && len(x.FMapUint8Uint8) != 0 && len(x.FMapUint8Uint64) != 0 && len(x.FMapUint8Int) != 0 && len(x.FMapUint8Int64) != 0 && len(x.FMapUint8Float64) != 0 && len(x.FMapUint8Bool) != 0 && len(x.FMapUint64Intf) != 0 && len(x.FMapUint64String) != 0 && len(x.FMapUint64Bytes) != 0 && len(x.FMapUint64Uint8) != 0 && len(x.FMapUint64Uint64) != 0 && len(x.FMapUint64Int) != 0 && len(x.FMapUint64Int64) != 0 && len(x.FMapUint64Float64) != 0 && len(x.FMapUint64Bool) != 0 && len(x.FMapIntIntf) != 0 && len(x.FMapIntString) != 0 && len(x.FMapIntBytes) != 0 && len(x.FMapIntUint8) != 0 && len(x.FMapIntUint64) != 0 && len(x.FMapIntInt) != 0 && len(x.FMapIntInt64) != 0 && len(x.FMapIntFloat64) != 0 && len(x.FMapIntBool) != 0 && len(x.FMapInt64Intf) != 0 && len(x.FMapInt64String) != 0 && len(x.FMapInt64Bytes) != 0 && len(x.FMapInt64Uint8) != 0 && len(x.FMapInt64Uint64) != 0 && len(x.FMapInt64Int) != 0 && len(x.FMapInt64Int64) != 0 && len(x.FMapInt64Float64) != 0 && len(x.FMapInt64Bool) != 0 && true)
+}
+
 func (x testMammoth2Binary) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelperEncoder(e)
@@ -6645,9 +6649,8 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(8)
@@ -7023,6 +7026,10 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj20-1, "")
 	}
+}
+
+func (x *TestMammoth2Wrapper) IsCodecEmpty() bool {
+	return !(!(x.V.IsCodecEmpty()) && x.T != 0 && x.B != 0 && x.J != 0 && len(x.C) != 0 && len(x.M) != 0 && len(x.L) != 0 && len(x.A) != 0 && true)
 }
 
 func (x codecSelfer19781) enctestMammoth2Basic(v *testMammoth2Basic, e *Encoder) {

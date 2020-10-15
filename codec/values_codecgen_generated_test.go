@@ -35,6 +35,7 @@ var (
 type codecSelfer19780 struct{}
 
 func codecSelfer19780False() bool { return false }
+func codecSelfer19780True() bool  { return true }
 
 func init() {
 	if GenVersion != 18 {
@@ -154,9 +155,8 @@ func (x *stringUint64T) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
@@ -288,6 +288,10 @@ func (x *stringUint64T) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *stringUint64T) IsCodecEmpty() bool {
+	return !(x.S != "" && x.U != 0 && true)
+}
+
 func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -295,9 +299,8 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(15)
@@ -823,6 +826,10 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *AnonInTestStruc) IsCodecEmpty() bool {
+	return !(x.AS != "" && x.AI64 != 0 && x.AI16 != 0 && x.AUi64 != 0 && len(x.ASslice) != 0 && len(x.AI64slice) != 0 && len(x.AUi64slice) != 0 && len(x.AF64slice) != 0 && len(x.AF32slice) != 0 && len(x.AMSU16) != 0 && len(x.AI64arr0) != 0 && len(x.AI64slice0) != 0 && len(x.AUi64sliceN) != 0 && len(x.AMSU16N) != 0 && len(x.AMSU16E) != 0 && true)
+}
+
 func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -830,9 +837,8 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(17)
@@ -1412,6 +1418,10 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *testSimpleFields) IsCodecEmpty() bool {
+	return !(x.S != "" && x.I64 != 0 && x.I8 != 0 && x.Ui64 != 0 && x.Ui8 != 0 && x.F64 != 0 && x.F32 != 0 && bool(x.B) && len(x.Sslice) != 0 && len(x.I16slice) != 0 && len(x.Ui64slice) != 0 && len(x.Ui8slice) != 0 && len(x.Bslice) != 0 && len(x.Iptrslice) != 0 && len(x.WrapSliceInt64) != 0 && len(x.WrapSliceString) != 0 && len(x.Msi64) != 0 && true)
+}
+
 func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -1419,9 +1429,8 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		var yyn54 bool = x.Nint64 == nil
 		if yyr2 || yy2arr2 {
@@ -3053,6 +3062,10 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *TestStrucCommon) IsCodecEmpty() bool {
+	return !(x.S != "" && x.I64 != 0 && x.I32 != 0 && x.I16 != 0 && x.I8 != 0 && x.I64n != 0 && x.I32n != 0 && x.I16n != 0 && x.I8n != 0 && x.Ui64 != 0 && x.Ui32 != 0 && x.Ui16 != 0 && x.Ui8 != 0 && x.F64 != 0 && x.F32 != 0 && bool(x.B) && x.By != 0 && len(x.Sslice) != 0 && len(x.I64slice) != 0 && len(x.I16slice) != 0 && len(x.Ui64slice) != 0 && len(x.Ui8slice) != 0 && len(x.Bslice) != 0 && len(x.Byslice) != 0 && len(x.BytesSlice) != 0 && len(x.Iptrslice) != 0 && len(x.WrapSliceInt64) != 0 && len(x.WrapSliceString) != 0 && len(x.Msi64) != 0 && len(x.Msbytes) != 0 && !(x.Simplef.IsCodecEmpty()) && len(x.SstrUi64T) != 0 && len(x.MstrUi64T) != 0 && !(x.AnonInTestStruc.IsCodecEmpty()) && !(x.NotAnon.IsCodecEmpty()) && len(x.Nmap) != 0 && len(x.Nslice) != 0 && true)
+}
+
 func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -3060,9 +3073,8 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		var yyn54 bool = x.TestStrucCommon.Nint64 == nil
 		var yyn58 bool = x.Nteststruc == nil
@@ -4858,6 +4870,10 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *TestStruc) IsCodecEmpty() bool {
+	return !(!(x.TestStrucCommon.IsCodecEmpty()) && len(x.Mtsptr) != 0 && len(x.Mts) != 0 && len(x.Its) != 0 && true)
+}
+
 func (x *codecgenA) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -4865,9 +4881,8 @@ func (x *codecgenA) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -4983,6 +4998,10 @@ func (x *codecgenA) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *codecgenA) IsCodecEmpty() bool {
+	return !(len(x.ZZ) != 0 && true)
+}
+
 func (x *codecgenB) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -4990,9 +5009,8 @@ func (x *codecgenB) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -5118,6 +5136,10 @@ func (x *codecgenB) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *codecgenB) IsCodecEmpty() bool {
+	return !(!(x.AA.IsCodecEmpty()) && true)
+}
+
 func (x *codecgenC) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -5125,12 +5147,11 @@ func (x *codecgenC) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		var yyq2 = [1]bool{     // should field at this index be written?
-			false || codecSelfer19780False() || len(x.BB.AA.ZZ) != 0, // BB
+			!(x.BB.IsCodecEmpty()), // BB
 		}
 		_ = yyq2
 		if yyr2 || yy2arr2 {
@@ -5270,6 +5291,10 @@ func (x *codecgenC) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *codecgenC) IsCodecEmpty() bool {
+	return !(!(x.BB.IsCodecEmpty()) && true)
+}
+
 func (x *TestCodecgenG) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -5277,9 +5302,8 @@ func (x *TestCodecgenG) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -5387,6 +5411,10 @@ func (x *TestCodecgenG) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *TestCodecgenG) IsCodecEmpty() bool {
+	return !(x.TestCodecgenG != 0 && true)
+}
+
 func (x *codecgenH) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -5394,9 +5422,8 @@ func (x *codecgenH) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -5504,6 +5531,10 @@ func (x *codecgenH) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *codecgenH) IsCodecEmpty() bool {
+	return !(!(x.TestCodecgenG.IsCodecEmpty()) && true)
+}
+
 func (x *codecgenI) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -5511,9 +5542,8 @@ func (x *codecgenI) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -5621,6 +5651,10 @@ func (x *codecgenI) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *codecgenI) IsCodecEmpty() bool {
+	return !(!(x.codecgenH.IsCodecEmpty()) && true)
+}
+
 func (x *codecgenK) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -5628,9 +5662,8 @@ func (x *codecgenK) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
@@ -5762,6 +5795,10 @@ func (x *codecgenK) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *codecgenK) IsCodecEmpty() bool {
+	return !(x.X != 0 && x.Y != "" && true)
+}
+
 func (x *codecgenL) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -5769,9 +5806,8 @@ func (x *codecgenL) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
@@ -5903,6 +5939,10 @@ func (x *codecgenL) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *codecgenL) IsCodecEmpty() bool {
+	return !(x.X != 0 && x.Y != 0 && true)
+}
+
 func (x *codecgenM) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -5910,9 +5950,8 @@ func (x *codecgenM) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
@@ -6044,6 +6083,10 @@ func (x *codecgenM) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *codecgenM) IsCodecEmpty() bool {
+	return !(!(x.codecgenK.IsCodecEmpty()) && true)
+}
+
 func (x *testStrucKeyTypeT0) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -6051,9 +6094,8 @@ func (x *testStrucKeyTypeT0) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -6161,6 +6203,10 @@ func (x *testStrucKeyTypeT0) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *testStrucKeyTypeT0) IsCodecEmpty() bool {
+	return !(x.F != 0 && true)
+}
+
 func (x *testStrucKeyTypeT1) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -6168,9 +6214,8 @@ func (x *testStrucKeyTypeT1) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -6278,6 +6323,10 @@ func (x *testStrucKeyTypeT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *testStrucKeyTypeT1) IsCodecEmpty() bool {
+	return !(x.F != 0 && true)
+}
+
 func (x *testStrucKeyTypeT2) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -6285,9 +6334,8 @@ func (x *testStrucKeyTypeT2) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -6391,6 +6439,10 @@ func (x *testStrucKeyTypeT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *testStrucKeyTypeT2) IsCodecEmpty() bool {
+	return !(x.F != 0 && true)
+}
+
 func (x *testStrucKeyTypeT3) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -6398,9 +6450,8 @@ func (x *testStrucKeyTypeT3) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -6504,6 +6555,10 @@ func (x *testStrucKeyTypeT3) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *testStrucKeyTypeT3) IsCodecEmpty() bool {
+	return !(x.F != 0 && true)
+}
+
 func (x *testStrucKeyTypeT4) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -6511,9 +6566,8 @@ func (x *testStrucKeyTypeT4) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -6617,6 +6671,10 @@ func (x *testStrucKeyTypeT4) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *testStrucKeyTypeT4) IsCodecEmpty() bool {
+	return !(x.F != 0 && true)
+}
+
 func (x Bbool) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -6670,9 +6728,8 @@ func (x *Sstructsmall) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -6780,6 +6837,10 @@ func (x *Sstructsmall) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *Sstructsmall) IsCodecEmpty() bool {
+	return !(x.A != 0 && true)
+}
+
 func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -6787,9 +6848,8 @@ func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		var yyn5 bool = x.Ssmallptr == nil
 		var yyn7 bool = x.Sptr == nil
@@ -7099,6 +7159,10 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *Sstructbig) IsCodecEmpty() bool {
+	return !(x.A != 0 && bool(x.B) && !(x.Ssmall.IsCodecEmpty()) && true)
+}
+
 func (x *SstructbigToArray) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -7106,9 +7170,8 @@ func (x *SstructbigToArray) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = true // struct tag has 'toArray'
 		var yyn5 bool = x.Ssmallptr == nil
 		var yyn7 bool = x.Sptr == nil
@@ -7418,6 +7481,10 @@ func (x *SstructbigToArray) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *SstructbigToArray) IsCodecEmpty() bool {
+	return !(x.A != 0 && bool(x.B) && !(x.Ssmall.IsCodecEmpty()) && true)
+}
+
 func (x *tLowerFirstLetter) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -7425,9 +7492,8 @@ func (x *tLowerFirstLetter) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
@@ -7557,6 +7623,10 @@ func (x *tLowerFirstLetter) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj6-1, "")
 	}
+}
+
+func (x *tLowerFirstLetter) IsCodecEmpty() bool {
+	return !(x.I != 0 && x.S != "" && true)
 }
 
 func (x wrapInt64) CodecEncodeSelf(e *Encoder) {
@@ -7696,9 +7766,8 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		var yyn7 bool = x.Tptr == nil
 		if yyr2 || yy2arr2 {
@@ -8028,6 +8097,10 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *AnonInTestStrucIntf) IsCodecEmpty() bool {
+	return !(len(x.Islice) != 0 && len(x.Ms) != 0 && x.Nintf != nil && !(x.T.IsZero()) && true)
+}
+
 func (x *missingFielderT1) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -8035,9 +8108,8 @@ func (x *missingFielderT1) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
@@ -8169,6 +8241,10 @@ func (x *missingFielderT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *missingFielderT1) IsCodecEmpty() bool {
+	return !(x.S != "" && bool(x.B) && true)
+}
+
 func (x *missingFielderT11) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -8176,9 +8252,8 @@ func (x *missingFielderT11) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(1)
@@ -8286,6 +8361,10 @@ func (x *missingFielderT11) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *missingFielderT11) IsCodecEmpty() bool {
+	return !(x.S2 != "" && true)
+}
+
 func (x *missingFielderT2) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -8293,9 +8372,8 @@ func (x *missingFielderT2) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(4)
@@ -8475,6 +8553,10 @@ func (x *missingFielderT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *missingFielderT2) IsCodecEmpty() bool {
+	return !(x.S != "" && bool(x.B) && x.F != 0 && x.I != 0 && true)
+}
+
 func (x *testSelfExtHelper) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -8482,9 +8564,8 @@ func (x *testSelfExtHelper) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(3)
@@ -8640,6 +8721,10 @@ func (x *testSelfExtHelper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *testSelfExtHelper) IsCodecEmpty() bool {
+	return !(x.S != "" && x.I != 0 && bool(x.B) && true)
+}
+
 func (x *TestSelfExtImpl) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -8647,9 +8732,8 @@ func (x *TestSelfExtImpl) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(3)
@@ -8805,6 +8889,10 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *TestSelfExtImpl) IsCodecEmpty() bool {
+	return !(!(x.testSelfExtHelper.IsCodecEmpty()) && true)
+}
+
 func (x *TestSelfExtImpl2) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -8812,9 +8900,8 @@ func (x *TestSelfExtImpl2) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
@@ -8946,6 +9033,10 @@ func (x *TestSelfExtImpl2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *TestSelfExtImpl2) IsCodecEmpty() bool {
+	return !(x.M != "" && bool(x.O) && true)
+}
+
 func (x *TestTwoNakedInterfaces) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -8953,9 +9044,8 @@ func (x *TestTwoNakedInterfaces) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(2)
@@ -9087,6 +9177,10 @@ func (x *TestTwoNakedInterfaces) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 }
 
+func (x *TestTwoNakedInterfaces) IsCodecEmpty() bool {
+	return !(x.A != nil && x.B != nil && true)
+}
+
 func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelperEncoder(e)
@@ -9094,11 +9188,18 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		yysep2 := !z.EncBinary()
 		yy2arr2 := z.EncBasicHandle().StructToArray
-		_, _ = yysep2, yy2arr2
+		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
-		var yyq2 = [83]bool{    // should field at this index be written?
+		var yyn54 bool = x.TestStrucCommon.Nint64 == nil
+		var yyn72 bool = x.Ttimeptr == nil
+		var yyn73 bool = x.AnonInTestStrucIntf == nil
+		var yyn74 bool = x.AnonInTestStrucIntf == nil
+		var yyn75 bool = x.AnonInTestStrucIntf == nil
+		var yyn76 bool = x.AnonInTestStrucIntf == nil
+		var yyn77 bool = x.AnonInTestStrucIntf == nil || x.AnonInTestStrucIntf.Tptr == nil
+		var yyn81 bool = x.Nteststruc == nil
+		var yyq2 = [83]bool{ // should field at this index be written?
 			x.S != "",                   // S
 			x.I64 != 0,                  // I64
 			x.I32 != 0,                  // I32
@@ -9129,46 +9230,46 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			len(x.WrapSliceString) != 0, // WrapSliceString
 			len(x.Msi64) != 0,           // Msi64
 			len(x.Msbytes) != 0,         // Msbytes
-			false || x.Simplef.S != "" || x.Simplef.I64 != 0 || x.Simplef.I8 != 0 || x.Simplef.Ui64 != 0 || x.Simplef.Ui8 != 0 || x.Simplef.F64 != 0 || x.Simplef.F32 != 0 || bool(x.Simplef.B) || len(x.Simplef.Sslice) != 0 || len(x.Simplef.I16slice) != 0 || len(x.Simplef.Ui64slice) != 0 || len(x.Simplef.Ui8slice) != 0 || len(x.Simplef.Bslice) != 0 || len(x.Simplef.Iptrslice) != 0 || len(x.Simplef.WrapSliceInt64) != 0 || len(x.Simplef.WrapSliceString) != 0 || len(x.Simplef.Msi64) != 0, // Simplef
-			len(x.SstrUi64T) != 0,   // SstrUi64T
-			len(x.MstrUi64T) != 0,   // MstrUi64T
-			x.AS != "",              // AS
-			x.AI64 != 0,             // AI64
-			x.AI16 != 0,             // AI16
-			x.AUi64 != 0,            // AUi64
-			len(x.ASslice) != 0,     // ASslice
-			len(x.AI64slice) != 0,   // AI64slice
-			len(x.AUi64slice) != 0,  // AUi64slice
-			len(x.AF64slice) != 0,   // AF64slice
-			len(x.AF32slice) != 0,   // AF32slice
-			len(x.AMSU16) != 0,      // AMSU16
-			len(x.AI64arr0) != 0,    // AI64arr0
-			len(x.AI64slice0) != 0,  // AI64slice0
-			len(x.AUi64sliceN) != 0, // AUi64sliceN
-			len(x.AMSU16N) != 0,     // AMSU16N
-			len(x.AMSU16E) != 0,     // AMSU16E
-			false || x.NotAnon.AS != "" || x.NotAnon.AI64 != 0 || x.NotAnon.AI16 != 0 || x.NotAnon.AUi64 != 0 || len(x.NotAnon.ASslice) != 0 || len(x.NotAnon.AI64slice) != 0 || len(x.NotAnon.AUi64slice) != 0 || len(x.NotAnon.AF64slice) != 0 || len(x.NotAnon.AF32slice) != 0 || len(x.NotAnon.AMSU16) != 0 || len(x.NotAnon.AI64arr0) != 0 || len(x.NotAnon.AI64slice0) != 0 || len(x.NotAnon.AUi64sliceN) != 0 || len(x.NotAnon.AMSU16N) != 0 || len(x.NotAnon.AMSU16E) != 0, // NotAnon
-			len(x.Nmap) != 0,           // Nmap
-			len(x.Nslice) != 0,         // Nslice
-			x.Nint64 != nil,            // Nint64
-			len(x.Chstr) != 0,          // Chstr
-			len(x.Mis) != 0,            // Mis
-			len(x.Mbu64) != 0,          // Mbu64
-			len(x.Miwu64s) != 0,        // Miwu64s
-			len(x.Mfwss) != 0,          // Mfwss
-			len(x.Mf32wss) != 0,        // Mf32wss
-			len(x.Mui2wss) != 0,        // Mui2wss
-			len(x.Msu2wss) != 0,        // Msu2wss
-			x.Ci64 != 0,                // Ci64
-			len(x.Swrapbytes) != 0,     // Swrapbytes
-			len(x.Swrapuint8) != 0,     // Swrapuint8
-			len(x.ArrStrUi64T) != 0,    // ArrStrUi64T
-			len(x.Ui64array) != 0,      // Ui64array
-			len(x.Ui64slicearray) != 0, // Ui64slicearray
-			len(x.SintfAarray) != 0,    // SintfAarray
-			len(x.MstrUi64TSelf) != 0,  // MstrUi64TSelf
-			!(x.Ttime.IsZero()),        // Ttime
-			x.Ttimeptr != nil,          // Ttimeptr
+			!(x.Simplef.IsCodecEmpty()), // Simplef
+			len(x.SstrUi64T) != 0,       // SstrUi64T
+			len(x.MstrUi64T) != 0,       // MstrUi64T
+			x.AS != "",                  // AS
+			x.AI64 != 0,                 // AI64
+			x.AI16 != 0,                 // AI16
+			x.AUi64 != 0,                // AUi64
+			len(x.ASslice) != 0,         // ASslice
+			len(x.AI64slice) != 0,       // AI64slice
+			len(x.AUi64slice) != 0,      // AUi64slice
+			len(x.AF64slice) != 0,       // AF64slice
+			len(x.AF32slice) != 0,       // AF32slice
+			len(x.AMSU16) != 0,          // AMSU16
+			len(x.AI64arr0) != 0,        // AI64arr0
+			len(x.AI64slice0) != 0,      // AI64slice0
+			len(x.AUi64sliceN) != 0,     // AUi64sliceN
+			len(x.AMSU16N) != 0,         // AMSU16N
+			len(x.AMSU16E) != 0,         // AMSU16E
+			!(x.NotAnon.IsCodecEmpty()), // NotAnon
+			len(x.Nmap) != 0,            // Nmap
+			len(x.Nslice) != 0,          // Nslice
+			x.Nint64 != nil,             // Nint64
+			len(x.Chstr) != 0,           // Chstr
+			len(x.Mis) != 0,             // Mis
+			len(x.Mbu64) != 0,           // Mbu64
+			len(x.Miwu64s) != 0,         // Miwu64s
+			len(x.Mfwss) != 0,           // Mfwss
+			len(x.Mf32wss) != 0,         // Mf32wss
+			len(x.Mui2wss) != 0,         // Mui2wss
+			len(x.Msu2wss) != 0,         // Msu2wss
+			x.Ci64 != 0,                 // Ci64
+			len(x.Swrapbytes) != 0,      // Swrapbytes
+			len(x.Swrapuint8) != 0,      // Swrapuint8
+			len(x.ArrStrUi64T) != 0,     // ArrStrUi64T
+			len(x.Ui64array) != 0,       // Ui64array
+			len(x.Ui64slicearray) != 0,  // Ui64slicearray
+			len(x.SintfAarray) != 0,     // SintfAarray
+			len(x.MstrUi64TSelf) != 0,   // MstrUi64TSelf
+			!(x.Ttime.IsZero()),         // Ttime
+			x.Ttimeptr != nil,           // Ttimeptr
 			x.AnonInTestStrucIntf != nil && len(x.Islice) != 0, // Islice
 			x.AnonInTestStrucIntf != nil && len(x.Ms) != 0,     // Ms
 			x.AnonInTestStrucIntf != nil && x.Nintf != nil,     // Nintf
@@ -9184,14 +9285,6 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			x.XuintToBytes != 0, // XuintToBytes
 		}
 		_ = yyq2
-		var yyn54 bool = x.TestStrucCommon.Nint64 == nil
-		var yyn72 bool = x.Ttimeptr == nil
-		var yyn73 bool = x.AnonInTestStrucIntf == nil
-		var yyn74 bool = x.AnonInTestStrucIntf == nil
-		var yyn75 bool = x.AnonInTestStrucIntf == nil
-		var yyn76 bool = x.AnonInTestStrucIntf == nil
-		var yyn77 bool = x.AnonInTestStrucIntf == nil || x.AnonInTestStrucIntf.Tptr == nil
-		var yyn81 bool = x.Nteststruc == nil
 		if yyr2 || yy2arr2 {
 			z.EncWriteArrayStart(83)
 			z.EncWriteArrayElem()
@@ -12663,6 +12756,10 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj149-1, "")
 	}
+}
+
+func (x *TestStrucFlex) IsCodecEmpty() bool {
+	return !(!(x.TestStrucCommon.IsCodecEmpty()) && len(x.Chstr) != 0 && len(x.Mis) != 0 && len(x.Mbu64) != 0 && len(x.Miwu64s) != 0 && len(x.Mfwss) != 0 && len(x.Mf32wss) != 0 && len(x.Mui2wss) != 0 && len(x.Msu2wss) != 0 && x.Ci64 != 0 && len(x.Swrapbytes) != 0 && len(x.Swrapuint8) != 0 && len(x.ArrStrUi64T) != 0 && len(x.Ui64array) != 0 && len(x.Ui64slicearray) != 0 && len(x.SintfAarray) != 0 && len(x.MstrUi64TSelf) != 0 && !(x.Ttime.IsZero()) && x.AnonInTestStrucIntf != nil && len(x.Mtsptr) != 0 && len(x.Mts) != 0 && len(x.Its) != 0 && bool(x.MarJ) && x.MarT != "" && len(x.MarB) != 0 && x.XuintToBytes != 0 && true)
 }
 
 func (x codecSelfer19780) encwrapSliceUint64(v wrapSliceUint64, e *Encoder) {
