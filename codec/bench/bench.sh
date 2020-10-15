@@ -39,7 +39,7 @@ _gen() {
     # Note: ensure you run the codecgen for this codebase
     cp values_test.go v.go &&
         echo "codecgen ..." &&
-        codecgen -nx -rt codecgen -t 'codecgen generated' -o values_codecgen${zsfx} -d 19780 v.go &&
+        codecgen -nx -ta=false -rt codecgen -t 'codecgen generated' -o values_codecgen${zsfx} -d 19780 v.go &&
         echo "msgp ... " &&
         msgp -unexported -tests=false -o=m9.go -file=v.go &&
         _prependbt m9.go values_msgp${zsfx} &&
