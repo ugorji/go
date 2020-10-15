@@ -1932,7 +1932,7 @@ func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 //    - is it comparable, and can i compare directly using ==
 //    - if checkStruct, then walk through the encodable fields
 //      and check if they are empty or not.
-func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) bool {
+func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// v is a struct kind - no need to check again.
 	// We only check isZero on a struct kind, to reduce the amount of times
 	// that we lookup the rtid and typeInfo for each type as we walk the tree.
@@ -1961,14 +1961,14 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) 
 	if ti.isFlag(tiflagComparable) {
 		return rv2i(v) == rv2i(rvZeroK(vt, reflect.Struct))
 	}
-	if !checkStruct {
+	if !recursive {
 		return false
 	}
 	// We only care about what we can encode/decode,
 	// so that is what we use to check omitEmpty.
 	for _, si := range ti.sfiSrc {
 		sfv := si.field(v)
-		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, deref, checkStruct) {
+		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, recursive) {
 			return false
 		}
 	}

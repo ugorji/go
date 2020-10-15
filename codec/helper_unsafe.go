@@ -180,10 +180,36 @@ func i2rtid(i interface{}) uintptr {
 
 // --------------------------
 
-func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) bool {
+func unsafeCmpZero(ptr unsafe.Pointer, size int) bool {
+	var s1, s2 string
+	s1u := (*unsafeString)(unsafe.Pointer(&s1))
+	s2u := (*unsafeString)(unsafe.Pointer(&s2))
+	s1u.Data, s1u.Len, s2u.Len = ptr, size, size
+	if size <= len(unsafeZeroArr) {
+		s2u.Data = unsafe.Pointer(&unsafeZeroArr[0])
+	} else {
+		arr := make([]byte, size)
+		s2u.Data = unsafe.Pointer(&arr[0])
+	}
+	return s1 == s2 // memcmp
+}
+
+func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	if urv.flag == 0 {
 		return true
+	}
+	if !recursive {
+		// t := rvPtrToType(urv.typ)
+		// // it is empty if it is a zero value OR it points to a zero value
+		// if urv.flag&unsafeFlagIndir == 0 { // this is a pointer
+		// 	if urv.ptr == nil {
+		// 		return true
+		// 	}
+		// 	return unsafeCmpZero(*(*unsafe.Pointer)(urv.ptr), int(t.Elem().Size()))
+		// }
+		// return unsafeCmpZero(urv.ptr, int(t.Size()))
+		return unsafeCmpZero(urv.ptr, int(rvPtrToType(urv.typ).Size()))
 	}
 	switch v.Kind() {
 	case reflect.Invalid:
@@ -220,28 +246,24 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) b
 		return *(*float32)(urv.ptr) == 0
 	case reflect.Float64:
 		return *(*float64)(urv.ptr) == 0
-	case reflect.Interface:
-		isnil := urv.ptr == nil || *(*unsafe.Pointer)(urv.ptr) == nil
-		if deref {
-			if isnil {
-				return true
-			}
-			return isEmptyValue(v.Elem(), tinfos, deref, checkStruct)
-		}
-		return isnil
-	case reflect.Ptr:
+	case reflect.Complex64:
+		return unsafeCmpZero(urv.ptr, 8)
+	case reflect.Complex128:
+		return unsafeCmpZero(urv.ptr, 16)
+	case reflect.Struct:
+		return isEmptyStruct(v, tinfos, recursive)
+	case reflect.Interface, reflect.Ptr:
 		// isnil := urv.ptr == nil // (not sufficient, as a pointer value encodes the type)
 		isnil := urv.ptr == nil || *(*unsafe.Pointer)(urv.ptr) == nil
-		if deref {
-			if isnil {
-				return true
-			}
-			return isEmptyValue(v.Elem(), tinfos, deref, checkStruct)
+		if recursive && !isnil {
+			return isEmptyValue(v.Elem(), tinfos, recursive)
 		}
 		return isnil
-	case reflect.Struct:
-		return isEmptyStruct(v, tinfos, deref, checkStruct)
-	case reflect.Map, reflect.Array, reflect.Chan:
+	case reflect.UnsafePointer:
+		return urv.ptr == nil || *(*unsafe.Pointer)(urv.ptr) == nil
+	case reflect.Chan:
+		return urv.ptr == nil || *(*unsafe.Pointer)(urv.ptr) == nil || v.Len() == 0
+	case reflect.Map, reflect.Array:
 		return v.Len() == 0
 	}
 	return false
@@ -866,6 +888,8 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
 }
 
 // ---------- go linknames (LINKED to runtime/reflect) ---------------
+
+// MARKER: always check that these linknames match subsequent versions of go
 
 //go:linkname unsafeZeroArr runtime.zeroVal
 var unsafeZeroArr [1024]byte

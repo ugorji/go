@@ -109,10 +109,13 @@ type EncodeOptions struct {
 	// This is opt-in, as there may be a performance hit to checking circular references.
 	CheckCircularRef bool
 
-	// RecursiveEmptyCheck controls whether we descend into interfaces, structs and pointers
-	// when checking if a value is empty.
+	// RecursiveEmptyCheck controls how we determine whether a value is empty.
 	//
-	// Note that this may make OmitEmpty more expensive, as it incurs a lot more reflect calls.
+	// If true, we descend into interfaces and pointers and check struct fields one by one to
+	// see if empty. In this mode, we honor IsZero, Comparable, IsCodecEmpty(), etc.
+	// Note: This will make OmitEmpty more expensive due to the large number of reflect calls.
+	//
+	// If false, we check if the value is equal to its zero value (newly allocated state).
 	RecursiveEmptyCheck bool
 
 	// Raw controls whether we encode Raw values.
@@ -499,7 +502,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		newlen = 0
 		for _, si := range f.ti.sfiSort { // use sorted array
 			kv.r = si.field(rv)
-			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
+			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
 			}
 			kv.v = si
@@ -512,7 +515,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				delete(mf, k)
 				continue
 			}
-			if f.ti.infoFieldOmitempty && isEmptyValue(rv4i(v), e.h.TypeInfos, recur, recur) {
+			if f.ti.infoFieldOmitempty && isEmptyValue(rv4i(v), e.h.TypeInfos, recur) {
 				delete(mf, k)
 				continue
 			}
@@ -541,7 +544,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			kv.r = si.field(rv)
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
-			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur, recur) {
+			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				switch kv.r.Kind() {
 				case reflect.Struct, reflect.Interface, reflect.Ptr, reflect.Array, reflect.Map, reflect.Slice:
 					kv.r = reflect.Value{} //encode as nil

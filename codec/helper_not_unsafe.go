@@ -6,6 +6,7 @@
 package codec
 
 import (
+	"math"
 	"reflect"
 	"sync/atomic"
 	"time"
@@ -94,30 +95,35 @@ func i2rtid(i interface{}) uintptr {
 
 // --------------------------
 
-func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) bool {
+func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	switch v.Kind() {
 	case reflect.Invalid:
 		return true
-	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+	case reflect.Array, reflect.String:
 		return v.Len() == 0
+	case reflect.Map, reflect.Slice, reflect.Chan:
+		return v.IsNil() || v.Len() == 0
 	case reflect.Bool:
 		return !v.Bool()
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return v.Int() == 0
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
 		return v.Uint() == 0
+	case reflect.Complex64, reflect.Complex128:
+		c := v.Complex()
+		return math.Float64bits(real(c)) == 0 && math.Float64bits(imag(c)) == 0
 	case reflect.Float32, reflect.Float64:
 		return v.Float() == 0
-	case reflect.Interface, reflect.Ptr:
-		if deref {
-			if v.IsNil() {
-				return true
-			}
-			return isEmptyValue(v.Elem(), tinfos, deref, checkStruct)
-		}
+	case reflect.Func, reflect.UnsafePointer:
 		return v.IsNil()
+	case reflect.Interface, reflect.Ptr:
+		isnil := v.IsNil()
+		if recursive && !isnil {
+			return isEmptyValue(v.Elem(), tinfos, recursive)
+		}
+		return isnil
 	case reflect.Struct:
-		return isEmptyStruct(v, tinfos, deref, checkStruct)
+		return isEmptyStruct(v, tinfos, recursive)
 	}
 	return false
 }
