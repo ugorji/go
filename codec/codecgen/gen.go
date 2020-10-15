@@ -69,6 +69,10 @@ import (
 	"go/format"
 )
 
+func codecGenBoolPtr(b bool) *bool {
+	return &b
+}
+
 func CodecGenTempWrite{{ .RandString }}() {
 	os.Remove("{{ .OutFile }}")
 	fout, err := os.Create("{{ .OutFile }}")
@@ -76,7 +80,13 @@ func CodecGenTempWrite{{ .RandString }}() {
 		panic(err)
 	}
 	defer fout.Close()
-	
+
+	var bJO, bS2A, bOE *bool
+	_, _, _ = bJO, bS2A, bOE
+	{{ if .JsonOnly }}bJO = codecGenBoolPtr({{ boolvar .JsonOnly }}){{end}}
+	{{ if .StructToArrayAlways }}bS2A = codecGenBoolPtr({{ boolvar .StructToArrayAlways }}){{end}}
+	{{ if .OmitEmptyAlways }}bOE = codecGenBoolPtr({{ boolvar .OmitEmptyAlways }}){{end}}
+
 	var typs []reflect.Type
 	var typ reflect.Type
 	var numfields int
@@ -92,6 +102,7 @@ typ = reflect.TypeOf(t{{ $index }})
 	var out = bytes.NewBuffer(make([]byte, 0, numfields*1024)) // {{ .AllFilesSize }}*16
 	{{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}Gen(out,
 		"{{ .BuildTag }}", "{{ .PackageName }}", "{{ .RandString }}", {{ .NoExtensions }},
+		bJO, bS2A, bOE,
 		{{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}NewTypeInfos(strings.Split("{{ .StructTags }}", ",")),
 		 typs...)
 
@@ -106,6 +117,67 @@ typ = reflect.TypeOf(t{{ $index }})
 
 `
 
+var genFuncs template.FuncMap
+
+func init() {
+	genFuncs = make(template.FuncMap)
+	genFuncs["boolvar"] = func(x *bool) bool { return *x }
+}
+
+type regexFlagValue struct {
+	v *regexp.Regexp
+}
+
+func (v *regexFlagValue) Set(s string) (err error) {
+	// fmt.Printf("calling regexFlagValue.Set with %s\n", s)
+	v.v, err = regexp.Compile(s)
+	return
+}
+func (v *regexFlagValue) Get() interface{} { return v.v }
+func (v *regexFlagValue) String() string   { return fmt.Sprintf("%v", v.v) }
+
+// boolFlagValue can be set to true or false, or unset as nil (default)
+type boolFlagValue struct {
+	v *bool
+}
+
+func (v *boolFlagValue) Set(s string) (err error) {
+	// fmt.Printf("calling boolFlagValue.Set with %s\n", s)
+	b, err := strconv.ParseBool(s)
+	if err == nil {
+		v.v = &b
+	}
+	return
+}
+func (v *boolFlagValue) Get() interface{} { return v.v }
+func (v *boolFlagValue) String() string   { return fmt.Sprintf("%#v", v.v) }
+
+type mainCfg struct {
+	CodecPkgName    string
+	CodecImportPath string
+	ImportPath      string
+	OutFile         string
+	PackageName     string
+	RandString      string
+	BuildTag        string
+	StructTags      string
+	Types           []string
+	AllFilesSize    int64
+	CodecPkgFiles   bool
+	NoExtensions    bool
+
+	JsonOnly            *bool
+	StructToArrayAlways *bool
+	OmitEmptyAlways     *bool
+
+	uid          int64
+	goRunTags    string
+	regexName    *regexp.Regexp
+	notRegexName *regexp.Regexp
+
+	keepTempFile bool // !deleteTempFile
+}
+
 // Generate is given a list of *.go files to parse, and an output file (fout).
 //
 // It finds all types T in the files, and it creates 2 tmp files (frun).
@@ -115,31 +187,33 @@ typ = reflect.TypeOf(t{{ $index }})
 // Tool then executes: "go run __frun__" which creates fout.
 // fout contains Codec(En|De)codeSelf implementations for every type T.
 //
-func Generate(outfile, buildTag, codecPkgPath string,
-	uid int64,
-	goRunTag string, st string,
-	regexName, notRegexName *regexp.Regexp,
-	deleteTempFile, noExtensions bool,
-	infiles ...string) (err error) {
+func mainGen(tv *mainCfg, infiles ...string) (err error) {
 	// For each file, grab AST, find each type, and write a call to it.
 	if len(infiles) == 0 {
 		return
 	}
-	if codecPkgPath == "" {
+	if tv.CodecImportPath == "" {
 		return errors.New("codec package path cannot be blank")
 	}
-	if outfile == "" {
+	if tv.OutFile == "" {
 		return errors.New("outfile cannot be blank")
 	}
-	if uid < 0 {
-		uid = -uid
-	} else if uid == 0 {
-		rr := rand.New(rand.NewSource(time.Now().UnixNano()))
-		uid = 101 + rr.Int63n(9777)
+	if tv.regexName == nil {
+		tv.regexName = regexp.MustCompile(".*")
 	}
+	if tv.notRegexName == nil {
+		tv.notRegexName = regexp.MustCompile("^$")
+	}
+	if tv.uid < 0 {
+		tv.uid = -tv.uid
+	} else if tv.uid == 0 {
+		rr := rand.New(rand.NewSource(time.Now().UnixNano()))
+		tv.uid = 101 + rr.Int63n(9777)
+	}
+
 	// We have to parse dir for package, before opening the temp file for writing (else ImportDir fails).
 	// Also, ImportDir(...) must take an absolute path.
-	lastdir := filepath.Dir(outfile)
+	lastdir := filepath.Dir(tv.OutFile)
 	absdir, err := filepath.Abs(lastdir)
 	if err != nil {
 		return
@@ -148,29 +222,10 @@ func Generate(outfile, buildTag, codecPkgPath string,
 	if err != nil {
 		return
 	}
-	type tmplT struct {
-		CodecPkgName    string
-		CodecImportPath string
-		ImportPath      string
-		OutFile         string
-		PackageName     string
-		RandString      string
-		BuildTag        string
-		StructTags      string
-		Types           []string
-		AllFilesSize    int64
-		CodecPkgFiles   bool
-		NoExtensions    bool
-	}
-	tv := tmplT{
-		CodecPkgName:    genCodecPkg,
-		OutFile:         outfile,
-		CodecImportPath: codecPkgPath,
-		BuildTag:        buildTag,
-		RandString:      strconv.FormatInt(uid, 10),
-		StructTags:      st,
-		NoExtensions:    noExtensions,
-	}
+
+	tv.CodecPkgName = genCodecPkg
+	tv.RandString = strconv.FormatInt(tv.uid, 10)
+
 	tv.ImportPath = importPath
 	if tv.ImportPath == tv.CodecImportPath {
 		tv.CodecPkgFiles = true
@@ -262,8 +317,8 @@ func Generate(outfile, buildTag, codecPkgPath string,
 							//   - it matches per the -r parameter
 							//   - it doesn't match per the -nr parameter
 							//   - it doesn't have any of the Selfer methods in the file
-							if regexName.FindStringIndex(td.Name.Name) != nil &&
-								notRegexName.FindStringIndex(td.Name.Name) == nil &&
+							if tv.regexName.FindStringIndex(td.Name.Name) != nil &&
+								tv.notRegexName.FindStringIndex(td.Name.Name) == nil &&
 								!selferEncTyps[td.Name.Name] &&
 								!selferDecTyps[td.Name.Name] {
 								tv.Types = append(tv.Types, td.Name.Name)
@@ -299,10 +354,10 @@ func Generate(outfile, buildTag, codecPkgPath string,
 	}
 
 	// remove outfile, so "go run ..." will not think that types in outfile already exist.
-	os.Remove(outfile)
+	os.Remove(tv.OutFile)
 
 	// execute go run frun
-	cmd := exec.Command("go", "run", "-tags", "codecgen.exec safe "+goRunTag, frunMainName) //, frunPkg.Name())
+	cmd := exec.Command("go", "run", "-tags", "codecgen.exec safe "+tv.goRunTags, frunMainName) //, frunPkg.Name())
 	cmd.Dir = lastdir
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
@@ -316,7 +371,7 @@ func Generate(outfile, buildTag, codecPkgPath string,
 
 	// only delete these files if codecgen ran successfully.
 	// if unsuccessful, these files are here for diagnosis.
-	if deleteTempFile {
+	if !tv.keepTempFile {
 		os.Remove(frunMainName)
 		os.Remove(frunPkgName)
 	}
@@ -331,7 +386,7 @@ func gen1(frunName, tmplStr string, tv interface{}) (frun *os.File, err error) {
 	}
 	defer frun.Close()
 
-	t := template.New("")
+	t := template.New("").Funcs(genFuncs)
 	if t, err = t.Parse(tmplStr); err != nil {
 		return
 	}
@@ -361,21 +416,42 @@ func genStripVendor(s string) string {
 }
 
 func main() {
-	o := flag.String("o", "", "out file")
-	c := flag.String("c", genCodecPath, "codec path")
-	t := flag.String("t", "", "build tag to put in file")
-	r := flag.String("r", ".*", "regex for type name to match")
-	nr := flag.String("nr", "^$", "regex for type name to exclude")
-	rt := flag.String("rt", "", "tags for go run")
-	st := flag.String("st", "codec,json", "struct tag keys to introspect")
-	x := flag.Bool("x", false, "keep temp file")
-	_ = flag.Bool("u", false, "Allow unsafe use. ***IGNORED*** - kept for backwards compatibility: ")
-	d := flag.Int64("d", 0, "random identifier for use in generated code")
-	nx := flag.Bool("nx", false, "do not support extensions - support of extensions may cause extra allocation")
+	var unusedBool bool
+	var g mainCfg
+	var r1, r2 regexFlagValue
+	var b1, b2, b3 boolFlagValue
+
+	flag.StringVar(&g.OutFile, "o", "", "`output file` that contains generated type")
+	flag.StringVar(&g.CodecImportPath, "c", genCodecPath, "`codec import path` useful when building against a mirror or fork")
+	flag.StringVar(&g.BuildTag, "t", "", "`build tag` to put into generated file")
+
+	flag.Var(&r1, "r", "`regex` for type names to match - defaults to '.*' (all)")
+	flag.Var(&r2, "nr", "`regex` for type names to exclude - defaults to the '^$' (none)")
+
+	flag.Var(&b1, "j", "if set to `true or false`, generated file supports 'json only' or omits json specific optimizations")
+	flag.Var(&b2, "ta", "if set to `true or false`, support 'to_array' always or never, regardless of Handle or struct tags")
+	flag.Var(&b3, "oe", "if set to `true or false`, 'omit empty' always or never, regardless of struct tags")
+
+	flag.StringVar(&g.goRunTags, "rt", "", "`runtime tags` for go run to select which files to use during codecgen execution")
+	flag.StringVar(&g.StructTags, "st", "codec,json", "`struct tag keys` to introspect")
+	flag.BoolVar(&g.keepTempFile, "x", false, "set to `true or false` to 'keep' temp file created during codecgen execution - for debugging sessions")
+	flag.BoolVar(&unusedBool, "u", false, "set to `true or false` to 'allow unsafe' use. **Deprecated and Ignored: kept for backwards compatibility**")
+	flag.Int64Var(&g.uid, "d", 0, "`random integer identifier` for use in generated code, to prevent excessive churn")
+	flag.BoolVar(&g.NoExtensions, "nx", false, "set to `true or false` to elide/ignore checking for extensions (if you do not use extensions)")
 
 	flag.Parse()
-	err := Generate(*o, *t, *c, *d, *rt, *st,
-		regexp.MustCompile(*r), regexp.MustCompile(*nr), !*x, *nx, flag.Args()...)
+
+	g.JsonOnly = b1.v
+	g.StructToArrayAlways = b2.v
+	g.OmitEmptyAlways = b3.v
+
+	g.regexName = r1.v
+	g.notRegexName = r2.v
+
+	// fmt.Printf("jsonOnly: %v, StructToArrayAlways: %v, OmitEmptyAlways: %v\n", g.JsonOnly, g.StructToArrayAlways, g.OmitEmptyAlways)
+	err := mainGen(&g, flag.Args()...)
+	// err := mainGen(*o, *t, *c, *d, *rt, *st,
+	// 	regexp.MustCompile(*r), regexp.MustCompile(*nr), !*x, *nx, flag.Args()...)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "codecgen error: %v\n", err)
 		os.Exit(1)

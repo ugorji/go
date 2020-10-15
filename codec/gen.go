@@ -172,6 +172,14 @@ type genBuf struct {
 	buf []byte
 }
 
+func (x *genBuf) sIf(b bool, s, t string) *genBuf {
+	if b {
+		x.buf = append(x.buf, s...)
+	} else {
+		x.buf = append(x.buf, t...)
+	}
+	return x
+}
 func (x *genBuf) s(s string) *genBuf              { x.buf = append(x.buf, s...); return x }
 func (x *genBuf) b(s []byte) *genBuf              { x.buf = append(x.buf, s...); return x }
 func (x *genBuf) v() string                       { return string(x.buf) }
@@ -192,7 +200,9 @@ type genRunner struct {
 	tc reflect.Type     // currently running selfer on this type
 	te map[uintptr]bool // types for which the encoder has been created
 	td map[uintptr]bool // types for which the decoder has been created
-	cp string           // codec import path
+	tz map[uintptr]bool // types for which GenIsZero has been created
+
+	cp string // codec import path
 
 	im  map[string]reflect.Type // imports to add
 	imn map[string]string       // package names of imports to add
@@ -203,6 +213,7 @@ type genRunner struct {
 
 	cpfx string // codec package prefix
 
+	ty map[reflect.Type]struct{} // types for which GenIsZero *should* be created
 	tm map[reflect.Type]struct{} // types for which enc/dec must be generated
 	ts []reflect.Type            // types for which enc/dec must be generated
 
@@ -211,6 +222,8 @@ type genRunner struct {
 
 	ti *TypeInfos
 	// rr *rand.Rand // random generator for file-specific types
+
+	jsonOnlyWhen, toArrayWhen, omitEmptyWhen *bool
 
 	nx bool // no extensions
 }
@@ -244,6 +257,7 @@ func (g *genIfClause) c(last bool) (v string) {
 //
 // Library users: DO NOT USE IT DIRECTLY. IT WILL CHANGE CONTINUOUSLY WITHOUT NOTICE.
 func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
+	jsonOnlyWhen, toArrayWhen, omitEmptyWhen *bool,
 	ti *TypeInfos, typ ...reflect.Type) {
 	// All types passed to this method do not have a codec.Selfer method implemented directly.
 	// codecgen already checks the AST and skips any types that define the codec.Selfer methods.
@@ -253,19 +267,25 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 		return
 	}
 	x := genRunner{
-		w:   w,
-		t:   typ,
-		te:  make(map[uintptr]bool),
-		td:  make(map[uintptr]bool),
-		im:  make(map[string]reflect.Type),
-		imn: make(map[string]string),
-		is:  make(map[reflect.Type]struct{}),
-		tm:  make(map[reflect.Type]struct{}),
-		ts:  []reflect.Type{},
-		bp:  genImportPath(typ[0]),
-		xs:  uid,
-		ti:  ti,
-		nx:  noExtensions,
+		w:             w,
+		t:             typ,
+		te:            make(map[uintptr]bool),
+		td:            make(map[uintptr]bool),
+		tz:            make(map[uintptr]bool),
+		im:            make(map[string]reflect.Type),
+		imn:           make(map[string]string),
+		is:            make(map[reflect.Type]struct{}),
+		tm:            make(map[reflect.Type]struct{}),
+		ty:            make(map[reflect.Type]struct{}),
+		ts:            []reflect.Type{},
+		bp:            genImportPath(typ[0]),
+		xs:            uid,
+		ti:            ti,
+		jsonOnlyWhen:  jsonOnlyWhen,
+		toArrayWhen:   toArrayWhen,
+		omitEmptyWhen: omitEmptyWhen,
+
+		nx: noExtensions,
 	}
 	if x.ti == nil {
 		x.ti = defTypeInfos
@@ -279,7 +299,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.cp = genImportPath(reflect.TypeOf(x))
 	x.imn[x.cp] = genCodecPkg
 	for _, t := range typ {
-		// fmt.Printf("###########: PkgPath: '%v', Name: '%s'\n", genImportPath(t), t.Name())
+		// xdebugf("###########: PkgPath: '%v', Name: '%s'\n", genImportPath(t), t.Name())
 		if genImportPath(t) != x.bp {
 			halt.onerror(errGenAllTypesSamePkg)
 		}
@@ -348,6 +368,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.line("type " + x.hn + " struct{}")
 	x.line("")
 	x.linef("func %sFalse() bool { return false }", x.hn)
+	x.linef("func %sTrue() bool { return true }", x.hn)
 	x.line("")
 	x.varsfxreset()
 	x.line("func init() {")
@@ -372,6 +393,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 		x.tc = t
 		x.selfer(true)
 		x.selfer(false)
+		x.tryGenIsZero(t)
 	}
 
 	for _, t := range x.ts {
@@ -404,6 +426,11 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 			halt.onerror(errGenExpectArrayOrMap)
 		}
 		x.line("}")
+		x.line("")
+	}
+
+	for t := range x.ty {
+		x.tryGenIsZero(t)
 		x.line("")
 	}
 
@@ -472,6 +499,15 @@ func (x *genRunner) sayFalse() string {
 		return x.hn + "False()"
 	}
 	return "false"
+}
+
+// sayFalse will either say "true" or use a function call that returns true.
+func (x *genRunner) sayTrue() string {
+	x.f++
+	if x.f%2 == 0 {
+		return x.hn + "True()"
+	}
+	return "true"
 }
 
 func (x *genRunner) varsfx() string {
@@ -575,6 +611,51 @@ func (x *genRunner) genZeroValueR(t reflect.Type) string {
 
 func (x *genRunner) genMethodNameT(t reflect.Type) (s string) {
 	return genMethodNameT(t, x.tc)
+}
+
+func (x *genRunner) tryGenIsZero(t reflect.Type) (done bool) {
+	if t.Kind() != reflect.Struct || t.Implements(isCodecEmptyerTyp) {
+		return
+	}
+
+	rtid := rt2id(t)
+
+	if _, ok := x.tz[rtid]; ok {
+		delete(x.ty, t)
+		return
+	}
+
+	x.tz[rtid] = true
+	delete(x.ty, t)
+
+	ti := x.ti.get(rtid, t)
+	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
+	varname := genTopLevelVarName
+
+	x.linef("func (%s *%s) IsCodecEmpty() bool {", varname, x.genTypeName(t))
+
+	anonSeen := make(map[reflect.Type]bool)
+	var omitline genBuf
+	for _, si := range tisfi {
+		if len(si.path) > 1 {
+			if anonSeen[si.path[0].typ] {
+				continue
+			}
+			anonSeen[si.path[0].typ] = true
+		}
+		t2 := genOmitEmptyLinePreChecks(varname, t, si, &omitline, true)
+		// if Ptr, we already checked if nil above
+		if t2.Type.Kind() != reflect.Ptr {
+			x.doEncOmitEmptyLine(t2, varname, &omitline)
+			omitline.s(" && ")
+		}
+	}
+	omitline.s(" true")
+	x.linef("return !(%s)", omitline.v())
+
+	x.line("}")
+	x.line("")
+	return true
 }
 
 func (x *genRunner) selfer(encode bool) {
@@ -823,6 +904,7 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 	} else if ti2.isFlag(tiflagBinaryMarshalerPtr) {
 		x.linef("%s z.EncBinary() { z.EncBinaryMarshal(%s%v) ", hasIf.c(false), addrPfx, varname)
 	}
+
 	if ti2.isFlag(tiflagJsonMarshaler) {
 		x.linef("%s !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(%s%v) ", hasIf.c(false), ptrPfx, varname)
 	} else if ti2.isFlag(tiflagJsonMarshalerPtr) {
@@ -918,12 +1000,39 @@ func (x *genRunner) encZero(t reflect.Type) {
 	}
 }
 
+func genOmitEmptyLinePreChecks(varname string, t reflect.Type, si *structFieldInfo, omitline *genBuf, oneLevel bool) (t2 reflect.StructField) {
+	// xdebug2f("calling genOmitEmptyLinePreChecks on: %v", t)
+	t2typ := t
+	varname3 := varname
+	// go through the loop, record the t2 field explicitly,
+	// and gather the omit line if embedded in pointers.
+	lp := len(si.path)
+	for ij := 0; ij < lp; ij++ {
+		for t2typ.Kind() == reflect.Ptr {
+			t2typ = t2typ.Elem()
+		}
+		t2 = t2typ.Field(int(si.path[ij].index))
+		t2typ = t2.Type
+		varname3 = varname3 + "." + t2.Name
+		// do not include actual field in the omit line.
+		// that is done subsequently (right after - below).
+		if ij+1 < lp && t2typ.Kind() == reflect.Ptr {
+			omitline.s(varname3).s(" != nil && ")
+		}
+		if oneLevel && ij == 0 {
+			break
+		}
+	}
+	return
+}
+
 func (x *genRunner) doEncOmitEmptyLine(t2 reflect.StructField, varname string, buf *genBuf) {
 	x.f = 0
 	x.encOmitEmptyLine(t2, varname, buf)
 }
 
 func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf *genBuf) {
+	// xdebugf("calling encOmitEmptyLine on: %v", t2.Type)
 	// smartly check omitEmpty on a struct type, as it may contain uncomparable map/slice/etc.
 	// also, for maps/slices/arrays, check if len ! 0 (not if == zero value)
 	varname2 := varname + "." + t2.Name
@@ -931,7 +1040,7 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 	case reflect.Struct:
 		rtid2 := rt2id(t2.Type)
 		ti2 := x.ti.get(rtid2, t2.Type)
-		// fmt.Printf(">>>> structfield: omitempty: type: %s, field: %s\n", t2.Type.Name(), t2.Name)
+		// xdebugf(">>>> structfield: omitempty: type: %s, field: %s\n", t2.Type.Name(), t2.Name)
 		if ti2.rtid == timeTypId {
 			buf.s("!(").s(varname2).s(".IsZero())")
 			break
@@ -940,10 +1049,28 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 			buf.s("!(").s(varname2).s(".IsZero())")
 			break
 		}
+		if t2.Type.Implements(isCodecEmptyerTyp) {
+			buf.s("!(").s(varname2).s(".IsCodecEmpty())")
+			break
+		}
+		_, ok := x.tz[rtid2]
+		if ok {
+			buf.s("!(").s(varname2).s(".IsCodecEmpty())")
+			break
+		}
+		// if we *should* create a IsCodecEmpty for it, but haven't yet, add it here
+		// _, ok = x.ty[rtid2]
+		if genImportPath(t2.Type) == x.bp {
+			x.ty[t2.Type] = struct{}{}
+			buf.s("!(").s(varname2).s(".IsCodecEmpty())")
+			break
+		}
 		if ti2.isFlag(tiflagComparable) {
 			buf.s(varname2).s(" != ").s(x.genZeroValueR(t2.Type))
 			break
 		}
+		// MARKER: we shouldn't get here at all ...
+		fmt.Printf("???? !!!! We shouldn't get to this point !!!! ????")
 		// buf.s("(")
 		buf.s(x.sayFalse()) // buf.s("false")
 		for i, n := 0, t2.Type.NumField(); i < n; i++ {
@@ -971,60 +1098,12 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	// if t === type currently running selfer on, do for all
 	ti := x.ti.get(rtid, t)
 	i := x.varsfx()
-	sepVarname := genTempVarPfx + "sep" + i
+	// sepVarname := genTempVarPfx + "sep" + i
 	numfieldsvar := genTempVarPfx + "q" + i
 	ti2arrayvar := genTempVarPfx + "r" + i
 	struct2arrvar := genTempVarPfx + "2arr" + i
 
-	x.line(sepVarname + " := !z.EncBinary()")
-	x.linef("%s := z.EncBasicHandle().StructToArray", struct2arrvar)
-	x.linef("_, _ = %s, %s", sepVarname, struct2arrvar)
-	x.linef("const %s bool = %v // struct tag has 'toArray'", ti2arrayvar, ti.toArray)
-
 	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
-
-	// var nn int
-	// due to omitEmpty, we need to calculate the
-	// number of non-empty things we write out first.
-	// This is required as we need to pre-determine the size of the container,
-	// to support length-prefixing.
-	if ti.anyOmitEmpty {
-		x.linef("var %s = [%v]bool{ // should field at this index be written?", numfieldsvar, len(tisfi))
-
-		for j, si := range tisfi {
-			_ = j
-			if !si.omitEmpty {
-				x.linef("true, // %s", si.fieldName)
-				continue
-			}
-			var t2 reflect.StructField
-			var omitline genBuf
-			{
-				t2typ := t
-				varname3 := varname
-				// go through the loop, record the t2 field explicitly,
-				// and gather the omit line if embedded in pointers.
-				lp := len(si.path)
-				for ij := 0; ij < lp; ij++ {
-					for t2typ.Kind() == reflect.Ptr {
-						t2typ = t2typ.Elem()
-					}
-					t2 = t2typ.Field(int(si.path[ij].index))
-					t2typ = t2.Type
-					varname3 = varname3 + "." + t2.Name
-					// do not include actual field in the omit line.
-					// that is done subsequently (right after - below).
-					if ij+1 < lp && t2typ.Kind() == reflect.Ptr {
-						omitline.s(varname3).s(" != nil && ")
-					}
-				}
-			}
-			x.doEncOmitEmptyLine(t2, varname, &omitline)
-			x.linef("%s, // %s", omitline.v(), si.fieldName)
-		}
-		x.line("}")
-		x.linef("_ = %s", numfieldsvar)
-	}
 
 	type genFQN struct {
 		i       string
@@ -1064,6 +1143,12 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		}
 	}
 
+	// x.line(sepVarname + " := !z.EncBinary()")
+	x.linef("%s := z.EncBasicHandle().StructToArray", struct2arrvar)
+	// x.linef("_, _ = %s, %s", sepVarname, struct2arrvar)
+	x.linef("_ = %s", struct2arrvar)
+	x.linef("const %s bool = %v // struct tag has 'toArray'", ti2arrayvar, ti.toArray)
+
 	for j := range genFQNs {
 		q := &genFQNs[j]
 		if q.canNil {
@@ -1071,79 +1156,131 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		}
 	}
 
-	x.linef("if %s || %s {", ti2arrayvar, struct2arrvar) // if ti.toArray
-	x.linef("z.EncWriteArrayStart(%d)", len(tisfi))
+	// var nn int
+	// due to omitEmpty, we need to calculate the
+	// number of non-empty things we write out first.
+	// This is required as we need to pre-determine the size of the container,
+	// to support length-prefixing.
+	omitEmptySometimes := x.omitEmptyWhen == nil
+	omitEmptyAlways := (x.omitEmptyWhen != nil && *(x.omitEmptyWhen))
+	// omitEmptyNever := (x.omitEmptyWhen != nil && !*(x.omitEmptyWhen))
 
-	for j, si := range tisfi {
-		q := &genFQNs[j]
-		// if the type of the field is a Selfer, or one of the ones
-		if q.canNil {
-			x.linef("if %s { z.EncWriteArrayElem(); r.EncodeNil() } else { ", q.nilVar)
-		}
-		x.linef("z.EncWriteArrayElem()")
-		if si.omitEmpty {
-			x.linef("if %s[%v] {", numfieldsvar, j)
-		}
-		x.encVarChkNil(q.fqname, q.sf.Type, false)
-		if si.omitEmpty {
-			x.linef("} else {")
-			x.encZero(q.sf.Type)
-			x.linef("}")
-		}
-		if q.canNil {
-			x.line("}")
-		}
-	}
+	toArraySometimes := x.toArrayWhen == nil
+	toArrayAlways := (x.toArrayWhen != nil && *(x.toArrayWhen))
+	toArrayNever := (x.toArrayWhen != nil && !(*(x.toArrayWhen)))
 
-	x.line("z.EncWriteArrayEnd()")
-	x.linef("} else {") // if not ti.toArray
-	if ti.anyOmitEmpty {
-		x.linef("var %snn%s int", genTempVarPfx, i)
-		x.linef("for _, b := range %s { if b { %snn%s++ } }", numfieldsvar, genTempVarPfx, i)
-		x.linef("z.EncWriteMapStart(%snn%s)", genTempVarPfx, i)
-		x.linef("%snn%s = %v", genTempVarPfx, i, 0)
-	} else {
-		x.linef("z.EncWriteMapStart(%d)", len(tisfi))
-	}
+	if (omitEmptySometimes && ti.anyOmitEmpty) || omitEmptyAlways {
+		x.linef("var %s = [%v]bool{ // should field at this index be written?", numfieldsvar, len(tisfi))
 
-	for j, si := range tisfi {
-		q := &genFQNs[j]
-		if si.omitEmpty {
-			x.linef("if %s[%v] {", numfieldsvar, j)
-		}
-		x.linef("z.EncWriteMapElemKey()")
-
-		// emulate EncStructFieldKey
-		switch ti.keyType {
-		case valueTypeInt:
-			x.linef("r.EncodeInt(z.M.Int(strconv.ParseInt(`%s`, 10, 64)))", si.encName)
-		case valueTypeUint:
-			x.linef("r.EncodeUint(z.M.Uint(strconv.ParseUint(`%s`, 10, 64)))", si.encName)
-		case valueTypeFloat:
-			x.linef("r.EncodeFloat64(z.M.Float(strconv.ParseFloat(`%s`, 64)))", si.encName)
-		default: // string
-			if si.encNameAsciiAlphaNum {
-				x.linef(`if z.IsJSONHandle() { z.WriteStr("\"%s\"") } else { `, si.encName)
+		for _, si := range tisfi {
+			if omitEmptySometimes && !si.omitEmpty {
+				x.linef("true, // %s", si.fieldName)
+				continue
 			}
-			x.linef("r.EncodeString(`%s`)", si.encName)
-			if si.encNameAsciiAlphaNum {
+			var omitline genBuf
+			t2 := genOmitEmptyLinePreChecks(varname, t, si, &omitline, false)
+			x.doEncOmitEmptyLine(t2, varname, &omitline)
+			x.linef("%s, // %s", omitline.v(), si.fieldName)
+		}
+		x.line("}")
+		x.linef("_ = %s", numfieldsvar)
+	}
+
+	if toArraySometimes {
+		x.linef("if %s || %s {", ti2arrayvar, struct2arrvar) // if ti.toArray
+	}
+	if toArraySometimes || toArrayAlways {
+		x.linef("z.EncWriteArrayStart(%d)", len(tisfi))
+
+		for j, si := range tisfi {
+			doOmitEmptyCheck := (omitEmptySometimes && si.omitEmpty) || omitEmptyAlways
+			q := &genFQNs[j]
+			// if the type of the field is a Selfer, or one of the ones
+			if q.canNil {
+				x.linef("if %s { z.EncWriteArrayElem(); r.EncodeNil() } else { ", q.nilVar)
+			}
+			x.linef("z.EncWriteArrayElem()")
+			if doOmitEmptyCheck {
+				x.linef("if %s[%v] {", numfieldsvar, j)
+			}
+			x.encVarChkNil(q.fqname, q.sf.Type, false)
+			if doOmitEmptyCheck {
+				x.linef("} else {")
+				x.encZero(q.sf.Type)
 				x.linef("}")
 			}
+			if q.canNil {
+				x.line("}")
+			}
 		}
-		x.line("z.EncWriteMapElemValue()")
-		if q.canNil {
-			x.line("if " + q.nilVar + " { r.EncodeNil() } else { ")
-			x.encVarChkNil(q.fqname, q.sf.Type, false)
-			x.line("}")
-		} else {
-			x.encVarChkNil(q.fqname, q.sf.Type, false)
-		}
-		if si.omitEmpty {
-			x.line("}")
-		}
+
+		x.line("z.EncWriteArrayEnd()")
 	}
-	x.line("z.EncWriteMapEnd()")
-	x.linef("} ") // end if/else ti.toArray
+	if toArraySometimes {
+		x.linef("} else {") // if not ti.toArray
+	}
+	if toArraySometimes || toArrayNever {
+		if (omitEmptySometimes && ti.anyOmitEmpty) || omitEmptyAlways {
+			x.linef("var %snn%s int", genTempVarPfx, i)
+			x.linef("for _, b := range %s { if b { %snn%s++ } }", numfieldsvar, genTempVarPfx, i)
+			x.linef("z.EncWriteMapStart(%snn%s)", genTempVarPfx, i)
+			x.linef("%snn%s = %v", genTempVarPfx, i, 0)
+		} else {
+			x.linef("z.EncWriteMapStart(%d)", len(tisfi))
+		}
+
+		for j, si := range tisfi {
+			q := &genFQNs[j]
+			doOmitEmptyCheck := (omitEmptySometimes && si.omitEmpty) || omitEmptyAlways
+			if doOmitEmptyCheck {
+				x.linef("if %s[%v] {", numfieldsvar, j)
+			}
+			x.linef("z.EncWriteMapElemKey()")
+
+			// emulate EncStructFieldKey
+			switch ti.keyType {
+			case valueTypeInt:
+				x.linef("r.EncodeInt(z.M.Int(strconv.ParseInt(`%s`, 10, 64)))", si.encName)
+			case valueTypeUint:
+				x.linef("r.EncodeUint(z.M.Uint(strconv.ParseUint(`%s`, 10, 64)))", si.encName)
+			case valueTypeFloat:
+				x.linef("r.EncodeFloat64(z.M.Float(strconv.ParseFloat(`%s`, 64)))", si.encName)
+			default: // string
+				if x.jsonOnlyWhen == nil {
+					if si.encNameAsciiAlphaNum {
+						x.linef(`if z.IsJSONHandle() { z.WriteStr("\"%s\"") } else { `, si.encName)
+					}
+					x.linef("r.EncodeString(`%s`)", si.encName)
+					if si.encNameAsciiAlphaNum {
+						x.linef("}")
+					}
+				} else if *(x.jsonOnlyWhen) {
+					if si.encNameAsciiAlphaNum {
+						x.linef(`z.WriteStr("\"%s\"")`, si.encName)
+					} else {
+						x.linef("r.EncodeString(`%s`)", si.encName)
+					}
+				} else {
+					x.linef("r.EncodeString(`%s`)", si.encName)
+				}
+			}
+			x.line("z.EncWriteMapElemValue()")
+			if q.canNil {
+				x.line("if " + q.nilVar + " { r.EncodeNil() } else { ")
+				x.encVarChkNil(q.fqname, q.sf.Type, false)
+				x.line("}")
+			} else {
+				x.encVarChkNil(q.fqname, q.sf.Type, false)
+			}
+			if doOmitEmptyCheck {
+				x.line("}")
+			}
+		}
+		x.line("z.EncWriteMapEnd()")
+	}
+	if toArraySometimes {
+		x.linef("} ") // end if/else ti.toArray
+	}
 }
 
 func (x *genRunner) encListFallback(varname string, t reflect.Type) {
