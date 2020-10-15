@@ -1924,7 +1924,22 @@ LOOP:
 }
 
 func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
-	return rt.Implements(iTyp), reflect.PtrTo(rt).Implements(iTyp)
+	// return rt.Implements(iTyp), reflect.PtrTo(rt).Implements(iTyp)
+
+	// if I's method is defined on T (ie T implements I), then *T implements I.
+	// The converse is not true.
+
+	// Type.Implements can be expensive, as it does a simulataneous linear search across 2 lists
+	// with alphanumeric string comparisons.
+	// If we can avoid running one of these 2 calls, we should.
+
+	base = rt.Implements(iTyp)
+	if base {
+		indir = true
+	} else {
+		indir = reflect.PtrTo(rt).Implements(iTyp)
+	}
+	return
 }
 
 // isEmptyStruct is only called from isEmptyValue, and checks if a struct is empty:
