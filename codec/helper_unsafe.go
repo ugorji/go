@@ -27,8 +27,6 @@ import (
 
 const safeMode = false
 
-var unsafeZeroArr [256]byte
-
 // MARKER: keep in sync with GO_ROOT/src/reflect/value.go
 const (
 	unsafeFlagStickyRO = 1 << 5
@@ -826,46 +824,6 @@ func mapAddrLoopvarRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 	return rvZeroAddrK(t, k)
 }
 
-//go:linkname mapiterinit reflect.mapiterinit
-//go:noescape
-func mapiterinit(typ unsafe.Pointer, it unsafe.Pointer) (key unsafe.Pointer)
-
-//go:linkname mapiternext reflect.mapiternext
-//go:noescape
-func mapiternext(it unsafe.Pointer) (key unsafe.Pointer)
-
-//go:linkname mapaccess reflect.mapaccess
-//go:noescape
-func mapaccess(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer)
-
-//go:linkname mapassign reflect.mapassign
-//go:noescape
-func mapassign(typ unsafe.Pointer, m unsafe.Pointer, key, val unsafe.Pointer)
-
-//go:linkname mapdelete reflect.mapdelete
-//go:noescape
-func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
-
-//go:linkname typedmemmove reflect.typedmemmove
-//go:noescape
-func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
-
-//go:linkname typedmemclr reflect.typedmemclr
-//go:noescape
-func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
-
-//go:linkname unsafe_New reflect.unsafe_New
-//go:noescape
-func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
-
-//go:linkname typedslicecopy reflect.typedslicecopy
-//go:noescape
-func typedslicecopy(elemType unsafe.Pointer, dst, src unsafeSlice) int
-
-//go:linkname rvPtrToType reflect.toType
-//go:noescape
-func rvPtrToType(typ unsafe.Pointer) reflect.Type
-
 // ---------- ENCODER optimized ---------------
 
 func (e *Encoder) jsondriver() *jsonEncDriver {
@@ -906,3 +864,48 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
 	urv.ptr = unsafe.Pointer(uintptr(uv.ptr) + uintptr(n.offset))
 	return
 }
+
+// ---------- go linknames (LINKED to runtime/reflect) ---------------
+
+//go:linkname unsafeZeroArr runtime.zeroVal
+var unsafeZeroArr [1024]byte
+
+//go:linkname mapiterinit reflect.mapiterinit
+//go:noescape
+func mapiterinit(typ unsafe.Pointer, it unsafe.Pointer) (key unsafe.Pointer)
+
+//go:linkname mapiternext reflect.mapiternext
+//go:noescape
+func mapiternext(it unsafe.Pointer) (key unsafe.Pointer)
+
+//go:linkname mapaccess reflect.mapaccess
+//go:noescape
+func mapaccess(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer)
+
+//go:linkname mapassign reflect.mapassign
+//go:noescape
+func mapassign(typ unsafe.Pointer, m unsafe.Pointer, key, val unsafe.Pointer)
+
+//go:linkname mapdelete reflect.mapdelete
+//go:noescape
+func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
+
+//go:linkname typedmemmove reflect.typedmemmove
+//go:noescape
+func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
+
+//go:linkname typedmemclr reflect.typedmemclr
+//go:noescape
+func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
+
+//go:linkname unsafe_New reflect.unsafe_New
+//go:noescape
+func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
+
+//go:linkname typedslicecopy reflect.typedslicecopy
+//go:noescape
+func typedslicecopy(elemType unsafe.Pointer, dst, src unsafeSlice) int
+
+//go:linkname rvPtrToType reflect.toType
+//go:noescape
+func rvPtrToType(typ unsafe.Pointer) reflect.Type
