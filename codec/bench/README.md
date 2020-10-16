@@ -94,14 +94,9 @@ What you should notice:
   usability and binary-size increases, as performance is already extremely good 
   without the codecgen path.
   
-See https://github.com/ugorji/go-codec-bench/blob/master/bench.out.txt for representative result from running `bench.sh` as below, as of 2020-09-11.
+See [bench.out.txt] for representative result from running `bench.sh` as below, as of 2020-11-16.
 ```sh
-  printf "**** STATS ****\n\n"
-  ./bench.sh -tx  # (stats)
-  printf "**** SUITE ****\n\n"
-  ./bench.sh -sx  # (not codecgen)
-  printf "**** SUITE (WITH CODECGEN) ****\n\n"
-  ./bench.sh -sgx # (codecgen)
+  ./bench.sh -z > bench.out.txt
 ```
 
 * snippet of benchmark output, running without codecgen (2020-11-16)*
@@ -133,7 +128,7 @@ BenchmarkCodecXSuite/options-false.../Benchmark__Mgobson____Decode-8         	  
 BenchmarkCodecXSuite/options-false.../Benchmark__Fxcbor_____Decode-8         	    5084	    235041 ns/op	   67253 B/op	    1299 allocs/op
 ```
 
-* snippet of bench.out.txt, running with codecgen (2020-09-11) *
+* snippet of bench.out.txt, running with codecgen (2020-11-16) *
 ```
 BenchmarkCodecXGenSuite/options-false.../Benchmark__Msgpack____Encode-8         	   29899	     40000 ns/op	     232 B/op	       2 allocs/op
 BenchmarkCodecXGenSuite/options-false.../Benchmark__Binc_______Encode-8         	   27520	     42680 ns/op	     248 B/op	       2 allocs/op
