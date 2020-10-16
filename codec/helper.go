@@ -1518,6 +1518,8 @@ type typeInfo struct {
 	sfiSort []*structFieldInfo // sorted. Used when enc/dec struct to map.
 	sfiSrc  []*structFieldInfo // unsorted. Used when enc/dec struct to array.
 
+	sfi4Name map[string]*structFieldInfo
+
 	key reflect.Type
 
 	// ---- cpu cache line boundary?
@@ -1543,24 +1545,10 @@ func (ti *typeInfo) flag(when bool, f tiflag) *typeInfo {
 	return ti
 }
 
-func (ti *typeInfo) siForEncName(sname string) (si *structFieldInfo) {
-	var i, h uint16
-	var n = uint16(len(ti.sfiSort))
-	var j = n
-LOOP:
-	if i < j {
-		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
-		if ti.sfiSort[h].encName < sname {
-			i = h + 1
-		} else {
-			j = h
-		}
-		goto LOOP
-	}
-	if i < n && ti.sfiSort[i].encName == sname {
-		return ti.sfiSort[i]
-	}
-	return
+func (ti *typeInfo) siForEncName(name string) (si *structFieldInfo) {
+	// binary search for map lookup is expensive, as it has to compare strings byte by byte.
+	// map (hash) lookup is faster, as it can leverage string length in disambiguation.
+	return ti.sfi4Name[name]
 }
 
 // resolves the struct field info got from a call to rget.
@@ -1590,6 +1578,8 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 	var anyOmitEmpty bool
 
 	// remove all the nils (non-ready)
+	m := make(map[string]*structFieldInfo)
+	w := make([]structFieldInfo, n)
 	y := make([]*structFieldInfo, n)
 	n = 0
 	for i := range x {
@@ -1599,7 +1589,9 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 		if !anyOmitEmpty && x[i].omitEmpty {
 			anyOmitEmpty = true
 		}
-		y[n] = &x[i]
+		w[n] = x[i]
+		y[n] = &w[n]
+		m[x[i].encName] = &w[n]
 		n++
 	}
 	if n != len(y) {
@@ -1613,6 +1605,7 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 	ti.anyOmitEmpty = anyOmitEmpty
 	ti.sfiSrc = y
 	ti.sfiSort = z
+	ti.sfi4Name = m
 }
 
 type rtid2ti struct {
@@ -1739,9 +1732,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		pv.reset()
 		pv.etypes = append(pv.etypes, ti.rtid)
 		x.rget(rt, rtid, omitEmpty, nil, pv)
-		vv := make([]structFieldInfo, len(pv.sfis))
-		copy(vv, pv.sfis)
-		ti.init(vv, pv.sfiNames)
+		ti.init(pv.sfis, pv.sfiNames)
 		pp.Put(pi)
 	case reflect.Map:
 		ti.elem = rt.Elem()
