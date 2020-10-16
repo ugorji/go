@@ -590,7 +590,6 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			d.mapEnd()
 			return
 		}
-		tisfi := f.ti.sfiSort
 		hasLen := containerLen >= 0
 
 		var name2 = []byte{}
@@ -599,8 +598,8 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			d.mapElemKey()
 			rvkencname = decStructFieldKey(d.d, f.ti.keyType, &d.b)
 			d.mapElemValue()
-			if k := f.ti.indexForEncName(stringView(rvkencname)); k >= 0 {
-				d.decodeValue(tisfi[k].fieldAlloc(rv), nil)
+			if si := f.ti.siForEncName(stringView(rvkencname)); si != nil {
+				d.decodeValue(si.fieldAlloc(rv), nil)
 			} else if mf != nil {
 				// store rvkencname in new []byte, as it previously shares Decoder.b, which is used in decode
 				name2 = append(name2[:0], rvkencname...)

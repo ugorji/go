@@ -1543,8 +1543,7 @@ func (ti *typeInfo) flag(when bool, f tiflag) *typeInfo {
 	return ti
 }
 
-// func (ti *typeInfo) indexForEncName(name []byte) (index int16) {
-func (ti *typeInfo) indexForEncName(sname string) (index int16) {
+func (ti *typeInfo) siForEncName(sname string) (si *structFieldInfo) {
 	var i, h uint16
 	var n = uint16(len(ti.sfiSort))
 	var j = n
@@ -1559,9 +1558,9 @@ LOOP:
 		goto LOOP
 	}
 	if i < n && ti.sfiSort[i].encName == sname {
-		return int16(i)
+		return ti.sfiSort[i]
 	}
-	return -1
+	return
 }
 
 // resolves the struct field info got from a call to rget.
