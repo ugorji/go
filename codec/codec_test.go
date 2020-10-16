@@ -1016,6 +1016,17 @@ func doTestCodecTableOne(t *testing.T, h Handle) {
 	//testCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18]) // do we need this?
 }
 
+func testEmptyTestStrucFlex() *TestStrucFlex {
+	var ts TestStrucFlex
+	// we initialize and start draining the chan, so that we can decode into it without it blocking due to no consumer
+	ts.Chstr = make(chan string, teststrucflexChanCap)
+	go func() {
+		for range ts.Chstr {
+		}
+	}() // drain it
+	return &ts
+}
+
 func doTestCodecMiscOne(t *testing.T, h Handle) {
 	defer testSetup(t)()
 	var err error
@@ -1053,7 +1064,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 			t.Logf("------- b: size: %v, value: %s", len(b), b1)
 		}
 	}
-	ts2 := emptyTestStrucFlex()
+	ts2 := testEmptyTestStrucFlex()
 	testUnmarshalErr(ts2, b, h, t, "pointer-to-struct")
 	if ts2.I64 != math.MaxInt64*2/3 {
 		t.Logf("------- Unmarshal wrong. Expect I64 = 64. Got: %v", ts2.I64)

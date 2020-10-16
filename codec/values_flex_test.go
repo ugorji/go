@@ -311,17 +311,6 @@ type TestStrucFlex struct {
 	Bboolignore bool         `codec:"-"` // expect this to be skipped/ignored
 }
 
-func emptyTestStrucFlex() *TestStrucFlex {
-	var ts TestStrucFlex
-	// we initialize and start draining the chan, so that we can decode into it without it blocking due to no consumer
-	ts.Chstr = make(chan string, teststrucflexChanCap)
-	go func() {
-		for range ts.Chstr {
-		}
-	}() // drain it
-	return &ts
-}
-
 func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts *TestStrucFlex) {
 	ts = &TestStrucFlex{
 		Chstr: make(chan string, teststrucflexChanCap),
