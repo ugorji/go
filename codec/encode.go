@@ -446,6 +446,13 @@ L1:
 	e.e.EncodeStringBytesRaw(bs)
 }
 
+func (e *Encoder) kStructSfi(f *codecFnInfo) []*structFieldInfo {
+	if e.h.Canonical {
+		return f.ti.sfiSort
+	}
+	return f.ti.sfiSrc
+}
+
 func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	if f.ti.toArray || e.h.StructToArray { // toArray
 		e.arrayStart(len(f.ti.sfiSrc))
@@ -455,8 +462,9 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 		}
 		e.arrayEnd()
 	} else {
-		e.mapStart(len(f.ti.sfiSort))
-		for _, si := range f.ti.sfiSort {
+		tisfi := e.kStructSfi(f)
+		e.mapStart(len(tisfi))
+		for _, si := range tisfi {
 			e.mapElemKey()
 			e.kStructFieldKey(f.ti.keyType, si.encNameAsciiAlphaNum, si.encName)
 			e.mapElemValue()
@@ -500,7 +508,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	var j int
 	if toMap {
 		newlen = 0
-		for _, si := range f.ti.sfiSort { // use sorted array
+		for _, si := range e.kStructSfi(f) {
 			kv.r = si.field(rv)
 			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
