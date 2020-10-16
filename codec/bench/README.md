@@ -85,11 +85,9 @@ Please see the [benchmarking blog post for detailed representative results](http
 A snapshot of some results on my 2016 MacBook Pro is below.  
 **Note: errors are truncated, and lines re-arranged, for readability**.
 
-Below are results of running the entire suite on 2017-11-20 (ie running ./bench.sh -s).
-
 What you should notice:
 
-- Results get better with codecgen, showing about 20-50% performance improvement.
+- Results get better with codecgen, resulting in about 50% performance improvement.
   Users should carefully weigh the performance improvements against the 
   usability and binary-size increases, as performance is already extremely good 
   without the codecgen path.
