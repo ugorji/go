@@ -97,6 +97,16 @@ func rv2ptr(urv *unsafeReflectValue) (ptr unsafe.Pointer) {
 	return
 }
 
+// func rvAddr(rv reflect.Value) uintptr {
+// 	return uintptr((*unsafeReflectValue)(unsafe.Pointer(&rv)).ptr)
+// }
+
+func eq4i(i0, i1 interface{}) bool {
+	v0 := (*unsafeIntf)(unsafe.Pointer(&i0))
+	v1 := (*unsafeIntf)(unsafe.Pointer(&i1))
+	return v0.typ == v1.typ && v0.word == v1.word
+}
+
 func rv4i(i interface{}) (rv reflect.Value) {
 	// Unfortunately, we cannot get the "kind" of the interface directly here.
 	// We need the 'rtype', whose structure changes in different go versions.

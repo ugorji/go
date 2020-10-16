@@ -45,6 +45,14 @@ func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	return
 }
 
+// func rvAddr(rv reflect.Value) uintptr {
+// 	return rv.UnsafeAddr()
+// }
+
+func eq4i(i0, i1 interface{}) bool {
+	return i0 == i1
+}
+
 func rv4i(i interface{}) reflect.Value {
 	return reflect.ValueOf(i)
 }

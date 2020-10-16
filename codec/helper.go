@@ -798,6 +798,7 @@ func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt boo
 			return
 		}
 	}
+
 	fn = x.fnLoad(rt, rtid, checkExt)
 	x.mu.Lock()
 	sp = fs.load()
@@ -1544,9 +1545,9 @@ func (ti *typeInfo) flag(when bool, f tiflag) *typeInfo {
 
 // func (ti *typeInfo) indexForEncName(name []byte) (index int16) {
 func (ti *typeInfo) indexForEncName(sname string) (index int16) {
-	var i, j, h, n uint16
-	n = uint16(len(ti.sfiSort))
-	j = n
+	var i, h uint16
+	var n = uint16(len(ti.sfiSort))
+	var j = n
 LOOP:
 	if i < j {
 		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
@@ -2251,75 +2252,6 @@ type ioBuffered interface {
 type sfiRv struct {
 	v *structFieldInfo
 	r reflect.Value
-}
-
-// -----------------
-
-type set []interface{}
-
-func (s *set) add(v interface{}) (exists bool) {
-	// e.ci is always nil, or len >= 1
-	x := *s
-
-	if x == nil {
-		x = make([]interface{}, 1, 8)
-		x[0] = v
-		*s = x
-		return
-	}
-	// typically, length will be 1. make this perform.
-	if len(x) == 1 {
-		if j := x[0]; j == 0 {
-			x[0] = v
-		} else if j == v {
-			exists = true
-		} else {
-			x = append(x, v)
-			*s = x
-		}
-		return
-	}
-	// check if it exists
-	for _, j := range x {
-		if j == v {
-			exists = true
-			return
-		}
-	}
-	// try to replace a "deleted" slot
-	for i, j := range x {
-		if j == 0 {
-			x[i] = v
-			return
-		}
-	}
-	// if unable to replace deleted slot, just append it.
-	x = append(x, v)
-	*s = x
-	return
-}
-
-func (s *set) remove(v interface{}) (exists bool) {
-	x := *s
-	if len(x) == 0 {
-		return
-	}
-	if len(x) == 1 {
-		if x[0] == v {
-			x[0] = 0
-		}
-		return
-	}
-	for i, j := range x {
-		if j == v {
-			exists = true
-			x[i] = 0 // set it to 0, as way to delete it.
-			// copy(x[i:], x[i+1:])
-			// x = x[:len(x)-1]
-			return
-		}
-	}
-	return
 }
 
 // ------

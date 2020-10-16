@@ -809,7 +809,15 @@ type Encoder struct {
 	// ---- cpu cache line boundary
 
 	// ---- writable fields during execution --- *try* to keep in sep cache line
-	ci set // holds set of addresses found during an encoding (if CheckCircularRef=true)
+
+	// ci holds interfaces during an encoding (if CheckCircularRef=true)
+	//
+	// We considered using a []uintptr (slice of pointer addresses) retrievable via rv.UnsafeAddr.
+	// However, it is possible for the same pointer to point to 2 different types e.g.
+	//    type T struct { tHelper }
+	//    Here, for var v T; &v and &v.tHelper are the same pointer.
+	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
+	ci []interface{} // []uintptr
 
 	slist sfiRvFreelist
 
@@ -853,9 +861,7 @@ func (e *Encoder) w() *encWr {
 
 func (e *Encoder) resetCommon() {
 	e.e.reset()
-	if e.ci == nil {
-		// e.ci = (set)(e.cidef[:0])
-	} else {
+	if e.ci != nil {
 		e.ci = e.ci[:0]
 	}
 	e.c = 0
@@ -1136,15 +1142,9 @@ func (e *Encoder) encode(iv interface{}) {
 func (e *Encoder) encodeValue(rv reflect.Value, fn *codecFn) {
 	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
 
-	// We considered using a uintptr (a pointer) retrievable via rv.UnsafeAddr.
-	// However, it is possible for the same pointer to point to 2 different types e.g.
-	//    type T struct { tHelper }
-	//    Here, for var v T; &v and &v.tHelper are the same pointer.
-	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
-
 	// MARKER: We check if value is nil here, so that the kXXX method do not have to.
 
-	var sptr interface{} // uintptr
+	var sptr interface{}
 	var rvp reflect.Value
 	var rvpValid bool
 TOP:
@@ -1158,7 +1158,14 @@ TOP:
 		rvp = rv
 		rv = rv.Elem()
 		if e.h.CheckCircularRef && rv.Kind() == reflect.Struct {
-			sptr = rv2i(rvp) // rv.UnsafeAddr()
+			// sptr = rvAddr(rv) // use rv, not rvp, as rvAddr gives ptr to the data rv
+			sptr = rv2i(rvp)
+			for _, vv := range e.ci {
+				if eq4i(sptr, vv) { // error if sptr already seen
+					e.errorf("circular reference found: %p, %T", sptr, sptr)
+				}
+			}
+			e.ci = append(e.ci, sptr)
 			break TOP
 		}
 		goto TOP
@@ -1179,35 +1186,31 @@ TOP:
 		return
 	}
 
-	if sptr != nil && (&e.ci).add(sptr) {
-		e.errorf("circular reference found: # %p, %T", sptr, sptr)
-	}
-
 	var rt reflect.Type
 	if fn == nil {
 		rt = rvType(rv)
 		fn = e.h.fn(rt)
 	}
-	if fn.i.addrE {
-		if rvpValid {
-			fn.fe(e, &fn.i, rvp)
-		} else if rv.CanAddr() {
-			fn.fe(e, &fn.i, rv.Addr())
-		} else if fn.i.addrEf {
-			if rt == nil {
-				rt = rvType(rv)
-			}
-			rv2 := rvZeroAddrK(rt, rv.Kind())
-			rvSetDirect(rv2, rv)
-			fn.fe(e, &fn.i, rv2.Addr())
-		} else {
-			fn.fe(e, &fn.i, rv)
+
+	if !fn.i.addrE { // typically, addrE = false, so check it first
+		fn.fe(e, &fn.i, rv)
+	} else if rvpValid {
+		fn.fe(e, &fn.i, rvp)
+	} else if rv.CanAddr() {
+		fn.fe(e, &fn.i, rv.Addr())
+	} else if fn.i.addrEf {
+		if rt == nil {
+			rt = rvType(rv)
 		}
+		rv2 := rvZeroAddrK(rt, rv.Kind())
+		rvSetDirect(rv2, rv)
+		fn.fe(e, &fn.i, rv2.Addr())
 	} else {
 		fn.fe(e, &fn.i, rv)
 	}
-	if sptr != 0 {
-		(&e.ci).remove(sptr)
+
+	if sptr != nil { // remove sptr
+		e.ci = e.ci[:len(e.ci)-1]
 	}
 }
 
