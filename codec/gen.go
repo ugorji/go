@@ -117,7 +117,8 @@ import (
 // v16: 20190629 refactoring for v1.1.6
 // v17: 20200911 reduce number of types for which we generate fast path functions (v1.1.8)
 // v18: 20201004 changed definition of genHelper...Extension (to take interface{}) and eliminated I2Rtid method
-const genVersion = 18
+// v19: 20201115 updated codecgen cmdline flags and optimized output
+const genVersion = 19
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go
@@ -1782,8 +1783,8 @@ func (x *genRunner) decStructMapSwitch(kName string, varname string, rtid uintpt
 	}
 	x.line("default:")
 	// pass the slice here, so that the string will not escape, and maybe save allocation
-	x.line("z.DecStructFieldNotFound(-1, " + kName + ")")
-	x.line("} // end switch " + kName)
+	x.linef("z.DecStructFieldNotFound(-1, %s)", kName)
+	x.linef("} // end switch %s", kName)
 }
 
 func (x *genRunner) decStructMap(varname, lenvarname string, rtid uintptr, t reflect.Type, style genStructMapStyle) {

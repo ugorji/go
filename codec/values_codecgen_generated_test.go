@@ -38,10 +38,10 @@ func codecSelfer19780False() bool { return false }
 func codecSelfer19780True() bool  { return true }
 
 func init() {
-	if GenVersion != 18 {
+	if GenVersion != 19 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic(errors.New("codecgen version mismatch: current: 18, need " + ver + ". Re-generate file: " + file))
+		panic(errors.New("codecgen version mismatch: current: 19, need " + ver + ". Re-generate file: " + file))
 	}
 	if false { // reference the types, but skip this branch at build/run time
 		var _ time.Time
