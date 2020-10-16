@@ -73,7 +73,7 @@ func init() {
 
 func benchPreInit() {
 	benchTs = newTestStruc(testDepth, testNumRepeatString, true, !testSkipIntf, testMapStringKeyOnly)
-	approxSize = approxDataSize(reflect.ValueOf(benchTs)) * 3 / 2 // multiply by 1.5 to appease msgp, and prevent alloc
+	approxSize = approxDataSize(reflect.ValueOf(benchTs)) * 2 // multiply by 1.5 or 2 to appease msgp, and prevent alloc
 	// bytesLen := 1024 * 4 * (testDepth + 1) * (testDepth + 1)
 	// if bytesLen < approxSize {
 	// 	bytesLen = approxSize
@@ -191,18 +191,24 @@ func doBenchCheck(t *testing.T, name string, encfn benchEncFn, decfn benchDecFn)
 func fnBenchmarkEncode(b *testing.B, encName string, ts interface{}, encfn benchEncFn) {
 	defer benchRecoverPanic(b)
 	testOnce.Do(testInitAll)
+	// ignore method params: ts, and work on benchTs directly
+	ts = benchTs
 	var err error
 	bs := make([]byte, 0, approxSize)
+
+	// do initial warm up by running encode one time
+	if _, err = encfn(ts, bs); err != nil {
+		b.Logf("Error encoding benchTs: %s: %v", encName, err)
+		b.FailNow()
+	}
+
 	runtime.GC()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		if _, err = encfn(ts, bs); err != nil {
-			break
+			b.Logf("Error encoding benchTs: %s: %v", encName, err)
+			b.FailNow()
 		}
-	}
-	if err != nil {
-		b.Logf("Error encoding benchTs: %s: %v", encName, err)
-		b.FailNow()
 	}
 }
 
@@ -211,12 +217,25 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 ) {
 	defer benchRecoverPanic(b)
 	testOnce.Do(testInitAll)
+	// ignore method params: ts and newfn, and work on benchTs and TestStruc directly
+	ts = benchTs
+
 	bs := make([]byte, 0, approxSize)
 	buf, err := encfn(ts, bs)
 	if err != nil {
 		b.Logf("Error encoding benchTs: %s: %v", encName, err)
 		b.FailNow()
 	}
+
+	// do initial warm up by running decode one time
+	var locTs TestStruc
+	ts = &locTs
+	// ts = newfn()
+	if err = decfn(buf, ts); err != nil {
+		b.Logf("Error decoding into new TestStruc: %s: %v", encName, err)
+		b.FailNow()
+	}
+
 	// if false && benchVerify { // do not do benchVerify during decode
 	// 	// ts2 := newfn()
 	// 	ts1 := ts.(*TestStruc)
@@ -228,16 +247,15 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 	// 		failT(b, "BenchVerify: Error comparing benchTs: %s: %v", encName, err)
 	// 	}
 	// }
+
 	runtime.GC()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ts = newfn()
+		locTs = TestStruc{}
+		// ts = newfn()
 		if err = decfn(buf, ts); err != nil {
-			break
+			b.Logf("Error decoding into new TestStruc: %s: %v", encName, err)
+			b.FailNow()
 		}
-	}
-	if err != nil {
-		b.Logf("Error decoding into new TestStruc: %s: %v", encName, err)
-		b.FailNow()
 	}
 }
