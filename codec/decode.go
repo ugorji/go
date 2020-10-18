@@ -812,7 +812,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		} else if rvChanged {
 			rv = rvSlice(rv, j)
 		}
-		rvlen = j
+		// rvlen = j
 	} else if j == 0 && rvIsNil(rv) {
 		if rvCanset {
 			rv = reflect.MakeSlice(f.ti.rt, 0, 0)
