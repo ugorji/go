@@ -26,6 +26,13 @@ EOF
     rm -f ${1}
 }
 
+_sed_in_file() {
+    case "$(uname -s)" in
+        Darwin*) sed -i '' "$@";;
+        *) sed -i "$@";;
+    esac
+}
+
 # To run the full suite of benchmarks, including executing against the external frameworks
 # listed above, you MUST first run code generation for the frameworks that support it.
 #
@@ -49,8 +56,8 @@ _gen() {
         echo "ffjson ... " && 
         ffjson -force-regenerate -reset-fields -w f9.go v.go &&
         _prependbt f9.go values_ffjson${zsfx} &&
-        sed -i '' -e 's+ MarshalJSON(+ _MarshalJSON(+g' values_ffjson${zsfx} &&
-        sed -i '' -e 's+ UnmarshalJSON(+ _UnmarshalJSON(+g' values_ffjson${zsfx} &&
+        _sed_in_file -e 's+ MarshalJSON(+ _MarshalJSON(+g' values_ffjson${zsfx} &&
+        _sed_in_file -e 's+ UnmarshalJSON(+ _UnmarshalJSON(+g' values_ffjson${zsfx} &&
         rm -f easyjson-bootstrap*.go ffjson-inception* &&
         rm -f v.go &&
         echo "... DONE"
