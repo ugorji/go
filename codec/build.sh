@@ -98,8 +98,9 @@ package codec
 func GenRunTmpl2Go(in, out string) { genRunTmpl2Go(in, out) }
 func GenRunSortTmpl2Go(in, out string) { genRunSortTmpl2Go(in, out) }
 EOF
+
     cat > gen-from-tmpl.generated.go <<EOF
-//+build ignore
+// +build ignore
 
 package main
 
@@ -110,6 +111,47 @@ codec.GenRunTmpl2Go("fast-path.go.tmpl", "fast-path.generated.go")
 codec.GenRunTmpl2Go("gen-helper.go.tmpl", "gen-helper.generated.go")
 codec.GenRunTmpl2Go("mammoth-test.go.tmpl", "mammoth_generated_test.go")
 codec.GenRunTmpl2Go("mammoth2-test.go.tmpl", "mammoth2_generated_test.go")
+}
+EOF
+
+    # stub xxxRv and xxxRvSlice creation, before you create it
+    cat > gen-from-tmpl.sort-slice-stubs.generated.go <<EOF
+// +build codecgen.sort_slice
+
+package codec
+
+import "reflect"
+import "time"
+
+EOF
+
+    for i in string bool uint64 int64 float64 bytes time; do
+        local i2=$i
+        case $i in
+            'time' ) i2="time.Time";;
+            'bytes' ) i2="[]byte";;
+        esac
+
+        cat >> gen-from-tmpl.sort-slice-stubs.generated.go <<EOF
+type ${i}Rv struct { v ${i2}; r reflect.Value }
+
+type ${i}RvSlice []${i}Rv
+
+func (${i}RvSlice) Len() int { return 0 }
+func (${i}RvSlice) Less(i, j int) bool { return false }
+func (${i}RvSlice) Swap(i, j int) {}
+
+EOF
+    done
+
+    cat > gen-from-tmpl.sort-slice.generated.go <<EOF
+// +build ignore
+
+package main
+
+import "${zpkg}"
+
+func main() {
 codec.GenRunSortTmpl2Go("sort-slice.go.tmpl", "sort-slice.generated.go")
 }
 EOF
@@ -118,7 +160,10 @@ EOF
         shared_test.go > bench/shared_test.go
 
     # explicitly return 0 if this passes, else return 1
-    go run -tags "notfastpath safe codecgen.exec" gen-from-tmpl.generated.go || return 1
+    local btags="notfastpath safe codecgen.exec"
+    rm -f sort-slice.generated.go fast-path.generated.go gen-helper.generated.go mammoth_generated_test.go mammoth2_generated_test.go
+    go run -tags "$btags codecgen.sort_slice" gen-from-tmpl.sort-slice.generated.go || return 1
+    go run -tags "$btags" gen-from-tmpl.generated.go || return 1
     rm -f gen-from-tmpl.*generated.go
     return 0
 }
@@ -150,6 +195,8 @@ _prebuild() {
     local zfin="test_values.generated.go"
     local zfin2="test_values_flex.generated.go"
     local zpkg="github.com/ugorji/go/codec"
+    local returncode=1
+
     # zpkg=${d##*/src/}
     # zgobase=${d%%/src/*}
     # rm -f *_generated_test.go 
@@ -160,8 +207,10 @@ _prebuild() {
         _codegenerators &&
         if [[ "$(type -t _codegenerators_external )" = "function" ]]; then _codegenerators_external ; fi &&
         if [[ $zforce ]]; then go install ${zargs[*]} .; fi &&
+        returncode=0 &&
         echo "prebuild done successfully"
     rm -f $d/$zfin $d/$zfin2
+    return $returncode
     # unset zfin zfin2 zpkg
 }
 
