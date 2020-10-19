@@ -4,6 +4,9 @@ env:
   # Turn off go module support, as the go.sum files in go/ and go/codec/
   # need to be populated with their cyclic checksums, so CI's mod=readonly will not work.
   - GO111MODULE=off
+branches:
+  only:
+    - master
 go:
   - master
   - 1.15.x
@@ -34,7 +37,7 @@ script:
     fi
   - |
     if [[ "${TRAVIS_GO_VERSION}" == "1.14.x" ]]; then
-    echo "XXXX RACE notfastpath" && go test "-race" -tags "alltests notfastpath" -run Suite -coverprofile coverage.race.txt github.com/ugorji/go/codec;
+    echo "XXXX RACE notfastpath" && go test "-race" -tags "alltests notfastpath safe" -run Suite -coverprofile coverage.race.txt github.com/ugorji/go/codec;
     fi
   - |
     if [[ "${TRAVIS_GO_VERSION}" == "1.15.x" ]]; then
