@@ -244,12 +244,11 @@ some caveats. See Encode documentation.
 
 ```go
 const CborStreamBytes byte = 0x5f ...
-const GenVersion = 19
+const GenVersion = 20
 var SelfExt = &extFailWrapper{}
 var GoRpc goRpc
 var MsgpackSpecRpc msgpackSpecRpc
-func GenHelperDecoder(d *Decoder) (gd genHelperDecoder, dd genHelperDecDriver)
-func GenHelperEncoder(e *Encoder) (ge genHelperEncoder, ee genHelperEncDriver)
+func GenHelper() (g genHelper)
 type BasicHandle struct{ ... }
 type BincHandle struct{ ... }
 type BytesExt interface{ ... }

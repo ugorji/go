@@ -26,17 +26,18 @@ const GenVersion = {{ .Version }}
 
 // GenHelperEncoder is exported so that it can be used externally by codecgen.
 //
-// Library users: DO NOT USE IT DIRECTLY. IT WILL CHANGE CONTINOUSLY WITHOUT NOTICE.
-func GenHelperEncoder(e *Encoder) (ge genHelperEncoder, ee genHelperEncDriver) {
+// Library users: DO NOT USE IT DIRECTLY or INDIRECTLY. IT WILL CHANGE CONTINOUSLY WITHOUT NOTICE.
+func GenHelper() (g genHelper) { return }
+
+type genHelper struct {}
+
+func (genHelper) Encoder(e *Encoder) (ge genHelperEncoder, ee genHelperEncDriver) {
 	ge = genHelperEncoder{e: e}
 	ee = genHelperEncDriver{encDriver: e.e}
 	return 
 }
 
-// GenHelperDecoder is exported so that it can be used externally by codecgen.
-//
-// Library users: DO NOT USE IT DIRECTLY. IT WILL CHANGE CONTINOUSLY WITHOUT NOTICE.
-func GenHelperDecoder(d *Decoder) (gd genHelperDecoder, dd genHelperDecDriver) {
+func (genHelper) Decoder(d *Decoder) (gd genHelperDecoder, dd genHelperDecDriver) {
 	gd = genHelperDecoder{d: d}
 	dd = genHelperDecDriver{decDriver: d.d}
 	return

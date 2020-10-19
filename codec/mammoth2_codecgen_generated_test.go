@@ -37,16 +37,16 @@ func codecSelfer19781False() bool { return false }
 func codecSelfer19781True() bool  { return true }
 
 func init() {
-	if GenVersion != 19 {
+	if GenVersion != 20 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic(errors.New("codecgen version mismatch: current: 19, need " + ver + ". Re-generate file: " + file))
+		panic(errors.New("codecgen version mismatch: current: 20, need " + ver + ". Re-generate file: " + file))
 	}
 }
 
 func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
-	z, r := GenHelperEncoder(e)
+	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
 	if x == nil {
 		r.EncodeNil()
@@ -3218,7 +3218,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 
 func (x *TestMammoth2) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	yyct2 := r.ContainerType()
 	if yyct2 == codecSelferValueTypeNil19781 {
@@ -3243,7 +3243,7 @@ func (x *TestMammoth2) CodecDecodeSelf(d *Decoder) {
 
 func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	var yyhl3 bool = l >= 0
 	for yyj3 := 0; ; yyj3++ {
@@ -4191,7 +4191,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 
 func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	var yyj273 int
 	var yyb273 bool
@@ -6560,7 +6560,7 @@ func (x *TestMammoth2) IsCodecEmpty() bool {
 
 func (x testMammoth2Binary) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
-	z, r := GenHelperEncoder(e)
+	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
 	if z.EncBinary() {
 		z.EncBinaryMarshal(x)
@@ -6571,7 +6571,7 @@ func (x testMammoth2Binary) CodecEncodeSelf(e *Encoder) {
 
 func (x *testMammoth2Binary) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	if z.DecBinary() {
 		z.DecBinaryUnmarshal(x)
@@ -6582,7 +6582,7 @@ func (x *testMammoth2Binary) CodecDecodeSelf(d *Decoder) {
 
 func (x testMammoth2Text) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
-	z, r := GenHelperEncoder(e)
+	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
 	if !z.EncBinary() {
 		z.EncTextMarshal(x)
@@ -6593,7 +6593,7 @@ func (x testMammoth2Text) CodecEncodeSelf(e *Encoder) {
 
 func (x *testMammoth2Text) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	if !z.DecBinary() {
 		z.DecTextUnmarshal(x)
@@ -6604,7 +6604,7 @@ func (x *testMammoth2Text) CodecDecodeSelf(d *Decoder) {
 
 func (x testMammoth2Json) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
-	z, r := GenHelperEncoder(e)
+	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
 	if !z.EncBinary() && z.IsJSONHandle() {
 		z.EncJSONMarshal(x)
@@ -6615,7 +6615,7 @@ func (x testMammoth2Json) CodecEncodeSelf(e *Encoder) {
 
 func (x *testMammoth2Json) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	if !z.DecBinary() && z.IsJSONHandle() {
 		z.DecJSONUnmarshal(x)
@@ -6626,7 +6626,7 @@ func (x *testMammoth2Json) CodecDecodeSelf(d *Decoder) {
 
 func (x *testMammoth2Basic) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
-	z, r := GenHelperEncoder(e)
+	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
 	if x == nil {
 		r.EncodeNil()
@@ -6637,14 +6637,14 @@ func (x *testMammoth2Basic) CodecEncodeSelf(e *Encoder) {
 
 func (x *testMammoth2Basic) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	h.dectestMammoth2Basic((*testMammoth2Basic)(x), d)
 }
 
 func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
-	z, r := GenHelperEncoder(e)
+	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
 	if x == nil {
 		r.EncodeNil()
@@ -6806,7 +6806,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 
 func (x *TestMammoth2Wrapper) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	yyct2 := r.ContainerType()
 	if yyct2 == codecSelferValueTypeNil19781 {
@@ -6831,7 +6831,7 @@ func (x *TestMammoth2Wrapper) CodecDecodeSelf(d *Decoder) {
 
 func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	var yyhl3 bool = l >= 0
 	for yyj3 := 0; ; yyj3++ {
@@ -6892,7 +6892,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 
 func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	var yyj20 int
 	var yyb20 bool
@@ -7034,7 +7034,7 @@ func (x *TestMammoth2Wrapper) IsCodecEmpty() bool {
 
 func (x codecSelfer19781) enctestMammoth2Basic(v *testMammoth2Basic, e *Encoder) {
 	var h codecSelfer19781
-	z, r := GenHelperEncoder(e)
+	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
 	if v == nil {
 		r.EncodeNil()
@@ -7050,7 +7050,7 @@ func (x codecSelfer19781) enctestMammoth2Basic(v *testMammoth2Basic, e *Encoder)
 
 func (x codecSelfer19781) dectestMammoth2Basic(v *testMammoth2Basic, d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 
 	yyv1 := v
@@ -7080,7 +7080,7 @@ func (x codecSelfer19781) dectestMammoth2Basic(v *testMammoth2Basic, d *Decoder)
 
 func (x codecSelfer19781) encMaptestMammoth2BasicTestMammoth2(v map[testMammoth2Basic]TestMammoth2, e *Encoder) {
 	var h codecSelfer19781
-	z, r := GenHelperEncoder(e)
+	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
 	if v == nil {
 		r.EncodeNil()
@@ -7108,7 +7108,7 @@ func (x codecSelfer19781) encMaptestMammoth2BasicTestMammoth2(v map[testMammoth2
 
 func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth2Basic]TestMammoth2, d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 
 	yyv1 := *v
@@ -7161,7 +7161,7 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 
 func (x codecSelfer19781) encSliceTestMammoth2(v []TestMammoth2, e *Encoder) {
 	var h codecSelfer19781
-	z, r := GenHelperEncoder(e)
+	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
 	if v == nil {
 		r.EncodeNil()
@@ -7182,7 +7182,7 @@ func (x codecSelfer19781) encSliceTestMammoth2(v []TestMammoth2, e *Encoder) {
 
 func (x codecSelfer19781) decSliceTestMammoth2(v *[]TestMammoth2, d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 
 	yyv1 := *v
@@ -7263,7 +7263,7 @@ func (x codecSelfer19781) decSliceTestMammoth2(v *[]TestMammoth2, d *Decoder) {
 
 func (x codecSelfer19781) encArray4int64(v *[4]int64, e *Encoder) {
 	var h codecSelfer19781
-	z, r := GenHelperEncoder(e)
+	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
 	if v == nil {
 		r.EncodeNil()
@@ -7279,7 +7279,7 @@ func (x codecSelfer19781) encArray4int64(v *[4]int64, e *Encoder) {
 
 func (x codecSelfer19781) decArray4int64(v *[4]int64, d *Decoder) {
 	var h codecSelfer19781
-	z, r := GenHelperDecoder(d)
+	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 
 	yyv1 := v

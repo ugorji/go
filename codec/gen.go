@@ -118,7 +118,8 @@ import (
 // v17: 20200911 reduce number of types for which we generate fast path functions (v1.1.8)
 // v18: 20201004 changed definition of genHelper...Extension (to take interface{}) and eliminated I2Rtid method
 // v19: 20201115 updated codecgen cmdline flags and optimized output
-const genVersion = 19
+// v20: 20201120 refactored GenHelper to one exported function
+const genVersion = 20
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go
@@ -454,9 +455,9 @@ func (x *genRunner) arr2str(t reflect.Type, s string) string {
 func (x *genRunner) genRequiredMethodVars(encode bool) {
 	x.line("var h " + x.hn)
 	if encode {
-		x.line("z, r := " + x.cpfx + "GenHelperEncoder(e)")
+		x.line("z, r := " + x.cpfx + "GenHelper().Encoder(e)")
 	} else {
-		x.line("z, r := " + x.cpfx + "GenHelperDecoder(d)")
+		x.line("z, r := " + x.cpfx + "GenHelper().Decoder(d)")
 	}
 	x.line("_, _, _ = h, z, r")
 }
