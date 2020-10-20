@@ -1930,6 +1930,19 @@ LOOP:
 			continue
 		}
 
+		si.path = structFieldInfoPathNode{
+			parent:   path,
+			typ:      f.Type,
+			offset:   uint16(f.Offset),
+			index:    j,
+			kind:     uint8(fkind),
+			numderef: numderef,
+			// set asciiAlphaNum to true (default); checked and may be set to false below
+			encNameAsciiAlphaNum: true,
+			// note: omitEmpty might have been set in an earlier parseTag call, etc - so carry it forward
+			omitEmpty: si.path.omitEmpty,
+		}
+
 		if !parsed {
 			si.encName = f.Name
 			si.parseTag(stag)
@@ -1937,23 +1950,12 @@ LOOP:
 		} else if si.encName == "" {
 			si.encName = f.Name
 		}
-		si.path = structFieldInfoPathNode{
-			parent:               path,
-			typ:                  f.Type,
-			offset:               uint16(f.Offset),
-			index:                j,
-			kind:                 uint8(fkind),
-			numderef:             numderef,
-			encNameAsciiAlphaNum: true,
-			omitEmpty:            omitEmpty,
+
+		if omitEmpty {
+			si.path.omitEmpty = true
 		}
 
-		// if omitEmpty {
-		// 	si.path.omitEmpty = true
-		// }
 		// si.fieldName = f.Name
-		// si.kind = uint8(fkind)
-		// si.ready = true
 		// si.path.encNameAsciiAlphaNum = true
 		for i := len(si.encName) - 1; i >= 0; i-- { // bounds-check elimination
 			if !asciiAlphaNumBitset.isset(si.encName[i]) {
