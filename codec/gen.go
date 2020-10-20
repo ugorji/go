@@ -1176,13 +1176,13 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 
 		for _, si := range tisfi {
 			if omitEmptySometimes && !si.omitEmpty {
-				x.linef("true, // %s", si.fieldName)
+				x.linef("true, // %s", si.encName) // si.fieldName)
 				continue
 			}
 			var omitline genBuf
 			t2 := genOmitEmptyLinePreChecks(varname, t, si, &omitline, false)
 			x.doEncOmitEmptyLine(t2, varname, &omitline)
-			x.linef("%s, // %s", omitline.v(), si.fieldName)
+			x.linef("%s, // %s", omitline.v(), si.encName) // si.fieldName)
 		}
 		x.line("}")
 		x.linef("_ = %s", numfieldsvar)

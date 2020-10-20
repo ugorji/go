@@ -1350,13 +1350,15 @@ type structFieldInfoPathNode struct {
 	index    uint16
 	kind     uint8
 	numderef uint8
-	// embedded bool
+
+	embedded bool
 	// exported bool
 }
 
 type structFieldInfo struct {
-	encName   string // encode name
-	fieldName string
+	encName string // encode name
+
+	// fieldName string // currently unused
 
 	// MARKER: leaf: consider optimizing for case where there are no embedded fields,
 	// thus keeping this within structFieldInfo makes sense.
@@ -1368,6 +1370,8 @@ type structFieldInfo struct {
 	encNameAsciiAlphaNum bool // the encName only contains ascii alphabet and numbers
 	ready                bool
 	omitEmpty            bool
+
+	_ [4]byte // padding
 }
 
 // field returns the field of the struct.
@@ -1875,7 +1879,8 @@ LOOP:
 					pv.etypes = append(pv.etypes, ftid)
 					path2 := make([]structFieldInfoPathNode, len(path)+1)
 					copy(path2, path)
-					path2[len(path)] = structFieldInfoPathNode{f.Type, uint16(f.Offset), j, uint8(fkind), numderef}
+					path2[len(path)] = structFieldInfoPathNode{f.Type,
+						uint16(f.Offset), j, uint8(fkind), numderef, f.Anonymous}
 					x.rget(ft, ftid, omitEmpty, path2, pv)
 				}
 				continue
@@ -1901,7 +1906,7 @@ LOOP:
 				break
 			}
 		}
-		si.fieldName = f.Name
+		// si.fieldName = f.Name
 		si.kind = uint8(fkind)
 		si.ready = true
 
@@ -1909,7 +1914,8 @@ LOOP:
 			si.omitEmpty = true
 		}
 
-		si.path = append(path, structFieldInfoPathNode{f.Type, uint16(f.Offset), j, uint8(fkind), numderef})
+		si.path = append(path, structFieldInfoPathNode{f.Type,
+			uint16(f.Offset), j, uint8(fkind), numderef, f.Anonymous})
 		pv.sfis = append(pv.sfis, si)
 	}
 }
