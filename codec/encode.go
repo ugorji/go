@@ -460,7 +460,7 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 		e.arrayStart(len(tisfi))
 		for i := range tisfi {
 			e.arrayElem()
-			e.encodeValue((&tisfi[i]).field(rv), nil)
+			e.encodeValue((&tisfi[i]).path.field(rv), nil)
 		}
 		e.arrayEnd()
 	} else {
@@ -471,7 +471,7 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 			e.mapElemKey()
 			e.kStructFieldKey(f.ti.keyType, si.encNameAsciiAlphaNum, si.encName)
 			e.mapElemValue()
-			e.encodeValue(si.field(rv), nil)
+			e.encodeValue(si.path.field(rv), nil)
 		}
 		e.mapEnd()
 	}
@@ -515,7 +515,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		tisfi = e.kStructSfi(f)
 		for i := range tisfi {
 			si := &tisfi[i]
-			kv.r = si.field(rv)
+			kv.r = si.path.field(rv)
 			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
 			}
@@ -556,7 +556,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		newlen = len(tisfi)
 		for i := range tisfi { // use unsorted array (to match sequence in struct)
 			si := &tisfi[i]
-			kv.r = si.field(rv)
+			kv.r = si.path.field(rv)
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
 			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {

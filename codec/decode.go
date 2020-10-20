@@ -599,7 +599,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			rvkencname = decStructFieldKey(d.d, f.ti.keyType, &d.b)
 			d.mapElemValue()
 			if si := f.ti.siForEncName(stringView(rvkencname)); si != nil {
-				d.decodeValue(si.fieldAlloc(rv), nil)
+				d.decodeValue(si.path.fieldAlloc(rv), nil)
 			} else if mf != nil {
 				// store rvkencname in new []byte, as it previously shares Decoder.b, which is used in decode
 				name2 = append(name2[:0], rvkencname...)
@@ -632,7 +632,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				break
 			}
 			d.arrayElem()
-			d.decodeValue(si.fieldAlloc(rv), nil)
+			d.decodeValue(si.path.fieldAlloc(rv), nil)
 		}
 		if (hasLen && containerLen > len(f.ti.sfiSrc)) || (!hasLen && !checkbreak) {
 			// read remaining values and throw away

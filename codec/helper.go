@@ -1355,6 +1355,39 @@ type structFieldInfoPathNode struct {
 	// exported bool
 }
 
+type structFieldInfoPath []structFieldInfoPathNode
+
+// field returns the field of the struct.
+func (path structFieldInfoPath) field(v reflect.Value) (rv2 reflect.Value) {
+	lp := len(path) - 1
+	for i := 0; i < lp; i++ {
+		v = path[i].rvField(v)
+		for j, k := uint8(0), path[i].numderef; j < k; j++ {
+			if rvIsNil(v) {
+				return
+			}
+			v = v.Elem()
+		}
+	}
+	return path[lp].rvField(v)
+}
+
+// fieldAlloc returns the field of the struct.
+// It allocates if a nil value was seen while searching.
+func (path structFieldInfoPath) fieldAlloc(v reflect.Value) (rv2 reflect.Value) {
+	lp := len(path) - 1
+	for i := 0; i < lp; i++ {
+		v = path[i].rvField(v)
+		for j, k := uint8(0), path[i].numderef; j < k; j++ {
+			if rvIsNil(v) {
+				rvSetDirect(v, reflect.New(rvType(v).Elem()))
+			}
+			v = v.Elem()
+		}
+	}
+	return path[lp].rvField(v)
+}
+
 type structFieldInfo struct {
 	encName string // encode name
 
@@ -1371,38 +1404,7 @@ type structFieldInfo struct {
 	// thus keeping this within structFieldInfo makes sense.
 	// leaf [1]structFieldInfoPathNode
 
-	path []structFieldInfoPathNode
-}
-
-// field returns the field of the struct.
-func (si *structFieldInfo) field(v reflect.Value) (rv2 reflect.Value) {
-	lp := len(si.path) - 1
-	for i := 0; i < lp; i++ {
-		v = si.path[i].rvField(v)
-		for j, k := uint8(0), si.path[i].numderef; j < k; j++ {
-			if rvIsNil(v) {
-				return
-			}
-			v = v.Elem()
-		}
-	}
-	return si.path[lp].rvField(v)
-}
-
-// fieldAlloc returns the field of the struct.
-// It allocates if a nil value was seen while searching.
-func (si *structFieldInfo) fieldAlloc(v reflect.Value) (rv2 reflect.Value) {
-	lp := len(si.path) - 1
-	for i := 0; i < lp; i++ {
-		v = si.path[i].rvField(v)
-		for j, k := uint8(0), si.path[i].numderef; j < k; j++ {
-			if rvIsNil(v) {
-				rvSetDirect(v, reflect.New(rvType(v).Elem()))
-			}
-			v = v.Elem()
-		}
-	}
-	return si.path[lp].rvField(v)
+	path structFieldInfoPath
 }
 
 func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
@@ -1977,7 +1979,7 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// so that is what we use to check omitEmpty.
 	tisfi := ti.sfiSrc
 	for i := range tisfi {
-		sfv := (&tisfi[i]).field(v)
+		sfv := (&tisfi[i]).path.field(v)
 		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, recursive) {
 			return false
 		}
