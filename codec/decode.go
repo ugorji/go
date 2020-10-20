@@ -1169,11 +1169,11 @@ func (d *Decoder) resetCommon() {
 	d.mtr, d.str = false, false
 	if d.h.MapType != nil {
 		d.mtid = rt2id(d.h.MapType)
-		d.mtr = fastpathAV.index(d.mtid) != -1
+		d.mtr = fastpathAvIndex(d.mtid) != -1
 	}
 	if d.h.SliceType != nil {
 		d.stid = rt2id(d.h.SliceType)
-		d.str = fastpathAV.index(d.stid) != -1
+		d.str = fastpathAvIndex(d.stid) != -1
 	}
 }
 

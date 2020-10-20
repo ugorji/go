@@ -2784,7 +2784,7 @@ func doTestScalars(t *testing.T, h Handle) {
 		string(""),
 		[]byte(nil),
 	}
-	for _, v := range fastpathAV {
+	for _, v := range fastpathAv {
 		vi = append(vi, reflect.Zero(v.rt).Interface())
 	}
 	for _, v := range vi {

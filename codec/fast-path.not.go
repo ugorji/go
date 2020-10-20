@@ -34,9 +34,9 @@ type fastpathE struct {
 }
 type fastpathA [0]fastpathE
 
-func (x fastpathA) index(rtid uintptr) int { return -1 }
+func fastpathAvIndex(rtid uintptr) int { return -1 }
 
-var fastpathAV fastpathA
+var fastpathAv fastpathA
 var fastpathTV fastpathT
 
 // ----

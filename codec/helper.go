@@ -884,9 +884,9 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 	} else {
 		if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice) {
 			if ti.pkgpath == "" { // un-named slice or map
-				if idx := fastpathAV.index(rtid); idx != -1 {
-					fn.fe = fastpathAV[idx].encfn
-					fn.fd = fastpathAV[idx].decfn
+				if idx := fastpathAvIndex(rtid); idx != -1 {
+					fn.fe = fastpathAv[idx].encfn
+					fn.fd = fastpathAv[idx].decfn
 					fi.addrD = true
 					fi.addrDf = false
 				}
@@ -899,15 +899,15 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 					rtu = reflect.SliceOf(ti.elem)
 				}
 				rtuid := rt2id(rtu)
-				if idx := fastpathAV.index(rtuid); idx != -1 {
-					xfnf := fastpathAV[idx].encfn
-					xrt := fastpathAV[idx].rt
+				if idx := fastpathAvIndex(rtuid); idx != -1 {
+					xfnf := fastpathAv[idx].encfn
+					xrt := fastpathAv[idx].rt
 					fn.fe = func(e *Encoder, xf *codecFnInfo, xrv reflect.Value) {
 						xfnf(e, xf, rvConvert(xrv, xrt))
 					}
 					fi.addrD = true
 					fi.addrDf = false // meaning it can be an address(ptr) or a value
-					xfnf2 := fastpathAV[idx].decfn
+					xfnf2 := fastpathAv[idx].decfn
 					xptr2rt := reflect.PtrTo(xrt)
 					fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
 						if xrv.Kind() == reflect.Ptr {

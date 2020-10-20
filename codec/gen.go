@@ -947,7 +947,7 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 		x.linef("if %s == nil { r.EncodeNil() } else {", varname)
 		if rtid == uint8SliceTypId {
 			x.line("r.EncodeStringBytesRaw([]byte(" + varname + "))")
-		} else if fastpathAV.index(rtid) != -1 {
+		} else if fastpathAvIndex(rtid) != -1 {
 			g := x.newFastpathGenV(t)
 			x.line("z.F." + g.MethodNamePfx("Enc", false) + "V(" + varname + ", e)")
 		} else {
@@ -961,7 +961,7 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 		// - if elements are primitives or Selfers, call dedicated function on each member.
 		// - else call Encoder.encode(XXX) on it.
 		x.linef("if %s == nil { r.EncodeNil() } else {", varname)
-		if fastpathAV.index(rtid) != -1 {
+		if fastpathAvIndex(rtid) != -1 {
 			g := x.newFastpathGenV(t)
 			x.line("z.F." + g.MethodNamePfx("Enc", false) + "V(" + varname + ", e)")
 		} else {
@@ -1574,7 +1574,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		if rtid == uint8SliceTypId {
 			x.linef("%s%s = r.DecodeBytes(%s(%s[]byte)(%s), false)",
 				ptrPfx, varname, ptrPfx, ptrPfx, varname)
-		} else if fastpathAV.index(rtid) != -1 {
+		} else if fastpathAvIndex(rtid) != -1 {
 			g := x.newFastpathGenV(t)
 			x.linef("z.F.%sX(%s%s, d)", g.MethodNamePfx("Dec", false), addrPfx, varname)
 		} else {
@@ -1586,7 +1586,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		// else write encode function in-line.
 		// - if elements are primitives or Selfers, call dedicated function on each member.
 		// - else call Encoder.encode(XXX) on it.
-		if fastpathAV.index(rtid) != -1 {
+		if fastpathAvIndex(rtid) != -1 {
 			g := x.newFastpathGenV(t)
 			x.linef("z.F.%sX(%s%s, d)", g.MethodNamePfx("Dec", false), addrPfx, varname)
 		} else {
