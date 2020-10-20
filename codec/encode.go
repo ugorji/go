@@ -446,7 +446,7 @@ L1:
 	e.e.EncodeStringBytesRaw(bs)
 }
 
-func (e *Encoder) kStructSfi(f *codecFnInfo) []*structFieldInfo {
+func (e *Encoder) kStructSfi(f *codecFnInfo) []structFieldInfo {
 	if e.h.Canonical {
 		return f.ti.sfiSort
 	}
@@ -454,17 +454,20 @@ func (e *Encoder) kStructSfi(f *codecFnInfo) []*structFieldInfo {
 }
 
 func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
+	var tisfi []structFieldInfo
 	if f.ti.toArray || e.h.StructToArray { // toArray
-		e.arrayStart(len(f.ti.sfiSrc))
-		for _, si := range f.ti.sfiSrc {
+		tisfi = f.ti.sfiSrc
+		e.arrayStart(len(tisfi))
+		for i := range tisfi {
 			e.arrayElem()
-			e.encodeValue(si.field(rv), nil)
+			e.encodeValue((&tisfi[i]).field(rv), nil)
 		}
 		e.arrayEnd()
 	} else {
-		tisfi := e.kStructSfi(f)
+		tisfi = e.kStructSfi(f)
 		e.mapStart(len(tisfi))
-		for _, si := range tisfi {
+		for i := range tisfi {
+			si := &tisfi[i]
 			e.mapElemKey()
 			e.kStructFieldKey(f.ti.keyType, si.encNameAsciiAlphaNum, si.encName)
 			e.mapElemValue()
@@ -498,7 +501,8 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		toMap = true
 		newlen += len(mf)
 	}
-	newlen += len(f.ti.sfiSrc)
+	tisfi := f.ti.sfiSrc
+	newlen += len(tisfi)
 
 	var fkvs = e.slist.get(newlen)
 
@@ -508,7 +512,9 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	var j int
 	if toMap {
 		newlen = 0
-		for _, si := range e.kStructSfi(f) {
+		tisfi = e.kStructSfi(f)
+		for i := range tisfi {
+			si := &tisfi[i]
 			kv.r = si.field(rv)
 			if si.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
@@ -547,8 +553,9 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		}
 		e.mapEnd()
 	} else {
-		newlen = len(f.ti.sfiSrc)
-		for i, si := range f.ti.sfiSrc { // use unsorted array (to match sequence in struct)
+		newlen = len(tisfi)
+		for i := range tisfi { // use unsorted array (to match sequence in struct)
+			si := &tisfi[i]
 			kv.r = si.field(rv)
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)
