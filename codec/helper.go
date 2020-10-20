@@ -1344,48 +1344,88 @@ func (o intf2impls) intf2impl(rtid uintptr) (rv reflect.Value) {
 	return
 }
 
+// structFieldinfopathNode is a node in a tree, which allows us easily
+// walk the anonymous path.
+//
+// In the typical case, the node is not embedded/anonymous, and thus the parent
+// will be nil and this information becomes a value (not needing any indirection).
 type structFieldInfoPathNode struct {
-	typ      reflect.Type
+	parent *structFieldInfoPathNode
+
 	offset   uint16
 	index    uint16
 	kind     uint8
 	numderef uint8
 
-	embedded bool
-	// exported bool
+	// encNameAsciiAlphaNum and omitEmpty should be in structFieldInfo,
+	// but are kept here for tighter packaging.
+
+	encNameAsciiAlphaNum bool // the encName only contains ascii alphabet and numbers
+	omitEmpty            bool
+
+	typ reflect.Type
 }
 
-type structFieldInfoPath []structFieldInfoPathNode
+// depth returns number of valid nodes in the hierachy
+func (path *structFieldInfoPathNode) depth() (d int) {
+TOP:
+	if path != nil {
+		d++
+		path = path.parent
+		goto TOP
+	}
+	return
+}
+
+// depth returns number of valid nodes in the hierachy
+func (path *structFieldInfoPathNode) root() *structFieldInfoPathNode {
+TOP:
+	if path.parent != nil {
+		path = path.parent
+		goto TOP
+	}
+	return path
+}
+
+func (path *structFieldInfoPathNode) fullpath() (p []*structFieldInfoPathNode) {
+	// this method is mostly called by a command-line tool - it's not optimized, and that's ok.
+	// it shouldn't be used in typical runtime use - as it does unnecessary allocation.
+	d := path.depth()
+	p = make([]*structFieldInfoPathNode, d)
+	for d--; d >= 0; d-- {
+		p[d] = path
+		path = path.parent
+	}
+	return
+}
 
 // field returns the field of the struct.
-func (path structFieldInfoPath) field(v reflect.Value) (rv2 reflect.Value) {
-	lp := len(path) - 1
-	for i := 0; i < lp; i++ {
-		v = path[i].rvField(v)
-		for j, k := uint8(0), path[i].numderef; j < k; j++ {
+func (path *structFieldInfoPathNode) field(v reflect.Value) (rv2 reflect.Value) {
+	if parent := path.parent; parent != nil {
+		v = parent.field(v)
+		for j, k := uint8(0), parent.numderef; j < k; j++ {
 			if rvIsNil(v) {
 				return
 			}
 			v = v.Elem()
 		}
 	}
-	return path[lp].rvField(v)
+	return path.rvField(v)
 }
 
 // fieldAlloc returns the field of the struct.
 // It allocates if a nil value was seen while searching.
-func (path structFieldInfoPath) fieldAlloc(v reflect.Value) (rv2 reflect.Value) {
-	lp := len(path) - 1
-	for i := 0; i < lp; i++ {
-		v = path[i].rvField(v)
-		for j, k := uint8(0), path[i].numderef; j < k; j++ {
+func (path *structFieldInfoPathNode) fieldAlloc(v reflect.Value) (rv2 reflect.Value) {
+	if parent := path.parent; parent != nil {
+		v = parent.field(v)
+		for j, k := uint8(0), parent.numderef; j < k; j++ {
 			if rvIsNil(v) {
 				rvSetDirect(v, reflect.New(rvType(v).Elem()))
 			}
 			v = v.Elem()
 		}
 	}
-	return path[lp].rvField(v)
+	return path.rvField(v)
 }
 
 type structFieldInfo struct {
@@ -1393,18 +1433,10 @@ type structFieldInfo struct {
 
 	// fieldName string // currently unused
 
-	kind                 uint8
-	encNameAsciiAlphaNum bool // the encName only contains ascii alphabet and numbers
-	ready                bool
-	omitEmpty            bool
+	// encNameAsciiAlphaNum and omitEmpty should be here,
+	// but are stored in structFieldInfoPathNode for tighter packaging.
 
-	_ [4]byte // padding
-
-	// MARKER: leaf: consider optimizing for case where there are no embedded fields,
-	// thus keeping this within structFieldInfo makes sense.
-	// leaf [1]structFieldInfoPathNode
-
-	path structFieldInfoPath
+	path structFieldInfoPathNode
 }
 
 func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
@@ -1445,7 +1477,7 @@ func (si *structFieldInfo) parseTag(stag string) {
 		} else {
 			switch s {
 			case "omitempty":
-				si.omitEmpty = true
+				si.path.omitEmpty = true
 			}
 		}
 	}
@@ -1564,16 +1596,16 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 
 	for i := range x {
 		ui := uint16(i)
-		xn := x[i].encName // fieldName or encName? use encName for now.
+		xn := x[ui].encName // fieldName or encName? use encName for now.
 		j, ok := ss[xn]
 		if ok {
-			i2clear := ui                        // index to be cleared
-			if len(x[i].path) < len(x[j].path) { // this one is shallower
+			i2clear := ui                               // index to be cleared
+			if x[ui].path.depth() < x[j].path.depth() { // this one is shallower
 				ss[xn] = ui
 				i2clear = j
 			}
-			if x[i2clear].ready {
-				x[i2clear].ready = false
+			if x[i2clear].encName != "" {
+				x[i2clear].encName = ""
 				n--
 			}
 		} else {
@@ -1589,10 +1621,10 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 	y := make([]*structFieldInfo, n)
 	n = 0
 	for i := range x {
-		if !x[i].ready {
+		if x[i].encName == "" {
 			continue
 		}
-		if !anyOmitEmpty && x[i].omitEmpty {
+		if !anyOmitEmpty && x[i].path.omitEmpty {
 			anyOmitEmpty = true
 		}
 		w[n] = x[i]
@@ -1799,7 +1831,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 }
 
 func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
-	path []structFieldInfoPathNode, pv *typeInfoLoad) {
+	path *structFieldInfoPathNode, pv *typeInfoLoad) {
 	// Read up fields and store how to access the value.
 	//
 	// It uses go's rules for message selectors,
@@ -1879,10 +1911,14 @@ LOOP:
 				}
 				if processIt {
 					pv.etypes = append(pv.etypes, ftid)
-					path2 := make([]structFieldInfoPathNode, len(path)+1)
-					copy(path2, path)
-					path2[len(path)] = structFieldInfoPathNode{f.Type,
-						uint16(f.Offset), j, uint8(fkind), numderef, f.Anonymous}
+					path2 := &structFieldInfoPathNode{
+						parent:   path,
+						typ:      f.Type,
+						offset:   uint16(f.Offset),
+						index:    j,
+						kind:     uint8(fkind),
+						numderef: numderef,
+					}
 					x.rget(ft, ftid, omitEmpty, path2, pv)
 				}
 				continue
@@ -1901,23 +1937,31 @@ LOOP:
 		} else if si.encName == "" {
 			si.encName = f.Name
 		}
-		si.encNameAsciiAlphaNum = true
+		si.path = structFieldInfoPathNode{
+			parent:               path,
+			typ:                  f.Type,
+			offset:               uint16(f.Offset),
+			index:                j,
+			kind:                 uint8(fkind),
+			numderef:             numderef,
+			encNameAsciiAlphaNum: true,
+			omitEmpty:            omitEmpty,
+		}
+
+		// if omitEmpty {
+		// 	si.path.omitEmpty = true
+		// }
+		// si.fieldName = f.Name
+		// si.kind = uint8(fkind)
+		// si.ready = true
+		// si.path.encNameAsciiAlphaNum = true
 		for i := len(si.encName) - 1; i >= 0; i-- { // bounds-check elimination
 			if !asciiAlphaNumBitset.isset(si.encName[i]) {
-				si.encNameAsciiAlphaNum = false
+				si.path.encNameAsciiAlphaNum = false
 				break
 			}
 		}
-		// si.fieldName = f.Name
-		si.kind = uint8(fkind)
-		si.ready = true
 
-		if omitEmpty {
-			si.omitEmpty = true
-		}
-
-		si.path = append(path, structFieldInfoPathNode{f.Type,
-			uint16(f.Offset), j, uint8(fkind), numderef, f.Anonymous})
 		pv.sfis = append(pv.sfis, si)
 	}
 }

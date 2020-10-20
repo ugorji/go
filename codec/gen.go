@@ -639,11 +639,12 @@ func (x *genRunner) tryGenIsZero(t reflect.Type) (done bool) {
 	anonSeen := make(map[reflect.Type]bool)
 	var omitline genBuf
 	for _, si := range tisfi {
-		if len(si.path) > 1 {
-			if anonSeen[si.path[0].typ] {
+		if si.path.parent != nil {
+			root := si.path.root()
+			if anonSeen[root.typ] {
 				continue
 			}
-			anonSeen[si.path[0].typ] = true
+			anonSeen[root.typ] = true
 		}
 		t2 := genOmitEmptyLinePreChecks(varname, t, si, &omitline, true)
 		// if Ptr, we already checked if nil above
@@ -1008,20 +1009,20 @@ func genOmitEmptyLinePreChecks(varname string, t reflect.Type, si *structFieldIn
 	varname3 := varname
 	// go through the loop, record the t2 field explicitly,
 	// and gather the omit line if embedded in pointers.
-	lp := len(si.path)
-	for ij := 0; ij < lp; ij++ {
+	fullpath := si.path.fullpath()
+	for i, path := range fullpath {
 		for t2typ.Kind() == reflect.Ptr {
 			t2typ = t2typ.Elem()
 		}
-		t2 = t2typ.Field(int(si.path[ij].index))
+		t2 = t2typ.Field(int(path.index))
 		t2typ = t2.Type
 		varname3 = varname3 + "." + t2.Name
 		// do not include actual field in the omit line.
 		// that is done subsequently (right after - below).
-		if ij+1 < lp && t2typ.Kind() == reflect.Ptr {
+		if i+1 < len(fullpath) && t2typ.Kind() == reflect.Ptr {
 			omitline.s(varname3).s(" != nil && ")
 		}
-		if oneLevel && ij == 0 {
+		if oneLevel {
 			break
 		}
 	}
@@ -1125,12 +1126,12 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		q.fqname = varname
 		{
 			t2typ := t
-			lp := len(si.path)
-			for ij := 0; ij < lp; ij++ {
+			fullpath := si.path.fullpath()
+			for _, path := range fullpath {
 				for t2typ.Kind() == reflect.Ptr {
 					t2typ = t2typ.Elem()
 				}
-				q.sf = t2typ.Field(int(si.path[ij].index))
+				q.sf = t2typ.Field(int(path.index))
 				t2typ = q.sf.Type
 				q.fqname += "." + q.sf.Name
 				if t2typ.Kind() == reflect.Ptr {
@@ -1175,7 +1176,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		x.linef("var %s = [%v]bool{ // should field at this index be written?", numfieldsvar, len(tisfi))
 
 		for _, si := range tisfi {
-			if omitEmptySometimes && !si.omitEmpty {
+			if omitEmptySometimes && !si.path.omitEmpty {
 				x.linef("true, // %s", si.encName) // si.fieldName)
 				continue
 			}
@@ -1195,7 +1196,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		x.linef("z.EncWriteArrayStart(%d)", len(tisfi))
 
 		for j, si := range tisfi {
-			doOmitEmptyCheck := (omitEmptySometimes && si.omitEmpty) || omitEmptyAlways
+			doOmitEmptyCheck := (omitEmptySometimes && si.path.omitEmpty) || omitEmptyAlways
 			q := &genFQNs[j]
 			// if the type of the field is a Selfer, or one of the ones
 			if q.canNil {
@@ -1233,7 +1234,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 
 		for j, si := range tisfi {
 			q := &genFQNs[j]
-			doOmitEmptyCheck := (omitEmptySometimes && si.omitEmpty) || omitEmptyAlways
+			doOmitEmptyCheck := (omitEmptySometimes && si.path.omitEmpty) || omitEmptyAlways
 			if doOmitEmptyCheck {
 				x.linef("if %s[%v] {", numfieldsvar, j)
 			}
@@ -1249,15 +1250,15 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 				x.linef("r.EncodeFloat64(z.M.Float(strconv.ParseFloat(`%s`, 64)))", si.encName)
 			default: // string
 				if x.jsonOnlyWhen == nil {
-					if si.encNameAsciiAlphaNum {
+					if si.path.encNameAsciiAlphaNum {
 						x.linef(`if z.IsJSONHandle() { z.WriteStr("\"%s\"") } else { `, si.encName)
 					}
 					x.linef("r.EncodeString(`%s`)", si.encName)
-					if si.encNameAsciiAlphaNum {
+					if si.path.encNameAsciiAlphaNum {
 						x.linef("}")
 					}
 				} else if *(x.jsonOnlyWhen) {
-					if si.encNameAsciiAlphaNum {
+					if si.path.encNameAsciiAlphaNum {
 						x.linef(`z.WriteStr("\"%s\"")`, si.encName)
 					} else {
 						x.linef("r.EncodeString(`%s`)", si.encName)
@@ -1350,13 +1351,13 @@ func (x *genRunner) decVarInitPtr(varname, nilvar string, t reflect.Type, si *st
 	t2kind := t2typ.Kind()
 	var nilbufed bool
 	if si != nil {
-		lp := len(si.path)
-		for ij := 0; ij < lp; ij++ {
+		fullpath := si.path.fullpath()
+		for _, path := range fullpath {
 			// only one-level pointers can be seen in a type
 			if t2typ.Kind() == reflect.Ptr {
 				t2typ = t2typ.Elem()
 			}
-			t2 = t2typ.Field(int(si.path[ij].index))
+			t2 = t2typ.Field(int(path.index))
 			t2typ = t2.Type
 			varname3 = varname3 + "." + t2.Name
 			t2kind = t2typ.Kind()
