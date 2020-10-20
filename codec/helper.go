@@ -1451,7 +1451,7 @@ func (si *structFieldInfo) parseTag(stag string) {
 	}
 }
 
-type sfiSortedByEncName []structFieldInfo
+type sfiSortedByEncName []*structFieldInfo
 
 func (p sfiSortedByEncName) Len() int           { return len(p) }
 func (p sfiSortedByEncName) Less(i, j int) bool { return p[uint(i)].encName < p[uint(j)].encName }
@@ -1521,8 +1521,8 @@ type typeInfo struct {
 	mbs          bool      // base type (T or *T) is a MapBySlice
 
 	// ---- cpu cache line boundary?
-	sfiSort []structFieldInfo // sorted. Used when enc/dec struct to map.
-	sfiSrc  []structFieldInfo // unsorted. Used when enc/dec struct to array.
+	sfiSort []*structFieldInfo // sorted. Used when enc/dec struct to map.
+	sfiSrc  []*structFieldInfo // unsorted. Used when enc/dec struct to array.
 
 	sfi4Name map[string]*structFieldInfo
 
@@ -1586,6 +1586,7 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 	// remove all the nils (non-ready)
 	m := make(map[string]*structFieldInfo)
 	w := make([]structFieldInfo, n)
+	y := make([]*structFieldInfo, n)
 	n = 0
 	for i := range x {
 		if !x[i].ready {
@@ -1595,18 +1596,20 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 			anyOmitEmpty = true
 		}
 		w[n] = x[i]
+		y[n] = &w[n]
 		m[x[i].encName] = &w[n]
 		n++
 	}
-	if n != len(w) {
-		halt.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d", ti.rt, len(w), len(x), n)
+	if n != len(y) {
+		halt.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d", ti.rt, len(y), len(x), n)
 	}
-	z := make([]structFieldInfo, n)
-	copy(z, w)
+
+	z := make([]*structFieldInfo, len(y))
+	copy(z, y)
 	sort.Sort(sfiSortedByEncName(z))
 
 	ti.anyOmitEmpty = anyOmitEmpty
-	ti.sfiSrc = w
+	ti.sfiSrc = y
 	ti.sfiSort = z
 	ti.sfi4Name = m
 }
@@ -1977,9 +1980,8 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	}
 	// We only care about what we can encode/decode,
 	// so that is what we use to check omitEmpty.
-	tisfi := ti.sfiSrc
-	for i := range tisfi {
-		sfv := (&tisfi[i]).path.field(v)
+	for _, si := range ti.sfiSrc {
+		sfv := si.path.field(v)
 		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, recursive) {
 			return false
 		}

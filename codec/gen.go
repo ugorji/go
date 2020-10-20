@@ -638,8 +638,7 @@ func (x *genRunner) tryGenIsZero(t reflect.Type) (done bool) {
 
 	anonSeen := make(map[reflect.Type]bool)
 	var omitline genBuf
-	for j := range tisfi {
-		si := &tisfi[j]
+	for _, si := range tisfi {
 		if len(si.path) > 1 {
 			if anonSeen[si.path[0].typ] {
 				continue
@@ -1118,8 +1117,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	}
 
 	genFQNs := make([]genFQN, len(tisfi))
-	for j := range tisfi {
-		si := &tisfi[j]
+	for j, si := range tisfi {
 		q := &genFQNs[j]
 		q.i = x.varsfx()
 		q.nilVar = genTempVarPfx + "n" + q.i
@@ -1176,8 +1174,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	if (omitEmptySometimes && ti.anyOmitEmpty) || omitEmptyAlways {
 		x.linef("var %s = [%v]bool{ // should field at this index be written?", numfieldsvar, len(tisfi))
 
-		for j := range tisfi {
-			si := &tisfi[j]
+		for _, si := range tisfi {
 			if omitEmptySometimes && !si.omitEmpty {
 				x.linef("true, // %s", si.encName) // si.fieldName)
 				continue
@@ -1197,8 +1194,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	if toArraySometimes || toArrayAlways {
 		x.linef("z.EncWriteArrayStart(%d)", len(tisfi))
 
-		for j := range tisfi {
-			si := &tisfi[j]
+		for j, si := range tisfi {
 			doOmitEmptyCheck := (omitEmptySometimes && si.omitEmpty) || omitEmptyAlways
 			q := &genFQNs[j]
 			// if the type of the field is a Selfer, or one of the ones
@@ -1235,8 +1231,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 			x.linef("z.EncWriteMapStart(%d)", len(tisfi))
 		}
 
-		for j := range tisfi {
-			si := &tisfi[j]
+		for j, si := range tisfi {
 			q := &genFQNs[j]
 			doOmitEmptyCheck := (omitEmptySometimes && si.omitEmpty) || omitEmptyAlways
 			if doOmitEmptyCheck {
@@ -1774,8 +1769,7 @@ func (x *genRunner) decStructMapSwitch(kName string, varname string, rtid uintpt
 	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
 	x.line("switch (" + kName + ") {")
 	var newbuf, nilbuf genBuf
-	for j := range tisfi {
-		si := &tisfi[j]
+	for _, si := range tisfi {
 		x.line("case \"" + si.encName + "\":")
 		newbuf.reset()
 		nilbuf.reset()
@@ -1848,8 +1842,7 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 		x.linef("} // end func %sfn%s", tpfx, i)
 	}
 	var newbuf, nilbuf genBuf
-	for j := range tisfi {
-		si := &tisfi[j]
+	for _, si := range tisfi {
 		if genDecStructArrayInlineLoopCheck {
 			x.linef("%sj%s++; if %shl%s { %sb%s = %sj%s > %s } else { %sb%s = z.DecCheckBreak() }",
 				tpfx, i, tpfx, i, tpfx, i,
