@@ -7,6 +7,16 @@ import (
 	"strconv"
 )
 
+// Per go spec, floats are represented in memory as
+// IEEE single or double precision floating point values.
+//
+// We also looked at the source for stdlib math/modf.go,
+// reviewed https://github.com/chewxy/math32
+// and read wikipedia documents describing the formats.
+//
+// It became clear that we could easily look at the bits to determine
+// whether any fraction exists.
+
 func parseFloat32(b []byte) (f float32, err error) {
 	return parseFloat32_custom(b)
 }

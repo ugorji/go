@@ -1341,13 +1341,18 @@ func (d *jsonDecDriver) atEndOfDecode() {}
 func jsonFloatStrconvFmtPrec64(f float64) (fmt byte, prec int8) {
 	fmt = 'f'
 	prec = -1
-	var abs = math.Abs(f)
+	fbits := math.Float64bits(f)
+	abs := math.Float64frombits(fbits &^ (1 << 63))
 	if abs == 0 || abs == 1 {
 		prec = 1
 	} else if abs < 1e-6 || abs >= 1e21 {
 		fmt = 'e'
-	} else if noFrac64(abs) { // _, frac := math.Modf(abs); frac == 0 {
-		prec = 1
+	} else {
+		exp := uint64(fbits>>52)&0x7FF - 1023 // uint(x>>shift)&mask - bias
+		// clear top 12+e bits, the integer part; if the rest is 0, then no fraction.
+		if exp < 52 && fbits<<(12+exp) == 0 { // means there's no fractional part
+			prec = 1
+		}
 	}
 	return
 }
@@ -1355,13 +1360,19 @@ func jsonFloatStrconvFmtPrec64(f float64) (fmt byte, prec int8) {
 func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 	fmt = 'f'
 	prec = -1
-	var abs = abs32(f)
+	// directly handle Modf (to get fractions) and Abs (to get absolute)
+	fbits := math.Float32bits(f)
+	abs := math.Float32frombits(fbits &^ (1 << 31))
 	if abs == 0 || abs == 1 {
 		prec = 1
 	} else if abs < 1e-6 || abs >= 1e21 {
 		fmt = 'e'
-	} else if noFrac32(abs) { // _, frac := math.Modf(abs); frac == 0 {
-		prec = 1
+	} else {
+		exp := uint32(fbits>>23)&0xFF - 127 // uint(x>>shift)&mask - bias
+		// clear top 9+e bits, the integer part; if the rest is 0, then no fraction.
+		if exp < 23 && fbits<<(9+exp) == 0 { // means there's no fractional part
+			prec = 1
+		}
 	}
 	return
 }
