@@ -197,6 +197,8 @@ const (
 	skipFastpathTypeSwitchInDirectCall = false
 )
 
+const cpu32Bit = ^uint(0)>>32 == 0
+
 var (
 	must mustHdl
 	halt panicHdl
@@ -2215,6 +2217,7 @@ func (x checkOverflow) SignedIntV(v uint64) int64 {
 // ------------------ FLOATING POINT -----------------
 
 func isNaN64(f float64) bool { return f != f }
+
 func abs32(f float32) float32 {
 	return math.Float32frombits(math.Float32bits(f) &^ (1 << 31))
 }

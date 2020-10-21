@@ -288,27 +288,99 @@ func (e *jsonEncDriver) EncodeFloat32(f float32) {
 	e.encodeFloat(float64(f), 32, fmt, prec)
 }
 
+func (e *jsonEncDriver) encodeUint(neg bool, quotes bool, u uint64) {
+	// copied mostly from std library: strconv
+	// this should only be called on 64bit OS.
+
+	const smallsString = "00010203040506070809" +
+		"10111213141516171819" +
+		"20212223242526272829" +
+		"30313233343536373839" +
+		"40414243444546474849" +
+		"50515253545556575859" +
+		"60616263646566676869" +
+		"70717273747576777879" +
+		"80818283848586878889" +
+		"90919293949596979899"
+
+	// typically, 19 or 20 bytes sufficient for decimal encoding a uint64
+	// var a [24]byte
+	var a = e.b[0:24]
+	var i = uint8(len(a))
+
+	if quotes {
+		i--
+		a[i] = '"'
+	}
+	// u guaranteed to fit into a uint (as we are not 32bit OS)
+	var is uint
+	var us = uint(u)
+	for us >= 100 {
+		is = us % 100 * 2
+		us /= 100
+		i -= 2
+		a[i+1] = smallsString[is+1]
+		a[i+0] = smallsString[is+0]
+	}
+
+	// us < 100
+	is = us * 2
+	i--
+	a[i] = smallsString[is+1]
+	if us >= 10 {
+		i--
+		a[i] = smallsString[is]
+	}
+	if neg {
+		i--
+		a[i] = '-'
+	}
+	if quotes {
+		i--
+		a[i] = '"'
+	}
+	e.e.encWr.writeb(a[i:])
+}
+
 func (e *jsonEncDriver) EncodeInt(v int64) {
-	if e.is == 'A' || e.is == 'L' && (v > 1<<53 || v < -(1<<53)) ||
-		(e.ks && e.e.c == containerMapKey) {
-		blen := 2 + len(strconv.AppendInt(e.b[1:1], v, 10))
-		e.b[0] = '"'
-		e.b[blen-1] = '"'
-		e.e.encWr.writeb(e.b[:blen])
+	quotes := e.is == 'A' || e.is == 'L' && (v > 1<<53 || v < -(1<<53)) ||
+		(e.ks && e.e.c == containerMapKey)
+
+	if cpu32Bit {
+		if quotes {
+			blen := 2 + len(strconv.AppendInt(e.b[1:1], v, 10))
+			e.b[0] = '"'
+			e.b[blen-1] = '"'
+			e.e.encWr.writeb(e.b[:blen])
+		} else {
+			e.e.encWr.writeb(strconv.AppendInt(e.b[:0], v, 10))
+		}
 		return
 	}
-	e.e.encWr.writeb(strconv.AppendInt(e.b[:0], v, 10))
+
+	if v < 0 {
+		e.encodeUint(true, quotes, uint64(-v))
+	} else {
+		e.encodeUint(false, quotes, uint64(v))
+	}
 }
 
 func (e *jsonEncDriver) EncodeUint(v uint64) {
-	if e.is == 'A' || e.is == 'L' && v > 1<<53 || (e.ks && e.e.c == containerMapKey) {
-		blen := 2 + len(strconv.AppendUint(e.b[1:1], v, 10))
-		e.b[0] = '"'
-		e.b[blen-1] = '"'
-		e.e.encWr.writeb(e.b[:blen])
+	quotes := e.is == 'A' || e.is == 'L' && v > 1<<53 || (e.ks && e.e.c == containerMapKey)
+
+	if cpu32Bit {
+		if quotes {
+			blen := 2 + len(strconv.AppendUint(e.b[1:1], v, 10))
+			e.b[0] = '"'
+			e.b[blen-1] = '"'
+			e.e.encWr.writeb(e.b[:blen])
+		} else {
+			e.e.encWr.writeb(strconv.AppendUint(e.b[:0], v, 10))
+		}
 		return
 	}
-	e.e.encWr.writeb(strconv.AppendUint(e.b[:0], v, 10))
+
+	e.encodeUint(false, quotes, v)
 }
 
 func (e *jsonEncDriver) EncodeString(v string) {
