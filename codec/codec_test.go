@@ -1807,6 +1807,12 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 
 	bh := basicHandle(h)
 
+	defer func(tt reflect.Type) { bh.MapType = tt }(bh.MapType)
+	defer func(b bool) { bh.RawToString = b }(bh.RawToString)
+
+	// msgpack python needs Raw converted to string
+	bh.RawToString = true
+
 	oldMapType := bh.MapType
 	tablePythonVerify := testTableVerify(testVerifyForPython|testVerifyTimeAsInteger|testVerifyMapTypeStrIntf, h)
 	for i, v := range tablePythonVerify {

@@ -19,15 +19,23 @@ _tests() {
     for i in "${a[@]}"
     do
         local i2=${i:-default}
-        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: '$i'"
+        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'alltests $i'; RUN: 'TestCodecSuite'"
         true &&
             go vet -printfuncs "errorf" "$@" &&
             go test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" \
                -run "TestCodecSuite" -coverprofile "${i2// /-}.cov.out" "$@" &
         b+=("${i2// /-}.cov.out")
         [[ "$zwait" == "1" ]] && wait
+            
         # if [[ "$?" != 0 ]]; then return 1; fi
     done
+    if [[ "$zextra" == "1" ]]; then
+        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'notfastpath x'; RUN: 'Test.*X$'"
+        go test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "notfastpath x" -run 'Test.*X$' \
+            -coverprofile "x.cov.out" &
+        b+=("x.cov.out")
+        [[ "$zwait" == "1" ]] && wait
+    fi
     wait
     [[ "$zcover" == "1" ]] && command -v gocovmerge && gocovmerge "${b[@]}" > __merge.cov.out && go tool cover -html=__merge.cov.out
 }
@@ -265,9 +273,12 @@ EOF
 }
 
 _usage() {
+    # hidden args:
+    # -pf [p=prebuild (f=force)]
+    
     cat <<EOF
 primary usage: $0 
-    -[tosw m pf n l d]   -> [t=tests (o=cover, s=short, w=wait), m=make, p=prebuild (f=force), n=inlining diagnostics, l=mid-stack inlining, d=race detector]
+    -[tesow m n l d]   -> [t=tests (e=extra, s=short, o=cover, w=wait), m=make, n=inlining diagnostics, l=mid-stack inlining, d=race detector]
     -v                   -> v=verbose
 EOF
     if [[ "$(type -t _usage_run)" = "function" ]]; then _usage_run ; fi
@@ -275,19 +286,23 @@ EOF
 
 _main() {
     if [[ -z "$1" ]]; then _usage; return 1; fi
-    local x
-    local zforce
-    local zcover
-    local zwait
+    local x # determines the main action to run in this build
+    local zforce # force
+    local zcover # generate cover profile and show in browser when done
+    local zwait # run tests in sequence, not parallel ie wait for one to finish before starting another
+    local zextra # means run extra (python based tests, etc) during testing
+    
     local ztestargs=()
     local zargs=()
     local zverbose=()
     local zbenchflags=""
+    
     OPTIND=1
-    while getopts ":ctmnrgpfvlyzdsowxb:" flag
+    while getopts ":cetmnrgpfvlyzdsowxb:" flag
     do
         case "x$flag" in
             'xo') zcover=1 ;;
+            'xe') zextra=1 ;;
             'xw') zwait=1 ;;
             'xf') zforce=1 ;;
             'xs') ztestargs+=("-short") ;;
