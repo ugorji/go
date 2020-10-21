@@ -561,13 +561,15 @@ func (z *bytesDecReader) numread() uint {
 	return z.c
 }
 
-func (z *bytesDecReader) readx(n uint) (bs []byte) {
-	// slicing from a non-constant start position is more expensive,
-	// as more computation is required to decipher the pointer start position.
-	// However, we do it only once, and it's better than reslicing both z.b and return value.
+// Note: slicing from a non-constant start position is more expensive,
+// as more computation is required to decipher the pointer start position.
+// However, we do it only once, and it's better than reslicing both z.b and return value.
 
-	z.c += n
-	return z.b[z.c-n : z.c]
+func (z *bytesDecReader) readx(n uint) (bs []byte) {
+	x := z.c + n
+	bs = z.b[z.c:x]
+	z.c = x
+	return
 }
 
 func (z *bytesDecReader) readb(bs []byte) {
@@ -575,29 +577,15 @@ func (z *bytesDecReader) readb(bs []byte) {
 }
 
 func (z *bytesDecReader) readn1() (v uint8) {
-	v = z.b[z.c] // cost 7
-	z.c++        // cost 4
+	v = z.b[z.c]
+	z.c++
 	return
 }
 
 func (z *bytesDecReader) readn(num uint8) (bs [rwNLen]byte) {
-	// if z.c >= uint(len(z.b)) || z.c+uint(num) >= uint(len(z.b)) {
-	// 	panic(io.EOF)
-	// }
-
-	// for bounds-check elimination, reslice z.b and ensure bs is within len
-	// bb := z.b[z.c:][:num]
-	bb := z.b[z.c : z.c+uint(num)]
-	_ = bs[len(bb)-1]
-	var i int
-LOOP:
-	if i < len(bb) {
-		bs[i] = bb[i]
-		i++
-		goto LOOP
-	}
-
-	z.c += uint(num)
+	x := z.c + uint(num)
+	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
+	z.c = x
 	return
 }
 
@@ -611,7 +599,7 @@ LOOP:
 	}
 	out = z.b[z.c:i]
 	z.c = i
-	return // z.b[c:i]
+	return
 }
 
 func (z *bytesDecReader) jsonReadAsisChars() (out []byte) {
@@ -628,14 +616,27 @@ LOOP:
 }
 
 func (z *bytesDecReader) skipWhitespace() (token byte) {
+	i := z.c
 LOOP:
-	token = z.b[z.c]
-	z.c++
-	if isWhitespaceChar(token) {
+	if isWhitespaceChar(z.b[i]) {
+		i++
 		goto LOOP
 	}
+	token = z.b[i]
+	z.c = i + 1
+
 	return
 }
+
+// func (z *bytesDecReader) skipWhitespace() (token byte) {
+// LOOP:
+// 	token = z.b[z.c]
+// 	z.c++
+// 	if isWhitespaceChar(token) {
+// 		goto LOOP
+// 	}
+// 	return
+// }
 
 func (z *bytesDecReader) readUntil(stop byte) (out []byte) {
 	i := z.c
