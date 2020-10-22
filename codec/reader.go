@@ -684,10 +684,10 @@ LOOP:
 		i++
 		goto LOOP
 	}
-	token = z.b[i]
+	// token = z.b[i]
 	z.c = i + 1
 
-	return
+	return z.b[i]
 }
 
 // func (z *bytesDecReader) skipWhitespace() (token byte) {
@@ -730,8 +730,15 @@ type decRd struct {
 	rb bytesDecReader
 	ri *ioDecReader
 	bi *bufioDecReader
+
+	decReader
 }
 
+// From out benchmarking, we see the following in terms of performance:
+//
+// - interface calls
+// - branch that can inline what it calls
+//
 // the if/else-if/else block is expensive to inline.
 // Each node of this construct costs a lot and dominates the budget.
 // Best to only do an if fast-path else block (so fast-path is inlined).
@@ -749,6 +756,11 @@ type decRd struct {
 // If golang inlining gets better and bytesDecReader methods can be inlined,
 // then we can revert to using these 2 functions so the bytesDecReader
 // methods are inlined and the IO paths call out to a function.
+//
+// decRd is designed to embed a decReader, and then re-implement some of the decReader
+// methods using a conditional branch. We only override the ones that have a bytes version
+// that is small enough to be inlined. We use ./run.sh -z to check.
+// Right now, only numread and readn1 can be inlined.
 
 func (z *decRd) numread() uint {
 	if z.bytes {
@@ -757,66 +769,6 @@ func (z *decRd) numread() uint {
 		return z.bi.numread()
 	} else {
 		return z.ri.numread()
-	}
-}
-
-func (z *decRd) readn2() [2]byte {
-	if z.bytes {
-		return z.rb.readn2()
-	} else if z.bufio {
-		return z.bi.readn2()
-	} else {
-		return z.ri.readn2()
-	}
-}
-
-func (z *decRd) readn3() [3]byte {
-	if z.bytes {
-		return z.rb.readn3()
-	} else if z.bufio {
-		return z.bi.readn3()
-	} else {
-		return z.ri.readn3()
-	}
-}
-
-func (z *decRd) readn4() [4]byte {
-	if z.bytes {
-		return z.rb.readn4()
-	} else if z.bufio {
-		return z.bi.readn4()
-	} else {
-		return z.ri.readn4()
-	}
-}
-
-func (z *decRd) readn8() [8]byte {
-	if z.bytes {
-		return z.rb.readn8()
-	} else if z.bufio {
-		return z.bi.readn8()
-	} else {
-		return z.ri.readn8()
-	}
-}
-
-func (z *decRd) readx(n uint) []byte {
-	if z.bytes {
-		return z.rb.readx(n)
-	} else if z.bufio {
-		return z.bi.readx(n)
-	} else {
-		return z.ri.readx(n)
-	}
-}
-
-func (z *decRd) readb(s []byte) {
-	if z.bytes {
-		z.rb.readb(s)
-	} else if z.bufio {
-		z.bi.readb(s)
-	} else {
-		z.ri.readb(s)
 	}
 }
 
@@ -837,46 +789,6 @@ func (z *decRd) readn1IO() uint8 {
 		return z.bi.readn1()
 	}
 	return z.ri.readn1()
-}
-
-func (z *decRd) skipWhitespace() (token byte) {
-	if z.bytes {
-		return z.rb.skipWhitespace()
-	} else if z.bufio {
-		return z.bi.skipWhitespace()
-	} else {
-		return z.ri.skipWhitespace()
-	}
-}
-
-func (z *decRd) readUntil(stop byte) (out []byte) {
-	if z.bytes {
-		return z.rb.readUntil(stop)
-	} else if z.bufio {
-		return z.bi.readUntil(stop)
-	} else {
-		return z.ri.readUntil(stop)
-	}
-}
-
-func (z *decRd) jsonReadNum() (bs []byte) {
-	if z.bytes {
-		return z.rb.jsonReadNum()
-	} else if z.bufio {
-		return z.bi.jsonReadNum()
-	} else {
-		return z.ri.jsonReadNum()
-	}
-}
-
-func (z *decRd) jsonReadAsisChars() (bs []byte) {
-	if z.bytes {
-		return z.rb.jsonReadAsisChars()
-	} else if z.bufio {
-		return z.bi.jsonReadAsisChars()
-	} else {
-		return z.ri.jsonReadAsisChars()
-	}
 }
 
 func readFull(r io.Reader, bs []byte) (n uint, err error) {

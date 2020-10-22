@@ -186,7 +186,7 @@ func (z *bytesEncAppender) writen2(b1, b2 byte) {
 	z.b = append(z.b, b1, b2)
 }
 func (z *bytesEncAppender) writen4(b [4]byte) {
-	z.b = append(z.b, b[0], b[1], b[2], b[3])
+	z.b = append(z.b, b[:]...)
 }
 func (z *bytesEncAppender) writen8(b [8]byte) {
 	z.b = append(z.b, b[:]...)
@@ -260,8 +260,7 @@ func (z *encWr) writen2(b1, b2 byte) {
 }
 func (z *encWr) writen4(b [4]byte) {
 	if z.bytes {
-		// MARKER: z.wb.writen4(b)
-		z.wb.b = append(z.wb.b, b[0], b[1], b[2], b[3])
+		z.wb.writen4(b)
 	} else {
 		z.wf.writen4(b)
 	}
