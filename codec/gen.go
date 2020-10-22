@@ -2591,3 +2591,27 @@ func genRunTmpl2Go(fnameIn, fnameOut string) {
 	err = genInternalGoFile(fin, fout)
 	genCheckErr(err)
 }
+
+// --- some methods here for other types, which are only used in codecgen
+
+// depth returns number of valid nodes in the hierachy
+func (path *structFieldInfoPathNode) root() *structFieldInfoPathNode {
+TOP:
+	if path.parent != nil {
+		path = path.parent
+		goto TOP
+	}
+	return path
+}
+
+func (path *structFieldInfoPathNode) fullpath() (p []*structFieldInfoPathNode) {
+	// this method is mostly called by a command-line tool - it's not optimized, and that's ok.
+	// it shouldn't be used in typical runtime use - as it does unnecessary allocation.
+	d := path.depth()
+	p = make([]*structFieldInfoPathNode, d)
+	for d--; d >= 0; d-- {
+		p[d] = path
+		path = path.parent
+	}
+	return
+}

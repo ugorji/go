@@ -1433,28 +1433,6 @@ TOP:
 	return
 }
 
-// depth returns number of valid nodes in the hierachy
-func (path *structFieldInfoPathNode) root() *structFieldInfoPathNode {
-TOP:
-	if path.parent != nil {
-		path = path.parent
-		goto TOP
-	}
-	return path
-}
-
-func (path *structFieldInfoPathNode) fullpath() (p []*structFieldInfoPathNode) {
-	// this method is mostly called by a command-line tool - it's not optimized, and that's ok.
-	// it shouldn't be used in typical runtime use - as it does unnecessary allocation.
-	d := path.depth()
-	p = make([]*structFieldInfoPathNode, d)
-	for d--; d >= 0; d-- {
-		p[d] = path
-		path = path.parent
-	}
-	return
-}
-
 // field returns the field of the struct.
 func (path *structFieldInfoPathNode) field(v reflect.Value) (rv2 reflect.Value) {
 	if parent := path.parent; parent != nil {
