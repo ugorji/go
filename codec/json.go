@@ -652,7 +652,7 @@ func (d *jsonDecDriver) readDelimError(xc uint8) {
 func (d *jsonDecDriver) readLit4True() {
 	bs := d.d.decRd.readn(3)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [rwNLen]byte{'r', 'u', 'e'} { // !Equal jsonLiteral4True
+	if jsonValidateSymbols && bs != [8]byte{'r', 'u', 'e'} { // !Equal jsonLiteral4True
 		d.d.errorf("expecting %s: got %s", jsonLiteral4True, bs)
 	}
 }
@@ -660,7 +660,7 @@ func (d *jsonDecDriver) readLit4True() {
 func (d *jsonDecDriver) readLit4False() {
 	bs := d.d.decRd.readn(4)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [rwNLen]byte{'a', 'l', 's', 'e'} { // !Equal jsonLiteral4False
+	if jsonValidateSymbols && bs != [8]byte{'a', 'l', 's', 'e'} { // !Equal jsonLiteral4False
 		d.d.errorf("expecting %s: got %s", jsonLiteral4False, bs)
 	}
 }
@@ -668,7 +668,7 @@ func (d *jsonDecDriver) readLit4False() {
 func (d *jsonDecDriver) readLit4Null() {
 	bs := d.d.decRd.readn(3) // readx(3)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [rwNLen]byte{'u', 'l', 'l'} { // !Equal jsonLiteral4Null
+	if jsonValidateSymbols && bs != [8]byte{'u', 'l', 'l'} { // !Equal jsonLiteral4Null
 		d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs)
 	}
 }
@@ -1067,7 +1067,9 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 		case 't':
 			buf = append(buf, '\t')
 		case 'u':
-			buf = append(buf, d.bstr[:utf8.EncodeRune(d.bstr[:], d.appendStringAsBytesSlashU())]...)
+			d.buf = buf
+			d.appendStringAsBytesSlashU()
+			buf = d.buf
 		default:
 			d.buf = buf
 			d.d.errorf("unsupported escaped value: %c", c)
@@ -1076,11 +1078,12 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 	d.buf = buf
 }
 
-func (d *jsonDecDriver) appendStringAsBytesSlashU() (r rune) {
+func (d *jsonDecDriver) appendStringAsBytesSlashU() {
+	var r rune
 	var rr uint32
 	var j uint
 	var c byte
-	var cs [7]byte
+	var cs [8]byte
 	cs = d.d.decRd.readn(4)
 	for _, c = range cs[:4] { // bounds-check-elimination
 		// best to use explicit if-else
@@ -1098,10 +1101,11 @@ func (d *jsonDecDriver) appendStringAsBytesSlashU() (r rune) {
 	}
 	r = rune(rr)
 	if utf16.IsSurrogate(r) {
-		cs = d.d.decRd.readn(6)
-		if cs[0] == '\\' && cs[1] == 'u' {
+		csu := d.d.decRd.readn(2)
+		cs = d.d.decRd.readn(4)
+		if csu[0] == '\\' && csu[1] == 'u' {
 			rr = 0
-			for j = 2; j < 6; j++ {
+			for j = 0; j < 4; j++ {
 				c = cs[j]
 				if c >= '0' && c <= '9' {
 					rr = rr*16 + uint32(c-jsonU4Chk2)
@@ -1120,7 +1124,7 @@ func (d *jsonDecDriver) appendStringAsBytesSlashU() (r rune) {
 		r = unicode.ReplacementChar
 	}
 encode_rune:
-	return
+	d.buf = append(d.buf, d.bstr[:utf8.EncodeRune(d.bstr[:], r)]...)
 }
 
 func (d *jsonDecDriver) nakedNum(z *fauxUnion, bs []byte) (err error) {
