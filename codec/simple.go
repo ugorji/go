@@ -401,7 +401,7 @@ func (d *simpleDecDriver) uint2Len(ui uint64) int {
 }
 
 func (d *simpleDecDriver) decLen() int {
-	switch d.bd % 8 {
+	switch d.bd & 7 { // d.bd % 8 {
 	case 0:
 		return 0
 	case 1:
@@ -614,7 +614,7 @@ func (d *simpleDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		v = append(v, d.d.decRd.readx(uint(c))...)
 
 	default:
-		switch c % 8 {
+		switch c & 7 { // c % 8 {
 		case 0:
 			length = 0
 		case 1:

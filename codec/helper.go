@@ -2330,6 +2330,8 @@ type sfiRv struct {
 //
 // given x > 0 and n > 0 and x is exactly 2^n, then pos/x === pos>>n AND pos%x === pos&(x-1).
 // consequently, pos/32 === pos>>5, pos/16 === pos>>4, pos/8 === pos>>3, pos%8 == pos&7
+//
+// Note that using >> or & is faster than using / or %, as division is quite expensive if not optimized.
 
 // MARKER:
 // We noticed a little performance degradation when using bitset256 as [32]byte (or bitset32 as uint32).
@@ -2341,11 +2343,11 @@ type sfiRv struct {
 type bitset32 [32]bool
 
 func (x *bitset32) set(pos byte) *bitset32 {
-	x[pos%32] = true
+	x[pos&31] = true // x[pos%32] = true
 	return x
 }
 func (x *bitset32) isset(pos byte) bool {
-	return x[pos%32]
+	return x[pos&31] // x[pos%32]
 }
 
 // type bitset64 [64]bool

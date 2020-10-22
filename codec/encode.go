@@ -299,10 +299,10 @@ func (e *Encoder) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
 		e.mapStart(0)
 	} else {
 		e.haltOnMbsOddLen(l)
-		e.mapStart(l / 2)
+		e.mapStart(l >> 1) // e.mapStart(l / 2)
 		fn := e.kSeqFn(ti.elem)
 		for j := 0; j < l; j++ {
-			if j%2 == 0 {
+			if j&1 == 0 { // j%2 == 0 {
 				e.mapElemKey()
 			} else {
 				e.mapElemValue()
@@ -332,10 +332,10 @@ func (e *Encoder) kSeqWMbs(rv reflect.Value, ti *typeInfo) {
 		e.mapStart(0)
 	} else {
 		e.haltOnMbsOddLen(l)
-		e.mapStart(l / 2)
+		e.mapStart(l >> 1) // e.mapStart(l / 2)
 		fn := e.kSeqFn(ti.elem)
 		for j := 0; j < l; j++ {
-			if j%2 == 0 {
+			if j&1 == 0 { // j%2 == 0 {
 				e.mapElemKey()
 			} else {
 				e.mapElemValue()
@@ -1309,7 +1309,7 @@ func (e *Encoder) arrayEnd() {
 // ----------
 
 func (e *Encoder) haltOnMbsOddLen(length int) {
-	if length%2 == 1 {
+	if length&1 == 1 { // length%2 == 1 {
 		e.errorf("mapBySlice requires even slice length, but got %v", length)
 	}
 }

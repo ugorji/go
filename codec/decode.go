@@ -1792,12 +1792,10 @@ func (x decSliceHelper) ElemContainerState(index int) {
 
 	if x.Array {
 		x.d.arrayElem()
+	} else if index&1 == 0 { // index%2 == 0 {
+		x.d.mapElemKey()
 	} else {
-		if index%2 == 0 {
-			x.d.mapElemKey()
-		} else {
-			x.d.mapElemValue()
-		}
+		x.d.mapElemValue()
 	}
 }
 

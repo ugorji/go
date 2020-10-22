@@ -621,9 +621,9 @@ func (fastpathT) EncSliceIntfV(v []interface{}, e *Encoder) {
 }
 func (fastpathT) EncAsMapSliceIntfV(v []interface{}, e *Encoder) {
 	e.haltOnMbsOddLen(len(v))
-	e.mapStart(len(v) / 2)
+	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
-		if j%2 == 0 {
+		if j&1 == 0 { // if j%2 == 0 {
 			e.mapElemKey()
 		} else {
 			e.mapElemValue()
@@ -649,9 +649,9 @@ func (fastpathT) EncSliceStringV(v []string, e *Encoder) {
 }
 func (fastpathT) EncAsMapSliceStringV(v []string, e *Encoder) {
 	e.haltOnMbsOddLen(len(v))
-	e.mapStart(len(v) / 2)
+	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
-		if j%2 == 0 {
+		if j&1 == 0 { // if j%2 == 0 {
 			e.mapElemKey()
 		} else {
 			e.mapElemValue()
@@ -677,9 +677,9 @@ func (fastpathT) EncSliceBytesV(v [][]byte, e *Encoder) {
 }
 func (fastpathT) EncAsMapSliceBytesV(v [][]byte, e *Encoder) {
 	e.haltOnMbsOddLen(len(v))
-	e.mapStart(len(v) / 2)
+	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
-		if j%2 == 0 {
+		if j&1 == 0 { // if j%2 == 0 {
 			e.mapElemKey()
 		} else {
 			e.mapElemValue()
@@ -705,9 +705,9 @@ func (fastpathT) EncSliceFloat64V(v []float64, e *Encoder) {
 }
 func (fastpathT) EncAsMapSliceFloat64V(v []float64, e *Encoder) {
 	e.haltOnMbsOddLen(len(v))
-	e.mapStart(len(v) / 2)
+	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
-		if j%2 == 0 {
+		if j&1 == 0 { // if j%2 == 0 {
 			e.mapElemKey()
 		} else {
 			e.mapElemValue()
@@ -733,9 +733,9 @@ func (fastpathT) EncSliceUint64V(v []uint64, e *Encoder) {
 }
 func (fastpathT) EncAsMapSliceUint64V(v []uint64, e *Encoder) {
 	e.haltOnMbsOddLen(len(v))
-	e.mapStart(len(v) / 2)
+	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
-		if j%2 == 0 {
+		if j&1 == 0 { // if j%2 == 0 {
 			e.mapElemKey()
 		} else {
 			e.mapElemValue()
@@ -761,9 +761,9 @@ func (fastpathT) EncSliceIntV(v []int, e *Encoder) {
 }
 func (fastpathT) EncAsMapSliceIntV(v []int, e *Encoder) {
 	e.haltOnMbsOddLen(len(v))
-	e.mapStart(len(v) / 2)
+	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
-		if j%2 == 0 {
+		if j&1 == 0 { // if j%2 == 0 {
 			e.mapElemKey()
 		} else {
 			e.mapElemValue()
@@ -789,9 +789,9 @@ func (fastpathT) EncSliceInt32V(v []int32, e *Encoder) {
 }
 func (fastpathT) EncAsMapSliceInt32V(v []int32, e *Encoder) {
 	e.haltOnMbsOddLen(len(v))
-	e.mapStart(len(v) / 2)
+	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
-		if j%2 == 0 {
+		if j&1 == 0 { // if j%2 == 0 {
 			e.mapElemKey()
 		} else {
 			e.mapElemValue()
@@ -817,9 +817,9 @@ func (fastpathT) EncSliceInt64V(v []int64, e *Encoder) {
 }
 func (fastpathT) EncAsMapSliceInt64V(v []int64, e *Encoder) {
 	e.haltOnMbsOddLen(len(v))
-	e.mapStart(len(v) / 2)
+	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
-		if j%2 == 0 {
+		if j&1 == 0 { // if j%2 == 0 {
 			e.mapElemKey()
 		} else {
 			e.mapElemValue()
@@ -845,9 +845,9 @@ func (fastpathT) EncSliceBoolV(v []bool, e *Encoder) {
 }
 func (fastpathT) EncAsMapSliceBoolV(v []bool, e *Encoder) {
 	e.haltOnMbsOddLen(len(v))
-	e.mapStart(len(v) / 2)
+	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
 	for j := range v {
-		if j%2 == 0 {
+		if j&1 == 0 { // if j%2 == 0 {
 			e.mapElemKey()
 		} else {
 			e.mapElemValue()
