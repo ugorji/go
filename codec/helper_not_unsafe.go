@@ -34,6 +34,10 @@ func bytesView(v string) []byte {
 	return []byte(v)
 }
 
+// func copyBytes(dst []byte, src []byte) {
+// 	copy(dst, src)
+// }
+
 // isNil says whether the value v is nil.
 // This applies to references like map/ptr/unsafepointer/chan/func,
 // and non-reference values like interface/slice.

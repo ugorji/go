@@ -75,6 +75,13 @@ func bytesView(v string) []byte {
 	return *(*[]byte)(unsafe.Pointer(&unsafeSlice{sx.Data, sx.Len, sx.Len}))
 }
 
+// func copyBytes(dst []byte, src []byte) {
+// 	// copy(dst, src)
+// 	dx := (*unsafeSlice)(unsafe.Pointer(&dst))
+// 	sx := (*unsafeSlice)(unsafe.Pointer(&src))
+// 	memmove(dx.Data, sx.Data, sx.Len)
+// }
+
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	var ui = (*unsafeIntf)(unsafe.Pointer(&v))
 	if ui.word == nil {
@@ -927,6 +934,10 @@ func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
 //go:linkname typedmemmove reflect.typedmemmove
 //go:noescape
 func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
+
+// //go:linkname memmove reflect.memmove
+// //go:noescape
+// func memmove(dst, src unsafe.Pointer, n int)
 
 //go:linkname typedmemclr reflect.typedmemclr
 //go:noescape
