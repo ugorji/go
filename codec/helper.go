@@ -170,12 +170,6 @@ const (
 	// when a 'nil' was encountered in the stream.
 	containerLenNil = math.MinInt32
 
-	// rvNLen is the length of the array for readn or writen calls.
-	//
-	// Note: we set it to 7, so that method calls that pass an int (for length)
-	// will keep both at 8 bytes.
-	rwNLen = 7
-
 	// Support encoding.(Binary|Text)(Unm|M)arshaler.
 	// This constant flag will enable or disable it.
 	supportMarshalInterfaces = true

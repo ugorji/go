@@ -16,8 +16,8 @@ type decReader interface {
 	readn1() uint8
 	// readn1eof() (v uint8, eof bool)
 
-	// read up to 7 bytes at a time
-	readn(num uint8) (v [rwNLen]byte)
+	// read up to 8 bytes at a time
+	readn(num uint8) (v [8]byte)
 	numread() uint // number of bytes read
 
 	// readNumber(includeLastByteRead bool) []byte
@@ -174,7 +174,7 @@ func (z *ioDecReader) UnreadByte() (err error) {
 	return
 }
 
-func (z *ioDecReader) readn(num uint8) (bs [rwNLen]byte) {
+func (z *ioDecReader) readn(num uint8) (bs [8]byte) {
 	z.readb(bs[:num])
 	// copy(bs[:], z.readx(uint(num)))
 	return
@@ -398,7 +398,7 @@ func (z *bufioDecReader) unreadn1() {
 	z.n--
 }
 
-func (z *bufioDecReader) readn(num uint8) (bs [rwNLen]byte) {
+func (z *bufioDecReader) readn(num uint8) (bs [8]byte) {
 	z.readb(bs[:num])
 	// copy(bs[:], z.readx(uint(num)))
 	return
@@ -582,7 +582,7 @@ func (z *bytesDecReader) readn1() (v uint8) {
 	return
 }
 
-func (z *bytesDecReader) readn(num uint8) (bs [rwNLen]byte) {
+func (z *bytesDecReader) readn(num uint8) (bs [8]byte) {
 	x := z.c + uint(num)
 	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
 	z.c = x
@@ -698,7 +698,7 @@ func (z *decRd) numread() uint {
 	}
 }
 
-func (z *decRd) readn(num uint8) [rwNLen]byte {
+func (z *decRd) readn(num uint8) [8]byte {
 	if z.bytes {
 		return z.rb.readn(num)
 	} else if z.bufio {
