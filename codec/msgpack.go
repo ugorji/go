@@ -188,13 +188,13 @@ func (e *msgpackEncDriver) EncodeInt(i int64) {
 	} else if i > math.MaxInt8 {
 		if i <= math.MaxInt16 {
 			e.e.encWr.writen1(mpInt16)
-			bigenHelper{e.x[:2], e.e.w()}.writeUint16(uint16(i))
+			bigen.writeUint16(e.e.w(), uint16(i))
 		} else if i <= math.MaxInt32 {
 			e.e.encWr.writen1(mpInt32)
-			bigenHelper{e.x[:4], e.e.w()}.writeUint32(uint32(i))
+			bigen.writeUint32(e.e.w(), uint32(i))
 		} else {
 			e.e.encWr.writen1(mpInt64)
-			bigenHelper{e.x[:8], e.e.w()}.writeUint64(uint64(i))
+			bigen.writeUint64(e.e.w(), uint64(i))
 		}
 	} else if i >= -32 {
 		if e.h.NoFixedNum {
@@ -206,13 +206,13 @@ func (e *msgpackEncDriver) EncodeInt(i int64) {
 		e.e.encWr.writen2(mpInt8, byte(i))
 	} else if i >= math.MinInt16 {
 		e.e.encWr.writen1(mpInt16)
-		bigenHelper{e.x[:2], e.e.w()}.writeUint16(uint16(i))
+		bigen.writeUint16(e.e.w(), uint16(i))
 	} else if i >= math.MinInt32 {
 		e.e.encWr.writen1(mpInt32)
-		bigenHelper{e.x[:4], e.e.w()}.writeUint32(uint32(i))
+		bigen.writeUint32(e.e.w(), uint32(i))
 	} else {
 		e.e.encWr.writen1(mpInt64)
-		bigenHelper{e.x[:8], e.e.w()}.writeUint64(uint64(i))
+		bigen.writeUint64(e.e.w(), uint64(i))
 	}
 }
 
@@ -227,13 +227,13 @@ func (e *msgpackEncDriver) EncodeUint(i uint64) {
 		e.e.encWr.writen2(mpUint8, byte(i))
 	} else if i <= math.MaxUint16 {
 		e.e.encWr.writen1(mpUint16)
-		bigenHelper{e.x[:2], e.e.w()}.writeUint16(uint16(i))
+		bigen.writeUint16(e.e.w(), uint16(i))
 	} else if i <= math.MaxUint32 {
 		e.e.encWr.writen1(mpUint32)
-		bigenHelper{e.x[:4], e.e.w()}.writeUint32(uint32(i))
+		bigen.writeUint32(e.e.w(), uint32(i))
 	} else {
 		e.e.encWr.writen1(mpUint64)
-		bigenHelper{e.x[:8], e.e.w()}.writeUint64(uint64(i))
+		bigen.writeUint64(e.e.w(), uint64(i))
 	}
 }
 
@@ -247,12 +247,12 @@ func (e *msgpackEncDriver) EncodeBool(b bool) {
 
 func (e *msgpackEncDriver) EncodeFloat32(f float32) {
 	e.e.encWr.writen1(mpFloat)
-	bigenHelper{e.x[:4], e.e.w()}.writeUint32(math.Float32bits(f))
+	bigen.writeUint32(e.e.w(), math.Float32bits(f))
 }
 
 func (e *msgpackEncDriver) EncodeFloat64(f float64) {
 	e.e.encWr.writen1(mpDouble)
-	bigenHelper{e.x[:8], e.e.w()}.writeUint64(math.Float64bits(f))
+	bigen.writeUint64(e.e.w(), math.Float64bits(f))
 }
 
 func (e *msgpackEncDriver) EncodeTime(t time.Time) {
@@ -279,12 +279,12 @@ func (e *msgpackEncDriver) EncodeTime(t time.Time) {
 	}
 	switch l {
 	case 4:
-		bigenHelper{e.x[:4], e.e.w()}.writeUint32(uint32(data64))
+		bigen.writeUint32(e.e.w(), uint32(data64))
 	case 8:
-		bigenHelper{e.x[:8], e.e.w()}.writeUint64(data64)
+		bigen.writeUint64(e.e.w(), data64)
 	case 12:
-		bigenHelper{e.x[:4], e.e.w()}.writeUint32(uint32(nsec))
-		bigenHelper{e.x[:8], e.e.w()}.writeUint64(uint64(sec))
+		bigen.writeUint32(e.e.w(), uint32(nsec))
+		bigen.writeUint64(e.e.w(), uint64(sec))
 	}
 }
 
@@ -332,11 +332,11 @@ func (e *msgpackEncDriver) encodeExtPreamble(xtag byte, l int) {
 		e.e.encWr.writen1(xtag)
 	} else if l < 65536 {
 		e.e.encWr.writen1(mpExt16)
-		bigenHelper{e.x[:2], e.e.w()}.writeUint16(uint16(l))
+		bigen.writeUint16(e.e.w(), uint16(l))
 		e.e.encWr.writen1(xtag)
 	} else {
 		e.e.encWr.writen1(mpExt32)
-		bigenHelper{e.x[:4], e.e.w()}.writeUint32(uint32(l))
+		bigen.writeUint32(e.e.w(), uint32(l))
 		e.e.encWr.writen1(xtag)
 	}
 }
@@ -388,10 +388,10 @@ func (e *msgpackEncDriver) writeContainerLen(ct msgpackContainerType, l int) {
 		e.e.encWr.writen2(ct.b8, uint8(l))
 	} else if l < 65536 {
 		e.e.encWr.writen1(ct.b16)
-		bigenHelper{e.x[:2], e.e.w()}.writeUint16(uint16(l))
+		bigen.writeUint16(e.e.w(), uint16(l))
 	} else {
 		e.e.encWr.writen1(ct.b32)
-		bigenHelper{e.x[:4], e.e.w()}.writeUint32(uint32(l))
+		bigen.writeUint32(e.e.w(), uint32(l))
 	}
 }
 
@@ -439,36 +439,36 @@ func (d *msgpackDecDriver) DecodeNaked() {
 
 	case mpFloat:
 		n.v = valueTypeFloat
-		n.f = float64(math.Float32frombits(bigen.Uint32(d.d.decRd.readx(4))))
+		n.f = float64(math.Float32frombits(bigen.Uint32(d.d.decRd.readn4())))
 	case mpDouble:
 		n.v = valueTypeFloat
-		n.f = math.Float64frombits(bigen.Uint64(d.d.decRd.readx(8)))
+		n.f = math.Float64frombits(bigen.Uint64(d.d.decRd.readn8()))
 
 	case mpUint8:
 		n.v = valueTypeUint
 		n.u = uint64(d.d.decRd.readn1())
 	case mpUint16:
 		n.v = valueTypeUint
-		n.u = uint64(bigen.Uint16(d.d.decRd.readx(2)))
+		n.u = uint64(bigen.Uint16(d.d.decRd.readn2()))
 	case mpUint32:
 		n.v = valueTypeUint
-		n.u = uint64(bigen.Uint32(d.d.decRd.readx(4)))
+		n.u = uint64(bigen.Uint32(d.d.decRd.readn4()))
 	case mpUint64:
 		n.v = valueTypeUint
-		n.u = uint64(bigen.Uint64(d.d.decRd.readx(8)))
+		n.u = uint64(bigen.Uint64(d.d.decRd.readn8()))
 
 	case mpInt8:
 		n.v = valueTypeInt
 		n.i = int64(int8(d.d.decRd.readn1()))
 	case mpInt16:
 		n.v = valueTypeInt
-		n.i = int64(int16(bigen.Uint16(d.d.decRd.readx(2))))
+		n.i = int64(int16(bigen.Uint16(d.d.decRd.readn2())))
 	case mpInt32:
 		n.v = valueTypeInt
-		n.i = int64(int32(bigen.Uint32(d.d.decRd.readx(4))))
+		n.i = int64(int32(bigen.Uint32(d.d.decRd.readn4())))
 	case mpInt64:
 		n.v = valueTypeInt
-		n.i = int64(int64(bigen.Uint64(d.d.decRd.readx(8))))
+		n.i = int64(int64(bigen.Uint64(d.d.decRd.readn8())))
 
 	default:
 		switch {
@@ -542,7 +542,6 @@ func (d *msgpackDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	bd := d.bd
 
 	var clen uint
-	var x []byte
 
 	switch bd {
 	case mpNil, mpFalse, mpTrue: // pass
@@ -559,13 +558,13 @@ func (d *msgpackDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		v = append(v, byte(clen))
 		v = append(v, d.d.decRd.readx(clen)...)
 	case mpStr16, mpBin16:
-		x = d.d.decRd.readx(2)
-		v = append(v, x...)
+		x := d.d.decRd.readn2()
+		v = append(v, x[:]...)
 		clen = uint(bigen.Uint16(x))
 		v = append(v, d.d.decRd.readx(clen)...)
 	case mpStr32, mpBin32:
-		x = d.d.decRd.readx(4)
-		v = append(v, x...)
+		x := d.d.decRd.readn4()
+		v = append(v, x[:]...)
 		clen = uint(bigen.Uint32(x))
 		v = append(v, d.d.decRd.readx(clen)...)
 	case mpFixExt1:
@@ -589,43 +588,43 @@ func (d *msgpackDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		v = append(v, d.d.decRd.readn1()) // tag
 		v = append(v, d.d.decRd.readx(clen)...)
 	case mpExt16:
-		x = d.d.decRd.readx(2)
+		x := d.d.decRd.readn2()
 		clen = uint(bigen.Uint16(x))
-		v = append(v, x...)
+		v = append(v, x[:]...)
 		v = append(v, d.d.decRd.readn1()) // tag
 		v = append(v, d.d.decRd.readx(clen)...)
 	case mpExt32:
-		x = d.d.decRd.readx(4)
+		x := d.d.decRd.readn4()
 		clen = uint(bigen.Uint32(x))
-		v = append(v, x...)
+		v = append(v, x[:]...)
 		v = append(v, d.d.decRd.readn1()) // tag
 		v = append(v, d.d.decRd.readx(clen)...)
 	case mpArray16:
-		x = d.d.decRd.readx(2)
+		x := d.d.decRd.readn2()
 		clen = uint(bigen.Uint16(x))
-		v = append(v, x...)
+		v = append(v, x[:]...)
 		for i := uint(0); i < clen; i++ {
 			v = d.nextValueBytesR(v)
 		}
 	case mpArray32:
-		x = d.d.decRd.readx(4)
+		x := d.d.decRd.readn4()
 		clen = uint(bigen.Uint32(x))
-		v = append(v, x...)
+		v = append(v, x[:]...)
 		for i := uint(0); i < clen; i++ {
 			v = d.nextValueBytesR(v)
 		}
 	case mpMap16:
-		x = d.d.decRd.readx(2)
+		x := d.d.decRd.readn2()
 		clen = uint(bigen.Uint16(x))
-		v = append(v, x...)
+		v = append(v, x[:]...)
 		for i := uint(0); i < clen; i++ {
 			v = d.nextValueBytesR(v)
 			v = d.nextValueBytesR(v)
 		}
 	case mpMap32:
-		x = d.d.decRd.readx(4)
+		x := d.d.decRd.readn4()
 		clen = uint(bigen.Uint32(x))
-		v = append(v, x...)
+		v = append(v, x[:]...)
 		for i := uint(0); i < clen; i++ {
 			v = d.nextValueBytesR(v)
 			v = d.nextValueBytesR(v)
@@ -664,19 +663,19 @@ func (d *msgpackDecDriver) DecodeInt64() (i int64) {
 	case mpUint8:
 		i = int64(uint64(d.d.decRd.readn1()))
 	case mpUint16:
-		i = int64(uint64(bigen.Uint16(d.d.decRd.readx(2))))
+		i = int64(uint64(bigen.Uint16(d.d.decRd.readn2())))
 	case mpUint32:
-		i = int64(uint64(bigen.Uint32(d.d.decRd.readx(4))))
+		i = int64(uint64(bigen.Uint32(d.d.decRd.readn4())))
 	case mpUint64:
-		i = int64(bigen.Uint64(d.d.decRd.readx(8)))
+		i = int64(bigen.Uint64(d.d.decRd.readn8()))
 	case mpInt8:
 		i = int64(int8(d.d.decRd.readn1()))
 	case mpInt16:
-		i = int64(int16(bigen.Uint16(d.d.decRd.readx(2))))
+		i = int64(int16(bigen.Uint16(d.d.decRd.readn2())))
 	case mpInt32:
-		i = int64(int32(bigen.Uint32(d.d.decRd.readx(4))))
+		i = int64(int32(bigen.Uint32(d.d.decRd.readn4())))
 	case mpInt64:
-		i = int64(bigen.Uint64(d.d.decRd.readx(8)))
+		i = int64(bigen.Uint64(d.d.decRd.readn8()))
 	default:
 		switch {
 		case d.bd >= mpPosFixNumMin && d.bd <= mpPosFixNumMax:
@@ -700,11 +699,11 @@ func (d *msgpackDecDriver) DecodeUint64() (ui uint64) {
 	case mpUint8:
 		ui = uint64(d.d.decRd.readn1())
 	case mpUint16:
-		ui = uint64(bigen.Uint16(d.d.decRd.readx(2)))
+		ui = uint64(bigen.Uint16(d.d.decRd.readn2()))
 	case mpUint32:
-		ui = uint64(bigen.Uint32(d.d.decRd.readx(4)))
+		ui = uint64(bigen.Uint32(d.d.decRd.readn4()))
 	case mpUint64:
-		ui = bigen.Uint64(d.d.decRd.readx(8))
+		ui = bigen.Uint64(d.d.decRd.readn8())
 	case mpInt8:
 		if i := int64(int8(d.d.decRd.readn1())); i >= 0 {
 			ui = uint64(i)
@@ -712,19 +711,19 @@ func (d *msgpackDecDriver) DecodeUint64() (ui uint64) {
 			d.d.errorf("assigning negative signed value: %v, to unsigned type", i)
 		}
 	case mpInt16:
-		if i := int64(int16(bigen.Uint16(d.d.decRd.readx(2)))); i >= 0 {
+		if i := int64(int16(bigen.Uint16(d.d.decRd.readn2()))); i >= 0 {
 			ui = uint64(i)
 		} else {
 			d.d.errorf("assigning negative signed value: %v, to unsigned type", i)
 		}
 	case mpInt32:
-		if i := int64(int32(bigen.Uint32(d.d.decRd.readx(4)))); i >= 0 {
+		if i := int64(int32(bigen.Uint32(d.d.decRd.readn4()))); i >= 0 {
 			ui = uint64(i)
 		} else {
 			d.d.errorf("assigning negative signed value: %v, to unsigned type", i)
 		}
 	case mpInt64:
-		if i := int64(bigen.Uint64(d.d.decRd.readx(8))); i >= 0 {
+		if i := int64(bigen.Uint64(d.d.decRd.readn8())); i >= 0 {
 			ui = uint64(i)
 		} else {
 			d.d.errorf("assigning negative signed value: %v, to unsigned type", i)
@@ -749,9 +748,9 @@ func (d *msgpackDecDriver) DecodeFloat64() (f float64) {
 		return
 	}
 	if d.bd == mpFloat {
-		f = float64(math.Float32frombits(bigen.Uint32(d.d.decRd.readx(4))))
+		f = float64(math.Float32frombits(bigen.Uint32(d.d.decRd.readn4())))
 	} else if d.bd == mpDouble {
-		f = math.Float64frombits(bigen.Uint64(d.d.decRd.readx(8)))
+		f = math.Float64frombits(bigen.Uint64(d.d.decRd.readn8()))
 	} else {
 		f = float64(d.DecodeInt64())
 	}
@@ -867,9 +866,9 @@ func (d *msgpackDecDriver) readContainerLen(ct msgpackContainerType) (clen int) 
 	if bd == ct.b8 {
 		clen = int(d.d.decRd.readn1())
 	} else if bd == ct.b16 {
-		clen = int(bigen.Uint16(d.d.decRd.readx(2)))
+		clen = int(bigen.Uint16(d.d.decRd.readn2()))
 	} else if bd == ct.b32 {
-		clen = int(bigen.Uint32(d.d.decRd.readx(4)))
+		clen = int(bigen.Uint32(d.d.decRd.readn4()))
 	} else if (ct.bFixMin & bd) == ct.bFixMin {
 		clen = int(ct.bFixMin ^ bd)
 	} else {
@@ -908,9 +907,9 @@ func (d *msgpackDecDriver) readExtLen() (clen int) {
 	case mpExt8:
 		clen = int(d.d.decRd.readn1())
 	case mpExt16:
-		clen = int(bigen.Uint16(d.d.decRd.readx(2)))
+		clen = int(bigen.Uint16(d.d.decRd.readn2()))
 	case mpExt32:
-		clen = int(bigen.Uint32(d.d.decRd.readx(4)))
+		clen = int(bigen.Uint32(d.d.decRd.readn4()))
 	default:
 		d.d.errorf("decoding ext bytes: found unexpected byte: %x", d.bd)
 	}
@@ -950,13 +949,13 @@ func (d *msgpackDecDriver) decodeTime(clen int) (t time.Time) {
 	d.bdRead = false
 	switch clen {
 	case 4:
-		t = time.Unix(int64(bigen.Uint32(d.d.decRd.readx(4))), 0).UTC()
+		t = time.Unix(int64(bigen.Uint32(d.d.decRd.readn4())), 0).UTC()
 	case 8:
-		tv := bigen.Uint64(d.d.decRd.readx(8))
+		tv := bigen.Uint64(d.d.decRd.readn8())
 		t = time.Unix(int64(tv&0x00000003ffffffff), int64(tv>>34)).UTC()
 	case 12:
-		nsec := bigen.Uint32(d.d.decRd.readx(4))
-		sec := bigen.Uint64(d.d.decRd.readx(8))
+		nsec := bigen.Uint32(d.d.decRd.readn4())
+		sec := bigen.Uint64(d.d.decRd.readn8())
 		t = time.Unix(int64(sec), int64(nsec)).UTC()
 	default:
 		d.d.errorf("invalid length of bytes for decoding time - expecting 4 or 8 or 12, got %d", clen)

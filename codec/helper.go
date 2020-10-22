@@ -478,7 +478,10 @@ func (e codecError) Error() string {
 }
 
 var (
-	bigen               = binary.BigEndian
+	bigen bigenHelper
+
+	bigenstd = binary.BigEndian
+
 	structInfoFieldName = "_struct"
 
 	mapStrIntfTyp  = reflect.TypeOf(map[string]interface{}(nil))
@@ -1177,26 +1180,83 @@ type noBuiltInTypes struct{}
 func (noBuiltInTypes) EncodeBuiltin(rt uintptr, v interface{}) {}
 func (noBuiltInTypes) DecodeBuiltin(rt uintptr, v interface{}) {}
 
-// bigenHelper.
-// Users must already slice the x completely, because we will not reslice.
-type bigenHelper struct {
-	x []byte // must be correctly sliced to appropriate len. slicing is a cost.
-	w *encWr
+// bigenHelper handles ByteOrder operations directly using
+// arrays of bytes (not slice of bytes).
+//
+// Since byteorder operations are very common for encoding and decoding
+// numbers, lengths, etc - it is imperative that this operation is as
+// fast as possible. Removing indirection (pointer chasing) to look
+// at up to 8 bytes helps a lot here.
+//
+// For times where it is expedient to use a slice, delegate to the
+// bigenstd (equal to the binary.BigEndian value).
+//
+// retrofitted from stdlib: encoding/binary/BigEndian (ByteOrder)
+type bigenHelper struct{}
+
+func (z bigenHelper) PutUint16(v uint16) (b [2]byte) {
+	return [...]byte{
+		byte(v >> 8),
+		byte(v),
+	}
 }
 
-func (z bigenHelper) writeUint16(v uint16) {
-	bigen.PutUint16(z.x, v)
-	z.w.writeb(z.x)
+func (z bigenHelper) PutUint32(v uint32) (b [4]byte) {
+	return [...]byte{
+		byte(v >> 24),
+		byte(v >> 16),
+		byte(v >> 8),
+		byte(v),
+	}
 }
 
-func (z bigenHelper) writeUint32(v uint32) {
-	bigen.PutUint32(z.x, v)
-	z.w.writeb(z.x)
+func (z bigenHelper) PutUint64(v uint64) (b [8]byte) {
+	return [...]byte{
+		byte(v >> 56),
+		byte(v >> 48),
+		byte(v >> 40),
+		byte(v >> 32),
+		byte(v >> 24),
+		byte(v >> 16),
+		byte(v >> 8),
+		byte(v),
+	}
 }
 
-func (z bigenHelper) writeUint64(v uint64) {
-	bigen.PutUint64(z.x, v)
-	z.w.writeb(z.x)
+func (z bigenHelper) Uint16(b [2]byte) (v uint16) {
+	return uint16(b[1]) |
+		uint16(b[0])<<8
+}
+
+func (z bigenHelper) Uint32(b [4]byte) (v uint32) {
+	return uint32(b[3]) |
+		uint32(b[2])<<8 |
+		uint32(b[1])<<16 |
+		uint32(b[0])<<24
+}
+
+func (z bigenHelper) Uint64(b [8]byte) (v uint64) {
+	return uint64(b[7]) |
+		uint64(b[6])<<8 |
+		uint64(b[5])<<16 |
+		uint64(b[4])<<24 |
+		uint64(b[3])<<32 |
+		uint64(b[2])<<40 |
+		uint64(b[1])<<48 |
+		uint64(b[0])<<56
+}
+
+func (z bigenHelper) writeUint16(w *encWr, v uint16) {
+	x := z.PutUint16(v)
+	w.writen2(x[0], x[1])
+}
+
+func (z bigenHelper) writeUint32(w *encWr, v uint32) {
+	w.writen4(z.PutUint32(v))
+}
+
+func (z bigenHelper) writeUint64(w *encWr, v uint64) {
+	w.writen8(z.PutUint64(v))
 }
 
 type extTypeTagFn struct {

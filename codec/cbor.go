@@ -145,12 +145,12 @@ func (e *cborEncDriver) EncodeFloat32(f float32) {
 	if e.h.OptimumSize {
 		if h := floatToHalfFloatBits(b); halfFloatToFloatBits(h) == b {
 			e.e.encWr.writen1(cborBdFloat16)
-			bigenHelper{e.x[:2], e.e.w()}.writeUint16(h)
+			bigen.writeUint16(e.e.w(), h)
 			return
 		}
 	}
 	e.e.encWr.writen1(cborBdFloat32)
-	bigenHelper{e.x[:4], e.e.w()}.writeUint32(b)
+	bigen.writeUint32(e.e.w(), b)
 }
 
 func (e *cborEncDriver) EncodeFloat64(f float64) {
@@ -161,7 +161,7 @@ func (e *cborEncDriver) EncodeFloat64(f float64) {
 		}
 	}
 	e.e.encWr.writen1(cborBdFloat64)
-	bigenHelper{e.x[:8], e.e.w()}.writeUint64(math.Float64bits(f))
+	bigen.writeUint64(e.e.w(), math.Float64bits(f))
 }
 
 func (e *cborEncDriver) encUint(v uint64, bd byte) {
@@ -171,13 +171,13 @@ func (e *cborEncDriver) encUint(v uint64, bd byte) {
 		e.e.encWr.writen2(bd+0x18, uint8(v))
 	} else if v <= math.MaxUint16 {
 		e.e.encWr.writen1(bd + 0x19)
-		bigenHelper{e.x[:2], e.e.w()}.writeUint16(uint16(v))
+		bigen.writeUint16(e.e.w(), uint16(v))
 	} else if v <= math.MaxUint32 {
 		e.e.encWr.writen1(bd + 0x1a)
-		bigenHelper{e.x[:4], e.e.w()}.writeUint32(uint32(v))
+		bigen.writeUint32(e.e.w(), uint32(v))
 	} else { // if v <= math.MaxUint64 {
 		e.e.encWr.writen1(bd + 0x1b)
-		bigenHelper{e.x[:8], e.e.w()}.writeUint64(v)
+		bigen.writeUint64(e.e.w(), v)
 	}
 }
 
@@ -407,11 +407,11 @@ func (d *cborDecDriver) decUint() (ui uint64) {
 	} else if v == 0x18 {
 		ui = uint64(d.d.decRd.readn1())
 	} else if v == 0x19 {
-		ui = uint64(bigen.Uint16(d.d.decRd.readx(2)))
+		ui = uint64(bigen.Uint16(d.d.decRd.readn2()))
 	} else if v == 0x1a {
-		ui = uint64(bigen.Uint32(d.d.decRd.readx(4)))
+		ui = uint64(bigen.Uint32(d.d.decRd.readn4()))
 	} else if v == 0x1b {
-		ui = uint64(bigen.Uint64(d.d.decRd.readx(8)))
+		ui = uint64(bigen.Uint64(d.d.decRd.readn8()))
 	} else {
 		d.d.errorf("invalid descriptor decoding uint: %x/%s", d.bd, cbordesc(d.bd))
 	}
@@ -501,11 +501,11 @@ func (d *cborDecDriver) DecodeFloat64() (f float64) {
 	}
 	switch d.bd {
 	case cborBdFloat16:
-		f = float64(math.Float32frombits(halfFloatToFloatBits(bigen.Uint16(d.d.decRd.readx(2)))))
+		f = float64(math.Float32frombits(halfFloatToFloatBits(bigen.Uint16(d.d.decRd.readn2()))))
 	case cborBdFloat32:
-		f = float64(math.Float32frombits(bigen.Uint32(d.d.decRd.readx(4))))
+		f = float64(math.Float32frombits(bigen.Uint32(d.d.decRd.readn4())))
 	case cborBdFloat64:
-		f = math.Float64frombits(bigen.Uint64(d.d.decRd.readx(8)))
+		f = math.Float64frombits(bigen.Uint64(d.d.decRd.readn8()))
 	default:
 		major := d.bd >> 5
 		if major == cborMajorUint {
@@ -753,19 +753,21 @@ func (d *cborDecDriver) DecodeNaked() {
 }
 
 func (d *cborDecDriver) uintBytes() (v []byte, ui uint64) {
+	// this is only used by nextValueBytes, so it's ok to
+	// use readx and bigenstd here.
 	switch vv := d.bd & 0x1f; vv {
 	case 0x18:
 		v = d.d.decRd.readx(1)
 		ui = uint64(v[0])
 	case 0x19:
 		v = d.d.decRd.readx(2)
-		ui = uint64(bigen.Uint16(v))
+		ui = uint64(bigenstd.Uint16(v))
 	case 0x1a:
 		v = d.d.decRd.readx(4)
-		ui = uint64(bigen.Uint32(v))
+		ui = uint64(bigenstd.Uint32(v))
 	case 0x1b:
 		v = d.d.decRd.readx(8)
-		ui = uint64(bigen.Uint64(v))
+		ui = uint64(bigenstd.Uint64(v))
 	default:
 		if vv > 0x1b {
 			d.d.errorf("invalid descriptor decoding uint: %x/%s", d.bd, cbordesc(d.bd))

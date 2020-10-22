@@ -246,12 +246,12 @@ type testUnixNanoTimeExt struct {
 func (x *testUnixNanoTimeExt) WriteExt(v interface{}) []byte {
 	v2 := v.(*time.Time)
 	bs := make([]byte, 8)
-	bigen.PutUint64(bs, uint64(v2.UnixNano()))
+	bigenstd.PutUint64(bs, uint64(v2.UnixNano()))
 	return bs
 }
 func (x *testUnixNanoTimeExt) ReadExt(v interface{}, bs []byte) {
 	v2 := v.(*time.Time)
-	ui := bigen.Uint64(bs)
+	ui := bigenstd.Uint64(bs)
 	*v2 = time.Unix(0, int64(ui)).UTC()
 }
 func (x *testUnixNanoTimeExt) ConvertExt(v interface{}) interface{} {
@@ -281,12 +281,12 @@ type wrapInt64Ext int64
 func (x *wrapInt64Ext) WriteExt(v interface{}) []byte {
 	v2 := uint64(int64(v.(wrapInt64)))
 	bs := make([]byte, 8)
-	bigen.PutUint64(bs, v2)
+	bigenstd.PutUint64(bs, v2)
 	return bs
 }
 func (x *wrapInt64Ext) ReadExt(v interface{}, bs []byte) {
 	v2 := v.(*wrapInt64)
-	ui := bigen.Uint64(bs)
+	ui := bigenstd.Uint64(bs)
 	*v2 = wrapInt64(int64(ui))
 }
 func (x *wrapInt64Ext) ConvertExt(v interface{}) interface{} {

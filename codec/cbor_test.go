@@ -227,7 +227,7 @@ func TestCborHalfFloat(t *testing.T) {
 	var res float64
 	for k, v := range m {
 		res = 0
-		bigen.PutUint16(ba[1:], k)
+		bigenstd.PutUint16(ba[1:], k)
 		testUnmarshalErr(&res, ba[:3], testCborH, t, "-")
 		if res == v {
 			if testVerbose {
@@ -266,7 +266,7 @@ func TestCborSkipTags(t *testing.T) {
 		// writes a tag between MaxUint8 and MaxUint16 (culled from cborEncDriver.encUint)
 		w.writen1(cborBaseTag + 0x19)
 		// bigenHelper.writeUint16
-		bigen.PutUint16(b8[:2], uint16(tags[tagIdx%len(tags)]))
+		bigenstd.PutUint16(b8[:2], uint16(tags[tagIdx%len(tags)]))
 		w.writeb(b8[:2])
 		tagIdx++
 	}
@@ -315,7 +315,7 @@ func TestCborSkipTags(t *testing.T) {
 		w.writen1(byte(len(s)) + cborBaseString)
 		w.writestr(s)
 		w.writen1(cborBdFloat64)
-		bigen.PutUint64(b8[:8], math.Float64bits(111.11))
+		bigenstd.PutUint64(b8[:8], math.Float64bits(111.11))
 		w.writeb(b8[:8])
 
 		addTagFn8To16()
