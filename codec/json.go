@@ -196,7 +196,7 @@ func (e *jsonEncDriver) EncodeNil() {
 	// ie if initial token is n.
 
 	// e.e.encWr.writeb(jsonLiteralNull)
-	e.e.encWr.writen4('n', 'u', 'l', 'l')
+	e.e.encWr.writen4([4]byte{'n', 'u', 'l', 'l'})
 }
 
 func (e *jsonEncDriver) EncodeTime(t time.Time) {
@@ -240,18 +240,18 @@ func (e *jsonEncDriver) EncodeBool(b bool) {
 
 	if e.ks && e.e.c == containerMapKey {
 		if b {
-			e.e.encWr.writen4('"', 't', 'r', 'u')
+			e.e.encWr.writen4([4]byte{'"', 't', 'r', 'u'})
 			e.e.encWr.writen2('e', '"')
 		} else {
-			e.e.encWr.writen4('"', 'f', 'a', 'l')
+			e.e.encWr.writen4([4]byte{'"', 'f', 'a', 'l'})
 			e.e.encWr.writen2('s', 'e')
 			e.e.encWr.writen1('"')
 		}
 	} else {
 		if b {
-			e.e.encWr.writen4('t', 'r', 'u', 'e')
+			e.e.encWr.writen4([4]byte{'t', 'r', 'u', 'e'})
 		} else {
-			e.e.encWr.writen4('f', 'a', 'l', 's')
+			e.e.encWr.writen4([4]byte{'f', 'a', 'l', 's'})
 			e.e.encWr.writen1('e')
 		}
 	}
@@ -650,26 +650,26 @@ func (d *jsonDecDriver) readDelimError(xc uint8) {
 }
 
 func (d *jsonDecDriver) readLit4True() {
-	bs := d.d.decRd.readn(3)
+	bs := d.d.decRd.readn3()
 	d.tok = 0
-	if jsonValidateSymbols && bs != [8]byte{'r', 'u', 'e'} { // !Equal jsonLiteral4True
-		d.d.errorf("expecting %s: got %s", jsonLiteral4True, bs)
+	if jsonValidateSymbols && bs != [...]byte{'r', 'u', 'e'} { // !Equal jsonLiteral4True
+		d.d.errorf("expecting %s: got %s", jsonLiteral4True, bs[:])
 	}
 }
 
 func (d *jsonDecDriver) readLit4False() {
-	bs := d.d.decRd.readn(4)
+	bs := d.d.decRd.readn4()
 	d.tok = 0
-	if jsonValidateSymbols && bs != [8]byte{'a', 'l', 's', 'e'} { // !Equal jsonLiteral4False
-		d.d.errorf("expecting %s: got %s", jsonLiteral4False, bs)
+	if jsonValidateSymbols && bs != [...]byte{'a', 'l', 's', 'e'} { // !Equal jsonLiteral4False
+		d.d.errorf("expecting %s: got %s", jsonLiteral4False, bs[:])
 	}
 }
 
 func (d *jsonDecDriver) readLit4Null() {
-	bs := d.d.decRd.readn(3) // readx(3)
+	bs := d.d.decRd.readn3() // readx(3)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [8]byte{'u', 'l', 'l'} { // !Equal jsonLiteral4Null
-		d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs)
+	if jsonValidateSymbols && bs != [...]byte{'u', 'l', 'l'} { // !Equal jsonLiteral4Null
+		d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs[:])
 	}
 }
 
@@ -1081,11 +1081,9 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 func (d *jsonDecDriver) appendStringAsBytesSlashU() {
 	var r rune
 	var rr uint32
-	var j uint
 	var c byte
-	var cs [8]byte
-	cs = d.d.decRd.readn(4)
-	for _, c = range cs[:4] { // bounds-check-elimination
+	var cs = d.d.decRd.readn4()
+	for _, c = range cs { // bounds-check-elimination
 		// best to use explicit if-else
 		// - not a table, etc which involve memory loads, array lookup with bounds checks, etc
 		if c >= '0' && c <= '9' {
@@ -1101,12 +1099,11 @@ func (d *jsonDecDriver) appendStringAsBytesSlashU() {
 	}
 	r = rune(rr)
 	if utf16.IsSurrogate(r) {
-		csu := d.d.decRd.readn(2)
-		cs = d.d.decRd.readn(4)
+		csu := d.d.decRd.readn2()
+		cs = d.d.decRd.readn4()
 		if csu[0] == '\\' && csu[1] == 'u' {
 			rr = 0
-			for j = 0; j < 4; j++ {
-				c = cs[j]
+			for _, c = range cs {
 				if c >= '0' && c <= '9' {
 					rr = rr*16 + uint32(c-jsonU4Chk2)
 				} else if c >= 'a' && c <= 'f' {

@@ -14,7 +14,8 @@ type encWriter interface {
 
 	// add convenience functions for writing 2,4
 	writen2(byte, byte)
-	writen4(byte, byte, byte, byte)
+	writen4([4]byte)
+	writen8([8]byte)
 
 	end()
 }
@@ -135,15 +136,20 @@ func (z *bufioEncWriter) writen2(b1, b2 byte) {
 	z.buf[z.n] = b1
 	z.n += 2
 }
-func (z *bufioEncWriter) writen4(b1, b2, b3, b4 byte) {
+func (z *bufioEncWriter) writen4(b [4]byte) {
 	if 4 > len(z.buf)-z.n {
 		z.flush()
 	}
-	z.buf[z.n+3] = b4
-	z.buf[z.n+2] = b3
-	z.buf[z.n+1] = b2
-	z.buf[z.n] = b1
+	copy(z.buf[z.n:], b[:])
 	z.n += 4
+}
+
+func (z *bufioEncWriter) writen8(b [8]byte) {
+	if 8 > len(z.buf)-z.n {
+		z.flush()
+	}
+	copy(z.buf[z.n:], b[:])
+	z.n += 8
 }
 
 func (z *bufioEncWriter) endErr() (err error) {
@@ -179,8 +185,11 @@ func (z *bytesEncAppender) writen1(b1 byte) {
 func (z *bytesEncAppender) writen2(b1, b2 byte) {
 	z.b = append(z.b, b1, b2)
 }
-func (z *bytesEncAppender) writen4(b1, b2, b3, b4 byte) {
-	z.b = append(z.b, b1, b2, b3, b4)
+func (z *bytesEncAppender) writen4(b [4]byte) {
+	z.b = append(z.b, b[0], b[1], b[2], b[3])
+}
+func (z *bytesEncAppender) writen8(b [8]byte) {
+	z.b = append(z.b, b[:]...)
 }
 func (z *bytesEncAppender) endErr() error {
 	*(z.out) = z.b
@@ -249,12 +258,19 @@ func (z *encWr) writen2(b1, b2 byte) {
 		z.wf.writen2(b1, b2)
 	}
 }
-func (z *encWr) writen4(b1, b2, b3, b4 byte) {
+func (z *encWr) writen4(b [4]byte) {
 	if z.bytes {
-		// MARKER: z.wb.writen4(b1, b2, b3, b4)
-		z.wb.b = append(z.wb.b, b1, b2, b3, b4)
+		// MARKER: z.wb.writen4(b)
+		z.wb.b = append(z.wb.b, b[0], b[1], b[2], b[3])
 	} else {
-		z.wf.writen4(b1, b2, b3, b4)
+		z.wf.writen4(b)
+	}
+}
+func (z *encWr) writen8(b [8]byte) {
+	if z.bytes {
+		z.wb.writen8(b)
+	} else {
+		z.wf.writen8(b)
 	}
 }
 

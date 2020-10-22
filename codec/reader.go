@@ -13,11 +13,17 @@ type decReader interface {
 	// Ensure you call detachZeroCopyBytes later if this needs to be sent outside codec control.
 	readx(n uint) []byte
 	readb([]byte)
-	readn1() uint8
+
+	readn1() byte
+	readn2() [2]byte
+	readn3() [3]byte
+	readn4() [4]byte
+	readn8() [8]byte
 	// readn1eof() (v uint8, eof bool)
 
-	// read up to 8 bytes at a time
-	readn(num uint8) (v [8]byte)
+	// // read up to 8 bytes at a time
+	// readn(num uint8) (v [8]byte)
+
 	numread() uint // number of bytes read
 
 	// readNumber(includeLastByteRead bool) []byte
@@ -174,9 +180,23 @@ func (z *ioDecReader) UnreadByte() (err error) {
 	return
 }
 
-func (z *ioDecReader) readn(num uint8) (bs [8]byte) {
-	z.readb(bs[:num])
-	// copy(bs[:], z.readx(uint(num)))
+func (z *ioDecReader) readn2() (bs [2]byte) {
+	z.readb(bs[:])
+	return
+}
+
+func (z *ioDecReader) readn3() (bs [3]byte) {
+	z.readb(bs[:])
+	return
+}
+
+func (z *ioDecReader) readn4() (bs [4]byte) {
+	z.readb(bs[:])
+	return
+}
+
+func (z *ioDecReader) readn8() (bs [8]byte) {
+	z.readb(bs[:])
 	return
 }
 
@@ -398,9 +418,23 @@ func (z *bufioDecReader) unreadn1() {
 	z.n--
 }
 
-func (z *bufioDecReader) readn(num uint8) (bs [8]byte) {
-	z.readb(bs[:num])
-	// copy(bs[:], z.readx(uint(num)))
+func (z *bufioDecReader) readn2() (bs [2]byte) {
+	z.readb(bs[:])
+	return
+}
+
+func (z *bufioDecReader) readn3() (bs [3]byte) {
+	z.readb(bs[:])
+	return
+}
+
+func (z *bufioDecReader) readn4() (bs [4]byte) {
+	z.readb(bs[:])
+	return
+}
+
+func (z *bufioDecReader) readn8() (bs [8]byte) {
+	z.readb(bs[:])
 	return
 }
 
@@ -582,8 +616,36 @@ func (z *bytesDecReader) readn1() (v uint8) {
 	return
 }
 
-func (z *bytesDecReader) readn(num uint8) (bs [8]byte) {
-	x := z.c + uint(num)
+// func (z *bytesDecReader) readn(num uint8) (bs [8]byte) {
+// 	x := z.c + uint(num)
+// 	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
+// 	z.c = x
+// 	return
+// }
+
+func (z *bytesDecReader) readn2() (bs [2]byte) {
+	x := z.c + 2
+	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
+	z.c = x
+	return
+}
+
+func (z *bytesDecReader) readn3() (bs [3]byte) {
+	x := z.c + 3
+	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
+	z.c = x
+	return
+}
+
+func (z *bytesDecReader) readn4() (bs [4]byte) {
+	x := z.c + 4
+	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
+	z.c = x
+	return
+}
+
+func (z *bytesDecReader) readn8() (bs [8]byte) {
+	x := z.c + 8
 	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
 	z.c = x
 	return
@@ -698,13 +760,43 @@ func (z *decRd) numread() uint {
 	}
 }
 
-func (z *decRd) readn(num uint8) [8]byte {
+func (z *decRd) readn2() [2]byte {
 	if z.bytes {
-		return z.rb.readn(num)
+		return z.rb.readn2()
 	} else if z.bufio {
-		return z.bi.readn(num)
+		return z.bi.readn2()
 	} else {
-		return z.ri.readn(num)
+		return z.ri.readn2()
+	}
+}
+
+func (z *decRd) readn3() [3]byte {
+	if z.bytes {
+		return z.rb.readn3()
+	} else if z.bufio {
+		return z.bi.readn3()
+	} else {
+		return z.ri.readn3()
+	}
+}
+
+func (z *decRd) readn4() [4]byte {
+	if z.bytes {
+		return z.rb.readn4()
+	} else if z.bufio {
+		return z.bi.readn4()
+	} else {
+		return z.ri.readn4()
+	}
+}
+
+func (z *decRd) readn8() [8]byte {
+	if z.bytes {
+		return z.rb.readn8()
+	} else if z.bufio {
+		return z.bi.readn8()
+	} else {
+		return z.ri.readn8()
 	}
 }
 
