@@ -2498,29 +2498,30 @@ func (x *bytesFreelist) check(v []byte, length int) (out []byte) {
 type sfiRvFreelist [][]sfiRv
 
 func (x *sfiRvFreelist) get(length int) (out []sfiRv) {
-	var j int = -1
-	for i := 0; i < len(*x); i++ {
-		if cap((*x)[i]) >= length && (j == -1 || cap((*x)[j]) > cap((*x)[i])) {
-			j = i
+	y := *x
+	for i, v := range y {
+		if cap(v) >= length {
+			// *x = append(y[:i], y[i+1:]...)
+			copy(y[i:], y[i+1:])
+			*x = y[:len(y)-1]
+			return v
 		}
 	}
-	if j == -1 {
-		return make([]sfiRv, length, freelistCapacity(length))
-	}
-	out = (*x)[j][:length]
-	(*x)[j] = nil
-	for i := 0; i < len(out); i++ {
-		out[i] = sfiRv{}
-	}
-	return
+	return make([]sfiRv, 0, freelistCapacity(length))
 }
 
 func (x *sfiRvFreelist) put(v []sfiRv) {
-	for i := 0; i < len(*x); i++ {
-		if cap((*x)[i]) == 0 {
-			(*x)[i] = v
+	if len(v) != 0 {
+		v = v[:0]
+	}
+	// append the new value, then try to put it in a better position
+	y := append(*x, v)
+	*x = y
+	for i, z := range y[:len(y)-1] {
+		if cap(z) > cap(v) {
+			copy(y[i+1:], y[i:])
+			y[i] = v
 			return
 		}
 	}
-	*x = append(*x, v)
 }

@@ -500,7 +500,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	}
 	newlen += len(f.ti.sfiSrc)
 
-	var fkvs = e.slist.get(newlen)
+	var fkvs = e.slist.get(newlen)[:newlen]
 
 	recur := e.h.RecursiveEmptyCheck
 
