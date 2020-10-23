@@ -684,9 +684,7 @@ LOOP:
 		i++
 		goto LOOP
 	}
-	// token = z.b[i]
 	z.c = i + 1
-
 	return z.b[i]
 }
 

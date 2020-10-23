@@ -61,7 +61,7 @@ type simpleEncDriver struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
 	h *SimpleHandle
-	b [8]byte
+	// b [8]byte
 	e Encoder
 }
 

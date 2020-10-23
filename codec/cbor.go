@@ -119,7 +119,7 @@ type cborEncDriver struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
 	h *CborHandle
-	x [8]byte
+	// x [8]byte
 
 	e Encoder
 }

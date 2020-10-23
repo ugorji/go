@@ -54,6 +54,8 @@ const (
 	// others not currently supported
 )
 
+const bincBdNil = 0 // bincVdSpecial<<4 | bincSpNil // staticcheck barfs on this (SA4016)
+
 var (
 	bincdescSpecialVsNames = map[byte]string{
 		bincSpNil:       "nil",
@@ -98,8 +100,8 @@ type bincEncDriver struct {
 	encDriverNoopContainerWriter
 	h *BincHandle
 	m map[string]uint16 // symbols
-	b [8]byte           // scratch, used for encoding numbers - bigendian style
-	s uint16            // symbols sequencer
+	// b [8]byte           // scratch, used for encoding numbers - bigendian style
+	s uint16 // symbols sequencer
 
 	e Encoder
 }
@@ -109,7 +111,7 @@ func (e *bincEncDriver) encoder() *Encoder {
 }
 
 func (e *bincEncDriver) EncodeNil() {
-	e.e.encWr.writen1(bincVdSpecial<<4 | bincSpNil)
+	e.e.encWr.writen1(bincBdNil)
 }
 
 func (e *bincEncDriver) EncodeTime(t time.Time) {
@@ -427,7 +429,7 @@ func (d *bincDecDriver) advanceNil() (null bool) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	if d.bd == bincVdSpecial<<4|bincSpNil {
+	if d.bd == bincBdNil {
 		d.bdRead = false
 		return true // null = true
 	}
@@ -442,7 +444,7 @@ func (d *bincDecDriver) ContainerType() (vt valueType) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	if d.bd == bincVdSpecial<<4|bincSpNil {
+	if d.bd == bincBdNil {
 		d.bdRead = false
 		return valueTypeNil
 	} else if d.vd == bincVdByteArray {

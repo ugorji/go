@@ -2268,12 +2268,11 @@ func isNumberChar(v byte) bool {
 	// return v > 42 && v < 102 && numCharWithExpBitset64.isset(v-42)
 }
 
-func isDigitChar(v byte) bool {
-	// these are in order of speed below ...
-
-	return digitCharBitset.isset(v)
-	// return v >= '0' && v <= '9'
-}
+// func isDigitChar(v byte) bool {
+// 	// these are in order of speed below ...
+// 	return digitCharBitset.isset(v)
+// 	// return v >= '0' && v <= '9'
+// }
 
 // -----------------------
 
@@ -2446,6 +2445,10 @@ func freelistCapacity(length int) (capacity int) {
 }
 
 // bytesFreelist is a list of byte buffers, sorted by cap.
+//
+// In anecdotal testing (running go test -tsd 1..6), we couldn't get
+// the length ofthe list > 4 at any time. So we believe a linear search
+// without bounds checking is sufficient.
 type bytesFreelist [][]byte
 
 // return a slice of possibly non-zero'ed bytes, with len=0,
@@ -2495,6 +2498,15 @@ func (x *bytesFreelist) check(v []byte, length int) (out []byte) {
 
 // -------------------------
 
+// sfiRvFreelist is used by Encoder for encoding structs,
+// where we have to gather the fields first and then
+// analyze them for omitEmpty, before knowing the length of the array/map to encode.
+//
+// Typically, the length here will depend on the number of cycles e.g.
+// if type T1 has reference to T1, or T1 has reference to type T2 which has reference to T1.
+//
+// In the general case, the length of this list at most times is 1,
+// so linear search is fine.
 type sfiRvFreelist [][]sfiRv
 
 func (x *sfiRvFreelist) get(length int) (out []sfiRv) {

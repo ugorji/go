@@ -170,7 +170,7 @@ type msgpackEncDriver struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
 	h *MsgpackHandle
-	x [8]byte
+	// x [8]byte
 	e Encoder
 }
 
