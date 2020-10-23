@@ -14,9 +14,7 @@ package codec
 // we will encode and decode appropriately.
 // Users can specify their map type if necessary to force it.
 //
-// Note:
-//   - we cannot use strconv.Quote and strconv.Unquote because json quotes/unquotes differently.
-//     We implement it here.
+// We cannot use strconv.(Q|Unq)uote because json quotes/unquotes differently.
 
 import (
 	"bytes"
@@ -82,6 +80,34 @@ const (
 	// U+2028 is LINE SEPARATOR. U+2029 is PARAGRAPH SEPARATOR.
 	// Both technically valid JSON, but bomb on JSONP, so fix here unconditionally.
 	jsonEscapeMultiByteUnicodeSep = true
+
+	// jsonManualInlineDecRdInHotZones controls whether we manually inline some decReader calls.
+	//
+	// encode performance is at par with libraries that just iterate over bytes directly,
+	// because encWr (with inlined bytesEncAppender calls) is inlined.
+	// Conversely, decode performance suffers because decRd (with inlined bytesDecReader calls)
+	// isn't inlinable.
+	//
+	// To improve decode performamnce from json:
+	// - readn1 is only called for \u
+	// - consequently, to optimize json decoding, we specifically need inlining
+	//   for bytes use-case of some other decReader methods:
+	//   - jsonReadAsisChars, skipWhitespace (advance) and jsonReadNum
+	//   - AND THEN readn3, readn4 (for ull, rue and alse).
+	//   - (readn1 is only called when a char is escaped).
+	// - without inlining, we still pay the cost of a method invocationK, and this dominates time
+	// - To mitigate, we manually inline in hot zones
+	//   *excluding places where used sparingly (e.g. nextValueBytes, and other atypical cases)*.
+	//   - jsonReadAsisChars *only* called in: appendStringAsBytes
+	//   - advance called: everywhere
+	//   - jsonReadNum: decNumBytes, DecodeNaked
+	// - From running go test (our anecdotal findings):
+	//   - calling jsonReadAsisChars in appendStringAsBytes: 23431
+	//   - calling jsonReadNum in decNumBytes: 15251
+	//   - calling jsonReadNum in DecodeNaked: 612
+	// Consequently, we manually inline jsonReadAsisChars (in appendStringAsBytes)
+	// and jsonReadNum (in decNumbytes)
+	jsonManualInlineDecRdInHotZones = true
 
 	jsonSpacesOrTabsLen = 128
 
@@ -590,9 +616,7 @@ func (d *jsonDecDriver) ReadArrayStart() int {
 }
 
 func (d *jsonDecDriver) CheckBreak() bool {
-	if d.tok == 0 {
-		d.tok = d.d.decRd.skipWhitespace()
-	}
+	d.advance()
 	return d.tok == '}' || d.tok == ']'
 }
 
@@ -811,12 +835,23 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 
 func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 	d.advance()
+	dr := &d.d.decRd
 	if d.tok == '"' {
-		bs = d.d.decRd.readUntil('"')
+		bs = dr.readUntil('"')
 	} else if d.tok == 'n' {
 		d.readLit4Null()
 	} else {
-		bs = d.d.decRd.jsonReadNum()
+		if jsonManualInlineDecRdInHotZones {
+			if dr.bytes {
+				bs = dr.rb.jsonReadNum()
+			} else if dr.bufio {
+				bs = dr.bi.jsonReadNum()
+			} else {
+				bs = dr.ri.jsonReadNum()
+			}
+		} else {
+			bs = dr.jsonReadNum()
+		}
 	}
 	d.tok = 0
 	return
@@ -1040,9 +1075,21 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 	dr := &d.d.decRd
 	d.tok = 0
 
+	var bs []byte
 	var c byte
 	for {
-		bs := dr.jsonReadAsisChars()
+		if jsonManualInlineDecRdInHotZones {
+			if dr.bytes {
+				bs = dr.rb.jsonReadAsisChars()
+			} else if dr.bufio {
+				bs = dr.bi.jsonReadAsisChars()
+			} else {
+				bs = dr.ri.jsonReadAsisChars()
+			}
+		} else {
+			bs = dr.jsonReadAsisChars()
+		}
+
 		buf = append(buf, bs[:len(bs)-1]...)
 		c = bs[len(bs)-1]
 
@@ -1067,9 +1114,7 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 		case 't':
 			buf = append(buf, '\t')
 		case 'u':
-			d.buf = buf
-			d.appendStringAsBytesSlashU()
-			buf = d.buf
+			buf = append(buf, d.bstr[:utf8.EncodeRune(d.bstr[:], d.appendStringAsBytesSlashU())]...)
 		default:
 			d.buf = buf
 			d.d.errorf("unsupported escaped value: %c", c)
@@ -1078,12 +1123,30 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 	d.buf = buf
 }
 
-func (d *jsonDecDriver) appendStringAsBytesSlashU() {
-	var r rune
+func (d *jsonDecDriver) appendStringAsBytesSlashU() (r rune) {
 	var rr uint32
-	var c byte
-	var cs = d.d.decRd.readn4()
-	for _, c = range cs { // bounds-check-elimination
+	var csu [2]byte
+	var cs [4]byte = d.d.decRd.readn4()
+	if rr = jsonSlashURune(cs); rr == unicode.ReplacementChar {
+		return unicode.ReplacementChar
+	}
+	r = rune(rr)
+	if utf16.IsSurrogate(r) {
+		csu = d.d.decRd.readn2()
+		cs = d.d.decRd.readn4()
+		if csu[0] == '\\' && csu[1] == 'u' {
+			if rr = jsonSlashURune(cs); rr == unicode.ReplacementChar {
+				return unicode.ReplacementChar
+			}
+			return utf16.DecodeRune(r, rune(rr))
+		}
+		return unicode.ReplacementChar
+	}
+	return
+}
+
+func jsonSlashURune(cs [4]byte) (rr uint32) {
+	for _, c := range cs {
 		// best to use explicit if-else
 		// - not a table, etc which involve memory loads, array lookup with bounds checks, etc
 		if c >= '0' && c <= '9' {
@@ -1093,35 +1156,10 @@ func (d *jsonDecDriver) appendStringAsBytesSlashU() {
 		} else if c >= 'A' && c <= 'F' {
 			rr = rr*16 + uint32(c-jsonU4Chk0)
 		} else {
-			r = unicode.ReplacementChar
-			goto encode_rune
+			return unicode.ReplacementChar
 		}
 	}
-	r = rune(rr)
-	if utf16.IsSurrogate(r) {
-		csu := d.d.decRd.readn2()
-		cs = d.d.decRd.readn4()
-		if csu[0] == '\\' && csu[1] == 'u' {
-			rr = 0
-			for _, c = range cs {
-				if c >= '0' && c <= '9' {
-					rr = rr*16 + uint32(c-jsonU4Chk2)
-				} else if c >= 'a' && c <= 'f' {
-					rr = rr*16 + uint32(c-jsonU4Chk1)
-				} else if c >= 'A' && c <= 'F' {
-					rr = rr*16 + uint32(c-jsonU4Chk0)
-				} else {
-					r = unicode.ReplacementChar
-					goto encode_rune
-				}
-			}
-			r = utf16.DecodeRune(r, rune(rr))
-			goto encode_rune
-		}
-		r = unicode.ReplacementChar
-	}
-encode_rune:
-	d.buf = append(d.buf, d.bstr[:utf8.EncodeRune(d.bstr[:], r)]...)
+	return
 }
 
 func (d *jsonDecDriver) nakedNum(z *fauxUnion, bs []byte) (err error) {
