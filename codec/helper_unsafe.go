@@ -130,11 +130,6 @@ func rv2i(rv reflect.Value) interface{} {
 	return *(*interface{})(unsafe.Pointer(&unsafeIntf{typ: urv.typ, word: rv2ptr(urv)}))
 }
 
-func rvType(rv reflect.Value) reflect.Type {
-	return rvPtrToType(((*unsafeReflectValue)(unsafe.Pointer(&rv))).typ)
-	// return rv.Type()
-}
-
 func rvIsNil(rv reflect.Value) bool {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	if urv.flag&unsafeFlagIndir != 0 {
@@ -216,18 +211,25 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	if urv.flag == 0 {
 		return true
 	}
-	if !recursive {
-		// t := rvPtrToType(urv.typ)
-		// // it is empty if it is a zero value OR it points to a zero value
-		// if urv.flag&unsafeFlagIndir == 0 { // this is a pointer
-		// 	if urv.ptr == nil {
-		// 		return true
-		// 	}
-		// 	return unsafeCmpZero(*(*unsafe.Pointer)(urv.ptr), int(t.Elem().Size()))
-		// }
-		// return unsafeCmpZero(urv.ptr, int(t.Size()))
-		return unsafeCmpZero(urv.ptr, int(rvPtrToType(urv.typ).Size()))
+	if recursive {
+		return isEmptyValueFallbackRecur(urv, v, tinfos)
 	}
+	// t := rvPtrToType(urv.typ)
+	// // it is empty if it is a zero value OR it points to a zero value
+	// if urv.flag&unsafeFlagIndir == 0 { // this is a pointer
+	// 	if urv.ptr == nil {
+	// 		return true
+	// 	}
+	// 	return unsafeCmpZero(*(*unsafe.Pointer)(urv.ptr), int(t.Elem().Size()))
+	// }
+	// return unsafeCmpZero(urv.ptr, int(t.Size()))
+	// return unsafeCmpZero(urv.ptr, int(rvPtrToType(urv.typ).Size()))
+	return unsafeCmpZero(urv.ptr, int(rvType(v).Size()))
+}
+
+func isEmptyValueFallbackRecur(urv *unsafeReflectValue, v reflect.Value, tinfos *TypeInfos) bool {
+	const recursive = true
+
 	switch v.Kind() {
 	case reflect.Invalid:
 		return true
@@ -908,9 +910,6 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
 
 // MARKER: always check that these linknames match subsequent versions of go
 
-//go:linkname unsafeZeroArr runtime.zeroVal
-var unsafeZeroArr [1024]byte
-
 //go:linkname mapiterinit reflect.mapiterinit
 //go:noescape
 func mapiterinit(typ unsafe.Pointer, it unsafe.Pointer) (key unsafe.Pointer)
@@ -950,7 +949,3 @@ func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
 //go:linkname typedslicecopy reflect.typedslicecopy
 //go:noescape
 func typedslicecopy(elemType unsafe.Pointer, dst, src unsafeSlice) int
-
-//go:linkname rvPtrToType reflect.toType
-//go:noescape
-func rvPtrToType(typ unsafe.Pointer) reflect.Type
