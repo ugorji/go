@@ -5,7 +5,8 @@
 
 _tests() {
     local vet="" # TODO: make it off
-    local gover=$( go version | cut -f 3 -d ' ' )
+    local gover=$( ${gocmd} version | cut -f 3 -d ' ' )
+    [[ $( ${gocmd} version ) == *"gccgo"* ]] && zcover=0
     case $gover in
         go1.[7-9]*|go1.1[0-9]*|go2.*|devel*) true ;;
         *) return 1
@@ -16,14 +17,15 @@ _tests() {
     echo "TestCodecSuite: (fastpath/unsafe), (!fastpath/!unsafe), (codecgen/unsafe)"
     local a=( "" "notfastpath safe"  "codecgen" )
     local b=()
+    local c=()
     for i in "${a[@]}"
     do
         local i2=${i:-default}
         [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'alltests $i'; RUN: 'TestCodecSuite'"
+        [[ "$zcover" == "1" ]] && c=( -coverprofile "${i2// /-}.cov.out" )
         true &&
-            go vet -printfuncs "errorf" "$@" &&
-            go test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" \
-               -run "TestCodecSuite" -coverprofile "${i2// /-}.cov.out" "$@" &
+            ${gocmd} vet -printfuncs "errorf" "$@" &&
+            ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" -run "TestCodecSuite" "${c[@]}" "$@" &
         b+=("${i2// /-}.cov.out")
         [[ "$zwait" == "1" ]] && wait
             
@@ -31,13 +33,17 @@ _tests() {
     done
     if [[ "$zextra" == "1" ]]; then
         [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'notfastpath x'; RUN: 'Test.*X$'"
-        go test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "notfastpath x" -run 'Test.*X$' \
-            -coverprofile "x.cov.out" &
+        [[ "$zcover" == "1" ]] && c=( -coverprofile "x.cov.out" )
+        ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "notfastpath x" -run 'Test.*X$' "${c[@]}" &
         b+=("x.cov.out")
         [[ "$zwait" == "1" ]] && wait
     fi
     wait
-    [[ "$zcover" == "1" ]] && command -v gocovmerge && gocovmerge "${b[@]}" > __merge.cov.out && go tool cover -html=__merge.cov.out
+    # go tool cover is not supported for gccgo.
+    [[ "$zcover" == "1" ]] &&
+        command -v gocovmerge &&
+        gocovmerge "${b[@]}" > __merge.cov.out &&
+        ${gocmd} tool cover -html=__merge.cov.out
 }
 
 # is a generation needed?
@@ -170,8 +176,8 @@ EOF
     # explicitly return 0 if this passes, else return 1
     local btags="notfastpath safe codecgen.exec"
     rm -f sort-slice.generated.go fast-path.generated.go gen-helper.generated.go mammoth_generated_test.go mammoth2_generated_test.go
-    go run -tags "$btags codecgen.sort_slice" gen-from-tmpl.sort-slice.generated.go || return 1
-    go run -tags "$btags" gen-from-tmpl.generated.go || return 1
+    ${gocmd} run -tags "$btags codecgen.sort_slice" gen-from-tmpl.sort-slice.generated.go || return 1
+    ${gocmd} run -tags "$btags" gen-from-tmpl.generated.go || return 1
     rm -f gen-from-tmpl.*generated.go
     return 0
 }
@@ -188,7 +194,7 @@ _codegenerators() {
     true &&
         echo "codecgen ... " &&
         if [[ $zforce || ! -f "$c8" || "$c7/gen.go" -nt "$c8" ]]; then
-            echo "rebuilding codecgen ... " && ( cd codecgen && go build -o $c8 ${zargs[*]} . )
+            echo "rebuilding codecgen ... " && ( cd codecgen && ${gocmd} build -o $c8 ${zargs[*]} . )
         fi &&
         $c8 -rt 'codecgen' -t 'codecgen generated' -o "values_codecgen${c5}" -d 19780 "$zfin" "$zfin2" &&
         cp mammoth2_generated_test.go $c9 &&
@@ -214,7 +220,7 @@ _prebuild() {
         cp $d/values_flex_test.go $d/$zfin2 &&
         _codegenerators &&
         if [[ "$(type -t _codegenerators_external )" = "function" ]]; then _codegenerators_external ; fi &&
-        if [[ $zforce ]]; then go install ${zargs[*]} .; fi &&
+        if [[ $zforce ]]; then ${gocmd} install ${zargs[*]} .; fi &&
         returncode=0 &&
         echo "prebuild done successfully"
     rm -f $d/$zfin $d/$zfin2
@@ -225,7 +231,7 @@ _prebuild() {
 _make() {
     local makeforce=${zforce}
     zforce=1
-    (cd codecgen && go install ${zargs[*]} .) && _prebuild && go install ${zargs[*]} .
+    (cd codecgen && ${gocmd} install ${zargs[*]} .) && _prebuild && ${gocmd} install ${zargs[*]} .
     zforce=${makeforce}
 }
 
@@ -296,6 +302,8 @@ _main() {
     local zargs=()
     local zverbose=()
     local zbenchflags=""
+
+    local gocmd=${MYGOCMD:-go}
     
     OPTIND=1
     while getopts ":cetmnrgpfvlyzdsowxb:" flag
