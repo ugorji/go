@@ -95,14 +95,20 @@ func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	return
 }
 
-func rv2ptr(urv *unsafeReflectValue) (ptr unsafe.Pointer) {
-	// true references (map, func, chan, ptr - NOT slice) may be double-referenced? as flagIndir
-	if refBitset.isset(byte(urv.flag&unsafeFlagKindMask)) && urv.flag&unsafeFlagIndir != 0 {
-		ptr = *(*unsafe.Pointer)(urv.ptr)
-	} else {
-		ptr = urv.ptr
+// return the pointer for a reference (map/chan/func/pointer/unsafe.Pointer).
+// true references (map, func, chan, ptr - NOT slice) may be double-referenced? as flagIndir
+func rvRefPtr(v *unsafeReflectValue) unsafe.Pointer {
+	if v.flag&unsafeFlagIndir != 0 {
+		return *(*unsafe.Pointer)(v.ptr)
 	}
-	return
+	return v.ptr
+}
+
+func rv2ptr(urv *unsafeReflectValue) unsafe.Pointer {
+	if refBitset.isset(byte(urv.flag&unsafeFlagKindMask)) && urv.flag&unsafeFlagIndir != 0 {
+		return *(*unsafe.Pointer)(urv.ptr)
+	}
+	return urv.ptr
 }
 
 // func rvAddr(rv reflect.Value) uintptr {
@@ -282,9 +288,9 @@ func isEmptyValueFallbackRecur(urv *unsafeReflectValue, v reflect.Value, tinfos 
 	case reflect.UnsafePointer:
 		return urv.ptr == nil || *(*unsafe.Pointer)(urv.ptr) == nil
 	case reflect.Chan:
-		return urv.ptr == nil || chanlen(rvptr(v)) == 0
+		return urv.ptr == nil || chanlen(rvRefPtr(urv)) == 0
 	case reflect.Map:
-		return urv.ptr == nil || maplen(rvptr(v)) == 0
+		return urv.ptr == nil || maplen(rvRefPtr(urv)) == 0
 	case reflect.Array:
 		return rvLenArray(v) == 0
 	}
@@ -707,19 +713,12 @@ func rvGetUintptr(rv reflect.Value) uintptr {
 }
 
 func rvLenMap(rv reflect.Value) int {
-	return maplen(rvptr(rv))
+	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	return maplen(rvRefPtr(v))
 }
 
 func rvLenArray(rv reflect.Value) int {
 	return rv.Len()
-}
-
-func rvptr(rv reflect.Value) unsafe.Pointer {
-	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	if v.flag&unsafeFlagIndir != 0 {
-		return *(*unsafe.Pointer)(v.ptr)
-	}
-	return v.ptr
 }
 
 // ------------ map range and map indexing ----------
@@ -778,9 +777,9 @@ func (t *unsafeMapIter) Next() (r bool) {
 	if t.done {
 		return
 	}
-	unsafeMapSet(t.kptr, t.ktyp, t.it.key, t.kisref)
+	unsafeMapSet(t.ktyp, t.kptr, t.it.key, t.kisref)
 	if t.mapvalues {
-		unsafeMapSet(t.vptr, t.vtyp, t.it.value, t.visref)
+		unsafeMapSet(t.vtyp, t.vptr, t.it.value, t.visref)
 	}
 	return true
 }
@@ -796,7 +795,8 @@ func (t *unsafeMapIter) Value() (r reflect.Value) {
 func (t *unsafeMapIter) Done() {
 }
 
-func unsafeMapSet(p, ptyp, p2 unsafe.Pointer, isref bool) {
+// unsafeMapSet does equivalent of: p = p2
+func unsafeMapSet(ptyp, p, p2 unsafe.Pointer, isref bool) {
 	if isref {
 		*(*unsafe.Pointer)(p) = *(*unsafe.Pointer)(p2) // p2
 	} else {
@@ -824,7 +824,7 @@ func mapRange(t *mapIter, m, k, v reflect.Value, mapvalues bool) {
 
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
 	t.mtyp = urv.typ
-	t.mptr = rv2ptr(urv)
+	t.mptr = rvRefPtr(urv)
 
 	t.it = (*unsafeMapHashIter)(mapiterinit(t.mtyp, t.mptr))
 
@@ -850,7 +850,7 @@ func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
 
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
 
-	vvptr := mapaccess(urv.typ, rv2ptr(urv), kptr)
+	vvptr := mapaccess(urv.typ, rvRefPtr(urv), kptr)
 	if vvptr == nil {
 		return
 	}
@@ -858,7 +858,7 @@ func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
 
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
 
-	unsafeMapSet(urv.ptr, urv.typ, vvptr, refBitset.isset(byte(v.Kind())))
+	unsafeMapSet(urv.typ, urv.ptr, vvptr, refBitset.isset(byte(v.Kind())))
 	return v
 }
 
@@ -868,7 +868,7 @@ func mapSet(m, k, v reflect.Value) {
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
 	var vptr = unsafeMapKVPtr(urv)
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
-	mapassign(urv.typ, rv2ptr(urv), kptr, vptr)
+	mapassign(urv.typ, rvRefPtr(urv), kptr, vptr)
 }
 
 // func mapDelete(m, k reflect.Value) {
