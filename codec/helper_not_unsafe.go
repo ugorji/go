@@ -302,11 +302,11 @@ func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) reflect.Value {
 	return rv.Index(i)
 }
 
-func rvGetSliceLen(rv reflect.Value) int {
+func rvLenSlice(rv reflect.Value) int {
 	return rv.Len()
 }
 
-func rvGetSliceCap(rv reflect.Value) int {
+func rvCapSlice(rv reflect.Value) int {
 	return rv.Cap()
 }
 
@@ -326,7 +326,7 @@ func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
 }
 
 func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
-	v = rvZeroAddrK(reflectArrayOf(rvGetSliceLen(rv), rvType(rv).Elem()), reflect.Array)
+	v = rvZeroAddrK(reflectArrayOf(rvLenSlice(rv), rvType(rv).Elem()), reflect.Array)
 	reflect.Copy(v, rv)
 	return
 }

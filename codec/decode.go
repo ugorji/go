@@ -710,8 +710,8 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	var rv0 = rv
 	var rv9 reflect.Value
 
-	rvlen := rvGetSliceLen(rv)
-	rvcap := rvGetSliceCap(rv)
+	rvlen := rvLenSlice(rv)
+	rvcap := rvCapSlice(rv)
 	hasLen := containerLenS > 0
 	if hasLen {
 		if containerLenS > rvcap {

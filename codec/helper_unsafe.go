@@ -552,12 +552,12 @@ func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
 	return
 }
 
-func rvGetSliceLen(rv reflect.Value) int {
+func rvLenSlice(rv reflect.Value) int {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	return (*unsafeSlice)(urv.ptr).Len
 }
 
-func rvGetSliceCap(rv reflect.Value) int {
+func rvCapSlice(rv reflect.Value) int {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	return (*unsafeSlice)(urv.ptr).Cap
 }
@@ -578,9 +578,9 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	// e.g. full slice is based off a *[16]byte, but we can create a *[4]byte
 	// off of it. That is ok.
 	//
-	// Consequently, we use rvGetSliceLen, not rvGetSliceCap.
+	// Consequently, we use rvLenSlice, not rvCapSlice.
 
-	t := reflectArrayOf(rvGetSliceLen(rv), rvType(rv).Elem())
+	t := reflectArrayOf(rvLenSlice(rv), rvType(rv).Elem())
 	// v = rvZeroAddrK(t, reflect.Array)
 
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))

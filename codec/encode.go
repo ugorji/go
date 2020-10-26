@@ -294,7 +294,7 @@ func (e *Encoder) kSeqFn(rtelem reflect.Type) (fn *codecFn) {
 }
 
 func (e *Encoder) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
-	var l = rvGetSliceLen(rv)
+	var l = rvLenSlice(rv)
 	if l == 0 {
 		e.mapStart(0)
 	} else {
@@ -314,7 +314,7 @@ func (e *Encoder) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
 }
 
 func (e *Encoder) kSliceW(rv reflect.Value, ti *typeInfo) {
-	var l = rvGetSliceLen(rv)
+	var l = rvLenSlice(rv)
 	e.arrayStart(l)
 	if l > 0 {
 		fn := e.kSeqFn(ti.elem)
