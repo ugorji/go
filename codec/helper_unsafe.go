@@ -28,6 +28,20 @@ import (
 
 const safeMode = false
 
+// helperUnsafeCopyMapEntry says that we should copy the pointer in the map
+// to another value during mapRange/iteration and mapGet calls.
+//
+// The only callers of mapRange/iteration is encode. Here, we just walk through the values
+// and encode them
+
+// The only caller of mapGet is decode. Here, it does a Get if the underlying value is a pointer,
+// and decodes into that.
+
+// For both users, we are very careful NOT to modify or keep the pointers around.
+// Consequently, it is ok for take advantage of the performance that the map is not modified
+// during an iteration and we can just "peek" at the internal value" in the map and use it.
+const helperUnsafeCopyMapEntry = false
+
 // MARKER: keep in sync with GO_ROOT/src/reflect/value.go
 const (
 	unsafeFlagStickyRO = 1 << 5
@@ -749,18 +763,13 @@ type mapIter struct {
 }
 
 type unsafeMapIter struct {
-	it *unsafeMapHashIter
-	// k, v             reflect.Value
-	mtyp, ktyp, vtyp unsafe.Pointer
-	mptr, kptr, vptr unsafe.Pointer
-	kisref, visref   bool
-	mapvalues        bool
-	done             bool
-	started          bool
-}
-
-func (t *unsafeMapIter) ValidKV() (r bool) {
-	return false
+	it             *unsafeMapHashIter
+	mtyp, mptr     unsafe.Pointer
+	k, v           reflect.Value
+	kisref, visref bool
+	mapvalues      bool
+	done           bool
+	started        bool
 }
 
 func (t *unsafeMapIter) Next() (r bool) {
@@ -777,19 +786,31 @@ func (t *unsafeMapIter) Next() (r bool) {
 	if t.done {
 		return
 	}
-	unsafeMapSet(t.ktyp, t.kptr, t.it.key, t.kisref)
+
+	k := (*unsafeReflectValue)(unsafe.Pointer(&t.k))
+	if helperUnsafeCopyMapEntry {
+		unsafeMapSet(k.typ, k.ptr, t.it.key, t.kisref)
+	} else {
+		k.ptr = t.it.key
+	}
+
 	if t.mapvalues {
-		unsafeMapSet(t.vtyp, t.vptr, t.it.value, t.visref)
+		v := (*unsafeReflectValue)(unsafe.Pointer(&t.v))
+		if helperUnsafeCopyMapEntry {
+			unsafeMapSet(v.typ, v.ptr, t.it.value, t.visref)
+		} else {
+			v.ptr = t.it.value
+		}
 	}
 	return true
 }
 
 func (t *unsafeMapIter) Key() (r reflect.Value) {
-	return
+	return t.k
 }
 
 func (t *unsafeMapIter) Value() (r reflect.Value) {
-	return
+	return t.v
 }
 
 func (t *unsafeMapIter) Done() {
@@ -804,6 +825,8 @@ func unsafeMapSet(ptyp, p, p2 unsafe.Pointer, isref bool) {
 	}
 }
 
+// unsafeMapKVPtr returns the pointer if flagIndir, else it returns a pointer to the pointer.
+// It is needed as maps always keep a reference to the underlying value.
 func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
 	if urv.flag&unsafeFlagIndir == 0 {
 		return unsafe.Pointer(&urv.ptr)
@@ -828,19 +851,14 @@ func mapRange(t *mapIter, m, k, v reflect.Value, mapvalues bool) {
 
 	t.it = (*unsafeMapHashIter)(mapiterinit(t.mtyp, t.mptr))
 
-	urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
-	t.ktyp = urv.typ
-	t.kptr = urv.ptr
+	t.k = k
 	t.kisref = refBitset.isset(byte(k.Kind()))
 
 	if mapvalues {
-		urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
-		t.vtyp = urv.typ
-		t.vptr = urv.ptr
+		t.v = v
 		t.visref = refBitset.isset(byte(v.Kind()))
 	} else {
-		t.vtyp = nil
-		t.vptr = nil
+		t.v = reflect.Value{}
 	}
 }
 
@@ -857,8 +875,11 @@ func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
 	// vvptr = *(*unsafe.Pointer)(vvptr)
 
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
-
-	unsafeMapSet(urv.typ, urv.ptr, vvptr, refBitset.isset(byte(v.Kind())))
+	if helperUnsafeCopyMapEntry {
+		unsafeMapSet(urv.typ, urv.ptr, vvptr, refBitset.isset(byte(v.Kind())))
+	} else {
+		urv.ptr = vvptr
+	}
 	return v
 }
 

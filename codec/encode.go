@@ -626,28 +626,15 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	var it mapIter
 	mapRange(&it, rv, rvk, rvv, true)
 
-	if it.ValidKV() {
-		for it.Next() {
-			e.mapElemKey()
-			if keyTypeIsString {
-				e.e.EncodeString(it.Key().String())
-			} else {
-				e.encodeValue(it.Key(), keyFn)
-			}
-			e.mapElemValue()
-			e.encodeValue(it.Value(), valFn)
+	for it.Next() {
+		e.mapElemKey()
+		if keyTypeIsString {
+			e.e.EncodeString(it.Key().String())
+		} else {
+			e.encodeValue(it.Key(), keyFn)
 		}
-	} else {
-		for it.Next() {
-			e.mapElemKey()
-			if keyTypeIsString {
-				e.e.EncodeString(rvk.String())
-			} else {
-				e.encodeValue(rvk, keyFn)
-			}
-			e.mapElemValue()
-			e.encodeValue(rvv, valFn)
-		}
+		e.mapElemValue()
+		e.encodeValue(it.Value(), valFn)
 	}
 	it.Done()
 
