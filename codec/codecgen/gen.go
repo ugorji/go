@@ -363,8 +363,7 @@ func mainGen(tv *mainCfg, infiles ...string) (err error) {
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
 	if err = cmd.Run(); err != nil {
-		err = fmt.Errorf("error running 'go run %s': %v, console: %s",
-			frunMainName, err, buf.Bytes())
+		err = fmt.Errorf("error running 'go run %s': %v, console: %s", frunMainName, err, buf.Bytes())
 		return
 	}
 	os.Stdout.Write(buf.Bytes())

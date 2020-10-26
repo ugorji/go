@@ -113,21 +113,6 @@ func GenRunTmpl2Go(in, out string) { genRunTmpl2Go(in, out) }
 func GenRunSortTmpl2Go(in, out string) { genRunSortTmpl2Go(in, out) }
 EOF
 
-    cat > gen-from-tmpl.generated.go <<EOF
-// +build ignore
-
-package main
-
-import "${zpkg}"
-
-func main() {
-codec.GenRunTmpl2Go("fast-path.go.tmpl", "fast-path.generated.go")
-codec.GenRunTmpl2Go("gen-helper.go.tmpl", "gen-helper.generated.go")
-codec.GenRunTmpl2Go("mammoth-test.go.tmpl", "mammoth_generated_test.go")
-codec.GenRunTmpl2Go("mammoth2-test.go.tmpl", "mammoth2_generated_test.go")
-}
-EOF
-
     # stub xxxRv and xxxRvSlice creation, before you create it
     cat > gen-from-tmpl.sort-slice-stubs.generated.go <<EOF
 // +build codecgen.sort_slice
@@ -158,6 +143,13 @@ func (${i}RvSlice) Swap(i, j int) {}
 EOF
     done
 
+    sed -e 's+// __DO_NOT_REMOVE__NEEDED_FOR_REPLACING__IMPORT_PATH__FOR_CODEC_BENCH__+import . "github.com/ugorji/go/codec"+' \
+        shared_test.go > bench/shared_test.go
+
+    # explicitly return 0 if this passes, else return 1
+    local btags="notfastpath safe codecgen.exec"
+    rm -f sort-slice.generated.go fast-path.generated.go gen-helper.generated.go mammoth_generated_test.go mammoth2_generated_test.go
+    
     cat > gen-from-tmpl.sort-slice.generated.go <<EOF
 // +build ignore
 
@@ -170,14 +162,27 @@ codec.GenRunSortTmpl2Go("sort-slice.go.tmpl", "sort-slice.generated.go")
 }
 EOF
 
-    sed -e 's+// __DO_NOT_REMOVE__NEEDED_FOR_REPLACING__IMPORT_PATH__FOR_CODEC_BENCH__+import . "github.com/ugorji/go/codec"+' \
-        shared_test.go > bench/shared_test.go
-
-    # explicitly return 0 if this passes, else return 1
-    local btags="notfastpath safe codecgen.exec"
-    rm -f sort-slice.generated.go fast-path.generated.go gen-helper.generated.go mammoth_generated_test.go mammoth2_generated_test.go
     ${gocmd} run -tags "$btags codecgen.sort_slice" gen-from-tmpl.sort-slice.generated.go || return 1
+    rm -f gen-from-tmpl.sort-slice.generated.go
+    
+    cat > gen-from-tmpl.generated.go <<EOF
+// +build ignore
+
+package main
+
+import "${zpkg}"
+
+func main() {
+codec.GenRunTmpl2Go("fast-path.go.tmpl", "fast-path.generated.go")
+codec.GenRunTmpl2Go("gen-helper.go.tmpl", "gen-helper.generated.go")
+codec.GenRunTmpl2Go("mammoth-test.go.tmpl", "mammoth_generated_test.go")
+codec.GenRunTmpl2Go("mammoth2-test.go.tmpl", "mammoth2_generated_test.go")
+}
+EOF
+
     ${gocmd} run -tags "$btags" gen-from-tmpl.generated.go || return 1
+    rm -f gen-from-tmpl.generated.go
+    
     rm -f gen-from-tmpl.*generated.go
     return 0
 }
@@ -236,7 +241,8 @@ _make() {
 }
 
 _clean() {
-    rm -f gen-from-tmpl.*generated.go \
+    rm -f \
+       gen-from-tmpl.*generated.go \
        codecgen-*.go \
        test_values.generated.go test_values_flex.generated.go
 }
