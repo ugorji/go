@@ -30,6 +30,8 @@ Please be aware of the following:
   *YMMV*.
 - These values were got from building the test binary that gives > 90% code coverage,
   and running `go tool nm` on it to see how much space these library symbols took.
+  We consider that your use will touch much less of the library and you can be sure 
+  that it will add less than 1MB to your binary.
 
 ## Resolving Module Issues
 
@@ -54,4 +56,14 @@ Fixing `ambiguous import` failure is now as simple as running
 ```
 go get -u github.com/ugorji/go/codec@latest
 ```
+
+## Running on GCCGO
+
+You can use [gccgo](https://gcc.gnu.org/onlinedocs/gccgo/) [1](https://golang.org/doc/install/gccgo)
+to build your applications that depend on this library.
+This is fully tested.
+
+There's a caveat for contributors to the library. 
+If you are contributing to the library, you will need to run `./build.sh -m` at some point.
+This has a failure on gccgo. Consequently, contributors must use the `gc` compiler.
 
