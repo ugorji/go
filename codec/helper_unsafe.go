@@ -12,6 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 	"unsafe"
+	"runtime"
 )
 
 // This file has unsafe variants of some helper methods.
