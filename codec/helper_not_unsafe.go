@@ -409,6 +409,14 @@ func rvGetUintptr(rv reflect.Value) uintptr {
 	return uintptr(rv.Uint())
 }
 
+func rvLenMap(rv reflect.Value) int {
+	return rv.Len()
+}
+
+func rvLenArray(rv reflect.Value) int {
+	return rv.Len()
+}
+
 // ------------ map range and map indexing ----------
 
 func mapGet(m, k, v reflect.Value) (vv reflect.Value) {

@@ -326,8 +326,8 @@ func (e *Encoder) kSliceW(rv reflect.Value, ti *typeInfo) {
 	e.arrayEnd()
 }
 
-func (e *Encoder) kSeqWMbs(rv reflect.Value, ti *typeInfo) {
-	var l = rv.Len()
+func (e *Encoder) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
+	var l = rvLenArray(rv)
 	if l == 0 {
 		e.mapStart(0)
 	} else {
@@ -346,8 +346,8 @@ func (e *Encoder) kSeqWMbs(rv reflect.Value, ti *typeInfo) {
 	e.mapEnd()
 }
 
-func (e *Encoder) kSeqW(rv reflect.Value, ti *typeInfo) {
-	var l = rv.Len()
+func (e *Encoder) kArrayW(rv reflect.Value, ti *typeInfo) {
+	var l = rvLenArray(rv)
 	e.arrayStart(l)
 	if l > 0 {
 		fn := e.kSeqFn(ti.elem)
@@ -380,24 +380,20 @@ func (e *Encoder) kChan(f *codecFnInfo, rv reflect.Value) {
 func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
 		e.kSliceWMbs(rv, f.ti)
+	} else if f.ti.rtid == uint8SliceTypId || uint8TypId == rt2id(f.ti.elem) {
+		e.e.EncodeStringBytesRaw(rvGetBytes(rv))
 	} else {
-		if f.ti.rtid == uint8SliceTypId || uint8TypId == rt2id(f.ti.elem) {
-			e.e.EncodeStringBytesRaw(rvGetBytes(rv))
-		} else {
-			e.kSliceW(rv, f.ti)
-		}
+		e.kSliceW(rv, f.ti)
 	}
 }
 
 func (e *Encoder) kArray(f *codecFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
-		e.kSeqWMbs(rv, f.ti)
+		e.kArrayWMbs(rv, f.ti)
+	} else if uint8TypId == rt2id(f.ti.elem) {
+		e.e.EncodeStringBytesRaw(rvGetArrayBytesRO(rv, e.b[:]))
 	} else {
-		if uint8TypId == rt2id(f.ti.elem) {
-			e.e.EncodeStringBytesRaw(rvGetArrayBytesRO(rv, e.b[:]))
-		} else {
-			e.kSeqW(rv, f.ti)
-		}
+		e.kArrayW(rv, f.ti)
 	}
 }
 
@@ -576,7 +572,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
-	l := rv.Len()
+	l := rvLenMap(rv)
 	e.mapStart(l)
 	if l == 0 {
 		e.mapEnd()

@@ -9,6 +9,7 @@ package codec
 
 import (
 	"reflect"
+	"runtime"
 	"sync/atomic"
 	"time"
 	"unsafe"
@@ -281,9 +282,11 @@ func isEmptyValueFallbackRecur(urv *unsafeReflectValue, v reflect.Value, tinfos 
 	case reflect.UnsafePointer:
 		return urv.ptr == nil || *(*unsafe.Pointer)(urv.ptr) == nil
 	case reflect.Chan:
-		return urv.ptr == nil || *(*unsafe.Pointer)(urv.ptr) == nil || v.Len() == 0
-	case reflect.Map, reflect.Array:
-		return v.Len() == 0
+		return urv.ptr == nil || chanlen(rvptr(v)) == 0
+	case reflect.Map:
+		return urv.ptr == nil || maplen(rvptr(v)) == 0
+	case reflect.Array:
+		return rvLenArray(v) == 0
 	}
 	return false
 }
@@ -560,11 +563,11 @@ func rvGetSliceCap(rv reflect.Value) int {
 }
 
 func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
-	l := rv.Len()
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	bx := (*unsafeSlice)(unsafe.Pointer(&bs))
 	bx.Data = urv.ptr
-	bx.Len, bx.Cap = l, l
+	bx.Len = rvLenArray(rv)
+	bx.Cap = bx.Len
 	return
 }
 
@@ -592,6 +595,7 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 
 func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 
 	var x []unsafe.Pointer
 
@@ -600,8 +604,8 @@ func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
 	uv.flag = unsafeFlagIndir | uintptr(reflect.Slice)
 
 	s := (*unsafeSlice)(uv.ptr)
-	s.Data = ((*unsafeReflectValue)(unsafe.Pointer(&rv))).ptr
-	s.Len = rv.Len()
+	s.Data = urv.ptr
+	s.Len = rvLenArray(rv)
 	s.Cap = s.Len
 	return
 }
@@ -700,6 +704,22 @@ func rvGetUint64(rv reflect.Value) uint64 {
 func rvGetUintptr(rv reflect.Value) uintptr {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	return *(*uintptr)(v.ptr)
+}
+
+func rvLenMap(rv reflect.Value) int {
+	return maplen(rvptr(rv))
+}
+
+func rvLenArray(rv reflect.Value) int {
+	return rv.Len()
+}
+
+func rvptr(rv reflect.Value) unsafe.Pointer {
+	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	if v.flag&unsafeFlagIndir != 0 {
+		return *(*unsafe.Pointer)(v.ptr)
+	}
+	return v.ptr
 }
 
 // ------------ map range and map indexing ----------
@@ -910,6 +930,14 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
 
 // MARKER: always check that these linknames match subsequent versions of go
 
+//go:linkname maplen reflect.maplen
+//go:noescape
+func maplen(typ unsafe.Pointer) int
+
+//go:linkname chanlen reflect.chanlen
+//go:noescape
+func chanlen(typ unsafe.Pointer) int
+
 //go:linkname mapiterinit reflect.mapiterinit
 //go:noescape
 func mapiterinit(typ unsafe.Pointer, it unsafe.Pointer) (key unsafe.Pointer)
@@ -930,22 +958,24 @@ func mapassign(typ unsafe.Pointer, m unsafe.Pointer, key, val unsafe.Pointer)
 //go:noescape
 func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
 
-//go:linkname typedmemmove reflect.typedmemmove
+//go:linkname typedmemmove runtime.typedmemmove
 //go:noescape
 func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
+
+//go:linkname typedmemclr runtime.typedmemclr
+//go:noescape
+func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
+
+//go:linkname typedslicecopy reflect.typedslicecopy
+//go:noescape
+func typedslicecopy(elemType unsafe.Pointer, dst, src unsafeSlice) int
 
 // //go:linkname memmove reflect.memmove
 // //go:noescape
 // func memmove(dst, src unsafe.Pointer, n int)
 
-//go:linkname typedmemclr reflect.typedmemclr
-//go:noescape
-func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
-
 //go:linkname unsafe_New reflect.unsafe_New
 //go:noescape
 func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
 
-//go:linkname typedslicecopy reflect.typedslicecopy
-//go:noescape
-func typedslicecopy(elemType unsafe.Pointer, dst, src unsafeSlice) int
+var _ = runtime.MemProfileRate
