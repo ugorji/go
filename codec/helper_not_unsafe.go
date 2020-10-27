@@ -302,6 +302,10 @@ func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) reflect.Value {
 	return rv.Index(i)
 }
 
+func rvSliceZeroCap(t reflect.Type) (v reflect.Value) {
+	return reflect.MakeSlice(t, 0, 0)
+}
+
 func rvLenSlice(rv reflect.Value) int {
 	return rv.Len()
 }

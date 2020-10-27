@@ -74,28 +74,18 @@ type unsafeReflectValue struct {
 	flag uintptr
 }
 
+var unsafeZeroSlice = unsafeSlice{unsafe.Pointer(&unsafeZeroArr[0]), 0, 0}
+
 func stringView(v []byte) string {
-	if len(v) == 0 {
-		return ""
-	}
-	bx := (*unsafeSlice)(unsafe.Pointer(&v))
-	return *(*string)(unsafe.Pointer(&unsafeString{bx.Data, bx.Len}))
+	return *(*string)(unsafe.Pointer(&v))
 }
 
-func bytesView(v string) []byte {
-	if len(v) == 0 {
-		return zeroByteSlice
-	}
+func bytesView(v string) (b []byte) {
 	sx := (*unsafeString)(unsafe.Pointer(&v))
-	return *(*[]byte)(unsafe.Pointer(&unsafeSlice{sx.Data, sx.Len, sx.Len}))
+	bx := (*unsafeSlice)(unsafe.Pointer(&b))
+	bx.Data, bx.Len, bx.Cap = sx.Data, sx.Len, sx.Len
+	return
 }
-
-// func copyBytes(dst []byte, src []byte) {
-// 	// copy(dst, src)
-// 	dx := (*unsafeSlice)(unsafe.Pointer(&dst))
-// 	sx := (*unsafeSlice)(unsafe.Pointer(&src))
-// 	memmove(dx.Data, sx.Data, sx.Len)
-// }
 
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	var ui = (*unsafeIntf)(unsafe.Pointer(&v))
@@ -567,9 +557,17 @@ func rvSlice(rv reflect.Value, length int) (v reflect.Value) {
 func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
-	uv.ptr = unsafe.Pointer(uintptr(((*unsafeSlice)(urv.ptr)).Data) + uintptr(ti.elemsize*uint32(i)))
+	uv.ptr = unsafe.Pointer(uintptr(((*unsafeSlice)(urv.ptr)).Data) + uintptr(int(ti.elemsize)*i))
 	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).word
 	uv.flag = uintptr(ti.elemkind) | unsafeFlagIndir | unsafeFlagAddr
+	return
+}
+
+func rvSliceZeroCap(t reflect.Type) (v reflect.Value) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).word
+	urv.flag = uintptr(reflect.Slice) | unsafeFlagIndir
+	urv.ptr = unsafe.Pointer(&unsafeZeroSlice)
 	return
 }
 

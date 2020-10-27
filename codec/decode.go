@@ -563,8 +563,13 @@ func decStructFieldKey(dd decDriver, keyType valueType, b *[decScratchByteArrayL
 	// since keyType is typically valueTypeString, branch prediction is pretty good.
 
 	if keyType == valueTypeString {
-		rvkencname = dd.DecodeStringAsBytes()
-	} else if keyType == valueTypeInt {
+		return dd.DecodeStringAsBytes()
+	}
+	return decStructFieldKeyNotString(dd, keyType, b)
+}
+
+func decStructFieldKeyNotString(dd decDriver, keyType valueType, b *[decScratchByteArrayLen]byte) (rvkencname []byte) {
+	if keyType == valueTypeInt {
 		rvkencname = strconv.AppendInt(b[:0], dd.DecodeInt64(), 10)
 	} else if keyType == valueTypeUint {
 		rvkencname = strconv.AppendUint(b[:0], dd.DecodeUint64(), 10)
@@ -597,9 +602,13 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
-		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
+		for j := 0; d.mapNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			rvkencname = decStructFieldKey(d.d, f.ti.keyType, &d.b)
+			if f.ti.keyType == valueTypeString {
+				rvkencname = d.d.DecodeStringAsBytes()
+			} else {
+				rvkencname = decStructFieldKeyNotString(d.d, f.ti.keyType, &d.b)
+			}
 			d.mapElemValue()
 			if si := f.ti.siForEncName(stringView(rvkencname)); si != nil {
 				d.decodeValue(si.path.fieldAlloc(rv), nil)
@@ -627,20 +636,28 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 		var checkbreak bool
 		for j, si := range f.ti.sfiSrc {
-			if hasLen && j == containerLen {
-				break
-			}
-			if !hasLen && d.checkBreak() {
+			if hasLen {
+				if j == containerLen {
+					break
+				}
+			} else if d.checkBreak() {
 				checkbreak = true
 				break
 			}
 			d.arrayElem()
 			d.decodeValue(si.path.fieldAlloc(rv), nil)
 		}
-		if (hasLen && containerLen > len(f.ti.sfiSrc)) || (!hasLen && !checkbreak) {
+		var proceed bool
+		if hasLen {
+			proceed = containerLen > len(f.ti.sfiSrc)
+		} else {
+			proceed = !checkbreak
+		}
+		// if (hasLen && containerLen > len(f.ti.sfiSrc)) || (!hasLen && !checkbreak) {
+		if proceed {
 			// read remaining values and throw away
 			for j := len(f.ti.sfiSrc); ; j++ {
-				if (hasLen && j == containerLen) || (!hasLen && d.checkBreak()) {
+				if !d.mapNext(j, containerLen, hasLen) {
 					break
 				}
 				d.arrayElem()
@@ -689,7 +706,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	if containerLenS == 0 {
 		if rvCanset {
 			if rvIsNil(rv) {
-				rvSetDirect(rv, reflect.MakeSlice(f.ti.rt, 0, 0))
+				rvSetDirect(rv, rvSliceZeroCap(f.ti.rt))
 			} else {
 				rvSetSliceLen(rv, 0)
 			}
@@ -751,11 +768,11 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	var j int
 
-	for ; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
+	for ; d.mapNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && f.seq == seqTypeSlice && rvIsNil(rv) { // means hasLen = false
 			if rvCanset {
 				rvlen = decDefSliceCap
-				rvcap = rvlen * 2
+				rvcap = rvlen + rvlen
 				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
 				rvCanset = false
 				rvChanged = true
@@ -818,7 +835,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		// rvlen = j
 	} else if j == 0 && rvIsNil(rv) {
 		if rvCanset {
-			rv = reflect.MakeSlice(f.ti.rt, 0, 0)
+			rv = rvSliceZeroCap(f.ti.rt)
 			rvCanset = false
 			rvChanged = true
 		}
@@ -888,7 +905,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 
 	var j int
 
-	for ; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
+	for ; d.mapNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && rvIsNil(rv) {
 			if hasLen {
 				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(f.ti.elemsize))
@@ -979,7 +996,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	hasLen := containerLen > 0
 	var kstrbs []byte
 
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
+	for j := 0; d.mapNext(j, containerLen, hasLen); j++ {
 		if j == 0 {
 			if !rvkMut {
 				rvkn = rvZeroAddrK(ktype, ktypeKind)
@@ -1656,6 +1673,15 @@ func (d *Decoder) decodeFloat32() float32 {
 
 // MARKER: do not call mapEnd if mapStart returns containerLenNil.
 
+func (d *Decoder) mapNext(j, containerLen int, hasLen bool) bool {
+	// return (hasLen && j < containerLen) || !(hasLen || slh.d.checkBreak())
+	if hasLen {
+		return j < containerLen
+	} else {
+		return !d.checkBreak()
+	}
+}
+
 func (d *Decoder) mapStart() (v int) {
 	v = d.d.ReadMapStart()
 	if v != containerLenNil {
@@ -1771,7 +1797,8 @@ func (d *Decoder) decSliceHelperStart() (x decSliceHelper, clen int) {
 		x.Array = true
 		clen = d.arrayStart()
 	case valueTypeMap:
-		clen = d.mapStart() * 2
+		clen = d.mapStart()
+		clen += clen
 	default:
 		d.errorf("only encoded map or array can be decoded into a slice (%d)", x.ct)
 	}
@@ -1913,7 +1940,7 @@ func decArrayCannotExpand(slh decSliceHelper, hasLen bool, lenv, j, containerLen
 	slh.ElemContainerState(j)
 	slh.d.swallow()
 	j++
-	for ; (hasLen && j < containerLenS) || !(hasLen || slh.d.checkBreak()); j++ {
+	for ; slh.d.mapNext(j, containerLenS, hasLen); j++ {
 		slh.ElemContainerState(j)
 		slh.d.swallow()
 	}
