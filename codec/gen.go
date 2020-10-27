@@ -869,10 +869,10 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 	}
 
 	if x.checkForSelfer(t, varname) {
-		if ti2.isFlag(tiflagSelfer) {
+		if ti2.flagSelfer {
 			x.linef("%s %s.CodecEncodeSelf(e)", hasIf.c(true), varname)
 			return
-		} else if ti2.isFlag(tiflagSelferPtr) {
+		} else if ti2.flagSelferPtr {
 			x.linef("%s %ssf%s := &%s", hasIf.c(true), genTempVarPfx, mi, varname)
 			x.linef("%ssf%s.CodecEncodeSelf(e)", genTempVarPfx, mi)
 			return
@@ -902,19 +902,19 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 		rtidAdded = true
 	}
 
-	if ti2.isFlag(tiflagBinaryMarshaler) {
+	if ti2.flagBinaryMarshaler {
 		x.linef("%s z.EncBinary() { z.EncBinaryMarshal(%s%v) ", hasIf.c(false), ptrPfx, varname)
-	} else if ti2.isFlag(tiflagBinaryMarshalerPtr) {
+	} else if ti2.flagBinaryMarshalerPtr {
 		x.linef("%s z.EncBinary() { z.EncBinaryMarshal(%s%v) ", hasIf.c(false), addrPfx, varname)
 	}
 
-	if ti2.isFlag(tiflagJsonMarshaler) {
+	if ti2.flagJsonMarshaler {
 		x.linef("%s !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(%s%v) ", hasIf.c(false), ptrPfx, varname)
-	} else if ti2.isFlag(tiflagJsonMarshalerPtr) {
+	} else if ti2.flagJsonMarshalerPtr {
 		x.linef("%s !z.EncBinary() && z.IsJSONHandle() { z.EncJSONMarshal(%s%v) ", hasIf.c(false), addrPfx, varname)
-	} else if ti2.isFlag(tiflagTextMarshaler) {
+	} else if ti2.flagTextMarshaler {
 		x.linef("%s !z.EncBinary() { z.EncTextMarshal(%s%v) ", hasIf.c(false), ptrPfx, varname)
-	} else if ti2.isFlag(tiflagTextMarshalerPtr) {
+	} else if ti2.flagTextMarshalerPtr {
 		x.linef("%s !z.EncBinary() { z.EncTextMarshal(%s%v) ", hasIf.c(false), addrPfx, varname)
 	}
 
@@ -1048,7 +1048,7 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 			buf.s("!(").s(varname2).s(".IsZero())")
 			break
 		}
-		if ti2.isFlag(tiflagIsZeroerPtr) || ti2.isFlag(tiflagIsZeroer) {
+		if ti2.flagIsZeroerPtr || ti2.flagIsZeroer {
 			buf.s("!(").s(varname2).s(".IsZero())")
 			break
 		}
@@ -1068,7 +1068,7 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 			buf.s("!(").s(varname2).s(".IsCodecEmpty())")
 			break
 		}
-		if ti2.isFlag(tiflagComparable) {
+		if ti2.flagComparable {
 			buf.s(varname2).s(" != ").s(x.genZeroValueR(t2.Type))
 			break
 		}
@@ -1510,11 +1510,11 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	}
 
 	if x.checkForSelfer(t, varname) {
-		if ti2.isFlag(tiflagSelfer) {
+		if ti2.flagSelfer {
 			x.linef("%s %s.CodecDecodeSelf(d)", hasIf.c(true), varname)
 			return
 		}
-		if ti2.isFlag(tiflagSelferPtr) {
+		if ti2.flagSelferPtr {
 			x.linef("%s %s.CodecDecodeSelf(d)", hasIf.c(true), varname)
 			return
 		}
@@ -1542,18 +1542,18 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		rtidAdded = true
 	}
 
-	if ti2.isFlag(tiflagBinaryUnmarshaler) {
+	if ti2.flagBinaryUnmarshaler {
 		x.linef("%s z.DecBinary() { z.DecBinaryUnmarshal(%s%v) ", hasIf.c(false), ptrPfx, varname)
-	} else if ti2.isFlag(tiflagBinaryUnmarshalerPtr) {
+	} else if ti2.flagBinaryUnmarshalerPtr {
 		x.linef("%s z.DecBinary() { z.DecBinaryUnmarshal(%s%v) ", hasIf.c(false), addrPfx, varname)
 	}
-	if ti2.isFlag(tiflagJsonUnmarshaler) {
+	if ti2.flagJsonUnmarshaler {
 		x.linef("%s !z.DecBinary() && z.IsJSONHandle() { z.DecJSONUnmarshal(%s%v)", hasIf.c(false), ptrPfx, varname)
-	} else if ti2.isFlag(tiflagJsonUnmarshalerPtr) {
+	} else if ti2.flagJsonUnmarshalerPtr {
 		x.linef("%s !z.DecBinary() && z.IsJSONHandle() { z.DecJSONUnmarshal(%s%v)", hasIf.c(false), addrPfx, varname)
-	} else if ti2.isFlag(tiflagTextUnmarshaler) {
+	} else if ti2.flagTextUnmarshaler {
 		x.linef("%s !z.DecBinary() { z.DecTextUnmarshal(%s%v)", hasIf.c(false), ptrPfx, varname)
-	} else if ti2.isFlag(tiflagTextUnmarshalerPtr) {
+	} else if ti2.flagTextUnmarshalerPtr {
 		x.linef("%s !z.DecBinary() { z.DecTextUnmarshal(%s%v)", hasIf.c(false), addrPfx, varname)
 	}
 

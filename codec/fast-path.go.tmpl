@@ -191,7 +191,7 @@ func (fastpathT) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *Enco
 	{{/* if v == nil { e.e.EncodeNil() } else */ -}}
 	e.haltOnMbsOddLen(len(v))
 	{{/*
-	if len(v)&1 == 1 { // len(v)%2 == 1 {
+	if len(v)&1 != 0 { // similar to &1==1 or %2 == 1
 		e.errorf(fastpathMapBySliceErrMsg, len(v))
 	}
 	*/ -}}

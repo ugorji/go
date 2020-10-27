@@ -579,9 +579,9 @@ func decStructFieldKey(dd decDriver, keyType valueType, b *[decScratchByteArrayL
 func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	ctyp := d.d.ContainerType()
 	var mf MissingFielder
-	if f.ti.isFlag(tiflagMissingFielder) {
+	if f.ti.flagMissingFielder {
 		mf = rv2i(rv).(MissingFielder)
-	} else if f.ti.isFlag(tiflagMissingFielderPtr) {
+	} else if f.ti.flagMissingFielderPtr {
 		mf = rv2i(rv.Addr()).(MissingFielder)
 	}
 	if ctyp == valueTypeMap {
@@ -591,8 +591,11 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			return
 		}
 		hasLen := containerLen >= 0
-
-		var name2 = []byte{}
+		var name2 []byte
+		if mf != nil {
+			var namearr2 [16]byte
+			name2 = namearr2[:0]
+		}
 		var rvkencname []byte
 		for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
 			d.mapElemKey()
@@ -948,34 +951,31 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	rvvMut := !isImmutableKind(vtypeKind)
 	rvvCanNil := isnilBitset.isset(byte(vtypeKind))
+	var vtypeIsPtr, vtypeIsMap bool
+	if rvvMut {
+		vtypeIsPtr = vtypeKind == reflect.Ptr
+		vtypeIsMap = vtypeKind == reflect.Ptr
+	}
+
+	var rvk, rvkn, rvv, rvvn, rvva, rvvz reflect.Value
 
 	// we do a doMapGet if kind is mutable, and InterfaceReset=true if interface
 	var doMapGet, doMapSet bool
 
 	if !d.h.MapValueReset {
-		if rvvMut {
-			if vtypeKind == reflect.Interface {
-				if !d.h.InterfaceReset {
-					doMapGet = true
-				}
-			} else {
-				doMapGet = true
+		if rvvMut && (vtypeKind != reflect.Interface || !d.h.InterfaceReset) {
+			doMapGet = true
+			rvva = mapAddrLoopvarRV(vtype, vtypeKind)
+			if vtypeKind == reflect.Ptr {
+				vtypeElem = vtype.Elem()
 			}
-		}
-	}
-
-	var rvk, rvkn, rvv, rvvn, rvva, rvvz reflect.Value
-
-	if rvvMut && doMapGet {
-		rvva = mapAddrLoopvarRV(vtype, vtypeKind)
-		if vtypeKind == reflect.Ptr {
-			vtypeElem = vtype.Elem()
 		}
 	}
 
 	rvkMut := !isImmutableKind(ktype.Kind()) // if ktype is immutable, then re-use the same rvk.
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
+
 	hasLen := containerLen > 0
 	var kstrbs []byte
 
@@ -986,6 +986,12 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			}
 			if !rvvMut {
 				rvvn = rvZeroAddrK(vtype, vtypeKind)
+			}
+			if !ktypeIsString && keyFn == nil {
+				keyFn = d.h.fn(ktypeLo)
+			}
+			if valFn == nil {
+				valFn = d.h.fn(vtypeLo)
 			}
 		}
 
@@ -1001,9 +1007,6 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			kstrbs = d.d.DecodeStringAsBytes()
 			rvk.SetString(d.string(kstrbs))
 		} else {
-			if keyFn == nil {
-				keyFn = d.h.fn(ktypeLo)
-			}
 			d.decodeValue(rvk, keyFn)
 
 			// special case if interface wrapping a byte array.
@@ -1028,13 +1031,14 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 		// there is non-nil content in the stream to decode ...
 
-		doMapSet = true // set to false if u do a get, and its a non-nil pointer
+		// set doMapSet to false if u do a get, and its a non-nil pointer, else keep as true
+		doMapSet = true
 
 		if rvvMut {
 			if doMapGet {
 				rvv = mapGet(rv, rvk, rvva)
 				if rvv.IsValid() && (!rvvCanNil || (rvvCanNil && !rvIsNil(rvv))) {
-					if vtypeKind == reflect.Ptr {
+					if vtypeIsPtr {
 						doMapSet = false
 					} else if vtypeKind != reflect.Map { // ok to decode directly into map
 						// make addressable (so you can set the slice/array elements or interface, etc)
@@ -1043,7 +1047,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 						rvv = rvvn
 					}
 				} else {
-					if vtypeKind == reflect.Ptr {
+					if vtypeIsMap {
 						rvv = reflect.New(vtypeElem)
 					} else {
 						rvv = rvZeroAddrK(vtype, vtypeKind)
@@ -1054,10 +1058,6 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			}
 		} else {
 			rvv = rvvn
-		}
-
-		if valFn == nil {
-			valFn = d.h.fn(vtypeLo)
 		}
 
 		d.decodeValueNoCheckNil(rvv, valFn)

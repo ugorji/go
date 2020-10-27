@@ -245,6 +245,7 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// }
 	// return unsafeCmpZero(urv.ptr, int(t.Size()))
 	// return unsafeCmpZero(urv.ptr, int(rvPtrToType(urv.typ).Size()))
+
 	return unsafeCmpZero(urv.ptr, int(rvType(v).Size()))
 }
 

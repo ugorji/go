@@ -478,11 +478,11 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	var newlen int
 	toMap := !(f.ti.toArray || e.h.StructToArray)
 	var mf map[string]interface{}
-	if f.ti.isFlag(tiflagMissingFielder) {
+	if f.ti.flagMissingFielder {
 		mf = rv2i(rv).(MissingFielder).CodecMissingFields()
 		toMap = true
 		newlen += len(mf)
-	} else if f.ti.isFlag(tiflagMissingFielderPtr) {
+	} else if f.ti.flagMissingFielderPtr {
 		if rv.CanAddr() {
 			mf = rv2i(rv.Addr()).(MissingFielder).CodecMissingFields()
 		} else {
@@ -1292,7 +1292,7 @@ func (e *Encoder) arrayEnd() {
 // ----------
 
 func (e *Encoder) haltOnMbsOddLen(length int) {
-	if length&1 == 1 { // length%2 == 1 {
+	if length&1 != 0 { // similar to &1==1 or %2 == 1
 		e.errorf("mapBySlice requires even slice length, but got %v", length)
 	}
 }
