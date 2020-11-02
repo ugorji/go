@@ -2,6 +2,7 @@
 
 # download the code and all its dependencies 
 _go_get() {
+    # Note: keep "github.com/ugorji/go/codec" in quotes, as script pushing to github will replace it appropriately
     ${gocmd} get -u \
        "github.com/ugorji/go/codec" "github.com/ugorji/go/codec"/codecgen \
        github.com/tinylib/msgp/msgp github.com/tinylib/msgp \
