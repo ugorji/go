@@ -14,14 +14,9 @@ go:
   # go testing suite support was introduced in go 1.7, thus tests will only compile for go 1.7+.
   # Once we introduce TB.Helper() support (introduced in go 1.9), then tests will only run from go 1.9+.
 install:
-  - |
-    if [[ "${TRAVIS_GO_VERSION}" =~ 1.1[0123].x ]]; then
-    go get github.com/ugorji/go/codec@master
-    else
-    go get -mod=mod github.com/ugorji/go/codec@master
-    fi
-    # explicitly request master, so we test changes at tip (and not the latest released version/tag)
-    # also, by explicitly requesting master, we don't have to request -mod=mod or otherwise
+  - go get github.com/ugorji/go/codec@master
+  # explicitly request master, so we test changes at tip (and not the latest released version/tag)
+  # also, by explicitly requesting master, we don't have to request -mod=mod or otherwise
 script:
   - go test -tags "alltests" -run Suite -coverprofile coverage.txt github.com/ugorji/go/codec
   - go test -tags "alltests safe" -run Suite -coverprofile coverage.safe.txt github.com/ugorji/go/codec
