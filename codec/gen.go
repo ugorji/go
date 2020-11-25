@@ -650,10 +650,10 @@ func (x *genRunner) tryGenIsZero(t reflect.Type) (done bool) {
 		// if Ptr, we already checked if nil above
 		if t2.Type.Kind() != reflect.Ptr {
 			x.doEncOmitEmptyLine(t2, varname, &omitline)
-			omitline.s(" && ")
+			omitline.s(" || ")
 		}
 	}
-	omitline.s(" true")
+	omitline.s(" false")
 	x.linef("return !(%s)", omitline.v())
 
 	x.line("}")
