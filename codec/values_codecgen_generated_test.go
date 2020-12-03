@@ -289,7 +289,7 @@ func (x *stringUint64T) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *stringUint64T) IsCodecEmpty() bool {
-	return !(x.S != "" && x.U != 0 && true)
+	return !(x.S != "" || x.U != 0 || false)
 }
 
 func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
@@ -827,7 +827,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *AnonInTestStruc) IsCodecEmpty() bool {
-	return !(x.AS != "" && x.AI64 != 0 && x.AI16 != 0 && x.AUi64 != 0 && len(x.ASslice) != 0 && len(x.AI64slice) != 0 && len(x.AUi64slice) != 0 && len(x.AF64slice) != 0 && len(x.AF32slice) != 0 && len(x.AMSU16) != 0 && len(x.AI64arr0) != 0 && len(x.AI64slice0) != 0 && len(x.AUi64sliceN) != 0 && len(x.AMSU16N) != 0 && len(x.AMSU16E) != 0 && true)
+	return !(x.AS != "" || x.AI64 != 0 || x.AI16 != 0 || x.AUi64 != 0 || len(x.ASslice) != 0 || len(x.AI64slice) != 0 || len(x.AUi64slice) != 0 || len(x.AF64slice) != 0 || len(x.AF32slice) != 0 || len(x.AMSU16) != 0 || len(x.AI64arr0) != 0 || len(x.AI64slice0) != 0 || len(x.AUi64sliceN) != 0 || len(x.AMSU16N) != 0 || len(x.AMSU16E) != 0 || false)
 }
 
 func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
@@ -1419,7 +1419,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *testSimpleFields) IsCodecEmpty() bool {
-	return !(x.S != "" && x.I64 != 0 && x.I8 != 0 && x.Ui64 != 0 && x.Ui8 != 0 && x.F64 != 0 && x.F32 != 0 && bool(x.B) && len(x.Sslice) != 0 && len(x.I16slice) != 0 && len(x.Ui64slice) != 0 && len(x.Ui8slice) != 0 && len(x.Bslice) != 0 && len(x.Iptrslice) != 0 && len(x.WrapSliceInt64) != 0 && len(x.WrapSliceString) != 0 && len(x.Msi64) != 0 && true)
+	return !(x.S != "" || x.I64 != 0 || x.I8 != 0 || x.Ui64 != 0 || x.Ui8 != 0 || x.F64 != 0 || x.F32 != 0 || bool(x.B) || len(x.Sslice) != 0 || len(x.I16slice) != 0 || len(x.Ui64slice) != 0 || len(x.Ui8slice) != 0 || len(x.Bslice) != 0 || len(x.Iptrslice) != 0 || len(x.WrapSliceInt64) != 0 || len(x.WrapSliceString) != 0 || len(x.Msi64) != 0 || false)
 }
 
 func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
@@ -3063,7 +3063,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *TestStrucCommon) IsCodecEmpty() bool {
-	return !(x.S != "" && x.I64 != 0 && x.I32 != 0 && x.I16 != 0 && x.I8 != 0 && x.I64n != 0 && x.I32n != 0 && x.I16n != 0 && x.I8n != 0 && x.Ui64 != 0 && x.Ui32 != 0 && x.Ui16 != 0 && x.Ui8 != 0 && x.F64 != 0 && x.F32 != 0 && bool(x.B) && x.By != 0 && len(x.Sslice) != 0 && len(x.I64slice) != 0 && len(x.I16slice) != 0 && len(x.Ui64slice) != 0 && len(x.Ui8slice) != 0 && len(x.Bslice) != 0 && len(x.Byslice) != 0 && len(x.BytesSlice) != 0 && len(x.Iptrslice) != 0 && len(x.WrapSliceInt64) != 0 && len(x.WrapSliceString) != 0 && len(x.Msi64) != 0 && len(x.Msbytes) != 0 && !(x.Simplef.IsCodecEmpty()) && len(x.SstrUi64T) != 0 && len(x.MstrUi64T) != 0 && !(x.AnonInTestStruc.IsCodecEmpty()) && !(x.NotAnon.IsCodecEmpty()) && len(x.Nmap) != 0 && len(x.Nslice) != 0 && true)
+	return !(x.S != "" || x.I64 != 0 || x.I32 != 0 || x.I16 != 0 || x.I8 != 0 || x.I64n != 0 || x.I32n != 0 || x.I16n != 0 || x.I8n != 0 || x.Ui64 != 0 || x.Ui32 != 0 || x.Ui16 != 0 || x.Ui8 != 0 || x.F64 != 0 || x.F32 != 0 || bool(x.B) || x.By != 0 || len(x.Sslice) != 0 || len(x.I64slice) != 0 || len(x.I16slice) != 0 || len(x.Ui64slice) != 0 || len(x.Ui8slice) != 0 || len(x.Bslice) != 0 || len(x.Byslice) != 0 || len(x.BytesSlice) != 0 || len(x.Iptrslice) != 0 || len(x.WrapSliceInt64) != 0 || len(x.WrapSliceString) != 0 || len(x.Msi64) != 0 || len(x.Msbytes) != 0 || !(x.Simplef.IsCodecEmpty()) || len(x.SstrUi64T) != 0 || len(x.MstrUi64T) != 0 || !(x.AnonInTestStruc.IsCodecEmpty()) || !(x.NotAnon.IsCodecEmpty()) || len(x.Nmap) != 0 || len(x.Nslice) != 0 || false)
 }
 
 func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
@@ -4871,7 +4871,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *TestStruc) IsCodecEmpty() bool {
-	return !(!(x.TestStrucCommon.IsCodecEmpty()) && len(x.Mtsptr) != 0 && len(x.Mts) != 0 && len(x.Its) != 0 && true)
+	return !(!(x.TestStrucCommon.IsCodecEmpty()) || len(x.Mtsptr) != 0 || len(x.Mts) != 0 || len(x.Its) != 0 || false)
 }
 
 func (x *codecgenA) CodecEncodeSelf(e *Encoder) {
@@ -4999,7 +4999,7 @@ func (x *codecgenA) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *codecgenA) IsCodecEmpty() bool {
-	return !(len(x.ZZ) != 0 && true)
+	return !(len(x.ZZ) != 0 || false)
 }
 
 func (x *codecgenB) CodecEncodeSelf(e *Encoder) {
@@ -5137,7 +5137,7 @@ func (x *codecgenB) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *codecgenB) IsCodecEmpty() bool {
-	return !(!(x.AA.IsCodecEmpty()) && true)
+	return !(!(x.AA.IsCodecEmpty()) || false)
 }
 
 func (x *codecgenC) CodecEncodeSelf(e *Encoder) {
@@ -5292,7 +5292,7 @@ func (x *codecgenC) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *codecgenC) IsCodecEmpty() bool {
-	return !(!(x.BB.IsCodecEmpty()) && true)
+	return !(!(x.BB.IsCodecEmpty()) || false)
 }
 
 func (x *TestCodecgenG) CodecEncodeSelf(e *Encoder) {
@@ -5412,7 +5412,7 @@ func (x *TestCodecgenG) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *TestCodecgenG) IsCodecEmpty() bool {
-	return !(x.TestCodecgenG != 0 && true)
+	return !(x.TestCodecgenG != 0 || false)
 }
 
 func (x *codecgenH) CodecEncodeSelf(e *Encoder) {
@@ -5532,7 +5532,7 @@ func (x *codecgenH) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *codecgenH) IsCodecEmpty() bool {
-	return !(!(x.TestCodecgenG.IsCodecEmpty()) && true)
+	return !(!(x.TestCodecgenG.IsCodecEmpty()) || false)
 }
 
 func (x *codecgenI) CodecEncodeSelf(e *Encoder) {
@@ -5652,7 +5652,7 @@ func (x *codecgenI) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *codecgenI) IsCodecEmpty() bool {
-	return !(!(x.codecgenH.IsCodecEmpty()) && true)
+	return !(!(x.codecgenH.IsCodecEmpty()) || false)
 }
 
 func (x *codecgenK) CodecEncodeSelf(e *Encoder) {
@@ -5796,7 +5796,7 @@ func (x *codecgenK) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *codecgenK) IsCodecEmpty() bool {
-	return !(x.X != 0 && x.Y != "" && true)
+	return !(x.X != 0 || x.Y != "" || false)
 }
 
 func (x *codecgenL) CodecEncodeSelf(e *Encoder) {
@@ -5940,7 +5940,7 @@ func (x *codecgenL) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *codecgenL) IsCodecEmpty() bool {
-	return !(x.X != 0 && x.Y != 0 && true)
+	return !(x.X != 0 || x.Y != 0 || false)
 }
 
 func (x *codecgenM) CodecEncodeSelf(e *Encoder) {
@@ -6084,7 +6084,7 @@ func (x *codecgenM) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *codecgenM) IsCodecEmpty() bool {
-	return !(!(x.codecgenK.IsCodecEmpty()) && true)
+	return !(!(x.codecgenK.IsCodecEmpty()) || false)
 }
 
 func (x *testStrucKeyTypeT0) CodecEncodeSelf(e *Encoder) {
@@ -6204,7 +6204,7 @@ func (x *testStrucKeyTypeT0) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *testStrucKeyTypeT0) IsCodecEmpty() bool {
-	return !(x.F != 0 && true)
+	return !(x.F != 0 || false)
 }
 
 func (x *testStrucKeyTypeT1) CodecEncodeSelf(e *Encoder) {
@@ -6324,7 +6324,7 @@ func (x *testStrucKeyTypeT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *testStrucKeyTypeT1) IsCodecEmpty() bool {
-	return !(x.F != 0 && true)
+	return !(x.F != 0 || false)
 }
 
 func (x *testStrucKeyTypeT2) CodecEncodeSelf(e *Encoder) {
@@ -6440,7 +6440,7 @@ func (x *testStrucKeyTypeT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *testStrucKeyTypeT2) IsCodecEmpty() bool {
-	return !(x.F != 0 && true)
+	return !(x.F != 0 || false)
 }
 
 func (x *testStrucKeyTypeT3) CodecEncodeSelf(e *Encoder) {
@@ -6556,7 +6556,7 @@ func (x *testStrucKeyTypeT3) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *testStrucKeyTypeT3) IsCodecEmpty() bool {
-	return !(x.F != 0 && true)
+	return !(x.F != 0 || false)
 }
 
 func (x *testStrucKeyTypeT4) CodecEncodeSelf(e *Encoder) {
@@ -6672,7 +6672,7 @@ func (x *testStrucKeyTypeT4) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *testStrucKeyTypeT4) IsCodecEmpty() bool {
-	return !(x.F != 0 && true)
+	return !(x.F != 0 || false)
 }
 
 func (x Bbool) CodecEncodeSelf(e *Encoder) {
@@ -6838,7 +6838,7 @@ func (x *Sstructsmall) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *Sstructsmall) IsCodecEmpty() bool {
-	return !(x.A != 0 && true)
+	return !(x.A != 0 || false)
 }
 
 func (x *Sstructbig) CodecEncodeSelf(e *Encoder) {
@@ -7160,7 +7160,7 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *Sstructbig) IsCodecEmpty() bool {
-	return !(x.A != 0 && bool(x.B) && !(x.Ssmall.IsCodecEmpty()) && true)
+	return !(x.A != 0 || bool(x.B) || !(x.Ssmall.IsCodecEmpty()) || false)
 }
 
 func (x *SstructbigToArray) CodecEncodeSelf(e *Encoder) {
@@ -7482,7 +7482,7 @@ func (x *SstructbigToArray) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *SstructbigToArray) IsCodecEmpty() bool {
-	return !(x.A != 0 && bool(x.B) && !(x.Ssmall.IsCodecEmpty()) && true)
+	return !(x.A != 0 || bool(x.B) || !(x.Ssmall.IsCodecEmpty()) || false)
 }
 
 func (x *tLowerFirstLetter) CodecEncodeSelf(e *Encoder) {
@@ -7626,7 +7626,7 @@ func (x *tLowerFirstLetter) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *tLowerFirstLetter) IsCodecEmpty() bool {
-	return !(x.I != 0 && x.S != "" && true)
+	return !(x.I != 0 || x.S != "" || false)
 }
 
 func (x wrapInt64) CodecEncodeSelf(e *Encoder) {
@@ -8098,7 +8098,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *AnonInTestStrucIntf) IsCodecEmpty() bool {
-	return !(len(x.Islice) != 0 && len(x.Ms) != 0 && x.Nintf != nil && !(x.T.IsZero()) && true)
+	return !(len(x.Islice) != 0 || len(x.Ms) != 0 || x.Nintf != nil || !(x.T.IsZero()) || false)
 }
 
 func (x *missingFielderT1) CodecEncodeSelf(e *Encoder) {
@@ -8242,7 +8242,7 @@ func (x *missingFielderT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *missingFielderT1) IsCodecEmpty() bool {
-	return !(x.S != "" && bool(x.B) && true)
+	return !(x.S != "" || bool(x.B) || false)
 }
 
 func (x *missingFielderT11) CodecEncodeSelf(e *Encoder) {
@@ -8362,7 +8362,7 @@ func (x *missingFielderT11) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *missingFielderT11) IsCodecEmpty() bool {
-	return !(x.S2 != "" && true)
+	return !(x.S2 != "" || false)
 }
 
 func (x *missingFielderT2) CodecEncodeSelf(e *Encoder) {
@@ -8554,7 +8554,7 @@ func (x *missingFielderT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *missingFielderT2) IsCodecEmpty() bool {
-	return !(x.S != "" && bool(x.B) && x.F != 0 && x.I != 0 && true)
+	return !(x.S != "" || bool(x.B) || x.F != 0 || x.I != 0 || false)
 }
 
 func (x *testSelfExtHelper) CodecEncodeSelf(e *Encoder) {
@@ -8722,7 +8722,7 @@ func (x *testSelfExtHelper) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *testSelfExtHelper) IsCodecEmpty() bool {
-	return !(x.S != "" && x.I != 0 && bool(x.B) && true)
+	return !(x.S != "" || x.I != 0 || bool(x.B) || false)
 }
 
 func (x *TestSelfExtImpl) CodecEncodeSelf(e *Encoder) {
@@ -8890,7 +8890,7 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *TestSelfExtImpl) IsCodecEmpty() bool {
-	return !(!(x.testSelfExtHelper.IsCodecEmpty()) && true)
+	return !(!(x.testSelfExtHelper.IsCodecEmpty()) || false)
 }
 
 func (x *TestSelfExtImpl2) CodecEncodeSelf(e *Encoder) {
@@ -9034,7 +9034,7 @@ func (x *TestSelfExtImpl2) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *TestSelfExtImpl2) IsCodecEmpty() bool {
-	return !(x.M != "" && bool(x.O) && true)
+	return !(x.M != "" || bool(x.O) || false)
 }
 
 func (x *TestTwoNakedInterfaces) CodecEncodeSelf(e *Encoder) {
@@ -9178,7 +9178,7 @@ func (x *TestTwoNakedInterfaces) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *TestTwoNakedInterfaces) IsCodecEmpty() bool {
-	return !(x.A != nil && x.B != nil && true)
+	return !(x.A != nil || x.B != nil || false)
 }
 
 func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
@@ -12759,7 +12759,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *TestStrucFlex) IsCodecEmpty() bool {
-	return !(!(x.TestStrucCommon.IsCodecEmpty()) && len(x.Chstr) != 0 && len(x.Mis) != 0 && len(x.Mbu64) != 0 && len(x.Miwu64s) != 0 && len(x.Mfwss) != 0 && len(x.Mf32wss) != 0 && len(x.Mui2wss) != 0 && len(x.Msu2wss) != 0 && x.Ci64 != 0 && len(x.Swrapbytes) != 0 && len(x.Swrapuint8) != 0 && len(x.ArrStrUi64T) != 0 && len(x.Ui64array) != 0 && len(x.Ui64slicearray) != 0 && len(x.SintfAarray) != 0 && len(x.MstrUi64TSelf) != 0 && !(x.Ttime.IsZero()) && x.AnonInTestStrucIntf != nil && len(x.Mtsptr) != 0 && len(x.Mts) != 0 && len(x.Its) != 0 && bool(x.MarJ) && x.MarT != "" && len(x.MarB) != 0 && x.XuintToBytes != 0 && true)
+	return !(!(x.TestStrucCommon.IsCodecEmpty()) || len(x.Chstr) != 0 || len(x.Mis) != 0 || len(x.Mbu64) != 0 || len(x.Miwu64s) != 0 || len(x.Mfwss) != 0 || len(x.Mf32wss) != 0 || len(x.Mui2wss) != 0 || len(x.Msu2wss) != 0 || x.Ci64 != 0 || len(x.Swrapbytes) != 0 || len(x.Swrapuint8) != 0 || len(x.ArrStrUi64T) != 0 || len(x.Ui64array) != 0 || len(x.Ui64slicearray) != 0 || len(x.SintfAarray) != 0 || len(x.MstrUi64TSelf) != 0 || !(x.Ttime.IsZero()) || x.AnonInTestStrucIntf != nil && len(x.Mtsptr) != 0 || len(x.Mts) != 0 || len(x.Its) != 0 || bool(x.MarJ) || x.MarT != "" || len(x.MarB) != 0 || x.XuintToBytes != 0 || false)
 }
 
 func (x codecSelfer19780) encwrapSliceUint64(v wrapSliceUint64, e *Encoder) {
