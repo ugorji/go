@@ -1451,7 +1451,7 @@ func (path *structFieldInfoPathNode) field(v reflect.Value) (rv2 reflect.Value) 
 // It allocates if a nil value was seen while searching.
 func (path *structFieldInfoPathNode) fieldAlloc(v reflect.Value) (rv2 reflect.Value) {
 	if parent := path.parent; parent != nil {
-		v = parent.field(v)
+		v = parent.fieldAlloc(v)
 		for j, k := uint8(0), parent.numderef; j < k; j++ {
 			if rvIsNil(v) {
 				rvSetDirect(v, reflect.New(rvType(v).Elem()))
