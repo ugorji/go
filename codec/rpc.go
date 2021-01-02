@@ -57,7 +57,7 @@ func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 		halt.onerror(errRpcJsonNeedsTermWhitespace)
 	}
 	var f ioFlusher
-	bh := basicHandle(h)
+	bh := h.getBasicHandle()
 	if !bh.RPCNoBuffer {
 		f, ok = w.(ioFlusher)
 		if bh.WriterBufferSize <= 0 {

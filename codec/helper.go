@@ -232,6 +232,8 @@ var (
 	errExtFnUpdateExtUnsupported  = errors.New("InterfaceExt.UpdateExt is not supported")
 
 	errPanicHdlUndefinedErr = errors.New("panic: undefined error")
+
+	errHandleInited = errors.New("cannot modify initialized Handle")
 )
 
 var pool4tiload = sync.Pool{
@@ -634,6 +636,8 @@ type BasicHandle struct {
 
 	extHandle
 
+	// these are used during runtime.
+	// At init time, they should have nothing in them.
 	rtidFns      atomicRtidFnSlice
 	rtidFnsNoExt atomicRtidFnSlice
 
@@ -666,9 +670,13 @@ type BasicHandle struct {
 	//
 	// Note: DO NOT CHANGE AFTER FIRST USE.
 	//
-	// Once a Handle has been used, do not modify this option.
-	// It will lead to unexpected behaviour during encoding and decoding.
+	// Once a Handle has been initialized (used), do not modify this option. It will be ignored.
 	TimeNotBuiltin bool
+
+	// timeBuiltin is initialized from TimeNotBuiltin, and used internally.
+	// once initialized, it cannot be changed, as the function for encoding/decoding time.Time
+	// will have been cached and the TimeNotBuiltin value will not be consulted thereafter.
+	timeBuiltin bool
 
 	// ExplicitRelease configures whether Release() is implicitly called after an encode or
 	// decode call.
@@ -695,9 +703,11 @@ type BasicHandle struct {
 	// ---- cache line
 }
 
-// basicHandle returns an initialized BasicHandle from the Handle.
-func basicHandle(hh Handle) (x *BasicHandle) {
-	x = hh.getBasicHandle()
+// initHandle does a one-time initialization of the handle.
+// After this is run, do not modify the Handle, as some modifications are ignored
+// e.g. extensions, registered interfaces, TimeNotBuiltIn, etc
+func initHandle(hh Handle) {
+	x := hh.getBasicHandle()
 	// ** We need to simulate once.Do, to ensure no data race within the block.
 	// ** Consequently, below would not work.
 	// if atomic.CompareAndSwapUint32(&x.inited, 0, 1) {
@@ -710,9 +720,29 @@ func basicHandle(hh Handle) (x *BasicHandle) {
 	// is not sufficient, since a race condition can occur within init(Handle) function.
 	// init is made noinline, so that this function can be inlined by its caller.
 	if atomic.LoadUint32(&x.inited) == 0 {
-		x.init(hh)
+		x.initHandle(hh)
 	}
-	return
+}
+
+func (x *BasicHandle) basicInit() {
+	x.rtidFns.store(nil)
+	x.rtidFnsNoExt.store(nil)
+	x.timeBuiltin = !x.TimeNotBuiltin
+}
+
+func (x *BasicHandle) init() {}
+
+func (x *BasicHandle) isInited() bool {
+	return atomic.LoadUint32(&x.inited) != 0
+}
+
+// clearInited: DANGEROUS - only use in testing, etc
+func (x *BasicHandle) clearInited() {
+	atomic.StoreUint32(&x.inited, 0)
+}
+
+func (x *BasicHandle) TimeBuiltin() bool {
+	return x.timeBuiltin
 }
 
 func (x *BasicHandle) isJs() bool {
@@ -724,9 +754,10 @@ func (x *BasicHandle) isBe() bool {
 }
 
 //go:noinline
-func (x *BasicHandle) init(hh Handle) {
+func (x *BasicHandle) initHandle(hh Handle) {
 	// make it uninlineable, as it is called at most once
 	x.mu.Lock()
+	defer x.mu.Unlock() // use defer, as halt may panic below
 	if x.inited == 0 {
 		var f = initedHandleFlag
 		if hh.isBinary() {
@@ -735,7 +766,6 @@ func (x *BasicHandle) init(hh Handle) {
 		if _, b := hh.(*JsonHandle); b {
 			f |= jsonHandleFlag
 		}
-		atomic.StoreUint32(&x.inited, uint32(f))
 		// ensure MapType and SliceType are of correct type
 		if x.MapType != nil && x.MapType.Kind() != reflect.Map {
 			halt.onerror(errMapTypeNotMapKind)
@@ -743,8 +773,10 @@ func (x *BasicHandle) init(hh Handle) {
 		if x.SliceType != nil && x.SliceType.Kind() != reflect.Slice {
 			halt.onerror(errSliceTypeNotSliceKind)
 		}
+		x.basicInit()
+		hh.init()
+		atomic.StoreUint32(&x.inited, uint32(f))
 	}
-	x.mu.Unlock()
 }
 
 func (x *BasicHandle) getBasicHandle() *BasicHandle {
@@ -834,7 +866,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 	fi.addrDf = true
 	fi.addrEf = true
 
-	if rtid == timeTypId && !x.TimeNotBuiltin {
+	if rtid == timeTypId && x.timeBuiltin {
 		fn.fe = (*Encoder).kTime
 		fn.fd = (*Decoder).kTime
 	} else if rtid == rawTypId {
@@ -1034,14 +1066,14 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 // Such a pre-configured Handle is safe for concurrent access.
 type Handle interface {
 	Name() string
-	// return the basic handle. It may not have been inited.
-	// Prefer to use basicHandle() helper function that ensures it has been inited.
 	getBasicHandle() *BasicHandle
 	newEncDriver() encDriver
 	newDecDriver() decDriver
 	isBinary() bool
 	// desc describes the current byte descriptor, or returns "unknown[XXX]" if not understood.
 	desc(bd byte) string
+	// init initializes the handle based on handle-specific info (beyond what is in BasicHandle)
+	init()
 }
 
 // Raw represents raw formatted bytes.
@@ -1273,13 +1305,13 @@ type extHandle []extTypeTagFn
 // To deregister an Ext, call AddExt with nil encfn and/or nil decfn.
 //
 // Deprecated: Use SetBytesExt or SetInterfaceExt on the Handle instead.
-func (o *extHandle) AddExt(rt reflect.Type, tag byte,
+func (x *BasicHandle) AddExt(rt reflect.Type, tag byte,
 	encfn func(reflect.Value) ([]byte, error),
 	decfn func(reflect.Value, []byte) error) (err error) {
 	if encfn == nil || decfn == nil {
-		return o.SetExt(rt, uint64(tag), nil)
+		return x.SetExt(rt, uint64(tag), nil)
 	}
-	return o.SetExt(rt, uint64(tag), addExtWrapper{encfn, decfn})
+	return x.SetExt(rt, uint64(tag), addExtWrapper{encfn, decfn})
 }
 
 // SetExt will set the extension for a tag and reflect.Type.
@@ -1288,10 +1320,10 @@ func (o *extHandle) AddExt(rt reflect.Type, tag byte,
 // To Deregister an ext, call SetExt with nil Ext.
 //
 // Deprecated: Use SetBytesExt or SetInterfaceExt on the Handle instead.
-func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
-	// o is a pointer, because we may need to initialize it
-	// We EXPECT *o is a pointer to a non-nil extHandle.
-
+func (x *BasicHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
+	if x.isInited() {
+		return errHandleInited
+	}
 	rk := rt.Kind()
 	for rk == reflect.Ptr {
 		rt = rt.Elem()
@@ -1310,16 +1342,15 @@ func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 		// Instead, we silently treat as a no-op, and return.
 		return
 	}
-	o2 := *o
-	for i := range o2 {
-		v := &o2[i]
+	for i := range x.extHandle {
+		v := &x.extHandle[i]
 		if v.rtid == rtid {
 			v.tag, v.ext = tag, ext
 			return
 		}
 	}
 	rtidptr := rt2id(reflect.PtrTo(rt))
-	*o = append(o2, extTypeTagFn{rtid, rtidptr, rt, tag, ext})
+	x.extHandle = append(x.extHandle, extTypeTagFn{rtid, rtidptr, rt, tag, ext})
 	return
 }
 

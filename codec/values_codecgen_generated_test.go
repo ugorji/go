@@ -7787,7 +7787,7 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 			z.EncWriteArrayElem()
 			z.EncFallback(x.Nintf)
 			z.EncWriteArrayElem()
-			if !z.EncBasicHandle().TimeNotBuiltin {
+			if z.EncBasicHandle().TimeBuiltin() {
 				r.EncodeTime(x.T)
 			} else if yyxt11 := z.Extension(x.T); yyxt11 != nil {
 				z.EncExtension(x.T, yyxt11)
@@ -7804,7 +7804,7 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 			} else {
 				z.EncWriteArrayElem()
 				yy12 := *x.Tptr
-				if !z.EncBasicHandle().TimeNotBuiltin {
+				if z.EncBasicHandle().TimeBuiltin() {
 					r.EncodeTime(yy12)
 				} else if yyxt13 := z.Extension(yy12); yyxt13 != nil {
 					z.EncExtension(yy12, yyxt13)
@@ -7858,7 +7858,7 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`T`)
 			}
 			z.EncWriteMapElemValue()
-			if !z.EncBasicHandle().TimeNotBuiltin {
+			if z.EncBasicHandle().TimeBuiltin() {
 				r.EncodeTime(x.T)
 			} else if yyxt17 := z.Extension(x.T); yyxt17 != nil {
 				z.EncExtension(x.T, yyxt17)
@@ -7880,7 +7880,7 @@ func (x *AnonInTestStrucIntf) CodecEncodeSelf(e *Encoder) {
 				r.EncodeNil()
 			} else {
 				yy18 := *x.Tptr
-				if !z.EncBasicHandle().TimeNotBuiltin {
+				if z.EncBasicHandle().TimeBuiltin() {
 					r.EncodeTime(yy18)
 				} else if yyxt19 := z.Extension(yy18); yyxt19 != nil {
 					z.EncExtension(yy18, yyxt19)
@@ -7948,7 +7948,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Nintf":
 			z.DecFallback(&x.Nintf, true)
 		case "T":
-			if !z.DecBasicHandle().TimeNotBuiltin {
+			if z.DecBasicHandle().TimeBuiltin() {
 				x.T = r.DecodeTime()
 			} else if yyxt11 := z.Extension(x.T); yyxt11 != nil {
 				z.DecExtension(&x.T, yyxt11)
@@ -7968,7 +7968,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.Tptr == nil {
 					x.Tptr = new(time.Time)
 				}
-				if !z.DecBasicHandle().TimeNotBuiltin {
+				if z.DecBasicHandle().TimeBuiltin() {
 					*x.Tptr = r.DecodeTime()
 				} else if yyxt13 := z.Extension(x.Tptr); yyxt13 != nil {
 					z.DecExtension(x.Tptr, yyxt13)
@@ -8040,7 +8040,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if !z.DecBasicHandle().TimeNotBuiltin {
+	if z.DecBasicHandle().TimeBuiltin() {
 		x.T = r.DecodeTime()
 	} else if yyxt22 := z.Extension(x.T); yyxt22 != nil {
 		z.DecExtension(&x.T, yyxt22)
@@ -8070,7 +8070,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.Tptr == nil {
 			x.Tptr = new(time.Time)
 		}
-		if !z.DecBasicHandle().TimeNotBuiltin {
+		if z.DecBasicHandle().TimeBuiltin() {
 			*x.Tptr = r.DecodeTime()
 		} else if yyxt24 := z.Extension(x.Tptr); yyxt24 != nil {
 			z.DecExtension(x.Tptr, yyxt24)
@@ -9876,7 +9876,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteArrayElem()
 			if yyq2[68] {
-				if !z.EncBasicHandle().TimeNotBuiltin {
+				if z.EncBasicHandle().TimeBuiltin() {
 					r.EncodeTime(x.Ttime)
 				} else if yyxt160 := z.Extension(x.Ttime); yyxt160 != nil {
 					z.EncExtension(x.Ttime, yyxt160)
@@ -9897,7 +9897,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				z.EncWriteArrayElem()
 				if yyq2[69] {
 					yy161 := *x.Ttimeptr
-					if !z.EncBasicHandle().TimeNotBuiltin {
+					if z.EncBasicHandle().TimeBuiltin() {
 						r.EncodeTime(yy161)
 					} else if yyxt162 := z.Extension(yy161); yyxt162 != nil {
 						z.EncExtension(yy161, yyxt162)
@@ -9959,7 +9959,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			} else {
 				z.EncWriteArrayElem()
 				if yyq2[73] {
-					if !z.EncBasicHandle().TimeNotBuiltin {
+					if z.EncBasicHandle().TimeBuiltin() {
 						r.EncodeTime(x.AnonInTestStrucIntf.T)
 					} else if yyxt166 := z.Extension(x.AnonInTestStrucIntf.T); yyxt166 != nil {
 						z.EncExtension(x.AnonInTestStrucIntf.T, yyxt166)
@@ -9981,7 +9981,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				z.EncWriteArrayElem()
 				if yyq2[74] {
 					yy167 := *x.AnonInTestStrucIntf.Tptr
-					if !z.EncBasicHandle().TimeNotBuiltin {
+					if z.EncBasicHandle().TimeBuiltin() {
 						r.EncodeTime(yy167)
 					} else if yyxt168 := z.Extension(yy167); yyxt168 != nil {
 						z.EncExtension(yy167, yyxt168)
@@ -10957,7 +10957,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					r.EncodeString(`Ttime`)
 				}
 				z.EncWriteMapElemValue()
-				if !z.EncBasicHandle().TimeNotBuiltin {
+				if z.EncBasicHandle().TimeBuiltin() {
 					r.EncodeTime(x.Ttime)
 				} else if yyxt251 := z.Extension(x.Ttime); yyxt251 != nil {
 					z.EncExtension(x.Ttime, yyxt251)
@@ -10981,7 +10981,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					r.EncodeNil()
 				} else {
 					yy252 := *x.Ttimeptr
-					if !z.EncBasicHandle().TimeNotBuiltin {
+					if z.EncBasicHandle().TimeBuiltin() {
 						r.EncodeTime(yy252)
 					} else if yyxt253 := z.Extension(yy252); yyxt253 != nil {
 						z.EncExtension(yy252, yyxt253)
@@ -11055,7 +11055,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if yyn76 {
 					r.EncodeNil()
 				} else {
-					if !z.EncBasicHandle().TimeNotBuiltin {
+					if z.EncBasicHandle().TimeBuiltin() {
 						r.EncodeTime(x.AnonInTestStrucIntf.T)
 					} else if yyxt257 := z.Extension(x.AnonInTestStrucIntf.T); yyxt257 != nil {
 						z.EncExtension(x.AnonInTestStrucIntf.T, yyxt257)
@@ -11080,7 +11080,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					r.EncodeNil()
 				} else {
 					yy258 := *x.AnonInTestStrucIntf.Tptr
-					if !z.EncBasicHandle().TimeNotBuiltin {
+					if z.EncBasicHandle().TimeBuiltin() {
 						r.EncodeTime(yy258)
 					} else if yyxt259 := z.Extension(yy258); yyxt259 != nil {
 						z.EncExtension(yy258, yyxt259)
@@ -11424,7 +11424,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "MstrUi64TSelf":
 			h.decMapstringUint64TPtrtostringUint64T((*map[stringUint64T]*stringUint64T)(&x.MstrUi64TSelf), d)
 		case "Ttime":
-			if !z.DecBasicHandle().TimeNotBuiltin {
+			if z.DecBasicHandle().TimeBuiltin() {
 				x.Ttime = r.DecodeTime()
 			} else if yyxt120 := z.Extension(x.Ttime); yyxt120 != nil {
 				z.DecExtension(&x.Ttime, yyxt120)
@@ -11444,7 +11444,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.Ttimeptr == nil {
 					x.Ttimeptr = new(time.Time)
 				}
-				if !z.DecBasicHandle().TimeNotBuiltin {
+				if z.DecBasicHandle().TimeBuiltin() {
 					*x.Ttimeptr = r.DecodeTime()
 				} else if yyxt122 := z.Extension(x.Ttimeptr); yyxt122 != nil {
 					z.DecExtension(x.Ttimeptr, yyxt122)
@@ -11498,7 +11498,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.AnonInTestStrucIntf == nil {
 					x.AnonInTestStrucIntf = new(AnonInTestStrucIntf)
 				}
-				if !z.DecBasicHandle().TimeNotBuiltin {
+				if z.DecBasicHandle().TimeBuiltin() {
 					x.AnonInTestStrucIntf.T = r.DecodeTime()
 				} else if yyxt130 := z.Extension(x.AnonInTestStrucIntf.T); yyxt130 != nil {
 					z.DecExtension(&x.AnonInTestStrucIntf.T, yyxt130)
@@ -11522,7 +11522,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.AnonInTestStrucIntf.Tptr == nil {
 					x.AnonInTestStrucIntf.Tptr = new(time.Time)
 				}
-				if !z.DecBasicHandle().TimeNotBuiltin {
+				if z.DecBasicHandle().TimeBuiltin() {
 					*x.AnonInTestStrucIntf.Tptr = r.DecodeTime()
 				} else if yyxt132 := z.Extension(x.AnonInTestStrucIntf.Tptr); yyxt132 != nil {
 					z.DecExtension(x.AnonInTestStrucIntf.Tptr, yyxt132)
@@ -12448,7 +12448,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	if !z.DecBasicHandle().TimeNotBuiltin {
+	if z.DecBasicHandle().TimeBuiltin() {
 		x.Ttime = r.DecodeTime()
 	} else if yyxt266 := z.Extension(x.Ttime); yyxt266 != nil {
 		z.DecExtension(&x.Ttime, yyxt266)
@@ -12478,7 +12478,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.Ttimeptr == nil {
 			x.Ttimeptr = new(time.Time)
 		}
-		if !z.DecBasicHandle().TimeNotBuiltin {
+		if z.DecBasicHandle().TimeBuiltin() {
 			*x.Ttimeptr = r.DecodeTime()
 		} else if yyxt268 := z.Extension(x.Ttimeptr); yyxt268 != nil {
 			z.DecExtension(x.Ttimeptr, yyxt268)
@@ -12572,7 +12572,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.AnonInTestStrucIntf == nil {
 			x.AnonInTestStrucIntf = new(AnonInTestStrucIntf)
 		}
-		if !z.DecBasicHandle().TimeNotBuiltin {
+		if z.DecBasicHandle().TimeBuiltin() {
 			x.AnonInTestStrucIntf.T = r.DecodeTime()
 		} else if yyxt276 := z.Extension(x.AnonInTestStrucIntf.T); yyxt276 != nil {
 			z.DecExtension(&x.AnonInTestStrucIntf.T, yyxt276)
@@ -12606,7 +12606,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.AnonInTestStrucIntf.Tptr == nil {
 			x.AnonInTestStrucIntf.Tptr = new(time.Time)
 		}
-		if !z.DecBasicHandle().TimeNotBuiltin {
+		if z.DecBasicHandle().TimeBuiltin() {
 			*x.AnonInTestStrucIntf.Tptr = r.DecodeTime()
 		} else if yyxt278 := z.Extension(x.AnonInTestStrucIntf.Tptr); yyxt278 != nil {
 			z.DecExtension(x.AnonInTestStrucIntf.Tptr, yyxt278)

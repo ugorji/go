@@ -1162,9 +1162,10 @@ func (d *Decoder) r() *decRd {
 }
 
 func (d *Decoder) init(h Handle) {
+	initHandle(h)
 	d.bytes = true
 	d.err = errDecoderNotInitialized
-	d.h = basicHandle(h)
+	d.h = h.getBasicHandle()
 	d.hh = h
 	d.be = h.isBinary()
 	if d.h.InternString {

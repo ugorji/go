@@ -15,6 +15,7 @@ import (
 )
 
 func TestCborIndefiniteLength(t *testing.T) {
+	defer testSetup(t)()
 	oldMapType := testCborH.MapType
 	defer func() {
 		testCborH.MapType = oldMapType
@@ -100,6 +101,7 @@ type testCborGolden struct {
 
 // Some tests are skipped because they include numbers outside the range of int64/uint64
 func TestCborGoldens(t *testing.T) {
+	defer testSetup(t)()
 	oldMapType := testCborH.MapType
 	defer func() {
 		testCborH.MapType = oldMapType
@@ -209,6 +211,7 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 }
 
 func TestCborHalfFloat(t *testing.T) {
+	defer testSetup(t)()
 	m := map[uint16]float64{
 		// using examples from
 		// https://en.wikipedia.org/wiki/Half-precision_floating-point_format
@@ -241,6 +244,7 @@ func TestCborHalfFloat(t *testing.T) {
 }
 
 func TestCborSkipTags(t *testing.T) {
+	defer testSetup(t)()
 	type Tcbortags struct {
 		A string
 		M map[string]interface{}
@@ -368,6 +372,7 @@ func TestCborSkipTags(t *testing.T) {
 }
 
 func TestCborMalformed(t *testing.T) {
+	defer testSetup(t)()
 	var bad = [][]byte{
 		[]byte("\x9b\x00\x00000000"),
 		[]byte("\x9b\x00\x00\x81112233"),

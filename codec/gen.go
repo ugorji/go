@@ -848,7 +848,7 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 	}
 
 	if t == timeTyp {
-		x.linef("%s !z.EncBasicHandle().TimeNotBuiltin { r.EncodeTime(%s%s)", hasIf.c(false), ptrPfx, varname)
+		x.linef("%s z.EncBasicHandle().TimeBuiltin() { r.EncodeTime(%s%s)", hasIf.c(false), ptrPfx, varname)
 		// return
 	}
 	if t == rawTyp {
@@ -1485,7 +1485,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		addrPfx = "&"
 	}
 	if t == timeTyp {
-		x.linef("%s !z.DecBasicHandle().TimeNotBuiltin { %s%v = r.DecodeTime()", hasIf.c(false), ptrPfx, varname)
+		x.linef("%s z.DecBasicHandle().TimeBuiltin() { %s%v = r.DecodeTime()", hasIf.c(false), ptrPfx, varname)
 		// return
 	}
 	if t == rawTyp {

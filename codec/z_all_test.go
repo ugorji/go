@@ -495,6 +495,7 @@ func TestCodecSuite(t *testing.T) {
 	// ---
 	testUseIoEncDec = 16
 	testRPCOptions.RPCNoBuffer = false
+	testReinit()
 	testRpcBufsize = 0
 	fnRun("rpc-buf-0", testRpcGroup)
 	testRpcBufsize = 0

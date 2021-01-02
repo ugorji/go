@@ -839,10 +839,11 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 }
 
 func (e *Encoder) init(h Handle) {
+	initHandle(h)
 	e.err = errEncoderNotInitialized
 	e.bytes = true
 	e.hh = h
-	e.h = basicHandle(h)
+	e.h = h.getBasicHandle()
 	e.be = e.hh.isBinary()
 }
 
