@@ -440,6 +440,7 @@ func testInit() {
 
 	for _, v := range testHandles {
 		bh := testBasicHandle(v)
+		bh.clearInited() // so it is reinitialized next time around
 		// pre-fill them first
 		bh.EncodeOptions = testEncodeOptions
 		bh.DecodeOptions = testDecodeOptions
