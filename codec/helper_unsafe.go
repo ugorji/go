@@ -956,7 +956,10 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
 // Note that as of Jan 2021 (go 1.16 release), go:linkname(s) are not inlined
 // outside of the standard library use (e.g. within sync, reflect, etc).
 //
-// Consequently, these do not necessarily give a performance boost, as a function overhead
+// Consequently, these do not necessarily give a performance boost, as a function overhead.
+//
+// Also, we link to the functions in reflect where possible, as opposed to those in runtime.
+// They are guaranteed to be safer for our use, even when they are just trampoline functions.
 
 //go:linkname maplen reflect.maplen
 //go:noescape
@@ -986,29 +989,25 @@ func mapassign(typ unsafe.Pointer, m unsafe.Pointer, key, val unsafe.Pointer)
 //go:noescape
 func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
 
-//go:linkname typedmemmove runtime.typedmemmove
+//go:linkname unsafe_New reflect.unsafe_New
 //go:noescape
-func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
-
-//go:linkname typedmemclr runtime.typedmemclr
-//go:noescape
-func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
+func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
 
 //go:linkname typedslicecopy reflect.typedslicecopy
 //go:noescape
 func typedslicecopy(elemType unsafe.Pointer, dst, src unsafeSlice) int
 
-//go:linkname unsafe_New reflect.unsafe_New
+//go:linkname typedmemmove reflect.typedmemmove
 //go:noescape
-func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
+func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
+
+//go:linkname typedmemclr reflect.typedmemclr
+//go:noescape
+func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
 
 //go:linkname memhash runtime.memhash
 //go:noescape
 func memhash(p unsafe.Pointer, seed, length uintptr) uintptr
-
-// //go:linkname memmove reflect.memmove
-// //go:noescape
-// func memmove(dst, src unsafe.Pointer, n int)
 
 // ---------- others ---------------
 
@@ -1017,3 +1016,5 @@ func hashShortString(b []byte) uintptr {
 }
 
 // var _ = runtime.MemProfileRate
+// func maplen(typ unsafe.Pointer) int { return *((*int)(typ)) }
+// func chanlen(typ unsafe.Pointer) int { return int(*((*uint)(typ))) }
