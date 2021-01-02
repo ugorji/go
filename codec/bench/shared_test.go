@@ -127,6 +127,7 @@ func init() {
 		testMsgpackH, testBincH, testSimpleH, testCborH, testJsonH)
 	// JSON should do HTMLCharsAsIs by default
 	testJsonH.HTMLCharsAsIs = true
+	// testJsonH.InternString = true
 	testInitFlags()
 	benchInitFlags()
 }

@@ -1173,13 +1173,6 @@ func (d *jsonDecDriver) nakedNum(z *fauxUnion, bs []byte) (err error) {
 	return
 }
 
-func (d *jsonDecDriver) sliceToString(bs []byte) string {
-	if d.d.is != nil && (jsonAlwaysReturnInternString || d.d.c == containerMapKey) {
-		return d.d.string(bs)
-	}
-	return string(bs)
-}
-
 func (d *jsonDecDriver) DecodeNaked() {
 	z := d.d.naked()
 
@@ -1218,12 +1211,12 @@ func (d *jsonDecDriver) DecodeNaked() {
 				// check if a number: float, int or uint
 				if err := d.nakedNum(z, bs); err != nil {
 					z.v = valueTypeString
-					z.s = d.sliceToString(bs)
+					z.s = d.d.string(bs)
 				}
 			}
 		} else {
 			z.v = valueTypeString
-			z.s = d.sliceToString(bs)
+			z.s = d.d.string(bs)
 		}
 	default: // number
 		bs = d.d.decRd.jsonReadNum()

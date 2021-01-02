@@ -1117,7 +1117,8 @@ type Decoder struct {
 	hh  Handle
 	err error
 
-	is map[string]string // used for interning strings
+	// used for interning strings
+	is internerMap
 
 	// ---- cpu cache line boundary?
 	// ---- writable fields during execution --- *try* to keep in sep cache line
@@ -1166,10 +1167,10 @@ func (d *Decoder) init(h Handle) {
 	d.h = basicHandle(h)
 	d.hh = h
 	d.be = h.isBinary()
-	// NOTE: do not initialize d.n here. It is lazily initialized in d.naked()
 	if d.h.InternString {
-		d.is = make(map[string]string, 32)
+		d.is.init()
 	}
+	// NOTE: do not initialize d.n here. It is lazily initialized in d.naked()
 }
 
 func (d *Decoder) resetCommon() {
@@ -1177,13 +1178,15 @@ func (d *Decoder) resetCommon() {
 	d.err = nil
 	d.depth = 0
 	d.calls = 0
-	d.maxdepth = d.h.MaxDepth
-	if d.maxdepth <= 0 {
-		d.maxdepth = decDefMaxDepth
+	d.maxdepth = decDefMaxDepth
+	if d.h.MaxDepth > 0 {
+		d.maxdepth = d.h.MaxDepth
 	}
 	// reset all things which were cached from the Handle, but could change
-	d.mtid, d.stid = 0, 0
-	d.mtr, d.str = false, false
+	d.mtid = 0
+	d.stid = 0
+	d.mtr = false
+	d.str = false
 	if d.h.MapType != nil {
 		d.mtid = rt2id(d.h.MapType)
 		d.mtr = fastpathAvIndex(d.mtid) != -1
@@ -1575,26 +1578,6 @@ func (d *Decoder) arrayCannotExpand(sliceLen, streamLen int) {
 	}
 }
 
-// isDecodeable checks if value can be decoded into
-//
-// decode can take any reflect.Value that is a inherently addressable i.e.
-//   - array
-//   - non-nil chan    (we will SEND to it)
-//   - non-nil slice   (we will set its elements)
-//   - non-nil map     (we will put into it)
-//   - non-nil pointer (we can "update" it)
-func isDecodeable(rv reflect.Value) (canDecode bool) {
-	switch rv.Kind() {
-	case reflect.Array:
-		canDecode = rv.CanAddr()
-	case reflect.Ptr, reflect.Slice, reflect.Chan, reflect.Map:
-		if !rvIsNil(rv) {
-			canDecode = true
-		}
-	}
-	return
-}
-
 // func (d *Decoder) ensureDecodeable(rv reflect.Value) {
 // 	if !isDecodeable(rv) {
 // 		d.haltAsNotDecodeable(rv)
@@ -1622,23 +1605,15 @@ func (d *Decoder) depthDecr() {
 	d.depth--
 }
 
-// Possibly get an interned version of a string
+// Possibly get an interned version of a string, iff InternString=true and decoding a map key.
 //
 // This should mostly be used for map keys, where the key type is string.
 // This is because keys of a map/struct are typically reused across many objects.
 func (d *Decoder) string(v []byte) (s string) {
-	if v == nil {
-		return
-	}
-	if d.is == nil {
+	if !d.h.InternString || d.c != containerMapKey || len(v) < 2 || len(v) > internMaxStrLen {
 		return string(v)
 	}
-	s, ok := d.is[string(v)] // no allocation here, per go implementation
-	if !ok {
-		s = string(v) // new allocation here
-		d.is[s] = s
-	}
-	return
+	return d.is.string(v)
 }
 
 func (d *Decoder) rawBytes() (v []byte) {
@@ -1774,6 +1749,17 @@ func (d *Decoder) sideDecode(v interface{}, bs []byte) {
 	NewDecoderBytes(bs, d.hh).decodeValue(rv, d.h.fnNoExt(rvType(rv)))
 }
 
+func (d *Decoder) fauxUnionReadRawBytes() {
+	if d.h.RawToString {
+		d.n.v = valueTypeString
+		// fauxUnion is only used within DecodeNaked calls; consequently, we should try to intern.
+		d.n.s = d.string(d.d.DecodeBytes(d.b[:], true))
+	} else {
+		d.n.v = valueTypeBytes
+		d.n.l = d.d.DecodeBytes(nil, false)
+	}
+}
+
 // --------------------------------------------------
 
 // decSliceHelper assists when decoding into a slice, from a map or an array in the stream.
@@ -1824,6 +1810,26 @@ func (x decSliceHelper) ElemContainerState(index int) {
 	} else {
 		x.d.mapElemValue()
 	}
+}
+
+// isDecodeable checks if value can be decoded into
+//
+// decode can take any reflect.Value that is a inherently addressable i.e.
+//   - array
+//   - non-nil chan    (we will SEND to it)
+//   - non-nil slice   (we will set its elements)
+//   - non-nil map     (we will put into it)
+//   - non-nil pointer (we can "update" it)
+func isDecodeable(rv reflect.Value) (canDecode bool) {
+	switch rv.Kind() {
+	case reflect.Array:
+		canDecode = rv.CanAddr()
+	case reflect.Ptr, reflect.Slice, reflect.Chan, reflect.Map:
+		if !rvIsNil(rv) {
+			canDecode = true
+		}
+	}
+	return
 }
 
 func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
@@ -1922,16 +1928,6 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 		rvlen = clen
 	}
 	return
-}
-
-func fauxUnionReadRawBytes(dr decDriver, d *Decoder, n *fauxUnion, rawToString bool) {
-	if rawToString {
-		n.v = valueTypeString
-		n.s = string(dr.DecodeBytes(d.b[:], true))
-	} else {
-		n.v = valueTypeBytes
-		n.l = dr.DecodeBytes(nil, false)
-	}
 }
 
 func decArrayCannotExpand(slh decSliceHelper, hasLen bool, lenv, j, containerLenS int) {

@@ -262,3 +262,6 @@ func (f genHelperDecoder) DecDecodeFloat32() float32 { return f.d.decodeFloat32(
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecCheckBreak() bool { return f.d.checkBreak() }
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperDecoder) DecString(v []byte) string { return f.d.string(v) }

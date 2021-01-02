@@ -9,7 +9,7 @@ package codec
 
 import (
 	"reflect"
-	"runtime"
+	_ "runtime" // needed so that gccgo works with go linkname(s)
 	"sync/atomic"
 	"time"
 	"unsafe"
@@ -990,12 +990,22 @@ func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
 //go:noescape
 func typedslicecopy(elemType unsafe.Pointer, dst, src unsafeSlice) int
 
-// //go:linkname memmove reflect.memmove
-// //go:noescape
-// func memmove(dst, src unsafe.Pointer, n int)
-
 //go:linkname unsafe_New reflect.unsafe_New
 //go:noescape
 func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
 
-var _ = runtime.MemProfileRate
+//go:linkname memhash runtime.memhash
+//go:noescape
+func memhash(p unsafe.Pointer, seed, length uintptr) uintptr
+
+// //go:linkname memmove reflect.memmove
+// //go:noescape
+// func memmove(dst, src unsafe.Pointer, n int)
+
+// ---------- others ---------------
+
+func hashShortString(b []byte) uintptr {
+	return memhash(unsafe.Pointer(&b[0]), 0, uintptr(len(b)))
+}
+
+// var _ = runtime.MemProfileRate

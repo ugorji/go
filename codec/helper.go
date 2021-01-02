@@ -1603,10 +1603,8 @@ func (ti *typeInfo) siForEncName(name string) (si *structFieldInfo) {
 	return ti.sfi4Name[name]
 }
 
-// resolves the struct field info got from a call to rget.
-// Returns a trimmed, unsorted and sorted []*structFieldInfo.
-func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
-	n := len(x)
+func (ti *typeInfo) resolve(x []structFieldInfo, ss map[string]uint16) (n int) {
+	n = len(x)
 
 	for i := range x {
 		ui := uint16(i)
@@ -1627,6 +1625,10 @@ func (ti *typeInfo) init(x []structFieldInfo, ss map[string]uint16) {
 		}
 	}
 
+	return
+}
+
+func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	var anyOmitEmpty bool
 
 	// remove all the nils (non-ready)
@@ -1801,7 +1803,8 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		pv.reset()
 		pv.etypes = append(pv.etypes, ti.rtid)
 		x.rget(rt, rtid, omitEmpty, nil, pv)
-		ti.init(pv.sfis, pv.sfiNames)
+		n := ti.resolve(pv.sfis, pv.sfiNames)
+		ti.init(pv.sfis, n)
 		pp.Put(pi)
 	case reflect.Map:
 		ti.elem = rt.Elem()
@@ -2533,4 +2536,84 @@ func (x *sfiRvFreelist) put(v []sfiRv) {
 			return
 		}
 	}
+}
+
+// ---- multiple interner implementations ----
+
+// Hard to tell which is most performant:
+//   - use a map[string]string - worst perf, no collisions, and unlimited entries
+//   - use a linear search with move to front heuristics - no collisions, and maxed at 64 entries
+//   - use a computationally-intensive hash - best performance, some collisions, maxed at 64 entries
+
+const (
+	internMaxStrLen = 16     // if more than 16 bytes, faster to copy than compare bytes
+	internCap       = 64 * 2 // 64 uses 1K bytes RAM, so 128 (anecdotal sweet spot) uses 2K bytes
+)
+
+type internerMap map[string]string
+
+func (x *internerMap) init() {
+	*x = make(map[string]string, internCap)
+}
+
+func (x internerMap) string(v []byte) (s string) {
+	s, ok := x[string(v)] // no allocation here, per go implementation
+	if !ok {
+		s = string(v) // new allocation here
+		x[s] = s
+	}
+	return
+}
+
+type internerHash struct {
+	v *[internCap]string
+}
+
+func (x *internerHash) init() {
+	var v [internCap]string
+	x.v = &v
+}
+
+func (x *internerHash) string(v []byte) (s string) {
+	h := hashShortString(v) % internCap
+	s = x.v[h]
+	if s != string(v) {
+		s = string(v)
+		x.v[h] = s
+	}
+	return
+}
+
+type internerLinearSearch struct {
+	v *[internCap]string
+}
+
+func (x *internerLinearSearch) init() {
+	var v [internCap]string
+	x.v = &v
+}
+
+func (x *internerLinearSearch) string(v []byte) (s string) {
+	// MARKER: should we move to front, given that we typically might see the field names in sequence?
+	// if most values are encoded in sequence based on field names, then moving is busy work.
+	// Howeer, if most values are accessed randomly, then moving has advantages.
+	const moveToFront = true
+	var i int
+	for i, s = range x.v {
+		if s == "" {
+			s = string(v)
+			x.v[i] = s
+			goto END
+		}
+		if s == string(v) {
+			goto END
+		}
+	}
+	s = string(v)
+END:
+	if moveToFront && i > 0 {
+		copy(x.v[1:], x.v[:i])
+		x.v[0] = s
+	}
+	return s
 }

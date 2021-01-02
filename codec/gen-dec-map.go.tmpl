@@ -23,7 +23,7 @@ if {{var "l"}} != 0 {
 	{{ $x := printf "%vmk%v" .TempVar .Rand }}{{ decLineVarK $x -}}
 	{{ if eq .KTyp "interface{}" }}{{/* // special case if a byte array. */ -}}
     if {{var "bv"}}, {{var "bok"}} := {{var "mk"}}.([]byte); {{var "bok"}} {
-		{{var "mk"}} = string({{var "bv"}})
+		{{var "mk"}} = z.DecString({{var "bv"}})
 	}
     {{ end -}}
     {{if decElemKindPtr -}}

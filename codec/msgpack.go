@@ -483,13 +483,13 @@ func (d *msgpackDecDriver) DecodeNaked() {
 		case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
 			if d.h.WriteExt || d.h.RawToString {
 				n.v = valueTypeString
-				n.s = string(d.DecodeStringAsBytes())
+				n.s = d.d.string(d.DecodeStringAsBytes())
 			} else {
 				n.v = valueTypeBytes
 				n.l = d.DecodeBytes(nil, false)
 			}
 		case bd == mpBin8, bd == mpBin16, bd == mpBin32:
-			fauxUnionReadRawBytes(d, &d.d, n, d.h.RawToString)
+			d.d.fauxUnionReadRawBytes()
 		case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
 			n.v = valueTypeArray
 			decodeFurther = true
