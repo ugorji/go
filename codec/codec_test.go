@@ -1096,7 +1096,6 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 		t.FailNow()
 	}
 
-	// log("m: %v, m2: %v, p: %v, p2: %v", m, m2, p, p2)
 	testCheckEqual(t, p, p2, "p=p2")
 	testCheckEqual(t, m, m2, "m=m2")
 	if err = deepEqual(p, p2); err == nil {
@@ -1368,7 +1367,6 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 	if testVerbose {
 		t.Logf("connFn: addr: %v, network: %v, port: %v", ln.Addr(), ln.Addr().Network(), (ln.Addr().(*net.TCPAddr)).Port)
 	}
-	// log("listener: %v", ln.Addr())
 	testCheckErr(t, err)
 	port = (ln.Addr().(*net.TCPAddr)).Port
 	// var opts *DecoderOptions
@@ -1403,9 +1401,7 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 		//	defer func() { println("##### client closing"); cl.Close() }()
 		var up, sq, mult int
 		var rstr string
-		// log("Calling client")
 		testCheckErr(t, cl.Call("TestRpcInt.Update", 5, &up))
-		// log("Called TestRpcInt.Update")
 		testCheckEqual(t, testRpcInt.i, 5, "testRpcInt.i=5")
 		testCheckEqual(t, up, 5, "up=5")
 		testCheckErr(t, cl.Call("TestRpcInt.Square", 1, &sq))
@@ -1419,7 +1415,6 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 	}
 
 	connFn := func() (bs net.Conn) {
-		// log("calling f1")
 		bs, err2 := net.Dial(ln.Addr().Network(), ln.Addr().String())
 		testCheckErr(t, err2)
 		return

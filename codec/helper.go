@@ -2071,17 +2071,17 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	if ti.rtid == timeTypId {
 		return rv2i(v).(time.Time).IsZero()
 	}
-	if ti.flagIsZeroerPtr && v.CanAddr() {
-		return rv2i(v.Addr()).(isZeroer).IsZero()
-	}
 	if ti.flagIsZeroer {
 		return rv2i(v).(isZeroer).IsZero()
 	}
-	if ti.flagIsCodecEmptyerPtr && v.CanAddr() {
-		return rv2i(v.Addr()).(isCodecEmptyer).IsCodecEmpty()
+	if ti.flagIsZeroerPtr && v.CanAddr() {
+		return rv2i(v.Addr()).(isZeroer).IsZero()
 	}
 	if ti.flagIsCodecEmptyer {
 		return rv2i(v).(isCodecEmptyer).IsCodecEmpty()
+	}
+	if ti.flagIsCodecEmptyerPtr && v.CanAddr() {
+		return rv2i(v.Addr()).(isCodecEmptyer).IsCodecEmpty()
 	}
 	if ti.flagComparable {
 		return rv2i(v) == rv2i(rvZeroK(vt, reflect.Struct))

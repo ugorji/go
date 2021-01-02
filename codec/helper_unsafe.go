@@ -1,9 +1,12 @@
 // +build !safe
 // +build !appengine
-// +build go1.7
+// +build go1.8
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
+
+// go 1.8 is needed, as that is when all linknames exist.
+// specifically, typedmemclr was introduced in go 1.8
 
 package codec
 
@@ -949,6 +952,11 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
 // ---------- go linknames (LINKED to runtime/reflect) ---------------
 
 // MARKER: always check that these linknames match subsequent versions of go
+//
+// Note that as of Jan 2021 (go 1.16 release), go:linkname(s) are not inlined
+// outside of the standard library use (e.g. within sync, reflect, etc).
+//
+// Consequently, these do not necessarily give a performance boost, as a function overhead
 
 //go:linkname maplen reflect.maplen
 //go:noescape
