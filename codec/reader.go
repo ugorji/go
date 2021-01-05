@@ -10,7 +10,6 @@ import "io"
 type decReader interface {
 	// readx will use the implementation scratch buffer if possible i.e. n < len(scratchbuf), OR
 	// just return a view of the []byte being decoded from.
-	// Ensure you call detachZeroCopyBytes later if this needs to be sent outside codec control.
 	readx(n uint) []byte
 	readb([]byte)
 

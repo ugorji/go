@@ -1530,7 +1530,7 @@ func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 	if !bytes.Equal(b1t, b2t) {
 		t.Logf("Unequal bytes of length: %v vs %v", len(b1t), len(b2t))
 		if testVerbose {
-			t.Logf("Unequal bytes: %v VS %v", b1t, b2t)
+			t.Logf("Unequal bytes: \n\t%v \n\tVS \n\t%v", b1t, b2t)
 		}
 		t.FailNow()
 	}

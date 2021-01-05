@@ -119,7 +119,8 @@ import (
 // v18: 20201004 changed definition of genHelper...Extension (to take interface{}) and eliminated I2Rtid method
 // v19: 20201115 updated codecgen cmdline flags and optimized output
 // v20: 20201120 refactored GenHelper to one exported function
-const genVersion = 20
+// v21: 20210104 refactored generated code to honor ZeroCopy=true for more efficiency
+const genVersion = 21
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go
@@ -154,6 +155,11 @@ const (
 )
 
 type genStructMapStyle uint8
+type genStringDecAsBytes string
+type genStringDecZC string
+
+var genStringDecAsBytesTyp = reflect.TypeOf(genStringDecAsBytes(""))
+var genStringDecZCTyp = reflect.TypeOf(genStringDecZC(""))
 
 const (
 	genStructMapStyleConsolidated genStructMapStyle = iota
@@ -862,7 +868,8 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 	// only check for extensions if extensions are configured,
 	// and the type is named, and has a packagePath,
 	// and this is not the CodecEncodeSelf or CodecDecodeSelf method (i.e. it is not a Selfer)
-	if !x.nx && varname != genTopLevelVarName && genImportPath(t) != "" && t.Name() != "" {
+	if !x.nx && varname != genTopLevelVarName && t != genStringDecAsBytesTyp &&
+		t != genStringDecZCTyp && genImportPath(t) != "" && t.Name() != "" {
 		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
 		x.linef("%s %s := z.Extension(%s); %s != nil { z.EncExtension(%s, %s) ",
 			hasIf.c(false), yy, varname, yy, varname, yy)
@@ -1502,7 +1509,8 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	// and the type is named, and has a packagePath,
 	// and this is not the CodecEncodeSelf or CodecDecodeSelf method (i.e. it is not a Selfer)
 	// xdebugf("genRunner.dec: varname: %v, t: %v, genImportPath: %v, t.Name: %v", varname, t, genImportPath(t), t.Name())
-	if !x.nx && varname != genTopLevelVarName && genImportPath(t) != "" && t.Name() != "" {
+	if !x.nx && varname != genTopLevelVarName && t != genStringDecAsBytesTyp &&
+		t != genStringDecZCTyp && genImportPath(t) != "" && t.Name() != "" {
 		// first check if extensions are configued, before doing the interface conversion
 		yy := fmt.Sprintf("%sxt%s", genTempVarPfx, mi)
 		x.linef("%s %s := z.Extension(%s); %s != nil { z.DecExtension(%s%s, %s) ", hasIf.c(false), yy, varname, yy, addrPfx, varname, yy)
@@ -1572,7 +1580,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		// - if elements are primitives or Selfers, call dedicated function on each member.
 		// - else call Encoder.encode(XXX) on it.
 		if rtid == uint8SliceTypId {
-			x.linef("%s%s = r.DecodeBytes(%s(%s[]byte)(%s), false)",
+			x.linef("%s%s = z.DecodeBytesInto(%s(%s[]byte)(%s))",
 				ptrPfx, varname, ptrPfx, ptrPfx, varname)
 		} else if fastpathAvIndex(rtid) != -1 {
 			g := x.newFastpathGenV(t)
@@ -1656,7 +1664,13 @@ func (x *genRunner) decTryAssignPrimitive(varname string, t reflect.Type, isptr 
 	case reflect.Bool:
 		x.linef("%s%s = (%s)(r.DecodeBool())", ptr, varname, x.genTypeName(t))
 	case reflect.String:
-		x.linef("%s%s = (%s)(string(r.DecodeStringAsBytes()))", ptr, varname, x.genTypeName(t))
+		if t == genStringDecAsBytesTyp {
+			x.linef("%s%s = r.DecodeStringAsBytes()", ptr, varname)
+		} else if t == genStringDecZCTyp {
+			x.linef("%s%s = (string)(z.DecStringZC(r.DecodeStringAsBytes()))", ptr, varname)
+		} else {
+			x.linef("%s%s = (%s)(z.DecStringZC(r.DecodeStringAsBytes()))", ptr, varname, x.genTypeName(t))
+		}
 	default:
 		return false
 	}
@@ -1665,11 +1679,11 @@ func (x *genRunner) decTryAssignPrimitive(varname string, t reflect.Type, isptr 
 
 func (x *genRunner) decListFallback(varname string, rtid uintptr, t reflect.Type) {
 	if t.AssignableTo(uint8SliceTyp) {
-		x.line("*" + varname + " = r.DecodeBytes(*((*[]byte)(" + varname + ")), false)")
+		x.line("*" + varname + " = z.DecodeBytesInto(*((*[]byte)(" + varname + ")))")
 		return
 	}
 	if t.Kind() == reflect.Array && t.Elem().Kind() == reflect.Uint8 {
-		x.linef("r.DecodeBytes( ((*[%d]byte)(%s))[:], true)", t.Len(), varname)
+		x.linef("r.DecodeBytes( ((*[%d]byte)(%s))[:])", t.Len(), varname)
 		return
 	}
 	type tstruc struct {
@@ -1744,6 +1758,14 @@ func (x *genRunner) decMapFallback(varname string, rtid uintptr, t reflect.Type)
 	funcs["decElemKindIntf"] = func() bool {
 		return telem.Kind() == reflect.Interface
 	}
+	funcs["decLineVarKStrBytes"] = func(varname string) string {
+		x.decVar(varname, "", genStringDecAsBytesTyp, false, true)
+		return ""
+	}
+	funcs["decLineVarKStrZC"] = func(varname string) string {
+		x.decVar(varname, "", genStringDecZCTyp, false, true)
+		return ""
+	}
 	funcs["decLineVarK"] = func(varname string) string {
 		x.decVar(varname, "", tkey, false, true)
 		return ""
@@ -1767,7 +1789,7 @@ func (x *genRunner) decMapFallback(varname string, rtid uintptr, t reflect.Type)
 func (x *genRunner) decStructMapSwitch(kName string, varname string, rtid uintptr, t reflect.Type) {
 	ti := x.ti.get(rtid, t)
 	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
-	x.line("switch (" + kName + ") {")
+	x.line("switch string(" + kName + ") {")
 	var newbuf, nilbuf genBuf
 	for _, si := range tisfi {
 		x.line("case \"" + si.encName + "\":")
@@ -1784,7 +1806,7 @@ func (x *genRunner) decStructMapSwitch(kName string, varname string, rtid uintpt
 	}
 	x.line("default:")
 	// pass the slice here, so that the string will not escape, and maybe save allocation
-	x.linef("z.DecStructFieldNotFound(-1, %s)", kName)
+	x.linef("z.DecStructFieldNotFound(-1, string(%s))", kName)
 	x.linef("} // end switch %s", kName)
 }
 
@@ -1810,13 +1832,13 @@ func (x *genRunner) decStructMap(varname, lenvarname string, rtid uintptr, t ref
 	// emulate decstructfieldkey
 	switch ti.keyType {
 	case valueTypeInt:
-		x.linef("%s := z.StringView(strconv.AppendInt(z.DecScratchArrayBuffer()[:0], r.DecodeInt64(), 10))", kName)
+		x.linef("%s := strconv.AppendInt(z.DecScratchArrayBuffer()[:0], r.DecodeInt64(), 10)", kName)
 	case valueTypeUint:
-		x.linef("%s := z.StringView(strconv.AppendUint(z.DecScratchArrayBuffer()[:0], r.DecodeUint64(), 10))", kName)
+		x.linef("%s := strconv.AppendUint(z.DecScratchArrayBuffer()[:0], r.DecodeUint64(), 10)", kName)
 	case valueTypeFloat:
-		x.linef("%s := z.StringView(strconv.AppendFloat(z.DecScratchArrayBuffer()[:0], r.DecodeFloat64(), 'f', -1, 64))", kName)
+		x.linef("%s := strconv.AppendFloat(z.DecScratchArrayBuffer()[:0], r.DecodeFloat64(), 'f', -1, 64)", kName)
 	default: // string
-		x.linef("%s := z.StringView(r.DecodeStringAsBytes())", kName)
+		x.linef("%s := r.DecodeStringAsBytes()", kName)
 	}
 
 	x.line("z.DecReadMapElemValue()")
@@ -2175,7 +2197,8 @@ func genInternalEncCommandAsString(s string, vname string) string {
 	}
 }
 
-func genInternalDecCommandAsString(s string) string {
+// used for fastpath only
+func genInternalDecCommandAsString(s string, mapkey bool) string {
 	switch s {
 	case "uint":
 		return "uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))"
@@ -2201,9 +2224,13 @@ func genInternalDecCommandAsString(s string) string {
 		return "d.d.DecodeInt64()"
 
 	case "string":
-		return "string(d.d.DecodeStringAsBytes())"
+		// if mapkey {
+		// 	return "d.stringZC(d.d.DecodeStringAsBytes())"
+		// }
+		// return "string(d.d.DecodeStringAsBytes())"
+		return "d.stringZC(d.d.DecodeStringAsBytes())"
 	case "[]byte", "[]uint8", "bytes":
-		return "d.d.DecodeBytes(nil, false)"
+		return "d.d.DecodeBytes([]byte{})"
 	case "float32":
 		return "float32(d.decodeFloat32())"
 	case "float64":

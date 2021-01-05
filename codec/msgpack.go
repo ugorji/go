@@ -481,15 +481,16 @@ func (d *msgpackDecDriver) DecodeNaked() {
 			n.v = valueTypeInt
 			n.i = int64(int8(bd))
 		case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
-			if d.h.WriteExt || d.h.RawToString {
-				n.v = valueTypeString
-				n.s = d.d.string(d.DecodeStringAsBytes())
-			} else {
-				n.v = valueTypeBytes
-				n.l = d.DecodeBytes(nil, false)
-			}
+			d.d.fauxUnionReadRawBytes(d.h.WriteExt)
+			// if d.h.WriteExt || d.h.RawToString {
+			// 	n.v = valueTypeString
+			// 	n.s = d.d.stringZC(d.DecodeStringAsBytes())
+			// } else {
+			// 	n.v = valueTypeBytes
+			// 	n.l = d.DecodeBytes([]byte{})
+			// }
 		case bd == mpBin8, bd == mpBin16, bd == mpBin32:
-			d.d.fauxUnionReadRawBytes()
+			d.d.fauxUnionReadRawBytes(false)
 		case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
 			n.v = valueTypeArray
 			decodeFurther = true
@@ -774,7 +775,8 @@ func (d *msgpackDecDriver) DecodeBool() (b bool) {
 	return
 }
 
-func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
+func (d *msgpackDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
+	d.d.decByteState = decByteStateNone
 	if d.advanceNil() {
 		return
 	}
@@ -789,12 +791,16 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 	} else if bd == mpArray16 || bd == mpArray32 ||
 		(bd >= mpFixArrayMin && bd <= mpFixArrayMax) {
 		// check if an "array" of uint8's
-		if zerocopy && len(bs) == 0 {
+		if bs == nil {
+			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:]
 		}
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		slen := d.ReadArrayStart()
-		bs = usableByteSlice(bs, slen)
+		var changed bool
+		if bs, changed = usableByteSlice(bs, slen); changed {
+			d.d.decByteState = decByteStateNone
+		}
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
@@ -804,17 +810,19 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) 
 	}
 
 	d.bdRead = false
-	if d.d.bytes && (zerocopy || d.h.ZeroCopy) {
+	if d.d.bytes && d.h.ZeroCopy {
+		d.d.decByteState = decByteStateZerocopy
 		return d.d.decRd.rb.readx(uint(clen))
 	}
-	if zerocopy && len(bs) == 0 {
+	if bs == nil {
+		d.d.decByteState = decByteStateReuseBuf
 		bs = d.d.b[:]
 	}
 	return decByteSlice(d.d.r(), clen, d.h.MaxInitLen, bs)
 }
 
 func (d *msgpackDecDriver) DecodeStringAsBytes() (s []byte) {
-	return d.DecodeBytes(d.d.b[:], true)
+	return d.DecodeBytes(nil)
 }
 
 func (d *msgpackDecDriver) readNextBd() {
@@ -970,12 +978,12 @@ func (d *msgpackDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 	if d.advanceNil() {
 		return
 	}
-	realxtag1, xbs := d.decodeExtV(ext != nil, uint8(xtag))
+	xbs, realxtag1, zerocopy := d.decodeExtV(ext != nil, uint8(xtag))
 	realxtag := uint64(realxtag1)
 	if ext == nil {
 		re := rv.(*RawExt)
 		re.Tag = realxtag
-		re.Data = detachZeroCopyBytes(d.d.bytes, re.Data, xbs)
+		re.setData(xbs, zerocopy)
 	} else if ext == SelfExt {
 		d.d.sideDecode(rv, xbs)
 	} else {
@@ -983,10 +991,10 @@ func (d *msgpackDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 	}
 }
 
-func (d *msgpackDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
+func (d *msgpackDecDriver) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xtag byte, zerocopy bool) {
 	xbd := d.bd
 	if xbd == mpBin8 || xbd == mpBin16 || xbd == mpBin32 {
-		xbs = d.DecodeBytes(nil, true)
+		xbs = d.DecodeBytes(nil)
 	} else if xbd == mpStr8 || xbd == mpStr16 || xbd == mpStr32 ||
 		(xbd >= mpFixStrMin && xbd <= mpFixStrMax) {
 		xbs = d.DecodeStringAsBytes()
@@ -998,6 +1006,7 @@ func (d *msgpackDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs 
 		}
 		if d.d.bytes {
 			xbs = d.d.decRd.rb.readx(uint(clen))
+			zerocopy = true
 		} else {
 			xbs = decByteSlice(d.d.r(), clen, d.d.h.MaxInitLen, d.d.b[:])
 		}

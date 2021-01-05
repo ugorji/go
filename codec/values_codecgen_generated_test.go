@@ -38,10 +38,10 @@ func codecSelfer19780False() bool { return false }
 func codecSelfer19780True() bool  { return true }
 
 func init() {
-	if GenVersion != 20 {
+	if GenVersion != 21 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic(errors.New("codecgen version mismatch: current: 20, need " + ver + ". Re-generate file: " + file))
+		panic(errors.New("codecgen version mismatch: current: 21, need " + ver + ". Re-generate file: " + file))
 	}
 	if false { // reference the types, but skip this branch at build/run time
 		var _ time.Time
@@ -109,7 +109,7 @@ func (x *wrapString) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
-	*x = (wrapString)(string(r.DecodeStringAsBytes()))
+	*x = (wrapString)(z.DecStringZC(r.DecodeStringAsBytes()))
 }
 
 func (x wrapUint64Slice) CodecEncodeSelf(e *Encoder) {
@@ -229,15 +229,15 @@ func (x *stringUint64T) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "S":
-			x.S = (string)(string(r.DecodeStringAsBytes()))
+			x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "U":
 			x.U = (uint64)(r.DecodeUint64())
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -260,7 +260,7 @@ func (x *stringUint64T) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.S = (string)(string(r.DecodeStringAsBytes()))
+	x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj6++
 	if yyhl6 {
 		yyb6 = yyj6 > l
@@ -585,11 +585,11 @@ func (x *AnonInTestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "AS":
-			x.AS = (string)(string(r.DecodeStringAsBytes()))
+			x.AS = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "AI64":
 			x.AI64 = (int64)(r.DecodeInt64())
 		case "AI16":
@@ -619,7 +619,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "AMSU16E":
 			h.decMapstringuint16((*map[string]uint16)(&x.AMSU16E), d)
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -642,7 +642,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.AS = (string)(string(r.DecodeStringAsBytes()))
+	x.AS = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj30++
 	if yyhl30 {
 		yyb30 = yyj30 > l
@@ -1133,11 +1133,11 @@ func (x *testSimpleFields) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "S":
-			x.S = (string)(string(r.DecodeStringAsBytes()))
+			x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "I64":
 			x.I64 = (int64)(r.DecodeInt64())
 		case "I8":
@@ -1159,7 +1159,7 @@ func (x *testSimpleFields) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Ui64slice":
 			z.F.DecSliceUint64X(&x.Ui64slice, d)
 		case "Ui8slice":
-			x.Ui8slice = r.DecodeBytes(([]byte)(x.Ui8slice), false)
+			x.Ui8slice = z.DecodeBytesInto(([]byte)(x.Ui8slice))
 		case "Bslice":
 			z.F.DecSliceBoolX(&x.Bslice, d)
 		case "Iptrslice":
@@ -1179,7 +1179,7 @@ func (x *testSimpleFields) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Msi64":
 			z.F.DecMapStringInt64X(&x.Msi64, d)
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -1202,7 +1202,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.S = (string)(string(r.DecodeStringAsBytes()))
+	x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj30++
 	if yyhl30 {
 		yyb30 = yyj30 > l
@@ -1334,7 +1334,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.Ui8slice = r.DecodeBytes(([]byte)(x.Ui8slice), false)
+	x.Ui8slice = z.DecodeBytesInto(([]byte)(x.Ui8slice))
 	yyj30++
 	if yyhl30 {
 		yyb30 = yyj30 > l
@@ -2253,11 +2253,11 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "S":
-			x.S = (string)(string(r.DecodeStringAsBytes()))
+			x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "I64":
 			x.I64 = (int64)(r.DecodeInt64())
 		case "I32":
@@ -2299,11 +2299,11 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Ui64slice":
 			z.F.DecSliceUint64X(&x.Ui64slice, d)
 		case "Ui8slice":
-			x.Ui8slice = r.DecodeBytes(([]byte)(x.Ui8slice), false)
+			x.Ui8slice = z.DecodeBytesInto(([]byte)(x.Ui8slice))
 		case "Bslice":
 			z.F.DecSliceBoolX(&x.Bslice, d)
 		case "Byslice":
-			x.Byslice = r.DecodeBytes(([]byte)(x.Byslice), false)
+			x.Byslice = z.DecodeBytesInto(([]byte)(x.Byslice))
 		case "BytesSlice":
 			z.F.DecSliceBytesX(&x.BytesSlice, d)
 		case "Iptrslice":
@@ -2335,7 +2335,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "MstrUi64T":
 			h.decMapstringPtrtostringUint64T((*map[string]*stringUint64T)(&x.MstrUi64T), d)
 		case "AS":
-			x.AnonInTestStruc.AS = (string)(string(r.DecodeStringAsBytes()))
+			x.AnonInTestStruc.AS = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "AI64":
 			x.AnonInTestStruc.AI64 = (int64)(r.DecodeInt64())
 		case "AI16":
@@ -2373,7 +2373,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Nmap":
 			z.F.DecMapStringBoolX(&x.Nmap, d)
 		case "Nslice":
-			x.Nslice = r.DecodeBytes(([]byte)(x.Nslice), false)
+			x.Nslice = z.DecodeBytesInto(([]byte)(x.Nslice))
 		case "Nint64":
 			if r.TryNil() {
 				if x.Nint64 != nil { // remove the if-true
@@ -2386,7 +2386,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 				*x.Nint64 = (int64)(r.DecodeInt64())
 			}
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -2409,7 +2409,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.S = (string)(string(r.DecodeStringAsBytes()))
+	x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj87++
 	if yyhl87 {
 		yyb87 = yyj87 > l
@@ -2661,7 +2661,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.Ui8slice = r.DecodeBytes(([]byte)(x.Ui8slice), false)
+	x.Ui8slice = z.DecodeBytesInto(([]byte)(x.Ui8slice))
 	yyj87++
 	if yyhl87 {
 		yyb87 = yyj87 > l
@@ -2685,7 +2685,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.Byslice = r.DecodeBytes(([]byte)(x.Byslice), false)
+	x.Byslice = z.DecodeBytesInto(([]byte)(x.Byslice))
 	yyj87++
 	if yyhl87 {
 		yyb87 = yyj87 > l
@@ -2817,7 +2817,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.AnonInTestStruc.AS = (string)(string(r.DecodeStringAsBytes()))
+	x.AnonInTestStruc.AS = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj87++
 	if yyhl87 {
 		yyb87 = yyj87 > l
@@ -3025,7 +3025,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.Nslice = r.DecodeBytes(([]byte)(x.Nslice), false)
+	x.Nslice = z.DecodeBytesInto(([]byte)(x.Nslice))
 	yyj87++
 	if yyhl87 {
 		yyb87 = yyj87 > l
@@ -3979,11 +3979,11 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "S":
-			x.TestStrucCommon.S = (string)(string(r.DecodeStringAsBytes()))
+			x.TestStrucCommon.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "I64":
 			x.TestStrucCommon.I64 = (int64)(r.DecodeInt64())
 		case "I32":
@@ -4025,11 +4025,11 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Ui64slice":
 			z.F.DecSliceUint64X(&x.TestStrucCommon.Ui64slice, d)
 		case "Ui8slice":
-			x.TestStrucCommon.Ui8slice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Ui8slice), false)
+			x.TestStrucCommon.Ui8slice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Ui8slice))
 		case "Bslice":
 			z.F.DecSliceBoolX(&x.TestStrucCommon.Bslice, d)
 		case "Byslice":
-			x.TestStrucCommon.Byslice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Byslice), false)
+			x.TestStrucCommon.Byslice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Byslice))
 		case "BytesSlice":
 			z.F.DecSliceBytesX(&x.TestStrucCommon.BytesSlice, d)
 		case "Iptrslice":
@@ -4061,7 +4061,7 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "MstrUi64T":
 			h.decMapstringPtrtostringUint64T((*map[string]*stringUint64T)(&x.TestStrucCommon.MstrUi64T), d)
 		case "AS":
-			x.TestStrucCommon.AnonInTestStruc.AS = (string)(string(r.DecodeStringAsBytes()))
+			x.TestStrucCommon.AnonInTestStruc.AS = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "AI64":
 			x.TestStrucCommon.AnonInTestStruc.AI64 = (int64)(r.DecodeInt64())
 		case "AI16":
@@ -4099,7 +4099,7 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Nmap":
 			z.F.DecMapStringBoolX(&x.TestStrucCommon.Nmap, d)
 		case "Nslice":
-			x.TestStrucCommon.Nslice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Nslice), false)
+			x.TestStrucCommon.Nslice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Nslice))
 		case "Nint64":
 			if r.TryNil() {
 				if x.TestStrucCommon.Nint64 != nil { // remove the if-true
@@ -4133,7 +4133,7 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 			}
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -4156,7 +4156,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.TestStrucCommon.S = (string)(string(r.DecodeStringAsBytes()))
+	x.TestStrucCommon.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj95++
 	if yyhl95 {
 		yyb95 = yyj95 > l
@@ -4408,7 +4408,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.TestStrucCommon.Ui8slice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Ui8slice), false)
+	x.TestStrucCommon.Ui8slice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Ui8slice))
 	yyj95++
 	if yyhl95 {
 		yyb95 = yyj95 > l
@@ -4432,7 +4432,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.TestStrucCommon.Byslice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Byslice), false)
+	x.TestStrucCommon.Byslice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Byslice))
 	yyj95++
 	if yyhl95 {
 		yyb95 = yyj95 > l
@@ -4564,7 +4564,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.TestStrucCommon.AnonInTestStruc.AS = (string)(string(r.DecodeStringAsBytes()))
+	x.TestStrucCommon.AnonInTestStruc.AS = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj95++
 	if yyhl95 {
 		yyb95 = yyj95 > l
@@ -4772,7 +4772,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.TestStrucCommon.Nslice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Nslice), false)
+	x.TestStrucCommon.Nslice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Nslice))
 	yyj95++
 	if yyhl95 {
 		yyb95 = yyj95 > l
@@ -4953,13 +4953,13 @@ func (x *codecgenA) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "ZZ":
-			x.ZZ = r.DecodeBytes(([]byte)(x.ZZ), false)
+			x.ZZ = z.DecodeBytesInto(([]byte)(x.ZZ))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -4982,7 +4982,7 @@ func (x *codecgenA) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.ZZ = r.DecodeBytes(([]byte)(x.ZZ), false)
+	x.ZZ = z.DecodeBytesInto(([]byte)(x.ZZ))
 	for {
 		yyj6++
 		if yyhl6 {
@@ -5083,9 +5083,9 @@ func (x *codecgenB) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "AA":
 			if yyxt5 := z.Extension(x.AA); yyxt5 != nil {
 				z.DecExtension(&x.AA, yyxt5)
@@ -5093,7 +5093,7 @@ func (x *codecgenB) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.AA.CodecDecodeSelf(d)
 			}
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -5238,9 +5238,9 @@ func (x *codecgenC) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "BB":
 			if yyxt5 := z.Extension(x.BB); yyxt5 != nil {
 				z.DecExtension(&x.BB, yyxt5)
@@ -5248,7 +5248,7 @@ func (x *codecgenC) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.BB.CodecDecodeSelf(d)
 			}
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -5366,13 +5366,13 @@ func (x *TestCodecgenG) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "TestCodecgenG":
 			x.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -5486,13 +5486,13 @@ func (x *codecgenH) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "TestCodecgenG":
 			x.TestCodecgenG.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -5606,13 +5606,13 @@ func (x *codecgenI) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "TestCodecgenG":
 			x.codecgenH.TestCodecgenG.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -5736,15 +5736,15 @@ func (x *codecgenK) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "X":
 			x.X = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		case "Y":
-			x.Y = (string)(string(r.DecodeStringAsBytes()))
+			x.Y = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -5779,7 +5779,7 @@ func (x *codecgenK) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.Y = (string)(string(r.DecodeStringAsBytes()))
+	x.Y = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	for {
 		yyj6++
 		if yyhl6 {
@@ -5880,15 +5880,15 @@ func (x *codecgenL) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "X":
 			x.X = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		case "Y":
 			x.Y = (uint32)(z.C.UintV(r.DecodeUint64(), 32))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -6024,15 +6024,15 @@ func (x *codecgenM) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "X":
 			x.codecgenK.X = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		case "Y":
-			x.codecgenK.Y = (string)(string(r.DecodeStringAsBytes()))
+			x.codecgenK.Y = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -6067,7 +6067,7 @@ func (x *codecgenM) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.codecgenK.Y = (string)(string(r.DecodeStringAsBytes()))
+	x.codecgenK.Y = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	for {
 		yyj6++
 		if yyhl6 {
@@ -6158,13 +6158,13 @@ func (x *testStrucKeyTypeT0) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "F":
 			x.F = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -6278,13 +6278,13 @@ func (x *testStrucKeyTypeT1) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "FFFF":
 			x.F = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -6394,13 +6394,13 @@ func (x *testStrucKeyTypeT2) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(strconv.AppendInt(z.DecScratchArrayBuffer()[:0], r.DecodeInt64(), 10))
+		yys3 := strconv.AppendInt(z.DecScratchArrayBuffer()[:0], r.DecodeInt64(), 10)
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "-1":
 			x.F = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -6510,13 +6510,13 @@ func (x *testStrucKeyTypeT3) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(strconv.AppendUint(z.DecScratchArrayBuffer()[:0], r.DecodeUint64(), 10))
+		yys3 := strconv.AppendUint(z.DecScratchArrayBuffer()[:0], r.DecodeUint64(), 10)
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "1":
 			x.F = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -6626,13 +6626,13 @@ func (x *testStrucKeyTypeT4) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(strconv.AppendFloat(z.DecScratchArrayBuffer()[:0], r.DecodeFloat64(), 'f', -1, 64))
+		yys3 := strconv.AppendFloat(z.DecScratchArrayBuffer()[:0], r.DecodeFloat64(), 'f', -1, 64)
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "2.5":
 			x.F = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -6718,7 +6718,7 @@ func (x *Sstring) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
-	*x = (Sstring)(string(r.DecodeStringAsBytes()))
+	*x = (Sstring)(z.DecStringZC(r.DecodeStringAsBytes()))
 }
 
 func (x *Sstructsmall) CodecEncodeSelf(e *Encoder) {
@@ -6792,13 +6792,13 @@ func (x *Sstructsmall) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "A":
 			x.A = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -6998,9 +6998,9 @@ func (x *Sstructbig) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "A":
 			x.A = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		case "B":
@@ -7042,7 +7042,7 @@ func (x *Sstructbig) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 			}
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -7320,9 +7320,9 @@ func (x *SstructbigToArray) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "A":
 			x.A = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		case "B":
@@ -7364,7 +7364,7 @@ func (x *SstructbigToArray) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 			}
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -7566,15 +7566,15 @@ func (x *tLowerFirstLetter) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "I":
 			x.I = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
 		case "S":
-			x.S = (string)(string(r.DecodeStringAsBytes()))
+			x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -7609,7 +7609,7 @@ func (x *tLowerFirstLetter) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.S = (string)(string(r.DecodeStringAsBytes()))
+	x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	for {
 		yyj6++
 		if yyhl6 {
@@ -7741,7 +7741,7 @@ func (x *testMarshalAsText) CodecDecodeSelf(d *Decoder) {
 	if !z.DecBinary() {
 		z.DecTextUnmarshal(x)
 	} else {
-		*x = (testMarshalAsText)(string(r.DecodeStringAsBytes()))
+		*x = (testMarshalAsText)(z.DecStringZC(r.DecodeStringAsBytes()))
 	}
 }
 
@@ -7938,9 +7938,9 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "Islice":
 			z.F.DecSliceIntfX(&x.Islice, d)
 		case "Ms":
@@ -7981,7 +7981,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromMap(l int, d *Decoder) {
 				}
 			}
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -8182,15 +8182,15 @@ func (x *missingFielderT1) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "S":
-			x.S = (string)(string(r.DecodeStringAsBytes()))
+			x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "B":
 			x.B = (bool)(r.DecodeBool())
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -8213,7 +8213,7 @@ func (x *missingFielderT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.S = (string)(string(r.DecodeStringAsBytes()))
+	x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj6++
 	if yyhl6 {
 		yyb6 = yyj6 > l
@@ -8316,13 +8316,13 @@ func (x *missingFielderT11) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "S2":
-			x.S2 = (string)(string(r.DecodeStringAsBytes()))
+			x.S2 = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -8345,7 +8345,7 @@ func (x *missingFielderT11) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.S2 = (string)(string(r.DecodeStringAsBytes()))
+	x.S2 = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	for {
 		yyj5++
 		if yyhl5 {
@@ -8466,11 +8466,11 @@ func (x *missingFielderT2) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "S":
-			x.S = (string)(string(r.DecodeStringAsBytes()))
+			x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "B":
 			x.B = (bool)(r.DecodeBool())
 		case "F":
@@ -8478,7 +8478,7 @@ func (x *missingFielderT2) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "I":
 			x.I = (int64)(r.DecodeInt64())
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -8501,7 +8501,7 @@ func (x *missingFielderT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.S = (string)(string(r.DecodeStringAsBytes()))
+	x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj8++
 	if yyhl8 {
 		yyb8 = yyj8 > l
@@ -8648,17 +8648,17 @@ func (x *testSelfExtHelper) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "S":
-			x.S = (string)(string(r.DecodeStringAsBytes()))
+			x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "I":
 			x.I = (int64)(r.DecodeInt64())
 		case "B":
 			x.B = (bool)(r.DecodeBool())
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -8681,7 +8681,7 @@ func (x *testSelfExtHelper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.S = (string)(string(r.DecodeStringAsBytes()))
+	x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj7++
 	if yyhl7 {
 		yyb7 = yyj7 > l
@@ -8816,17 +8816,17 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "S":
-			x.testSelfExtHelper.S = (string)(string(r.DecodeStringAsBytes()))
+			x.testSelfExtHelper.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "I":
 			x.testSelfExtHelper.I = (int64)(r.DecodeInt64())
 		case "B":
 			x.testSelfExtHelper.B = (bool)(r.DecodeBool())
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -8849,7 +8849,7 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.testSelfExtHelper.S = (string)(string(r.DecodeStringAsBytes()))
+	x.testSelfExtHelper.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj7++
 	if yyhl7 {
 		yyb7 = yyj7 > l
@@ -8974,15 +8974,15 @@ func (x *TestSelfExtImpl2) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "M":
-			x.M = (string)(string(r.DecodeStringAsBytes()))
+			x.M = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "O":
 			x.O = (bool)(r.DecodeBool())
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -9005,7 +9005,7 @@ func (x *TestSelfExtImpl2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.M = (string)(string(r.DecodeStringAsBytes()))
+	x.M = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj6++
 	if yyhl6 {
 		yyb6 = yyj6 > l
@@ -9118,15 +9118,15 @@ func (x *TestTwoNakedInterfaces) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "A":
 			z.DecFallback(&x.A, true)
 		case "B":
 			z.DecFallback(&x.B, true)
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -11255,11 +11255,11 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "S":
-			x.TestStrucCommon.S = (string)(string(r.DecodeStringAsBytes()))
+			x.TestStrucCommon.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "I64":
 			x.TestStrucCommon.I64 = (int64)(r.DecodeInt64())
 		case "I32":
@@ -11301,11 +11301,11 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Ui64slice":
 			z.F.DecSliceUint64X(&x.TestStrucCommon.Ui64slice, d)
 		case "Ui8slice":
-			x.TestStrucCommon.Ui8slice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Ui8slice), false)
+			x.TestStrucCommon.Ui8slice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Ui8slice))
 		case "Bslice":
 			z.F.DecSliceBoolX(&x.TestStrucCommon.Bslice, d)
 		case "Byslice":
-			x.TestStrucCommon.Byslice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Byslice), false)
+			x.TestStrucCommon.Byslice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Byslice))
 		case "BytesSlice":
 			z.F.DecSliceBytesX(&x.TestStrucCommon.BytesSlice, d)
 		case "Iptrslice":
@@ -11337,7 +11337,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "MstrUi64T":
 			h.decMapstringPtrtostringUint64T((*map[string]*stringUint64T)(&x.TestStrucCommon.MstrUi64T), d)
 		case "AS":
-			x.TestStrucCommon.AnonInTestStruc.AS = (string)(string(r.DecodeStringAsBytes()))
+			x.TestStrucCommon.AnonInTestStruc.AS = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "AI64":
 			x.TestStrucCommon.AnonInTestStruc.AI64 = (int64)(r.DecodeInt64())
 		case "AI16":
@@ -11375,7 +11375,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Nmap":
 			z.F.DecMapStringBoolX(&x.TestStrucCommon.Nmap, d)
 		case "Nslice":
-			x.TestStrucCommon.Nslice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Nslice), false)
+			x.TestStrucCommon.Nslice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Nslice))
 		case "Nint64":
 			if r.TryNil() {
 				if x.TestStrucCommon.Nint64 != nil { // remove the if-true
@@ -11580,7 +11580,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 				x.XuintToBytes.CodecDecodeSelf(d)
 			}
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -11603,7 +11603,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.TestStrucCommon.S = (string)(string(r.DecodeStringAsBytes()))
+	x.TestStrucCommon.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj149++
 	if yyhl149 {
 		yyb149 = yyj149 > l
@@ -11855,7 +11855,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.TestStrucCommon.Ui8slice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Ui8slice), false)
+	x.TestStrucCommon.Ui8slice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Ui8slice))
 	yyj149++
 	if yyhl149 {
 		yyb149 = yyj149 > l
@@ -11879,7 +11879,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.TestStrucCommon.Byslice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Byslice), false)
+	x.TestStrucCommon.Byslice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Byslice))
 	yyj149++
 	if yyhl149 {
 		yyb149 = yyj149 > l
@@ -12011,7 +12011,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.TestStrucCommon.AnonInTestStruc.AS = (string)(string(r.DecodeStringAsBytes()))
+	x.TestStrucCommon.AnonInTestStruc.AS = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj149++
 	if yyhl149 {
 		yyb149 = yyj149 > l
@@ -12219,7 +12219,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.TestStrucCommon.Nslice = r.DecodeBytes(([]byte)(x.TestStrucCommon.Nslice), false)
+	x.TestStrucCommon.Nslice = z.DecodeBytesInto(([]byte)(x.TestStrucCommon.Nslice))
 	yyj149++
 	if yyhl149 {
 		yyb149 = yyj149 > l
@@ -12931,7 +12931,7 @@ func (x codecSelfer19780) decwrapSliceString(v *wrapSliceString, d *Decoder) {
 			if yydb1 {
 				z.DecSwallow()
 			} else {
-				yyv1[yyj1] = (string)(string(r.DecodeStringAsBytes()))
+				yyv1[yyj1] = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 			}
 		}
 		if yyj1 < len(yyv1) {
@@ -13285,7 +13285,7 @@ func (x codecSelfer19780) decMapstringuint16(v *map[string]uint16, d *Decoder) {
 			yyhl1 := yyl1 > 0
 			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
-				yymk1 = (string)(string(r.DecodeStringAsBytes()))
+				yymk1 = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 				if yymg1 {
 					yymv1 = yyv1[yymk1]
 				}
@@ -13294,7 +13294,7 @@ func (x codecSelfer19780) decMapstringuint16(v *map[string]uint16, d *Decoder) {
 				yymv1 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
 				if yymdn1 {
 					yyv1[yymk1] = 0
-				} else if yyv1 != nil {
+				} else {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -13700,7 +13700,7 @@ func (x codecSelfer19780) decMapstringPtrtostringUint64T(v *map[string]*stringUi
 			yyhl1 := yyl1 > 0
 			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
-				yymk1 = (string)(string(r.DecodeStringAsBytes()))
+				yymk1 = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 				yyms1 = true
 				if yymg1 {
 					yymv1, yymok1 = yyv1[yymk1]
@@ -13726,7 +13726,7 @@ func (x codecSelfer19780) decMapstringPtrtostringUint64T(v *map[string]*stringUi
 				}
 				if yymdn1 {
 					yyv1[yymk1] = nil
-				} else if yyms1 && yyv1 != nil {
+				} else if yyms1 {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -13786,7 +13786,7 @@ func (x codecSelfer19780) decMapstringPtrtoTestStruc(v *map[string]*TestStruc, d
 			yyhl1 := yyl1 > 0
 			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
-				yymk1 = (string)(string(r.DecodeStringAsBytes()))
+				yymk1 = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 				yyms1 = true
 				if yymg1 {
 					yymv1, yymok1 = yyv1[yymk1]
@@ -13812,7 +13812,7 @@ func (x codecSelfer19780) decMapstringPtrtoTestStruc(v *map[string]*TestStruc, d
 				}
 				if yymdn1 {
 					yyv1[yymk1] = nil
-				} else if yyms1 && yyv1 != nil {
+				} else if yyms1 {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -13869,7 +13869,7 @@ func (x codecSelfer19780) decMapstringTestStruc(v *map[string]TestStruc, d *Deco
 			yyhl1 := yyl1 > 0
 			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
-				yymk1 = (string)(string(r.DecodeStringAsBytes()))
+				yymk1 = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 				if yymg1 {
 					yymv1 = yyv1[yymk1]
 				} else {
@@ -13884,7 +13884,7 @@ func (x codecSelfer19780) decMapstringTestStruc(v *map[string]TestStruc, d *Deco
 				}
 				if yymdn1 {
 					yyv1[yymk1] = TestStruc{}
-				} else if yyv1 != nil {
+				} else {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -14044,7 +14044,7 @@ func (x codecSelfer19780) decAarray(v *Aarray, d *Decoder) {
 			if yydb1 {
 				z.DecSwallow()
 			} else {
-				yyv1[yyj1] = (string)(string(r.DecodeStringAsBytes()))
+				yyv1[yyj1] = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 			}
 		}
 	}
@@ -14066,7 +14066,7 @@ func (x codecSelfer19780) decwrapBytes(v *wrapBytes, d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
-	*v = r.DecodeBytes(*((*[]byte)(v)), false)
+	*v = z.DecodeBytesInto(*((*[]byte)(v)))
 }
 
 func (x codecSelfer19780) enctestMarshalAsBinary(v testMarshalAsBinary, e *Encoder) {
@@ -14084,7 +14084,7 @@ func (x codecSelfer19780) dectestMarshalAsBinary(v *testMarshalAsBinary, d *Deco
 	var h codecSelfer19780
 	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
-	*v = r.DecodeBytes(*((*[]byte)(v)), false)
+	*v = z.DecodeBytesInto(*((*[]byte)(v)))
 }
 
 func (x codecSelfer19780) encChanstring(v chan string, e *Encoder) {
@@ -14172,7 +14172,7 @@ func (x codecSelfer19780) decChanstring(v *chan string, d *Decoder) {
 			}
 			yyh1.ElemContainerState(yyj1)
 			var yyvcx1 string
-			yyvcx1 = (string)(string(r.DecodeStringAsBytes()))
+			yyvcx1 = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 			yyv1 <- yyvcx1
 		}
 	}
@@ -14237,7 +14237,7 @@ func (x codecSelfer19780) decMapboolc3RydWN0IHt9(v *map[bool]struct{}, d *Decode
 				z.DecFallback(&yymv1, false)
 				if yymdn1 {
 					yyv1[yymk1] = struct{}{}
-				} else if yyv1 != nil {
+				} else {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -14308,7 +14308,7 @@ func (x codecSelfer19780) decMapintwrapUint64Slice(v *map[int]wrapUint64Slice, d
 				}
 				if yymdn1 {
 					yyv1[yymk1] = nil
-				} else if yyv1 != nil {
+				} else {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -14379,7 +14379,7 @@ func (x codecSelfer19780) decMapfloat64wrapStringSlice(v *map[float64]wrapString
 				}
 				if yymdn1 {
 					yyv1[yymk1] = nil
-				} else if yyv1 != nil {
+				} else {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -14450,7 +14450,7 @@ func (x codecSelfer19780) decMapfloat32wrapStringSlice(v *map[float32]wrapString
 				}
 				if yymdn1 {
 					yyv1[yymk1] = nil
-				} else if yyv1 != nil {
+				} else {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -14521,7 +14521,7 @@ func (x codecSelfer19780) decMapuint64wrapStringSlice(v *map[uint64]wrapStringSl
 				}
 				if yymdn1 {
 					yyv1[yymk1] = nil
-				} else if yyv1 != nil {
+				} else {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -14601,7 +14601,7 @@ func (x codecSelfer19780) decMapstringUint64TwrapStringSlice(v *map[stringUint64
 				}
 				if yymdn1 {
 					yyv1[yymk1] = nil
-				} else if yyv1 != nil {
+				} else {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -15103,7 +15103,7 @@ func (x codecSelfer19780) decMapstringUint64TPtrtostringUint64T(v *map[stringUin
 				}
 				if yymdn1 {
 					yyv1[yymk1] = nil
-				} else if yyms1 && yyv1 != nil {
+				} else if yyms1 {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -15163,7 +15163,7 @@ func (x codecSelfer19780) decMapstringPtrtoTestStrucFlex(v *map[string]*TestStru
 			yyhl1 := yyl1 > 0
 			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
-				yymk1 = (string)(string(r.DecodeStringAsBytes()))
+				yymk1 = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 				yyms1 = true
 				if yymg1 {
 					yymv1, yymok1 = yyv1[yymk1]
@@ -15189,7 +15189,7 @@ func (x codecSelfer19780) decMapstringPtrtoTestStrucFlex(v *map[string]*TestStru
 				}
 				if yymdn1 {
 					yyv1[yymk1] = nil
-				} else if yyms1 && yyv1 != nil {
+				} else if yyms1 {
 					yyv1[yymk1] = yymv1
 				}
 			}
@@ -15246,7 +15246,7 @@ func (x codecSelfer19780) decMapstringTestStrucFlex(v *map[string]TestStrucFlex,
 			yyhl1 := yyl1 > 0
 			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
 				z.DecReadMapElemKey()
-				yymk1 = (string)(string(r.DecodeStringAsBytes()))
+				yymk1 = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 				if yymg1 {
 					yymv1 = yyv1[yymk1]
 				} else {
@@ -15261,7 +15261,7 @@ func (x codecSelfer19780) decMapstringTestStrucFlex(v *map[string]TestStrucFlex,
 				}
 				if yymdn1 {
 					yyv1[yymk1] = TestStrucFlex{}
-				} else if yyv1 != nil {
+				} else {
 					yyv1[yymk1] = yymv1
 				}
 			}

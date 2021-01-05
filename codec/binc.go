@@ -702,7 +702,9 @@ func (d *bincDecDriver) decLenNumber() (v uint64) {
 	return
 }
 
-func (d *bincDecDriver) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
+// func (d *bincDecDriver) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
+func (d *bincDecDriver) DecodeStringAsBytes() (bs2 []byte) {
+	d.d.decByteState = decByteStateNone
 	if d.advanceNil() {
 		return
 	}
@@ -710,16 +712,12 @@ func (d *bincDecDriver) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
-		if zerocopy {
-			if d.d.bytes {
-				bs2 = d.d.decRd.rb.readx(uint(slen))
-			} else if len(bs) == 0 {
-				bs2 = decByteSlice(d.d.r(), slen, d.d.h.MaxInitLen, d.d.b[:])
-			} else {
-				bs2 = decByteSlice(d.d.r(), slen, d.d.h.MaxInitLen, bs)
-			}
+		if d.d.bytes {
+			d.d.decByteState = decByteStateZerocopy
+			bs2 = d.d.decRd.rb.readx(uint(slen))
 		} else {
-			bs2 = decByteSlice(d.d.r(), slen, d.d.h.MaxInitLen, bs)
+			d.d.decByteState = decByteStateReuseBuf
+			bs2 = decByteSlice(d.d.r(), slen, d.d.h.MaxInitLen, d.d.b[:])
 		}
 	case bincVdSymbol:
 		// zerocopy doesn't apply for symbols,
@@ -760,20 +758,21 @@ func (d *bincDecDriver) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
 	return
 }
 
-func (d *bincDecDriver) DecodeStringAsBytes() (s []byte) {
-	return d.decStringBytes(d.d.b[:], true)
-}
-
-func (d *bincDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
+func (d *bincDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
+	d.d.decByteState = decByteStateNone
 	if d.advanceNil() {
 		return
 	}
 	if d.vd == bincVdArray {
-		if zerocopy && len(bs) == 0 {
+		if bs == nil {
 			bs = d.d.b[:]
+			d.d.decByteState = decByteStateReuseBuf
 		}
 		slen := d.ReadArrayStart()
-		bs = usableByteSlice(bs, slen)
+		var changed bool
+		if bs, changed = usableByteSlice(bs, slen); changed {
+			d.d.decByteState = decByteStateNone
+		}
 		for i := 0; i < slen; i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
@@ -786,11 +785,13 @@ func (d *bincDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		d.d.errorf("bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
-	if d.d.bytes && (zerocopy || d.h.ZeroCopy) {
+	if d.d.bytes && d.h.ZeroCopy {
+		d.d.decByteState = decByteStateZerocopy
 		return d.d.decRd.rb.readx(uint(clen))
 	}
-	if zerocopy && len(bs) == 0 {
+	if bs == nil {
 		bs = d.d.b[:]
+		d.d.decByteState = decByteStateReuseBuf
 	}
 	return decByteSlice(d.d.r(), clen, d.d.h.MaxInitLen, bs)
 }
@@ -802,12 +803,12 @@ func (d *bincDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 	if d.advanceNil() {
 		return
 	}
-	realxtag1, xbs := d.decodeExtV(ext != nil, uint8(xtag))
+	xbs, realxtag1, zerocopy := d.decodeExtV(ext != nil, uint8(xtag))
 	realxtag := uint64(realxtag1)
 	if ext == nil {
 		re := rv.(*RawExt)
 		re.Tag = realxtag
-		re.Data = detachZeroCopyBytes(d.d.bytes, re.Data, xbs)
+		re.setData(xbs, zerocopy)
 	} else if ext == SelfExt {
 		d.d.sideDecode(rv, xbs)
 	} else {
@@ -815,7 +816,7 @@ func (d *bincDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 	}
 }
 
-func (d *bincDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs []byte) {
+func (d *bincDecDriver) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xtag byte, zerocopy bool) {
 	if d.vd == bincVdCustomExt {
 		l := d.decLen()
 		xtag = d.d.decRd.readn1()
@@ -824,11 +825,12 @@ func (d *bincDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs []b
 		}
 		if d.d.bytes {
 			xbs = d.d.decRd.rb.readx(uint(l))
+			zerocopy = true
 		} else {
 			xbs = decByteSlice(d.d.r(), l, d.d.h.MaxInitLen, d.d.b[:])
 		}
 	} else if d.vd == bincVdByteArray {
-		xbs = d.DecodeBytes(nil, true)
+		xbs = d.DecodeBytes(nil)
 	} else {
 		d.d.errorf("ext expects extensions or byte array - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
@@ -890,12 +892,12 @@ func (d *bincDecDriver) DecodeNaked() {
 		n.f = d.decFloat()
 	case bincVdString:
 		n.v = valueTypeString
-		n.s = d.d.string(d.DecodeStringAsBytes())
+		n.s = d.d.stringZC(d.DecodeStringAsBytes())
 	case bincVdByteArray:
-		d.d.fauxUnionReadRawBytes()
+		d.d.fauxUnionReadRawBytes(false)
 	case bincVdSymbol:
 		n.v = valueTypeSymbol
-		n.s = d.d.string(d.DecodeStringAsBytes())
+		n.s = d.d.stringZC(d.DecodeStringAsBytes())
 	case bincVdTimestamp:
 		n.v = valueTypeTime
 		tt, err := bincDecodeTime(d.d.decRd.readx(uint(d.vs)))

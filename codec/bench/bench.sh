@@ -199,6 +199,7 @@ _usage() {
     printf "\t-sgx run test suite for codec; if g, use generated files; if x, do external also\n"
     printf "\t-jqp run test suite for [json, json-quick, json-profile]\n"
     printf "\t-z run tests for bench.out.txt\n"
+    printf "\t-f [pprof file] run pprof\n"
 }
 
 _main() {
@@ -211,10 +212,10 @@ _main() {
     local args=()
     local do_x="0"
     local do_g="0"
-    while getopts "dcbsjqptxklgz" flag
+    while getopts "dcbsjqptxklgzf" flag
     do
         case "$flag" in
-            d|c|b|s|j|q|p|t|x|k|l|g|z) args+=( "$flag" ) ;;
+            d|c|b|s|j|q|p|t|x|k|l|g|z|f) args+=( "$flag" ) ;;
             *) _usage; return 1 ;;
         esac
     done
@@ -237,6 +238,7 @@ _main() {
     [[ " ${args[*]} " == *"p"* ]] && _suite_very_quick_json_only_profile "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"t"* ]] && _suite_tests "$@" | _suite_trim_output | _suite_tests_strip_file_line
     [[ " ${args[*]} " == *"z"* ]] && _bench_dot_out_dot_txt
+    [[ " ${args[*]} " == *"f"* ]] && ${gocmd} tool pprof bench.test ${1:-mem.out}
     
     true
     # shift $((OPTIND-1))

@@ -10,7 +10,7 @@ package codec
 import "encoding"
 
 // GenVersion is the current version of codecgen.
-const GenVersion = 20
+const GenVersion = 21
 
 // This file is used to generate helper code for codecgen.
 // The values here i.e. genHelper(En|De)coder are not to be used directly by
@@ -202,7 +202,7 @@ func (f genHelperDecoder) DecJSONUnmarshal(tm jsonUnmarshaler) {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecBinaryUnmarshal(bm encoding.BinaryUnmarshaler) {
-	halt.onerror(bm.UnmarshalBinary(f.d.d.DecodeBytes(nil, true)))
+	halt.onerror(bm.UnmarshalBinary(f.d.d.DecodeBytes(nil)))
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -264,4 +264,7 @@ func (f genHelperDecoder) DecDecodeFloat32() float32 { return f.d.decodeFloat32(
 func (f genHelperDecoder) DecCheckBreak() bool { return f.d.checkBreak() }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperDecoder) DecString(v []byte) string { return f.d.string(v) }
+func (f genHelperDecoder) DecStringZC(v []byte) string { return f.d.stringZC(v) }
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperDecoder) DecodeBytesInto(v []byte) []byte { return f.d.decodeBytesInto(v) }

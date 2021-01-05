@@ -6,7 +6,7 @@
 package codec
 
 import (
-	"hash/adler32"
+	// "hash/adler32"
 	"math"
 	"reflect"
 	"sync/atomic"
@@ -467,7 +467,9 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) reflect.Value {
 
 // ---------- others ---------------
 
-func hashShortString(b []byte) (h uintptr) {
+/*
+
+   func hashShortString(b []byte) (h uintptr) {
 	return uintptr(adler32.Checksum(b))
 }
 
@@ -499,3 +501,5 @@ func hashShortString(b []byte) (h uintptr) {
 // 	h = ((h << 3) | uint64(len(b)&7))
 // 	return
 // }
+
+*/

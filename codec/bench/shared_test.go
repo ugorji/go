@@ -170,9 +170,6 @@ func testHEDGet(h Handle) *testHED {
 func testReinit() {
 	testOnce = sync.Once{}
 	testHEDs = nil
-	// for _, v := range testHandles {
-	// 	v.getBasicHandle().clearInited() // so it is reinitialized next time around
-	// }
 }
 
 func testInitAll() {

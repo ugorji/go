@@ -111,7 +111,7 @@ const (
 
 	jsonSpacesOrTabsLen = 128
 
-	jsonAlwaysReturnInternString = false
+	// jsonAlwaysReturnInternString = false
 )
 
 var (
@@ -984,7 +984,8 @@ func (d *jsonDecDriver) decBytesFromArray(bs []byte) []byte {
 	return bs
 }
 
-func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
+func (d *jsonDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
+	d.d.decByteState = decByteStateNone
 	// if decoding into raw bytes, and the RawBytesExt is configured, use it to decode.
 	if d.se.InterfaceExt != nil {
 		bsOut = bs
@@ -995,7 +996,8 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
 	if d.tok == '[' {
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
-		if zerocopy && len(bs) == 0 {
+		if bs == nil {
+			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:]
 		}
 		return d.decBytesFromArray(bs)
@@ -1016,7 +1018,8 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 		bsOut = []byte{}
 	} else if slen <= cap(bs) {
 		bsOut = bs[:slen]
-	} else if zerocopy {
+	} else if bs == nil {
+		d.d.decByteState = decByteStateReuseBuf
 		d.buf = d.d.blist.check(d.buf, slen)[:slen]
 		bsOut = d.buf
 	} else {
@@ -1033,12 +1036,12 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 }
 
 func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
+	d.d.decByteState = decByteStateNone
 	d.advance()
 
 	// common case
 	if d.tok == '"' {
-		d.appendStringAsBytes()
-		return d.buf
+		return d.dblQuoteStringAsBytes()
 	}
 
 	// handle non-string scalar: null, true, false or a number
@@ -1069,15 +1072,32 @@ func (d *jsonDecDriver) readUnescapedString() (bs []byte) {
 	return
 }
 
-func (d *jsonDecDriver) appendStringAsBytes() {
+func (d *jsonDecDriver) dblQuoteStringAsBytes() (buf []byte) {
+	d.d.decByteState = decByteStateNone
+	// expect that d.buf is already truncated, or has bytes that are part of the final string
+
 	// use a local buf variable, so we don't do pointer chasing within loop
-	buf := d.buf[:0]
+	buf = d.buf[:0]
 	dr := &d.d.decRd
 	d.tok = 0
 
 	var bs []byte
 	var c byte
+	var firstTime bool = true
+
 	for {
+		if firstTime {
+			firstTime = false
+			if dr.bytes {
+				bs = dr.rb.jsonReadAsisChars()
+				if bs[len(bs)-1] == '"' {
+					d.d.decByteState = decByteStateZerocopy
+					return bs[:len(bs)-1]
+				}
+				goto APPEND
+			}
+		}
+
 		if jsonManualInlineDecRdInHotZones {
 			if dr.bytes {
 				bs = dr.rb.jsonReadAsisChars()
@@ -1090,6 +1110,7 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 			bs = dr.jsonReadAsisChars()
 		}
 
+	APPEND:
 		buf = append(buf, bs[:len(bs)-1]...)
 		c = bs[len(bs)-1]
 
@@ -1121,6 +1142,8 @@ func (d *jsonDecDriver) appendStringAsBytes() {
 		}
 	}
 	d.buf = buf
+	d.d.decByteState = decByteStateReuseBuf
+	return
 }
 
 func (d *jsonDecDriver) appendStringAsBytesSlashU() (r rune) {
@@ -1196,8 +1219,7 @@ func (d *jsonDecDriver) DecodeNaked() {
 		z.v = valueTypeArray // don't consume. kInterfaceNaked will call ReadArrayStart
 	case '"':
 		// if a string, and MapKeyAsString, then try to decode it as a nil, bool or number first
-		d.appendStringAsBytes()
-		bs = d.buf
+		bs = d.dblQuoteStringAsBytes()
 		if len(bs) > 0 && d.d.c == containerMapKey && d.h.MapKeyAsString {
 			if bytes.Equal(bs, jsonLiteralNull) {
 				z.v = valueTypeNil
@@ -1211,12 +1233,12 @@ func (d *jsonDecDriver) DecodeNaked() {
 				// check if a number: float, int or uint
 				if err := d.nakedNum(z, bs); err != nil {
 					z.v = valueTypeString
-					z.s = d.d.string(bs)
+					z.s = d.d.stringZC(bs)
 				}
 			}
 		} else {
 			z.v = valueTypeString
-			z.s = d.d.string(bs)
+			z.s = d.d.stringZC(bs)
 		}
 	default: // number
 		bs = d.d.decRd.jsonReadNum()

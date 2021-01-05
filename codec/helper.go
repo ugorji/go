@@ -741,6 +741,8 @@ func (x *BasicHandle) clearInited() {
 	atomic.StoreUint32(&x.inited, 0)
 }
 
+// TimeBuiltin returns whether time.Time OOTB support is used,
+// based on the initial configuration of TimeNotBuiltin
 func (x *BasicHandle) TimeBuiltin() bool {
 	return x.timeBuiltin
 }
@@ -1097,6 +1099,17 @@ type RawExt struct {
 	// Value is used by codecs (e.g. cbor, json) which leverage the format to do
 	// custom serialization of the types.
 	Value interface{}
+}
+
+func (re *RawExt) setData(xbs []byte, zerocopy bool) {
+	if zerocopy {
+		re.Data = xbs
+	} else {
+		if len(re.Data) > 0 {
+			re.Data = re.Data[:0]
+		}
+		re.Data = append(re.Data, xbs...)
+	}
 }
 
 // BytesExt handles custom (de)serialization of types to/from []byte.
@@ -2142,15 +2155,22 @@ func isImmutableKind(k reflect.Kind) (v bool) {
 	return scalarBitset.isset(byte(k))
 }
 
-func usableByteSlice(bs []byte, slen int) []byte {
+func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
+	if slen <= 0 {
+		return []byte{}, true
+	}
 	if cap(bs) < slen {
-		return make([]byte, slen)
+		return make([]byte, slen), true
 	}
-	if bs == nil {
-		return []byte{}
-	}
-	return bs[:slen]
+	return bs[:slen], false
 }
+
+// func notNilBytes(v []byte) []byte {
+// 	if v == nil {
+// 		return []byte{}
+// 	}
+// 	return v
+// }
 
 // ----
 
@@ -2596,6 +2616,7 @@ func (x internerMap) string(v []byte) (s string) {
 	return
 }
 
+/*
 type internerHash struct {
 	v *[internCap]string
 }
@@ -2648,3 +2669,4 @@ END:
 	}
 	return s
 }
+*/

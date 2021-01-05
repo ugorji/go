@@ -37,10 +37,10 @@ func codecSelfer19781False() bool { return false }
 func codecSelfer19781True() bool  { return true }
 
 func init() {
-	if GenVersion != 20 {
+	if GenVersion != 21 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic(errors.New("codecgen version mismatch: current: 20, need " + ver + ". Re-generate file: " + file))
+		panic(errors.New("codecgen version mismatch: current: 21, need " + ver + ". Re-generate file: " + file))
 	}
 }
 
@@ -3257,9 +3257,9 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "FIntf":
 			z.DecFallback(&x.FIntf, true)
 		case "FptrIntf":
@@ -3274,7 +3274,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				z.DecFallback(x.FptrIntf, true)
 			}
 		case "FString":
-			x.FString = (string)(string(r.DecodeStringAsBytes()))
+			x.FString = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 		case "FptrString":
 			if r.TryNil() {
 				if x.FptrString != nil { // remove the if-true
@@ -3284,10 +3284,10 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrString == nil {
 					x.FptrString = new(string)
 				}
-				*x.FptrString = (string)(string(r.DecodeStringAsBytes()))
+				*x.FptrString = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 			}
 		case "FBytes":
-			x.FBytes = r.DecodeBytes(([]byte)(x.FBytes), false)
+			x.FBytes = z.DecodeBytesInto(([]byte)(x.FBytes))
 		case "FptrBytes":
 			if r.TryNil() {
 				if x.FptrBytes != nil { // remove the if-true
@@ -3297,7 +3297,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				if x.FptrBytes == nil {
 					x.FptrBytes = new([]uint8)
 				}
-				*x.FptrBytes = r.DecodeBytes(*(*[]byte)(x.FptrBytes), false)
+				*x.FptrBytes = z.DecodeBytesInto(*(*[]byte)(x.FptrBytes))
 			}
 		case "FFloat32":
 			x.FFloat32 = (float32)(z.DecDecodeFloat32())
@@ -4184,7 +4184,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 				z.F.DecMapInt64BoolX(x.FptrMapInt64Bool, d)
 			}
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -4240,7 +4240,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.FString = (string)(string(r.DecodeStringAsBytes()))
+	x.FString = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj273++
 	if yyhl273 {
 		yyb273 = yyj273 > l
@@ -4260,7 +4260,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrString == nil {
 			x.FptrString = new(string)
 		}
-		*x.FptrString = (string)(string(r.DecodeStringAsBytes()))
+		*x.FptrString = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	}
 	yyj273++
 	if yyhl273 {
@@ -4273,7 +4273,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	x.FBytes = r.DecodeBytes(([]byte)(x.FBytes), false)
+	x.FBytes = z.DecodeBytesInto(([]byte)(x.FBytes))
 	yyj273++
 	if yyhl273 {
 		yyb273 = yyj273 > l
@@ -4293,7 +4293,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		if x.FptrBytes == nil {
 			x.FptrBytes = new([]uint8)
 		}
-		*x.FptrBytes = r.DecodeBytes(*(*[]byte)(x.FptrBytes), false)
+		*x.FptrBytes = z.DecodeBytesInto(*(*[]byte)(x.FptrBytes))
 	}
 	yyj273++
 	if yyhl273 {
@@ -6845,9 +6845,9 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 			}
 		}
 		z.DecReadMapElemKey()
-		yys3 := z.StringView(r.DecodeStringAsBytes())
+		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
-		switch yys3 {
+		switch string(yys3) {
 		case "V":
 			if yyxt5 := z.Extension(x.V); yyxt5 != nil {
 				z.DecExtension(&x.V, yyxt5)
@@ -6885,7 +6885,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "A":
 			h.decArray4int64((*[4]int64)(&x.A), d)
 		default:
-			z.DecStructFieldNotFound(-1, yys3)
+			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
 	} // end for yyj3
 }
@@ -7150,7 +7150,7 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 				}
 				if yymdn1 {
 					yyv1[yymk1] = TestMammoth2{}
-				} else if yyv1 != nil {
+				} else {
 					yyv1[yymk1] = yymv1
 				}
 			}

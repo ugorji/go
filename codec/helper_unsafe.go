@@ -845,9 +845,9 @@ func mapRange(t *mapIter, m, k, v reflect.Value, mapvalues bool) {
 	t.started = false
 	t.mapvalues = mapvalues
 
-	var urv *unsafeReflectValue
+	// var urv *unsafeReflectValue
 
-	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&m))
 	t.mtyp = urv.typ
 	t.mptr = rvRefPtr(urv)
 
@@ -1005,6 +1005,8 @@ func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
 //go:noescape
 func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
 
+/*
+
 //go:linkname memhash runtime.memhash
 //go:noescape
 func memhash(p unsafe.Pointer, seed, length uintptr) uintptr
@@ -1018,3 +1020,5 @@ func hashShortString(b []byte) uintptr {
 // var _ = runtime.MemProfileRate
 // func maplen(typ unsafe.Pointer) int { return *((*int)(typ)) }
 // func chanlen(typ unsafe.Pointer) int { return int(*((*uint)(typ))) }
+
+*/

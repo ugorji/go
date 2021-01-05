@@ -388,7 +388,7 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *Decoder) 
 			changed = true
 		} 
 		slh.ElemContainerState(j)
-		{{ if eq .Elem "interface{}" }}d.decode(&v[uint(j)]){{ else }}v[uint(j)] = {{ decmd .Elem }}{{ end }}
+		{{ if eq .Elem "interface{}" }}d.decode(&v[uint(j)]){{ else }}v[uint(j)] = {{ decmd .Elem false }}{{ end }}
 	}
 	if j < len(v) {
 		v = v[:uint(j)]
@@ -420,7 +420,7 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}N(v []{{ .Elem }}, d *Decoder) 
 		{{ if eq .Elem "interface{}" -}}
 		d.decode(&v[uint(j)])
 		{{- else -}}
-		v[uint(j)] = {{ decmd .Elem }}
+		v[uint(j)] = {{ decmd .Elem false }}
 		{{- end }}
 	}
 	slh.End()
@@ -486,8 +486,8 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem 
 		{{ if eq .MapKey "interface{}" }}mk = nil 
 		d.decode(&mk)
 		if bv, bok := mk.([]byte); bok {
-			mk = d.string(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
-		}{{ else }}mk = {{ decmd .MapKey }}{{ end }}
+			mk = d.stringZC(bv) {{/* // maps cannot have []byte as key. switch to string. */}}
+		}{{ else }}mk = {{ decmd .MapKey true }}{{ end }}
 		d.mapElemValue()
 		{{ if eq .Elem "interface{}" "[]byte" "bytes" -}}
 		if mapGet { mv = v[mk] } else { mv = nil }
@@ -495,9 +495,9 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem 
 		{{ if eq .Elem "interface{}" -}}
 		d.decode(&mv)
 		{{ else if eq .Elem "[]byte" "bytes" -}}
-		mv = d.d.DecodeBytes(mv, false)
+		mv = d.decodeBytesInto(mv)
 		{{ else -}}
-		mv = {{ decmd .Elem }}
+		mv = {{ decmd .Elem false }}
 		{{ end -}}
 		if v != nil { v[mk] = mv }
 	}

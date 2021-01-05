@@ -572,7 +572,8 @@ func (d *cborDecDriver) ReadArrayStart() (length int) {
 	return d.decLen()
 }
 
-func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
+func (d *cborDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
+	d.d.decByteState = decByteStateNone
 	if d.advanceNil() {
 		return
 	}
@@ -582,20 +583,16 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 		d.bdRead = false
 		if bs == nil {
-			if zerocopy {
-				return d.decAppendIndefiniteBytes(d.d.b[:0])
-			}
-			return d.decAppendIndefiniteBytes(zeroByteSlice)
+			d.d.decByteState = decByteStateReuseBuf
+			return d.decAppendIndefiniteBytes(d.d.b[:0])
 		}
 		return d.decAppendIndefiniteBytes(bs[:0])
 	}
 	if d.bd == cborBdIndefiniteArray {
 		d.bdRead = false
-		if zerocopy && len(bs) == 0 {
-			bs = d.d.b[:]
-		}
 		if bs == nil {
-			bs = []byte{}
+			d.d.decByteState = decByteStateReuseBuf
+			bs = d.d.b[:0]
 		} else {
 			bs = bs[:0]
 		}
@@ -606,11 +603,15 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	}
 	if d.bd>>5 == cborMajorArray {
 		d.bdRead = false
-		if zerocopy && len(bs) == 0 {
+		if bs == nil {
+			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:]
 		}
 		slen := d.decLen()
-		bs = usableByteSlice(bs, slen)
+		var changed bool
+		if bs, changed = usableByteSlice(bs, slen); changed {
+			d.d.decByteState = decByteStateNone
+		}
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
@@ -618,17 +619,19 @@ func (d *cborDecDriver) DecodeBytes(bs []byte, zerocopy bool) (bsOut []byte) {
 	}
 	clen := d.decLen()
 	d.bdRead = false
-	if d.d.bytes && (zerocopy || d.h.ZeroCopy) {
+	if d.d.bytes && d.h.ZeroCopy {
+		d.d.decByteState = decByteStateZerocopy
 		return d.d.decRd.rb.readx(uint(clen))
 	}
-	if zerocopy && len(bs) == 0 {
+	if bs == nil {
+		d.d.decByteState = decByteStateReuseBuf
 		bs = d.d.b[:]
 	}
 	return decByteSlice(d.d.r(), clen, d.h.MaxInitLen, bs)
 }
 
 func (d *cborDecDriver) DecodeStringAsBytes() (s []byte) {
-	return d.DecodeBytes(d.d.b[:], true)
+	return d.DecodeBytes(nil)
 }
 
 func (d *cborDecDriver) DecodeTime() (t time.Time) {
@@ -704,10 +707,10 @@ func (d *cborDecDriver) DecodeNaked() {
 		n.v = valueTypeInt
 		n.i = d.DecodeInt64()
 	case cborMajorBytes:
-		d.d.fauxUnionReadRawBytes()
+		d.d.fauxUnionReadRawBytes(false)
 	case cborMajorString:
 		n.v = valueTypeString
-		n.s = d.d.string(d.DecodeStringAsBytes())
+		n.s = d.d.stringZC(d.DecodeStringAsBytes())
 	case cborMajorArray:
 		n.v = valueTypeArray
 		decodeFurther = true
