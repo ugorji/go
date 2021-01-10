@@ -220,6 +220,8 @@ var (
 
 	oneByteArr    [1]byte
 	zeroByteSlice = oneByteArr[:0:0]
+
+	eofReader devNullReader
 )
 
 var (
@@ -231,9 +233,11 @@ var (
 	errExtFnConvertExtUnsupported = errors.New("InterfaceExt.ConvertExt is not supported")
 	errExtFnUpdateExtUnsupported  = errors.New("InterfaceExt.UpdateExt is not supported")
 
-	errPanicHdlUndefinedErr = errors.New("panic: undefined error")
+	errPanicUndefined = errors.New("panic: undefined error")
 
 	errHandleInited = errors.New("cannot modify initialized Handle")
+
+	errNoFormatHandle = errors.New("no handle (cannot identify format)")
 )
 
 var pool4tiload = sync.Pool{
@@ -467,16 +471,28 @@ type isCodecEmptyer interface {
 }
 
 type codecError struct {
-	name string
-	err  error
+	err    error
+	name   string
+	pos    int
+	encode bool
 }
 
-func (e codecError) Cause() error {
+func (e *codecError) Cause() error {
 	return e.err
 }
 
-func (e codecError) Error() string {
-	return fmt.Sprintf("%s error: %v", e.name, e.err)
+func (e *codecError) Error() string {
+	if e.encode {
+		return fmt.Sprintf("%s encode error: %v", e.name, e.err)
+	}
+	return fmt.Sprintf("%s decode error [pos %d]: %v", e.name, e.pos, e.err)
+}
+
+func wrapCodecErr(in error, name string, numbytesread int, encode bool) (out error) {
+	if x, ok := in.(*codecError); ok && x.pos == numbytesread && x.name == name && x.encode == encode {
+		return in
+	}
+	return &codecError{in, name, numbytesread, encode}
 }
 
 var (
@@ -2127,6 +2143,9 @@ func isSliceBoundsError(s string) bool {
 }
 
 func panicValToErr(h errDecorator, v interface{}, err *error) {
+	if v == *err {
+		return
+	}
 	switch xerr := v.(type) {
 	case nil:
 	case runtime.Error:
@@ -2448,7 +2467,7 @@ func (panicHdl) onerror(err error) {
 //go:noinline
 func (panicHdl) errorf(format string, params ...interface{}) {
 	if format == "" {
-		panic(errPanicHdlUndefinedErr)
+		panic(errPanicUndefined)
 	}
 	if len(params) == 0 {
 		panic(errors.New(format))

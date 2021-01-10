@@ -6,7 +6,6 @@ package codec
 import (
 	"encoding"
 	"errors"
-	"fmt"
 	"io"
 	"reflect"
 	"sort"
@@ -48,14 +47,6 @@ type encDriverContainerTracker interface {
 	WriteArrayElem()
 	WriteMapElemKey()
 	WriteMapElemValue()
-}
-
-type encodeError struct {
-	codecError
-}
-
-func (e encodeError) Error() string {
-	return fmt.Sprintf("%s encode error: %v", e.name, e.err)
 }
 
 type encDriverNoopContainerWriter struct{}
@@ -978,31 +969,28 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
-
-	if e.err != nil {
-		return e.err
-	}
 	defer func() {
 		// if error occurred during encoding, return that error;
 		// else if error occurred on end'ing (i.e. during flush), return that error.
 		if x := recover(); x != nil {
-			panicValToErr(e, x, &err)
-			e.err = err
+			panicValToErr(e, x, &e.err)
+			err = e.err
 		}
 	}()
 
-	e.mustEncode(v)
+	e.MustEncode(v)
 	return
 }
 
 // MustEncode is like Encode, but panics if unable to Encode.
-// This provides insight to the code location that triggered the error.
+//
+// Note: This provides insight to the code location that triggered the error.
 func (e *Encoder) MustEncode(v interface{}) {
 	halt.onerror(e.err)
-	e.mustEncode(v)
-}
+	if e.hh == nil {
+		halt.onerror(errNoFormatHandle)
+	}
 
-func (e *Encoder) mustEncode(v interface{}) {
 	e.calls++
 	e.encode(v)
 	e.calls--
@@ -1242,7 +1230,7 @@ func (e *Encoder) rawBytes(vv Raw) {
 }
 
 func (e *Encoder) wrapErr(v error, err *error) {
-	*err = encodeError{codecError{name: e.hh.Name(), err: v}}
+	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
 }
 
 // ---- container tracker methods

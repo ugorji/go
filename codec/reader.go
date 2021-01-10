@@ -788,6 +788,11 @@ func (z *decRd) readn1IO() uint8 {
 	return z.ri.readn1()
 }
 
+type devNullReader struct{}
+
+func (devNullReader) Read(p []byte) (int, error) { return 0, io.EOF }
+func (devNullReader) Close() error               { return nil }
+
 func readFull(r io.Reader, bs []byte) (n uint, err error) {
 	var nn int
 	for n < uint(len(bs)) && err == nil {

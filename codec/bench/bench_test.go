@@ -80,11 +80,13 @@ func benchPreInit() {
 	// }
 
 	// use zerocopy for the benchmarks, for best performance
-	testJsonH.ZeroCopy = true
-	testCborH.ZeroCopy = true
-	testMsgpackH.ZeroCopy = true
-	testSimpleH.ZeroCopy = true
-	testBincH.ZeroCopy = true
+	const zeroCopyVal = true
+
+	testJsonH.ZeroCopy = zeroCopyVal
+	testCborH.ZeroCopy = zeroCopyVal
+	testMsgpackH.ZeroCopy = zeroCopyVal
+	testSimpleH.ZeroCopy = zeroCopyVal
+	testBincH.ZeroCopy = zeroCopyVal
 }
 
 func benchReinit() {

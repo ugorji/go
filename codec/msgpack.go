@@ -810,7 +810,7 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
 	}
 
 	d.bdRead = false
-	if d.d.bytes && d.h.ZeroCopy {
+	if d.d.zerocopy() {
 		d.d.decByteState = decByteStateZerocopy
 		return d.d.decRd.rb.readx(uint(clen))
 	}

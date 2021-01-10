@@ -1507,11 +1507,20 @@ func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 	if ch, ok := h.(*CborHandle); ok {
 		cborIndef = ch.IndefiniteLength
 	}
+
+	// if ch, ok := h.(*BincHandle); ok && ch.AsSymbols != 2 {
+	// 	defer func(u uint8) { ch.AsSymbols = u }(ch.AsSymbols)
+	// 	ch.AsSymbols = 2
+	// }
+
 	bh := testBasicHandle(h)
-	if !bh.Canonical {
-		bh.Canonical = true
-		defer func() { bh.Canonical = false }()
-	}
+
+	defer func(c, si bool) {
+		bh.Canonical = c
+		bh.SignedInteger = si
+	}(bh.Canonical, bh.SignedInteger)
+	bh.Canonical = true
+	// bh.SignedInteger = true
 
 	e1 := NewEncoderBytes(&b1, h)
 	e1.MustEncode(v1)
@@ -1642,7 +1651,7 @@ func doTestErrWriter(t *testing.T, h Handle) {
 	enc := NewEncoder(w, h)
 	for i := 0; i < 4; i++ {
 		err := enc.Encode("ugorji")
-		if ev, ok := err.(encodeError); ok {
+		if ev, ok := err.(*codecError); ok {
 			err = ev.Cause()
 		}
 		if err != testErrWriterErr {
@@ -3007,11 +3016,8 @@ func doTestMaxDepth(t *testing.T, h Handle) {
 			var v2 interface{}
 			err = testUnmarshal(&v2, b1, h)
 		}
-		if err1, ok := err.(decodeError); ok {
-			err = err1.codecError
-		}
 		var err0 interface{} = err
-		if err1, ok := err.(codecError); ok {
+		if err1, ok := err.(*codecError); ok {
 			err0 = err1.err
 		}
 		if err0 != v.E {

@@ -259,6 +259,7 @@ type DecodeOptions struct{ ... }
 type Decoder struct{ ... }
     func NewDecoder(r io.Reader, h Handle) *Decoder
     func NewDecoderBytes(in []byte, h Handle) *Decoder
+    func NewDecoderString(s string, h Handle) *Decoder
 type EncodeOptions struct{ ... }
 type Encoder struct{ ... }
     func NewEncoder(w io.Writer, h Handle) *Encoder

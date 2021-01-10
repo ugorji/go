@@ -34,12 +34,12 @@ const safeMode = false
 // helperUnsafeCopyMapEntry says that we should copy the pointer in the map
 // to another value during mapRange/iteration and mapGet calls.
 //
-// The only callers of mapRange/iteration is encode. Here, we just walk through the values
-// and encode them
-
-// The only caller of mapGet is decode. Here, it does a Get if the underlying value is a pointer,
-// and decodes into that.
-
+// The only callers of mapRange/iteration is encode.
+// Here, we just walk through the values and encode them
+//
+// The only caller of mapGet is decode.
+// Here, it does a Get if the underlying value is a pointer, and decodes into that.
+//
 // For both users, we are very careful NOT to modify or keep the pointers around.
 // Consequently, it is ok for take advantage of the performance that the map is not modified
 // during an iteration and we can just "peek" at the internal value" in the map and use it.
@@ -789,21 +789,20 @@ func (t *unsafeMapIter) Next() (r bool) {
 		return
 	}
 
-	k := (*unsafeReflectValue)(unsafe.Pointer(&t.k))
 	if helperUnsafeCopyMapEntry {
+		k := (*unsafeReflectValue)(unsafe.Pointer(&t.k))
 		unsafeMapSet(k.typ, k.ptr, t.it.key, t.kisref)
-	} else {
-		k.ptr = t.it.key
-	}
-
-	if t.mapvalues {
-		v := (*unsafeReflectValue)(unsafe.Pointer(&t.v))
-		if helperUnsafeCopyMapEntry {
+		if t.mapvalues {
+			v := (*unsafeReflectValue)(unsafe.Pointer(&t.v))
 			unsafeMapSet(v.typ, v.ptr, t.it.value, t.visref)
-		} else {
-			v.ptr = t.it.value
+		}
+	} else {
+		(*unsafeReflectValue)(unsafe.Pointer(&t.k)).ptr = t.it.key
+		if t.mapvalues {
+			(*unsafeReflectValue)(unsafe.Pointer(&t.v)).ptr = t.it.value
 		}
 	}
+
 	return true
 }
 
@@ -815,8 +814,7 @@ func (t *unsafeMapIter) Value() (r reflect.Value) {
 	return t.v
 }
 
-func (t *unsafeMapIter) Done() {
-}
+func (t *unsafeMapIter) Done() {}
 
 // unsafeMapSet does equivalent of: p = p2
 func unsafeMapSet(ptyp, p, p2 unsafe.Pointer, isref bool) {

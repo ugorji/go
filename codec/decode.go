@@ -6,7 +6,6 @@ package codec
 import (
 	"encoding"
 	"errors"
-	"fmt"
 	"io"
 	"reflect"
 	"strconv"
@@ -154,15 +153,6 @@ type decDriverContainerTracker interface {
 	ReadArrayElem()
 	ReadMapElemKey()
 	ReadMapElemValue()
-}
-
-type decodeError struct {
-	codecError
-	pos int
-}
-
-func (d decodeError) Error() string {
-	return fmt.Sprintf("%s decode error [pos %d]: %v", d.name, d.pos, d.err)
 }
 
 type decDriverNoopContainerReader struct{}
@@ -1015,18 +1005,6 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	var callFnRvk bool
 
-	// fnRvk is not inlineable, as reflect.Value.Set has high inline cost
-	// so we just manually inline in the 2 places below.
-	// fnRvk := func(s string) {
-	// 	if callFnRvk {
-	// 		if ktypeIsString {
-	// 			rvSetString(rvk, s)
-	// 		} else { // ktypeIsIntf
-	// 			rvk.Set(rv4i(s))
-	// 		}
-	// 	}
-	// }
-
 	fnRvk2 := func() (s string) {
 		callFnRvk = false
 		if len(kstr2bs) < 2 {
@@ -1035,7 +1013,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		if safeMode {
 			return d.string(kstr2bs)
 		}
-		if !safeMode && d.decByteState == decByteStateZerocopy && d.h.ZeroCopy {
+		// unsafe mode below
+		if d.decByteState == decByteStateZerocopy && d.h.ZeroCopy {
 			return stringView(kstr2bs)
 		}
 		callFnRvk = true
@@ -1225,6 +1204,10 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 	return d
 }
 
+func NewDecoderString(s string, h Handle) *Decoder {
+	return NewDecoderBytes(bytesView(s), h)
+}
+
 func (d *Decoder) r() *decRd {
 	return &d.decRd
 }
@@ -1270,7 +1253,7 @@ func (d *Decoder) resetCommon() {
 // clearing all state from last run(s).
 func (d *Decoder) Reset(r io.Reader) {
 	if r == nil {
-		return
+		r = &eofReader
 	}
 	d.bytes = false
 	if d.h.ReaderBufferSize > 0 {
@@ -1295,13 +1278,17 @@ func (d *Decoder) Reset(r io.Reader) {
 // clearing all state from last run(s).
 func (d *Decoder) ResetBytes(in []byte) {
 	if in == nil {
-		return
+		in = []byte{}
 	}
 	d.bufio = false
 	d.bytes = true
 	d.decReader = &d.rb
 	d.rb.reset(in)
 	d.resetCommon()
+}
+
+func (d *Decoder) ResetString(s string) {
+	d.ResetBytes(bytesView(s))
 }
 
 func (d *Decoder) naked() *fauxUnion {
@@ -1373,32 +1360,27 @@ func (d *Decoder) Decode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
-	if d.err != nil {
-		return d.err
-	}
 	defer func() {
 		if x := recover(); x != nil {
-			panicValToErr(d, x, &err)
-			d.err = err
+			panicValToErr(d, x, &d.err)
+			err = d.err
 		}
 	}()
 
-	d.mustDecode(v)
+	d.MustDecode(v)
 	return
 }
 
 // MustDecode is like Decode, but panics if unable to Decode.
-// This provides insight to the code location that triggered the error.
+//
+// Note: This provides insight to the code location that triggered the error.
 func (d *Decoder) MustDecode(v interface{}) {
 	halt.onerror(d.err)
-	d.mustDecode(v)
-}
+	if d.hh == nil {
+		halt.onerror(errNoFormatHandle)
+	}
 
-// MustDecode is like Decode, but panics if unable to Decode.
-// This provides insight to the code location that triggered the error.
-func (d *Decoder) mustDecode(v interface{}) {
 	// Top-level: v is a pointer and not nil.
-
 	d.calls++
 	d.decode(v)
 	d.calls--
@@ -1679,12 +1661,6 @@ func (d *Decoder) depthDecr() {
 // This should mostly be used for map keys, where the key type is string.
 // This is because keys of a map/struct are typically reused across many objects.
 func (d *Decoder) string(v []byte) (s string) {
-	// if !d.h.InternString || d.c != containerMapKey || len(v) < 2 || len(v) > internMaxStrLen {
-	// 	return string(v)
-	// }
-	// if d.is == nil {
-	// 	d.is.init()
-	// }
 	if d.is == nil || d.c != containerMapKey || len(v) < 2 || len(v) > internMaxStrLen {
 		return string(v)
 	}
@@ -1696,6 +1672,10 @@ func (d *Decoder) stringZC(v []byte) (s string) {
 		return stringView(v)
 	}
 	return d.string(v)
+}
+
+func (d *Decoder) zerocopy() bool {
+	return d.bytes && d.h.ZeroCopy
 }
 
 // decodeBytesInto is a convenience delegate function to decDriver.DecodeBytes.
@@ -1715,7 +1695,7 @@ func (d *Decoder) rawBytes() (v []byte) {
 }
 
 func (d *Decoder) wrapErr(v error, err *error) {
-	*err = decodeError{codecError: codecError{name: d.hh.Name(), err: v}, pos: d.NumBytesRead()}
+	*err = wrapCodecErr(v, d.hh.Name(), d.NumBytesRead(), false)
 }
 
 // NumBytesRead returns the number of bytes read

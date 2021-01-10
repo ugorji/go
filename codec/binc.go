@@ -785,7 +785,7 @@ func (d *bincDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
 		d.d.errorf("bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
 	d.bdRead = false
-	if d.d.bytes && d.h.ZeroCopy {
+	if d.d.zerocopy() {
 		d.d.decByteState = decByteStateZerocopy
 		return d.d.decRd.rb.readx(uint(clen))
 	}
