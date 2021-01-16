@@ -1,6 +1,6 @@
 // +build !safe
 // +build !appengine
-// +build go1.8
+// +build go1.9
 // +build !gc
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.

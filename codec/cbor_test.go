@@ -180,7 +180,7 @@ func TestCborGoldens(t *testing.T) {
 			testCborError(t, i, nil, v, nil, &b)
 		default:
 			v0 := g.Decoded
-			// testCborCoerceJsonNumber(rv4i(&v0))
+			// testCborCoerceJsonNumber(reflect.ValueOf(&v0))
 			testCborError(t, i, v0, v, deepEqual(v0, v), nil)
 		}
 	}

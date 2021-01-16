@@ -395,6 +395,7 @@ func (e *jsonEncDriver) EncodeUint(v uint64) {
 	quotes := e.is == 'A' || e.is == 'L' && v > 1<<53 || (e.ks && e.e.c == containerMapKey)
 
 	if cpu32Bit {
+		// use strconv directly, as optimized encodeUint only works on 64-bit alone
 		if quotes {
 			blen := 2 + len(strconv.AppendUint(e.b[1:1], v, 10))
 			e.b[0] = '"'
@@ -706,16 +707,27 @@ func (d *jsonDecDriver) advance() {
 func (d *jsonDecDriver) nextValueBytes(start []byte) (v []byte) {
 	v = start
 	dr := &d.d.decRd
+	// consumeString := func() {
+	// 	for {
+	// 		bs := dr.jsonReadAsisChars()
+	// 		v = append(v, bs...)
+	// 		if bs[len(bs)-1] == '"' {
+	// 			break
+	// 		}
+	// 		// last char is '\', so consume next one
+	// 		v = append(v, dr.readn1())
+	// 	}
+	// }
+
 	consumeString := func() {
-		for {
-			bs := dr.jsonReadAsisChars()
-			v = append(v, bs...)
-			if bs[len(bs)-1] == '"' {
-				break
-			}
-			// last char is '\', so consume next one
-			v = append(v, dr.readn1())
+	TOP:
+		v = append(v, dr.jsonReadAsisChars()...)
+		if v[len(v)-1] == '"' {
+			return
 		}
+		// last char is '\', so consume next one
+		v = append(v, dr.readn1())
+		goto TOP
 	}
 
 	d.advance() // ignore leading whitespace

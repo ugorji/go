@@ -13,7 +13,7 @@ import (
 )
 
 func makeMapReflect(typ reflect.Type, size int) (rv reflect.Value) {
-	t := (*unsafeIntf)(unsafe.Pointer(&typ)).word
+	t := (*unsafeIntf)(unsafe.Pointer(&typ)).ptr
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	urv.typ = t
 	urv.flag = uintptr(reflect.Map)

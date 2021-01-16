@@ -1,4 +1,4 @@
-// +build !go1.8 safe appengine
+// +build !go1.9 safe appengine
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -43,7 +43,7 @@ func bytesView(v string) []byte {
 // This applies to references like map/ptr/unsafepointer/chan/func,
 // and non-reference values like interface/slice.
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
-	rv = rv4i(v)
+	rv = reflect.ValueOf(v)
 	if isnilBitset.isset(byte(rv.Kind())) {
 		isnil = rv.IsNil()
 	}
@@ -58,9 +58,11 @@ func eq4i(i0, i1 interface{}) bool {
 	return i0 == i1
 }
 
-func rv4i(i interface{}) reflect.Value {
-	return reflect.ValueOf(i)
-}
+func rv4iptr(i interface{}) reflect.Value { return reflect.ValueOf(i) }
+func rv4istr(i interface{}) reflect.Value { return reflect.ValueOf(i) }
+
+// func rv4i(i interface{}) reflect.Value { return reflect.ValueOf(i) }
+// func rv4iK(i interface{}, kind byte, isref bool) reflect.Value { return reflect.ValueOf(i) }
 
 func rv2i(rv reflect.Value) interface{} {
 	return rv.Interface()
@@ -82,15 +84,7 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
 	return reflect.New(t).Elem()
 }
 
-func rvZeroAddr(t reflect.Type) reflect.Value {
-	return reflect.New(t).Elem()
-}
-
 func rvZeroK(t reflect.Type, k reflect.Kind) reflect.Value {
-	return reflect.Zero(t)
-}
-
-func rvZero(t reflect.Type) reflect.Value {
 	return reflect.Zero(t)
 }
 
@@ -98,12 +92,18 @@ func rvConvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
 	return v.Convert(t)
 }
 
+func rvAddressableReadonly(v reflect.Value) (rv reflect.Value) {
+	rv = rvZeroAddrK(v.Type(), v.Kind())
+	rvSetDirect(rv, v)
+	return
+}
+
 func rt2id(rt reflect.Type) uintptr {
-	return rv4i(rt).Pointer()
+	return reflect.ValueOf(rt).Pointer()
 }
 
 func i2rtid(i interface{}) uintptr {
-	return rv4i(reflect.TypeOf(i)).Pointer()
+	return reflect.ValueOf(reflect.TypeOf(i)).Pointer()
 }
 
 // --------------------------
@@ -191,25 +191,25 @@ func (x *atomicRtidFnSlice) store(p []codecRtidFn) {
 
 // --------------------------
 func (n *fauxUnion) ru() reflect.Value {
-	return rv4i(&n.u).Elem()
+	return reflect.ValueOf(&n.u).Elem()
 }
 func (n *fauxUnion) ri() reflect.Value {
-	return rv4i(&n.i).Elem()
+	return reflect.ValueOf(&n.i).Elem()
 }
 func (n *fauxUnion) rf() reflect.Value {
-	return rv4i(&n.f).Elem()
+	return reflect.ValueOf(&n.f).Elem()
 }
 func (n *fauxUnion) rl() reflect.Value {
-	return rv4i(&n.l).Elem()
+	return reflect.ValueOf(&n.l).Elem()
 }
 func (n *fauxUnion) rs() reflect.Value {
-	return rv4i(&n.s).Elem()
+	return reflect.ValueOf(&n.s).Elem()
 }
 func (n *fauxUnion) rt() reflect.Value {
-	return rv4i(&n.t).Elem()
+	return reflect.ValueOf(&n.t).Elem()
 }
 func (n *fauxUnion) rb() reflect.Value {
-	return rv4i(&n.b).Elem()
+	return reflect.ValueOf(&n.b).Elem()
 }
 
 // --------------------------
@@ -226,7 +226,7 @@ func rvSetBool(rv reflect.Value, v bool) {
 }
 
 func rvSetTime(rv reflect.Value, v time.Time) {
-	rv.Set(rv4i(v))
+	rv.Set(reflect.ValueOf(v))
 }
 
 func rvSetFloat32(rv reflect.Value, v float32) {
@@ -326,7 +326,7 @@ func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
 	} else {
 		bs = make([]byte, l)
 	}
-	reflect.Copy(rv4i(bs), rv)
+	reflect.Copy(reflect.ValueOf(bs), rv)
 	return
 }
 
@@ -418,17 +418,15 @@ func rvLenMap(rv reflect.Value) int {
 	return rv.Len()
 }
 
-func rvLenArray(rv reflect.Value) int {
-	return rv.Len()
-}
+// func rvLenArray(rv reflect.Value) int {	return rv.Len() }
 
 // ------------ map range and map indexing ----------
 
-func mapGet(m, k, v reflect.Value) (vv reflect.Value) {
+func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) (vv reflect.Value) {
 	return m.MapIndex(k)
 }
 
-func mapSet(m, k, v reflect.Value) {
+func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) {
 	m.SetMapIndex(k, v)
 }
 

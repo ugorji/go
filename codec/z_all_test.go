@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
 // +build alltests
-// +build go1.8
+// +build go1.9
 
 package codec
 
@@ -21,7 +21,8 @@ package codec
 //    a=( "" "safe" "codecgen" "notfastpath" "codecgen notfastpath" "codecgen safe" "safe notfastpath" )
 //    for i in "${a[@]}"; do echo ">>>> TAGS: $i"; go test "-tags=alltests $i" -run=Suite; done
 //
-// This only works on go1.7 and above. This is when subtests and suites were supported.
+// This suite of tests requires support for subtests and suites,
+// and conseqneutly will only run on go1.7 and above.
 
 // find . -name "codec_test.go" | xargs grep -e '^func Test' | \
 //     cut -d '(' -f 1 | cut -d ' ' -f 2 | \

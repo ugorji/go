@@ -179,7 +179,7 @@ _suite_very_quick_json_only_profile() {
 }
 
 _suite_trim_output() {
-    grep -v -E "^(goos:|goarch:|pkg:|PASS|ok|=== RUN|--- PASS)"
+    grep -v -E "^(goos:|goarch:|pkg:|cpu:|PASS|ok|=== RUN|--- PASS)"
 }
 
 _bench_dot_out_dot_txt() {
@@ -191,6 +191,17 @@ _bench_dot_out_dot_txt() {
   ./bench.sh -sgx # (codecgen)
 }
 
+_suite_debugging() {
+    local js=( En )
+    for j in ${js[@]}; do
+        echo "---- codecgen ----"
+        ${gocmd} test "${zargs[@]}" -tags "generated" -bench "__(Json)__.*${j}" -benchmem "$@"
+        echo "---- no codecgen ----"
+        ${gocmd} test "${zargs[@]}" -tags "" -bench "__(Json)__.*${j}" -benchmem "$@"
+        echo
+    done
+}
+
 _usage() {
     printf "usage: bench.sh -[dcbsgjqpz] for \n"
     printf "\t-d download\n"
@@ -200,6 +211,7 @@ _usage() {
     printf "\t-jqp run test suite for [json, json-quick, json-profile]\n"
     printf "\t-z run tests for bench.out.txt\n"
     printf "\t-f [pprof file] run pprof\n"
+    printf "\t-y run debugging suite (used during development only)\n"
 }
 
 _main() {
@@ -212,10 +224,10 @@ _main() {
     local args=()
     local do_x="0"
     local do_g="0"
-    while getopts "dcbsjqptxklgzf" flag
+    while getopts "dcbsjqptxklgzfy" flag
     do
         case "$flag" in
-            d|c|b|s|j|q|p|t|x|k|l|g|z|f) args+=( "$flag" ) ;;
+            d|c|b|s|j|q|p|t|x|k|l|g|z|f|y) args+=( "$flag" ) ;;
             *) _usage; return 1 ;;
         esac
     done
@@ -239,6 +251,7 @@ _main() {
     [[ " ${args[*]} " == *"t"* ]] && _suite_tests "$@" | _suite_trim_output | _suite_tests_strip_file_line
     [[ " ${args[*]} " == *"z"* ]] && _bench_dot_out_dot_txt
     [[ " ${args[*]} " == *"f"* ]] && ${gocmd} tool pprof bench.test ${1:-mem.out}
+    [[ " ${args[*]} " == *"y"* ]] && _suite_debugging "$@" | _suite_trim_output
     
     true
     # shift $((OPTIND-1))

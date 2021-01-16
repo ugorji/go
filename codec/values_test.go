@@ -54,6 +54,7 @@ type AnonInTestStruc struct {
 	AF64slice  []float64
 	AF32slice  []float32
 
+	AMSS map[string]string
 	// AMI32U32  map[int32]uint32
 	// AMU32F64 map[uint32]float64 // json/bson do not like it
 	AMSU16 map[string]uint16
@@ -208,7 +209,18 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			math.MaxUint16, math.MaxUint16 + 4, math.MaxUint16 - 4,
 			math.MaxUint32, math.MaxUint32 + 4, math.MaxUint32 - 4,
 		},
-		AMSU16: map[string]uint16{strRpt(n, "1"): 1, strRpt(n, "22"): 2, strRpt(n, "333"): 3, strRpt(n, "4444"): 4},
+		AMSU16: map[string]uint16{
+			strRpt(n, "1"):    1,
+			strRpt(n, "22"):   2,
+			strRpt(n, "333"):  3,
+			strRpt(n, "4444"): 4,
+		},
+		AMSS: map[string]string{
+			strRpt(n, "1"):    strRpt(n, "1"),
+			strRpt(n, "22"):   strRpt(n, "22"),
+			strRpt(n, "333"):  strRpt(n, "333"),
+			strRpt(n, "4444"): strRpt(n, "4444"),
+		},
 
 		// Note: +/- inf, NaN, and other non-representable numbers should not be explicitly tested here
 

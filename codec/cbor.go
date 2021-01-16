@@ -266,11 +266,11 @@ func (e *cborEncDriver) WriteArrayEnd() {
 }
 
 func (e *cborEncDriver) EncodeString(v string) {
+	bb := cborBaseString
 	if e.h.StringToRaw {
-		e.EncodeStringBytesRaw(bytesView(v))
-		return
+		bb = cborBaseBytes
 	}
-	e.encStringBytesS(cborBaseString, v)
+	e.encStringBytesS(bb, v)
 }
 
 func (e *cborEncDriver) EncodeStringBytesRaw(v []byte) {

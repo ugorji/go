@@ -242,7 +242,7 @@ func (e *Encoder) kErr(f *codecFnInfo, rv reflect.Value) {
 }
 
 func chanToSlice(rv reflect.Value, rtslice reflect.Type, timeout time.Duration) (rvcs reflect.Value) {
-	rvcs = rvZero(rtslice)
+	rvcs = rvZeroK(rtslice, reflect.Slice)
 	if timeout < 0 { // consume until close
 		for {
 			recv, recvOk := rv.Recv()
@@ -258,7 +258,7 @@ func chanToSlice(rv reflect.Value, rtslice reflect.Type, timeout time.Duration) 
 			cases[1] = reflect.SelectCase{Dir: reflect.SelectDefault}
 		} else {
 			tt := time.NewTimer(timeout)
-			cases[1] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: rv4i(tt.C)}
+			cases[1] = reflect.SelectCase{Dir: reflect.SelectRecv, Chan: reflect.ValueOf(tt.C)}
 		}
 		for {
 			chosen, recv, recvOk := reflect.Select(cases)
@@ -318,7 +318,7 @@ func (e *Encoder) kSliceW(rv reflect.Value, ti *typeInfo) {
 }
 
 func (e *Encoder) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
-	var l = rvLenArray(rv)
+	var l = rv.Len()
 	if l == 0 {
 		e.mapStart(0)
 	} else {
@@ -338,7 +338,7 @@ func (e *Encoder) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
 }
 
 func (e *Encoder) kArrayW(rv reflect.Value, ti *typeInfo) {
-	var l = rvLenArray(rv)
+	var l = rv.Len()
 	e.arrayStart(l)
 	if l > 0 {
 		fn := e.kSeqFn(ti.elem)
@@ -510,7 +510,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				delete(mf, k)
 				continue
 			}
-			if f.ti.infoFieldOmitempty && isEmptyValue(rv4i(v), e.h.TypeInfos, recur) {
+			if f.ti.infoFieldOmitempty && isEmptyValue(reflect.ValueOf(v), e.h.TypeInfos, recur) {
 				delete(mf, k)
 				continue
 			}
@@ -596,7 +596,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	var rvv = mapAddrLoopvarRV(f.ti.elem, vtypeKind)
 
 	if e.h.Canonical {
-		e.kMapCanonical(f.ti.key, f.ti.elem, rv, rvv, valFn)
+		e.kMapCanonical(f.ti, rv, rvv, valFn)
 		e.mapEnd()
 		return
 	}
@@ -632,12 +632,19 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	e.mapEnd()
 }
 
-func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value, valFn *codecFn) {
+func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *codecFn) {
 	// we previously did out-of-band if an extension was registered.
 	// This is not necessary, as the natural kind is sufficient for ordering.
 
+	rtkey := ti.key
+	// rtval := ti.elem
 	mks := rv.MapKeys()
-	switch rtkey.Kind() {
+	rtkeyKind := rtkey.Kind()
+	kfast := mapKeyFastKindFor(rtkeyKind)
+	visindirect := ti.elemsize > mapMaxElemSize
+	visref := refBitset.isset(ti.elemkind)
+
+	switch rtkeyKind {
 	case reflect.Bool:
 		mksv := make([]boolRv, len(mks))
 		for i, k := range mks {
@@ -650,7 +657,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 			e.mapElemKey()
 			e.e.EncodeBool(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.String:
 		mksv := make([]stringRv, len(mks))
@@ -664,7 +671,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 			e.mapElemKey()
 			e.e.EncodeString(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
 		mksv := make([]uint64Rv, len(mks))
@@ -678,7 +685,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 			e.mapElemKey()
 			e.e.EncodeUint(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		mksv := make([]int64Rv, len(mks))
@@ -692,7 +699,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 			e.mapElemKey()
 			e.e.EncodeInt(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.Float32:
 		mksv := make([]float64Rv, len(mks))
@@ -706,7 +713,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 			e.mapElemKey()
 			e.e.EncodeFloat32(float32(mksv[i].v))
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.Float64:
 		mksv := make([]float64Rv, len(mks))
@@ -720,7 +727,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 			e.mapElemKey()
 			e.e.EncodeFloat64(mksv[i].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn)
+			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.Struct:
 		if rtkey == timeTyp {
@@ -735,7 +742,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 				e.mapElemKey()
 				e.e.EncodeTime(mksv[i].v)
 				e.mapElemValue()
-				e.encodeValue(mapGet(rv, mksv[i].r, rvv), valFn)
+				e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 			}
 			break
 		}
@@ -758,7 +765,7 @@ func (e *Encoder) kMapCanonical(rtkey, rtval reflect.Type, rv, rvv reflect.Value
 			e.mapElemKey()
 			e.encWr.writeb(mksbv[j].v)
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksbv[j].r, rvv), valFn)
+			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
 		}
 		e.blist.put(mksv)
 	}
@@ -1179,12 +1186,7 @@ TOP:
 	} else if rv.CanAddr() {
 		fn.fe(e, &fn.i, rv.Addr())
 	} else if fn.i.addrEf {
-		if rt == nil {
-			rt = rvType(rv)
-		}
-		rv2 := rvZeroAddrK(rt, rv.Kind())
-		rvSetDirect(rv2, rv)
-		fn.fe(e, &fn.i, rv2.Addr())
+		fn.fe(e, &fn.i, rvAddressableReadonly(rv).Addr())
 	} else {
 		fn.fe(e, &fn.i, rv)
 	}

@@ -928,7 +928,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 					rv1 := reflect.New(v0rt)
 					err = testUnmarshal(rv1.Interface(), b0, h)
 					v1 = rv1.Elem().Interface()
-					// v1 = reflect.Indirect(rv4i(v1)).Interface()
+					// v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface()
 				}
 			}
 		}
@@ -939,7 +939,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 		// if v1 != nil {
 		//	t.Logf("         v1 returned: %T, %#v", v1, v1)
 		//	//we always indirect, because ptr to typed value may be passed (if not testNil)
-		//	v1 = reflect.Indirect(rv4i(v1)).Interface()
+		//	v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface()
 		// }
 		if err != nil {
 			t.Logf("-------- Error: %v", err)
@@ -1855,7 +1855,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 			continue
 		}
 		//no need to indirect, because we pass a nil ptr, so we already have the value
-		//if v1 != nil { v1 = reflect.Indirect(rv4i(v1)).Interface() }
+		//if v1 != nil { v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface() }
 		if err = deepEqual(v, v1); err == nil {
 			if testVerbose {
 				t.Logf("++++++++ Objects match: %T, %v", v, v)
@@ -1864,8 +1864,8 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 			t.Logf("-------- FAIL: Objects do not match: %v. Source: %T. Decoded: %T", err, v, v1)
 			if testVerbose {
 				t.Logf("--------   GOLDEN: %#v", v)
-				// t.Logf("--------   DECODED: %#v <====> %#v", v1, reflect.Indirect(rv4i(v1)).Interface())
-				t.Logf("--------   DECODED: %#v <====> %#v", v1, reflect.Indirect(rv4i(v1)).Interface())
+				// t.Logf("--------   DECODED: %#v <====> %#v", v1, reflect.Indirect(reflect.ValueOf(v1)).Interface())
+				t.Logf("--------   DECODED: %#v <====> %#v", v1, reflect.Indirect(reflect.ValueOf(v1)).Interface())
 			}
 			t.FailNow()
 		}
@@ -1881,7 +1881,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 			}
 		} else {
 			xs := "--------"
-			if rv4i(v).Kind() == reflect.Map {
+			if reflect.ValueOf(v).Kind() == reflect.Map {
 				xs = "        "
 				if testVerbose {
 					t.Logf("%s FAIL - bytes do not match, but it's a map (ok - dependent on ordering): %v", xs, err)
@@ -2311,7 +2311,8 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	for _, i := range sizes {
 		var m1, m2 map[string]bool
 		m1 = make(map[string]bool, 1)
-		var s1 = stringView(in[:i])
+		// var s1 = stringView(in[:i])
+		var s1 = string(in[:i])
 		// fmt.Printf("testcontainerlen: large string: i: %v, |%s|\n", i, s1)
 		m1[s1] = true
 
@@ -2391,7 +2392,7 @@ func testRandomFillRV(v reflect.Value) {
 		testRandomFillRV(v.Elem())
 	case reflect.Interface:
 		if v.IsNil() {
-			v.Set(rv4i("nothing"))
+			v.Set(reflect.ValueOf("nothing"))
 		} else {
 			testRandomFillRV(v.Elem())
 		}
@@ -2449,7 +2450,7 @@ func doTestMammoth(t *testing.T, h Handle) {
 	var b []byte
 
 	var m, m2 TestMammoth
-	testRandomFillRV(rv4i(&m).Elem())
+	testRandomFillRV(reflect.ValueOf(&m).Elem())
 	b = testMarshalErr(&m, h, t, "mammoth-"+name)
 
 	testUnmarshalErr(&m2, b, h, t, "mammoth-"+name)
@@ -2461,7 +2462,7 @@ func doTestMammoth(t *testing.T, h Handle) {
 	}
 
 	var mm, mm2 TestMammoth2Wrapper
-	testRandomFillRV(rv4i(&mm).Elem())
+	testRandomFillRV(reflect.ValueOf(&mm).Elem())
 	b = testMarshalErr(&mm, h, t, "mammoth2-"+name)
 	// os.Stderr.Write([]byte("\n\n\n\n" + string(b) + "\n\n\n\n"))
 	testUnmarshalErr(&mm2, b, h, t, "mammoth2-"+name)
@@ -3090,6 +3091,7 @@ func doTestBytesEncodedAsArray(t *testing.T, h Handle) {
 func doTestStrucEncDec(t *testing.T, h Handle) {
 	defer testSetup(t)()
 	name := h.Name()
+
 	{
 		var ts1 = newTestStruc(2, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
 		var ts2 TestStruc
@@ -3098,6 +3100,7 @@ func doTestStrucEncDec(t *testing.T, h Handle) {
 		testDeepEqualErr(ts1, &ts2, t, name)
 		testReleaseBytes(bs)
 	}
+
 	// Note: We cannot use TestStrucFlex because it has omitempty values,
 	// Meaning that sometimes, encoded and decoded will not be same.
 	// {
@@ -4351,7 +4354,7 @@ func TestMapRangeIndex(t *testing.T) {
 	rvk := mapAddrLoopvarRV(mt.Key(), mt.Key().Kind())
 	rvv := mapAddrLoopvarRV(mt.Elem(), mt.Elem().Kind())
 	var it mapIter
-	mapRange(&it, rv4i(m1), rvk, rvv, true)
+	mapRange(&it, reflect.ValueOf(m1), rvk, rvv, true)
 	for it.Next() {
 		k := fnrv(it.Key(), rvk).Interface().(string)
 		v := fnrv(it.Value(), rvv).Interface().(*T)
@@ -4380,7 +4383,7 @@ func TestMapRangeIndex(t *testing.T) {
 	mt = reflect.TypeOf(m2)
 	rvk = mapAddrLoopvarRV(mt.Key(), mt.Key().Kind())
 	rvv = mapAddrLoopvarRV(mt.Elem(), mt.Elem().Kind())
-	mapRange(&it, rv4i(m2), rvk, rvv, true)
+	mapRange(&it, reflect.ValueOf(m2), rvk, rvv, true)
 	for it.Next() {
 		k := fnrv(it.Key(), rvk).Interface().(*T)
 		v := fnrv(it.Value(), rvv).Interface().(T)
@@ -4399,10 +4402,17 @@ func TestMapRangeIndex(t *testing.T) {
 
 	fnTestMapIndex := func(mi ...interface{}) {
 		for _, m0 := range mi {
-			m := rv4i(m0)
-			rvv := mapAddrLoopvarRV(m.Type().Elem(), m.Type().Elem().Kind())
+			m := reflect.ValueOf(m0)
+			mkt := m.Type().Key()
+			mvt := m.Type().Elem()
+			kfast := mapKeyFastKindFor(mkt.Kind())
+			rvv := mapAddrLoopvarRV(mvt, mvt.Kind())
+			visindirect := mvt.Size() > mapMaxElemSize
+			visref := refBitset.isset(byte(mvt.Kind()))
+
 			for _, k := range m.MapKeys() {
-				testDeepEqualErr(m.MapIndex(k).Interface(), mapGet(m, k, rvv).Interface(), t, "map-index-eq")
+				mg := mapGet(m, k, rvv, kfast, visindirect, visref).Interface()
+				testDeepEqualErr(m.MapIndex(k).Interface(), mg, t, "map-index-eq")
 			}
 		}
 	}
@@ -4413,8 +4423,8 @@ func TestMapRangeIndex(t *testing.T) {
 	// var tt = &T{I: 3}
 	// ttTyp := reflect.TypeOf(tt)
 	// _, _ = tt, ttTyp
-	// mv := rv4i(m)
-	// it := mapRange(mv, rv4i(&s).Elem(), rv4i(&tt).Elem(), true) //ok
+	// mv := reflect.ValueOf(m)
+	// it := mapRange(mv, reflect.ValueOf(&s).Elem(), reflect.ValueOf(&tt).Elem(), true) //ok
 	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(reflect.TypeOf(T{})).Elem(), true) // ok
 	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(ttTyp.Elem()), true) // !ok
 	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(reflect.TypeOf(T{})), true) !ok

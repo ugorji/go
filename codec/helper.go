@@ -191,7 +191,36 @@ const (
 	skipFastpathTypeSwitchInDirectCall = false
 )
 
+// keep in sync with
+//    $GOROOT/src/cmd/compile/internal/gc/reflect.go: MAXKEYSIZE, MAXELEMSIZE
+//    $GOROOT/src/runtime/map.go: maxKeySize, maxElemSize
+//    $GOROOT/src/reflect/type.go: maxKeySize, maxElemSize
+//
+// We use these to determine whether the type is stored indirectly in the map or not.
+const (
+	mapMaxKeySize  = 128
+	mapMaxElemSize = 128
+)
+
 const cpu32Bit = ^uint(0)>>32 == 0
+
+type rkind byte
+
+const (
+	rkindPtr    = byte(reflect.Ptr)
+	rkindString = byte(reflect.String)
+	rkindChan   = byte(reflect.Chan)
+)
+
+type mapKeyFastKind uint8
+
+const (
+	mapKeyFastKind32 = iota + 1
+	mapKeyFastKind32ptr
+	mapKeyFastKind64
+	mapKeyFastKind64ptr
+	mapKeyFastKindStr
+)
 
 var (
 	must mustHdl
@@ -214,6 +243,8 @@ var (
 
 	// scalarBitset sets bit for all kinds which are scalars/primitives and thus immutable
 	scalarBitset bitset32
+
+	mapKeyFastKindVals [32]mapKeyFastKind
 
 	// codecgen is set to true by codecgen, so that tests, etc can use this information as needed.
 	codecgen bool
@@ -251,6 +282,30 @@ var pool4tiload = sync.Pool{
 }
 
 func init() {
+	xx := func(f mapKeyFastKind, k ...reflect.Kind) {
+		for _, v := range k {
+			mapKeyFastKindVals[byte(v)] = f
+		}
+	}
+
+	var f mapKeyFastKind
+
+	f = mapKeyFastKind64
+	if wordSizeBits == 32 {
+		f = mapKeyFastKind32
+	}
+	xx(f, reflect.Int, reflect.Uint, reflect.Uintptr)
+
+	f = mapKeyFastKind64ptr
+	if wordSizeBits == 32 {
+		f = mapKeyFastKind32ptr
+	}
+	xx(f, reflect.Ptr)
+
+	xx(mapKeyFastKindStr, reflect.String)
+	xx(mapKeyFastKind32, reflect.Uint32, reflect.Int32, reflect.Float32)
+	xx(mapKeyFastKind64, reflect.Uint64, reflect.Int64, reflect.Float64)
+
 	scalarBitset.
 		set(byte(reflect.Bool)).
 		set(byte(reflect.Int)).
@@ -1173,13 +1228,13 @@ type addExtWrapper struct {
 }
 
 func (x addExtWrapper) WriteExt(v interface{}) []byte {
-	bs, err := x.encFn(rv4i(v))
+	bs, err := x.encFn(reflect.ValueOf(v))
 	halt.onerror(err)
 	return bs
 }
 
 func (x addExtWrapper) ReadExt(v interface{}, bs []byte) {
-	halt.onerror(x.decFn(rv4i(v), bs))
+	halt.onerror(x.decFn(reflect.ValueOf(v), bs))
 }
 
 func (x addExtWrapper) ConvertExt(v interface{}) interface{} {
@@ -1657,10 +1712,10 @@ type typeInfo struct {
 	keykind, elemkind uint8
 }
 
-func (ti *typeInfo) siForEncName(name string) (si *structFieldInfo) {
+func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
 	// binary search for map lookup is expensive, as it has to compare strings byte by byte.
 	// map (hash) lookup is faster, as it can leverage string length in disambiguation.
-	return ti.sfi4Name[name]
+	return ti.sfi4Name[string(name)]
 }
 
 func (ti *typeInfo) resolve(x []structFieldInfo, ss map[string]uint16) (n int) {
@@ -2184,12 +2239,10 @@ func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
 	return bs[:slen], false
 }
 
-// func notNilBytes(v []byte) []byte {
-// 	if v == nil {
-// 		return []byte{}
-// 	}
-// 	return v
-// }
+func mapKeyFastKindFor(k reflect.Kind) mapKeyFastKind {
+	return mapKeyFastKindVals[k&31]
+	// return mapKeyFastKindVals[int(k)%len(mapKeyFastKindVals)]
+}
 
 // ----
 
@@ -2238,7 +2291,8 @@ func makeExt(ext interface{}) Ext {
 }
 
 func baseRV(v interface{}) (rv reflect.Value) {
-	for rv = rv4i(v); rv.Kind() == reflect.Ptr; rv = rv.Elem() {
+	// use reflect.ValueOf, not rv4i, as of go 1.16beta, rv4i was not inlineable
+	for rv = reflect.ValueOf(v); rv.Kind() == reflect.Ptr; rv = rv.Elem() {
 	}
 	return
 }
@@ -2464,6 +2518,10 @@ func (panicHdl) onerror(err error) {
 }
 
 // errorf will always panic, using the parameters passed.
+//
+// Note: it is ok to pass in a stringView, as it will just pass it directly
+// to a fmt.Sprintf call and not hold onto it.
+//
 //go:noinline
 func (panicHdl) errorf(format string, params ...interface{}) {
 	if format == "" {

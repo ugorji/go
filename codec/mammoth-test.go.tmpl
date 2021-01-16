@@ -7,6 +7,7 @@ package codec
 
 import "testing"
 import "fmt"
+import "reflect"
 
 // TestMammoth has all the different paths optimized in fast-path
 // It has all the primitives, slices and maps.
@@ -71,7 +72,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	testDeepEqualErr(v{{$i}}v2[0], v{{$i}}v2[1], t, "equal-slice-v{{$i}}") // should not change
 	testDeepEqualErr(len(v{{$i}}v2), 2, t, "equal-slice-v{{$i}}") // should not change
 	v{{$i}}v2 = make([]{{ .Elem }}, 2)
-	testUnmarshalErr(rv4i(v{{$i}}v2), bs{{$i}}, h, t, "dec-slice-v{{$i}}-noaddr") // non-addressable value
+	testUnmarshalErr(reflect.ValueOf(v{{$i}}v2), bs{{$i}}, h, t, "dec-slice-v{{$i}}-noaddr") // non-addressable value
 	testDeepEqualErr(v{{$i}}v2[0], v{{$i}}v2[1], t, "equal-slice-v{{$i}}-noaddr") // should not change
 	testDeepEqualErr(len(v{{$i}}v2), 2, t, "equal-slice-v{{$i}}") // should not change
 	} else {
@@ -79,7 +80,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	testUnmarshalErr(v{{$i}}v2, bs{{$i}}, h, t, "dec-slice-v{{$i}}")
 	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-slice-v{{$i}}")
 	v{{$i}}v2 = make([]{{ .Elem }}, len(v))
-	testUnmarshalErr(rv4i(v{{$i}}v2), bs{{$i}}, h, t, "dec-slice-v{{$i}}-noaddr") // non-addressable value
+	testUnmarshalErr(reflect.ValueOf(v{{$i}}v2), bs{{$i}}, h, t, "dec-slice-v{{$i}}-noaddr") // non-addressable value
 	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-slice-v{{$i}}-noaddr")
 	}
 	testReleaseBytes(bs{{$i}})
@@ -144,7 +145,7 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 	testUnmarshalErr(v{{$i}}v2, bs{{$i}}, h, t, "dec-map-v{{$i}}")
 	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-map-v{{$i}}")
 	if v == nil { v{{$i}}v2 = nil } else { v{{$i}}v2 = make(map[{{ .MapKey }}]{{ .Elem }}, len(v)) } // reset map
-	testUnmarshalErr(rv4i(v{{$i}}v2), bs{{$i}}, h, t, "dec-map-v{{$i}}-noaddr") // decode into non-addressable map value
+	testUnmarshalErr(reflect.ValueOf(v{{$i}}v2), bs{{$i}}, h, t, "dec-map-v{{$i}}-noaddr") // decode into non-addressable map value
 	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-map-v{{$i}}-noaddr")
     }
 	if v == nil { v{{$i}}v2 = nil } else { v{{$i}}v2 = make(map[{{ .MapKey }}]{{ .Elem }}, len(v)) } // reset map
