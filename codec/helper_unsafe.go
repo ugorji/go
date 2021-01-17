@@ -246,14 +246,18 @@ func rvAddressableReadonly(v reflect.Value) reflect.Value {
 	// Assume folks calling it are passing a value that can be addressable, but isn't.
 	// This assumes that the flagIndir is already set on it.
 	// so we just set the flagAddr bit on the flag (and do not set the flagIndir).
+
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	uv.flag = uv.flag | unsafeFlagAddr // | unsafeFlagIndir
+
 	// callers of this only use it in read-only mode
 	// if uv.ptr == nil || uv.ptr == unsafeZeroAddr {
 	// 	uv.ptr = unsafe_New(uv.typ)
 	// }
+
 	return v
-	// rv = rvZeroAddrK(v.Type(), v.Kind())
+
+	// rv := rvZeroAddrK(v.Type(), v.Kind())
 	// rvSetDirect(rv, v)
 	// return rv.Addr()
 }
@@ -903,24 +907,6 @@ func (t *unsafeMapIter) Value() (r reflect.Value) {
 
 func (t *unsafeMapIter) Done() {}
 
-// // unsafeMapSet does equivalent of: p = p2
-// func unsafeMapSet(ptyp, p, p2 unsafe.Pointer, isref bool) {
-// 	if isref {
-// 		*(*unsafe.Pointer)(p) = *(*unsafe.Pointer)(p2) // p2
-// 	} else {
-// 		typedmemmove(ptyp, p, p2) // *(*unsafe.Pointer)(p2)) // p2)
-// 	}
-// }
-
-// unsafeMapKVPtr returns the pointer if flagIndir, else it returns a pointer to the pointer.
-// It is needed as maps always keep a reference to the underlying value.
-func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
-	if urv.flag&unsafeFlagIndir == 0 {
-		return unsafe.Pointer(&urv.ptr)
-	}
-	return urv.ptr
-}
-
 func mapRange(t *mapIter, m, k, v reflect.Value, mapvalues bool) {
 	if rvIsNil(m) {
 		t.done = true
@@ -948,6 +934,32 @@ func mapRange(t *mapIter, m, k, v reflect.Value, mapvalues bool) {
 		t.v = reflect.Value{}
 	}
 }
+
+// // unsafeMapSet does equivalent of: p = p2
+// func unsafeMapSet(ptyp, p, p2 unsafe.Pointer, isref bool) {
+// 	if isref {
+// 		*(*unsafe.Pointer)(p) = *(*unsafe.Pointer)(p2) // p2
+// 	} else {
+// 		typedmemmove(ptyp, p, p2) // *(*unsafe.Pointer)(p2)) // p2)
+// 	}
+// }
+
+// unsafeMapKVPtr returns the pointer if flagIndir, else it returns a pointer to the pointer.
+// It is needed as maps always keep a reference to the underlying value.
+func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
+	if urv.flag&unsafeFlagIndir == 0 {
+		return unsafe.Pointer(&urv.ptr)
+	}
+	return urv.ptr
+}
+
+// func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) (vv reflect.Value) {
+// 	return m.MapIndex(k)
+// }
+
+// func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) {
+// 	m.SetMapIndex(k, v)
+// }
 
 func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) (_ reflect.Value) {
 	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
@@ -1006,9 +1018,9 @@ func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, va
 	// Sometimes, we got vvptr == nil when we dereferenced vvptr (if valIsIndirect).
 	// consequently, only call them if !valIsIndirect
 
-	const useReflect = false
+	const useGenericMapassign = false
 
-	if useReflect || valIsIndirect {
+	if useGenericMapassign || valIsIndirect {
 		vvptr = mapassign(urv.typ, mptr, kptr)
 		typedmemmove(vtyp, vvptr, vptr)
 		// reflect_mapassign(urv.typ, mptr, kptr, vptr)
@@ -1019,11 +1031,11 @@ func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, va
 	case mapKeyFastKind32:
 		vvptr = mapassign_fast32(urv.typ, mptr, *(*uint32)(kptr))
 	case mapKeyFastKind32ptr:
-		vvptr = mapassign_fast32ptr(urv.typ, mptr, kptr)
+		vvptr = mapassign_fast32ptr(urv.typ, mptr, *(*unsafe.Pointer)(kptr))
 	case mapKeyFastKind64:
 		vvptr = mapassign_fast64(urv.typ, mptr, *(*uint64)(kptr))
 	case mapKeyFastKind64ptr:
-		vvptr = mapassign_fast64ptr(urv.typ, mptr, kptr)
+		vvptr = mapassign_fast64ptr(urv.typ, mptr, *(*unsafe.Pointer)(kptr))
 	case mapKeyFastKindStr:
 		vvptr = mapassign_faststr(urv.typ, mptr, *(*string)(kptr))
 	default:

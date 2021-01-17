@@ -192,7 +192,7 @@ _bench_dot_out_dot_txt() {
 }
 
 _suite_debugging() {
-    local js=( En )
+    local js=( _ ) # or: ( _ ) ( En ) ( De ) ( En De )
     for j in ${js[@]}; do
         echo "---- codecgen ----"
         ${gocmd} test "${zargs[@]}" -tags "generated" -bench "__(Json)__.*${j}" -benchmem "$@"

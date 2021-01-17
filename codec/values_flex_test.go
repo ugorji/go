@@ -263,6 +263,10 @@ type TestStrucFlex struct {
 
 	Mis     map[int]string
 	Mbu64   map[bool]struct{}
+	Mu8e    map[byte]struct{}
+	Mu8u64  map[byte]stringUint64T
+	Msp2ss  map[*string][]string
+	Mip2ss  map[*uint64][]string
 	Miwu64s map[int]wrapUint64Slice
 	Mfwss   map[float64]wrapStringSlice
 	Mf32wss map[float32]wrapStringSlice
@@ -295,7 +299,7 @@ type TestStrucFlex struct {
 	// make this one omitempty (so it is excluded if nil).
 	*AnonInTestStrucIntf `json:",omitempty"`
 
-	//M map[interface{}]interface{}  `json:"-",bson:"-"`
+	M          map[interface{}]interface{} `json:"-"`
 	Mtsptr     map[string]*TestStrucFlex
 	Mts        map[string]TestStrucFlex
 	Its        []*TestStrucFlex
@@ -348,7 +352,12 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 			22:  "twenty two",
 			-44: "minus forty four",
 		},
-		Mbu64: map[bool]struct{}{false: {}, true: {}},
+		Mbu64:  map[bool]struct{}{false: {}, true: {}},
+		Mu8e:   map[byte]struct{}{1: {}, 2: {}, 3: {}, 4: {}},
+		Mu8u64: make(map[byte]stringUint64T),
+		Mip2ss: make(map[*uint64][]string),
+		Msp2ss: make(map[*string][]string),
+		M:      make(map[interface{}]interface{}),
 
 		Ci64: -22,
 		Swrapbytes: []wrapBytes{ // lengths of 1, 2, 4, 8, 16, 32, 64, 128, 256,
@@ -381,10 +390,17 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 		XuintToBytes: 16,
 	}
 
+	var strslice []string
 	for i := uint64(0); i < numStrUi64T; i++ {
-		ss := stringUint64T{S: strings.Repeat(strconv.FormatUint(i, 10), 4), U: i}
+		s := strings.Repeat(strconv.FormatUint(i, 10), 4)
+		ss := stringUint64T{S: s, U: i}
+		strslice = append(strslice, s)
 		// Ensure this is set to nil if decoding into a nil interface{}.
 		ts.MstrUi64TSelf[ss] = &ss
+		ts.Mu8u64[s[0]] = ss
+		ts.Mip2ss[&i] = strslice
+		ts.Msp2ss[&s] = strslice
+		ts.M[s] = strslice
 	}
 
 	numChanSend := cap(ts.Chstr) / 4 // 8
