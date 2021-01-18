@@ -896,7 +896,7 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 		if t == t0 {
 			inlist = true
 			if x.checkForSelfer(t, varname) {
-				x.line(varname + ".CodecEncodeSelf(e)")
+				x.linef("%s %s.CodecEncodeSelf(e)", hasIf.c(true), varname)
 				return
 			}
 			break
