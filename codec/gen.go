@@ -94,6 +94,7 @@ import (
 // GenVersion is the current version of codecgen.
 //
 // MARKER: Increment this value each time codecgen changes fundamentally.
+// Also update codecgen/gen.go (minimumCodecVersion, genVersion, etc).
 // Fundamental changes are:
 //   - helper methods change (signature change, new ones added, some removed, etc)
 //   - codecgen command line changes
@@ -120,7 +121,8 @@ import (
 // v19: 20201115 updated codecgen cmdline flags and optimized output
 // v20: 20201120 refactored GenHelper to one exported function
 // v21: 20210104 refactored generated code to honor ZeroCopy=true for more efficiency
-const genVersion = 21
+// v22: 20210118 fixed issue in generated code when encoding a type which is also a codec.Selfer
+const genVersion = 22
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go

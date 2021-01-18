@@ -34,10 +34,18 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime/debug"
 	"strconv"
 	"strings"
 	"text/template"
 	"time"
+)
+
+// MARKER: keep in sync with ../gen.go (genVersion) and ../go.mod (module version)
+const (
+	codecgenModuleVersion = `1.2.3-devel` // default version - overridden by go.mod
+	minimumCodecVersion   = `1.2.3-devel`
+	genVersion            = 22
 )
 
 const genCodecPkg = "codec1978" // MARKER: keep in sync with ../gen.go
@@ -416,10 +424,12 @@ func genStripVendor(s string) string {
 
 func main() {
 	var unusedBool bool
+	var printVersion bool
 	var g mainCfg
 	var r1, r2 regexFlagValue
 	var b1, b2, b3 boolFlagValue
 
+	flag.BoolVar(&printVersion, "version", false, "show version information")
 	flag.StringVar(&g.OutFile, "o", "", "`output file` that contains generated type")
 	flag.StringVar(&g.CodecImportPath, "c", genCodecPath, "`codec import path` useful when building against a mirror or fork")
 	flag.StringVar(&g.BuildTag, "t", "", "`build tag` to put into generated file")
@@ -439,6 +449,17 @@ func main() {
 	flag.BoolVar(&g.NoExtensions, "nx", false, "set to `true or false` to elide/ignore checking for extensions (if you do not use extensions)")
 
 	flag.Parse()
+
+	if printVersion {
+		var modVersion string = codecgenModuleVersion
+		if bi, ok := debug.ReadBuildInfo(); ok {
+			if modVersion = bi.Main.Version; len(modVersion) > 0 && modVersion[0] == 'v' {
+				modVersion = modVersion[1:]
+			}
+		}
+		fmt.Printf("codecgen v%s (internal version %d) works with %s library v%s +\n", modVersion, genVersion, genCodecPath, minimumCodecVersion)
+		return
+	}
 
 	g.JsonOnly = b1.v
 	g.StructToArrayAlways = b2.v
