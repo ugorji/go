@@ -52,6 +52,14 @@ func init() {
 
 const testRecoverPanicToErr = true
 
+func testPanicToErr(h errDecorator, err *error) {
+	// Note: This method MUST be called directly from defer i.e. defer testPanicToErr ...
+	// else it seems the recover is not fully handled
+	if x := recover(); x != nil {
+		panicValToErr(h, x, err)
+	}
+}
+
 var testBytesFreeList bytesFreelist
 
 type testCustomStringT string
@@ -391,15 +399,15 @@ func testSetupNoop() {}
 func testSetup(t *testing.T) (fn func()) {
 	testOnce.Do(testInitAll)
 	// in case an error is seen, recover it here.
-	fnRecoverPanic := func() {
-		if x := recover(); x != nil {
-			var err error
-			panicValToErr(errDecoratorDef{}, x, &err)
-			t.Logf("recovered error: %v", err)
-			t.FailNow()
-		}
-	}
 	if testRecoverPanicToErr {
+		fnRecoverPanic := func() {
+			if x := recover(); x != nil {
+				var err error
+				panicValToErr(errDecoratorDef{}, x, &err)
+				t.Logf("recovered error: %v", err)
+				t.FailNow()
+			}
+		}
 		fn = fnRecoverPanic
 	}
 	if fn == nil {
@@ -460,12 +468,12 @@ func testInit() {
 	// and use on some places for testSimpleH e.g. for time.Time and wrapInt64
 	var (
 		myExtEncFn = func(x BytesExt, rv reflect.Value) (bs []byte, err error) {
-			defer panicToErr(errDecoratorDef{}, &err)
+			defer testPanicToErr(errDecoratorDef{}, &err)
 			bs = x.WriteExt(rv.Interface())
 			return
 		}
 		myExtDecFn = func(x BytesExt, rv reflect.Value, bs []byte) (err error) {
-			defer panicToErr(errDecoratorDef{}, &err)
+			defer testPanicToErr(errDecoratorDef{}, &err)
 			x.ReadExt(rv.Interface(), bs)
 			return
 		}
@@ -4383,6 +4391,7 @@ func TestMapRangeIndex(t *testing.T) {
 	mt = reflect.TypeOf(m2)
 	rvk = mapAddrLoopvarRV(mt.Key(), mt.Key().Kind())
 	rvv = mapAddrLoopvarRV(mt.Elem(), mt.Elem().Kind())
+	it = mapIter{} // zero it out first, before calling mapRange
 	mapRange(&it, reflect.ValueOf(m2), rvk, rvv, true)
 	for it.Next() {
 		k := fnrv(it.Key(), rvk).Interface().(*T)

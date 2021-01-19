@@ -834,8 +834,6 @@ func rvLenMap(rv reflect.Value) int {
 // It is more performant to provide a value that the map entry is set into,
 // and that elides the allocation.
 
-// unsafeMapHashIter
-//
 // go 1.4+ has runtime/hashmap.go or runtime/map.go which has a
 // hIter struct with the first 2 values being key and value
 // of the current iteration.
@@ -844,23 +842,32 @@ func rvLenMap(rv reflect.Value) int {
 // We bypass the reflect wrapper functions and just use the *hIter directly.
 //
 // Though *hIter has many fields, we only care about the first 2.
-type unsafeMapHashIter struct {
-	key, value unsafe.Pointer
-	// other fields are ignored
-}
+//
+// We directly embed this in unsafeMapIter below
+//
+// hiter is typically about 12 words, but we just fill up unsafeMapIter to 32 words,
+// so it fills multiple cache lines and can give some extra space to accomodate small growth.
 
-type mapIter struct {
-	unsafeMapIter
-}
+// type unsafeMapHashIter struct {
+// 	key, value unsafe.Pointer
+// 	// other fields are ignored, but make up about 10 words. fill up unsafeMapIter to be up to 32 words.
+// 	_ [20]uintptr // padding for other fields
+// }
 
 type unsafeMapIter struct {
-	it             *unsafeMapHashIter
-	mtyp, mptr     unsafe.Pointer
-	k, v           reflect.Value
-	kisref, visref bool
-	mapvalues      bool
-	done           bool
-	started        bool
+	mtyp, mptr unsafe.Pointer
+	k, v       reflect.Value
+	kisref     bool
+	visref     bool
+	mapvalues  bool
+	done       bool
+	started    bool
+	_          [3]byte // padding
+	it         struct {
+		key   unsafe.Pointer
+		value unsafe.Pointer
+		_     [20]uintptr // padding for other fields (to make up 32 words for enclosing struct)
+	}
 }
 
 func (t *unsafeMapIter) Next() (r bool) {
@@ -868,7 +875,7 @@ func (t *unsafeMapIter) Next() (r bool) {
 		return
 	}
 	if t.started {
-		mapiternext((unsafe.Pointer)(t.it))
+		mapiternext((unsafe.Pointer)(&t.it))
 	} else {
 		t.started = true
 	}
@@ -907,6 +914,10 @@ func (t *unsafeMapIter) Value() (r reflect.Value) {
 
 func (t *unsafeMapIter) Done() {}
 
+type mapIter struct {
+	unsafeMapIter
+}
+
 func mapRange(t *mapIter, m, k, v reflect.Value, mapvalues bool) {
 	if rvIsNil(m) {
 		t.done = true
@@ -922,7 +933,8 @@ func mapRange(t *mapIter, m, k, v reflect.Value, mapvalues bool) {
 	t.mtyp = urv.typ
 	t.mptr = rvRefPtr(urv)
 
-	t.it = (*unsafeMapHashIter)(mapiterinit(t.mtyp, t.mptr))
+	// t.it = (*unsafeMapHashIter)(reflect_mapiterinit(t.mtyp, t.mptr))
+	mapiterinit(t.mtyp, t.mptr, unsafe.Pointer(&t.it))
 
 	t.k = k
 	t.kisref = refBitset.isset(byte(k.Kind()))
@@ -952,14 +964,6 @@ func unsafeMapKVPtr(urv *unsafeReflectValue) unsafe.Pointer {
 	}
 	return urv.ptr
 }
-
-// func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) (vv reflect.Value) {
-// 	return m.MapIndex(k)
-// }
-
-// func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) {
-// 	m.SetMapIndex(k, v)
-// }
 
 func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) (_ reflect.Value) {
 	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
@@ -1014,13 +1018,13 @@ func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, va
 	var vvptr unsafe.Pointer
 
 	// mapassign_fastXXX don't take indirect into account.
-	// It was hard to determine the heuristic that makes it work all the time.
+	// It was hard to infer what makes it work all the time.
 	// Sometimes, we got vvptr == nil when we dereferenced vvptr (if valIsIndirect).
-	// consequently, only call them if !valIsIndirect
+	// Consequently, only use fastXXX functions if !valIsIndirect
 
-	const useGenericMapassign = false
+	const alwaysUseGenericMapassign = false
 
-	if useGenericMapassign || valIsIndirect {
+	if alwaysUseGenericMapassign || valIsIndirect {
 		vvptr = mapassign(urv.typ, mptr, kptr)
 		typedmemmove(vtyp, vvptr, vptr)
 		// reflect_mapassign(urv.typ, mptr, kptr, vptr)
@@ -1042,8 +1046,7 @@ func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, va
 		vvptr = mapassign(urv.typ, mptr, kptr)
 	}
 
-	// keyFast := keyFastKind != 0
-	// if keyFast && valIsIndirect {
+	// if keyFastKind != 0 && valIsIndirect {
 	// 	vvptr = *(*unsafe.Pointer)(vvptr)
 	// }
 
@@ -1153,17 +1156,13 @@ func len_chan(m unsafe.Pointer) int {
 // Also, we link to the functions in reflect where possible, as opposed to those in runtime.
 // They are guaranteed to be safer for our use, even when they are just trampoline functions.
 
-//go:linkname mapiterinit reflect.mapiterinit
+//go:linkname mapiterinit runtime.mapiterinit
 //go:noescape
-func mapiterinit(typ unsafe.Pointer, it unsafe.Pointer) (key unsafe.Pointer)
+func mapiterinit(typ unsafe.Pointer, m unsafe.Pointer, it unsafe.Pointer)
 
-//go:linkname mapiternext reflect.mapiternext
+//go:linkname mapiternext runtime.mapiternext
 //go:noescape
 func mapiternext(it unsafe.Pointer) (key unsafe.Pointer)
-
-//go:linkname mapaccess reflect.mapaccess
-//go:noescape
-func mapaccess(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer)
 
 //go:linkname mapaccess2 runtime.mapaccess2
 //go:noescape
@@ -1180,10 +1179,6 @@ func mapaccess2_fast64(typ unsafe.Pointer, m unsafe.Pointer, key uint64) (val un
 //go:linkname mapaccess2_faststr runtime.mapaccess2_faststr
 //go:noescape
 func mapaccess2_faststr(typ unsafe.Pointer, m unsafe.Pointer, key string) (val unsafe.Pointer, ok bool)
-
-//go:linkname reflect_mapassign reflect.mapassign
-//go:noescape
-func reflect_mapassign(typ unsafe.Pointer, m unsafe.Pointer, key, val unsafe.Pointer)
 
 //go:linkname mapassign_fast32 runtime.mapassign_fast32
 //go:noescape
@@ -1238,6 +1233,18 @@ func maplen(typ unsafe.Pointer) int
 //go:linkname chanlen reflect.chanlen
 //go:noescape
 func chanlen(typ unsafe.Pointer) int
+
+//go:linkname reflect_mapiterinit reflect.mapiterinit
+//go:noescape
+func reflect_mapiterinit(typ unsafe.Pointer, m unsafe.Pointer) (it unsafe.Pointer)
+
+//go:linkname reflect_mapaccess reflect.mapaccess
+//go:noescape
+func reflect_mapaccess(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer)
+
+//go:linkname reflect_mapassign reflect.mapassign
+//go:noescape
+func reflect_mapassign(typ unsafe.Pointer, m unsafe.Pointer, key, val unsafe.Pointer)
 
 //go:linkname memhash runtime.memhash
 //go:noescape

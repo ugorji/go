@@ -267,6 +267,7 @@ type TestStrucFlex struct {
 	Mu8u64  map[byte]stringUint64T
 	Msp2ss  map[*string][]string
 	Mip2ss  map[*uint64][]string
+	Ms2misu map[string]map[uint64]stringUint64T
 	Miwu64s map[int]wrapUint64Slice
 	Mfwss   map[float64]wrapStringSlice
 	Mf32wss map[float32]wrapStringSlice
@@ -300,6 +301,7 @@ type TestStrucFlex struct {
 	*AnonInTestStrucIntf `json:",omitempty"`
 
 	M          map[interface{}]interface{} `json:"-"`
+	Msu        map[wrapString]interface{}
 	Mtsptr     map[string]*TestStrucFlex
 	Mts        map[string]TestStrucFlex
 	Its        []*TestStrucFlex
@@ -352,12 +354,20 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 			22:  "twenty two",
 			-44: "minus forty four",
 		},
+
+		Ms2misu: map[string]map[uint64]stringUint64T{
+			"1":   {1: {"11", 11}},
+			"22":  {1: {"2222", 2222}},
+			"333": {1: {"333333", 333333}},
+		},
+
 		Mbu64:  map[bool]struct{}{false: {}, true: {}},
 		Mu8e:   map[byte]struct{}{1: {}, 2: {}, 3: {}, 4: {}},
 		Mu8u64: make(map[byte]stringUint64T),
 		Mip2ss: make(map[*uint64][]string),
 		Msp2ss: make(map[*string][]string),
 		M:      make(map[interface{}]interface{}),
+		Msu:    make(map[wrapString]interface{}),
 
 		Ci64: -22,
 		Swrapbytes: []wrapBytes{ // lengths of 1, 2, 4, 8, 16, 32, 64, 128, 256,
@@ -400,7 +410,16 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 		ts.Mu8u64[s[0]] = ss
 		ts.Mip2ss[&i] = strslice
 		ts.Msp2ss[&s] = strslice
+		// add some other values of maps and pointers into M
 		ts.M[s] = strslice
+		// cannot use this, as converting stringUint64T to interface{} returns map,
+		// DecodeNaked does this, causing "hash of unhashable value" as some maps cannot be map keys
+		// ts.M[ss] = &ss
+		ts.Msu[wrapString(s)] = &ss
+		s = s + "-map"
+		ss.S = s
+		ts.M[s] = map[string]string{s: s}
+		ts.Msu[wrapString(s)] = map[string]string{s: s}
 	}
 
 	numChanSend := cap(ts.Chstr) / 4 // 8

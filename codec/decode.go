@@ -963,8 +963,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	ktype, vtype := ti.key, ti.elem
 	ktypeId := rt2id(ktype)
-	vtypeKind := vtype.Kind()
-	ktypeKind := ktype.Kind()
+	vtypeKind := reflect.Kind(ti.elemkind)
+	ktypeKind := reflect.Kind(ti.keykind)
 	kfast := mapKeyFastKindFor(ktypeKind)
 	visindirect := ti.elemsize > mapMaxElemSize
 	visref := refBitset.isset(byte(vtypeKind))
@@ -972,26 +972,31 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	var vtypeElem reflect.Type
 
 	var keyFn, valFn *codecFn
-	var ktypeLo, vtypeLo reflect.Type
+	var ktypeLo, vtypeLo = ktype, vtype
 
-	for ktypeLo = ktype; ktypeLo.Kind() == reflect.Ptr; ktypeLo = ktypeLo.Elem() {
+	if ktypeKind == reflect.Ptr {
+		for ktypeLo = ktype.Elem(); ktypeLo.Kind() == reflect.Ptr; ktypeLo = ktypeLo.Elem() {
+		}
 	}
 
-	for vtypeLo = vtype; vtypeLo.Kind() == reflect.Ptr; vtypeLo = vtypeLo.Elem() {
+	if vtypeKind == reflect.Ptr {
+		vtypeElem = vtype.Elem()
+		for vtypeLo = vtypeElem; vtypeLo.Kind() == reflect.Ptr; vtypeLo = vtypeLo.Elem() {
+		}
 	}
 
 	rvvMut := !isImmutableKind(vtypeKind)
 	rvvCanNil := isnilBitset.isset(byte(vtypeKind))
 	vtypeIsPtr := vtypeKind == reflect.Ptr
-	vtypeIsMap := vtypeKind == reflect.Map
 
 	// rvk: key
-	// rvkn: on each iteration of loop, if non-mutable, set rvk to this
+	// rvkn: if non-mutable, on each iteration of loop, set rvk to this
 	// rvv: value
-	// rvvn: on each iteration of loop, if non-mutable, set rvv to this
+	// rvvn: if non-mutable, on each iteration of loop, set rvv to this
+	//       if mutable, may be used as a temporary value for local-scoped operations
+	// rvva: if mutable, used as transient value for use for key lookup
 	// rvvz: zero value of map value type, used to do a map set when nil is found in stream
-	// rvva: used as transient value for use for key lookup
-	var rvk, rvkn, rvv, rvvn, rvvz, rvva reflect.Value
+	var rvk, rvkn, rvv, rvvn, rvva, rvvz reflect.Value
 
 	// we do a doMapGet if kind is mutable, and InterfaceReset=true if interface
 	var doMapGet, doMapSet bool
@@ -1000,13 +1005,10 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		if rvvMut && (vtypeKind != reflect.Interface || !d.h.InterfaceReset) {
 			doMapGet = true
 			rvva = mapAddrLoopvarRV(vtype, vtypeKind)
-			if vtypeKind == reflect.Ptr {
-				vtypeElem = vtype.Elem()
-			}
 		}
 	}
 
-	rvkMut := !isImmutableKind(ktype.Kind()) // if ktype is immutable, then re-use the same rvk.
+	rvkMut := !isImmutableKind(ktypeKind) // if ktype is immutable, then re-use the same rvk.
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
 
@@ -1015,8 +1017,12 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	// kstrbs is used locally for the key bytes, so we can reduce allocation.
 	// When we read keys, we copy to this local bytes array, and use a stringView for lookup.
 	// We only convert it into a true string if we have to do a set on the map.
-	var kstrarr [64]byte // most keys are less than 32 bytes, and even more less than 64
-	var kstrbs = kstrarr[:0]
+
+	// Since kstr2bs will usually escape to the heap, declaring a [64]byte array may be wasteful.
+	// It is only valuable if we are sure that it is declared on the stack.
+	// var kstrarr [64]byte // most keys are less than 32 bytes, and even more less than 64
+	// var kstrbs = kstrarr[:0]
+	var kstrbs []byte
 	var kstr2bs []byte
 	var s string
 
@@ -1102,19 +1108,31 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 		// there is non-nil content in the stream to decode ...
 
-		// set doMapSet to false if u do a get, and its a non-nil pointer, else keep as true
+		// set doMapSet to false iff u do a get, and the return value is a non-nil pointer
 		doMapSet = true
 
 		if rvvMut {
 			if doMapGet {
 				rvv = mapGet(rv, rvk, rvva, kfast, visindirect, visref)
-				if rvv.IsValid() && (!rvvCanNil || (rvvCanNil && !rvIsNil(rvv))) {
-					if vtypeIsPtr {
+				if rvv.IsValid() && (!rvvCanNil || !rvIsNil(rvv)) {
+					switch vtypeKind {
+					case reflect.Ptr, reflect.Map: // ok to decode directly into map
 						doMapSet = false
-					} else if !vtypeIsMap { // ok to decode directly into map
-						// make addressable (so you can set the slice/array elements or interface, etc)
+					case reflect.Interface:
+						// if an interface{}, just decode into it iff a non-nil ptr/map, else allocate afresh
+						rvvn = rvv.Elem()
+						if k := rvvn.Kind(); (k == reflect.Ptr || k == reflect.Map) && !rvIsNil(rvvn) {
+							d.decodeValueNoCheckNil(rvvn, nil) // valFn is incorrect here
+							continue
+						}
+						// make addressable (so we can set the interface)
 						rvvn = rvZeroAddrK(vtype, vtypeKind)
 						rvvn.Set(rvv)
+						rvv = rvvn
+					default:
+						// make addressable (so you can set the slice/array elements, etc)
+						rvvn = rvZeroAddrK(vtype, vtypeKind)
+						rvSetDirect(rvvn, rvv)
 						rvv = rvvn
 					}
 				} else {
@@ -1376,12 +1394,14 @@ func (d *Decoder) Decode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
-	defer func() {
-		if x := recover(); x != nil {
-			panicValToErr(d, x, &d.err)
-			err = d.err
-		}
-	}()
+	if !debugging {
+		defer func() {
+			if x := recover(); x != nil {
+				panicValToErr(d, x, &d.err)
+				err = d.err
+			}
+		}()
+	}
 
 	d.MustDecode(v)
 	return
@@ -1426,7 +1446,11 @@ func (d *Decoder) swallow() {
 func (d *Decoder) swallowErr() (err error) {
 	bs := d.blist.get(256)
 	defer func() {
-		panicToErr(d, &err)
+		if !debugging {
+			if x := recover(); x != nil {
+				panicValToErr(d, x, &err)
+			}
+		}
 		d.blist.put(bs)
 	}()
 	bs = d.d.nextValueBytes(bs) // discard it
@@ -1970,7 +1994,10 @@ func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 //      if <= 0, it is unset, and we infer it based on the unit size
 //    - unit: number of bytes for each element of the collection
 func decInferLen(clen, maxlen, unit int) (rvlen int) {
-	const maxLenIfUnset = 8 // 64
+	// anecdotal testing showed increase in allocation with map length of 16.
+	// We saw same typical alloc from 0-8, then a 20% increase at 16.
+	// Thus, we set it to 8.
+	const maxLenIfUnset = 8
 	// handle when maxlen is not set i.e. <= 0
 
 	// clen==0:           use 0

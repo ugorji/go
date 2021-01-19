@@ -160,6 +160,14 @@ import (
 	"unicode/utf8"
 )
 
+// if debugging is true, then
+//   - within Encode/Decode, do not recover from panic's
+//   - etc
+//
+// Note: Negative tests that check for errors will fail, so only use this
+// when debugging, and run only one test at a time preferably.
+const debugging = false
+
 const (
 	// containerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.
@@ -2182,14 +2190,6 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 		}
 	}
 	return true
-}
-
-func panicToErr(h errDecorator, err *error) {
-	// Note: This method MUST be called directly from defer i.e. defer panicToErr ...
-	// else it seems the recover is not fully handled
-	if x := recover(); x != nil {
-		panicValToErr(h, x, err)
-	}
 }
 
 func isSliceBoundsError(s string) bool {

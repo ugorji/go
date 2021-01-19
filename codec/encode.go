@@ -976,14 +976,16 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
-	defer func() {
-		// if error occurred during encoding, return that error;
-		// else if error occurred on end'ing (i.e. during flush), return that error.
-		if x := recover(); x != nil {
-			panicValToErr(e, x, &e.err)
-			err = e.err
-		}
-	}()
+	if !debugging {
+		defer func() {
+			// if error occurred during encoding, return that error;
+			// else if error occurred on end'ing (i.e. during flush), return that error.
+			if x := recover(); x != nil {
+				panicValToErr(e, x, &e.err)
+				err = e.err
+			}
+		}()
+	}
 
 	e.MustEncode(v)
 	return
