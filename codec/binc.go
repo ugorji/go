@@ -472,22 +472,23 @@ func (d *bincDecDriver) DecodeTime() (t time.Time) {
 	return
 }
 
-func (d *bincDecDriver) decFloatPruned(maxlen uint8, b []byte) {
+func (d *bincDecDriver) decFloatPruned(maxlen uint8) {
 	l := d.d.decRd.readn1()
 	if l > maxlen {
 		d.d.errorf("cannot read float - at most %v bytes used to represent float - received %v bytes", maxlen, l)
 	}
-	for i := l; i < 4; i++ {
-		b[i] = 0
+	for i := l; i < maxlen; i++ {
+		d.b[i] = 0
 	}
-	d.d.decRd.readb(b[0:l])
+	d.d.decRd.readb(d.b[0:l])
 }
 
 func (d *bincDecDriver) decFloatPre32() (b [4]byte) {
 	if d.vs&0x8 == 0 {
 		b = d.d.decRd.readn4()
 	} else {
-		d.decFloatPruned(4, b[:])
+		d.decFloatPruned(4)
+		copy(b[:], d.b[:])
 	}
 	return
 }
@@ -496,7 +497,8 @@ func (d *bincDecDriver) decFloatPre64() (b [8]byte) {
 	if d.vs&0x8 == 0 {
 		b = d.d.decRd.readn8()
 	} else {
-		d.decFloatPruned(8, b[:])
+		d.decFloatPruned(8)
+		copy(b[:], d.b[:])
 	}
 	return
 }
