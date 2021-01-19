@@ -168,12 +168,13 @@ _suite_very_quick_json_non_suite() {
 }
 
 _suite_very_quick_profile() {
-    local a="Json"
-    case "$1" in
-        Json|Cbor|Msgpack|Simple|Binc) a="${1}"; shift ;;
-    esac
-    local b="${1}"
-    ${go[@]} test "${zargs[@]}" -tags "alltests" -bench "__${a}__.*${b}" \
+    local a="${1:-Json}"
+    # case "$1" in
+    #     Json|Cbor|Msgpack|Simple|Binc) a="${1}"; shift ;;
+    # esac
+    local b="${2}"
+    local c="${3}"
+    ${go[@]} test "${zargs[@]}" -tags "alltests ${c}" -bench "__${a}__.*${b}" \
        -benchmem -benchtime 4s \
        -cpuprofile cpu.out -memprofile mem.out -memprofilerate 1
 }
