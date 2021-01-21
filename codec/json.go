@@ -165,7 +165,7 @@ type jsonEncDriver struct {
 
 	s *bitset256 // safe set for characters (taking h.HTMLAsIs into consideration)
 
-	buf *[]byte // used mostly for encoding []byte
+	// buf *[]byte // used mostly for encoding []byte
 
 	// scratch buffer for: encode time, numbers, etc
 	//
@@ -176,8 +176,9 @@ type jsonEncDriver struct {
 	// mantissa (up to 17), exponent (up to 3), signs (up to 3), dot (up to 1), E (up to 1)
 	// for a total of 24 characters.
 	//    -xxx.yyyyyyyyyyyye-zzz
-	// Consequently, 48 is sufficient for encoding all floats.
-	b [48]byte
+	// Consequently, 35 characters should be sufficient for encoding time, integers or floats.
+	// We use up all the remaining bytes to make this use full cache lines.
+	b [56]byte
 
 	e Encoder
 }
@@ -450,33 +451,15 @@ func (e *jsonEncDriver) EncodeStringBytesRaw(v []byte) {
 
 	slen := base64.StdEncoding.EncodedLen(len(v)) + 2
 
-	// start buf with a minimum of 64 bytes
-	// we don't do this within reset, as encoding []byte values may not be common.
-	const minLenBytes = 64
-	n := minLenBytes
-	if slen > minLenBytes {
-		n = slen
-	}
+	// bs := e.e.blist.check(*e.buf, n)[:slen]
+	// *e.buf = bs
 
-	bs := e.e.blist.check(*e.buf, n)[:slen]
-	*e.buf = bs
+	bs := e.e.blist.peek(slen, false)[:slen]
 
-	// if slen > 56 {
-	// 	zz.Debug2f("\t%d", slen)
-	// }
-	// var bs []byte
-	// if len(e.b) < slen {
-	// 	bs = e.e.blist.get(slen)[:slen]
-	// } else {
-	// 	bs = e.b[:slen]
-	// }
 	bs[0] = '"'
 	base64.StdEncoding.Encode(bs[1:], v)
 	bs[len(bs)-1] = '"'
 	e.e.encWr.writeb(bs)
-	// if len(e.b) < slen {
-	// 	e.e.blist.put(bs)
-	// }
 }
 
 // indent is done as below:
@@ -614,6 +597,8 @@ type jsonDecDriver struct {
 	_    byte    // padding
 	bstr [4]byte // scratch used for string \UXXX parsing
 
+	// scratch buffer used for base64 decoding (DecodeBytes in reuseBuf mode),
+	// or reading doubleQuoted string (DecodeStringAsBytes, DecodeNaked)
 	buf *[]byte
 
 	// se  interfaceExtWrapper
@@ -1395,8 +1380,8 @@ func (h *JsonHandle) typical() bool {
 
 func (h *JsonHandle) newEncDriver() encDriver {
 	var e = &jsonEncDriver{h: h}
-	var x []byte
-	e.buf = &x
+	// var x []byte
+	// e.buf = &x
 	e.e.e = e
 	e.e.js = true
 	e.e.init(h)

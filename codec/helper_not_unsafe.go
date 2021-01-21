@@ -35,6 +35,10 @@ func bytesView(v string) []byte {
 	return []byte(v)
 }
 
+func byteSliceSameData(v1 []byte, v2 []byte) bool {
+	return cap(v1) != 0 && cap(v2) != 0 && &(v1[:1][0]) == &(v2[:1][0])
+}
+
 // func copyBytes(dst []byte, src []byte) {
 // 	copy(dst, src)
 // }

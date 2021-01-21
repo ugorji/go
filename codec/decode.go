@@ -330,12 +330,18 @@ func (d *Decoder) textUnmarshal(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
-	tm := rv2i(rv).(jsonUnmarshaler)
+	d.jsonUnmarshalV(rv2i(rv).(jsonUnmarshaler))
+}
+
+func (d *Decoder) jsonUnmarshalV(tm jsonUnmarshaler) {
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
-	bs := d.blist.get(256)
-	bs = d.d.nextValueBytes(bs)
+	bs0 := d.blist.get(256)
+	bs := d.d.nextValueBytes(bs0)
 	fnerr := tm.UnmarshalJSON(bs)
 	d.blist.put(bs)
+	if !byteSliceSameData(bs0, bs) {
+		d.blist.put(bs0)
+	}
 	d.onerror(fnerr)
 }
 
@@ -1438,22 +1444,23 @@ func (d *Decoder) Release() {
 }
 
 func (d *Decoder) swallow() {
-	bs := d.blist.get(256)
-	bs = d.d.nextValueBytes(bs) // discard it
+	bs0 := d.blist.get(256)
+	bs := d.d.nextValueBytes(bs0) // discard it
 	d.blist.put(bs)
+	if !byteSliceSameData(bs0, bs) {
+		d.blist.put(bs0)
+	}
 }
 
 func (d *Decoder) swallowErr() (err error) {
-	bs := d.blist.get(256)
-	defer func() {
-		if !debugging {
+	if !debugging {
+		defer func() {
 			if x := recover(); x != nil {
 				panicValToErr(d, x, &err)
 			}
-		}
-		d.blist.put(bs)
-	}()
-	bs = d.d.nextValueBytes(bs) // discard it
+		}()
+	}
+	d.swallow()
 	return
 }
 
@@ -1775,12 +1782,15 @@ func (d *Decoder) mapNext(j, containerLen int, hasLen bool) bool {
 }
 
 func (d *Decoder) mapStart() (v int) {
-	v = d.d.ReadMapStart()
+	return d.postMapStart(d.d.ReadMapStart())
+}
+
+func (d *Decoder) postMapStart(v int) int {
 	if v != containerLenNil {
 		d.depthIncr()
 		d.c = containerMapStart
 	}
-	return
+	return v
 }
 
 func (d *Decoder) mapElemKey() {
@@ -1803,13 +1813,25 @@ func (d *Decoder) mapEnd() {
 	d.c = 0
 }
 
+// func (d *Decoder) arrayStart() (v int) {
+// 	v = d.d.ReadArrayStart()
+// 	if v != containerLenNil {
+// 		d.depthIncr()
+// 		d.c = containerArrayStart
+// 	}
+// 	return
+// }
+
 func (d *Decoder) arrayStart() (v int) {
-	v = d.d.ReadArrayStart()
+	return d.postArrayStart(d.d.ReadArrayStart())
+}
+
+func (d *Decoder) postArrayStart(v int) int {
 	if v != containerLenNil {
 		d.depthIncr()
 		d.c = containerArrayStart
 	}
-	return
+	return v
 }
 
 func (d *Decoder) arrayElem() {

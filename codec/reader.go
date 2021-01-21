@@ -83,6 +83,7 @@ func (z *ioDecReaderCommon) reset(r io.Reader, blist *bytesFreelist) {
 	z.r = r
 	z.ls = unreadByteUndefined
 	z.l, z.n = 0, 0
+	z.bufr = z.blist.check(z.bufr, 256)
 }
 
 func (z *ioDecReaderCommon) numread() uint {
@@ -244,7 +245,7 @@ func (z *ioDecReader) readn1eof() (b uint8, eof bool) {
 
 func (z *ioDecReader) jsonReadNum() (bs []byte) {
 	z.unreadn1()
-	z.bufr = z.blist.check(z.bufr, 256)
+	z.bufr = z.bufr[:0]
 LOOP:
 	i, eof := z.readn1eof()
 	if eof {
@@ -259,7 +260,7 @@ LOOP:
 }
 
 func (z *ioDecReader) jsonReadAsisChars() (bs []byte) {
-	z.bufr = z.blist.check(z.bufr, 256)
+	z.bufr = z.bufr[:0]
 LOOP:
 	i := z.readn1()
 	z.bufr = append(z.bufr, i)
@@ -279,7 +280,7 @@ LOOP:
 }
 
 func (z *ioDecReader) readUntil(stop byte) []byte {
-	z.bufr = z.blist.check(z.bufr, 256)
+	z.bufr = z.bufr[:0]
 LOOP:
 	token := z.readn1()
 	z.bufr = append(z.bufr, token)
@@ -457,7 +458,7 @@ func (z *bufioDecReader) readx(n uint) (bs []byte) {
 
 func (z *bufioDecReader) jsonReadNum() (bs []byte) {
 	z.unreadn1()
-	z.bufr = z.blist.check(z.bufr, 256)
+	z.bufr = z.bufr[:0]
 LOOP:
 	i, eof := z.readn1eof()
 	if eof {
@@ -472,7 +473,7 @@ LOOP:
 }
 
 func (z *bufioDecReader) jsonReadAsisChars() (bs []byte) {
-	z.bufr = z.blist.check(z.bufr, 256)
+	z.bufr = z.bufr[:0]
 LOOP:
 	i := z.readn1()
 	z.bufr = append(z.bufr, i)
@@ -546,7 +547,7 @@ FINISH:
 }
 
 func (z *bufioDecReader) readUntilFill(stop byte) []byte {
-	z.bufr = z.blist.check(z.bufr, 256)
+	z.bufr = z.bufr[:0]
 	z.n += uint(len(z.buf)) - z.c
 	z.bufr = append(z.bufr, z.buf[z.c:]...)
 	for {

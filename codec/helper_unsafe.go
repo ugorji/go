@@ -93,6 +93,10 @@ func bytesView(v string) (b []byte) {
 	return
 }
 
+func byteSliceSameData(v1 []byte, v2 []byte) bool {
+	return (*unsafeSlice)(unsafe.Pointer(&v1)).Data == (*unsafeSlice)(unsafe.Pointer(&v2)).Data
+}
+
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	var ui = (*unsafeIntf)(unsafe.Pointer(&v))
 	if ui.ptr == nil {

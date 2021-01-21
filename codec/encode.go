@@ -31,9 +31,6 @@ type encDriver interface {
 	EncodeExt(v interface{}, xtag uint64, ext Ext)
 	// EncodeString using cUTF8, honor'ing StringToRaw flag
 	EncodeString(v string)
-	// Note: EncodeStringBytesRaw must treat v as a re-usable buffer,
-	// and not hold onto it at all after this call,
-	// or use the bytesFreeList during its use.
 	EncodeStringBytesRaw(v []byte)
 	EncodeTime(time.Time)
 	WriteArrayStart(length int)
@@ -400,8 +397,9 @@ func (e *Encoder) kSliceBytesChan(rv reflect.Value) {
 	// ch := rv2i(rv).(<-chan byte) // fix error - that this is a chan byte, not a <-chan byte.
 
 	// bs := e.b[:0]
-	bs := e.blist.peek(false)[:0]
-	cap0 := cap(bs)
+	bs0 := e.blist.peek(32, true)
+	bs := bs0
+	// cap0 := cap(bs)
 
 	irv := rv2i(rv)
 	ch, ok := irv.(<-chan byte)
@@ -438,8 +436,9 @@ L1:
 	}
 
 	e.e.EncodeStringBytesRaw(bs)
-	if cap(bs) != cap0 { // if caps change, then slices are different
-		e.blist.put(bs)
+	e.blist.put(bs)
+	if !byteSliceSameData(bs0, bs) {
+		e.blist.put(bs0)
 	}
 }
 
@@ -760,7 +759,8 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 	default:
 		// out-of-band
 		// first encode each key to a []byte first, then sort them, then record
-		var mksv = e.blist.get(len(mks) * 16)
+		bs0 := e.blist.get(len(mks) * 16)
+		mksv := bs0
 		e2 := NewEncoderBytes(&mksv, e.hh)
 		mksbv := make([]bytesRv, len(mks))
 		for i, k := range mks {
@@ -778,6 +778,9 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
 		}
 		e.blist.put(mksv)
+		if !byteSliceSameData(bs0, mksv) {
+			e.blist.put(bs0)
+		}
 	}
 }
 

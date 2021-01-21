@@ -2582,14 +2582,27 @@ type bytesFreelist [][]byte
 
 // peek returns a slice of possibly non-zero'ed bytes, with len=0,
 // and with the largest capacity from the list.
-func (x *bytesFreelist) peek(pop bool) (out []byte) {
-	y := *x
-	if bytesFreeListNoCache || len(y) == 0 {
-		return
+func (x *bytesFreelist) peek(length int, pop bool) (out []byte) {
+	if bytesFreeListNoCache {
+		return make([]byte, 0, freelistCapacity(length))
 	}
-	out = y[len(y)-1]
-	if pop {
-		*x = y[:len(y)-1]
+	y := *x
+	if len(y) > 0 {
+		out = y[len(y)-1]
+	}
+	// start buf with a minimum of 64 bytes
+	const minLenBytes = 64
+	if length < minLenBytes {
+		length = minLenBytes
+	}
+	if cap(out) < length {
+		out = make([]byte, 0, freelistCapacity(length))
+		y = append(y, out)
+		*x = y
+	}
+	if pop && len(y) > 0 {
+		y = y[:len(y)-1]
+		*x = y
 	}
 	return
 }
