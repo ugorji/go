@@ -31,6 +31,9 @@ type encDriver interface {
 	EncodeExt(v interface{}, xtag uint64, ext Ext)
 	// EncodeString using cUTF8, honor'ing StringToRaw flag
 	EncodeString(v string)
+	// Note: EncodeStringBytesRaw must treat v as a re-usable buffer,
+	// and not hold onto it at all after this call,
+	// or use the bytesFreeList during its use.
 	EncodeStringBytesRaw(v []byte)
 	EncodeTime(time.Time)
 	WriteArrayStart(length int)
@@ -382,7 +385,8 @@ func (e *Encoder) kArray(f *codecFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
 		e.kArrayWMbs(rv, f.ti)
 	} else if uint8TypId == rt2id(f.ti.elem) {
-		e.e.EncodeStringBytesRaw(rvGetArrayBytesRO(rv, e.b[:]))
+		// e.e.EncodeStringBytesRaw(rvGetArrayBytesRO(rv, e.b[:]))
+		e.e.EncodeStringBytesRaw(rvGetArrayBytesRO(rv, nil))
 	} else {
 		e.kArrayW(rv, f.ti)
 	}
@@ -395,7 +399,10 @@ func (e *Encoder) kSliceBytesChan(rv reflect.Value) {
 	// for b := range rv2i(rv).(<-chan byte) { bs = append(bs, b) }
 	// ch := rv2i(rv).(<-chan byte) // fix error - that this is a chan byte, not a <-chan byte.
 
-	bs := e.b[:0]
+	// bs := e.b[:0]
+	bs := e.blist.peek(false)[:0]
+	cap0 := cap(bs)
+
 	irv := rv2i(rv)
 	ch, ok := irv.(<-chan byte)
 	if !ok {
@@ -431,6 +438,9 @@ L1:
 	}
 
 	e.e.EncodeStringBytesRaw(bs)
+	if cap(bs) != cap0 { // if caps change, then slices are different
+		e.blist.put(bs)
+	}
 }
 
 func (e *Encoder) kStructSfi(f *codecFnInfo) []*structFieldInfo {
@@ -810,7 +820,7 @@ type Encoder struct {
 
 	slist sfiRvFreelist
 
-	b [2 * 8]byte // for encoding chan byte, (non-addressable) [N]byte, etc
+	// b [1 * 8]byte // for encoding chan byte, (non-addressable) [N]byte, etc
 
 	// ---- cpu cache line boundary?
 }
@@ -856,6 +866,7 @@ func (e *Encoder) resetCommon() {
 	}
 	e.c = 0
 	e.calls = 0
+	e.seq = 0
 	e.err = nil
 }
 

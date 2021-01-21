@@ -7,6 +7,6 @@ package codec
 
 import "time"
 
-func fmtTime(t time.Time, b []byte) []byte {
-	return t.AppendFormat(b, time.RFC3339Nano)
+func fmtTime(t time.Time, fmt string, b []byte) []byte {
+	return t.AppendFormat(b, fmt)
 }

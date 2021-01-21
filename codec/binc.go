@@ -101,7 +101,7 @@ type bincEncDriver struct {
 	h *BincHandle
 	m map[string]uint16 // symbols
 	// b [8]byte           // scratch, used for encoding numbers - bigendian style
-	s uint16 // symbols sequencer
+	// s uint16 // symbols sequencer
 
 	e Encoder
 }
@@ -293,8 +293,8 @@ func (e *bincEncDriver) EncodeSymbol(v string) {
 			bigen.writeUint16(e.e.w(), ui)
 		}
 	} else {
-		e.s++
-		ui = e.s
+		e.e.seq++
+		ui = e.e.seq
 		e.m[v] = ui
 		var lenprec uint8
 		if l <= math.MaxUint8 {
@@ -408,7 +408,7 @@ type bincDecDriver struct {
 	// MARKER: consider using binary search here instead of a map (ie bincDecSymbol)
 	s map[uint16][]byte
 
-	b [8]byte // scratch for decoding numbers - big endian style
+	// b [8]byte // scratch for decoding numbers - big endian style
 	// _ [4]uint64 // padding cache-aligned
 
 	d Decoder
@@ -478,9 +478,9 @@ func (d *bincDecDriver) decFloatPruned(maxlen uint8) {
 		d.d.errorf("cannot read float - at most %v bytes used to represent float - received %v bytes", maxlen, l)
 	}
 	for i := l; i < maxlen; i++ {
-		d.b[i] = 0
+		d.d.b[i] = 0
 	}
-	d.d.decRd.readb(d.b[0:l])
+	d.d.decRd.readb(d.d.b[0:l])
 }
 
 func (d *bincDecDriver) decFloatPre32() (b [4]byte) {
@@ -488,7 +488,7 @@ func (d *bincDecDriver) decFloatPre32() (b [4]byte) {
 		b = d.d.decRd.readn4()
 	} else {
 		d.decFloatPruned(4)
-		copy(b[:], d.b[:])
+		copy(b[:], d.d.b[:])
 	}
 	return
 }
@@ -498,7 +498,7 @@ func (d *bincDecDriver) decFloatPre64() (b [8]byte) {
 		b = d.d.decRd.readn8()
 	} else {
 		d.decFloatPruned(8)
-		copy(b[:], d.b[:])
+		copy(b[:], d.d.b[:])
 	}
 	return
 }
@@ -530,7 +530,7 @@ func (d *bincDecDriver) decUint() (v uint64) {
 	case 4, 5, 6:
 		var b [8]byte
 		lim := 7 - d.vs
-		bs := d.b[lim:8]
+		bs := d.d.b[lim:8]
 		d.d.decRd.readb(bs)
 		copy(b[lim:], bs)
 		v = bigen.Uint64(b)
@@ -545,23 +545,23 @@ func (d *bincDecDriver) decUint() (v uint64) {
 func (d *bincDecDriver) uintBytes() (bs []byte) {
 	switch d.vs {
 	case 0:
-		bs = d.b[:1]
+		bs = d.d.b[:1]
 		bs[0] = d.d.decRd.readn1()
 	case 1:
-		bs = d.b[:2]
+		bs = d.d.b[:2]
 		d.d.decRd.readb(bs)
 	case 2:
-		bs = d.b[:3]
+		bs = d.d.b[:3]
 		d.d.decRd.readb(bs)
 	case 3:
-		bs = d.b[:4]
+		bs = d.d.b[:4]
 		d.d.decRd.readb(bs)
 	case 4, 5, 6:
 		lim := 7 - d.vs
-		bs = d.b[lim:8]
+		bs = d.d.b[lim:8]
 		d.d.decRd.readb(bs)
 	case 7:
-		bs = d.b[:8]
+		bs = d.d.b[:8]
 		d.d.decRd.readb(bs)
 	default:
 		d.d.errorf("unsigned integers with greater than 64 bits of precision not supported: d.vs: %v %x", d.vs, d.vs)
@@ -997,8 +997,8 @@ func (d *bincDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 					d.d.errorf("cannot read float - at most 8 bytes used to represent float - received %v bytes", xlen)
 				}
 			}
-			d.d.decRd.readb(d.b[:xlen])
-			v = append(v, d.b[:xlen]...)
+			d.d.decRd.readb(d.d.b[:xlen])
+			v = append(v, d.d.b[:xlen]...)
 		}
 		switch d.vs & 0x7 {
 		case bincFlBin32:
@@ -1108,7 +1108,6 @@ func (h *BincHandle) newDecDriver() decDriver {
 }
 
 func (e *bincEncDriver) reset() {
-	e.s = 0
 	e.m = nil
 }
 

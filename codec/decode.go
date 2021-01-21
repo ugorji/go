@@ -19,8 +19,8 @@ const (
 const (
 	decDefMaxDepth         = 1024 // maximum depth
 	decDefSliceCap         = 8
-	decDefChanCap          = 64      // should be large, as cap cannot be expanded
-	decScratchByteArrayLen = (7 * 8) // ??? cacheLineSize +
+	decDefChanCap          = 64          // should be large, as cap cannot be expanded
+	decScratchByteArrayLen = (8 + 2) * 8 // ??? cacheLineSize +
 
 	// decFailNonEmptyIntf configures whether we error
 	// when decoding naked into a non-empty interface.
@@ -1825,7 +1825,7 @@ func (d *Decoder) arrayEnd() {
 	d.c = 0
 }
 
-func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext Ext) {
+func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
 	// var v interface{} = ext.ConvertExt(rv)
 	// d.d.decode(&v)
 	// ext.UpdateExt(rv, v)

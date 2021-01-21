@@ -292,7 +292,7 @@ var pool4tiload = sync.Pool{
 func init() {
 	xx := func(f mapKeyFastKind, k ...reflect.Kind) {
 		for _, v := range k {
-			mapKeyFastKindVals[byte(v)] = f
+			mapKeyFastKindVals[byte(v)%32] = f
 		}
 	}
 
@@ -923,8 +923,8 @@ func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt boo
 		idx, fn2 := findRtidFn(sp, rtid)
 		if fn2 == nil {
 			sp2 := make([]codecRtidFn, len(sp)+1)
-			copy(sp2, sp[:idx])
 			copy(sp2[idx+1:], sp[idx:])
+			copy(sp2, sp[:idx])
 			sp2[idx] = codecRtidFn{rtid, fn}
 			fs.store(sp2)
 		}
@@ -1184,10 +1184,7 @@ func (re *RawExt) setData(xbs []byte, zerocopy bool) {
 	if zerocopy {
 		re.Data = xbs
 	} else {
-		if len(re.Data) > 0 {
-			re.Data = re.Data[:0]
-		}
-		re.Data = append(re.Data, xbs...)
+		re.Data = append(re.Data[:0], xbs...)
 	}
 }
 
@@ -1601,7 +1598,11 @@ func parseStructInfo(stag string) (toArray, omitEmpty bool, keytype valueType) {
 	if stag == "" {
 		return
 	}
-	for _, s := range strings.Split(stag, ",")[1:] {
+	ss := strings.Split(stag, ",")
+	if len(ss) < 2 {
+		return
+	}
+	for _, s := range ss[1:] {
 		switch s {
 		case "omitempty":
 			omitEmpty = true
@@ -1731,11 +1732,11 @@ func (ti *typeInfo) resolve(x []structFieldInfo, ss map[string]uint16) (n int) {
 
 	for i := range x {
 		ui := uint16(i)
-		xn := x[ui].encName // fieldName or encName? use encName for now.
+		xn := x[i].encName // fieldName or encName? use encName for now.
 		j, ok := ss[xn]
 		if ok {
-			i2clear := ui                               // index to be cleared
-			if x[ui].path.depth() < x[j].path.depth() { // this one is shallower
+			i2clear := ui                              // index to be cleared
+			if x[i].path.depth() < x[j].path.depth() { // this one is shallower
 				ss[xn] = ui
 				i2clear = j
 			}
@@ -1977,8 +1978,8 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		if pti == nil {
 			pti = &ti
 			sp2 := make([]rtid2ti, len(sp)+1)
-			copy(sp2, sp[:idx])
 			copy(sp2[idx+1:], sp[idx:])
+			copy(sp2, sp[:idx])
 			sp2[idx] = rtid2ti{rtid, pti}
 			x.infos.store(sp2)
 		}
@@ -2274,12 +2275,12 @@ type codecRtidFn struct {
 }
 
 func makeExt(ext interface{}) Ext {
-	if ext == nil {
-		return &extFailWrapper{}
-	}
+	// if ext == nil {
+	// 	return &extFailWrapper{}
+	// }
 	switch t := ext.(type) {
-	case nil:
-		return &extFailWrapper{}
+	// case nil:
+	// 	return &extFailWrapper{}
 	case Ext:
 		return t
 	case BytesExt:
@@ -2579,14 +2580,31 @@ func freelistCapacity(length int) (capacity int) {
 // without bounds checking is sufficient.
 type bytesFreelist [][]byte
 
-// return a slice of possibly non-zero'ed bytes, with len=0,
+// peek returns a slice of possibly non-zero'ed bytes, with len=0,
+// and with the largest capacity from the list.
+func (x *bytesFreelist) peek(pop bool) (out []byte) {
+	y := *x
+	if bytesFreeListNoCache || len(y) == 0 {
+		return
+	}
+	out = y[len(y)-1]
+	if pop {
+		*x = y[:len(y)-1]
+	}
+	return
+}
+
+// get returns a slice of possibly non-zero'ed bytes, with len=0,
 // and with cap >= length requested.
 func (x *bytesFreelist) get(length int) (out []byte) {
 	if bytesFreeListNoCache {
 		return make([]byte, 0, freelistCapacity(length))
 	}
 	y := *x
-	for i, v := range y {
+	// MARKER: do not use range, as range is not currently inlineable as of go 1.16-beta
+	// for i, v := range y {
+	for i := 0; i < len(y); i++ {
+		v := y[i]
 		if cap(v) >= length {
 			// *x = append(y[:i], y[i+1:]...)
 			copy(y[i:], y[i+1:])
@@ -2607,7 +2625,10 @@ func (x *bytesFreelist) put(v []byte) {
 	// append the new value, then try to put it in a better position
 	y := append(*x, v)
 	*x = y
-	for i, z := range y[:len(y)-1] {
+	// MARKER: do not use range, as range is not currently inlineable as of go 1.16-beta
+	// for i, z := range y[:len(y)-1] {
+	for i := 0; i < len(y)-1; i++ {
+		z := y[i]
 		if cap(z) > cap(v) {
 			copy(y[i+1:], y[i:])
 			y[i] = v
@@ -2617,11 +2638,49 @@ func (x *bytesFreelist) put(v []byte) {
 }
 
 func (x *bytesFreelist) check(v []byte, length int) (out []byte) {
+	// ensure inlineable, by moving slow-path out to its own function
 	if cap(v) >= length {
 		return v[:0]
 	}
-	x.put(v)
-	return x.get(length)
+	return x.checkPutGet(v, length)
+}
+
+func (x *bytesFreelist) checkPutGet(v []byte, length int) []byte {
+	// checkPutGet broken out into its own function, so check is inlineable in general case
+	const useSeparateCalls = false
+
+	if useSeparateCalls {
+		x.put(v)
+		return x.get(length)
+	}
+
+	if bytesFreeListNoCache {
+		return make([]byte, 0, freelistCapacity(length))
+	}
+
+	// assume cap(v) < length, so put must happen before get
+	y := *x
+	var put = cap(v) == 0 // if empty, consider it already put
+	if !put {
+		y = append(y, v)
+	}
+	for i := 0; i < len(y); i++ {
+		z := y[i]
+		if put {
+			if cap(z) >= length {
+				copy(y[i:], y[i+1:])
+				y = y[:len(y)-1]
+				return z
+			}
+		} else {
+			if cap(z) > cap(v) {
+				copy(y[i+1:], y[i:])
+				y[i] = v
+				put = true
+			}
+		}
+	}
+	return make([]byte, 0, freelistCapacity(length))
 }
 
 // -------------------------
@@ -2639,7 +2698,11 @@ type sfiRvFreelist [][]sfiRv
 
 func (x *sfiRvFreelist) get(length int) (out []sfiRv) {
 	y := *x
-	for i, v := range y {
+
+	// MARKER: do not use range, as range is not currently inlineable as of go 1.16-beta
+	// for i, v := range y {
+	for i := 0; i < len(y); i++ {
+		v := y[i]
 		if cap(v) >= length {
 			// *x = append(y[:i], y[i+1:]...)
 			copy(y[i:], y[i+1:])
@@ -2657,7 +2720,10 @@ func (x *sfiRvFreelist) put(v []sfiRv) {
 	// append the new value, then try to put it in a better position
 	y := append(*x, v)
 	*x = y
-	for i, z := range y[:len(y)-1] {
+	// MARKER: do not use range, as range is not currently inlineable as of go 1.16-beta
+	// for i, z := range y[:len(y)-1] {
+	for i := 0; i < len(y)-1; i++ {
+		z := y[i]
 		if cap(z) > cap(v) {
 			copy(y[i+1:], y[i:])
 			y[i] = v
