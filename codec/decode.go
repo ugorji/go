@@ -608,7 +608,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		mf = rv2i(rv.Addr()).(MissingFielder)
 	}
 	if ctyp == valueTypeMap {
-		containerLen := d.mapStart()
+		containerLen := d.mapStart(d.d.ReadMapStart())
 		if containerLen == 0 {
 			d.mapEnd()
 			return
@@ -644,7 +644,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		}
 		d.mapEnd()
 	} else if ctyp == valueTypeArray {
-		containerLen := d.arrayStart()
+		containerLen := d.arrayStart(d.d.ReadArrayStart())
 		if containerLen == 0 {
 			d.arrayEnd()
 			return
@@ -955,7 +955,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
-	containerLen := d.mapStart()
+	containerLen := d.mapStart(d.d.ReadMapStart())
 	ti := f.ti
 	if rvIsNil(rv) {
 		rvlen := decInferLen(containerLen, d.h.MaxInitLen, int(ti.keysize+ti.elemsize))
@@ -1781,11 +1781,7 @@ func (d *Decoder) mapNext(j, containerLen int, hasLen bool) bool {
 	return !d.checkBreak()
 }
 
-func (d *Decoder) mapStart() (v int) {
-	return d.postMapStart(d.d.ReadMapStart())
-}
-
-func (d *Decoder) postMapStart(v int) int {
+func (d *Decoder) mapStart(v int) int {
 	if v != containerLenNil {
 		d.depthIncr()
 		d.c = containerMapStart
@@ -1813,20 +1809,7 @@ func (d *Decoder) mapEnd() {
 	d.c = 0
 }
 
-// func (d *Decoder) arrayStart() (v int) {
-// 	v = d.d.ReadArrayStart()
-// 	if v != containerLenNil {
-// 		d.depthIncr()
-// 		d.c = containerArrayStart
-// 	}
-// 	return
-// }
-
-func (d *Decoder) arrayStart() (v int) {
-	return d.postArrayStart(d.d.ReadArrayStart())
-}
-
-func (d *Decoder) postArrayStart(v int) int {
+func (d *Decoder) arrayStart(v int) int {
 	if v != containerLenNil {
 		d.depthIncr()
 		d.c = containerArrayStart
@@ -1920,9 +1903,9 @@ func (d *Decoder) decSliceHelperStart() (x decSliceHelper, clen int) {
 		x.IsNil = true
 	case valueTypeArray:
 		x.Array = true
-		clen = d.arrayStart()
+		clen = d.arrayStart(d.d.ReadArrayStart())
 	case valueTypeMap:
-		clen = d.mapStart()
+		clen = d.mapStart(d.d.ReadMapStart())
 		clen += clen
 	default:
 		d.errorf("only encoded map or array can be decoded into a slice (%d)", x.ct)

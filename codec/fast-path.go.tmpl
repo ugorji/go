@@ -281,7 +281,7 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 // maps only change if nil, and in that case, there's no point copying
 */ -}}
 	case map[{{ .MapKey }}]{{ .Elem }}:
-		containerLen = d.mapStart()
+		containerLen = d.mapStart(d.d.ReadMapStart())
 		if containerLen != containerLenNil {
 			if containerLen != 0 {
 				fastpathTV.{{ .MethodNamePfx "Dec" false }}L(v, containerLen, d)
@@ -290,7 +290,7 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 		}
 	case *map[{{ .MapKey }}]{{ .Elem }}:
 		{{/*
-		containerLen = d.mapStart()
+		containerLen = d.mapStart(d.d.ReadMapStart())
 		if containerLen == 0 {
 			d.mapEnd()
 		} else if containerLen == containerLenNil {
@@ -437,7 +437,7 @@ Also, these methods are called by decodeValue directly, after handling a TryNil.
 Consequently, there's no need to check for containerLenNil here.
 */ -}}
 func (d *Decoder) {{ .MethodNamePfx "fastpathDec" false }}R(f *codecFnInfo, rv reflect.Value) {
-	containerLen := d.mapStart()
+	containerLen := d.mapStart(d.d.ReadMapStart())
     {{/*
 	if containerLen == containerLenNil {
 		if rv.Kind() == reflect.Ptr {
@@ -460,7 +460,7 @@ func (d *Decoder) {{ .MethodNamePfx "fastpathDec" false }}R(f *codecFnInfo, rv r
 	d.mapEnd()
 }
 func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{{ .Elem }}, d *Decoder) {
-	containerLen := d.mapStart()
+	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
 	} else {

@@ -292,7 +292,7 @@ var pool4tiload = sync.Pool{
 func init() {
 	xx := func(f mapKeyFastKind, k ...reflect.Kind) {
 		for _, v := range k {
-			mapKeyFastKindVals[byte(v)%32] = f
+			mapKeyFastKindVals[byte(v)&31] = f // 'v % 32' equal to 'v & 31'
 		}
 	}
 
