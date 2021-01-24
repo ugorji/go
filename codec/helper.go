@@ -1585,6 +1585,8 @@ func (path *structFieldInfoPathNode) fieldAlloc(v reflect.Value) (rv2 reflect.Va
 type structFieldInfo struct {
 	encName string // encode name
 
+	// encNameHash uintptr
+
 	// fieldName string // currently unused
 
 	// encNameAsciiAlphaNum and omitEmpty should be here,
@@ -1644,8 +1646,8 @@ func (si *structFieldInfo) parseTag(stag string) {
 type sfiSortedByEncName []*structFieldInfo
 
 func (p sfiSortedByEncName) Len() int           { return len(p) }
-func (p sfiSortedByEncName) Less(i, j int) bool { return p[uint(i)].encName < p[uint(j)].encName }
 func (p sfiSortedByEncName) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
+func (p sfiSortedByEncName) Less(i, j int) bool { return p[uint(i)].encName < p[uint(j)].encName }
 
 // typeInfo keeps static (non-changing readonly)information
 // about each (non-ptr) type referenced in the encode/decode sequence.
@@ -1676,9 +1678,12 @@ type typeInfo struct {
 	sfiSort []*structFieldInfo // sorted. Used when enc/dec struct to map.
 	sfiSrc  []*structFieldInfo // unsorted. Used when enc/dec struct to array.
 
-	sfi4Name map[string]*structFieldInfo
-
 	key reflect.Type
+
+	// ---- cpu cache line boundary?
+
+	// sfiSrch  []*structFieldInfo          // sorted. used for finding sfi given a name
+	sfi4Name map[string]*structFieldInfo // map. used for finding sfi given a name // TODO comment
 
 	// ---- cpu cache line boundary?
 
@@ -1722,7 +1727,6 @@ type typeInfo struct {
 }
 
 func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
-	// binary search for map lookup is expensive, as it has to compare strings byte by byte.
 	// map (hash) lookup is faster, as it can leverage string length in disambiguation.
 	return ti.sfi4Name[string(name)]
 }
@@ -1758,7 +1762,9 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	// remove all the nils (non-ready)
 	m := make(map[string]*structFieldInfo)
 	w := make([]structFieldInfo, n)
-	y := make([]*structFieldInfo, n)
+	y := make([]*structFieldInfo, n+n)
+	z := y[n:]
+	y = y[:n]
 	n = 0
 	for i := range x {
 		if x[i].encName == "" {
@@ -1776,13 +1782,16 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 		halt.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d", ti.rt, len(y), len(x), n)
 	}
 
-	z := make([]*structFieldInfo, len(y))
 	copy(z, y)
 	sort.Sort(sfiSortedByEncName(z))
+
+	// copy(b, y)
+	// sort.Sort(sfiSortedForBinarySearch(b))
 
 	ti.anyOmitEmpty = anyOmitEmpty
 	ti.sfiSrc = y
 	ti.sfiSort = z
+	// ti.sfiSrch = b
 	ti.sfi4Name = m
 }
 
@@ -2108,6 +2117,9 @@ LOOP:
 		} else if si.encName == "" {
 			si.encName = f.Name
 		}
+
+		// si.encNameHash = maxUintptr()
+		// si.encNameHash = hashShortString(bytesView(si.encName))
 
 		if omitEmpty {
 			si.path.omitEmpty = true
@@ -2578,6 +2590,24 @@ func freelistCapacity(length int) (capacity int) {
 // In anecdotal testing (running go test -tsd 1..6), we couldn't get
 // the length ofthe list > 4 at any time. So we believe a linear search
 // without bounds checking is sufficient.
+//
+// Typical usage model:
+//   peek may go together with put, iff pop=true. peek gets largest byte slice temporarily.
+//   check is used to switch a []byte if necessary
+//   get/put go together
+//
+// Given that folks may get a []byte, and then append to it a lot which may re-allocate
+// a new []byte, we should try to return both (one received from blist and new one allocated).
+//
+// Typical usage model for get/put, when we don't know whether we may need more than requested
+//   v0 := blist.get()
+//   v1 := v0
+//   ... use v1 ...
+//   blist.put(v1)
+//   if byteSliceAddr(v0) != byteSliceAddr(v1) {
+//     blist.put(v0)
+//   }
+//
 type bytesFreelist [][]byte
 
 // peek returns a slice of possibly non-zero'ed bytes, with len=0,
@@ -2825,4 +2855,97 @@ END:
 	}
 	return s
 }
+*/
+
+/*
+
+// binary search for string is expensive, as it has to compare strings byte by byte.
+// Even when we include len, and hashCode, during sorting, and then do a binary search,
+// as done below, we saw via testing anecdotally
+// that map (hash) lookup is faster, as it can leverage string length in disambiguation.
+//
+// When evaluating current siForEncName using a map, vs siForEncNameB below,
+// decode speed was about 3% faster using maps.
+//
+// This might be because of better inlining using map syntax, or otherwise.
+// Either way, siForEncNameB is not inlined, and runtime.memhash is not inlined either,
+// so there may be some overhead using siForEnaNameB below.
+// Either way, we will comment all out the code for binarysearch method, but leave in-place
+// in case things change later.
+
+func (ti *typeInfo) siForEncNameB(name []byte) (si *structFieldInfo) {
+	s := ti.sfiSrch
+	// - cutoff = keyLen < 16 ? 8 : 4
+	// - arraylen < cutoff ? linearSearch : binarySearch
+	cutoff := 4
+	if len(name) <= 16 {
+		cutoff = 8
+	}
+	if len(s) < cutoff {
+		// do linear search
+		for _, si = range s {
+			if si.encName == string(name) {
+				return
+			}
+		}
+		return nil
+	}
+
+	var i, h uint
+	var j = uint(len(s))
+	hash := hashShortString(name)
+LOOP:
+	if i < j {
+		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
+		if s[h].searchLessThan2(name, hash) {
+			i = h + 1
+		} else {
+			j = h
+		}
+		goto LOOP
+	}
+	if i < uint(len(s)) && s[i].encName == string(name) {
+		si = s[i]
+	}
+	return
+}
+
+func (si *structFieldInfo) searchLessThan(name string, hash uintptr) bool {
+	// return (len(si.encName) != len(name) && len(si.encName) < len(name)) ||
+    // 	(si.encNameHash != hash && si.encNameHash < hash) ||
+    //     si.encName < name
+	if len(si.encName) != len(name) {
+		return len(si.encName) < len(name)
+	}
+	if si.encNameHash != hash {
+		return si.encNameHash < hash
+	}
+	return si.encName < name
+}
+
+func (si *structFieldInfo) searchLessThan2(name []byte, hash uintptr) bool {
+	if len(si.encName) != len(name) {
+		return len(si.encName) < len(name)
+	}
+	if si.encNameHash != hash {
+		return si.encNameHash < hash
+	}
+	return si.encName < string(name)
+}
+
+type sfiSortedForBinarySearch []*structFieldInfo
+
+func (p sfiSortedForBinarySearch) Len() int      { return len(p) }
+func (p sfiSortedForBinarySearch) Swap(i, j int) { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
+func (p sfiSortedForBinarySearch) Less(i, j int) bool {
+	return p[uint(i)].searchLessThan(p[uint(j)].encName, p[uint(j)].encNameHash)
+}
+
+func maxUintptr() uintptr {
+	if cpu32Bit {
+		return uintptr(math.MaxUint32)
+	}
+	return uintptr(math.MaxUint64)
+}
+
 */

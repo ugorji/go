@@ -193,12 +193,17 @@ _bench_dot_out_dot_txt() {
 }
 
 _suite_debugging() {
-    local js=( _ ) # or: ( _ ) ( En ) ( De ) ( En De )
+    local cg="n" # n = no codecgen, c = codecgen; options are c, n, cn
+    local js=( De ) # or: ( _ ) ( En ) ( De ) ( En De )
     for j in ${js[@]}; do
-        echo "---- codecgen ----"
-        ${go[@]} test "${zargs[@]}" -tags "generated" -bench "__(Json)__.*${j}" -benchmem "$@"
-        echo "---- no codecgen ----"
-        ${go[@]} test "${zargs[@]}" -tags "" -bench "__(Json)__.*${j}" -benchmem "$@"
+        if [[ ${cg} =~ "c" ]]; then
+            echo "---- codecgen ----"
+            ${go[@]} test "${zargs[@]}" -tags "generated" -bench "__(Json)__.*${j}"  -benchtime 2s -benchmem "$@"
+        fi
+        if [[ ${cg} =~ "n" ]]; then
+            echo "---- no codecgen ----"
+            ${go[@]} test "${zargs[@]}" -tags "" -bench "__(Json)__.*${j}"  -benchtime 2s -benchmem "$@"
+        fi
         echo
     done
 }
@@ -251,11 +256,16 @@ _main() {
     [[ " ${args[*]} " == *"s"* && "${do_x}" == 1 && "${do_g}" == 1 ]] && _suite_any x g BenchmarkCodecXGenSuite "$@" | _suite_trim_output
     
     [[ " ${args[*]} " == *"j"* ]] && _suite_any x - BenchmarkCodecQuickAllJsonSuite "$@" | _suite_trim_output
+
+    # These are some very specific suites
+    # [[ " ${args[*]} " == *"q"* ]] && _suite_very_quick_json_via_suite "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"q"* ]] && _suite_very_quick_json_non_suite "$@" | _suite_trim_output
-    [[ " ${args[*]} " == *"p"* ]] && _suite_very_quick_profile "$@" | _suite_trim_output
+
+    # These are just helpers (not really running benchmark suites)
     [[ " ${args[*]} " == *"t"* ]] && _suite_tests "$@" | _suite_trim_output | _suite_tests_strip_file_line
-    [[ " ${args[*]} " == *"z"* ]] && _bench_dot_out_dot_txt
+    [[ " ${args[*]} " == *"p"* ]] && _suite_very_quick_profile "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"f"* ]] && ${go[@]} tool pprof bench.test ${1:-mem.out}
+    [[ " ${args[*]} " == *"z"* ]] && _bench_dot_out_dot_txt
     [[ " ${args[*]} " == *"y"* ]] && _suite_debugging "$@" | _suite_trim_output
     
     true

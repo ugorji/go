@@ -471,7 +471,8 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) reflect.Value {
 
 /*
 
-   func hashShortString(b []byte) (h uintptr) {
+func hashShortString(b []byte) (h uintptr) {
+	// MARKER: consider fnv - it may be a better hash than adler
 	return uintptr(adler32.Checksum(b))
 }
 

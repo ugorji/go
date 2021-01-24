@@ -15,8 +15,6 @@ import (
 	"time"
 )
 
-import . "github.com/ugorji/go/codec"
-
 var benchmarkGroupOnce sync.Once
 
 var benchmarkGroupSave struct {
@@ -42,8 +40,6 @@ func benchmarkGroupReset() {
 
 	testDepth = benchmarkGroupSave.testDepth
 	testMapStringKeyOnly = benchmarkGroupSave.testMapStringKeyOnly
-
-	testDecodeOptions.ZeroCopy = true
 }
 
 func benchmarkOneFn(fns []func(*testing.B)) func(*testing.B) {
@@ -77,9 +73,6 @@ func benchmarkSuite(t *testing.B, fns ...func(t *testing.B)) {
 
 	testReinit() // so flag.Parse() is called first, and never called again
 	benchReinit()
-
-	testDecodeOptions = DecodeOptions{}
-	testEncodeOptions = EncodeOptions{}
 
 	benchmarkGroupReset()
 

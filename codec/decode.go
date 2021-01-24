@@ -1142,6 +1142,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 						rvv = rvvn
 					}
 				} else {
+					// stream has non-nil value, so we can just directly create new value to the pointer
 					if vtypeIsPtr {
 						rvv = reflect.New(vtypeElem)
 					} else {
@@ -1149,7 +1150,12 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 					}
 				}
 			} else {
-				rvv = rvZeroAddrK(vtype, vtypeKind)
+				// stream has non-nil value, so we can just directly create new value to the pointer
+				if vtypeIsPtr {
+					rvv = reflect.New(vtypeElem)
+				} else {
+					rvv = rvZeroAddrK(vtype, vtypeKind)
+				}
 			}
 		} else {
 			rvv = rvvn
