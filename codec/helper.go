@@ -1683,7 +1683,7 @@ type typeInfo struct {
 	// ---- cpu cache line boundary?
 
 	// sfiSrch  []*structFieldInfo          // sorted. used for finding sfi given a name
-	sfi4Name map[string]*structFieldInfo // map. used for finding sfi given a name // TODO comment
+	sfi4Name map[string]*structFieldInfo // map. used for finding sfi given a name
 
 	// ---- cpu cache line boundary?
 
@@ -1727,7 +1727,6 @@ type typeInfo struct {
 }
 
 func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
-	// map (hash) lookup is faster, as it can leverage string length in disambiguation.
 	return ti.sfi4Name[string(name)]
 }
 
@@ -1736,7 +1735,7 @@ func (ti *typeInfo) resolve(x []structFieldInfo, ss map[string]uint16) (n int) {
 
 	for i := range x {
 		ui := uint16(i)
-		xn := x[i].encName // fieldName or encName? use encName for now.
+		xn := x[i].encName
 		j, ok := ss[xn]
 		if ok {
 			i2clear := ui                              // index to be cleared
@@ -1760,8 +1759,11 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	var anyOmitEmpty bool
 
 	// remove all the nils (non-ready)
-	m := make(map[string]*structFieldInfo)
+	m := make(map[string]*structFieldInfo, n)
 	w := make([]structFieldInfo, n)
+	// y := make([]*structFieldInfo, n+n+n)
+	// b := y[n+n:]
+	// z := y[n:]
 	y := make([]*structFieldInfo, n+n)
 	z := y[n:]
 	y = y[:n]
@@ -2911,9 +2913,7 @@ LOOP:
 }
 
 func (si *structFieldInfo) searchLessThan(name string, hash uintptr) bool {
-	// return (len(si.encName) != len(name) && len(si.encName) < len(name)) ||
-    // 	(si.encNameHash != hash && si.encNameHash < hash) ||
-    //     si.encName < name
+	// MARKER: consider comment'ing out len checks, so there's at most 2 checks
 	if len(si.encName) != len(name) {
 		return len(si.encName) < len(name)
 	}
@@ -2924,6 +2924,7 @@ func (si *structFieldInfo) searchLessThan(name string, hash uintptr) bool {
 }
 
 func (si *structFieldInfo) searchLessThan2(name []byte, hash uintptr) bool {
+	// MARKER: consider comment'ing out len checks, so there's at most 2 checks
 	if len(si.encName) != len(name) {
 		return len(si.encName) < len(name)
 	}
