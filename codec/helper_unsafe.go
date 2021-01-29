@@ -78,14 +78,26 @@ type unsafeReflectValue struct {
 	flag uintptr
 }
 
+// keep in sync with stdlib runtime/type.go
+type unsafeRuntimeType struct {
+	size uintptr
+	// ... many other fields here
+}
+
 var unsafeZeroAddr = unsafe.Pointer(&unsafeZeroArr[0])
 
 var unsafeZeroSlice = unsafeSlice{unsafeZeroAddr, 0, 0}
 
+// stringView returns a view of the []byte as a string.
+// In unsafe mode, it doesn't incur allocation and copying caused by conversion.
+// In regular safe mode, it is an allocation and copy.
 func stringView(v []byte) string {
 	return *(*string)(unsafe.Pointer(&v))
 }
 
+// bytesView returns a view of the string as a []byte.
+// In unsafe mode, it doesn't incur allocation and copying caused by conversion.
+// In regular safe mode, it is an allocation and copy.
 func bytesView(v string) (b []byte) {
 	sx := (*unsafeString)(unsafe.Pointer(&v))
 	bx := (*unsafeSlice)(unsafe.Pointer(&b))
@@ -221,7 +233,7 @@ func rvZeroK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
 	if refBitset.isset(byte(k)) {
 		urv.flag = uintptr(k)
-	} else if (k == reflect.Struct || k == reflect.Array) && t.Size() > uintptr(len(unsafeZeroArr)) {
+	} else if (k == reflect.Struct || k == reflect.Array) && rtsize2(urv.typ) > uintptr(len(unsafeZeroArr)) {
 		urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
 		urv.ptr = unsafe_New(urv.typ)
 	} else {
@@ -266,6 +278,14 @@ func rvAddressableReadonly(v reflect.Value) reflect.Value {
 	// return rv.Addr()
 }
 
+func rtsize(rt reflect.Type) uintptr {
+	return ((*unsafeRuntimeType)(((*unsafeIntf)(unsafe.Pointer(&rt))).ptr)).size
+}
+
+func rtsize2(rt unsafe.Pointer) uintptr {
+	return ((*unsafeRuntimeType)(rt)).size
+}
+
 func rt2id(rt reflect.Type) uintptr {
 	return uintptr(((*unsafeIntf)(unsafe.Pointer(&rt))).ptr)
 }
@@ -277,17 +297,13 @@ func i2rtid(i interface{}) uintptr {
 // --------------------------
 
 func unsafeCmpZero(ptr unsafe.Pointer, size int) bool {
-	var s1, s2 string
-	s1u := (*unsafeString)(unsafe.Pointer(&s1))
-	s2u := (*unsafeString)(unsafe.Pointer(&s2))
-	s1u.Data, s1u.Len, s2u.Len = ptr, size, size
-	if size <= len(unsafeZeroArr) {
-		s2u.Data = unsafeZeroAddr
-	} else {
+	var s1 = unsafeString{ptr, size}
+	var s2 = unsafeString{unsafeZeroAddr, size}
+	if size > len(unsafeZeroArr) {
 		arr := make([]byte, size)
-		s2u.Data = unsafe.Pointer(&arr[0])
+		s2.Data = unsafe.Pointer(&arr[0])
 	}
-	return s1 == s2 // memcmp
+	return *(*string)(unsafe.Pointer(&s1)) == *(*string)(unsafe.Pointer(&s2)) // memcmp
 }
 
 func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
@@ -304,12 +320,14 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// 	if urv.ptr == nil {
 	// 		return true
 	// 	}
-	// 	return unsafeCmpZero(*(*unsafe.Pointer)(urv.ptr), int(t.Elem().Size()))
+	// 	return unsafeCmpZero(*(*unsafe.Pointer)(urv.ptr), int(rtsize(t.Elem())))
 	// }
-	// return unsafeCmpZero(urv.ptr, int(t.Size()))
-	// return unsafeCmpZero(urv.ptr, int(rvPtrToType(urv.typ).Size()))
+	// return unsafeCmpZero(urv.ptr, int(rtsize(t)))
+	// return unsafeCmpZero(urv.ptr, int(rtsize(rvPtrToType(urv.typ))))
 
-	return unsafeCmpZero(urv.ptr, int(rvType(v).Size()))
+	// return unsafeCmpZero(urv.ptr, int(rtsize(rvType(v))))
+	return unsafeCmpZero(urv.ptr, int(rtsize2(urv.typ)))
+
 }
 
 func isEmptyValueFallbackRecur(urv *unsafeReflectValue, v reflect.Value, tinfos *TypeInfos) bool {
@@ -851,12 +869,6 @@ func rvLenMap(rv reflect.Value) int {
 //
 // hiter is typically about 12 words, but we just fill up unsafeMapIter to 32 words,
 // so it fills multiple cache lines and can give some extra space to accomodate small growth.
-
-// type unsafeMapHashIter struct {
-// 	key, value unsafe.Pointer
-// 	// other fields are ignored, but make up about 10 words. fill up unsafeMapIter to be up to 32 words.
-// 	_ [20]uintptr // padding for other fields
-// }
 
 type unsafeMapIter struct {
 	mtyp, mptr unsafe.Pointer

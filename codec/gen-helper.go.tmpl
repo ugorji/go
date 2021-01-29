@@ -115,10 +115,6 @@ func (f genHelperEncoder) EncExtension(v interface{}, xfFn *extTypeTagFn) {
 func (f genHelperEncoder) WriteStr(s string) {
 	f.e.w().writestr(s)
 }
-{{/*
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperEncoder) BytesView(v string) []byte { return bytesView(v) }
-*/ -}}
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncWriteMapStart(length int) { f.e.mapStart(length) }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -213,8 +209,6 @@ func (f genHelperDecoder) DecExtension(v interface{}, xfFn *extTypeTagFn) {
 func (f genHelperDecoder) DecInferLen(clen, maxlen, unit int) (rvlen int) {
 	return decInferLen(clen, maxlen, unit)
 }
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperDecoder) StringView(v []byte) string { return stringView(v) }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecReadMapStart() int { return f.d.mapStart(f.d.d.ReadMapStart()) }

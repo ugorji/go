@@ -157,12 +157,13 @@ _suite_very_quick_json_non_suite() {
     # Quickly get numbers for json, stdjson, jsoniter and json (codecgen)"
     echo ">>>> very quick json bench"
     # local tags=( "x" "x generated" )
+    local t="x" # options: "x" "x safe"
     local js=( En De )
     for j in ${js[@]}; do
         echo "---- codecgen ----"
-        ${go[@]} test "${zargs[@]}" -tags "x generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
+        ${go[@]} test "${zargs[@]}" -tags "${t} generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
         echo "---- no codecgen ----"
-        ${go[@]} test "${zargs[@]}" -tags "x" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
+        ${go[@]} test "${zargs[@]}" -tags "${t}" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
         echo
     done
 }

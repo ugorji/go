@@ -15,22 +15,10 @@ import (
 
 const safeMode = true
 
-// stringView returns a view of the []byte as a string.
-// In unsafe mode, it doesn't incur allocation and copying caused by conversion.
-// In regular safe mode, it is an allocation and copy.
-//
-// Usage: Always maintain a reference to v while result of this call is in use,
-//        and call keepAlive4BytesView(v) at point where done with view.
 func stringView(v []byte) string {
 	return string(v)
 }
 
-// bytesView returns a view of the string as a []byte.
-// In unsafe mode, it doesn't incur allocation and copying caused by conversion.
-// In regular safe mode, it is an allocation and copy.
-//
-// Usage: Always maintain a reference to v while result of this call is in use,
-//        and call keepAlive4BytesView(v) at point where done with view.
 func bytesView(v string) []byte {
 	return []byte(v)
 }
@@ -100,6 +88,10 @@ func rvAddressableReadonly(v reflect.Value) (rv reflect.Value) {
 	rv = rvZeroAddrK(v.Type(), v.Kind())
 	rvSetDirect(rv, v)
 	return
+}
+
+func rtsize(rt reflect.Type) uintptr {
+	return rt.Size()
 }
 
 func rt2id(rt reflect.Type) uintptr {

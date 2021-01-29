@@ -233,9 +233,6 @@ func (f genHelperDecoder) DecInferLen(clen, maxlen, unit int) (rvlen int) {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperDecoder) StringView(v []byte) string { return stringView(v) }
-
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecReadMapStart() int { return f.d.mapStart(f.d.d.ReadMapStart()) }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
