@@ -173,6 +173,20 @@ func (e *Encoder) raw(f *codecFnInfo, rv reflect.Value) {
 	e.rawBytes(rv2i(rv).(Raw))
 }
 
+func (e *Encoder) encodeComplex64(v complex64) {
+	if imag(v) != 0 {
+		e.errorf("cannot encode complex number: %v, with imaginary values: %v", v, imag(v))
+	}
+	e.e.EncodeFloat32(real(v))
+}
+
+func (e *Encoder) encodeComplex128(v complex128) {
+	if imag(v) != 0 {
+		e.errorf("cannot encode complex number: %v, with imaginary values: %v", v, imag(v))
+	}
+	e.e.EncodeFloat64(real(v))
+}
+
 func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeBool(rvGetBool(rv))
 }
@@ -185,12 +199,20 @@ func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeString(rvGetString(rv))
 }
 
+func (e *Encoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeFloat32(rvGetFloat32(rv))
+}
+
 func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeFloat64(rvGetFloat64(rv))
 }
 
-func (e *Encoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
-	e.e.EncodeFloat32(rvGetFloat32(rv))
+func (e *Encoder) kComplex64(f *codecFnInfo, rv reflect.Value) {
+	e.encodeComplex64(rvGetComplex64(rv))
+}
+
+func (e *Encoder) kComplex128(f *codecFnInfo, rv reflect.Value) {
+	e.encodeComplex128(rvGetComplex128(rv))
 }
 
 func (e *Encoder) kInt(f *codecFnInfo, rv reflect.Value) {
@@ -1086,6 +1108,10 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.EncodeFloat32(v)
 	case float64:
 		e.e.EncodeFloat64(v)
+	case complex64:
+		e.encodeComplex64(v)
+	case complex128:
+		e.encodeComplex128(v)
 	case time.Time:
 		e.e.EncodeTime(v)
 	case []byte:
@@ -1122,6 +1148,10 @@ func (e *Encoder) encode(iv interface{}) {
 		e.e.EncodeFloat32(*v)
 	case *float64:
 		e.e.EncodeFloat64(*v)
+	case *complex64:
+		e.encodeComplex64(*v)
+	case *complex128:
+		e.encodeComplex128(*v)
 	case *time.Time:
 		e.e.EncodeTime(*v)
 	case *[]byte:

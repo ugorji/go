@@ -233,6 +233,14 @@ func rvSetFloat64(rv reflect.Value, v float64) {
 	rv.SetFloat(v)
 }
 
+func rvSetComplex64(rv reflect.Value, v complex64) {
+	rv.SetComplex(complex128(v))
+}
+
+func rvSetComplex128(rv reflect.Value, v complex128) {
+	rv.SetComplex(v)
+}
+
 func rvSetInt(rv reflect.Value, v int) {
 	rv.SetInt(int64(v))
 }
@@ -364,6 +372,14 @@ func rvGetFloat64(rv reflect.Value) float64 {
 
 func rvGetFloat32(rv reflect.Value) float32 {
 	return float32(rv.Float())
+}
+
+func rvGetComplex64(rv reflect.Value) complex64 {
+	return complex64(rv.Complex())
+}
+
+func rvGetComplex128(rv reflect.Value) complex128 {
+	return rv.Complex()
 }
 
 func rvGetInt(rv reflect.Value) int {

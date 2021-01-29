@@ -138,6 +138,12 @@ func (f genHelperEncoder) EncWriteMapElemKey() { f.e.mapElemKey() }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncWriteMapElemValue() { f.e.mapElemValue() }
 
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncEncodeComplex64(v complex64) { f.e.encodeComplex64(v) }
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncEncodeComplex128(v complex128) { f.e.encodeComplex128(v) }
+
 // ---------------- DECODER FOLLOWS -----------------
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*

@@ -373,6 +373,14 @@ func (d *Decoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
 	rvSetFloat64(rv, d.d.DecodeFloat64())
 }
 
+func (d *Decoder) kComplex64(f *codecFnInfo, rv reflect.Value) {
+	rvSetComplex64(rv, complex(d.decodeFloat32(), 0))
+}
+
+func (d *Decoder) kComplex128(f *codecFnInfo, rv reflect.Value) {
+	rvSetComplex128(rv, complex(d.d.DecodeFloat64(), 0))
+}
+
 func (d *Decoder) kInt(f *codecFnInfo, rv reflect.Value) {
 	rvSetInt(rv, int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize)))
 }
@@ -1583,9 +1591,13 @@ func (d *Decoder) decode(iv interface{}) {
 	case *uint64:
 		*v = d.d.DecodeUint64()
 	case *float32:
-		*v = float32(d.decodeFloat32())
+		*v = d.decodeFloat32()
 	case *float64:
 		*v = d.d.DecodeFloat64()
+	case *complex64:
+		*v = complex(d.decodeFloat32(), 0)
+	case *complex128:
+		*v = complex(d.d.DecodeFloat64(), 0)
 	case *[]byte:
 		*v = d.decodeBytesInto(*v)
 	case []byte:

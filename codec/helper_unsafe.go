@@ -556,6 +556,16 @@ func rvSetFloat64(rv reflect.Value, v float64) {
 	*(*float64)(urv.ptr) = v
 }
 
+func rvSetComplex64(rv reflect.Value, v complex64) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	*(*complex64)(urv.ptr) = v
+}
+
+func rvSetComplex128(rv reflect.Value, v complex128) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	*(*complex128)(urv.ptr) = v
+}
+
 func rvSetInt(rv reflect.Value, v int) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	*(*int)(urv.ptr) = v
@@ -774,6 +784,16 @@ func rvGetFloat64(rv reflect.Value) float64 {
 func rvGetFloat32(rv reflect.Value) float32 {
 	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	return *(*float32)(v.ptr)
+}
+
+func rvGetComplex64(rv reflect.Value) complex64 {
+	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	return *(*complex64)(v.ptr)
+}
+
+func rvGetComplex128(rv reflect.Value) complex128 {
+	v := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	return *(*complex128)(v.ptr)
 }
 
 func rvGetInt(rv reflect.Value) int {

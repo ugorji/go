@@ -90,6 +90,10 @@ import (
 // Note:
 //   codecgen-generated code depends on the variables defined by fast-path.generated.go.
 //   consequently, you cannot run with tags "codecgen notfastpath".
+//
+// Note:
+//   genInternalXXX functions are used for generating fast-path and other internally generated
+//   files, and not for use in codecgen.
 
 // GenVersion is the current version of codecgen.
 //
@@ -938,6 +942,10 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 		x.line("r.EncodeFloat32(float32(" + varname + "))")
 	case reflect.Float64:
 		x.line("r.EncodeFloat64(float64(" + varname + "))")
+	case reflect.Complex64:
+		x.linef("z.EncEncodeComplex64(complex64(%s))", varname)
+	case reflect.Complex128:
+		x.linef("z.EncEncodeComplex128(complex128(%s))", varname)
 	case reflect.Bool:
 		x.line("r.EncodeBool(bool(" + varname + "))")
 	case reflect.String:
@@ -1003,6 +1011,10 @@ func (x *genRunner) encZero(t reflect.Type) {
 		x.line("r.EncodeFloat32(0)")
 	case reflect.Float64:
 		x.line("r.EncodeFloat64(0)")
+	case reflect.Complex64:
+		x.line("z.EncEncodeComplex64(0)")
+	case reflect.Complex128:
+		x.line("z.EncEncodeComplex128(0)")
 	case reflect.Bool:
 		x.line("r.EncodeBool(false)")
 	case reflect.String:
@@ -1663,6 +1675,11 @@ func (x *genRunner) decTryAssignPrimitive(varname string, t reflect.Type, isptr 
 	case reflect.Float64:
 		x.linef("%s%s = (%s)(r.DecodeFloat64())", ptr, varname, x.genTypeName(t))
 
+	case reflect.Complex64:
+		x.linef("%s%s = (%s)(complex(z.DecDecodeFloat32()), 0)", ptr, varname, x.genTypeName(t))
+	case reflect.Complex128:
+		x.linef("%s%s = (%s)(complex(r.DecodeFloat64()), 0)", ptr, varname, x.genTypeName(t))
+
 	case reflect.Bool:
 		x.linef("%s%s = (%s)(r.DecodeBool())", ptr, varname, x.genTypeName(t))
 	case reflect.String:
@@ -2161,7 +2178,7 @@ func genInternalNonZeroValue(s string) string {
 		i = 2
 	case "bytes", "[]byte", "[]uint8":
 		i = 3
-	case "float32", "float64", "float", "double":
+	case "float32", "float64", "float", "double", "complex", "complex64", "complex128":
 		i = 4
 	default:
 		i = 5
@@ -2172,6 +2189,7 @@ func genInternalNonZeroValue(s string) string {
 	return genInternalNonZeroValueStrs[idx%slen][i] // return string, to remove ambiguity
 }
 
+// Note: used for fastpath only
 func genInternalEncCommandAsString(s string, vname string) string {
 	switch s {
 	case "uint64":
@@ -2199,7 +2217,7 @@ func genInternalEncCommandAsString(s string, vname string) string {
 	}
 }
 
-// used for fastpath only
+// Note: used for fastpath only
 func genInternalDecCommandAsString(s string, mapkey bool) string {
 	switch s {
 	case "uint":
@@ -2237,6 +2255,10 @@ func genInternalDecCommandAsString(s string, mapkey bool) string {
 		return "float32(d.decodeFloat32())"
 	case "float64":
 		return "d.d.DecodeFloat64()"
+	case "complex64":
+		return "complex(d.decodeFloat32(), 0)"
+	case "complex128":
+		return "complex(d.d.DecodeFloat64(), 0)"
 	case "bool":
 		return "d.d.DecodeBool()"
 	default:
@@ -2316,6 +2338,8 @@ func genInternalInit() {
 		"int64":       8,
 		"float32":     4,
 		"float64":     8,
+		"complex64":   8,
+		"complex128":  16,
 		"bool":        1,
 	}
 

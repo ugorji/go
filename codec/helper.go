@@ -1088,6 +1088,12 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 			case reflect.Float64:
 				fn.fe = (*Encoder).kFloat64
 				fn.fd = (*Decoder).kFloat64
+			case reflect.Complex64:
+				fn.fe = (*Encoder).kComplex64
+				fn.fd = (*Decoder).kComplex64
+			case reflect.Complex128:
+				fn.fe = (*Encoder).kComplex128
+				fn.fd = (*Decoder).kComplex128
 			case reflect.Chan:
 				fi.seq = seqTypeChan
 				fn.fe = (*Encoder).kChan
@@ -2016,7 +2022,7 @@ LOOP:
 		fkind := f.Type.Kind()
 		// skip if a func type, or is unexported, or structTag value == "-"
 		switch fkind {
-		case reflect.Func, reflect.Complex64, reflect.Complex128, reflect.UnsafePointer:
+		case reflect.Func, reflect.UnsafePointer:
 			continue LOOP
 		}
 
