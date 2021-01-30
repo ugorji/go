@@ -810,7 +810,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		// if indefinite, etc, then expand the slice if necessary
 		if j >= rvlen {
 			if f.seq == seqTypeArray {
-				decArrayCannotExpand(slh, hasLen, rvlen, j, containerLenS)
+				slh.arrayCannotExpand(hasLen, rvlen, j, containerLenS)
 				return
 			}
 			slh.ElemContainerState(j)
@@ -921,7 +921,7 @@ func (d *Decoder) kArray(f *codecFnInfo, rv reflect.Value) {
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
 		// note that you cannot expand the array if indefinite and we go past array length
 		if j >= rvlen {
-			decArrayCannotExpand(slh, hasLen, rvlen, j, containerLenS)
+			slh.arrayCannotExpand(hasLen, rvlen, j, containerLenS)
 			return
 		}
 
@@ -1549,6 +1549,16 @@ func (d *Decoder) swallowErr() (err error) {
 	return
 }
 
+func (d *Decoder) swallowMapContents(containerLen int) {
+	hasLen := containerLen > 0
+	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
+		d.mapElemKey()
+		d.swallow()
+		d.mapElemValue()
+		d.swallow()
+	}
+}
+
 func setZero(iv interface{}) {
 	if iv == nil {
 		return
@@ -2023,6 +2033,19 @@ func (x decSliceHelper) ElemContainerState(index int) {
 	}
 }
 
+func (slh decSliceHelper) arrayCannotExpand(hasLen bool, lenv, j, containerLenS int) {
+	slh.d.arrayCannotExpand(lenv, j+1)
+	// drain completely and return
+	slh.ElemContainerState(j)
+	slh.d.swallow()
+	j++
+	for ; slh.d.containerNext(j, containerLenS, hasLen); j++ {
+		slh.ElemContainerState(j)
+		slh.d.swallow()
+	}
+	slh.End()
+}
+
 // isDecodeable checks if value can be decoded into
 //
 // decode can take any reflect.Value that is a inherently addressable i.e.
@@ -2140,17 +2163,4 @@ func decInferLen(clen, maxlen, unit int) int {
 		return clen
 	}
 	return maxlen
-}
-
-func decArrayCannotExpand(slh decSliceHelper, hasLen bool, lenv, j, containerLenS int) {
-	slh.d.arrayCannotExpand(lenv, j+1)
-	// drain completely and return
-	slh.ElemContainerState(j)
-	slh.d.swallow()
-	j++
-	for ; slh.d.containerNext(j, containerLenS, hasLen); j++ {
-		slh.ElemContainerState(j)
-		slh.d.swallow()
-	}
-	slh.End()
 }

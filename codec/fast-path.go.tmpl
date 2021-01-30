@@ -413,7 +413,7 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}N(v []{{ .Elem }}, d *Decoder) 
 	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		{{/* // if indefinite, etc, then expand the slice if necessary */ -}}
 		if j >= len(v) {
-			decArrayCannotExpand(slh, hasLen, len(v), j, containerLenS)
+			slh.arrayCannotExpand(hasLen, len(v), j, containerLenS)
 			return
 		} 
 		slh.ElemContainerState(j)
@@ -475,6 +475,10 @@ func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{{ .E
 }
 func (fastpathT) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem }}, containerLen int, d *Decoder) {
 	{{/* No need to check if containerLen == containerLenNil, as that is checked by R and L above  */ -}}
+	if v == nil {
+		d.swallowMapContents(containerLen)
+		return
+	}
 	{{if eq .Elem "interface{}" }}mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
     {{else if eq .Elem "bytes" "[]byte" }}mapGet := v != nil && !d.h.MapValueReset
     {{end -}}
@@ -499,7 +503,7 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem 
 		{{ else -}}
 		mv = {{ decmd .Elem false }}
 		{{ end -}}
-		if v != nil { v[mk] = mv }
+		v[mk] = mv
 	}
 }
 {{end}}{{end}}{{end}}
