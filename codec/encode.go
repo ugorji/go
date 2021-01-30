@@ -856,7 +856,9 @@ type Encoder struct {
 // OR pass in a memory buffered writer (eg bufio.Writer, bytes.Buffer).
 func NewEncoder(w io.Writer, h Handle) *Encoder {
 	e := h.newEncDriver().encoder()
-	e.Reset(w)
+	if w != nil {
+		e.Reset(w)
+	}
 	return e
 }
 
@@ -867,7 +869,9 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 // After encoding, the out parameter contains the encoded contents.
 func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 	e := h.newEncDriver().encoder()
-	e.ResetBytes(out)
+	if out != nil {
+		e.ResetBytes(out)
+	}
 	return e
 }
 
@@ -900,9 +904,6 @@ func (e *Encoder) resetCommon() {
 // This accommodates using the state of the Encoder,
 // where it has "cached" information about sub-engines.
 func (e *Encoder) Reset(w io.Writer) {
-	if w == nil {
-		return
-	}
 	e.bytes = false
 	if e.wf == nil {
 		e.wf = new(bufioEncWriter)
@@ -913,9 +914,6 @@ func (e *Encoder) Reset(w io.Writer) {
 
 // ResetBytes resets the Encoder with a new destination output []byte.
 func (e *Encoder) ResetBytes(out *[]byte) {
-	if out == nil {
-		return
-	}
 	var in []byte = *out
 	if in == nil {
 		in = make([]byte, defEncByteBufSize)

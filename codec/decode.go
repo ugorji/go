@@ -1246,7 +1246,9 @@ type Decoder struct {
 // OR pass in a memory buffered reader (eg bufio.Reader, bytes.Buffer).
 func NewDecoder(r io.Reader, h Handle) *Decoder {
 	d := h.newDecDriver().decoder()
-	d.Reset(r)
+	if r != nil {
+		d.Reset(r)
+	}
 	return d
 }
 
@@ -1254,7 +1256,9 @@ func NewDecoder(r io.Reader, h Handle) *Decoder {
 // from a byte slice with zero copying.
 func NewDecoderBytes(in []byte, h Handle) *Decoder {
 	d := h.newDecDriver().decoder()
-	d.ResetBytes(in)
+	if in != nil {
+		d.ResetBytes(in)
+	}
 	return d
 }
 
@@ -2016,11 +2020,16 @@ func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 //    - maxlen: max length to be returned.
 //      if <= 0, it is unset, and we infer it based on the unit size
 //    - unit: number of bytes for each element of the collection
-func decInferLen(clen, maxlen, unit int) (rvlen int) {
+func decInferLen(clen, maxlen, unit int) int {
 	// anecdotal testing showed increase in allocation with map length of 16.
 	// We saw same typical alloc from 0-8, then a 20% increase at 16.
 	// Thus, we set it to 8.
-	const maxLenIfUnset = 8
+	const (
+		minLenIfUnset = 8
+		maxMem        = 256 * 1024 // 256Kb Memory
+		// floorMem = 4 * 1024 // 4Kb Memory
+	)
+
 	// handle when maxlen is not set i.e. <= 0
 
 	// clen==0:           use 0
@@ -2030,35 +2039,40 @@ func decInferLen(clen, maxlen, unit int) (rvlen int) {
 	// maxlen> 0, clen>0: cap at maxlen
 
 	if clen == 0 || clen == containerLenNil {
-		return
+		return 0
 	}
 	if clen < 0 {
-		return maxLenIfUnset
+		// if unspecified, return 64 for bytes, ... 8 for uint64, ... and everything else
+		clen = 64 / unit
+		if clen > minLenIfUnset {
+			return clen
+		}
+		return minLenIfUnset
 	}
-	if unit == 0 {
+	if unit <= 0 {
 		return clen
 	}
 	if maxlen <= 0 {
-		// no maxlen defined. Use maximum of 256K memory, with a floor of 4K items.
-		// maxlen = 256 * 1024 / unit
-		// if maxlen < (4 * 1024) {
+		// // no maxlen defined. Use maximum of 256K memory, with a floor of 4K items.
+		// // maxlen = 256 * 1024 / unit
+		// // if maxlen < (4 * 1024) {
+		// // 	maxlen = 4 * 1024
+		// // }
+		// if unit < (256 / 4) {
+		// 	maxlen = 256 * 1024 / unit
+		// } else {
 		// 	maxlen = 4 * 1024
 		// }
-		if unit < (256 / 4) {
-			maxlen = 256 * 1024 / unit
-		} else {
-			maxlen = 4 * 1024
-		}
-		// if maxlen > maxLenIfUnset {
-		// 	maxlen = maxLenIfUnset
-		// }
+		// // if maxlen > maxLenIfUnset {
+		// // 	maxlen = maxLenIfUnset
+		// // }
+		// no maxlen defined. Use maximum of 256K memory
+		maxlen = maxMem / unit
 	}
-	if clen > maxlen {
-		rvlen = maxlen
-	} else {
-		rvlen = clen
+	if clen < maxlen {
+		return clen
 	}
-	return
+	return maxlen
 }
 
 func decArrayCannotExpand(slh decSliceHelper, hasLen bool, lenv, j, containerLenS int) {
