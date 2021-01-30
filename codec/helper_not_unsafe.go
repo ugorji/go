@@ -307,6 +307,10 @@ func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) reflect.Value {
 	return rv.Index(i)
 }
 
+func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) reflect.Value {
+	return rv.Index(i)
+}
+
 func rvSliceZeroCap(t reflect.Type) (v reflect.Value) {
 	return reflect.MakeSlice(t, 0, 0)
 }
@@ -319,10 +323,11 @@ func rvCapSlice(rv reflect.Value) int {
 	return rv.Cap()
 }
 
-func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
+// if scratch is nil, then return a writable view (assuming canAddr=true)
+func rvGetArrayBytes(rv reflect.Value, scratch []byte) (bs []byte) {
 	l := rv.Len()
-	if rv.CanAddr() {
-		return rvGetBytes(rv.Slice(0, l))
+	if scratch == nil || rv.CanAddr() {
+		return rv.Slice(0, l).Bytes()
 	}
 
 	if l <= cap(scratch) {
@@ -338,10 +343,6 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	v = rvZeroAddrK(reflectArrayOf(rvLenSlice(rv), rvType(rv).Elem()), reflect.Array)
 	reflect.Copy(v, rv)
 	return
-}
-
-func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
-	return rv.Slice(0, rv.Len())
 }
 
 func rvCopySlice(dest, src reflect.Value) {
@@ -511,5 +512,9 @@ func hashShortString(b []byte) (h uintptr) {
 // 	h = ((h << 3) | uint64(len(b)&7))
 // 	return
 // }
+
+func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
+	return rv.Slice(0, rv.Len())
+}
 
 */

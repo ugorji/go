@@ -59,6 +59,8 @@ type AnonInTestStruc struct {
 	// AMU32F64 map[uint32]float64 // json/bson do not like it
 	AMSU16 map[string]uint16
 
+	AI64arr8 [8]int64
+
 	// use these to test 0-len or nil slices/maps/arrays
 	AI64arr0    [0]int64
 	AI64slice0  []int64
@@ -221,6 +223,8 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			strRpt(n, "333"):  strRpt(n, "333"),
 			strRpt(n, "4444"): strRpt(n, "4444"),
 		},
+
+		AI64arr8: [...]int64{1, 8, 2, 7, 3, 6, 4, 5},
 
 		// Note: +/- inf, NaN, and other non-representable numbers should not be explicitly tested here
 

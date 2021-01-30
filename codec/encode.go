@@ -404,8 +404,8 @@ func (e *Encoder) kArray(f *codecFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
 		e.kArrayWMbs(rv, f.ti)
 	} else if uint8TypId == rt2id(f.ti.elem) {
-		// e.e.EncodeStringBytesRaw(rvGetArrayBytesRO(rv, e.b[:]))
-		e.e.EncodeStringBytesRaw(rvGetArrayBytesRO(rv, nil))
+		// e.e.EncodeStringBytesRaw(rvGetArrayBytes(rv, e.b[:]))
+		e.e.EncodeStringBytesRaw(rvGetArrayBytes(rv, []byte{}))
 	} else {
 		e.kArrayW(rv, f.ti)
 	}

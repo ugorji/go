@@ -1105,11 +1105,12 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 			case reflect.Array:
 				fi.seq = seqTypeArray
 				fn.fe = (*Encoder).kArray
-				rt2 := reflect.SliceOf(ti.elem)
-				fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
-					// call fnVia directly, so fn(...) is not recursive, and this can be inlined
-					d.h.fnVia(rt2, &x.rtidFns, true).fd(d, xf, rvGetSlice4Array(xrv, rt2))
-				}
+				fn.fd = (*Decoder).kArray
+				// rt2 := reflect.SliceOf(ti.elem)
+				// fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
+				// 	// call fnVia directly, so fn(...) is not recursive, and this can be inlined
+				// 	d.h.fnVia(rt2, &x.rtidFns, true).fd(d, xf, rvGetSlice4Array(xrv, rt2))
+				// }
 			case reflect.Struct:
 				if ti.anyOmitEmpty ||
 					ti.flagMissingFielder ||

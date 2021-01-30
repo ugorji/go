@@ -628,7 +628,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
-		for j := 0; d.mapNext(j, containerLen, hasLen); j++ {
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
 			if f.ti.keyType == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
@@ -683,7 +683,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		if proceed {
 			// read remaining values and throw away
 			for j := len(f.ti.sfiSrc); ; j++ {
-				if !d.mapNext(j, containerLen, hasLen) {
+				if !d.containerNext(j, containerLen, hasLen) {
 					break
 				}
 				d.arrayElem()
@@ -716,6 +716,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			rvbs = rvbs[:len(rvbs):len(rvbs)]
 		}
 		bs2 := d.decodeBytesInto(rvbs)
+		// if !(len(bs2) == len(rvbs) && byteSliceSameData(rvbs, bs2)) {
 		if !(len(bs2) > 0 && len(bs2) == len(rvbs) && &bs2[0] == &rvbs[0]) {
 			if rvCanset {
 				rvSetBytes(rv, bs2)
@@ -794,7 +795,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	var j int
 
-	for ; d.mapNext(j, containerLenS, hasLen); j++ {
+	for ; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && f.seq == seqTypeSlice && rvIsNil(rv) { // means hasLen = false
 			if rvCanset {
 				rvlen = decDefSliceCap
@@ -872,6 +873,72 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 
+func (d *Decoder) kArray(f *codecFnInfo, rv reflect.Value) {
+	// An array can be set from a map or array in stream.
+
+	ctyp := d.d.ContainerType()
+	if ctyp == valueTypeBytes || ctyp == valueTypeString {
+		// you can only decode bytes or string in the stream into a slice or array of bytes
+		if f.ti.elemkind != uint8(reflect.Uint8) {
+			d.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
+		}
+		rvbs := rvGetArrayBytes(rv, nil)
+		bs2 := d.decodeBytesInto(rvbs)
+		if !byteSliceSameData(rvbs, bs2) && len(rvbs) > 0 && len(bs2) > 0 {
+			copy(rvbs, bs2)
+		}
+		return
+	}
+
+	slh, containerLenS := d.decSliceHelperStart() // only expects valueType(Array|Map) - never Nil
+
+	// an array can never return a nil slice. so no need to check f.array here.
+	if containerLenS == 0 {
+		slh.End()
+		return
+	}
+
+	rtelem := f.ti.elem
+	rtelemkind := rtelem.Kind()
+	for rtelemkind == reflect.Ptr {
+		rtelem = rtelem.Elem()
+		rtelemkind = rtelem.Kind()
+	}
+
+	var fn *codecFn
+
+	var rv9 reflect.Value
+
+	rvlen := rv.Len() // same as cap
+	hasLen := containerLenS > 0
+	if hasLen && containerLenS > rvlen {
+		d.errorf("cannot decode into array with length: %v, less than container length: %v", rvlen, containerLenS)
+	}
+
+	// consider creating new element once, and just decoding into it.
+	var elemReset = d.h.SliceElementReset
+
+	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
+		// note that you cannot expand the array if indefinite and we go past array length
+		if j >= rvlen {
+			decArrayCannotExpand(slh, hasLen, rvlen, j, containerLenS)
+			return
+		}
+
+		slh.ElemContainerState(j)
+		rv9 = rvArrayIndex(rv, j, f.ti)
+		if elemReset {
+			rvSetDirectZero(rv9)
+		}
+
+		if fn == nil {
+			fn = d.h.fn(rtelem)
+		}
+		d.decodeValue(rv9, fn)
+	}
+	slh.End()
+}
+
 func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 	// A slice can be set from a map or array in stream.
 	// This way, the order can be kept (as order is lost with map).
@@ -930,7 +997,7 @@ func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
 
 	var j int
 
-	for ; d.mapNext(j, containerLenS, hasLen); j++ {
+	for ; d.containerNext(j, containerLenS, hasLen); j++ {
 		if j == 0 && rvIsNil(rv) {
 			if hasLen {
 				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(f.ti.elemsize))
@@ -1062,7 +1129,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		return stringView(kstr2bs)
 	}
 
-	for j := 0; d.mapNext(j, containerLen, hasLen); j++ {
+	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		callFnRvk = false
 		if j == 0 {
 			rvk = rvZeroAddrK(ktype, ktypeKind)
@@ -1795,7 +1862,7 @@ func (d *Decoder) decodeFloat32() float32 {
 
 // MARKER: do not call mapEnd if mapStart returns containerLenNil.
 
-func (d *Decoder) mapNext(j, containerLen int, hasLen bool) bool {
+func (d *Decoder) containerNext(j, containerLen int, hasLen bool) bool {
 	// return (hasLen && j < containerLen) || !(hasLen || slh.d.checkBreak())
 	if hasLen {
 		return j < containerLen
@@ -2081,7 +2148,7 @@ func decArrayCannotExpand(slh decSliceHelper, hasLen bool, lenv, j, containerLen
 	slh.ElemContainerState(j)
 	slh.d.swallow()
 	j++
-	for ; slh.d.mapNext(j, containerLenS, hasLen); j++ {
+	for ; slh.d.containerNext(j, containerLenS, hasLen); j++ {
 		slh.ElemContainerState(j)
 		slh.d.swallow()
 	}

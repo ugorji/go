@@ -697,7 +697,17 @@ func rvCapSlice(rv reflect.Value) int {
 	return (*unsafeSlice)(urv.ptr).Cap
 }
 
-func rvGetArrayBytesRO(rv reflect.Value, scratch []byte) (bs []byte) {
+func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	uv.ptr = unsafe.Pointer(uintptr(urv.ptr) + uintptr(int(ti.elemsize)*i))
+	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
+	uv.flag = uintptr(ti.elemkind) | unsafeFlagIndir | unsafeFlagAddr
+	return
+}
+
+// if scratch is nil, then return a writable view (assuming canAddr=true)
+func rvGetArrayBytes(rv reflect.Value, scratch []byte) (bs []byte) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	bx := (*unsafeSlice)(unsafe.Pointer(&bs))
 	bx.Data = urv.ptr
@@ -725,23 +735,6 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	uv.ptr = *(*unsafe.Pointer)(urv.ptr) // slice rv has a ptr to the slice.
 
-	return
-}
-
-func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
-	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-
-	var x []unsafe.Pointer
-
-	uv.ptr = unsafe.Pointer(&x)
-	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&tslice))).ptr
-	uv.flag = unsafeFlagIndir | uintptr(reflect.Slice)
-
-	s := (*unsafeSlice)(uv.ptr)
-	s.Data = urv.ptr
-	s.Len = rv.Len()
-	s.Cap = s.Len
 	return
 }
 
@@ -1293,5 +1286,22 @@ func hashShortString(b []byte) uintptr {
 }
 
 // var _ = runtime.MemProfileRate
+
+func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
+	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+
+	var x []unsafe.Pointer
+
+	uv.ptr = unsafe.Pointer(&x)
+	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&tslice))).ptr
+	uv.flag = unsafeFlagIndir | uintptr(reflect.Slice)
+
+	s := (*unsafeSlice)(uv.ptr)
+	s.Data = urv.ptr
+	s.Len = rv.Len()
+	s.Cap = s.Len
+	return
+}
 
 */
