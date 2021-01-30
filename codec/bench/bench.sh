@@ -169,14 +169,15 @@ _suite_very_quick_json_non_suite() {
 }
 
 _suite_very_quick_profile() {
-    local a="${1:-Json}"
+    local a="${1:-Json}" # Json Cbor Msgpack Simple
     # case "$1" in
     #     Json|Cbor|Msgpack|Simple|Binc) a="${1}"; shift ;;
     # esac
     local b="${2}"
     local c="${3}"
+    local t="${4:-4s}" # 4s 1x
     ${go[@]} test "${zargs[@]}" -tags "alltests ${c}" -bench "__${a}__.*${b}" \
-       -benchmem -benchtime 4s \
+       -benchmem -benchtime "${t}" \
        -cpuprofile cpu.out -memprofile mem.out -memprofilerate 1
 }
 
@@ -216,7 +217,7 @@ _usage() {
     printf "\t-tx tests (show stats for each format and whether encoded == decoded); if x, do external also\n"
     printf "\t-sgx run test suite for codec; if g, use generated files; if x, do external also\n"
     printf "\t-jq run test suite for [json, json-quick]\n"
-    printf "\t-p run test suite with profiles: defaults to json: [Format] [suffix]\n"
+    printf "\t-p run test suite with profiles: defaults to json: [format] [suffix] [benchtime]\n"
     printf "\t-z run tests for bench.out.txt\n"
     printf "\t-f [pprof file] run pprof\n"
     printf "\t-y run debugging suite (used during development only)\n"
@@ -231,7 +232,7 @@ _main() {
     # export GODEBUG=asyncpreemptoff=1 # TODO remove
     
     local go=( "${MYGOCMD:-go}" )
-    local zargs=("-count" "1")
+    local zargs=("-count" "1" "-tr")
     local args=()
     local do_x="0"
     local do_g="0"
