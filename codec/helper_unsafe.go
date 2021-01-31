@@ -738,6 +738,18 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	return
 }
 
+func rvGetSlice4Array(rv reflect.Value, v interface{}) {
+	// v is a pointer to a slice to be populated
+	uv := (*unsafeIntf)(unsafe.Pointer(&v))
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+
+	s := (*unsafeSlice)(uv.ptr)
+	s.Data = urv.ptr
+	s.Len = rv.Len()
+	s.Cap = s.Len
+	return
+}
+
 func rvCopySlice(dest, src reflect.Value) {
 	t := rvType(dest).Elem()
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&dest))
@@ -1286,22 +1298,5 @@ func hashShortString(b []byte) uintptr {
 }
 
 // var _ = runtime.MemProfileRate
-
-func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
-	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-
-	var x []unsafe.Pointer
-
-	uv.ptr = unsafe.Pointer(&x)
-	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&tslice))).ptr
-	uv.flag = unsafeFlagIndir | uintptr(reflect.Slice)
-
-	s := (*unsafeSlice)(uv.ptr)
-	s.Data = urv.ptr
-	s.Len = rv.Len()
-	s.Cap = s.Len
-	return
-}
 
 */

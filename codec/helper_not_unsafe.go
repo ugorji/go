@@ -345,6 +345,11 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	return
 }
 
+func rvGetSlice4Array(rv reflect.Value, v interface{}) {
+	// v is a pointer to a slice to be populated
+	reflect.ValueOf(v).Elem().Set(rv.Slice(0, rv.Len()))
+}
+
 func rvCopySlice(dest, src reflect.Value) {
 	reflect.Copy(dest, src)
 }
@@ -512,9 +517,5 @@ func hashShortString(b []byte) (h uintptr) {
 // 	h = ((h << 3) | uint64(len(b)&7))
 // 	return
 // }
-
-func rvGetSlice4Array(rv reflect.Value, tslice reflect.Type) (v reflect.Value) {
-	return rv.Slice(0, rv.Len())
-}
 
 */

@@ -938,41 +938,49 @@ func (d *bincDecDriver) DecodeNaked() {
 	}
 }
 
-func (d *bincDecDriver) nextValueBytes(start []byte) (v []byte) {
+func (d *bincDecDriver) nextValueBytes(v0 []byte) (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v = append(start, d.bd)
+	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
+	var cursor = d.d.rb.c - 1
+	h.append1(&v, d.bd)
 	v = d.nextValueBytesBdReadR(v)
 	d.bdRead = false
+	h.bytesRdV(&v, cursor)
 	return
 }
 
 func (d *bincDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
 	d.readNextBd()
-	v = append(v0, d.bd)
+	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
+	h.append1(&v, d.bd)
 	return d.nextValueBytesBdReadR(v)
 }
 
 func (d *bincDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
+
 	fnLen := func(vs byte) uint {
 		switch vs {
 		case 0:
 			x := d.d.decRd.readn1()
-			v = append(v, x)
+			h.append1(&v, x)
 			return uint(x)
 		case 1:
 			x := d.d.decRd.readn2()
-			v = append(v, x[:]...)
+			h.appendN(&v, x[:]...)
 			return uint(bigen.Uint16(x))
 		case 2:
 			x := d.d.decRd.readn4()
-			v = append(v, x[:]...)
+			h.appendN(&v, x[:]...)
 			return uint(bigen.Uint32(x))
 		case 3:
 			x := d.d.decRd.readn8()
-			v = append(v, x[:]...)
+			h.appendN(&v, x[:]...)
 			return uint(bigen.Uint64(x))
 		default:
 			return uint(vs - 4)
@@ -992,18 +1000,18 @@ func (d *bincDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	case bincVdSmallInt: // pass
 	case bincVdPosInt, bincVdNegInt:
 		bs := d.uintBytes()
-		v = append(v, bs...)
+		h.appendN(&v, bs...)
 	case bincVdFloat:
 		fn := func(xlen byte) {
 			if d.vs&0x8 != 0 {
 				xlen = d.d.decRd.readn1()
-				v = append(v, xlen)
+				h.append1(&v, xlen)
 				if xlen > 8 {
 					d.d.errorf("cannot read float - at most 8 bytes used to represent float - received %v bytes", xlen)
 				}
 			}
 			d.d.decRd.readb(d.d.b[:xlen])
-			v = append(v, d.d.b[:xlen]...)
+			h.appendN(&v, d.d.b[:xlen]...)
 		}
 		switch d.vs & 0x7 {
 		case bincFlBin32:
@@ -1015,23 +1023,23 @@ func (d *bincDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		}
 	case bincVdString, bincVdByteArray:
 		clen = fnLen(d.vs)
-		v = append(v, d.d.decRd.readx(clen)...)
+		h.appendN(&v, d.d.decRd.readx(clen)...)
 	case bincVdSymbol:
 		if d.vs&0x8 == 0 {
-			v = append(v, d.d.decRd.readn1())
+			h.append1(&v, d.d.decRd.readn1())
 		} else {
-			v = append(v, d.d.decRd.rb.readx(2)...)
+			h.appendN(&v, d.d.decRd.rb.readx(2)...)
 		}
 		if d.vs&0x4 != 0 {
 			clen = fnLen(d.vs & 0x3)
-			v = append(v, d.d.decRd.readx(clen)...)
+			h.appendN(&v, d.d.decRd.readx(clen)...)
 		}
 	case bincVdTimestamp:
-		v = append(v, d.d.decRd.readx(uint(d.vs))...)
+		h.appendN(&v, d.d.decRd.readx(uint(d.vs))...)
 	case bincVdCustomExt:
 		clen = fnLen(d.vs)
-		v = append(v, d.d.decRd.readn1()) // tag
-		v = append(v, d.d.decRd.readx(clen)...)
+		h.append1(&v, d.d.decRd.readn1()) // tag
+		h.appendN(&v, d.d.decRd.readx(clen)...)
 	case bincVdArray:
 		clen = fnLen(d.vs)
 		for i := uint(0); i < clen; i++ {

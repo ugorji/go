@@ -726,48 +726,47 @@ func (d *jsonDecDriver) advance() {
 	}
 }
 
-func (d *jsonDecDriver) nextValueBytes(start []byte) (v []byte) {
-	v = start
+func (d *jsonDecDriver) nextValueBytes(v0 []byte) (v []byte) {
+	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
+	v, cursor := d.nextValueBytesR(v)
+	h.bytesRdV(&v, cursor)
+	return
+}
+
+func (d *jsonDecDriver) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
+	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
 	dr := &d.d.decRd
-	// consumeString := func() {
-	// 	for {
-	// 		bs := dr.jsonReadAsisChars()
-	// 		v = append(v, bs...)
-	// 		if bs[len(bs)-1] == '"' {
-	// 			break
-	// 		}
-	// 		// last char is '\', so consume next one
-	// 		v = append(v, dr.readn1())
-	// 	}
-	// }
 
 	consumeString := func() {
 	TOP:
-		v = append(v, dr.jsonReadAsisChars()...)
-		if v[len(v)-1] == '"' {
-			return
+		bs := dr.jsonReadAsisChars()
+		h.appendN(&v, bs...)
+		if bs[len(bs)-1] != '"' {
+			// last char is '\', so consume next one and try again
+			h.append1(&v, dr.readn1())
+			goto TOP
 		}
-		// last char is '\', so consume next one
-		v = append(v, dr.readn1())
-		goto TOP
 	}
 
-	d.advance() // ignore leading whitespace
+	d.advance()           // ignore leading whitespace
+	cursor = d.d.rb.c - 1 // cursor starts just before non-whitespace token
 
 	switch d.tok {
 	default:
-		v = append(v, dr.jsonReadNum()...)
+		h.appendN(&v, dr.jsonReadNum()...)
 	case 'n':
 		d.readLit4Null()
-		v = append(v, jsonLiteralNull...)
+		h.appendN(&v, jsonLiteralNull...)
 	case 'f':
 		d.readLit4False()
-		v = append(v, jsonLiteralFalse...)
+		h.appendN(&v, jsonLiteralFalse...)
 	case 't':
 		d.readLit4True()
-		v = append(v, jsonLiteralTrue...)
+		h.appendN(&v, jsonLiteralTrue...)
 	case '"':
-		v = append(v, '"')
+		h.append1(&v, '"')
 		consumeString()
 	case '{', '[':
 		var elem struct{}
@@ -775,11 +774,11 @@ func (d *jsonDecDriver) nextValueBytes(start []byte) (v []byte) {
 
 		stack = append(stack, elem)
 
-		v = append(v, d.tok)
+		h.append1(&v, d.tok)
 
 		for len(stack) != 0 {
 			c := dr.readn1()
-			v = append(v, c)
+			h.append1(&v, c)
 			switch c {
 			case '"':
 				consumeString()

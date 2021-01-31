@@ -527,24 +527,32 @@ func (d *msgpackDecDriver) DecodeNaked() {
 	}
 }
 
-func (d *msgpackDecDriver) nextValueBytes(start []byte) (v []byte) {
+func (d *msgpackDecDriver) nextValueBytes(v0 []byte) (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v = append(start, d.bd)
+	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
+	var cursor = d.d.rb.c - 1
+	h.append1(&v, d.bd)
 	v = d.nextValueBytesBdReadR(v)
 	d.bdRead = false
+	h.bytesRdV(&v, cursor)
 	return
 }
 
 func (d *msgpackDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
 	d.readNextBd()
-	v = append(v0, d.bd)
+	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
+	h.append1(&v, d.bd)
 	return d.nextValueBytesBdReadR(v)
 }
 
 func (d *msgpackDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
+
 	bd := d.bd
 
 	var clen uint
@@ -552,77 +560,77 @@ func (d *msgpackDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	switch bd {
 	case mpNil, mpFalse, mpTrue: // pass
 	case mpUint8, mpInt8:
-		v = append(v, d.d.decRd.readn1())
+		h.append1(&v, d.d.decRd.readn1())
 	case mpUint16, mpInt16:
-		v = append(v, d.d.decRd.readx(2)...)
+		h.appendN(&v, d.d.decRd.readx(2)...)
 	case mpFloat, mpUint32, mpInt32:
-		v = append(v, d.d.decRd.readx(4)...)
+		h.appendN(&v, d.d.decRd.readx(4)...)
 	case mpDouble, mpUint64, mpInt64:
-		v = append(v, d.d.decRd.readx(8)...)
+		h.appendN(&v, d.d.decRd.readx(8)...)
 	case mpStr8, mpBin8:
 		clen = uint(d.d.decRd.readn1())
-		v = append(v, byte(clen))
-		v = append(v, d.d.decRd.readx(clen)...)
+		h.append1(&v, byte(clen))
+		h.appendN(&v, d.d.decRd.readx(clen)...)
 	case mpStr16, mpBin16:
 		x := d.d.decRd.readn2()
-		v = append(v, x[:]...)
+		h.appendN(&v, x[:]...)
 		clen = uint(bigen.Uint16(x))
-		v = append(v, d.d.decRd.readx(clen)...)
+		h.appendN(&v, d.d.decRd.readx(clen)...)
 	case mpStr32, mpBin32:
 		x := d.d.decRd.readn4()
-		v = append(v, x[:]...)
+		h.appendN(&v, x[:]...)
 		clen = uint(bigen.Uint32(x))
-		v = append(v, d.d.decRd.readx(clen)...)
+		h.appendN(&v, d.d.decRd.readx(clen)...)
 	case mpFixExt1:
-		v = append(v, d.d.decRd.readn1()) // tag
-		v = append(v, d.d.decRd.readn1())
+		h.append1(&v, d.d.decRd.readn1()) // tag
+		h.append1(&v, d.d.decRd.readn1())
 	case mpFixExt2:
-		v = append(v, d.d.decRd.readn1()) // tag
-		v = append(v, d.d.decRd.readx(2)...)
+		h.append1(&v, d.d.decRd.readn1()) // tag
+		h.appendN(&v, d.d.decRd.readx(2)...)
 	case mpFixExt4:
-		v = append(v, d.d.decRd.readn1()) // tag
-		v = append(v, d.d.decRd.readx(4)...)
+		h.append1(&v, d.d.decRd.readn1()) // tag
+		h.appendN(&v, d.d.decRd.readx(4)...)
 	case mpFixExt8:
-		v = append(v, d.d.decRd.readn1()) // tag
-		v = append(v, d.d.decRd.readx(8)...)
+		h.append1(&v, d.d.decRd.readn1()) // tag
+		h.appendN(&v, d.d.decRd.readx(8)...)
 	case mpFixExt16:
-		v = append(v, d.d.decRd.readn1()) // tag
-		v = append(v, d.d.decRd.readx(16)...)
+		h.append1(&v, d.d.decRd.readn1()) // tag
+		h.appendN(&v, d.d.decRd.readx(16)...)
 	case mpExt8:
 		clen = uint(d.d.decRd.readn1())
-		v = append(v, uint8(clen))
-		v = append(v, d.d.decRd.readn1()) // tag
-		v = append(v, d.d.decRd.readx(clen)...)
+		h.append1(&v, uint8(clen))
+		h.append1(&v, d.d.decRd.readn1()) // tag
+		h.appendN(&v, d.d.decRd.readx(clen)...)
 	case mpExt16:
 		x := d.d.decRd.readn2()
 		clen = uint(bigen.Uint16(x))
-		v = append(v, x[:]...)
-		v = append(v, d.d.decRd.readn1()) // tag
-		v = append(v, d.d.decRd.readx(clen)...)
+		h.appendN(&v, x[:]...)
+		h.append1(&v, d.d.decRd.readn1()) // tag
+		h.appendN(&v, d.d.decRd.readx(clen)...)
 	case mpExt32:
 		x := d.d.decRd.readn4()
 		clen = uint(bigen.Uint32(x))
-		v = append(v, x[:]...)
-		v = append(v, d.d.decRd.readn1()) // tag
-		v = append(v, d.d.decRd.readx(clen)...)
+		h.appendN(&v, x[:]...)
+		h.append1(&v, d.d.decRd.readn1()) // tag
+		h.appendN(&v, d.d.decRd.readx(clen)...)
 	case mpArray16:
 		x := d.d.decRd.readn2()
 		clen = uint(bigen.Uint16(x))
-		v = append(v, x[:]...)
+		h.appendN(&v, x[:]...)
 		for i := uint(0); i < clen; i++ {
 			v = d.nextValueBytesR(v)
 		}
 	case mpArray32:
 		x := d.d.decRd.readn4()
 		clen = uint(bigen.Uint32(x))
-		v = append(v, x[:]...)
+		h.appendN(&v, x[:]...)
 		for i := uint(0); i < clen; i++ {
 			v = d.nextValueBytesR(v)
 		}
 	case mpMap16:
 		x := d.d.decRd.readn2()
 		clen = uint(bigen.Uint16(x))
-		v = append(v, x[:]...)
+		h.appendN(&v, x[:]...)
 		for i := uint(0); i < clen; i++ {
 			v = d.nextValueBytesR(v)
 			v = d.nextValueBytesR(v)
@@ -630,7 +638,7 @@ func (d *msgpackDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	case mpMap32:
 		x := d.d.decRd.readn4()
 		clen = uint(bigen.Uint32(x))
-		v = append(v, x[:]...)
+		h.appendN(&v, x[:]...)
 		for i := uint(0); i < clen; i++ {
 			v = d.nextValueBytesR(v)
 			v = d.nextValueBytesR(v)
@@ -641,7 +649,7 @@ func (d *msgpackDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		case bd >= mpNegFixNumMin && bd <= mpNegFixNumMax: // pass
 		case bd >= mpFixStrMin && bd <= mpFixStrMax:
 			clen = uint(mpFixStrMin ^ bd)
-			v = append(v, d.d.decRd.readx(clen)...)
+			h.appendN(&v, d.d.decRd.readx(clen)...)
 		case bd >= mpFixArrayMin && bd <= mpFixArrayMax:
 			clen = uint(mpFixArrayMin ^ bd)
 			for i := uint(0); i < clen; i++ {

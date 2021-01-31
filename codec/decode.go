@@ -17,10 +17,11 @@ const (
 )
 
 const (
-	decDefMaxDepth         = 1024 // maximum depth
-	decDefSliceCap         = 8
+	decDefMaxDepth         = 1024        // maximum depth
 	decDefChanCap          = 64          // should be large, as cap cannot be expanded
 	decScratchByteArrayLen = (8 + 2) * 8 // ??? cacheLineSize +
+
+	// decDefSliceCap         = 8
 
 	// decFailNonEmptyIntf configures whether we error
 	// when decoding naked into a non-empty interface.
@@ -153,6 +154,15 @@ type decDriver interface {
 	reset()
 	atEndOfDecode()
 
+	// nextValueBytes will return the bytes representing the next value in the stream.
+	//
+	// if start is nil, then treat it as a request to discard the next set of bytes,
+	// and the return response does not matter.
+	// Typically, this means that the returned []byte is nil/empty/undefined.
+	//
+	// Optimize for decoding from a []byte, where the nextValueBytes will just be a sub-slice
+	// of the input slice. Callers that need to use this to not be a view into the input bytes
+	// should handle it appropriately.
 	nextValueBytes(start []byte) []byte
 
 	decoder() *Decoder
@@ -335,12 +345,17 @@ func (d *Decoder) jsonUnmarshal(f *codecFnInfo, rv reflect.Value) {
 
 func (d *Decoder) jsonUnmarshalV(tm jsonUnmarshaler) {
 	// grab the bytes to be read, as UnmarshalJSON needs the full JSON so as to unmarshal it itself.
-	bs0 := d.blist.get(256)
+	var bs0 = []byte{}
+	if !d.bytes {
+		bs0 = d.blist.get(256)
+	}
 	bs := d.d.nextValueBytes(bs0)
 	fnerr := tm.UnmarshalJSON(bs)
-	d.blist.put(bs)
-	if !byteSliceSameData(bs0, bs) {
-		d.blist.put(bs0)
+	if !d.bytes {
+		d.blist.put(bs)
+		if !byteSliceSameData(bs0, bs) {
+			d.blist.put(bs0)
+		}
 	}
 	d.onerror(fnerr)
 }
@@ -772,9 +787,9 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				}
 			} else if rvCanset { // rvlen1 > rvcap
 				rvlen = rvlen1
-				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvlen)
-				rvCanset = false
 				rvcap = rvlen
+				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
+				rvCanset = false
 				rvChanged = true
 			} else { // rvlen1 > rvcap && !canSet
 				d.errorf("cannot decode into non-settable slice")
@@ -796,10 +811,13 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	var j int
 
 	for ; d.containerNext(j, containerLenS, hasLen); j++ {
-		if j == 0 && f.seq == seqTypeSlice && rvIsNil(rv) { // means hasLen = false
+		// if j == 0 && f.seq == seqTypeSlice && rvIsNil(rv) { // means hasLen = false
+		if j == 0 && rvIsNil(rv) { // means hasLen = false
 			if rvCanset {
-				rvlen = decDefSliceCap
-				rvcap = rvlen + rvlen
+				// rvlen = decDefSliceCap
+				// rvcap = rvlen + rvlen
+				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(f.ti.elemsize))
+				rvcap = rvlen
 				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
 				rvCanset = false
 				rvChanged = true
@@ -809,10 +827,10 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		}
 		// if indefinite, etc, then expand the slice if necessary
 		if j >= rvlen {
-			if f.seq == seqTypeArray {
-				slh.arrayCannotExpand(hasLen, rvlen, j, containerLenS)
-				return
-			}
+			// if f.seq == seqTypeArray {
+			// 	slh.arrayCannotExpand(hasLen, rvlen, j, containerLenS)
+			// 	return
+			// }
 			slh.ElemContainerState(j)
 
 			// expand the slice up to the cap.
@@ -939,7 +957,7 @@ func (d *Decoder) kArray(f *codecFnInfo, rv reflect.Value) {
 	slh.End()
 }
 
-func (d *Decoder) kSliceForChan(f *codecFnInfo, rv reflect.Value) {
+func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 	// A slice can be set from a map or array in stream.
 	// This way, the order can be kept (as order is lost with map).
 
@@ -1529,12 +1547,7 @@ func (d *Decoder) Release() {
 }
 
 func (d *Decoder) swallow() {
-	bs0 := d.blist.get(256)
-	bs := d.d.nextValueBytes(bs0) // discard it
-	d.blist.put(bs)
-	if !byteSliceSameData(bs0, bs) {
-		d.blist.put(bs0)
-	}
+	d.d.nextValueBytes(nil)
 }
 
 func (d *Decoder) swallowErr() (err error) {
@@ -1843,7 +1856,13 @@ func (d *Decoder) decodeBytesInto(in []byte) (v []byte) {
 func (d *Decoder) rawBytes() (v []byte) {
 	// ensure that this is not a view into the bytes
 	// i.e. if necessary, make new copy always.
-	return d.d.nextValueBytes(nil)
+	v = d.d.nextValueBytes([]byte{})
+	if d.bytes && !d.h.ZeroCopy {
+		v0 := v
+		v = make([]byte, len(v))
+		copy(v, v0)
+	}
+	return
 }
 
 func (d *Decoder) wrapErr(v error, err *error) {
@@ -2033,17 +2052,47 @@ func (x decSliceHelper) ElemContainerState(index int) {
 	}
 }
 
-func (slh decSliceHelper) arrayCannotExpand(hasLen bool, lenv, j, containerLenS int) {
-	slh.d.arrayCannotExpand(lenv, j+1)
+func (x decSliceHelper) arrayCannotExpand(hasLen bool, lenv, j, containerLenS int) {
+	x.d.arrayCannotExpand(lenv, j+1)
 	// drain completely and return
-	slh.ElemContainerState(j)
-	slh.d.swallow()
+	x.ElemContainerState(j)
+	x.d.swallow()
 	j++
-	for ; slh.d.containerNext(j, containerLenS, hasLen); j++ {
-		slh.ElemContainerState(j)
-		slh.d.swallow()
+	for ; x.d.containerNext(j, containerLenS, hasLen); j++ {
+		x.ElemContainerState(j)
+		x.d.swallow()
 	}
-	slh.End()
+	x.End()
+}
+
+// decNextValueBytesHelper helps with NextValueBytes calls.
+//
+// Typical usage:
+//    - each Handle's decDriver will implement a high level nextValueBytes,
+//      which will track the current cursor, delegate to a nextValueBytesR
+//      method, and then potentially call bytesRdV at the end.
+//
+// See simple.go for typical usage model.
+type decNextValueBytesHelper struct {
+	d *Decoder
+}
+
+func (x decNextValueBytesHelper) append1(v *[]byte, b byte) {
+	if *v != nil && !x.d.bytes {
+		*v = append(*v, b)
+	}
+}
+
+func (x decNextValueBytesHelper) appendN(v *[]byte, b ...byte) {
+	if *v != nil && !x.d.bytes {
+		*v = append(*v, b...)
+	}
+}
+
+func (x decNextValueBytesHelper) bytesRdV(v *[]byte, startpos uint) {
+	if x.d.bytes {
+		*v = x.d.rb.b[startpos:x.d.rb.c]
+	}
 }
 
 // isDecodeable checks if value can be decoded into

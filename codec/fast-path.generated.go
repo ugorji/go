@@ -605,10 +605,16 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 
 // -- -- fast path functions
 func (e *Encoder) fastpathEncSliceIntfR(f *codecFnInfo, rv reflect.Value) {
-	if f.ti.mbs {
-		fastpathTV.EncAsMapSliceIntfV(rv2i(rv).([]interface{}), e)
+	var v []interface{}
+	if rv.Kind() == reflect.Array {
+		rvGetSlice4Array(rv, &v)
 	} else {
-		fastpathTV.EncSliceIntfV(rv2i(rv).([]interface{}), e)
+		v = rv2i(rv).([]interface{})
+	}
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceIntfV(v, e)
+	} else {
+		fastpathTV.EncSliceIntfV(v, e)
 	}
 }
 func (fastpathT) EncSliceIntfV(v []interface{}, e *Encoder) {
@@ -633,10 +639,16 @@ func (fastpathT) EncAsMapSliceIntfV(v []interface{}, e *Encoder) {
 	e.mapEnd()
 }
 func (e *Encoder) fastpathEncSliceStringR(f *codecFnInfo, rv reflect.Value) {
-	if f.ti.mbs {
-		fastpathTV.EncAsMapSliceStringV(rv2i(rv).([]string), e)
+	var v []string
+	if rv.Kind() == reflect.Array {
+		rvGetSlice4Array(rv, &v)
 	} else {
-		fastpathTV.EncSliceStringV(rv2i(rv).([]string), e)
+		v = rv2i(rv).([]string)
+	}
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceStringV(v, e)
+	} else {
+		fastpathTV.EncSliceStringV(v, e)
 	}
 }
 func (fastpathT) EncSliceStringV(v []string, e *Encoder) {
@@ -661,10 +673,16 @@ func (fastpathT) EncAsMapSliceStringV(v []string, e *Encoder) {
 	e.mapEnd()
 }
 func (e *Encoder) fastpathEncSliceBytesR(f *codecFnInfo, rv reflect.Value) {
-	if f.ti.mbs {
-		fastpathTV.EncAsMapSliceBytesV(rv2i(rv).([][]byte), e)
+	var v [][]byte
+	if rv.Kind() == reflect.Array {
+		rvGetSlice4Array(rv, &v)
 	} else {
-		fastpathTV.EncSliceBytesV(rv2i(rv).([][]byte), e)
+		v = rv2i(rv).([][]byte)
+	}
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceBytesV(v, e)
+	} else {
+		fastpathTV.EncSliceBytesV(v, e)
 	}
 }
 func (fastpathT) EncSliceBytesV(v [][]byte, e *Encoder) {
@@ -689,10 +707,16 @@ func (fastpathT) EncAsMapSliceBytesV(v [][]byte, e *Encoder) {
 	e.mapEnd()
 }
 func (e *Encoder) fastpathEncSliceFloat64R(f *codecFnInfo, rv reflect.Value) {
-	if f.ti.mbs {
-		fastpathTV.EncAsMapSliceFloat64V(rv2i(rv).([]float64), e)
+	var v []float64
+	if rv.Kind() == reflect.Array {
+		rvGetSlice4Array(rv, &v)
 	} else {
-		fastpathTV.EncSliceFloat64V(rv2i(rv).([]float64), e)
+		v = rv2i(rv).([]float64)
+	}
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceFloat64V(v, e)
+	} else {
+		fastpathTV.EncSliceFloat64V(v, e)
 	}
 }
 func (fastpathT) EncSliceFloat64V(v []float64, e *Encoder) {
@@ -717,10 +741,16 @@ func (fastpathT) EncAsMapSliceFloat64V(v []float64, e *Encoder) {
 	e.mapEnd()
 }
 func (e *Encoder) fastpathEncSliceUint64R(f *codecFnInfo, rv reflect.Value) {
-	if f.ti.mbs {
-		fastpathTV.EncAsMapSliceUint64V(rv2i(rv).([]uint64), e)
+	var v []uint64
+	if rv.Kind() == reflect.Array {
+		rvGetSlice4Array(rv, &v)
 	} else {
-		fastpathTV.EncSliceUint64V(rv2i(rv).([]uint64), e)
+		v = rv2i(rv).([]uint64)
+	}
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceUint64V(v, e)
+	} else {
+		fastpathTV.EncSliceUint64V(v, e)
 	}
 }
 func (fastpathT) EncSliceUint64V(v []uint64, e *Encoder) {
@@ -745,10 +775,16 @@ func (fastpathT) EncAsMapSliceUint64V(v []uint64, e *Encoder) {
 	e.mapEnd()
 }
 func (e *Encoder) fastpathEncSliceIntR(f *codecFnInfo, rv reflect.Value) {
-	if f.ti.mbs {
-		fastpathTV.EncAsMapSliceIntV(rv2i(rv).([]int), e)
+	var v []int
+	if rv.Kind() == reflect.Array {
+		rvGetSlice4Array(rv, &v)
 	} else {
-		fastpathTV.EncSliceIntV(rv2i(rv).([]int), e)
+		v = rv2i(rv).([]int)
+	}
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceIntV(v, e)
+	} else {
+		fastpathTV.EncSliceIntV(v, e)
 	}
 }
 func (fastpathT) EncSliceIntV(v []int, e *Encoder) {
@@ -773,10 +809,16 @@ func (fastpathT) EncAsMapSliceIntV(v []int, e *Encoder) {
 	e.mapEnd()
 }
 func (e *Encoder) fastpathEncSliceInt32R(f *codecFnInfo, rv reflect.Value) {
-	if f.ti.mbs {
-		fastpathTV.EncAsMapSliceInt32V(rv2i(rv).([]int32), e)
+	var v []int32
+	if rv.Kind() == reflect.Array {
+		rvGetSlice4Array(rv, &v)
 	} else {
-		fastpathTV.EncSliceInt32V(rv2i(rv).([]int32), e)
+		v = rv2i(rv).([]int32)
+	}
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceInt32V(v, e)
+	} else {
+		fastpathTV.EncSliceInt32V(v, e)
 	}
 }
 func (fastpathT) EncSliceInt32V(v []int32, e *Encoder) {
@@ -801,10 +843,16 @@ func (fastpathT) EncAsMapSliceInt32V(v []int32, e *Encoder) {
 	e.mapEnd()
 }
 func (e *Encoder) fastpathEncSliceInt64R(f *codecFnInfo, rv reflect.Value) {
-	if f.ti.mbs {
-		fastpathTV.EncAsMapSliceInt64V(rv2i(rv).([]int64), e)
+	var v []int64
+	if rv.Kind() == reflect.Array {
+		rvGetSlice4Array(rv, &v)
 	} else {
-		fastpathTV.EncSliceInt64V(rv2i(rv).([]int64), e)
+		v = rv2i(rv).([]int64)
+	}
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceInt64V(v, e)
+	} else {
+		fastpathTV.EncSliceInt64V(v, e)
 	}
 }
 func (fastpathT) EncSliceInt64V(v []int64, e *Encoder) {
@@ -829,10 +877,16 @@ func (fastpathT) EncAsMapSliceInt64V(v []int64, e *Encoder) {
 	e.mapEnd()
 }
 func (e *Encoder) fastpathEncSliceBoolR(f *codecFnInfo, rv reflect.Value) {
-	if f.ti.mbs {
-		fastpathTV.EncAsMapSliceBoolV(rv2i(rv).([]bool), e)
+	var v []bool
+	if rv.Kind() == reflect.Array {
+		rvGetSlice4Array(rv, &v)
 	} else {
-		fastpathTV.EncSliceBoolV(rv2i(rv).([]bool), e)
+		v = rv2i(rv).([]bool)
+	}
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceBoolV(v, e)
+	} else {
+		fastpathTV.EncSliceBoolV(v, e)
 	}
 }
 func (fastpathT) EncSliceBoolV(v []bool, e *Encoder) {
@@ -2811,12 +2865,18 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 // -- -- fast path functions
 
 func (d *Decoder) fastpathDecSliceIntfR(f *codecFnInfo, rv reflect.Value) {
-	if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
+	var v []interface{}
+	switch rv.Kind() {
+	case reflect.Ptr:
 		vp := rv2i(rv).(*[]interface{})
-		if v, changed := fastpathTV.DecSliceIntfY(*vp, d); changed {
+		var changed bool
+		if v, changed = fastpathTV.DecSliceIntfY(*vp, d); changed {
 			*vp = v
 		}
-	} else {
+	case reflect.Array:
+		rvGetSlice4Array(rv, &v)
+		fastpathTV.DecSliceIntfN(v, d)
+	default:
 		fastpathTV.DecSliceIntfN(rv2i(rv).([]interface{}), d)
 	}
 }
@@ -2861,7 +2921,7 @@ func (fastpathT) DecSliceIntfY(v []interface{}, d *Decoder) (_ []interface{}, ch
 	var j int
 	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = decDefSliceCap
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
 			v = make([]interface{}, uint(xlen))
 			changed = true
 		}
@@ -2904,12 +2964,18 @@ func (fastpathT) DecSliceIntfN(v []interface{}, d *Decoder) {
 }
 
 func (d *Decoder) fastpathDecSliceStringR(f *codecFnInfo, rv reflect.Value) {
-	if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
+	var v []string
+	switch rv.Kind() {
+	case reflect.Ptr:
 		vp := rv2i(rv).(*[]string)
-		if v, changed := fastpathTV.DecSliceStringY(*vp, d); changed {
+		var changed bool
+		if v, changed = fastpathTV.DecSliceStringY(*vp, d); changed {
 			*vp = v
 		}
-	} else {
+	case reflect.Array:
+		rvGetSlice4Array(rv, &v)
+		fastpathTV.DecSliceStringN(v, d)
+	default:
 		fastpathTV.DecSliceStringN(rv2i(rv).([]string), d)
 	}
 }
@@ -2954,7 +3020,7 @@ func (fastpathT) DecSliceStringY(v []string, d *Decoder) (_ []string, changed bo
 	var j int
 	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = decDefSliceCap
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 16)
 			v = make([]string, uint(xlen))
 			changed = true
 		}
@@ -2997,12 +3063,18 @@ func (fastpathT) DecSliceStringN(v []string, d *Decoder) {
 }
 
 func (d *Decoder) fastpathDecSliceBytesR(f *codecFnInfo, rv reflect.Value) {
-	if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
+	var v [][]byte
+	switch rv.Kind() {
+	case reflect.Ptr:
 		vp := rv2i(rv).(*[][]byte)
-		if v, changed := fastpathTV.DecSliceBytesY(*vp, d); changed {
+		var changed bool
+		if v, changed = fastpathTV.DecSliceBytesY(*vp, d); changed {
 			*vp = v
 		}
-	} else {
+	case reflect.Array:
+		rvGetSlice4Array(rv, &v)
+		fastpathTV.DecSliceBytesN(v, d)
+	default:
 		fastpathTV.DecSliceBytesN(rv2i(rv).([][]byte), d)
 	}
 }
@@ -3047,7 +3119,7 @@ func (fastpathT) DecSliceBytesY(v [][]byte, d *Decoder) (_ [][]byte, changed boo
 	var j int
 	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = decDefSliceCap
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 24)
 			v = make([][]byte, uint(xlen))
 			changed = true
 		}
@@ -3090,12 +3162,18 @@ func (fastpathT) DecSliceBytesN(v [][]byte, d *Decoder) {
 }
 
 func (d *Decoder) fastpathDecSliceFloat64R(f *codecFnInfo, rv reflect.Value) {
-	if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
+	var v []float64
+	switch rv.Kind() {
+	case reflect.Ptr:
 		vp := rv2i(rv).(*[]float64)
-		if v, changed := fastpathTV.DecSliceFloat64Y(*vp, d); changed {
+		var changed bool
+		if v, changed = fastpathTV.DecSliceFloat64Y(*vp, d); changed {
 			*vp = v
 		}
-	} else {
+	case reflect.Array:
+		rvGetSlice4Array(rv, &v)
+		fastpathTV.DecSliceFloat64N(v, d)
+	default:
 		fastpathTV.DecSliceFloat64N(rv2i(rv).([]float64), d)
 	}
 }
@@ -3140,7 +3218,7 @@ func (fastpathT) DecSliceFloat64Y(v []float64, d *Decoder) (_ []float64, changed
 	var j int
 	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = decDefSliceCap
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
 			v = make([]float64, uint(xlen))
 			changed = true
 		}
@@ -3183,12 +3261,18 @@ func (fastpathT) DecSliceFloat64N(v []float64, d *Decoder) {
 }
 
 func (d *Decoder) fastpathDecSliceUint64R(f *codecFnInfo, rv reflect.Value) {
-	if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
+	var v []uint64
+	switch rv.Kind() {
+	case reflect.Ptr:
 		vp := rv2i(rv).(*[]uint64)
-		if v, changed := fastpathTV.DecSliceUint64Y(*vp, d); changed {
+		var changed bool
+		if v, changed = fastpathTV.DecSliceUint64Y(*vp, d); changed {
 			*vp = v
 		}
-	} else {
+	case reflect.Array:
+		rvGetSlice4Array(rv, &v)
+		fastpathTV.DecSliceUint64N(v, d)
+	default:
 		fastpathTV.DecSliceUint64N(rv2i(rv).([]uint64), d)
 	}
 }
@@ -3233,7 +3317,7 @@ func (fastpathT) DecSliceUint64Y(v []uint64, d *Decoder) (_ []uint64, changed bo
 	var j int
 	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = decDefSliceCap
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
 			v = make([]uint64, uint(xlen))
 			changed = true
 		}
@@ -3276,12 +3360,18 @@ func (fastpathT) DecSliceUint64N(v []uint64, d *Decoder) {
 }
 
 func (d *Decoder) fastpathDecSliceIntR(f *codecFnInfo, rv reflect.Value) {
-	if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
+	var v []int
+	switch rv.Kind() {
+	case reflect.Ptr:
 		vp := rv2i(rv).(*[]int)
-		if v, changed := fastpathTV.DecSliceIntY(*vp, d); changed {
+		var changed bool
+		if v, changed = fastpathTV.DecSliceIntY(*vp, d); changed {
 			*vp = v
 		}
-	} else {
+	case reflect.Array:
+		rvGetSlice4Array(rv, &v)
+		fastpathTV.DecSliceIntN(v, d)
+	default:
 		fastpathTV.DecSliceIntN(rv2i(rv).([]int), d)
 	}
 }
@@ -3326,7 +3416,7 @@ func (fastpathT) DecSliceIntY(v []int, d *Decoder) (_ []int, changed bool) {
 	var j int
 	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = decDefSliceCap
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
 			v = make([]int, uint(xlen))
 			changed = true
 		}
@@ -3369,12 +3459,18 @@ func (fastpathT) DecSliceIntN(v []int, d *Decoder) {
 }
 
 func (d *Decoder) fastpathDecSliceInt32R(f *codecFnInfo, rv reflect.Value) {
-	if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
+	var v []int32
+	switch rv.Kind() {
+	case reflect.Ptr:
 		vp := rv2i(rv).(*[]int32)
-		if v, changed := fastpathTV.DecSliceInt32Y(*vp, d); changed {
+		var changed bool
+		if v, changed = fastpathTV.DecSliceInt32Y(*vp, d); changed {
 			*vp = v
 		}
-	} else {
+	case reflect.Array:
+		rvGetSlice4Array(rv, &v)
+		fastpathTV.DecSliceInt32N(v, d)
+	default:
 		fastpathTV.DecSliceInt32N(rv2i(rv).([]int32), d)
 	}
 }
@@ -3419,7 +3515,7 @@ func (fastpathT) DecSliceInt32Y(v []int32, d *Decoder) (_ []int32, changed bool)
 	var j int
 	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = decDefSliceCap
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 4)
 			v = make([]int32, uint(xlen))
 			changed = true
 		}
@@ -3462,12 +3558,18 @@ func (fastpathT) DecSliceInt32N(v []int32, d *Decoder) {
 }
 
 func (d *Decoder) fastpathDecSliceInt64R(f *codecFnInfo, rv reflect.Value) {
-	if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
+	var v []int64
+	switch rv.Kind() {
+	case reflect.Ptr:
 		vp := rv2i(rv).(*[]int64)
-		if v, changed := fastpathTV.DecSliceInt64Y(*vp, d); changed {
+		var changed bool
+		if v, changed = fastpathTV.DecSliceInt64Y(*vp, d); changed {
 			*vp = v
 		}
-	} else {
+	case reflect.Array:
+		rvGetSlice4Array(rv, &v)
+		fastpathTV.DecSliceInt64N(v, d)
+	default:
 		fastpathTV.DecSliceInt64N(rv2i(rv).([]int64), d)
 	}
 }
@@ -3512,7 +3614,7 @@ func (fastpathT) DecSliceInt64Y(v []int64, d *Decoder) (_ []int64, changed bool)
 	var j int
 	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = decDefSliceCap
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 8)
 			v = make([]int64, uint(xlen))
 			changed = true
 		}
@@ -3555,12 +3657,18 @@ func (fastpathT) DecSliceInt64N(v []int64, d *Decoder) {
 }
 
 func (d *Decoder) fastpathDecSliceBoolR(f *codecFnInfo, rv reflect.Value) {
-	if f.seq != seqTypeArray && rv.Kind() == reflect.Ptr {
+	var v []bool
+	switch rv.Kind() {
+	case reflect.Ptr:
 		vp := rv2i(rv).(*[]bool)
-		if v, changed := fastpathTV.DecSliceBoolY(*vp, d); changed {
+		var changed bool
+		if v, changed = fastpathTV.DecSliceBoolY(*vp, d); changed {
 			*vp = v
 		}
-	} else {
+	case reflect.Array:
+		rvGetSlice4Array(rv, &v)
+		fastpathTV.DecSliceBoolN(v, d)
+	default:
 		fastpathTV.DecSliceBoolN(rv2i(rv).([]bool), d)
 	}
 }
@@ -3605,7 +3713,7 @@ func (fastpathT) DecSliceBoolY(v []bool, d *Decoder) (_ []bool, changed bool) {
 	var j int
 	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
 		if j == 0 && len(v) == 0 { // means hasLen == false
-			xlen = decDefSliceCap
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
 			v = make([]bool, uint(xlen))
 			changed = true
 		}

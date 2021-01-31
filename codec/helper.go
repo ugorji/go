@@ -442,14 +442,15 @@ func (x valueType) String() string {
 	return strconv.FormatInt(int64(x), 10)
 }
 
-type seqType uint8
+// seqType is no longer used, as we now use dedicated methods for decoding slice vs chan vs array
+// type seqType uint8
 
-const (
-	_ seqType = iota
-	seqTypeArray
-	seqTypeSlice
-	seqTypeChan
-)
+// const (
+// 	_ seqType = iota
+// 	seqTypeArray
+// 	seqTypeSlice
+// 	// seqTypeChan
+// )
 
 // note that containerMapStart and containerArraySend are not sent.
 // This is because the ReadXXXStart and EncodeXXXStart already does these.
@@ -1007,7 +1008,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				var rtu reflect.Type
 				if rk == reflect.Map {
 					rtu = reflect.MapOf(ti.key, ti.elem)
-				} else {
+				} else { // slice
 					rtu = reflect.SliceOf(ti.elem)
 				}
 				rtuid := rt2id(rtu)
@@ -1095,22 +1096,53 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				fn.fe = (*Encoder).kComplex128
 				fn.fd = (*Decoder).kComplex128
 			case reflect.Chan:
-				fi.seq = seqTypeChan
+				// fi.seq = seqTypeChan
 				fn.fe = (*Encoder).kChan
-				fn.fd = (*Decoder).kSliceForChan
+				fn.fd = (*Decoder).kChan
 			case reflect.Slice:
-				fi.seq = seqTypeSlice
+				// fi.seq = seqTypeSlice
 				fn.fe = (*Encoder).kSlice
 				fn.fd = (*Decoder).kSlice
 			case reflect.Array:
-				fi.seq = seqTypeArray
+				// fi.seq = seqTypeArray
+				fi.addrD = false // decode directly into array value (slice made from it)
+
 				fn.fe = (*Encoder).kArray
 				fn.fd = (*Decoder).kArray
-				// rt2 := reflect.SliceOf(ti.elem)
-				// fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
-				// 	// call fnVia directly, so fn(...) is not recursive, and this can be inlined
-				// 	d.h.fnVia(rt2, &x.rtidFns, true).fd(d, xf, rvGetSlice4Array(xrv, rt2))
+
+				idx := fastpathAvIndex(rt2id(ti.key)) // ti.key for arrays = reflect.SliceOf(ti.elem)
+				if idx != -1 {
+					fn.fe = fastpathAv[idx].encfn
+					fn.fd = fastpathAv[idx].decfn
+				}
+
+				// // MARKER: optimized path below incurs allocation as we allocate a slice object
+				// // and populate it as a slice of the array.
+				// // there's no way to create this on the stack.
+				// const skipOptimizedFastpath = true
+				// if skipOptimizedFastpath {
+				// 	break
 				// }
+				// rt2 := ti.key // ti.key for arrays caches reflect.SliceOf(ti.elem)
+				// rtid2 := rt2id(rt2)
+				// idx := fastpathAvIndex(rtid2)
+				// if idx != -1 {
+				// 	fe2 := fastpathAv[idx].encfn
+				// 	fd2 := fastpathAv[idx].decfn
+				// 	fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
+				// 		fd2(d, xf, rvGetSlice4Array(xrv, rt2))
+				// 	}
+				// 	fn.fe = func(e *Encoder, xf *codecFnInfo, xrv reflect.Value) {
+				// 		fe2(e, xf, rvGetSlice4Array(xrv, rt2))
+				// 	}
+				// 	fi.addrD = false // decode directly into array value (slice made from it)
+				// }
+				// // rt2 := reflect.SliceOf(ti.elem)
+				// // fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
+				// // 	// call fnVia directly, so fn(...) is not recursive, and this can be inlined
+				// // 	d.h.fnVia(rt2, &x.rtidFns, true).fd(d, xf, rvGetSlice4Array(xrv, rt2))
+				// // }
+
 			case reflect.Struct:
 				if ti.anyOmitEmpty ||
 					ti.flagMissingFielder ||
@@ -1976,6 +2008,10 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 		ti.elem = rt.Elem()
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
+		// MARKER: for arrays, use the (unused key field) to store the slice type
+		ti.key = reflect.SliceOf(ti.elem)
+		ti.keykind = uint8(reflect.Slice)
+		ti.keysize = uint32(ti.key.Size())
 	case reflect.Ptr:
 		ti.elem = rt.Elem()
 		ti.elemkind = uint8(ti.elem.Kind())
@@ -2269,10 +2305,10 @@ func mapKeyFastKindFor(k reflect.Kind) mapKeyFastKind {
 // ----
 
 type codecFnInfo struct {
-	ti     *typeInfo
-	xfFn   Ext
-	xfTag  uint64
-	seq    seqType
+	ti    *typeInfo
+	xfFn  Ext
+	xfTag uint64
+	// seq    seqType
 	addrD  bool
 	addrDf bool // force: if addrD, then decode function MUST take a ptr
 	addrE  bool

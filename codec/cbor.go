@@ -780,53 +780,61 @@ func (d *cborDecDriver) uintBytes() (v []byte, ui uint64) {
 	return
 }
 
-func (d *cborDecDriver) nextValueBytes(start []byte) (v []byte) {
+func (d *cborDecDriver) nextValueBytes(v0 []byte) (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v = append(start, d.bd)
+	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
+	var cursor = d.d.rb.c - 1
+	h.append1(&v, d.bd)
 	v = d.nextValueBytesBdReadR(v)
 	d.bdRead = false
+	h.bytesRdV(&v, cursor)
 	return
 }
 
 func (d *cborDecDriver) nextValueBytesR(v0 []byte) (v []byte) {
 	d.readNextBd()
-	v = append(v0, d.bd)
+	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
+	h.append1(&v, d.bd)
 	return d.nextValueBytesBdReadR(v)
 }
 
 func (d *cborDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	v = v0
+	var h = decNextValueBytesHelper{d: &d.d}
+
 	var bs []byte
 	var ui uint64
 
 	switch d.bd >> 5 {
 	case cborMajorUint, cborMajorNegInt:
 		bs, _ = d.uintBytes()
-		v = append(v, bs...)
+		h.appendN(&v, bs...)
 	case cborMajorString, cborMajorBytes:
 		if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 			for {
 				d.readNextBd()
-				v = append(v, d.bd)
+				h.append1(&v, d.bd)
 				if d.bd == cborBdBreak {
 					break
 				}
 				bs, ui = d.uintBytes()
-				v = append(v, bs...)
-				v = append(v, d.d.decRd.readx(uint(ui))...)
+				h.appendN(&v, bs...)
+				h.appendN(&v, d.d.decRd.readx(uint(ui))...)
 			}
 		} else {
 			bs, ui = d.uintBytes()
-			v = append(v, bs...)
-			v = append(v, d.d.decRd.readx(uint(ui))...)
+			h.appendN(&v, bs...)
+			h.appendN(&v, d.d.decRd.readx(uint(ui))...)
 		}
 	case cborMajorArray:
 		if d.bd == cborBdIndefiniteArray {
 			for {
 				d.readNextBd()
-				v = append(v, d.bd)
+				h.append1(&v, d.bd)
 				if d.bd == cborBdBreak {
 					break
 				}
@@ -834,7 +842,7 @@ func (d *cborDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 			}
 		} else {
 			bs, ui = d.uintBytes()
-			v = append(v, bs...)
+			h.appendN(&v, bs...)
 			for i := uint64(0); i < ui; i++ {
 				v = d.nextValueBytesR(v)
 			}
@@ -843,7 +851,7 @@ func (d *cborDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		if d.bd == cborBdIndefiniteMap {
 			for {
 				d.readNextBd()
-				v = append(v, d.bd)
+				h.append1(&v, d.bd)
 				if d.bd == cborBdBreak {
 					break
 				}
@@ -852,7 +860,7 @@ func (d *cborDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 			}
 		} else {
 			bs, ui = d.uintBytes()
-			v = append(v, bs...)
+			h.appendN(&v, bs...)
 			for i := uint64(0); i < ui; i++ {
 				v = d.nextValueBytesR(v)
 				v = d.nextValueBytesR(v)
@@ -860,17 +868,17 @@ func (d *cborDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		}
 	case cborMajorTag:
 		bs, _ = d.uintBytes()
-		v = append(v, bs...)
+		h.appendN(&v, bs...)
 		v = d.nextValueBytesR(v)
 	case cborMajorSimpleOrFloat:
 		switch d.bd {
 		case cborBdNil, cborBdUndefined, cborBdFalse, cborBdTrue: // pass
 		case cborBdFloat16:
-			v = append(v, d.d.decRd.readx(2)...)
+			h.appendN(&v, d.d.decRd.readx(2)...)
 		case cborBdFloat32:
-			v = append(v, d.d.decRd.readx(4)...)
+			h.appendN(&v, d.d.decRd.readx(4)...)
 		case cborBdFloat64:
-			v = append(v, d.d.decRd.readx(8)...)
+			h.appendN(&v, d.d.decRd.readx(8)...)
 		default:
 			d.d.errorf("nextValueBytes: Unrecognized d.bd: 0x%x", d.bd)
 		}
