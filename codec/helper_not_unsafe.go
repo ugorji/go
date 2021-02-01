@@ -137,6 +137,54 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	return false
 }
 
+// isEmptyStruct is only called from isEmptyValue, and checks if a struct is empty:
+//    - does it implement IsZero() bool
+//    - is it comparable, and can i compare directly using ==
+//    - if checkStruct, then walk through the encodable fields
+//      and check if they are empty or not.
+func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
+	// v is a struct kind - no need to check again.
+	// We only check isZero on a struct kind, to reduce the amount of times
+	// that we lookup the rtid and typeInfo for each type as we walk the tree.
+
+	vt := rvType(v)
+	rtid := rt2id(vt)
+	if tinfos == nil {
+		tinfos = defTypeInfos
+	}
+	ti := tinfos.get(rtid, vt)
+	if ti.rtid == timeTypId {
+		return rv2i(v).(time.Time).IsZero()
+	}
+	if ti.flagIsZeroer {
+		return rv2i(v).(isZeroer).IsZero()
+	}
+	if ti.flagIsZeroerPtr && v.CanAddr() {
+		return rv2i(v.Addr()).(isZeroer).IsZero()
+	}
+	if ti.flagIsCodecEmptyer {
+		return rv2i(v).(isCodecEmptyer).IsCodecEmpty()
+	}
+	if ti.flagIsCodecEmptyerPtr && v.CanAddr() {
+		return rv2i(v.Addr()).(isCodecEmptyer).IsCodecEmpty()
+	}
+	if ti.flagComparable {
+		return rv2i(v) == rv2i(rvZeroK(vt, reflect.Struct))
+	}
+	if !recursive {
+		return false
+	}
+	// We only care about what we can encode/decode,
+	// so that is what we use to check omitEmpty.
+	for _, si := range ti.sfiSrc {
+		sfv := si.path.field(v)
+		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, recursive) {
+			return false
+		}
+	}
+	return true
+}
+
 // --------------------------
 type atomicClsErr struct {
 	v atomic.Value

@@ -1896,19 +1896,28 @@ LOOP:
 }
 
 func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
+	if pti = x.find(rtid); pti == nil {
+		pti = x.load(rt)
+	}
+	return
+}
+
+func (x *TypeInfos) find(rtid uintptr) (pti *typeInfo) {
 	sp := x.infos.load()
 	if sp != nil {
 		_, pti = findTypeInfo(sp, rtid)
-		if pti != nil {
-			return
-		}
 	}
+	return
+}
 
+func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	rk := rt.Kind()
 
 	if rk == reflect.Ptr { // || (rk == reflect.Interface && rtid != intfTypId) {
 		halt.errorf("invalid kind passed to TypeInfos.get: %v - %v", rk, rt)
 	}
+
+	rtid := rt2id(rt)
 
 	// do not hold lock while computing this.
 	// it may lead to duplication, but that's ok.
@@ -2019,7 +2028,7 @@ func (x *TypeInfos) get(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
 	}
 
 	x.mu.Lock()
-	sp = x.infos.load()
+	sp := x.infos.load()
 	// since this is an atomic load/store, we MUST use a different array each time,
 	// else we have a data race when a store is happening simultaneously with a findRtidFn call.
 	if sp == nil {
@@ -2200,54 +2209,6 @@ func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 		indir = reflect.PtrTo(rt).Implements(iTyp)
 	}
 	return
-}
-
-// isEmptyStruct is only called from isEmptyValue, and checks if a struct is empty:
-//    - does it implement IsZero() bool
-//    - is it comparable, and can i compare directly using ==
-//    - if checkStruct, then walk through the encodable fields
-//      and check if they are empty or not.
-func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
-	// v is a struct kind - no need to check again.
-	// We only check isZero on a struct kind, to reduce the amount of times
-	// that we lookup the rtid and typeInfo for each type as we walk the tree.
-
-	vt := rvType(v)
-	rtid := rt2id(vt)
-	if tinfos == nil {
-		tinfos = defTypeInfos
-	}
-	ti := tinfos.get(rtid, vt)
-	if ti.rtid == timeTypId {
-		return rv2i(v).(time.Time).IsZero()
-	}
-	if ti.flagIsZeroer {
-		return rv2i(v).(isZeroer).IsZero()
-	}
-	if ti.flagIsZeroerPtr && v.CanAddr() {
-		return rv2i(v.Addr()).(isZeroer).IsZero()
-	}
-	if ti.flagIsCodecEmptyer {
-		return rv2i(v).(isCodecEmptyer).IsCodecEmpty()
-	}
-	if ti.flagIsCodecEmptyerPtr && v.CanAddr() {
-		return rv2i(v.Addr()).(isCodecEmptyer).IsCodecEmpty()
-	}
-	if ti.flagComparable {
-		return rv2i(v) == rv2i(rvZeroK(vt, reflect.Struct))
-	}
-	if !recursive {
-		return false
-	}
-	// We only care about what we can encode/decode,
-	// so that is what we use to check omitEmpty.
-	for _, si := range ti.sfiSrc {
-		sfv := si.path.field(v)
-		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, recursive) {
-			return false
-		}
-	}
-	return true
 }
 
 func isSliceBoundsError(s string) bool {

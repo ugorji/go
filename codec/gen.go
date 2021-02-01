@@ -95,6 +95,20 @@ import (
 //   genInternalXXX functions are used for generating fast-path and other internally generated
 //   files, and not for use in codecgen.
 
+// Size of a struct or value is not portable across machines, especially across 32-bit vs 64-bit
+// operating systems. This is due to types like int, uintptr, pointers, (and derived types like slice), etc
+// which use the natural word size on those machines, which may be 4 bytes (on 32-bit) or 8 bytes (on 64-bit).
+//
+// Within decInferLen calls, we may generate an explicit size of the entry.
+// We do this because decInferLen values are expected to be approximate,
+// and serve as a good hint on the size of the elements or key+value entry.
+//
+// Since development is done on 64-bit machines, the sizes will be roughly correctly
+// on 64-bit OS, and slightly larger than expected on 32-bit OS.
+// This is ok.
+//
+// For reference, look for 'Size' in fast-path.go.tmpl, gen-dec-(array|map).go.tmpl and gen.go (this file).
+
 // GenVersion is the current version of codecgen.
 //
 // MARKER: Increment this value each time codecgen changes fundamentally.

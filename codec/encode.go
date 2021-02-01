@@ -102,9 +102,12 @@ type EncodeOptions struct {
 
 	// RecursiveEmptyCheck controls how we determine whether a value is empty.
 	//
-	// If true, we descend into interfaces and pointers and check struct fields one by one to
-	// see if empty. In this mode, we honor IsZero, Comparable, IsCodecEmpty(), etc.
-	// Note: This will make OmitEmpty more expensive due to the large number of reflect calls.
+	// If true, we descend into interfaces and pointers to reursively check if value is empty.
+	//
+	// We *might* check struct fields one by one to see if empty
+	// (if we cannot directly check if a struct value is equal to its zero value)..
+	// If so, we honor IsZero, Comparable, IsCodecEmpty(), etc.
+	// Note: This *may* make OmitEmpty more expensive due to the large number of reflect calls.
 	//
 	// If false, we check if the value is equal to its zero value (newly allocated state).
 	RecursiveEmptyCheck bool

@@ -373,7 +373,15 @@ func isEmptyValueFallbackRecur(urv *unsafeReflectValue, v reflect.Value, tinfos 
 	case reflect.Complex128:
 		return unsafeCmpZero(urv.ptr, 16)
 	case reflect.Struct:
-		return isEmptyStruct(v, tinfos, recursive)
+		// return isEmptyStruct(v, tinfos, recursive)
+		if tinfos == nil {
+			tinfos = defTypeInfos
+		}
+		ti := tinfos.find(uintptr(urv.typ))
+		if ti == nil {
+			ti = tinfos.load(rvType(v))
+		}
+		return unsafeCmpZero(urv.ptr, int(ti.size))
 	case reflect.Interface, reflect.Ptr:
 		// isnil := urv.ptr == nil // (not sufficient, as a pointer value encodes the type)
 		isnil := urv.ptr == nil || *(*unsafe.Pointer)(urv.ptr) == nil
