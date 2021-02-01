@@ -1110,10 +1110,16 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				fn.fe = (*Encoder).kArray
 				fn.fd = (*Decoder).kArray
 
-				idx := fastpathAvIndex(rt2id(ti.key)) // ti.key for arrays = reflect.SliceOf(ti.elem)
-				if idx != -1 {
-					fn.fe = fastpathAv[idx].encfn
-					fn.fd = fastpathAv[idx].decfn
+				// in safeMode, if array is not addressable, converting from an array to a slice
+				// requires an allocation (see helper_not_unsafe.go: func rvGetSlice4Array).
+				// MARKER: may be best to use kArray explicitly in that case.
+				const useFastpathForkArray = true // !safeMode true
+				if useFastpathForkArray {
+					idx := fastpathAvIndex(rt2id(ti.key)) // ti.key for arrays = reflect.SliceOf(ti.elem)
+					if idx != -1 {
+						fn.fe = fastpathAv[idx].encfn
+						fn.fd = fastpathAv[idx].decfn
+					}
 				}
 
 				// // MARKER: optimized path below incurs allocation as we allocate a slice object

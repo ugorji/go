@@ -395,7 +395,21 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 
 func rvGetSlice4Array(rv reflect.Value, v interface{}) {
 	// v is a pointer to a slice to be populated
-	reflect.ValueOf(v).Elem().Set(rv.Slice(0, rv.Len()))
+
+	// rv.Slice fails if address is not addressable, which can occur during encoding.
+	// Consequently, check if non-addressable, and if so, make new slice and copy into it first.
+	// MARKER: this *may* cause allocation if non-addressable, unfortunately.
+
+	rve := reflect.ValueOf(v).Elem()
+	l := rv.Len()
+	if rv.CanAddr() {
+		rve.Set(rv.Slice(0, l))
+	} else {
+		rvs := reflect.MakeSlice(rve.Type(), l, l)
+		reflect.Copy(rvs, rv)
+		rve.Set(rvs)
+	}
+	// reflect.ValueOf(v).Elem().Set(rv.Slice(0, rv.Len()))
 }
 
 func rvCopySlice(dest, src reflect.Value) {
