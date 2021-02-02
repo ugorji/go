@@ -603,7 +603,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 	// Consequently, we MAY have to allocate a value (containing the underlying value),
 	// decode into it, and reset the interface to that new value.
 
-	rvn2 := rvZeroAddrK(rvType(rvn), rvn.Kind())
+	rvn2 := rvZeroAddrTransientK(rvType(rvn), rvn.Kind())
 	rvSetDirect(rvn2, rvn)
 	d.decodeValue(rvn2, nil)
 	rv.Set(rvn2)
@@ -1037,7 +1037,7 @@ func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 		}
 		slh.ElemContainerState(j)
 		if rtelem0Mut || !rv9.IsValid() { // || (f.ti.elemkind == reflect.Ptr && rvIsNil(rv9)) {
-			rv9 = rvZeroAddrK(f.ti.elem, reflect.Kind(f.ti.elemkind))
+			rv9 = rvZeroAddrTransientK(f.ti.elem, reflect.Kind(f.ti.elemkind))
 		}
 		if fn == nil {
 			fn = d.h.fn(rtelem)
@@ -1153,6 +1153,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		return stringView(kstr2bs)
 	}
 
+	// Use a possibly transient (map) value, to reduce allocation
+
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		callFnRvk = false
 		if j == 0 {
@@ -1161,7 +1163,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				rvkn = rvk
 			}
 			if !rvvMut {
-				rvvn = rvZeroAddrK(vtype, vtypeKind)
+				rvvn = rvZeroAddrTransientK(vtype, vtypeKind)
 			}
 			if !ktypeIsString && keyFn == nil {
 				keyFn = d.h.fn(ktypeLo)
@@ -1236,7 +1238,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 						rvv = rvvn
 					default:
 						// make addressable (so you can set the slice/array elements, etc)
-						rvvn = rvZeroAddrK(vtype, vtypeKind)
+						rvvn = rvZeroAddrTransientK(vtype, vtypeKind)
 						rvSetDirect(rvvn, rvv)
 						rvv = rvvn
 					}
@@ -1245,7 +1247,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 					if vtypeIsPtr {
 						rvv = reflect.New(vtypeElem)
 					} else {
-						rvv = rvZeroAddrK(vtype, vtypeKind)
+						rvv = rvZeroAddrTransientK(vtype, vtypeKind)
 					}
 				}
 			} else {
@@ -1253,7 +1255,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				if vtypeIsPtr {
 					rvv = reflect.New(vtypeElem)
 				} else {
-					rvv = rvZeroAddrK(vtype, vtypeKind)
+					rvv = rvZeroAddrTransientK(vtype, vtypeKind)
 				}
 			}
 		} else {
@@ -1981,7 +1983,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 		if rv.Kind() == reflect.Ptr {
 			rv2 = reflect.New(rvType(rv).Elem())
 		} else {
-			rv2 = rvZeroAddrK(rvType(rv), rv.Kind())
+			rv2 = rvZeroAddrTransientK(rvType(rv), rv.Kind())
 		}
 		rvSetDirect(rv2, rv)
 		rv = rv2

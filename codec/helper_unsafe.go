@@ -84,9 +84,29 @@ type unsafeRuntimeType struct {
 	// ... many other fields here
 }
 
-var unsafeZeroAddr = unsafe.Pointer(&unsafeZeroArr[0])
+// unsafeZeroScalarXXX below is used in rvZeroAddrPrimK as the backing storage
+// for primitives that we want to decode into.
+//
+// MARKER: slices are not supported, as they are mutable, and thus an element can be being
+// decoded when we are using this space for a slice that should hold it.
+//
+// Cap is 16 as the maximum size is a complex128 (or string on 64-bit machines).
 
-var unsafeZeroSlice = unsafeSlice{unsafeZeroAddr, 0, 0}
+const unsafeZeroScalarArrCap = 16
+
+var (
+	unsafeZeroScalarArr  [unsafeZeroScalarArrCap]byte
+	unsafeZeroScalarAddr = unsafe.Pointer(&unsafeZeroScalarArr[0])
+)
+
+// unsafeZeroAddr and unsafeZeroSlice points to a read-only block of memory
+// used for setting a zero value for most types or creating a read-only
+// zero value for a given type.
+
+var (
+	unsafeZeroAddr  = unsafe.Pointer(&unsafeZeroArr[0])
+	unsafeZeroSlice = unsafeSlice{unsafeZeroAddr, 0, 0}
+)
 
 // stringView returns a view of the []byte as a string.
 // In unsafe mode, it doesn't incur allocation and copying caused by conversion.
@@ -231,6 +251,28 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return
 }
 
+// rvZeroAddrTransientK is used for getting a *transient* value to be decoded into,
+// which will right away be used for something else.
+//
+// For this, we optimize and use a scratch space if the kind is a number, bool or string.
+//
+// We use this for situations where we need to decode into a primitive for setting as a
+// map value or into an interface.
+func rvZeroAddrTransientK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+	// zz.Debugf("rvZeroAddrTransientK")
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
+	urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
+	// if k is number, bool or string, use scratch space
+	if scalarBitset.isset(byte(k)) {
+		unsafeZeroScalarArr = [unsafeZeroScalarArrCap]byte{}
+		urv.ptr = unsafeZeroScalarAddr
+	} else {
+		urv.ptr = unsafe_New(urv.typ)
+	}
+	return
+}
+
 func rvZeroK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
@@ -254,7 +296,7 @@ func rvConvert(v reflect.Value, t reflect.Type) reflect.Value {
 
 // rvAddressableReadonly returns an addressable reflect.Value.
 //
-// use it within encode calls, when you just want to "read" the underlying ptr
+// Use it within encode calls, when you just want to "read" the underlying ptr
 // without modifying the value.
 //
 // Note that it cannot be used for r/w use, as those non-addressable values
@@ -634,8 +676,12 @@ func rvSetUint64(rv reflect.Value, v uint64) {
 
 // ----------------
 
-// rvSetDirect is rv.Set for all kinds except reflect.Interface
+// rvSetDirect is rv.Set for all kinds except reflect.Interface.
+//
+// Callers MUST not pass an interface value in, as it may result in an unexpected segfaults.
 func rvSetDirect(rv reflect.Value, v reflect.Value) {
+	// MARKER: rv.Set for interface may need to do a separate allocation if a scalar value.
+	// The book-keeping is onerous, so we just do the simple ones where a memmove is sufficient.
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	if uv.flag&unsafeFlagIndir == 0 {
