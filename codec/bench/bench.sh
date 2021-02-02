@@ -143,28 +143,35 @@ _suite_any() {
 #     ${go[@]} test "${zargs[@]}" -tags "alltests codecgen" -bench "__Json____" -benchmem "$@"
 # }
 
-_suite_very_quick_json_via_suite() {
-    # Quickly get numbers for json, stdjson, jsoniter and json (codecgen)"
-    echo ">>>> very quick json bench"
-    local prefix="BenchmarkCodecVeryQuickAllJsonSuite/json-all-bd1......../"
-    ${go[@]} test "${zargs[@]}" -tags "alltests x" -bench BenchmarkCodecVeryQuickAllJsonSuite -benchmem "$@" |
-        sed -e "s+^$prefix++"
-    echo "---- CODECGEN RESULTS ----"
-    ${go[@]} test "${zargs[@]}" -tags "x generated" -bench "__(Json|Easyjson)__" -benchmem "$@"
-}
+# _suite_very_quick_json_via_suite() {
+#     # Quickly get numbers for json, stdjson, jsoniter and json (codecgen)"
+#     echo ">>>> very quick json bench"
+#     local prefix="BenchmarkCodecVeryQuickAllJsonSuite/json-all-bd1......../"
+#     ${go[@]} test "${zargs[@]}" -tags "alltests x" -bench BenchmarkCodecVeryQuickAllJsonSuite -benchmem "$@" |
+#         sed -e "s+^$prefix++"
+#     echo "---- CODECGEN RESULTS ----"
+#     ${go[@]} test "${zargs[@]}" -tags "x generated" -bench "__(Json|Easyjson)__" -benchmem "$@"
+# }
 
 _suite_very_quick_json_non_suite() {
     # Quickly get numbers for json, stdjson, jsoniter and json (codecgen)"
+    local t="${1:-x}"
+    shift
     echo ">>>> very quick json bench"
     # local tags=( "x" "x generated" )
-    local t="x" # options: "x" "x safe"
+    local tags=("${t}" "${t} generated" "${t} safe" "${t} generated safe")
     local js=( En De )
-    for j in ${js[@]}; do
-        echo "---- codecgen ----"
-        ${go[@]} test "${zargs[@]}" -tags "${t} generated" -bench "__(Json|Easyjson)__.*${j}" -benchmem "$@"
-        echo "---- no codecgen ----"
-        ${go[@]} test "${zargs[@]}" -tags "${t}" -bench "__(Json|Std_Json|JsonIter)__.*${j}" -benchmem "$@"
-        echo
+    for t in "${tags[@]}"; do
+        echo "---- tags: ${t} ----"
+        local b="Json"
+        if [[ "${t}" =~ x && ! "${t}" =~ safe ]]; then
+            b="Json|Std_Json|JsonIter"
+            if [[ "${t}" =~ generated ]]; then b="Json|Easyjson"; fi
+        fi            
+        for j in "${js[@]}"; do
+            ${go[@]} test "${zargs[@]}" -tags "${t}" -bench "__(${b})__.*${j}" -benchmem "$@"
+            [[ "${b}" != Json ]] && echo # echo if more than 1 line is printed
+        done
     done
 }
 

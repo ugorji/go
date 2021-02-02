@@ -217,7 +217,7 @@ func fnBenchmarkEncode(b *testing.B, encName string, ts interface{}, encfn bench
 	bs := make([]byte, 0, approxSize)
 
 	// do initial warm up by running encode one time
-	if _, err = encfn(ts, bs); err != nil {
+	if bs, err = encfn(ts, bs); err != nil {
 		b.Logf("Error encoding benchTs: %s: %v", encName, err)
 		b.FailNow()
 	}
@@ -240,16 +240,16 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 	// ignore method params: ts and newfn, and work on benchTs and TestStruc directly
 	ts = benchTs
 
-	bs := make([]byte, 0, approxSize)
-	buf, err := encfn(ts, bs)
+	buf := make([]byte, 0, approxSize)
+	buf, err := encfn(ts, buf)
 	if err != nil {
 		b.Logf("Error encoding benchTs: %s: %v", encName, err)
 		b.FailNow()
 	}
 
 	// do initial warm up by running decode one time
-	var locTs TestStruc
-	ts = &locTs
+	locTs := new(TestStruc)
+	ts = locTs
 	// ts = newfn()
 	if err = decfn(buf, ts); err != nil {
 		b.Logf("Error decoding into new TestStruc: %s: %v", encName, err)
@@ -271,7 +271,7 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 	runtime.GC()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		locTs = TestStruc{}
+		*locTs = TestStruc{}
 		// ts = newfn()
 		if err = decfn(buf, ts); err != nil {
 			b.Logf("Error decoding into new TestStruc: %s: %v", encName, err)
