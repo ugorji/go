@@ -168,7 +168,7 @@ _suite_very_quick_json_non_suite() {
     done
 }
 
-_suite_very_quick_profile() {
+_suite_very_quick_benchmark() {
     local a="${1:-Json}" # Json Cbor Msgpack Simple
     # case "$1" in
     #     Json|Cbor|Msgpack|Simple|Binc) a="${1}"; shift ;;
@@ -176,9 +176,7 @@ _suite_very_quick_profile() {
     local b="${2}"
     local c="${3}"
     local t="${4:-4s}" # 4s 1x
-    ${go[@]} test "${zargs[@]}" -tags "alltests ${c}" -bench "__${a}__.*${b}" \
-       -benchmem -benchtime "${t}" \
-       -cpuprofile cpu.out -memprofile mem.out -memprofilerate 1
+    ${go[@]} test "${zargs[@]}" -tags "alltests ${c}" -bench "__${a}__.*${b}" -benchmem -benchtime "${t}"
 }
 
 _suite_trim_output() {
@@ -195,19 +193,21 @@ _bench_dot_out_dot_txt() {
 }
 
 _suite_debugging() {
-    local cg="n" # n = no codecgen, c = codecgen; options are c, n, cn
-    local js=( De ) # or: ( _ ) ( En ) ( De ) ( En De )
-    for j in ${js[@]}; do
-        if [[ ${cg} =~ "c" ]]; then
-            echo "---- codecgen ----"
-            ${go[@]} test "${zargs[@]}" -tags "generated" -bench "__(Json)__.*${j}"  -benchtime 2s -benchmem "$@"
-        fi
-        if [[ ${cg} =~ "n" ]]; then
-            echo "---- no codecgen ----"
-            ${go[@]} test "${zargs[@]}" -tags "" -bench "__(Json)__.*${j}"  -benchtime 2s -benchmem "$@"
-        fi
-        echo
-    done
+    _suite_very_quick_benchmark "$@"
+    
+    # local cg="n" # n = no codecgen, c = codecgen; options are c, n, cn
+    # local js=( De ) # or: ( _ ) ( En ) ( De ) ( En De )
+    # for j in ${js[@]}; do
+    #     if [[ ${cg} =~ "c" ]]; then
+    #         echo "---- codecgen ----"
+    #         ${go[@]} test "${zargs[@]}" -tags "generated" -bench "__(Json)__.*${j}"  -benchtime 2s -benchmem "$@"
+    #     fi
+    #     if [[ ${cg} =~ "n" ]]; then
+    #         echo "---- no codecgen ----"
+    #         ${go[@]} test "${zargs[@]}" -tags "" -bench "__(Json)__.*${j}"  -benchtime 2s -benchmem "$@"
+    #     fi
+    #     echo
+    # done
 }
 
 _usage() {
@@ -217,10 +217,10 @@ _usage() {
     printf "\t-tx tests (show stats for each format and whether encoded == decoded); if x, do external also\n"
     printf "\t-sgx run test suite for codec; if g, use generated files; if x, do external also\n"
     printf "\t-jq run test suite for [json, json-quick]\n"
-    printf "\t-p run test suite with profiles: defaults to json: [format] [suffix] [benchtime]\n"
+    printf "\t-p run test suite with profiles: defaults to json: [format/prefix] [suffix] [tags] [benchtime]\n"
     printf "\t-z run tests for bench.out.txt\n"
     printf "\t-f [pprof file] run pprof\n"
-    printf "\t-y run debugging suite (used during development only)\n"
+    printf "\t-y run debugging suite (during development only): [format/prefix] [suffix] [tags] [benchtime]\n"
 }
 
 _main() {
@@ -265,7 +265,7 @@ _main() {
 
     # These are just helpers (not really running benchmark suites)
     [[ " ${args[*]} " == *"t"* ]] && _suite_tests "$@" | _suite_trim_output | _suite_tests_strip_file_line
-    [[ " ${args[*]} " == *"p"* ]] && _suite_very_quick_profile "$@" | _suite_trim_output
+    [[ " ${args[*]} " == *"p"* ]] && zargs+=("-cpuprofile" "cpu.out" "-memprofile" "mem.out" "-memprofilerate" "1") && _suite_very_quick_benchmark "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"f"* ]] && ${go[@]} tool pprof bench.test ${1:-mem.out}
     [[ " ${args[*]} " == *"z"* ]] && _bench_dot_out_dot_txt
     [[ " ${args[*]} " == *"y"* ]] && _suite_debugging "$@" | _suite_trim_output
