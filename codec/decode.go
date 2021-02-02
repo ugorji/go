@@ -788,9 +788,11 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			} else if rvCanset { // rvlen1 > rvcap
 				rvlen = rvlen1
 				rvcap = rvlen
-				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
-				rvCanset = false
-				rvChanged = true
+				// rv = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
+				// rvCanset = false
+				// rvChanged = true
+				rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvcap)
+				rvChanged = !rvCanset
 			} else { // rvlen1 > rvcap && !canSet
 				d.errorf("cannot decode into non-settable slice")
 			}
@@ -818,9 +820,11 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				// rvcap = rvlen + rvlen
 				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(f.ti.elemsize))
 				rvcap = rvlen
-				rv = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
-				rvCanset = false
-				rvChanged = true
+				// rv = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
+				// rvCanset = false
+				// rvChanged = true
+				rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvcap)
+				rvChanged = !rvCanset
 			} else {
 				d.errorf("cannot decode into non-settable slice")
 			}
@@ -851,11 +855,13 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				}
 				rvcap = int(growCap(uint(rvcap), uint(f.ti.elemsize), 1))
 				rvlen = rvcap
-				rv9 = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
-				rvCopySlice(rv9, rv)
-				rv = rv9
-				rvCanset = false
-				rvChanged = true
+				// rv9 = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
+				// rvCanset = false
+				// rvChanged = true
+				// rvCopySlice(rv9, rv)
+				// rv = rv9
+				rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvcap)
+				rvChanged = !rvCanset
 			}
 		} else {
 			slh.ElemContainerState(j)

@@ -1112,7 +1112,14 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 
 				// in safeMode, if array is not addressable, converting from an array to a slice
 				// requires an allocation (see helper_not_unsafe.go: func rvGetSlice4Array).
-				// MARKER: may be best to use kArray explicitly in that case.
+				//
+				// (Non-addressable arrays mostly occur as keys/values from a map).
+				//
+				// However, fastpath functions are mostly for slices of numbers or strings,
+				// which are small by definition and thus allocation should be fast/cheap in time.
+				//
+				// Consequently, the value of doing this quick allocation to elide the overhead cost of
+				// non-optimized (not-unsafe) reflection is a fair price when safeMode=true.
 				const useFastpathForkArray = true // !safeMode true
 				if useFastpathForkArray {
 					idx := fastpathAvIndex(rt2id(ti.key)) // ti.key for arrays = reflect.SliceOf(ti.elem)

@@ -13,6 +13,9 @@ import (
 	"time"
 )
 
+// This file has safe variants of some helper functions.
+// MARKER: See helper_unsafe.go for the usage documentation.
+
 const safeMode = true
 
 func stringView(v []byte) string {
@@ -31,9 +34,6 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 // 	copy(dst, src)
 // }
 
-// isNil says whether the value v is nil.
-// This applies to references like map/ptr/unsafepointer/chan/func,
-// and non-reference values like interface/slice.
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	rv = reflect.ValueOf(v)
 	if isnilBitset.isset(byte(rv.Kind())) {
@@ -335,7 +335,6 @@ func rvSetUint64(rv reflect.Value, v uint64) {
 
 // ----------------
 
-// rvSetDirect is rv.Set for all kinds except reflect.Interface
 func rvSetDirect(rv reflect.Value, v reflect.Value) {
 	rv.Set(v)
 }
@@ -344,9 +343,16 @@ func rvSetDirectZero(rv reflect.Value) {
 	rv.Set(reflect.Zero(rv.Type()))
 }
 
-// rvSlice returns a slice of the slice of lenth
 func rvSlice(rv reflect.Value, length int) reflect.Value {
 	return rv.Slice(0, length)
+}
+
+func rvMakeSlice(rv reflect.Value, ti *typeInfo, xlen, xcap int) (v reflect.Value, set bool) {
+	v = reflect.MakeSlice(ti.rt, xlen, xcap)
+	if rv.Len() > 0 {
+		reflect.Copy(v, rv)
+	}
+	return
 }
 
 // ----------------
@@ -371,7 +377,6 @@ func rvCapSlice(rv reflect.Value) int {
 	return rv.Cap()
 }
 
-// if scratch is nil, then return a writable view (assuming canAddr=true)
 func rvGetArrayBytes(rv reflect.Value, scratch []byte) (bs []byte) {
 	l := rv.Len()
 	if scratch == nil || rv.CanAddr() {
@@ -514,9 +519,6 @@ func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, va
 // 	m.SetMapIndex(k, reflect.Value{})
 // }
 
-// return an addressable reflect value that can be used in mapRange and mapGet operations.
-//
-// all calls to mapGet or mapRange will call here to get an addressable reflect.Value.
 func mapAddrLoopvarRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 	return // reflect.New(t).Elem()
 }

@@ -20,8 +20,8 @@ import (
 	"unsafe"
 )
 
-// This file has unsafe variants of some helper methods.
-// MARKER: See helper_not_unsafe.go for the usage information.
+// This file has unsafe variants of some helper functions.
+// MARKER: See helper_unsafe.go for the usage documentation.
 
 // For reflect.Value code, we decided to do the following:
 //    - if we know the kind, we can elide conditional checks for
@@ -109,6 +109,9 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 	return (*unsafeSlice)(unsafe.Pointer(&v1)).Data == (*unsafeSlice)(unsafe.Pointer(&v2)).Data
 }
 
+// isNil says whether the value v is nil.
+// This applies to references like map/ptr/unsafepointer/chan/func,
+// and non-reference values like interface/slice.
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	var ui = (*unsafeIntf)(unsafe.Pointer(&v))
 	if ui.ptr == nil {
@@ -665,7 +668,24 @@ func rvSetDirectZero(rv reflect.Value) {
 // 	return
 // }
 
-// rvSlice returns a sub-slice of the slice given new lenth
+// rvMakeSlice updates the slice to point to a new array.
+// It copies data from old slice to new slice.
+// It returns set=true iff it updates it, else it just returns a new slice pointing to a newly made array.
+func rvMakeSlice(rv reflect.Value, ti *typeInfo, xlen, xcap int) (_ reflect.Value, set bool) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	ux := (*unsafeSlice)(urv.ptr)
+	t := ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
+	s := unsafeSlice{unsafe_NewArray(t, xcap), xlen, xcap}
+	if ux.Len > 0 {
+		typedslicecopy(t, s, *ux)
+	}
+	*ux = s
+	return rv, true
+}
+
+// rvSlice returns a sub-slice of the slice given new lenth,
+// without modifying passed in value.
+// It is typically called when we know that SetLen(...) cannot be done.
 func rvSlice(rv reflect.Value, length int) reflect.Value {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	var x []struct{}
@@ -1260,6 +1280,10 @@ func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
 //go:linkname unsafe_New reflect.unsafe_New
 //go:noescape
 func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
+
+//go:linkname unsafe_NewArray reflect.unsafe_NewArray
+//go:noescape
+func unsafe_NewArray(typ unsafe.Pointer, cap int) unsafe.Pointer
 
 //go:linkname typedslicecopy reflect.typedslicecopy
 //go:noescape
