@@ -95,8 +95,10 @@ type unsafeRuntimeType struct {
 const unsafeZeroScalarArrCap = 16
 
 var (
-	unsafeZeroScalarArr  [unsafeZeroScalarArrCap]byte
-	unsafeZeroScalarAddr = unsafe.Pointer(&unsafeZeroScalarArr[0])
+	unsafeZeroScalarArr [2][unsafeZeroScalarArrCap]byte
+
+	unsafeZeroScalar0Addr = &unsafeZeroScalarArr[0]
+	unsafeZeroScalar1Addr = &unsafeZeroScalarArr[1]
 )
 
 // unsafeZeroAddr and unsafeZeroSlice points to a read-only block of memory
@@ -256,21 +258,37 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 //
 // For this, we optimize and use a scratch space if the kind is a number, bool or string.
 //
-// We use this for situations where we need to decode into a primitive for setting as a
-// map value or into an interface.
-func rvZeroAddrTransientK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+// We use this for situations:
+// - we need to decode into a primitive for setting into an interface.
+// - decode into a primitive for setting a map value
+// - decode into a primitive for setting a map key iff the map value is also a primitive
+//
+// For all these, the decoding can be thought of as a one-off value which will not
+// interfer with other values being decoded.
+//
+// Because of the situation with map keys and map values being primitives, we have 2 variants:
+// Transient and Transient2 (used for map keys if map value is primitive also)
+func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr *[unsafeZeroScalarArrCap]byte) (rv reflect.Value) {
 	// zz.Debugf("rvZeroAddrTransientK")
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
 	urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
 	// if k is number, bool or string, use scratch space
 	if scalarBitset.isset(byte(k)) {
-		unsafeZeroScalarArr = [unsafeZeroScalarArrCap]byte{}
-		urv.ptr = unsafeZeroScalarAddr
+		*addr = [unsafeZeroScalarArrCap]byte{}
+		urv.ptr = unsafe.Pointer(addr)
 	} else {
 		urv.ptr = unsafe_New(urv.typ)
 	}
 	return
+}
+
+func rvZeroAddrTransientK(t reflect.Type, k reflect.Kind) reflect.Value {
+	return rvZeroAddrTransientAnyK(t, k, unsafeZeroScalar0Addr)
+}
+
+func rvZeroAddrTransient2K(t reflect.Type, k reflect.Kind) reflect.Value {
+	return rvZeroAddrTransientAnyK(t, k, unsafeZeroScalar1Addr)
 }
 
 func rvZeroK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {

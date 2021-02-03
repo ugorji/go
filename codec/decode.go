@@ -1158,7 +1158,12 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		callFnRvk = false
 		if j == 0 {
-			rvk = rvZeroAddrK(ktype, ktypeKind)
+			// if vtypekind is a scalar, then it is ok to use transient Key for map key
+			if scalarBitset.isset(byte(vtypeKind)) {
+				rvk = rvZeroAddrTransient2K(ktype, ktypeKind)
+			} else {
+				rvk = rvZeroAddrK(ktype, ktypeKind)
+			}
 			if !rvkMut {
 				rvkn = rvk
 			}

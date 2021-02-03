@@ -80,6 +80,10 @@ func rvZeroAddrTransientK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return reflect.New(t).Elem()
 }
 
+func rvZeroAddrTransient2K(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+	return reflect.New(t).Elem()
+}
+
 func rvZeroK(t reflect.Type, k reflect.Kind) reflect.Value {
 	return reflect.Zero(t)
 }
