@@ -851,14 +851,17 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				if !(rvCanset || rvChanged) {
 					d.onerror(errExpandSliceCannotChange)
 				}
-				rvcap = int(growCap(uint(rvcap), uint(f.ti.elemsize), 1))
+				// rvcap = int(growCap(uint(rvcap), uint(f.ti.elemsize), 1))
+				// rvlen = rvcap
+				// // rv9 = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
+				// // rvCanset = false
+				// // rvChanged = true
+				// // rvCopySlice(rv9, rv)
+				// // rv = rv9
+				// rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvcap)
+				// rvChanged = !rvCanset
+				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
 				rvlen = rvcap
-				// rv9 = reflect.MakeSlice(f.ti.rt, rvlen, rvcap)
-				// rvCanset = false
-				// rvChanged = true
-				// rvCopySlice(rv9, rv)
-				// rv = rv9
-				rv, rvCanset = rvMakeSlice(rv, f.ti, rvlen, rvcap)
 				rvChanged = !rvCanset
 			}
 		} else {

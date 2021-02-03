@@ -747,6 +747,18 @@ func rvMakeSlice(rv reflect.Value, ti *typeInfo, xlen, xcap int) (_ reflect.Valu
 	return rv, true
 }
 
+// rcGrowSlice updates the slice to point to a new array with the cap incremented, and len set to the new cap value.
+// It copies data from old slice to new slice.
+// It returns set=true iff it updates it, else it just returns a new slice pointing to a newly made array.
+func rvGrowSlice(rv reflect.Value, ti *typeInfo, xcap, incr int) (v reflect.Value, newcap int, set bool) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	ux := (*unsafeSlice)(urv.ptr)
+	t := ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
+	*ux = growslice(t, *ux, xcap+incr)
+	ux.Len = ux.Cap
+	return rv, ux.Cap, true
+}
+
 // rvSlice returns a sub-slice of the slice given new lenth,
 // without modifying passed in value.
 // It is typically called when we know that SetLen(...) cannot be done.
@@ -1360,6 +1372,10 @@ func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
 //go:linkname typedmemclr reflect.typedmemclr
 //go:noescape
 func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
+
+//go:linkname growslice runtime.growslice
+//go:noescape
+func growslice(typ unsafe.Pointer, old unsafeSlice, cap int) unsafeSlice
 
 /*
 

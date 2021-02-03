@@ -363,6 +363,15 @@ func rvMakeSlice(rv reflect.Value, ti *typeInfo, xlen, xcap int) (v reflect.Valu
 	return
 }
 
+func rvGrowSlice(rv reflect.Value, ti *typeInfo, xcap, incr int) (v reflect.Value, newcap int, set bool) {
+	newcap = int(growCap(uint(xcap), uint(ti.elemsize), uint(incr)))
+	v = reflect.MakeSlice(ti.rt, newcap, newcap)
+	if rv.Len() > 0 {
+		reflect.Copy(v, rv)
+	}
+	return
+}
+
 // ----------------
 
 func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) reflect.Value {
