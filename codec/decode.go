@@ -593,20 +593,18 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 
 	canDecode, _ := isDecodeable(rvn)
 
-	if canDecode {
-		d.decodeValue(rvn, nil)
-		rv.Set(rvn)
-		return
-	}
-
 	// Note: interface{} is settable, but underlying type may not be.
 	// Consequently, we MAY have to allocate a value (containing the underlying value),
 	// decode into it, and reset the interface to that new value.
 
-	rvn2 := rvZeroAddrTransientK(rvType(rvn), rvn.Kind())
-	rvSetDirect(rvn2, rvn)
-	d.decodeValue(rvn2, nil)
-	rv.Set(rvn2)
+	if !canDecode {
+		rvn2 := rvZeroAddrTransientK(rvType(rvn), rvn.Kind())
+		rvSetDirect(rvn2, rvn)
+		rvn = rvn2
+	}
+
+	d.decodeValue(rvn, nil)
+	rv.Set(rvn)
 }
 
 func decStructFieldKeyNotString(dd decDriver, keyType valueType, b *[decScratchByteArrayLen]byte) (rvkencname []byte) {
@@ -1984,6 +1982,30 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 		s = ext.ConvertExt(rv2i(rv2))
 	}
 	rv = reflect.ValueOf(s)
+
+	// We cannot use isDecodeable here, as the value converted may be nil,
+	// or it may not be nil, but it is not addressable, and so we cannot extend it, etc.
+	// Instead, we just ensure that the value is addressable.
+
+	// canDecode, reason := isDecodeable(rv)
+	// if !canDecode {
+	// 	switch reason {
+	// 	case decNotDecodeableReasonNonAddrValue:
+	// 		rv2 = rvZeroAddrTransientK(rvType(rv), rv.Kind())
+	// 		rvSetDirect(rv2, rv)
+	// 		rv = rv2
+	// 	case decNotDecodeableReasonNilReference:
+	// 		rvk = rv.Kind()
+	// 		if rvk == reflect.Ptr {
+	// 			rv = reflect.New(rvType(rv).Elem())
+	// 		} else {
+	// 			rv = rvZeroAddrK(rvType(rv), rvk)
+	// 		}
+	// 	default:
+	// 		d.haltAsNotDecodeable(rv)
+	// 	}
+	// }
+
 	if !rv.CanAddr() {
 		if rv.Kind() == reflect.Ptr {
 			rv2 = reflect.New(rvType(rv).Elem())
@@ -1993,6 +2015,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 		rvSetDirect(rv2, rv)
 		rv = rv2
 	}
+
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
 }
