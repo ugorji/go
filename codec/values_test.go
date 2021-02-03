@@ -57,7 +57,7 @@ type AnonInTestStruc struct {
 	AMSS map[string]string
 	// AMI32U32  map[int32]uint32
 	// AMU32F64 map[uint32]float64 // json/bson do not like it
-	AMSU16 map[string]uint16
+	AMSU64 map[string]uint64
 
 	AI64arr8 [8]int64
 
@@ -65,8 +65,8 @@ type AnonInTestStruc struct {
 	AI64arr0    [0]int64
 	AI64slice0  []int64
 	AUi64sliceN []uint64
-	AMSU16N     map[string]uint16
-	AMSU16E     map[string]uint16
+	AMSU64N     map[string]uint64
+	AMSU64E     map[string]uint64
 }
 
 // testSimpleFields is a sub-set of TestStrucCommon
@@ -85,7 +85,7 @@ type testSimpleFields struct {
 	B bool
 
 	Sslice    []string
-	I16slice  []int16
+	I32slice  []int32
 	Ui64slice []uint64
 	Ui8slice  []uint8
 	Bslice    []bool
@@ -95,7 +95,7 @@ type testSimpleFields struct {
 	WrapSliceInt64  wrapSliceUint64
 	WrapSliceString wrapSliceString
 
-	Msi64 map[string]int64
+	Msint map[string]int
 }
 
 type TestStrucCommon struct {
@@ -124,7 +124,7 @@ type TestStrucCommon struct {
 
 	Sslice    []string
 	I64slice  []int64
-	I16slice  []int16
+	I32slice  []int32
 	Ui64slice []uint64
 	Ui8slice  []uint8
 	Bslice    []bool
@@ -137,7 +137,7 @@ type TestStrucCommon struct {
 	WrapSliceInt64  wrapSliceUint64
 	WrapSliceString wrapSliceString
 
-	Msi64 map[string]int64
+	Msint map[string]int
 
 	Msbytes map[string][]byte
 
@@ -211,7 +211,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			math.MaxUint16, math.MaxUint16 + 4, math.MaxUint16 - 4,
 			math.MaxUint32, math.MaxUint32 + 4, math.MaxUint32 - 4,
 		},
-		AMSU16: map[string]uint16{
+		AMSU64: map[string]uint64{
 			strRpt(n, "1"):    1,
 			strRpt(n, "22"):   2,
 			strRpt(n, "333"):  3,
@@ -263,8 +263,8 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 
 		AI64slice0:  []int64{},
 		AUi64sliceN: nil,
-		AMSU16N:     nil,
-		AMSU16E:     map[string]uint16{},
+		AMSU64N:     nil,
+		AMSU64E:     map[string]uint64{},
 	}
 
 	if !bench {
@@ -296,7 +296,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 
 		Sslice:    []string{strRpt(n, "one"), strRpt(n, "two"), strRpt(n, "three")},
 		I64slice:  []int64{1111, 2222, 3333},
-		I16slice:  []int16{44, 55, 66},
+		I32slice:  []int32{44, 55, 66},
 		Ui64slice: []uint64{12121212, 34343434, 56565656},
 		Ui8slice:  []uint8{210, 211, 212},
 		Bslice:    []bool{true, false, true, false},
@@ -306,7 +306,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			[]byte(strRpt(n, "two")),
 			[]byte(strRpt(n, "\"three\"")),
 		},
-		Msi64: map[string]int64{
+		Msint: map[string]int{
 			strRpt(n, "one"):       1,
 			strRpt(n, "two"):       2,
 			strRpt(n, "\"three\""): 3,
@@ -340,12 +340,12 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 			B: true,
 
 			Sslice:    []string{strRpt(n, "one"), strRpt(n, "two"), strRpt(n, "three")},
-			I16slice:  []int16{44, 55, 66},
+			I32slice:  []int32{44, 55, 66},
 			Ui64slice: []uint64{12121212, 34343434, 56565656},
 			Ui8slice:  []uint8{210, 211, 212},
 			Bslice:    []bool{true, false, true, false},
 
-			Msi64: map[string]int64{
+			Msint: map[string]int{
 				strRpt(n, "one"):       1,
 				strRpt(n, "two"):       2,
 				strRpt(n, "\"three\""): 3,
@@ -392,6 +392,7 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 func newTestStruc(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts *TestStruc) {
 	ts = &TestStruc{}
 	populateTestStrucCommon(&ts.TestStrucCommon, n, bench, useInterface, useStringKeyOnly)
+	// zz.Debugf("ts.AnonInTestStruc.AMSS: %v", ts.AnonInTestStruc.AMSS)
 	if depth > 0 {
 		depth--
 		if ts.Mtsptr == nil {

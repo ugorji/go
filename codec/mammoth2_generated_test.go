@@ -69,6 +69,8 @@ type TestMammoth2 struct {
 	FptrSliceString  *[]string
 	FSliceBytes      [][]byte
 	FptrSliceBytes   *[][]byte
+	FSliceFloat32    []float32
+	FptrSliceFloat32 *[]float32
 	FSliceFloat64    []float64
 	FptrSliceFloat64 *[]float64
 	FSliceUint64     []uint64
@@ -94,8 +96,8 @@ type TestMammoth2 struct {
 	FptrMapStringUint64  *map[string]uint64
 	FMapStringInt        map[string]int
 	FptrMapStringInt     *map[string]int
-	FMapStringInt64      map[string]int64
-	FptrMapStringInt64   *map[string]int64
+	FMapStringInt32      map[string]int32
+	FptrMapStringInt32   *map[string]int32
 	FMapStringFloat64    map[string]float64
 	FptrMapStringFloat64 *map[string]float64
 	FMapStringBool       map[string]bool
@@ -112,8 +114,8 @@ type TestMammoth2 struct {
 	FptrMapUint8Uint64   *map[uint8]uint64
 	FMapUint8Int         map[uint8]int
 	FptrMapUint8Int      *map[uint8]int
-	FMapUint8Int64       map[uint8]int64
-	FptrMapUint8Int64    *map[uint8]int64
+	FMapUint8Int32       map[uint8]int32
+	FptrMapUint8Int32    *map[uint8]int32
 	FMapUint8Float64     map[uint8]float64
 	FptrMapUint8Float64  *map[uint8]float64
 	FMapUint8Bool        map[uint8]bool
@@ -130,8 +132,8 @@ type TestMammoth2 struct {
 	FptrMapUint64Uint64  *map[uint64]uint64
 	FMapUint64Int        map[uint64]int
 	FptrMapUint64Int     *map[uint64]int
-	FMapUint64Int64      map[uint64]int64
-	FptrMapUint64Int64   *map[uint64]int64
+	FMapUint64Int32      map[uint64]int32
+	FptrMapUint64Int32   *map[uint64]int32
 	FMapUint64Float64    map[uint64]float64
 	FptrMapUint64Float64 *map[uint64]float64
 	FMapUint64Bool       map[uint64]bool
@@ -148,30 +150,30 @@ type TestMammoth2 struct {
 	FptrMapIntUint64     *map[int]uint64
 	FMapIntInt           map[int]int
 	FptrMapIntInt        *map[int]int
-	FMapIntInt64         map[int]int64
-	FptrMapIntInt64      *map[int]int64
+	FMapIntInt32         map[int]int32
+	FptrMapIntInt32      *map[int]int32
 	FMapIntFloat64       map[int]float64
 	FptrMapIntFloat64    *map[int]float64
 	FMapIntBool          map[int]bool
 	FptrMapIntBool       *map[int]bool
-	FMapInt64Intf        map[int64]interface{}
-	FptrMapInt64Intf     *map[int64]interface{}
-	FMapInt64String      map[int64]string
-	FptrMapInt64String   *map[int64]string
-	FMapInt64Bytes       map[int64][]byte
-	FptrMapInt64Bytes    *map[int64][]byte
-	FMapInt64Uint8       map[int64]uint8
-	FptrMapInt64Uint8    *map[int64]uint8
-	FMapInt64Uint64      map[int64]uint64
-	FptrMapInt64Uint64   *map[int64]uint64
-	FMapInt64Int         map[int64]int
-	FptrMapInt64Int      *map[int64]int
-	FMapInt64Int64       map[int64]int64
-	FptrMapInt64Int64    *map[int64]int64
-	FMapInt64Float64     map[int64]float64
-	FptrMapInt64Float64  *map[int64]float64
-	FMapInt64Bool        map[int64]bool
-	FptrMapInt64Bool     *map[int64]bool
+	FMapInt32Intf        map[int32]interface{}
+	FptrMapInt32Intf     *map[int32]interface{}
+	FMapInt32String      map[int32]string
+	FptrMapInt32String   *map[int32]string
+	FMapInt32Bytes       map[int32][]byte
+	FptrMapInt32Bytes    *map[int32][]byte
+	FMapInt32Uint8       map[int32]uint8
+	FptrMapInt32Uint8    *map[int32]uint8
+	FMapInt32Uint64      map[int32]uint64
+	FptrMapInt32Uint64   *map[int32]uint64
+	FMapInt32Int         map[int32]int
+	FptrMapInt32Int      *map[int32]int
+	FMapInt32Int32       map[int32]int32
+	FptrMapInt32Int32    *map[int32]int32
+	FMapInt32Float64     map[int32]float64
+	FptrMapInt32Float64  *map[int32]float64
+	FMapInt32Bool        map[int32]bool
+	FptrMapInt32Bool     *map[int32]bool
 }
 
 // -----------

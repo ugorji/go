@@ -2484,7 +2484,7 @@ func genInternalFastpathSliceTypes() []string {
 		"interface{}",
 		"string",
 		"[]byte",
-		// "float32",
+		"float32",
 		"float64",
 		// "uint",
 		// "uint8", // no need for fastpath of []uint8, as it is handled specially
@@ -2509,16 +2509,16 @@ func genInternalFastpathMapKeyTypes() []string {
 		// "float32",
 		// "float64",
 		// "uint",
-		"uint8",
+		"uint8", // byte
 		// "uint16",
 		// "uint32",
-		"uint64",
+		"uint64", // used for keys
 		// "uintptr",
-		"int",
+		"int", // default number key
 		// "int8",
 		// "int16",
-		// "int32",
-		"int64",
+		"int32", // rune
+		// "int64",
 		// "bool",
 	}
 }
@@ -2529,16 +2529,16 @@ func genInternalFastpathMapValueTypes() []string {
 		"string",
 		"[]byte",
 		// "uint",
-		"uint8",
+		"uint8", // byte
 		// "uint16",
 		// "uint32",
-		"uint64",
+		"uint64", // used for keys, etc
 		// "uintptr",
-		"int",
+		"int", // default number
 		//"int8",
 		// "int16",
-		// "int32", // rune (mostly used for unicode)
-		"int64",
+		"int32", // rune (mostly used for unicode)
+		// "int64",
 		// "float32",
 		"float64",
 		"bool",

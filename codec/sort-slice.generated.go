@@ -41,11 +41,11 @@ func (p intSlice) Less(i, j int) bool {
 	return p[uint(i)] < p[uint(j)]
 }
 
-type int64Slice []int64
+type int32Slice []int32
 
-func (p int64Slice) Len() int      { return len(p) }
-func (p int64Slice) Swap(i, j int) { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
-func (p int64Slice) Less(i, j int) bool {
+func (p int32Slice) Len() int      { return len(p) }
+func (p int32Slice) Swap(i, j int) { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
+func (p int32Slice) Less(i, j int) bool {
 	return p[uint(i)] < p[uint(j)]
 }
 
