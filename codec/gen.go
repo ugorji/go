@@ -140,7 +140,8 @@ import (
 // v20: 20201120 refactored GenHelper to one exported function
 // v21: 20210104 refactored generated code to honor ZeroCopy=true for more efficiency
 // v22: 20210118 fixed issue in generated code when encoding a type which is also a codec.Selfer
-const genVersion = 22
+// v23: 20210203 changed slice/map types for which we generate fast-path functions
+const genVersion = 23
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go

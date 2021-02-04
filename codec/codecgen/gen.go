@@ -45,7 +45,7 @@ import (
 const (
 	codecgenModuleVersion = `1.2.3-devel` // default version - overridden by go.mod
 	minimumCodecVersion   = `1.2.3-devel`
-	genVersion            = 22
+	genVersion            = 23
 )
 
 const genCodecPkg = "codec1978" // MARKER: keep in sync with ../gen.go
