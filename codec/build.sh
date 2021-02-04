@@ -12,8 +12,7 @@ _tests() {
         *) return 1
     esac
     # note that codecgen requires fastpath, so you cannot do "codecgen notfastpath"
-    # we test the following permutations: fastpath/unsafe, !fastpath/!unsafe, codecgen/unsafe
-    ## local a=( "" "safe"  "notfastpath safe" "codecgen" )
+    # we test the following permutations wnich all execute different code paths as below.
     echo "TestCodecSuite: (fastpath/unsafe), (fastpath/!unsafe), (!fastpath/!unsafe), (codecgen/unsafe)"
     local nc=1 # count
     local a=( "" "safe" "notfastpath safe"  "codecgen" )

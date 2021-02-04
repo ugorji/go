@@ -31,6 +31,13 @@ import (
 // We can also optimize
 //      - IsNil
 
+// MARKER: Some functions here will not be hit during code coverage runs due to optimizations, e.g.
+//   - rvCopySlice:      decode calls it if rvGrowSlice didn't set the new slice into the pointer to the orig slice.
+//                       however, helper_unsafe sets it, so there's no need to call rvCopySlice later
+//   - rvSlice:          same as above
+//   - rvGetArray4Bytes: only called within kArray for []byte, but that is now handled
+//                       within the fast-path directly
+
 const safeMode = false
 
 // helperUnsafeDirectAssignMapEntry says that we should not copy the pointer in the map
