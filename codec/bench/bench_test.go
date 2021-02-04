@@ -80,7 +80,7 @@ func benchPreInit() {
 	// }
 
 	// benchmark comparisons use zerocopy (easyjson, json-iterator, etc).
-	// use zerocopy for the benchmarks, for best performance
+	// use zerocopy for the benchmarks, for best performance, and better comparison to others.
 	const zeroCopyVal = true
 
 	testJsonH.ZeroCopy = zeroCopyVal

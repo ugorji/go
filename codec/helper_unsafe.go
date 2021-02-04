@@ -269,7 +269,6 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 // Because of the situation with map keys and map values being primitives, we have 2 variants:
 // Transient and Transient2 (used for map keys if map value is primitive also)
 func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr *[unsafeZeroScalarArrCap]byte) (rv reflect.Value) {
-	// zz.Debugf("rvZeroAddrTransientK")
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
 	urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr

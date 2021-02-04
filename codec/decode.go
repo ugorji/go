@@ -1143,7 +1143,6 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			return d.string(kstr2bs)
 		}
 		// unsafe mode below
-
 		if !d.zerocopystate() {
 			callFnRvk = true
 			if d.decByteState == decByteStateReuseBuf {
@@ -1154,12 +1153,13 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		return stringView(kstr2bs)
 	}
 
-	// Use a possibly transient (map) value, to reduce allocation
+	// Use a possibly transient (map) value (and key), to reduce allocation
 
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		callFnRvk = false
 		if j == 0 {
-			// if vtypekind is a scalar, then it is ok to use transient Key for map key
+			// if vtypekind is a scalar, then it is ok to use transient Key for map key.
+			// as the map value is decoded using xxxTransientK, use xxxTransient2K for the key.
 			if scalarBitset.isset(byte(vtypeKind)) {
 				rvk = rvZeroAddrTransient2K(ktype, ktypeKind)
 			} else {
