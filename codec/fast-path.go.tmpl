@@ -124,9 +124,9 @@ func init() {
 		i++
 	}
 	{{/* do not register []byte in fast-path */}}
-	{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}{{if ne .Elem "uint8" -}}
+	{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
 	fn([]{{ .Elem }}(nil), (*Encoder).{{ .MethodNamePfx "fastpathEnc" false }}R, (*Decoder).{{ .MethodNamePfx "fastpathDec" false }}R)
-	{{end}}{{end}}{{end}}{{end}}
+	{{end}}{{end}}{{end}}
 	
 	{{range .Values}}{{if not .Primitive}}{{if .MapKey -}}
 	fn(map[{{ .MapKey }}]{{ .Elem }}(nil), (*Encoder).{{ .MethodNamePfx "fastpathEnc" false }}R, (*Decoder).{{ .MethodNamePfx "fastpathDec" false }}R)
@@ -140,7 +140,7 @@ func init() {
 // -- -- fast path type switch
 func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 	switch v := iv.(type) {
-{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}{{if ne .Elem "uint8" -}}
+{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
 	case []{{ .Elem }}:
 		fastpathTV.{{ .MethodNamePfx "Enc" false }}V(v, e)
 	case *[]{{ .Elem }}:
@@ -149,7 +149,7 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 		} else {
 			fastpathTV.{{ .MethodNamePfx "Enc" false }}V(*v, e)
 		}
-{{end}}{{end}}{{end}}{{end -}}
+{{end}}{{end}}{{end -}}
 
 {{range .Values}}{{if not .Primitive}}{{if .MapKey -}}
 	case map[{{ .MapKey }}]{{ .Elem }}:
@@ -186,12 +186,16 @@ func (e *Encoder) {{ .MethodNamePfx "fastpathEnc" false }}R(f *codecFnInfo, rv r
 }
 func (fastpathT) {{ .MethodNamePfx "Enc" false }}V(v []{{ .Elem }}, e *Encoder) {
 	{{/* if v == nil { e.e.EncodeNil(); return } */ -}}
+	{{ if eq .Elem "uint8" "byte" -}}
+	e.e.EncodeStringBytesRaw(v)
+	{{ else -}}
 	e.arrayStart(len(v))
 	for j := range v {
 		e.arrayElem()
 		{{ encmd .Elem "v[j]"}}
 	} 
 	e.arrayEnd()
+	{{ end -}}
 }
 func (fastpathT) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *Encoder) {
 	{{/* if v == nil { e.e.EncodeNil() } else */ -}}
@@ -274,7 +278,7 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 	var changed bool
 	var containerLen int
 	switch v := iv.(type) {
-{{range .Values}}{{if not .Primitive}}{{if not .MapKey }}{{if ne .Elem "uint8" -}}
+{{range .Values}}{{if not .Primitive}}{{if not .MapKey -}}
 	case []{{ .Elem }}:
 		fastpathTV.{{ .MethodNamePfx "Dec" false }}N(v, d)
 	case *[]{{ .Elem }}:
@@ -282,7 +286,7 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 		if v2, changed = fastpathTV.{{ .MethodNamePfx "Dec" false }}Y(*v, d); changed {
 			*v = v2
 		}
-{{end}}{{end}}{{end}}{{end -}}
+{{end}}{{end}}{{end -}}
 {{range .Values}}{{if not .Primitive}}{{if .MapKey }}{{/*
 // maps only change if nil, and in that case, there's no point copying
 */ -}}
@@ -366,7 +370,17 @@ func (d *Decoder) {{ .MethodNamePfx "fastpathDec" false }}R(f *codecFnInfo, rv r
 func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *[]{{ .Elem }}, d *Decoder) {
 	if v, changed := f.{{ .MethodNamePfx "Dec" false }}Y(*vp, d); changed { *vp = v }
 }
-func (fastpathT) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *Decoder) (_ []{{ .Elem }}, changed bool) {
+func (fastpathT) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *Decoder) (v2 []{{ .Elem }}, changed bool) {
+	{{ if eq .Elem "uint8" "byte" -}}
+	switch d.d.ContainerType() {
+	case valueTypeNil, valueTypeMap:
+		break
+	default:
+		v2 = d.decodeBytesInto(v[:len(v):len(v)])
+		changed = !(len(v2) > 0 && len(v2) == len(v) && &v2[0] == &v[0]) // not same slice
+		return
+	}
+	{{ end -}}
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil { return }
@@ -416,9 +430,21 @@ func (fastpathT) {{ .MethodNamePfx "Dec" false }}Y(v []{{ .Elem }}, d *Decoder) 
 		changed = true
 	}
 	slh.End()
-	return v, changed 
+	return v, changed
 }
 func (fastpathT) {{ .MethodNamePfx "Dec" false }}N(v []{{ .Elem }}, d *Decoder) {
+	{{ if eq .Elem "uint8" "byte" -}}
+	switch d.d.ContainerType() {
+	case valueTypeNil, valueTypeMap:
+		break
+	default:
+		v2 := d.decodeBytesInto(v[:len(v):len(v)])
+		if !(len(v2) > 0 && len(v2) == len(v) && &v2[0] == &v[0]) { // not same slice
+			copy(v, v2)
+		}
+		return
+	}
+	{{ end -}}
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		return

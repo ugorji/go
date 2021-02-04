@@ -48,15 +48,15 @@ type fastpathE struct {
 	decfn func(*Decoder, *codecFnInfo, reflect.Value)
 }
 
-type fastpathA [55]fastpathE
-type fastpathARtid [55]uintptr
+type fastpathA [56]fastpathE
+type fastpathARtid [56]uintptr
 
 var fastpathAv fastpathA
 var fastpathAvRtid fastpathARtid
 
 type fastpathAslice struct{}
 
-func (fastpathAslice) Len() int { return 55 }
+func (fastpathAslice) Len() int { return 56 }
 func (fastpathAslice) Less(i, j int) bool {
 	return fastpathAvRtid[uint(i)] < fastpathAvRtid[uint(j)]
 }
@@ -68,9 +68,9 @@ func (fastpathAslice) Swap(i, j int) {
 func fastpathAvIndex(rtid uintptr) int {
 	// use binary search to grab the index (adapted from sort/search.go)
 	// Note: we use goto (instead of for loop) so this can be inlined.
-	// h, i, j := 0, 0, 55
+	// h, i, j := 0, 0, 56
 	var h, i uint
-	var j uint = 55
+	var j uint = 56
 LOOP:
 	if i < j {
 		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
@@ -81,7 +81,7 @@ LOOP:
 		}
 		goto LOOP
 	}
-	if i < 55 && fastpathAvRtid[i] == rtid {
+	if i < 56 && fastpathAvRtid[i] == rtid {
 		return int(i)
 	}
 	return -1
@@ -105,6 +105,7 @@ func init() {
 	fn([][]byte(nil), (*Encoder).fastpathEncSliceBytesR, (*Decoder).fastpathDecSliceBytesR)
 	fn([]float32(nil), (*Encoder).fastpathEncSliceFloat32R, (*Decoder).fastpathDecSliceFloat32R)
 	fn([]float64(nil), (*Encoder).fastpathEncSliceFloat64R, (*Decoder).fastpathDecSliceFloat64R)
+	fn([]uint8(nil), (*Encoder).fastpathEncSliceUint8R, (*Decoder).fastpathDecSliceUint8R)
 	fn([]uint64(nil), (*Encoder).fastpathEncSliceUint64R, (*Decoder).fastpathDecSliceUint64R)
 	fn([]int(nil), (*Encoder).fastpathEncSliceIntR, (*Decoder).fastpathDecSliceIntR)
 	fn([]int32(nil), (*Encoder).fastpathEncSliceInt32R, (*Decoder).fastpathDecSliceInt32R)
@@ -204,6 +205,14 @@ func fastpathEncodeTypeSwitch(iv interface{}, e *Encoder) bool {
 			e.e.EncodeNil()
 		} else {
 			fastpathTV.EncSliceFloat64V(*v, e)
+		}
+	case []uint8:
+		fastpathTV.EncSliceUint8V(v, e)
+	case *[]uint8:
+		if *v == nil {
+			e.e.EncodeNil()
+		} else {
+			fastpathTV.EncSliceUint8V(*v, e)
 		}
 	case []uint64:
 		fastpathTV.EncSliceUint64V(v, e)
@@ -780,6 +789,35 @@ func (fastpathT) EncAsMapSliceFloat64V(v []float64, e *Encoder) {
 			e.mapElemValue()
 		}
 		e.e.EncodeFloat64(v[j])
+	}
+	e.mapEnd()
+}
+func (e *Encoder) fastpathEncSliceUint8R(f *codecFnInfo, rv reflect.Value) {
+	var v []uint8
+	if rv.Kind() == reflect.Array {
+		rvGetSlice4Array(rv, &v)
+	} else {
+		v = rv2i(rv).([]uint8)
+	}
+	if f.ti.mbs {
+		fastpathTV.EncAsMapSliceUint8V(v, e)
+	} else {
+		fastpathTV.EncSliceUint8V(v, e)
+	}
+}
+func (fastpathT) EncSliceUint8V(v []uint8, e *Encoder) {
+	e.e.EncodeStringBytesRaw(v)
+}
+func (fastpathT) EncAsMapSliceUint8V(v []uint8, e *Encoder) {
+	e.haltOnMbsOddLen(len(v))
+	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
+	for j := range v {
+		if j&1 == 0 { // if j%2 == 0 {
+			e.mapElemKey()
+		} else {
+			e.mapElemValue()
+		}
+		e.e.EncodeUint(uint64(v[j]))
 	}
 	e.mapEnd()
 }
@@ -2301,6 +2339,13 @@ func fastpathDecodeTypeSwitch(iv interface{}, d *Decoder) bool {
 		if v2, changed = fastpathTV.DecSliceFloat64Y(*v, d); changed {
 			*v = v2
 		}
+	case []uint8:
+		fastpathTV.DecSliceUint8N(v, d)
+	case *[]uint8:
+		var v2 []uint8
+		if v2, changed = fastpathTV.DecSliceUint8Y(*v, d); changed {
+			*v = v2
+		}
 	case []uint64:
 		fastpathTV.DecSliceUint64N(v, d)
 	case *[]uint64:
@@ -2805,6 +2850,8 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool {
 		*v = nil
 	case *[]float64:
 		*v = nil
+	case *[]uint8:
+		*v = nil
 	case *[]uint64:
 		*v = nil
 	case *[]int:
@@ -2937,7 +2984,7 @@ func (f fastpathT) DecSliceIntfX(vp *[]interface{}, d *Decoder) {
 		*vp = v
 	}
 }
-func (fastpathT) DecSliceIntfY(v []interface{}, d *Decoder) (_ []interface{}, changed bool) {
+func (fastpathT) DecSliceIntfY(v []interface{}, d *Decoder) (v2 []interface{}, changed bool) {
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil {
@@ -3036,7 +3083,7 @@ func (f fastpathT) DecSliceStringX(vp *[]string, d *Decoder) {
 		*vp = v
 	}
 }
-func (fastpathT) DecSliceStringY(v []string, d *Decoder) (_ []string, changed bool) {
+func (fastpathT) DecSliceStringY(v []string, d *Decoder) (v2 []string, changed bool) {
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil {
@@ -3135,7 +3182,7 @@ func (f fastpathT) DecSliceBytesX(vp *[][]byte, d *Decoder) {
 		*vp = v
 	}
 }
-func (fastpathT) DecSliceBytesY(v [][]byte, d *Decoder) (_ [][]byte, changed bool) {
+func (fastpathT) DecSliceBytesY(v [][]byte, d *Decoder) (v2 [][]byte, changed bool) {
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil {
@@ -3234,7 +3281,7 @@ func (f fastpathT) DecSliceFloat32X(vp *[]float32, d *Decoder) {
 		*vp = v
 	}
 }
-func (fastpathT) DecSliceFloat32Y(v []float32, d *Decoder) (_ []float32, changed bool) {
+func (fastpathT) DecSliceFloat32Y(v []float32, d *Decoder) (v2 []float32, changed bool) {
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil {
@@ -3333,7 +3380,7 @@ func (f fastpathT) DecSliceFloat64X(vp *[]float64, d *Decoder) {
 		*vp = v
 	}
 }
-func (fastpathT) DecSliceFloat64Y(v []float64, d *Decoder) (_ []float64, changed bool) {
+func (fastpathT) DecSliceFloat64Y(v []float64, d *Decoder) (v2 []float64, changed bool) {
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil {
@@ -3411,6 +3458,123 @@ func (fastpathT) DecSliceFloat64N(v []float64, d *Decoder) {
 	slh.End()
 }
 
+func (d *Decoder) fastpathDecSliceUint8R(f *codecFnInfo, rv reflect.Value) {
+	var v []uint8
+	switch rv.Kind() {
+	case reflect.Ptr:
+		vp := rv2i(rv).(*[]uint8)
+		var changed bool
+		if v, changed = fastpathTV.DecSliceUint8Y(*vp, d); changed {
+			*vp = v
+		}
+	case reflect.Array:
+		rvGetSlice4Array(rv, &v)
+		fastpathTV.DecSliceUint8N(v, d)
+	default:
+		fastpathTV.DecSliceUint8N(rv2i(rv).([]uint8), d)
+	}
+}
+func (f fastpathT) DecSliceUint8X(vp *[]uint8, d *Decoder) {
+	if v, changed := f.DecSliceUint8Y(*vp, d); changed {
+		*vp = v
+	}
+}
+func (fastpathT) DecSliceUint8Y(v []uint8, d *Decoder) (v2 []uint8, changed bool) {
+	switch d.d.ContainerType() {
+	case valueTypeNil, valueTypeMap:
+		break
+	default:
+		v2 = d.decodeBytesInto(v[:len(v):len(v)])
+		changed = !(len(v2) > 0 && len(v2) == len(v) && &v2[0] == &v[0]) // not same slice
+		return
+	}
+	slh, containerLenS := d.decSliceHelperStart()
+	if slh.IsNil {
+		if v == nil {
+			return
+		}
+		return nil, true
+	}
+	if containerLenS == 0 {
+		if v == nil {
+			v = []uint8{}
+		} else if len(v) != 0 {
+			v = v[:0]
+		}
+		slh.End()
+		return v, true
+	}
+	hasLen := containerLenS > 0
+	var xlen int
+	if hasLen {
+		if containerLenS > cap(v) {
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			if xlen <= cap(v) {
+				v = v[:uint(xlen)]
+			} else {
+				v = make([]uint8, uint(xlen))
+			}
+			changed = true
+		} else if containerLenS != len(v) {
+			v = v[:containerLenS]
+			changed = true
+		}
+	}
+	var j int
+	for j = 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
+		if j == 0 && len(v) == 0 { // means hasLen == false
+			xlen = decInferLen(containerLenS, d.h.MaxInitLen, 1)
+			v = make([]uint8, uint(xlen))
+			changed = true
+		}
+		if j >= len(v) {
+			v = append(v, 0)
+			changed = true
+		}
+		slh.ElemContainerState(j)
+		v[uint(j)] = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
+	}
+	if j < len(v) {
+		v = v[:uint(j)]
+		changed = true
+	} else if j == 0 && v == nil {
+		v = []uint8{}
+		changed = true
+	}
+	slh.End()
+	return v, changed
+}
+func (fastpathT) DecSliceUint8N(v []uint8, d *Decoder) {
+	switch d.d.ContainerType() {
+	case valueTypeNil, valueTypeMap:
+		break
+	default:
+		v2 := d.decodeBytesInto(v[:len(v):len(v)])
+		if !(len(v2) > 0 && len(v2) == len(v) && &v2[0] == &v[0]) { // not same slice
+			copy(v, v2)
+		}
+		return
+	}
+	slh, containerLenS := d.decSliceHelperStart()
+	if slh.IsNil {
+		return
+	}
+	if containerLenS == 0 {
+		slh.End()
+		return
+	}
+	hasLen := containerLenS > 0
+	for j := 0; (hasLen && j < containerLenS) || !(hasLen || d.checkBreak()); j++ {
+		if j >= len(v) {
+			slh.arrayCannotExpand(hasLen, len(v), j, containerLenS)
+			return
+		}
+		slh.ElemContainerState(j)
+		v[uint(j)] = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
+	}
+	slh.End()
+}
+
 func (d *Decoder) fastpathDecSliceUint64R(f *codecFnInfo, rv reflect.Value) {
 	var v []uint64
 	switch rv.Kind() {
@@ -3432,7 +3596,7 @@ func (f fastpathT) DecSliceUint64X(vp *[]uint64, d *Decoder) {
 		*vp = v
 	}
 }
-func (fastpathT) DecSliceUint64Y(v []uint64, d *Decoder) (_ []uint64, changed bool) {
+func (fastpathT) DecSliceUint64Y(v []uint64, d *Decoder) (v2 []uint64, changed bool) {
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil {
@@ -3531,7 +3695,7 @@ func (f fastpathT) DecSliceIntX(vp *[]int, d *Decoder) {
 		*vp = v
 	}
 }
-func (fastpathT) DecSliceIntY(v []int, d *Decoder) (_ []int, changed bool) {
+func (fastpathT) DecSliceIntY(v []int, d *Decoder) (v2 []int, changed bool) {
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil {
@@ -3630,7 +3794,7 @@ func (f fastpathT) DecSliceInt32X(vp *[]int32, d *Decoder) {
 		*vp = v
 	}
 }
-func (fastpathT) DecSliceInt32Y(v []int32, d *Decoder) (_ []int32, changed bool) {
+func (fastpathT) DecSliceInt32Y(v []int32, d *Decoder) (v2 []int32, changed bool) {
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil {
@@ -3729,7 +3893,7 @@ func (f fastpathT) DecSliceInt64X(vp *[]int64, d *Decoder) {
 		*vp = v
 	}
 }
-func (fastpathT) DecSliceInt64Y(v []int64, d *Decoder) (_ []int64, changed bool) {
+func (fastpathT) DecSliceInt64Y(v []int64, d *Decoder) (v2 []int64, changed bool) {
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil {
@@ -3828,7 +3992,7 @@ func (f fastpathT) DecSliceBoolX(vp *[]bool, d *Decoder) {
 		*vp = v
 	}
 }
-func (fastpathT) DecSliceBoolY(v []bool, d *Decoder) (_ []bool, changed bool) {
+func (fastpathT) DecSliceBoolY(v []bool, d *Decoder) (v2 []bool, changed bool) {
 	slh, containerLenS := d.decSliceHelperStart()
 	if slh.IsNil {
 		if v == nil {

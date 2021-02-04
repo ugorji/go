@@ -2150,7 +2150,8 @@ type genInternal struct {
 
 func (x genInternal) FastpathLen() (l int) {
 	for _, v := range x.Values {
-		if v.Primitive == "" && !(v.MapKey == "" && v.Elem == "uint8") {
+		// if v.Primitive == "" && !(v.MapKey == "" && v.Elem == "uint8") {
+		if v.Primitive == "" {
 			l++
 		}
 	}
@@ -2488,6 +2489,7 @@ func genInternalFastpathSliceTypes() []string {
 		"float64",
 		// "uint",
 		// "uint8", // no need for fastpath of []uint8, as it is handled specially
+		"uint8", // keep fast-path, so it doesn't have to go through reflection
 		// "uint16",
 		// "uint32",
 		"uint64",

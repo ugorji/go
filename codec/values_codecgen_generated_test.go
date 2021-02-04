@@ -349,11 +349,11 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 				z.F.EncMapStringStringV(x.AMSS, e)
 			} // end block: if x.AMSS map == nil
 			z.EncWriteArrayElem()
-			if x.AMSU16 == nil {
+			if x.AMSU64 == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AMSU16, e)
-			} // end block: if x.AMSU16 map == nil
+				z.F.EncMapStringUint64V(x.AMSU64, e)
+			} // end block: if x.AMSU64 map == nil
 			z.EncWriteArrayElem()
 			yy31 := &x.AI64arr8
 			h.encArray8int64((*[8]int64)(yy31), e)
@@ -373,17 +373,17 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 				z.F.EncSliceUint64V(x.AUi64sliceN, e)
 			} // end block: if x.AUi64sliceN slice == nil
 			z.EncWriteArrayElem()
-			if x.AMSU16N == nil {
+			if x.AMSU64N == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AMSU16N, e)
-			} // end block: if x.AMSU16N map == nil
+				z.F.EncMapStringUint64V(x.AMSU64N, e)
+			} // end block: if x.AMSU64N map == nil
 			z.EncWriteArrayElem()
-			if x.AMSU16E == nil {
+			if x.AMSU64E == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AMSU16E, e)
-			} // end block: if x.AMSU16E map == nil
+				z.F.EncMapStringUint64V(x.AMSU64E, e)
+			} // end block: if x.AMSU64E map == nil
 			z.EncWriteArrayEnd()
 		} else {
 			z.EncWriteMapStart(17)
@@ -493,16 +493,16 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			} // end block: if x.AMSS map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"AMSU16\"")
+				z.WriteStr("\"AMSU64\"")
 			} else {
-				r.EncodeString(`AMSU16`)
+				r.EncodeString(`AMSU64`)
 			}
 			z.EncWriteMapElemValue()
-			if x.AMSU16 == nil {
+			if x.AMSU64 == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AMSU16, e)
-			} // end block: if x.AMSU16 map == nil
+				z.F.EncMapStringUint64V(x.AMSU64, e)
+			} // end block: if x.AMSU64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64arr8\"")
@@ -547,28 +547,28 @@ func (x *AnonInTestStruc) CodecEncodeSelf(e *Encoder) {
 			} // end block: if x.AUi64sliceN slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"AMSU16N\"")
+				z.WriteStr("\"AMSU64N\"")
 			} else {
-				r.EncodeString(`AMSU16N`)
+				r.EncodeString(`AMSU64N`)
 			}
 			z.EncWriteMapElemValue()
-			if x.AMSU16N == nil {
+			if x.AMSU64N == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AMSU16N, e)
-			} // end block: if x.AMSU16N map == nil
+				z.F.EncMapStringUint64V(x.AMSU64N, e)
+			} // end block: if x.AMSU64N map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"AMSU16E\"")
+				z.WriteStr("\"AMSU64E\"")
 			} else {
-				r.EncodeString(`AMSU16E`)
+				r.EncodeString(`AMSU64E`)
 			}
 			z.EncWriteMapElemValue()
-			if x.AMSU16E == nil {
+			if x.AMSU64E == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AMSU16E, e)
-			} // end block: if x.AMSU16E map == nil
+				z.F.EncMapStringUint64V(x.AMSU64E, e)
+			} // end block: if x.AMSU64E map == nil
 			z.EncWriteMapEnd()
 		}
 	}
@@ -638,8 +638,8 @@ func (x *AnonInTestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			z.F.DecSliceFloat32X(&x.AF32slice, d)
 		case "AMSS":
 			z.F.DecMapStringStringX(&x.AMSS, d)
-		case "AMSU16":
-			z.F.DecMapStringUint64X(&x.AMSU16, d)
+		case "AMSU64":
+			z.F.DecMapStringUint64X(&x.AMSU64, d)
 		case "AI64arr8":
 			h.decArray8int64((*[8]int64)(&x.AI64arr8), d)
 		case "AI64arr0":
@@ -648,10 +648,10 @@ func (x *AnonInTestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			z.F.DecSliceInt64X(&x.AI64slice0, d)
 		case "AUi64sliceN":
 			z.F.DecSliceUint64X(&x.AUi64sliceN, d)
-		case "AMSU16N":
-			z.F.DecMapStringUint64X(&x.AMSU16N, d)
-		case "AMSU16E":
-			z.F.DecMapStringUint64X(&x.AMSU16E, d)
+		case "AMSU64N":
+			z.F.DecMapStringUint64X(&x.AMSU64N, d)
+		case "AMSU64E":
+			z.F.DecMapStringUint64X(&x.AMSU64E, d)
 		default:
 			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
@@ -796,7 +796,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.AMSU16, d)
+	z.F.DecMapStringUint64X(&x.AMSU64, d)
 	yyj34++
 	if yyhl34 {
 		yyb34 = yyj34 > l
@@ -856,7 +856,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.AMSU16N, d)
+	z.F.DecMapStringUint64X(&x.AMSU64N, d)
 	yyj34++
 	if yyhl34 {
 		yyb34 = yyj34 > l
@@ -868,7 +868,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.AMSU16E, d)
+	z.F.DecMapStringUint64X(&x.AMSU64E, d)
 	for {
 		yyj34++
 		if yyhl34 {
@@ -885,7 +885,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *AnonInTestStruc) IsCodecEmpty() bool {
-	return !(x.AS != "" || x.AI64 != 0 || x.AI16 != 0 || x.AUi64 != 0 || len(x.ASslice) != 0 || len(x.AI64slice) != 0 || len(x.AUi64slice) != 0 || len(x.AF64slice) != 0 || len(x.AF32slice) != 0 || len(x.AMSS) != 0 || len(x.AMSU16) != 0 || len(x.AI64arr8) != 0 || len(x.AI64arr0) != 0 || len(x.AI64slice0) != 0 || len(x.AUi64sliceN) != 0 || len(x.AMSU16N) != 0 || len(x.AMSU16E) != 0 || false)
+	return !(x.AS != "" || x.AI64 != 0 || x.AI16 != 0 || x.AUi64 != 0 || len(x.ASslice) != 0 || len(x.AI64slice) != 0 || len(x.AUi64slice) != 0 || len(x.AF64slice) != 0 || len(x.AF32slice) != 0 || len(x.AMSS) != 0 || len(x.AMSU64) != 0 || len(x.AI64arr8) != 0 || len(x.AI64arr0) != 0 || len(x.AI64slice0) != 0 || len(x.AUi64sliceN) != 0 || len(x.AMSU64N) != 0 || len(x.AMSU64E) != 0 || false)
 }
 
 func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
@@ -965,11 +965,11 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 				x.WrapSliceString.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
-			if x.Msi64 == nil {
+			if x.Msint == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringIntV(x.Msi64, e)
-			} // end block: if x.Msi64 map == nil
+				z.F.EncMapStringIntV(x.Msint, e)
+			} // end block: if x.Msint map == nil
 			z.EncWriteArrayEnd()
 		} else {
 			z.EncWriteMapStart(17)
@@ -1135,16 +1135,16 @@ func (x *testSimpleFields) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"Msi64\"")
+				z.WriteStr("\"Msint\"")
 			} else {
-				r.EncodeString(`Msi64`)
+				r.EncodeString(`Msint`)
 			}
 			z.EncWriteMapElemValue()
-			if x.Msi64 == nil {
+			if x.Msint == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringIntV(x.Msi64, e)
-			} // end block: if x.Msi64 map == nil
+				z.F.EncMapStringIntV(x.Msint, e)
+			} // end block: if x.Msint map == nil
 			z.EncWriteMapEnd()
 		}
 	}
@@ -1234,8 +1234,8 @@ func (x *testSimpleFields) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				x.WrapSliceString.CodecDecodeSelf(d)
 			}
-		case "Msi64":
-			z.F.DecMapStringIntX(&x.Msi64, d)
+		case "Msint":
+			z.F.DecMapStringIntX(&x.Msint, d)
 		default:
 			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
@@ -1460,7 +1460,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringIntX(&x.Msi64, d)
+	z.F.DecMapStringIntX(&x.Msint, d)
 	for {
 		yyj30++
 		if yyhl30 {
@@ -1477,7 +1477,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *testSimpleFields) IsCodecEmpty() bool {
-	return !(x.S != "" || x.I64 != 0 || x.I8 != 0 || x.Ui64 != 0 || x.Ui8 != 0 || x.F64 != 0 || x.F32 != 0 || bool(x.B) || len(x.Sslice) != 0 || len(x.I32slice) != 0 || len(x.Ui64slice) != 0 || len(x.Ui8slice) != 0 || len(x.Bslice) != 0 || len(x.Iptrslice) != 0 || len(x.WrapSliceInt64) != 0 || len(x.WrapSliceString) != 0 || len(x.Msi64) != 0 || false)
+	return !(x.S != "" || x.I64 != 0 || x.I8 != 0 || x.Ui64 != 0 || x.Ui8 != 0 || x.F64 != 0 || x.F32 != 0 || bool(x.B) || len(x.Sslice) != 0 || len(x.I32slice) != 0 || len(x.Ui64slice) != 0 || len(x.Ui8slice) != 0 || len(x.Bslice) != 0 || len(x.Iptrslice) != 0 || len(x.WrapSliceInt64) != 0 || len(x.WrapSliceString) != 0 || len(x.Msint) != 0 || false)
 }
 
 func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
@@ -1594,11 +1594,11 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 				x.WrapSliceString.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
-			if x.Msi64 == nil {
+			if x.Msint == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringIntV(x.Msi64, e)
-			} // end block: if x.Msi64 map == nil
+				z.F.EncMapStringIntV(x.Msint, e)
+			} // end block: if x.Msint map == nil
 			z.EncWriteArrayElem()
 			if x.Msbytes == nil {
 				r.EncodeNil()
@@ -1669,11 +1669,11 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 				z.F.EncMapStringStringV(x.AnonInTestStruc.AMSS, e)
 			} // end block: if x.AnonInTestStruc.AMSS map == nil
 			z.EncWriteArrayElem()
-			if x.AnonInTestStruc.AMSU16 == nil {
+			if x.AnonInTestStruc.AMSU64 == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU16, e)
-			} // end block: if x.AnonInTestStruc.AMSU16 map == nil
+				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU64, e)
+			} // end block: if x.AnonInTestStruc.AMSU64 map == nil
 			z.EncWriteArrayElem()
 			yy102 := &x.AnonInTestStruc.AI64arr8
 			h.encArray8int64((*[8]int64)(yy102), e)
@@ -1693,17 +1693,17 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 				z.F.EncSliceUint64V(x.AnonInTestStruc.AUi64sliceN, e)
 			} // end block: if x.AnonInTestStruc.AUi64sliceN slice == nil
 			z.EncWriteArrayElem()
-			if x.AnonInTestStruc.AMSU16N == nil {
+			if x.AnonInTestStruc.AMSU64N == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU16N, e)
-			} // end block: if x.AnonInTestStruc.AMSU16N map == nil
+				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU64N, e)
+			} // end block: if x.AnonInTestStruc.AMSU64N map == nil
 			z.EncWriteArrayElem()
-			if x.AnonInTestStruc.AMSU16E == nil {
+			if x.AnonInTestStruc.AMSU64E == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU16E, e)
-			} // end block: if x.AnonInTestStruc.AMSU16E map == nil
+				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU64E, e)
+			} // end block: if x.AnonInTestStruc.AMSU64E map == nil
 			z.EncWriteArrayElem()
 			yy110 := &x.NotAnon
 			if yyxt111 := z.Extension(yy110); yyxt111 != nil {
@@ -2004,16 +2004,16 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"Msi64\"")
+				z.WriteStr("\"Msint\"")
 			} else {
-				r.EncodeString(`Msi64`)
+				r.EncodeString(`Msint`)
 			}
 			z.EncWriteMapElemValue()
-			if x.Msi64 == nil {
+			if x.Msint == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringIntV(x.Msi64, e)
-			} // end block: if x.Msi64 map == nil
+				z.F.EncMapStringIntV(x.Msint, e)
+			} // end block: if x.Msint map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Msbytes\"")
@@ -2169,16 +2169,16 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			} // end block: if x.AnonInTestStruc.AMSS map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"AMSU16\"")
+				z.WriteStr("\"AMSU64\"")
 			} else {
-				r.EncodeString(`AMSU16`)
+				r.EncodeString(`AMSU64`)
 			}
 			z.EncWriteMapElemValue()
-			if x.AnonInTestStruc.AMSU16 == nil {
+			if x.AnonInTestStruc.AMSU64 == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU16, e)
-			} // end block: if x.AnonInTestStruc.AMSU16 map == nil
+				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU64, e)
+			} // end block: if x.AnonInTestStruc.AMSU64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64arr8\"")
@@ -2223,28 +2223,28 @@ func (x *TestStrucCommon) CodecEncodeSelf(e *Encoder) {
 			} // end block: if x.AnonInTestStruc.AUi64sliceN slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"AMSU16N\"")
+				z.WriteStr("\"AMSU64N\"")
 			} else {
-				r.EncodeString(`AMSU16N`)
+				r.EncodeString(`AMSU64N`)
 			}
 			z.EncWriteMapElemValue()
-			if x.AnonInTestStruc.AMSU16N == nil {
+			if x.AnonInTestStruc.AMSU64N == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU16N, e)
-			} // end block: if x.AnonInTestStruc.AMSU16N map == nil
+				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU64N, e)
+			} // end block: if x.AnonInTestStruc.AMSU64N map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"AMSU16E\"")
+				z.WriteStr("\"AMSU64E\"")
 			} else {
-				r.EncodeString(`AMSU16E`)
+				r.EncodeString(`AMSU64E`)
 			}
 			z.EncWriteMapElemValue()
-			if x.AnonInTestStruc.AMSU16E == nil {
+			if x.AnonInTestStruc.AMSU64E == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU16E, e)
-			} // end block: if x.AnonInTestStruc.AMSU16E map == nil
+				z.F.EncMapStringUint64V(x.AnonInTestStruc.AMSU64E, e)
+			} // end block: if x.AnonInTestStruc.AMSU64E map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"NotAnon\"")
@@ -2408,8 +2408,8 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				x.WrapSliceString.CodecDecodeSelf(d)
 			}
-		case "Msi64":
-			z.F.DecMapStringIntX(&x.Msi64, d)
+		case "Msint":
+			z.F.DecMapStringIntX(&x.Msint, d)
 		case "Msbytes":
 			z.F.DecMapStringBytesX(&x.Msbytes, d)
 		case "Simplef":
@@ -2442,8 +2442,8 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 			z.F.DecSliceFloat32X(&x.AnonInTestStruc.AF32slice, d)
 		case "AMSS":
 			z.F.DecMapStringStringX(&x.AnonInTestStruc.AMSS, d)
-		case "AMSU16":
-			z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU16, d)
+		case "AMSU64":
+			z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU64, d)
 		case "AI64arr8":
 			h.decArray8int64((*[8]int64)(&x.AnonInTestStruc.AI64arr8), d)
 		case "AI64arr0":
@@ -2452,10 +2452,10 @@ func (x *TestStrucCommon) codecDecodeSelfFromMap(l int, d *Decoder) {
 			z.F.DecSliceInt64X(&x.AnonInTestStruc.AI64slice0, d)
 		case "AUi64sliceN":
 			z.F.DecSliceUint64X(&x.AnonInTestStruc.AUi64sliceN, d)
-		case "AMSU16N":
-			z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU16N, d)
-		case "AMSU16E":
-			z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU16E, d)
+		case "AMSU64N":
+			z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU64N, d)
+		case "AMSU64E":
+			z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU64E, d)
 		case "NotAnon":
 			if yyxt84 := z.Extension(x.NotAnon); yyxt84 != nil {
 				z.DecExtension(&x.NotAnon, yyxt84)
@@ -2845,7 +2845,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringIntX(&x.Msi64, d)
+	z.F.DecMapStringIntX(&x.Msint, d)
 	yyj91++
 	if yyhl91 {
 		yyb91 = yyj91 > l
@@ -3029,7 +3029,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU16, d)
+	z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU64, d)
 	yyj91++
 	if yyhl91 {
 		yyb91 = yyj91 > l
@@ -3089,7 +3089,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU16N, d)
+	z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU64N, d)
 	yyj91++
 	if yyhl91 {
 		yyb91 = yyj91 > l
@@ -3101,7 +3101,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU16E, d)
+	z.F.DecMapStringUint64X(&x.AnonInTestStruc.AMSU64E, d)
 	yyj91++
 	if yyhl91 {
 		yyb91 = yyj91 > l
@@ -3179,7 +3179,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *TestStrucCommon) IsCodecEmpty() bool {
-	return !(x.S != "" || x.I64 != 0 || x.I32 != 0 || x.I16 != 0 || x.I8 != 0 || x.I64n != 0 || x.I32n != 0 || x.I16n != 0 || x.I8n != 0 || x.Ui64 != 0 || x.Ui32 != 0 || x.Ui16 != 0 || x.Ui8 != 0 || x.F64 != 0 || x.F32 != 0 || bool(x.B) || x.By != 0 || len(x.Sslice) != 0 || len(x.I64slice) != 0 || len(x.I32slice) != 0 || len(x.Ui64slice) != 0 || len(x.Ui8slice) != 0 || len(x.Bslice) != 0 || len(x.Byslice) != 0 || len(x.BytesSlice) != 0 || len(x.Iptrslice) != 0 || len(x.WrapSliceInt64) != 0 || len(x.WrapSliceString) != 0 || len(x.Msi64) != 0 || len(x.Msbytes) != 0 || !(x.Simplef.IsCodecEmpty()) || len(x.SstrUi64T) != 0 || len(x.MstrUi64T) != 0 || !(x.AnonInTestStruc.IsCodecEmpty()) || !(x.NotAnon.IsCodecEmpty()) || len(x.Nmap) != 0 || len(x.Nslice) != 0 || false)
+	return !(x.S != "" || x.I64 != 0 || x.I32 != 0 || x.I16 != 0 || x.I8 != 0 || x.I64n != 0 || x.I32n != 0 || x.I16n != 0 || x.I8n != 0 || x.Ui64 != 0 || x.Ui32 != 0 || x.Ui16 != 0 || x.Ui8 != 0 || x.F64 != 0 || x.F32 != 0 || bool(x.B) || x.By != 0 || len(x.Sslice) != 0 || len(x.I64slice) != 0 || len(x.I32slice) != 0 || len(x.Ui64slice) != 0 || len(x.Ui8slice) != 0 || len(x.Bslice) != 0 || len(x.Byslice) != 0 || len(x.BytesSlice) != 0 || len(x.Iptrslice) != 0 || len(x.WrapSliceInt64) != 0 || len(x.WrapSliceString) != 0 || len(x.Msint) != 0 || len(x.Msbytes) != 0 || !(x.Simplef.IsCodecEmpty()) || len(x.SstrUi64T) != 0 || len(x.MstrUi64T) != 0 || !(x.AnonInTestStruc.IsCodecEmpty()) || !(x.NotAnon.IsCodecEmpty()) || len(x.Nmap) != 0 || len(x.Nslice) != 0 || false)
 }
 
 func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
@@ -3297,11 +3297,11 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 				x.TestStrucCommon.WrapSliceString.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
-			if x.TestStrucCommon.Msi64 == nil {
+			if x.TestStrucCommon.Msint == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringIntV(x.TestStrucCommon.Msi64, e)
-			} // end block: if x.TestStrucCommon.Msi64 map == nil
+				z.F.EncMapStringIntV(x.TestStrucCommon.Msint, e)
+			} // end block: if x.TestStrucCommon.Msint map == nil
 			z.EncWriteArrayElem()
 			if x.TestStrucCommon.Msbytes == nil {
 				r.EncodeNil()
@@ -3372,11 +3372,11 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 				z.F.EncMapStringStringV(x.TestStrucCommon.AnonInTestStruc.AMSS, e)
 			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSS map == nil
 			z.EncWriteArrayElem()
-			if x.TestStrucCommon.AnonInTestStruc.AMSU16 == nil {
+			if x.TestStrucCommon.AnonInTestStruc.AMSU64 == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16, e)
-			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16 map == nil
+				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64, e)
+			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64 map == nil
 			z.EncWriteArrayElem()
 			yy106 := &x.TestStrucCommon.AnonInTestStruc.AI64arr8
 			h.encArray8int64((*[8]int64)(yy106), e)
@@ -3396,17 +3396,17 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 				z.F.EncSliceUint64V(x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, e)
 			} // end block: if x.TestStrucCommon.AnonInTestStruc.AUi64sliceN slice == nil
 			z.EncWriteArrayElem()
-			if x.TestStrucCommon.AnonInTestStruc.AMSU16N == nil {
+			if x.TestStrucCommon.AnonInTestStruc.AMSU64N == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16N, e)
-			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16N map == nil
+				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64N, e)
+			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64N map == nil
 			z.EncWriteArrayElem()
-			if x.TestStrucCommon.AnonInTestStruc.AMSU16E == nil {
+			if x.TestStrucCommon.AnonInTestStruc.AMSU64E == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16E, e)
-			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16E map == nil
+				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64E, e)
+			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64E map == nil
 			z.EncWriteArrayElem()
 			yy114 := &x.TestStrucCommon.NotAnon
 			if yyxt115 := z.Extension(yy114); yyxt115 != nil {
@@ -3736,16 +3736,16 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"Msi64\"")
+				z.WriteStr("\"Msint\"")
 			} else {
-				r.EncodeString(`Msi64`)
+				r.EncodeString(`Msint`)
 			}
 			z.EncWriteMapElemValue()
-			if x.TestStrucCommon.Msi64 == nil {
+			if x.TestStrucCommon.Msint == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringIntV(x.TestStrucCommon.Msi64, e)
-			} // end block: if x.TestStrucCommon.Msi64 map == nil
+				z.F.EncMapStringIntV(x.TestStrucCommon.Msint, e)
+			} // end block: if x.TestStrucCommon.Msint map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"Msbytes\"")
@@ -3901,16 +3901,16 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSS map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"AMSU16\"")
+				z.WriteStr("\"AMSU64\"")
 			} else {
-				r.EncodeString(`AMSU16`)
+				r.EncodeString(`AMSU64`)
 			}
 			z.EncWriteMapElemValue()
-			if x.TestStrucCommon.AnonInTestStruc.AMSU16 == nil {
+			if x.TestStrucCommon.AnonInTestStruc.AMSU64 == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16, e)
-			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16 map == nil
+				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64, e)
+			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64 map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"AI64arr8\"")
@@ -3955,28 +3955,28 @@ func (x *TestStruc) CodecEncodeSelf(e *Encoder) {
 			} // end block: if x.TestStrucCommon.AnonInTestStruc.AUi64sliceN slice == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"AMSU16N\"")
+				z.WriteStr("\"AMSU64N\"")
 			} else {
-				r.EncodeString(`AMSU16N`)
+				r.EncodeString(`AMSU64N`)
 			}
 			z.EncWriteMapElemValue()
-			if x.TestStrucCommon.AnonInTestStruc.AMSU16N == nil {
+			if x.TestStrucCommon.AnonInTestStruc.AMSU64N == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16N, e)
-			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16N map == nil
+				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64N, e)
+			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64N map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
-				z.WriteStr("\"AMSU16E\"")
+				z.WriteStr("\"AMSU64E\"")
 			} else {
-				r.EncodeString(`AMSU16E`)
+				r.EncodeString(`AMSU64E`)
 			}
 			z.EncWriteMapElemValue()
-			if x.TestStrucCommon.AnonInTestStruc.AMSU16E == nil {
+			if x.TestStrucCommon.AnonInTestStruc.AMSU64E == nil {
 				r.EncodeNil()
 			} else {
-				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16E, e)
-			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16E map == nil
+				z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64E, e)
+			} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64E map == nil
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"NotAnon\"")
@@ -4192,8 +4192,8 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				x.TestStrucCommon.WrapSliceString.CodecDecodeSelf(d)
 			}
-		case "Msi64":
-			z.F.DecMapStringIntX(&x.TestStrucCommon.Msi64, d)
+		case "Msint":
+			z.F.DecMapStringIntX(&x.TestStrucCommon.Msint, d)
 		case "Msbytes":
 			z.F.DecMapStringBytesX(&x.TestStrucCommon.Msbytes, d)
 		case "Simplef":
@@ -4226,8 +4226,8 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			z.F.DecSliceFloat32X(&x.TestStrucCommon.AnonInTestStruc.AF32slice, d)
 		case "AMSS":
 			z.F.DecMapStringStringX(&x.TestStrucCommon.AnonInTestStruc.AMSS, d)
-		case "AMSU16":
-			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16, d)
+		case "AMSU64":
+			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64, d)
 		case "AI64arr8":
 			h.decArray8int64((*[8]int64)(&x.TestStrucCommon.AnonInTestStruc.AI64arr8), d)
 		case "AI64arr0":
@@ -4236,10 +4236,10 @@ func (x *TestStruc) codecDecodeSelfFromMap(l int, d *Decoder) {
 			z.F.DecSliceInt64X(&x.TestStrucCommon.AnonInTestStruc.AI64slice0, d)
 		case "AUi64sliceN":
 			z.F.DecSliceUint64X(&x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, d)
-		case "AMSU16N":
-			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16N, d)
-		case "AMSU16E":
-			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16E, d)
+		case "AMSU64N":
+			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64N, d)
+		case "AMSU64E":
+			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64E, d)
 		case "NotAnon":
 			if yyxt84 := z.Extension(x.TestStrucCommon.NotAnon); yyxt84 != nil {
 				z.DecExtension(&x.TestStrucCommon.NotAnon, yyxt84)
@@ -4650,7 +4650,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringIntX(&x.TestStrucCommon.Msi64, d)
+	z.F.DecMapStringIntX(&x.TestStrucCommon.Msint, d)
 	yyj99++
 	if yyhl99 {
 		yyb99 = yyj99 > l
@@ -4834,7 +4834,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16, d)
+	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64, d)
 	yyj99++
 	if yyhl99 {
 		yyb99 = yyj99 > l
@@ -4894,7 +4894,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16N, d)
+	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64N, d)
 	yyj99++
 	if yyhl99 {
 		yyb99 = yyj99 > l
@@ -4906,7 +4906,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16E, d)
+	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64E, d)
 	yyj99++
 	if yyhl99 {
 		yyb99 = yyj99 > l
@@ -9402,7 +9402,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			len(x.Iptrslice) != 0,       // Iptrslice
 			len(x.WrapSliceInt64) != 0,  // WrapSliceInt64
 			len(x.WrapSliceString) != 0, // WrapSliceString
-			len(x.Msi64) != 0,           // Msi64
+			len(x.Msint) != 0,           // Msint
 			len(x.Msbytes) != 0,         // Msbytes
 			!(x.Simplef.IsCodecEmpty()), // Simplef
 			len(x.SstrUi64T) != 0,       // SstrUi64T
@@ -9417,13 +9417,13 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			len(x.AF64slice) != 0,       // AF64slice
 			len(x.AF32slice) != 0,       // AF32slice
 			len(x.AMSS) != 0,            // AMSS
-			len(x.AMSU16) != 0,          // AMSU16
+			len(x.AMSU64) != 0,          // AMSU64
 			len(x.AI64arr8) != 0,        // AI64arr8
 			len(x.AI64arr0) != 0,        // AI64arr0
 			len(x.AI64slice0) != 0,      // AI64slice0
 			len(x.AUi64sliceN) != 0,     // AUi64sliceN
-			len(x.AMSU16N) != 0,         // AMSU16N
-			len(x.AMSU16E) != 0,         // AMSU16E
+			len(x.AMSU64N) != 0,         // AMSU64N
+			len(x.AMSU64E) != 0,         // AMSU64E
 			!(x.NotAnon.IsCodecEmpty()), // NotAnon
 			len(x.Nmap) != 0,            // Nmap
 			len(x.Nslice) != 0,          // Nslice
@@ -9683,11 +9683,11 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteArrayElem()
 			if yyq2[28] {
-				if x.TestStrucCommon.Msi64 == nil {
+				if x.TestStrucCommon.Msint == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringIntV(x.TestStrucCommon.Msi64, e)
-				} // end block: if x.TestStrucCommon.Msi64 map == nil
+					z.F.EncMapStringIntV(x.TestStrucCommon.Msint, e)
+				} // end block: if x.TestStrucCommon.Msint map == nil
 			} else {
 				r.EncodeNil()
 			}
@@ -9818,11 +9818,11 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteArrayElem()
 			if yyq2[43] {
-				if x.TestStrucCommon.AnonInTestStruc.AMSU16 == nil {
+				if x.TestStrucCommon.AnonInTestStruc.AMSU64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16, e)
-				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16 map == nil
+					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64, e)
+				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64 map == nil
 			} else {
 				r.EncodeNil()
 			}
@@ -9862,21 +9862,21 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			}
 			z.EncWriteArrayElem()
 			if yyq2[48] {
-				if x.TestStrucCommon.AnonInTestStruc.AMSU16N == nil {
+				if x.TestStrucCommon.AnonInTestStruc.AMSU64N == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16N, e)
-				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16N map == nil
+					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64N, e)
+				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64N map == nil
 			} else {
 				r.EncodeNil()
 			}
 			z.EncWriteArrayElem()
 			if yyq2[49] {
-				if x.TestStrucCommon.AnonInTestStruc.AMSU16E == nil {
+				if x.TestStrucCommon.AnonInTestStruc.AMSU64E == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16E, e)
-				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16E map == nil
+					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64E, e)
+				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64E map == nil
 			} else {
 				r.EncodeNil()
 			}
@@ -10677,16 +10677,16 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			if yyq2[28] {
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"Msi64\"")
+					z.WriteStr("\"Msint\"")
 				} else {
-					r.EncodeString(`Msi64`)
+					r.EncodeString(`Msint`)
 				}
 				z.EncWriteMapElemValue()
-				if x.TestStrucCommon.Msi64 == nil {
+				if x.TestStrucCommon.Msint == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringIntV(x.TestStrucCommon.Msi64, e)
-				} // end block: if x.TestStrucCommon.Msi64 map == nil
+					z.F.EncMapStringIntV(x.TestStrucCommon.Msint, e)
+				} // end block: if x.TestStrucCommon.Msint map == nil
 			}
 			if yyq2[29] {
 				z.EncWriteMapElemKey()
@@ -10872,16 +10872,16 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			if yyq2[43] {
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16\"")
+					z.WriteStr("\"AMSU64\"")
 				} else {
-					r.EncodeString(`AMSU16`)
+					r.EncodeString(`AMSU64`)
 				}
 				z.EncWriteMapElemValue()
-				if x.TestStrucCommon.AnonInTestStruc.AMSU16 == nil {
+				if x.TestStrucCommon.AnonInTestStruc.AMSU64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16, e)
-				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16 map == nil
+					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64, e)
+				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64 map == nil
 			}
 			if yyq2[44] {
 				z.EncWriteMapElemKey()
@@ -10936,30 +10936,30 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			if yyq2[48] {
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16N\"")
+					z.WriteStr("\"AMSU64N\"")
 				} else {
-					r.EncodeString(`AMSU16N`)
+					r.EncodeString(`AMSU64N`)
 				}
 				z.EncWriteMapElemValue()
-				if x.TestStrucCommon.AnonInTestStruc.AMSU16N == nil {
+				if x.TestStrucCommon.AnonInTestStruc.AMSU64N == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16N, e)
-				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16N map == nil
+					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64N, e)
+				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64N map == nil
 			}
 			if yyq2[49] {
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"AMSU16E\"")
+					z.WriteStr("\"AMSU64E\"")
 				} else {
-					r.EncodeString(`AMSU16E`)
+					r.EncodeString(`AMSU64E`)
 				}
 				z.EncWriteMapElemValue()
-				if x.TestStrucCommon.AnonInTestStruc.AMSU16E == nil {
+				if x.TestStrucCommon.AnonInTestStruc.AMSU64E == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU16E, e)
-				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU16E map == nil
+					z.F.EncMapStringUint64V(x.TestStrucCommon.AnonInTestStruc.AMSU64E, e)
+				} // end block: if x.TestStrucCommon.AnonInTestStruc.AMSU64E map == nil
 			}
 			if yyq2[50] {
 				z.EncWriteMapElemKey()
@@ -11690,8 +11690,8 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 			} else {
 				x.TestStrucCommon.WrapSliceString.CodecDecodeSelf(d)
 			}
-		case "Msi64":
-			z.F.DecMapStringIntX(&x.TestStrucCommon.Msi64, d)
+		case "Msint":
+			z.F.DecMapStringIntX(&x.TestStrucCommon.Msint, d)
 		case "Msbytes":
 			z.F.DecMapStringBytesX(&x.TestStrucCommon.Msbytes, d)
 		case "Simplef":
@@ -11724,8 +11724,8 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 			z.F.DecSliceFloat32X(&x.TestStrucCommon.AnonInTestStruc.AF32slice, d)
 		case "AMSS":
 			z.F.DecMapStringStringX(&x.TestStrucCommon.AnonInTestStruc.AMSS, d)
-		case "AMSU16":
-			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16, d)
+		case "AMSU64":
+			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64, d)
 		case "AI64arr8":
 			h.decArray8int64((*[8]int64)(&x.TestStrucCommon.AnonInTestStruc.AI64arr8), d)
 		case "AI64arr0":
@@ -11734,10 +11734,10 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 			z.F.DecSliceInt64X(&x.TestStrucCommon.AnonInTestStruc.AI64slice0, d)
 		case "AUi64sliceN":
 			z.F.DecSliceUint64X(&x.TestStrucCommon.AnonInTestStruc.AUi64sliceN, d)
-		case "AMSU16N":
-			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16N, d)
-		case "AMSU16E":
-			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16E, d)
+		case "AMSU64N":
+			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64N, d)
+		case "AMSU64E":
+			z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64E, d)
 		case "NotAnon":
 			if yyxt84 := z.Extension(x.TestStrucCommon.NotAnon); yyxt84 != nil {
 				z.DecExtension(&x.TestStrucCommon.NotAnon, yyxt84)
@@ -12331,7 +12331,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringIntX(&x.TestStrucCommon.Msi64, d)
+	z.F.DecMapStringIntX(&x.TestStrucCommon.Msint, d)
 	yyj165++
 	if yyhl165 {
 		yyb165 = yyj165 > l
@@ -12515,7 +12515,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16, d)
+	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64, d)
 	yyj165++
 	if yyhl165 {
 		yyb165 = yyj165 > l
@@ -12575,7 +12575,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16N, d)
+	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64N, d)
 	yyj165++
 	if yyhl165 {
 		yyb165 = yyj165 > l
@@ -12587,7 +12587,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU16E, d)
+	z.F.DecMapStringUint64X(&x.TestStrucCommon.AnonInTestStruc.AMSU64E, d)
 	yyj165++
 	if yyhl165 {
 		yyb165 = yyj165 > l
