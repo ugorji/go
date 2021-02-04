@@ -92,6 +92,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 	testDeepEqualErr(v{{$i}}v1, v{{$i}}v2, t, "equal-slice-v{{$i}}-p")
 	v{{$i}}va = [8]{{ .Elem }}{} // clear the array
 	testUnmarshalErr(&v{{$i}}va, bs{{$i}}, h, t, "dec-array-v{{$i}}-p-1")
+	if v{{$i}}v1 == nil && v{{$i}}v2 == nil { v{{$i}}v2 = []{{ .Elem }}{} } // so we can compare to zero len slice below
 	testDeepEqualErr(v{{$i}}va[:len(v{{$i}}v2)], v{{$i}}v2, t, "equal-array-v{{$i}}-p-1")
 	v{{$i}}va = [8]{{ .Elem }}{} // clear the array		
 	v{{$i}}v2 = v{{$i}}va[:1:1]
