@@ -219,11 +219,6 @@ func (f genHelperDecoder) IsJSONHandle() bool {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperDecoder) I2Rtid(v interface{}) uintptr {
-	return i2rtid(v)
-}
-
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) Extension(v interface{}) (xfn *extTypeTagFn) {
 	return f.d.h.getExtForI(v)
 }

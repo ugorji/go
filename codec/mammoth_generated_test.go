@@ -52,28 +52,39 @@ type TestMammoth struct {
 	FBool       bool
 	FptrBool    *bool
 
-	FSliceIntf       []interface{}
-	FptrSliceIntf    *[]interface{}
-	FSliceString     []string
-	FptrSliceString  *[]string
-	FSliceBytes      [][]byte
-	FptrSliceBytes   *[][]byte
-	FSliceFloat32    []float32
-	FptrSliceFloat32 *[]float32
-	FSliceFloat64    []float64
-	FptrSliceFloat64 *[]float64
-	FSliceUint8      []uint8
-	FptrSliceUint8   *[]uint8
-	FSliceUint64     []uint64
-	FptrSliceUint64  *[]uint64
-	FSliceInt        []int
-	FptrSliceInt     *[]int
-	FSliceInt32      []int32
-	FptrSliceInt32   *[]int32
-	FSliceInt64      []int64
-	FptrSliceInt64   *[]int64
-	FSliceBool       []bool
-	FptrSliceBool    *[]bool
+	FSliceIntf        []interface{}
+	FptrSliceIntf     *[]interface{}
+	Farr4SliceIntf    [4]interface{}
+	FSliceString      []string
+	FptrSliceString   *[]string
+	Farr4SliceString  [4]string
+	FSliceBytes       [][]byte
+	FptrSliceBytes    *[][]byte
+	Farr4SliceBytes   [4][]byte
+	FSliceFloat32     []float32
+	FptrSliceFloat32  *[]float32
+	Farr4SliceFloat32 [4]float32
+	FSliceFloat64     []float64
+	FptrSliceFloat64  *[]float64
+	Farr4SliceFloat64 [4]float64
+	FSliceUint8       []uint8
+	FptrSliceUint8    *[]uint8
+	Farr4SliceUint8   [4]uint8
+	FSliceUint64      []uint64
+	FptrSliceUint64   *[]uint64
+	Farr4SliceUint64  [4]uint64
+	FSliceInt         []int
+	FptrSliceInt      *[]int
+	Farr4SliceInt     [4]int
+	FSliceInt32       []int32
+	FptrSliceInt32    *[]int32
+	Farr4SliceInt32   [4]int32
+	FSliceInt64       []int64
+	FptrSliceInt64    *[]int64
+	Farr4SliceInt64   [4]int64
+	FSliceBool        []bool
+	FptrSliceBool     *[]bool
+	Farr4SliceBool    [4]bool
 
 	FMapStringIntf       map[string]interface{}
 	FptrMapStringIntf    *map[string]interface{}
@@ -288,6 +299,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		testUnmarshalErr(&v17v2, bs17, h, t, "dec-slice-v17-p")
 		testDeepEqualErr(v17v1, v17v2, t, "equal-slice-v17-p")
 		v17va = [8]interface{}{} // clear the array
+		testUnmarshalErr(&v17va, bs17, h, t, "dec-array-v17-p-1")
+		testDeepEqualErr(v17va[:len(v17v2)], v17v2, t, "equal-array-v17-p-1")
+		v17va = [8]interface{}{} // clear the array
 		v17v2 = v17va[:1:1]
 		testUnmarshalErr(&v17v2, bs17, h, t, "dec-slice-v17-p-1")
 		testDeepEqualErr(v17v1, v17v2, t, "equal-slice-v17-p-1")
@@ -358,6 +372,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		v18v2 = nil
 		testUnmarshalErr(&v18v2, bs18, h, t, "dec-slice-v18-p")
 		testDeepEqualErr(v18v1, v18v2, t, "equal-slice-v18-p")
+		v18va = [8]string{} // clear the array
+		testUnmarshalErr(&v18va, bs18, h, t, "dec-array-v18-p-1")
+		testDeepEqualErr(v18va[:len(v18v2)], v18v2, t, "equal-array-v18-p-1")
 		v18va = [8]string{} // clear the array
 		v18v2 = v18va[:1:1]
 		testUnmarshalErr(&v18v2, bs18, h, t, "dec-slice-v18-p-1")
@@ -430,6 +447,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		testUnmarshalErr(&v19v2, bs19, h, t, "dec-slice-v19-p")
 		testDeepEqualErr(v19v1, v19v2, t, "equal-slice-v19-p")
 		v19va = [8][]byte{} // clear the array
+		testUnmarshalErr(&v19va, bs19, h, t, "dec-array-v19-p-1")
+		testDeepEqualErr(v19va[:len(v19v2)], v19v2, t, "equal-array-v19-p-1")
+		v19va = [8][]byte{} // clear the array
 		v19v2 = v19va[:1:1]
 		testUnmarshalErr(&v19v2, bs19, h, t, "dec-slice-v19-p-1")
 		testDeepEqualErr(v19v1, v19v2, t, "equal-slice-v19-p-1")
@@ -500,6 +520,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		v20v2 = nil
 		testUnmarshalErr(&v20v2, bs20, h, t, "dec-slice-v20-p")
 		testDeepEqualErr(v20v1, v20v2, t, "equal-slice-v20-p")
+		v20va = [8]float32{} // clear the array
+		testUnmarshalErr(&v20va, bs20, h, t, "dec-array-v20-p-1")
+		testDeepEqualErr(v20va[:len(v20v2)], v20v2, t, "equal-array-v20-p-1")
 		v20va = [8]float32{} // clear the array
 		v20v2 = v20va[:1:1]
 		testUnmarshalErr(&v20v2, bs20, h, t, "dec-slice-v20-p-1")
@@ -572,6 +595,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		testUnmarshalErr(&v21v2, bs21, h, t, "dec-slice-v21-p")
 		testDeepEqualErr(v21v1, v21v2, t, "equal-slice-v21-p")
 		v21va = [8]float64{} // clear the array
+		testUnmarshalErr(&v21va, bs21, h, t, "dec-array-v21-p-1")
+		testDeepEqualErr(v21va[:len(v21v2)], v21v2, t, "equal-array-v21-p-1")
+		v21va = [8]float64{} // clear the array
 		v21v2 = v21va[:1:1]
 		testUnmarshalErr(&v21v2, bs21, h, t, "dec-slice-v21-p-1")
 		testDeepEqualErr(v21v1, v21v2, t, "equal-slice-v21-p-1")
@@ -642,6 +668,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		v22v2 = nil
 		testUnmarshalErr(&v22v2, bs22, h, t, "dec-slice-v22-p")
 		testDeepEqualErr(v22v1, v22v2, t, "equal-slice-v22-p")
+		v22va = [8]uint8{} // clear the array
+		testUnmarshalErr(&v22va, bs22, h, t, "dec-array-v22-p-1")
+		testDeepEqualErr(v22va[:len(v22v2)], v22v2, t, "equal-array-v22-p-1")
 		v22va = [8]uint8{} // clear the array
 		v22v2 = v22va[:1:1]
 		testUnmarshalErr(&v22v2, bs22, h, t, "dec-slice-v22-p-1")
@@ -714,6 +743,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		testUnmarshalErr(&v23v2, bs23, h, t, "dec-slice-v23-p")
 		testDeepEqualErr(v23v1, v23v2, t, "equal-slice-v23-p")
 		v23va = [8]uint64{} // clear the array
+		testUnmarshalErr(&v23va, bs23, h, t, "dec-array-v23-p-1")
+		testDeepEqualErr(v23va[:len(v23v2)], v23v2, t, "equal-array-v23-p-1")
+		v23va = [8]uint64{} // clear the array
 		v23v2 = v23va[:1:1]
 		testUnmarshalErr(&v23v2, bs23, h, t, "dec-slice-v23-p-1")
 		testDeepEqualErr(v23v1, v23v2, t, "equal-slice-v23-p-1")
@@ -784,6 +816,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		v24v2 = nil
 		testUnmarshalErr(&v24v2, bs24, h, t, "dec-slice-v24-p")
 		testDeepEqualErr(v24v1, v24v2, t, "equal-slice-v24-p")
+		v24va = [8]int{} // clear the array
+		testUnmarshalErr(&v24va, bs24, h, t, "dec-array-v24-p-1")
+		testDeepEqualErr(v24va[:len(v24v2)], v24v2, t, "equal-array-v24-p-1")
 		v24va = [8]int{} // clear the array
 		v24v2 = v24va[:1:1]
 		testUnmarshalErr(&v24v2, bs24, h, t, "dec-slice-v24-p-1")
@@ -856,6 +891,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		testUnmarshalErr(&v25v2, bs25, h, t, "dec-slice-v25-p")
 		testDeepEqualErr(v25v1, v25v2, t, "equal-slice-v25-p")
 		v25va = [8]int32{} // clear the array
+		testUnmarshalErr(&v25va, bs25, h, t, "dec-array-v25-p-1")
+		testDeepEqualErr(v25va[:len(v25v2)], v25v2, t, "equal-array-v25-p-1")
+		v25va = [8]int32{} // clear the array
 		v25v2 = v25va[:1:1]
 		testUnmarshalErr(&v25v2, bs25, h, t, "dec-slice-v25-p-1")
 		testDeepEqualErr(v25v1, v25v2, t, "equal-slice-v25-p-1")
@@ -927,6 +965,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		testUnmarshalErr(&v26v2, bs26, h, t, "dec-slice-v26-p")
 		testDeepEqualErr(v26v1, v26v2, t, "equal-slice-v26-p")
 		v26va = [8]int64{} // clear the array
+		testUnmarshalErr(&v26va, bs26, h, t, "dec-array-v26-p-1")
+		testDeepEqualErr(v26va[:len(v26v2)], v26v2, t, "equal-array-v26-p-1")
+		v26va = [8]int64{} // clear the array
 		v26v2 = v26va[:1:1]
 		testUnmarshalErr(&v26v2, bs26, h, t, "dec-slice-v26-p-1")
 		testDeepEqualErr(v26v1, v26v2, t, "equal-slice-v26-p-1")
@@ -997,6 +1038,9 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 		v27v2 = nil
 		testUnmarshalErr(&v27v2, bs27, h, t, "dec-slice-v27-p")
 		testDeepEqualErr(v27v1, v27v2, t, "equal-slice-v27-p")
+		v27va = [8]bool{} // clear the array
+		testUnmarshalErr(&v27va, bs27, h, t, "dec-array-v27-p-1")
+		testDeepEqualErr(v27va[:len(v27v2)], v27v2, t, "equal-array-v27-p-1")
 		v27va = [8]bool{} // clear the array
 		v27v2 = v27va[:1:1]
 		testUnmarshalErr(&v27v2, bs27, h, t, "dec-slice-v27-p-1")

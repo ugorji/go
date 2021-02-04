@@ -520,7 +520,8 @@ func (f fastpathT) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{{ .E
 func (fastpathT) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem }}, containerLen int, d *Decoder) {
 	{{/* No need to check if containerLen == containerLenNil, as that is checked by R and L above  */ -}}
 	if v == nil {
-		d.swallowMapContents(containerLen)
+		d.errorf("cannot decode into nil map[{{ .MapKey }}]{{ .Elem }} given stream length: %v", containerLen)
+        {{/* d.swallowMapContents(containerLen) */ -}}
 		return
 	}
 	{{if eq .Elem "interface{}" }}mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset

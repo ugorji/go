@@ -178,6 +178,14 @@ const (
 	// when a 'nil' was encountered in the stream.
 	containerLenNil = math.MinInt32
 
+	// [N]byte is handled by converting to []byte first,
+	// and sending to the dedicated fast-path function for []byte.
+	//
+	// Code exists in case our understanding is wrong.
+	// keep the defensive code behind this flag, so we can remove/hide it if needed.
+	// For now, we enable the defensive code (ie set it to true).
+	handleBytesWithinKArray = true
+
 	// Support encoding.(Binary|Text)(Unm|M)arshaler.
 	// This constant flag will enable or disable it.
 	supportMarshalInterfaces = true
@@ -995,39 +1003,68 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 		fi.addrD = ti.flagTextUnmarshalerPtr
 		fi.addrE = ti.flagTextMarshalerPtr
 	} else {
-		if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice) {
+		if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice || rk == reflect.Array) {
+			// by default (without using unsafe),
+			// if an array is not addressable, converting from an array to a slice
+			// requires an allocation (see helper_not_unsafe.go: func rvGetSlice4Array).
+			//
+			// (Non-addressable arrays mostly occur as keys/values from a map).
+			//
+			// However, fastpath functions are mostly for slices of numbers or strings,
+			// which are small by definition and thus allocation should be fast/cheap in time.
+			//
+			// Consequently, the value of doing this quick allocation to elide the overhead cost of
+			// non-optimized (not-unsafe) reflection is a fair price.
+			var rtid2 uintptr
 			if ti.pkgpath == "" { // un-named slice or map
-				if idx := fastpathAvIndex(rtid); idx != -1 {
+				rtid2 = rtid
+				if rk == reflect.Array {
+					rtid2 = rt2id(ti.key) // ti.key for arrays = reflect.SliceOf(ti.elem)
+				}
+				if idx := fastpathAvIndex(rtid2); idx != -1 {
 					fn.fe = fastpathAv[idx].encfn
 					fn.fd = fastpathAv[idx].decfn
 					fi.addrD = true
 					fi.addrDf = false
+					if rk == reflect.Array {
+						fi.addrD = false // decode directly into array value (slice made from it)
+					}
 				}
 			} else {
 				// use mapping for underlying type if there
 				var rtu reflect.Type
 				if rk == reflect.Map {
 					rtu = reflect.MapOf(ti.key, ti.elem)
-				} else { // slice
+				} else if rk == reflect.Slice {
 					rtu = reflect.SliceOf(ti.elem)
+				} else { // reflect.Array
+					rtu = ti.key // ti.key for arrays = reflect.SliceOf(ti.elem)
 				}
-				rtuid := rt2id(rtu)
-				if idx := fastpathAvIndex(rtuid); idx != -1 {
+				rtid2 = rt2id(rtu)
+				if idx := fastpathAvIndex(rtid2); idx != -1 {
 					xfnf := fastpathAv[idx].encfn
-					xrt := fastpathAv[idx].rt
-					fn.fe = func(e *Encoder, xf *codecFnInfo, xrv reflect.Value) {
-						xfnf(e, xf, rvConvert(xrv, xrt))
-					}
-					fi.addrD = true
-					fi.addrDf = false // meaning it can be an address(ptr) or a value
 					xfnf2 := fastpathAv[idx].decfn
-					xptr2rt := reflect.PtrTo(xrt)
-					fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
-						if xrv.Kind() == reflect.Ptr {
-							xfnf2(d, xf, rvConvert(xrv, xptr2rt))
-						} else {
+					xrt := fastpathAv[idx].rt
+					if rk == reflect.Array {
+						fi.addrD = false // decode directly into array value (slice made from it)
+						xrt = reflect.ArrayOf(ti.rt.Len(), ti.elem)
+						fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
 							xfnf2(d, xf, rvConvert(xrv, xrt))
 						}
+					} else {
+						fi.addrD = true
+						fi.addrDf = false // meaning it can be an address(ptr) or a value
+						xptr2rt := reflect.PtrTo(xrt)
+						fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
+							if xrv.Kind() == reflect.Ptr {
+								xfnf2(d, xf, rvConvert(xrv, xptr2rt))
+							} else {
+								xfnf2(d, xf, rvConvert(xrv, xrt))
+							}
+						}
+					}
+					fn.fe = func(e *Encoder, xf *codecFnInfo, xrv reflect.Value) {
+						xfnf(e, xf, rvConvert(xrv, xrt))
 					}
 				}
 			}
@@ -1038,9 +1075,9 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				fn.fe = (*Encoder).kBool
 				fn.fd = (*Decoder).kBool
 			case reflect.String:
-				// Do not use different functions based on StringToRaw option,
-				// as that will statically set the function for a string type,
-				// and if the Handle is modified thereafter, behaviour is non-deterministic.
+				// Do not use different functions based on StringToRaw option, as that will statically
+				// set the function for a string type, and if the Handle is modified thereafter,
+				// behaviour is non-deterministic
 				// i.e. DO NOT DO:
 				//   if x.StringToRaw {
 				//   	fn.fe = (*Encoder).kStringToRaw
@@ -1109,53 +1146,6 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 
 				fn.fe = (*Encoder).kArray
 				fn.fd = (*Decoder).kArray
-
-				// in safeMode, if array is not addressable, converting from an array to a slice
-				// requires an allocation (see helper_not_unsafe.go: func rvGetSlice4Array).
-				//
-				// (Non-addressable arrays mostly occur as keys/values from a map).
-				//
-				// However, fastpath functions are mostly for slices of numbers or strings,
-				// which are small by definition and thus allocation should be fast/cheap in time.
-				//
-				// Consequently, the value of doing this quick allocation to elide the overhead cost of
-				// non-optimized (not-unsafe) reflection is a fair price when safeMode=true.
-				const useFastpathForkArray = true // !safeMode true
-				if useFastpathForkArray {
-					idx := fastpathAvIndex(rt2id(ti.key)) // ti.key for arrays = reflect.SliceOf(ti.elem)
-					if idx != -1 {
-						fn.fe = fastpathAv[idx].encfn
-						fn.fd = fastpathAv[idx].decfn
-					}
-				}
-
-				// // MARKER: optimized path below incurs allocation as we allocate a slice object
-				// // and populate it as a slice of the array.
-				// // there's no way to create this on the stack.
-				// const skipOptimizedFastpath = true
-				// if skipOptimizedFastpath {
-				// 	break
-				// }
-				// rt2 := ti.key // ti.key for arrays caches reflect.SliceOf(ti.elem)
-				// rtid2 := rt2id(rt2)
-				// idx := fastpathAvIndex(rtid2)
-				// if idx != -1 {
-				// 	fe2 := fastpathAv[idx].encfn
-				// 	fd2 := fastpathAv[idx].decfn
-				// 	fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
-				// 		fd2(d, xf, rvGetSlice4Array(xrv, rt2))
-				// 	}
-				// 	fn.fe = func(e *Encoder, xf *codecFnInfo, xrv reflect.Value) {
-				// 		fe2(e, xf, rvGetSlice4Array(xrv, rt2))
-				// 	}
-				// 	fi.addrD = false // decode directly into array value (slice made from it)
-				// }
-				// // rt2 := reflect.SliceOf(ti.elem)
-				// // fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
-				// // 	// call fnVia directly, so fn(...) is not recursive, and this can be inlined
-				// // 	d.h.fnVia(rt2, &x.rtidFns, true).fd(d, xf, rvGetSlice4Array(xrv, rt2))
-				// // }
-
 			case reflect.Struct:
 				if ti.anyOmitEmpty ||
 					ti.flagMissingFielder ||
@@ -2034,10 +2024,11 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.key = reflect.SliceOf(ti.elem)
 		ti.keykind = uint8(reflect.Slice)
 		ti.keysize = uint32(ti.key.Size())
-	case reflect.Ptr:
-		ti.elem = rt.Elem()
-		ti.elemkind = uint8(ti.elem.Kind())
-		ti.elemsize = uint32(ti.elem.Size())
+		// MARKER: reflect.Ptr cannot happen here, as we halt early if reflect.Ptr passed in
+		// case reflect.Ptr:
+		// 	ti.elem = rt.Elem()
+		// 	ti.elemkind = uint8(ti.elem.Kind())
+		// 	ti.elemsize = uint32(ti.elem.Size())
 	}
 
 	x.mu.Lock()

@@ -315,6 +315,9 @@ type TestStrucFlex struct {
 
 	Ffunc       func() error // expect this to be skipped/ignored
 	Bboolignore bool         `codec:"-"` // expect this to be skipped/ignored
+
+	Cmplx64  complex64
+	Cmplx128 complex128
 }
 
 func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts *TestStrucFlex) {
@@ -398,6 +401,9 @@ func newTestStrucFlex(depth, n int, bench, useInterface, useStringKeyOnly bool) 
 		MarB: []byte("hello bytes"),
 
 		XuintToBytes: 16,
+
+		Cmplx64:  complex(16, 0),
+		Cmplx128: complex(1616, 0),
 	}
 
 	var strslice []string

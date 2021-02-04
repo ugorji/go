@@ -262,12 +262,15 @@ func (x *testUnixNanoTimeExt) ReadExt(v interface{}, bs []byte) {
 	ui := bigenstd.Uint64(bs)
 	*v2 = time.Unix(0, int64(ui)).UTC()
 }
-func (x *testUnixNanoTimeExt) ConvertExt(v interface{}) interface{} {
+
+type testUnixNanoTimeInterfaceExt struct{}
+
+func (x testUnixNanoTimeInterfaceExt) ConvertExt(v interface{}) interface{} {
 	v2 := v.(*time.Time) // structs are encoded by passing the ptr
 	return v2.UTC().UnixNano()
 }
 
-func (x *testUnixNanoTimeExt) UpdateExt(dest interface{}, v interface{}) {
+func (x testUnixNanoTimeInterfaceExt) UpdateExt(dest interface{}, v interface{}) {
 	tt := dest.(*time.Time)
 	*tt = time.Unix(0, v.(int64)).UTC()
 	// switch v2 := v.(type) {
@@ -337,9 +340,9 @@ func (x *wrapBytesExt) UpdateExt(dest interface{}, v interface{}) {
 
 // timeExt is an extension handler for time.Time, that uses binc model for encoding/decoding time.
 // we used binc model, as that is the only custom time representation that we designed ourselves.
-type timeExt struct{}
+type timeBytesExt struct{}
 
-func (x timeExt) WriteExt(v interface{}) (bs []byte) {
+func (x timeBytesExt) WriteExt(v interface{}) (bs []byte) {
 	return bincEncodeTime(*(v.(*time.Time)))
 	// return bincEncodeTime(v.(time.Time))
 	// switch v2 := v.(type) {
@@ -352,18 +355,21 @@ func (x timeExt) WriteExt(v interface{}) (bs []byte) {
 	// }
 	// return
 }
-func (x timeExt) ReadExt(v interface{}, bs []byte) {
+func (x timeBytesExt) ReadExt(v interface{}, bs []byte) {
 	tt, err := bincDecodeTime(bs)
 	if err != nil {
 		panic(err)
 	}
 	*(v.(*time.Time)) = tt
 }
-func (x timeExt) ConvertExt(v interface{}) interface{} {
-	return x.WriteExt(v)
+
+type timeInterfaceExt struct{}
+
+func (x timeInterfaceExt) ConvertExt(v interface{}) interface{} {
+	return timeBytesExt{}.WriteExt(v)
 }
-func (x timeExt) UpdateExt(v interface{}, src interface{}) {
-	x.ReadExt(v, src.([]byte))
+func (x timeInterfaceExt) UpdateExt(v interface{}, src interface{}) {
+	timeBytesExt{}.ReadExt(v, src.([]byte))
 }
 
 // ----
@@ -459,7 +465,7 @@ func testInit() {
 		bh.MaxInitLen = testMaxInitLen
 	}
 
-	var tTimeExt timeExt
+	var tTimeExt timeBytesExt
 	var tBytesExt wrapBytesExt
 	var tI64Ext wrapInt64Ext
 	var tUintToBytesExt testUintToBytesExt
@@ -493,8 +499,8 @@ func testInit() {
 	// However, we add these here to ensure nothing happens.
 	chkErr(testSimpleH.AddExt(timeTyp, 1, timeExtEncFn, timeExtDecFn))
 	// testBincH.SetBytesExt(timeTyp, 1, timeExt{}) // time is builtin for binc
-	chkErr(testMsgpackH.SetBytesExt(timeTyp, 1, timeExt{}))
-	chkErr(testCborH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{}))
+	chkErr(testMsgpackH.SetBytesExt(timeTyp, 1, timeBytesExt{}))
+	chkErr(testCborH.SetInterfaceExt(timeTyp, 1, testUnixNanoTimeInterfaceExt{}))
 	// testJsonH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
 
 	// Add extensions for the testSelfExt
@@ -548,6 +554,8 @@ func testInit() {
 		float32(3232.0),
 		float64(6464.0),
 		float64(6464646464.0),
+		complex64(complex(160.0, 0)),
+		complex128(complex(1616, 0)),
 		false,
 		true,
 		"null",
@@ -717,6 +725,10 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 		v2 = float64(iv)
 	case float64:
 		v2 = float64(iv)
+	case complex64:
+		v2 = float64(float32(real(iv)))
+	case complex128:
+		v2 = float64(real(iv))
 	case []interface{}:
 		m2 := make([]interface{}, len(iv))
 		for j, vj := range iv {
@@ -2443,6 +2455,8 @@ func testRandomFillRV(v reflect.Value) {
 		v.SetBool(fneg() == 1)
 	case reflect.Float32, reflect.Float64:
 		v.SetFloat(float64(fneg()) * float64(rand.Float32()))
+	case reflect.Complex64, reflect.Complex128:
+		v.SetComplex(complex(float64(fneg())*float64(rand.Float32()), 0))
 	case reflect.String:
 		// ensure this string can test the extent of json string decoding
 		v.SetString(strings.Repeat(strconv.FormatInt(rand.Int63n(99), 10), rand.Intn(8)) +

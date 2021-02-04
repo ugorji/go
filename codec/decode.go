@@ -902,7 +902,7 @@ func (d *Decoder) kArray(f *codecFnInfo, rv reflect.Value) {
 	// An array can be set from a map or array in stream.
 
 	ctyp := d.d.ContainerType()
-	if ctyp == valueTypeBytes || ctyp == valueTypeString {
+	if handleBytesWithinKArray && (ctyp == valueTypeBytes || ctyp == valueTypeString) {
 		// you can only decode bytes or string in the stream into a slice or array of bytes
 		if f.ti.elemkind != uint8(reflect.Uint8) {
 			d.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
@@ -1576,15 +1576,15 @@ func (d *Decoder) swallowErr() (err error) {
 	return
 }
 
-func (d *Decoder) swallowMapContents(containerLen int) {
-	hasLen := containerLen > 0
-	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
-		d.mapElemKey()
-		d.swallow()
-		d.mapElemValue()
-		d.swallow()
-	}
-}
+// func (d *Decoder) swallowMapContents(containerLen int) {
+// 	hasLen := containerLen > 0
+// 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
+// 		d.mapElemKey()
+// 		d.swallow()
+// 		d.mapElemValue()
+// 		d.swallow()
+// 	}
+// }
 
 func setZero(iv interface{}) {
 	if iv == nil {
@@ -1814,6 +1814,7 @@ func (d *Decoder) haltAsNotDecodeable(rv reflect.Value) {
 	if !rv.IsValid() {
 		d.onerror(errCannotDecodeIntoNil)
 	}
+	// check if an interface can be retrieved, before grabbing an interface
 	if !rv.CanInterface() {
 		d.errorf("cannot decode into a value without an interface: %v", rv)
 	}

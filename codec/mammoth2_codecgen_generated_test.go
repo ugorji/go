@@ -6840,39 +6840,40 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 		yy2arr2 := z.EncBasicHandle().StructToArray
 		_ = yy2arr2
 		const yyr2 bool = false // struct tag has 'toArray'
+		var yyn14 bool = x.Tpbytes == nil
 		if yyr2 || yy2arr2 {
-			z.EncWriteArrayStart(8)
+			z.EncWriteArrayStart(12)
 			z.EncWriteArrayElem()
-			yy11 := &x.V
-			if yyxt12 := z.Extension(yy11); yyxt12 != nil {
-				z.EncExtension(yy11, yyxt12)
+			yy15 := &x.V
+			if yyxt16 := z.Extension(yy15); yyxt16 != nil {
+				z.EncExtension(yy15, yyxt16)
 			} else {
-				yy11.CodecEncodeSelf(e)
+				yy15.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
-			if yyxt13 := z.Extension(x.T); yyxt13 != nil {
-				z.EncExtension(x.T, yyxt13)
+			if yyxt17 := z.Extension(x.T); yyxt17 != nil {
+				z.EncExtension(x.T, yyxt17)
 			} else {
 				x.T.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
-			if yyxt14 := z.Extension(x.B); yyxt14 != nil {
-				z.EncExtension(x.B, yyxt14)
+			if yyxt18 := z.Extension(x.B); yyxt18 != nil {
+				z.EncExtension(x.B, yyxt18)
 			} else {
 				x.B.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
-			if yyxt15 := z.Extension(x.J); yyxt15 != nil {
-				z.EncExtension(x.J, yyxt15)
+			if yyxt19 := z.Extension(x.J); yyxt19 != nil {
+				z.EncExtension(x.J, yyxt19)
 			} else {
 				x.J.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
-			yy16 := &x.C
-			if yyxt17 := z.Extension(yy16); yyxt17 != nil {
-				z.EncExtension(yy16, yyxt17)
+			yy20 := &x.C
+			if yyxt21 := z.Extension(yy20); yyxt21 != nil {
+				z.EncExtension(yy20, yyxt21)
 			} else {
-				yy16.CodecEncodeSelf(e)
+				yy20.CodecEncodeSelf(e)
 			}
 			z.EncWriteArrayElem()
 			if x.M == nil {
@@ -6887,11 +6888,33 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
 			} // end block: if x.L slice == nil
 			z.EncWriteArrayElem()
-			yy20 := &x.A
-			h.encArray4int64((*[4]int64)(yy20), e)
+			yy24 := &x.A
+			h.encArray4int64((*[4]int64)(yy24), e)
+			z.EncWriteArrayElem()
+			z.EncEncodeComplex128(complex128(x.Tcomplex128))
+			z.EncWriteArrayElem()
+			z.EncEncodeComplex64(complex64(x.Tcomplex64))
+			z.EncWriteArrayElem()
+			if x.Tbytes == nil {
+				r.EncodeNil()
+			} else {
+				r.EncodeStringBytesRaw([]byte(x.Tbytes))
+			} // end block: if x.Tbytes slice == nil
+			if yyn14 {
+				z.EncWriteArrayElem()
+				r.EncodeNil()
+			} else {
+				z.EncWriteArrayElem()
+				yy29 := *x.Tpbytes
+				if yy29 == nil {
+					r.EncodeNil()
+				} else {
+					r.EncodeStringBytesRaw([]byte(yy29))
+				} // end block: if yy29 slice == nil
+			}
 			z.EncWriteArrayEnd()
 		} else {
-			z.EncWriteMapStart(8)
+			z.EncWriteMapStart(12)
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
 				z.WriteStr("\"V\"")
@@ -6899,11 +6922,11 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`V`)
 			}
 			z.EncWriteMapElemValue()
-			yy22 := &x.V
-			if yyxt23 := z.Extension(yy22); yyxt23 != nil {
-				z.EncExtension(yy22, yyxt23)
+			yy31 := &x.V
+			if yyxt32 := z.Extension(yy31); yyxt32 != nil {
+				z.EncExtension(yy31, yyxt32)
 			} else {
-				yy22.CodecEncodeSelf(e)
+				yy31.CodecEncodeSelf(e)
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -6912,8 +6935,8 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`T`)
 			}
 			z.EncWriteMapElemValue()
-			if yyxt24 := z.Extension(x.T); yyxt24 != nil {
-				z.EncExtension(x.T, yyxt24)
+			if yyxt33 := z.Extension(x.T); yyxt33 != nil {
+				z.EncExtension(x.T, yyxt33)
 			} else {
 				x.T.CodecEncodeSelf(e)
 			}
@@ -6924,8 +6947,8 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`B`)
 			}
 			z.EncWriteMapElemValue()
-			if yyxt25 := z.Extension(x.B); yyxt25 != nil {
-				z.EncExtension(x.B, yyxt25)
+			if yyxt34 := z.Extension(x.B); yyxt34 != nil {
+				z.EncExtension(x.B, yyxt34)
 			} else {
 				x.B.CodecEncodeSelf(e)
 			}
@@ -6936,8 +6959,8 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`J`)
 			}
 			z.EncWriteMapElemValue()
-			if yyxt26 := z.Extension(x.J); yyxt26 != nil {
-				z.EncExtension(x.J, yyxt26)
+			if yyxt35 := z.Extension(x.J); yyxt35 != nil {
+				z.EncExtension(x.J, yyxt35)
 			} else {
 				x.J.CodecEncodeSelf(e)
 			}
@@ -6948,11 +6971,11 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`C`)
 			}
 			z.EncWriteMapElemValue()
-			yy27 := &x.C
-			if yyxt28 := z.Extension(yy27); yyxt28 != nil {
-				z.EncExtension(yy27, yyxt28)
+			yy36 := &x.C
+			if yyxt37 := z.Extension(yy36); yyxt37 != nil {
+				z.EncExtension(yy36, yyxt37)
 			} else {
-				yy27.CodecEncodeSelf(e)
+				yy36.CodecEncodeSelf(e)
 			}
 			z.EncWriteMapElemKey()
 			if z.IsJSONHandle() {
@@ -6985,8 +7008,53 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(`A`)
 			}
 			z.EncWriteMapElemValue()
-			yy31 := &x.A
-			h.encArray4int64((*[4]int64)(yy31), e)
+			yy40 := &x.A
+			h.encArray4int64((*[4]int64)(yy40), e)
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Tcomplex128\"")
+			} else {
+				r.EncodeString(`Tcomplex128`)
+			}
+			z.EncWriteMapElemValue()
+			z.EncEncodeComplex128(complex128(x.Tcomplex128))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Tcomplex64\"")
+			} else {
+				r.EncodeString(`Tcomplex64`)
+			}
+			z.EncWriteMapElemValue()
+			z.EncEncodeComplex64(complex64(x.Tcomplex64))
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Tbytes\"")
+			} else {
+				r.EncodeString(`Tbytes`)
+			}
+			z.EncWriteMapElemValue()
+			if x.Tbytes == nil {
+				r.EncodeNil()
+			} else {
+				r.EncodeStringBytesRaw([]byte(x.Tbytes))
+			} // end block: if x.Tbytes slice == nil
+			z.EncWriteMapElemKey()
+			if z.IsJSONHandle() {
+				z.WriteStr("\"Tpbytes\"")
+			} else {
+				r.EncodeString(`Tpbytes`)
+			}
+			z.EncWriteMapElemValue()
+			if yyn14 {
+				r.EncodeNil()
+			} else {
+				yy45 := *x.Tpbytes
+				if yy45 == nil {
+					r.EncodeNil()
+				} else {
+					r.EncodeStringBytesRaw([]byte(yy45))
+				} // end block: if yy45 slice == nil
+			}
 			z.EncWriteMapEnd()
 		}
 	}
@@ -7072,6 +7140,23 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 			h.decSliceTestMammoth2((*[]TestMammoth2)(&x.L), d)
 		case "A":
 			h.decArray4int64((*[4]int64)(&x.A), d)
+		case "Tcomplex128":
+			x.Tcomplex128 = (complex128)(complex(r.DecodeFloat64(), 0))
+		case "Tcomplex64":
+			x.Tcomplex64 = (complex64)(complex(z.DecDecodeFloat32(), 0))
+		case "Tbytes":
+			x.Tbytes = z.DecodeBytesInto(([]byte)(x.Tbytes))
+		case "Tpbytes":
+			if r.TryNil() {
+				if x.Tpbytes != nil { // remove the if-true
+					x.Tpbytes = nil
+				}
+			} else {
+				if x.Tpbytes == nil {
+					x.Tpbytes = new([]uint8)
+				}
+				*x.Tpbytes = z.DecodeBytesInto(*(*[]byte)(x.Tpbytes))
+			}
 		default:
 			z.DecStructFieldNotFound(-1, string(yys3))
 		} // end switch yys3
@@ -7082,142 +7167,199 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var h codecSelfer19781
 	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
-	var yyj20 int
-	var yyb20 bool
-	var yyhl20 bool = l >= 0
-	yyj20++
-	if yyhl20 {
-		yyb20 = yyj20 > l
+	var yyj26 int
+	var yyb26 bool
+	var yyhl26 bool = l >= 0
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
 	} else {
-		yyb20 = z.DecCheckBreak()
+		yyb26 = z.DecCheckBreak()
 	}
-	if yyb20 {
+	if yyb26 {
 		z.DecReadArrayEnd()
 		return
 	}
 	z.DecReadArrayElem()
-	if yyxt22 := z.Extension(x.V); yyxt22 != nil {
-		z.DecExtension(&x.V, yyxt22)
+	if yyxt28 := z.Extension(x.V); yyxt28 != nil {
+		z.DecExtension(&x.V, yyxt28)
 	} else {
 		x.V.CodecDecodeSelf(d)
 	}
-	yyj20++
-	if yyhl20 {
-		yyb20 = yyj20 > l
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
 	} else {
-		yyb20 = z.DecCheckBreak()
+		yyb26 = z.DecCheckBreak()
 	}
-	if yyb20 {
+	if yyb26 {
 		z.DecReadArrayEnd()
 		return
 	}
 	z.DecReadArrayElem()
-	if yyxt24 := z.Extension(x.T); yyxt24 != nil {
-		z.DecExtension(&x.T, yyxt24)
+	if yyxt30 := z.Extension(x.T); yyxt30 != nil {
+		z.DecExtension(&x.T, yyxt30)
 	} else {
 		x.T.CodecDecodeSelf(d)
 	}
-	yyj20++
-	if yyhl20 {
-		yyb20 = yyj20 > l
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
 	} else {
-		yyb20 = z.DecCheckBreak()
+		yyb26 = z.DecCheckBreak()
 	}
-	if yyb20 {
+	if yyb26 {
 		z.DecReadArrayEnd()
 		return
 	}
 	z.DecReadArrayElem()
-	if yyxt26 := z.Extension(x.B); yyxt26 != nil {
-		z.DecExtension(&x.B, yyxt26)
+	if yyxt32 := z.Extension(x.B); yyxt32 != nil {
+		z.DecExtension(&x.B, yyxt32)
 	} else {
 		x.B.CodecDecodeSelf(d)
 	}
-	yyj20++
-	if yyhl20 {
-		yyb20 = yyj20 > l
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
 	} else {
-		yyb20 = z.DecCheckBreak()
+		yyb26 = z.DecCheckBreak()
 	}
-	if yyb20 {
+	if yyb26 {
 		z.DecReadArrayEnd()
 		return
 	}
 	z.DecReadArrayElem()
-	if yyxt28 := z.Extension(x.J); yyxt28 != nil {
-		z.DecExtension(&x.J, yyxt28)
+	if yyxt34 := z.Extension(x.J); yyxt34 != nil {
+		z.DecExtension(&x.J, yyxt34)
 	} else {
 		x.J.CodecDecodeSelf(d)
 	}
-	yyj20++
-	if yyhl20 {
-		yyb20 = yyj20 > l
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
 	} else {
-		yyb20 = z.DecCheckBreak()
+		yyb26 = z.DecCheckBreak()
 	}
-	if yyb20 {
+	if yyb26 {
 		z.DecReadArrayEnd()
 		return
 	}
 	z.DecReadArrayElem()
-	if yyxt30 := z.Extension(x.C); yyxt30 != nil {
-		z.DecExtension(&x.C, yyxt30)
+	if yyxt36 := z.Extension(x.C); yyxt36 != nil {
+		z.DecExtension(&x.C, yyxt36)
 	} else {
 		x.C.CodecDecodeSelf(d)
 	}
-	yyj20++
-	if yyhl20 {
-		yyb20 = yyj20 > l
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
 	} else {
-		yyb20 = z.DecCheckBreak()
+		yyb26 = z.DecCheckBreak()
 	}
-	if yyb20 {
+	if yyb26 {
 		z.DecReadArrayEnd()
 		return
 	}
 	z.DecReadArrayElem()
 	h.decMaptestMammoth2BasicTestMammoth2((*map[testMammoth2Basic]TestMammoth2)(&x.M), d)
-	yyj20++
-	if yyhl20 {
-		yyb20 = yyj20 > l
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
 	} else {
-		yyb20 = z.DecCheckBreak()
+		yyb26 = z.DecCheckBreak()
 	}
-	if yyb20 {
+	if yyb26 {
 		z.DecReadArrayEnd()
 		return
 	}
 	z.DecReadArrayElem()
 	h.decSliceTestMammoth2((*[]TestMammoth2)(&x.L), d)
-	yyj20++
-	if yyhl20 {
-		yyb20 = yyj20 > l
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
 	} else {
-		yyb20 = z.DecCheckBreak()
+		yyb26 = z.DecCheckBreak()
 	}
-	if yyb20 {
+	if yyb26 {
 		z.DecReadArrayEnd()
 		return
 	}
 	z.DecReadArrayElem()
 	h.decArray4int64((*[4]int64)(&x.A), d)
-	for {
-		yyj20++
-		if yyhl20 {
-			yyb20 = yyj20 > l
-		} else {
-			yyb20 = z.DecCheckBreak()
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
+	} else {
+		yyb26 = z.DecCheckBreak()
+	}
+	if yyb26 {
+		z.DecReadArrayEnd()
+		return
+	}
+	z.DecReadArrayElem()
+	x.Tcomplex128 = (complex128)(complex(r.DecodeFloat64(), 0))
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
+	} else {
+		yyb26 = z.DecCheckBreak()
+	}
+	if yyb26 {
+		z.DecReadArrayEnd()
+		return
+	}
+	z.DecReadArrayElem()
+	x.Tcomplex64 = (complex64)(complex(z.DecDecodeFloat32(), 0))
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
+	} else {
+		yyb26 = z.DecCheckBreak()
+	}
+	if yyb26 {
+		z.DecReadArrayEnd()
+		return
+	}
+	z.DecReadArrayElem()
+	x.Tbytes = z.DecodeBytesInto(([]byte)(x.Tbytes))
+	yyj26++
+	if yyhl26 {
+		yyb26 = yyj26 > l
+	} else {
+		yyb26 = z.DecCheckBreak()
+	}
+	if yyb26 {
+		z.DecReadArrayEnd()
+		return
+	}
+	z.DecReadArrayElem()
+	if r.TryNil() {
+		if x.Tpbytes != nil { // remove the if-true
+			x.Tpbytes = nil
 		}
-		if yyb20 {
+	} else {
+		if x.Tpbytes == nil {
+			x.Tpbytes = new([]uint8)
+		}
+		*x.Tpbytes = z.DecodeBytesInto(*(*[]byte)(x.Tpbytes))
+	}
+	for {
+		yyj26++
+		if yyhl26 {
+			yyb26 = yyj26 > l
+		} else {
+			yyb26 = z.DecCheckBreak()
+		}
+		if yyb26 {
 			break
 		}
 		z.DecReadArrayElem()
-		z.DecStructFieldNotFound(yyj20-1, "")
+		z.DecStructFieldNotFound(yyj26-1, "")
 	}
 }
 
 func (x *TestMammoth2Wrapper) IsCodecEmpty() bool {
-	return !(!(x.V.IsCodecEmpty()) || x.T != 0 || x.B != 0 || x.J != 0 || len(x.C) != 0 || len(x.M) != 0 || len(x.L) != 0 || len(x.A) != 0 || false)
+	return !(!(x.V.IsCodecEmpty()) || x.T != 0 || x.B != 0 || x.J != 0 || len(x.C) != 0 || len(x.M) != 0 || len(x.L) != 0 || len(x.A) != 0 || x.Tcomplex128 != 0 || x.Tcomplex64 != 0 || len(x.Tbytes) != 0 || false)
 }
 
 func (x codecSelfer19781) enctestMammoth2Basic(v *testMammoth2Basic, e *Encoder) {

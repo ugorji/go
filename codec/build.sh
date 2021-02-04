@@ -14,9 +14,9 @@ _tests() {
     # note that codecgen requires fastpath, so you cannot do "codecgen notfastpath"
     # we test the following permutations: fastpath/unsafe, !fastpath/!unsafe, codecgen/unsafe
     ## local a=( "" "safe"  "notfastpath safe" "codecgen" )
-    echo "TestCodecSuite: (fastpath/unsafe), (!fastpath/!unsafe), (codecgen/unsafe)"
+    echo "TestCodecSuite: (fastpath/unsafe), (fastpath/!unsafe), (!fastpath/!unsafe), (codecgen/unsafe)"
     local nc=1 # count
-    local a=( "" "notfastpath safe"  "codecgen" )
+    local a=( "" "safe" "notfastpath safe"  "codecgen" )
     local b=()
     local c=()
     for i in "${a[@]}"

@@ -33,6 +33,8 @@ def get_test_data_list():
          3232.0,
          6464.0,
          6464646464.0,
+         160.0,
+         1616.0,
          False,
          True,
          u"null",

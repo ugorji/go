@@ -1691,9 +1691,9 @@ func (x *genRunner) decTryAssignPrimitive(varname string, t reflect.Type, isptr 
 		x.linef("%s%s = (%s)(r.DecodeFloat64())", ptr, varname, x.genTypeName(t))
 
 	case reflect.Complex64:
-		x.linef("%s%s = (%s)(complex(z.DecDecodeFloat32()), 0)", ptr, varname, x.genTypeName(t))
+		x.linef("%s%s = (%s)(complex(z.DecDecodeFloat32(), 0))", ptr, varname, x.genTypeName(t))
 	case reflect.Complex128:
-		x.linef("%s%s = (%s)(complex(r.DecodeFloat64()), 0)", ptr, varname, x.genTypeName(t))
+		x.linef("%s%s = (%s)(complex(r.DecodeFloat64(), 0))", ptr, varname, x.genTypeName(t))
 
 	case reflect.Bool:
 		x.linef("%s%s = (%s)(r.DecodeBool())", ptr, varname, x.genTypeName(t))

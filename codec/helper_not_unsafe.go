@@ -89,6 +89,11 @@ func rvZeroK(t reflect.Type, k reflect.Kind) reflect.Value {
 }
 
 func rvConvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
+	// reflect.Value.Convert(...) will make a copy if it is addressable.
+	// since we need to maintain references for decoding, we must check appropriately.
+	if v.CanAddr() {
+		return v.Addr().Convert(reflect.PtrTo(t)).Elem()
+	}
 	return v.Convert(t)
 }
 
@@ -96,10 +101,6 @@ func rvAddressableReadonly(v reflect.Value) (rv reflect.Value) {
 	rv = rvZeroAddrK(v.Type(), v.Kind())
 	rvSetDirect(rv, v)
 	return
-}
-
-func rtsize(rt reflect.Type) uintptr {
-	return rt.Size()
 }
 
 func rt2id(rt reflect.Type) uintptr {
@@ -598,5 +599,9 @@ func hashShortString(b []byte) (h uintptr) {
 // 	h = ((h << 3) | uint64(len(b)&7))
 // 	return
 // }
+
+func rtsize(rt reflect.Type) uintptr {
+	return rt.Size()
+}
 
 */

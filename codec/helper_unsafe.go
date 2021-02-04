@@ -305,6 +305,8 @@ func rvZeroK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return
 }
 
+// rvConvert will convert a value to a different type directly,
+// ensuring that they still point to the same underlying value.
 func rvConvert(v reflect.Value, t reflect.Type) reflect.Value {
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
 	uv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
@@ -338,10 +340,6 @@ func rvAddressableReadonly(v reflect.Value) reflect.Value {
 	// rv := rvZeroAddrK(v.Type(), v.Kind())
 	// rvSetDirect(rv, v)
 	// return rv.Addr()
-}
-
-func rtsize(rt reflect.Type) uintptr {
-	return ((*unsafeRuntimeType)(((*unsafeIntf)(unsafe.Pointer(&rt))).ptr)).size
 }
 
 func rtsize2(rt unsafe.Pointer) uintptr {
@@ -1406,6 +1404,10 @@ func memhash(p unsafe.Pointer, seed, length uintptr) uintptr
 
 func hashShortString(b []byte) uintptr {
 	return memhash(unsafe.Pointer(&b[0]), 0, uintptr(len(b)))
+}
+
+func rtsize(rt reflect.Type) uintptr {
+	return ((*unsafeRuntimeType)(((*unsafeIntf)(unsafe.Pointer(&rt))).ptr)).size
 }
 
 // var _ = runtime.MemProfileRate

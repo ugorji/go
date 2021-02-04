@@ -225,4 +225,9 @@ type TestMammoth2Wrapper struct {
 	M map[testMammoth2Basic]TestMammoth2
 	L []TestMammoth2
 	A [4]int64
+
+	Tcomplex128 complex128
+	Tcomplex64  complex64
+	Tbytes      []uint8
+	Tpbytes     *[]uint8
 }
