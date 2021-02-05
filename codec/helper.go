@@ -1047,7 +1047,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 					xrt := fastpathAv[idx].rt
 					if rk == reflect.Array {
 						fi.addrD = false // decode directly into array value (slice made from it)
-						xrt = reflect.ArrayOf(ti.rt.Len(), ti.elem)
+						xrt = reflectArrayOf(ti.rt.Len(), ti.elem)
 						fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
 							xfnf2(d, xf, rvConvert(xrv, xrt))
 						}

@@ -757,7 +757,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 
 	rtelem0Mut := !isImmutableKind(reflect.Kind(f.ti.elemkind))
 	rtelem := f.ti.elem
-	rtelemkind := rtelem.Kind()
+	rtelemkind := reflect.Kind(f.ti.elemkind)
 	for rtelemkind == reflect.Ptr {
 		rtelem = rtelem.Elem()
 		rtelemkind = rtelem.Kind()
@@ -795,7 +795,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 				d.errorf("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut {
-				rvCopySlice(rv, rv0) // only copy up to length NOT cap i.e. rv0.Slice(0, rvcap)
+				rvCopySlice(rv, rv0, rtelem) // only copy up to length NOT cap i.e. rv0.Slice(0, rvcap)
 			}
 		} else if containerLenS != rvlen {
 			if rvCanset {
@@ -1623,6 +1623,10 @@ func setZero(iv interface{}) {
 	case *float32:
 		*v = 0
 	case *float64:
+		*v = 0
+	case *complex64:
+		*v = 0
+	case *complex128:
 		*v = 0
 	case *[]byte:
 		*v = nil

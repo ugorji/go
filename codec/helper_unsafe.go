@@ -302,12 +302,12 @@ func rvZeroK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
 	if refBitset.isset(byte(k)) {
 		urv.flag = uintptr(k)
-	} else if (k == reflect.Struct || k == reflect.Array) && rtsize2(urv.typ) > uintptr(len(unsafeZeroArr)) {
-		urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
-		urv.ptr = unsafe_New(urv.typ)
-	} else {
+	} else if rtsize2(urv.typ) <= uintptr(len(unsafeZeroArr)) {
 		urv.flag = uintptr(k) | unsafeFlagIndir
 		urv.ptr = unsafeZeroAddr
+	} else {  // maning struct or array
+		urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
+		urv.ptr = unsafe_New(urv.typ)
 	}
 	return
 }
@@ -372,6 +372,22 @@ func unsafeCmpZero(ptr unsafe.Pointer, size int) bool {
 	}
 	return *(*string)(unsafe.Pointer(&s1)) == *(*string)(unsafe.Pointer(&s2)) // memcmp
 }
+
+// MARKER: using builtins do not affect cost of an operation, while explicitly calling the
+// readlink'ed function is a function call that prevents inlining.
+// 
+// func unsafeCmpZero(ptr unsafe.Pointer, size int) bool {
+// 	if size > len(unsafeZeroArr) {
+// 		return unsafeCmpZeroAlloc(ptr, size)
+// 	}
+// 	return *(*string)(unsafe.Pointer(&unsafeString{ptr, size})) ==
+// 		*(*string)(unsafe.Pointer(&unsafeString{unsafeZeroAddr, size}))
+// }
+//
+// func unsafeCmpZeroAlloc(ptr unsafe.Pointer, size int) bool {
+// 	return *(*string)(unsafe.Pointer(&unsafeString{ptr, size})) ==
+// 		*(*string)(unsafe.Pointer(&unsafeString{mallocgc(uintptr(size), nil, true), size}))
+// }
 
 func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&v))
@@ -858,13 +874,10 @@ func rvGetSlice4Array(rv reflect.Value, v interface{}) {
 	return
 }
 
-func rvCopySlice(dest, src reflect.Value) {
-	t := rvType(dest).Elem()
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&dest))
-	destPtr := urv.ptr
-	urv = (*unsafeReflectValue)(unsafe.Pointer(&src))
-	typedslicecopy((*unsafeIntf)(unsafe.Pointer(&t)).ptr,
-		*(*unsafeSlice)(destPtr), *(*unsafeSlice)(urv.ptr))
+func rvCopySlice(dest, src reflect.Value, elemType reflect.Type) {
+	typedslicecopy((*unsafeIntf)(unsafe.Pointer(&elemType)).ptr,
+		*(*unsafeSlice)((*unsafeReflectValue)(unsafe.Pointer(&dest)).ptr),
+		*(*unsafeSlice)((*unsafeReflectValue)(unsafe.Pointer(&src)).ptr))
 }
 
 // ------------
@@ -1382,6 +1395,10 @@ func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
 func growslice(typ unsafe.Pointer, old unsafeSlice, cap int) unsafeSlice
 
 /*
+
+//go:linkname mallocgc runtime.mallocgc
+//go:noescape
+func mallocgc(size uintptr, typ unsafe.Pointer, needzero bool) unsafe.Pointer
 
 //go:linkname maplen reflect.maplen
 //go:noescape

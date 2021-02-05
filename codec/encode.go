@@ -105,7 +105,7 @@ type EncodeOptions struct {
 	// If true, we descend into interfaces and pointers to reursively check if value is empty.
 	//
 	// We *might* check struct fields one by one to see if empty
-	// (if we cannot directly check if a struct value is equal to its zero value)..
+	// (if we cannot directly check if a struct value is equal to its zero value).
 	// If so, we honor IsZero, Comparable, IsCodecEmpty(), etc.
 	// Note: This *may* make OmitEmpty more expensive due to the large number of reflect calls.
 	//

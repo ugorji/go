@@ -435,7 +435,7 @@ func rvGetSlice4Array(rv reflect.Value, v interface{}) {
 	// reflect.ValueOf(v).Elem().Set(rv.Slice(0, rv.Len()))
 }
 
-func rvCopySlice(dest, src reflect.Value) {
+func rvCopySlice(dest, src reflect.Value, _ reflect.Type) {
 	reflect.Copy(dest, src)
 }
 
