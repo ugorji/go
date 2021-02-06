@@ -6819,7 +6819,7 @@ func (x *testMammoth2Basic) CodecEncodeSelf(e *Encoder) {
 	if x == nil {
 		r.EncodeNil()
 	} else {
-		h.enctestMammoth2Basic((*testMammoth2Basic)(x), e)
+		z.F.EncSliceUint64V(([]uint64)(x[:]), e)
 	}
 }
 
@@ -6827,7 +6827,7 @@ func (x *testMammoth2Basic) CodecDecodeSelf(d *Decoder) {
 	var h codecSelfer19781
 	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
-	h.dectestMammoth2Basic((*testMammoth2Basic)(x), d)
+	z.F.DecSliceUint64N(([]uint64)(x[:]), d)
 }
 
 func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
@@ -7360,52 +7360,6 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 
 func (x *TestMammoth2Wrapper) IsCodecEmpty() bool {
 	return !(!(x.V.IsCodecEmpty()) || x.T != 0 || x.B != 0 || x.J != 0 || len(x.C) != 0 || len(x.M) != 0 || len(x.L) != 0 || len(x.A) != 0 || x.Tcomplex128 != 0 || x.Tcomplex64 != 0 || len(x.Tbytes) != 0 || false)
-}
-
-func (x codecSelfer19781) enctestMammoth2Basic(v *testMammoth2Basic, e *Encoder) {
-	var h codecSelfer19781
-	z, r := GenHelper().Encoder(e)
-	_, _, _ = h, z, r
-	if v == nil {
-		r.EncodeNil()
-		return
-	}
-	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
-		z.EncWriteArrayElem()
-		r.EncodeUint(uint64(yyv1))
-	}
-	z.EncWriteArrayEnd()
-}
-
-func (x codecSelfer19781) dectestMammoth2Basic(v *testMammoth2Basic, d *Decoder) {
-	var h codecSelfer19781
-	z, r := GenHelper().Decoder(d)
-	_, _, _ = h, z, r
-
-	yyv1 := v
-	yyh1, yyl1 := z.DecSliceHelperStart()
-	if yyl1 == 0 {
-	} else {
-		yyhl1 := yyl1 > 0
-		var yyrl1 int
-		_ = yyrl1
-		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
-			yyh1.ElemContainerState(yyj1)
-			var yydb1 bool
-			if yyj1 >= len(yyv1) {
-				z.DecArrayCannotExpand(len(v), yyj1+1)
-				yydb1 = true
-			}
-			if yydb1 {
-				z.DecSwallow()
-			} else {
-				yyv1[yyj1] = (uint64)(r.DecodeUint64())
-			}
-		}
-	}
-	yyh1.End()
 }
 
 func (x codecSelfer19781) encMaptestMammoth2BasicTestMammoth2(v map[testMammoth2Basic]TestMammoth2, e *Encoder) {

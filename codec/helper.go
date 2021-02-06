@@ -1016,7 +1016,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 			// Consequently, the value of doing this quick allocation to elide the overhead cost of
 			// non-optimized (not-unsafe) reflection is a fair price.
 			var rtid2 uintptr
-			if ti.pkgpath == "" { // un-named slice or map
+			if ti.pkgpath == "" { // un-named type (slice or mpa or array)
 				rtid2 = rtid
 				if rk == reflect.Array {
 					rtid2 = rt2id(ti.key) // ti.key for arrays = reflect.SliceOf(ti.elem)
@@ -1030,17 +1030,9 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 						fi.addrD = false // decode directly into array value (slice made from it)
 					}
 				}
-			} else {
+			} else { // named type (with underlying type of map or slice or array)
 				// use mapping for underlying type if there
-				var rtu reflect.Type
-				if rk == reflect.Map {
-					rtu = reflect.MapOf(ti.key, ti.elem)
-				} else if rk == reflect.Slice {
-					rtu = reflect.SliceOf(ti.elem)
-				} else { // reflect.Array
-					rtu = ti.key // ti.key for arrays = reflect.SliceOf(ti.elem)
-				}
-				rtid2 = rt2id(rtu)
+				rtid2 = rt2id(ti.underlying)
 				if idx := fastpathAvIndex(rtid2); idx != -1 {
 					xfnf := fastpathAv[idx].encfn
 					xfnf2 := fastpathAv[idx].decfn
@@ -1720,9 +1712,20 @@ type typeInfo struct {
 	sfiSort []*structFieldInfo // sorted. Used when enc/dec struct to map.
 	sfiSrc  []*structFieldInfo // unsorted. Used when enc/dec struct to array.
 
+	// key is:
+	//   - map key (if map type)
+	//   - if map kind: map key
+	//   - if array kind: sliceOf(elem)
+	//   - if chan kind: sliceof(elem)
 	key reflect.Type
 
 	// ---- cpu cache line boundary?
+
+	// underlying is the underlying type of a named slice, map or array, as defined by go spec.
+	// used by fastpath where there are defined fastpath functions for the underlying type.
+	//
+	// for a map, it's a map; for a slice or array, it's a slice; else its nil.
+	underlying reflect.Type
 
 	// sfiSrch  []*structFieldInfo          // sorted. used for finding sfi given a name
 	sfi4Name map[string]*structFieldInfo // map. used for finding sfi given a name
@@ -1999,6 +2002,9 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.key = rt.Key()
 		ti.keykind = uint8(ti.key.Kind())
 		ti.keysize = uint32(ti.key.Size())
+		if ti.pkgpath != "" {
+			ti.underlying = reflect.MapOf(ti.key, ti.elem)
+		}
 	case reflect.Slice:
 		ti.mbs, b2 = implIntf(rt, mapBySliceTyp)
 		if !ti.mbs && b2 {
@@ -2007,11 +2013,16 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.elem = rt.Elem()
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
+		if ti.pkgpath != "" {
+			ti.underlying = reflect.SliceOf(ti.elem)
+		}
 	case reflect.Chan:
 		ti.elem = rt.Elem()
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
 		ti.chandir = uint8(rt.ChanDir())
+		ti.key = reflect.SliceOf(ti.elem)
+		ti.keykind = uint8(reflect.Slice)
 	case reflect.Array:
 		ti.mbs, b2 = implIntf(rt, mapBySliceTyp)
 		if !ti.mbs && b2 {
@@ -2020,10 +2031,13 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.elem = rt.Elem()
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
-		// MARKER: for arrays, use the (unused key field) to store the slice type
 		ti.key = reflect.SliceOf(ti.elem)
 		ti.keykind = uint8(reflect.Slice)
 		ti.keysize = uint32(ti.key.Size())
+		if ti.pkgpath != "" {
+			ti.underlying = ti.key
+		}
+
 		// MARKER: reflect.Ptr cannot happen here, as we halt early if reflect.Ptr passed in
 		// case reflect.Ptr:
 		// 	ti.elem = rt.Elem()

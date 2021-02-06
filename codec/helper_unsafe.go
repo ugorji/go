@@ -305,7 +305,7 @@ func rvZeroK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	} else if rtsize2(urv.typ) <= uintptr(len(unsafeZeroArr)) {
 		urv.flag = uintptr(k) | unsafeFlagIndir
 		urv.ptr = unsafeZeroAddr
-	} else {  // maning struct or array
+	} else { // meaning struct or array
 		urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
 		urv.ptr = unsafe_New(urv.typ)
 	}
@@ -375,7 +375,7 @@ func unsafeCmpZero(ptr unsafe.Pointer, size int) bool {
 
 // MARKER: using builtins do not affect cost of an operation, while explicitly calling the
 // readlink'ed function is a function call that prevents inlining.
-// 
+//
 // func unsafeCmpZero(ptr unsafe.Pointer, size int) bool {
 // 	if size > len(unsafeZeroArr) {
 // 		return unsafeCmpZeroAlloc(ptr, size)

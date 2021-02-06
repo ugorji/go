@@ -89,8 +89,8 @@ func rvZeroK(t reflect.Type, k reflect.Kind) reflect.Value {
 }
 
 func rvConvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
-	// reflect.Value.Convert(...) will make a copy if it is addressable.
-	// since we need to maintain references for decoding, we must check appropriately.
+	// Note that reflect.Value.Convert(...) will make a copy if it is addressable.
+	// Since we decode into the passed value, we must try to convert the addressable value..
 	if v.CanAddr() {
 		return v.Addr().Convert(reflect.PtrTo(t)).Elem()
 	}
