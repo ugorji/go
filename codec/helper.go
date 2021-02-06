@@ -942,6 +942,23 @@ func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt boo
 	return
 }
 
+func fnloadFastpathUnderlying(ti *typeInfo) (f *fastpathE, u reflect.Type) {
+	var rtid uintptr
+	var idx int
+	rtid = rt2id(ti.fastpathUnderlying)
+	idx = fastpathAvIndex(rtid)
+	if idx == -1 {
+		return
+	}
+	f = &fastpathAv[idx]
+	if uint8(reflect.Array) == ti.kind {
+		u = reflectArrayOf(ti.rt.Len(), ti.elem)
+	} else {
+		u = f.rt
+	}
+	return
+}
+
 func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *codecFn) {
 	fn = new(codecFn)
 	fi := &(fn.i)
@@ -1031,15 +1048,13 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 					}
 				}
 			} else { // named type (with underlying type of map or slice or array)
-				// use mapping for underlying type if there
-				rtid2 = rt2id(ti.underlying)
-				if idx := fastpathAvIndex(rtid2); idx != -1 {
-					xfnf := fastpathAv[idx].encfn
-					xfnf2 := fastpathAv[idx].decfn
-					xrt := fastpathAv[idx].rt
+				// try to use mapping for underlying type
+				xfe, xrt := x.fnloadFastpathUnderlying(ti)
+				if xfe != nil {
+					xfnf := xfe.encfn
+					xfnf2 := xfe.decfn
 					if rk == reflect.Array {
 						fi.addrD = false // decode directly into array value (slice made from it)
-						xrt = reflectArrayOf(ti.rt.Len(), ti.elem)
 						fn.fd = func(d *Decoder, xf *codecFnInfo, xrv reflect.Value) {
 							xfnf2(d, xf, rvConvert(xrv, xrt))
 						}
@@ -1721,11 +1736,11 @@ type typeInfo struct {
 
 	// ---- cpu cache line boundary?
 
-	// underlying is the underlying type of a named slice, map or array, as defined by go spec.
-	// used by fastpath where there are defined fastpath functions for the underlying type.
+	// fastpathUnderlying is the underlying type of a named slice, map or array, as defined by go spec,
+	// that is used by fastpath where there are defined fastpath functions for the underlying type.
 	//
 	// for a map, it's a map; for a slice or array, it's a slice; else its nil.
-	underlying reflect.Type
+	fastpathUnderlying reflect.Type
 
 	// sfiSrch  []*structFieldInfo          // sorted. used for finding sfi given a name
 	sfi4Name map[string]*structFieldInfo // map. used for finding sfi given a name
@@ -1734,8 +1749,12 @@ type typeInfo struct {
 
 	size, keysize, elemsize uint32
 
-	// other flags, with individual bits representing if set.
-	flagComparable  bool
+	keykind, elemkind uint8
+
+	flagCustom     bool // does this have custom implementation?
+	flagComparable bool
+
+	// custom implementation flags
 	flagIsZeroer    bool
 	flagIsZeroerPtr bool
 
@@ -1767,8 +1786,6 @@ type typeInfo struct {
 	flagMissingFielderPtr bool
 
 	infoFieldOmitempty bool
-
-	keykind, elemkind uint8
 }
 
 func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
@@ -1937,9 +1954,11 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		keyType: valueTypeString, // default it - so it's never 0
 	}
 
+	// bset sets custom implementation flags
 	bset := func(when bool, b *bool) {
 		if when {
 			*b = true
+			ti.flagCustom = true
 		}
 	}
 
@@ -1976,7 +1995,8 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	bset(b1, &ti.flagIsCodecEmptyer)
 	bset(b2, &ti.flagIsCodecEmptyerPtr)
 	b1 = rt.Comparable()
-	bset(b1, &ti.flagComparable)
+	// bset(b1, &ti.flagComparable)
+	ti.flagComparable = b1
 
 	switch rk {
 	case reflect.Struct:
@@ -2003,7 +2023,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.keykind = uint8(ti.key.Kind())
 		ti.keysize = uint32(ti.key.Size())
 		if ti.pkgpath != "" {
-			ti.underlying = reflect.MapOf(ti.key, ti.elem)
+			ti.fastpathUnderlying = reflect.MapOf(ti.key, ti.elem)
 		}
 	case reflect.Slice:
 		ti.mbs, b2 = implIntf(rt, mapBySliceTyp)
@@ -2014,7 +2034,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
 		if ti.pkgpath != "" {
-			ti.underlying = reflect.SliceOf(ti.elem)
+			ti.fastpathUnderlying = reflect.SliceOf(ti.elem)
 		}
 	case reflect.Chan:
 		ti.elem = rt.Elem()
@@ -2035,7 +2055,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.keykind = uint8(reflect.Slice)
 		ti.keysize = uint32(ti.key.Size())
 		if ti.pkgpath != "" {
-			ti.underlying = ti.key
+			ti.fastpathUnderlying = ti.key
 		}
 
 		// MARKER: reflect.Ptr cannot happen here, as we halt early if reflect.Ptr passed in

@@ -797,7 +797,7 @@ func (x *genRunner) registerXtraT(t reflect.Type, ti *typeInfo) {
 	if ti == nil {
 		ti = x.ti.get(rt2id(t), t)
 	}
-	if _, rtidu := genUnderlying(t, ti.rtid, ti); fastpathAvIndex(rtidu) != -1 {
+	if _, rtidu := genFastpathUnderlying(t, ti.rtid, ti); fastpathAvIndex(rtidu) != -1 {
 		return
 	}
 	x.tm[t] = struct{}{}
@@ -980,7 +980,7 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 		x.xtraSM(varname, t, ti2, true, false)
 		// x.encListFallback(varname, rtid, t)
 	case reflect.Array:
-		_, rtidu := genUnderlying(t, rtid, ti2)
+		_, rtidu := genFastpathUnderlying(t, rtid, ti2)
 		if fastpathAvIndex(rtidu) != -1 {
 			g := x.newFastpathGenV(ti2.key)
 			x.linef("z.F.%sV((%s)(%s[:]), e)", g.MethodNamePfx("Enc", false), x.genTypeName(ti2.key), varname)
@@ -999,7 +999,7 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 		if rtid == uint8SliceTypId {
 			x.line("r.EncodeStringBytesRaw([]byte(" + varname + "))")
 		} else {
-			tu, rtidu := genUnderlying(t, rtid, ti2)
+			tu, rtidu := genFastpathUnderlying(t, rtid, ti2)
 			if fastpathAvIndex(rtidu) != -1 {
 				g := x.newFastpathGenV(tu)
 				if rtid == rtidu {
@@ -1019,7 +1019,7 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 		// - if elements are primitives or Selfers, call dedicated function on each member.
 		// - else call Encoder.encode(XXX) on it.
 		x.linef("if %s == nil { r.EncodeNil() } else {", varname)
-		tu, rtidu := genUnderlying(t, rtid, ti2)
+		tu, rtidu := genFastpathUnderlying(t, rtid, ti2)
 		if fastpathAvIndex(rtidu) != -1 {
 			g := x.newFastpathGenV(tu)
 			if rtid == rtidu {
@@ -1633,7 +1633,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 	case reflect.Chan:
 		x.xtraSM(varname, t, ti2, false, isptr)
 	case reflect.Array:
-		_, rtidu := genUnderlying(t, rtid, ti2)
+		_, rtidu := genFastpathUnderlying(t, rtid, ti2)
 		if fastpathAvIndex(rtidu) != -1 {
 			g := x.newFastpathGenV(ti2.key)
 			x.linef("z.F.%sN((%s)(%s[:]), d)", g.MethodNamePfx("Dec", false), x.genTypeName(ti2.key), varname)
@@ -1650,7 +1650,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		if rtid == uint8SliceTypId {
 			x.linef("%s%s = z.DecodeBytesInto(%s(%s[]byte)(%s))", ptrPfx, varname, ptrPfx, ptrPfx, varname)
 		} else {
-			tu, rtidu := genUnderlying(t, rtid, ti2)
+			tu, rtidu := genFastpathUnderlying(t, rtid, ti2)
 			if fastpathAvIndex(rtidu) != -1 {
 				g := x.newFastpathGenV(tu)
 				if rtid == rtidu {
@@ -1669,7 +1669,7 @@ func (x *genRunner) dec(varname string, t reflect.Type, isptr bool) {
 		// - if elements are primitives or Selfers, call dedicated function on each member.
 		// - else call Encoder.encode(XXX) on it.
 
-		tu, rtidu := genUnderlying(t, rtid, ti2)
+		tu, rtidu := genFastpathUnderlying(t, rtid, ti2)
 		if fastpathAvIndex(rtidu) != -1 {
 			g := x.newFastpathGenV(tu)
 			if rtid == rtidu {
@@ -2105,11 +2105,11 @@ func genNonPtr(t reflect.Type) reflect.Type {
 	return t
 }
 
-func genUnderlying(t reflect.Type, rtid uintptr, ti *typeInfo) (tu reflect.Type, rtidu uintptr) {
+func genFastpathUnderlying(t reflect.Type, rtid uintptr, ti *typeInfo) (tu reflect.Type, rtidu uintptr) {
 	tu = t
 	rtidu = rtid
 	if ti.pkgpath != "" {
-		tu = ti.underlying
+		tu = ti.fastpathUnderlying
 		rtidu = rt2id(tu)
 	}
 	return

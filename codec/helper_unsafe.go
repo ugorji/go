@@ -138,6 +138,31 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 	return (*unsafeSlice)(unsafe.Pointer(&v1)).Data == (*unsafeSlice)(unsafe.Pointer(&v2)).Data
 }
 
+// fnloadFastpathUnderlying returns a fastpathE and underlying type
+// for use in BasicHandle.fnload calls.
+func (x *BasicHandle) fnloadFastpathUnderlying(ti *typeInfo) (f *fastpathE, u reflect.Type) {
+	// MARKER: in unsafe mode, we can convert between types with same shape,
+	// even if this is forbidden in normal go code.
+	//
+	// For map kind: check key and value (elem)
+	// for slice or array kind: check elem
+	// check is as below:
+	//   if no-custom-static-implement && no-registered-extension && type-is-scalar-or-byteslice &&
+	//   fastpath-to-deep-underlying-slice-or-map-exists, then use deep underlying.
+	//
+	// Concern is that the checks can be expensive, as we need to look up typeInfo for elem
+	// (and key if a map), and then look up whether extensions are registered for them, and then
+	// use reflect to create deep underlying type, and then check if a fastpath exists for it.
+	//
+	// The gain for all this is in the rare case where you have a custom type that has defined elem type
+	// which wraps a builtin type that we have a fastpath for.
+	// The gain doesn't justify the cost.
+	//
+	// Leae here in case the cost-analysis changes in the future.
+
+	return fnloadFastpathUnderlying(ti)
+}
+
 // isNil says whether the value v is nil.
 // This applies to references like map/ptr/unsafepointer/chan/func,
 // and non-reference values like interface/slice.
