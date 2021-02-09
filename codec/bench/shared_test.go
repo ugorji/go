@@ -110,6 +110,8 @@ var (
 
 	testRpcBufsize       int
 	testMapStringKeyOnly bool
+
+	testBenchmarkNoConfig bool
 )
 
 // variables that are not flags, but which can configure the handles
@@ -151,9 +153,10 @@ func testInitFlags() {
 }
 
 func benchInitFlags() {
+	flag.BoolVar(&testBenchmarkNoConfig, "bnc", false, "benchmarks: do not make configuration changes for fair benchmarking")
 	// flags reproduced here for compatibility (duplicate some in testInitFlags)
-	flag.BoolVar(&testMapStringKeyOnly, "bs", false, "use maps with string keys only")
-	flag.IntVar(&testDepth, "bd", 1, "Bench Depth")
+	flag.BoolVar(&testMapStringKeyOnly, "bs", false, "benchmarks: use maps with string keys only")
+	flag.IntVar(&testDepth, "bd", 1, "Benchmarks: Test Struc Depth")
 }
 
 func testHEDGet(h Handle) *testHED {

@@ -73,17 +73,17 @@ _gen() {
 _suite_tests() {
     if [[ "${do_x}" = "1" ]]; then
         printf "\n==== X Baseline ====\n"
-        ${go[@]} test "${zargs[@]}" -tags x -v
+        ${go[@]} test "${zargs[@]}" -tags x -v "$@"
     else
         printf "\n==== Baseline ====\n"
-        ${go[@]} test "${zargs[@]}" -v
+        ${go[@]} test "${zargs[@]}" -v "$@"
     fi
     if [[ "${do_x}" = "1" ]]; then
         printf "\n==== X Generated ====\n"
-        ${go[@]} test "${zargs[@]}" -tags "x generated" -v
+        ${go[@]} test "${zargs[@]}" -tags "x generated" -v "$@"
     else
         printf "\n==== Generated ====\n"
-        ${go[@]} test "${zargs[@]}" -tags "generated" -v
+        ${go[@]} test "${zargs[@]}" -tags "generated" -v "$@"
     fi
 }
 
@@ -96,7 +96,7 @@ _suite_any() {
     local x="$1"
     local g="$2"
     local b="$3"
-    shift; shift; shift
+    shift 3
     local a=( "" "safe"  "notfastpath" "notfastpath safe" "codecgen" "codecgen safe")
     if [[ "$g" = "g" ]]; then a=( "generated" "generated safe"); fi
     for i in "${a[@]}"; do
@@ -183,7 +183,8 @@ _suite_very_quick_benchmark() {
     local b="${2}"
     local c="${3}"
     local t="${4:-4s}" # 4s 1x
-    ${go[@]} test "${zargs[@]}" -tags "alltests ${c}" -bench "__${a}__.*${b}" -benchmem -benchtime "${t}"
+    shift 4
+    ${go[@]} test "${zargs[@]}" -tags "alltests ${c}" -bench "__${a}__.*${b}" -benchmem -benchtime "${t}" "$@"
 }
 
 _suite_trim_output() {
