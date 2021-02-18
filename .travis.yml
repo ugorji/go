@@ -6,6 +6,7 @@ branches:
     - master
 go:
   - master
+  - 1.16.x
   - 1.15.x
   - 1.14.x
   - 1.13.x
@@ -25,23 +26,23 @@ script:
   # we use if block below, so that we still return with success even if skipped.
   # Previously, we used [[...]] && go test ..., which returned exit code 0 and broke the build.
   - |
-    if [[ "${TRAVIS_GO_VERSION}" == "1.11.x" ]]; then
+    if [[ "${TRAVIS_GO_VERSION}" == "1.12.x" ]]; then
     echo "XXX 386" && GOARCH=386 go test -tags "alltests" -run Suite -coverprofile coverage.386.txt github.com/ugorji/go/codec
     fi
   - |
-    if [[ "${TRAVIS_GO_VERSION}" == "1.12.x" ]]; then
+    if [[ "${TRAVIS_GO_VERSION}" == "1.13.x" ]]; then
     echo "XXX 386 safe" && GOARCH=386 go test -tags "alltests safe" -run Suite -coverprofile coverage.386.safe.txt github.com/ugorji/go/codec
     fi
   - |
-    if [[ "${TRAVIS_GO_VERSION}" == "1.13.x" ]]; then
+    if [[ "${TRAVIS_GO_VERSION}" == "1.14.x" ]]; then
     echo "XXX 386 codecgen" && GOARCH=386 go test -tags "alltests codecgen" -run Suite -coverprofile coverage.386.codecgen.txt github.com/ugorji/go/codec
     fi
   - |
-    if [[ "${TRAVIS_GO_VERSION}" == "1.14.x" ]]; then
+    if [[ "${TRAVIS_GO_VERSION}" == "1.15.x" ]]; then
     echo "XXX RACE notfastpath safe" && go test "-race" -tags "alltests notfastpath safe" -run Suite -coverprofile coverage.race.notfastpath.safe.txt github.com/ugorji/go/codec
     fi
   - |
-    if [[ "${TRAVIS_GO_VERSION}" == "1.15.x" ]]; then
+    if [[ "${TRAVIS_GO_VERSION}" == "1.16.x" ]]; then
     echo "XXX RACE" && go test "-race" -tags "alltests" -run Suite -coverprofile coverage.race.txt github.com/ugorji/go/codec
     fi
 
