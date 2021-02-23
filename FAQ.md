@@ -15,18 +15,18 @@ providing much faster encoding and decoding of slices and maps
 containing built-in numeric, boolean, string and interface{} types.
 
 Furthermore, you can bypass including `fast-path.generated.go` in your binary,
-by building (or running tests and benchmarks) with the tag: `notfastpath`.
+by building (or running tests and benchmarks) with the tag: `codec.notfastpath`.
 
-    go install -tags notfastpath
-    go build -tags notfastpath
-    go test -tags notfastpath
+    go install -tags codec.notfastpath
+    go build -tags codec.notfastpath
+    go test -tags codec.notfastpath
 
-With the tag `notfastpath`, we trim that size to about `700Kb`.
+With the tag `codec.notfastpath`, we trim that size to about `700Kb`.
 
 Please be aware of the following:
 
-- At least in our representative microbenchmarks for cbor (for example),
-  passing `notfastpath` tag causes a clear performance loss (about 33%).  
+- At least in our representative microbenchmarks for json (for example),
+  passing `codec.notfastpath` tag causes a clear performance loss (about 10%).  
   *YMMV*.
 - These values were got from building the test binary that gives > 90% code coverage,
   and running `go tool nm` on it to see how much space these library symbols took.

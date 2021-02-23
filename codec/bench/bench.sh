@@ -67,7 +67,7 @@ _gen() {
 # run the full suite of tests
 #
 # Basically, its a sequence of
-# ${go[@]} test -tags "alltests x safe codecgen generated" -bench "CodecSuite or AllSuite or XSuite" -benchmem
+# ${go[@]} test -tags "alltests x codec.safe codecgen generated" -bench "CodecSuite or AllSuite or XSuite" -benchmem
 #
 
 _suite_tests() {
@@ -97,8 +97,8 @@ _suite_any() {
     local g="$2"
     local b="$3"
     shift 3
-    local a=( "" "safe"  "notfastpath" "notfastpath safe" "codecgen" "codecgen safe")
-    if [[ "$g" = "g" ]]; then a=( "generated" "generated safe"); fi
+    local a=( "" "codec.safe"  "codec.notfastpath" "codec.notfastpath codec.safe" "codecgen" "codecgen codec.safe")
+    if [[ "$g" = "g" ]]; then a=( "generated" "generated codec.safe"); fi
     for i in "${a[@]}"; do
         echo ">>>> bench TAGS: 'alltests $x $i' SUITE: $b"
         ${go[@]} test "${zargs[@]}" -tags "alltests $x $i" -bench "$b" -benchmem "$@"
@@ -107,7 +107,7 @@ _suite_any() {
 
 # _suite() {
 #     local t="alltests x"
-#     local a=( "" "safe"  "notfastpath" "notfastpath safe" "codecgen" "codecgen safe")
+#     local a=( "" "codec.safe"  "codec.notfastpath" "codec.notfastpath codec.safe" "codecgen" "codecgen codec.safe")
 #     for i in "${a[@]}"
 #     do
 #         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecXSuite"
@@ -117,7 +117,7 @@ _suite_any() {
 
 # _suite_gen() {
 #     local t="alltests x"
-#     local b=( "generated" "generated safe")
+#     local b=( "generated" "generated codec.safe")
 #     for i in "${b[@]}"
 #     do
 #         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecXGenSuite"
@@ -127,7 +127,7 @@ _suite_any() {
 
 # _suite_json() {
 #     local t="alltests x"
-#     local a=( "" "safe"  "notfastpath" "notfastpath safe" "codecgen" "codecgen safe")
+#     local a=( "" "codec.safe"  "codec.notfastpath" "codec.notfastpath codec.safe" "codecgen" "codecgen codec.safe")
 #     for i in "${a[@]}"
 #     do
 #         echo ">>>> bench TAGS: '$t $i' SUITE: BenchmarkCodecQuickAllJsonSuite"
@@ -159,12 +159,12 @@ _suite_very_quick_json_non_suite() {
     shift
     echo ">>>> very quick json bench"
     # local tags=( "x" "x generated" )
-    local tags=("${t}" "${t} generated" "${t} safe" "${t} generated safe")
+    local tags=("${t}" "${t} generated" "${t} codec.safe" "${t} generated codec.safe" "${t} codec.notfastpath")
     local js=( En De )
     for t in "${tags[@]}"; do
         echo "---- tags: ${t} ----"
         local b="Json"
-        if [[ "${t}" =~ x && ! "${t}" =~ safe ]]; then
+        if [[ "${t}" =~ x && ! "${t}" =~ safe && ! "${t}" =~ notfastpath ]]; then
             b="Json|Std_Json|JsonIter"
             if [[ "${t}" =~ generated ]]; then b="Json|Easyjson"; fi
         fi            
@@ -275,7 +275,7 @@ _main() {
     [[ " ${args[*]} " == *"t"* ]] && _suite_tests "$@" | _suite_trim_output | _suite_tests_strip_file_line
     [[ " ${args[*]} " == *"p"* ]] && zargs+=("-cpuprofile" "cpu.out" "-memprofile" "mem.out" "-memprofilerate" "1") && _suite_very_quick_benchmark "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"f"* ]] && ${go[@]} tool pprof bench.test ${1:-mem.out}
-    [[ " ${args[*]} " == *"z"* ]] && _bench_dot_out_dot_txt
+    [[ " ${args[*]} " == *"z"* ]] && _bench_dot_out_dot_txt > bench.out.txt.$(date '+%Y%m%d_%H%M') 2>&1
     [[ " ${args[*]} " == *"y"* ]] && _suite_debugging "$@" | _suite_trim_output
     
     true

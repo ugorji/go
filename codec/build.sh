@@ -11,11 +11,11 @@ _tests() {
         go1.[7-9]*|go1.1[0-9]*|go2.*|devel*) true ;;
         *) return 1
     esac
-    # note that codecgen requires fastpath, so you cannot do "codecgen notfastpath"
+    # note that codecgen requires fastpath, so you cannot do "codecgen codec.notfastpath"
     # we test the following permutations wnich all execute different code paths as below.
     echo "TestCodecSuite: (fastpath/unsafe), (fastpath/!unsafe), (!fastpath/!unsafe), (codecgen/unsafe)"
     local nc=1 # count
-    local a=( "" "safe" "notfastpath safe"  "codecgen" )
+    local a=( "" "codec.safe" "codec.notfastpath codec.safe"  "codecgen" )
     local b=()
     local c=()
     for i in "${a[@]}"
@@ -32,9 +32,9 @@ _tests() {
         # if [[ "$?" != 0 ]]; then return 1; fi
     done
     if [[ "$zextra" == "1" ]]; then
-        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'notfastpath x'; RUN: 'Test.*X$'"
+        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'codec.notfastpath x'; RUN: 'Test.*X$'"
         [[ "$zcover" == "1" ]] && c=( -coverprofile "x.cov.out" )
-        ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "notfastpath x" -count $nc -run 'Test.*X$' "${c[@]}" &
+        ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "codec.notfastpath x" -count $nc -run 'Test.*X$' "${c[@]}" &
         b+=("x.cov.out")
         [[ "$zwait" == "1" ]] && wait
     fi
@@ -147,7 +147,7 @@ EOF
         shared_test.go > bench/shared_test.go
 
     # explicitly return 0 if this passes, else return 1
-    local btags="notfastpath safe codecgen.exec"
+    local btags="codec.notfastpath codec.safe codecgen.exec"
     rm -f sort-slice.generated.go fast-path.generated.go gen-helper.generated.go mammoth_generated_test.go mammoth2_generated_test.go
     
     cat > gen-from-tmpl.sort-slice.generated.go <<EOF
@@ -203,7 +203,7 @@ _codegenerators() {
         fi &&
         $c8 -rt 'codecgen' -t 'codecgen generated' -o "values_codecgen${c5}" -d 19780 "$zfin" "$zfin2" &&
         cp mammoth2_generated_test.go $c9 &&
-        $c8 -t 'codecgen,!notfastpath generated,!notfastpath' -o "mammoth2_codecgen${c5}" -d 19781 "mammoth2_generated_test.go" &&
+        $c8 -t 'codecgen,!codec.notfastpath generated,!codec.notfastpath' -o "mammoth2_codecgen${c5}" -d 19781 "mammoth2_generated_test.go" &&
         rm -f $c9 &&
         echo "generators done!" 
 }

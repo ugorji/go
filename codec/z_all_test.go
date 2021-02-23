@@ -12,13 +12,13 @@ package codec
 //
 // Because build tags are a build time parameter, we will have to test out the
 // different tags separately.
-// Tags: x codecgen safe appengine notfastpath
+// Tags: x codecgen codec.safe codec.notfastpath appengine
 //
 // These tags should be added to alltests, e.g.
 //   go test '-tags=alltests x codecgen' -run=Suite -coverprofile=cov.out
 //
 // To run all tests before submitting code, run:
-//    a=( "" "safe" "codecgen" "notfastpath" "codecgen notfastpath" "codecgen safe" "safe notfastpath" )
+//    a=( "" "codec.safe" "codecgen" "codec.notfastpath" "codecgen codec.notfastpath" "codecgen codec.safe" "codec.safe codec.notfastpath" )
 //    for i in "${a[@]}"; do echo ">>>> TAGS: $i"; go test "-tags=alltests $i" -run=Suite; done
 //
 // This suite of tests requires support for subtests and suites,

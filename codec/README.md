@@ -13,7 +13,7 @@ Supported Serialization formats are:
 
 This package will carefully use 'package unsafe' for performance reasons in
 specific places. You can build without unsafe use by passing the safe or
-appengine tag i.e. 'go install -tags=safe ...'.
+appengine tag i.e. 'go install -tags=codec.safe ...'.
 
 This library works with both the standard `gc` and the `gccgo` compilers.
 
@@ -209,11 +209,11 @@ To run the full suite of tests, use the following:
     go test -tags alltests -run Suite
 ```
 
-You can run the tag 'safe' to run tests or build in safe mode. e.g.
+You can run the tag 'codec.safe' to run tests or build in safe mode. e.g.
 
 ```
-    go test -tags safe -run Json
-    go test -tags "alltests safe" -run Suite
+    go test -tags codec.safe -run Json
+    go test -tags "alltests codec.safe" -run Suite
 ```
 
 ## Running Benchmarks

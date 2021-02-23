@@ -1,5 +1,6 @@
 // +build go1.10
 // +build !safe
+// +build !codec.safe
 // +build !appengine
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.

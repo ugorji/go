@@ -90,7 +90,7 @@ import (
 //
 // Note:
 //   codecgen-generated code depends on the variables defined by fast-path.generated.go.
-//   consequently, you cannot run with tags "codecgen notfastpath".
+//   consequently, you cannot run with tags "codecgen codec.notfastpath".
 //
 // Note:
 //   genInternalXXX functions are used for generating fast-path and other internally generated

@@ -365,9 +365,9 @@ func mainGen(tv *mainCfg, infiles ...string) (err error) {
 	os.Remove(tv.OutFile)
 
 	// execute go run
-	// MARKER: it must be run with safe tag, so that we don't use wrong optimizations that only make sense at runtime.
+	// MARKER: it must be run with codec.safe tag, so that we don't use wrong optimizations that only make sense at runtime.
 	// e.g. compositeUnderlyingType will cause generated code to have bad conversions for defined composite types.
-	cmd := exec.Command("go", "run", "-tags", "codecgen.exec safe "+tv.goRunTags, frunMainName) //, frunPkg.Name())
+	cmd := exec.Command("go", "run", "-tags", "codecgen.exec codec.safe "+tv.goRunTags, frunMainName) //, frunPkg.Name())
 	cmd.Dir = lastdir
 	var buf bytes.Buffer
 	cmd.Stdout = &buf

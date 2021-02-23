@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
 // +build go1.10
-// +build safe appengine
+// +build safe codec.safe appengine
 
 package codec
 

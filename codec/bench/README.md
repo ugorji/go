@@ -64,7 +64,7 @@ The 3 suite of benchmarks are
 # Run suite of tests in default mode (selectively using unsafe in specific areas)
 go test -tags "alltests x" -bench "CodecXSuite" -benchmem 
 # Run suite of tests in safe mode (no usage of unsafe)
-go test -tags "alltests x safe" -bench "CodecXSuite" -benchmem 
+go test -tags "alltests x codec.safe" -bench "CodecXSuite" -benchmem 
 # Run suite of tests in codecgen mode, including all tests which are generated (msgp, ffjson, etc)
 go test -tags "alltests x generated" -bench "CodecXGenSuite" -benchmem 
 

@@ -1,4 +1,5 @@
 // +build !safe
+// +build !codec.safe
 // +build !appengine
 // +build go1.9
 
@@ -1338,7 +1339,7 @@ func len_chan(m unsafe.Pointer) int {
 // as only maplen, chanlen and mapaccess are small enough to get inlined.
 //
 //   We checked this by going into $GOROOT/src/runtime and running:
-//   $ go build -tags notfastpath -gcflags "-m=2"
+//   $ go build -tags codec.notfastpath -gcflags "-m=2"
 //
 // Also, we link to the functions in reflect where possible, as opposed to those in runtime.
 // They are guaranteed to be safer for our use, even when they are just trampoline functions.

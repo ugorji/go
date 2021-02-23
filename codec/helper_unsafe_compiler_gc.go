@@ -1,4 +1,5 @@
 // +build !safe
+// +build !codec.safe
 // +build !appengine
 // +build go1.9
 // +build gc

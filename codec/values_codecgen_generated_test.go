@@ -1,3 +1,4 @@
+//go:build go1.6 && (codecgen || generated)
 // +build go1.6
 // +build codecgen generated
 
