@@ -223,9 +223,9 @@ const cpu32Bit = ^uint(0)>>32 == 0
 type rkind byte
 
 const (
-	rkindPtr    = byte(reflect.Ptr)
-	rkindString = byte(reflect.String)
-	rkindChan   = byte(reflect.Chan)
+	rkindPtr    = rkind(reflect.Ptr)
+	rkindString = rkind(reflect.String)
+	rkindChan   = rkind(reflect.Chan)
 )
 
 type mapKeyFastKind uint8
@@ -561,7 +561,8 @@ func (e *codecError) Error() string {
 }
 
 func wrapCodecErr(in error, name string, numbytesread int, encode bool) (out error) {
-	if x, ok := in.(*codecError); ok && x.pos == numbytesread && x.name == name && x.encode == encode {
+	x, ok := in.(*codecError)
+	if ok && x.pos == numbytesread && x.name == name && x.encode == encode {
 		return in
 	}
 	return &codecError{in, name, numbytesread, encode}
@@ -1736,8 +1737,8 @@ type typeInfo struct {
 
 	// ---- cpu cache line boundary?
 
-	// fastpathUnderlying is the underlying type of a named slice, map or array, as defined by go spec,
-	// that is used by fastpath where there are defined fastpath functions for the underlying type.
+	// fastpathUnderlying is underlying type of a named slice/map/array, as defined by go spec,
+	// that is used by fastpath where we defined fastpath functions for the underlying type.
 	//
 	// for a map, it's a map; for a slice or array, it's a slice; else its nil.
 	fastpathUnderlying reflect.Type
@@ -2750,6 +2751,7 @@ func (x *bytesFreelist) checkPutGet(v []byte, length int) []byte {
 	var put = cap(v) == 0 // if empty, consider it already put
 	if !put {
 		y = append(y, v)
+		*x = y
 	}
 	for i := 0; i < len(y); i++ {
 		z := y[i]
@@ -2757,6 +2759,7 @@ func (x *bytesFreelist) checkPutGet(v []byte, length int) []byte {
 			if cap(z) >= length {
 				copy(y[i:], y[i+1:])
 				y = y[:len(y)-1]
+				*x = y
 				return z
 			}
 		} else {

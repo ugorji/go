@@ -57,8 +57,8 @@ type decByteState uint8
 
 const (
 	decByteStateNone     decByteState = iota
-	decByteStateZerocopy              // view into the []byte that we are decoding from
-	decByteStateReuseBuf              // view into the transient buffer used internally by the decDriver
+	decByteStateZerocopy              // view into []byte that we are decoding from
+	decByteStateReuseBuf              // view into transient buffer used internally by decDriver
 	// decByteStateNewAlloc
 )
 
@@ -1361,6 +1361,13 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 	return d
 }
 
+// NewDecoderString returns a Decoder which efficiently decodes directly
+// from a string with zero copying.
+//
+// It is a convenience function that calls NewDecoderBytes with a
+// []byte view into the string.
+//
+// This can be an efficient zero-copy if using default mode i.e. without codec.safe tag.
 func NewDecoderString(s string, h Handle) *Decoder {
 	return NewDecoderBytes(bytesView(s), h)
 }
@@ -1444,6 +1451,13 @@ func (d *Decoder) ResetBytes(in []byte) {
 	d.resetCommon()
 }
 
+// ResetString resets the Decoder with a new string to decode from,
+// clearing all state from last run(s).
+//
+// It is a convenience function that calls ResetBytes with a
+// []byte view into the string.
+//
+// This can be an efficient zero-copy if using default mode i.e. without codec.safe tag.
 func (d *Decoder) ResetString(s string) {
 	d.ResetBytes(bytesView(s))
 }

@@ -155,7 +155,7 @@ func (x *BasicHandle) fnloadFastpathUnderlying(ti *typeInfo) (f *fastpathE, u re
 	// (and key if a map), and then look up whether extensions are registered for them, and then
 	// use reflect to create deep underlying type, and then check if a fastpath exists for it.
 	//
-	// The gain for all this is in the rare case where you have a custom type that has defined elem type
+	// The gain here is in the rare case where you have a custom type that has defined elem type
 	// which wraps a builtin type that we have a fastpath for.
 	// The gain doesn't justify the cost.
 	//
@@ -897,7 +897,6 @@ func rvGetSlice4Array(rv reflect.Value, v interface{}) {
 	s.Data = urv.ptr
 	s.Len = rv.Len()
 	s.Cap = s.Len
-	return
 }
 
 func rvCopySlice(dest, src reflect.Value, elemType reflect.Type) {
