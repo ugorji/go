@@ -57,6 +57,23 @@ func (encDriverNoopContainerWriter) WriteMapStart(length int)   {}
 func (encDriverNoopContainerWriter) WriteMapEnd()               {}
 func (encDriverNoopContainerWriter) atEndOfEncode()             {}
 
+// encStructFieldObj[Slice] is used for sorting when there are missing fields and canonical flag is set
+type encStructFieldObj struct {
+	key   string
+	rv    reflect.Value
+	intf  interface{}
+	ascii bool
+	isRv  bool
+}
+
+type encStructFieldObjSlice []encStructFieldObj
+
+func (p encStructFieldObjSlice) Len() int      { return len(p) }
+func (p encStructFieldObjSlice) Swap(i, j int) { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
+func (p encStructFieldObjSlice) Less(i, j int) bool {
+	return p[uint(i)].key < p[uint(j)].key
+}
+
 // EncodeOptions captures configuration options during encode.
 type EncodeOptions struct {
 	// WriterBufferSize is the size of the buffer used when writing.
@@ -550,26 +567,51 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				}
 				mf2s = append(mf2s, stringIntf{k, v})
 			}
-			if e.h.Canonical {
-				sort.Sort((stringIntfSlice)(mf2s))
+		}
+
+		e.mapStart(newlen + len(mf2s))
+
+		// When there are missing fields, and Canonical flag is set,
+		// we cannot have the missing fields and struct fields sorted independently.
+		// We have to capture them together and sort as a unit.
+
+		if len(mf2s) > 0 && e.h.Canonical {
+			mf2w := make([]encStructFieldObj, newlen+len(mf2s))
+			for j = 0; j < newlen; j++ {
+				kv = fkvs[j]
+				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, kv.v.path.encNameAsciiAlphaNum, true}
+			}
+			for _, v := range mf2s {
+				mf2w[j] = encStructFieldObj{v.v, reflect.Value{}, v.i, false, false}
+				j++
+			}
+			sort.Sort((encStructFieldObjSlice)(mf2w))
+			for _, v := range mf2w {
+				e.mapElemKey()
+				e.kStructFieldKey(f.ti.keyType, v.ascii, v.key)
+				e.mapElemValue()
+				if v.isRv {
+					e.encodeValue(v.rv, nil)
+				} else {
+					e.encode(v.intf)
+				}
+			}
+		} else {
+			for j = 0; j < newlen; j++ {
+				kv = fkvs[j]
+				e.mapElemKey()
+				e.kStructFieldKey(f.ti.keyType, kv.v.path.encNameAsciiAlphaNum, kv.v.encName)
+				e.mapElemValue()
+				e.encodeValue(kv.r, nil)
+			}
+			for _, v := range mf2s {
+				e.mapElemKey()
+				e.kStructFieldKey(f.ti.keyType, false, v.v)
+				e.mapElemValue()
+				e.encode(v.i)
 			}
 		}
-		// encode it all
-		e.mapStart(newlen + len(mf2s))
-		for j = 0; j < newlen; j++ {
-			kv = fkvs[j]
-			e.mapElemKey()
-			e.kStructFieldKey(f.ti.keyType, kv.v.path.encNameAsciiAlphaNum, kv.v.encName)
-			e.mapElemValue()
-			e.encodeValue(kv.r, nil)
-		}
-		// now, add the others
-		for _, v := range mf2s {
-			e.mapElemKey()
-			e.kStructFieldKey(f.ti.keyType, false, v.v)
-			e.mapElemValue()
-			e.encode(v.i)
-		}
+
 		e.mapEnd()
 	} else {
 		newlen = len(f.ti.sfiSrc)

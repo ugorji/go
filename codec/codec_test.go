@@ -2986,7 +2986,7 @@ func doTestMissingFields(t *testing.T, h Handle) {
 
 	testReleaseBytes(b1)
 
-	// test canonical interaction
+	// test canonical interaction - with structs having some missing fields and some regular fields
 	bh := testBasicHandle(h)
 
 	defer func(c bool) {
@@ -2996,22 +2996,30 @@ func doTestMissingFields(t *testing.T, h Handle) {
 
 	b1 = nil
 
-	for i := 0; i < 32; i++ {
+	var s1 = struct {
+		A int
+		B int
+		C int
+	}{1, 2, 3}
+
+	NewEncoderBytes(&b1, h).MustEncode(&s1)
+
+	var s2 = struct {
+		C int
+		testMissingFieldsMap
+	}{C: 3}
+	s2.testMissingFieldsMap = testMissingFieldsMap{
+		m: map[string]interface{}{
+			"A": 1,
+			"B": 2,
+		},
+	}
+
+	for i := 0; i < 16; i++ {
 		b2 = nil
-		var s = struct{ testMissingFieldsMap }{
-			testMissingFieldsMap{
-				m: map[string]interface{}{
-					"a": 1,
-					"b": 2,
-				},
-			},
-		}
+		NewEncoderBytes(&b2, h).MustEncode(&s2)
 
-		NewEncoderBytes(&b2, h).MustEncode(&s)
-
-		if b1 == nil {
-			b1 = b2
-		} else if !bytes.Equal(b1, b2) {
+		if !bytes.Equal(b1, b2) {
 			t.Fatalf("bytes differed:'%s' vs '%s'", b1, b2)
 		}
 	}
