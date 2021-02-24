@@ -54,7 +54,7 @@ type {{ $v }}Rv struct {
 type {{ $v }}RvSlice []{{ $v }}Rv
 {{template "T" args "Kind" $v "Type" (print $v "RvSlice") "V" ".v"}}
 
-{{if eq $v "bytes" -}}
+{{if eq $v "bytes" "string" -}}
 type {{ $v }}Intf struct {
 	v {{ $t }}
 	i interface{}

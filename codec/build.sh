@@ -140,6 +140,14 @@ func (${i}RvSlice) Len() int { return 0 }
 func (${i}RvSlice) Less(i, j int) bool { return false }
 func (${i}RvSlice) Swap(i, j int) {}
 
+type ${i}Intf struct { v ${i2}; i interface{} }
+
+type ${i}IntfSlice []${i}Intf
+
+func (${i}IntfSlice) Len() int { return 0 }
+func (${i}IntfSlice) Less(i, j int) bool { return false }
+func (${i}IntfSlice) Swap(i, j int) {}
+
 EOF
     done
 

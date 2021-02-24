@@ -537,20 +537,25 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			fkvs[newlen] = kv
 			newlen++
 		}
-		var mflen int
-		for k, v := range mf {
-			if k == "" {
-				delete(mf, k)
-				continue
+
+		var mf2s []stringIntf
+		if len(mf) > 0 {
+			mf2s = make([]stringIntf, 0, len(mf))
+			for k, v := range mf {
+				if k == "" {
+					continue
+				}
+				if f.ti.infoFieldOmitempty && isEmptyValue(reflect.ValueOf(v), e.h.TypeInfos, recur) {
+					continue
+				}
+				mf2s = append(mf2s, stringIntf{k, v})
 			}
-			if f.ti.infoFieldOmitempty && isEmptyValue(reflect.ValueOf(v), e.h.TypeInfos, recur) {
-				delete(mf, k)
-				continue
+			if e.h.Canonical {
+				sort.Sort((stringIntfSlice)(mf2s))
 			}
-			mflen++
 		}
 		// encode it all
-		e.mapStart(newlen + mflen)
+		e.mapStart(newlen + len(mf2s))
 		for j = 0; j < newlen; j++ {
 			kv = fkvs[j]
 			e.mapElemKey()
@@ -559,11 +564,11 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			e.encodeValue(kv.r, nil)
 		}
 		// now, add the others
-		for k, v := range mf {
+		for _, v := range mf2s {
 			e.mapElemKey()
-			e.kStructFieldKey(f.ti.keyType, false, k)
+			e.kStructFieldKey(f.ti.keyType, false, v.v)
 			e.mapElemValue()
-			e.encode(v)
+			e.encode(v.i)
 		}
 		e.mapEnd()
 	} else {

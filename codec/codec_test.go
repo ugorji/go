@@ -102,6 +102,26 @@ type testIntfMapT2 struct {
 
 func (x testIntfMapT2) GetIntfMapV() string { return x.IntfMapV }
 
+type testMissingFieldsMap struct {
+	m map[string]interface{}
+}
+
+func (mf *testMissingFieldsMap) CodecMissingField(field []byte, value interface{}) bool {
+	if mf.m == nil {
+		mf.m = map[string]interface{}{}
+	}
+
+	(mf.m)[string(field)] = value
+
+	return true
+}
+
+func (mf *testMissingFieldsMap) CodecMissingFields() map[string]interface{} {
+	return mf.m
+}
+
+var _ MissingFielder = (*testMissingFieldsMap)(nil)
+
 var testErrWriterErr = errors.New("testErrWriterErr")
 
 type testErrWriter struct{}
@@ -2965,6 +2985,36 @@ func doTestMissingFields(t *testing.T, h Handle) {
 	testDeepEqualErr(m4, map[string]string{"s1": "s111", "S2": "S222"}, t, name+"-missing-cmp-11")
 
 	testReleaseBytes(b1)
+
+	// test canonical interaction
+	bh := testBasicHandle(h)
+
+	defer func(c bool) {
+		bh.Canonical = c
+	}(bh.Canonical)
+	bh.Canonical = true
+
+	b1 = nil
+
+	for i := 0; i < 32; i++ {
+		b2 = nil
+		var s = struct{ testMissingFieldsMap }{
+			testMissingFieldsMap{
+				m: map[string]interface{}{
+					"a": 1,
+					"b": 2,
+				},
+			},
+		}
+
+		NewEncoderBytes(&b2, h).MustEncode(&s)
+
+		if b1 == nil {
+			b1 = b2
+		} else if !bytes.Equal(b1, b2) {
+			t.Fatalf("bytes differed:'%s' vs '%s'", b1, b2)
+		}
+	}
 }
 
 func doTestMaxDepth(t *testing.T, h Handle) {
