@@ -1,3 +1,4 @@
+//go:build codecgen.exec
 // +build codecgen.exec
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
@@ -40,13 +41,14 @@ import (
 // In those areas, we try to only do reflection or interface-conversion when NECESSARY:
 //    - Extensions, only if Extensions are configured.
 //
-// However, codecgen doesn't support the following:
-//   - Canonical option. (codecgen IGNORES it currently)
-//     This is just because it has not been implemented.
+// However, note following codecgen caveats:
+//   - Canonical option.
+//     If Canonical=true, codecgen'ed code will delegate encoding maps to reflection-based code.
 //   - MissingFielder implementation.
-//     If a type implements MissingFielder, it is completely ignored by codecgen.
-//   - CheckCircularReference.
-//     When encoding, if a circular reference is encountered, it will cause a stack overflow.
+//     If a type implements MissingFielder, a Selfer is not generated (with a warning message).
+//   - CheckCircularRef.
+//     When encoding a struct, a circular reference can lead to a stack overflow.
+//     If CheckCircularRef=true, codecgen'ed code will delegate encoding structs to reflection-based code.
 //
 // During encode/decode, Selfer takes precedence.
 // A type implementing Selfer will know how to encode/decode itself statically.
@@ -142,7 +144,8 @@ import (
 // v21: 20210104 refactored generated code to honor ZeroCopy=true for more efficiency
 // v22: 20210118 fixed issue in generated code when encoding a type which is also a codec.Selfer
 // v23: 20210203 changed slice/map types for which we generate fast-path functions
-const genVersion = 23
+// v24: 20210226 robust handling for Canonical|CheckCircularRef flags and MissingFielder implementations
+const genVersion = 24
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go
@@ -159,6 +162,10 @@ const (
 	//
 	// From testing, it didn't make much difference in runtime, so keep as true (one function only)
 	genUseOneFunctionForDecStructMap = true
+
+	// genStructCanonical configures whether we generate 2 paths based on Canonical flag
+	// when encoding struct fields.
+	genStructCanonical = false
 
 	// genFastpathCanonical configures whether we support Canonical in fast path.
 	// The savings is not much.
@@ -288,17 +295,17 @@ func (g *genIfClause) c(last bool) (v string) {
 // Library users: DO NOT USE IT DIRECTLY. IT WILL CHANGE CONTINUOUSLY WITHOUT NOTICE.
 func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	jsonOnlyWhen, toArrayWhen, omitEmptyWhen *bool,
-	ti *TypeInfos, typ ...reflect.Type) {
+	ti *TypeInfos, types ...reflect.Type) (warnings []string) {
 	// All types passed to this method do not have a codec.Selfer method implemented directly.
 	// codecgen already checks the AST and skips any types that define the codec.Selfer methods.
 	// Consequently, there's no need to check and trim them if they implement codec.Selfer
 
-	if len(typ) == 0 {
+	if len(types) == 0 {
 		return
 	}
 	x := genRunner{
 		w:             w,
-		t:             typ,
+		t:             types,
 		te:            make(map[uintptr]bool),
 		td:            make(map[uintptr]bool),
 		tz:            make(map[uintptr]bool),
@@ -308,7 +315,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 		tm:            make(map[reflect.Type]struct{}),
 		ty:            make(map[reflect.Type]struct{}),
 		ts:            []reflect.Type{},
-		bp:            genImportPath(typ[0]),
+		bp:            genImportPath(types[0]),
 		xs:            uid,
 		ti:            ti,
 		jsonOnlyWhen:  jsonOnlyWhen,
@@ -328,13 +335,26 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	// gather imports first:
 	x.cp = genImportPath(reflect.TypeOf(x))
 	x.imn[x.cp] = genCodecPkg
-	for _, t := range typ {
+
+	// iterate, check if all in same package, and remove any missingfielders
+	for i := 0; i < len(x.t); {
+		t := x.t[i]
 		// xdebugf("###########: PkgPath: '%v', Name: '%s'\n", genImportPath(t), t.Name())
 		if genImportPath(t) != x.bp {
 			halt.onerror(errGenAllTypesSamePkg)
 		}
+		ti1 := x.ti.get(rt2id(t), t)
+		if ti1.flagMissingFielder || ti1.flagMissingFielderPtr {
+			// output diagnostic message  - that nothing generated for this type
+			warnings = append(warnings, fmt.Sprintf("type: '%v' not generated; implements codec.MissingFielder", t))
+			copy(x.t[i:], x.t[i+1:])
+			x.t = x.t[:len(x.t)-1]
+			continue
+		}
 		x.genRefPkgs(t)
+		i++
 	}
+
 	x.line("// +build go1.6")
 	if buildTags != "" {
 		x.line("// +build " + buildTags)
@@ -419,8 +439,9 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.line("")
 
 	// generate rest of type info
-	for _, t := range typ {
+	for _, t := range x.t {
 		x.tc = t
+		x.linef("func (%s) codecSelferViaCodecgen() {}", x.genTypeName(t))
 		x.selfer(true)
 		x.selfer(false)
 		x.tryGenIsZero(t)
@@ -465,6 +486,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	}
 
 	x.line("")
+	return
 }
 
 func (x *genRunner) checkForSelfer(t reflect.Type, varname string) bool {
@@ -691,6 +713,7 @@ func (x *genRunner) tryGenIsZero(t reflect.Type) (done bool) {
 
 func (x *genRunner) selfer(encode bool) {
 	t := x.tc
+	// ti := x.ti.get(rt2id(t), t)
 	t0 := t
 	// always make decode use a pointer receiver,
 	// and structs/arrays always use a ptr receiver (encode|decode)
@@ -710,6 +733,9 @@ func (x *genRunner) selfer(encode bool) {
 	if encode {
 		x.line(") CodecEncodeSelf(e *" + x.cpfx + "Encoder) {")
 		x.genRequiredMethodVars(true)
+		if t0.Kind() == reflect.Struct {
+			x.linef("if z.EncBasicHandle().CheckCircularRef { z.EncEncode(%s); return }", genTopLevelVarName)
+		}
 		x.encVar(genTopLevelVarName, t)
 	} else {
 		x.line(") CodecDecodeSelf(d *" + x.cpfx + "Decoder) {")
@@ -1297,53 +1323,66 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 			x.linef("z.EncWriteMapStart(%d)", len(tisfi))
 		}
 
-		for j, si := range tisfi {
-			q := &genFQNs[j]
-			doOmitEmptyCheck := (omitEmptySometimes && si.path.omitEmpty) || omitEmptyAlways
-			if doOmitEmptyCheck {
-				x.linef("if %s[%v] {", numfieldsvar, j)
-			}
-			x.linef("z.EncWriteMapElemKey()")
+		fn := func(tisfi []*structFieldInfo) {
+			for j, si := range tisfi {
+				q := &genFQNs[j]
+				doOmitEmptyCheck := (omitEmptySometimes && si.path.omitEmpty) || omitEmptyAlways
+				if doOmitEmptyCheck {
+					x.linef("if %s[%v] {", numfieldsvar, j)
+				}
+				x.linef("z.EncWriteMapElemKey()")
 
-			// emulate EncStructFieldKey
-			switch ti.keyType {
-			case valueTypeInt:
-				x.linef("r.EncodeInt(z.M.Int(strconv.ParseInt(`%s`, 10, 64)))", si.encName)
-			case valueTypeUint:
-				x.linef("r.EncodeUint(z.M.Uint(strconv.ParseUint(`%s`, 10, 64)))", si.encName)
-			case valueTypeFloat:
-				x.linef("r.EncodeFloat64(z.M.Float(strconv.ParseFloat(`%s`, 64)))", si.encName)
-			default: // string
-				if x.jsonOnlyWhen == nil {
-					if si.path.encNameAsciiAlphaNum {
-						x.linef(`if z.IsJSONHandle() { z.WriteStr("\"%s\"") } else { `, si.encName)
-					}
-					x.linef("r.EncodeString(`%s`)", si.encName)
-					if si.path.encNameAsciiAlphaNum {
-						x.linef("}")
-					}
-				} else if *(x.jsonOnlyWhen) {
-					if si.path.encNameAsciiAlphaNum {
-						x.linef(`z.WriteStr("\"%s\"")`, si.encName)
+				// emulate EncStructFieldKey
+				switch ti.keyType {
+				case valueTypeInt:
+					x.linef("r.EncodeInt(z.M.Int(strconv.ParseInt(`%s`, 10, 64)))", si.encName)
+				case valueTypeUint:
+					x.linef("r.EncodeUint(z.M.Uint(strconv.ParseUint(`%s`, 10, 64)))", si.encName)
+				case valueTypeFloat:
+					x.linef("r.EncodeFloat64(z.M.Float(strconv.ParseFloat(`%s`, 64)))", si.encName)
+				default: // string
+					if x.jsonOnlyWhen == nil {
+						if si.path.encNameAsciiAlphaNum {
+							x.linef(`if z.IsJSONHandle() { z.WriteStr("\"%s\"") } else { `, si.encName)
+						}
+						x.linef("r.EncodeString(`%s`)", si.encName)
+						if si.path.encNameAsciiAlphaNum {
+							x.linef("}")
+						}
+					} else if *(x.jsonOnlyWhen) {
+						if si.path.encNameAsciiAlphaNum {
+							x.linef(`z.WriteStr("\"%s\"")`, si.encName)
+						} else {
+							x.linef("r.EncodeString(`%s`)", si.encName)
+						}
 					} else {
 						x.linef("r.EncodeString(`%s`)", si.encName)
 					}
+				}
+				x.line("z.EncWriteMapElemValue()")
+				if q.canNil {
+					x.line("if " + q.nilVar + " { r.EncodeNil() } else { ")
+					x.encVarChkNil(q.fqname, q.sf.Type, false)
+					x.line("}")
 				} else {
-					x.linef("r.EncodeString(`%s`)", si.encName)
+					x.encVarChkNil(q.fqname, q.sf.Type, false)
+				}
+				if doOmitEmptyCheck {
+					x.line("}")
 				}
 			}
-			x.line("z.EncWriteMapElemValue()")
-			if q.canNil {
-				x.line("if " + q.nilVar + " { r.EncodeNil() } else { ")
-				x.encVarChkNil(q.fqname, q.sf.Type, false)
-				x.line("}")
-			} else {
-				x.encVarChkNil(q.fqname, q.sf.Type, false)
-			}
-			if doOmitEmptyCheck {
-				x.line("}")
-			}
 		}
+
+		if genStructCanonical {
+			x.linef("if z.EncBasicHandle().Canonical {") // if Canonical block
+			fn(ti.sfiSort)
+			x.linef("} else {") // else !cononical block
+			fn(ti.sfiSrc)
+			x.linef("}") // end if Canonical block
+		} else {
+			fn(tisfi)
+		}
+
 		x.line("z.EncWriteMapEnd()")
 	}
 	if toArraySometimes {
@@ -1394,10 +1433,11 @@ func (x *genRunner) encListFallback(varname string, t reflect.Type) {
 }
 
 func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
-	x.linef("if %s == nil { r.EncodeNil(); return }", varname)
-	// MARKER: Canonical Option is not honored
+	x.linef("if %s == nil { r.EncodeNil()", varname)
+	x.linef("} else if z.EncBasicHandle().Canonical { z.EncEncodeMapNonNil(%s)", varname)
+	x.line("} else {")
 	i := x.varsfx()
-	x.line("z.EncWriteMapStart(len(" + varname + "))")
+	x.linef("z.EncWriteMapStart(len(%s))", varname)
 	x.linef("for %sk%s, %sv%s := range %s {", genTempVarPfx, i, genTempVarPfx, i, varname)
 	x.linef("z.EncWriteMapElemKey()")
 	x.encVar(genTempVarPfx+"k"+i, t.Key())
@@ -1405,6 +1445,7 @@ func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 	x.encVar(genTempVarPfx+"v"+i, t.Elem())
 	x.line("}")
 	x.line("z.EncWriteMapEnd()")
+	x.line("}")
 }
 
 func (x *genRunner) decVarInitPtr(varname, nilvar string, t reflect.Type, si *structFieldInfo,

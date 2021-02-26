@@ -37,18 +37,17 @@ Usage of codecgen:
 
 **Limitations**
 
-codecgen doesn't support the following:
+codecgen caveats:
 
-- Canonical option. 
-  This has not been implemented.
-- MissingFielder implementation.
-  If a type implements MissingFielder, it is completely ignored by codecgen.
-- CheckCircularReference.
-  When encoding, if a circular reference is encountered, it will cause a stack overflow.
-  Only use codecgen on types that you know do have circular references.
+- Canonical option.  
+  If Canonical=true, codecgen'ed code will delegate encoding maps to reflection-based code.
+- MissingFielder implementation.  
+  If a type implements MissingFielder, a Selfer is not generated (with a warning message).
+- CheckCircularRef.  
+  When encoding a struct, a circular reference can lead to a stack overflow.  
+  If CheckCircularRef=true, codecgen'ed code will delegate encoding structs to reflection-based code.
 
 **More Information**
 
 Please see the [blog article](http://ugorji.net/blog/go-codecgen)
 for more information on how to use the tool.
-

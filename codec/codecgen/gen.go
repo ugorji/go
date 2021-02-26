@@ -43,14 +43,14 @@ import (
 
 // MARKER: keep in sync with ../gen.go (genVersion) and ../go.mod (module version)
 const (
-	codecgenModuleVersion = `1.2.4` // default version - overridden by go.mod
+	codecgenModuleVersion = `1.2.4` // default version - overridden if available via go.mod
 	minimumCodecVersion   = `1.2.4`
-	genVersion            = 23
+	genVersion            = 24
 )
 
 const genCodecPkg = "codec1978" // MARKER: keep in sync with ../gen.go
 
-const genFrunMainTmpl = `//+build ignore
+const genFrunMainTmpl = `// +build ignore
 
 // Code generated - temporary main package for codecgen - DO NOT EDIT.
 
@@ -61,7 +61,7 @@ func main() {
 }
 `
 
-// const genFrunPkgTmpl = `//+build codecgen
+// const genFrunPkgTmpl = `// +build codecgen
 const genFrunPkgTmpl = `
 
 // Code generated - temporary package for codecgen - DO NOT EDIT.
@@ -75,6 +75,7 @@ import (
 	"bytes"
 	"strings"
 	"go/format"
+	"log"
 )
 
 func codecGenBoolPtr(b bool) *bool {
@@ -108,11 +109,15 @@ typ = reflect.TypeOf(t{{ $index }})
 	// println("initializing {{ .OutFile }}, buf size: {{ .AllFilesSize }}*16",
 	// 	{{ .AllFilesSize }}*16, "num fields: ", numfields)
 	var out = bytes.NewBuffer(make([]byte, 0, numfields*1024)) // {{ .AllFilesSize }}*16
-	{{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}Gen(out,
+	var warnings = {{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}Gen(out,
 		"{{ .BuildTag }}", "{{ .PackageName }}", "{{ .RandString }}", {{ .NoExtensions }},
 		bJO, bS2A, bOE,
 		{{ if not .CodecPkgFiles }}{{ .CodecPkgName }}.{{ end }}NewTypeInfos(strings.Split("{{ .StructTags }}", ",")),
 		 typs...)
+
+	for _, warning := range warnings {
+		log.Printf("warning: %s", warning)
+	}
 
 	bout, err := format.Source(out.Bytes())
 	// println("... lengths: before formatting: ", len(out.Bytes()), ", after formatting", len(bout))

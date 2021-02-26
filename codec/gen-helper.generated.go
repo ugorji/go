@@ -13,7 +13,7 @@ import (
 )
 
 // GenVersion is the current version of codecgen.
-const GenVersion = 23
+const GenVersion = 24
 
 // This file is used to generate helper code for codecgen.
 // The values here i.e. genHelper(En|De)coder are not to be used directly by
@@ -143,6 +143,16 @@ func (f genHelperEncoder) EncEncodeComplex64(v complex64) { f.e.encodeComplex64(
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncEncodeComplex128(v complex128) { f.e.encodeComplex128(v) }
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncEncode(v interface{}) { f.e.encode(v) }
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncEncodeMapNonNil(v interface{}) {
+	if skipFastpathTypeSwitchInDirectCall || !fastpathEncodeTypeSwitch(v, f.e) {
+		f.e.encodeValue(reflect.ValueOf(v), nil)
+	}
+}
 
 // ---------------- DECODER FOLLOWS -----------------
 

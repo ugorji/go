@@ -38,17 +38,22 @@ func codecSelfer19781False() bool { return false }
 func codecSelfer19781True() bool  { return true }
 
 func init() {
-	if GenVersion != 23 {
+	if GenVersion != 24 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic(errors.New("codecgen version mismatch: current: 23, need " + ver + ". Re-generate file: " + file))
+		panic(errors.New("codecgen version mismatch: current: 24, need " + ver + ". Re-generate file: " + file))
 	}
 }
 
+func (TestMammoth2) codecSelferViaCodecgen() {}
 func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
+	if z.EncBasicHandle().CheckCircularRef {
+		z.EncEncode(x)
+		return
+	}
 	if x == nil {
 		r.EncodeNil()
 	} else {
@@ -6747,6 +6752,7 @@ func (x *TestMammoth2) IsCodecEmpty() bool {
 	return !(x.FIntf != nil || x.FString != "" || len(x.FBytes) != 0 || x.FFloat32 != 0 || x.FFloat64 != 0 || x.FUint != 0 || x.FUint8 != 0 || x.FUint16 != 0 || x.FUint32 != 0 || x.FUint64 != 0 || x.FUintptr != 0 || x.FInt != 0 || x.FInt8 != 0 || x.FInt16 != 0 || x.FInt32 != 0 || x.FInt64 != 0 || bool(x.FBool) || len(x.FSliceIntf) != 0 || len(x.FSliceString) != 0 || len(x.FSliceBytes) != 0 || len(x.FSliceFloat32) != 0 || len(x.FSliceFloat64) != 0 || len(x.FSliceUint8) != 0 || len(x.FSliceUint64) != 0 || len(x.FSliceInt) != 0 || len(x.FSliceInt32) != 0 || len(x.FSliceInt64) != 0 || len(x.FSliceBool) != 0 || len(x.FMapStringIntf) != 0 || len(x.FMapStringString) != 0 || len(x.FMapStringBytes) != 0 || len(x.FMapStringUint8) != 0 || len(x.FMapStringUint64) != 0 || len(x.FMapStringInt) != 0 || len(x.FMapStringInt32) != 0 || len(x.FMapStringFloat64) != 0 || len(x.FMapStringBool) != 0 || len(x.FMapUint8Intf) != 0 || len(x.FMapUint8String) != 0 || len(x.FMapUint8Bytes) != 0 || len(x.FMapUint8Uint8) != 0 || len(x.FMapUint8Uint64) != 0 || len(x.FMapUint8Int) != 0 || len(x.FMapUint8Int32) != 0 || len(x.FMapUint8Float64) != 0 || len(x.FMapUint8Bool) != 0 || len(x.FMapUint64Intf) != 0 || len(x.FMapUint64String) != 0 || len(x.FMapUint64Bytes) != 0 || len(x.FMapUint64Uint8) != 0 || len(x.FMapUint64Uint64) != 0 || len(x.FMapUint64Int) != 0 || len(x.FMapUint64Int32) != 0 || len(x.FMapUint64Float64) != 0 || len(x.FMapUint64Bool) != 0 || len(x.FMapIntIntf) != 0 || len(x.FMapIntString) != 0 || len(x.FMapIntBytes) != 0 || len(x.FMapIntUint8) != 0 || len(x.FMapIntUint64) != 0 || len(x.FMapIntInt) != 0 || len(x.FMapIntInt32) != 0 || len(x.FMapIntFloat64) != 0 || len(x.FMapIntBool) != 0 || len(x.FMapInt32Intf) != 0 || len(x.FMapInt32String) != 0 || len(x.FMapInt32Bytes) != 0 || len(x.FMapInt32Uint8) != 0 || len(x.FMapInt32Uint64) != 0 || len(x.FMapInt32Int) != 0 || len(x.FMapInt32Int32) != 0 || len(x.FMapInt32Float64) != 0 || len(x.FMapInt32Bool) != 0 || false)
 }
 
+func (testMammoth2Binary) codecSelferViaCodecgen() {}
 func (x testMammoth2Binary) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelper().Encoder(e)
@@ -6769,6 +6775,7 @@ func (x *testMammoth2Binary) CodecDecodeSelf(d *Decoder) {
 	}
 }
 
+func (testMammoth2Text) codecSelferViaCodecgen() {}
 func (x testMammoth2Text) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelper().Encoder(e)
@@ -6791,6 +6798,7 @@ func (x *testMammoth2Text) CodecDecodeSelf(d *Decoder) {
 	}
 }
 
+func (testMammoth2Json) codecSelferViaCodecgen() {}
 func (x testMammoth2Json) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelper().Encoder(e)
@@ -6813,6 +6821,7 @@ func (x *testMammoth2Json) CodecDecodeSelf(d *Decoder) {
 	}
 }
 
+func (testMammoth2Basic) codecSelferViaCodecgen() {}
 func (x *testMammoth2Basic) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelper().Encoder(e)
@@ -6831,10 +6840,15 @@ func (x *testMammoth2Basic) CodecDecodeSelf(d *Decoder) {
 	z.F.DecSliceUint64N(([]uint64)(x[:]), d)
 }
 
+func (TestMammoth2Wrapper) codecSelferViaCodecgen() {}
 func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 	var h codecSelfer19781
 	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
+	if z.EncBasicHandle().CheckCircularRef {
+		z.EncEncode(x)
+		return
+	}
 	if x == nil {
 		r.EncodeNil()
 	} else {
@@ -7369,26 +7383,28 @@ func (x codecSelfer19781) encMaptestMammoth2BasicTestMammoth2(v map[testMammoth2
 	_, _, _ = h, z, r
 	if v == nil {
 		r.EncodeNil()
-		return
-	}
-	z.EncWriteMapStart(len(v))
-	for yyk1, yyv1 := range v {
-		z.EncWriteMapElemKey()
-		yy2 := &yyk1
-		if yyxt3 := z.Extension(yy2); yyxt3 != nil {
-			z.EncExtension(yy2, yyxt3)
-		} else {
-			yy2.CodecEncodeSelf(e)
+	} else if z.EncBasicHandle().Canonical {
+		z.EncEncodeMapNonNil(v)
+	} else {
+		z.EncWriteMapStart(len(v))
+		for yyk1, yyv1 := range v {
+			z.EncWriteMapElemKey()
+			yy2 := &yyk1
+			if yyxt3 := z.Extension(yy2); yyxt3 != nil {
+				z.EncExtension(yy2, yyxt3)
+			} else {
+				yy2.CodecEncodeSelf(e)
+			}
+			z.EncWriteMapElemValue()
+			yy4 := &yyv1
+			if yyxt5 := z.Extension(yy4); yyxt5 != nil {
+				z.EncExtension(yy4, yyxt5)
+			} else {
+				yy4.CodecEncodeSelf(e)
+			}
 		}
-		z.EncWriteMapElemValue()
-		yy4 := &yyv1
-		if yyxt5 := z.Extension(yy4); yyxt5 != nil {
-			z.EncExtension(yy4, yyxt5)
-		} else {
-			yy4.CodecEncodeSelf(e)
-		}
+		z.EncWriteMapEnd()
 	}
-	z.EncWriteMapEnd()
 }
 
 func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth2Basic]TestMammoth2, d *Decoder) {

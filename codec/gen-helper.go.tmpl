@@ -133,6 +133,14 @@ func (f genHelperEncoder) EncWriteMapElemValue() { f.e.mapElemValue() }
 func (f genHelperEncoder) EncEncodeComplex64(v complex64) { f.e.encodeComplex64(v) }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncEncodeComplex128(v complex128) { f.e.encodeComplex128(v) }
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncEncode(v interface{}) { f.e.encode(v) }
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncEncodeMapNonNil(v interface{}) {
+	if skipFastpathTypeSwitchInDirectCall || !fastpathEncodeTypeSwitch(v, f.e) {
+		f.e.encodeValue(reflect.ValueOf(v), nil)
+	}
+}
 
 // ---------------- DECODER FOLLOWS -----------------
 
