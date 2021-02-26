@@ -44,11 +44,14 @@ import (
 // However, note following codecgen caveats:
 //   - Canonical option.
 //     If Canonical=true, codecgen'ed code will delegate encoding maps to reflection-based code.
-//   - MissingFielder implementation.
-//     If a type implements MissingFielder, a Selfer is not generated (with a warning message).
-//   - CheckCircularRef.
+//     This is due to the runtime work needed to marshal a map in canonical mode.
+//   - CheckCircularRef option.
 //     When encoding a struct, a circular reference can lead to a stack overflow.
 //     If CheckCircularRef=true, codecgen'ed code will delegate encoding structs to reflection-based code.
+//   - MissingFielder implementation.
+//     If a type implements MissingFielder, a Selfer is not generated (with a warning message).
+//     Statically reproducing the runtime work needed to extract the missing fields and marshal them along with the struct fields,
+//     while handling the Canonical=true special case, was onerous to implement.
 //
 // During encode/decode, Selfer takes precedence.
 // A type implementing Selfer will know how to encode/decode itself statically.
