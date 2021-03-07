@@ -166,6 +166,8 @@ import (
 //
 // Note: Negative tests that check for errors will fail, so only use this
 // when debugging, and run only one test at a time preferably.
+//
+// Note: RPC tests espeially fail, as they depend on getting the error from an Encode/Decode call.
 const debugging = false
 
 const (
