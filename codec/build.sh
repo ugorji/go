@@ -13,9 +13,9 @@ _tests() {
     esac
     # note that codecgen requires fastpath, so you cannot do "codecgen codec.notfastpath"
     # we test the following permutations wnich all execute different code paths as below.
-    echo "TestCodecSuite: (fastpath/unsafe), (fastpath/!unsafe), (!fastpath/!unsafe), (codecgen/unsafe)"
+    echo "TestCodecSuite: (fastpath/unsafe), (!fastpath/unsafe), (fastpath/!unsafe), (!fastpath/!unsafe), (codecgen/unsafe)"
     local nc=1 # count
-    local a=( "" "codec.safe" "codec.notfastpath codec.safe"  "codecgen" )
+    local a=( "" "codec.notfastpath" "codec.safe" "codec.notfastpath codec.safe"  "codecgen" )
     local b=()
     local c=()
     for i in "${a[@]}"
