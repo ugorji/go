@@ -892,6 +892,8 @@ type Encoder struct {
 	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
 	ci []interface{} // []uintptr
 
+	perType
+
 	slist sfiRvFreelist
 
 	// b [1 * 8]byte // for encoding chan byte, (non-addressable) [N]byte, etc
@@ -1279,7 +1281,7 @@ TOP:
 	} else if rv.CanAddr() {
 		fn.fe(e, &fn.i, rv.Addr())
 	} else if fn.i.addrEf {
-		fn.fe(e, &fn.i, rvAddressableReadonly(rv).Addr())
+		fn.fe(e, &fn.i, e.perType.AddressableRO(rv).Addr())
 	} else {
 		fn.fe(e, &fn.i, rv)
 	}

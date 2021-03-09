@@ -1,4 +1,3 @@
-//go:build !go1.9 || safe || codec.safe || appengine
 // +build !go1.9 safe codec.safe appengine
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
@@ -94,12 +93,6 @@ func rvConvert(v reflect.Value, t reflect.Type) (rv reflect.Value) {
 	return v.Convert(t)
 }
 
-func rvAddressableReadonly(v reflect.Value) (rv reflect.Value) {
-	rv = rvZeroAddrK(v.Type(), v.Kind())
-	rvSetDirect(rv, v)
-	return
-}
-
 func rt2id(rt reflect.Type) uintptr {
 	return reflect.ValueOf(rt).Pointer()
 }
@@ -193,30 +186,30 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 
 // --------------------------
 
-type decTransientElem struct {
-	rtid                uintptr
-	addr0, addr1, addr2 reflect.Value
+type perTypeElem struct {
+	rtid               uintptr
+	zero, addr1, addr2 reflect.Value
 }
 
-type decTransient struct {
-	v []decTransientElem
+type perType struct {
+	v []perTypeElem
 }
 
-func newDecTransientElem(t reflect.Type, rtid uintptr) (v decTransientElem) {
+func newPerTypeElem(t reflect.Type, rtid uintptr) (v perTypeElem) {
 	v.rtid = rtid
-	v.addr0 = reflect.Zero(t)
+	v.zero = reflect.Zero(t)
 	v.addr1 = reflect.New(t).Elem()
 	v.addr2 = reflect.New(t).Elem()
 	return
 }
 
-func (x *decTransient) get(t reflect.Type, scalar, do2 bool) (v reflect.Value) {
+func (x *perType) get(t reflect.Type, scalar, do2 bool) (v reflect.Value) {
 	const alwaysNew = false
 	if alwaysNew || !scalar {
 		return reflect.New(t).Elem()
 	}
 	rtid := rt2id(t)
-	var e *decTransientElem
+	var e *perTypeElem
 	var h, i uint
 	var j = uint(len(x.v))
 LOOP:
@@ -231,28 +224,34 @@ LOOP:
 	}
 	if i < uint(len(x.v)) {
 		if x.v[i].rtid != rtid {
-			x.v = append(x.v, decTransientElem{})
+			x.v = append(x.v, perTypeElem{})
 			copy(x.v[i+1:], x.v[i:])
-			x.v[i] = newDecTransientElem(t, rtid)
+			x.v[i] = newPerTypeElem(t, rtid)
 		}
 	} else {
-		x.v = append(x.v, newDecTransientElem(t, rtid))
+		x.v = append(x.v, newPerTypeElem(t, rtid))
 	}
 	e = &x.v[i]
 	if do2 {
-		e.addr2.Set(e.addr0)
+		e.addr2.Set(e.zero)
 		return e.addr2
 	}
-	e.addr1.Set(e.addr0)
+	e.addr1.Set(e.zero)
 	return e.addr1
 }
 
-func (x *decTransient) AddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+func (x *perType) TransientAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return x.get(t, scalarBitset.isset(byte(k)), false)
 }
 
-func (x *decTransient) Addr2K(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+func (x *perType) TransientAddr2K(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return x.get(t, scalarBitset.isset(byte(k)), true)
+}
+
+func (x *perType) AddressableRO(v reflect.Value) (rv reflect.Value) {
+	rv = x.TransientAddrK(v.Type(), v.Kind())
+	rvSetDirect(rv, v)
+	return
 }
 
 // --------------------------

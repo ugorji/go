@@ -65,8 +65,6 @@ const (
 	// unsafeTypeKindDirectIface = 1 << 5
 )
 
-type decTransient struct{}
-
 type unsafeString struct {
 	Data unsafe.Pointer
 	Len  int
@@ -92,6 +90,20 @@ type unsafeReflectValue struct {
 type unsafeRuntimeType struct {
 	size uintptr
 	// ... many other fields here
+}
+
+type perType struct{}
+
+func (perType) TransientAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
+	return rvZeroAddrTransientAnyK(t, k, unsafeZeroScalar0Addr)
+}
+
+func (perType) TransientAddr2K(t reflect.Type, k reflect.Kind) reflect.Value {
+	return rvZeroAddrTransientAnyK(t, k, unsafeZeroScalar1Addr)
+}
+
+func (perType) AddressableRO(v reflect.Value) reflect.Value {
+	return rvAddressableReadonly(v)
 }
 
 // unsafeZeroScalarXXX below is used in rvZeroAddrPrimK as the backing storage
@@ -315,14 +327,6 @@ func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr *[unsafeZeroSc
 		urv.ptr = unsafe_New(urv.typ)
 	}
 	return
-}
-
-func (decTransient) AddrK(t reflect.Type, k reflect.Kind) reflect.Value {
-	return rvZeroAddrTransientAnyK(t, k, unsafeZeroScalar0Addr)
-}
-
-func (decTransient) Addr2K(t reflect.Type, k reflect.Kind) reflect.Value {
-	return rvZeroAddrTransientAnyK(t, k, unsafeZeroScalar1Addr)
 }
 
 func rvZeroK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
