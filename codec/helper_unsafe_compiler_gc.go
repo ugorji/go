@@ -39,3 +39,7 @@ var unsafeZeroArr [1024]byte
 //go:linkname rvPtrToType reflect.toType
 //go:noescape
 func rvPtrToType(typ unsafe.Pointer) reflect.Type
+
+//go:linkname growslice runtime.growslice
+//go:noescape
+func growslice(typ unsafe.Pointer, old unsafeSlice, cap int) unsafeSlice

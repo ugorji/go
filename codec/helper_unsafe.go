@@ -1405,10 +1405,6 @@ func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
 //go:noescape
 func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
 
-//go:linkname growslice runtime.growslice
-//go:noescape
-func growslice(typ unsafe.Pointer, old unsafeSlice, cap int) unsafeSlice
-
 /*
 
 //go:linkname mallocgc runtime.mallocgc
