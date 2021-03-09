@@ -1,3 +1,4 @@
+//go:build !go1.9 || safe || codec.safe || appengine
 // +build !go1.9 safe codec.safe appengine
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
@@ -77,14 +78,6 @@ func rvSetSliceLen(rv reflect.Value, length int) {
 }
 
 func rvZeroAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
-	return reflect.New(t).Elem()
-}
-
-func rvZeroAddrTransientK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
-	return reflect.New(t).Elem()
-}
-
-func rvZeroAddrTransient2K(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return reflect.New(t).Elem()
 }
 
@@ -196,6 +189,70 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 		}
 	}
 	return true
+}
+
+// --------------------------
+
+type decTransientElem struct {
+	rtid                uintptr
+	addr0, addr1, addr2 reflect.Value
+}
+
+type decTransient struct {
+	v []decTransientElem
+}
+
+func newDecTransientElem(t reflect.Type, rtid uintptr) (v decTransientElem) {
+	v.rtid = rtid
+	v.addr0 = reflect.Zero(t)
+	v.addr1 = reflect.New(t).Elem()
+	v.addr2 = reflect.New(t).Elem()
+	return
+}
+
+func (x *decTransient) get(t reflect.Type, scalar, do2 bool) (v reflect.Value) {
+	const alwaysNew = false
+	if alwaysNew || !scalar {
+		return reflect.New(t).Elem()
+	}
+	rtid := rt2id(t)
+	var e *decTransientElem
+	var h, i uint
+	var j = uint(len(x.v))
+LOOP:
+	if i < j {
+		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
+		if x.v[h].rtid < rtid {
+			i = h + 1
+		} else {
+			j = h
+		}
+		goto LOOP
+	}
+	if i < uint(len(x.v)) {
+		if x.v[i].rtid != rtid {
+			x.v = append(x.v, decTransientElem{})
+			copy(x.v[i+1:], x.v[i:])
+			x.v[i] = newDecTransientElem(t, rtid)
+		}
+	} else {
+		x.v = append(x.v, newDecTransientElem(t, rtid))
+	}
+	e = &x.v[i]
+	if do2 {
+		e.addr2.Set(e.addr0)
+		return e.addr2
+	}
+	e.addr1.Set(e.addr0)
+	return e.addr1
+}
+
+func (x *decTransient) AddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+	return x.get(t, scalarBitset.isset(byte(k)), false)
+}
+
+func (x *decTransient) Addr2K(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+	return x.get(t, scalarBitset.isset(byte(k)), true)
 }
 
 // --------------------------

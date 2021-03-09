@@ -598,7 +598,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 	// decode into it, and reset the interface to that new value.
 
 	if !canDecode {
-		rvn2 := rvZeroAddrTransientK(rvType(rvn), rvn.Kind())
+		rvn2 := d.decTransient.AddrK(rvType(rvn), rvn.Kind())
 		rvSetDirect(rvn2, rvn)
 		rvn = rvn2
 	}
@@ -1038,7 +1038,7 @@ func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 		}
 		slh.ElemContainerState(j)
 		if rtelem0Mut || !rv9.IsValid() { // || (f.ti.elemkind == reflect.Ptr && rvIsNil(rv9)) {
-			rv9 = rvZeroAddrTransientK(f.ti.elem, reflect.Kind(f.ti.elemkind))
+			rv9 = d.decTransient.AddrK(f.ti.elem, reflect.Kind(f.ti.elemkind))
 		}
 		if fn == nil {
 			fn = d.h.fn(rtelem)
@@ -1161,7 +1161,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			// if vtypekind is a scalar, then it is ok to use transient Key for map key.
 			// as the map value is decoded using xxxTransientK, use xxxTransient2K for the key.
 			if scalarBitset.isset(byte(vtypeKind)) {
-				rvk = rvZeroAddrTransient2K(ktype, ktypeKind)
+				rvk = d.decTransient.Addr2K(ktype, ktypeKind)
 			} else {
 				rvk = rvZeroAddrK(ktype, ktypeKind)
 			}
@@ -1169,7 +1169,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				rvkn = rvk
 			}
 			if !rvvMut {
-				rvvn = rvZeroAddrTransientK(vtype, vtypeKind)
+				rvvn = d.decTransient.AddrK(vtype, vtypeKind)
 			}
 			if !ktypeIsString && keyFn == nil {
 				keyFn = d.h.fn(ktypeLo)
@@ -1244,7 +1244,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 						rvv = rvvn
 					default:
 						// make addressable (so you can set the slice/array elements, etc)
-						rvvn = rvZeroAddrTransientK(vtype, vtypeKind)
+						rvvn = d.decTransient.AddrK(vtype, vtypeKind)
 						rvSetDirect(rvvn, rvv)
 						rvv = rvvn
 					}
@@ -1253,7 +1253,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 					if vtypeIsPtr {
 						rvv = reflect.New(vtypeElem)
 					} else {
-						rvv = rvZeroAddrTransientK(vtype, vtypeKind)
+						rvv = d.decTransient.AddrK(vtype, vtypeKind)
 					}
 				}
 			} else {
@@ -1261,7 +1261,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				if vtypeIsPtr {
 					rvv = reflect.New(vtypeElem)
 				} else {
-					rvv = rvZeroAddrTransientK(vtype, vtypeKind)
+					rvv = d.decTransient.AddrK(vtype, vtypeKind)
 				}
 			}
 		} else {
@@ -1315,6 +1315,8 @@ type Decoder struct {
 
 	hh  Handle
 	err error
+
+	decTransient
 
 	// used for interning strings
 	is internerMap
@@ -2013,7 +2015,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 	// if !canDecode {
 	// 	switch reason {
 	// 	case decNotDecodeableReasonNonAddrValue:
-	// 		rv2 = rvZeroAddrTransientK(rvType(rv), rv.Kind())
+	// 		rv2 = d.decTransient.AddrK(rvType(rv), rv.Kind())
 	// 		rvSetDirect(rv2, rv)
 	// 		rv = rv2
 	// 	case decNotDecodeableReasonNilReference:
@@ -2032,7 +2034,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 		if rv.Kind() == reflect.Ptr {
 			rv2 = reflect.New(rvType(rv).Elem())
 		} else {
-			rv2 = rvZeroAddrTransientK(rvType(rv), rv.Kind())
+			rv2 = d.decTransient.AddrK(rvType(rv), rv.Kind())
 		}
 		rvSetDirect(rv2, rv)
 		rv = rv2

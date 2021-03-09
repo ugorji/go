@@ -65,6 +65,8 @@ const (
 	// unsafeTypeKindDirectIface = 1 << 5
 )
 
+type decTransient struct{}
+
 type unsafeString struct {
 	Data unsafe.Pointer
 	Len  int
@@ -315,11 +317,11 @@ func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr *[unsafeZeroSc
 	return
 }
 
-func rvZeroAddrTransientK(t reflect.Type, k reflect.Kind) reflect.Value {
+func (decTransient) AddrK(t reflect.Type, k reflect.Kind) reflect.Value {
 	return rvZeroAddrTransientAnyK(t, k, unsafeZeroScalar0Addr)
 }
 
-func rvZeroAddrTransient2K(t reflect.Type, k reflect.Kind) reflect.Value {
+func (decTransient) Addr2K(t reflect.Type, k reflect.Kind) reflect.Value {
 	return rvZeroAddrTransientAnyK(t, k, unsafeZeroScalar1Addr)
 }
 
