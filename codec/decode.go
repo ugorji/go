@@ -19,7 +19,7 @@ const (
 const (
 	decDefMaxDepth         = 1024        // maximum depth
 	decDefChanCap          = 64          // should be large, as cap cannot be expanded
-	decScratchByteArrayLen = (8 + 2) * 8 // ??? cacheLineSize +
+	decScratchByteArrayLen = (4 + 2) * 8 // around cacheLineSize ie ~64, depending on Decoder size
 
 	// decDefSliceCap         = 8
 
@@ -1316,7 +1316,7 @@ type Decoder struct {
 	hh  Handle
 	err error
 
-	perType
+	perType decPerType
 
 	// used for interning strings
 	is internerMap

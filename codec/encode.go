@@ -892,7 +892,7 @@ type Encoder struct {
 	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
 	ci []interface{} // []uintptr
 
-	perType
+	perType encPerType
 
 	slist sfiRvFreelist
 

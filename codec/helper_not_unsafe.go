@@ -195,6 +195,14 @@ type perType struct {
 	v []perTypeElem
 }
 
+type decPerType struct {
+	perType
+}
+
+type encPerType struct {
+	perType
+}
+
 func newPerTypeElem(t reflect.Type, rtid uintptr) (v perTypeElem) {
 	v.rtid = rtid
 	v.zero = reflect.Zero(t)

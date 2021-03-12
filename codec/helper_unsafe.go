@@ -65,6 +65,16 @@ const (
 	// unsafeTypeKindDirectIface = 1 << 5
 )
 
+// unsafeZeroScalarXXX below is used in rvZeroAddrPrimK as the backing storage
+// for primitives that we want to decode into.
+//
+// MARKER: slices are not supported, as they are mutable, and thus an element can be being
+// decoded when we are using this space for a slice that should hold it.
+//
+// Cap is 16 as the maximum size is a complex128 (or string on 64-bit machines).
+
+const unsafeZeroScalarArrCap = 16
+
 type unsafeString struct {
 	Data unsafe.Pointer
 	Len  int
@@ -92,36 +102,48 @@ type unsafeRuntimeType struct {
 	// ... many other fields here
 }
 
-type perType struct{}
-
-func (perType) TransientAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
-	return rvZeroAddrTransientAnyK(t, k, unsafeZeroScalar0Addr)
+type perType struct {
+	addr1, addr2 [unsafeZeroScalarArrCap]byte
 }
 
-func (perType) TransientAddr2K(t reflect.Type, k reflect.Kind) reflect.Value {
-	return rvZeroAddrTransientAnyK(t, k, unsafeZeroScalar1Addr)
+type decPerType struct {
+	perType
 }
 
-func (perType) AddressableRO(v reflect.Value) reflect.Value {
+type encPerType struct{}
+
+// TransientAddrK is used for getting a *transient* value to be decoded into,
+// which will right away be used for something else.
+//
+// For this, we optimize and use a scratch space.
+//
+// We use this for situations:
+// - decode into a temp value x, and then set x into an interface
+// - decode into a temp value, for use as a map key, to lookup up a map value
+// - decode into a temp value, for use as a map value, to set into a map
+// - decode into a temp value, for sending into a channel
+//
+// By definition, Transient values are NEVER pointers.
+//
+// In general, only non-composite values can be transient i.e. number, bool, string.
+// These values can be encoded/decoded directly by a driver and will not
+// interfer with other values being decoded.
+//
+// Note that because of the situation with map keys and map values iterate during a range,
+// we have 2 variants of:
+// Transient and Transient2 (used for map keys if map value is transient also)
+
+func (x *perType) TransientAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
+	return rvZeroAddrTransientAnyK(t, k, &x.addr1)
+}
+
+func (x *perType) TransientAddr2K(t reflect.Type, k reflect.Kind) reflect.Value {
+	return rvZeroAddrTransientAnyK(t, k, &x.addr2)
+}
+
+func (encPerType) AddressableRO(v reflect.Value) reflect.Value {
 	return rvAddressableReadonly(v)
 }
-
-// unsafeZeroScalarXXX below is used in rvZeroAddrPrimK as the backing storage
-// for primitives that we want to decode into.
-//
-// MARKER: slices are not supported, as they are mutable, and thus an element can be being
-// decoded when we are using this space for a slice that should hold it.
-//
-// Cap is 16 as the maximum size is a complex128 (or string on 64-bit machines).
-
-const unsafeZeroScalarArrCap = 16
-
-var (
-	unsafeZeroScalarArr [2][unsafeZeroScalarArrCap]byte
-
-	unsafeZeroScalar0Addr = &unsafeZeroScalarArr[0]
-	unsafeZeroScalar1Addr = &unsafeZeroScalarArr[1]
-)
 
 // unsafeZeroAddr and unsafeZeroSlice points to a read-only block of memory
 // used for setting a zero value for most types or creating a read-only
@@ -300,21 +322,6 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return
 }
 
-// rvZeroAddrTransientK is used for getting a *transient* value to be decoded into,
-// which will right away be used for something else.
-//
-// For this, we optimize and use a scratch space if the kind is a number, bool or string.
-//
-// We use this for situations:
-// - we need to decode into a primitive for setting into an interface.
-// - decode into a primitive for setting a map value
-// - decode into a primitive for setting a map key iff the map value is also a primitive
-//
-// For all these, the decoding can be thought of as a one-off value which will not
-// interfer with other values being decoded.
-//
-// Because of the situation with map keys and map values being primitives, we have 2 variants:
-// Transient and Transient2 (used for map keys if map value is primitive also)
 func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr *[unsafeZeroScalarArrCap]byte) (rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
