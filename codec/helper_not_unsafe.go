@@ -420,6 +420,14 @@ func rvSetDirectZero(rv reflect.Value) {
 	rv.Set(reflect.Zero(rv.Type()))
 }
 
+func rvSet(rv reflect.Value, v reflect.Value) {
+	rv.Set(v)
+}
+
+func rvSetZero(rv reflect.Value) {
+	rv.Set(reflect.Zero(rv.Type()))
+}
+
 func rvSlice(rv reflect.Value, length int) reflect.Value {
 	return rv.Slice(0, length)
 }

@@ -753,6 +753,20 @@ func rvSetUint64(rv reflect.Value, v uint64) {
 
 // ----------------
 
+// rvSet is rv.Set for all kinds, including reflect.Interface.
+func rvSet(rv reflect.Value, v reflect.Value) {
+	if rv.Kind() == reflect.Interface {
+		rv.Set(v)
+	} else {
+		rvSetDirect(rv, v)
+	}
+}
+
+// rvSetZero is rv.Set(reflect.Zero(rv.Type()) for all kinds (including reflect.Interface).
+func rvSetZero(rv reflect.Value) {
+	rvSetDirectZero(rv)
+}
+
 // rvSetDirect is rv.Set for all kinds except reflect.Interface.
 //
 // Callers MUST not pass an interface value in, as it may result in an unexpected segfaults.
@@ -772,6 +786,7 @@ func rvSetDirect(rv reflect.Value, v reflect.Value) {
 	}
 }
 
+// rvSetDirectZero is rv.Set(reflect.Zero(rv.Type()) for all kinds except reflect.Interface.
 func rvSetDirectZero(rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	if urv.ptr != unsafeZeroAddr {

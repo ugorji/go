@@ -573,16 +573,29 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 	//
 	// ensure you call rv.Set(...) before returning.
 
+	isnilrv := rvIsNil(rv)
+
 	var rvn reflect.Value
-	if d.h.InterfaceReset || rvIsNil(rv) {
+
+	if d.h.InterfaceReset {
 		// check if mapping to a type: if so, initialize it and move on
 		rvn = d.h.intf2impl(f.ti.rtid)
 		if !rvn.IsValid() {
 			rvn = d.kInterfaceNaked(f)
 			if rvn.IsValid() {
 				rv.Set(rvn)
-			} else if d.h.InterfaceReset {
-				setZeroRV(rv)
+			} else if !isnilrv {
+				decSetNonNilRV2Zero4Intf(rv)
+			}
+			return
+		}
+	} else if isnilrv {
+		// check if mapping to a type: if so, initialize it and move on
+		rvn = d.h.intf2impl(f.ti.rtid)
+		if !rvn.IsValid() {
+			rvn = d.kInterfaceNaked(f)
+			if rvn.IsValid() {
+				rv.Set(rvn)
 			}
 			return
 		}
@@ -599,7 +612,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 
 	if !canDecode {
 		rvn2 := d.perType.TransientAddrK(rvType(rvn), rvn.Kind())
-		rvSetDirect(rvn2, rvn)
+		rvSet(rvn2, rvn)
 		rvn = rvn2
 	}
 
@@ -755,7 +768,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 
-	rtelem0Mut := !isImmutableKind(reflect.Kind(f.ti.elemkind))
+	rtelem0Mut := !scalarBitset.isset(f.ti.elemkind)
 	rtelem := f.ti.elem
 	rtelemkind := reflect.Kind(f.ti.elemkind)
 	for rtelemkind == reflect.Ptr {
@@ -869,7 +882,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		}
 		rv9 = rvSliceIndex(rv, j, f.ti)
 		if elemReset {
-			rvSetDirectZero(rv9)
+			rvSetZero(rv9)
 		}
 
 		if fn == nil {
@@ -953,7 +966,7 @@ func (d *Decoder) kArray(f *codecFnInfo, rv reflect.Value) {
 		slh.ElemContainerState(j)
 		rv9 = rvArrayIndex(rv, j, f.ti)
 		if elemReset {
-			rvSetDirectZero(rv9)
+			rvSetZero(rv9)
 		}
 
 		if fn == nil {
@@ -1003,9 +1016,9 @@ func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 		return
 	}
 
-	rtelem0Mut := !isImmutableKind(reflect.Kind(f.ti.elemkind))
 	rtelem := f.ti.elem
-	rtelemkind := rtelem.Kind()
+	rtelemkind := reflect.Kind(f.ti.elemkind)
+	rtelem0Mut := !scalarBitset.isset(f.ti.elemkind)
 	for rtelemkind == reflect.Ptr {
 		rtelem = rtelem.Elem()
 		rtelemkind = rtelem.Kind()
@@ -1020,29 +1033,33 @@ func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 	var rvlen int // := rv.Len()
 	hasLen := containerLenS > 0
 
-	var j int
-
-	for ; d.containerNext(j, containerLenS, hasLen); j++ {
-		if j == 0 && rvIsNil(rv) {
-			if hasLen {
-				rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(f.ti.elemsize))
-			} else {
-				rvlen = decDefChanCap
+	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
+		if j == 0 {
+			if rvIsNil(rv) {
+				if hasLen {
+					rvlen = decInferLen(containerLenS, d.h.MaxInitLen, int(f.ti.elemsize))
+				} else {
+					rvlen = decDefChanCap
+				}
+				if rvCanset {
+					rv = reflect.MakeChan(f.ti.rt, rvlen)
+					rvChanged = true
+				} else {
+					d.errorf("cannot decode into non-settable chan")
+				}
 			}
-			if rvCanset {
-				rv = reflect.MakeChan(f.ti.rt, rvlen)
-				rvChanged = true
-			} else {
-				d.errorf("cannot decode into non-settable chan")
+			if !rtelem0Mut {
+				rv9 = d.perType.TransientAddrK(f.ti.elem, reflect.Kind(f.ti.elemkind))
+			}
+			if fn == nil {
+				fn = d.h.fn(rtelem)
 			}
 		}
 		slh.ElemContainerState(j)
-		if rtelem0Mut || !rv9.IsValid() { // || (f.ti.elemkind == reflect.Ptr && rvIsNil(rv9)) {
+		if rtelem0Mut { // || (f.ti.elemkind == reflect.Ptr && rvIsNil(rv9)) {
 			rv9 = d.perType.TransientAddrK(f.ti.elem, reflect.Kind(f.ti.elemkind))
 		}
-		if fn == nil {
-			fn = d.h.fn(rtelem)
-		}
+		rvSetZero(rv9)
 		d.decodeValue(rv9, fn)
 		rv.Send(rv9)
 	}
@@ -1085,15 +1102,15 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 	}
 
-	if vtypeKind == reflect.Ptr {
+	vtypeIsPtr := vtypeKind == reflect.Ptr
+	if vtypeIsPtr {
 		vtypeElem = vtype.Elem()
 		for vtypeLo = vtypeElem; vtypeLo.Kind() == reflect.Ptr; vtypeLo = vtypeLo.Elem() {
 		}
 	}
 
-	rvvMut := !isImmutableKind(vtypeKind)
-	rvvCanNil := isnilBitset.isset(byte(vtypeKind))
-	vtypeIsPtr := vtypeKind == reflect.Ptr
+	rvvMut := !scalarBitset.isset(ti.elemkind)
+	rvvCanNil := isnilBitset.isset(ti.elemkind)
 
 	// rvk: key
 	// rvkn: if non-mutable, on each iteration of loop, set rvk to this
@@ -1114,7 +1131,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		}
 	}
 
-	rvkMut := !isImmutableKind(ktypeKind) // if ktype is immutable, then re-use the same rvk.
+	rvkMut := !scalarBitset.isset(ti.keykind) // if ktype is immutable, then re-use the same rvk.
 	ktypeIsString := ktypeId == stringTypId
 	ktypeIsIntf := ktypeId == intfTypId
 
@@ -1158,8 +1175,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		callFnRvk = false
 		if j == 0 {
-			// if vtypekind is a scalar, then it is ok to use transient Key for map key.
-			// as the map value is decoded using xxxTransientK, use xxxTransient2K for the key.
+			// if vtypekind is a scalar and thus value will be decoded using TransientAddrK,
+			// then it is ok to use TransientAddr2K for the map key.
 			if scalarBitset.isset(byte(vtypeKind)) {
 				rvk = d.perType.TransientAddr2K(ktype, ktypeKind)
 			} else {
@@ -1178,7 +1195,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				valFn = d.h.fn(vtypeLo)
 			}
 		} else if rvkMut {
-			rvSetDirectZero(rvk)
+			rvSetZero(rvk)
 		} else {
 			rvk = rvkn
 		}
@@ -1245,7 +1262,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 					default:
 						// make addressable (so you can set the slice/array elements, etc)
 						rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
-						rvSetDirect(rvvn, rvv)
+						rvSet(rvvn, rvv)
 						rvv = rvvn
 					}
 				} else {
@@ -1651,15 +1668,16 @@ func setZero(iv interface{}) {
 	case *time.Time:
 		*v = time.Time{}
 	case reflect.Value:
-		setZeroRV(v)
+		decSetNonNilRV2Zero(v)
 	default:
 		if !fastpathDecodeSetZeroTypeSwitch(iv) {
-			setZeroRV(rv)
+			decSetNonNilRV2Zero(rv)
 		}
 	}
 }
 
-func setZeroRV(v reflect.Value) {
+// decSetNonNilRV2Zero will set the non-nil value to its zero value.
+func decSetNonNilRV2Zero(v reflect.Value) {
 	// If not decodeable (settable), we do not touch it.
 	// We considered empty'ing it if not decodeable e.g.
 	//    - if chan, drain it
@@ -1670,11 +1688,30 @@ func setZeroRV(v reflect.Value) {
 	// whole value to the zero value, or leave AS IS.
 
 	k := v.Kind()
-	if k == reflect.Ptr || k == reflect.Interface {
-		v = v.Elem()
-	}
-	if v.CanSet() {
+	if k == reflect.Interface {
+		decSetNonNilRV2Zero4Intf(v)
+	} else if k == reflect.Ptr {
+		decSetNonNilRV2Zero4Ptr(v)
+	} else if v.CanSet() {
 		rvSetDirectZero(v)
+	}
+}
+
+func decSetNonNilRV2Zero4Ptr(v reflect.Value) {
+	ve := v.Elem()
+	if ve.CanSet() {
+		rvSetZero(ve) // we can have a pointer to an interface
+	} else if v.CanSet() {
+		rvSetZero(v)
+	}
+}
+
+func decSetNonNilRV2Zero4Intf(v reflect.Value) {
+	ve := v.Elem()
+	if ve.CanSet() {
+		rvSetDirectZero(ve) // interfaces always have element as a non-interface
+	} else if v.CanSet() {
+		rvSetZero(v)
 	}
 }
 
@@ -1764,7 +1801,7 @@ func (d *Decoder) decode(iv interface{}) {
 // subsequent calls i.e. kXXX methods, etc do not have to handle it themselves.
 func (d *Decoder) decodeValue(rv reflect.Value, fn *codecFn) {
 	if d.d.TryNil() {
-		setZeroRV(rv)
+		decSetNonNilRV2Zero(rv)
 		return
 	}
 	d.decodeValueNoCheckNil(rv, fn)
@@ -2036,7 +2073,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 		} else {
 			rv2 = d.perType.TransientAddrK(rvType(rv), rv.Kind())
 		}
-		rvSetDirect(rv2, rv)
+		rvSet(rv2, rv)
 		rv = rv2
 	}
 

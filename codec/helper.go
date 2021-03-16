@@ -1761,8 +1761,9 @@ type typeInfo struct {
 
 	keykind, elemkind uint8
 
-	flagCustom     bool // does this have custom implementation?
-	flagComparable bool
+	flagCustom       bool // does this have custom implementation?
+	flagComparable   bool
+	flagCanTransient bool
 
 	flagSelferViaCodecgen bool
 
@@ -2014,6 +2015,8 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	// bset(b1, &ti.flagComparable)
 	ti.flagComparable = b1
 
+	ti.flagCanTransient = true
+
 	switch rk {
 	case reflect.Struct:
 		var omitEmpty bool
@@ -2027,11 +2030,12 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		pv := pi.(*typeInfoLoad)
 		pv.reset()
 		pv.etypes = append(pv.etypes, ti.rtid)
-		x.rget(rt, rtid, omitEmpty, nil, pv)
+		x.rget(rt, rtid, &ti, nil, pv, omitEmpty)
 		n := ti.resolve(pv.sfis, pv.sfiNames)
 		ti.init(pv.sfis, n)
 		pp.Put(pi)
 	case reflect.Map:
+		ti.flagCanTransient = false
 		ti.elem = rt.Elem()
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
@@ -2053,6 +2057,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 			ti.fastpathUnderlying = reflect.SliceOf(ti.elem)
 		}
 	case reflect.Chan:
+		ti.flagCanTransient = false
 		ti.elem = rt.Elem()
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
@@ -2060,6 +2065,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.key = reflect.SliceOf(ti.elem)
 		ti.keykind = uint8(reflect.Slice)
 	case reflect.Array:
+		ti.flagCanTransient = false
 		ti.mbs, b2 = implIntf(rt, mapBySliceTyp)
 		if !ti.mbs && b2 {
 			ti.mbs = b2
@@ -2079,6 +2085,10 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		// 	ti.elem = rt.Elem()
 		// 	ti.elemkind = uint8(ti.elem.Kind())
 		// 	ti.elemsize = uint32(ti.elem.Size())
+	case reflect.Interface:
+		ti.flagCanTransient = false
+	case reflect.Func:
+		ti.flagCanTransient = false
 	}
 
 	x.mu.Lock()
@@ -2105,8 +2115,8 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	return
 }
 
-func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
-	path *structFieldInfoPathNode, pv *typeInfoLoad) {
+func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, ti *typeInfo,
+	path *structFieldInfoPathNode, pv *typeInfoLoad, omitEmpty bool) {
 	// Read up fields and store how to access the value.
 	//
 	// It uses go's rules for message selectors,
@@ -2115,6 +2125,9 @@ func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, omitEmpty bool,
 	// Note: we consciously use slices, not a map, to simulate a set.
 	//       Typically, types have < 16 fields,
 	//       and iteration using equals is faster than maps there
+	if ti != nil {
+		ti.flagCanTransient = true
+	}
 	flen := rt.NumField()
 LOOP:
 	for j, jlen := uint16(0), uint16(flen); j < jlen; j++ {
@@ -2124,6 +2137,13 @@ LOOP:
 		switch fkind {
 		case reflect.Func, reflect.UnsafePointer:
 			continue LOOP
+		}
+
+		if ti != nil && ti.flagCanTransient {
+			switch fkind {
+			case reflect.Func, reflect.Chan, reflect.Map, reflect.Interface:
+				ti.flagCanTransient = false
+			}
 		}
 
 		isUnexported := f.PkgPath != ""
@@ -2194,7 +2214,7 @@ LOOP:
 						kind:     uint8(fkind),
 						numderef: numderef,
 					}
-					x.rget(ft, ftid, omitEmpty, path2, pv)
+					x.rget(ft, ftid, nil, path2, pv, omitEmpty)
 				}
 				continue
 			}
@@ -2298,9 +2318,9 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 	}
 }
 
-func isImmutableKind(k reflect.Kind) (v bool) {
-	return scalarBitset.isset(byte(k))
-}
+// func isImmutableKind(k reflect.Kind) (v bool) {
+// 	return scalarBitset.isset(byte(k))
+// }
 
 func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
 	if slen <= 0 {
