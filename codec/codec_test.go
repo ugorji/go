@@ -50,7 +50,7 @@ func init() {
 	testPreInitFns = append(testPreInitFns, testInit)
 }
 
-const testRecoverPanicToErr = true
+const testRecoverPanicToErr = !debugging
 
 func testPanicToErr(h errDecorator, err *error) {
 	// Note: This method MUST be called directly from defer i.e. defer testPanicToErr ...
