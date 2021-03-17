@@ -211,9 +211,9 @@ func newPerTypeElem(t reflect.Type, rtid uintptr) (v perTypeElem) {
 	return
 }
 
-func (x *perType) get(t reflect.Type, scalar, do2 bool) (v reflect.Value) {
+func (x *perType) get(t reflect.Type, do2 bool) (v reflect.Value) {
 	const alwaysNew = false
-	if alwaysNew || !scalar {
+	if alwaysNew {
 		return reflect.New(t).Elem()
 	}
 	rtid := rt2id(t)
@@ -249,17 +249,21 @@ LOOP:
 }
 
 func (x *perType) TransientAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
-	return x.get(t, scalarBitset.isset(byte(k)), false)
+	return x.get(t, false)
 }
 
 func (x *perType) TransientAddr2K(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
-	return x.get(t, scalarBitset.isset(byte(k)), true)
+	return x.get(t, true)
 }
 
 func (x *perType) AddressableRO(v reflect.Value) (rv reflect.Value) {
-	rv = x.TransientAddrK(v.Type(), v.Kind())
+	rv = x.get(v.Type(), false)
 	rvSetDirect(rv, v)
 	return
+}
+
+func basicCheckCanTransient(ti *typeInfo) bool {
+	return true
 }
 
 // --------------------------

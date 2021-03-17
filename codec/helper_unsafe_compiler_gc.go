@@ -25,10 +25,10 @@ func rvGrowSlice(rv reflect.Value, ti *typeInfo, xcap, incr int) (v reflect.Valu
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	ux := (*unsafeSlice)(urv.ptr)
 	t := ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
-	// zz.Debugf("before growslice: ux:Data(%x) Len/Cap: %d/%d, xcap/incr/xcap+incr: %d/%d/%d; rv: kind: %v, type: %v",
-	// ux.Data, ux.Len, ux.Cap, xcap, incr, xcap+incr, rv.Kind(), rv.Type())
+	// zz.Debugf("< growslice: ux:Data(%x) Len/Cap: %d/%d, xcap/incr: %d/%d/%d; kind: %v, type: %v",
+	// ux.Data, ux.Len, ux.Cap, xcap, incr, rv.Kind(), rv.Type())
 	*ux = growslice(t, *ux, xcap+incr)
-	// zz.Debug2f("after growslice:  ux:Data(%x) Len/Cap: %d/%d", ux.Data, ux.Len, ux.Cap)
+	// zz.Debug2f("> growslice:  ux:Data(%x) Len/Cap: %d/%d", ux.Data, ux.Len, ux.Cap)
 	ux.Len = ux.Cap
 	return rv, ux.Cap, true
 }

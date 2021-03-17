@@ -343,7 +343,10 @@ func init() {
 		set(byte(reflect.Complex128)).
 		set(byte(reflect.String))
 
-	// MARKER: reflect.Array is not a scalar, as its contents can be modified
+	// MARKER: reflect.Array is not a scalar, as its contents can be modified.
+	//
+	// Also, reflect.Array cannot be transient, as it might be non-addressable,
+	// meaning all the elements are non-addressable, and thus could re-use the transient buffer.
 
 	refBitset.
 		set(byte(reflect.Map)).
@@ -1734,11 +1737,11 @@ type typeInfo struct {
 	mbs          bool      // base type (T or *T) is a MapBySlice
 
 	// ---- cpu cache line boundary?
+
 	sfiSort []*structFieldInfo // sorted. Used when enc/dec struct to map.
 	sfiSrc  []*structFieldInfo // unsorted. Used when enc/dec struct to array.
 
 	// key is:
-	//   - map key (if map type)
 	//   - if map kind: map key
 	//   - if array kind: sliceOf(elem)
 	//   - if chan kind: sliceof(elem)
@@ -1756,6 +1759,9 @@ type typeInfo struct {
 	sfi4Name map[string]*structFieldInfo // map. used for finding sfi given a name
 
 	// ---- cpu cache line boundary?
+
+	tikey  *typeInfo
+	tielem *typeInfo
 
 	size, keysize, elemsize uint32
 
@@ -2015,8 +2021,9 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	// bset(b1, &ti.flagComparable)
 	ti.flagComparable = b1
 
-	ti.flagCanTransient = true
+	ti.flagCanTransient = basicCheckCanTransient(&ti)
 
+	var tt reflect.Type
 	switch rk {
 	case reflect.Struct:
 		var omitEmpty bool
@@ -2037,9 +2044,15 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	case reflect.Map:
 		ti.flagCanTransient = false
 		ti.elem = rt.Elem()
+		for tt = ti.elem; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
+		}
+		ti.tielem = x.get(rt2id(tt), tt)
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
 		ti.key = rt.Key()
+		for tt = ti.key; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
+		}
+		ti.tikey = x.get(rt2id(tt), tt)
 		ti.keykind = uint8(ti.key.Kind())
 		ti.keysize = uint32(ti.key.Size())
 		if ti.pkgpath != "" {
@@ -2051,6 +2064,9 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 			ti.mbs = b2
 		}
 		ti.elem = rt.Elem()
+		for tt = ti.elem; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
+		}
+		ti.tielem = x.get(rt2id(tt), tt)
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
 		if ti.pkgpath != "" {
@@ -2059,6 +2075,9 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	case reflect.Chan:
 		ti.flagCanTransient = false
 		ti.elem = rt.Elem()
+		for tt = ti.elem; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
+		}
+		ti.tielem = x.get(rt2id(tt), tt)
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
 		ti.chandir = uint8(rt.ChanDir())
@@ -2071,6 +2090,9 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 			ti.mbs = b2
 		}
 		ti.elem = rt.Elem()
+		for tt = ti.elem; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
+		}
+		ti.tielem = x.get(rt2id(tt), tt)
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
 		ti.key = reflect.SliceOf(ti.elem)
@@ -2125,25 +2147,23 @@ func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, ti *typeInfo,
 	// Note: we consciously use slices, not a map, to simulate a set.
 	//       Typically, types have < 16 fields,
 	//       and iteration using equals is faster than maps there
-	if ti != nil {
-		ti.flagCanTransient = true
-	}
 	flen := rt.NumField()
 LOOP:
 	for j, jlen := uint16(0), uint16(flen); j < jlen; j++ {
 		f := rt.Field(int(j))
 		fkind := f.Type.Kind()
-		// skip if a func type, or is unexported, or structTag value == "-"
-		switch fkind {
-		case reflect.Func, reflect.UnsafePointer:
-			continue LOOP
-		}
 
 		if ti != nil && ti.flagCanTransient {
 			switch fkind {
 			case reflect.Func, reflect.Chan, reflect.Map, reflect.Interface:
 				ti.flagCanTransient = false
 			}
+		}
+
+		// skip if a func type, or is unexported, or structTag value == "-"
+		switch fkind {
+		case reflect.Func, reflect.UnsafePointer:
+			continue LOOP
 		}
 
 		isUnexported := f.PkgPath != ""

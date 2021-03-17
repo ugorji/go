@@ -65,15 +65,10 @@ const (
 	// unsafeTypeKindDirectIface = 1 << 5
 )
 
-// unsafeZeroScalarXXX below is used in rvZeroAddrPrimK as the backing storage
-// for primitives that we want to decode into.
-//
-// MARKER: slices are not supported, as they are mutable, and thus an element can be being
-// decoded when we are using this space for a slice that should hold it.
-//
-// Cap is 16 as the maximum size is a complex128 (or string on 64-bit machines).
+// unsafeTransientArrCap below is used in TransientAddr as the backing storage
+// Cap is >= 16 as the maximum size is a complex128 (or string on 64-bit machines).
 
-const unsafeZeroScalarArrCap = 16
+const unsafeTransientArrCap = 64
 
 type unsafeString struct {
 	Data unsafe.Pointer
@@ -103,7 +98,7 @@ type unsafeRuntimeType struct {
 }
 
 type perType struct {
-	addr1, addr2 [unsafeZeroScalarArrCap]byte
+	addr1, addr2 [unsafeTransientArrCap]byte
 }
 
 type decPerType struct {
@@ -143,6 +138,10 @@ func (x *perType) TransientAddr2K(t reflect.Type, k reflect.Kind) reflect.Value 
 
 func (encPerType) AddressableRO(v reflect.Value) reflect.Value {
 	return rvAddressableReadonly(v)
+}
+
+func basicCheckCanTransient(ti *typeInfo) bool {
+	return ti.size <= unsafeTransientArrCap
 }
 
 // unsafeZeroAddr and unsafeZeroSlice points to a read-only block of memory
@@ -322,17 +321,12 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return
 }
 
-func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr *[unsafeZeroScalarArrCap]byte) (rv reflect.Value) {
+func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr *[unsafeTransientArrCap]byte) (rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
 	urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
-	// if k is number, bool or string, use scratch space
-	if scalarBitset.isset(byte(k)) {
-		*addr = [unsafeZeroScalarArrCap]byte{}
-		urv.ptr = unsafe.Pointer(addr)
-	} else {
-		urv.ptr = unsafe_New(urv.typ)
-	}
+	*addr = [unsafeTransientArrCap]byte{}
+	urv.ptr = unsafe.Pointer(addr)
 	return
 }
 
