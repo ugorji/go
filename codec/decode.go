@@ -1101,7 +1101,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	ktypeKind := reflect.Kind(ti.keykind)
 	kfast := mapKeyFastKindFor(ktypeKind)
 	visindirect := ti.elemsize > mapMaxElemSize
-	visref := refBitset.isset(byte(vtypeKind))
+	visref := refBitset.isset(ti.elemkind)
 
 	vtypePtr := vtypeKind == reflect.Ptr
 	ktypePtr := ktypeKind == reflect.Ptr
@@ -1262,56 +1262,56 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		// set doMapSet to false iff u do a get, and the return value is a non-nil pointer
 		doMapSet = true
 
-		if rvvMut {
-			if doMapGet {
-				rvv = mapGet(rv, rvk, rvva, kfast, visindirect, visref)
-				if rvv.IsValid() && (!rvvCanNil || !rvIsNil(rvv)) {
-					switch vtypeKind {
-					case reflect.Ptr, reflect.Map: // ok to decode directly into map
-						doMapSet = false
-					case reflect.Interface:
-						// if an interface{}, just decode into it iff a non-nil ptr/map, else allocate afresh
-						rvvn = rvv.Elem()
-						if k := rvvn.Kind(); (k == reflect.Ptr || k == reflect.Map) && !rvIsNil(rvvn) {
-							d.decodeValueNoCheckNil(rvvn, nil) // valFn is incorrect here
-							continue
-						}
-						// make addressable (so we can set the interface)
-						rvvn = rvZeroAddrK(vtype, vtypeKind)
-						rvvn.Set(rvv)
-						rvv = rvvn
-					default:
-						// make addressable (so you can set the slice/array elements, etc)
-						if vTransient {
-							rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
-						} else {
-							rvvn = rvZeroAddrK(vtype, vtypeKind)
-						}
-						rvSet(rvvn, rvv)
-						rvv = rvvn
-					}
-				} else {
-					if vtypePtr {
-						rvv = reflect.New(vtypeElem) // non-nil in stream, so allocate value
-					} else if vTransient {
-						rvv = d.perType.TransientAddrK(vtype, vtypeKind)
-					} else {
-						rvv = rvZeroAddrK(vtype, vtypeKind)
-					}
-				}
+		if !rvvMut {
+			rvv = rvvn
+		} else if !doMapGet {
+			goto NEW_RVV
+		} else {
+			rvv = mapGet(rv, rvk, rvva, kfast, visindirect, visref)
+			// if rvv.IsValid() && (!rvvCanNil || !rvIsNil(rvv)) {
+			// if rvv.IsValid() && !(rvvCanNil && rvIsNil(rvv)) {
+			// if !(!rvv.IsValid() || (rvvCanNil && rvIsNil(rvv))) {
+			if !rvv.IsValid() || (rvvCanNil && rvIsNil(rvv)) {
+				goto NEW_RVV
 			} else {
-				if vtypePtr {
-					rvv = reflect.New(vtypeElem) // non-nil in stream, so allocate value
-				} else if vTransient {
-					rvv = d.perType.TransientAddrK(vtype, vtypeKind)
-				} else {
-					rvv = rvZeroAddrK(vtype, vtypeKind)
+				switch vtypeKind {
+				case reflect.Ptr, reflect.Map: // ok to decode directly into map
+					doMapSet = false
+				case reflect.Interface:
+					// if an interface{}, just decode into it iff a non-nil ptr/map, else allocate afresh
+					rvvn = rvv.Elem()
+					if k := rvvn.Kind(); (k == reflect.Ptr || k == reflect.Map) && !rvIsNil(rvvn) {
+						d.decodeValueNoCheckNil(rvvn, nil) // valFn is incorrect here
+						continue
+					}
+					// make addressable (so we can set the interface)
+					rvvn = rvZeroAddrK(vtype, vtypeKind)
+					rvvn.Set(rvv)
+					rvv = rvvn
+				default:
+					// make addressable (so you can set the slice/array elements, etc)
+					if vTransient {
+						rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
+					} else {
+						rvvn = rvZeroAddrK(vtype, vtypeKind)
+					}
+					rvSet(rvvn, rvv)
+					rvv = rvvn
 				}
 			}
+		}
+		goto DECODE_VALUE_NO_CHECK_NIL
+
+	NEW_RVV:
+		if vtypePtr {
+			rvv = reflect.New(vtypeElem) // non-nil in stream, so allocate value
+		} else if vTransient {
+			rvv = d.perType.TransientAddrK(vtype, vtypeKind)
 		} else {
-			rvv = rvvn
+			rvv = rvZeroAddrK(vtype, vtypeKind)
 		}
 
+	DECODE_VALUE_NO_CHECK_NIL:
 		d.decodeValueNoCheckNil(rvv, valFn)
 
 		if doMapSet {
