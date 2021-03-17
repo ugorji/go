@@ -60,6 +60,7 @@ func simpledesc(bd byte) (s string) {
 type simpleEncDriver struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
+	encDriverNoState
 	h *SimpleHandle
 	// b [8]byte
 	e Encoder
@@ -232,10 +233,9 @@ func (e *simpleEncDriver) EncodeTime(t time.Time) {
 //------------------------------------
 
 type simpleDecDriver struct {
-	h      *SimpleHandle
-	bdRead bool
-	bd     byte
-	_      bool
+	h *SimpleHandle
+	bdAndBdread
+	_ bool
 	noBuiltInTypes
 	decDriverNoopContainerReader
 	d Decoder
@@ -737,13 +737,6 @@ func (h *SimpleHandle) newDecDriver() decDriver {
 	d.d.init(h)
 	d.reset()
 	return d
-}
-
-func (e *simpleEncDriver) reset() {
-}
-
-func (d *simpleDecDriver) reset() {
-	d.bd, d.bdRead = 0, false
 }
 
 var _ decDriver = (*simpleDecDriver)(nil)

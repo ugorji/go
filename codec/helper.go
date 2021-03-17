@@ -393,6 +393,20 @@ const (
 	jsonHandleFlag
 )
 
+type driverStateManager interface {
+	saveState() interface{}
+	restoreState(state interface{})
+}
+
+type bdAndBdread struct {
+	bdRead bool
+	bd     byte
+}
+
+func (x *bdAndBdread) reset()                     { x.bd, x.bdRead = 0, false }
+func (x bdAndBdread) saveState() interface{}      { return x }
+func (x *bdAndBdread) restoreState(v interface{}) { *x = v.(bdAndBdread) }
+
 type clsErr struct {
 	err    error // error on closing
 	closed bool  // is it closed?

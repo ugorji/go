@@ -41,6 +41,8 @@ type encDriver interface {
 	reset()
 	atEndOfEncode()
 	encoder() *Encoder
+
+	driverStateManager
 }
 
 type encDriverContainerTracker interface {
@@ -48,6 +50,12 @@ type encDriverContainerTracker interface {
 	WriteMapElemKey()
 	WriteMapElemValue()
 }
+
+type encDriverNoState struct{}
+
+func (encDriverNoState) reset()                     {}
+func (encDriverNoState) saveState() interface{}     { return nil }
+func (encDriverNoState) restoreState(v interface{}) {}
 
 type encDriverNoopContainerWriter struct{}
 
@@ -832,15 +840,36 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 		// first encode each key to a []byte first, then sort them, then record
 		bs0 := e.blist.get(len(mks) * 16)
 		mksv := bs0
-		e2 := NewEncoderBytes(&mksv, e.hh)
 		mksbv := make([]bytesRv, len(mks))
-		for i, k := range mks {
-			v := &mksbv[i]
-			l := len(mksv)
-			e2.MustEncode(k)
-			v.r = k
-			v.v = mksv[l:]
-		}
+
+		func() {
+			// replicate sideEncode logic
+			defer func(wb bytesEncAppender, bytes bool, c containerState, state interface{}) {
+				e.wb = wb
+				e.bytes = bytes
+				e.c = c
+				e.e.restoreState(state)
+			}(e.wb, e.bytes, e.c, e.e.saveState())
+
+			// e2 := NewEncoderBytes(&mksv, e.hh)
+			e.wb = bytesEncAppender{mksv[:0], &mksv}
+			e.bytes = true
+			e.c = 0
+			e.e.reset()
+
+			for i, k := range mks {
+				v := &mksbv[i]
+				l := len(mksv)
+
+				e.encodeValue(k, nil)
+				e.e.atEndOfEncode()
+				e.w().end()
+
+				v.r = k
+				v.v = mksv[l:]
+			}
+		}()
+
 		sort.Sort(bytesRvSlice(mksbv))
 		for j := range mksbv {
 			e.mapElemKey()
@@ -965,12 +994,8 @@ func (e *Encoder) Reset(w io.Writer) {
 
 // ResetBytes resets the Encoder with a new destination output []byte.
 func (e *Encoder) ResetBytes(out *[]byte) {
-	var in []byte = *out
-	if in == nil {
-		in = make([]byte, defEncByteBufSize)
-	}
 	e.bytes = true
-	e.wb.reset(in, out)
+	e.wb.reset(encInBytes(out), out)
 	e.resetCommon()
 }
 
@@ -1384,11 +1409,37 @@ func (e *Encoder) haltOnMbsOddLen(length int) {
 }
 
 func (e *Encoder) sideEncode(v interface{}, bs *[]byte) {
+	// rv := baseRV(v)
+	// e2 := NewEncoderBytes(bs, e.hh)
+	// e2.encodeValue(rv, e2.h.fnNoExt(rvType(rv)))
+	// e2.e.atEndOfEncode()
+	// e2.w().end()
+
+	defer func(wb bytesEncAppender, bytes bool, c containerState, state interface{}) {
+		e.wb = wb
+		e.bytes = bytes
+		e.c = c
+		e.e.restoreState(state)
+	}(e.wb, e.bytes, e.c, e.e.saveState())
+
+	e.wb = bytesEncAppender{encInBytes(bs)[:0], bs}
+	e.bytes = true
+	e.c = 0
+	e.e.reset()
+
+	// must call using fnNoExt
 	rv := baseRV(v)
-	e2 := NewEncoderBytes(bs, e.hh)
-	e2.encodeValue(rv, e.h.fnNoExt(rvType(rv)))
-	e2.e.atEndOfEncode()
-	e2.w().end()
+	e.encodeValue(rv, e.h.fnNoExt(rvType(rv)))
+	e.e.atEndOfEncode()
+	e.w().end()
+}
+
+func encInBytes(out *[]byte) (in []byte) {
+	in = *out
+	if in == nil {
+		in = make([]byte, defEncByteBufSize)
+	}
+	return
 }
 
 func encStructFieldKey(encName string, ee encDriver, w *encWr,

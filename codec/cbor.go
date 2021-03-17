@@ -117,6 +117,7 @@ func cbordesc(bd byte) (s string) {
 
 type cborEncDriver struct {
 	noBuiltInTypes
+	encDriverNoState
 	encDriverNoopContainerWriter
 	h *CborHandle
 	// x [8]byte
@@ -318,11 +319,10 @@ func (e *cborEncDriver) encStringBytesS(bb byte, v string) {
 
 type cborDecDriver struct {
 	decDriverNoopContainerReader
-	h      *CborHandle
-	bdRead bool
-	bd     byte
-	st     bool // skip tags
-	_      bool // found nil
+	h *CborHandle
+	bdAndBdread
+	st bool // skip tags
+	_  bool // found nil
 	noBuiltInTypes
 	d Decoder
 }
@@ -946,12 +946,8 @@ func (h *CborHandle) newDecDriver() decDriver {
 	return d
 }
 
-func (e *cborEncDriver) reset() {
-}
-
 func (d *cborDecDriver) reset() {
-	d.bd = 0
-	d.bdRead = false
+	d.bdAndBdread.reset()
 	d.st = d.h.SkipUnexpectedTags
 }
 

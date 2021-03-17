@@ -168,6 +168,8 @@ type decDriver interface {
 	nextValueBytes(start []byte) []byte
 
 	decoder() *Decoder
+
+	driverStateManager
 }
 
 type decDriverContainerTracker interface {
@@ -1438,13 +1440,15 @@ func (d *Decoder) init(h Handle) {
 func (d *Decoder) resetCommon() {
 	d.d.reset()
 	d.err = nil
+	d.c = 0
+	d.decByteState = decByteStateNone
 	d.depth = 0
 	d.calls = 0
+	// reset all things which were cached from the Handle, but could change
 	d.maxdepth = decDefMaxDepth
 	if d.h.MaxDepth > 0 {
 		d.maxdepth = d.h.MaxDepth
 	}
-	// reset all things which were cached from the Handle, but could change
 	d.mtid = 0
 	d.stid = 0
 	d.mtr = false
@@ -2111,8 +2115,32 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 }
 
 func (d *Decoder) sideDecode(v interface{}, bs []byte) {
+	// rv := baseRV(v)
+	// NewDecoderBytes(bs, d.hh).decodeValue(rv, d.h.fnNoExt(rvType(rv)))
+
+	defer func(rb bytesDecReader, bytes bool,
+		c containerState, dbs decByteState, depth int16, r decReader, state interface{}) {
+		d.rb = rb
+		d.bytes = bytes
+		d.c = c
+		d.decByteState = dbs
+		d.depth = depth
+		d.decReader = r
+		d.d.restoreState(state)
+	}(d.rb, d.bytes, d.c, d.decByteState, d.depth, d.decReader, d.d.saveState())
+
+	// d.rb.reset(in)
+	d.rb = bytesDecReader{bs[:len(bs):len(bs)], 0}
+	d.bytes = true
+	d.decReader = &d.rb
+	d.d.reset()
+	d.c = 0
+	d.decByteState = decByteStateNone
+	d.depth = 0
+
+	// must call using fnNoExt
 	rv := baseRV(v)
-	NewDecoderBytes(bs, d.hh).decodeValue(rv, d.h.fnNoExt(rvType(rv)))
+	d.decodeValue(rv, d.h.fnNoExt(rvType(rv)))
 }
 
 func (d *Decoder) fauxUnionReadRawBytes(asString bool) {

@@ -169,6 +169,7 @@ var (
 type msgpackEncDriver struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
+	encDriverNoState
 	h *MsgpackHandle
 	// x [8]byte
 	e Encoder
@@ -406,9 +407,8 @@ type msgpackDecDriver struct {
 	decDriverNoopContainerReader
 	h *MsgpackHandle
 	// b      [scratchByteArrayLen]byte
-	bd     byte
-	bdRead bool
-	_      bool
+	bdAndBdread
+	_ bool
 	noBuiltInTypes
 	// _ [6]uint64 // padding
 	d Decoder
@@ -1075,13 +1075,6 @@ func (h *MsgpackHandle) newDecDriver() decDriver {
 	d.d.init(h)
 	d.reset()
 	return d
-}
-
-func (e *msgpackEncDriver) reset() {
-}
-
-func (d *msgpackDecDriver) reset() {
-	d.bd, d.bdRead = 0, false
 }
 
 //--------------------------------------------------

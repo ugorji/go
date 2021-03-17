@@ -1,4 +1,3 @@
-//go:build codecgen.exec
 // +build codecgen.exec
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
@@ -2247,7 +2246,7 @@ func genCustomTypeName(tstr string) string {
 }
 
 func genIsImmutable(t reflect.Type) (v bool) {
-	return isImmutableKind(t.Kind())
+	return scalarBitset.isset(byte(t.Kind()))
 }
 
 type genInternal struct {

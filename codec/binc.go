@@ -399,11 +399,7 @@ func (e *bincEncDriver) encLenNumber(bd byte, v uint64) {
 
 //------------------------------------
 
-type bincDecDriver struct {
-	decDriverNoopContainerReader
-	noBuiltInTypes
-
-	h      *BincHandle
+type bincDecState struct {
 	bdRead bool
 	bd     byte
 	vd     byte
@@ -412,6 +408,18 @@ type bincDecDriver struct {
 	_ bool
 	// MARKER: consider using binary search here instead of a map (ie bincDecSymbol)
 	s map[uint16][]byte
+}
+
+func (x bincDecState) saveState() interface{}      { return x }
+func (x *bincDecState) restoreState(v interface{}) { *x = v.(bincDecState) }
+
+type bincDecDriver struct {
+	decDriverNoopContainerReader
+	noBuiltInTypes
+
+	h *BincHandle
+
+	bincDecState
 
 	// b [8]byte // scratch for decoding numbers - big endian style
 	// _ [4]uint64 // padding cache-aligned
@@ -1122,6 +1130,14 @@ func (h *BincHandle) newDecDriver() decDriver {
 
 func (e *bincEncDriver) reset() {
 	e.m = nil
+}
+
+func (e *bincEncDriver) saveState() interface{} {
+	return e.m
+}
+
+func (e *bincEncDriver) restoreState(v interface{}) {
+	e.m = v.(map[string]uint16)
 }
 
 func (e *bincEncDriver) atEndOfEncode() {

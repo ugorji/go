@@ -146,6 +146,15 @@ func init() {
 
 // ----------------
 
+type jsonEncState struct {
+	di int8   // indent per: if negative, use tabs
+	d  bool   // indenting?
+	dl uint16 // indent level
+}
+
+func (x jsonEncState) saveState() interface{}      { return x }
+func (x *jsonEncState) restoreState(v interface{}) { *x = v.(jsonEncState) }
+
 type jsonEncDriver struct {
 	noBuiltInTypes
 	h *JsonHandle
@@ -153,9 +162,7 @@ type jsonEncDriver struct {
 	// se interfaceExtWrapper
 
 	// ---- cpu cache line boundary?
-	di int8   // indent per: if negative, use tabs
-	d  bool   // indenting?
-	dl uint16 // indent level
+	jsonEncState
 
 	ks bool // map key as string
 	is byte // integer as string
@@ -586,10 +593,7 @@ func (e *jsonEncDriver) atEndOfEncode() {
 
 // ----------
 
-type jsonDecDriver struct {
-	noBuiltInTypes
-	h *JsonHandle
-
+type jsonDecState struct {
 	rawext bool // rawext configured on the handle
 
 	tok  uint8   // used to store the token read right after skipWhiteSpace
@@ -600,6 +604,16 @@ type jsonDecDriver struct {
 	// scratch buffer used for base64 decoding (DecodeBytes in reuseBuf mode),
 	// or reading doubleQuoted string (DecodeStringAsBytes, DecodeNaked)
 	buf *[]byte
+}
+
+func (x jsonDecState) saveState() interface{}      { return x }
+func (x *jsonDecState) restoreState(v interface{}) { *x = v.(jsonDecState) }
+
+type jsonDecDriver struct {
+	noBuiltInTypes
+	h *JsonHandle
+
+	jsonDecState
 
 	// se  interfaceExtWrapper
 
