@@ -1445,8 +1445,6 @@ func (d *jsonDecDriver) reset() {
 	d.rawext = d.h.RawBytesExt != nil
 }
 
-func (d *jsonDecDriver) atEndOfDecode() {}
-
 func jsonFloatStrconvFmtPrec64(f float64) (fmt byte, prec int8) {
 	fmt = 'f'
 	prec = -1

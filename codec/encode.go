@@ -40,7 +40,8 @@ type encDriver interface {
 
 	// reset will reset current encoding runtime state, and cached information from the handle
 	reset()
-	atEndOfEncode()
+
+	// atEndOfEncode()
 
 	encoder() *Encoder
 
@@ -66,7 +67,6 @@ func (encDriverNoopContainerWriter) WriteArrayStart(length int) {}
 func (encDriverNoopContainerWriter) WriteArrayEnd()             {}
 func (encDriverNoopContainerWriter) WriteMapStart(length int)   {}
 func (encDriverNoopContainerWriter) WriteMapEnd()               {}
-func (encDriverNoopContainerWriter) atEndOfEncode()             {}
 
 // encStructFieldObj[Slice] is used for sorting when there are missing fields and canonical flag is set
 type encStructFieldObj struct {
@@ -865,7 +865,7 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 				l := len(mksv)
 
 				e.encodeValue(k, nil)
-				e.e.atEndOfEncode()
+				e.atEndOfEncode()
 				e.w().end()
 
 				v.r = k
@@ -1117,7 +1117,7 @@ func (e *Encoder) MustEncode(v interface{}) {
 	e.encode(v)
 	e.calls--
 	if e.calls == 0 {
-		e.e.atEndOfEncode()
+		e.atEndOfEncode()
 		e.w().end()
 	}
 }
@@ -1413,11 +1413,18 @@ func (e *Encoder) haltOnMbsOddLen(length int) {
 	}
 }
 
+func (e *Encoder) atEndOfEncode() {
+	// e.e.atEndOfEncode()
+	if e.js {
+		e.jsondriver().atEndOfEncode()
+	}
+}
+
 func (e *Encoder) sideEncode(v interface{}, bs *[]byte) {
 	// rv := baseRV(v)
 	// e2 := NewEncoderBytes(bs, e.hh)
 	// e2.encodeValue(rv, e2.h.fnNoExt(rvType(rv)))
-	// e2.e.atEndOfEncode()
+	// e2.atEndOfEncode()
 	// e2.w().end()
 
 	defer func(wb bytesEncAppender, bytes bool, c containerState, state interface{}) {
@@ -1435,7 +1442,7 @@ func (e *Encoder) sideEncode(v interface{}, bs *[]byte) {
 	// must call using fnNoExt
 	rv := baseRV(v)
 	e.encodeValue(rv, e.h.fnNoExt(rvType(rv)))
-	e.e.atEndOfEncode()
+	e.atEndOfEncode()
 	e.w().end()
 }
 

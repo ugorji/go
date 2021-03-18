@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+// Symbol management:
+// - symbols are stored in a symbol map during encoding and decoding.
+// - the symbols persist until the (En|De)coder ResetXXX method is called.
+
 const bincDoPrune = true
 
 // vd as low 4 bits (there are 16 slots)
@@ -1137,18 +1141,6 @@ func (h *BincHandle) newDecDriver() decDriver {
 	d.d.init(h)
 	d.reset()
 	return d
-}
-
-func (e *bincEncDriver) atEndOfEncode() {
-	for k := range e.m {
-		delete(e.m, k)
-	}
-}
-
-func (d *bincDecDriver) atEndOfDecode() {
-	for k := range d.s {
-		delete(d.s, k)
-	}
 }
 
 // var timeDigits = [...]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}

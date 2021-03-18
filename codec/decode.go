@@ -154,7 +154,8 @@ type decDriver interface {
 	ReadMapEnd()
 
 	reset()
-	atEndOfDecode()
+
+	// atEndOfDecode()
 
 	// nextValueBytes will return the bytes representing the next value in the stream.
 	//
@@ -185,7 +186,6 @@ func (x decDriverNoopContainerReader) ReadArrayEnd()           {}
 func (x decDriverNoopContainerReader) ReadMapStart() (v int)   { return }
 func (x decDriverNoopContainerReader) ReadMapEnd()             {}
 func (x decDriverNoopContainerReader) CheckBreak() (v bool)    { return }
-func (x decDriverNoopContainerReader) atEndOfDecode()          {}
 
 // DecodeOptions captures configuration options during decode.
 type DecodeOptions struct {
@@ -1607,9 +1607,9 @@ func (d *Decoder) MustDecode(v interface{}) {
 	d.calls++
 	d.decode(v)
 	d.calls--
-	if d.calls == 0 {
-		d.d.atEndOfDecode()
-	}
+	// if d.calls == 0 {
+	// 	d.d.atEndOfDecode()
+	// }
 }
 
 // Release releases shared (pooled) resources.
