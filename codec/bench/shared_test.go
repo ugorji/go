@@ -100,7 +100,9 @@ var (
 
 	testMaxInitLen int
 
-	testUseReset bool
+	testUseReset    bool
+	testUseParallel bool
+
 	testSkipIntf bool
 
 	testUseIoEncDec  int
@@ -143,6 +145,7 @@ func testInitFlags() {
 
 	flag.BoolVar(&testSkipIntf, "tf", false, "Skip Interfaces")
 	flag.BoolVar(&testUseReset, "tr", false, "Use Reset")
+	flag.BoolVar(&testUseParallel, "tp", false, "Run tests in parallel")
 	flag.IntVar(&testNumRepeatString, "trs", 8, "Create string variables by repeating a string N times")
 	flag.BoolVar(&bIgnore, "tm", true, "(Deprecated) Use Must(En|De)code")
 
@@ -193,7 +196,7 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.B
 	// bs = make([]byte, 0, approxSize)
 	var e *Encoder
 	var buf *bytes.Buffer
-	if testUseReset {
+	if testUseReset && !testUseParallel {
 		e = testHEDGet(h).E
 	} else {
 		e = NewEncoder(nil, h)
@@ -227,7 +230,7 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.B
 
 func testSharedCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, oldReadBufferSize int) {
 	// var buf *bytes.Reader
-	if testUseReset {
+	if testUseReset && !testUseParallel {
 		d = testHEDGet(h).D
 	} else {
 		d = NewDecoder(nil, h)

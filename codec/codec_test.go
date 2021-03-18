@@ -21,6 +21,14 @@ package codec
 // - testXXX variables and constants are only used in tests.
 // - shared functions/vars/consts are testShared...
 // - fnBenchmarkXX and fnTestXXX can be used as needed.
+//
+// - each TestXXX must only call testSetup once.
+// - each test with a prefix __doTest is a dependent helper function,
+//   which MUST not call testSetup itself.
+//   doTestXXX or TestXXX may call it.
+
+// if we are testing in parallel,
+// then we don't want to share much state: testBytesFreeList, etc.
 
 import (
 	"bufio"
@@ -424,6 +432,9 @@ func testSetupNoop() {}
 // or recover from panic's and fail the test appropriately.
 func testSetup(t *testing.T) (fn func()) {
 	testOnce.Do(testInitAll)
+	if testUseParallel {
+		t.Parallel()
+	}
 	// in case an error is seen, recover it here.
 	if testRecoverPanicToErr {
 		fnRecoverPanic := func() {
@@ -832,12 +843,21 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 }
 
 func testReleaseBytes(bs []byte) {
-	testBytesFreeList.put(bs)
+	if !testUseParallel {
+		testBytesFreeList.put(bs)
+	}
+}
+
+func testGetBytes() (bs []byte) {
+	if !testUseParallel {
+		bs = testBytesFreeList.get(64)
+	}
+	return
 }
 
 func testMarshal(v interface{}, h Handle) (bs []byte, err error) {
 	// return testCodecEncode(v, nil, testByteBuf, h)
-	return testCodecEncode(v, testBytesFreeList.get(64), testByteBuf, h, false)
+	return testCodecEncode(v, testGetBytes(), testByteBuf, h, false)
 }
 
 func testUnmarshal(v interface{}, data []byte, h Handle) (err error) {
@@ -845,8 +865,8 @@ func testUnmarshal(v interface{}, data []byte, h Handle) (err error) {
 }
 
 func testMarshalErr(v interface{}, h Handle, t *testing.T, name string) (bs []byte) {
-	// t.Helper()
-	bs, err := testCodecEncode(v, testBytesFreeList.get(64), testByteBuf, h, true)
+	t.Helper()
+	bs, err := testCodecEncode(v, testGetBytes(), testByteBuf, h, true)
 	if err != nil {
 		t.Logf("%s: marshal failed: %v", name, err)
 		if testVerbose {
@@ -858,7 +878,7 @@ func testMarshalErr(v interface{}, h Handle, t *testing.T, name string) (bs []by
 }
 
 func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name string) {
-	// t.Helper()
+	t.Helper()
 	err := testCodecDecode(data, v, h, true)
 	if err != nil {
 		t.Logf("%s: unmarshal failed: %v", name, err)
@@ -870,7 +890,7 @@ func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name s
 }
 
 func testDeepEqualErr(v1, v2 interface{}, t *testing.T, name string) {
-	// t.Helper()
+	t.Helper()
 	if err := deepEqual(v1, v2); err == nil {
 		if testVerbose {
 			t.Logf("%s: values equal", name)
@@ -1683,8 +1703,14 @@ func doTestAnonCycle(t *testing.T, h Handle) {
 	}
 }
 
-func doTestErrWriter(t *testing.T, h Handle) {
+func doTestAllErrWriter(t *testing.T, hh ...Handle) {
 	defer testSetup(t)()
+	for _, h := range hh {
+		__doTestErrWriter(t, h)
+	}
+}
+
+func __doTestErrWriter(t *testing.T, h Handle) {
 	name := h.Name()
 	var ew testErrWriter
 	w := bufio.NewWriterSize(&ew, 4)
@@ -1701,10 +1727,9 @@ func doTestErrWriter(t *testing.T, h Handle) {
 	}
 }
 
-func doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
-	defer testSetup(t)()
+func __doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
 	if testVerbose {
-		t.Logf("Running doTestJsonLargeInteger: v: %#v, ias: %c", v, ias)
+		t.Logf("Running TestJsonLargeInteger: v: %#v, ias: %c", v, ias)
 	}
 	oldIAS := testJsonH.IntegerAsString
 	defer func() { testJsonH.IntegerAsString = oldIAS }()
@@ -2150,12 +2175,10 @@ func doTestDecodeNilMapValue(t *testing.T, h Handle) {
 	}
 	testReleaseBytes(bs)
 
-	doTestDecodeNilMapEntryValue(t, h)
+	__doTestDecodeNilMapEntryValue(t, h)
 }
 
-func doTestDecodeNilMapEntryValue(t *testing.T, h Handle) {
-	defer testSetup(t)()
-
+func __doTestDecodeNilMapEntryValue(t *testing.T, h Handle) {
 	type Entry struct{}
 	type Entries struct {
 		Map map[string]*Entry
@@ -3607,8 +3630,7 @@ after the new line
 	}
 }
 
-func doTestBufioDecReader(t *testing.T, bufsize int) {
-	defer testSetup(t)()
+func __doTestBufioDecReader(t *testing.T, bufsize int) {
 	bufsizehalf := (bufsize + 1) / 2
 
 	// try to read 85 bytes in chunks of 7 at a time.
@@ -3804,13 +3826,11 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 
 func doTestNumbers(t *testing.T, h Handle) {
 	defer testSetup(t)()
-	doTestIntegers(t, h)
-	doTestFloats(t, h)
+	__doTestIntegers(t, h)
+	__doTestFloats(t, h)
 }
 
-func doTestIntegers(t *testing.T, h Handle) {
-	defer testSetup(t)()
-
+func __doTestIntegers(t *testing.T, h Handle) {
 	// handle SignedInteger=true|false
 	// decode into an interface{}
 
@@ -3903,9 +3923,7 @@ var testFloatsToParse = []float64{
 	1.00000000000000033306690738754696212708950042724609375,
 }
 
-func doTestFloats(t *testing.T, h Handle) {
-	defer testSetup(t)()
-
+func __doTestFloats(t *testing.T, h Handle) {
 	_, jok := h.(*JsonHandle)
 
 	f64s := testFloatsToParse
@@ -4012,11 +4030,15 @@ func doTestDesc(t *testing.T, h Handle, m map[byte]string) {
 }
 
 func TestBufioDecReader(t *testing.T) {
+	doTestBufioDecReader(t)
+}
+
+func doTestBufioDecReader(t *testing.T) {
 	defer testSetup(t)()
-	doTestBufioDecReader(t, 13)
-	doTestBufioDecReader(t, 3)
-	doTestBufioDecReader(t, 5)
-	doTestBufioDecReader(t, 127)
+	__doTestBufioDecReader(t, 13)
+	__doTestBufioDecReader(t, 3)
+	__doTestBufioDecReader(t, 5)
+	__doTestBufioDecReader(t, 127)
 }
 
 func TestAtomic(t *testing.T) {
@@ -4072,6 +4094,10 @@ func TestAtomic(t *testing.T) {
 // -----------
 
 func TestJsonLargeInteger(t *testing.T) {
+	doTestJsonLargeInteger(t)
+}
+
+func doTestJsonLargeInteger(t *testing.T) {
 	defer testSetup(t)()
 	for _, i := range []uint8{'L', 'A', 0} {
 		for _, j := range []interface{}{
@@ -4086,7 +4112,7 @@ func TestJsonLargeInteger(t *testing.T) {
 			int64(1840000e-2),
 			uint64(1840000e+2),
 		} {
-			doTestJsonLargeInteger(t, j, i)
+			__doTestJsonLargeInteger(t, j, i)
 		}
 	}
 
@@ -4657,8 +4683,7 @@ func TestAllAnonCycle(t *testing.T) {
 }
 
 func TestAllErrWriter(t *testing.T) {
-	doTestErrWriter(t, testCborH)
-	doTestErrWriter(t, testJsonH)
+	doTestAllErrWriter(t, testCborH, testJsonH)
 }
 
 // ----- RPC custom -----

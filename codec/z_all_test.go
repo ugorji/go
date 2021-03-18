@@ -56,6 +56,7 @@ func testGroupResetFlags() {
 	testRpcBufsize = 2048
 	testUseIoEncDec = -1
 	testUseReset = false
+	testUseParallel = false
 	testMaxInitLen = 0
 	testUseIoWrapper = false
 	testNumRepeatString = 8
@@ -364,6 +365,7 @@ func TestCodecSuite(t *testing.T) {
 
 	testUseIoEncDec = 0
 	testUseReset = true
+	// testUseParallel = true // TODO confirm
 
 	testDecodeOptions.ZeroCopy = true
 	testDecodeOptions.InternString = true
