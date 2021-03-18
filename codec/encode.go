@@ -38,8 +38,10 @@ type encDriver interface {
 	WriteMapStart(length int)
 	WriteMapEnd()
 
+	// reset will reset current encoding runtime state, and cached information from the handle
 	reset()
 	atEndOfEncode()
+
 	encoder() *Encoder
 
 	driverStateManager
@@ -53,8 +55,9 @@ type encDriverContainerTracker interface {
 
 type encDriverNoState struct{}
 
+func (encDriverNoState) captureState() interface{}  { return nil }
 func (encDriverNoState) reset()                     {}
-func (encDriverNoState) saveState() interface{}     { return nil }
+func (encDriverNoState) resetState()                {}
 func (encDriverNoState) restoreState(v interface{}) {}
 
 type encDriverNoopContainerWriter struct{}
@@ -849,13 +852,13 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 				e.bytes = bytes
 				e.c = c
 				e.e.restoreState(state)
-			}(e.wb, e.bytes, e.c, e.e.saveState())
+			}(e.wb, e.bytes, e.c, e.e.captureState())
 
 			// e2 := NewEncoderBytes(&mksv, e.hh)
 			e.wb = bytesEncAppender{mksv[:0], &mksv}
 			e.bytes = true
 			e.c = 0
-			e.e.reset()
+			e.e.resetState()
 
 			for i, k := range mks {
 				v := &mksbv[i]
@@ -1264,7 +1267,18 @@ TOP:
 		rvpValid = true
 		rvp = rv
 		rv = rv.Elem()
-		if e.h.CheckCircularRef && rv.Kind() == reflect.Struct {
+		goto TOP
+	case reflect.Interface:
+		if rvIsNil(rv) {
+			e.e.EncodeNil()
+			return
+		}
+		rvpValid = false
+		rvp = reflect.Value{}
+		rv = rv.Elem()
+		goto TOP
+	case reflect.Struct:
+		if rvpValid && e.h.CheckCircularRef {
 			// sptr = rvAddr(rv) // use rv, not rvp, as rvAddr gives ptr to the data rv
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
@@ -1273,16 +1287,7 @@ TOP:
 				}
 			}
 			e.ci = append(e.ci, sptr)
-			break TOP
 		}
-		goto TOP
-	case reflect.Interface:
-		if rvIsNil(rv) {
-			e.e.EncodeNil()
-			return
-		}
-		rv = rv.Elem()
-		goto TOP
 	case reflect.Slice, reflect.Map, reflect.Chan:
 		if rvIsNil(rv) {
 			e.e.EncodeNil()
@@ -1420,12 +1425,12 @@ func (e *Encoder) sideEncode(v interface{}, bs *[]byte) {
 		e.bytes = bytes
 		e.c = c
 		e.e.restoreState(state)
-	}(e.wb, e.bytes, e.c, e.e.saveState())
+	}(e.wb, e.bytes, e.c, e.e.captureState())
 
 	e.wb = bytesEncAppender{encInBytes(bs)[:0], bs}
 	e.bytes = true
 	e.c = 0
-	e.e.reset()
+	e.e.resetState()
 
 	// must call using fnNoExt
 	rv := baseRV(v)

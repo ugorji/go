@@ -2127,13 +2127,13 @@ func (d *Decoder) sideDecode(v interface{}, bs []byte) {
 		d.depth = depth
 		d.decReader = r
 		d.d.restoreState(state)
-	}(d.rb, d.bytes, d.c, d.decByteState, d.depth, d.decReader, d.d.saveState())
+	}(d.rb, d.bytes, d.c, d.decByteState, d.depth, d.decReader, d.d.captureState())
 
 	// d.rb.reset(in)
 	d.rb = bytesDecReader{bs[:len(bs):len(bs)], 0}
 	d.bytes = true
 	d.decReader = &d.rb
-	d.d.reset()
+	d.d.resetState()
 	d.c = 0
 	d.decByteState = decByteStateNone
 	d.depth = 0

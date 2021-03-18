@@ -393,8 +393,13 @@ const (
 	jsonHandleFlag
 )
 
+// driverStateManager supports the runtime state of an (enc|dec)Driver.
+//
+// During a side(En|De)code call, we can capture the state, reset it,
+// and then restore it later to continue the primary encoding/decoding.
 type driverStateManager interface {
-	saveState() interface{}
+	resetState()
+	captureState() interface{}
 	restoreState(state interface{})
 }
 
@@ -403,8 +408,9 @@ type bdAndBdread struct {
 	bd     byte
 }
 
-func (x *bdAndBdread) reset()                     { x.bd, x.bdRead = 0, false }
-func (x bdAndBdread) saveState() interface{}      { return x }
+func (x bdAndBdread) captureState() interface{}   { return x }
+func (x *bdAndBdread) resetState()                { x.bd, x.bdRead = 0, false }
+func (x *bdAndBdread) reset()                     { x.resetState() }
 func (x *bdAndBdread) restoreState(v interface{}) { *x = v.(bdAndBdread) }
 
 type clsErr struct {

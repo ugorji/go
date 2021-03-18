@@ -95,11 +95,20 @@ func bincdesc(vd, vs byte) (s string) {
 	return
 }
 
+type bincEncState struct {
+	m map[string]uint16 // symbols
+}
+
+func (e bincEncState) captureState() interface{}   { return e.m }
+func (e *bincEncState) resetState()                { e.m = nil }
+func (e *bincEncState) reset()                     { e.resetState() }
+func (e *bincEncState) restoreState(v interface{}) { e.m = v.(map[string]uint16) }
+
 type bincEncDriver struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
 	h *BincHandle
-	m map[string]uint16 // symbols
+	bincEncState
 	// b [8]byte           // scratch, used for encoding numbers - bigendian style
 	// s uint16 // symbols sequencer
 
@@ -410,7 +419,9 @@ type bincDecState struct {
 	s map[uint16][]byte
 }
 
-func (x bincDecState) saveState() interface{}      { return x }
+func (x bincDecState) captureState() interface{}   { return x }
+func (x *bincDecState) resetState()                { *x = bincDecState{} }
+func (x *bincDecState) reset()                     { x.resetState() }
 func (x *bincDecState) restoreState(v interface{}) { *x = v.(bincDecState) }
 
 type bincDecDriver struct {
@@ -1128,36 +1139,15 @@ func (h *BincHandle) newDecDriver() decDriver {
 	return d
 }
 
-func (e *bincEncDriver) reset() {
-	e.m = nil
-}
-
-func (e *bincEncDriver) saveState() interface{} {
-	return e.m
-}
-
-func (e *bincEncDriver) restoreState(v interface{}) {
-	e.m = v.(map[string]uint16)
-}
-
 func (e *bincEncDriver) atEndOfEncode() {
-	if e.m != nil {
-		for k := range e.m {
-			delete(e.m, k)
-		}
+	for k := range e.m {
+		delete(e.m, k)
 	}
 }
 
-func (d *bincDecDriver) reset() {
-	d.s = nil
-	d.bd, d.bdRead, d.vd, d.vs = 0, false, 0, 0
-}
-
 func (d *bincDecDriver) atEndOfDecode() {
-	if d.s != nil {
-		for k := range d.s {
-			delete(d.s, k)
-		}
+	for k := range d.s {
+		delete(d.s, k)
 	}
 }
 

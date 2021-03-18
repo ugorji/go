@@ -152,7 +152,7 @@ type jsonEncState struct {
 	dl uint16 // indent level
 }
 
-func (x jsonEncState) saveState() interface{}      { return x }
+func (x jsonEncState) captureState() interface{}   { return x }
 func (x *jsonEncState) restoreState(v interface{}) { *x = v.(jsonEncState) }
 
 type jsonEncDriver struct {
@@ -583,11 +583,11 @@ func (e *jsonEncDriver) quoteStr(s string) {
 
 func (e *jsonEncDriver) atEndOfEncode() {
 	if e.h.TermWhitespace {
-		if e.e.c == 0 { // scalar written, output space
-			e.e.encWr.writen1(' ')
-		} else { // container written, output new-line
-			e.e.encWr.writen1('\n')
+		var c byte = ' ' // default is that scalar is written, so output space
+		if e.e.c != 0 {
+			c = '\n' // for containers (map/list), output a newline
 		}
+		e.e.encWr.writen1(c)
 	}
 }
 
@@ -606,7 +606,7 @@ type jsonDecState struct {
 	buf *[]byte
 }
 
-func (x jsonDecState) saveState() interface{}      { return x }
+func (x jsonDecState) captureState() interface{}   { return x }
 func (x *jsonDecState) restoreState(v interface{}) { *x = v.(jsonDecState) }
 
 type jsonDecDriver struct {
@@ -1414,8 +1414,14 @@ func (h *JsonHandle) newDecDriver() decDriver {
 	return d
 }
 
+func (e *jsonEncDriver) resetState() {
+	e.dl = 0
+}
+
 func (e *jsonEncDriver) reset() {
+	e.resetState()
 	// (htmlasis && jsonCharSafeSet.isset(b)) || jsonCharHtmlSafeSet.isset(b)
+	// cache values from the handle
 	e.typical = e.h.typical()
 	if e.h.HTMLCharsAsIs {
 		e.s = &jsonCharSafeSet
@@ -1423,19 +1429,20 @@ func (e *jsonEncDriver) reset() {
 		e.s = &jsonCharHtmlSafeSet
 	}
 	e.rawext = e.h.RawBytesExt != nil
-	e.d, e.dl, e.di = false, 0, 0
-	if e.h.Indent != 0 {
-		e.d = true
-		e.di = int8(e.h.Indent)
-	}
+	e.di = int8(e.h.Indent)
+	e.d = e.h.Indent != 0
 	e.ks = e.h.MapKeyAsString
 	e.is = e.h.IntegerAsString
 }
 
-func (d *jsonDecDriver) reset() {
-	d.rawext = d.h.RawBytesExt != nil
+func (d *jsonDecDriver) resetState() {
 	*d.buf = d.d.blist.check(*d.buf, 256)
 	d.tok = 0
+}
+
+func (d *jsonDecDriver) reset() {
+	d.resetState()
+	d.rawext = d.h.RawBytesExt != nil
 }
 
 func (d *jsonDecDriver) atEndOfDecode() {}
