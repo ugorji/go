@@ -241,6 +241,11 @@ const (
 )
 
 var (
+	// use a global mutex to ensure each Handle is initialized.
+	// We do this, so we don't have to store the basicHandle mutex
+	// directly in BasicHandle, so it can be shallow-copied.
+	handleInitMu sync.Mutex
+
 	must mustHdl
 	halt panicHdl
 
@@ -737,6 +742,15 @@ type MapBySlice interface {
 	MapBySlice()
 }
 
+type basicHandleRuntimeState struct {
+	// these are used during runtime.
+	// At init time, they should have nothing in them.
+	rtidFns      atomicRtidFnSlice
+	rtidFnsNoExt atomicRtidFnSlice
+
+	mu sync.Mutex
+}
+
 // BasicHandle encapsulates the common options and extension functions.
 //
 // Deprecated: DO NOT USE DIRECTLY. EXPORTED FOR GODOC BENEFIT. WILL BE REMOVED.
@@ -749,16 +763,15 @@ type BasicHandle struct {
 	// If not configured, the default TypeInfos is used, which uses struct tag keys: codec, json
 	TypeInfos *TypeInfos
 
+	*basicHandleRuntimeState
+
+	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
+
 	// Note: BasicHandle is not comparable, due to these slices here (extHandle, intf2impls).
 	// If *[]T is used instead, this becomes comparable, at the cost of extra indirection.
 	// Thses slices are used all the time, so keep as slices (not pointers).
 
 	extHandle
-
-	// these are used during runtime.
-	// At init time, they should have nothing in them.
-	rtidFns      atomicRtidFnSlice
-	rtidFnsNoExt atomicRtidFnSlice
 
 	// ---- cache line
 
@@ -769,9 +782,6 @@ type BasicHandle struct {
 	EncodeOptions
 
 	intf2impls
-
-	mu     sync.Mutex
-	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
 
 	RPCOptions
 
@@ -858,6 +868,7 @@ func (x *BasicHandle) isInited() bool {
 // clearInited: DANGEROUS - only use in testing, etc
 func (x *BasicHandle) clearInited() {
 	atomic.StoreUint32(&x.inited, 0)
+	x.basicHandleRuntimeState = nil
 }
 
 // TimeBuiltin returns whether time.Time OOTB support is used,
@@ -874,12 +885,14 @@ func (x *BasicHandle) isBe() bool {
 	return handleFlag(x.inited)&binaryHandleFlag != 0
 }
 
+// initHandle should be called only from codec.initHandle global function.
+// make it uninlineable, as it is called at most once for each handle.
 //go:noinline
 func (x *BasicHandle) initHandle(hh Handle) {
-	// make it uninlineable, as it is called at most once
-	x.mu.Lock()
-	defer x.mu.Unlock() // use defer, as halt may panic below
+	handleInitMu.Lock()
+	defer handleInitMu.Unlock() // use defer, as halt may panic below
 	if x.inited == 0 {
+		x.basicHandleRuntimeState = new(basicHandleRuntimeState)
 		var f = initedHandleFlag
 		if hh.isBinary() {
 			f |= binaryHandleFlag
