@@ -860,27 +860,21 @@ func testGetBytes() (bs []byte) {
 }
 
 func testHandleCopy(h Handle) (h2 Handle) {
-	bh := testBasicHandle(h)
 	switch v := h.(type) {
 	case *JsonHandle:
 		v2 := *v
-		v2.BasicHandle = *bh
 		h2 = &v2
 	case *CborHandle:
 		v2 := *v
-		v2.BasicHandle = *bh
 		h2 = &v2
 	case *MsgpackHandle:
 		v2 := *v
-		v2.BasicHandle = *bh
 		h2 = &v2
 	case *SimpleHandle:
 		v2 := *v
-		v2.BasicHandle = *bh
 		h2 = &v2
 	case *BincHandle:
 		v2 := *v
-		v2.BasicHandle = *bh
 		h2 = &v2
 	}
 	return
