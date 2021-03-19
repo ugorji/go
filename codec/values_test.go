@@ -392,7 +392,6 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 func newTestStruc(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts *TestStruc) {
 	ts = &TestStruc{}
 	populateTestStrucCommon(&ts.TestStrucCommon, n, bench, useInterface, useStringKeyOnly)
-	// zz.Debugf("ts.AnonInTestStruc.AMSS: %v", ts.AnonInTestStruc.AMSS)
 	if depth > 0 {
 		depth--
 		if ts.Mtsptr == nil {

@@ -25,9 +25,9 @@ func TestCborPythonGenStreamsX(t *testing.T) {
 }
 
 func TestMsgpackRpcSpecGoClientToPythonSvcX(t *testing.T) {
-	doTestMsgpackRpcSpecGoClientToPythonSvc(t)
+	doTestMsgpackRpcSpecGoClientToPythonSvc(t, testMsgpackH)
 }
 
 func TestMsgpackRpcSpecPythonClientToGoSvcX(t *testing.T) {
-	doTestMsgpackRpcSpecPythonClientToGoSvc(t)
+	doTestMsgpackRpcSpecPythonClientToGoSvc(t, testMsgpackH)
 }

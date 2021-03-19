@@ -365,7 +365,7 @@ func TestCodecSuite(t *testing.T) {
 
 	testUseIoEncDec = 0
 	testUseReset = true
-	// testUseParallel = true // TODO confirm
+	testUseParallel = true
 
 	testDecodeOptions.ZeroCopy = true
 	testDecodeOptions.InternString = true

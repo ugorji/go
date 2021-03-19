@@ -3,14 +3,6 @@
 
 package codec
 
-// FIXING CORRECT FILE/LINE NUMBERS IN Logf
-//
-// We get wrong file/line numbers for calls to test(Marshal|Unmarshal|DeepEqual)Err helper functions.
-// This is solved by t.Helper function, but this only exists from go1.9+.
-//
-// For now, we don't include t.Helper, so the tests can be run (without a suite)
-// in go 1.4+
-
 // NAMING CONVENTION FOR TESTS
 //
 // function and variable/const names here fit a simple naming convention
@@ -46,7 +38,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -185,8 +176,14 @@ var (
 
 	table []interface{} // main items we encode
 	// will encode a float32 as float64, or large int as uint
-	testRpcInt = new(TestRpcInt)
+
+	testRpcServer = rpc.NewServer()
+	testRpcInt    = new(TestRpcInt)
 )
+
+func init() {
+	testRpcServer.Register(testRpcInt)
+}
 
 var wrapInt64Typ = reflect.TypeOf(wrapInt64(0))
 var wrapBytesTyp = reflect.TypeOf(wrapBytes(nil))
@@ -424,16 +421,23 @@ func (x testUintToBytesExt) UpdateExt(v interface{}, src interface{}) {
 
 func testSetupNoop() {}
 
+func testSetup(t *testing.T, h *Handle) (fn func()) {
+	return testSetupWithChecks(t, h, true)
+}
+
 // testSetup will ensure testInitAll is run, and then
 // return a function that should be deferred to run at the end
 // of the test.
 //
 // This function can track how much time a test took,
 // or recover from panic's and fail the test appropriately.
-func testSetup(t *testing.T) (fn func()) {
+func testSetupWithChecks(t *testing.T, h *Handle, allowParallel bool) (fn func()) {
 	testOnce.Do(testInitAll)
-	if testUseParallel {
+	if allowParallel && testUseParallel {
 		t.Parallel()
+		if h != nil {
+			*h = testHandleCopy(*h)
+		}
 	}
 	// in case an error is seen, recover it here.
 	if testRecoverPanicToErr {
@@ -855,6 +859,33 @@ func testGetBytes() (bs []byte) {
 	return
 }
 
+func testHandleCopy(h Handle) (h2 Handle) {
+	bh := testBasicHandle(h)
+	switch v := h.(type) {
+	case *JsonHandle:
+		v2 := *v
+		v2.BasicHandle = *bh
+		h2 = &v2
+	case *CborHandle:
+		v2 := *v
+		v2.BasicHandle = *bh
+		h2 = &v2
+	case *MsgpackHandle:
+		v2 := *v
+		v2.BasicHandle = *bh
+		h2 = &v2
+	case *SimpleHandle:
+		v2 := *v
+		v2.BasicHandle = *bh
+		h2 = &v2
+	case *BincHandle:
+		v2 := *v
+		v2.BasicHandle = *bh
+		h2 = &v2
+	}
+	return
+}
+
 func testMarshal(v interface{}, h Handle) (bs []byte, err error) {
 	// return testCodecEncode(v, nil, testByteBuf, h)
 	return testCodecEncode(v, testGetBytes(), testByteBuf, h, false)
@@ -921,7 +952,7 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 	//if testNil, then just test for when a pointer to a nil interface{} is passed. It should work.
 	//Current setup allows us test (at least manually) the nil interface or typed interface.
 	if testVerbose {
-		t.Logf("================ TestNil: %v ================\n", testNil)
+		t.Logf("================ TestNil: %v: %v entries ================\n", testNil, len(vs))
 	}
 
 	if mh, ok := h.(*MsgpackHandle); ok {
@@ -941,30 +972,44 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 		}
 		// if a TestStrucFlex and we are doing a testNil,
 		// ensure the fields which are not encodeable are set to nil appropriately
-		// i.e. MstrUi64TSelf
+		// i.e. TestStrucFlex.{MstrUi64TSelf, mapMsu2wss}
 		var mapMstrUi64TSelf map[stringUint64T]*stringUint64T
 		var mapMsu2wss map[stringUint64T]wrapStringSlice
+		// TestStrucFlex.{Msp2ss, Mip2ss} have pointer keys.
+		// When we encode and the decode back into the same value,
+		// the length of this map will effectively double, because
+		// each pointer has equal underlying value, but are separate entries in the map.
+		//
+		// Best way to compare is to store them, and then compare them later if needed.
+		var mapMsp2ss map[*string][]string
+		var mapMip2ss map[*uint64][]string
+
 		tsflex, _ := v0.(*TestStrucFlex)
-		if testNil && tsflex != nil {
+		if tsflex != nil {
 			mapMstrUi64TSelf = tsflex.MstrUi64TSelf
 			mapMsu2wss = tsflex.Msu2wss
-			tsflex.MstrUi64TSelf = nil
-			tsflex.Msu2wss = nil
+			mapMsp2ss = tsflex.Msp2ss
+			mapMip2ss = tsflex.Mip2ss
+			if testNil {
+				tsflex.MstrUi64TSelf = nil
+				tsflex.Msu2wss = nil
+			}
 		}
 		b0 := testMarshalErr(v0, h, t, "v0")
 		var b1 = b0
-		if len(b1) > 256 {
-			b1 = b1[:256]
+		if len(b0) > 1024 {
+			b1 = b0[:1024]
 		}
-		if testVerbose {
-			if h.isBinary() {
-				t.Logf("         Encoded bytes: len: %v, %v\n", len(b0), b1)
-			} else {
-				t.Logf("         Encoded string: len: %v, %s\n", len(b0), b0)
-				// println("########### encoded string: " + string(b0))
+		bytesorstr := "string"
+		if h.isBinary() {
+			bytesorstr = "bytes"
+			if len(b0) > 256 {
+				b1 = b0[:256]
 			}
 		}
-
+		if testVerbose {
+			t.Logf("         Encoded %s: type: %T, len/cap: %v/%v, %v, %s\n", bytesorstr, v0, len(b0), cap(b0), b1, "...")
+		}
 		// TestStrucFlex has many fields which will encode differently if SignedInteger - so skip
 		if _, ok := v0.(*TestStrucFlex); ok && bh.SignedInteger {
 			continue
@@ -972,25 +1017,34 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 
 		var v1 interface{}
 		var err error
-		if testNil {
-			err = testUnmarshal(&v1, b0, h)
-			if tsflex != nil {
+
+		if tsflex != nil {
+			if testNil {
 				tsflex.MstrUi64TSelf = mapMstrUi64TSelf
 				tsflex.Msu2wss = mapMsu2wss
 			}
-		} else {
-			if v0 != nil {
-				v0rt := reflect.TypeOf(v0) // ptr
-				if v0rt.Kind() == reflect.Ptr {
-					err = testUnmarshal(v0, b0, h)
-					v1 = v0
-				} else {
-					rv1 := reflect.New(v0rt)
-					err = testUnmarshal(rv1.Interface(), b0, h)
-					v1 = rv1.Elem().Interface()
-					// v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface()
-				}
+			tsflex.Msp2ss = nil
+			tsflex.Mip2ss = nil
+		}
+
+		if testNil {
+			err = testUnmarshal(&v1, b0, h)
+		} else if v0 != nil {
+			v0rt := reflect.TypeOf(v0) // ptr
+			if v0rt.Kind() == reflect.Ptr {
+				err = testUnmarshal(v0, b0, h)
+				v1 = v0
+			} else {
+				rv1 := reflect.New(v0rt)
+				err = testUnmarshal(rv1.Interface(), b0, h)
+				v1 = rv1.Elem().Interface()
+				// v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface()
 			}
+		}
+
+		if tsflex != nil {
+			// MARKER: consider compare tsflex.{Msp2ss, Mip2ss} to map{Msp2ss, Mip2ss}
+			_, _ = mapMsp2ss, mapMip2ss
 		}
 
 		if testVerbose {
@@ -1034,9 +1088,10 @@ func testCodecTableOne(t *testing.T, testNil bool, h Handle,
 }
 
 func doTestCodecTableOne(t *testing.T, h Handle) {
-	defer testSetup(t)()
-	// func TestMsgpackAllExperimental(t *testing.T) {
-	// dopts := testDecOpts(nil, nil, false, true, true),
+	// since this test modifies maps (and slices?), it should not be run in parallel,
+	// else we may get "concurrent modification/range/set" errors.
+
+	defer testSetupWithChecks(t, &h, false)()
 
 	numPrim, numMap, idxTime, idxMap := testTableNumPrimitives, testTableNumMaps, testTableIdxTime, testTableNumPrimitives+2
 
@@ -1079,19 +1134,8 @@ func doTestCodecTableOne(t *testing.T, h Handle) {
 	//testCodecTableOne(t, true, h, table[17:18], tableTestNilVerify[17:18]) // do we need this?
 }
 
-func testEmptyTestStrucFlex() *TestStrucFlex {
-	var ts TestStrucFlex
-	// we initialize and start draining the chan, so that we can decode into it without it blocking due to no consumer
-	ts.Chstr = make(chan string, teststrucflexChanCap)
-	go func() {
-		for range ts.Chstr {
-		}
-	}() // drain it
-	return &ts
-}
-
 func doTestCodecMiscOne(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	var err error
 	bh := testBasicHandle(h)
 	b := testMarshalErr(32, h, t, "32")
@@ -1127,12 +1171,22 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 			t.Logf("------- b: size: %v, value: %s", len(b), b1)
 		}
 	}
-	ts2 := testEmptyTestStrucFlex()
+
+	// ts2 := testEmptyTestStrucFlex()
+	var ts2 = new(TestStrucFlex)
+	// we initialize and start draining the chan, so that we can decode into it without it blocking due to no consumer
+	ts2.Chstr = make(chan string, teststrucflexChanCap)
+	go func() {
+		for range ts2.Chstr {
+		}
+	}() // drain it
+
 	testUnmarshalErr(ts2, b, h, t, "pointer-to-struct")
 	if ts2.I64 != math.MaxInt64*2/3 {
 		t.Logf("------- Unmarshal wrong. Expect I64 = 64. Got: %v", ts2.I64)
 		t.FailNow()
 	}
+	close(ts2.Chstr)
 	testReleaseBytes(b)
 
 	// Note: These will not work with SliceElementReset or InterfaceReset=true, so handle that.
@@ -1215,7 +1269,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 	}
 
 	// test byte array, even if empty (msgpack only)
-	if h == testMsgpackH {
+	if _, ok := h.(*MsgpackHandle); ok {
 		type ystruct struct {
 			Anarray []byte
 		}
@@ -1240,7 +1294,7 @@ func doTestCodecMiscOne(t *testing.T, h Handle) {
 }
 
 func doTestCodecEmbeddedPointer(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	type Z int
 	type A struct {
 		AnInt int
@@ -1260,7 +1314,7 @@ func doTestCodecEmbeddedPointer(t *testing.T, h Handle) {
 }
 
 func testCodecUnderlyingType(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	// Manual Test.
 	// Run by hand, with accompanying printf.statements in fast-path.go
 	// to ensure that the fast functions are called.
@@ -1282,7 +1336,7 @@ func testCodecUnderlyingType(t *testing.T, h Handle) {
 }
 
 func doTestCodecChan(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	// - send a slice []*int64 (sl1) into an chan (ch1) with cap > len(s1)
 	// - encode ch1 as a stream array
 	// - decode a chan (ch2), with cap > len(s1) from the stream array
@@ -1408,13 +1462,16 @@ func doTestCodecChan(t *testing.T, h Handle) {
 			t.FailNow()
 		}
 	}
-
 }
 
 func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration) (port int) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	if testSkipRPCTests {
 		return
+	}
+
+	if mh, ok := h.(*MsgpackHandle); ok && mh.SliceElementReset {
+		t.Skipf("skipping ... MsgpackRpcSpec does not handle SliceElementReset - needs investigation")
 	}
 
 	if jsonH, ok := h.(*JsonHandle); ok && !jsonH.TermWhitespace {
@@ -1422,57 +1479,54 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 		defer func() { jsonH.TermWhitespace = false }()
 	}
 
-	srv := rpc.NewServer()
-	srv.Register(testRpcInt)
+	// srv := rpc.NewServer()
+	// srv.Register(testRpcInt)
+	srv := testRpcServer
+
 	ln, err := net.Listen("tcp", "127.0.0.1:0") // listen on ipv4 localhost
-	if testVerbose {
-		t.Logf("connFn: addr: %v, network: %v, port: %v", ln.Addr(), ln.Addr().Network(), (ln.Addr().(*net.TCPAddr)).Port)
-	}
 	testCheckErr(t, err)
 	port = (ln.Addr().(*net.TCPAddr)).Port
+	if testVerbose {
+		t.Logf("connFn: addr: %v, network: %v, port: %v", ln.Addr(), ln.Addr().Network(), port)
+	}
 	// var opts *DecoderOptions
 	// opts := testDecOpts
 	// opts.MapType = mapStrIntfTyp
 	serverExitChan := make(chan bool, 1)
 	var serverExitFlag uint64
 	serverFn := func() {
+		var conns []net.Conn
+		var svrcodecs []rpc.ServerCodec
+		defer func() {
+			for i := range conns {
+				svrcodecs[i].Close()
+				conns[i].Close()
+			}
+			ln.Close()
+			serverExitChan <- true
+		}()
 		for {
 			conn1, err1 := ln.Accept()
-			// if err1 != nil {
-			// 	//fmt.Printf("accept err1: %v\n", err1)
-			// 	continue
-			// }
 			if atomic.LoadUint64(&serverExitFlag) == 1 {
-				serverExitChan <- true
 				if conn1 != nil {
 					conn1.Close()
 				}
-				return // exit serverFn goroutine
+				break
 			}
-			if err1 == nil && conn1 != nil {
+			if err1 != nil {
+				// fmt.Printf("accept err1: %v\n", err1)
+				if testVerbose {
+					t.Logf("rpc error accepting connection: %v", err1)
+				}
+				continue
+			}
+			if conn1 != nil {
 				sc := rr.ServerCodec(testReadWriteCloser(conn1), h)
-				srv.ServeCodec(sc)
+				conns = append(conns, conn1)
+				svrcodecs = append(svrcodecs, sc)
+				go srv.ServeCodec(sc)
 			}
 		}
-	}
-
-	clientFn := func(cc rpc.ClientCodec) {
-		cl := rpc.NewClientWithCodec(cc)
-		defer cl.Close()
-		//	defer func() { println("##### client closing"); cl.Close() }()
-		var up, sq, mult int
-		var rstr string
-		testCheckErr(t, cl.Call("TestRpcInt.Update", 5, &up))
-		testCheckEqual(t, testRpcInt.i, 5, "testRpcInt.i=5")
-		testCheckEqual(t, up, 5, "up=5")
-		testCheckErr(t, cl.Call("TestRpcInt.Square", 1, &sq))
-		testCheckEqual(t, sq, 25, "sq=25")
-		testCheckErr(t, cl.Call("TestRpcInt.Mult", 20, &mult))
-		testCheckEqual(t, mult, 100, "mult=100")
-		testCheckErr(t, cl.Call("TestRpcInt.EchoStruct", TestRpcABC{"Aa", "Bb", "Cc"}, &rstr))
-		testCheckEqual(t, rstr, fmt.Sprintf("%#v", TestRpcABC{"Aa", "Bb", "Cc"}), "rstr=")
-		testCheckErr(t, cl.Call("TestRpcInt.Echo123", []string{"A1", "B2", "C3"}, &rstr))
-		testCheckEqual(t, rstr, fmt.Sprintf("%#v", []string{"A1", "B2", "C3"}), "rstr=")
 	}
 
 	connFn := func() (bs net.Conn) {
@@ -1482,36 +1536,58 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 	}
 
 	exitFn := func() {
+		if atomic.LoadUint64(&serverExitFlag) == 1 {
+			return
+		}
 		atomic.StoreUint64(&serverExitFlag, 1)
 		bs := connFn()
+		defer bs.Close()
 		<-serverExitChan
-		bs.Close()
+		// atomic.StoreUint64(&serverExitFlag, 0)
 		// serverExitChan <- true
 	}
 
 	go serverFn()
-	runtime.Gosched()
+
+	// runtime.Gosched()
+
 	if exitSleepMs == 0 {
-		defer ln.Close()
 		defer exitFn()
-	}
-	if doRequest {
-		bs := connFn()
-		cc := rr.ClientCodec(testReadWriteCloser(bs), h)
-		clientFn(cc)
-	}
-	if exitSleepMs != 0 {
+	} else {
 		go func() {
-			defer ln.Close()
 			time.Sleep(exitSleepMs)
 			exitFn()
+		}()
+	}
+
+	if doRequest {
+		func() {
+			bs := connFn()
+			defer bs.Close()
+			cc := rr.ClientCodec(testReadWriteCloser(bs), h)
+			defer cc.Close()
+			cl := rpc.NewClientWithCodec(cc)
+			defer cl.Close()
+			var up, sq, mult int
+			var rstr string
+			testCheckErr(t, cl.Call("TestRpcInt.Update", 5, &up))
+			testCheckEqual(t, testRpcInt.i, 5, "testRpcInt.i=5")
+			testCheckEqual(t, up, 5, "up=5")
+			testCheckErr(t, cl.Call("TestRpcInt.Square", 1, &sq))
+			testCheckEqual(t, sq, 25, "sq=25")
+			testCheckErr(t, cl.Call("TestRpcInt.Mult", 20, &mult))
+			testCheckEqual(t, mult, 100, "mult=100")
+			testCheckErr(t, cl.Call("TestRpcInt.EchoStruct", TestRpcABC{"Aa", "Bb", "Cc"}, &rstr))
+			testCheckEqual(t, rstr, fmt.Sprintf("%#v", TestRpcABC{"Aa", "Bb", "Cc"}), "rstr=")
+			testCheckErr(t, cl.Call("TestRpcInt.Echo123", []string{"A1", "B2", "C3"}, &rstr))
+			testCheckEqual(t, rstr, fmt.Sprintf("%#v", []string{"A1", "B2", "C3"}), "rstr=")
 		}()
 	}
 	return
 }
 
 func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	// println("doTestMapEncodeForCanonical")
 	v1 := map[stringUint64T]interface{}{
 		stringUint64T{"a", 1}: 1,
@@ -1606,7 +1682,7 @@ func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 }
 
 func doTestStdEncIntf(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	args := [][2]interface{}{
 		{&TestABC{"A", "BB", "CCC"}, new(TestABC)},
 		{&TestABC2{"AAA", "BB", "C"}, new(TestABC2)},
@@ -1629,7 +1705,7 @@ func doTestStdEncIntf(t *testing.T, h Handle) {
 }
 
 func doTestEncCircularRef(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	type T1 struct {
 		S string
 		B bool
@@ -1688,7 +1764,7 @@ type (
 )
 
 func doTestAnonCycle(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	var x TestAnonCycleT1
 	x.S = "hello"
 	x.TestAnonCycleT2.S2 = "hello.2"
@@ -1704,8 +1780,11 @@ func doTestAnonCycle(t *testing.T, h Handle) {
 }
 
 func doTestAllErrWriter(t *testing.T, hh ...Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, nil)()
 	for _, h := range hh {
+		if testUseParallel {
+			h = testHandleCopy(h)
+		}
 		__doTestErrWriter(t, h)
 	}
 }
@@ -1727,22 +1806,22 @@ func __doTestErrWriter(t *testing.T, h Handle) {
 	}
 }
 
-func __doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
+func __doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8, jh *JsonHandle) {
 	if testVerbose {
 		t.Logf("Running TestJsonLargeInteger: v: %#v, ias: %c", v, ias)
 	}
-	oldIAS := testJsonH.IntegerAsString
-	defer func() { testJsonH.IntegerAsString = oldIAS }()
-	testJsonH.IntegerAsString = ias
+	oldIAS := jh.IntegerAsString
+	defer func() { jh.IntegerAsString = oldIAS }()
+	jh.IntegerAsString = ias
 
 	var vu uint
 	var vi int
 	var vb bool
 	var b []byte
-	e := NewEncoderBytes(&b, testJsonH)
+	e := NewEncoderBytes(&b, jh)
 	e.MustEncode(v)
 	e.MustEncode(true)
-	d := NewDecoderBytes(b, testJsonH)
+	d := NewDecoderBytes(b, jh)
 	// below, we validate that the json string or number was encoded,
 	// then decode, and validate that the correct value was decoded.
 	fnStrChk := func() {
@@ -1800,7 +1879,7 @@ func __doTestJsonLargeInteger(t *testing.T, v interface{}, ias uint8) {
 }
 
 func doTestRawValue(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	bh := testBasicHandle(h)
 	if !bh.Raw {
 		bh.Raw = true
@@ -1849,7 +1928,7 @@ func doTestRawValue(t *testing.T, h Handle) {
 // We keep this unexported here, and put actual test in ext_dep_test.go.
 // This way, it can be excluded by excluding file completely.
 func doTestPythonGenStreams(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 
 	// time0 := time.Now()
 	// defer func() { xdebugf("python-gen-streams: %s: took: %v", h.Name(), time.Since(time0)) }()
@@ -1888,9 +1967,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 	oldMapType := bh.MapType
 	tablePythonVerify := testTableVerify(testVerifyForPython|testVerifyTimeAsInteger|testVerifyMapTypeStrIntf, h)
 	for i, v := range tablePythonVerify {
-		// if v == uint64(0) && h == testMsgpackH {
-		// 	v = int64(0)
-		// }
+		// if v == uint64(0) && h is a *MsgpackHandle: v = int64(0)
 		bh.MapType = oldMapType
 		//load up the golden file based on number
 		//decode it
@@ -1974,11 +2051,11 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 //    - Go Service requires only one argument
 //    - Python Service allows multiple arguments
 
-func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
+func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T, h Handle) {
 	if testSkipRPCTests {
 		return
 	}
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 
 	// openPorts are between 6700 and 6800
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -1994,7 +2071,7 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 		bs, err2 = net.Dial("tcp", ":"+openPort)
 	}
 	testCheckErr(t, err2)
-	cc := MsgpackSpecRpc.ClientCodec(testReadWriteCloser(bs), testMsgpackH)
+	cc := MsgpackSpecRpc.ClientCodec(testReadWriteCloser(bs), h)
 	cl := rpc.NewClientWithCodec(cc)
 	defer cl.Close()
 	var rstr string
@@ -2006,14 +2083,14 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 	cmd.Process.Kill()
 }
 
-func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
+func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T, h Handle) {
 	if testSkipRPCTests {
 		return
 	}
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	// seems 10ms is not enough for test run; set high to 1 second, and client will close when done
 	exitSleepDur := 1000 * time.Millisecond
-	port := doTestCodecRpcOne(t, MsgpackSpecRpc, testMsgpackH, false, exitSleepDur)
+	port := doTestCodecRpcOne(t, MsgpackSpecRpc, h, false, exitSleepDur)
 	cmd := exec.Command("python", "test.py", "rpc-client-go-service", strconv.Itoa(port))
 	var cmdout []byte
 	var err error
@@ -2027,7 +2104,7 @@ func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
 }
 
 func doTestSwallowAndZero(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	v1 := newTestStrucFlex(testDepth, testNumRepeatString, false, false, testMapStringKeyOnly)
 	var b1 []byte
 
@@ -2044,7 +2121,7 @@ func doTestSwallowAndZero(t *testing.T, h Handle) {
 }
 
 func doTestRawExt(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	var b []byte
 	var v RawExt // interface{}
 	_, isJson := h.(*JsonHandle)
@@ -2116,7 +2193,7 @@ func doTestRawExt(t *testing.T, h Handle) {
 // }
 
 func doTestMapStructKey(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	var b []byte
 	var v interface{} // map[stringUint64T]wrapUint64Slice // interface{}
 	bh := testBasicHandle(h)
@@ -2144,7 +2221,7 @@ func doTestMapStructKey(t *testing.T, h Handle) {
 }
 
 func doTestDecodeNilMapValue(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	type Struct struct {
 		Field map[uint16]map[uint32]struct{}
 	}
@@ -2214,7 +2291,7 @@ func __doTestDecodeNilMapEntryValue(t *testing.T, h Handle) {
 }
 
 func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	type Embedded struct {
 		Field byte
 	}
@@ -2257,7 +2334,7 @@ func doTestEmbeddedFieldPrecedence(t *testing.T, h Handle) {
 }
 
 func doTestLargeContainerLen(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 
 	// This test can take a while if run multiple times in a loop, as it creates
 	// large maps/slices. Use t.Short() appropriately to limit its execution time.
@@ -2510,7 +2587,12 @@ func testRandomFillRV(v reflect.Value) {
 }
 
 func doTestMammoth(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
+	if mh, ok := h.(*MsgpackHandle); ok {
+		defer func(b bool) { mh.RawToString = b }(mh.RawToString)
+		mh.RawToString = true
+	}
+
 	name := h.Name()
 	var b []byte
 
@@ -2537,7 +2619,7 @@ func doTestMammoth(t *testing.T, h Handle) {
 }
 
 func doTestTime(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 	// test time which uses the time.go implementation (ie Binc)
 	var tt, tt2 time.Time
@@ -2556,7 +2638,7 @@ func doTestTime(t *testing.T, h Handle) {
 }
 
 func doTestUintToInt(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 	var golden = [...]int64{
 		0, 1, 22, 333, 4444, 55555, 666666,
@@ -2622,7 +2704,13 @@ func doTestUintToInt(t *testing.T, h Handle) {
 }
 
 func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
+
+	if mh, ok := h.(*MsgpackHandle); ok {
+		defer func(b bool) { mh.RawToString = b }(mh.RawToString)
+		mh.RawToString = true
+	}
+
 	name := h.Name()
 
 	// - maptype, slicetype: diff from map[string]intf, map[intf]intf or []intf, etc
@@ -2824,7 +2912,12 @@ func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
 }
 
 func doTestScalars(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
+
+	if mh, ok := h.(*MsgpackHandle); ok {
+		defer func(b bool) { mh.RawToString = b }(mh.RawToString)
+		mh.RawToString = true
+	}
 
 	// for each scalar:
 	// - encode its ptr
@@ -2925,7 +3018,7 @@ func doTestScalars(t *testing.T, h Handle) {
 }
 
 func doTestIntfMapping(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 	rti := reflect.TypeOf((*testIntfMapI)(nil)).Elem()
 	defer func() { testBasicHandle(h).Intf2Impl(rti, nil) }()
@@ -2953,7 +3046,7 @@ func doTestIntfMapping(t *testing.T, h Handle) {
 }
 
 func doTestOmitempty(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 	if testBasicHandle(h).StructToArray {
 		t.Skipf("skipping OmitEmpty test when StructToArray=true")
@@ -2976,7 +3069,7 @@ func doTestOmitempty(t *testing.T, h Handle) {
 }
 
 func doTestMissingFields(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 	if codecgen {
 		t.Skipf("skipping Missing Fields tests as it is not honored by codecgen")
@@ -3049,7 +3142,7 @@ func doTestMissingFields(t *testing.T, h Handle) {
 }
 
 func doTestMaxDepth(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 	type T struct {
 		I interface{} // value to encode
@@ -3135,7 +3228,7 @@ func doTestMaxDepth(t *testing.T, h Handle) {
 }
 
 func doTestMultipleEncDec(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 	// encode a string multiple times.
 	// decode it multiple times.
@@ -3155,7 +3248,7 @@ func doTestMultipleEncDec(t *testing.T, h Handle) {
 }
 
 func doTestSelfExt(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 	var ts TestSelfExtImpl
 	ts.S = "ugorji"
@@ -3170,7 +3263,7 @@ func doTestSelfExt(t *testing.T, h Handle) {
 }
 
 func doTestBytesEncodedAsArray(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 	// Need to test edge case where bytes are encoded as an array
 	// (not using optimized []byte native format)
@@ -3192,7 +3285,7 @@ func doTestBytesEncodedAsArray(t *testing.T, h Handle) {
 }
 
 func doTestStrucEncDec(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 
 	{
@@ -3217,7 +3310,7 @@ func doTestStrucEncDec(t *testing.T, h Handle) {
 }
 
 func doTestStructKeyType(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	name := h.Name()
 
 	mh, mok := h.(*MsgpackHandle)
@@ -3306,7 +3399,7 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 }
 
 func doTestRawToStringToRawEtc(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	// name := h.Name()
 
 	// Tests:
@@ -3442,13 +3535,13 @@ MAP_VALUE_RESET:
 
 // -----------------
 
-func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
-	defer testSetup(t)()
+func doTestJsonDecodeNonStringScalarInStringContext(t *testing.T, h Handle) {
+	defer testSetup(t, &h)()
 	var b = `{"s.true": "true", "b.true": true, "s.false": "false", "b.false": false, "s.10": "10", "i.10": 10, "i.-10": -10}`
 	var golden = map[string]string{"s.true": "true", "b.true": "true", "s.false": "false", "b.false": "false", "s.10": "10", "i.10": "10", "i.-10": "-10"}
 
 	var m map[string]string
-	d := NewDecoderBytes([]byte(b), testJsonH)
+	d := NewDecoderBytes([]byte(b), h)
 	d.MustDecode(&m)
 	if err := deepEqual(golden, m); err == nil {
 		if testVerbose {
@@ -3459,25 +3552,27 @@ func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
 		t.FailNow()
 	}
 
-	oldMapKeyAsString := testJsonH.MapKeyAsString
-	oldPreferFloat := testJsonH.PreferFloat
-	oldSignedInteger := testJsonH.SignedInteger
-	oldHTMLCharAsIs := testJsonH.HTMLCharsAsIs
-	oldMapType := testJsonH.MapType
+	jh := h.(*JsonHandle)
+
+	oldMapKeyAsString := jh.MapKeyAsString
+	oldPreferFloat := jh.PreferFloat
+	oldSignedInteger := jh.SignedInteger
+	oldHTMLCharAsIs := jh.HTMLCharsAsIs
+	oldMapType := jh.MapType
 
 	defer func() {
-		testJsonH.MapKeyAsString = oldMapKeyAsString
-		testJsonH.PreferFloat = oldPreferFloat
-		testJsonH.SignedInteger = oldSignedInteger
-		testJsonH.HTMLCharsAsIs = oldHTMLCharAsIs
-		testJsonH.MapType = oldMapType
+		jh.MapKeyAsString = oldMapKeyAsString
+		jh.PreferFloat = oldPreferFloat
+		jh.SignedInteger = oldSignedInteger
+		jh.HTMLCharsAsIs = oldHTMLCharAsIs
+		jh.MapType = oldMapType
 	}()
 
-	testJsonH.MapType = mapIntfIntfTyp
-	testJsonH.HTMLCharsAsIs = false
-	testJsonH.MapKeyAsString = true
-	testJsonH.PreferFloat = false
-	testJsonH.SignedInteger = false
+	jh.MapType = mapIntfIntfTyp
+	jh.HTMLCharsAsIs = false
+	jh.MapKeyAsString = true
+	jh.PreferFloat = false
+	jh.SignedInteger = false
 
 	// Also test out decoding string values into naked interface
 	b = `{"true": true, "false": false, "null": null, "7700000000000000000": 7700000000000000000}`
@@ -3503,21 +3598,21 @@ func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
 	fn()
 	delete(golden2, uint64(num))
 
-	testJsonH.SignedInteger = true
+	jh.SignedInteger = true
 	golden2[int64(num)] = int64(num)
 	fn()
 	delete(golden2, int64(num))
-	testJsonH.SignedInteger = false
+	jh.SignedInteger = false
 
-	testJsonH.PreferFloat = true
+	jh.PreferFloat = true
 	golden2[float64(num)] = float64(num)
 	fn()
 	delete(golden2, float64(num))
-	testJsonH.PreferFloat = false
+	jh.PreferFloat = false
 }
 
-func TestJsonEncodeIndent(t *testing.T) {
-	defer testSetup(t)()
+func doTestJsonEncodeIndent(t *testing.T, h Handle) {
+	defer testSetup(t, &h)()
 	v := TestSimplish{
 		Ii: -794,
 		Ss: `A Man is
@@ -3538,23 +3633,25 @@ after the new line
 		v.Sl = append(v.Sl, &v3)
 		v.Mm[strconv.FormatInt(int64(i), 10)] = &v3
 	}
-	oldcan := testJsonH.Canonical
-	oldIndent := testJsonH.Indent
-	oldS2A := testJsonH.StructToArray
+	jh := h.(*JsonHandle)
+
+	oldcan := jh.Canonical
+	oldIndent := jh.Indent
+	oldS2A := jh.StructToArray
 	defer func() {
-		testJsonH.Canonical = oldcan
-		testJsonH.Indent = oldIndent
-		testJsonH.StructToArray = oldS2A
+		jh.Canonical = oldcan
+		jh.Indent = oldIndent
+		jh.StructToArray = oldS2A
 	}()
-	testJsonH.Canonical = true
-	testJsonH.Indent = -1
-	testJsonH.StructToArray = false
+	jh.Canonical = true
+	jh.Indent = -1
+	jh.StructToArray = false
 	var bs []byte
-	NewEncoderBytes(&bs, testJsonH).MustEncode(&v)
+	NewEncoderBytes(&bs, jh).MustEncode(&v)
 	txt1Tab := string(bs)
 	bs = nil
-	testJsonH.Indent = 120
-	NewEncoderBytes(&bs, testJsonH).MustEncode(&v)
+	jh.Indent = 120
+	NewEncoderBytes(&bs, jh).MustEncode(&v)
 	txtSpaces := string(bs)
 	// fmt.Printf("\n-----------\n%s\n------------\n%s\n-------------\n", txt1Tab, txtSpaces)
 
@@ -3696,7 +3793,7 @@ func __doTestBufioDecReader(t *testing.T, bufsize int) {
 }
 
 func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	// encode a slice, decode it with PreferArrayOverSlice
 	// if codecgen, skip the test (as codecgen doesn't work with PreferArrayOverSlice)
 	if codecgen {
@@ -3722,9 +3819,9 @@ func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
 }
 
 func doTestZeroCopyBytes(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	// jsonhandle and cborhandle with indefiniteLength do not support inline bytes, so skip them.
-	if _, ok := h.(*JsonHandle); ok { // if h == testJsonH {
+	if _, ok := h.(*JsonHandle); ok {
 		t.Skipf("skipping ... zero copy bytes not supported by json handle")
 	}
 	if ch, ok := h.(*CborHandle); ok && ch.IndefiniteLength {
@@ -3764,7 +3861,7 @@ func doTestZeroCopyBytes(t *testing.T, h Handle) {
 }
 
 func doTestNextValueBytes(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 
 	bh := testBasicHandle(h)
 
@@ -3825,7 +3922,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 }
 
 func doTestNumbers(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	__doTestIntegers(t, h)
 	__doTestFloats(t, h)
 }
@@ -3969,7 +4066,7 @@ func __doTestFloats(t *testing.T, h Handle) {
 }
 
 func doTestStructFieldInfoToArray(t *testing.T, h Handle) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	bh := testBasicHandle(h)
 
 	defer func(b bool) { bh.CheckCircularRef = b }(bh.CheckCircularRef)
@@ -4020,7 +4117,7 @@ func doTestStructFieldInfoToArray(t *testing.T, h Handle) {
 }
 
 func doTestDesc(t *testing.T, h Handle, m map[byte]string) {
-	defer testSetup(t)()
+	defer testSetup(t, &h)()
 	for k, v := range m {
 		if s := h.desc(k); s != v {
 			t.Logf("error describing descriptor: '%q' i.e. 0x%x, expected '%s', got '%s'", k, k, v, s)
@@ -4034,7 +4131,7 @@ func TestBufioDecReader(t *testing.T) {
 }
 
 func doTestBufioDecReader(t *testing.T) {
-	defer testSetup(t)()
+	defer testSetup(t, nil)()
 	__doTestBufioDecReader(t, 13)
 	__doTestBufioDecReader(t, 3)
 	__doTestBufioDecReader(t, 5)
@@ -4042,7 +4139,7 @@ func doTestBufioDecReader(t *testing.T) {
 }
 
 func TestAtomic(t *testing.T) {
-	defer testSetup(t)()
+	defer testSetup(t, nil)()
 	// load, store, load, confirm
 	if true {
 		var a atomicTypeInfoSlice
@@ -4093,12 +4190,9 @@ func TestAtomic(t *testing.T) {
 
 // -----------
 
-func TestJsonLargeInteger(t *testing.T) {
-	doTestJsonLargeInteger(t)
-}
-
-func doTestJsonLargeInteger(t *testing.T) {
-	defer testSetup(t)()
+func doTestJsonLargeInteger(t *testing.T, h Handle) {
+	defer testSetup(t, &h)()
+	jh := h.(*JsonHandle)
 	for _, i := range []uint8{'L', 'A', 0} {
 		for _, j := range []interface{}{
 			int64(1 << 60),
@@ -4112,13 +4206,13 @@ func doTestJsonLargeInteger(t *testing.T) {
 			int64(1840000e-2),
 			uint64(1840000e+2),
 		} {
-			__doTestJsonLargeInteger(t, j, i)
+			__doTestJsonLargeInteger(t, j, i, jh)
 		}
 	}
 
-	oldIAS := testJsonH.IntegerAsString
-	defer func() { testJsonH.IntegerAsString = oldIAS }()
-	testJsonH.IntegerAsString = 0
+	oldIAS := jh.IntegerAsString
+	defer func() { jh.IntegerAsString = oldIAS }()
+	jh.IntegerAsString = 0
 
 	type tt struct {
 		s           string
@@ -4130,7 +4224,7 @@ func doTestJsonLargeInteger(t *testing.T) {
 	var i int64
 	var ui uint64
 	var err error
-	var d *Decoder = NewDecoderBytes(nil, testJsonH)
+	var d *Decoder = NewDecoderBytes(nil, jh)
 	for _, v := range []tt{
 		{"0", true, true, 0, 0},
 		{"0000", true, true, 0, 0},
@@ -4191,9 +4285,10 @@ func doTestJsonLargeInteger(t *testing.T) {
 	}
 }
 
-func TestJsonInvalidUnicode(t *testing.T) {
-	defer testSetup(t)()
+func doTestJsonInvalidUnicode(t *testing.T, h Handle) {
+	defer testSetup(t, &h)()
 	// t.Skipf("new json implementation does not handle bad unicode robustly")
+	jh := h.(*JsonHandle)
 
 	var err error
 
@@ -4211,9 +4306,9 @@ func TestJsonInvalidUnicode(t *testing.T) {
 
 	for k, v := range m {
 		// call testUnmarshal directly, so we can check for EOF
-		// testUnmarshalErr(&s, []byte(k), testJsonH, t, "-")
+		// testUnmarshalErr(&s, []byte(k), jh, t, "-")
 		var s string
-		err = testUnmarshal(&s, []byte(k), testJsonH)
+		err = testUnmarshal(&s, []byte(k), jh)
 		if err != nil {
 			if err == io.EOF {
 				continue
@@ -4237,7 +4332,7 @@ func TestJsonInvalidUnicode(t *testing.T) {
 	}
 	for k, v := range m {
 		var s string
-		err = testUnmarshal(&s, []byte(k), testJsonH)
+		err = testUnmarshal(&s, []byte(k), jh)
 		if err != nil {
 			t.Logf("%s: unmarshal failed: %v", "-", err)
 			t.FailNow()
@@ -4267,7 +4362,7 @@ func TestJsonInvalidUnicode(t *testing.T) {
 	}
 
 	for k, v := range m2 {
-		b, err = testMarshal(k, testJsonH)
+		b, err = testMarshal(k, jh)
 		if err != nil {
 			t.Logf("%s: marshal failed: %v", "-", err)
 			t.FailNow()
@@ -4281,8 +4376,8 @@ func TestJsonInvalidUnicode(t *testing.T) {
 	}
 }
 
-func TestJsonNumberParsing(t *testing.T) {
-	defer testSetup(t)()
+func doTestJsonNumberParsing(t *testing.T, h Handle) {
+	defer testSetup(t, &h)()
 	for _, f64 := range testFloatsToParse {
 		// using large prec might make a non-exact float ..., while small prec might make lose some precision.
 		// However, we can do a check, and only check if the (u)int64 and float64 can be converted to one another
@@ -4375,8 +4470,6 @@ func TestJsonNumberParsing(t *testing.T) {
 		}
 	}
 	{
-		h := testJsonH
-
 		var f64 float64 = 64.0
 		var f32 float32 = 32.0
 		var i int = 11
@@ -4398,10 +4491,10 @@ func TestJsonNumberParsing(t *testing.T) {
 	}
 }
 
-func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
-	defer testSetup(t)()
+func doTestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T, h Handle) {
+	defer testSetup(t, &h)()
 	fn := func(t *testing.T, b []byte, v interface{}) {
-		if err := NewDecoderBytes(b, testMsgpackH).Decode(v); err != io.EOF && err != io.ErrUnexpectedEOF {
+		if err := NewDecoderBytes(b, h).Decode(v); err != io.EOF && err != io.ErrUnexpectedEOF {
 			t.Fatalf("expected EOF or ErrUnexpectedEOF, got %v", err)
 		}
 	}
@@ -4424,7 +4517,7 @@ func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
 }
 
 func TestMapRangeIndex(t *testing.T) {
-	defer testSetup(t)()
+	defer testSetup(t, nil)()
 	// t.Skip()
 	type T struct {
 		I int
@@ -4602,8 +4695,6 @@ func TestMsgpackStdEncIntf(t *testing.T) {
 }
 
 func TestMsgpackMammoth(t *testing.T) {
-	defer func(b bool) { testMsgpackH.RawToString = b }(testMsgpackH.RawToString)
-	testMsgpackH.RawToString = true
 	doTestMammoth(t, testMsgpackH)
 }
 
@@ -4689,9 +4780,6 @@ func TestAllErrWriter(t *testing.T) {
 // ----- RPC custom -----
 
 func TestMsgpackRpcSpec(t *testing.T) {
-	if testMsgpackH.SliceElementReset {
-		t.Skipf("skipping ... MsgpackRpcSpec does not handle SliceElementReset - needs investigation")
-	}
 	doTestCodecRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, 0)
 }
 
@@ -4873,8 +4961,6 @@ func TestCborMammothMapsAndSlices(t *testing.T) {
 }
 
 func TestMsgpackMammothMapsAndSlices(t *testing.T) {
-	defer func(b bool) { testMsgpackH.RawToString = b }(testMsgpackH.RawToString)
-	testMsgpackH.RawToString = true
 	doTestMammothMapsAndSlices(t, testMsgpackH)
 }
 
@@ -4935,8 +5021,6 @@ func TestCborDifferentMapOrSliceType(t *testing.T) {
 }
 
 func TestMsgpackDifferentMapOrSliceType(t *testing.T) {
-	defer func(b bool) { testMsgpackH.RawToString = b }(testMsgpackH.RawToString)
-	testMsgpackH.RawToString = true
 	doTestDifferentMapOrSliceType(t, testMsgpackH)
 }
 
@@ -4957,8 +5041,6 @@ func TestCborScalars(t *testing.T) {
 }
 
 func TestMsgpackScalars(t *testing.T) {
-	defer func(b bool) { testMsgpackH.RawToString = b }(testMsgpackH.RawToString)
-	testMsgpackH.RawToString = true
 	doTestScalars(t, testMsgpackH)
 }
 
@@ -5309,4 +5391,28 @@ func TestSimpleStructFieldInfoToArray(t *testing.T) {
 
 func TestMultipleEncDec(t *testing.T) {
 	doTestMultipleEncDec(t, testJsonH)
+}
+
+func TestJsonEncodeIndent(t *testing.T) {
+	doTestJsonEncodeIndent(t, testJsonH)
+}
+
+func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
+	doTestJsonDecodeNonStringScalarInStringContext(t, testJsonH)
+}
+
+func TestJsonLargeInteger(t *testing.T) {
+	doTestJsonLargeInteger(t, testJsonH)
+}
+
+func TestJsonInvalidUnicode(t *testing.T) {
+	doTestJsonInvalidUnicode(t, testJsonH)
+}
+
+func TestJsonNumberParsing(t *testing.T) {
+	doTestJsonNumberParsing(t, testJsonH)
+}
+
+func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
+	doTestMsgpackDecodeMapAndExtSizeMismatch(t, testMsgpackH)
 }

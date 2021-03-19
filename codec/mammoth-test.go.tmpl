@@ -45,7 +45,7 @@ func (_ {{ .MethodNamePfx "typMbs" false }}) MapBySlice() { }
 type {{ .MethodNamePfx "typMap" false }} map[{{ .MapKey }}]{{ .Elem }}
 {{end}}{{end}}{{end}}
 
-func doTestMammothSlices(t *testing.T, h Handle) {
+func __doTestMammothSlices(t *testing.T, h Handle) {
 {{range $i, $e := .Values }}{{if not .Primitive }}{{if not .MapKey -}}
     var v{{$i}}va [8]{{ .Elem }}
     for _, v := range [][]{{ .Elem }}{ nil, {}, { {{ nonzerocmd .Elem }}, {{ zerocmd .Elem }}, {{ zerocmd .Elem }}, {{ nonzerocmd .Elem }} } } {
@@ -137,7 +137,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 {{end}}{{end}}{{end}}
 }
 
-func doTestMammothMaps(t *testing.T, h Handle) {
+func __doTestMammothMaps(t *testing.T, h Handle) {
 {{range $i, $e := .Values }}{{if not .Primitive }}{{if .MapKey -}}
     for _, v := range []map[{{ .MapKey }}]{{ .Elem }}{ nil, {}, { {{ nonzerocmd .MapKey }}:{{ zerocmd .Elem }} {{if ne "bool" .MapKey}}, {{ nonzerocmd .MapKey }}:{{ nonzerocmd .Elem }} {{end}} } } {
     // fmt.Printf(">>>> running mammoth map v{{$i}}: %v\n", v)
@@ -179,6 +179,11 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 }
 
 func doTestMammothMapsAndSlices(t *testing.T, h Handle) {
-     doTestMammothSlices(t, h)
-     doTestMammothMaps(t, h)
+	defer testSetup(t, &h)()
+	if mh, ok := h.(*MsgpackHandle); ok {
+		defer func(b bool) { mh.RawToString = b }(mh.RawToString)
+		mh.RawToString = true
+	}
+	__doTestMammothSlices(t, h)
+	__doTestMammothMaps(t, h)
 }

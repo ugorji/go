@@ -9,18 +9,20 @@ import (
 	"encoding/hex"
 	"math"
 	"os"
+	"reflect"
 	"regexp"
 	"strings"
 	"testing"
 )
 
 func TestCborIndefiniteLength(t *testing.T) {
-	defer testSetup(t)()
-	oldMapType := testCborH.MapType
-	defer func() {
-		testCborH.MapType = oldMapType
-	}()
-	testCborH.MapType = testMapStrIntfTyp
+	var h Handle = testCborH
+	defer testSetup(t, &h)()
+	bh := testBasicHandle(h)
+	defer func(oldMapType reflect.Type) {
+		bh.MapType = oldMapType
+	}(bh.MapType)
+	bh.MapType = testMapStrIntfTyp
 	// var (
 	// 	M1 map[string][]byte
 	// 	M2 map[uint64]bool
@@ -37,7 +39,7 @@ func TestCborIndefiniteLength(t *testing.T) {
 	}
 	var buf bytes.Buffer
 	// buf.Reset()
-	e := NewEncoder(&buf, testCborH)
+	e := NewEncoder(&buf, h)
 	buf.WriteByte(cborBdIndefiniteMap)
 	//----
 	buf.WriteByte(cborBdIndefiniteString)
@@ -79,7 +81,7 @@ func TestCborIndefiniteLength(t *testing.T) {
 
 	buf.WriteByte(cborBdBreak) // close map
 
-	NewDecoderBytes(buf.Bytes(), testCborH).MustDecode(&vv)
+	NewDecoderBytes(buf.Bytes(), h).MustDecode(&vv)
 	if err := deepEqual(v, vv); err != nil {
 		t.Logf("-------- Before and After marshal do not match: Error: %v", err)
 		if testVerbose {
@@ -101,12 +103,14 @@ type testCborGolden struct {
 
 // Some tests are skipped because they include numbers outside the range of int64/uint64
 func TestCborGoldens(t *testing.T) {
-	defer testSetup(t)()
-	oldMapType := testCborH.MapType
-	defer func() {
-		testCborH.MapType = oldMapType
-	}()
-	testCborH.MapType = testMapStrIntfTyp
+	var h Handle = testCborH
+	defer testSetup(t, &h)()
+	bh := testBasicHandle(h)
+	defer func(oldMapType reflect.Type) {
+		bh.MapType = oldMapType
+	}(bh.MapType)
+	bh.MapType = testMapStrIntfTyp
+
 	// decode test-cbor-goldens.json into a list of []*testCborGolden
 	// for each one,
 	// - decode hex into []byte bs
@@ -159,7 +163,7 @@ func TestCborGoldens(t *testing.T) {
 			t.FailNow()
 		}
 		var v interface{}
-		NewDecoderBytes(bs, testCborH).MustDecode(&v)
+		NewDecoderBytes(bs, h).MustDecode(&v)
 		if _, ok := v.(RawExt); ok {
 			continue
 		}
@@ -211,7 +215,8 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 }
 
 func TestCborHalfFloat(t *testing.T) {
-	defer testSetup(t)()
+	var h Handle = testCborH
+	defer testSetup(t, &h)()
 	m := map[uint16]float64{
 		// using examples from
 		// https://en.wikipedia.org/wiki/Half-precision_floating-point_format
@@ -231,7 +236,7 @@ func TestCborHalfFloat(t *testing.T) {
 	for k, v := range m {
 		res = 0
 		bigenstd.PutUint16(ba[1:], k)
-		testUnmarshalErr(&res, ba[:3], testCborH, t, "-")
+		testUnmarshalErr(&res, ba[:3], h, t, "-")
 		if res == v {
 			if testVerbose {
 				t.Logf("equal floats: from %x %b, %v", k, k, v)
@@ -244,7 +249,7 @@ func TestCborHalfFloat(t *testing.T) {
 }
 
 func TestCborSkipTags(t *testing.T) {
-	defer testSetup(t)()
+	defer testSetup(t, nil)()
 	type Tcbortags struct {
 		A string
 		M map[string]interface{}
@@ -372,7 +377,8 @@ func TestCborSkipTags(t *testing.T) {
 }
 
 func TestCborMalformed(t *testing.T) {
-	defer testSetup(t)()
+	var h Handle = testCborH
+	defer testSetup(t, &h)()
 	var bad = [][]byte{
 		[]byte("\x9b\x00\x00000000"),
 		[]byte("\x9b\x00\x00\x81112233"),
@@ -381,7 +387,7 @@ func TestCborMalformed(t *testing.T) {
 	var out interface{}
 	for _, v := range bad {
 		out = nil
-		err := testUnmarshal(&out, v, testCborH)
+		err := testUnmarshal(&out, v, h)
 		if err == nil {
 			t.Logf("missing expected error decoding malformed cbor")
 			t.FailNow()

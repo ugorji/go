@@ -268,7 +268,7 @@ type typMapMapInt32Int32 map[int32]int32
 type typMapMapInt32Float64 map[int32]float64
 type typMapMapInt32Bool map[int32]bool
 
-func doTestMammothSlices(t *testing.T, h Handle) {
+func __doTestMammothSlices(t *testing.T, h Handle) {
 	var v17va [8]interface{}
 	for _, v := range [][]interface{}{nil, {}, {"string-is-an-interface-2", nil, nil, "string-is-an-interface-3"}} {
 		var v17v1, v17v2 []interface{}
@@ -1119,7 +1119,7 @@ func doTestMammothSlices(t *testing.T, h Handle) {
 
 }
 
-func doTestMammothMaps(t *testing.T, h Handle) {
+func __doTestMammothMaps(t *testing.T, h Handle) {
 	for _, v := range []map[string]interface{}{nil, {}, {"some-string-1": nil, "some-string-2": "string-is-an-interface-1"}} {
 		// fmt.Printf(">>>> running mammoth map v28: %v\n", v)
 		var v28v1, v28v2 map[string]interface{}
@@ -3419,6 +3419,11 @@ func doTestMammothMaps(t *testing.T, h Handle) {
 }
 
 func doTestMammothMapsAndSlices(t *testing.T, h Handle) {
-	doTestMammothSlices(t, h)
-	doTestMammothMaps(t, h)
+	defer testSetup(t, &h)()
+	if mh, ok := h.(*MsgpackHandle); ok {
+		defer func(b bool) { mh.RawToString = b }(mh.RawToString)
+		mh.RawToString = true
+	}
+	__doTestMammothSlices(t, h)
+	__doTestMammothMaps(t, h)
 }
