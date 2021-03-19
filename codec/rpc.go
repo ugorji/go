@@ -11,9 +11,10 @@ import (
 )
 
 var (
-	errRpcJsonNeedsTermWhitespace = errors.New("rpc - requires JsonHandle with TermWhitespace=true")
-	errRpcIsClosed                = errors.New("rpc - connection has been closed")
-	errRpcNoConn                  = errors.New("rpc - no connection")
+	errRpcIsClosed = errors.New("rpc - connection has been closed")
+	errRpcNoConn   = errors.New("rpc - no connection")
+
+	rpcSpaceArr = [1]byte{' '}
 )
 
 // Rpc provides a rpc Server or Client Codec for rpc communication.
@@ -51,16 +52,11 @@ func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
 }
 
 func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
-	// defensive: ensure that jsonH has TermWhitespace turned on.
-	jsonH, ok := h.(*JsonHandle)
-	if ok && !jsonH.TermWhitespace {
-		halt.onerror(errRpcJsonNeedsTermWhitespace)
-	}
-	var f ioFlusher
 	bh := h.getBasicHandle()
 	// if the writer can flush, ensure we leverage it, else
 	// we may hang waiting on read if write isn't flushed.
-	f, ok = w.(ioFlusher)
+	// var f ioFlusher
+	f, ok := w.(ioFlusher)
 	if !bh.RPCNoBuffer {
 		if bh.WriterBufferSize <= 0 {
 			if !ok { // a flusher means there's already a buffer
@@ -85,18 +81,32 @@ func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 	}
 }
 
-func (c *rpcCodec) write(obj1, obj2 interface{}, writeObj2 bool) (err error) {
+func (c *rpcCodec) write(obj ...interface{}) (err error) {
 	err = c.ready()
-	if err == nil {
-		err = c.enc.Encode(obj1)
-		if err == nil && writeObj2 {
-			err = c.enc.Encode(obj2)
-		}
-		if c.f != nil {
+	if err != nil {
+		return
+	}
+	if c.f != nil {
+		defer func() {
 			flushErr := c.f.Flush()
-			if err == nil {
-				// ignore flush error if prior error occurred during Encode
+			if flushErr != nil && err == nil {
 				err = flushErr
+			}
+		}()
+	}
+
+	for _, o := range obj {
+		err = c.enc.Encode(o)
+		if err != nil {
+			return
+		}
+		// defensive: ensure a space is always written after each encoding,
+		// in case the value was a number, and encoding a value right after
+		// without a space will lead to invalid output.
+		if c.h.isJson() {
+			_, err = c.w.Write(rpcSpaceArr[:])
+			if err != nil {
+				return
 			}
 		}
 	}
@@ -155,11 +165,11 @@ type goRpcCodec struct {
 }
 
 func (c *goRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
-	return c.write(r, body, true)
+	return c.write(r, body)
 }
 
 func (c *goRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
-	return c.write(r, body, true)
+	return c.write(r, body)
 }
 
 func (c *goRpcCodec) ReadResponseHeader(r *rpc.Response) error {

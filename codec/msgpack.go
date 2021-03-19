@@ -1095,7 +1095,7 @@ func (c *msgpackSpecRpcCodec) WriteRequest(r *rpc.Request, body interface{}) err
 		bodyArr = []interface{}{body}
 	}
 	r2 := []interface{}{0, uint32(r.Seq), r.ServiceMethod, bodyArr}
-	return c.write(r2, nil, false)
+	return c.write(r2)
 }
 
 func (c *msgpackSpecRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
@@ -1107,7 +1107,7 @@ func (c *msgpackSpecRpcCodec) WriteResponse(r *rpc.Response, body interface{}) e
 		body = nil
 	}
 	r2 := []interface{}{1, uint32(r.Seq), moe, body}
-	return c.write(r2, nil, false)
+	return c.write(r2)
 }
 
 func (c *msgpackSpecRpcCodec) ReadResponseHeader(r *rpc.Response) error {
