@@ -1381,6 +1381,8 @@ type JsonHandle struct {
 	// _ [5]uint64 // padding (cache line)
 }
 
+func (h *JsonHandle) isJson() bool { return true }
+
 // Name returns the name of the handle: json
 func (h *JsonHandle) Name() string { return "json" }
 

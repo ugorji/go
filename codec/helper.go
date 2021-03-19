@@ -841,7 +841,7 @@ func initHandle(hh Handle) {
 	// ** Consequently, below would not work.
 	// if atomic.CompareAndSwapUint32(&x.inited, 0, 1) {
 	// 	x.be = hh.isBinary()
-	// 	_, x.js = hh.(*JsonHandle)
+	// 	x.js = hh.isJson
 	// 	x.n = hh.Name()[0]
 	// }
 
@@ -897,7 +897,7 @@ func (x *BasicHandle) initHandle(hh Handle) {
 		if hh.isBinary() {
 			f |= binaryHandleFlag
 		}
-		if _, b := hh.(*JsonHandle); b {
+		if hh.isJson() {
 			f |= jsonHandleFlag
 		}
 		// ensure MapType and SliceType are of correct type
@@ -1246,6 +1246,7 @@ type Handle interface {
 	newEncDriver() encDriver
 	newDecDriver() decDriver
 	isBinary() bool
+	isJson() bool // json is special for now, so track it
 	// desc describes the current byte descriptor, or returns "unknown[XXX]" if not understood.
 	desc(bd byte) string
 	// init initializes the handle based on handle-specific info (beyond what is in BasicHandle)
@@ -1383,10 +1384,16 @@ type extFailWrapper struct {
 type binaryEncodingType struct{}
 
 func (binaryEncodingType) isBinary() bool { return true }
+func (binaryEncodingType) isJson() bool   { return false }
 
 type textEncodingType struct{}
 
 func (textEncodingType) isBinary() bool { return false }
+func (textEncodingType) isJson() bool   { return false }
+
+type notJsonType struct{}
+
+func (notJsonType) isJson() bool { return false }
 
 // noBuiltInTypes is embedded into many types which do not support builtins
 // e.g. msgpack, simple, cbor.
