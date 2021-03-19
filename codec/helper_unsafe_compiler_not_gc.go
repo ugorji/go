@@ -22,7 +22,6 @@ func rvType(rv reflect.Value) reflect.Type {
 // Seems there's something going wrong in growslice.
 // Until we find out why, use standard reflection.
 func rvGrowSlice(rv reflect.Value, ti *typeInfo, xcap, incr int) (v reflect.Value, newcap int, set bool) {
-	// zz.Debugf("rv: kind: %v, type: %v", rv.Kind(), rv.Type())
 	newcap = int(growCap(uint(xcap), uint(ti.elemsize), uint(incr)))
 	v = reflect.MakeSlice(ti.rt, newcap, newcap)
 	if rv.Len() > 0 {
