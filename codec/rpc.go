@@ -58,10 +58,12 @@ func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 	}
 	var f ioFlusher
 	bh := h.getBasicHandle()
+	// if the writer can flush, ensure we leverage it, else
+	// we may hang waiting on read if write isn't flushed.
+	f, ok = w.(ioFlusher)
 	if !bh.RPCNoBuffer {
-		f, ok = w.(ioFlusher)
 		if bh.WriterBufferSize <= 0 {
-			if !ok {
+			if !ok { // a flusher means there's already a buffer
 				bw := bufio.NewWriter(w)
 				f, w = bw, bw
 			}
