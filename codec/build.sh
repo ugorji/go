@@ -14,7 +14,9 @@ _tests() {
     # note that codecgen requires fastpath, so you cannot do "codecgen codec.notfastpath"
     # we test the following permutations wnich all execute different code paths as below.
     echo "TestCodecSuite: (fastpath/unsafe), (!fastpath/unsafe), (fastpath/!unsafe), (!fastpath/!unsafe), (codecgen/unsafe)"
-    local nc=1 # count
+    local echo=1
+    local nc=2 # count
+    local cpus="1,$(nproc)"
     local a=( "" "codec.notfastpath" "codec.safe" "codec.notfastpath codec.safe"  "codecgen" )
     local b=()
     local c=()
@@ -25,7 +27,9 @@ _tests() {
         [[ "$zcover" == "1" ]] && c=( -coverprofile "${i2// /-}.cov.out" )
         true &&
             ${gocmd} vet -printfuncs "errorf" "$@" &&
-            ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" -count $nc -run "TestCodecSuite" "${c[@]}" "$@" &
+            if [[ "$echo" == 1 ]]; then set -o xtrace; fi &&
+            ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "alltests $i" -count $nc -cpu $cpus -run "TestCodecSuite" "${c[@]}" "$@" &
+        if [[ "$echo" == 1 ]]; then set +o xtrace; fi
         b+=("${i2// /-}.cov.out")
         [[ "$zwait" == "1" ]] && wait
             
