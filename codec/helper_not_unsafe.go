@@ -30,9 +30,9 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 	return cap(v1) != 0 && cap(v2) != 0 && &(v1[:1][0]) == &(v2[:1][0])
 }
 
-func (x *BasicHandle) fnloadFastpathUnderlying(ti *typeInfo) (f *fastpathE, u reflect.Type) {
-	return fnloadFastpathUnderlying(ti)
-}
+// func (x *BasicHandle) fnloadFastpathUnderlying(ti *typeInfo) (f *fastpathE, u reflect.Type) {
+// 	return fnloadFastpathUnderlying(ti)
+// }
 
 // func copyBytes(dst []byte, src []byte) {
 // 	copy(dst, src)

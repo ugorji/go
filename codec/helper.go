@@ -742,13 +742,35 @@ type MapBySlice interface {
 	MapBySlice()
 }
 
+// basicHandleRuntimeState holds onto all BasicHandle runtime and cached config information.
+//
+// Storing this outside BasicHandle allows us create shallow copies of a Handle,
+// which can be used e.g. when we need to modify config fields temporarily.
+// Shallow copies are used within tests, so we can modify some config fields for a test
+// temporarily when running tests in parallel, without running the risk that a test executing
+// in parallel with other tests does not see a transient modified values not meant for it.
 type basicHandleRuntimeState struct {
 	// these are used during runtime.
 	// At init time, they should have nothing in them.
 	rtidFns      atomicRtidFnSlice
 	rtidFnsNoExt atomicRtidFnSlice
 
+	// Note: basicHandleRuntimeState is not comparable, due to these slices here (extHandle, intf2impls).
+	// If *[]T is used instead, this becomes comparable, at the cost of extra indirection.
+	// Thses slices are used all the time, so keep as slices (not pointers).
+
+	extHandle
+
+	intf2impls
+
 	mu sync.Mutex
+
+	flags handleFlag
+
+	// timeBuiltin is initialized from TimeNotBuiltin, and used internally.
+	// once initialized, it cannot be changed, as the function for encoding/decoding time.Time
+	// will have been cached and the TimeNotBuiltin value will not be consulted thereafter.
+	timeBuiltin bool
 }
 
 // BasicHandle encapsulates the common options and extension functions.
@@ -765,14 +787,6 @@ type BasicHandle struct {
 
 	*basicHandleRuntimeState
 
-	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
-
-	// Note: BasicHandle is not comparable, due to these slices here (extHandle, intf2impls).
-	// If *[]T is used instead, this becomes comparable, at the cost of extra indirection.
-	// Thses slices are used all the time, so keep as slices (not pointers).
-
-	extHandle
-
 	// ---- cache line
 
 	DecodeOptions
@@ -780,8 +794,6 @@ type BasicHandle struct {
 	// ---- cache line
 
 	EncodeOptions
-
-	intf2impls
 
 	RPCOptions
 
@@ -801,11 +813,6 @@ type BasicHandle struct {
 	//
 	// Once a Handle has been initialized (used), do not modify this option. It will be ignored.
 	TimeNotBuiltin bool
-
-	// timeBuiltin is initialized from TimeNotBuiltin, and used internally.
-	// once initialized, it cannot be changed, as the function for encoding/decoding time.Time
-	// will have been cached and the TimeNotBuiltin value will not be consulted thereafter.
-	timeBuiltin bool
 
 	// ExplicitRelease configures whether Release() is implicitly called after an encode or
 	// decode call.
@@ -830,6 +837,8 @@ type BasicHandle struct {
 	ExplicitRelease bool
 
 	// ---- cache line
+	inited uint32 // holds if inited, and also handle flags (binary encoding, json handler, etc)
+
 }
 
 // initHandle does a one-time initialization of the handle.
@@ -868,21 +877,51 @@ func (x *BasicHandle) isInited() bool {
 // clearInited: DANGEROUS - only use in testing, etc
 func (x *BasicHandle) clearInited() {
 	atomic.StoreUint32(&x.inited, 0)
-	x.basicHandleRuntimeState = nil
 }
 
 // TimeBuiltin returns whether time.Time OOTB support is used,
 // based on the initial configuration of TimeNotBuiltin
-func (x *BasicHandle) TimeBuiltin() bool {
+func (x *basicHandleRuntimeState) TimeBuiltin() bool {
 	return x.timeBuiltin
 }
 
-func (x *BasicHandle) isJs() bool {
-	return handleFlag(x.inited)&jsonHandleFlag != 0
+func (x *basicHandleRuntimeState) isJs() bool {
+	return handleFlag(x.flags)&jsonHandleFlag != 0
 }
 
-func (x *BasicHandle) isBe() bool {
-	return handleFlag(x.inited)&binaryHandleFlag != 0
+func (x *basicHandleRuntimeState) isBe() bool {
+	return handleFlag(x.flags)&binaryHandleFlag != 0
+}
+
+func (x *basicHandleRuntimeState) setExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
+	rk := rt.Kind()
+	for rk == reflect.Ptr {
+		rt = rt.Elem()
+		rk = rt.Kind()
+	}
+
+	if rt.PkgPath() == "" || rk == reflect.Interface { // || rk == reflect.Ptr {
+		return fmt.Errorf("codec.Handle.SetExt: Takes named type, not a pointer or interface: %v", rt)
+	}
+
+	rtid := rt2id(rt)
+	switch rtid {
+	case timeTypId, rawTypId, rawExtTypId:
+		// all natively supported type, so cannot have an extension.
+		// However, we do not return an error for these, as we do not document that.
+		// Instead, we silently treat as a no-op, and return.
+		return
+	}
+	for i := range x.extHandle {
+		v := &x.extHandle[i]
+		if v.rtid == rtid {
+			v.tag, v.ext = tag, ext
+			return
+		}
+	}
+	rtidptr := rt2id(reflect.PtrTo(rt))
+	x.extHandle = append(x.extHandle, extTypeTagFn{rtid, rtidptr, rt, tag, ext})
+	return
 }
 
 // initHandle should be called only from codec.initHandle global function.
@@ -892,13 +931,18 @@ func (x *BasicHandle) initHandle(hh Handle) {
 	handleInitMu.Lock()
 	defer handleInitMu.Unlock() // use defer, as halt may panic below
 	if x.inited == 0 {
-		x.basicHandleRuntimeState = new(basicHandleRuntimeState)
-		var f = initedHandleFlag
-		if hh.isBinary() {
-			f |= binaryHandleFlag
+		if x.basicHandleRuntimeState == nil {
+			x.basicHandleRuntimeState = new(basicHandleRuntimeState)
 		}
-		if hh.isJson() {
-			f |= jsonHandleFlag
+		if x.flags == 0 {
+			var f = initedHandleFlag
+			if hh.isBinary() {
+				f |= binaryHandleFlag
+			}
+			if hh.isJson() {
+				f |= jsonHandleFlag
+			}
+			x.flags = f
 		}
 		// ensure MapType and SliceType are of correct type
 		if x.MapType != nil && x.MapType.Kind() != reflect.Map {
@@ -909,7 +953,7 @@ func (x *BasicHandle) initHandle(hh Handle) {
 		}
 		x.basicInit()
 		hh.init()
-		atomic.StoreUint32(&x.inited, uint32(f))
+		atomic.StoreUint32(&x.inited, uint32(initedHandleFlag))
 	}
 }
 
@@ -917,11 +961,15 @@ func (x *BasicHandle) getBasicHandle() *BasicHandle {
 	return x
 }
 
-func (x *BasicHandle) getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
-	if x.TypeInfos == nil {
-		return defTypeInfos.get(rtid, rt)
+func (x *BasicHandle) typeInfos() *TypeInfos {
+	if x.TypeInfos != nil {
+		return x.TypeInfos
 	}
-	return x.TypeInfos.get(rtid, rt)
+	return defTypeInfos
+}
+
+func (x *BasicHandle) getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo) {
+	return x.typeInfos().get(rtid, rt)
 }
 
 func findRtidFn(s []codecRtidFn, rtid uintptr) (i uint, fn *codecFn) {
@@ -948,14 +996,14 @@ LOOP:
 }
 
 func (x *BasicHandle) fn(rt reflect.Type) (fn *codecFn) {
-	return x.fnVia(rt, &x.rtidFns, true)
+	return x.fnVia(rt, x.typeInfos(), &x.rtidFns, x.CheckCircularRef, true)
 }
 
 func (x *BasicHandle) fnNoExt(rt reflect.Type) (fn *codecFn) {
-	return x.fnVia(rt, &x.rtidFnsNoExt, false)
+	return x.fnVia(rt, x.typeInfos(), &x.rtidFnsNoExt, x.CheckCircularRef, false)
 }
 
-func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt bool) (fn *codecFn) {
+func (x *basicHandleRuntimeState) fnVia(rt reflect.Type, tinfos *TypeInfos, fs *atomicRtidFnSlice, checkCircularRef, checkExt bool) (fn *codecFn) {
 	rtid := rt2id(rt)
 	sp := fs.load()
 	if sp != nil {
@@ -964,7 +1012,7 @@ func (x *BasicHandle) fnVia(rt reflect.Type, fs *atomicRtidFnSlice, checkExt boo
 		}
 	}
 
-	fn = x.fnLoad(rt, rtid, checkExt)
+	fn = x.fnLoad(rt, rtid, tinfos, checkCircularRef, checkExt)
 	x.mu.Lock()
 	sp = fs.load()
 	// since this is an atomic load/store, we MUST use a different array each time,
@@ -1003,10 +1051,10 @@ func fnloadFastpathUnderlying(ti *typeInfo) (f *fastpathE, u reflect.Type) {
 	return
 }
 
-func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *codecFn) {
+func (x *basicHandleRuntimeState) fnLoad(rt reflect.Type, rtid uintptr, tinfos *TypeInfos, checkCircularRef, checkExt bool) (fn *codecFn) {
 	fn = new(codecFn)
 	fi := &(fn.i)
-	ti := x.getTypeInfo(rtid, rt)
+	ti := tinfos.get(rtid, rt)
 	fi.ti = ti
 	rk := reflect.Kind(ti.kind)
 
@@ -1037,7 +1085,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 			fi.addrE = true
 		}
 	} else if (ti.flagSelfer || ti.flagSelferPtr) &&
-		!(x.CheckCircularRef && ti.flagSelferViaCodecgen && ti.kind == byte(reflect.Struct)) {
+		!(checkCircularRef && ti.flagSelferViaCodecgen && ti.kind == byte(reflect.Struct)) {
 		// do not use Selfer generated by codecgen if it is a struct and CheckCircularRef=true
 		fn.fe = (*Encoder).selferMarshal
 		fn.fd = (*Decoder).selferUnmarshal
@@ -1095,7 +1143,7 @@ func (x *BasicHandle) fnLoad(rt reflect.Type, rtid uintptr, checkExt bool) (fn *
 				}
 			} else { // named type (with underlying type of map or slice or array)
 				// try to use mapping for underlying type
-				xfe, xrt := x.fnloadFastpathUnderlying(ti)
+				xfe, xrt := fnloadFastpathUnderlying(ti)
 				if xfe != nil {
 					xfnf := xfe.encfn
 					xfnf2 := xfe.decfn
@@ -1515,34 +1563,10 @@ func (x *BasicHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 	if x.isInited() {
 		return errHandleInited
 	}
-	rk := rt.Kind()
-	for rk == reflect.Ptr {
-		rt = rt.Elem()
-		rk = rt.Kind()
+	if x.basicHandleRuntimeState == nil {
+		x.basicHandleRuntimeState = new(basicHandleRuntimeState)
 	}
-
-	if rt.PkgPath() == "" || rk == reflect.Interface { // || rk == reflect.Ptr {
-		return fmt.Errorf("codec.Handle.SetExt: Takes named type, not a pointer or interface: %v", rt)
-	}
-
-	rtid := rt2id(rt)
-	switch rtid {
-	case timeTypId, rawTypId, rawExtTypId:
-		// all natively supported type, so cannot have an extension.
-		// However, we do not return an error for these, as we do not document that.
-		// Instead, we silently treat as a no-op, and return.
-		return
-	}
-	for i := range x.extHandle {
-		v := &x.extHandle[i]
-		if v.rtid == rtid {
-			v.tag, v.ext = tag, ext
-			return
-		}
-	}
-	rtidptr := rt2id(reflect.PtrTo(rt))
-	x.extHandle = append(x.extHandle, extTypeTagFn{rtid, rtidptr, rt, tag, ext})
-	return
+	return x.basicHandleRuntimeState.setExt(rt, tag, ext)
 }
 
 func (o extHandle) getExtForI(x interface{}) (v *extTypeTagFn) {
