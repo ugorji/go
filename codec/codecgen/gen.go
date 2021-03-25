@@ -75,7 +75,7 @@ import (
 	"bytes"
 	"strings"
 	"go/format"
-	"log"
+	"fmt"
 )
 
 func codecGenBoolPtr(b bool) *bool {
@@ -116,7 +116,7 @@ typ = reflect.TypeOf(t{{ $index }})
 		 typs...)
 
 	for _, warning := range warnings {
-		log.Printf("warning: %s", warning)
+		fmt.Fprintf(os.Stderr, "warning: %s\n", warning)
 	}
 
 	bout, err := format.Source(out.Bytes())
