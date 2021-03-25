@@ -390,14 +390,6 @@ func init() {
 	}
 }
 
-type handleFlag uint8
-
-const (
-	initedHandleFlag handleFlag = 1 << iota
-	binaryHandleFlag
-	jsonHandleFlag
-)
-
 // driverStateManager supports the runtime state of an (enc|dec)Driver.
 //
 // During a side(En|De)code call, we can capture the state, reset it,
@@ -765,12 +757,14 @@ type basicHandleRuntimeState struct {
 
 	mu sync.Mutex
 
-	flags handleFlag
+	jsonHandle   bool
+	binaryHandle bool
 
 	// timeBuiltin is initialized from TimeNotBuiltin, and used internally.
 	// once initialized, it cannot be changed, as the function for encoding/decoding time.Time
 	// will have been cached and the TimeNotBuiltin value will not be consulted thereafter.
 	timeBuiltin bool
+	_           bool // padding
 }
 
 // BasicHandle encapsulates the common options and extension functions.
@@ -886,11 +880,11 @@ func (x *basicHandleRuntimeState) TimeBuiltin() bool {
 }
 
 func (x *basicHandleRuntimeState) isJs() bool {
-	return handleFlag(x.flags)&jsonHandleFlag != 0
+	return x.jsonHandle
 }
 
 func (x *basicHandleRuntimeState) isBe() bool {
-	return handleFlag(x.flags)&binaryHandleFlag != 0
+	return x.binaryHandle
 }
 
 func (x *basicHandleRuntimeState) setExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
@@ -934,16 +928,8 @@ func (x *BasicHandle) initHandle(hh Handle) {
 		if x.basicHandleRuntimeState == nil {
 			x.basicHandleRuntimeState = new(basicHandleRuntimeState)
 		}
-		if x.flags == 0 {
-			var f = initedHandleFlag
-			if hh.isBinary() {
-				f |= binaryHandleFlag
-			}
-			if hh.isJson() {
-				f |= jsonHandleFlag
-			}
-			x.flags = f
-		}
+		x.jsonHandle = hh.isJson()
+		x.binaryHandle = hh.isBinary()
 		// ensure MapType and SliceType are of correct type
 		if x.MapType != nil && x.MapType.Kind() != reflect.Map {
 			halt.onerror(errMapTypeNotMapKind)
@@ -953,7 +939,7 @@ func (x *BasicHandle) initHandle(hh Handle) {
 		}
 		x.basicInit()
 		hh.init()
-		atomic.StoreUint32(&x.inited, uint32(initedHandleFlag))
+		atomic.StoreUint32(&x.inited, 1)
 	}
 }
 
