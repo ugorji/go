@@ -102,8 +102,22 @@ type unsafeRuntimeType struct {
 	// ... many other fields here
 }
 
+type unsafePerTypeElem struct {
+	arr   [unsafeTransientArrCap]byte // for bool, number, struct, array kinds
+	slice unsafeSlice                 // for string and slice kinds
+}
+
+func (x *unsafePerTypeElem) addrFor(k reflect.Kind) unsafe.Pointer {
+	if k == reflect.String || k == reflect.Slice {
+		x.slice = unsafeSlice{} // memclr
+		return unsafe.Pointer(&x.slice)
+	}
+	x.arr = [unsafeTransientArrCap]byte{} // memclr
+	return unsafe.Pointer(&x.arr)
+}
+
 type perType struct {
-	addr1, addr2 [unsafeTransientArrCap]byte
+	elems [2]unsafePerTypeElem
 }
 
 type decPerType struct {
@@ -115,30 +129,14 @@ type encPerType struct{}
 // TransientAddrK is used for getting a *transient* value to be decoded into,
 // which will right away be used for something else.
 //
-// For this, we optimize and use a scratch space.
-//
-// We use this for situations:
-// - decode into a temp value x, and then set x into an interface
-// - decode into a temp value, for use as a map key, to lookup up a map value
-// - decode into a temp value, for use as a map value, to set into a map
-// - decode into a temp value, for sending into a channel
-//
-// By definition, Transient values are NEVER pointers.
-//
-// In general, only non-composite values can be transient i.e. number, bool, string.
-// These values can be encoded/decoded directly by a driver and will not
-// interfer with other values being decoded.
-//
-// Note that because of the situation with map keys and map values iterate during a range,
-// we have 2 variants of:
-// Transient and Transient2 (used for map keys if map value is transient also)
+// See notes in helper.go about "Transient values during decoding"
 
 func (x *perType) TransientAddrK(t reflect.Type, k reflect.Kind) reflect.Value {
-	return rvZeroAddrTransientAnyK(t, k, &x.addr1)
+	return rvZeroAddrTransientAnyK(t, k, x.elems[0].addrFor(k))
 }
 
 func (x *perType) TransientAddr2K(t reflect.Type, k reflect.Kind) reflect.Value {
-	return rvZeroAddrTransientAnyK(t, k, &x.addr2)
+	return rvZeroAddrTransientAnyK(t, k, x.elems[1].addrFor(k))
 }
 
 func (encPerType) AddressableRO(v reflect.Value) reflect.Value {
@@ -326,12 +324,11 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return
 }
 
-func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr *[unsafeTransientArrCap]byte) (rv reflect.Value) {
+func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr unsafe.Pointer) (rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
 	urv.flag = uintptr(k) | unsafeFlagIndir | unsafeFlagAddr
-	*addr = [unsafeTransientArrCap]byte{}
-	urv.ptr = unsafe.Pointer(addr)
+	urv.ptr = addr
 	return
 }
 

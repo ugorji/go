@@ -141,6 +141,54 @@ package codec
 // ------------------------------------------
 // Passing reflect.Kind to functions that take a reflect.Value
 //   - Note that reflect.Value.Kind() is very cheap, as its fundamentally a binary AND of 2 numbers
+//
+// ------------------------------------------
+// Transient values during decoding
+//
+// With reflection, the stack is not used. Consequently, values which may be stack-allocated in
+// normal use will cause a heap allocation when using reflection.
+//
+// There are cases where we know that a value is transient, and we just need to decode into it
+// temporarily so we can right away use its value for something else.
+//
+// In these situations, we can elide the heap allocation by being deliberate with use of a pre-cached
+// scratch memory or scratch value.
+//
+// We use this for situations:
+// - decode into a temp value x, and then set x into an interface
+// - decode into a temp value, for use as a map key, to lookup up a map value
+// - decode into a temp value, for use as a map value, to set into a map
+// - decode into a temp value, for sending into a channel
+//
+// By definition, Transient values are NEVER pointer-shaped values,
+// like pointer, func, map, chan. Using transient for pointer-shaped values
+// can lead to data corruption when GC tries to follow what it saw as a pointer at one point.
+//
+// In general, transient values are values which can be decoded as an atomic value
+// using a single call to the decDriver. This naturally includes bool or numeric types.
+//
+// Note that some values which "contain" pointers, specifically string and slice,
+// can also be transient. In the case of string, it is decoded as an atomic value.
+// In the case of a slice, decoding into its elements always uses an addressable
+// value in memory ie we grow the slice, and then decode directly into the memory
+// address corresponding to that index in the slice.
+//
+// To handle these string and slice values, we have to use a scratch value
+// which has the same shape of a string or slice.
+//
+// Consequently, the full range of types which can be transient is:
+// - numbers
+// - bool
+// - string
+// - slice
+//
+// and whbut we MUST use a scratch space with that element
+// being defined as an unsafe.Pointer to start with.
+//
+// We have to be careful with maps. Because we iterate map keys and values during a range,
+// we must have 2 variants of the scratch space/value for maps and keys separately.
+//
+// These are the TransientAddrK and TransientAddr2K methods of decPerType.
 
 import (
 	"encoding"
@@ -264,8 +312,12 @@ var (
 	// isnilBitset sets bit for all kinds which can be compared to nil
 	isnilBitset bitset32
 
-	// hasptrBitset sets bit for all kinds which always have internal pointers
-	hasptrBitset bitset32
+	// // hasptrBitset sets bit for all kinds which always have internal pointers
+	// hasptrBitset bitset32
+
+	// transientBitset sets bits for all kinds which are always transient'able:
+	// numbers, bool, strings and slices
+	transientBitset bitset32
 
 	// scalarBitset sets bit for all kinds which are scalars/primitives and thus immutable
 	scalarBitset bitset32
@@ -351,10 +403,12 @@ func init() {
 		set(byte(reflect.Complex128)).
 		set(byte(reflect.String))
 
+	transientBitset = scalarBitset
+
+	transientBitset.
+		set(byte(reflect.Slice))
+
 	// MARKER: reflect.Array is not a scalar, as its contents can be modified.
-	//
-	// Also, reflect.Array cannot be transient, as it might be non-addressable,
-	// meaning all the elements are non-addressable, and thus could re-use the transient buffer.
 
 	refBitset.
 		set(byte(reflect.Map)).
@@ -369,10 +423,10 @@ func init() {
 		set(byte(reflect.Interface)).
 		set(byte(reflect.Slice))
 
-	hasptrBitset = isnilBitset
-
-	hasptrBitset.
-		set(byte(reflect.String))
+	// hasptrBitset = isnilBitset
+	//
+	// hasptrBitset.
+	// 	set(byte(reflect.String))
 
 	for i := byte(0); i <= utf8.RuneSelf; i++ {
 		if (i >= '0' && i <= '9') || (i >= 'a' && i <= 'z') || (i >= 'A' && i <= 'Z') {
@@ -2081,7 +2135,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 
 	// flagCanTransient MUST be false for anything with a pointer in it.
 	// All reference types (string, slice, func, map, ptr, interface, etc) have pointers.
-	// 
+	//
 	// If using transient for a type with a pointer, there is the potential for data corruption
 	//  when GC tries to follow a "transient" pointer which may become a non-pointer soon after.
 	//
@@ -2089,7 +2143,8 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 
 	ti.flagCanTransient = basicCheckCanTransient(&ti)
 	if ti.flagCanTransient {
-		ti.flagCanTransient = !hasptrBitset.isset(byte(rk))
+		// ti.flagCanTransient = !hasptrBitset.isset(byte(rk))
+		ti.flagCanTransient = transientBitset.isset(byte(rk))
 	}
 
 	var tt reflect.Type
@@ -2160,7 +2215,8 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
 		if ti.flagCanTransient {
-			ti.flagCanTransient = !hasptrBitset.isset(ti.elemkind)
+			// ti.flagCanTransient = !hasptrBitset.isset(ti.elemkind)
+			ti.flagCanTransient = transientBitset.isset(ti.elemkind)
 			if ti.flagCanTransient {
 				ti.flagCanTransient = x.get(rt2id(ti.elem), ti.elem).flagCanTransient
 			}
@@ -2223,12 +2279,11 @@ LOOP:
 		fkind := f.Type.Kind()
 
 		if ti != nil && ti.flagCanTransient {
-			ti.flagCanTransient = !hasptrBitset.isset(byte(fkind))
-			if ti.flagCanTransient {
-				switch fkind { // check if array or struct and handle accordingly
-				case reflect.Struct, reflect.Array:
-					ti.flagCanTransient = x.get(rt2id(f.Type), f.Type).flagCanTransient
-				}
+			// ti.flagCanTransient = !hasptrBitset.isset(byte(fkind))
+			ti.flagCanTransient = transientBitset.isset(byte(fkind))
+			// check if array or struct and handle accordingly
+			if ti.flagCanTransient && (fkind == reflect.Struct || fkind == reflect.Array) {
+				ti.flagCanTransient = x.get(rt2id(f.Type), f.Type).flagCanTransient
 			}
 		}
 

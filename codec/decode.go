@@ -617,16 +617,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 	// decode into it, and reset the interface to that new value.
 
 	if !canDecode {
-		rvk := rvn.Kind()
-		rvt := rvType(rvn)
-
-		var rvn2 reflect.Value
-		if decUseTransient && rvk != reflect.Ptr && d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient {
-			rvn2 = d.perType.TransientAddrK(rvt, rvk)
-		} else {
-			rvn2 = rvZeroAddrK(rvt, rvk)
-		}
-
+		rvn2 := d.oneShotAddrRV(rvType(rvn), rvn.Kind())
 		rvSetDirect(rvn2, rvn)
 		rvn = rvn2
 	}
@@ -2077,19 +2068,22 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 	// }
 
 	if !rv.CanAddr() {
-		rvk = rv.Kind()
-		rvt := rvType(rv)
-		if decUseTransient && rvk != reflect.Ptr && d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient {
-			rv2 = d.perType.TransientAddrK(rvt, rvk)
-		} else {
-			rv2 = rvZeroAddrK(rvt, rvk)
-		}
+		rv2 = d.oneShotAddrRV(rvType(rv), rv.Kind())
 		rvSet(rv2, rv)
 		rv = rv2
 	}
 
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
+}
+
+func (d *Decoder) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
+	if decUseTransient &&
+		(transientBitset.isset(byte(rvk)) ||
+			((rvk == reflect.Struct || rvk == reflect.Array) && d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
+		return d.perType.TransientAddrK(rvt, rvk)
+	}
+	return rvZeroAddrK(rvt, rvk)
 }
 
 func (d *Decoder) sideDecode(v interface{}, bs []byte) {
