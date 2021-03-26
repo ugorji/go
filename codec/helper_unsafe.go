@@ -55,6 +55,11 @@ const safeMode = false
 // during an iteration and we can just "peek" at the internal value" in the map and use it.
 const helperUnsafeDirectAssignMapEntry = true
 
+// Transient values can lead to GC corruption if the value has internal pointers.
+//
+// decUseTransient says that we should not use the transient optimization.
+const decUseTransient = true
+
 // MARKER: keep in sync with GO_ROOT/src/reflect/value.go
 const (
 	unsafeFlagStickyRO = 1 << 5
@@ -1219,9 +1224,7 @@ func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, va
 	// Sometimes, we got vvptr == nil when we dereferenced vvptr (if valIsIndirect).
 	// Consequently, only use fastXXX functions if !valIsIndirect
 
-	const alwaysUseGenericMapassign = false
-
-	if alwaysUseGenericMapassign || valIsIndirect {
+	if valIsIndirect {
 		vvptr = mapassign(urv.typ, mptr, kptr)
 		typedmemmove(vtyp, vvptr, vptr)
 		// reflect_mapassign(urv.typ, mptr, kptr, vptr)
@@ -1277,6 +1280,28 @@ func mapAddrLoopvarRV(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 
 func (e *Encoder) jsondriver() *jsonEncDriver {
 	return (*jsonEncDriver)((*unsafeIntf)(unsafe.Pointer(&e.e)).ptr)
+}
+
+func (d *Decoder) zerocopystate() bool {
+	return d.decByteState == decByteStateZerocopy && d.h.ZeroCopy
+}
+
+func (d *Decoder) stringZC(v []byte) (s string) {
+	if d.zerocopystate() {
+		return stringView(v)
+	}
+	return d.string(v)
+}
+
+func (d *Decoder) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
+	if !d.zerocopystate() {
+		*callFnRvk = true
+		if d.decByteState == decByteStateReuseBuf {
+			*kstrbs = append((*kstrbs)[:0], (*kstr2bs)...)
+			*kstr2bs = *kstrbs
+		}
+	}
+	return stringView(*kstr2bs)
 }
 
 // ---------- DECODER optimized ---------------

@@ -621,7 +621,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 		rvt := rvType(rvn)
 
 		var rvn2 reflect.Value
-		if rvk != reflect.Ptr && d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient {
+		if decUseTransient && rvk != reflect.Ptr && d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient {
 			rvn2 = d.perType.TransientAddrK(rvt, rvk)
 		} else {
 			rvn2 = rvZeroAddrK(rvt, rvk)
@@ -1066,7 +1066,7 @@ func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 		slh.ElemContainerState(j)
 		if rv9.IsValid() {
 			rvSetZero(rv9)
-		} else if useTransient {
+		} else if decUseTransient && useTransient {
 			rv9 = d.perType.TransientAddrK(f.ti.elem, reflect.Kind(f.ti.elemkind))
 		} else {
 			rv9 = rvZeroAddrK(f.ti.elem, reflect.Kind(f.ti.elemkind))
@@ -1174,18 +1174,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		if len(kstr2bs) < 2 {
 			return string(kstr2bs)
 		}
-		if safeMode {
-			return d.string(kstr2bs)
-		}
-		// unsafe mode below
-		if !d.zerocopystate() {
-			callFnRvk = true
-			if d.decByteState == decByteStateReuseBuf {
-				kstrbs = append(kstrbs[:0], kstr2bs...)
-				kstr2bs = kstrbs
-			}
-		}
-		return stringView(kstr2bs)
+		return d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
 	}
 
 	// Use a possibly transient (map) value (and key), to reduce allocation
@@ -1195,7 +1184,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		if j == 0 {
 			// if vtypekind is a scalar and thus value will be decoded using TransientAddrK,
 			// then it is ok to use TransientAddr2K for the map key.
-			if vTransient && kTransient {
+			if decUseTransient && vTransient && kTransient {
 				rvk = d.perType.TransientAddr2K(ktype, ktypeKind)
 			} else {
 				rvk = rvZeroAddrK(ktype, ktypeKind)
@@ -1204,7 +1193,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 				rvkn = rvk
 			}
 			if !rvvMut {
-				if vTransient {
+				if decUseTransient && vTransient {
 					rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
 				} else {
 					rvvn = rvZeroAddrK(vtype, vtypeKind)
@@ -1292,7 +1281,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 					rvv = rvvn
 				default:
 					// make addressable (so you can set the slice/array elements, etc)
-					if vTransient {
+					if decUseTransient && vTransient {
 						rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
 					} else {
 						rvvn = rvZeroAddrK(vtype, vtypeKind)
@@ -1307,7 +1296,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	NEW_RVV:
 		if vtypePtr {
 			rvv = reflect.New(vtypeElem) // non-nil in stream, so allocate value
-		} else if vTransient {
+		} else if decUseTransient && vTransient {
 			rvv = d.perType.TransientAddrK(vtype, vtypeKind)
 		} else {
 			rvv = rvZeroAddrK(vtype, vtypeKind)
@@ -1931,19 +1920,8 @@ func (d *Decoder) string(v []byte) (s string) {
 	return d.is.string(v)
 }
 
-func (d *Decoder) stringZC(v []byte) (s string) {
-	if !safeMode && d.zerocopystate() {
-		return stringView(v)
-	}
-	return d.string(v)
-}
-
 func (d *Decoder) zerocopy() bool {
 	return d.bytes && d.h.ZeroCopy
-}
-
-func (d *Decoder) zerocopystate() bool {
-	return d.decByteState == decByteStateZerocopy && d.h.ZeroCopy
 }
 
 // decodeBytesInto is a convenience delegate function to decDriver.DecodeBytes.
@@ -2101,7 +2079,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 	if !rv.CanAddr() {
 		rvk = rv.Kind()
 		rvt := rvType(rv)
-		if rvk != reflect.Ptr && d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient {
+		if decUseTransient && rvk != reflect.Ptr && d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient {
 			rv2 = d.perType.TransientAddrK(rvt, rvk)
 		} else {
 			rv2 = rvZeroAddrK(rvt, rvk)

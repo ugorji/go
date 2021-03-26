@@ -264,6 +264,9 @@ var (
 	// isnilBitset sets bit for all kinds which can be compared to nil
 	isnilBitset bitset32
 
+	// hasptrBitset sets bit for all kinds which always have internal pointers
+	hasptrBitset bitset32
+
 	// scalarBitset sets bit for all kinds which are scalars/primitives and thus immutable
 	scalarBitset bitset32
 
@@ -365,6 +368,11 @@ func init() {
 	isnilBitset.
 		set(byte(reflect.Interface)).
 		set(byte(reflect.Slice))
+
+	hasptrBitset = isnilBitset
+
+	hasptrBitset.
+		set(byte(reflect.String))
 
 	for i := byte(0); i <= utf8.RuneSelf; i++ {
 		if (i >= '0' && i <= '9') || (i >= 'a' && i <= 'z') || (i >= 'A' && i <= 'Z') {
@@ -2071,7 +2079,18 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	// bset(b1, &ti.flagComparable)
 	ti.flagComparable = b1
 
+	// flagCanTransient MUST be false for anything with a pointer in it.
+	// All reference types (string, slice, func, map, ptr, interface, etc) have pointers.
+	// 
+	// If using transient for a type with a pointer, there is the potential for data corruption
+	//  when GC tries to follow a "transient" pointer which may become a non-pointer soon after.
+	//
+	// struct and array can have flagCanTransient=true iff there are no internal references.
+
 	ti.flagCanTransient = basicCheckCanTransient(&ti)
+	if ti.flagCanTransient {
+		ti.flagCanTransient = !hasptrBitset.isset(byte(rk))
+	}
 
 	var tt reflect.Type
 	switch rk {
@@ -2087,12 +2106,12 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		pv := pi.(*typeInfoLoad)
 		pv.reset()
 		pv.etypes = append(pv.etypes, ti.rtid)
+		// rget will set the value of flagCanTransient appropriately
 		x.rget(rt, rtid, &ti, nil, pv, omitEmpty)
 		n := ti.resolve(pv.sfis, pv.sfiNames)
 		ti.init(pv.sfis, n)
 		pp.Put(pi)
 	case reflect.Map:
-		ti.flagCanTransient = false
 		ti.elem = rt.Elem()
 		for tt = ti.elem; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
 		}
@@ -2123,7 +2142,6 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 			ti.fastpathUnderlying = reflect.SliceOf(ti.elem)
 		}
 	case reflect.Chan:
-		ti.flagCanTransient = false
 		ti.elem = rt.Elem()
 		for tt = ti.elem; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
 		}
@@ -2134,17 +2152,22 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.key = reflect.SliceOf(ti.elem)
 		ti.keykind = uint8(reflect.Slice)
 	case reflect.Array:
-		ti.flagCanTransient = false
 		ti.mbs, b2 = implIntf(rt, mapBySliceTyp)
 		if !ti.mbs && b2 {
 			ti.mbs = b2
 		}
 		ti.elem = rt.Elem()
+		ti.elemkind = uint8(ti.elem.Kind())
+		ti.elemsize = uint32(ti.elem.Size())
+		if ti.flagCanTransient {
+			ti.flagCanTransient = !hasptrBitset.isset(ti.elemkind)
+			if ti.flagCanTransient {
+				ti.flagCanTransient = x.get(rt2id(ti.elem), ti.elem).flagCanTransient
+			}
+		}
 		for tt = ti.elem; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
 		}
 		ti.tielem = x.get(rt2id(tt), tt)
-		ti.elemkind = uint8(ti.elem.Kind())
-		ti.elemsize = uint32(ti.elem.Size())
 		ti.key = reflect.SliceOf(ti.elem)
 		ti.keykind = uint8(reflect.Slice)
 		ti.keysize = uint32(ti.key.Size())
@@ -2157,10 +2180,6 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		// 	ti.elem = rt.Elem()
 		// 	ti.elemkind = uint8(ti.elem.Kind())
 		// 	ti.elemsize = uint32(ti.elem.Size())
-	case reflect.Interface:
-		ti.flagCanTransient = false
-	case reflect.Func:
-		ti.flagCanTransient = false
 	}
 
 	x.mu.Lock()
@@ -2204,9 +2223,12 @@ LOOP:
 		fkind := f.Type.Kind()
 
 		if ti != nil && ti.flagCanTransient {
-			switch fkind {
-			case reflect.Func, reflect.Chan, reflect.Map, reflect.Interface:
-				ti.flagCanTransient = false
+			ti.flagCanTransient = !hasptrBitset.isset(byte(fkind))
+			if ti.flagCanTransient {
+				switch fkind { // check if array or struct and handle accordingly
+				case reflect.Struct, reflect.Array:
+					ti.flagCanTransient = x.get(rt2id(f.Type), f.Type).flagCanTransient
+				}
 			}
 		}
 

@@ -17,6 +17,7 @@ import (
 // MARKER: See helper_unsafe.go for the usage documentation.
 
 const safeMode = true
+const decUseTransient = true
 
 func stringView(v []byte) string {
 	return string(v)
@@ -635,6 +636,14 @@ func (d *Decoder) checkBreak() bool {
 
 func (d *Decoder) jsondriver() *jsonDecDriver {
 	return d.d.(*jsonDecDriver)
+}
+
+func (d *Decoder) stringZC(v []byte) (s string) {
+	return d.string(v)
+}
+
+func (d *Decoder) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
+	return d.string(*kstr2bs)
 }
 
 // ---------- structFieldInfo optimized ---------------
