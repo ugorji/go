@@ -188,8 +188,21 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 // --------------------------
 
 type perTypeElem struct {
-	rtid               uintptr
-	zero, addr1, addr2 reflect.Value
+	t    reflect.Type
+	rtid uintptr
+	zero reflect.Value
+	addr [2]reflect.Value
+}
+
+func (x *perTypeElem) get(index uint8) (v reflect.Value) {
+	v = x.addr[index%2]
+	if v.IsValid() {
+		v.Set(x.zero)
+	} else {
+		v = reflect.New(x.t).Elem()
+		x.addr[index%2] = v
+	}
+	return
 }
 
 type perType struct {
@@ -204,21 +217,8 @@ type encPerType struct {
 	perType
 }
 
-func newPerTypeElem(t reflect.Type, rtid uintptr) (v perTypeElem) {
-	v.rtid = rtid
-	v.zero = reflect.Zero(t)
-	v.addr1 = reflect.New(t).Elem()
-	v.addr2 = reflect.New(t).Elem()
-	return
-}
-
-func (x *perType) get(t reflect.Type, do2 bool) (v reflect.Value) {
-	const alwaysNew = false
-	if alwaysNew {
-		return reflect.New(t).Elem()
-	}
+func (x *perType) elem(t reflect.Type) *perTypeElem {
 	rtid := rt2id(t)
-	var e *perTypeElem
 	var h, i uint
 	var j = uint(len(x.v))
 LOOP:
@@ -235,30 +235,24 @@ LOOP:
 		if x.v[i].rtid != rtid {
 			x.v = append(x.v, perTypeElem{})
 			copy(x.v[i+1:], x.v[i:])
-			x.v[i] = newPerTypeElem(t, rtid)
+			x.v[i] = perTypeElem{t: t, rtid: rtid, zero: reflect.Zero(t)}
 		}
 	} else {
-		x.v = append(x.v, newPerTypeElem(t, rtid))
+		x.v = append(x.v, perTypeElem{t: t, rtid: rtid, zero: reflect.Zero(t)})
 	}
-	e = &x.v[i]
-	if do2 {
-		e.addr2.Set(e.zero)
-		return e.addr2
-	}
-	e.addr1.Set(e.zero)
-	return e.addr1
+	return &x.v[i]
 }
 
 func (x *perType) TransientAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
-	return x.get(t, false)
+	return x.elem(t).get(0)
 }
 
 func (x *perType) TransientAddr2K(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
-	return x.get(t, true)
+	return x.elem(t).get(1)
 }
 
 func (x *perType) AddressableRO(v reflect.Value) (rv reflect.Value) {
-	rv = x.get(v.Type(), false)
+	rv = x.elem(v.Type()).get(0)
 	rvSetDirect(rv, v)
 	return
 }
