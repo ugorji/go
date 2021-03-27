@@ -1,11 +1,8 @@
-// +build !safe
-// +build !codec.safe
-// +build !appengine
-// +build go1.9
-// +build !gc
-
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
+
+//go:build !safe && !codec.safe && !appengine && go1.9 && !gc
+// +build !safe,!codec.safe,!appengine,go1.9,!gc
 
 package codec
 

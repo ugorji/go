@@ -1,7 +1,8 @@
-// +build codecgen.exec
-
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
+
+//go:build codecgen.exec
+// +build codecgen.exec
 
 package codec
 
