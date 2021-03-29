@@ -315,9 +315,8 @@ var (
 	// // hasptrBitset sets bit for all kinds which always have internal pointers
 	// hasptrBitset bitset32
 
-	// transientBitset sets bits for all kinds which are always transient'able:
-	// numbers, bool, strings and slices
-	transientBitset bitset32
+	// numBoolBitset sets bit for all number and bool kinds
+	numBoolBitset bitset32
 
 	// scalarBitset sets bit for all kinds which are scalars/primitives and thus immutable
 	scalarBitset bitset32
@@ -384,7 +383,7 @@ func init() {
 	xx(mapKeyFastKind32, reflect.Uint32, reflect.Int32, reflect.Float32)
 	xx(mapKeyFastKind64, reflect.Uint64, reflect.Int64, reflect.Float64)
 
-	scalarBitset.
+	numBoolBitset.
 		set(byte(reflect.Bool)).
 		set(byte(reflect.Int)).
 		set(byte(reflect.Int8)).
@@ -400,13 +399,12 @@ func init() {
 		set(byte(reflect.Float32)).
 		set(byte(reflect.Float64)).
 		set(byte(reflect.Complex64)).
-		set(byte(reflect.Complex128)).
+		set(byte(reflect.Complex128))
+
+	scalarBitset = numBoolBitset
+
+	scalarBitset.
 		set(byte(reflect.String))
-
-	transientBitset = scalarBitset
-
-	transientBitset.
-		set(byte(reflect.Slice))
 
 	// MARKER: reflect.Array is not a scalar, as its contents can be modified.
 
@@ -2133,19 +2131,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	// bset(b1, &ti.flagComparable)
 	ti.flagComparable = b1
 
-	// flagCanTransient MUST be false for anything with a pointer in it.
-	// All reference types (string, slice, func, map, ptr, interface, etc) have pointers.
-	//
-	// If using transient for a type with a pointer, there is the potential for data corruption
-	//  when GC tries to follow a "transient" pointer which may become a non-pointer soon after.
-	//
-	// struct and array can have flagCanTransient=true iff there are no internal references.
-
-	ti.flagCanTransient = basicCheckCanTransient(&ti)
-	if ti.flagCanTransient {
-		// ti.flagCanTransient = !hasptrBitset.isset(byte(rk))
-		ti.flagCanTransient = transientBitset.isset(byte(rk))
-	}
+	doSetFlagCanTransient(&ti)
 
 	var tt reflect.Type
 	switch rk {
@@ -2161,8 +2147,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		pv := pi.(*typeInfoLoad)
 		pv.reset()
 		pv.etypes = append(pv.etypes, ti.rtid)
-		// rget will set the value of flagCanTransient appropriately
-		x.rget(rt, rtid, &ti, nil, pv, omitEmpty)
+		x.rget(rt, rtid, nil, pv, omitEmpty)
 		n := ti.resolve(pv.sfis, pv.sfiNames)
 		ti.init(pv.sfis, n)
 		pp.Put(pi)
@@ -2214,13 +2199,6 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.elem = rt.Elem()
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
-		if ti.flagCanTransient {
-			// ti.flagCanTransient = !hasptrBitset.isset(ti.elemkind)
-			ti.flagCanTransient = transientBitset.isset(ti.elemkind)
-			if ti.flagCanTransient {
-				ti.flagCanTransient = x.get(rt2id(ti.elem), ti.elem).flagCanTransient
-			}
-		}
 		for tt = ti.elem; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
 		}
 		ti.tielem = x.get(rt2id(tt), tt)
@@ -2262,7 +2240,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	return
 }
 
-func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr, ti *typeInfo,
+func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr,
 	path *structFieldInfoPathNode, pv *typeInfoLoad, omitEmpty bool) {
 	// Read up fields and store how to access the value.
 	//
@@ -2277,15 +2255,6 @@ LOOP:
 	for j, jlen := uint16(0), uint16(flen); j < jlen; j++ {
 		f := rt.Field(int(j))
 		fkind := f.Type.Kind()
-
-		if ti != nil && ti.flagCanTransient {
-			// ti.flagCanTransient = !hasptrBitset.isset(byte(fkind))
-			ti.flagCanTransient = transientBitset.isset(byte(fkind))
-			// check if array or struct and handle accordingly
-			if ti.flagCanTransient && (fkind == reflect.Struct || fkind == reflect.Array) {
-				ti.flagCanTransient = x.get(rt2id(f.Type), f.Type).flagCanTransient
-			}
-		}
 
 		// skip if a func type, or is unexported, or structTag value == "-"
 		switch fkind {
@@ -2361,7 +2330,7 @@ LOOP:
 						kind:     uint8(fkind),
 						numderef: numderef,
 					}
-					x.rget(ft, ftid, nil, path2, pv, omitEmpty)
+					x.rget(ft, ftid, path2, pv, omitEmpty)
 				}
 				continue
 			}

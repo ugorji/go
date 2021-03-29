@@ -53,11 +53,6 @@ const safeMode = false
 // during an iteration and we can just "peek" at the internal value" in the map and use it.
 const helperUnsafeDirectAssignMapEntry = true
 
-// Transient values can lead to GC corruption if the value has internal pointers.
-//
-// decUseTransient says that we should not use the transient optimization.
-const decUseTransient = true
-
 // MARKER: keep in sync with GO_ROOT/src/reflect/value.go
 const (
 	unsafeFlagStickyRO = 1 << 5
@@ -100,6 +95,77 @@ type unsafeRuntimeType struct {
 	// ... many other fields here
 }
 
+// unsafeZeroAddr and unsafeZeroSlice points to a read-only block of memory
+// used for setting a zero value for most types or creating a read-only
+// zero value for a given type.
+var (
+	unsafeZeroAddr  = unsafe.Pointer(&unsafeZeroArr[0])
+	unsafeZeroSlice = unsafeSlice{unsafeZeroAddr, 0, 0}
+)
+
+var (
+	// numBoolStrSliceBitset sets bits for all kinds which are
+	// numbers, bool, strings and slices
+	numBoolStrSliceBitset bitset32
+)
+
+func init() {
+	numBoolStrSliceBitset = numBoolBitset
+
+	numBoolStrSliceBitset.
+		set(byte(reflect.String)).
+		set(byte(reflect.Slice))
+}
+
+// Handling flagCanTransient
+//
+// We use a scratch memory and an unsafeSlice for transient values:
+//
+// unsafeSlice is used for standalone strings and slices (outside an array or struct).
+// scratch memory is used for other kinds, based on contract below:
+// - numbers, bool are always transient
+// - structs and arrays are transient iff they have no pointers i.e.
+//   no string, slice, chan, func, interface, map, etc only numbers and bools.
+// - slices and strings are transient (using the unsafeSlice)
+//
+// Noteworthy that all reference types (string, slice, func, map, ptr, interface, etc) have pointers.
+//
+// If using transient for a type with a pointer, there is the potential for data corruption
+// when GC tries to follow a "transient" pointer which may become a non-pointer soon after.
+//
+// struct and array can have flagCanTransient=true iff there are no internal pointers.
+
+func unsafeWalk4CanTransient(t reflect.Type, k reflect.Kind) (v bool) {
+	if numBoolBitset.isset(byte(k)) {
+		v = true
+	} else if k == reflect.Array {
+		elem := t.Elem()
+		v = unsafeWalk4CanTransient(elem, elem.Kind())
+	} else if k == reflect.Struct {
+		v = true
+		for j, jlen := 0, t.NumField(); j < jlen; j++ {
+			f := t.Field(j)
+			if !unsafeWalk4CanTransient(f.Type, f.Type.Kind()) {
+				v = false
+				return
+			}
+		}
+	} else {
+		v = false
+	}
+	return
+}
+
+func doSetFlagCanTransient(ti *typeInfo) {
+	ti.flagCanTransient = ti.size <= unsafeTransientArrCap
+	if ti.flagCanTransient {
+		// if ti kind is a num, bool, string or slice, then it is flagCanTransient
+		if !numBoolStrSliceBitset.isset(ti.kind) {
+			ti.flagCanTransient = unsafeWalk4CanTransient(ti.rt, reflect.Kind(ti.kind))
+		}
+	}
+}
+
 type unsafePerTypeElem struct {
 	arr   [unsafeTransientArrCap]byte // for bool, number, struct, array kinds
 	slice unsafeSlice                 // for string and slice kinds
@@ -140,19 +206,6 @@ func (x *perType) TransientAddr2K(t reflect.Type, k reflect.Kind) reflect.Value 
 func (encPerType) AddressableRO(v reflect.Value) reflect.Value {
 	return rvAddressableReadonly(v)
 }
-
-func basicCheckCanTransient(ti *typeInfo) bool {
-	return ti.size <= unsafeTransientArrCap
-}
-
-// unsafeZeroAddr and unsafeZeroSlice points to a read-only block of memory
-// used for setting a zero value for most types or creating a read-only
-// zero value for a given type.
-
-var (
-	unsafeZeroAddr  = unsafe.Pointer(&unsafeZeroArr[0])
-	unsafeZeroSlice = unsafeSlice{unsafeZeroAddr, 0, 0}
-)
 
 // stringView returns a view of the []byte as a string.
 // In unsafe mode, it doesn't incur allocation and copying caused by conversion.
@@ -1297,6 +1350,16 @@ func (d *Decoder) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string 
 		}
 	}
 	return stringView(*kstr2bs)
+}
+
+func (d *Decoder) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
+	if decUseTransient &&
+		(numBoolStrSliceBitset.isset(byte(rvk)) ||
+			((rvk == reflect.Struct || rvk == reflect.Array) &&
+				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
+		return d.perType.TransientAddrK(rvt, rvk)
+	}
+	return rvZeroAddrK(rvt, rvk)
 }
 
 // ---------- DECODER optimized ---------------

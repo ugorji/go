@@ -12,9 +12,7 @@ import (
 	"time"
 )
 
-const (
-	msgBadDesc = "unrecognized descriptor byte"
-)
+const msgBadDesc = "unrecognized descriptor byte"
 
 const (
 	decDefMaxDepth         = 1024        // maximum depth
@@ -37,6 +35,14 @@ const (
 	//
 	// Consequently, we should relax this. Put it behind a const flag for now.
 	decFailNonEmptyIntf = false
+
+	// decUseTransient says that we should not use the transient optimization.
+	//
+	// There's potential for GC corruption or memory overwrites if transient isn't
+	// used carefully, so this flag helps turn it off quickly if needed.
+	//
+	// Use it everywhere needed so we can completely remove unused code blocks.
+	decUseTransient = true
 )
 
 var (
@@ -1020,7 +1026,7 @@ func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 	}
 
 	rtelem := f.ti.elem
-	useTransient := f.ti.elemkind != byte(reflect.Ptr) && f.ti.tielem.flagCanTransient
+	useTransient := decUseTransient && f.ti.elemkind != byte(reflect.Ptr) && f.ti.tielem.flagCanTransient
 
 	for k := reflect.Kind(f.ti.elemkind); k == reflect.Ptr; k = rtelem.Kind() {
 		rtelem = rtelem.Elem()
@@ -1099,8 +1105,8 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	vtypePtr := vtypeKind == reflect.Ptr
 	ktypePtr := ktypeKind == reflect.Ptr
 
-	vTransient := !vtypePtr && ti.tielem.flagCanTransient
-	kTransient := !ktypePtr && ti.tikey.flagCanTransient
+	vTransient := decUseTransient && !vtypePtr && ti.tielem.flagCanTransient
+	kTransient := decUseTransient && !ktypePtr && ti.tikey.flagCanTransient
 
 	var vtypeElem reflect.Type
 
@@ -2075,15 +2081,6 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
-}
-
-func (d *Decoder) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient &&
-		(transientBitset.isset(byte(rvk)) ||
-			((rvk == reflect.Struct || rvk == reflect.Array) && d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
-		return d.perType.TransientAddrK(rvt, rvk)
-	}
-	return rvZeroAddrK(rvt, rvk)
 }
 
 func (d *Decoder) sideDecode(v interface{}, bs []byte) {
