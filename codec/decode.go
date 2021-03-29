@@ -2123,6 +2123,16 @@ func (d *Decoder) fauxUnionReadRawBytes(asString bool) {
 	}
 }
 
+func (d *Decoder) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
+	if decUseTransient &&
+		(numBoolStrSliceBitset.isset(byte(rvk)) ||
+			((rvk == reflect.Struct || rvk == reflect.Array) &&
+				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
+		return d.perType.TransientAddrK(rvt, rvk)
+	}
+	return rvZeroAddrK(rvt, rvk)
+}
+
 // --------------------------------------------------
 
 // decSliceHelper assists when decoding into a slice, from a map or an array in the stream.

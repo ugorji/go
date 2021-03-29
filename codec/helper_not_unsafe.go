@@ -19,23 +19,8 @@ import (
 
 const safeMode = true
 
-var safeTransientBitset bitset32
-
-func init() {
-	safeTransientBitset = numBoolBitset
-
-	safeTransientBitset.
-		set(byte(reflect.String)).
-		set(byte(reflect.Slice))
-
-	// structs that refer to themselves in their fields
-	// will cause issues, as it might try to decode on the same transient one.
-	// This applies to arrays also.
-	// Thus, we don't support them for transient.
-	// safeTransientBitset.
-	// 	set(byte(reflect.Struct)).
-	// 	set(byte(reflect.Array))
-}
+const transientSizeMax = 0
+const transientValueHasStringSlice = true
 
 func stringView(v []byte) string {
 	return string(v)
@@ -273,10 +258,6 @@ func (x *perType) AddressableRO(v reflect.Value) (rv reflect.Value) {
 	rv = x.elem(v.Type()).get(0)
 	rvSetDirect(rv, v)
 	return
-}
-
-func doSetFlagCanTransient(ti *typeInfo) {
-	ti.flagCanTransient = safeTransientBitset.isset(ti.kind)
 }
 
 // --------------------------
@@ -656,13 +637,6 @@ func (d *Decoder) stringZC(v []byte) (s string) {
 
 func (d *Decoder) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
 	return d.string(*kstr2bs)
-}
-
-func (d *Decoder) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient && safeTransientBitset.isset(byte(rvk)) {
-		return d.perType.TransientAddrK(rvt, rvk)
-	}
-	return rvZeroAddrK(rvt, rvk)
 }
 
 // ---------- structFieldInfo optimized ---------------

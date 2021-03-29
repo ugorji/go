@@ -318,6 +318,10 @@ var (
 	// numBoolBitset sets bit for all number and bool kinds
 	numBoolBitset bitset32
 
+	// numBoolStrSliceBitset sets bits for all kinds which are
+	// numbers, bool, strings and slices
+	numBoolStrSliceBitset bitset32
+
 	// scalarBitset sets bit for all kinds which are scalars/primitives and thus immutable
 	scalarBitset bitset32
 
@@ -400,6 +404,12 @@ func init() {
 		set(byte(reflect.Float64)).
 		set(byte(reflect.Complex64)).
 		set(byte(reflect.Complex128))
+
+	numBoolStrSliceBitset = numBoolBitset
+
+	numBoolStrSliceBitset.
+		set(byte(reflect.String)).
+		set(byte(reflect.Slice))
 
 	scalarBitset = numBoolBitset
 
@@ -1988,6 +1998,60 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	ti.sfi4Name = m
 }
 
+// Handling flagCanTransient
+//
+// We support transient optimization if the kind of the type is
+// a number, bool, string, or slice.
+// In addition, we also support if the kind is struct or array,
+// and the type does not contain any pointers recursively).
+//
+// Noteworthy that all reference types (string, slice, func, map, ptr, interface, etc) have pointers.
+//
+// If using transient for a type with a pointer, there is the potential for data corruption
+// when GC tries to follow a "transient" pointer which may become a non-pointer soon after.
+//
+
+func isCanTransient(t reflect.Type, k reflect.Kind) (v bool) {
+	var bs *bitset32
+	if transientValueHasStringSlice {
+		bs = &numBoolStrSliceBitset
+	} else {
+		bs = &numBoolBitset
+	}
+	if bs.isset(byte(k)) {
+		v = true
+	} else if k == reflect.Array {
+		elem := t.Elem()
+		v = isCanTransient(elem, elem.Kind())
+	} else if k == reflect.Struct {
+		v = true
+		for j, jlen := 0, t.NumField(); j < jlen; j++ {
+			f := t.Field(j)
+			if !isCanTransient(f.Type, f.Type.Kind()) {
+				v = false
+				return
+			}
+		}
+	} else {
+		v = false
+	}
+	return
+}
+
+func (ti *typeInfo) doSetFlagCanTransient() {
+	if transientSizeMax > 0 {
+		ti.flagCanTransient = ti.size <= transientSizeMax
+	} else {
+		ti.flagCanTransient = true
+	}
+	if ti.flagCanTransient {
+		// if ti kind is a num, bool, string or slice, then it is flagCanTransient
+		if !numBoolStrSliceBitset.isset(ti.kind) {
+			ti.flagCanTransient = isCanTransient(ti.rt, reflect.Kind(ti.kind))
+		}
+	}
+}
+
 type rtid2ti struct {
 	rtid uintptr
 	ti   *typeInfo
@@ -2131,7 +2195,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	// bset(b1, &ti.flagComparable)
 	ti.flagComparable = b1
 
-	doSetFlagCanTransient(&ti)
+	ti.doSetFlagCanTransient()
 
 	var tt reflect.Type
 	switch rk {
