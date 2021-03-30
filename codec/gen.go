@@ -2153,7 +2153,7 @@ func genNonPtr(t reflect.Type) reflect.Type {
 func genFastpathUnderlying(t reflect.Type, rtid uintptr, ti *typeInfo) (tu reflect.Type, rtidu uintptr) {
 	tu = t
 	rtidu = rtid
-	if ti.pkgpath != "" {
+	if ti.flagHasPkgPath {
 		tu = ti.fastpathUnderlying
 		rtidu = rt2id(tu)
 	}

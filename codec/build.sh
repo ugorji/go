@@ -18,6 +18,10 @@ _tests() {
     local echo=1
     local nc=2 # count
     local cpus="1,$(nproc)"
+    # if using the race detector, then set nc to
+    if [[ " ${zargs[@]} " =~ "-race" ]]; then
+        cpus="$(nproc)"
+    fi
     local a=( "" "codec.notfastpath" "codec.safe" "codec.notfastpath codec.safe"  "codecgen" )
     local b=()
     local c=()

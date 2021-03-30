@@ -15,9 +15,9 @@ import (
 const msgBadDesc = "unrecognized descriptor byte"
 
 const (
-	decDefMaxDepth         = 1024        // maximum depth
-	decDefChanCap          = 64          // should be large, as cap cannot be expanded
-	decScratchByteArrayLen = (8 + 2) * 8 // around cacheLineSize ie ~64, depending on Decoder size
+	decDefMaxDepth         = 1024            // maximum depth
+	decDefChanCap          = 64              // should be large, as cap cannot be expanded
+	decScratchByteArrayLen = (8 + 2 + 2) * 8 // around cacheLineSize ie ~64, depending on Decoder size
 
 	// MARKER: massage decScratchByteArrayLen to ensure xxxDecDriver structs fit within cacheLine*N
 

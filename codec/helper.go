@@ -1183,7 +1183,7 @@ func (x *basicHandleRuntimeState) fnLoad(rt reflect.Type, rtid uintptr, tinfos *
 			// Consequently, the value of doing this quick allocation to elide the overhead cost of
 			// non-optimized (not-unsafe) reflection is a fair price.
 			var rtid2 uintptr
-			if ti.pkgpath == "" { // un-named type (slice or mpa or array)
+			if !ti.flagHasPkgPath { // un-named type (slice or mpa or array)
 				rtid2 = rtid
 				if rk == reflect.Array {
 					rtid2 = rt2id(ti.key) // ti.key for arrays = reflect.SliceOf(ti.elem)
@@ -1841,9 +1841,10 @@ func (p sfiSortedByEncName) Less(i, j int) bool { return p[uint(i)].encName < p[
 //   - If type is text(M/Unm)arshaler, call Text(M/Unm)arshal method
 //   - Else decode appropriately based on the reflect.Kind
 type typeInfo struct {
-	rt      reflect.Type
-	elem    reflect.Type
-	pkgpath string
+	rt   reflect.Type
+	elem reflect.Type
+
+	// pkgpath string
 
 	rtid uintptr
 
@@ -1887,6 +1888,7 @@ type typeInfo struct {
 
 	keykind, elemkind uint8
 
+	flagHasPkgPath   bool // Type.PackagePath != ""
 	flagCustom       bool // does this have custom implementation?
 	flagComparable   bool
 	flagCanTransient bool
@@ -2143,8 +2145,10 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		kind:    uint8(rk),
 		size:    uint32(rt.Size()),
 		numMeth: uint16(rt.NumMethod()),
-		pkgpath: rt.PkgPath(),
 		keyType: valueTypeString, // default it - so it's never 0
+
+		// pkgpath: rt.PkgPath(),
+		flagHasPkgPath: rt.PkgPath() != "",
 	}
 
 	// bset sets custom implementation flags
@@ -2228,7 +2232,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.tikey = x.get(rt2id(tt), tt)
 		ti.keykind = uint8(ti.key.Kind())
 		ti.keysize = uint32(ti.key.Size())
-		if ti.pkgpath != "" {
+		if ti.flagHasPkgPath {
 			ti.fastpathUnderlying = reflect.MapOf(ti.key, ti.elem)
 		}
 	case reflect.Slice:
@@ -2242,7 +2246,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.tielem = x.get(rt2id(tt), tt)
 		ti.elemkind = uint8(ti.elem.Kind())
 		ti.elemsize = uint32(ti.elem.Size())
-		if ti.pkgpath != "" {
+		if ti.flagHasPkgPath {
 			ti.fastpathUnderlying = reflect.SliceOf(ti.elem)
 		}
 	case reflect.Chan:
@@ -2269,7 +2273,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.key = reflect.SliceOf(ti.elem)
 		ti.keykind = uint8(reflect.Slice)
 		ti.keysize = uint32(ti.key.Size())
-		if ti.pkgpath != "" {
+		if ti.flagHasPkgPath {
 			ti.fastpathUnderlying = ti.key
 		}
 

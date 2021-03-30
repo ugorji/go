@@ -249,12 +249,23 @@ type TestRpcABC struct {
 }
 
 type TestRpcInt struct {
-	i int
+	i int64
 }
 
-func (r *TestRpcInt) Update(n int, res *int) error      { r.i = n; *res = r.i; return nil }
-func (r *TestRpcInt) Square(ignore int, res *int) error { *res = r.i * r.i; return nil }
-func (r *TestRpcInt) Mult(n int, res *int) error        { *res = r.i * n; return nil }
+func (r *TestRpcInt) Update(n int, res *int) error {
+	atomic.StoreInt64(&r.i, int64(n))
+	*res = n
+	return nil
+}
+func (r *TestRpcInt) Square(ignore int, res *int) error {
+	i := int(atomic.LoadInt64(&r.i))
+	*res = i * i
+	return nil
+}
+func (r *TestRpcInt) Mult(n int, res *int) error {
+	*res = int(atomic.LoadInt64(&r.i)) * n
+	return nil
+}
 func (r *TestRpcInt) EchoStruct(arg TestRpcABC, res *string) error {
 	*res = fmt.Sprintf("%#v", arg)
 	return nil
@@ -475,6 +486,7 @@ func testCheckErr(t *testing.T, err error) {
 }
 
 func testCheckEqual(t *testing.T, v1 interface{}, v2 interface{}, desc string) {
+	t.Helper()
 	if err := deepEqual(v1, v2); err != nil {
 		t.Logf("Not Equal: %s: %v", desc, err)
 		if testVerbose {
@@ -1565,7 +1577,7 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 			var up, sq, mult int
 			var rstr string
 			testCheckErr(t, cl.Call("TestRpcInt.Update", 5, &up))
-			testCheckEqual(t, testRpcInt.i, 5, "testRpcInt.i=5")
+			testCheckEqual(t, atomic.LoadInt64(&testRpcInt.i), int64(5), "testRpcInt.i=5")
 			testCheckEqual(t, up, 5, "up=5")
 			testCheckErr(t, cl.Call("TestRpcInt.Square", 1, &sq))
 			testCheckEqual(t, sq, 25, "sq=25")
