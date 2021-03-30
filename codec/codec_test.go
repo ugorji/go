@@ -2580,38 +2580,6 @@ func testRandomFillRV(v reflect.Value) {
 	}
 }
 
-func doTestMammoth(t *testing.T, h Handle) {
-	defer testSetup(t, &h)()
-	if mh, ok := h.(*MsgpackHandle); ok {
-		defer func(b bool) { mh.RawToString = b }(mh.RawToString)
-		mh.RawToString = true
-	}
-
-	name := h.Name()
-	var b []byte
-
-	var m, m2 TestMammoth
-	testRandomFillRV(reflect.ValueOf(&m).Elem())
-	b = testMarshalErr(&m, h, t, "mammoth-"+name)
-
-	testUnmarshalErr(&m2, b, h, t, "mammoth-"+name)
-	testDeepEqualErr(&m, &m2, t, "mammoth-"+name)
-	testReleaseBytes(b)
-
-	if testing.Short() {
-		t.Skipf("skipping rest of mammoth test in -short mode")
-	}
-
-	var mm, mm2 TestMammoth2Wrapper
-	testRandomFillRV(reflect.ValueOf(&mm).Elem())
-	b = testMarshalErr(&mm, h, t, "mammoth2-"+name)
-	// os.Stderr.Write([]byte("\n\n\n\n" + string(b) + "\n\n\n\n"))
-	testUnmarshalErr(&mm2, b, h, t, "mammoth2-"+name)
-	testDeepEqualErr(&mm, &mm2, t, "mammoth2-"+name)
-	// testMammoth2(t, name, h)
-	testReleaseBytes(b)
-}
-
 func doTestTime(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
 	name := h.Name()
@@ -4648,10 +4616,6 @@ func TestBincStdEncIntf(t *testing.T) {
 	doTestStdEncIntf(t, testBincH)
 }
 
-func TestBincMammoth(t *testing.T) {
-	doTestMammoth(t, testBincH)
-}
-
 func TestSimpleCodecsTable(t *testing.T) {
 	doTestCodecTableOne(t, testSimpleH)
 }
@@ -4668,10 +4632,6 @@ func TestSimpleStdEncIntf(t *testing.T) {
 	doTestStdEncIntf(t, testSimpleH)
 }
 
-func TestSimpleMammoth(t *testing.T) {
-	doTestMammoth(t, testSimpleH)
-}
-
 func TestMsgpackCodecsTable(t *testing.T) {
 	doTestCodecTableOne(t, testMsgpackH)
 }
@@ -4686,10 +4646,6 @@ func TestMsgpackCodecsEmbeddedPointer(t *testing.T) {
 
 func TestMsgpackStdEncIntf(t *testing.T) {
 	doTestStdEncIntf(t, testMsgpackH)
-}
-
-func TestMsgpackMammoth(t *testing.T) {
-	doTestMammoth(t, testMsgpackH)
 }
 
 func TestCborCodecsTable(t *testing.T) {
@@ -4712,10 +4668,6 @@ func TestCborStdEncIntf(t *testing.T) {
 	doTestStdEncIntf(t, testCborH)
 }
 
-func TestCborMammoth(t *testing.T) {
-	doTestMammoth(t, testCborH)
-}
-
 func TestJsonCodecsTable(t *testing.T) {
 	doTestCodecTableOne(t, testJsonH)
 }
@@ -4734,10 +4686,6 @@ func TestJsonCodecChan(t *testing.T) {
 
 func TestJsonStdEncIntf(t *testing.T) {
 	doTestStdEncIntf(t, testJsonH)
-}
-
-func TestJsonMammoth(t *testing.T) {
-	doTestMammoth(t, testJsonH)
 }
 
 // ----- Raw ---------
@@ -4944,26 +4892,6 @@ func TestBincLargeContainerLen(t *testing.T) {
 
 func TestSimpleLargeContainerLen(t *testing.T) {
 	doTestLargeContainerLen(t, testSimpleH)
-}
-
-func TestJsonMammothMapsAndSlices(t *testing.T) {
-	doTestMammothMapsAndSlices(t, testJsonH)
-}
-
-func TestCborMammothMapsAndSlices(t *testing.T) {
-	doTestMammothMapsAndSlices(t, testCborH)
-}
-
-func TestMsgpackMammothMapsAndSlices(t *testing.T) {
-	doTestMammothMapsAndSlices(t, testMsgpackH)
-}
-
-func TestBincMammothMapsAndSlices(t *testing.T) {
-	doTestMammothMapsAndSlices(t, testBincH)
-}
-
-func TestSimpleMammothMapsAndSlices(t *testing.T) {
-	doTestMammothMapsAndSlices(t, testSimpleH)
 }
 
 func TestJsonTime(t *testing.T) {

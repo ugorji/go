@@ -1,5 +1,5 @@
-//go:build !notfastpath && !codec.notfastpath
-// +build !notfastpath,!codec.notfastpath
+//go:build !notfastpath && !codec.notfastpath && !codec.notmammoth
+// +build !notfastpath,!codec.notfastpath,!codec.notmammoth
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.

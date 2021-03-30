@@ -7,6 +7,7 @@ _tests() {
     local vet="" # TODO: make it off
     local gover=$( ${gocmd} version | cut -f 3 -d ' ' )
     [[ $( ${gocmd} version ) == *"gccgo"* ]] && zcover=0
+    [[ $( ${gocmd} version ) == *"gollvm"* ]] && zcover=0
     case $gover in
         go1.[7-9]*|go1.1[0-9]*|go2.*|devel*) true ;;
         *) return 1
@@ -43,7 +44,7 @@ _tests() {
         [[ "$zwait" == "1" ]] && wait
     fi
     wait
-    # go tool cover is not supported for gccgo.
+    # go tool cover is not supported for gccgo, gollvm, other non-standard go compilers
     [[ "$zcover" == "1" ]] &&
         command -v gocovmerge &&
         gocovmerge "${b[@]}" > __merge.cov.out &&
@@ -215,7 +216,7 @@ _codegenerators() {
         fi &&
         $c8 -rt 'codecgen' -t 'codecgen generated' -o "values_codecgen${c5}" -d 19780 "$zfin" "$zfin2" &&
         cp mammoth2_generated_test.go $c9 &&
-        $c8 -t 'codecgen,!codec.notfastpath generated,!codec.notfastpath' -o "mammoth2_codecgen${c5}" -d 19781 "mammoth2_generated_test.go" &&
+        $c8 -t 'codecgen,!codec.notfastpath,!codec.notmammoth generated,!codec.notfastpath,!codec.notmammoth' -o "mammoth2_codecgen${c5}" -d 19781 "mammoth2_generated_test.go" &&
         rm -f $c9 &&
         echo "generators done!" 
 }
@@ -324,7 +325,7 @@ _main() {
     local gocmd=${MYGOCMD:-go}
     
     OPTIND=1
-    while getopts ":cetmnrgpfvlyzdsowxb:" flag
+    while getopts ":cetmnrgpfvldsowkxyzb:" flag
     do
         case "x$flag" in
             'xo') zcover=1 ;;
@@ -353,6 +354,7 @@ _main() {
         'xx') _analyze_checks "$@" ;;
         'xy') _analyze_debug_types "$@" ;;
         'xz') _analyze_do_inlining_and_more "$@" ;;
+        'xk') _go_compiler_validation_suite ;;
         'xb') _bench "$@" ;;
     esac
     # unset zforce zargs zbenchflags

@@ -192,6 +192,7 @@ type genStringDecZC string
 
 var genStringDecAsBytesTyp = reflect.TypeOf(genStringDecAsBytes(""))
 var genStringDecZCTyp = reflect.TypeOf(genStringDecZC(""))
+var genFormats = []string{"Json", "Cbor", "Msgpack", "Binc", "Simple"}
 
 const (
 	genStructMapStyleConsolidated genStructMapStyle = iota
@@ -2253,6 +2254,7 @@ func genIsImmutable(t reflect.Type) (v bool) {
 type genInternal struct {
 	Version int
 	Values  []fastpathGenV
+	Formats []string
 }
 
 func (x genInternal) FastpathLen() (l int) {
@@ -2515,7 +2517,7 @@ func genInternalInit() {
 	// }
 	// var mapkeytypestr = string(mb)
 
-	var gt = genInternal{Version: genVersion}
+	var gt = genInternal{Version: genVersion, Formats: genFormats}
 
 	// For each slice or map type, there must be a (symmetrical) Encode and Decode fast-path function
 

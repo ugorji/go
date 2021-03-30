@@ -1,6 +1,9 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
+//go:build !codec.notmammoth
+// +build !codec.notmammoth
+
 // Code generated from mammoth-test.go.tmpl - DO NOT EDIT.
 
 package codec
@@ -3426,4 +3429,68 @@ func doTestMammothMapsAndSlices(t *testing.T, h Handle) {
 	}
 	__doTestMammothSlices(t, h)
 	__doTestMammothMaps(t, h)
+}
+
+func doTestMammoth(t *testing.T, h Handle) {
+	defer testSetup(t, &h)()
+	if mh, ok := h.(*MsgpackHandle); ok {
+		defer func(b bool) { mh.RawToString = b }(mh.RawToString)
+		mh.RawToString = true
+	}
+
+	name := h.Name()
+	var b []byte
+
+	var m, m2 TestMammoth
+	testRandomFillRV(reflect.ValueOf(&m).Elem())
+	b = testMarshalErr(&m, h, t, "mammoth-"+name)
+
+	testUnmarshalErr(&m2, b, h, t, "mammoth-"+name)
+	testDeepEqualErr(&m, &m2, t, "mammoth-"+name)
+	testReleaseBytes(b)
+
+	if testing.Short() {
+		t.Skipf("skipping rest of mammoth test in -short mode")
+	}
+
+	var mm, mm2 TestMammoth2Wrapper
+	testRandomFillRV(reflect.ValueOf(&mm).Elem())
+	b = testMarshalErr(&mm, h, t, "mammoth2-"+name)
+	// os.Stderr.Write([]byte("\n\n\n\n" + string(b) + "\n\n\n\n"))
+	testUnmarshalErr(&mm2, b, h, t, "mammoth2-"+name)
+	testDeepEqualErr(&mm, &mm2, t, "mammoth2-"+name)
+	// testMammoth2(t, name, h)
+	testReleaseBytes(b)
+}
+
+func TestJsonMammoth(t *testing.T) {
+	doTestMammoth(t, testJsonH)
+}
+func TestCborMammoth(t *testing.T) {
+	doTestMammoth(t, testCborH)
+}
+func TestMsgpackMammoth(t *testing.T) {
+	doTestMammoth(t, testMsgpackH)
+}
+func TestBincMammoth(t *testing.T) {
+	doTestMammoth(t, testBincH)
+}
+func TestSimpleMammoth(t *testing.T) {
+	doTestMammoth(t, testSimpleH)
+}
+
+func TestJsonMammothMapsAndSlices(t *testing.T) {
+	doTestMammothMapsAndSlices(t, testJsonH)
+}
+func TestCborMammothMapsAndSlices(t *testing.T) {
+	doTestMammothMapsAndSlices(t, testCborH)
+}
+func TestMsgpackMammothMapsAndSlices(t *testing.T) {
+	doTestMammothMapsAndSlices(t, testMsgpackH)
+}
+func TestBincMammothMapsAndSlices(t *testing.T) {
+	doTestMammothMapsAndSlices(t, testBincH)
+}
+func TestSimpleMammothMapsAndSlices(t *testing.T) {
+	doTestMammothMapsAndSlices(t, testSimpleH)
 }
