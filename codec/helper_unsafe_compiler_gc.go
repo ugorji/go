@@ -12,20 +12,12 @@ import (
 	"unsafe"
 )
 
-func rvType(rv reflect.Value) reflect.Type {
-	return rvPtrToType(((*unsafeReflectValue)(unsafe.Pointer(&rv))).typ) // rv.Type()
+func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (v unsafeSlice) {
+	return growslice(typ, old, cap+incr)
 }
 
-// rcGrowSlice updates the slice to point to a new array with the cap incremented, and len set to the new cap value.
-// It copies data from old slice to new slice.
-// It returns set=true iff it updates it, else it just returns a new slice pointing to a newly made array.
-func rvGrowSlice(rv reflect.Value, ti *typeInfo, xcap, incr int) (v reflect.Value, newcap int, set bool) {
-	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
-	ux := (*unsafeSlice)(urv.ptr)
-	t := ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
-	*ux = growslice(t, *ux, xcap+incr)
-	ux.Len = ux.Cap
-	return rv, ux.Cap, true
+func rvType(rv reflect.Value) reflect.Type {
+	return rvPtrToType(((*unsafeReflectValue)(unsafe.Pointer(&rv))).typ) // rv.Type()
 }
 
 func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) {

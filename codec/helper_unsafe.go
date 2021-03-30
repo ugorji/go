@@ -850,6 +850,18 @@ func rvSlice(rv reflect.Value, length int) reflect.Value {
 	return rv
 }
 
+// rcGrowSlice updates the slice to point to a new array with the cap incremented, and len set to the new cap value.
+// It copies data from old slice to new slice.
+// It returns set=true iff it updates it, else it just returns a new slice pointing to a newly made array.
+func rvGrowSlice(rv reflect.Value, ti *typeInfo, xcap, incr int) (v reflect.Value, newcap int, set bool) {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	ux := (*unsafeSlice)(urv.ptr)
+	t := ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
+	*ux = unsafeGrowslice(t, *ux, xcap, incr)
+	ux.Len = ux.Cap
+	return rv, ux.Cap, true
+}
+
 // ------------
 
 func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
@@ -1344,6 +1356,13 @@ func mallocgc(size uintptr, typ unsafe.Pointer, needzero bool) unsafe.Pointer
 //go:linkname newarray runtime.newarray
 //go:noescape
 func newarray(typ unsafe.Pointer, n int) unsafe.Pointer
+
+// runtime.memmove is a stub implemented in assembly, and will not work across compilers.
+// Instead, we use the function wrapper linked in reflect i.e. reflect.memmove.
+
+//go:linkname memmove reflect.memmove
+//go:noescape
+func memmove(dst, src unsafe.Pointer, length uintptr)
 
 /*
 

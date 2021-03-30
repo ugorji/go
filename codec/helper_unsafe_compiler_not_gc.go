@@ -6,9 +6,75 @@
 
 package codec
 
+import (
+	"reflect"
+	_ "runtime" // needed for go linkname(s)
+	"unsafe"
+)
+
 var unsafeZeroArr [1024]byte
+
+func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (v unsafeSlice) {
+	size := rtsize2(typ)
+	if size == 0 {
+		return unsafeSlice{unsafe.Pointer(&unsafeZeroArr[0]), old.Len, cap + incr}
+	}
+	newcap := int(growCap(uint(cap), uint(size), uint(incr)))
+	v = unsafeSlice{Data: newarray(typ, newcap), Len: old.Len, Cap: newcap}
+	memmove(v.Data, old.Data, size*uintptr(old.Len))
+	return
+}
 
 // func unsafeNew(t reflect.Type, typ unsafe.Pointer) unsafe.Pointer {
 // 	rv := reflect.New(t)
 // 	return ((*unsafeReflectValue)(unsafe.Pointer(&rv))).ptr
 // }
+
+// runtime.{mapassign_fastXXX, mapaccess2_fastXXX} are not supported in gollvm,
+// failing with "error: undefined reference" error.
+// so we just use runtime.{mapassign, mapaccess2} directly
+
+func mapSet(m, k, v reflect.Value, _ mapKeyFastKind, valIsIndirect, valIsRef bool) {
+	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+	var kptr = unsafeMapKVPtr(urv)
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
+	var vtyp = urv.typ
+	var vptr = unsafeMapKVPtr(urv)
+
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
+	mptr := rvRefPtr(urv)
+
+	vvptr := mapassign(urv.typ, mptr, kptr)
+	typedmemmove(vtyp, vvptr, vptr)
+}
+
+func mapGet(m, k, v reflect.Value, _ mapKeyFastKind, valIsIndirect, valIsRef bool) (_ reflect.Value) {
+	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
+	var kptr = unsafeMapKVPtr(urv)
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))
+	mptr := rvRefPtr(urv)
+
+	vvptr, ok := mapaccess2(urv.typ, mptr, kptr)
+
+	if !ok {
+		return
+	}
+
+	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
+
+	if helperUnsafeDirectAssignMapEntry || valIsRef {
+		urv.ptr = vvptr
+	} else {
+		typedmemmove(urv.typ, urv.ptr, vvptr)
+	}
+
+	return v
+}
+
+//go:linkname mapassign runtime.mapassign
+//go:noescape
+func mapassign(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) unsafe.Pointer
+
+//go:linkname mapaccess2 runtime.mapaccess2
+//go:noescape
+func mapaccess2(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer, ok bool)

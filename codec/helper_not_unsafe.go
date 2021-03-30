@@ -434,6 +434,15 @@ func rvMakeSlice(rv reflect.Value, ti *typeInfo, xlen, xcap int) (v reflect.Valu
 	return
 }
 
+func rvGrowSlice(rv reflect.Value, ti *typeInfo, xcap, incr int) (v reflect.Value, newcap int, set bool) {
+	newcap = int(growCap(uint(xcap), uint(ti.elemsize), uint(incr)))
+	v = reflect.MakeSlice(ti.rt, newcap, newcap)
+	if rv.Len() > 0 {
+		reflect.Copy(v, rv)
+	}
+	return
+}
+
 // ----------------
 
 func rvSliceIndex(rv reflect.Value, i int, ti *typeInfo) reflect.Value {
@@ -585,6 +594,14 @@ func rvLenMap(rv reflect.Value) int {
 // func rvLenArray(rv reflect.Value) int {	return rv.Len() }
 
 // ------------ map range and map indexing ----------
+
+func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) {
+	m.SetMapIndex(k, v)
+}
+
+func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) (vv reflect.Value) {
+	return m.MapIndex(k)
+}
 
 // func mapDelete(m, k reflect.Value) {
 // 	m.SetMapIndex(k, reflect.Value{})

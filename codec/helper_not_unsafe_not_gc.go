@@ -15,35 +15,15 @@ import "reflect"
 //   runtime.growslice does not work with gccgo,
 //   failing with "growslice: cap out of range" error.
 // - mapSet/mapGet:
-//   runtime.{mapassign, mapaccess} are not supported in gollvm,
+//   runtime.{mapassign_fastXXX, mapaccess2_fastXXX} are not supported in gollvm,
 //   failing with "error: undefined reference" error.
+//   however, runtime.{mapassign, mapaccess2} are supported, so use that instead.
 // - rvType:
 //   reflect.toType is not supported in gccgo, gollvm.
 // - reflect.{unsafe_New, unsafe_NewArray} are not supported in gollvm,
 //   failing with "error: undefined reference" error.
-//   however, runtime.{mallocgc, newarray} are supported, to use that instead.
-//
-// When runtime.{mapassign, mapaccess} are supported in gollvm, then we will
-// use mapSet and mapGet from helper_unsafe_compiler_gc.go, as that gives significant
-// performance improvement and reduces allocation.
+//   however, runtime.{mallocgc, newarray} are supported, so use that instead.
 
 func rvType(rv reflect.Value) reflect.Type {
 	return rv.Type()
-}
-
-func rvGrowSlice(rv reflect.Value, ti *typeInfo, xcap, incr int) (v reflect.Value, newcap int, set bool) {
-	newcap = int(growCap(uint(xcap), uint(ti.elemsize), uint(incr)))
-	v = reflect.MakeSlice(ti.rt, newcap, newcap)
-	if rv.Len() > 0 {
-		reflect.Copy(v, rv)
-	}
-	return
-}
-
-func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) {
-	m.SetMapIndex(k, v)
-}
-
-func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) (vv reflect.Value) {
-	return m.MapIndex(k)
 }
