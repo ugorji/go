@@ -275,7 +275,7 @@ _main() {
     [[ " ${args[*]} " == *"t"* ]] && _suite_tests "$@" | _suite_trim_output | _suite_tests_strip_file_line
     [[ " ${args[*]} " == *"p"* ]] && zargs+=("-cpuprofile" "cpu.out" "-memprofile" "mem.out" "-memprofilerate" "1") && _suite_very_quick_benchmark "$@" | _suite_trim_output
     [[ " ${args[*]} " == *"f"* ]] && ${go[@]} tool pprof bench.test ${1:-mem.out}
-    [[ " ${args[*]} " == *"z"* ]] && _bench_dot_out_dot_txt > bench.out.txt.$(date '+%Y%m%d_%H%M') 2>&1
+    [[ " ${args[*]} " == *"z"* ]] && _bench_dot_out_dot_txt
     [[ " ${args[*]} " == *"y"* ]] && _suite_debugging "$@" | _suite_trim_output
     
     true
