@@ -137,14 +137,6 @@ func mapassign_fast64ptr(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointe
 //go:noescape
 func mapassign_faststr(typ unsafe.Pointer, m unsafe.Pointer, s string) unsafe.Pointer
 
-//go:linkname mapassign runtime.mapassign
-//go:noescape
-func mapassign(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) unsafe.Pointer
-
-//go:linkname mapaccess2 runtime.mapaccess2
-//go:noescape
-func mapaccess2(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer, ok bool)
-
 //go:linkname mapaccess2_fast32 runtime.mapaccess2_fast32
 //go:noescape
 func mapaccess2_fast32(typ unsafe.Pointer, m unsafe.Pointer, key uint32) (val unsafe.Pointer, ok bool)

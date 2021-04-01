@@ -218,7 +218,7 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 // 	// The gain doesn't justify the cost.
 // 	//
 // 	// Leae here in case the cost-analysis changes in the future.
-
+//
 // 	return fnloadFastpathUnderlying(ti)
 // }
 
@@ -227,10 +227,14 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 // and non-reference values like interface/slice.
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	var ui = (*unsafeIntf)(unsafe.Pointer(&v))
-	if ui.ptr == nil {
-		isnil = true
-		return
+	isnil = ui.ptr == nil
+	if !isnil {
+		rv, isnil = unsafeIsNilIntfOrSlice(ui, v)
 	}
+	return
+}
+
+func unsafeIsNilIntfOrSlice(ui *unsafeIntf, v interface{}) (rv reflect.Value, isnil bool) {
 	rv = reflect.ValueOf(v) // reflect.ValueOf is currently not inline'able - so call it directly
 	tk := rv.Kind()
 	isnil = (tk == reflect.Interface || tk == reflect.Slice) && *(*unsafe.Pointer)(ui.ptr) == nil
@@ -343,6 +347,23 @@ func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	urv.ptr = unsafeNew(urv.typ)
 	return
 }
+
+// func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+// 	typ := ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
+// 	// urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+// 	// *urv = unsafeReflectValue{
+// 	*((*unsafeReflectValue)(unsafe.Pointer(&rv))) = unsafeReflectValue{
+// 		unsafeIntf: unsafeIntf{typ: typ, ptr: unsafeNew(typ)},
+// 		flag:       uintptr(k) | unsafeFlagIndir | unsafeFlagAddr}
+// 	return
+// }
+
+// func rvZeroAddrK(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
+// 	typ := ((*unsafeIntf)(unsafe.Pointer(&t))).ptr
+// 	return *(*reflect.Value)(unsafe.Pointer(&unsafeReflectValue{
+// 		unsafeIntf: unsafeIntf{typ: typ, ptr: unsafeNew(typ)},
+// 		flag:       uintptr(k) | unsafeFlagIndir | unsafeFlagAddr}))
+// }
 
 func rvZeroAddrTransientAnyK(t reflect.Type, k reflect.Kind, addr unsafe.Pointer) (rv reflect.Value) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
@@ -769,25 +790,29 @@ func rvSetUint64(rv reflect.Value, v uint64) {
 
 // ----------------
 
-// rvSet is rv.Set for all kinds, including reflect.Interface.
-func rvSet(rv reflect.Value, v reflect.Value) {
-	if rv.Kind() == reflect.Interface {
-		rv.Set(v)
-	} else {
-		rvSetDirect(rv, v)
-	}
-}
+// // rvSet is rv.Set for all kinds, including reflect.Interface.
+// func rvSet(rv reflect.Value, v reflect.Value) {
+// 	if rv.Kind() == reflect.Interface {
+// 		rvSetIntf(rv, v)
+// 	} else {
+// 		rvSetDirect(rv, v)
+// 	}
+// }
 
 // rvSetZero is rv.Set(reflect.Zero(rv.Type()) for all kinds (including reflect.Interface).
 func rvSetZero(rv reflect.Value) {
 	rvSetDirectZero(rv)
 }
 
+func rvSetIntf(rv reflect.Value, v reflect.Value) {
+	rv.Set(v)
+}
+
 // rvSetDirect is rv.Set for all kinds except reflect.Interface.
 //
-// Callers MUST not pass an interface value in, as it may result in an unexpected segfaults.
+// Callers MUST not pass a value of kind reflect.Interface, as it may cause unexpected segfaults.
 func rvSetDirect(rv reflect.Value, v reflect.Value) {
-	// MARKER: rv.Set for interface may need to do a separate allocation if a scalar value.
+	// MARKER: rv.Set for kind reflect.Interface may do a separate allocation if a scalar value.
 	// The book-keeping is onerous, so we just do the simple ones where a memmove is sufficient.
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
@@ -853,11 +878,11 @@ func rvSlice(rv reflect.Value, length int) reflect.Value {
 // rcGrowSlice updates the slice to point to a new array with the cap incremented, and len set to the new cap value.
 // It copies data from old slice to new slice.
 // It returns set=true iff it updates it, else it just returns a new slice pointing to a newly made array.
-func rvGrowSlice(rv reflect.Value, ti *typeInfo, xcap, incr int) (v reflect.Value, newcap int, set bool) {
+func rvGrowSlice(rv reflect.Value, ti *typeInfo, cap, incr int) (v reflect.Value, newcap int, set bool) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	ux := (*unsafeSlice)(urv.ptr)
 	t := ((*unsafeIntf)(unsafe.Pointer(&ti.elem))).ptr
-	*ux = unsafeGrowslice(t, *ux, xcap, incr)
+	*ux = unsafeGrowslice(t, *ux, cap, incr)
 	ux.Len = ux.Cap
 	return rv, ux.Cap, true
 }
@@ -1321,9 +1346,18 @@ func unsafeNew(typ unsafe.Pointer) unsafe.Pointer {
 //
 //   We checked this by going into $GOROOT/src/runtime and running:
 //   $ go build -tags codec.notfastpath -gcflags "-m=2"
-//
-// Also, we link to the functions in reflect where possible, as opposed to those in runtime.
-// They are guaranteed to be safer for our use, even when they are just trampoline functions.
+
+// reflect.{unsafe_New, unsafe_NewArray} are not supported in gollvm,
+// failing with "error: undefined reference" error.
+// however, runtime.{mallocgc, newarray} are supported, so use that instead.
+
+//go:linkname mallocgc runtime.mallocgc
+//go:noescape
+func mallocgc(size uintptr, typ unsafe.Pointer, needzero bool) unsafe.Pointer
+
+//go:linkname newarray runtime.newarray
+//go:noescape
+func newarray(typ unsafe.Pointer, n int) unsafe.Pointer
 
 //go:linkname mapiterinit runtime.mapiterinit
 //go:noescape
@@ -1333,9 +1367,23 @@ func mapiterinit(typ unsafe.Pointer, m unsafe.Pointer, it unsafe.Pointer)
 //go:noescape
 func mapiternext(it unsafe.Pointer) (key unsafe.Pointer)
 
-//go:linkname mapdelete reflect.mapdelete
+//go:linkname mapdelete runtime.mapdelete
 //go:noescape
 func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
+
+//go:linkname mapassign runtime.mapassign
+//go:noescape
+func mapassign(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) unsafe.Pointer
+
+//go:linkname mapaccess2 runtime.mapaccess2
+//go:noescape
+func mapaccess2(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer, ok bool)
+
+// reflect.typed{memmove, memclr, slicecopy} will handle checking if the type has pointers or not,
+// and if a writeBarrier is needed, before delegating to the right method in the runtime.
+//
+// This is why we use the functions in reflect, and not the ones in runtime directly.
+// Calling runtime.XXX here will lead to memory issues.
 
 //go:linkname typedslicecopy reflect.typedslicecopy
 //go:noescape
@@ -1349,22 +1397,14 @@ func typedmemmove(typ unsafe.Pointer, dst, src unsafe.Pointer)
 //go:noescape
 func typedmemclr(typ unsafe.Pointer, dst unsafe.Pointer)
 
-//go:linkname mallocgc runtime.mallocgc
-//go:noescape
-func mallocgc(size uintptr, typ unsafe.Pointer, needzero bool) unsafe.Pointer
+/*
 
-//go:linkname newarray runtime.newarray
-//go:noescape
-func newarray(typ unsafe.Pointer, n int) unsafe.Pointer
-
-// runtime.memmove is a stub implemented in assembly, and will not work across compilers.
+// runtime.memmove is a stub implemented in assembly, whose reference is not found in gollvm, etc.
 // Instead, we use the function wrapper linked in reflect i.e. reflect.memmove.
 
 //go:linkname memmove reflect.memmove
 //go:noescape
 func memmove(dst, src unsafe.Pointer, length uintptr)
-
-/*
 
 //go:linkname maplen reflect.maplen
 //go:noescape

@@ -414,7 +414,11 @@ func rvSetDirectZero(rv reflect.Value) {
 	rv.Set(reflect.Zero(rv.Type()))
 }
 
-func rvSet(rv reflect.Value, v reflect.Value) {
+// func rvSet(rv reflect.Value, v reflect.Value) {
+// 	rv.Set(v)
+// }
+
+func rvSetIntf(rv reflect.Value, v reflect.Value) {
 	rv.Set(v)
 }
 
@@ -434,8 +438,8 @@ func rvMakeSlice(rv reflect.Value, ti *typeInfo, xlen, xcap int) (v reflect.Valu
 	return
 }
 
-func rvGrowSlice(rv reflect.Value, ti *typeInfo, xcap, incr int) (v reflect.Value, newcap int, set bool) {
-	newcap = int(growCap(uint(xcap), uint(ti.elemsize), uint(incr)))
+func rvGrowSlice(rv reflect.Value, ti *typeInfo, cap, incr int) (v reflect.Value, newcap int, set bool) {
+	newcap = int(growCap(uint(cap), uint(ti.elemsize), uint(incr)))
 	v = reflect.MakeSlice(ti.rt, newcap, newcap)
 	if rv.Len() > 0 {
 		reflect.Copy(v, rv)
