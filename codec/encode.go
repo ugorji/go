@@ -512,9 +512,10 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	} else {
 		tisfi := e.kStructSfi(f)
 		e.mapStart(len(tisfi))
+		keytyp := f.ti.keyType
 		for _, si := range tisfi {
 			e.mapElemKey()
-			e.kStructFieldKey(f.ti.keyType, si.path.encNameAsciiAlphaNum, si.encName)
+			e.kStructFieldKey(keytyp, si.path.encNameAsciiAlphaNum, si.encName)
 			e.mapElemValue()
 			e.encodeValue(si.path.field(rv), nil)
 		}
@@ -535,14 +536,17 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		toMap = true
 		newlen += len(mf)
 	} else if f.ti.flagMissingFielderPtr {
+		var rv2 reflect.Value
 		if rv.CanAddr() {
-			mf = rv2i(rv.Addr()).(MissingFielder).CodecMissingFields()
+			rv2 = rvAddr(rv, f.ti.ptr)
 		} else {
-			// make a new addressable value of same one, and use it
-			rv2 := reflect.New(rvType(rv))
-			rvSetDirect(rv2.Elem(), rv)
-			mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
+			// TODO: Why make new one? Instead, use addrRO?
+			// // make a new addressable value of same one, and use it
+			// rv2 = reflect.New(rvType(rv))
+			// rvSetDirect(rv2.Elem(), rv)
+			rv2 = rvAddr(e.addrRO(rv), f.ti.ptr)
 		}
+		mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
 		toMap = true
 		newlen += len(mf)
 	}
@@ -608,16 +612,17 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				}
 			}
 		} else {
+			keytyp := f.ti.keyType
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
 				e.mapElemKey()
-				e.kStructFieldKey(f.ti.keyType, kv.v.path.encNameAsciiAlphaNum, kv.v.encName)
+				e.kStructFieldKey(keytyp, kv.v.path.encNameAsciiAlphaNum, kv.v.encName)
 				e.mapElemValue()
 				e.encodeValue(kv.r, nil)
 			}
 			for _, v := range mf2s {
 				e.mapElemKey()
-				e.kStructFieldKey(f.ti.keyType, false, v.v)
+				e.kStructFieldKey(keytyp, false, v.v)
 				e.mapElemValue()
 				e.encode(v.i)
 			}
@@ -671,8 +676,8 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	var keyFn, valFn *codecFn
 
-	ktypeKind := f.ti.key.Kind()
-	vtypeKind := f.ti.elem.Kind()
+	ktypeKind := reflect.Kind(f.ti.keykind)
+	vtypeKind := reflect.Kind(f.ti.elemkind)
 
 	rtval := f.ti.elem
 	rtvalkind := vtypeKind
@@ -1309,16 +1314,26 @@ TOP:
 	} else if rvpValid {
 		fn.fe(e, &fn.i, rvp)
 	} else if rv.CanAddr() {
-		fn.fe(e, &fn.i, rv.Addr())
-	} else if fn.i.addrEf {
-		fn.fe(e, &fn.i, e.perType.AddressableRO(rv).Addr())
+		// fn.fe(e, &fn.i, rv.Addr())
+		fn.fe(e, &fn.i, rvAddr(rv, fn.i.ti.ptr))
 	} else {
-		fn.fe(e, &fn.i, rv)
+		// fn.fe(e, &fn.i, e.perType.AddressableRO(rv).Addr())
+		fn.fe(e, &fn.i, rvAddr(e.addrRO(rv), fn.i.ti.ptr))
 	}
+	// } else if fn.i.addrEf {
+	// 	// fn.fe(e, &fn.i, e.perType.AddressableRO(rv).Addr())
+	// 	fn.fe(e, &fn.i, rvAddr(e.addrRO(rv), fn.i.ti.ptr))
+	// } else {
+	// 	fn.fe(e, &fn.i, rv)
+	// }
 
 	if sptr != nil { // remove sptr
 		e.ci = e.ci[:len(e.ci)-1]
 	}
+}
+
+func (e *Encoder) addrRO(rv reflect.Value) reflect.Value {
+	return e.perType.AddressableRO(rv)
 }
 
 func (e *Encoder) marshalUtf8(bs []byte, fnerr error) {

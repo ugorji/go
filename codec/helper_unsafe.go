@@ -79,6 +79,7 @@ const (
 	unsafeFlagEmbedRO  = 1 << 6
 	unsafeFlagIndir    = 1 << 7
 	unsafeFlagAddr     = 1 << 8
+	unsafeFlagRO       = unsafeFlagStickyRO | unsafeFlagEmbedRO
 	// unsafeFlagKindMask = (1 << 5) - 1 // 5 bits for 27 kinds (up to 31)
 	// unsafeTypeKindDirectIface = 1 << 5
 )
@@ -325,6 +326,13 @@ func rv2i(rv reflect.Value) (i interface{}) {
 		urv.ptr = *(*unsafe.Pointer)(urv.ptr)
 	}
 	return *(*interface{})(unsafe.Pointer(&urv.unsafeIntf))
+}
+
+func rvAddr(rv reflect.Value, ptrType reflect.Type) reflect.Value {
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	urv.flag = (urv.flag & unsafeFlagRO) | uintptr(reflect.Ptr)
+	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&ptrType))).ptr
+	return rv
 }
 
 func rvIsNil(rv reflect.Value) bool {

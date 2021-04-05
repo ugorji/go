@@ -68,6 +68,10 @@ func rv2i(rv reflect.Value) interface{} {
 	return rv.Interface()
 }
 
+func rvAddr(rv reflect.Value, ptrType reflect.Type) reflect.Value {
+	return rv.Addr()
+}
+
 func rvIsNil(rv reflect.Value) bool {
 	return rv.IsNil()
 }

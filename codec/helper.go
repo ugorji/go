@@ -1119,7 +1119,7 @@ func (x *basicHandleRuntimeState) fnLoad(rt reflect.Type, rtid uintptr, tinfos *
 	// it implementes one of the pre-declared interfaces.
 
 	fi.addrDf = true
-	fi.addrEf = true
+	// fi.addrEf = true
 
 	if rtid == timeTypId && x.timeBuiltin {
 		fn.fe = (*Encoder).kTime
@@ -1831,6 +1831,26 @@ func (p sfiSortedByEncName) Len() int           { return len(p) }
 func (p sfiSortedByEncName) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
 func (p sfiSortedByEncName) Less(i, j int) bool { return p[uint(i)].encName < p[uint(j)].encName }
 
+// typeInfo4Container holds information that is only available for
+// containers like map, array, chan, slice.
+type typeInfo4Container struct {
+	elem reflect.Type
+	// key is:
+	//   - if map kind: map key
+	//   - if array kind: sliceOf(elem)
+	//   - if chan kind: sliceof(elem)
+	key reflect.Type
+
+	// fastpathUnderlying is underlying type of a named slice/map/array, as defined by go spec,
+	// that is used by fastpath where we defined fastpath functions for the underlying type.
+	//
+	// for a map, it's a map; for a slice or array, it's a slice; else its nil.
+	fastpathUnderlying reflect.Type
+
+	tikey  *typeInfo
+	tielem *typeInfo
+}
+
 // typeInfo keeps static (non-changing readonly)information
 // about each (non-ptr) type referenced in the encode/decode sequence.
 //
@@ -1841,8 +1861,8 @@ func (p sfiSortedByEncName) Less(i, j int) bool { return p[uint(i)].encName < p[
 //   - If type is text(M/Unm)arshaler, call Text(M/Unm)arshal method
 //   - Else decode appropriately based on the reflect.Kind
 type typeInfo struct {
-	rt   reflect.Type
-	elem reflect.Type
+	rt  reflect.Type
+	ptr reflect.Type
 
 	// pkgpath string
 
@@ -1857,32 +1877,12 @@ type typeInfo struct {
 	keyType      valueType // if struct, how is the field name stored in a stream? default is string
 	mbs          bool      // base type (T or *T) is a MapBySlice
 
-	// ---- cpu cache line boundary?
-
-	sfiSort []*structFieldInfo // sorted. Used when enc/dec struct to map.
-	sfiSrc  []*structFieldInfo // unsorted. Used when enc/dec struct to array.
-
-	// key is:
-	//   - if map kind: map key
-	//   - if array kind: sliceOf(elem)
-	//   - if chan kind: sliceof(elem)
-	key reflect.Type
-
-	// ---- cpu cache line boundary?
-
-	// fastpathUnderlying is underlying type of a named slice/map/array, as defined by go spec,
-	// that is used by fastpath where we defined fastpath functions for the underlying type.
-	//
-	// for a map, it's a map; for a slice or array, it's a slice; else its nil.
-	fastpathUnderlying reflect.Type
-
 	// sfiSrch  []*structFieldInfo          // sorted. used for finding sfi given a name
 	sfi4Name map[string]*structFieldInfo // map. used for finding sfi given a name
 
-	// ---- cpu cache line boundary?
+	*typeInfo4Container
 
-	tikey  *typeInfo
-	tielem *typeInfo
+	// ---- cpu cache line boundary?
 
 	size, keysize, elemsize uint32
 
@@ -1927,6 +1927,12 @@ type typeInfo struct {
 	flagMissingFielderPtr bool
 
 	infoFieldOmitempty bool
+
+	sfiSrc []*structFieldInfo // unsorted. Used when enc/dec struct to array
+
+	// ---- cpu cache line boundary?
+
+	sfiSort []*structFieldInfo // sorted. Used when enc struct to canonical map, etc
 }
 
 func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
@@ -2141,6 +2147,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	// it may lead to duplication, but that's ok.
 	ti := typeInfo{
 		rt:      rt,
+		ptr:     reflect.PtrTo(rt),
 		rtid:    rtid,
 		kind:    uint8(rk),
 		size:    uint32(rt.Size()),
@@ -2220,6 +2227,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.init(pv.sfis, n)
 		pp.Put(pi)
 	case reflect.Map:
+		ti.typeInfo4Container = new(typeInfo4Container)
 		ti.elem = rt.Elem()
 		for tt = ti.elem; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
 		}
@@ -2236,6 +2244,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 			ti.fastpathUnderlying = reflect.MapOf(ti.key, ti.elem)
 		}
 	case reflect.Slice:
+		ti.typeInfo4Container = new(typeInfo4Container)
 		ti.mbs, b2 = implIntf(rt, mapBySliceTyp)
 		if !ti.mbs && b2 {
 			ti.mbs = b2
@@ -2250,6 +2259,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 			ti.fastpathUnderlying = reflect.SliceOf(ti.elem)
 		}
 	case reflect.Chan:
+		ti.typeInfo4Container = new(typeInfo4Container)
 		ti.elem = rt.Elem()
 		for tt = ti.elem; tt.Kind() == reflect.Ptr; tt = tt.Elem() {
 		}
@@ -2260,6 +2270,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		ti.key = reflect.SliceOf(ti.elem)
 		ti.keykind = uint8(reflect.Slice)
 	case reflect.Array:
+		ti.typeInfo4Container = new(typeInfo4Container)
 		ti.mbs, b2 = implIntf(rt, mapBySliceTyp)
 		if !ti.mbs && b2 {
 			ti.mbs = b2
@@ -2531,7 +2542,7 @@ type codecFnInfo struct {
 	addrD  bool
 	addrDf bool // force: if addrD, then decode function MUST take a ptr
 	addrE  bool
-	addrEf bool // force: if addrE, then encode function MUST take a ptr
+	// addrEf bool // force: if addrE, then encode function MUST take a ptr
 }
 
 // codecFn encapsulates the captured variables and the encode function.
