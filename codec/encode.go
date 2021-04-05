@@ -504,21 +504,23 @@ L1:
 
 func (e *Encoder) kStructSfi(f *codecFnInfo) []*structFieldInfo {
 	if e.h.Canonical {
-		return f.ti.sfiSort
+		return f.ti.sfi.sorted()
 	}
-	return f.ti.sfiSrc
+	return f.ti.sfi.source()
 }
 
 func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
+	var tisfi []*structFieldInfo
 	if f.ti.toArray || e.h.StructToArray { // toArray
-		e.arrayStart(len(f.ti.sfiSrc))
-		for _, si := range f.ti.sfiSrc {
+		tisfi = f.ti.sfi.source()
+		e.arrayStart(len(tisfi))
+		for _, si := range tisfi {
 			e.arrayElem()
 			e.encodeValue(si.path.field(rv), nil)
 		}
 		e.arrayEnd()
 	} else {
-		tisfi := e.kStructSfi(f)
+		tisfi = e.kStructSfi(f)
 		e.mapStart(len(tisfi))
 		keytyp := f.ti.keyType
 		for _, si := range tisfi {
@@ -558,7 +560,8 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		toMap = true
 		newlen += len(mf)
 	}
-	newlen += len(f.ti.sfiSrc)
+	tisfi := f.ti.sfi.source()
+	newlen += len(tisfi)
 
 	var fkvs = e.slist.get(newlen)[:newlen]
 
@@ -638,8 +641,8 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 
 		e.mapEnd()
 	} else {
-		newlen = len(f.ti.sfiSrc)
-		for i, si := range f.ti.sfiSrc { // use unsorted array (to match sequence in struct)
+		newlen = len(tisfi)
+		for i, si := range tisfi { // use unsorted array (to match sequence in struct)
 			kv.r = si.path.field(rv)
 			// use the zero value.
 			// if a reference or struct, set to nil (so you do not output too much)

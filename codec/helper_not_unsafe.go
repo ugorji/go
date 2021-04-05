@@ -179,7 +179,7 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	}
 	// We only care about what we can encode/decode,
 	// so that is what we use to check omitEmpty.
-	for _, si := range ti.sfiSrc {
+	for _, si := range ti.sfi.source() {
 		sfv := si.path.field(v)
 		if sfv.IsValid() && !isEmptyValue(sfv, tinfos, recursive) {
 			return false
@@ -261,6 +261,19 @@ func (x *perType) AddressableRO(v reflect.Value) (rv reflect.Value) {
 }
 
 // --------------------------
+type structFieldInfos struct {
+	c []*structFieldInfo
+	s []*structFieldInfo
+}
+
+func (x *structFieldInfos) load(source, sorted []*structFieldInfo) {
+	x.c = source
+	x.s = sorted
+}
+
+func (x *structFieldInfos) sorted() (v []*structFieldInfo) { return x.s }
+func (x *structFieldInfos) source() (v []*structFieldInfo) { return x.c }
+
 type atomicClsErr struct {
 	v atomic.Value
 }

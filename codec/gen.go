@@ -685,7 +685,7 @@ func (x *genRunner) tryGenIsZero(t reflect.Type) (done bool) {
 	delete(x.ty, t)
 
 	ti := x.ti.get(rtid, t)
-	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
+	tisfi := ti.sfi.source() // always use sequence from file. decStruct expects same thing.
 	varname := genTopLevelVarName
 
 	x.linef("func (%s *%s) IsCodecEmpty() bool {", varname, x.genTypeName(t))
@@ -1201,7 +1201,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	ti2arrayvar := genTempVarPfx + "r" + i
 	struct2arrvar := genTempVarPfx + "2arr" + i
 
-	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
+	tisfi := ti.sfi.source() // always use sequence from file. decStruct expects same thing.
 
 	type genFQN struct {
 		i       string
@@ -1379,9 +1379,9 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 
 		if genStructCanonical {
 			x.linef("if z.EncBasicHandle().Canonical {") // if Canonical block
-			fn(ti.sfiSort)
+			fn(ti.sfi.sorted())
 			x.linef("} else {") // else !cononical block
-			fn(ti.sfiSrc)
+			fn(ti.sfi.source())
 			x.linef("}") // end if Canonical block
 		} else {
 			fn(tisfi)
@@ -1924,7 +1924,7 @@ func (x *genRunner) decMapFallback(varname string, rtid uintptr, t reflect.Type)
 
 func (x *genRunner) decStructMapSwitch(kName string, varname string, rtid uintptr, t reflect.Type) {
 	ti := x.ti.get(rtid, t)
-	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
+	tisfi := ti.sfi.source() // always use sequence from file. decStruct expects same thing.
 	x.line("switch string(" + kName + ") {")
 	var newbuf, nilbuf genBuf
 	for _, si := range tisfi {
@@ -1987,7 +1987,7 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 	tpfx := genTempVarPfx
 	i := x.varsfx()
 	ti := x.ti.get(rtid, t)
-	tisfi := ti.sfiSrc // always use sequence from file. decStruct expects same thing.
+	tisfi := ti.sfi.source() // always use sequence from file. decStruct expects same thing.
 	x.linef("var %sj%s int", tpfx, i)
 	x.linef("var %sb%s bool", tpfx, i)                        // break
 	x.linef("var %shl%s bool = %s >= 0", tpfx, i, lenvarname) // has length

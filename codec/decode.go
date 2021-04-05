@@ -701,7 +701,8 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		// Arrays are not used as much for structs.
 		hasLen := containerLen >= 0
 		var checkbreak bool
-		for j, si := range ti.sfiSrc {
+		tisfi := ti.sfi.source()
+		for j, si := range tisfi {
 			if hasLen {
 				if j == containerLen {
 					break
@@ -715,14 +716,14 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		}
 		var proceed bool
 		if hasLen {
-			proceed = containerLen > len(ti.sfiSrc)
+			proceed = containerLen > len(tisfi)
 		} else {
 			proceed = !checkbreak
 		}
-		// if (hasLen && containerLen > len(ti.sfiSrc)) || (!hasLen && !checkbreak) {
+		// if (hasLen && containerLen > len(tisfi)) || (!hasLen && !checkbreak) {
 		if proceed {
 			// read remaining values and throw away
-			for j := len(ti.sfiSrc); ; j++ {
+			for j := len(tisfi); ; j++ {
 				if !d.containerNext(j, containerLen, hasLen) {
 					break
 				}

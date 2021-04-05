@@ -1928,11 +1928,11 @@ type typeInfo struct {
 
 	infoFieldOmitempty bool
 
-	sfiSrc []*structFieldInfo // unsorted. Used when enc/dec struct to array
+	sfi structFieldInfos
 
-	// ---- cpu cache line boundary?
-
-	sfiSort []*structFieldInfo // sorted. Used when enc struct to canonical map, etc
+	// sfiSrc []*structFieldInfo // unsorted. Used when enc/dec struct to array
+	// // ---- cpu cache line boundary?
+	// sfiSort []*structFieldInfo // sorted. Used when enc struct to canonical map, etc
 }
 
 func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
@@ -2000,8 +2000,7 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	// sort.Sort(sfiSortedForBinarySearch(b))
 
 	ti.anyOmitEmpty = anyOmitEmpty
-	ti.sfiSrc = y
-	ti.sfiSort = z
+	ti.sfi.load(y, z)
 	// ti.sfiSrch = b
 	ti.sfi4Name = m
 }

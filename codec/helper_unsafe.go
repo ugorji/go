@@ -570,6 +570,34 @@ func isEmptyValueFallbackRecur(urv *unsafeReflectValue, v reflect.Value, tinfos 
 
 // --------------------------
 
+type structFieldInfos struct {
+	c      unsafe.Pointer // source
+	s      unsafe.Pointer // sorted
+	length int
+}
+
+func (x *structFieldInfos) load(source, sorted []*structFieldInfo) {
+	s := (*unsafeSlice)(unsafe.Pointer(&sorted))
+	x.s = s.Data
+	x.length = s.Len
+	s = (*unsafeSlice)(unsafe.Pointer(&source))
+	x.c = s.Data
+}
+
+func (x *structFieldInfos) sorted() (v []*structFieldInfo) {
+	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{Data: x.s, Len: x.length, Cap: x.length}
+	// s := (*unsafeSlice)(unsafe.Pointer(&v))
+	// s.Data = x.sorted0
+	// s.Len = x.length
+	// s.Cap = s.Len
+	return
+}
+
+func (x *structFieldInfos) source() (v []*structFieldInfo) {
+	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{Data: x.c, Len: x.length, Cap: x.length}
+	return
+}
+
 // atomicXXX is expected to be 2 words (for symmetry with atomic.Value)
 //
 // Note that we do not atomically load/store length and data pointer separately,
