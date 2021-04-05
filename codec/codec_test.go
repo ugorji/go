@@ -3352,23 +3352,23 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 	}
 
 	m["F"] = 90
-	fn(testStrucKeyTypeT0{F: 90})
+	fn(&testStrucKeyTypeT0{F: 90})
 	fnclr()
 
 	m["FFFF"] = 100
-	fn(testStrucKeyTypeT1{F: 100})
+	fn(&testStrucKeyTypeT1{F: 100})
 	fnclr()
 
 	m[int64(-1)] = 200
-	fn(testStrucKeyTypeT2{F: 200})
+	fn(&testStrucKeyTypeT2{F: 200})
 	fnclr()
 
 	m[int64(1)] = 300
-	fn(testStrucKeyTypeT3{F: 300})
+	fn(&testStrucKeyTypeT3{F: 300})
 	fnclr()
 
 	m[float64(2.5)] = 400
-	fn(testStrucKeyTypeT4{F: 400})
+	fn(&testStrucKeyTypeT4{F: 400})
 	fnclr()
 }
 
