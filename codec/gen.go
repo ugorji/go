@@ -1425,11 +1425,17 @@ func (x *genRunner) encListFallback(varname string, t reflect.Type) {
 	}
 
 	x.line("z.EncWriteArrayStart(len(" + varname + "))")
-	x.linef("for _, %sv%s := range %s {", genTempVarPfx, i, varname)
-	x.linef("z.EncWriteArrayElem()")
 
-	x.encVar(genTempVarPfx+"v"+i, t.Elem())
+	// x.linef("for _, %sv%s := range %s {", genTempVarPfx, i, varname)
+	// x.linef("z.EncWriteArrayElem()")
+	// x.encVar(genTempVarPfx+"v"+i, t.Elem())
+	// x.line("}")
+
+	x.linef("for %sv%s := range %s {", genTempVarPfx, i, varname)
+	x.linef("z.EncWriteArrayElem()")
+	x.encVar(fmt.Sprintf("%s[%sv%s]", varname, genTempVarPfx, i), t.Elem())
 	x.line("}")
+
 	x.line("z.EncWriteArrayEnd()")
 	if t.Kind() == reflect.Chan {
 		x.line("}")

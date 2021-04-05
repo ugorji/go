@@ -13216,12 +13216,12 @@ func (x codecSelfer19780) encwrapUint64Slice(v wrapUint64Slice, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		if yyxt2 := z.Extension(yyv1); yyxt2 != nil {
-			z.EncExtension(yyv1, yyxt2)
+		if yyxt2 := z.Extension(v[yyv1]); yyxt2 != nil {
+			z.EncExtension(v[yyv1], yyxt2)
 		} else {
-			yyv1.CodecEncodeSelf(e)
+			v[yyv1].CodecEncodeSelf(e)
 		}
 	}
 	z.EncWriteArrayEnd()
@@ -13317,12 +13317,12 @@ func (x codecSelfer19780) encwrapStringSlice(v wrapStringSlice, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		if yyxt2 := z.Extension(yyv1); yyxt2 != nil {
-			z.EncExtension(yyv1, yyxt2)
+		if yyxt2 := z.Extension(v[yyv1]); yyxt2 != nil {
+			z.EncExtension(v[yyv1], yyxt2)
 		} else {
-			yyv1.CodecEncodeSelf(e)
+			v[yyv1].CodecEncodeSelf(e)
 		}
 	}
 	z.EncWriteArrayEnd()
@@ -13418,9 +13418,9 @@ func (x codecSelfer19780) encArray8int64(v *[8]int64, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		r.EncodeInt(int64(yyv1))
+		r.EncodeInt(int64(v[yyv1]))
 	}
 	z.EncWriteArrayEnd()
 }
@@ -13464,9 +13464,9 @@ func (x codecSelfer19780) encArray0int64(v *[0]int64, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		r.EncodeInt(int64(yyv1))
+		r.EncodeInt(int64(v[yyv1]))
 	}
 	z.EncWriteArrayEnd()
 }
@@ -13510,12 +13510,12 @@ func (x codecSelfer19780) encSlicePtrtoint64(v []*int64, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		if yyv1 == nil {
+		if v[yyv1] == nil {
 			r.EncodeNil()
 		} else {
-			yy2 := *yyv1
+			yy2 := *v[yyv1]
 			r.EncodeInt(int64(yy2))
 		}
 	}
@@ -13615,9 +13615,9 @@ func (x codecSelfer19780) encSlicestringUint64T(v []stringUint64T, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		yy2 := &yyv1
+		yy2 := &v[yyv1]
 		if yyxt3 := z.Extension(yy2); yyxt3 != nil {
 			z.EncExtension(yy2, yyxt3)
 		} else {
@@ -13967,15 +13967,15 @@ func (x codecSelfer19780) encSlicePtrtoTestStruc(v []*TestStruc, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		if yyv1 == nil {
+		if v[yyv1] == nil {
 			r.EncodeNil()
 		} else {
-			if yyxt2 := z.Extension(yyv1); yyxt2 != nil {
-				z.EncExtension(yyv1, yyxt2)
+			if yyxt2 := z.Extension(v[yyv1]); yyxt2 != nil {
+				z.EncExtension(v[yyv1], yyxt2)
 			} else {
-				yyv1.CodecEncodeSelf(e)
+				v[yyv1].CodecEncodeSelf(e)
 			}
 		}
 	}
@@ -14111,9 +14111,9 @@ func (x codecSelfer19780) encChanstring(v chan string, e *Encoder) {
 			}
 		}
 		z.EncWriteArrayStart(len(sch1))
-		for _, yyv1 := range sch1 {
+		for yyv1 := range sch1 {
 			z.EncWriteArrayElem()
-			r.EncodeString(string(yyv1))
+			r.EncodeString(string(sch1[yyv1]))
 		}
 		z.EncWriteArrayEnd()
 	}
@@ -15059,12 +15059,12 @@ func (x codecSelfer19780) encSlicewrapBytes(v []wrapBytes, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		if yyxt2 := z.Extension(yyv1); yyxt2 != nil {
-			z.EncExtension(yyv1, yyxt2)
+		if yyxt2 := z.Extension(v[yyv1]); yyxt2 != nil {
+			z.EncExtension(v[yyv1], yyxt2)
 		} else {
-			yyv1.CodecEncodeSelf(e)
+			v[yyv1].CodecEncodeSelf(e)
 		}
 	}
 	z.EncWriteArrayEnd()
@@ -15160,12 +15160,12 @@ func (x codecSelfer19780) encSlicewrapUint8(v []wrapUint8, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		if yyxt2 := z.Extension(yyv1); yyxt2 != nil {
-			z.EncExtension(yyv1, yyxt2)
+		if yyxt2 := z.Extension(v[yyv1]); yyxt2 != nil {
+			z.EncExtension(v[yyv1], yyxt2)
 		} else {
-			yyv1.CodecEncodeSelf(e)
+			v[yyv1].CodecEncodeSelf(e)
 		}
 	}
 	z.EncWriteArrayEnd()
@@ -15261,9 +15261,9 @@ func (x codecSelfer19780) encArray4stringUint64T(v *[4]stringUint64T, e *Encoder
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		yy2 := &yyv1
+		yy2 := &v[yyv1]
 		if yyxt3 := z.Extension(yy2); yyxt3 != nil {
 			z.EncExtension(yy2, yyxt3)
 		} else {
@@ -15316,9 +15316,9 @@ func (x codecSelfer19780) encArray4uint64(v *[4]uint64, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		r.EncodeUint(uint64(yyv1))
+		r.EncodeUint(uint64(v[yyv1]))
 	}
 	z.EncWriteArrayEnd()
 }
@@ -15362,12 +15362,12 @@ func (x codecSelfer19780) encSlicePtrtoArray4uint64(v []*[4]uint64, e *Encoder) 
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		if yyv1 == nil {
+		if v[yyv1] == nil {
 			r.EncodeNil()
 		} else {
-			h.encArray4uint64((*[4]uint64)(yyv1), e)
+			h.encArray4uint64((*[4]uint64)(v[yyv1]), e)
 		}
 	}
 	z.EncWriteArrayEnd()
@@ -15804,15 +15804,15 @@ func (x codecSelfer19780) encSlicePtrtoTestStrucFlex(v []*TestStrucFlex, e *Enco
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		if yyv1 == nil {
+		if v[yyv1] == nil {
 			r.EncodeNil()
 		} else {
-			if yyxt2 := z.Extension(yyv1); yyxt2 != nil {
-				z.EncExtension(yyv1, yyxt2)
+			if yyxt2 := z.Extension(v[yyv1]); yyxt2 != nil {
+				z.EncExtension(v[yyv1], yyxt2)
 			} else {
-				yyv1.CodecEncodeSelf(e)
+				v[yyv1].CodecEncodeSelf(e)
 			}
 		}
 	}

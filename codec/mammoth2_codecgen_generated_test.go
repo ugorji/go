@@ -7469,9 +7469,9 @@ func (x codecSelfer19781) encSliceTestMammoth2(v []TestMammoth2, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		yy2 := &yyv1
+		yy2 := &v[yyv1]
 		if yyxt3 := z.Extension(yy2); yyxt3 != nil {
 			z.EncExtension(yy2, yyxt3)
 		} else {
@@ -7571,9 +7571,9 @@ func (x codecSelfer19781) encArray4int64(v *[4]int64, e *Encoder) {
 		return
 	}
 	z.EncWriteArrayStart(len(v))
-	for _, yyv1 := range v {
+	for yyv1 := range v {
 		z.EncWriteArrayElem()
-		r.EncodeInt(int64(yyv1))
+		r.EncodeInt(int64(v[yyv1]))
 	}
 	z.EncWriteArrayEnd()
 }
