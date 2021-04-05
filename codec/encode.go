@@ -169,6 +169,14 @@ type EncodeOptions struct {
 	// to store a float64 as a half float. Doing this check has a small performance cost,
 	// but the benefit is that the encoded message will be smaller.
 	OptimumSize bool
+
+	// NoAddressableReadonly controls whether we try to force a non-addressable value
+	// to be addressable so we can call a pointer method on it e.g. for types
+	// that support Selfer, json.Marshaler, etc.
+	//
+	// Use it in the very rare occurrence that your types modify a pointer value when calling
+	// an encode callback function e.g. JsonMarshal, TextMarshal, BinaryMarshal or CodecEncodeSelf.
+	NoAddressableReadonly bool
 }
 
 // ---------------------------------------------
@@ -1314,14 +1322,11 @@ TOP:
 	} else if rvpValid {
 		fn.fe(e, &fn.i, rvp)
 	} else if rv.CanAddr() {
-		// fn.fe(e, &fn.i, rv.Addr())
 		fn.fe(e, &fn.i, rvAddr(rv, fn.i.ti.ptr))
 	} else {
-		// fn.fe(e, &fn.i, e.perType.AddressableRO(rv).Addr())
 		fn.fe(e, &fn.i, rvAddr(e.addrRO(rv), fn.i.ti.ptr))
 	}
 	// } else if fn.i.addrEf {
-	// 	// fn.fe(e, &fn.i, e.perType.AddressableRO(rv).Addr())
 	// 	fn.fe(e, &fn.i, rvAddr(e.addrRO(rv), fn.i.ti.ptr))
 	// } else {
 	// 	fn.fe(e, &fn.i, rv)
@@ -1332,7 +1337,11 @@ TOP:
 	}
 }
 
+// addrRO returns a readonly addressable value for a non-addressable value.
 func (e *Encoder) addrRO(rv reflect.Value) reflect.Value {
+	if e.h.NoAddressableReadonly {
+		return rv.Addr()
+	}
 	return e.perType.AddressableRO(rv)
 }
 
