@@ -585,7 +585,7 @@ func (x *structFieldInfos) load(source, sorted []*structFieldInfo) {
 }
 
 func (x *structFieldInfos) sorted() (v []*structFieldInfo) {
-	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{Data: x.s, Len: x.length, Cap: x.length}
+	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{x.s, x.length, x.length}
 	// s := (*unsafeSlice)(unsafe.Pointer(&v))
 	// s.Data = x.sorted0
 	// s.Len = x.length
@@ -594,7 +594,7 @@ func (x *structFieldInfos) sorted() (v []*structFieldInfo) {
 }
 
 func (x *structFieldInfos) source() (v []*structFieldInfo) {
-	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{Data: x.c, Len: x.length, Cap: x.length}
+	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{x.c, x.length, x.length}
 	return
 }
 

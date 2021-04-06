@@ -546,16 +546,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 		toMap = true
 		newlen += len(mf)
 	} else if f.ti.flagMissingFielderPtr {
-		var rv2 reflect.Value
-		if rv.CanAddr() {
-			rv2 = rvAddr(rv, f.ti.ptr)
-		} else {
-			// TODO: Why make new one? Instead, use addrRO?
-			// // make a new addressable value of same one, and use it
-			// rv2 = reflect.New(rvType(rv))
-			// rvSetDirect(rv2.Elem(), rv)
-			rv2 = rvAddr(e.addrRO(rv), f.ti.ptr)
-		}
+		rv2 := e.addrRV(rv, f.ti.ptr)
 		mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
 		toMap = true
 		newlen += len(mf)
@@ -1321,31 +1312,30 @@ TOP:
 	}
 
 	if !fn.i.addrE { // typically, addrE = false, so check it first
-		fn.fe(e, &fn.i, rv)
+		// keep rv same
 	} else if rvpValid {
-		fn.fe(e, &fn.i, rvp)
-	} else if rv.CanAddr() {
-		fn.fe(e, &fn.i, rvAddr(rv, fn.i.ti.ptr))
+		rv = rvp
 	} else {
-		fn.fe(e, &fn.i, rvAddr(e.addrRO(rv), fn.i.ti.ptr))
+		rv = e.addrRV(rv, fn.i.ti.ptr)
 	}
-	// } else if fn.i.addrEf {
-	// 	fn.fe(e, &fn.i, rvAddr(e.addrRO(rv), fn.i.ti.ptr))
-	// } else {
-	// 	fn.fe(e, &fn.i, rv)
-	// }
+	fn.fe(e, &fn.i, rv)
 
 	if sptr != nil { // remove sptr
 		e.ci = e.ci[:len(e.ci)-1]
 	}
 }
 
-// addrRO returns a readonly addressable value for a non-addressable value.
-func (e *Encoder) addrRO(rv reflect.Value) reflect.Value {
-	if e.h.NoAddressableReadonly {
-		return rv.Addr()
+// addrRV returns a addressable value which may be readonly
+func (e *Encoder) addrRV(rv reflect.Value, ptrType reflect.Type) (rva reflect.Value) {
+	if rv.CanAddr() {
+		return rvAddr(rv, ptrType)
 	}
-	return e.perType.AddressableRO(rv)
+	if e.h.NoAddressableReadonly {
+		rva = reflect.New(rvType(rv))
+		rvSetDirect(rva.Elem(), rv)
+		return
+	}
+	return rvAddr(e.perType.AddressableRO(rv), ptrType)
 }
 
 func (e *Encoder) marshalUtf8(bs []byte, fnerr error) {

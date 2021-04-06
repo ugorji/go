@@ -1834,18 +1834,14 @@ PTR:
 	}
 	if fn.i.addrD {
 		if rvpValid {
-			fn.fd(d, &fn.i, rvp)
+			rv = rvp
 		} else if rv.CanAddr() {
-			// fn.fd(d, &fn.i, rv.Addr())
-			fn.fd(d, &fn.i, rvAddr(rv, fn.i.ti.ptr))
+			rv = rvAddr(rv, fn.i.ti.ptr)
 		} else if fn.i.addrDf {
 			d.errorf("cannot decode into a non-pointer value")
-		} else {
-			fn.fd(d, &fn.i, rv)
 		}
-	} else {
-		fn.fd(d, &fn.i, rv)
 	}
+	fn.fd(d, &fn.i, rv)
 }
 
 func (d *Decoder) structFieldNotFound(index int, rvkencname string) {
