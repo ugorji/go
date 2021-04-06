@@ -43,9 +43,9 @@ import (
 
 // MARKER: keep in sync with ../gen.go (genVersion) and ../go.mod (module version)
 const (
-	codecgenModuleVersion = `1.2.4` // default version - overridden if available via go.mod
-	minimumCodecVersion   = `1.2.4`
-	genVersion            = 24
+	codecgenModuleVersion = `1.2.6` // default version - overridden if available via go.mod
+	minimumCodecVersion   = `1.2.6`
+	genVersion            = 25
 )
 
 const genCodecPkg = "codec1978" // MARKER: keep in sync with ../gen.go
@@ -464,7 +464,8 @@ func main() {
 				modVersion = modVersion[1:]
 			}
 		}
-		fmt.Printf("codecgen v%s (internal version %d) works with %s library v%s +\n", modVersion, genVersion, genCodecPath, minimumCodecVersion)
+		fmt.Printf("codecgen v%s (internal version %d) works with %s library v%s +\n",
+			modVersion, genVersion, genCodecPath, minimumCodecVersion)
 		return
 	}
 

@@ -5,6 +5,7 @@ package codec
 
 import (
 	"math"
+	"reflect"
 	"time"
 )
 
@@ -243,12 +244,12 @@ func (e *bincEncDriver) encUint(bd byte, pos bool, v uint64) {
 	}
 }
 
-func (e *bincEncDriver) EncodeExt(v interface{}, xtag uint64, ext Ext) {
+func (e *bincEncDriver) EncodeExt(v interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
 	var bs0, bs []byte
 	if ext == SelfExt {
 		bs0 = e.e.blist.get(1024)
 		bs = bs0
-		e.e.sideEncode(v, &bs)
+		e.e.sideEncode(v, basetype, &bs)
 	} else {
 		bs = ext.WriteExt(v)
 	}
@@ -826,7 +827,7 @@ func (d *bincDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
 	return decByteSlice(d.d.r(), clen, d.d.h.MaxInitLen, bs)
 }
 
-func (d *bincDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
+func (d *bincDecDriver) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
 	if xtag > 0xff {
 		d.d.errorf("ext: tag must be <= 0xff; got: %v", xtag)
 	}
@@ -840,7 +841,7 @@ func (d *bincDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 		re.Tag = realxtag
 		re.setData(xbs, zerocopy)
 	} else if ext == SelfExt {
-		d.d.sideDecode(rv, xbs)
+		d.d.sideDecode(rv, basetype, xbs)
 	} else {
 		ext.ReadExt(rv, xbs)
 	}

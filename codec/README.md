@@ -246,7 +246,7 @@ some caveats. See Encode documentation.
 
 ```go
 const CborStreamBytes byte = 0x5f ...
-const GenVersion = 24
+const GenVersion = 25
 var SelfExt = &extFailWrapper{}
 var GoRpc goRpc
 var MsgpackSpecRpc msgpackSpecRpc

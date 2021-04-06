@@ -142,7 +142,7 @@ type decDriver interface {
 	// DecodeBytes(bs []byte, isstring, zerocopy bool) (bsOut []byte)
 
 	// DecodeExt will decode into a *RawExt or into an extension.
-	DecodeExt(v interface{}, xtag uint64, ext Ext)
+	DecodeExt(v interface{}, basetype reflect.Type, xtag uint64, ext Ext)
 	// decodeExt(verifyTag bool, tag byte) (xtag byte, xbs []byte)
 
 	DecodeTime() (t time.Time)
@@ -325,11 +325,11 @@ type DecodeOptions struct {
 // ----------------------------------------
 
 func (d *Decoder) rawExt(f *codecFnInfo, rv reflect.Value) {
-	d.d.DecodeExt(rv2i(rv), 0, nil)
+	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
 
 func (d *Decoder) ext(f *codecFnInfo, rv reflect.Value) {
-	d.d.DecodeExt(rv2i(rv), f.xfTag, f.xfFn)
+	d.d.DecodeExt(rv2i(rv), f.ti.rt, f.xfTag, f.xfFn)
 }
 
 func (d *Decoder) selferUnmarshal(f *codecFnInfo, rv reflect.Value) {
@@ -537,7 +537,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			} else {
 				rvn = reflect.New(bfn.rt)
 				if bfn.ext == SelfExt {
-					d.sideDecode(rv2i(rvn), bytes)
+					d.sideDecode(rv2i(rvn), bfn.rt, bytes)
 				} else {
 					bfn.ext.ReadExt(rv2i(rvn), bytes)
 				}
@@ -1204,7 +1204,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		} else {
 			d.decByteState = decByteStateNone
 			d.decodeValue(rvk, keyFn)
-			// special case if interface wrapping a byte array.
+			// special case if interface wrapping a byte slice
 			if ktypeIsIntf {
 				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvType(rvk2) == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
@@ -2037,27 +2037,8 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 	rv = reflect.ValueOf(s)
 
 	// We cannot use isDecodeable here, as the value converted may be nil,
-	// or it may not be nil, but it is not addressable, and so we cannot extend it, etc.
+	// or it may not be nil but is not addressable and thus we cannot extend it, etc.
 	// Instead, we just ensure that the value is addressable.
-
-	// canDecode, reason := isDecodeable(rv)
-	// if !canDecode {
-	// 	switch reason {
-	// 	case decNotDecodeableReasonNonAddrValue:
-	// 		rv2 = d.perType.TransientAddrK(rvType(rv), rv.Kind())
-	// 		rvSetDirect(rv2, rv)
-	// 		rv = rv2
-	// 	case decNotDecodeableReasonNilReference:
-	// 		rvk = rv.Kind()
-	// 		if rvk == reflect.Ptr {
-	// 			rv = reflect.New(rvType(rv).Elem())
-	// 		} else {
-	// 			rv = rvZeroAddrK(rvType(rv), rvk)
-	// 		}
-	// 	default:
-	// 		d.haltAsNotDecodeable(rv)
-	// 	}
-	// }
 
 	if !rv.CanAddr() {
 		rvk = rv.Kind()
@@ -2074,9 +2055,8 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 	ext.UpdateExt(v, rv2i(rv))
 }
 
-func (d *Decoder) sideDecode(v interface{}, bs []byte) {
-	// rv := baseRV(v)
-	// NewDecoderBytes(bs, d.hh).decodeValue(rv, d.h.fnNoExt(rvType(rv)))
+func (d *Decoder) sideDecode(v interface{}, basetype reflect.Type, bs []byte) {
+	// NewDecoderBytes(bs, d.hh).decodeValue(baseRV(v), d.h.fnNoExt(basetype))
 
 	defer func(rb bytesDecReader, bytes bool,
 		c containerState, dbs decByteState, depth int16, r decReader, state interface{}) {
@@ -2099,8 +2079,7 @@ func (d *Decoder) sideDecode(v interface{}, bs []byte) {
 	d.depth = 0
 
 	// must call using fnNoExt
-	rv := baseRV(v)
-	d.decodeValue(rv, d.h.fnNoExt(rvType(rv)))
+	d.decodeValue(baseRV(v), d.h.fnNoExt(basetype))
 }
 
 func (d *Decoder) fauxUnionReadRawBytes(asString bool) {

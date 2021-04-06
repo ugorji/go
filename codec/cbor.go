@@ -5,6 +5,7 @@ package codec
 
 import (
 	"math"
+	"reflect"
 	"time"
 )
 
@@ -216,11 +217,10 @@ func (e *cborEncDriver) EncodeTime(t time.Time) {
 	}
 }
 
-func (e *cborEncDriver) EncodeExt(rv interface{}, xtag uint64, ext Ext) {
+func (e *cborEncDriver) EncodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
 	e.encUint(uint64(xtag), cborBaseTag)
 	if ext == SelfExt {
-		rv2 := baseRV(rv)
-		e.e.encodeValue(rv2, e.h.fnNoExt(rvType(rv2)))
+		e.e.encodeValue(baseRV(rv), e.h.fnNoExt(basetype))
 	} else if v := ext.ConvertExt(rv); v == nil {
 		e.EncodeNil()
 	} else {
@@ -662,7 +662,7 @@ func (d *cborDecDriver) decodeTime(xtag uint64) (t time.Time) {
 	return
 }
 
-func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
+func (d *cborDecDriver) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
 	if d.advanceNil() {
 		return
 	}
@@ -678,8 +678,7 @@ func (d *cborDecDriver) DecodeExt(rv interface{}, xtag uint64, ext Ext) {
 	} else if xtag != realxtag {
 		d.d.errorf("Wrong extension tag. Got %b. Expecting: %v", realxtag, xtag)
 	} else if ext == SelfExt {
-		rv2 := baseRV(rv)
-		d.d.decodeValue(rv2, d.h.fnNoExt(rvType(rv2)))
+		d.d.decodeValue(baseRV(rv), d.h.fnNoExt(basetype))
 	} else {
 		d.d.interfaceExtConvertAndDecode(rv, ext)
 	}

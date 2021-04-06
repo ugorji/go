@@ -148,7 +148,8 @@ import (
 // v22: 20210118 fixed issue in generated code when encoding a type which is also a codec.Selfer
 // v23: 20210203 changed slice/map types for which we generate fast-path functions
 // v24: 20210226 robust handling for Canonical|CheckCircularRef flags and MissingFielder implementations
-const genVersion = 24
+// v25: 20210406 pass base reflect.Type to side(En|De)code and (En|De)codeExt calls
+const genVersion = 25
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go

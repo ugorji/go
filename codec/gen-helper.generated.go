@@ -13,7 +13,7 @@ import (
 )
 
 // GenVersion is the current version of codecgen.
-const GenVersion = 24
+const GenVersion = 25
 
 // This file is used to generate helper code for codecgen.
 // The values here i.e. genHelper(En|De)coder are not to be used directly by
@@ -109,7 +109,7 @@ func (f genHelperEncoder) Extension(v interface{}) (xfn *extTypeTagFn) {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncExtension(v interface{}, xfFn *extTypeTagFn) {
-	f.e.e.EncodeExt(v, xfFn.tag, xfFn.ext)
+	f.e.e.EncodeExt(v, xfFn.rt, xfFn.tag, xfFn.ext)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -235,7 +235,7 @@ func (f genHelperDecoder) Extension(v interface{}) (xfn *extTypeTagFn) {
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecExtension(v interface{}, xfFn *extTypeTagFn) {
-	f.d.d.DecodeExt(v, xfFn.tag, xfFn.ext)
+	f.d.d.DecodeExt(v, xfFn.rt, xfFn.tag, xfFn.ext)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*

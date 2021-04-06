@@ -109,7 +109,7 @@ func (f genHelperEncoder) Extension(v interface{}) (xfn *extTypeTagFn) {
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncExtension(v interface{}, xfFn *extTypeTagFn) {
-	f.e.e.EncodeExt(v, xfFn.tag, xfFn.ext)
+	f.e.e.EncodeExt(v, xfFn.rt, xfFn.tag, xfFn.ext)
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) WriteStr(s string) {
@@ -217,7 +217,7 @@ func (f genHelperDecoder) Extension(v interface{}) (xfn *extTypeTagFn) {
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecExtension(v interface{}, xfFn *extTypeTagFn) {
-	f.d.d.DecodeExt(v, xfFn.tag, xfFn.ext)
+	f.d.d.DecodeExt(v, xfFn.rt, xfFn.tag, xfFn.ext)
 }
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecInferLen(clen, maxlen, unit int) (rvlen int) {

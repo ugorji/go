@@ -38,10 +38,10 @@ func codecSelfer19781False() bool { return false }
 func codecSelfer19781True() bool  { return true }
 
 func init() {
-	if GenVersion != 24 {
+	if GenVersion != 25 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic(errors.New("codecgen version mismatch: current: 24, need " + ver + ". Re-generate file: " + file))
+		panic(errors.New("codecgen version mismatch: current: 25, need " + ver + ". Re-generate file: " + file))
 	}
 }
 
