@@ -4581,7 +4581,7 @@ func TestMapRangeIndex(t *testing.T) {
 			mvt := m.Type().Elem()
 			kfast := mapKeyFastKindFor(mkt.Kind())
 			rvv := mapAddrLoopvarRV(mvt, mvt.Kind())
-			visindirect := mvt.Size() > mapMaxElemSize
+			visindirect := mapStoresElemIndirect(mvt.Size())
 			visref := refBitset.isset(byte(mvt.Kind()))
 
 			for _, k := range m.MapKeys() {

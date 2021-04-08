@@ -731,7 +731,7 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 	mks := rv.MapKeys()
 	rtkeyKind := rtkey.Kind()
 	kfast := mapKeyFastKindFor(rtkeyKind)
-	visindirect := ti.elemsize > mapMaxElemSize
+	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
 	visref := refBitset.isset(ti.elemkind)
 
 	switch rtkeyKind {

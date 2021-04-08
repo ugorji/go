@@ -1080,7 +1080,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	vtypeKind := reflect.Kind(ti.elemkind)
 	ktypeKind := reflect.Kind(ti.keykind)
 	kfast := mapKeyFastKindFor(ktypeKind)
-	visindirect := ti.elemsize > mapMaxElemSize
+	visindirect := mapStoresElemIndirect(uintptr(ti.elemsize))
 	visref := refBitset.isset(ti.elemkind)
 
 	vtypePtr := vtypeKind == reflect.Ptr

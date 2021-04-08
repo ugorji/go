@@ -604,11 +604,13 @@ func rvLenMap(rv reflect.Value) int {
 
 // ------------ map range and map indexing ----------
 
-func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) {
+func mapStoresElemIndirect(elemsize uintptr) bool { return false }
+
+func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, _, _ bool) {
 	m.SetMapIndex(k, v)
 }
 
-func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) (vv reflect.Value) {
+func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, _, _ bool) (vv reflect.Value) {
 	return m.MapIndex(k)
 }
 

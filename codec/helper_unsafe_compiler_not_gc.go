@@ -40,7 +40,9 @@ func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (v unsa
 // failing with "error: undefined reference" error.
 // so we just use runtime.{mapassign, mapaccess2} directly
 
-func mapSet(m, k, v reflect.Value, _ mapKeyFastKind, valIsIndirect, valIsRef bool) {
+func mapStoresElemIndirect(elemsize uintptr) bool { return false }
+
+func mapSet(m, k, v reflect.Value, _ mapKeyFastKind, _, valIsRef bool) {
 	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
 	var kptr = unsafeMapKVPtr(urv)
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))
@@ -54,7 +56,7 @@ func mapSet(m, k, v reflect.Value, _ mapKeyFastKind, valIsIndirect, valIsRef boo
 	typedmemmove(vtyp, vvptr, vptr)
 }
 
-func mapGet(m, k, v reflect.Value, _ mapKeyFastKind, valIsIndirect, valIsRef bool) (_ reflect.Value) {
+func mapGet(m, k, v reflect.Value, _ mapKeyFastKind, _, valIsRef bool) (_ reflect.Value) {
 	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
 	var kptr = unsafeMapKVPtr(urv)
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&m))

@@ -257,17 +257,6 @@ const (
 	skipFastpathTypeSwitchInDirectCall = false
 )
 
-// keep in sync with
-//    $GOROOT/src/cmd/compile/internal/gc/reflect.go: MAXKEYSIZE, MAXELEMSIZE
-//    $GOROOT/src/runtime/map.go: maxKeySize, maxElemSize
-//    $GOROOT/src/reflect/type.go: maxKeySize, maxElemSize
-//
-// We use these to determine whether the type is stored indirectly in the map or not.
-const (
-	mapMaxKeySize  = 128
-	mapMaxElemSize = 128
-)
-
 const cpu32Bit = ^uint(0)>>32 == 0
 
 type rkind byte

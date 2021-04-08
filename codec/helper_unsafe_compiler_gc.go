@@ -12,12 +12,33 @@ import (
 	"unsafe"
 )
 
+// keep in sync with
+//    $GOROOT/src/cmd/compile/internal/gc/reflect.go: MAXKEYSIZE, MAXELEMSIZE
+//    $GOROOT/src/runtime/map.go: maxKeySize, maxElemSize
+//    $GOROOT/src/reflect/type.go: maxKeySize, maxElemSize
+//
+// We use these to determine whether the type is stored indirectly in the map or not.
+const (
+	// mapMaxKeySize  = 128
+	mapMaxElemSize = 128
+)
+
 func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (v unsafeSlice) {
 	return growslice(typ, old, cap+incr)
 }
 
 func rvType(rv reflect.Value) reflect.Type {
 	return rvPtrToType(((*unsafeReflectValue)(unsafe.Pointer(&rv))).typ) // rv.Type()
+}
+
+// mapStoresElemIndirect tells if the element type is stored indirectly in the map.
+//
+// This is used to determine valIsIndirect which is passed into mapSet/mapGet calls.
+//
+// If valIsIndirect doesn't matter, then just return false and ignore the value
+// passed in mapGet/mapSet calls
+func mapStoresElemIndirect(elemsize uintptr) bool {
+	return elemsize > mapMaxElemSize
 }
 
 func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) {
