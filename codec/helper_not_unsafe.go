@@ -34,14 +34,6 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 	return cap(v1) != 0 && cap(v2) != 0 && &(v1[:1][0]) == &(v2[:1][0])
 }
 
-// func (x *BasicHandle) fnloadFastpathUnderlying(ti *typeInfo) (f *fastpathE, u reflect.Type) {
-// 	return fnloadFastpathUnderlying(ti)
-// }
-
-// func copyBytes(dst []byte, src []byte) {
-// 	copy(dst, src)
-// }
-
 func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	rv = reflect.ValueOf(v)
 	if isnilBitset.isset(byte(rv.Kind())) {
@@ -49,10 +41,6 @@ func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	}
 	return
 }
-
-// func rvAddr(rv reflect.Value) uintptr {
-// 	return rv.UnsafeAddr()
-// }
 
 func eq4i(i0, i1 interface{}) bool {
 	return i0 == i1
@@ -663,44 +651,3 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) reflect.Value {
 }
 
 // ---------- others ---------------
-
-/*
-func hashShortString(b []byte) (h uintptr) {
-	// MARKER: consider fnv - it may be a better hash than adler
-	return uintptr(adler32.Checksum(b))
-}
-
-// func hashShortString(b []byte) (h uint64) {
-// 	// culled from https://github.com/golang/go/issues/32779#issuecomment-735494578
-// 	// Read the string in two parts using wide-integer loads.
-// 	// The prefix and suffix may overlap, which is fine.
-// 	switch {
-// 	case len(b) > 8:
-// 		h ^= binary.LittleEndian.Uint64(b[:8])
-// 		h *= 0x00000100000001B3 // inspired by FNV-64
-// 		h ^= binary.LittleEndian.Uint64(b[len(b)-8:])
-// 	case len(b) > 4:
-// 		h ^= uint64(binary.LittleEndian.Uint32(b[:4]))
-// 		h *= 0x01000193 // inspired by FNV-32
-// 		h ^= uint64(binary.LittleEndian.Uint32(b[len(b)-4:]))
-// 	default:
-// 		h ^= uint64(binary.LittleEndian.Uint16(b[:2]))
-// 		h *= 0x010f // inspired by hypothetical FNV-16
-// 		h ^= uint64(binary.LittleEndian.Uint16(b[len(b)-2:]))
-// 	}
-//
-// 	// Collapse a 64-bit, 32-bit, or 16-bit hash into an 8-bit hash.
-// 	h ^= h >> 32
-// 	h ^= h >> 16
-// 	h ^= h >> 8
-//
-// 	// The cache has 8 buckets based on the lower 3-bits of the length.
-// 	h = ((h << 3) | uint64(len(b)&7))
-// 	return
-// }
-
-func rtsize(rt reflect.Type) uintptr {
-	return rt.Size()
-}
-
-*/

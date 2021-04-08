@@ -1376,8 +1376,6 @@ type JsonHandle struct {
 	// RawBytesExt, if configured, is used to encode and decode raw bytes in a custom way.
 	// If not configured, raw bytes are encoded to/from base64 text.
 	RawBytesExt InterfaceExt
-
-	// _ [5]uint64 // padding (cache line)
 }
 
 func (h *JsonHandle) isJson() bool { return true }
@@ -1387,7 +1385,6 @@ func (h *JsonHandle) Name() string { return "json" }
 
 func (h *JsonHandle) desc(bd byte) string { return string(bd) }
 
-// func (h *JsonHandle) hasElemSeparators() bool { return true }
 func (h *JsonHandle) typical() bool {
 	return h.Indent == 0 && !h.MapKeyAsString && h.IntegerAsString != 'A' && h.IntegerAsString != 'L'
 }

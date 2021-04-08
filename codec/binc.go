@@ -114,8 +114,6 @@ type bincEncDriver struct {
 	encDriverNoopContainerWriter
 	h *BincHandle
 	bincEncState
-	// b [8]byte           // scratch, used for encoding numbers - bigendian style
-	// s uint16 // symbols sequencer
 
 	e Encoder
 }
@@ -436,9 +434,6 @@ type bincDecDriver struct {
 	h *BincHandle
 
 	bincDecState
-
-	// b [8]byte // scratch for decoding numbers - big endian style
-	// _ [4]uint64 // padding cache-aligned
 
 	d Decoder
 }

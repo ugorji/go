@@ -25,8 +25,6 @@ type decReader interface {
 
 	numread() uint // number of bytes read
 
-	// readNumber(includeLastByteRead bool) []byte
-
 	// skip any whitespace characters, and return the first non-matching byte
 	skipWhitespace() (token byte)
 
@@ -687,16 +685,6 @@ LOOP:
 	z.c = i + 1
 	return z.b[i]
 }
-
-// func (z *bytesDecReader) skipWhitespace() (token byte) {
-// LOOP:
-// 	token = z.b[z.c]
-// 	z.c++
-// 	if isWhitespaceChar(token) {
-// 		goto LOOP
-// 	}
-// 	return
-// }
 
 func (z *bytesDecReader) readUntil(stop byte) (out []byte) {
 	i := z.c

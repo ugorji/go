@@ -407,11 +407,9 @@ func (e *msgpackEncDriver) writeContainerLen(ct msgpackContainerType, l int) {
 type msgpackDecDriver struct {
 	decDriverNoopContainerReader
 	h *MsgpackHandle
-	// b      [scratchByteArrayLen]byte
 	bdAndBdread
 	_ bool
 	noBuiltInTypes
-	// _ [6]uint64 // padding
 	d Decoder
 }
 

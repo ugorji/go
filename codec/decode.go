@@ -21,8 +21,6 @@ const (
 
 	// MARKER: massage decScratchByteArrayLen to ensure xxxDecDriver structs fit within cacheLine*N
 
-	// decDefSliceCap         = 8
-
 	// decFailNonEmptyIntf configures whether we error
 	// when decoding naked into a non-empty interface.
 	//
@@ -652,7 +650,6 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	if ti.flagMissingFielder {
 		mf = rv2i(rv).(MissingFielder)
 	} else if ti.flagMissingFielderPtr {
-		// mf = rv2i(rv.Addr()).(MissingFielder)
 		mf = rv2i(rvAddr(rv, ti.ptr)).(MissingFielder)
 	}
 	if ctyp == valueTypeMap {
@@ -836,7 +833,6 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	var j int
 
 	for ; d.containerNext(j, containerLenS, hasLen); j++ {
-		// if j == 0 && f.seq == seqTypeSlice && rvIsNil(rv) { // means hasLen = false
 		if j == 0 {
 			if rvIsNil(rv) { // means hasLen = false
 				if rvCanset {
@@ -854,10 +850,6 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 		}
 		// if indefinite, etc, then expand the slice if necessary
 		if j >= rvlen {
-			// if f.seq == seqTypeArray {
-			// 	slh.arrayCannotExpand(hasLen, rvlen, j, containerLenS)
-			// 	return
-			// }
 			slh.ElemContainerState(j)
 
 			// expand the slice up to the cap.
@@ -1027,7 +1019,7 @@ func (d *Decoder) kChan(f *codecFnInfo, rv reflect.Value) {
 	var rv0 = rv
 	var rv9 reflect.Value
 
-	var rvlen int // := rv.Len()
+	var rvlen int // = rv.Len()
 	hasLen := containerLenS > 0
 
 	for j := 0; d.containerNext(j, containerLenS, hasLen); j++ {
@@ -1245,36 +1237,32 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			goto NEW_RVV
 		} else {
 			rvv = mapGet(rv, rvk, rvva, kfast, visindirect, visref)
-			// if rvv.IsValid() && (!rvvCanNil || !rvIsNil(rvv)) {
-			// if rvv.IsValid() && !(rvvCanNil && rvIsNil(rvv)) {
-			// if !(!rvv.IsValid() || (rvvCanNil && rvIsNil(rvv))) {
 			if !rvv.IsValid() || (rvvCanNil && rvIsNil(rvv)) {
 				goto NEW_RVV
-			} else {
-				switch vtypeKind {
-				case reflect.Ptr, reflect.Map: // ok to decode directly into map
-					doMapSet = false
-				case reflect.Interface:
-					// if an interface{}, just decode into it iff a non-nil ptr/map, else allocate afresh
-					rvvn = rvv.Elem()
-					if k := rvvn.Kind(); (k == reflect.Ptr || k == reflect.Map) && !rvIsNil(rvvn) {
-						d.decodeValueNoCheckNil(rvvn, nil) // valFn is incorrect here
-						continue
-					}
-					// make addressable (so we can set the interface)
-					rvvn = rvZeroAddrK(vtype, vtypeKind)
-					rvSetIntf(rvvn, rvv)
-					rvv = rvvn
-				default:
-					// make addressable (so you can set the slice/array elements, etc)
-					if decUseTransient && vTransient {
-						rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
-					} else {
-						rvvn = rvZeroAddrK(vtype, vtypeKind)
-					}
-					rvSetDirect(rvvn, rvv)
-					rvv = rvvn
+			}
+			switch vtypeKind {
+			case reflect.Ptr, reflect.Map: // ok to decode directly into map
+				doMapSet = false
+			case reflect.Interface:
+				// if an interface{}, just decode into it iff a non-nil ptr/map, else allocate afresh
+				rvvn = rvv.Elem()
+				if k := rvvn.Kind(); (k == reflect.Ptr || k == reflect.Map) && !rvIsNil(rvvn) {
+					d.decodeValueNoCheckNil(rvvn, nil) // valFn is incorrect here
+					continue
 				}
+				// make addressable (so we can set the interface)
+				rvvn = rvZeroAddrK(vtype, vtypeKind)
+				rvSetIntf(rvvn, rvv)
+				rvv = rvvn
+			default:
+				// make addressable (so you can set the slice/array elements, etc)
+				if decUseTransient && vTransient {
+					rvvn = d.perType.TransientAddrK(vtype, vtypeKind)
+				} else {
+					rvvn = rvZeroAddrK(vtype, vtypeKind)
+				}
+				rvSetDirect(rvvn, rvv)
+				rvv = rvvn
 			}
 		}
 		goto DECODE_VALUE_NO_CHECK_NIL
@@ -1582,9 +1570,6 @@ func (d *Decoder) MustDecode(v interface{}) {
 	d.calls++
 	d.decode(v)
 	d.calls--
-	// if d.calls == 0 {
-	// 	d.d.atEndOfDecode()
-	// }
 }
 
 // Release releases shared (pooled) resources.
@@ -1614,16 +1599,6 @@ func (d *Decoder) swallowErr() (err error) {
 	d.swallow()
 	return
 }
-
-// func (d *Decoder) swallowMapContents(containerLen int) {
-// 	hasLen := containerLen > 0
-// 	for j := 0; (hasLen && j < containerLen) || !(hasLen || d.checkBreak()); j++ {
-// 		d.mapElemKey()
-// 		d.swallow()
-// 		d.mapElemValue()
-// 		d.swallow()
-// 	}
-// }
 
 func setZero(iv interface{}) {
 	if iv == nil {
@@ -1863,12 +1838,6 @@ func (d *Decoder) arrayCannotExpand(sliceLen, streamLen int) {
 		d.errorf("cannot expand array len during decode from %v to %v", sliceLen, streamLen)
 	}
 }
-
-// func (d *Decoder) ensureDecodeable(rv reflect.Value) {
-// 	if !isDecodeable(rv) {
-// 		d.haltAsNotDecodeable(rv)
-// 	}
-// }
 
 func (d *Decoder) haltAsNotDecodeable(rv reflect.Value) {
 	if !rv.IsValid() {
@@ -2220,17 +2189,7 @@ func isDecodeable(rv reflect.Value) (canDecode bool, reason decNotDecodeableReas
 		canDecode = rv.CanAddr()
 		reason = decNotDecodeableReasonNonAddrValue
 	}
-	// if canDecode {
-	// 	reason = decNotDecodeableReasonUnknown
-	// }
 	return
-	// switch rv.Kind() {
-	// case reflect.Array:
-	// 	canDecode = rv.CanAddr()
-	// case reflect.Ptr, reflect.Slice, reflect.Chan, reflect.Map:
-	// 	canDecode = !rvIsNil(rv)
-	// }
-	// return
 }
 
 func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
@@ -2269,7 +2228,6 @@ func decInferLen(clen, maxlen, unit int) int {
 	const (
 		minLenIfUnset = 8
 		maxMem        = 256 * 1024 // 256Kb Memory
-		// floorMem = 4 * 1024 // 4Kb Memory
 	)
 
 	// handle when maxlen is not set i.e. <= 0
@@ -2295,20 +2253,6 @@ func decInferLen(clen, maxlen, unit int) int {
 		return clen
 	}
 	if maxlen <= 0 {
-		// // no maxlen defined. Use maximum of 256K memory, with a floor of 4K items.
-		// // maxlen = 256 * 1024 / unit
-		// // if maxlen < (4 * 1024) {
-		// // 	maxlen = 4 * 1024
-		// // }
-		// if unit < (256 / 4) {
-		// 	maxlen = 256 * 1024 / unit
-		// } else {
-		// 	maxlen = 4 * 1024
-		// }
-		// // if maxlen > maxLenIfUnset {
-		// // 	maxlen = maxLenIfUnset
-		// // }
-		// no maxlen defined. Use maximum of 256K memory
 		maxlen = maxMem / unit
 	}
 	if clen < maxlen {

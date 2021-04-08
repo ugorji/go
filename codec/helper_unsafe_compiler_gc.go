@@ -148,15 +148,3 @@ func mapaccess2_fast64(typ unsafe.Pointer, m unsafe.Pointer, key uint64) (val un
 //go:linkname mapaccess2_faststr runtime.mapaccess2_faststr
 //go:noescape
 func mapaccess2_faststr(typ unsafe.Pointer, m unsafe.Pointer, key string) (val unsafe.Pointer, ok bool)
-
-/*
-
-//go:linkname unsafe_New reflect.unsafe_New
-//go:noescape
-func unsafe_New(typ unsafe.Pointer) unsafe.Pointer
-
-//go:linkname unsafe_NewArray reflect.unsafe_NewArray
-//go:noescape
-func unsafe_NewArray(typ unsafe.Pointer, cap int) unsafe.Pointer
-
-*/

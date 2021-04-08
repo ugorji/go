@@ -41,8 +41,6 @@ type encDriver interface {
 	// reset will reset current encoding runtime state, and cached information from the handle
 	reset()
 
-	// atEndOfEncode()
-
 	encoder() *Encoder
 
 	driverStateManager
@@ -336,9 +334,8 @@ func (e *Encoder) kSeqFn(rtelem reflect.Type) (fn *codecFn) {
 	for rtelem.Kind() == reflect.Ptr {
 		rtelem = rtelem.Elem()
 	}
-	// if kind is reflect.Interface, do not pre-determine the
-	// encoding type, because preEncodeValue may break it down to
-	// a concrete type and kInterface will bomb.
+	// if kind is reflect.Interface, do not pre-determine the encoding type,
+	// because preEncodeValue may break it down to a concrete type and kInterface will bomb.
 	if rtelem.Kind() != reflect.Interface {
 		fn = e.h.fn(rtelem)
 	}
@@ -453,13 +450,8 @@ func (e *Encoder) kSliceBytesChan(rv reflect.Value) {
 	// do not use range, so that the number of elements encoded
 	// does not change, and encoding does not hang waiting on someone to close chan.
 
-	// for b := range rv2i(rv).(<-chan byte) { bs = append(bs, b) }
-	// ch := rv2i(rv).(<-chan byte) // fix error - that this is a chan byte, not a <-chan byte.
-
-	// bs := e.b[:0]
 	bs0 := e.blist.peek(32, true)
 	bs := bs0
-	// cap0 := cap(bs)
 
 	irv := rv2i(rv)
 	ch, ok := irv.(<-chan byte)
@@ -736,7 +728,6 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 	// This is not necessary, as the natural kind is sufficient for ordering.
 
 	rtkey := ti.key
-	// rtval := ti.elem
 	mks := rv.MapKeys()
 	rtkeyKind := rtkey.Kind()
 	kfast := mapKeyFastKindFor(rtkeyKind)
@@ -935,10 +926,6 @@ type Encoder struct {
 	perType encPerType
 
 	slist sfiRvFreelist
-
-	// b [1 * 8]byte // for encoding chan byte, (non-addressable) [N]byte, etc
-
-	// ---- cpu cache line boundary?
 }
 
 // NewEncoder returns an Encoder for encoding into an io.Writer.
@@ -1287,7 +1274,6 @@ TOP:
 		goto TOP
 	case reflect.Struct:
 		if rvpValid && e.h.CheckCircularRef {
-			// sptr = rvAddr(rv) // use rv, not rvp, as rvAddr gives ptr to the data rv
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
 				if eq4i(sptr, vv) { // error if sptr already seen

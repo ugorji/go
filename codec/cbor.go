@@ -121,7 +121,6 @@ type cborEncDriver struct {
 	encDriverNoState
 	encDriverNoopContainerWriter
 	h *CborHandle
-	// x [8]byte
 
 	e Encoder
 }

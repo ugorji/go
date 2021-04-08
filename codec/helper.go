@@ -305,6 +305,9 @@ var (
 	// numCharWithExpBitset64 bitset64
 	// numCharNoExpBitset64   bitset64
 	// whitespaceCharBitset64 bitset64
+	//
+	// // hasptrBitset sets bit for all kinds which always have internal pointers
+	// hasptrBitset bitset32
 
 	// refBitset sets bit for all kinds which are direct internal references
 	refBitset bitset32
@@ -312,14 +315,10 @@ var (
 	// isnilBitset sets bit for all kinds which can be compared to nil
 	isnilBitset bitset32
 
-	// // hasptrBitset sets bit for all kinds which always have internal pointers
-	// hasptrBitset bitset32
-
 	// numBoolBitset sets bit for all number and bool kinds
 	numBoolBitset bitset32
 
-	// numBoolStrSliceBitset sets bits for all kinds which are
-	// numbers, bool, strings and slices
+	// numBoolStrSliceBitset sets bits for all kinds which are numbers, bool, strings and slices
 	numBoolStrSliceBitset bitset32
 
 	// scalarBitset sets bit for all kinds which are scalars/primitives and thus immutable
@@ -443,19 +442,13 @@ func init() {
 		switch i {
 		case ' ', '\t', '\r', '\n':
 			whitespaceCharBitset.set(i)
-			// whitespaceCharBitset64.set(i)
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 			digitCharBitset.set(i)
 			numCharBitset.set(i)
-			// numCharWithExpBitset64.set(i - 42)
-			// numCharNoExpBitset64.set(i)
 		case '.', '+', '-':
 			numCharBitset.set(i)
-			// numCharWithExpBitset64.set(i - 42)
-			// numCharNoExpBitset64.set(i)
 		case 'e', 'E':
 			numCharBitset.set(i)
-			// numCharWithExpBitset64.set(i - 42)
 		}
 	}
 }
@@ -541,16 +534,6 @@ func (x valueType) String() string {
 	}
 	return strconv.FormatInt(int64(x), 10)
 }
-
-// seqType is no longer used, as we now use dedicated methods for decoding slice vs chan vs array
-// type seqType uint8
-
-// const (
-// 	_ seqType = iota
-// 	seqTypeArray
-// 	seqTypeSlice
-// 	// seqTypeChan
-// )
 
 // note that containerMapStart and containerArraySend are not sent.
 // This is because the ReadXXXStart and EncodeXXXStart already does these.
@@ -910,8 +893,10 @@ type BasicHandle struct {
 // e.g. extensions, registered interfaces, TimeNotBuiltIn, etc
 func initHandle(hh Handle) {
 	x := hh.getBasicHandle()
-	// ** We need to simulate once.Do, to ensure no data race within the block.
-	// ** Consequently, below would not work.
+
+	// MARKER: We need to simulate once.Do, to ensure no data race within the block.
+	// Consequently, below would not work.
+	//
 	// if atomic.CompareAndSwapUint32(&x.inited, 0, 1) {
 	// 	x.be = hh.isBinary()
 	// 	x.js = hh.isJson
@@ -971,7 +956,7 @@ func (x *basicHandleRuntimeState) setExt(rt reflect.Type, tag uint64, ext Ext) (
 	rtid := rt2id(rt)
 	switch rtid {
 	case timeTypId, rawTypId, rawExtTypId:
-		// all natively supported type, so cannot have an extension.
+		// these are all natively supported type, so they cannot have an extension.
 		// However, we do not return an error for these, as we do not document that.
 		// Instead, we silently treat as a no-op, and return.
 		return
@@ -1290,17 +1275,13 @@ func (x *basicHandleRuntimeState) fnLoad(rt reflect.Type, rtid uintptr, tinfos *
 				fn.fe = (*Encoder).kComplex128
 				fn.fd = (*Decoder).kComplex128
 			case reflect.Chan:
-				// fi.seq = seqTypeChan
 				fn.fe = (*Encoder).kChan
 				fn.fd = (*Decoder).kChan
 			case reflect.Slice:
-				// fi.seq = seqTypeSlice
 				fn.fe = (*Encoder).kSlice
 				fn.fd = (*Decoder).kSlice
 			case reflect.Array:
-				// fi.seq = seqTypeArray
 				fi.addrD = false // decode directly into array value (slice made from it)
-
 				fn.fe = (*Encoder).kArray
 				fn.fd = (*Decoder).kArray
 			case reflect.Struct:
@@ -1877,7 +1858,6 @@ type typeInfo struct {
 	keyType      valueType // if struct, how is the field name stored in a stream? default is string
 	mbs          bool      // base type (T or *T) is a MapBySlice
 
-	// sfiSrch  []*structFieldInfo          // sorted. used for finding sfi given a name
 	sfi4Name map[string]*structFieldInfo // map. used for finding sfi given a name
 
 	*typeInfo4Container
@@ -1929,10 +1909,6 @@ type typeInfo struct {
 	infoFieldOmitempty bool
 
 	sfi structFieldInfos
-
-	// sfiSrc []*structFieldInfo // unsorted. Used when enc/dec struct to array
-	// // ---- cpu cache line boundary?
-	// sfiSort []*structFieldInfo // sorted. Used when enc struct to canonical map, etc
 }
 
 func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
@@ -1970,9 +1946,6 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	// remove all the nils (non-ready)
 	m := make(map[string]*structFieldInfo, n)
 	w := make([]structFieldInfo, n)
-	// y := make([]*structFieldInfo, n+n+n)
-	// b := y[n+n:]
-	// z := y[n:]
 	y := make([]*structFieldInfo, n+n)
 	z := y[n:]
 	y = y[:n]
@@ -1996,12 +1969,8 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	copy(z, y)
 	sort.Sort(sfiSortedByEncName(z))
 
-	// copy(b, y)
-	// sort.Sort(sfiSortedForBinarySearch(b))
-
 	ti.anyOmitEmpty = anyOmitEmpty
 	ti.sfi.load(y, z)
-	// ti.sfiSrch = b
 	ti.sfi4Name = m
 }
 
@@ -2440,15 +2409,12 @@ LOOP:
 			si.encName = f.Name
 		}
 
-		// si.encNameHash = maxUintptr()
-		// si.encNameHash = hashShortString(bytesView(si.encName))
+		// si.encNameHash = maxUintptr() // hashShortString(bytesView(si.encName))
 
 		if omitEmpty {
 			si.path.omitEmpty = true
 		}
 
-		// si.fieldName = f.Name
-		// si.path.encNameAsciiAlphaNum = true
 		for i := len(si.encName) - 1; i >= 0; i-- { // bounds-check elimination
 			if !asciiAlphaNumBitset.isset(si.encName[i]) {
 				si.path.encNameAsciiAlphaNum = false
@@ -2512,10 +2478,6 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 	}
 }
 
-// func isImmutableKind(k reflect.Kind) (v bool) {
-// 	return scalarBitset.isset(byte(k))
-// }
-
 func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
 	if slen <= 0 {
 		return []byte{}, true
@@ -2528,16 +2490,14 @@ func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
 
 func mapKeyFastKindFor(k reflect.Kind) mapKeyFastKind {
 	return mapKeyFastKindVals[k&31]
-	// return mapKeyFastKindVals[int(k)%len(mapKeyFastKindVals)]
 }
 
 // ----
 
 type codecFnInfo struct {
-	ti    *typeInfo
-	xfFn  Ext
-	xfTag uint64
-	// seq    seqType
+	ti     *typeInfo
+	xfFn   Ext
+	xfTag  uint64
 	addrD  bool
 	addrDf bool // force: if addrD, then decode function MUST take a ptr
 	addrE  bool
@@ -2552,7 +2512,7 @@ type codecFn struct {
 	i  codecFnInfo
 	fe func(*Encoder, *codecFnInfo, reflect.Value)
 	fd func(*Decoder, *codecFnInfo, reflect.Value)
-	_  [1]uint64 // padding (cache-aligned)
+	// _  [1]uint64 // padding (cache-aligned)
 }
 
 type codecRtidFn struct {
@@ -2561,12 +2521,7 @@ type codecRtidFn struct {
 }
 
 func makeExt(ext interface{}) Ext {
-	// if ext == nil {
-	// 	return &extFailWrapper{}
-	// }
 	switch t := ext.(type) {
-	// case nil:
-	// 	return &extFailWrapper{}
 	case Ext:
 		return t
 	case BytesExt:
@@ -2679,21 +2634,11 @@ func isNumberChar(v byte) bool {
 	// return v > 42 && v < 102 && numCharWithExpBitset64.isset(v-42)
 }
 
-// func isDigitChar(v byte) bool {
-// 	// these are in order of speed below ...
-// 	return digitCharBitset.isset(v)
-// 	// return v >= '0' && v <= '9'
-// }
-
 // -----------------------
 
 type ioFlusher interface {
 	Flush() error
 }
-
-// type ioPeeker interface {
-// 	Peek(int) ([]byte, error)
-// }
 
 type ioBuffered interface {
 	Buffered() int
@@ -2738,16 +2683,6 @@ func (x *bitset32) isset(pos byte) bool {
 	return x[pos&31] // x[pos%32]
 }
 
-// type bitset64 [64]bool
-
-// func (x *bitset64) set(pos byte) *bitset64 {
-// 	x[pos%64] = true
-// 	return x
-// }
-// func (x *bitset64) isset(pos byte) bool {
-// 	return x[pos%64]
-// }
-
 type bitset256 [256]bool
 
 func (x *bitset256) set(pos byte) *bitset256 {
@@ -2757,41 +2692,6 @@ func (x *bitset256) set(pos byte) *bitset256 {
 func (x *bitset256) isset(pos byte) bool {
 	return x[pos]
 }
-
-// ----
-// type bitset32 uint32
-
-// func (x *bitset32) set(pos byte) *bitset32 {
-// 	*x = *x | (1 << pos)
-// 	return x
-// }
-// func (x bitset32) isset(pos byte) bool {
-// 	return uint32(x)&(1<<pos) != 0
-// }
-
-// type bitset64 uint64
-
-// func (x *bitset64) set(pos byte) *bitset64 {
-// 	*x = *x | (1 << pos)
-// 	return x
-// }
-// func (x bitset64) isset(pos byte) bool {
-// 	return uint64(x)&(1<<pos) != 0
-// }
-
-// type bitset256 [32]byte
-
-// func (x *bitset256) set(pos byte) *bitset256 {
-// 	x[pos>>3] |= (1 << (pos & 7))
-// 	return x
-// }
-// func (x *bitset256) check(pos byte) uint8 {
-// 	return x[pos>>3] & (1 << (pos & 7))
-// }
-// func (x *bitset256) isset(pos byte) bool {
-// 	return x.check(pos) != 0
-// 	// return x[pos>>3]&(1<<(pos&7)) != 0
-// }
 
 // ------------
 
@@ -3077,150 +2977,3 @@ func (x internerMap) string(v []byte) (s string) {
 	}
 	return
 }
-
-/*
-type internerHash struct {
-	v *[internCap]string
-}
-
-func (x *internerHash) init() {
-	var v [internCap]string
-	x.v = &v
-}
-
-func (x *internerHash) string(v []byte) (s string) {
-	h := hashShortString(v) % internCap
-	s = x.v[h]
-	if s != string(v) {
-		s = string(v)
-		x.v[h] = s
-	}
-	return
-}
-
-type internerLinearSearch struct {
-	v *[internCap]string
-}
-
-func (x *internerLinearSearch) init() {
-	var v [internCap]string
-	x.v = &v
-}
-
-func (x *internerLinearSearch) string(v []byte) (s string) {
-	// MARKER: should we move to front, given that we typically might see the field names in sequence?
-	// if most values are encoded in sequence based on field names, then moving is busy work.
-	// Howeer, if most values are accessed randomly, then moving has advantages.
-	const moveToFront = true
-	var i int
-	for i, s = range x.v {
-		if s == "" {
-			s = string(v)
-			x.v[i] = s
-			goto END
-		}
-		if s == string(v) {
-			goto END
-		}
-	}
-	s = string(v)
-END:
-	if moveToFront && i > 0 {
-		copy(x.v[1:], x.v[:i])
-		x.v[0] = s
-	}
-	return s
-}
-*/
-
-/*
-
-// binary search for string is expensive, as it has to compare strings byte by byte.
-// Even when we include len, and hashCode, during sorting, and then do a binary search,
-// as done below, we saw via testing anecdotally
-// that map (hash) lookup is faster, as it can leverage string length in disambiguation.
-//
-// When evaluating current siForEncName using a map, vs siForEncNameB below,
-// decode speed was about 3% faster using maps.
-//
-// This might be because of better inlining using map syntax, or otherwise.
-// Either way, siForEncNameB is not inlined, and runtime.memhash is not inlined either,
-// so there may be some overhead using siForEnaNameB below.
-// Either way, we will comment all out the code for binarysearch method, but leave in-place
-// in case things change later.
-
-func (ti *typeInfo) siForEncNameB(name []byte) (si *structFieldInfo) {
-	s := ti.sfiSrch
-	// - cutoff = keyLen < 16 ? 8 : 4
-	// - arraylen < cutoff ? linearSearch : binarySearch
-	cutoff := 4
-	if len(name) <= 16 {
-		cutoff = 8
-	}
-	if len(s) < cutoff {
-		// do linear search
-		for _, si = range s {
-			if si.encName == string(name) {
-				return
-			}
-		}
-		return nil
-	}
-
-	var i, h uint
-	var j = uint(len(s))
-	hash := hashShortString(name)
-LOOP:
-	if i < j {
-		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
-		if s[h].searchLessThan2(name, hash) {
-			i = h + 1
-		} else {
-			j = h
-		}
-		goto LOOP
-	}
-	if i < uint(len(s)) && s[i].encName == string(name) {
-		si = s[i]
-	}
-	return
-}
-
-func (si *structFieldInfo) searchLessThan(name string, hash uintptr) bool {
-	// MARKER: consider comment'ing out len checks, so there's at most 2 checks
-	if len(si.encName) != len(name) {
-		return len(si.encName) < len(name)
-	}
-	if si.encNameHash != hash {
-		return si.encNameHash < hash
-	}
-	return si.encName < name
-}
-
-func (si *structFieldInfo) searchLessThan2(name []byte, hash uintptr) bool {
-	// MARKER: consider comment'ing out len checks, so there's at most 2 checks
-	if len(si.encName) != len(name) {
-		return len(si.encName) < len(name)
-	}
-	if si.encNameHash != hash {
-		return si.encNameHash < hash
-	}
-	return si.encName < string(name)
-}
-
-type sfiSortedForBinarySearch []*structFieldInfo
-
-func (p sfiSortedForBinarySearch) Len() int      { return len(p) }
-func (p sfiSortedForBinarySearch) Swap(i, j int) { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
-func (p sfiSortedForBinarySearch) Less(i, j int) bool {
-	return p[uint(i)].searchLessThan(p[uint(j)].encName, p[uint(j)].encNameHash)
-}
-
-func maxUintptr() uintptr {
-	if cpu32Bit {
-		return uintptr(math.MaxUint32)
-	}
-	return uintptr(math.MaxUint64)
-}
-
-*/
