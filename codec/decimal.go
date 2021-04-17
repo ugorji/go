@@ -4,6 +4,7 @@
 package codec
 
 import (
+	"math"
 	"strconv"
 )
 
@@ -129,7 +130,18 @@ var fi32 = floatinfo{23, true, 10, 7, false, 1<<23 - 1}
 var fi64 = floatinfo{52, false, 22, 15, false, 1<<52 - 1}
 
 var fi64u = floatinfo{0, false, 19, 0, true, fUint64Cutoff}
-var fi64i = floatinfo{0, false, 19, 0, true, fUint64Cutoff}
+
+func noFrac64(fbits uint64) bool {
+	exp := uint64(fbits>>52)&0x7FF - 1023 // uint(x>>shift)&mask - bias
+	// clear top 12+e bits, the integer part; if the rest is 0, then no fraction.
+	return exp < 52 && fbits<<(12+exp) == 0 // means there's no fractional part
+}
+
+func noFrac32(fbits uint32) bool {
+	exp := uint32(fbits>>23)&0xFF - 127 // uint(x>>shift)&mask - bias
+	// clear top 9+e bits, the integer part; if the rest is 0, then no fraction.
+	return exp < 23 && fbits<<(9+exp) == 0 // means there's no fractional part
+}
 
 func strconvParseErr(b []byte, fn string) error {
 	return &strconv.NumError{
@@ -256,23 +268,40 @@ func parseUint64_reader(r readFloatResult) (f uint64, fail bool) {
 	return
 }
 
-func parseInt64_reader(r readFloatResult) (v int64, fail bool) {
-	if r.exp == 0 {
-	} else if r.exp < 0 { // int / 10^k
-		if r.mantissa%uint64pow10[uint8(-r.exp)] != 0 {
-			// fail = true
-			return 0, true
-		}
-		r.mantissa /= uint64pow10[uint8(-r.exp)]
-	} else { // exp > 0
-		r.mantissa *= uint64pow10[uint8(r.exp)]
+func parseInteger_bytes(b []byte) (u uint64, neg, ok bool) {
+	if len(b) == 0 {
+		ok = true
+		return
 	}
-	if chkOvf.Uint2Int(r.mantissa, r.neg) {
-		fail = true
-	} else if r.neg {
-		v = -int64(r.mantissa)
-	} else {
-		v = int64(r.mantissa)
+	if b[0] == '-' {
+		if len(b) == 1 {
+			return
+		}
+		neg = true
+		b = b[1:]
+	}
+
+	u, ok = parseUint64_simple(b)
+	if ok {
+		return
+	}
+
+	r := readFloat(b, fi64u)
+	if r.ok {
+		var fail bool
+		u, fail = parseUint64_reader(r)
+		if fail {
+			f, err := parseFloat64(b)
+			if err != nil {
+				return
+			}
+			if !noFrac64(math.Float64bits(f)) {
+				return
+			}
+			u = uint64(f)
+		}
+		ok = true
+		return
 	}
 	return
 }
@@ -320,11 +349,16 @@ func parseNumber(b []byte, z *fauxUnion, preferSignedInt bool) (err error) {
 }
 
 type readFloatResult struct {
-	mantissa                        uint64
-	exp                             int8
-	neg, sawdot, sawexp, trunc, bad bool
-	ok                              bool
-	_                               byte // padding
+	mantissa uint64
+	exp      int8
+	neg      bool
+	trunc    bool
+	bad      bool // bad decimal string
+	hardexp  bool // exponent is hard to handle (> 2 digits, etc)
+	ok       bool
+	// sawdot   bool
+	// sawexp   bool
+	_ [2]bool // padding
 }
 
 func readFloat(s []byte, y floatinfo) (r readFloatResult) {
@@ -346,20 +380,21 @@ func readFloat(s []byte, y floatinfo) (r readFloatResult) {
 	// for trailing 0's e.g. 700000000000000000000 can be encoded exactly as it is 7e20
 
 	var nd, ndMant, dp int8
+	var sawdot, sawexp bool
 	var xu uint64
 
 LOOP:
 	for ; i < slen; i++ {
 		switch s[i] {
 		case '.':
-			if r.sawdot {
+			if sawdot {
 				r.bad = true
 				return
 			}
-			r.sawdot = true
+			sawdot = true
 			dp = nd
 		case 'e', 'E':
-			r.sawexp = true
+			sawexp = true
 			break LOOP
 		case '0':
 			if nd == 0 {
@@ -395,11 +430,11 @@ LOOP:
 		}
 	}
 
-	if !r.sawdot {
+	if !sawdot {
 		dp = nd
 	}
 
-	if r.sawexp {
+	if sawexp {
 		i++
 		if i < slen {
 			var eneg bool
@@ -413,6 +448,7 @@ LOOP:
 				// for exact match, exponent is 1 or 2 digits (float64: -22 to 37, float32: -1 to 17).
 				// exit quick if exponent is more than 2 digits.
 				if i+2 < slen {
+					r.hardexp = true
 					return
 				}
 				var e int8
@@ -445,6 +481,7 @@ LOOP:
 		if r.exp < -y.exactPow10 ||
 			r.exp > y.exactInts+y.exactPow10 ||
 			(y.mantbits != 0 && r.mantissa>>y.mantbits != 0) {
+			r.hardexp = true
 			return
 		}
 	}

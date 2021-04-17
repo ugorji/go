@@ -239,11 +239,16 @@ type simpleDecDriver struct {
 	_ bool
 	noBuiltInTypes
 	decDriverNoopContainerReader
+	decDriverNoopNumberHelper
 	d Decoder
 }
 
 func (d *simpleDecDriver) decoder() *Decoder {
 	return &d.d
+}
+
+func (d *simpleDecDriver) descBd() string {
+	return sprintf("%v (%s)", d.bd, simpledesc(d.bd))
 }
 
 func (d *simpleDecDriver) readNextBd() {
@@ -290,7 +295,21 @@ func (d *simpleDecDriver) TryNil() bool {
 	return d.advanceNil()
 }
 
-func (d *simpleDecDriver) decCheckInteger() (ui uint64, neg bool) {
+func (d *simpleDecDriver) decFloat() (f float64, ok bool) {
+	ok = true
+	switch d.bd {
+	case simpleVdFloat32:
+		f = float64(math.Float32frombits(bigen.Uint32(d.d.decRd.readn4())))
+	case simpleVdFloat64:
+		f = math.Float64frombits(bigen.Uint64(d.d.decRd.readn8()))
+	default:
+		ok = false
+	}
+	return
+}
+
+func (d *simpleDecDriver) decInteger() (ui uint64, neg, ok bool) {
+	ok = true
 	switch d.bd {
 	case simpleVdPosInt:
 		ui = uint64(d.d.decRd.readn1())
@@ -313,7 +332,8 @@ func (d *simpleDecDriver) decCheckInteger() (ui uint64, neg bool) {
 		ui = uint64(bigen.Uint64(d.d.decRd.readn8()))
 		neg = true
 	default:
-		d.d.errorf("integer only valid from pos/neg integer1..8. Invalid descriptor: %v", d.bd)
+		ok = false
+		// d.d.errorf("integer only valid from pos/neg integer1..8. Invalid descriptor: %v", d.bd)
 	}
 	// DO NOT do this check below, because callers may only want the unsigned value:
 	//
@@ -328,11 +348,7 @@ func (d *simpleDecDriver) DecodeInt64() (i int64) {
 	if d.advanceNil() {
 		return
 	}
-	ui, neg := d.decCheckInteger()
-	i = chkOvf.SignedIntV(ui)
-	if neg {
-		i = -i
-	}
+	i = decNegintPosintFloatNumberHelper{&d.d}.int64(d.decInteger())
 	d.bdRead = false
 	return
 }
@@ -341,10 +357,7 @@ func (d *simpleDecDriver) DecodeUint64() (ui uint64) {
 	if d.advanceNil() {
 		return
 	}
-	ui, neg := d.decCheckInteger()
-	if neg {
-		d.d.errorf("assigning negative signed value to unsigned type")
-	}
+	ui = decNegintPosintFloatNumberHelper{&d.d}.uint64(d.decInteger())
 	d.bdRead = false
 	return
 }
@@ -353,17 +366,7 @@ func (d *simpleDecDriver) DecodeFloat64() (f float64) {
 	if d.advanceNil() {
 		return
 	}
-	if d.bd == simpleVdFloat32 {
-		f = float64(math.Float32frombits(bigen.Uint32(d.d.decRd.readn4())))
-	} else if d.bd == simpleVdFloat64 {
-		f = math.Float64frombits(bigen.Uint64(d.d.decRd.readn8()))
-	} else {
-		if d.bd >= simpleVdPosInt && d.bd <= simpleVdNegInt+3 {
-			f = float64(d.DecodeInt64())
-		} else {
-			d.d.errorf("float only valid from float32/64: Invalid descriptor: %v", d.bd)
-		}
-	}
+	f = decNegintPosintFloatNumberHelper{&d.d}.float64(d.decFloat())
 	d.bdRead = false
 	return
 }

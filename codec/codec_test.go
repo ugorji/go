@@ -4352,6 +4352,18 @@ func doTestJsonInvalidUnicode(t *testing.T, h Handle) {
 
 func doTestJsonNumberParsing(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
+	parseInt64_reader := func(r readFloatResult) (v int64, fail bool) {
+		u, fail := parseUint64_reader(r)
+		if fail {
+			return
+		}
+		if r.neg {
+			v = -int64(u)
+		} else {
+			v = int64(u)
+		}
+		return
+	}
 	for _, f64 := range testFloatsToParse {
 		// using large prec might make a non-exact float ..., while small prec might make lose some precision.
 		// However, we can do a check, and only check if the (u)int64 and float64 can be converted to one another
@@ -4394,7 +4406,7 @@ func doTestJsonNumberParsing(t *testing.T, h Handle) {
 			if fint != float64(int64(fint)) {
 				goto F32
 			}
-			r = readFloat(bv, fi64i)
+			r = readFloat(bv, fi64u)
 			fail = !r.ok
 			if r.ok {
 				fsi, fail = parseInt64_reader(r)
@@ -4432,7 +4444,7 @@ func doTestJsonNumberParsing(t *testing.T, h Handle) {
 		}
 		vi := int64(v)
 		bv = strconv.AppendFloat(nil, float64(vi), 'E', prec, 64)
-		r = readFloat(bv, fi64i)
+		r = readFloat(bv, fi64u)
 		if r.ok {
 			if fs, fail := parseInt64_reader(r); fail || fs != vi {
 				t.Logf("int64 -> int64 error (prec: %v, fail: %v) parsing '%s', got %v, expected %v", prec, fail, bv, fs, vi)

@@ -2439,6 +2439,10 @@ func isSliceBoundsError(s string) bool {
 		strings.Contains(s, "slice bounds out of range")
 }
 
+func sprintf(format string, v ...interface{}) string {
+	return fmt.Sprintf(format, v...)
+}
+
 func panicValToErr(h errDecorator, v interface{}, err *error) {
 	if v == *err {
 		return

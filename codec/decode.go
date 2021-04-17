@@ -7,6 +7,7 @@ import (
 	"encoding"
 	"errors"
 	"io"
+	"math"
 	"reflect"
 	"strconv"
 	"time"
@@ -172,9 +173,13 @@ type decDriver interface {
 	// should handle it appropriately.
 	nextValueBytes(start []byte) []byte
 
+	// descBd will describe the token descriptor that signifies what type was decoded
+	descBd() string
+
 	decoder() *Decoder
 
 	driverStateManager
+	decNegintPosintFloatNumber
 }
 
 type decDriverContainerTracker interface {
@@ -183,11 +188,23 @@ type decDriverContainerTracker interface {
 	ReadMapElemValue()
 }
 
+type decNegintPosintFloatNumber interface {
+	decInteger() (ui uint64, neg, ok bool)
+	decFloat() (f float64, ok bool)
+}
+
+type decDriverNoopNumberHelper struct{}
+
+func (x decDriverNoopNumberHelper) decInteger() (ui uint64, neg, ok bool) {
+	panic("decInteger unsupported")
+}
+func (x decDriverNoopNumberHelper) decFloat() (f float64, ok bool) { panic("decFloat unsupported") }
+
 type decDriverNoopContainerReader struct{}
 
-func (x decDriverNoopContainerReader) ReadArrayStart() (v int) { return }
+func (x decDriverNoopContainerReader) ReadArrayStart() (v int) { panic("ReadArrayStart unsupported") }
 func (x decDriverNoopContainerReader) ReadArrayEnd()           {}
-func (x decDriverNoopContainerReader) ReadMapStart() (v int)   { return }
+func (x decDriverNoopContainerReader) ReadMapStart() (v int)   { panic("ReadMapStart unsupported") }
 func (x decDriverNoopContainerReader) ReadMapEnd()             {}
 func (x decDriverNoopContainerReader) CheckBreak() (v bool)    { return }
 
@@ -2165,6 +2182,77 @@ func (x decNextValueBytesHelper) bytesRdV(v *[]byte, startpos uint) {
 	if x.d.bytes {
 		*v = x.d.rb.b[startpos:x.d.rb.c]
 	}
+}
+
+// decNegintPosintFloatNumberHelper is used for formats that are binary
+// and have distinct ways of storing positive integers vs negative integers
+// vs floats, which are uniquely identified by the byte descriptor.
+//
+// Currently, these formats are binc, cbor and simple.
+type decNegintPosintFloatNumberHelper struct {
+	d *Decoder
+}
+
+func (x decNegintPosintFloatNumberHelper) uint64(ui uint64, neg, ok bool) uint64 {
+	if ok && !neg {
+		return ui
+	}
+	return x.uint64TryFloat(ok)
+}
+
+func (x decNegintPosintFloatNumberHelper) uint64TryFloat(ok bool) (ui uint64) {
+	if ok { // neg = true
+		x.d.errorf("assigning negative signed value to unsigned type")
+	}
+	f, ok := x.d.d.decFloat()
+	if ok && f >= 0 && noFrac64(math.Float64bits(f)) {
+		ui = uint64(f)
+	} else {
+		x.d.errorf("invalid number loading uint64, with descriptor: %v", x.d.d.descBd())
+	}
+	return ui
+}
+
+func (x decNegintPosintFloatNumberHelper) int64v(ui uint64, neg bool) (i int64) {
+	if neg && x.d.cbor {
+		ui++
+	}
+	i = chkOvf.SignedIntV(ui)
+	if neg {
+		i = -i
+	}
+	return
+}
+
+func (x decNegintPosintFloatNumberHelper) int64(ui uint64, neg, ok bool) (i int64) {
+	if ok {
+		return x.int64v(ui, neg)
+	}
+	// 	return x.int64TryFloat()
+	// }
+	// func (x decNegintPosintFloatNumberHelper) int64TryFloat() (i int64) {
+	f, ok := x.d.d.decFloat()
+	if ok && noFrac64(math.Float64bits(f)) {
+		i = int64(f)
+	} else {
+		x.d.errorf("invalid number loading uint64, with descriptor: %v", x.d.d.descBd())
+	}
+	return
+}
+
+func (x decNegintPosintFloatNumberHelper) float64(f float64, ok bool) float64 {
+	if ok {
+		return f
+	}
+	return x.float64TryInteger()
+}
+
+func (x decNegintPosintFloatNumberHelper) float64TryInteger() float64 {
+	ui, neg, ok := x.d.d.decInteger()
+	if !ok {
+		x.d.errorf("invalid descriptor for float: %v", x.d.d.descBd())
+	}
+	return float64(x.int64v(ui, neg))
 }
 
 // isDecodeable checks if value can be decoded into

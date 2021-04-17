@@ -611,6 +611,7 @@ func (x *jsonDecState) restoreState(v interface{}) { *x = v.(jsonDecState) }
 
 type jsonDecDriver struct {
 	noBuiltInTypes
+	decDriverNoopNumberHelper
 	h *JsonHandle
 
 	jsonDecState
@@ -621,6 +622,8 @@ type jsonDecDriver struct {
 
 	d Decoder
 }
+
+func (d *jsonDecDriver) descBd() (s string) { panic("descBd unsupported") }
 
 func (d *jsonDecDriver) decoder() *Decoder {
 	return &d.d
@@ -905,68 +908,31 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 }
 
 func (d *jsonDecDriver) DecodeUint64() (u uint64) {
-	bs := d.decNumBytes()
-	if len(bs) == 0 {
-		return
-	}
-	if bs[0] == '-' {
+	b := d.decNumBytes()
+	u, neg, ok := parseInteger_bytes(b)
+	if neg {
 		d.d.errorf("negative number cannot be decoded as uint64")
 	}
-	var r readFloatResult
-	u, r.ok = parseUint64_simple(bs)
-	if r.ok {
-		return
+	if !ok {
+		d.d.onerror(strconvParseErr(b, "ParseUint"))
 	}
-
-	r = readFloat(bs, fi64u)
-	if r.ok {
-		u, r.bad = parseUint64_reader(r)
-		if r.bad {
-			d.d.onerror(strconvParseErr(bs, "ParseUint"))
-		}
-		return
-	}
-	d.d.onerror(strconvParseErr(bs, "ParseUint"))
 	return
 }
 
 func (d *jsonDecDriver) DecodeInt64() (v int64) {
 	b := d.decNumBytes()
-	if len(b) == 0 {
-		return
+	u, neg, ok := parseInteger_bytes(b)
+	if !ok {
+		d.d.onerror(strconvParseErr(b, "ParseInt"))
 	}
-
-	var r readFloatResult
-	var neg bool
-
-	if b[0] == '-' {
-		neg = true
-		b = b[1:]
+	if chkOvf.Uint2Int(u, neg) {
+		d.d.errorf("overflow decoding number from %s", b)
 	}
-
-	r.mantissa, r.ok = parseUint64_simple(b)
-	if r.ok {
-		if chkOvf.Uint2Int(r.mantissa, neg) {
-			d.d.errorf("overflow decoding number from %s", b)
-		}
-		if neg {
-			v = -int64(r.mantissa)
-		} else {
-			v = int64(r.mantissa)
-		}
-		return
+	if neg {
+		v = -int64(u)
+	} else {
+		v = int64(u)
 	}
-
-	r = readFloat(b, fi64i)
-	if r.ok {
-		r.neg = neg
-		v, r.bad = parseInt64_reader(r)
-		if r.bad {
-			d.d.onerror(strconvParseErr(b, "ParseInt"))
-		}
-		return
-	}
-	d.d.onerror(strconvParseErr(b, "ParseInt"))
 	return
 }
 
@@ -1452,12 +1418,8 @@ func jsonFloatStrconvFmtPrec64(f float64) (fmt byte, prec int8) {
 		prec = 1
 	} else if abs < 1e-6 || abs >= 1e21 {
 		fmt = 'e'
-	} else {
-		exp := uint64(fbits>>52)&0x7FF - 1023 // uint(x>>shift)&mask - bias
-		// clear top 12+e bits, the integer part; if the rest is 0, then no fraction.
-		if exp < 52 && fbits<<(12+exp) == 0 { // means there's no fractional part
-			prec = 1
-		}
+	} else if noFrac64(fbits) {
+		prec = 1
 	}
 	return
 }
@@ -1472,12 +1434,8 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 		prec = 1
 	} else if abs < 1e-6 || abs >= 1e21 {
 		fmt = 'e'
-	} else {
-		exp := uint32(fbits>>23)&0xFF - 127 // uint(x>>shift)&mask - bias
-		// clear top 9+e bits, the integer part; if the rest is 0, then no fraction.
-		if exp < 23 && fbits<<(9+exp) == 0 { // means there's no fractional part
-			prec = 1
-		}
+	} else if noFrac32(fbits) {
+		prec = 1
 	}
 	return
 }

@@ -406,6 +406,7 @@ func (e *msgpackEncDriver) writeContainerLen(ct msgpackContainerType, l int) {
 
 type msgpackDecDriver struct {
 	decDriverNoopContainerReader
+	decDriverNoopNumberHelper
 	h *MsgpackHandle
 	bdAndBdread
 	_ bool
@@ -667,6 +668,24 @@ func (d *msgpackDecDriver) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	return
 }
 
+func (d *msgpackDecDriver) decFloat4Int32() (f float32) {
+	fbits := bigen.Uint32(d.d.decRd.readn4())
+	f = math.Float32frombits(fbits)
+	if !noFrac32(fbits) {
+		d.d.errorf("assigning integer value from float32 with a fraction: %v", f)
+	}
+	return
+}
+
+func (d *msgpackDecDriver) decFloat4Int64() (f float64) {
+	fbits := bigen.Uint64(d.d.decRd.readn8())
+	f = math.Float64frombits(fbits)
+	if !noFrac64(fbits) {
+		d.d.errorf("assigning integer value from float64 with a fraction: %v", f)
+	}
+	return
+}
+
 // int can be decoded from msgpack type: intXXX or uintXXX
 func (d *msgpackDecDriver) DecodeInt64() (i int64) {
 	if d.advanceNil() {
@@ -689,6 +708,10 @@ func (d *msgpackDecDriver) DecodeInt64() (i int64) {
 		i = int64(int32(bigen.Uint32(d.d.decRd.readn4())))
 	case mpInt64:
 		i = int64(bigen.Uint64(d.d.decRd.readn8()))
+	case mpFloat:
+		i = int64(d.decFloat4Int32())
+	case mpDouble:
+		i = int64(d.decFloat4Int64())
 	default:
 		switch {
 		case d.bd >= mpPosFixNumMin && d.bd <= mpPosFixNumMax:
@@ -740,6 +763,18 @@ func (d *msgpackDecDriver) DecodeUint64() (ui uint64) {
 			ui = uint64(i)
 		} else {
 			d.d.errorf("assigning negative signed value: %v, to unsigned type", i)
+		}
+	case mpFloat:
+		if f := d.decFloat4Int32(); f >= 0 {
+			ui = uint64(f)
+		} else {
+			d.d.errorf("assigning negative float value: %v, to unsigned type", f)
+		}
+	case mpDouble:
+		if f := d.decFloat4Int64(); f >= 0 {
+			ui = uint64(f)
+		} else {
+			d.d.errorf("assigning negative float value: %v, to unsigned type", f)
 		}
 	default:
 		switch {
@@ -835,6 +870,10 @@ func (d *msgpackDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
 
 func (d *msgpackDecDriver) DecodeStringAsBytes() (s []byte) {
 	return d.DecodeBytes(nil)
+}
+
+func (d *msgpackDecDriver) descBd() string {
+	return sprintf("%v (%s)", d.bd, mpdesc(d.bd))
 }
 
 func (d *msgpackDecDriver) readNextBd() {
