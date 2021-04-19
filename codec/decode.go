@@ -2213,8 +2213,8 @@ func (x decNegintPosintFloatNumberHelper) uint64TryFloat(ok bool) (ui uint64) {
 	return ui
 }
 
-func (x decNegintPosintFloatNumberHelper) int64v(ui uint64, neg bool) (i int64) {
-	if neg && x.d.cbor {
+func decNegintPosintFloatNumberHelperInt64v(ui uint64, neg, incrIfNeg bool) (i int64) {
+	if neg && incrIfNeg {
 		ui++
 	}
 	i = chkOvf.SignedIntV(ui)
@@ -2226,7 +2226,7 @@ func (x decNegintPosintFloatNumberHelper) int64v(ui uint64, neg bool) (i int64) 
 
 func (x decNegintPosintFloatNumberHelper) int64(ui uint64, neg, ok bool) (i int64) {
 	if ok {
-		return x.int64v(ui, neg)
+		return decNegintPosintFloatNumberHelperInt64v(ui, neg, x.d.cbor)
 	}
 	// 	return x.int64TryFloat()
 	// }
@@ -2252,7 +2252,7 @@ func (x decNegintPosintFloatNumberHelper) float64TryInteger() float64 {
 	if !ok {
 		x.d.errorf("invalid descriptor for float: %v", x.d.d.descBd())
 	}
-	return float64(x.int64v(ui, neg))
+	return float64(decNegintPosintFloatNumberHelperInt64v(ui, neg, x.d.cbor))
 }
 
 // isDecodeable checks if value can be decoded into
