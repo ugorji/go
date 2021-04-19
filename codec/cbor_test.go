@@ -377,6 +377,9 @@ func TestCborSkipTags(t *testing.T) {
 }
 
 func TestCborMalformed(t *testing.T) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
 	var h Handle = testCborH
 	defer testSetup(t, &h)()
 	var bad = [][]byte{

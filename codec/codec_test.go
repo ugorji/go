@@ -51,6 +51,10 @@ func init() {
 
 const testRecoverPanicToErr = !debugging
 
+// tests which check for errors will fail if testRecoverPanicToErr=false (debugging=true).
+// Consequently, skip them.
+var testSkipIfNotRecoverPanicToErrMsg = "tests checks for errors, and testRecoverPanicToErr=false"
+
 func testPanicToErr(h errDecorator, err *error) {
 	// Note: This method MUST be called directly from defer i.e. defer testPanicToErr ...
 	// else it seems the recover is not fully handled
@@ -157,6 +161,8 @@ var (
 
 	// set this when running using bufio, etc
 	testSkipRPCTests = false
+
+	testSkipRPCTestsMsg = "testSkipRPCTests=true"
 )
 
 var (
@@ -1473,7 +1479,10 @@ func doTestCodecChan(t *testing.T, h Handle) {
 func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration) (port int) {
 	defer testSetup(t, &h)()
 	if testSkipRPCTests {
-		return
+		t.Skip(testSkipRPCTestsMsg)
+	}
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
 	}
 
 	if mh, ok := h.(*MsgpackHandle); ok && mh.SliceElementReset {
@@ -1711,6 +1720,9 @@ func doTestStdEncIntf(t *testing.T, h Handle) {
 }
 
 func doTestEncCircularRef(t *testing.T, h Handle) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
 	defer testSetup(t, &h)()
 	type T1 struct {
 		S string
@@ -1786,6 +1798,9 @@ func doTestAnonCycle(t *testing.T, h Handle) {
 }
 
 func doTestAllErrWriter(t *testing.T, hh ...Handle) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
 	defer testSetup(t, nil)()
 	for _, h := range hh {
 		if testUseParallel {
@@ -2059,7 +2074,7 @@ func doTestPythonGenStreams(t *testing.T, h Handle) {
 
 func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T, h Handle) {
 	if testSkipRPCTests {
-		return
+		t.Skip(testSkipRPCTestsMsg)
 	}
 	defer testSetup(t, &h)()
 
@@ -2091,7 +2106,7 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T, h Handle) {
 
 func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T, h Handle) {
 	if testSkipRPCTests {
-		return
+		t.Skip(testSkipRPCTestsMsg)
 	}
 	defer testSetup(t, &h)()
 	// seems 10ms is not enough for test run; set high to 1 second, and client will close when done
@@ -2678,6 +2693,9 @@ func doTestUintToInt(t *testing.T, h Handle) {
 }
 
 func doTestDifferentMapOrSliceType(t *testing.T, h Handle) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
 	defer testSetup(t, &h)()
 
 	if mh, ok := h.(*MsgpackHandle); ok {
@@ -3116,6 +3134,9 @@ func doTestMissingFields(t *testing.T, h Handle) {
 }
 
 func doTestMaxDepth(t *testing.T, h Handle) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
 	defer testSetup(t, &h)()
 	name := h.Name()
 	type T struct {
@@ -4040,6 +4061,9 @@ func __doTestFloats(t *testing.T, h Handle) {
 }
 
 func doTestStructFieldInfoToArray(t *testing.T, h Handle) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
 	defer testSetup(t, &h)()
 	bh := testBasicHandle(h)
 
@@ -4165,6 +4189,9 @@ func TestAtomic(t *testing.T) {
 // -----------
 
 func doTestJsonLargeInteger(t *testing.T, h Handle) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
 	defer testSetup(t, &h)()
 	jh := h.(*JsonHandle)
 	for _, i := range []uint8{'L', 'A', 0} {
@@ -4260,6 +4287,9 @@ func doTestJsonLargeInteger(t *testing.T, h Handle) {
 }
 
 func doTestJsonInvalidUnicode(t *testing.T, h Handle) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
 	defer testSetup(t, &h)()
 	// t.Skipf("new json implementation does not handle bad unicode robustly")
 	jh := h.(*JsonHandle)
@@ -4478,6 +4508,9 @@ func doTestJsonNumberParsing(t *testing.T, h Handle) {
 }
 
 func doTestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T, h Handle) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
 	defer testSetup(t, &h)()
 	fn := func(t *testing.T, b []byte, v interface{}) {
 		if err := NewDecoderBytes(b, h).Decode(v); err != io.EOF && err != io.ErrUnexpectedEOF {
