@@ -3920,6 +3920,7 @@ func doTestNumbers(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
 	__doTestIntegers(t, h)
 	__doTestFloats(t, h)
+	__doTestIntegerFloatConversions(t, h)
 }
 
 func __doTestIntegers(t *testing.T, h Handle) {
@@ -4056,6 +4057,47 @@ func __doTestFloats(t *testing.T, h Handle) {
 				t.FailNow()
 			}
 			testReleaseBytes(b)
+		}
+	}
+}
+
+func __doTestIntegerFloatConversions(t *testing.T, h Handle) {
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
+	type tI struct{ N int }
+	type tU struct{ N uint }
+	type tF struct{ N float64 }
+
+	type elem struct {
+		in  interface{}
+		out interface{}
+		err string
+	}
+	tests := []elem{
+		// good
+		{tI{5}, tF{5.0}, ""},
+		{tU{5}, tF{5.0}, ""},
+		{tF{5.0}, tU{5}, ""},
+		{tF{5.0}, tI{5}, ""},
+		{tF{-5.0}, tI{-5}, ""},
+		// test negative number into unsigned integer
+		{tI{-5}, tU{5}, "error"},
+		{tF{-5.0}, tU{5}, "error"},
+		// test fractional float into integer
+		{tF{-5.7}, tU{5}, "error"},
+		{tF{-5.7}, tI{5}, "error"},
+	}
+	for _, v := range tests {
+		r := reflect.New(reflect.TypeOf(v.out))
+		b := testMarshalErr(v.in, h, t, "")
+		err := testUnmarshal(r.Interface(), b, h)
+		if v.err == "" {
+			testDeepEqualErr(err, nil, t, "")
+			testDeepEqualErr(r.Elem().Interface(), v.out, t, "")
+		} else if err == nil {
+			t.Logf("expecting an error but didn't receive any, with in: %v, out: %v, expecting err matching: %v", v.in, v.out, v.err)
+			t.FailNow()
 		}
 	}
 }
