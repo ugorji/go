@@ -1,5 +1,5 @@
-//go:build !notfastpath && !codec.notfastpath && !codec.notmammoth
-// +build !notfastpath,!codec.notfastpath,!codec.notmammoth
+//go:build !codec.notmammoth
+// +build !codec.notmammoth
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -10,15 +10,16 @@ package codec
 
 // Increase codecoverage by covering all the codecgen paths, in fast-path and gen-helper.go....
 //
-// Add:
-// - test file for creating a mammoth generated file as _mammoth_generated.go
-//   - generate a second mammoth files in a different file: mammoth2_generated_test.go
-//     - mammoth-test.go.tmpl will do this
-//   - run codecgen on it, into mammoth2_codecgen_generated_test.go (no build tags)
-//   - as part of TestMammoth, run it also
-//   - this will cover all the codecgen, gen-helper, etc in one full run
-//   - check in mammoth* files into github also
-// - then
+// Note: even though this is built based on fast-path and gen-helper, we will run these tests
+// in all modes, including notfastpath, etc.
+//
+// Add test file for creating a mammoth generated file as _mammoth_generated.go
+//  - generate a second mammoth files in a different file: mammoth2_generated_test.go
+//    mammoth-test.go.tmpl will do this
+//  - run codecgen on it, into mammoth2_codecgen_generated_test.go (no build tags)
+//  - as part of TestMammoth, run it also
+//  - this will cover all the codecgen, gen-helper, etc in one full run
+//  - check in mammoth* files into github also
 //
 // Now, add some types:
 //  - some that implement BinaryMarshal, TextMarshal, JSONMarshal, and one that implements none of it
@@ -26,6 +27,7 @@ package codec
 //  - this wrapper object is what we work encode/decode (so that the codecgen methods are called)
 
 // import "encoding/binary"
+
 import "fmt"
 
 type TestMammoth2 struct {
