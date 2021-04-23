@@ -113,8 +113,8 @@ type floatinfo struct {
 
 	// expbits uint8 // (unused)
 	// bias    int16 // (unused)
+	// is32bit bool // (unused)
 
-	is32bit    bool
 	exactPow10 int8 // Exact powers of ten are <= 10^N (32: 10, 64: 22)
 
 	exactInts int8 // Exact integers are <= 10^N (for non-float, set to 0)
@@ -126,10 +126,10 @@ type floatinfo struct {
 	mantCutoff uint64
 }
 
-var fi32 = floatinfo{23, true, 10, 7, false, 1<<23 - 1}
-var fi64 = floatinfo{52, false, 22, 15, false, 1<<52 - 1}
+var fi32 = floatinfo{23, 10, 7, false, 1<<23 - 1}
+var fi64 = floatinfo{52, 22, 15, false, 1<<52 - 1}
 
-var fi64u = floatinfo{0, false, 19, 0, true, fUint64Cutoff}
+var fi64u = floatinfo{0, 19, 0, true, fUint64Cutoff}
 
 func noFrac64(fbits uint64) bool {
 	exp := uint64(fbits>>52)&0x7FF - 1023 // uint(x>>shift)&mask - bias
@@ -358,7 +358,7 @@ type readFloatResult struct {
 	ok       bool
 	// sawdot   bool
 	// sawexp   bool
-	_ [2]bool // padding
+	//_ [2]bool // padding
 }
 
 func readFloat(s []byte, y floatinfo) (r readFloatResult) {
