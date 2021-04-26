@@ -609,11 +609,12 @@ func (z *bytesDecReader) readb(bs []byte) {
 	copy(bs, z.readx(uint(len(bs))))
 }
 
-func (z *bytesDecReader) readn1() (v uint8) {
-	v = z.b[z.c]
-	z.c++
-	return
-}
+// MARKER: do not use this - as it calls into memmove (as the size of data to move is unknown)
+// func (z *bytesDecReader) readnn(bs []byte, n uint) {
+// 	x := z.c
+// 	copy(bs, z.b[x:x+n])
+// 	z.c += n
+// }
 
 // func (z *bytesDecReader) readn(num uint8) (bs [8]byte) {
 // 	x := z.c + uint(num)
@@ -622,31 +623,40 @@ func (z *bytesDecReader) readn1() (v uint8) {
 // 	return
 // }
 
+// func (z *bytesDecReader) readn1() uint8 {
+// 	z.c++
+// 	return z.b[z.c-1]
+// }
+
+func (z *bytesDecReader) readn1() (v uint8) {
+	v = z.b[z.c]
+	z.c++
+	return
+}
+
+const bytesDecReaderUseNN = true
+
 func (z *bytesDecReader) readn2() (bs [2]byte) {
-	x := z.c + 2
-	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
-	z.c = x
+	copy(bs[:], z.b[z.c:z.c+2]) // slice z.b completely, so we get bounds error if past
+	z.c += 2
 	return
 }
 
 func (z *bytesDecReader) readn3() (bs [4]byte) {
-	x := z.c + 3
-	copy(bs[1:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
-	z.c = x
+	copy(bs[1:], z.b[z.c:z.c+3]) // slice z.b completely, so we get bounds error if past
+	z.c += 3
 	return
 }
 
 func (z *bytesDecReader) readn4() (bs [4]byte) {
-	x := z.c + 4
-	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
-	z.c = x
+	copy(bs[:], z.b[z.c:z.c+4]) // slice z.b completely, so we get bounds error if past
+	z.c += 4
 	return
 }
 
 func (z *bytesDecReader) readn8() (bs [8]byte) {
-	x := z.c + 8
-	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
-	z.c = x
+	copy(bs[:], z.b[z.c:z.c+8]) // slice z.b completely, so we get bounds error if past
+	z.c += 8
 	return
 }
 
