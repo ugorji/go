@@ -716,7 +716,7 @@ func (d *jsonDecDriver) readDelimError(xc uint8) {
 func (d *jsonDecDriver) readLit4True() {
 	bs := d.d.decRd.readn3()
 	d.tok = 0
-	if jsonValidateSymbols && bs != [...]byte{'r', 'u', 'e'} { // !Equal jsonLiteral4True
+	if jsonValidateSymbols && bs != [...]byte{0, 'r', 'u', 'e'} { // !Equal jsonLiteral4True
 		d.d.errorf("expecting %s: got %s", jsonLiteral4True, bs[:])
 	}
 }
@@ -732,7 +732,7 @@ func (d *jsonDecDriver) readLit4False() {
 func (d *jsonDecDriver) readLit4Null() {
 	bs := d.d.decRd.readn3() // readx(3)
 	d.tok = 0
-	if jsonValidateSymbols && bs != [...]byte{'u', 'l', 'l'} { // !Equal jsonLiteral4Null
+	if jsonValidateSymbols && bs != [...]byte{0, 'u', 'l', 'l'} { // !Equal jsonLiteral4Null
 		d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs[:])
 	}
 }

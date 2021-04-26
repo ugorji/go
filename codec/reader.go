@@ -15,7 +15,8 @@ type decReader interface {
 
 	readn1() byte
 	readn2() [2]byte
-	readn3() [3]byte
+	// readn3 will read 3 bytes into the top-most elements of a 4-byte array
+	readn3() [4]byte
 	readn4() [4]byte
 	readn8() [8]byte
 	// readn1eof() (v uint8, eof bool)
@@ -183,8 +184,8 @@ func (z *ioDecReader) readn2() (bs [2]byte) {
 	return
 }
 
-func (z *ioDecReader) readn3() (bs [3]byte) {
-	z.readb(bs[:])
+func (z *ioDecReader) readn3() (bs [4]byte) {
+	z.readb(bs[1:])
 	return
 }
 
@@ -421,8 +422,8 @@ func (z *bufioDecReader) readn2() (bs [2]byte) {
 	return
 }
 
-func (z *bufioDecReader) readn3() (bs [3]byte) {
-	z.readb(bs[:])
+func (z *bufioDecReader) readn3() (bs [4]byte) {
+	z.readb(bs[1:])
 	return
 }
 
@@ -628,9 +629,9 @@ func (z *bytesDecReader) readn2() (bs [2]byte) {
 	return
 }
 
-func (z *bytesDecReader) readn3() (bs [3]byte) {
+func (z *bytesDecReader) readn3() (bs [4]byte) {
 	x := z.c + 3
-	copy(bs[:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
+	copy(bs[1:], z.b[z.c:x]) // slice z.b completely, so we get bounds error if past
 	z.c = x
 	return
 }
