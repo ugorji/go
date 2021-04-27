@@ -634,31 +634,33 @@ func (z *bytesDecReader) readn1() (v uint8) {
 	return
 }
 
-const bytesDecReaderUseNN = true
+// MARKER: for readn{2,3,4,8}, ensure you slice z.b completely so we get bounds error if past end.
 
 func (z *bytesDecReader) readn2() (bs [2]byte) {
+	// copy(bs[:], z.b[z.c:z.c+2])
 	bs[1] = z.b[z.c+1]
 	bs[0] = z.b[z.c]
-	// copy(bs[:], z.b[z.c:z.c+2]) // slice z.b completely, so we get bounds error if past
 	z.c += 2
 	return
 }
 
 func (z *bytesDecReader) readn3() (bs [4]byte) {
-	// bs[3], bs[2], bs[1] = z.b[z.c+2], z.b[z.c+1], z.b[z.c]
-	copy(bs[1:], z.b[z.c:z.c+3]) // slice z.b completely, so we get bounds error if past
+	// copy(bs[1:], z.b[z.c:z.c+3])
+	bs = okBytes3(z.b[z.c : z.c+3])
 	z.c += 3
 	return
 }
 
 func (z *bytesDecReader) readn4() (bs [4]byte) {
-	copy(bs[:], z.b[z.c:z.c+4]) // slice z.b completely, so we get bounds error if past
+	// copy(bs[:], z.b[z.c:z.c+4])
+	bs = okBytes4(z.b[z.c : z.c+4])
 	z.c += 4
 	return
 }
 
 func (z *bytesDecReader) readn8() (bs [8]byte) {
-	copy(bs[:], z.b[z.c:z.c+8]) // slice z.b completely, so we get bounds error if past
+	// copy(bs[:], z.b[z.c:z.c+8])
+	bs = okBytes8(z.b[z.c : z.c+8])
 	z.c += 8
 	return
 }

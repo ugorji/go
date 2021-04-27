@@ -198,6 +198,23 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 	return (*unsafeSlice)(unsafe.Pointer(&v1)).Data == (*unsafeSlice)(unsafe.Pointer(&v2)).Data
 }
 
+// MARKER: okBytesN functions will copy N bytes into the top slots of the return array.
+// These functions expect that the bounds are valid, and have been checked before this is called.
+// copy(...) does a number of checks which are unnecessary in this situation when in bounds.
+
+func okBytes3(b []byte) (v [4]byte) {
+	*(*[3]byte)(unsafe.Pointer(&v[1])) = *((*[3]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
+	return
+}
+
+func okBytes4(b []byte) [4]byte {
+	return *((*[4]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
+}
+
+func okBytes8(b []byte) [8]byte {
+	return *((*[8]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
+}
+
 // isNil says whether the value v is nil.
 // This applies to references like map/ptr/unsafepointer/chan/func,
 // and non-reference values like interface/slice.
