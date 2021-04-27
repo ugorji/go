@@ -665,7 +665,7 @@ func (z *bytesDecReader) readn8() (bs [8]byte) {
 	return
 }
 
-func (z *bytesDecReader) jsonReadNum() (out []byte) {
+func (z *bytesDecReader) jsonReadNum() []byte {
 	z.c--
 	i := z.c
 LOOP:
@@ -673,9 +673,8 @@ LOOP:
 		i++
 		goto LOOP
 	}
-	out = z.b[z.c:i]
-	z.c = i
-	return
+	z.c, i = i, z.c
+	return z.b[i:z.c]
 }
 
 func (z *bytesDecReader) jsonReadAsisChars() []byte {
@@ -706,9 +705,8 @@ func (z *bytesDecReader) readUntil(stop byte) (out []byte) {
 	i := z.c
 LOOP:
 	if z.b[i] == stop {
-		i++
-		out = z.b[z.c : i-1]
-		z.c = i
+		out = z.b[z.c:i]
+		z.c = i + 1
 		return
 	}
 	i++
