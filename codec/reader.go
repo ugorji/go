@@ -637,12 +637,15 @@ func (z *bytesDecReader) readn1() (v uint8) {
 const bytesDecReaderUseNN = true
 
 func (z *bytesDecReader) readn2() (bs [2]byte) {
-	copy(bs[:], z.b[z.c:z.c+2]) // slice z.b completely, so we get bounds error if past
+	bs[1] = z.b[z.c+1]
+	bs[0] = z.b[z.c]
+	// copy(bs[:], z.b[z.c:z.c+2]) // slice z.b completely, so we get bounds error if past
 	z.c += 2
 	return
 }
 
 func (z *bytesDecReader) readn3() (bs [4]byte) {
+	// bs[3], bs[2], bs[1] = z.b[z.c+2], z.b[z.c+1], z.b[z.c]
 	copy(bs[1:], z.b[z.c:z.c+3]) // slice z.b completely, so we get bounds error if past
 	z.c += 3
 	return
@@ -673,15 +676,14 @@ LOOP:
 	return
 }
 
-func (z *bytesDecReader) jsonReadAsisChars() (out []byte) {
+func (z *bytesDecReader) jsonReadAsisChars() []byte {
 	i := z.c
 LOOP:
 	token := z.b[i]
 	i++
 	if token == '"' || token == '\\' {
-		out = z.b[z.c:i]
-		z.c = i
-		return // z.b[c:i]
+		z.c, i = i, z.c
+		return z.b[i:z.c]
 	}
 	goto LOOP
 }
@@ -689,12 +691,13 @@ LOOP:
 func (z *bytesDecReader) skipWhitespace() (token byte) {
 	i := z.c
 LOOP:
-	if isWhitespaceChar(z.b[i]) {
+	token = z.b[i]
+	if isWhitespaceChar(token) {
 		i++
 		goto LOOP
 	}
 	z.c = i + 1
-	return z.b[i]
+	return
 }
 
 func (z *bytesDecReader) readUntil(stop byte) (out []byte) {

@@ -632,7 +632,7 @@ func (d *jsonDecDriver) decoder() *Decoder {
 func (d *jsonDecDriver) ReadMapStart() int {
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		return containerLenNil
 	}
 	if d.tok != '{' {
@@ -645,7 +645,7 @@ func (d *jsonDecDriver) ReadMapStart() int {
 func (d *jsonDecDriver) ReadArrayStart() int {
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		return containerLenNil
 	}
 	if d.tok != '[' {
@@ -713,27 +713,34 @@ func (d *jsonDecDriver) readDelimError(xc uint8) {
 	d.d.errorf("read json delimiter - expect char '%c' but got char '%c'", xc, d.tok)
 }
 
-func (d *jsonDecDriver) readLit4True() {
-	bs := d.d.decRd.readn3()
+// MARKER: readLit4XXX takes the readn(3|4) as a parameter so they can be inlined.
+// We pass the array directly to errorf, as passing slice pushes past inlining threshold,
+// and passing slice also might cause allocation of the bs array on the heap.
+
+func (d *jsonDecDriver) readLit4True(bs [4]byte) {
+	// bs := d.d.decRd.readn3()
 	d.tok = 0
 	if jsonValidateSymbols && bs != [...]byte{0, 'r', 'u', 'e'} { // !Equal jsonLiteral4True
-		d.d.errorf("expecting %s: got %s", jsonLiteral4True, bs[:])
+		// d.d.errorf("expecting %s: got %s", jsonLiteral4True, bs[:])
+		d.d.errorf("expecting true: got t%s", bs)
 	}
 }
 
-func (d *jsonDecDriver) readLit4False() {
-	bs := d.d.decRd.readn4()
+func (d *jsonDecDriver) readLit4False(bs [4]byte) {
+	// bs := d.d.decRd.readn4()
 	d.tok = 0
-	if jsonValidateSymbols && bs != [...]byte{'a', 'l', 's', 'e'} { // !Equal jsonLiteral4False
-		d.d.errorf("expecting %s: got %s", jsonLiteral4False, bs[:])
+	if jsonValidateSymbols && bs != [4]byte{'a', 'l', 's', 'e'} { // !Equal jsonLiteral4False
+		// d.d.errorf("expecting %s: got %s", jsonLiteral4False, bs)
+		d.d.errorf("expecting false: got f%s", bs)
 	}
 }
 
-func (d *jsonDecDriver) readLit4Null() {
-	bs := d.d.decRd.readn3() // readx(3)
+func (d *jsonDecDriver) readLit4Null(bs [4]byte) {
+	// bs := d.d.decRd.readn3() // readx(3)
 	d.tok = 0
 	if jsonValidateSymbols && bs != [...]byte{0, 'u', 'l', 'l'} { // !Equal jsonLiteral4Null
-		d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs[:])
+		// d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs[:])
+		d.d.errorf("expecting null: got n%s", bs)
 	}
 }
 
@@ -743,12 +750,10 @@ func (d *jsonDecDriver) advance() {
 	}
 }
 
-func (d *jsonDecDriver) nextValueBytes(v0 []byte) (v []byte) {
-	v = v0
-	var h = decNextValueBytesHelper{d: &d.d}
+func (d *jsonDecDriver) nextValueBytes(v []byte) []byte {
 	v, cursor := d.nextValueBytesR(v)
-	h.bytesRdV(&v, cursor)
-	return
+	decNextValueBytesHelper{d: &d.d}.bytesRdV(&v, cursor)
+	return v
 }
 
 func (d *jsonDecDriver) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
@@ -774,13 +779,13 @@ func (d *jsonDecDriver) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
 	default:
 		h.appendN(&v, dr.jsonReadNum()...)
 	case 'n':
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		h.appendN(&v, jsonLiteralNull...)
 	case 'f':
-		d.readLit4False()
+		d.readLit4False(d.d.decRd.readn4())
 		h.appendN(&v, jsonLiteralFalse...)
 	case 't':
-		d.readLit4True()
+		d.readLit4True(d.d.decRd.readn3())
 		h.appendN(&v, jsonLiteralTrue...)
 	case '"':
 		h.append1(&v, '"')
@@ -815,7 +820,7 @@ func (d *jsonDecDriver) TryNil() bool {
 	// we shouldn't try to see if quoted "null" was here, right?
 	// only the plain string: `null` denotes a nil (ie not quotes)
 	if d.tok == 'n' {
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		return true
 	}
 	return false
@@ -824,7 +829,7 @@ func (d *jsonDecDriver) TryNil() bool {
 func (d *jsonDecDriver) DecodeBool() (v bool) {
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		return
 	}
 	fquot := d.d.c == containerMapKey && d.tok == '"'
@@ -833,10 +838,10 @@ func (d *jsonDecDriver) DecodeBool() (v bool) {
 	}
 	switch d.tok {
 	case 'f':
-		d.readLit4False()
+		d.readLit4False(d.d.decRd.readn4())
 		// v = false
 	case 't':
-		d.readLit4True()
+		d.readLit4True(d.d.decRd.readn3())
 		v = true
 	default:
 		d.d.errorf("decode bool: got first char %c", d.tok)
@@ -852,9 +857,10 @@ func (d *jsonDecDriver) DecodeTime() (t time.Time) {
 	// read string, and pass the string into json.unmarshal
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		return
 	}
+	d.ensureReadingString()
 	bs := d.readUnescapedString()
 	t, err := time.Parse(time.RFC3339, stringView(bs))
 	d.d.onerror(err)
@@ -875,7 +881,7 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 	} else if d.tok == '[' {
 		return valueTypeArray
 	} else if d.tok == 'n' {
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		return valueTypeNil
 	} else if d.tok == '"' {
 		return valueTypeString
@@ -889,7 +895,7 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 	if d.tok == '"' {
 		bs = dr.readUntil('"')
 	} else if d.tok == 'n' {
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 	} else {
 		if jsonManualInlineDecRdInHotZones {
 			if dr.bytes {
@@ -961,7 +967,7 @@ func (d *jsonDecDriver) DecodeFloat32() (f float32) {
 func (d *jsonDecDriver) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		return
 	}
 	if ext == nil {
@@ -1000,7 +1006,7 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
 	d.d.decByteState = decByteStateNone
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		return nil
 	}
 	// if decoding into raw bytes, and the RawBytesExt is configured, use it to decode.
@@ -1022,6 +1028,7 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
 	// base64 encodes []byte{} as "", and we encode nil []byte as null.
 	// Consequently, base64 should decode null as a nil []byte, and "" as an empty []byte{}.
 
+	d.ensureReadingString()
 	bs1 := d.readUnescapedString()
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
@@ -1057,13 +1064,13 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 	// handle non-string scalar: null, true, false or a number
 	switch d.tok {
 	case 'n':
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		return nil // []byte{}
 	case 'f':
-		d.readLit4False()
+		d.readLit4False(d.d.decRd.readn4())
 		return jsonLiteralFalse
 	case 't':
-		d.readLit4True()
+		d.readLit4True(d.d.decRd.readn3())
 		return jsonLiteralTrue
 	}
 
@@ -1072,11 +1079,14 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 	return d.d.decRd.jsonReadNum()
 }
 
-func (d *jsonDecDriver) readUnescapedString() (bs []byte) {
+func (d *jsonDecDriver) ensureReadingString() {
 	if d.tok != '"' {
 		d.d.errorf("expecting string starting with '\"'; got '%c'", d.tok)
 	}
+}
 
+func (d *jsonDecDriver) readUnescapedString() (bs []byte) {
+	// d.ensureReadingString()
 	bs = d.d.decRd.readUntil('"')
 	d.tok = 0
 	return
@@ -1211,14 +1221,14 @@ func (d *jsonDecDriver) DecodeNaked() {
 	var bs []byte
 	switch d.tok {
 	case 'n':
-		d.readLit4Null()
+		d.readLit4Null(d.d.decRd.readn3())
 		z.v = valueTypeNil
 	case 'f':
-		d.readLit4False()
+		d.readLit4False(d.d.decRd.readn4())
 		z.v = valueTypeBool
 		z.b = false
 	case 't':
-		d.readLit4True()
+		d.readLit4True(d.d.decRd.readn3())
 		z.v = valueTypeBool
 		z.b = true
 	case '{':
