@@ -2472,13 +2472,19 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 }
 
 func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
+	const maxCap = 1024 * 1024 * 64 // 64MB
+	const skipMaxCap = false        // allow to test
 	if slen <= 0 {
 		return []byte{}, true
 	}
-	if cap(bs) < slen {
+	if slen <= cap(bs) {
+		return bs[:slen], false
+	}
+	// slen > cap(bs) ... handle memory overload appropriately
+	if skipMaxCap || slen <= maxCap {
 		return make([]byte, slen), true
 	}
-	return bs[:slen], false
+	return make([]byte, maxCap), true
 }
 
 func mapKeyFastKindFor(k reflect.Kind) mapKeyFastKind {

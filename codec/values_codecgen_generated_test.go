@@ -13298,7 +13298,7 @@ func (x codecSelfer19780) decwrapUint64Slice(v *wrapUint64Slice, d *Decoder) {
 			yyv1 = yyv1[:yyj1]
 			yyc1 = true
 		} else if yyj1 == 0 && yyv1 == nil {
-			yyv1 = make([]wrapUint64, 0)
+			yyv1 = []wrapUint64{}
 			yyc1 = true
 		}
 	}
@@ -13399,7 +13399,7 @@ func (x codecSelfer19780) decwrapStringSlice(v *wrapStringSlice, d *Decoder) {
 			yyv1 = yyv1[:yyj1]
 			yyc1 = true
 		} else if yyj1 == 0 && yyv1 == nil {
-			yyv1 = make([]wrapString, 0)
+			yyv1 = []wrapString{}
 			yyc1 = true
 		}
 	}
@@ -13596,7 +13596,7 @@ func (x codecSelfer19780) decSlicePtrtoint64(v *[]*int64, d *Decoder) {
 			yyv1 = yyv1[:yyj1]
 			yyc1 = true
 		} else if yyj1 == 0 && yyv1 == nil {
-			yyv1 = make([]*int64, 0)
+			yyv1 = []*int64{}
 			yyc1 = true
 		}
 	}
@@ -13698,7 +13698,7 @@ func (x codecSelfer19780) decSlicestringUint64T(v *[]stringUint64T, d *Decoder) 
 			yyv1 = yyv1[:yyj1]
 			yyc1 = true
 		} else if yyj1 == 0 && yyv1 == nil {
-			yyv1 = make([]stringUint64T, 0)
+			yyv1 = []stringUint64T{}
 			yyc1 = true
 		}
 	}
@@ -14060,7 +14060,7 @@ func (x codecSelfer19780) decSlicePtrtoTestStruc(v *[]*TestStruc, d *Decoder) {
 			yyv1 = yyv1[:yyj1]
 			yyc1 = true
 		} else if yyj1 == 0 && yyv1 == nil {
-			yyv1 = make([]*TestStruc, 0)
+			yyv1 = []*TestStruc{}
 			yyc1 = true
 		}
 	}
@@ -15141,7 +15141,7 @@ func (x codecSelfer19780) decSlicewrapBytes(v *[]wrapBytes, d *Decoder) {
 			yyv1 = yyv1[:yyj1]
 			yyc1 = true
 		} else if yyj1 == 0 && yyv1 == nil {
-			yyv1 = make([]wrapBytes, 0)
+			yyv1 = []wrapBytes{}
 			yyc1 = true
 		}
 	}
@@ -15242,7 +15242,7 @@ func (x codecSelfer19780) decSlicewrapUint8(v *[]wrapUint8, d *Decoder) {
 			yyv1 = yyv1[:yyj1]
 			yyc1 = true
 		} else if yyj1 == 0 && yyv1 == nil {
-			yyv1 = make([]wrapUint8, 0)
+			yyv1 = []wrapUint8{}
 			yyc1 = true
 		}
 	}
@@ -15447,7 +15447,7 @@ func (x codecSelfer19780) decSlicePtrtoArray4uint64(v *[]*[4]uint64, d *Decoder)
 			yyv1 = yyv1[:yyj1]
 			yyc1 = true
 		} else if yyj1 == 0 && yyv1 == nil {
-			yyv1 = make([]*[4]uint64, 0)
+			yyv1 = []*[4]uint64{}
 			yyc1 = true
 		}
 	}
@@ -15897,7 +15897,7 @@ func (x codecSelfer19780) decSlicePtrtoTestStrucFlex(v *[]*TestStrucFlex, d *Dec
 			yyv1 = yyv1[:yyj1]
 			yyc1 = true
 		} else if yyj1 == 0 && yyv1 == nil {
-			yyv1 = make([]*TestStrucFlex, 0)
+			yyv1 = []*TestStrucFlex{}
 			yyc1 = true
 		}
 	}

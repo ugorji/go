@@ -7552,7 +7552,7 @@ func (x codecSelfer19781) decSliceTestMammoth2(v *[]TestMammoth2, d *Decoder) {
 			yyv1 = yyv1[:yyj1]
 			yyc1 = true
 		} else if yyj1 == 0 && yyv1 == nil {
-			yyv1 = make([]TestMammoth2, 0)
+			yyv1 = []TestMammoth2{}
 			yyc1 = true
 		}
 	}
