@@ -943,13 +943,18 @@ func (x *basicHandleRuntimeState) setExt(rt reflect.Type, tag uint64, ext Ext) (
 	}
 
 	rtid := rt2id(rt)
+	// handle all natively supported type appropriately, so they cannot have an extension.
+	// However, we do not return an error for these, as we do not document that.
+	// Instead, we silently treat as a no-op, and return.
 	switch rtid {
-	case timeTypId, rawTypId, rawExtTypId:
-		// these are all natively supported type, so they cannot have an extension.
-		// However, we do not return an error for these, as we do not document that.
-		// Instead, we silently treat as a no-op, and return.
+	case rawTypId, rawExtTypId:
 		return
+	case timeTypId:
+		if x.timeBuiltin {
+			return
+		}
 	}
+
 	for i := range x.extHandle {
 		v := &x.extHandle[i]
 		if v.rtid == rtid {
