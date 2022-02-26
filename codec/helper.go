@@ -1971,7 +1971,7 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 // Handling flagCanTransient
 //
 // We support transient optimization if the kind of the type is
-// a number, bool, string, or slice.
+// a number, bool, string, or slice (of number/bool).
 // In addition, we also support if the kind is struct or array,
 // and the type does not contain any pointers recursively).
 //
@@ -1981,15 +1981,20 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 // when GC tries to follow a "transient" pointer which may become a non-pointer soon after.
 //
 
-func isCanTransient(t reflect.Type, k reflect.Kind) (v bool) {
-	var bs *bitset32
+func transientBitsetFlags() *bitset32 {
 	if transientValueHasStringSlice {
-		bs = &numBoolStrSliceBitset
-	} else {
-		bs = &numBoolBitset
+		return &numBoolStrSliceBitset
 	}
+	return &numBoolBitset
+}
+
+func isCanTransient(t reflect.Type, k reflect.Kind) (v bool) {
+	var bs = transientBitsetFlags()
 	if bs.isset(byte(k)) {
 		v = true
+	} else if k == reflect.Slice {
+		elem := t.Elem()
+		v = numBoolBitset.isset(byte(elem.Kind()))
 	} else if k == reflect.Array {
 		elem := t.Elem()
 		v = isCanTransient(elem, elem.Kind())
@@ -2015,8 +2020,7 @@ func (ti *typeInfo) doSetFlagCanTransient() {
 		ti.flagCanTransient = true
 	}
 	if ti.flagCanTransient {
-		// if ti kind is a num, bool, string or slice, then it is flagCanTransient
-		if !numBoolStrSliceBitset.isset(ti.kind) {
+		if !transientBitsetFlags().isset(ti.kind) {
 			ti.flagCanTransient = isCanTransient(ti.rt, reflect.Kind(ti.kind))
 		}
 	}
