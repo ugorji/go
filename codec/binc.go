@@ -7,6 +7,7 @@ import (
 	"math"
 	"reflect"
 	"time"
+	"unicode/utf8"
 )
 
 // Symbol management:
@@ -789,6 +790,11 @@ func (d *bincDecDriver) DecodeStringAsBytes() (bs2 []byte) {
 	default:
 		d.d.errorf("string/bytes - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
+
+	if d.h.ValidateUnicode && !utf8.Valid(bs2) {
+		d.d.errorf("DecodeStringAsBytes: invalid UTF-8: %s", bs2)
+	}
+
 	d.bdRead = false
 	return
 }

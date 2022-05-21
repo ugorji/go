@@ -335,6 +335,12 @@ type DecodeOptions struct {
 	//
 	// This mostly impacts when we decode registered extensions.
 	PreferPointerForStructOrArray bool
+
+	// ValidateUnicode controls will cause decoding to fail if an expected unicode
+	// string is well-formed but include invalid codepoints.
+	//
+	// This could have a performance impact.
+	ValidateUnicode bool
 }
 
 // ----------------------------------------

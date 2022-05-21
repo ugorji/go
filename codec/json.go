@@ -1093,6 +1093,7 @@ func (d *jsonDecDriver) readUnescapedString() (bs []byte) {
 }
 
 func (d *jsonDecDriver) dblQuoteStringAsBytes() (buf []byte) {
+	checkUtf8 := d.h.ValidateUnicode
 	d.d.decByteState = decByteStateNone
 	// use a local buf variable, so we don't do pointer chasing within loop
 	buf = (*d.buf)[:0]
@@ -1153,7 +1154,11 @@ func (d *jsonDecDriver) dblQuoteStringAsBytes() (buf []byte) {
 		case 't':
 			buf = append(buf, '\t')
 		case 'u':
-			buf = append(buf, d.bstr[:utf8.EncodeRune(d.bstr[:], d.appendStringAsBytesSlashU())]...)
+			rr := d.appendStringAsBytesSlashU()
+			if checkUtf8 && rr == unicode.ReplacementChar {
+				d.d.errorf("invalid UTF-8 character found after: %s", buf)
+			}
+			buf = append(buf, d.bstr[:utf8.EncodeRune(d.bstr[:], rr)]...)
 		default:
 			*d.buf = buf
 			d.d.errorf("unsupported escaped value: %c", c)
