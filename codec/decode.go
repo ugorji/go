@@ -660,6 +660,16 @@ func decStructFieldKeyNotString(dd decDriver, keyType valueType, b *[decScratchB
 	return
 }
 
+func (d *Decoder) kStructField(si *structFieldInfo, rv reflect.Value) {
+	if d.d.TryNil() {
+		if rv = si.path.field(rv); rv.IsValid() {
+			decSetNonNilRV2Zero(rv)
+		}
+		return
+	}
+	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+}
+
 func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	ctyp := d.d.ContainerType()
 	ti := f.ti
@@ -691,7 +701,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 			}
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
-				d.decodeValue(si.path.fieldAlloc(rv), nil)
+				d.kStructField(si, rv)
 			} else if mf != nil {
 				// store rvkencname in new []byte, as it previously shares Decoder.b, which is used in decode
 				name2 = append(name2[:0], rvkencname...)
@@ -726,7 +736,7 @@ func (d *Decoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 				break
 			}
 			d.arrayElem()
-			d.decodeValue(si.path.fieldAlloc(rv), nil)
+			d.kStructField(si, rv)
 		}
 		var proceed bool
 		if hasLen {

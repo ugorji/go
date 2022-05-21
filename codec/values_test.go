@@ -43,6 +43,11 @@ type stringUint64T struct {
 	U uint64
 }
 
+type AnonInTestStrucSlim struct {
+	S string
+	P *string
+}
+
 type AnonInTestStruc struct {
 	AS         string
 	AI64       int64
@@ -149,6 +154,9 @@ type TestStrucCommon struct {
 	AnonInTestStruc
 
 	NotAnon AnonInTestStruc
+
+	*AnonInTestStrucSlim
+	NotAnonSlim *AnonInTestStrucSlim
 
 	// R          Raw // Testing Raw must be explicitly turned on, so use standalone test
 	// Rext RawExt // Testing RawExt is tricky, so use standalone test
