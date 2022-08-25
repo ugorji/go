@@ -1741,6 +1741,7 @@ func (path *structFieldInfoPathNode) fieldAlloc(v reflect.Value) (rv2 reflect.Va
 
 type structFieldInfo struct {
 	encName string // encode name
+	pos     int // position within struct
 
 	// encNameHash uintptr
 
@@ -1953,6 +1954,7 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 		}
 		w[n] = x[i]
 		y[n] = &w[n]
+		y[n].pos = n
 		m[x[i].encName] = &w[n]
 		n++
 	}
