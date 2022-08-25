@@ -169,7 +169,7 @@ const (
 
 	// genStructCanonical configures whether we generate 2 paths based on Canonical flag
 	// when encoding struct fields.
-	genStructCanonical = false
+	genStructCanonical = true
 
 	// genFastpathCanonical configures whether we support Canonical in fast path.
 	// The savings is not much.
@@ -1329,11 +1329,11 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		}
 
 		fn := func(tisfi []*structFieldInfo) {
-			for j, si := range tisfi {
-				q := &genFQNs[j]
+			for _, si := range tisfi {
+				q := &genFQNs[si.pos]
 				doOmitEmptyCheck := (omitEmptySometimes && si.path.omitEmpty) || omitEmptyAlways
 				if doOmitEmptyCheck {
-					x.linef("if %s[%v] {", numfieldsvar, j)
+					x.linef("if %s[%v] {", numfieldsvar, si.pos)
 				}
 				x.linef("z.EncWriteMapElemKey()")
 
@@ -1381,7 +1381,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		if genStructCanonical {
 			x.linef("if z.EncBasicHandle().Canonical {") // if Canonical block
 			fn(ti.sfi.sorted())
-			x.linef("} else {") // else !cononical block
+			x.linef("} else {") // else !canonical block
 			fn(ti.sfi.source())
 			x.linef("}") // end if Canonical block
 		} else {
