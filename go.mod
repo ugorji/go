@@ -1,4 +1,4 @@
-module github.com/hashicorp/go-msgpack
+module github.com/hashicorp/go-msgpack/v2
 
 go 1.13
 
