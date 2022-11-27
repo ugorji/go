@@ -617,6 +617,11 @@ func (e *codecError) Cause() error {
 	return e.err
 }
 
+// Unwrap implements support for go1.13+ error wrapping
+func (e *codecError) Unwrap() error {
+	return e.err
+}
+
 func (e *codecError) Error() string {
 	if e.encode {
 		return fmt.Sprintf("%s encode error: %v", e.name, e.err)
