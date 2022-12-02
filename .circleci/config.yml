@@ -1,8 +1,0 @@
-version: 2
-jobs:
-  build:
-    docker:
-      - image: docker.mirror.hashicorp.services/cimg/go:1.19.2
-    steps:
-      - checkout
-      - run: go test ./codec
