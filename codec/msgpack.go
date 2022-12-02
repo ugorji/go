@@ -891,21 +891,32 @@ func (d *msgpackDecDriver) DecodeTime() (t time.Time) {
 }
 
 func (d *msgpackDecDriver) decodeTime(clen int) (t time.Time) {
-	// bs = d.r.readx(clen)
+	bs := d.r.readx(uint(clen))
+
+	// Decode as a binary marshalled string for compatibility with other versions of go-msgpack.
+	// time.Time should always be encoded as 16 bytes or fewer in the binary marshalling format,
+	// so will always fit within the 32 byte max for fixed strings
+	if d.bd >= mpFixStrMin && d.bd <= mpFixStrMax {
+		err := t.UnmarshalBinary(bs)
+		if err == nil {
+			return
+		}
+		// fallthrough on failure
+	}
+
 	d.bdRead = false
 	switch clen {
 	case 4:
-		t = time.Unix(int64(bigen.Uint32(d.r.readx(4))), 0).UTC()
+		t = time.Unix(int64(bigen.Uint32(bs)), 0).UTC()
 	case 8:
-		tv := bigen.Uint64(d.r.readx(8))
+		tv := bigen.Uint64(bs)
 		t = time.Unix(int64(tv&0x00000003ffffffff), int64(tv>>34)).UTC()
 	case 12:
-		nsec := bigen.Uint32(d.r.readx(4))
-		sec := bigen.Uint64(d.r.readx(8))
+		nsec := bigen.Uint32(bs[:4])
+		sec := bigen.Uint64(bs[4:])
 		t = time.Unix(int64(sec), int64(nsec)).UTC()
 	default:
-		d.d.errorf("invalid length of bytes for decoding time - expecting 4 or 8 or 12, got %d", clen)
-		return
+		d.d.errorf("invalid bytes for decoding time - expecting string or 4, 8, or 12 bytes, got %d", clen)
 	}
 	return
 }
@@ -956,7 +967,7 @@ func (d *msgpackDecDriver) decodeExtV(verifyTag bool, tag byte) (xtag byte, xbs 
 
 //--------------------------------------------------
 
-//MsgpackHandle is a Handle for the Msgpack Schema-Free Encoding Format.
+// MsgpackHandle is a Handle for the Msgpack Schema-Free Encoding Format.
 type MsgpackHandle struct {
 	BasicHandle
 
