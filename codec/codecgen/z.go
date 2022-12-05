@@ -3,4 +3,4 @@
 
 package main
 
-const genCodecPath = "github.com/ugorji/go/codec"
+const genCodecPath = "github.com/hashicorp/go-msgpack/v2/codec"

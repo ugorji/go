@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: ${{ needs.get-go-version.outputs.go-version }}
-      - run: '[ "$(gofmt -l . | wc -l)" -gt 0 ] && false'
+      - run: 'exit $(( $(gofmt -s -l . | wc -l) != 0 ))'
 
   test:
     name: codec test

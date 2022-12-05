@@ -10,12 +10,12 @@
 //   - for binary formats (cbor, etc): 25% on encoding and 30% on decoding to/from []byte
 //   - for text formats (json, etc): 15% on encoding and 25% on decoding to/from []byte
 //
-// Note that (as of Dec 2018) codecgen completely ignores
+// # Note that (as of Dec 2018) codecgen completely ignores
 //
-// - MissingFielder interface
-//   (if you types implements it, codecgen ignores that)
-// - decode option PreferArrayOverSlice
-//   (we cannot dynamically create non-static arrays without reflection)
+//   - MissingFielder interface
+//     (if you types implements it, codecgen ignores that)
+//   - decode option PreferArrayOverSlice
+//     (we cannot dynamically create non-static arrays without reflection)
 //
 // In explicit package terms: codecgen generates codec.Selfer implementations for a set of types.
 package main
@@ -111,10 +111,10 @@ typ = reflect.TypeOf(t{{ $index }})
 // It finds all types T in the files, and it creates 2 tmp files (frun).
 //   - main package file passed to 'go run'
 //   - package level file which calls *genRunner.Selfer to write Selfer impls for each T.
+//
 // We use a package level file so that it can reference unexported types in the package being worked on.
 // Tool then executes: "go run __frun__" which creates fout.
 // fout contains Codec(En|De)codeSelf implementations for every type T.
-//
 func Generate(outfile, buildTag, codecPkgPath string,
 	uid int64,
 	goRunTag string, st string,

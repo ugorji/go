@@ -1,3 +1,4 @@
+//go:build codecgen || generated
 // +build codecgen generated
 
 package codec

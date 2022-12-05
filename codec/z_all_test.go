@@ -1,8 +1,8 @@
 // Copyright (c) 2012-2018 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-// +build alltests
-// +build go1.7
+//go:build alltests && go1.7
+// +build alltests,go1.7
 
 package codec
 
@@ -12,13 +12,13 @@ package codec
 //
 // Because build tags are a build time parameter, we will have to test out the
 // different tags separately.
-// Tags: x codecgen safe appengine notfastpath
+// Tags: x codecgen safe appengine
 //
 // These tags should be added to alltests, e.g.
 //   go test '-tags=alltests x codecgen' -run=Suite -coverprofile=cov.out
 //
 // To run all tests before submitting code, run:
-//    a=( "" "safe" "codecgen" "notfastpath" "codecgen notfastpath" "codecgen safe" "safe notfastpath" )
+//    a=( "" "safe" "codecgen" "codecgen safe" )
 //    for i in "${a[@]}"; do echo ">>>> TAGS: $i"; go test "-tags=alltests $i" -run=Suite; done
 //
 // This only works on go1.7 and above. This is when subtests and suites were supported.

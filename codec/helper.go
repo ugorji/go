@@ -450,9 +450,10 @@ var immutableKindsSet = [32]bool{
 // By definition, it is not allowed for a Selfer to directly call Encode or Decode on itself.
 // If that is done, Encode/Decode will rightfully fail with a Stack Overflow style error.
 // For example, the snippet below will cause such an error.
-//     type testSelferRecur struct{}
-//     func (s *testSelferRecur) CodecEncodeSelf(e *Encoder) { e.MustEncode(s) }
-//     func (s *testSelferRecur) CodecDecodeSelf(d *Decoder) { d.MustDecode(s) }
+//
+//	type testSelferRecur struct{}
+//	func (s *testSelferRecur) CodecEncodeSelf(e *Encoder) { e.MustEncode(s) }
+//	func (s *testSelferRecur) CodecDecodeSelf(d *Decoder) { d.MustDecode(s) }
 //
 // Note: *the first set of bytes of any value MUST NOT represent nil in the format*.
 // This is because, during each decode, we first check the the next set of bytes
@@ -486,13 +487,14 @@ type MissingFielder interface {
 // This affords storing a map in a specific sequence in the stream.
 //
 // Example usage:
-//    type T1 []string         // or []int or []Point or any other "slice" type
-//    func (_ T1) MapBySlice{} // T1 now implements MapBySlice, and will be encoded as a map
-//    type T2 struct { KeyValues T1 }
 //
-//    var kvs = []string{"one", "1", "two", "2", "three", "3"}
-//    var v2 = T2{ KeyValues: T1(kvs) }
-//    // v2 will be encoded like the map: {"KeyValues": {"one": "1", "two": "2", "three": "3"} }
+//	type T1 []string         // or []int or []Point or any other "slice" type
+//	func (_ T1) MapBySlice{} // T1 now implements MapBySlice, and will be encoded as a map
+//	type T2 struct { KeyValues T1 }
+//
+//	var kvs = []string{"one", "1", "two", "2", "three", "3"}
+//	var v2 = T2{ KeyValues: T1(kvs) }
+//	// v2 will be encoded like the map: {"KeyValues": {"one": "1", "two": "2", "three": "3"} }
 //
 // The support of MapBySlice affords the following:
 //   - A slice type which implements MapBySlice will be encoded as a map
@@ -1052,12 +1054,12 @@ func (z bigenHelper) writeUint64(v uint64) {
 }
 
 type extTypeTagFn struct {
-	rtid    uintptr
-	rtidptr uintptr
-	rt      reflect.Type
-	tag     uint64
-	ext     Ext
-	_       [1]uint64 // padding
+	rtid     uintptr
+	rtidptr  uintptr
+	rt       reflect.Type
+	tag      uint64
+	ext      Ext
+	_padding [1]uint64 // padding
 }
 
 type extHandle []extTypeTagFn
@@ -1099,13 +1101,7 @@ func (o *extHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 		// all natively supported type, so cannot have an extension
 		return // TODO: should we silently ignore, or return an error???
 	}
-	// if o == nil {
-	// 	return errors.New("codec.Handle.SetExt: extHandle not initialized")
-	// }
 	o2 := *o
-	// if o2 == nil {
-	// 	return errors.New("codec.Handle.SetExt: extHandle not initialized")
-	// }
 	for i := range o2 {
 		v := &o2[i]
 		if v.rtid == rtid {
@@ -1925,10 +1921,10 @@ func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 }
 
 // isEmptyStruct is only called from isEmptyValue, and checks if a struct is empty:
-//    - does it implement IsZero() bool
-//    - is it comparable, and can i compare directly using ==
-//    - if checkStruct, then walk through the encodable fields
-//      and check if they are empty or not.
+//   - does it implement IsZero() bool
+//   - is it comparable, and can i compare directly using ==
+//   - if checkStruct, then walk through the encodable fields
+//     and check if they are empty or not.
 func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) bool {
 	// v is a struct kind - no need to check again.
 	// We only check isZero on a struct kind, to reduce the amount of times
@@ -2570,40 +2566,6 @@ func (z *bytesBufPooler) get(bufsize int) (buf []byte) {
 		z.pool, z.poolbuf = nil, nil
 	}
 
-	// // Try to use binary search.
-	// // This is not optimal, as most folks select 1k or 2k buffers
-	// // so a linear search is better (sequence of if/else blocks)
-	// if bufsize < 1 {
-	// 	bufsize = 0
-	// } else {
-	// 	bufsize--
-	// 	bufsize /= 1024
-	// }
-	// switch bufsize {
-	// case 0:
-	// 	z.pool, z.poolbuf = pool.bytes1k()
-	// 	buf = z.poolbuf.(*[1 * 1024]byte)[:]
-	// case 1:
-	// 	z.pool, z.poolbuf = pool.bytes2k()
-	// 	buf = z.poolbuf.(*[2 * 1024]byte)[:]
-	// case 2, 3:
-	// 	z.pool, z.poolbuf = pool.bytes4k()
-	// 	buf = z.poolbuf.(*[4 * 1024]byte)[:]
-	// case 4, 5, 6, 7:
-	// 	z.pool, z.poolbuf = pool.bytes8k()
-	// 	buf = z.poolbuf.(*[8 * 1024]byte)[:]
-	// case 8, 9, 10, 11, 12, 13, 14, 15:
-	// 	z.pool, z.poolbuf = pool.bytes16k()
-	// 	buf = z.poolbuf.(*[16 * 1024]byte)[:]
-	// case 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31:
-	// 	z.pool, z.poolbuf = pool.bytes32k()
-	// 	buf = z.poolbuf.(*[32 * 1024]byte)[:]
-	// default:
-	// 	z.pool, z.poolbuf = pool.bytes64k()
-	// 	buf = z.poolbuf.(*[64 * 1024]byte)[:]
-	// }
-	// return
-
 	if bufsize <= 1*1024 {
 		z.pool, z.poolbuf = &pool.buf1k, pool.buf1k.Get() // pool.bytes1k()
 		buf = z.poolbuf.(*[1 * 1024]byte)[:]
@@ -2667,53 +2629,291 @@ func (z *sfiRvPooler) get(newlen int) (fkvs []sfiRv) {
 	return
 }
 
-// xdebugf printf. the message in red on the terminal.
-// Use it in place of fmt.Printf (which it calls internally)
-func xdebugf(pattern string, args ...interface{}) {
-	var delim string
-	if len(pattern) > 0 && pattern[len(pattern)-1] != '\n' {
-		delim = "\n"
-	}
-	fmt.Printf("\033[1;31m"+pattern+delim+"\033[0m", args...)
+// safe-mod optimizations
+
+const safeMode = true
+
+// stringView returns a view of the []byte as a string.
+// In unsafe mode, it doesn't incur allocation and copying caused by conversion.
+// In regular safe mode, it is an allocation and copy.
+//
+// Usage: Always maintain a reference to v while result of this call is in use,
+//
+//	and call keepAlive4BytesView(v) at point where done with view.
+func stringView(v []byte) string {
+	return string(v)
 }
 
-// func isImmutableKind(k reflect.Kind) (v bool) {
-// 	return false ||
-// 		k == reflect.Int ||
-// 		k == reflect.Int8 ||
-// 		k == reflect.Int16 ||
-// 		k == reflect.Int32 ||
-// 		k == reflect.Int64 ||
-// 		k == reflect.Uint ||
-// 		k == reflect.Uint8 ||
-// 		k == reflect.Uint16 ||
-// 		k == reflect.Uint32 ||
-// 		k == reflect.Uint64 ||
-// 		k == reflect.Uintptr ||
-// 		k == reflect.Float32 ||
-// 		k == reflect.Float64 ||
-// 		k == reflect.Bool ||
-// 		k == reflect.String
-// }
+// bytesView returns a view of the string as a []byte.
+// In unsafe mode, it doesn't incur allocation and copying caused by conversion.
+// In regular safe mode, it is an allocation and copy.
+//
+// Usage: Always maintain a reference to v while result of this call is in use,
+//
+//	and call keepAlive4BytesView(v) at point where done with view.
+func bytesView(v string) []byte {
+	return []byte(v)
+}
 
-// func timeLocUTCName(tzint int16) string {
-// 	if tzint == 0 {
-// 		return "UTC"
-// 	}
-// 	var tzname = []byte("UTC+00:00")
-// 	//tzname := fmt.Sprintf("UTC%s%02d:%02d", tzsign, tz/60, tz%60) //perf issue using Sprintf.. inline below.
-// 	//tzhr, tzmin := tz/60, tz%60 //faster if u convert to int first
-// 	var tzhr, tzmin int16
-// 	if tzint < 0 {
-// 		tzname[3] = '-' // (TODO: verify. this works here)
-// 		tzhr, tzmin = -tzint/60, (-tzint)%60
-// 	} else {
-// 		tzhr, tzmin = tzint/60, tzint%60
-// 	}
-// 	tzname[4] = timeDigits[tzhr/10]
-// 	tzname[5] = timeDigits[tzhr%10]
-// 	tzname[7] = timeDigits[tzmin/10]
-// 	tzname[8] = timeDigits[tzmin%10]
-// 	return string(tzname)
-// 	//return time.FixedZone(string(tzname), int(tzint)*60)
-// }
+func definitelyNil(v interface{}) bool {
+	// this is a best-effort option.
+	// We just return false, so we don't unnecessarily incur the cost of reflection this early.
+	return false
+}
+
+func rv2i(rv reflect.Value) interface{} {
+	return rv.Interface()
+}
+
+func rt2id(rt reflect.Type) uintptr {
+	return reflect.ValueOf(rt).Pointer()
+}
+
+func i2rtid(i interface{}) uintptr {
+	return reflect.ValueOf(reflect.TypeOf(i)).Pointer()
+}
+
+// --------------------------
+
+func isEmptyValue(v reflect.Value, tinfos *TypeInfos, deref, checkStruct bool) bool {
+	switch v.Kind() {
+	case reflect.Invalid:
+		return true
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		if deref {
+			if v.IsNil() {
+				return true
+			}
+			return isEmptyValue(v.Elem(), tinfos, deref, checkStruct)
+		}
+		return v.IsNil()
+	case reflect.Struct:
+		return isEmptyStruct(v, tinfos, deref, checkStruct)
+	}
+	return false
+}
+
+// --------------------------
+type atomicClsErr struct {
+	v atomic.Value
+}
+
+func (x *atomicClsErr) load() (e clsErr) {
+	if i := x.v.Load(); i != nil {
+		e = i.(clsErr)
+	}
+	return
+}
+
+func (x *atomicClsErr) store(p clsErr) {
+	x.v.Store(p)
+}
+
+// --------------------------
+type atomicTypeInfoSlice struct { // expected to be 2 words
+	v atomic.Value
+}
+
+func (x *atomicTypeInfoSlice) load() (e []rtid2ti) {
+	if i := x.v.Load(); i != nil {
+		e = i.([]rtid2ti)
+	}
+	return
+}
+
+func (x *atomicTypeInfoSlice) store(p []rtid2ti) {
+	x.v.Store(p)
+}
+
+// --------------------------
+type atomicRtidFnSlice struct { // expected to be 2 words
+	v atomic.Value
+}
+
+func (x *atomicRtidFnSlice) load() (e []codecRtidFn) {
+	if i := x.v.Load(); i != nil {
+		e = i.([]codecRtidFn)
+	}
+	return
+}
+
+func (x *atomicRtidFnSlice) store(p []codecRtidFn) {
+	x.v.Store(p)
+}
+
+// --------------------------
+func (n *decNaked) ru() reflect.Value {
+	return reflect.ValueOf(&n.u).Elem()
+}
+func (n *decNaked) ri() reflect.Value {
+	return reflect.ValueOf(&n.i).Elem()
+}
+func (n *decNaked) rf() reflect.Value {
+	return reflect.ValueOf(&n.f).Elem()
+}
+func (n *decNaked) rl() reflect.Value {
+	return reflect.ValueOf(&n.l).Elem()
+}
+func (n *decNaked) rs() reflect.Value {
+	return reflect.ValueOf(&n.s).Elem()
+}
+func (n *decNaked) rt() reflect.Value {
+	return reflect.ValueOf(&n.t).Elem()
+}
+func (n *decNaked) rb() reflect.Value {
+	return reflect.ValueOf(&n.b).Elem()
+}
+
+// --------------------------
+func (d *Decoder) raw(f *codecFnInfo, rv reflect.Value) {
+	rv.SetBytes(d.rawBytes())
+}
+
+func (d *Decoder) kString(f *codecFnInfo, rv reflect.Value) {
+	rv.SetString(d.d.DecodeString())
+}
+
+func (d *Decoder) kBool(f *codecFnInfo, rv reflect.Value) {
+	rv.SetBool(d.d.DecodeBool())
+}
+
+func (d *Decoder) kTime(f *codecFnInfo, rv reflect.Value) {
+	rv.Set(reflect.ValueOf(d.d.DecodeTime()))
+}
+
+func (d *Decoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
+	fv := d.d.DecodeFloat64()
+	if chkOvf.Float32(fv) {
+		d.errorf("float32 overflow: %v", fv)
+	}
+	rv.SetFloat(fv)
+}
+
+func (d *Decoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
+	rv.SetFloat(d.d.DecodeFloat64())
+}
+
+func (d *Decoder) kInt(f *codecFnInfo, rv reflect.Value) {
+	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
+}
+
+func (d *Decoder) kInt8(f *codecFnInfo, rv reflect.Value) {
+	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), 8))
+}
+
+func (d *Decoder) kInt16(f *codecFnInfo, rv reflect.Value) {
+	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), 16))
+}
+
+func (d *Decoder) kInt32(f *codecFnInfo, rv reflect.Value) {
+	rv.SetInt(chkOvf.IntV(d.d.DecodeInt64(), 32))
+}
+
+func (d *Decoder) kInt64(f *codecFnInfo, rv reflect.Value) {
+	rv.SetInt(d.d.DecodeInt64())
+}
+
+func (d *Decoder) kUint(f *codecFnInfo, rv reflect.Value) {
+	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
+}
+
+func (d *Decoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
+	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))
+}
+
+func (d *Decoder) kUint8(f *codecFnInfo, rv reflect.Value) {
+	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), 8))
+}
+
+func (d *Decoder) kUint16(f *codecFnInfo, rv reflect.Value) {
+	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), 16))
+}
+
+func (d *Decoder) kUint32(f *codecFnInfo, rv reflect.Value) {
+	rv.SetUint(chkOvf.UintV(d.d.DecodeUint64(), 32))
+}
+
+func (d *Decoder) kUint64(f *codecFnInfo, rv reflect.Value) {
+	rv.SetUint(d.d.DecodeUint64())
+}
+
+// ----------------
+
+func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeBool(rv.Bool())
+}
+
+func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeTime(rv2i(rv).(time.Time))
+}
+
+func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
+	s := rv.String()
+	if e.h.StringToRaw {
+		e.e.EncodeStringBytesRaw(bytesView(s))
+	} else {
+		e.e.EncodeStringEnc(cUTF8, s)
+	}
+}
+
+func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeFloat64(rv.Float())
+}
+
+func (e *Encoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeFloat32(float32(rv.Float()))
+}
+
+func (e *Encoder) kInt(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeInt(rv.Int())
+}
+
+func (e *Encoder) kInt8(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeInt(rv.Int())
+}
+
+func (e *Encoder) kInt16(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeInt(rv.Int())
+}
+
+func (e *Encoder) kInt32(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeInt(rv.Int())
+}
+
+func (e *Encoder) kInt64(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeInt(rv.Int())
+}
+
+func (e *Encoder) kUint(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(rv.Uint())
+}
+
+func (e *Encoder) kUint8(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(rv.Uint())
+}
+
+func (e *Encoder) kUint16(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(rv.Uint())
+}
+
+func (e *Encoder) kUint32(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(rv.Uint())
+}
+
+func (e *Encoder) kUint64(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(rv.Uint())
+}
+
+func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
+	e.e.EncodeUint(rv.Uint())
+}

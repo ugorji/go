@@ -204,14 +204,14 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 
 		AF64slice: []float64{
 			11.11e-11, -11.11e+11,
-			2.222E+12, -2.222E-12,
-			-555.55E-5, 555.55E+5,
-			666.66E-6, -666.66E+6,
-			7777.7777E-7, -7777.7777E-7,
-			-8888.8888E+8, 8888.8888E+8,
-			-99999.9999E+9, 99999.9999E+9,
+			2.222e+12, -2.222e-12,
+			-555.55e-5, 555.55e+5,
+			666.66e-6, -666.66e+6,
+			7777.7777e-7, -7777.7777e-7,
+			-8888.8888e+8, 8888.8888e+8,
+			-99999.9999e+9, 99999.9999e+9,
 			// these below are hairy enough to need strconv.ParseFloat
-			33.33E-33, -33.33E+33,
+			33.33e-33, -33.33e+33,
 			44.44e+44, -44.44e-44,
 			// standard ones
 			0, -1, 1,
@@ -221,14 +221,14 @@ func populateTestStrucCommon(ts *TestStrucCommon, n int, bench, useInterface, us
 		},
 		AF32slice: []float32{
 			11.11e-11, -11.11e+11,
-			2.222E+12, -2.222E-12,
-			-555.55E-5, 555.55E+5,
-			666.66E-6, -666.66E+6,
-			7777.7777E-7, -7777.7777E-7,
-			-8888.8888E+8, 8888.8888E+8,
-			-99999.9999E+9, 99999.9999E+9,
+			2.222e+12, -2.222e-12,
+			-555.55e-5, 555.55e+5,
+			666.66e-6, -666.66e+6,
+			7777.7777e-7, -7777.7777e-7,
+			-8888.8888e+8, 8888.8888e+8,
+			-99999.9999e+9, 99999.9999e+9,
 			// these below are hairy enough to need strconv.ParseFloat
-			33.33E-33, -33.33E+33,
+			33.33e-33, -33.33e+33,
 			// standard ones
 			0, -1, 1,
 			// math.Float32frombits(0x7FF00000), math.Float32frombits(0xFFF00000), //+inf and -inf

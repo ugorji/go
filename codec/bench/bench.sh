@@ -62,7 +62,7 @@ _gen() {
 # 
 _suite() {
     local t="alltests x"
-    local a=( "" "safe"  "notfastpath" "notfastpath safe" "codecgen" "codecgen safe")
+    local a=( "" "safe"  "codecgen" "codecgen safe")
     local b=( "generated" "generated safe")
     for i in "${a[@]}"
     do

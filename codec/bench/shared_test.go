@@ -51,7 +51,7 @@ import (
 	"testing"
 )
 
-import . "github.com/ugorji/go/codec"
+import . "github.com/hashicorp/go-msgpack/v2/codec"
 
 type testHED struct {
 	H Handle
