@@ -3268,6 +3268,29 @@ func TestMultipleEncDec(t *testing.T) {
 	doTestMultipleEncDec(t, "json", testJsonH)
 }
 
+func encodeMsgPack(in interface{}) (*bytes.Buffer, error) {
+	buf := bytes.NewBuffer(nil)
+	hd := MsgpackHandle{}
+	enc := NewEncoder(buf, &hd)
+	err := enc.Encode(in)
+	return buf, err
+}
+
+func TestMapStructDoubleDecode(t *testing.T) {
+	// we should be able to decode into structs in a map
+	// if the struct is already present, it is not addressable, so has to be recreated
+	x := map[string]struct{ A string }{}
+	x["abc"] = struct{ A string }{"def"}
+	out, err := encodeMsgPack(x)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = decodeMsgPack(out.Bytes(), &x)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 // TODO:
 //
 // Add Tests for the following:

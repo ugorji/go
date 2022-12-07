@@ -437,7 +437,7 @@ var immutableKindsSet = [32]bool{
 	// reflect.Ptr
 	// reflect.Slice
 	reflect.String: true,
-	// reflect.Struct
+	reflect.Struct: true,
 	// reflect.UnsafePointer
 }
 
