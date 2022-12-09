@@ -4,14 +4,14 @@
 # A Test calls this internally to create the golden files
 # So it can process them (so we don't have to checkin the files).
 
-# Ensure msgpack-python and cbor are installed first, using:
+# Ensure msgpack-python is installed first, using:
 #   sudo apt-get install python-dev
 #   sudo apt-get install python-pip
-#   pip install --user msgpack-python msgpack-rpc-python cbor
+#   pip install --user msgpack-python msgpack-rpc-python
 
 # Ensure all "string" keys are utf strings (else encoded as bytes)
 
-import cbor, msgpack, msgpackrpc, sys, os, threading
+import msgpack, msgpackrpc, sys, os, threading
 
 def get_test_data_list():
     # get list with all primitive types, and a combo type
@@ -72,15 +72,11 @@ def build_test_data(destdir):
         f = open(os.path.join(destdir, str(i) + '.msgpack.golden'), 'wb')
         f.write(serialized)
         f.close()
-        serialized = cbor.dumps(l[i])
-        f = open(os.path.join(destdir, str(i) + '.cbor.golden'), 'wb')
-        f.write(serialized)
-        f.close()
 
 def doRpcServer(port, stopTimeSec):
     class EchoHandler(object):
         def Echo123(self, msg1, msg2, msg3):
-            return ("1:%s 2:%s 3:%s" % (msg1, msg2, msg3))
+            return ("1:%s 2:%s 3:%s" % (msg1.decode('utf8'), msg2.decode('utf8'), msg3.decode('utf8')))
         def EchoStruct(self, msg):
             return ("%s" % msg)
     
@@ -98,15 +94,15 @@ def doRpcServer(port, stopTimeSec):
 def doRpcClientToPythonSvc(port):
     address = msgpackrpc.Address('127.0.0.1', port)
     client = msgpackrpc.Client(address, unpack_encoding='utf-8')
-    print client.call("Echo123", "A1", "B2", "C3")
-    print client.call("EchoStruct", {"A" :"Aa", "B":"Bb", "C":"Cc"})
+    print(client.call("Echo123", "A1", "B2", "C3"))
+    print(client.call("EchoStruct", {"A" :"Aa", "B":"Bb", "C":"Cc"}))
    
 def doRpcClientToGoSvc(port):
     # print ">>>> port: ", port, " <<<<<"
     address = msgpackrpc.Address('127.0.0.1', port)
     client = msgpackrpc.Client(address, unpack_encoding='utf-8')
-    print client.call("TestRpcInt.Echo123", ["A1", "B2", "C3"])
-    print client.call("TestRpcInt.EchoStruct", {"A" :"Aa", "B":"Bb", "C":"Cc"})
+    print(client.call("TestRpcInt.Echo123", ["A1", "B2", "C3"]))
+    print(client.call("TestRpcInt.EchoStruct", {"A" :"Aa", "B":"Bb", "C":"Cc"}))
 
 def doMain(args):
     if len(args) == 2 and args[0] == "testdata":

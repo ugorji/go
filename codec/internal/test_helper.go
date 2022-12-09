@@ -1,7 +1,7 @@
 // Copyright (c) 2012-2015 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-package codec
+package internal
 
 // All non-std package dependencies related to testing live in this file,
 // so porting to different environment is easy (just update functions).
@@ -13,25 +13,25 @@ import (
 
 // --- these functions are used by both benchmarks and tests
 
-var errDeepEqualNotMatch = errors.New("Not Match")
+var ErrDeepEqualNotMatch = errors.New("not Match")
 
-func deepEqual(v1, v2 interface{}) (err error) {
+func DeepEqual(v1, v2 interface{}) (err error) {
 	if !reflect.DeepEqual(v1, v2) {
-		err = errDeepEqualNotMatch
+		err = ErrDeepEqualNotMatch
 	}
 	return
 }
 
-func approxDataSize(rv reflect.Value) (sum int) {
+func ApproxDataSize(rv reflect.Value) (sum int) {
 	switch rk := rv.Kind(); rk {
 	case reflect.Invalid:
 	case reflect.Ptr, reflect.Interface:
 		sum += int(rv.Type().Size())
-		sum += approxDataSize(rv.Elem())
+		sum += ApproxDataSize(rv.Elem())
 	case reflect.Slice:
 		sum += int(rv.Type().Size())
 		for j := 0; j < rv.Len(); j++ {
-			sum += approxDataSize(rv.Index(j))
+			sum += ApproxDataSize(rv.Index(j))
 		}
 	case reflect.String:
 		sum += int(rv.Type().Size())
@@ -39,14 +39,14 @@ func approxDataSize(rv reflect.Value) (sum int) {
 	case reflect.Map:
 		sum += int(rv.Type().Size())
 		for _, mk := range rv.MapKeys() {
-			sum += approxDataSize(mk)
-			sum += approxDataSize(rv.MapIndex(mk))
+			sum += ApproxDataSize(mk)
+			sum += ApproxDataSize(rv.MapIndex(mk))
 		}
 	case reflect.Struct:
 		//struct size already includes the full data size.
 		//sum += int(rv.Type().Size())
 		for j := 0; j < rv.NumField(); j++ {
-			sum += approxDataSize(rv.Field(j))
+			sum += ApproxDataSize(rv.Field(j))
 		}
 	default:
 		//pure value types

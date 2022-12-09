@@ -1,13 +1,6 @@
-[![Sourcegraph](https://sourcegraph.com/github.com/ugorji/go/-/badge.svg?v=4)](https://sourcegraph.com/github.com/ugorji/go/-/tree/codec?badge)
-[![Build Status](https://travis-ci.org/ugorji/go.svg?branch=master)](https://travis-ci.org/ugorji/go)
-[![codecov](https://codecov.io/gh/ugorji/go/branch/master/graph/badge.svg?v=4)](https://codecov.io/gh/ugorji/go)
-[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/ugorji/go/codec)
-[![rcard](https://goreportcard.com/badge/github.com/ugorji/go/codec?v=4)](https://goreportcard.com/report/github.com/ugorji/go/codec)
-[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/ugorji/go/master/LICENSE)
+# go-msgpack
 
-# go-codec
-
-This repository contains the `go-codec` library.
+This repository contains the `go-msgpack` library.
 
 To install:
 
@@ -18,23 +11,13 @@ go get github.com/hashicorp/go-msgpack/codec
 # Package Documentation
 
 
-Package codec provides a High Performance, Feature-Rich Idiomatic Go 1.4+
-codec/encoding library for binc, msgpack, cbor, json.
+Package codec provides a High Performance, Feature-Rich Idiomatic
+codec/encoding library for msgpack, json.
 
 Supported Serialization formats are:
 
   - msgpack: https://github.com/msgpack/msgpack
-  - binc:    http://github.com/ugorji/binc
-  - cbor:    http://cbor.io http://tools.ietf.org/html/rfc7049
   - json:    http://json.org http://tools.ietf.org/html/rfc7159
-  - simple:
-
-This package will carefully use 'package unsafe' for performance reasons in
-specific places. You can build without unsafe use by passing the safe or
-appengine tag i.e. 'go install -tags=safe ...'. Note that unsafe is only
-supported for the last 4 go releases e.g. current go release is go 1.12, so
-we support unsafe use only from go 1.9+ . This is because supporting unsafe
-requires knowledge of implementation details.
 
 For detailed usage information, read the primer at
 http://ugorji.net/blog/go-codec-primer .
@@ -45,12 +28,9 @@ standard library (ie json, xml, gob, etc).
 Rich Feature Set includes:
 
   - Simple but extremely powerful and feature-rich API
-  - Support for go1.4 and above, while selectively using newer APIs for later releases
   - Excellent code coverage ( > 90% )
   - Very High Performance.
     Our extensive benchmarks show us outperforming Gob, Json, Bson, etc by 2-4X.
-  - Careful selected use of 'unsafe' for targeted performance gains.
-    100% mode exists where 'unsafe' is not used at all.
   - Lock-free (sans mutex) concurrency for scaling to 100's of cores
   - In-place updates during decode, with option to zero value in maps and slices prior to decode
   - Coerce types where appropriate
@@ -76,9 +56,9 @@ Rich Feature Set includes:
   - Comprehensive support for anonymous fields
   - Fast (no-reflection) encoding/decoding of common maps and slices
   - Code-generation for faster performance.
-  - Support binary (e.g. messagepack, cbor) and text (e.g. json) formats
+  - Support binary (e.g. messagepack) and text (e.g. json) formats
   - Support indefinite-length formats to enable true streaming
-    (for formats which support it e.g. json, cbor)
+    (for formats which support it e.g. json)
   - Support canonical encoding, where a value is ALWAYS encoded as same sequence of bytes.
     This mostly applies to maps, where iteration order is non-deterministic.
   - NIL in data stream decoded as zero value
@@ -166,23 +146,21 @@ Sample usage model:
 ```go
     // create and configure Handle
     var (
-      bh codec.BincHandle
       mh codec.MsgpackHandle
-      ch codec.CborHandle
     )
 
     mh.MapType = reflect.TypeOf(map[string]interface{}(nil))
 
     // configure extensions
     // e.g. for msgpack, define functions and enable Time support for tag 1
-    // mh.SetExt(reflect.TypeOf(time.Time{}), 1, myExt)
+    mh.SetExt(reflect.TypeOf(time.Time{}), 1, myExt)
 
     // create and use decoder/encoder
     var (
       r io.Reader
       w io.Writer
       b []byte
-      h = &bh // or mh to use msgpack
+      h = &mh
     )
 
     dec = codec.NewDecoder(r, h)
@@ -235,11 +213,14 @@ You can run the tag 'safe' to run tests or build in safe mode. e.g.
 ## Running Benchmarks
 
 ```
-    cd bench
+    cd codec/bench
+    ./bench.sh -d
+    ./bench.sh -c
+    ./bench.sh -s
     go test -bench . -benchmem -benchtime 1s
 ```
 
-Please see http://github.com/ugorji/go-codec-bench .
+Please see http://github.com/hashicorp/go-codec-bench .
 
 
 ## Caveats
@@ -251,48 +232,9 @@ decoding
   - func, complex numbers, unsafe pointers
   - unexported and not embedded
   - unexported and embedded and not struct kind
-  - unexported and embedded pointers (from go1.10)
+  - unexported and embedded pointers
 
 Every other field in a struct will be encoded/decoded.
 
 Embedded fields are encoded as if they exist in the top-level struct, with
 some caveats. See Encode documentation.
-
-## Exported Package API
-
-```go
-const CborStreamBytes byte = 0x5f ...
-const GenVersion = 10
-var GoRpc goRpc
-var MsgpackSpecRpc msgpackSpecRpc
-func GenHelperDecoder(d *Decoder) (gd genHelperDecoder, dd genHelperDecDriver)
-func GenHelperEncoder(e *Encoder) (ge genHelperEncoder, ee genHelperEncDriver)
-type BasicHandle struct{ ... }
-type BincHandle struct{ ... }
-type BytesExt interface{ ... }
-type CborHandle struct{ ... }
-type DecodeOptions struct{ ... }
-type Decoder struct{ ... }
-    func NewDecoder(r io.Reader, h Handle) *Decoder
-    func NewDecoderBytes(in []byte, h Handle) *Decoder
-type EncodeOptions struct{ ... }
-type Encoder struct{ ... }
-    func NewEncoder(w io.Writer, h Handle) *Encoder
-    func NewEncoderBytes(out *[]byte, h Handle) *Encoder
-type Ext interface{ ... }
-type Handle interface{ ... }
-type InterfaceExt interface{ ... }
-type JsonHandle struct{ ... }
-type MapBySlice interface{ ... }
-type MissingFielder interface{ ... }
-type MsgpackHandle struct{ ... }
-type MsgpackSpecRpcMultiArgs []interface{}
-type RPCOptions struct{ ... }
-type Raw []byte
-type RawExt struct{ ... }
-type Rpc interface{ ... }
-type Selfer interface{ ... }
-type SimpleHandle struct{ ... }
-type TypeInfos struct{ ... }
-    func NewTypeInfos(tags []string) *TypeInfos
-```

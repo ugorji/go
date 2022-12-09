@@ -1712,7 +1712,7 @@ LOOP:
 			// Also, from go1.10, ignore pointers to unexported struct types
 			// because unmarshal cannot assign a new struct to an unexported field.
 			// See https://golang.org/issue/21357
-			if (isUnexported && !isStruct) || (!allowSetUnexportedEmbeddedPtr && isUnexported && isPtr) {
+			if (isUnexported && !isStruct) || (isUnexported && isPtr) {
 				continue
 			}
 			doInline := stag == ""
@@ -2916,4 +2916,11 @@ func (e *Encoder) kUint64(f *codecFnInfo, rv reflect.Value) {
 
 func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(rv.Uint())
+}
+
+func makeMapReflect(t reflect.Type, size int) reflect.Value {
+	if size < 0 {
+		return reflect.MakeMapWithSize(t, 4)
+	}
+	return reflect.MakeMapWithSize(t, size)
 }

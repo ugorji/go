@@ -25,6 +25,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/go-msgpack/v2/codec/internal"
 )
 
 func init() {
@@ -300,6 +302,163 @@ func (x *wrapBytesExt) UpdateExt(dest interface{}, v interface{}) {
 
 // ----
 
+// EncodeTime encodes a time.Time as a []byte, including
+// information on the instant in time and UTC offset.
+//
+// Format Description
+//
+//	A timestamp is composed of 3 components:
+//
+//	- secs: signed integer representing seconds since unix epoch
+//	- nsces: unsigned integer representing fractional seconds as a
+//	  nanosecond offset within secs, in the range 0 <= nsecs < 1e9
+//	- tz: signed integer representing timezone offset in minutes east of UTC,
+//	  and a dst (daylight savings time) flag
+//
+//	When encoding a timestamp, the first byte is the descriptor, which
+//	defines which components are encoded and how many bytes are used to
+//	encode secs and nsecs components. *If secs/nsecs is 0 or tz is UTC, it
+//	is not encoded in the byte array explicitly*.
+//
+//	    Descriptor 8 bits are of the form `A B C DDD EE`:
+//	        A:   Is secs component encoded? 1 = true
+//	        B:   Is nsecs component encoded? 1 = true
+//	        C:   Is tz component encoded? 1 = true
+//	        DDD: Number of extra bytes for secs (range 0-7).
+//	             If A = 1, secs encoded in DDD+1 bytes.
+//	                 If A = 0, secs is not encoded, and is assumed to be 0.
+//	                 If A = 1, then we need at least 1 byte to encode secs.
+//	                 DDD says the number of extra bytes beyond that 1.
+//	                 E.g. if DDD=0, then secs is represented in 1 byte.
+//	                      if DDD=2, then secs is represented in 3 bytes.
+//	        EE:  Number of extra bytes for nsecs (range 0-3).
+//	             If B = 1, nsecs encoded in EE+1 bytes (similar to secs/DDD above)
+//
+//	Following the descriptor bytes, subsequent bytes are:
+//
+//	    secs component encoded in `DDD + 1` bytes (if A == 1)
+//	    nsecs component encoded in `EE + 1` bytes (if B == 1)
+//	    tz component encoded in 2 bytes (if C == 1)
+//
+//	secs and nsecs components are integers encoded in a BigEndian
+//	2-complement encoding format.
+//
+//	tz component is encoded as 2 bytes (16 bits). Most significant bit 15 to
+//	Least significant bit 0 are described below:
+//
+//	    Timezone offset has a range of -12:00 to +14:00 (ie -720 to +840 minutes).
+//	    Bit 15 = have\_dst: set to 1 if we set the dst flag.
+//	    Bit 14 = dst\_on: set to 1 if dst is in effect at the time, or 0 if not.
+//	    Bits 13..0 = timezone offset in minutes. It is a signed integer in Big Endian format.
+func bincEncodeTime(t time.Time) []byte {
+	//t := rv.Interface().(time.Time)
+	tsecs, tnsecs := t.Unix(), t.Nanosecond()
+	var (
+		bd   byte
+		btmp [8]byte
+		bs   [16]byte
+		i    int = 1
+	)
+	l := t.Location()
+	if l == time.UTC {
+		l = nil
+	}
+	if tsecs != 0 {
+		bd = bd | 0x80
+		bigen.PutUint64(btmp[:], uint64(tsecs))
+		f := pruneSignExt(btmp[:], tsecs >= 0)
+		bd = bd | (byte(7-f) << 2)
+		copy(bs[i:], btmp[f:])
+		i = i + (8 - f)
+	}
+	if tnsecs != 0 {
+		bd = bd | 0x40
+		bigen.PutUint32(btmp[:4], uint32(tnsecs))
+		f := pruneSignExt(btmp[:4], true)
+		bd = bd | byte(3-f)
+		copy(bs[i:], btmp[f:4])
+		i = i + (4 - f)
+	}
+	if l != nil {
+		bd = bd | 0x20
+		// Note that Go Libs do not give access to dst flag.
+		_, zoneOffset := t.Zone()
+		//zoneName, zoneOffset := t.Zone()
+		zoneOffset /= 60
+		z := uint16(zoneOffset)
+		bigen.PutUint16(btmp[:2], z)
+		// clear dst flags
+		bs[i] = btmp[0] & 0x3f
+		bs[i+1] = btmp[1]
+		i = i + 2
+	}
+	bs[0] = bd
+	return bs[0:i]
+}
+
+// bincDecodeTime decodes a []byte into a time.Time.
+func bincDecodeTime(bs []byte) (tt time.Time, err error) {
+	bd := bs[0]
+	var (
+		tsec  int64
+		tnsec uint32
+		tz    uint16
+		i     byte = 1
+		i2    byte
+		n     byte
+	)
+	if bd&(1<<7) != 0 {
+		var btmp [8]byte
+		n = ((bd >> 2) & 0x7) + 1
+		i2 = i + n
+		copy(btmp[8-n:], bs[i:i2])
+		//if first bit of bs[i] is set, then fill btmp[0..8-n] with 0xff (ie sign extend it)
+		if bs[i]&(1<<7) != 0 {
+			copy(btmp[0:8-n], bsAll0xff)
+			//for j,k := byte(0), 8-n; j < k; j++ {	btmp[j] = 0xff }
+		}
+		i = i2
+		tsec = int64(bigen.Uint64(btmp[:]))
+	}
+	if bd&(1<<6) != 0 {
+		var btmp [4]byte
+		n = (bd & 0x3) + 1
+		i2 = i + n
+		copy(btmp[4-n:], bs[i:i2])
+		i = i2
+		tnsec = bigen.Uint32(btmp[:])
+	}
+	if bd&(1<<5) == 0 {
+		tt = time.Unix(tsec, int64(tnsec)).UTC()
+		return
+	}
+	// In stdlib time.Parse, when a date is parsed without a zone name, it uses "" as zone name.
+	// However, we need name here, so it can be shown when time is printf.d.
+	// Zone name is in form: UTC-08:00.
+	// Note that Go Libs do not give access to dst flag, so we ignore dst bits
+
+	i2 = i + 2
+	tz = bigen.Uint16(bs[i:i2])
+	// i = i2
+	// sign extend sign bit into top 2 MSB (which were dst bits):
+	if tz&(1<<13) == 0 { // positive
+		tz = tz & 0x3fff //clear 2 MSBs: dst bits
+	} else { // negative
+		tz = tz | 0xc000 //set 2 MSBs: dst bits
+	}
+	tzint := int16(tz)
+	if tzint == 0 {
+		tt = time.Unix(tsec, int64(tnsec)).UTC()
+	} else {
+		// For Go Time, do not use a descriptive timezone.
+		// It's unnecessary, and makes it harder to do a reflect.DeepEqual.
+		// The Offset already tells what the offset should be, if not on UTC and unknown zone name.
+		// var zoneName = timeLocUTCName(tzint)
+		tt = time.Unix(tsec, int64(tnsec)).In(time.FixedZone("", int(tzint)*60))
+	}
+	return
+}
+
 // timeExt is an extension handler for time.Time, that uses binc model for encoding/decoding time.
 // we used binc model, as that is the only custom time representation that we designed ourselves.
 type timeExt struct{}
@@ -348,7 +507,7 @@ func checkErrT(t *testing.T, err error) {
 }
 
 func checkEqualT(t *testing.T, v1 interface{}, v2 interface{}, desc string) {
-	if err := deepEqual(v1, v2); err != nil {
+	if err := internal.DeepEqual(v1, v2); err != nil {
 		failT(t, "Not Equal: %s: %v. v1: %v, v2: %v", desc, err, v1, v2)
 	}
 }
@@ -386,28 +545,8 @@ func testInit() {
 
 	testMsgpackH.WriteExt = true
 
-	var tTimeExt timeExt
 	var tBytesExt wrapBytesExt
 	var tI64Ext wrapInt64Ext
-
-	// create legacy functions suitable for deprecated AddExt functionality,
-	// and use on some places for testSimpleH e.g. for time.Time and wrapInt64
-	var (
-		myExtEncFn = func(x BytesExt, rv reflect.Value) (bs []byte, err error) {
-			defer panicToErr(errDecoratorDef{}, &err)
-			bs = x.WriteExt(rv.Interface())
-			return
-		}
-		myExtDecFn = func(x BytesExt, rv reflect.Value, bs []byte) (err error) {
-			defer panicToErr(errDecoratorDef{}, &err)
-			x.ReadExt(rv.Interface(), bs)
-			return
-		}
-		timeExtEncFn      = func(rv reflect.Value) (bs []byte, err error) { return myExtEncFn(tTimeExt, rv) }
-		timeExtDecFn      = func(rv reflect.Value, bs []byte) (err error) { return myExtDecFn(tTimeExt, rv, bs) }
-		wrapInt64ExtEncFn = func(rv reflect.Value) (bs []byte, err error) { return myExtEncFn(&tI64Ext, rv) }
-		wrapInt64ExtDecFn = func(rv reflect.Value, bs []byte) (err error) { return myExtDecFn(&tI64Ext, rv, bs) }
-	)
 
 	chkErr := func(err error) {
 		if err != nil {
@@ -417,27 +556,18 @@ func testInit() {
 
 	// time.Time is a native type, so extensions will have no effect.
 	// However, we add these here to ensure nothing happens.
-	chkErr(testSimpleH.AddExt(timeTyp, 1, timeExtEncFn, timeExtDecFn))
-	// testBincH.SetBytesExt(timeTyp, 1, timeExt{}) // time is builtin for binc
 	chkErr(testMsgpackH.SetBytesExt(timeTyp, 1, timeExt{}))
-	chkErr(testCborH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{}))
 	// testJsonH.SetInterfaceExt(timeTyp, 1, &testUnixNanoTimeExt{})
 
 	// Now, add extensions for the type wrapInt64 and wrapBytes,
 	// so we can execute the Encode/Decode Ext paths.
 
-	chkErr(testSimpleH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt))
 	chkErr(testMsgpackH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt))
-	chkErr(testBincH.SetBytesExt(wrapBytesTyp, 32, &tBytesExt))
 	chkErr(testJsonH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt))
-	chkErr(testCborH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt))
 
-	chkErr(testSimpleH.AddExt(wrapInt64Typ, 16, wrapInt64ExtEncFn, wrapInt64ExtDecFn))
 	// chkErr(testSimpleH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext))
 	chkErr(testMsgpackH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext))
-	chkErr(testBincH.SetBytesExt(wrapInt64Typ, 16, &tI64Ext))
 	chkErr(testJsonH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext))
-	chkErr(testCborH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext))
 
 	// primitives MUST be an even number, so it can be used as a mapBySlice also.
 	primitives := []interface{}{
@@ -601,7 +731,6 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 	//  - all positive integers are unsigned 64-bit ints
 	//  - all floats are float64
 	_, isMsgp := h.(*MsgpackHandle)
-	_, isCbor := h.(*CborHandle)
 	switch iv := v.(type) {
 	case int8:
 		v2 = testVerifyValInt(int64(iv), isMsgp)
@@ -694,9 +823,6 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 			}
 		case isMsgp:
 			v2 = iv.UTC()
-		case isCbor:
-			// fmt.Printf("%%%% cbor verifier\n")
-			v2 = iv.UTC().Round(time.Microsecond)
 		default:
 			v2 = v
 		}
@@ -729,7 +855,7 @@ func testUnmarshalErr(v interface{}, data []byte, h Handle, t *testing.T, name s
 }
 
 func testDeepEqualErr(v1, v2 interface{}, t *testing.T, name string) {
-	if err := deepEqual(v1, v2); err == nil {
+	if err := internal.DeepEqual(v1, v2); err == nil {
 		logT(t, "%s: values equal", name)
 	} else {
 		failT(t, "%s: values not equal: %v. 1: %v, 2: %v", name, err, v1, v2)
@@ -801,7 +927,7 @@ func doTestCodecTableOne(t *testing.T, testNil bool, h Handle,
 			continue
 		}
 
-		if err = deepEqual(v0check, v1); err == nil {
+		if err = internal.DeepEqual(v0check, v1); err == nil {
 			logT(t, "++++++++ Before and After marshal matched\n")
 		} else {
 			// logT(t, "-------- Before and After marshal do not match: Error: %v"+
@@ -921,13 +1047,13 @@ func testCodecMiscOne(t *testing.T, h Handle) {
 	// log("m: %v, m2: %v, p: %v, p2: %v", m, m2, p, p2)
 	checkEqualT(t, p, p2, "p=p2")
 	checkEqualT(t, m, m2, "m=m2")
-	if err = deepEqual(p, p2); err == nil {
+	if err = internal.DeepEqual(p, p2); err == nil {
 		logT(t, "p and p2 match")
 	} else {
 		logT(t, "Not Equal: %v. p: %v, p2: %v", err, p, p2)
 		failT(t)
 	}
-	if err = deepEqual(m, m2); err == nil {
+	if err = internal.DeepEqual(m, m2); err == nil {
 		logT(t, "m and m2 match")
 	} else {
 		logT(t, "Not Equal: %v. m: %v, m2: %v", err, m, m2)
@@ -1060,7 +1186,7 @@ func testCodecChan(t *testing.T, h Handle) {
 		for j := range ch2 {
 			sl2 = append(sl2, j)
 		}
-		if err := deepEqual(sl1, sl2); err != nil {
+		if err := internal.DeepEqual(sl1, sl2); err != nil {
 			logT(t, "FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
 			failT(t)
 		}
@@ -1088,7 +1214,7 @@ func testCodecChan(t *testing.T, h Handle) {
 			// logT(t, ">>>> from chan: is nil? %v, %v", j == nil, j)
 			sl2 = append(sl2, j)
 		}
-		if err := deepEqual(sl1, sl2); err != nil {
+		if err := internal.DeepEqual(sl1, sl2); err != nil {
 			logT(t, "FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
 			failT(t)
 		}
@@ -1114,7 +1240,7 @@ func testCodecChan(t *testing.T, h Handle) {
 		for j := range ch2 {
 			sl2 = append(sl2, j)
 		}
-		if err := deepEqual(sl1, sl2); err != nil {
+		if err := internal.DeepEqual(sl1, sl2); err != nil {
 			logT(t, "FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
 			failT(t)
 		}
@@ -1140,7 +1266,7 @@ func testCodecChan(t *testing.T, h Handle) {
 		for j := range ch2 {
 			sl2 = append(sl2, j)
 		}
-		if err := deepEqual(sl1, sl2); err != nil {
+		if err := internal.DeepEqual(sl1, sl2); err != nil {
 			logT(t, "FAIL: Not Match: %v; len: %v, %v", err, len(sl1), len(sl2))
 			failT(t)
 		}
@@ -1294,7 +1420,7 @@ func doTestMapEncodeForCanonical(t *testing.T, name string, h Handle) {
 		},
 	}
 	var v2 map[stringUint64T]interface{}
-	var b1, b2, b3 []byte
+	var b1, b2 []byte
 
 	// encode v1 into b1, decode b1 into v2, encode v2 into b2, and compare b1 and b2.
 	// OR
@@ -1303,10 +1429,6 @@ func doTestMapEncodeForCanonical(t *testing.T, name string, h Handle) {
 	//   where each key is encoded as an indefinite length string, which makes it not the same
 	//   order as the strings were lexicographically ordered before.
 
-	var cborIndef bool
-	if ch, ok := h.(*CborHandle); ok {
-		cborIndef = ch.IndefiniteLength
-	}
 	bh := basicHandle(h)
 	if !bh.Canonical {
 		bh.Canonical = true
@@ -1321,11 +1443,6 @@ func doTestMapEncodeForCanonical(t *testing.T, name string, h Handle) {
 	e2 := NewEncoderBytes(&b2, h)
 	e2.MustEncode(v2)
 	var b1t, b2t = b1, b2
-	if cborIndef {
-		e2 = NewEncoderBytes(&b3, h)
-		e2.MustEncode(v2)
-		b1t, b2t = b2, b3
-	}
 
 	if !bytes.Equal(b1t, b2t) {
 		logT(t, "Unequal bytes: %v VS %v", b1t, b2t)
@@ -1345,7 +1462,7 @@ func doTestStdEncIntf(t *testing.T, name string, h Handle) {
 		e.MustEncode(a[0])
 		d := NewDecoderBytes(b, h)
 		d.MustDecode(a[1])
-		if err := deepEqual(a[0], a[1]); err == nil {
+		if err := internal.DeepEqual(a[0], a[1]); err == nil {
 			logT(t, "++++ Objects match")
 		} else {
 			logT(t, "---- FAIL: Objects do not match: y1: %v, err: %v", a[1], err)
@@ -1609,7 +1726,7 @@ func doTestPythonGenStreams(t *testing.T, name string, h Handle) {
 		}
 		//no need to indirect, because we pass a nil ptr, so we already have the value
 		//if v1 != nil { v1 = reflect.Indirect(reflect.ValueOf(v1)).Interface() }
-		if err = deepEqual(v, v1); err == nil {
+		if err = internal.DeepEqual(v, v1); err == nil {
 			logT(t, "++++++++ Objects match: %T, %v", v, v)
 		} else {
 			logT(t, "-------- FAIL: Objects do not match: %v. Source: %T. Decoded: %T", err, v, v1)
@@ -1624,7 +1741,7 @@ func doTestPythonGenStreams(t *testing.T, name string, h Handle) {
 			failT(t)
 			continue
 		}
-		if err = deepEqual(bsb, bss); err == nil {
+		if err = internal.DeepEqual(bsb, bss); err == nil {
 			logT(t, "++++++++ Bytes match")
 		} else {
 			logT(t, "???????? FAIL: Bytes do not match. %v.", err)
@@ -1722,7 +1839,6 @@ func doTestRawExt(t *testing.T, h Handle) {
 	var b []byte
 	var v RawExt // interface{}
 	_, isJson := h.(*JsonHandle)
-	_, isCbor := h.(*CborHandle)
 	bh := basicHandle(h)
 	// isValuer := isJson || isCbor
 	// _ = isValuer
@@ -1738,8 +1854,6 @@ func doTestRawExt(t *testing.T, h Handle) {
 		switch {
 		case isJson:
 			r2.Tag = 0
-			r2.Data = nil
-		case isCbor:
 			r2.Data = nil
 		default:
 			r2.Value = nil
@@ -1935,11 +2049,6 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	// to do this, we create a simple one-field struct,
 	// use use flags to switch from symbols to non-symbols
 
-	hbinc, okbinc := h.(*BincHandle)
-	if okbinc {
-		oldAsSymbols := hbinc.AsSymbols
-		defer func() { hbinc.AsSymbols = oldAsSymbols }()
-	}
 	var out []byte = make([]byte, 0, math.MaxUint16*3/2)
 	var in []byte = make([]byte, math.MaxUint16*3/2)
 	for i := range in {
@@ -1960,9 +2069,6 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		// fmt.Printf("testcontainerlen: large string: i: %v, |%s|\n", i, s1)
 		m1[s1] = true
 
-		if okbinc {
-			hbinc.AsSymbols = 2
-		}
 		out = out[:0]
 		e.ResetBytes(&out)
 		e.MustEncode(m1)
@@ -1970,18 +2076,6 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		m2 = make(map[string]bool, 1)
 		testUnmarshalErr(m2, out, h, t, "no-symbols")
 		testDeepEqualErr(m1, m2, t, "no-symbols")
-
-		if okbinc {
-			// now, do as symbols
-			hbinc.AsSymbols = 1
-			out = out[:0]
-			e.ResetBytes(&out)
-			e.MustEncode(m1)
-			// bs, _ = testMarshalErr(m1, h, t, "-")
-			m2 = make(map[string]bool, 1)
-			testUnmarshalErr(m2, out, h, t, "symbols")
-			testDeepEqualErr(m1, m2, t, "symbols")
-		}
 	}
 
 }
@@ -2204,7 +2298,7 @@ func doTestDifferentMapOrSliceType(t *testing.T, name string, h Handle) {
 		v2d = nil
 		// v2d = reflect.New(bh.MapType).Elem().Interface()
 		switch h.(type) {
-		case *MsgpackHandle, *BincHandle, *CborHandle:
+		case *MsgpackHandle:
 			b = testMarshalErr(v2i, h, t, name)
 			testUnmarshalErr(&v2d, b, h, t, name)
 			testDeepEqualErr(v2d, goldMap[j], t, name)
@@ -2481,7 +2575,7 @@ func TestJsonDecodeNonStringScalarInStringContext(t *testing.T) {
 	var m map[string]string
 	d := NewDecoderBytes([]byte(b), testJsonH)
 	d.MustDecode(&m)
-	if err := deepEqual(golden, m); err == nil {
+	if err := internal.DeepEqual(golden, m); err == nil {
 		logT(t, "++++ match: decoded: %#v", m)
 	} else {
 		logT(t, "---- mismatch: %v ==> golden: %#v, decoded: %#v", err, golden, m)
@@ -2786,46 +2880,6 @@ func TestMsgpackDecodeMapAndExtSizeMismatch(t *testing.T) {
 
 // ----------
 
-func TestBincCodecsTable(t *testing.T) {
-	testCodecTableOne(t, testBincH)
-}
-
-func TestBincCodecsMisc(t *testing.T) {
-	testCodecMiscOne(t, testBincH)
-}
-
-func TestBincCodecsEmbeddedPointer(t *testing.T) {
-	testCodecEmbeddedPointer(t, testBincH)
-}
-
-func TestBincStdEncIntf(t *testing.T) {
-	doTestStdEncIntf(t, "binc", testBincH)
-}
-
-func TestBincMammoth(t *testing.T) {
-	testMammoth(t, "binc", testBincH)
-}
-
-func TestSimpleCodecsTable(t *testing.T) {
-	testCodecTableOne(t, testSimpleH)
-}
-
-func TestSimpleCodecsMisc(t *testing.T) {
-	testCodecMiscOne(t, testSimpleH)
-}
-
-func TestSimpleCodecsEmbeddedPointer(t *testing.T) {
-	testCodecEmbeddedPointer(t, testSimpleH)
-}
-
-func TestSimpleStdEncIntf(t *testing.T) {
-	doTestStdEncIntf(t, "simple", testSimpleH)
-}
-
-func TestSimpleMammoth(t *testing.T) {
-	testMammoth(t, "simple", testSimpleH)
-}
-
 func TestMsgpackCodecsTable(t *testing.T) {
 	testCodecTableOne(t, testMsgpackH)
 }
@@ -2844,34 +2898,6 @@ func TestMsgpackStdEncIntf(t *testing.T) {
 
 func TestMsgpackMammoth(t *testing.T) {
 	testMammoth(t, "msgpack", testMsgpackH)
-}
-
-func TestCborCodecsTable(t *testing.T) {
-	testCodecTableOne(t, testCborH)
-}
-
-func TestCborCodecsMisc(t *testing.T) {
-	testCodecMiscOne(t, testCborH)
-}
-
-func TestCborCodecsEmbeddedPointer(t *testing.T) {
-	testCodecEmbeddedPointer(t, testCborH)
-}
-
-func TestCborMapEncodeForCanonical(t *testing.T) {
-	doTestMapEncodeForCanonical(t, "cbor", testCborH)
-}
-
-func TestCborCodecChan(t *testing.T) {
-	testCodecChan(t, testCborH)
-}
-
-func TestCborStdEncIntf(t *testing.T) {
-	doTestStdEncIntf(t, "cbor", testCborH)
-}
-
-func TestCborMammoth(t *testing.T) {
-	testMammoth(t, "cbor", testCborH)
 }
 
 func TestJsonCodecsTable(t *testing.T) {
@@ -2902,50 +2928,20 @@ func TestJsonMammoth(t *testing.T) {
 func TestJsonRaw(t *testing.T) {
 	doTestRawValue(t, "json", testJsonH)
 }
-func TestBincRaw(t *testing.T) {
-	doTestRawValue(t, "binc", testBincH)
-}
 func TestMsgpackRaw(t *testing.T) {
 	doTestRawValue(t, "msgpack", testMsgpackH)
-}
-func TestSimpleRaw(t *testing.T) {
-	doTestRawValue(t, "simple", testSimpleH)
-}
-func TestCborRaw(t *testing.T) {
-	doTestRawValue(t, "cbor", testCborH)
 }
 
 // ----- ALL (framework based) -----
 
-func TestAllEncCircularRef(t *testing.T) {
-	doTestEncCircularRef(t, "cbor", testCborH)
-}
-
-func TestAllAnonCycle(t *testing.T) {
-	doTestAnonCycle(t, "cbor", testCborH)
-}
-
 func TestAllErrWriter(t *testing.T) {
-	doTestErrWriter(t, "cbor", testCborH)
 	doTestErrWriter(t, "json", testJsonH)
 }
 
 // ----- RPC -----
 
-func TestBincRpcGo(t *testing.T) {
-	testCodecRpcOne(t, GoRpc, testBincH, true, 0)
-}
-
-func TestSimpleRpcGo(t *testing.T) {
-	testCodecRpcOne(t, GoRpc, testSimpleH, true, 0)
-}
-
 func TestMsgpackRpcGo(t *testing.T) {
 	testCodecRpcOne(t, GoRpc, testMsgpackH, true, 0)
-}
-
-func TestCborRpcGo(t *testing.T) {
-	testCodecRpcOne(t, GoRpc, testCborH, true, 0)
 }
 
 func TestJsonRpcGo(t *testing.T) {
@@ -2956,136 +2952,56 @@ func TestMsgpackRpcSpec(t *testing.T) {
 	testCodecRpcOne(t, MsgpackSpecRpc, testMsgpackH, true, 0)
 }
 
-func TestBincUnderlyingType(t *testing.T) {
-	testCodecUnderlyingType(t, testBincH)
-}
-
 func TestJsonSwallowAndZero(t *testing.T) {
 	doTestSwallowAndZero(t, testJsonH)
-}
-
-func TestCborSwallowAndZero(t *testing.T) {
-	doTestSwallowAndZero(t, testCborH)
 }
 
 func TestMsgpackSwallowAndZero(t *testing.T) {
 	doTestSwallowAndZero(t, testMsgpackH)
 }
 
-func TestBincSwallowAndZero(t *testing.T) {
-	doTestSwallowAndZero(t, testBincH)
-}
-
-func TestSimpleSwallowAndZero(t *testing.T) {
-	doTestSwallowAndZero(t, testSimpleH)
-}
-
 func TestJsonRawExt(t *testing.T) {
 	doTestRawExt(t, testJsonH)
-}
-
-func TestCborRawExt(t *testing.T) {
-	doTestRawExt(t, testCborH)
 }
 
 func TestMsgpackRawExt(t *testing.T) {
 	doTestRawExt(t, testMsgpackH)
 }
 
-func TestBincRawExt(t *testing.T) {
-	doTestRawExt(t, testBincH)
-}
-
-func TestSimpleRawExt(t *testing.T) {
-	doTestRawExt(t, testSimpleH)
-}
-
 func TestJsonMapStructKey(t *testing.T) {
 	doTestMapStructKey(t, testJsonH)
-}
-
-func TestCborMapStructKey(t *testing.T) {
-	doTestMapStructKey(t, testCborH)
 }
 
 func TestMsgpackMapStructKey(t *testing.T) {
 	doTestMapStructKey(t, testMsgpackH)
 }
 
-func TestBincMapStructKey(t *testing.T) {
-	doTestMapStructKey(t, testBincH)
-}
-
-func TestSimpleMapStructKey(t *testing.T) {
-	doTestMapStructKey(t, testSimpleH)
-}
-
 func TestJsonDecodeNilMapValue(t *testing.T) {
 	doTestDecodeNilMapValue(t, testJsonH)
-}
-
-func TestCborDecodeNilMapValue(t *testing.T) {
-	doTestDecodeNilMapValue(t, testCborH)
 }
 
 func TestMsgpackDecodeNilMapValue(t *testing.T) {
 	doTestDecodeNilMapValue(t, testMsgpackH)
 }
 
-func TestBincDecodeNilMapValue(t *testing.T) {
-	doTestDecodeNilMapValue(t, testBincH)
-}
-
-func TestSimpleDecodeNilMapValue(t *testing.T) {
-	doTestDecodeNilMapValue(t, testSimpleH)
-}
-
 func TestJsonEmbeddedFieldPrecedence(t *testing.T) {
 	doTestEmbeddedFieldPrecedence(t, testJsonH)
-}
-
-func TestCborEmbeddedFieldPrecedence(t *testing.T) {
-	doTestEmbeddedFieldPrecedence(t, testCborH)
 }
 
 func TestMsgpackEmbeddedFieldPrecedence(t *testing.T) {
 	doTestEmbeddedFieldPrecedence(t, testMsgpackH)
 }
 
-func TestBincEmbeddedFieldPrecedence(t *testing.T) {
-	doTestEmbeddedFieldPrecedence(t, testBincH)
-}
-
-func TestSimpleEmbeddedFieldPrecedence(t *testing.T) {
-	doTestEmbeddedFieldPrecedence(t, testSimpleH)
-}
-
 func TestJsonLargeContainerLen(t *testing.T) {
 	doTestLargeContainerLen(t, testJsonH)
-}
-
-func TestCborLargeContainerLen(t *testing.T) {
-	doTestLargeContainerLen(t, testCborH)
 }
 
 func TestMsgpackLargeContainerLen(t *testing.T) {
 	doTestLargeContainerLen(t, testMsgpackH)
 }
 
-func TestBincLargeContainerLen(t *testing.T) {
-	doTestLargeContainerLen(t, testBincH)
-}
-
-func TestSimpleLargeContainerLen(t *testing.T) {
-	doTestLargeContainerLen(t, testSimpleH)
-}
-
 func TestJsonMammothMapsAndSlices(t *testing.T) {
 	doTestMammothMapsAndSlices(t, testJsonH)
-}
-
-func TestCborMammothMapsAndSlices(t *testing.T) {
-	doTestMammothMapsAndSlices(t, testCborH)
 }
 
 func TestMsgpackMammothMapsAndSlices(t *testing.T) {
@@ -3096,172 +3012,68 @@ func TestMsgpackMammothMapsAndSlices(t *testing.T) {
 	doTestMammothMapsAndSlices(t, testMsgpackH)
 }
 
-func TestBincMammothMapsAndSlices(t *testing.T) {
-	doTestMammothMapsAndSlices(t, testBincH)
-}
-
-func TestSimpleMammothMapsAndSlices(t *testing.T) {
-	doTestMammothMapsAndSlices(t, testSimpleH)
-}
-
 func TestJsonTime(t *testing.T) {
 	testTime(t, "json", testJsonH)
-}
-
-func TestCborTime(t *testing.T) {
-	testTime(t, "cbor", testCborH)
 }
 
 func TestMsgpackTime(t *testing.T) {
 	testTime(t, "msgpack", testMsgpackH)
 }
 
-func TestBincTime(t *testing.T) {
-	testTime(t, "binc", testBincH)
-}
-
-func TestSimpleTime(t *testing.T) {
-	testTime(t, "simple", testSimpleH)
-}
-
 func TestJsonUintToInt(t *testing.T) {
 	testUintToInt(t, "json", testJsonH)
-}
-
-func TestCborUintToInt(t *testing.T) {
-	testUintToInt(t, "cbor", testCborH)
 }
 
 func TestMsgpackUintToInt(t *testing.T) {
 	testUintToInt(t, "msgpack", testMsgpackH)
 }
 
-func TestBincUintToInt(t *testing.T) {
-	testUintToInt(t, "binc", testBincH)
-}
-
-func TestSimpleUintToInt(t *testing.T) {
-	testUintToInt(t, "simple", testSimpleH)
-}
-
 func TestJsonDifferentMapOrSliceType(t *testing.T) {
 	doTestDifferentMapOrSliceType(t, "json", testJsonH)
-}
-
-func TestCborDifferentMapOrSliceType(t *testing.T) {
-	doTestDifferentMapOrSliceType(t, "cbor", testCborH)
 }
 
 func TestMsgpackDifferentMapOrSliceType(t *testing.T) {
 	doTestDifferentMapOrSliceType(t, "msgpack", testMsgpackH)
 }
 
-func TestBincDifferentMapOrSliceType(t *testing.T) {
-	doTestDifferentMapOrSliceType(t, "binc", testBincH)
-}
-
-func TestSimpleDifferentMapOrSliceType(t *testing.T) {
-	doTestDifferentMapOrSliceType(t, "simple", testSimpleH)
-}
-
 func TestJsonScalars(t *testing.T) {
 	doTestScalars(t, "json", testJsonH)
-}
-
-func TestCborScalars(t *testing.T) {
-	doTestScalars(t, "cbor", testCborH)
 }
 
 func TestMsgpackScalars(t *testing.T) {
 	doTestScalars(t, "msgpack", testMsgpackH)
 }
 
-func TestBincScalars(t *testing.T) {
-	doTestScalars(t, "binc", testBincH)
-}
-
-func TestSimpleScalars(t *testing.T) {
-	doTestScalars(t, "simple", testSimpleH)
-}
-
 func TestJsonOmitempty(t *testing.T) {
 	doTestOmitempty(t, "json", testJsonH)
-}
-
-func TestCborOmitempty(t *testing.T) {
-	doTestOmitempty(t, "cbor", testCborH)
 }
 
 func TestMsgpackOmitempty(t *testing.T) {
 	doTestOmitempty(t, "msgpack", testMsgpackH)
 }
 
-func TestBincOmitempty(t *testing.T) {
-	doTestOmitempty(t, "binc", testBincH)
-}
-
-func TestSimpleOmitempty(t *testing.T) {
-	doTestOmitempty(t, "simple", testSimpleH)
-}
-
 func TestJsonIntfMapping(t *testing.T) {
 	doTestIntfMapping(t, "json", testJsonH)
-}
-
-func TestCborIntfMapping(t *testing.T) {
-	doTestIntfMapping(t, "cbor", testCborH)
 }
 
 func TestMsgpackIntfMapping(t *testing.T) {
 	doTestIntfMapping(t, "msgpack", testMsgpackH)
 }
 
-func TestBincIntfMapping(t *testing.T) {
-	doTestIntfMapping(t, "binc", testBincH)
-}
-
-func TestSimpleIntfMapping(t *testing.T) {
-	doTestIntfMapping(t, "simple", testSimpleH)
-}
-
 func TestJsonMissingFields(t *testing.T) {
 	doTestMissingFields(t, "json", testJsonH)
-}
-
-func TestCborMissingFields(t *testing.T) {
-	doTestMissingFields(t, "cbor", testCborH)
 }
 
 func TestMsgpackMissingFields(t *testing.T) {
 	doTestMissingFields(t, "msgpack", testMsgpackH)
 }
 
-func TestBincMissingFields(t *testing.T) {
-	doTestMissingFields(t, "binc", testBincH)
-}
-
-func TestSimpleMissingFields(t *testing.T) {
-	doTestMissingFields(t, "simple", testSimpleH)
-}
-
 func TestJsonMaxDepth(t *testing.T) {
 	doTestMaxDepth(t, "json", testJsonH)
 }
 
-func TestCborMaxDepth(t *testing.T) {
-	doTestMaxDepth(t, "cbor", testCborH)
-}
-
 func TestMsgpackMaxDepth(t *testing.T) {
 	doTestMaxDepth(t, "msgpack", testMsgpackH)
-}
-
-func TestBincMaxDepth(t *testing.T) {
-	doTestMaxDepth(t, "binc", testBincH)
-}
-
-func TestSimpleMaxDepth(t *testing.T) {
-	doTestMaxDepth(t, "simple", testSimpleH)
 }
 
 func TestMultipleEncDec(t *testing.T) {

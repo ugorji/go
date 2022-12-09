@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/go-msgpack/v2/codec/internal"
 )
 
 // Sample way to run:
@@ -46,7 +48,7 @@ func benchReinit() {
 
 func benchPreInit() {
 	benchTs = newTestStruc(benchDepth, testNumRepeatString, true, !testSkipIntf, benchMapStringKeyOnly)
-	approxSize = approxDataSize(reflect.ValueOf(benchTs)) * 3 / 2 // multiply by 1.5 to appease msgp, and prevent alloc
+	approxSize = internal.ApproxDataSize(reflect.ValueOf(benchTs)) * 3 / 2 // multiply by 1.5 to appease msgp, and prevent alloc
 	// bytesLen := 1024 * 4 * (benchDepth + 1) * (benchDepth + 1)
 	// if bytesLen < approxSize {
 	// 	bytesLen = approxSize
@@ -54,9 +56,6 @@ func benchPreInit() {
 
 	benchCheckers = append(benchCheckers,
 		benchChecker{"msgpack", fnMsgpackEncodeFn, fnMsgpackDecodeFn},
-		benchChecker{"binc", fnBincEncodeFn, fnBincDecodeFn},
-		benchChecker{"simple", fnSimpleEncodeFn, fnSimpleDecodeFn},
-		benchChecker{"cbor", fnCborEncodeFn, fnCborDecodeFn},
 		benchChecker{"json", fnJsonEncodeFn, fnJsonDecodeFn},
 		benchChecker{"std-json", fnStdJsonEncodeFn, fnStdJsonDecodeFn},
 		benchChecker{"gob", fnGobEncodeFn, fnGobDecodeFn},
@@ -139,7 +138,7 @@ func doBenchCheck(name string, encfn benchEncFn, decfn benchDecFn) {
 	decDur := time.Since(tnow)
 	// if benchCheckDoDeepEqual {
 	if benchVerify {
-		err = deepEqual(benchTs, &ts2)
+		err = internal.DeepEqual(benchTs, &ts2)
 		if err == nil {
 			logT(nil, "\t%10s: len: %d bytes,\t encode: %v,\t decode: %v,\tencoded = decoded", name, encLen, encDur, decDur)
 		} else {
@@ -205,19 +204,6 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 		logT(b, "Error encoding benchTs: %s: %v", encName, err)
 		b.FailNow()
 	}
-	if false && benchVerify { // do not do benchVerify during decode
-		// ts2 := newfn()
-		ts1 := ts.(*TestStruc)
-		ts2 := new(TestStruc)
-		if err = decfn(buf, ts2); err != nil {
-			logT(b, "BenchVerify: Error decoding benchTs: %s: %v", encName, err)
-			b.FailNow()
-		}
-		if err = deepEqual(ts1, ts2); err != nil {
-			logT(b, "BenchVerify: Error comparing benchTs: %s: %v", encName, err)
-			b.FailNow()
-		}
-	}
 	runtime.GC()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -240,30 +226,6 @@ func fnMsgpackEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
 
 func fnMsgpackDecodeFn(buf []byte, ts interface{}) error {
 	return sTestCodecDecode(buf, ts, testMsgpackH, &testMsgpackH.BasicHandle)
-}
-
-func fnBincEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
-	return sTestCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testBincH, &testBincH.BasicHandle)
-}
-
-func fnBincDecodeFn(buf []byte, ts interface{}) error {
-	return sTestCodecDecode(buf, ts, testBincH, &testBincH.BasicHandle)
-}
-
-func fnSimpleEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
-	return sTestCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testSimpleH, &testSimpleH.BasicHandle)
-}
-
-func fnSimpleDecodeFn(buf []byte, ts interface{}) error {
-	return sTestCodecDecode(buf, ts, testSimpleH, &testSimpleH.BasicHandle)
-}
-
-func fnCborEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
-	return sTestCodecEncode(ts, bsIn, fnBenchmarkByteBuf, testCborH, &testCborH.BasicHandle)
-}
-
-func fnCborDecodeFn(buf []byte, ts interface{}) error {
-	return sTestCodecDecode(buf, ts, testCborH, &testCborH.BasicHandle)
 }
 
 func fnJsonEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
@@ -316,18 +278,6 @@ func Benchmark__Msgpack____Encode(b *testing.B) {
 	fnBenchmarkEncode(b, "msgpack", benchTs, fnMsgpackEncodeFn)
 }
 
-func Benchmark__Binc_______Encode(b *testing.B) {
-	fnBenchmarkEncode(b, "binc", benchTs, fnBincEncodeFn)
-}
-
-func Benchmark__Simple_____Encode(b *testing.B) {
-	fnBenchmarkEncode(b, "simple", benchTs, fnSimpleEncodeFn)
-}
-
-func Benchmark__Cbor_______Encode(b *testing.B) {
-	fnBenchmarkEncode(b, "cbor", benchTs, fnCborEncodeFn)
-}
-
 func Benchmark__Json_______Encode(b *testing.B) {
 	fnBenchmarkEncode(b, "json", benchTs, fnJsonEncodeFn)
 }
@@ -348,18 +298,6 @@ func Benchmark__Std_Xml____Encode(b *testing.B) {
 
 func Benchmark__Msgpack____Decode(b *testing.B) {
 	fnBenchmarkDecode(b, "msgpack", benchTs, fnMsgpackEncodeFn, fnMsgpackDecodeFn, fnBenchNewTs)
-}
-
-func Benchmark__Binc_______Decode(b *testing.B) {
-	fnBenchmarkDecode(b, "binc", benchTs, fnBincEncodeFn, fnBincDecodeFn, fnBenchNewTs)
-}
-
-func Benchmark__Simple_____Decode(b *testing.B) {
-	fnBenchmarkDecode(b, "simple", benchTs, fnSimpleEncodeFn, fnSimpleDecodeFn, fnBenchNewTs)
-}
-
-func Benchmark__Cbor_______Decode(b *testing.B) {
-	fnBenchmarkDecode(b, "cbor", benchTs, fnCborEncodeFn, fnCborDecodeFn, fnBenchNewTs)
 }
 
 func Benchmark__Json_______Decode(b *testing.B) {

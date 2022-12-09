@@ -1,5 +1,4 @@
 //go:build x
-// +build x
 
 // Copyright (c) 2012-2018 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -10,7 +9,6 @@ import (
 	"bytes"
 	"testing"
 
-	gcbor "bitbucket.org/bodhisnarkva/cbor/go" // gcbor "code.google.com/p/cbor/go"
 	"github.com/Sereal/Sereal/Go/sereal"
 	"github.com/davecgh/go-xdr/xdr2"
 	"github.com/json-iterator/go"
@@ -23,7 +21,6 @@ import (
  go get -u github.com/tinylib/msgp/msgp github.com/tinylib/msgp \
            github.com/pquerna/ffjson/ffjson github.com/pquerna/ffjson \
            github.com/Sereal/Sereal/Go/sereal \
-           bitbucket.org/bodhisnarkva/cbor/go \
            github.com/davecgh/go-xdr/xdr2 \
            gopkg.in/mgo.v2/bson \
            gopkg.in/vmihailenco/msgpack.v2 \
@@ -45,7 +42,6 @@ func benchXPreInit() {
 		benchChecker{"v-msgpack", fnVMsgpackEncodeFn, fnVMsgpackDecodeFn},
 		benchChecker{"bson", fnBsonEncodeFn, fnBsonDecodeFn},
 		// place codecs with issues at the end, so as not to make results too ugly
-		benchChecker{"gcbor", fnGcborEncodeFn, fnGcborDecodeFn}, // this logs fat ugly message, but we log.SetOutput(ioutil.Discard)
 		benchChecker{"xdr", fnXdrEncodeFn, fnXdrDecodeFn},
 		benchChecker{"sereal", fnSerealEncodeFn, fnSerealDecodeFn},
 	)
@@ -110,16 +106,6 @@ func fnSerealDecodeFn(buf []byte, ts interface{}) error {
 	return sereal.Unmarshal(buf, ts)
 }
 
-func fnGcborEncodeFn(ts interface{}, bsIn []byte) (bs []byte, err error) {
-	buf := fnBenchmarkByteBuf(bsIn)
-	err = gcbor.NewEncoder(buf).Encode(ts)
-	return buf.Bytes(), err
-}
-
-func fnGcborDecodeFn(buf []byte, ts interface{}) error {
-	return gcbor.NewDecoder(bytes.NewReader(buf)).Decode(ts)
-}
-
 func Benchmark__JsonIter___Encode(b *testing.B) {
 	fnBenchmarkEncode(b, "jsoniter", benchTs, fnJsonIterEncodeFn)
 }
@@ -144,14 +130,6 @@ func Benchmark__VMsgpack___Encode(b *testing.B) {
 
 func Benchmark__VMsgpack___Decode(b *testing.B) {
 	fnBenchmarkDecode(b, "v-msgpack", benchTs, fnVMsgpackEncodeFn, fnVMsgpackDecodeFn, fnBenchNewTs)
-}
-
-func Benchmark__Gcbor______Encode(b *testing.B) {
-	fnBenchmarkEncode(b, "gcbor", benchTs, fnGcborEncodeFn)
-}
-
-func Benchmark__Gcbor______Decode(b *testing.B) {
-	fnBenchmarkDecode(b, "gcbor", benchTs, fnGcborEncodeFn, fnGcborDecodeFn, fnBenchNewTs)
 }
 
 func Benchmark__Xdr________Encode(b *testing.B) {

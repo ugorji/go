@@ -2,15 +2,12 @@
 
 This is a comparison of different binary and text encodings.
 
-We compare the codecs provided by github.com/ugorji/go/codec package,
+We compare the codecs provided by github.com/hashicorp/go-msgpack/v2/codec package,
 against other libraries:
 
-[github.com/ugorji/go/codec](http://github.com/ugorji/go) provides:
+[github.com/go-msgpack/go-msgpack/v2/codec](http://github.com/hashicorp/go-msgpack/v2/codec) provides:
 
   - msgpack: [http://github.com/msgpack/msgpack] 
-  - binc:    [http://github.com/ugorji/binc]
-  - cbor:    [http://cbor.io] [http://tools.ietf.org/html/rfc7049]
-  - simple: 
   - json:    [http://json.org] [http://tools.ietf.org/html/rfc7159] 
 
 Other codecs compared include:
@@ -19,11 +16,9 @@ Other codecs compared include:
   - [gopkg.in/mgo.v2/bson](http://gopkg.in/mgo.v2/bson)
   - [github.com/davecgh/go-xdr/xdr2](https://godoc.org/github.com/davecgh/go-xdr/xdr)
   - [github.com/Sereal/Sereal/Go/sereal](https://godoc.org/github.com/Sereal/Sereal/Go/sereal)
-  - [code.google.com/p/cbor/go](http://code.google.com/p/cbor/go)
   - [github.com/tinylib/msgp](http://github.com/tinylib/msgp)
   - [github.com/tinylib/msgp](http://godoc.org/github.com/tinylib/msgp)
   - [github.com/pquerna/ffjson/ffjson](http://godoc.org/github.com/pquerna/ffjson/ffjson)
-  - [bitbucket.org/bodhisnarkva/cbor/go](http://godoc.org/bitbucket.org/bodhisnarkva/cbor/go)
   - [github.com/json-iterator/go](http://godoc.org/github.com/json-iterator/go)
   - [github.com/mailru/easyjson](http://godoc.org/github.com/mailru/easyjson)
   

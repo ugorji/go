@@ -49,9 +49,9 @@ import (
 	"log"
 	"sync"
 	"testing"
-)
 
-import . "github.com/hashicorp/go-msgpack/v2/codec"
+	. "github.com/hashicorp/go-msgpack/v2/codec"
+)
 
 type testHED struct {
 	H Handle
@@ -78,9 +78,6 @@ func (x ioWriterWrapper) Write(p []byte) (n int, err error) {
 var (
 	// testNoopH    = NoopHandle(8)
 	testMsgpackH = &MsgpackHandle{}
-	testBincH    = &BincHandle{}
-	testSimpleH  = &SimpleHandle{}
-	testCborH    = &CborHandle{}
 	testJsonH    = &JsonHandle{}
 
 	testHandles     []Handle
@@ -139,12 +136,9 @@ func init() {
 	testHEDs = make([]testHED, 0, 32)
 	testHandles = append(testHandles,
 		// testNoopH,
-		testMsgpackH, testBincH, testSimpleH, testCborH, testJsonH)
+		testMsgpackH, testJsonH)
 	// set ExplicitRelease on each handle
 	testMsgpackH.ExplicitRelease = true
-	testBincH.ExplicitRelease = true
-	testSimpleH.ExplicitRelease = true
-	testCborH.ExplicitRelease = true
 	testJsonH.ExplicitRelease = true
 
 	testInitFlags()
@@ -286,8 +280,10 @@ func sTestCodecDecode(bs []byte, ts interface{}, h Handle, bh *BasicHandle) (err
 
 func logT(x interface{}, format string, args ...interface{}) {
 	if t, ok := x.(*testing.T); ok && t != nil {
+		t.Helper()
 		t.Logf(format, args...)
 	} else if b, ok := x.(*testing.B); ok && b != nil {
+		b.Helper()
 		b.Logf(format, args...)
 	} else { // if testing.Verbose() { // if testVerbose {
 		if len(format) == 0 || format[len(format)-1] != '\n' {

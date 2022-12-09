@@ -1,9 +1,7 @@
 // Copyright (c) 2012-2018 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-//go:build (alltests || codecgen) && go1.7
-// +build alltests codecgen
-// +build go1.7
+//go:build alltests || codecgen
 
 package codec
 
@@ -14,9 +12,9 @@ import (
 	"sync"
 	"testing"
 	"time"
-)
 
-import . "github.com/ugorji/go/codec"
+	. "github.com/hashicorp/go-msgpack/v2/codec"
+)
 
 var benchmarkGroupOnce sync.Once
 
@@ -196,18 +194,12 @@ find . -name "$z" | xargs grep -e '^func Benchmark.*Decode' | \
 func benchmarkCodecGroup(t *testing.B) {
 	benchmarkDivider()
 	t.Run("Benchmark__Msgpack____Encode", Benchmark__Msgpack____Encode)
-	t.Run("Benchmark__Binc_______Encode", Benchmark__Binc_______Encode)
-	t.Run("Benchmark__Simple_____Encode", Benchmark__Simple_____Encode)
-	t.Run("Benchmark__Cbor_______Encode", Benchmark__Cbor_______Encode)
 	t.Run("Benchmark__Json_______Encode", Benchmark__Json_______Encode)
 	t.Run("Benchmark__Std_Json___Encode", Benchmark__Std_Json___Encode)
 	t.Run("Benchmark__Gob________Encode", Benchmark__Gob________Encode)
 	// t.Run("Benchmark__Std_Xml____Encode", Benchmark__Std_Xml____Encode)
 	benchmarkDivider()
 	t.Run("Benchmark__Msgpack____Decode", Benchmark__Msgpack____Decode)
-	t.Run("Benchmark__Binc_______Decode", Benchmark__Binc_______Decode)
-	t.Run("Benchmark__Simple_____Decode", Benchmark__Simple_____Decode)
-	t.Run("Benchmark__Cbor_______Decode", Benchmark__Cbor_______Decode)
 	t.Run("Benchmark__Json_______Decode", Benchmark__Json_______Decode)
 	t.Run("Benchmark__Std_Json___Decode", Benchmark__Std_Json___Decode)
 	t.Run("Benchmark__Gob________Decode", Benchmark__Gob________Decode)
@@ -224,17 +216,7 @@ func benchmarkJsonDecodeGroup(t *testing.B) {
 	t.Run("Benchmark__Json_______Decode", Benchmark__Json_______Decode)
 }
 
-func benchmarkCborEncodeGroup(t *testing.B) {
-	t.Run("Benchmark__Cbor_______Encode", Benchmark__Cbor_______Encode)
-}
-
-func benchmarkCborDecodeGroup(t *testing.B) {
-	t.Run("Benchmark__Cbor_______Decode", Benchmark__Cbor_______Decode)
-}
-
 func BenchmarkCodecQuickSuite(t *testing.B) {
-	benchmarkQuickSuite(t, "cbor", benchmarkCborEncodeGroup)
-	benchmarkQuickSuite(t, "cbor", benchmarkCborDecodeGroup)
 	benchmarkQuickSuite(t, "json", benchmarkJsonEncodeGroup)
 	benchmarkQuickSuite(t, "json", benchmarkJsonDecodeGroup)
 

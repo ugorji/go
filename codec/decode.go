@@ -1277,8 +1277,8 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			var v2 []interface{}
 			d.decode(&v2)
 			rvn = reflect.ValueOf(&v2).Elem()
-			if reflectArrayOfSupported && d.stid == 0 && d.h.PreferArrayOverSlice {
-				rvn2 := reflect.New(reflectArrayOf(rvn.Len(), intfTyp)).Elem()
+			if d.stid == 0 && d.h.PreferArrayOverSlice {
+				rvn2 := reflect.New(reflect.ArrayOf(rvn.Len(), intfTyp)).Elem()
 				reflect.Copy(rvn2, rvn)
 				rvn = rvn2
 			}

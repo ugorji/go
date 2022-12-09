@@ -1740,10 +1740,7 @@ func (x *genV) MethodNamePfx(prefix string, prim bool) string {
 // We strip it here.
 func genImportPath(t reflect.Type) (s string) {
 	s = t.PkgPath()
-	if genCheckVendor {
-		// HACK: always handle vendoring. It should be typically on in go 1.6, 1.7
-		s = genStripVendor(s)
-	}
+	s = genStripVendor(s)
 	return
 }
 
