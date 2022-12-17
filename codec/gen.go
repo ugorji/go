@@ -942,9 +942,14 @@ func (x *genRunner) enc(varname string, t reflect.Type, isptr bool) {
 		if ti2.flagSelfer {
 			x.linef("%s %s.CodecEncodeSelf(e)", hasIf.c(true), varname)
 			return
-		} else if ti2.flagSelferPtr {
-			x.linef("%s %ssf%s := &%s", hasIf.c(true), genTempVarPfx, mi, varname)
-			x.linef("%ssf%s.CodecEncodeSelf(e)", genTempVarPfx, mi)
+		}
+		if ti2.flagSelferPtr {
+			if isptr {
+				x.linef("%s %s.CodecEncodeSelf(e)", hasIf.c(true), varname)
+			} else {
+				x.linef("%s %ssf%s := &%s", hasIf.c(true), genTempVarPfx, mi, varname)
+				x.linef("%ssf%s.CodecEncodeSelf(e)", genTempVarPfx, mi)
+			}
 			return
 		}
 
