@@ -332,6 +332,7 @@ func mainGen(tv *mainCfg, infiles ...string) (err error) {
 							//   - it doesn't have any of the Selfer methods in the file
 							if tv.regexName.FindStringIndex(td.Name.Name) != nil &&
 								tv.notRegexName.FindStringIndex(td.Name.Name) == nil &&
+								!td.Assign.IsValid() &&
 								!selferEncTyps[td.Name.Name] &&
 								!selferDecTyps[td.Name.Name] {
 								tv.Types = append(tv.Types, td.Name.Name)
