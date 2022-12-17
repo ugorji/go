@@ -2581,17 +2581,22 @@ func (checkOverflow) Uint2Int(v uint64, neg bool) (overflow bool) {
 
 func (checkOverflow) SignedInt(v uint64) (overflow bool) {
 	//e.g. -127 to 128 for int8
-	pos := (v >> 63) == 0
-	ui2 := v & 0x7fffffffffffffff
-	if pos {
-		if ui2 > math.MaxInt64 {
-			overflow = true
-		}
-	} else {
-		if ui2 > math.MaxInt64-1 {
-			overflow = true
-		}
-	}
+	// pos := (v >> 63) == 0
+	// ui2 := v & 0x7fffffffffffffff
+	// if pos {
+	// 	if ui2 > math.MaxInt64 {
+	// 		overflow = true
+	// 	}
+	// } else {
+	// 	if ui2 > math.MaxInt64-1 {
+	// 		overflow = true
+	// 	}
+	// }
+
+	// a signed integer has overflow if the sign (first) bit is 1 (negative)
+	// and the numbers after the sign bit is > maxint64 - 1
+	overflow = (v>>63) != 0 && v&0x7fffffffffffffff > math.MaxInt64-1
+
 	return
 }
 
