@@ -617,7 +617,6 @@ func (e *codecError) Cause() error {
 	return e.err
 }
 
-// Unwrap implements support for go1.13+ error wrapping
 func (e *codecError) Unwrap() error {
 	return e.err
 }
