@@ -9,6 +9,7 @@ package codec
 import (
 	"errors"
 	"runtime"
+	"sort"
 	"strconv"
 )
 
@@ -29,13 +30,38 @@ const (
 )
 
 var (
-	errCodecSelferOnlyMapOrArrayEncodeToStruct19781 = errors.New(`only encoded map or array can be decoded into a struct`)
+	errCodecSelferOnlyMapOrArrayEncodeToStruct19781                = errors.New(`only encoded map or array can be decoded into a struct`)
+	_                                               sort.Interface = nil
 )
 
 type codecSelfer19781 struct{}
 
 func codecSelfer19781False() bool { return false }
 func codecSelfer19781True() bool  { return true }
+
+type codecSelfer19781stringSlice []string
+
+func (p codecSelfer19781stringSlice) Len() int           { return len(p) }
+func (p codecSelfer19781stringSlice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
+func (p codecSelfer19781stringSlice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
+
+type codecSelfer19781uint64Slice []uint64
+
+func (p codecSelfer19781uint64Slice) Len() int           { return len(p) }
+func (p codecSelfer19781uint64Slice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
+func (p codecSelfer19781uint64Slice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
+
+type codecSelfer19781int64Slice []int64
+
+func (p codecSelfer19781int64Slice) Len() int           { return len(p) }
+func (p codecSelfer19781int64Slice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
+func (p codecSelfer19781int64Slice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
+
+type codecSelfer19781float64Slice []float64
+
+func (p codecSelfer19781float64Slice) Len() int           { return len(p) }
+func (p codecSelfer19781float64Slice) Swap(i, j int)      { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }
+func (p codecSelfer19781float64Slice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
 
 func init() {
 	if GenVersion != 25 {
@@ -1324,1994 +1350,3986 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			z.EncWriteArrayEnd()
 		} else {
 			z.EncWriteMapStart(146)
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FIntf\"")
-			} else {
-				r.EncodeString(`FIntf`)
-			}
-			z.EncWriteMapElemValue()
-			z.EncFallback(x.FIntf)
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrIntf\"")
-			} else {
-				r.EncodeString(`FptrIntf`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn4 {
-				r.EncodeNil()
-			} else {
-				yy369 := *x.FptrIntf
-				z.EncFallback(yy369)
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FString\"")
-			} else {
-				r.EncodeString(`FString`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeString(string(x.FString))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrString\"")
-			} else {
-				r.EncodeString(`FptrString`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn6 {
-				r.EncodeNil()
-			} else {
-				yy372 := *x.FptrString
-				r.EncodeString(string(yy372))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FBytes\"")
-			} else {
-				r.EncodeString(`FBytes`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FBytes == nil {
-				r.EncodeNil()
-			} else {
-				r.EncodeStringBytesRaw([]byte(x.FBytes))
-			} // end block: if x.FBytes slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrBytes\"")
-			} else {
-				r.EncodeString(`FptrBytes`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn8 {
-				r.EncodeNil()
-			} else {
-				yy375 := *x.FptrBytes
-				if yy375 == nil {
+			if z.EncBasicHandle().Canonical {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FBool\"")
+				} else {
+					r.EncodeString(`FBool`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeBool(bool(x.FBool))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FBytes\"")
+				} else {
+					r.EncodeString(`FBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FBytes == nil {
 					r.EncodeNil()
 				} else {
-					r.EncodeStringBytesRaw([]byte(yy375))
-				} // end block: if yy375 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FFloat32\"")
-			} else {
-				r.EncodeString(`FFloat32`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeFloat32(float32(x.FFloat32))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrFloat32\"")
-			} else {
-				r.EncodeString(`FptrFloat32`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn10 {
-				r.EncodeNil()
-			} else {
-				yy378 := *x.FptrFloat32
-				r.EncodeFloat32(float32(yy378))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FFloat64\"")
-			} else {
-				r.EncodeString(`FFloat64`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeFloat64(float64(x.FFloat64))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrFloat64\"")
-			} else {
-				r.EncodeString(`FptrFloat64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn12 {
-				r.EncodeNil()
-			} else {
-				yy381 := *x.FptrFloat64
-				r.EncodeFloat64(float64(yy381))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FUint\"")
-			} else {
-				r.EncodeString(`FUint`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeUint(uint64(x.FUint))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrUint\"")
-			} else {
-				r.EncodeString(`FptrUint`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn14 {
-				r.EncodeNil()
-			} else {
-				yy384 := *x.FptrUint
-				r.EncodeUint(uint64(yy384))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FUint8\"")
-			} else {
-				r.EncodeString(`FUint8`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeUint(uint64(x.FUint8))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrUint8\"")
-			} else {
-				r.EncodeString(`FptrUint8`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn16 {
-				r.EncodeNil()
-			} else {
-				yy387 := *x.FptrUint8
-				r.EncodeUint(uint64(yy387))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FUint16\"")
-			} else {
-				r.EncodeString(`FUint16`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeUint(uint64(x.FUint16))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrUint16\"")
-			} else {
-				r.EncodeString(`FptrUint16`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn18 {
-				r.EncodeNil()
-			} else {
-				yy390 := *x.FptrUint16
-				r.EncodeUint(uint64(yy390))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FUint32\"")
-			} else {
-				r.EncodeString(`FUint32`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeUint(uint64(x.FUint32))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrUint32\"")
-			} else {
-				r.EncodeString(`FptrUint32`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn20 {
-				r.EncodeNil()
-			} else {
-				yy393 := *x.FptrUint32
-				r.EncodeUint(uint64(yy393))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FUint64\"")
-			} else {
-				r.EncodeString(`FUint64`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeUint(uint64(x.FUint64))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrUint64\"")
-			} else {
-				r.EncodeString(`FptrUint64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn22 {
-				r.EncodeNil()
-			} else {
-				yy396 := *x.FptrUint64
-				r.EncodeUint(uint64(yy396))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FUintptr\"")
-			} else {
-				r.EncodeString(`FUintptr`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeUint(uint64(x.FUintptr))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrUintptr\"")
-			} else {
-				r.EncodeString(`FptrUintptr`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn24 {
-				r.EncodeNil()
-			} else {
-				yy399 := *x.FptrUintptr
-				r.EncodeUint(uint64(yy399))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FInt\"")
-			} else {
-				r.EncodeString(`FInt`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeInt(int64(x.FInt))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrInt\"")
-			} else {
-				r.EncodeString(`FptrInt`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn26 {
-				r.EncodeNil()
-			} else {
-				yy402 := *x.FptrInt
-				r.EncodeInt(int64(yy402))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FInt8\"")
-			} else {
-				r.EncodeString(`FInt8`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeInt(int64(x.FInt8))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrInt8\"")
-			} else {
-				r.EncodeString(`FptrInt8`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn28 {
-				r.EncodeNil()
-			} else {
-				yy405 := *x.FptrInt8
-				r.EncodeInt(int64(yy405))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FInt16\"")
-			} else {
-				r.EncodeString(`FInt16`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeInt(int64(x.FInt16))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrInt16\"")
-			} else {
-				r.EncodeString(`FptrInt16`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn30 {
-				r.EncodeNil()
-			} else {
-				yy408 := *x.FptrInt16
-				r.EncodeInt(int64(yy408))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FInt32\"")
-			} else {
-				r.EncodeString(`FInt32`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeInt(int64(x.FInt32))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrInt32\"")
-			} else {
-				r.EncodeString(`FptrInt32`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn32 {
-				r.EncodeNil()
-			} else {
-				yy411 := *x.FptrInt32
-				r.EncodeInt(int64(yy411))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FInt64\"")
-			} else {
-				r.EncodeString(`FInt64`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeInt(int64(x.FInt64))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrInt64\"")
-			} else {
-				r.EncodeString(`FptrInt64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn34 {
-				r.EncodeNil()
-			} else {
-				yy414 := *x.FptrInt64
-				r.EncodeInt(int64(yy414))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FBool\"")
-			} else {
-				r.EncodeString(`FBool`)
-			}
-			z.EncWriteMapElemValue()
-			r.EncodeBool(bool(x.FBool))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrBool\"")
-			} else {
-				r.EncodeString(`FptrBool`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn36 {
-				r.EncodeNil()
-			} else {
-				yy417 := *x.FptrBool
-				r.EncodeBool(bool(yy417))
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceIntf\"")
-			} else {
-				r.EncodeString(`FSliceIntf`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceIntf == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncSliceIntfV(x.FSliceIntf, e)
-			} // end block: if x.FSliceIntf slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceIntf\"")
-			} else {
-				r.EncodeString(`FptrSliceIntf`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn38 {
-				r.EncodeNil()
-			} else {
-				yy420 := *x.FptrSliceIntf
-				if yy420 == nil {
+					r.EncodeStringBytesRaw([]byte(x.FBytes))
+				} // end block: if x.FBytes slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FFloat32\"")
+				} else {
+					r.EncodeString(`FFloat32`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeFloat32(float32(x.FFloat32))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FFloat64\"")
+				} else {
+					r.EncodeString(`FFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeFloat64(float64(x.FFloat64))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FInt\"")
+				} else {
+					r.EncodeString(`FInt`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.FInt))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FInt16\"")
+				} else {
+					r.EncodeString(`FInt16`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.FInt16))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FInt32\"")
+				} else {
+					r.EncodeString(`FInt32`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.FInt32))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FInt64\"")
+				} else {
+					r.EncodeString(`FInt64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.FInt64))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FInt8\"")
+				} else {
+					r.EncodeString(`FInt8`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.FInt8))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FIntf\"")
+				} else {
+					r.EncodeString(`FIntf`)
+				}
+				z.EncWriteMapElemValue()
+				z.EncFallback(x.FIntf)
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Bool\"")
+				} else {
+					r.EncodeString(`FMapInt32Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Bool == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceIntfV(yy420, e)
-				} // end block: if yy420 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceString\"")
-			} else {
-				r.EncodeString(`FSliceString`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceString == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncSliceStringV(x.FSliceString, e)
-			} // end block: if x.FSliceString slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceString\"")
-			} else {
-				r.EncodeString(`FptrSliceString`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn40 {
-				r.EncodeNil()
-			} else {
-				yy423 := *x.FptrSliceString
-				if yy423 == nil {
+					z.F.EncMapInt32BoolV(x.FMapInt32Bool, e)
+				} // end block: if x.FMapInt32Bool map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Bytes\"")
+				} else {
+					r.EncodeString(`FMapInt32Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Bytes == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceStringV(yy423, e)
-				} // end block: if yy423 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceBytes\"")
-			} else {
-				r.EncodeString(`FSliceBytes`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceBytes == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncSliceBytesV(x.FSliceBytes, e)
-			} // end block: if x.FSliceBytes slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceBytes\"")
-			} else {
-				r.EncodeString(`FptrSliceBytes`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn42 {
-				r.EncodeNil()
-			} else {
-				yy426 := *x.FptrSliceBytes
-				if yy426 == nil {
+					z.F.EncMapInt32BytesV(x.FMapInt32Bytes, e)
+				} // end block: if x.FMapInt32Bytes map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Float64\"")
+				} else {
+					r.EncodeString(`FMapInt32Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Float64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceBytesV(yy426, e)
-				} // end block: if yy426 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceFloat32\"")
-			} else {
-				r.EncodeString(`FSliceFloat32`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceFloat32 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncSliceFloat32V(x.FSliceFloat32, e)
-			} // end block: if x.FSliceFloat32 slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceFloat32\"")
-			} else {
-				r.EncodeString(`FptrSliceFloat32`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn44 {
-				r.EncodeNil()
-			} else {
-				yy429 := *x.FptrSliceFloat32
-				if yy429 == nil {
+					z.F.EncMapInt32Float64V(x.FMapInt32Float64, e)
+				} // end block: if x.FMapInt32Float64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Int\"")
+				} else {
+					r.EncodeString(`FMapInt32Int`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Int == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceFloat32V(yy429, e)
-				} // end block: if yy429 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceFloat64\"")
-			} else {
-				r.EncodeString(`FSliceFloat64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceFloat64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncSliceFloat64V(x.FSliceFloat64, e)
-			} // end block: if x.FSliceFloat64 slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceFloat64\"")
-			} else {
-				r.EncodeString(`FptrSliceFloat64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn46 {
-				r.EncodeNil()
-			} else {
-				yy432 := *x.FptrSliceFloat64
-				if yy432 == nil {
+					z.F.EncMapInt32IntV(x.FMapInt32Int, e)
+				} // end block: if x.FMapInt32Int map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Int32\"")
+				} else {
+					r.EncodeString(`FMapInt32Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Int32 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceFloat64V(yy432, e)
-				} // end block: if yy432 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceUint8\"")
-			} else {
-				r.EncodeString(`FSliceUint8`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceUint8 == nil {
-				r.EncodeNil()
-			} else {
-				r.EncodeStringBytesRaw([]byte(x.FSliceUint8))
-			} // end block: if x.FSliceUint8 slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceUint8\"")
-			} else {
-				r.EncodeString(`FptrSliceUint8`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn48 {
-				r.EncodeNil()
-			} else {
-				yy435 := *x.FptrSliceUint8
-				if yy435 == nil {
+					z.F.EncMapInt32Int32V(x.FMapInt32Int32, e)
+				} // end block: if x.FMapInt32Int32 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Intf\"")
+				} else {
+					r.EncodeString(`FMapInt32Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Intf == nil {
 					r.EncodeNil()
 				} else {
-					r.EncodeStringBytesRaw([]byte(yy435))
-				} // end block: if yy435 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceUint64\"")
-			} else {
-				r.EncodeString(`FSliceUint64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceUint64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncSliceUint64V(x.FSliceUint64, e)
-			} // end block: if x.FSliceUint64 slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceUint64\"")
-			} else {
-				r.EncodeString(`FptrSliceUint64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn50 {
-				r.EncodeNil()
-			} else {
-				yy438 := *x.FptrSliceUint64
-				if yy438 == nil {
+					z.F.EncMapInt32IntfV(x.FMapInt32Intf, e)
+				} // end block: if x.FMapInt32Intf map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32String\"")
+				} else {
+					r.EncodeString(`FMapInt32String`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32String == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceUint64V(yy438, e)
-				} // end block: if yy438 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceInt\"")
-			} else {
-				r.EncodeString(`FSliceInt`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceInt == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncSliceIntV(x.FSliceInt, e)
-			} // end block: if x.FSliceInt slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceInt\"")
-			} else {
-				r.EncodeString(`FptrSliceInt`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn52 {
-				r.EncodeNil()
-			} else {
-				yy441 := *x.FptrSliceInt
-				if yy441 == nil {
+					z.F.EncMapInt32StringV(x.FMapInt32String, e)
+				} // end block: if x.FMapInt32String map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Uint64\"")
+				} else {
+					r.EncodeString(`FMapInt32Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceIntV(yy441, e)
-				} // end block: if yy441 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceInt32\"")
-			} else {
-				r.EncodeString(`FSliceInt32`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceInt32 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncSliceInt32V(x.FSliceInt32, e)
-			} // end block: if x.FSliceInt32 slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceInt32\"")
-			} else {
-				r.EncodeString(`FptrSliceInt32`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn54 {
-				r.EncodeNil()
-			} else {
-				yy444 := *x.FptrSliceInt32
-				if yy444 == nil {
+					z.F.EncMapInt32Uint64V(x.FMapInt32Uint64, e)
+				} // end block: if x.FMapInt32Uint64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Uint8\"")
+				} else {
+					r.EncodeString(`FMapInt32Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceInt32V(yy444, e)
-				} // end block: if yy444 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceInt64\"")
-			} else {
-				r.EncodeString(`FSliceInt64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceInt64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncSliceInt64V(x.FSliceInt64, e)
-			} // end block: if x.FSliceInt64 slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceInt64\"")
-			} else {
-				r.EncodeString(`FptrSliceInt64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn56 {
-				r.EncodeNil()
-			} else {
-				yy447 := *x.FptrSliceInt64
-				if yy447 == nil {
+					z.F.EncMapInt32Uint8V(x.FMapInt32Uint8, e)
+				} // end block: if x.FMapInt32Uint8 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntBool\"")
+				} else {
+					r.EncodeString(`FMapIntBool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntBool == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceInt64V(yy447, e)
-				} // end block: if yy447 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FSliceBool\"")
-			} else {
-				r.EncodeString(`FSliceBool`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FSliceBool == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncSliceBoolV(x.FSliceBool, e)
-			} // end block: if x.FSliceBool slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrSliceBool\"")
-			} else {
-				r.EncodeString(`FptrSliceBool`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn58 {
-				r.EncodeNil()
-			} else {
-				yy450 := *x.FptrSliceBool
-				if yy450 == nil {
+					z.F.EncMapIntBoolV(x.FMapIntBool, e)
+				} // end block: if x.FMapIntBool map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntBytes\"")
+				} else {
+					r.EncodeString(`FMapIntBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntBytes == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncSliceBoolV(yy450, e)
-				} // end block: if yy450 slice == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapStringIntf\"")
-			} else {
-				r.EncodeString(`FMapStringIntf`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapStringIntf == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapStringIntfV(x.FMapStringIntf, e)
-			} // end block: if x.FMapStringIntf map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapStringIntf\"")
-			} else {
-				r.EncodeString(`FptrMapStringIntf`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn60 {
-				r.EncodeNil()
-			} else {
-				yy453 := *x.FptrMapStringIntf
-				if yy453 == nil {
+					z.F.EncMapIntBytesV(x.FMapIntBytes, e)
+				} // end block: if x.FMapIntBytes map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntFloat64\"")
+				} else {
+					r.EncodeString(`FMapIntFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringIntfV(yy453, e)
-				} // end block: if yy453 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapStringString\"")
-			} else {
-				r.EncodeString(`FMapStringString`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapStringString == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapStringStringV(x.FMapStringString, e)
-			} // end block: if x.FMapStringString map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapStringString\"")
-			} else {
-				r.EncodeString(`FptrMapStringString`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn62 {
-				r.EncodeNil()
-			} else {
-				yy456 := *x.FptrMapStringString
-				if yy456 == nil {
+					z.F.EncMapIntFloat64V(x.FMapIntFloat64, e)
+				} // end block: if x.FMapIntFloat64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntInt\"")
+				} else {
+					r.EncodeString(`FMapIntInt`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntInt == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringStringV(yy456, e)
-				} // end block: if yy456 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapStringBytes\"")
-			} else {
-				r.EncodeString(`FMapStringBytes`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapStringBytes == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapStringBytesV(x.FMapStringBytes, e)
-			} // end block: if x.FMapStringBytes map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapStringBytes\"")
-			} else {
-				r.EncodeString(`FptrMapStringBytes`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn64 {
-				r.EncodeNil()
-			} else {
-				yy459 := *x.FptrMapStringBytes
-				if yy459 == nil {
+					z.F.EncMapIntIntV(x.FMapIntInt, e)
+				} // end block: if x.FMapIntInt map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntInt32\"")
+				} else {
+					r.EncodeString(`FMapIntInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntInt32 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringBytesV(yy459, e)
-				} // end block: if yy459 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapStringUint8\"")
-			} else {
-				r.EncodeString(`FMapStringUint8`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapStringUint8 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapStringUint8V(x.FMapStringUint8, e)
-			} // end block: if x.FMapStringUint8 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapStringUint8\"")
-			} else {
-				r.EncodeString(`FptrMapStringUint8`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn66 {
-				r.EncodeNil()
-			} else {
-				yy462 := *x.FptrMapStringUint8
-				if yy462 == nil {
+					z.F.EncMapIntInt32V(x.FMapIntInt32, e)
+				} // end block: if x.FMapIntInt32 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntIntf\"")
+				} else {
+					r.EncodeString(`FMapIntIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntIntf == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringUint8V(yy462, e)
-				} // end block: if yy462 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapStringUint64\"")
-			} else {
-				r.EncodeString(`FMapStringUint64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapStringUint64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapStringUint64V(x.FMapStringUint64, e)
-			} // end block: if x.FMapStringUint64 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapStringUint64\"")
-			} else {
-				r.EncodeString(`FptrMapStringUint64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn68 {
-				r.EncodeNil()
-			} else {
-				yy465 := *x.FptrMapStringUint64
-				if yy465 == nil {
+					z.F.EncMapIntIntfV(x.FMapIntIntf, e)
+				} // end block: if x.FMapIntIntf map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntString\"")
+				} else {
+					r.EncodeString(`FMapIntString`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntString == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringUint64V(yy465, e)
-				} // end block: if yy465 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapStringInt\"")
-			} else {
-				r.EncodeString(`FMapStringInt`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapStringInt == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapStringIntV(x.FMapStringInt, e)
-			} // end block: if x.FMapStringInt map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapStringInt\"")
-			} else {
-				r.EncodeString(`FptrMapStringInt`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn70 {
-				r.EncodeNil()
-			} else {
-				yy468 := *x.FptrMapStringInt
-				if yy468 == nil {
+					z.F.EncMapIntStringV(x.FMapIntString, e)
+				} // end block: if x.FMapIntString map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntUint64\"")
+				} else {
+					r.EncodeString(`FMapIntUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntUint64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringIntV(yy468, e)
-				} // end block: if yy468 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapStringInt32\"")
-			} else {
-				r.EncodeString(`FMapStringInt32`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapStringInt32 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapStringInt32V(x.FMapStringInt32, e)
-			} // end block: if x.FMapStringInt32 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapStringInt32\"")
-			} else {
-				r.EncodeString(`FptrMapStringInt32`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn72 {
-				r.EncodeNil()
-			} else {
-				yy471 := *x.FptrMapStringInt32
-				if yy471 == nil {
+					z.F.EncMapIntUint64V(x.FMapIntUint64, e)
+				} // end block: if x.FMapIntUint64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntUint8\"")
+				} else {
+					r.EncodeString(`FMapIntUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntUint8 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringInt32V(yy471, e)
-				} // end block: if yy471 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapStringFloat64\"")
-			} else {
-				r.EncodeString(`FMapStringFloat64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapStringFloat64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapStringFloat64V(x.FMapStringFloat64, e)
-			} // end block: if x.FMapStringFloat64 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapStringFloat64\"")
-			} else {
-				r.EncodeString(`FptrMapStringFloat64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn74 {
-				r.EncodeNil()
-			} else {
-				yy474 := *x.FptrMapStringFloat64
-				if yy474 == nil {
+					z.F.EncMapIntUint8V(x.FMapIntUint8, e)
+				} // end block: if x.FMapIntUint8 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringBool\"")
+				} else {
+					r.EncodeString(`FMapStringBool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringBool == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringFloat64V(yy474, e)
-				} // end block: if yy474 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapStringBool\"")
-			} else {
-				r.EncodeString(`FMapStringBool`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapStringBool == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapStringBoolV(x.FMapStringBool, e)
-			} // end block: if x.FMapStringBool map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapStringBool\"")
-			} else {
-				r.EncodeString(`FptrMapStringBool`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn76 {
-				r.EncodeNil()
-			} else {
-				yy477 := *x.FptrMapStringBool
-				if yy477 == nil {
+					z.F.EncMapStringBoolV(x.FMapStringBool, e)
+				} // end block: if x.FMapStringBool map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringBytes\"")
+				} else {
+					r.EncodeString(`FMapStringBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringBytes == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapStringBoolV(yy477, e)
-				} // end block: if yy477 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint8Intf\"")
-			} else {
-				r.EncodeString(`FMapUint8Intf`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint8Intf == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint8IntfV(x.FMapUint8Intf, e)
-			} // end block: if x.FMapUint8Intf map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint8Intf\"")
-			} else {
-				r.EncodeString(`FptrMapUint8Intf`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn78 {
-				r.EncodeNil()
-			} else {
-				yy480 := *x.FptrMapUint8Intf
-				if yy480 == nil {
+					z.F.EncMapStringBytesV(x.FMapStringBytes, e)
+				} // end block: if x.FMapStringBytes map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringFloat64\"")
+				} else {
+					r.EncodeString(`FMapStringFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint8IntfV(yy480, e)
-				} // end block: if yy480 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint8String\"")
-			} else {
-				r.EncodeString(`FMapUint8String`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint8String == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint8StringV(x.FMapUint8String, e)
-			} // end block: if x.FMapUint8String map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint8String\"")
-			} else {
-				r.EncodeString(`FptrMapUint8String`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn80 {
-				r.EncodeNil()
-			} else {
-				yy483 := *x.FptrMapUint8String
-				if yy483 == nil {
+					z.F.EncMapStringFloat64V(x.FMapStringFloat64, e)
+				} // end block: if x.FMapStringFloat64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringInt\"")
+				} else {
+					r.EncodeString(`FMapStringInt`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringInt == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint8StringV(yy483, e)
-				} // end block: if yy483 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint8Bytes\"")
-			} else {
-				r.EncodeString(`FMapUint8Bytes`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint8Bytes == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint8BytesV(x.FMapUint8Bytes, e)
-			} // end block: if x.FMapUint8Bytes map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint8Bytes\"")
-			} else {
-				r.EncodeString(`FptrMapUint8Bytes`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn82 {
-				r.EncodeNil()
-			} else {
-				yy486 := *x.FptrMapUint8Bytes
-				if yy486 == nil {
+					z.F.EncMapStringIntV(x.FMapStringInt, e)
+				} // end block: if x.FMapStringInt map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringInt32\"")
+				} else {
+					r.EncodeString(`FMapStringInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringInt32 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint8BytesV(yy486, e)
-				} // end block: if yy486 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint8Uint8\"")
-			} else {
-				r.EncodeString(`FMapUint8Uint8`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint8Uint8 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint8Uint8V(x.FMapUint8Uint8, e)
-			} // end block: if x.FMapUint8Uint8 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint8Uint8\"")
-			} else {
-				r.EncodeString(`FptrMapUint8Uint8`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn84 {
-				r.EncodeNil()
-			} else {
-				yy489 := *x.FptrMapUint8Uint8
-				if yy489 == nil {
+					z.F.EncMapStringInt32V(x.FMapStringInt32, e)
+				} // end block: if x.FMapStringInt32 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringIntf\"")
+				} else {
+					r.EncodeString(`FMapStringIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringIntf == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint8Uint8V(yy489, e)
-				} // end block: if yy489 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint8Uint64\"")
-			} else {
-				r.EncodeString(`FMapUint8Uint64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint8Uint64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint8Uint64V(x.FMapUint8Uint64, e)
-			} // end block: if x.FMapUint8Uint64 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint8Uint64\"")
-			} else {
-				r.EncodeString(`FptrMapUint8Uint64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn86 {
-				r.EncodeNil()
-			} else {
-				yy492 := *x.FptrMapUint8Uint64
-				if yy492 == nil {
+					z.F.EncMapStringIntfV(x.FMapStringIntf, e)
+				} // end block: if x.FMapStringIntf map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringString\"")
+				} else {
+					r.EncodeString(`FMapStringString`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringString == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint8Uint64V(yy492, e)
-				} // end block: if yy492 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint8Int\"")
-			} else {
-				r.EncodeString(`FMapUint8Int`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint8Int == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint8IntV(x.FMapUint8Int, e)
-			} // end block: if x.FMapUint8Int map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint8Int\"")
-			} else {
-				r.EncodeString(`FptrMapUint8Int`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn88 {
-				r.EncodeNil()
-			} else {
-				yy495 := *x.FptrMapUint8Int
-				if yy495 == nil {
+					z.F.EncMapStringStringV(x.FMapStringString, e)
+				} // end block: if x.FMapStringString map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringUint64\"")
+				} else {
+					r.EncodeString(`FMapStringUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringUint64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint8IntV(yy495, e)
-				} // end block: if yy495 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint8Int32\"")
-			} else {
-				r.EncodeString(`FMapUint8Int32`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint8Int32 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint8Int32V(x.FMapUint8Int32, e)
-			} // end block: if x.FMapUint8Int32 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint8Int32\"")
-			} else {
-				r.EncodeString(`FptrMapUint8Int32`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn90 {
-				r.EncodeNil()
-			} else {
-				yy498 := *x.FptrMapUint8Int32
-				if yy498 == nil {
+					z.F.EncMapStringUint64V(x.FMapStringUint64, e)
+				} // end block: if x.FMapStringUint64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringUint8\"")
+				} else {
+					r.EncodeString(`FMapStringUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringUint8 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint8Int32V(yy498, e)
-				} // end block: if yy498 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint8Float64\"")
-			} else {
-				r.EncodeString(`FMapUint8Float64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint8Float64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint8Float64V(x.FMapUint8Float64, e)
-			} // end block: if x.FMapUint8Float64 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint8Float64\"")
-			} else {
-				r.EncodeString(`FptrMapUint8Float64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn92 {
-				r.EncodeNil()
-			} else {
-				yy501 := *x.FptrMapUint8Float64
-				if yy501 == nil {
+					z.F.EncMapStringUint8V(x.FMapStringUint8, e)
+				} // end block: if x.FMapStringUint8 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Bool\"")
+				} else {
+					r.EncodeString(`FMapUint64Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Bool == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint8Float64V(yy501, e)
-				} // end block: if yy501 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint8Bool\"")
-			} else {
-				r.EncodeString(`FMapUint8Bool`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint8Bool == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint8BoolV(x.FMapUint8Bool, e)
-			} // end block: if x.FMapUint8Bool map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint8Bool\"")
-			} else {
-				r.EncodeString(`FptrMapUint8Bool`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn94 {
-				r.EncodeNil()
-			} else {
-				yy504 := *x.FptrMapUint8Bool
-				if yy504 == nil {
+					z.F.EncMapUint64BoolV(x.FMapUint64Bool, e)
+				} // end block: if x.FMapUint64Bool map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Bytes\"")
+				} else {
+					r.EncodeString(`FMapUint64Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Bytes == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint8BoolV(yy504, e)
-				} // end block: if yy504 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint64Intf\"")
-			} else {
-				r.EncodeString(`FMapUint64Intf`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint64Intf == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint64IntfV(x.FMapUint64Intf, e)
-			} // end block: if x.FMapUint64Intf map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint64Intf\"")
-			} else {
-				r.EncodeString(`FptrMapUint64Intf`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn96 {
-				r.EncodeNil()
-			} else {
-				yy507 := *x.FptrMapUint64Intf
-				if yy507 == nil {
+					z.F.EncMapUint64BytesV(x.FMapUint64Bytes, e)
+				} // end block: if x.FMapUint64Bytes map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Float64\"")
+				} else {
+					r.EncodeString(`FMapUint64Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Float64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint64IntfV(yy507, e)
-				} // end block: if yy507 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint64String\"")
-			} else {
-				r.EncodeString(`FMapUint64String`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint64String == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint64StringV(x.FMapUint64String, e)
-			} // end block: if x.FMapUint64String map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint64String\"")
-			} else {
-				r.EncodeString(`FptrMapUint64String`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn98 {
-				r.EncodeNil()
-			} else {
-				yy510 := *x.FptrMapUint64String
-				if yy510 == nil {
+					z.F.EncMapUint64Float64V(x.FMapUint64Float64, e)
+				} // end block: if x.FMapUint64Float64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Int\"")
+				} else {
+					r.EncodeString(`FMapUint64Int`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Int == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint64StringV(yy510, e)
-				} // end block: if yy510 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint64Bytes\"")
-			} else {
-				r.EncodeString(`FMapUint64Bytes`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint64Bytes == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint64BytesV(x.FMapUint64Bytes, e)
-			} // end block: if x.FMapUint64Bytes map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint64Bytes\"")
-			} else {
-				r.EncodeString(`FptrMapUint64Bytes`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn100 {
-				r.EncodeNil()
-			} else {
-				yy513 := *x.FptrMapUint64Bytes
-				if yy513 == nil {
+					z.F.EncMapUint64IntV(x.FMapUint64Int, e)
+				} // end block: if x.FMapUint64Int map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Int32\"")
+				} else {
+					r.EncodeString(`FMapUint64Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Int32 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint64BytesV(yy513, e)
-				} // end block: if yy513 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint64Uint8\"")
-			} else {
-				r.EncodeString(`FMapUint64Uint8`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint64Uint8 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint64Uint8V(x.FMapUint64Uint8, e)
-			} // end block: if x.FMapUint64Uint8 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint64Uint8\"")
-			} else {
-				r.EncodeString(`FptrMapUint64Uint8`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn102 {
-				r.EncodeNil()
-			} else {
-				yy516 := *x.FptrMapUint64Uint8
-				if yy516 == nil {
+					z.F.EncMapUint64Int32V(x.FMapUint64Int32, e)
+				} // end block: if x.FMapUint64Int32 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Intf\"")
+				} else {
+					r.EncodeString(`FMapUint64Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Intf == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint64Uint8V(yy516, e)
-				} // end block: if yy516 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint64Uint64\"")
-			} else {
-				r.EncodeString(`FMapUint64Uint64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint64Uint64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint64Uint64V(x.FMapUint64Uint64, e)
-			} // end block: if x.FMapUint64Uint64 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint64Uint64\"")
-			} else {
-				r.EncodeString(`FptrMapUint64Uint64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn104 {
-				r.EncodeNil()
-			} else {
-				yy519 := *x.FptrMapUint64Uint64
-				if yy519 == nil {
+					z.F.EncMapUint64IntfV(x.FMapUint64Intf, e)
+				} // end block: if x.FMapUint64Intf map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64String\"")
+				} else {
+					r.EncodeString(`FMapUint64String`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64String == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint64Uint64V(yy519, e)
-				} // end block: if yy519 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint64Int\"")
-			} else {
-				r.EncodeString(`FMapUint64Int`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint64Int == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint64IntV(x.FMapUint64Int, e)
-			} // end block: if x.FMapUint64Int map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint64Int\"")
-			} else {
-				r.EncodeString(`FptrMapUint64Int`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn106 {
-				r.EncodeNil()
-			} else {
-				yy522 := *x.FptrMapUint64Int
-				if yy522 == nil {
+					z.F.EncMapUint64StringV(x.FMapUint64String, e)
+				} // end block: if x.FMapUint64String map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Uint64\"")
+				} else {
+					r.EncodeString(`FMapUint64Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint64IntV(yy522, e)
-				} // end block: if yy522 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint64Int32\"")
-			} else {
-				r.EncodeString(`FMapUint64Int32`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint64Int32 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint64Int32V(x.FMapUint64Int32, e)
-			} // end block: if x.FMapUint64Int32 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint64Int32\"")
-			} else {
-				r.EncodeString(`FptrMapUint64Int32`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn108 {
-				r.EncodeNil()
-			} else {
-				yy525 := *x.FptrMapUint64Int32
-				if yy525 == nil {
+					z.F.EncMapUint64Uint64V(x.FMapUint64Uint64, e)
+				} // end block: if x.FMapUint64Uint64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Uint8\"")
+				} else {
+					r.EncodeString(`FMapUint64Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint64Int32V(yy525, e)
-				} // end block: if yy525 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint64Float64\"")
-			} else {
-				r.EncodeString(`FMapUint64Float64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint64Float64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint64Float64V(x.FMapUint64Float64, e)
-			} // end block: if x.FMapUint64Float64 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint64Float64\"")
-			} else {
-				r.EncodeString(`FptrMapUint64Float64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn110 {
-				r.EncodeNil()
-			} else {
-				yy528 := *x.FptrMapUint64Float64
-				if yy528 == nil {
+					z.F.EncMapUint64Uint8V(x.FMapUint64Uint8, e)
+				} // end block: if x.FMapUint64Uint8 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Bool\"")
+				} else {
+					r.EncodeString(`FMapUint8Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Bool == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint64Float64V(yy528, e)
-				} // end block: if yy528 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapUint64Bool\"")
-			} else {
-				r.EncodeString(`FMapUint64Bool`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapUint64Bool == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapUint64BoolV(x.FMapUint64Bool, e)
-			} // end block: if x.FMapUint64Bool map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapUint64Bool\"")
-			} else {
-				r.EncodeString(`FptrMapUint64Bool`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn112 {
-				r.EncodeNil()
-			} else {
-				yy531 := *x.FptrMapUint64Bool
-				if yy531 == nil {
+					z.F.EncMapUint8BoolV(x.FMapUint8Bool, e)
+				} // end block: if x.FMapUint8Bool map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Bytes\"")
+				} else {
+					r.EncodeString(`FMapUint8Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Bytes == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapUint64BoolV(yy531, e)
-				} // end block: if yy531 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapIntIntf\"")
-			} else {
-				r.EncodeString(`FMapIntIntf`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapIntIntf == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapIntIntfV(x.FMapIntIntf, e)
-			} // end block: if x.FMapIntIntf map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapIntIntf\"")
-			} else {
-				r.EncodeString(`FptrMapIntIntf`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn114 {
-				r.EncodeNil()
-			} else {
-				yy534 := *x.FptrMapIntIntf
-				if yy534 == nil {
+					z.F.EncMapUint8BytesV(x.FMapUint8Bytes, e)
+				} // end block: if x.FMapUint8Bytes map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Float64\"")
+				} else {
+					r.EncodeString(`FMapUint8Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Float64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapIntIntfV(yy534, e)
-				} // end block: if yy534 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapIntString\"")
-			} else {
-				r.EncodeString(`FMapIntString`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapIntString == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapIntStringV(x.FMapIntString, e)
-			} // end block: if x.FMapIntString map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapIntString\"")
-			} else {
-				r.EncodeString(`FptrMapIntString`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn116 {
-				r.EncodeNil()
-			} else {
-				yy537 := *x.FptrMapIntString
-				if yy537 == nil {
+					z.F.EncMapUint8Float64V(x.FMapUint8Float64, e)
+				} // end block: if x.FMapUint8Float64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Int\"")
+				} else {
+					r.EncodeString(`FMapUint8Int`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Int == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapIntStringV(yy537, e)
-				} // end block: if yy537 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapIntBytes\"")
-			} else {
-				r.EncodeString(`FMapIntBytes`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapIntBytes == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapIntBytesV(x.FMapIntBytes, e)
-			} // end block: if x.FMapIntBytes map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapIntBytes\"")
-			} else {
-				r.EncodeString(`FptrMapIntBytes`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn118 {
-				r.EncodeNil()
-			} else {
-				yy540 := *x.FptrMapIntBytes
-				if yy540 == nil {
+					z.F.EncMapUint8IntV(x.FMapUint8Int, e)
+				} // end block: if x.FMapUint8Int map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Int32\"")
+				} else {
+					r.EncodeString(`FMapUint8Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Int32 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapIntBytesV(yy540, e)
-				} // end block: if yy540 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapIntUint8\"")
-			} else {
-				r.EncodeString(`FMapIntUint8`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapIntUint8 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapIntUint8V(x.FMapIntUint8, e)
-			} // end block: if x.FMapIntUint8 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapIntUint8\"")
-			} else {
-				r.EncodeString(`FptrMapIntUint8`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn120 {
-				r.EncodeNil()
-			} else {
-				yy543 := *x.FptrMapIntUint8
-				if yy543 == nil {
+					z.F.EncMapUint8Int32V(x.FMapUint8Int32, e)
+				} // end block: if x.FMapUint8Int32 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Intf\"")
+				} else {
+					r.EncodeString(`FMapUint8Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Intf == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapIntUint8V(yy543, e)
-				} // end block: if yy543 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapIntUint64\"")
-			} else {
-				r.EncodeString(`FMapIntUint64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapIntUint64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapIntUint64V(x.FMapIntUint64, e)
-			} // end block: if x.FMapIntUint64 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapIntUint64\"")
-			} else {
-				r.EncodeString(`FptrMapIntUint64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn122 {
-				r.EncodeNil()
-			} else {
-				yy546 := *x.FptrMapIntUint64
-				if yy546 == nil {
+					z.F.EncMapUint8IntfV(x.FMapUint8Intf, e)
+				} // end block: if x.FMapUint8Intf map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8String\"")
+				} else {
+					r.EncodeString(`FMapUint8String`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8String == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapIntUint64V(yy546, e)
-				} // end block: if yy546 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapIntInt\"")
-			} else {
-				r.EncodeString(`FMapIntInt`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapIntInt == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapIntIntV(x.FMapIntInt, e)
-			} // end block: if x.FMapIntInt map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapIntInt\"")
-			} else {
-				r.EncodeString(`FptrMapIntInt`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn124 {
-				r.EncodeNil()
-			} else {
-				yy549 := *x.FptrMapIntInt
-				if yy549 == nil {
+					z.F.EncMapUint8StringV(x.FMapUint8String, e)
+				} // end block: if x.FMapUint8String map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Uint64\"")
+				} else {
+					r.EncodeString(`FMapUint8Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Uint64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapIntIntV(yy549, e)
-				} // end block: if yy549 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapIntInt32\"")
-			} else {
-				r.EncodeString(`FMapIntInt32`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapIntInt32 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapIntInt32V(x.FMapIntInt32, e)
-			} // end block: if x.FMapIntInt32 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapIntInt32\"")
-			} else {
-				r.EncodeString(`FptrMapIntInt32`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn126 {
-				r.EncodeNil()
-			} else {
-				yy552 := *x.FptrMapIntInt32
-				if yy552 == nil {
+					z.F.EncMapUint8Uint64V(x.FMapUint8Uint64, e)
+				} // end block: if x.FMapUint8Uint64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Uint8\"")
+				} else {
+					r.EncodeString(`FMapUint8Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Uint8 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapIntInt32V(yy552, e)
-				} // end block: if yy552 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapIntFloat64\"")
-			} else {
-				r.EncodeString(`FMapIntFloat64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapIntFloat64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapIntFloat64V(x.FMapIntFloat64, e)
-			} // end block: if x.FMapIntFloat64 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapIntFloat64\"")
-			} else {
-				r.EncodeString(`FptrMapIntFloat64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn128 {
-				r.EncodeNil()
-			} else {
-				yy555 := *x.FptrMapIntFloat64
-				if yy555 == nil {
+					z.F.EncMapUint8Uint8V(x.FMapUint8Uint8, e)
+				} // end block: if x.FMapUint8Uint8 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceBool\"")
+				} else {
+					r.EncodeString(`FSliceBool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceBool == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapIntFloat64V(yy555, e)
-				} // end block: if yy555 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapIntBool\"")
-			} else {
-				r.EncodeString(`FMapIntBool`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapIntBool == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapIntBoolV(x.FMapIntBool, e)
-			} // end block: if x.FMapIntBool map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapIntBool\"")
-			} else {
-				r.EncodeString(`FptrMapIntBool`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn130 {
-				r.EncodeNil()
-			} else {
-				yy558 := *x.FptrMapIntBool
-				if yy558 == nil {
+					z.F.EncSliceBoolV(x.FSliceBool, e)
+				} // end block: if x.FSliceBool slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceBytes\"")
+				} else {
+					r.EncodeString(`FSliceBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceBytes == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapIntBoolV(yy558, e)
-				} // end block: if yy558 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapInt32Intf\"")
-			} else {
-				r.EncodeString(`FMapInt32Intf`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapInt32Intf == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapInt32IntfV(x.FMapInt32Intf, e)
-			} // end block: if x.FMapInt32Intf map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapInt32Intf\"")
-			} else {
-				r.EncodeString(`FptrMapInt32Intf`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn132 {
-				r.EncodeNil()
-			} else {
-				yy561 := *x.FptrMapInt32Intf
-				if yy561 == nil {
+					z.F.EncSliceBytesV(x.FSliceBytes, e)
+				} // end block: if x.FSliceBytes slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceFloat32\"")
+				} else {
+					r.EncodeString(`FSliceFloat32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceFloat32 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapInt32IntfV(yy561, e)
-				} // end block: if yy561 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapInt32String\"")
-			} else {
-				r.EncodeString(`FMapInt32String`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapInt32String == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapInt32StringV(x.FMapInt32String, e)
-			} // end block: if x.FMapInt32String map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapInt32String\"")
-			} else {
-				r.EncodeString(`FptrMapInt32String`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn134 {
-				r.EncodeNil()
-			} else {
-				yy564 := *x.FptrMapInt32String
-				if yy564 == nil {
+					z.F.EncSliceFloat32V(x.FSliceFloat32, e)
+				} // end block: if x.FSliceFloat32 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceFloat64\"")
+				} else {
+					r.EncodeString(`FSliceFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceFloat64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapInt32StringV(yy564, e)
-				} // end block: if yy564 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapInt32Bytes\"")
-			} else {
-				r.EncodeString(`FMapInt32Bytes`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapInt32Bytes == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapInt32BytesV(x.FMapInt32Bytes, e)
-			} // end block: if x.FMapInt32Bytes map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapInt32Bytes\"")
-			} else {
-				r.EncodeString(`FptrMapInt32Bytes`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn136 {
-				r.EncodeNil()
-			} else {
-				yy567 := *x.FptrMapInt32Bytes
-				if yy567 == nil {
+					z.F.EncSliceFloat64V(x.FSliceFloat64, e)
+				} // end block: if x.FSliceFloat64 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceInt\"")
+				} else {
+					r.EncodeString(`FSliceInt`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceInt == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapInt32BytesV(yy567, e)
-				} // end block: if yy567 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapInt32Uint8\"")
-			} else {
-				r.EncodeString(`FMapInt32Uint8`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapInt32Uint8 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapInt32Uint8V(x.FMapInt32Uint8, e)
-			} // end block: if x.FMapInt32Uint8 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapInt32Uint8\"")
-			} else {
-				r.EncodeString(`FptrMapInt32Uint8`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn138 {
-				r.EncodeNil()
-			} else {
-				yy570 := *x.FptrMapInt32Uint8
-				if yy570 == nil {
+					z.F.EncSliceIntV(x.FSliceInt, e)
+				} // end block: if x.FSliceInt slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceInt32\"")
+				} else {
+					r.EncodeString(`FSliceInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceInt32 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapInt32Uint8V(yy570, e)
-				} // end block: if yy570 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapInt32Uint64\"")
-			} else {
-				r.EncodeString(`FMapInt32Uint64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapInt32Uint64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapInt32Uint64V(x.FMapInt32Uint64, e)
-			} // end block: if x.FMapInt32Uint64 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapInt32Uint64\"")
-			} else {
-				r.EncodeString(`FptrMapInt32Uint64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn140 {
-				r.EncodeNil()
-			} else {
-				yy573 := *x.FptrMapInt32Uint64
-				if yy573 == nil {
+					z.F.EncSliceInt32V(x.FSliceInt32, e)
+				} // end block: if x.FSliceInt32 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceInt64\"")
+				} else {
+					r.EncodeString(`FSliceInt64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceInt64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapInt32Uint64V(yy573, e)
-				} // end block: if yy573 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapInt32Int\"")
-			} else {
-				r.EncodeString(`FMapInt32Int`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapInt32Int == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapInt32IntV(x.FMapInt32Int, e)
-			} // end block: if x.FMapInt32Int map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapInt32Int\"")
-			} else {
-				r.EncodeString(`FptrMapInt32Int`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn142 {
-				r.EncodeNil()
-			} else {
-				yy576 := *x.FptrMapInt32Int
-				if yy576 == nil {
+					z.F.EncSliceInt64V(x.FSliceInt64, e)
+				} // end block: if x.FSliceInt64 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceIntf\"")
+				} else {
+					r.EncodeString(`FSliceIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceIntf == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapInt32IntV(yy576, e)
-				} // end block: if yy576 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapInt32Int32\"")
-			} else {
-				r.EncodeString(`FMapInt32Int32`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapInt32Int32 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapInt32Int32V(x.FMapInt32Int32, e)
-			} // end block: if x.FMapInt32Int32 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapInt32Int32\"")
-			} else {
-				r.EncodeString(`FptrMapInt32Int32`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn144 {
-				r.EncodeNil()
-			} else {
-				yy579 := *x.FptrMapInt32Int32
-				if yy579 == nil {
+					z.F.EncSliceIntfV(x.FSliceIntf, e)
+				} // end block: if x.FSliceIntf slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceString\"")
+				} else {
+					r.EncodeString(`FSliceString`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceString == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapInt32Int32V(yy579, e)
-				} // end block: if yy579 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapInt32Float64\"")
-			} else {
-				r.EncodeString(`FMapInt32Float64`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapInt32Float64 == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapInt32Float64V(x.FMapInt32Float64, e)
-			} // end block: if x.FMapInt32Float64 map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapInt32Float64\"")
-			} else {
-				r.EncodeString(`FptrMapInt32Float64`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn146 {
-				r.EncodeNil()
-			} else {
-				yy582 := *x.FptrMapInt32Float64
-				if yy582 == nil {
+					z.F.EncSliceStringV(x.FSliceString, e)
+				} // end block: if x.FSliceString slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceUint64\"")
+				} else {
+					r.EncodeString(`FSliceUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceUint64 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapInt32Float64V(yy582, e)
-				} // end block: if yy582 map == nil
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FMapInt32Bool\"")
-			} else {
-				r.EncodeString(`FMapInt32Bool`)
-			}
-			z.EncWriteMapElemValue()
-			if x.FMapInt32Bool == nil {
-				r.EncodeNil()
-			} else {
-				z.F.EncMapInt32BoolV(x.FMapInt32Bool, e)
-			} // end block: if x.FMapInt32Bool map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"FptrMapInt32Bool\"")
-			} else {
-				r.EncodeString(`FptrMapInt32Bool`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn148 {
-				r.EncodeNil()
-			} else {
-				yy585 := *x.FptrMapInt32Bool
-				if yy585 == nil {
+					z.F.EncSliceUint64V(x.FSliceUint64, e)
+				} // end block: if x.FSliceUint64 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceUint8\"")
+				} else {
+					r.EncodeString(`FSliceUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceUint8 == nil {
 					r.EncodeNil()
 				} else {
-					z.F.EncMapInt32BoolV(yy585, e)
-				} // end block: if yy585 map == nil
+					r.EncodeStringBytesRaw([]byte(x.FSliceUint8))
+				} // end block: if x.FSliceUint8 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FString\"")
+				} else {
+					r.EncodeString(`FString`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeString(string(x.FString))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUint\"")
+				} else {
+					r.EncodeString(`FUint`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUint))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUint16\"")
+				} else {
+					r.EncodeString(`FUint16`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUint16))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUint32\"")
+				} else {
+					r.EncodeString(`FUint32`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUint32))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUint64\"")
+				} else {
+					r.EncodeString(`FUint64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUint64))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUint8\"")
+				} else {
+					r.EncodeString(`FUint8`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUint8))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUintptr\"")
+				} else {
+					r.EncodeString(`FUintptr`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUintptr))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrBool\"")
+				} else {
+					r.EncodeString(`FptrBool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn36 {
+					r.EncodeNil()
+				} else {
+					yy441 := *x.FptrBool
+					r.EncodeBool(bool(yy441))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrBytes\"")
+				} else {
+					r.EncodeString(`FptrBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn8 {
+					r.EncodeNil()
+				} else {
+					yy443 := *x.FptrBytes
+					if yy443 == nil {
+						r.EncodeNil()
+					} else {
+						r.EncodeStringBytesRaw([]byte(yy443))
+					} // end block: if yy443 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrFloat32\"")
+				} else {
+					r.EncodeString(`FptrFloat32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn10 {
+					r.EncodeNil()
+				} else {
+					yy445 := *x.FptrFloat32
+					r.EncodeFloat32(float32(yy445))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrFloat64\"")
+				} else {
+					r.EncodeString(`FptrFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn12 {
+					r.EncodeNil()
+				} else {
+					yy447 := *x.FptrFloat64
+					r.EncodeFloat64(float64(yy447))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrInt\"")
+				} else {
+					r.EncodeString(`FptrInt`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn26 {
+					r.EncodeNil()
+				} else {
+					yy449 := *x.FptrInt
+					r.EncodeInt(int64(yy449))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrInt16\"")
+				} else {
+					r.EncodeString(`FptrInt16`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn30 {
+					r.EncodeNil()
+				} else {
+					yy451 := *x.FptrInt16
+					r.EncodeInt(int64(yy451))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrInt32\"")
+				} else {
+					r.EncodeString(`FptrInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn32 {
+					r.EncodeNil()
+				} else {
+					yy453 := *x.FptrInt32
+					r.EncodeInt(int64(yy453))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrInt64\"")
+				} else {
+					r.EncodeString(`FptrInt64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn34 {
+					r.EncodeNil()
+				} else {
+					yy455 := *x.FptrInt64
+					r.EncodeInt(int64(yy455))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrInt8\"")
+				} else {
+					r.EncodeString(`FptrInt8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn28 {
+					r.EncodeNil()
+				} else {
+					yy457 := *x.FptrInt8
+					r.EncodeInt(int64(yy457))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrIntf\"")
+				} else {
+					r.EncodeString(`FptrIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn4 {
+					r.EncodeNil()
+				} else {
+					yy459 := *x.FptrIntf
+					z.EncFallback(yy459)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Bool\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn148 {
+					r.EncodeNil()
+				} else {
+					yy461 := *x.FptrMapInt32Bool
+					if yy461 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32BoolV(yy461, e)
+					} // end block: if yy461 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Bytes\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn136 {
+					r.EncodeNil()
+				} else {
+					yy463 := *x.FptrMapInt32Bytes
+					if yy463 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32BytesV(yy463, e)
+					} // end block: if yy463 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Float64\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn146 {
+					r.EncodeNil()
+				} else {
+					yy465 := *x.FptrMapInt32Float64
+					if yy465 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32Float64V(yy465, e)
+					} // end block: if yy465 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Int\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Int`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn142 {
+					r.EncodeNil()
+				} else {
+					yy467 := *x.FptrMapInt32Int
+					if yy467 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32IntV(yy467, e)
+					} // end block: if yy467 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Int32\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn144 {
+					r.EncodeNil()
+				} else {
+					yy469 := *x.FptrMapInt32Int32
+					if yy469 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32Int32V(yy469, e)
+					} // end block: if yy469 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Intf\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn132 {
+					r.EncodeNil()
+				} else {
+					yy471 := *x.FptrMapInt32Intf
+					if yy471 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32IntfV(yy471, e)
+					} // end block: if yy471 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32String\"")
+				} else {
+					r.EncodeString(`FptrMapInt32String`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn134 {
+					r.EncodeNil()
+				} else {
+					yy473 := *x.FptrMapInt32String
+					if yy473 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32StringV(yy473, e)
+					} // end block: if yy473 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Uint64\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn140 {
+					r.EncodeNil()
+				} else {
+					yy475 := *x.FptrMapInt32Uint64
+					if yy475 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32Uint64V(yy475, e)
+					} // end block: if yy475 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Uint8\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn138 {
+					r.EncodeNil()
+				} else {
+					yy477 := *x.FptrMapInt32Uint8
+					if yy477 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32Uint8V(yy477, e)
+					} // end block: if yy477 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntBool\"")
+				} else {
+					r.EncodeString(`FptrMapIntBool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn130 {
+					r.EncodeNil()
+				} else {
+					yy479 := *x.FptrMapIntBool
+					if yy479 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntBoolV(yy479, e)
+					} // end block: if yy479 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntBytes\"")
+				} else {
+					r.EncodeString(`FptrMapIntBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn118 {
+					r.EncodeNil()
+				} else {
+					yy481 := *x.FptrMapIntBytes
+					if yy481 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntBytesV(yy481, e)
+					} // end block: if yy481 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntFloat64\"")
+				} else {
+					r.EncodeString(`FptrMapIntFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn128 {
+					r.EncodeNil()
+				} else {
+					yy483 := *x.FptrMapIntFloat64
+					if yy483 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntFloat64V(yy483, e)
+					} // end block: if yy483 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntInt\"")
+				} else {
+					r.EncodeString(`FptrMapIntInt`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn124 {
+					r.EncodeNil()
+				} else {
+					yy485 := *x.FptrMapIntInt
+					if yy485 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntIntV(yy485, e)
+					} // end block: if yy485 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntInt32\"")
+				} else {
+					r.EncodeString(`FptrMapIntInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn126 {
+					r.EncodeNil()
+				} else {
+					yy487 := *x.FptrMapIntInt32
+					if yy487 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntInt32V(yy487, e)
+					} // end block: if yy487 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntIntf\"")
+				} else {
+					r.EncodeString(`FptrMapIntIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn114 {
+					r.EncodeNil()
+				} else {
+					yy489 := *x.FptrMapIntIntf
+					if yy489 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntIntfV(yy489, e)
+					} // end block: if yy489 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntString\"")
+				} else {
+					r.EncodeString(`FptrMapIntString`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn116 {
+					r.EncodeNil()
+				} else {
+					yy491 := *x.FptrMapIntString
+					if yy491 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntStringV(yy491, e)
+					} // end block: if yy491 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntUint64\"")
+				} else {
+					r.EncodeString(`FptrMapIntUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn122 {
+					r.EncodeNil()
+				} else {
+					yy493 := *x.FptrMapIntUint64
+					if yy493 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntUint64V(yy493, e)
+					} // end block: if yy493 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntUint8\"")
+				} else {
+					r.EncodeString(`FptrMapIntUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn120 {
+					r.EncodeNil()
+				} else {
+					yy495 := *x.FptrMapIntUint8
+					if yy495 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntUint8V(yy495, e)
+					} // end block: if yy495 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringBool\"")
+				} else {
+					r.EncodeString(`FptrMapStringBool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn76 {
+					r.EncodeNil()
+				} else {
+					yy497 := *x.FptrMapStringBool
+					if yy497 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringBoolV(yy497, e)
+					} // end block: if yy497 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringBytes\"")
+				} else {
+					r.EncodeString(`FptrMapStringBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn64 {
+					r.EncodeNil()
+				} else {
+					yy499 := *x.FptrMapStringBytes
+					if yy499 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringBytesV(yy499, e)
+					} // end block: if yy499 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringFloat64\"")
+				} else {
+					r.EncodeString(`FptrMapStringFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn74 {
+					r.EncodeNil()
+				} else {
+					yy501 := *x.FptrMapStringFloat64
+					if yy501 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringFloat64V(yy501, e)
+					} // end block: if yy501 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringInt\"")
+				} else {
+					r.EncodeString(`FptrMapStringInt`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn70 {
+					r.EncodeNil()
+				} else {
+					yy503 := *x.FptrMapStringInt
+					if yy503 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringIntV(yy503, e)
+					} // end block: if yy503 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringInt32\"")
+				} else {
+					r.EncodeString(`FptrMapStringInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn72 {
+					r.EncodeNil()
+				} else {
+					yy505 := *x.FptrMapStringInt32
+					if yy505 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringInt32V(yy505, e)
+					} // end block: if yy505 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringIntf\"")
+				} else {
+					r.EncodeString(`FptrMapStringIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn60 {
+					r.EncodeNil()
+				} else {
+					yy507 := *x.FptrMapStringIntf
+					if yy507 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringIntfV(yy507, e)
+					} // end block: if yy507 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringString\"")
+				} else {
+					r.EncodeString(`FptrMapStringString`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn62 {
+					r.EncodeNil()
+				} else {
+					yy509 := *x.FptrMapStringString
+					if yy509 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringStringV(yy509, e)
+					} // end block: if yy509 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringUint64\"")
+				} else {
+					r.EncodeString(`FptrMapStringUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn68 {
+					r.EncodeNil()
+				} else {
+					yy511 := *x.FptrMapStringUint64
+					if yy511 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringUint64V(yy511, e)
+					} // end block: if yy511 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringUint8\"")
+				} else {
+					r.EncodeString(`FptrMapStringUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn66 {
+					r.EncodeNil()
+				} else {
+					yy513 := *x.FptrMapStringUint8
+					if yy513 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringUint8V(yy513, e)
+					} // end block: if yy513 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Bool\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn112 {
+					r.EncodeNil()
+				} else {
+					yy515 := *x.FptrMapUint64Bool
+					if yy515 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64BoolV(yy515, e)
+					} // end block: if yy515 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Bytes\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn100 {
+					r.EncodeNil()
+				} else {
+					yy517 := *x.FptrMapUint64Bytes
+					if yy517 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64BytesV(yy517, e)
+					} // end block: if yy517 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Float64\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn110 {
+					r.EncodeNil()
+				} else {
+					yy519 := *x.FptrMapUint64Float64
+					if yy519 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64Float64V(yy519, e)
+					} // end block: if yy519 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Int\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Int`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn106 {
+					r.EncodeNil()
+				} else {
+					yy521 := *x.FptrMapUint64Int
+					if yy521 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64IntV(yy521, e)
+					} // end block: if yy521 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Int32\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn108 {
+					r.EncodeNil()
+				} else {
+					yy523 := *x.FptrMapUint64Int32
+					if yy523 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64Int32V(yy523, e)
+					} // end block: if yy523 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Intf\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn96 {
+					r.EncodeNil()
+				} else {
+					yy525 := *x.FptrMapUint64Intf
+					if yy525 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64IntfV(yy525, e)
+					} // end block: if yy525 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64String\"")
+				} else {
+					r.EncodeString(`FptrMapUint64String`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn98 {
+					r.EncodeNil()
+				} else {
+					yy527 := *x.FptrMapUint64String
+					if yy527 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64StringV(yy527, e)
+					} // end block: if yy527 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Uint64\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn104 {
+					r.EncodeNil()
+				} else {
+					yy529 := *x.FptrMapUint64Uint64
+					if yy529 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64Uint64V(yy529, e)
+					} // end block: if yy529 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Uint8\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn102 {
+					r.EncodeNil()
+				} else {
+					yy531 := *x.FptrMapUint64Uint8
+					if yy531 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64Uint8V(yy531, e)
+					} // end block: if yy531 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Bool\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn94 {
+					r.EncodeNil()
+				} else {
+					yy533 := *x.FptrMapUint8Bool
+					if yy533 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8BoolV(yy533, e)
+					} // end block: if yy533 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Bytes\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn82 {
+					r.EncodeNil()
+				} else {
+					yy535 := *x.FptrMapUint8Bytes
+					if yy535 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8BytesV(yy535, e)
+					} // end block: if yy535 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Float64\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn92 {
+					r.EncodeNil()
+				} else {
+					yy537 := *x.FptrMapUint8Float64
+					if yy537 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8Float64V(yy537, e)
+					} // end block: if yy537 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Int\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Int`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn88 {
+					r.EncodeNil()
+				} else {
+					yy539 := *x.FptrMapUint8Int
+					if yy539 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8IntV(yy539, e)
+					} // end block: if yy539 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Int32\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn90 {
+					r.EncodeNil()
+				} else {
+					yy541 := *x.FptrMapUint8Int32
+					if yy541 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8Int32V(yy541, e)
+					} // end block: if yy541 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Intf\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn78 {
+					r.EncodeNil()
+				} else {
+					yy543 := *x.FptrMapUint8Intf
+					if yy543 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8IntfV(yy543, e)
+					} // end block: if yy543 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8String\"")
+				} else {
+					r.EncodeString(`FptrMapUint8String`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn80 {
+					r.EncodeNil()
+				} else {
+					yy545 := *x.FptrMapUint8String
+					if yy545 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8StringV(yy545, e)
+					} // end block: if yy545 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Uint64\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn86 {
+					r.EncodeNil()
+				} else {
+					yy547 := *x.FptrMapUint8Uint64
+					if yy547 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8Uint64V(yy547, e)
+					} // end block: if yy547 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Uint8\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn84 {
+					r.EncodeNil()
+				} else {
+					yy549 := *x.FptrMapUint8Uint8
+					if yy549 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8Uint8V(yy549, e)
+					} // end block: if yy549 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceBool\"")
+				} else {
+					r.EncodeString(`FptrSliceBool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn58 {
+					r.EncodeNil()
+				} else {
+					yy551 := *x.FptrSliceBool
+					if yy551 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceBoolV(yy551, e)
+					} // end block: if yy551 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceBytes\"")
+				} else {
+					r.EncodeString(`FptrSliceBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn42 {
+					r.EncodeNil()
+				} else {
+					yy553 := *x.FptrSliceBytes
+					if yy553 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceBytesV(yy553, e)
+					} // end block: if yy553 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceFloat32\"")
+				} else {
+					r.EncodeString(`FptrSliceFloat32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn44 {
+					r.EncodeNil()
+				} else {
+					yy555 := *x.FptrSliceFloat32
+					if yy555 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceFloat32V(yy555, e)
+					} // end block: if yy555 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceFloat64\"")
+				} else {
+					r.EncodeString(`FptrSliceFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn46 {
+					r.EncodeNil()
+				} else {
+					yy557 := *x.FptrSliceFloat64
+					if yy557 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceFloat64V(yy557, e)
+					} // end block: if yy557 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceInt\"")
+				} else {
+					r.EncodeString(`FptrSliceInt`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn52 {
+					r.EncodeNil()
+				} else {
+					yy559 := *x.FptrSliceInt
+					if yy559 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceIntV(yy559, e)
+					} // end block: if yy559 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceInt32\"")
+				} else {
+					r.EncodeString(`FptrSliceInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn54 {
+					r.EncodeNil()
+				} else {
+					yy561 := *x.FptrSliceInt32
+					if yy561 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceInt32V(yy561, e)
+					} // end block: if yy561 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceInt64\"")
+				} else {
+					r.EncodeString(`FptrSliceInt64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn56 {
+					r.EncodeNil()
+				} else {
+					yy563 := *x.FptrSliceInt64
+					if yy563 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceInt64V(yy563, e)
+					} // end block: if yy563 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceIntf\"")
+				} else {
+					r.EncodeString(`FptrSliceIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn38 {
+					r.EncodeNil()
+				} else {
+					yy565 := *x.FptrSliceIntf
+					if yy565 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceIntfV(yy565, e)
+					} // end block: if yy565 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceString\"")
+				} else {
+					r.EncodeString(`FptrSliceString`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn40 {
+					r.EncodeNil()
+				} else {
+					yy567 := *x.FptrSliceString
+					if yy567 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceStringV(yy567, e)
+					} // end block: if yy567 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceUint64\"")
+				} else {
+					r.EncodeString(`FptrSliceUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn50 {
+					r.EncodeNil()
+				} else {
+					yy569 := *x.FptrSliceUint64
+					if yy569 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceUint64V(yy569, e)
+					} // end block: if yy569 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceUint8\"")
+				} else {
+					r.EncodeString(`FptrSliceUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn48 {
+					r.EncodeNil()
+				} else {
+					yy571 := *x.FptrSliceUint8
+					if yy571 == nil {
+						r.EncodeNil()
+					} else {
+						r.EncodeStringBytesRaw([]byte(yy571))
+					} // end block: if yy571 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrString\"")
+				} else {
+					r.EncodeString(`FptrString`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn6 {
+					r.EncodeNil()
+				} else {
+					yy573 := *x.FptrString
+					r.EncodeString(string(yy573))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUint\"")
+				} else {
+					r.EncodeString(`FptrUint`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn14 {
+					r.EncodeNil()
+				} else {
+					yy575 := *x.FptrUint
+					r.EncodeUint(uint64(yy575))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUint16\"")
+				} else {
+					r.EncodeString(`FptrUint16`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn18 {
+					r.EncodeNil()
+				} else {
+					yy577 := *x.FptrUint16
+					r.EncodeUint(uint64(yy577))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUint32\"")
+				} else {
+					r.EncodeString(`FptrUint32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn20 {
+					r.EncodeNil()
+				} else {
+					yy579 := *x.FptrUint32
+					r.EncodeUint(uint64(yy579))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUint64\"")
+				} else {
+					r.EncodeString(`FptrUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn22 {
+					r.EncodeNil()
+				} else {
+					yy581 := *x.FptrUint64
+					r.EncodeUint(uint64(yy581))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUint8\"")
+				} else {
+					r.EncodeString(`FptrUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn16 {
+					r.EncodeNil()
+				} else {
+					yy583 := *x.FptrUint8
+					r.EncodeUint(uint64(yy583))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUintptr\"")
+				} else {
+					r.EncodeString(`FptrUintptr`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn24 {
+					r.EncodeNil()
+				} else {
+					yy585 := *x.FptrUintptr
+					r.EncodeUint(uint64(yy585))
+				}
+			} else {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FIntf\"")
+				} else {
+					r.EncodeString(`FIntf`)
+				}
+				z.EncWriteMapElemValue()
+				z.EncFallback(x.FIntf)
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrIntf\"")
+				} else {
+					r.EncodeString(`FptrIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn4 {
+					r.EncodeNil()
+				} else {
+					yy588 := *x.FptrIntf
+					z.EncFallback(yy588)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FString\"")
+				} else {
+					r.EncodeString(`FString`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeString(string(x.FString))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrString\"")
+				} else {
+					r.EncodeString(`FptrString`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn6 {
+					r.EncodeNil()
+				} else {
+					yy591 := *x.FptrString
+					r.EncodeString(string(yy591))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FBytes\"")
+				} else {
+					r.EncodeString(`FBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FBytes == nil {
+					r.EncodeNil()
+				} else {
+					r.EncodeStringBytesRaw([]byte(x.FBytes))
+				} // end block: if x.FBytes slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrBytes\"")
+				} else {
+					r.EncodeString(`FptrBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn8 {
+					r.EncodeNil()
+				} else {
+					yy594 := *x.FptrBytes
+					if yy594 == nil {
+						r.EncodeNil()
+					} else {
+						r.EncodeStringBytesRaw([]byte(yy594))
+					} // end block: if yy594 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FFloat32\"")
+				} else {
+					r.EncodeString(`FFloat32`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeFloat32(float32(x.FFloat32))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrFloat32\"")
+				} else {
+					r.EncodeString(`FptrFloat32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn10 {
+					r.EncodeNil()
+				} else {
+					yy597 := *x.FptrFloat32
+					r.EncodeFloat32(float32(yy597))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FFloat64\"")
+				} else {
+					r.EncodeString(`FFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeFloat64(float64(x.FFloat64))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrFloat64\"")
+				} else {
+					r.EncodeString(`FptrFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn12 {
+					r.EncodeNil()
+				} else {
+					yy600 := *x.FptrFloat64
+					r.EncodeFloat64(float64(yy600))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUint\"")
+				} else {
+					r.EncodeString(`FUint`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUint))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUint\"")
+				} else {
+					r.EncodeString(`FptrUint`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn14 {
+					r.EncodeNil()
+				} else {
+					yy603 := *x.FptrUint
+					r.EncodeUint(uint64(yy603))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUint8\"")
+				} else {
+					r.EncodeString(`FUint8`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUint8))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUint8\"")
+				} else {
+					r.EncodeString(`FptrUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn16 {
+					r.EncodeNil()
+				} else {
+					yy606 := *x.FptrUint8
+					r.EncodeUint(uint64(yy606))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUint16\"")
+				} else {
+					r.EncodeString(`FUint16`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUint16))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUint16\"")
+				} else {
+					r.EncodeString(`FptrUint16`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn18 {
+					r.EncodeNil()
+				} else {
+					yy609 := *x.FptrUint16
+					r.EncodeUint(uint64(yy609))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUint32\"")
+				} else {
+					r.EncodeString(`FUint32`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUint32))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUint32\"")
+				} else {
+					r.EncodeString(`FptrUint32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn20 {
+					r.EncodeNil()
+				} else {
+					yy612 := *x.FptrUint32
+					r.EncodeUint(uint64(yy612))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUint64\"")
+				} else {
+					r.EncodeString(`FUint64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUint64))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUint64\"")
+				} else {
+					r.EncodeString(`FptrUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn22 {
+					r.EncodeNil()
+				} else {
+					yy615 := *x.FptrUint64
+					r.EncodeUint(uint64(yy615))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FUintptr\"")
+				} else {
+					r.EncodeString(`FUintptr`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeUint(uint64(x.FUintptr))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrUintptr\"")
+				} else {
+					r.EncodeString(`FptrUintptr`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn24 {
+					r.EncodeNil()
+				} else {
+					yy618 := *x.FptrUintptr
+					r.EncodeUint(uint64(yy618))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FInt\"")
+				} else {
+					r.EncodeString(`FInt`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.FInt))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrInt\"")
+				} else {
+					r.EncodeString(`FptrInt`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn26 {
+					r.EncodeNil()
+				} else {
+					yy621 := *x.FptrInt
+					r.EncodeInt(int64(yy621))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FInt8\"")
+				} else {
+					r.EncodeString(`FInt8`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.FInt8))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrInt8\"")
+				} else {
+					r.EncodeString(`FptrInt8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn28 {
+					r.EncodeNil()
+				} else {
+					yy624 := *x.FptrInt8
+					r.EncodeInt(int64(yy624))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FInt16\"")
+				} else {
+					r.EncodeString(`FInt16`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.FInt16))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrInt16\"")
+				} else {
+					r.EncodeString(`FptrInt16`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn30 {
+					r.EncodeNil()
+				} else {
+					yy627 := *x.FptrInt16
+					r.EncodeInt(int64(yy627))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FInt32\"")
+				} else {
+					r.EncodeString(`FInt32`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.FInt32))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrInt32\"")
+				} else {
+					r.EncodeString(`FptrInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn32 {
+					r.EncodeNil()
+				} else {
+					yy630 := *x.FptrInt32
+					r.EncodeInt(int64(yy630))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FInt64\"")
+				} else {
+					r.EncodeString(`FInt64`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeInt(int64(x.FInt64))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrInt64\"")
+				} else {
+					r.EncodeString(`FptrInt64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn34 {
+					r.EncodeNil()
+				} else {
+					yy633 := *x.FptrInt64
+					r.EncodeInt(int64(yy633))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FBool\"")
+				} else {
+					r.EncodeString(`FBool`)
+				}
+				z.EncWriteMapElemValue()
+				r.EncodeBool(bool(x.FBool))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrBool\"")
+				} else {
+					r.EncodeString(`FptrBool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn36 {
+					r.EncodeNil()
+				} else {
+					yy636 := *x.FptrBool
+					r.EncodeBool(bool(yy636))
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceIntf\"")
+				} else {
+					r.EncodeString(`FSliceIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceIntf == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceIntfV(x.FSliceIntf, e)
+				} // end block: if x.FSliceIntf slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceIntf\"")
+				} else {
+					r.EncodeString(`FptrSliceIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn38 {
+					r.EncodeNil()
+				} else {
+					yy639 := *x.FptrSliceIntf
+					if yy639 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceIntfV(yy639, e)
+					} // end block: if yy639 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceString\"")
+				} else {
+					r.EncodeString(`FSliceString`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceString == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceStringV(x.FSliceString, e)
+				} // end block: if x.FSliceString slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceString\"")
+				} else {
+					r.EncodeString(`FptrSliceString`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn40 {
+					r.EncodeNil()
+				} else {
+					yy642 := *x.FptrSliceString
+					if yy642 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceStringV(yy642, e)
+					} // end block: if yy642 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceBytes\"")
+				} else {
+					r.EncodeString(`FSliceBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceBytes == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceBytesV(x.FSliceBytes, e)
+				} // end block: if x.FSliceBytes slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceBytes\"")
+				} else {
+					r.EncodeString(`FptrSliceBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn42 {
+					r.EncodeNil()
+				} else {
+					yy645 := *x.FptrSliceBytes
+					if yy645 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceBytesV(yy645, e)
+					} // end block: if yy645 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceFloat32\"")
+				} else {
+					r.EncodeString(`FSliceFloat32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceFloat32 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceFloat32V(x.FSliceFloat32, e)
+				} // end block: if x.FSliceFloat32 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceFloat32\"")
+				} else {
+					r.EncodeString(`FptrSliceFloat32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn44 {
+					r.EncodeNil()
+				} else {
+					yy648 := *x.FptrSliceFloat32
+					if yy648 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceFloat32V(yy648, e)
+					} // end block: if yy648 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceFloat64\"")
+				} else {
+					r.EncodeString(`FSliceFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceFloat64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceFloat64V(x.FSliceFloat64, e)
+				} // end block: if x.FSliceFloat64 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceFloat64\"")
+				} else {
+					r.EncodeString(`FptrSliceFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn46 {
+					r.EncodeNil()
+				} else {
+					yy651 := *x.FptrSliceFloat64
+					if yy651 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceFloat64V(yy651, e)
+					} // end block: if yy651 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceUint8\"")
+				} else {
+					r.EncodeString(`FSliceUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceUint8 == nil {
+					r.EncodeNil()
+				} else {
+					r.EncodeStringBytesRaw([]byte(x.FSliceUint8))
+				} // end block: if x.FSliceUint8 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceUint8\"")
+				} else {
+					r.EncodeString(`FptrSliceUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn48 {
+					r.EncodeNil()
+				} else {
+					yy654 := *x.FptrSliceUint8
+					if yy654 == nil {
+						r.EncodeNil()
+					} else {
+						r.EncodeStringBytesRaw([]byte(yy654))
+					} // end block: if yy654 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceUint64\"")
+				} else {
+					r.EncodeString(`FSliceUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceUint64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceUint64V(x.FSliceUint64, e)
+				} // end block: if x.FSliceUint64 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceUint64\"")
+				} else {
+					r.EncodeString(`FptrSliceUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn50 {
+					r.EncodeNil()
+				} else {
+					yy657 := *x.FptrSliceUint64
+					if yy657 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceUint64V(yy657, e)
+					} // end block: if yy657 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceInt\"")
+				} else {
+					r.EncodeString(`FSliceInt`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceInt == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceIntV(x.FSliceInt, e)
+				} // end block: if x.FSliceInt slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceInt\"")
+				} else {
+					r.EncodeString(`FptrSliceInt`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn52 {
+					r.EncodeNil()
+				} else {
+					yy660 := *x.FptrSliceInt
+					if yy660 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceIntV(yy660, e)
+					} // end block: if yy660 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceInt32\"")
+				} else {
+					r.EncodeString(`FSliceInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceInt32 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceInt32V(x.FSliceInt32, e)
+				} // end block: if x.FSliceInt32 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceInt32\"")
+				} else {
+					r.EncodeString(`FptrSliceInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn54 {
+					r.EncodeNil()
+				} else {
+					yy663 := *x.FptrSliceInt32
+					if yy663 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceInt32V(yy663, e)
+					} // end block: if yy663 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceInt64\"")
+				} else {
+					r.EncodeString(`FSliceInt64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceInt64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceInt64V(x.FSliceInt64, e)
+				} // end block: if x.FSliceInt64 slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceInt64\"")
+				} else {
+					r.EncodeString(`FptrSliceInt64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn56 {
+					r.EncodeNil()
+				} else {
+					yy666 := *x.FptrSliceInt64
+					if yy666 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceInt64V(yy666, e)
+					} // end block: if yy666 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FSliceBool\"")
+				} else {
+					r.EncodeString(`FSliceBool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FSliceBool == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncSliceBoolV(x.FSliceBool, e)
+				} // end block: if x.FSliceBool slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrSliceBool\"")
+				} else {
+					r.EncodeString(`FptrSliceBool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn58 {
+					r.EncodeNil()
+				} else {
+					yy669 := *x.FptrSliceBool
+					if yy669 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncSliceBoolV(yy669, e)
+					} // end block: if yy669 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringIntf\"")
+				} else {
+					r.EncodeString(`FMapStringIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringIntf == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringIntfV(x.FMapStringIntf, e)
+				} // end block: if x.FMapStringIntf map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringIntf\"")
+				} else {
+					r.EncodeString(`FptrMapStringIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn60 {
+					r.EncodeNil()
+				} else {
+					yy672 := *x.FptrMapStringIntf
+					if yy672 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringIntfV(yy672, e)
+					} // end block: if yy672 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringString\"")
+				} else {
+					r.EncodeString(`FMapStringString`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringString == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringStringV(x.FMapStringString, e)
+				} // end block: if x.FMapStringString map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringString\"")
+				} else {
+					r.EncodeString(`FptrMapStringString`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn62 {
+					r.EncodeNil()
+				} else {
+					yy675 := *x.FptrMapStringString
+					if yy675 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringStringV(yy675, e)
+					} // end block: if yy675 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringBytes\"")
+				} else {
+					r.EncodeString(`FMapStringBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringBytes == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringBytesV(x.FMapStringBytes, e)
+				} // end block: if x.FMapStringBytes map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringBytes\"")
+				} else {
+					r.EncodeString(`FptrMapStringBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn64 {
+					r.EncodeNil()
+				} else {
+					yy678 := *x.FptrMapStringBytes
+					if yy678 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringBytesV(yy678, e)
+					} // end block: if yy678 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringUint8\"")
+				} else {
+					r.EncodeString(`FMapStringUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringUint8 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringUint8V(x.FMapStringUint8, e)
+				} // end block: if x.FMapStringUint8 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringUint8\"")
+				} else {
+					r.EncodeString(`FptrMapStringUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn66 {
+					r.EncodeNil()
+				} else {
+					yy681 := *x.FptrMapStringUint8
+					if yy681 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringUint8V(yy681, e)
+					} // end block: if yy681 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringUint64\"")
+				} else {
+					r.EncodeString(`FMapStringUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringUint64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringUint64V(x.FMapStringUint64, e)
+				} // end block: if x.FMapStringUint64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringUint64\"")
+				} else {
+					r.EncodeString(`FptrMapStringUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn68 {
+					r.EncodeNil()
+				} else {
+					yy684 := *x.FptrMapStringUint64
+					if yy684 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringUint64V(yy684, e)
+					} // end block: if yy684 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringInt\"")
+				} else {
+					r.EncodeString(`FMapStringInt`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringInt == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringIntV(x.FMapStringInt, e)
+				} // end block: if x.FMapStringInt map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringInt\"")
+				} else {
+					r.EncodeString(`FptrMapStringInt`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn70 {
+					r.EncodeNil()
+				} else {
+					yy687 := *x.FptrMapStringInt
+					if yy687 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringIntV(yy687, e)
+					} // end block: if yy687 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringInt32\"")
+				} else {
+					r.EncodeString(`FMapStringInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringInt32 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringInt32V(x.FMapStringInt32, e)
+				} // end block: if x.FMapStringInt32 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringInt32\"")
+				} else {
+					r.EncodeString(`FptrMapStringInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn72 {
+					r.EncodeNil()
+				} else {
+					yy690 := *x.FptrMapStringInt32
+					if yy690 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringInt32V(yy690, e)
+					} // end block: if yy690 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringFloat64\"")
+				} else {
+					r.EncodeString(`FMapStringFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringFloat64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringFloat64V(x.FMapStringFloat64, e)
+				} // end block: if x.FMapStringFloat64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringFloat64\"")
+				} else {
+					r.EncodeString(`FptrMapStringFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn74 {
+					r.EncodeNil()
+				} else {
+					yy693 := *x.FptrMapStringFloat64
+					if yy693 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringFloat64V(yy693, e)
+					} // end block: if yy693 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapStringBool\"")
+				} else {
+					r.EncodeString(`FMapStringBool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapStringBool == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapStringBoolV(x.FMapStringBool, e)
+				} // end block: if x.FMapStringBool map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapStringBool\"")
+				} else {
+					r.EncodeString(`FptrMapStringBool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn76 {
+					r.EncodeNil()
+				} else {
+					yy696 := *x.FptrMapStringBool
+					if yy696 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapStringBoolV(yy696, e)
+					} // end block: if yy696 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Intf\"")
+				} else {
+					r.EncodeString(`FMapUint8Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Intf == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8IntfV(x.FMapUint8Intf, e)
+				} // end block: if x.FMapUint8Intf map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Intf\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn78 {
+					r.EncodeNil()
+				} else {
+					yy699 := *x.FptrMapUint8Intf
+					if yy699 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8IntfV(yy699, e)
+					} // end block: if yy699 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8String\"")
+				} else {
+					r.EncodeString(`FMapUint8String`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8String == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8StringV(x.FMapUint8String, e)
+				} // end block: if x.FMapUint8String map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8String\"")
+				} else {
+					r.EncodeString(`FptrMapUint8String`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn80 {
+					r.EncodeNil()
+				} else {
+					yy702 := *x.FptrMapUint8String
+					if yy702 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8StringV(yy702, e)
+					} // end block: if yy702 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Bytes\"")
+				} else {
+					r.EncodeString(`FMapUint8Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Bytes == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8BytesV(x.FMapUint8Bytes, e)
+				} // end block: if x.FMapUint8Bytes map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Bytes\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn82 {
+					r.EncodeNil()
+				} else {
+					yy705 := *x.FptrMapUint8Bytes
+					if yy705 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8BytesV(yy705, e)
+					} // end block: if yy705 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Uint8\"")
+				} else {
+					r.EncodeString(`FMapUint8Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Uint8 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Uint8V(x.FMapUint8Uint8, e)
+				} // end block: if x.FMapUint8Uint8 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Uint8\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn84 {
+					r.EncodeNil()
+				} else {
+					yy708 := *x.FptrMapUint8Uint8
+					if yy708 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8Uint8V(yy708, e)
+					} // end block: if yy708 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Uint64\"")
+				} else {
+					r.EncodeString(`FMapUint8Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Uint64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Uint64V(x.FMapUint8Uint64, e)
+				} // end block: if x.FMapUint8Uint64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Uint64\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn86 {
+					r.EncodeNil()
+				} else {
+					yy711 := *x.FptrMapUint8Uint64
+					if yy711 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8Uint64V(yy711, e)
+					} // end block: if yy711 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Int\"")
+				} else {
+					r.EncodeString(`FMapUint8Int`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Int == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8IntV(x.FMapUint8Int, e)
+				} // end block: if x.FMapUint8Int map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Int\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Int`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn88 {
+					r.EncodeNil()
+				} else {
+					yy714 := *x.FptrMapUint8Int
+					if yy714 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8IntV(yy714, e)
+					} // end block: if yy714 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Int32\"")
+				} else {
+					r.EncodeString(`FMapUint8Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Int32 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Int32V(x.FMapUint8Int32, e)
+				} // end block: if x.FMapUint8Int32 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Int32\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn90 {
+					r.EncodeNil()
+				} else {
+					yy717 := *x.FptrMapUint8Int32
+					if yy717 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8Int32V(yy717, e)
+					} // end block: if yy717 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Float64\"")
+				} else {
+					r.EncodeString(`FMapUint8Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Float64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8Float64V(x.FMapUint8Float64, e)
+				} // end block: if x.FMapUint8Float64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Float64\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn92 {
+					r.EncodeNil()
+				} else {
+					yy720 := *x.FptrMapUint8Float64
+					if yy720 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8Float64V(yy720, e)
+					} // end block: if yy720 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint8Bool\"")
+				} else {
+					r.EncodeString(`FMapUint8Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint8Bool == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint8BoolV(x.FMapUint8Bool, e)
+				} // end block: if x.FMapUint8Bool map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint8Bool\"")
+				} else {
+					r.EncodeString(`FptrMapUint8Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn94 {
+					r.EncodeNil()
+				} else {
+					yy723 := *x.FptrMapUint8Bool
+					if yy723 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint8BoolV(yy723, e)
+					} // end block: if yy723 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Intf\"")
+				} else {
+					r.EncodeString(`FMapUint64Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Intf == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64IntfV(x.FMapUint64Intf, e)
+				} // end block: if x.FMapUint64Intf map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Intf\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn96 {
+					r.EncodeNil()
+				} else {
+					yy726 := *x.FptrMapUint64Intf
+					if yy726 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64IntfV(yy726, e)
+					} // end block: if yy726 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64String\"")
+				} else {
+					r.EncodeString(`FMapUint64String`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64String == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64StringV(x.FMapUint64String, e)
+				} // end block: if x.FMapUint64String map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64String\"")
+				} else {
+					r.EncodeString(`FptrMapUint64String`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn98 {
+					r.EncodeNil()
+				} else {
+					yy729 := *x.FptrMapUint64String
+					if yy729 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64StringV(yy729, e)
+					} // end block: if yy729 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Bytes\"")
+				} else {
+					r.EncodeString(`FMapUint64Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Bytes == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64BytesV(x.FMapUint64Bytes, e)
+				} // end block: if x.FMapUint64Bytes map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Bytes\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn100 {
+					r.EncodeNil()
+				} else {
+					yy732 := *x.FptrMapUint64Bytes
+					if yy732 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64BytesV(yy732, e)
+					} // end block: if yy732 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Uint8\"")
+				} else {
+					r.EncodeString(`FMapUint64Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Uint8 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Uint8V(x.FMapUint64Uint8, e)
+				} // end block: if x.FMapUint64Uint8 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Uint8\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn102 {
+					r.EncodeNil()
+				} else {
+					yy735 := *x.FptrMapUint64Uint8
+					if yy735 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64Uint8V(yy735, e)
+					} // end block: if yy735 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Uint64\"")
+				} else {
+					r.EncodeString(`FMapUint64Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Uint64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Uint64V(x.FMapUint64Uint64, e)
+				} // end block: if x.FMapUint64Uint64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Uint64\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn104 {
+					r.EncodeNil()
+				} else {
+					yy738 := *x.FptrMapUint64Uint64
+					if yy738 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64Uint64V(yy738, e)
+					} // end block: if yy738 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Int\"")
+				} else {
+					r.EncodeString(`FMapUint64Int`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Int == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64IntV(x.FMapUint64Int, e)
+				} // end block: if x.FMapUint64Int map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Int\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Int`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn106 {
+					r.EncodeNil()
+				} else {
+					yy741 := *x.FptrMapUint64Int
+					if yy741 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64IntV(yy741, e)
+					} // end block: if yy741 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Int32\"")
+				} else {
+					r.EncodeString(`FMapUint64Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Int32 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Int32V(x.FMapUint64Int32, e)
+				} // end block: if x.FMapUint64Int32 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Int32\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn108 {
+					r.EncodeNil()
+				} else {
+					yy744 := *x.FptrMapUint64Int32
+					if yy744 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64Int32V(yy744, e)
+					} // end block: if yy744 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Float64\"")
+				} else {
+					r.EncodeString(`FMapUint64Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Float64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64Float64V(x.FMapUint64Float64, e)
+				} // end block: if x.FMapUint64Float64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Float64\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn110 {
+					r.EncodeNil()
+				} else {
+					yy747 := *x.FptrMapUint64Float64
+					if yy747 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64Float64V(yy747, e)
+					} // end block: if yy747 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapUint64Bool\"")
+				} else {
+					r.EncodeString(`FMapUint64Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapUint64Bool == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapUint64BoolV(x.FMapUint64Bool, e)
+				} // end block: if x.FMapUint64Bool map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapUint64Bool\"")
+				} else {
+					r.EncodeString(`FptrMapUint64Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn112 {
+					r.EncodeNil()
+				} else {
+					yy750 := *x.FptrMapUint64Bool
+					if yy750 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapUint64BoolV(yy750, e)
+					} // end block: if yy750 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntIntf\"")
+				} else {
+					r.EncodeString(`FMapIntIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntIntf == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntIntfV(x.FMapIntIntf, e)
+				} // end block: if x.FMapIntIntf map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntIntf\"")
+				} else {
+					r.EncodeString(`FptrMapIntIntf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn114 {
+					r.EncodeNil()
+				} else {
+					yy753 := *x.FptrMapIntIntf
+					if yy753 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntIntfV(yy753, e)
+					} // end block: if yy753 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntString\"")
+				} else {
+					r.EncodeString(`FMapIntString`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntString == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntStringV(x.FMapIntString, e)
+				} // end block: if x.FMapIntString map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntString\"")
+				} else {
+					r.EncodeString(`FptrMapIntString`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn116 {
+					r.EncodeNil()
+				} else {
+					yy756 := *x.FptrMapIntString
+					if yy756 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntStringV(yy756, e)
+					} // end block: if yy756 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntBytes\"")
+				} else {
+					r.EncodeString(`FMapIntBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntBytes == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntBytesV(x.FMapIntBytes, e)
+				} // end block: if x.FMapIntBytes map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntBytes\"")
+				} else {
+					r.EncodeString(`FptrMapIntBytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn118 {
+					r.EncodeNil()
+				} else {
+					yy759 := *x.FptrMapIntBytes
+					if yy759 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntBytesV(yy759, e)
+					} // end block: if yy759 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntUint8\"")
+				} else {
+					r.EncodeString(`FMapIntUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntUint8 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntUint8V(x.FMapIntUint8, e)
+				} // end block: if x.FMapIntUint8 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntUint8\"")
+				} else {
+					r.EncodeString(`FptrMapIntUint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn120 {
+					r.EncodeNil()
+				} else {
+					yy762 := *x.FptrMapIntUint8
+					if yy762 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntUint8V(yy762, e)
+					} // end block: if yy762 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntUint64\"")
+				} else {
+					r.EncodeString(`FMapIntUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntUint64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntUint64V(x.FMapIntUint64, e)
+				} // end block: if x.FMapIntUint64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntUint64\"")
+				} else {
+					r.EncodeString(`FptrMapIntUint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn122 {
+					r.EncodeNil()
+				} else {
+					yy765 := *x.FptrMapIntUint64
+					if yy765 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntUint64V(yy765, e)
+					} // end block: if yy765 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntInt\"")
+				} else {
+					r.EncodeString(`FMapIntInt`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntInt == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntIntV(x.FMapIntInt, e)
+				} // end block: if x.FMapIntInt map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntInt\"")
+				} else {
+					r.EncodeString(`FptrMapIntInt`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn124 {
+					r.EncodeNil()
+				} else {
+					yy768 := *x.FptrMapIntInt
+					if yy768 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntIntV(yy768, e)
+					} // end block: if yy768 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntInt32\"")
+				} else {
+					r.EncodeString(`FMapIntInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntInt32 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntInt32V(x.FMapIntInt32, e)
+				} // end block: if x.FMapIntInt32 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntInt32\"")
+				} else {
+					r.EncodeString(`FptrMapIntInt32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn126 {
+					r.EncodeNil()
+				} else {
+					yy771 := *x.FptrMapIntInt32
+					if yy771 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntInt32V(yy771, e)
+					} // end block: if yy771 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntFloat64\"")
+				} else {
+					r.EncodeString(`FMapIntFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntFloat64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntFloat64V(x.FMapIntFloat64, e)
+				} // end block: if x.FMapIntFloat64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntFloat64\"")
+				} else {
+					r.EncodeString(`FptrMapIntFloat64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn128 {
+					r.EncodeNil()
+				} else {
+					yy774 := *x.FptrMapIntFloat64
+					if yy774 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntFloat64V(yy774, e)
+					} // end block: if yy774 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapIntBool\"")
+				} else {
+					r.EncodeString(`FMapIntBool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapIntBool == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapIntBoolV(x.FMapIntBool, e)
+				} // end block: if x.FMapIntBool map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapIntBool\"")
+				} else {
+					r.EncodeString(`FptrMapIntBool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn130 {
+					r.EncodeNil()
+				} else {
+					yy777 := *x.FptrMapIntBool
+					if yy777 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapIntBoolV(yy777, e)
+					} // end block: if yy777 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Intf\"")
+				} else {
+					r.EncodeString(`FMapInt32Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Intf == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt32IntfV(x.FMapInt32Intf, e)
+				} // end block: if x.FMapInt32Intf map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Intf\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Intf`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn132 {
+					r.EncodeNil()
+				} else {
+					yy780 := *x.FptrMapInt32Intf
+					if yy780 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32IntfV(yy780, e)
+					} // end block: if yy780 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32String\"")
+				} else {
+					r.EncodeString(`FMapInt32String`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32String == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt32StringV(x.FMapInt32String, e)
+				} // end block: if x.FMapInt32String map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32String\"")
+				} else {
+					r.EncodeString(`FptrMapInt32String`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn134 {
+					r.EncodeNil()
+				} else {
+					yy783 := *x.FptrMapInt32String
+					if yy783 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32StringV(yy783, e)
+					} // end block: if yy783 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Bytes\"")
+				} else {
+					r.EncodeString(`FMapInt32Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Bytes == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt32BytesV(x.FMapInt32Bytes, e)
+				} // end block: if x.FMapInt32Bytes map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Bytes\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Bytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn136 {
+					r.EncodeNil()
+				} else {
+					yy786 := *x.FptrMapInt32Bytes
+					if yy786 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32BytesV(yy786, e)
+					} // end block: if yy786 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Uint8\"")
+				} else {
+					r.EncodeString(`FMapInt32Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Uint8 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt32Uint8V(x.FMapInt32Uint8, e)
+				} // end block: if x.FMapInt32Uint8 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Uint8\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Uint8`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn138 {
+					r.EncodeNil()
+				} else {
+					yy789 := *x.FptrMapInt32Uint8
+					if yy789 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32Uint8V(yy789, e)
+					} // end block: if yy789 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Uint64\"")
+				} else {
+					r.EncodeString(`FMapInt32Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Uint64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt32Uint64V(x.FMapInt32Uint64, e)
+				} // end block: if x.FMapInt32Uint64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Uint64\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Uint64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn140 {
+					r.EncodeNil()
+				} else {
+					yy792 := *x.FptrMapInt32Uint64
+					if yy792 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32Uint64V(yy792, e)
+					} // end block: if yy792 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Int\"")
+				} else {
+					r.EncodeString(`FMapInt32Int`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Int == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt32IntV(x.FMapInt32Int, e)
+				} // end block: if x.FMapInt32Int map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Int\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Int`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn142 {
+					r.EncodeNil()
+				} else {
+					yy795 := *x.FptrMapInt32Int
+					if yy795 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32IntV(yy795, e)
+					} // end block: if yy795 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Int32\"")
+				} else {
+					r.EncodeString(`FMapInt32Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Int32 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt32Int32V(x.FMapInt32Int32, e)
+				} // end block: if x.FMapInt32Int32 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Int32\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Int32`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn144 {
+					r.EncodeNil()
+				} else {
+					yy798 := *x.FptrMapInt32Int32
+					if yy798 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32Int32V(yy798, e)
+					} // end block: if yy798 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Float64\"")
+				} else {
+					r.EncodeString(`FMapInt32Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Float64 == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt32Float64V(x.FMapInt32Float64, e)
+				} // end block: if x.FMapInt32Float64 map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Float64\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Float64`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn146 {
+					r.EncodeNil()
+				} else {
+					yy801 := *x.FptrMapInt32Float64
+					if yy801 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32Float64V(yy801, e)
+					} // end block: if yy801 map == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FMapInt32Bool\"")
+				} else {
+					r.EncodeString(`FMapInt32Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if x.FMapInt32Bool == nil {
+					r.EncodeNil()
+				} else {
+					z.F.EncMapInt32BoolV(x.FMapInt32Bool, e)
+				} // end block: if x.FMapInt32Bool map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"FptrMapInt32Bool\"")
+				} else {
+					r.EncodeString(`FptrMapInt32Bool`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn148 {
+					r.EncodeNil()
+				} else {
+					yy804 := *x.FptrMapInt32Bool
+					if yy804 == nil {
+						r.EncodeNil()
+					} else {
+						z.F.EncMapInt32BoolV(yy804, e)
+					} // end block: if yy804 map == nil
+				}
 			}
 			z.EncWriteMapEnd()
 		}
@@ -6930,145 +8948,288 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			z.EncWriteArrayEnd()
 		} else {
 			z.EncWriteMapStart(12)
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"V\"")
-			} else {
-				r.EncodeString(`V`)
-			}
-			z.EncWriteMapElemValue()
-			yy31 := &x.V
-			if yyxt32 := z.Extension(yy31); yyxt32 != nil {
-				z.EncExtension(yy31, yyxt32)
-			} else {
-				yy31.CodecEncodeSelf(e)
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"T\"")
-			} else {
-				r.EncodeString(`T`)
-			}
-			z.EncWriteMapElemValue()
-			if yyxt33 := z.Extension(x.T); yyxt33 != nil {
-				z.EncExtension(x.T, yyxt33)
-			} else {
-				x.T.CodecEncodeSelf(e)
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"B\"")
-			} else {
-				r.EncodeString(`B`)
-			}
-			z.EncWriteMapElemValue()
-			if yyxt34 := z.Extension(x.B); yyxt34 != nil {
-				z.EncExtension(x.B, yyxt34)
-			} else {
-				x.B.CodecEncodeSelf(e)
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"J\"")
-			} else {
-				r.EncodeString(`J`)
-			}
-			z.EncWriteMapElemValue()
-			if yyxt35 := z.Extension(x.J); yyxt35 != nil {
-				z.EncExtension(x.J, yyxt35)
-			} else {
-				x.J.CodecEncodeSelf(e)
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"C\"")
-			} else {
-				r.EncodeString(`C`)
-			}
-			z.EncWriteMapElemValue()
-			yy36 := &x.C
-			if yyxt37 := z.Extension(yy36); yyxt37 != nil {
-				z.EncExtension(yy36, yyxt37)
-			} else {
-				yy36.CodecEncodeSelf(e)
-			}
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"M\"")
-			} else {
-				r.EncodeString(`M`)
-			}
-			z.EncWriteMapElemValue()
-			if x.M == nil {
-				r.EncodeNil()
-			} else {
-				h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
-			} // end block: if x.M map == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"L\"")
-			} else {
-				r.EncodeString(`L`)
-			}
-			z.EncWriteMapElemValue()
-			if x.L == nil {
-				r.EncodeNil()
-			} else {
-				h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
-			} // end block: if x.L slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"A\"")
-			} else {
-				r.EncodeString(`A`)
-			}
-			z.EncWriteMapElemValue()
-			yy40 := &x.A
-			h.encArray4int64((*[4]int64)(yy40), e)
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"Tcomplex128\"")
-			} else {
-				r.EncodeString(`Tcomplex128`)
-			}
-			z.EncWriteMapElemValue()
-			z.EncEncodeComplex128(complex128(x.Tcomplex128))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"Tcomplex64\"")
-			} else {
-				r.EncodeString(`Tcomplex64`)
-			}
-			z.EncWriteMapElemValue()
-			z.EncEncodeComplex64(complex64(x.Tcomplex64))
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"Tbytes\"")
-			} else {
-				r.EncodeString(`Tbytes`)
-			}
-			z.EncWriteMapElemValue()
-			if x.Tbytes == nil {
-				r.EncodeNil()
-			} else {
-				r.EncodeStringBytesRaw([]byte(x.Tbytes))
-			} // end block: if x.Tbytes slice == nil
-			z.EncWriteMapElemKey()
-			if z.IsJSONHandle() {
-				z.WriteStr("\"Tpbytes\"")
-			} else {
-				r.EncodeString(`Tpbytes`)
-			}
-			z.EncWriteMapElemValue()
-			if yyn14 {
-				r.EncodeNil()
-			} else {
-				yy45 := *x.Tpbytes
-				if yy45 == nil {
+			if z.EncBasicHandle().Canonical {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"A\"")
+				} else {
+					r.EncodeString(`A`)
+				}
+				z.EncWriteMapElemValue()
+				yy31 := &x.A
+				h.encArray4int64((*[4]int64)(yy31), e)
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"B\"")
+				} else {
+					r.EncodeString(`B`)
+				}
+				z.EncWriteMapElemValue()
+				if yyxt33 := z.Extension(x.B); yyxt33 != nil {
+					z.EncExtension(x.B, yyxt33)
+				} else {
+					x.B.CodecEncodeSelf(e)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"C\"")
+				} else {
+					r.EncodeString(`C`)
+				}
+				z.EncWriteMapElemValue()
+				yy34 := &x.C
+				if yyxt35 := z.Extension(yy34); yyxt35 != nil {
+					z.EncExtension(yy34, yyxt35)
+				} else {
+					yy34.CodecEncodeSelf(e)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"J\"")
+				} else {
+					r.EncodeString(`J`)
+				}
+				z.EncWriteMapElemValue()
+				if yyxt36 := z.Extension(x.J); yyxt36 != nil {
+					z.EncExtension(x.J, yyxt36)
+				} else {
+					x.J.CodecEncodeSelf(e)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"L\"")
+				} else {
+					r.EncodeString(`L`)
+				}
+				z.EncWriteMapElemValue()
+				if x.L == nil {
 					r.EncodeNil()
 				} else {
-					r.EncodeStringBytesRaw([]byte(yy45))
-				} // end block: if yy45 slice == nil
+					h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
+				} // end block: if x.L slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"M\"")
+				} else {
+					r.EncodeString(`M`)
+				}
+				z.EncWriteMapElemValue()
+				if x.M == nil {
+					r.EncodeNil()
+				} else {
+					h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
+				} // end block: if x.M map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"T\"")
+				} else {
+					r.EncodeString(`T`)
+				}
+				z.EncWriteMapElemValue()
+				if yyxt39 := z.Extension(x.T); yyxt39 != nil {
+					z.EncExtension(x.T, yyxt39)
+				} else {
+					x.T.CodecEncodeSelf(e)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Tbytes\"")
+				} else {
+					r.EncodeString(`Tbytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.Tbytes == nil {
+					r.EncodeNil()
+				} else {
+					r.EncodeStringBytesRaw([]byte(x.Tbytes))
+				} // end block: if x.Tbytes slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Tcomplex128\"")
+				} else {
+					r.EncodeString(`Tcomplex128`)
+				}
+				z.EncWriteMapElemValue()
+				z.EncEncodeComplex128(complex128(x.Tcomplex128))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Tcomplex64\"")
+				} else {
+					r.EncodeString(`Tcomplex64`)
+				}
+				z.EncWriteMapElemValue()
+				z.EncEncodeComplex64(complex64(x.Tcomplex64))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Tpbytes\"")
+				} else {
+					r.EncodeString(`Tpbytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn14 {
+					r.EncodeNil()
+				} else {
+					yy43 := *x.Tpbytes
+					if yy43 == nil {
+						r.EncodeNil()
+					} else {
+						r.EncodeStringBytesRaw([]byte(yy43))
+					} // end block: if yy43 slice == nil
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"V\"")
+				} else {
+					r.EncodeString(`V`)
+				}
+				z.EncWriteMapElemValue()
+				yy45 := &x.V
+				if yyxt46 := z.Extension(yy45); yyxt46 != nil {
+					z.EncExtension(yy45, yyxt46)
+				} else {
+					yy45.CodecEncodeSelf(e)
+				}
+			} else {
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"V\"")
+				} else {
+					r.EncodeString(`V`)
+				}
+				z.EncWriteMapElemValue()
+				yy47 := &x.V
+				if yyxt48 := z.Extension(yy47); yyxt48 != nil {
+					z.EncExtension(yy47, yyxt48)
+				} else {
+					yy47.CodecEncodeSelf(e)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"T\"")
+				} else {
+					r.EncodeString(`T`)
+				}
+				z.EncWriteMapElemValue()
+				if yyxt49 := z.Extension(x.T); yyxt49 != nil {
+					z.EncExtension(x.T, yyxt49)
+				} else {
+					x.T.CodecEncodeSelf(e)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"B\"")
+				} else {
+					r.EncodeString(`B`)
+				}
+				z.EncWriteMapElemValue()
+				if yyxt50 := z.Extension(x.B); yyxt50 != nil {
+					z.EncExtension(x.B, yyxt50)
+				} else {
+					x.B.CodecEncodeSelf(e)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"J\"")
+				} else {
+					r.EncodeString(`J`)
+				}
+				z.EncWriteMapElemValue()
+				if yyxt51 := z.Extension(x.J); yyxt51 != nil {
+					z.EncExtension(x.J, yyxt51)
+				} else {
+					x.J.CodecEncodeSelf(e)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"C\"")
+				} else {
+					r.EncodeString(`C`)
+				}
+				z.EncWriteMapElemValue()
+				yy52 := &x.C
+				if yyxt53 := z.Extension(yy52); yyxt53 != nil {
+					z.EncExtension(yy52, yyxt53)
+				} else {
+					yy52.CodecEncodeSelf(e)
+				}
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"M\"")
+				} else {
+					r.EncodeString(`M`)
+				}
+				z.EncWriteMapElemValue()
+				if x.M == nil {
+					r.EncodeNil()
+				} else {
+					h.encMaptestMammoth2BasicTestMammoth2((map[testMammoth2Basic]TestMammoth2)(x.M), e)
+				} // end block: if x.M map == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"L\"")
+				} else {
+					r.EncodeString(`L`)
+				}
+				z.EncWriteMapElemValue()
+				if x.L == nil {
+					r.EncodeNil()
+				} else {
+					h.encSliceTestMammoth2(([]TestMammoth2)(x.L), e)
+				} // end block: if x.L slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"A\"")
+				} else {
+					r.EncodeString(`A`)
+				}
+				z.EncWriteMapElemValue()
+				yy56 := &x.A
+				h.encArray4int64((*[4]int64)(yy56), e)
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Tcomplex128\"")
+				} else {
+					r.EncodeString(`Tcomplex128`)
+				}
+				z.EncWriteMapElemValue()
+				z.EncEncodeComplex128(complex128(x.Tcomplex128))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Tcomplex64\"")
+				} else {
+					r.EncodeString(`Tcomplex64`)
+				}
+				z.EncWriteMapElemValue()
+				z.EncEncodeComplex64(complex64(x.Tcomplex64))
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Tbytes\"")
+				} else {
+					r.EncodeString(`Tbytes`)
+				}
+				z.EncWriteMapElemValue()
+				if x.Tbytes == nil {
+					r.EncodeNil()
+				} else {
+					r.EncodeStringBytesRaw([]byte(x.Tbytes))
+				} // end block: if x.Tbytes slice == nil
+				z.EncWriteMapElemKey()
+				if z.IsJSONHandle() {
+					z.WriteStr("\"Tpbytes\"")
+				} else {
+					r.EncodeString(`Tpbytes`)
+				}
+				z.EncWriteMapElemValue()
+				if yyn14 {
+					r.EncodeNil()
+				} else {
+					yy61 := *x.Tpbytes
+					if yy61 == nil {
+						r.EncodeNil()
+					} else {
+						r.EncodeStringBytesRaw([]byte(yy61))
+					} // end block: if yy61 slice == nil
+				}
 			}
 			z.EncWriteMapEnd()
 		}
