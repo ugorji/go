@@ -43,8 +43,10 @@ import (
 //
 // However, note following codecgen caveats:
 //   - Canonical option.
-//     If Canonical=true, codecgen'ed code will delegate encoding maps to reflection-based code.
+//     If Canonical=true, codecgen'ed code may delegate encoding maps to reflection-based code.
 //     This is due to the runtime work needed to marshal a map in canonical mode.
+//     However, if map key is a pre-defined/builtin numeric or string type, codecgen
+//     will try to write it out itself
 //   - CheckCircularRef option.
 //     When encoding a struct, a circular reference can lead to a stack overflow.
 //     If CheckCircularRef=true, codecgen'ed code will delegate encoding structs to reflection-based code.
@@ -169,7 +171,7 @@ const (
 
 	// genStructCanonical configures whether we generate 2 paths based on Canonical flag
 	// when encoding struct fields.
-	genStructCanonical = false
+	genStructCanonical = true
 
 	// genFastpathCanonical configures whether we support Canonical in fast path.
 	// The savings is not much.
@@ -390,7 +392,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 		}
 	}
 	// add required packages
-	for _, k := range [...]string{"runtime", "errors", "strconv"} { // "reflect", "fmt"
+	for _, k := range [...]string{"runtime", "errors", "strconv", "sort"} { // "reflect", "fmt"
 		if _, ok := x.im[k]; !ok {
 			x.line("\"" + k + "\"")
 		}
@@ -416,6 +418,7 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.line(")")
 	x.line("var (")
 	x.line("errCodecSelferOnlyMapOrArrayEncodeToStruct" + x.xs + " = " + "errors.New(`only encoded map or array can be decoded into a struct`)")
+	x.line("_ sort.Interface = nil")
 	x.line(")")
 	x.line("")
 
@@ -424,6 +427,16 @@ func Gen(w io.Writer, buildTags, pkgName, uid string, noExtensions bool,
 	x.line("")
 	x.linef("func %sFalse() bool { return false }", x.hn)
 	x.linef("func %sTrue() bool { return true }", x.hn)
+	x.line("")
+
+	// add types for sorting canonical
+	for _, s := range []string{"string", "uint64", "int64", "float64"} {
+		x.linef("type %s%sSlice []%s", x.hn, s, s)
+		x.linef("func (p %s%sSlice) Len() int      { return len(p) }", x.hn, s)
+		x.linef("func (p %s%sSlice) Swap(i, j int) { p[uint(i)], p[uint(j)] = p[uint(j)], p[uint(i)] }", x.hn, s)
+		x.linef("func (p %s%sSlice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }", x.hn, s)
+	}
+
 	x.line("")
 	x.varsfxreset()
 	x.line("func init() {")
@@ -1219,7 +1232,10 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 	}
 
 	genFQNs := make([]genFQN, len(tisfi))
+	si2Pos := make(map[*structFieldInfo]int) // stores position in sorted structFieldInfos
+
 	for j, si := range tisfi {
+		si2Pos[si] = j
 		q := &genFQNs[j]
 		q.i = x.varsfx()
 		q.nilVar = genTempVarPfx + "n" + q.i
@@ -1334,11 +1350,13 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		}
 
 		fn := func(tisfi []*structFieldInfo) {
-			for j, si := range tisfi {
-				q := &genFQNs[j]
+			// tisfi here may be source or sorted, so use the src position stored elsewhere
+			for _, si := range tisfi {
+				pos := si2Pos[si]
+				q := &genFQNs[pos]
 				doOmitEmptyCheck := (omitEmptySometimes && si.path.omitEmpty) || omitEmptyAlways
 				if doOmitEmptyCheck {
-					x.linef("if %s[%v] {", numfieldsvar, j)
+					x.linef("if %s[%v] {", numfieldsvar, pos)
 				}
 				x.linef("z.EncWriteMapElemKey()")
 
@@ -1386,7 +1404,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 		if genStructCanonical {
 			x.linef("if z.EncBasicHandle().Canonical {") // if Canonical block
 			fn(ti.sfi.sorted())
-			x.linef("} else {") // else !cononical block
+			x.linef("} else {") // else !Canonical block
 			fn(ti.sfi.source())
 			x.linef("}") // end if Canonical block
 		} else {
@@ -1450,9 +1468,77 @@ func (x *genRunner) encListFallback(varname string, t reflect.Type) {
 
 func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 	x.linef("if %s == nil { r.EncodeNil()", varname)
-	x.linef("} else if z.EncBasicHandle().Canonical { z.EncEncodeMapNonNil(%s)", varname)
+	x.line("} else if z.EncBasicHandle().Canonical {")
+	// Solve for easy case accomodated by sort package without reflection i.e.
+	// map keys of type: float, int, string (pre-defined/builtin types).
+	//
+	// To do this, we will get the keys into an array of uint64|float64|string,
+	// sort them, then write them out, and grab the value and encode it appropriately
+	var handleCanonicalHere bool
+	var canonSortKind reflect.Kind
+	tkey := t.Key()
+	tkind := tkey.Kind()
+	// pre-defined types have a name and no pkgpath and appropriate kind
+	if tkey.PkgPath() == "" && tkey.Name() != "" {
+		switch tkind {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			canonSortKind = reflect.Int64
+			handleCanonicalHere = true
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			canonSortKind = reflect.Uint64
+			handleCanonicalHere = true
+		case reflect.Float32, reflect.Float64:
+			canonSortKind = reflect.Float64
+			handleCanonicalHere = true
+		case reflect.String:
+			canonSortKind = reflect.String
+			handleCanonicalHere = true
+		}
+	}
+
+	var i string
+	if handleCanonicalHere {
+		// TODO flesh out here
+		// get the type, get the slice type its mapped to, and complete the code
+		if i == "" {
+			i = x.varsfx()
+		}
+		x.linef("%ss%s := make([]%s, 0, len(%s))", genTempVarPfx, i, canonSortKind, varname)
+		x.linef("for k, _ := range %s {", varname)
+		x.linef("  %ss%s = append(%ss%s, %s(k))", genTempVarPfx, i, genTempVarPfx, i, canonSortKind)
+		x.linef("}")
+		x.linef("sort.Sort(%s%sSlice(%ss%s))", x.hn, canonSortKind, genTempVarPfx, i)
+		x.linef("z.EncWriteMapStart(len(%s))", varname)
+		x.linef("for _, %sv%s := range %ss%s {", genTempVarPfx, i, genTempVarPfx, i)
+		x.linef("  z.EncWriteMapElemKey()")
+		switch tkind {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			x.linef("r.EncodeInt(int64(%sv%s))", genTempVarPfx, i)
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+			x.linef("r.EncodeUint(uint64(%sv%s))", genTempVarPfx, i)
+		case reflect.Float32:
+			x.linef("r.EncodeFloat32(float32(%sv%s))", genTempVarPfx, i)
+		case reflect.Float64:
+			x.linef("r.EncodeFloat64(%sv%s)", genTempVarPfx, i)
+		case reflect.String:
+			x.linef("r.EncodeString(%sv%s)", genTempVarPfx, i)
+		}
+		x.linef("  z.EncWriteMapElemValue()")
+		vname := genTempVarPfx + "e" + i
+		x.linef("%s := %s[%s(%sv%s)]", vname, varname, tkind, genTempVarPfx, i)
+		x.encVar(vname, t.Elem())
+		x.linef("}")
+
+		x.line("z.EncWriteMapEnd()")
+	} else {
+		x.linef("z.EncEncodeMapNonNil(%s)", varname)
+	}
+
 	x.line("} else {")
-	i := x.varsfx()
+
+	if i == "" {
+		i = x.varsfx()
+	}
 	x.linef("z.EncWriteMapStart(len(%s))", varname)
 	x.linef("for %sk%s, %sv%s := range %s {", genTempVarPfx, i, genTempVarPfx, i, varname)
 	x.linef("z.EncWriteMapElemKey()")
@@ -1461,6 +1547,7 @@ func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 	x.encVar(genTempVarPfx+"v"+i, t.Elem())
 	x.line("}")
 	x.line("z.EncWriteMapEnd()")
+
 	x.line("}")
 }
 
