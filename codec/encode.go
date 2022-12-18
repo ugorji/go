@@ -686,12 +686,6 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	var rvv = mapAddrLoopvarRV(f.ti.elem, vtypeKind)
 
-	if e.h.Canonical {
-		e.kMapCanonical(f.ti, rv, rvv, valFn)
-		e.mapEnd()
-		return
-	}
-
 	rtkey := f.ti.key
 	var keyTypeIsString = stringTypId == rt2id(rtkey) // rtkeyid
 	if !keyTypeIsString {
@@ -701,6 +695,12 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		if rtkey.Kind() != reflect.Interface {
 			keyFn = e.h.fn(rtkey)
 		}
+	}
+
+	if e.h.Canonical {
+		e.kMapCanonical(f.ti, rv, rvv, valFn, keyFn)
+		e.mapEnd()
+		return
 	}
 
 	var rvk = mapAddrLoopvarRV(f.ti.key, ktypeKind)
@@ -723,11 +723,15 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	e.mapEnd()
 }
 
-func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *codecFn) {
+func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn, keyFn *codecFn) {
 	// we previously did out-of-band if an extension was registered.
 	// This is not necessary, as the natural kind is sufficient for ordering.
 
+	// If the key is a predeclared type, directly call methods on encDriver e.g. EncodeString
+	// but if not, call encodeValue, in case it has an extension registered or otherwise.
 	rtkey := ti.key
+	rtkeydecl := rtkey.PkgPath() == "" && rtkey.Name() != "" // key type is predeclared
+
 	mks := rv.MapKeys()
 	rtkeyKind := rtkey.Kind()
 	kfast := mapKeyFastKindFor(rtkeyKind)
@@ -745,7 +749,11 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 		sort.Sort(boolRvSlice(mksv))
 		for i := range mksv {
 			e.mapElemKey()
-			e.e.EncodeBool(mksv[i].v)
+			if rtkeydecl {
+				e.e.EncodeBool(mksv[i].v)
+			} else {
+				e.encodeValue(mksv[i].r, keyFn)
+			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
@@ -759,7 +767,11 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 		sort.Sort(stringRvSlice(mksv))
 		for i := range mksv {
 			e.mapElemKey()
-			e.e.EncodeString(mksv[i].v)
+			if rtkeydecl {
+				e.e.EncodeString(mksv[i].v)
+			} else {
+				e.encodeValue(mksv[i].r, keyFn)
+			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
@@ -773,7 +785,11 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 		sort.Sort(uint64RvSlice(mksv))
 		for i := range mksv {
 			e.mapElemKey()
-			e.e.EncodeUint(mksv[i].v)
+			if rtkeydecl {
+				e.e.EncodeUint(mksv[i].v)
+			} else {
+				e.encodeValue(mksv[i].r, keyFn)
+			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
@@ -787,7 +803,11 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 		sort.Sort(int64RvSlice(mksv))
 		for i := range mksv {
 			e.mapElemKey()
-			e.e.EncodeInt(mksv[i].v)
+			if rtkeydecl {
+				e.e.EncodeInt(mksv[i].v)
+			} else {
+				e.encodeValue(mksv[i].r, keyFn)
+			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
@@ -801,7 +821,11 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 		sort.Sort(float64RvSlice(mksv))
 		for i := range mksv {
 			e.mapElemKey()
-			e.e.EncodeFloat32(float32(mksv[i].v))
+			if rtkeydecl {
+				e.e.EncodeFloat32(float32(mksv[i].v))
+			} else {
+				e.encodeValue(mksv[i].r, keyFn)
+			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
@@ -815,7 +839,11 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, valFn *code
 		sort.Sort(float64RvSlice(mksv))
 		for i := range mksv {
 			e.mapElemKey()
-			e.e.EncodeFloat64(mksv[i].v)
+			if rtkeydecl {
+				e.e.EncodeFloat64(mksv[i].v)
+			} else {
+				e.encodeValue(mksv[i].r, keyFn)
+			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
