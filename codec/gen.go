@@ -1152,7 +1152,7 @@ func (x *genRunner) doEncOmitEmptyLine(t2 reflect.StructField, varname string, b
 func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf *genBuf) {
 	// xdebugf("calling encOmitEmptyLine on: %v", t2.Type)
 	// smartly check omitEmpty on a struct type, as it may contain uncomparable map/slice/etc.
-	// also, for maps/slices/arrays, check if len ! 0 (not if == zero value)
+	// also, for maps/slices, check if len ! 0 (not if == zero value)
 	varname2 := varname + "." + t2.Name
 	switch t2.Type.Kind() {
 	case reflect.Struct:
@@ -1187,9 +1187,9 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 			buf.s(varname2).s(" != ").s(x.genZeroValueR(t2.Type))
 			break
 		}
-		// fmt.Printf("???? !!!! We shouldn't get to this point !!!! ???? - for type: %v\n", t2.Type)
 		// buf.s("(")
 		buf.s(x.sayFalse()) // buf.s("false")
+		var wrote bool
 		for i, n := 0, t2.Type.NumField(); i < n; i++ {
 			f := t2.Type.Field(i)
 			if f.PkgPath != "" { // unexported
@@ -1197,12 +1197,27 @@ func (x *genRunner) encOmitEmptyLine(t2 reflect.StructField, varname string, buf
 			}
 			buf.s(" || ")
 			x.encOmitEmptyLine(f, varname2, buf)
+			wrote = true
+		}
+		if !wrote {
+			buf.s(" || ").s(x.sayTrue())
 		}
 		//buf.s(")")
 	case reflect.Bool:
 		buf.s("bool(").s(varname2).s(")")
-	case reflect.Map, reflect.Slice, reflect.Array, reflect.Chan:
+	case reflect.Map, reflect.Slice, reflect.Chan:
 		buf.s("len(").s(varname2).s(") != 0")
+	case reflect.Array:
+		tlen := t2.Type.Len()
+		if tlen == 0 {
+			buf.s(x.sayFalse())
+		} else if t2.Type.Comparable() {
+			buf.s(varname2).s(" != ").s(x.genZeroValueR(t2.Type))
+		} else { // then we cannot even compare the individual values
+			// TODO use playground to check if you can compare to a
+			// zero value of an array, even if array not comparable.
+			buf.s(x.sayTrue())
+		}
 	default:
 		buf.s(varname2).s(" != ").s(x.genZeroValueR(t2.Type))
 	}
