@@ -1335,7 +1335,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *AnonInTestStruc) IsCodecEmpty() bool {
-	return !(x.AS != "" || x.AI64 != 0 || x.AI16 != 0 || x.AUi64 != 0 || len(x.ASslice) != 0 || len(x.AI64slice) != 0 || len(x.AUi64slice) != 0 || len(x.AF64slice) != 0 || len(x.AF32slice) != 0 || len(x.AMSS) != 0 || len(x.AMSU64) != 0 || len(x.AI64arr8) != 0 || len(x.AI64arr0) != 0 || len(x.AI64slice0) != 0 || len(x.AUi64sliceN) != 0 || len(x.AMSU64N) != 0 || len(x.AMSU64E) != 0 || false)
+	return !(x.AS != "" || x.AI64 != 0 || x.AI16 != 0 || x.AUi64 != 0 || len(x.ASslice) != 0 || len(x.AI64slice) != 0 || len(x.AUi64slice) != 0 || len(x.AF64slice) != 0 || len(x.AF32slice) != 0 || len(x.AMSS) != 0 || len(x.AMSU64) != 0 || x.AI64arr8 != [8]int64{} || false || len(x.AI64slice0) != 0 || len(x.AUi64sliceN) != 0 || len(x.AMSU64N) != 0 || len(x.AMSU64E) != 0 || false)
 }
 
 func (testSimpleFields) codecSelferViaCodecgen() {}
@@ -11968,41 +11968,41 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 			len(x.AF32slice) != 0,       // AF32slice
 			len(x.AMSS) != 0,            // AMSS
 			len(x.AMSU64) != 0,          // AMSU64
-			len(x.AI64arr8) != 0,        // AI64arr8
-			len(x.AI64arr0) != 0,        // AI64arr0
+			x.AI64arr8 != [8]int64{},    // AI64arr8
+			false,                       // AI64arr0
 			len(x.AI64slice0) != 0,      // AI64slice0
 			len(x.AUi64sliceN) != 0,     // AUi64sliceN
 			len(x.AMSU64N) != 0,         // AMSU64N
 			len(x.AMSU64E) != 0,         // AMSU64E
 			!(x.NotAnon.IsCodecEmpty()), // NotAnon
 			x.TestStrucCommon.AnonInTestStrucSlim != nil && x.P != nil, // P
-			x.NotAnonSlim != nil,       // NotAnonSlim
-			len(x.Nmap) != 0,           // Nmap
-			len(x.Nslice) != 0,         // Nslice
-			x.Nint64 != nil,            // Nint64
-			len(x.Chstr) != 0,          // Chstr
-			len(x.Mis) != 0,            // Mis
-			len(x.Mbu64) != 0,          // Mbu64
-			len(x.Mu8e) != 0,           // Mu8e
-			len(x.Mu8u64) != 0,         // Mu8u64
-			len(x.Msp2ss) != 0,         // Msp2ss
-			len(x.Mip2ss) != 0,         // Mip2ss
-			len(x.Ms2misu) != 0,        // Ms2misu
-			len(x.Miwu64s) != 0,        // Miwu64s
-			len(x.Mfwss) != 0,          // Mfwss
-			len(x.Mf32wss) != 0,        // Mf32wss
-			len(x.Mui2wss) != 0,        // Mui2wss
-			len(x.Msu2wss) != 0,        // Msu2wss
-			x.Ci64 != 0,                // Ci64
-			len(x.Swrapbytes) != 0,     // Swrapbytes
-			len(x.Swrapuint8) != 0,     // Swrapuint8
-			len(x.ArrStrUi64T) != 0,    // ArrStrUi64T
-			len(x.Ui64array) != 0,      // Ui64array
-			len(x.Ui64slicearray) != 0, // Ui64slicearray
-			len(x.SintfAarray) != 0,    // SintfAarray
-			len(x.MstrUi64TSelf) != 0,  // MstrUi64TSelf
-			!(x.Ttime.IsZero()),        // Ttime
-			x.Ttimeptr != nil,          // Ttimeptr
+			x.NotAnonSlim != nil,                // NotAnonSlim
+			len(x.Nmap) != 0,                    // Nmap
+			len(x.Nslice) != 0,                  // Nslice
+			x.Nint64 != nil,                     // Nint64
+			len(x.Chstr) != 0,                   // Chstr
+			len(x.Mis) != 0,                     // Mis
+			len(x.Mbu64) != 0,                   // Mbu64
+			len(x.Mu8e) != 0,                    // Mu8e
+			len(x.Mu8u64) != 0,                  // Mu8u64
+			len(x.Msp2ss) != 0,                  // Msp2ss
+			len(x.Mip2ss) != 0,                  // Mip2ss
+			len(x.Ms2misu) != 0,                 // Ms2misu
+			len(x.Miwu64s) != 0,                 // Miwu64s
+			len(x.Mfwss) != 0,                   // Mfwss
+			len(x.Mf32wss) != 0,                 // Mf32wss
+			len(x.Mui2wss) != 0,                 // Mui2wss
+			len(x.Msu2wss) != 0,                 // Msu2wss
+			x.Ci64 != 0,                         // Ci64
+			len(x.Swrapbytes) != 0,              // Swrapbytes
+			len(x.Swrapuint8) != 0,              // Swrapuint8
+			x.ArrStrUi64T != [4]stringUint64T{}, // ArrStrUi64T
+			x.Ui64array != [4]uint64{},          // Ui64array
+			len(x.Ui64slicearray) != 0,          // Ui64slicearray
+			len(x.SintfAarray) != 0,             // SintfAarray
+			len(x.MstrUi64TSelf) != 0,           // MstrUi64TSelf
+			!(x.Ttime.IsZero()),                 // Ttime
+			x.Ttimeptr != nil,                   // Ttimeptr
 			x.AnonInTestStrucIntf != nil && len(x.Islice) != 0, // Islice
 			x.AnonInTestStrucIntf != nil && len(x.Ms) != 0,     // Ms
 			x.AnonInTestStrucIntf != nil && x.Nintf != nil,     // Nintf
@@ -17274,7 +17274,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *TestStrucFlex) IsCodecEmpty() bool {
-	return !(!(x.TestStrucCommon.IsCodecEmpty()) || len(x.Chstr) != 0 || len(x.Mis) != 0 || len(x.Mbu64) != 0 || len(x.Mu8e) != 0 || len(x.Mu8u64) != 0 || len(x.Msp2ss) != 0 || len(x.Mip2ss) != 0 || len(x.Ms2misu) != 0 || len(x.Miwu64s) != 0 || len(x.Mfwss) != 0 || len(x.Mf32wss) != 0 || len(x.Mui2wss) != 0 || len(x.Msu2wss) != 0 || x.Ci64 != 0 || len(x.Swrapbytes) != 0 || len(x.Swrapuint8) != 0 || len(x.ArrStrUi64T) != 0 || len(x.Ui64array) != 0 || len(x.Ui64slicearray) != 0 || len(x.SintfAarray) != 0 || len(x.MstrUi64TSelf) != 0 || !(x.Ttime.IsZero()) || x.AnonInTestStrucIntf != nil && len(x.Msu) != 0 || len(x.Mtsptr) != 0 || len(x.Mts) != 0 || len(x.Its) != 0 || bool(x.MarJ) || x.MarT != "" || len(x.MarB) != 0 || x.XuintToBytes != 0 || x.Cmplx64 != 0 || x.Cmplx128 != 0 || false)
+	return !(!(x.TestStrucCommon.IsCodecEmpty()) || len(x.Chstr) != 0 || len(x.Mis) != 0 || len(x.Mbu64) != 0 || len(x.Mu8e) != 0 || len(x.Mu8u64) != 0 || len(x.Msp2ss) != 0 || len(x.Mip2ss) != 0 || len(x.Ms2misu) != 0 || len(x.Miwu64s) != 0 || len(x.Mfwss) != 0 || len(x.Mf32wss) != 0 || len(x.Mui2wss) != 0 || len(x.Msu2wss) != 0 || x.Ci64 != 0 || len(x.Swrapbytes) != 0 || len(x.Swrapuint8) != 0 || x.ArrStrUi64T != [4]stringUint64T{} || x.Ui64array != [4]uint64{} || len(x.Ui64slicearray) != 0 || len(x.SintfAarray) != 0 || len(x.MstrUi64TSelf) != 0 || !(x.Ttime.IsZero()) || x.AnonInTestStrucIntf != nil && len(x.Msu) != 0 || len(x.Mtsptr) != 0 || len(x.Mts) != 0 || len(x.Its) != 0 || bool(x.MarJ) || x.MarT != "" || len(x.MarB) != 0 || x.XuintToBytes != 0 || x.Cmplx64 != 0 || x.Cmplx128 != 0 || false)
 }
 
 func (x codecSelfer19780) encwrapUint64Slice(v wrapUint64Slice, e *Encoder) {

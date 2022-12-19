@@ -9535,7 +9535,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 }
 
 func (x *TestMammoth2Wrapper) IsCodecEmpty() bool {
-	return !(!(x.V.IsCodecEmpty()) || x.T != 0 || x.B != 0 || x.J != 0 || len(x.C) != 0 || len(x.M) != 0 || len(x.L) != 0 || len(x.A) != 0 || x.Tcomplex128 != 0 || x.Tcomplex64 != 0 || len(x.Tbytes) != 0 || false)
+	return !(!(x.V.IsCodecEmpty()) || x.T != 0 || x.B != 0 || x.J != 0 || x.C != testMammoth2Basic{} || len(x.M) != 0 || len(x.L) != 0 || x.A != [4]int64{} || x.Tcomplex128 != 0 || x.Tcomplex64 != 0 || len(x.Tbytes) != 0 || false)
 }
 
 func (x codecSelfer19781) encMaptestMammoth2BasicTestMammoth2(v map[testMammoth2Basic]TestMammoth2, e *Encoder) {
