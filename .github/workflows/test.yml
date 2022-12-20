@@ -13,7 +13,6 @@ jobs:
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     env:
-      GO111MODULE: 'on'
       COVER_GO_VERSION: '1.19'
       GOARCH: ${{ matrix.arch }}
     name: go ${{ matrix.go }} on ${{ matrix.arch }}
