@@ -11,7 +11,7 @@ jobs:
         go: [ '1.11', '1.16', '1.18', '1.19', master ]
         arch: [ amd64 ]
         os: [ ubuntu-latest ]
-        go-tag: [ '', 'safe', 'notfastpath', 'codecgen' ]
+        go-tag: [ 'alltests', 'safe', 'notfastpath', 'codecgen' ]
         include: 
           - go: '1.19'
             arch: '386'            
