@@ -1,32 +1,22 @@
 name: Build and Test go-codec
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: workflow_dispatch
 jobs:
   tests:
     strategy:
       matrix:
-        go: [ '1.11', '1.17', '1.18', '1.19', 'master' ]
-        arch: [ amd64, '386' ]
+        go: [ '1.11', '1.17', '1.19', 'master' ]
+        arch: [ amd64 ]
         os: [ ubuntu-latest ]
-        go-tag: [ '', 'safe', 'notfastpath', 'codecgen' ]
-        exclude:
-          - go: '1.11'
+        include:
+          - go: '1.19'
             arch: '386'
-          - go: '1.17'
-            arch: '386'
-          - go: '1.18'
-            arch: '386'
-          - go: 'master'
-            arch: '386'
+            os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: 'on'
       COVER_GO_VERSION: '1.19'
       GOARCH: ${{ matrix.arch }}
-    name: go ${{ matrix.go }} on ${{ matrix.arch }} using go tags ${{ matrix.go-tag }}
+    name: go ${{ matrix.go }} on ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
@@ -36,7 +26,8 @@ jobs:
         shell: bash
         run: |
           cd codec
-          go test "-tags=alltests ${{ matrix.go-tag }}" -run=Suite -coverprofile "coverage.${{ matrix.go }}.${{ matrix.arch }}.${{ matrix.go-tag }}.txt" github.com/ugorji/go/codec
+          t=( "" "safe" "notfastpath" "codecgen" )
+          for i in "${t[@]}"; do go test "-tags=alltests ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"; done
       - uses: codecov/codecov-action@v3
         if: matrix.go == env.COVER_GO_VERSION
         with:
@@ -54,8 +45,10 @@ jobs:
 #   steps:
 #     - uses: codecov/codecov-action@v3
 #       directory: ./codec
-
+#
 # steps:
 #   - uses: actions/checkout@v3
 #     with:
 #       fetch-depth: 0 # required for new-from-rev option in .golangci.yml
+#
+#        go-tag: [ '', 'safe', 'notfastpath', 'codecgen' ]
