@@ -33,8 +33,9 @@ jobs:
           go test "-tags=alltests ${{ matrix.go-tag }}" -run=Suite -coverprofile "coverage.${{ matrix.go }}.${{ matrix.arch }}.${{ matrix.go-tag }}.txt" github.com/ugorji/go/codec
       - uses: codecov/codecov-action@v3
         if: matrix.go == env.COVER_GO_VERSION
-        directory: ./codec
-        
+        with:
+          directory: ./codec
+
 
 # No need to go get, as github knows its working out of this folder
 # Most of our code is now the same since go1.12. Only before that did we selectively compile files.
