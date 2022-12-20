@@ -3,6 +3,7 @@ on: workflow_dispatch
 jobs:
   tests:
     strategy:
+      fail-fast: true
       matrix:
         go: [ '1.11', '1.17', '1.19', 'master' ]
         arch: [ amd64 ]
@@ -13,6 +14,7 @@ jobs:
             os: ubuntu-latest
     runs-on: ${{ matrix.os }}
     env:
+      GO111MODULE: 'on'
       COVER_GO_VERSION: '1.19'
       GOARCH: ${{ matrix.arch }}
     name: go ${{ matrix.go }} on ${{ matrix.arch }}
@@ -25,6 +27,7 @@ jobs:
         shell: bash
         run: |
           cd codec
+          go mod tidy
           t=( "" "safe" "notfastpath" "codecgen" )
           for i in "${t[@]}"; do go test "-tags=alltests ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"; done
       - uses: codecov/codecov-action@v3
