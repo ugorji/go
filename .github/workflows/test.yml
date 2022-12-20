@@ -28,6 +28,7 @@ jobs:
         run: |
           cd codec
           go mod tidy
+          go mod edit -replace github.com/ugorji/go=./
           t=( "" "safe" "notfastpath" "codecgen" )
           for i in "${t[@]}"; do go test "-tags=alltests ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"; done
       - uses: codecov/codecov-action@v3
