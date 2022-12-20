@@ -1,11 +1,18 @@
 name: Build and Test go-codec
-on: workflow_dispatch
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ master ]
+    paths: [ '**.go' ]
+  pull_request:
+    branches: [ master ]
+    paths: [ '**.go' ]
 jobs:
   tests:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        go: [ '1.19', '1.17', '1.11', '1.20.0-rc.1' ]
+        go: [ '1.19', '1.17', '1.11' ]
         arch: [ amd64 ]
         os: [ ubuntu-latest ]
         include:
@@ -36,11 +43,34 @@ jobs:
           directory: ./codec
 
 
-# No need to go get, as github knows its working out of this folder
-# Most of our code is now the same since go1.12. Only before that did we selectively compile files.
-# Ok to jump around, and only test 1.11, and the last 2 production releases and master.
-# Test i386 on last production release.
-
+# No need to go get, as github knows its working out of this folder.
+#
+# Most of our code is the same since go1.12; before that we selectively compile files using build constraints.
+#
+# We test against the following go releases
+# - latest production release
+# - 2 releases before that
+# - an archive version (go 1.11)
+# - and a beta/rc of development release (so github can just download an archive of it and use)
+#
+# Pre-release versions must use semver e.g. as of 20221220, it's '1.20.0-rc.1' 
+# TODO: add this back once we resolve the issue with go-codec failing on development branch.
+#
+# We test amd64 on all releases, and i386 (32-bit) on last production release.
+#
+# We previously had each tag be its own matrix, but that exploded the number of runs.
+# Instead, since the environment is consistent, we just use a bash script to run through all
+# the tags for that run.
+#
+# Finally, we do a go mod edit -droprequire github.com/ugorji/go to circumvent the "missing go.sum entry" error.
+# We put a requirements cycle with github.com/ugorji/go to allow folks requiring .../ugorji/go in 2019 to work ok.
+# Now, everyone should have updated to a go-codec version >= 1.17 or preferably >= 1.2.0.
+# Now is a good time to remove that requirements cycle.
+#
+#
+#
+#
+# --- SCRATCH ---
 # coverage:
 #   if: ${{ always() }}
 #   needs: [ tests]
@@ -52,5 +82,3 @@ jobs:
 #   - uses: actions/checkout@v3
 #     with:
 #       fetch-depth: 0 # required for new-from-rev option in .golangci.yml
-#
-#        go-tag: [ '', 'safe', 'notfastpath', 'codecgen' ]
