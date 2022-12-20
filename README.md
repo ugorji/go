@@ -1,7 +1,7 @@
 [![Sourcegraph](https://sourcegraph.com/github.com/ugorji/go/-/badge.svg?v=4)](https://sourcegraph.com/github.com/ugorji/go/-/tree/codec?badge)
-[![Build Status](https://travis-ci.org/ugorji/go.svg?branch=master)](https://travis-ci.org/ugorji/go)
+[![Build and Test go-codec](https://github.com/ugorji/go/actions/workflows/test.yml/badge.svg)](https://github.com/ugorji/go/actions/workflows/test.yml)
 [![codecov](https://codecov.io/gh/ugorji/go/branch/master/graph/badge.svg?v=4)](https://codecov.io/gh/ugorji/go)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/ugorji/go/codec)](https://pkg.go.dev/github.com/ugorji/go/codec)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ugorji/go/codec.svg)](https://pkg.go.dev/github.com/ugorji/go/codec)
 [![rcard](https://goreportcard.com/badge/github.com/ugorji/go/codec?v=4)](https://goreportcard.com/report/github.com/ugorji/go/codec)
 [![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/ugorji/go/master/LICENSE)
 
