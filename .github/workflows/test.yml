@@ -27,9 +27,8 @@ jobs:
         shell: bash
         run: |
           cd codec
-          ls -al
-          cat go.mod
-          go mod edit -replace github.com/ugorji/go/codec=./
+          echo "" > go.sum
+          go mod edit -droprequire github.com/ugorji/go
           echo "After editing go.mod"
           cat go.mod
           t=( "" "safe" "notfastpath" "codecgen" )
