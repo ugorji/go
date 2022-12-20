@@ -28,9 +28,6 @@ jobs:
         run: |
           cd codec
           echo "" > go.sum
-          go mod edit -droprequire github.com/ugorji/go
-          echo "After editing go.mod"
-          cat go.mod
           t=( "" "safe" "notfastpath" "codecgen" )
           for i in "${t[@]}"; do go test "-tags=alltests ${i}" "-run=Suite" "-coverprofile=coverage.${{ matrix.go }}.${{ matrix.arch }}.${i}.txt"; done
       - uses: codecov/codecov-action@v3
