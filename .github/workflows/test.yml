@@ -8,13 +8,19 @@ jobs:
   tests:
     strategy:
       matrix:
-        go: [ '1.11', '1.16', '1.18', '1.19', master ]
-        arch: [ amd64 ]
+        go: [ '1.11', '1.17', '1.18', '1.19', 'master' ]
+        arch: [ amd64, '386' ]
         os: [ ubuntu-latest ]
-        go-tag: [ 'alltests', 'safe', 'notfastpath', 'codecgen' ]
-        include: 
-          - go: '1.19'
-            arch: '386'            
+        go-tag: [ '', 'safe', 'notfastpath', 'codecgen' ]
+        exclude:
+          - go: '1.11'
+            arch: '386'
+          - go: '1.17'
+            arch: '386'
+          - go: '1.18'
+            arch: '386'
+          - go: 'master'
+            arch: '386'
     runs-on: ${{ matrix.os }}
     env:
       GO111MODULE: 'on'
