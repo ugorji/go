@@ -4,5 +4,5 @@ go 1.11
 
 require (
 	github.com/ugorji/go/codec v1.2.7
-	golang.org/x/tools v0.0.0-20201028224754-2c115999a7f0
+	golang.org/x/tools v0.4.0
 )

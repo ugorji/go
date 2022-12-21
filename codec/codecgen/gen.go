@@ -12,10 +12,10 @@
 //
 // Note that (as of Dec 2018) codecgen completely ignores
 //
-// - MissingFielder interface
-//   (if you types implements it, codecgen ignores that)
-// - decode option PreferArrayOverSlice
-//   (we cannot dynamically create non-static arrays without reflection)
+//   - MissingFielder interface
+//     (if you types implements it, codecgen ignores that)
+//   - decode option PreferArrayOverSlice
+//     (we cannot dynamically create non-static arrays without reflection)
 //
 // In explicit package terms: codecgen generates codec.Selfer implementations for a set of types.
 package main
@@ -43,8 +43,8 @@ import (
 
 // MARKER: keep in sync with ../gen.go (genVersion) and ../go.mod (module version)
 const (
-	codecgenModuleVersion = `1.2.6` // default version - overridden if available via go.mod
-	minimumCodecVersion   = `1.2.6`
+	codecgenModuleVersion = `1.2.7` // default version - overridden if available via go.mod
+	minimumCodecVersion   = `1.2.7`
 	genVersion            = 25
 )
 
@@ -191,15 +191,15 @@ type mainCfg struct {
 	keepTempFile bool // !deleteTempFile
 }
 
-// Generate is given a list of *.go files to parse, and an output file (fout).
+// mainGen is given a list of *.go files to parse, and an output file (fout).
 //
 // It finds all types T in the files, and it creates 2 tmp files (frun).
 //   - main package file passed to 'go run'
 //   - package level file which calls *genRunner.Selfer to write Selfer impls for each T.
+//
 // We use a package level file so that it can reference unexported types in the package being worked on.
 // Tool then executes: "go run __frun__" which creates fout.
 // fout contains Codec(En|De)codeSelf implementations for every type T.
-//
 func mainGen(tv *mainCfg, infiles ...string) (err error) {
 	// For each file, grab AST, find each type, and write a call to it.
 	if len(infiles) == 0 {

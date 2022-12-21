@@ -3,4 +3,6 @@
 
 package main
 
+import _ "github.com/ugorji/go/codec" // ensures the go.mod keeps this dependency
+
 const genCodecPath = "github.com/ugorji/go/codec"
