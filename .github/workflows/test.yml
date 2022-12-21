@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        go: [ '1.19', '1.17', '1.11' ]
+        go: [ '1.19', '1.17', '1.11', '1.20.0-rc.1' ]
         arch: [ amd64 ]
         os: [ ubuntu-latest ]
         include:
