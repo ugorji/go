@@ -13,9 +13,10 @@ import (
 )
 
 // keep in sync with
-//    $GOROOT/src/cmd/compile/internal/gc/reflect.go: MAXKEYSIZE, MAXELEMSIZE
-//    $GOROOT/src/runtime/map.go: maxKeySize, maxElemSize
-//    $GOROOT/src/reflect/type.go: maxKeySize, maxElemSize
+//
+//	$GOROOT/src/cmd/compile/internal/gc/reflect.go: MAXKEYSIZE, MAXELEMSIZE
+//	$GOROOT/src/runtime/map.go: maxKeySize, maxElemSize
+//	$GOROOT/src/reflect/type.go: maxKeySize, maxElemSize
 //
 // We use these to determine whether the type is stored indirectly in the map or not.
 const (
@@ -133,10 +134,6 @@ var unsafeZeroArr [1024]byte
 //go:linkname rvPtrToType reflect.toType
 //go:noescape
 func rvPtrToType(typ unsafe.Pointer) reflect.Type
-
-//go:linkname growslice runtime.growslice
-//go:noescape
-func growslice(typ unsafe.Pointer, old unsafeSlice, cap int) unsafeSlice
 
 //go:linkname mapassign_fast32 runtime.mapassign_fast32
 //go:noescape
