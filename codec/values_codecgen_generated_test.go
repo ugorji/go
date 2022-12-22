@@ -19826,13 +19826,34 @@ func (x codecSelfer19780) encMapwrapStringInterface(v map[wrapString]interface{}
 	if v == nil {
 		r.EncodeNil()
 	} else if z.EncBasicHandle().Canonical {
-		z.EncEncodeMapNonNil(v)
+		if z.Extension(wrapString("")) != nil {
+			z.EncEncodeMapNonNil(v)
+		} else {
+			yys1 := make([]string, 0, len(v))
+			for k, _ := range v {
+				yys1 = append(yys1, string(k))
+			}
+			sort.Sort(codecSelfer19780stringSlice(yys1))
+			z.EncWriteMapStart(len(v))
+			for _, yyv1 := range yys1 {
+				z.EncWriteMapElemKey()
+				r.EncodeString(yyv1)
+				z.EncWriteMapElemValue()
+				yye1 := v[wrapString(yyv1)]
+				if yye1 == nil {
+					r.EncodeNil()
+				} else {
+					z.EncFallback(yye1)
+				}
+			}
+			z.EncWriteMapEnd()
+		}
 	} else {
 		z.EncWriteMapStart(len(v))
 		for yyk1, yyv1 := range v {
 			z.EncWriteMapElemKey()
-			if yyxt2 := z.Extension(yyk1); yyxt2 != nil {
-				z.EncExtension(yyk1, yyxt2)
+			if yyxt3 := z.Extension(yyk1); yyxt3 != nil {
+				z.EncExtension(yyk1, yyxt3)
 			} else {
 				yyk1.CodecEncodeSelf(e)
 			}
