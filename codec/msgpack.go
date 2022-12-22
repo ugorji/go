@@ -1076,7 +1076,7 @@ func (d *msgpackDecDriver) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xta
 
 //--------------------------------------------------
 
-//MsgpackHandle is a Handle for the Msgpack Schema-Free Encoding Format.
+// MsgpackHandle is a Handle for the Msgpack Schema-Free Encoding Format.
 type MsgpackHandle struct {
 	binaryEncodingType
 	BasicHandle

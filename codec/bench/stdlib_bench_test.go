@@ -1,3 +1,4 @@
+//go:build !generated
 // +build !generated
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.

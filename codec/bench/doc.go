@@ -10,5 +10,4 @@ Here, we have the benchmark files comparing against other encoding libraries.
 
 See README.md for more details.
 */
-package codec 
-
+package codec

@@ -1,6 +1,5 @@
-// +build alltests
-// +build go1.7
-// +build !generated
+//go:build alltests && go1.7 && !generated
+// +build alltests,go1.7,!generated
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.

@@ -155,10 +155,10 @@ func isEmptyValue(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 }
 
 // isEmptyStruct is only called from isEmptyValue, and checks if a struct is empty:
-//    - does it implement IsZero() bool
-//    - is it comparable, and can i compare directly using ==
-//    - if checkStruct, then walk through the encodable fields
-//      and check if they are empty or not.
+//   - does it implement IsZero() bool
+//   - is it comparable, and can i compare directly using ==
+//   - if checkStruct, then walk through the encodable fields
+//     and check if they are empty or not.
 func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// v is a struct kind - no need to check again.
 	// We only check isZero on a struct kind, to reduce the amount of times
