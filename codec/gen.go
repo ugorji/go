@@ -128,7 +128,9 @@ import (
 // v1: Initial Version
 // v2: -
 // v3: Changes for Kubernetes:
-//     changes in signature of some unpublished helper methods and codecgen cmdline arguments.
+//
+//	changes in signature of some unpublished helper methods and codecgen cmdline arguments.
+//
 // v4: Removed separator support from (en|de)cDriver, and refactored codec(gen)
 // v5: changes to support faster json decoding. Let encoder/decoder maintain state of collections.
 // v6: removed unsafe from gen, and now uses codecgen.exec tag
@@ -1484,40 +1486,39 @@ func (x *genRunner) encListFallback(varname string, t reflect.Type) {
 func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 	x.linef("if %s == nil { r.EncodeNil()", varname)
 	x.line("} else if z.EncBasicHandle().Canonical {")
+
 	// Solve for easy case accomodated by sort package without reflection i.e.
 	// map keys of type: float, int, string (pre-defined/builtin types).
 	//
 	// To do this, we will get the keys into an array of uint64|float64|string,
 	// sort them, then write them out, and grab the value and encode it appropriately
-	var handleCanonicalHere bool
-	var canonSortKind reflect.Kind
 	tkey := t.Key()
 	tkind := tkey.Kind()
+	tkeybase := tkey
+	for tkeybase.Kind() == reflect.Ptr {
+		tkeybase = tkeybase.Elem()
+	}
+	tikey := x.ti.get(rt2id(tkeybase), tkeybase)
+
 	// pre-defined types have a name and no pkgpath and appropriate kind
-	if tkey.PkgPath() == "" && tkey.Name() != "" {
-		switch tkind {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			canonSortKind = reflect.Int64
-			handleCanonicalHere = true
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			canonSortKind = reflect.Uint64
-			handleCanonicalHere = true
-		case reflect.Float32, reflect.Float64:
-			canonSortKind = reflect.Float64
-			handleCanonicalHere = true
-		case reflect.String:
-			canonSortKind = reflect.String
-			handleCanonicalHere = true
-		}
+	predeclared := tkey.PkgPath() == "" && tkey.Name() != ""
+
+	canonSortKind := reflect.Invalid
+	switch tkind {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		canonSortKind = reflect.Int64
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		canonSortKind = reflect.Uint64
+	case reflect.Float32, reflect.Float64:
+		canonSortKind = reflect.Float64
+	case reflect.String:
+		canonSortKind = reflect.String
 	}
 
-	var i string
-	if handleCanonicalHere {
-		// TODO flesh out here
+	var i string = x.varsfx()
+
+	fnCanonNumBoolStrKind := func() {
 		// get the type, get the slice type its mapped to, and complete the code
-		if i == "" {
-			i = x.varsfx()
-		}
 		x.linef("%ss%s := make([]%s, 0, len(%s))", genTempVarPfx, i, canonSortKind, varname)
 		x.linef("for k, _ := range %s {", varname)
 		x.linef("  %ss%s = append(%ss%s, %s(k))", genTempVarPfx, i, genTempVarPfx, i, canonSortKind)
@@ -1540,20 +1541,30 @@ func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 		}
 		x.linef("  z.EncWriteMapElemValue()")
 		vname := genTempVarPfx + "e" + i
-		x.linef("%s := %s[%s(%sv%s)]", vname, varname, tkind, genTempVarPfx, i)
+		x.linef("%s := %s[%s(%sv%s)]", vname, varname, x.genTypeName(tkey), genTempVarPfx, i)
 		x.encVar(vname, t.Elem())
 		x.linef("}")
 
 		x.line("z.EncWriteMapEnd()")
+
+	}
+
+	if canonSortKind != reflect.Invalid && !tikey.flagMarshalInterface {
+		if predeclared {
+			fnCanonNumBoolStrKind()
+		} else {
+			// handle if an extension
+			x.linef("if z.Extension(%s(%s)) != nil { z.EncEncodeMapNonNil(%s) } else {",
+				x.genTypeName(tkey), x.genZeroValueR(tkey), varname)
+			fnCanonNumBoolStrKind()
+			x.line("}")
+		}
 	} else {
 		x.linef("z.EncEncodeMapNonNil(%s)", varname)
 	}
 
 	x.line("} else {")
 
-	if i == "" {
-		i = x.varsfx()
-	}
 	x.linef("z.EncWriteMapStart(len(%s))", varname)
 	x.linef("for %sk%s, %sv%s := range %s {", genTempVarPfx, i, genTempVarPfx, i, varname)
 	x.linef("z.EncWriteMapElemKey()")
