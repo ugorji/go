@@ -1905,6 +1905,8 @@ type typeInfo struct {
 	flagSelfer    bool
 	flagSelferPtr bool
 
+	flagMarshalInterface bool
+
 	flagMissingFielder    bool
 	flagMissingFielderPtr bool
 
@@ -2175,6 +2177,15 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 
 	b1, b2 = implIntf(rt, isSelferViaCodecgenerTyp)
 	ti.flagSelferViaCodecgen = b1 || b2
+
+	ti.flagMarshalInterface = ti.flagSelfer || ti.flagSelferPtr ||
+		ti.flagSelferViaCodecgen ||
+		ti.flagBinaryMarshaler || ti.flagBinaryMarshalerPtr ||
+		ti.flagBinaryUnmarshaler || ti.flagBinaryUnmarshalerPtr ||
+		ti.flagTextMarshaler || ti.flagTextMarshalerPtr ||
+		ti.flagTextUnmarshaler || ti.flagTextUnmarshalerPtr ||
+		ti.flagJsonMarshaler || ti.flagJsonMarshalerPtr ||
+		ti.flagJsonUnmarshaler || ti.flagJsonUnmarshalerPtr
 
 	b1 = rt.Comparable()
 	// bset(b1, &ti.flagComparable)
