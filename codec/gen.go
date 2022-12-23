@@ -1494,11 +1494,11 @@ func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 	// sort them, then write them out, and grab the value and encode it appropriately
 	tkey := t.Key()
 	tkind := tkey.Kind()
-	tkeybase := tkey
-	for tkeybase.Kind() == reflect.Ptr {
-		tkeybase = tkeybase.Elem()
-	}
-	tikey := x.ti.get(rt2id(tkeybase), tkeybase)
+	// tkeybase := tkey
+	// for tkeybase.Kind() == reflect.Ptr {
+	// 	tkeybase = tkeybase.Elem()
+	// }
+	// tikey := x.ti.get(rt2id(tkeybase), tkeybase)
 
 	// pre-defined types have a name and no pkgpath and appropriate kind
 	predeclared := tkey.PkgPath() == "" && tkey.Name() != ""
@@ -1518,6 +1518,10 @@ func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 	var i string = x.varsfx()
 
 	fnCanonNumBoolStrKind := func() {
+		if !predeclared {
+			x.linef("var %svv%s %s", genTempVarPfx, i, x.genTypeName(tkey))
+			x.linef("%sencfn%s := z.EncFnGivenAddr(&%svv%s)", genTempVarPfx, i, genTempVarPfx, i)
+		}
 		// get the type, get the slice type its mapped to, and complete the code
 		x.linef("%ss%s := make([]%s, 0, len(%s))", genTempVarPfx, i, canonSortKind, varname)
 		x.linef("for k, _ := range %s {", varname)
@@ -1527,21 +1531,34 @@ func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 		x.linef("z.EncWriteMapStart(len(%s))", varname)
 		x.linef("for _, %sv%s := range %ss%s {", genTempVarPfx, i, genTempVarPfx, i)
 		x.linef("  z.EncWriteMapElemKey()")
-		switch tkind {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			x.linef("r.EncodeInt(int64(%sv%s))", genTempVarPfx, i)
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-			x.linef("r.EncodeUint(uint64(%sv%s))", genTempVarPfx, i)
-		case reflect.Float32:
-			x.linef("r.EncodeFloat32(float32(%sv%s))", genTempVarPfx, i)
-		case reflect.Float64:
-			x.linef("r.EncodeFloat64(%sv%s)", genTempVarPfx, i)
-		case reflect.String:
-			x.linef("r.EncodeString(%sv%s)", genTempVarPfx, i)
+		if predeclared {
+			switch tkind {
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32:
+				x.linef("r.EncodeInt(int64(%sv%s))", genTempVarPfx, i)
+			case reflect.Int64:
+				x.linef("r.EncodeInt(%sv%s)", genTempVarPfx, i)
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uintptr:
+				x.linef("r.EncodeUint(%sv%s)", genTempVarPfx, i)
+			case reflect.Uint64:
+				x.linef("r.EncodeUint(uint64(%sv%s))", genTempVarPfx, i)
+			case reflect.Float32:
+				x.linef("r.EncodeFloat32(float32(%sv%s))", genTempVarPfx, i)
+			case reflect.Float64:
+				x.linef("r.EncodeFloat64(%sv%s)", genTempVarPfx, i)
+			case reflect.String:
+				x.linef("r.EncodeString(%sv%s)", genTempVarPfx, i)
+			}
+		} else {
+			x.linef("%svv%s = %s(%sv%s)", genTempVarPfx, i, x.genTypeName(tkey), genTempVarPfx, i)
+			x.linef("z.EncEncodeNumBoolStrKindGivenAddr(&%svv%s, %sencfn%s)", genTempVarPfx, i, genTempVarPfx, i)
 		}
 		x.linef("  z.EncWriteMapElemValue()")
 		vname := genTempVarPfx + "e" + i
-		x.linef("%s := %s[%s(%sv%s)]", vname, varname, x.genTypeName(tkey), genTempVarPfx, i)
+		if predeclared {
+			x.linef("%s := %s[%s(%sv%s)]", vname, varname, x.genTypeName(tkey), genTempVarPfx, i)
+		} else {
+			x.linef("%s := %s[%svv%s]", vname, varname, genTempVarPfx, i)
+		}
 		x.encVar(vname, t.Elem())
 		x.linef("}")
 
@@ -1549,16 +1566,22 @@ func (x *genRunner) encMapFallback(varname string, t reflect.Type) {
 
 	}
 
-	if canonSortKind != reflect.Invalid && !tikey.flagMarshalInterface {
-		if predeclared {
-			fnCanonNumBoolStrKind()
-		} else {
-			// handle if an extension
-			x.linef("if z.Extension(%s(%s)) != nil { z.EncEncodeMapNonNil(%s) } else {",
-				x.genTypeName(tkey), x.genZeroValueR(tkey), varname)
-			fnCanonNumBoolStrKind()
-			x.line("}")
-		}
+	// if canonSortKind != reflect.Invalid && !tikey.flagMarshalInterface {
+	// 	if predeclared {
+	// 		fnCanonNumBoolStrKind()
+	// 	} else {
+	// 		// handle if an extension
+	// 		x.linef("if z.Extension(%s(%s)) != nil { z.EncEncodeMapNonNil(%s) } else {",
+	// 			x.genTypeName(tkey), x.genZeroValueR(tkey), varname)
+	// 		fnCanonNumBoolStrKind()
+	// 		x.line("}")
+	// 	}
+	// } else {
+	// 	x.linef("z.EncEncodeMapNonNil(%s)", varname)
+	// }
+
+	if canonSortKind != reflect.Invalid {
+		fnCanonNumBoolStrKind()
 	} else {
 		x.linef("z.EncEncodeMapNonNil(%s)", varname)
 	}
@@ -2802,7 +2825,7 @@ func genInternalSortableTypes() []string {
 // that are used for reflection-based canonical's encoding of maps.
 //
 // For now, we only support the highest sizes for
-// int64, uint64, float64, bool, string, bytes.
+// int64, uint64, float64, string, bytes.
 func genInternalSortablePlusTypes() []string {
 	return []string{
 		"string",
@@ -2810,7 +2833,7 @@ func genInternalSortablePlusTypes() []string {
 		"uint64",
 		// "uintptr",
 		"int64",
-		"bool",
+		// "bool",
 		"time",
 		"bytes",
 	}

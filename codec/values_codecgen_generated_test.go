@@ -18376,7 +18376,7 @@ func (x codecSelfer19780) encMapuint8c3RydWN0IHt9(v map[uint8]struct{}, e *Encod
 		z.EncWriteMapStart(len(v))
 		for _, yyv1 := range yys1 {
 			z.EncWriteMapElemKey()
-			r.EncodeUint(uint64(yyv1))
+			r.EncodeUint(yyv1)
 			z.EncWriteMapElemValue()
 			yye1 := v[uint8(yyv1)]
 			yy2 := &yye1
@@ -18456,7 +18456,7 @@ func (x codecSelfer19780) encMapuint8stringUint64T(v map[uint8]stringUint64T, e 
 		z.EncWriteMapStart(len(v))
 		for _, yyv1 := range yys1 {
 			z.EncWriteMapElemKey()
-			r.EncodeUint(uint64(yyv1))
+			r.EncodeUint(yyv1)
 			z.EncWriteMapElemValue()
 			yye1 := v[uint8(yyv1)]
 			yy2 := &yye1
@@ -19826,28 +19826,27 @@ func (x codecSelfer19780) encMapwrapStringInterface(v map[wrapString]interface{}
 	if v == nil {
 		r.EncodeNil()
 	} else if z.EncBasicHandle().Canonical {
-		if z.Extension(wrapString("")) != nil {
-			z.EncEncodeMapNonNil(v)
-		} else {
-			yys1 := make([]string, 0, len(v))
-			for k, _ := range v {
-				yys1 = append(yys1, string(k))
-			}
-			sort.Sort(codecSelfer19780stringSlice(yys1))
-			z.EncWriteMapStart(len(v))
-			for _, yyv1 := range yys1 {
-				z.EncWriteMapElemKey()
-				r.EncodeString(yyv1)
-				z.EncWriteMapElemValue()
-				yye1 := v[wrapString(yyv1)]
-				if yye1 == nil {
-					r.EncodeNil()
-				} else {
-					z.EncFallback(yye1)
-				}
-			}
-			z.EncWriteMapEnd()
+		var yyvv1 wrapString
+		yyencfn1 := z.EncFnGivenAddr(&yyvv1)
+		yys1 := make([]string, 0, len(v))
+		for k, _ := range v {
+			yys1 = append(yys1, string(k))
 		}
+		sort.Sort(codecSelfer19780stringSlice(yys1))
+		z.EncWriteMapStart(len(v))
+		for _, yyv1 := range yys1 {
+			z.EncWriteMapElemKey()
+			yyvv1 = wrapString(yyv1)
+			z.EncEncodeNumBoolStrKindGivenAddr(&yyvv1, yyencfn1)
+			z.EncWriteMapElemValue()
+			yye1 := v[yyvv1]
+			if yye1 == nil {
+				r.EncodeNil()
+			} else {
+				z.EncFallback(yye1)
+			}
+		}
+		z.EncWriteMapEnd()
 	} else {
 		z.EncWriteMapStart(len(v))
 		for yyk1, yyv1 := range v {

@@ -148,9 +148,19 @@ func (f genHelperEncoder) EncEncodeComplex128(v complex128) { f.e.encodeComplex1
 func (f genHelperEncoder) EncEncode(v interface{}) { f.e.encode(v) }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncFnGivenAddr(v interface{}) *codecFn {
+	return f.e.h.fn(reflect.TypeOf(v).Elem())
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncEncodeNumBoolStrKindGivenAddr(v interface{}, encFn *codecFn) {
+	f.e.encodeValueNonNil(reflect.ValueOf(v).Elem(), encFn)
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncEncodeMapNonNil(v interface{}) {
 	if skipFastpathTypeSwitchInDirectCall || !fastpathEncodeTypeSwitch(v, f.e) {
-		f.e.encodeValue(reflect.ValueOf(v), nil)
+		f.e.encodeValueNonNil(reflect.ValueOf(v), nil)
 	}
 }
 

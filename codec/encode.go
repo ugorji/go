@@ -688,7 +688,9 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 
 	rtkey := f.ti.key
 	var keyTypeIsString = stringTypId == rt2id(rtkey) // rtkeyid
-	if !keyTypeIsString {
+	if keyTypeIsString {
+		keyFn = e.h.fn(rtkey)
+	} else {
 		for rtkey.Kind() == reflect.Ptr {
 			rtkey = rtkey.Elem()
 		}
@@ -724,9 +726,8 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 }
 
 func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valFn *codecFn) {
-	// we previously did out-of-band if an extension was registered.
-	// This is not necessary, as the natural kind is sufficient for ordering.
-
+	// The base kind of the type of the map key is sufficient for ordering.
+	// We only do out of band if that kind is not ordered (number or string), bool or time.Time.
 	// If the key is a predeclared type, directly call methods on encDriver e.g. EncodeString
 	// but if not, call encodeValue, in case it has an extension registered or otherwise.
 	rtkey := ti.key
@@ -740,22 +741,24 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 
 	switch rtkeyKind {
 	case reflect.Bool:
-		mksv := make([]boolRv, len(mks))
-		for i, k := range mks {
-			v := &mksv[i]
-			v.r = k
-			v.v = k.Bool()
+		// though bool keys make no sense in a map, it *could* happen.
+		// in that case, we MUST support it in reflection mode,
+		// as that is the fallback for even codecgen and others.
+
+		// sort the keys so that false comes before true
+		// ie if 2 keys in order (true, false), then swap them
+		if len(mks) == 2 && mks[0].Bool() {
+			mks[0], mks[1] = mks[1], mks[0]
 		}
-		sort.Sort(boolRvSlice(mksv))
-		for i := range mksv {
+		for i := range mks {
 			e.mapElemKey()
 			if rtkeydecl {
-				e.e.EncodeBool(mksv[i].v)
+				e.e.EncodeBool(mks[i].Bool())
 			} else {
-				e.encodeValueNumBoolStr(mksv[i].r, keyFn)
+				e.encodeValueNonNil(mks[i], keyFn)
 			}
 			e.mapElemValue()
-			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
+			e.encodeValue(mapGet(rv, mks[i], rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.String:
 		mksv := make([]stringRv, len(mks))
@@ -770,7 +773,7 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			if rtkeydecl {
 				e.e.EncodeString(mksv[i].v)
 			} else {
-				e.encodeValueNumBoolStr(mksv[i].r, keyFn)
+				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
@@ -788,7 +791,7 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			if rtkeydecl {
 				e.e.EncodeUint(mksv[i].v)
 			} else {
-				e.encodeValueNumBoolStr(mksv[i].r, keyFn)
+				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
@@ -806,7 +809,7 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			if rtkeydecl {
 				e.e.EncodeInt(mksv[i].v)
 			} else {
-				e.encodeValueNumBoolStr(mksv[i].r, keyFn)
+				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
@@ -824,7 +827,7 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			if rtkeydecl {
 				e.e.EncodeFloat32(float32(mksv[i].v))
 			} else {
-				e.encodeValueNumBoolStr(mksv[i].r, keyFn)
+				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
@@ -842,12 +845,12 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			if rtkeydecl {
 				e.e.EncodeFloat64(mksv[i].v)
 			} else {
-				e.encodeValueNumBoolStr(mksv[i].r, keyFn)
+				e.encodeValueNonNil(mksv[i].r, keyFn)
 			}
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
-	case reflect.Struct:
+	default:
 		if rtkey == timeTyp {
 			mksv := make([]timeRv, len(mks))
 			for i, k := range mks {
@@ -864,8 +867,7 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			}
 			break
 		}
-		fallthrough
-	default:
+
 		// out-of-band
 		// first encode each key to a []byte first, then sort them, then record
 		bs0 := e.blist.get(len(mks) * 16)
@@ -1340,7 +1342,9 @@ TOP:
 	}
 }
 
-func (e *Encoder) encodeValueNumBoolStr(rv reflect.Value, fn *codecFn) {
+// encodeValueNonNil can encode a number, bool, or string
+// OR non-nil values of kind map, slice and chan.
+func (e *Encoder) encodeValueNonNil(rv reflect.Value, fn *codecFn) {
 	if fn == nil {
 		fn = e.h.fn(rvType(rv))
 	}
