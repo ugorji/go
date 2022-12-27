@@ -155,6 +155,7 @@ func benchRecoverPanic(t *testing.B) {
 	if benchRecover {
 		if r := recover(); r != nil {
 			t.Logf("(recovered) panic: %v\n", r)
+			t.FailNow()
 		}
 	}
 }
@@ -163,6 +164,7 @@ func benchRecoverPanicT(t *testing.T) {
 	if benchRecover {
 		if r := recover(); r != nil {
 			t.Logf("(recovered) panic: %v\n", r)
+			t.FailNow()
 		}
 	}
 }
