@@ -1871,10 +1871,10 @@ type typeInfo struct {
 	keykind, elemkind uint8
 
 	flagHasPkgPath   bool // Type.PackagePath != ""
-	flagCustom       bool // does this have custom implementation?
 	flagComparable   bool
 	flagCanTransient bool
 
+	flagMarshalInterface  bool // does this have custom (un)marshal implementation?
 	flagSelferViaCodecgen bool
 
 	// custom implementation flags
@@ -1904,8 +1904,6 @@ type typeInfo struct {
 
 	flagSelfer    bool
 	flagSelferPtr bool
-
-	flagMarshalInterface bool
 
 	flagMissingFielder    bool
 	flagMissingFielderPtr bool
@@ -2138,7 +2136,6 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	bset := func(when bool, b *bool) {
 		if when {
 			*b = true
-			ti.flagCustom = true
 		}
 	}
 
