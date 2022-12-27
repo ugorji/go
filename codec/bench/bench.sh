@@ -19,8 +19,9 @@ _go_get() {
 
 # add generated tag to the top of each file
 _prependbt() {
+    local tag="${3:-generated}"
     cat > ${2} <<EOF
-// +build generated
+// +build ${tag}
 
 EOF
     cat ${1} >> ${2}
@@ -45,6 +46,7 @@ _gen() {
     # local z=`pwd`
     # z=${z%%/src/*}
     # Note: ensure you run the codecgen for this codebase
+    # NOTE: MARKER: ffjson has been generating bad uncompilable code, so ignore it for now
     cp values_test.go v.go &&
         echo "codecgen ..." &&
         codecgen -nx -ta=false -rt codecgen -t 'codecgen generated' -o values_codecgen${zsfx} -d 19780 v.go &&
@@ -56,7 +58,7 @@ _gen() {
         _prependbt e9.go values_easyjson${zsfx} &&
         echo "ffjson ... " && 
         ffjson -force-regenerate -reset-fields -w f9.go v.go &&
-        _prependbt f9.go values_ffjson${zsfx} &&
+        _prependbt f9.go values_ffjson${zsfx} ignore &&
         _sed_in_file -e 's+ MarshalJSON(+ _MarshalJSON(+g' values_ffjson${zsfx} &&
         _sed_in_file -e 's+ UnmarshalJSON(+ _UnmarshalJSON(+g' values_ffjson${zsfx} &&
         rm -f easyjson-bootstrap*.go ffjson-inception* &&

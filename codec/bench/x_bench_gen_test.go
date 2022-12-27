@@ -25,8 +25,15 @@ import (
 
  Known Issues with external libraries:
  - msgp io.R/W support doesn't work. It throws error
+ - ffjson: generated code fails to compile as of latest commit checked on 2022-12-26
 
 */
+
+// benchXGenSkipFFJSON triggers whether we throw a panic based
+// on whether ffjson generated code compiles.
+//
+// MARKER: change if ffjson is updated and compiles successfully
+const benchXGenSkipFFJSON = true
 
 func init() {
 	testPreInitFns = append(testPreInitFns, benchXGenPreInit)
@@ -67,11 +74,19 @@ func fnEasyjsonDecodeFn(buf []byte, ts interface{}) error {
 }
 
 func fnFfjsonEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
+	if benchXGenSkipFFJSON {
+		panic(errors.New("ffjson: generated code fails to compile; checked 2022-12-26"))
+	}
+
 	return ffjson.Marshal(ts)
 	// return ts.(json.Marshaler).MarshalJSON()
 }
 
 func fnFfjsonDecodeFn(buf []byte, ts interface{}) error {
+	if benchXGenSkipFFJSON {
+		panic(errors.New("ffjson: generated code fails to compile; checked 2022-12-26"))
+	}
+
 	return ffjson.Unmarshal(buf, ts)
 	// return ts.(json.Unmarshaler).UnmarshalJSON(buf)
 }
