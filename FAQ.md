@@ -57,13 +57,13 @@ Fixing `ambiguous import` failure is now as simple as running
 go get -u github.com/ugorji/go/codec@latest
 ```
 
-### Removing requirements cycle in v1.3
+### Removing requirements cycle in v1.2.8
 
 Unfortunately, due to the requirements cycle noted above, we cannot create a
 valid `go.sum` until after the git version tags have been created. This is why
 a `go.sum` has not been distributed with these 2 modules above.
 
-To fix that, starting with codec `v1.3`, we will remove the requirements cycle.
+To fix that, starting with codec `v1.2.8`, we will remove the requirements cycle.
 `github.com/ugorji/go/` will require `github.com/ugorji/go/codec`
 but not vice versa. It has been over 3 years since we released `v1.1.7` (in July 2019)
 with the requirements cycle to accomodate folks with an older version of
