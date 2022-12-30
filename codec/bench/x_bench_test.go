@@ -15,6 +15,7 @@ import (
 	xdr "github.com/davecgh/go-xdr/xdr2"
 	fxcbor "github.com/fxamacker/cbor/v2"
 	mgobson "github.com/globalsign/mgo/bson"
+	goccyjson "github.com/goccy/go-json"
 	jsoniter "github.com/json-iterator/go"
 	vmsgpack "github.com/vmihailenco/msgpack/v4"
 	"go.mongodb.org/mongo-driver/bson"
@@ -30,6 +31,7 @@ import (
            github.com/globalsign/mgo/bson \
            github.com/vmihailenco/msgpack/v4 /
            github.com/json-iterator/go \
+           github.com/goccy/go-json \
            github.com/fxamacker/cbor/v2 \
            github.com/mailru/easyjson/...
 
@@ -46,12 +48,16 @@ func init() {
 func benchXPreInit() {
 	benchCheckers = append(benchCheckers,
 		benchChecker{"json-iter", fnJsonIterEncodeFn, fnJsonIterDecodeFn},
+		benchChecker{"goccyjson", fnGoccyJsonEncodeFn, fnGoccyJsonDecodeFn},
 		benchChecker{"v-msgpack", fnVMsgpackEncodeFn, fnVMsgpackDecodeFn},
 		benchChecker{"bson", fnBsonEncodeFn, fnBsonDecodeFn},
 		benchChecker{"mgobson", fnMgobsonEncodeFn, fnMgobsonDecodeFn},
 		benchChecker{"fxcbor", fnFxcborEncodeFn, fnFxcborDecodeFn},
+
 		// place codecs with issues at the end, so as not to make results too ugly
-		benchChecker{"gcbor", fnGcborEncodeFn, fnGcborDecodeFn}, // this logs fat ugly message, but we log.SetOutput(ioutil.Discard)
+
+		// this logs fat ugly message, but we log.SetOutput(ioutil.Discard)
+		benchChecker{"gcbor", fnGcborEncodeFn, fnGcborDecodeFn},
 		benchChecker{"xdr", fnXdrEncodeFn, fnXdrDecodeFn},
 		benchChecker{"sereal", fnSerealEncodeFn, fnSerealDecodeFn},
 	)
@@ -105,6 +111,22 @@ func fnJsonIterDecodeFn(buf []byte, ts interface{}) error {
 	return jsoniter.Unmarshal(buf, ts)
 }
 
+func fnGoccyJsonEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
+	if testUseIoEncDec >= 0 {
+		buf := fnBenchmarkByteBuf(bsIn)
+		err := goccyjson.NewEncoder(buf).Encode(ts)
+		return buf.Bytes(), err
+	}
+	return goccyjson.Marshal(ts)
+}
+
+func fnGoccyJsonDecodeFn(buf []byte, ts interface{}) error {
+	if testUseIoEncDec >= 0 {
+		return goccyjson.NewDecoder(bytes.NewReader(buf)).Decode(ts)
+	}
+	return goccyjson.Unmarshal(buf, ts)
+}
+
 func fnFxcborEncodeFn(ts interface{}, bsIn []byte) ([]byte, error) {
 	if testUseIoEncDec >= 0 {
 		buf := bytes.NewBuffer(bsIn[:0])
@@ -156,6 +178,14 @@ func Benchmark__JsonIter___Encode(b *testing.B) {
 
 func Benchmark__JsonIter___Decode(b *testing.B) {
 	fnBenchmarkDecode(b, "jsoniter", benchTs, fnJsonIterEncodeFn, fnJsonIterDecodeFn, fnBenchNewTs)
+}
+
+func Benchmark__GoccyJson__Encode(b *testing.B) {
+	fnBenchmarkEncode(b, "goccyjson", benchTs, fnGoccyJsonEncodeFn)
+}
+
+func Benchmark__GoccyJson__Decode(b *testing.B) {
+	fnBenchmarkDecode(b, "goccyjson", benchTs, fnGoccyJsonEncodeFn, fnGoccyJsonDecodeFn, fnBenchNewTs)
 }
 
 func Benchmark__Fxcbor_____Encode(b *testing.B) {

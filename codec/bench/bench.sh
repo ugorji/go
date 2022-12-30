@@ -156,7 +156,7 @@ _suite_any() {
 # }
 
 _suite_very_quick_json_non_suite() {
-    # Quickly get numbers for json, stdjson, jsoniter and json (codecgen)"
+    # Quickly get numbers for json, stdjson, jsoniter, goccyjson and json (codecgen)"
     local t="${1:-x}"
     shift
     echo ">>>> very quick json bench"
@@ -167,7 +167,7 @@ _suite_very_quick_json_non_suite() {
         echo "---- tags: ${t} ----"
         local b="Json"
         if [[ "${t}" =~ x && ! "${t}" =~ safe && ! "${t}" =~ notfastpath ]]; then
-            b="Json|Std_Json|JsonIter"
+            b="Json|Std_Json|JsonIter|GoccyJson"
             if [[ "${t}" =~ generated ]]; then b="Json|Easyjson"; fi
         fi            
         for j in "${js[@]}"; do
