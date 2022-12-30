@@ -11,6 +11,18 @@ import (
 	"unsafe"
 )
 
-//go:linkname growslice reflect.growslice
+func growslice(typ unsafe.Pointer, old unsafeSlice, num int) (s unsafeSlice) {
+	// culled from GOROOT/runtime/slice.go
+	num -= old.Cap - old.Len
+	s = rtgrowslice(old.Data, old.Cap+num, old.Cap, num, typ)
+	s.Len = old.Len
+	return
+}
+
+//go:linkname rtgrowslice runtime.growslice
 //go:noescape
-func growslice(typ unsafe.Pointer, old unsafeSlice, cap int) unsafeSlice
+func rtgrowslice(oldPtr unsafe.Pointer, newLen, oldCap, num int, typ unsafe.Pointer) unsafeSlice
+
+// //go:linkname growslice reflect.growslice
+// //go:noescape
+// func growslice(typ unsafe.Pointer, old unsafeSlice, cap int) unsafeSlice

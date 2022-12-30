@@ -13,4 +13,4 @@ import (
 
 //go:linkname growslice runtime.growslice
 //go:noescape
-func growslice(typ unsafe.Pointer, old unsafeSlice, cap int) unsafeSlice
+func growslice(typ unsafe.Pointer, old unsafeSlice, num int) unsafeSlice
