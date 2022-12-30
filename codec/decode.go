@@ -1466,21 +1466,11 @@ func (d *Decoder) Reset(r io.Reader) {
 		r = &eofReader
 	}
 	d.bytes = false
-	if d.h.ReaderBufferSize > 0 {
-		if d.bi == nil {
-			d.bi = new(bufioDecReader)
-		}
-		d.bi.reset(r, d.h.ReaderBufferSize, &d.blist)
-		d.bufio = true
-		d.decReader = d.bi
-	} else {
-		if d.ri == nil {
-			d.ri = new(ioDecReader)
-		}
-		d.ri.reset(r, &d.blist)
-		d.bufio = false
-		d.decReader = d.ri
+	if d.ri == nil {
+		d.ri = new(ioDecReader)
 	}
+	d.ri.reset(r, d.h.ReaderBufferSize, &d.blist)
+	d.decReader = d.ri
 	d.resetCommon()
 }
 
@@ -1490,7 +1480,6 @@ func (d *Decoder) ResetBytes(in []byte) {
 	if in == nil {
 		in = []byte{}
 	}
-	d.bufio = false
 	d.bytes = true
 	d.decReader = &d.rb
 	d.rb.reset(in)

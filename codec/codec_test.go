@@ -3722,71 +3722,6 @@ after the new line
 	}
 }
 
-func __doTestBufioDecReader(t *testing.T, bufsize int) {
-	bufsizehalf := (bufsize + 1) / 2
-
-	// try to read 85 bytes in chunks of 7 at a time.
-	var s = strings.Repeat("01234'56789      ", 5)
-	// fmt.Printf("s: %s\n", s)
-	var r = strings.NewReader(s)
-	var br bufioDecReader
-	var blist bytesFreelist
-	br.reset(r, bufsize, &blist)
-	b, err := ioutil.ReadAll(br.r)
-	if err != nil {
-		panic(err)
-	}
-	var s2 = string(b)
-	// fmt.Printf("s==s2: %v, len(s): %v, len(b): %v, len(s2): %v\n", s == s2, len(s), len(b), len(s2))
-	if s != s2 {
-		t.Logf("not equal: \ns:  %s\ns2: %s", s, s2)
-		t.FailNow()
-	}
-	// Now, test search functions for skip, readTo and readUntil
-	// readUntil ', readTo ', skip whitespace. 3 times in a loop, each time compare the token and/or outs
-	// readUntil: see: 56789
-	var out []byte
-	var token byte
-	br.reset(strings.NewReader(s), bufsizehalf, &blist)
-	// println()
-	for _, v2 := range [...]string{
-		`01234'`,
-		`56789      01234'`,
-		`56789      01234'`,
-		`56789      01234'`,
-	} {
-		out = br.readUntil('\'')
-		testDeepEqualErr(string(out), v2[:len(v2)-1], t, "-")
-		// fmt.Printf("readUntil: out: `%s`\n", out)
-	}
-	br.reset(strings.NewReader(s), bufsizehalf, &blist)
-	// println()
-
-	// 20200915: readTo is not longer available
-	// for range [4]struct{}{} {
-	// 	out = br.readTo(&numCharBitset)
-	// 	testDeepEqualErr(string(out), `01234`, t, "-")
-	// 	// fmt.Printf("readTo: out: `%s`\n", out)
-	// 	out = br.readUntil('\'', true)
-	// 	testDeepEqualErr(string(out), "'", t, "-")
-	// 	// fmt.Printf("readUntil: out: `%s`\n", out)
-	// 	out = br.readTo(&numCharBitset)
-	// 	testDeepEqualErr(string(out), `56789`, t, "-")
-	// 	// fmt.Printf("readTo: out: `%s`\n", out)
-	// 	out = br.readUntil('0', true)
-	// 	testDeepEqualErr(string(out), `      0`, t, "-")
-	// 	// fmt.Printf("readUntil: out: `%s`\n", out)
-	// 	br.unreadn1()
-	// }
-	br.reset(strings.NewReader(s), bufsizehalf, &blist)
-	for range [4]struct{}{} {
-		token = br.skipWhitespace() // br.skip(&whitespaceCharBitset)
-		testDeepEqualErr(token, byte('0'), t, "-")
-		out = br.readUntil(' ')
-		testDeepEqualErr(string(out), `1234'56789`, t, "-")
-	}
-}
-
 func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
 	// encode a slice, decode it with PreferArrayOverSlice
@@ -4164,18 +4099,6 @@ func doTestDesc(t *testing.T, h Handle, m map[byte]string) {
 			t.FailNow()
 		}
 	}
-}
-
-func TestBufioDecReader(t *testing.T) {
-	doTestBufioDecReader(t)
-}
-
-func doTestBufioDecReader(t *testing.T) {
-	defer testSetup(t, nil)()
-	__doTestBufioDecReader(t, 13)
-	__doTestBufioDecReader(t, 3)
-	__doTestBufioDecReader(t, 5)
-	__doTestBufioDecReader(t, 127)
 }
 
 func TestAtomic(t *testing.T) {

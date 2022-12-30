@@ -339,7 +339,7 @@ func testRpcGroup(t *testing.T) {
 
 func testNonHandlesGroup(t *testing.T) {
 	// grep "func Test" codec_test.go | grep -v -E '(Cbor|Json|Simple|Msgpack|Binc)'
-	t.Run("TestBufioDecReader", TestBufioDecReader)
+	// t.Run("TestBufioDecReader", TestBufioDecReader)
 	t.Run("TestAtomic", TestAtomic)
 	t.Run("TestAllEncCircularRef", TestAllEncCircularRef)
 	t.Run("TestAllAnonCycle", TestAllAnonCycle)

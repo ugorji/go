@@ -900,8 +900,6 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 		if jsonManualInlineDecRdInHotZones {
 			if dr.bytes {
 				bs = dr.rb.jsonReadNum()
-			} else if dr.bufio {
-				bs = dr.bi.jsonReadNum()
 			} else {
 				bs = dr.ri.jsonReadNum()
 			}
@@ -1120,8 +1118,6 @@ func (d *jsonDecDriver) dblQuoteStringAsBytes() (buf []byte) {
 		if jsonManualInlineDecRdInHotZones {
 			if dr.bytes {
 				bs = dr.rb.jsonReadAsisChars()
-			} else if dr.bufio {
-				bs = dr.bi.jsonReadAsisChars()
 			} else {
 				bs = dr.ri.jsonReadAsisChars()
 			}
