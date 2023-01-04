@@ -308,7 +308,7 @@ _usage() {
     cat <<EOF
 primary usage: $0 
     -[tesow m n l d]   -> [t=tests (e=extra, s=short, o=cover, w=wait), m=make, n=inlining diagnostics, l=mid-stack inlining, d=race detector]
-    -v                   -> v=verbose
+    -v                 -> v=verbose
 EOF
     if [[ "$(type -t _usage_run)" = "function" ]]; then _usage_run ; fi
 }

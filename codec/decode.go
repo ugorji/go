@@ -2185,6 +2185,12 @@ func (x decNextValueBytesHelper) appendN(v *[]byte, b ...byte) {
 	}
 }
 
+func (x decNextValueBytesHelper) appendS(v *[]byte, b string) {
+	if *v != nil && !x.d.bytes {
+		*v = append(*v, b...)
+	}
+}
+
 func (x decNextValueBytesHelper) bytesRdV(v *[]byte, startpos uint) {
 	if x.d.bytes {
 		*v = x.d.rb.b[startpos:x.d.rb.c]

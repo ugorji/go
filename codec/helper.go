@@ -1562,6 +1562,10 @@ func (z bigenHelper) writeUint16(w *encWr, v uint16) {
 }
 
 func (z bigenHelper) writeUint32(w *encWr, v uint32) {
+	// w.writeb((z.PutUint32(v))[:])
+	// x := z.PutUint32(v)
+	// w.writeb(x[:])
+	// w.writen4(x[0], x[1], x[2], x[3])
 	w.writen4(z.PutUint32(v))
 }
 

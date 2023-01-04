@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"bytes"
 	"io"
+	"strings"
 )
 
 // decReader abstracts the reading source, allowing implementations that can
@@ -188,6 +189,8 @@ func (z *ioDecReader) reset(r io.Reader, bufsize int, blist *bytesFreelist) {
 	// if bytes.[Buffer|Reader], no value in adding extra buffer
 	// if bufio.Reader, no value in extra buffer unless size changes
 	switch bb := r.(type) {
+	case *strings.Reader:
+		z.br = bb
 	case *bytes.Buffer:
 		z.br = bb
 	case *bytes.Reader:
@@ -263,26 +266,31 @@ func (z *ioDecReader) readn1() (b uint8) {
 	return
 }
 
-func (z *ioDecReader) readn1eof() (b uint8, eof bool) {
-	b, err := z.br.ReadByte()
-	if err == nil {
-		z.n++
-	} else if err == io.EOF {
-		eof = true
-	} else {
-		halt.onerror(err)
-	}
-	return
-}
+// func (z *ioDecReader) readn1eof() (b uint8, eof bool) {
+// 	b, err := z.br.ReadByte()
+// 	if err == nil {
+// 		z.n++
+// 	} else if err == io.EOF {
+// 		eof = true
+// 	} else {
+// 		halt.onerror(err)
+// 	}
+// 	return
+// }
 
 func (z *ioDecReader) jsonReadNum() (bs []byte) {
 	z.unreadn1()
 	z.bufr = z.bufr[:0]
 LOOP:
-	i, eof := z.readn1eof()
-	if eof {
+	// i, eof := z.readn1eof()
+	i, err := z.br.ReadByte()
+	if err == io.EOF {
 		return z.bufr
 	}
+	if err != nil {
+		halt.onerror(err)
+	}
+	z.n++
 	if isNumberChar(i) {
 		z.bufr = append(z.bufr, i)
 		goto LOOP
@@ -311,14 +319,25 @@ LOOP:
 	return
 }
 
+// func (z *ioDecReader) readUntil(stop byte) []byte {
+// 	z.bufr = z.bufr[:0]
+// LOOP:
+// 	token := z.readn1()
+// 	z.bufr = append(z.bufr, token)
+// 	if token == stop {
+// 		return z.bufr[:len(z.bufr)-1]
+// 	}
+// 	goto LOOP
+// }
+
 func (z *ioDecReader) readUntil(stop byte) []byte {
 	z.bufr = z.bufr[:0]
 LOOP:
 	token := z.readn1()
-	z.bufr = append(z.bufr, token)
 	if token == stop {
-		return z.bufr[:len(z.bufr)-1]
+		return z.bufr
 	}
+	z.bufr = append(z.bufr, token)
 	goto LOOP
 }
 
@@ -335,6 +354,9 @@ func (z *ioDecReader) unreadn1() {
 // Note: we do not try to convert index'ing out of bounds to an io.EOF.
 // instead, we let it bubble up to the exported Encode/Decode method
 // and recover it as an io.EOF.
+//
+// Every function here MUST defensively check bounds either explicitly
+// or via a bounds check.
 //
 // see panicValToErr(...) function in helper.go.
 type bytesDecReader struct {
@@ -385,18 +407,21 @@ func (z *bytesDecReader) readb(bs []byte) {
 // 	return z.b[z.c-1]
 // }
 
+// MARKER: readn{1,2,3,4,8} should throw an out of bounds error if past length.
+// MARKER: readn1: explicitly ensure bounds check is done
+// MARKER: readn{2,3,4,8}: ensure you slice z.b completely so we get bounds error if past end.
+
 func (z *bytesDecReader) readn1() (v uint8) {
 	v = z.b[z.c]
 	z.c++
 	return
 }
 
-// MARKER: for readn{2,3,4,8}, ensure you slice z.b completely so we get bounds error if past end.
-
 func (z *bytesDecReader) readn2() (bs [2]byte) {
 	// copy(bs[:], z.b[z.c:z.c+2])
-	bs[1] = z.b[z.c+1]
-	bs[0] = z.b[z.c]
+	// bs[1] = z.b[z.c+1]
+	// bs[0] = z.b[z.c]
+	bs = okBytes2(z.b[z.c : z.c+2])
 	z.c += 2
 	return
 }
@@ -423,14 +448,17 @@ func (z *bytesDecReader) readn8() (bs [8]byte) {
 }
 
 func (z *bytesDecReader) jsonReadNum() []byte {
-	z.c--
+	z.c-- // unread
 	i := z.c
 LOOP:
+	// gracefully handle end of slice, as end of stream is meaningful here
 	if i < uint(len(z.b)) && isNumberChar(z.b[i]) {
 		i++
 		goto LOOP
 	}
 	z.c, i = i, z.c
+	// MARKER: 20230103: byteSliceOf here prevents inlining of jsonReadNum
+	// return byteSliceOf(z.b, i, z.c)
 	return z.b[i:z.c]
 }
 
@@ -441,7 +469,8 @@ LOOP:
 	i++
 	if token == '"' || token == '\\' {
 		z.c, i = i, z.c
-		return z.b[i:z.c]
+		return byteSliceOf(z.b, i, z.c)
+		// return z.b[i:z.c]
 	}
 	goto LOOP
 }
@@ -462,7 +491,8 @@ func (z *bytesDecReader) readUntil(stop byte) (out []byte) {
 	i := z.c
 LOOP:
 	if z.b[i] == stop {
-		out = z.b[z.c:i]
+		out = byteSliceOf(z.b, z.c, i)
+		// out = z.b[z.c:i]
 		z.c = i + 1
 		return
 	}
@@ -515,28 +545,35 @@ type decRd struct {
 // decRd is designed to embed a decReader, and then re-implement some of the decReader
 // methods using a conditional branch. We only override the ones that have a bytes version
 // that is small enough to be inlined. We use ./run.sh -z to check.
-// Right now, only numread and readn1 can be inlined.
+//
+// Right now, only numread can be inlined. It is very beneficial if readn1 can be inlined.
 
 func (z *decRd) numread() uint {
 	if z.bytes {
 		return z.rb.numread()
-	} else {
-		return z.ri.numread()
 	}
+	return z.ri.numread()
 }
 
-func (z *decRd) readn1() (v uint8) {
-	if z.bytes {
-		// MARKER: manually inline, else this function is not inlined.
-		// Keep in sync with bytesDecReader.readn1
-		// return z.rb.readn1()
-		v = z.rb.b[z.rb.c]
-		z.rb.c++
-	} else {
-		v = z.ri.readn1()
-	}
-	return
-}
+// func (z *decRd) readn1() (v uint8) {
+// 	if z.bytes {
+// 		// MARKER: manually inline, else this function is not inlined.
+// 		// Keep in sync with bytesDecReader.readn1
+// 		// return z.rb.readn1()
+// 		v = z.rb.b[z.rb.c]
+// 		z.rb.c++
+// 	} else {
+// 		v = z.ri.readn1()
+// 	}
+// 	return
+// }
+//
+// func (z *decRd) readn1() uint8 {
+// 	if z.bytes {
+// 		return z.rb.readn1()
+// 	}
+// 	return z.ri.readn1()
+// }
 
 type devNullReader struct{}
 

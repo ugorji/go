@@ -51,11 +51,9 @@ import (
 //      - IsNil
 
 // MARKER: Some functions here will not be hit during code coverage runs due to optimizations, e.g.
-//   - rvCopySlice:      decode calls it if rvGrowSlice didn't set the new slice into the pointer to the orig slice.
-//                       however, helper_unsafe sets it, so there's no need to call rvCopySlice later
+//   - rvCopySlice:      called by decode if rvGrowSlice did not set new slice into pointer to orig slice.
+//                       however, helper_unsafe sets it, so no need to call rvCopySlice later
 //   - rvSlice:          same as above
-//   - rvGetArray4Bytes: only called within kArray for []byte, but that is now handled
-//                       within the fast-path directly
 
 const safeMode = false
 
@@ -177,6 +175,32 @@ func (encPerType) AddressableRO(v reflect.Value) reflect.Value {
 	return rvAddressableReadonly(v)
 }
 
+// byteAt returns the byte given an index which is guaranteed
+// to be within the bounds of the slice i.e. we defensively
+// already verified that the index is less than the length of the slice.
+func byteAt(b []byte, index uint) byte {
+	// return b[index]
+	return *(*byte)(unsafe.Pointer(uintptr((*unsafeSlice)(unsafe.Pointer(&b)).Data) + uintptr(index)))
+}
+
+func byteSliceOf(b []byte, start, end uint) []byte {
+	s := (*unsafeSlice)(unsafe.Pointer(&b))
+	s.Data = unsafe.Pointer(uintptr(s.Data) + uintptr(start))
+	s.Len = int(end - start)
+	s.Cap -= int(start)
+	return b
+}
+
+// func byteSliceWithLen(b []byte, length uint) []byte {
+// 	(*unsafeSlice)(unsafe.Pointer(&b)).Len = int(length)
+// 	return b
+// }
+
+func setByteAt(b []byte, index uint, val byte) {
+	// b[index] = val
+	*(*byte)(unsafe.Pointer(uintptr((*unsafeSlice)(unsafe.Pointer(&b)).Data) + uintptr(index))) = val
+}
+
 // stringView returns a view of the []byte as a string.
 // In unsafe mode, it doesn't incur allocation and copying caused by conversion.
 // In regular safe mode, it is an allocation and copy.
@@ -201,6 +225,10 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 // MARKER: okBytesN functions will copy N bytes into the top slots of the return array.
 // These functions expect that the bounds are valid, and have been checked before this is called.
 // copy(...) does a number of checks which are unnecessary in this situation when in bounds.
+
+func okBytes2(b []byte) [2]byte {
+	return *((*[2]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
+}
 
 func okBytes3(b []byte) (v [4]byte) {
 	*(*[3]byte)(unsafe.Pointer(&v[1])) = *((*[3]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))

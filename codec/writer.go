@@ -106,7 +106,8 @@ func (z *bufioEncWriter) writeqstr(s string) {
 	if z.n+len(s)+2 > len(z.buf) {
 		z.flush()
 	}
-	z.buf[z.n] = '"'
+	setByteAt(z.buf, uint(z.n), '"')
+	// z.buf[z.n] = '"'
 	z.n++
 LOOP:
 	a := len(z.buf) - z.n
@@ -117,7 +118,8 @@ LOOP:
 		goto LOOP
 	}
 	z.n += copy(z.buf[z.n:], s)
-	z.buf[z.n] = '"'
+	setByteAt(z.buf, uint(z.n), '"')
+	// z.buf[z.n] = '"'
 	z.n++
 }
 
@@ -125,21 +127,29 @@ func (z *bufioEncWriter) writen1(b1 byte) {
 	if 1 > len(z.buf)-z.n {
 		z.flush()
 	}
-	z.buf[z.n] = b1
+	setByteAt(z.buf, uint(z.n), b1)
+	// z.buf[z.n] = b1
 	z.n++
 }
 func (z *bufioEncWriter) writen2(b1, b2 byte) {
 	if 2 > len(z.buf)-z.n {
 		z.flush()
 	}
-	z.buf[z.n+1] = b2
-	z.buf[z.n] = b1
+	setByteAt(z.buf, uint(z.n+1), b2)
+	setByteAt(z.buf, uint(z.n), b1)
+	// z.buf[z.n+1] = b2
+	// z.buf[z.n] = b1
 	z.n += 2
 }
+
 func (z *bufioEncWriter) writen4(b [4]byte) {
 	if 4 > len(z.buf)-z.n {
 		z.flush()
 	}
+	// setByteAt(z.buf, uint(z.n+3), b4)
+	// setByteAt(z.buf, uint(z.n+2), b3)
+	// setByteAt(z.buf, uint(z.n+1), b2)
+	// setByteAt(z.buf, uint(z.n), b1)
 	copy(z.buf[z.n:], b[:])
 	z.n += 4
 }
@@ -185,14 +195,17 @@ func (z *bytesEncAppender) writen1(b1 byte) {
 func (z *bytesEncAppender) writen2(b1, b2 byte) {
 	z.b = append(z.b, b1, b2)
 }
+
 func (z *bytesEncAppender) writen4(b [4]byte) {
 	z.b = append(z.b, b[:]...)
-	// z.b = append(z.b, b[0], b[1], b[2], b[3]) // prevents inlining encWr.writen4
+	// z.b = append(z.b, b1, b2, b3, b4) // prevents inlining encWr.writen4
 }
+
 func (z *bytesEncAppender) writen8(b [8]byte) {
 	z.b = append(z.b, b[:]...)
 	// z.b = append(z.b, b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7]) // prevents inlining encWr.writen4
 }
+
 func (z *bytesEncAppender) endErr() error {
 	*(z.out) = z.b
 	return nil
@@ -229,14 +242,6 @@ func (z *encWr) writeb(s []byte) {
 		z.wf.writeb(s)
 	}
 }
-func (z *encWr) writeqstr(s string) {
-	if z.bytes {
-		// MARKER: z.wb.writeqstr(s)
-		z.wb.b = append(append(append(z.wb.b, '"'), s...), '"')
-	} else {
-		z.wf.writeqstr(s)
-	}
-}
 func (z *encWr) writestr(s string) {
 	if z.bytes {
 		z.wb.writestr(s)
@@ -260,18 +265,31 @@ func (z *encWr) writen2(b1, b2 byte) {
 		z.wf.writen2(b1, b2)
 	}
 }
+
 func (z *encWr) writen4(b [4]byte) {
 	if z.bytes {
-		z.wb.writen4(b)
+		// MARKER: z.wb.writen4(b1, b2, b3, b4)
+		z.wb.b = append(z.wb.b, b[:]...)
+		// z.wb.writen4(b)
 	} else {
 		z.wf.writen4(b)
 	}
 }
 func (z *encWr) writen8(b [8]byte) {
 	if z.bytes {
+		// z.wb.b = append(z.wb.b, b[:]...)
 		z.wb.writen8(b)
 	} else {
 		z.wf.writen8(b)
+	}
+}
+
+func (z *encWr) writeqstr(s string) {
+	if z.bytes {
+		// MARKER: z.wb.writeqstr(s)
+		z.wb.b = append(append(append(z.wb.b, '"'), s...), '"')
+	} else {
+		z.wf.writeqstr(s)
 	}
 }
 

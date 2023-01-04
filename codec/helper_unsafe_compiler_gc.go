@@ -29,7 +29,8 @@ func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (v unsa
 }
 
 func rvType(rv reflect.Value) reflect.Type {
-	return rvPtrToType(((*unsafeReflectValue)(unsafe.Pointer(&rv))).typ) // rv.Type()
+	return rvPtrToType(((*unsafeReflectValue)(unsafe.Pointer(&rv))).typ)
+	// return rv.Type()
 }
 
 // mapStoresElemIndirect tells if the element type is stored indirectly in the map.
