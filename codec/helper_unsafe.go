@@ -474,7 +474,7 @@ func isEmptyValueFallbackRecur(urv *unsafeReflectValue, v reflect.Value, tinfos 
 		}
 		ti := tinfos.find(uintptr(urv.typ))
 		if ti == nil {
-			ti = tinfos.load(rvType(v))
+			ti = tinfos.load(v.Type())
 		}
 		return unsafeCmpZero(urv.ptr, int(ti.size))
 	case reflect.Interface, reflect.Ptr:
@@ -890,7 +890,7 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	//
 	// Consequently, we use rvLenSlice, not rvCapSlice.
 
-	t := reflectArrayOf(rvLenSlice(rv), rvType(rv).Elem())
+	t := reflectArrayOf(rvLenSlice(rv), rv.Type().Elem())
 	// v = rvZeroAddrK(t, reflect.Array)
 
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))

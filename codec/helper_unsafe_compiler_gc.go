@@ -28,10 +28,10 @@ func unsafeGrowslice(typ unsafe.Pointer, old unsafeSlice, cap, incr int) (v unsa
 	return growslice(typ, old, cap+incr)
 }
 
-func rvType(rv reflect.Value) reflect.Type {
-	return rvPtrToType(((*unsafeReflectValue)(unsafe.Pointer(&rv))).typ)
-	// return rv.Type()
-}
+// func rvType(rv reflect.Value) reflect.Type {
+// 	return rvPtrToType(((*unsafeReflectValue)(unsafe.Pointer(&rv))).typ)
+// 	// return rv.Type()
+// }
 
 // mapStoresElemIndirect tells if the element type is stored indirectly in the map.
 //
@@ -132,9 +132,9 @@ func mapGet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, va
 //go:linkname unsafeZeroArr runtime.zeroVal
 var unsafeZeroArr [1024]byte
 
-//go:linkname rvPtrToType reflect.toType
-//go:noescape
-func rvPtrToType(typ unsafe.Pointer) reflect.Type
+// //go:linkname rvPtrToType reflect.toType
+// //go:noescape
+// func rvPtrToType(typ unsafe.Pointer) reflect.Type
 
 //go:linkname mapassign_fast32 runtime.mapassign_fast32
 //go:noescape

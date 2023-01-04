@@ -1743,7 +1743,7 @@ func (path *structFieldInfoPathNode) fieldAlloc(v reflect.Value) (rv2 reflect.Va
 		v = parent.fieldAlloc(v)
 		for j, k := uint8(0), parent.numderef; j < k; j++ {
 			if rvIsNil(v) {
-				rvSetDirect(v, reflect.New(rvType(v).Elem()))
+				rvSetDirect(v, reflect.New(v.Type().Elem()))
 			}
 			v = v.Elem()
 		}

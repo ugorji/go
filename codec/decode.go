@@ -644,7 +644,7 @@ func (d *Decoder) kInterface(f *codecFnInfo, rv reflect.Value) {
 	// decode into it, and reset the interface to that new value.
 
 	if !canDecode {
-		rvn2 := d.oneShotAddrRV(rvType(rvn), rvn.Kind())
+		rvn2 := d.oneShotAddrRV(rvn.Type(), rvn.Kind())
 		rvSetDirect(rvn2, rvn)
 		rvn = rvn2
 	}
@@ -1231,7 +1231,7 @@ func (d *Decoder) kMap(f *codecFnInfo, rv reflect.Value) {
 			d.decodeValue(rvk, keyFn)
 			// special case if interface wrapping a byte slice
 			if ktypeIsIntf {
-				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvType(rvk2) == uint8SliceTyp {
+				if rvk2 := rvk.Elem(); rvk2.IsValid() && rvk2.Type() == uint8SliceTyp {
 					kstr2bs = rvGetBytes(rvk2)
 					rvSetIntf(rvk, rv4istr(fnRvk2()))
 				}
@@ -1821,7 +1821,7 @@ PTR:
 	if rv.Kind() == reflect.Ptr {
 		rvpValid = true
 		if rvIsNil(rv) {
-			rvSetDirect(rv, reflect.New(rvType(rv).Elem()))
+			rvSetDirect(rv, reflect.New(rv.Type().Elem()))
 		}
 		rvp = rv
 		rv = rv.Elem()
@@ -1829,7 +1829,7 @@ PTR:
 	}
 
 	if fn == nil {
-		fn = d.h.fn(rvType(rv))
+		fn = d.h.fn(rv.Type())
 	}
 	if fn.i.addrD {
 		if rvpValid {
@@ -2035,7 +2035,7 @@ func (d *Decoder) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) 
 
 	if !rv.CanAddr() {
 		rvk = rv.Kind()
-		rv2 = d.oneShotAddrRV(rvType(rv), rvk)
+		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
 		if rvk == reflect.Interface {
 			rvSetIntf(rv2, rv)
 		} else {

@@ -1325,7 +1325,7 @@ TOP:
 	}
 
 	if fn == nil {
-		fn = e.h.fn(rvType(rv))
+		fn = e.h.fn(rv.Type())
 	}
 
 	if !fn.i.addrE { // typically, addrE = false, so check it first
@@ -1346,7 +1346,7 @@ TOP:
 // OR non-nil values of kind map, slice and chan.
 func (e *Encoder) encodeValueNonNil(rv reflect.Value, fn *codecFn) {
 	if fn == nil {
-		fn = e.h.fn(rvType(rv))
+		fn = e.h.fn(rv.Type())
 	}
 
 	if fn.i.addrE { // typically, addrE = false, so check it first

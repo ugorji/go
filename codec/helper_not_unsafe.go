@@ -185,7 +185,7 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	// We only check isZero on a struct kind, to reduce the amount of times
 	// that we lookup the rtid and typeInfo for each type as we walk the tree.
 
-	vt := rvType(v)
+	vt := v.Type()
 	rtid := rt2id(vt)
 	if tinfos == nil {
 		tinfos = defTypeInfos
@@ -537,7 +537,7 @@ func rvGetArrayBytes(rv reflect.Value, scratch []byte) (bs []byte) {
 }
 
 func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
-	v = rvZeroAddrK(reflectArrayOf(rvLenSlice(rv), rvType(rv).Elem()), reflect.Array)
+	v = rvZeroAddrK(reflectArrayOf(rvLenSlice(rv), rv.Type().Elem()), reflect.Array)
 	reflect.Copy(v, rv)
 	return
 }
