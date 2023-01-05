@@ -29,12 +29,6 @@ import (
 
 //--------------------------------
 
-//	var jsonLits = [...]byte{
-//		'"', 't', 'r', 'u', 'e', '"',
-//		'"', 'f', 'a', 'l', 's', 'e', '"',
-//		'"', 'n', 'u', 'l', 'l', '"',
-//	}
-
 // jsonLits and jsonLitb are defined at the package level,
 // so they are guaranteed to be stored efficiently, making
 // for better append/string comparison/etc.
@@ -45,9 +39,9 @@ const jsonLits = `"true"false"null"`
 var jsonLitb = []byte(jsonLits)
 
 const (
-	jsonLitTrue  = 1
-	jsonLitFalse = 6
-	jsonLitNull  = 12
+	jsonLitT = 1
+	jsonLitF = 6
+	jsonLitN = 12
 )
 
 const jsonEncodeUintSmallsString = "" +
@@ -63,21 +57,6 @@ const jsonEncodeUintSmallsString = "" +
 	"90919293949596979899"
 
 var jsonEncodeUintSmallsStringBytes = []byte(jsonEncodeUintSmallsString)
-
-// var (
-// 	jsonLiteralTrueQ  = jsonLits[jsonLitTrueQ : jsonLitTrueQ+6]
-// 	jsonLiteralFalseQ = jsonLits[jsonLitFalseQ : jsonLitFalseQ+7]
-// 	jsonLiteralNullQ  = jsonLits[jsonLitNullQ : jsonLitNullQ+6]
-
-// 	jsonLiteralTrue  = jsonLits[jsonLitTrue : jsonLitTrue+4]
-// 	jsonLiteralFalse = jsonLits[jsonLitFalse : jsonLitFalse+5]
-// 	jsonLiteralNull  = jsonLits[jsonLitNull : jsonLitNull+4]
-
-// 	// these are used, after consuming the first char
-// 	jsonLiteral4True  = jsonLits[jsonLitTrue+1 : jsonLitTrue+4]
-// 	jsonLiteral4False = jsonLits[jsonLitFalse+1 : jsonLitFalse+5]
-// 	jsonLiteral4Null  = jsonLits[jsonLitNull+1 : jsonLitNull+4]
-// )
 
 const (
 	jsonU4Chk2 = '0'
@@ -259,11 +238,9 @@ func (e *jsonEncDriver) WriteMapElemValue() {
 
 func (e *jsonEncDriver) EncodeNil() {
 	// We always encode nil as just null (never in quotes)
-	// This allows us to easily decode if a nil in the json stream
-	// ie if initial token is n.
+	// so we can easily decode if a nil in the json streamie if initial token is n.
 
-	e.e.encWr.writestr(jsonLits[jsonLitNull : jsonLitNull+4])
-	// e.e.encWr.writen4('n', 'u', 'l', 'l')
+	e.e.encWr.writestr(jsonLits[jsonLitN : jsonLitN+4])
 }
 
 func (e *jsonEncDriver) EncodeTime(t time.Time) {
@@ -306,23 +283,15 @@ func (e *jsonEncDriver) EncodeBool(b bool) {
 
 	if e.ks && e.e.c == containerMapKey {
 		if b {
-			e.e.encWr.writestr(jsonLits[jsonLitTrue-1 : jsonLitTrue+5])
-			// e.e.encWr.writen4('"', 't', 'r', 'u')
-			// e.e.encWr.writen2('e', '"')
+			e.e.encWr.writestr(jsonLits[jsonLitT-1 : jsonLitT+5])
 		} else {
-			e.e.encWr.writestr(jsonLits[jsonLitFalse-1 : jsonLitFalse+6])
-			// e.e.encWr.writen4('"', 'f', 'a', 'l')
-			// e.e.encWr.writen2('s', 'e')
-			// e.e.encWr.writen1('"')
+			e.e.encWr.writestr(jsonLits[jsonLitF-1 : jsonLitF+6])
 		}
 	} else {
 		if b {
-			e.e.encWr.writestr(jsonLits[jsonLitTrue : jsonLitTrue+4])
-			// e.e.encWr.writen4('t', 'r', 'u', 'e')
+			e.e.encWr.writestr(jsonLits[jsonLitT : jsonLitT+4])
 		} else {
-			e.e.encWr.writestr(jsonLits[jsonLitFalse : jsonLitFalse+5])
-			// e.e.encWr.writen4('f', 'a', 'l', 's')
-			// e.e.encWr.writen1('e')
+			e.e.encWr.writestr(jsonLits[jsonLitF : jsonLitF+5])
 		}
 	}
 }
@@ -656,7 +625,7 @@ func (d *jsonDecDriver) decoder() *Decoder {
 func (d *jsonDecDriver) ReadMapStart() int {
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
 		return containerLenNil
 	}
 	if d.tok != '{' {
@@ -669,7 +638,7 @@ func (d *jsonDecDriver) ReadMapStart() int {
 func (d *jsonDecDriver) ReadArrayStart() int {
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
 		return containerLenNil
 	}
 	if d.tok != '[' {
@@ -741,30 +710,10 @@ func (d *jsonDecDriver) readDelimError(xc uint8) {
 // We pass the array directly to errorf, as passing slice pushes past inlining threshold,
 // and passing slice also might cause allocation of the bs array on the heap.
 
-func (d *jsonDecDriver) readLit4True(bs [4]byte) {
-	// bs := d.d.decRd.readn3()
+func (d *jsonDecDriver) readLit(got, expect [4]byte) {
 	d.tok = 0
-	if jsonValidateSymbols && bs != [...]byte{0, 'r', 'u', 'e'} {
-		// d.d.errorf("expecting %s: got %s", jsonLiteral4True, bs[:])
-		d.d.errorf("expecting true: got t%s", bs)
-	}
-}
-
-func (d *jsonDecDriver) readLit4False(bs [4]byte) {
-	// bs := d.d.decRd.readn4()
-	d.tok = 0
-	if jsonValidateSymbols && bs != [4]byte{'a', 'l', 's', 'e'} {
-		// d.d.errorf("expecting %s: got %s", jsonLiteral4False, bs)
-		d.d.errorf("expecting false: got f%s", bs)
-	}
-}
-
-func (d *jsonDecDriver) readLit4Null(bs [4]byte) {
-	// bs := d.d.decRd.readn3() // readx(3)
-	d.tok = 0
-	if jsonValidateSymbols && bs != [...]byte{0, 'u', 'l', 'l'} {
-		// d.d.errorf("expecting %s: got %s", jsonLiteral4Null, bs[:])
-		d.d.errorf("expecting null: got n%s", bs)
+	if jsonValidateSymbols && got != expect {
+		d.d.errorf("expecting %s: got %s", expect, got)
 	}
 }
 
@@ -803,14 +752,14 @@ func (d *jsonDecDriver) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
 	default:
 		h.appendN(&v, dr.jsonReadNum()...)
 	case 'n':
-		d.readLit4Null(d.d.decRd.readn3())
-		h.appendS(&v, jsonLits[jsonLitNull:jsonLitNull+4])
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		h.appendS(&v, jsonLits[jsonLitN:jsonLitN+4])
 	case 'f':
-		d.readLit4False(d.d.decRd.readn4())
-		h.appendS(&v, jsonLits[jsonLitFalse:jsonLitFalse+5])
+		d.readLit([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
+		h.appendS(&v, jsonLits[jsonLitF:jsonLitF+5])
 	case 't':
-		d.readLit4True(d.d.decRd.readn3())
-		h.appendS(&v, jsonLits[jsonLitTrue:jsonLitTrue+4])
+		d.readLit([4]byte{0, 'r', 'u', 'e'}, d.d.decRd.readn3())
+		h.appendS(&v, jsonLits[jsonLitT:jsonLitT+4])
 	case '"':
 		h.append1(&v, '"')
 		consumeString()
@@ -844,7 +793,7 @@ func (d *jsonDecDriver) TryNil() bool {
 	// we shouldn't try to see if quoted "null" was here, right?
 	// only the plain string: `null` denotes a nil (ie not quotes)
 	if d.tok == 'n' {
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
 		return true
 	}
 	return false
@@ -858,13 +807,13 @@ func (d *jsonDecDriver) DecodeBool() (v bool) {
 	}
 	switch d.tok {
 	case 'f':
-		d.readLit4False(d.d.decRd.readn4())
+		d.readLit([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
 		// v = false
 	case 't':
-		d.readLit4True(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'r', 'u', 'e'}, d.d.decRd.readn3())
 		v = true
 	case 'n':
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
 		// v = false
 	default:
 		d.d.errorf("decode bool: got first char %c", d.tok)
@@ -880,7 +829,7 @@ func (d *jsonDecDriver) DecodeTime() (t time.Time) {
 	// read string, and pass the string into json.unmarshal
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
 		return
 	}
 	d.ensureReadingString()
@@ -904,7 +853,7 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 	} else if d.tok == '[' {
 		return valueTypeArray
 	} else if d.tok == 'n' {
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
 		return valueTypeNil
 	} else if d.tok == '"' {
 		return valueTypeString
@@ -918,7 +867,7 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 	if d.tok == '"' {
 		bs = dr.readUntil('"')
 	} else if d.tok == 'n' {
-		d.readLit4Null(dr.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, dr.readn3())
 	} else {
 		if jsonManualInlineDecRdInHotZones {
 			if dr.bytes {
@@ -988,7 +937,7 @@ func (d *jsonDecDriver) DecodeFloat32() (f float32) {
 func (d *jsonDecDriver) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
 		return
 	}
 	if ext == nil {
@@ -1025,7 +974,7 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
 	d.d.decByteState = decByteStateNone
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
 		return nil
 	}
 	// if decoding into raw bytes, and the RawBytesExt is configured, use it to decode.
@@ -1084,14 +1033,14 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 	// handle non-string scalar: null, true, false or a number
 	switch d.tok {
 	case 'n':
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
 		return nil // []byte{}
 	case 'f':
-		d.readLit4False(d.d.decRd.readn4())
-		return jsonLitb[jsonLitFalse : jsonLitFalse+5]
+		d.readLit([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
+		return jsonLitb[jsonLitF : jsonLitF+5]
 	case 't':
-		d.readLit4True(d.d.decRd.readn3())
-		return jsonLitb[jsonLitTrue : jsonLitTrue+4]
+		d.readLit([4]byte{0, 'r', 'u', 'e'}, d.d.decRd.readn3())
+		return jsonLitb[jsonLitT : jsonLitT+4]
 	default:
 		// try to parse a valid number
 		d.tok = 0
@@ -1245,14 +1194,14 @@ func (d *jsonDecDriver) DecodeNaked() {
 	var bs []byte
 	switch d.tok {
 	case 'n':
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
 		z.v = valueTypeNil
 	case 'f':
-		d.readLit4False(d.d.decRd.readn4())
+		d.readLit([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
 		z.v = valueTypeBool
 		z.b = false
 	case 't':
-		d.readLit4True(d.d.decRd.readn3())
+		d.readLit([4]byte{0, 'r', 'u', 'e'}, d.d.decRd.readn3())
 		z.v = valueTypeBool
 		z.b = true
 	case '{':
@@ -1478,5 +1427,4 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 var _ decDriverContainerTracker = (*jsonDecDriver)(nil)
 var _ encDriverContainerTracker = (*jsonEncDriver)(nil)
 var _ decDriver = (*jsonDecDriver)(nil)
-
 var _ encDriver = (*jsonEncDriver)(nil)
