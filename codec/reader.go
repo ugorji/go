@@ -244,9 +244,9 @@ func (z *ioDecReader) readx(n uint) (bs []byte) {
 	} else {
 		bs = make([]byte, n)
 	}
-	_, err := readFull(z.br, bs)
+	nn, err := readFull(z.br, bs)
+	z.n += nn
 	halt.onerror(err)
-	z.n += uint(len(bs))
 	return
 }
 
@@ -254,9 +254,9 @@ func (z *ioDecReader) readb(bs []byte) {
 	if len(bs) == 0 {
 		return
 	}
-	_, err := readFull(z.br, bs)
+	nn, err := readFull(z.br, bs)
+	z.n += nn
 	halt.onerror(err)
-	z.n += uint(len(bs))
 }
 
 func (z *ioDecReader) readn1() (b uint8) {
