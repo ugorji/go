@@ -435,7 +435,8 @@ func (e *jsonEncDriver) EncodeInt(v int64) {
 }
 
 func (e *jsonEncDriver) EncodeUint(v uint64) {
-	quotes := e.is == 'A' || e.is == 'L' && v > 1<<53 || (e.ks && e.e.c == containerMapKey)
+	quotes := e.is == 'A' || e.is == 'L' && v > 1<<53 ||
+		(e.ks && e.e.c == containerMapKey)
 
 	if cpu32Bit {
 		// use strconv directly, as optimized encodeUint only works on 64-bit alone
@@ -851,10 +852,6 @@ func (d *jsonDecDriver) TryNil() bool {
 
 func (d *jsonDecDriver) DecodeBool() (v bool) {
 	d.advance()
-	if d.tok == 'n' {
-		d.readLit4Null(d.d.decRd.readn3())
-		return
-	}
 	fquot := d.d.c == containerMapKey && d.tok == '"'
 	if fquot {
 		d.tok = d.d.decRd.readn1()
@@ -866,6 +863,9 @@ func (d *jsonDecDriver) DecodeBool() (v bool) {
 	case 't':
 		d.readLit4True(d.d.decRd.readn3())
 		v = true
+	case 'n':
+		d.readLit4Null(d.d.decRd.readn3())
+		// v = false
 	default:
 		d.d.errorf("decode bool: got first char %c", d.tok)
 		// v = false // "unreachable"
@@ -918,7 +918,7 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 	if d.tok == '"' {
 		bs = dr.readUntil('"')
 	} else if d.tok == 'n' {
-		d.readLit4Null(d.d.decRd.readn3())
+		d.readLit4Null(dr.readn3())
 	} else {
 		if jsonManualInlineDecRdInHotZones {
 			if dr.bytes {
@@ -1003,9 +1003,7 @@ func (d *jsonDecDriver) DecodeExt(rv interface{}, basetype reflect.Type, xtag ui
 }
 
 func (d *jsonDecDriver) decBytesFromArray(bs []byte) []byte {
-	if bs == nil {
-		bs = []byte{}
-	} else {
+	if bs != nil {
 		bs = bs[:0]
 	}
 	d.tok = 0
@@ -1078,7 +1076,7 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 	d.d.decByteState = decByteStateNone
 	d.advance()
 
-	// common case
+	// common case - hoist outside the switch statement
 	if d.tok == '"' {
 		return d.dblQuoteStringAsBytes()
 	}
@@ -1094,11 +1092,11 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 	case 't':
 		d.readLit4True(d.d.decRd.readn3())
 		return jsonLitb[jsonLitTrue : jsonLitTrue+4]
+	default:
+		// try to parse a valid number
+		d.tok = 0
+		return d.d.decRd.jsonReadNum()
 	}
-
-	// try to parse a valid number
-	d.tok = 0
-	return d.d.decRd.jsonReadNum()
 }
 
 func (d *jsonDecDriver) ensureReadingString() {
