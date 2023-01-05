@@ -237,7 +237,7 @@ func (z *ioDecReader) readn8() (bs [8]byte) {
 
 func (z *ioDecReader) readx(n uint) (bs []byte) {
 	if n == 0 {
-		return
+		return zeroByteSlice
 	}
 	if n < uint(len(z.x)) {
 		bs = z.x[:n]
@@ -378,14 +378,16 @@ func (z *bytesDecReader) numread() uint {
 // However, we do it only once, and it's better than reslicing both z.b and return value.
 
 func (z *bytesDecReader) readx(n uint) (bs []byte) {
-	x := z.c + n
-	bs = z.b[z.c:x]
-	z.c = x
+	// x := z.c + n
+	// bs = z.b[z.c:x]
+	// z.c = x
+	bs = z.b[z.c : z.c+n]
+	z.c += n
 	return
 }
 
 func (z *bytesDecReader) readb(bs []byte) {
-	copy(bs, z.readx(uint(len(bs))))
+	copybytes(bs, z.readx(uint(len(bs))))
 }
 
 // MARKER: do not use this - as it calls into memmove (as the size of data to move is unknown)

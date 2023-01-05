@@ -793,7 +793,7 @@ func (d *Decoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 			if rvCanset {
 				rvSetBytes(rv, bs2)
 			} else if len(rvbs) > 0 && len(bs2) > 0 {
-				copy(rvbs, bs2)
+				copybytes(rvbs, bs2)
 			}
 		}
 		return
@@ -947,7 +947,7 @@ func (d *Decoder) kArray(f *codecFnInfo, rv reflect.Value) {
 		rvbs := rvGetArrayBytes(rv, nil)
 		bs2 := d.decodeBytesInto(rvbs)
 		if !byteSliceSameData(rvbs, bs2) && len(rvbs) > 0 && len(bs2) > 0 {
-			copy(rvbs, bs2)
+			copybytes(rvbs, bs2)
 		}
 		return
 	}
@@ -1774,7 +1774,7 @@ func (d *Decoder) decode(iv interface{}) {
 		// not addressable byte slice, so do not decode into it past the length
 		b := d.decodeBytesInto(v[:len(v):len(v)])
 		if !(len(b) > 0 && len(b) == len(v) && &b[0] == &v[0]) { // not same slice
-			copy(v, b)
+			copybytes(v, b)
 		}
 	case *time.Time:
 		*v = d.d.DecodeTime()
@@ -1915,9 +1915,9 @@ func (d *Decoder) rawBytes() (v []byte) {
 	// i.e. if necessary, make new copy always.
 	v = d.d.nextValueBytes([]byte{})
 	if d.bytes && !d.h.ZeroCopy {
-		v0 := v
-		v = make([]byte, len(v))
-		copy(v, v0)
+		vv := make([]byte, len(v))
+		copy(vv, v) // using copy here triggers make+copy optimization eliding memclr
+		v = vv
 	}
 	return
 }
@@ -2294,12 +2294,8 @@ func isDecodeable(rv reflect.Value) (canDecode bool, reason decNotDecodeableReas
 }
 
 func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
-	if clen == 0 {
-		return zeroByteSlice
-	}
-	if len(bs) == clen {
-		bsOut = bs
-		r.readb(bsOut)
+	if clen <= 0 {
+		bsOut = zeroByteSlice
 	} else if cap(bs) >= clen {
 		bsOut = bs[:clen]
 		r.readb(bsOut)
@@ -2309,7 +2305,7 @@ func decByteSlice(r *decRd, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 			len3 := decInferLen(clen-len2, maxInitLen, 1)
 			bs3 := bsOut
 			bsOut = make([]byte, len2+len3)
-			copy(bsOut, bs3)
+			copybytes(bsOut, bs3)
 			r.readb(bsOut[len2:])
 			len2 += len3
 		}

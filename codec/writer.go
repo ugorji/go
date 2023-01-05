@@ -63,7 +63,7 @@ func (z *bufioEncWriter) flushErr() (err error) {
 			err = io.ErrShortWrite
 		}
 		if n > 0 {
-			copy(z.buf, z.buf[n:z.n+n])
+			copybytes(z.buf, z.buf[n:z.n+n])
 		}
 	}
 	return err
@@ -77,12 +77,12 @@ func (z *bufioEncWriter) writeb(s []byte) {
 LOOP:
 	a := len(z.buf) - z.n
 	if len(s) > a {
-		z.n += copy(z.buf[z.n:], s[:a])
+		z.n += copybytes(z.buf[z.n:], s[:a])
 		s = s[a:]
 		z.flush()
 		goto LOOP
 	}
-	z.n += copy(z.buf[z.n:], s)
+	z.n += copybytes(z.buf[z.n:], s)
 }
 
 func (z *bufioEncWriter) writestr(s string) {
@@ -90,12 +90,12 @@ func (z *bufioEncWriter) writestr(s string) {
 LOOP:
 	a := len(z.buf) - z.n
 	if len(s) > a {
-		z.n += copy(z.buf[z.n:], s[:a])
+		z.n += copybytestr(z.buf[z.n:], s[:a])
 		s = s[a:]
 		z.flush()
 		goto LOOP
 	}
-	z.n += copy(z.buf[z.n:], s)
+	z.n += copybytestr(z.buf[z.n:], s)
 }
 
 func (z *bufioEncWriter) writeqstr(s string) {
@@ -112,12 +112,12 @@ func (z *bufioEncWriter) writeqstr(s string) {
 LOOP:
 	a := len(z.buf) - z.n
 	if len(s)+1 > a {
-		z.n += copy(z.buf[z.n:], s[:a])
+		z.n += copybytestr(z.buf[z.n:], s[:a])
 		s = s[a:]
 		z.flush()
 		goto LOOP
 	}
-	z.n += copy(z.buf[z.n:], s)
+	z.n += copybytestr(z.buf[z.n:], s)
 	setByteAt(z.buf, uint(z.n), '"')
 	// z.buf[z.n] = '"'
 	z.n++
@@ -150,7 +150,7 @@ func (z *bufioEncWriter) writen4(b [4]byte) {
 	// setByteAt(z.buf, uint(z.n+2), b3)
 	// setByteAt(z.buf, uint(z.n+1), b2)
 	// setByteAt(z.buf, uint(z.n), b1)
-	copy(z.buf[z.n:], b[:])
+	copybytes(z.buf[z.n:], b[:])
 	z.n += 4
 }
 
@@ -158,7 +158,7 @@ func (z *bufioEncWriter) writen8(b [8]byte) {
 	if 8 > len(z.buf)-z.n {
 		z.flush()
 	}
-	copy(z.buf[z.n:], b[:])
+	copybytes(z.buf[z.n:], b[:])
 	z.n += 8
 }
 

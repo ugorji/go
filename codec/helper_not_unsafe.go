@@ -647,6 +647,14 @@ func rvLenMap(rv reflect.Value) int {
 	return rv.Len()
 }
 
+func copybytes(to, from []byte) int {
+	return copy(to, from)
+}
+
+func copybytestr(to []byte, from string) int {
+	return copy(to, from)
+}
+
 // func rvLenArray(rv reflect.Value) int {	return rv.Len() }
 
 // ------------ map range and map indexing ----------

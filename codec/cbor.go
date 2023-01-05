@@ -439,7 +439,7 @@ func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 		newLen := oldLen + n
 		if newLen > uint(cap(bs)) {
 			bs2 := make([]byte, newLen, 2*uint(cap(bs))+n)
-			copy(bs2, bs)
+			copybytes(bs2, bs)
 			bs = bs2
 		} else {
 			bs = bs[:newLen]

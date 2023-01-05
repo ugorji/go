@@ -1028,6 +1028,26 @@ func rvLenMap(rv reflect.Value) int {
 	return len_map(rvRefPtr((*unsafeReflectValue)(unsafe.Pointer(&rv))))
 }
 
+func copybytes(to, from []byte) (n int) {
+	n = (*unsafeSlice)(unsafe.Pointer(&from)).Len
+	memmove(
+		(*unsafeSlice)(unsafe.Pointer(&to)).Data,
+		(*unsafeSlice)(unsafe.Pointer(&from)).Data,
+		uintptr(n),
+	)
+	return
+}
+
+func copybytestr(to []byte, from string) (n int) {
+	n = (*unsafeSlice)(unsafe.Pointer(&from)).Len
+	memmove(
+		(*unsafeSlice)(unsafe.Pointer(&to)).Data,
+		(*unsafeSlice)(unsafe.Pointer(&from)).Data,
+		uintptr(n),
+	)
+	return
+}
+
 // Note: it is hard to find len(...) of an array type,
 // as that is a field in the arrayType representing the array, and hard to introspect.
 //
@@ -1286,6 +1306,10 @@ func unsafeNew(typ unsafe.Pointer) unsafe.Pointer {
 // reflect.{unsafe_New, unsafe_NewArray} are not supported in gollvm,
 // failing with "error: undefined reference" error.
 // however, runtime.{mallocgc, newarray} are supported, so use that instead.
+
+//go:linkname memmove runtime.memmove
+//go:noescape
+func memmove(to, from unsafe.Pointer, n uintptr)
 
 //go:linkname mallocgc runtime.mallocgc
 //go:noescape
