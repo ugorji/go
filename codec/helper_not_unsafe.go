@@ -55,8 +55,8 @@ func okBytes2(b []byte) (v [2]byte) {
 	return
 }
 
-func okBytes3(b []byte) (v [4]byte) {
-	copy(v[1:], b)
+func okBytes3(b []byte) (v [3]byte) {
+	copy(v[:], b)
 	return
 }
 
@@ -647,13 +647,13 @@ func rvLenMap(rv reflect.Value) int {
 	return rv.Len()
 }
 
-func copybytes(to, from []byte) int {
-	return copy(to, from)
-}
+// func copybytes(to, from []byte) int {
+// 	return copy(to, from)
+// }
 
-func copybytestr(to []byte, from string) int {
-	return copy(to, from)
-}
+// func copybytestr(to []byte, from string) int {
+// 	return copy(to, from)
+// }
 
 // func rvLenArray(rv reflect.Value) int {	return rv.Len() }
 

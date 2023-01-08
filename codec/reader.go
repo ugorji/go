@@ -22,8 +22,7 @@ type decReader interface {
 
 	readn1() byte
 	readn2() [2]byte
-	// readn3 will read 3 bytes into the top-most elements of a 4-byte array
-	readn3() [4]byte
+	readn3() [3]byte
 	readn4() [4]byte
 	readn8() [8]byte
 	// readn1eof() (v uint8, eof bool)
@@ -215,13 +214,20 @@ func (z *ioDecReader) numread() uint {
 	return z.n
 }
 
+func (z *ioDecReader) readn1() (b uint8) {
+	b, err := z.br.ReadByte()
+	halt.onerror(err)
+	z.n++
+	return
+}
+
 func (z *ioDecReader) readn2() (bs [2]byte) {
 	z.readb(bs[:])
 	return
 }
 
-func (z *ioDecReader) readn3() (bs [4]byte) {
-	z.readb(bs[1:])
+func (z *ioDecReader) readn3() (bs [3]byte) {
+	z.readb(bs[:])
 	return
 }
 
@@ -257,13 +263,6 @@ func (z *ioDecReader) readb(bs []byte) {
 	nn, err := readFull(z.br, bs)
 	z.n += nn
 	halt.onerror(err)
-}
-
-func (z *ioDecReader) readn1() (b uint8) {
-	b, err := z.br.ReadByte()
-	halt.onerror(err)
-	z.n++
-	return
 }
 
 // func (z *ioDecReader) readn1eof() (b uint8, eof bool) {
@@ -387,7 +386,7 @@ func (z *bytesDecReader) readx(n uint) (bs []byte) {
 }
 
 func (z *bytesDecReader) readb(bs []byte) {
-	copybytes(bs, z.readx(uint(len(bs))))
+	copy(bs, z.readx(uint(len(bs))))
 }
 
 // MARKER: do not use this - as it calls into memmove (as the size of data to move is unknown)
@@ -428,7 +427,7 @@ func (z *bytesDecReader) readn2() (bs [2]byte) {
 	return
 }
 
-func (z *bytesDecReader) readn3() (bs [4]byte) {
+func (z *bytesDecReader) readn3() (bs [3]byte) {
 	// copy(bs[1:], z.b[z.c:z.c+3])
 	bs = okBytes3(z.b[z.c : z.c+3])
 	z.c += 3
@@ -521,34 +520,16 @@ type decRd struct {
 	decReader
 }
 
-// From out benchmarking, we see the following in terms of performance:
+// From out benchmarking, we see the following impact performance:
 //
 // - interface calls
-// - branch that can inline what it calls
-//
-// the if/else-if/else block is expensive to inline.
-// Each node of this construct costs a lot and dominates the budget.
-// Best to only do an if fast-path else block (so fast-path is inlined).
-// This is irrespective of inlineExtraCallCost set in $GOROOT/src/cmd/compile/internal/gc/inl.go
-//
-// In decRd methods below, we delegate all IO functions into their own methods.
-// This allows for the inlining of the common path when z.bytes=true.
-// Go 1.12+ supports inlining methods with up to 1 inlined function (or 2 if no other constructs).
-//
-// However, up through Go 1.13, decRd's readXXX, skip and unreadXXX methods are not inlined.
-// Consequently, there is no benefit to do the xxxIO methods for decRd at this time.
-// Instead, we have a if/else-if/else block so that IO calls do not have to jump through
-// a second unnecessary function call.
-//
-// If golang inlining gets better and bytesDecReader methods can be inlined,
-// then we can revert to using these 2 functions so the bytesDecReader
-// methods are inlined and the IO paths call out to a function.
+// - conditional (if) branch have a high inlining cost
 //
 // decRd is designed to embed a decReader, and then re-implement some of the decReader
 // methods using a conditional branch. We only override the ones that have a bytes version
 // that is small enough to be inlined. We use ./run.sh -z to check.
 //
-// Right now, only numread can be inlined. It is very beneficial if readn1 can be inlined.
+// Right now, only numread and "carefully crafted" readn1 can be inlined.
 
 func (z *decRd) numread() uint {
 	if z.bytes {
@@ -557,24 +538,31 @@ func (z *decRd) numread() uint {
 	return z.ri.numread()
 }
 
-// func (z *decRd) readn1() (v uint8) {
+func (z *decRd) readn1() (v uint8) {
+	if z.bytes {
+		// return z.rb.readn1()
+		// MARKER: calling z.rb.readn1() prevents decRd.readn1 from being inlined.
+		// copy code, to manually inline and explicitly return here.
+		// Keep in sync with bytesDecReader.readn1
+		v = z.rb.b[z.rb.c]
+		z.rb.c++
+		return
+	}
+	return z.ri.readn1()
+}
+
+// func (z *decRd) readn4() [4]byte {
 // 	if z.bytes {
-// 		// MARKER: manually inline, else this function is not inlined.
-// 		// Keep in sync with bytesDecReader.readn1
-// 		// return z.rb.readn1()
-// 		v = z.rb.b[z.rb.c]
-// 		z.rb.c++
-// 	} else {
-// 		v = z.ri.readn1()
+// 		return z.rb.readn4()
 // 	}
-// 	return
+// 	return z.ri.readn4()
 // }
-//
-// func (z *decRd) readn1() uint8 {
+
+// func (z *decRd) readn3() [3]byte {
 // 	if z.bytes {
-// 		return z.rb.readn1()
+// 		return z.rb.readn3()
 // 	}
-// 	return z.ri.readn1()
+// 	return z.ri.readn3()
 // }
 
 type devNullReader struct{}

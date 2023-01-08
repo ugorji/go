@@ -223,16 +223,15 @@ func byteSliceSameData(v1 []byte, v2 []byte) bool {
 }
 
 // MARKER: okBytesN functions will copy N bytes into the top slots of the return array.
-// These functions expect that the bounds are valid, and have been checked before this is called.
+// These functions expect that the bound check already occured and are are valid.
 // copy(...) does a number of checks which are unnecessary in this situation when in bounds.
 
 func okBytes2(b []byte) [2]byte {
 	return *((*[2]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
 }
 
-func okBytes3(b []byte) (v [4]byte) {
-	*(*[3]byte)(unsafe.Pointer(&v[1])) = *((*[3]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
-	return
+func okBytes3(b []byte) [3]byte {
+	return *((*[3]byte)(((*unsafeSlice)(unsafe.Pointer(&b))).Data))
 }
 
 func okBytes4(b []byte) [4]byte {
@@ -1028,25 +1027,31 @@ func rvLenMap(rv reflect.Value) int {
 	return len_map(rvRefPtr((*unsafeReflectValue)(unsafe.Pointer(&rv))))
 }
 
-func copybytes(to, from []byte) (n int) {
-	n = (*unsafeSlice)(unsafe.Pointer(&from)).Len
-	memmove(
-		(*unsafeSlice)(unsafe.Pointer(&to)).Data,
-		(*unsafeSlice)(unsafe.Pointer(&from)).Data,
-		uintptr(n),
-	)
-	return
-}
+// copy is an intrinsic, which may use asm if length is small,
+// or make a runtime call to runtime.memmove if length is large.
+// Performance suffers when you always call runtime.memmove function.
+//
+// Consequently, there's no value in a copybytes call - just call copy() directly
 
-func copybytestr(to []byte, from string) (n int) {
-	n = (*unsafeSlice)(unsafe.Pointer(&from)).Len
-	memmove(
-		(*unsafeSlice)(unsafe.Pointer(&to)).Data,
-		(*unsafeSlice)(unsafe.Pointer(&from)).Data,
-		uintptr(n),
-	)
-	return
-}
+// func copybytes(to, from []byte) (n int) {
+// 	n = (*unsafeSlice)(unsafe.Pointer(&from)).Len
+// 	memmove(
+// 		(*unsafeSlice)(unsafe.Pointer(&to)).Data,
+// 		(*unsafeSlice)(unsafe.Pointer(&from)).Data,
+// 		uintptr(n),
+// 	)
+// 	return
+// }
+
+// func copybytestr(to []byte, from string) (n int) {
+// 	n = (*unsafeSlice)(unsafe.Pointer(&from)).Len
+// 	memmove(
+// 		(*unsafeSlice)(unsafe.Pointer(&to)).Data,
+// 		(*unsafeSlice)(unsafe.Pointer(&from)).Data,
+// 		uintptr(n),
+// 	)
+// 	return
+// }
 
 // Note: it is hard to find len(...) of an array type,
 // as that is a field in the arrayType representing the array, and hard to introspect.

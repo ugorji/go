@@ -556,7 +556,10 @@ func (d *bincDecDriver) decUint() (v uint64) {
 	case 1:
 		v = uint64(bigen.Uint16(d.d.decRd.readn2()))
 	case 2:
-		v = uint64(bigen.Uint32(d.d.decRd.readn3()))
+		b3 := d.d.decRd.readn3()
+		var b [4]byte
+		copy(b[1:], b3[:])
+		v = uint64(bigen.Uint32(b))
 	case 3:
 		v = uint64(bigen.Uint32(d.d.decRd.readn4()))
 	case 4, 5, 6:

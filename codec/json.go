@@ -625,7 +625,7 @@ func (d *jsonDecDriver) decoder() *Decoder {
 func (d *jsonDecDriver) ReadMapStart() int {
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		return containerLenNil
 	}
 	if d.tok != '{' {
@@ -638,7 +638,7 @@ func (d *jsonDecDriver) ReadMapStart() int {
 func (d *jsonDecDriver) ReadArrayStart() int {
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		return containerLenNil
 	}
 	if d.tok != '[' {
@@ -706,11 +706,18 @@ func (d *jsonDecDriver) readDelimError(xc uint8) {
 	d.d.errorf("read json delimiter - expect char '%c' but got char '%c'", xc, d.tok)
 }
 
-// MARKER: readLit4XXX takes the readn(3|4) as a parameter so they can be inlined.
+// MARKER: checkLit takes the readn(3|4) result as a parameter so they can be inlined.
 // We pass the array directly to errorf, as passing slice pushes past inlining threshold,
 // and passing slice also might cause allocation of the bs array on the heap.
 
-func (d *jsonDecDriver) readLit(got, expect [4]byte) {
+func (d *jsonDecDriver) checkLit3(got, expect [3]byte) {
+	d.tok = 0
+	if jsonValidateSymbols && got != expect {
+		d.d.errorf("expecting %s: got %s", expect, got)
+	}
+}
+
+func (d *jsonDecDriver) checkLit4(got, expect [4]byte) {
 	d.tok = 0
 	if jsonValidateSymbols && got != expect {
 		d.d.errorf("expecting %s: got %s", expect, got)
@@ -752,13 +759,13 @@ func (d *jsonDecDriver) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
 	default:
 		h.appendN(&v, dr.jsonReadNum()...)
 	case 'n':
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		h.appendS(&v, jsonLits[jsonLitN:jsonLitN+4])
 	case 'f':
-		d.readLit([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
+		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
 		h.appendS(&v, jsonLits[jsonLitF:jsonLitF+5])
 	case 't':
-		d.readLit([4]byte{0, 'r', 'u', 'e'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'r', 'u', 'e'}, d.d.decRd.readn3())
 		h.appendS(&v, jsonLits[jsonLitT:jsonLitT+4])
 	case '"':
 		h.append1(&v, '"')
@@ -793,7 +800,7 @@ func (d *jsonDecDriver) TryNil() bool {
 	// we shouldn't try to see if quoted "null" was here, right?
 	// only the plain string: `null` denotes a nil (ie not quotes)
 	if d.tok == 'n' {
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		return true
 	}
 	return false
@@ -801,19 +808,20 @@ func (d *jsonDecDriver) TryNil() bool {
 
 func (d *jsonDecDriver) DecodeBool() (v bool) {
 	d.advance()
+	// bool can be in quotes if and only if it's a map key
 	fquot := d.d.c == containerMapKey && d.tok == '"'
 	if fquot {
 		d.tok = d.d.decRd.readn1()
 	}
 	switch d.tok {
 	case 'f':
-		d.readLit([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
+		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
 		// v = false
 	case 't':
-		d.readLit([4]byte{0, 'r', 'u', 'e'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'r', 'u', 'e'}, d.d.decRd.readn3())
 		v = true
 	case 'n':
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		// v = false
 	default:
 		d.d.errorf("decode bool: got first char %c", d.tok)
@@ -829,7 +837,7 @@ func (d *jsonDecDriver) DecodeTime() (t time.Time) {
 	// read string, and pass the string into json.unmarshal
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		return
 	}
 	d.ensureReadingString()
@@ -853,7 +861,7 @@ func (d *jsonDecDriver) ContainerType() (vt valueType) {
 	} else if d.tok == '[' {
 		return valueTypeArray
 	} else if d.tok == 'n' {
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		return valueTypeNil
 	} else if d.tok == '"' {
 		return valueTypeString
@@ -867,7 +875,7 @@ func (d *jsonDecDriver) decNumBytes() (bs []byte) {
 	if d.tok == '"' {
 		bs = dr.readUntil('"')
 	} else if d.tok == 'n' {
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, dr.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, dr.readn3())
 	} else {
 		if jsonManualInlineDecRdInHotZones {
 			if dr.bytes {
@@ -937,7 +945,7 @@ func (d *jsonDecDriver) DecodeFloat32() (f float32) {
 func (d *jsonDecDriver) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		return
 	}
 	if ext == nil {
@@ -974,7 +982,7 @@ func (d *jsonDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
 	d.d.decByteState = decByteStateNone
 	d.advance()
 	if d.tok == 'n' {
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		return nil
 	}
 	// if decoding into raw bytes, and the RawBytesExt is configured, use it to decode.
@@ -1033,13 +1041,13 @@ func (d *jsonDecDriver) DecodeStringAsBytes() (s []byte) {
 	// handle non-string scalar: null, true, false or a number
 	switch d.tok {
 	case 'n':
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		return nil // []byte{}
 	case 'f':
-		d.readLit([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
+		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
 		return jsonLitb[jsonLitF : jsonLitF+5]
 	case 't':
-		d.readLit([4]byte{0, 'r', 'u', 'e'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'r', 'u', 'e'}, d.d.decRd.readn3())
 		return jsonLitb[jsonLitT : jsonLitT+4]
 	default:
 		// try to parse a valid number
@@ -1194,14 +1202,14 @@ func (d *jsonDecDriver) DecodeNaked() {
 	var bs []byte
 	switch d.tok {
 	case 'n':
-		d.readLit([4]byte{0, 'u', 'l', 'l'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'u', 'l', 'l'}, d.d.decRd.readn3())
 		z.v = valueTypeNil
 	case 'f':
-		d.readLit([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
+		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.d.decRd.readn4())
 		z.v = valueTypeBool
 		z.b = false
 	case 't':
-		d.readLit([4]byte{0, 'r', 'u', 'e'}, d.d.decRd.readn3())
+		d.checkLit3([3]byte{'r', 'u', 'e'}, d.d.decRd.readn3())
 		z.v = valueTypeBool
 		z.b = true
 	case '{':
