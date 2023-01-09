@@ -2463,6 +2463,14 @@ func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 	return
 }
 
+func bool2int(b bool) (v uint8) {
+	// MARKER: optimized to be a single instruction
+	if b {
+		v = 1
+	}
+	return
+}
+
 func isSliceBoundsError(s string) bool {
 	return strings.Contains(s, "index out of range") ||
 		strings.Contains(s, "slice bounds out of range")

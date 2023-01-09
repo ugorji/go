@@ -80,6 +80,11 @@ const (
 	// Both technically valid JSON, but bomb on JSONP, so fix here unconditionally.
 	jsonEscapeMultiByteUnicodeSep = true
 
+	// jsonRecognizeBoolNullInQuotedStr is used during decoding into a blank interface{}
+	// to control whether we detect quoted values of bools and null where a map key is expected,
+	// and treat as nil, true or false.
+	jsonNakedBoolNullInQuotedStr = true
+
 	// jsonManualInlineDecRdInHotZones controls whether we manually inline some decReader calls.
 	//
 	// encode performance is at par with libraries that just iterate over bytes directly,
@@ -238,7 +243,7 @@ func (e *jsonEncDriver) WriteMapElemValue() {
 
 func (e *jsonEncDriver) EncodeNil() {
 	// We always encode nil as just null (never in quotes)
-	// so we can easily decode if a nil in the json streamie if initial token is n.
+	// so we can easily decode if a nil in the json stream ie if initial token is n.
 
 	e.e.encWr.writestr(jsonLits[jsonLitN : jsonLitN+4])
 }
@@ -276,25 +281,31 @@ func (e *jsonEncDriver) EncodeRawExt(re *RawExt) {
 	}
 }
 
-func (e *jsonEncDriver) EncodeBool(b bool) {
-	// Use writen with an array instead of writeb with a slice
-	// i.e. in place of e.e.encWr.writeb(jsonLiteralTrueQ)
-	//      OR jsonLiteralTrue, jsonLiteralFalse, jsonLiteralFalseQ, etc
-
-	if e.ks && e.e.c == containerMapKey {
-		if b {
-			e.e.encWr.writestr(jsonLits[jsonLitT-1 : jsonLitT+5])
-		} else {
-			e.e.encWr.writestr(jsonLits[jsonLitF-1 : jsonLitF+6])
-		}
-	} else {
-		if b {
-			e.e.encWr.writestr(jsonLits[jsonLitT : jsonLitT+4])
-		} else {
-			e.e.encWr.writestr(jsonLits[jsonLitF : jsonLitF+5])
-		}
-	}
+var jsonEncBoolStrs = [2][2]string{
+	{jsonLits[jsonLitF : jsonLitF+5], jsonLits[jsonLitT : jsonLitT+4]},
+	{jsonLits[jsonLitF-1 : jsonLitF+6], jsonLits[jsonLitT-1 : jsonLitT+5]},
 }
+
+func (e *jsonEncDriver) EncodeBool(b bool) {
+	e.e.encWr.writestr(
+		jsonEncBoolStrs[bool2int(e.ks && e.e.c == containerMapKey)%2][bool2int(b)%2])
+}
+
+// func (e *jsonEncDriver) EncodeBool(b bool) {
+// 	if e.ks && e.e.c == containerMapKey {
+// 		if b {
+// 			e.e.encWr.writestr(jsonLits[jsonLitT-1 : jsonLitT+5])
+// 		} else {
+// 			e.e.encWr.writestr(jsonLits[jsonLitF-1 : jsonLitF+6])
+// 		}
+// 	} else {
+// 		if b {
+// 			e.e.encWr.writestr(jsonLits[jsonLitT : jsonLitT+4])
+// 		} else {
+// 			e.e.encWr.writestr(jsonLits[jsonLitF : jsonLitF+5])
+// 		}
+// 	}
+// }
 
 func (e *jsonEncDriver) encodeFloat(f float64, bitsize, fmt byte, prec int8) {
 	var blen uint
@@ -1217,12 +1228,13 @@ func (d *jsonDecDriver) DecodeNaked() {
 	case '[':
 		z.v = valueTypeArray // don't consume. kInterfaceNaked will call ReadArrayStart
 	case '"':
-		// if a string, and MapKeyAsString, then try to decode it as a nil, bool or number first
+		// if a string, and MapKeyAsString, then try to decode it as a bool or number first
 		bs = d.dblQuoteStringAsBytes()
-		if len(bs) > 0 && d.d.c == containerMapKey && d.h.MapKeyAsString {
+		if jsonNakedBoolNullInQuotedStr &&
+			d.h.MapKeyAsString && len(bs) > 0 && d.d.c == containerMapKey {
 			switch string(bs) {
-			case "null":
-				z.v = valueTypeNil
+			// case "null": // nil is never quoted
+			// 	z.v = valueTypeNil
 			case "true":
 				z.v = valueTypeBool
 				z.b = true

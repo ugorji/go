@@ -3570,7 +3570,7 @@ func doTestJsonDecodeNonStringScalarInStringContext(t *testing.T, h Handle) {
 	jh.SignedInteger = false
 
 	// Also test out decoding string values into naked interface
-	b = `{"true": true, "false": false, "null": null, "7700000000000000000": 7700000000000000000}`
+	b = `{"true": true, "false": false, null: null, "7700000000000000000": 7700000000000000000}`
 	const num = 7700000000000000000 // 77
 	var golden2 = map[interface{}]interface{}{
 		true:  true,
