@@ -43,9 +43,9 @@ import (
 
 // MARKER: keep in sync with ../gen.go (genVersion) and ../go.mod (module version)
 const (
-	codecgenModuleVersion = `1.2.7` // default version - overridden if available via go.mod
-	minimumCodecVersion   = `1.2.7`
-	genVersion            = 25
+	codecgenModuleVersion = `1.2.8` // default version - overridden if available via go.mod
+	minimumCodecVersion   = `1.2.8`
+	genVersion            = 26
 )
 
 const genCodecPkg = "codec1978" // MARKER: keep in sync with ../gen.go
