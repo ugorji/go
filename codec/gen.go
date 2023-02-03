@@ -127,16 +127,13 @@ import (
 //
 // v1: Initial Version
 // v2: -
-// v3: Changes for Kubernetes:
-//
-//	changes in signature of some unpublished helper methods and codecgen cmdline arguments.
-//
+// v3: For Kubernetes: changes in signature of some unpublished helper methods and codecgen cmdline arguments.
 // v4: Removed separator support from (en|de)cDriver, and refactored codec(gen)
 // v5: changes to support faster json decoding. Let encoder/decoder maintain state of collections.
 // v6: removed unsafe from gen, and now uses codecgen.exec tag
 // v7: -
 // v8: current - we now maintain compatibility with old generated code.
-// v9: skipped
+// v9: - skipped
 // v10: modified encDriver and decDriver interfaces.
 // v11: remove deprecated methods of encDriver and decDriver.
 // v12: removed deprecated methods from genHelper and changed container tracking logic
@@ -153,7 +150,8 @@ import (
 // v23: 20210203 changed slice/map types for which we generate fast-path functions
 // v24: 20210226 robust handling for Canonical|CheckCircularRef flags and MissingFielder implementations
 // v25: 20210406 pass base reflect.Type to side(En|De)code and (En|De)codeExt calls
-const genVersion = 25
+// v26: 20230201 genHelper changes for more inlining and consequent performance
+const genVersion = 26
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go
@@ -163,13 +161,6 @@ const (
 	// ignore canBeNil parameter, and always set to true.
 	// This is because nil can appear anywhere, so we should always check.
 	genAnythingCanBeNil = true
-
-	// if genUseOneFunctionForDecStructMap, make a single codecDecodeSelferFromMap function;
-	// else make codecDecodeSelferFromMap{LenPrefix,CheckBreak} so that conditionals
-	// are not executed a lot.
-	//
-	// From testing, it didn't make much difference in runtime, so keep as true (one function only)
-	genUseOneFunctionForDecStructMap = true
 
 	// genStructCanonical configures whether we generate 2 paths based on Canonical flag
 	// when encoding struct fields.
@@ -183,27 +174,14 @@ const (
 
 	// genFastpathTrimTypes configures whether we trim uncommon fastpath types.
 	genFastpathTrimTypes = true
-
-	// genDecStructArrayInlineLoopCheck configures whether we create a next function
-	// for each iteration in the loop and call it, or just inline it.
-	//
-	// with inlining, we get better performance but about 10% larger files.
-	genDecStructArrayInlineLoopCheck = true
 )
 
-type genStructMapStyle uint8
 type genStringDecAsBytes string
 type genStringDecZC string
 
 var genStringDecAsBytesTyp = reflect.TypeOf(genStringDecAsBytes(""))
 var genStringDecZCTyp = reflect.TypeOf(genStringDecZC(""))
 var genFormats = []string{"Json", "Cbor", "Msgpack", "Binc", "Simple"}
-
-const (
-	genStructMapStyleConsolidated genStructMapStyle = iota
-	genStructMapStyleLenPrefix
-	genStructMapStyleCheckBreak
-)
 
 var (
 	errGenAllTypesSamePkg        = errors.New("All types must be in the same package")
@@ -774,28 +752,12 @@ func (x *genRunner) selfer(encode bool) {
 	}
 
 	// write is containerMap
-	if genUseOneFunctionForDecStructMap {
-		x.out(fnSigPfx)
-		x.line(") codecDecodeSelfFromMap(l int, d *" + x.cpfx + "Decoder) {")
-		x.genRequiredMethodVars(false)
-		x.decStructMap(genTopLevelVarName, "l", rt2id(t0), t0, genStructMapStyleConsolidated)
-		x.line("}")
-		x.line("")
-	} else {
-		x.out(fnSigPfx)
-		x.line(") codecDecodeSelfFromMapLenPrefix(l int, d *" + x.cpfx + "Decoder) {")
-		x.genRequiredMethodVars(false)
-		x.decStructMap(genTopLevelVarName, "l", rt2id(t0), t0, genStructMapStyleLenPrefix)
-		x.line("}")
-		x.line("")
-
-		x.out(fnSigPfx)
-		x.line(") codecDecodeSelfFromMapCheckBreak(l int, d *" + x.cpfx + "Decoder) {")
-		x.genRequiredMethodVars(false)
-		x.decStructMap(genTopLevelVarName, "l", rt2id(t0), t0, genStructMapStyleCheckBreak)
-		x.line("}")
-		x.line("")
-	}
+	x.out(fnSigPfx)
+	x.line(") codecDecodeSelfFromMap(l int, d *" + x.cpfx + "Decoder) {")
+	x.genRequiredMethodVars(false)
+	x.decStructMap(genTopLevelVarName, "l", rt2id(t0), t0)
+	x.line("}")
+	x.line("")
 
 	// write containerArray
 	x.out(fnSigPfx)
@@ -1388,7 +1350,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 				default: // string
 					if x.jsonOnlyWhen == nil {
 						if si.path.encNameAsciiAlphaNum {
-							x.linef(`if z.IsJSONHandle() { z.WriteStr("\"%s\"") } else { `, si.encName)
+							x.linef(`if z.IsJSONHandle() { z.EncWr().WriteStr("\"%s\"") } else { `, si.encName)
 						}
 						x.linef("r.EncodeString(`%s`)", si.encName)
 						if si.path.encNameAsciiAlphaNum {
@@ -1396,7 +1358,7 @@ func (x *genRunner) encStruct(varname string, rtid uintptr, t reflect.Type) {
 						}
 					} else if *(x.jsonOnlyWhen) {
 						if si.path.encNameAsciiAlphaNum {
-							x.linef(`z.WriteStr("\"%s\"")`, si.encName)
+							x.linef(`z.EncWr().WriteStr("\"%s\"")`, si.encName)
 						} else {
 							x.linef("r.EncodeString(`%s`)", si.encName)
 						}
@@ -2088,23 +2050,16 @@ func (x *genRunner) decStructMapSwitch(kName string, varname string, rtid uintpt
 	x.linef("} // end switch %s", kName)
 }
 
-func (x *genRunner) decStructMap(varname, lenvarname string, rtid uintptr, t reflect.Type, style genStructMapStyle) {
+func (x *genRunner) decStructMap(varname, lenvarname string, rtid uintptr, t reflect.Type) {
 	tpfx := genTempVarPfx
 	ti := x.ti.get(rtid, t)
 	i := x.varsfx()
 	kName := tpfx + "s" + i
 
-	switch style {
-	case genStructMapStyleLenPrefix:
-		x.linef("for %sj%s := 0; %sj%s < %s; %sj%s++ {", tpfx, i, tpfx, i, lenvarname, tpfx, i)
-	case genStructMapStyleCheckBreak:
-		x.linef("for %sj%s := 0; !z.DecCheckBreak(); %sj%s++ {", tpfx, i, tpfx, i)
-	default: // 0, otherwise.
-		x.linef("var %shl%s bool = %s >= 0", tpfx, i, lenvarname) // has length
-		x.linef("for %sj%s := 0; ; %sj%s++ {", tpfx, i, tpfx, i)
-		x.linef("if %shl%s { if %sj%s >= %s { break }", tpfx, i, tpfx, i, lenvarname)
-		x.line("} else { if z.DecCheckBreak() { break }; }")
-	}
+	x.linef("var %shl%s bool = %s >= 0", tpfx, i, lenvarname) // has length
+	x.linef("for %sj%s := 0; z.DecContainerNext(%sj%s, %s, %shl%s); %sj%s++ {",
+		tpfx, i, tpfx, i, lenvarname, tpfx, i, tpfx, i)
+
 	x.line("z.DecReadMapElemKey()")
 
 	// emulate decstructfieldkey
@@ -2133,24 +2088,11 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 	x.linef("var %sj%s int", tpfx, i)
 	x.linef("var %sb%s bool", tpfx, i)                        // break
 	x.linef("var %shl%s bool = %s >= 0", tpfx, i, lenvarname) // has length
-	if !genDecStructArrayInlineLoopCheck {
-		x.linef("var %sfn%s = func() bool { ", tpfx, i)
-		x.linef("%sj%s++; if %shl%s { %sb%s = %sj%s > %s } else { %sb%s = z.DecCheckBreak() };",
-			tpfx, i, tpfx, i, tpfx, i,
-			tpfx, i, lenvarname, tpfx, i)
-		x.linef("if %sb%s { z.DecReadArrayEnd(); return true }; return false", tpfx, i)
-		x.linef("} // end func %sfn%s", tpfx, i)
-	}
 	var newbuf, nilbuf genBuf
 	for _, si := range tisfi {
-		if genDecStructArrayInlineLoopCheck {
-			x.linef("%sj%s++; if %shl%s { %sb%s = %sj%s > %s } else { %sb%s = z.DecCheckBreak() }",
-				tpfx, i, tpfx, i, tpfx, i,
-				tpfx, i, lenvarname, tpfx, i)
-			x.linef("if %sb%s { z.DecReadArrayEnd(); %s }", tpfx, i, breakString)
-		} else {
-			x.linef("if %sfn%s() { %s }", tpfx, i, breakString)
-		}
+		x.linef("%sj%s++", tpfx, i)
+		x.linef("%sb%s = !z.DecContainerNext(%sj%s, %s, %shl%s)", tpfx, i, tpfx, i, lenvarname, tpfx, i)
+		x.linef("if %sb%s { z.DecReadArrayEnd(); %s }", tpfx, i, breakString)
 		x.line("z.DecReadArrayElem()")
 		newbuf.reset()
 		nilbuf.reset()
@@ -2164,11 +2106,8 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 		}
 	}
 	// read remaining values and throw away.
-	x.line("for {")
-	x.linef("%sj%s++; if %shl%s { %sb%s = %sj%s > %s } else { %sb%s = z.DecCheckBreak() }",
-		tpfx, i, tpfx, i, tpfx, i,
-		tpfx, i, lenvarname, tpfx, i)
-	x.linef("if %sb%s { break }", tpfx, i)
+	x.linef("for %sj%s++; z.DecContainerNext(%sj%s, %s, %shl%s); %sj%s++ {",
+		tpfx, i, tpfx, i, lenvarname, tpfx, i, tpfx, i)
 	x.line("z.DecReadArrayElem()")
 	x.linef(`z.DecStructFieldNotFound(%sj%s - 1, "")`, tpfx, i)
 	x.line("}")
@@ -2183,15 +2122,10 @@ func (x *genRunner) decStruct(varname string, rtid uintptr, t reflect.Type) {
 	x.linef("} else if %sct%s == codecSelferValueTypeMap%s {", genTempVarPfx, i, x.xs)
 	x.line(genTempVarPfx + "l" + i + " := z.DecReadMapStart()")
 	x.linef("if %sl%s == 0 {", genTempVarPfx, i)
-	if genUseOneFunctionForDecStructMap {
-		x.line("} else { ")
-		x.linef("%s.codecDecodeSelfFromMap(%sl%s, d)", varname, genTempVarPfx, i)
-	} else {
-		x.line("} else if " + genTempVarPfx + "l" + i + " > 0 { ")
-		x.line(varname + ".codecDecodeSelfFromMapLenPrefix(" + genTempVarPfx + "l" + i + ", d)")
-		x.line("} else {")
-		x.line(varname + ".codecDecodeSelfFromMapCheckBreak(" + genTempVarPfx + "l" + i + ", d)")
-	}
+
+	x.line("} else { ")
+	x.linef("%s.codecDecodeSelfFromMap(%sl%s, d)", varname, genTempVarPfx, i)
+
 	x.line("}")
 	x.line("z.DecReadMapEnd()")
 

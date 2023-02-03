@@ -64,10 +64,10 @@ func (p codecSelfer19781float64Slice) Swap(i, j int)      { p[uint(i)], p[uint(j
 func (p codecSelfer19781float64Slice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
 
 func init() {
-	if GenVersion != 25 {
+	if GenVersion != 26 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic(errors.New("codecgen version mismatch: current: 25, need " + ver + ". Re-generate file: " + file))
+		panic(errors.New("codecgen version mismatch: current: 26, need " + ver + ". Re-generate file: " + file))
 	}
 }
 
@@ -1353,7 +1353,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			if z.EncBasicHandle().Canonical {
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FBool\"")
+					z.EncWr().WriteStr("\"FBool\"")
 				} else {
 					r.EncodeString(`FBool`)
 				}
@@ -1361,7 +1361,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeBool(bool(x.FBool))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FBytes\"")
+					z.EncWr().WriteStr("\"FBytes\"")
 				} else {
 					r.EncodeString(`FBytes`)
 				}
@@ -1373,7 +1373,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FBytes slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FFloat32\"")
+					z.EncWr().WriteStr("\"FFloat32\"")
 				} else {
 					r.EncodeString(`FFloat32`)
 				}
@@ -1381,7 +1381,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeFloat32(float32(x.FFloat32))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FFloat64\"")
+					z.EncWr().WriteStr("\"FFloat64\"")
 				} else {
 					r.EncodeString(`FFloat64`)
 				}
@@ -1389,7 +1389,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeFloat64(float64(x.FFloat64))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FInt\"")
+					z.EncWr().WriteStr("\"FInt\"")
 				} else {
 					r.EncodeString(`FInt`)
 				}
@@ -1397,7 +1397,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeInt(int64(x.FInt))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FInt16\"")
+					z.EncWr().WriteStr("\"FInt16\"")
 				} else {
 					r.EncodeString(`FInt16`)
 				}
@@ -1405,7 +1405,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeInt(int64(x.FInt16))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FInt32\"")
+					z.EncWr().WriteStr("\"FInt32\"")
 				} else {
 					r.EncodeString(`FInt32`)
 				}
@@ -1413,7 +1413,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeInt(int64(x.FInt32))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FInt64\"")
+					z.EncWr().WriteStr("\"FInt64\"")
 				} else {
 					r.EncodeString(`FInt64`)
 				}
@@ -1421,7 +1421,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeInt(int64(x.FInt64))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FInt8\"")
+					z.EncWr().WriteStr("\"FInt8\"")
 				} else {
 					r.EncodeString(`FInt8`)
 				}
@@ -1429,7 +1429,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeInt(int64(x.FInt8))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FIntf\"")
+					z.EncWr().WriteStr("\"FIntf\"")
 				} else {
 					r.EncodeString(`FIntf`)
 				}
@@ -1437,7 +1437,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				z.EncFallback(x.FIntf)
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Bool\"")
+					z.EncWr().WriteStr("\"FMapInt32Bool\"")
 				} else {
 					r.EncodeString(`FMapInt32Bool`)
 				}
@@ -1449,7 +1449,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Bool map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Bytes\"")
+					z.EncWr().WriteStr("\"FMapInt32Bytes\"")
 				} else {
 					r.EncodeString(`FMapInt32Bytes`)
 				}
@@ -1461,7 +1461,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Bytes map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Float64\"")
+					z.EncWr().WriteStr("\"FMapInt32Float64\"")
 				} else {
 					r.EncodeString(`FMapInt32Float64`)
 				}
@@ -1473,7 +1473,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Float64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Int\"")
+					z.EncWr().WriteStr("\"FMapInt32Int\"")
 				} else {
 					r.EncodeString(`FMapInt32Int`)
 				}
@@ -1485,7 +1485,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Int map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Int32\"")
+					z.EncWr().WriteStr("\"FMapInt32Int32\"")
 				} else {
 					r.EncodeString(`FMapInt32Int32`)
 				}
@@ -1497,7 +1497,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Int32 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Intf\"")
+					z.EncWr().WriteStr("\"FMapInt32Intf\"")
 				} else {
 					r.EncodeString(`FMapInt32Intf`)
 				}
@@ -1509,7 +1509,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Intf map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32String\"")
+					z.EncWr().WriteStr("\"FMapInt32String\"")
 				} else {
 					r.EncodeString(`FMapInt32String`)
 				}
@@ -1521,7 +1521,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32String map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Uint64\"")
+					z.EncWr().WriteStr("\"FMapInt32Uint64\"")
 				} else {
 					r.EncodeString(`FMapInt32Uint64`)
 				}
@@ -1533,7 +1533,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Uint64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Uint8\"")
+					z.EncWr().WriteStr("\"FMapInt32Uint8\"")
 				} else {
 					r.EncodeString(`FMapInt32Uint8`)
 				}
@@ -1545,7 +1545,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Uint8 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntBool\"")
+					z.EncWr().WriteStr("\"FMapIntBool\"")
 				} else {
 					r.EncodeString(`FMapIntBool`)
 				}
@@ -1557,7 +1557,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntBool map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntBytes\"")
+					z.EncWr().WriteStr("\"FMapIntBytes\"")
 				} else {
 					r.EncodeString(`FMapIntBytes`)
 				}
@@ -1569,7 +1569,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntBytes map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntFloat64\"")
+					z.EncWr().WriteStr("\"FMapIntFloat64\"")
 				} else {
 					r.EncodeString(`FMapIntFloat64`)
 				}
@@ -1581,7 +1581,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntFloat64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntInt\"")
+					z.EncWr().WriteStr("\"FMapIntInt\"")
 				} else {
 					r.EncodeString(`FMapIntInt`)
 				}
@@ -1593,7 +1593,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntInt map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntInt32\"")
+					z.EncWr().WriteStr("\"FMapIntInt32\"")
 				} else {
 					r.EncodeString(`FMapIntInt32`)
 				}
@@ -1605,7 +1605,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntInt32 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntIntf\"")
+					z.EncWr().WriteStr("\"FMapIntIntf\"")
 				} else {
 					r.EncodeString(`FMapIntIntf`)
 				}
@@ -1617,7 +1617,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntIntf map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntString\"")
+					z.EncWr().WriteStr("\"FMapIntString\"")
 				} else {
 					r.EncodeString(`FMapIntString`)
 				}
@@ -1629,7 +1629,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntString map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntUint64\"")
+					z.EncWr().WriteStr("\"FMapIntUint64\"")
 				} else {
 					r.EncodeString(`FMapIntUint64`)
 				}
@@ -1641,7 +1641,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntUint64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntUint8\"")
+					z.EncWr().WriteStr("\"FMapIntUint8\"")
 				} else {
 					r.EncodeString(`FMapIntUint8`)
 				}
@@ -1653,7 +1653,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntUint8 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringBool\"")
+					z.EncWr().WriteStr("\"FMapStringBool\"")
 				} else {
 					r.EncodeString(`FMapStringBool`)
 				}
@@ -1665,7 +1665,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringBool map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringBytes\"")
+					z.EncWr().WriteStr("\"FMapStringBytes\"")
 				} else {
 					r.EncodeString(`FMapStringBytes`)
 				}
@@ -1677,7 +1677,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringBytes map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringFloat64\"")
+					z.EncWr().WriteStr("\"FMapStringFloat64\"")
 				} else {
 					r.EncodeString(`FMapStringFloat64`)
 				}
@@ -1689,7 +1689,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringFloat64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringInt\"")
+					z.EncWr().WriteStr("\"FMapStringInt\"")
 				} else {
 					r.EncodeString(`FMapStringInt`)
 				}
@@ -1701,7 +1701,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringInt map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringInt32\"")
+					z.EncWr().WriteStr("\"FMapStringInt32\"")
 				} else {
 					r.EncodeString(`FMapStringInt32`)
 				}
@@ -1713,7 +1713,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringInt32 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringIntf\"")
+					z.EncWr().WriteStr("\"FMapStringIntf\"")
 				} else {
 					r.EncodeString(`FMapStringIntf`)
 				}
@@ -1725,7 +1725,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringIntf map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringString\"")
+					z.EncWr().WriteStr("\"FMapStringString\"")
 				} else {
 					r.EncodeString(`FMapStringString`)
 				}
@@ -1737,7 +1737,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringString map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringUint64\"")
+					z.EncWr().WriteStr("\"FMapStringUint64\"")
 				} else {
 					r.EncodeString(`FMapStringUint64`)
 				}
@@ -1749,7 +1749,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringUint64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringUint8\"")
+					z.EncWr().WriteStr("\"FMapStringUint8\"")
 				} else {
 					r.EncodeString(`FMapStringUint8`)
 				}
@@ -1761,7 +1761,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringUint8 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Bool\"")
+					z.EncWr().WriteStr("\"FMapUint64Bool\"")
 				} else {
 					r.EncodeString(`FMapUint64Bool`)
 				}
@@ -1773,7 +1773,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Bool map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Bytes\"")
+					z.EncWr().WriteStr("\"FMapUint64Bytes\"")
 				} else {
 					r.EncodeString(`FMapUint64Bytes`)
 				}
@@ -1785,7 +1785,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Bytes map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Float64\"")
+					z.EncWr().WriteStr("\"FMapUint64Float64\"")
 				} else {
 					r.EncodeString(`FMapUint64Float64`)
 				}
@@ -1797,7 +1797,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Float64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Int\"")
+					z.EncWr().WriteStr("\"FMapUint64Int\"")
 				} else {
 					r.EncodeString(`FMapUint64Int`)
 				}
@@ -1809,7 +1809,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Int map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Int32\"")
+					z.EncWr().WriteStr("\"FMapUint64Int32\"")
 				} else {
 					r.EncodeString(`FMapUint64Int32`)
 				}
@@ -1821,7 +1821,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Int32 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Intf\"")
+					z.EncWr().WriteStr("\"FMapUint64Intf\"")
 				} else {
 					r.EncodeString(`FMapUint64Intf`)
 				}
@@ -1833,7 +1833,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Intf map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64String\"")
+					z.EncWr().WriteStr("\"FMapUint64String\"")
 				} else {
 					r.EncodeString(`FMapUint64String`)
 				}
@@ -1845,7 +1845,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64String map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Uint64\"")
+					z.EncWr().WriteStr("\"FMapUint64Uint64\"")
 				} else {
 					r.EncodeString(`FMapUint64Uint64`)
 				}
@@ -1857,7 +1857,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Uint64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Uint8\"")
+					z.EncWr().WriteStr("\"FMapUint64Uint8\"")
 				} else {
 					r.EncodeString(`FMapUint64Uint8`)
 				}
@@ -1869,7 +1869,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Uint8 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Bool\"")
+					z.EncWr().WriteStr("\"FMapUint8Bool\"")
 				} else {
 					r.EncodeString(`FMapUint8Bool`)
 				}
@@ -1881,7 +1881,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Bool map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Bytes\"")
+					z.EncWr().WriteStr("\"FMapUint8Bytes\"")
 				} else {
 					r.EncodeString(`FMapUint8Bytes`)
 				}
@@ -1893,7 +1893,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Bytes map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Float64\"")
+					z.EncWr().WriteStr("\"FMapUint8Float64\"")
 				} else {
 					r.EncodeString(`FMapUint8Float64`)
 				}
@@ -1905,7 +1905,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Float64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Int\"")
+					z.EncWr().WriteStr("\"FMapUint8Int\"")
 				} else {
 					r.EncodeString(`FMapUint8Int`)
 				}
@@ -1917,7 +1917,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Int map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Int32\"")
+					z.EncWr().WriteStr("\"FMapUint8Int32\"")
 				} else {
 					r.EncodeString(`FMapUint8Int32`)
 				}
@@ -1929,7 +1929,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Int32 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Intf\"")
+					z.EncWr().WriteStr("\"FMapUint8Intf\"")
 				} else {
 					r.EncodeString(`FMapUint8Intf`)
 				}
@@ -1941,7 +1941,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Intf map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8String\"")
+					z.EncWr().WriteStr("\"FMapUint8String\"")
 				} else {
 					r.EncodeString(`FMapUint8String`)
 				}
@@ -1953,7 +1953,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8String map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Uint64\"")
+					z.EncWr().WriteStr("\"FMapUint8Uint64\"")
 				} else {
 					r.EncodeString(`FMapUint8Uint64`)
 				}
@@ -1965,7 +1965,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Uint64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Uint8\"")
+					z.EncWr().WriteStr("\"FMapUint8Uint8\"")
 				} else {
 					r.EncodeString(`FMapUint8Uint8`)
 				}
@@ -1977,7 +1977,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Uint8 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceBool\"")
+					z.EncWr().WriteStr("\"FSliceBool\"")
 				} else {
 					r.EncodeString(`FSliceBool`)
 				}
@@ -1989,7 +1989,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceBool slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceBytes\"")
+					z.EncWr().WriteStr("\"FSliceBytes\"")
 				} else {
 					r.EncodeString(`FSliceBytes`)
 				}
@@ -2001,7 +2001,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceBytes slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceFloat32\"")
+					z.EncWr().WriteStr("\"FSliceFloat32\"")
 				} else {
 					r.EncodeString(`FSliceFloat32`)
 				}
@@ -2013,7 +2013,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceFloat32 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceFloat64\"")
+					z.EncWr().WriteStr("\"FSliceFloat64\"")
 				} else {
 					r.EncodeString(`FSliceFloat64`)
 				}
@@ -2025,7 +2025,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceFloat64 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceInt\"")
+					z.EncWr().WriteStr("\"FSliceInt\"")
 				} else {
 					r.EncodeString(`FSliceInt`)
 				}
@@ -2037,7 +2037,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceInt slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceInt32\"")
+					z.EncWr().WriteStr("\"FSliceInt32\"")
 				} else {
 					r.EncodeString(`FSliceInt32`)
 				}
@@ -2049,7 +2049,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceInt32 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceInt64\"")
+					z.EncWr().WriteStr("\"FSliceInt64\"")
 				} else {
 					r.EncodeString(`FSliceInt64`)
 				}
@@ -2061,7 +2061,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceInt64 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceIntf\"")
+					z.EncWr().WriteStr("\"FSliceIntf\"")
 				} else {
 					r.EncodeString(`FSliceIntf`)
 				}
@@ -2073,7 +2073,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceIntf slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceString\"")
+					z.EncWr().WriteStr("\"FSliceString\"")
 				} else {
 					r.EncodeString(`FSliceString`)
 				}
@@ -2085,7 +2085,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceString slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceUint64\"")
+					z.EncWr().WriteStr("\"FSliceUint64\"")
 				} else {
 					r.EncodeString(`FSliceUint64`)
 				}
@@ -2097,7 +2097,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceUint64 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceUint8\"")
+					z.EncWr().WriteStr("\"FSliceUint8\"")
 				} else {
 					r.EncodeString(`FSliceUint8`)
 				}
@@ -2109,7 +2109,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceUint8 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FString\"")
+					z.EncWr().WriteStr("\"FString\"")
 				} else {
 					r.EncodeString(`FString`)
 				}
@@ -2117,7 +2117,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(string(x.FString))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUint\"")
+					z.EncWr().WriteStr("\"FUint\"")
 				} else {
 					r.EncodeString(`FUint`)
 				}
@@ -2125,7 +2125,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUint))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUint16\"")
+					z.EncWr().WriteStr("\"FUint16\"")
 				} else {
 					r.EncodeString(`FUint16`)
 				}
@@ -2133,7 +2133,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUint16))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUint32\"")
+					z.EncWr().WriteStr("\"FUint32\"")
 				} else {
 					r.EncodeString(`FUint32`)
 				}
@@ -2141,7 +2141,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUint32))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUint64\"")
+					z.EncWr().WriteStr("\"FUint64\"")
 				} else {
 					r.EncodeString(`FUint64`)
 				}
@@ -2149,7 +2149,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUint64))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUint8\"")
+					z.EncWr().WriteStr("\"FUint8\"")
 				} else {
 					r.EncodeString(`FUint8`)
 				}
@@ -2157,7 +2157,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUint8))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUintptr\"")
+					z.EncWr().WriteStr("\"FUintptr\"")
 				} else {
 					r.EncodeString(`FUintptr`)
 				}
@@ -2165,7 +2165,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUintptr))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrBool\"")
+					z.EncWr().WriteStr("\"FptrBool\"")
 				} else {
 					r.EncodeString(`FptrBool`)
 				}
@@ -2178,7 +2178,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrBytes\"")
+					z.EncWr().WriteStr("\"FptrBytes\"")
 				} else {
 					r.EncodeString(`FptrBytes`)
 				}
@@ -2195,7 +2195,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrFloat32\"")
+					z.EncWr().WriteStr("\"FptrFloat32\"")
 				} else {
 					r.EncodeString(`FptrFloat32`)
 				}
@@ -2208,7 +2208,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrFloat64\"")
+					z.EncWr().WriteStr("\"FptrFloat64\"")
 				} else {
 					r.EncodeString(`FptrFloat64`)
 				}
@@ -2221,7 +2221,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrInt\"")
+					z.EncWr().WriteStr("\"FptrInt\"")
 				} else {
 					r.EncodeString(`FptrInt`)
 				}
@@ -2234,7 +2234,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrInt16\"")
+					z.EncWr().WriteStr("\"FptrInt16\"")
 				} else {
 					r.EncodeString(`FptrInt16`)
 				}
@@ -2247,7 +2247,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrInt32\"")
+					z.EncWr().WriteStr("\"FptrInt32\"")
 				} else {
 					r.EncodeString(`FptrInt32`)
 				}
@@ -2260,7 +2260,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrInt64\"")
+					z.EncWr().WriteStr("\"FptrInt64\"")
 				} else {
 					r.EncodeString(`FptrInt64`)
 				}
@@ -2273,7 +2273,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrInt8\"")
+					z.EncWr().WriteStr("\"FptrInt8\"")
 				} else {
 					r.EncodeString(`FptrInt8`)
 				}
@@ -2286,7 +2286,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrIntf\"")
+					z.EncWr().WriteStr("\"FptrIntf\"")
 				} else {
 					r.EncodeString(`FptrIntf`)
 				}
@@ -2299,7 +2299,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Bool\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Bool\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Bool`)
 				}
@@ -2316,7 +2316,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Bytes\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Bytes\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Bytes`)
 				}
@@ -2333,7 +2333,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Float64\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Float64\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Float64`)
 				}
@@ -2350,7 +2350,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Int\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Int\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Int`)
 				}
@@ -2367,7 +2367,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Int32\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Int32\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Int32`)
 				}
@@ -2384,7 +2384,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Intf\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Intf\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Intf`)
 				}
@@ -2401,7 +2401,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32String\"")
+					z.EncWr().WriteStr("\"FptrMapInt32String\"")
 				} else {
 					r.EncodeString(`FptrMapInt32String`)
 				}
@@ -2418,7 +2418,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Uint64\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Uint64\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Uint64`)
 				}
@@ -2435,7 +2435,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Uint8\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Uint8\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Uint8`)
 				}
@@ -2452,7 +2452,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntBool\"")
+					z.EncWr().WriteStr("\"FptrMapIntBool\"")
 				} else {
 					r.EncodeString(`FptrMapIntBool`)
 				}
@@ -2469,7 +2469,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntBytes\"")
+					z.EncWr().WriteStr("\"FptrMapIntBytes\"")
 				} else {
 					r.EncodeString(`FptrMapIntBytes`)
 				}
@@ -2486,7 +2486,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntFloat64\"")
+					z.EncWr().WriteStr("\"FptrMapIntFloat64\"")
 				} else {
 					r.EncodeString(`FptrMapIntFloat64`)
 				}
@@ -2503,7 +2503,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntInt\"")
+					z.EncWr().WriteStr("\"FptrMapIntInt\"")
 				} else {
 					r.EncodeString(`FptrMapIntInt`)
 				}
@@ -2520,7 +2520,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntInt32\"")
+					z.EncWr().WriteStr("\"FptrMapIntInt32\"")
 				} else {
 					r.EncodeString(`FptrMapIntInt32`)
 				}
@@ -2537,7 +2537,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntIntf\"")
+					z.EncWr().WriteStr("\"FptrMapIntIntf\"")
 				} else {
 					r.EncodeString(`FptrMapIntIntf`)
 				}
@@ -2554,7 +2554,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntString\"")
+					z.EncWr().WriteStr("\"FptrMapIntString\"")
 				} else {
 					r.EncodeString(`FptrMapIntString`)
 				}
@@ -2571,7 +2571,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntUint64\"")
+					z.EncWr().WriteStr("\"FptrMapIntUint64\"")
 				} else {
 					r.EncodeString(`FptrMapIntUint64`)
 				}
@@ -2588,7 +2588,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntUint8\"")
+					z.EncWr().WriteStr("\"FptrMapIntUint8\"")
 				} else {
 					r.EncodeString(`FptrMapIntUint8`)
 				}
@@ -2605,7 +2605,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringBool\"")
+					z.EncWr().WriteStr("\"FptrMapStringBool\"")
 				} else {
 					r.EncodeString(`FptrMapStringBool`)
 				}
@@ -2622,7 +2622,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringBytes\"")
+					z.EncWr().WriteStr("\"FptrMapStringBytes\"")
 				} else {
 					r.EncodeString(`FptrMapStringBytes`)
 				}
@@ -2639,7 +2639,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringFloat64\"")
+					z.EncWr().WriteStr("\"FptrMapStringFloat64\"")
 				} else {
 					r.EncodeString(`FptrMapStringFloat64`)
 				}
@@ -2656,7 +2656,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringInt\"")
+					z.EncWr().WriteStr("\"FptrMapStringInt\"")
 				} else {
 					r.EncodeString(`FptrMapStringInt`)
 				}
@@ -2673,7 +2673,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringInt32\"")
+					z.EncWr().WriteStr("\"FptrMapStringInt32\"")
 				} else {
 					r.EncodeString(`FptrMapStringInt32`)
 				}
@@ -2690,7 +2690,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringIntf\"")
+					z.EncWr().WriteStr("\"FptrMapStringIntf\"")
 				} else {
 					r.EncodeString(`FptrMapStringIntf`)
 				}
@@ -2707,7 +2707,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringString\"")
+					z.EncWr().WriteStr("\"FptrMapStringString\"")
 				} else {
 					r.EncodeString(`FptrMapStringString`)
 				}
@@ -2724,7 +2724,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringUint64\"")
+					z.EncWr().WriteStr("\"FptrMapStringUint64\"")
 				} else {
 					r.EncodeString(`FptrMapStringUint64`)
 				}
@@ -2741,7 +2741,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringUint8\"")
+					z.EncWr().WriteStr("\"FptrMapStringUint8\"")
 				} else {
 					r.EncodeString(`FptrMapStringUint8`)
 				}
@@ -2758,7 +2758,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Bool\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Bool\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Bool`)
 				}
@@ -2775,7 +2775,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Bytes\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Bytes\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Bytes`)
 				}
@@ -2792,7 +2792,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Float64\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Float64\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Float64`)
 				}
@@ -2809,7 +2809,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Int\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Int\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Int`)
 				}
@@ -2826,7 +2826,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Int32\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Int32\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Int32`)
 				}
@@ -2843,7 +2843,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Intf\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Intf\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Intf`)
 				}
@@ -2860,7 +2860,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64String\"")
+					z.EncWr().WriteStr("\"FptrMapUint64String\"")
 				} else {
 					r.EncodeString(`FptrMapUint64String`)
 				}
@@ -2877,7 +2877,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Uint64\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Uint64\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Uint64`)
 				}
@@ -2894,7 +2894,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Uint8\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Uint8\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Uint8`)
 				}
@@ -2911,7 +2911,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Bool\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Bool\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Bool`)
 				}
@@ -2928,7 +2928,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Bytes\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Bytes\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Bytes`)
 				}
@@ -2945,7 +2945,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Float64\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Float64\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Float64`)
 				}
@@ -2962,7 +2962,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Int\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Int\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Int`)
 				}
@@ -2979,7 +2979,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Int32\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Int32\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Int32`)
 				}
@@ -2996,7 +2996,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Intf\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Intf\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Intf`)
 				}
@@ -3013,7 +3013,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8String\"")
+					z.EncWr().WriteStr("\"FptrMapUint8String\"")
 				} else {
 					r.EncodeString(`FptrMapUint8String`)
 				}
@@ -3030,7 +3030,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Uint64\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Uint64\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Uint64`)
 				}
@@ -3047,7 +3047,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Uint8\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Uint8\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Uint8`)
 				}
@@ -3064,7 +3064,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceBool\"")
+					z.EncWr().WriteStr("\"FptrSliceBool\"")
 				} else {
 					r.EncodeString(`FptrSliceBool`)
 				}
@@ -3081,7 +3081,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceBytes\"")
+					z.EncWr().WriteStr("\"FptrSliceBytes\"")
 				} else {
 					r.EncodeString(`FptrSliceBytes`)
 				}
@@ -3098,7 +3098,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceFloat32\"")
+					z.EncWr().WriteStr("\"FptrSliceFloat32\"")
 				} else {
 					r.EncodeString(`FptrSliceFloat32`)
 				}
@@ -3115,7 +3115,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceFloat64\"")
+					z.EncWr().WriteStr("\"FptrSliceFloat64\"")
 				} else {
 					r.EncodeString(`FptrSliceFloat64`)
 				}
@@ -3132,7 +3132,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceInt\"")
+					z.EncWr().WriteStr("\"FptrSliceInt\"")
 				} else {
 					r.EncodeString(`FptrSliceInt`)
 				}
@@ -3149,7 +3149,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceInt32\"")
+					z.EncWr().WriteStr("\"FptrSliceInt32\"")
 				} else {
 					r.EncodeString(`FptrSliceInt32`)
 				}
@@ -3166,7 +3166,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceInt64\"")
+					z.EncWr().WriteStr("\"FptrSliceInt64\"")
 				} else {
 					r.EncodeString(`FptrSliceInt64`)
 				}
@@ -3183,7 +3183,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceIntf\"")
+					z.EncWr().WriteStr("\"FptrSliceIntf\"")
 				} else {
 					r.EncodeString(`FptrSliceIntf`)
 				}
@@ -3200,7 +3200,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceString\"")
+					z.EncWr().WriteStr("\"FptrSliceString\"")
 				} else {
 					r.EncodeString(`FptrSliceString`)
 				}
@@ -3217,7 +3217,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceUint64\"")
+					z.EncWr().WriteStr("\"FptrSliceUint64\"")
 				} else {
 					r.EncodeString(`FptrSliceUint64`)
 				}
@@ -3234,7 +3234,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceUint8\"")
+					z.EncWr().WriteStr("\"FptrSliceUint8\"")
 				} else {
 					r.EncodeString(`FptrSliceUint8`)
 				}
@@ -3251,7 +3251,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrString\"")
+					z.EncWr().WriteStr("\"FptrString\"")
 				} else {
 					r.EncodeString(`FptrString`)
 				}
@@ -3264,7 +3264,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUint\"")
+					z.EncWr().WriteStr("\"FptrUint\"")
 				} else {
 					r.EncodeString(`FptrUint`)
 				}
@@ -3277,7 +3277,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUint16\"")
+					z.EncWr().WriteStr("\"FptrUint16\"")
 				} else {
 					r.EncodeString(`FptrUint16`)
 				}
@@ -3290,7 +3290,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUint32\"")
+					z.EncWr().WriteStr("\"FptrUint32\"")
 				} else {
 					r.EncodeString(`FptrUint32`)
 				}
@@ -3303,7 +3303,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUint64\"")
+					z.EncWr().WriteStr("\"FptrUint64\"")
 				} else {
 					r.EncodeString(`FptrUint64`)
 				}
@@ -3316,7 +3316,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUint8\"")
+					z.EncWr().WriteStr("\"FptrUint8\"")
 				} else {
 					r.EncodeString(`FptrUint8`)
 				}
@@ -3329,7 +3329,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUintptr\"")
+					z.EncWr().WriteStr("\"FptrUintptr\"")
 				} else {
 					r.EncodeString(`FptrUintptr`)
 				}
@@ -3343,7 +3343,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 			} else {
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FIntf\"")
+					z.EncWr().WriteStr("\"FIntf\"")
 				} else {
 					r.EncodeString(`FIntf`)
 				}
@@ -3351,7 +3351,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				z.EncFallback(x.FIntf)
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrIntf\"")
+					z.EncWr().WriteStr("\"FptrIntf\"")
 				} else {
 					r.EncodeString(`FptrIntf`)
 				}
@@ -3364,7 +3364,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FString\"")
+					z.EncWr().WriteStr("\"FString\"")
 				} else {
 					r.EncodeString(`FString`)
 				}
@@ -3372,7 +3372,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeString(string(x.FString))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrString\"")
+					z.EncWr().WriteStr("\"FptrString\"")
 				} else {
 					r.EncodeString(`FptrString`)
 				}
@@ -3385,7 +3385,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FBytes\"")
+					z.EncWr().WriteStr("\"FBytes\"")
 				} else {
 					r.EncodeString(`FBytes`)
 				}
@@ -3397,7 +3397,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FBytes slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrBytes\"")
+					z.EncWr().WriteStr("\"FptrBytes\"")
 				} else {
 					r.EncodeString(`FptrBytes`)
 				}
@@ -3414,7 +3414,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FFloat32\"")
+					z.EncWr().WriteStr("\"FFloat32\"")
 				} else {
 					r.EncodeString(`FFloat32`)
 				}
@@ -3422,7 +3422,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeFloat32(float32(x.FFloat32))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrFloat32\"")
+					z.EncWr().WriteStr("\"FptrFloat32\"")
 				} else {
 					r.EncodeString(`FptrFloat32`)
 				}
@@ -3435,7 +3435,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FFloat64\"")
+					z.EncWr().WriteStr("\"FFloat64\"")
 				} else {
 					r.EncodeString(`FFloat64`)
 				}
@@ -3443,7 +3443,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeFloat64(float64(x.FFloat64))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrFloat64\"")
+					z.EncWr().WriteStr("\"FptrFloat64\"")
 				} else {
 					r.EncodeString(`FptrFloat64`)
 				}
@@ -3456,7 +3456,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUint\"")
+					z.EncWr().WriteStr("\"FUint\"")
 				} else {
 					r.EncodeString(`FUint`)
 				}
@@ -3464,7 +3464,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUint))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUint\"")
+					z.EncWr().WriteStr("\"FptrUint\"")
 				} else {
 					r.EncodeString(`FptrUint`)
 				}
@@ -3477,7 +3477,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUint8\"")
+					z.EncWr().WriteStr("\"FUint8\"")
 				} else {
 					r.EncodeString(`FUint8`)
 				}
@@ -3485,7 +3485,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUint8))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUint8\"")
+					z.EncWr().WriteStr("\"FptrUint8\"")
 				} else {
 					r.EncodeString(`FptrUint8`)
 				}
@@ -3498,7 +3498,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUint16\"")
+					z.EncWr().WriteStr("\"FUint16\"")
 				} else {
 					r.EncodeString(`FUint16`)
 				}
@@ -3506,7 +3506,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUint16))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUint16\"")
+					z.EncWr().WriteStr("\"FptrUint16\"")
 				} else {
 					r.EncodeString(`FptrUint16`)
 				}
@@ -3519,7 +3519,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUint32\"")
+					z.EncWr().WriteStr("\"FUint32\"")
 				} else {
 					r.EncodeString(`FUint32`)
 				}
@@ -3527,7 +3527,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUint32))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUint32\"")
+					z.EncWr().WriteStr("\"FptrUint32\"")
 				} else {
 					r.EncodeString(`FptrUint32`)
 				}
@@ -3540,7 +3540,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUint64\"")
+					z.EncWr().WriteStr("\"FUint64\"")
 				} else {
 					r.EncodeString(`FUint64`)
 				}
@@ -3548,7 +3548,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUint64))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUint64\"")
+					z.EncWr().WriteStr("\"FptrUint64\"")
 				} else {
 					r.EncodeString(`FptrUint64`)
 				}
@@ -3561,7 +3561,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FUintptr\"")
+					z.EncWr().WriteStr("\"FUintptr\"")
 				} else {
 					r.EncodeString(`FUintptr`)
 				}
@@ -3569,7 +3569,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeUint(uint64(x.FUintptr))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrUintptr\"")
+					z.EncWr().WriteStr("\"FptrUintptr\"")
 				} else {
 					r.EncodeString(`FptrUintptr`)
 				}
@@ -3582,7 +3582,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FInt\"")
+					z.EncWr().WriteStr("\"FInt\"")
 				} else {
 					r.EncodeString(`FInt`)
 				}
@@ -3590,7 +3590,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeInt(int64(x.FInt))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrInt\"")
+					z.EncWr().WriteStr("\"FptrInt\"")
 				} else {
 					r.EncodeString(`FptrInt`)
 				}
@@ -3603,7 +3603,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FInt8\"")
+					z.EncWr().WriteStr("\"FInt8\"")
 				} else {
 					r.EncodeString(`FInt8`)
 				}
@@ -3611,7 +3611,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeInt(int64(x.FInt8))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrInt8\"")
+					z.EncWr().WriteStr("\"FptrInt8\"")
 				} else {
 					r.EncodeString(`FptrInt8`)
 				}
@@ -3624,7 +3624,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FInt16\"")
+					z.EncWr().WriteStr("\"FInt16\"")
 				} else {
 					r.EncodeString(`FInt16`)
 				}
@@ -3632,7 +3632,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeInt(int64(x.FInt16))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrInt16\"")
+					z.EncWr().WriteStr("\"FptrInt16\"")
 				} else {
 					r.EncodeString(`FptrInt16`)
 				}
@@ -3645,7 +3645,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FInt32\"")
+					z.EncWr().WriteStr("\"FInt32\"")
 				} else {
 					r.EncodeString(`FInt32`)
 				}
@@ -3653,7 +3653,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeInt(int64(x.FInt32))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrInt32\"")
+					z.EncWr().WriteStr("\"FptrInt32\"")
 				} else {
 					r.EncodeString(`FptrInt32`)
 				}
@@ -3666,7 +3666,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FInt64\"")
+					z.EncWr().WriteStr("\"FInt64\"")
 				} else {
 					r.EncodeString(`FInt64`)
 				}
@@ -3674,7 +3674,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeInt(int64(x.FInt64))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrInt64\"")
+					z.EncWr().WriteStr("\"FptrInt64\"")
 				} else {
 					r.EncodeString(`FptrInt64`)
 				}
@@ -3687,7 +3687,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FBool\"")
+					z.EncWr().WriteStr("\"FBool\"")
 				} else {
 					r.EncodeString(`FBool`)
 				}
@@ -3695,7 +3695,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				r.EncodeBool(bool(x.FBool))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrBool\"")
+					z.EncWr().WriteStr("\"FptrBool\"")
 				} else {
 					r.EncodeString(`FptrBool`)
 				}
@@ -3708,7 +3708,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceIntf\"")
+					z.EncWr().WriteStr("\"FSliceIntf\"")
 				} else {
 					r.EncodeString(`FSliceIntf`)
 				}
@@ -3720,7 +3720,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceIntf slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceIntf\"")
+					z.EncWr().WriteStr("\"FptrSliceIntf\"")
 				} else {
 					r.EncodeString(`FptrSliceIntf`)
 				}
@@ -3737,7 +3737,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceString\"")
+					z.EncWr().WriteStr("\"FSliceString\"")
 				} else {
 					r.EncodeString(`FSliceString`)
 				}
@@ -3749,7 +3749,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceString slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceString\"")
+					z.EncWr().WriteStr("\"FptrSliceString\"")
 				} else {
 					r.EncodeString(`FptrSliceString`)
 				}
@@ -3766,7 +3766,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceBytes\"")
+					z.EncWr().WriteStr("\"FSliceBytes\"")
 				} else {
 					r.EncodeString(`FSliceBytes`)
 				}
@@ -3778,7 +3778,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceBytes slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceBytes\"")
+					z.EncWr().WriteStr("\"FptrSliceBytes\"")
 				} else {
 					r.EncodeString(`FptrSliceBytes`)
 				}
@@ -3795,7 +3795,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceFloat32\"")
+					z.EncWr().WriteStr("\"FSliceFloat32\"")
 				} else {
 					r.EncodeString(`FSliceFloat32`)
 				}
@@ -3807,7 +3807,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceFloat32 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceFloat32\"")
+					z.EncWr().WriteStr("\"FptrSliceFloat32\"")
 				} else {
 					r.EncodeString(`FptrSliceFloat32`)
 				}
@@ -3824,7 +3824,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceFloat64\"")
+					z.EncWr().WriteStr("\"FSliceFloat64\"")
 				} else {
 					r.EncodeString(`FSliceFloat64`)
 				}
@@ -3836,7 +3836,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceFloat64 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceFloat64\"")
+					z.EncWr().WriteStr("\"FptrSliceFloat64\"")
 				} else {
 					r.EncodeString(`FptrSliceFloat64`)
 				}
@@ -3853,7 +3853,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceUint8\"")
+					z.EncWr().WriteStr("\"FSliceUint8\"")
 				} else {
 					r.EncodeString(`FSliceUint8`)
 				}
@@ -3865,7 +3865,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceUint8 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceUint8\"")
+					z.EncWr().WriteStr("\"FptrSliceUint8\"")
 				} else {
 					r.EncodeString(`FptrSliceUint8`)
 				}
@@ -3882,7 +3882,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceUint64\"")
+					z.EncWr().WriteStr("\"FSliceUint64\"")
 				} else {
 					r.EncodeString(`FSliceUint64`)
 				}
@@ -3894,7 +3894,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceUint64 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceUint64\"")
+					z.EncWr().WriteStr("\"FptrSliceUint64\"")
 				} else {
 					r.EncodeString(`FptrSliceUint64`)
 				}
@@ -3911,7 +3911,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceInt\"")
+					z.EncWr().WriteStr("\"FSliceInt\"")
 				} else {
 					r.EncodeString(`FSliceInt`)
 				}
@@ -3923,7 +3923,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceInt slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceInt\"")
+					z.EncWr().WriteStr("\"FptrSliceInt\"")
 				} else {
 					r.EncodeString(`FptrSliceInt`)
 				}
@@ -3940,7 +3940,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceInt32\"")
+					z.EncWr().WriteStr("\"FSliceInt32\"")
 				} else {
 					r.EncodeString(`FSliceInt32`)
 				}
@@ -3952,7 +3952,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceInt32 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceInt32\"")
+					z.EncWr().WriteStr("\"FptrSliceInt32\"")
 				} else {
 					r.EncodeString(`FptrSliceInt32`)
 				}
@@ -3969,7 +3969,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceInt64\"")
+					z.EncWr().WriteStr("\"FSliceInt64\"")
 				} else {
 					r.EncodeString(`FSliceInt64`)
 				}
@@ -3981,7 +3981,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceInt64 slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceInt64\"")
+					z.EncWr().WriteStr("\"FptrSliceInt64\"")
 				} else {
 					r.EncodeString(`FptrSliceInt64`)
 				}
@@ -3998,7 +3998,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FSliceBool\"")
+					z.EncWr().WriteStr("\"FSliceBool\"")
 				} else {
 					r.EncodeString(`FSliceBool`)
 				}
@@ -4010,7 +4010,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FSliceBool slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrSliceBool\"")
+					z.EncWr().WriteStr("\"FptrSliceBool\"")
 				} else {
 					r.EncodeString(`FptrSliceBool`)
 				}
@@ -4027,7 +4027,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringIntf\"")
+					z.EncWr().WriteStr("\"FMapStringIntf\"")
 				} else {
 					r.EncodeString(`FMapStringIntf`)
 				}
@@ -4039,7 +4039,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringIntf map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringIntf\"")
+					z.EncWr().WriteStr("\"FptrMapStringIntf\"")
 				} else {
 					r.EncodeString(`FptrMapStringIntf`)
 				}
@@ -4056,7 +4056,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringString\"")
+					z.EncWr().WriteStr("\"FMapStringString\"")
 				} else {
 					r.EncodeString(`FMapStringString`)
 				}
@@ -4068,7 +4068,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringString map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringString\"")
+					z.EncWr().WriteStr("\"FptrMapStringString\"")
 				} else {
 					r.EncodeString(`FptrMapStringString`)
 				}
@@ -4085,7 +4085,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringBytes\"")
+					z.EncWr().WriteStr("\"FMapStringBytes\"")
 				} else {
 					r.EncodeString(`FMapStringBytes`)
 				}
@@ -4097,7 +4097,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringBytes map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringBytes\"")
+					z.EncWr().WriteStr("\"FptrMapStringBytes\"")
 				} else {
 					r.EncodeString(`FptrMapStringBytes`)
 				}
@@ -4114,7 +4114,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringUint8\"")
+					z.EncWr().WriteStr("\"FMapStringUint8\"")
 				} else {
 					r.EncodeString(`FMapStringUint8`)
 				}
@@ -4126,7 +4126,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringUint8 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringUint8\"")
+					z.EncWr().WriteStr("\"FptrMapStringUint8\"")
 				} else {
 					r.EncodeString(`FptrMapStringUint8`)
 				}
@@ -4143,7 +4143,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringUint64\"")
+					z.EncWr().WriteStr("\"FMapStringUint64\"")
 				} else {
 					r.EncodeString(`FMapStringUint64`)
 				}
@@ -4155,7 +4155,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringUint64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringUint64\"")
+					z.EncWr().WriteStr("\"FptrMapStringUint64\"")
 				} else {
 					r.EncodeString(`FptrMapStringUint64`)
 				}
@@ -4172,7 +4172,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringInt\"")
+					z.EncWr().WriteStr("\"FMapStringInt\"")
 				} else {
 					r.EncodeString(`FMapStringInt`)
 				}
@@ -4184,7 +4184,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringInt map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringInt\"")
+					z.EncWr().WriteStr("\"FptrMapStringInt\"")
 				} else {
 					r.EncodeString(`FptrMapStringInt`)
 				}
@@ -4201,7 +4201,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringInt32\"")
+					z.EncWr().WriteStr("\"FMapStringInt32\"")
 				} else {
 					r.EncodeString(`FMapStringInt32`)
 				}
@@ -4213,7 +4213,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringInt32 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringInt32\"")
+					z.EncWr().WriteStr("\"FptrMapStringInt32\"")
 				} else {
 					r.EncodeString(`FptrMapStringInt32`)
 				}
@@ -4230,7 +4230,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringFloat64\"")
+					z.EncWr().WriteStr("\"FMapStringFloat64\"")
 				} else {
 					r.EncodeString(`FMapStringFloat64`)
 				}
@@ -4242,7 +4242,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringFloat64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringFloat64\"")
+					z.EncWr().WriteStr("\"FptrMapStringFloat64\"")
 				} else {
 					r.EncodeString(`FptrMapStringFloat64`)
 				}
@@ -4259,7 +4259,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapStringBool\"")
+					z.EncWr().WriteStr("\"FMapStringBool\"")
 				} else {
 					r.EncodeString(`FMapStringBool`)
 				}
@@ -4271,7 +4271,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapStringBool map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapStringBool\"")
+					z.EncWr().WriteStr("\"FptrMapStringBool\"")
 				} else {
 					r.EncodeString(`FptrMapStringBool`)
 				}
@@ -4288,7 +4288,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Intf\"")
+					z.EncWr().WriteStr("\"FMapUint8Intf\"")
 				} else {
 					r.EncodeString(`FMapUint8Intf`)
 				}
@@ -4300,7 +4300,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Intf map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Intf\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Intf\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Intf`)
 				}
@@ -4317,7 +4317,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8String\"")
+					z.EncWr().WriteStr("\"FMapUint8String\"")
 				} else {
 					r.EncodeString(`FMapUint8String`)
 				}
@@ -4329,7 +4329,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8String map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8String\"")
+					z.EncWr().WriteStr("\"FptrMapUint8String\"")
 				} else {
 					r.EncodeString(`FptrMapUint8String`)
 				}
@@ -4346,7 +4346,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Bytes\"")
+					z.EncWr().WriteStr("\"FMapUint8Bytes\"")
 				} else {
 					r.EncodeString(`FMapUint8Bytes`)
 				}
@@ -4358,7 +4358,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Bytes map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Bytes\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Bytes\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Bytes`)
 				}
@@ -4375,7 +4375,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Uint8\"")
+					z.EncWr().WriteStr("\"FMapUint8Uint8\"")
 				} else {
 					r.EncodeString(`FMapUint8Uint8`)
 				}
@@ -4387,7 +4387,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Uint8 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Uint8\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Uint8\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Uint8`)
 				}
@@ -4404,7 +4404,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Uint64\"")
+					z.EncWr().WriteStr("\"FMapUint8Uint64\"")
 				} else {
 					r.EncodeString(`FMapUint8Uint64`)
 				}
@@ -4416,7 +4416,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Uint64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Uint64\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Uint64\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Uint64`)
 				}
@@ -4433,7 +4433,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Int\"")
+					z.EncWr().WriteStr("\"FMapUint8Int\"")
 				} else {
 					r.EncodeString(`FMapUint8Int`)
 				}
@@ -4445,7 +4445,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Int map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Int\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Int\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Int`)
 				}
@@ -4462,7 +4462,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Int32\"")
+					z.EncWr().WriteStr("\"FMapUint8Int32\"")
 				} else {
 					r.EncodeString(`FMapUint8Int32`)
 				}
@@ -4474,7 +4474,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Int32 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Int32\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Int32\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Int32`)
 				}
@@ -4491,7 +4491,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Float64\"")
+					z.EncWr().WriteStr("\"FMapUint8Float64\"")
 				} else {
 					r.EncodeString(`FMapUint8Float64`)
 				}
@@ -4503,7 +4503,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Float64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Float64\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Float64\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Float64`)
 				}
@@ -4520,7 +4520,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint8Bool\"")
+					z.EncWr().WriteStr("\"FMapUint8Bool\"")
 				} else {
 					r.EncodeString(`FMapUint8Bool`)
 				}
@@ -4532,7 +4532,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint8Bool map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint8Bool\"")
+					z.EncWr().WriteStr("\"FptrMapUint8Bool\"")
 				} else {
 					r.EncodeString(`FptrMapUint8Bool`)
 				}
@@ -4549,7 +4549,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Intf\"")
+					z.EncWr().WriteStr("\"FMapUint64Intf\"")
 				} else {
 					r.EncodeString(`FMapUint64Intf`)
 				}
@@ -4561,7 +4561,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Intf map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Intf\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Intf\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Intf`)
 				}
@@ -4578,7 +4578,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64String\"")
+					z.EncWr().WriteStr("\"FMapUint64String\"")
 				} else {
 					r.EncodeString(`FMapUint64String`)
 				}
@@ -4590,7 +4590,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64String map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64String\"")
+					z.EncWr().WriteStr("\"FptrMapUint64String\"")
 				} else {
 					r.EncodeString(`FptrMapUint64String`)
 				}
@@ -4607,7 +4607,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Bytes\"")
+					z.EncWr().WriteStr("\"FMapUint64Bytes\"")
 				} else {
 					r.EncodeString(`FMapUint64Bytes`)
 				}
@@ -4619,7 +4619,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Bytes map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Bytes\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Bytes\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Bytes`)
 				}
@@ -4636,7 +4636,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Uint8\"")
+					z.EncWr().WriteStr("\"FMapUint64Uint8\"")
 				} else {
 					r.EncodeString(`FMapUint64Uint8`)
 				}
@@ -4648,7 +4648,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Uint8 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Uint8\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Uint8\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Uint8`)
 				}
@@ -4665,7 +4665,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Uint64\"")
+					z.EncWr().WriteStr("\"FMapUint64Uint64\"")
 				} else {
 					r.EncodeString(`FMapUint64Uint64`)
 				}
@@ -4677,7 +4677,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Uint64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Uint64\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Uint64\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Uint64`)
 				}
@@ -4694,7 +4694,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Int\"")
+					z.EncWr().WriteStr("\"FMapUint64Int\"")
 				} else {
 					r.EncodeString(`FMapUint64Int`)
 				}
@@ -4706,7 +4706,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Int map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Int\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Int\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Int`)
 				}
@@ -4723,7 +4723,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Int32\"")
+					z.EncWr().WriteStr("\"FMapUint64Int32\"")
 				} else {
 					r.EncodeString(`FMapUint64Int32`)
 				}
@@ -4735,7 +4735,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Int32 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Int32\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Int32\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Int32`)
 				}
@@ -4752,7 +4752,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Float64\"")
+					z.EncWr().WriteStr("\"FMapUint64Float64\"")
 				} else {
 					r.EncodeString(`FMapUint64Float64`)
 				}
@@ -4764,7 +4764,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Float64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Float64\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Float64\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Float64`)
 				}
@@ -4781,7 +4781,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapUint64Bool\"")
+					z.EncWr().WriteStr("\"FMapUint64Bool\"")
 				} else {
 					r.EncodeString(`FMapUint64Bool`)
 				}
@@ -4793,7 +4793,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapUint64Bool map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapUint64Bool\"")
+					z.EncWr().WriteStr("\"FptrMapUint64Bool\"")
 				} else {
 					r.EncodeString(`FptrMapUint64Bool`)
 				}
@@ -4810,7 +4810,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntIntf\"")
+					z.EncWr().WriteStr("\"FMapIntIntf\"")
 				} else {
 					r.EncodeString(`FMapIntIntf`)
 				}
@@ -4822,7 +4822,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntIntf map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntIntf\"")
+					z.EncWr().WriteStr("\"FptrMapIntIntf\"")
 				} else {
 					r.EncodeString(`FptrMapIntIntf`)
 				}
@@ -4839,7 +4839,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntString\"")
+					z.EncWr().WriteStr("\"FMapIntString\"")
 				} else {
 					r.EncodeString(`FMapIntString`)
 				}
@@ -4851,7 +4851,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntString map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntString\"")
+					z.EncWr().WriteStr("\"FptrMapIntString\"")
 				} else {
 					r.EncodeString(`FptrMapIntString`)
 				}
@@ -4868,7 +4868,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntBytes\"")
+					z.EncWr().WriteStr("\"FMapIntBytes\"")
 				} else {
 					r.EncodeString(`FMapIntBytes`)
 				}
@@ -4880,7 +4880,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntBytes map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntBytes\"")
+					z.EncWr().WriteStr("\"FptrMapIntBytes\"")
 				} else {
 					r.EncodeString(`FptrMapIntBytes`)
 				}
@@ -4897,7 +4897,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntUint8\"")
+					z.EncWr().WriteStr("\"FMapIntUint8\"")
 				} else {
 					r.EncodeString(`FMapIntUint8`)
 				}
@@ -4909,7 +4909,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntUint8 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntUint8\"")
+					z.EncWr().WriteStr("\"FptrMapIntUint8\"")
 				} else {
 					r.EncodeString(`FptrMapIntUint8`)
 				}
@@ -4926,7 +4926,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntUint64\"")
+					z.EncWr().WriteStr("\"FMapIntUint64\"")
 				} else {
 					r.EncodeString(`FMapIntUint64`)
 				}
@@ -4938,7 +4938,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntUint64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntUint64\"")
+					z.EncWr().WriteStr("\"FptrMapIntUint64\"")
 				} else {
 					r.EncodeString(`FptrMapIntUint64`)
 				}
@@ -4955,7 +4955,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntInt\"")
+					z.EncWr().WriteStr("\"FMapIntInt\"")
 				} else {
 					r.EncodeString(`FMapIntInt`)
 				}
@@ -4967,7 +4967,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntInt map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntInt\"")
+					z.EncWr().WriteStr("\"FptrMapIntInt\"")
 				} else {
 					r.EncodeString(`FptrMapIntInt`)
 				}
@@ -4984,7 +4984,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntInt32\"")
+					z.EncWr().WriteStr("\"FMapIntInt32\"")
 				} else {
 					r.EncodeString(`FMapIntInt32`)
 				}
@@ -4996,7 +4996,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntInt32 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntInt32\"")
+					z.EncWr().WriteStr("\"FptrMapIntInt32\"")
 				} else {
 					r.EncodeString(`FptrMapIntInt32`)
 				}
@@ -5013,7 +5013,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntFloat64\"")
+					z.EncWr().WriteStr("\"FMapIntFloat64\"")
 				} else {
 					r.EncodeString(`FMapIntFloat64`)
 				}
@@ -5025,7 +5025,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntFloat64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntFloat64\"")
+					z.EncWr().WriteStr("\"FptrMapIntFloat64\"")
 				} else {
 					r.EncodeString(`FptrMapIntFloat64`)
 				}
@@ -5042,7 +5042,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapIntBool\"")
+					z.EncWr().WriteStr("\"FMapIntBool\"")
 				} else {
 					r.EncodeString(`FMapIntBool`)
 				}
@@ -5054,7 +5054,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapIntBool map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapIntBool\"")
+					z.EncWr().WriteStr("\"FptrMapIntBool\"")
 				} else {
 					r.EncodeString(`FptrMapIntBool`)
 				}
@@ -5071,7 +5071,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Intf\"")
+					z.EncWr().WriteStr("\"FMapInt32Intf\"")
 				} else {
 					r.EncodeString(`FMapInt32Intf`)
 				}
@@ -5083,7 +5083,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Intf map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Intf\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Intf\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Intf`)
 				}
@@ -5100,7 +5100,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32String\"")
+					z.EncWr().WriteStr("\"FMapInt32String\"")
 				} else {
 					r.EncodeString(`FMapInt32String`)
 				}
@@ -5112,7 +5112,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32String map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32String\"")
+					z.EncWr().WriteStr("\"FptrMapInt32String\"")
 				} else {
 					r.EncodeString(`FptrMapInt32String`)
 				}
@@ -5129,7 +5129,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Bytes\"")
+					z.EncWr().WriteStr("\"FMapInt32Bytes\"")
 				} else {
 					r.EncodeString(`FMapInt32Bytes`)
 				}
@@ -5141,7 +5141,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Bytes map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Bytes\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Bytes\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Bytes`)
 				}
@@ -5158,7 +5158,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Uint8\"")
+					z.EncWr().WriteStr("\"FMapInt32Uint8\"")
 				} else {
 					r.EncodeString(`FMapInt32Uint8`)
 				}
@@ -5170,7 +5170,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Uint8 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Uint8\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Uint8\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Uint8`)
 				}
@@ -5187,7 +5187,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Uint64\"")
+					z.EncWr().WriteStr("\"FMapInt32Uint64\"")
 				} else {
 					r.EncodeString(`FMapInt32Uint64`)
 				}
@@ -5199,7 +5199,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Uint64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Uint64\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Uint64\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Uint64`)
 				}
@@ -5216,7 +5216,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Int\"")
+					z.EncWr().WriteStr("\"FMapInt32Int\"")
 				} else {
 					r.EncodeString(`FMapInt32Int`)
 				}
@@ -5228,7 +5228,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Int map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Int\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Int\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Int`)
 				}
@@ -5245,7 +5245,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Int32\"")
+					z.EncWr().WriteStr("\"FMapInt32Int32\"")
 				} else {
 					r.EncodeString(`FMapInt32Int32`)
 				}
@@ -5257,7 +5257,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Int32 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Int32\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Int32\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Int32`)
 				}
@@ -5274,7 +5274,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Float64\"")
+					z.EncWr().WriteStr("\"FMapInt32Float64\"")
 				} else {
 					r.EncodeString(`FMapInt32Float64`)
 				}
@@ -5286,7 +5286,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Float64 map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Float64\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Float64\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Float64`)
 				}
@@ -5303,7 +5303,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FMapInt32Bool\"")
+					z.EncWr().WriteStr("\"FMapInt32Bool\"")
 				} else {
 					r.EncodeString(`FMapInt32Bool`)
 				}
@@ -5315,7 +5315,7 @@ func (x *TestMammoth2) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.FMapInt32Bool map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"FptrMapInt32Bool\"")
+					z.EncWr().WriteStr("\"FptrMapInt32Bool\"")
 				} else {
 					r.EncodeString(`FptrMapInt32Bool`)
 				}
@@ -5366,16 +5366,7 @@ func (x *TestMammoth2) codecDecodeSelfFromMap(l int, d *Decoder) {
 	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	var yyhl3 bool = l >= 0
-	for yyj3 := 0; ; yyj3++ {
-		if yyhl3 {
-			if yyj3 >= l {
-				break
-			}
-		} else {
-			if z.DecCheckBreak() {
-				break
-			}
-		}
+	for yyj3 := 0; z.DecContainerNext(yyj3, l, yyhl3); yyj3++ {
 		z.DecReadMapElemKey()
 		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
@@ -6343,11 +6334,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyb281 bool
 	var yyhl281 bool = l >= 0
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6355,11 +6342,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.DecFallback(&x.FIntf, true)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6376,11 +6359,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.DecFallback(x.FptrIntf, true)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6388,11 +6367,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FString = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6409,11 +6384,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrString = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6421,11 +6392,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FBytes = z.DecodeBytesInto(([]byte)(x.FBytes))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6442,11 +6409,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrBytes = z.DecodeBytesInto(*(*[]byte)(x.FptrBytes))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6454,11 +6417,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FFloat32 = (float32)(z.DecDecodeFloat32())
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6475,11 +6434,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrFloat32 = (float32)(z.DecDecodeFloat32())
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6487,11 +6442,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FFloat64 = (float64)(r.DecodeFloat64())
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6508,11 +6459,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrFloat64 = (float64)(r.DecodeFloat64())
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6520,11 +6467,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FUint = (uint)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6541,11 +6484,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrUint = (uint)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6553,11 +6492,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FUint8 = (uint8)(z.C.UintV(r.DecodeUint64(), 8))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6574,11 +6509,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrUint8 = (uint8)(z.C.UintV(r.DecodeUint64(), 8))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6586,11 +6517,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FUint16 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6607,11 +6534,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrUint16 = (uint16)(z.C.UintV(r.DecodeUint64(), 16))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6619,11 +6542,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FUint32 = (uint32)(z.C.UintV(r.DecodeUint64(), 32))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6640,11 +6559,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrUint32 = (uint32)(z.C.UintV(r.DecodeUint64(), 32))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6652,11 +6567,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FUint64 = (uint64)(r.DecodeUint64())
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6673,11 +6584,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrUint64 = (uint64)(r.DecodeUint64())
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6685,11 +6592,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FUintptr = (uintptr)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6706,11 +6609,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrUintptr = (uintptr)(z.C.UintV(r.DecodeUint64(), codecSelferBitsize19781))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6718,11 +6617,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FInt = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6739,11 +6634,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrInt = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19781))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6751,11 +6642,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FInt8 = (int8)(z.C.IntV(r.DecodeInt64(), 8))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6772,11 +6659,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrInt8 = (int8)(z.C.IntV(r.DecodeInt64(), 8))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6784,11 +6667,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FInt16 = (int16)(z.C.IntV(r.DecodeInt64(), 16))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6805,11 +6684,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrInt16 = (int16)(z.C.IntV(r.DecodeInt64(), 16))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6817,11 +6692,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FInt32 = (int32)(z.C.IntV(r.DecodeInt64(), 32))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6838,11 +6709,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrInt32 = (int32)(z.C.IntV(r.DecodeInt64(), 32))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6850,11 +6717,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FInt64 = (int64)(r.DecodeInt64())
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6871,11 +6734,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrInt64 = (int64)(r.DecodeInt64())
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6883,11 +6742,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FBool = (bool)(r.DecodeBool())
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6904,11 +6759,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrBool = (bool)(r.DecodeBool())
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6916,11 +6767,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecSliceIntfX(&x.FSliceIntf, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6937,11 +6784,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecSliceIntfX(x.FptrSliceIntf, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6949,11 +6792,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecSliceStringX(&x.FSliceString, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6970,11 +6809,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecSliceStringX(x.FptrSliceString, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -6982,11 +6817,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecSliceBytesX(&x.FSliceBytes, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7003,11 +6834,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecSliceBytesX(x.FptrSliceBytes, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7015,11 +6842,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecSliceFloat32X(&x.FSliceFloat32, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7036,11 +6859,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecSliceFloat32X(x.FptrSliceFloat32, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7048,11 +6867,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecSliceFloat64X(&x.FSliceFloat64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7069,11 +6884,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecSliceFloat64X(x.FptrSliceFloat64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7081,11 +6892,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.FSliceUint8 = z.DecodeBytesInto(([]byte)(x.FSliceUint8))
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7102,11 +6909,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.FptrSliceUint8 = z.DecodeBytesInto(*(*[]byte)(x.FptrSliceUint8))
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7114,11 +6917,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecSliceUint64X(&x.FSliceUint64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7135,11 +6934,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecSliceUint64X(x.FptrSliceUint64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7147,11 +6942,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecSliceIntX(&x.FSliceInt, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7168,11 +6959,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecSliceIntX(x.FptrSliceInt, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7180,11 +6967,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecSliceInt32X(&x.FSliceInt32, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7201,11 +6984,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecSliceInt32X(x.FptrSliceInt32, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7213,11 +6992,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecSliceInt64X(&x.FSliceInt64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7234,11 +7009,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecSliceInt64X(x.FptrSliceInt64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7246,11 +7017,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecSliceBoolX(&x.FSliceBool, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7267,11 +7034,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecSliceBoolX(x.FptrSliceBool, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7279,11 +7042,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapStringIntfX(&x.FMapStringIntf, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7300,11 +7059,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapStringIntfX(x.FptrMapStringIntf, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7312,11 +7067,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapStringStringX(&x.FMapStringString, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7333,11 +7084,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapStringStringX(x.FptrMapStringString, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7345,11 +7092,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapStringBytesX(&x.FMapStringBytes, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7366,11 +7109,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapStringBytesX(x.FptrMapStringBytes, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7378,11 +7117,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapStringUint8X(&x.FMapStringUint8, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7399,11 +7134,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapStringUint8X(x.FptrMapStringUint8, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7411,11 +7142,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapStringUint64X(&x.FMapStringUint64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7432,11 +7159,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapStringUint64X(x.FptrMapStringUint64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7444,11 +7167,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapStringIntX(&x.FMapStringInt, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7465,11 +7184,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapStringIntX(x.FptrMapStringInt, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7477,11 +7192,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapStringInt32X(&x.FMapStringInt32, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7498,11 +7209,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapStringInt32X(x.FptrMapStringInt32, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7510,11 +7217,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapStringFloat64X(&x.FMapStringFloat64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7531,11 +7234,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapStringFloat64X(x.FptrMapStringFloat64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7543,11 +7242,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapStringBoolX(&x.FMapStringBool, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7564,11 +7259,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapStringBoolX(x.FptrMapStringBool, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7576,11 +7267,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint8IntfX(&x.FMapUint8Intf, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7597,11 +7284,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint8IntfX(x.FptrMapUint8Intf, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7609,11 +7292,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint8StringX(&x.FMapUint8String, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7630,11 +7309,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint8StringX(x.FptrMapUint8String, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7642,11 +7317,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint8BytesX(&x.FMapUint8Bytes, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7663,11 +7334,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint8BytesX(x.FptrMapUint8Bytes, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7675,11 +7342,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint8Uint8X(&x.FMapUint8Uint8, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7696,11 +7359,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint8Uint8X(x.FptrMapUint8Uint8, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7708,11 +7367,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint8Uint64X(&x.FMapUint8Uint64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7729,11 +7384,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint8Uint64X(x.FptrMapUint8Uint64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7741,11 +7392,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint8IntX(&x.FMapUint8Int, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7762,11 +7409,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint8IntX(x.FptrMapUint8Int, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7774,11 +7417,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint8Int32X(&x.FMapUint8Int32, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7795,11 +7434,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint8Int32X(x.FptrMapUint8Int32, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7807,11 +7442,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint8Float64X(&x.FMapUint8Float64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7828,11 +7459,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint8Float64X(x.FptrMapUint8Float64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7840,11 +7467,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint8BoolX(&x.FMapUint8Bool, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7861,11 +7484,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint8BoolX(x.FptrMapUint8Bool, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7873,11 +7492,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint64IntfX(&x.FMapUint64Intf, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7894,11 +7509,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint64IntfX(x.FptrMapUint64Intf, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7906,11 +7517,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint64StringX(&x.FMapUint64String, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7927,11 +7534,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint64StringX(x.FptrMapUint64String, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7939,11 +7542,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint64BytesX(&x.FMapUint64Bytes, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7960,11 +7559,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint64BytesX(x.FptrMapUint64Bytes, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7972,11 +7567,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint64Uint8X(&x.FMapUint64Uint8, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -7993,11 +7584,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint64Uint8X(x.FptrMapUint64Uint8, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8005,11 +7592,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint64Uint64X(&x.FMapUint64Uint64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8026,11 +7609,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint64Uint64X(x.FptrMapUint64Uint64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8038,11 +7617,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint64IntX(&x.FMapUint64Int, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8059,11 +7634,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint64IntX(x.FptrMapUint64Int, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8071,11 +7642,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint64Int32X(&x.FMapUint64Int32, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8092,11 +7659,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint64Int32X(x.FptrMapUint64Int32, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8104,11 +7667,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint64Float64X(&x.FMapUint64Float64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8125,11 +7684,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint64Float64X(x.FptrMapUint64Float64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8137,11 +7692,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapUint64BoolX(&x.FMapUint64Bool, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8158,11 +7709,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapUint64BoolX(x.FptrMapUint64Bool, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8170,11 +7717,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapIntIntfX(&x.FMapIntIntf, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8191,11 +7734,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapIntIntfX(x.FptrMapIntIntf, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8203,11 +7742,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapIntStringX(&x.FMapIntString, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8224,11 +7759,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapIntStringX(x.FptrMapIntString, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8236,11 +7767,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapIntBytesX(&x.FMapIntBytes, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8257,11 +7784,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapIntBytesX(x.FptrMapIntBytes, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8269,11 +7792,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapIntUint8X(&x.FMapIntUint8, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8290,11 +7809,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapIntUint8X(x.FptrMapIntUint8, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8302,11 +7817,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapIntUint64X(&x.FMapIntUint64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8323,11 +7834,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapIntUint64X(x.FptrMapIntUint64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8335,11 +7842,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapIntIntX(&x.FMapIntInt, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8356,11 +7859,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapIntIntX(x.FptrMapIntInt, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8368,11 +7867,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapIntInt32X(&x.FMapIntInt32, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8389,11 +7884,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapIntInt32X(x.FptrMapIntInt32, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8401,11 +7892,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapIntFloat64X(&x.FMapIntFloat64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8422,11 +7909,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapIntFloat64X(x.FptrMapIntFloat64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8434,11 +7917,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapIntBoolX(&x.FMapIntBool, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8455,11 +7934,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapIntBoolX(x.FptrMapIntBool, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8467,11 +7942,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapInt32IntfX(&x.FMapInt32Intf, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8488,11 +7959,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapInt32IntfX(x.FptrMapInt32Intf, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8500,11 +7967,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapInt32StringX(&x.FMapInt32String, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8521,11 +7984,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapInt32StringX(x.FptrMapInt32String, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8533,11 +7992,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapInt32BytesX(&x.FMapInt32Bytes, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8554,11 +8009,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapInt32BytesX(x.FptrMapInt32Bytes, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8566,11 +8017,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapInt32Uint8X(&x.FMapInt32Uint8, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8587,11 +8034,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapInt32Uint8X(x.FptrMapInt32Uint8, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8599,11 +8042,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapInt32Uint64X(&x.FMapInt32Uint64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8620,11 +8059,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapInt32Uint64X(x.FptrMapInt32Uint64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8632,11 +8067,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapInt32IntX(&x.FMapInt32Int, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8653,11 +8084,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapInt32IntX(x.FptrMapInt32Int, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8665,11 +8092,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapInt32Int32X(&x.FMapInt32Int32, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8686,11 +8109,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapInt32Int32X(x.FptrMapInt32Int32, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8698,11 +8117,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapInt32Float64X(&x.FMapInt32Float64, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8719,11 +8134,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapInt32Float64X(x.FptrMapInt32Float64, d)
 	}
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8731,11 +8142,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	z.F.DecMapInt32BoolX(&x.FMapInt32Bool, d)
 	yyj281++
-	if yyhl281 {
-		yyb281 = yyj281 > l
-	} else {
-		yyb281 = z.DecCheckBreak()
-	}
+	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
 		return
@@ -8751,16 +8158,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		z.F.DecMapInt32BoolX(x.FptrMapInt32Bool, d)
 	}
-	for {
-		yyj281++
-		if yyhl281 {
-			yyb281 = yyj281 > l
-		} else {
-			yyb281 = z.DecCheckBreak()
-		}
-		if yyb281 {
-			break
-		}
+	for yyj281++; z.DecContainerNext(yyj281, l, yyhl281); yyj281++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj281-1, "")
 	}
@@ -8951,7 +8349,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			if z.EncBasicHandle().Canonical {
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"A\"")
+					z.EncWr().WriteStr("\"A\"")
 				} else {
 					r.EncodeString(`A`)
 				}
@@ -8960,7 +8358,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				h.encArray4int64((*[4]int64)(yy31), e)
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
+					z.EncWr().WriteStr("\"B\"")
 				} else {
 					r.EncodeString(`B`)
 				}
@@ -8972,7 +8370,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"C\"")
+					z.EncWr().WriteStr("\"C\"")
 				} else {
 					r.EncodeString(`C`)
 				}
@@ -8985,7 +8383,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"J\"")
+					z.EncWr().WriteStr("\"J\"")
 				} else {
 					r.EncodeString(`J`)
 				}
@@ -8997,7 +8395,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"L\"")
+					z.EncWr().WriteStr("\"L\"")
 				} else {
 					r.EncodeString(`L`)
 				}
@@ -9009,7 +8407,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.L slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"M\"")
+					z.EncWr().WriteStr("\"M\"")
 				} else {
 					r.EncodeString(`M`)
 				}
@@ -9021,7 +8419,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.M map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"T\"")
+					z.EncWr().WriteStr("\"T\"")
 				} else {
 					r.EncodeString(`T`)
 				}
@@ -9033,7 +8431,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"Tbytes\"")
+					z.EncWr().WriteStr("\"Tbytes\"")
 				} else {
 					r.EncodeString(`Tbytes`)
 				}
@@ -9045,7 +8443,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.Tbytes slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"Tcomplex128\"")
+					z.EncWr().WriteStr("\"Tcomplex128\"")
 				} else {
 					r.EncodeString(`Tcomplex128`)
 				}
@@ -9053,7 +8451,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				z.EncEncodeComplex128(complex128(x.Tcomplex128))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"Tcomplex64\"")
+					z.EncWr().WriteStr("\"Tcomplex64\"")
 				} else {
 					r.EncodeString(`Tcomplex64`)
 				}
@@ -9061,7 +8459,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				z.EncEncodeComplex64(complex64(x.Tcomplex64))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"Tpbytes\"")
+					z.EncWr().WriteStr("\"Tpbytes\"")
 				} else {
 					r.EncodeString(`Tpbytes`)
 				}
@@ -9078,7 +8476,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"V\"")
+					z.EncWr().WriteStr("\"V\"")
 				} else {
 					r.EncodeString(`V`)
 				}
@@ -9092,7 +8490,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 			} else {
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"V\"")
+					z.EncWr().WriteStr("\"V\"")
 				} else {
 					r.EncodeString(`V`)
 				}
@@ -9105,7 +8503,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"T\"")
+					z.EncWr().WriteStr("\"T\"")
 				} else {
 					r.EncodeString(`T`)
 				}
@@ -9117,7 +8515,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"B\"")
+					z.EncWr().WriteStr("\"B\"")
 				} else {
 					r.EncodeString(`B`)
 				}
@@ -9129,7 +8527,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"J\"")
+					z.EncWr().WriteStr("\"J\"")
 				} else {
 					r.EncodeString(`J`)
 				}
@@ -9141,7 +8539,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"C\"")
+					z.EncWr().WriteStr("\"C\"")
 				} else {
 					r.EncodeString(`C`)
 				}
@@ -9154,7 +8552,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				}
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"M\"")
+					z.EncWr().WriteStr("\"M\"")
 				} else {
 					r.EncodeString(`M`)
 				}
@@ -9166,7 +8564,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.M map == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"L\"")
+					z.EncWr().WriteStr("\"L\"")
 				} else {
 					r.EncodeString(`L`)
 				}
@@ -9178,7 +8576,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.L slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"A\"")
+					z.EncWr().WriteStr("\"A\"")
 				} else {
 					r.EncodeString(`A`)
 				}
@@ -9187,7 +8585,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				h.encArray4int64((*[4]int64)(yy56), e)
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"Tcomplex128\"")
+					z.EncWr().WriteStr("\"Tcomplex128\"")
 				} else {
 					r.EncodeString(`Tcomplex128`)
 				}
@@ -9195,7 +8593,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				z.EncEncodeComplex128(complex128(x.Tcomplex128))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"Tcomplex64\"")
+					z.EncWr().WriteStr("\"Tcomplex64\"")
 				} else {
 					r.EncodeString(`Tcomplex64`)
 				}
@@ -9203,7 +8601,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				z.EncEncodeComplex64(complex64(x.Tcomplex64))
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"Tbytes\"")
+					z.EncWr().WriteStr("\"Tbytes\"")
 				} else {
 					r.EncodeString(`Tbytes`)
 				}
@@ -9215,7 +8613,7 @@ func (x *TestMammoth2Wrapper) CodecEncodeSelf(e *Encoder) {
 				} // end block: if x.Tbytes slice == nil
 				z.EncWriteMapElemKey()
 				if z.IsJSONHandle() {
-					z.WriteStr("\"Tpbytes\"")
+					z.EncWr().WriteStr("\"Tpbytes\"")
 				} else {
 					r.EncodeString(`Tpbytes`)
 				}
@@ -9266,16 +8664,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromMap(l int, d *Decoder) {
 	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
 	var yyhl3 bool = l >= 0
-	for yyj3 := 0; ; yyj3++ {
-		if yyhl3 {
-			if yyj3 >= l {
-				break
-			}
-		} else {
-			if z.DecCheckBreak() {
-				break
-			}
-		}
+	for yyj3 := 0; z.DecContainerNext(yyj3, l, yyhl3); yyj3++ {
 		z.DecReadMapElemKey()
 		yys3 := r.DecodeStringAsBytes()
 		z.DecReadMapElemValue()
@@ -9347,11 +8736,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyb26 bool
 	var yyhl26 bool = l >= 0
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9363,11 +8748,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.V.CodecDecodeSelf(d)
 	}
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9379,11 +8760,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.T.CodecDecodeSelf(d)
 	}
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9395,11 +8772,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.B.CodecDecodeSelf(d)
 	}
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9411,11 +8784,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.J.CodecDecodeSelf(d)
 	}
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9427,11 +8796,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		x.C.CodecDecodeSelf(d)
 	}
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9439,11 +8804,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	h.decMaptestMammoth2BasicTestMammoth2((*map[testMammoth2Basic]TestMammoth2)(&x.M), d)
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9451,11 +8812,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	h.decSliceTestMammoth2((*[]TestMammoth2)(&x.L), d)
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9463,11 +8820,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	h.decArray4int64((*[4]int64)(&x.A), d)
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9475,11 +8828,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.Tcomplex128 = (complex128)(complex(r.DecodeFloat64(), 0))
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9487,11 +8836,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.Tcomplex64 = (complex64)(complex(z.DecDecodeFloat32(), 0))
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9499,11 +8844,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	z.DecReadArrayElem()
 	x.Tbytes = z.DecodeBytesInto(([]byte)(x.Tbytes))
 	yyj26++
-	if yyhl26 {
-		yyb26 = yyj26 > l
-	} else {
-		yyb26 = z.DecCheckBreak()
-	}
+	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
 		return
@@ -9519,16 +8860,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		*x.Tpbytes = z.DecodeBytesInto(*(*[]byte)(x.Tpbytes))
 	}
-	for {
-		yyj26++
-		if yyhl26 {
-			yyb26 = yyj26 > l
-		} else {
-			yyb26 = z.DecCheckBreak()
-		}
-		if yyb26 {
-			break
-		}
+	for yyj26++; z.DecContainerNext(yyj26, l, yyhl26); yyj26++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj26-1, "")
 	}
@@ -9591,7 +8923,7 @@ func (x codecSelfer19781) decMaptestMammoth2BasicTestMammoth2(v *map[testMammoth
 		}
 		if yyl1 != 0 {
 			yyhl1 := yyl1 > 0
-			for yyj1 := 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ {
+			for yyj1 := 0; z.DecContainerNext(yyj1, yyl1, yyhl1); yyj1++ {
 				z.DecReadMapElemKey()
 				if yyxt3 := z.Extension(yymk1); yyxt3 != nil {
 					z.DecExtension(&yymk1, yyxt3)
@@ -9683,7 +9015,7 @@ func (x codecSelfer19781) decSliceTestMammoth2(v *[]TestMammoth2, d *Decoder) {
 			}
 		}
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; z.DecContainerNext(yyj1, yyl1, yyhl1); yyj1++ {
 			if yyj1 == 0 && yyv1 == nil {
 				if yyhl1 {
 					yyrl1 = z.DecInferLen(yyl1, z.DecBasicHandle().MaxInitLen, 1376)
@@ -9752,7 +9084,7 @@ func (x codecSelfer19781) decArray4int64(v *[4]int64, d *Decoder) {
 		var yyrl1 int
 		_ = yyrl1
 		var yyj1 int
-		for yyj1 = 0; (yyhl1 && yyj1 < yyl1) || !(yyhl1 || z.DecCheckBreak()); yyj1++ { // bounds-check-elimination
+		for yyj1 = 0; z.DecContainerNext(yyj1, yyl1, yyhl1); yyj1++ {
 			yyh1.ElemContainerState(yyj1)
 			var yydb1 bool
 			if yyj1 >= len(yyv1) {

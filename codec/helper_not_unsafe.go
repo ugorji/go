@@ -685,10 +685,6 @@ func (e *Encoder) jsondriver() *jsonEncDriver {
 
 // ---------- DECODER optimized ---------------
 
-func (d *Decoder) checkBreak() bool {
-	return d.d.CheckBreak()
-}
-
 func (d *Decoder) jsondriver() *jsonDecDriver {
 	return d.d.(*jsonDecDriver)
 }

@@ -1216,7 +1216,10 @@ func (d *Decoder) zerocopystate() bool {
 }
 
 func (d *Decoder) stringZC(v []byte) (s string) {
-	if d.zerocopystate() {
+	// MARKER: inline zerocopystate directly so genHelper forwarding function fits within inlining cost
+
+	// if d.zerocopystate() {
+	if d.decByteState == decByteStateZerocopy && d.h.ZeroCopy {
 		return stringView(v)
 	}
 	return d.string(v)
@@ -1234,22 +1237,6 @@ func (d *Decoder) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string 
 }
 
 // ---------- DECODER optimized ---------------
-
-func (d *Decoder) checkBreak() bool {
-	// MARKER: jsonDecDriver.CheckBreak() costs over 80, and this isn't inlined.
-	// Consequently, there's no benefit in incurring the cost of this
-	// wrapping function checkBreak.
-	//
-	// It is faster to just call the interface method directly.
-
-	// if d.js {
-	// 	return d.jsondriver().CheckBreak()
-	// }
-	// if d.cbor {
-	// 	return d.cbordriver().CheckBreak()
-	// }
-	return d.d.CheckBreak()
-}
 
 func (d *Decoder) jsondriver() *jsonDecDriver {
 	return (*jsonDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).ptr)

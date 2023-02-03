@@ -218,16 +218,21 @@ func (z *bytesEncAppender) reset(in []byte, out *[]byte) {
 // --------------------------------------------------
 
 type encWr struct {
+	wb bytesEncAppender
+	wf *bufioEncWriter
+
 	bytes bool // encoding to []byte
-	js    bool // is json encoder?
-	be    bool // is binary encoder?
+
+	// MARKER: these fields below should belong directly in Encoder.
+	// we pack them here for space efficiency and cache-line optimization.
+
+	js bool // is json encoder?
+	be bool // is binary encoder?
 
 	c containerState
 
 	calls uint16
 	seq   uint16 // sequencer (e.g. used by binc for symbols, etc)
-	wb    bytesEncAppender
-	wf    *bufioEncWriter
 }
 
 // MARKER: manually inline bytesEncAppender.writenx/writeqstr methods,
@@ -249,6 +254,18 @@ func (z *encWr) writestr(s string) {
 		z.wf.writestr(s)
 	}
 }
+
+// MARKER: Add WriteStr to be called directly by generated code without a genHelper forwarding function.
+// Go's inlining model adds cost for forwarding functions, preventing inlining (cost goes above 80 budget).
+
+func (z *encWr) WriteStr(s string) {
+	if z.bytes {
+		z.wb.writestr(s)
+	} else {
+		z.wf.writestr(s)
+	}
+}
+
 func (z *encWr) writen1(b1 byte) {
 	if z.bytes {
 		z.wb.writen1(b1)

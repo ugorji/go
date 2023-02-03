@@ -189,7 +189,7 @@ type jsonEncDriver struct {
 	//    -xxx.yyyyyyyyyyyye-zzz
 	// Consequently, 35 characters should be sufficient for encoding time, integers or floats.
 	// We use up all the remaining bytes to make this use full cache lines.
-	b [56]byte
+	b [48]byte
 
 	e Encoder
 }
@@ -659,6 +659,12 @@ func (d *jsonDecDriver) ReadArrayStart() int {
 	return containerLenUnknown
 }
 
+// MARKER:
+// We attempted making sure CheckBreak can be inlined, by moving the skipWhitespace
+// call to an explicit (noinline) function call.
+// However, this forces CheckBreak to always incur a function call if there was whitespace,
+// with no clear benefit.
+
 func (d *jsonDecDriver) CheckBreak() bool {
 	d.advance()
 	return d.tok == '}' || d.tok == ']'
@@ -735,9 +741,13 @@ func (d *jsonDecDriver) checkLit4(got, expect [4]byte) {
 	}
 }
 
+func (d *jsonDecDriver) skipWhitespace() {
+	d.tok = d.d.decRd.skipWhitespace()
+}
+
 func (d *jsonDecDriver) advance() {
 	if d.tok == 0 {
-		d.tok = d.d.decRd.skipWhitespace() // skip(&whitespaceCharBitset)
+		d.skipWhitespace()
 	}
 }
 

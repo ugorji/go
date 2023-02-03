@@ -163,7 +163,7 @@ type ioDecReader struct {
 	br   ioReaderByteScanner // main reader used for Read|ReadByte|UnreadByte
 	bb   *bufio.Reader       // created internally, and reused on reset if needed
 
-	x [64 + 48]byte // for: get struct field name, swallow valueTypeBytes, etc
+	x [64 + 40]byte // for: get struct field name, swallow valueTypeBytes, etc
 }
 
 func (z *ioDecReader) reset(r io.Reader, bufsize int, blist *bytesFreelist) {
@@ -504,6 +504,16 @@ LOOP:
 // --------------
 
 type decRd struct {
+	rb bytesDecReader
+	ri *ioDecReader
+
+	decReader
+
+	bytes bool // is bytes reader
+
+	// MARKER: these fields below should belong directly in Encoder.
+	// we pack them here for space efficiency and cache-line optimization.
+
 	mtr bool // is maptype a known type?
 	str bool // is slicetype a known type?
 
@@ -512,22 +522,22 @@ type decRd struct {
 	jsms bool // is json handle, and MapKeyAsString
 	cbor bool // is cbor handle
 
-	bytes bool // is bytes reader
+	cbreak bool // is a check breaker
 
-	rb bytesDecReader
-	ri *ioDecReader
-
-	decReader
 }
 
 // From out benchmarking, we see the following impact performance:
 //
-// - interface calls
-// - conditional (if) branch have a high inlining cost
+// - functions that are too big to inline
+// - interface calls (as no inlining can occur)
 //
 // decRd is designed to embed a decReader, and then re-implement some of the decReader
-// methods using a conditional branch. We only override the ones that have a bytes version
-// that is small enough to be inlined. We use ./run.sh -z to check.
+// methods using a conditional branch.
+//
+// We only override the ones where the bytes version is inlined AND the wrapper method
+// (containing the bytes version alongside a conditional branch) is also inlined.
+//
+// We use ./run.sh -z to check.
 //
 // Right now, only numread and "carefully crafted" readn1 can be inlined.
 
@@ -563,6 +573,13 @@ func (z *decRd) readn1() (v uint8) {
 // 		return z.rb.readn3()
 // 	}
 // 	return z.ri.readn3()
+// }
+
+// func (z *decRd) skipWhitespace() byte {
+// 	if z.bytes {
+// 		return z.rb.skipWhitespace()
+// 	}
+// 	return z.ri.skipWhitespace()
 // }
 
 type devNullReader struct{}

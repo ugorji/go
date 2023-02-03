@@ -13,7 +13,7 @@ import (
 )
 
 // GenVersion is the current version of codecgen.
-const GenVersion = 25
+const GenVersion = 26
 
 // This file is used to generate helper code for codecgen.
 // The values here i.e. genHelper(En|De)coder are not to be used directly by
@@ -66,6 +66,11 @@ func (f genHelperEncoder) EncBasicHandle() *BasicHandle {
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperEncoder) EncWr() *encWr {
+	return f.e.w()
+}
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncBinary() bool {
 	return f.e.be // f.e.hh.isBinaryEncoding()
 }
@@ -110,11 +115,6 @@ func (f genHelperEncoder) Extension(v interface{}) (xfn *extTypeTagFn) {
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperEncoder) EncExtension(v interface{}, xfFn *extTypeTagFn) {
 	f.e.e.EncodeExt(v, xfFn.rt, xfFn.tag, xfFn.ext)
-}
-
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperEncoder) WriteStr(s string) {
-	f.e.w().writestr(s)
 }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
@@ -278,10 +278,17 @@ func (f genHelperDecoder) DecReadMapElemValue() { f.d.mapElemValue() }
 func (f genHelperDecoder) DecDecodeFloat32() float32 { return f.d.decodeFloat32() }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
-func (f genHelperDecoder) DecCheckBreak() bool { return f.d.checkBreak() }
-
-// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecStringZC(v []byte) string { return f.d.stringZC(v) }
 
 // FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
 func (f genHelperDecoder) DecodeBytesInto(v []byte) []byte { return f.d.decodeBytesInto(v) }
+
+// FOR USE BY CODECGEN ONLY. IT *WILL* CHANGE WITHOUT NOTICE. *DO NOT USE*
+func (f genHelperDecoder) DecContainerNext(j, containerLen int, hasLen bool) bool {
+	// return f.d.containerNext(j, containerLen, hasLen)
+	// rewriting so it can be inlined
+	if hasLen {
+		return j < containerLen
+	}
+	return !f.d.checkBreak()
+}
