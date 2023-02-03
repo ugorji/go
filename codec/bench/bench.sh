@@ -160,7 +160,6 @@ _suite_very_quick_json_non_suite() {
     local t="${1:-x}"
     shift
     echo ">>>> very quick json bench"
-    # local tags=( "x" "x generated" )
     local tags=("${t}" "${t} generated" "${t} codec.safe" "${t} generated codec.safe" "${t} codec.notfastpath")
     local js=( En De )
     for t in "${tags[@]}"; do

@@ -36,6 +36,7 @@ package codec
 import (
 	"reflect"
 	"runtime"
+	"strings"
 	"testing"
 	"time"
 )
@@ -238,8 +239,23 @@ func fnBenchmarkDecode(b *testing.B, encName string, ts interface{},
 ) {
 	defer benchRecoverPanic(b)
 	testOnce.Do(testInitAll)
-	// ignore method params: ts and newfn, and work on benchTs and TestStruc directly
+
+	// MARKER: to ensure same sequence of bytes to be decoded, always encode using codec encoder.
+	//
+	// ignore method params:
+	// - ts: use benchTs instead
+	// - newfn: use TestStruc instead
+	// - benchEncFn: use codec's encfn instead (based on name/format)
+
 	ts = benchTs
+
+	if strings.Index(encName, "json") != -1 {
+		encfn = fnJsonEncodeFn
+	} else if strings.Index(encName, "cbor") != -1 {
+		encfn = fnCborEncodeFn
+	} else if strings.Index(encName, "msgpack") != -1 {
+		encfn = fnMsgpackEncodeFn
+	}
 
 	buf := make([]byte, 0, approxSize)
 	buf, err := encfn(ts, buf)

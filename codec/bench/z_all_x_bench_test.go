@@ -134,3 +134,11 @@ func BenchmarkCodecQuickAllJsonSuite(t *testing.B) {
 	// benchmarkQuickSuite(t, benchmarkAllJsonEncodeGroup)
 	// benchmarkQuickSuite(t, benchmarkAllJsonDecodeGroup)
 }
+
+func BenchmarkCodecQuickEncode(t *testing.B) {
+	benchmarkQuickSuite(t, "json-all", benchmarkAllJsonEncodeGroup)
+}
+
+func BenchmarkCodecQuickDecode(t *testing.B) {
+	benchmarkQuickSuite(t, "json-all", benchmarkAllJsonDecodeGroup)
+}
