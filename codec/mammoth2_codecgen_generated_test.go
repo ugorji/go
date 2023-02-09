@@ -6333,7 +6333,6 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj281 int
 	var yyb281 bool
 	var yyhl281 bool = l >= 0
-	yyj281++
 	yyb281 = !z.DecContainerNext(yyj281, l, yyhl281)
 	if yyb281 {
 		z.DecReadArrayEnd()
@@ -8158,6 +8157,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		z.F.DecMapInt32BoolX(x.FptrMapInt32Bool, d)
 	}
+	yyj281++
 	for yyj281++; z.DecContainerNext(yyj281, l, yyhl281); yyj281++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj281-1, "")
@@ -8735,7 +8735,6 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj26 int
 	var yyb26 bool
 	var yyhl26 bool = l >= 0
-	yyj26++
 	yyb26 = !z.DecContainerNext(yyj26, l, yyhl26)
 	if yyb26 {
 		z.DecReadArrayEnd()
@@ -8860,6 +8859,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		*x.Tpbytes = z.DecodeBytesInto(*(*[]byte)(x.Tpbytes))
 	}
+	yyj26++
 	for yyj26++; z.DecContainerNext(yyj26, l, yyhl26); yyj26++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj26-1, "")

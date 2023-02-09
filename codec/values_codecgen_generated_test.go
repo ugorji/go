@@ -297,7 +297,6 @@ func (x *stringUint64T) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj6 int
 	var yyb6 bool
 	var yyhl6 bool = l >= 0
-	yyj6++
 	yyb6 = !z.DecContainerNext(yyj6, l, yyhl6)
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -313,6 +312,7 @@ func (x *stringUint64T) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.U = (uint64)(r.DecodeUint64())
+	yyj6++
 	for yyj6++; z.DecContainerNext(yyj6, l, yyhl6); yyj6++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj6-1, "")
@@ -465,7 +465,6 @@ func (x *AnonInTestStrucSlim) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj7 int
 	var yyb7 bool
 	var yyhl7 bool = l >= 0
-	yyj7++
 	yyb7 = !z.DecContainerNext(yyj7, l, yyhl7)
 	if yyb7 {
 		z.DecReadArrayEnd()
@@ -490,6 +489,7 @@ func (x *AnonInTestStrucSlim) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		*x.P = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
 	}
+	yyj7++
 	for yyj7++; z.DecContainerNext(yyj7, l, yyhl7); yyj7++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj7-1, "")
@@ -1054,7 +1054,6 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj34 int
 	var yyb34 bool
 	var yyhl34 bool = l >= 0
-	yyj34++
 	yyb34 = !z.DecContainerNext(yyj34, l, yyhl34)
 	if yyb34 {
 		z.DecReadArrayEnd()
@@ -1190,6 +1189,7 @@ func (x *AnonInTestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	z.F.DecMapStringUint64X(&x.AMSU64E, d)
+	yyj34++
 	for yyj34++; z.DecContainerNext(yyj34, l, yyhl34); yyj34++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj34-1, "")
@@ -1732,7 +1732,6 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj30 int
 	var yyb30 bool
 	var yyhl30 bool = l >= 0
-	yyj30++
 	yyb30 = !z.DecContainerNext(yyj30, l, yyhl30)
 	if yyb30 {
 		z.DecReadArrayEnd()
@@ -1876,6 +1875,7 @@ func (x *testSimpleFields) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	z.F.DecMapStringIntX(&x.Msint, d)
+	yyj30++
 	for yyj30++; z.DecContainerNext(yyj30, l, yyhl30); yyj30++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj30-1, "")
@@ -3564,7 +3564,6 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj95 int
 	var yyb95 bool
 	var yyhl95 bool = l >= 0
-	yyj95++
 	yyb95 = !z.DecContainerNext(yyj95, l, yyhl95)
 	if yyb95 {
 		z.DecReadArrayEnd()
@@ -4062,6 +4061,7 @@ func (x *TestStrucCommon) codecDecodeSelfFromArray(l int, d *Decoder) {
 		}
 		*x.Nint64 = (int64)(r.DecodeInt64())
 	}
+	yyj95++
 	for yyj95++; z.DecContainerNext(yyj95, l, yyhl95); yyj95++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj95-1, "")
@@ -5905,7 +5905,6 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj103 int
 	var yyb103 bool
 	var yyhl103 bool = l >= 0
-	yyj103++
 	yyb103 = !z.DecContainerNext(yyj103, l, yyhl103)
 	if yyb103 {
 		z.DecReadArrayEnd()
@@ -6448,6 +6447,7 @@ func (x *TestStruc) codecDecodeSelfFromArray(l int, d *Decoder) {
 			x.Nteststruc.CodecDecodeSelf(d)
 		}
 	}
+	yyj103++
 	for yyj103++; z.DecContainerNext(yyj103, l, yyhl103); yyj103++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj103-1, "")
@@ -6566,7 +6566,6 @@ func (x *codecgenA) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj6 int
 	var yyb6 bool
 	var yyhl6 bool = l >= 0
-	yyj6++
 	yyb6 = !z.DecContainerNext(yyj6, l, yyhl6)
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -6574,6 +6573,7 @@ func (x *codecgenA) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.ZZ = z.DecodeBytesInto(([]byte)(x.ZZ))
+	yyj6++
 	for yyj6++; z.DecContainerNext(yyj6, l, yyhl6); yyj6++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj6-1, "")
@@ -6699,7 +6699,6 @@ func (x *codecgenB) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj6 int
 	var yyb6 bool
 	var yyhl6 bool = l >= 0
-	yyj6++
 	yyb6 = !z.DecContainerNext(yyj6, l, yyhl6)
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -6711,6 +6710,7 @@ func (x *codecgenB) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		x.AA.CodecDecodeSelf(d)
 	}
+	yyj6++
 	for yyj6++; z.DecContainerNext(yyj6, l, yyhl6); yyj6++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj6-1, "")
@@ -6855,7 +6855,6 @@ func (x *codecgenC) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj6 int
 	var yyb6 bool
 	var yyhl6 bool = l >= 0
-	yyj6++
 	yyb6 = !z.DecContainerNext(yyj6, l, yyhl6)
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -6867,6 +6866,7 @@ func (x *codecgenC) codecDecodeSelfFromArray(l int, d *Decoder) {
 	} else {
 		x.BB.CodecDecodeSelf(d)
 	}
+	yyj6++
 	for yyj6++; z.DecContainerNext(yyj6, l, yyhl6); yyj6++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj6-1, "")
@@ -6973,7 +6973,6 @@ func (x *TestCodecgenG) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj5 int
 	var yyb5 bool
 	var yyhl5 bool = l >= 0
-	yyj5++
 	yyb5 = !z.DecContainerNext(yyj5, l, yyhl5)
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -6981,6 +6980,7 @@ func (x *TestCodecgenG) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+	yyj5++
 	for yyj5++; z.DecContainerNext(yyj5, l, yyhl5); yyj5++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj5-1, "")
@@ -7087,7 +7087,6 @@ func (x *codecgenH) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj5 int
 	var yyb5 bool
 	var yyhl5 bool = l >= 0
-	yyj5++
 	yyb5 = !z.DecContainerNext(yyj5, l, yyhl5)
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -7095,6 +7094,7 @@ func (x *codecgenH) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.TestCodecgenG.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+	yyj5++
 	for yyj5++; z.DecContainerNext(yyj5, l, yyhl5); yyj5++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj5-1, "")
@@ -7201,7 +7201,6 @@ func (x *codecgenI) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj5 int
 	var yyb5 bool
 	var yyhl5 bool = l >= 0
-	yyj5++
 	yyb5 = !z.DecContainerNext(yyj5, l, yyhl5)
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -7209,6 +7208,7 @@ func (x *codecgenI) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.codecgenH.TestCodecgenG.TestCodecgenG = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+	yyj5++
 	for yyj5++; z.DecContainerNext(yyj5, l, yyhl5); yyj5++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj5-1, "")
@@ -7335,7 +7335,6 @@ func (x *codecgenK) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj6 int
 	var yyb6 bool
 	var yyhl6 bool = l >= 0
-	yyj6++
 	yyb6 = !z.DecContainerNext(yyj6, l, yyhl6)
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -7351,6 +7350,7 @@ func (x *codecgenK) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.Y = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
+	yyj6++
 	for yyj6++; z.DecContainerNext(yyj6, l, yyhl6); yyj6++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj6-1, "")
@@ -7477,7 +7477,6 @@ func (x *codecgenL) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj6 int
 	var yyb6 bool
 	var yyhl6 bool = l >= 0
-	yyj6++
 	yyb6 = !z.DecContainerNext(yyj6, l, yyhl6)
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -7493,6 +7492,7 @@ func (x *codecgenL) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.Y = (uint32)(z.C.UintV(r.DecodeUint64(), 32))
+	yyj6++
 	for yyj6++; z.DecContainerNext(yyj6, l, yyhl6); yyj6++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj6-1, "")
@@ -7619,7 +7619,6 @@ func (x *codecgenM) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj6 int
 	var yyb6 bool
 	var yyhl6 bool = l >= 0
-	yyj6++
 	yyb6 = !z.DecContainerNext(yyj6, l, yyhl6)
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -7635,6 +7634,7 @@ func (x *codecgenM) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.codecgenK.Y = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
+	yyj6++
 	for yyj6++; z.DecContainerNext(yyj6, l, yyhl6); yyj6++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj6-1, "")
@@ -7741,7 +7741,6 @@ func (x *testStrucKeyTypeT0) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj5 int
 	var yyb5 bool
 	var yyhl5 bool = l >= 0
-	yyj5++
 	yyb5 = !z.DecContainerNext(yyj5, l, yyhl5)
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -7749,6 +7748,7 @@ func (x *testStrucKeyTypeT0) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.F = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+	yyj5++
 	for yyj5++; z.DecContainerNext(yyj5, l, yyhl5); yyj5++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj5-1, "")
@@ -7855,7 +7855,6 @@ func (x *testStrucKeyTypeT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj5 int
 	var yyb5 bool
 	var yyhl5 bool = l >= 0
-	yyj5++
 	yyb5 = !z.DecContainerNext(yyj5, l, yyhl5)
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -7863,6 +7862,7 @@ func (x *testStrucKeyTypeT1) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.F = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+	yyj5++
 	for yyj5++; z.DecContainerNext(yyj5, l, yyhl5); yyj5++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj5-1, "")
@@ -7961,7 +7961,6 @@ func (x *testStrucKeyTypeT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj5 int
 	var yyb5 bool
 	var yyhl5 bool = l >= 0
-	yyj5++
 	yyb5 = !z.DecContainerNext(yyj5, l, yyhl5)
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -7969,6 +7968,7 @@ func (x *testStrucKeyTypeT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.F = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+	yyj5++
 	for yyj5++; z.DecContainerNext(yyj5, l, yyhl5); yyj5++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj5-1, "")
@@ -8067,7 +8067,6 @@ func (x *testStrucKeyTypeT3) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj5 int
 	var yyb5 bool
 	var yyhl5 bool = l >= 0
-	yyj5++
 	yyb5 = !z.DecContainerNext(yyj5, l, yyhl5)
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -8075,6 +8074,7 @@ func (x *testStrucKeyTypeT3) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.F = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+	yyj5++
 	for yyj5++; z.DecContainerNext(yyj5, l, yyhl5); yyj5++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj5-1, "")
@@ -8173,7 +8173,6 @@ func (x *testStrucKeyTypeT4) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj5 int
 	var yyb5 bool
 	var yyhl5 bool = l >= 0
-	yyj5++
 	yyb5 = !z.DecContainerNext(yyj5, l, yyhl5)
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -8181,6 +8180,7 @@ func (x *testStrucKeyTypeT4) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.F = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+	yyj5++
 	for yyj5++; z.DecContainerNext(yyj5, l, yyhl5); yyj5++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj5-1, "")
@@ -8336,7 +8336,6 @@ func (x *Sstructsmall) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj5 int
 	var yyb5 bool
 	var yyhl5 bool = l >= 0
-	yyj5++
 	yyb5 = !z.DecContainerNext(yyj5, l, yyhl5)
 	if yyb5 {
 		z.DecReadArrayEnd()
@@ -8344,6 +8343,7 @@ func (x *Sstructsmall) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.A = (int)(z.C.IntV(r.DecodeInt64(), codecSelferBitsize19780))
+	yyj5++
 	for yyj5++; z.DecContainerNext(yyj5, l, yyhl5); yyj5++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj5-1, "")
@@ -8627,7 +8627,6 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj12 int
 	var yyb12 bool
 	var yyhl12 bool = l >= 0
-	yyj12++
 	yyb12 = !z.DecContainerNext(yyj12, l, yyhl12)
 	if yyb12 {
 		z.DecReadArrayEnd()
@@ -8697,6 +8696,7 @@ func (x *Sstructbig) codecDecodeSelfFromArray(l int, d *Decoder) {
 			x.Sptr.CodecDecodeSelf(d)
 		}
 	}
+	yyj12++
 	for yyj12++; z.DecContainerNext(yyj12, l, yyhl12); yyj12++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj12-1, "")
@@ -8980,7 +8980,6 @@ func (x *SstructbigToArray) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj12 int
 	var yyb12 bool
 	var yyhl12 bool = l >= 0
-	yyj12++
 	yyb12 = !z.DecContainerNext(yyj12, l, yyhl12)
 	if yyb12 {
 		z.DecReadArrayEnd()
@@ -9050,6 +9049,7 @@ func (x *SstructbigToArray) codecDecodeSelfFromArray(l int, d *Decoder) {
 			x.Sptr.CodecDecodeSelf(d)
 		}
 	}
+	yyj12++
 	for yyj12++; z.DecContainerNext(yyj12, l, yyhl12); yyj12++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj12-1, "")
@@ -9176,7 +9176,6 @@ func (x *tLowerFirstLetter) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj6 int
 	var yyb6 bool
 	var yyhl6 bool = l >= 0
-	yyj6++
 	yyb6 = !z.DecContainerNext(yyj6, l, yyhl6)
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -9192,6 +9191,7 @@ func (x *tLowerFirstLetter) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.S = (string)(z.DecStringZC(r.DecodeStringAsBytes()))
+	yyj6++
 	for yyj6++; z.DecContainerNext(yyj6, l, yyhl6); yyj6++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj6-1, "")
@@ -9645,7 +9645,6 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj14 int
 	var yyb14 bool
 	var yyhl14 bool = l >= 0
-	yyj14++
 	yyb14 = !z.DecContainerNext(yyj14, l, yyhl14)
 	if yyb14 {
 		z.DecReadArrayEnd()
@@ -9714,6 +9713,7 @@ func (x *AnonInTestStrucIntf) codecDecodeSelfFromArray(l int, d *Decoder) {
 			z.DecFallback(x.Tptr, false)
 		}
 	}
+	yyj14++
 	for yyj14++; z.DecContainerNext(yyj14, l, yyhl14); yyj14++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj14-1, "")
@@ -9880,7 +9880,6 @@ func (x *missingFielderT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj8 int
 	var yyb8 bool
 	var yyhl8 bool = l >= 0
-	yyj8++
 	yyb8 = !z.DecContainerNext(yyj8, l, yyhl8)
 	if yyb8 {
 		z.DecReadArrayEnd()
@@ -9912,6 +9911,7 @@ func (x *missingFielderT2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.I = (int64)(r.DecodeInt64())
+	yyj8++
 	for yyj8++; z.DecContainerNext(yyj8, l, yyhl8); yyj8++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj8-1, "")
@@ -10058,7 +10058,6 @@ func (x *testSelfExtHelper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj7 int
 	var yyb7 bool
 	var yyhl7 bool = l >= 0
-	yyj7++
 	yyb7 = !z.DecContainerNext(yyj7, l, yyhl7)
 	if yyb7 {
 		z.DecReadArrayEnd()
@@ -10082,6 +10081,7 @@ func (x *testSelfExtHelper) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.B = (bool)(r.DecodeBool())
+	yyj7++
 	for yyj7++; z.DecContainerNext(yyj7, l, yyhl7); yyj7++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj7-1, "")
@@ -10228,7 +10228,6 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj7 int
 	var yyb7 bool
 	var yyhl7 bool = l >= 0
-	yyj7++
 	yyb7 = !z.DecContainerNext(yyj7, l, yyhl7)
 	if yyb7 {
 		z.DecReadArrayEnd()
@@ -10252,6 +10251,7 @@ func (x *TestSelfExtImpl) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.testSelfExtHelper.B = (bool)(r.DecodeBool())
+	yyj7++
 	for yyj7++; z.DecContainerNext(yyj7, l, yyhl7); yyj7++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj7-1, "")
@@ -10378,7 +10378,6 @@ func (x *TestSelfExtImpl2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj6 int
 	var yyb6 bool
 	var yyhl6 bool = l >= 0
-	yyj6++
 	yyb6 = !z.DecContainerNext(yyj6, l, yyhl6)
 	if yyb6 {
 		z.DecReadArrayEnd()
@@ -10394,6 +10393,7 @@ func (x *TestSelfExtImpl2) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.O = (bool)(r.DecodeBool())
+	yyj6++
 	for yyj6++; z.DecContainerNext(yyj6, l, yyhl6); yyj6++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj6-1, "")
@@ -10520,7 +10520,6 @@ func (x *TestTwoNakedInterfaces) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj8 int
 	var yyb8 bool
 	var yyhl8 bool = l >= 0
-	yyj8++
 	yyb8 = !z.DecContainerNext(yyj8, l, yyhl8)
 	if yyb8 {
 		z.DecReadArrayEnd()
@@ -10536,6 +10535,7 @@ func (x *TestTwoNakedInterfaces) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	z.DecFallback(&x.B, true)
+	yyj8++
 	for yyj8++; z.DecContainerNext(yyj8, l, yyhl8); yyj8++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj8-1, "")
@@ -14577,7 +14577,6 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	var yyj171 int
 	var yyb171 bool
 	var yyhl171 bool = l >= 0
-	yyj171++
 	yyb171 = !z.DecContainerNext(yyj171, l, yyhl171)
 	if yyb171 {
 		z.DecReadArrayEnd()
@@ -15517,6 +15516,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 	}
 	z.DecReadArrayElem()
 	x.Cmplx128 = (complex128)(complex(r.DecodeFloat64(), 0))
+	yyj171++
 	for yyj171++; z.DecContainerNext(yyj171, l, yyhl171); yyj171++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj171-1, "")
