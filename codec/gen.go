@@ -2090,7 +2090,6 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 	x.linef("var %shl%s bool = %s >= 0", tpfx, i, lenvarname) // has length
 	var newbuf, nilbuf genBuf
 	for _, si := range tisfi {
-		x.linef("%sj%s++", tpfx, i)
 		x.linef("%sb%s = !z.DecContainerNext(%sj%s, %s, %shl%s)", tpfx, i, tpfx, i, lenvarname, tpfx, i)
 		x.linef("if %sb%s { z.DecReadArrayEnd(); %s }", tpfx, i, breakString)
 		x.line("z.DecReadArrayElem()")
@@ -2104,6 +2103,7 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 		if len(newbuf.buf) > 0 {
 			x.line("}")
 		}
+		x.linef("%sj%s++", tpfx, i)
 	}
 	// read remaining values and throw away.
 	x.linef("for %sj%s++; z.DecContainerNext(%sj%s, %s, %shl%s); %sj%s++ {",
