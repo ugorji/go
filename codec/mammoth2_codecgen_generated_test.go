@@ -64,10 +64,10 @@ func (p codecSelfer19781float64Slice) Swap(i, j int)      { p[uint(i)], p[uint(j
 func (p codecSelfer19781float64Slice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
 
 func init() {
-	if GenVersion != 26 {
+	if GenVersion != 27 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic(errors.New("codecgen version mismatch: current: 26, need " + ver + ". Re-generate file: " + file))
+		panic(errors.New("codecgen version mismatch: current: 27, need " + ver + ". Re-generate file: " + file))
 	}
 }
 
@@ -8158,7 +8158,7 @@ func (x *TestMammoth2) codecDecodeSelfFromArray(l int, d *Decoder) {
 		z.F.DecMapInt32BoolX(x.FptrMapInt32Bool, d)
 	}
 	yyj281++
-	for yyj281++; z.DecContainerNext(yyj281, l, yyhl281); yyj281++ {
+	for ; z.DecContainerNext(yyj281, l, yyhl281); yyj281++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj281-1, "")
 	}
@@ -8860,7 +8860,7 @@ func (x *TestMammoth2Wrapper) codecDecodeSelfFromArray(l int, d *Decoder) {
 		*x.Tpbytes = z.DecodeBytesInto(*(*[]byte)(x.Tpbytes))
 	}
 	yyj26++
-	for yyj26++; z.DecContainerNext(yyj26, l, yyhl26); yyj26++ {
+	for ; z.DecContainerNext(yyj26, l, yyhl26); yyj26++ {
 		z.DecReadArrayElem()
 		z.DecStructFieldNotFound(yyj26-1, "")
 	}
