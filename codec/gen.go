@@ -151,7 +151,8 @@ import (
 // v24: 20210226 robust handling for Canonical|CheckCircularRef flags and MissingFielder implementations
 // v25: 20210406 pass base reflect.Type to side(En|De)code and (En|De)codeExt calls
 // v26: 20230201 genHelper changes for more inlining and consequent performance
-const genVersion = 26
+// v27: 20230219 fix error decoding struct from array - due to misplaced counter increment
+const genVersion = 27
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go
@@ -2106,8 +2107,8 @@ func (x *genRunner) decStructArray(varname, lenvarname, breakString string, rtid
 		x.linef("%sj%s++", tpfx, i)
 	}
 	// read remaining values and throw away.
-	x.linef("for %sj%s++; z.DecContainerNext(%sj%s, %s, %shl%s); %sj%s++ {",
-		tpfx, i, tpfx, i, lenvarname, tpfx, i, tpfx, i)
+	x.linef("for ; z.DecContainerNext(%sj%s, %s, %shl%s); %sj%s++ {",
+		tpfx, i, lenvarname, tpfx, i, tpfx, i)
 	x.line("z.DecReadArrayElem()")
 	x.linef(`z.DecStructFieldNotFound(%sj%s - 1, "")`, tpfx, i)
 	x.line("}")
