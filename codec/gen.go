@@ -152,7 +152,8 @@ import (
 // v25: 20210406 pass base reflect.Type to side(En|De)code and (En|De)codeExt calls
 // v26: 20230201 genHelper changes for more inlining and consequent performance
 // v27: 20230219 fix error decoding struct from array - due to misplaced counter increment
-const genVersion = 27
+// v28: 20230224  fix decoding missing fields of struct from array, due to double counter increment
+const genVersion = 28
 
 const (
 	genCodecPkg        = "codec1978" // MARKER: keep in sync with codecgen/gen.go

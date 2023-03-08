@@ -64,10 +64,10 @@ func (p codecSelfer19781float64Slice) Swap(i, j int)      { p[uint(i)], p[uint(j
 func (p codecSelfer19781float64Slice) Less(i, j int) bool { return p[uint(i)] < p[uint(j)] }
 
 func init() {
-	if GenVersion != 27 {
+	if GenVersion != 28 {
 		_, file, _, _ := runtime.Caller(0)
 		ver := strconv.FormatInt(int64(GenVersion), 10)
-		panic(errors.New("codecgen version mismatch: current: 27, need " + ver + ". Re-generate file: " + file))
+		panic(errors.New("codecgen version mismatch: current: 28, need " + ver + ". Re-generate file: " + file))
 	}
 }
 
