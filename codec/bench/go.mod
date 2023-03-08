@@ -14,7 +14,7 @@ require (
 	github.com/mailru/easyjson v0.7.7
 	github.com/pquerna/ffjson v0.0.0-20190930134022-aa0246cd15f7
 	github.com/tinylib/msgp v1.1.8
-	github.com/ugorji/go/codec v1.2.10
+	github.com/ugorji/go/codec v1.2.11
 	github.com/vmihailenco/msgpack/v4 v4.3.12
 	go.mongodb.org/mongo-driver v1.11.2
 )
