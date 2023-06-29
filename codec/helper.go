@@ -2803,7 +2803,7 @@ func freelistCapacity(length int) (capacity int) {
 // bytesFreelist is a list of byte buffers, sorted by cap.
 //
 // In anecdotal testing (running go test -tsd 1..6), we couldn't get
-// the length ofthe list > 4 at any time. So we believe a linear search
+// the length of the list > 4 at any time. So we believe a linear search
 // without bounds checking is sufficient.
 //
 // Typical usage model:
@@ -2821,7 +2821,7 @@ func freelistCapacity(length int) (capacity int) {
 //	v1 := v0
 //	... use v1 ...
 //	blist.put(v1)
-//	if byteSliceAddr(v0) != byteSliceAddr(v1) {
+//	if !byteSliceSameData(v0, v1) {
 //	  blist.put(v0)
 //	}
 type bytesFreelist [][]byte

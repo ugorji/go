@@ -204,7 +204,11 @@ func (e *cborEncDriver) EncodeTime(t time.Time) {
 		e.EncodeNil()
 	} else if e.h.TimeRFC3339 {
 		e.encUint(0, cborBaseTag)
-		e.encStringBytesS(cborBaseString, t.Format(time.RFC3339Nano))
+		const fmt = time.RFC3339Nano
+		bs := e.e.blist.get(len(fmt))
+		bs = fmtTime(t, fmt, bs) // size bounded: no chance of realloc.
+		e.encStringBytesS(cborBaseString, stringView(bs))
+		e.e.blist.put(bs)
 	} else {
 		e.encUint(1, cborBaseTag)
 		t = t.UTC().Round(time.Microsecond)
