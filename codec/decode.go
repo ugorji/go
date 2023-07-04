@@ -1580,14 +1580,9 @@ func (d *Decoder) MustDecode(v interface{}) {
 	d.calls--
 }
 
-// Release releases shared (pooled) resources.
+// Release is a no-op.
 //
-// It is important to call Release() when done with a Decoder, so those resources
-// are released instantly for use by subsequently created Decoders.
-//
-// By default, Release() is automatically called unless the option ExplicitRelease is set.
-//
-// Deprecated: Release is a no-op as pooled resources are not used with an Decoder.
+// Deprecated: Pooled resources are not used with a Decoder.
 // This method is kept for compatibility reasons only.
 func (d *Decoder) Release() {
 }
