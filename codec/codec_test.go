@@ -3088,6 +3088,42 @@ func encodeMsgPack(in interface{}) (*bytes.Buffer, error) {
 	return buf, err
 }
 
+func TestTimeEncodeOptionHonored(t *testing.T) {
+	buf := bytes.NewBuffer(nil)
+	hd := MsgpackHandle{
+		BasicHandle: BasicHandle{
+			TimeNotBuiltin: true,
+		},
+	}
+	enc := NewEncoder(buf, &hd)
+
+	tm, err := time.Parse(time.DateTime, time.DateTime)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = enc.Encode(tm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := []byte{175, 1, 0, 0, 0, 14, 187, 75, 55, 229, 0, 0, 0, 0, 255, 255}
+
+	if !bytes.Equal(buf.Bytes(), expected) {
+		t.Errorf("Expected old time format time %s to encode as %+v but got %+v", time.DateTime, expected, buf.Bytes())
+	}
+
+	buf = bytes.NewBuffer(nil)
+	enc = NewEncoder(buf, &MsgpackHandle{})
+	err = enc.Encode(tm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected = []byte{164, 67, 185, 64, 229}
+
+	if !bytes.Equal(buf.Bytes(), expected) {
+		t.Errorf("Expected new time format time %s to encode as %+v but got %+v", time.DateTime, expected, buf.Bytes())
+	}
+}
+
 func TestMapStructDoubleDecode(t *testing.T) {
 	// we should be able to decode into structs in a map
 	// if the struct is already present, it is not addressable, so has to be recreated

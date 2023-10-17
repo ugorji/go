@@ -286,6 +286,15 @@ func (e *msgpackEncDriver) EncodeFloat64(f float64) {
 }
 
 func (e *msgpackEncDriver) EncodeTime(t time.Time) {
+	// use the MarshalBinary format if requested
+	if e.h.TimeNotBuiltin {
+		bin, err := t.MarshalBinary()
+		if err != nil {
+			return
+		}
+		e.EncodeStringBytesRaw(bin)
+		return
+	}
 	if t.IsZero() {
 		e.EncodeNil()
 		return
