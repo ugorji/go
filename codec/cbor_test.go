@@ -92,6 +92,22 @@ func TestCborIndefiniteLength(t *testing.T) {
 	}
 }
 
+// "If any definite-length text string inside an indefinite-length text string is invalid, the
+// indefinite-length text string is invalid. Note that this implies that the UTF-8 bytes of a single
+// Unicode code point (scalar value) cannot be spread between chunks: a new chunk of a text string
+// can only be started at a code point boundary."
+func TestCborIndefiniteLengthTextStringChunksAreUTF8(t *testing.T) {
+	defer testSetup(t, nil)()
+	var handle CborHandle
+	handle.ValidateUnicode = true
+
+	var out string
+	err := NewDecoderBytes([]byte{cborBdIndefiniteString, 0x61, 0xc2, 0x61, 0xa3, cborBdBreak}, &handle).Decode(&out)
+	if err == nil {
+		t.Errorf("expected error but decoded to: %q", out)
+	}
+}
+
 type testCborGolden struct {
 	Base64     string      `codec:"cbor"`
 	Hex        string      `codec:"hex"`
