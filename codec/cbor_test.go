@@ -61,8 +61,8 @@ func TestCborIndefiniteLength(t *testing.T) {
 	buf.WriteByte(cborBdBreak)
 
 	buf.WriteByte(cborBdIndefiniteString)
-	e.MustEncode([]byte("two-")) // encode as bytes, to check robustness of code
-	e.MustEncode([]byte("value"))
+	e.MustEncode("two-")
+	e.MustEncode("value")
 	buf.WriteByte(cborBdBreak)
 
 	//----
