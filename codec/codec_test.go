@@ -2532,7 +2532,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 
 func testRandomFillRV(v reflect.Value) {
 	fneg := func() int64 {
-		i := rand.Intn(1)
+		i := rand.Intn(2)
 		if i == 1 {
 			return 1
 		}
