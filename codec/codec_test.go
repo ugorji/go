@@ -4276,10 +4276,11 @@ func doTestJsonInvalidUnicode(t *testing.T, h Handle) {
 	for k, v := range m {
 		// call testUnmarshal directly, so we can check for EOF
 		// testUnmarshalErr(&s, []byte(k), jh, t, "-")
+		// t.Logf("%s >> %s", k, v)
 		var s string
 		err = testUnmarshal(&s, []byte(k), jh)
 		if err != nil {
-			if err == io.EOF {
+			if err == io.EOF || err == io.ErrUnexpectedEOF {
 				continue
 			}
 			t.Logf("%s: unmarshal failed: %v", "-", err)

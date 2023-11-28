@@ -110,8 +110,7 @@ package codec
 //
 // ------------------------------------------
 // Bounds Checking
-//    - Allow bytesDecReader to incur "bounds check error", and
-//      recover that as an io.EOF.
+//    - Allow bytesDecReader to incur "bounds check error", and recover that as an io error.
 //      This allows the bounds check branch to always be taken by the branch predictor,
 //      giving better performance (in theory), while ensuring that the code is shorter.
 //
@@ -2473,7 +2472,7 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 	case runtime.Error:
 		d, dok := h.(*Decoder)
 		if dok && d.bytes && isSliceBoundsError(xerr.Error()) {
-			*err = io.EOF
+			*err = io.ErrUnexpectedEOF
 		} else {
 			h.wrapErr(xerr, err)
 		}
