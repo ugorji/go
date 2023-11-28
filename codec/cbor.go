@@ -427,12 +427,13 @@ func (d *cborDecDriver) decLen() int {
 	return int(d.decUint())
 }
 
-func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
+func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte, major byte) []byte {
 	d.bdRead = false
 	for !d.CheckBreak() {
-		if major := d.bd >> 5; major != cborMajorBytes && major != cborMajorString {
-			d.d.errorf("invalid indefinite string/bytes %x (%s); got major %v, expected %v or %v",
-				d.bd, cbordesc(d.bd), major, cborMajorBytes, cborMajorString)
+		chunkMajor := d.bd >> 5
+		if chunkMajor != major {
+			d.d.errorf("malformed indefinite string/bytes %x (%s); contains chunk with major type %v, expected %v",
+				d.bd, cbordesc(d.bd), chunkMajor, major)
 		}
 		n := uint(d.decLen())
 		oldLen := uint(len(bs))
@@ -445,6 +446,9 @@ func (d *cborDecDriver) decAppendIndefiniteBytes(bs []byte) []byte {
 			bs = bs[:newLen]
 		}
 		d.d.decRd.readb(bs[oldLen:newLen])
+		if d.h.ValidateUnicode && major == cborMajorString && !utf8.Valid(bs[oldLen:newLen]) {
+			d.d.errorf("indefinite-length text string contains chunk that is not a valid utf-8 sequence: 0x%x", bs[oldLen:newLen])
+		}
 		d.bdRead = false
 	}
 	d.bdRead = false
@@ -580,9 +584,9 @@ func (d *cborDecDriver) DecodeBytes(bs []byte) (bsOut []byte) {
 		d.bdRead = false
 		if bs == nil {
 			d.d.decByteState = decByteStateReuseBuf
-			return d.decAppendIndefiniteBytes(d.d.b[:0])
+			return d.decAppendIndefiniteBytes(d.d.b[:0], d.bd>>5)
 		}
-		return d.decAppendIndefiniteBytes(bs[:0])
+		return d.decAppendIndefiniteBytes(bs[:0], d.bd>>5)
 	}
 	if d.bd == cborBdIndefiniteArray {
 		d.bdRead = false

@@ -61,8 +61,8 @@ func TestCborIndefiniteLength(t *testing.T) {
 	buf.WriteByte(cborBdBreak)
 
 	buf.WriteByte(cborBdIndefiniteString)
-	e.MustEncode([]byte("two-")) // encode as bytes, to check robustness of code
-	e.MustEncode([]byte("value"))
+	e.MustEncode("two-")
+	e.MustEncode("value")
 	buf.WriteByte(cborBdBreak)
 
 	//----
@@ -89,6 +89,41 @@ func TestCborIndefiniteLength(t *testing.T) {
 			t.Logf("    ....... DECODED: (%T) %#v", vv, vv)
 		}
 		t.FailNow()
+	}
+}
+
+// "If any item between the indefinite-length string indicator (0b010_11111 or 0b011_11111) and the
+// "break" stop code is not a definite-length string item of the same major type, the string is not
+// well-formed."
+func TestCborIndefiniteLengthStringChunksCannotMixTypes(t *testing.T) {
+	defer testSetup(t, nil)()
+	var handle CborHandle
+
+	for _, in := range [][]byte{
+		{cborBdIndefiniteString, 0x40, cborBdBreak}, // byte string chunk in indefinite length text string
+		{cborBdIndefiniteBytes, 0x60, cborBdBreak},  // text string chunk in indefinite length byte string
+	} {
+		var out string
+		err := NewDecoderBytes(in, &handle).Decode(&out)
+		if err == nil {
+			t.Errorf("expected error but decoded 0x%x to: %q", in, out)
+		}
+	}
+}
+
+// "If any definite-length text string inside an indefinite-length text string is invalid, the
+// indefinite-length text string is invalid. Note that this implies that the UTF-8 bytes of a single
+// Unicode code point (scalar value) cannot be spread between chunks: a new chunk of a text string
+// can only be started at a code point boundary."
+func TestCborIndefiniteLengthTextStringChunksAreUTF8(t *testing.T) {
+	defer testSetup(t, nil)()
+	var handle CborHandle
+	handle.ValidateUnicode = true
+
+	var out string
+	err := NewDecoderBytes([]byte{cborBdIndefiniteString, 0x61, 0xc2, 0x61, 0xa3, cborBdBreak}, &handle).Decode(&out)
+	if err == nil {
+		t.Errorf("expected error but decoded to: %q", out)
 	}
 }
 
