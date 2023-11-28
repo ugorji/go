@@ -96,15 +96,18 @@ func TestCborIndefiniteLength(t *testing.T) {
 // "break" stop code is not a definite-length string item of the same major type, the string is not
 // well-formed."
 func TestCborIndefiniteLengthStringChunksCannotMixTypes(t *testing.T) {
-	defer testSetup(t, nil)()
-	var handle CborHandle
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
+	var h Handle = testCborH
+	defer testSetup(t, &h)()
 
 	for _, in := range [][]byte{
 		{cborBdIndefiniteString, 0x40, cborBdBreak}, // byte string chunk in indefinite length text string
 		{cborBdIndefiniteBytes, 0x60, cborBdBreak},  // text string chunk in indefinite length byte string
 	} {
 		var out string
-		err := NewDecoderBytes(in, &handle).Decode(&out)
+		err := NewDecoderBytes(in, h).Decode(&out)
 		if err == nil {
 			t.Errorf("expected error but decoded 0x%x to: %q", in, out)
 		}
@@ -116,12 +119,21 @@ func TestCborIndefiniteLengthStringChunksCannotMixTypes(t *testing.T) {
 // Unicode code point (scalar value) cannot be spread between chunks: a new chunk of a text string
 // can only be started at a code point boundary."
 func TestCborIndefiniteLengthTextStringChunksAreUTF8(t *testing.T) {
-	defer testSetup(t, nil)()
-	var handle CborHandle
-	handle.ValidateUnicode = true
+	if !testRecoverPanicToErr {
+		t.Skip(testSkipIfNotRecoverPanicToErrMsg)
+	}
+	var h Handle = testCborH
+	defer testSetup(t, &h)()
+
+	bh := testBasicHandle(h)
+	defer func(oldValidateUnicode bool) {
+		bh.ValidateUnicode = oldValidateUnicode
+	}(bh.ValidateUnicode)
+	bh.ValidateUnicode = true
 
 	var out string
-	err := NewDecoderBytes([]byte{cborBdIndefiniteString, 0x61, 0xc2, 0x61, 0xa3, cborBdBreak}, &handle).Decode(&out)
+	in := []byte{cborBdIndefiniteString, 0x61, 0xc2, 0x61, 0xa3, cborBdBreak}
+	err := NewDecoderBytes(in, h).Decode(&out)
 	if err == nil {
 		t.Errorf("expected error but decoded to: %q", out)
 	}
