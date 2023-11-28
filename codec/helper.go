@@ -857,26 +857,11 @@ type BasicHandle struct {
 	// Once a Handle has been initialized (used), do not modify this option. It will be ignored.
 	TimeNotBuiltin bool
 
-	// ExplicitRelease configures whether Release() is implicitly called after an encode or
-	// decode call.
-	//
-	// If you will hold onto an Encoder or Decoder for re-use, by calling Reset(...)
-	// on it or calling (Must)Encode repeatedly into a given []byte or io.Writer,
-	// then you do not want it to be implicitly closed after each Encode/Decode call.
-	// Doing so will unnecessarily return resources to the shared pool, only for you to
-	// grab them right after again to do another Encode/Decode call.
-	//
-	// Instead, you configure ExplicitRelease=true, and you explicitly call Release() when
-	// you are truly done.
-	//
-	// As an alternative, you can explicitly set a finalizer - so its resources
-	// are returned to the shared pool before it is garbage-collected. Do it as below:
-	//    runtime.SetFinalizer(e, (*Encoder).Release)
-	//    runtime.SetFinalizer(d, (*Decoder).Release)
+	// ExplicitRelease is ignored and has no effect.
 	//
 	// Deprecated: This is not longer used as pools are only used for long-lived objects
 	// which are shared across goroutines.
-	// Setting this value has no effect. It is maintained for backward compatibility.
+	// It is maintained for backward compatibility.
 	ExplicitRelease bool
 
 	// ---- cache line
