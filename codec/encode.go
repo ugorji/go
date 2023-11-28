@@ -984,6 +984,10 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 	return e
 }
 
+func (e *Encoder) HandleName() string {
+	return e.hh.Name()
+}
+
 func (e *Encoder) init(h Handle) {
 	initHandle(h)
 	e.err = errEncoderNotInitialized

@@ -1399,6 +1399,10 @@ func NewDecoderString(s string, h Handle) *Decoder {
 	return NewDecoderBytes(bytesView(s), h)
 }
 
+func (d *Decoder) HandleName() string {
+	return d.hh.Name()
+}
+
 func (d *Decoder) r() *decRd {
 	return &d.decRd
 }
