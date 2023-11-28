@@ -123,6 +123,11 @@ type cborEncDriver struct {
 	encDriverNoopContainerWriter
 	h *CborHandle
 
+	// scratch buffer for: encode time, numbers, etc
+	//
+	// RFC3339Nano uses 35 chars: 2006-01-02T15:04:05.999999999Z07:00
+	b [40]byte
+
 	e Encoder
 }
 
@@ -204,7 +209,7 @@ func (e *cborEncDriver) EncodeTime(t time.Time) {
 		e.EncodeNil()
 	} else if e.h.TimeRFC3339 {
 		e.encUint(0, cborBaseTag)
-		e.encStringBytesS(cborBaseString, t.Format(time.RFC3339Nano))
+		e.encStringBytesS(cborBaseString, stringView(fmtTime(t, time.RFC3339Nano, e.b[:0])))
 	} else {
 		e.encUint(1, cborBaseTag)
 		t = t.UTC().Round(time.Microsecond)
