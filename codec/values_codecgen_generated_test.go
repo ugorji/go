@@ -11173,7 +11173,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if x.Mbu64 == nil {
 					r.EncodeNil()
 				} else {
-					h.encMapboolc3RydWN0IHt9((map[bool]struct{})(x.Mbu64), e)
+					h.encMapboolONaHEdLDOQQHWfI((map[bool]struct{})(x.Mbu64), e)
 				} // end block: if x.Mbu64 map == nil
 			} else {
 				r.EncodeNil()
@@ -11183,7 +11183,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 				if x.Mu8e == nil {
 					r.EncodeNil()
 				} else {
-					h.encMapuint8c3RydWN0IHt9((map[uint8]struct{})(x.Mu8e), e)
+					h.encMapuint8ONaHEdLDOQQHWfI((map[uint8]struct{})(x.Mu8e), e)
 				} // end block: if x.Mu8e map == nil
 			} else {
 				r.EncodeNil()
@@ -12152,7 +12152,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					if x.Mbu64 == nil {
 						r.EncodeNil()
 					} else {
-						h.encMapboolc3RydWN0IHt9((map[bool]struct{})(x.Mbu64), e)
+						h.encMapboolONaHEdLDOQQHWfI((map[bool]struct{})(x.Mbu64), e)
 					} // end block: if x.Mbu64 map == nil
 				}
 				if yyq2[66] {
@@ -12394,7 +12394,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					if x.Mu8e == nil {
 						r.EncodeNil()
 					} else {
-						h.encMapuint8c3RydWN0IHt9((map[uint8]struct{})(x.Mu8e), e)
+						h.encMapuint8ONaHEdLDOQQHWfI((map[uint8]struct{})(x.Mu8e), e)
 					} // end block: if x.Mu8e map == nil
 				}
 				if yyq2[60] {
@@ -13610,7 +13610,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					if x.Mbu64 == nil {
 						r.EncodeNil()
 					} else {
-						h.encMapboolc3RydWN0IHt9((map[bool]struct{})(x.Mbu64), e)
+						h.encMapboolONaHEdLDOQQHWfI((map[bool]struct{})(x.Mbu64), e)
 					} // end block: if x.Mbu64 map == nil
 				}
 				if yyq2[59] {
@@ -13624,7 +13624,7 @@ func (x *TestStrucFlex) CodecEncodeSelf(e *Encoder) {
 					if x.Mu8e == nil {
 						r.EncodeNil()
 					} else {
-						h.encMapuint8c3RydWN0IHt9((map[uint8]struct{})(x.Mu8e), e)
+						h.encMapuint8ONaHEdLDOQQHWfI((map[uint8]struct{})(x.Mu8e), e)
 					} // end block: if x.Mu8e map == nil
 				}
 				if yyq2[60] {
@@ -14361,9 +14361,9 @@ func (x *TestStrucFlex) codecDecodeSelfFromMap(l int, d *Decoder) {
 		case "Mis":
 			z.F.DecMapIntStringX(&x.Mis, d)
 		case "Mbu64":
-			h.decMapboolc3RydWN0IHt9((*map[bool]struct{})(&x.Mbu64), d)
+			h.decMapboolONaHEdLDOQQHWfI((*map[bool]struct{})(&x.Mbu64), d)
 		case "Mu8e":
-			h.decMapuint8c3RydWN0IHt9((*map[uint8]struct{})(&x.Mu8e), d)
+			h.decMapuint8ONaHEdLDOQQHWfI((*map[uint8]struct{})(&x.Mu8e), d)
 		case "Mu8u64":
 			h.decMapuint8stringUint64T((*map[uint8]stringUint64T)(&x.Mu8u64), d)
 		case "Msp2ss":
@@ -15097,7 +15097,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	h.decMapboolc3RydWN0IHt9((*map[bool]struct{})(&x.Mbu64), d)
+	h.decMapboolONaHEdLDOQQHWfI((*map[bool]struct{})(&x.Mbu64), d)
 	yyj171++
 	yyb171 = !z.DecContainerNext(yyj171, l, yyhl171)
 	if yyb171 {
@@ -15105,7 +15105,7 @@ func (x *TestStrucFlex) codecDecodeSelfFromArray(l int, d *Decoder) {
 		return
 	}
 	z.DecReadArrayElem()
-	h.decMapuint8c3RydWN0IHt9((*map[uint8]struct{})(&x.Mu8e), d)
+	h.decMapuint8ONaHEdLDOQQHWfI((*map[uint8]struct{})(&x.Mu8e), d)
 	yyj171++
 	yyb171 = !z.DecContainerNext(yyj171, l, yyhl171)
 	if yyb171 {
@@ -16545,7 +16545,7 @@ func (x codecSelfer19780) decChanstring(v *chan string, d *Decoder) {
 	}
 }
 
-func (x codecSelfer19780) encMapboolc3RydWN0IHt9(v map[bool]struct{}, e *Encoder) {
+func (x codecSelfer19780) encMapboolONaHEdLDOQQHWfI(v map[bool]struct{}, e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
@@ -16566,7 +16566,7 @@ func (x codecSelfer19780) encMapboolc3RydWN0IHt9(v map[bool]struct{}, e *Encoder
 	}
 }
 
-func (x codecSelfer19780) decMapboolc3RydWN0IHt9(v *map[bool]struct{}, d *Decoder) {
+func (x codecSelfer19780) decMapboolONaHEdLDOQQHWfI(v *map[bool]struct{}, d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
@@ -16611,7 +16611,7 @@ func (x codecSelfer19780) decMapboolc3RydWN0IHt9(v *map[bool]struct{}, d *Decode
 	}
 }
 
-func (x codecSelfer19780) encMapuint8c3RydWN0IHt9(v map[uint8]struct{}, e *Encoder) {
+func (x codecSelfer19780) encMapuint8ONaHEdLDOQQHWfI(v map[uint8]struct{}, e *Encoder) {
 	var h codecSelfer19780
 	z, r := GenHelper().Encoder(e)
 	_, _, _ = h, z, r
@@ -16646,7 +16646,7 @@ func (x codecSelfer19780) encMapuint8c3RydWN0IHt9(v map[uint8]struct{}, e *Encod
 	}
 }
 
-func (x codecSelfer19780) decMapuint8c3RydWN0IHt9(v *map[uint8]struct{}, d *Decoder) {
+func (x codecSelfer19780) decMapuint8ONaHEdLDOQQHWfI(v *map[uint8]struct{}, d *Decoder) {
 	var h codecSelfer19780
 	z, r := GenHelper().Decoder(d)
 	_, _, _ = h, z, r
