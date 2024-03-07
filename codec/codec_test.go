@@ -4193,9 +4193,9 @@ func doTestJsonLargeInteger(t *testing.T, h Handle) {
 	var d *Decoder = NewDecoderBytes(nil, jh)
 	for _, v := range []tt{
 		{"0", true, true, 0, 0},
-		{"0000", true, true, 0, 0},
+		{"0000", false, false, 0, 0},
 		{"0.00e+2", true, true, 0, 0},
-		{"000e-2", true, true, 0, 0},
+		{"000e-2", false, false, 0, 0},
 		{"0.00e-2", true, true, 0, 0},
 
 		{"9223372036854775807", true, true, math.MaxInt64, math.MaxInt64},                             // maxint64
@@ -4384,7 +4384,6 @@ func doTestJsonNumberParsing(t *testing.T, h Handle) {
 			}
 			// try decoding it a uint64 or int64
 			fint, ffrac = math.Modf(f)
-			// xdebug2f(">> fint: %v (ffrac: %v) as uint64: %v as float64: %v", fint, ffrac, uint64(fint), float64(uint64(fint)))
 			bv = strconv.AppendFloat(bv[:0], fint, 'E', prec, 64)
 			if f < 0 || fint != float64(uint64(fint)) {
 				goto F64i

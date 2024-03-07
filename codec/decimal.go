@@ -234,6 +234,10 @@ func parseFloat64_custom(b []byte) (f float64, err error) {
 }
 
 func parseUint64_simple(b []byte) (n uint64, ok bool) {
+	if len(b) > 1 && b[0] == '0' { // punt on numbers with leading zeros
+		return
+	}
+
 	var i int
 	var n1 uint64
 	var c uint8
@@ -384,12 +388,22 @@ func readFloat(s []byte, y floatinfo) (r readFloatResult) {
 		i++
 	}
 
-	// we considered punting early if string has length > maxMantDigits, but this doesn't account
+	// considered punting early if string has length > maxMantDigits, but doesn't account
 	// for trailing 0's e.g. 700000000000000000000 can be encoded exactly as it is 7e20
 
 	var nd, ndMant, dp int8
 	var sawdot, sawexp bool
 	var xu uint64
+
+	if i+1 < slen && s[i] == '0' {
+		switch s[i+1] {
+		case '.', 'e', 'E':
+			// ok
+		default:
+			r.bad = true
+			return
+		}
+	}
 
 LOOP:
 	for ; i < slen; i++ {
