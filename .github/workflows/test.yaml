@@ -37,3 +37,4 @@ jobs:
         with:
           go-version: ${{ needs.get-go-version.outputs.go-version }}
       - run: go test -v ./codec
+      - run: go test -tags codecgen.exec -v ./codec
