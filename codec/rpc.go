@@ -169,7 +169,13 @@ func (c *goRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
 }
 
 func (c *goRpcCodec) WriteResponse(r *rpc.Response, body interface{}) error {
-	return c.write(r, body)
+	err := c.write(r, body)
+	if err != nil {
+		// If error occurred writing a response, close the underlying connection.
+		// See hashicorp/net-rpc-msgpackrpc#15
+		c.Close()
+	}
+	return err
 }
 
 func (c *goRpcCodec) ReadResponseHeader(r *rpc.Response) error {
