@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"time"
@@ -761,13 +762,13 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			e.encodeValue(mapGet(rv, mks[i], rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.String:
-		mksv := make([]stringRv, len(mks))
+		mksv := make([]orderedRv[string], len(mks))
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
 			v.v = k.String()
 		}
-		sort.Sort(stringRvSlice(mksv))
+		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
 			e.mapElemKey()
 			if rtkeydecl {
@@ -779,13 +780,13 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint, reflect.Uintptr:
-		mksv := make([]uint64Rv, len(mks))
+		mksv := make([]orderedRv[uint64], len(mks))
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
 			v.v = k.Uint()
 		}
-		sort.Sort(uint64RvSlice(mksv))
+		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
 			e.mapElemKey()
 			if rtkeydecl {
@@ -797,13 +798,13 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-		mksv := make([]int64Rv, len(mks))
+		mksv := make([]orderedRv[int64], len(mks))
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
 			v.v = k.Int()
 		}
-		sort.Sort(int64RvSlice(mksv))
+		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
 			e.mapElemKey()
 			if rtkeydecl {
@@ -815,13 +816,13 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.Float32:
-		mksv := make([]float64Rv, len(mks))
+		mksv := make([]orderedRv[float64], len(mks))
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
 			v.v = k.Float()
 		}
-		sort.Sort(float64RvSlice(mksv))
+		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
 			e.mapElemKey()
 			if rtkeydecl {
@@ -833,13 +834,13 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			e.encodeValue(mapGet(rv, mksv[i].r, rvv, kfast, visindirect, visref), valFn)
 		}
 	case reflect.Float64:
-		mksv := make([]float64Rv, len(mks))
+		mksv := make([]orderedRv[float64], len(mks))
 		for i, k := range mks {
 			v := &mksv[i]
 			v.r = k
 			v.v = k.Float()
 		}
-		sort.Sort(float64RvSlice(mksv))
+		slices.SortFunc(mksv, cmpOrderedRv)
 		for i := range mksv {
 			e.mapElemKey()
 			if rtkeydecl {
@@ -858,7 +859,7 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 				v.r = k
 				v.v = rv2i(k).(time.Time)
 			}
-			sort.Sort(timeRvSlice(mksv))
+			slices.SortFunc(mksv, cmpTimeRv)
 			for i := range mksv {
 				e.mapElemKey()
 				e.e.EncodeTime(mksv[i].v)
@@ -903,7 +904,7 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 			}
 		}()
 
-		sort.Sort(bytesRvSlice(mksbv))
+		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
 			e.mapElemKey()
 			e.encWr.writeb(mksbv[j].v)

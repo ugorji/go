@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
 //go:build !safe && !codec.safe && !appengine && go1.9 && gc
-// +build !safe,!codec.safe,!appengine,go1.9,gc
 
 package codec
 

@@ -527,7 +527,7 @@ func (d *Decoder) kInterfaceNaked(f *codecFnInfo) (rvn reflect.Value) {
 			rvn = rvZeroAddrK(d.h.SliceType, reflect.Slice)
 			d.decodeValue(rvn, nil)
 		}
-		if reflectArrayOfSupported && d.h.PreferArrayOverSlice {
+		if d.h.PreferArrayOverSlice {
 			rvn = rvGetArray4Slice(rvn)
 		}
 	case valueTypeExt:
@@ -1957,8 +1957,6 @@ func (d *Decoder) checkBreak() (v bool) {
 }
 
 func (d *Decoder) containerNext(j, containerLen int, hasLen bool) bool {
-	// MARKER: keep in sync with gen-helper.go.tmpl
-
 	// return (hasLen && j < containerLen) || !(hasLen || slh.d.checkBreak())
 	if hasLen {
 		return j < containerLen

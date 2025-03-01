@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
 //go:build alltests && go1.9
-// +build alltests,go1.9
 
 package codec
 

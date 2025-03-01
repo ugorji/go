@@ -3063,9 +3063,6 @@ func doTestOmitempty(t *testing.T, h Handle) {
 func doTestMissingFields(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
 	name := h.Name()
-	if codecgen {
-		t.Skipf("skipping Missing Fields tests as it is not honored by codecgen")
-	}
 	if testBasicHandle(h).StructToArray {
 		t.Skipf("skipping Missing Fields test when StructToArray=true")
 	}
@@ -3725,10 +3722,6 @@ after the new line
 func doTestPreferArrayOverSlice(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
 	// encode a slice, decode it with PreferArrayOverSlice
-	// if codecgen, skip the test (as codecgen doesn't work with PreferArrayOverSlice)
-	if codecgen {
-		t.Skip("skipping ... prefer array over slice is not supported in codecgen mode")
-	}
 	bh := testBasicHandle(h)
 	paos := bh.PreferArrayOverSlice
 	styp := bh.SliceType

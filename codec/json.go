@@ -256,7 +256,7 @@ func (e *jsonEncDriver) EncodeTime(t time.Time) {
 		e.EncodeNil()
 	} else {
 		e.b[0] = '"'
-		b := fmtTime(t, time.RFC3339Nano, e.b[1:1])
+		b := t.AppendFormat(e.b[1:1], time.RFC3339Nano)
 		e.b[len(b)+1] = '"'
 		e.e.encWr.writeb(e.b[:len(b)+2])
 	}

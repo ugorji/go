@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
 //go:build ignore
-// +build ignore
 
 package codec
 

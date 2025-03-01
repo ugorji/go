@@ -1,5 +1,4 @@
-// +build !notfastpath
-// +build !codec.notfastpath
+//go:build !notfastpath && !codec.notfastpath
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -53,6 +52,7 @@ DecMap...L  (delegated to by both above)
 import (
 	"reflect"
 	"sort"
+	"slices"
 )
 
 const fastpathEnabled = true
@@ -241,7 +241,7 @@ func (fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Elem 
 			vp.i = k2 
 			i++
 		}
-		sort.Sort(bytesIntfSlice(v2))
+		slices.SortFunc(v2, cmpBytesIntf)
 		for j := range v2 {
 			e.mapElemKey()
 			e.asis(v2[j].v)
@@ -253,7 +253,8 @@ func (fastpathT) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Elem 
 			v2[i] = {{if eq $x .MapKey}}k{{else}}{{ $x }}(k){{end}}
 			i++
 		}
-		sort.Sort({{ sorttype .MapKey false}}(v2))
+		slices.Sort(v2)
+		{{/* // sort.Sort({{ sorttype .MapKey false}}(v2)) */ -}}
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			{{if eq .MapKey "string"}} e.e.EncodeString(k2) {{else}}{{ $y := printf "%s(k2)" .MapKey }}{{if eq $x .MapKey }}{{ $y = "k2" }}{{end}}{{ encmd .MapKey $y }}{{end}}

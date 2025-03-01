@@ -190,6 +190,8 @@ package codec
 // These are the TransientAddrK and TransientAddr2K methods of decPerType.
 
 import (
+	"bytes"
+	"cmp"
 	"encoding"
 	"encoding/binary"
 	"errors"
@@ -1070,7 +1072,7 @@ func fnloadFastpathUnderlying(ti *typeInfo) (f *fastpathE, u reflect.Type) {
 	}
 	f = &fastpathAv[idx]
 	if uint8(reflect.Array) == ti.kind {
-		u = reflectArrayOf(ti.rt.Len(), ti.elem)
+		u = reflect.ArrayOf(ti.rt.Len(), ti.elem)
 	} else {
 		u = f.rt
 	}
@@ -2341,7 +2343,7 @@ LOOP:
 			// Also, from go1.10, ignore pointers to unexported struct types
 			// because unmarshal cannot assign a new struct to an unexported field.
 			// See https://golang.org/issue/21357
-			if (isUnexported && !isStruct) || (!allowSetUnexportedEmbeddedPtr && isUnexported && isPtr) {
+			if (isUnexported && !isStruct) || (isUnexported && isPtr) {
 				continue
 			}
 			doInline := stag == ""
@@ -2427,6 +2429,60 @@ LOOP:
 	}
 }
 
+type orderedRv[T cmp.Ordered] struct {
+	v T
+	r reflect.Value
+}
+
+type timeRv struct {
+	v time.Time
+	r reflect.Value
+}
+
+type bytesRv struct {
+	v []byte
+	r reflect.Value
+}
+
+type bytesIntf struct {
+	v []byte
+	i interface{}
+}
+
+type stringIntf struct {
+	v string
+	i interface{}
+}
+
+type orderedIntf[T cmp.Ordered] struct {
+	v T
+	i interface{}
+}
+
+func cmpOrderedRv[T cmp.Ordered](v1, v2 orderedRv[T]) int {
+	return cmp.Compare(v1.v, v2.v)
+}
+
+func cmpTimeRv(v1, v2 timeRv) int {
+	return v1.v.Compare(v2.v)
+}
+
+func cmpBytesRv(v1, v2 bytesRv) int {
+	return bytes.Compare(v1.v, v2.v)
+}
+
+// func cmpOrderedIntf[T cmp.Ordered](v1, v2 orderedIntf[T]) int {
+// 	return cmp.Compare(v1.v, v2.v)
+// }
+
+// func cmpBytesIntf(v1, v2 bytesIntf) int {
+// 	return bytes.Compare(v1.v, v2.v)
+// }
+
+// func cmpStringIntf(v1, v2 stringIntf) int {
+// 	return strings.Compare(v1.v, v2.v)
+// }
+
 func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 	// return rt.Implements(iTyp), reflect.PtrTo(rt).Implements(iTyp)
 
@@ -2441,7 +2497,7 @@ func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 	if base {
 		indir = true
 	} else {
-		indir = reflect.PtrTo(rt).Implements(iTyp)
+		indir = reflect.PointerTo(rt).Implements(iTyp)
 	}
 	return
 }

@@ -1,5 +1,4 @@
 //go:build !notfastpath && !codec.notfastpath
-// +build !notfastpath,!codec.notfastpath
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -34,6 +33,7 @@ package codec
 
 import (
 	"reflect"
+	"slices"
 	"sort"
 )
 
@@ -1004,7 +1004,7 @@ func (fastpathT) EncMapStringIntfV(v map[string]interface{}, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(stringSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeString(k2)
@@ -1033,7 +1033,7 @@ func (fastpathT) EncMapStringStringV(v map[string]string, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(stringSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeString(k2)
@@ -1062,7 +1062,7 @@ func (fastpathT) EncMapStringBytesV(v map[string][]byte, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(stringSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeString(k2)
@@ -1091,7 +1091,7 @@ func (fastpathT) EncMapStringUint8V(v map[string]uint8, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(stringSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeString(k2)
@@ -1120,7 +1120,7 @@ func (fastpathT) EncMapStringUint64V(v map[string]uint64, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(stringSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeString(k2)
@@ -1149,7 +1149,7 @@ func (fastpathT) EncMapStringIntV(v map[string]int, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(stringSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeString(k2)
@@ -1178,7 +1178,7 @@ func (fastpathT) EncMapStringInt32V(v map[string]int32, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(stringSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeString(k2)
@@ -1207,7 +1207,7 @@ func (fastpathT) EncMapStringFloat64V(v map[string]float64, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(stringSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeString(k2)
@@ -1236,7 +1236,7 @@ func (fastpathT) EncMapStringBoolV(v map[string]bool, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(stringSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeString(k2)
@@ -1265,7 +1265,7 @@ func (fastpathT) EncMapUint8IntfV(v map[uint8]interface{}, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint8Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
@@ -1294,7 +1294,7 @@ func (fastpathT) EncMapUint8StringV(v map[uint8]string, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint8Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
@@ -1323,7 +1323,7 @@ func (fastpathT) EncMapUint8BytesV(v map[uint8][]byte, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint8Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
@@ -1352,7 +1352,7 @@ func (fastpathT) EncMapUint8Uint8V(v map[uint8]uint8, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint8Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
@@ -1381,7 +1381,7 @@ func (fastpathT) EncMapUint8Uint64V(v map[uint8]uint64, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint8Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
@@ -1410,7 +1410,7 @@ func (fastpathT) EncMapUint8IntV(v map[uint8]int, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint8Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
@@ -1439,7 +1439,7 @@ func (fastpathT) EncMapUint8Int32V(v map[uint8]int32, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint8Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
@@ -1468,7 +1468,7 @@ func (fastpathT) EncMapUint8Float64V(v map[uint8]float64, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint8Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
@@ -1497,7 +1497,7 @@ func (fastpathT) EncMapUint8BoolV(v map[uint8]bool, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint8Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(uint64(k2))
@@ -1526,7 +1526,7 @@ func (fastpathT) EncMapUint64IntfV(v map[uint64]interface{}, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint64Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(k2)
@@ -1555,7 +1555,7 @@ func (fastpathT) EncMapUint64StringV(v map[uint64]string, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint64Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(k2)
@@ -1584,7 +1584,7 @@ func (fastpathT) EncMapUint64BytesV(v map[uint64][]byte, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint64Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(k2)
@@ -1613,7 +1613,7 @@ func (fastpathT) EncMapUint64Uint8V(v map[uint64]uint8, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint64Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(k2)
@@ -1642,7 +1642,7 @@ func (fastpathT) EncMapUint64Uint64V(v map[uint64]uint64, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint64Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(k2)
@@ -1671,7 +1671,7 @@ func (fastpathT) EncMapUint64IntV(v map[uint64]int, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint64Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(k2)
@@ -1700,7 +1700,7 @@ func (fastpathT) EncMapUint64Int32V(v map[uint64]int32, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint64Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(k2)
@@ -1729,7 +1729,7 @@ func (fastpathT) EncMapUint64Float64V(v map[uint64]float64, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint64Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(k2)
@@ -1758,7 +1758,7 @@ func (fastpathT) EncMapUint64BoolV(v map[uint64]bool, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(uint64Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeUint(k2)
@@ -1787,7 +1787,7 @@ func (fastpathT) EncMapIntIntfV(v map[int]interface{}, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(intSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -1816,7 +1816,7 @@ func (fastpathT) EncMapIntStringV(v map[int]string, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(intSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -1845,7 +1845,7 @@ func (fastpathT) EncMapIntBytesV(v map[int][]byte, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(intSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -1874,7 +1874,7 @@ func (fastpathT) EncMapIntUint8V(v map[int]uint8, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(intSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -1903,7 +1903,7 @@ func (fastpathT) EncMapIntUint64V(v map[int]uint64, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(intSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -1932,7 +1932,7 @@ func (fastpathT) EncMapIntIntV(v map[int]int, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(intSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -1961,7 +1961,7 @@ func (fastpathT) EncMapIntInt32V(v map[int]int32, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(intSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -1990,7 +1990,7 @@ func (fastpathT) EncMapIntFloat64V(v map[int]float64, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(intSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -2019,7 +2019,7 @@ func (fastpathT) EncMapIntBoolV(v map[int]bool, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(intSlice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -2048,7 +2048,7 @@ func (fastpathT) EncMapInt32IntfV(v map[int32]interface{}, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(int32Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -2077,7 +2077,7 @@ func (fastpathT) EncMapInt32StringV(v map[int32]string, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(int32Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -2106,7 +2106,7 @@ func (fastpathT) EncMapInt32BytesV(v map[int32][]byte, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(int32Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -2135,7 +2135,7 @@ func (fastpathT) EncMapInt32Uint8V(v map[int32]uint8, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(int32Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -2164,7 +2164,7 @@ func (fastpathT) EncMapInt32Uint64V(v map[int32]uint64, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(int32Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -2193,7 +2193,7 @@ func (fastpathT) EncMapInt32IntV(v map[int32]int, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(int32Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -2222,7 +2222,7 @@ func (fastpathT) EncMapInt32Int32V(v map[int32]int32, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(int32Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -2251,7 +2251,7 @@ func (fastpathT) EncMapInt32Float64V(v map[int32]float64, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(int32Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))
@@ -2280,7 +2280,7 @@ func (fastpathT) EncMapInt32BoolV(v map[int32]bool, e *Encoder) {
 			v2[i] = k
 			i++
 		}
-		sort.Sort(int32Slice(v2))
+		slices.Sort(v2)
 		for _, k2 := range v2 {
 			e.mapElemKey()
 			e.e.EncodeInt(int64(k2))

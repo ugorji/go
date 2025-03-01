@@ -209,7 +209,7 @@ func (e *cborEncDriver) EncodeTime(t time.Time) {
 		e.EncodeNil()
 	} else if e.h.TimeRFC3339 {
 		e.encUint(0, cborBaseTag)
-		e.encStringBytesS(cborBaseString, stringView(fmtTime(t, time.RFC3339Nano, e.b[:0])))
+		e.encStringBytesS(cborBaseString, stringView(t.AppendFormat(e.b[:0], time.RFC3339Nano)))
 	} else {
 		e.encUint(1, cborBaseTag)
 		t = t.UTC().Round(time.Microsecond)

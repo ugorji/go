@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
 //go:build !go1.9 || safe || codec.safe || appengine
-// +build !go1.9 safe codec.safe appengine
 
 package codec
 
@@ -223,6 +222,10 @@ func isEmptyStruct(v reflect.Value, tinfos *TypeInfos, recursive bool) bool {
 	return true
 }
 
+func makeMapReflect(t reflect.Type, size int) reflect.Value {
+	return reflect.MakeMapWithSize(t, size)
+}
+
 // --------------------------
 
 type perTypeElem struct {
@@ -293,6 +296,38 @@ func (x *perType) AddressableRO(v reflect.Value) (rv reflect.Value) {
 	rv = x.elem(v.Type()).get(0)
 	rvSetDirect(rv, v)
 	return
+}
+
+// --------------------------
+type mapIter struct {
+	t      *reflect.MapIter
+	m      reflect.Value
+	values bool
+}
+
+func (t *mapIter) Next() (r bool) {
+	return t.t.Next()
+}
+
+func (t *mapIter) Key() reflect.Value {
+	return t.t.Key()
+}
+
+func (t *mapIter) Value() (r reflect.Value) {
+	if t.values {
+		return t.t.Value()
+	}
+	return
+}
+
+func (t *mapIter) Done() {}
+
+func mapRange(t *mapIter, m, k, v reflect.Value, values bool) {
+	*t = mapIter{
+		m:      m,
+		t:      m.MapRange(),
+		values: values,
+	}
 }
 
 // --------------------------
@@ -537,7 +572,7 @@ func rvGetArrayBytes(rv reflect.Value, scratch []byte) (bs []byte) {
 }
 
 func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
-	v = rvZeroAddrK(reflectArrayOf(rvLenSlice(rv), rv.Type().Elem()), reflect.Array)
+	v = rvZeroAddrK(reflect.ArrayOf(rvLenSlice(rv), rv.Type().Elem()), reflect.Array)
 	reflect.Copy(v, rv)
 	return
 }

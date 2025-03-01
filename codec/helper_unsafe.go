@@ -2,7 +2,6 @@
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
 //go:build !safe && !codec.safe && !appengine && go1.9
-// +build !safe,!codec.safe,!appengine,go1.9
 
 // minimum of go 1.9 is needed, as that is the minimum for all features and linked functions we need
 // - typedmemclr was introduced in go 1.8
@@ -889,7 +888,7 @@ func rvGetArray4Slice(rv reflect.Value) (v reflect.Value) {
 	//
 	// Consequently, we use rvLenSlice, not rvCapSlice.
 
-	t := reflectArrayOf(rvLenSlice(rv), rv.Type().Elem())
+	t := reflect.ArrayOf(rvLenSlice(rv), rv.Type().Elem())
 	// v = rvZeroAddrK(t, reflect.Array)
 
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
@@ -1205,6 +1204,15 @@ func mapAddrLoopvarRV(t reflect.Type, k reflect.Kind) (rv reflect.Value) {
 	return
 }
 
+func makeMapReflect(typ reflect.Type, size int) (rv reflect.Value) {
+	t := (*unsafeIntf)(unsafe.Pointer(&typ)).ptr
+	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
+	urv.typ = t
+	urv.flag = uintptr(reflect.Map)
+	urv.ptr = makemap(t, size, nil)
+	return
+}
+
 // ---------- ENCODER optimized ---------------
 
 func (e *Encoder) jsondriver() *jsonEncDriver {
@@ -1299,9 +1307,9 @@ func unsafeNew(typ unsafe.Pointer) unsafe.Pointer {
 // failing with "error: undefined reference" error.
 // however, runtime.{mallocgc, newarray} are supported, so use that instead.
 
-//go:linkname memmove runtime.memmove
-//go:noescape
-func memmove(to, from unsafe.Pointer, n uintptr)
+// //go:linkname memmove runtime.memmove
+// //go:noescape
+// func memmove(to, from unsafe.Pointer, n uintptr)
 
 //go:linkname mallocgc runtime.mallocgc
 //go:noescape
@@ -1319,9 +1327,9 @@ func mapiterinit(typ unsafe.Pointer, m unsafe.Pointer, it unsafe.Pointer)
 //go:noescape
 func mapiternext(it unsafe.Pointer) (key unsafe.Pointer)
 
-//go:linkname mapdelete runtime.mapdelete
-//go:noescape
-func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
+// //go:linkname mapdelete runtime.mapdelete
+// //go:noescape
+// func mapdelete(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer)
 
 //go:linkname mapassign runtime.mapassign
 //go:noescape
@@ -1330,6 +1338,10 @@ func mapassign(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) unsafe.
 //go:linkname mapaccess2 runtime.mapaccess2
 //go:noescape
 func mapaccess2(typ unsafe.Pointer, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer, ok bool)
+
+//go:linkname makemap runtime.makemap
+//go:noescape
+func makemap(typ unsafe.Pointer, size int, h unsafe.Pointer) unsafe.Pointer
 
 // reflect.typed{memmove, memclr, slicecopy} will handle checking if the type has pointers or not,
 // and if a writeBarrier is needed, before delegating to the right method in the runtime.
