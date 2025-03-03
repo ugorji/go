@@ -10,7 +10,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math"
 	"math/rand"
 	"net"
@@ -1291,7 +1290,9 @@ func testCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs
 		defer func() { jsonH.TermWhitespace = false }()
 	}
 	srv := rpc.NewServer()
-	srv.Register(testRpcInt)
+	if err := srv.Register(testRpcInt); err != nil {
+		t.Fatal(err)
+	}
 	ln, err := net.Listen("tcp", "127.0.0.1:0") // listen on ipv4 localhost
 	logT(t, "connFn: addr: %v, network: %v, port: %v", ln.Addr(), ln.Addr().Network(), (ln.Addr().(*net.TCPAddr)).Port)
 	// log("listener: %v", ln.Addr())
@@ -1673,7 +1674,7 @@ func doTestRawValue(t *testing.T, name string, h Handle) {
 func doTestPythonGenStreams(t *testing.T, name string, h Handle) {
 	testOnce.Do(testInitAll)
 	logT(t, "TestPythonGenStreams-%v", name)
-	tmpdir, err := ioutil.TempDir("", "golang-"+name+"-test")
+	tmpdir, err := os.MkdirTemp("", "golang-"+name+"-test")
 	if err != nil {
 		logT(t, "-------- Unable to create temp directory\n")
 		failT(t)
@@ -1707,7 +1708,7 @@ func doTestPythonGenStreams(t *testing.T, name string, h Handle) {
 		logT(t, "..............................................")
 		logT(t, "         Testing: #%d: %T, %#v\n", i, v, v)
 		var bss []byte
-		bss, err = ioutil.ReadFile(filepath.Join(tmpdir, strconv.Itoa(i)+"."+name+".golden"))
+		bss, err = os.ReadFile(filepath.Join(tmpdir, strconv.Itoa(i)+"."+name+".golden"))
 		if err != nil {
 			logT(t, "-------- Error reading golden file: %d. Err: %v", i, err)
 			failT(t)
@@ -1795,7 +1796,9 @@ func doTestMsgpackRpcSpecGoClientToPythonSvc(t *testing.T) {
 	var mArgs MsgpackSpecRpcMultiArgs = []interface{}{"A1", "B2", "C3"}
 	checkErrT(t, cl.Call("Echo123", mArgs, &rstr))
 	checkEqualT(t, rstr, "1:A1 2:B2 3:C3", "rstr=")
-	cmd.Process.Kill()
+	if err := cmd.Process.Kill(); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func doTestMsgpackRpcSpecPythonClientToGoSvc(t *testing.T) {
@@ -2083,7 +2086,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 func testRandomFillRV(v reflect.Value) {
 	testOnce.Do(testInitAll)
 	fneg := func() int64 {
-		i := rand.Intn(1)
+		i := rand.Intn(2)
 		if i == 1 {
 			return 1
 		}
@@ -2394,7 +2397,11 @@ func doTestScalars(t *testing.T, name string, h Handle) {
 func doTestIntfMapping(t *testing.T, name string, h Handle) {
 	testOnce.Do(testInitAll)
 	rti := reflect.TypeOf((*testIntfMapI)(nil)).Elem()
-	defer func() { basicHandle(h).Intf2Impl(rti, nil) }()
+	defer func() {
+		if err := basicHandle(h).Intf2Impl(rti, nil); err != nil {
+			t.Fatal(err)
+		}
+	}()
 
 	type T9 struct {
 		I testIntfMapI
@@ -2705,7 +2712,7 @@ func TestBufioDecReader(t *testing.T) {
 	var r = strings.NewReader(s)
 	var br = &bufioDecReader{buf: make([]byte, 0, 13)}
 	br.r = r
-	b, err := ioutil.ReadAll(br.r)
+	b, err := io.ReadAll(br.r)
 	if err != nil {
 		panic(err)
 	}

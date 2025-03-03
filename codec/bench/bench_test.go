@@ -172,7 +172,6 @@ func doBenchCheck(name string, encfn benchEncFn, decfn benchDecFn) {
 	} else {
 		logT(nil, "\t%10s: len: %d bytes,\t encode: %v,\t decode: %v", name, encLen, encDur, decDur)
 	}
-	return
 }
 
 func fnBenchmarkEncode(b *testing.B, encName string, ts interface{}, encfn benchEncFn) {
