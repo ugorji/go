@@ -967,9 +967,6 @@ type encoder[T encDriver] struct {
 
 	e T
 
-	// sideEncoder encoder must be held solely by the driver
-	// es *encoder[T]
-
 	fp *fastpathEs[T]
 
 	rtidFn, rtidFnNoExt *atomicRtidFnSlice

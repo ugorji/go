@@ -2786,23 +2786,121 @@ func (x internerMap) string(v []byte) (s string) {
 	return
 }
 
-type linearMap4[K comparable, V any] struct {
-	keys   [4]K
-	values [4]V
-	num    uint8
+// type linearMap4[K comparable, V any] struct {
+// 	keys   [4]K
+// 	values [4]V
+// 	num    uint8
+// }
+
+// func (m *linearMap4[K, V]) get(k K) (v V) {
+// 	for i := uint8(0); i < m.num; i++ {
+// 		if m.keys[i] == k {
+// 			return m.values[i]
+// 		}
+// 	}
+// 	return
+// }
+
+// func (m *linearMap4[K, V]) put(k K, v V) {
+// 	m.keys[m.num] = k
+// 	m.values[m.num] = v
+// 	m.num++
+// }
+
+func sideDecode[T decDriver](ds *decoder[T], v interface{}, basetype reflect.Type) {
+	if v == nil && basetype == nil {
+		return
+	}
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = baseRV(v)
+	}
+	if basetype == nil {
+		ds.decodeValue(rv, nil)
+	} else {
+		ds.decodeValue(rv, ds.fnNoExt(basetype))
+	}
 }
 
-func (m *linearMap4[K, V]) get(k K) (v V) {
-	for i := uint8(0); i < m.num; i++ {
-		if m.keys[i] == k {
-			return m.values[i]
-		}
+func sideEncode[T encDriver](es *encoder[T], v interface{}, basetype reflect.Type, cs containerState) {
+	if v == nil && basetype == nil {
+		return
+	}
+
+	if cs != 0 {
+		es.c = cs
+	}
+
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = baseRV(v)
+	}
+
+	if basetype == nil {
+		es.encodeValue(rv, nil)
+	} else {
+		es.encodeValue(rv, es.fnNoExt(basetype))
+	}
+	es.e.atEndOfEncode()
+	es.e.writerEnd()
+}
+
+func decResetBytes[T decReader](r T, in []byte) (ok bool) {
+	v, ok := any(r).(bytesDecReaderM)
+	if ok {
+		v.reset(in)
 	}
 	return
 }
 
-func (m *linearMap4[K, V]) put(k K, v V) {
-	m.keys[m.num] = k
-	m.values[m.num] = v
-	m.num++
+func decResetIO[T decReader](r T, in io.Reader, bufsize int, blist *bytesFreelist) (ok bool) {
+	v, ok := any(r).(ioDecReaderM)
+	if ok {
+		v.reset(in, bufsize, blist)
+	}
+	return
 }
+
+func encResetBytes[T encWriter](w T, out *[]byte) (ok bool) {
+	v, ok := any(w).(bytesEncAppenderM)
+	if ok {
+		v.reset(*out, out)
+	}
+	// fmt.Printf("resetOutBytes: e.w: %v of type: %T (ok=%v)\n", e.w, any(e.w), ok)
+	return
+}
+
+func encResetIO[T encWriter](w T, out io.Writer, bufsize int, blist *bytesFreelist) (ok bool) {
+	v, ok := any(w).(bufioEncWriterM)
+	if ok {
+		v.reset(out, bufsize, blist)
+	}
+	// fmt.Printf("resetOutIO: e.w: %v of type: %T (ok=%v)\n", e.w, any(e.w), ok)
+	return
+}
+
+// func newDecDriverBytes[T decDriver, R decReader](in []byte) *decoder[T] {
+// 	var cc [2]struct {
+// 		r bytesDecReader
+// 		e decoder[T]
+// 		d simpleDecDriver[bytesDecReaderM]
+// 	}
+
+// 	for i := range cc {
+// 		c := &cc[i]
+// 		c.e.rtidFn = &h.rtidFnsDecBytes
+// 		c.e.rtidFnNoExt = &h.rtidFnsDecNoExtBytes
+// 		c.d.bytes = true
+// 		c.d.d = &c.e.decoderShared
+// 		c.d.h = h
+// 		c.d.r = bytesDecReaderM{&c.r}
+// 		c.e.d = T{&c.d}
+// 		c.e.init(h)
+// 		c.e.resetCommon()
+// 	}
+
+// 	cc[0].r.reset(in)
+// 	cc[0].d.ds = &cc[1].d
+
+// 	return &cc[0].e
+// }
