@@ -8,6 +8,7 @@ import (
 	"errors"
 	"io"
 	"net/rpc"
+	"sync/atomic"
 )
 
 var (
@@ -44,7 +45,7 @@ type rpcCodec struct {
 	enc *Encoder
 	h   Handle
 
-	cls atomicClsErr
+	cls atomic.Pointer[clsErr]
 }
 
 func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
@@ -119,7 +120,7 @@ func (c *rpcCodec) read(obj interface{}) (err error) {
 		//If nil is passed in, we should read and discard
 		if obj == nil {
 			// return c.dec.Decode(&obj)
-			err = c.dec.swallowErr()
+			err = panicToErr(c.dec, func() { c.dec.swallow() })
 		} else {
 			err = c.dec.Decode(obj)
 		}
@@ -129,11 +130,11 @@ func (c *rpcCodec) read(obj interface{}) (err error) {
 
 func (c *rpcCodec) Close() (err error) {
 	if c.c != nil {
-		cls := c.cls.load()
+		cls := c.cls.Load()
 		if !cls.closed {
 			cls.err = c.c.Close()
 			cls.closed = true
-			c.cls.store(cls)
+			c.cls.Store(cls)
 		}
 		err = cls.err
 	}
@@ -144,7 +145,7 @@ func (c *rpcCodec) ready() (err error) {
 	if c.c == nil {
 		err = errRpcNoConn
 	} else {
-		cls := c.cls.load()
+		cls := c.cls.Load()
 		if cls.closed {
 			if err = cls.err; err == nil {
 				err = errRpcIsClosed

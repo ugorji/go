@@ -1,6 +1,8 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
+//go:build 2025
+
 package codec
 
 // By default, this json support uses base64 encoding for bytes, because you cannot
@@ -1370,6 +1372,11 @@ func (h *JsonHandle) desc(bd byte) string { return string(bd) }
 
 func (h *JsonHandle) typical() bool {
 	return h.Indent == 0 && !h.MapKeyAsString && h.IntegerAsString != 'A' && h.IntegerAsString != 'L'
+}
+
+// SetInterfaceExt sets an extension
+func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceExt) (err error) {
+	return h.SetExt(rt, tag, makeExt(ext))
 }
 
 func (h *JsonHandle) newEncDriver() encDriver {

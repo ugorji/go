@@ -344,53 +344,6 @@ func (x *structFieldInfos) load(source, sorted []*structFieldInfo) {
 func (x *structFieldInfos) sorted() (v []*structFieldInfo) { return x.s }
 func (x *structFieldInfos) source() (v []*structFieldInfo) { return x.c }
 
-type atomicClsErr struct {
-	v atomic.Value
-}
-
-func (x *atomicClsErr) load() (e clsErr) {
-	if i := x.v.Load(); i != nil {
-		e = i.(clsErr)
-	}
-	return
-}
-
-func (x *atomicClsErr) store(p clsErr) {
-	x.v.Store(p)
-}
-
-// --------------------------
-type atomicTypeInfoSlice struct {
-	v atomic.Value
-}
-
-func (x *atomicTypeInfoSlice) load() (e []rtid2ti) {
-	if i := x.v.Load(); i != nil {
-		e = i.([]rtid2ti)
-	}
-	return
-}
-
-func (x *atomicTypeInfoSlice) store(p []rtid2ti) {
-	x.v.Store(p)
-}
-
-// --------------------------
-type atomicRtidFnSlice struct {
-	v atomic.Value
-}
-
-func (x *atomicRtidFnSlice) load() (e []codecRtidFn) {
-	if i := x.v.Load(); i != nil {
-		e = i.([]codecRtidFn)
-	}
-	return
-}
-
-func (x *atomicRtidFnSlice) store(p []codecRtidFn) {
-	x.v.Store(p)
-}
-
 // --------------------------
 func (n *fauxUnion) ru() reflect.Value {
 	return reflect.ValueOf(&n.u).Elem()
@@ -714,21 +667,11 @@ func mapAddrLoopvarRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 
 // ---------- ENCODER optimized ---------------
 
-func (e *Encoder) jsondriver() *jsonEncDriver {
-	return e.e.(*jsonEncDriver)
-}
-
-// ---------- DECODER optimized ---------------
-
-func (d *Decoder) jsondriver() *jsonDecDriver {
-	return d.d.(*jsonDecDriver)
-}
-
-func (d *Decoder) stringZC(v []byte) (s string) {
+func (d *decoderShared) stringZC(v []byte) (s string) {
 	return d.string(v)
 }
 
-func (d *Decoder) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
+func (d *decoderShared) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
 	return d.string(*kstr2bs)
 }
 
@@ -739,3 +682,42 @@ func (n *structFieldInfoPathNode) rvField(v reflect.Value) reflect.Value {
 }
 
 // ---------- others ---------------
+
+// --------------------------
+type atomicRtidFnSlice struct {
+	v atomic.Value
+}
+
+func (x *atomicRtidFnSlice) load() interface{} {
+	return x.v.Load()
+	// if i := x.v.Load(); i != nil {
+	// 	e = i.([]codecRtidFn)
+	// }
+	// return
+}
+
+func (x *atomicRtidFnSlice) store(p interface{}) {
+	x.v.Store(p)
+}
+
+func encFromRtidFnSlice[E encDriver](v interface{}) (s []encRtidFn[E]) {
+	if v != nil {
+		s = *(v.(*[]encRtidFn[E]))
+	}
+	return
+}
+
+func encToRtidFnSlice[E encDriver](s *[]encRtidFn[E]) interface{} {
+	return s
+}
+
+func decFromRtidFnSlice[D decDriver](v interface{}) (s []decRtidFn[D]) {
+	if v != nil {
+		s = *(v.(*[]decRtidFn[D]))
+	}
+	return
+}
+
+func decToRtidFnSlice[D decDriver](s *[]decRtidFn[D]) interface{} {
+	return s
+}

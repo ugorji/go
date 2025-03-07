@@ -10,18 +10,23 @@ import (
 )
 
 type testHED struct {
-	H Handle
-	E *Encoder
-	D *Decoder
+	H   Handle
+	Eb  *Encoder
+	Db  *Decoder
+	Eio *Encoder
+	Dio *Decoder
 }
 
 var (
 	// testNoopH    = NoopHandle(8)
+	/* MARKER 2025 - uncomment
 	testMsgpackH = &MsgpackHandle{}
 	testBincH    = &BincHandle{}
-	testSimpleH  = &SimpleHandle{}
 	testCborH    = &CborHandle{}
 	testJsonH    = &JsonHandle{}
+	*/
+
+	testSimpleH = &SimpleHandle{}
 
 	testHandles []Handle
 
@@ -37,12 +42,16 @@ var (
 
 func init() {
 	testHEDs = make([]testHED, 0, 32)
-	testHandles = append(testHandles,
-		// testNoopH,
-		testMsgpackH, testBincH, testSimpleH, testCborH, testJsonH)
+
+	/* MARKER 2025 - uncomment
+	testHandles = append(testHandles, testMsgpackH, testBincH, testSimpleH, testCborH, testJsonH)
+
 	// JSON should do HTMLCharsAsIs by default
 	testJsonH.HTMLCharsAsIs = true
 	// testJsonH.InternString = true
+	*/
+	testHandles = append(testHandles, testSimpleH)
+
 	testReInitFns = append(testReInitFns, func() { testHEDs = nil })
 }
 
@@ -53,7 +62,13 @@ func testHEDGet(h Handle) *testHED {
 			return v
 		}
 	}
-	testHEDs = append(testHEDs, testHED{h, NewEncoder(nil, h), NewDecoder(nil, h)})
+	testHEDs = append(testHEDs, testHED{
+		H:   h,
+		Eio: NewEncoder(nil, h),
+		Dio: NewDecoder(nil, h),
+		Eb:  NewEncoderBytes(nil, h),
+		Db:  NewDecoderBytes(nil, h),
+	})
 	return &testHEDs[len(testHEDs)-1]
 }
 
@@ -62,13 +77,22 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.B
 	// bs = make([]byte, 0, approxSize)
 	var e *Encoder
 	var buf *bytes.Buffer
+	useIO := testUseIoEncDec >= 0
 	if testUseReset && !testUseParallel {
-		e = testHEDGet(h).E
-	} else {
+		hed := testHEDGet(h)
+		if useIO {
+			e = hed.Eio
+		} else {
+			e = hed.Eb
+		}
+	} else if useIO {
 		e = NewEncoder(nil, h)
+	} else {
+		e = NewEncoderBytes(nil, h)
 	}
+
 	var oldWriteBufferSize int
-	if testUseIoEncDec >= 0 {
+	if useIO {
 		buf = fn(bsIn)
 		// set the encode options for using a buffer
 		oldWriteBufferSize = bh.WriterBufferSize
@@ -96,12 +120,20 @@ func testSharedCodecEncode(ts interface{}, bsIn []byte, fn func([]byte) *bytes.B
 
 func testSharedCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, oldReadBufferSize int) {
 	// var buf *bytes.Reader
+	useIO := testUseIoEncDec >= 0
 	if testUseReset && !testUseParallel {
-		d = testHEDGet(h).D
-	} else {
+		hed := testHEDGet(h)
+		if useIO {
+			d = hed.Dio
+		} else {
+			d = hed.Db
+		}
+	} else if useIO {
 		d = NewDecoder(nil, h)
+	} else {
+		d = NewDecoderBytes(nil, h)
 	}
-	if testUseIoEncDec >= 0 {
+	if useIO {
 		buf := bytes.NewReader(bs)
 		oldReadBufferSize = bh.ReaderBufferSize
 		bh.ReaderBufferSize = testUseIoEncDec

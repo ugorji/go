@@ -22,6 +22,13 @@ var errEncoderNotInitialized = errors.New("Encoder not initialized")
 
 // encDriver abstracts the actual codec (binc vs msgpack, etc)
 type encDriver interface {
+	simpleEncDriverM[bufioEncWriterM] |
+		simpleEncDriverM[bytesEncAppenderM]
+
+	encDriverI
+}
+
+type encDriverI interface {
 	EncodeNil()
 	EncodeInt(i int64)
 	EncodeUint(i uint64)
@@ -39,10 +46,23 @@ type encDriver interface {
 	WriteMapStart(length int)
 	WriteMapEnd()
 
+	// these are no-op except for json
+	encDriverContainerTracker
+
 	// reset will reset current encoding runtime state, and cached information from the handle
 	reset()
 
-	encoder() *Encoder
+	atEndOfEncode()
+	writerEnd()
+
+	writeBytesAsis(b []byte)
+	writeStringAsisDblQuoted(v string)
+
+	sideEncode(v interface{}, basetype reflect.Type, cs containerState)
+	sideEncoder(out *[]byte)
+
+	resetOutBytes(out *[]byte) (ok bool)
+	resetOutIO(out io.Writer) (ok bool)
 
 	driverStateManager
 }
@@ -66,6 +86,7 @@ func (encDriverNoopContainerWriter) WriteArrayStart(length int) {}
 func (encDriverNoopContainerWriter) WriteArrayEnd()             {}
 func (encDriverNoopContainerWriter) WriteMapStart(length int)   {}
 func (encDriverNoopContainerWriter) WriteMapEnd()               {}
+func (encDriverNoopContainerWriter) atEndOfEncode()             {}
 
 // encStructFieldObj[Slice] is used for sorting when there are missing fields and canonical flag is set
 type encStructFieldObj struct {
@@ -180,124 +201,124 @@ type EncodeOptions struct {
 
 // ---------------------------------------------
 
-func (e *Encoder) rawExt(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) rawExt(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
 
-func (e *Encoder) ext(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) ext(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeExt(rv2i(rv), f.ti.rt, f.xfTag, f.xfFn)
 }
 
-func (e *Encoder) selferMarshal(f *codecFnInfo, rv reflect.Value) {
-	rv2i(rv).(Selfer).CodecEncodeSelf(e)
+func (e *encoder[T]) selferMarshal(f *encFnInfo, rv reflect.Value) {
+	rv2i(rv).(Selfer).CodecEncodeSelf(&Encoder{e})
 }
 
-func (e *Encoder) binaryMarshal(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) binaryMarshal(f *encFnInfo, rv reflect.Value) {
 	bs, fnerr := rv2i(rv).(encoding.BinaryMarshaler).MarshalBinary()
 	e.marshalRaw(bs, fnerr)
 }
 
-func (e *Encoder) textMarshal(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) textMarshal(f *encFnInfo, rv reflect.Value) {
 	bs, fnerr := rv2i(rv).(encoding.TextMarshaler).MarshalText()
 	e.marshalUtf8(bs, fnerr)
 }
 
-func (e *Encoder) jsonMarshal(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) jsonMarshal(f *encFnInfo, rv reflect.Value) {
 	bs, fnerr := rv2i(rv).(jsonMarshaler).MarshalJSON()
 	e.marshalAsis(bs, fnerr)
 }
 
-func (e *Encoder) raw(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) raw(f *encFnInfo, rv reflect.Value) {
 	e.rawBytes(rv2i(rv).(Raw))
 }
 
-func (e *Encoder) encodeComplex64(v complex64) {
+func (e *encoder[T]) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
 		e.errorf("cannot encode complex number: %v, with imaginary values: %v", v, imag(v))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
-func (e *Encoder) encodeComplex128(v complex128) {
+func (e *encoder[T]) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
 		e.errorf("cannot encode complex number: %v, with imaginary values: %v", v, imag(v))
 	}
 	e.e.EncodeFloat64(real(v))
 }
 
-func (e *Encoder) kBool(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kBool(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeBool(rvGetBool(rv))
 }
 
-func (e *Encoder) kTime(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kTime(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeTime(rvGetTime(rv))
 }
 
-func (e *Encoder) kString(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kString(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeString(rvGetString(rv))
 }
 
-func (e *Encoder) kFloat32(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kFloat32(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeFloat32(rvGetFloat32(rv))
 }
 
-func (e *Encoder) kFloat64(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kFloat64(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeFloat64(rvGetFloat64(rv))
 }
 
-func (e *Encoder) kComplex64(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kComplex64(f *encFnInfo, rv reflect.Value) {
 	e.encodeComplex64(rvGetComplex64(rv))
 }
 
-func (e *Encoder) kComplex128(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kComplex128(f *encFnInfo, rv reflect.Value) {
 	e.encodeComplex128(rvGetComplex128(rv))
 }
 
-func (e *Encoder) kInt(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kInt(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeInt(int64(rvGetInt(rv)))
 }
 
-func (e *Encoder) kInt8(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kInt8(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeInt(int64(rvGetInt8(rv)))
 }
 
-func (e *Encoder) kInt16(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kInt16(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeInt(int64(rvGetInt16(rv)))
 }
 
-func (e *Encoder) kInt32(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kInt32(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeInt(int64(rvGetInt32(rv)))
 }
 
-func (e *Encoder) kInt64(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kInt64(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeInt(int64(rvGetInt64(rv)))
 }
 
-func (e *Encoder) kUint(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUint(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUint(rv)))
 }
 
-func (e *Encoder) kUint8(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUint8(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUint8(rv)))
 }
 
-func (e *Encoder) kUint16(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUint16(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUint16(rv)))
 }
 
-func (e *Encoder) kUint32(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUint32(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUint32(rv)))
 }
 
-func (e *Encoder) kUint64(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUint64(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUint64(rv)))
 }
 
-func (e *Encoder) kUintptr(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUintptr(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
 }
 
-func (e *Encoder) kErr(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kErr(f *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported kind %s, for %#v", rv.Kind(), rv)
 }
 
@@ -331,19 +352,19 @@ func chanToSlice(rv reflect.Value, rtslice reflect.Type, timeout time.Duration) 
 	return
 }
 
-func (e *Encoder) kSeqFn(rtelem reflect.Type) (fn *codecFn) {
+func (e *encoder[T]) kSeqFn(rtelem reflect.Type) (fn *encFn[T]) {
 	for rtelem.Kind() == reflect.Ptr {
 		rtelem = rtelem.Elem()
 	}
 	// if kind is reflect.Interface, do not pre-determine the encoding type,
 	// because preEncodeValue may break it down to a concrete type and kInterface will bomb.
 	if rtelem.Kind() != reflect.Interface {
-		fn = e.h.fn(rtelem)
+		fn = e.fn(rtelem)
 	}
 	return
 }
 
-func (e *Encoder) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
+func (e *encoder[T]) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
 	var l = rvLenSlice(rv)
 	if l == 0 {
 		e.mapStart(0)
@@ -363,7 +384,7 @@ func (e *Encoder) kSliceWMbs(rv reflect.Value, ti *typeInfo) {
 	e.mapEnd()
 }
 
-func (e *Encoder) kSliceW(rv reflect.Value, ti *typeInfo) {
+func (e *encoder[T]) kSliceW(rv reflect.Value, ti *typeInfo) {
 	var l = rvLenSlice(rv)
 	e.arrayStart(l)
 	if l > 0 {
@@ -376,7 +397,7 @@ func (e *Encoder) kSliceW(rv reflect.Value, ti *typeInfo) {
 	e.arrayEnd()
 }
 
-func (e *Encoder) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
+func (e *encoder[T]) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
 	var l = rv.Len()
 	if l == 0 {
 		e.mapStart(0)
@@ -396,7 +417,7 @@ func (e *Encoder) kArrayWMbs(rv reflect.Value, ti *typeInfo) {
 	e.mapEnd()
 }
 
-func (e *Encoder) kArrayW(rv reflect.Value, ti *typeInfo) {
+func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo) {
 	var l = rv.Len()
 	e.arrayStart(l)
 	if l > 0 {
@@ -409,7 +430,7 @@ func (e *Encoder) kArrayW(rv reflect.Value, ti *typeInfo) {
 	e.arrayEnd()
 }
 
-func (e *Encoder) kChan(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
 		e.errorf("send-only channel cannot be encoded")
 	}
@@ -427,7 +448,7 @@ func (e *Encoder) kChan(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 
-func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kSlice(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
 		e.kSliceWMbs(rv, f.ti)
 	} else if f.ti.rtid == uint8SliceTypId || uint8TypId == rt2id(f.ti.elem) {
@@ -437,7 +458,7 @@ func (e *Encoder) kSlice(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 
-func (e *Encoder) kArray(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kArray(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
 		e.kArrayWMbs(rv, f.ti)
 	} else if handleBytesWithinKArray && uint8TypId == rt2id(f.ti.elem) {
@@ -447,7 +468,7 @@ func (e *Encoder) kArray(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 
-func (e *Encoder) kSliceBytesChan(rv reflect.Value) {
+func (e *encoder[T]) kSliceBytesChan(rv reflect.Value) {
 	// do not use range, so that the number of elements encoded
 	// does not change, and encoding does not hang waiting on someone to close chan.
 
@@ -495,14 +516,14 @@ L1:
 	}
 }
 
-func (e *Encoder) kStructSfi(f *codecFnInfo) []*structFieldInfo {
+func (e *encoder[T]) kStructSfi(f *encFnInfo) []*structFieldInfo {
 	if e.h.Canonical {
 		return f.ti.sfi.sorted()
 	}
 	return f.ti.sfi.source()
 }
 
-func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
 	var tisfi []*structFieldInfo
 	if f.ti.toArray || e.h.StructToArray { // toArray
 		tisfi = f.ti.sfi.source()
@@ -526,11 +547,11 @@ func (e *Encoder) kStructNoOmitempty(f *codecFnInfo, rv reflect.Value) {
 	}
 }
 
-func (e *Encoder) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-	encStructFieldKey(encName, e.e, e.w(), keyType, encNameAsciiAlphaNum, e.js)
+func (e *encoder[T]) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
+	encStructFieldKey(encName, e.e, keyType, encNameAsciiAlphaNum, e.js)
 }
 
-func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 	var newlen int
 	ti := f.ti
 	toMap := !(ti.toArray || e.h.StructToArray)
@@ -654,7 +675,7 @@ func (e *Encoder) kStruct(f *codecFnInfo, rv reflect.Value) {
 	e.slist.put(fkvs)
 }
 
-func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kMap(f *encFnInfo, rv reflect.Value) {
 	l := rvLenMap(rv)
 	e.mapStart(l)
 	if l == 0 {
@@ -670,7 +691,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	// encoding type, because preEncodeValue may break it down to
 	// a concrete type and kInterface will bomb.
 
-	var keyFn, valFn *codecFn
+	var keyFn, valFn *encFn[T]
 
 	ktypeKind := reflect.Kind(f.ti.keykind)
 	vtypeKind := reflect.Kind(f.ti.elemkind)
@@ -682,7 +703,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 		rtvalkind = rtval.Kind()
 	}
 	if rtvalkind != reflect.Interface {
-		valFn = e.h.fn(rtval)
+		valFn = e.fn(rtval)
 	}
 
 	var rvv = mapAddrLoopvarRV(f.ti.elem, vtypeKind)
@@ -690,13 +711,13 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	rtkey := f.ti.key
 	var keyTypeIsString = stringTypId == rt2id(rtkey) // rtkeyid
 	if keyTypeIsString {
-		keyFn = e.h.fn(rtkey)
+		keyFn = e.fn(rtkey)
 	} else {
 		for rtkey.Kind() == reflect.Ptr {
 			rtkey = rtkey.Elem()
 		}
 		if rtkey.Kind() != reflect.Interface {
-			keyFn = e.h.fn(rtkey)
+			keyFn = e.fn(rtkey)
 		}
 	}
 
@@ -726,7 +747,7 @@ func (e *Encoder) kMap(f *codecFnInfo, rv reflect.Value) {
 	e.mapEnd()
 }
 
-func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valFn *codecFn) {
+func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valFn *encFn[T]) {
 	// The base kind of the type of the map key is sufficient for ordering.
 	// We only do out of band if that kind is not ordered (number or string), bool or time.Time.
 	// If the key is a predeclared type, directly call methods on encDriver e.g. EncodeString
@@ -877,28 +898,23 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 
 		func() {
 			// replicate sideEncode logic
-			defer func(wb bytesEncAppender, bytes bool, c containerState, state interface{}) {
-				e.wb = wb
-				e.bytes = bytes
-				e.c = c
-				e.e.restoreState(state)
-			}(e.wb, e.bytes, e.c, e.e.captureState())
+			// defer func(wb bytesEncAppender, bytes bool, c containerState, state interface{}) {
+			// 	e.wb = wb
+			// 	e.bytes = bytes
+			// 	e.c = c
+			// 	e.e.restoreState(state)
+			// }(e.wb, e.bytes, e.c, e.e.captureState())
 
-			// e2 := NewEncoderBytes(&mksv, e.hh)
-			e.wb = bytesEncAppender{mksv[:0], &mksv}
-			e.bytes = true
-			e.c = 0
-			e.e.resetState()
-
+			// // e2 := NewEncoderBytes(&mksv, e.hh)
+			// e.wb = bytesEncAppender{mksv[:0], &mksv}
+			// e.bytes = true
+			// e.c = 0
+			// e.e.resetState()
+			e.e.sideEncoder(&mksv)
 			for i, k := range mks {
 				v := &mksbv[i]
 				l := len(mksv)
-
-				e.c = containerMapKey
-				e.encodeValue(k, nil)
-				e.atEndOfEncode()
-				e.w().end()
-
+				e.e.sideEncode(k, nil, containerMapKey)
 				v.r = k
 				v.v = mksv[l:]
 			}
@@ -907,7 +923,7 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
 			e.mapElemKey()
-			e.encWr.writeb(mksbv[j].v)
+			e.e.writeBytesAsis(mksbv[j].v)
 			e.mapElemValue()
 			e.encodeValue(mapGet(rv, mksbv[j].r, rvv, kfast, visindirect, visref), valFn)
 		}
@@ -918,6 +934,26 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 	}
 }
 
+// encoderShared is shared as a field between Encoder and its encDrivers.
+// This way, encDrivers need not hold a referece to the Encoder itself.
+type encoderShared struct {
+	// MARKER: these fields below should belong directly in Encoder.
+	// There should not be any pointers here - just values.
+	// we pack them here for space efficiency and cache-line optimization.
+
+	blist bytesFreelist
+
+	err error
+
+	js bool // is json encoder?
+	be bool // is binary encoder?
+
+	c containerState
+
+	calls uint16
+	seq   uint16 // sequencer (e.g. used by binc for symbols, etc)
+}
+
 // Encoder writes an object to an output stream in a supported format.
 //
 // Encoder is NOT safe for concurrent use i.e. a Encoder cannot be used
@@ -926,21 +962,25 @@ func (e *Encoder) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, valF
 // However, as Encoder could be allocation heavy to initialize, a Reset method is provided
 // so its state can be reused to decode new input streams repeatedly.
 // This is the idiomatic way to use.
-type Encoder struct {
+type encoder[T encDriver] struct {
 	panicHdl
 
-	e encDriver
+	e T
+
+	// sideEncoder encoder must be held solely by the driver
+	// es *encoder[T]
+
+	fp *fastpathEs[T]
+
+	rtidFn, rtidFnNoExt *atomicRtidFnSlice
 
 	h *BasicHandle
 
-	// hopefully, reduce derefencing cost by laying the encWriter inside the Encoder
-	encWr
+	// hopefully, reduce derefencing cost by laying some fields shared with encDriver
+	encoderShared
 
 	// ---- cpu cache line boundary
 	hh Handle
-
-	blist bytesFreelist
-	err   error
 
 	// ---- cpu cache line boundary
 
@@ -960,49 +1000,27 @@ type Encoder struct {
 	slist sfiRvFreelist
 }
 
-// NewEncoder returns an Encoder for encoding into an io.Writer.
-//
-// For efficiency, Users are encouraged to configure WriterBufferSize on the handle
-// OR pass in a memory buffered writer (eg bufio.Writer, bytes.Buffer).
-func NewEncoder(w io.Writer, h Handle) *Encoder {
-	e := h.newEncDriver().encoder()
-	if w != nil {
-		e.Reset(w)
-	}
-	return e
-}
-
-// NewEncoderBytes returns an encoder for encoding directly and efficiently
-// into a byte slice, using zero-copying to temporary slices.
-//
-// It will potentially replace the output byte slice pointed to.
-// After encoding, the out parameter contains the encoded contents.
-func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
-	e := h.newEncDriver().encoder()
-	if out != nil {
-		e.ResetBytes(out)
-	}
-	return e
-}
-
-func (e *Encoder) HandleName() string {
+func (e *encoder[T]) HandleName() string {
 	return e.hh.Name()
 }
 
-func (e *Encoder) init(h Handle) {
+// Release is a no-op.
+//
+// Deprecated: Pooled resources are not used with an Encoder.
+// This method is kept for compatibility reasons only.
+func (e *encoder[T]) Release() {
+}
+
+func (e *encoder[T]) init(h Handle) {
 	initHandle(h)
 	e.err = errEncoderNotInitialized
-	e.bytes = true
 	e.hh = h
 	e.h = h.getBasicHandle()
 	e.be = e.hh.isBinary()
+	e.fp = fastpathEList[T]()
 }
 
-func (e *Encoder) w() *encWr {
-	return &e.encWr
-}
-
-func (e *Encoder) resetCommon() {
+func (e *encoder[T]) resetCommon() {
 	e.e.reset()
 	if e.ci != nil {
 		e.ci = e.ci[:0]
@@ -1013,24 +1031,22 @@ func (e *Encoder) resetCommon() {
 	e.err = nil
 }
 
-// Reset resets the Encoder with a new output stream.
+// MustEncode is like Encode, but panics if unable to Encode.
 //
-// This accommodates using the state of the Encoder,
-// where it has "cached" information about sub-engines.
-func (e *Encoder) Reset(w io.Writer) {
-	e.bytes = false
-	if e.wf == nil {
-		e.wf = new(bufioEncWriter)
+// Note: This provides insight to the code location that triggered the error.
+func (e *encoder[T]) MustEncode(v interface{}) {
+	halt.onerror(e.err)
+	if e.hh == nil {
+		halt.onerror(errNoFormatHandle)
 	}
-	e.wf.reset(w, e.h.WriterBufferSize, &e.blist)
-	e.resetCommon()
-}
 
-// ResetBytes resets the Encoder with a new destination output []byte.
-func (e *Encoder) ResetBytes(out *[]byte) {
-	e.bytes = true
-	e.wb.reset(encInBytes(out), out)
-	e.resetCommon()
+	e.calls++
+	e.encode(v)
+	e.calls--
+	if e.calls == 0 {
+		e.e.atEndOfEncode()
+		e.e.writerEnd()
+	}
 }
 
 // Encode writes an object into a stream.
@@ -1118,7 +1134,7 @@ func (e *Encoder) ResetBytes(out *[]byte) {
 // Note that struct field names and keys in map[string]XXX will be treated as symbols.
 // Some formats support symbols (e.g. binc) and will properly encode the string
 // only once in the stream, and use a tag to refer to it thereafter.
-func (e *Encoder) Encode(v interface{}) (err error) {
+func (e *encoder[T]) Encode(v interface{}) (err error) {
 	// tried to use closure, as runtime optimizes defer with no params.
 	// This seemed to be causing weird issues (like circular reference found, unexpected panic, etc).
 	// Also, see https://github.com/golang/go/issues/14939#issuecomment-417836139
@@ -1137,32 +1153,7 @@ func (e *Encoder) Encode(v interface{}) (err error) {
 	return
 }
 
-// MustEncode is like Encode, but panics if unable to Encode.
-//
-// Note: This provides insight to the code location that triggered the error.
-func (e *Encoder) MustEncode(v interface{}) {
-	halt.onerror(e.err)
-	if e.hh == nil {
-		halt.onerror(errNoFormatHandle)
-	}
-
-	e.calls++
-	e.encode(v)
-	e.calls--
-	if e.calls == 0 {
-		e.atEndOfEncode()
-		e.w().end()
-	}
-}
-
-// Release is a no-op.
-//
-// Deprecated: Pooled resources are not used with an Encoder.
-// This method is kept for compatibility reasons only.
-func (e *Encoder) Release() {
-}
-
-func (e *Encoder) encode(iv interface{}) {
+func (e *encoder[T]) encode(iv interface{}) {
 	// MARKER: a switch with only concrete types can be optimized.
 	// consequently, we deal with nil and interfaces outside the switch.
 
@@ -1279,7 +1270,7 @@ func (e *Encoder) encode(iv interface{}) {
 //
 // Note that encodeValue will handle nil in the stream early, so that the
 // subsequent calls i.e. kXXX methods, etc do not have to handle it themselves.
-func (e *Encoder) encodeValue(rv reflect.Value, fn *codecFn) {
+func (e *encoder[T]) encodeValue(rv reflect.Value, fn *encFn[T]) {
 	// if a valid fn is passed, it MUST BE for the dereferenced type of rv
 
 	// MARKER: We check if value is nil here, so that the kXXX method do not have to.
@@ -1328,7 +1319,7 @@ TOP:
 	}
 
 	if fn == nil {
-		fn = e.h.fn(rv.Type())
+		fn = e.fn(rv.Type())
 	}
 
 	if !fn.i.addrE { // typically, addrE = false, so check it first
@@ -1347,9 +1338,9 @@ TOP:
 
 // encodeValueNonNil can encode a number, bool, or string
 // OR non-nil values of kind map, slice and chan.
-func (e *Encoder) encodeValueNonNil(rv reflect.Value, fn *codecFn) {
+func (e *encoder[T]) encodeValueNonNil(rv reflect.Value, fn *encFn[T]) {
 	if fn == nil {
-		fn = e.h.fn(rv.Type())
+		fn = e.fn(rv.Type())
 	}
 
 	if fn.i.addrE { // typically, addrE = false, so check it first
@@ -1359,7 +1350,7 @@ func (e *Encoder) encodeValueNonNil(rv reflect.Value, fn *codecFn) {
 }
 
 // addrRV returns a addressable value which may be readonly
-func (e *Encoder) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
+func (e *encoder[T]) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
 	if rv.CanAddr() {
 		return rvAddr(rv, ptrType)
 	}
@@ -1371,7 +1362,7 @@ func (e *Encoder) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva refle
 	return rvAddr(e.perType.AddressableRO(rv), ptrType)
 }
 
-func (e *Encoder) marshalUtf8(bs []byte, fnerr error) {
+func (e *encoder[T]) marshalUtf8(bs []byte, fnerr error) {
 	e.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
@@ -1380,16 +1371,16 @@ func (e *Encoder) marshalUtf8(bs []byte, fnerr error) {
 	}
 }
 
-func (e *Encoder) marshalAsis(bs []byte, fnerr error) {
+func (e *encoder[T]) marshalAsis(bs []byte, fnerr error) {
 	e.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
-		e.encWr.writeb(bs) // e.asis(bs)
+		e.e.writeBytesAsis(bs) // e.asis(bs)
 	}
 }
 
-func (e *Encoder) marshalRaw(bs []byte, fnerr error) {
+func (e *encoder[T]) marshalRaw(bs []byte, fnerr error) {
 	e.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
@@ -1398,120 +1389,99 @@ func (e *Encoder) marshalRaw(bs []byte, fnerr error) {
 	}
 }
 
-func (e *Encoder) rawBytes(vv Raw) {
+func (e *encoder[T]) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
 		e.errorf("Raw values cannot be encoded: %v", v)
 	}
-	e.encWr.writeb(v)
+	e.e.writeBytesAsis(v)
 }
 
-func (e *Encoder) wrapErr(v error, err *error) {
+func (e *encoder[T]) wrapErr(v error, err *error) {
 	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
+}
+
+func (e *encoder[T]) fn(t reflect.Type) *encFn[T] {
+	return encFnViaBH[T](t, e.rtidFn, e.h, e.fp, false)
+}
+
+func (e *encoder[T]) fnNoExt(t reflect.Type) *encFn[T] {
+	return encFnViaBH[T](t, e.rtidFnNoExt, e.h, e.fp, true)
 }
 
 // ---- container tracker methods
 // Note: We update the .c after calling the callback.
 // This way, the callback can know what the last status was.
 
-func (e *Encoder) mapStart(length int) {
+func (e *encoder[T]) mapStart(length int) {
 	e.e.WriteMapStart(length)
 	e.c = containerMapStart
 }
 
-func (e *Encoder) mapElemKey() {
-	if e.js {
-		e.jsondriver().WriteMapElemKey()
-	}
+func (e *encoder[T]) mapElemKey() {
+	e.e.WriteMapElemKey()
 	e.c = containerMapKey
 }
 
-func (e *Encoder) mapElemValue() {
-	if e.js {
-		e.jsondriver().WriteMapElemValue()
-	}
+func (e *encoder[T]) mapElemValue() {
+	e.e.WriteMapElemValue()
 	e.c = containerMapValue
 }
 
-func (e *Encoder) mapEnd() {
+func (e *encoder[T]) mapEnd() {
 	e.e.WriteMapEnd()
 	e.c = 0
 }
 
-func (e *Encoder) arrayStart(length int) {
+func (e *encoder[T]) arrayStart(length int) {
 	e.e.WriteArrayStart(length)
 	e.c = containerArrayStart
 }
 
-func (e *Encoder) arrayElem() {
-	if e.js {
-		e.jsondriver().WriteArrayElem()
-	}
+func (e *encoder[T]) arrayElem() {
+	e.e.WriteArrayElem()
 	e.c = containerArrayElem
 }
 
-func (e *Encoder) arrayEnd() {
+func (e *encoder[T]) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
 }
 
 // ----------
 
-func (e *Encoder) haltOnMbsOddLen(length int) {
+func (e *encoder[T]) haltOnMbsOddLen(length int) {
 	if length&1 != 0 { // similar to &1==1 or %2 == 1
 		e.errorf("mapBySlice requires even slice length, but got %v", length)
 	}
 }
 
-func (e *Encoder) atEndOfEncode() {
-	// e.e.atEndOfEncode()
-	if e.js {
-		e.jsondriver().atEndOfEncode()
-	}
+func (e *encoder[T]) writerEnd() {
+	e.e.writerEnd()
 }
 
-func (e *Encoder) sideEncode(v interface{}, basetype reflect.Type, bs *[]byte) {
-	// rv := baseRV(v)
-	// e2 := NewEncoderBytes(bs, e.hh)
-	// e2.encodeValue(rv, e2.h.fnNoExt(basetype))
-	// e2.atEndOfEncode()
-	// e2.w().end()
-
-	defer func(wb bytesEncAppender, bytes bool, c containerState, state interface{}) {
-		e.wb = wb
-		e.bytes = bytes
-		e.c = c
-		e.e.restoreState(state)
-	}(e.wb, e.bytes, e.c, e.e.captureState())
-
-	e.wb = bytesEncAppender{encInBytes(bs)[:0], bs}
-	e.bytes = true
-	e.c = 0
-	e.e.resetState()
-
-	// must call using fnNoExt
-	rv := baseRV(v)
-	e.encodeValue(rv, e.h.fnNoExt(basetype))
-	e.atEndOfEncode()
-	e.w().end()
+func (e *encoder[T]) atEndOfEncode() {
+	e.e.atEndOfEncode()
 }
 
 func encInBytes(out *[]byte) (in []byte) {
-	in = *out
+	if out != nil {
+		in = *out
+	}
 	if in == nil {
 		in = make([]byte, defEncByteBufSize)
 	}
 	return
 }
 
-func encStructFieldKey(encName string, ee encDriver, w *encWr,
+func encStructFieldKey[T encDriver](encName string, ee T,
 	keyType valueType, encNameAsciiAlphaNum bool, js bool) {
 	// use if-else-if, not switch (which compiles to binary-search)
 	// since keyType is typically valueTypeString, branch prediction is pretty good.
 
 	if keyType == valueTypeString {
 		if js && encNameAsciiAlphaNum { // keyType == valueTypeString
-			w.writeqstr(encName)
+			ee.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
 		} else { // keyType == valueTypeString
 			ee.EncodeString(encName)
 		}
@@ -1525,3 +1495,101 @@ func encStructFieldKey(encName string, ee encDriver, w *encWr,
 		halt.errorf("invalid struct key type: %v", keyType)
 	}
 }
+
+// type encInitCombo[T encDriver, T2 encWriter] struct {
+// 	wb bytesEncAppender
+// 	wi bufioEncWriter
+// 	e  encoder[T]
+// 	es encoder[T, bytesEncAppenderM]
+// }
+
+type encoderI interface {
+	Encode(v interface{}) error
+	MustEncode(v interface{})
+	Release()
+	Reset(w io.Writer) error
+	ResetBytes(out *[]byte) error
+	// WriteStr(s string)
+
+	wrapErr(v error, err *error)
+	atEndOfEncode()
+	writerEnd()
+	// encodeValue(rv reflect.Value, fn *encFn)
+}
+
+type Encoder struct {
+	encoderI
+}
+
+// NewEncoder returns an Encoder for encoding into an io.Writer.
+//
+// For efficiency, Users are encouraged to configure WriterBufferSize on the handle
+// OR pass in a memory buffered writer (eg bufio.Writer, bytes.Buffer).
+func NewEncoder(w io.Writer, h Handle) *Encoder {
+	switch v := h.(type) {
+	case *SimpleHandle:
+		return &Encoder{v.newEncDriverIO(w)}
+	}
+	return nil
+	// switch v := h.(type) {
+	// case *SimpleHandle:
+	// 	d, e := h.newEncDriverIO()
+	// 	e.w.Reset(out)
+	// }
+	// e.wb.resetBytes(out)
+	// e.w.bytesEncAppender = &e.wb
+	// return &Encoder{e}
+	// e := h.newEncDriver().encoder()
+	// if w != nil {
+	// 	e.Reset(w)
+	// }
+	// return e
+}
+
+// NewEncoderBytes returns an encoder for encoding directly and efficiently
+// into a byte slice, using zero-copying to temporary slices.
+//
+// It will potentially replace the output byte slice pointed to.
+// After encoding, the out parameter contains the encoded contents.
+func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
+	// var wb *bytesEncAppender
+	switch v := h.(type) {
+	case *SimpleHandle:
+		return &Encoder{v.newEncDriverBytes(out)}
+	}
+	// e.wb.resetBytes(out)
+	// e.w.bytesEncAppender = &e.wb
+	return nil
+}
+
+var errEncNoResetBytesWithWriter = errors.New("cannot reset an Encoder which outputs to []byte with a io.Writer")
+var errEncNoResetWriterWithBytes = errors.New("cannot reset an Encoder which outputs to io.Writer with a []byte")
+
+// Reset resets the Encoder with a new output stream.
+//
+// This accommodates using the state of the Encoder,
+// where it has "cached" information about sub-engines.
+func (e *encoder[T]) Reset(w io.Writer) (err error) {
+	if e.e.resetOutIO(w) {
+		e.resetCommon()
+	} else {
+		err = errEncNoResetBytesWithWriter
+	}
+	return
+}
+
+// ResetBytes resets the Encoder with a new destination output []byte.
+func (e *encoder[T]) ResetBytes(out *[]byte) (err error) {
+	if e.e.resetOutBytes(out) {
+		e.resetCommon()
+	} else {
+		err = errEncNoResetWriterWithBytes
+	}
+	return
+}
+
+type encDriverContainerNoTrackerT struct{}
+
+func (encDriverContainerNoTrackerT) WriteArrayElem()    {}
+func (encDriverContainerNoTrackerT) WriteMapElemKey()   {}
+func (encDriverContainerNoTrackerT) WriteMapElemValue() {}

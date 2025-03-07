@@ -528,66 +528,43 @@ func (x *structFieldInfos) source() (v []*structFieldInfo) {
 	return
 }
 
-// atomicXXX is expected to be 2 words (for symmetry with atomic.Value)
-//
+// --------------------------
+
 // Note that we do not atomically load/store length and data pointer separately,
 // as this could lead to some races. Instead, we atomically load/store cappedSlice.
-//
-// Note: with atomic.(Load|Store)Pointer, we MUST work with an unsafe.Pointer directly.
 
-// ----------------------
-type atomicTypeInfoSlice struct {
-	v unsafe.Pointer // *[]rtid2ti
-}
-
-func (x *atomicTypeInfoSlice) load() (s []rtid2ti) {
-	x2 := atomic.LoadPointer(&x.v)
-	if x2 != nil {
-		s = *(*[]rtid2ti)(x2)
-	}
-	return
-}
-
-func (x *atomicTypeInfoSlice) store(p []rtid2ti) {
-	atomic.StorePointer(&x.v, unsafe.Pointer(&p))
-}
-
-// MARKER: in safe mode, atomicXXX are atomic.Value, which contains an interface{}.
-// This is 2 words.
-// consider padding atomicXXX here with a uintptr, so they fit into 2 words also.
-
-// --------------------------
 type atomicRtidFnSlice struct {
 	v unsafe.Pointer // *[]codecRtidFn
 }
 
-func (x *atomicRtidFnSlice) load() (s []codecRtidFn) {
-	x2 := atomic.LoadPointer(&x.v)
-	if x2 != nil {
-		s = *(*[]codecRtidFn)(x2)
+func (x *atomicRtidFnSlice) load() (s unsafe.Pointer) {
+	return atomic.LoadPointer(&x.v)
+}
+
+func (x *atomicRtidFnSlice) store(p unsafe.Pointer) {
+	atomic.StorePointer(&x.v, unsafe.Pointer(p))
+}
+
+func encFromRtidFnSlice[E encDriver](v unsafe.Pointer) (s []encRtidFn[E]) {
+	if v != nil {
+		s = *(*[]encRtidFn[E])(v)
 	}
 	return
 }
 
-func (x *atomicRtidFnSlice) store(p []codecRtidFn) {
-	atomic.StorePointer(&x.v, unsafe.Pointer(&p))
+func encToRtidFnSlice[E encDriver](s *[]encRtidFn[E]) unsafe.Pointer {
+	return unsafe.Pointer(s)
 }
 
-// --------------------------
-type atomicClsErr struct {
-	v unsafe.Pointer // *clsErr
-}
-
-func (x *atomicClsErr) load() (e clsErr) {
-	x2 := (*clsErr)(atomic.LoadPointer(&x.v))
-	if x2 != nil {
-		e = *x2
+func decFromRtidFnSlice[D decDriver](v unsafe.Pointer) (s []decRtidFn[D]) {
+	if v != nil {
+		s = *(*[]decRtidFn[D])(v)
 	}
 	return
 }
 
-func (x *atomicClsErr) store(p clsErr) {
-	atomic.StorePointer(&x.v, unsafe.Pointer(&p))
+func decToRtidFnSlice[D decDriver](s *[]decRtidFn[D]) unsafe.Pointer {
+	return unsafe.Pointer(s)
 }
 
 // --------------------------
@@ -1215,26 +1192,21 @@ func makeMapReflect(typ reflect.Type, size int) (rv reflect.Value) {
 
 // ---------- ENCODER optimized ---------------
 
-func (e *Encoder) jsondriver() *jsonEncDriver {
-	return (*jsonEncDriver)((*unsafeIntf)(unsafe.Pointer(&e.e)).ptr)
+// ---------- DECODER optimized ---------------
+
+func (d *decoderShared) zerocopystate(handleZeroCopy bool) bool {
+	return d.decByteState == decByteStateZerocopy && handleZeroCopy
 }
 
-func (d *Decoder) zerocopystate() bool {
-	return d.decByteState == decByteStateZerocopy && d.h.ZeroCopy
-}
-
-func (d *Decoder) stringZC(v []byte) (s string) {
-	// MARKER: inline zerocopystate directly so genHelper forwarding function fits within inlining cost
-
-	// if d.zerocopystate() {
-	if d.decByteState == decByteStateZerocopy && d.h.ZeroCopy {
+func (d *decoderShared) stringZC(v []byte) (s string) {
+	if d.zerocopystate(d.zeroCopy) {
 		return stringView(v)
 	}
 	return d.string(v)
 }
 
-func (d *Decoder) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
-	if !d.zerocopystate() {
+func (d *decoderShared) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
+	if !d.zerocopystate(d.zeroCopy) {
 		*callFnRvk = true
 		if d.decByteState == decByteStateReuseBuf {
 			*kstrbs = append((*kstrbs)[:0], (*kstr2bs)...)
@@ -1244,11 +1216,9 @@ func (d *Decoder) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string 
 	return stringView(*kstr2bs)
 }
 
-// ---------- DECODER optimized ---------------
-
-func (d *Decoder) jsondriver() *jsonDecDriver {
-	return (*jsonDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).ptr)
-}
+// func (d *decoder[T]) jsondriver() *jsonDecDriver {
+// 	return (*jsonDecDriver)((*unsafeIntf)(unsafe.Pointer(&d.d)).ptr)
+// }
 
 // ---------- structFieldInfo optimized ---------------
 

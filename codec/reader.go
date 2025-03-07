@@ -6,6 +6,7 @@ package codec
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
 	"strings"
 )
@@ -13,6 +14,8 @@ import (
 // decReader abstracts the reading source, allowing implementations that can
 // read from an io.Reader or directly off a byte slice with zero-copying.
 type decReader interface {
+	bytesDecReaderM | ioDecReaderM
+
 	// readx will return a view of the []byte if decoding from a []byte, OR
 	// read into the implementation scratch buffer if possible i.e. n < len(scratchbuf), OR
 	// create a new []byte and read into that
@@ -52,6 +55,9 @@ type decReader interface {
 
 	// readUntil will read, only stopping once it matches the 'stop' byte (which it excludes).
 	readUntil(stop byte) (out []byte)
+
+	// only supported when reading from bytes
+	bytesReadFrom(startpos uint) []byte
 }
 
 // ------------------------------------------------
@@ -164,6 +170,17 @@ type ioDecReader struct {
 	bb   *bufio.Reader       // created internally, and reused on reset if needed
 
 	x [64 + 40]byte // for: get struct field name, swallow valueTypeBytes, etc
+}
+
+type ioDecReaderM struct {
+	*ioDecReader
+}
+
+var errNoBytesReadFromSupport = errors.New("bytesReadFrom() is not supported")
+
+func (z *ioDecReader) bytesReadFrom(startpos uint) []byte {
+	halt.onerror(errNoBytesReadFromSupport)
+	return nil
 }
 
 func (z *ioDecReader) reset(r io.Reader, bufsize int, blist *bytesFreelist) {
@@ -363,6 +380,10 @@ type bytesDecReader struct {
 	c uint   // cursor
 }
 
+type bytesDecReaderM struct {
+	*bytesDecReader
+}
+
 func (z *bytesDecReader) reset(in []byte) {
 	z.b = in[:len(in):len(in)] // reslicing must not go past capacity
 	z.c = 0
@@ -370,6 +391,10 @@ func (z *bytesDecReader) reset(in []byte) {
 
 func (z *bytesDecReader) numread() uint {
 	return z.c
+}
+
+func (z *bytesDecReader) bytesReadFrom(startpos uint) []byte {
+	return z.b[startpos:z.c]
 }
 
 // Note: slicing from a non-constant start position is more expensive,
@@ -503,29 +528,6 @@ LOOP:
 
 // --------------
 
-type decRd struct {
-	rb bytesDecReader
-	ri *ioDecReader
-
-	decReader
-
-	bytes bool // is bytes reader
-
-	// MARKER: these fields below should belong directly in Encoder.
-	// we pack them here for space efficiency and cache-line optimization.
-
-	mtr bool // is maptype a known type?
-	str bool // is slicetype a known type?
-
-	be   bool // is binary encoding
-	js   bool // is json handle
-	jsms bool // is json handle, and MapKeyAsString
-	cbor bool // is cbor handle
-
-	cbreak bool // is a check breaker
-
-}
-
 // From out benchmarking, we see the following impact performance:
 //
 // - functions that are too big to inline
@@ -541,25 +543,25 @@ type decRd struct {
 //
 // Right now, only numread and "carefully crafted" readn1 can be inlined.
 
-func (z *decRd) numread() uint {
-	if z.bytes {
-		return z.rb.numread()
-	}
-	return z.ri.numread()
-}
+// func (z *decRd) numread() uint {
+// 	if z.bytes {
+// 		return z.rb.numread()
+// 	}
+// 	return z.ri.numread()
+// }
 
-func (z *decRd) readn1() (v uint8) {
-	if z.bytes {
-		// return z.rb.readn1()
-		// MARKER: calling z.rb.readn1() prevents decRd.readn1 from being inlined.
-		// copy code, to manually inline and explicitly return here.
-		// Keep in sync with bytesDecReader.readn1
-		v = z.rb.b[z.rb.c]
-		z.rb.c++
-		return
-	}
-	return z.ri.readn1()
-}
+// func (z *decRd) readn1() (v uint8) {
+// 	if z.bytes {
+// 		// return z.rb.readn1()
+// 		// MARKER: calling z.rb.readn1() prevents decRd.readn1 from being inlined.
+// 		// copy code, to manually inline and explicitly return here.
+// 		// Keep in sync with bytesDecReader.readn1
+// 		v = z.rb.b[z.rb.c]
+// 		z.rb.c++
+// 		return
+// 	}
+// 	return z.ri.readn1()
+// }
 
 // func (z *decRd) readn4() [4]byte {
 // 	if z.bytes {
@@ -604,4 +606,4 @@ func readFull(r io.Reader, bs []byte) (n uint, err error) {
 	return
 }
 
-var _ decReader = (*decRd)(nil)
+// var _ decReader = (*decRd)(nil)

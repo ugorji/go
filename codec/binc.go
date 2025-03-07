@@ -1,6 +1,8 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
+//go:build 2025
+
 package codec
 
 import (
@@ -1143,6 +1145,11 @@ type BincHandle struct {
 func (h *BincHandle) Name() string { return "binc" }
 
 func (h *BincHandle) desc(bd byte) string { return bincdesc(bd>>4, bd&0x0f) }
+
+// SetBytesExt sets an extension
+func (h *BincHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
+	return h.SetExt(rt, tag, makeExt(ext))
+}
 
 func (h *BincHandle) newEncDriver() encDriver {
 	var e = &bincEncDriver{h: h}

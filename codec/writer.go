@@ -3,10 +3,15 @@
 
 package codec
 
-import "io"
+import (
+	"fmt"
+	"io"
+)
 
 // encWriter abstracts writing to a byte array or to an io.Writer.
 type encWriter interface {
+	bufioEncWriterM | bytesEncAppenderM
+
 	writeb([]byte)
 	writestr(string)
 	writeqstr(string) // write string wrapped in quotes ie "..."
@@ -30,6 +35,10 @@ type bufioEncWriter struct {
 	n int
 
 	b [16]byte // scratch buffer and padding (cache-aligned)
+}
+
+type bufioEncWriterM struct {
+	*bufioEncWriter
 }
 
 func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
@@ -56,6 +65,7 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
 }
 
 func (z *bufioEncWriter) flushErr() (err error) {
+	fmt.Printf("bufioEncWriter: %T (nil=%v): %v\n", z.w, z.w == nil, z.w)
 	n, err := z.w.Write(z.buf[:z.n])
 	z.n -= n
 	if z.n > 0 {
@@ -169,12 +179,20 @@ func (z *bufioEncWriter) endErr() (err error) {
 	return
 }
 
+func (z *bufioEncWriter) end() {
+	halt.onerror(z.endErr())
+}
+
 // ---------------------------------------------
 
 // bytesEncAppender implements encWriter and can write to an byte slice.
 type bytesEncAppender struct {
 	b   []byte
 	out *[]byte
+}
+
+type bytesEncAppenderM struct {
+	*bytesEncAppender
 }
 
 func (z *bytesEncAppender) writeb(s []byte) {
@@ -210,6 +228,11 @@ func (z *bytesEncAppender) endErr() error {
 	*(z.out) = z.b
 	return nil
 }
+
+func (z *bytesEncAppender) end() {
+	*(z.out) = z.b
+}
+
 func (z *bytesEncAppender) reset(in []byte, out *[]byte) {
 	z.b = in[:0]
 	z.out = out
@@ -217,108 +240,10 @@ func (z *bytesEncAppender) reset(in []byte, out *[]byte) {
 
 // --------------------------------------------------
 
-type encWr struct {
-	wb bytesEncAppender
-	wf *bufioEncWriter
-
-	bytes bool // encoding to []byte
-
-	// MARKER: these fields below should belong directly in Encoder.
-	// we pack them here for space efficiency and cache-line optimization.
-
-	js bool // is json encoder?
-	be bool // is binary encoder?
-
-	c containerState
-
-	calls uint16
-	seq   uint16 // sequencer (e.g. used by binc for symbols, etc)
-}
-
-// MARKER: manually inline bytesEncAppender.writenx/writeqstr methods,
-// as calling them causes encWr.writenx/writeqstr methods to not be inlined (cost > 80).
-//
-// i.e. e.g. instead of writing z.wb.writen2(b1, b2), use z.wb.b = append(z.wb.b, b1, b2)
-
-func (z *encWr) writeb(s []byte) {
-	if z.bytes {
-		z.wb.writeb(s)
-	} else {
-		z.wf.writeb(s)
-	}
-}
-func (z *encWr) writestr(s string) {
-	if z.bytes {
-		z.wb.writestr(s)
-	} else {
-		z.wf.writestr(s)
-	}
-}
-
-// MARKER: Add WriteStr to be called directly by generated code without a genHelper forwarding function.
-// Go's inlining model adds cost for forwarding functions, preventing inlining (cost goes above 80 budget).
-
-func (z *encWr) WriteStr(s string) {
-	if z.bytes {
-		z.wb.writestr(s)
-	} else {
-		z.wf.writestr(s)
-	}
-}
-
-func (z *encWr) writen1(b1 byte) {
-	if z.bytes {
-		z.wb.writen1(b1)
-	} else {
-		z.wf.writen1(b1)
-	}
-}
-
-func (z *encWr) writen2(b1, b2 byte) {
-	if z.bytes {
-		// MARKER: z.wb.writen2(b1, b2)
-		z.wb.b = append(z.wb.b, b1, b2)
-	} else {
-		z.wf.writen2(b1, b2)
-	}
-}
-
-func (z *encWr) writen4(b [4]byte) {
-	if z.bytes {
-		// MARKER: z.wb.writen4(b1, b2, b3, b4)
-		z.wb.b = append(z.wb.b, b[:]...)
-		// z.wb.writen4(b)
-	} else {
-		z.wf.writen4(b)
-	}
-}
-func (z *encWr) writen8(b [8]byte) {
-	if z.bytes {
-		// z.wb.b = append(z.wb.b, b[:]...)
-		z.wb.writen8(b)
-	} else {
-		z.wf.writen8(b)
-	}
-}
-
-func (z *encWr) writeqstr(s string) {
-	if z.bytes {
-		// MARKER: z.wb.writeqstr(s)
-		z.wb.b = append(append(append(z.wb.b, '"'), s...), '"')
-	} else {
-		z.wf.writeqstr(s)
-	}
-}
-
-func (z *encWr) endErr() error {
-	if z.bytes {
-		return z.wb.endErr()
-	}
-	return z.wf.endErr()
-}
-
-func (z *encWr) end() {
-	halt.onerror(z.endErr())
-}
-
-var _ encWriter = (*encWr)(nil)
+// func (z *encWr) WriteStr(s string) {
+// 	if z.bytes {
+// 		z.wb.writestr(s)
+// 	} else {
+// 		z.wf.writestr(s)
+// 	}
+// }

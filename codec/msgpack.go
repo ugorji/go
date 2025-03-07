@@ -1,6 +1,8 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
+//go:build 2025
+
 /*
 Msgpack-c implementation powers the c, c++, python, ruby, etc libraries.
 We need to maintain compatibility with it and how it encodes integer values
@@ -1106,6 +1108,11 @@ type MsgpackHandle struct {
 func (h *MsgpackHandle) Name() string { return "msgpack" }
 
 func (h *MsgpackHandle) desc(bd byte) string { return mpdesc(bd) }
+
+// SetBytesExt sets an extension
+func (h *MsgpackHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
+	return h.SetExt(rt, tag, makeExt(ext))
+}
 
 func (h *MsgpackHandle) newEncDriver() encDriver {
 	var e = &msgpackEncDriver{h: h}

@@ -1,6 +1,8 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
+//go:build 2025
+
 package codec
 
 // NAMING CONVENTION FOR TESTS
@@ -2133,8 +2135,8 @@ func doTestSwallowAndZero(t *testing.T, h Handle) {
 	e1.MustEncode(v1)
 	d1 := NewDecoderBytes(b1, h)
 	d1.swallow()
-	if d1.r().numread() != uint(len(b1)) {
-		t.Logf("swallow didn't consume all encoded bytes: %v out of %v", d1.r().numread(), len(b1))
+	if d1.NumBytesRead() != len(b1) {
+		t.Logf("swallow didn't consume all encoded bytes: %v out of %v", d1.NumBytesRead(), len(b1))
 		t.FailNow()
 	}
 	setZero(v1)
@@ -2406,7 +2408,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testDeepEqualErr(m, m2, t, "-slices")
 
 	d, x := testSharedCodecDecoder(bs, h, bh)
-	bs2 := d.d.nextValueBytes([]byte{})
+	bs2 := d.getDecDriver().nextValueBytes([]byte{})
 	testSharedCodecDecoderAfter(d, x, bh)
 	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-slices")
 	// if len(bs2) != 0 || len(bs2) != len(bs) { }
@@ -2424,7 +2426,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testDeepEqualErr(mm, mm2, t, "-map")
 
 		d, x = testSharedCodecDecoder(bs, h, bh)
-		bs2 = d.d.nextValueBytes([]byte{})
+		bs2 = d.getDecDriver().nextValueBytes([]byte{})
 		testSharedCodecDecoderAfter(d, x, bh)
 		testDeepEqualErr(bs, bs2, t, "nextvaluebytes-map")
 		testReleaseBytes(bs)
@@ -2489,7 +2491,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testDeepEqualErr(m1, m2, t, "no-symbols-string")
 
 		d, x = testSharedCodecDecoder(out, h, bh)
-		bs2 = d.d.nextValueBytes([]byte{})
+		bs2 = d.getDecDriver().nextValueBytes([]byte{})
 		testSharedCodecDecoderAfter(d, x, bh)
 		testDeepEqualErr(out, bs2, t, "nextvaluebytes-no-symbols-string")
 
@@ -2505,7 +2507,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 			testDeepEqualErr(m1, m2, t, "symbols-string")
 
 			d, x = testSharedCodecDecoder(out, h, bh)
-			bs2 = d.d.nextValueBytes([]byte{})
+			bs2 = d.getDecDriver().nextValueBytes([]byte{})
 			testSharedCodecDecoderAfter(d, x, bh)
 			testDeepEqualErr(out, bs2, t, "nextvaluebytes-symbols-string")
 			hbinc.AsSymbols = 2
@@ -2520,7 +2522,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testDeepEqualErr(xl, xl2, t, "-large-extension-bytes")
 
 	d, x = testSharedCodecDecoder(bs, h, bh)
-	bs2 = d.d.nextValueBytes([]byte{})
+	bs2 = d.getDecDriver().nextValueBytes([]byte{})
 	testSharedCodecDecoderAfter(d, x, bh)
 	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-large-extension-bytes")
 
@@ -2949,9 +2951,11 @@ func doTestScalars(t *testing.T, h Handle) {
 		string(""),
 		[]byte(nil),
 	}
-	for _, v := range fastpathAv {
-		vi = append(vi, reflect.Zero(v.rt).Interface())
-	}
+	// add all the fastpath ones
+	// MARKER 2025 - add these back
+	// for _, v := range fastpathAv {
+	// 	vi = append(vi, reflect.Zero(v.rt).Interface())
+	// }
 	for _, v := range vi {
 		rv := reflect.New(reflect.TypeOf(v)).Elem()
 		testRandomFillRV(rv)
@@ -3820,7 +3824,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 
 	d, oldReadBufferSize := testSharedCodecDecoder(out, h, testBasicHandle(h))
 	for i := 0; i < len(inputs)*2; i++ {
-		valueBytes[i] = d.d.nextValueBytes([]byte{})
+		valueBytes[i] = d.getDecDriver().nextValueBytes([]byte{})
 		// bs := d.d.nextValueBytes([]byte{})
 		// valueBytes[i] = make([]byte, len(bs))
 		// copy(valueBytes[i], bs)
@@ -4094,55 +4098,55 @@ func doTestDesc(t *testing.T, h Handle, m map[byte]string) {
 	}
 }
 
-func TestAtomic(t *testing.T) {
-	defer testSetup(t, nil)()
-	// load, store, load, confirm
-	if true {
-		var a atomicTypeInfoSlice
-		l := a.load()
-		if l != nil {
-			t.Logf("atomic fail: %T, expected load return nil, received: %v", a, l)
-			t.FailNow()
-		}
-		l = append(l, rtid2ti{})
-		a.store(l)
-		l = a.load()
-		if len(l) != 1 {
-			t.Logf("atomic fail: %T, expected load to have length 1, received: %d", a, len(l))
-			t.FailNow()
-		}
-	}
-	if true {
-		var a atomicRtidFnSlice
-		l := a.load()
-		if l != nil {
-			t.Logf("atomic fail: %T, expected load return nil, received: %v", a, l)
-			t.FailNow()
-		}
-		l = append(l, codecRtidFn{})
-		a.store(l)
-		l = a.load()
-		if len(l) != 1 {
-			t.Logf("atomic fail: %T, expected load to have length 1, received: %d", a, len(l))
-			t.FailNow()
-		}
-	}
-	if true {
-		var a atomicClsErr
-		l := a.load()
-		if l.err != nil {
-			t.Logf("atomic fail: %T, expected load return clsErr = nil, received: %v", a, l.err)
-			t.FailNow()
-		}
-		l.err = io.EOF
-		a.store(l)
-		l = a.load()
-		if l.err != io.EOF {
-			t.Logf("atomic fail: %T, expected clsErr = io.EOF, received: %v", a, l.err)
-			t.FailNow()
-		}
-	}
-}
+// func TestAtomic(t *testing.T) {
+// 	defer testSetup(t, nil)()
+// 	// load, store, load, confirm
+// 	if true {
+// 		var a atomicTypeInfoSlice
+// 		l := a.load()
+// 		if l != nil {
+// 			t.Logf("atomic fail: %T, expected load return nil, received: %v", a, l)
+// 			t.FailNow()
+// 		}
+// 		l = append(l, rtid2ti{})
+// 		a.store(l)
+// 		l = a.load()
+// 		if len(l) != 1 {
+// 			t.Logf("atomic fail: %T, expected load to have length 1, received: %d", a, len(l))
+// 			t.FailNow()
+// 		}
+// 	}
+// 	if true {
+// 		var a atomicRtidFnSlice
+// 		l := a.load()
+// 		if l != nil {
+// 			t.Logf("atomic fail: %T, expected load return nil, received: %v", a, l)
+// 			t.FailNow()
+// 		}
+// 		l = append(l, codecRtidFn{})
+// 		a.store(l)
+// 		l = a.load()
+// 		if len(l) != 1 {
+// 			t.Logf("atomic fail: %T, expected load to have length 1, received: %d", a, len(l))
+// 			t.FailNow()
+// 		}
+// 	}
+// 	if true {
+// 		var a atomicClsErr
+// 		l := a.load()
+// 		if l.err != nil {
+// 			t.Logf("atomic fail: %T, expected load return clsErr = nil, received: %v", a, l.err)
+// 			t.FailNow()
+// 		}
+// 		l.err = io.EOF
+// 		a.store(l)
+// 		l = a.load()
+// 		if l.err != io.EOF {
+// 			t.Logf("atomic fail: %T, expected clsErr = io.EOF, received: %v", a, l.err)
+// 			t.FailNow()
+// 		}
+// 	}
+// }
 
 // -----------
 
