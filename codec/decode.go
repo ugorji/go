@@ -1449,6 +1449,11 @@ type decoderI interface {
 	swallow()
 
 	getDecDriver() decDriverI
+
+	decode(v interface{})
+	decodeAs(v interface{}, t reflect.Type, ext bool)
+
+	interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt)
 }
 
 type Decoder struct {
@@ -1895,6 +1900,14 @@ func (d *decoder[T]) decode(iv interface{}) {
 			}
 			d.decodeValue(v, nil)
 		}
+	}
+}
+
+func (d *decoder[T]) decodeAs(v interface{}, t reflect.Type, ext bool) {
+	if ext {
+		d.decodeValue(baseRV(v), d.fn(t))
+	} else {
+		d.decodeValue(baseRV(v), d.fnNoExt(t))
 	}
 }
 

@@ -1038,6 +1038,12 @@ func (x *BasicHandle) getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo)
 // 		false, x.CheckCircularRef, x.timeBuiltin, x.binaryHandle, x.jsonHandle)
 // }
 
+type handle interface {
+	*SimpleHandle
+
+	Handle
+}
+
 // Handle defines a specific encoding format. It also stores any runtime state
 // used during an Encoding or Decoding session e.g. stored state about Types, etc.
 //
@@ -2879,28 +2885,25 @@ func encResetIO[T encWriter](w T, out io.Writer, bufsize int, blist *bytesFreeli
 	return
 }
 
-// func newDecDriverBytes[T decDriver, R decReader](in []byte) *decoder[T] {
+// func newDecDriverBytes[T decDriver, R decReader, H handle](in []byte, ext, noExt *atomicRtidFnSlice) *decoder[T] {
 // 	var cc [2]struct {
 // 		r bytesDecReader
 // 		e decoder[T]
-// 		d simpleDecDriver[bytesDecReaderM]
+// 		d T
 // 	}
-
 // 	for i := range cc {
 // 		c := &cc[i]
-// 		c.e.rtidFn = &h.rtidFnsDecBytes
-// 		c.e.rtidFnNoExt = &h.rtidFnsDecNoExtBytes
+// 		c.e.rtidFn = ext
+// 		c.e.rtidFnNoExt = noExt
 // 		c.d.bytes = true
 // 		c.d.d = &c.e.decoderShared
 // 		c.d.h = h
 // 		c.d.r = bytesDecReaderM{&c.r}
-// 		c.e.d = T{&c.d}
+// 		c.e.d = c.d
 // 		c.e.init(h)
 // 		c.e.resetCommon()
 // 	}
-
 // 	cc[0].r.reset(in)
 // 	cc[0].d.ds = &cc[1].d
-
 // 	return &cc[0].e
 // }

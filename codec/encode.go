@@ -1263,6 +1263,14 @@ func (e *encoder[T]) encode(iv interface{}) {
 	}
 }
 
+func (e *encoder[T]) encodeAs(v interface{}, t reflect.Type, ext bool) {
+	if ext {
+		e.encodeValue(baseRV(v), e.fn(t))
+	} else {
+		e.encodeValue(baseRV(v), e.fnNoExt(t))
+	}
+}
+
 // encodeValue will encode a value.
 //
 // Note that encodeValue will handle nil in the stream early, so that the
@@ -1511,6 +1519,9 @@ type encoderI interface {
 	wrapErr(v error, err *error)
 	atEndOfEncode()
 	writerEnd()
+
+	encode(v interface{})
+	encodeAs(v interface{}, t reflect.Type, ext bool)
 	// encodeValue(rv reflect.Value, fn *encFn)
 }
 
