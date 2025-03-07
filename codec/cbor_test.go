@@ -17,6 +17,23 @@ import (
 	"testing"
 )
 
+func init() {
+	testPreInitFns = append(testPreInitFns, cborTestInit)
+}
+
+func cborTestInit() {
+	var tI64Ext wrapInt64Ext
+	var tUintToBytesExt testUintToBytesExt
+	var tBytesExt wrapBytesExt
+
+	halt.onerror(testCborH.SetInterfaceExt(timeTyp, 1, testUnixNanoTimeInterfaceExt{}))
+	halt.onerror(testCborH.SetInterfaceExt(testSelfExtTyp, 78, SelfExt))
+	halt.onerror(testCborH.SetInterfaceExt(testSelfExt2Typ, 79, SelfExt))
+	halt.onerror(testCborH.SetInterfaceExt(wrapBytesTyp, 32, &tBytesExt))
+	halt.onerror(testCborH.SetInterfaceExt(testUintToBytesTyp, 33, &tUintToBytesExt))
+	halt.onerror(testCborH.SetInterfaceExt(wrapInt64Typ, 16, &tI64Ext))
+}
+
 func TestCborIndefiniteLength(t *testing.T) {
 	var h Handle = testCborH
 	defer testSetup(t, &h)()
@@ -445,4 +462,179 @@ func TestCborMalformed(t *testing.T) {
 			t.FailNow()
 		}
 	}
+}
+
+// ----------
+//
+// cbor tests shared with other formats
+
+func TestCborCodecsTable(t *testing.T) {
+	doTestCodecTableOne(t, testCborH)
+}
+
+func TestCborCodecsMisc(t *testing.T) {
+	doTestCodecMiscOne(t, testCborH)
+}
+
+func TestCborCodecsEmbeddedPointer(t *testing.T) {
+	doTestCodecEmbeddedPointer(t, testCborH)
+}
+
+func TestCborCodecChan(t *testing.T) {
+	doTestCodecChan(t, testCborH)
+}
+
+func TestCborStdEncIntf(t *testing.T) {
+	doTestStdEncIntf(t, testCborH)
+}
+
+func TestCborRaw(t *testing.T) {
+	doTestRawValue(t, testCborH)
+}
+
+// ----- RPC -----
+
+func TestCborRpcGo(t *testing.T) {
+	doTestCodecRpcOne(t, GoRpc, testCborH, true, 0)
+}
+
+// ----- OTHERS -----
+
+func TestCborMapEncodeForCanonical(t *testing.T) {
+	doTestMapEncodeForCanonical(t, testCborH)
+}
+
+func TestCborSwallowAndZero(t *testing.T) {
+	doTestSwallowAndZero(t, testCborH)
+}
+
+func TestCborRawExt(t *testing.T) {
+	doTestRawExt(t, testCborH)
+}
+
+func TestCborMapStructKey(t *testing.T) {
+	doTestMapStructKey(t, testCborH)
+}
+
+func TestCborDecodeNilMapValue(t *testing.T) {
+	doTestDecodeNilMapValue(t, testCborH)
+}
+
+func TestCborEmbeddedFieldPrecedence(t *testing.T) {
+	doTestEmbeddedFieldPrecedence(t, testCborH)
+}
+
+func TestCborLargeContainerLen(t *testing.T) {
+	if testCborH.IndefiniteLength {
+		t.Skipf("skipping as cbor Indefinite Length doesn't use prefixed lengths")
+	}
+	doTestLargeContainerLen(t, testCborH)
+}
+
+func TestCborTime(t *testing.T) {
+	doTestTime(t, testCborH)
+}
+
+func TestCborUintToInt(t *testing.T) {
+	doTestUintToInt(t, testCborH)
+}
+
+func TestCborDifferentMapOrSliceType(t *testing.T) {
+	doTestDifferentMapOrSliceType(t, testCborH)
+}
+
+func TestCborScalars(t *testing.T) {
+	doTestScalars(t, testCborH)
+}
+
+func TestCborOmitempty(t *testing.T) {
+	doTestOmitempty(t, testCborH)
+}
+
+func TestCborIntfMapping(t *testing.T) {
+	doTestIntfMapping(t, testCborH)
+}
+
+func TestCborMissingFields(t *testing.T) {
+	doTestMissingFields(t, testCborH)
+}
+
+func TestCborMaxDepth(t *testing.T) {
+	doTestMaxDepth(t, testCborH)
+}
+
+func TestCborSelfExt(t *testing.T) {
+	doTestSelfExt(t, testCborH)
+}
+
+func TestCborBytesEncodedAsArray(t *testing.T) {
+	doTestBytesEncodedAsArray(t, testCborH)
+}
+
+func TestCborStrucEncDec(t *testing.T) {
+	doTestStrucEncDec(t, testCborH)
+}
+
+func TestCborRawToStringToRawEtc(t *testing.T) {
+	doTestRawToStringToRawEtc(t, testCborH)
+}
+
+func TestCborStructKeyType(t *testing.T) {
+	doTestStructKeyType(t, testCborH)
+}
+
+func TestCborPreferArrayOverSlice(t *testing.T) {
+	doTestPreferArrayOverSlice(t, testCborH)
+}
+
+func TestCborZeroCopyBytes(t *testing.T) {
+	if testCborH.IndefiniteLength {
+		t.Skipf("skipping ... zero copy bytes not supported by cbor handle with IndefiniteLength=true")
+	}
+	doTestZeroCopyBytes(t, testCborH)
+}
+
+func TestCborNextValueBytes(t *testing.T) {
+	// x := testCborH.IndefiniteLength
+	// defer func() { testCborH.IndefiniteLength = x }()
+
+	// xdebugf(">>>>> TestCborNextValueBytes: IndefiniteLength = false")
+	// testCborH.IndefiniteLength = false
+	// doTestNextValueBytes(t, testCborH)
+	// xdebugf(">>>>> TestCborNextValueBytes: IndefiniteLength = true")
+	// testCborH.IndefiniteLength = true
+	doTestNextValueBytes(t, testCborH)
+}
+
+func TestCborNumbers(t *testing.T) {
+	doTestNumbers(t, testCborH)
+}
+
+func TestCborDesc(t *testing.T) {
+	m := make(map[byte]string)
+	for k, v := range cbordescMajorNames {
+		// if k == cborMajorSimpleOrFloat { m[k<<5] = "nil" }
+		m[k<<5] = v
+	}
+	for k, v := range cbordescSimpleNames {
+		m[k] = v
+	}
+	delete(m, cborMajorSimpleOrFloat<<5)
+	doTestDesc(t, testCborH, m)
+}
+
+func TestCborStructFieldInfoToArray(t *testing.T) {
+	doTestStructFieldInfoToArray(t, testCborH)
+}
+func TestAllErrWriter(t *testing.T) {
+	// doTestAllErrWriter(t, testCborH, testJsonH)
+	doTestAllErrWriter(t, testCborH)
+}
+
+func TestAllEncCircularRef(t *testing.T) {
+	doTestEncCircularRef(t, testCborH)
+}
+
+func TestAllAnonCycle(t *testing.T) {
+	doTestAnonCycle(t, testCborH)
 }

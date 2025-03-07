@@ -1062,6 +1062,7 @@ type Handle interface {
 	desc(bd byte) string
 	// init initializes the handle based on handle-specific info (beyond what is in BasicHandle)
 	init()
+	// clone() Handle
 }
 
 // Raw represents raw formatted bytes.

@@ -868,6 +868,11 @@ func (h *SimpleHandle) Name() string { return "simple" }
 
 func (h *SimpleHandle) desc(bd byte) string { return simpledesc(bd) }
 
+// func (h *SimpleHandle) clone() interface{} {
+// 	h2 := *h
+// 	return &h2
+// }
+
 // SetBytesExt sets an extension
 func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (err error) {
 	return h.SetExt(rt, tag, makeExt(ext))
