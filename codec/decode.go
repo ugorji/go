@@ -196,6 +196,8 @@ type decDriverI interface {
 
 	NumBytesRead() int
 
+	init(h Handle, shared *decoderShared)
+
 	driverStateManager
 	decNegintPosintFloatNumber
 }
@@ -1370,6 +1372,9 @@ type decoderShared struct {
 
 	n fauxUnion
 
+	rtidFn, rtidFnNoExt *atomicRtidFnSlice
+
+	sd decoderI
 	// b is an always-available scratch buffer used by Decoder and decDrivers.
 	// By being always-available, it can be used for one-off things without
 	// having to get from freelist, use, and return back to freelist.
@@ -1422,8 +1427,6 @@ type decoder[T decDriver] struct {
 
 	fp *fastpathDs[T]
 
-	rtidFn, rtidFnNoExt *atomicRtidFnSlice
-
 	h *BasicHandle
 
 	// ---- cpu cache line boundary?
@@ -1456,53 +1459,6 @@ type decoderI interface {
 	interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt)
 }
 
-type Decoder struct {
-	decoderI
-}
-
-// NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
-//
-// For efficiency, Users are encouraged to configure ReaderBufferSize on the handle
-// OR pass in a memory buffered reader (eg bufio.Reader, bytes.Buffer).
-func NewDecoder(r io.Reader, h Handle) *Decoder {
-	switch v := h.(type) {
-	case *SimpleHandle:
-		return &Decoder{v.newDecDriverIO(r)}
-	}
-	return nil
-	// d := h.newDecDriver().decoder()
-	// if r != nil {
-	// 	d.Reset(r)
-	// }
-	// return d
-}
-
-// NewDecoderBytes returns a Decoder which efficiently decodes directly
-// from a byte slice with zero copying.
-func NewDecoderBytes(in []byte, h Handle) *Decoder {
-	switch v := h.(type) {
-	case *SimpleHandle:
-		return &Decoder{v.newDecDriverBytes(in)}
-	}
-	return nil
-	// d := h.newDecDriver().decoder()
-	// if in != nil {
-	// 	d.ResetBytes(in)
-	// }
-	// return d
-}
-
-// NewDecoderString returns a Decoder which efficiently decodes directly
-// from a string with zero copying.
-//
-// It is a convenience function that calls NewDecoderBytes with a
-// []byte view into the string.
-//
-// This can be an efficient zero-copy if using default mode i.e. without codec.safe tag.
-func NewDecoderString(s string, h Handle) *Decoder {
-	return NewDecoderBytes(bytesView(s), h)
-}
-
 // func (d *Decoder) Decode(v interface{}) (err error) {}
 // func (d *Decoder) HandleName() string               {}
 // func (d *Decoder) MustDecode(v interface{})         {}
@@ -1522,19 +1478,34 @@ func (d *decoder[T]) getDecDriver() decDriverI {
 
 func (d *decoder[T]) init(h Handle) {
 	initHandle(h)
-	d.cbreak = d.js || d.cbor
-	d.bytes = true
-	d.err = errDecoderNotInitialized
-	d.h = h.getBasicHandle()
+	callMake(&d.d)
 	d.hh = h
+	d.h = h.getBasicHandle()
 	d.be = h.isBinary()
+	d.err = errDecoderNotInitialized
+
+	d.fp = fastpathDList[T]()
+
 	if d.h.InternString && d.is == nil {
 		d.is.init()
 	}
+
+	d.d.init(h, &d.decoderShared) // should set js, cbor, bytes, etc
+	d.cbreak = d.js || d.cbor
+
+	if d.bytes {
+		d.rtidFn = &d.h.rtidFnsDecBytes
+		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtBytes
+	} else {
+		d.rtidFn = &d.h.rtidFnsDecIO
+		d.rtidFnNoExt = &d.h.rtidFnsDecNoExtIO
+	}
+
+	d.reset()
 	// NOTE: do not initialize d.n here. It is lazily initialized in d.naked()
 }
 
-func (d *decoder[T]) resetCommon() {
+func (d *decoder[T]) reset() {
 	d.d.reset()
 	d.err = nil
 	d.c = 0
@@ -1566,40 +1537,23 @@ var errDecNoResetReaderWithBytes = errors.New("cannot reset an Decoder reading f
 // Reset the Decoder with a new Reader to decode from,
 // clearing all state from last run(s).
 func (d *decoder[T]) Reset(r io.Reader) (err error) {
-	if d.d.resetInIO(r) {
-		d.resetCommon()
-	} else {
-		err = errDecNoResetBytesWithReader
+	if d.bytes {
+		return errDecNoResetBytesWithReader
 	}
+	d.reset()
+	d.d.resetInIO(r)
 	return
-	// if r == nil {
-	// 	r = &eofReader
-	// }
-	// d.bytes = false
-	// if d.ri == nil {
-	// 	d.ri = new(ioDecReader)
-	// }
-	// d.ri.reset(r, d.h.ReaderBufferSize, &d.blist)
-	// d.decReader = d.ri
-	// d.resetCommon()
 }
 
 // ResetBytes resets the Decoder with a new []byte to decode from,
 // clearing all state from last run(s).
 func (d *decoder[T]) ResetBytes(in []byte) (err error) {
-	if d.d.resetInBytes(in) {
-		d.resetCommon()
-	} else {
-		err = errDecNoResetReaderWithBytes
+	if !d.bytes {
+		return errDecNoResetReaderWithBytes
 	}
+	d.reset()
+	d.d.resetInBytes(in)
 	return
-	// if in == nil {
-	// 	in = []byte{}
-	// }
-	// d.bytes = true
-	// d.decReader = &d.rb
-	// d.rb.reset(in)
-	// d.resetCommon()
 }
 
 // ResetString resets the Decoder with a new string to decode from,
@@ -2439,4 +2393,119 @@ func decInferLen(clen, maxlen, unit int) int {
 		return clen
 	}
 	return maxlen
+}
+
+func sideDecode[T decDriver](ds *decoder[T], v interface{}, basetype reflect.Type) {
+	if v == nil && basetype == nil {
+		return
+	}
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = baseRV(v)
+	}
+	if basetype == nil {
+		ds.decodeValue(rv, nil)
+	} else {
+		ds.decodeValue(rv, ds.fnNoExt(basetype))
+	}
+}
+
+func decResetBytes[T decReader](r T, in []byte) (ok bool) {
+	v, ok := any(r).(bytesDecReaderM)
+	if ok {
+		v.reset(in)
+	}
+	return
+}
+
+func decResetIO[T decReader](r T, in io.Reader, bufsize int, blist *bytesFreelist) (ok bool) {
+	v, ok := any(r).(ioDecReaderM)
+	if ok {
+		v.reset(in, bufsize, blist)
+	}
+	return
+}
+
+// func newDecDriverBytes[T decDriver, R decReader](in []byte, ext, noExt *atomicRtidFnSlice) *decoder[T] {
+// 	var cc [2]struct {
+// 		r bytesDecReader
+// 		e decoder[T]
+// 		d T
+// 	}
+// 	for i := range cc {
+// 		c := &cc[i]
+// 		c.e.rtidFn = ext
+// 		c.e.rtidFnNoExt = noExt
+// 		c.d.bytes = true
+// 		c.d.d = &c.e.decoderShared
+// 		c.d.h = h
+// 		c.d.r = bytesDecReaderM{&c.r}
+// 		c.e.d = c.d
+// 		c.e.init(h)
+// 	}
+// 	cc[0].r.reset(in)
+// 	cc[0].d.ds = &cc[1].d
+// 	return &cc[0].e
+// }
+
+func newDecDriverBytes[T decDriver](in []byte, h Handle) *decoder[T] {
+	var c1, c2 decoder[T]
+	c1.init(h)
+	c2.init(h)
+	c1.ResetBytes(in) // MARKER check for error
+	c1.sd = &c2
+	return &c1
+}
+
+func newDecDriverIO[T, T2 decDriver](in io.Reader, h Handle) *decoder[T] {
+	var c1 decoder[T]
+	var c2 decoder[T2]
+	c1.init(h)
+	c2.init(h)
+	c1.Reset(in)
+	c1.sd = &c2
+	return &c1
+}
+
+type Decoder struct {
+	decoderI
+}
+
+// NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
+//
+// For efficiency, Users are encouraged to configure ReaderBufferSize on the handle
+// OR pass in a memory buffered reader (eg bufio.Reader, bytes.Buffer).
+func NewDecoder(r io.Reader, h Handle) *Decoder {
+	var d decoderI
+	switch h.(type) {
+	case *SimpleHandle:
+		d = newDecDriverIO[simpleDecDriverM[ioDecReaderM], simpleDecDriverM[bytesDecReaderM]](r, h)
+	default:
+		return nil
+	}
+	return &Decoder{d}
+}
+
+// NewDecoderBytes returns a Decoder which efficiently decodes directly
+// from a byte slice with zero copying.
+func NewDecoderBytes(in []byte, h Handle) *Decoder {
+	var d decoderI
+	switch h.(type) {
+	case *SimpleHandle:
+		d = newDecDriverBytes[simpleDecDriverM[bytesDecReaderM]](in, h)
+	default:
+		return nil
+	}
+	return &Decoder{d}
+}
+
+// NewDecoderString returns a Decoder which efficiently decodes directly
+// from a string with zero copying.
+//
+// It is a convenience function that calls NewDecoderBytes with a
+// []byte view into the string.
+//
+// This can be an efficient zero-copy if using default mode i.e. without codec.safe tag.
+func NewDecoderString(s string, h Handle) *Decoder {
+	return NewDecoderBytes(bytesView(s), h)
 }

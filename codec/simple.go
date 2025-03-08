@@ -10,6 +10,20 @@ import (
 	"time"
 )
 
+// func init() {
+// 	var t *SimpleHandle
+// 	h := handleNewFn{
+// 		typ: rt2id(reflect.TypeOf(t)),
+// 		encBytes: func(v *[]byte, h Handle) encoderI {
+// 			return newEncDriverBytes[simpleEncDriverM[bytesEncAppenderM]](v, h)
+// 		},
+// 		encIO:    newEncDriverIO[simpleEncDriverM[bufioEncAppenderM], simpleEncDriverM[bytesEncAppenderM]],
+// 		decBytes: newDecDriverBytes[simpleDecDriverM[bytesDecReaderM]],
+// 		decIO:    newDecDriverIO[simpleDecDriverM[ioDecReaderM], simpleDecDriverM[bytesDecReaderM]],
+// 	}
+// 	handleNewFns = append(handleNewFns, h)
+// }
+
 const (
 	_               uint8 = iota
 	simpleVdNil           = 1
@@ -63,6 +77,10 @@ type simpleEncDriverM[T encWriter] struct {
 	*simpleEncDriver[T]
 }
 
+func (d *simpleEncDriverM[T]) Make() {
+	d.simpleEncDriver = new(simpleEncDriver[T])
+}
+
 type simpleEncDriver[T encWriter] struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
@@ -74,11 +92,23 @@ type simpleEncDriver[T encWriter] struct {
 	w T
 	e *encoderShared
 
-	// we cannot reference a *encoder here, due to recursive limitations of go generics
-	// this MUST be *encoder[simpleEncDriverM[bytesEncAppenderM]]
-	// es encoderI // must-be *encoder[simpleEncDriverM[bytesEncAppenderM]]
-	// es *encoder[simpleEncDriverM[bytesEncAppenderM]]
-	es interface{}
+	bytes bool
+	// // we cannot reference a *encoder here, due to recursive limitations of go generics
+	// // this MUST be *encoder[simpleEncDriverM[bytesEncAppenderM]]
+	// // es encoderI // must-be *encoder[simpleEncDriverM[bytesEncAppenderM]]
+	// // es *encoder[simpleEncDriverM[bytesEncAppenderM]]
+	// es interface{}
+}
+
+func (d *simpleEncDriver[T]) init(hh Handle, shared *encoderShared) {
+	// d.simpleEncDriver = new(simpleEncDriver[T])
+	callMake(&d.w)
+
+	d.h = hh.(*SimpleHandle)
+	d.bytes = d.w.isBytes()
+	shared.bytes = d.bytes
+	d.e = shared
+	// d.w.init()
 }
 
 func (e *simpleEncDriver[T]) EncodeNil() {
@@ -165,12 +195,11 @@ func (e *simpleEncDriver[T]) encLen(bd byte, length int) {
 }
 
 func (e *simpleEncDriver[T]) sideEncoder(out *[]byte) {
-	es := e.es.(*encoder[simpleEncDriverM[bytesEncAppenderM]])
-	es.e.w.reset(*out, out)
+	(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]])).e.w.reset(*out, out)
 }
 
 func (e *simpleEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
-	sideEncode(e.es.(*encoder[simpleEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
+	sideEncode(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
 }
 
 func (e *simpleEncDriver[T]) EncodeExt(v interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
@@ -281,6 +310,20 @@ type simpleDecDriver[T decReader] struct {
 
 type simpleDecDriverM[T decReader] struct {
 	*simpleDecDriver[T]
+}
+
+func (d *simpleDecDriverM[T]) Make() {
+	d.simpleDecDriver = new(simpleDecDriver[T])
+}
+
+func (d *simpleDecDriver[T]) init(hh Handle, shared *decoderShared) {
+	// d.simpleDecDriver = new(simpleDecDriver[T])
+	callMake(&d.r)
+	d.h = hh.(*SimpleHandle)
+	d.bytes = d.r.isBytes()
+	shared.bytes = d.bytes
+	d.d = shared
+	// d.r.init()
 }
 
 func (d *simpleDecDriver[T]) isBytes() bool {
@@ -504,6 +547,7 @@ func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	clen := d.decLen()
 	d.bdRead = false
 	// if d.d.zerocopy() {
+	// fmt.Printf("d: %v, d.h: %v\n", d, d.h)
 	if d.bytes && d.h.ZeroCopy {
 		d.d.decByteState = decByteStateZerocopy
 		return d.r.readx(uint(clen))
@@ -768,8 +812,7 @@ func (d *simpleDecDriver[T]) resetInIO(r io.Reader) (ok bool) {
 
 func (d *simpleDecDriver[T]) sideDecoder(in []byte) {
 	ds := d.ds.(*decoder[simpleDecDriverM[bytesDecReaderM]])
-	ds.resetCommon()
-	ds.d.r.reset(in)
+	ds.ResetBytes(in)
 }
 
 func (d *simpleDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
@@ -824,6 +867,21 @@ func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (e
 	return h.SetExt(rt, tag, makeExt(ext))
 }
 
+/*
+func (h *SimpleHandle) newEncDriverBytes(out *[]byte) *encoder[simpleEncDriverM[bytesEncAppenderM]] {
+	return newEncDriverBytes[simpleEncDriverM[bytesEncAppenderM]](out, h)
+}
+
+func (h *SimpleHandle) newEncDriverIO(out io.Writer) *encoder[simpleEncDriverM[bufioEncWriterM]] {
+	return newEncDriverIO[ simpleEncDriverM[bytesEncAppenderM], simpleEncDriverM[bytesEncAppenderM] ](out, h)
+}
+
+func (h *SimpleHandle) newDecDriverBytes(in []byte) *decoder[simpleDecDriverM[bytesDecReaderM]] {
+	return newDecDriverBytes[ simpleDecDriverM[bytesDecReaderM],
+func (h *SimpleHandle) newDecDriverIO(in io.Reader) *decoder[simpleDecDriverM[ioDecReaderM]] {
+*/
+
+/*
 func (h *SimpleHandle) newEncDriverBytes(out *[]byte) *encoder[simpleEncDriverM[bytesEncAppenderM]] {
 	var cc [2]struct {
 		w bytesEncAppender
@@ -956,3 +1014,4 @@ func (h *SimpleHandle) newDecDriverIO(in io.Reader) *decoder[simpleDecDriverM[io
 
 	return &c.e
 }
+*/

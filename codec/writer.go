@@ -4,7 +4,6 @@
 package codec
 
 import (
-	"fmt"
 	"io"
 )
 
@@ -22,6 +21,7 @@ type encWriter interface {
 	writen4([4]byte)
 	writen8([8]byte)
 
+	isBytes() bool
 	end()
 }
 
@@ -39,6 +39,14 @@ type bufioEncWriter struct {
 
 type bufioEncWriterM struct {
 	*bufioEncWriter
+}
+
+func (z *bufioEncWriterM) Make() {
+	z.bufioEncWriter = new(bufioEncWriter)
+}
+
+func (z *bufioEncWriter) isBytes() bool {
+	return false
 }
 
 func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
@@ -65,7 +73,7 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
 }
 
 func (z *bufioEncWriter) flushErr() (err error) {
-	fmt.Printf("bufioEncWriter: %T (nil=%v): %v\n", z.w, z.w == nil, z.w)
+	// fmt.Printf("bufioEncWriter: %T (nil=%v): %v\n", z.w, z.w == nil, z.w)
 	n, err := z.w.Write(z.buf[:z.n])
 	z.n -= n
 	if z.n > 0 {
@@ -193,6 +201,15 @@ type bytesEncAppender struct {
 
 type bytesEncAppenderM struct {
 	*bytesEncAppender
+}
+
+func (z *bytesEncAppenderM) Make() {
+	// fmt.Printf(">>>> callMake: on %T\n", z)
+	z.bytesEncAppender = new(bytesEncAppender)
+}
+
+func (z *bytesEncAppender) isBytes() bool {
+	return true
 }
 
 func (z *bytesEncAppender) writeb(s []byte) {

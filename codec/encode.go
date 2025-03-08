@@ -64,6 +64,8 @@ type encDriverI interface {
 	resetOutBytes(out *[]byte) (ok bool)
 	resetOutIO(out io.Writer) (ok bool)
 
+	init(h Handle, shared *encoderShared)
+
 	driverStateManager
 }
 
@@ -948,10 +950,16 @@ type encoderShared struct {
 	js bool // is json encoder?
 	be bool // is binary encoder?
 
+	bytes bool
+
 	c containerState
 
 	calls uint16
 	seq   uint16 // sequencer (e.g. used by binc for symbols, etc)
+
+	rtidFn, rtidFnNoExt *atomicRtidFnSlice
+
+	se encoderI
 }
 
 // Encoder writes an object to an output stream in a supported format.
@@ -968,8 +976,6 @@ type encoder[T encDriver] struct {
 	e T
 
 	fp *fastpathEs[T]
-
-	rtidFn, rtidFnNoExt *atomicRtidFnSlice
 
 	h *BasicHandle
 
@@ -1010,14 +1016,28 @@ func (e *encoder[T]) Release() {
 
 func (e *encoder[T]) init(h Handle) {
 	initHandle(h)
-	e.err = errEncoderNotInitialized
+	callMake(&e.e)
 	e.hh = h
 	e.h = h.getBasicHandle()
 	e.be = e.hh.isBinary()
+	e.err = errEncoderNotInitialized
+
 	e.fp = fastpathEList[T]()
+
+	e.e.init(h, &e.encoderShared)
+
+	if e.bytes {
+		e.rtidFn = &e.h.rtidFnsEncBytes
+		e.rtidFnNoExt = &e.h.rtidFnsEncNoExtBytes
+	} else {
+		e.rtidFn = &e.h.rtidFnsEncIO
+		e.rtidFnNoExt = &e.h.rtidFnsEncNoExtIO
+	}
+
+	e.reset()
 }
 
-func (e *encoder[T]) resetCommon() {
+func (e *encoder[T]) reset() {
 	e.e.reset()
 	if e.ci != nil {
 		e.ci = e.ci[:0]
@@ -1525,6 +1545,105 @@ type encoderI interface {
 	// encodeValue(rv reflect.Value, fn *encFn)
 }
 
+var errEncNoResetBytesWithWriter = errors.New("cannot reset an Encoder which outputs to []byte with a io.Writer")
+var errEncNoResetWriterWithBytes = errors.New("cannot reset an Encoder which outputs to io.Writer with a []byte")
+
+// Reset resets the Encoder with a new output stream.
+//
+// This accommodates using the state of the Encoder,
+// where it has "cached" information about sub-engines.
+func (e *encoder[T]) Reset(w io.Writer) (err error) {
+	if e.bytes {
+		return errEncNoResetBytesWithWriter
+	}
+	e.reset()
+	if w == nil {
+		w = io.Discard
+	}
+	e.e.resetOutIO(w)
+	return
+}
+
+// ResetBytes resets the Encoder with a new destination output []byte.
+func (e *encoder[T]) ResetBytes(out *[]byte) (err error) {
+	if !e.bytes {
+		return errEncNoResetWriterWithBytes
+	}
+	e.reset()
+	if out == nil {
+		out = new([]byte)
+	}
+	e.e.resetOutBytes(out)
+	return
+}
+
+type encDriverContainerNoTrackerT struct{}
+
+func (encDriverContainerNoTrackerT) WriteArrayElem()    {}
+func (encDriverContainerNoTrackerT) WriteMapElemKey()   {}
+func (encDriverContainerNoTrackerT) WriteMapElemValue() {}
+
+func sideEncode[T encDriver](es *encoder[T], v interface{}, basetype reflect.Type, cs containerState) {
+	if v == nil && basetype == nil {
+		return
+	}
+
+	if cs != 0 {
+		es.c = cs
+	}
+
+	rv, ok := v.(reflect.Value)
+	if !ok {
+		rv = baseRV(v)
+	}
+
+	if basetype == nil {
+		es.encodeValue(rv, nil)
+	} else {
+		es.encodeValue(rv, es.fnNoExt(basetype))
+	}
+	es.e.atEndOfEncode()
+	es.e.writerEnd()
+}
+
+func encResetBytes[T encWriter](w T, out *[]byte) (ok bool) {
+	v, ok := any(w).(bytesEncAppenderM)
+	// fmt.Printf("encResetBytes: v: %v, ok: %v, out: %v\n", v, ok, out)
+	if ok {
+		v.reset(*out, out)
+	}
+	// fmt.Printf("resetOutBytes: e.w: %v of type: %T (ok=%v)\n", e.w, any(e.w), ok)
+	return
+}
+
+func encResetIO[T encWriter](w T, out io.Writer, bufsize int, blist *bytesFreelist) (ok bool) {
+	v, ok := any(w).(bufioEncWriterM)
+	if ok {
+		v.reset(out, bufsize, blist)
+	}
+	// fmt.Printf("resetOutIO: e.w: %v of type: %T (ok=%v)\n", e.w, any(e.w), ok)
+	return
+}
+
+func newEncDriverBytes[T encDriver](out *[]byte, h Handle) *encoder[T] {
+	var c1, c2 encoder[T]
+	c1.init(h)
+	c2.init(h)
+	c1.ResetBytes(out) // MARKER check for error
+	c1.se = &c2
+	return &c1
+}
+
+func newEncDriverIO[T, T2 encDriver](out io.Writer, h Handle) *encoder[T] {
+	var c1 encoder[T]
+	var c2 encoder[T2]
+	c1.init(h)
+	c2.init(h)
+	c1.Reset(out) // MARKER check for error
+	c1.se = &c2
+	return &c1
+}
+
 type Encoder struct {
 	encoderI
 }
@@ -1534,24 +1653,14 @@ type Encoder struct {
 // For efficiency, Users are encouraged to configure WriterBufferSize on the handle
 // OR pass in a memory buffered writer (eg bufio.Writer, bytes.Buffer).
 func NewEncoder(w io.Writer, h Handle) *Encoder {
-	switch v := h.(type) {
+	var e encoderI
+	switch h.(type) {
 	case *SimpleHandle:
-		return &Encoder{v.newEncDriverIO(w)}
+		e = newEncDriverIO[simpleEncDriverM[bytesEncAppenderM], simpleEncDriverM[bytesEncAppenderM]](w, h)
+	default:
+		return nil
 	}
-	return nil
-	// switch v := h.(type) {
-	// case *SimpleHandle:
-	// 	d, e := h.newEncDriverIO()
-	// 	e.w.Reset(out)
-	// }
-	// e.wb.resetBytes(out)
-	// e.w.bytesEncAppender = &e.wb
-	// return &Encoder{e}
-	// e := h.newEncDriver().encoder()
-	// if w != nil {
-	// 	e.Reset(w)
-	// }
-	// return e
+	return &Encoder{e}
 }
 
 // NewEncoderBytes returns an encoder for encoding directly and efficiently
@@ -1560,44 +1669,12 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 // It will potentially replace the output byte slice pointed to.
 // After encoding, the out parameter contains the encoded contents.
 func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
-	// var wb *bytesEncAppender
-	switch v := h.(type) {
+	var e encoderI
+	switch h.(type) {
 	case *SimpleHandle:
-		return &Encoder{v.newEncDriverBytes(out)}
+		e = newEncDriverBytes[simpleEncDriverM[bytesEncAppenderM]](out, h)
+	default:
+		return nil
 	}
-	// e.wb.resetBytes(out)
-	// e.w.bytesEncAppender = &e.wb
-	return nil
+	return &Encoder{e}
 }
-
-var errEncNoResetBytesWithWriter = errors.New("cannot reset an Encoder which outputs to []byte with a io.Writer")
-var errEncNoResetWriterWithBytes = errors.New("cannot reset an Encoder which outputs to io.Writer with a []byte")
-
-// Reset resets the Encoder with a new output stream.
-//
-// This accommodates using the state of the Encoder,
-// where it has "cached" information about sub-engines.
-func (e *encoder[T]) Reset(w io.Writer) (err error) {
-	if e.e.resetOutIO(w) {
-		e.resetCommon()
-	} else {
-		err = errEncNoResetBytesWithWriter
-	}
-	return
-}
-
-// ResetBytes resets the Encoder with a new destination output []byte.
-func (e *encoder[T]) ResetBytes(out *[]byte) (err error) {
-	if e.e.resetOutBytes(out) {
-		e.resetCommon()
-	} else {
-		err = errEncNoResetWriterWithBytes
-	}
-	return
-}
-
-type encDriverContainerNoTrackerT struct{}
-
-func (encDriverContainerNoTrackerT) WriteArrayElem()    {}
-func (encDriverContainerNoTrackerT) WriteMapElemKey()   {}
-func (encDriverContainerNoTrackerT) WriteMapElemValue() {}

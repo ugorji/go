@@ -281,6 +281,14 @@ const (
 	mapKeyFastKindStr
 )
 
+// type handleNewFn struct {
+// 	typ      uintptr
+// 	encBytes func(*[]byte, h Handle) encoderI
+// 	encIO    func(io.Writer) encoderI
+// 	decBytes func(in []byte) decoderI
+// 	decIO    func(io.Reader) decoderI
+// }
+
 var (
 	// use a global mutex to ensure each Handle is initialized.
 	// We do this, so we don't have to store the basicHandle mutex
@@ -326,6 +334,8 @@ var (
 	zeroByteSlice = oneByteArr[:0:0]
 
 	eofReader devNullReader
+
+	// handleNewFns []handleNewFn
 )
 
 var (
@@ -1038,11 +1048,11 @@ func (x *BasicHandle) getTypeInfo(rtid uintptr, rt reflect.Type) (pti *typeInfo)
 // 		false, x.CheckCircularRef, x.timeBuiltin, x.binaryHandle, x.jsonHandle)
 // }
 
-type handle interface {
-	*SimpleHandle
-
-	Handle
-}
+// type handle interface {
+// 	*SimpleHandle
+//
+// 	Handle
+// }
 
 // Handle defines a specific encoding format. It also stores any runtime state
 // used during an Encoding or Decoding session e.g. stored state about Types, etc.
@@ -2792,6 +2802,37 @@ func (x internerMap) string(v []byte) (s string) {
 	return
 }
 
+// func initSoloField(v interface{}) {
+// 	r := reflect.ValueOf(v)
+// 	if r.Kind() != reflect.Ptr {
+// 		return
+// 	}
+// 	r = r.Elem()
+// 	if !(r.Kind() == reflect.Struct && r.NumField() == 1) {
+// 		return
+// 	}
+// 	r = r.Field(0)
+// 	if r.Kind() != reflect.Ptr {
+// 		return
+// 	}
+// 	// r = r.Elem()
+// 	// r.Set(reflect.New(r.Type()).Elem())
+// 	r.Set(reflect.New(r.Type()))
+// }
+
+// callMake will call a Method "Make" on the value given.
+// This is used by generics wrappers (with M on the end)
+// to initialize (set as non-nil value) the underlying real driver/reader/writer.
+//
+// Unfortunately, we cannot use an init() function on the M wrappers,
+// as they are not pointers themselves.
+func callMake(v interface{}) {
+	r := reflect.ValueOf(v)
+	m := r.MethodByName("Make")
+	// fmt.Printf("callMake: on r: %v (of type: %T), m: %v\n", v, v, m)
+	m.Call(nil)
+}
+
 // type linearMap4[K comparable, V any] struct {
 // 	keys   [4]K
 // 	values [4]V
@@ -2811,99 +2852,4 @@ func (x internerMap) string(v []byte) (s string) {
 // 	m.keys[m.num] = k
 // 	m.values[m.num] = v
 // 	m.num++
-// }
-
-func sideDecode[T decDriver](ds *decoder[T], v interface{}, basetype reflect.Type) {
-	if v == nil && basetype == nil {
-		return
-	}
-	rv, ok := v.(reflect.Value)
-	if !ok {
-		rv = baseRV(v)
-	}
-	if basetype == nil {
-		ds.decodeValue(rv, nil)
-	} else {
-		ds.decodeValue(rv, ds.fnNoExt(basetype))
-	}
-}
-
-func sideEncode[T encDriver](es *encoder[T], v interface{}, basetype reflect.Type, cs containerState) {
-	if v == nil && basetype == nil {
-		return
-	}
-
-	if cs != 0 {
-		es.c = cs
-	}
-
-	rv, ok := v.(reflect.Value)
-	if !ok {
-		rv = baseRV(v)
-	}
-
-	if basetype == nil {
-		es.encodeValue(rv, nil)
-	} else {
-		es.encodeValue(rv, es.fnNoExt(basetype))
-	}
-	es.e.atEndOfEncode()
-	es.e.writerEnd()
-}
-
-func decResetBytes[T decReader](r T, in []byte) (ok bool) {
-	v, ok := any(r).(bytesDecReaderM)
-	if ok {
-		v.reset(in)
-	}
-	return
-}
-
-func decResetIO[T decReader](r T, in io.Reader, bufsize int, blist *bytesFreelist) (ok bool) {
-	v, ok := any(r).(ioDecReaderM)
-	if ok {
-		v.reset(in, bufsize, blist)
-	}
-	return
-}
-
-func encResetBytes[T encWriter](w T, out *[]byte) (ok bool) {
-	v, ok := any(w).(bytesEncAppenderM)
-	if ok {
-		v.reset(*out, out)
-	}
-	// fmt.Printf("resetOutBytes: e.w: %v of type: %T (ok=%v)\n", e.w, any(e.w), ok)
-	return
-}
-
-func encResetIO[T encWriter](w T, out io.Writer, bufsize int, blist *bytesFreelist) (ok bool) {
-	v, ok := any(w).(bufioEncWriterM)
-	if ok {
-		v.reset(out, bufsize, blist)
-	}
-	// fmt.Printf("resetOutIO: e.w: %v of type: %T (ok=%v)\n", e.w, any(e.w), ok)
-	return
-}
-
-// func newDecDriverBytes[T decDriver, R decReader, H handle](in []byte, ext, noExt *atomicRtidFnSlice) *decoder[T] {
-// 	var cc [2]struct {
-// 		r bytesDecReader
-// 		e decoder[T]
-// 		d T
-// 	}
-// 	for i := range cc {
-// 		c := &cc[i]
-// 		c.e.rtidFn = ext
-// 		c.e.rtidFnNoExt = noExt
-// 		c.d.bytes = true
-// 		c.d.d = &c.e.decoderShared
-// 		c.d.h = h
-// 		c.d.r = bytesDecReaderM{&c.r}
-// 		c.e.d = c.d
-// 		c.e.init(h)
-// 		c.e.resetCommon()
-// 	}
-// 	cc[0].r.reset(in)
-// 	cc[0].d.ds = &cc[1].d
-// 	return &cc[0].e
 // }
