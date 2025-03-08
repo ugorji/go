@@ -804,11 +804,11 @@ func genInternalDecCommandAsString(s string, mapkey bool) string {
 	case "[]byte", "[]uint8", "bytes":
 		return "d.d.DecodeBytes([]byte{})"
 	case "float32":
-		return "float32(d.decodeFloat32())"
+		return "float32(d.d.DecodeFloat32())"
 	case "float64":
 		return "d.d.DecodeFloat64()"
 	case "complex64":
-		return "complex(d.decodeFloat32(), 0)"
+		return "complex(d.d.DecodeFloat32(), 0)"
 	case "complex128":
 		return "complex(d.d.DecodeFloat64(), 0)"
 	case "bool":

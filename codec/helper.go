@@ -220,7 +220,7 @@ import (
 // Consequently, they will always fail if debugging = true.
 //
 // MARKER 2025 change to false
-const debugging = true
+const debugging = false
 
 const (
 	// containerLenUnknown is length returned from Read(Map|Array)Len
@@ -2291,6 +2291,8 @@ func panicToErr(h errDecorator, fn func()) (err error) {
 }
 
 func panicValToErr(h errDecorator, v interface{}, err *error) {
+	// fmt.Printf("calling panicValToErr: (%T), %v\n", v, v)
+	// debug.PrintStack()
 	if v == *err {
 		return
 	}
@@ -2298,7 +2300,9 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 	case nil:
 	case runtime.Error:
 		d, dok := h.(decoderI)
+		// fmt.Printf("treating as a runtime error, is h a decoderI? %v\n", dok)
 		if dok && d.isBytes() && isSliceBoundsError(xerr.Error()) {
+			// fmt.Printf("returning io.ErrUnexpectedEOF\n")
 			*err = io.ErrUnexpectedEOF
 		} else {
 			h.wrapErr(xerr, err)

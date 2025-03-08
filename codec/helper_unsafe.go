@@ -1194,19 +1194,19 @@ func makeMapReflect(typ reflect.Type, size int) (rv reflect.Value) {
 
 // ---------- DECODER optimized ---------------
 
-func (d *decoderShared) zerocopystate(handleZeroCopy bool) bool {
-	return d.decByteState == decByteStateZerocopy && handleZeroCopy
+func (d *decoderShared) zerocopystate() bool {
+	return d.decByteState == decByteStateZerocopy && d.zeroCopy
 }
 
 func (d *decoderShared) stringZC(v []byte) (s string) {
-	if d.zerocopystate(d.zeroCopy) {
+	if d.zerocopystate() {
 		return stringView(v)
 	}
 	return d.string(v)
 }
 
 func (d *decoderShared) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
-	if !d.zerocopystate(d.zeroCopy) {
+	if !d.zerocopystate() {
 		*callFnRvk = true
 		if d.decByteState == decByteStateReuseBuf {
 			*kstrbs = append((*kstrbs)[:0], (*kstr2bs)...)

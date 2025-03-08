@@ -17,6 +17,18 @@ const fastpathEnabled = false
 // This tag disables fastpath during build, allowing for faster build, test execution,
 // short-program runs, etc.
 
+// type fastpathT struct{}
+type fastpathE[E encDriver] struct {
+	rt    reflect.Type
+	encfn func(*encoder[E], *encFnInfo, reflect.Value)
+}
+type fastpathD[D decDriver] struct {
+	rt    reflect.Type
+	decfn func(*decoder[D], *decFnInfo, reflect.Value)
+}
+type fastpathEs[T encDriver] [0]fastpathE[T]
+type fastpathDs[T decDriver] [0]fastpathD[T]
+
 func fastpathDecodeTypeSwitch[T decDriver](iv interface{}, d *decoder[T]) bool { return false }
 func fastpathEncodeTypeSwitch[T encDriver](iv interface{}, e *encoder[T]) bool { return false }
 
@@ -24,20 +36,6 @@ func fastpathEncodeTypeSwitch[T encDriver](iv interface{}, e *encoder[T]) bool {
 // func fastpathEncodeTypeSwitchMap(iv interface{}, e *Encoder) bool   { return false }
 
 func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool { return false }
-
-// type fastpathT struct{}
-type fastpathE[E encDriver] struct {
-	rtid  uintptr
-	rt    reflect.Type
-	encfn func(*encoder[E], *encFnInfo, reflect.Value)
-}
-type fastpathD[D decDriver] struct {
-	rtid  uintptr
-	rt    reflect.Type
-	decfn func(*decoder[D], *decFnInfo, reflect.Value)
-}
-type fastpathEs[T encDriver] [0]fastpathE[T]
-type fastpathDs[T decDriver] [0]fastpathD[T]
 
 func fastpathAvIndex(rtid uintptr) int { return -1 }
 

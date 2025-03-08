@@ -1357,6 +1357,8 @@ type decoderShared struct {
 	cbreak bool // is a check breaker
 	bytes  bool // uses a bytes reader
 
+	zeroCopy bool
+
 	err error
 
 	// ---- cpu cache line boundary?
@@ -1492,6 +1494,7 @@ func (d *decoder[T]) init(h Handle) {
 	callMake(&d.d)
 	d.hh = h
 	d.h = h.getBasicHandle()
+	d.zeroCopy = d.h.ZeroCopy
 	d.be = h.isBinary()
 	d.err = errDecoderNotInitialized
 

@@ -71,7 +71,8 @@ func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 			}
 		}
 	}
-	return rpcCodec{
+
+	rc := rpcCodec{
 		c:   c,
 		w:   w,
 		r:   r,
@@ -80,6 +81,8 @@ func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 		enc: NewEncoder(w, h),
 		dec: NewDecoder(r, h),
 	}
+	rc.cls.Store(new(clsErr))
+	return rc
 }
 
 func (c *rpcCodec) write(obj ...interface{}) (err error) {
@@ -146,7 +149,7 @@ func (c *rpcCodec) ready() (err error) {
 		err = errRpcNoConn
 	} else {
 		cls := c.cls.Load()
-		if cls.closed {
+		if cls != nil && cls.closed {
 			if err = cls.err; err == nil {
 				err = errRpcIsClosed
 			}
