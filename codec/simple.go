@@ -82,6 +82,7 @@ type simpleEncDriver[T encWriter] struct {
 	encDriverNoopContainerWriter
 	encDriverNoState
 	encDriverContainerNoTrackerT
+	encInit2er
 
 	h *SimpleHandle
 	// b [8]byte
@@ -272,6 +273,7 @@ type simpleDecDriver[T decReader] struct {
 	noBuiltInTypes
 	decDriverNoopNumberHelper
 	decDriverNoopContainerReader
+	decInit2er
 
 	r T
 	d *decoderShared
@@ -947,23 +949,16 @@ func (h *SimpleHandle) newDecDriverIO(in io.Reader) *decoder[simpleDecDriverM[io
 
 // ----
 
-func (d *simpleDecDriver[T]) descBd() string {
-	return sprintf("%v (%s)", d.bd, simpledesc(d.bd))
-}
-
-// ----
-
 func (d *simpleEncDriverM[T]) Make() {
 	d.simpleEncDriver = new(simpleEncDriver[T])
 }
 
 func (d *simpleEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) {
 	callMake(&d.w)
-
 	d.h = hh.(*SimpleHandle)
-	shared.bytes = d.w.isBytes()
 	d.e = shared
 	// d.w.init()
+	d.init2(enc)
 }
 
 func (e *simpleEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
@@ -995,10 +990,10 @@ func (d *simpleDecDriverM[T]) Make() {
 func (d *simpleDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) {
 	callMake(&d.r)
 	d.h = hh.(*SimpleHandle)
-	d.bytes = d.r.isBytes()
-	shared.bytes = d.bytes
+	d.bytes = shared.bytes
 	d.d = shared
 	// d.r.init()
+	d.init2(dec)
 }
 
 func (d *simpleDecDriver[T]) isBytes() bool {
@@ -1024,4 +1019,10 @@ func (d *simpleDecDriver[T]) sideDecoder(in []byte) {
 
 func (d *simpleDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
 	sideDecode(d.d.sd.(*decoder[simpleDecDriverM[bytesDecReaderM]]), v, basetype)
+}
+
+// ---- (custom stanza)
+
+func (d *simpleDecDriver[T]) descBd() string {
+	return sprintf("%v (%s)", d.bd, simpledesc(d.bd))
 }

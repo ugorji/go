@@ -59,7 +59,7 @@ type decReader interface {
 	// only supported when reading from bytes
 	bytesReadFrom(startpos uint) []byte
 
-	isBytes() bool
+	// isBytes() bool
 }
 
 // ------------------------------------------------
@@ -184,9 +184,9 @@ func (z *ioDecReaderM) Make() {
 	z.ioDecReader = new(ioDecReader)
 }
 
-func (z *ioDecReader) isBytes() bool {
-	return false
-}
+// func (z *ioDecReader) isBytes() bool {
+// 	return false
+// }
 
 func (z *ioDecReader) bytesReadFrom(startpos uint) []byte {
 	halt.onerror(errNoBytesReadFromSupport)
@@ -398,9 +398,9 @@ func (z *bytesDecReaderM) Make() {
 	z.bytesDecReader = new(bytesDecReader)
 }
 
-func (z *bytesDecReader) isBytes() bool {
-	return true
-}
+// func (z *bytesDecReader) isBytes() bool {
+// 	return true
+// }
 
 func (z *bytesDecReader) reset(in []byte) {
 	z.b = in[:len(in):len(in)] // reslicing must not go past capacity

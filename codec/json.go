@@ -1470,29 +1470,16 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 
 // ----
 
-var errJsonNoBd = errors.New("descBd unsupported")
-
-func (d *jsonDecDriver[T]) descBd() (s string) {
-	halt.onerror(errJsonNoBd)
-	return
-}
-
-// ----
-
 func (d *jsonEncDriverM[T]) Make() {
 	d.jsonEncDriver = new(jsonEncDriver[T])
 }
 
 func (d *jsonEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) {
 	callMake(&d.w)
-
 	d.h = hh.(*JsonHandle)
-	shared.bytes = d.w.isBytes()
 	d.e = shared
 	// d.w.init()
-
-	// custom for json
-	d.enc = enc
+	d.init2(enc)
 }
 
 func (e *jsonEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
@@ -1524,17 +1511,10 @@ func (d *jsonDecDriverM[T]) Make() {
 func (d *jsonDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) {
 	callMake(&d.r)
 	d.h = hh.(*JsonHandle)
-	d.bytes = d.r.isBytes()
-	shared.bytes = d.bytes
+	d.bytes = shared.bytes
 	d.d = shared
 	// d.r.init()
-
-	// custom for json
-	d.dec = dec
-	var x []byte
-	d.buf = &x
-	d.d.js = true
-	d.d.jsms = d.h.MapKeyAsString
+	d.init2(dec)
 }
 
 func (d *jsonDecDriver[T]) isBytes() bool {
@@ -1560,4 +1540,25 @@ func (d *jsonDecDriver[T]) sideDecoder(in []byte) {
 
 func (d *jsonDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
 	sideDecode(d.d.sd.(*decoder[jsonDecDriverM[bytesDecReaderM]]), v, basetype)
+}
+
+// ---- (custom stanza)
+
+var errJsonNoBd = errors.New("descBd unsupported in json")
+
+func (d *jsonDecDriver[T]) descBd() (s string) {
+	halt.onerror(errJsonNoBd)
+	return
+}
+
+func (d *jsonEncDriver[T]) init2(enc encoderI) {
+	d.enc = enc
+}
+
+func (d *jsonDecDriver[T]) init2(dec decoderI) {
+	d.dec = dec
+	var x []byte
+	d.buf = &x
+	d.d.js = true
+	d.d.jsms = d.h.MapKeyAsString
 }

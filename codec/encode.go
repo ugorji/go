@@ -71,6 +71,10 @@ type encDriverI interface {
 	driverStateManager
 }
 
+type encInit2er struct{}
+
+func (encInit2er) init2(enc encoderI) {}
+
 type encDriverContainerTracker interface {
 	WriteArrayElem()
 	WriteMapElemKey()
@@ -1631,6 +1635,8 @@ func encResetIO[T encWriter](w T, out io.Writer, bufsize int, blist *bytesFreeli
 
 func newEncDriverBytes[T encDriver](out *[]byte, h Handle) *encoder[T] {
 	var c1, c2 encoder[T]
+	c1.bytes = true
+	c2.bytes = true
 	c1.init(h)
 	c2.init(h)
 	// fmt.Printf("newEnc: bytes: %v\n", c2.bytes)
@@ -1643,6 +1649,8 @@ func newEncDriverBytes[T encDriver](out *[]byte, h Handle) *encoder[T] {
 func newEncDriverIO[T, T2 encDriver](out io.Writer, h Handle) *encoder[T] {
 	var c1 encoder[T]
 	var c2 encoder[T2]
+	c1.bytes = false
+	c2.bytes = true
 	c1.init(h)
 	c2.init(h)
 	c1.Reset(out) // MARKER check for error

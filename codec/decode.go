@@ -188,7 +188,7 @@ type decDriverI interface {
 	// descBd will describe the token descriptor that signifies what type was decoded
 	descBd() string
 
-	isBytes() bool
+	// isBytes() bool
 
 	sideDecode(v interface{}, basetype reflect.Type)
 	sideDecoder(bs []byte)
@@ -203,6 +203,10 @@ type decDriverI interface {
 	driverStateManager
 	decNegintPosintFloatNumber
 }
+
+type decInit2er struct{}
+
+func (decInit2er) init2(dec decoderI) {}
 
 type decDriverContainerTracker interface {
 	ReadArrayElem()
@@ -1450,6 +1454,7 @@ type decoderI interface {
 	ResetBytes(in []byte) error
 	ResetString(s string) error
 
+	isBytes() bool
 	wrapErr(v error, err *error)
 	swallow()
 
@@ -1476,6 +1481,10 @@ func (d *decoder[T]) HandleName() string {
 
 func (d *decoder[T]) getDecDriver() decDriverI {
 	return d.d
+}
+
+func (d *decoder[T]) isBytes() bool {
+	return d.bytes
 }
 
 func (d *decoder[T]) init(h Handle) {
@@ -2452,6 +2461,8 @@ func decResetIO[T decReader](r T, in io.Reader, bufsize int, blist *bytesFreelis
 
 func newDecDriverBytes[T decDriver](in []byte, h Handle) *decoder[T] {
 	var c1, c2 decoder[T]
+	c1.bytes = true
+	c2.bytes = true
 	c1.init(h)
 	c2.init(h)
 	c1.ResetBytes(in) // MARKER check for error
@@ -2462,6 +2473,8 @@ func newDecDriverBytes[T decDriver](in []byte, h Handle) *decoder[T] {
 func newDecDriverIO[T, T2 decDriver](in io.Reader, h Handle) *decoder[T] {
 	var c1 decoder[T]
 	var c2 decoder[T2]
+	c1.bytes = false
+	c2.bytes = true
 	c1.init(h)
 	c2.init(h)
 	c1.Reset(in)

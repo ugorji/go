@@ -2298,7 +2298,7 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 	case nil:
 	case runtime.Error:
 		d, dok := h.(decoderI)
-		if dok && d.getDecDriver().isBytes() && isSliceBoundsError(xerr.Error()) {
+		if dok && d.isBytes() && isSliceBoundsError(xerr.Error()) {
 			*err = io.ErrUnexpectedEOF
 		} else {
 			h.wrapErr(xerr, err)

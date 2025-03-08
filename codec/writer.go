@@ -21,7 +21,7 @@ type encWriter interface {
 	writen4([4]byte)
 	writen8([8]byte)
 
-	isBytes() bool
+	// isBytes() bool
 	end()
 }
 
@@ -46,9 +46,9 @@ func (z *bufioEncWriterM) Make() {
 	z.w = io.Discard
 }
 
-func (z *bufioEncWriter) isBytes() bool {
-	return false
-}
+// func (z *bufioEncWriter) isBytes() bool {
+// 	return false
+// }
 
 func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
 	z.w = w
@@ -210,9 +210,9 @@ func (z *bytesEncAppenderM) Make() {
 	z.out = new([]byte)
 }
 
-func (z *bytesEncAppender) isBytes() bool {
-	return true
-}
+// func (z *bytesEncAppender) isBytes() bool {
+// 	return true
+// }
 
 func (z *bytesEncAppender) writeb(s []byte) {
 	z.b = append(z.b, s...)
