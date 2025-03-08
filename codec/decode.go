@@ -80,7 +80,9 @@ const (
 
 type decDriver interface {
 	simpleDecDriverM[bytesDecReaderM] |
-		simpleDecDriverM[ioDecReaderM]
+		simpleDecDriverM[ioDecReaderM] |
+		jsonDecDriverM[bytesDecReaderM] |
+		jsonDecDriverM[ioDecReaderM]
 
 	decDriverI
 }
@@ -196,7 +198,7 @@ type decDriverI interface {
 
 	NumBytesRead() int
 
-	init(h Handle, shared *decoderShared)
+	init(h Handle, shared *decoderShared, dec decoderI)
 
 	driverStateManager
 	decNegintPosintFloatNumber
@@ -1490,7 +1492,7 @@ func (d *decoder[T]) init(h Handle) {
 		d.is.init()
 	}
 
-	d.d.init(h, &d.decoderShared) // should set js, cbor, bytes, etc
+	d.d.init(h, &d.decoderShared, d) // should set js, cbor, bytes, etc
 	d.cbreak = d.js || d.cbor
 
 	if d.bytes {
@@ -2480,6 +2482,8 @@ func NewDecoder(r io.Reader, h Handle) *Decoder {
 	switch h.(type) {
 	case *SimpleHandle:
 		d = newDecDriverIO[simpleDecDriverM[ioDecReaderM], simpleDecDriverM[bytesDecReaderM]](r, h)
+	case *JsonHandle:
+		d = newDecDriverIO[jsonDecDriverM[ioDecReaderM], jsonDecDriverM[bytesDecReaderM]](r, h)
 	default:
 		return nil
 	}
@@ -2493,6 +2497,8 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 	switch h.(type) {
 	case *SimpleHandle:
 		d = newDecDriverBytes[simpleDecDriverM[bytesDecReaderM]](in, h)
+	case *JsonHandle:
+		d = newDecDriverBytes[jsonDecDriverM[bytesDecReaderM]](in, h)
 	default:
 		return nil
 	}

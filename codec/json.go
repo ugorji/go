@@ -1,8 +1,6 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-//go:build 2025
-
 package codec
 
 // By default, this json support uses base64 encoding for bytes, because you cannot
@@ -20,6 +18,8 @@ package codec
 
 import (
 	"encoding/base64"
+	"errors"
+	"io"
 	"math"
 	"reflect"
 	"strconv"
@@ -198,7 +198,7 @@ type jsonEncDriver[T encWriter] struct {
 	// We use up all the remaining bytes to make this use full cache lines.
 	b [48]byte
 
-	ei encoderI
+	enc encoderI
 
 	e *encoderShared
 }
@@ -271,11 +271,11 @@ func (e *jsonEncDriver[T]) EncodeTime(t time.Time) {
 
 func (e *jsonEncDriver[T]) EncodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
 	if ext == SelfExt {
-		e.ei.encodeAs(rv, basetype, false)
+		e.enc.encodeAs(rv, basetype, false)
 	} else if v := ext.ConvertExt(rv); v == nil {
 		e.EncodeNil()
 	} else {
-		e.ei.encode(v)
+		e.enc.encode(v)
 	}
 }
 
@@ -284,7 +284,7 @@ func (e *jsonEncDriver[T]) EncodeRawExt(re *RawExt) {
 	if re.Value == nil {
 		e.EncodeNil()
 	} else {
-		e.ei.encode(re.Value)
+		e.enc.encode(re.Value)
 	}
 }
 
@@ -461,7 +461,7 @@ func (e *jsonEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 		if iv == nil {
 			e.EncodeNil()
 		} else {
-			e.ei.encode(iv)
+			e.enc.encode(iv)
 		}
 		return
 	}
@@ -638,12 +638,10 @@ type jsonDecDriver[T decReader] struct {
 
 	bytes bool
 
-	di decoderI
+	dec decoderI
 
 	d *decoderShared
 }
-
-func (d *jsonDecDriver[T]) descBd() (s string) { panic("descBd unsupported") }
 
 func (d *jsonDecDriver[T]) ReadMapStart() int {
 	d.advance()
@@ -978,11 +976,11 @@ func (d *jsonDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag
 	if ext == nil {
 		re := rv.(*RawExt)
 		re.Tag = xtag
-		d.di.decode(&re.Value)
+		d.dec.decode(&re.Value)
 	} else if ext == SelfExt {
-		d.di.decodeAs(rv, basetype, false)
+		d.dec.decodeAs(rv, basetype, false)
 	} else {
-		d.di.interfaceExtConvertAndDecode(rv, ext)
+		d.dec.interfaceExtConvertAndDecode(rv, ext)
 	}
 }
 
@@ -1015,7 +1013,7 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	// if decoding into raw bytes, and the RawBytesExt is configured, use it to decode.
 	if d.rawext {
 		bsOut = bs
-		d.di.interfaceExtConvertAndDecode(&bsOut, d.h.RawBytesExt)
+		d.dec.interfaceExtConvertAndDecode(&bsOut, d.h.RawBytesExt)
 		return
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
@@ -1374,28 +1372,28 @@ func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceE
 	return h.SetExt(rt, tag, makeExt(ext))
 }
 
-func (h *JsonHandle) newEncDriver() encDriver {
-	var e = &jsonEncDriver{h: h}
-	// var x []byte
-	// e.buf = &x
-	e.e.e = e
-	e.e.js = true
-	e.e.init(h)
-	e.reset()
-	return e
-}
+// func (h *JsonHandle) newEncDriver() encDriver {
+// 	var e = &jsonEncDriver{h: h}
+// 	// var x []byte
+// 	// e.buf = &x
+// 	e.e.e = e
+// 	e.e.js = true
+// 	e.e.init(h)
+// 	e.reset()
+// 	return e
+// }
 
-func (h *JsonHandle) newDecDriver() decDriver {
-	var d = &jsonDecDriver{h: h}
-	var x []byte
-	d.buf = &x
-	d.d.d = d
-	d.d.js = true
-	d.d.jsms = h.MapKeyAsString
-	d.d.init(h)
-	d.reset()
-	return d
-}
+// func (h *JsonHandle) newDecDriver() decDriver {
+// 	var d = &jsonDecDriver{h: h}
+// 	var x []byte
+// 	d.buf = &x
+// 	d.d.d = d
+// 	d.d.js = true
+// 	d.d.jsms = h.MapKeyAsString
+// 	d.d.init(h)
+// 	d.reset()
+// 	return d
+// }
 
 func (e *jsonEncDriver[T]) resetState() {
 	e.dl = 0
@@ -1463,3 +1461,103 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 // var _ encDriverContainerTracker = (*jsonEncDriver[T])(nil)
 // var _ decDriver = (*jsonDecDriver[T])(nil)
 // var _ encDriver = (*jsonEncDriver[T])(nil)
+
+// ----
+//
+// The following below are similar across all format files (except for the format name).
+//
+// We keep them together here, so that we can easily copy and compare.
+
+// ----
+
+var errJsonNoBd = errors.New("descBd unsupported")
+
+func (d *jsonDecDriver[T]) descBd() (s string) {
+	halt.onerror(errJsonNoBd)
+	return
+}
+
+// ----
+
+func (d *jsonEncDriverM[T]) Make() {
+	d.jsonEncDriver = new(jsonEncDriver[T])
+}
+
+func (d *jsonEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) {
+	callMake(&d.w)
+
+	d.h = hh.(*JsonHandle)
+	shared.bytes = d.w.isBytes()
+	d.e = shared
+	// d.w.init()
+
+	// custom for json
+	d.enc = enc
+}
+
+func (e *jsonEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
+func (e *jsonEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
+func (e *jsonEncDriver[T]) writerEnd()                        { e.w.end() }
+
+func (e *jsonEncDriver[T]) resetOutBytes(out *[]byte) (ok bool) {
+	return encResetBytes(e.w, out)
+}
+
+func (e *jsonEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
+	return encResetIO(e.w, out, e.h.WriterBufferSize, &e.e.blist)
+}
+
+func (e *jsonEncDriver[T]) sideEncoder(out *[]byte) {
+	(e.e.se.(*encoder[jsonEncDriverM[bytesEncAppenderM]])).e.w.reset(*out, out)
+}
+
+func (e *jsonEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
+	sideEncode(e.e.se.(*encoder[jsonEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
+}
+
+// ----
+
+func (d *jsonDecDriverM[T]) Make() {
+	d.jsonDecDriver = new(jsonDecDriver[T])
+}
+
+func (d *jsonDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) {
+	callMake(&d.r)
+	d.h = hh.(*JsonHandle)
+	d.bytes = d.r.isBytes()
+	shared.bytes = d.bytes
+	d.d = shared
+	// d.r.init()
+
+	// custom for json
+	d.dec = dec
+	var x []byte
+	d.buf = &x
+	d.d.js = true
+	d.d.jsms = d.h.MapKeyAsString
+}
+
+func (d *jsonDecDriver[T]) isBytes() bool {
+	return d.bytes
+}
+
+func (d *jsonDecDriver[T]) NumBytesRead() int {
+	return int(d.r.numread())
+}
+
+func (d *jsonDecDriver[T]) resetInBytes(in []byte) (ok bool) {
+	return decResetBytes(d.r, in)
+}
+
+func (d *jsonDecDriver[T]) resetInIO(r io.Reader) (ok bool) {
+	return decResetIO(d.r, r, d.h.ReaderBufferSize, &d.d.blist)
+}
+
+func (d *jsonDecDriver[T]) sideDecoder(in []byte) {
+	ds := d.d.sd.(*decoder[jsonDecDriverM[bytesDecReaderM]])
+	ds.ResetBytes(in)
+}
+
+func (d *jsonDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
+	sideDecode(d.d.sd.(*decoder[jsonDecDriverM[bytesDecReaderM]]), v, basetype)
+}

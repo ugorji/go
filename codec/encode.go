@@ -23,7 +23,9 @@ var errEncoderNotInitialized = errors.New("Encoder not initialized")
 // encDriver abstracts the actual codec (binc vs msgpack, etc)
 type encDriver interface {
 	simpleEncDriverM[bufioEncWriterM] |
-		simpleEncDriverM[bytesEncAppenderM]
+		simpleEncDriverM[bytesEncAppenderM] |
+		jsonEncDriverM[bufioEncWriterM] |
+		jsonEncDriverM[bytesEncAppenderM]
 
 	encDriverI
 }
@@ -64,7 +66,7 @@ type encDriverI interface {
 	resetOutBytes(out *[]byte) (ok bool)
 	resetOutIO(out io.Writer) (ok bool)
 
-	init(h Handle, shared *encoderShared)
+	init(h Handle, shared *encoderShared, enc encoderI)
 
 	driverStateManager
 }
@@ -1024,8 +1026,8 @@ func (e *encoder[T]) init(h Handle) {
 
 	e.fp = fastpathEList[T]()
 
-	e.e.init(h, &e.encoderShared)
-
+	e.e.init(h, &e.encoderShared, e)
+	// fmt.Printf("encoder.init: after driver.init: bytes: %v\n", e.bytes)
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
 		e.rtidFnNoExt = &e.h.rtidFnsEncNoExtBytes
@@ -1553,6 +1555,7 @@ var errEncNoResetWriterWithBytes = errors.New("cannot reset an Encoder which out
 // This accommodates using the state of the Encoder,
 // where it has "cached" information about sub-engines.
 func (e *encoder[T]) Reset(w io.Writer) (err error) {
+	// fmt.Printf("encoder.Reset: bytes: %v\n", e.bytes)
 	if e.bytes {
 		return errEncNoResetBytesWithWriter
 	}
@@ -1566,6 +1569,7 @@ func (e *encoder[T]) Reset(w io.Writer) (err error) {
 
 // ResetBytes resets the Encoder with a new destination output []byte.
 func (e *encoder[T]) ResetBytes(out *[]byte) (err error) {
+	// fmt.Printf("encoder.ResetBytes: bytes: %v\n", e.bytes)
 	if !e.bytes {
 		return errEncNoResetWriterWithBytes
 	}
@@ -1612,7 +1616,7 @@ func encResetBytes[T encWriter](w T, out *[]byte) (ok bool) {
 	if ok {
 		v.reset(*out, out)
 	}
-	// fmt.Printf("resetOutBytes: e.w: %v of type: %T (ok=%v)\n", e.w, any(e.w), ok)
+	// fmt.Printf("resetOutBytes: e.w: %v of type: %T (ok=%v)\n", any(w), any(w), ok)
 	return
 }
 
@@ -1621,7 +1625,7 @@ func encResetIO[T encWriter](w T, out io.Writer, bufsize int, blist *bytesFreeli
 	if ok {
 		v.reset(out, bufsize, blist)
 	}
-	// fmt.Printf("resetOutIO: e.w: %v of type: %T (ok=%v)\n", e.w, any(e.w), ok)
+	// fmt.Printf("resetOutIO: e.w: %v of type: %T (ok=%v)\n", any(w), any(w), ok)
 	return
 }
 
@@ -1629,7 +1633,9 @@ func newEncDriverBytes[T encDriver](out *[]byte, h Handle) *encoder[T] {
 	var c1, c2 encoder[T]
 	c1.init(h)
 	c2.init(h)
+	// fmt.Printf("newEnc: bytes: %v\n", c2.bytes)
 	c1.ResetBytes(out) // MARKER check for error
+	c2.ResetBytes(nil)
 	c1.se = &c2
 	return &c1
 }
@@ -1640,6 +1646,7 @@ func newEncDriverIO[T, T2 encDriver](out io.Writer, h Handle) *encoder[T] {
 	c1.init(h)
 	c2.init(h)
 	c1.Reset(out) // MARKER check for error
+	c2.Reset(nil)
 	c1.se = &c2
 	return &c1
 }
@@ -1656,7 +1663,9 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 	var e encoderI
 	switch h.(type) {
 	case *SimpleHandle:
-		e = newEncDriverIO[simpleEncDriverM[bytesEncAppenderM], simpleEncDriverM[bytesEncAppenderM]](w, h)
+		e = newEncDriverIO[simpleEncDriverM[bufioEncWriterM], simpleEncDriverM[bytesEncAppenderM]](w, h)
+	case *JsonHandle:
+		e = newEncDriverIO[jsonEncDriverM[bufioEncWriterM], jsonEncDriverM[bytesEncAppenderM]](w, h)
 	default:
 		return nil
 	}
@@ -1673,6 +1682,8 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 	switch h.(type) {
 	case *SimpleHandle:
 		e = newEncDriverBytes[simpleEncDriverM[bytesEncAppenderM]](out, h)
+	case *JsonHandle:
+		e = newEncDriverBytes[jsonEncDriverM[bytesEncAppenderM]](out, h)
 	default:
 		return nil
 	}

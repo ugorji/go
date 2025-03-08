@@ -43,6 +43,7 @@ type bufioEncWriterM struct {
 
 func (z *bufioEncWriterM) Make() {
 	z.bufioEncWriter = new(bufioEncWriter)
+	z.w = io.Discard
 }
 
 func (z *bufioEncWriter) isBytes() bool {
@@ -206,6 +207,7 @@ type bytesEncAppenderM struct {
 func (z *bytesEncAppenderM) Make() {
 	// fmt.Printf(">>>> callMake: on %T\n", z)
 	z.bytesEncAppender = new(bytesEncAppender)
+	z.out = new([]byte)
 }
 
 func (z *bytesEncAppender) isBytes() bool {
@@ -241,12 +243,13 @@ func (z *bytesEncAppender) writen8(b [8]byte) {
 	// z.b = append(z.b, b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7]) // prevents inlining encWr.writen4
 }
 
-func (z *bytesEncAppender) endErr() error {
-	*(z.out) = z.b
-	return nil
-}
+// func (z *bytesEncAppender) endErr() error {
+// 	*(z.out) = z.b
+// 	return nil
+// }
 
 func (z *bytesEncAppender) end() {
+	// fmt.Printf("z.out: %v, z.b: %v\n", z.out, z.b)
 	*(z.out) = z.b
 }
 

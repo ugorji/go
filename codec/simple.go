@@ -77,10 +77,6 @@ type simpleEncDriverM[T encWriter] struct {
 	*simpleEncDriver[T]
 }
 
-func (d *simpleEncDriverM[T]) Make() {
-	d.simpleEncDriver = new(simpleEncDriver[T])
-}
-
 type simpleEncDriver[T encWriter] struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
@@ -92,23 +88,13 @@ type simpleEncDriver[T encWriter] struct {
 	w T
 	e *encoderShared
 
-	bytes bool
+	// bytes bool
+
 	// // we cannot reference a *encoder here, due to recursive limitations of go generics
 	// // this MUST be *encoder[simpleEncDriverM[bytesEncAppenderM]]
 	// // es encoderI // must-be *encoder[simpleEncDriverM[bytesEncAppenderM]]
 	// // es *encoder[simpleEncDriverM[bytesEncAppenderM]]
 	// es interface{}
-}
-
-func (d *simpleEncDriver[T]) init(hh Handle, shared *encoderShared) {
-	// d.simpleEncDriver = new(simpleEncDriver[T])
-	callMake(&d.w)
-
-	d.h = hh.(*SimpleHandle)
-	d.bytes = d.w.isBytes()
-	shared.bytes = d.bytes
-	d.e = shared
-	// d.w.init()
 }
 
 func (e *simpleEncDriver[T]) EncodeNil() {
@@ -194,14 +180,6 @@ func (e *simpleEncDriver[T]) encLen(bd byte, length int) {
 	}
 }
 
-func (e *simpleEncDriver[T]) sideEncoder(out *[]byte) {
-	(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]])).e.w.reset(*out, out)
-}
-
-func (e *simpleEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
-	sideEncode(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
 func (e *simpleEncDriver[T]) EncodeExt(v interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
 	var bs0, bs []byte
 	if ext == SelfExt {
@@ -280,19 +258,11 @@ func (e *simpleEncDriver[T]) EncodeTime(t time.Time) {
 	e.w.writeb(v)
 }
 
-func (e *simpleEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
-func (e *simpleEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
-func (e *simpleEncDriver[T]) writerEnd()                        { e.w.end() }
-
-func (e *simpleEncDriver[T]) resetOutBytes(out *[]byte) (ok bool) {
-	return encResetBytes(e.w, out)
-}
-
-func (e *simpleEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
-	return encResetIO(e.w, out, e.h.WriterBufferSize, &e.e.blist)
-}
-
 //------------------------------------
+
+type simpleDecDriverM[T decReader] struct {
+	*simpleDecDriver[T]
+}
 
 type simpleDecDriver[T decReader] struct {
 	h *SimpleHandle
@@ -303,35 +273,9 @@ type simpleDecDriver[T decReader] struct {
 	decDriverNoopNumberHelper
 	decDriverNoopContainerReader
 
-	r  T
-	d  *decoderShared
-	ds interface{} // must be *decoder[simpleDecDriverM[bytes...]]
-}
-
-type simpleDecDriverM[T decReader] struct {
-	*simpleDecDriver[T]
-}
-
-func (d *simpleDecDriverM[T]) Make() {
-	d.simpleDecDriver = new(simpleDecDriver[T])
-}
-
-func (d *simpleDecDriver[T]) init(hh Handle, shared *decoderShared) {
-	// d.simpleDecDriver = new(simpleDecDriver[T])
-	callMake(&d.r)
-	d.h = hh.(*SimpleHandle)
-	d.bytes = d.r.isBytes()
-	shared.bytes = d.bytes
-	d.d = shared
-	// d.r.init()
-}
-
-func (d *simpleDecDriver[T]) isBytes() bool {
-	return d.bytes
-}
-
-func (d *simpleDecDriver[T]) descBd() string {
-	return sprintf("%v (%s)", d.bd, simpledesc(d.bd))
+	r T
+	d *decoderShared
+	// ds interface{} // must be *decoder[simpleDecDriverM[bytes...]]
 }
 
 func (d *simpleDecDriver[T]) readNextBd() {
@@ -798,27 +742,6 @@ func (d *simpleDecDriver[T]) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	return
 }
 
-func (d *simpleDecDriver[T]) NumBytesRead() int {
-	return int(d.r.numread())
-}
-
-func (d *simpleDecDriver[T]) resetInBytes(in []byte) (ok bool) {
-	return decResetBytes(d.r, in)
-}
-
-func (d *simpleDecDriver[T]) resetInIO(r io.Reader) (ok bool) {
-	return decResetIO(d.r, r, d.h.ReaderBufferSize, &d.d.blist)
-}
-
-func (d *simpleDecDriver[T]) sideDecoder(in []byte) {
-	ds := d.ds.(*decoder[simpleDecDriverM[bytesDecReaderM]])
-	ds.ResetBytes(in)
-}
-
-func (d *simpleDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
-	sideDecode(d.ds.(*decoder[simpleDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
 //------------------------------------
 
 // SimpleHandle is a Handle for a very simple encoding format.
@@ -1015,3 +938,90 @@ func (h *SimpleHandle) newDecDriverIO(in io.Reader) *decoder[simpleDecDriverM[io
 	return &c.e
 }
 */
+
+// ----
+//
+// The following below are similar across all format files (except for the format name).
+//
+// We keep them together here, so that we can easily copy and compare.
+
+// ----
+
+func (d *simpleDecDriver[T]) descBd() string {
+	return sprintf("%v (%s)", d.bd, simpledesc(d.bd))
+}
+
+// ----
+
+func (d *simpleEncDriverM[T]) Make() {
+	d.simpleEncDriver = new(simpleEncDriver[T])
+}
+
+func (d *simpleEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) {
+	callMake(&d.w)
+
+	d.h = hh.(*SimpleHandle)
+	shared.bytes = d.w.isBytes()
+	d.e = shared
+	// d.w.init()
+}
+
+func (e *simpleEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
+func (e *simpleEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
+func (e *simpleEncDriver[T]) writerEnd()                        { e.w.end() }
+
+func (e *simpleEncDriver[T]) resetOutBytes(out *[]byte) (ok bool) {
+	return encResetBytes(e.w, out)
+}
+
+func (e *simpleEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
+	return encResetIO(e.w, out, e.h.WriterBufferSize, &e.e.blist)
+}
+
+func (e *simpleEncDriver[T]) sideEncoder(out *[]byte) {
+	(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]])).e.w.reset(*out, out)
+}
+
+func (e *simpleEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
+	sideEncode(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
+}
+
+// ----
+
+func (d *simpleDecDriverM[T]) Make() {
+	d.simpleDecDriver = new(simpleDecDriver[T])
+}
+
+func (d *simpleDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) {
+	callMake(&d.r)
+	d.h = hh.(*SimpleHandle)
+	d.bytes = d.r.isBytes()
+	shared.bytes = d.bytes
+	d.d = shared
+	// d.r.init()
+}
+
+func (d *simpleDecDriver[T]) isBytes() bool {
+	return d.bytes
+}
+
+func (d *simpleDecDriver[T]) NumBytesRead() int {
+	return int(d.r.numread())
+}
+
+func (d *simpleDecDriver[T]) resetInBytes(in []byte) (ok bool) {
+	return decResetBytes(d.r, in)
+}
+
+func (d *simpleDecDriver[T]) resetInIO(r io.Reader) (ok bool) {
+	return decResetIO(d.r, r, d.h.ReaderBufferSize, &d.d.blist)
+}
+
+func (d *simpleDecDriver[T]) sideDecoder(in []byte) {
+	ds := d.d.sd.(*decoder[simpleDecDriverM[bytesDecReaderM]])
+	ds.ResetBytes(in)
+}
+
+func (d *simpleDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
+	sideDecode(d.d.sd.(*decoder[simpleDecDriverM[bytesDecReaderM]]), v, basetype)
+}

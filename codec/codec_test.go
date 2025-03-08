@@ -3143,14 +3143,50 @@ func doTestMultipleEncDec(t *testing.T, h Handle) {
 	// encode a string multiple times.
 	// decode it multiple times.
 	// ensure we get the value each time
+
+	const encIO = true
+	const decIO = true
+
+	var e *Encoder
+	var d *Decoder
+
 	var s1 = "ugorji"
 	var s2 = "nwoke"
 	var s11, s21 string
+	// var buf bytes.Buffer
+	// e := NewEncoder(&buf, h)
+	var bs []byte
 	var buf bytes.Buffer
-	e := NewEncoder(&buf, h)
+
+	if encIO {
+		e = NewEncoder(&buf, h)
+	} else {
+		e = NewEncoderBytes(&bs, h)
+	}
 	e.MustEncode(s1)
 	e.MustEncode(s2)
-	d := NewDecoder(&buf, h)
+
+	// if encIO {
+	// 	fmt.Printf(">>>> b: %s\n", buf.Bytes())
+	// } else {
+	// 	fmt.Printf(">>>> b: %s\n", bs)
+	// }
+
+	// d := NewDecoder(&buf, h)
+	// d := NewDecoderBytes(buf, h)
+	if decIO {
+		if encIO {
+			d = NewDecoder(&buf, h)
+		} else {
+			d = NewDecoder(bytes.NewBuffer(bs), h)
+		}
+	} else {
+		if encIO {
+			d = NewDecoderBytes(buf.Bytes(), h)
+		} else {
+			d = NewDecoderBytes(bs, h)
+		}
+	}
 	d.MustDecode(&s11)
 	d.MustDecode(&s21)
 	testDeepEqualErr(s1, s11, t, name+"-multiple-encode")

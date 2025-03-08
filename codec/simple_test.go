@@ -160,3 +160,11 @@ func TestSimpleDesc(t *testing.T) {
 func TestSimpleStructFieldInfoToArray(t *testing.T) {
 	doTestStructFieldInfoToArray(t, testSimpleH)
 }
+
+func TestSimpleMultipleEncDec(t *testing.T) {
+	doTestMultipleEncDec(t, testSimpleH)
+}
+
+func TestSimpleAllErrWriter(t *testing.T) {
+	doTestAllErrWriter(t, testSimpleH)
+}

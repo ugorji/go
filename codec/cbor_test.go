@@ -626,15 +626,15 @@ func TestCborDesc(t *testing.T) {
 func TestCborStructFieldInfoToArray(t *testing.T) {
 	doTestStructFieldInfoToArray(t, testCborH)
 }
-func TestAllErrWriter(t *testing.T) {
+func TestCborAllErrWriter(t *testing.T) {
 	// doTestAllErrWriter(t, testCborH, testJsonH)
 	doTestAllErrWriter(t, testCborH)
 }
 
-func TestAllEncCircularRef(t *testing.T) {
+func TestCborAllEncCircularRef(t *testing.T) {
 	doTestEncCircularRef(t, testCborH)
 }
 
-func TestAllAnonCycle(t *testing.T) {
+func TestCborAllAnonCycle(t *testing.T) {
 	doTestAnonCycle(t, testCborH)
 }

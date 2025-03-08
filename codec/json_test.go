@@ -1,8 +1,6 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-//go:build 2025
-
 package codec
 
 import (
@@ -767,9 +765,10 @@ func TestJsonNumberParsing(t *testing.T) {
 	doTestJsonNumberParsing(t, testJsonH)
 }
 
-func TestMultipleEncDec(t *testing.T) {
+func TestJsonMultipleEncDec(t *testing.T) {
 	doTestMultipleEncDec(t, testJsonH)
 }
-func TestAllErrWriter(t *testing.T) {
+
+func TestJsonAllErrWriter(t *testing.T) {
 	doTestAllErrWriter(t, testJsonH)
 }
