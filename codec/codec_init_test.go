@@ -9,6 +9,13 @@ import (
 	// . "github.com/ugorji/go/codec"
 )
 
+// variables that are not flags, but which can configure the handles
+var (
+	testEncodeOptions EncodeOptions
+	testDecodeOptions DecodeOptions
+	testRPCOptions    RPCOptions
+)
+
 type testHED struct {
 	H   Handle
 	Eb  *Encoder
@@ -19,37 +26,25 @@ type testHED struct {
 
 var (
 	// testNoopH    = NoopHandle(8)
-	// MARKER 2025 - uncomment
-	// testMsgpackH = &MsgpackHandle{}
-	// testBincH    = &BincHandle{}
-	// testCborH    = &CborHandle{}
-
-	testJsonH   = &JsonHandle{}
-	testSimpleH = &SimpleHandle{}
+	testBincH    = &BincHandle{}
+	testMsgpackH = &MsgpackHandle{}
+	testJsonH    = &JsonHandle{}
+	testSimpleH  = &SimpleHandle{}
+	testCborH    = &CborHandle{}
 
 	testHandles []Handle
 
 	testHEDs []testHED
 )
 
-// variables that are not flags, but which can configure the handles
-var (
-	testEncodeOptions EncodeOptions
-	testDecodeOptions DecodeOptions
-	testRPCOptions    RPCOptions
-)
-
 func init() {
 	// testHEDs = make([]testHED, 0, 32)
-
-	// MARKER 2025 - uncomment/add them all back
-	// testHandles = append(testHandles, testMsgpackH, testBincH, testSimpleH, testCborH, testJsonH)
 
 	// JSON should do HTMLCharsAsIs by default
 	testJsonH.HTMLCharsAsIs = true
 	// testJsonH.InternString = true
 
-	testHandles = append(testHandles, testSimpleH, testJsonH)
+	testHandles = append(testHandles, testSimpleH, testJsonH, testCborH, testMsgpackH, testBincH)
 
 	testReInitFns = append(testReInitFns, func() { testHEDs = nil })
 }

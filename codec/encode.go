@@ -25,7 +25,13 @@ type encDriver interface {
 	simpleEncDriverM[bufioEncWriterM] |
 		simpleEncDriverM[bytesEncAppenderM] |
 		jsonEncDriverM[bufioEncWriterM] |
-		jsonEncDriverM[bytesEncAppenderM]
+		jsonEncDriverM[bytesEncAppenderM] |
+		cborEncDriverM[bufioEncWriterM] |
+		cborEncDriverM[bytesEncAppenderM] |
+		msgpackEncDriverM[bufioEncWriterM] |
+		msgpackEncDriverM[bytesEncAppenderM] |
+		bincEncDriverM[bufioEncWriterM] |
+		bincEncDriverM[bytesEncAppenderM]
 
 	encDriverI
 }
@@ -1674,6 +1680,12 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 		e = newEncDriverIO[simpleEncDriverM[bufioEncWriterM], simpleEncDriverM[bytesEncAppenderM]](w, h)
 	case *JsonHandle:
 		e = newEncDriverIO[jsonEncDriverM[bufioEncWriterM], jsonEncDriverM[bytesEncAppenderM]](w, h)
+	case *CborHandle:
+		e = newEncDriverIO[cborEncDriverM[bufioEncWriterM], cborEncDriverM[bytesEncAppenderM]](w, h)
+	case *MsgpackHandle:
+		e = newEncDriverIO[msgpackEncDriverM[bufioEncWriterM], msgpackEncDriverM[bytesEncAppenderM]](w, h)
+	case *BincHandle:
+		e = newEncDriverIO[bincEncDriverM[bufioEncWriterM], bincEncDriverM[bytesEncAppenderM]](w, h)
 	default:
 		return nil
 	}
@@ -1692,6 +1704,12 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 		e = newEncDriverBytes[simpleEncDriverM[bytesEncAppenderM]](out, h)
 	case *JsonHandle:
 		e = newEncDriverBytes[jsonEncDriverM[bytesEncAppenderM]](out, h)
+	case *CborHandle:
+		e = newEncDriverBytes[cborEncDriverM[bytesEncAppenderM]](out, h)
+	case *MsgpackHandle:
+		e = newEncDriverBytes[msgpackEncDriverM[bytesEncAppenderM]](out, h)
+	case *BincHandle:
+		e = newEncDriverBytes[bincEncDriverM[bytesEncAppenderM]](out, h)
 	default:
 		return nil
 	}

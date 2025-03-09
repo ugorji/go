@@ -73,10 +73,6 @@ func simpledesc(bd byte) (s string) {
 	return
 }
 
-type simpleEncDriverM[T encWriter] struct {
-	*simpleEncDriver[T]
-}
-
 type simpleEncDriver[T encWriter] struct {
 	noBuiltInTypes
 	encDriverNoopContainerWriter
@@ -261,10 +257,6 @@ func (e *simpleEncDriver[T]) EncodeTime(t time.Time) {
 
 //------------------------------------
 
-type simpleDecDriverM[T decReader] struct {
-	*simpleDecDriver[T]
-}
-
 type simpleDecDriver[T decReader] struct {
 	h *SimpleHandle
 	bdAndBdread
@@ -390,10 +382,6 @@ func (d *simpleDecDriver[T]) DecodeUint64() (ui uint64) {
 	ui = decNegintPosintFloatNumberHelper{d}.uint64(d.decInteger())
 	d.bdRead = false
 	return
-}
-
-func (d *simpleDecDriver[T]) DecodeFloat32() (f float32) {
-	return float32(chkOvf.Float32V(d.DecodeFloat64()))
 }
 
 func (d *simpleDecDriver[T]) DecodeFloat64() (f float64) {
@@ -949,6 +937,10 @@ func (h *SimpleHandle) newDecDriverIO(in io.Reader) *decoder[simpleDecDriverM[io
 
 // ----
 
+type simpleEncDriverM[T encWriter] struct {
+	*simpleEncDriver[T]
+}
+
 func (d *simpleEncDriverM[T]) Make() {
 	d.simpleEncDriver = new(simpleEncDriver[T])
 }
@@ -982,6 +974,10 @@ func (e *simpleEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs
 }
 
 // ----
+
+type simpleDecDriverM[T decReader] struct {
+	*simpleDecDriver[T]
+}
 
 func (d *simpleDecDriverM[T]) Make() {
 	d.simpleDecDriver = new(simpleDecDriver[T])
@@ -1025,4 +1021,8 @@ func (d *simpleDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
 
 func (d *simpleDecDriver[T]) descBd() string {
 	return sprintf("%v (%s)", d.bd, simpledesc(d.bd))
+}
+
+func (d *simpleDecDriver[T]) DecodeFloat32() (f float32) {
+	return float32(chkOvf.Float32V(d.DecodeFloat64()))
 }

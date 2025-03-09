@@ -542,7 +542,7 @@ func (x *atomicRtidFnSlice) load() (s unsafe.Pointer) {
 }
 
 func (x *atomicRtidFnSlice) store(p unsafe.Pointer) {
-	atomic.StorePointer(&x.v, unsafe.Pointer(p))
+	atomic.StorePointer(&x.v, p)
 }
 
 func encFromRtidFnSlice[E encDriver](v unsafe.Pointer) (s []encRtidFn[E]) {

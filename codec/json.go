@@ -161,10 +161,6 @@ type jsonEncState struct {
 func (x jsonEncState) captureState() interface{}   { return x }
 func (x *jsonEncState) restoreState(v interface{}) { *x = v.(jsonEncState) }
 
-type jsonEncDriverM[T encWriter] struct {
-	*jsonEncDriver[T]
-}
-
 type jsonEncDriver[T encWriter] struct {
 	noBuiltInTypes
 	h *JsonHandle
@@ -619,10 +615,6 @@ type jsonDecState struct {
 
 func (x jsonDecState) captureState() interface{}   { return x }
 func (x *jsonDecState) restoreState(v interface{}) { *x = v.(jsonDecState) }
-
-type jsonDecDriverM[T decReader] struct {
-	*jsonDecDriver[T]
-}
 
 type jsonDecDriver[T decReader] struct {
 	noBuiltInTypes
@@ -1470,6 +1462,10 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 
 // ----
 
+type jsonEncDriverM[T encWriter] struct {
+	*jsonEncDriver[T]
+}
+
 func (d *jsonEncDriverM[T]) Make() {
 	d.jsonEncDriver = new(jsonEncDriver[T])
 }
@@ -1503,6 +1499,10 @@ func (e *jsonEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs c
 }
 
 // ----
+
+type jsonDecDriverM[T decReader] struct {
+	*jsonDecDriver[T]
+}
 
 func (d *jsonDecDriverM[T]) Make() {
 	d.jsonDecDriver = new(jsonDecDriver[T])
@@ -1553,6 +1553,7 @@ func (d *jsonDecDriver[T]) descBd() (s string) {
 
 func (d *jsonEncDriver[T]) init2(enc encoderI) {
 	d.enc = enc
+	d.e.js = true
 }
 
 func (d *jsonDecDriver[T]) init2(dec decoderI) {

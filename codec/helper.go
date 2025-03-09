@@ -219,8 +219,8 @@ import (
 // Note: RPC tests depend on getting the error from an Encode/Decode call.
 // Consequently, they will always fail if debugging = true.
 //
-// MARKER 2025 change to false
-const debugging = false
+// MARKER 2025: change to false
+const debugging = true
 
 const (
 	// containerLenUnknown is length returned from Read(Map|Array)Len

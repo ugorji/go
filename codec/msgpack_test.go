@@ -1,8 +1,6 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-//go:build 2025
-
 package codec
 
 import (
@@ -22,6 +20,10 @@ func init() {
 }
 
 func msgpackTestInit() {
+	var tUintToBytesExt testUintToBytesExt
+	var tBytesExt wrapBytesExt
+	var tI64Ext wrapInt64Ext
+
 	// time.Time is a native type, so extensions will have no effect.
 	// However, we add these here to ensure nothing happens.
 	halt.onerror(testMsgpackH.SetBytesExt(timeTyp, 1, timeBytesExt{}))
@@ -147,10 +149,6 @@ func TestMsgpackCodecsEmbeddedPointer(t *testing.T) {
 
 func TestMsgpackStdEncIntf(t *testing.T) {
 	doTestStdEncIntf(t, testMsgpackH)
-}
-
-func TestMsgpackRaw(t *testing.T) {
-	doTestRawValue(t, testMsgpackH)
 }
 
 func TestMsgpackRaw(t *testing.T) {

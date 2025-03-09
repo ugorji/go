@@ -82,7 +82,13 @@ type decDriver interface {
 	simpleDecDriverM[bytesDecReaderM] |
 		simpleDecDriverM[ioDecReaderM] |
 		jsonDecDriverM[bytesDecReaderM] |
-		jsonDecDriverM[ioDecReaderM]
+		jsonDecDriverM[ioDecReaderM] |
+		cborDecDriverM[bytesDecReaderM] |
+		cborDecDriverM[ioDecReaderM] |
+		msgpackDecDriverM[bytesDecReaderM] |
+		msgpackDecDriverM[ioDecReaderM] |
+		bincDecDriverM[bytesDecReaderM] |
+		bincDecDriverM[ioDecReaderM]
 
 	decDriverI
 }
@@ -2500,6 +2506,12 @@ func NewDecoder(r io.Reader, h Handle) *Decoder {
 		d = newDecDriverIO[simpleDecDriverM[ioDecReaderM], simpleDecDriverM[bytesDecReaderM]](r, h)
 	case *JsonHandle:
 		d = newDecDriverIO[jsonDecDriverM[ioDecReaderM], jsonDecDriverM[bytesDecReaderM]](r, h)
+	case *CborHandle:
+		d = newDecDriverIO[cborDecDriverM[ioDecReaderM], cborDecDriverM[bytesDecReaderM]](r, h)
+	case *MsgpackHandle:
+		d = newDecDriverIO[msgpackDecDriverM[ioDecReaderM], msgpackDecDriverM[bytesDecReaderM]](r, h)
+	case *BincHandle:
+		d = newDecDriverIO[bincDecDriverM[ioDecReaderM], bincDecDriverM[bytesDecReaderM]](r, h)
 	default:
 		return nil
 	}
@@ -2515,6 +2527,12 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 		d = newDecDriverBytes[simpleDecDriverM[bytesDecReaderM]](in, h)
 	case *JsonHandle:
 		d = newDecDriverBytes[jsonDecDriverM[bytesDecReaderM]](in, h)
+	case *CborHandle:
+		d = newDecDriverBytes[cborDecDriverM[bytesDecReaderM]](in, h)
+	case *MsgpackHandle:
+		d = newDecDriverBytes[msgpackDecDriverM[bytesDecReaderM]](in, h)
+	case *BincHandle:
+		d = newDecDriverBytes[bincDecDriverM[bytesDecReaderM]](in, h)
 	default:
 		return nil
 	}

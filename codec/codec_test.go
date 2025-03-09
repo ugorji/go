@@ -2380,6 +2380,11 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 			math.MaxUint16, math.MaxUint16+4, math.MaxUint16-4)
 	}
 
+	// // MARKER 2025: test failing from here in unsafe mode. remove when fixed
+	// if !safeMode {
+	// 	t.Skipf("skipping ... LargeContainerLen tests failing in unsafe mode")
+	// }
+
 	for _, i := range sizes {
 		var m1, m2 map[string]bool
 		m1 = make(map[string]bool, 1)
@@ -3277,7 +3282,7 @@ func doTestStructKeyType(t *testing.T, h Handle) {
 	if bcok {
 		bcsym = testFI.get(h, "AsSymbols").(uint8) // bch.AsSymbols
 		// MARKER: should be 0 but binc symbols do not work well
-		testFI.set(h, "AsSymbols", 2) // bch.AsSymbols = 2
+		testFI.set(h, "AsSymbols", uint8(2)) // bch.AsSymbols = 2
 	}
 	defer func() {
 		bh.StructToArray = s2a
