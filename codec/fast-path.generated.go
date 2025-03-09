@@ -57,11 +57,14 @@ type fastpathDT[T decDriver] struct{}
 
 type fastpathARtid [56]uintptr
 
-var fastpathAvRtid fastpathARtid
+type fastpathRtRtid struct {
+	rtid uintptr
+	rt   reflect.Type
+}
+type fastpathARtRtid [56]fastpathRtRtid
 
-// func fastpathSortLess(i, j int) bool {
-// 	return fastpathAvRtid[uint(i)] < fastpathAvRtid[uint(j)]
-// }
+var fastpathAvRtid fastpathARtid
+var fastpathAvRtRtid fastpathARtRtid
 
 func fastpathAvIndex(rtid uintptr) int {
 	// use binary search to grab the index (adapted from sort/search.go)
@@ -88,7 +91,10 @@ LOOP:
 func init() {
 	var i uint = 0
 	fn := func(v interface{}) {
-		fastpathAvRtid[i] = rt2id(reflect.TypeOf(v))
+		xrt := reflect.TypeOf(v)
+		xrtid := rt2id(xrt)
+		fastpathAvRtid[i] = xrtid
+		fastpathAvRtRtid[i] = fastpathRtRtid{rtid: xrtid, rt: xrt}
 		i++
 	}
 
@@ -151,6 +157,7 @@ func init() {
 	fn(map[int32]bool(nil))
 
 	sort.Slice(fastpathAvRtid[:], func(i, j int) bool { return fastpathAvRtid[i] < fastpathAvRtid[j] })
+	sort.Slice(fastpathAvRtRtid[:], func(i, j int) bool { return fastpathAvRtRtid[i].rtid < fastpathAvRtRtid[j].rtid })
 }
 
 func fastpathEList[T encDriver]() *fastpathEs[T] {

@@ -39,13 +39,16 @@ func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool { return false }
 
 func fastpathAvIndex(rtid uintptr) int { return -1 }
 
-func fastpathEList[T encDriver]() (v *fastpathEs[T]) {
-	return
+func fastpathEList[T encDriver]() (v *fastpathEs[T]) { return }
+func fastpathDList[T decDriver]() (v *fastpathDs[T]) { return }
+
+type fastpathRtRtid struct {
+	rtid uintptr
+	rt   reflect.Type
 }
-func fastpathDList[T decDriver]() (v *fastpathDs[T]) {
-	return
-}
+type fastpathARtRtid [0]fastpathRtRtid
+
+var fastpathAvRtRtid fastpathARtRtid
 
 //var fastpathAV fastpathA
-
 // var fastpathTV fastpathT
