@@ -922,11 +922,35 @@ func initHandle(hh Handle) {
 	// is not sufficient, since a race condition can occur within init(Handle) function.
 	// init is made noinline, so that this function can be inlined by its caller.
 	if atomic.LoadUint32(&x.inited) == 0 {
-		x.initHandle(hh)
+		initHandle2(x, hh)
 	}
 }
 
+// initHandle2 should be called only from codec.initHandle global function.
+// make it uninlineable, as it is called at most once for each handle.
+//
+//go:noinline
+func initHandle2(x *BasicHandle, hh Handle) {
+	handleInitMu.Lock()
+	defer handleInitMu.Unlock() // use defer, as halt may panic below
+	if x.inited != 0 {
+		return
+	}
+	x.jsonHandle = hh.isJson()
+	x.binaryHandle = hh.isBinary()
+	x.basicInit()
+	hh.init()
+	atomic.StoreUint32(&x.inited, 1)
+}
+
 func (x *BasicHandle) basicInit() {
+	// ensure MapType and SliceType are of correct type
+	if x.MapType != nil && x.MapType.Kind() != reflect.Map {
+		halt.onerror(errMapTypeNotMapKind)
+	}
+	if x.SliceType != nil && x.SliceType.Kind() != reflect.Slice {
+		halt.onerror(errSliceTypeNotSliceKind)
+	}
 	x.timeBuiltin = !x.TimeNotBuiltin
 	x.zeroCopy = x.ZeroCopy
 }
@@ -990,29 +1014,6 @@ func (x *basicHandleRuntimeState) setExt(rt reflect.Type, tag uint64, ext Ext) (
 	rtidptr := rt2id(reflect.PtrTo(rt))
 	x.extHandle = append(x.extHandle, extTypeTagFn{rtid, rtidptr, rt, tag, ext})
 	return
-}
-
-// initHandle should be called only from codec.initHandle global function.
-// make it uninlineable, as it is called at most once for each handle.
-//
-//go:noinline
-func (x *BasicHandle) initHandle(hh Handle) {
-	handleInitMu.Lock()
-	defer handleInitMu.Unlock() // use defer, as halt may panic below
-	if x.inited == 0 {
-		x.jsonHandle = hh.isJson()
-		x.binaryHandle = hh.isBinary()
-		// ensure MapType and SliceType are of correct type
-		if x.MapType != nil && x.MapType.Kind() != reflect.Map {
-			halt.onerror(errMapTypeNotMapKind)
-		}
-		if x.SliceType != nil && x.SliceType.Kind() != reflect.Slice {
-			halt.onerror(errSliceTypeNotSliceKind)
-		}
-		x.basicInit()
-		hh.init()
-		atomic.StoreUint32(&x.inited, 1)
-	}
 }
 
 func (x *BasicHandle) getBasicHandle() *BasicHandle {

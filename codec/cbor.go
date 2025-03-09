@@ -966,6 +966,13 @@ func (d *cborDecDriver[T]) reset() {
 
 // ----
 
+var (
+	cborFpEncIO    = fastpathEList[cborEncDriverM[bufioEncWriterM]]()
+	cborFpEncBytes = fastpathEList[cborEncDriverM[bytesEncAppenderM]]()
+	cborFpDecIO    = fastpathDList[cborDecDriverM[ioDecReaderM]]()
+	cborFpDecBytes = fastpathDList[cborDecDriverM[bytesDecReaderM]]()
+)
+
 type cborEncDriverM[T encWriter] struct {
 	*cborEncDriver[T]
 }
@@ -974,12 +981,18 @@ func (d *cborEncDriverM[T]) Make() {
 	d.cborEncDriver = new(cborEncDriver[T])
 }
 
-func (d *cborEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) {
+func (d *cborEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*CborHandle)
 	d.e = shared
+	if shared.bytes {
+		fp = cborFpEncBytes
+	} else {
+		fp = cborFpEncIO
+	}
 	// d.w.init()
 	d.init2(enc)
+	return
 }
 
 func (e *cborEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
@@ -1012,13 +1025,19 @@ func (d *cborDecDriverM[T]) Make() {
 	d.cborDecDriver = new(cborDecDriver[T])
 }
 
-func (d *cborDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) {
+func (d *cborDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*CborHandle)
 	d.bytes = shared.bytes
 	d.d = shared
+	if shared.bytes {
+		fp = cborFpDecBytes
+	} else {
+		fp = cborFpDecIO
+	}
 	// d.r.init()
 	d.init2(dec)
+	return
 }
 
 func (d *cborDecDriver[T]) isBytes() bool {

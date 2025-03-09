@@ -72,7 +72,7 @@ type encDriverI interface {
 	resetOutBytes(out *[]byte) (ok bool)
 	resetOutIO(out io.Writer) (ok bool)
 
-	init(h Handle, shared *encoderShared, enc encoderI)
+	init(h Handle, shared *encoderShared, enc encoderI) (fp interface{})
 
 	driverStateManager
 }
@@ -1034,9 +1034,9 @@ func (e *encoder[T]) init(h Handle) {
 	e.be = e.hh.isBinary()
 	e.err = errEncoderNotInitialized
 
-	e.fp = fastpathEList[T]()
+	// e.fp = fastpathEList[T]()
+	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEs[T])
 
-	e.e.init(h, &e.encoderShared, e)
 	// fmt.Printf("encoder.init: after driver.init: bytes: %v\n", e.bytes)
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes

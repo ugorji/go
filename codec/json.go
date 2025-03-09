@@ -1462,6 +1462,13 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 
 // ----
 
+var (
+	jsonFpEncIO    = fastpathEList[jsonEncDriverM[bufioEncWriterM]]()
+	jsonFpEncBytes = fastpathEList[jsonEncDriverM[bytesEncAppenderM]]()
+	jsonFpDecIO    = fastpathDList[jsonDecDriverM[ioDecReaderM]]()
+	jsonFpDecBytes = fastpathDList[jsonDecDriverM[bytesDecReaderM]]()
+)
+
 type jsonEncDriverM[T encWriter] struct {
 	*jsonEncDriver[T]
 }
@@ -1470,12 +1477,18 @@ func (d *jsonEncDriverM[T]) Make() {
 	d.jsonEncDriver = new(jsonEncDriver[T])
 }
 
-func (d *jsonEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) {
+func (d *jsonEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*JsonHandle)
 	d.e = shared
+	if shared.bytes {
+		fp = jsonFpEncBytes
+	} else {
+		fp = jsonFpEncIO
+	}
 	// d.w.init()
 	d.init2(enc)
+	return
 }
 
 func (e *jsonEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
@@ -1508,13 +1521,19 @@ func (d *jsonDecDriverM[T]) Make() {
 	d.jsonDecDriver = new(jsonDecDriver[T])
 }
 
-func (d *jsonDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) {
+func (d *jsonDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*JsonHandle)
 	d.bytes = shared.bytes
 	d.d = shared
+	if shared.bytes {
+		fp = jsonFpDecBytes
+	} else {
+		fp = jsonFpDecIO
+	}
 	// d.r.init()
 	d.init2(dec)
+	return
 }
 
 func (d *jsonDecDriver[T]) isBytes() bool {

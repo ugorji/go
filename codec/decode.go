@@ -204,7 +204,7 @@ type decDriverI interface {
 
 	NumBytesRead() int
 
-	init(h Handle, shared *decoderShared, dec decoderI)
+	init(h Handle, shared *decoderShared, dec decoderI) (fp interface{})
 
 	driverStateManager
 	decNegintPosintFloatNumber
@@ -1504,13 +1504,13 @@ func (d *decoder[T]) init(h Handle) {
 	d.be = h.isBinary()
 	d.err = errDecoderNotInitialized
 
-	d.fp = fastpathDList[T]()
-
 	if d.h.InternString && d.is == nil {
 		d.is.init()
 	}
 
-	d.d.init(h, &d.decoderShared, d) // should set js, cbor, bytes, etc
+	// d.fp = fastpathDList[T]()
+	d.fp = d.d.init(h, &d.decoderShared, d).(*fastpathDs[T]) // should set js, cbor, bytes, etc
+
 	d.cbreak = d.js || d.cbor
 
 	if d.bytes {

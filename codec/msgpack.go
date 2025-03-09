@@ -1241,6 +1241,13 @@ func (x msgpackSpecRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.Clien
 
 // ----
 
+var (
+	msgpackFpEncIO    = fastpathEList[msgpackEncDriverM[bufioEncWriterM]]()
+	msgpackFpEncBytes = fastpathEList[msgpackEncDriverM[bytesEncAppenderM]]()
+	msgpackFpDecIO    = fastpathDList[msgpackDecDriverM[ioDecReaderM]]()
+	msgpackFpDecBytes = fastpathDList[msgpackDecDriverM[bytesDecReaderM]]()
+)
+
 type msgpackEncDriverM[T encWriter] struct {
 	*msgpackEncDriver[T]
 }
@@ -1249,12 +1256,18 @@ func (d *msgpackEncDriverM[T]) Make() {
 	d.msgpackEncDriver = new(msgpackEncDriver[T])
 }
 
-func (d *msgpackEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) {
+func (d *msgpackEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*MsgpackHandle)
 	d.e = shared
+	if shared.bytes {
+		fp = msgpackFpEncBytes
+	} else {
+		fp = msgpackFpEncIO
+	}
 	// d.w.init()
 	d.init2(enc)
+	return
 }
 
 func (e *msgpackEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
@@ -1287,13 +1300,19 @@ func (d *msgpackDecDriverM[T]) Make() {
 	d.msgpackDecDriver = new(msgpackDecDriver[T])
 }
 
-func (d *msgpackDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) {
+func (d *msgpackDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*MsgpackHandle)
 	d.bytes = shared.bytes
 	d.d = shared
+	if shared.bytes {
+		fp = msgpackFpDecBytes
+	} else {
+		fp = msgpackFpDecIO
+	}
 	// d.r.init()
 	d.init2(dec)
+	return
 }
 
 func (d *msgpackDecDriver[T]) isBytes() bool {
