@@ -1283,7 +1283,7 @@ func (e *msgpackEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
 }
 
 func (e *msgpackEncDriver[T]) sideEncoder(out *[]byte) {
-	(e.e.se.(*encoder[msgpackEncDriverM[bytesEncAppenderM]])).e.w.reset(*out, out)
+	sideEncoder[msgpackEncDriverM[bytesEncAppenderM]](out, e.e, e.h)
 }
 
 func (e *msgpackEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
@@ -1332,8 +1332,7 @@ func (d *msgpackDecDriver[T]) resetInIO(r io.Reader) (ok bool) {
 }
 
 func (d *msgpackDecDriver[T]) sideDecoder(in []byte) {
-	ds := d.d.sd.(*decoder[msgpackDecDriverM[bytesDecReaderM]])
-	ds.ResetBytes(in)
+	sideDecoder[msgpackDecDriverM[bytesDecReaderM]](in, d.d, d.h)
 }
 
 func (d *msgpackDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {

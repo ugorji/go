@@ -1571,9 +1571,13 @@ func (d *decoder[T]) ResetBytes(in []byte) (err error) {
 	if !d.bytes {
 		return errDecNoResetReaderWithBytes
 	}
+	d.resetBytes(in)
+	return
+}
+
+func (d *decoder[T]) resetBytes(in []byte) {
 	d.reset()
 	d.d.resetInBytes(in)
-	return
 }
 
 // ResetString resets the Decoder with a new string to decode from,
@@ -2430,6 +2434,17 @@ func sideDecode[T decDriver](ds *decoder[T], v interface{}, basetype reflect.Typ
 	}
 }
 
+func sideDecoder[T decDriver](in []byte, d *decoderShared, h Handle) (sd *decoder[T]) {
+	if d.sd == nil {
+		sd = newDecDriverBytes[T](in, h)
+		d.sd = sd
+	} else {
+		sd = d.sd.(*decoder[T])
+	}
+	sd.resetBytes(in)
+	return
+}
+
 func decResetBytes[T decReader](r T, in []byte) (ok bool) {
 	v, ok := any(r).(bytesDecReaderM)
 	if ok {
@@ -2469,25 +2484,18 @@ func decResetIO[T decReader](r T, in io.Reader, bufsize int, blist *bytesFreelis
 // }
 
 func newDecDriverBytes[T decDriver](in []byte, h Handle) *decoder[T] {
-	var c1, c2 decoder[T]
+	var c1 decoder[T]
 	c1.bytes = true
-	c2.bytes = true
 	c1.init(h)
-	c2.init(h)
 	c1.ResetBytes(in) // MARKER check for error
-	c1.sd = &c2
 	return &c1
 }
 
-func newDecDriverIO[T, T2 decDriver](in io.Reader, h Handle) *decoder[T] {
+func newDecDriverIO[T decDriver](in io.Reader, h Handle) *decoder[T] {
 	var c1 decoder[T]
-	var c2 decoder[T2]
 	c1.bytes = false
-	c2.bytes = true
 	c1.init(h)
-	c2.init(h)
 	c1.Reset(in)
-	c1.sd = &c2
 	return &c1
 }
 
@@ -2503,15 +2511,15 @@ func NewDecoder(r io.Reader, h Handle) *Decoder {
 	var d decoderI
 	switch h.(type) {
 	case *SimpleHandle:
-		d = newDecDriverIO[simpleDecDriverM[ioDecReaderM], simpleDecDriverM[bytesDecReaderM]](r, h)
+		d = newDecDriverIO[simpleDecDriverM[ioDecReaderM]](r, h)
 	case *JsonHandle:
-		d = newDecDriverIO[jsonDecDriverM[ioDecReaderM], jsonDecDriverM[bytesDecReaderM]](r, h)
+		d = newDecDriverIO[jsonDecDriverM[ioDecReaderM]](r, h)
 	case *CborHandle:
-		d = newDecDriverIO[cborDecDriverM[ioDecReaderM], cborDecDriverM[bytesDecReaderM]](r, h)
+		d = newDecDriverIO[cborDecDriverM[ioDecReaderM]](r, h)
 	case *MsgpackHandle:
-		d = newDecDriverIO[msgpackDecDriverM[ioDecReaderM], msgpackDecDriverM[bytesDecReaderM]](r, h)
+		d = newDecDriverIO[msgpackDecDriverM[ioDecReaderM]](r, h)
 	case *BincHandle:
-		d = newDecDriverIO[bincDecDriverM[ioDecReaderM], bincDecDriverM[bytesDecReaderM]](r, h)
+		d = newDecDriverIO[bincDecDriverM[ioDecReaderM]](r, h)
 	default:
 		return nil
 	}

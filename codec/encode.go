@@ -1583,12 +1583,17 @@ func (e *encoder[T]) ResetBytes(out *[]byte) (err error) {
 	if !e.bytes {
 		return errEncNoResetWriterWithBytes
 	}
+	e.resetBytes(out)
+	return nil
+}
+
+// only call this iff you are sure it is a bytes encoder
+func (e *encoder[T]) resetBytes(out *[]byte) {
 	e.reset()
 	if out == nil {
 		out = new([]byte)
 	}
 	e.e.resetOutBytes(out)
-	return
 }
 
 type encDriverContainerNoTrackerT struct{}
@@ -1620,6 +1625,17 @@ func sideEncode[T encDriver](es *encoder[T], v interface{}, basetype reflect.Typ
 	es.e.writerEnd()
 }
 
+func sideEncoder[T encDriver](out *[]byte, e *encoderShared, h Handle) (se *encoder[T]) {
+	if e.se == nil {
+		se = newEncDriverBytes[T](out, h)
+		e.se = se
+	} else {
+		se = e.se.(*encoder[T])
+	}
+	se.resetBytes(out)
+	return
+}
+
 func encResetBytes[T encWriter](w T, out *[]byte) (ok bool) {
 	v, ok := any(w).(bytesEncAppenderM)
 	// fmt.Printf("encResetBytes: v: %v, ok: %v, out: %v\n", v, ok, out)
@@ -1640,28 +1656,19 @@ func encResetIO[T encWriter](w T, out io.Writer, bufsize int, blist *bytesFreeli
 }
 
 func newEncDriverBytes[T encDriver](out *[]byte, h Handle) *encoder[T] {
-	var c1, c2 encoder[T]
+	var c1 encoder[T]
 	c1.bytes = true
-	c2.bytes = true
 	c1.init(h)
-	c2.init(h)
 	// fmt.Printf("newEnc: bytes: %v\n", c2.bytes)
 	c1.ResetBytes(out) // MARKER check for error
-	c2.ResetBytes(nil)
-	c1.se = &c2
 	return &c1
 }
 
-func newEncDriverIO[T, T2 encDriver](out io.Writer, h Handle) *encoder[T] {
+func newEncDriverIO[T encDriver](out io.Writer, h Handle) *encoder[T] {
 	var c1 encoder[T]
-	var c2 encoder[T2]
 	c1.bytes = false
-	c2.bytes = true
 	c1.init(h)
-	c2.init(h)
 	c1.Reset(out) // MARKER check for error
-	c2.Reset(nil)
-	c1.se = &c2
 	return &c1
 }
 
@@ -1677,15 +1684,15 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 	var e encoderI
 	switch h.(type) {
 	case *SimpleHandle:
-		e = newEncDriverIO[simpleEncDriverM[bufioEncWriterM], simpleEncDriverM[bytesEncAppenderM]](w, h)
+		e = newEncDriverIO[simpleEncDriverM[bufioEncWriterM]](w, h)
 	case *JsonHandle:
-		e = newEncDriverIO[jsonEncDriverM[bufioEncWriterM], jsonEncDriverM[bytesEncAppenderM]](w, h)
+		e = newEncDriverIO[jsonEncDriverM[bufioEncWriterM]](w, h)
 	case *CborHandle:
-		e = newEncDriverIO[cborEncDriverM[bufioEncWriterM], cborEncDriverM[bytesEncAppenderM]](w, h)
+		e = newEncDriverIO[cborEncDriverM[bufioEncWriterM]](w, h)
 	case *MsgpackHandle:
-		e = newEncDriverIO[msgpackEncDriverM[bufioEncWriterM], msgpackEncDriverM[bytesEncAppenderM]](w, h)
+		e = newEncDriverIO[msgpackEncDriverM[bufioEncWriterM]](w, h)
 	case *BincHandle:
-		e = newEncDriverIO[bincEncDriverM[bufioEncWriterM], bincEncDriverM[bytesEncAppenderM]](w, h)
+		e = newEncDriverIO[bincEncDriverM[bufioEncWriterM]](w, h)
 	default:
 		return nil
 	}

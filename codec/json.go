@@ -1504,7 +1504,7 @@ func (e *jsonEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
 }
 
 func (e *jsonEncDriver[T]) sideEncoder(out *[]byte) {
-	(e.e.se.(*encoder[jsonEncDriverM[bytesEncAppenderM]])).e.w.reset(*out, out)
+	sideEncoder[jsonEncDriverM[bytesEncAppenderM]](out, e.e, e.h)
 }
 
 func (e *jsonEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
@@ -1553,8 +1553,7 @@ func (d *jsonDecDriver[T]) resetInIO(r io.Reader) (ok bool) {
 }
 
 func (d *jsonDecDriver[T]) sideDecoder(in []byte) {
-	ds := d.d.sd.(*decoder[jsonDecDriverM[bytesDecReaderM]])
-	ds.ResetBytes(in)
+	sideDecoder[jsonDecDriverM[bytesDecReaderM]](in, d.d, d.h)
 }
 
 func (d *jsonDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {

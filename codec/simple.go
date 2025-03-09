@@ -979,7 +979,7 @@ func (e *simpleEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
 }
 
 func (e *simpleEncDriver[T]) sideEncoder(out *[]byte) {
-	(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]])).e.w.reset(*out, out)
+	sideEncoder[simpleEncDriverM[bytesEncAppenderM]](out, e.e, e.h)
 }
 
 func (e *simpleEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
@@ -1028,8 +1028,7 @@ func (d *simpleDecDriver[T]) resetInIO(r io.Reader) (ok bool) {
 }
 
 func (d *simpleDecDriver[T]) sideDecoder(in []byte) {
-	ds := d.d.sd.(*decoder[simpleDecDriverM[bytesDecReaderM]])
-	ds.ResetBytes(in)
+	sideDecoder[simpleDecDriverM[bytesDecReaderM]](in, d.d, d.h)
 }
 
 func (d *simpleDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
