@@ -1,8 +1,6 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-//go:build 2025
-
 package codec
 
 // bench_test is the "helper" file for all benchmarking tests.
@@ -227,6 +225,7 @@ func fnBenchmarkEncode(b *testing.B, encName string, ts interface{}, encfn bench
 	}
 
 	runtime.GC()
+	// fmt.Printf(">>>> calling ResetTimer on enc\n")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		if _, err = encfn(ts, bs); err != nil {
