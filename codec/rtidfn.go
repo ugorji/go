@@ -77,8 +77,8 @@ LOOP:
 	return
 }
 
-func encFnViaBH[E encDriver](rt reflect.Type, fns *atomicRtidFnSlice, x *BasicHandle, fp *fastpathEs[E],
-	checkExt bool) (fn *encFn[E]) {
+func encFnViaBH[E encDriver](rt reflect.Type, fns *atomicRtidFnSlice,
+	x *BasicHandle, fp *fastpathEs[E], checkExt bool) (fn *encFn[E]) {
 	return encFnVia[E](rt, fns, x.typeInfos(), &x.mu, x.extHandle, fp,
 		checkExt, x.CheckCircularRef, x.timeBuiltin, x.binaryHandle, x.jsonHandle)
 }
@@ -90,12 +90,22 @@ func encFnVia[E encDriver](rt reflect.Type, fns *atomicRtidFnSlice,
 	var sp []encRtidFn[E]
 	sp = encFromRtidFnSlice[E](fns.load())
 	if sp != nil {
-		if _, fn = encFindRtidFn[E](sp, rtid); fn != nil {
-			return
-		}
+		_, fn = encFindRtidFn[E](sp, rtid)
 	}
-	fn = encFnLoad[E](rt, rtid, tinfos, exth, fp, checkCircularRef, checkExt, timeBuiltin, binaryEncoding, json)
-	sp = nil
+	if fn == nil {
+		fn = encFnViaLoader[E](rt, rtid, fns, tinfos, mu, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
+	}
+	return
+}
+
+func encFnViaLoader[E encDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidFnSlice,
+	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathEs[E],
+	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *encFn[E]) {
+
+	fn = encFnLoad[E](rt, rtid, tinfos, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
+	// fmt.Printf("encFnVia->Load: [%p] len (%v) storing type: %v (%v) fn: %v [%T]\n", fns, len(sp), rt, rtid, fn, fn)
+	// fmt.Printf("encFnVia: loading new fn for type: %v, with rtid: %v\n", rt, rtid)
+	var sp []encRtidFn[E]
 	mu.Lock()
 	sp = encFromRtidFnSlice[E](fns.load())
 	// since this is an atomic load/store, we MUST use a different array each time,
@@ -105,6 +115,8 @@ func encFnVia[E encDriver](rt reflect.Type, fns *atomicRtidFnSlice,
 		fns.store(encToRtidFnSlice[E](&sp))
 	} else {
 		idx, fn2 := encFindRtidFn[E](sp, rtid)
+		// fmt.Printf("encFnVia->Load: [%p] len (%v) storing type: %v (%v) (index:%v), fn: %v [%T]\n", fns, len(sp), rt, rtid, idx, fn2, fn2)
+		// fmt.Printf("encFnVia: [%p] len (%v) storing type: %v (%v) AT index: %v, fn: %v\n", fns, len(sp), rt, rtid, idx, fn2)
 		if fn2 == nil {
 			sp2 := make([]encRtidFn[E], len(sp)+1)
 			copy(sp2[idx+1:], sp[idx:])
@@ -119,7 +131,7 @@ func encFnVia[E encDriver](rt reflect.Type, fns *atomicRtidFnSlice,
 
 func encFnLoad[E encDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 	exth extHandle, fp *fastpathEs[E],
-	checkCircularRef, checkExt, timeBuiltin, binaryEncoding, json bool) (fn *encFn[E]) {
+	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *encFn[E]) {
 	fn = new(encFn[E])
 	fi := &(fn.i)
 	ti := tinfos.get(rtid, rt)

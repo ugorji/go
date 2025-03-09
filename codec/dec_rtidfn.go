@@ -88,12 +88,20 @@ func decFnVia[D decDriver](rt reflect.Type, fns *atomicRtidFnSlice,
 	var sp []decRtidFn[D]
 	sp = decFromRtidFnSlice[D](fns.load())
 	if sp != nil {
-		if _, fn = decFindRtidFn[D](sp, rtid); fn != nil {
-			return
-		}
+		_, fn = decFindRtidFn[D](sp, rtid)
 	}
-	fn = decFnLoad[D](rt, rtid, tinfos, exth, fp, checkCircularRef, checkExt, timeBuiltin, binaryEncoding, json)
-	sp = nil
+	if fn == nil {
+		fn = decFnViaLoader[D](rt, rtid, fns, tinfos, mu, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
+	}
+	return
+}
+
+func decFnViaLoader[D decDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidFnSlice,
+	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathDs[D],
+	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *decFn[D]) {
+
+	fn = decFnLoad[D](rt, rtid, tinfos, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
+	var sp []decRtidFn[D]
 	mu.Lock()
 	sp = decFromRtidFnSlice[D](fns.load())
 	// since this is an atomic load/store, we MUST use a different array each time,
@@ -103,6 +111,7 @@ func decFnVia[D decDriver](rt reflect.Type, fns *atomicRtidFnSlice,
 		fns.store(decToRtidFnSlice[D](&sp))
 	} else {
 		idx, fn2 := decFindRtidFn[D](sp, rtid)
+		// fmt.Printf("encFnVia->Load: [%p] len (%v) storing type: %v (%v) (index:%v), fn: %v [%T]\n", fns, len(sp), rt, rtid, idx, fn2, fn2)
 		if fn2 == nil {
 			sp2 := make([]decRtidFn[D], len(sp)+1)
 			copy(sp2[idx+1:], sp[idx:])
@@ -117,7 +126,7 @@ func decFnVia[D decDriver](rt reflect.Type, fns *atomicRtidFnSlice,
 
 func decFnLoad[D decDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 	exth extHandle, fp *fastpathDs[D],
-	checkCircularRef, checkExt, timeBuiltin, binaryEncoding, json bool) (fn *decFn[D]) {
+	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *decFn[D]) {
 	fn = new(decFn[D])
 	fi := &(fn.i)
 	ti := tinfos.get(rtid, rt)
