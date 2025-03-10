@@ -244,11 +244,11 @@ _main() {
         'xg') _go ;;
         'xp') _prebuild "$@" ;;
         'xc') _clean "$@" ;;
+        'xi') _check_inlining_one "$@" ;;
+        'xk') _go_compiler_validation_suite ;;
         'xx') _analyze_checks "$@" ;;
         'xy') _analyze_debug_types "$@" ;;
         'xz') _analyze_do_inlining_and_more "$@" ;;
-        'xk') _go_compiler_validation_suite ;;
-        'xi') _check_inlining_one "$@" ;;
     esac
     # unset zforce zargs zbenchflags
 }
