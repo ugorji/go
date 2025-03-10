@@ -74,7 +74,7 @@ type encDriverI interface {
 
 	init(h Handle, shared *encoderShared, enc encoderI) (fp interface{})
 
-	driverStateManager
+	// driverStateManager
 }
 
 type encInit2er struct{}
@@ -89,10 +89,10 @@ type encDriverContainerTracker interface {
 
 type encDriverNoState struct{}
 
-func (encDriverNoState) captureState() interface{}  { return nil }
-func (encDriverNoState) reset()                     {}
-func (encDriverNoState) resetState()                {}
-func (encDriverNoState) restoreState(v interface{}) {}
+// func (encDriverNoState) captureState() interface{}  { return nil }
+// func (encDriverNoState) resetState()                {}
+// func (encDriverNoState) restoreState(v interface{}) {}
+func (encDriverNoState) reset() {}
 
 type encDriverNoopContainerWriter struct{}
 
@@ -1501,15 +1501,15 @@ func (e *encoder[T]) atEndOfEncode() {
 	e.e.atEndOfEncode()
 }
 
-func encInBytes(out *[]byte) (in []byte) {
-	if out != nil {
-		in = *out
-	}
-	if in == nil {
-		in = make([]byte, defEncByteBufSize)
-	}
-	return
-}
+// func encInBytes(out *[]byte) (in []byte) {
+// 	if out != nil {
+// 		in = *out
+// 	}
+// 	if in == nil {
+// 		in = make([]byte, defEncByteBufSize)
+// 	}
+// 	return
+// }
 
 func encStructFieldKey[T encDriver](encName string, ee T,
 	keyType valueType, encNameAsciiAlphaNum bool, js bool) {

@@ -206,7 +206,7 @@ type decDriverI interface {
 
 	init(h Handle, shared *decoderShared, dec decoderI) (fp interface{})
 
-	driverStateManager
+	// driverStateManager
 	decNegintPosintFloatNumber
 }
 
@@ -1561,6 +1561,9 @@ func (d *decoder[T]) Reset(r io.Reader) (err error) {
 		return errDecNoResetBytesWithReader
 	}
 	d.reset()
+	if r == nil {
+		r = eofReader
+	}
 	d.d.resetInIO(r)
 	return
 }

@@ -110,10 +110,11 @@ type bincEncState struct {
 	m map[string]uint16 // symbols
 }
 
-func (e *bincEncState) restoreState(v interface{}) { e.m = v.(map[string]uint16) }
-func (e bincEncState) captureState() interface{}   { return e.m }
-func (e *bincEncState) resetState()                { e.m = nil }
-func (e *bincEncState) reset()                     { e.resetState() }
+// func (e *bincEncState) restoreState(v interface{}) { e.m = v.(map[string]uint16) }
+// func (e bincEncState) captureState() interface{}   { return e.m }
+// func (e *bincEncState) resetState()                { e.m = nil }
+// func (e *bincEncState) reset()                     { e.resetState() }
+func (e *bincEncState) reset() { e.m = nil }
 
 type bincEncDriver[T encWriter] struct {
 	noBuiltInTypes
@@ -433,10 +434,11 @@ type bincDecState struct {
 	s map[uint16][]byte
 }
 
-func (x bincDecState) captureState() interface{}   { return x }
-func (x *bincDecState) resetState()                { *x = bincDecState{} }
-func (x *bincDecState) reset()                     { x.resetState() }
-func (x *bincDecState) restoreState(v interface{}) { *x = v.(bincDecState) }
+// func (x bincDecState) captureState() interface{}   { return x }
+// func (x *bincDecState) resetState()                { *x = bincDecState{} }
+// func (x *bincDecState) reset()                     { x.resetState() }
+// func (x *bincDecState) restoreState(v interface{}) { *x = v.(bincDecState) }
+func (x *bincDecState) reset() { *x = bincDecState{} }
 
 type bincDecDriver[T decReader] struct {
 	decDriverNoopContainerReader

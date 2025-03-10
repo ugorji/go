@@ -455,25 +455,26 @@ func init() {
 	}
 }
 
-// driverStateManager supports the runtime state of an (enc|dec)Driver.
-//
-// During a side(En|De)code call, we can capture the state, reset it,
-// and then restore it later to continue the primary encoding/decoding.
-type driverStateManager interface {
-	resetState()
-	captureState() interface{}
-	restoreState(state interface{})
-}
+// // driverStateManager supports the runtime state of an (enc|dec)Driver.
+// //
+// // During a side(En|De)code call, we can capture the state, reset it,
+// // and then restore it later to continue the primary encoding/decoding.
+// type driverStateManager interface {
+// 	resetState()
+// 	captureState() interface{}
+// 	restoreState(state interface{})
+// }
 
 type bdAndBdread struct {
 	bdRead bool
 	bd     byte
 }
 
-func (x bdAndBdread) captureState() interface{}   { return x }
-func (x *bdAndBdread) resetState()                { x.bd, x.bdRead = 0, false }
-func (x *bdAndBdread) reset()                     { x.resetState() }
-func (x *bdAndBdread) restoreState(v interface{}) { *x = v.(bdAndBdread) }
+// func (x bdAndBdread) captureState() interface{}   { return x }
+// func (x *bdAndBdread) resetState()                { x.bd, x.bdRead = 0, false }
+// func (x *bdAndBdread) reset()                     { x.resetState() }
+// func (x *bdAndBdread) restoreState(v interface{}) { *x = v.(bdAndBdread) }
+func (x *bdAndBdread) reset() { x.bd, x.bdRead = 0, false }
 
 type clsErr struct {
 	err    error // error on closing
@@ -972,13 +973,13 @@ func (x *BasicHandle) clearInited() {
 // 	return x.timeBuiltin
 // }
 
-func (x *basicHandleRuntimeState) isJs() bool {
-	return x.jsonHandle
-}
+// func (x *basicHandleRuntimeState) isJs() bool {
+// 	return x.jsonHandle
+// }
 
-func (x *basicHandleRuntimeState) isBe() bool {
-	return x.binaryHandle
-}
+// func (x *basicHandleRuntimeState) isBe() bool {
+// 	return x.binaryHandle
+// }
 
 func (x *basicHandleRuntimeState) setExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 	rk := rt.Kind()

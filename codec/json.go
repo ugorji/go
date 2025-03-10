@@ -158,8 +158,8 @@ type jsonEncState struct {
 	dl uint16 // indent level
 }
 
-func (x jsonEncState) captureState() interface{}   { return x }
-func (x *jsonEncState) restoreState(v interface{}) { *x = v.(jsonEncState) }
+// func (x jsonEncState) captureState() interface{}   { return x }
+// func (x *jsonEncState) restoreState(v interface{}) { *x = v.(jsonEncState) }
 
 type jsonEncDriver[T encWriter] struct {
 	noBuiltInTypes
@@ -613,8 +613,8 @@ type jsonDecState struct {
 	buf *[]byte
 }
 
-func (x jsonDecState) captureState() interface{}   { return x }
-func (x *jsonDecState) restoreState(v interface{}) { *x = v.(jsonDecState) }
+// func (x jsonDecState) captureState() interface{}   { return x }
+// func (x *jsonDecState) restoreState(v interface{}) { *x = v.(jsonDecState) }
 
 type jsonDecDriver[T decReader] struct {
 	noBuiltInTypes
