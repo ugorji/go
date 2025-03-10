@@ -1536,10 +1536,6 @@ func (d *jsonDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) 
 	return
 }
 
-func (d *jsonDecDriver[T]) isBytes() bool {
-	return d.bytes
-}
-
 func (d *jsonDecDriver[T]) NumBytesRead() int {
 	return int(d.r.numread())
 }

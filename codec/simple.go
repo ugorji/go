@@ -1011,10 +1011,6 @@ func (d *simpleDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI
 	return
 }
 
-func (d *simpleDecDriver[T]) isBytes() bool {
-	return d.bytes
-}
-
 func (d *simpleDecDriver[T]) NumBytesRead() int {
 	return int(d.r.numread())
 }

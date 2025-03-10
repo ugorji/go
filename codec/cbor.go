@@ -1040,10 +1040,6 @@ func (d *cborDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) 
 	return
 }
 
-func (d *cborDecDriver[T]) isBytes() bool {
-	return d.bytes
-}
-
 func (d *cborDecDriver[T]) NumBytesRead() int {
 	return int(d.r.numread())
 }

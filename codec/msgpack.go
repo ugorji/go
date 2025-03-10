@@ -1315,10 +1315,6 @@ func (d *msgpackDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoder
 	return
 }
 
-func (d *msgpackDecDriver[T]) isBytes() bool {
-	return d.bytes
-}
-
 func (d *msgpackDecDriver[T]) NumBytesRead() int {
 	return int(d.r.numread())
 }

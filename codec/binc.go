@@ -110,10 +110,10 @@ type bincEncState struct {
 	m map[string]uint16 // symbols
 }
 
+func (e *bincEncState) restoreState(v interface{}) { e.m = v.(map[string]uint16) }
 func (e bincEncState) captureState() interface{}   { return e.m }
 func (e *bincEncState) resetState()                { e.m = nil }
 func (e *bincEncState) reset()                     { e.resetState() }
-func (e *bincEncState) restoreState(v interface{}) { e.m = v.(map[string]uint16) }
 
 type bincEncDriver[T encWriter] struct {
 	noBuiltInTypes
@@ -1252,10 +1252,6 @@ func (d *bincDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) 
 	// d.r.init()
 	d.init2(dec)
 	return
-}
-
-func (d *bincDecDriver[T]) isBytes() bool {
-	return d.bytes
 }
 
 func (d *bincDecDriver[T]) NumBytesRead() int {
