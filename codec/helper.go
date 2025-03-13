@@ -334,6 +334,10 @@ var (
 
 	eofReader devNullReader
 
+	// string containing all values of a uint8 in sequence.
+	// We maintain a [256]byte slice, for efficiently making strings with one byte.
+	str256 string
+
 	// handleNewFns []handleNewFn
 )
 
@@ -453,6 +457,12 @@ func init() {
 			numCharBitset.set(i)
 		}
 	}
+
+	var bstr256 [256]byte
+	for i := range len(bstr256) {
+		bstr256[i] = byte(i)
+	}
+	str256 = stringView(bstr256[:])
 }
 
 // // driverStateManager supports the runtime state of an (enc|dec)Driver.
@@ -1711,7 +1721,7 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 		n++
 	}
 	if n != len(y) {
-		halt.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d", ti.rt, len(y), len(x), n)
+		halt.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d", ti.rt, len(y), len(x), any(n))
 	}
 
 	copy(z, y)
@@ -1858,7 +1868,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	rk := rt.Kind()
 
 	if rk == reflect.Ptr { // || (rk == reflect.Interface && rtid != intfTypId) {
-		halt.errorf("invalid kind passed to TypeInfos.get: %v - %v", rk, rt)
+		halt.errorf("invalid kind passed to TypeInfos.get: %v - %v", rk.String(), rt)
 	}
 
 	rtid := rt2id(rt)
@@ -2291,6 +2301,7 @@ func panicToErr(h errDecorator, fn func()) (err error) {
 	return
 }
 
+// recovered panics can be runtime.Error, error, string or anything else.
 func panicValToErr(h errDecorator, v interface{}, err *error) {
 	// fmt.Printf("calling panicValToErr: (%T), %v\n", v, v)
 	// debug.PrintStack()
@@ -2317,6 +2328,8 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 		default:
 			h.wrapErr(xerr, err)
 		}
+	case string:
+		*err = errors.New(xerr)
 	default:
 		// we don't expect this to happen (as this library always panics with an error)
 		h.wrapErr(fmt.Errorf("%v", v), err)
@@ -2327,7 +2340,7 @@ func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
 	const maxCap = 1024 * 1024 * 64 // 64MB
 	const skipMaxCap = false        // allow to test
 	if slen <= 0 {
-		return []byte{}, true
+		return zeroByteSlice, true // MARKER 2025 validate []byte{}, true
 	}
 	if slen <= cap(bs) {
 		return bs[:slen], false
@@ -2356,8 +2369,15 @@ func makeExt(ext interface{}) Ext {
 }
 
 func baseRV(v interface{}) (rv reflect.Value) {
+	// MARKER TODO try using rv4i not reflect.ValueOf
 	// use reflect.ValueOf, not rv4i, as of go 1.16beta, rv4i was not inlineable
 	for rv = reflect.ValueOf(v); rv.Kind() == reflect.Ptr; rv = rv.Elem() {
+	}
+	return
+}
+
+func baseRVRV(v reflect.Value) (rv reflect.Value) {
+	for rv = v; rv.Kind() == reflect.Ptr; rv = rv.Elem() {
 	}
 	return
 }
@@ -2417,25 +2437,25 @@ func (checkOverflow) SignedInt(v uint64) (overflow bool) {
 
 func (x checkOverflow) Float32V(v float64) float64 {
 	if x.Float32(v) {
-		halt.errorf("float32 overflow: %v", v)
+		halt.errorFloat("float32 overflow: ", v)
 	}
 	return v
 }
 func (x checkOverflow) UintV(v uint64, bitsize uint8) uint64 {
 	if x.Uint(v, bitsize) {
-		halt.errorf("uint64 overflow: %v", v)
+		halt.errorUint("uint64 overflow: ", v)
 	}
 	return v
 }
 func (x checkOverflow) IntV(v int64, bitsize uint8) int64 {
 	if x.Int(v, bitsize) {
-		halt.errorf("int64 overflow: %v", v)
+		halt.errorInt("int64 overflow: ", v)
 	}
 	return v
 }
 func (x checkOverflow) SignedIntV(v uint64) int64 {
 	if x.SignedInt(v) {
-		halt.errorf("uint64 to int64 overflow: %v", v)
+		halt.errorUint("uint64 to int64 overflow: ", v)
 	}
 	return int64(v)
 }
@@ -2523,28 +2543,73 @@ func (x *bitset256) isset(pos byte) bool {
 
 // ------------
 
+// panicHdl will panic with the parameters passed.
 type panicHdl struct{}
 
-// errorv will panic if err is defined (not nil)
 func (panicHdl) onerror(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
+func (panicHdl) errorStr(s string) {
+	panic(s)
+}
+
+func (panicHdl) errorStr2(s, s2 string) {
+	panic(s + s2)
+}
+
+func (panicHdl) errorBytes(s string, p1 []byte) {
+	panic(s + stringView(p1))
+}
+
+func (v panicHdl) errorByte(prefix string, p1 byte) {
+	panic(stringView(append(panicHdlBytes(prefix), p1)))
+}
+
+func (v panicHdl) errorInt(prefix string, p1 int64) {
+	panic(stringView(strconv.AppendInt(panicHdlBytes(prefix), p1, 10)))
+	// bs := make([]byte, len(prefix)+8)
+	// bs = append(bs, prefix...)
+	// bs = strconv.AppendInt(bs, p1, 10)
+	// panic(stringView(bs))
+}
+
+func (v panicHdl) errorUint(prefix string, p1 uint64) {
+	panic(stringView(strconv.AppendUint(panicHdlBytes(prefix), p1, 10)))
+}
+
+func (v panicHdl) errorFloat(prefix string, p1 float64) {
+	panic(stringView(strconv.AppendFloat(panicHdlBytes(prefix), p1, 'G', -1, 10)))
+}
+
+// func (v panicHdl) errorInt(prefix string, p1 int) {
+// 	panic(stringView(strconv.AppendInt(panicHdlBytes(prefix), int64(p1), 10)))
+// 	// v.errorInt64(prefix, int64(p1))
+// }
+
+func panicHdlBytes(prefix string) []byte {
+	return append(make([]byte, len(prefix)+8), prefix...)
+}
+
+// MARKER
+// consider adding //go:noinline to errorf and maybe other methods
+
 // errorf will always panic, using the parameters passed.
 //
 // Note: it is ok to pass in a stringView, as it will just pass it directly
 // to a fmt.Sprintf call and not hold onto it.
 //
-//go:noinline
+// Since this is an unexported call, we will not be defensive.
+// Callers should ensure a non-empty string and 1+ parameter.
 func (panicHdl) errorf(format string, params ...interface{}) {
-	if format == "" {
-		panic(errPanicUndefined)
-	}
-	if len(params) == 0 {
-		panic(errors.New(format))
-	}
+	// if format == "" {
+	// 	panic(errPanicUndefined)
+	// }
+	// if len(params) == 0 {
+	// 	panic(errors.New(format))
+	// }
 	panic(fmt.Errorf(format, params...))
 }
 

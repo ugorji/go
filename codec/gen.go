@@ -802,7 +802,7 @@ func genInternalDecCommandAsString(s string, mapkey bool) string {
 		// return "string(d.d.DecodeStringAsBytes())"
 		return "d.stringZC(d.d.DecodeStringAsBytes())"
 	case "[]byte", "[]uint8", "bytes":
-		return "d.d.DecodeBytes([]byte{})"
+		return "d.d.DecodeBytes(zeroByteSlice)"
 	case "float32":
 		return "float32(d.d.DecodeFloat32())"
 	case "float64":

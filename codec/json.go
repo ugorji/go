@@ -453,7 +453,8 @@ func (e *jsonEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 	}
 
 	if e.rawext {
-		iv := e.h.RawBytesExt.ConvertExt(v)
+		// explicitly convert v to interface{} so that v doesn't escape to heap
+		iv := e.h.RawBytesExt.ConvertExt(any(v))
 		if iv == nil {
 			e.EncodeNil()
 		} else {
@@ -642,7 +643,7 @@ func (d *jsonDecDriver[T]) ReadMapStart() int {
 		return containerLenNil
 	}
 	if d.tok != '{' {
-		halt.errorf("read map - expect char '%c' but got char '%c'", '{', d.tok)
+		halt.errorByte("read map - expect char '{' but got char: ", d.tok)
 	}
 	d.tok = 0
 	return containerLenUnknown
@@ -655,7 +656,7 @@ func (d *jsonDecDriver[T]) ReadArrayStart() int {
 		return containerLenNil
 	}
 	if d.tok != '[' {
-		halt.errorf("read array - expect char '%c' but got char '%c'", '[', d.tok)
+		halt.errorByte("read array - expect char '[' but got char ", d.tok)
 	}
 	d.tok = 0
 	return containerLenUnknown
@@ -721,6 +722,7 @@ func (d *jsonDecDriver[T]) ReadMapEnd() {
 	d.tok = 0
 }
 
+//go:inline
 func (d *jsonDecDriver[T]) readDelimError(xc uint8) {
 	halt.errorf("read json delimiter - expect char '%c' but got char '%c'", xc, d.tok)
 }
@@ -732,15 +734,27 @@ func (d *jsonDecDriver[T]) readDelimError(xc uint8) {
 func (d *jsonDecDriver[T]) checkLit3(got, expect [3]byte) {
 	d.tok = 0
 	if jsonValidateSymbols && got != expect {
-		halt.errorf("expecting %s: got %s", expect, got)
+		jsonCheckLitErr3(got, expect)
 	}
 }
 
 func (d *jsonDecDriver[T]) checkLit4(got, expect [4]byte) {
 	d.tok = 0
 	if jsonValidateSymbols && got != expect {
-		halt.errorf("expecting %s: got %s", expect, got)
+		jsonCheckLitErr4(got, expect)
 	}
+}
+
+// MARKER: checkLitErr methods to prevent the got/expect parameters from escaping
+
+//go:noinline
+func jsonCheckLitErr3(got, expect [3]byte) {
+	halt.errorf("expecting %s: got %s", expect, got)
+}
+
+//go:noinline
+func jsonCheckLitErr4(got, expect [4]byte) {
+	halt.errorf("expecting %s: got %s", expect, got)
 }
 
 func (d *jsonDecDriver[T]) skipWhitespace() {
@@ -850,7 +864,7 @@ func (d *jsonDecDriver[T]) DecodeBool() (v bool) {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
 		// v = false
 	default:
-		halt.errorf("decode bool: got first char %c", d.tok)
+		halt.errorByte("decode bool: got first char: ", d.tok)
 		// v = false // "unreachable"
 	}
 	if fquot {
@@ -912,7 +926,7 @@ func (d *jsonDecDriver[T]) DecodeUint64() (u uint64) {
 	b := d.decNumBytes()
 	u, neg, ok := parseInteger_bytes(b)
 	if neg {
-		halt.errorf("negative number cannot be decoded as uint64")
+		halt.errorStr("negative number cannot be decoded as uint64")
 	}
 	if !ok {
 		halt.onerror(strconvParseErr(b, "ParseUint"))
@@ -927,7 +941,7 @@ func (d *jsonDecDriver[T]) DecodeInt64() (v int64) {
 		halt.onerror(strconvParseErr(b, "ParseInt"))
 	}
 	if chkOvf.Uint2Int(u, neg) {
-		halt.errorf("overflow decoding number from %s", b)
+		halt.errorBytes("overflow decoding number from ", b)
 	}
 	if neg {
 		v = -int64(u)
@@ -985,7 +999,7 @@ func (d *jsonDecDriver[T]) decBytesFromArray(bs []byte) []byte {
 	d.tok = d.r.skipWhitespace() // skip(&whitespaceCharBitset)
 	for d.tok != ']' {
 		if d.tok != ',' {
-			halt.errorf("read array element - expect char '%c' but got char '%c'", ',', d.tok)
+			halt.errorByte("read array element - expect char ',' but got char: ", d.tok)
 		}
 		d.tok = 0
 		bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
@@ -1025,7 +1039,7 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	bs1 := d.readUnescapedString()
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
-		bsOut = []byte{}
+		bsOut = zeroByteSlice // MARKER 2025 []byte{}
 	} else if slen <= cap(bs) {
 		bsOut = bs[:slen]
 	} else if bs == nil {
@@ -1038,7 +1052,7 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	}
 	slen2, err := base64.StdEncoding.Decode(bsOut, bs1)
 	if err != nil {
-		halt.errorf("error decoding base64 binary '%s': %v", bs1, err)
+		halt.errorf("error decoding base64 binary '%s': %v", any(bs1), err)
 	}
 	if slen != slen2 {
 		bsOut = bsOut[:slen2]
@@ -1075,7 +1089,7 @@ func (d *jsonDecDriver[T]) DecodeStringAsBytes() (s []byte) {
 
 func (d *jsonDecDriver[T]) ensureReadingString() {
 	if d.tok != '"' {
-		halt.errorf("expecting string starting with '\"'; got '%c'", d.tok)
+		halt.errorByte("expecting string starting with '\"'; got ", d.tok)
 	}
 }
 
@@ -1140,12 +1154,12 @@ func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte) {
 		case 'u':
 			rr := d.appendStringAsBytesSlashU()
 			if checkUtf8 && rr == unicode.ReplacementChar {
-				halt.errorf("invalid UTF-8 character found after: %s", buf)
+				halt.errorBytes("invalid UTF-8 character found after: ", buf)
 			}
 			buf = append(buf, d.bstr[:utf8.EncodeRune(d.bstr[:], rr)]...)
 		default:
 			*d.buf = buf
-			halt.errorf("unsupported escaped value: %c", c)
+			halt.errorByte("unsupported escaped value: ", c)
 		}
 	}
 	*d.buf = buf
@@ -1253,10 +1267,10 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 		bs = d.r.jsonReadNum()
 		d.tok = 0
 		if len(bs) == 0 {
-			halt.errorf("decode number from empty string")
+			halt.errorStr("decode number from empty string")
 		}
 		if err := d.nakedNum(z, bs); err != nil {
-			halt.errorf("decode number from %s: %v", bs, err)
+			halt.errorf("decode number from %s: %v", any(bs), err)
 		}
 	}
 }
@@ -1511,6 +1525,10 @@ func (e *jsonEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs c
 	sideEncode(e.e.se.(*encoder[jsonEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
 }
 
+func (e *jsonEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
+	sideEncodeRV(e.e.se.(*encoder[jsonEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
+}
+
 // ----
 
 type jsonDecDriverM[T decReader] struct {
@@ -1556,6 +1574,10 @@ func (d *jsonDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
 	sideDecode(d.d.sd.(*decoder[jsonDecDriverM[bytesDecReaderM]]), v, basetype)
 }
 
+func (d *jsonDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
+	sideDecodeRV(d.d.sd.(*decoder[jsonDecDriverM[bytesDecReaderM]]), v, basetype)
+}
+
 // ---- (custom stanza)
 
 var errJsonNoBd = errors.New("descBd unsupported in json")
@@ -1572,8 +1594,9 @@ func (d *jsonEncDriver[T]) init2(enc encoderI) {
 
 func (d *jsonDecDriver[T]) init2(dec decoderI) {
 	d.dec = dec
-	var x []byte
-	d.buf = &x
+	// var x []byte
+	// d.buf = &x
+	d.buf = new([]byte)
 	d.d.js = true
 	d.d.jsms = d.h.MapKeyAsString
 }

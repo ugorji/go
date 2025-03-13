@@ -982,8 +982,12 @@ func (e *simpleEncDriver[T]) sideEncoder(out *[]byte) {
 	sideEncoder[simpleEncDriverM[bytesEncAppenderM]](out, e.e, e.h)
 }
 
-func (e *simpleEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
+func (e *simpleEncDriver[T]) sideEncode(v any, basetype reflect.Type, cs containerState) {
 	sideEncode(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
+}
+
+func (e *simpleEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
+	sideEncodeRV(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
 }
 
 // ----
@@ -1027,8 +1031,12 @@ func (d *simpleDecDriver[T]) sideDecoder(in []byte) {
 	sideDecoder[simpleDecDriverM[bytesDecReaderM]](in, d.d, d.h)
 }
 
-func (d *simpleDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
+func (d *simpleDecDriver[T]) sideDecode(v any, basetype reflect.Type) {
 	sideDecode(d.d.sd.(*decoder[simpleDecDriverM[bytesDecReaderM]]), v, basetype)
+}
+
+func (d *simpleDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
+	sideDecodeRV(d.d.sd.(*decoder[simpleDecDriverM[bytesDecReaderM]]), v, basetype)
 }
 
 // ---- (custom stanza)

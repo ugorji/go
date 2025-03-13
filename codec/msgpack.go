@@ -1290,6 +1290,10 @@ func (e *msgpackEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, c
 	sideEncode(e.e.se.(*encoder[msgpackEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
 }
 
+func (e *msgpackEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
+	sideEncodeRV(e.e.se.(*encoder[msgpackEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
+}
+
 // ----
 
 type msgpackDecDriverM[T decReader] struct {
@@ -1333,6 +1337,10 @@ func (d *msgpackDecDriver[T]) sideDecoder(in []byte) {
 
 func (d *msgpackDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
 	sideDecode(d.d.sd.(*decoder[msgpackDecDriverM[bytesDecReaderM]]), v, basetype)
+}
+
+func (d *msgpackDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
+	sideDecodeRV(d.d.sd.(*decoder[msgpackDecDriverM[bytesDecReaderM]]), v, basetype)
 }
 
 // ---- (custom stanza)

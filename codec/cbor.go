@@ -1015,6 +1015,10 @@ func (e *cborEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs c
 	sideEncode(e.e.se.(*encoder[cborEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
 }
 
+func (e *cborEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
+	sideEncodeRV(e.e.se.(*encoder[cborEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
+}
+
 // ----
 
 type cborDecDriverM[T decReader] struct {
@@ -1058,6 +1062,10 @@ func (d *cborDecDriver[T]) sideDecoder(in []byte) {
 
 func (d *cborDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
 	sideDecode(d.d.sd.(*decoder[cborDecDriverM[bytesDecReaderM]]), v, basetype)
+}
+
+func (d *cborDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
+	sideDecodeRV(d.d.sd.(*decoder[cborDecDriverM[bytesDecReaderM]]), v, basetype)
 }
 
 // ---- (custom stanza)

@@ -66,7 +66,8 @@ type encDriverI interface {
 	writeBytesAsis(b []byte)
 	writeStringAsisDblQuoted(v string)
 
-	sideEncode(v interface{}, basetype reflect.Type, cs containerState)
+	sideEncode(v any, basetype reflect.Type, cs containerState)
+	sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState)
 	sideEncoder(out *[]byte)
 
 	resetOutBytes(out *[]byte) (ok bool)
@@ -248,14 +249,14 @@ func (e *encoder[T]) raw(f *encFnInfo, rv reflect.Value) {
 
 func (e *encoder[T]) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", v, imag(v))
+		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
 func (e *encoder[T]) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", v, imag(v))
+		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat64(real(v))
 }
@@ -333,7 +334,7 @@ func (e *encoder[T]) kUintptr(f *encFnInfo, rv reflect.Value) {
 }
 
 func (e *encoder[T]) kErr(f *encFnInfo, rv reflect.Value) {
-	e.errorf("unsupported kind %s, for %#v", rv.Kind(), rv)
+	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
 func chanToSlice(rv reflect.Value, rtslice reflect.Type, timeout time.Duration) (rvcs reflect.Value) {
@@ -446,7 +447,7 @@ func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo) {
 
 func (e *encoder[T]) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorf("send-only channel cannot be encoded")
+		e.errorStr("send-only channel cannot be encoded")
 	}
 	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
 		e.kSliceBytesChan(rv)
@@ -476,7 +477,7 @@ func (e *encoder[T]) kArray(f *encFnInfo, rv reflect.Value) {
 	if f.ti.mbs {
 		e.kArrayWMbs(rv, f.ti)
 	} else if handleBytesWithinKArray && uint8TypId == rt2id(f.ti.elem) {
-		e.e.EncodeStringBytesRaw(rvGetArrayBytes(rv, []byte{}))
+		e.e.EncodeStringBytesRaw(rvGetArrayBytes(rv, nil))
 	} else {
 		e.kArrayW(rv, f.ti)
 	}
@@ -910,29 +911,38 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 		mksv := bs0
 		mksbv := make([]bytesRv, len(mks))
 
-		func() {
-			// replicate sideEncode logic
-			// defer func(wb bytesEncAppender, bytes bool, c containerState, state interface{}) {
-			// 	e.wb = wb
-			// 	e.bytes = bytes
-			// 	e.c = c
-			// 	e.e.restoreState(state)
-			// }(e.wb, e.bytes, e.c, e.e.captureState())
+		// func() {
+		// 	// replicate sideEncode logic
+		// 	// defer func(wb bytesEncAppender, bytes bool, c containerState, state interface{}) {
+		// 	// 	e.wb = wb
+		// 	// 	e.bytes = bytes
+		// 	// 	e.c = c
+		// 	// 	e.e.restoreState(state)
+		// 	// }(e.wb, e.bytes, e.c, e.e.captureState())
 
-			// // e2 := NewEncoderBytes(&mksv, e.hh)
-			// e.wb = bytesEncAppender{mksv[:0], &mksv}
-			// e.bytes = true
-			// e.c = 0
-			// e.e.resetState()
-			e.e.sideEncoder(&mksv)
-			for i, k := range mks {
-				v := &mksbv[i]
-				l := len(mksv)
-				e.e.sideEncode(k, nil, containerMapKey)
-				v.r = k
-				v.v = mksv[l:]
-			}
-		}()
+		// 	// // e2 := NewEncoderBytes(&mksv, e.hh)
+		// 	// e.wb = bytesEncAppender{mksv[:0], &mksv}
+		// 	// e.bytes = true
+		// 	// e.c = 0
+		// 	// e.e.resetState()
+		// 	e.e.sideEncoder(&mksv)
+		// 	for i, k := range mks {
+		// 		v := &mksbv[i]
+		// 		l := len(mksv)
+		// 		e.e.sideEncode(k, nil, containerMapKey)
+		// 		v.r = k
+		// 		v.v = mksv[l:]
+		// 	}
+		// }()
+
+		e.e.sideEncoder(&mksv)
+		for i, k := range mks {
+			v := &mksbv[i]
+			l := len(mksv)
+			e.e.sideEncodeRV(baseRVRV(k), nil, containerMapKey)
+			v.r = k
+			v.v = mksv[l:]
+		}
 
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
@@ -1429,7 +1439,7 @@ func (e *encoder[T]) marshalRaw(bs []byte, fnerr error) {
 func (e *encoder[T]) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
-		e.errorf("Raw values cannot be encoded: %v", v)
+		e.errorBytes("Raw values cannot be encoded: ", v)
 	}
 	e.e.writeBytesAsis(v)
 }
@@ -1489,7 +1499,7 @@ func (e *encoder[T]) arrayEnd() {
 
 func (e *encoder[T]) haltOnMbsOddLen(length int) {
 	if length&1 != 0 { // similar to &1==1 or %2 == 1
-		e.errorf("mapBySlice requires even slice length, but got %v", length)
+		e.errorInt("mapBySlice requires even slice length, but got ", int64(length))
 	}
 }
 
@@ -1529,7 +1539,7 @@ func encStructFieldKey[T encDriver](encName string, ee T,
 	} else if keyType == valueTypeFloat {
 		ee.EncodeFloat64(must.Float(strconv.ParseFloat(encName, 64)))
 	} else {
-		halt.errorf("invalid struct key type: %v", keyType)
+		halt.errorStr2("invalid struct key type: ", keyType.String())
 	}
 }
 
@@ -1607,13 +1617,16 @@ func sideEncode[T encDriver](es *encoder[T], v interface{}, basetype reflect.Typ
 		return
 	}
 
-	if cs != 0 {
-		es.c = cs
-	}
-
 	rv, ok := v.(reflect.Value)
 	if !ok {
 		rv = baseRV(v)
+	}
+	sideEncodeRV(es, rv, basetype, cs)
+}
+
+func sideEncodeRV[T encDriver](es *encoder[T], rv reflect.Value, basetype reflect.Type, cs containerState) {
+	if cs != 0 {
+		es.c = cs
 	}
 
 	if basetype == nil {
