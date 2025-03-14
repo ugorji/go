@@ -194,6 +194,8 @@ func (z *bufioEncWriter) end() {
 
 // ---------------------------------------------
 
+var bytesEncAppenderDefOut = []byte{}
+
 // bytesEncAppender implements encWriter and can write to an byte slice.
 type bytesEncAppender struct {
 	b   []byte
@@ -205,9 +207,8 @@ type bytesEncAppenderM struct {
 }
 
 func (z *bytesEncAppenderM) Make() {
-	// fmt.Printf(">>>> callMake: on %T\n", z)
 	z.bytesEncAppender = new(bytesEncAppender)
-	z.out = new([]byte)
+	z.out = &bytesEncAppenderDefOut
 }
 
 // func (z *bytesEncAppender) isBytes() bool {

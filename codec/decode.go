@@ -1215,12 +1215,12 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		// maintain a [256]byte slice, for efficiently making strings with one byte
 		switch len(kstr2bs) {
 		case 0:
-			return ""
 		case 1:
-			b := kstr2bs[0]
-			return str256[b : b+1]
+			s = str256[kstr2bs[0] : kstr2bs[0]+1]
+		default:
+			s = d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
 		}
-		return d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
+		return
 	}
 
 	// Use a possibly transient (map) value (and key), to reduce allocation
@@ -1430,11 +1430,24 @@ func (d *decoderShared) fauxUnionReadRawBytes(dr decDriverI, asString, rawToStri
 // This should mostly be used for map keys, where the key type is string.
 // This is because keys of a map/struct are typically reused across many objects.
 func (d *decoderShared) string(v []byte) (s string) {
-	if d.is == nil || d.c != containerMapKey || len(v) < 2 || len(v) > internMaxStrLen {
-		return string(v)
+	if len(v) == 0 {
+	} else if len(v) == 1 {
+		s = str256[v[0] : v[0]+1]
+	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
+		s = string(v)
+	} else {
+		s = d.is.string(v)
 	}
-	return d.is.string(v)
+	return
+
 }
+
+// func (d *decoderShared) string(v []byte) (s string) {
+// 	if d.is == nil || d.c != containerMapKey || len(v) < 2 || len(v) > internMaxStrLen {
+// 		return string(v)
+// 	}
+// 	return d.is.string(v)
+// }
 
 // Decoder reads and decodes an object from an input stream in a supported format.
 //
@@ -1594,6 +1607,9 @@ func (d *decoder[T]) ResetBytes(in []byte) (err error) {
 
 func (d *decoder[T]) resetBytes(in []byte) {
 	d.reset()
+	if in == nil {
+		in = zeroByteSlice
+	}
 	d.d.resetInBytes(in)
 }
 

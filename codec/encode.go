@@ -1601,7 +1601,7 @@ func (e *encoder[T]) ResetBytes(out *[]byte) (err error) {
 func (e *encoder[T]) resetBytes(out *[]byte) {
 	e.reset()
 	if out == nil {
-		out = new([]byte)
+		out = &bytesEncAppenderDefOut
 	}
 	e.e.resetOutBytes(out)
 }

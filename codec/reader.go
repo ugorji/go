@@ -199,6 +199,11 @@ func (z *ioDecReader) reset(r io.Reader, bufsize int, blist *bytesFreelist) {
 	z.bufr = z.blist.check(z.bufr, 256)
 	z.br = nil
 
+	if r == nil {
+		z.br = &eofReader
+		return
+	}
+
 	var ok bool
 
 	if bufsize <= 0 {
@@ -403,6 +408,7 @@ func (z *bytesDecReaderM) Make() {
 // }
 
 func (z *bytesDecReader) reset(in []byte) {
+	// it's ok to resize a nil slice, so long as it's not past 0
 	z.b = in[:len(in):len(in)] // reslicing must not go past capacity
 	z.c = 0
 }
@@ -606,6 +612,8 @@ type devNullReader struct{}
 
 func (devNullReader) Read(p []byte) (int, error) { return 0, io.EOF }
 func (devNullReader) Close() error               { return nil }
+func (devNullReader) ReadByte() (byte, error)    { return 0, io.EOF }
+func (devNullReader) UnreadByte() error          { return io.EOF }
 
 func readFull(r io.Reader, bs []byte) (n uint, err error) {
 	var nn int
