@@ -2890,17 +2890,30 @@ func (x internerMap) string(v []byte) (s string) {
 // 	r.Set(reflect.New(r.Type()))
 // }
 
-// callMake will call a Method "Make" on the value given.
-// This is used by generics wrappers (with M on the end)
-// to initialize (set as non-nil value) the underlying real driver/reader/writer.
+// // callMake will call a Method "Make" on the value given.
+// // This is used by generics wrappers (with M on the end)
+// // to initialize (set as non-nil value) the underlying real driver/reader/writer.
+// //
+// // Unfortunately, we cannot use an init() function on the M wrappers,
+// // as they are not pointers themselves.
+// func callMake(v interface{}) {
+// 	r := reflect.ValueOf(v)
+// 	m := r.MethodByName("Make")
+// 	// fmt.Printf("callMake: on r: %v (of type: %T), m: %v\n", v, v, m)
+// 	m.Call(nil)
+// }
+
+// MARKER using reflect to call the Make() method (as above)
+// did excessive allocation and dramatically increasing execution time.
 //
-// Unfortunately, we cannot use an init() function on the M wrappers,
-// as they are not pointers themselves.
+// Switching to using an interface worked much better.
+
+type maker interface {
+	Make()
+}
+
 func callMake(v interface{}) {
-	r := reflect.ValueOf(v)
-	m := r.MethodByName("Make")
-	// fmt.Printf("callMake: on r: %v (of type: %T), m: %v\n", v, v, m)
-	m.Call(nil)
+	v.(maker).Make()
 }
 
 // type linearMap4[K comparable, V any] struct {
