@@ -225,7 +225,6 @@ func fnBenchmarkEncode(b *testing.B, encName string, ts interface{}, encfn bench
 	}
 
 	runtime.GC()
-	// fmt.Printf(">>>> calling ResetTimer on enc\n")
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		if _, err = encfn(ts, bs); err != nil {
