@@ -965,9 +965,12 @@ type encoderShared struct {
 	// There should not be any pointers here - just values.
 	// we pack them here for space efficiency and cache-line optimization.
 
-	blist bytesFreelist
+	rtidFn, rtidFnNoExt *atomicRtidFnSlice
 
+	se  encoderI
 	err error
+
+	blist bytesFreelist
 
 	js bool // is json encoder?
 	be bool // is binary encoder?
@@ -978,10 +981,6 @@ type encoderShared struct {
 
 	calls uint16
 	seq   uint16 // sequencer (e.g. used by binc for symbols, etc)
-
-	rtidFn, rtidFnNoExt *atomicRtidFnSlice
-
-	se encoderI
 }
 
 // Encoder writes an object to an output stream in a supported format.
@@ -994,12 +993,13 @@ type encoderShared struct {
 // This is the idiomatic way to use.
 type encoder[T encDriver] struct {
 	panicHdl
-
-	e T
+	perType encPerType
 
 	fp *fastpathEs[T]
 
 	h *BasicHandle
+
+	e T
 
 	// hopefully, reduce derefencing cost by laying some fields shared with encDriver
 	encoderShared
@@ -1019,8 +1019,6 @@ type encoder[T encDriver] struct {
 	//    Here, for var v T; &v and &v.tHelper are the same pointer.
 	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
 	ci []interface{} // []uintptr
-
-	perType encPerType
 
 	slist sfiRvFreelist
 }

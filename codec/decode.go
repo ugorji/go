@@ -1364,6 +1364,15 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 }
 
 type decoderShared struct {
+	rtidFn, rtidFnNoExt *atomicRtidFnSlice
+
+	// used for interning strings
+	is internerMap
+
+	err error
+
+	sd decoderI
+
 	blist bytesFreelist
 
 	mtr bool // is maptype a known type?
@@ -1379,8 +1388,6 @@ type decoderShared struct {
 
 	zeroCopy bool
 
-	err error
-
 	// ---- cpu cache line boundary?
 	// ---- writable fields during execution --- *try* to keep in sep cache line
 	maxdepth int16
@@ -1395,14 +1402,8 @@ type decoderShared struct {
 
 	decByteState
 
-	// used for interning strings
-	is internerMap
-
 	n fauxUnion
 
-	rtidFn, rtidFnNoExt *atomicRtidFnSlice
-
-	sd decoderI
 	// b is an always-available scratch buffer used by Decoder and decDrivers.
 	// By being always-available, it can be used for one-off things without
 	// having to get from freelist, use, and return back to freelist.
@@ -1459,24 +1460,24 @@ func (d *decoderShared) string(v []byte) (s string) {
 // This is the idiomatic way to use.
 type decoder[T decDriver] struct {
 	panicHdl
-
-	d T
-
-	// cache the mapTypeId and sliceTypeId for faster comparisons
-	mtid uintptr
-	stid uintptr
+	perType decPerType
 
 	fp *fastpathDs[T]
 
 	h *BasicHandle
 
-	// ---- cpu cache line boundary?
+	d T
+
 	decoderShared
 
-	// ---- cpu cache line boundary?
 	hh Handle
+	// cache the mapTypeId and sliceTypeId for faster comparisons
+	mtid uintptr
+	stid uintptr
 
-	perType decPerType
+	// ---- cpu cache line boundary?
+
+	// ---- cpu cache line boundary?
 }
 
 type decoderI interface {

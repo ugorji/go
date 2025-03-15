@@ -122,10 +122,9 @@ type bincEncDriver[T encWriter] struct {
 	encDriverContainerNoTrackerT
 	encInit2er
 	h *BincHandle
-	bincEncState
-
-	w T
 	e *encoderShared
+	w T
+	bincEncState
 }
 
 func (e *bincEncDriver[T]) EncodeNil() {
@@ -447,13 +446,12 @@ type bincDecDriver[T decReader] struct {
 	noBuiltInTypes
 
 	h *BincHandle
+	d *decoderShared
+	r T
 
 	bincDecState
 
 	bytes bool
-
-	r T
-	d *decoderShared
 }
 
 func (d *bincDecDriver[T]) readNextBd() {

@@ -176,9 +176,9 @@ type msgpackEncDriver[T encWriter] struct {
 	encInit2er
 
 	h *MsgpackHandle
+	e *encoderShared
 	w T
 	// x [8]byte
-	e *encoderShared
 }
 
 func (e *msgpackEncDriver[T]) EncodeNil() {
@@ -419,11 +419,12 @@ type msgpackDecDriver[T decReader] struct {
 	decInit2er
 
 	h *MsgpackHandle
+	d *decoderShared
+	r T
+
 	bdAndBdread
 	bytes bool
 	noBuiltInTypes
-	r T
-	d *decoderShared
 }
 
 // Note: This returns either a primitive (int, bool, etc) for non-containers,

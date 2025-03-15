@@ -164,10 +164,13 @@ type jsonEncState struct {
 type jsonEncDriver[T encWriter] struct {
 	noBuiltInTypes
 	h *JsonHandle
+	e *encoderShared
+	s *bitset256 // safe set for characters (taking h.HTMLAsIs into consideration)
 
 	w T
 	// se interfaceExtWrapper
 
+	enc encoderI
 	// ---- cpu cache line boundary?
 	jsonEncState
 
@@ -176,8 +179,6 @@ type jsonEncDriver[T encWriter] struct {
 
 	typical bool
 	rawext  bool // rawext configured on the handle
-
-	s *bitset256 // safe set for characters (taking h.HTMLAsIs into consideration)
 
 	// buf *[]byte // used mostly for encoding []byte
 
@@ -193,10 +194,6 @@ type jsonEncDriver[T encWriter] struct {
 	// Consequently, 35 characters should be sufficient for encoding time, integers or floats.
 	// We use up all the remaining bytes to make this use full cache lines.
 	b [48]byte
-
-	enc encoderI
-
-	e *encoderShared
 }
 
 func (e *jsonEncDriver[T]) writeIndent() {
@@ -602,16 +599,16 @@ func (e *jsonEncDriver[T]) atEndOfEncode() {
 // ----------
 
 type jsonDecState struct {
+	// scratch buffer used for base64 decoding (DecodeBytes in reuseBuf mode),
+	// or reading doubleQuoted string (DecodeStringAsBytes, DecodeNaked)
+	buf *[]byte
+
 	rawext bool // rawext configured on the handle
 
 	tok  uint8   // used to store the token read right after skipWhiteSpace
 	_    bool    // found null
 	_    byte    // padding
 	bstr [4]byte // scratch used for string \UXXX parsing
-
-	// scratch buffer used for base64 decoding (DecodeBytes in reuseBuf mode),
-	// or reading doubleQuoted string (DecodeStringAsBytes, DecodeNaked)
-	buf *[]byte
 }
 
 // func (x jsonDecState) captureState() interface{}   { return x }
@@ -621,6 +618,7 @@ type jsonDecDriver[T decReader] struct {
 	noBuiltInTypes
 	decDriverNoopNumberHelper
 	h *JsonHandle
+	d *decoderShared
 
 	r T
 	jsonDecState
@@ -632,8 +630,6 @@ type jsonDecDriver[T decReader] struct {
 	bytes bool
 
 	dec decoderI
-
-	d *decoderShared
 }
 
 func (d *jsonDecDriver[T]) ReadMapStart() int {

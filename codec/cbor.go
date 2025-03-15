@@ -124,16 +124,15 @@ type cborEncDriver[T encWriter] struct {
 	encDriverNoopContainerWriter
 	encDriverContainerNoTrackerT
 
-	h *CborHandle
-	w T
+	h   *CborHandle
+	e   *encoderShared
+	w   T
+	enc encoderI
+
 	// scratch buffer for: encode time, numbers, etc
 	//
 	// RFC3339Nano uses 35 chars: 2006-01-02T15:04:05.999999999Z07:00
 	b [40]byte
-
-	enc encoderI
-
-	e *encoderShared
 }
 
 func (e *cborEncDriver[T]) EncodeNil() {
@@ -329,15 +328,15 @@ func (e *cborEncDriver[T]) encStringBytesS(bb byte, v string) {
 type cborDecDriver[T decReader] struct {
 	decDriverNoopContainerReader
 	decDriverNoopNumberHelper
-	h *CborHandle
+	noBuiltInTypes
+
+	h   *CborHandle
+	d   *decoderShared
+	r   T
+	dec decoderI
 	bdAndBdread
 	st    bool // skip tags
 	bytes bool
-
-	noBuiltInTypes
-	r   T
-	dec decoderI
-	d   *decoderShared
 }
 
 func (d *cborDecDriver[T]) readNextBd() {

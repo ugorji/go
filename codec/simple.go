@@ -81,9 +81,9 @@ type simpleEncDriver[T encWriter] struct {
 	encInit2er
 
 	h *SimpleHandle
+	e *encoderShared
 	// b [8]byte
 	w T
-	e *encoderShared
 
 	// bytes bool
 
@@ -259,6 +259,9 @@ func (e *simpleEncDriver[T]) EncodeTime(t time.Time) {
 
 type simpleDecDriver[T decReader] struct {
 	h *SimpleHandle
+	d *decoderShared
+	r T
+
 	bdAndBdread
 	bytes bool
 
@@ -267,8 +270,6 @@ type simpleDecDriver[T decReader] struct {
 	decDriverNoopContainerReader
 	decInit2er
 
-	r T
-	d *decoderShared
 	// ds interface{} // must be *decoder[simpleDecDriverM[bytes...]]
 }
 

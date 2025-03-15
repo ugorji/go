@@ -161,15 +161,15 @@ func (z *ioReaderByteScannerT) reset(r io.Reader) {
 
 // ioDecReader is a decReader that reads off an io.Reader.
 type ioDecReader struct {
+	blist *bytesFreelist
+	bb    *bufio.Reader // created internally, and reused on reset if needed
+
 	rr ioReaderByteScannerT // the reader passed in, wrapped into a reader+bytescanner
+	br ioReaderByteScanner  // main reader used for Read|ReadByte|UnreadByte
 
 	n uint // num read
 
-	blist *bytesFreelist
-
-	bufr []byte              // buffer for readTo/readUntil
-	br   ioReaderByteScanner // main reader used for Read|ReadByte|UnreadByte
-	bb   *bufio.Reader       // created internally, and reused on reset if needed
+	bufr []byte // buffer for readTo/readUntil
 
 	x [64 + 40]byte // for: get struct field name, swallow valueTypeBytes, etc
 }
