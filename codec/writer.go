@@ -46,9 +46,17 @@ func (z *bufioEncWriterM) Make() {
 	z.w = io.Discard
 }
 
-// func (z *bufioEncWriter) isBytes() bool {
-// 	return false
-// }
+// // flesh out these writes, to hopefully force full stenciling/monomorphization
+// // unfortunately, even with this, the go generics implementation
+// // still used a dynamic dispatch, and not static (calling stenciled method)
+// func (z bufioEncWriterM) writeb(v []byte)    { z.bufioEncWriter.writeb(v) }
+// func (z bufioEncWriterM) writestr(v string)  { z.bufioEncWriter.writestr(v) }
+// func (z bufioEncWriterM) writeqstr(v string) { z.bufioEncWriter.writeqstr(v) }
+// func (z bufioEncWriterM) writen1(v byte)     { z.bufioEncWriter.writen1(v) }
+// func (z bufioEncWriterM) writen2(v, v2 byte) { z.bufioEncWriter.writen2(v, v2) }
+// func (z bufioEncWriterM) writen4(v [4]byte)  { z.bufioEncWriter.writen4(v) }
+// func (z bufioEncWriterM) writen8(v [8]byte)  { z.bufioEncWriter.writen8(v) }
+// func (z bufioEncWriterM) end()               { z.bufioEncWriter.end() }
 
 func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
 	z.w = w
@@ -211,9 +219,17 @@ func (z *bytesEncAppenderM) Make() {
 	z.out = &bytesEncAppenderDefOut
 }
 
-// func (z *bytesEncAppender) isBytes() bool {
-// 	return true
-// }
+// // flesh out these writes, to hopefully force full stenciling/monomorphization
+// // unfortunately, even with this, the go generics implementation
+// // still used a dynamic dispatch, and not static (calling stenciled method)
+// func (z bytesEncAppenderM) writeb(v []byte)    { z.bytesEncAppender.writeb(v) }
+// func (z bytesEncAppenderM) writestr(v string)  { z.bytesEncAppender.writestr(v) }
+// func (z bytesEncAppenderM) writeqstr(v string) { z.bytesEncAppender.writeqstr(v) }
+// func (z bytesEncAppenderM) writen1(v byte)     { z.bytesEncAppender.writen1(v) }
+// func (z bytesEncAppenderM) writen2(v, v2 byte) { z.bytesEncAppender.writen2(v, v2) }
+// func (z bytesEncAppenderM) writen4(v [4]byte)  { z.bytesEncAppender.writen4(v) }
+// func (z bytesEncAppenderM) writen8(v [8]byte)  { z.bytesEncAppender.writen8(v) }
+// func (z bytesEncAppenderM) end()               { z.bytesEncAppender.end() }
 
 func (z *bytesEncAppender) writeb(s []byte) {
 	z.b = append(z.b, s...)
