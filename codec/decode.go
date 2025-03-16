@@ -35,7 +35,7 @@ const (
 	// Consequently, we should relax this. Put it behind a const flag for now.
 	decFailNonEmptyIntf = false
 
-	// decUseTransient says that we should not use the transient optimization.
+	// decUseTransient says whether we should use the transient optimization.
 	//
 	// There's potential for GC corruption or memory overwrites if transient isn't
 	// used carefully, so this flag helps turn it off quickly if needed.
