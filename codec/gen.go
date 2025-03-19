@@ -432,7 +432,8 @@ func (x *genRunner) registerXtraT(t reflect.Type, ti *typeInfo) {
 	if ti == nil {
 		ti = x.ti.get(rt2id(t), t)
 	}
-	if _, rtidu := genFastpathUnderlying(t, ti.rtid, ti); fastpathAvIndex(rtidu) != -1 {
+	_, rtidu := genFastpathUnderlying(t, ti.rtid, ti)
+	if _, ok := fastpathAvIndex(rtidu); ok {
 		return
 	}
 	x.tm[t] = struct{}{}

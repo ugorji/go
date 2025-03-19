@@ -1571,11 +1571,11 @@ func (d *decoder[T]) reset() {
 	d.str = false
 	if d.h.MapType != nil {
 		d.mtid = rt2id(d.h.MapType)
-		d.mtr = fastpathAvIndex(d.mtid) != -1
+		_, d.mtr = fastpathAvIndex(d.mtid)
 	}
 	if d.h.SliceType != nil {
 		d.stid = rt2id(d.h.SliceType)
-		d.str = fastpathAvIndex(d.stid) != -1
+		_, d.str = fastpathAvIndex(d.stid)
 	}
 }
 

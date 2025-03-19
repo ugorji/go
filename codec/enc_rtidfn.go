@@ -11,11 +11,9 @@ import (
 // ----
 
 func encFnloadFastpathUnderlying[T encDriver](ti *typeInfo, fp *fastpathEs[T]) (f *fastpathE[T], u reflect.Type) {
-	var rtid uintptr
-	var idx int
-	rtid = rt2id(ti.fastpathUnderlying)
-	idx = fastpathAvIndex(rtid)
-	if idx == -1 {
+	rtid := rt2id(ti.fastpathUnderlying)
+	idx, ok := fastpathAvIndex(rtid)
+	if !ok {
 		return
 	}
 	f = &fp[idx]
@@ -190,7 +188,7 @@ func encFnLoad[E encDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 				if rk == reflect.Array {
 					rtid2 = rt2id(ti.key) // ti.key for arrays = reflect.SliceOf(ti.elem)
 				}
-				if idx := fastpathAvIndex(rtid2); idx != -1 {
+				if idx, ok := fastpathAvIndex(rtid2); ok {
 					fn.fe = fp[idx].encfn
 				}
 			} else { // named type (with underlying type of map or slice or array)

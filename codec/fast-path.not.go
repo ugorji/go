@@ -37,7 +37,7 @@ func fastpathEncodeTypeSwitch[T encDriver](iv interface{}, e *encoder[T]) bool {
 
 func fastpathDecodeSetZeroTypeSwitch(iv interface{}) bool { return false }
 
-func fastpathAvIndex(rtid uintptr) int { return -1 }
+func fastpathAvIndex(rtid uintptr) (uint, bool) { return 0, false }
 
 func fastpathEList[T encDriver]() (v *fastpathEs[T]) { return }
 func fastpathDList[T decDriver]() (v *fastpathDs[T]) { return }

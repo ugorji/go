@@ -66,11 +66,11 @@ type fastpathARtRtid [56]fastpathRtRtid
 var fastpathAvRtid fastpathARtid
 var fastpathAvRtRtid fastpathARtRtid
 
-func fastpathAvIndex(rtid uintptr) int {
+func fastpathAvIndex(rtid uintptr) (i uint, ok bool) {
 	// use binary search to grab the index (adapted from sort/search.go)
 	// Note: we use goto (instead of for loop) so this can be inlined.
 	// h, i, j := 0, 0, 56
-	var h, i uint
+	var h uint
 	var j uint = 56
 LOOP:
 	if i < j {
@@ -82,10 +82,7 @@ LOOP:
 		}
 		goto LOOP
 	}
-	if i < 56 && fastpathAvRtid[i] == rtid {
-		return int(i)
-	}
-	return -1
+	return i, i < 56 && fastpathAvRtid[i] == rtid
 }
 
 func init() {
