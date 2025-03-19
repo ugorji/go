@@ -482,7 +482,6 @@ func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	clen := d.decLen()
 	d.bdRead = false
 	// if d.d.zerocopy() {
-	// fmt.Printf("d: %v, d.h: %v\n", d, d.h)
 	if d.bytes && d.h.ZeroCopy {
 		d.d.decByteState = decByteStateZerocopy
 		return d.r.readx(uint(clen))

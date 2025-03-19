@@ -150,7 +150,6 @@ after the new line
 	jh.Indent = 120
 	NewEncoderBytes(&bs, jh).MustEncode(&v)
 	txtSpaces := string(bs)
-	// fmt.Printf("\n-----------\n%s\n------------\n%s\n-------------\n", txt1Tab, txtSpaces)
 
 	goldenResultTab := `{
 	"Ar": [

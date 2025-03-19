@@ -82,7 +82,6 @@ func (z *bufioEncWriter) reset(w io.Writer, bufsize int, blist *bytesFreelist) {
 }
 
 func (z *bufioEncWriter) flushErr() (err error) {
-	// fmt.Printf("bufioEncWriter: %T (nil=%v): %v\n", z.w, z.w == nil, z.w)
 	n, err := z.w.Write(z.buf[:z.n])
 	z.n -= n
 	if z.n > 0 {
@@ -266,7 +265,6 @@ func (z *bytesEncAppender) writen8(b [8]byte) {
 // }
 
 func (z *bytesEncAppender) end() {
-	// fmt.Printf("z.out: %v, z.b: %v\n", z.out, z.b)
 	*(z.out) = z.b
 }
 

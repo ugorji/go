@@ -202,16 +202,13 @@ func TestCborGoldens(t *testing.T) {
 	tagregex := regexp.MustCompile(`[\d]+\(.+?\)`)
 	hexregex := regexp.MustCompile(`h'([0-9a-fA-F]*)'`)
 	for i, g := range gs {
-		// fmt.Printf("%v, skip: %v, isTag: %v, %s\n", i, g.Skip, tagregex.MatchString(g.Diagnostic), g.Diagnostic)
 		// skip tags or simple or those with prefix, as we can't verify them.
 		if g.Skip || strings.HasPrefix(g.Diagnostic, "simple(") || tagregex.MatchString(g.Diagnostic) {
-			// fmt.Printf("%v: skipped\n", i)
 			if testVerbose {
 				t.Logf("[%v] skipping because skip=true OR unsupported simple value or Tag Value", i)
 			}
 			continue
 		}
-		// println("++++++++++++", i, "g.Diagnostic", g.Diagnostic)
 		if hexregex.MatchString(g.Diagnostic) {
 			// println(i, "g.Diagnostic matched hex")
 			if s2 := g.Diagnostic[2 : len(g.Diagnostic)-1]; s2 == "" {
@@ -219,7 +216,6 @@ func TestCborGoldens(t *testing.T) {
 			} else if bs2, err2 := hex.DecodeString(s2); err2 == nil {
 				g.Decoded = bs2
 			}
-			// fmt.Printf("%v: hex: %v\n", i, g.Decoded)
 		}
 		bs, err := hex.DecodeString(g.Hex)
 		if err != nil {
@@ -256,7 +252,6 @@ func TestCborGoldens(t *testing.T) {
 
 func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bool) {
 	if err == nil && equal == nil {
-		// fmt.Printf("%v testCborError passed (err and equal nil)\n", i)
 		return
 	}
 	if err != nil {
@@ -275,7 +270,6 @@ func testCborError(t *testing.T, i int, v0, v1 interface{}, err error, equal *bo
 		}
 		t.FailNow()
 	}
-	// fmt.Printf("%v testCborError passed (checks passed)\n", i)
 }
 
 func TestCborHalfFloat(t *testing.T) {

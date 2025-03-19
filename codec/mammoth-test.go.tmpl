@@ -213,7 +213,7 @@ func __doTestMammothSlices(t *testing.T, h Handle) {
 func __doTestMammothMaps(t *testing.T, h Handle) {
 {{range $i, $e := .Values }}{{if not .Primitive }}{{if .MapKey -}}
     for _, v := range []map[{{ .MapKey }}]{{ .Elem }}{ nil, {}, { {{ nonzerocmd .MapKey }}:{{ zerocmd .Elem }} {{if ne "bool" .MapKey}}, {{ nonzerocmd .MapKey }}:{{ nonzerocmd .Elem }} {{end}} } } {
-    // fmt.Printf(">>>> running mammoth map v{{$i}}: %v\n", v)
+    {{/* // fmt.Printf(">>>> running mammoth map v{{$i}}: %v\n", v) */ -}}
     var v{{$i}}v1, v{{$i}}v2 map[{{ .MapKey }}]{{ .Elem }}
     var bs{{$i}} []byte
 	v{{$i}}v1 = v

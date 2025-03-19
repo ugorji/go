@@ -53,10 +53,7 @@ type decRtidFn[D decDriver] struct {
 // ----
 
 func decFindRtidFn[D decDriver](s []decRtidFn[D], rtid uintptr) (i uint, fn *decFn[D]) {
-	// binary search. adapted from sort/search.go.
-	// Note: we use goto (instead of for loop) so this can be inlined.
-
-	// h, i, j := 0, 0, len(s)
+	// binary search. Adapted from sort/search.go. Use goto (not for loop) to allow inlining.
 	var h uint // var h, i uint
 	var j = uint(len(s))
 LOOP:
@@ -111,7 +108,6 @@ func decFnViaLoader[D decDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidF
 		fns.store(decToRtidFnSlice[D](&sp))
 	} else {
 		idx, fn2 := decFindRtidFn[D](sp, rtid)
-		// fmt.Printf("encFnVia->Load: [%p] len (%v) storing type: %v (%v) (index:%v), fn: %v [%T]\n", fns, len(sp), rt, rtid, idx, fn2, fn2)
 		if fn2 == nil {
 			sp2 := make([]decRtidFn[D], len(sp)+1)
 			copy(sp2[idx+1:], sp[idx:])

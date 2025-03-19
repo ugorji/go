@@ -759,7 +759,6 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 	switch iv := v.(type) {
 	case int8:
 		v2 = testVerifyValInt(int64(iv), isMsgp)
-		// fmt.Printf(">>>> is msgp: %v, v: %T, %v ==> v2: %T, %v\n", isMsgp, v, v, v2, v2)
 	case int16:
 		v2 = testVerifyValInt(int64(iv), isMsgp)
 	case int32:
@@ -853,7 +852,6 @@ func testVerifyVal(v interface{}, f testVerifyFlag, h Handle) (v2 interface{}) {
 		case isMsgp:
 			v2 = iv.UTC()
 		case isCbor:
-			// fmt.Printf("%%%% cbor verifier\n")
 			v2 = iv.UTC().Round(time.Microsecond)
 		default:
 			v2 = v
@@ -1538,7 +1536,6 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 				break
 			}
 			if err1 != nil {
-				// fmt.Printf("accept err1: %v\n", err1)
 				if testVerbose {
 					t.Logf("rpc error accepting connection: %v", err1)
 				}
@@ -2032,7 +2029,6 @@ func doTestRawExt(t *testing.T, h Handle) {
 	} {
 		e := NewEncoderBytes(&b, h)
 		e.MustEncode(&r)
-		// fmt.Printf(">>>> rawext: isnil? %v, %d - %v\n", b == nil, len(b), b)
 		d := NewDecoderBytes(b, h)
 		d.MustDecode(&v)
 		var r2 = r
@@ -2075,7 +2071,6 @@ func doTestRawExt(t *testing.T, h Handle) {
 	} {
 		e := NewEncoderBytes(&b, h)
 		e.MustEncode(&s)
-		// fmt.Printf(">>>> rawext: isnil? %v, %d - %v\n", b == nil, len(b), b)
 		var r Raw = make([]byte, len(b))
 		copy(r, b)
 		d := NewDecoderBytes(b, h)
@@ -2365,7 +2360,6 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		m1 = make(map[string]bool, 1)
 		// var s1 = stringView(in[:i])
 		var s1 = string(in[:i])
-		// fmt.Printf("testcontainerlen: large string: i: %v, |%s|\n", i, s1)
 		m1[s1] = true
 
 		if okbinc {
@@ -2505,7 +2499,6 @@ func doTestTime(t *testing.T, h Handle) {
 	var tt, tt2 time.Time
 	// time in 1990
 	tt = time.Unix(20*366*24*60*60, 1000*900).In(time.FixedZone("UGO", -5*60*60))
-	// fmt.Printf("time tt: %v\n", tt)
 	b := testMarshalErr(tt, h, t, "time-"+name)
 	testUnmarshalErr(&tt2, b, h, t, "time-"+name)
 	// per go documentation, test time with .Equal not ==
@@ -3145,14 +3138,6 @@ func doTestMultipleEncDec(t *testing.T, h Handle) {
 	e.MustEncode(s1)
 	e.MustEncode(s2)
 
-	// if encIO {
-	// 	fmt.Printf(">>>> b: %s\n", buf.Bytes())
-	// } else {
-	// 	fmt.Printf(">>>> b: %s\n", bs)
-	// }
-
-	// d := NewDecoder(&buf, h)
-	// d := NewDecoderBytes(buf, h)
 	if decIO {
 		if encIO {
 			d = NewDecoder(&buf, h)
@@ -3228,7 +3213,6 @@ func doTestStrucEncDec(t *testing.T, h Handle) {
 	// 	var ts1 = newTestStrucFlex(2, testNumRepeatString, false, !testSkipIntf, testMapStringKeyOnly)
 	// 	var ts2 TestStrucFlex
 	// 	bs := testMarshalErr(ts1, h, t, name)
-	// 	fmt.Printf("\n\n%s\n\n", bs)
 	// 	testUnmarshalErr(&ts2, bs, h, t, name)
 	// 	testDeepEqualErr(ts1, &ts2, t, name)
 	// }
@@ -4000,9 +3984,6 @@ func TestMapRangeIndex(t *testing.T) {
 	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(reflect.TypeOf(T{})), true) !ok
 	// it := mapRange(mv, reflect.New(reflect.TypeOf(s)).Elem(), reflect.New(reflect.TypeOf(T{})).Elem(), true) // ok
 
-	// fmt.Printf("key: %#v\n", it.Key())
-	// fmt.Printf("exp: %#v\n", mv.MapIndex(it.Key()))
-	// fmt.Printf("val: %#v\n", it.Value())
 	// testDeepEqualErr(mv.MapIndex(it.Key()), it.Value().Interface()
 }
 

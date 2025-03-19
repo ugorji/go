@@ -55,10 +55,7 @@ type encRtidFn[E encDriver] struct {
 // ----
 
 func encFindRtidFn[E encDriver](s []encRtidFn[E], rtid uintptr) (i uint, fn *encFn[E]) {
-	// binary search. adapted from sort/search.go.
-	// Note: we use goto (instead of for loop) so this can be inlined.
-
-	// h, i, j := 0, 0, len(s)
+	// binary search. Adapted from sort/search.go. Use goto (not for loop) to allow inlining.
 	var h uint // var h, i uint
 	var j = uint(len(s))
 LOOP:
@@ -103,8 +100,6 @@ func encFnViaLoader[E encDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidF
 	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *encFn[E]) {
 
 	fn = encFnLoad[E](rt, rtid, tinfos, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
-	// fmt.Printf("encFnVia->Load: [%p] len (%v) storing type: %v (%v) fn: %v [%T]\n", fns, len(sp), rt, rtid, fn, fn)
-	// fmt.Printf("encFnVia: loading new fn for type: %v, with rtid: %v\n", rt, rtid)
 	var sp []encRtidFn[E]
 	mu.Lock()
 	sp = encFromRtidFnSlice[E](fns.load())
@@ -115,8 +110,6 @@ func encFnViaLoader[E encDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidF
 		fns.store(encToRtidFnSlice[E](&sp))
 	} else {
 		idx, fn2 := encFindRtidFn[E](sp, rtid)
-		// fmt.Printf("encFnVia->Load: [%p] len (%v) storing type: %v (%v) (index:%v), fn: %v [%T]\n", fns, len(sp), rt, rtid, idx, fn2, fn2)
-		// fmt.Printf("encFnVia: [%p] len (%v) storing type: %v (%v) AT index: %v, fn: %v\n", fns, len(sp), rt, rtid, idx, fn2)
 		if fn2 == nil {
 			sp2 := make([]encRtidFn[E], len(sp)+1)
 			copy(sp2[idx+1:], sp[idx:])

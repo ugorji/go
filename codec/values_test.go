@@ -418,19 +418,16 @@ func newTestStruc(depth, n int, bench, useInterface, useStringKeyOnly bool) (ts 
 var testStrRptMap = make(map[int]map[string]string)
 
 func strRpt(n int, s string) string {
-	if false {
-		// fmt.Printf(">>>> calling strings.Repeat on n: %d, key: %s\n", n, s)
-		return strings.Repeat(s, n)
-	}
+	// if false {
+	// 	return strings.Repeat(s, n)
+	// }
 	m1, ok := testStrRptMap[n]
 	if !ok {
-		// fmt.Printf(">>>> making new map for n: %v\n", n)
 		m1 = make(map[string]string)
 		testStrRptMap[n] = m1
 	}
 	v1, ok := m1[s]
 	if !ok {
-		// fmt.Printf(">>>> creating new entry for key: %s\n", s)
 		v1 = strings.Repeat(s, n)
 		m1[s] = v1
 	}

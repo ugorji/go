@@ -2300,8 +2300,6 @@ func panicToErr(h errDecorator, fn func()) (err error) {
 
 // recovered panics can be runtime.Error, error, string or anything else.
 func panicValToErr(h errDecorator, v interface{}, err *error) {
-	// fmt.Printf("calling panicValToErr: (%T), %v\n", v, v)
-	// debug.PrintStack()
 	if v == *err {
 		return
 	}
@@ -2309,9 +2307,7 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 	case nil:
 	case runtime.Error:
 		d, dok := h.(decoderI)
-		// fmt.Printf("treating as a runtime error, is h a decoderI? %v\n", dok)
 		if dok && d.isBytes() && isSliceBoundsError(xerr.Error()) {
-			// fmt.Printf("returning io.ErrUnexpectedEOF\n")
 			*err = io.ErrUnexpectedEOF
 		} else {
 			h.wrapErr(xerr, err)
@@ -2896,7 +2892,6 @@ func (x internerMap) string(v []byte) (s string) {
 // func callMake(v interface{}) {
 // 	r := reflect.ValueOf(v)
 // 	m := r.MethodByName("Make")
-// 	// fmt.Printf("callMake: on r: %v (of type: %T), m: %v\n", v, v, m)
 // 	m.Call(nil)
 // }
 
@@ -2932,4 +2927,21 @@ func callMake(v interface{}) {
 // 	m.keys[m.num] = k
 // 	m.values[m.num] = v
 // 	m.num++
+// }
+
+// func binarySearchUintptr(s []uintptr, v uintptr) (i uint, ok bool) {
+// 	// binary search. Adapted from sort/search.go. Use goto (not for loop) to allow inlining.
+// 	var h uint // var h, i uint
+// 	var j = uint(len(s))
+// LOOP:
+// 	if i < j {
+// 		h = (i + j) >> 1 // avoid overflow when computing h // h = i + (j-i)/2
+// 		if s[h] < v {
+// 			i = h + 1
+// 		} else {
+// 			j = h
+// 		}
+// 		goto LOOP
+// 	}
+// 	return i, i < uint(len(s)) && s[i] == v
 // }

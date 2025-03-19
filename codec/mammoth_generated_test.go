@@ -1197,7 +1197,6 @@ func __doTestMammothSlices(t *testing.T, h Handle) {
 
 func __doTestMammothMaps(t *testing.T, h Handle) {
 	for _, v := range []map[string]interface{}{nil, {}, {"some-string-1": nil, "some-string-2": "string-is-an-interface-1"}} {
-		// fmt.Printf(">>>> running mammoth map v28: %v\n", v)
 		var v28v1, v28v2 map[string]interface{}
 		var bs28 []byte
 		v28v1 = v
@@ -1248,7 +1247,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[string]string{nil, {}, {"some-string-3": "", "some-string-1": "some-string-2"}} {
-		// fmt.Printf(">>>> running mammoth map v29: %v\n", v)
 		var v29v1, v29v2 map[string]string
 		var bs29 []byte
 		v29v1 = v
@@ -1299,7 +1297,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[string][]byte{nil, {}, {"some-string-3": nil, "some-string-1": []byte("some-string-1")}} {
-		// fmt.Printf(">>>> running mammoth map v30: %v\n", v)
 		var v30v1, v30v2 map[string][]byte
 		var bs30 []byte
 		v30v1 = v
@@ -1350,7 +1347,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[string]uint8{nil, {}, {"some-string-2": 0, "some-string-3": 127}} {
-		// fmt.Printf(">>>> running mammoth map v31: %v\n", v)
 		var v31v1, v31v2 map[string]uint8
 		var bs31 []byte
 		v31v1 = v
@@ -1401,7 +1397,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[string]uint64{nil, {}, {"some-string-1": 0, "some-string-2": 111}} {
-		// fmt.Printf(">>>> running mammoth map v32: %v\n", v)
 		var v32v1, v32v2 map[string]uint64
 		var bs32 []byte
 		v32v1 = v
@@ -1452,7 +1447,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[string]int{nil, {}, {"some-string-3": 0, "some-string-1": 77}} {
-		// fmt.Printf(">>>> running mammoth map v33: %v\n", v)
 		var v33v1, v33v2 map[string]int
 		var bs33 []byte
 		v33v1 = v
@@ -1503,7 +1497,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[string]int32{nil, {}, {"some-string-2": 0, "some-string-3": 127}} {
-		// fmt.Printf(">>>> running mammoth map v34: %v\n", v)
 		var v34v1, v34v2 map[string]int32
 		var bs34 []byte
 		v34v1 = v
@@ -1554,7 +1547,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[string]float64{nil, {}, {"some-string-1": 0, "some-string-2": 33.3e3}} {
-		// fmt.Printf(">>>> running mammoth map v35: %v\n", v)
 		var v35v1, v35v2 map[string]float64
 		var bs35 []byte
 		v35v1 = v
@@ -1605,7 +1597,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[string]bool{nil, {}, {"some-string-3": false, "some-string-1": true}} {
-		// fmt.Printf(">>>> running mammoth map v36: %v\n", v)
 		var v36v1, v36v2 map[string]bool
 		var bs36 []byte
 		v36v1 = v
@@ -1656,7 +1647,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint8]interface{}{nil, {}, {111: nil, 77: "string-is-an-interface-2"}} {
-		// fmt.Printf(">>>> running mammoth map v37: %v\n", v)
 		var v37v1, v37v2 map[uint8]interface{}
 		var bs37 []byte
 		v37v1 = v
@@ -1707,7 +1697,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint8]string{nil, {}, {127: "", 111: "some-string-2"}} {
-		// fmt.Printf(">>>> running mammoth map v38: %v\n", v)
 		var v38v1, v38v2 map[uint8]string
 		var bs38 []byte
 		v38v1 = v
@@ -1758,7 +1747,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint8][]byte{nil, {}, {77: nil, 127: []byte("some-string-2")}} {
-		// fmt.Printf(">>>> running mammoth map v39: %v\n", v)
 		var v39v1, v39v2 map[uint8][]byte
 		var bs39 []byte
 		v39v1 = v
@@ -1809,7 +1797,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint8]uint8{nil, {}, {111: 0, 77: 127}} {
-		// fmt.Printf(">>>> running mammoth map v40: %v\n", v)
 		var v40v1, v40v2 map[uint8]uint8
 		var bs40 []byte
 		v40v1 = v
@@ -1860,7 +1847,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint8]uint64{nil, {}, {111: 0, 77: 127}} {
-		// fmt.Printf(">>>> running mammoth map v41: %v\n", v)
 		var v41v1, v41v2 map[uint8]uint64
 		var bs41 []byte
 		v41v1 = v
@@ -1911,7 +1897,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint8]int{nil, {}, {111: 0, 77: 127}} {
-		// fmt.Printf(">>>> running mammoth map v42: %v\n", v)
 		var v42v1, v42v2 map[uint8]int
 		var bs42 []byte
 		v42v1 = v
@@ -1962,7 +1947,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint8]int32{nil, {}, {111: 0, 77: 127}} {
-		// fmt.Printf(">>>> running mammoth map v43: %v\n", v)
 		var v43v1, v43v2 map[uint8]int32
 		var bs43 []byte
 		v43v1 = v
@@ -2013,7 +1997,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint8]float64{nil, {}, {111: 0, 77: 11.1}} {
-		// fmt.Printf(">>>> running mammoth map v44: %v\n", v)
 		var v44v1, v44v2 map[uint8]float64
 		var bs44 []byte
 		v44v1 = v
@@ -2064,7 +2047,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint8]bool{nil, {}, {127: false, 111: false}} {
-		// fmt.Printf(">>>> running mammoth map v45: %v\n", v)
 		var v45v1, v45v2 map[uint8]bool
 		var bs45 []byte
 		v45v1 = v
@@ -2115,7 +2097,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint64]interface{}{nil, {}, {77: nil, 127: "string-is-an-interface-3"}} {
-		// fmt.Printf(">>>> running mammoth map v46: %v\n", v)
 		var v46v1, v46v2 map[uint64]interface{}
 		var bs46 []byte
 		v46v1 = v
@@ -2166,7 +2147,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint64]string{nil, {}, {111: "", 77: "some-string-3"}} {
-		// fmt.Printf(">>>> running mammoth map v47: %v\n", v)
 		var v47v1, v47v2 map[uint64]string
 		var bs47 []byte
 		v47v1 = v
@@ -2217,7 +2197,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint64][]byte{nil, {}, {127: nil, 111: []byte("some-string-3")}} {
-		// fmt.Printf(">>>> running mammoth map v48: %v\n", v)
 		var v48v1, v48v2 map[uint64][]byte
 		var bs48 []byte
 		v48v1 = v
@@ -2268,7 +2247,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint64]uint8{nil, {}, {77: 0, 127: 111}} {
-		// fmt.Printf(">>>> running mammoth map v49: %v\n", v)
 		var v49v1, v49v2 map[uint64]uint8
 		var bs49 []byte
 		v49v1 = v
@@ -2319,7 +2297,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint64]uint64{nil, {}, {77: 0, 127: 111}} {
-		// fmt.Printf(">>>> running mammoth map v50: %v\n", v)
 		var v50v1, v50v2 map[uint64]uint64
 		var bs50 []byte
 		v50v1 = v
@@ -2370,7 +2347,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint64]int{nil, {}, {77: 0, 127: 111}} {
-		// fmt.Printf(">>>> running mammoth map v51: %v\n", v)
 		var v51v1, v51v2 map[uint64]int
 		var bs51 []byte
 		v51v1 = v
@@ -2421,7 +2397,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint64]int32{nil, {}, {77: 0, 127: 111}} {
-		// fmt.Printf(">>>> running mammoth map v52: %v\n", v)
 		var v52v1, v52v2 map[uint64]int32
 		var bs52 []byte
 		v52v1 = v
@@ -2472,7 +2447,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint64]float64{nil, {}, {77: 0, 127: 22.2}} {
-		// fmt.Printf(">>>> running mammoth map v53: %v\n", v)
 		var v53v1, v53v2 map[uint64]float64
 		var bs53 []byte
 		v53v1 = v
@@ -2523,7 +2497,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[uint64]bool{nil, {}, {111: false, 77: true}} {
-		// fmt.Printf(">>>> running mammoth map v54: %v\n", v)
 		var v54v1, v54v2 map[uint64]bool
 		var bs54 []byte
 		v54v1 = v
@@ -2574,7 +2547,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int]interface{}{nil, {}, {127: nil, 111: "string-is-an-interface-1"}} {
-		// fmt.Printf(">>>> running mammoth map v55: %v\n", v)
 		var v55v1, v55v2 map[int]interface{}
 		var bs55 []byte
 		v55v1 = v
@@ -2625,7 +2597,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int]string{nil, {}, {77: "", 127: "some-string-1"}} {
-		// fmt.Printf(">>>> running mammoth map v56: %v\n", v)
 		var v56v1, v56v2 map[int]string
 		var bs56 []byte
 		v56v1 = v
@@ -2676,7 +2647,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int][]byte{nil, {}, {111: nil, 77: []byte("some-string-1")}} {
-		// fmt.Printf(">>>> running mammoth map v57: %v\n", v)
 		var v57v1, v57v2 map[int][]byte
 		var bs57 []byte
 		v57v1 = v
@@ -2727,7 +2697,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int]uint8{nil, {}, {127: 0, 111: 77}} {
-		// fmt.Printf(">>>> running mammoth map v58: %v\n", v)
 		var v58v1, v58v2 map[int]uint8
 		var bs58 []byte
 		v58v1 = v
@@ -2778,7 +2747,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int]uint64{nil, {}, {127: 0, 111: 77}} {
-		// fmt.Printf(">>>> running mammoth map v59: %v\n", v)
 		var v59v1, v59v2 map[int]uint64
 		var bs59 []byte
 		v59v1 = v
@@ -2829,7 +2797,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int]int{nil, {}, {127: 0, 111: 77}} {
-		// fmt.Printf(">>>> running mammoth map v60: %v\n", v)
 		var v60v1, v60v2 map[int]int
 		var bs60 []byte
 		v60v1 = v
@@ -2880,7 +2847,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int]int32{nil, {}, {127: 0, 111: 77}} {
-		// fmt.Printf(">>>> running mammoth map v61: %v\n", v)
 		var v61v1, v61v2 map[int]int32
 		var bs61 []byte
 		v61v1 = v
@@ -2931,7 +2897,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int]float64{nil, {}, {127: 0, 111: 33.3e3}} {
-		// fmt.Printf(">>>> running mammoth map v62: %v\n", v)
 		var v62v1, v62v2 map[int]float64
 		var bs62 []byte
 		v62v1 = v
@@ -2982,7 +2947,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int]bool{nil, {}, {77: false, 127: true}} {
-		// fmt.Printf(">>>> running mammoth map v63: %v\n", v)
 		var v63v1, v63v2 map[int]bool
 		var bs63 []byte
 		v63v1 = v
@@ -3033,7 +2997,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int32]interface{}{nil, {}, {111: nil, 77: "string-is-an-interface-2"}} {
-		// fmt.Printf(">>>> running mammoth map v64: %v\n", v)
 		var v64v1, v64v2 map[int32]interface{}
 		var bs64 []byte
 		v64v1 = v
@@ -3084,7 +3047,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int32]string{nil, {}, {127: "", 111: "some-string-2"}} {
-		// fmt.Printf(">>>> running mammoth map v65: %v\n", v)
 		var v65v1, v65v2 map[int32]string
 		var bs65 []byte
 		v65v1 = v
@@ -3135,7 +3097,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int32][]byte{nil, {}, {77: nil, 127: []byte("some-string-2")}} {
-		// fmt.Printf(">>>> running mammoth map v66: %v\n", v)
 		var v66v1, v66v2 map[int32][]byte
 		var bs66 []byte
 		v66v1 = v
@@ -3186,7 +3147,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int32]uint8{nil, {}, {111: 0, 77: 127}} {
-		// fmt.Printf(">>>> running mammoth map v67: %v\n", v)
 		var v67v1, v67v2 map[int32]uint8
 		var bs67 []byte
 		v67v1 = v
@@ -3237,7 +3197,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int32]uint64{nil, {}, {111: 0, 77: 127}} {
-		// fmt.Printf(">>>> running mammoth map v68: %v\n", v)
 		var v68v1, v68v2 map[int32]uint64
 		var bs68 []byte
 		v68v1 = v
@@ -3288,7 +3247,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int32]int{nil, {}, {111: 0, 77: 127}} {
-		// fmt.Printf(">>>> running mammoth map v69: %v\n", v)
 		var v69v1, v69v2 map[int32]int
 		var bs69 []byte
 		v69v1 = v
@@ -3339,7 +3297,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int32]int32{nil, {}, {111: 0, 77: 127}} {
-		// fmt.Printf(">>>> running mammoth map v70: %v\n", v)
 		var v70v1, v70v2 map[int32]int32
 		var bs70 []byte
 		v70v1 = v
@@ -3390,7 +3347,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int32]float64{nil, {}, {111: 0, 77: 11.1}} {
-		// fmt.Printf(">>>> running mammoth map v71: %v\n", v)
 		var v71v1, v71v2 map[int32]float64
 		var bs71 []byte
 		v71v1 = v
@@ -3441,7 +3397,6 @@ func __doTestMammothMaps(t *testing.T, h Handle) {
 		}
 	}
 	for _, v := range []map[int32]bool{nil, {}, {127: false, 111: false}} {
-		// fmt.Printf(">>>> running mammoth map v72: %v\n", v)
 		var v72v1, v72v2 map[int32]bool
 		var bs72 []byte
 		v72v1 = v

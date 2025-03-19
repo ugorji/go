@@ -53,7 +53,6 @@ func testHEDGet(h Handle) (d *testHED) {
 	for i := range testHEDs {
 		v := &testHEDs[i]
 		if v.H == h {
-			// fmt.Printf("testHEDGet: <cached> h: %v\n", h)
 			return v
 		}
 	}
@@ -65,7 +64,6 @@ func testHEDGet(h Handle) (d *testHED) {
 		Db:  NewDecoderBytes(nil, h),
 	})
 	d = &testHEDs[len(testHEDs)-1]
-	// fmt.Printf("testHEDGet: <new> h: %v\n", h)
 	return
 }
 
@@ -120,7 +118,6 @@ func testSharedCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, o
 	useIO := testUseIoEncDec >= 0
 	if testUseReset && !testUseParallel {
 		hed := testHEDGet(h)
-		// fmt.Printf("testSharedCodecDecoder: <hed>: %v\n", hed)
 		if useIO {
 			d = hed.Dio
 		} else {
@@ -130,9 +127,7 @@ func testSharedCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, o
 		d = NewDecoder(nil, h)
 	} else {
 		d = NewDecoderBytes(nil, h)
-		// fmt.Printf("testSharedCodecDecoder: not use IO: d: %v\n", d)
 	}
-	// fmt.Printf("testSharedCodecDecoder: d: %v\n", d)
 	if useIO {
 		buf := bytes.NewReader(bs)
 		oldReadBufferSize = bh.ReaderBufferSize

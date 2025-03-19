@@ -1045,7 +1045,6 @@ func (e *encoder[T]) init(h Handle) {
 	// e.fp = fastpathEList[T]()
 	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEs[T])
 
-	// fmt.Printf("encoder.init: after driver.init: bytes: %v\n", e.bytes)
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
 		e.rtidFnNoExt = &e.h.rtidFnsEncNoExtBytes
@@ -1573,7 +1572,6 @@ var errEncNoResetWriterWithBytes = errors.New("cannot reset an Encoder which out
 // This accommodates using the state of the Encoder,
 // where it has "cached" information about sub-engines.
 func (e *encoder[T]) Reset(w io.Writer) (err error) {
-	// fmt.Printf("encoder.Reset: bytes: %v\n", e.bytes)
 	if e.bytes {
 		return errEncNoResetBytesWithWriter
 	}
@@ -1587,7 +1585,6 @@ func (e *encoder[T]) Reset(w io.Writer) (err error) {
 
 // ResetBytes resets the Encoder with a new destination output []byte.
 func (e *encoder[T]) ResetBytes(out *[]byte) (err error) {
-	// fmt.Printf("encoder.ResetBytes: bytes: %v\n", e.bytes)
 	if !e.bytes {
 		return errEncNoResetWriterWithBytes
 	}
@@ -1649,11 +1646,9 @@ func sideEncoder[T encDriver](out *[]byte, e *encoderShared, h Handle) (se *enco
 
 func encResetBytes[T encWriter](w T, out *[]byte) (ok bool) {
 	v, ok := any(w).(bytesEncAppenderM)
-	// fmt.Printf("encResetBytes: v: %v, ok: %v, out: %v\n", v, ok, out)
 	if ok {
 		v.reset(*out, out)
 	}
-	// fmt.Printf("resetOutBytes: e.w: %v of type: %T (ok=%v)\n", any(w), any(w), ok)
 	return
 }
 
@@ -1662,7 +1657,6 @@ func encResetIO[T encWriter](w T, out io.Writer, bufsize int, blist *bytesFreeli
 	if ok {
 		v.reset(out, bufsize, blist)
 	}
-	// fmt.Printf("resetOutIO: e.w: %v of type: %T (ok=%v)\n", any(w), any(w), ok)
 	return
 }
 
@@ -1670,7 +1664,6 @@ func newEncDriverBytes[T encDriver](out *[]byte, h Handle) *encoder[T] {
 	var c1 encoder[T]
 	c1.bytes = true
 	c1.init(h)
-	// fmt.Printf("newEnc: bytes: %v\n", c2.bytes)
 	c1.ResetBytes(out) // MARKER check for error
 	return &c1
 }
