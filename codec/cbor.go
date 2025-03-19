@@ -124,6 +124,8 @@ type cborEncDriver[T encWriter] struct {
 	encDriverNoopContainerWriter
 	encDriverContainerNoTrackerT
 
+	bigen bigenWriter[T]
+
 	h   *CborHandle
 	e   *encoderShared
 	w   T
@@ -148,21 +150,19 @@ func (e *cborEncDriver[T]) EncodeBool(b bool) {
 }
 
 func (e *cborEncDriver[T]) EncodeFloat32(f float32) {
-	var bigen bigenWriter[T]
 	b := math.Float32bits(f)
 	if e.h.OptimumSize {
 		if h := floatToHalfFloatBits(b); halfFloatToFloatBits(h) == b {
 			e.w.writen1(cborBdFloat16)
-			bigen.writeUint16(e.w, h)
+			e.bigen.writeUint16(e.w, h)
 			return
 		}
 	}
 	e.w.writen1(cborBdFloat32)
-	bigen.writeUint32(e.w, b)
+	e.bigen.writeUint32(e.w, b)
 }
 
 func (e *cborEncDriver[T]) EncodeFloat64(f float64) {
-	var bigen bigenWriter[T]
 	if e.h.OptimumSize {
 		if f32 := float32(f); float64(f32) == f {
 			e.EncodeFloat32(f32)
@@ -170,24 +170,23 @@ func (e *cborEncDriver[T]) EncodeFloat64(f float64) {
 		}
 	}
 	e.w.writen1(cborBdFloat64)
-	bigen.writeUint64(e.w, math.Float64bits(f))
+	e.bigen.writeUint64(e.w, math.Float64bits(f))
 }
 
 func (e *cborEncDriver[T]) encUint(v uint64, bd byte) {
-	var bigen bigenWriter[T]
 	if v <= 0x17 {
 		e.w.writen1(byte(v) + bd)
 	} else if v <= math.MaxUint8 {
 		e.w.writen2(bd+0x18, uint8(v))
 	} else if v <= math.MaxUint16 {
 		e.w.writen1(bd + 0x19)
-		bigen.writeUint16(e.w, uint16(v))
+		e.bigen.writeUint16(e.w, uint16(v))
 	} else if v <= math.MaxUint32 {
 		e.w.writen1(bd + 0x1a)
-		bigen.writeUint32(e.w, uint32(v))
+		e.bigen.writeUint32(e.w, uint32(v))
 	} else { // if v <= math.MaxUint64 {
 		e.w.writen1(bd + 0x1b)
-		bigen.writeUint64(e.w, v)
+		e.bigen.writeUint64(e.w, v)
 	}
 }
 

@@ -175,6 +175,8 @@ type msgpackEncDriver[T encWriter] struct {
 	encDriverContainerNoTrackerT
 	encInit2er
 
+	bigen bigenWriter[T]
+
 	h *MsgpackHandle
 	e *encoderShared
 	w T
@@ -186,19 +188,18 @@ func (e *msgpackEncDriver[T]) EncodeNil() {
 }
 
 func (e *msgpackEncDriver[T]) EncodeInt(i int64) {
-	var bigen bigenWriter[T]
 	if e.h.PositiveIntUnsigned && i >= 0 {
 		e.EncodeUint(uint64(i))
 	} else if i > math.MaxInt8 {
 		if i <= math.MaxInt16 {
 			e.w.writen1(mpInt16)
-			bigen.writeUint16(e.w, uint16(i))
+			e.bigen.writeUint16(e.w, uint16(i))
 		} else if i <= math.MaxInt32 {
 			e.w.writen1(mpInt32)
-			bigen.writeUint32(e.w, uint32(i))
+			e.bigen.writeUint32(e.w, uint32(i))
 		} else {
 			e.w.writen1(mpInt64)
-			bigen.writeUint64(e.w, uint64(i))
+			e.bigen.writeUint64(e.w, uint64(i))
 		}
 	} else if i >= -32 {
 		if e.h.NoFixedNum {
@@ -210,18 +211,17 @@ func (e *msgpackEncDriver[T]) EncodeInt(i int64) {
 		e.w.writen2(mpInt8, byte(i))
 	} else if i >= math.MinInt16 {
 		e.w.writen1(mpInt16)
-		bigen.writeUint16(e.w, uint16(i))
+		e.bigen.writeUint16(e.w, uint16(i))
 	} else if i >= math.MinInt32 {
 		e.w.writen1(mpInt32)
-		bigen.writeUint32(e.w, uint32(i))
+		e.bigen.writeUint32(e.w, uint32(i))
 	} else {
 		e.w.writen1(mpInt64)
-		bigen.writeUint64(e.w, uint64(i))
+		e.bigen.writeUint64(e.w, uint64(i))
 	}
 }
 
 func (e *msgpackEncDriver[T]) EncodeUint(i uint64) {
-	var bigen bigenWriter[T]
 	if i <= math.MaxInt8 {
 		if e.h.NoFixedNum {
 			e.w.writen2(mpUint8, byte(i))
@@ -232,13 +232,13 @@ func (e *msgpackEncDriver[T]) EncodeUint(i uint64) {
 		e.w.writen2(mpUint8, byte(i))
 	} else if i <= math.MaxUint16 {
 		e.w.writen1(mpUint16)
-		bigen.writeUint16(e.w, uint16(i))
+		e.bigen.writeUint16(e.w, uint16(i))
 	} else if i <= math.MaxUint32 {
 		e.w.writen1(mpUint32)
-		bigen.writeUint32(e.w, uint32(i))
+		e.bigen.writeUint32(e.w, uint32(i))
 	} else {
 		e.w.writen1(mpUint64)
-		bigen.writeUint64(e.w, uint64(i))
+		e.bigen.writeUint64(e.w, uint64(i))
 	}
 }
 
@@ -251,19 +251,16 @@ func (e *msgpackEncDriver[T]) EncodeBool(b bool) {
 }
 
 func (e *msgpackEncDriver[T]) EncodeFloat32(f float32) {
-	var bigen bigenWriter[T]
 	e.w.writen1(mpFloat)
-	bigen.writeUint32(e.w, math.Float32bits(f))
+	e.bigen.writeUint32(e.w, math.Float32bits(f))
 }
 
 func (e *msgpackEncDriver[T]) EncodeFloat64(f float64) {
-	var bigen bigenWriter[T]
 	e.w.writen1(mpDouble)
-	bigen.writeUint64(e.w, math.Float64bits(f))
+	e.bigen.writeUint64(e.w, math.Float64bits(f))
 }
 
 func (e *msgpackEncDriver[T]) EncodeTime(t time.Time) {
-	var bigen bigenWriter[T]
 	if t.IsZero() {
 		e.EncodeNil()
 		return
@@ -287,12 +284,12 @@ func (e *msgpackEncDriver[T]) EncodeTime(t time.Time) {
 	}
 	switch l {
 	case 4:
-		bigen.writeUint32(e.w, uint32(data64))
+		e.bigen.writeUint32(e.w, uint32(data64))
 	case 8:
-		bigen.writeUint64(e.w, data64)
+		e.bigen.writeUint64(e.w, data64)
 	case 12:
-		bigen.writeUint32(e.w, uint32(nsec))
-		bigen.writeUint64(e.w, uint64(sec))
+		e.bigen.writeUint32(e.w, uint32(nsec))
+		e.bigen.writeUint64(e.w, uint64(sec))
 	}
 }
 
@@ -331,7 +328,6 @@ func (e *msgpackEncDriver[T]) EncodeRawExt(re *RawExt) {
 }
 
 func (e *msgpackEncDriver[T]) encodeExtPreamble(xtag byte, l int) {
-	var bigen bigenWriter[T]
 	if l == 1 {
 		e.w.writen2(mpFixExt1, xtag)
 	} else if l == 2 {
@@ -347,11 +343,11 @@ func (e *msgpackEncDriver[T]) encodeExtPreamble(xtag byte, l int) {
 		e.w.writen1(xtag)
 	} else if l < 65536 {
 		e.w.writen1(mpExt16)
-		bigen.writeUint16(e.w, uint16(l))
+		e.bigen.writeUint16(e.w, uint16(l))
 		e.w.writen1(xtag)
 	} else {
 		e.w.writen1(mpExt32)
-		bigen.writeUint32(e.w, uint32(l))
+		e.bigen.writeUint32(e.w, uint32(l))
 		e.w.writen1(xtag)
 	}
 }
@@ -397,17 +393,16 @@ func (e *msgpackEncDriver[T]) EncodeStringBytesRaw(bs []byte) {
 }
 
 func (e *msgpackEncDriver[T]) writeContainerLen(ct msgpackContainerType, l int) {
-	var bigen bigenWriter[T]
 	if ct.fixCutoff > 0 && l < int(ct.fixCutoff) {
 		e.w.writen1(ct.bFixMin | byte(l))
 	} else if ct.b8 > 0 && l < 256 {
 		e.w.writen2(ct.b8, uint8(l))
 	} else if l < 65536 {
 		e.w.writen1(ct.b16)
-		bigen.writeUint16(e.w, uint16(l))
+		e.bigen.writeUint16(e.w, uint16(l))
 	} else {
 		e.w.writen1(ct.b32)
-		bigen.writeUint32(e.w, uint32(l))
+		e.bigen.writeUint32(e.w, uint32(l))
 	}
 }
 
