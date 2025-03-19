@@ -1255,15 +1255,9 @@ func (noBuiltInTypes) DecodeBuiltin(rt uintptr, v interface{}) {}
 //
 // retrofitted from stdlib: encoding/binary/BigEndian (ByteOrder)
 type bigenHelper struct{}
-type bigenWriter[T encWriter] struct {
-	bigenHelper
-}
 
-func (z bigenHelper) PutUint16(v uint16) (b [2]byte) {
-	return [...]byte{
-		byte(v >> 8),
-		byte(v),
-	}
+func (z bigenHelper) PutUint16(v uint16) (b1, b2 byte) {
+	return byte(v >> 8), byte(v)
 }
 
 func (z bigenHelper) PutUint32(v uint32) (b [4]byte) {
@@ -1311,22 +1305,25 @@ func (z bigenHelper) Uint64(b [8]byte) (v uint64) {
 		uint64(b[0])<<56
 }
 
-func (z bigenWriter[T]) writeUint16(w T, v uint16) {
-	x := z.PutUint16(v)
-	w.writen2(x[0], x[1])
-}
-
-func (z bigenWriter[T]) writeUint32(w T, v uint32) {
-	// w.writeb((z.PutUint32(v))[:])
-	// x := z.PutUint32(v)
-	// w.writeb(x[:])
-	// w.writen4(x[0], x[1], x[2], x[3])
-	w.writen4(z.PutUint32(v))
-}
-
-func (z bigenWriter[T]) writeUint64(w T, v uint64) {
-	w.writen8(z.PutUint64(v))
-}
+// type bigenWriter[T encWriter] struct {
+// 	bigenHelper
+// }
+//
+// func (z bigenWriter[T]) writeUint16(w T, v uint16) {
+// 	w.writen2(z.PutUint16(v))
+// }
+//
+// func (z bigenWriter[T]) writeUint32(w T, v uint32) {
+// 	// w.writeb((z.PutUint32(v))[:])
+// 	// x := z.PutUint32(v)
+// 	// w.writeb(x[:])
+// 	// w.writen4(x[0], x[1], x[2], x[3])
+// 	w.writen4(z.PutUint32(v))
+// }
+//
+// func (z bigenWriter[T]) writeUint64(w T, v uint64) {
+// 	w.writen8(z.PutUint64(v))
+// }
 
 type extTypeTagFn struct {
 	rtid    uintptr

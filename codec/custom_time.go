@@ -88,10 +88,10 @@ func customEncodeTime(t time.Time) []byte {
 		// zoneName, zoneOffset := t.Zone()
 		zoneOffset /= 60
 		z := uint16(zoneOffset)
-		btmp := bigen.PutUint16(z)
+		btmp0, btmp1 := bigen.PutUint16(z)
 		// clear dst flags
-		bs[i] = btmp[0] & 0x3f
-		bs[i+1] = btmp[1]
+		bs[i] = btmp0 & 0x3f
+		bs[i+1] = btmp1
 		i = i + 2
 	}
 	bs[0] = bd

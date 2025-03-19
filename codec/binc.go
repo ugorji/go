@@ -122,8 +122,6 @@ type bincEncDriver[T encWriter] struct {
 	encDriverContainerNoTrackerT
 	encInit2er
 
-	bigen bigenWriter[T]
-
 	h *BincHandle
 	e *encoderShared
 	w T
@@ -170,7 +168,7 @@ func (e *bincEncDriver[T]) encSpFloat(f float64) (done bool) {
 func (e *bincEncDriver[T]) EncodeFloat32(f float32) {
 	if !e.encSpFloat(float64(f)) {
 		e.w.writen1(bincVdFloat<<4 | bincFlBin32)
-		e.bigen.writeUint32(e.w, math.Float32bits(f))
+		e.w.writen4(bigen.PutUint32(math.Float32bits(f)))
 	}
 }
 
@@ -242,7 +240,7 @@ func (e *bincEncDriver[T]) encUint(bd byte, pos bool, v uint64) {
 		e.w.writen2(bd|0x0, byte(v))
 	} else if v <= math.MaxUint16 {
 		e.w.writen1(bd | 0x01)
-		e.bigen.writeUint16(e.w, uint16(v))
+		e.w.writen2(bigen.PutUint16(uint16(v)))
 	} else if v <= math.MaxUint32 {
 		e.encIntegerPrune32(bd, pos, v)
 	} else {
@@ -316,7 +314,7 @@ func (e *bincEncDriver[T]) EncodeSymbol(v string) {
 			e.w.writen2(bincVdSymbol<<4, byte(ui))
 		} else {
 			e.w.writen1(bincVdSymbol<<4 | 0x8)
-			e.bigen.writeUint16(e.w, ui)
+			e.w.writen2(bigen.PutUint16(ui))
 		}
 	} else {
 		e.e.seq++
@@ -336,16 +334,16 @@ func (e *bincEncDriver[T]) EncodeSymbol(v string) {
 			e.w.writen2(bincVdSymbol<<4|0x0|0x4|lenprec, byte(ui))
 		} else {
 			e.w.writen1(bincVdSymbol<<4 | 0x8 | 0x4 | lenprec)
-			e.bigen.writeUint16(e.w, ui)
+			e.w.writen2(bigen.PutUint16(ui))
 		}
 		if lenprec == 0 {
 			e.w.writen1(byte(l))
 		} else if lenprec == 1 {
-			e.bigen.writeUint16(e.w, uint16(l))
+			e.w.writen2(bigen.PutUint16(uint16(l)))
 		} else if lenprec == 2 {
-			e.bigen.writeUint32(e.w, uint32(l))
+			e.w.writen4(bigen.PutUint32(uint32(l)))
 		} else {
-			e.bigen.writeUint64(e.w, uint64(l))
+			e.w.writen8(bigen.PutUint64(uint64(l)))
 		}
 		e.w.writestr(v)
 	}
@@ -408,13 +406,13 @@ func (e *bincEncDriver[T]) encLenNumber(bd byte, v uint64) {
 		e.w.writen2(bd, byte(v))
 	} else if v <= math.MaxUint16 {
 		e.w.writen1(bd | 0x01)
-		e.bigen.writeUint16(e.w, uint16(v))
+		e.w.writen2(bigen.PutUint16(uint16(v)))
 	} else if v <= math.MaxUint32 {
 		e.w.writen1(bd | 0x02)
-		e.bigen.writeUint32(e.w, uint32(v))
+		e.w.writen4(bigen.PutUint32(uint32(v)))
 	} else {
 		e.w.writen1(bd | 0x03)
-		e.bigen.writeUint64(e.w, uint64(v))
+		e.w.writen8(bigen.PutUint64(uint64(v)))
 	}
 }
 

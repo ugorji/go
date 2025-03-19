@@ -124,8 +124,6 @@ type cborEncDriver[T encWriter] struct {
 	encDriverNoopContainerWriter
 	encDriverContainerNoTrackerT
 
-	bigen bigenWriter[T]
-
 	h   *CborHandle
 	e   *encoderShared
 	w   T
@@ -154,12 +152,12 @@ func (e *cborEncDriver[T]) EncodeFloat32(f float32) {
 	if e.h.OptimumSize {
 		if h := floatToHalfFloatBits(b); halfFloatToFloatBits(h) == b {
 			e.w.writen1(cborBdFloat16)
-			e.bigen.writeUint16(e.w, h)
+			e.w.writen2(bigen.PutUint16(h))
 			return
 		}
 	}
 	e.w.writen1(cborBdFloat32)
-	e.bigen.writeUint32(e.w, b)
+	e.w.writen4(bigen.PutUint32(b))
 }
 
 func (e *cborEncDriver[T]) EncodeFloat64(f float64) {
@@ -170,7 +168,7 @@ func (e *cborEncDriver[T]) EncodeFloat64(f float64) {
 		}
 	}
 	e.w.writen1(cborBdFloat64)
-	e.bigen.writeUint64(e.w, math.Float64bits(f))
+	e.w.writen8(bigen.PutUint64(math.Float64bits(f)))
 }
 
 func (e *cborEncDriver[T]) encUint(v uint64, bd byte) {
@@ -180,13 +178,13 @@ func (e *cborEncDriver[T]) encUint(v uint64, bd byte) {
 		e.w.writen2(bd+0x18, uint8(v))
 	} else if v <= math.MaxUint16 {
 		e.w.writen1(bd + 0x19)
-		e.bigen.writeUint16(e.w, uint16(v))
+		e.w.writen2(bigen.PutUint16(uint16(v)))
 	} else if v <= math.MaxUint32 {
 		e.w.writen1(bd + 0x1a)
-		e.bigen.writeUint32(e.w, uint32(v))
+		e.w.writen4(bigen.PutUint32(uint32(v)))
 	} else { // if v <= math.MaxUint64 {
 		e.w.writen1(bd + 0x1b)
-		e.bigen.writeUint64(e.w, v)
+		e.w.writen8(bigen.PutUint64(v))
 	}
 }
 
