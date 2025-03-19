@@ -22,7 +22,7 @@ package codec
 // if we are testing in parallel,
 // then we don't want to share much state: testBytesFreeList, etc.
 
-// Note (2025-03-07):
+// Note:
 // - this file should not depend on any types specific to a given format.
 // - all format-dependent code should be in <format>_test.go files.
 

@@ -218,8 +218,7 @@ import (
 //
 // Note: RPC tests depend on getting the error from an Encode/Decode call.
 // Consequently, they will always fail if debugging = true.
-// MARKER 2025: change to false
-const debugging = true
+const debugging = false
 
 const (
 	// containerLenUnknown is length returned from Read(Map|Array)Len
@@ -2333,7 +2332,7 @@ func usableByteSlice(bs []byte, slen int) (out []byte, changed bool) {
 	const maxCap = 1024 * 1024 * 64 // 64MB
 	const skipMaxCap = false        // allow to test
 	if slen <= 0 {
-		return zeroByteSlice, true // MARKER 2025 validate []byte{}, true
+		return zeroByteSlice, true
 	}
 	if slen <= cap(bs) {
 		return bs[:slen], false

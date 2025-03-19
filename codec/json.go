@@ -1035,7 +1035,7 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	bs1 := d.readUnescapedString()
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
-		bsOut = zeroByteSlice // MARKER 2025 []byte{}
+		bsOut = zeroByteSlice
 	} else if slen <= cap(bs) {
 		bsOut = bs[:slen]
 	} else if bs == nil {
