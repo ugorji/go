@@ -699,25 +699,3 @@ func (x *atomicRtidFnSlice) load() interface{} {
 func (x *atomicRtidFnSlice) store(p interface{}) {
 	x.v.Store(p)
 }
-
-func encFromRtidFnSlice[E encDriver](v interface{}) (s []encRtidFn[E]) {
-	if v != nil {
-		s = *(v.(*[]encRtidFn[E]))
-	}
-	return
-}
-
-func encToRtidFnSlice[E encDriver](s *[]encRtidFn[E]) interface{} {
-	return s
-}
-
-func decFromRtidFnSlice[D decDriver](v interface{}) (s []decRtidFn[D]) {
-	if v != nil {
-		s = *(v.(*[]decRtidFn[D]))
-	}
-	return
-}
-
-func decToRtidFnSlice[D decDriver](s *[]decRtidFn[D]) interface{} {
-	return s
-}

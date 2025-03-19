@@ -545,28 +545,6 @@ func (x *atomicRtidFnSlice) store(p unsafe.Pointer) {
 	atomic.StorePointer(&x.v, p)
 }
 
-func encFromRtidFnSlice[E encDriver](v unsafe.Pointer) (s []encRtidFn[E]) {
-	if v != nil {
-		s = *(*[]encRtidFn[E])(v)
-	}
-	return
-}
-
-func encToRtidFnSlice[E encDriver](s *[]encRtidFn[E]) unsafe.Pointer {
-	return unsafe.Pointer(s)
-}
-
-func decFromRtidFnSlice[D decDriver](v unsafe.Pointer) (s []decRtidFn[D]) {
-	if v != nil {
-		s = *(*[]decRtidFn[D])(v)
-	}
-	return
-}
-
-func decToRtidFnSlice[D decDriver](s *[]decRtidFn[D]) unsafe.Pointer {
-	return unsafe.Pointer(s)
-}
-
 // --------------------------
 
 // to create a reflect.Value for each member field of fauxUnion,
