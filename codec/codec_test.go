@@ -2337,7 +2337,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		in[i] = 'A'
 	}
 
-	e := NewEncoder(nil, h)
+	e := NewEncoderBytes(nil, h)
 
 	sizes = []int{
 		0, 1, 4, 8, 12, 16, 28, 32, 36,
@@ -2348,11 +2348,6 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		sizes = append(sizes,
 			math.MaxInt16-4, math.MaxInt16, math.MaxInt16+4,
 			math.MaxUint16, math.MaxUint16+4, math.MaxUint16-4)
-	}
-
-	// // MARKER 2025: test failing from here in unsafe mode. remove when fixed
-	if !safeMode {
-		t.Skipf("skipping ... LargeContainerLen tests failing in unsafe mode")
 	}
 
 	for _, i := range sizes {
@@ -2368,6 +2363,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		out = out[:0]
 		e.ResetBytes(&out)
 		e.MustEncode(m1)
+
 		// bs, _ = testMarshalErr(m1, h, t, "-")
 		m2 = make(map[string]bool, 1)
 		testUnmarshalErr(m2, out, h, t, "no-symbols-string")
