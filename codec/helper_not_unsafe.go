@@ -77,6 +77,14 @@ func isNil(v interface{}) (rv reflect.Value, isnil bool) {
 	return
 }
 
+func ptrToLowLevel(v interface{}) interface{} {
+	return v
+}
+
+func lowLevelToPtr[T any](v interface{}) *T {
+	return v.(*T)
+}
+
 func eq4i(i0, i1 interface{}) bool {
 	return i0 == i1
 }

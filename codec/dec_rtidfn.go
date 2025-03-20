@@ -70,6 +70,13 @@ LOOP:
 	return
 }
 
+func decFromRtidFnSlice1[D decDriver](fns *atomicRtidFnSlice) (s []decRtidFn[D]) {
+	if v := fns.load(); v != nil {
+		s = *(lowLevelToPtr[[]decRtidFn[D]](v))
+	}
+	return
+}
+
 func decFnViaBH[D decDriver](rt reflect.Type, fns *atomicRtidFnSlice, x *BasicHandle, fp *fastpathDs[D],
 	checkExt bool) (fn *decFn[D]) {
 	return decFnVia[D](rt, fns, x.typeInfos(), &x.mu, x.extHandle, fp,
@@ -81,7 +88,7 @@ func decFnVia[D decDriver](rt reflect.Type, fns *atomicRtidFnSlice,
 	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *decFn[D]) {
 	rtid := rt2id(rt)
 	var sp []decRtidFn[D]
-	sp = decFromRtidFnSlice[D](fns.load())
+	sp = decFromRtidFnSlice1[D](fns)
 	if sp != nil {
 		_, fn = decFindRtidFn[D](sp, rtid)
 	}
@@ -98,12 +105,12 @@ func decFnViaLoader[D decDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidF
 	fn = decFnLoad[D](rt, rtid, tinfos, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
 	var sp []decRtidFn[D]
 	mu.Lock()
-	sp = decFromRtidFnSlice[D](fns.load())
+	sp = decFromRtidFnSlice1[D](fns)
 	// since this is an atomic load/store, we MUST use a different array each time,
 	// else we have a data race when a store is happening simultaneously with a decFindRtidFn call.
 	if sp == nil {
 		sp = []decRtidFn[D]{{rtid, fn}}
-		fns.store(decToRtidFnSlice[D](&sp))
+		fns.store(ptrToLowLevel(&sp))
 	} else {
 		idx, fn2 := decFindRtidFn[D](sp, rtid)
 		if fn2 == nil {
@@ -111,7 +118,7 @@ func decFnViaLoader[D decDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidF
 			copy(sp2[idx+1:], sp[idx:])
 			copy(sp2, sp[:idx])
 			sp2[idx] = decRtidFn[D]{rtid, fn}
-			fns.store(decToRtidFnSlice[D](&sp2))
+			fns.store(ptrToLowLevel(&sp2))
 		}
 	}
 	mu.Unlock()

@@ -260,6 +260,14 @@ func unsafeIsNilIntfOrSlice(ui *unsafeIntf, v interface{}) (rv reflect.Value, is
 	return
 }
 
+func ptrToLowLevel[T any](ptr *T) unsafe.Pointer {
+	return unsafe.Pointer(ptr)
+}
+
+func lowLevelToPtr[T any](v unsafe.Pointer) *T {
+	return (*T)(v)
+}
+
 // return the pointer for a reference (map/chan/func/pointer/unsafe.Pointer).
 // true references (map, func, chan, ptr - NOT slice) may be double-referenced? as flagIndir
 //
