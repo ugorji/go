@@ -1211,8 +1211,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		// }
 		// return d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
 
-		// MARKER 2025 validate this logic
-
 		// maintain a [256]byte slice, for efficiently making strings with one byte
 		switch len(kstr2bs) {
 		case 0:
