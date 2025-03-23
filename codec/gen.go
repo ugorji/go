@@ -9,22 +9,750 @@ import (
 	"bytes"
 	"encoding/base32"
 	"errors"
-	"fmt"
+	"go/ast"
 	"go/format"
+	"go/parser"
+	"go/token"
 	"io"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
 	"sync"
 	"text/template"
-
 	// "ugorji.net/zz"
-	"unicode"
-	"unicode/utf8"
 )
+
+// ---------------------------------------------------
+
+const (
+	genTopLevelVarName = "x"
+
+	// genFastpathCanonical configures whether we support Canonical in fast path. Low savings.
+	//
+	// MARKER: This MUST ALWAYS BE TRUE. fast-path.go.tmpl doesn't handle it being false.
+	genFastpathCanonical = true
+
+	// genFastpathTrimTypes configures whether we trim uncommon fastpath types.
+	genFastpathTrimTypes = true
+)
+
+var genFormats = []string{"Json", "Cbor", "Msgpack", "Binc", "Simple"}
+
+var (
+	errGenAllTypesSamePkg        = errors.New("All types must be in the same package")
+	errGenExpectArrayOrMap       = errors.New("unexpected type - expecting array/map/slice")
+	errGenUnexpectedTypeFastpath = errors.New("fast-path: unexpected type - requires map or slice")
+
+	// don't use base64, only 63 characters allowed in valid go identifiers
+	// ie ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_
+	//
+	// don't use numbers, as a valid go identifer must start with a letter.
+	genTypenameEnc = base32.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef")
+	genQNameRegex  = regexp.MustCompile(`[A-Za-z_.]+`)
+)
+
+// --------
+
+func genCheckErr(err error) {
+	halt.onerror(err)
+}
+
+func genTitleCaseName(s string) string {
+	switch s {
+	case "interface{}", "interface {}":
+		return "Intf"
+	case "[]byte", "[]uint8", "bytes":
+		return "Bytes"
+	default:
+		return strings.ToUpper(s[0:1]) + s[1:]
+	}
+}
+
+// --------
+
+type genFastpathV struct {
+	// genFastpathV is either a primitive (Primitive != "") or a map (MapKey != "") or a slice
+	MapKey      string
+	Elem        string
+	Primitive   string
+	Size        int
+	NoCanonical bool
+}
+
+func (x *genFastpathV) MethodNamePfx(prefix string, prim bool) string {
+	var name []byte
+	if prefix != "" {
+		name = append(name, prefix...)
+	}
+	if prim {
+		name = append(name, genTitleCaseName(x.Primitive)...)
+	} else {
+		if x.MapKey == "" {
+			name = append(name, "Slice"...)
+		} else {
+			name = append(name, "Map"...)
+			name = append(name, genTitleCaseName(x.MapKey)...)
+		}
+		name = append(name, genTitleCaseName(x.Elem)...)
+	}
+	return string(name)
+}
+
+// --------
+
+type genTmpl struct {
+	Values  []genFastpathV
+	Formats []string
+}
+
+func (x genTmpl) FastpathLen() (l int) {
+	for _, v := range x.Values {
+		// if v.Primitive == "" && !(v.MapKey == "" && v.Elem == "uint8") {
+		if v.Primitive == "" {
+			l++
+		}
+	}
+	return
+}
+
+func genTmplZeroValue(s string) string {
+	switch s {
+	case "interface{}", "interface {}":
+		return "nil"
+	case "[]byte", "[]uint8", "bytes":
+		return "nil"
+	case "bool":
+		return "false"
+	case "string":
+		return `""`
+	default:
+		return "0"
+	}
+}
+
+var genTmplNonZeroValueIdx [6]uint64
+var genTmplNonZeroValueStrs = [...][6]string{
+	{`"string-is-an-interface-1"`, "true", `"some-string-1"`, `[]byte("some-string-1")`, "11.1", "111"},
+	{`"string-is-an-interface-2"`, "false", `"some-string-2"`, `[]byte("some-string-2")`, "22.2", "77"},
+	{`"string-is-an-interface-3"`, "true", `"some-string-3"`, `[]byte("some-string-3")`, "33.3e3", "127"},
+}
+
+// Note: last numbers must be in range: 0-127 (as they may be put into a int8, uint8, etc)
+
+func genTmplNonZeroValue(s string) string {
+	var i int
+	switch s {
+	case "interface{}", "interface {}":
+		i = 0
+	case "bool":
+		i = 1
+	case "string":
+		i = 2
+	case "bytes", "[]byte", "[]uint8":
+		i = 3
+	case "float32", "float64", "float", "double", "complex", "complex64", "complex128":
+		i = 4
+	default:
+		i = 5
+	}
+	genTmplNonZeroValueIdx[i]++
+	idx := genTmplNonZeroValueIdx[i]
+	slen := uint64(len(genTmplNonZeroValueStrs))
+	return genTmplNonZeroValueStrs[idx%slen][i] // return string, to remove ambiguity
+}
+
+// Note: used for fastpath only
+func genTmplEncCommandAsString(s string, vname string) string {
+	switch s {
+	case "uint64":
+		return "e.e.EncodeUint(" + vname + ")"
+	case "uint", "uint8", "uint16", "uint32":
+		return "e.e.EncodeUint(uint64(" + vname + "))"
+	case "int64":
+		return "e.e.EncodeInt(" + vname + ")"
+	case "int", "int8", "int16", "int32":
+		return "e.e.EncodeInt(int64(" + vname + "))"
+	case "[]byte", "[]uint8", "bytes":
+		return "e.e.EncodeStringBytesRaw(" + vname + ")"
+	case "string":
+		return "e.e.EncodeString(" + vname + ")"
+	case "float32":
+		return "e.e.EncodeFloat32(" + vname + ")"
+	case "float64":
+		return "e.e.EncodeFloat64(" + vname + ")"
+	case "bool":
+		return "e.e.EncodeBool(" + vname + ")"
+	// case "symbol":
+	// 	return "e.e.EncodeSymbol(" + vname + ")"
+	default:
+		return "e.encode(" + vname + ")"
+	}
+}
+
+// Note: used for fastpath only
+func genTmplDecCommandAsString(s string, mapkey bool) string {
+	switch s {
+	case "uint":
+		return "uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))"
+	case "uint8":
+		return "uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))"
+	case "uint16":
+		return "uint16(chkOvf.UintV(d.d.DecodeUint64(), 16))"
+	case "uint32":
+		return "uint32(chkOvf.UintV(d.d.DecodeUint64(), 32))"
+	case "uint64":
+		return "d.d.DecodeUint64()"
+	case "uintptr":
+		return "uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))"
+	case "int":
+		return "int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))"
+	case "int8":
+		return "int8(chkOvf.IntV(d.d.DecodeInt64(), 8))"
+	case "int16":
+		return "int16(chkOvf.IntV(d.d.DecodeInt64(), 16))"
+	case "int32":
+		return "int32(chkOvf.IntV(d.d.DecodeInt64(), 32))"
+	case "int64":
+		return "d.d.DecodeInt64()"
+
+	case "string":
+		// if mapkey {
+		// 	return "d.stringZC(d.d.DecodeStringAsBytes())"
+		// }
+		// return "string(d.d.DecodeStringAsBytes())"
+		return "d.stringZC(d.d.DecodeStringAsBytes())"
+	case "[]byte", "[]uint8", "bytes":
+		return "d.d.DecodeBytes(zeroByteSlice)"
+	case "float32":
+		return "float32(d.d.DecodeFloat32())"
+	case "float64":
+		return "d.d.DecodeFloat64()"
+	case "complex64":
+		return "complex(d.d.DecodeFloat32(), 0)"
+	case "complex128":
+		return "complex(d.d.DecodeFloat64(), 0)"
+	case "bool":
+		return "d.d.DecodeBool()"
+	default:
+		halt.onerror(errors.New("gen internal: unknown type for decode: " + s))
+	}
+	return ""
+}
+
+func genTmplSortType(s string, elem bool) string {
+	if elem {
+		return s
+	}
+	return s + "Slice"
+}
+
+// var genTmplMu sync.Mutex
+var genTmplV = genTmpl{}
+var genTmplFuncs template.FuncMap
+var genTmplOnce sync.Once
+
+func genTmplInit() {
+	wordSizeBytes := int(intBitsize) / 8
+
+	typesizes := map[string]int{
+		"interface{}": 2 * wordSizeBytes,
+		"string":      2 * wordSizeBytes,
+		"[]byte":      3 * wordSizeBytes,
+		"uint":        1 * wordSizeBytes,
+		"uint8":       1,
+		"uint16":      2,
+		"uint32":      4,
+		"uint64":      8,
+		"uintptr":     1 * wordSizeBytes,
+		"int":         1 * wordSizeBytes,
+		"int8":        1,
+		"int16":       2,
+		"int32":       4,
+		"int64":       8,
+		"float32":     4,
+		"float64":     8,
+		"complex64":   8,
+		"complex128":  16,
+		"bool":        1,
+	}
+
+	// keep as slice, so it is in specific iteration order.
+	// Initial order was uint64, string, interface{}, int, int64, ...
+
+	var types = [...]string{
+		"interface{}",
+		"string",
+		"[]byte",
+		"float32",
+		"float64",
+		"uint",
+		"uint8",
+		"uint16",
+		"uint32",
+		"uint64",
+		"uintptr",
+		"int",
+		"int8",
+		"int16",
+		"int32",
+		"int64",
+		"bool",
+	}
+
+	var primitivetypes, slicetypes, mapkeytypes, mapvaltypes []string
+
+	primitivetypes = types[:]
+
+	slicetypes = types[:]
+	mapkeytypes = types[:]
+	mapvaltypes = types[:]
+
+	if genFastpathTrimTypes {
+		// Note: we only create fast-paths for commonly used types.
+		// Consequently, things like int8, uint16, uint, etc are commented out.
+		slicetypes = []string{
+			"interface{}",
+			"string",
+			"[]byte",
+			"float32",
+			"float64",
+			"uint8", // keep fast-path, so it doesn't have to go through reflection
+			"uint64",
+			"int",
+			"int32", // rune
+			"int64",
+			"bool",
+		}
+		mapkeytypes = []string{
+			"string",
+			"uint8",  // byte
+			"uint64", // used for keys
+			"int",    // default number key
+			"int32",  // rune
+		}
+		mapvaltypes = []string{
+			"interface{}",
+			"string",
+			"[]byte",
+			"uint8",  // byte
+			"uint64", // used for keys, etc
+			"int",    // default number
+			"int32",  // rune (mostly used for unicode)
+			"float64",
+			"bool",
+		}
+	}
+
+	var gt = genTmpl{Formats: genFormats}
+
+	// For each slice or map type, there must be a (symmetrical) Encode and Decode fast-path function
+
+	for _, s := range primitivetypes {
+		gt.Values = append(gt.Values,
+			genFastpathV{Primitive: s, Size: typesizes[s], NoCanonical: !genFastpathCanonical})
+	}
+	for _, s := range slicetypes {
+		gt.Values = append(gt.Values,
+			genFastpathV{Elem: s, Size: typesizes[s], NoCanonical: !genFastpathCanonical})
+	}
+	for _, s := range mapkeytypes {
+		for _, ms := range mapvaltypes {
+			gt.Values = append(gt.Values,
+				genFastpathV{MapKey: s, Elem: ms, Size: typesizes[s] + typesizes[ms], NoCanonical: !genFastpathCanonical})
+		}
+	}
+
+	funcs := make(template.FuncMap)
+	// funcs["haspfx"] = strings.HasPrefix
+	funcs["encmd"] = genTmplEncCommandAsString
+	funcs["decmd"] = genTmplDecCommandAsString
+	funcs["zerocmd"] = genTmplZeroValue
+	funcs["nonzerocmd"] = genTmplNonZeroValue
+	funcs["hasprefix"] = strings.HasPrefix
+	funcs["sorttype"] = genTmplSortType
+
+	genTmplV = gt
+	genTmplFuncs = funcs
+}
+
+// genTmplGoFile is used to generate source files from templates.
+func genTmplGoFile(r io.Reader, w io.Writer) (err error) {
+	genTmplOnce.Do(genTmplInit)
+
+	gt := genTmplV
+
+	t := template.New("").Funcs(genTmplFuncs)
+
+	tmplstr, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+
+	if t, err = t.Parse(string(tmplstr)); err != nil {
+		return
+	}
+
+	var out bytes.Buffer
+	err = t.Execute(&out, gt)
+	if err != nil {
+		return
+	}
+
+	bout, err := format.Source(out.Bytes())
+	if err != nil {
+		w.Write(out.Bytes()) // write out if error, so we can still see.
+		// w.Write(bout) // write out if error, as much as possible, so we can still see.
+		return
+	}
+	w.Write(bout)
+	return
+}
+
+func genTmplRun2Go(fnameIn, fnameOut string) {
+	// println("____ " + fnameIn + " --> " + fnameOut + " ______")
+	fin, err := os.Open(fnameIn)
+	genCheckErr(err)
+	defer fin.Close()
+	fout, err := os.Create(fnameOut)
+	genCheckErr(err)
+	defer fout.Close()
+	err = genTmplGoFile(fin, fout)
+	genCheckErr(err)
+}
+
+// ----
+// MARKER 2025
+
+// - [fn:monoBase] for each file of fast-path.generated.go, encode.go, decode.go:
+//   - ignore init() and imports (go imports will fix it later - or we just grab all imports and let go-imports fix later)
+//   - parse encode.go, decode.go, fast-path.generated.go into an AST
+//     - for each function, if a generic function/method, add it into the AST
+// - [fn:monoAll] for each handle
+//   - [fn:monoHandle] clone prior AST
+//   - add <format>.go into it
+//   - transform the node names to monomorphize them
+//   - transform the method/func calls in each method to monomorphize them
+// - output AST into a file <format>.mono.generated.go
+
+type genMono struct {
+	files map[string][]byte
+}
+
+func (x *genMono) file(fname string) (b []byte) {
+	var err error
+	b = x.files[fname]
+	if b == nil {
+		b, err = os.ReadFile(fname)
+		halt.onerror(err)
+		x.files[fname] = b
+	}
+	return
+}
+
+func (x *genMono) base() (r *ast.File, fset *token.FileSet) {
+	fset = token.NewFileSet()
+	r = &ast.File{
+		Name: &ast.Ident{Name: "codec"},
+	}
+	fnames := []string{"encode.go", "decode.go", "fast-path.generated.go"}
+	for _, fname := range fnames {
+		fsrc := x.file(fname)
+		f, err := parser.ParseFile(fset, fname, fsrc, parser.AllErrors)
+		halt.onerror(err)
+		genMonoMerge(r, f)
+	}
+	return
+}
+
+func (x *genMono) handle(h Handle, base *ast.File, fset *token.FileSet) (r *ast.File) {
+	r = genMonoCopy(base)
+	hname := h.Name()
+	fname := hname + ".go"
+	fsrc := x.file(fname)
+	f, err := parser.ParseFile(fset, fname, fsrc, parser.AllErrors)
+	halt.onerror(err)
+	genMonoMerge(r, f)
+	return
+}
+
+func genMonoMerge(dst, src *ast.File) {
+	fn := func(node ast.Node) bool {
+		switch n := node.(type) {
+		case *ast.FuncDecl:
+			if n.Type.TypeParams != nil {
+				dst.Decls = append(dst.Decls, n)
+			}
+			return false
+		case *ast.GenDecl:
+			if n.Tok == token.TYPE {
+				for _, v := range n.Specs {
+					nn := v.(*ast.TypeSpec)
+					if nn.TypeParams != nil {
+						// each decl will have only 1 var/type
+						dst.Decls = append(dst.Decls, &ast.GenDecl{Tok: n.Tok, Specs: []ast.Spec{v}})
+					}
+				}
+			}
+			return false
+		}
+		return true
+	}
+	ast.Inspect(src, fn)
+}
+
+func genMonoTransform(r *ast.File, h Handle, isbytes bool) {
+	var sfx string
+	if isbytes {
+		sfx = "Bytes"
+	} else {
+		sfx = "IO"
+	}
+	up := func(s string) string {
+		return strings.ToUpper(s[:1]) + s[1:]
+	}
+	hname := up(h.Name())
+
+	// Type parameters only exist in
+	//   - function/method declarations (function, method)
+	//     - signature
+	//     - body
+	//   - type declarations (struct, array)
+	//     - signature
+	//     - body
+	//   - type instantiations (N/A as moved into init.go)
+	//   - type constraints (N/A as moved into init.go)
+	//
+	// Consequently, we only need to work on func and type declarations
+	// and things that flow down from there.
+	//
+	// We only want to work on Field values which could have TypeParams.
+
+	var stack []ast.Node
+	pop := func() {
+		stack = stack[:len(stack)-1]
+	}
+	push := func(n ast.Node) {
+		stack = append(stack, n)
+	}
+	// last := func(n depth) ast.Node {
+	// 	pos := len(stack) - 1 - n
+	// 	if pos >= 0 {
+	// 		return stack[pos]
+	// 	}
+	// 	return nil
+	// }
+	locate := func(f func(n ast.Node) bool) ast.Node {
+		for i := len(stack) - 1; i >= 0; i-- {
+			if n := stack[i]; f(n) {
+				return n
+			}
+		}
+		return nil
+	}
+
+	locateTypeSpec := func() *ast.TypeSpec {
+		fp := func(node ast.Node) bool {
+			_, ok := node.(*ast.TypeSpec)
+			return ok
+		}
+		v := locate(fp)
+		if v != nil {
+			return v.(*ast.TypeSpec)
+		}
+		return nil
+	}
+
+	// if type parameter is encDriver, use <name><handle><IO|Bytes>
+	// e.g. if type is encoder[T], do encoderJsonBytes --> jsonEncDriverBytes
+	fnNameViaType := func(nn *ast.Ident, typeParam string) {
+		switch typeParam {
+		case "encDriver", "decDriver":
+			// encoder or decoder has a field of encDriver / decDriver
+			nn.Name += hname + sfx
+		case "encWriter", "decReader":
+			// already en encDriver or decDriver
+			nn.Name += sfx
+		}
+	}
+
+	okTypeParams := func(v *ast.FieldList) bool {
+		if v == nil || v.List == nil || len(v.List) == 0 {
+			return false
+		}
+		if len(v.List) > 1 {
+			halt.errorStr("no support for type parameters more than 1")
+		}
+		// length = 1
+		return true
+	}
+
+	fn := func(node ast.Node) bool {
+		if node == nil {
+			pop()
+			return false
+		}
+		push(node)
+
+		switch n := node.(type) {
+		case *ast.FuncDecl:
+			if !okTypeParams(n.Type.TypeParams) {
+				return false
+			}
+			// if method, change receiver name; else if function, change func name
+			nn := n.Name
+			if n.Recv != nil {
+				nn = n.Recv.List[0].Names[0]
+			}
+			fnNameViaType(nn, n.Type.TypeParams.List[0].Type.(*ast.Ident).Name)
+		case *ast.FuncType:
+			// update the params and results, using type parameters
+			if n.TypeParams == nil {
+				return false
+			}
+			// field := n.TypeParams.List[0].Type.(*ast.Ident)
+			// for _, v0 := range []*ast.FieldList{n.Params, n.Results} {
+			// 	if v0 == nil {
+			// 		continue
+			// 	}
+			// 	// fmt.Printf("v0: %v, len(v0.List): %v\n", v0, v0)
+			// 	for _, v1 := range v0.List {
+			// 		// fmt.Printf("v1: %v, len(v1.Names): %v\n", v1, len(v1.Names))
+			// 		for _, v2 := range v1.Names {
+			// 			fnNameViaType(v2, field.Name)
+			// 		}
+			// 	}
+			// }
+		case *ast.Field:
+			// type x[T encDriver] struct { w T }
+			if n.Type == nil {
+				return false
+			}
+			p := locateTypeSpec()
+			if p == nil {
+				return false
+			}
+			param := p.TypeParams.List[0].Type.(*ast.Ident)
+			// if any generic field, handle it using p's TypeParams
+			switch nt := n.Type.(type) {
+			case *ast.Ident:
+				if nt.Name == param.Name {
+					pnew := ast.NewIdent("")
+					n.Type = pnew
+					fnNameViaType(pnew, param.Name)
+				}
+			case *ast.IndexExpr:
+				if nt.Index.(*ast.Ident).Name == param.Name {
+					pnew := ast.NewIdent(nt.X.(*ast.Ident).Name)
+					n.Type = pnew
+					fnNameViaType(pnew, param.Name)
+				}
+			case *ast.StarExpr:
+				switch ni := nt.X.(type) {
+				case *ast.IndexExpr:
+					if ni.Index.(*ast.Ident).Name == param.Name {
+						pnew := ast.NewIdent(ni.X.(*ast.Ident).Name)
+						nt.X = pnew
+						fnNameViaType(pnew, param.Name)
+					}
+				}
+			}
+		case *ast.TypeSpec:
+			// type x[T encDriver] struct { ... }
+			if !okTypeParams(n.TypeParams) {
+				return false
+			}
+			fnNameViaType(n.Name, n.TypeParams.List[0].Type.(*ast.Ident).Name)
+		case *ast.ValueSpec:
+			// var X encoder[T]
+			p := locateTypeSpec()
+			if p == nil {
+				return false
+			}
+			if !okTypeParams(p.TypeParams) {
+				return false
+			}
+			// MARKER 2025 - need to set the type of the variable (not the name)
+			// param := p.TypeParams.List[0].Type.(*ast.Ident)
+			// fnNameViaType(n.Name, n.TypeParams.List[0].Type.(*ast.Ident).Name)
+		case *ast.ArrayType:
+			// type fastpathEs[T encDriver] [0]fastpathE[T]
+			p := locateTypeSpec()
+			if p == nil {
+				return false
+			}
+			param := p.TypeParams.List[0].Type.(*ast.Ident)
+			switch elt := n.Elt.(type) {
+			case *ast.IndexExpr:
+				if elt.Index.(*ast.Ident).Name == param.Name { // generic
+					pnew := ast.NewIdent(elt.X.(*ast.Ident).Name)
+					n.Elt = pnew
+					fnNameViaType(pnew, param.Name)
+				}
+			case *ast.InterfaceType: // MARKER 2025
+			default:
+			}
+
+		}
+		return true
+	}
+	ast.Inspect(r, fn)
+
+	// set type params to nil, and Pos to NoPos
+	fn = func(node ast.Node) bool {
+		switch n := node.(type) {
+		// case *ast.FuncDecl:
+		// 	n.Type.TypeParams = nil
+		case *ast.FuncType:
+			n.TypeParams = nil
+		case *ast.TypeSpec: // for type ...
+			n.TypeParams = nil
+		}
+		return true
+	}
+	ast.Inspect(r, fn)
+
+}
+
+func genMonoCopy(src *ast.File) (dst *ast.File) {
+	dst = &ast.File{
+		Name: &ast.Ident{Name: "codec"},
+	}
+	dst.Decls = append(dst.Decls, src.Decls...)
+	return
+}
+
+func GenMonoAll() {
+	hdls := []Handle{
+		(*SimpleHandle)(nil),
+		(*JsonHandle)(nil),
+		(*CborHandle)(nil),
+		(*BincHandle)(nil),
+		(*MsgpackHandle)(nil),
+	}
+	m := &genMono{files: make(map[string][]byte)}
+	for _, v := range hdls {
+		b, fset := m.base()
+		r1 := m.handle(v, b, fset)
+		genMonoTransform(r1, v, true)
+
+		b, fset = m.base()
+		r2 := m.handle(v, b, fset)
+		genMonoTransform(r2, v, false)
+		// merge r2 into r1
+		r1.Decls = append(r1.Decls, r2.Decls...)
+		// output r1 to a file
+		f, err := os.Create(v.Name() + ".mono.generated.go")
+		halt.onerror(err)
+		defer f.Close()
+		err = format.Node(f, fset, r1)
+		halt.onerror(err)
+	}
+}
+
+// ----
+
+/*
 
 // ---------------------------------------------------
 // codecgen supports the full cycle of reflection-based codec:
@@ -97,7 +825,7 @@ import (
 //   consequently, you cannot run with tags "codecgen codec.notfastpath".
 //
 // Note:
-//   genInternalXXX functions are used for generating fast-path and other internally generated
+//   genTmplXXX functions are used for generating fast-path and other internally generated
 //   files, and not for use in codecgen.
 
 // Size of a struct or value is not portable across machines, especially across 32-bit vs 64-bit
@@ -114,58 +842,60 @@ import (
 //
 // For reference, look for 'Size' in fast-path.go.tmpl, gen-dec-(array|map).go.tmpl and gen.go (this file).
 
-const (
-	genTopLevelVarName = "x"
-
-	// genFastpathCanonical configures whether we support Canonical in fast path. Low savings.
-	//
-	// MARKER: This MUST ALWAYS BE TRUE. fast-path.go.tmpl doesn't handle it being false.
-	genFastpathCanonical = true
-
-	// genFastpathTrimTypes configures whether we trim uncommon fastpath types.
-	genFastpathTrimTypes = true
-)
-
 type genStringDecAsBytes string
 type genStringDecZC string
 
 var genStringDecAsBytesTyp = reflect.TypeOf(genStringDecAsBytes(""))
 var genStringDecZCTyp = reflect.TypeOf(genStringDecZC(""))
-var genFormats = []string{"Json", "Cbor", "Msgpack", "Binc", "Simple"}
 
-var (
-	errGenAllTypesSamePkg        = errors.New("All types must be in the same package")
-	errGenExpectArrayOrMap       = errors.New("unexpected type - expecting array/map/slice")
-	errGenUnexpectedTypeFastpath = errors.New("fast-path: unexpected type - requires map or slice")
-
-	// don't use base64, only 63 characters allowed in valid go identifiers
-	// ie ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_
-	//
-	// don't use numbers, as a valid go identifer must start with a letter.
-	genTypenameEnc = base32.NewEncoding("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef")
-	genQNameRegex  = regexp.MustCompile(`[A-Za-z_.]+`)
-)
-
-type genBuf struct {
-	buf []byte
+func genTmplSortType(s string, elem bool) string {
+	for _, v := range [...]string{
+		"int",
+		"uint",
+		"float",
+		"bool",
+		"string",
+		"bytes", "[]uint8", "[]byte",
+	} {
+		if v == "[]byte" || v == "[]uint8" {
+			v = "bytes"
+		}
+		if strings.HasPrefix(s, v) {
+			if v == "int" || v == "uint" || v == "float" {
+				v += "64"
+			}
+			if elem {
+				return v
+			}
+			return v + "Slice"
+		}
+	}
+	halt.onerror(errors.New("sorttype: unexpected type: " + s))
 }
 
-func (x *genBuf) sIf(b bool, s, t string) *genBuf {
-	if b {
-		x.buf = append(x.buf, s...)
-	} else {
-		x.buf = append(x.buf, t...)
+func genStripVendor(s string) string {
+	// HACK: Misbehaviour occurs in go 1.5. May have to re-visit this later.
+	// if s contains /vendor/ OR startsWith vendor/, then return everything after it.
+	const vendorStart = "vendor/"
+	const vendorInline = "/vendor/"
+	if i := strings.LastIndex(s, vendorInline); i >= 0 {
+		s = s[i+len(vendorInline):]
+	} else if strings.HasPrefix(s, vendorStart) {
+		s = s[len(vendorStart):]
 	}
-	return x
+	return s
 }
-func (x *genBuf) s(s string) *genBuf              { x.buf = append(x.buf, s...); return x }
-func (x *genBuf) b(s []byte) *genBuf              { x.buf = append(x.buf, s...); return x }
-func (x *genBuf) v() string                       { return string(x.buf) }
-func (x *genBuf) f(s string, args ...interface{}) { x.s(fmt.Sprintf(s, args...)) }
-func (x *genBuf) reset() {
-	if x.buf != nil {
-		x.buf = x.buf[:0]
-	}
+
+// genImportPath returns import path of a non-predeclared named typed, or an empty string otherwise.
+//
+// This handles the misbehaviour that occurs when 1.5-style vendoring is enabled,
+// where PkgPath returns the full path, including the vendoring pre-fix that should have been stripped.
+// We strip it here.
+func genImportPath(t reflect.Type) (s string) {
+	s = t.PkgPath()
+	// HACK: always handle vendoring. It should be typically on in go 1.6, 1.7
+	s = genStripVendor(s)
+	return
 }
 
 // genRunner holds some state used during a Gen run.
@@ -206,6 +936,30 @@ type genRunner struct {
 	nx bool // no extensions
 }
 
+func (x *genRunner) genTypeNamePrim(t reflect.Type) (n string) {
+	if t.Name() == "" {
+		return t.String()
+	} else if genImportPath(t) == "" || genImportPath(t) == genImportPath(x.tc) {
+		return t.Name()
+	} else {
+		return x.imn[genImportPath(t)] + "." + t.Name()
+		// return t.String() // best way to get the package name inclusive
+	}
+}
+
+func (x *genRunner) lineIf(s string) {
+	if s != "" {
+		x.line(s)
+	}
+}
+
+func (x *genRunner) linef(s string, params ...interface{}) {
+	x.outf(s, params...)
+	if len(s) == 0 || s[len(s)-1] != '\n' {
+		x.out("\n")
+	}
+}
+
 type genIfClause struct {
 	hasIf bool
 }
@@ -213,6 +967,194 @@ type genIfClause struct {
 func (g *genIfClause) end(x *genRunner) {
 	if g.hasIf {
 		x.line("}")
+	}
+}
+
+func (x *genRunner) out(s string) {
+	_, err := io.WriteString(x.w, s)
+	genCheckErr(err)
+}
+
+func (x *genRunner) line(s string) {
+	x.out(s)
+	if len(s) == 0 || s[len(s)-1] != '\n' {
+		x.out("\n")
+	}
+}
+
+func (x *genRunner) outf(s string, params ...interface{}) {
+	_, err := fmt.Fprintf(x.w, s, params...)
+	genCheckErr(err)
+}
+
+func (x *genRunner) genTypeName(t reflect.Type) (n string) {
+	// if the type has a PkgPath, which doesn't match the current package,
+	// then include it.
+	// We cannot depend on t.String() because it includes current package,
+	// or t.PkgPath because it includes full import path,
+	//
+	var ptrPfx string
+	for t.Kind() == reflect.Ptr {
+		ptrPfx += "*"
+		t = t.Elem()
+	}
+	if tn := t.Name(); tn != "" {
+		return ptrPfx + x.genTypeNamePrim(t)
+	}
+	switch t.Kind() {
+	case reflect.Map:
+		return ptrPfx + "map[" + x.genTypeName(t.Key()) + "]" + x.genTypeName(t.Elem())
+	case reflect.Slice:
+		return ptrPfx + "[]" + x.genTypeName(t.Elem())
+	case reflect.Array:
+		return ptrPfx + "[" + strconv.FormatInt(int64(t.Len()), 10) + "]" + x.genTypeName(t.Elem())
+	case reflect.Chan:
+		return ptrPfx + t.ChanDir().String() + " " + x.genTypeName(t.Elem())
+	default:
+		if t == intfTyp {
+			return ptrPfx + "interface{}"
+		} else {
+			return ptrPfx + x.genTypeNamePrim(t)
+		}
+	}
+}
+
+func (x *genRunner) genMethodNameT(t reflect.Type) (s string) {
+	return genMethodNameT(t, x.tc)
+}
+
+// genCustomNameForType base32 encodes the t.String() value in such a way
+// that it can be used within a function name.
+func genCustomTypeName(tstr string) string {
+	len2 := genTypenameEnc.EncodedLen(len(tstr))
+	bufx := make([]byte, len2)
+	genTypenameEnc.Encode(bufx, []byte(tstr))
+	for i := len2 - 1; i >= 0; i-- {
+		if bufx[i] == '=' {
+			len2--
+		} else {
+			break
+		}
+	}
+	return string(bufx[:len2])
+}
+
+func genMethodNameT(t reflect.Type, tRef reflect.Type) (n string) {
+	var ptrPfx string
+	for t.Kind() == reflect.Ptr {
+		ptrPfx += "Ptrto"
+		t = t.Elem()
+	}
+	tstr := t.String()
+	if tn := t.Name(); tn != "" {
+		if tRef != nil && genImportPath(t) == genImportPath(tRef) {
+			return ptrPfx + tn
+		} else {
+			if genQNameRegex.MatchString(tstr) {
+				return ptrPfx + strings.Replace(tstr, ".", "_", 1000)
+			} else {
+				return ptrPfx + genCustomTypeName(tstr)
+			}
+		}
+	}
+	switch t.Kind() {
+	case reflect.Map:
+		return ptrPfx + "Map" + genMethodNameT(t.Key(), tRef) + genMethodNameT(t.Elem(), tRef)
+	case reflect.Slice:
+		return ptrPfx + "Slice" + genMethodNameT(t.Elem(), tRef)
+	case reflect.Array:
+		return ptrPfx + "Array" + strconv.FormatInt(int64(t.Len()), 10) + genMethodNameT(t.Elem(), tRef)
+	case reflect.Chan:
+		var cx string
+		switch t.ChanDir() {
+		case reflect.SendDir:
+			cx = "ChanSend"
+		case reflect.RecvDir:
+			cx = "ChanRecv"
+		default:
+			cx = "Chan"
+		}
+		return ptrPfx + cx + genMethodNameT(t.Elem(), tRef)
+	default:
+		if t == intfTyp {
+			return ptrPfx + "Interface"
+		} else {
+			if tRef != nil && genImportPath(t) == genImportPath(tRef) {
+				if t.Name() != "" {
+					return ptrPfx + t.Name()
+				} else {
+					return ptrPfx + genCustomTypeName(tstr)
+				}
+			} else {
+				// best way to get the package name inclusive
+				if t.Name() != "" && genQNameRegex.MatchString(tstr) {
+					return ptrPfx + strings.Replace(tstr, ".", "_", 1000)
+				} else {
+					return ptrPfx + genCustomTypeName(tstr)
+				}
+			}
+		}
+	}
+}
+
+func (x *genRunner) newFastpathGenV(t reflect.Type) (v genFastpathV) {
+	v.NoCanonical = !genFastpathCanonical
+	switch t.Kind() {
+	case reflect.Slice, reflect.Array:
+		te := t.Elem()
+		v.Elem = x.genTypeName(te)
+		v.Size = int(te.Size())
+	case reflect.Map:
+		te := t.Elem()
+		tk := t.Key()
+		v.Elem = x.genTypeName(te)
+		v.MapKey = x.genTypeName(tk)
+		v.Size = int(te.Size() + tk.Size())
+	default:
+		halt.onerror(errGenUnexpectedTypeFastpath)
+	}
+	return
+}
+
+// A go identifier is (letter|_)[letter|number|_]*
+func genGoIdentifier(s string, checkFirstChar bool) string {
+	b := make([]byte, 0, len(s))
+	t := make([]byte, 4)
+	var n int
+	for i, r := range s {
+		if checkFirstChar && i == 0 && !unicode.IsLetter(r) {
+			b = append(b, '_')
+		}
+		// r must be unicode_letter, unicode_digit or _
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			n = utf8.EncodeRune(t, r)
+			b = append(b, t[:n]...)
+		} else {
+			b = append(b, '_')
+		}
+	}
+	return string(b)
+}
+
+type genBuf struct {
+	buf []byte
+}
+
+func (x *genBuf) sIf(b bool, s, t string) *genBuf {
+	if b {
+		x.buf = append(x.buf, s...)
+	} else {
+		x.buf = append(x.buf, t...)
+	}
+	return x
+}
+func (x *genBuf) s(s string) *genBuf              { x.buf = append(x.buf, s...); return x }
+func (x *genBuf) b(s []byte) *genBuf              { x.buf = append(x.buf, s...); return x }
+func (x *genBuf) v() string                       { return string(x.buf) }
+func (x *genBuf) f(s string, args ...interface{}) { x.s(fmt.Sprintf(s, args...)) }
+func (x *genBuf) reset() {
+	if x.buf != nil {
+		x.buf = x.buf[:0]
 	}
 }
 
@@ -302,77 +1244,49 @@ func (x *genRunner) varsfxreset() {
 	x.c = 0
 }
 
-func (x *genRunner) out(s string) {
-	_, err := io.WriteString(x.w, s)
-	genCheckErr(err)
-}
-
-func (x *genRunner) outf(s string, params ...interface{}) {
-	_, err := fmt.Fprintf(x.w, s, params...)
-	genCheckErr(err)
-}
-
-func (x *genRunner) line(s string) {
-	x.out(s)
-	if len(s) == 0 || s[len(s)-1] != '\n' {
-		x.out("\n")
-	}
-}
-
-func (x *genRunner) lineIf(s string) {
-	if s != "" {
-		x.line(s)
-	}
-}
-
-func (x *genRunner) linef(s string, params ...interface{}) {
-	x.outf(s, params...)
-	if len(s) == 0 || s[len(s)-1] != '\n' {
-		x.out("\n")
-	}
-}
-
-func (x *genRunner) genTypeName(t reflect.Type) (n string) {
-	// if the type has a PkgPath, which doesn't match the current package,
-	// then include it.
-	// We cannot depend on t.String() because it includes current package,
-	// or t.PkgPath because it includes full import path,
-	//
-	var ptrPfx string
+func genNonPtr(t reflect.Type) reflect.Type {
 	for t.Kind() == reflect.Ptr {
-		ptrPfx += "*"
 		t = t.Elem()
 	}
-	if tn := t.Name(); tn != "" {
-		return ptrPfx + x.genTypeNamePrim(t)
-	}
-	switch t.Kind() {
-	case reflect.Map:
-		return ptrPfx + "map[" + x.genTypeName(t.Key()) + "]" + x.genTypeName(t.Elem())
-	case reflect.Slice:
-		return ptrPfx + "[]" + x.genTypeName(t.Elem())
-	case reflect.Array:
-		return ptrPfx + "[" + strconv.FormatInt(int64(t.Len()), 10) + "]" + x.genTypeName(t.Elem())
-	case reflect.Chan:
-		return ptrPfx + t.ChanDir().String() + " " + x.genTypeName(t.Elem())
-	default:
-		if t == intfTyp {
-			return ptrPfx + "interface{}"
-		} else {
-			return ptrPfx + x.genTypeNamePrim(t)
-		}
-	}
+	return t
 }
 
-func (x *genRunner) genTypeNamePrim(t reflect.Type) (n string) {
-	if t.Name() == "" {
-		return t.String()
-	} else if genImportPath(t) == "" || genImportPath(t) == genImportPath(x.tc) {
-		return t.Name()
-	} else {
-		return x.imn[genImportPath(t)] + "." + t.Name()
-		// return t.String() // best way to get the package name inclusive
+func genFastpathUnderlying(t reflect.Type, rtid uintptr, ti *typeInfo) (tu reflect.Type, rtidu uintptr) {
+	tu = t
+	rtidu = rtid
+	if ti.flagHasPkgPath {
+		tu = ti.fastpathUnderlying
+		rtidu = rt2id(tu)
 	}
+	return
+}
+
+func genIsImmutable(t reflect.Type) (v bool) {
+	return scalarBitset.isset(byte(t.Kind()))
+}
+
+// --- some methods here for other types, which are only used in codecgen
+
+// depth returns number of valid nodes in the hierachy
+func (path *structFieldInfoPathNode) root() *structFieldInfoPathNode {
+TOP:
+	if path.parent != nil {
+		path = path.parent
+		goto TOP
+	}
+	return path
+}
+
+func (path *structFieldInfoPathNode) fullpath() (p []*structFieldInfoPathNode) {
+	// this method is mostly called by a command-line tool - it's not optimized, and that's ok.
+	// it shouldn't be used in typical runtime use - as it does unnecessary allocation.
+	d := path.depth()
+	p = make([]*structFieldInfoPathNode, d)
+	for d--; d >= 0; d-- {
+		p[d] = path
+		path = path.parent
+	}
+	return
 }
 
 func (x *genRunner) genZeroValueR(t reflect.Type) string {
@@ -390,10 +1304,6 @@ func (x *genRunner) genZeroValueR(t reflect.Type) string {
 	default: // all numbers
 		return "0"
 	}
-}
-
-func (x *genRunner) genMethodNameT(t reflect.Type) (s string) {
-	return genMethodNameT(t, x.tc)
 }
 
 // used for chan, array, slice, map
@@ -494,550 +1404,6 @@ func genOmitEmptyLinePreChecks(varname string, t reflect.Type, si *structFieldIn
 	return
 }
 
-// --------
-
-type fastpathGenV struct {
-	// fastpathGenV is either a primitive (Primitive != "") or a map (MapKey != "") or a slice
-	MapKey      string
-	Elem        string
-	Primitive   string
-	Size        int
-	NoCanonical bool
-}
-
-func (x *genRunner) newFastpathGenV(t reflect.Type) (v fastpathGenV) {
-	v.NoCanonical = !genFastpathCanonical
-	switch t.Kind() {
-	case reflect.Slice, reflect.Array:
-		te := t.Elem()
-		v.Elem = x.genTypeName(te)
-		v.Size = int(te.Size())
-	case reflect.Map:
-		te := t.Elem()
-		tk := t.Key()
-		v.Elem = x.genTypeName(te)
-		v.MapKey = x.genTypeName(tk)
-		v.Size = int(te.Size() + tk.Size())
-	default:
-		halt.onerror(errGenUnexpectedTypeFastpath)
-	}
-	return
-}
-
-func (x *fastpathGenV) MethodNamePfx(prefix string, prim bool) string {
-	var name []byte
-	if prefix != "" {
-		name = append(name, prefix...)
-	}
-	if prim {
-		name = append(name, genTitleCaseName(x.Primitive)...)
-	} else {
-		if x.MapKey == "" {
-			name = append(name, "Slice"...)
-		} else {
-			name = append(name, "Map"...)
-			name = append(name, genTitleCaseName(x.MapKey)...)
-		}
-		name = append(name, genTitleCaseName(x.Elem)...)
-	}
-	return string(name)
-}
-
-// genImportPath returns import path of a non-predeclared named typed, or an empty string otherwise.
-//
-// This handles the misbehaviour that occurs when 1.5-style vendoring is enabled,
-// where PkgPath returns the full path, including the vendoring pre-fix that should have been stripped.
-// We strip it here.
-func genImportPath(t reflect.Type) (s string) {
-	s = t.PkgPath()
-	// HACK: always handle vendoring. It should be typically on in go 1.6, 1.7
-	s = genStripVendor(s)
-	return
-}
-
-// A go identifier is (letter|_)[letter|number|_]*
-func genGoIdentifier(s string, checkFirstChar bool) string {
-	b := make([]byte, 0, len(s))
-	t := make([]byte, 4)
-	var n int
-	for i, r := range s {
-		if checkFirstChar && i == 0 && !unicode.IsLetter(r) {
-			b = append(b, '_')
-		}
-		// r must be unicode_letter, unicode_digit or _
-		if unicode.IsLetter(r) || unicode.IsDigit(r) {
-			n = utf8.EncodeRune(t, r)
-			b = append(b, t[:n]...)
-		} else {
-			b = append(b, '_')
-		}
-	}
-	return string(b)
-}
-
-func genNonPtr(t reflect.Type) reflect.Type {
-	for t.Kind() == reflect.Ptr {
-		t = t.Elem()
-	}
-	return t
-}
-
-func genFastpathUnderlying(t reflect.Type, rtid uintptr, ti *typeInfo) (tu reflect.Type, rtidu uintptr) {
-	tu = t
-	rtidu = rtid
-	if ti.flagHasPkgPath {
-		tu = ti.fastpathUnderlying
-		rtidu = rt2id(tu)
-	}
-	return
-}
-
-func genTitleCaseName(s string) string {
-	switch s {
-	case "interface{}", "interface {}":
-		return "Intf"
-	case "[]byte", "[]uint8", "bytes":
-		return "Bytes"
-	default:
-		return strings.ToUpper(s[0:1]) + s[1:]
-	}
-}
-
-func genMethodNameT(t reflect.Type, tRef reflect.Type) (n string) {
-	var ptrPfx string
-	for t.Kind() == reflect.Ptr {
-		ptrPfx += "Ptrto"
-		t = t.Elem()
-	}
-	tstr := t.String()
-	if tn := t.Name(); tn != "" {
-		if tRef != nil && genImportPath(t) == genImportPath(tRef) {
-			return ptrPfx + tn
-		} else {
-			if genQNameRegex.MatchString(tstr) {
-				return ptrPfx + strings.Replace(tstr, ".", "_", 1000)
-			} else {
-				return ptrPfx + genCustomTypeName(tstr)
-			}
-		}
-	}
-	switch t.Kind() {
-	case reflect.Map:
-		return ptrPfx + "Map" + genMethodNameT(t.Key(), tRef) + genMethodNameT(t.Elem(), tRef)
-	case reflect.Slice:
-		return ptrPfx + "Slice" + genMethodNameT(t.Elem(), tRef)
-	case reflect.Array:
-		return ptrPfx + "Array" + strconv.FormatInt(int64(t.Len()), 10) + genMethodNameT(t.Elem(), tRef)
-	case reflect.Chan:
-		var cx string
-		switch t.ChanDir() {
-		case reflect.SendDir:
-			cx = "ChanSend"
-		case reflect.RecvDir:
-			cx = "ChanRecv"
-		default:
-			cx = "Chan"
-		}
-		return ptrPfx + cx + genMethodNameT(t.Elem(), tRef)
-	default:
-		if t == intfTyp {
-			return ptrPfx + "Interface"
-		} else {
-			if tRef != nil && genImportPath(t) == genImportPath(tRef) {
-				if t.Name() != "" {
-					return ptrPfx + t.Name()
-				} else {
-					return ptrPfx + genCustomTypeName(tstr)
-				}
-			} else {
-				// best way to get the package name inclusive
-				if t.Name() != "" && genQNameRegex.MatchString(tstr) {
-					return ptrPfx + strings.Replace(tstr, ".", "_", 1000)
-				} else {
-					return ptrPfx + genCustomTypeName(tstr)
-				}
-			}
-		}
-	}
-}
-
-// genCustomNameForType base32 encodes the t.String() value in such a way
-// that it can be used within a function name.
-func genCustomTypeName(tstr string) string {
-	len2 := genTypenameEnc.EncodedLen(len(tstr))
-	bufx := make([]byte, len2)
-	genTypenameEnc.Encode(bufx, []byte(tstr))
-	for i := len2 - 1; i >= 0; i-- {
-		if bufx[i] == '=' {
-			len2--
-		} else {
-			break
-		}
-	}
-	return string(bufx[:len2])
-}
-
-func genIsImmutable(t reflect.Type) (v bool) {
-	return scalarBitset.isset(byte(t.Kind()))
-}
-
-type genInternal struct {
-	Values  []fastpathGenV
-	Formats []string
-}
-
-func (x genInternal) FastpathLen() (l int) {
-	for _, v := range x.Values {
-		// if v.Primitive == "" && !(v.MapKey == "" && v.Elem == "uint8") {
-		if v.Primitive == "" {
-			l++
-		}
-	}
-	return
-}
-
-func genInternalZeroValue(s string) string {
-	switch s {
-	case "interface{}", "interface {}":
-		return "nil"
-	case "[]byte", "[]uint8", "bytes":
-		return "nil"
-	case "bool":
-		return "false"
-	case "string":
-		return `""`
-	default:
-		return "0"
-	}
-}
-
-var genInternalNonZeroValueIdx [6]uint64
-var genInternalNonZeroValueStrs = [...][6]string{
-	{`"string-is-an-interface-1"`, "true", `"some-string-1"`, `[]byte("some-string-1")`, "11.1", "111"},
-	{`"string-is-an-interface-2"`, "false", `"some-string-2"`, `[]byte("some-string-2")`, "22.2", "77"},
-	{`"string-is-an-interface-3"`, "true", `"some-string-3"`, `[]byte("some-string-3")`, "33.3e3", "127"},
-}
-
-// Note: last numbers must be in range: 0-127 (as they may be put into a int8, uint8, etc)
-
-func genInternalNonZeroValue(s string) string {
-	var i int
-	switch s {
-	case "interface{}", "interface {}":
-		i = 0
-	case "bool":
-		i = 1
-	case "string":
-		i = 2
-	case "bytes", "[]byte", "[]uint8":
-		i = 3
-	case "float32", "float64", "float", "double", "complex", "complex64", "complex128":
-		i = 4
-	default:
-		i = 5
-	}
-	genInternalNonZeroValueIdx[i]++
-	idx := genInternalNonZeroValueIdx[i]
-	slen := uint64(len(genInternalNonZeroValueStrs))
-	return genInternalNonZeroValueStrs[idx%slen][i] // return string, to remove ambiguity
-}
-
-// Note: used for fastpath only
-func genInternalEncCommandAsString(s string, vname string) string {
-	switch s {
-	case "uint64":
-		return "e.e.EncodeUint(" + vname + ")"
-	case "uint", "uint8", "uint16", "uint32":
-		return "e.e.EncodeUint(uint64(" + vname + "))"
-	case "int64":
-		return "e.e.EncodeInt(" + vname + ")"
-	case "int", "int8", "int16", "int32":
-		return "e.e.EncodeInt(int64(" + vname + "))"
-	case "[]byte", "[]uint8", "bytes":
-		return "e.e.EncodeStringBytesRaw(" + vname + ")"
-	case "string":
-		return "e.e.EncodeString(" + vname + ")"
-	case "float32":
-		return "e.e.EncodeFloat32(" + vname + ")"
-	case "float64":
-		return "e.e.EncodeFloat64(" + vname + ")"
-	case "bool":
-		return "e.e.EncodeBool(" + vname + ")"
-	// case "symbol":
-	// 	return "e.e.EncodeSymbol(" + vname + ")"
-	default:
-		return "e.encode(" + vname + ")"
-	}
-}
-
-// Note: used for fastpath only
-func genInternalDecCommandAsString(s string, mapkey bool) string {
-	switch s {
-	case "uint":
-		return "uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))"
-	case "uint8":
-		return "uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))"
-	case "uint16":
-		return "uint16(chkOvf.UintV(d.d.DecodeUint64(), 16))"
-	case "uint32":
-		return "uint32(chkOvf.UintV(d.d.DecodeUint64(), 32))"
-	case "uint64":
-		return "d.d.DecodeUint64()"
-	case "uintptr":
-		return "uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize))"
-	case "int":
-		return "int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))"
-	case "int8":
-		return "int8(chkOvf.IntV(d.d.DecodeInt64(), 8))"
-	case "int16":
-		return "int16(chkOvf.IntV(d.d.DecodeInt64(), 16))"
-	case "int32":
-		return "int32(chkOvf.IntV(d.d.DecodeInt64(), 32))"
-	case "int64":
-		return "d.d.DecodeInt64()"
-
-	case "string":
-		// if mapkey {
-		// 	return "d.stringZC(d.d.DecodeStringAsBytes())"
-		// }
-		// return "string(d.d.DecodeStringAsBytes())"
-		return "d.stringZC(d.d.DecodeStringAsBytes())"
-	case "[]byte", "[]uint8", "bytes":
-		return "d.d.DecodeBytes(zeroByteSlice)"
-	case "float32":
-		return "float32(d.d.DecodeFloat32())"
-	case "float64":
-		return "d.d.DecodeFloat64()"
-	case "complex64":
-		return "complex(d.d.DecodeFloat32(), 0)"
-	case "complex128":
-		return "complex(d.d.DecodeFloat64(), 0)"
-	case "bool":
-		return "d.d.DecodeBool()"
-	default:
-		halt.onerror(errors.New("gen internal: unknown type for decode: " + s))
-	}
-	return ""
-}
-
-// func genInternalSortType(s string, elem bool) string {
-// 	for _, v := range [...]string{
-// 		"int",
-// 		"uint",
-// 		"float",
-// 		"bool",
-// 		"string",
-// 		"bytes", "[]uint8", "[]byte",
-// 	} {
-// 		if v == "[]byte" || v == "[]uint8" {
-// 			v = "bytes"
-// 		}
-// 		if strings.HasPrefix(s, v) {
-// 			if v == "int" || v == "uint" || v == "float" {
-// 				v += "64"
-// 			}
-// 			if elem {
-// 				return v
-// 			}
-// 			return v + "Slice"
-// 		}
-// 	}
-// 	halt.onerror(errors.New("sorttype: unexpected type: " + s))
-// }
-
-func genInternalSortType(s string, elem bool) string {
-	if elem {
-		return s
-	}
-	return s + "Slice"
-}
-
-// MARKER: keep in sync with codecgen/gen.go
-func genStripVendor(s string) string {
-	// HACK: Misbehaviour occurs in go 1.5. May have to re-visit this later.
-	// if s contains /vendor/ OR startsWith vendor/, then return everything after it.
-	const vendorStart = "vendor/"
-	const vendorInline = "/vendor/"
-	if i := strings.LastIndex(s, vendorInline); i >= 0 {
-		s = s[i+len(vendorInline):]
-	} else if strings.HasPrefix(s, vendorStart) {
-		s = s[len(vendorStart):]
-	}
-	return s
-}
-
-// var genInternalMu sync.Mutex
-var genInternalV = genInternal{}
-var genInternalTmplFuncs template.FuncMap
-var genInternalOnce sync.Once
-
-func genInternalInit() {
-	wordSizeBytes := int(intBitsize) / 8
-
-	typesizes := map[string]int{
-		"interface{}": 2 * wordSizeBytes,
-		"string":      2 * wordSizeBytes,
-		"[]byte":      3 * wordSizeBytes,
-		"uint":        1 * wordSizeBytes,
-		"uint8":       1,
-		"uint16":      2,
-		"uint32":      4,
-		"uint64":      8,
-		"uintptr":     1 * wordSizeBytes,
-		"int":         1 * wordSizeBytes,
-		"int8":        1,
-		"int16":       2,
-		"int32":       4,
-		"int64":       8,
-		"float32":     4,
-		"float64":     8,
-		"complex64":   8,
-		"complex128":  16,
-		"bool":        1,
-	}
-
-	// keep as slice, so it is in specific iteration order.
-	// Initial order was uint64, string, interface{}, int, int64, ...
-
-	var types = [...]string{
-		"interface{}",
-		"string",
-		"[]byte",
-		"float32",
-		"float64",
-		"uint",
-		"uint8",
-		"uint16",
-		"uint32",
-		"uint64",
-		"uintptr",
-		"int",
-		"int8",
-		"int16",
-		"int32",
-		"int64",
-		"bool",
-	}
-
-	var primitivetypes, slicetypes, mapkeytypes, mapvaltypes []string
-
-	primitivetypes = types[:]
-
-	slicetypes = types[:]
-	mapkeytypes = types[:]
-	mapvaltypes = types[:]
-
-	if genFastpathTrimTypes {
-		// Note: we only create fast-paths for commonly used types.
-		// Consequently, things like int8, uint16, uint, etc are commented out.
-		slicetypes = []string{
-			"interface{}",
-			"string",
-			"[]byte",
-			"float32",
-			"float64",
-			"uint8", // keep fast-path, so it doesn't have to go through reflection
-			"uint64",
-			"int",
-			"int32", // rune
-			"int64",
-			"bool",
-		}
-		mapkeytypes = []string{
-			"string",
-			"uint8",  // byte
-			"uint64", // used for keys
-			"int",    // default number key
-			"int32",  // rune
-		}
-		mapvaltypes = []string{
-			"interface{}",
-			"string",
-			"[]byte",
-			"uint8",  // byte
-			"uint64", // used for keys, etc
-			"int",    // default number
-			"int32",  // rune (mostly used for unicode)
-			"float64",
-			"bool",
-		}
-	}
-
-	var gt = genInternal{Formats: genFormats}
-
-	// For each slice or map type, there must be a (symmetrical) Encode and Decode fast-path function
-
-	for _, s := range primitivetypes {
-		gt.Values = append(gt.Values,
-			fastpathGenV{Primitive: s, Size: typesizes[s], NoCanonical: !genFastpathCanonical})
-	}
-	for _, s := range slicetypes {
-		gt.Values = append(gt.Values,
-			fastpathGenV{Elem: s, Size: typesizes[s], NoCanonical: !genFastpathCanonical})
-	}
-	for _, s := range mapkeytypes {
-		for _, ms := range mapvaltypes {
-			gt.Values = append(gt.Values,
-				fastpathGenV{MapKey: s, Elem: ms, Size: typesizes[s] + typesizes[ms], NoCanonical: !genFastpathCanonical})
-		}
-	}
-
-	funcs := make(template.FuncMap)
-	// funcs["haspfx"] = strings.HasPrefix
-	funcs["encmd"] = genInternalEncCommandAsString
-	funcs["decmd"] = genInternalDecCommandAsString
-	funcs["zerocmd"] = genInternalZeroValue
-	funcs["nonzerocmd"] = genInternalNonZeroValue
-	funcs["hasprefix"] = strings.HasPrefix
-	funcs["sorttype"] = genInternalSortType
-
-	genInternalV = gt
-	genInternalTmplFuncs = funcs
-}
-
-// genInternalGoFile is used to generate source files from templates.
-func genInternalGoFile(r io.Reader, w io.Writer) (err error) {
-	genInternalOnce.Do(genInternalInit)
-
-	gt := genInternalV
-
-	t := template.New("").Funcs(genInternalTmplFuncs)
-
-	tmplstr, err := ioutil.ReadAll(r)
-	if err != nil {
-		return
-	}
-
-	if t, err = t.Parse(string(tmplstr)); err != nil {
-		return
-	}
-
-	var out bytes.Buffer
-	err = t.Execute(&out, gt)
-	if err != nil {
-		return
-	}
-
-	bout, err := format.Source(out.Bytes())
-	if err != nil {
-		w.Write(out.Bytes()) // write out if error, so we can still see.
-		// w.Write(bout) // write out if error, as much as possible, so we can still see.
-		return
-	}
-	w.Write(bout)
-	return
-}
-
-func genTypeForShortName(s string) string {
-	switch s {
-	case "time":
-		return "time.Time"
-	case "bytes":
-		return "[]byte"
-	}
-	return s
-}
-
 func genArgs(args ...interface{}) map[string]interface{} {
 	m := make(map[string]interface{}, len(args)/2)
 	for i := 0; i < len(args); {
@@ -1056,42 +1422,151 @@ func genEndsWith(s0 string, sn ...string) bool {
 	return false
 }
 
-func genCheckErr(err error) {
-	halt.onerror(err)
-}
-
-func genRunTmpl2Go(fnameIn, fnameOut string) {
-	// println("____ " + fnameIn + " --> " + fnameOut + " ______")
-	fin, err := os.Open(fnameIn)
-	genCheckErr(err)
-	defer fin.Close()
-	fout, err := os.Create(fnameOut)
-	genCheckErr(err)
-	defer fout.Close()
-	err = genInternalGoFile(fin, fout)
-	genCheckErr(err)
-}
-
-// --- some methods here for other types, which are only used in codecgen
-
-// depth returns number of valid nodes in the hierachy
-func (path *structFieldInfoPathNode) root() *structFieldInfoPathNode {
-TOP:
-	if path.parent != nil {
-		path = path.parent
-		goto TOP
+func genTypeForShortName(s string) string {
+	switch s {
+	case "time":
+		return "time.Time"
+	case "bytes":
+		return "[]byte"
 	}
-	return path
+	return s
 }
 
-func (path *structFieldInfoPathNode) fullpath() (p []*structFieldInfoPathNode) {
-	// this method is mostly called by a command-line tool - it's not optimized, and that's ok.
-	// it shouldn't be used in typical runtime use - as it does unnecessary allocation.
-	d := path.depth()
-	p = make([]*structFieldInfoPathNode, d)
-	for d--; d >= 0; d-- {
-		p[d] = path
-		path = path.parent
+// ----
+
+func genMonoCloneRV(v reflect.Value) (r reflect.Value) {
+	fmt.Printf(">>>> getMonoCloneRV: %v, Kind: %v\n", v.Type(), v.Kind())
+	switch v.Kind() {
+	case reflect.Ptr:
+		if v.IsNil() {
+			r = reflect.Zero(reflect.PointerTo(v.Type().Elem()))
+			return
+		}
+		v = v.Elem()
+		r = reflect.New(v.Type())
+		r.Elem().Set(genMonoCloneRV(v))
+		return
+	case reflect.Interface:
+		return genMonoCloneRV(v.Elem())
+	case reflect.Struct:
+		r = reflect.New(v.Type()).Elem()
+		for i := 0; i < v.NumField(); i++ {
+			if f := v.Field(i); f.Kind() != reflect.Invalid {
+				r.Field(i).Set(genMonoCloneRV(f))
+			}
+		}
+		return
+	case reflect.Slice:
+		lenv := v.Len()
+		r = reflect.MakeSlice(v.Type(), lenv, v.Cap())
+		for i := 0; i < lenv; i++ {
+			r.Index(i).Set(genMonoCloneRV(v.Index(i)))
+		}
+		return
+	case reflect.Array:
+		lenv := v.Len()
+		r = reflect.New(reflect.ArrayOf(lenv, v.Type().Elem())).Elem()
+		for i := 0; i < lenv; i++ {
+			r.Index(i).Set(genMonoCloneRV(v.Index(i)))
+		}
+		return
+	case reflect.Map:
+		r = reflect.MakeMap(v.Type())
+		for _, key := range v.MapKeys() {
+			r.SetMapIndex(key, genMonoCloneRV(v.MapIndex(key)))
+		}
+		return
+	default:
+		r = v
 	}
 	return
 }
+
+const GEN_MONO_CLONE_VIA_REFLECT = true
+
+// clones a node, ignoring the Pos
+func genMonoClone(fset *token.FileSet, n ast.Node) (r ast.Node) {
+	if GEN_MONO_CLONE_VIA_REFLECT {
+		r = genMonoCloneRV(reflect.ValueOf(n)).Interface().(ast.Node)
+		return
+	}
+
+	fmt.Printf(">>>> getMonoClone: %#T | isnil: %v\n", n, n == nil)
+	switch d := n.(type) {
+	case *ast.FuncDecl:
+		r = &ast.FuncDecl{
+			Name: genMonoClone(fset, d.Name).(*ast.Ident),
+			Recv: genMonoClone(fset, d.Recv).(*ast.FieldList),
+			Type: genMonoClone(fset, d.Type).(*ast.FuncType),
+			Body: genMonoClone(fset, d.Body).(*ast.BlockStmt),
+		}
+	case *ast.GenDecl:
+		x := &ast.GenDecl{
+			Tok:    d.Tok, // (import, const, var or type)
+			Lparen: d.Lparen,
+			Rparen: d.Rparen,
+		}
+		r = x
+		for _, v := range d.Specs {
+			x.Specs = append(x.Specs, genMonoClone(fset, v).(ast.Spec))
+		}
+		// x := *d
+		// r = x
+		// x.Doc = nil
+		// x.Specs = nil
+	case *ast.Ident:
+		r = &ast.Ident{
+			Name: d.Name,
+		}
+	case *ast.BasicLit:
+		r = &ast.BasicLit{
+			Kind:  d.Kind,
+			Value: d.Value,
+		}
+	case *ast.FieldList:
+		x := new(ast.FieldList)
+		r = x
+		for _, v := range d.List {
+			x.List = append(x.List, genMonoClone(fset, v).(*ast.Field))
+		}
+	case *ast.Field:
+		x := &ast.Field{
+			Type: genMonoClone(fset, d.Type).(ast.Expr),
+		}
+		r = x
+		for _, v := range d.Names {
+			x.Names = append(x.Names, genMonoClone(fset, v).(*ast.Ident))
+		}
+	case *ast.FuncType:
+		r = &ast.FuncType{
+			Func:       d.Func,
+			TypeParams: genMonoClone(fset, d.TypeParams).(*ast.FieldList),
+			Params:     genMonoClone(fset, d.Params).(*ast.FieldList),
+			Results:    genMonoClone(fset, d.Results).(*ast.FieldList),
+		}
+	case *ast.BlockStmt:
+		x := new(ast.BlockStmt)
+		r = x
+		for _, v := range d.List {
+			x.List = append(x.List, genMonoClone(fset, v).(ast.Stmt))
+		}
+	case *ast.ReturnStmt:
+		x := new(ast.ReturnStmt)
+		r = x
+		for _, v := range d.Results {
+			x.Results = append(x.Results, genMonoClone(fset, v).(ast.Expr))
+		}
+	case *ast.TypeSpec:
+		r = &ast.TypeSpec{
+			Name:       genMonoClone(fset, d.Name).(*ast.Ident),
+			TypeParams: genMonoClone(fset, d.Name).(*ast.FieldList),
+			Type:       d.Type,
+		}
+	default:
+		r = d
+	}
+	return
+}
+
+
+*/
