@@ -441,6 +441,8 @@ type bincDecDriver[T decReader] struct {
 	decInit2er
 	noBuiltInTypes
 
+	rh helperDecReader[T]
+
 	h *BincHandle
 	d *decoderShared
 	r T
@@ -757,7 +759,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs2 []byte) {
 			bs2 = d.r.readx(uint(slen))
 		} else {
 			d.d.decByteState = decByteStateReuseBuf
-			bs2 = decByteSlice(d.r, slen, d.h.MaxInitLen, d.d.b[:])
+			bs2 = d.rh.decByteSlice(d.r, slen, d.h.MaxInitLen, d.d.b[:])
 		}
 	case bincVdSymbol:
 		// zerocopy doesn't apply for symbols,
@@ -788,7 +790,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs2 []byte) {
 			}
 			// As we are using symbols, do not store any part of
 			// the parameter bs in the map, as it might be a shared buffer.
-			bs2 = decByteSlice(d.r, slen, d.h.MaxInitLen, nil)
+			bs2 = d.rh.decByteSlice(d.r, slen, d.h.MaxInitLen, nil)
 			d.s[symbol] = bs2
 		}
 	default:
@@ -841,7 +843,7 @@ func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 		bs = d.d.b[:]
 		d.d.decByteState = decByteStateReuseBuf
 	}
-	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	return d.rh.decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
 }
 
 func (d *bincDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
@@ -876,7 +878,7 @@ func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xta
 			xbs = d.r.readx(uint(l))
 			zerocopy = true
 		} else {
-			xbs = decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
+			xbs = d.rh.decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
 		}
 	} else if d.vd == bincVdByteArray {
 		xbs = d.DecodeBytes(nil)
@@ -959,7 +961,7 @@ func (d *bincDecDriver[T]) DecodeNaked() {
 		if d.d.bytes {
 			n.l = d.r.readx(uint(l))
 		} else {
-			n.l = decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
+			n.l = d.rh.decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
 		}
 	case bincVdArray:
 		n.v = valueTypeArray

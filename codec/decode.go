@@ -679,7 +679,7 @@ func (d *decoder[T]) kInterface(f *decFnInfo, rv reflect.Value) {
 	rvSetIntf(rv, rvn)
 }
 
-func decStructFieldKeyNotString[T decDriver](dd T, keyType valueType, b *[decScratchByteArrayLen]byte) (rvkencname []byte) {
+func (helperDecDriver[T]) decStructFieldKeyNotString(dd T, keyType valueType, b *[decScratchByteArrayLen]byte) (rvkencname []byte) {
 	if keyType == valueTypeInt {
 		rvkencname = strconv.AppendInt(b[:0], dd.DecodeInt64(), 10)
 	} else if keyType == valueTypeUint {
@@ -729,7 +729,7 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			if ti.keyType == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
 			} else {
-				rvkencname = decStructFieldKeyNotString(d.d, ti.keyType, &d.b)
+				rvkencname = d.dh.decStructFieldKeyNotString(d.d, ti.keyType, &d.b)
 			}
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
@@ -1446,6 +1446,8 @@ type decoder[T decDriver] struct {
 	panicHdl
 	perType decPerType
 
+	dh helperDecDriver[T]
+
 	fp *fastpathDs[T]
 
 	h *BasicHandle
@@ -1888,7 +1890,7 @@ func (d *decoder[T]) decode(iv interface{}) {
 
 	default:
 		// we can't check non-predefined types, as they might be a Selfer or extension.
-		if skipFastpathTypeSwitchInDirectCall || !fastpathDecodeTypeSwitch(iv, d) {
+		if skipFastpathTypeSwitchInDirectCall || !d.dh.fastpathDecodeTypeSwitch(iv, d) {
 			v := reflect.ValueOf(iv)
 			if x, _ := isDecodeable(v); !x {
 				d.haltAsNotDecodeable(v)
@@ -2165,11 +2167,11 @@ func (d *decoder[T]) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.V
 }
 
 func (d *decoder[T]) fn(t reflect.Type) *decFn[T] {
-	return decFnViaBH[T](t, d.rtidFn, d.h, d.fp, false)
+	return d.dh.decFnViaBH(t, d.rtidFn, d.h, d.fp, false)
 }
 
 func (d *decoder[T]) fnNoExt(t reflect.Type) *decFn[T] {
-	return decFnViaBH[T](t, d.rtidFnNoExt, d.h, d.fp, true)
+	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
 // --------------------------------------------------
@@ -2372,26 +2374,6 @@ func isDecodeable(rv reflect.Value) (canDecode bool, reason decNotDecodeableReas
 	return
 }
 
-func decByteSlice[T decReader](r T, clen, maxInitLen int, bs []byte) (bsOut []byte) {
-	if clen <= 0 {
-		bsOut = zeroByteSlice
-	} else if cap(bs) >= clen {
-		bsOut = bs[:clen]
-		r.readb(bsOut)
-	} else {
-		var len2 int
-		for len2 < clen {
-			len3 := decInferLen(clen-len2, maxInitLen, 1)
-			bs3 := bsOut
-			bsOut = make([]byte, len2+len3)
-			copy(bsOut, bs3)
-			r.readb(bsOut[len2:])
-			len2 += len3
-		}
-	}
-	return
-}
-
 // decInferLen will infer a sensible length, given the following:
 //   - clen: length wanted.
 //   - maxlen: max length to be returned.
@@ -2437,9 +2419,9 @@ func decInferLen(clen, maxlen, unit int) int {
 	return maxlen
 }
 
-func sideDecoder[T decDriver](in []byte, d *decoderShared, h Handle) (sd *decoder[T]) {
+func (dh helperDecDriver[T]) sideDecoder(in []byte, d *decoderShared, h Handle) (sd *decoder[T]) {
 	if d.sd == nil {
-		sd = newDecDriverBytes[T](in, h)
+		sd = dh.newDecDriverBytes(in, h)
 		d.sd = sd
 	} else {
 		sd = d.sd.(*decoder[T])
@@ -2448,7 +2430,7 @@ func sideDecoder[T decDriver](in []byte, d *decoderShared, h Handle) (sd *decode
 	return
 }
 
-func sideDecode[T decDriver](ds *decoder[T], v interface{}, basetype reflect.Type) {
+func (dh helperDecDriver[T]) sideDecode(ds *decoder[T], v interface{}, basetype reflect.Type) {
 	if v == nil && basetype == nil {
 		return
 	}
@@ -2456,10 +2438,10 @@ func sideDecode[T decDriver](ds *decoder[T], v interface{}, basetype reflect.Typ
 	if !ok {
 		rv = baseRV(v)
 	}
-	sideDecodeRV(ds, rv, basetype)
+	dh.sideDecodeRV(ds, rv, basetype)
 }
 
-func sideDecodeRV[T decDriver](ds *decoder[T], rv reflect.Value, basetype reflect.Type) {
+func (helperDecDriver[T]) sideDecodeRV(ds *decoder[T], rv reflect.Value, basetype reflect.Type) {
 	if basetype == nil {
 		ds.decodeValue(rv, nil)
 	} else {
@@ -2467,7 +2449,7 @@ func sideDecodeRV[T decDriver](ds *decoder[T], rv reflect.Value, basetype reflec
 	}
 }
 
-func newDecDriverBytes[T decDriver](in []byte, h Handle) *decoder[T] {
+func (helperDecDriver[T]) newDecDriverBytes(in []byte, h Handle) *decoder[T] {
 	var c1 decoder[T]
 	c1.bytes = true
 	c1.init(h)
@@ -2475,7 +2457,7 @@ func newDecDriverBytes[T decDriver](in []byte, h Handle) *decoder[T] {
 	return &c1
 }
 
-func newDecDriverIO[T decDriver](in io.Reader, h Handle) *decoder[T] {
+func (helperDecDriver[T]) newDecDriverIO(in io.Reader, h Handle) *decoder[T] {
 	var c1 decoder[T]
 	c1.bytes = false
 	c1.init(h)
@@ -2500,7 +2482,7 @@ func NewDecoderString(s string, h Handle) *Decoder {
 
 // ----
 
-func decFnloadFastpathUnderlying[T decDriver](ti *typeInfo, fp *fastpathDs[T]) (f *fastpathD[T], u reflect.Type) {
+func (helperDecDriver[T]) decFnloadFastpathUnderlying(ti *typeInfo, fp *fastpathDs[T]) (f *fastpathD[T], u reflect.Type) {
 	rtid := rt2id(ti.fastpathUnderlying)
 	idx, ok := fastpathAvIndex(rtid)
 	if !ok {
@@ -2529,20 +2511,20 @@ type decFnInfo struct {
 // This way, we only do some calculations one times, and pass to the
 // code block that should be called (encapsulated in a function)
 // instead of executing the checks every time.
-type decFn[D decDriver] struct {
+type decFn[T decDriver] struct {
 	i  decFnInfo
-	fd func(*decoder[D], *decFnInfo, reflect.Value)
+	fd func(*decoder[T], *decFnInfo, reflect.Value)
 	// _  [1]uint64 // padding (cache-aligned)
 }
 
-type decRtidFn[D decDriver] struct {
+type decRtidFn[T decDriver] struct {
 	rtid uintptr
-	fn   *decFn[D]
+	fn   *decFn[T]
 }
 
 // ----
 
-func decFindRtidFn[D decDriver](s []decRtidFn[D], rtid uintptr) (i uint, fn *decFn[D]) {
+func (helperDecDriver[T]) decFindRtidFn(s []decRtidFn[T], rtid uintptr) (i uint, fn *decFn[T]) {
 	// binary search. Adapted from sort/search.go. Use goto (not for loop) to allow inlining.
 	var h uint // var h, i uint
 	var j = uint(len(s))
@@ -2562,53 +2544,53 @@ LOOP:
 	return
 }
 
-func decFromRtidFnSlice[D decDriver](fns *atomicRtidFnSlice) (s []decRtidFn[D]) {
+func (helperDecDriver[T]) decFromRtidFnSlice(fns *atomicRtidFnSlice) (s []decRtidFn[T]) {
 	if v := fns.load(); v != nil {
-		s = *(lowLevelToPtr[[]decRtidFn[D]](v))
+		s = *(lowLevelToPtr[[]decRtidFn[T]](v))
 	}
 	return
 }
 
-func decFnViaBH[D decDriver](rt reflect.Type, fns *atomicRtidFnSlice, x *BasicHandle, fp *fastpathDs[D],
-	checkExt bool) (fn *decFn[D]) {
-	return decFnVia[D](rt, fns, x.typeInfos(), &x.mu, x.extHandle, fp,
+func (dh helperDecDriver[T]) decFnViaBH(rt reflect.Type, fns *atomicRtidFnSlice, x *BasicHandle, fp *fastpathDs[T],
+	checkExt bool) (fn *decFn[T]) {
+	return dh.decFnVia(rt, fns, x.typeInfos(), &x.mu, x.extHandle, fp,
 		checkExt, x.CheckCircularRef, x.timeBuiltin, x.binaryHandle, x.jsonHandle)
 }
 
-func decFnVia[D decDriver](rt reflect.Type, fns *atomicRtidFnSlice,
-	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathDs[D],
-	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *decFn[D]) {
+func (dh helperDecDriver[T]) decFnVia(rt reflect.Type, fns *atomicRtidFnSlice,
+	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathDs[T],
+	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *decFn[T]) {
 	rtid := rt2id(rt)
-	var sp []decRtidFn[D] = decFromRtidFnSlice[D](fns)
+	var sp []decRtidFn[T] = dh.decFromRtidFnSlice(fns)
 	if sp != nil {
-		_, fn = decFindRtidFn[D](sp, rtid)
+		_, fn = dh.decFindRtidFn(sp, rtid)
 	}
 	if fn == nil {
-		fn = decFnViaLoader[D](rt, rtid, fns, tinfos, mu, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
+		fn = dh.decFnViaLoader(rt, rtid, fns, tinfos, mu, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
 	}
 	return
 }
 
-func decFnViaLoader[D decDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidFnSlice,
-	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathDs[D],
-	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *decFn[D]) {
+func (dh helperDecDriver[T]) decFnViaLoader(rt reflect.Type, rtid uintptr, fns *atomicRtidFnSlice,
+	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathDs[T],
+	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *decFn[T]) {
 
-	fn = decFnLoad[D](rt, rtid, tinfos, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
-	var sp []decRtidFn[D]
+	fn = dh.decFnLoad(rt, rtid, tinfos, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
+	var sp []decRtidFn[T]
 	mu.Lock()
-	sp = decFromRtidFnSlice[D](fns)
+	sp = dh.decFromRtidFnSlice(fns)
 	// since this is an atomic load/store, we MUST use a different array each time,
 	// else we have a data race when a store is happening simultaneously with a decFindRtidFn call.
 	if sp == nil {
-		sp = []decRtidFn[D]{{rtid, fn}}
+		sp = []decRtidFn[T]{{rtid, fn}}
 		fns.store(ptrToLowLevel(&sp))
 	} else {
-		idx, fn2 := decFindRtidFn[D](sp, rtid)
+		idx, fn2 := dh.decFindRtidFn(sp, rtid)
 		if fn2 == nil {
-			sp2 := make([]decRtidFn[D], len(sp)+1)
+			sp2 := make([]decRtidFn[T], len(sp)+1)
 			copy(sp2[idx+1:], sp[idx:])
 			copy(sp2, sp[:idx])
-			sp2[idx] = decRtidFn[D]{rtid, fn}
+			sp2[idx] = decRtidFn[T]{rtid, fn}
 			fns.store(ptrToLowLevel(&sp2))
 		}
 	}
@@ -2616,10 +2598,10 @@ func decFnViaLoader[D decDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidF
 	return
 }
 
-func decFnLoad[D decDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
-	exth extHandle, fp *fastpathDs[D],
-	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *decFn[D]) {
-	fn = new(decFn[D])
+func (dh helperDecDriver[T]) decFnLoad(rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
+	exth extHandle, fp *fastpathDs[T],
+	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *decFn[T]) {
+	fn = new(decFn[T])
 	fi := &(fn.i)
 	ti := tinfos.get(rtid, rt)
 	fi.ti = ti
@@ -2632,36 +2614,36 @@ func decFnLoad[D decDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 	fi.addrDf = true
 
 	if rtid == timeTypId && timeBuiltin {
-		fn.fd = (*decoder[D]).kTime
+		fn.fd = (*decoder[T]).kTime
 	} else if rtid == rawTypId {
-		fn.fd = (*decoder[D]).raw
+		fn.fd = (*decoder[T]).raw
 	} else if rtid == rawExtTypId {
-		fn.fd = (*decoder[D]).rawExt
+		fn.fd = (*decoder[T]).rawExt
 		fi.addrD = true
 	} else if xfFn := exth.getExt(rtid, checkExt); xfFn != nil {
 		fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
-		fn.fd = (*decoder[D]).ext
+		fn.fd = (*decoder[T]).ext
 		fi.addrD = true
 	} else if (ti.flagSelfer || ti.flagSelferPtr) &&
 		!(checkCircularRef && ti.flagSelferViaCodecgen && ti.kind == byte(reflect.Struct)) {
 		// do not use Selfer generated by codecgen if it is a struct and CheckCircularRef=true
-		fn.fd = (*decoder[D]).selferUnmarshal
+		fn.fd = (*decoder[T]).selferUnmarshal
 		fi.addrD = ti.flagSelferPtr
 	} else if supportMarshalInterfaces && binaryEncoding &&
 		(ti.flagBinaryMarshaler || ti.flagBinaryMarshalerPtr) &&
 		(ti.flagBinaryUnmarshaler || ti.flagBinaryUnmarshalerPtr) {
-		fn.fd = (*decoder[D]).binaryUnmarshal
+		fn.fd = (*decoder[T]).binaryUnmarshal
 		fi.addrD = ti.flagBinaryUnmarshalerPtr
 	} else if supportMarshalInterfaces && !binaryEncoding && json &&
 		(ti.flagJsonMarshaler || ti.flagJsonMarshalerPtr) &&
 		(ti.flagJsonUnmarshaler || ti.flagJsonUnmarshalerPtr) {
 		//If JSON, we should check JSONMarshal before textMarshal
-		fn.fd = (*decoder[D]).jsonUnmarshal
+		fn.fd = (*decoder[T]).jsonUnmarshal
 		fi.addrD = ti.flagJsonUnmarshalerPtr
 	} else if supportMarshalInterfaces && !binaryEncoding &&
 		(ti.flagTextMarshaler || ti.flagTextMarshalerPtr) &&
 		(ti.flagTextUnmarshaler || ti.flagTextUnmarshalerPtr) {
-		fn.fd = (*decoder[D]).textUnmarshal
+		fn.fd = (*decoder[T]).textUnmarshal
 		fi.addrD = ti.flagTextUnmarshalerPtr
 	} else {
 		if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice || rk == reflect.Array) {
@@ -2681,19 +2663,19 @@ func decFnLoad[D decDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 				}
 			} else { // named type (with underlying type of map or slice or array)
 				// try to use mapping for underlying type
-				xfe, xrt := decFnloadFastpathUnderlying[D](ti, fp)
+				xfe, xrt := dh.decFnloadFastpathUnderlying(ti, fp)
 				if xfe != nil {
 					xfnf2 := xfe.decfn
 					if rk == reflect.Array {
 						fi.addrD = false // decode directly into array value (slice made from it)
-						fn.fd = func(d *decoder[D], xf *decFnInfo, xrv reflect.Value) {
+						fn.fd = func(d *decoder[T], xf *decFnInfo, xrv reflect.Value) {
 							xfnf2(d, xf, rvConvert(xrv, xrt))
 						}
 					} else {
 						fi.addrD = true
 						fi.addrDf = false // meaning it can be an address(ptr) or a value
 						xptr2rt := reflect.PointerTo(xrt)
-						fn.fd = func(d *decoder[D], xf *decFnInfo, xrv reflect.Value) {
+						fn.fd = func(d *decoder[T], xf *decFnInfo, xrv reflect.Value) {
 							if xrv.Kind() == reflect.Ptr {
 								xfnf2(d, xf, rvConvert(xrv, xptr2rt))
 							} else {
@@ -2707,56 +2689,56 @@ func decFnLoad[D decDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 		if fn.fd == nil {
 			switch rk {
 			case reflect.Bool:
-				fn.fd = (*decoder[D]).kBool
+				fn.fd = (*decoder[T]).kBool
 			case reflect.String:
-				fn.fd = (*decoder[D]).kString
+				fn.fd = (*decoder[T]).kString
 			case reflect.Int:
-				fn.fd = (*decoder[D]).kInt
+				fn.fd = (*decoder[T]).kInt
 			case reflect.Int8:
-				fn.fd = (*decoder[D]).kInt8
+				fn.fd = (*decoder[T]).kInt8
 			case reflect.Int16:
-				fn.fd = (*decoder[D]).kInt16
+				fn.fd = (*decoder[T]).kInt16
 			case reflect.Int32:
-				fn.fd = (*decoder[D]).kInt32
+				fn.fd = (*decoder[T]).kInt32
 			case reflect.Int64:
-				fn.fd = (*decoder[D]).kInt64
+				fn.fd = (*decoder[T]).kInt64
 			case reflect.Uint:
-				fn.fd = (*decoder[D]).kUint
+				fn.fd = (*decoder[T]).kUint
 			case reflect.Uint8:
-				fn.fd = (*decoder[D]).kUint8
+				fn.fd = (*decoder[T]).kUint8
 			case reflect.Uint16:
-				fn.fd = (*decoder[D]).kUint16
+				fn.fd = (*decoder[T]).kUint16
 			case reflect.Uint32:
-				fn.fd = (*decoder[D]).kUint32
+				fn.fd = (*decoder[T]).kUint32
 			case reflect.Uint64:
-				fn.fd = (*decoder[D]).kUint64
+				fn.fd = (*decoder[T]).kUint64
 			case reflect.Uintptr:
-				fn.fd = (*decoder[D]).kUintptr
+				fn.fd = (*decoder[T]).kUintptr
 			case reflect.Float32:
-				fn.fd = (*decoder[D]).kFloat32
+				fn.fd = (*decoder[T]).kFloat32
 			case reflect.Float64:
-				fn.fd = (*decoder[D]).kFloat64
+				fn.fd = (*decoder[T]).kFloat64
 			case reflect.Complex64:
-				fn.fd = (*decoder[D]).kComplex64
+				fn.fd = (*decoder[T]).kComplex64
 			case reflect.Complex128:
-				fn.fd = (*decoder[D]).kComplex128
+				fn.fd = (*decoder[T]).kComplex128
 			case reflect.Chan:
-				fn.fd = (*decoder[D]).kChan
+				fn.fd = (*decoder[T]).kChan
 			case reflect.Slice:
-				fn.fd = (*decoder[D]).kSlice
+				fn.fd = (*decoder[T]).kSlice
 			case reflect.Array:
 				fi.addrD = false // decode directly into array value (slice made from it)
-				fn.fd = (*decoder[D]).kArray
+				fn.fd = (*decoder[T]).kArray
 			case reflect.Struct:
-				fn.fd = (*decoder[D]).kStruct
+				fn.fd = (*decoder[T]).kStruct
 			case reflect.Map:
-				fn.fd = (*decoder[D]).kMap
+				fn.fd = (*decoder[T]).kMap
 			case reflect.Interface:
 				// encode: reflect.Interface are handled already by preEncodeValue
-				fn.fd = (*decoder[D]).kInterface
+				fn.fd = (*decoder[T]).kInterface
 			default:
 				// reflect.Ptr and reflect.Interface are handled already by preEncodeValue
-				fn.fd = (*decoder[D]).kErr
+				fn.fd = (*decoder[T]).kErr
 			}
 		}
 	}
@@ -2764,3 +2746,28 @@ func decFnLoad[D decDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 }
 
 // ----
+
+func (helperDecReader[T]) decByteSlice(r T, clen, maxInitLen int, bs []byte) (bsOut []byte) {
+	if clen <= 0 {
+		bsOut = zeroByteSlice
+	} else if cap(bs) >= clen {
+		bsOut = bs[:clen]
+		r.readb(bsOut)
+	} else {
+		var len2 int
+		for len2 < clen {
+			len3 := decInferLen(clen-len2, maxInitLen, 1)
+			bs3 := bsOut
+			bsOut = make([]byte, len2+len3)
+			copy(bsOut, bs3)
+			r.readb(bsOut[len2:])
+			len2 += len3
+		}
+	}
+	return
+}
+
+// ----
+
+type helperDecReader[T decReader] struct{}
+type helperDecDriver[T decDriver] struct{}

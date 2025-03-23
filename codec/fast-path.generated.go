@@ -39,15 +39,15 @@ import (
 
 const fastpathEnabled = true
 
-type fastpathE[E encDriver] struct {
+type fastpathE[T encDriver] struct {
 	rtid  uintptr
 	rt    reflect.Type
-	encfn func(*encoder[E], *encFnInfo, reflect.Value)
+	encfn func(*encoder[T], *encFnInfo, reflect.Value)
 }
-type fastpathD[D decDriver] struct {
+type fastpathD[T decDriver] struct {
 	rtid  uintptr
 	rt    reflect.Type
-	decfn func(*decoder[D], *decFnInfo, reflect.Value)
+	decfn func(*decoder[T], *decFnInfo, reflect.Value)
 }
 type fastpathEs[T encDriver] [56]fastpathE[T]
 type fastpathDs[T decDriver] [56]fastpathD[T]
@@ -157,7 +157,7 @@ func init() {
 	sort.Slice(fastpathAvRtRtid[:], func(i, j int) bool { return fastpathAvRtRtid[i].rtid < fastpathAvRtRtid[j].rtid })
 }
 
-func fastpathEList[T encDriver]() *fastpathEs[T] {
+func (helperEncDriver[T]) fastpathEList() *fastpathEs[T] {
 	var i uint = 0
 	var s fastpathEs[T]
 	fn := func(v interface{}, fe func(*encoder[T], *encFnInfo, reflect.Value)) {
@@ -228,7 +228,7 @@ func fastpathEList[T encDriver]() *fastpathEs[T] {
 	return &s
 }
 
-func fastpathDList[T decDriver]() *fastpathDs[T] {
+func (helperDecDriver[T]) fastpathDList() *fastpathDs[T] {
 	var i uint = 0
 	var s fastpathDs[T]
 	fn := func(v interface{}, fd func(*decoder[T], *decFnInfo, reflect.Value)) {
@@ -302,7 +302,7 @@ func fastpathDList[T decDriver]() *fastpathDs[T] {
 // -- encode
 
 // -- -- fast path type switch
-func fastpathEncodeTypeSwitch[T encDriver](iv interface{}, e *encoder[T]) bool {
+func (helperEncDriver[T]) fastpathEncodeTypeSwitch(iv interface{}, e *encoder[T]) bool {
 	var ft fastpathET[T]
 	switch v := iv.(type) {
 	case []interface{}:
@@ -2495,7 +2495,7 @@ func (fastpathET[T]) EncMapInt32BoolV(v map[int32]bool, e *encoder[T]) {
 // -- decode
 
 // -- -- fast path type switch
-func fastpathDecodeTypeSwitch[T decDriver](iv interface{}, d *decoder[T]) bool {
+func (helperDecDriver[T]) fastpathDecodeTypeSwitch(iv interface{}, d *decoder[T]) bool {
 	var ft fastpathDT[T]
 	var changed bool
 	var containerLen int

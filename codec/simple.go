@@ -262,6 +262,8 @@ type simpleDecDriver[T decReader] struct {
 	d *decoderShared
 	r T
 
+	rh helperDecReader[T]
+
 	bdAndBdread
 	bytes bool
 
@@ -490,7 +492,7 @@ func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 		d.d.decByteState = decByteStateReuseBuf
 		bs = d.d.b[:]
 	}
-	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	return d.rh.decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
 }
 
 func (d *simpleDecDriver[T]) DecodeTime() (t time.Time) {
@@ -540,7 +542,7 @@ func (d *simpleDecDriver[T]) decodeExtV(verifyTag bool, tag byte) (xbs []byte, x
 			xbs = d.r.readx(uint(l))
 			zerocopy = true
 		} else {
-			xbs = decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
+			xbs = d.rh.decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
 		}
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
@@ -603,7 +605,7 @@ func (d *simpleDecDriver[T]) DecodeNaked() {
 		if d.d.bytes {
 			n.l = d.r.readx(uint(l))
 		} else {
-			n.l = decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
+			n.l = d.rh.decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
 		}
 	case simpleVdArray, simpleVdArray + 1, simpleVdArray + 2,
 		simpleVdArray + 3, simpleVdArray + 4:

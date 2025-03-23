@@ -549,7 +549,7 @@ func (e *encoder[T]) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
 }
 
 func (e *encoder[T]) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-	encStructFieldKey(encName, e.e, keyType, encNameAsciiAlphaNum, e.js)
+	e.dh.encStructFieldKey(encName, e.e, keyType, encNameAsciiAlphaNum, e.js)
 }
 
 func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
@@ -981,6 +981,8 @@ type encoder[T encDriver] struct {
 	panicHdl
 	perType encPerType
 
+	dh helperEncDriver[T]
+
 	fp *fastpathEs[T]
 
 	h *BasicHandle
@@ -1282,7 +1284,7 @@ func (e *encoder[T]) encode(iv interface{}) {
 		}
 	default:
 		// we can't check non-predefined types, as they might be a Selfer or extension.
-		if skipFastpathTypeSwitchInDirectCall || !fastpathEncodeTypeSwitch(iv, e) {
+		if skipFastpathTypeSwitchInDirectCall || !e.dh.fastpathEncodeTypeSwitch(iv, e) {
 			e.encodeValue(rv, nil)
 		}
 	}
@@ -1432,11 +1434,11 @@ func (e *encoder[T]) wrapErr(v error, err *error) {
 }
 
 func (e *encoder[T]) fn(t reflect.Type) *encFn[T] {
-	return encFnViaBH[T](t, e.rtidFn, e.h, e.fp, false)
+	return e.dh.encFnViaBH(t, e.rtidFn, e.h, e.fp, false)
 }
 
 func (e *encoder[T]) fnNoExt(t reflect.Type) *encFn[T] {
-	return encFnViaBH[T](t, e.rtidFnNoExt, e.h, e.fp, true)
+	return e.dh.encFnViaBH(t, e.rtidFnNoExt, e.h, e.fp, true)
 }
 
 // ---- container tracker methods
@@ -1504,7 +1506,7 @@ func (e *encoder[T]) atEndOfEncode() {
 // 	return
 // }
 
-func encStructFieldKey[T encDriver](encName string, ee T,
+func (helperEncDriver[T]) encStructFieldKey(encName string, ee T,
 	keyType valueType, encNameAsciiAlphaNum bool, js bool) {
 	// use if-else-if, not switch (which compiles to binary-search)
 	// since keyType is typically valueTypeString, branch prediction is pretty good.
@@ -1591,7 +1593,7 @@ func (encDriverContainerNoTrackerT) WriteArrayElem()    {}
 func (encDriverContainerNoTrackerT) WriteMapElemKey()   {}
 func (encDriverContainerNoTrackerT) WriteMapElemValue() {}
 
-func sideEncode[T encDriver](es *encoder[T], v interface{}, basetype reflect.Type, cs containerState) {
+func (x helperEncDriver[T]) sideEncode(es *encoder[T], v interface{}, basetype reflect.Type, cs containerState) {
 	if v == nil && basetype == nil {
 		return
 	}
@@ -1600,10 +1602,10 @@ func sideEncode[T encDriver](es *encoder[T], v interface{}, basetype reflect.Typ
 	if !ok {
 		rv = baseRV(v)
 	}
-	sideEncodeRV(es, rv, basetype, cs)
+	x.sideEncodeRV(es, rv, basetype, cs)
 }
 
-func sideEncodeRV[T encDriver](es *encoder[T], rv reflect.Value, basetype reflect.Type, cs containerState) {
+func (helperEncDriver[T]) sideEncodeRV(es *encoder[T], rv reflect.Value, basetype reflect.Type, cs containerState) {
 	if cs != 0 {
 		es.c = cs
 	}
@@ -1617,9 +1619,9 @@ func sideEncodeRV[T encDriver](es *encoder[T], rv reflect.Value, basetype reflec
 	es.e.writerEnd()
 }
 
-func sideEncoder[T encDriver](out *[]byte, e *encoderShared, h Handle) (se *encoder[T]) {
+func (x helperEncDriver[T]) sideEncoder(out *[]byte, e *encoderShared, h Handle) (se *encoder[T]) {
 	if e.se == nil {
-		se = newEncDriverBytes[T](out, h)
+		se = x.newEncDriverBytes(out, h)
 		e.se = se
 	} else {
 		se = e.se.(*encoder[T])
@@ -1628,7 +1630,7 @@ func sideEncoder[T encDriver](out *[]byte, e *encoderShared, h Handle) (se *enco
 	return
 }
 
-func newEncDriverBytes[T encDriver](out *[]byte, h Handle) *encoder[T] {
+func (helperEncDriver[T]) newEncDriverBytes(out *[]byte, h Handle) *encoder[T] {
 	var c1 encoder[T]
 	c1.bytes = true
 	c1.init(h)
@@ -1636,7 +1638,7 @@ func newEncDriverBytes[T encDriver](out *[]byte, h Handle) *encoder[T] {
 	return &c1
 }
 
-func newEncDriverIO[T encDriver](out io.Writer, h Handle) *encoder[T] {
+func (helperEncDriver[T]) newEncDriverIO(out io.Writer, h Handle) *encoder[T] {
 	var c1 encoder[T]
 	c1.bytes = false
 	c1.init(h)
@@ -1650,7 +1652,7 @@ type Encoder struct {
 
 // ----
 
-func encFnloadFastpathUnderlying[T encDriver](ti *typeInfo, fp *fastpathEs[T]) (f *fastpathE[T], u reflect.Type) {
+func (helperEncDriver[T]) encFnloadFastpathUnderlying(ti *typeInfo, fp *fastpathEs[T]) (f *fastpathE[T], u reflect.Type) {
 	rtid := rt2id(ti.fastpathUnderlying)
 	idx, ok := fastpathAvIndex(rtid)
 	if !ok {
@@ -1679,20 +1681,20 @@ type encFnInfo struct {
 // This way, we only do some calculations one times, and pass to the
 // code block that should be called (encapsulated in a function)
 // instead of executing the checks every time.
-type encFn[E encDriver] struct {
+type encFn[T encDriver] struct {
 	i  encFnInfo
-	fe func(*encoder[E], *encFnInfo, reflect.Value)
+	fe func(*encoder[T], *encFnInfo, reflect.Value)
 	// _  [1]uint64 // padding (cache-aligned)
 }
 
-type encRtidFn[E encDriver] struct {
+type encRtidFn[T encDriver] struct {
 	rtid uintptr
-	fn   *encFn[E]
+	fn   *encFn[T]
 }
 
 // ----
 
-func encFindRtidFn[E encDriver](s []encRtidFn[E], rtid uintptr) (i uint, fn *encFn[E]) {
+func (helperEncDriver[T]) encFindRtidFn(s []encRtidFn[T], rtid uintptr) (i uint, fn *encFn[T]) {
 	// binary search. Adapted from sort/search.go. Use goto (not for loop) to allow inlining.
 	var h uint // var h, i uint
 	var j = uint(len(s))
@@ -1712,54 +1714,54 @@ LOOP:
 	return
 }
 
-func encFromRtidFnSlice[E encDriver](fns *atomicRtidFnSlice) (s []encRtidFn[E]) {
+func (helperEncDriver[T]) encFromRtidFnSlice(fns *atomicRtidFnSlice) (s []encRtidFn[T]) {
 	if v := fns.load(); v != nil {
-		s = *(lowLevelToPtr[[]encRtidFn[E]](v))
+		s = *(lowLevelToPtr[[]encRtidFn[T]](v))
 	}
 	return
 }
 
-func encFnViaBH[E encDriver](rt reflect.Type, fns *atomicRtidFnSlice,
-	x *BasicHandle, fp *fastpathEs[E], checkExt bool) (fn *encFn[E]) {
-	return encFnVia[E](rt, fns, x.typeInfos(), &x.mu, x.extHandle, fp,
+func (dh helperEncDriver[T]) encFnViaBH(rt reflect.Type, fns *atomicRtidFnSlice,
+	x *BasicHandle, fp *fastpathEs[T], checkExt bool) (fn *encFn[T]) {
+	return dh.encFnVia(rt, fns, x.typeInfos(), &x.mu, x.extHandle, fp,
 		checkExt, x.CheckCircularRef, x.timeBuiltin, x.binaryHandle, x.jsonHandle)
 }
 
-func encFnVia[E encDriver](rt reflect.Type, fns *atomicRtidFnSlice,
-	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathEs[E],
-	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *encFn[E]) {
+func (dh helperEncDriver[T]) encFnVia(rt reflect.Type, fns *atomicRtidFnSlice,
+	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathEs[T],
+	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *encFn[T]) {
 	rtid := rt2id(rt)
-	var sp []encRtidFn[E]
-	sp = encFromRtidFnSlice[E](fns)
+	var sp []encRtidFn[T]
+	sp = dh.encFromRtidFnSlice(fns)
 	if sp != nil {
-		_, fn = encFindRtidFn[E](sp, rtid)
+		_, fn = dh.encFindRtidFn(sp, rtid)
 	}
 	if fn == nil {
-		fn = encFnViaLoader[E](rt, rtid, fns, tinfos, mu, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
+		fn = dh.encFnViaLoader(rt, rtid, fns, tinfos, mu, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
 	}
 	return
 }
 
-func encFnViaLoader[E encDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidFnSlice,
-	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathEs[E],
-	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *encFn[E]) {
+func (dh helperEncDriver[T]) encFnViaLoader(rt reflect.Type, rtid uintptr, fns *atomicRtidFnSlice,
+	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathEs[T],
+	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *encFn[T]) {
 
-	fn = encFnLoad[E](rt, rtid, tinfos, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
-	var sp []encRtidFn[E]
+	fn = dh.encFnLoad(rt, rtid, tinfos, exth, fp, checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json)
+	var sp []encRtidFn[T]
 	mu.Lock()
-	sp = encFromRtidFnSlice[E](fns)
+	sp = dh.encFromRtidFnSlice(fns)
 	// since this is an atomic load/store, we MUST use a different array each time,
 	// else we have a data race when a store is happening simultaneously with a encFindRtidFn call.
 	if sp == nil {
-		sp = []encRtidFn[E]{{rtid, fn}}
+		sp = []encRtidFn[T]{{rtid, fn}}
 		fns.store(ptrToLowLevel(&sp))
 	} else {
-		idx, fn2 := encFindRtidFn[E](sp, rtid)
+		idx, fn2 := dh.encFindRtidFn(sp, rtid)
 		if fn2 == nil {
-			sp2 := make([]encRtidFn[E], len(sp)+1)
+			sp2 := make([]encRtidFn[T], len(sp)+1)
 			copy(sp2[idx+1:], sp[idx:])
 			copy(sp2, sp[:idx])
-			sp2[idx] = encRtidFn[E]{rtid, fn}
+			sp2[idx] = encRtidFn[T]{rtid, fn}
 			fns.store(ptrToLowLevel(&sp2))
 		}
 	}
@@ -1767,10 +1769,10 @@ func encFnViaLoader[E encDriver](rt reflect.Type, rtid uintptr, fns *atomicRtidF
 	return
 }
 
-func encFnLoad[E encDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
-	exth extHandle, fp *fastpathEs[E],
-	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *encFn[E]) {
-	fn = new(encFn[E])
+func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
+	exth extHandle, fp *fastpathEs[T],
+	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *encFn[T]) {
+	fn = new(encFn[T])
 	fi := &(fn.i)
 	ti := tinfos.get(rtid, rt)
 	fi.ti = ti
@@ -1783,38 +1785,38 @@ func encFnLoad[E encDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 	// fi.addrEf = true
 
 	if rtid == timeTypId && timeBuiltin {
-		fn.fe = (*encoder[E]).kTime
+		fn.fe = (*encoder[T]).kTime
 	} else if rtid == rawTypId {
-		fn.fe = (*encoder[E]).raw
+		fn.fe = (*encoder[T]).raw
 	} else if rtid == rawExtTypId {
-		fn.fe = (*encoder[E]).rawExt
+		fn.fe = (*encoder[T]).rawExt
 		fi.addrE = true
 	} else if xfFn := exth.getExt(rtid, checkExt); xfFn != nil {
 		fi.xfTag, fi.xfFn = xfFn.tag, xfFn.ext
-		fn.fe = (*encoder[E]).ext
+		fn.fe = (*encoder[T]).ext
 		if rk == reflect.Struct || rk == reflect.Array {
 			fi.addrE = true
 		}
 	} else if (ti.flagSelfer || ti.flagSelferPtr) &&
 		!(checkCircularRef && ti.flagSelferViaCodecgen && ti.kind == byte(reflect.Struct)) {
 		// do not use Selfer generated by codecgen if it is a struct and CheckCircularRef=true
-		fn.fe = (*encoder[E]).selferMarshal
+		fn.fe = (*encoder[T]).selferMarshal
 		fi.addrE = ti.flagSelferPtr
 	} else if supportMarshalInterfaces && binaryEncoding &&
 		(ti.flagBinaryMarshaler || ti.flagBinaryMarshalerPtr) &&
 		(ti.flagBinaryUnmarshaler || ti.flagBinaryUnmarshalerPtr) {
-		fn.fe = (*encoder[E]).binaryMarshal
+		fn.fe = (*encoder[T]).binaryMarshal
 		fi.addrE = ti.flagBinaryMarshalerPtr
 	} else if supportMarshalInterfaces && !binaryEncoding && json &&
 		(ti.flagJsonMarshaler || ti.flagJsonMarshalerPtr) &&
 		(ti.flagJsonUnmarshaler || ti.flagJsonUnmarshalerPtr) {
 		//If JSON, we should check JSONMarshal before textMarshal
-		fn.fe = (*encoder[E]).jsonMarshal
+		fn.fe = (*encoder[T]).jsonMarshal
 		fi.addrE = ti.flagJsonMarshalerPtr
 	} else if supportMarshalInterfaces && !binaryEncoding &&
 		(ti.flagTextMarshaler || ti.flagTextMarshalerPtr) &&
 		(ti.flagTextUnmarshaler || ti.flagTextUnmarshalerPtr) {
-		fn.fe = (*encoder[E]).textMarshal
+		fn.fe = (*encoder[T]).textMarshal
 		fi.addrE = ti.flagTextMarshalerPtr
 	} else {
 		if fastpathEnabled && (rk == reflect.Map || rk == reflect.Slice || rk == reflect.Array) {
@@ -1840,10 +1842,10 @@ func encFnLoad[E encDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 				}
 			} else { // named type (with underlying type of map or slice or array)
 				// try to use mapping for underlying type
-				xfe, xrt := encFnloadFastpathUnderlying[E](ti, fp)
+				xfe, xrt := dh.encFnloadFastpathUnderlying(ti, fp)
 				if xfe != nil {
 					xfnf := xfe.encfn
-					fn.fe = func(e *encoder[E], xf *encFnInfo, xrv reflect.Value) {
+					fn.fe = func(e *encoder[T], xf *encFnInfo, xrv reflect.Value) {
 						xfnf(e, xf, rvConvert(xrv, xrt))
 					}
 				}
@@ -1852,71 +1854,71 @@ func encFnLoad[E encDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 		if fn.fe == nil {
 			switch rk {
 			case reflect.Bool:
-				fn.fe = (*encoder[E]).kBool
+				fn.fe = (*encoder[T]).kBool
 			case reflect.String:
 				// Do not use different functions based on StringToRaw option, as that will statically
 				// set the function for a string type, and if the Handle is modified thereafter,
 				// behaviour is non-deterministic
 				// i.e. DO NOT DO:
 				//   if x.StringToRaw {
-				//   	fn.fe = (*encoder[E]).kStringToRaw
+				//   	fn.fe = (*encoder[T]).kStringToRaw
 				//   } else {
-				//   	fn.fe = (*encoder[E]).kStringEnc
+				//   	fn.fe = (*encoder[T]).kStringEnc
 				//   }
 
-				fn.fe = (*encoder[E]).kString
+				fn.fe = (*encoder[T]).kString
 			case reflect.Int:
-				fn.fe = (*encoder[E]).kInt
+				fn.fe = (*encoder[T]).kInt
 			case reflect.Int8:
-				fn.fe = (*encoder[E]).kInt8
+				fn.fe = (*encoder[T]).kInt8
 			case reflect.Int16:
-				fn.fe = (*encoder[E]).kInt16
+				fn.fe = (*encoder[T]).kInt16
 			case reflect.Int32:
-				fn.fe = (*encoder[E]).kInt32
+				fn.fe = (*encoder[T]).kInt32
 			case reflect.Int64:
-				fn.fe = (*encoder[E]).kInt64
+				fn.fe = (*encoder[T]).kInt64
 			case reflect.Uint:
-				fn.fe = (*encoder[E]).kUint
+				fn.fe = (*encoder[T]).kUint
 			case reflect.Uint8:
-				fn.fe = (*encoder[E]).kUint8
+				fn.fe = (*encoder[T]).kUint8
 			case reflect.Uint16:
-				fn.fe = (*encoder[E]).kUint16
+				fn.fe = (*encoder[T]).kUint16
 			case reflect.Uint32:
-				fn.fe = (*encoder[E]).kUint32
+				fn.fe = (*encoder[T]).kUint32
 			case reflect.Uint64:
-				fn.fe = (*encoder[E]).kUint64
+				fn.fe = (*encoder[T]).kUint64
 			case reflect.Uintptr:
-				fn.fe = (*encoder[E]).kUintptr
+				fn.fe = (*encoder[T]).kUintptr
 			case reflect.Float32:
-				fn.fe = (*encoder[E]).kFloat32
+				fn.fe = (*encoder[T]).kFloat32
 			case reflect.Float64:
-				fn.fe = (*encoder[E]).kFloat64
+				fn.fe = (*encoder[T]).kFloat64
 			case reflect.Complex64:
-				fn.fe = (*encoder[E]).kComplex64
+				fn.fe = (*encoder[T]).kComplex64
 			case reflect.Complex128:
-				fn.fe = (*encoder[E]).kComplex128
+				fn.fe = (*encoder[T]).kComplex128
 			case reflect.Chan:
-				fn.fe = (*encoder[E]).kChan
+				fn.fe = (*encoder[T]).kChan
 			case reflect.Slice:
-				fn.fe = (*encoder[E]).kSlice
+				fn.fe = (*encoder[T]).kSlice
 			case reflect.Array:
-				fn.fe = (*encoder[E]).kArray
+				fn.fe = (*encoder[T]).kArray
 			case reflect.Struct:
 				if ti.anyOmitEmpty ||
 					ti.flagMissingFielder ||
 					ti.flagMissingFielderPtr {
-					fn.fe = (*encoder[E]).kStruct
+					fn.fe = (*encoder[T]).kStruct
 				} else {
-					fn.fe = (*encoder[E]).kStructNoOmitempty
+					fn.fe = (*encoder[T]).kStructNoOmitempty
 				}
 			case reflect.Map:
-				fn.fe = (*encoder[E]).kMap
+				fn.fe = (*encoder[T]).kMap
 			case reflect.Interface:
 				// encode: reflect.Interface are handled already by preEncodeValue
-				fn.fe = (*encoder[E]).kErr
+				fn.fe = (*encoder[T]).kErr
 			default:
 				// reflect.Ptr and reflect.Interface are handled already by preEncodeValue
-				fn.fe = (*encoder[E]).kErr
+				fn.fe = (*encoder[T]).kErr
 			}
 		}
 	}
@@ -1924,3 +1926,6 @@ func encFnLoad[E encDriver](rt reflect.Type, rtid uintptr, tinfos *TypeInfos,
 }
 
 // ----
+
+type helperEncWriter[T encWriter] struct{}
+type helperEncDriver[T encDriver] struct{}

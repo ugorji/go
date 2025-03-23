@@ -225,3 +225,31 @@ Embedded fields are encoded as if they exist in the top-level struct,
 with some caveats. See Encode documentation.
 */
 package codec
+
+/*
+Generics
+
+Generics are used across to board to reduce boilerplate, and hopefully
+improve performance by
+- reducing need for interface calls (de-virtualization)
+- resultant inlining of those calls
+
+encoder/decoder --> Driver (json/cbor/...) --> input/output (bytes or io abstraction)
+
+There are 2 * 5 * 2 (20) combinations of monomorphized values.
+
+Key rules
+- do not use top-level generic functions.
+  Due to type inference, monomorphizing them proves challenging
+- only use generic methods.
+  Monomorphizing is done at the type once, and method names need not change
+- do not have method calls have a parameter of an encWriter or decReader.
+  All those calls are handled directly by the driver.
+- Include a helper type for each parameterized thing, and add all generic functions to them e.g.
+  helperEncWriter[T encWriter]
+  helperEncReader[T decReader]
+  helperEncDriver[T encDriver]
+  helperDecDriver[T decDriver]
+- Always use T as the generic type name (when needed)
+
+*/
