@@ -36,7 +36,7 @@ _build() {
 
     cat > gen-from-tmpl.codec.generated.go <<EOF
 package codec
-func GenRunTmpl2Go(in, out string) { genRunTmpl2Go(in, out) }
+func GenTmplRun2Go(in, out string) { genTmplRun2Go(in, out) }
 EOF
 
     # explicitly return 0 if this passes, else return 1
@@ -51,8 +51,8 @@ package main
 import "${zpkg}"
 
 func main() {
-codec.GenRunTmpl2Go("fast-path.go.tmpl", "fast-path.generated.go")
-codec.GenRunTmpl2Go("mammoth-test.go.tmpl", "mammoth_generated_test.go")
+codec.GenTmplRun2Go("fast-path.go.tmpl", "fast-path.generated.go")
+codec.GenTmplRun2Go("mammoth-test.go.tmpl", "mammoth_generated_test.go")
 }
 EOF
 

@@ -788,13 +788,6 @@ func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (e
 
 // ----
 
-var (
-	simpleFpEncIO    = fastpathEList[simpleEncDriverM[bufioEncWriterM]]()
-	simpleFpEncBytes = fastpathEList[simpleEncDriverM[bytesEncAppenderM]]()
-	simpleFpDecIO    = fastpathDList[simpleDecDriverM[ioDecReaderM]]()
-	simpleFpDecBytes = fastpathDList[simpleDecDriverM[bytesDecReaderM]]()
-)
-
 type simpleEncDriverM[T encWriter] struct {
 	*simpleEncDriver[T]
 }
@@ -827,18 +820,6 @@ func (e *simpleEncDriver[T]) resetOutBytes(out *[]byte) (ok bool) {
 
 func (e *simpleEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
 	return encResetIO(e.w, out, e.h.WriterBufferSize, &e.e.blist)
-}
-
-func (e *simpleEncDriver[T]) sideEncoder(out *[]byte) {
-	sideEncoder[simpleEncDriverM[bytesEncAppenderM]](out, e.e, e.h)
-}
-
-func (e *simpleEncDriver[T]) sideEncode(v any, basetype reflect.Type, cs containerState) {
-	sideEncode(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (e *simpleEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
-	sideEncodeRV(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
 }
 
 // ----

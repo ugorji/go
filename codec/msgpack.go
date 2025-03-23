@@ -1235,13 +1235,6 @@ func (x msgpackSpecRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.Clien
 
 // ----
 
-var (
-	msgpackFpEncIO    = fastpathEList[msgpackEncDriverM[bufioEncWriterM]]()
-	msgpackFpEncBytes = fastpathEList[msgpackEncDriverM[bytesEncAppenderM]]()
-	msgpackFpDecIO    = fastpathDList[msgpackDecDriverM[ioDecReaderM]]()
-	msgpackFpDecBytes = fastpathDList[msgpackDecDriverM[bytesDecReaderM]]()
-)
-
 type msgpackEncDriverM[T encWriter] struct {
 	*msgpackEncDriver[T]
 }
@@ -1274,18 +1267,6 @@ func (e *msgpackEncDriver[T]) resetOutBytes(out *[]byte) (ok bool) {
 
 func (e *msgpackEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
 	return encResetIO(e.w, out, e.h.WriterBufferSize, &e.e.blist)
-}
-
-func (e *msgpackEncDriver[T]) sideEncoder(out *[]byte) {
-	sideEncoder[msgpackEncDriverM[bytesEncAppenderM]](out, e.e, e.h)
-}
-
-func (e *msgpackEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
-	sideEncode(e.e.se.(*encoder[msgpackEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (e *msgpackEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
-	sideEncodeRV(e.e.se.(*encoder[msgpackEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
 }
 
 // ----

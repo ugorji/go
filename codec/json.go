@@ -1472,13 +1472,6 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 
 // ----
 
-var (
-	jsonFpEncIO    = fastpathEList[jsonEncDriverM[bufioEncWriterM]]()
-	jsonFpEncBytes = fastpathEList[jsonEncDriverM[bytesEncAppenderM]]()
-	jsonFpDecIO    = fastpathDList[jsonDecDriverM[ioDecReaderM]]()
-	jsonFpDecBytes = fastpathDList[jsonDecDriverM[bytesDecReaderM]]()
-)
-
 type jsonEncDriverM[T encWriter] struct {
 	*jsonEncDriver[T]
 }
@@ -1511,18 +1504,6 @@ func (e *jsonEncDriver[T]) resetOutBytes(out *[]byte) (ok bool) {
 
 func (e *jsonEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
 	return encResetIO(e.w, out, e.h.WriterBufferSize, &e.e.blist)
-}
-
-func (e *jsonEncDriver[T]) sideEncoder(out *[]byte) {
-	sideEncoder[jsonEncDriverM[bytesEncAppenderM]](out, e.e, e.h)
-}
-
-func (e *jsonEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
-	sideEncode(e.e.se.(*encoder[jsonEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (e *jsonEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
-	sideEncodeRV(e.e.se.(*encoder[jsonEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
 }
 
 // ----

@@ -962,13 +962,6 @@ func (d *cborDecDriver[T]) reset() {
 
 // ----
 
-var (
-	cborFpEncIO    = fastpathEList[cborEncDriverM[bufioEncWriterM]]()
-	cborFpEncBytes = fastpathEList[cborEncDriverM[bytesEncAppenderM]]()
-	cborFpDecIO    = fastpathDList[cborDecDriverM[ioDecReaderM]]()
-	cborFpDecBytes = fastpathDList[cborDecDriverM[bytesDecReaderM]]()
-)
-
 type cborEncDriverM[T encWriter] struct {
 	*cborEncDriver[T]
 }
@@ -1001,18 +994,6 @@ func (e *cborEncDriver[T]) resetOutBytes(out *[]byte) (ok bool) {
 
 func (e *cborEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
 	return encResetIO(e.w, out, e.h.WriterBufferSize, &e.e.blist)
-}
-
-func (e *cborEncDriver[T]) sideEncoder(out *[]byte) {
-	sideEncoder[cborEncDriverM[bytesEncAppenderM]](out, e.e, e.h)
-}
-
-func (e *cborEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
-	sideEncode(e.e.se.(*encoder[cborEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (e *cborEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
-	sideEncodeRV(e.e.se.(*encoder[cborEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
 }
 
 // ----

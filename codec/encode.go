@@ -22,21 +22,6 @@ const defEncByteBufSize = 1 << 10 // 4:16, 6:64, 8:256, 10:1024
 var errEncoderNotInitialized = errors.New("Encoder not initialized")
 
 // encDriver abstracts the actual codec (binc vs msgpack, etc)
-type encDriver interface {
-	simpleEncDriverM[bufioEncWriterM] |
-		simpleEncDriverM[bytesEncAppenderM] |
-		jsonEncDriverM[bufioEncWriterM] |
-		jsonEncDriverM[bytesEncAppenderM] |
-		cborEncDriverM[bufioEncWriterM] |
-		cborEncDriverM[bytesEncAppenderM] |
-		msgpackEncDriverM[bufioEncWriterM] |
-		msgpackEncDriverM[bytesEncAppenderM] |
-		bincEncDriverM[bufioEncWriterM] |
-		bincEncDriverM[bytesEncAppenderM]
-
-	encDriverI
-}
-
 type encDriverI interface {
 	EncodeNil()
 	EncodeInt(i int64)
@@ -1679,53 +1664,6 @@ func newEncDriverIO[T encDriver](out io.Writer, h Handle) *encoder[T] {
 
 type Encoder struct {
 	encoderI
-}
-
-// NewEncoder returns an Encoder for encoding into an io.Writer.
-//
-// For efficiency, Users are encouraged to configure WriterBufferSize on the handle
-// OR pass in a memory buffered writer (eg bufio.Writer, bytes.Buffer).
-func NewEncoder(w io.Writer, h Handle) *Encoder {
-	var e encoderI
-	switch h.(type) {
-	case *SimpleHandle:
-		e = newEncDriverIO[simpleEncDriverM[bufioEncWriterM]](w, h)
-	case *JsonHandle:
-		e = newEncDriverIO[jsonEncDriverM[bufioEncWriterM]](w, h)
-	case *CborHandle:
-		e = newEncDriverIO[cborEncDriverM[bufioEncWriterM]](w, h)
-	case *MsgpackHandle:
-		e = newEncDriverIO[msgpackEncDriverM[bufioEncWriterM]](w, h)
-	case *BincHandle:
-		e = newEncDriverIO[bincEncDriverM[bufioEncWriterM]](w, h)
-	default:
-		return nil
-	}
-	return &Encoder{e}
-}
-
-// NewEncoderBytes returns an encoder for encoding directly and efficiently
-// into a byte slice, using zero-copying to temporary slices.
-//
-// It will potentially replace the output byte slice pointed to.
-// After encoding, the out parameter contains the encoded contents.
-func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
-	var e encoderI
-	switch h.(type) {
-	case *SimpleHandle:
-		e = newEncDriverBytes[simpleEncDriverM[bytesEncAppenderM]](out, h)
-	case *JsonHandle:
-		e = newEncDriverBytes[jsonEncDriverM[bytesEncAppenderM]](out, h)
-	case *CborHandle:
-		e = newEncDriverBytes[cborEncDriverM[bytesEncAppenderM]](out, h)
-	case *MsgpackHandle:
-		e = newEncDriverBytes[msgpackEncDriverM[bytesEncAppenderM]](out, h)
-	case *BincHandle:
-		e = newEncDriverBytes[bincEncDriverM[bytesEncAppenderM]](out, h)
-	default:
-		return nil
-	}
-	return &Encoder{e}
 }
 
 // ----

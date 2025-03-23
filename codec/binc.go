@@ -1176,13 +1176,6 @@ func bincDecodeTime(bs []byte) (tt time.Time, err error) {
 
 // ----
 
-var (
-	bincFpEncIO    = fastpathEList[bincEncDriverM[bufioEncWriterM]]()
-	bincFpEncBytes = fastpathEList[bincEncDriverM[bytesEncAppenderM]]()
-	bincFpDecIO    = fastpathDList[bincDecDriverM[ioDecReaderM]]()
-	bincFpDecBytes = fastpathDList[bincDecDriverM[bytesDecReaderM]]()
-)
-
 type bincEncDriverM[T encWriter] struct {
 	*bincEncDriver[T]
 }
@@ -1215,18 +1208,6 @@ func (e *bincEncDriver[T]) resetOutBytes(out *[]byte) (ok bool) {
 
 func (e *bincEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
 	return encResetIO(e.w, out, e.h.WriterBufferSize, &e.e.blist)
-}
-
-func (e *bincEncDriver[T]) sideEncoder(out *[]byte) {
-	sideEncoder[bincEncDriverM[bytesEncAppenderM]](out, e.e, e.h)
-}
-
-func (e *bincEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
-	sideEncode(e.e.se.(*encoder[bincEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (e *bincEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
-	sideEncodeRV(e.e.se.(*encoder[bincEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
 }
 
 // ----

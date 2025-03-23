@@ -8,9 +8,7 @@ import (
 )
 
 // encWriter abstracts writing to a byte array or to an io.Writer.
-type encWriter interface {
-	bufioEncWriterM | bytesEncAppenderM
-
+type encWriterI interface {
 	writeb([]byte)
 	writestr(string)
 	writeqstr(string) // write string wrapped in quotes ie "..."

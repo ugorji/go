@@ -13,9 +13,7 @@ import (
 
 // decReader abstracts the reading source, allowing implementations that can
 // read from an io.Reader or directly off a byte slice with zero-copying.
-type decReader interface {
-	bytesDecReaderM | ioDecReaderM
-
+type decReaderI interface {
 	// readx will return a view of the []byte if decoding from a []byte, OR
 	// read into the implementation scratch buffer if possible i.e. n < len(scratchbuf), OR
 	// create a new []byte and read into that

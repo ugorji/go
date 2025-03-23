@@ -79,21 +79,6 @@ const (
 	decNotDecodeableReasonNilReference
 )
 
-type decDriver interface {
-	simpleDecDriverM[bytesDecReaderM] |
-		simpleDecDriverM[ioDecReaderM] |
-		jsonDecDriverM[bytesDecReaderM] |
-		jsonDecDriverM[ioDecReaderM] |
-		cborDecDriverM[bytesDecReaderM] |
-		cborDecDriverM[ioDecReaderM] |
-		msgpackDecDriverM[bytesDecReaderM] |
-		msgpackDecDriverM[ioDecReaderM] |
-		bincDecDriverM[bytesDecReaderM] |
-		bincDecDriverM[ioDecReaderM]
-
-	decDriverI
-}
-
 type decDriverI interface {
 
 	// this will check if the next token is a break.
@@ -2541,50 +2526,6 @@ type Decoder struct {
 	decoderI
 }
 
-// NewDecoder returns a Decoder for decoding a stream of bytes from an io.Reader.
-//
-// For efficiency, Users are encouraged to configure ReaderBufferSize on the handle
-// OR pass in a memory buffered reader (eg bufio.Reader, bytes.Buffer).
-func NewDecoder(r io.Reader, h Handle) *Decoder {
-	var d decoderI
-	switch h.(type) {
-	case *SimpleHandle:
-		d = newDecDriverIO[simpleDecDriverM[ioDecReaderM]](r, h)
-	case *JsonHandle:
-		d = newDecDriverIO[jsonDecDriverM[ioDecReaderM]](r, h)
-	case *CborHandle:
-		d = newDecDriverIO[cborDecDriverM[ioDecReaderM]](r, h)
-	case *MsgpackHandle:
-		d = newDecDriverIO[msgpackDecDriverM[ioDecReaderM]](r, h)
-	case *BincHandle:
-		d = newDecDriverIO[bincDecDriverM[ioDecReaderM]](r, h)
-	default:
-		return nil
-	}
-	return &Decoder{d}
-}
-
-// NewDecoderBytes returns a Decoder which efficiently decodes directly
-// from a byte slice with zero copying.
-func NewDecoderBytes(in []byte, h Handle) *Decoder {
-	var d decoderI
-	switch h.(type) {
-	case *SimpleHandle:
-		d = newDecDriverBytes[simpleDecDriverM[bytesDecReaderM]](in, h)
-	case *JsonHandle:
-		d = newDecDriverBytes[jsonDecDriverM[bytesDecReaderM]](in, h)
-	case *CborHandle:
-		d = newDecDriverBytes[cborDecDriverM[bytesDecReaderM]](in, h)
-	case *MsgpackHandle:
-		d = newDecDriverBytes[msgpackDecDriverM[bytesDecReaderM]](in, h)
-	case *BincHandle:
-		d = newDecDriverBytes[bincDecDriverM[bytesDecReaderM]](in, h)
-	default:
-		return nil
-	}
-	return &Decoder{d}
-}
-
 // NewDecoderString returns a Decoder which efficiently decodes directly
 // from a string with zero copying.
 //
@@ -2677,8 +2618,7 @@ func decFnVia[D decDriver](rt reflect.Type, fns *atomicRtidFnSlice,
 	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathDs[D],
 	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *decFn[D]) {
 	rtid := rt2id(rt)
-	var sp []decRtidFn[D]
-	sp = decFromRtidFnSlice[D](fns)
+	var sp []decRtidFn[D] = decFromRtidFnSlice[D](fns)
 	if sp != nil {
 		_, fn = decFindRtidFn[D](sp, rtid)
 	}
