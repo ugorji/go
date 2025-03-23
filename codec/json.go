@@ -1498,12 +1498,12 @@ func (e *jsonEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
 func (e *jsonEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
 func (e *jsonEncDriver[T]) writerEnd()                        { e.w.end() }
 
-func (e *jsonEncDriver[T]) resetOutBytes(out *[]byte) (ok bool) {
-	return encResetBytes(e.w, out)
+func (e *jsonEncDriver[T]) resetOutBytes(out *[]byte) {
+	e.w.resetBytes(*out, out)
 }
 
-func (e *jsonEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
-	return encResetIO(e.w, out, e.h.WriterBufferSize, &e.e.blist)
+func (e *jsonEncDriver[T]) resetOutIO(out io.Writer) {
+	e.w.resetIO(out, e.h.WriterBufferSize, &e.e.blist)
 }
 
 // ----
@@ -1535,24 +1535,12 @@ func (d *jsonDecDriver[T]) NumBytesRead() int {
 	return int(d.r.numread())
 }
 
-func (d *jsonDecDriver[T]) resetInBytes(in []byte) (ok bool) {
-	return decResetBytes(d.r, in)
+func (d *jsonDecDriver[T]) resetInBytes(in []byte) {
+	d.r.resetBytes(in)
 }
 
-func (d *jsonDecDriver[T]) resetInIO(r io.Reader) (ok bool) {
-	return decResetIO(d.r, r, d.h.ReaderBufferSize, &d.d.blist)
-}
-
-func (d *jsonDecDriver[T]) sideDecoder(in []byte) {
-	sideDecoder[jsonDecDriverM[bytesDecReaderM]](in, d.d, d.h)
-}
-
-func (d *jsonDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
-	sideDecode(d.d.sd.(*decoder[jsonDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
-func (d *jsonDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
-	sideDecodeRV(d.d.sd.(*decoder[jsonDecDriverM[bytesDecReaderM]]), v, basetype)
+func (d *jsonDecDriver[T]) resetInIO(r io.Reader) {
+	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
 }
 
 // ---- (custom stanza)

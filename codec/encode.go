@@ -56,8 +56,8 @@ type encDriverI interface {
 	sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState)
 	sideEncoder(out *[]byte)
 
-	resetOutBytes(out *[]byte) (ok bool)
-	resetOutIO(out io.Writer) (ok bool)
+	resetOutBytes(out *[]byte)
+	resetOutIO(out io.Writer)
 
 	init(h Handle, shared *encoderShared, enc encoderI) (fp interface{})
 
@@ -1537,8 +1537,8 @@ type encoderI interface {
 	Encode(v interface{}) error
 	MustEncode(v interface{})
 	Release()
-	Reset(w io.Writer) error
-	ResetBytes(out *[]byte) error
+	Reset(w io.Writer)
+	ResetBytes(out *[]byte)
 	// WriteStr(s string)
 
 	wrapErr(v error, err *error)
@@ -1557,25 +1557,23 @@ var errEncNoResetWriterWithBytes = errors.New("cannot reset an Encoder which out
 //
 // This accommodates using the state of the Encoder,
 // where it has "cached" information about sub-engines.
-func (e *encoder[T]) Reset(w io.Writer) (err error) {
+func (e *encoder[T]) Reset(w io.Writer) {
 	if e.bytes {
-		return errEncNoResetBytesWithWriter
+		halt.onerror(errEncNoResetBytesWithWriter)
 	}
 	e.reset()
 	if w == nil {
 		w = io.Discard
 	}
 	e.e.resetOutIO(w)
-	return
 }
 
 // ResetBytes resets the Encoder with a new destination output []byte.
-func (e *encoder[T]) ResetBytes(out *[]byte) (err error) {
+func (e *encoder[T]) ResetBytes(out *[]byte) {
 	if !e.bytes {
-		return errEncNoResetWriterWithBytes
+		halt.onerror(errEncNoResetWriterWithBytes)
 	}
 	e.resetBytes(out)
-	return nil
 }
 
 // only call this iff you are sure it is a bytes encoder
@@ -1627,22 +1625,6 @@ func sideEncoder[T encDriver](out *[]byte, e *encoderShared, h Handle) (se *enco
 		se = e.se.(*encoder[T])
 	}
 	se.resetBytes(out)
-	return
-}
-
-func encResetBytes[T encWriter](w T, out *[]byte) (ok bool) {
-	v, ok := any(w).(bytesEncAppenderM)
-	if ok {
-		v.reset(*out, out)
-	}
-	return
-}
-
-func encResetIO[T encWriter](w T, out io.Writer, bufsize int, blist *bytesFreelist) (ok bool) {
-	v, ok := any(w).(bufioEncWriterM)
-	if ok {
-		v.reset(out, bufsize, blist)
-	}
 	return
 }
 

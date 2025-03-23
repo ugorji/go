@@ -186,8 +186,8 @@ type decDriverI interface {
 	sideDecodeRV(v reflect.Value, basetype reflect.Type)
 	sideDecoder(bs []byte)
 
-	resetInBytes(in []byte) (ok bool)
-	resetInIO(r io.Reader) (ok bool)
+	resetInBytes(in []byte)
+	resetInIO(r io.Reader)
 
 	NumBytesRead() int
 
@@ -1470,9 +1470,9 @@ type decoderI interface {
 	MustDecode(v interface{})
 	NumBytesRead() int
 	Release() // deprecated
-	Reset(r io.Reader) error
-	ResetBytes(in []byte) error
-	ResetString(s string) error
+	Reset(r io.Reader)
+	ResetBytes(in []byte)
+	ResetString(s string)
 
 	isBytes() bool
 	wrapErr(v error, err *error)
@@ -1568,23 +1568,22 @@ var errDecNoResetReaderWithBytes = errors.New("cannot reset an Decoder reading f
 
 // Reset the Decoder with a new Reader to decode from,
 // clearing all state from last run(s).
-func (d *decoder[T]) Reset(r io.Reader) (err error) {
+func (d *decoder[T]) Reset(r io.Reader) {
 	if d.bytes {
-		return errDecNoResetBytesWithReader
+		halt.onerror(errDecNoResetBytesWithReader)
 	}
 	d.reset()
 	if r == nil {
 		r = &eofReader
 	}
 	d.d.resetInIO(r)
-	return
 }
 
 // ResetBytes resets the Decoder with a new []byte to decode from,
 // clearing all state from last run(s).
-func (d *decoder[T]) ResetBytes(in []byte) (err error) {
+func (d *decoder[T]) ResetBytes(in []byte) {
 	if !d.bytes {
-		return errDecNoResetReaderWithBytes
+		halt.onerror(errDecNoResetReaderWithBytes)
 	}
 	d.resetBytes(in)
 	return
@@ -1605,8 +1604,8 @@ func (d *decoder[T]) resetBytes(in []byte) {
 // []byte view into the string.
 //
 // This can be an efficient zero-copy if using default mode i.e. without codec.safe tag.
-func (d *decoder[T]) ResetString(s string) error {
-	return d.ResetBytes(bytesView(s))
+func (d *decoder[T]) ResetString(s string) {
+	d.ResetBytes(bytesView(s))
 }
 
 // Decode decodes the stream from reader and stores the result in the
@@ -2467,44 +2466,6 @@ func sideDecodeRV[T decDriver](ds *decoder[T], rv reflect.Value, basetype reflec
 		ds.decodeValue(rv, ds.fnNoExt(basetype))
 	}
 }
-
-func decResetBytes[T decReader](r T, in []byte) (ok bool) {
-	v, ok := any(r).(bytesDecReaderM)
-	if ok {
-		v.reset(in)
-	}
-	return
-}
-
-func decResetIO[T decReader](r T, in io.Reader, bufsize int, blist *bytesFreelist) (ok bool) {
-	v, ok := any(r).(ioDecReaderM)
-	if ok {
-		v.reset(in, bufsize, blist)
-	}
-	return
-}
-
-// func newDecDriverBytes[T decDriver, R decReader](in []byte, ext, noExt *atomicRtidFnSlice) *decoder[T] {
-// 	var cc [2]struct {
-// 		r bytesDecReader
-// 		e decoder[T]
-// 		d T
-// 	}
-// 	for i := range cc {
-// 		c := &cc[i]
-// 		c.e.rtidFn = ext
-// 		c.e.rtidFnNoExt = noExt
-// 		c.d.bytes = true
-// 		c.d.d = &c.e.decoderShared
-// 		c.d.h = h
-// 		c.d.r = bytesDecReaderM{&c.r}
-// 		c.e.d = c.d
-// 		c.e.init(h)
-// 	}
-// 	cc[0].r.reset(in)
-// 	cc[0].d.ds = &cc[1].d
-// 	return &cc[0].e
-// }
 
 func newDecDriverBytes[T decDriver](in []byte, h Handle) *decoder[T] {
 	var c1 decoder[T]

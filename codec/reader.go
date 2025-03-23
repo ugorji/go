@@ -58,6 +58,9 @@ type decReaderI interface {
 	bytesReadFrom(startpos uint) []byte
 
 	// isBytes() bool
+	resetIO(r io.Reader, bufsize int, blist *bytesFreelist)
+
+	resetBytes(in []byte)
 }
 
 // ------------------------------------------------
@@ -191,7 +194,11 @@ func (z *ioDecReader) bytesReadFrom(startpos uint) []byte {
 	return nil
 }
 
-func (z *ioDecReader) reset(r io.Reader, bufsize int, blist *bytesFreelist) {
+func (z *ioDecReader) resetBytes(in []byte) {
+	halt.errorStr("resetBytes unsupported by ioDecReader")
+}
+
+func (z *ioDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreelist) {
 	z.blist = blist
 	z.n = 0
 	z.bufr = z.blist.check(z.bufr, 256)
@@ -405,7 +412,11 @@ func (z *bytesDecReaderM) Make() {
 // 	return true
 // }
 
-func (z *bytesDecReader) reset(in []byte) {
+func (z *bytesDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreelist) {
+	halt.errorStr("resetIO unsupported by bytesDecReader")
+}
+
+func (z *bytesDecReader) resetBytes(in []byte) {
 	// it's ok to resize a nil slice, so long as it's not past 0
 	z.b = in[:len(in):len(in)] // reslicing must not go past capacity
 	z.c = 0

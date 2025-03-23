@@ -1202,12 +1202,12 @@ func (e *bincEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
 func (e *bincEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
 func (e *bincEncDriver[T]) writerEnd()                        { e.w.end() }
 
-func (e *bincEncDriver[T]) resetOutBytes(out *[]byte) (ok bool) {
-	return encResetBytes(e.w, out)
+func (e *bincEncDriver[T]) resetOutBytes(out *[]byte) {
+	e.w.resetBytes(*out, out)
 }
 
-func (e *bincEncDriver[T]) resetOutIO(out io.Writer) (ok bool) {
-	return encResetIO(e.w, out, e.h.WriterBufferSize, &e.e.blist)
+func (e *bincEncDriver[T]) resetOutIO(out io.Writer) {
+	e.w.resetIO(out, e.h.WriterBufferSize, &e.e.blist)
 }
 
 // ----
@@ -1239,24 +1239,12 @@ func (d *bincDecDriver[T]) NumBytesRead() int {
 	return int(d.r.numread())
 }
 
-func (d *bincDecDriver[T]) resetInBytes(in []byte) (ok bool) {
-	return decResetBytes(d.r, in)
+func (d *bincDecDriver[T]) resetInBytes(in []byte) {
+	d.r.resetBytes(in)
 }
 
-func (d *bincDecDriver[T]) resetInIO(r io.Reader) (ok bool) {
-	return decResetIO(d.r, r, d.h.ReaderBufferSize, &d.d.blist)
-}
-
-func (d *bincDecDriver[T]) sideDecoder(in []byte) {
-	sideDecoder[bincDecDriverM[bytesDecReaderM]](in, d.d, d.h)
-}
-
-func (d *bincDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
-	sideDecode(d.d.sd.(*decoder[bincDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
-func (d *bincDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
-	sideDecodeRV(d.d.sd.(*decoder[bincDecDriverM[bytesDecReaderM]]), v, basetype)
+func (d *bincDecDriver[T]) resetInIO(r io.Reader) {
+	d.r.resetIO(r, d.h.ReaderBufferSize, &d.d.blist)
 }
 
 // ---- (custom stanza)
