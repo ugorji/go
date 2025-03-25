@@ -11,6 +11,7 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
+	"runtime"
 	"slices"
 	"strings"
 )
@@ -40,6 +41,13 @@ const genMonoParserMode = parser.AllErrors | parser.SkipObjectResolution
 // Consequently, since there is only one function ie decByteSlice, we handle it manually.
 // This method is in the type helperDecReader.
 var genMonoSpecialFieldTypes = []string{"helperDecReader"}
+
+// These functions should take the address of first param when monomorphized
+var genMonoSpecialFunc4Addr = []string{"decByteSlice"}
+
+var genMonoRefImportsVia_ = [][2]string{
+	{"errors", "New"},
+}
 
 type genMono struct {
 	files       map[string][]byte
@@ -73,10 +81,19 @@ func (m *genMono) do(h Handle) {
 	m.trFile(r2, h, false)
 	// clear(m.typParam)
 
-	r0 := &ast.File{
-		Name: &ast.Ident{Name: "codec"},
-	}
+	r0 := &ast.File{Name: &ast.Ident{Name: "codec"}}
 	r0.Decls = append(r0.Decls, &ast.GenDecl{Tok: token.IMPORT, Specs: m.importSpecs})
+	_vd := &ast.GenDecl{Tok: token.VAR}
+	for _, v := range genMonoRefImportsVia_ {
+		_vs := new(ast.ValueSpec)
+		_vs.Names = append(_vs.Names, &ast.Ident{Name: "_"})
+		_vs.Values = append(_vs.Values, &ast.SelectorExpr{
+			X:   &ast.Ident{Name: v[0]},
+			Sel: &ast.Ident{Name: v[1]},
+		})
+		_vd.Specs = append(_vd.Specs, _vs)
+	}
+	r0.Decls = append(r0.Decls, _vd)
 	r0.Decls = append(r0.Decls, r1.Decls...)
 	r0.Decls = append(r0.Decls, r2.Decls...)
 
@@ -112,7 +129,7 @@ func (x *genMono) base(isbytes bool) (r *ast.File, fset *token.FileSet) {
 		Name: &ast.Ident{Name: "codec"},
 	}
 	fnames := []string{"encode.go", "decode.go", "fast-path.generated.go"}
-	fnames = []string{"encode.go", "decode.go", "fast-path.not.go"} // MARKER 2025 - remove this
+	// fnames = []string{"encode.go", "decode.go", "fast-path.not.go"} // MARKER 2025 - remove this
 	for _, fname = range fnames {
 		fsrc := x.file(fname)
 		f, err := parser.ParseFile(fset, fname, fsrc, genMonoParserMode)
@@ -331,6 +348,10 @@ func (x *genMono) trMethodBody(r *ast.BlockStmt, tp *ast.Field, h Handle, isbyte
 					fnUp()
 				}
 			}
+			// special case: if decByteSlice function, take addr of first parameter // MARKER 2025
+			if n4, ok4 := n.Fun.(*ast.Ident); ok4 && slices.Contains(genMonoSpecialFunc4Addr, n4.Name) {
+				n.Args[0] = &ast.UnaryExpr{Op: token.AND, X: n.Args[0].(*ast.SelectorExpr)}
+			}
 		case *ast.CompositeLit:
 			if genMonoUpdateIndexExprT(&pn, n.Type) {
 				n.Type = pn
@@ -494,11 +515,12 @@ func GenMonoAll() {
 		(*BincHandle)(nil),
 		(*MsgpackHandle)(nil),
 	}
-	hdls = []Handle{(*SimpleHandle)(nil)} // MARKER 2025 remove
+	// hdls = []Handle{(*MsgpackHandle)(nil)} // MARKER 2025 remove
 	var m genMono
 	m.init()
 	for _, v := range hdls {
 		m.do(v)
+		runtime.GC()
 	}
 }
 
