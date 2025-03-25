@@ -251,5 +251,7 @@ Key rules
   helperEncDriver[T encDriver]
   helperDecDriver[T decDriver]
 - Always use T as the generic type name (when needed)
+- No inline types
+- No closures taking parameters of generic types
 
 */

@@ -1178,14 +1178,6 @@ func bincDecodeTime(bs []byte) (tt time.Time, err error) {
 
 // ----
 
-type bincEncDriverM[T encWriter] struct {
-	*bincEncDriver[T]
-}
-
-func (d *bincEncDriverM[T]) Make() {
-	d.bincEncDriver = new(bincEncDriver[T])
-}
-
 func (d *bincEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*BincHandle)
@@ -1213,14 +1205,6 @@ func (e *bincEncDriver[T]) resetOutIO(out io.Writer) {
 }
 
 // ----
-
-type bincDecDriverM[T decReader] struct {
-	*bincDecDriver[T]
-}
-
-func (d *bincDecDriverM[T]) Make() {
-	d.bincDecDriver = new(bincDecDriver[T])
-}
 
 func (d *bincDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
 	callMake(&d.r)

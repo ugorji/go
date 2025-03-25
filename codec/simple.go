@@ -790,14 +790,6 @@ func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (e
 
 // ----
 
-type simpleEncDriverM[T encWriter] struct {
-	*simpleEncDriver[T]
-}
-
-func (d *simpleEncDriverM[T]) Make() {
-	d.simpleEncDriver = new(simpleEncDriver[T])
-}
-
 func (d *simpleEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*SimpleHandle)
@@ -825,14 +817,6 @@ func (e *simpleEncDriver[T]) resetOutIO(out io.Writer) {
 }
 
 // ----
-
-type simpleDecDriverM[T decReader] struct {
-	*simpleDecDriver[T]
-}
-
-func (d *simpleDecDriverM[T]) Make() {
-	d.simpleDecDriver = new(simpleDecDriver[T])
-}
 
 func (d *simpleDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
 	callMake(&d.r)

@@ -1237,14 +1237,6 @@ func (x msgpackSpecRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.Clien
 
 // ----
 
-type msgpackEncDriverM[T encWriter] struct {
-	*msgpackEncDriver[T]
-}
-
-func (d *msgpackEncDriverM[T]) Make() {
-	d.msgpackEncDriver = new(msgpackEncDriver[T])
-}
-
 func (d *msgpackEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*MsgpackHandle)
@@ -1272,14 +1264,6 @@ func (e *msgpackEncDriver[T]) resetOutIO(out io.Writer) {
 }
 
 // ----
-
-type msgpackDecDriverM[T decReader] struct {
-	*msgpackDecDriver[T]
-}
-
-func (d *msgpackDecDriverM[T]) Make() {
-	d.msgpackDecDriver = new(msgpackDecDriver[T])
-}
 
 func (d *msgpackDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
 	callMake(&d.r)

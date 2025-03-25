@@ -964,14 +964,6 @@ func (d *cborDecDriver[T]) reset() {
 
 // ----
 
-type cborEncDriverM[T encWriter] struct {
-	*cborEncDriver[T]
-}
-
-func (d *cborEncDriverM[T]) Make() {
-	d.cborEncDriver = new(cborEncDriver[T])
-}
-
 func (d *cborEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*CborHandle)
@@ -999,14 +991,6 @@ func (e *cborEncDriver[T]) resetOutIO(out io.Writer) {
 }
 
 // ----
-
-type cborDecDriverM[T decReader] struct {
-	*cborDecDriver[T]
-}
-
-func (d *cborDecDriverM[T]) Make() {
-	d.cborDecDriver = new(cborDecDriver[T])
-}
 
 func (d *cborDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
 	callMake(&d.r)

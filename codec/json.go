@@ -1472,14 +1472,6 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 
 // ----
 
-type jsonEncDriverM[T encWriter] struct {
-	*jsonEncDriver[T]
-}
-
-func (d *jsonEncDriverM[T]) Make() {
-	d.jsonEncDriver = new(jsonEncDriver[T])
-}
-
 func (d *jsonEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*JsonHandle)
@@ -1507,14 +1499,6 @@ func (e *jsonEncDriver[T]) resetOutIO(out io.Writer) {
 }
 
 // ----
-
-type jsonDecDriverM[T decReader] struct {
-	*jsonDecDriver[T]
-}
-
-func (d *jsonDecDriverM[T]) Make() {
-	d.jsonDecDriver = new(jsonDecDriver[T])
-}
 
 func (d *jsonDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
 	callMake(&d.r)

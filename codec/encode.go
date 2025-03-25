@@ -1927,5 +1927,4 @@ func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 
 // ----
 
-type helperEncWriter[T encWriter] struct{}
 type helperEncDriver[T encDriver] struct{}

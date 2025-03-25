@@ -26,6 +26,30 @@ type decReader interface {
 	decReaderI
 }
 
+// type helperEncWriter[T encWriter] struct{}
+
+type helperDecReader[T decReader] struct{}
+
+func (helperDecReader[T]) decByteSlice(r T, clen, maxInitLen int, bs []byte) (bsOut []byte) {
+	if clen <= 0 {
+		bsOut = zeroByteSlice
+	} else if cap(bs) >= clen {
+		bsOut = bs[:clen]
+		r.readb(bsOut)
+	} else {
+		var len2 int
+		for len2 < clen {
+			len3 := decInferLen(clen-len2, maxInitLen, 1)
+			bs3 := bsOut
+			bsOut = make([]byte, len2+len3)
+			copy(bsOut, bs3)
+			r.readb(bsOut[len2:])
+			len2 += len3
+		}
+	}
+	return
+}
+
 // ---- (encode.go)
 
 type encDriver interface {
@@ -175,6 +199,22 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 
 // ---- (binc.go)
 
+type bincEncDriverM[T encWriter] struct {
+	*bincEncDriver[T]
+}
+
+func (d *bincEncDriverM[T]) Make() {
+	d.bincEncDriver = new(bincEncDriver[T])
+}
+
+type bincDecDriverM[T decReader] struct {
+	*bincDecDriver[T]
+}
+
+func (d *bincDecDriverM[T]) Make() {
+	d.bincDecDriver = new(bincDecDriver[T])
+}
+
 var (
 	bincFpEncIO    = helperEncDriver[bincEncDriverM[bufioEncWriterM]]{}.fastpathEList()
 	bincFpEncBytes = helperEncDriver[bincEncDriverM[bytesEncAppenderM]]{}.fastpathEList()
@@ -213,6 +253,22 @@ func (d *bincDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) 
 }
 
 // ---- (cbor.go)
+
+type cborEncDriverM[T encWriter] struct {
+	*cborEncDriver[T]
+}
+
+func (d *cborEncDriverM[T]) Make() {
+	d.cborEncDriver = new(cborEncDriver[T])
+}
+
+type cborDecDriverM[T decReader] struct {
+	*cborDecDriver[T]
+}
+
+func (d *cborDecDriverM[T]) Make() {
+	d.cborDecDriver = new(cborDecDriver[T])
+}
 
 var (
 	cborFpEncIO    = helperEncDriver[cborEncDriverM[bufioEncWriterM]]{}.fastpathEList()
@@ -253,6 +309,22 @@ func (d *cborDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) 
 
 // ---- (json.go)
 
+type jsonEncDriverM[T encWriter] struct {
+	*jsonEncDriver[T]
+}
+
+func (d *jsonEncDriverM[T]) Make() {
+	d.jsonEncDriver = new(jsonEncDriver[T])
+}
+
+type jsonDecDriverM[T decReader] struct {
+	*jsonDecDriver[T]
+}
+
+func (d *jsonDecDriverM[T]) Make() {
+	d.jsonDecDriver = new(jsonDecDriver[T])
+}
+
 var (
 	jsonFpEncIO    = helperEncDriver[jsonEncDriverM[bufioEncWriterM]]{}.fastpathEList()
 	jsonFpEncBytes = helperEncDriver[jsonEncDriverM[bytesEncAppenderM]]{}.fastpathEList()
@@ -292,6 +364,22 @@ func (d *jsonDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) 
 
 // ---- (msgpack.go)
 
+type msgpackEncDriverM[T encWriter] struct {
+	*msgpackEncDriver[T]
+}
+
+func (d *msgpackEncDriverM[T]) Make() {
+	d.msgpackEncDriver = new(msgpackEncDriver[T])
+}
+
+type msgpackDecDriverM[T decReader] struct {
+	*msgpackDecDriver[T]
+}
+
+func (d *msgpackDecDriverM[T]) Make() {
+	d.msgpackDecDriver = new(msgpackDecDriver[T])
+}
+
 var (
 	msgpackFpEncIO    = helperEncDriver[msgpackEncDriverM[bufioEncWriterM]]{}.fastpathEList()
 	msgpackFpEncBytes = helperEncDriver[msgpackEncDriverM[bytesEncAppenderM]]{}.fastpathEList()
@@ -330,6 +418,22 @@ func (d *msgpackDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Typ
 }
 
 // ---- (simple.go)
+
+type simpleEncDriverM[T encWriter] struct {
+	*simpleEncDriver[T]
+}
+
+func (d *simpleEncDriverM[T]) Make() {
+	d.simpleEncDriver = new(simpleEncDriver[T])
+}
+
+type simpleDecDriverM[T decReader] struct {
+	*simpleDecDriver[T]
+}
+
+func (d *simpleDecDriverM[T]) Make() {
+	d.simpleDecDriver = new(simpleDecDriver[T])
+}
 
 var (
 	simpleFpEncIO    = helperEncDriver[simpleEncDriverM[bufioEncWriterM]]{}.fastpathEList()
