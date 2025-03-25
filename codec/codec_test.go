@@ -2282,7 +2282,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testDeepEqualErr(m, m2, t, "-slices")
 
 	d, x := testSharedCodecDecoder(bs, h, bh)
-	bs2 := d.getDecDriver().nextValueBytes([]byte{})
+	bs2 := d.nextValueBytes([]byte{})
 	testSharedCodecDecoderAfter(d, x, bh)
 	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-slices")
 	// if len(bs2) != 0 || len(bs2) != len(bs) { }
@@ -2300,7 +2300,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testDeepEqualErr(mm, mm2, t, "-map")
 
 		d, x = testSharedCodecDecoder(bs, h, bh)
-		bs2 = d.getDecDriver().nextValueBytes([]byte{})
+		bs2 = d.nextValueBytes([]byte{})
 		testSharedCodecDecoderAfter(d, x, bh)
 		testDeepEqualErr(bs, bs2, t, "nextvaluebytes-map")
 		testReleaseBytes(bs)
@@ -2370,7 +2370,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 		testDeepEqualErr(m1, m2, t, "no-symbols-string")
 
 		d, x = testSharedCodecDecoder(out, h, bh)
-		bs2 = d.getDecDriver().nextValueBytes([]byte{})
+		bs2 = d.nextValueBytes([]byte{})
 		testSharedCodecDecoderAfter(d, x, bh)
 		testDeepEqualErr(out, bs2, t, "nextvaluebytes-no-symbols-string")
 
@@ -2386,7 +2386,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 			testDeepEqualErr(m1, m2, t, "symbols-string")
 
 			d, x = testSharedCodecDecoder(out, h, bh)
-			bs2 = d.getDecDriver().nextValueBytes([]byte{})
+			bs2 = d.nextValueBytes([]byte{})
 			testSharedCodecDecoderAfter(d, x, bh)
 			testDeepEqualErr(out, bs2, t, "nextvaluebytes-symbols-string")
 			testFI.set(h, "AsSymbols", uint8(2)) // hbinc.AsSymbols = 2
@@ -2401,7 +2401,7 @@ func doTestLargeContainerLen(t *testing.T, h Handle) {
 	testDeepEqualErr(xl, xl2, t, "-large-extension-bytes")
 
 	d, x = testSharedCodecDecoder(bs, h, bh)
-	bs2 = d.getDecDriver().nextValueBytes([]byte{})
+	bs2 = d.nextValueBytes([]byte{})
 	testSharedCodecDecoderAfter(d, x, bh)
 	testDeepEqualErr(bs, bs2, t, "nextvaluebytes-large-extension-bytes")
 
@@ -3542,7 +3542,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 
 	d, oldReadBufferSize := testSharedCodecDecoder(out, h, testBasicHandle(h))
 	for i := 0; i < len(inputs)*2; i++ {
-		valueBytes[i] = d.getDecDriver().nextValueBytes([]byte{})
+		valueBytes[i] = d.nextValueBytes([]byte{})
 		// bs := d.d.nextValueBytes([]byte{})
 		// valueBytes[i] = make([]byte, len(bs))
 		// copy(valueBytes[i], bs)

@@ -1475,7 +1475,8 @@ type decoderI interface {
 	wrapErr(v error, err *error)
 	swallow()
 
-	getDecDriver() decDriverI
+	nextValueBytes(start []byte) []byte // wrapper method, for use in tests
+	// getDecDriver() decDriverI
 
 	decode(v interface{})
 	decodeAs(v interface{}, t reflect.Type, ext bool)
@@ -1494,10 +1495,6 @@ type decoderI interface {
 
 func (d *decoder[T]) HandleName() string {
 	return d.hh.Name()
-}
-
-func (d *decoder[T]) getDecDriver() decDriverI {
-	return d.d
 }
 
 func (d *decoder[T]) isBytes() bool {
@@ -1709,6 +1706,10 @@ func (d *decoder[T]) Release() {
 
 func (d *decoder[T]) swallow() {
 	d.d.nextValueBytes(nil)
+}
+
+func (d *decoder[T]) nextValueBytes(start []byte) []byte {
+	return d.d.nextValueBytes(start)
 }
 
 // func (d *decoder[T]) swallowErr() (err error) {
