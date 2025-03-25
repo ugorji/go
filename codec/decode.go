@@ -182,10 +182,6 @@ type decDriverI interface {
 
 	// isBytes() bool
 
-	sideDecode(v any, basetype reflect.Type)
-	sideDecodeRV(v reflect.Value, basetype reflect.Type)
-	sideDecoder(bs []byte)
-
 	resetInBytes(in []byte)
 	resetInIO(r io.Reader)
 
@@ -584,8 +580,6 @@ func (d *decoder[T]) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 				rvn = reflect.New(bfn.rt)
 				if bfn.ext == SelfExt {
 					sideDecode(d.h, rv2i(rvn), bytes, bfn.rt, true)
-					// d.d.sideDecoder(bytes) // MARKER 2025
-					// d.d.sideDecodeRV(rvn, bfn.rt)
 				} else {
 					bfn.ext.ReadExt(rv2i(rvn), bytes)
 				}
@@ -2418,36 +2412,6 @@ func decInferLen(clen, maxlen, unit int) int {
 		return clen
 	}
 	return maxlen
-}
-
-func (dh helperDecDriver[T]) sideDecoder(in []byte, d *decoderShared, h Handle) (sd *decoder[T]) {
-	if d.sd == nil {
-		sd = dh.newDecDriverBytes(in, h)
-		d.sd = sd
-	} else {
-		sd = d.sd.(*decoder[T])
-	}
-	sd.resetBytes(in)
-	return
-}
-
-func (dh helperDecDriver[T]) sideDecode(ds *decoder[T], v interface{}, basetype reflect.Type) {
-	if v == nil && basetype == nil {
-		return
-	}
-	rv, ok := v.(reflect.Value)
-	if !ok {
-		rv = baseRV(v)
-	}
-	dh.sideDecodeRV(ds, rv, basetype)
-}
-
-func (helperDecDriver[T]) sideDecodeRV(ds *decoder[T], rv reflect.Value, basetype reflect.Type) {
-	if basetype == nil {
-		ds.decodeValue(rv, nil)
-	} else {
-		ds.decodeValue(rv, ds.fnNoExt(basetype))
-	}
 }
 
 func (helperDecDriver[T]) newDecDriverBytes(in []byte, h Handle) *decoder[T] {

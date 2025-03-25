@@ -52,10 +52,6 @@ type encDriverI interface {
 	writeBytesAsis(b []byte)
 	writeStringAsisDblQuoted(v string)
 
-	sideEncode(v any, basetype reflect.Type, cs containerState)
-	sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState)
-	sideEncoder(out *[]byte)
-
 	resetOutBytes(out *[]byte)
 	resetOutIO(out io.Writer)
 
@@ -931,7 +927,6 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 			se := e.h.sideEncPool.Get().(encoderI)
 			defer e.h.sideEncPool.Put(se)
 			se.ResetBytes(&mksv)
-			// e.e.sideEncoder(&mksv)
 			for i, k := range mks {
 				v := &mksbv[i]
 				l := len(mksv)
@@ -939,7 +934,6 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 				se.encode(rv2i(baseRVRV(k)))
 				se.atEndOfEncode()
 				se.writerEnd()
-				// e.e.sideEncodeRV(baseRVRV(k), nil, containerMapKey)
 				v.r = k
 				v.v = mksv[l:]
 			}
@@ -1609,43 +1603,6 @@ type encDriverContainerNoTrackerT struct{}
 func (encDriverContainerNoTrackerT) WriteArrayElem()    {}
 func (encDriverContainerNoTrackerT) WriteMapElemKey()   {}
 func (encDriverContainerNoTrackerT) WriteMapElemValue() {}
-
-func (x helperEncDriver[T]) sideEncode(es *encoder[T], v interface{}, basetype reflect.Type, cs containerState) {
-	if v == nil && basetype == nil {
-		return
-	}
-
-	rv, ok := v.(reflect.Value)
-	if !ok {
-		rv = baseRV(v)
-	}
-	x.sideEncodeRV(es, rv, basetype, cs)
-}
-
-func (helperEncDriver[T]) sideEncodeRV(es *encoder[T], rv reflect.Value, basetype reflect.Type, cs containerState) {
-	if cs != 0 {
-		es.c = cs
-	}
-
-	if basetype == nil {
-		es.encodeValue(rv, nil)
-	} else {
-		es.encodeValue(rv, es.fnNoExt(basetype))
-	}
-	es.e.atEndOfEncode()
-	es.e.writerEnd()
-}
-
-func (x helperEncDriver[T]) sideEncoder(out *[]byte, e *encoderShared, h Handle) (se *encoder[T]) {
-	if e.se == nil {
-		se = x.newEncDriverBytes(out, h)
-		e.se = se
-	} else {
-		se = e.se.(*encoder[T])
-	}
-	se.resetBytes(out)
-	return
-}
 
 func (helperEncDriver[T]) newEncDriverBytes(out *[]byte, h Handle) *encoder[T] {
 	var c1 encoder[T]

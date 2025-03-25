@@ -5,7 +5,6 @@ package codec
 
 import (
 	"io"
-	"reflect"
 )
 
 // This contains all the iniatializations of generics.
@@ -222,36 +221,6 @@ var (
 	bincFpDecBytes = helperDecDriver[bincDecDriverM[bytesDecReaderM]]{}.fastpathDList()
 )
 
-func (e *bincEncDriver[T]) sideEncoder(out *[]byte) {
-	var dh helperEncDriver[bincEncDriverM[bytesEncAppenderM]]
-	dh.sideEncoder(out, e.e, e.h)
-}
-
-func (e *bincEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
-	var dh helperEncDriver[bincEncDriverM[bytesEncAppenderM]]
-	dh.sideEncode(e.e.se.(*encoder[bincEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (e *bincEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
-	var dh helperEncDriver[bincEncDriverM[bytesEncAppenderM]]
-	dh.sideEncodeRV(e.e.se.(*encoder[bincEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (d *bincDecDriver[T]) sideDecoder(in []byte) {
-	var dh helperDecDriver[bincDecDriverM[bytesDecReaderM]]
-	dh.sideDecoder(in, d.d, d.h)
-}
-
-func (d *bincDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
-	var dh helperDecDriver[bincDecDriverM[bytesDecReaderM]]
-	dh.sideDecode(d.d.sd.(*decoder[bincDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
-func (d *bincDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
-	var dh helperDecDriver[bincDecDriverM[bytesDecReaderM]]
-	dh.sideDecodeRV(d.d.sd.(*decoder[bincDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
 // ---- (cbor.go)
 
 type cborEncDriverM[T encWriter] struct {
@@ -276,36 +245,6 @@ var (
 	cborFpDecIO    = helperDecDriver[cborDecDriverM[ioDecReaderM]]{}.fastpathDList()
 	cborFpDecBytes = helperDecDriver[cborDecDriverM[bytesDecReaderM]]{}.fastpathDList()
 )
-
-func (e *cborEncDriver[T]) sideEncoder(out *[]byte) {
-	var dh helperEncDriver[cborEncDriverM[bytesEncAppenderM]]
-	dh.sideEncoder(out, e.e, e.h)
-}
-
-func (e *cborEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
-	var dh helperEncDriver[cborEncDriverM[bytesEncAppenderM]]
-	dh.sideEncode(e.e.se.(*encoder[cborEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (e *cborEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
-	var dh helperEncDriver[cborEncDriverM[bytesEncAppenderM]]
-	dh.sideEncodeRV(e.e.se.(*encoder[cborEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (d *cborDecDriver[T]) sideDecoder(in []byte) {
-	var dh helperDecDriver[cborDecDriverM[bytesDecReaderM]]
-	dh.sideDecoder(in, d.d, d.h)
-}
-
-func (d *cborDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
-	var dh helperDecDriver[cborDecDriverM[bytesDecReaderM]]
-	dh.sideDecode(d.d.sd.(*decoder[cborDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
-func (d *cborDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
-	var dh helperDecDriver[cborDecDriverM[bytesDecReaderM]]
-	dh.sideDecodeRV(d.d.sd.(*decoder[cborDecDriverM[bytesDecReaderM]]), v, basetype)
-}
 
 // ---- (json.go)
 
@@ -332,36 +271,6 @@ var (
 	jsonFpDecBytes = helperDecDriver[jsonDecDriverM[bytesDecReaderM]]{}.fastpathDList()
 )
 
-func (e *jsonEncDriver[T]) sideEncoder(out *[]byte) {
-	var dh helperEncDriver[jsonEncDriverM[bytesEncAppenderM]]
-	dh.sideEncoder(out, e.e, e.h)
-}
-
-func (e *jsonEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
-	var dh helperEncDriver[jsonEncDriverM[bytesEncAppenderM]]
-	dh.sideEncode(e.e.se.(*encoder[jsonEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (e *jsonEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
-	var dh helperEncDriver[jsonEncDriverM[bytesEncAppenderM]]
-	dh.sideEncodeRV(e.e.se.(*encoder[jsonEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (d *jsonDecDriver[T]) sideDecoder(in []byte) {
-	var dh helperDecDriver[jsonDecDriverM[bytesDecReaderM]]
-	dh.sideDecoder(in, d.d, d.h)
-}
-
-func (d *jsonDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
-	var dh helperDecDriver[jsonDecDriverM[bytesDecReaderM]]
-	dh.sideDecode(d.d.sd.(*decoder[jsonDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
-func (d *jsonDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
-	var dh helperDecDriver[jsonDecDriverM[bytesDecReaderM]]
-	dh.sideDecodeRV(d.d.sd.(*decoder[jsonDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
 // ---- (msgpack.go)
 
 type msgpackEncDriverM[T encWriter] struct {
@@ -387,36 +296,6 @@ var (
 	msgpackFpDecBytes = helperDecDriver[msgpackDecDriverM[bytesDecReaderM]]{}.fastpathDList()
 )
 
-func (e *msgpackEncDriver[T]) sideEncoder(out *[]byte) {
-	var dh helperEncDriver[msgpackEncDriverM[bytesEncAppenderM]]
-	dh.sideEncoder(out, e.e, e.h)
-}
-
-func (e *msgpackEncDriver[T]) sideEncode(v interface{}, basetype reflect.Type, cs containerState) {
-	var dh helperEncDriver[msgpackEncDriverM[bytesEncAppenderM]]
-	dh.sideEncode(e.e.se.(*encoder[msgpackEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (e *msgpackEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
-	var dh helperEncDriver[msgpackEncDriverM[bytesEncAppenderM]]
-	dh.sideEncodeRV(e.e.se.(*encoder[msgpackEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (d *msgpackDecDriver[T]) sideDecoder(in []byte) {
-	var dh helperDecDriver[msgpackDecDriverM[bytesDecReaderM]]
-	dh.sideDecoder(in, d.d, d.h)
-}
-
-func (d *msgpackDecDriver[T]) sideDecode(v interface{}, basetype reflect.Type) {
-	var dh helperDecDriver[msgpackDecDriverM[bytesDecReaderM]]
-	dh.sideDecode(d.d.sd.(*decoder[msgpackDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
-func (d *msgpackDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
-	var dh helperDecDriver[msgpackDecDriverM[bytesDecReaderM]]
-	dh.sideDecodeRV(d.d.sd.(*decoder[msgpackDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
 // ---- (simple.go)
 
 type simpleEncDriverM[T encWriter] struct {
@@ -441,36 +320,6 @@ var (
 	simpleFpDecIO    = helperDecDriver[simpleDecDriverM[ioDecReaderM]]{}.fastpathDList()
 	simpleFpDecBytes = helperDecDriver[simpleDecDriverM[bytesDecReaderM]]{}.fastpathDList()
 )
-
-func (e *simpleEncDriver[T]) sideEncoder(out *[]byte) {
-	var dh helperEncDriver[simpleEncDriverM[bytesEncAppenderM]]
-	dh.sideEncoder(out, e.e, e.h)
-}
-
-func (e *simpleEncDriver[T]) sideEncode(v any, basetype reflect.Type, cs containerState) {
-	var dh helperEncDriver[simpleEncDriverM[bytesEncAppenderM]]
-	dh.sideEncode(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (e *simpleEncDriver[T]) sideEncodeRV(v reflect.Value, basetype reflect.Type, cs containerState) {
-	var dh helperEncDriver[simpleEncDriverM[bytesEncAppenderM]]
-	dh.sideEncodeRV(e.e.se.(*encoder[simpleEncDriverM[bytesEncAppenderM]]), v, basetype, cs)
-}
-
-func (d *simpleDecDriver[T]) sideDecoder(in []byte) {
-	var dh helperDecDriver[simpleDecDriverM[bytesDecReaderM]]
-	dh.sideDecoder(in, d.d, d.h)
-}
-
-func (d *simpleDecDriver[T]) sideDecode(v any, basetype reflect.Type) {
-	var dh helperDecDriver[simpleDecDriverM[bytesDecReaderM]]
-	dh.sideDecode(d.d.sd.(*decoder[simpleDecDriverM[bytesDecReaderM]]), v, basetype)
-}
-
-func (d *simpleDecDriver[T]) sideDecodeRV(v reflect.Value, basetype reflect.Type) {
-	var dh helperDecDriver[simpleDecDriverM[bytesDecReaderM]]
-	dh.sideDecodeRV(d.d.sd.(*decoder[simpleDecDriverM[bytesDecReaderM]]), v, basetype)
-}
 
 // ---- commented out stuff
 
