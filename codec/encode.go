@@ -202,6 +202,12 @@ type EncodeOptions struct {
 
 // ---------------------------------------------
 
+func (e *encoder[T]) setContainerState(cs containerState) {
+	if cs != 0 {
+		e.c = cs
+	}
+}
+
 func (e *encoder[T]) rawExt(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -921,14 +927,23 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 		// 	}
 		// }()
 
-		e.e.sideEncoder(&mksv)
-		for i, k := range mks {
-			v := &mksbv[i]
-			l := len(mksv)
-			e.e.sideEncodeRV(baseRVRV(k), nil, containerMapKey)
-			v.r = k
-			v.v = mksv[l:]
-		}
+		func() {
+			se := e.h.sideEncPool.Get().(encoderI)
+			defer e.h.sideEncPool.Put(se)
+			se.ResetBytes(&mksv)
+			// e.e.sideEncoder(&mksv)
+			for i, k := range mks {
+				v := &mksbv[i]
+				l := len(mksv)
+				se.setContainerState(containerMapKey)
+				se.encode(rv2i(baseRVRV(k)))
+				se.atEndOfEncode()
+				se.writerEnd()
+				// e.e.sideEncodeRV(baseRVRV(k), nil, containerMapKey)
+				v.r = k
+				v.v = mksv[l:]
+			}
+		}()
 
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
@@ -1550,6 +1565,8 @@ type encoderI interface {
 	encode(v interface{})
 	encodeAs(v interface{}, t reflect.Type, ext bool)
 	// encodeValue(rv reflect.Value, fn *encFn)
+
+	setContainerState(cs containerState) // needed for canonical encoding via side encoder
 }
 
 var errEncNoResetBytesWithWriter = errors.New("cannot reset an Encoder which outputs to []byte with a io.Writer")
@@ -1926,5 +1943,16 @@ func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 }
 
 // ----
+
+func sideEncode(h *BasicHandle, v interface{}, out *[]byte, basetype reflect.Type, ext bool) {
+	se := h.sideEncPool.Get().(encoderI)
+	defer h.sideEncPool.Put(se)
+	se.ResetBytes(out)
+	se.encodeAs(v, basetype, ext)
+	se.atEndOfEncode()
+	se.writerEnd()
+	// e.sideEncoder(&bs)
+	// e.sideEncode(v, basetype, 0)
+}
 
 type helperEncDriver[T encDriver] struct{}

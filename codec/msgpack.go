@@ -296,8 +296,7 @@ func (e *msgpackEncDriver[T]) EncodeExt(v interface{}, basetype reflect.Type, xt
 	if ext == SelfExt {
 		bs0 = e.e.blist.get(1024)
 		bs = bs0
-		e.sideEncoder(&bs)
-		e.sideEncode(v, basetype, 0)
+		sideEncode(&e.h.BasicHandle, v, &bs, basetype, true)
 	} else {
 		bs = ext.WriteExt(v)
 	}
@@ -1050,8 +1049,7 @@ func (d *msgpackDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, x
 		re.Tag = realxtag
 		re.setData(xbs, zerocopy)
 	} else if ext == SelfExt {
-		d.sideDecoder(xbs)
-		d.sideDecode(rv, basetype)
+		sideDecode(&d.h.BasicHandle, rv, xbs, basetype, true)
 	} else {
 		ext.ReadExt(rv, xbs)
 	}

@@ -848,6 +848,9 @@ type basicHandleRuntimeState struct {
 	rtidFnsDecBytes,
 	rtidFnsDecNoExtBytes atomicRtidFnSlice
 
+	sideEncPool sync.Pool
+	sideDecPool sync.Pool
+
 	mu sync.Mutex
 
 	jsonHandle   bool
@@ -949,8 +952,18 @@ func initHandle2(x *BasicHandle, hh Handle) {
 	x.jsonHandle = hh.isJson()
 	x.binaryHandle = hh.isBinary()
 	x.basicInit()
+
+	x.sideEncPool.New = func() any {
+		return NewEncoderBytes(nil, hh).encoderI
+	}
+	x.sideDecPool.New = func() any {
+		return NewDecoderBytes(nil, hh).decoderI
+	}
+
 	hh.init()
+
 	atomic.StoreUint32(&x.inited, 1)
+
 }
 
 func (x *BasicHandle) basicInit() {
