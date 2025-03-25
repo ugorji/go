@@ -26,28 +26,8 @@ type decReader interface {
 }
 
 // type helperEncWriter[T encWriter] struct{}
-
-type helperDecReader[T decReader] struct{}
-
-func (helperDecReader[T]) decByteSlice(r T, clen, maxInitLen int, bs []byte) (bsOut []byte) {
-	if clen <= 0 {
-		bsOut = zeroByteSlice
-	} else if cap(bs) >= clen {
-		bsOut = bs[:clen]
-		r.readb(bsOut)
-	} else {
-		var len2 int
-		for len2 < clen {
-			len3 := decInferLen(clen-len2, maxInitLen, 1)
-			bs3 := bsOut
-			bsOut = make([]byte, len2+len3)
-			copy(bsOut, bs3)
-			r.readb(bsOut[len2:])
-			len2 += len3
-		}
-	}
-	return
-}
+// type helperDecReader[T decReader] struct{}
+// func (helperDecReader[T]) decByteSlice(r T, clen, maxInitLen int, bs []byte) (bsOut []byte) {
 
 // ---- (encode.go)
 

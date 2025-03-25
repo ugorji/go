@@ -327,8 +327,6 @@ type cborDecDriver[T decReader] struct {
 	decDriverNoopNumberHelper
 	noBuiltInTypes
 
-	rh helperDecReader[T]
-
 	h   *CborHandle
 	d   *decoderShared
 	r   T
@@ -634,7 +632,7 @@ func (d *cborDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 		d.d.decByteState = decByteStateReuseBuf
 		bs = d.d.b[:]
 	}
-	return d.rh.decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
 }
 
 func (d *cborDecDriver[T]) DecodeStringAsBytes() (s []byte) {
