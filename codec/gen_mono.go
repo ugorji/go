@@ -50,6 +50,16 @@ var genMonoRefImportsVia_ = [][2]string{
 	// {"errors", "New"},
 }
 
+var genMonoCallsToSkip = []string{"callMake"}
+
+type genMonoFieldState uint
+
+const (
+	genMonoFieldRecv genMonoFieldState = iota << 1
+	genMonoFieldParamsResult
+	genMonoFieldStruct
+)
+
 type genMono struct {
 	files       map[string][]byte
 	typParam    map[string]*ast.Field
@@ -83,18 +93,23 @@ func (m *genMono) do(h Handle) {
 	m.trFile(r2, h, false)
 	clear(m.typParam)
 
-	r0 := &ast.File{Name: &ast.Ident{Name: "codec"}}
-	r0.Decls = append(r0.Decls, &ast.GenDecl{Tok: token.IMPORT, Specs: m.importSpecs})
-	if _vd := genMonoRefImportsVia_Decl(); _vd != nil {
-		r0.Decls = append(r0.Decls, _vd)
-	}
+	fname := h.Name() + ".mono.generated.go"
+
+	r0 := genMonoOutInit(m.importSpecs, fname)
 	r0.Decls = append(r0.Decls, r1.Decls...)
 	r0.Decls = append(r0.Decls, r2.Decls...)
 
 	// output r1 to a file
-	f, err := os.Create(h.Name() + ".mono.generated.go")
+	f, err := os.Create(fname)
 	halt.onerror(err)
 	defer f.Close()
+	_, err = f.WriteString(`// Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
+// Use of this source code is governed by a MIT license found in the LICENSE file.
+
+//go:build !codec.generics
+
+`)
+	halt.onerror(err)
 	err = format.Node(f, fset, r0)
 	halt.onerror(err)
 
@@ -123,6 +138,7 @@ func (x *genMono) base(isbytes bool) (r *ast.File, fset *token.FileSet) {
 		Name: &ast.Ident{Name: "codec"},
 	}
 	fnames := []string{"encode.go", "decode.go", "fast-path.generated.go"}
+	// fnames[2] = "fast-path.not.go"
 	for _, fname = range fnames {
 		fsrc := x.file(fname)
 		f, err := parser.ParseFile(fset, fname, fsrc, genMonoParserMode)
@@ -274,7 +290,7 @@ func (x *genMono) trType(n *ast.TypeSpec, h Handle, isbytes bool) {
 
 func (x *genMono) trMethodSign(n *ast.FuncDecl, h Handle, isbytes bool) (tp *ast.Field) {
 	// check if recv type is not parameterized
-	tp = x.trField(n.Recv.List[0], nil, h, isbytes, true)
+	tp = x.trField(n.Recv.List[0], nil, h, isbytes, genMonoFieldRecv)
 	// handle params and results
 	x.trMethodSignNonRecv(n.Type.Params, tp, h, isbytes)
 	x.trMethodSignNonRecv(n.Type.Results, tp, h, isbytes)
@@ -286,7 +302,7 @@ func (x *genMono) trMethodSignNonRecv(r *ast.FieldList, tp *ast.Field, h Handle,
 		return
 	}
 	for _, v := range r.List {
-		x.trField(v, tp, h, isbytes, false)
+		x.trField(v, tp, h, isbytes, genMonoFieldParamsResult)
 	}
 }
 
@@ -299,7 +315,7 @@ func (x *genMono) trStruct(r *ast.StructType, tp *ast.Field, h Handle, isbytes b
 		return
 	}
 	for _, v := range r.Fields.List {
-		x.trField(v, tp, h, isbytes, false)
+		x.trField(v, tp, h, isbytes, genMonoFieldStruct)
 	}
 }
 
@@ -385,7 +401,7 @@ func (x *genMono) trMethodBody(r *ast.BlockStmt, tp *ast.Field, h Handle, isbyte
 	ast.Inspect(r, fn)
 }
 
-func (x *genMono) trField(f *ast.Field, tpt *ast.Field, h Handle, isbytes, isRecv bool) (tp *ast.Field) {
+func (x *genMono) trField(f *ast.Field, tpt *ast.Field, h Handle, isbytes bool, state genMonoFieldState) (tp *ast.Field) {
 	// sfx, writer, reader, hnameUp := genMonoIsBytesVals(h.Name(), isbytes)
 	var pn *ast.Ident
 	switch nn := f.Type.(type) {
@@ -405,10 +421,13 @@ func (x *genMono) trField(f *ast.Field, tpt *ast.Field, h Handle, isbytes, isRec
 		x.trArray(nn, tpt, h, isbytes)
 		return
 	case *ast.Ident:
-		if isRecv || nn.Name != "T" {
+		if state == genMonoFieldRecv || nn.Name != "T" {
 			return
 		}
-		pn = nn
+		pn = nn // "T"
+		if state == genMonoFieldParamsResult {
+			f.Type = &ast.StarExpr{X: pn}
+		}
 	}
 	if pn == nil {
 		return
@@ -418,7 +437,8 @@ func (x *genMono) trField(f *ast.Field, tpt *ast.Field, h Handle, isbytes, isRec
 	return
 }
 
-func (x *genMono) updateIdentForT(pn *ast.Ident, h Handle, tp *ast.Field, isbytes, lookupTP bool) (tp2 *ast.Field) {
+func (x *genMono) updateIdentForT(pn *ast.Ident, h Handle, tp *ast.Field,
+	isbytes bool, lookupTP bool) (tp2 *ast.Field) {
 	sfx, writer, reader, hnameUp := genMonoIsBytesVals(h.Name(), isbytes)
 	// handle special ones e.g. helperDecReader et al
 	if slices.Contains(genMonoSpecialFieldTypes, pn.Name) {
@@ -497,24 +517,37 @@ func genMonoCopy(src *ast.File) (dst *ast.File) {
 	return
 }
 
-func genMonoRefImportsVia_Decl() (_vd *ast.GenDecl) {
-	if len(genMonoRefImportsVia_) == 0 {
-		return
+type genMonoStrBuilder struct {
+	v []byte
+}
+
+func (x *genMonoStrBuilder) s(v string) *genMonoStrBuilder {
+	x.v = append(x.v, v...)
+	return x
+}
+
+func genMonoOutInit(importSpecs []ast.Spec, fname string) (f *ast.File) {
+	// ParseFile seems to skip the //go:build stanza
+	// it should be written directly into the file
+	var s genMonoStrBuilder
+	s.s(`
+package codec
+
+import (
+`)
+	for _, v := range importSpecs {
+		s.s("\t").s(v.(*ast.ImportSpec).Path.Value).s("\n")
 	}
-	_vd = &ast.GenDecl{Tok: token.VAR}
+	s.s(")\n")
 	for _, v := range genMonoRefImportsVia_ {
-		_vs := new(ast.ValueSpec)
-		_vs.Names = append(_vs.Names, &ast.Ident{Name: "_"})
-		_vs.Values = append(_vs.Values, &ast.SelectorExpr{
-			X:   &ast.Ident{Name: v[0]},
-			Sel: &ast.Ident{Name: v[1]},
-		})
-		_vd.Specs = append(_vd.Specs, _vs)
+		s.s("var _ = ").s(v[0]).s(".").s(v[1]).s("\n")
 	}
+	f, err := parser.ParseFile(token.NewFileSet(), fname, s.v, genMonoParserMode)
+	halt.onerror(err)
 	return
 }
 
-func GenMonoAll() {
+func genMonoAll() {
 	hdls := []Handle{
 		(*SimpleHandle)(nil),
 		(*JsonHandle)(nil),
@@ -529,3 +562,29 @@ func GenMonoAll() {
 		runtime.GC()
 	}
 }
+
+// func genMonoOutInit(importSpecs []ast.Spec) (r0 *ast.File) {
+// 	r0 = &ast.File{Name: &ast.Ident{Name: "codec"}}
+// 	r0.Decls = append(r0.Decls, &ast.GenDecl{Tok: token.IMPORT, Specs: importSpecs})
+// 	if _vd := genMonoRefImportsVia_Decl(); _vd != nil {
+// 		r0.Decls = append(r0.Decls, _vd)
+// 	}
+// 	return
+// }
+
+// func genMonoRefImportsVia_Decl() (_vd *ast.GenDecl) {
+// 	if len(genMonoRefImportsVia_) == 0 {
+// 		return
+// 	}
+// 	_vd = &ast.GenDecl{Tok: token.VAR}
+// 	for _, v := range genMonoRefImportsVia_ {
+// 		_vs := new(ast.ValueSpec)
+// 		_vs.Names = append(_vs.Names, &ast.Ident{Name: "_"})
+// 		_vs.Values = append(_vs.Values, &ast.SelectorExpr{
+// 			X:   &ast.Ident{Name: v[0]},
+// 			Sel: &ast.Ident{Name: v[1]},
+// 		})
+// 		_vd.Specs = append(_vd.Specs, _vs)
+// 	}
+// 	return
+// }
