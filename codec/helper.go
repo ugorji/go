@@ -2916,10 +2916,6 @@ type maker interface {
 	Make()
 }
 
-func callMake(v interface{}) {
-	v.(maker).Make()
-}
-
 // type linearMap4[K comparable, V any] struct {
 // 	keys   [4]K
 // 	values [4]V

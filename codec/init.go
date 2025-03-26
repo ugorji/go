@@ -1,14 +1,18 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
+//go:build codec.generics
+
 package codec
 
-import (
-	"io"
-)
+import "io"
 
 // This contains all the iniatializations of generics.
 // Putting it into one file, ensures that we can go generics or not.
+
+func callMake(v interface{}) {
+	v.(maker).Make()
+}
 
 // ---- (writer.go)
 
@@ -55,19 +59,19 @@ func NewEncoder(w io.Writer, h Handle) *Encoder {
 	switch h.(type) {
 	case *SimpleHandle:
 		var dh helperEncDriver[simpleEncDriverM[bufioEncWriterM]]
-		e = dh.newEncDriverIO(w, h)
+		e = dh.newEncoderIO(w, h)
 	case *JsonHandle:
 		var dh helperEncDriver[jsonEncDriverM[bufioEncWriterM]]
-		e = dh.newEncDriverIO(w, h)
+		e = dh.newEncoderIO(w, h)
 	case *CborHandle:
 		var dh helperEncDriver[cborEncDriverM[bufioEncWriterM]]
-		e = dh.newEncDriverIO(w, h)
+		e = dh.newEncoderIO(w, h)
 	case *MsgpackHandle:
 		var dh helperEncDriver[msgpackEncDriverM[bufioEncWriterM]]
-		e = dh.newEncDriverIO(w, h)
+		e = dh.newEncoderIO(w, h)
 	case *BincHandle:
 		var dh helperEncDriver[bincEncDriverM[bufioEncWriterM]]
-		e = dh.newEncDriverIO(w, h)
+		e = dh.newEncoderIO(w, h)
 	default:
 		return nil
 	}
@@ -84,19 +88,19 @@ func NewEncoderBytes(out *[]byte, h Handle) *Encoder {
 	switch h.(type) {
 	case *SimpleHandle:
 		var dh helperEncDriver[simpleEncDriverM[bytesEncAppenderM]]
-		e = dh.newEncDriverBytes(out, h)
+		e = dh.newEncoderBytes(out, h)
 	case *JsonHandle:
 		var dh helperEncDriver[jsonEncDriverM[bytesEncAppenderM]]
-		e = dh.newEncDriverBytes(out, h)
+		e = dh.newEncoderBytes(out, h)
 	case *CborHandle:
 		var dh helperEncDriver[cborEncDriverM[bytesEncAppenderM]]
-		e = dh.newEncDriverBytes(out, h)
+		e = dh.newEncoderBytes(out, h)
 	case *MsgpackHandle:
 		var dh helperEncDriver[msgpackEncDriverM[bytesEncAppenderM]]
-		e = dh.newEncDriverBytes(out, h)
+		e = dh.newEncoderBytes(out, h)
 	case *BincHandle:
 		var dh helperEncDriver[bincEncDriverM[bytesEncAppenderM]]
-		e = dh.newEncDriverBytes(out, h)
+		e = dh.newEncoderBytes(out, h)
 	default:
 		return nil
 	}
@@ -129,19 +133,19 @@ func NewDecoder(r io.Reader, h Handle) *Decoder {
 	switch h.(type) {
 	case *SimpleHandle:
 		var dh helperDecDriver[simpleDecDriverM[ioDecReaderM]]
-		d = dh.newDecDriverIO(r, h)
+		d = dh.newDecoderIO(r, h)
 	case *JsonHandle:
 		var dh helperDecDriver[jsonDecDriverM[ioDecReaderM]]
-		d = dh.newDecDriverIO(r, h)
+		d = dh.newDecoderIO(r, h)
 	case *CborHandle:
 		var dh helperDecDriver[cborDecDriverM[ioDecReaderM]]
-		d = dh.newDecDriverIO(r, h)
+		d = dh.newDecoderIO(r, h)
 	case *MsgpackHandle:
 		var dh helperDecDriver[msgpackDecDriverM[ioDecReaderM]]
-		d = dh.newDecDriverIO(r, h)
+		d = dh.newDecoderIO(r, h)
 	case *BincHandle:
 		var dh helperDecDriver[bincDecDriverM[ioDecReaderM]]
-		d = dh.newDecDriverIO(r, h)
+		d = dh.newDecoderIO(r, h)
 	default:
 		return nil
 	}
@@ -155,19 +159,19 @@ func NewDecoderBytes(in []byte, h Handle) *Decoder {
 	switch h.(type) {
 	case *SimpleHandle:
 		var dh helperDecDriver[simpleDecDriverM[bytesDecReaderM]]
-		d = dh.newDecDriverBytes(in, h)
+		d = dh.newDecoderBytes(in, h)
 	case *JsonHandle:
 		var dh helperDecDriver[jsonDecDriverM[bytesDecReaderM]]
-		d = dh.newDecDriverBytes(in, h)
+		d = dh.newDecoderBytes(in, h)
 	case *CborHandle:
 		var dh helperDecDriver[cborDecDriverM[bytesDecReaderM]]
-		d = dh.newDecDriverBytes(in, h)
+		d = dh.newDecoderBytes(in, h)
 	case *MsgpackHandle:
 		var dh helperDecDriver[msgpackDecDriverM[bytesDecReaderM]]
-		d = dh.newDecDriverBytes(in, h)
+		d = dh.newDecoderBytes(in, h)
 	case *BincHandle:
 		var dh helperDecDriver[bincDecDriverM[bytesDecReaderM]]
-		d = dh.newDecDriverBytes(in, h)
+		d = dh.newDecoderBytes(in, h)
 	default:
 		return nil
 	}
