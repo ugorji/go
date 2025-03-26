@@ -7,7 +7,7 @@
 _ng() {
     local a="$1"
     if [[ ! -e "$a" ]]; then echo 1; return; fi 
-    for i in `ls -1 *.go.tmpl gen.go values_test.go`
+    for i in `ls -1 *.go.tmpl gen.go gen_mono.go values_test.go`
     do
         if [[ "$a" -ot "$i" ]]; then echo 1; return; fi 
     done
@@ -24,7 +24,7 @@ EOF
 
 # _build generates fast-path.go
 _build() {
-    if ! [[ "${zforce}" || $(_ng "fast-path.generated.go") || $(_ng "gen.generated.go") ]]; then return 0; fi
+    if ! [[ "${zforce}" || $(_ng "fast-path.generated.go") || $(_ng "json.mono.generated.go") ]]; then return 0; fi
     
     if [ "${zbak}" ]; then
         _zts=`date '+%m%d%Y_%H%M%S'`
@@ -32,24 +32,22 @@ _build() {
         [ -e "fast-path${_gg}" ] && mv fast-path${_gg} fast-path${_gg}__${_zts}.bak
         [ -e "gen${_gg}" ] && mv gen${_gg} gen${_gg}__${_zts}.bak
     fi 
-    rm -f fast-path.generated.go *safe.generated.go *_generated_test.go 
+    rm -f fast-path.generated.go *safe.generated.go *_generated_test.go gen-from-tmpl*.generated.go
 
     cat > gen-from-tmpl.codec.generated.go <<EOF
 package codec
 func GenTmplRun2Go(in, out string) { genTmplRun2Go(in, out) }
+func GenMonoAll() { genMonoAll() }
 EOF
 
     # explicitly return 0 if this passes, else return 1
-    local btags="codec.notfastpath codec.safe codec.gen"
+    local btags="codec.notfastpath codec.safe codec.gen codec.generics"
     rm -f fast-path.generated.go mammoth_generated_test.go
     
     cat > gen-from-tmpl.generated.go <<EOF
-// +build ignore
-
+//go:build ignore
 package main
-
 import "${zpkg}"
-
 func main() {
 codec.GenTmplRun2Go("fast-path.go.tmpl", "fast-path.generated.go")
 codec.GenTmplRun2Go("mammoth-test.go.tmpl", "mammoth_generated_test.go")
@@ -58,8 +56,19 @@ EOF
 
     ${gocmd} run -tags "$btags" gen-from-tmpl.generated.go || return 1
     rm -f gen-from-tmpl.generated.go
-    
-    rm -f gen-from-tmpl.*generated.go
+
+    cat > gen-from-tmpl.mono.generated.go <<EOF
+//go:build ignore
+package main
+import "${zpkg}"
+func main() {
+codec.GenMonoAll()
+}
+EOF
+    btags="codec.safe codec.gen codec.generics"
+    ${gocmd} run -tags "$btags" gen-from-tmpl.mono.generated.go || return 1
+    rm -f gen-from-tmpl.mono.*generated.go
+    rm -f gen-from-tmpl*.generated.go
     return 0
 }
 
