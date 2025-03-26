@@ -674,18 +674,18 @@ func (d *decoder[T]) kInterface(f *decFnInfo, rv reflect.Value) {
 	rvSetIntf(rv, rvn)
 }
 
-func (helperDecDriver[T]) decStructFieldKeyNotString(dd T, keyType valueType, b *[decScratchByteArrayLen]byte) (rvkencname []byte) {
-	if keyType == valueTypeInt {
-		rvkencname = strconv.AppendInt(b[:0], dd.DecodeInt64(), 10)
-	} else if keyType == valueTypeUint {
-		rvkencname = strconv.AppendUint(b[:0], dd.DecodeUint64(), 10)
-	} else if keyType == valueTypeFloat {
-		rvkencname = strconv.AppendFloat(b[:0], dd.DecodeFloat64(), 'f', -1, 64)
-	} else {
-		halt.errorStr2("invalid struct key type: ", keyType.String())
-	}
-	return
-}
+// func (helperDecDriver[T]) decStructFieldKeyNotString(dd T, keyType valueType, b *[decScratchByteArrayLen]byte) (rvkencname []byte) {
+// 	if keyType == valueTypeInt {
+// 		rvkencname = strconv.AppendInt(b[:0], dd.DecodeInt64(), 10)
+// 	} else if keyType == valueTypeUint {
+// 		rvkencname = strconv.AppendUint(b[:0], dd.DecodeUint64(), 10)
+// 	} else if keyType == valueTypeFloat {
+// 		rvkencname = strconv.AppendFloat(b[:0], dd.DecodeFloat64(), 'f', -1, 64)
+// 	} else {
+// 		halt.errorStr2("invalid struct key type: ", keyType.String())
+// 	}
+// 	return
+// }
 
 func (d *decoder[T]) kStructField(si *structFieldInfo, rv reflect.Value) {
 	if d.d.TryNil() {
@@ -721,11 +721,23 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 		var rvkencname []byte
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			if ti.keyType == valueTypeString {
+			switch ti.keyType {
+			case valueTypeString:
 				rvkencname = d.d.DecodeStringAsBytes()
-			} else {
-				rvkencname = d.dh.decStructFieldKeyNotString(d.d, ti.keyType, &d.b)
+			case valueTypeInt:
+				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
+			case valueTypeUint:
+				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
+			case valueTypeFloat:
+				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
+			default:
+				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
+			// if ti.keyType == valueTypeString {
+			// 	rvkencname = d.d.DecodeStringAsBytes()
+			// } else {
+			// 	rvkencname = d.dh.decStructFieldKeyNotString(d.d, ti.keyType, &d.b)
+			// }
 			d.mapElemValue()
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
@@ -2415,7 +2427,7 @@ func decInferLen(clen, maxlen, unit int) int {
 	return maxlen
 }
 
-func (helperDecDriver[T]) newDecDriverBytes(in []byte, h Handle) *decoder[T] {
+func (helperDecDriver[T]) newDecoderBytes(in []byte, h Handle) *decoder[T] {
 	var c1 decoder[T]
 	c1.bytes = true
 	c1.init(h)
@@ -2423,7 +2435,7 @@ func (helperDecDriver[T]) newDecDriverBytes(in []byte, h Handle) *decoder[T] {
 	return &c1
 }
 
-func (helperDecDriver[T]) newDecDriverIO(in io.Reader, h Handle) *decoder[T] {
+func (helperDecDriver[T]) newDecoderIO(in io.Reader, h Handle) *decoder[T] {
 	var c1 decoder[T]
 	c1.bytes = false
 	c1.init(h)

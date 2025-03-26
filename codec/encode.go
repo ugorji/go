@@ -551,7 +551,22 @@ func (e *encoder[T]) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
 }
 
 func (e *encoder[T]) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-	e.dh.encStructFieldKey(encName, e.e, keyType, encNameAsciiAlphaNum, e.js)
+	if keyType == valueTypeString {
+		if e.js && encNameAsciiAlphaNum { // keyType == valueTypeString
+			e.e.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
+		} else { // keyType == valueTypeString
+			e.e.EncodeString(encName)
+		}
+	} else if keyType == valueTypeInt {
+		e.e.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
+	} else if keyType == valueTypeUint {
+		e.e.EncodeUint(must.Uint(strconv.ParseUint(encName, 10, 64)))
+	} else if keyType == valueTypeFloat {
+		e.e.EncodeFloat64(must.Float(strconv.ParseFloat(encName, 64)))
+	} else {
+		halt.errorStr2("invalid struct key type: ", keyType.String())
+	}
+	// e.dh.encStructFieldKey(e.e, encName, keyType, encNameAsciiAlphaNum, e.js)
 }
 
 func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
@@ -1515,27 +1530,27 @@ func (e *encoder[T]) atEndOfEncode() {
 // 	return
 // }
 
-func (helperEncDriver[T]) encStructFieldKey(encName string, ee T,
-	keyType valueType, encNameAsciiAlphaNum bool, js bool) {
-	// use if-else-if, not switch (which compiles to binary-search)
-	// since keyType is typically valueTypeString, branch prediction is pretty good.
+// func (helperEncDriver[T]) encStructFieldKey(ee T, encName string,
+// 	keyType valueType, encNameAsciiAlphaNum bool, js bool) {
+// 	// use if-else-if, not switch (which compiles to binary-search)
+// 	// since keyType is typically valueTypeString, branch prediction is pretty good.
 
-	if keyType == valueTypeString {
-		if js && encNameAsciiAlphaNum { // keyType == valueTypeString
-			ee.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
-		} else { // keyType == valueTypeString
-			ee.EncodeString(encName)
-		}
-	} else if keyType == valueTypeInt {
-		ee.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
-	} else if keyType == valueTypeUint {
-		ee.EncodeUint(must.Uint(strconv.ParseUint(encName, 10, 64)))
-	} else if keyType == valueTypeFloat {
-		ee.EncodeFloat64(must.Float(strconv.ParseFloat(encName, 64)))
-	} else {
-		halt.errorStr2("invalid struct key type: ", keyType.String())
-	}
-}
+// 	if keyType == valueTypeString {
+// 		if js && encNameAsciiAlphaNum { // keyType == valueTypeString
+// 			ee.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
+// 		} else { // keyType == valueTypeString
+// 			ee.EncodeString(encName)
+// 		}
+// 	} else if keyType == valueTypeInt {
+// 		ee.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
+// 	} else if keyType == valueTypeUint {
+// 		ee.EncodeUint(must.Uint(strconv.ParseUint(encName, 10, 64)))
+// 	} else if keyType == valueTypeFloat {
+// 		ee.EncodeFloat64(must.Float(strconv.ParseFloat(encName, 64)))
+// 	} else {
+// 		halt.errorStr2("invalid struct key type: ", keyType.String())
+// 	}
+// }
 
 // type encInitCombo[T encDriver, T2 encWriter] struct {
 // 	wb bytesEncAppender
@@ -1604,19 +1619,19 @@ func (encDriverContainerNoTrackerT) WriteArrayElem()    {}
 func (encDriverContainerNoTrackerT) WriteMapElemKey()   {}
 func (encDriverContainerNoTrackerT) WriteMapElemValue() {}
 
-func (helperEncDriver[T]) newEncDriverBytes(out *[]byte, h Handle) *encoder[T] {
+func (helperEncDriver[T]) newEncoderBytes(out *[]byte, h Handle) *encoder[T] {
 	var c1 encoder[T]
 	c1.bytes = true
 	c1.init(h)
-	c1.ResetBytes(out) // MARKER check for error
+	c1.ResetBytes(out)
 	return &c1
 }
 
-func (helperEncDriver[T]) newEncDriverIO(out io.Writer, h Handle) *encoder[T] {
+func (helperEncDriver[T]) newEncoderIO(out io.Writer, h Handle) *encoder[T] {
 	var c1 encoder[T]
 	c1.bytes = false
 	c1.init(h)
-	c1.Reset(out) // MARKER check for error
+	c1.Reset(out)
 	return &c1
 }
 
