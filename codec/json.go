@@ -514,8 +514,7 @@ func (e *jsonEncDriver[T]) WriteMapEnd() {
 func (e *jsonEncDriver[T]) quoteStr(s string) {
 	// adapted from std pkg encoding/json
 	const hex = "0123456789abcdef"
-	w := e.w
-	w.writen1('"')
+	e.w.writen1('"')
 	var i, start uint
 	for i < uint(len(s)) {
 		// encode all bytes < 0x20 (except \r, \n).
@@ -533,24 +532,24 @@ func (e *jsonEncDriver[T]) quoteStr(s string) {
 		// b := s[i]
 		if s[i] < utf8.RuneSelf {
 			if start < i {
-				w.writestr(s[start:i])
+				e.w.writestr(s[start:i])
 			}
 			switch s[i] {
 			case '\\', '"':
-				w.writen2('\\', s[i])
+				e.w.writen2('\\', s[i])
 			case '\n':
-				w.writen2('\\', 'n')
+				e.w.writen2('\\', 'n')
 			case '\r':
-				w.writen2('\\', 'r')
+				e.w.writen2('\\', 'r')
 			case '\b':
-				w.writen2('\\', 'b')
+				e.w.writen2('\\', 'b')
 			case '\f':
-				w.writen2('\\', 'f')
+				e.w.writen2('\\', 'f')
 			case '\t':
-				w.writen2('\\', 't')
+				e.w.writen2('\\', 't')
 			default:
-				w.writestr(`\u00`)
-				w.writen2(hex[s[i]>>4], hex[s[i]&0xF])
+				e.w.writestr(`\u00`)
+				e.w.writen2(hex[s[i]>>4], hex[s[i]&0xF])
 			}
 			i++
 			start = i
@@ -559,9 +558,9 @@ func (e *jsonEncDriver[T]) quoteStr(s string) {
 		c, size := utf8.DecodeRuneInString(s[i:])
 		if c == utf8.RuneError && size == 1 { // meaning invalid encoding (so output as-is)
 			if start < i {
-				w.writestr(s[start:i])
+				e.w.writestr(s[start:i])
 			}
-			w.writestr(`\uFFFD`)
+			e.w.writestr(`\uFFFD`)
 			i++
 			start = i
 			continue
@@ -570,10 +569,10 @@ func (e *jsonEncDriver[T]) quoteStr(s string) {
 		// Both technically valid JSON, but bomb on JSONP, so fix here *unconditionally*.
 		if jsonEscapeMultiByteUnicodeSep && (c == '\u2028' || c == '\u2029') {
 			if start < i {
-				w.writestr(s[start:i])
+				e.w.writestr(s[start:i])
 			}
-			w.writestr(`\u202`)
-			w.writen1(hex[c&0xF])
+			e.w.writestr(`\u202`)
+			e.w.writen1(hex[c&0xF])
 			i += uint(size)
 			start = i
 			continue
@@ -581,9 +580,9 @@ func (e *jsonEncDriver[T]) quoteStr(s string) {
 		i += uint(size)
 	}
 	if start < uint(len(s)) {
-		w.writestr(s[start:])
+		e.w.writestr(s[start:])
 	}
-	w.writen1('"')
+	e.w.writen1('"')
 }
 
 func (e *jsonEncDriver[T]) atEndOfEncode() {
