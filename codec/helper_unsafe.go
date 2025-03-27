@@ -836,6 +836,7 @@ func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
 func rvGetArrayBytes(rv reflect.Value, _ []byte) (bs []byte) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	bx := (*unsafeSlice)(unsafe.Pointer(&bs))
+	// bx.Data, bx.Len, bx.Cap = urv.ptr, rv.Len(), bx.Len
 	bx.Data = urv.ptr
 	bx.Len = rv.Len()
 	bx.Cap = bx.Len
@@ -1184,11 +1185,33 @@ func (d *decoderShared) zerocopystate() bool {
 	return d.decByteState == decByteStateZerocopy && d.zeroCopy
 }
 
+// func (d *decoderShared) stringZC(v []byte) (s string) {
+// 	if d.zerocopystate() {
+// 		return stringView(v)
+// 	}
+// 	return d.string(v)
+// }
+
 func (d *decoderShared) stringZC(v []byte) (s string) {
-	if d.zerocopystate() {
-		return stringView(v)
+	// This method is called a lot. Inlining helps with performance.
+	//
+	// MARKER: TUNED BELOW TO force inlining
+	// - inlined d.string(...)
+	// - remove if len(v) == 0 { check
+	// - used double indexing to eliminate inline cost of the addition (v[0]:v[0]+1)
+
+	// if len(v) == 0 {
+	// } else if len(v) == 1 {
+	if len(v) == 1 {
+		s = str256[v[0]:][:1] // str256[v[0] : v[0]+1]
+	} else if d.decByteState == decByteStateZerocopy && d.zeroCopy {
+		s = stringView(v)
+	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
+		s = string(v)
+	} else {
+		s = d.is.string(v)
 	}
-	return d.string(v)
+	return
 }
 
 func (d *decoderShared) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
