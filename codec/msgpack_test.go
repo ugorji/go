@@ -254,6 +254,10 @@ func TestMsgpackZeroCopyBytes(t *testing.T) {
 	doTestZeroCopyBytes(t, testMsgpackH)
 }
 
+func TestMsgpackNextValueBytes(t *testing.T) {
+	doTestNextValueBytes(t, testMsgpackH)
+}
+
 func TestMsgpackNumbers(t *testing.T) {
 	doTestNumbers(t, testMsgpackH)
 }
