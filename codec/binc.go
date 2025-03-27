@@ -237,7 +237,7 @@ func (e *bincEncDriver[T]) encUint(bd byte, pos bool, v uint64) {
 	} else if pos && v >= 1 && v <= 16 {
 		e.w.writen1(bincVdSmallInt<<4 | byte(v-1))
 	} else if v <= math.MaxUint8 {
-		e.w.writen2(bd|0x0, byte(v))
+		e.w.writen2(bd, byte(v)) // bd|0x0
 	} else if v <= math.MaxUint16 {
 		e.w.writen1(bd | 0x01)
 		e.w.writen2(bigen.PutUint16(uint16(v)))
@@ -330,7 +330,7 @@ func (e *bincEncDriver[T]) EncodeSymbol(v string) {
 			lenprec = 3
 		}
 		if ui <= math.MaxUint8 {
-			e.w.writen2(bincVdSymbol<<4|0x0|0x4|lenprec, byte(ui))
+			e.w.writen2(bincVdSymbol<<4|0x4|lenprec, byte(ui)) // bincVdSymbol<<4|0x0|0x4|lenprec
 		} else {
 			e.w.writen1(bincVdSymbol<<4 | 0x8 | 0x4 | lenprec)
 			e.w.writen2(bigen.PutUint16(ui))
@@ -436,7 +436,7 @@ func (x *bincDecState) reset() { *x = bincDecState{} }
 
 type bincDecDriver[T decReader] struct {
 	decDriverNoopContainerReader
-	decDriverNoopNumberHelper
+	// decDriverNoopNumberHelper
 	decInit2er
 	noBuiltInTypes
 
@@ -941,7 +941,7 @@ func (d *bincDecDriver[T]) DecodeNaked() {
 		n.v = valueTypeString
 		n.s = d.d.stringZC(d.DecodeStringAsBytes())
 	case bincVdByteArray:
-		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString, d.h.ZeroCopy)
+		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)
 	case bincVdSymbol:
 		n.v = valueTypeSymbol
 		n.s = d.d.stringZC(d.DecodeStringAsBytes())

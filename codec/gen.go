@@ -489,7 +489,7 @@ func genTmplRun2Go(fnameIn, fnameOut string) {
 //   This way, there isn't a function call overhead just to see that we should not enter a block of code.
 //
 // Note:
-//   codecgen-generated code depends on the variables defined by fast-path.generated.go.
+//   codecgen-generated code depends on the variables defined by fastpath.generated.go.
 //   consequently, you cannot run with tags "codecgen codec.notfastpath".
 //
 // Note:

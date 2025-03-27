@@ -833,7 +833,7 @@ func rvArrayIndex(rv reflect.Value, i int, ti *typeInfo) (v reflect.Value) {
 }
 
 // if scratch is nil, then return a writable view (assuming canAddr=true)
-func rvGetArrayBytes(rv reflect.Value, scratch []byte) (bs []byte) {
+func rvGetArrayBytes(rv reflect.Value, _ []byte) (bs []byte) {
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	bx := (*unsafeSlice)(unsafe.Pointer(&bs))
 	bx.Data = urv.ptr

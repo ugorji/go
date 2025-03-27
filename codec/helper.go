@@ -218,7 +218,7 @@ import (
 //
 // Note: RPC tests depend on getting the error from an Encode/Decode call.
 // Consequently, they will always fail if debugging = true.
-const debugging = false
+const debugging = true // MARKER 2025
 
 const (
 	// containerLenUnknown is length returned from Read(Map|Array)Len
@@ -1971,7 +1971,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		pv := pi.(*typeInfoLoad)
 		pv.reset()
 		pv.etypes = append(pv.etypes, ti.rtid)
-		x.rget(rt, rtid, nil, pv, omitEmpty)
+		x.rget(rt, nil, pv, omitEmpty)
 		n := ti.resolve(pv.sfis, pv.sfiNames)
 		ti.init(pv.sfis, n)
 		pp.Put(pi)
@@ -2071,8 +2071,7 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 	return
 }
 
-func (x *TypeInfos) rget(rt reflect.Type, rtid uintptr,
-	path *structFieldInfoPathNode, pv *typeInfoLoad, omitEmpty bool) {
+func (x *TypeInfos) rget(rt reflect.Type, path *structFieldInfoPathNode, pv *typeInfoLoad, omitEmpty bool) {
 	// Read up fields and store how to access the value.
 	//
 	// It uses go's rules for message selectors,
@@ -2161,7 +2160,7 @@ LOOP:
 						kind:     uint8(fkind),
 						numderef: numderef,
 					}
-					x.rget(ft, ftid, path2, pv, omitEmpty)
+					x.rget(ft, path2, pv, omitEmpty)
 				}
 				continue
 			}
@@ -2588,7 +2587,7 @@ func (v panicHdl) errorUint(prefix string, p1 uint64) {
 }
 
 func (v panicHdl) errorFloat(prefix string, p1 float64) {
-	panic(stringView(strconv.AppendFloat(panicHdlBytes(prefix), p1, 'G', -1, 10)))
+	panic(stringView(strconv.AppendFloat(panicHdlBytes(prefix), p1, 'G', -1, 64)))
 }
 
 // func (v panicHdl) errorInt(prefix string, p1 int) {
@@ -2913,10 +2912,10 @@ func (x internerMap) string(v []byte) (s string) {
 // did excessive allocation and dramatically increasing execution time.
 //
 // Switching to using an interface worked much better.
-
-type maker interface {
-	Make()
-}
+//
+// type maker interface {
+// 	Make()
+// }
 
 // type linearMap4[K comparable, V any] struct {
 // 	keys   [4]K

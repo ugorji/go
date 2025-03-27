@@ -1336,18 +1336,19 @@ func testCodecUnderlyingType(t *testing.T, h Handle) {
 	type T1 map[string]string
 	v := T1{"1": "1s", "2": "2s"}
 	var bs []byte
-	var err error
+	// var err error
 	NewEncoderBytes(&bs, h).MustEncode(v)
-	if err != nil {
-		t.Logf("Error during encode: %v", err)
-		t.FailNow()
-	}
+	// if err != nil {
+	// 	t.Logf("Error during encode: %v", err)
+	// 	t.FailNow()
+	// }
 	var v2 T1
 	NewDecoderBytes(bs, h).MustDecode(&v2)
-	if err != nil {
-		t.Logf("Error during decode: %v", err)
-		t.FailNow()
-	}
+	// if err != nil {
+	// 	t.Logf("Error during decode: %v", err)
+	// 	t.FailNow()
+	// }
+	_, _ = v, v2
 }
 
 func doTestCodecChan(t *testing.T, h Handle) {
@@ -1479,7 +1480,7 @@ func doTestCodecChan(t *testing.T, h Handle) {
 	}
 }
 
-func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleepMs time.Duration) (port int) {
+func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep time.Duration) (port int) {
 	defer testSetup(t, &h)()
 	if testSkipRPCTests {
 		t.Skip(testSkipRPCTestsMsg)
@@ -1573,11 +1574,11 @@ func doTestCodecRpcOne(t *testing.T, rr Rpc, h Handle, doRequest bool, exitSleep
 
 	// runtime.Gosched()
 
-	if exitSleepMs == 0 {
+	if exitSleep == 0 {
 		defer exitFn()
 	} else {
 		go func() {
-			time.Sleep(exitSleepMs)
+			time.Sleep(exitSleep)
 			exitFn()
 		}()
 	}
@@ -1612,9 +1613,9 @@ func doTestMapEncodeForCanonical(t *testing.T, h Handle) {
 	defer testSetup(t, &h)()
 	// println("doTestMapEncodeForCanonical")
 	v1 := map[stringUint64T]interface{}{
-		stringUint64T{"a", 1}: 1,
-		stringUint64T{"b", 2}: "hello",
-		stringUint64T{"c", 3}: map[string]interface{}{
+		{"a", 1}: 1,
+		{"b", 2}: "hello",
+		{"c", 3}: map[string]interface{}{
 			"c/a": 1,
 			"c/b": "world",
 			"c/c": []int{1, 2, 3, 4},
@@ -2092,8 +2093,8 @@ func doTestMapStructKey(t *testing.T, h Handle) {
 	var v interface{} // map[stringUint64T]wrapUint64Slice // interface{}
 	bh := testBasicHandle(h)
 	m := map[stringUint64T]wrapUint64Slice{
-		stringUint64T{"55555", 55555}: []wrapUint64{12345},
-		stringUint64T{"333", 333}:     []wrapUint64{123},
+		{"55555", 55555}: []wrapUint64{12345},
+		{"333", 333}:     []wrapUint64{123},
 	}
 	oldCanonical := bh.Canonical
 	oldMapType := bh.MapType

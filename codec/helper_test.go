@@ -13,7 +13,7 @@ import (
 
 // --- these functions are used by both benchmarks and tests
 
-var errDeepEqualNotMatch = errors.New("Not Match")
+var errDeepEqualNotMatch = errors.New("not match")
 
 func deepEqual(v1, v2 interface{}) (err error) {
 	if !reflect.DeepEqual(v1, v2) {

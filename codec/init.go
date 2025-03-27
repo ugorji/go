@@ -1,7 +1,7 @@
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-//go:build codec.generics
+//go:build codec.notmono
 
 package codec
 
@@ -9,6 +9,8 @@ import "io"
 
 // This contains all the iniatializations of generics.
 // Putting it into one file, ensures that we can go generics or not.
+
+type maker interface{ Make() }
 
 func callMake(v interface{}) {
 	v.(maker).Make()

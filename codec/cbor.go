@@ -324,7 +324,7 @@ func (e *cborEncDriver[T]) encStringBytesS(bb byte, v string) {
 
 type cborDecDriver[T decReader] struct {
 	decDriverNoopContainerReader
-	decDriverNoopNumberHelper
+	// decDriverNoopNumberHelper
 	noBuiltInTypes
 
 	h   *CborHandle
@@ -715,7 +715,7 @@ func (d *cborDecDriver[T]) DecodeNaked() {
 		n.v = valueTypeInt
 		n.i = d.DecodeInt64()
 	case cborMajorBytes:
-		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString, d.h.ZeroCopy)
+		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)
 	case cborMajorString:
 		n.v = valueTypeString
 		n.s = d.d.stringZC(d.DecodeStringAsBytes())

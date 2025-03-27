@@ -265,7 +265,7 @@ type simpleDecDriver[T decReader] struct {
 	bytes bool
 
 	noBuiltInTypes
-	decDriverNoopNumberHelper
+	// decDriverNoopNumberHelper
 	decDriverNoopContainerReader
 	decInit2er
 
@@ -593,7 +593,7 @@ func (d *simpleDecDriver[T]) DecodeNaked() {
 		n.s = d.d.stringZC(d.DecodeStringAsBytes())
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
-		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString, d.h.ZeroCopy)
+		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)
 	case simpleVdExt, simpleVdExt + 1, simpleVdExt + 2, simpleVdExt + 3, simpleVdExt + 4:
 		n.v = valueTypeExt
 		l := d.decLen()

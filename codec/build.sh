@@ -16,7 +16,7 @@
 _build_proceed() {
     # return success (0) if we should, and 1 (fail) if not
     if [[ "${zforce}" ]]; then return 0; fi
-    for a in "fast-path.generated.go" "json.mono.generated.go"; do
+    for a in "fastpath.generated.go" "json.mono.generated.go"; do
         if [[ ! -e "$a" ]]; then return 0; fi
         for b in `ls -1 *.go.tmpl gen.go gen_mono.go values_test.go`; do
             if [[ "$a" -ot "$b" ]]; then return 0; fi
@@ -27,7 +27,7 @@ _build_proceed() {
 
 # _build generates fast-path.go
 _build() {
-    # if ! [[ "${zforce}" || $(_ng "fast-path.generated.go") || $(_ng "json.mono.generated.go") ]]; then return 0; fi
+    # if ! [[ "${zforce}" || $(_ng "fastpath.generated.go") || $(_ng "json.mono.generated.go") ]]; then return 0; fi
     _build_proceed
     if [ $? -eq 1 ]; then return 0; fi
     if [ "${zbak}" ]; then
@@ -36,7 +36,7 @@ _build() {
         [ -e "fast-path${_gg}" ] && mv fast-path${_gg} fast-path${_gg}__${_zts}.bak
         [ -e "gen${_gg}" ] && mv gen${_gg} gen${_gg}__${_zts}.bak
     fi 
-    rm -f fast-path.generated.go *_generated_test.go gen-from-tmpl*.generated.go
+    rm -f fast*path.generated.go *mono*generated.go *_generated_test.go gen-from-tmpl*.generated.go
 
     cat > gen-from-tmpl.codec.generated.go <<EOF
 package codec
@@ -45,15 +45,15 @@ func GenMonoAll() { genMonoAll() }
 EOF
 
     # explicitly return 0 if this passes, else return 1
-    local btags="codec.gen codec.generics codec.safe codec.notfastpath"
-    rm -f fast-path.generated.go mammoth_generated_test.go
+    local btags="codec.gen codec.notmono codec.safe codec.notfastpath"
+    rm -f fastpath.generated.go mammoth_generated_test.go
     
     cat > gen-from-tmpl.generated.go <<EOF
 //go:build ignore
 package main
 import "${zpkg}"
 func main() {
-codec.GenTmplRun2Go("fast-path.go.tmpl", "fast-path.generated.go")
+codec.GenTmplRun2Go("fast-path.go.tmpl", "fastpath.generated.go")
 codec.GenTmplRun2Go("mammoth-test.go.tmpl", "mammoth_generated_test.go")
 }
 EOF
@@ -69,7 +69,7 @@ func main() {
 codec.GenMonoAll()
 }
 EOF
-    # btags="codec.safe codec.gen codec.generics"
+    # btags="codec.safe codec.gen codec.notmono"
     ${gocmd} run -tags "$btags" gen-from-tmpl.generated.go || return 1
     rm -f gen-from-tmpl*.generated.go
     return 0
@@ -133,7 +133,9 @@ _tests() {
     if [[ " ${zargs[@]} " =~ "-race" ]]; then
         cpus="$(nproc)"
     fi
-    local a=( "" "codec.safe" "codec.generics" "codec.generics codec.safe" "codec.generics codec.notfastpath" )
+    local a=( "" "codec.safe" "codec.notfastpath" "codec.safe codec.notfastpath"
+              "codec.notmono" "codec.notmono codec.safe"
+              "codec.notmono codec.notfastpath" "codec.notmono codec.safe codec.notfastpath" )
     local b=()
     local c=()
     for i in "${a[@]}"
@@ -152,9 +154,9 @@ _tests() {
         # if [[ "$?" != 0 ]]; then return 1; fi
     done
     if [[ "$zextra" == "1" ]]; then
-        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'codec.generics codec.notfastpath x'; RUN: 'Test.*X$'"
+        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'codec.notmono codec.notfastpath x'; RUN: 'Test.*X$'"
         [[ "$zcover" == "1" ]] && c=( -coverprofile "x.cov.out" )
-        ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "codec.generics codec.notfastpath x" -count $nc -run 'Test.*X$' "${c[@]}" &
+        ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "codec.notmono codec.notfastpath x" -count $nc -run 'Test.*X$' "${c[@]}" &
         b+=("x.cov.out")
         [[ "$zwait" == "1" ]] && wait
     fi

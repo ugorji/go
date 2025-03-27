@@ -204,7 +204,7 @@ func (e *encoder[T]) setContainerState(cs containerState) {
 	}
 }
 
-func (e *encoder[T]) rawExt(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
 
@@ -212,26 +212,26 @@ func (e *encoder[T]) ext(f *encFnInfo, rv reflect.Value) {
 	e.e.EncodeExt(rv2i(rv), f.ti.rt, f.xfTag, f.xfFn)
 }
 
-func (e *encoder[T]) selferMarshal(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) selferMarshal(_ *encFnInfo, rv reflect.Value) {
 	rv2i(rv).(Selfer).CodecEncodeSelf(&Encoder{e})
 }
 
-func (e *encoder[T]) binaryMarshal(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) binaryMarshal(_ *encFnInfo, rv reflect.Value) {
 	bs, fnerr := rv2i(rv).(encoding.BinaryMarshaler).MarshalBinary()
 	e.marshalRaw(bs, fnerr)
 }
 
-func (e *encoder[T]) textMarshal(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) textMarshal(_ *encFnInfo, rv reflect.Value) {
 	bs, fnerr := rv2i(rv).(encoding.TextMarshaler).MarshalText()
 	e.marshalUtf8(bs, fnerr)
 }
 
-func (e *encoder[T]) jsonMarshal(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) jsonMarshal(_ *encFnInfo, rv reflect.Value) {
 	bs, fnerr := rv2i(rv).(jsonMarshaler).MarshalJSON()
 	e.marshalAsis(bs, fnerr)
 }
 
-func (e *encoder[T]) raw(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) raw(_ *encFnInfo, rv reflect.Value) {
 	e.rawBytes(rv2i(rv).(Raw))
 }
 
@@ -249,79 +249,79 @@ func (e *encoder[T]) encodeComplex128(v complex128) {
 	e.e.EncodeFloat64(real(v))
 }
 
-func (e *encoder[T]) kBool(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kBool(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeBool(rvGetBool(rv))
 }
 
-func (e *encoder[T]) kTime(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kTime(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeTime(rvGetTime(rv))
 }
 
-func (e *encoder[T]) kString(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kString(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeString(rvGetString(rv))
 }
 
-func (e *encoder[T]) kFloat32(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kFloat32(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeFloat32(rvGetFloat32(rv))
 }
 
-func (e *encoder[T]) kFloat64(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kFloat64(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeFloat64(rvGetFloat64(rv))
 }
 
-func (e *encoder[T]) kComplex64(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kComplex64(_ *encFnInfo, rv reflect.Value) {
 	e.encodeComplex64(rvGetComplex64(rv))
 }
 
-func (e *encoder[T]) kComplex128(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kComplex128(_ *encFnInfo, rv reflect.Value) {
 	e.encodeComplex128(rvGetComplex128(rv))
 }
 
-func (e *encoder[T]) kInt(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kInt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeInt(int64(rvGetInt(rv)))
 }
 
-func (e *encoder[T]) kInt8(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kInt8(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeInt(int64(rvGetInt8(rv)))
 }
 
-func (e *encoder[T]) kInt16(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kInt16(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeInt(int64(rvGetInt16(rv)))
 }
 
-func (e *encoder[T]) kInt32(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kInt32(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeInt(int64(rvGetInt32(rv)))
 }
 
-func (e *encoder[T]) kInt64(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kInt64(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeInt(int64(rvGetInt64(rv)))
 }
 
-func (e *encoder[T]) kUint(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUint(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUint(rv)))
 }
 
-func (e *encoder[T]) kUint8(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUint8(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUint8(rv)))
 }
 
-func (e *encoder[T]) kUint16(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUint16(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUint16(rv)))
 }
 
-func (e *encoder[T]) kUint32(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUint32(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUint32(rv)))
 }
 
-func (e *encoder[T]) kUint64(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUint64(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUint64(rv)))
 }
 
-func (e *encoder[T]) kUintptr(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kUintptr(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
 }
 
-func (e *encoder[T]) kErr(f *encFnInfo, rv reflect.Value) {
+func (e *encoder[T]) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
@@ -977,7 +977,7 @@ type encoderShared struct {
 
 	rtidFn, rtidFnNoExt *atomicRtidFnSlice
 
-	se  encoderI
+	// se  encoderI
 	err error
 
 	blist bytesFreelist
@@ -1720,8 +1720,7 @@ func (dh helperEncDriver[T]) encFnVia(rt reflect.Type, fns *atomicRtidFnSlice,
 	tinfos *TypeInfos, mu *sync.Mutex, exth extHandle, fp *fastpathEs[T],
 	checkExt, checkCircularRef, timeBuiltin, binaryEncoding, json bool) (fn *encFn[T]) {
 	rtid := rt2id(rt)
-	var sp []encRtidFn[T]
-	sp = dh.encFromRtidFnSlice(fns)
+	var sp []encRtidFn[T] = dh.encFromRtidFnSlice(fns)
 	if sp != nil {
 		_, fn = dh.encFindRtidFn(sp, rtid)
 	}

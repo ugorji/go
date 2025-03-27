@@ -567,8 +567,8 @@ func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .E
         {{/* d.swallowMapContents(containerLen) */ -}}
 		return
 	}
-	{{if eq .Elem "interface{}" }}mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
-    {{else if eq .Elem "bytes" "[]byte" }}mapGet := v != nil && !d.h.MapValueReset
+	{{if eq .Elem "interface{}" }}mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
+    {{else if eq .Elem "bytes" "[]byte" }}mapGet := !d.h.MapValueReset
     {{end -}}
     var mk {{ .MapKey }}
 	var mv {{ .Elem }}

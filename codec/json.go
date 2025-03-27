@@ -87,8 +87,6 @@ const (
 	// and treat as nil, true or false.
 	jsonNakedBoolNullInQuotedStr = true
 
-	// jsonManualInlineDecRdInHotZones controls whether we manually inline some decReader calls.
-	//
 	// encode performance is at par with libraries that just iterate over bytes directly,
 	// because encWr (with inlined bytesEncAppender calls) is inlined.
 	// Conversely, decode performance suffers because decRd (with inlined bytesDecReader calls)
@@ -101,7 +99,7 @@ const (
 	//   - jsonReadAsisChars, skipWhitespace (advance) and jsonReadNum
 	//   - AND THEN readn3, readn4 (for ull, rue and alse).
 	//   - (readn1 is only called when a char is escaped).
-	// - without inlining, we still pay the cost of a method invocationK, and this dominates time
+	// - without inlining, we still pay the cost of a method invocation, and this dominates time
 	// - To mitigate, we manually inline in hot zones
 	//   *excluding places where used sparingly (e.g. nextValueBytes, and other atypical cases)*.
 	//   - jsonReadAsisChars *only* called in: appendStringAsBytes
@@ -113,7 +111,11 @@ const (
 	//   - calling jsonReadNum in DecodeNaked: 612
 	// Consequently, we manually inline jsonReadAsisChars (in appendStringAsBytes)
 	// and jsonReadNum (in decNumbytes)
-	jsonManualInlineDecRdInHotZones = true
+
+	// jsonManualInlineDecRdInHotZones controls whether we manually inline some decReader calls.
+	//
+	// CURRENTLY UNUSED (2025-03-27)
+	// jsonManualInlineDecRdInHotZones = true
 
 	jsonSpacesOrTabsLen = 128
 

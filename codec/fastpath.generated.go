@@ -4311,7 +4311,7 @@ func (fastpathDT[T]) DecMapStringIntfL(v map[string]interface{}, containerLen in
 		d.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
 		return
 	}
-	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
+	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk string
 	var mv interface{}
 	hasLen := containerLen > 0
@@ -4409,7 +4409,7 @@ func (fastpathDT[T]) DecMapStringBytesL(v map[string][]byte, containerLen int, d
 		d.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
 		return
 	}
-	mapGet := v != nil && !d.h.MapValueReset
+	mapGet := !d.h.MapValueReset
 	var mk string
 	var mv []byte
 	hasLen := containerLen > 0
@@ -4737,7 +4737,7 @@ func (fastpathDT[T]) DecMapUint8IntfL(v map[uint8]interface{}, containerLen int,
 		d.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
 		return
 	}
-	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
+	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk uint8
 	var mv interface{}
 	hasLen := containerLen > 0
@@ -4835,7 +4835,7 @@ func (fastpathDT[T]) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, d *
 		d.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
 		return
 	}
-	mapGet := v != nil && !d.h.MapValueReset
+	mapGet := !d.h.MapValueReset
 	var mk uint8
 	var mv []byte
 	hasLen := containerLen > 0
@@ -5163,7 +5163,7 @@ func (fastpathDT[T]) DecMapUint64IntfL(v map[uint64]interface{}, containerLen in
 		d.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
 		return
 	}
-	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
+	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk uint64
 	var mv interface{}
 	hasLen := containerLen > 0
@@ -5261,7 +5261,7 @@ func (fastpathDT[T]) DecMapUint64BytesL(v map[uint64][]byte, containerLen int, d
 		d.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
 		return
 	}
-	mapGet := v != nil && !d.h.MapValueReset
+	mapGet := !d.h.MapValueReset
 	var mk uint64
 	var mv []byte
 	hasLen := containerLen > 0
@@ -5589,7 +5589,7 @@ func (fastpathDT[T]) DecMapIntIntfL(v map[int]interface{}, containerLen int, d *
 		d.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
 		return
 	}
-	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
+	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk int
 	var mv interface{}
 	hasLen := containerLen > 0
@@ -5687,7 +5687,7 @@ func (fastpathDT[T]) DecMapIntBytesL(v map[int][]byte, containerLen int, d *deco
 		d.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
 		return
 	}
-	mapGet := v != nil && !d.h.MapValueReset
+	mapGet := !d.h.MapValueReset
 	var mk int
 	var mv []byte
 	hasLen := containerLen > 0
@@ -6015,7 +6015,7 @@ func (fastpathDT[T]) DecMapInt32IntfL(v map[int32]interface{}, containerLen int,
 		d.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
 		return
 	}
-	mapGet := v != nil && !d.h.MapValueReset && !d.h.InterfaceReset
+	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
 	var mk int32
 	var mv interface{}
 	hasLen := containerLen > 0
@@ -6113,7 +6113,7 @@ func (fastpathDT[T]) DecMapInt32BytesL(v map[int32][]byte, containerLen int, d *
 		d.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
 		return
 	}
-	mapGet := v != nil && !d.h.MapValueReset
+	mapGet := !d.h.MapValueReset
 	var mk int32
 	var mv []byte
 	hasLen := containerLen > 0

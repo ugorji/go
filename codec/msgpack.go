@@ -487,7 +487,7 @@ func (d *msgpackDecDriver[T]) DecodeNaked() {
 			n.v = valueTypeInt
 			n.i = int64(int8(bd))
 		case bd == mpStr8, bd == mpStr16, bd == mpStr32, bd >= mpFixStrMin && bd <= mpFixStrMax:
-			d.d.fauxUnionReadRawBytes(d, d.h.WriteExt, d.h.RawToString, d.h.ZeroCopy)
+			d.d.fauxUnionReadRawBytes(d, d.h.WriteExt, d.h.RawToString) //, d.h.ZeroCopy)
 			// if d.h.WriteExt || d.h.RawToString {
 			// 	n.v = valueTypeString
 			// 	n.s = d.d.stringZC(d.DecodeStringAsBytes())
@@ -496,7 +496,7 @@ func (d *msgpackDecDriver[T]) DecodeNaked() {
 			// 	n.l = d.DecodeBytes([]byte{})
 			// }
 		case bd == mpBin8, bd == mpBin16, bd == mpBin32:
-			d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString, d.h.ZeroCopy)
+			d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)
 		case bd == mpArray16, bd == mpArray32, bd >= mpFixArrayMin && bd <= mpFixArrayMax:
 			n.v = valueTypeArray
 			decodeFurther = true

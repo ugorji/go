@@ -297,7 +297,7 @@ func TestCborHalfFloat(t *testing.T) {
 		0x03ff: math.Pow(2, -14) - math.Pow(2, -24),
 		0x0001: math.Pow(2, -24),
 		0x0000: 0,
-		0x8000: -0.0,
+		0x8000: 0.0, // -0.0
 	}
 	var ba [3]byte
 	ba[0] = cborBdFloat16

@@ -373,24 +373,24 @@ func (d *decoder[T]) ext(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, f.xfTag, f.xfFn)
 }
 
-func (d *decoder[T]) selferUnmarshal(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	rv2i(rv).(Selfer).CodecDecodeSelf(&Decoder{d})
 }
 
-func (d *decoder[T]) binaryUnmarshal(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
 	d.onerror(fnerr)
 }
 
-func (d *decoder[T]) textUnmarshal(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
 	d.onerror(fnerr)
 }
 
-func (d *decoder[T]) jsonUnmarshal(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	d.jsonUnmarshalV(rv2i(rv).(jsonUnmarshaler))
 }
 
@@ -411,84 +411,84 @@ func (d *decoder[T]) jsonUnmarshalV(tm jsonUnmarshaler) {
 	d.onerror(fnerr)
 }
 
-func (d *decoder[T]) kErr(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kErr(_ *decFnInfo, rv reflect.Value) {
 	d.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
 	// d.errorStr2("no decoding function defined for kind: ", rv.Kind().String())
 }
 
-func (d *decoder[T]) raw(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) raw(_ *decFnInfo, rv reflect.Value) {
 	rvSetBytes(rv, d.rawBytes())
 }
 
-func (d *decoder[T]) kString(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kString(_ *decFnInfo, rv reflect.Value) {
 	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes()))
 }
 
-func (d *decoder[T]) kBool(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kBool(_ *decFnInfo, rv reflect.Value) {
 	rvSetBool(rv, d.d.DecodeBool())
 }
 
-func (d *decoder[T]) kTime(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kTime(_ *decFnInfo, rv reflect.Value) {
 	rvSetTime(rv, d.d.DecodeTime())
 }
 
-func (d *decoder[T]) kFloat32(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kFloat32(_ *decFnInfo, rv reflect.Value) {
 	rvSetFloat32(rv, d.d.DecodeFloat32())
 }
 
-func (d *decoder[T]) kFloat64(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kFloat64(_ *decFnInfo, rv reflect.Value) {
 	rvSetFloat64(rv, d.d.DecodeFloat64())
 }
 
-func (d *decoder[T]) kComplex64(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kComplex64(_ *decFnInfo, rv reflect.Value) {
 	rvSetComplex64(rv, complex(d.d.DecodeFloat32(), 0))
 }
 
-func (d *decoder[T]) kComplex128(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kComplex128(_ *decFnInfo, rv reflect.Value) {
 	rvSetComplex128(rv, complex(d.d.DecodeFloat64(), 0))
 }
 
-func (d *decoder[T]) kInt(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kInt(_ *decFnInfo, rv reflect.Value) {
 	rvSetInt(rv, int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize)))
 }
 
-func (d *decoder[T]) kInt8(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kInt8(_ *decFnInfo, rv reflect.Value) {
 	rvSetInt8(rv, int8(chkOvf.IntV(d.d.DecodeInt64(), 8)))
 }
 
-func (d *decoder[T]) kInt16(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kInt16(_ *decFnInfo, rv reflect.Value) {
 	rvSetInt16(rv, int16(chkOvf.IntV(d.d.DecodeInt64(), 16)))
 }
 
-func (d *decoder[T]) kInt32(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kInt32(_ *decFnInfo, rv reflect.Value) {
 	rvSetInt32(rv, int32(chkOvf.IntV(d.d.DecodeInt64(), 32)))
 }
 
-func (d *decoder[T]) kInt64(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kInt64(_ *decFnInfo, rv reflect.Value) {
 	rvSetInt64(rv, d.d.DecodeInt64())
 }
 
-func (d *decoder[T]) kUint(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kUint(_ *decFnInfo, rv reflect.Value) {
 	rvSetUint(rv, uint(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize)))
 }
 
-func (d *decoder[T]) kUintptr(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kUintptr(_ *decFnInfo, rv reflect.Value) {
 	rvSetUintptr(rv, uintptr(chkOvf.UintV(d.d.DecodeUint64(), uintBitsize)))
 }
 
-func (d *decoder[T]) kUint8(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kUint8(_ *decFnInfo, rv reflect.Value) {
 	rvSetUint8(rv, uint8(chkOvf.UintV(d.d.DecodeUint64(), 8)))
 }
 
-func (d *decoder[T]) kUint16(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kUint16(_ *decFnInfo, rv reflect.Value) {
 	rvSetUint16(rv, uint16(chkOvf.UintV(d.d.DecodeUint64(), 16)))
 }
 
-func (d *decoder[T]) kUint32(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kUint32(_ *decFnInfo, rv reflect.Value) {
 	rvSetUint32(rv, uint32(chkOvf.UintV(d.d.DecodeUint64(), 32)))
 }
 
-func (d *decoder[T]) kUint64(f *decFnInfo, rv reflect.Value) {
+func (d *decoder[T]) kUint64(_ *decFnInfo, rv reflect.Value) {
 	rvSetUint64(rv, d.d.DecodeUint64())
 }
 
@@ -1362,7 +1362,7 @@ type decoderShared struct {
 
 	err error
 
-	sd decoderI
+	// sd decoderI
 
 	blist bytesFreelist
 
@@ -1405,7 +1405,7 @@ func (d *decoderShared) naked() *fauxUnion {
 	return &d.n
 }
 
-func (d *decoderShared) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString, handleZeroCopy bool) {
+func (d *decoderShared) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString bool) { //, handleZeroCopy bool) {
 	if asString || rawToString {
 		d.n.v = valueTypeString
 		// fauxUnion is only used within DecodeNaked calls; consequently, we should try to intern.
@@ -1592,7 +1592,6 @@ func (d *decoder[T]) ResetBytes(in []byte) {
 		halt.onerror(errDecNoResetReaderWithBytes)
 	}
 	d.resetBytes(in)
-	return
 }
 
 func (d *decoder[T]) resetBytes(in []byte) {

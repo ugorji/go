@@ -11,16 +11,15 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
-	"runtime"
 	"slices"
 	"strings"
 )
 
 // ----
 
-// - [fn:monoBase] for each file of fast-path.generated.go, encode.go, decode.go:
+// - [fn:monoBase] for each file of fastpath.generated.go, encode.go, decode.go:
 //   - ignore init() and imports (go imports will fix it later - or we just grab all imports and let go-imports fix later)
-//   - parse encode.go, decode.go, fast-path.generated.go into an AST
+//   - parse encode.go, decode.go, fastpath.generated.go into an AST
 //     - for each function, if a generic function/method, add it into the AST
 // - [fn:monoAll] for each handle
 //   - [fn:monoHandle] clone prior AST
@@ -80,20 +79,24 @@ func (x *genMono) reset() {
 	x.importSpecs = x.importSpecs[:0]
 }
 
-func (m *genMono) do(h Handle) {
+func (m *genMono) do(h Handle, fastpath bool) {
 	m.reset()
 
-	b, fset := m.base(true)
+	b, fset := m.base(true, fastpath)
 	r1 := m.handle(h, b, fset)
 	m.trFile(r1, h, true)
 	clear(m.typParam)
 
-	b, fset = m.base(false)
+	b, fset = m.base(false, fastpath)
 	r2 := m.handle(h, b, fset)
 	m.trFile(r2, h, false)
 	clear(m.typParam)
 
-	fname := h.Name() + ".mono.generated.go"
+	var fnameSfx = ".mono.generated.go"
+	if fastpath {
+		fnameSfx = ".fastpath.mono.generated.go"
+	}
+	fname := h.Name() + fnameSfx
 
 	r0 := genMonoOutInit(m.importSpecs, fname)
 	r0.Decls = append(r0.Decls, r1.Decls...)
@@ -103,12 +106,21 @@ func (m *genMono) do(h Handle) {
 	f, err := os.Create(fname)
 	halt.onerror(err)
 	defer f.Close()
-	_, err = f.WriteString(`// Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
+
+	var s genMonoStrBuilder
+	s.s(`//go:build !codec.notmono`)
+	if fastpath {
+		s.s(` && !notfastpath && !codec.notfastpath`)
+	} else {
+		s.s(` && (notfastpath || codec.notfastpath)`)
+	}
+	s.s(`
+
+// Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
 
-//go:build !codec.generics
-
 `)
+	_, err = f.Write(s.v)
 	halt.onerror(err)
 	err = format.Node(f, fset, r0)
 	halt.onerror(err)
@@ -127,7 +139,7 @@ func (x *genMono) file(fname string) (b []byte) {
 	return
 }
 
-func (x *genMono) base(isbytes bool) (r *ast.File, fset *token.FileSet) {
+func (x *genMono) base(isbytes, fastpath bool) (r *ast.File, fset *token.FileSet) {
 	fname := "base.io.mono.go"
 	if isbytes {
 		fname = "base.bytes.mono.go"
@@ -137,8 +149,10 @@ func (x *genMono) base(isbytes bool) (r *ast.File, fset *token.FileSet) {
 	r = &ast.File{
 		Name: &ast.Ident{Name: "codec"},
 	}
-	fnames := []string{"encode.go", "decode.go", "fast-path.generated.go"}
-	// fnames[2] = "fast-path.not.go"
+	fnames := []string{"encode.go", "decode.go", "fastpath.generated.go"}
+	if !fastpath {
+		fnames[2] = "fastpath.not.go"
+	}
 	for _, fname = range fnames {
 		fsrc := x.file(fname)
 		f, err := parser.ParseFile(fset, fname, fsrc, genMonoParserMode)
@@ -558,8 +572,8 @@ func genMonoAll() {
 	var m genMono
 	m.init()
 	for _, v := range hdls {
-		m.do(v)
-		runtime.GC()
+		m.do(v, true)
+		m.do(v, false)
 	}
 }
 

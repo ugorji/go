@@ -90,11 +90,11 @@ Building and running is configured using build tags as below.
 At runtime:
 
 - codec.safe: run in safe mode (not using unsafe optimizations)
-- codec.generics: use generics code (bypassing performance-boosting monomorphized code)
+- codec.notmono: use generics code (bypassing performance-boosting monomorphized code)
+- codec.notfastpath: skip fast path code for slices and maps of built-in types (number, bool, string, bytes)
 
 Build only:
 
-- codec.notfastpath: used to build fastpath codebase
 - codec.gen: used to generate fastpath and monomorphization code
 
 Test only:
@@ -226,9 +226,9 @@ You can run the tag 'codec.safe' to run tests or build in safe mode. e.g.
 	go test -tags codec.safe -run Json
 	go test -tags "alltests codec.safe" -run Suite
 
-You can run the tag 'codec.generics' to build bypassing the monomorphized code e.g.
+You can run the tag 'codec.notmono' to build bypassing the monomorphized code e.g.
 
-	go test -tags codec.generics -run Json
+	go test -tags codec.notmono -run Json
 
 Running Benchmarks
 

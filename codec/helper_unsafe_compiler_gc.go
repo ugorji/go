@@ -42,7 +42,7 @@ func mapStoresElemIndirect(elemsize uintptr) bool {
 	return elemsize > mapMaxElemSize
 }
 
-func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, valIsRef bool) {
+func mapSet(m, k, v reflect.Value, keyFastKind mapKeyFastKind, valIsIndirect, _ bool) { // valIsRef
 	var urv = (*unsafeReflectValue)(unsafe.Pointer(&k))
 	var kptr = unsafeMapKVPtr(urv)
 	urv = (*unsafeReflectValue)(unsafe.Pointer(&v))

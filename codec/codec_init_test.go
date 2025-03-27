@@ -153,7 +153,7 @@ func testSharedCodecDecoder(bs []byte, h Handle, bh *BasicHandle) (d *Decoder, o
 	return
 }
 
-func testSharedCodecDecoderAfter(d *Decoder, oldReadBufferSize int, bh *BasicHandle) {
+func testSharedCodecDecoderAfter(_ *Decoder, oldReadBufferSize int, bh *BasicHandle) {
 	if testUseIoEncDec >= 0 {
 		bh.ReaderBufferSize = oldReadBufferSize
 	}
