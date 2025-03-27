@@ -3,36 +3,40 @@
 # Run all the different permutations of all the tests and other things
 # This helps ensure that nothing gets broken.
 
-# is a generation needed?
-_ng() {
-    local a="$1"
-    if [[ ! -e "$a" ]]; then echo 1; return; fi 
-    for i in `ls -1 *.go.tmpl gen.go gen_mono.go values_test.go`
-    do
-        if [[ "$a" -ot "$i" ]]; then echo 1; return; fi 
+# # is a generation needed?
+# _ng() {
+#     local a="$1"
+#     if [[ ! -e "$a" ]]; then echo 1; return; fi 
+#     for i in `ls -1 *.go.tmpl gen.go gen_mono.go values_test.go`
+#     do
+#         if [[ "$a" -ot "$i" ]]; then echo 1; return; fi 
+#     done
+# }
+
+_build_proceed() {
+    # return success (0) if we should, and 1 (fail) if not
+    if [[ "${zforce}" ]]; then return 0; fi
+    for a in "fast-path.generated.go" "json.mono.generated.go"; do
+        if [[ ! -e "$a" ]]; then return 0; fi
+        for b in `ls -1 *.go.tmpl gen.go gen_mono.go values_test.go`; do
+            if [[ "$a" -ot "$b" ]]; then return 0; fi
+        done
     done
-}
-
-_prependbt() {
-    cat > ${2} <<EOF
-// +build generated
-
-EOF
-    cat ${1} >> ${2}
-    rm -f ${1}
+    return 1
 }
 
 # _build generates fast-path.go
 _build() {
-    if ! [[ "${zforce}" || $(_ng "fast-path.generated.go") || $(_ng "json.mono.generated.go") ]]; then return 0; fi
-    
+    # if ! [[ "${zforce}" || $(_ng "fast-path.generated.go") || $(_ng "json.mono.generated.go") ]]; then return 0; fi
+    _build_proceed
+    if [ $? -eq 1 ]; then return 0; fi
     if [ "${zbak}" ]; then
         _zts=`date '+%m%d%Y_%H%M%S'`
         _gg=".generated.go"
         [ -e "fast-path${_gg}" ] && mv fast-path${_gg} fast-path${_gg}__${_zts}.bak
         [ -e "gen${_gg}" ] && mv gen${_gg} gen${_gg}__${_zts}.bak
     fi 
-    rm -f fast-path.generated.go *safe.generated.go *_generated_test.go gen-from-tmpl*.generated.go
+    rm -f fast-path.generated.go *_generated_test.go gen-from-tmpl*.generated.go
 
     cat > gen-from-tmpl.codec.generated.go <<EOF
 package codec
@@ -41,7 +45,7 @@ func GenMonoAll() { genMonoAll() }
 EOF
 
     # explicitly return 0 if this passes, else return 1
-    local btags="codec.notfastpath codec.safe codec.gen codec.generics"
+    local btags="codec.gen codec.generics codec.safe codec.notfastpath"
     rm -f fast-path.generated.go mammoth_generated_test.go
     
     cat > gen-from-tmpl.generated.go <<EOF
@@ -57,7 +61,7 @@ EOF
     ${gocmd} run -tags "$btags" gen-from-tmpl.generated.go || return 1
     rm -f gen-from-tmpl.generated.go
 
-    cat > gen-from-tmpl.mono.generated.go <<EOF
+    cat > gen-from-tmpl.generated.go <<EOF
 //go:build ignore
 package main
 import "${zpkg}"
@@ -65,15 +69,13 @@ func main() {
 codec.GenMonoAll()
 }
 EOF
-    btags="codec.safe codec.gen codec.generics"
-    ${gocmd} run -tags "$btags" gen-from-tmpl.mono.generated.go || return 1
-    rm -f gen-from-tmpl.mono.*generated.go
+    # btags="codec.safe codec.gen codec.generics"
+    ${gocmd} run -tags "$btags" gen-from-tmpl.generated.go || return 1
     rm -f gen-from-tmpl*.generated.go
     return 0
 }
 
 _prebuild() {
-    echo "prebuild: zforce: $zforce"
     local d="$PWD"
     local zfin="test_values.generated.go"
     local zfin2="test_values_flex.generated.go"
@@ -96,11 +98,15 @@ _prebuild() {
     # unset zfin zfin2 zpkg
 }
 
+# _make() {
+#     local makeforce=${zforce}
+#     zforce=1
+#     _prebuild && ${gocmd} install ${zargs[*]} .
+#     zforce=${makeforce}
+# }
+
 _make() {
-    local makeforce=${zforce}
-    zforce=1
     _prebuild && ${gocmd} install ${zargs[*]} .
-    zforce=${makeforce}
 }
 
 _clean() {
@@ -115,7 +121,7 @@ _tests() {
     [[ $( ${gocmd} version ) == *"gccgo"* ]] && zcover=0
     [[ $( ${gocmd} version ) == *"gollvm"* ]] && zcover=0
     case $gover in
-        go1.[7-9]*|go1.1[0-9]*|go2.*|devel*) true ;;
+        go1.2[0-9]*|go2.*|devel*) true ;;
         *) return 1
     esac
     # we test the following permutations wnich all execute different code paths as below.
@@ -127,7 +133,7 @@ _tests() {
     if [[ " ${zargs[@]} " =~ "-race" ]]; then
         cpus="$(nproc)"
     fi
-    local a=( "" "codec.notfastpath" "codec.safe" "codec.notfastpath codec.safe" )
+    local a=( "" "codec.safe" "codec.generics" "codec.generics codec.safe" "codec.generics codec.notfastpath" )
     local b=()
     local c=()
     for i in "${a[@]}"
@@ -146,9 +152,9 @@ _tests() {
         # if [[ "$?" != 0 ]]; then return 1; fi
     done
     if [[ "$zextra" == "1" ]]; then
-        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'codec.notfastpath x'; RUN: 'Test.*X$'"
+        [[ "$zwait" == "1" ]] && echo ">>>> TAGS: 'codec.generics codec.notfastpath x'; RUN: 'Test.*X$'"
         [[ "$zcover" == "1" ]] && c=( -coverprofile "x.cov.out" )
-        ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "codec.notfastpath x" -count $nc -run 'Test.*X$' "${c[@]}" &
+        ${gocmd} test ${zargs[*]} ${ztestargs[*]} -vet "$vet" -tags "codec.generics codec.notfastpath x" -count $nc -run 'Test.*X$' "${c[@]}" &
         b+=("x.cov.out")
         [[ "$zwait" == "1" ]] && wait
     fi
@@ -174,8 +180,8 @@ _release() {
     cat > $f <<EOF
 ========== `date` ===========
 EOF
-    # # go 1.6 and below kept giving memory errors on Mac OS X during SDK build or go run execution,
-    # # that is fine, as we only explicitly test the last 3 releases and tip (2 years).
+    # go 1.6 and below kept giving memory errors on Mac OS X during SDK build or go run execution,
+    # that is fine, as we only explicitly test the last 3 releases and tip (2 years).
     local makeforce=${zforce}
     zforce=1
     for i in 1.10 1.11 1.12 master
