@@ -258,8 +258,9 @@ func (fastpathET[T]) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *
 
 {{range .Values}}{{if not .Primitive}}{{if .MapKey -}}
 func (e *encoder[T]) {{ .MethodNamePfx "fastpathEnc" false }}R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathET[T]
-	ft.{{ .MethodNamePfx "Enc" false }}V(rv2i(rv).(map[{{ .MapKey }}]{{ .Elem }}), e)
+	{{/* var ft fastpathET[T]
+	ft.{{ .MethodNamePfx "Enc" false }}V(rv2i(rv).(map[{{ .MapKey }}]{{ .Elem }}), e) */ -}}
+	fastpathET[T]{}.{{ .MethodNamePfx "Enc" false }}V(rv2i(rv).(map[{{ .MapKey }}]{{ .Elem }}), e)
 }
 func (fastpathET[T]) {{ .MethodNamePfx "Enc" false }}V(v map[{{ .MapKey }}]{{ .Elem }}, e *encoder[T]) {
 	{{/* if v == nil { e.e.EncodeNil(); return } */ -}}
@@ -550,15 +551,15 @@ func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
-		}
-		if containerLen != 0 {
-			f.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[{{ .MapKey }}]{{ .Elem }}, decInferLen(containerLen, d.h.MaxInitLen, {{ .Size }}))
+	}
+	if containerLen != 0 {
+		f.{{ .MethodNamePfx "Dec" false }}L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem }}, containerLen int, d *decoder[T]) {
 	{{/* No need to check if containerLen == containerLenNil, as that is checked by R and L above  */ -}}

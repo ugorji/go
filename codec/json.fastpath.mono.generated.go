@@ -149,13 +149,10 @@ func (e *encoderJsonBytes) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderJsonBytes) kSeqFn(rtelem reflect.Type) (fn *encFnJsonBytes) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderJsonBytes) kSeqFn(rt reflect.Type) (fn *encFnJsonBytes) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -1126,6 +1123,15 @@ func (e *encoderJsonBytes) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnJsonBytes struct {
+	i  encFnInfo
+	fe func(*encoderJsonBytes, *encFnInfo, reflect.Value)
+}
+type encRtidFnJsonBytes struct {
+	rtid uintptr
+	fn   *encFnJsonBytes
+}
+
 func (helperEncDriverJsonBytes) newEncoderBytes(out *[]byte, h Handle) *encoderJsonBytes {
 	var c1 encoderJsonBytes
 	c1.bytes = true
@@ -1155,15 +1161,6 @@ func (helperEncDriverJsonBytes) encFnloadFastpathUnderlying(ti *typeInfo, fp *fa
 		u = f.rt
 	}
 	return
-}
-
-type encFnJsonBytes struct {
-	i  encFnInfo
-	fe func(*encoderJsonBytes, *encFnInfo, reflect.Value)
-}
-type encRtidFnJsonBytes struct {
-	rtid uintptr
-	fn   *encFnJsonBytes
 }
 
 func (helperEncDriverJsonBytes) encFindRtidFn(s []encRtidFnJsonBytes, rtid uintptr) (i uint, fn *encFnJsonBytes) {
@@ -1688,18 +1685,19 @@ func (d *decoderJsonBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -2768,6 +2766,15 @@ func (x decSliceHelperJsonBytes) arrayCannotExpand(hasLen bool, lenv, j, contain
 	x.End()
 }
 
+type decFnJsonBytes struct {
+	i  decFnInfo
+	fd func(*decoderJsonBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnJsonBytes struct {
+	rtid uintptr
+	fn   *decFnJsonBytes
+}
+
 func (helperDecDriverJsonBytes) newDecoderBytes(in []byte, h Handle) *decoderJsonBytes {
 	var c1 decoderJsonBytes
 	c1.bytes = true
@@ -2797,15 +2804,6 @@ func (helperDecDriverJsonBytes) decFnloadFastpathUnderlying(ti *typeInfo, fp *fa
 		u = f.rt
 	}
 	return
-}
-
-type decFnJsonBytes struct {
-	i  decFnInfo
-	fd func(*decoderJsonBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnJsonBytes struct {
-	rtid uintptr
-	fn   *decFnJsonBytes
 }
 
 func (helperDecDriverJsonBytes) decFindRtidFn(s []decRtidFnJsonBytes, rtid uintptr) (i uint, fn *decFnJsonBytes) {
@@ -4021,8 +4019,7 @@ func (fastpathETJsonBytes) EncAsMapSliceBoolV(v []bool, e *encoderJsonBytes) {
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapStringIntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
+	fastpathETJsonBytes{}.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
 }
 func (fastpathETJsonBytes) EncMapStringIntfV(v map[string]interface{}, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4051,8 +4048,7 @@ func (fastpathETJsonBytes) EncMapStringIntfV(v map[string]interface{}, e *encode
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapStringStringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapStringStringV(rv2i(rv).(map[string]string), e)
+	fastpathETJsonBytes{}.EncMapStringStringV(rv2i(rv).(map[string]string), e)
 }
 func (fastpathETJsonBytes) EncMapStringStringV(v map[string]string, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4081,8 +4077,7 @@ func (fastpathETJsonBytes) EncMapStringStringV(v map[string]string, e *encoderJs
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapStringBytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
+	fastpathETJsonBytes{}.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
 }
 func (fastpathETJsonBytes) EncMapStringBytesV(v map[string][]byte, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4111,8 +4106,7 @@ func (fastpathETJsonBytes) EncMapStringBytesV(v map[string][]byte, e *encoderJso
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapStringUint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
+	fastpathETJsonBytes{}.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
 }
 func (fastpathETJsonBytes) EncMapStringUint8V(v map[string]uint8, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4141,8 +4135,7 @@ func (fastpathETJsonBytes) EncMapStringUint8V(v map[string]uint8, e *encoderJson
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapStringUint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
+	fastpathETJsonBytes{}.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
 }
 func (fastpathETJsonBytes) EncMapStringUint64V(v map[string]uint64, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4171,8 +4164,7 @@ func (fastpathETJsonBytes) EncMapStringUint64V(v map[string]uint64, e *encoderJs
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapStringIntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapStringIntV(rv2i(rv).(map[string]int), e)
+	fastpathETJsonBytes{}.EncMapStringIntV(rv2i(rv).(map[string]int), e)
 }
 func (fastpathETJsonBytes) EncMapStringIntV(v map[string]int, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4201,8 +4193,7 @@ func (fastpathETJsonBytes) EncMapStringIntV(v map[string]int, e *encoderJsonByte
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapStringInt32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapStringInt32V(rv2i(rv).(map[string]int32), e)
+	fastpathETJsonBytes{}.EncMapStringInt32V(rv2i(rv).(map[string]int32), e)
 }
 func (fastpathETJsonBytes) EncMapStringInt32V(v map[string]int32, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4231,8 +4222,7 @@ func (fastpathETJsonBytes) EncMapStringInt32V(v map[string]int32, e *encoderJson
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapStringFloat64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
+	fastpathETJsonBytes{}.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
 }
 func (fastpathETJsonBytes) EncMapStringFloat64V(v map[string]float64, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4261,8 +4251,7 @@ func (fastpathETJsonBytes) EncMapStringFloat64V(v map[string]float64, e *encoder
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapStringBoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
+	fastpathETJsonBytes{}.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
 }
 func (fastpathETJsonBytes) EncMapStringBoolV(v map[string]bool, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4291,8 +4280,7 @@ func (fastpathETJsonBytes) EncMapStringBoolV(v map[string]bool, e *encoderJsonBy
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint8IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
+	fastpathETJsonBytes{}.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
 }
 func (fastpathETJsonBytes) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4321,8 +4309,7 @@ func (fastpathETJsonBytes) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderJ
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint8StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
+	fastpathETJsonBytes{}.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
 }
 func (fastpathETJsonBytes) EncMapUint8StringV(v map[uint8]string, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4351,8 +4338,7 @@ func (fastpathETJsonBytes) EncMapUint8StringV(v map[uint8]string, e *encoderJson
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint8BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
+	fastpathETJsonBytes{}.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
 }
 func (fastpathETJsonBytes) EncMapUint8BytesV(v map[uint8][]byte, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4381,8 +4367,7 @@ func (fastpathETJsonBytes) EncMapUint8BytesV(v map[uint8][]byte, e *encoderJsonB
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint8Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
+	fastpathETJsonBytes{}.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
 }
 func (fastpathETJsonBytes) EncMapUint8Uint8V(v map[uint8]uint8, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4411,8 +4396,7 @@ func (fastpathETJsonBytes) EncMapUint8Uint8V(v map[uint8]uint8, e *encoderJsonBy
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint8Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
+	fastpathETJsonBytes{}.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
 }
 func (fastpathETJsonBytes) EncMapUint8Uint64V(v map[uint8]uint64, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4441,8 +4425,7 @@ func (fastpathETJsonBytes) EncMapUint8Uint64V(v map[uint8]uint64, e *encoderJson
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint8IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
+	fastpathETJsonBytes{}.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
 }
 func (fastpathETJsonBytes) EncMapUint8IntV(v map[uint8]int, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4471,8 +4454,7 @@ func (fastpathETJsonBytes) EncMapUint8IntV(v map[uint8]int, e *encoderJsonBytes)
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint8Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint8Int32V(rv2i(rv).(map[uint8]int32), e)
+	fastpathETJsonBytes{}.EncMapUint8Int32V(rv2i(rv).(map[uint8]int32), e)
 }
 func (fastpathETJsonBytes) EncMapUint8Int32V(v map[uint8]int32, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4501,8 +4483,7 @@ func (fastpathETJsonBytes) EncMapUint8Int32V(v map[uint8]int32, e *encoderJsonBy
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint8Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
+	fastpathETJsonBytes{}.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
 }
 func (fastpathETJsonBytes) EncMapUint8Float64V(v map[uint8]float64, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4531,8 +4512,7 @@ func (fastpathETJsonBytes) EncMapUint8Float64V(v map[uint8]float64, e *encoderJs
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint8BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
+	fastpathETJsonBytes{}.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
 }
 func (fastpathETJsonBytes) EncMapUint8BoolV(v map[uint8]bool, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4561,8 +4541,7 @@ func (fastpathETJsonBytes) EncMapUint8BoolV(v map[uint8]bool, e *encoderJsonByte
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint64IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
+	fastpathETJsonBytes{}.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
 }
 func (fastpathETJsonBytes) EncMapUint64IntfV(v map[uint64]interface{}, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4591,8 +4570,7 @@ func (fastpathETJsonBytes) EncMapUint64IntfV(v map[uint64]interface{}, e *encode
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint64StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
+	fastpathETJsonBytes{}.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
 }
 func (fastpathETJsonBytes) EncMapUint64StringV(v map[uint64]string, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4621,8 +4599,7 @@ func (fastpathETJsonBytes) EncMapUint64StringV(v map[uint64]string, e *encoderJs
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint64BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
+	fastpathETJsonBytes{}.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
 }
 func (fastpathETJsonBytes) EncMapUint64BytesV(v map[uint64][]byte, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4651,8 +4628,7 @@ func (fastpathETJsonBytes) EncMapUint64BytesV(v map[uint64][]byte, e *encoderJso
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint64Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
+	fastpathETJsonBytes{}.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
 }
 func (fastpathETJsonBytes) EncMapUint64Uint8V(v map[uint64]uint8, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4681,8 +4657,7 @@ func (fastpathETJsonBytes) EncMapUint64Uint8V(v map[uint64]uint8, e *encoderJson
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint64Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
+	fastpathETJsonBytes{}.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
 }
 func (fastpathETJsonBytes) EncMapUint64Uint64V(v map[uint64]uint64, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4711,8 +4686,7 @@ func (fastpathETJsonBytes) EncMapUint64Uint64V(v map[uint64]uint64, e *encoderJs
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint64IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
+	fastpathETJsonBytes{}.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
 }
 func (fastpathETJsonBytes) EncMapUint64IntV(v map[uint64]int, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4741,8 +4715,7 @@ func (fastpathETJsonBytes) EncMapUint64IntV(v map[uint64]int, e *encoderJsonByte
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint64Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint64Int32V(rv2i(rv).(map[uint64]int32), e)
+	fastpathETJsonBytes{}.EncMapUint64Int32V(rv2i(rv).(map[uint64]int32), e)
 }
 func (fastpathETJsonBytes) EncMapUint64Int32V(v map[uint64]int32, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4771,8 +4744,7 @@ func (fastpathETJsonBytes) EncMapUint64Int32V(v map[uint64]int32, e *encoderJson
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint64Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
+	fastpathETJsonBytes{}.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
 }
 func (fastpathETJsonBytes) EncMapUint64Float64V(v map[uint64]float64, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4801,8 +4773,7 @@ func (fastpathETJsonBytes) EncMapUint64Float64V(v map[uint64]float64, e *encoder
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapUint64BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
+	fastpathETJsonBytes{}.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
 }
 func (fastpathETJsonBytes) EncMapUint64BoolV(v map[uint64]bool, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4831,8 +4802,7 @@ func (fastpathETJsonBytes) EncMapUint64BoolV(v map[uint64]bool, e *encoderJsonBy
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapIntIntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
+	fastpathETJsonBytes{}.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
 }
 func (fastpathETJsonBytes) EncMapIntIntfV(v map[int]interface{}, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4861,8 +4831,7 @@ func (fastpathETJsonBytes) EncMapIntIntfV(v map[int]interface{}, e *encoderJsonB
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapIntStringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapIntStringV(rv2i(rv).(map[int]string), e)
+	fastpathETJsonBytes{}.EncMapIntStringV(rv2i(rv).(map[int]string), e)
 }
 func (fastpathETJsonBytes) EncMapIntStringV(v map[int]string, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4891,8 +4860,7 @@ func (fastpathETJsonBytes) EncMapIntStringV(v map[int]string, e *encoderJsonByte
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapIntBytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
+	fastpathETJsonBytes{}.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
 }
 func (fastpathETJsonBytes) EncMapIntBytesV(v map[int][]byte, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4921,8 +4889,7 @@ func (fastpathETJsonBytes) EncMapIntBytesV(v map[int][]byte, e *encoderJsonBytes
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapIntUint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
+	fastpathETJsonBytes{}.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
 }
 func (fastpathETJsonBytes) EncMapIntUint8V(v map[int]uint8, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4951,8 +4918,7 @@ func (fastpathETJsonBytes) EncMapIntUint8V(v map[int]uint8, e *encoderJsonBytes)
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapIntUint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
+	fastpathETJsonBytes{}.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
 }
 func (fastpathETJsonBytes) EncMapIntUint64V(v map[int]uint64, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -4981,8 +4947,7 @@ func (fastpathETJsonBytes) EncMapIntUint64V(v map[int]uint64, e *encoderJsonByte
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapIntIntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapIntIntV(rv2i(rv).(map[int]int), e)
+	fastpathETJsonBytes{}.EncMapIntIntV(rv2i(rv).(map[int]int), e)
 }
 func (fastpathETJsonBytes) EncMapIntIntV(v map[int]int, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5011,8 +4976,7 @@ func (fastpathETJsonBytes) EncMapIntIntV(v map[int]int, e *encoderJsonBytes) {
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapIntInt32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapIntInt32V(rv2i(rv).(map[int]int32), e)
+	fastpathETJsonBytes{}.EncMapIntInt32V(rv2i(rv).(map[int]int32), e)
 }
 func (fastpathETJsonBytes) EncMapIntInt32V(v map[int]int32, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5041,8 +5005,7 @@ func (fastpathETJsonBytes) EncMapIntInt32V(v map[int]int32, e *encoderJsonBytes)
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapIntFloat64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
+	fastpathETJsonBytes{}.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
 }
 func (fastpathETJsonBytes) EncMapIntFloat64V(v map[int]float64, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5071,8 +5034,7 @@ func (fastpathETJsonBytes) EncMapIntFloat64V(v map[int]float64, e *encoderJsonBy
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapIntBoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
+	fastpathETJsonBytes{}.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
 }
 func (fastpathETJsonBytes) EncMapIntBoolV(v map[int]bool, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5101,8 +5063,7 @@ func (fastpathETJsonBytes) EncMapIntBoolV(v map[int]bool, e *encoderJsonBytes) {
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapInt32IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapInt32IntfV(rv2i(rv).(map[int32]interface{}), e)
+	fastpathETJsonBytes{}.EncMapInt32IntfV(rv2i(rv).(map[int32]interface{}), e)
 }
 func (fastpathETJsonBytes) EncMapInt32IntfV(v map[int32]interface{}, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5131,8 +5092,7 @@ func (fastpathETJsonBytes) EncMapInt32IntfV(v map[int32]interface{}, e *encoderJ
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapInt32StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapInt32StringV(rv2i(rv).(map[int32]string), e)
+	fastpathETJsonBytes{}.EncMapInt32StringV(rv2i(rv).(map[int32]string), e)
 }
 func (fastpathETJsonBytes) EncMapInt32StringV(v map[int32]string, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5161,8 +5121,7 @@ func (fastpathETJsonBytes) EncMapInt32StringV(v map[int32]string, e *encoderJson
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapInt32BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapInt32BytesV(rv2i(rv).(map[int32][]byte), e)
+	fastpathETJsonBytes{}.EncMapInt32BytesV(rv2i(rv).(map[int32][]byte), e)
 }
 func (fastpathETJsonBytes) EncMapInt32BytesV(v map[int32][]byte, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5191,8 +5150,7 @@ func (fastpathETJsonBytes) EncMapInt32BytesV(v map[int32][]byte, e *encoderJsonB
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapInt32Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapInt32Uint8V(rv2i(rv).(map[int32]uint8), e)
+	fastpathETJsonBytes{}.EncMapInt32Uint8V(rv2i(rv).(map[int32]uint8), e)
 }
 func (fastpathETJsonBytes) EncMapInt32Uint8V(v map[int32]uint8, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5221,8 +5179,7 @@ func (fastpathETJsonBytes) EncMapInt32Uint8V(v map[int32]uint8, e *encoderJsonBy
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapInt32Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapInt32Uint64V(rv2i(rv).(map[int32]uint64), e)
+	fastpathETJsonBytes{}.EncMapInt32Uint64V(rv2i(rv).(map[int32]uint64), e)
 }
 func (fastpathETJsonBytes) EncMapInt32Uint64V(v map[int32]uint64, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5251,8 +5208,7 @@ func (fastpathETJsonBytes) EncMapInt32Uint64V(v map[int32]uint64, e *encoderJson
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapInt32IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapInt32IntV(rv2i(rv).(map[int32]int), e)
+	fastpathETJsonBytes{}.EncMapInt32IntV(rv2i(rv).(map[int32]int), e)
 }
 func (fastpathETJsonBytes) EncMapInt32IntV(v map[int32]int, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5281,8 +5237,7 @@ func (fastpathETJsonBytes) EncMapInt32IntV(v map[int32]int, e *encoderJsonBytes)
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapInt32Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapInt32Int32V(rv2i(rv).(map[int32]int32), e)
+	fastpathETJsonBytes{}.EncMapInt32Int32V(rv2i(rv).(map[int32]int32), e)
 }
 func (fastpathETJsonBytes) EncMapInt32Int32V(v map[int32]int32, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5311,8 +5266,7 @@ func (fastpathETJsonBytes) EncMapInt32Int32V(v map[int32]int32, e *encoderJsonBy
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapInt32Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapInt32Float64V(rv2i(rv).(map[int32]float64), e)
+	fastpathETJsonBytes{}.EncMapInt32Float64V(rv2i(rv).(map[int32]float64), e)
 }
 func (fastpathETJsonBytes) EncMapInt32Float64V(v map[int32]float64, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -5341,8 +5295,7 @@ func (fastpathETJsonBytes) EncMapInt32Float64V(v map[int32]float64, e *encoderJs
 	e.mapEnd()
 }
 func (e *encoderJsonBytes) fastpathEncMapInt32BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonBytes
-	ft.EncMapInt32BoolV(rv2i(rv).(map[int32]bool), e)
+	fastpathETJsonBytes{}.EncMapInt32BoolV(rv2i(rv).(map[int32]bool), e)
 }
 func (fastpathETJsonBytes) EncMapInt32BoolV(v map[int32]bool, e *encoderJsonBytes) {
 	e.mapStart(len(v))
@@ -7047,15 +7000,15 @@ func (f fastpathDTJsonBytes) DecMapStringIntfX(vp *map[string]interface{}, d *de
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapStringIntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapStringIntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapStringIntfL(v map[string]interface{}, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7099,15 +7052,15 @@ func (f fastpathDTJsonBytes) DecMapStringStringX(vp *map[string]string, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapStringStringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapStringStringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapStringStringL(v map[string]string, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7145,15 +7098,15 @@ func (f fastpathDTJsonBytes) DecMapStringBytesX(vp *map[string][]byte, d *decode
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
-		}
-		if containerLen != 0 {
-			f.DecMapStringBytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
+	}
+	if containerLen != 0 {
+		f.DecMapStringBytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapStringBytesL(v map[string][]byte, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7197,15 +7150,15 @@ func (f fastpathDTJsonBytes) DecMapStringUint8X(vp *map[string]uint8, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapStringUint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapStringUint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapStringUint8L(v map[string]uint8, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7243,15 +7196,15 @@ func (f fastpathDTJsonBytes) DecMapStringUint64X(vp *map[string]uint64, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringUint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringUint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapStringUint64L(v map[string]uint64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7289,15 +7242,15 @@ func (f fastpathDTJsonBytes) DecMapStringIntX(vp *map[string]int, d *decoderJson
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringIntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringIntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapStringIntL(v map[string]int, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7335,15 +7288,15 @@ func (f fastpathDTJsonBytes) DecMapStringInt32X(vp *map[string]int32, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapStringInt32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapStringInt32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapStringInt32L(v map[string]int32, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7381,15 +7334,15 @@ func (f fastpathDTJsonBytes) DecMapStringFloat64X(vp *map[string]float64, d *dec
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringFloat64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringFloat64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapStringFloat64L(v map[string]float64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7427,15 +7380,15 @@ func (f fastpathDTJsonBytes) DecMapStringBoolX(vp *map[string]bool, d *decoderJs
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapStringBoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapStringBoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapStringBoolL(v map[string]bool, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7473,15 +7426,15 @@ func (f fastpathDTJsonBytes) DecMapUint8IntfX(vp *map[uint8]interface{}, d *deco
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint8IntfL(v map[uint8]interface{}, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7525,15 +7478,15 @@ func (f fastpathDTJsonBytes) DecMapUint8StringX(vp *map[uint8]string, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint8StringL(v map[uint8]string, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7571,15 +7524,15 @@ func (f fastpathDTJsonBytes) DecMapUint8BytesX(vp *map[uint8][]byte, d *decoderJ
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7623,15 +7576,15 @@ func (f fastpathDTJsonBytes) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decoderJs
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7669,15 +7622,15 @@ func (f fastpathDTJsonBytes) DecMapUint8Uint64X(vp *map[uint8]uint64, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint8Uint64L(v map[uint8]uint64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7715,15 +7668,15 @@ func (f fastpathDTJsonBytes) DecMapUint8IntX(vp *map[uint8]int, d *decoderJsonBy
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint8IntL(v map[uint8]int, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7761,15 +7714,15 @@ func (f fastpathDTJsonBytes) DecMapUint8Int32X(vp *map[uint8]int32, d *decoderJs
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint8Int32L(v map[uint8]int32, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7807,15 +7760,15 @@ func (f fastpathDTJsonBytes) DecMapUint8Float64X(vp *map[uint8]float64, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint8Float64L(v map[uint8]float64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7853,15 +7806,15 @@ func (f fastpathDTJsonBytes) DecMapUint8BoolX(vp *map[uint8]bool, d *decoderJson
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint8BoolL(v map[uint8]bool, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7899,15 +7852,15 @@ func (f fastpathDTJsonBytes) DecMapUint64IntfX(vp *map[uint64]interface{}, d *de
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint64IntfL(v map[uint64]interface{}, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7951,15 +7904,15 @@ func (f fastpathDTJsonBytes) DecMapUint64StringX(vp *map[uint64]string, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint64StringL(v map[uint64]string, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -7997,15 +7950,15 @@ func (f fastpathDTJsonBytes) DecMapUint64BytesX(vp *map[uint64][]byte, d *decode
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint64BytesL(v map[uint64][]byte, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8049,15 +8002,15 @@ func (f fastpathDTJsonBytes) DecMapUint64Uint8X(vp *map[uint64]uint8, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint64Uint8L(v map[uint64]uint8, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8095,15 +8048,15 @@ func (f fastpathDTJsonBytes) DecMapUint64Uint64X(vp *map[uint64]uint64, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint64Uint64L(v map[uint64]uint64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8141,15 +8094,15 @@ func (f fastpathDTJsonBytes) DecMapUint64IntX(vp *map[uint64]int, d *decoderJson
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint64IntL(v map[uint64]int, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8187,15 +8140,15 @@ func (f fastpathDTJsonBytes) DecMapUint64Int32X(vp *map[uint64]int32, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint64Int32L(v map[uint64]int32, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8233,15 +8186,15 @@ func (f fastpathDTJsonBytes) DecMapUint64Float64X(vp *map[uint64]float64, d *dec
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint64Float64L(v map[uint64]float64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8279,15 +8232,15 @@ func (f fastpathDTJsonBytes) DecMapUint64BoolX(vp *map[uint64]bool, d *decoderJs
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapUint64BoolL(v map[uint64]bool, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8325,15 +8278,15 @@ func (f fastpathDTJsonBytes) DecMapIntIntfX(vp *map[int]interface{}, d *decoderJ
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapIntIntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapIntIntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapIntIntfL(v map[int]interface{}, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8377,15 +8330,15 @@ func (f fastpathDTJsonBytes) DecMapIntStringX(vp *map[int]string, d *decoderJson
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapIntStringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapIntStringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapIntStringL(v map[int]string, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8423,15 +8376,15 @@ func (f fastpathDTJsonBytes) DecMapIntBytesX(vp *map[int][]byte, d *decoderJsonB
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapIntBytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapIntBytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapIntBytesL(v map[int][]byte, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8475,15 +8428,15 @@ func (f fastpathDTJsonBytes) DecMapIntUint8X(vp *map[int]uint8, d *decoderJsonBy
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapIntUint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapIntUint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapIntUint8L(v map[int]uint8, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8521,15 +8474,15 @@ func (f fastpathDTJsonBytes) DecMapIntUint64X(vp *map[int]uint64, d *decoderJson
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntUint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntUint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapIntUint64L(v map[int]uint64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8567,15 +8520,15 @@ func (f fastpathDTJsonBytes) DecMapIntIntX(vp *map[int]int, d *decoderJsonBytes)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntIntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntIntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapIntIntL(v map[int]int, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8613,15 +8566,15 @@ func (f fastpathDTJsonBytes) DecMapIntInt32X(vp *map[int]int32, d *decoderJsonBy
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapIntInt32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapIntInt32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapIntInt32L(v map[int]int32, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8659,15 +8612,15 @@ func (f fastpathDTJsonBytes) DecMapIntFloat64X(vp *map[int]float64, d *decoderJs
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntFloat64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntFloat64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapIntFloat64L(v map[int]float64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8705,15 +8658,15 @@ func (f fastpathDTJsonBytes) DecMapIntBoolX(vp *map[int]bool, d *decoderJsonByte
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapIntBoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapIntBoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapIntBoolL(v map[int]bool, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8751,15 +8704,15 @@ func (f fastpathDTJsonBytes) DecMapInt32IntfX(vp *map[int32]interface{}, d *deco
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapInt32IntfL(v map[int32]interface{}, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8803,15 +8756,15 @@ func (f fastpathDTJsonBytes) DecMapInt32StringX(vp *map[int32]string, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapInt32StringL(v map[int32]string, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8849,15 +8802,15 @@ func (f fastpathDTJsonBytes) DecMapInt32BytesX(vp *map[int32][]byte, d *decoderJ
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapInt32BytesL(v map[int32][]byte, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8901,15 +8854,15 @@ func (f fastpathDTJsonBytes) DecMapInt32Uint8X(vp *map[int32]uint8, d *decoderJs
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapInt32Uint8L(v map[int32]uint8, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8947,15 +8900,15 @@ func (f fastpathDTJsonBytes) DecMapInt32Uint64X(vp *map[int32]uint64, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapInt32Uint64L(v map[int32]uint64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -8993,15 +8946,15 @@ func (f fastpathDTJsonBytes) DecMapInt32IntX(vp *map[int32]int, d *decoderJsonBy
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapInt32IntL(v map[int32]int, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -9039,15 +8992,15 @@ func (f fastpathDTJsonBytes) DecMapInt32Int32X(vp *map[int32]int32, d *decoderJs
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapInt32Int32L(v map[int32]int32, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -9085,15 +9038,15 @@ func (f fastpathDTJsonBytes) DecMapInt32Float64X(vp *map[int32]float64, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapInt32Float64L(v map[int32]float64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -9131,15 +9084,15 @@ func (f fastpathDTJsonBytes) DecMapInt32BoolX(vp *map[int32]bool, d *decoderJson
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonBytes) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
@@ -10357,13 +10310,10 @@ func (e *encoderJsonIO) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderJsonIO) kSeqFn(rtelem reflect.Type) (fn *encFnJsonIO) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderJsonIO) kSeqFn(rt reflect.Type) (fn *encFnJsonIO) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -11334,6 +11284,15 @@ func (e *encoderJsonIO) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnJsonIO struct {
+	i  encFnInfo
+	fe func(*encoderJsonIO, *encFnInfo, reflect.Value)
+}
+type encRtidFnJsonIO struct {
+	rtid uintptr
+	fn   *encFnJsonIO
+}
+
 func (helperEncDriverJsonIO) newEncoderBytes(out *[]byte, h Handle) *encoderJsonIO {
 	var c1 encoderJsonIO
 	c1.bytes = true
@@ -11363,15 +11322,6 @@ func (helperEncDriverJsonIO) encFnloadFastpathUnderlying(ti *typeInfo, fp *fastp
 		u = f.rt
 	}
 	return
-}
-
-type encFnJsonIO struct {
-	i  encFnInfo
-	fe func(*encoderJsonIO, *encFnInfo, reflect.Value)
-}
-type encRtidFnJsonIO struct {
-	rtid uintptr
-	fn   *encFnJsonIO
 }
 
 func (helperEncDriverJsonIO) encFindRtidFn(s []encRtidFnJsonIO, rtid uintptr) (i uint, fn *encFnJsonIO) {
@@ -11896,18 +11846,19 @@ func (d *decoderJsonIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -12976,6 +12927,15 @@ func (x decSliceHelperJsonIO) arrayCannotExpand(hasLen bool, lenv, j, containerL
 	x.End()
 }
 
+type decFnJsonIO struct {
+	i  decFnInfo
+	fd func(*decoderJsonIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnJsonIO struct {
+	rtid uintptr
+	fn   *decFnJsonIO
+}
+
 func (helperDecDriverJsonIO) newDecoderBytes(in []byte, h Handle) *decoderJsonIO {
 	var c1 decoderJsonIO
 	c1.bytes = true
@@ -13005,15 +12965,6 @@ func (helperDecDriverJsonIO) decFnloadFastpathUnderlying(ti *typeInfo, fp *fastp
 		u = f.rt
 	}
 	return
-}
-
-type decFnJsonIO struct {
-	i  decFnInfo
-	fd func(*decoderJsonIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnJsonIO struct {
-	rtid uintptr
-	fn   *decFnJsonIO
 }
 
 func (helperDecDriverJsonIO) decFindRtidFn(s []decRtidFnJsonIO, rtid uintptr) (i uint, fn *decFnJsonIO) {
@@ -14229,8 +14180,7 @@ func (fastpathETJsonIO) EncAsMapSliceBoolV(v []bool, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapStringIntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
+	fastpathETJsonIO{}.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
 }
 func (fastpathETJsonIO) EncMapStringIntfV(v map[string]interface{}, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14259,8 +14209,7 @@ func (fastpathETJsonIO) EncMapStringIntfV(v map[string]interface{}, e *encoderJs
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapStringStringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapStringStringV(rv2i(rv).(map[string]string), e)
+	fastpathETJsonIO{}.EncMapStringStringV(rv2i(rv).(map[string]string), e)
 }
 func (fastpathETJsonIO) EncMapStringStringV(v map[string]string, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14289,8 +14238,7 @@ func (fastpathETJsonIO) EncMapStringStringV(v map[string]string, e *encoderJsonI
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapStringBytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
+	fastpathETJsonIO{}.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
 }
 func (fastpathETJsonIO) EncMapStringBytesV(v map[string][]byte, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14319,8 +14267,7 @@ func (fastpathETJsonIO) EncMapStringBytesV(v map[string][]byte, e *encoderJsonIO
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapStringUint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
+	fastpathETJsonIO{}.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
 }
 func (fastpathETJsonIO) EncMapStringUint8V(v map[string]uint8, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14349,8 +14296,7 @@ func (fastpathETJsonIO) EncMapStringUint8V(v map[string]uint8, e *encoderJsonIO)
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapStringUint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
+	fastpathETJsonIO{}.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
 }
 func (fastpathETJsonIO) EncMapStringUint64V(v map[string]uint64, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14379,8 +14325,7 @@ func (fastpathETJsonIO) EncMapStringUint64V(v map[string]uint64, e *encoderJsonI
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapStringIntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapStringIntV(rv2i(rv).(map[string]int), e)
+	fastpathETJsonIO{}.EncMapStringIntV(rv2i(rv).(map[string]int), e)
 }
 func (fastpathETJsonIO) EncMapStringIntV(v map[string]int, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14409,8 +14354,7 @@ func (fastpathETJsonIO) EncMapStringIntV(v map[string]int, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapStringInt32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapStringInt32V(rv2i(rv).(map[string]int32), e)
+	fastpathETJsonIO{}.EncMapStringInt32V(rv2i(rv).(map[string]int32), e)
 }
 func (fastpathETJsonIO) EncMapStringInt32V(v map[string]int32, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14439,8 +14383,7 @@ func (fastpathETJsonIO) EncMapStringInt32V(v map[string]int32, e *encoderJsonIO)
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapStringFloat64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
+	fastpathETJsonIO{}.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
 }
 func (fastpathETJsonIO) EncMapStringFloat64V(v map[string]float64, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14469,8 +14412,7 @@ func (fastpathETJsonIO) EncMapStringFloat64V(v map[string]float64, e *encoderJso
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapStringBoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
+	fastpathETJsonIO{}.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
 }
 func (fastpathETJsonIO) EncMapStringBoolV(v map[string]bool, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14499,8 +14441,7 @@ func (fastpathETJsonIO) EncMapStringBoolV(v map[string]bool, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint8IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
+	fastpathETJsonIO{}.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
 }
 func (fastpathETJsonIO) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14529,8 +14470,7 @@ func (fastpathETJsonIO) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderJson
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint8StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
+	fastpathETJsonIO{}.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
 }
 func (fastpathETJsonIO) EncMapUint8StringV(v map[uint8]string, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14559,8 +14499,7 @@ func (fastpathETJsonIO) EncMapUint8StringV(v map[uint8]string, e *encoderJsonIO)
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint8BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
+	fastpathETJsonIO{}.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
 }
 func (fastpathETJsonIO) EncMapUint8BytesV(v map[uint8][]byte, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14589,8 +14528,7 @@ func (fastpathETJsonIO) EncMapUint8BytesV(v map[uint8][]byte, e *encoderJsonIO) 
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint8Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
+	fastpathETJsonIO{}.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
 }
 func (fastpathETJsonIO) EncMapUint8Uint8V(v map[uint8]uint8, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14619,8 +14557,7 @@ func (fastpathETJsonIO) EncMapUint8Uint8V(v map[uint8]uint8, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint8Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
+	fastpathETJsonIO{}.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
 }
 func (fastpathETJsonIO) EncMapUint8Uint64V(v map[uint8]uint64, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14649,8 +14586,7 @@ func (fastpathETJsonIO) EncMapUint8Uint64V(v map[uint8]uint64, e *encoderJsonIO)
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint8IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
+	fastpathETJsonIO{}.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
 }
 func (fastpathETJsonIO) EncMapUint8IntV(v map[uint8]int, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14679,8 +14615,7 @@ func (fastpathETJsonIO) EncMapUint8IntV(v map[uint8]int, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint8Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint8Int32V(rv2i(rv).(map[uint8]int32), e)
+	fastpathETJsonIO{}.EncMapUint8Int32V(rv2i(rv).(map[uint8]int32), e)
 }
 func (fastpathETJsonIO) EncMapUint8Int32V(v map[uint8]int32, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14709,8 +14644,7 @@ func (fastpathETJsonIO) EncMapUint8Int32V(v map[uint8]int32, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint8Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
+	fastpathETJsonIO{}.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
 }
 func (fastpathETJsonIO) EncMapUint8Float64V(v map[uint8]float64, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14739,8 +14673,7 @@ func (fastpathETJsonIO) EncMapUint8Float64V(v map[uint8]float64, e *encoderJsonI
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint8BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
+	fastpathETJsonIO{}.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
 }
 func (fastpathETJsonIO) EncMapUint8BoolV(v map[uint8]bool, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14769,8 +14702,7 @@ func (fastpathETJsonIO) EncMapUint8BoolV(v map[uint8]bool, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint64IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
+	fastpathETJsonIO{}.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
 }
 func (fastpathETJsonIO) EncMapUint64IntfV(v map[uint64]interface{}, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14799,8 +14731,7 @@ func (fastpathETJsonIO) EncMapUint64IntfV(v map[uint64]interface{}, e *encoderJs
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint64StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
+	fastpathETJsonIO{}.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
 }
 func (fastpathETJsonIO) EncMapUint64StringV(v map[uint64]string, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14829,8 +14760,7 @@ func (fastpathETJsonIO) EncMapUint64StringV(v map[uint64]string, e *encoderJsonI
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint64BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
+	fastpathETJsonIO{}.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
 }
 func (fastpathETJsonIO) EncMapUint64BytesV(v map[uint64][]byte, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14859,8 +14789,7 @@ func (fastpathETJsonIO) EncMapUint64BytesV(v map[uint64][]byte, e *encoderJsonIO
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint64Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
+	fastpathETJsonIO{}.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
 }
 func (fastpathETJsonIO) EncMapUint64Uint8V(v map[uint64]uint8, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14889,8 +14818,7 @@ func (fastpathETJsonIO) EncMapUint64Uint8V(v map[uint64]uint8, e *encoderJsonIO)
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint64Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
+	fastpathETJsonIO{}.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
 }
 func (fastpathETJsonIO) EncMapUint64Uint64V(v map[uint64]uint64, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14919,8 +14847,7 @@ func (fastpathETJsonIO) EncMapUint64Uint64V(v map[uint64]uint64, e *encoderJsonI
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint64IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
+	fastpathETJsonIO{}.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
 }
 func (fastpathETJsonIO) EncMapUint64IntV(v map[uint64]int, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14949,8 +14876,7 @@ func (fastpathETJsonIO) EncMapUint64IntV(v map[uint64]int, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint64Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint64Int32V(rv2i(rv).(map[uint64]int32), e)
+	fastpathETJsonIO{}.EncMapUint64Int32V(rv2i(rv).(map[uint64]int32), e)
 }
 func (fastpathETJsonIO) EncMapUint64Int32V(v map[uint64]int32, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -14979,8 +14905,7 @@ func (fastpathETJsonIO) EncMapUint64Int32V(v map[uint64]int32, e *encoderJsonIO)
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint64Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
+	fastpathETJsonIO{}.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
 }
 func (fastpathETJsonIO) EncMapUint64Float64V(v map[uint64]float64, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15009,8 +14934,7 @@ func (fastpathETJsonIO) EncMapUint64Float64V(v map[uint64]float64, e *encoderJso
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapUint64BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
+	fastpathETJsonIO{}.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
 }
 func (fastpathETJsonIO) EncMapUint64BoolV(v map[uint64]bool, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15039,8 +14963,7 @@ func (fastpathETJsonIO) EncMapUint64BoolV(v map[uint64]bool, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapIntIntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
+	fastpathETJsonIO{}.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
 }
 func (fastpathETJsonIO) EncMapIntIntfV(v map[int]interface{}, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15069,8 +14992,7 @@ func (fastpathETJsonIO) EncMapIntIntfV(v map[int]interface{}, e *encoderJsonIO) 
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapIntStringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapIntStringV(rv2i(rv).(map[int]string), e)
+	fastpathETJsonIO{}.EncMapIntStringV(rv2i(rv).(map[int]string), e)
 }
 func (fastpathETJsonIO) EncMapIntStringV(v map[int]string, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15099,8 +15021,7 @@ func (fastpathETJsonIO) EncMapIntStringV(v map[int]string, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapIntBytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
+	fastpathETJsonIO{}.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
 }
 func (fastpathETJsonIO) EncMapIntBytesV(v map[int][]byte, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15129,8 +15050,7 @@ func (fastpathETJsonIO) EncMapIntBytesV(v map[int][]byte, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapIntUint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
+	fastpathETJsonIO{}.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
 }
 func (fastpathETJsonIO) EncMapIntUint8V(v map[int]uint8, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15159,8 +15079,7 @@ func (fastpathETJsonIO) EncMapIntUint8V(v map[int]uint8, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapIntUint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
+	fastpathETJsonIO{}.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
 }
 func (fastpathETJsonIO) EncMapIntUint64V(v map[int]uint64, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15189,8 +15108,7 @@ func (fastpathETJsonIO) EncMapIntUint64V(v map[int]uint64, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapIntIntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapIntIntV(rv2i(rv).(map[int]int), e)
+	fastpathETJsonIO{}.EncMapIntIntV(rv2i(rv).(map[int]int), e)
 }
 func (fastpathETJsonIO) EncMapIntIntV(v map[int]int, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15219,8 +15137,7 @@ func (fastpathETJsonIO) EncMapIntIntV(v map[int]int, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapIntInt32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapIntInt32V(rv2i(rv).(map[int]int32), e)
+	fastpathETJsonIO{}.EncMapIntInt32V(rv2i(rv).(map[int]int32), e)
 }
 func (fastpathETJsonIO) EncMapIntInt32V(v map[int]int32, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15249,8 +15166,7 @@ func (fastpathETJsonIO) EncMapIntInt32V(v map[int]int32, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapIntFloat64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
+	fastpathETJsonIO{}.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
 }
 func (fastpathETJsonIO) EncMapIntFloat64V(v map[int]float64, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15279,8 +15195,7 @@ func (fastpathETJsonIO) EncMapIntFloat64V(v map[int]float64, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapIntBoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
+	fastpathETJsonIO{}.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
 }
 func (fastpathETJsonIO) EncMapIntBoolV(v map[int]bool, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15309,8 +15224,7 @@ func (fastpathETJsonIO) EncMapIntBoolV(v map[int]bool, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapInt32IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapInt32IntfV(rv2i(rv).(map[int32]interface{}), e)
+	fastpathETJsonIO{}.EncMapInt32IntfV(rv2i(rv).(map[int32]interface{}), e)
 }
 func (fastpathETJsonIO) EncMapInt32IntfV(v map[int32]interface{}, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15339,8 +15253,7 @@ func (fastpathETJsonIO) EncMapInt32IntfV(v map[int32]interface{}, e *encoderJson
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapInt32StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapInt32StringV(rv2i(rv).(map[int32]string), e)
+	fastpathETJsonIO{}.EncMapInt32StringV(rv2i(rv).(map[int32]string), e)
 }
 func (fastpathETJsonIO) EncMapInt32StringV(v map[int32]string, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15369,8 +15282,7 @@ func (fastpathETJsonIO) EncMapInt32StringV(v map[int32]string, e *encoderJsonIO)
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapInt32BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapInt32BytesV(rv2i(rv).(map[int32][]byte), e)
+	fastpathETJsonIO{}.EncMapInt32BytesV(rv2i(rv).(map[int32][]byte), e)
 }
 func (fastpathETJsonIO) EncMapInt32BytesV(v map[int32][]byte, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15399,8 +15311,7 @@ func (fastpathETJsonIO) EncMapInt32BytesV(v map[int32][]byte, e *encoderJsonIO) 
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapInt32Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapInt32Uint8V(rv2i(rv).(map[int32]uint8), e)
+	fastpathETJsonIO{}.EncMapInt32Uint8V(rv2i(rv).(map[int32]uint8), e)
 }
 func (fastpathETJsonIO) EncMapInt32Uint8V(v map[int32]uint8, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15429,8 +15340,7 @@ func (fastpathETJsonIO) EncMapInt32Uint8V(v map[int32]uint8, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapInt32Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapInt32Uint64V(rv2i(rv).(map[int32]uint64), e)
+	fastpathETJsonIO{}.EncMapInt32Uint64V(rv2i(rv).(map[int32]uint64), e)
 }
 func (fastpathETJsonIO) EncMapInt32Uint64V(v map[int32]uint64, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15459,8 +15369,7 @@ func (fastpathETJsonIO) EncMapInt32Uint64V(v map[int32]uint64, e *encoderJsonIO)
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapInt32IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapInt32IntV(rv2i(rv).(map[int32]int), e)
+	fastpathETJsonIO{}.EncMapInt32IntV(rv2i(rv).(map[int32]int), e)
 }
 func (fastpathETJsonIO) EncMapInt32IntV(v map[int32]int, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15489,8 +15398,7 @@ func (fastpathETJsonIO) EncMapInt32IntV(v map[int32]int, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapInt32Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapInt32Int32V(rv2i(rv).(map[int32]int32), e)
+	fastpathETJsonIO{}.EncMapInt32Int32V(rv2i(rv).(map[int32]int32), e)
 }
 func (fastpathETJsonIO) EncMapInt32Int32V(v map[int32]int32, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15519,8 +15427,7 @@ func (fastpathETJsonIO) EncMapInt32Int32V(v map[int32]int32, e *encoderJsonIO) {
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapInt32Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapInt32Float64V(rv2i(rv).(map[int32]float64), e)
+	fastpathETJsonIO{}.EncMapInt32Float64V(rv2i(rv).(map[int32]float64), e)
 }
 func (fastpathETJsonIO) EncMapInt32Float64V(v map[int32]float64, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -15549,8 +15456,7 @@ func (fastpathETJsonIO) EncMapInt32Float64V(v map[int32]float64, e *encoderJsonI
 	e.mapEnd()
 }
 func (e *encoderJsonIO) fastpathEncMapInt32BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETJsonIO
-	ft.EncMapInt32BoolV(rv2i(rv).(map[int32]bool), e)
+	fastpathETJsonIO{}.EncMapInt32BoolV(rv2i(rv).(map[int32]bool), e)
 }
 func (fastpathETJsonIO) EncMapInt32BoolV(v map[int32]bool, e *encoderJsonIO) {
 	e.mapStart(len(v))
@@ -17255,15 +17161,15 @@ func (f fastpathDTJsonIO) DecMapStringIntfX(vp *map[string]interface{}, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapStringIntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapStringIntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapStringIntfL(v map[string]interface{}, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17307,15 +17213,15 @@ func (f fastpathDTJsonIO) DecMapStringStringX(vp *map[string]string, d *decoderJ
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapStringStringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapStringStringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapStringStringL(v map[string]string, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17353,15 +17259,15 @@ func (f fastpathDTJsonIO) DecMapStringBytesX(vp *map[string][]byte, d *decoderJs
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
-		}
-		if containerLen != 0 {
-			f.DecMapStringBytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
+	}
+	if containerLen != 0 {
+		f.DecMapStringBytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapStringBytesL(v map[string][]byte, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17405,15 +17311,15 @@ func (f fastpathDTJsonIO) DecMapStringUint8X(vp *map[string]uint8, d *decoderJso
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapStringUint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapStringUint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapStringUint8L(v map[string]uint8, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17451,15 +17357,15 @@ func (f fastpathDTJsonIO) DecMapStringUint64X(vp *map[string]uint64, d *decoderJ
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringUint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringUint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapStringUint64L(v map[string]uint64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17497,15 +17403,15 @@ func (f fastpathDTJsonIO) DecMapStringIntX(vp *map[string]int, d *decoderJsonIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringIntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringIntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapStringIntL(v map[string]int, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17543,15 +17449,15 @@ func (f fastpathDTJsonIO) DecMapStringInt32X(vp *map[string]int32, d *decoderJso
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapStringInt32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapStringInt32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapStringInt32L(v map[string]int32, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17589,15 +17495,15 @@ func (f fastpathDTJsonIO) DecMapStringFloat64X(vp *map[string]float64, d *decode
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringFloat64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringFloat64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapStringFloat64L(v map[string]float64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17635,15 +17541,15 @@ func (f fastpathDTJsonIO) DecMapStringBoolX(vp *map[string]bool, d *decoderJsonI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapStringBoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapStringBoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapStringBoolL(v map[string]bool, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17681,15 +17587,15 @@ func (f fastpathDTJsonIO) DecMapUint8IntfX(vp *map[uint8]interface{}, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint8IntfL(v map[uint8]interface{}, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17733,15 +17639,15 @@ func (f fastpathDTJsonIO) DecMapUint8StringX(vp *map[uint8]string, d *decoderJso
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint8StringL(v map[uint8]string, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17779,15 +17685,15 @@ func (f fastpathDTJsonIO) DecMapUint8BytesX(vp *map[uint8][]byte, d *decoderJson
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17831,15 +17737,15 @@ func (f fastpathDTJsonIO) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decoderJsonI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17877,15 +17783,15 @@ func (f fastpathDTJsonIO) DecMapUint8Uint64X(vp *map[uint8]uint64, d *decoderJso
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint8Uint64L(v map[uint8]uint64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17923,15 +17829,15 @@ func (f fastpathDTJsonIO) DecMapUint8IntX(vp *map[uint8]int, d *decoderJsonIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint8IntL(v map[uint8]int, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -17969,15 +17875,15 @@ func (f fastpathDTJsonIO) DecMapUint8Int32X(vp *map[uint8]int32, d *decoderJsonI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint8Int32L(v map[uint8]int32, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18015,15 +17921,15 @@ func (f fastpathDTJsonIO) DecMapUint8Float64X(vp *map[uint8]float64, d *decoderJ
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint8Float64L(v map[uint8]float64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18061,15 +17967,15 @@ func (f fastpathDTJsonIO) DecMapUint8BoolX(vp *map[uint8]bool, d *decoderJsonIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint8BoolL(v map[uint8]bool, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18107,15 +18013,15 @@ func (f fastpathDTJsonIO) DecMapUint64IntfX(vp *map[uint64]interface{}, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint64IntfL(v map[uint64]interface{}, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18159,15 +18065,15 @@ func (f fastpathDTJsonIO) DecMapUint64StringX(vp *map[uint64]string, d *decoderJ
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint64StringL(v map[uint64]string, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18205,15 +18111,15 @@ func (f fastpathDTJsonIO) DecMapUint64BytesX(vp *map[uint64][]byte, d *decoderJs
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint64BytesL(v map[uint64][]byte, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18257,15 +18163,15 @@ func (f fastpathDTJsonIO) DecMapUint64Uint8X(vp *map[uint64]uint8, d *decoderJso
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint64Uint8L(v map[uint64]uint8, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18303,15 +18209,15 @@ func (f fastpathDTJsonIO) DecMapUint64Uint64X(vp *map[uint64]uint64, d *decoderJ
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint64Uint64L(v map[uint64]uint64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18349,15 +18255,15 @@ func (f fastpathDTJsonIO) DecMapUint64IntX(vp *map[uint64]int, d *decoderJsonIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint64IntL(v map[uint64]int, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18395,15 +18301,15 @@ func (f fastpathDTJsonIO) DecMapUint64Int32X(vp *map[uint64]int32, d *decoderJso
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint64Int32L(v map[uint64]int32, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18441,15 +18347,15 @@ func (f fastpathDTJsonIO) DecMapUint64Float64X(vp *map[uint64]float64, d *decode
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint64Float64L(v map[uint64]float64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18487,15 +18393,15 @@ func (f fastpathDTJsonIO) DecMapUint64BoolX(vp *map[uint64]bool, d *decoderJsonI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapUint64BoolL(v map[uint64]bool, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18533,15 +18439,15 @@ func (f fastpathDTJsonIO) DecMapIntIntfX(vp *map[int]interface{}, d *decoderJson
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapIntIntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapIntIntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapIntIntfL(v map[int]interface{}, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18585,15 +18491,15 @@ func (f fastpathDTJsonIO) DecMapIntStringX(vp *map[int]string, d *decoderJsonIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapIntStringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapIntStringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapIntStringL(v map[int]string, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18631,15 +18537,15 @@ func (f fastpathDTJsonIO) DecMapIntBytesX(vp *map[int][]byte, d *decoderJsonIO) 
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapIntBytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapIntBytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapIntBytesL(v map[int][]byte, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18683,15 +18589,15 @@ func (f fastpathDTJsonIO) DecMapIntUint8X(vp *map[int]uint8, d *decoderJsonIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapIntUint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapIntUint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapIntUint8L(v map[int]uint8, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18729,15 +18635,15 @@ func (f fastpathDTJsonIO) DecMapIntUint64X(vp *map[int]uint64, d *decoderJsonIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntUint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntUint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapIntUint64L(v map[int]uint64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18775,15 +18681,15 @@ func (f fastpathDTJsonIO) DecMapIntIntX(vp *map[int]int, d *decoderJsonIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntIntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntIntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapIntIntL(v map[int]int, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18821,15 +18727,15 @@ func (f fastpathDTJsonIO) DecMapIntInt32X(vp *map[int]int32, d *decoderJsonIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapIntInt32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapIntInt32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapIntInt32L(v map[int]int32, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18867,15 +18773,15 @@ func (f fastpathDTJsonIO) DecMapIntFloat64X(vp *map[int]float64, d *decoderJsonI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntFloat64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntFloat64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapIntFloat64L(v map[int]float64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18913,15 +18819,15 @@ func (f fastpathDTJsonIO) DecMapIntBoolX(vp *map[int]bool, d *decoderJsonIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapIntBoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapIntBoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapIntBoolL(v map[int]bool, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -18959,15 +18865,15 @@ func (f fastpathDTJsonIO) DecMapInt32IntfX(vp *map[int32]interface{}, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapInt32IntfL(v map[int32]interface{}, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -19011,15 +18917,15 @@ func (f fastpathDTJsonIO) DecMapInt32StringX(vp *map[int32]string, d *decoderJso
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapInt32StringL(v map[int32]string, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -19057,15 +18963,15 @@ func (f fastpathDTJsonIO) DecMapInt32BytesX(vp *map[int32][]byte, d *decoderJson
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapInt32BytesL(v map[int32][]byte, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -19109,15 +19015,15 @@ func (f fastpathDTJsonIO) DecMapInt32Uint8X(vp *map[int32]uint8, d *decoderJsonI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapInt32Uint8L(v map[int32]uint8, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -19155,15 +19061,15 @@ func (f fastpathDTJsonIO) DecMapInt32Uint64X(vp *map[int32]uint64, d *decoderJso
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapInt32Uint64L(v map[int32]uint64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -19201,15 +19107,15 @@ func (f fastpathDTJsonIO) DecMapInt32IntX(vp *map[int32]int, d *decoderJsonIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapInt32IntL(v map[int32]int, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -19247,15 +19153,15 @@ func (f fastpathDTJsonIO) DecMapInt32Int32X(vp *map[int32]int32, d *decoderJsonI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapInt32Int32L(v map[int32]int32, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -19293,15 +19199,15 @@ func (f fastpathDTJsonIO) DecMapInt32Float64X(vp *map[int32]float64, d *decoderJ
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapInt32Float64L(v map[int32]float64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
@@ -19339,15 +19245,15 @@ func (f fastpathDTJsonIO) DecMapInt32BoolX(vp *map[int32]bool, d *decoderJsonIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTJsonIO) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *decoderJsonIO) {
 	if v == nil {

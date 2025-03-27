@@ -144,13 +144,10 @@ func (e *encoderSimpleBytes) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderSimpleBytes) kSeqFn(rtelem reflect.Type) (fn *encFnSimpleBytes) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderSimpleBytes) kSeqFn(rt reflect.Type) (fn *encFnSimpleBytes) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -1121,6 +1118,15 @@ func (e *encoderSimpleBytes) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnSimpleBytes struct {
+	i  encFnInfo
+	fe func(*encoderSimpleBytes, *encFnInfo, reflect.Value)
+}
+type encRtidFnSimpleBytes struct {
+	rtid uintptr
+	fn   *encFnSimpleBytes
+}
+
 func (helperEncDriverSimpleBytes) newEncoderBytes(out *[]byte, h Handle) *encoderSimpleBytes {
 	var c1 encoderSimpleBytes
 	c1.bytes = true
@@ -1150,15 +1156,6 @@ func (helperEncDriverSimpleBytes) encFnloadFastpathUnderlying(ti *typeInfo, fp *
 		u = f.rt
 	}
 	return
-}
-
-type encFnSimpleBytes struct {
-	i  encFnInfo
-	fe func(*encoderSimpleBytes, *encFnInfo, reflect.Value)
-}
-type encRtidFnSimpleBytes struct {
-	rtid uintptr
-	fn   *encFnSimpleBytes
 }
 
 func (helperEncDriverSimpleBytes) encFindRtidFn(s []encRtidFnSimpleBytes, rtid uintptr) (i uint, fn *encFnSimpleBytes) {
@@ -1683,18 +1680,19 @@ func (d *decoderSimpleBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -2763,6 +2761,15 @@ func (x decSliceHelperSimpleBytes) arrayCannotExpand(hasLen bool, lenv, j, conta
 	x.End()
 }
 
+type decFnSimpleBytes struct {
+	i  decFnInfo
+	fd func(*decoderSimpleBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnSimpleBytes struct {
+	rtid uintptr
+	fn   *decFnSimpleBytes
+}
+
 func (helperDecDriverSimpleBytes) newDecoderBytes(in []byte, h Handle) *decoderSimpleBytes {
 	var c1 decoderSimpleBytes
 	c1.bytes = true
@@ -2792,15 +2799,6 @@ func (helperDecDriverSimpleBytes) decFnloadFastpathUnderlying(ti *typeInfo, fp *
 		u = f.rt
 	}
 	return
-}
-
-type decFnSimpleBytes struct {
-	i  decFnInfo
-	fd func(*decoderSimpleBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnSimpleBytes struct {
-	rtid uintptr
-	fn   *decFnSimpleBytes
 }
 
 func (helperDecDriverSimpleBytes) decFindRtidFn(s []decRtidFnSimpleBytes, rtid uintptr) (i uint, fn *decFnSimpleBytes) {
@@ -3866,13 +3864,10 @@ func (e *encoderSimpleIO) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderSimpleIO) kSeqFn(rtelem reflect.Type) (fn *encFnSimpleIO) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderSimpleIO) kSeqFn(rt reflect.Type) (fn *encFnSimpleIO) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -4843,6 +4838,15 @@ func (e *encoderSimpleIO) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnSimpleIO struct {
+	i  encFnInfo
+	fe func(*encoderSimpleIO, *encFnInfo, reflect.Value)
+}
+type encRtidFnSimpleIO struct {
+	rtid uintptr
+	fn   *encFnSimpleIO
+}
+
 func (helperEncDriverSimpleIO) newEncoderBytes(out *[]byte, h Handle) *encoderSimpleIO {
 	var c1 encoderSimpleIO
 	c1.bytes = true
@@ -4872,15 +4876,6 @@ func (helperEncDriverSimpleIO) encFnloadFastpathUnderlying(ti *typeInfo, fp *fas
 		u = f.rt
 	}
 	return
-}
-
-type encFnSimpleIO struct {
-	i  encFnInfo
-	fe func(*encoderSimpleIO, *encFnInfo, reflect.Value)
-}
-type encRtidFnSimpleIO struct {
-	rtid uintptr
-	fn   *encFnSimpleIO
 }
 
 func (helperEncDriverSimpleIO) encFindRtidFn(s []encRtidFnSimpleIO, rtid uintptr) (i uint, fn *encFnSimpleIO) {
@@ -5405,18 +5400,19 @@ func (d *decoderSimpleIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -6485,6 +6481,15 @@ func (x decSliceHelperSimpleIO) arrayCannotExpand(hasLen bool, lenv, j, containe
 	x.End()
 }
 
+type decFnSimpleIO struct {
+	i  decFnInfo
+	fd func(*decoderSimpleIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnSimpleIO struct {
+	rtid uintptr
+	fn   *decFnSimpleIO
+}
+
 func (helperDecDriverSimpleIO) newDecoderBytes(in []byte, h Handle) *decoderSimpleIO {
 	var c1 decoderSimpleIO
 	c1.bytes = true
@@ -6514,15 +6519,6 @@ func (helperDecDriverSimpleIO) decFnloadFastpathUnderlying(ti *typeInfo, fp *fas
 		u = f.rt
 	}
 	return
-}
-
-type decFnSimpleIO struct {
-	i  decFnInfo
-	fd func(*decoderSimpleIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnSimpleIO struct {
-	rtid uintptr
-	fn   *decFnSimpleIO
 }
 
 func (helperDecDriverSimpleIO) decFindRtidFn(s []decRtidFnSimpleIO, rtid uintptr) (i uint, fn *decFnSimpleIO) {

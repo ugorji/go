@@ -145,13 +145,10 @@ func (e *encoderBincBytes) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderBincBytes) kSeqFn(rtelem reflect.Type) (fn *encFnBincBytes) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderBincBytes) kSeqFn(rt reflect.Type) (fn *encFnBincBytes) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -1122,6 +1119,15 @@ func (e *encoderBincBytes) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnBincBytes struct {
+	i  encFnInfo
+	fe func(*encoderBincBytes, *encFnInfo, reflect.Value)
+}
+type encRtidFnBincBytes struct {
+	rtid uintptr
+	fn   *encFnBincBytes
+}
+
 func (helperEncDriverBincBytes) newEncoderBytes(out *[]byte, h Handle) *encoderBincBytes {
 	var c1 encoderBincBytes
 	c1.bytes = true
@@ -1151,15 +1157,6 @@ func (helperEncDriverBincBytes) encFnloadFastpathUnderlying(ti *typeInfo, fp *fa
 		u = f.rt
 	}
 	return
-}
-
-type encFnBincBytes struct {
-	i  encFnInfo
-	fe func(*encoderBincBytes, *encFnInfo, reflect.Value)
-}
-type encRtidFnBincBytes struct {
-	rtid uintptr
-	fn   *encFnBincBytes
 }
 
 func (helperEncDriverBincBytes) encFindRtidFn(s []encRtidFnBincBytes, rtid uintptr) (i uint, fn *encFnBincBytes) {
@@ -1684,18 +1681,19 @@ func (d *decoderBincBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -2764,6 +2762,15 @@ func (x decSliceHelperBincBytes) arrayCannotExpand(hasLen bool, lenv, j, contain
 	x.End()
 }
 
+type decFnBincBytes struct {
+	i  decFnInfo
+	fd func(*decoderBincBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnBincBytes struct {
+	rtid uintptr
+	fn   *decFnBincBytes
+}
+
 func (helperDecDriverBincBytes) newDecoderBytes(in []byte, h Handle) *decoderBincBytes {
 	var c1 decoderBincBytes
 	c1.bytes = true
@@ -2793,15 +2800,6 @@ func (helperDecDriverBincBytes) decFnloadFastpathUnderlying(ti *typeInfo, fp *fa
 		u = f.rt
 	}
 	return
-}
-
-type decFnBincBytes struct {
-	i  decFnInfo
-	fd func(*decoderBincBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnBincBytes struct {
-	rtid uintptr
-	fn   *decFnBincBytes
 }
 
 func (helperDecDriverBincBytes) decFindRtidFn(s []decRtidFnBincBytes, rtid uintptr) (i uint, fn *decFnBincBytes) {
@@ -4190,13 +4188,10 @@ func (e *encoderBincIO) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderBincIO) kSeqFn(rtelem reflect.Type) (fn *encFnBincIO) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderBincIO) kSeqFn(rt reflect.Type) (fn *encFnBincIO) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -5167,6 +5162,15 @@ func (e *encoderBincIO) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnBincIO struct {
+	i  encFnInfo
+	fe func(*encoderBincIO, *encFnInfo, reflect.Value)
+}
+type encRtidFnBincIO struct {
+	rtid uintptr
+	fn   *encFnBincIO
+}
+
 func (helperEncDriverBincIO) newEncoderBytes(out *[]byte, h Handle) *encoderBincIO {
 	var c1 encoderBincIO
 	c1.bytes = true
@@ -5196,15 +5200,6 @@ func (helperEncDriverBincIO) encFnloadFastpathUnderlying(ti *typeInfo, fp *fastp
 		u = f.rt
 	}
 	return
-}
-
-type encFnBincIO struct {
-	i  encFnInfo
-	fe func(*encoderBincIO, *encFnInfo, reflect.Value)
-}
-type encRtidFnBincIO struct {
-	rtid uintptr
-	fn   *encFnBincIO
 }
 
 func (helperEncDriverBincIO) encFindRtidFn(s []encRtidFnBincIO, rtid uintptr) (i uint, fn *encFnBincIO) {
@@ -5729,18 +5724,19 @@ func (d *decoderBincIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -6809,6 +6805,15 @@ func (x decSliceHelperBincIO) arrayCannotExpand(hasLen bool, lenv, j, containerL
 	x.End()
 }
 
+type decFnBincIO struct {
+	i  decFnInfo
+	fd func(*decoderBincIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnBincIO struct {
+	rtid uintptr
+	fn   *decFnBincIO
+}
+
 func (helperDecDriverBincIO) newDecoderBytes(in []byte, h Handle) *decoderBincIO {
 	var c1 decoderBincIO
 	c1.bytes = true
@@ -6838,15 +6843,6 @@ func (helperDecDriverBincIO) decFnloadFastpathUnderlying(ti *typeInfo, fp *fastp
 		u = f.rt
 	}
 	return
-}
-
-type decFnBincIO struct {
-	i  decFnInfo
-	fd func(*decoderBincIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnBincIO struct {
-	rtid uintptr
-	fn   *decFnBincIO
 }
 
 func (helperDecDriverBincIO) decFindRtidFn(s []decRtidFnBincIO, rtid uintptr) (i uint, fn *decFnBincIO) {

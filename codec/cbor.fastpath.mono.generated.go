@@ -145,13 +145,10 @@ func (e *encoderCborBytes) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderCborBytes) kSeqFn(rtelem reflect.Type) (fn *encFnCborBytes) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderCborBytes) kSeqFn(rt reflect.Type) (fn *encFnCborBytes) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -1122,6 +1119,15 @@ func (e *encoderCborBytes) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnCborBytes struct {
+	i  encFnInfo
+	fe func(*encoderCborBytes, *encFnInfo, reflect.Value)
+}
+type encRtidFnCborBytes struct {
+	rtid uintptr
+	fn   *encFnCborBytes
+}
+
 func (helperEncDriverCborBytes) newEncoderBytes(out *[]byte, h Handle) *encoderCborBytes {
 	var c1 encoderCborBytes
 	c1.bytes = true
@@ -1151,15 +1157,6 @@ func (helperEncDriverCborBytes) encFnloadFastpathUnderlying(ti *typeInfo, fp *fa
 		u = f.rt
 	}
 	return
-}
-
-type encFnCborBytes struct {
-	i  encFnInfo
-	fe func(*encoderCborBytes, *encFnInfo, reflect.Value)
-}
-type encRtidFnCborBytes struct {
-	rtid uintptr
-	fn   *encFnCborBytes
 }
 
 func (helperEncDriverCborBytes) encFindRtidFn(s []encRtidFnCborBytes, rtid uintptr) (i uint, fn *encFnCborBytes) {
@@ -1684,18 +1681,19 @@ func (d *decoderCborBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -2764,6 +2762,15 @@ func (x decSliceHelperCborBytes) arrayCannotExpand(hasLen bool, lenv, j, contain
 	x.End()
 }
 
+type decFnCborBytes struct {
+	i  decFnInfo
+	fd func(*decoderCborBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnCborBytes struct {
+	rtid uintptr
+	fn   *decFnCborBytes
+}
+
 func (helperDecDriverCborBytes) newDecoderBytes(in []byte, h Handle) *decoderCborBytes {
 	var c1 decoderCborBytes
 	c1.bytes = true
@@ -2793,15 +2800,6 @@ func (helperDecDriverCborBytes) decFnloadFastpathUnderlying(ti *typeInfo, fp *fa
 		u = f.rt
 	}
 	return
-}
-
-type decFnCborBytes struct {
-	i  decFnInfo
-	fd func(*decoderCborBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnCborBytes struct {
-	rtid uintptr
-	fn   *decFnCborBytes
 }
 
 func (helperDecDriverCborBytes) decFindRtidFn(s []decRtidFnCborBytes, rtid uintptr) (i uint, fn *decFnCborBytes) {
@@ -4017,8 +4015,7 @@ func (fastpathETCborBytes) EncAsMapSliceBoolV(v []bool, e *encoderCborBytes) {
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringIntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
+	fastpathETCborBytes{}.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
 }
 func (fastpathETCborBytes) EncMapStringIntfV(v map[string]interface{}, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4047,8 +4044,7 @@ func (fastpathETCborBytes) EncMapStringIntfV(v map[string]interface{}, e *encode
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringStringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapStringStringV(rv2i(rv).(map[string]string), e)
+	fastpathETCborBytes{}.EncMapStringStringV(rv2i(rv).(map[string]string), e)
 }
 func (fastpathETCborBytes) EncMapStringStringV(v map[string]string, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4077,8 +4073,7 @@ func (fastpathETCborBytes) EncMapStringStringV(v map[string]string, e *encoderCb
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringBytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
+	fastpathETCborBytes{}.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
 }
 func (fastpathETCborBytes) EncMapStringBytesV(v map[string][]byte, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4107,8 +4102,7 @@ func (fastpathETCborBytes) EncMapStringBytesV(v map[string][]byte, e *encoderCbo
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringUint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
+	fastpathETCborBytes{}.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
 }
 func (fastpathETCborBytes) EncMapStringUint8V(v map[string]uint8, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4137,8 +4131,7 @@ func (fastpathETCborBytes) EncMapStringUint8V(v map[string]uint8, e *encoderCbor
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringUint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
+	fastpathETCborBytes{}.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
 }
 func (fastpathETCborBytes) EncMapStringUint64V(v map[string]uint64, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4167,8 +4160,7 @@ func (fastpathETCborBytes) EncMapStringUint64V(v map[string]uint64, e *encoderCb
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringIntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapStringIntV(rv2i(rv).(map[string]int), e)
+	fastpathETCborBytes{}.EncMapStringIntV(rv2i(rv).(map[string]int), e)
 }
 func (fastpathETCborBytes) EncMapStringIntV(v map[string]int, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4197,8 +4189,7 @@ func (fastpathETCborBytes) EncMapStringIntV(v map[string]int, e *encoderCborByte
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringInt32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapStringInt32V(rv2i(rv).(map[string]int32), e)
+	fastpathETCborBytes{}.EncMapStringInt32V(rv2i(rv).(map[string]int32), e)
 }
 func (fastpathETCborBytes) EncMapStringInt32V(v map[string]int32, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4227,8 +4218,7 @@ func (fastpathETCborBytes) EncMapStringInt32V(v map[string]int32, e *encoderCbor
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringFloat64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
+	fastpathETCborBytes{}.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
 }
 func (fastpathETCborBytes) EncMapStringFloat64V(v map[string]float64, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4257,8 +4247,7 @@ func (fastpathETCborBytes) EncMapStringFloat64V(v map[string]float64, e *encoder
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapStringBoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
+	fastpathETCborBytes{}.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
 }
 func (fastpathETCborBytes) EncMapStringBoolV(v map[string]bool, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4287,8 +4276,7 @@ func (fastpathETCborBytes) EncMapStringBoolV(v map[string]bool, e *encoderCborBy
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
+	fastpathETCborBytes{}.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
 }
 func (fastpathETCborBytes) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4317,8 +4305,7 @@ func (fastpathETCborBytes) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderC
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
+	fastpathETCborBytes{}.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
 }
 func (fastpathETCborBytes) EncMapUint8StringV(v map[uint8]string, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4347,8 +4334,7 @@ func (fastpathETCborBytes) EncMapUint8StringV(v map[uint8]string, e *encoderCbor
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
+	fastpathETCborBytes{}.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
 }
 func (fastpathETCborBytes) EncMapUint8BytesV(v map[uint8][]byte, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4377,8 +4363,7 @@ func (fastpathETCborBytes) EncMapUint8BytesV(v map[uint8][]byte, e *encoderCborB
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
+	fastpathETCborBytes{}.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
 }
 func (fastpathETCborBytes) EncMapUint8Uint8V(v map[uint8]uint8, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4407,8 +4392,7 @@ func (fastpathETCborBytes) EncMapUint8Uint8V(v map[uint8]uint8, e *encoderCborBy
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
+	fastpathETCborBytes{}.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
 }
 func (fastpathETCborBytes) EncMapUint8Uint64V(v map[uint8]uint64, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4437,8 +4421,7 @@ func (fastpathETCborBytes) EncMapUint8Uint64V(v map[uint8]uint64, e *encoderCbor
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
+	fastpathETCborBytes{}.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
 }
 func (fastpathETCborBytes) EncMapUint8IntV(v map[uint8]int, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4467,8 +4450,7 @@ func (fastpathETCborBytes) EncMapUint8IntV(v map[uint8]int, e *encoderCborBytes)
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint8Int32V(rv2i(rv).(map[uint8]int32), e)
+	fastpathETCborBytes{}.EncMapUint8Int32V(rv2i(rv).(map[uint8]int32), e)
 }
 func (fastpathETCborBytes) EncMapUint8Int32V(v map[uint8]int32, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4497,8 +4479,7 @@ func (fastpathETCborBytes) EncMapUint8Int32V(v map[uint8]int32, e *encoderCborBy
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
+	fastpathETCborBytes{}.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
 }
 func (fastpathETCborBytes) EncMapUint8Float64V(v map[uint8]float64, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4527,8 +4508,7 @@ func (fastpathETCborBytes) EncMapUint8Float64V(v map[uint8]float64, e *encoderCb
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint8BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
+	fastpathETCborBytes{}.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
 }
 func (fastpathETCborBytes) EncMapUint8BoolV(v map[uint8]bool, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4557,8 +4537,7 @@ func (fastpathETCborBytes) EncMapUint8BoolV(v map[uint8]bool, e *encoderCborByte
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
+	fastpathETCborBytes{}.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
 }
 func (fastpathETCborBytes) EncMapUint64IntfV(v map[uint64]interface{}, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4587,8 +4566,7 @@ func (fastpathETCborBytes) EncMapUint64IntfV(v map[uint64]interface{}, e *encode
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
+	fastpathETCborBytes{}.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
 }
 func (fastpathETCborBytes) EncMapUint64StringV(v map[uint64]string, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4617,8 +4595,7 @@ func (fastpathETCborBytes) EncMapUint64StringV(v map[uint64]string, e *encoderCb
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
+	fastpathETCborBytes{}.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
 }
 func (fastpathETCborBytes) EncMapUint64BytesV(v map[uint64][]byte, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4647,8 +4624,7 @@ func (fastpathETCborBytes) EncMapUint64BytesV(v map[uint64][]byte, e *encoderCbo
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
+	fastpathETCborBytes{}.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
 }
 func (fastpathETCborBytes) EncMapUint64Uint8V(v map[uint64]uint8, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4677,8 +4653,7 @@ func (fastpathETCborBytes) EncMapUint64Uint8V(v map[uint64]uint8, e *encoderCbor
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
+	fastpathETCborBytes{}.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
 }
 func (fastpathETCborBytes) EncMapUint64Uint64V(v map[uint64]uint64, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4707,8 +4682,7 @@ func (fastpathETCborBytes) EncMapUint64Uint64V(v map[uint64]uint64, e *encoderCb
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
+	fastpathETCborBytes{}.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
 }
 func (fastpathETCborBytes) EncMapUint64IntV(v map[uint64]int, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4737,8 +4711,7 @@ func (fastpathETCborBytes) EncMapUint64IntV(v map[uint64]int, e *encoderCborByte
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint64Int32V(rv2i(rv).(map[uint64]int32), e)
+	fastpathETCborBytes{}.EncMapUint64Int32V(rv2i(rv).(map[uint64]int32), e)
 }
 func (fastpathETCborBytes) EncMapUint64Int32V(v map[uint64]int32, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4767,8 +4740,7 @@ func (fastpathETCborBytes) EncMapUint64Int32V(v map[uint64]int32, e *encoderCbor
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
+	fastpathETCborBytes{}.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
 }
 func (fastpathETCborBytes) EncMapUint64Float64V(v map[uint64]float64, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4797,8 +4769,7 @@ func (fastpathETCborBytes) EncMapUint64Float64V(v map[uint64]float64, e *encoder
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapUint64BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
+	fastpathETCborBytes{}.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
 }
 func (fastpathETCborBytes) EncMapUint64BoolV(v map[uint64]bool, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4827,8 +4798,7 @@ func (fastpathETCborBytes) EncMapUint64BoolV(v map[uint64]bool, e *encoderCborBy
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntIntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
+	fastpathETCborBytes{}.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
 }
 func (fastpathETCborBytes) EncMapIntIntfV(v map[int]interface{}, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4857,8 +4827,7 @@ func (fastpathETCborBytes) EncMapIntIntfV(v map[int]interface{}, e *encoderCborB
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntStringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapIntStringV(rv2i(rv).(map[int]string), e)
+	fastpathETCborBytes{}.EncMapIntStringV(rv2i(rv).(map[int]string), e)
 }
 func (fastpathETCborBytes) EncMapIntStringV(v map[int]string, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4887,8 +4856,7 @@ func (fastpathETCborBytes) EncMapIntStringV(v map[int]string, e *encoderCborByte
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntBytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
+	fastpathETCborBytes{}.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
 }
 func (fastpathETCborBytes) EncMapIntBytesV(v map[int][]byte, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4917,8 +4885,7 @@ func (fastpathETCborBytes) EncMapIntBytesV(v map[int][]byte, e *encoderCborBytes
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntUint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
+	fastpathETCborBytes{}.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
 }
 func (fastpathETCborBytes) EncMapIntUint8V(v map[int]uint8, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4947,8 +4914,7 @@ func (fastpathETCborBytes) EncMapIntUint8V(v map[int]uint8, e *encoderCborBytes)
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntUint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
+	fastpathETCborBytes{}.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
 }
 func (fastpathETCborBytes) EncMapIntUint64V(v map[int]uint64, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -4977,8 +4943,7 @@ func (fastpathETCborBytes) EncMapIntUint64V(v map[int]uint64, e *encoderCborByte
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntIntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapIntIntV(rv2i(rv).(map[int]int), e)
+	fastpathETCborBytes{}.EncMapIntIntV(rv2i(rv).(map[int]int), e)
 }
 func (fastpathETCborBytes) EncMapIntIntV(v map[int]int, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5007,8 +4972,7 @@ func (fastpathETCborBytes) EncMapIntIntV(v map[int]int, e *encoderCborBytes) {
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntInt32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapIntInt32V(rv2i(rv).(map[int]int32), e)
+	fastpathETCborBytes{}.EncMapIntInt32V(rv2i(rv).(map[int]int32), e)
 }
 func (fastpathETCborBytes) EncMapIntInt32V(v map[int]int32, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5037,8 +5001,7 @@ func (fastpathETCborBytes) EncMapIntInt32V(v map[int]int32, e *encoderCborBytes)
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntFloat64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
+	fastpathETCborBytes{}.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
 }
 func (fastpathETCborBytes) EncMapIntFloat64V(v map[int]float64, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5067,8 +5030,7 @@ func (fastpathETCborBytes) EncMapIntFloat64V(v map[int]float64, e *encoderCborBy
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapIntBoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
+	fastpathETCborBytes{}.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
 }
 func (fastpathETCborBytes) EncMapIntBoolV(v map[int]bool, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5097,8 +5059,7 @@ func (fastpathETCborBytes) EncMapIntBoolV(v map[int]bool, e *encoderCborBytes) {
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapInt32IntfV(rv2i(rv).(map[int32]interface{}), e)
+	fastpathETCborBytes{}.EncMapInt32IntfV(rv2i(rv).(map[int32]interface{}), e)
 }
 func (fastpathETCborBytes) EncMapInt32IntfV(v map[int32]interface{}, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5127,8 +5088,7 @@ func (fastpathETCborBytes) EncMapInt32IntfV(v map[int32]interface{}, e *encoderC
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapInt32StringV(rv2i(rv).(map[int32]string), e)
+	fastpathETCborBytes{}.EncMapInt32StringV(rv2i(rv).(map[int32]string), e)
 }
 func (fastpathETCborBytes) EncMapInt32StringV(v map[int32]string, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5157,8 +5117,7 @@ func (fastpathETCborBytes) EncMapInt32StringV(v map[int32]string, e *encoderCbor
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapInt32BytesV(rv2i(rv).(map[int32][]byte), e)
+	fastpathETCborBytes{}.EncMapInt32BytesV(rv2i(rv).(map[int32][]byte), e)
 }
 func (fastpathETCborBytes) EncMapInt32BytesV(v map[int32][]byte, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5187,8 +5146,7 @@ func (fastpathETCborBytes) EncMapInt32BytesV(v map[int32][]byte, e *encoderCborB
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapInt32Uint8V(rv2i(rv).(map[int32]uint8), e)
+	fastpathETCborBytes{}.EncMapInt32Uint8V(rv2i(rv).(map[int32]uint8), e)
 }
 func (fastpathETCborBytes) EncMapInt32Uint8V(v map[int32]uint8, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5217,8 +5175,7 @@ func (fastpathETCborBytes) EncMapInt32Uint8V(v map[int32]uint8, e *encoderCborBy
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapInt32Uint64V(rv2i(rv).(map[int32]uint64), e)
+	fastpathETCborBytes{}.EncMapInt32Uint64V(rv2i(rv).(map[int32]uint64), e)
 }
 func (fastpathETCborBytes) EncMapInt32Uint64V(v map[int32]uint64, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5247,8 +5204,7 @@ func (fastpathETCborBytes) EncMapInt32Uint64V(v map[int32]uint64, e *encoderCbor
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapInt32IntV(rv2i(rv).(map[int32]int), e)
+	fastpathETCborBytes{}.EncMapInt32IntV(rv2i(rv).(map[int32]int), e)
 }
 func (fastpathETCborBytes) EncMapInt32IntV(v map[int32]int, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5277,8 +5233,7 @@ func (fastpathETCborBytes) EncMapInt32IntV(v map[int32]int, e *encoderCborBytes)
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapInt32Int32V(rv2i(rv).(map[int32]int32), e)
+	fastpathETCborBytes{}.EncMapInt32Int32V(rv2i(rv).(map[int32]int32), e)
 }
 func (fastpathETCborBytes) EncMapInt32Int32V(v map[int32]int32, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5307,8 +5262,7 @@ func (fastpathETCborBytes) EncMapInt32Int32V(v map[int32]int32, e *encoderCborBy
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapInt32Float64V(rv2i(rv).(map[int32]float64), e)
+	fastpathETCborBytes{}.EncMapInt32Float64V(rv2i(rv).(map[int32]float64), e)
 }
 func (fastpathETCborBytes) EncMapInt32Float64V(v map[int32]float64, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -5337,8 +5291,7 @@ func (fastpathETCborBytes) EncMapInt32Float64V(v map[int32]float64, e *encoderCb
 	e.mapEnd()
 }
 func (e *encoderCborBytes) fastpathEncMapInt32BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborBytes
-	ft.EncMapInt32BoolV(rv2i(rv).(map[int32]bool), e)
+	fastpathETCborBytes{}.EncMapInt32BoolV(rv2i(rv).(map[int32]bool), e)
 }
 func (fastpathETCborBytes) EncMapInt32BoolV(v map[int32]bool, e *encoderCborBytes) {
 	e.mapStart(len(v))
@@ -7043,15 +6996,15 @@ func (f fastpathDTCborBytes) DecMapStringIntfX(vp *map[string]interface{}, d *de
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapStringIntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapStringIntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapStringIntfL(v map[string]interface{}, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7095,15 +7048,15 @@ func (f fastpathDTCborBytes) DecMapStringStringX(vp *map[string]string, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapStringStringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapStringStringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapStringStringL(v map[string]string, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7141,15 +7094,15 @@ func (f fastpathDTCborBytes) DecMapStringBytesX(vp *map[string][]byte, d *decode
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
-		}
-		if containerLen != 0 {
-			f.DecMapStringBytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
+	}
+	if containerLen != 0 {
+		f.DecMapStringBytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapStringBytesL(v map[string][]byte, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7193,15 +7146,15 @@ func (f fastpathDTCborBytes) DecMapStringUint8X(vp *map[string]uint8, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapStringUint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapStringUint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapStringUint8L(v map[string]uint8, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7239,15 +7192,15 @@ func (f fastpathDTCborBytes) DecMapStringUint64X(vp *map[string]uint64, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringUint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringUint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapStringUint64L(v map[string]uint64, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7285,15 +7238,15 @@ func (f fastpathDTCborBytes) DecMapStringIntX(vp *map[string]int, d *decoderCbor
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringIntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringIntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapStringIntL(v map[string]int, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7331,15 +7284,15 @@ func (f fastpathDTCborBytes) DecMapStringInt32X(vp *map[string]int32, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapStringInt32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapStringInt32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapStringInt32L(v map[string]int32, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7377,15 +7330,15 @@ func (f fastpathDTCborBytes) DecMapStringFloat64X(vp *map[string]float64, d *dec
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringFloat64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringFloat64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapStringFloat64L(v map[string]float64, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7423,15 +7376,15 @@ func (f fastpathDTCborBytes) DecMapStringBoolX(vp *map[string]bool, d *decoderCb
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapStringBoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapStringBoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapStringBoolL(v map[string]bool, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7469,15 +7422,15 @@ func (f fastpathDTCborBytes) DecMapUint8IntfX(vp *map[uint8]interface{}, d *deco
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint8IntfL(v map[uint8]interface{}, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7521,15 +7474,15 @@ func (f fastpathDTCborBytes) DecMapUint8StringX(vp *map[uint8]string, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint8StringL(v map[uint8]string, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7567,15 +7520,15 @@ func (f fastpathDTCborBytes) DecMapUint8BytesX(vp *map[uint8][]byte, d *decoderC
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7619,15 +7572,15 @@ func (f fastpathDTCborBytes) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decoderCb
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7665,15 +7618,15 @@ func (f fastpathDTCborBytes) DecMapUint8Uint64X(vp *map[uint8]uint64, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint8Uint64L(v map[uint8]uint64, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7711,15 +7664,15 @@ func (f fastpathDTCborBytes) DecMapUint8IntX(vp *map[uint8]int, d *decoderCborBy
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint8IntL(v map[uint8]int, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7757,15 +7710,15 @@ func (f fastpathDTCborBytes) DecMapUint8Int32X(vp *map[uint8]int32, d *decoderCb
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint8Int32L(v map[uint8]int32, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7803,15 +7756,15 @@ func (f fastpathDTCborBytes) DecMapUint8Float64X(vp *map[uint8]float64, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint8Float64L(v map[uint8]float64, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7849,15 +7802,15 @@ func (f fastpathDTCborBytes) DecMapUint8BoolX(vp *map[uint8]bool, d *decoderCbor
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint8BoolL(v map[uint8]bool, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7895,15 +7848,15 @@ func (f fastpathDTCborBytes) DecMapUint64IntfX(vp *map[uint64]interface{}, d *de
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint64IntfL(v map[uint64]interface{}, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7947,15 +7900,15 @@ func (f fastpathDTCborBytes) DecMapUint64StringX(vp *map[uint64]string, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint64StringL(v map[uint64]string, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -7993,15 +7946,15 @@ func (f fastpathDTCborBytes) DecMapUint64BytesX(vp *map[uint64][]byte, d *decode
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint64BytesL(v map[uint64][]byte, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8045,15 +7998,15 @@ func (f fastpathDTCborBytes) DecMapUint64Uint8X(vp *map[uint64]uint8, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint64Uint8L(v map[uint64]uint8, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8091,15 +8044,15 @@ func (f fastpathDTCborBytes) DecMapUint64Uint64X(vp *map[uint64]uint64, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint64Uint64L(v map[uint64]uint64, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8137,15 +8090,15 @@ func (f fastpathDTCborBytes) DecMapUint64IntX(vp *map[uint64]int, d *decoderCbor
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint64IntL(v map[uint64]int, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8183,15 +8136,15 @@ func (f fastpathDTCborBytes) DecMapUint64Int32X(vp *map[uint64]int32, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint64Int32L(v map[uint64]int32, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8229,15 +8182,15 @@ func (f fastpathDTCborBytes) DecMapUint64Float64X(vp *map[uint64]float64, d *dec
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint64Float64L(v map[uint64]float64, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8275,15 +8228,15 @@ func (f fastpathDTCborBytes) DecMapUint64BoolX(vp *map[uint64]bool, d *decoderCb
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapUint64BoolL(v map[uint64]bool, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8321,15 +8274,15 @@ func (f fastpathDTCborBytes) DecMapIntIntfX(vp *map[int]interface{}, d *decoderC
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapIntIntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapIntIntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapIntIntfL(v map[int]interface{}, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8373,15 +8326,15 @@ func (f fastpathDTCborBytes) DecMapIntStringX(vp *map[int]string, d *decoderCbor
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapIntStringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapIntStringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapIntStringL(v map[int]string, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8419,15 +8372,15 @@ func (f fastpathDTCborBytes) DecMapIntBytesX(vp *map[int][]byte, d *decoderCborB
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapIntBytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapIntBytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapIntBytesL(v map[int][]byte, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8471,15 +8424,15 @@ func (f fastpathDTCborBytes) DecMapIntUint8X(vp *map[int]uint8, d *decoderCborBy
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapIntUint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapIntUint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapIntUint8L(v map[int]uint8, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8517,15 +8470,15 @@ func (f fastpathDTCborBytes) DecMapIntUint64X(vp *map[int]uint64, d *decoderCbor
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntUint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntUint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapIntUint64L(v map[int]uint64, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8563,15 +8516,15 @@ func (f fastpathDTCborBytes) DecMapIntIntX(vp *map[int]int, d *decoderCborBytes)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntIntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntIntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapIntIntL(v map[int]int, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8609,15 +8562,15 @@ func (f fastpathDTCborBytes) DecMapIntInt32X(vp *map[int]int32, d *decoderCborBy
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapIntInt32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapIntInt32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapIntInt32L(v map[int]int32, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8655,15 +8608,15 @@ func (f fastpathDTCborBytes) DecMapIntFloat64X(vp *map[int]float64, d *decoderCb
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntFloat64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntFloat64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapIntFloat64L(v map[int]float64, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8701,15 +8654,15 @@ func (f fastpathDTCborBytes) DecMapIntBoolX(vp *map[int]bool, d *decoderCborByte
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapIntBoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapIntBoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapIntBoolL(v map[int]bool, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8747,15 +8700,15 @@ func (f fastpathDTCborBytes) DecMapInt32IntfX(vp *map[int32]interface{}, d *deco
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapInt32IntfL(v map[int32]interface{}, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8799,15 +8752,15 @@ func (f fastpathDTCborBytes) DecMapInt32StringX(vp *map[int32]string, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapInt32StringL(v map[int32]string, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8845,15 +8798,15 @@ func (f fastpathDTCborBytes) DecMapInt32BytesX(vp *map[int32][]byte, d *decoderC
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapInt32BytesL(v map[int32][]byte, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8897,15 +8850,15 @@ func (f fastpathDTCborBytes) DecMapInt32Uint8X(vp *map[int32]uint8, d *decoderCb
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapInt32Uint8L(v map[int32]uint8, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8943,15 +8896,15 @@ func (f fastpathDTCborBytes) DecMapInt32Uint64X(vp *map[int32]uint64, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapInt32Uint64L(v map[int32]uint64, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -8989,15 +8942,15 @@ func (f fastpathDTCborBytes) DecMapInt32IntX(vp *map[int32]int, d *decoderCborBy
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapInt32IntL(v map[int32]int, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -9035,15 +8988,15 @@ func (f fastpathDTCborBytes) DecMapInt32Int32X(vp *map[int32]int32, d *decoderCb
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapInt32Int32L(v map[int32]int32, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -9081,15 +9034,15 @@ func (f fastpathDTCborBytes) DecMapInt32Float64X(vp *map[int32]float64, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapInt32Float64L(v map[int32]float64, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -9127,15 +9080,15 @@ func (f fastpathDTCborBytes) DecMapInt32BoolX(vp *map[int32]bool, d *decoderCbor
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborBytes) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *decoderCborBytes) {
 	if v == nil {
@@ -10126,13 +10079,10 @@ func (e *encoderCborIO) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderCborIO) kSeqFn(rtelem reflect.Type) (fn *encFnCborIO) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderCborIO) kSeqFn(rt reflect.Type) (fn *encFnCborIO) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -11103,6 +11053,15 @@ func (e *encoderCborIO) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnCborIO struct {
+	i  encFnInfo
+	fe func(*encoderCborIO, *encFnInfo, reflect.Value)
+}
+type encRtidFnCborIO struct {
+	rtid uintptr
+	fn   *encFnCborIO
+}
+
 func (helperEncDriverCborIO) newEncoderBytes(out *[]byte, h Handle) *encoderCborIO {
 	var c1 encoderCborIO
 	c1.bytes = true
@@ -11132,15 +11091,6 @@ func (helperEncDriverCborIO) encFnloadFastpathUnderlying(ti *typeInfo, fp *fastp
 		u = f.rt
 	}
 	return
-}
-
-type encFnCborIO struct {
-	i  encFnInfo
-	fe func(*encoderCborIO, *encFnInfo, reflect.Value)
-}
-type encRtidFnCborIO struct {
-	rtid uintptr
-	fn   *encFnCborIO
 }
 
 func (helperEncDriverCborIO) encFindRtidFn(s []encRtidFnCborIO, rtid uintptr) (i uint, fn *encFnCborIO) {
@@ -11665,18 +11615,19 @@ func (d *decoderCborIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -12745,6 +12696,15 @@ func (x decSliceHelperCborIO) arrayCannotExpand(hasLen bool, lenv, j, containerL
 	x.End()
 }
 
+type decFnCborIO struct {
+	i  decFnInfo
+	fd func(*decoderCborIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnCborIO struct {
+	rtid uintptr
+	fn   *decFnCborIO
+}
+
 func (helperDecDriverCborIO) newDecoderBytes(in []byte, h Handle) *decoderCborIO {
 	var c1 decoderCborIO
 	c1.bytes = true
@@ -12774,15 +12734,6 @@ func (helperDecDriverCborIO) decFnloadFastpathUnderlying(ti *typeInfo, fp *fastp
 		u = f.rt
 	}
 	return
-}
-
-type decFnCborIO struct {
-	i  decFnInfo
-	fd func(*decoderCborIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnCborIO struct {
-	rtid uintptr
-	fn   *decFnCborIO
 }
 
 func (helperDecDriverCborIO) decFindRtidFn(s []decRtidFnCborIO, rtid uintptr) (i uint, fn *decFnCborIO) {
@@ -13998,8 +13949,7 @@ func (fastpathETCborIO) EncAsMapSliceBoolV(v []bool, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringIntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
+	fastpathETCborIO{}.EncMapStringIntfV(rv2i(rv).(map[string]interface{}), e)
 }
 func (fastpathETCborIO) EncMapStringIntfV(v map[string]interface{}, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14028,8 +13978,7 @@ func (fastpathETCborIO) EncMapStringIntfV(v map[string]interface{}, e *encoderCb
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringStringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapStringStringV(rv2i(rv).(map[string]string), e)
+	fastpathETCborIO{}.EncMapStringStringV(rv2i(rv).(map[string]string), e)
 }
 func (fastpathETCborIO) EncMapStringStringV(v map[string]string, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14058,8 +14007,7 @@ func (fastpathETCborIO) EncMapStringStringV(v map[string]string, e *encoderCborI
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringBytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
+	fastpathETCborIO{}.EncMapStringBytesV(rv2i(rv).(map[string][]byte), e)
 }
 func (fastpathETCborIO) EncMapStringBytesV(v map[string][]byte, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14088,8 +14036,7 @@ func (fastpathETCborIO) EncMapStringBytesV(v map[string][]byte, e *encoderCborIO
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringUint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
+	fastpathETCborIO{}.EncMapStringUint8V(rv2i(rv).(map[string]uint8), e)
 }
 func (fastpathETCborIO) EncMapStringUint8V(v map[string]uint8, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14118,8 +14065,7 @@ func (fastpathETCborIO) EncMapStringUint8V(v map[string]uint8, e *encoderCborIO)
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringUint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
+	fastpathETCborIO{}.EncMapStringUint64V(rv2i(rv).(map[string]uint64), e)
 }
 func (fastpathETCborIO) EncMapStringUint64V(v map[string]uint64, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14148,8 +14094,7 @@ func (fastpathETCborIO) EncMapStringUint64V(v map[string]uint64, e *encoderCborI
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringIntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapStringIntV(rv2i(rv).(map[string]int), e)
+	fastpathETCborIO{}.EncMapStringIntV(rv2i(rv).(map[string]int), e)
 }
 func (fastpathETCborIO) EncMapStringIntV(v map[string]int, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14178,8 +14123,7 @@ func (fastpathETCborIO) EncMapStringIntV(v map[string]int, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringInt32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapStringInt32V(rv2i(rv).(map[string]int32), e)
+	fastpathETCborIO{}.EncMapStringInt32V(rv2i(rv).(map[string]int32), e)
 }
 func (fastpathETCborIO) EncMapStringInt32V(v map[string]int32, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14208,8 +14152,7 @@ func (fastpathETCborIO) EncMapStringInt32V(v map[string]int32, e *encoderCborIO)
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringFloat64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
+	fastpathETCborIO{}.EncMapStringFloat64V(rv2i(rv).(map[string]float64), e)
 }
 func (fastpathETCborIO) EncMapStringFloat64V(v map[string]float64, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14238,8 +14181,7 @@ func (fastpathETCborIO) EncMapStringFloat64V(v map[string]float64, e *encoderCbo
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapStringBoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
+	fastpathETCborIO{}.EncMapStringBoolV(rv2i(rv).(map[string]bool), e)
 }
 func (fastpathETCborIO) EncMapStringBoolV(v map[string]bool, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14268,8 +14210,7 @@ func (fastpathETCborIO) EncMapStringBoolV(v map[string]bool, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
+	fastpathETCborIO{}.EncMapUint8IntfV(rv2i(rv).(map[uint8]interface{}), e)
 }
 func (fastpathETCborIO) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14298,8 +14239,7 @@ func (fastpathETCborIO) EncMapUint8IntfV(v map[uint8]interface{}, e *encoderCbor
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
+	fastpathETCborIO{}.EncMapUint8StringV(rv2i(rv).(map[uint8]string), e)
 }
 func (fastpathETCborIO) EncMapUint8StringV(v map[uint8]string, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14328,8 +14268,7 @@ func (fastpathETCborIO) EncMapUint8StringV(v map[uint8]string, e *encoderCborIO)
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
+	fastpathETCborIO{}.EncMapUint8BytesV(rv2i(rv).(map[uint8][]byte), e)
 }
 func (fastpathETCborIO) EncMapUint8BytesV(v map[uint8][]byte, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14358,8 +14297,7 @@ func (fastpathETCborIO) EncMapUint8BytesV(v map[uint8][]byte, e *encoderCborIO) 
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
+	fastpathETCborIO{}.EncMapUint8Uint8V(rv2i(rv).(map[uint8]uint8), e)
 }
 func (fastpathETCborIO) EncMapUint8Uint8V(v map[uint8]uint8, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14388,8 +14326,7 @@ func (fastpathETCborIO) EncMapUint8Uint8V(v map[uint8]uint8, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
+	fastpathETCborIO{}.EncMapUint8Uint64V(rv2i(rv).(map[uint8]uint64), e)
 }
 func (fastpathETCborIO) EncMapUint8Uint64V(v map[uint8]uint64, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14418,8 +14355,7 @@ func (fastpathETCborIO) EncMapUint8Uint64V(v map[uint8]uint64, e *encoderCborIO)
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
+	fastpathETCborIO{}.EncMapUint8IntV(rv2i(rv).(map[uint8]int), e)
 }
 func (fastpathETCborIO) EncMapUint8IntV(v map[uint8]int, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14448,8 +14384,7 @@ func (fastpathETCborIO) EncMapUint8IntV(v map[uint8]int, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint8Int32V(rv2i(rv).(map[uint8]int32), e)
+	fastpathETCborIO{}.EncMapUint8Int32V(rv2i(rv).(map[uint8]int32), e)
 }
 func (fastpathETCborIO) EncMapUint8Int32V(v map[uint8]int32, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14478,8 +14413,7 @@ func (fastpathETCborIO) EncMapUint8Int32V(v map[uint8]int32, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
+	fastpathETCborIO{}.EncMapUint8Float64V(rv2i(rv).(map[uint8]float64), e)
 }
 func (fastpathETCborIO) EncMapUint8Float64V(v map[uint8]float64, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14508,8 +14442,7 @@ func (fastpathETCborIO) EncMapUint8Float64V(v map[uint8]float64, e *encoderCborI
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint8BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
+	fastpathETCborIO{}.EncMapUint8BoolV(rv2i(rv).(map[uint8]bool), e)
 }
 func (fastpathETCborIO) EncMapUint8BoolV(v map[uint8]bool, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14538,8 +14471,7 @@ func (fastpathETCborIO) EncMapUint8BoolV(v map[uint8]bool, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
+	fastpathETCborIO{}.EncMapUint64IntfV(rv2i(rv).(map[uint64]interface{}), e)
 }
 func (fastpathETCborIO) EncMapUint64IntfV(v map[uint64]interface{}, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14568,8 +14500,7 @@ func (fastpathETCborIO) EncMapUint64IntfV(v map[uint64]interface{}, e *encoderCb
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
+	fastpathETCborIO{}.EncMapUint64StringV(rv2i(rv).(map[uint64]string), e)
 }
 func (fastpathETCborIO) EncMapUint64StringV(v map[uint64]string, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14598,8 +14529,7 @@ func (fastpathETCborIO) EncMapUint64StringV(v map[uint64]string, e *encoderCborI
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
+	fastpathETCborIO{}.EncMapUint64BytesV(rv2i(rv).(map[uint64][]byte), e)
 }
 func (fastpathETCborIO) EncMapUint64BytesV(v map[uint64][]byte, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14628,8 +14558,7 @@ func (fastpathETCborIO) EncMapUint64BytesV(v map[uint64][]byte, e *encoderCborIO
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
+	fastpathETCborIO{}.EncMapUint64Uint8V(rv2i(rv).(map[uint64]uint8), e)
 }
 func (fastpathETCborIO) EncMapUint64Uint8V(v map[uint64]uint8, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14658,8 +14587,7 @@ func (fastpathETCborIO) EncMapUint64Uint8V(v map[uint64]uint8, e *encoderCborIO)
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
+	fastpathETCborIO{}.EncMapUint64Uint64V(rv2i(rv).(map[uint64]uint64), e)
 }
 func (fastpathETCborIO) EncMapUint64Uint64V(v map[uint64]uint64, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14688,8 +14616,7 @@ func (fastpathETCborIO) EncMapUint64Uint64V(v map[uint64]uint64, e *encoderCborI
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
+	fastpathETCborIO{}.EncMapUint64IntV(rv2i(rv).(map[uint64]int), e)
 }
 func (fastpathETCborIO) EncMapUint64IntV(v map[uint64]int, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14718,8 +14645,7 @@ func (fastpathETCborIO) EncMapUint64IntV(v map[uint64]int, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint64Int32V(rv2i(rv).(map[uint64]int32), e)
+	fastpathETCborIO{}.EncMapUint64Int32V(rv2i(rv).(map[uint64]int32), e)
 }
 func (fastpathETCborIO) EncMapUint64Int32V(v map[uint64]int32, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14748,8 +14674,7 @@ func (fastpathETCborIO) EncMapUint64Int32V(v map[uint64]int32, e *encoderCborIO)
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
+	fastpathETCborIO{}.EncMapUint64Float64V(rv2i(rv).(map[uint64]float64), e)
 }
 func (fastpathETCborIO) EncMapUint64Float64V(v map[uint64]float64, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14778,8 +14703,7 @@ func (fastpathETCborIO) EncMapUint64Float64V(v map[uint64]float64, e *encoderCbo
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapUint64BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
+	fastpathETCborIO{}.EncMapUint64BoolV(rv2i(rv).(map[uint64]bool), e)
 }
 func (fastpathETCborIO) EncMapUint64BoolV(v map[uint64]bool, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14808,8 +14732,7 @@ func (fastpathETCborIO) EncMapUint64BoolV(v map[uint64]bool, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntIntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
+	fastpathETCborIO{}.EncMapIntIntfV(rv2i(rv).(map[int]interface{}), e)
 }
 func (fastpathETCborIO) EncMapIntIntfV(v map[int]interface{}, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14838,8 +14761,7 @@ func (fastpathETCborIO) EncMapIntIntfV(v map[int]interface{}, e *encoderCborIO) 
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntStringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapIntStringV(rv2i(rv).(map[int]string), e)
+	fastpathETCborIO{}.EncMapIntStringV(rv2i(rv).(map[int]string), e)
 }
 func (fastpathETCborIO) EncMapIntStringV(v map[int]string, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14868,8 +14790,7 @@ func (fastpathETCborIO) EncMapIntStringV(v map[int]string, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntBytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
+	fastpathETCborIO{}.EncMapIntBytesV(rv2i(rv).(map[int][]byte), e)
 }
 func (fastpathETCborIO) EncMapIntBytesV(v map[int][]byte, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14898,8 +14819,7 @@ func (fastpathETCborIO) EncMapIntBytesV(v map[int][]byte, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntUint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
+	fastpathETCborIO{}.EncMapIntUint8V(rv2i(rv).(map[int]uint8), e)
 }
 func (fastpathETCborIO) EncMapIntUint8V(v map[int]uint8, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14928,8 +14848,7 @@ func (fastpathETCborIO) EncMapIntUint8V(v map[int]uint8, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntUint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
+	fastpathETCborIO{}.EncMapIntUint64V(rv2i(rv).(map[int]uint64), e)
 }
 func (fastpathETCborIO) EncMapIntUint64V(v map[int]uint64, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14958,8 +14877,7 @@ func (fastpathETCborIO) EncMapIntUint64V(v map[int]uint64, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntIntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapIntIntV(rv2i(rv).(map[int]int), e)
+	fastpathETCborIO{}.EncMapIntIntV(rv2i(rv).(map[int]int), e)
 }
 func (fastpathETCborIO) EncMapIntIntV(v map[int]int, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -14988,8 +14906,7 @@ func (fastpathETCborIO) EncMapIntIntV(v map[int]int, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntInt32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapIntInt32V(rv2i(rv).(map[int]int32), e)
+	fastpathETCborIO{}.EncMapIntInt32V(rv2i(rv).(map[int]int32), e)
 }
 func (fastpathETCborIO) EncMapIntInt32V(v map[int]int32, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15018,8 +14935,7 @@ func (fastpathETCborIO) EncMapIntInt32V(v map[int]int32, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntFloat64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
+	fastpathETCborIO{}.EncMapIntFloat64V(rv2i(rv).(map[int]float64), e)
 }
 func (fastpathETCborIO) EncMapIntFloat64V(v map[int]float64, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15048,8 +14964,7 @@ func (fastpathETCborIO) EncMapIntFloat64V(v map[int]float64, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapIntBoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
+	fastpathETCborIO{}.EncMapIntBoolV(rv2i(rv).(map[int]bool), e)
 }
 func (fastpathETCborIO) EncMapIntBoolV(v map[int]bool, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15078,8 +14993,7 @@ func (fastpathETCborIO) EncMapIntBoolV(v map[int]bool, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32IntfR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapInt32IntfV(rv2i(rv).(map[int32]interface{}), e)
+	fastpathETCborIO{}.EncMapInt32IntfV(rv2i(rv).(map[int32]interface{}), e)
 }
 func (fastpathETCborIO) EncMapInt32IntfV(v map[int32]interface{}, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15108,8 +15022,7 @@ func (fastpathETCborIO) EncMapInt32IntfV(v map[int32]interface{}, e *encoderCbor
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32StringR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapInt32StringV(rv2i(rv).(map[int32]string), e)
+	fastpathETCborIO{}.EncMapInt32StringV(rv2i(rv).(map[int32]string), e)
 }
 func (fastpathETCborIO) EncMapInt32StringV(v map[int32]string, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15138,8 +15051,7 @@ func (fastpathETCborIO) EncMapInt32StringV(v map[int32]string, e *encoderCborIO)
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32BytesR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapInt32BytesV(rv2i(rv).(map[int32][]byte), e)
+	fastpathETCborIO{}.EncMapInt32BytesV(rv2i(rv).(map[int32][]byte), e)
 }
 func (fastpathETCborIO) EncMapInt32BytesV(v map[int32][]byte, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15168,8 +15080,7 @@ func (fastpathETCborIO) EncMapInt32BytesV(v map[int32][]byte, e *encoderCborIO) 
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32Uint8R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapInt32Uint8V(rv2i(rv).(map[int32]uint8), e)
+	fastpathETCborIO{}.EncMapInt32Uint8V(rv2i(rv).(map[int32]uint8), e)
 }
 func (fastpathETCborIO) EncMapInt32Uint8V(v map[int32]uint8, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15198,8 +15109,7 @@ func (fastpathETCborIO) EncMapInt32Uint8V(v map[int32]uint8, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32Uint64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapInt32Uint64V(rv2i(rv).(map[int32]uint64), e)
+	fastpathETCborIO{}.EncMapInt32Uint64V(rv2i(rv).(map[int32]uint64), e)
 }
 func (fastpathETCborIO) EncMapInt32Uint64V(v map[int32]uint64, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15228,8 +15138,7 @@ func (fastpathETCborIO) EncMapInt32Uint64V(v map[int32]uint64, e *encoderCborIO)
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32IntR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapInt32IntV(rv2i(rv).(map[int32]int), e)
+	fastpathETCborIO{}.EncMapInt32IntV(rv2i(rv).(map[int32]int), e)
 }
 func (fastpathETCborIO) EncMapInt32IntV(v map[int32]int, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15258,8 +15167,7 @@ func (fastpathETCborIO) EncMapInt32IntV(v map[int32]int, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32Int32R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapInt32Int32V(rv2i(rv).(map[int32]int32), e)
+	fastpathETCborIO{}.EncMapInt32Int32V(rv2i(rv).(map[int32]int32), e)
 }
 func (fastpathETCborIO) EncMapInt32Int32V(v map[int32]int32, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15288,8 +15196,7 @@ func (fastpathETCborIO) EncMapInt32Int32V(v map[int32]int32, e *encoderCborIO) {
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32Float64R(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapInt32Float64V(rv2i(rv).(map[int32]float64), e)
+	fastpathETCborIO{}.EncMapInt32Float64V(rv2i(rv).(map[int32]float64), e)
 }
 func (fastpathETCborIO) EncMapInt32Float64V(v map[int32]float64, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -15318,8 +15225,7 @@ func (fastpathETCborIO) EncMapInt32Float64V(v map[int32]float64, e *encoderCborI
 	e.mapEnd()
 }
 func (e *encoderCborIO) fastpathEncMapInt32BoolR(f *encFnInfo, rv reflect.Value) {
-	var ft fastpathETCborIO
-	ft.EncMapInt32BoolV(rv2i(rv).(map[int32]bool), e)
+	fastpathETCborIO{}.EncMapInt32BoolV(rv2i(rv).(map[int32]bool), e)
 }
 func (fastpathETCborIO) EncMapInt32BoolV(v map[int32]bool, e *encoderCborIO) {
 	e.mapStart(len(v))
@@ -17024,15 +16930,15 @@ func (f fastpathDTCborIO) DecMapStringIntfX(vp *map[string]interface{}, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapStringIntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapStringIntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapStringIntfL(v map[string]interface{}, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17076,15 +16982,15 @@ func (f fastpathDTCborIO) DecMapStringStringX(vp *map[string]string, d *decoderC
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapStringStringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]string, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapStringStringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapStringStringL(v map[string]string, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17122,15 +17028,15 @@ func (f fastpathDTCborIO) DecMapStringBytesX(vp *map[string][]byte, d *decoderCb
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
-		}
-		if containerLen != 0 {
-			f.DecMapStringBytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string][]byte, decInferLen(containerLen, d.h.MaxInitLen, 40))
+	}
+	if containerLen != 0 {
+		f.DecMapStringBytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapStringBytesL(v map[string][]byte, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17174,15 +17080,15 @@ func (f fastpathDTCborIO) DecMapStringUint8X(vp *map[string]uint8, d *decoderCbo
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapStringUint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]uint8, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapStringUint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapStringUint8L(v map[string]uint8, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17220,15 +17126,15 @@ func (f fastpathDTCborIO) DecMapStringUint64X(vp *map[string]uint64, d *decoderC
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringUint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]uint64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringUint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapStringUint64L(v map[string]uint64, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17266,15 +17172,15 @@ func (f fastpathDTCborIO) DecMapStringIntX(vp *map[string]int, d *decoderCborIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringIntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]int, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringIntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapStringIntL(v map[string]int, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17312,15 +17218,15 @@ func (f fastpathDTCborIO) DecMapStringInt32X(vp *map[string]int32, d *decoderCbo
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapStringInt32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]int32, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapStringInt32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapStringInt32L(v map[string]int32, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17358,15 +17264,15 @@ func (f fastpathDTCborIO) DecMapStringFloat64X(vp *map[string]float64, d *decode
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapStringFloat64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]float64, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapStringFloat64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapStringFloat64L(v map[string]float64, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17404,15 +17310,15 @@ func (f fastpathDTCborIO) DecMapStringBoolX(vp *map[string]bool, d *decoderCborI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapStringBoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[string]bool, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapStringBoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapStringBoolL(v map[string]bool, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17450,15 +17356,15 @@ func (f fastpathDTCborIO) DecMapUint8IntfX(vp *map[uint8]interface{}, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint8IntfL(v map[uint8]interface{}, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17502,15 +17408,15 @@ func (f fastpathDTCborIO) DecMapUint8StringX(vp *map[uint8]string, d *decoderCbo
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]string, decInferLen(containerLen, d.h.MaxInitLen, 17))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint8StringL(v map[uint8]string, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17548,15 +17454,15 @@ func (f fastpathDTCborIO) DecMapUint8BytesX(vp *map[uint8][]byte, d *decoderCbor
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8][]byte, decInferLen(containerLen, d.h.MaxInitLen, 25))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17600,15 +17506,15 @@ func (f fastpathDTCborIO) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decoderCborI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]uint8, decInferLen(containerLen, d.h.MaxInitLen, 2))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17646,15 +17552,15 @@ func (f fastpathDTCborIO) DecMapUint8Uint64X(vp *map[uint8]uint64, d *decoderCbo
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]uint64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint8Uint64L(v map[uint8]uint64, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17692,15 +17598,15 @@ func (f fastpathDTCborIO) DecMapUint8IntX(vp *map[uint8]int, d *decoderCborIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]int, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint8IntL(v map[uint8]int, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17738,15 +17644,15 @@ func (f fastpathDTCborIO) DecMapUint8Int32X(vp *map[uint8]int32, d *decoderCborI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]int32, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint8Int32L(v map[uint8]int32, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17784,15 +17690,15 @@ func (f fastpathDTCborIO) DecMapUint8Float64X(vp *map[uint8]float64, d *decoderC
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]float64, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint8Float64L(v map[uint8]float64, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17830,15 +17736,15 @@ func (f fastpathDTCborIO) DecMapUint8BoolX(vp *map[uint8]bool, d *decoderCborIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
-		}
-		if containerLen != 0 {
-			f.DecMapUint8BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint8]bool, decInferLen(containerLen, d.h.MaxInitLen, 2))
+	}
+	if containerLen != 0 {
+		f.DecMapUint8BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint8BoolL(v map[uint8]bool, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17876,15 +17782,15 @@ func (f fastpathDTCborIO) DecMapUint64IntfX(vp *map[uint64]interface{}, d *decod
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint64IntfL(v map[uint64]interface{}, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17928,15 +17834,15 @@ func (f fastpathDTCborIO) DecMapUint64StringX(vp *map[uint64]string, d *decoderC
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint64StringL(v map[uint64]string, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -17974,15 +17880,15 @@ func (f fastpathDTCborIO) DecMapUint64BytesX(vp *map[uint64][]byte, d *decoderCb
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint64BytesL(v map[uint64][]byte, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18026,15 +17932,15 @@ func (f fastpathDTCborIO) DecMapUint64Uint8X(vp *map[uint64]uint8, d *decoderCbo
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint64Uint8L(v map[uint64]uint8, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18072,15 +17978,15 @@ func (f fastpathDTCborIO) DecMapUint64Uint64X(vp *map[uint64]uint64, d *decoderC
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint64Uint64L(v map[uint64]uint64, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18118,15 +18024,15 @@ func (f fastpathDTCborIO) DecMapUint64IntX(vp *map[uint64]int, d *decoderCborIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint64IntL(v map[uint64]int, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18164,15 +18070,15 @@ func (f fastpathDTCborIO) DecMapUint64Int32X(vp *map[uint64]int32, d *decoderCbo
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint64Int32L(v map[uint64]int32, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18210,15 +18116,15 @@ func (f fastpathDTCborIO) DecMapUint64Float64X(vp *map[uint64]float64, d *decode
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint64Float64L(v map[uint64]float64, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18256,15 +18162,15 @@ func (f fastpathDTCborIO) DecMapUint64BoolX(vp *map[uint64]bool, d *decoderCborI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapUint64BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[uint64]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapUint64BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapUint64BoolL(v map[uint64]bool, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18302,15 +18208,15 @@ func (f fastpathDTCborIO) DecMapIntIntfX(vp *map[int]interface{}, d *decoderCbor
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapIntIntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapIntIntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapIntIntfL(v map[int]interface{}, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18354,15 +18260,15 @@ func (f fastpathDTCborIO) DecMapIntStringX(vp *map[int]string, d *decoderCborIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
-		}
-		if containerLen != 0 {
-			f.DecMapIntStringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]string, decInferLen(containerLen, d.h.MaxInitLen, 24))
+	}
+	if containerLen != 0 {
+		f.DecMapIntStringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapIntStringL(v map[int]string, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18400,15 +18306,15 @@ func (f fastpathDTCborIO) DecMapIntBytesX(vp *map[int][]byte, d *decoderCborIO) 
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
-		}
-		if containerLen != 0 {
-			f.DecMapIntBytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int][]byte, decInferLen(containerLen, d.h.MaxInitLen, 32))
+	}
+	if containerLen != 0 {
+		f.DecMapIntBytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapIntBytesL(v map[int][]byte, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18452,15 +18358,15 @@ func (f fastpathDTCborIO) DecMapIntUint8X(vp *map[int]uint8, d *decoderCborIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapIntUint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]uint8, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapIntUint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapIntUint8L(v map[int]uint8, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18498,15 +18404,15 @@ func (f fastpathDTCborIO) DecMapIntUint64X(vp *map[int]uint64, d *decoderCborIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntUint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]uint64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntUint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapIntUint64L(v map[int]uint64, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18544,15 +18450,15 @@ func (f fastpathDTCborIO) DecMapIntIntX(vp *map[int]int, d *decoderCborIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntIntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]int, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntIntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapIntIntL(v map[int]int, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18590,15 +18496,15 @@ func (f fastpathDTCborIO) DecMapIntInt32X(vp *map[int]int32, d *decoderCborIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapIntInt32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]int32, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapIntInt32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapIntInt32L(v map[int]int32, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18636,15 +18542,15 @@ func (f fastpathDTCborIO) DecMapIntFloat64X(vp *map[int]float64, d *decoderCborI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
-		}
-		if containerLen != 0 {
-			f.DecMapIntFloat64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]float64, decInferLen(containerLen, d.h.MaxInitLen, 16))
+	}
+	if containerLen != 0 {
+		f.DecMapIntFloat64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapIntFloat64L(v map[int]float64, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18682,15 +18588,15 @@ func (f fastpathDTCborIO) DecMapIntBoolX(vp *map[int]bool, d *decoderCborIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
-		}
-		if containerLen != 0 {
-			f.DecMapIntBoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int]bool, decInferLen(containerLen, d.h.MaxInitLen, 9))
+	}
+	if containerLen != 0 {
+		f.DecMapIntBoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapIntBoolL(v map[int]bool, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18728,15 +18634,15 @@ func (f fastpathDTCborIO) DecMapInt32IntfX(vp *map[int32]interface{}, d *decoder
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32IntfL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]interface{}, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32IntfL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapInt32IntfL(v map[int32]interface{}, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18780,15 +18686,15 @@ func (f fastpathDTCborIO) DecMapInt32StringX(vp *map[int32]string, d *decoderCbo
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32StringL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]string, decInferLen(containerLen, d.h.MaxInitLen, 20))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32StringL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapInt32StringL(v map[int32]string, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18826,15 +18732,15 @@ func (f fastpathDTCborIO) DecMapInt32BytesX(vp *map[int32][]byte, d *decoderCbor
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32BytesL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32][]byte, decInferLen(containerLen, d.h.MaxInitLen, 28))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32BytesL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapInt32BytesL(v map[int32][]byte, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18878,15 +18784,15 @@ func (f fastpathDTCborIO) DecMapInt32Uint8X(vp *map[int32]uint8, d *decoderCborI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Uint8L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]uint8, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Uint8L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapInt32Uint8L(v map[int32]uint8, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18924,15 +18830,15 @@ func (f fastpathDTCborIO) DecMapInt32Uint64X(vp *map[int32]uint64, d *decoderCbo
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Uint64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]uint64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Uint64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapInt32Uint64L(v map[int32]uint64, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -18970,15 +18876,15 @@ func (f fastpathDTCborIO) DecMapInt32IntX(vp *map[int32]int, d *decoderCborIO) {
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32IntL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]int, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32IntL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapInt32IntL(v map[int32]int, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -19016,15 +18922,15 @@ func (f fastpathDTCborIO) DecMapInt32Int32X(vp *map[int32]int32, d *decoderCborI
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Int32L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]int32, decInferLen(containerLen, d.h.MaxInitLen, 8))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Int32L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapInt32Int32L(v map[int32]int32, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -19062,15 +18968,15 @@ func (f fastpathDTCborIO) DecMapInt32Float64X(vp *map[int32]float64, d *decoderC
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32Float64L(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]float64, decInferLen(containerLen, d.h.MaxInitLen, 12))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32Float64L(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapInt32Float64L(v map[int32]float64, containerLen int, d *decoderCborIO) {
 	if v == nil {
@@ -19108,15 +19014,15 @@ func (f fastpathDTCborIO) DecMapInt32BoolX(vp *map[int32]bool, d *decoderCborIO)
 	containerLen := d.mapStart(d.d.ReadMapStart())
 	if containerLen == containerLenNil {
 		*vp = nil
-	} else {
-		if *vp == nil {
-			*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
-		}
-		if containerLen != 0 {
-			f.DecMapInt32BoolL(*vp, containerLen, d)
-		}
-		d.mapEnd()
+		return
 	}
+	if *vp == nil {
+		*vp = make(map[int32]bool, decInferLen(containerLen, d.h.MaxInitLen, 5))
+	}
+	if containerLen != 0 {
+		f.DecMapInt32BoolL(*vp, containerLen, d)
+	}
+	d.mapEnd()
 }
 func (fastpathDTCborIO) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *decoderCborIO) {
 	if v == nil {

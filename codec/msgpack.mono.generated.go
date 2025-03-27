@@ -145,13 +145,10 @@ func (e *encoderMsgpackBytes) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderMsgpackBytes) kSeqFn(rtelem reflect.Type) (fn *encFnMsgpackBytes) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderMsgpackBytes) kSeqFn(rt reflect.Type) (fn *encFnMsgpackBytes) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -1122,6 +1119,15 @@ func (e *encoderMsgpackBytes) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnMsgpackBytes struct {
+	i  encFnInfo
+	fe func(*encoderMsgpackBytes, *encFnInfo, reflect.Value)
+}
+type encRtidFnMsgpackBytes struct {
+	rtid uintptr
+	fn   *encFnMsgpackBytes
+}
+
 func (helperEncDriverMsgpackBytes) newEncoderBytes(out *[]byte, h Handle) *encoderMsgpackBytes {
 	var c1 encoderMsgpackBytes
 	c1.bytes = true
@@ -1151,15 +1157,6 @@ func (helperEncDriverMsgpackBytes) encFnloadFastpathUnderlying(ti *typeInfo, fp 
 		u = f.rt
 	}
 	return
-}
-
-type encFnMsgpackBytes struct {
-	i  encFnInfo
-	fe func(*encoderMsgpackBytes, *encFnInfo, reflect.Value)
-}
-type encRtidFnMsgpackBytes struct {
-	rtid uintptr
-	fn   *encFnMsgpackBytes
 }
 
 func (helperEncDriverMsgpackBytes) encFindRtidFn(s []encRtidFnMsgpackBytes, rtid uintptr) (i uint, fn *encFnMsgpackBytes) {
@@ -1684,18 +1681,19 @@ func (d *decoderMsgpackBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -2764,6 +2762,15 @@ func (x decSliceHelperMsgpackBytes) arrayCannotExpand(hasLen bool, lenv, j, cont
 	x.End()
 }
 
+type decFnMsgpackBytes struct {
+	i  decFnInfo
+	fd func(*decoderMsgpackBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnMsgpackBytes struct {
+	rtid uintptr
+	fn   *decFnMsgpackBytes
+}
+
 func (helperDecDriverMsgpackBytes) newDecoderBytes(in []byte, h Handle) *decoderMsgpackBytes {
 	var c1 decoderMsgpackBytes
 	c1.bytes = true
@@ -2793,15 +2800,6 @@ func (helperDecDriverMsgpackBytes) decFnloadFastpathUnderlying(ti *typeInfo, fp 
 		u = f.rt
 	}
 	return
-}
-
-type decFnMsgpackBytes struct {
-	i  decFnInfo
-	fd func(*decoderMsgpackBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnMsgpackBytes struct {
-	rtid uintptr
-	fn   *decFnMsgpackBytes
 }
 
 func (helperDecDriverMsgpackBytes) decFindRtidFn(s []decRtidFnMsgpackBytes, rtid uintptr) (i uint, fn *decFnMsgpackBytes) {
@@ -4120,13 +4118,10 @@ func (e *encoderMsgpackIO) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderMsgpackIO) kSeqFn(rtelem reflect.Type) (fn *encFnMsgpackIO) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderMsgpackIO) kSeqFn(rt reflect.Type) (fn *encFnMsgpackIO) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -5097,6 +5092,15 @@ func (e *encoderMsgpackIO) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnMsgpackIO struct {
+	i  encFnInfo
+	fe func(*encoderMsgpackIO, *encFnInfo, reflect.Value)
+}
+type encRtidFnMsgpackIO struct {
+	rtid uintptr
+	fn   *encFnMsgpackIO
+}
+
 func (helperEncDriverMsgpackIO) newEncoderBytes(out *[]byte, h Handle) *encoderMsgpackIO {
 	var c1 encoderMsgpackIO
 	c1.bytes = true
@@ -5126,15 +5130,6 @@ func (helperEncDriverMsgpackIO) encFnloadFastpathUnderlying(ti *typeInfo, fp *fa
 		u = f.rt
 	}
 	return
-}
-
-type encFnMsgpackIO struct {
-	i  encFnInfo
-	fe func(*encoderMsgpackIO, *encFnInfo, reflect.Value)
-}
-type encRtidFnMsgpackIO struct {
-	rtid uintptr
-	fn   *encFnMsgpackIO
 }
 
 func (helperEncDriverMsgpackIO) encFindRtidFn(s []encRtidFnMsgpackIO, rtid uintptr) (i uint, fn *encFnMsgpackIO) {
@@ -5659,18 +5654,19 @@ func (d *decoderMsgpackIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -6739,6 +6735,15 @@ func (x decSliceHelperMsgpackIO) arrayCannotExpand(hasLen bool, lenv, j, contain
 	x.End()
 }
 
+type decFnMsgpackIO struct {
+	i  decFnInfo
+	fd func(*decoderMsgpackIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnMsgpackIO struct {
+	rtid uintptr
+	fn   *decFnMsgpackIO
+}
+
 func (helperDecDriverMsgpackIO) newDecoderBytes(in []byte, h Handle) *decoderMsgpackIO {
 	var c1 decoderMsgpackIO
 	c1.bytes = true
@@ -6768,15 +6773,6 @@ func (helperDecDriverMsgpackIO) decFnloadFastpathUnderlying(ti *typeInfo, fp *fa
 		u = f.rt
 	}
 	return
-}
-
-type decFnMsgpackIO struct {
-	i  decFnInfo
-	fd func(*decoderMsgpackIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnMsgpackIO struct {
-	rtid uintptr
-	fn   *decFnMsgpackIO
 }
 
 func (helperDecDriverMsgpackIO) decFindRtidFn(s []decRtidFnMsgpackIO, rtid uintptr) (i uint, fn *decFnMsgpackIO) {

@@ -149,13 +149,10 @@ func (e *encoderJsonBytes) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderJsonBytes) kSeqFn(rtelem reflect.Type) (fn *encFnJsonBytes) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderJsonBytes) kSeqFn(rt reflect.Type) (fn *encFnJsonBytes) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -1126,6 +1123,15 @@ func (e *encoderJsonBytes) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnJsonBytes struct {
+	i  encFnInfo
+	fe func(*encoderJsonBytes, *encFnInfo, reflect.Value)
+}
+type encRtidFnJsonBytes struct {
+	rtid uintptr
+	fn   *encFnJsonBytes
+}
+
 func (helperEncDriverJsonBytes) newEncoderBytes(out *[]byte, h Handle) *encoderJsonBytes {
 	var c1 encoderJsonBytes
 	c1.bytes = true
@@ -1155,15 +1161,6 @@ func (helperEncDriverJsonBytes) encFnloadFastpathUnderlying(ti *typeInfo, fp *fa
 		u = f.rt
 	}
 	return
-}
-
-type encFnJsonBytes struct {
-	i  encFnInfo
-	fe func(*encoderJsonBytes, *encFnInfo, reflect.Value)
-}
-type encRtidFnJsonBytes struct {
-	rtid uintptr
-	fn   *encFnJsonBytes
 }
 
 func (helperEncDriverJsonBytes) encFindRtidFn(s []encRtidFnJsonBytes, rtid uintptr) (i uint, fn *encFnJsonBytes) {
@@ -1688,18 +1685,19 @@ func (d *decoderJsonBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -2768,6 +2766,15 @@ func (x decSliceHelperJsonBytes) arrayCannotExpand(hasLen bool, lenv, j, contain
 	x.End()
 }
 
+type decFnJsonBytes struct {
+	i  decFnInfo
+	fd func(*decoderJsonBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnJsonBytes struct {
+	rtid uintptr
+	fn   *decFnJsonBytes
+}
+
 func (helperDecDriverJsonBytes) newDecoderBytes(in []byte, h Handle) *decoderJsonBytes {
 	var c1 decoderJsonBytes
 	c1.bytes = true
@@ -2797,15 +2804,6 @@ func (helperDecDriverJsonBytes) decFnloadFastpathUnderlying(ti *typeInfo, fp *fa
 		u = f.rt
 	}
 	return
-}
-
-type decFnJsonBytes struct {
-	i  decFnInfo
-	fd func(*decoderJsonBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnJsonBytes struct {
-	rtid uintptr
-	fn   *decFnJsonBytes
 }
 
 func (helperDecDriverJsonBytes) decFindRtidFn(s []decRtidFnJsonBytes, rtid uintptr) (i uint, fn *decFnJsonBytes) {
@@ -4245,13 +4243,10 @@ func (e *encoderJsonIO) kErr(_ *encFnInfo, rv reflect.Value) {
 	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
-func (e *encoderJsonIO) kSeqFn(rtelem reflect.Type) (fn *encFnJsonIO) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoderJsonIO) kSeqFn(rt reflect.Type) (fn *encFnJsonIO) {
 
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -5222,6 +5217,15 @@ func (e *encoderJsonIO) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
+type encFnJsonIO struct {
+	i  encFnInfo
+	fe func(*encoderJsonIO, *encFnInfo, reflect.Value)
+}
+type encRtidFnJsonIO struct {
+	rtid uintptr
+	fn   *encFnJsonIO
+}
+
 func (helperEncDriverJsonIO) newEncoderBytes(out *[]byte, h Handle) *encoderJsonIO {
 	var c1 encoderJsonIO
 	c1.bytes = true
@@ -5251,15 +5255,6 @@ func (helperEncDriverJsonIO) encFnloadFastpathUnderlying(ti *typeInfo, fp *fastp
 		u = f.rt
 	}
 	return
-}
-
-type encFnJsonIO struct {
-	i  encFnInfo
-	fe func(*encoderJsonIO, *encFnInfo, reflect.Value)
-}
-type encRtidFnJsonIO struct {
-	rtid uintptr
-	fn   *encFnJsonIO
 }
 
 func (helperEncDriverJsonIO) encFindRtidFn(s []encRtidFnJsonIO, rtid uintptr) (i uint, fn *encFnJsonIO) {
@@ -5784,18 +5779,19 @@ func (d *decoderJsonIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
 
@@ -6864,6 +6860,15 @@ func (x decSliceHelperJsonIO) arrayCannotExpand(hasLen bool, lenv, j, containerL
 	x.End()
 }
 
+type decFnJsonIO struct {
+	i  decFnInfo
+	fd func(*decoderJsonIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnJsonIO struct {
+	rtid uintptr
+	fn   *decFnJsonIO
+}
+
 func (helperDecDriverJsonIO) newDecoderBytes(in []byte, h Handle) *decoderJsonIO {
 	var c1 decoderJsonIO
 	c1.bytes = true
@@ -6893,15 +6898,6 @@ func (helperDecDriverJsonIO) decFnloadFastpathUnderlying(ti *typeInfo, fp *fastp
 		u = f.rt
 	}
 	return
-}
-
-type decFnJsonIO struct {
-	i  decFnInfo
-	fd func(*decoderJsonIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnJsonIO struct {
-	rtid uintptr
-	fn   *decFnJsonIO
 }
 
 func (helperDecDriverJsonIO) decFindRtidFn(s []decRtidFnJsonIO, rtid uintptr) (i uint, fn *decFnJsonIO) {
