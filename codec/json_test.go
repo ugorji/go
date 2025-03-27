@@ -655,6 +655,10 @@ func TestJsonRawExt(t *testing.T) {
 	doTestRawExt(t, testJsonH)
 }
 
+func TestJsonMapStructKey(t *testing.T) {
+	doTestMapStructKey(t, testJsonH)
+}
+
 func TestJsonDecodeNilMapValue(t *testing.T) {
 	doTestDecodeNilMapValue(t, testJsonH)
 }

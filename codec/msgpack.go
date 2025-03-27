@@ -1118,7 +1118,7 @@ func (h *MsgpackHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (
 //--------------------------------------------------
 
 type msgpackSpecRpcCodec struct {
-	rpcCodec
+	*rpcCodec
 }
 
 // /////////////// Spec RPC Codec ///////////////////

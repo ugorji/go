@@ -876,8 +876,9 @@ func testGetBytes() (bs []byte) {
 }
 
 func testHandleCopy(h Handle) (h2 Handle) {
-	rv := reflect.ValueOf(h).Elem().Elem() // interface --> pointer --> value
-	rv2 := reflect.New(rv.Type()).Elem()
+	// interface --> pointer --> value
+	rv := baseRVRV(reflect.ValueOf(h).Elem())
+	rv2 := reflect.New(rv.Type())
 	rv2.Elem().Set(rv)
 	return rv2.Interface().(Handle)
 }

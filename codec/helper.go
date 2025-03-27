@@ -1365,7 +1365,9 @@ func (x *BasicHandle) AddExt(rt reflect.Type, tag byte,
 // An error is returned if that is not honored.
 // To Deregister an ext, call SetExt with nil Ext.
 //
-// Deprecated: Use SetBytesExt or SetInterfaceExt on the Handle instead.
+// It will throw an error if called after the Handle has been initialized.
+//
+// Deprecated: Use SetBytesExt or SetInterfaceExt on the Handle instead (which *may* internally call this)
 func (x *BasicHandle) SetExt(rt reflect.Type, tag uint64, ext Ext) (err error) {
 	if x.isInited() {
 		return errHandleInited
