@@ -97,7 +97,7 @@ At runtime:
 
 Build only:
 
-- codec.gen: used to generate fastpath and monomorphization code
+- codec.build: used to generate fastpath and monomorphization code
 
 Test only:
 

@@ -29,7 +29,7 @@ _build() {
     
     rm -f fast*path.generated.go *mono*generated.go *_generated_test.go gen-from-tmpl*.generated.go
 
-    local btags="codec.gen codec.notmono codec.safe codec.notfastpath"
+    local btags="codec.build codec.notmono codec.safe codec.notfastpath"
 
     cat > gen-from-tmpl.codec.generated.go <<EOF
 package codec
