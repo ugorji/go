@@ -36,10 +36,14 @@ func TestCborIndefiniteLength(t *testing.T) {
 	var h Handle = testCborH
 	defer testSetup(t, &h)()
 	bh := testBasicHandle(h)
-	defer func(oldMapType reflect.Type) {
+	defer func(oldMapType reflect.Type, oldRawToString, oldSignedInteger bool) {
 		bh.MapType = oldMapType
-	}(bh.MapType)
+		bh.RawToString = oldRawToString
+		bh.SignedInteger = oldSignedInteger
+	}(bh.MapType, bh.RawToString, bh.SignedInteger)
 	bh.MapType = testMapStrIntfTyp
+	bh.RawToString = false
+	bh.SignedInteger = false
 	// var (
 	// 	M1 map[string][]byte
 	// 	M2 map[uint64]bool
@@ -170,10 +174,14 @@ func TestCborGoldens(t *testing.T) {
 	var h Handle = testCborH
 	defer testSetup(t, &h)()
 	bh := testBasicHandle(h)
-	defer func(oldMapType reflect.Type) {
+	defer func(oldMapType reflect.Type, oldRawToString, oldSignedInteger bool) {
 		bh.MapType = oldMapType
-	}(bh.MapType)
+		bh.RawToString = oldRawToString
+		bh.SignedInteger = oldSignedInteger
+	}(bh.MapType, bh.RawToString, bh.SignedInteger)
 	bh.MapType = testMapStrIntfTyp
+	bh.RawToString = false
+	bh.SignedInteger = false
 
 	// decode test-cbor-goldens.json into a list of []*testCborGolden
 	// for each one,
@@ -224,7 +232,10 @@ func TestCborGoldens(t *testing.T) {
 		}
 		var v interface{}
 		NewDecoderBytes(bs, h).MustDecode(&v)
-		if _, ok := v.(RawExt); ok {
+		switch v.(type) {
+		case RawExt:
+			continue
+		case *RawExt:
 			continue
 		}
 		// check the diagnostics to compare
