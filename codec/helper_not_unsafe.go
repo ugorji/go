@@ -519,7 +519,7 @@ func rvCapSlice(rv reflect.Value) int {
 
 func rvGetArrayBytes(rv reflect.Value, scratch []byte) (bs []byte) {
 	l := rv.Len()
-	if scratch == nil || rv.CanAddr() {
+	if scratch == nil && rv.CanAddr() {
 		return rv.Slice(0, l).Bytes()
 	}
 
