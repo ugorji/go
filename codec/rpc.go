@@ -48,11 +48,11 @@ type rpcCodec struct {
 	cls atomic.Pointer[clsErr]
 }
 
-func newRPCCodec(conn io.ReadWriteCloser, h Handle) rpcCodec {
+func newRPCCodec(conn io.ReadWriteCloser, h Handle) *rpcCodec {
 	return newRPCCodec2(conn, conn, conn, h)
 }
 
-func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
+func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) *rpcCodec {
 	bh := h.getBasicHandle()
 	// if the writer can flush, ensure we leverage it, else
 	// we may hang waiting on read if write isn't flushed.
@@ -72,7 +72,7 @@ func newRPCCodec2(r io.Reader, w io.Writer, c io.Closer, h Handle) rpcCodec {
 		}
 	}
 
-	rc := rpcCodec{
+	rc := &rpcCodec{
 		c:   c,
 		w:   w,
 		r:   r,
@@ -165,7 +165,7 @@ func (c *rpcCodec) ReadResponseBody(body interface{}) error {
 // -------------------------------------
 
 type goRpcCodec struct {
-	rpcCodec
+	*rpcCodec
 }
 
 func (c *goRpcCodec) WriteRequest(r *rpc.Request, body interface{}) error {
