@@ -176,7 +176,7 @@ type msgpackEncDriver[T encWriter] struct {
 	encInit2er
 
 	h *MsgpackHandle
-	e *encoderShared
+	e *encoderBase
 	w T
 	// x [8]byte
 }
@@ -411,7 +411,7 @@ type msgpackDecDriver[T decReader] struct {
 	decInit2er
 
 	h *MsgpackHandle
-	d *decoderShared
+	d *decoderBase
 	r T
 
 	bdAndBdread
@@ -1233,7 +1233,7 @@ func (x msgpackSpecRpc) ClientCodec(conn io.ReadWriteCloser, h Handle) rpc.Clien
 
 // ----
 
-func (d *msgpackEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *msgpackEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*MsgpackHandle)
 	d.e = shared
@@ -1261,7 +1261,7 @@ func (e *msgpackEncDriver[T]) resetOutIO(out io.Writer) {
 
 // ----
 
-func (d *msgpackDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *msgpackDecDriver[T]) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*MsgpackHandle)
 	d.bytes = shared.bytes

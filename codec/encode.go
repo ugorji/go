@@ -19,7 +19,7 @@ import (
 // for bufio buffer or []byte (when nil passed)
 const defEncByteBufSize = 1 << 10 // 4:16, 6:64, 8:256, 10:1024
 
-var errEncoderNotInitialized = errors.New("Encoder not initialized")
+var errEncoderNotInitialized = errors.New("encoder not initialized")
 
 // encDriver abstracts the actual codec (binc vs msgpack, etc)
 type encDriverI interface {
@@ -55,7 +55,7 @@ type encDriverI interface {
 	resetOutBytes(out *[]byte)
 	resetOutIO(out io.Writer)
 
-	init(h Handle, shared *encoderShared, enc encoderI) (fp interface{})
+	init(h Handle, shared *encoderBase, enc encoderI) (fp interface{})
 
 	// driverStateManager
 }
@@ -237,14 +237,14 @@ func (e *encoder[T]) raw(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoder[T]) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
 func (e *encoder[T]) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat64(real(v))
 }
@@ -322,7 +322,7 @@ func (e *encoder[T]) kUintptr(_ *encFnInfo, rv reflect.Value) {
 }
 
 func (e *encoder[T]) kErr(_ *encFnInfo, rv reflect.Value) {
-	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
+	halt.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
 func chanToSlice(rv reflect.Value, rtslice reflect.Type, timeout time.Duration) (rvcs reflect.Value) {
@@ -432,7 +432,7 @@ func (e *encoder[T]) kArrayW(rv reflect.Value, ti *typeInfo) {
 
 func (e *encoder[T]) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorStr("send-only channel cannot be encoded")
+		halt.errorStr("send-only channel cannot be encoded")
 	}
 	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
 		e.kSliceBytesChan(rv)
@@ -965,9 +965,9 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 	}
 }
 
-// encoderShared is shared as a field between Encoder and its encDrivers.
+// encoderBase is shared as a field between Encoder and its encDrivers.
 // This way, encDrivers need not hold a referece to the Encoder itself.
-type encoderShared struct {
+type encoderBase struct {
 	// MARKER: these fields below should belong directly in Encoder.
 	// There should not be any pointers here - just values.
 	// we pack them here for space efficiency and cache-line optimization.
@@ -999,7 +999,6 @@ type encoderShared struct {
 // so its state can be reused to decode new input streams repeatedly.
 // This is the idiomatic way to use.
 type encoder[T encDriver] struct {
-	panicHdl
 	perType encPerType
 
 	dh helperEncDriver[T]
@@ -1011,7 +1010,7 @@ type encoder[T encDriver] struct {
 	e T
 
 	// hopefully, reduce derefencing cost by laying some fields shared with encDriver
-	encoderShared
+	encoderBase
 
 	// ---- cpu cache line boundary
 	hh Handle
@@ -1052,7 +1051,7 @@ func (e *encoder[T]) init(h Handle) {
 	e.err = errEncoderNotInitialized
 
 	// e.fp = fastpathEList[T]()
-	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEs[T])
+	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEs[T])
 
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
@@ -1356,7 +1355,7 @@ TOP:
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
 				if eq4i(sptr, vv) { // error if sptr already seen
-					e.errorf("circular reference found: %p, %T", sptr, sptr)
+					halt.errorf("circular reference found: %p, %T", sptr, sptr)
 				}
 			}
 			e.ci = append(e.ci, sptr)
@@ -1416,7 +1415,7 @@ func (e *encoder[T]) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva re
 }
 
 func (e *encoder[T]) marshalUtf8(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1425,7 +1424,7 @@ func (e *encoder[T]) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *encoder[T]) marshalAsis(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1434,7 +1433,7 @@ func (e *encoder[T]) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *encoder[T]) marshalRaw(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1445,7 +1444,7 @@ func (e *encoder[T]) marshalRaw(bs []byte, fnerr error) {
 func (e *encoder[T]) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
-		e.errorBytes("Raw values cannot be encoded: ", v)
+		halt.errorBytes("Raw values cannot be encoded: ", v)
 	}
 	e.e.writeBytesAsis(v)
 }
@@ -1505,7 +1504,7 @@ func (e *encoder[T]) arrayEnd() {
 
 func (e *encoder[T]) haltOnMbsOddLen(length int) {
 	if length&1 != 0 { // similar to &1==1 or %2 == 1
-		e.errorInt("mapBySlice requires even slice length, but got ", int64(length))
+		halt.errorInt("mapBySlice requires even slice length, but got ", int64(length))
 	}
 }
 

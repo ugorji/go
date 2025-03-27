@@ -166,7 +166,7 @@ type jsonEncState struct {
 type jsonEncDriver[T encWriter] struct {
 	noBuiltInTypes
 	h *JsonHandle
-	e *encoderShared
+	e *encoderBase
 	s *bitset256 // safe set for characters (taking h.HTMLAsIs into consideration)
 
 	w T
@@ -619,7 +619,7 @@ type jsonDecDriver[T decReader] struct {
 	noBuiltInTypes
 	decDriverNoopNumberHelper
 	h *JsonHandle
-	d *decoderShared
+	d *decoderBase
 
 	r T
 	jsonDecState
@@ -1473,7 +1473,7 @@ func jsonFloatStrconvFmtPrec32(f float32) (fmt byte, prec int8) {
 
 // ----
 
-func (d *jsonEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *jsonEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*JsonHandle)
 	d.e = shared
@@ -1501,7 +1501,7 @@ func (e *jsonEncDriver[T]) resetOutIO(out io.Writer) {
 
 // ----
 
-func (d *jsonDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *jsonDecDriver[T]) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*JsonHandle)
 	d.bytes = shared.bytes

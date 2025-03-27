@@ -1181,18 +1181,18 @@ func makeMapReflect(typ reflect.Type, size int) (rv reflect.Value) {
 
 // ---------- DECODER optimized ---------------
 
-func (d *decoderShared) zerocopystate() bool {
+func (d *decoderBase) zerocopystate() bool {
 	return d.decByteState == decByteStateZerocopy && d.zeroCopy
 }
 
-// func (d *decoderShared) stringZC(v []byte) (s string) {
+// func (d *decoderBase) stringZC(v []byte) (s string) {
 // 	if d.zerocopystate() {
 // 		return stringView(v)
 // 	}
 // 	return d.string(v)
 // }
 
-func (d *decoderShared) stringZC(v []byte) (s string) {
+func (d *decoderBase) stringZC(v []byte) (s string) {
 	// This method is called a lot. Inlining helps with performance.
 	//
 	// MARKER: TUNED BELOW TO force inlining
@@ -1214,7 +1214,7 @@ func (d *decoderShared) stringZC(v []byte) (s string) {
 	return
 }
 
-func (d *decoderShared) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
+func (d *decoderBase) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
 	if !d.zerocopystate() {
 		*callFnRvk = true
 		if d.decByteState == decByteStateReuseBuf {

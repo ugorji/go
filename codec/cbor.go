@@ -125,7 +125,7 @@ type cborEncDriver[T encWriter] struct {
 	encDriverContainerNoTrackerT
 
 	h   *CborHandle
-	e   *encoderShared
+	e   *encoderBase
 	w   T
 	enc encoderI
 
@@ -328,7 +328,7 @@ type cborDecDriver[T decReader] struct {
 	noBuiltInTypes
 
 	h   *CborHandle
-	d   *decoderShared
+	d   *decoderBase
 	r   T
 	dec decoderI
 	bdAndBdread
@@ -962,7 +962,7 @@ func (d *cborDecDriver[T]) reset() {
 
 // ----
 
-func (d *cborEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *cborEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*CborHandle)
 	d.e = shared
@@ -990,7 +990,7 @@ func (e *cborEncDriver[T]) resetOutIO(out io.Writer) {
 
 // ----
 
-func (d *cborDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *cborDecDriver[T]) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*CborHandle)
 	d.bytes = shared.bytes

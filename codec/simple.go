@@ -81,7 +81,7 @@ type simpleEncDriver[T encWriter] struct {
 	encInit2er
 
 	h *SimpleHandle
-	e *encoderShared
+	e *encoderBase
 	// b [8]byte
 	w T
 
@@ -258,7 +258,7 @@ func (e *simpleEncDriver[T]) EncodeTime(t time.Time) {
 
 type simpleDecDriver[T decReader] struct {
 	h *SimpleHandle
-	d *decoderShared
+	d *decoderBase
 	r T
 
 	bdAndBdread
@@ -786,7 +786,7 @@ func (h *SimpleHandle) SetBytesExt(rt reflect.Type, tag uint64, ext BytesExt) (e
 
 // ----
 
-func (d *simpleEncDriver[T]) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *simpleEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*SimpleHandle)
 	d.e = shared
@@ -814,7 +814,7 @@ func (e *simpleEncDriver[T]) resetOutIO(out io.Writer) {
 
 // ----
 
-func (d *simpleDecDriver[T]) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *simpleDecDriver[T]) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*SimpleHandle)
 	d.bytes = shared.bytes
