@@ -719,20 +719,34 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			name2 = namearr2[:0]
 		}
 		var rvkencname []byte
+		tkt := ti.keyType
 		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 			d.mapElemKey()
-			switch ti.keyType {
-			case valueTypeString:
+			// use if-else since <8 branches and we need good branch prediction for string
+			if tkt == valueTypeString {
 				rvkencname = d.d.DecodeStringAsBytes()
-			case valueTypeInt:
+			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			case valueTypeUint:
+			} else if tkt == valueTypeUint {
 				rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			case valueTypeFloat:
+			} else if tkt == valueTypeFloat {
 				rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			default:
+			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
+			// switch tkt {
+			// case valueTypeString:
+			// 	rvkencname = d.d.DecodeStringAsBytes()
+			// case valueTypeInt:
+			// 	rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
+			// case valueTypeUint:
+			// 	rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
+			// case valueTypeFloat:
+			// 	rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
+			// default:
+			// 	halt.errorStr2("invalid struct key type: ", ti.keyType.String())
+			// }
+			//
 			// if ti.keyType == valueTypeString {
 			// 	rvkencname = d.d.DecodeStringAsBytes()
 			// } else {
@@ -2426,22 +2440,6 @@ func decInferLen(clen, maxlen, unit int) int {
 	return maxlen
 }
 
-func (helperDecDriver[T]) newDecoderBytes(in []byte, h Handle) *decoder[T] {
-	var c1 decoder[T]
-	c1.bytes = true
-	c1.init(h)
-	c1.ResetBytes(in) // MARKER check for error
-	return &c1
-}
-
-func (helperDecDriver[T]) newDecoderIO(in io.Reader, h Handle) *decoder[T] {
-	var c1 decoder[T]
-	c1.bytes = false
-	c1.init(h)
-	c1.Reset(in)
-	return &c1
-}
-
 type Decoder struct {
 	decoderI
 }
@@ -2455,23 +2453,6 @@ type Decoder struct {
 // This can be an efficient zero-copy if using default mode i.e. without codec.safe tag.
 func NewDecoderString(s string, h Handle) *Decoder {
 	return NewDecoderBytes(bytesView(s), h)
-}
-
-// ----
-
-func (helperDecDriver[T]) decFnloadFastpathUnderlying(ti *typeInfo, fp *fastpathDs[T]) (f *fastpathD[T], u reflect.Type) {
-	rtid := rt2id(ti.fastpathUnderlying)
-	idx, ok := fastpathAvIndex(rtid)
-	if !ok {
-		return
-	}
-	f = &fp[idx]
-	if uint8(reflect.Array) == ti.kind {
-		u = reflect.ArrayOf(ti.rt.Len(), ti.elem)
-	} else {
-		u = f.rt
-	}
-	return
 }
 
 // ----
@@ -2500,6 +2481,39 @@ type decRtidFn[T decDriver] struct {
 }
 
 // ----
+
+func (helperDecDriver[T]) newDecoderBytes(in []byte, h Handle) *decoder[T] {
+	var c1 decoder[T]
+	c1.bytes = true
+	c1.init(h)
+	c1.ResetBytes(in) // MARKER check for error
+	return &c1
+}
+
+func (helperDecDriver[T]) newDecoderIO(in io.Reader, h Handle) *decoder[T] {
+	var c1 decoder[T]
+	c1.bytes = false
+	c1.init(h)
+	c1.Reset(in)
+	return &c1
+}
+
+// ----
+
+func (helperDecDriver[T]) decFnloadFastpathUnderlying(ti *typeInfo, fp *fastpathDs[T]) (f *fastpathD[T], u reflect.Type) {
+	rtid := rt2id(ti.fastpathUnderlying)
+	idx, ok := fastpathAvIndex(rtid)
+	if !ok {
+		return
+	}
+	f = &fp[idx]
+	if uint8(reflect.Array) == ti.kind {
+		u = reflect.ArrayOf(ti.rt.Len(), ti.elem)
+	} else {
+		u = f.rt
+	}
+	return
+}
 
 func (helperDecDriver[T]) decFindRtidFn(s []decRtidFn[T], rtid uintptr) (i uint, fn *decFn[T]) {
 	// binary search. Adapted from sort/search.go. Use goto (not for loop) to allow inlining.

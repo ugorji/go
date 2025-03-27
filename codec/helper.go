@@ -2388,6 +2388,12 @@ func baseRVRV(v reflect.Value) (rv reflect.Value) {
 	return
 }
 
+func baseRT(v reflect.Type) (vv reflect.Type) {
+	for vv = v; vv.Kind() == reflect.Ptr; vv = vv.Elem() {
+	}
+	return
+}
+
 // ----
 
 // these "checkOverflow" functions must be inlinable, and not call anybody.

@@ -355,14 +355,11 @@ func chanToSlice(rv reflect.Value, rtslice reflect.Type, timeout time.Duration) 
 	return
 }
 
-func (e *encoder[T]) kSeqFn(rtelem reflect.Type) (fn *encFn[T]) {
-	for rtelem.Kind() == reflect.Ptr {
-		rtelem = rtelem.Elem()
-	}
+func (e *encoder[T]) kSeqFn(rt reflect.Type) (fn *encFn[T]) {
 	// if kind is reflect.Interface, do not pre-determine the encoding type,
 	// because preEncodeValue may break it down to a concrete type and kInterface will bomb.
-	if rtelem.Kind() != reflect.Interface {
-		fn = e.fn(rtelem)
+	if rt = baseRT(rt); rt.Kind() != reflect.Interface {
+		fn = e.fn(rt)
 	}
 	return
 }
@@ -1619,41 +1616,8 @@ func (encDriverContainerNoTrackerT) WriteArrayElem()    {}
 func (encDriverContainerNoTrackerT) WriteMapElemKey()   {}
 func (encDriverContainerNoTrackerT) WriteMapElemValue() {}
 
-func (helperEncDriver[T]) newEncoderBytes(out *[]byte, h Handle) *encoder[T] {
-	var c1 encoder[T]
-	c1.bytes = true
-	c1.init(h)
-	c1.ResetBytes(out)
-	return &c1
-}
-
-func (helperEncDriver[T]) newEncoderIO(out io.Writer, h Handle) *encoder[T] {
-	var c1 encoder[T]
-	c1.bytes = false
-	c1.init(h)
-	c1.Reset(out)
-	return &c1
-}
-
 type Encoder struct {
 	encoderI
-}
-
-// ----
-
-func (helperEncDriver[T]) encFnloadFastpathUnderlying(ti *typeInfo, fp *fastpathEs[T]) (f *fastpathE[T], u reflect.Type) {
-	rtid := rt2id(ti.fastpathUnderlying)
-	idx, ok := fastpathAvIndex(rtid)
-	if !ok {
-		return
-	}
-	f = &fp[idx]
-	if uint8(reflect.Array) == ti.kind {
-		u = reflect.ArrayOf(ti.rt.Len(), ti.elem)
-	} else {
-		u = f.rt
-	}
-	return
 }
 
 // ----
@@ -1679,6 +1643,39 @@ type encFn[T encDriver] struct {
 type encRtidFn[T encDriver] struct {
 	rtid uintptr
 	fn   *encFn[T]
+}
+
+// ----
+
+func (helperEncDriver[T]) newEncoderBytes(out *[]byte, h Handle) *encoder[T] {
+	var c1 encoder[T]
+	c1.bytes = true
+	c1.init(h)
+	c1.ResetBytes(out)
+	return &c1
+}
+
+func (helperEncDriver[T]) newEncoderIO(out io.Writer, h Handle) *encoder[T] {
+	var c1 encoder[T]
+	c1.bytes = false
+	c1.init(h)
+	c1.Reset(out)
+	return &c1
+}
+
+func (helperEncDriver[T]) encFnloadFastpathUnderlying(ti *typeInfo, fp *fastpathEs[T]) (f *fastpathE[T], u reflect.Type) {
+	rtid := rt2id(ti.fastpathUnderlying)
+	idx, ok := fastpathAvIndex(rtid)
+	if !ok {
+		return
+	}
+	f = &fp[idx]
+	if uint8(reflect.Array) == ti.kind {
+		u = reflect.ArrayOf(ti.rt.Len(), ti.elem)
+	} else {
+		u = f.rt
+	}
+	return
 }
 
 // ----
