@@ -18,12 +18,6 @@ import (
 	"unicode/utf8"
 )
 
-func (e *encoderMsgpackBytes) setContainerState(cs containerState) {
-	if cs != 0 {
-		e.c = cs
-	}
-}
-
 func (e *encoderMsgpackBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -57,14 +51,14 @@ func (e *encoderMsgpackBytes) raw(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderMsgpackBytes) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
 func (e *encoderMsgpackBytes) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat64(real(v))
 }
@@ -139,10 +133,6 @@ func (e *encoderMsgpackBytes) kUint64(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderMsgpackBytes) kUintptr(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
-}
-
-func (e *encoderMsgpackBytes) kErr(_ *encFnInfo, rv reflect.Value) {
-	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
 func (e *encoderMsgpackBytes) kSeqFn(rt reflect.Type) (fn *encFnMsgpackBytes) {
@@ -221,7 +211,7 @@ func (e *encoderMsgpackBytes) kArrayW(rv reflect.Value, ti *typeInfo) {
 
 func (e *encoderMsgpackBytes) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorStr("send-only channel cannot be encoded")
+		halt.errorStr("send-only channel cannot be encoded")
 	}
 	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
 		e.kSliceBytesChan(rv)
@@ -301,13 +291,6 @@ L1:
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
 	}
-}
-
-func (e *encoderMsgpackBytes) kStructSfi(f *encFnInfo) []*structFieldInfo {
-	if e.h.Canonical {
-		return f.ti.sfi.sorted()
-	}
-	return f.ti.sfi.source()
 }
 
 func (e *encoderMsgpackBytes) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
@@ -703,31 +686,10 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 }
 
 type encoderMsgpackBytes struct {
-	panicHdl
-	perType encPerType
-
 	dh helperEncDriverMsgpackBytes
-
 	fp *fastpathEsMsgpackBytes
-
-	h *BasicHandle
-
-	e msgpackEncDriverBytes
-
-	encoderShared
-
-	hh Handle
-
-	ci []interface{}
-
-	slist sfiRvFreelist
-}
-
-func (e *encoderMsgpackBytes) HandleName() string {
-	return e.hh.Name()
-}
-
-func (e *encoderMsgpackBytes) Release() {
+	e  msgpackEncDriverBytes
+	encoderBase
 }
 
 func (e *encoderMsgpackBytes) init(h Handle) {
@@ -738,7 +700,7 @@ func (e *encoderMsgpackBytes) init(h Handle) {
 	e.be = e.hh.isBinary()
 	e.err = errEncoderNotInitialized
 
-	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEsMsgpackBytes)
+	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsMsgpackBytes)
 
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
@@ -941,7 +903,7 @@ TOP:
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
 				if eq4i(sptr, vv) {
-					e.errorf("circular reference found: %p, %T", sptr, sptr)
+					halt.errorf("circular reference found: %p, %T", sptr, sptr)
 				}
 			}
 			e.ci = append(e.ci, sptr)
@@ -985,20 +947,8 @@ func (e *encoderMsgpackBytes) encodeValueNonNil(rv reflect.Value, fn *encFnMsgpa
 	fn.fe(e, &fn.i, rv)
 }
 
-func (e *encoderMsgpackBytes) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
-	if rv.CanAddr() {
-		return rvAddr(rv, ptrType)
-	}
-	if e.h.NoAddressableReadonly {
-		rva = reflect.New(typ)
-		rvSetDirect(rva.Elem(), rv)
-		return
-	}
-	return rvAddr(e.perType.AddressableRO(rv), ptrType)
-}
-
 func (e *encoderMsgpackBytes) marshalUtf8(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1007,7 +957,7 @@ func (e *encoderMsgpackBytes) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *encoderMsgpackBytes) marshalAsis(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1016,7 +966,7 @@ func (e *encoderMsgpackBytes) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *encoderMsgpackBytes) marshalRaw(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1027,13 +977,9 @@ func (e *encoderMsgpackBytes) marshalRaw(bs []byte, fnerr error) {
 func (e *encoderMsgpackBytes) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
-		e.errorBytes("Raw values cannot be encoded: ", v)
+		halt.errorBytes("Raw values cannot be encoded: ", v)
 	}
 	e.e.writeBytesAsis(v)
-}
-
-func (e *encoderMsgpackBytes) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
 }
 
 func (e *encoderMsgpackBytes) fn(t reflect.Type) *encFnMsgpackBytes {
@@ -1077,12 +1023,6 @@ func (e *encoderMsgpackBytes) arrayElem() {
 func (e *encoderMsgpackBytes) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
-}
-
-func (e *encoderMsgpackBytes) haltOnMbsOddLen(length int) {
-	if length&1 != 0 {
-		e.errorInt("mapBySlice requires even slice length, but got ", int64(length))
-	}
 }
 
 func (e *encoderMsgpackBytes) writerEnd() {
@@ -1381,13 +1321,13 @@ func (d *decoderMsgpackBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderMsgpackBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderMsgpackBytes) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
@@ -1408,11 +1348,11 @@ func (d *decoderMsgpackBytes) jsonUnmarshalV(tm jsonUnmarshaler) {
 			d.blist.put(bs0)
 		}
 	}
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderMsgpackBytes) kErr(_ *decFnInfo, rv reflect.Value) {
-	d.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
+	halt.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
 
 }
 
@@ -1498,7 +1438,7 @@ func (d *decoderMsgpackBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) 
 	d.d.DecodeNaked()
 
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
-		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
+		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
 	switch n.v {
 	case valueTypeMap:
@@ -1706,7 +1646,7 @@ func (d *decoderMsgpackBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 				var f interface{}
 				d.decode(&f)
 				if !mf.CodecMissingField(name2, f) && d.h.ErrorIfNoField {
-					d.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
+					halt.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
 				}
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
@@ -1734,7 +1674,7 @@ func (d *decoderMsgpackBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 
 		d.arrayEnd()
 	} else {
-		d.onerror(errNeedMapOrArrayDecodeToStruct)
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
 	}
 }
 
@@ -1747,7 +1687,7 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
 		if !rvCanset {
@@ -1813,7 +1753,7 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvcap = rvlen
 				rvChanged = !rvCanset
 			} else {
-				d.errorStr("cannot decode into non-settable slice")
+				halt.errorStr("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut {
 				rvCopySlice(rv, rv0, rtelem)
@@ -1839,7 +1779,7 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 					rvcap = rvlen
 					rvChanged = !rvCanset
 				} else {
-					d.errorStr("cannot decode into non-settable slice")
+					halt.errorStr("cannot decode into non-settable slice")
 				}
 			}
 			if fn == nil {
@@ -1857,11 +1797,11 @@ func (d *decoderMsgpackBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				} else if rvChanged {
 					rv = rvSlice(rv, rvlen)
 				} else {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 			} else {
 				if !(rvCanset || rvChanged) {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
 				rvlen = rvcap
@@ -1903,7 +1843,7 @@ func (d *decoderMsgpackBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	if handleBytesWithinKArray && (ctyp == valueTypeBytes || ctyp == valueTypeString) {
 
 		if f.ti.elemkind != uint8(reflect.Uint8) {
-			d.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
+			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
 		bs2 := d.decodeBytesInto(rvbs)
@@ -1932,7 +1872,7 @@ func (d *decoderMsgpackBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	rvlen := rv.Len()
 	hasLen := containerLenS > 0
 	if hasLen && containerLenS > rvlen {
-		d.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
+		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
 
 	var elemReset = d.h.SliceElementReset
@@ -1962,13 +1902,13 @@ func (d *decoderMsgpackBytes) kChan(f *decFnInfo, rv reflect.Value) {
 
 	ti := f.ti
 	if ti.chandir&uint8(reflect.SendDir) == 0 {
-		d.errorStr("receive-only channel cannot be decoded")
+		halt.errorStr("receive-only channel cannot be decoded")
 	}
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		bs2 := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
@@ -2022,7 +1962,7 @@ func (d *decoderMsgpackBytes) kChan(f *decFnInfo, rv reflect.Value) {
 					rv = reflect.MakeChan(ti.rt, rvlen)
 					rvChanged = true
 				} else {
-					d.errorStr("cannot decode into non-settable chan")
+					halt.errorStr("cannot decode into non-settable chan")
 				}
 			}
 			if fn == nil {
@@ -2266,31 +2206,10 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 }
 
 type decoderMsgpackBytes struct {
-	panicHdl
-	perType decPerType
-
 	dh helperDecDriverMsgpackBytes
-
 	fp *fastpathDsMsgpackBytes
-
-	h *BasicHandle
-
-	d msgpackDecDriverBytes
-
-	decoderShared
-
-	hh Handle
-
-	mtid uintptr
-	stid uintptr
-}
-
-func (d *decoderMsgpackBytes) HandleName() string {
-	return d.hh.Name()
-}
-
-func (d *decoderMsgpackBytes) isBytes() bool {
-	return d.bytes
+	d  msgpackDecDriverBytes
+	decoderBase
 }
 
 func (d *decoderMsgpackBytes) init(h Handle) {
@@ -2306,7 +2225,7 @@ func (d *decoderMsgpackBytes) init(h Handle) {
 		d.is.init()
 	}
 
-	d.fp = d.d.init(h, &d.decoderShared, d).(*fastpathDsMsgpackBytes)
+	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsMsgpackBytes)
 
 	d.cbreak = d.js || d.cbor
 
@@ -2418,7 +2337,7 @@ func (d *decoderMsgpackBytes) nextValueBytes(start []byte) []byte {
 func (d *decoderMsgpackBytes) decode(iv interface{}) {
 
 	if iv == nil {
-		d.onerror(errCannotDecodeIntoNil)
+		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
@@ -2528,7 +2447,7 @@ PTR:
 		} else if rv.CanAddr() {
 			rv = rvAddr(rv, fn.i.ti.ptr)
 		} else if fn.i.addrDf {
-			d.errorStr("cannot decode into a non-pointer value")
+			halt.errorStr("cannot decode into a non-pointer value")
 		}
 	}
 	fn.fd(d, &fn.i, rv)
@@ -2538,40 +2457,12 @@ func (d *decoderMsgpackBytes) structFieldNotFound(index int, rvkencname string) 
 
 	if d.h.ErrorIfNoField {
 		if index >= 0 {
-			d.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
+			halt.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
 		} else if rvkencname != "" {
-			d.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
+			halt.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
 		}
 	}
 	d.swallow()
-}
-
-func (d *decoderMsgpackBytes) arrayCannotExpand(sliceLen, streamLen int) {
-	if d.h.ErrorIfNoArrayExpand {
-		d.errorf("cannot expand array len during decode from %v to %v", any(sliceLen), any(streamLen))
-	}
-}
-
-func (d *decoderMsgpackBytes) haltAsNotDecodeable(rv reflect.Value) {
-	if !rv.IsValid() {
-		d.onerror(errCannotDecodeIntoNil)
-	}
-
-	if !rv.CanInterface() {
-		d.errorf("cannot decode into a value without an interface: %v", rv)
-	}
-	d.errorf("cannot decode into value of kind: %v, %#v", rv.Kind(), rv2i(rv))
-}
-
-func (d *decoderMsgpackBytes) depthIncr() {
-	d.depth++
-	if d.depth >= d.maxdepth {
-		d.onerror(errMaxDepthExceeded)
-	}
-}
-
-func (d *decoderMsgpackBytes) depthDecr() {
-	d.depth--
 }
 
 func (d *decoderMsgpackBytes) decodeBytesInto(in []byte) (v []byte) {
@@ -2593,11 +2484,11 @@ func (d *decoderMsgpackBytes) rawBytes() (v []byte) {
 }
 
 func (d *decoderMsgpackBytes) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, d.hh.Name(), d.NumBytesRead(), false)
+	*err = wrapCodecErr(v, d.hh.Name(), d.d.NumBytesRead(), false)
 }
 
 func (d *decoderMsgpackBytes) NumBytesRead() int {
-	return int(d.d.NumBytesRead())
+	return d.d.NumBytesRead()
 }
 
 func (d *decoderMsgpackBytes) checkBreak() (v bool) {
@@ -2613,14 +2504,6 @@ func (d *decoderMsgpackBytes) containerNext(j, containerLen int, hasLen bool) bo
 		return j < containerLen
 	}
 	return !d.checkBreak()
-}
-
-func (d *decoderMsgpackBytes) mapStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerMapStart
-	}
-	return v
 }
 
 func (d *decoderMsgpackBytes) mapElemKey() {
@@ -2639,14 +2522,6 @@ func (d *decoderMsgpackBytes) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoderMsgpackBytes) arrayStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerArrayStart
-	}
-	return v
-}
-
 func (d *decoderMsgpackBytes) arrayElem() {
 	d.d.ReadArrayElem()
 	d.c = containerArrayElem
@@ -2659,41 +2534,9 @@ func (d *decoderMsgpackBytes) arrayEnd() {
 }
 
 func (d *decoderMsgpackBytes) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-
-	var s interface{}
-	rv := reflect.ValueOf(v)
-	rv2 := rv.Elem()
-	rvk := rv2.Kind()
-	if rvk == reflect.Struct || rvk == reflect.Array {
-		s = ext.ConvertExt(v)
-	} else {
-		s = ext.ConvertExt(rv2i(rv2))
-	}
-	rv = reflect.ValueOf(s)
-
-	if !rv.CanAddr() {
-		rvk = rv.Kind()
-		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
-		if rvk == reflect.Interface {
-			rvSetIntf(rv2, rv)
-		} else {
-			rvSetDirect(rv2, rv)
-		}
-		rv = rv2
-	}
-
+	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
-}
-
-func (d *decoderMsgpackBytes) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient &&
-		(numBoolStrSliceBitset.isset(byte(rvk)) ||
-			((rvk == reflect.Struct || rvk == reflect.Array) &&
-				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
-		return d.perType.TransientAddrK(rvt, rvk)
-	}
-	return rvZeroAddrK(rvt, rvk)
 }
 
 func (d *decoderMsgpackBytes) fn(t reflect.Type) *decFnMsgpackBytes {
@@ -2724,7 +2567,7 @@ func (d *decoderMsgpackBytes) decSliceHelperStart() (x decSliceHelperMsgpackByte
 		clen = d.mapStart(d.d.ReadMapStart())
 		clen += clen
 	default:
-		d.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
+		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
 	}
 	return
 }
@@ -3048,7 +2891,7 @@ type msgpackEncDriverBytes struct {
 	encInit2er
 
 	h *MsgpackHandle
-	e *encoderShared
+	e *encoderBase
 	w bytesEncAppender
 }
 
@@ -3280,7 +3123,7 @@ type msgpackDecDriverBytes struct {
 	decInit2er
 
 	h *MsgpackHandle
-	d *decoderShared
+	d *decoderBase
 	r bytesDecReader
 
 	bdAndBdread
@@ -3931,7 +3774,7 @@ func (d *msgpackDecDriverBytes) decodeExtV(verifyTag bool, tag byte) (xbs []byte
 	return
 }
 
-func (d *msgpackEncDriverBytes) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *msgpackEncDriverBytes) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*MsgpackHandle)
 	d.e = shared
@@ -3957,7 +3800,7 @@ func (e *msgpackEncDriverBytes) resetOutIO(out io.Writer) {
 	e.w.resetIO(out, e.h.WriterBufferSize, &e.e.blist)
 }
 
-func (d *msgpackDecDriverBytes) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *msgpackDecDriverBytes) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*MsgpackHandle)
 	d.bytes = shared.bytes
@@ -3991,12 +3834,6 @@ func (d *msgpackDecDriverBytes) descBd() string {
 func (d *msgpackDecDriverBytes) DecodeFloat32() (f float32) {
 	return float32(chkOvf.Float32V(d.DecodeFloat64()))
 }
-func (e *encoderMsgpackIO) setContainerState(cs containerState) {
-	if cs != 0 {
-		e.c = cs
-	}
-}
-
 func (e *encoderMsgpackIO) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -4030,14 +3867,14 @@ func (e *encoderMsgpackIO) raw(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderMsgpackIO) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
 func (e *encoderMsgpackIO) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat64(real(v))
 }
@@ -4112,10 +3949,6 @@ func (e *encoderMsgpackIO) kUint64(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderMsgpackIO) kUintptr(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
-}
-
-func (e *encoderMsgpackIO) kErr(_ *encFnInfo, rv reflect.Value) {
-	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
 func (e *encoderMsgpackIO) kSeqFn(rt reflect.Type) (fn *encFnMsgpackIO) {
@@ -4194,7 +4027,7 @@ func (e *encoderMsgpackIO) kArrayW(rv reflect.Value, ti *typeInfo) {
 
 func (e *encoderMsgpackIO) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorStr("send-only channel cannot be encoded")
+		halt.errorStr("send-only channel cannot be encoded")
 	}
 	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
 		e.kSliceBytesChan(rv)
@@ -4274,13 +4107,6 @@ L1:
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
 	}
-}
-
-func (e *encoderMsgpackIO) kStructSfi(f *encFnInfo) []*structFieldInfo {
-	if e.h.Canonical {
-		return f.ti.sfi.sorted()
-	}
-	return f.ti.sfi.source()
 }
 
 func (e *encoderMsgpackIO) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
@@ -4676,31 +4502,10 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 }
 
 type encoderMsgpackIO struct {
-	panicHdl
-	perType encPerType
-
 	dh helperEncDriverMsgpackIO
-
 	fp *fastpathEsMsgpackIO
-
-	h *BasicHandle
-
-	e msgpackEncDriverIO
-
-	encoderShared
-
-	hh Handle
-
-	ci []interface{}
-
-	slist sfiRvFreelist
-}
-
-func (e *encoderMsgpackIO) HandleName() string {
-	return e.hh.Name()
-}
-
-func (e *encoderMsgpackIO) Release() {
+	e  msgpackEncDriverIO
+	encoderBase
 }
 
 func (e *encoderMsgpackIO) init(h Handle) {
@@ -4711,7 +4516,7 @@ func (e *encoderMsgpackIO) init(h Handle) {
 	e.be = e.hh.isBinary()
 	e.err = errEncoderNotInitialized
 
-	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEsMsgpackIO)
+	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsMsgpackIO)
 
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
@@ -4914,7 +4719,7 @@ TOP:
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
 				if eq4i(sptr, vv) {
-					e.errorf("circular reference found: %p, %T", sptr, sptr)
+					halt.errorf("circular reference found: %p, %T", sptr, sptr)
 				}
 			}
 			e.ci = append(e.ci, sptr)
@@ -4958,20 +4763,8 @@ func (e *encoderMsgpackIO) encodeValueNonNil(rv reflect.Value, fn *encFnMsgpackI
 	fn.fe(e, &fn.i, rv)
 }
 
-func (e *encoderMsgpackIO) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
-	if rv.CanAddr() {
-		return rvAddr(rv, ptrType)
-	}
-	if e.h.NoAddressableReadonly {
-		rva = reflect.New(typ)
-		rvSetDirect(rva.Elem(), rv)
-		return
-	}
-	return rvAddr(e.perType.AddressableRO(rv), ptrType)
-}
-
 func (e *encoderMsgpackIO) marshalUtf8(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -4980,7 +4773,7 @@ func (e *encoderMsgpackIO) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *encoderMsgpackIO) marshalAsis(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -4989,7 +4782,7 @@ func (e *encoderMsgpackIO) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *encoderMsgpackIO) marshalRaw(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -5000,13 +4793,9 @@ func (e *encoderMsgpackIO) marshalRaw(bs []byte, fnerr error) {
 func (e *encoderMsgpackIO) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
-		e.errorBytes("Raw values cannot be encoded: ", v)
+		halt.errorBytes("Raw values cannot be encoded: ", v)
 	}
 	e.e.writeBytesAsis(v)
-}
-
-func (e *encoderMsgpackIO) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
 }
 
 func (e *encoderMsgpackIO) fn(t reflect.Type) *encFnMsgpackIO {
@@ -5050,12 +4839,6 @@ func (e *encoderMsgpackIO) arrayElem() {
 func (e *encoderMsgpackIO) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
-}
-
-func (e *encoderMsgpackIO) haltOnMbsOddLen(length int) {
-	if length&1 != 0 {
-		e.errorInt("mapBySlice requires even slice length, but got ", int64(length))
-	}
 }
 
 func (e *encoderMsgpackIO) writerEnd() {
@@ -5354,13 +5137,13 @@ func (d *decoderMsgpackIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderMsgpackIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderMsgpackIO) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
@@ -5381,11 +5164,11 @@ func (d *decoderMsgpackIO) jsonUnmarshalV(tm jsonUnmarshaler) {
 			d.blist.put(bs0)
 		}
 	}
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderMsgpackIO) kErr(_ *decFnInfo, rv reflect.Value) {
-	d.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
+	halt.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
 
 }
 
@@ -5471,7 +5254,7 @@ func (d *decoderMsgpackIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	d.d.DecodeNaked()
 
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
-		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
+		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
 	switch n.v {
 	case valueTypeMap:
@@ -5679,7 +5462,7 @@ func (d *decoderMsgpackIO) kStruct(f *decFnInfo, rv reflect.Value) {
 				var f interface{}
 				d.decode(&f)
 				if !mf.CodecMissingField(name2, f) && d.h.ErrorIfNoField {
-					d.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
+					halt.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
 				}
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
@@ -5707,7 +5490,7 @@ func (d *decoderMsgpackIO) kStruct(f *decFnInfo, rv reflect.Value) {
 
 		d.arrayEnd()
 	} else {
-		d.onerror(errNeedMapOrArrayDecodeToStruct)
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
 	}
 }
 
@@ -5720,7 +5503,7 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
 		if !rvCanset {
@@ -5786,7 +5569,7 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvcap = rvlen
 				rvChanged = !rvCanset
 			} else {
-				d.errorStr("cannot decode into non-settable slice")
+				halt.errorStr("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut {
 				rvCopySlice(rv, rv0, rtelem)
@@ -5812,7 +5595,7 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 					rvcap = rvlen
 					rvChanged = !rvCanset
 				} else {
-					d.errorStr("cannot decode into non-settable slice")
+					halt.errorStr("cannot decode into non-settable slice")
 				}
 			}
 			if fn == nil {
@@ -5830,11 +5613,11 @@ func (d *decoderMsgpackIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				} else if rvChanged {
 					rv = rvSlice(rv, rvlen)
 				} else {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 			} else {
 				if !(rvCanset || rvChanged) {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
 				rvlen = rvcap
@@ -5876,7 +5659,7 @@ func (d *decoderMsgpackIO) kArray(f *decFnInfo, rv reflect.Value) {
 	if handleBytesWithinKArray && (ctyp == valueTypeBytes || ctyp == valueTypeString) {
 
 		if f.ti.elemkind != uint8(reflect.Uint8) {
-			d.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
+			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
 		bs2 := d.decodeBytesInto(rvbs)
@@ -5905,7 +5688,7 @@ func (d *decoderMsgpackIO) kArray(f *decFnInfo, rv reflect.Value) {
 	rvlen := rv.Len()
 	hasLen := containerLenS > 0
 	if hasLen && containerLenS > rvlen {
-		d.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
+		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
 
 	var elemReset = d.h.SliceElementReset
@@ -5935,13 +5718,13 @@ func (d *decoderMsgpackIO) kChan(f *decFnInfo, rv reflect.Value) {
 
 	ti := f.ti
 	if ti.chandir&uint8(reflect.SendDir) == 0 {
-		d.errorStr("receive-only channel cannot be decoded")
+		halt.errorStr("receive-only channel cannot be decoded")
 	}
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		bs2 := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
@@ -5995,7 +5778,7 @@ func (d *decoderMsgpackIO) kChan(f *decFnInfo, rv reflect.Value) {
 					rv = reflect.MakeChan(ti.rt, rvlen)
 					rvChanged = true
 				} else {
-					d.errorStr("cannot decode into non-settable chan")
+					halt.errorStr("cannot decode into non-settable chan")
 				}
 			}
 			if fn == nil {
@@ -6239,31 +6022,10 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 }
 
 type decoderMsgpackIO struct {
-	panicHdl
-	perType decPerType
-
 	dh helperDecDriverMsgpackIO
-
 	fp *fastpathDsMsgpackIO
-
-	h *BasicHandle
-
-	d msgpackDecDriverIO
-
-	decoderShared
-
-	hh Handle
-
-	mtid uintptr
-	stid uintptr
-}
-
-func (d *decoderMsgpackIO) HandleName() string {
-	return d.hh.Name()
-}
-
-func (d *decoderMsgpackIO) isBytes() bool {
-	return d.bytes
+	d  msgpackDecDriverIO
+	decoderBase
 }
 
 func (d *decoderMsgpackIO) init(h Handle) {
@@ -6279,7 +6041,7 @@ func (d *decoderMsgpackIO) init(h Handle) {
 		d.is.init()
 	}
 
-	d.fp = d.d.init(h, &d.decoderShared, d).(*fastpathDsMsgpackIO)
+	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsMsgpackIO)
 
 	d.cbreak = d.js || d.cbor
 
@@ -6391,7 +6153,7 @@ func (d *decoderMsgpackIO) nextValueBytes(start []byte) []byte {
 func (d *decoderMsgpackIO) decode(iv interface{}) {
 
 	if iv == nil {
-		d.onerror(errCannotDecodeIntoNil)
+		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
@@ -6501,7 +6263,7 @@ PTR:
 		} else if rv.CanAddr() {
 			rv = rvAddr(rv, fn.i.ti.ptr)
 		} else if fn.i.addrDf {
-			d.errorStr("cannot decode into a non-pointer value")
+			halt.errorStr("cannot decode into a non-pointer value")
 		}
 	}
 	fn.fd(d, &fn.i, rv)
@@ -6511,40 +6273,12 @@ func (d *decoderMsgpackIO) structFieldNotFound(index int, rvkencname string) {
 
 	if d.h.ErrorIfNoField {
 		if index >= 0 {
-			d.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
+			halt.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
 		} else if rvkencname != "" {
-			d.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
+			halt.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
 		}
 	}
 	d.swallow()
-}
-
-func (d *decoderMsgpackIO) arrayCannotExpand(sliceLen, streamLen int) {
-	if d.h.ErrorIfNoArrayExpand {
-		d.errorf("cannot expand array len during decode from %v to %v", any(sliceLen), any(streamLen))
-	}
-}
-
-func (d *decoderMsgpackIO) haltAsNotDecodeable(rv reflect.Value) {
-	if !rv.IsValid() {
-		d.onerror(errCannotDecodeIntoNil)
-	}
-
-	if !rv.CanInterface() {
-		d.errorf("cannot decode into a value without an interface: %v", rv)
-	}
-	d.errorf("cannot decode into value of kind: %v, %#v", rv.Kind(), rv2i(rv))
-}
-
-func (d *decoderMsgpackIO) depthIncr() {
-	d.depth++
-	if d.depth >= d.maxdepth {
-		d.onerror(errMaxDepthExceeded)
-	}
-}
-
-func (d *decoderMsgpackIO) depthDecr() {
-	d.depth--
 }
 
 func (d *decoderMsgpackIO) decodeBytesInto(in []byte) (v []byte) {
@@ -6566,11 +6300,11 @@ func (d *decoderMsgpackIO) rawBytes() (v []byte) {
 }
 
 func (d *decoderMsgpackIO) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, d.hh.Name(), d.NumBytesRead(), false)
+	*err = wrapCodecErr(v, d.hh.Name(), d.d.NumBytesRead(), false)
 }
 
 func (d *decoderMsgpackIO) NumBytesRead() int {
-	return int(d.d.NumBytesRead())
+	return d.d.NumBytesRead()
 }
 
 func (d *decoderMsgpackIO) checkBreak() (v bool) {
@@ -6586,14 +6320,6 @@ func (d *decoderMsgpackIO) containerNext(j, containerLen int, hasLen bool) bool 
 		return j < containerLen
 	}
 	return !d.checkBreak()
-}
-
-func (d *decoderMsgpackIO) mapStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerMapStart
-	}
-	return v
 }
 
 func (d *decoderMsgpackIO) mapElemKey() {
@@ -6612,14 +6338,6 @@ func (d *decoderMsgpackIO) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoderMsgpackIO) arrayStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerArrayStart
-	}
-	return v
-}
-
 func (d *decoderMsgpackIO) arrayElem() {
 	d.d.ReadArrayElem()
 	d.c = containerArrayElem
@@ -6632,41 +6350,9 @@ func (d *decoderMsgpackIO) arrayEnd() {
 }
 
 func (d *decoderMsgpackIO) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-
-	var s interface{}
-	rv := reflect.ValueOf(v)
-	rv2 := rv.Elem()
-	rvk := rv2.Kind()
-	if rvk == reflect.Struct || rvk == reflect.Array {
-		s = ext.ConvertExt(v)
-	} else {
-		s = ext.ConvertExt(rv2i(rv2))
-	}
-	rv = reflect.ValueOf(s)
-
-	if !rv.CanAddr() {
-		rvk = rv.Kind()
-		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
-		if rvk == reflect.Interface {
-			rvSetIntf(rv2, rv)
-		} else {
-			rvSetDirect(rv2, rv)
-		}
-		rv = rv2
-	}
-
+	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
-}
-
-func (d *decoderMsgpackIO) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient &&
-		(numBoolStrSliceBitset.isset(byte(rvk)) ||
-			((rvk == reflect.Struct || rvk == reflect.Array) &&
-				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
-		return d.perType.TransientAddrK(rvt, rvk)
-	}
-	return rvZeroAddrK(rvt, rvk)
 }
 
 func (d *decoderMsgpackIO) fn(t reflect.Type) *decFnMsgpackIO {
@@ -6697,7 +6383,7 @@ func (d *decoderMsgpackIO) decSliceHelperStart() (x decSliceHelperMsgpackIO, cle
 		clen = d.mapStart(d.d.ReadMapStart())
 		clen += clen
 	default:
-		d.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
+		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
 	}
 	return
 }
@@ -7021,7 +6707,7 @@ type msgpackEncDriverIO struct {
 	encInit2er
 
 	h *MsgpackHandle
-	e *encoderShared
+	e *encoderBase
 	w bufioEncWriter
 }
 
@@ -7253,7 +6939,7 @@ type msgpackDecDriverIO struct {
 	decInit2er
 
 	h *MsgpackHandle
-	d *decoderShared
+	d *decoderBase
 	r ioDecReader
 
 	bdAndBdread
@@ -7904,7 +7590,7 @@ func (d *msgpackDecDriverIO) decodeExtV(verifyTag bool, tag byte) (xbs []byte, x
 	return
 }
 
-func (d *msgpackEncDriverIO) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *msgpackEncDriverIO) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*MsgpackHandle)
 	d.e = shared
@@ -7930,7 +7616,7 @@ func (e *msgpackEncDriverIO) resetOutIO(out io.Writer) {
 	e.w.resetIO(out, e.h.WriterBufferSize, &e.e.blist)
 }
 
-func (d *msgpackDecDriverIO) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *msgpackDecDriverIO) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*MsgpackHandle)
 	d.bytes = shared.bytes

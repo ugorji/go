@@ -240,7 +240,7 @@ func (fastpathET[T]) {{ .MethodNamePfx "EncAsMap" false }}V(v []{{ .Elem }}, e *
 	e.haltOnMbsOddLen(len(v))
 	{{/*
 	if len(v)&1 != 0 { // similar to &1==1 or %2 == 1
-		e.errorInt(fastpathMapBySliceErrMsg, len(v))
+		halt.errorInt(fastpathMapBySliceErrMsg, len(v))
 	}
 	*/ -}}
 	e.mapStart(len(v) >> 1) // e.mapStart(len(v) / 2)
@@ -564,7 +564,7 @@ func (f fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}X(vp *map[{{ .MapKey }}]{
 func (fastpathDT[T]) {{ .MethodNamePfx "Dec" false }}L(v map[{{ .MapKey }}]{{ .Elem }}, containerLen int, d *decoder[T]) {
 	{{/* No need to check if containerLen == containerLenNil, as that is checked by R and L above  */ -}}
 	if v == nil {
-		d.errorInt("cannot decode into nil map[{{ .MapKey }}]{{ .Elem }} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[{{ .MapKey }}]{{ .Elem }} given stream length: ", int64(containerLen))
         {{/* d.swallowMapContents(containerLen) */ -}}
 		return
 	}

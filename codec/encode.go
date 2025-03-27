@@ -198,7 +198,7 @@ type EncodeOptions struct {
 
 // ---------------------------------------------
 
-func (e *encoder[T]) setContainerState(cs containerState) {
+func (e *encoderBase) setContainerState(cs containerState) {
 	if cs != 0 {
 		e.c = cs
 	}
@@ -321,7 +321,7 @@ func (e *encoder[T]) kUintptr(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
 }
 
-func (e *encoder[T]) kErr(_ *encFnInfo, rv reflect.Value) {
+func (e *encoderBase) kErr(_ *encFnInfo, rv reflect.Value) {
 	halt.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
@@ -516,7 +516,7 @@ L1:
 	}
 }
 
-func (e *encoder[T]) kStructSfi(f *encFnInfo) []*structFieldInfo {
+func (e *encoderBase) kStructSfi(f *encFnInfo) []*structFieldInfo {
 	if e.h.Canonical {
 		return f.ti.sfi.sorted()
 	}
@@ -968,6 +968,10 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 // encoderBase is shared as a field between Encoder and its encDrivers.
 // This way, encDrivers need not hold a referece to the Encoder itself.
 type encoderBase struct {
+	perType encPerType
+
+	h *BasicHandle
+
 	// MARKER: these fields below should belong directly in Encoder.
 	// There should not be any pointers here - just values.
 	// we pack them here for space efficiency and cache-line optimization.
@@ -988,29 +992,6 @@ type encoderBase struct {
 
 	calls uint16
 	seq   uint16 // sequencer (e.g. used by binc for symbols, etc)
-}
-
-// Encoder writes an object to an output stream in a supported format.
-//
-// Encoder is NOT safe for concurrent use i.e. a Encoder cannot be used
-// concurrently in multiple goroutines.
-//
-// However, as Encoder could be allocation heavy to initialize, a Reset method is provided
-// so its state can be reused to decode new input streams repeatedly.
-// This is the idiomatic way to use.
-type encoder[T encDriver] struct {
-	perType encPerType
-
-	dh helperEncDriver[T]
-
-	fp *fastpathEs[T]
-
-	h *BasicHandle
-
-	e T
-
-	// hopefully, reduce derefencing cost by laying some fields shared with encDriver
-	encoderBase
 
 	// ---- cpu cache line boundary
 	hh Handle
@@ -1031,7 +1012,22 @@ type encoder[T encDriver] struct {
 	slist sfiRvFreelist
 }
 
-func (e *encoder[T]) HandleName() string {
+// Encoder writes an object to an output stream in a supported format.
+//
+// Encoder is NOT safe for concurrent use i.e. a Encoder cannot be used
+// concurrently in multiple goroutines.
+//
+// However, as Encoder could be allocation heavy to initialize, a Reset method is provided
+// so its state can be reused to decode new input streams repeatedly.
+// This is the idiomatic way to use.
+type encoder[T encDriver] struct {
+	dh helperEncDriver[T]
+	fp *fastpathEs[T]
+	e  T
+	encoderBase
+}
+
+func (e *encoderBase) HandleName() string {
 	return e.hh.Name()
 }
 
@@ -1039,7 +1035,7 @@ func (e *encoder[T]) HandleName() string {
 //
 // Deprecated: Pooled resources are not used with an Encoder.
 // This method is kept for compatibility reasons only.
-func (e *encoder[T]) Release() {
+func (e *encoderBase) Release() {
 }
 
 func (e *encoder[T]) init(h Handle) {
@@ -1402,7 +1398,7 @@ func (e *encoder[T]) encodeValueNonNil(rv reflect.Value, fn *encFn[T]) {
 }
 
 // addrRV returns a addressable value which may be readonly
-func (e *encoder[T]) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
+func (e *encoderBase) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
 	if rv.CanAddr() {
 		return rvAddr(rv, ptrType)
 	}
@@ -1449,7 +1445,7 @@ func (e *encoder[T]) rawBytes(vv Raw) {
 	e.e.writeBytesAsis(v)
 }
 
-func (e *encoder[T]) wrapErr(v error, err *error) {
+func (e *encoderBase) wrapErr(v error, err *error) {
 	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
 }
 
@@ -1502,7 +1498,7 @@ func (e *encoder[T]) arrayEnd() {
 
 // ----------
 
-func (e *encoder[T]) haltOnMbsOddLen(length int) {
+func (e *encoderBase) haltOnMbsOddLen(length int) {
 	if length&1 != 0 { // similar to &1==1 or %2 == 1
 		halt.errorInt("mapBySlice requires even slice length, but got ", int64(length))
 	}

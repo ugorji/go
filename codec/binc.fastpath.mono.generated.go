@@ -18,12 +18,6 @@ import (
 	"unicode/utf8"
 )
 
-func (e *encoderBincBytes) setContainerState(cs containerState) {
-	if cs != 0 {
-		e.c = cs
-	}
-}
-
 func (e *encoderBincBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -57,14 +51,14 @@ func (e *encoderBincBytes) raw(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderBincBytes) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
 func (e *encoderBincBytes) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat64(real(v))
 }
@@ -139,10 +133,6 @@ func (e *encoderBincBytes) kUint64(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderBincBytes) kUintptr(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
-}
-
-func (e *encoderBincBytes) kErr(_ *encFnInfo, rv reflect.Value) {
-	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
 func (e *encoderBincBytes) kSeqFn(rt reflect.Type) (fn *encFnBincBytes) {
@@ -221,7 +211,7 @@ func (e *encoderBincBytes) kArrayW(rv reflect.Value, ti *typeInfo) {
 
 func (e *encoderBincBytes) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorStr("send-only channel cannot be encoded")
+		halt.errorStr("send-only channel cannot be encoded")
 	}
 	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
 		e.kSliceBytesChan(rv)
@@ -301,13 +291,6 @@ L1:
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
 	}
-}
-
-func (e *encoderBincBytes) kStructSfi(f *encFnInfo) []*structFieldInfo {
-	if e.h.Canonical {
-		return f.ti.sfi.sorted()
-	}
-	return f.ti.sfi.source()
 }
 
 func (e *encoderBincBytes) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
@@ -703,31 +686,10 @@ func (e *encoderBincBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 }
 
 type encoderBincBytes struct {
-	panicHdl
-	perType encPerType
-
 	dh helperEncDriverBincBytes
-
 	fp *fastpathEsBincBytes
-
-	h *BasicHandle
-
-	e bincEncDriverBytes
-
-	encoderShared
-
-	hh Handle
-
-	ci []interface{}
-
-	slist sfiRvFreelist
-}
-
-func (e *encoderBincBytes) HandleName() string {
-	return e.hh.Name()
-}
-
-func (e *encoderBincBytes) Release() {
+	e  bincEncDriverBytes
+	encoderBase
 }
 
 func (e *encoderBincBytes) init(h Handle) {
@@ -738,7 +700,7 @@ func (e *encoderBincBytes) init(h Handle) {
 	e.be = e.hh.isBinary()
 	e.err = errEncoderNotInitialized
 
-	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEsBincBytes)
+	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsBincBytes)
 
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
@@ -941,7 +903,7 @@ TOP:
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
 				if eq4i(sptr, vv) {
-					e.errorf("circular reference found: %p, %T", sptr, sptr)
+					halt.errorf("circular reference found: %p, %T", sptr, sptr)
 				}
 			}
 			e.ci = append(e.ci, sptr)
@@ -985,20 +947,8 @@ func (e *encoderBincBytes) encodeValueNonNil(rv reflect.Value, fn *encFnBincByte
 	fn.fe(e, &fn.i, rv)
 }
 
-func (e *encoderBincBytes) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
-	if rv.CanAddr() {
-		return rvAddr(rv, ptrType)
-	}
-	if e.h.NoAddressableReadonly {
-		rva = reflect.New(typ)
-		rvSetDirect(rva.Elem(), rv)
-		return
-	}
-	return rvAddr(e.perType.AddressableRO(rv), ptrType)
-}
-
 func (e *encoderBincBytes) marshalUtf8(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1007,7 +957,7 @@ func (e *encoderBincBytes) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *encoderBincBytes) marshalAsis(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1016,7 +966,7 @@ func (e *encoderBincBytes) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *encoderBincBytes) marshalRaw(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1027,13 +977,9 @@ func (e *encoderBincBytes) marshalRaw(bs []byte, fnerr error) {
 func (e *encoderBincBytes) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
-		e.errorBytes("Raw values cannot be encoded: ", v)
+		halt.errorBytes("Raw values cannot be encoded: ", v)
 	}
 	e.e.writeBytesAsis(v)
-}
-
-func (e *encoderBincBytes) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
 }
 
 func (e *encoderBincBytes) fn(t reflect.Type) *encFnBincBytes {
@@ -1077,12 +1023,6 @@ func (e *encoderBincBytes) arrayElem() {
 func (e *encoderBincBytes) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
-}
-
-func (e *encoderBincBytes) haltOnMbsOddLen(length int) {
-	if length&1 != 0 {
-		e.errorInt("mapBySlice requires even slice length, but got ", int64(length))
-	}
 }
 
 func (e *encoderBincBytes) writerEnd() {
@@ -1381,13 +1321,13 @@ func (d *decoderBincBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderBincBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderBincBytes) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
@@ -1408,11 +1348,11 @@ func (d *decoderBincBytes) jsonUnmarshalV(tm jsonUnmarshaler) {
 			d.blist.put(bs0)
 		}
 	}
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderBincBytes) kErr(_ *decFnInfo, rv reflect.Value) {
-	d.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
+	halt.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
 
 }
 
@@ -1498,7 +1438,7 @@ func (d *decoderBincBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	d.d.DecodeNaked()
 
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
-		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
+		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
 	switch n.v {
 	case valueTypeMap:
@@ -1706,7 +1646,7 @@ func (d *decoderBincBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 				var f interface{}
 				d.decode(&f)
 				if !mf.CodecMissingField(name2, f) && d.h.ErrorIfNoField {
-					d.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
+					halt.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
 				}
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
@@ -1734,7 +1674,7 @@ func (d *decoderBincBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 
 		d.arrayEnd()
 	} else {
-		d.onerror(errNeedMapOrArrayDecodeToStruct)
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
 	}
 }
 
@@ -1747,7 +1687,7 @@ func (d *decoderBincBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
 		if !rvCanset {
@@ -1813,7 +1753,7 @@ func (d *decoderBincBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvcap = rvlen
 				rvChanged = !rvCanset
 			} else {
-				d.errorStr("cannot decode into non-settable slice")
+				halt.errorStr("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut {
 				rvCopySlice(rv, rv0, rtelem)
@@ -1839,7 +1779,7 @@ func (d *decoderBincBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 					rvcap = rvlen
 					rvChanged = !rvCanset
 				} else {
-					d.errorStr("cannot decode into non-settable slice")
+					halt.errorStr("cannot decode into non-settable slice")
 				}
 			}
 			if fn == nil {
@@ -1857,11 +1797,11 @@ func (d *decoderBincBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				} else if rvChanged {
 					rv = rvSlice(rv, rvlen)
 				} else {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 			} else {
 				if !(rvCanset || rvChanged) {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
 				rvlen = rvcap
@@ -1903,7 +1843,7 @@ func (d *decoderBincBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	if handleBytesWithinKArray && (ctyp == valueTypeBytes || ctyp == valueTypeString) {
 
 		if f.ti.elemkind != uint8(reflect.Uint8) {
-			d.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
+			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
 		bs2 := d.decodeBytesInto(rvbs)
@@ -1932,7 +1872,7 @@ func (d *decoderBincBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	rvlen := rv.Len()
 	hasLen := containerLenS > 0
 	if hasLen && containerLenS > rvlen {
-		d.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
+		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
 
 	var elemReset = d.h.SliceElementReset
@@ -1962,13 +1902,13 @@ func (d *decoderBincBytes) kChan(f *decFnInfo, rv reflect.Value) {
 
 	ti := f.ti
 	if ti.chandir&uint8(reflect.SendDir) == 0 {
-		d.errorStr("receive-only channel cannot be decoded")
+		halt.errorStr("receive-only channel cannot be decoded")
 	}
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		bs2 := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
@@ -2022,7 +1962,7 @@ func (d *decoderBincBytes) kChan(f *decFnInfo, rv reflect.Value) {
 					rv = reflect.MakeChan(ti.rt, rvlen)
 					rvChanged = true
 				} else {
-					d.errorStr("cannot decode into non-settable chan")
+					halt.errorStr("cannot decode into non-settable chan")
 				}
 			}
 			if fn == nil {
@@ -2266,31 +2206,10 @@ func (d *decoderBincBytes) kMap(f *decFnInfo, rv reflect.Value) {
 }
 
 type decoderBincBytes struct {
-	panicHdl
-	perType decPerType
-
 	dh helperDecDriverBincBytes
-
 	fp *fastpathDsBincBytes
-
-	h *BasicHandle
-
-	d bincDecDriverBytes
-
-	decoderShared
-
-	hh Handle
-
-	mtid uintptr
-	stid uintptr
-}
-
-func (d *decoderBincBytes) HandleName() string {
-	return d.hh.Name()
-}
-
-func (d *decoderBincBytes) isBytes() bool {
-	return d.bytes
+	d  bincDecDriverBytes
+	decoderBase
 }
 
 func (d *decoderBincBytes) init(h Handle) {
@@ -2306,7 +2225,7 @@ func (d *decoderBincBytes) init(h Handle) {
 		d.is.init()
 	}
 
-	d.fp = d.d.init(h, &d.decoderShared, d).(*fastpathDsBincBytes)
+	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsBincBytes)
 
 	d.cbreak = d.js || d.cbor
 
@@ -2418,7 +2337,7 @@ func (d *decoderBincBytes) nextValueBytes(start []byte) []byte {
 func (d *decoderBincBytes) decode(iv interface{}) {
 
 	if iv == nil {
-		d.onerror(errCannotDecodeIntoNil)
+		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
@@ -2528,7 +2447,7 @@ PTR:
 		} else if rv.CanAddr() {
 			rv = rvAddr(rv, fn.i.ti.ptr)
 		} else if fn.i.addrDf {
-			d.errorStr("cannot decode into a non-pointer value")
+			halt.errorStr("cannot decode into a non-pointer value")
 		}
 	}
 	fn.fd(d, &fn.i, rv)
@@ -2538,40 +2457,12 @@ func (d *decoderBincBytes) structFieldNotFound(index int, rvkencname string) {
 
 	if d.h.ErrorIfNoField {
 		if index >= 0 {
-			d.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
+			halt.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
 		} else if rvkencname != "" {
-			d.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
+			halt.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
 		}
 	}
 	d.swallow()
-}
-
-func (d *decoderBincBytes) arrayCannotExpand(sliceLen, streamLen int) {
-	if d.h.ErrorIfNoArrayExpand {
-		d.errorf("cannot expand array len during decode from %v to %v", any(sliceLen), any(streamLen))
-	}
-}
-
-func (d *decoderBincBytes) haltAsNotDecodeable(rv reflect.Value) {
-	if !rv.IsValid() {
-		d.onerror(errCannotDecodeIntoNil)
-	}
-
-	if !rv.CanInterface() {
-		d.errorf("cannot decode into a value without an interface: %v", rv)
-	}
-	d.errorf("cannot decode into value of kind: %v, %#v", rv.Kind(), rv2i(rv))
-}
-
-func (d *decoderBincBytes) depthIncr() {
-	d.depth++
-	if d.depth >= d.maxdepth {
-		d.onerror(errMaxDepthExceeded)
-	}
-}
-
-func (d *decoderBincBytes) depthDecr() {
-	d.depth--
 }
 
 func (d *decoderBincBytes) decodeBytesInto(in []byte) (v []byte) {
@@ -2593,11 +2484,11 @@ func (d *decoderBincBytes) rawBytes() (v []byte) {
 }
 
 func (d *decoderBincBytes) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, d.hh.Name(), d.NumBytesRead(), false)
+	*err = wrapCodecErr(v, d.hh.Name(), d.d.NumBytesRead(), false)
 }
 
 func (d *decoderBincBytes) NumBytesRead() int {
-	return int(d.d.NumBytesRead())
+	return d.d.NumBytesRead()
 }
 
 func (d *decoderBincBytes) checkBreak() (v bool) {
@@ -2613,14 +2504,6 @@ func (d *decoderBincBytes) containerNext(j, containerLen int, hasLen bool) bool 
 		return j < containerLen
 	}
 	return !d.checkBreak()
-}
-
-func (d *decoderBincBytes) mapStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerMapStart
-	}
-	return v
 }
 
 func (d *decoderBincBytes) mapElemKey() {
@@ -2639,14 +2522,6 @@ func (d *decoderBincBytes) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoderBincBytes) arrayStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerArrayStart
-	}
-	return v
-}
-
 func (d *decoderBincBytes) arrayElem() {
 	d.d.ReadArrayElem()
 	d.c = containerArrayElem
@@ -2659,41 +2534,9 @@ func (d *decoderBincBytes) arrayEnd() {
 }
 
 func (d *decoderBincBytes) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-
-	var s interface{}
-	rv := reflect.ValueOf(v)
-	rv2 := rv.Elem()
-	rvk := rv2.Kind()
-	if rvk == reflect.Struct || rvk == reflect.Array {
-		s = ext.ConvertExt(v)
-	} else {
-		s = ext.ConvertExt(rv2i(rv2))
-	}
-	rv = reflect.ValueOf(s)
-
-	if !rv.CanAddr() {
-		rvk = rv.Kind()
-		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
-		if rvk == reflect.Interface {
-			rvSetIntf(rv2, rv)
-		} else {
-			rvSetDirect(rv2, rv)
-		}
-		rv = rv2
-	}
-
+	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
-}
-
-func (d *decoderBincBytes) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient &&
-		(numBoolStrSliceBitset.isset(byte(rvk)) ||
-			((rvk == reflect.Struct || rvk == reflect.Array) &&
-				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
-		return d.perType.TransientAddrK(rvt, rvk)
-	}
-	return rvZeroAddrK(rvt, rvk)
 }
 
 func (d *decoderBincBytes) fn(t reflect.Type) *decFnBincBytes {
@@ -2724,7 +2567,7 @@ func (d *decoderBincBytes) decSliceHelperStart() (x decSliceHelperBincBytes, cle
 		clen = d.mapStart(d.d.ReadMapStart())
 		clen += clen
 	default:
-		d.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
+		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
 	}
 	return
 }
@@ -7008,7 +6851,7 @@ func (f fastpathDTBincBytes) DecMapStringIntfX(vp *map[string]interface{}, d *de
 }
 func (fastpathDTBincBytes) DecMapStringIntfL(v map[string]interface{}, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -7060,7 +6903,7 @@ func (f fastpathDTBincBytes) DecMapStringStringX(vp *map[string]string, d *decod
 }
 func (fastpathDTBincBytes) DecMapStringStringL(v map[string]string, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7106,7 +6949,7 @@ func (f fastpathDTBincBytes) DecMapStringBytesX(vp *map[string][]byte, d *decode
 }
 func (fastpathDTBincBytes) DecMapStringBytesL(v map[string][]byte, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -7158,7 +7001,7 @@ func (f fastpathDTBincBytes) DecMapStringUint8X(vp *map[string]uint8, d *decoder
 }
 func (fastpathDTBincBytes) DecMapStringUint8L(v map[string]uint8, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7204,7 +7047,7 @@ func (f fastpathDTBincBytes) DecMapStringUint64X(vp *map[string]uint64, d *decod
 }
 func (fastpathDTBincBytes) DecMapStringUint64L(v map[string]uint64, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7250,7 +7093,7 @@ func (f fastpathDTBincBytes) DecMapStringIntX(vp *map[string]int, d *decoderBinc
 }
 func (fastpathDTBincBytes) DecMapStringIntL(v map[string]int, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7296,7 +7139,7 @@ func (f fastpathDTBincBytes) DecMapStringInt32X(vp *map[string]int32, d *decoder
 }
 func (fastpathDTBincBytes) DecMapStringInt32L(v map[string]int32, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7342,7 +7185,7 @@ func (f fastpathDTBincBytes) DecMapStringFloat64X(vp *map[string]float64, d *dec
 }
 func (fastpathDTBincBytes) DecMapStringFloat64L(v map[string]float64, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7388,7 +7231,7 @@ func (f fastpathDTBincBytes) DecMapStringBoolX(vp *map[string]bool, d *decoderBi
 }
 func (fastpathDTBincBytes) DecMapStringBoolL(v map[string]bool, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7434,7 +7277,7 @@ func (f fastpathDTBincBytes) DecMapUint8IntfX(vp *map[uint8]interface{}, d *deco
 }
 func (fastpathDTBincBytes) DecMapUint8IntfL(v map[uint8]interface{}, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -7486,7 +7329,7 @@ func (f fastpathDTBincBytes) DecMapUint8StringX(vp *map[uint8]string, d *decoder
 }
 func (fastpathDTBincBytes) DecMapUint8StringL(v map[uint8]string, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7532,7 +7375,7 @@ func (f fastpathDTBincBytes) DecMapUint8BytesX(vp *map[uint8][]byte, d *decoderB
 }
 func (fastpathDTBincBytes) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -7584,7 +7427,7 @@ func (f fastpathDTBincBytes) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decoderBi
 }
 func (fastpathDTBincBytes) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7630,7 +7473,7 @@ func (f fastpathDTBincBytes) DecMapUint8Uint64X(vp *map[uint8]uint64, d *decoder
 }
 func (fastpathDTBincBytes) DecMapUint8Uint64L(v map[uint8]uint64, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7676,7 +7519,7 @@ func (f fastpathDTBincBytes) DecMapUint8IntX(vp *map[uint8]int, d *decoderBincBy
 }
 func (fastpathDTBincBytes) DecMapUint8IntL(v map[uint8]int, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7722,7 +7565,7 @@ func (f fastpathDTBincBytes) DecMapUint8Int32X(vp *map[uint8]int32, d *decoderBi
 }
 func (fastpathDTBincBytes) DecMapUint8Int32L(v map[uint8]int32, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7768,7 +7611,7 @@ func (f fastpathDTBincBytes) DecMapUint8Float64X(vp *map[uint8]float64, d *decod
 }
 func (fastpathDTBincBytes) DecMapUint8Float64L(v map[uint8]float64, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7814,7 +7657,7 @@ func (f fastpathDTBincBytes) DecMapUint8BoolX(vp *map[uint8]bool, d *decoderBinc
 }
 func (fastpathDTBincBytes) DecMapUint8BoolL(v map[uint8]bool, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7860,7 +7703,7 @@ func (f fastpathDTBincBytes) DecMapUint64IntfX(vp *map[uint64]interface{}, d *de
 }
 func (fastpathDTBincBytes) DecMapUint64IntfL(v map[uint64]interface{}, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -7912,7 +7755,7 @@ func (f fastpathDTBincBytes) DecMapUint64StringX(vp *map[uint64]string, d *decod
 }
 func (fastpathDTBincBytes) DecMapUint64StringL(v map[uint64]string, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -7958,7 +7801,7 @@ func (f fastpathDTBincBytes) DecMapUint64BytesX(vp *map[uint64][]byte, d *decode
 }
 func (fastpathDTBincBytes) DecMapUint64BytesL(v map[uint64][]byte, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -8010,7 +7853,7 @@ func (f fastpathDTBincBytes) DecMapUint64Uint8X(vp *map[uint64]uint8, d *decoder
 }
 func (fastpathDTBincBytes) DecMapUint64Uint8L(v map[uint64]uint8, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8056,7 +7899,7 @@ func (f fastpathDTBincBytes) DecMapUint64Uint64X(vp *map[uint64]uint64, d *decod
 }
 func (fastpathDTBincBytes) DecMapUint64Uint64L(v map[uint64]uint64, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8102,7 +7945,7 @@ func (f fastpathDTBincBytes) DecMapUint64IntX(vp *map[uint64]int, d *decoderBinc
 }
 func (fastpathDTBincBytes) DecMapUint64IntL(v map[uint64]int, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8148,7 +7991,7 @@ func (f fastpathDTBincBytes) DecMapUint64Int32X(vp *map[uint64]int32, d *decoder
 }
 func (fastpathDTBincBytes) DecMapUint64Int32L(v map[uint64]int32, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8194,7 +8037,7 @@ func (f fastpathDTBincBytes) DecMapUint64Float64X(vp *map[uint64]float64, d *dec
 }
 func (fastpathDTBincBytes) DecMapUint64Float64L(v map[uint64]float64, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8240,7 +8083,7 @@ func (f fastpathDTBincBytes) DecMapUint64BoolX(vp *map[uint64]bool, d *decoderBi
 }
 func (fastpathDTBincBytes) DecMapUint64BoolL(v map[uint64]bool, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8286,7 +8129,7 @@ func (f fastpathDTBincBytes) DecMapIntIntfX(vp *map[int]interface{}, d *decoderB
 }
 func (fastpathDTBincBytes) DecMapIntIntfL(v map[int]interface{}, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -8338,7 +8181,7 @@ func (f fastpathDTBincBytes) DecMapIntStringX(vp *map[int]string, d *decoderBinc
 }
 func (fastpathDTBincBytes) DecMapIntStringL(v map[int]string, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8384,7 +8227,7 @@ func (f fastpathDTBincBytes) DecMapIntBytesX(vp *map[int][]byte, d *decoderBincB
 }
 func (fastpathDTBincBytes) DecMapIntBytesL(v map[int][]byte, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -8436,7 +8279,7 @@ func (f fastpathDTBincBytes) DecMapIntUint8X(vp *map[int]uint8, d *decoderBincBy
 }
 func (fastpathDTBincBytes) DecMapIntUint8L(v map[int]uint8, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8482,7 +8325,7 @@ func (f fastpathDTBincBytes) DecMapIntUint64X(vp *map[int]uint64, d *decoderBinc
 }
 func (fastpathDTBincBytes) DecMapIntUint64L(v map[int]uint64, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8528,7 +8371,7 @@ func (f fastpathDTBincBytes) DecMapIntIntX(vp *map[int]int, d *decoderBincBytes)
 }
 func (fastpathDTBincBytes) DecMapIntIntL(v map[int]int, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8574,7 +8417,7 @@ func (f fastpathDTBincBytes) DecMapIntInt32X(vp *map[int]int32, d *decoderBincBy
 }
 func (fastpathDTBincBytes) DecMapIntInt32L(v map[int]int32, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8620,7 +8463,7 @@ func (f fastpathDTBincBytes) DecMapIntFloat64X(vp *map[int]float64, d *decoderBi
 }
 func (fastpathDTBincBytes) DecMapIntFloat64L(v map[int]float64, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8666,7 +8509,7 @@ func (f fastpathDTBincBytes) DecMapIntBoolX(vp *map[int]bool, d *decoderBincByte
 }
 func (fastpathDTBincBytes) DecMapIntBoolL(v map[int]bool, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8712,7 +8555,7 @@ func (f fastpathDTBincBytes) DecMapInt32IntfX(vp *map[int32]interface{}, d *deco
 }
 func (fastpathDTBincBytes) DecMapInt32IntfL(v map[int32]interface{}, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -8764,7 +8607,7 @@ func (f fastpathDTBincBytes) DecMapInt32StringX(vp *map[int32]string, d *decoder
 }
 func (fastpathDTBincBytes) DecMapInt32StringL(v map[int32]string, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -8810,7 +8653,7 @@ func (f fastpathDTBincBytes) DecMapInt32BytesX(vp *map[int32][]byte, d *decoderB
 }
 func (fastpathDTBincBytes) DecMapInt32BytesL(v map[int32][]byte, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -8862,7 +8705,7 @@ func (f fastpathDTBincBytes) DecMapInt32Uint8X(vp *map[int32]uint8, d *decoderBi
 }
 func (fastpathDTBincBytes) DecMapInt32Uint8L(v map[int32]uint8, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -8908,7 +8751,7 @@ func (f fastpathDTBincBytes) DecMapInt32Uint64X(vp *map[int32]uint64, d *decoder
 }
 func (fastpathDTBincBytes) DecMapInt32Uint64L(v map[int32]uint64, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -8954,7 +8797,7 @@ func (f fastpathDTBincBytes) DecMapInt32IntX(vp *map[int32]int, d *decoderBincBy
 }
 func (fastpathDTBincBytes) DecMapInt32IntL(v map[int32]int, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -9000,7 +8843,7 @@ func (f fastpathDTBincBytes) DecMapInt32Int32X(vp *map[int32]int32, d *decoderBi
 }
 func (fastpathDTBincBytes) DecMapInt32Int32L(v map[int32]int32, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -9046,7 +8889,7 @@ func (f fastpathDTBincBytes) DecMapInt32Float64X(vp *map[int32]float64, d *decod
 }
 func (fastpathDTBincBytes) DecMapInt32Float64L(v map[int32]float64, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -9092,7 +8935,7 @@ func (f fastpathDTBincBytes) DecMapInt32BoolX(vp *map[int32]bool, d *decoderBinc
 }
 func (fastpathDTBincBytes) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *decoderBincBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -9114,7 +8957,7 @@ type bincEncDriverBytes struct {
 	encInit2er
 
 	h *BincHandle
-	e *encoderShared
+	e *encoderBase
 	w bytesEncAppender
 	bincEncState
 }
@@ -9408,7 +9251,7 @@ type bincDecDriverBytes struct {
 	noBuiltInTypes
 
 	h *BincHandle
-	d *decoderShared
+	d *decoderBase
 	r bytesDecReader
 
 	bincDecState
@@ -10068,7 +9911,7 @@ func (d *bincDecDriverBytes) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	return
 }
 
-func (d *bincEncDriverBytes) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *bincEncDriverBytes) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*BincHandle)
 	d.e = shared
@@ -10094,7 +9937,7 @@ func (e *bincEncDriverBytes) resetOutIO(out io.Writer) {
 	e.w.resetIO(out, e.h.WriterBufferSize, &e.e.blist)
 }
 
-func (d *bincDecDriverBytes) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *bincDecDriverBytes) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*BincHandle)
 	d.bytes = shared.bytes
@@ -10128,12 +9971,6 @@ func (d *bincDecDriverBytes) descBd() string {
 func (d *bincDecDriverBytes) DecodeFloat32() (f float32) {
 	return float32(chkOvf.Float32V(d.DecodeFloat64()))
 }
-func (e *encoderBincIO) setContainerState(cs containerState) {
-	if cs != 0 {
-		e.c = cs
-	}
-}
-
 func (e *encoderBincIO) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -10167,14 +10004,14 @@ func (e *encoderBincIO) raw(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderBincIO) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
 func (e *encoderBincIO) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat64(real(v))
 }
@@ -10249,10 +10086,6 @@ func (e *encoderBincIO) kUint64(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderBincIO) kUintptr(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
-}
-
-func (e *encoderBincIO) kErr(_ *encFnInfo, rv reflect.Value) {
-	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
 func (e *encoderBincIO) kSeqFn(rt reflect.Type) (fn *encFnBincIO) {
@@ -10331,7 +10164,7 @@ func (e *encoderBincIO) kArrayW(rv reflect.Value, ti *typeInfo) {
 
 func (e *encoderBincIO) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorStr("send-only channel cannot be encoded")
+		halt.errorStr("send-only channel cannot be encoded")
 	}
 	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
 		e.kSliceBytesChan(rv)
@@ -10411,13 +10244,6 @@ L1:
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
 	}
-}
-
-func (e *encoderBincIO) kStructSfi(f *encFnInfo) []*structFieldInfo {
-	if e.h.Canonical {
-		return f.ti.sfi.sorted()
-	}
-	return f.ti.sfi.source()
 }
 
 func (e *encoderBincIO) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
@@ -10813,31 +10639,10 @@ func (e *encoderBincIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 }
 
 type encoderBincIO struct {
-	panicHdl
-	perType encPerType
-
 	dh helperEncDriverBincIO
-
 	fp *fastpathEsBincIO
-
-	h *BasicHandle
-
-	e bincEncDriverIO
-
-	encoderShared
-
-	hh Handle
-
-	ci []interface{}
-
-	slist sfiRvFreelist
-}
-
-func (e *encoderBincIO) HandleName() string {
-	return e.hh.Name()
-}
-
-func (e *encoderBincIO) Release() {
+	e  bincEncDriverIO
+	encoderBase
 }
 
 func (e *encoderBincIO) init(h Handle) {
@@ -10848,7 +10653,7 @@ func (e *encoderBincIO) init(h Handle) {
 	e.be = e.hh.isBinary()
 	e.err = errEncoderNotInitialized
 
-	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEsBincIO)
+	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsBincIO)
 
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
@@ -11051,7 +10856,7 @@ TOP:
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
 				if eq4i(sptr, vv) {
-					e.errorf("circular reference found: %p, %T", sptr, sptr)
+					halt.errorf("circular reference found: %p, %T", sptr, sptr)
 				}
 			}
 			e.ci = append(e.ci, sptr)
@@ -11095,20 +10900,8 @@ func (e *encoderBincIO) encodeValueNonNil(rv reflect.Value, fn *encFnBincIO) {
 	fn.fe(e, &fn.i, rv)
 }
 
-func (e *encoderBincIO) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
-	if rv.CanAddr() {
-		return rvAddr(rv, ptrType)
-	}
-	if e.h.NoAddressableReadonly {
-		rva = reflect.New(typ)
-		rvSetDirect(rva.Elem(), rv)
-		return
-	}
-	return rvAddr(e.perType.AddressableRO(rv), ptrType)
-}
-
 func (e *encoderBincIO) marshalUtf8(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -11117,7 +10910,7 @@ func (e *encoderBincIO) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *encoderBincIO) marshalAsis(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -11126,7 +10919,7 @@ func (e *encoderBincIO) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *encoderBincIO) marshalRaw(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -11137,13 +10930,9 @@ func (e *encoderBincIO) marshalRaw(bs []byte, fnerr error) {
 func (e *encoderBincIO) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
-		e.errorBytes("Raw values cannot be encoded: ", v)
+		halt.errorBytes("Raw values cannot be encoded: ", v)
 	}
 	e.e.writeBytesAsis(v)
-}
-
-func (e *encoderBincIO) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
 }
 
 func (e *encoderBincIO) fn(t reflect.Type) *encFnBincIO {
@@ -11187,12 +10976,6 @@ func (e *encoderBincIO) arrayElem() {
 func (e *encoderBincIO) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
-}
-
-func (e *encoderBincIO) haltOnMbsOddLen(length int) {
-	if length&1 != 0 {
-		e.errorInt("mapBySlice requires even slice length, but got ", int64(length))
-	}
 }
 
 func (e *encoderBincIO) writerEnd() {
@@ -11491,13 +11274,13 @@ func (d *decoderBincIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderBincIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderBincIO) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
@@ -11518,11 +11301,11 @@ func (d *decoderBincIO) jsonUnmarshalV(tm jsonUnmarshaler) {
 			d.blist.put(bs0)
 		}
 	}
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderBincIO) kErr(_ *decFnInfo, rv reflect.Value) {
-	d.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
+	halt.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
 
 }
 
@@ -11608,7 +11391,7 @@ func (d *decoderBincIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	d.d.DecodeNaked()
 
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
-		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
+		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
 	switch n.v {
 	case valueTypeMap:
@@ -11816,7 +11599,7 @@ func (d *decoderBincIO) kStruct(f *decFnInfo, rv reflect.Value) {
 				var f interface{}
 				d.decode(&f)
 				if !mf.CodecMissingField(name2, f) && d.h.ErrorIfNoField {
-					d.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
+					halt.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
 				}
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
@@ -11844,7 +11627,7 @@ func (d *decoderBincIO) kStruct(f *decFnInfo, rv reflect.Value) {
 
 		d.arrayEnd()
 	} else {
-		d.onerror(errNeedMapOrArrayDecodeToStruct)
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
 	}
 }
 
@@ -11857,7 +11640,7 @@ func (d *decoderBincIO) kSlice(f *decFnInfo, rv reflect.Value) {
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
 		if !rvCanset {
@@ -11923,7 +11706,7 @@ func (d *decoderBincIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvcap = rvlen
 				rvChanged = !rvCanset
 			} else {
-				d.errorStr("cannot decode into non-settable slice")
+				halt.errorStr("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut {
 				rvCopySlice(rv, rv0, rtelem)
@@ -11949,7 +11732,7 @@ func (d *decoderBincIO) kSlice(f *decFnInfo, rv reflect.Value) {
 					rvcap = rvlen
 					rvChanged = !rvCanset
 				} else {
-					d.errorStr("cannot decode into non-settable slice")
+					halt.errorStr("cannot decode into non-settable slice")
 				}
 			}
 			if fn == nil {
@@ -11967,11 +11750,11 @@ func (d *decoderBincIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				} else if rvChanged {
 					rv = rvSlice(rv, rvlen)
 				} else {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 			} else {
 				if !(rvCanset || rvChanged) {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
 				rvlen = rvcap
@@ -12013,7 +11796,7 @@ func (d *decoderBincIO) kArray(f *decFnInfo, rv reflect.Value) {
 	if handleBytesWithinKArray && (ctyp == valueTypeBytes || ctyp == valueTypeString) {
 
 		if f.ti.elemkind != uint8(reflect.Uint8) {
-			d.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
+			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
 		bs2 := d.decodeBytesInto(rvbs)
@@ -12042,7 +11825,7 @@ func (d *decoderBincIO) kArray(f *decFnInfo, rv reflect.Value) {
 	rvlen := rv.Len()
 	hasLen := containerLenS > 0
 	if hasLen && containerLenS > rvlen {
-		d.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
+		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
 
 	var elemReset = d.h.SliceElementReset
@@ -12072,13 +11855,13 @@ func (d *decoderBincIO) kChan(f *decFnInfo, rv reflect.Value) {
 
 	ti := f.ti
 	if ti.chandir&uint8(reflect.SendDir) == 0 {
-		d.errorStr("receive-only channel cannot be decoded")
+		halt.errorStr("receive-only channel cannot be decoded")
 	}
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		bs2 := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
@@ -12132,7 +11915,7 @@ func (d *decoderBincIO) kChan(f *decFnInfo, rv reflect.Value) {
 					rv = reflect.MakeChan(ti.rt, rvlen)
 					rvChanged = true
 				} else {
-					d.errorStr("cannot decode into non-settable chan")
+					halt.errorStr("cannot decode into non-settable chan")
 				}
 			}
 			if fn == nil {
@@ -12376,31 +12159,10 @@ func (d *decoderBincIO) kMap(f *decFnInfo, rv reflect.Value) {
 }
 
 type decoderBincIO struct {
-	panicHdl
-	perType decPerType
-
 	dh helperDecDriverBincIO
-
 	fp *fastpathDsBincIO
-
-	h *BasicHandle
-
-	d bincDecDriverIO
-
-	decoderShared
-
-	hh Handle
-
-	mtid uintptr
-	stid uintptr
-}
-
-func (d *decoderBincIO) HandleName() string {
-	return d.hh.Name()
-}
-
-func (d *decoderBincIO) isBytes() bool {
-	return d.bytes
+	d  bincDecDriverIO
+	decoderBase
 }
 
 func (d *decoderBincIO) init(h Handle) {
@@ -12416,7 +12178,7 @@ func (d *decoderBincIO) init(h Handle) {
 		d.is.init()
 	}
 
-	d.fp = d.d.init(h, &d.decoderShared, d).(*fastpathDsBincIO)
+	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsBincIO)
 
 	d.cbreak = d.js || d.cbor
 
@@ -12528,7 +12290,7 @@ func (d *decoderBincIO) nextValueBytes(start []byte) []byte {
 func (d *decoderBincIO) decode(iv interface{}) {
 
 	if iv == nil {
-		d.onerror(errCannotDecodeIntoNil)
+		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
@@ -12638,7 +12400,7 @@ PTR:
 		} else if rv.CanAddr() {
 			rv = rvAddr(rv, fn.i.ti.ptr)
 		} else if fn.i.addrDf {
-			d.errorStr("cannot decode into a non-pointer value")
+			halt.errorStr("cannot decode into a non-pointer value")
 		}
 	}
 	fn.fd(d, &fn.i, rv)
@@ -12648,40 +12410,12 @@ func (d *decoderBincIO) structFieldNotFound(index int, rvkencname string) {
 
 	if d.h.ErrorIfNoField {
 		if index >= 0 {
-			d.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
+			halt.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
 		} else if rvkencname != "" {
-			d.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
+			halt.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
 		}
 	}
 	d.swallow()
-}
-
-func (d *decoderBincIO) arrayCannotExpand(sliceLen, streamLen int) {
-	if d.h.ErrorIfNoArrayExpand {
-		d.errorf("cannot expand array len during decode from %v to %v", any(sliceLen), any(streamLen))
-	}
-}
-
-func (d *decoderBincIO) haltAsNotDecodeable(rv reflect.Value) {
-	if !rv.IsValid() {
-		d.onerror(errCannotDecodeIntoNil)
-	}
-
-	if !rv.CanInterface() {
-		d.errorf("cannot decode into a value without an interface: %v", rv)
-	}
-	d.errorf("cannot decode into value of kind: %v, %#v", rv.Kind(), rv2i(rv))
-}
-
-func (d *decoderBincIO) depthIncr() {
-	d.depth++
-	if d.depth >= d.maxdepth {
-		d.onerror(errMaxDepthExceeded)
-	}
-}
-
-func (d *decoderBincIO) depthDecr() {
-	d.depth--
 }
 
 func (d *decoderBincIO) decodeBytesInto(in []byte) (v []byte) {
@@ -12703,11 +12437,11 @@ func (d *decoderBincIO) rawBytes() (v []byte) {
 }
 
 func (d *decoderBincIO) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, d.hh.Name(), d.NumBytesRead(), false)
+	*err = wrapCodecErr(v, d.hh.Name(), d.d.NumBytesRead(), false)
 }
 
 func (d *decoderBincIO) NumBytesRead() int {
-	return int(d.d.NumBytesRead())
+	return d.d.NumBytesRead()
 }
 
 func (d *decoderBincIO) checkBreak() (v bool) {
@@ -12723,14 +12457,6 @@ func (d *decoderBincIO) containerNext(j, containerLen int, hasLen bool) bool {
 		return j < containerLen
 	}
 	return !d.checkBreak()
-}
-
-func (d *decoderBincIO) mapStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerMapStart
-	}
-	return v
 }
 
 func (d *decoderBincIO) mapElemKey() {
@@ -12749,14 +12475,6 @@ func (d *decoderBincIO) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoderBincIO) arrayStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerArrayStart
-	}
-	return v
-}
-
 func (d *decoderBincIO) arrayElem() {
 	d.d.ReadArrayElem()
 	d.c = containerArrayElem
@@ -12769,41 +12487,9 @@ func (d *decoderBincIO) arrayEnd() {
 }
 
 func (d *decoderBincIO) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-
-	var s interface{}
-	rv := reflect.ValueOf(v)
-	rv2 := rv.Elem()
-	rvk := rv2.Kind()
-	if rvk == reflect.Struct || rvk == reflect.Array {
-		s = ext.ConvertExt(v)
-	} else {
-		s = ext.ConvertExt(rv2i(rv2))
-	}
-	rv = reflect.ValueOf(s)
-
-	if !rv.CanAddr() {
-		rvk = rv.Kind()
-		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
-		if rvk == reflect.Interface {
-			rvSetIntf(rv2, rv)
-		} else {
-			rvSetDirect(rv2, rv)
-		}
-		rv = rv2
-	}
-
+	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
-}
-
-func (d *decoderBincIO) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient &&
-		(numBoolStrSliceBitset.isset(byte(rvk)) ||
-			((rvk == reflect.Struct || rvk == reflect.Array) &&
-				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
-		return d.perType.TransientAddrK(rvt, rvk)
-	}
-	return rvZeroAddrK(rvt, rvk)
 }
 
 func (d *decoderBincIO) fn(t reflect.Type) *decFnBincIO {
@@ -12834,7 +12520,7 @@ func (d *decoderBincIO) decSliceHelperStart() (x decSliceHelperBincIO, clen int)
 		clen = d.mapStart(d.d.ReadMapStart())
 		clen += clen
 	default:
-		d.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
+		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
 	}
 	return
 }
@@ -17118,7 +16804,7 @@ func (f fastpathDTBincIO) DecMapStringIntfX(vp *map[string]interface{}, d *decod
 }
 func (fastpathDTBincIO) DecMapStringIntfL(v map[string]interface{}, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -17170,7 +16856,7 @@ func (f fastpathDTBincIO) DecMapStringStringX(vp *map[string]string, d *decoderB
 }
 func (fastpathDTBincIO) DecMapStringStringL(v map[string]string, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17216,7 +16902,7 @@ func (f fastpathDTBincIO) DecMapStringBytesX(vp *map[string][]byte, d *decoderBi
 }
 func (fastpathDTBincIO) DecMapStringBytesL(v map[string][]byte, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -17268,7 +16954,7 @@ func (f fastpathDTBincIO) DecMapStringUint8X(vp *map[string]uint8, d *decoderBin
 }
 func (fastpathDTBincIO) DecMapStringUint8L(v map[string]uint8, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17314,7 +17000,7 @@ func (f fastpathDTBincIO) DecMapStringUint64X(vp *map[string]uint64, d *decoderB
 }
 func (fastpathDTBincIO) DecMapStringUint64L(v map[string]uint64, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17360,7 +17046,7 @@ func (f fastpathDTBincIO) DecMapStringIntX(vp *map[string]int, d *decoderBincIO)
 }
 func (fastpathDTBincIO) DecMapStringIntL(v map[string]int, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17406,7 +17092,7 @@ func (f fastpathDTBincIO) DecMapStringInt32X(vp *map[string]int32, d *decoderBin
 }
 func (fastpathDTBincIO) DecMapStringInt32L(v map[string]int32, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17452,7 +17138,7 @@ func (f fastpathDTBincIO) DecMapStringFloat64X(vp *map[string]float64, d *decode
 }
 func (fastpathDTBincIO) DecMapStringFloat64L(v map[string]float64, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17498,7 +17184,7 @@ func (f fastpathDTBincIO) DecMapStringBoolX(vp *map[string]bool, d *decoderBincI
 }
 func (fastpathDTBincIO) DecMapStringBoolL(v map[string]bool, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17544,7 +17230,7 @@ func (f fastpathDTBincIO) DecMapUint8IntfX(vp *map[uint8]interface{}, d *decoder
 }
 func (fastpathDTBincIO) DecMapUint8IntfL(v map[uint8]interface{}, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -17596,7 +17282,7 @@ func (f fastpathDTBincIO) DecMapUint8StringX(vp *map[uint8]string, d *decoderBin
 }
 func (fastpathDTBincIO) DecMapUint8StringL(v map[uint8]string, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17642,7 +17328,7 @@ func (f fastpathDTBincIO) DecMapUint8BytesX(vp *map[uint8][]byte, d *decoderBinc
 }
 func (fastpathDTBincIO) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -17694,7 +17380,7 @@ func (f fastpathDTBincIO) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decoderBincI
 }
 func (fastpathDTBincIO) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17740,7 +17426,7 @@ func (f fastpathDTBincIO) DecMapUint8Uint64X(vp *map[uint8]uint64, d *decoderBin
 }
 func (fastpathDTBincIO) DecMapUint8Uint64L(v map[uint8]uint64, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17786,7 +17472,7 @@ func (f fastpathDTBincIO) DecMapUint8IntX(vp *map[uint8]int, d *decoderBincIO) {
 }
 func (fastpathDTBincIO) DecMapUint8IntL(v map[uint8]int, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17832,7 +17518,7 @@ func (f fastpathDTBincIO) DecMapUint8Int32X(vp *map[uint8]int32, d *decoderBincI
 }
 func (fastpathDTBincIO) DecMapUint8Int32L(v map[uint8]int32, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17878,7 +17564,7 @@ func (f fastpathDTBincIO) DecMapUint8Float64X(vp *map[uint8]float64, d *decoderB
 }
 func (fastpathDTBincIO) DecMapUint8Float64L(v map[uint8]float64, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17924,7 +17610,7 @@ func (f fastpathDTBincIO) DecMapUint8BoolX(vp *map[uint8]bool, d *decoderBincIO)
 }
 func (fastpathDTBincIO) DecMapUint8BoolL(v map[uint8]bool, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17970,7 +17656,7 @@ func (f fastpathDTBincIO) DecMapUint64IntfX(vp *map[uint64]interface{}, d *decod
 }
 func (fastpathDTBincIO) DecMapUint64IntfL(v map[uint64]interface{}, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -18022,7 +17708,7 @@ func (f fastpathDTBincIO) DecMapUint64StringX(vp *map[uint64]string, d *decoderB
 }
 func (fastpathDTBincIO) DecMapUint64StringL(v map[uint64]string, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18068,7 +17754,7 @@ func (f fastpathDTBincIO) DecMapUint64BytesX(vp *map[uint64][]byte, d *decoderBi
 }
 func (fastpathDTBincIO) DecMapUint64BytesL(v map[uint64][]byte, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -18120,7 +17806,7 @@ func (f fastpathDTBincIO) DecMapUint64Uint8X(vp *map[uint64]uint8, d *decoderBin
 }
 func (fastpathDTBincIO) DecMapUint64Uint8L(v map[uint64]uint8, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18166,7 +17852,7 @@ func (f fastpathDTBincIO) DecMapUint64Uint64X(vp *map[uint64]uint64, d *decoderB
 }
 func (fastpathDTBincIO) DecMapUint64Uint64L(v map[uint64]uint64, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18212,7 +17898,7 @@ func (f fastpathDTBincIO) DecMapUint64IntX(vp *map[uint64]int, d *decoderBincIO)
 }
 func (fastpathDTBincIO) DecMapUint64IntL(v map[uint64]int, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18258,7 +17944,7 @@ func (f fastpathDTBincIO) DecMapUint64Int32X(vp *map[uint64]int32, d *decoderBin
 }
 func (fastpathDTBincIO) DecMapUint64Int32L(v map[uint64]int32, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18304,7 +17990,7 @@ func (f fastpathDTBincIO) DecMapUint64Float64X(vp *map[uint64]float64, d *decode
 }
 func (fastpathDTBincIO) DecMapUint64Float64L(v map[uint64]float64, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18350,7 +18036,7 @@ func (f fastpathDTBincIO) DecMapUint64BoolX(vp *map[uint64]bool, d *decoderBincI
 }
 func (fastpathDTBincIO) DecMapUint64BoolL(v map[uint64]bool, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18396,7 +18082,7 @@ func (f fastpathDTBincIO) DecMapIntIntfX(vp *map[int]interface{}, d *decoderBinc
 }
 func (fastpathDTBincIO) DecMapIntIntfL(v map[int]interface{}, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -18448,7 +18134,7 @@ func (f fastpathDTBincIO) DecMapIntStringX(vp *map[int]string, d *decoderBincIO)
 }
 func (fastpathDTBincIO) DecMapIntStringL(v map[int]string, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18494,7 +18180,7 @@ func (f fastpathDTBincIO) DecMapIntBytesX(vp *map[int][]byte, d *decoderBincIO) 
 }
 func (fastpathDTBincIO) DecMapIntBytesL(v map[int][]byte, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -18546,7 +18232,7 @@ func (f fastpathDTBincIO) DecMapIntUint8X(vp *map[int]uint8, d *decoderBincIO) {
 }
 func (fastpathDTBincIO) DecMapIntUint8L(v map[int]uint8, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18592,7 +18278,7 @@ func (f fastpathDTBincIO) DecMapIntUint64X(vp *map[int]uint64, d *decoderBincIO)
 }
 func (fastpathDTBincIO) DecMapIntUint64L(v map[int]uint64, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18638,7 +18324,7 @@ func (f fastpathDTBincIO) DecMapIntIntX(vp *map[int]int, d *decoderBincIO) {
 }
 func (fastpathDTBincIO) DecMapIntIntL(v map[int]int, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18684,7 +18370,7 @@ func (f fastpathDTBincIO) DecMapIntInt32X(vp *map[int]int32, d *decoderBincIO) {
 }
 func (fastpathDTBincIO) DecMapIntInt32L(v map[int]int32, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18730,7 +18416,7 @@ func (f fastpathDTBincIO) DecMapIntFloat64X(vp *map[int]float64, d *decoderBincI
 }
 func (fastpathDTBincIO) DecMapIntFloat64L(v map[int]float64, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18776,7 +18462,7 @@ func (f fastpathDTBincIO) DecMapIntBoolX(vp *map[int]bool, d *decoderBincIO) {
 }
 func (fastpathDTBincIO) DecMapIntBoolL(v map[int]bool, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18822,7 +18508,7 @@ func (f fastpathDTBincIO) DecMapInt32IntfX(vp *map[int32]interface{}, d *decoder
 }
 func (fastpathDTBincIO) DecMapInt32IntfL(v map[int32]interface{}, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -18874,7 +18560,7 @@ func (f fastpathDTBincIO) DecMapInt32StringX(vp *map[int32]string, d *decoderBin
 }
 func (fastpathDTBincIO) DecMapInt32StringL(v map[int32]string, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -18920,7 +18606,7 @@ func (f fastpathDTBincIO) DecMapInt32BytesX(vp *map[int32][]byte, d *decoderBinc
 }
 func (fastpathDTBincIO) DecMapInt32BytesL(v map[int32][]byte, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -18972,7 +18658,7 @@ func (f fastpathDTBincIO) DecMapInt32Uint8X(vp *map[int32]uint8, d *decoderBincI
 }
 func (fastpathDTBincIO) DecMapInt32Uint8L(v map[int32]uint8, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19018,7 +18704,7 @@ func (f fastpathDTBincIO) DecMapInt32Uint64X(vp *map[int32]uint64, d *decoderBin
 }
 func (fastpathDTBincIO) DecMapInt32Uint64L(v map[int32]uint64, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19064,7 +18750,7 @@ func (f fastpathDTBincIO) DecMapInt32IntX(vp *map[int32]int, d *decoderBincIO) {
 }
 func (fastpathDTBincIO) DecMapInt32IntL(v map[int32]int, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19110,7 +18796,7 @@ func (f fastpathDTBincIO) DecMapInt32Int32X(vp *map[int32]int32, d *decoderBincI
 }
 func (fastpathDTBincIO) DecMapInt32Int32L(v map[int32]int32, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19156,7 +18842,7 @@ func (f fastpathDTBincIO) DecMapInt32Float64X(vp *map[int32]float64, d *decoderB
 }
 func (fastpathDTBincIO) DecMapInt32Float64L(v map[int32]float64, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19202,7 +18888,7 @@ func (f fastpathDTBincIO) DecMapInt32BoolX(vp *map[int32]bool, d *decoderBincIO)
 }
 func (fastpathDTBincIO) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *decoderBincIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19224,7 +18910,7 @@ type bincEncDriverIO struct {
 	encInit2er
 
 	h *BincHandle
-	e *encoderShared
+	e *encoderBase
 	w bufioEncWriter
 	bincEncState
 }
@@ -19518,7 +19204,7 @@ type bincDecDriverIO struct {
 	noBuiltInTypes
 
 	h *BincHandle
-	d *decoderShared
+	d *decoderBase
 	r ioDecReader
 
 	bincDecState
@@ -20178,7 +19864,7 @@ func (d *bincDecDriverIO) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	return
 }
 
-func (d *bincEncDriverIO) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *bincEncDriverIO) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*BincHandle)
 	d.e = shared
@@ -20204,7 +19890,7 @@ func (e *bincEncDriverIO) resetOutIO(out io.Writer) {
 	e.w.resetIO(out, e.h.WriterBufferSize, &e.e.blist)
 }
 
-func (d *bincDecDriverIO) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *bincDecDriverIO) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*BincHandle)
 	d.bytes = shared.bytes

@@ -22,12 +22,6 @@ import (
 	"unicode/utf8"
 )
 
-func (e *encoderJsonBytes) setContainerState(cs containerState) {
-	if cs != 0 {
-		e.c = cs
-	}
-}
-
 func (e *encoderJsonBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -61,14 +55,14 @@ func (e *encoderJsonBytes) raw(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderJsonBytes) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
 func (e *encoderJsonBytes) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat64(real(v))
 }
@@ -143,10 +137,6 @@ func (e *encoderJsonBytes) kUint64(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderJsonBytes) kUintptr(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
-}
-
-func (e *encoderJsonBytes) kErr(_ *encFnInfo, rv reflect.Value) {
-	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
 func (e *encoderJsonBytes) kSeqFn(rt reflect.Type) (fn *encFnJsonBytes) {
@@ -225,7 +215,7 @@ func (e *encoderJsonBytes) kArrayW(rv reflect.Value, ti *typeInfo) {
 
 func (e *encoderJsonBytes) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorStr("send-only channel cannot be encoded")
+		halt.errorStr("send-only channel cannot be encoded")
 	}
 	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
 		e.kSliceBytesChan(rv)
@@ -305,13 +295,6 @@ L1:
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
 	}
-}
-
-func (e *encoderJsonBytes) kStructSfi(f *encFnInfo) []*structFieldInfo {
-	if e.h.Canonical {
-		return f.ti.sfi.sorted()
-	}
-	return f.ti.sfi.source()
 }
 
 func (e *encoderJsonBytes) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
@@ -707,31 +690,10 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 }
 
 type encoderJsonBytes struct {
-	panicHdl
-	perType encPerType
-
 	dh helperEncDriverJsonBytes
-
 	fp *fastpathEsJsonBytes
-
-	h *BasicHandle
-
-	e jsonEncDriverBytes
-
-	encoderShared
-
-	hh Handle
-
-	ci []interface{}
-
-	slist sfiRvFreelist
-}
-
-func (e *encoderJsonBytes) HandleName() string {
-	return e.hh.Name()
-}
-
-func (e *encoderJsonBytes) Release() {
+	e  jsonEncDriverBytes
+	encoderBase
 }
 
 func (e *encoderJsonBytes) init(h Handle) {
@@ -742,7 +704,7 @@ func (e *encoderJsonBytes) init(h Handle) {
 	e.be = e.hh.isBinary()
 	e.err = errEncoderNotInitialized
 
-	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEsJsonBytes)
+	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsJsonBytes)
 
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
@@ -945,7 +907,7 @@ TOP:
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
 				if eq4i(sptr, vv) {
-					e.errorf("circular reference found: %p, %T", sptr, sptr)
+					halt.errorf("circular reference found: %p, %T", sptr, sptr)
 				}
 			}
 			e.ci = append(e.ci, sptr)
@@ -989,20 +951,8 @@ func (e *encoderJsonBytes) encodeValueNonNil(rv reflect.Value, fn *encFnJsonByte
 	fn.fe(e, &fn.i, rv)
 }
 
-func (e *encoderJsonBytes) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
-	if rv.CanAddr() {
-		return rvAddr(rv, ptrType)
-	}
-	if e.h.NoAddressableReadonly {
-		rva = reflect.New(typ)
-		rvSetDirect(rva.Elem(), rv)
-		return
-	}
-	return rvAddr(e.perType.AddressableRO(rv), ptrType)
-}
-
 func (e *encoderJsonBytes) marshalUtf8(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1011,7 +961,7 @@ func (e *encoderJsonBytes) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *encoderJsonBytes) marshalAsis(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1020,7 +970,7 @@ func (e *encoderJsonBytes) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *encoderJsonBytes) marshalRaw(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1031,13 +981,9 @@ func (e *encoderJsonBytes) marshalRaw(bs []byte, fnerr error) {
 func (e *encoderJsonBytes) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
-		e.errorBytes("Raw values cannot be encoded: ", v)
+		halt.errorBytes("Raw values cannot be encoded: ", v)
 	}
 	e.e.writeBytesAsis(v)
-}
-
-func (e *encoderJsonBytes) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
 }
 
 func (e *encoderJsonBytes) fn(t reflect.Type) *encFnJsonBytes {
@@ -1081,12 +1027,6 @@ func (e *encoderJsonBytes) arrayElem() {
 func (e *encoderJsonBytes) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
-}
-
-func (e *encoderJsonBytes) haltOnMbsOddLen(length int) {
-	if length&1 != 0 {
-		e.errorInt("mapBySlice requires even slice length, but got ", int64(length))
-	}
 }
 
 func (e *encoderJsonBytes) writerEnd() {
@@ -1385,13 +1325,13 @@ func (d *decoderJsonBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderJsonBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderJsonBytes) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
@@ -1412,11 +1352,11 @@ func (d *decoderJsonBytes) jsonUnmarshalV(tm jsonUnmarshaler) {
 			d.blist.put(bs0)
 		}
 	}
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderJsonBytes) kErr(_ *decFnInfo, rv reflect.Value) {
-	d.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
+	halt.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
 
 }
 
@@ -1502,7 +1442,7 @@ func (d *decoderJsonBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	d.d.DecodeNaked()
 
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
-		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
+		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
 	switch n.v {
 	case valueTypeMap:
@@ -1710,7 +1650,7 @@ func (d *decoderJsonBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 				var f interface{}
 				d.decode(&f)
 				if !mf.CodecMissingField(name2, f) && d.h.ErrorIfNoField {
-					d.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
+					halt.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
 				}
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
@@ -1738,7 +1678,7 @@ func (d *decoderJsonBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 
 		d.arrayEnd()
 	} else {
-		d.onerror(errNeedMapOrArrayDecodeToStruct)
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
 	}
 }
 
@@ -1751,7 +1691,7 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
 		if !rvCanset {
@@ -1817,7 +1757,7 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvcap = rvlen
 				rvChanged = !rvCanset
 			} else {
-				d.errorStr("cannot decode into non-settable slice")
+				halt.errorStr("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut {
 				rvCopySlice(rv, rv0, rtelem)
@@ -1843,7 +1783,7 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 					rvcap = rvlen
 					rvChanged = !rvCanset
 				} else {
-					d.errorStr("cannot decode into non-settable slice")
+					halt.errorStr("cannot decode into non-settable slice")
 				}
 			}
 			if fn == nil {
@@ -1861,11 +1801,11 @@ func (d *decoderJsonBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				} else if rvChanged {
 					rv = rvSlice(rv, rvlen)
 				} else {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 			} else {
 				if !(rvCanset || rvChanged) {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
 				rvlen = rvcap
@@ -1907,7 +1847,7 @@ func (d *decoderJsonBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	if handleBytesWithinKArray && (ctyp == valueTypeBytes || ctyp == valueTypeString) {
 
 		if f.ti.elemkind != uint8(reflect.Uint8) {
-			d.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
+			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
 		bs2 := d.decodeBytesInto(rvbs)
@@ -1936,7 +1876,7 @@ func (d *decoderJsonBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	rvlen := rv.Len()
 	hasLen := containerLenS > 0
 	if hasLen && containerLenS > rvlen {
-		d.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
+		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
 
 	var elemReset = d.h.SliceElementReset
@@ -1966,13 +1906,13 @@ func (d *decoderJsonBytes) kChan(f *decFnInfo, rv reflect.Value) {
 
 	ti := f.ti
 	if ti.chandir&uint8(reflect.SendDir) == 0 {
-		d.errorStr("receive-only channel cannot be decoded")
+		halt.errorStr("receive-only channel cannot be decoded")
 	}
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		bs2 := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
@@ -2026,7 +1966,7 @@ func (d *decoderJsonBytes) kChan(f *decFnInfo, rv reflect.Value) {
 					rv = reflect.MakeChan(ti.rt, rvlen)
 					rvChanged = true
 				} else {
-					d.errorStr("cannot decode into non-settable chan")
+					halt.errorStr("cannot decode into non-settable chan")
 				}
 			}
 			if fn == nil {
@@ -2270,31 +2210,10 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 }
 
 type decoderJsonBytes struct {
-	panicHdl
-	perType decPerType
-
 	dh helperDecDriverJsonBytes
-
 	fp *fastpathDsJsonBytes
-
-	h *BasicHandle
-
-	d jsonDecDriverBytes
-
-	decoderShared
-
-	hh Handle
-
-	mtid uintptr
-	stid uintptr
-}
-
-func (d *decoderJsonBytes) HandleName() string {
-	return d.hh.Name()
-}
-
-func (d *decoderJsonBytes) isBytes() bool {
-	return d.bytes
+	d  jsonDecDriverBytes
+	decoderBase
 }
 
 func (d *decoderJsonBytes) init(h Handle) {
@@ -2310,7 +2229,7 @@ func (d *decoderJsonBytes) init(h Handle) {
 		d.is.init()
 	}
 
-	d.fp = d.d.init(h, &d.decoderShared, d).(*fastpathDsJsonBytes)
+	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsJsonBytes)
 
 	d.cbreak = d.js || d.cbor
 
@@ -2422,7 +2341,7 @@ func (d *decoderJsonBytes) nextValueBytes(start []byte) []byte {
 func (d *decoderJsonBytes) decode(iv interface{}) {
 
 	if iv == nil {
-		d.onerror(errCannotDecodeIntoNil)
+		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
@@ -2532,7 +2451,7 @@ PTR:
 		} else if rv.CanAddr() {
 			rv = rvAddr(rv, fn.i.ti.ptr)
 		} else if fn.i.addrDf {
-			d.errorStr("cannot decode into a non-pointer value")
+			halt.errorStr("cannot decode into a non-pointer value")
 		}
 	}
 	fn.fd(d, &fn.i, rv)
@@ -2542,40 +2461,12 @@ func (d *decoderJsonBytes) structFieldNotFound(index int, rvkencname string) {
 
 	if d.h.ErrorIfNoField {
 		if index >= 0 {
-			d.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
+			halt.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
 		} else if rvkencname != "" {
-			d.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
+			halt.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
 		}
 	}
 	d.swallow()
-}
-
-func (d *decoderJsonBytes) arrayCannotExpand(sliceLen, streamLen int) {
-	if d.h.ErrorIfNoArrayExpand {
-		d.errorf("cannot expand array len during decode from %v to %v", any(sliceLen), any(streamLen))
-	}
-}
-
-func (d *decoderJsonBytes) haltAsNotDecodeable(rv reflect.Value) {
-	if !rv.IsValid() {
-		d.onerror(errCannotDecodeIntoNil)
-	}
-
-	if !rv.CanInterface() {
-		d.errorf("cannot decode into a value without an interface: %v", rv)
-	}
-	d.errorf("cannot decode into value of kind: %v, %#v", rv.Kind(), rv2i(rv))
-}
-
-func (d *decoderJsonBytes) depthIncr() {
-	d.depth++
-	if d.depth >= d.maxdepth {
-		d.onerror(errMaxDepthExceeded)
-	}
-}
-
-func (d *decoderJsonBytes) depthDecr() {
-	d.depth--
 }
 
 func (d *decoderJsonBytes) decodeBytesInto(in []byte) (v []byte) {
@@ -2597,11 +2488,11 @@ func (d *decoderJsonBytes) rawBytes() (v []byte) {
 }
 
 func (d *decoderJsonBytes) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, d.hh.Name(), d.NumBytesRead(), false)
+	*err = wrapCodecErr(v, d.hh.Name(), d.d.NumBytesRead(), false)
 }
 
 func (d *decoderJsonBytes) NumBytesRead() int {
-	return int(d.d.NumBytesRead())
+	return d.d.NumBytesRead()
 }
 
 func (d *decoderJsonBytes) checkBreak() (v bool) {
@@ -2617,14 +2508,6 @@ func (d *decoderJsonBytes) containerNext(j, containerLen int, hasLen bool) bool 
 		return j < containerLen
 	}
 	return !d.checkBreak()
-}
-
-func (d *decoderJsonBytes) mapStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerMapStart
-	}
-	return v
 }
 
 func (d *decoderJsonBytes) mapElemKey() {
@@ -2643,14 +2526,6 @@ func (d *decoderJsonBytes) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoderJsonBytes) arrayStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerArrayStart
-	}
-	return v
-}
-
 func (d *decoderJsonBytes) arrayElem() {
 	d.d.ReadArrayElem()
 	d.c = containerArrayElem
@@ -2663,41 +2538,9 @@ func (d *decoderJsonBytes) arrayEnd() {
 }
 
 func (d *decoderJsonBytes) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-
-	var s interface{}
-	rv := reflect.ValueOf(v)
-	rv2 := rv.Elem()
-	rvk := rv2.Kind()
-	if rvk == reflect.Struct || rvk == reflect.Array {
-		s = ext.ConvertExt(v)
-	} else {
-		s = ext.ConvertExt(rv2i(rv2))
-	}
-	rv = reflect.ValueOf(s)
-
-	if !rv.CanAddr() {
-		rvk = rv.Kind()
-		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
-		if rvk == reflect.Interface {
-			rvSetIntf(rv2, rv)
-		} else {
-			rvSetDirect(rv2, rv)
-		}
-		rv = rv2
-	}
-
+	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
-}
-
-func (d *decoderJsonBytes) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient &&
-		(numBoolStrSliceBitset.isset(byte(rvk)) ||
-			((rvk == reflect.Struct || rvk == reflect.Array) &&
-				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
-		return d.perType.TransientAddrK(rvt, rvk)
-	}
-	return rvZeroAddrK(rvt, rvk)
 }
 
 func (d *decoderJsonBytes) fn(t reflect.Type) *decFnJsonBytes {
@@ -2728,7 +2571,7 @@ func (d *decoderJsonBytes) decSliceHelperStart() (x decSliceHelperJsonBytes, cle
 		clen = d.mapStart(d.d.ReadMapStart())
 		clen += clen
 	default:
-		d.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
+		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
 	}
 	return
 }
@@ -7012,7 +6855,7 @@ func (f fastpathDTJsonBytes) DecMapStringIntfX(vp *map[string]interface{}, d *de
 }
 func (fastpathDTJsonBytes) DecMapStringIntfL(v map[string]interface{}, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -7064,7 +6907,7 @@ func (f fastpathDTJsonBytes) DecMapStringStringX(vp *map[string]string, d *decod
 }
 func (fastpathDTJsonBytes) DecMapStringStringL(v map[string]string, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7110,7 +6953,7 @@ func (f fastpathDTJsonBytes) DecMapStringBytesX(vp *map[string][]byte, d *decode
 }
 func (fastpathDTJsonBytes) DecMapStringBytesL(v map[string][]byte, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -7162,7 +7005,7 @@ func (f fastpathDTJsonBytes) DecMapStringUint8X(vp *map[string]uint8, d *decoder
 }
 func (fastpathDTJsonBytes) DecMapStringUint8L(v map[string]uint8, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7208,7 +7051,7 @@ func (f fastpathDTJsonBytes) DecMapStringUint64X(vp *map[string]uint64, d *decod
 }
 func (fastpathDTJsonBytes) DecMapStringUint64L(v map[string]uint64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7254,7 +7097,7 @@ func (f fastpathDTJsonBytes) DecMapStringIntX(vp *map[string]int, d *decoderJson
 }
 func (fastpathDTJsonBytes) DecMapStringIntL(v map[string]int, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7300,7 +7143,7 @@ func (f fastpathDTJsonBytes) DecMapStringInt32X(vp *map[string]int32, d *decoder
 }
 func (fastpathDTJsonBytes) DecMapStringInt32L(v map[string]int32, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7346,7 +7189,7 @@ func (f fastpathDTJsonBytes) DecMapStringFloat64X(vp *map[string]float64, d *dec
 }
 func (fastpathDTJsonBytes) DecMapStringFloat64L(v map[string]float64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7392,7 +7235,7 @@ func (f fastpathDTJsonBytes) DecMapStringBoolX(vp *map[string]bool, d *decoderJs
 }
 func (fastpathDTJsonBytes) DecMapStringBoolL(v map[string]bool, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -7438,7 +7281,7 @@ func (f fastpathDTJsonBytes) DecMapUint8IntfX(vp *map[uint8]interface{}, d *deco
 }
 func (fastpathDTJsonBytes) DecMapUint8IntfL(v map[uint8]interface{}, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -7490,7 +7333,7 @@ func (f fastpathDTJsonBytes) DecMapUint8StringX(vp *map[uint8]string, d *decoder
 }
 func (fastpathDTJsonBytes) DecMapUint8StringL(v map[uint8]string, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7536,7 +7379,7 @@ func (f fastpathDTJsonBytes) DecMapUint8BytesX(vp *map[uint8][]byte, d *decoderJ
 }
 func (fastpathDTJsonBytes) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -7588,7 +7431,7 @@ func (f fastpathDTJsonBytes) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decoderJs
 }
 func (fastpathDTJsonBytes) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7634,7 +7477,7 @@ func (f fastpathDTJsonBytes) DecMapUint8Uint64X(vp *map[uint8]uint64, d *decoder
 }
 func (fastpathDTJsonBytes) DecMapUint8Uint64L(v map[uint8]uint64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7680,7 +7523,7 @@ func (f fastpathDTJsonBytes) DecMapUint8IntX(vp *map[uint8]int, d *decoderJsonBy
 }
 func (fastpathDTJsonBytes) DecMapUint8IntL(v map[uint8]int, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7726,7 +7569,7 @@ func (f fastpathDTJsonBytes) DecMapUint8Int32X(vp *map[uint8]int32, d *decoderJs
 }
 func (fastpathDTJsonBytes) DecMapUint8Int32L(v map[uint8]int32, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7772,7 +7615,7 @@ func (f fastpathDTJsonBytes) DecMapUint8Float64X(vp *map[uint8]float64, d *decod
 }
 func (fastpathDTJsonBytes) DecMapUint8Float64L(v map[uint8]float64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7818,7 +7661,7 @@ func (f fastpathDTJsonBytes) DecMapUint8BoolX(vp *map[uint8]bool, d *decoderJson
 }
 func (fastpathDTJsonBytes) DecMapUint8BoolL(v map[uint8]bool, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -7864,7 +7707,7 @@ func (f fastpathDTJsonBytes) DecMapUint64IntfX(vp *map[uint64]interface{}, d *de
 }
 func (fastpathDTJsonBytes) DecMapUint64IntfL(v map[uint64]interface{}, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -7916,7 +7759,7 @@ func (f fastpathDTJsonBytes) DecMapUint64StringX(vp *map[uint64]string, d *decod
 }
 func (fastpathDTJsonBytes) DecMapUint64StringL(v map[uint64]string, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -7962,7 +7805,7 @@ func (f fastpathDTJsonBytes) DecMapUint64BytesX(vp *map[uint64][]byte, d *decode
 }
 func (fastpathDTJsonBytes) DecMapUint64BytesL(v map[uint64][]byte, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -8014,7 +7857,7 @@ func (f fastpathDTJsonBytes) DecMapUint64Uint8X(vp *map[uint64]uint8, d *decoder
 }
 func (fastpathDTJsonBytes) DecMapUint64Uint8L(v map[uint64]uint8, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8060,7 +7903,7 @@ func (f fastpathDTJsonBytes) DecMapUint64Uint64X(vp *map[uint64]uint64, d *decod
 }
 func (fastpathDTJsonBytes) DecMapUint64Uint64L(v map[uint64]uint64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8106,7 +7949,7 @@ func (f fastpathDTJsonBytes) DecMapUint64IntX(vp *map[uint64]int, d *decoderJson
 }
 func (fastpathDTJsonBytes) DecMapUint64IntL(v map[uint64]int, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8152,7 +7995,7 @@ func (f fastpathDTJsonBytes) DecMapUint64Int32X(vp *map[uint64]int32, d *decoder
 }
 func (fastpathDTJsonBytes) DecMapUint64Int32L(v map[uint64]int32, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8198,7 +8041,7 @@ func (f fastpathDTJsonBytes) DecMapUint64Float64X(vp *map[uint64]float64, d *dec
 }
 func (fastpathDTJsonBytes) DecMapUint64Float64L(v map[uint64]float64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8244,7 +8087,7 @@ func (f fastpathDTJsonBytes) DecMapUint64BoolX(vp *map[uint64]bool, d *decoderJs
 }
 func (fastpathDTJsonBytes) DecMapUint64BoolL(v map[uint64]bool, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -8290,7 +8133,7 @@ func (f fastpathDTJsonBytes) DecMapIntIntfX(vp *map[int]interface{}, d *decoderJ
 }
 func (fastpathDTJsonBytes) DecMapIntIntfL(v map[int]interface{}, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -8342,7 +8185,7 @@ func (f fastpathDTJsonBytes) DecMapIntStringX(vp *map[int]string, d *decoderJson
 }
 func (fastpathDTJsonBytes) DecMapIntStringL(v map[int]string, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8388,7 +8231,7 @@ func (f fastpathDTJsonBytes) DecMapIntBytesX(vp *map[int][]byte, d *decoderJsonB
 }
 func (fastpathDTJsonBytes) DecMapIntBytesL(v map[int][]byte, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -8440,7 +8283,7 @@ func (f fastpathDTJsonBytes) DecMapIntUint8X(vp *map[int]uint8, d *decoderJsonBy
 }
 func (fastpathDTJsonBytes) DecMapIntUint8L(v map[int]uint8, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8486,7 +8329,7 @@ func (f fastpathDTJsonBytes) DecMapIntUint64X(vp *map[int]uint64, d *decoderJson
 }
 func (fastpathDTJsonBytes) DecMapIntUint64L(v map[int]uint64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8532,7 +8375,7 @@ func (f fastpathDTJsonBytes) DecMapIntIntX(vp *map[int]int, d *decoderJsonBytes)
 }
 func (fastpathDTJsonBytes) DecMapIntIntL(v map[int]int, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8578,7 +8421,7 @@ func (f fastpathDTJsonBytes) DecMapIntInt32X(vp *map[int]int32, d *decoderJsonBy
 }
 func (fastpathDTJsonBytes) DecMapIntInt32L(v map[int]int32, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8624,7 +8467,7 @@ func (f fastpathDTJsonBytes) DecMapIntFloat64X(vp *map[int]float64, d *decoderJs
 }
 func (fastpathDTJsonBytes) DecMapIntFloat64L(v map[int]float64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8670,7 +8513,7 @@ func (f fastpathDTJsonBytes) DecMapIntBoolX(vp *map[int]bool, d *decoderJsonByte
 }
 func (fastpathDTJsonBytes) DecMapIntBoolL(v map[int]bool, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -8716,7 +8559,7 @@ func (f fastpathDTJsonBytes) DecMapInt32IntfX(vp *map[int32]interface{}, d *deco
 }
 func (fastpathDTJsonBytes) DecMapInt32IntfL(v map[int32]interface{}, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -8768,7 +8611,7 @@ func (f fastpathDTJsonBytes) DecMapInt32StringX(vp *map[int32]string, d *decoder
 }
 func (fastpathDTJsonBytes) DecMapInt32StringL(v map[int32]string, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -8814,7 +8657,7 @@ func (f fastpathDTJsonBytes) DecMapInt32BytesX(vp *map[int32][]byte, d *decoderJ
 }
 func (fastpathDTJsonBytes) DecMapInt32BytesL(v map[int32][]byte, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -8866,7 +8709,7 @@ func (f fastpathDTJsonBytes) DecMapInt32Uint8X(vp *map[int32]uint8, d *decoderJs
 }
 func (fastpathDTJsonBytes) DecMapInt32Uint8L(v map[int32]uint8, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -8912,7 +8755,7 @@ func (f fastpathDTJsonBytes) DecMapInt32Uint64X(vp *map[int32]uint64, d *decoder
 }
 func (fastpathDTJsonBytes) DecMapInt32Uint64L(v map[int32]uint64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -8958,7 +8801,7 @@ func (f fastpathDTJsonBytes) DecMapInt32IntX(vp *map[int32]int, d *decoderJsonBy
 }
 func (fastpathDTJsonBytes) DecMapInt32IntL(v map[int32]int, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -9004,7 +8847,7 @@ func (f fastpathDTJsonBytes) DecMapInt32Int32X(vp *map[int32]int32, d *decoderJs
 }
 func (fastpathDTJsonBytes) DecMapInt32Int32L(v map[int32]int32, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -9050,7 +8893,7 @@ func (f fastpathDTJsonBytes) DecMapInt32Float64X(vp *map[int32]float64, d *decod
 }
 func (fastpathDTJsonBytes) DecMapInt32Float64L(v map[int32]float64, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -9096,7 +8939,7 @@ func (f fastpathDTJsonBytes) DecMapInt32BoolX(vp *map[int32]bool, d *decoderJson
 }
 func (fastpathDTJsonBytes) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *decoderJsonBytes) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -9114,7 +8957,7 @@ func (fastpathDTJsonBytes) DecMapInt32BoolL(v map[int32]bool, containerLen int, 
 type jsonEncDriverBytes struct {
 	noBuiltInTypes
 	h *JsonHandle
-	e *encoderShared
+	e *encoderBase
 	s *bitset256
 
 	w bytesEncAppender
@@ -9214,8 +9057,7 @@ func (e *jsonEncDriverBytes) EncodeRawExt(re *RawExt) {
 }
 
 func (e *jsonEncDriverBytes) EncodeBool(b bool) {
-	e.w.writestr(
-		jsonEncBoolStrs[bool2int(e.ks && e.e.c == containerMapKey)%2][bool2int(b)%2])
+	e.w.writestr(jsonEncBoolStrs[bool2int(e.ks && e.e.c == containerMapKey)%2][bool2int(b)%2])
 }
 
 func (e *jsonEncDriverBytes) encodeFloat(f float64, bitsize, fmt byte, prec int8) {
@@ -9250,49 +9092,7 @@ func (e *jsonEncDriverBytes) EncodeFloat32(f float32) {
 }
 
 func (e *jsonEncDriverBytes) encodeUint(neg bool, quotes bool, u uint64) {
-
-	var ss = jsonEncodeUintSmallsStringBytes
-
-	var a = e.b[0:24]
-	var i = uint(len(a))
-
-	if quotes {
-		i--
-		setByteAt(a, i, '"')
-
-	}
-
-	var is uint
-	var us = uint(u)
-	for us >= 100 {
-		is = us % 100 * 2
-		us /= 100
-		i -= 2
-		setByteAt(a, i+1, byteAt(ss, is+1))
-		setByteAt(a, i, byteAt(ss, is))
-
-	}
-
-	is = us * 2
-	i--
-	setByteAt(a, i, byteAt(ss, is+1))
-
-	if us >= 10 {
-		i--
-		setByteAt(a, i, byteAt(ss, is))
-
-	}
-	if neg {
-		i--
-		setByteAt(a, i, '-')
-
-	}
-	if quotes {
-		i--
-		setByteAt(a, i, '"')
-
-	}
-	e.w.writeb(a[i:])
+	e.w.writeb(jsonEncodeUint(neg, quotes, u, &e.b))
 }
 
 func (e *jsonEncDriverBytes) EncodeInt(v int64) {
@@ -9487,7 +9287,7 @@ type jsonDecDriverBytes struct {
 	noBuiltInTypes
 	decDriverNoopNumberHelper
 	h *JsonHandle
-	d *decoderShared
+	d *decoderBase
 
 	r bytesDecReader
 	jsonDecState
@@ -10113,7 +9913,7 @@ func (d *jsonDecDriverBytes) reset() {
 	d.rawext = d.h.RawBytesExt != nil
 }
 
-func (d *jsonEncDriverBytes) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *jsonEncDriverBytes) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*JsonHandle)
 	d.e = shared
@@ -10139,7 +9939,7 @@ func (e *jsonEncDriverBytes) resetOutIO(out io.Writer) {
 	e.w.resetIO(out, e.h.WriterBufferSize, &e.e.blist)
 }
 
-func (d *jsonDecDriverBytes) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *jsonDecDriverBytes) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*JsonHandle)
 	d.bytes = shared.bytes
@@ -10183,12 +9983,6 @@ func (d *jsonDecDriverBytes) init2(dec decoderI) {
 	d.d.js = true
 	d.d.jsms = d.h.MapKeyAsString
 }
-func (e *encoderJsonIO) setContainerState(cs containerState) {
-	if cs != 0 {
-		e.c = cs
-	}
-}
-
 func (e *encoderJsonIO) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -10222,14 +10016,14 @@ func (e *encoderJsonIO) raw(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderJsonIO) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
 func (e *encoderJsonIO) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat64(real(v))
 }
@@ -10304,10 +10098,6 @@ func (e *encoderJsonIO) kUint64(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderJsonIO) kUintptr(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
-}
-
-func (e *encoderJsonIO) kErr(_ *encFnInfo, rv reflect.Value) {
-	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
 func (e *encoderJsonIO) kSeqFn(rt reflect.Type) (fn *encFnJsonIO) {
@@ -10386,7 +10176,7 @@ func (e *encoderJsonIO) kArrayW(rv reflect.Value, ti *typeInfo) {
 
 func (e *encoderJsonIO) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorStr("send-only channel cannot be encoded")
+		halt.errorStr("send-only channel cannot be encoded")
 	}
 	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
 		e.kSliceBytesChan(rv)
@@ -10466,13 +10256,6 @@ L1:
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
 	}
-}
-
-func (e *encoderJsonIO) kStructSfi(f *encFnInfo) []*structFieldInfo {
-	if e.h.Canonical {
-		return f.ti.sfi.sorted()
-	}
-	return f.ti.sfi.source()
 }
 
 func (e *encoderJsonIO) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
@@ -10868,31 +10651,10 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 }
 
 type encoderJsonIO struct {
-	panicHdl
-	perType encPerType
-
 	dh helperEncDriverJsonIO
-
 	fp *fastpathEsJsonIO
-
-	h *BasicHandle
-
-	e jsonEncDriverIO
-
-	encoderShared
-
-	hh Handle
-
-	ci []interface{}
-
-	slist sfiRvFreelist
-}
-
-func (e *encoderJsonIO) HandleName() string {
-	return e.hh.Name()
-}
-
-func (e *encoderJsonIO) Release() {
+	e  jsonEncDriverIO
+	encoderBase
 }
 
 func (e *encoderJsonIO) init(h Handle) {
@@ -10903,7 +10665,7 @@ func (e *encoderJsonIO) init(h Handle) {
 	e.be = e.hh.isBinary()
 	e.err = errEncoderNotInitialized
 
-	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEsJsonIO)
+	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsJsonIO)
 
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
@@ -11106,7 +10868,7 @@ TOP:
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
 				if eq4i(sptr, vv) {
-					e.errorf("circular reference found: %p, %T", sptr, sptr)
+					halt.errorf("circular reference found: %p, %T", sptr, sptr)
 				}
 			}
 			e.ci = append(e.ci, sptr)
@@ -11150,20 +10912,8 @@ func (e *encoderJsonIO) encodeValueNonNil(rv reflect.Value, fn *encFnJsonIO) {
 	fn.fe(e, &fn.i, rv)
 }
 
-func (e *encoderJsonIO) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
-	if rv.CanAddr() {
-		return rvAddr(rv, ptrType)
-	}
-	if e.h.NoAddressableReadonly {
-		rva = reflect.New(typ)
-		rvSetDirect(rva.Elem(), rv)
-		return
-	}
-	return rvAddr(e.perType.AddressableRO(rv), ptrType)
-}
-
 func (e *encoderJsonIO) marshalUtf8(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -11172,7 +10922,7 @@ func (e *encoderJsonIO) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *encoderJsonIO) marshalAsis(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -11181,7 +10931,7 @@ func (e *encoderJsonIO) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *encoderJsonIO) marshalRaw(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -11192,13 +10942,9 @@ func (e *encoderJsonIO) marshalRaw(bs []byte, fnerr error) {
 func (e *encoderJsonIO) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
-		e.errorBytes("Raw values cannot be encoded: ", v)
+		halt.errorBytes("Raw values cannot be encoded: ", v)
 	}
 	e.e.writeBytesAsis(v)
-}
-
-func (e *encoderJsonIO) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
 }
 
 func (e *encoderJsonIO) fn(t reflect.Type) *encFnJsonIO {
@@ -11242,12 +10988,6 @@ func (e *encoderJsonIO) arrayElem() {
 func (e *encoderJsonIO) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
-}
-
-func (e *encoderJsonIO) haltOnMbsOddLen(length int) {
-	if length&1 != 0 {
-		e.errorInt("mapBySlice requires even slice length, but got ", int64(length))
-	}
 }
 
 func (e *encoderJsonIO) writerEnd() {
@@ -11546,13 +11286,13 @@ func (d *decoderJsonIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderJsonIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderJsonIO) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
@@ -11573,11 +11313,11 @@ func (d *decoderJsonIO) jsonUnmarshalV(tm jsonUnmarshaler) {
 			d.blist.put(bs0)
 		}
 	}
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderJsonIO) kErr(_ *decFnInfo, rv reflect.Value) {
-	d.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
+	halt.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
 
 }
 
@@ -11663,7 +11403,7 @@ func (d *decoderJsonIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	d.d.DecodeNaked()
 
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
-		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
+		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
 	switch n.v {
 	case valueTypeMap:
@@ -11871,7 +11611,7 @@ func (d *decoderJsonIO) kStruct(f *decFnInfo, rv reflect.Value) {
 				var f interface{}
 				d.decode(&f)
 				if !mf.CodecMissingField(name2, f) && d.h.ErrorIfNoField {
-					d.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
+					halt.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
 				}
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
@@ -11899,7 +11639,7 @@ func (d *decoderJsonIO) kStruct(f *decFnInfo, rv reflect.Value) {
 
 		d.arrayEnd()
 	} else {
-		d.onerror(errNeedMapOrArrayDecodeToStruct)
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
 	}
 }
 
@@ -11912,7 +11652,7 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
 		if !rvCanset {
@@ -11978,7 +11718,7 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvcap = rvlen
 				rvChanged = !rvCanset
 			} else {
-				d.errorStr("cannot decode into non-settable slice")
+				halt.errorStr("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut {
 				rvCopySlice(rv, rv0, rtelem)
@@ -12004,7 +11744,7 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 					rvcap = rvlen
 					rvChanged = !rvCanset
 				} else {
-					d.errorStr("cannot decode into non-settable slice")
+					halt.errorStr("cannot decode into non-settable slice")
 				}
 			}
 			if fn == nil {
@@ -12022,11 +11762,11 @@ func (d *decoderJsonIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				} else if rvChanged {
 					rv = rvSlice(rv, rvlen)
 				} else {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 			} else {
 				if !(rvCanset || rvChanged) {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
 				rvlen = rvcap
@@ -12068,7 +11808,7 @@ func (d *decoderJsonIO) kArray(f *decFnInfo, rv reflect.Value) {
 	if handleBytesWithinKArray && (ctyp == valueTypeBytes || ctyp == valueTypeString) {
 
 		if f.ti.elemkind != uint8(reflect.Uint8) {
-			d.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
+			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
 		bs2 := d.decodeBytesInto(rvbs)
@@ -12097,7 +11837,7 @@ func (d *decoderJsonIO) kArray(f *decFnInfo, rv reflect.Value) {
 	rvlen := rv.Len()
 	hasLen := containerLenS > 0
 	if hasLen && containerLenS > rvlen {
-		d.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
+		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
 
 	var elemReset = d.h.SliceElementReset
@@ -12127,13 +11867,13 @@ func (d *decoderJsonIO) kChan(f *decFnInfo, rv reflect.Value) {
 
 	ti := f.ti
 	if ti.chandir&uint8(reflect.SendDir) == 0 {
-		d.errorStr("receive-only channel cannot be decoded")
+		halt.errorStr("receive-only channel cannot be decoded")
 	}
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		bs2 := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
@@ -12187,7 +11927,7 @@ func (d *decoderJsonIO) kChan(f *decFnInfo, rv reflect.Value) {
 					rv = reflect.MakeChan(ti.rt, rvlen)
 					rvChanged = true
 				} else {
-					d.errorStr("cannot decode into non-settable chan")
+					halt.errorStr("cannot decode into non-settable chan")
 				}
 			}
 			if fn == nil {
@@ -12431,31 +12171,10 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 }
 
 type decoderJsonIO struct {
-	panicHdl
-	perType decPerType
-
 	dh helperDecDriverJsonIO
-
 	fp *fastpathDsJsonIO
-
-	h *BasicHandle
-
-	d jsonDecDriverIO
-
-	decoderShared
-
-	hh Handle
-
-	mtid uintptr
-	stid uintptr
-}
-
-func (d *decoderJsonIO) HandleName() string {
-	return d.hh.Name()
-}
-
-func (d *decoderJsonIO) isBytes() bool {
-	return d.bytes
+	d  jsonDecDriverIO
+	decoderBase
 }
 
 func (d *decoderJsonIO) init(h Handle) {
@@ -12471,7 +12190,7 @@ func (d *decoderJsonIO) init(h Handle) {
 		d.is.init()
 	}
 
-	d.fp = d.d.init(h, &d.decoderShared, d).(*fastpathDsJsonIO)
+	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsJsonIO)
 
 	d.cbreak = d.js || d.cbor
 
@@ -12583,7 +12302,7 @@ func (d *decoderJsonIO) nextValueBytes(start []byte) []byte {
 func (d *decoderJsonIO) decode(iv interface{}) {
 
 	if iv == nil {
-		d.onerror(errCannotDecodeIntoNil)
+		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
@@ -12693,7 +12412,7 @@ PTR:
 		} else if rv.CanAddr() {
 			rv = rvAddr(rv, fn.i.ti.ptr)
 		} else if fn.i.addrDf {
-			d.errorStr("cannot decode into a non-pointer value")
+			halt.errorStr("cannot decode into a non-pointer value")
 		}
 	}
 	fn.fd(d, &fn.i, rv)
@@ -12703,40 +12422,12 @@ func (d *decoderJsonIO) structFieldNotFound(index int, rvkencname string) {
 
 	if d.h.ErrorIfNoField {
 		if index >= 0 {
-			d.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
+			halt.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
 		} else if rvkencname != "" {
-			d.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
+			halt.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
 		}
 	}
 	d.swallow()
-}
-
-func (d *decoderJsonIO) arrayCannotExpand(sliceLen, streamLen int) {
-	if d.h.ErrorIfNoArrayExpand {
-		d.errorf("cannot expand array len during decode from %v to %v", any(sliceLen), any(streamLen))
-	}
-}
-
-func (d *decoderJsonIO) haltAsNotDecodeable(rv reflect.Value) {
-	if !rv.IsValid() {
-		d.onerror(errCannotDecodeIntoNil)
-	}
-
-	if !rv.CanInterface() {
-		d.errorf("cannot decode into a value without an interface: %v", rv)
-	}
-	d.errorf("cannot decode into value of kind: %v, %#v", rv.Kind(), rv2i(rv))
-}
-
-func (d *decoderJsonIO) depthIncr() {
-	d.depth++
-	if d.depth >= d.maxdepth {
-		d.onerror(errMaxDepthExceeded)
-	}
-}
-
-func (d *decoderJsonIO) depthDecr() {
-	d.depth--
 }
 
 func (d *decoderJsonIO) decodeBytesInto(in []byte) (v []byte) {
@@ -12758,11 +12449,11 @@ func (d *decoderJsonIO) rawBytes() (v []byte) {
 }
 
 func (d *decoderJsonIO) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, d.hh.Name(), d.NumBytesRead(), false)
+	*err = wrapCodecErr(v, d.hh.Name(), d.d.NumBytesRead(), false)
 }
 
 func (d *decoderJsonIO) NumBytesRead() int {
-	return int(d.d.NumBytesRead())
+	return d.d.NumBytesRead()
 }
 
 func (d *decoderJsonIO) checkBreak() (v bool) {
@@ -12778,14 +12469,6 @@ func (d *decoderJsonIO) containerNext(j, containerLen int, hasLen bool) bool {
 		return j < containerLen
 	}
 	return !d.checkBreak()
-}
-
-func (d *decoderJsonIO) mapStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerMapStart
-	}
-	return v
 }
 
 func (d *decoderJsonIO) mapElemKey() {
@@ -12804,14 +12487,6 @@ func (d *decoderJsonIO) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoderJsonIO) arrayStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerArrayStart
-	}
-	return v
-}
-
 func (d *decoderJsonIO) arrayElem() {
 	d.d.ReadArrayElem()
 	d.c = containerArrayElem
@@ -12824,41 +12499,9 @@ func (d *decoderJsonIO) arrayEnd() {
 }
 
 func (d *decoderJsonIO) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-
-	var s interface{}
-	rv := reflect.ValueOf(v)
-	rv2 := rv.Elem()
-	rvk := rv2.Kind()
-	if rvk == reflect.Struct || rvk == reflect.Array {
-		s = ext.ConvertExt(v)
-	} else {
-		s = ext.ConvertExt(rv2i(rv2))
-	}
-	rv = reflect.ValueOf(s)
-
-	if !rv.CanAddr() {
-		rvk = rv.Kind()
-		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
-		if rvk == reflect.Interface {
-			rvSetIntf(rv2, rv)
-		} else {
-			rvSetDirect(rv2, rv)
-		}
-		rv = rv2
-	}
-
+	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
-}
-
-func (d *decoderJsonIO) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient &&
-		(numBoolStrSliceBitset.isset(byte(rvk)) ||
-			((rvk == reflect.Struct || rvk == reflect.Array) &&
-				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
-		return d.perType.TransientAddrK(rvt, rvk)
-	}
-	return rvZeroAddrK(rvt, rvk)
 }
 
 func (d *decoderJsonIO) fn(t reflect.Type) *decFnJsonIO {
@@ -12889,7 +12532,7 @@ func (d *decoderJsonIO) decSliceHelperStart() (x decSliceHelperJsonIO, clen int)
 		clen = d.mapStart(d.d.ReadMapStart())
 		clen += clen
 	default:
-		d.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
+		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
 	}
 	return
 }
@@ -17173,7 +16816,7 @@ func (f fastpathDTJsonIO) DecMapStringIntfX(vp *map[string]interface{}, d *decod
 }
 func (fastpathDTJsonIO) DecMapStringIntfL(v map[string]interface{}, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -17225,7 +16868,7 @@ func (f fastpathDTJsonIO) DecMapStringStringX(vp *map[string]string, d *decoderJ
 }
 func (fastpathDTJsonIO) DecMapStringStringL(v map[string]string, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17271,7 +16914,7 @@ func (f fastpathDTJsonIO) DecMapStringBytesX(vp *map[string][]byte, d *decoderJs
 }
 func (fastpathDTJsonIO) DecMapStringBytesL(v map[string][]byte, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -17323,7 +16966,7 @@ func (f fastpathDTJsonIO) DecMapStringUint8X(vp *map[string]uint8, d *decoderJso
 }
 func (fastpathDTJsonIO) DecMapStringUint8L(v map[string]uint8, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17369,7 +17012,7 @@ func (f fastpathDTJsonIO) DecMapStringUint64X(vp *map[string]uint64, d *decoderJ
 }
 func (fastpathDTJsonIO) DecMapStringUint64L(v map[string]uint64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17415,7 +17058,7 @@ func (f fastpathDTJsonIO) DecMapStringIntX(vp *map[string]int, d *decoderJsonIO)
 }
 func (fastpathDTJsonIO) DecMapStringIntL(v map[string]int, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17461,7 +17104,7 @@ func (f fastpathDTJsonIO) DecMapStringInt32X(vp *map[string]int32, d *decoderJso
 }
 func (fastpathDTJsonIO) DecMapStringInt32L(v map[string]int32, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17507,7 +17150,7 @@ func (f fastpathDTJsonIO) DecMapStringFloat64X(vp *map[string]float64, d *decode
 }
 func (fastpathDTJsonIO) DecMapStringFloat64L(v map[string]float64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17553,7 +17196,7 @@ func (f fastpathDTJsonIO) DecMapStringBoolX(vp *map[string]bool, d *decoderJsonI
 }
 func (fastpathDTJsonIO) DecMapStringBoolL(v map[string]bool, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -17599,7 +17242,7 @@ func (f fastpathDTJsonIO) DecMapUint8IntfX(vp *map[uint8]interface{}, d *decoder
 }
 func (fastpathDTJsonIO) DecMapUint8IntfL(v map[uint8]interface{}, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -17651,7 +17294,7 @@ func (f fastpathDTJsonIO) DecMapUint8StringX(vp *map[uint8]string, d *decoderJso
 }
 func (fastpathDTJsonIO) DecMapUint8StringL(v map[uint8]string, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17697,7 +17340,7 @@ func (f fastpathDTJsonIO) DecMapUint8BytesX(vp *map[uint8][]byte, d *decoderJson
 }
 func (fastpathDTJsonIO) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -17749,7 +17392,7 @@ func (f fastpathDTJsonIO) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decoderJsonI
 }
 func (fastpathDTJsonIO) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17795,7 +17438,7 @@ func (f fastpathDTJsonIO) DecMapUint8Uint64X(vp *map[uint8]uint64, d *decoderJso
 }
 func (fastpathDTJsonIO) DecMapUint8Uint64L(v map[uint8]uint64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17841,7 +17484,7 @@ func (f fastpathDTJsonIO) DecMapUint8IntX(vp *map[uint8]int, d *decoderJsonIO) {
 }
 func (fastpathDTJsonIO) DecMapUint8IntL(v map[uint8]int, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17887,7 +17530,7 @@ func (f fastpathDTJsonIO) DecMapUint8Int32X(vp *map[uint8]int32, d *decoderJsonI
 }
 func (fastpathDTJsonIO) DecMapUint8Int32L(v map[uint8]int32, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17933,7 +17576,7 @@ func (f fastpathDTJsonIO) DecMapUint8Float64X(vp *map[uint8]float64, d *decoderJ
 }
 func (fastpathDTJsonIO) DecMapUint8Float64L(v map[uint8]float64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -17979,7 +17622,7 @@ func (f fastpathDTJsonIO) DecMapUint8BoolX(vp *map[uint8]bool, d *decoderJsonIO)
 }
 func (fastpathDTJsonIO) DecMapUint8BoolL(v map[uint8]bool, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -18025,7 +17668,7 @@ func (f fastpathDTJsonIO) DecMapUint64IntfX(vp *map[uint64]interface{}, d *decod
 }
 func (fastpathDTJsonIO) DecMapUint64IntfL(v map[uint64]interface{}, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -18077,7 +17720,7 @@ func (f fastpathDTJsonIO) DecMapUint64StringX(vp *map[uint64]string, d *decoderJ
 }
 func (fastpathDTJsonIO) DecMapUint64StringL(v map[uint64]string, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18123,7 +17766,7 @@ func (f fastpathDTJsonIO) DecMapUint64BytesX(vp *map[uint64][]byte, d *decoderJs
 }
 func (fastpathDTJsonIO) DecMapUint64BytesL(v map[uint64][]byte, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -18175,7 +17818,7 @@ func (f fastpathDTJsonIO) DecMapUint64Uint8X(vp *map[uint64]uint8, d *decoderJso
 }
 func (fastpathDTJsonIO) DecMapUint64Uint8L(v map[uint64]uint8, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18221,7 +17864,7 @@ func (f fastpathDTJsonIO) DecMapUint64Uint64X(vp *map[uint64]uint64, d *decoderJ
 }
 func (fastpathDTJsonIO) DecMapUint64Uint64L(v map[uint64]uint64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18267,7 +17910,7 @@ func (f fastpathDTJsonIO) DecMapUint64IntX(vp *map[uint64]int, d *decoderJsonIO)
 }
 func (fastpathDTJsonIO) DecMapUint64IntL(v map[uint64]int, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18313,7 +17956,7 @@ func (f fastpathDTJsonIO) DecMapUint64Int32X(vp *map[uint64]int32, d *decoderJso
 }
 func (fastpathDTJsonIO) DecMapUint64Int32L(v map[uint64]int32, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18359,7 +18002,7 @@ func (f fastpathDTJsonIO) DecMapUint64Float64X(vp *map[uint64]float64, d *decode
 }
 func (fastpathDTJsonIO) DecMapUint64Float64L(v map[uint64]float64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18405,7 +18048,7 @@ func (f fastpathDTJsonIO) DecMapUint64BoolX(vp *map[uint64]bool, d *decoderJsonI
 }
 func (fastpathDTJsonIO) DecMapUint64BoolL(v map[uint64]bool, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -18451,7 +18094,7 @@ func (f fastpathDTJsonIO) DecMapIntIntfX(vp *map[int]interface{}, d *decoderJson
 }
 func (fastpathDTJsonIO) DecMapIntIntfL(v map[int]interface{}, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -18503,7 +18146,7 @@ func (f fastpathDTJsonIO) DecMapIntStringX(vp *map[int]string, d *decoderJsonIO)
 }
 func (fastpathDTJsonIO) DecMapIntStringL(v map[int]string, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18549,7 +18192,7 @@ func (f fastpathDTJsonIO) DecMapIntBytesX(vp *map[int][]byte, d *decoderJsonIO) 
 }
 func (fastpathDTJsonIO) DecMapIntBytesL(v map[int][]byte, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -18601,7 +18244,7 @@ func (f fastpathDTJsonIO) DecMapIntUint8X(vp *map[int]uint8, d *decoderJsonIO) {
 }
 func (fastpathDTJsonIO) DecMapIntUint8L(v map[int]uint8, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18647,7 +18290,7 @@ func (f fastpathDTJsonIO) DecMapIntUint64X(vp *map[int]uint64, d *decoderJsonIO)
 }
 func (fastpathDTJsonIO) DecMapIntUint64L(v map[int]uint64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18693,7 +18336,7 @@ func (f fastpathDTJsonIO) DecMapIntIntX(vp *map[int]int, d *decoderJsonIO) {
 }
 func (fastpathDTJsonIO) DecMapIntIntL(v map[int]int, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18739,7 +18382,7 @@ func (f fastpathDTJsonIO) DecMapIntInt32X(vp *map[int]int32, d *decoderJsonIO) {
 }
 func (fastpathDTJsonIO) DecMapIntInt32L(v map[int]int32, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18785,7 +18428,7 @@ func (f fastpathDTJsonIO) DecMapIntFloat64X(vp *map[int]float64, d *decoderJsonI
 }
 func (fastpathDTJsonIO) DecMapIntFloat64L(v map[int]float64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18831,7 +18474,7 @@ func (f fastpathDTJsonIO) DecMapIntBoolX(vp *map[int]bool, d *decoderJsonIO) {
 }
 func (fastpathDTJsonIO) DecMapIntBoolL(v map[int]bool, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -18877,7 +18520,7 @@ func (f fastpathDTJsonIO) DecMapInt32IntfX(vp *map[int32]interface{}, d *decoder
 }
 func (fastpathDTJsonIO) DecMapInt32IntfL(v map[int32]interface{}, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -18929,7 +18572,7 @@ func (f fastpathDTJsonIO) DecMapInt32StringX(vp *map[int32]string, d *decoderJso
 }
 func (fastpathDTJsonIO) DecMapInt32StringL(v map[int32]string, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -18975,7 +18618,7 @@ func (f fastpathDTJsonIO) DecMapInt32BytesX(vp *map[int32][]byte, d *decoderJson
 }
 func (fastpathDTJsonIO) DecMapInt32BytesL(v map[int32][]byte, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -19027,7 +18670,7 @@ func (f fastpathDTJsonIO) DecMapInt32Uint8X(vp *map[int32]uint8, d *decoderJsonI
 }
 func (fastpathDTJsonIO) DecMapInt32Uint8L(v map[int32]uint8, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19073,7 +18716,7 @@ func (f fastpathDTJsonIO) DecMapInt32Uint64X(vp *map[int32]uint64, d *decoderJso
 }
 func (fastpathDTJsonIO) DecMapInt32Uint64L(v map[int32]uint64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19119,7 +18762,7 @@ func (f fastpathDTJsonIO) DecMapInt32IntX(vp *map[int32]int, d *decoderJsonIO) {
 }
 func (fastpathDTJsonIO) DecMapInt32IntL(v map[int32]int, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19165,7 +18808,7 @@ func (f fastpathDTJsonIO) DecMapInt32Int32X(vp *map[int32]int32, d *decoderJsonI
 }
 func (fastpathDTJsonIO) DecMapInt32Int32L(v map[int32]int32, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19211,7 +18854,7 @@ func (f fastpathDTJsonIO) DecMapInt32Float64X(vp *map[int32]float64, d *decoderJ
 }
 func (fastpathDTJsonIO) DecMapInt32Float64L(v map[int32]float64, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19257,7 +18900,7 @@ func (f fastpathDTJsonIO) DecMapInt32BoolX(vp *map[int32]bool, d *decoderJsonIO)
 }
 func (fastpathDTJsonIO) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *decoderJsonIO) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -19275,7 +18918,7 @@ func (fastpathDTJsonIO) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *
 type jsonEncDriverIO struct {
 	noBuiltInTypes
 	h *JsonHandle
-	e *encoderShared
+	e *encoderBase
 	s *bitset256
 
 	w bufioEncWriter
@@ -19375,8 +19018,7 @@ func (e *jsonEncDriverIO) EncodeRawExt(re *RawExt) {
 }
 
 func (e *jsonEncDriverIO) EncodeBool(b bool) {
-	e.w.writestr(
-		jsonEncBoolStrs[bool2int(e.ks && e.e.c == containerMapKey)%2][bool2int(b)%2])
+	e.w.writestr(jsonEncBoolStrs[bool2int(e.ks && e.e.c == containerMapKey)%2][bool2int(b)%2])
 }
 
 func (e *jsonEncDriverIO) encodeFloat(f float64, bitsize, fmt byte, prec int8) {
@@ -19411,49 +19053,7 @@ func (e *jsonEncDriverIO) EncodeFloat32(f float32) {
 }
 
 func (e *jsonEncDriverIO) encodeUint(neg bool, quotes bool, u uint64) {
-
-	var ss = jsonEncodeUintSmallsStringBytes
-
-	var a = e.b[0:24]
-	var i = uint(len(a))
-
-	if quotes {
-		i--
-		setByteAt(a, i, '"')
-
-	}
-
-	var is uint
-	var us = uint(u)
-	for us >= 100 {
-		is = us % 100 * 2
-		us /= 100
-		i -= 2
-		setByteAt(a, i+1, byteAt(ss, is+1))
-		setByteAt(a, i, byteAt(ss, is))
-
-	}
-
-	is = us * 2
-	i--
-	setByteAt(a, i, byteAt(ss, is+1))
-
-	if us >= 10 {
-		i--
-		setByteAt(a, i, byteAt(ss, is))
-
-	}
-	if neg {
-		i--
-		setByteAt(a, i, '-')
-
-	}
-	if quotes {
-		i--
-		setByteAt(a, i, '"')
-
-	}
-	e.w.writeb(a[i:])
+	e.w.writeb(jsonEncodeUint(neg, quotes, u, &e.b))
 }
 
 func (e *jsonEncDriverIO) EncodeInt(v int64) {
@@ -19648,7 +19248,7 @@ type jsonDecDriverIO struct {
 	noBuiltInTypes
 	decDriverNoopNumberHelper
 	h *JsonHandle
-	d *decoderShared
+	d *decoderBase
 
 	r ioDecReader
 	jsonDecState
@@ -20274,7 +19874,7 @@ func (d *jsonDecDriverIO) reset() {
 	d.rawext = d.h.RawBytesExt != nil
 }
 
-func (d *jsonEncDriverIO) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *jsonEncDriverIO) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*JsonHandle)
 	d.e = shared
@@ -20300,7 +19900,7 @@ func (e *jsonEncDriverIO) resetOutIO(out io.Writer) {
 	e.w.resetIO(out, e.h.WriterBufferSize, &e.e.blist)
 }
 
-func (d *jsonDecDriverIO) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *jsonDecDriverIO) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*JsonHandle)
 	d.bytes = shared.bytes

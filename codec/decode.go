@@ -1369,6 +1369,10 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 }
 
 type decoderBase struct {
+	perType decPerType
+
+	h *BasicHandle
+
 	rtidFn, rtidFnNoExt *atomicRtidFnSlice
 
 	// used for interning strings
@@ -1413,6 +1417,11 @@ type decoderBase struct {
 	// By being always-available, it can be used for one-off things without
 	// having to get from freelist, use, and return back to freelist.
 	b [decScratchByteArrayLen]byte
+
+	hh Handle
+	// cache the mapTypeId and sliceTypeId for faster comparisons
+	mtid uintptr
+	stid uintptr
 }
 
 func (d *decoderBase) naked() *fauxUnion {
@@ -1445,7 +1454,6 @@ func (d *decoderBase) string(v []byte) (s string) {
 		s = d.is.string(v)
 	}
 	return
-
 }
 
 // func (d *decoderBase) string(v []byte) (s string) {
@@ -1464,26 +1472,10 @@ func (d *decoderBase) string(v []byte) (s string) {
 // so its state can be reused to decode new input streams repeatedly.
 // This is the idiomatic way to use.
 type decoder[T decDriver] struct {
-	perType decPerType
-
 	dh helperDecDriver[T]
-
 	fp *fastpathDs[T]
-
-	h *BasicHandle
-
-	d T
-
+	d  T
 	decoderBase
-
-	hh Handle
-	// cache the mapTypeId and sliceTypeId for faster comparisons
-	mtid uintptr
-	stid uintptr
-
-	// ---- cpu cache line boundary?
-
-	// ---- cpu cache line boundary?
 }
 
 type decoderI interface {
@@ -1518,11 +1510,11 @@ type decoderI interface {
 // func (d *Decoder) ResetBytes(in []byte)             {}
 // func (d *Decoder) ResetString(s string)             {}
 
-func (d *decoder[T]) HandleName() string {
+func (d *decoderBase) HandleName() string {
 	return d.hh.Name()
 }
 
-func (d *decoder[T]) isBytes() bool {
+func (d *decoderBase) isBytes() bool {
 	return d.bytes
 }
 
@@ -1989,14 +1981,14 @@ func (d *decoder[T]) structFieldNotFound(index int, rvkencname string) {
 	d.swallow()
 }
 
-func (d *decoder[T]) arrayCannotExpand(sliceLen, streamLen int) {
+func (d *decoderBase) arrayCannotExpand(sliceLen, streamLen int) {
 	if d.h.ErrorIfNoArrayExpand {
 		halt.errorf("cannot expand array len during decode from %v to %v", any(sliceLen), any(streamLen))
 	}
 }
 
 //go:noinline
-func (d *decoder[T]) haltAsNotDecodeable(rv reflect.Value) {
+func (d *decoderBase) haltAsNotDecodeable(rv reflect.Value) {
 	if !rv.IsValid() {
 		halt.onerror(errCannotDecodeIntoNil)
 	}
@@ -2007,14 +1999,14 @@ func (d *decoder[T]) haltAsNotDecodeable(rv reflect.Value) {
 	halt.errorf("cannot decode into value of kind: %v, %#v", rv.Kind(), rv2i(rv))
 }
 
-func (d *decoder[T]) depthIncr() {
+func (d *decoderBase) depthIncr() {
 	d.depth++
 	if d.depth >= d.maxdepth {
 		halt.onerror(errMaxDepthExceeded)
 	}
 }
 
-func (d *decoder[T]) depthDecr() {
+func (d *decoderBase) depthDecr() {
 	d.depth--
 }
 
@@ -2045,12 +2037,12 @@ func (d *decoder[T]) rawBytes() (v []byte) {
 }
 
 func (d *decoder[T]) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, d.hh.Name(), d.NumBytesRead(), false)
+	*err = wrapCodecErr(v, d.hh.Name(), d.d.NumBytesRead(), false)
 }
 
 // NumBytesRead returns the number of bytes read
 func (d *decoder[T]) NumBytesRead() int {
-	return int(d.d.NumBytesRead())
+	return d.d.NumBytesRead()
 }
 
 // // decodeFloat32 will delegate to an appropriate DecodeFloat32 implementation (if exists),
@@ -2090,7 +2082,7 @@ func (d *decoder[T]) containerNext(j, containerLen int, hasLen bool) bool {
 	return !d.checkBreak()
 }
 
-func (d *decoder[T]) mapStart(v int) int {
+func (d *decoderBase) mapStart(v int) int {
 	if v != containerLenNil {
 		d.depthIncr()
 		d.c = containerMapStart
@@ -2114,7 +2106,7 @@ func (d *decoder[T]) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoder[T]) arrayStart(v int) int {
+func (d *decoderBase) arrayStart(v int) int {
 	if v != containerLenNil {
 		d.depthIncr()
 		d.c = containerArrayStart
@@ -2133,7 +2125,7 @@ func (d *decoder[T]) arrayEnd() {
 	d.c = 0
 }
 
-func (d *decoder[T]) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
+func (d *decoderBase) interfaceExtConvertAndDecodeGetRV(v interface{}, ext InterfaceExt) reflect.Value {
 	// var v interface{} = ext.ConvertExt(rv)
 	// d.d.decode(&v)
 	// ext.UpdateExt(rv, v)
@@ -2171,12 +2163,16 @@ func (d *decoder[T]) interfaceExtConvertAndDecode(v interface{}, ext InterfaceEx
 		}
 		rv = rv2
 	}
+	return rv
+}
 
+func (d *decoder[T]) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
+	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
 }
 
-func (d *decoder[T]) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
+func (d *decoderBase) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
 	if decUseTransient &&
 		(numBoolStrSliceBitset.isset(byte(rvk)) ||
 			((rvk == reflect.Struct || rvk == reflect.Array) &&

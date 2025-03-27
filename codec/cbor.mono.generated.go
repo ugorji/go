@@ -18,12 +18,6 @@ import (
 	"unicode/utf8"
 )
 
-func (e *encoderCborBytes) setContainerState(cs containerState) {
-	if cs != 0 {
-		e.c = cs
-	}
-}
-
 func (e *encoderCborBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -57,14 +51,14 @@ func (e *encoderCborBytes) raw(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderCborBytes) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
 func (e *encoderCborBytes) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat64(real(v))
 }
@@ -139,10 +133,6 @@ func (e *encoderCborBytes) kUint64(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderCborBytes) kUintptr(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
-}
-
-func (e *encoderCborBytes) kErr(_ *encFnInfo, rv reflect.Value) {
-	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
 func (e *encoderCborBytes) kSeqFn(rt reflect.Type) (fn *encFnCborBytes) {
@@ -221,7 +211,7 @@ func (e *encoderCborBytes) kArrayW(rv reflect.Value, ti *typeInfo) {
 
 func (e *encoderCborBytes) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorStr("send-only channel cannot be encoded")
+		halt.errorStr("send-only channel cannot be encoded")
 	}
 	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
 		e.kSliceBytesChan(rv)
@@ -301,13 +291,6 @@ L1:
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
 	}
-}
-
-func (e *encoderCborBytes) kStructSfi(f *encFnInfo) []*structFieldInfo {
-	if e.h.Canonical {
-		return f.ti.sfi.sorted()
-	}
-	return f.ti.sfi.source()
 }
 
 func (e *encoderCborBytes) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
@@ -703,31 +686,10 @@ func (e *encoderCborBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 }
 
 type encoderCborBytes struct {
-	panicHdl
-	perType encPerType
-
 	dh helperEncDriverCborBytes
-
 	fp *fastpathEsCborBytes
-
-	h *BasicHandle
-
-	e cborEncDriverBytes
-
-	encoderShared
-
-	hh Handle
-
-	ci []interface{}
-
-	slist sfiRvFreelist
-}
-
-func (e *encoderCborBytes) HandleName() string {
-	return e.hh.Name()
-}
-
-func (e *encoderCborBytes) Release() {
+	e  cborEncDriverBytes
+	encoderBase
 }
 
 func (e *encoderCborBytes) init(h Handle) {
@@ -738,7 +700,7 @@ func (e *encoderCborBytes) init(h Handle) {
 	e.be = e.hh.isBinary()
 	e.err = errEncoderNotInitialized
 
-	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEsCborBytes)
+	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsCborBytes)
 
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
@@ -941,7 +903,7 @@ TOP:
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
 				if eq4i(sptr, vv) {
-					e.errorf("circular reference found: %p, %T", sptr, sptr)
+					halt.errorf("circular reference found: %p, %T", sptr, sptr)
 				}
 			}
 			e.ci = append(e.ci, sptr)
@@ -985,20 +947,8 @@ func (e *encoderCborBytes) encodeValueNonNil(rv reflect.Value, fn *encFnCborByte
 	fn.fe(e, &fn.i, rv)
 }
 
-func (e *encoderCborBytes) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
-	if rv.CanAddr() {
-		return rvAddr(rv, ptrType)
-	}
-	if e.h.NoAddressableReadonly {
-		rva = reflect.New(typ)
-		rvSetDirect(rva.Elem(), rv)
-		return
-	}
-	return rvAddr(e.perType.AddressableRO(rv), ptrType)
-}
-
 func (e *encoderCborBytes) marshalUtf8(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1007,7 +957,7 @@ func (e *encoderCborBytes) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *encoderCborBytes) marshalAsis(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1016,7 +966,7 @@ func (e *encoderCborBytes) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *encoderCborBytes) marshalRaw(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -1027,13 +977,9 @@ func (e *encoderCborBytes) marshalRaw(bs []byte, fnerr error) {
 func (e *encoderCborBytes) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
-		e.errorBytes("Raw values cannot be encoded: ", v)
+		halt.errorBytes("Raw values cannot be encoded: ", v)
 	}
 	e.e.writeBytesAsis(v)
-}
-
-func (e *encoderCborBytes) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
 }
 
 func (e *encoderCborBytes) fn(t reflect.Type) *encFnCborBytes {
@@ -1077,12 +1023,6 @@ func (e *encoderCborBytes) arrayElem() {
 func (e *encoderCborBytes) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
-}
-
-func (e *encoderCborBytes) haltOnMbsOddLen(length int) {
-	if length&1 != 0 {
-		e.errorInt("mapBySlice requires even slice length, but got ", int64(length))
-	}
 }
 
 func (e *encoderCborBytes) writerEnd() {
@@ -1381,13 +1321,13 @@ func (d *decoderCborBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderCborBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderCborBytes) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
@@ -1408,11 +1348,11 @@ func (d *decoderCborBytes) jsonUnmarshalV(tm jsonUnmarshaler) {
 			d.blist.put(bs0)
 		}
 	}
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderCborBytes) kErr(_ *decFnInfo, rv reflect.Value) {
-	d.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
+	halt.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
 
 }
 
@@ -1498,7 +1438,7 @@ func (d *decoderCborBytes) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	d.d.DecodeNaked()
 
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
-		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
+		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
 	switch n.v {
 	case valueTypeMap:
@@ -1706,7 +1646,7 @@ func (d *decoderCborBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 				var f interface{}
 				d.decode(&f)
 				if !mf.CodecMissingField(name2, f) && d.h.ErrorIfNoField {
-					d.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
+					halt.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
 				}
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
@@ -1734,7 +1674,7 @@ func (d *decoderCborBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 
 		d.arrayEnd()
 	} else {
-		d.onerror(errNeedMapOrArrayDecodeToStruct)
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
 	}
 }
 
@@ -1747,7 +1687,7 @@ func (d *decoderCborBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
 		if !rvCanset {
@@ -1813,7 +1753,7 @@ func (d *decoderCborBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvcap = rvlen
 				rvChanged = !rvCanset
 			} else {
-				d.errorStr("cannot decode into non-settable slice")
+				halt.errorStr("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut {
 				rvCopySlice(rv, rv0, rtelem)
@@ -1839,7 +1779,7 @@ func (d *decoderCborBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 					rvcap = rvlen
 					rvChanged = !rvCanset
 				} else {
-					d.errorStr("cannot decode into non-settable slice")
+					halt.errorStr("cannot decode into non-settable slice")
 				}
 			}
 			if fn == nil {
@@ -1857,11 +1797,11 @@ func (d *decoderCborBytes) kSlice(f *decFnInfo, rv reflect.Value) {
 				} else if rvChanged {
 					rv = rvSlice(rv, rvlen)
 				} else {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 			} else {
 				if !(rvCanset || rvChanged) {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
 				rvlen = rvcap
@@ -1903,7 +1843,7 @@ func (d *decoderCborBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	if handleBytesWithinKArray && (ctyp == valueTypeBytes || ctyp == valueTypeString) {
 
 		if f.ti.elemkind != uint8(reflect.Uint8) {
-			d.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
+			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
 		bs2 := d.decodeBytesInto(rvbs)
@@ -1932,7 +1872,7 @@ func (d *decoderCborBytes) kArray(f *decFnInfo, rv reflect.Value) {
 	rvlen := rv.Len()
 	hasLen := containerLenS > 0
 	if hasLen && containerLenS > rvlen {
-		d.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
+		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
 
 	var elemReset = d.h.SliceElementReset
@@ -1962,13 +1902,13 @@ func (d *decoderCborBytes) kChan(f *decFnInfo, rv reflect.Value) {
 
 	ti := f.ti
 	if ti.chandir&uint8(reflect.SendDir) == 0 {
-		d.errorStr("receive-only channel cannot be decoded")
+		halt.errorStr("receive-only channel cannot be decoded")
 	}
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		bs2 := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
@@ -2022,7 +1962,7 @@ func (d *decoderCborBytes) kChan(f *decFnInfo, rv reflect.Value) {
 					rv = reflect.MakeChan(ti.rt, rvlen)
 					rvChanged = true
 				} else {
-					d.errorStr("cannot decode into non-settable chan")
+					halt.errorStr("cannot decode into non-settable chan")
 				}
 			}
 			if fn == nil {
@@ -2266,31 +2206,10 @@ func (d *decoderCborBytes) kMap(f *decFnInfo, rv reflect.Value) {
 }
 
 type decoderCborBytes struct {
-	panicHdl
-	perType decPerType
-
 	dh helperDecDriverCborBytes
-
 	fp *fastpathDsCborBytes
-
-	h *BasicHandle
-
-	d cborDecDriverBytes
-
-	decoderShared
-
-	hh Handle
-
-	mtid uintptr
-	stid uintptr
-}
-
-func (d *decoderCborBytes) HandleName() string {
-	return d.hh.Name()
-}
-
-func (d *decoderCborBytes) isBytes() bool {
-	return d.bytes
+	d  cborDecDriverBytes
+	decoderBase
 }
 
 func (d *decoderCborBytes) init(h Handle) {
@@ -2306,7 +2225,7 @@ func (d *decoderCborBytes) init(h Handle) {
 		d.is.init()
 	}
 
-	d.fp = d.d.init(h, &d.decoderShared, d).(*fastpathDsCborBytes)
+	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsCborBytes)
 
 	d.cbreak = d.js || d.cbor
 
@@ -2418,7 +2337,7 @@ func (d *decoderCborBytes) nextValueBytes(start []byte) []byte {
 func (d *decoderCborBytes) decode(iv interface{}) {
 
 	if iv == nil {
-		d.onerror(errCannotDecodeIntoNil)
+		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
@@ -2528,7 +2447,7 @@ PTR:
 		} else if rv.CanAddr() {
 			rv = rvAddr(rv, fn.i.ti.ptr)
 		} else if fn.i.addrDf {
-			d.errorStr("cannot decode into a non-pointer value")
+			halt.errorStr("cannot decode into a non-pointer value")
 		}
 	}
 	fn.fd(d, &fn.i, rv)
@@ -2538,40 +2457,12 @@ func (d *decoderCborBytes) structFieldNotFound(index int, rvkencname string) {
 
 	if d.h.ErrorIfNoField {
 		if index >= 0 {
-			d.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
+			halt.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
 		} else if rvkencname != "" {
-			d.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
+			halt.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
 		}
 	}
 	d.swallow()
-}
-
-func (d *decoderCborBytes) arrayCannotExpand(sliceLen, streamLen int) {
-	if d.h.ErrorIfNoArrayExpand {
-		d.errorf("cannot expand array len during decode from %v to %v", any(sliceLen), any(streamLen))
-	}
-}
-
-func (d *decoderCborBytes) haltAsNotDecodeable(rv reflect.Value) {
-	if !rv.IsValid() {
-		d.onerror(errCannotDecodeIntoNil)
-	}
-
-	if !rv.CanInterface() {
-		d.errorf("cannot decode into a value without an interface: %v", rv)
-	}
-	d.errorf("cannot decode into value of kind: %v, %#v", rv.Kind(), rv2i(rv))
-}
-
-func (d *decoderCborBytes) depthIncr() {
-	d.depth++
-	if d.depth >= d.maxdepth {
-		d.onerror(errMaxDepthExceeded)
-	}
-}
-
-func (d *decoderCborBytes) depthDecr() {
-	d.depth--
 }
 
 func (d *decoderCborBytes) decodeBytesInto(in []byte) (v []byte) {
@@ -2593,11 +2484,11 @@ func (d *decoderCborBytes) rawBytes() (v []byte) {
 }
 
 func (d *decoderCborBytes) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, d.hh.Name(), d.NumBytesRead(), false)
+	*err = wrapCodecErr(v, d.hh.Name(), d.d.NumBytesRead(), false)
 }
 
 func (d *decoderCborBytes) NumBytesRead() int {
-	return int(d.d.NumBytesRead())
+	return d.d.NumBytesRead()
 }
 
 func (d *decoderCborBytes) checkBreak() (v bool) {
@@ -2613,14 +2504,6 @@ func (d *decoderCborBytes) containerNext(j, containerLen int, hasLen bool) bool 
 		return j < containerLen
 	}
 	return !d.checkBreak()
-}
-
-func (d *decoderCborBytes) mapStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerMapStart
-	}
-	return v
 }
 
 func (d *decoderCborBytes) mapElemKey() {
@@ -2639,14 +2522,6 @@ func (d *decoderCborBytes) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoderCborBytes) arrayStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerArrayStart
-	}
-	return v
-}
-
 func (d *decoderCborBytes) arrayElem() {
 	d.d.ReadArrayElem()
 	d.c = containerArrayElem
@@ -2659,41 +2534,9 @@ func (d *decoderCborBytes) arrayEnd() {
 }
 
 func (d *decoderCborBytes) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-
-	var s interface{}
-	rv := reflect.ValueOf(v)
-	rv2 := rv.Elem()
-	rvk := rv2.Kind()
-	if rvk == reflect.Struct || rvk == reflect.Array {
-		s = ext.ConvertExt(v)
-	} else {
-		s = ext.ConvertExt(rv2i(rv2))
-	}
-	rv = reflect.ValueOf(s)
-
-	if !rv.CanAddr() {
-		rvk = rv.Kind()
-		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
-		if rvk == reflect.Interface {
-			rvSetIntf(rv2, rv)
-		} else {
-			rvSetDirect(rv2, rv)
-		}
-		rv = rv2
-	}
-
+	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
-}
-
-func (d *decoderCborBytes) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient &&
-		(numBoolStrSliceBitset.isset(byte(rvk)) ||
-			((rvk == reflect.Struct || rvk == reflect.Array) &&
-				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
-		return d.perType.TransientAddrK(rvt, rvk)
-	}
-	return rvZeroAddrK(rvt, rvk)
 }
 
 func (d *decoderCborBytes) fn(t reflect.Type) *decFnCborBytes {
@@ -2724,7 +2567,7 @@ func (d *decoderCborBytes) decSliceHelperStart() (x decSliceHelperCborBytes, cle
 		clen = d.mapStart(d.d.ReadMapStart())
 		clen += clen
 	default:
-		d.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
+		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
 	}
 	return
 }
@@ -3047,7 +2890,7 @@ type cborEncDriverBytes struct {
 	encDriverContainerNoTrackerT
 
 	h   *CborHandle
-	e   *encoderShared
+	e   *encoderBase
 	w   bytesEncAppender
 	enc encoderI
 
@@ -3245,7 +3088,7 @@ type cborDecDriverBytes struct {
 	noBuiltInTypes
 
 	h   *CborHandle
-	d   *decoderShared
+	d   *decoderBase
 	r   bytesDecReader
 	dec decoderI
 	bdAndBdread
@@ -3816,7 +3659,7 @@ func (d *cborDecDriverBytes) reset() {
 	d.st = d.h.SkipUnexpectedTags
 }
 
-func (d *cborEncDriverBytes) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *cborEncDriverBytes) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*CborHandle)
 	d.e = shared
@@ -3842,7 +3685,7 @@ func (e *cborEncDriverBytes) resetOutIO(out io.Writer) {
 	e.w.resetIO(out, e.h.WriterBufferSize, &e.e.blist)
 }
 
-func (d *cborDecDriverBytes) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *cborDecDriverBytes) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*CborHandle)
 	d.bytes = shared.bytes
@@ -3885,12 +3728,6 @@ func (d *cborDecDriverBytes) init2(dec decoderI) {
 	d.dec = dec
 	d.d.cbor = true
 }
-func (e *encoderCborIO) setContainerState(cs containerState) {
-	if cs != 0 {
-		e.c = cs
-	}
-}
-
 func (e *encoderCborIO) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -3924,14 +3761,14 @@ func (e *encoderCborIO) raw(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderCborIO) encodeComplex64(v complex64) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat32(real(v))
 }
 
 func (e *encoderCborIO) encodeComplex128(v complex128) {
 	if imag(v) != 0 {
-		e.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
+		halt.errorf("cannot encode complex number: %v, with imaginary values: %v", any(v), any(imag(v)))
 	}
 	e.e.EncodeFloat64(real(v))
 }
@@ -4006,10 +3843,6 @@ func (e *encoderCborIO) kUint64(_ *encFnInfo, rv reflect.Value) {
 
 func (e *encoderCborIO) kUintptr(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeUint(uint64(rvGetUintptr(rv)))
-}
-
-func (e *encoderCborIO) kErr(_ *encFnInfo, rv reflect.Value) {
-	e.errorf("unsupported encoding kind %s, for %#v", rv.Kind(), any(rv))
 }
 
 func (e *encoderCborIO) kSeqFn(rt reflect.Type) (fn *encFnCborIO) {
@@ -4088,7 +3921,7 @@ func (e *encoderCborIO) kArrayW(rv reflect.Value, ti *typeInfo) {
 
 func (e *encoderCborIO) kChan(f *encFnInfo, rv reflect.Value) {
 	if f.ti.chandir&uint8(reflect.RecvDir) == 0 {
-		e.errorStr("send-only channel cannot be encoded")
+		halt.errorStr("send-only channel cannot be encoded")
 	}
 	if !f.ti.mbs && uint8TypId == rt2id(f.ti.elem) {
 		e.kSliceBytesChan(rv)
@@ -4168,13 +4001,6 @@ L1:
 	if !byteSliceSameData(bs0, bs) {
 		e.blist.put(bs0)
 	}
-}
-
-func (e *encoderCborIO) kStructSfi(f *encFnInfo) []*structFieldInfo {
-	if e.h.Canonical {
-		return f.ti.sfi.sorted()
-	}
-	return f.ti.sfi.source()
 }
 
 func (e *encoderCborIO) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
@@ -4570,31 +4396,10 @@ func (e *encoderCborIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 }
 
 type encoderCborIO struct {
-	panicHdl
-	perType encPerType
-
 	dh helperEncDriverCborIO
-
 	fp *fastpathEsCborIO
-
-	h *BasicHandle
-
-	e cborEncDriverIO
-
-	encoderShared
-
-	hh Handle
-
-	ci []interface{}
-
-	slist sfiRvFreelist
-}
-
-func (e *encoderCborIO) HandleName() string {
-	return e.hh.Name()
-}
-
-func (e *encoderCborIO) Release() {
+	e  cborEncDriverIO
+	encoderBase
 }
 
 func (e *encoderCborIO) init(h Handle) {
@@ -4605,7 +4410,7 @@ func (e *encoderCborIO) init(h Handle) {
 	e.be = e.hh.isBinary()
 	e.err = errEncoderNotInitialized
 
-	e.fp = e.e.init(h, &e.encoderShared, e).(*fastpathEsCborIO)
+	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsCborIO)
 
 	if e.bytes {
 		e.rtidFn = &e.h.rtidFnsEncBytes
@@ -4808,7 +4613,7 @@ TOP:
 			sptr = rv2i(rvp)
 			for _, vv := range e.ci {
 				if eq4i(sptr, vv) {
-					e.errorf("circular reference found: %p, %T", sptr, sptr)
+					halt.errorf("circular reference found: %p, %T", sptr, sptr)
 				}
 			}
 			e.ci = append(e.ci, sptr)
@@ -4852,20 +4657,8 @@ func (e *encoderCborIO) encodeValueNonNil(rv reflect.Value, fn *encFnCborIO) {
 	fn.fe(e, &fn.i, rv)
 }
 
-func (e *encoderCborIO) addrRV(rv reflect.Value, typ, ptrType reflect.Type) (rva reflect.Value) {
-	if rv.CanAddr() {
-		return rvAddr(rv, ptrType)
-	}
-	if e.h.NoAddressableReadonly {
-		rva = reflect.New(typ)
-		rvSetDirect(rva.Elem(), rv)
-		return
-	}
-	return rvAddr(e.perType.AddressableRO(rv), ptrType)
-}
-
 func (e *encoderCborIO) marshalUtf8(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -4874,7 +4667,7 @@ func (e *encoderCborIO) marshalUtf8(bs []byte, fnerr error) {
 }
 
 func (e *encoderCborIO) marshalAsis(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -4883,7 +4676,7 @@ func (e *encoderCborIO) marshalAsis(bs []byte, fnerr error) {
 }
 
 func (e *encoderCborIO) marshalRaw(bs []byte, fnerr error) {
-	e.onerror(fnerr)
+	halt.onerror(fnerr)
 	if bs == nil {
 		e.e.EncodeNil()
 	} else {
@@ -4894,13 +4687,9 @@ func (e *encoderCborIO) marshalRaw(bs []byte, fnerr error) {
 func (e *encoderCborIO) rawBytes(vv Raw) {
 	v := []byte(vv)
 	if !e.h.Raw {
-		e.errorBytes("Raw values cannot be encoded: ", v)
+		halt.errorBytes("Raw values cannot be encoded: ", v)
 	}
 	e.e.writeBytesAsis(v)
-}
-
-func (e *encoderCborIO) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, e.hh.Name(), 0, true)
 }
 
 func (e *encoderCborIO) fn(t reflect.Type) *encFnCborIO {
@@ -4944,12 +4733,6 @@ func (e *encoderCborIO) arrayElem() {
 func (e *encoderCborIO) arrayEnd() {
 	e.e.WriteArrayEnd()
 	e.c = 0
-}
-
-func (e *encoderCborIO) haltOnMbsOddLen(length int) {
-	if length&1 != 0 {
-		e.errorInt("mapBySlice requires even slice length, but got ", int64(length))
-	}
 }
 
 func (e *encoderCborIO) writerEnd() {
@@ -5248,13 +5031,13 @@ func (d *decoderCborIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
 	xbs := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderCborIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
 	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderCborIO) jsonUnmarshal(_ *decFnInfo, rv reflect.Value) {
@@ -5275,11 +5058,11 @@ func (d *decoderCborIO) jsonUnmarshalV(tm jsonUnmarshaler) {
 			d.blist.put(bs0)
 		}
 	}
-	d.onerror(fnerr)
+	halt.onerror(fnerr)
 }
 
 func (d *decoderCborIO) kErr(_ *decFnInfo, rv reflect.Value) {
-	d.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
+	halt.errorf("unsupported decoding kind: %s, for %#v", rv.Kind(), rv)
 
 }
 
@@ -5365,7 +5148,7 @@ func (d *decoderCborIO) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 	d.d.DecodeNaked()
 
 	if decFailNonEmptyIntf && f.ti.numMeth > 0 {
-		d.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
+		halt.errorf("cannot decode non-nil codec value into nil %v (%v methods)", f.ti.rt, f.ti.numMeth)
 	}
 	switch n.v {
 	case valueTypeMap:
@@ -5573,7 +5356,7 @@ func (d *decoderCborIO) kStruct(f *decFnInfo, rv reflect.Value) {
 				var f interface{}
 				d.decode(&f)
 				if !mf.CodecMissingField(name2, f) && d.h.ErrorIfNoField {
-					d.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
+					halt.errorStr2("no matching struct field when decoding stream map with key: ", stringView(name2))
 				}
 			} else {
 				d.structFieldNotFound(-1, stringView(rvkencname))
@@ -5601,7 +5384,7 @@ func (d *decoderCborIO) kStruct(f *decFnInfo, rv reflect.Value) {
 
 		d.arrayEnd()
 	} else {
-		d.onerror(errNeedMapOrArrayDecodeToStruct)
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
 	}
 }
 
@@ -5614,7 +5397,7 @@ func (d *decoderCborIO) kSlice(f *decFnInfo, rv reflect.Value) {
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		rvbs := rvGetBytes(rv)
 		if !rvCanset {
@@ -5680,7 +5463,7 @@ func (d *decoderCborIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				rvcap = rvlen
 				rvChanged = !rvCanset
 			} else {
-				d.errorStr("cannot decode into non-settable slice")
+				halt.errorStr("cannot decode into non-settable slice")
 			}
 			if rvChanged && oldRvlenGtZero && rtelem0Mut {
 				rvCopySlice(rv, rv0, rtelem)
@@ -5706,7 +5489,7 @@ func (d *decoderCborIO) kSlice(f *decFnInfo, rv reflect.Value) {
 					rvcap = rvlen
 					rvChanged = !rvCanset
 				} else {
-					d.errorStr("cannot decode into non-settable slice")
+					halt.errorStr("cannot decode into non-settable slice")
 				}
 			}
 			if fn == nil {
@@ -5724,11 +5507,11 @@ func (d *decoderCborIO) kSlice(f *decFnInfo, rv reflect.Value) {
 				} else if rvChanged {
 					rv = rvSlice(rv, rvlen)
 				} else {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 			} else {
 				if !(rvCanset || rvChanged) {
-					d.onerror(errExpandSliceCannotChange)
+					halt.onerror(errExpandSliceCannotChange)
 				}
 				rv, rvcap, rvCanset = rvGrowSlice(rv, f.ti, rvcap, 1)
 				rvlen = rvcap
@@ -5770,7 +5553,7 @@ func (d *decoderCborIO) kArray(f *decFnInfo, rv reflect.Value) {
 	if handleBytesWithinKArray && (ctyp == valueTypeBytes || ctyp == valueTypeString) {
 
 		if f.ti.elemkind != uint8(reflect.Uint8) {
-			d.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
+			halt.errorf("bytes/string in stream can decode into array of bytes, but not %v", f.ti.rt)
 		}
 		rvbs := rvGetArrayBytes(rv, nil)
 		bs2 := d.decodeBytesInto(rvbs)
@@ -5799,7 +5582,7 @@ func (d *decoderCborIO) kArray(f *decFnInfo, rv reflect.Value) {
 	rvlen := rv.Len()
 	hasLen := containerLenS > 0
 	if hasLen && containerLenS > rvlen {
-		d.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
+		halt.errorf("cannot decode into array with length: %v, less than container length: %v", any(rvlen), any(containerLenS))
 	}
 
 	var elemReset = d.h.SliceElementReset
@@ -5829,13 +5612,13 @@ func (d *decoderCborIO) kChan(f *decFnInfo, rv reflect.Value) {
 
 	ti := f.ti
 	if ti.chandir&uint8(reflect.SendDir) == 0 {
-		d.errorStr("receive-only channel cannot be decoded")
+		halt.errorStr("receive-only channel cannot be decoded")
 	}
 	ctyp := d.d.ContainerType()
 	if ctyp == valueTypeBytes || ctyp == valueTypeString {
 
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
-			d.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
+			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
 		bs2 := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
@@ -5889,7 +5672,7 @@ func (d *decoderCborIO) kChan(f *decFnInfo, rv reflect.Value) {
 					rv = reflect.MakeChan(ti.rt, rvlen)
 					rvChanged = true
 				} else {
-					d.errorStr("cannot decode into non-settable chan")
+					halt.errorStr("cannot decode into non-settable chan")
 				}
 			}
 			if fn == nil {
@@ -6133,31 +5916,10 @@ func (d *decoderCborIO) kMap(f *decFnInfo, rv reflect.Value) {
 }
 
 type decoderCborIO struct {
-	panicHdl
-	perType decPerType
-
 	dh helperDecDriverCborIO
-
 	fp *fastpathDsCborIO
-
-	h *BasicHandle
-
-	d cborDecDriverIO
-
-	decoderShared
-
-	hh Handle
-
-	mtid uintptr
-	stid uintptr
-}
-
-func (d *decoderCborIO) HandleName() string {
-	return d.hh.Name()
-}
-
-func (d *decoderCborIO) isBytes() bool {
-	return d.bytes
+	d  cborDecDriverIO
+	decoderBase
 }
 
 func (d *decoderCborIO) init(h Handle) {
@@ -6173,7 +5935,7 @@ func (d *decoderCborIO) init(h Handle) {
 		d.is.init()
 	}
 
-	d.fp = d.d.init(h, &d.decoderShared, d).(*fastpathDsCborIO)
+	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsCborIO)
 
 	d.cbreak = d.js || d.cbor
 
@@ -6285,7 +6047,7 @@ func (d *decoderCborIO) nextValueBytes(start []byte) []byte {
 func (d *decoderCborIO) decode(iv interface{}) {
 
 	if iv == nil {
-		d.onerror(errCannotDecodeIntoNil)
+		halt.onerror(errCannotDecodeIntoNil)
 	}
 
 	switch v := iv.(type) {
@@ -6395,7 +6157,7 @@ PTR:
 		} else if rv.CanAddr() {
 			rv = rvAddr(rv, fn.i.ti.ptr)
 		} else if fn.i.addrDf {
-			d.errorStr("cannot decode into a non-pointer value")
+			halt.errorStr("cannot decode into a non-pointer value")
 		}
 	}
 	fn.fd(d, &fn.i, rv)
@@ -6405,40 +6167,12 @@ func (d *decoderCborIO) structFieldNotFound(index int, rvkencname string) {
 
 	if d.h.ErrorIfNoField {
 		if index >= 0 {
-			d.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
+			halt.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
 		} else if rvkencname != "" {
-			d.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
+			halt.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
 		}
 	}
 	d.swallow()
-}
-
-func (d *decoderCborIO) arrayCannotExpand(sliceLen, streamLen int) {
-	if d.h.ErrorIfNoArrayExpand {
-		d.errorf("cannot expand array len during decode from %v to %v", any(sliceLen), any(streamLen))
-	}
-}
-
-func (d *decoderCborIO) haltAsNotDecodeable(rv reflect.Value) {
-	if !rv.IsValid() {
-		d.onerror(errCannotDecodeIntoNil)
-	}
-
-	if !rv.CanInterface() {
-		d.errorf("cannot decode into a value without an interface: %v", rv)
-	}
-	d.errorf("cannot decode into value of kind: %v, %#v", rv.Kind(), rv2i(rv))
-}
-
-func (d *decoderCborIO) depthIncr() {
-	d.depth++
-	if d.depth >= d.maxdepth {
-		d.onerror(errMaxDepthExceeded)
-	}
-}
-
-func (d *decoderCborIO) depthDecr() {
-	d.depth--
 }
 
 func (d *decoderCborIO) decodeBytesInto(in []byte) (v []byte) {
@@ -6460,11 +6194,11 @@ func (d *decoderCborIO) rawBytes() (v []byte) {
 }
 
 func (d *decoderCborIO) wrapErr(v error, err *error) {
-	*err = wrapCodecErr(v, d.hh.Name(), d.NumBytesRead(), false)
+	*err = wrapCodecErr(v, d.hh.Name(), d.d.NumBytesRead(), false)
 }
 
 func (d *decoderCborIO) NumBytesRead() int {
-	return int(d.d.NumBytesRead())
+	return d.d.NumBytesRead()
 }
 
 func (d *decoderCborIO) checkBreak() (v bool) {
@@ -6480,14 +6214,6 @@ func (d *decoderCborIO) containerNext(j, containerLen int, hasLen bool) bool {
 		return j < containerLen
 	}
 	return !d.checkBreak()
-}
-
-func (d *decoderCborIO) mapStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerMapStart
-	}
-	return v
 }
 
 func (d *decoderCborIO) mapElemKey() {
@@ -6506,14 +6232,6 @@ func (d *decoderCborIO) mapEnd() {
 	d.c = 0
 }
 
-func (d *decoderCborIO) arrayStart(v int) int {
-	if v != containerLenNil {
-		d.depthIncr()
-		d.c = containerArrayStart
-	}
-	return v
-}
-
 func (d *decoderCborIO) arrayElem() {
 	d.d.ReadArrayElem()
 	d.c = containerArrayElem
@@ -6526,41 +6244,9 @@ func (d *decoderCborIO) arrayEnd() {
 }
 
 func (d *decoderCborIO) interfaceExtConvertAndDecode(v interface{}, ext InterfaceExt) {
-
-	var s interface{}
-	rv := reflect.ValueOf(v)
-	rv2 := rv.Elem()
-	rvk := rv2.Kind()
-	if rvk == reflect.Struct || rvk == reflect.Array {
-		s = ext.ConvertExt(v)
-	} else {
-		s = ext.ConvertExt(rv2i(rv2))
-	}
-	rv = reflect.ValueOf(s)
-
-	if !rv.CanAddr() {
-		rvk = rv.Kind()
-		rv2 = d.oneShotAddrRV(rv.Type(), rvk)
-		if rvk == reflect.Interface {
-			rvSetIntf(rv2, rv)
-		} else {
-			rvSetDirect(rv2, rv)
-		}
-		rv = rv2
-	}
-
+	rv := d.interfaceExtConvertAndDecodeGetRV(v, ext)
 	d.decodeValue(rv, nil)
 	ext.UpdateExt(v, rv2i(rv))
-}
-
-func (d *decoderCborIO) oneShotAddrRV(rvt reflect.Type, rvk reflect.Kind) reflect.Value {
-	if decUseTransient &&
-		(numBoolStrSliceBitset.isset(byte(rvk)) ||
-			((rvk == reflect.Struct || rvk == reflect.Array) &&
-				d.h.getTypeInfo(rt2id(rvt), rvt).flagCanTransient)) {
-		return d.perType.TransientAddrK(rvt, rvk)
-	}
-	return rvZeroAddrK(rvt, rvk)
 }
 
 func (d *decoderCborIO) fn(t reflect.Type) *decFnCborIO {
@@ -6591,7 +6277,7 @@ func (d *decoderCborIO) decSliceHelperStart() (x decSliceHelperCborIO, clen int)
 		clen = d.mapStart(d.d.ReadMapStart())
 		clen += clen
 	default:
-		d.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
+		halt.errorStr2("to decode into a slice, expect map/array - got ", x.ct.String())
 	}
 	return
 }
@@ -6914,7 +6600,7 @@ type cborEncDriverIO struct {
 	encDriverContainerNoTrackerT
 
 	h   *CborHandle
-	e   *encoderShared
+	e   *encoderBase
 	w   bufioEncWriter
 	enc encoderI
 
@@ -7112,7 +6798,7 @@ type cborDecDriverIO struct {
 	noBuiltInTypes
 
 	h   *CborHandle
-	d   *decoderShared
+	d   *decoderBase
 	r   ioDecReader
 	dec decoderI
 	bdAndBdread
@@ -7683,7 +7369,7 @@ func (d *cborDecDriverIO) reset() {
 	d.st = d.h.SkipUnexpectedTags
 }
 
-func (d *cborEncDriverIO) init(hh Handle, shared *encoderShared, enc encoderI) (fp interface{}) {
+func (d *cborEncDriverIO) init(hh Handle, shared *encoderBase, enc encoderI) (fp interface{}) {
 	callMake(&d.w)
 	d.h = hh.(*CborHandle)
 	d.e = shared
@@ -7709,7 +7395,7 @@ func (e *cborEncDriverIO) resetOutIO(out io.Writer) {
 	e.w.resetIO(out, e.h.WriterBufferSize, &e.e.blist)
 }
 
-func (d *cborDecDriverIO) init(hh Handle, shared *decoderShared, dec decoderI) (fp interface{}) {
+func (d *cborDecDriverIO) init(hh Handle, shared *decoderBase, dec decoderI) (fp interface{}) {
 	callMake(&d.r)
 	d.h = hh.(*CborHandle)
 	d.bytes = shared.bytes

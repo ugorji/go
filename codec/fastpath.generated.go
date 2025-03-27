@@ -4263,7 +4263,7 @@ func (f fastpathDT[T]) DecMapStringIntfX(vp *map[string]interface{}, d *decoder[
 }
 func (fastpathDT[T]) DecMapStringIntfL(v map[string]interface{}, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -4315,7 +4315,7 @@ func (f fastpathDT[T]) DecMapStringStringX(vp *map[string]string, d *decoder[T])
 }
 func (fastpathDT[T]) DecMapStringStringL(v map[string]string, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -4361,7 +4361,7 @@ func (f fastpathDT[T]) DecMapStringBytesX(vp *map[string][]byte, d *decoder[T]) 
 }
 func (fastpathDT[T]) DecMapStringBytesL(v map[string][]byte, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -4413,7 +4413,7 @@ func (f fastpathDT[T]) DecMapStringUint8X(vp *map[string]uint8, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapStringUint8L(v map[string]uint8, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -4459,7 +4459,7 @@ func (f fastpathDT[T]) DecMapStringUint64X(vp *map[string]uint64, d *decoder[T])
 }
 func (fastpathDT[T]) DecMapStringUint64L(v map[string]uint64, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -4505,7 +4505,7 @@ func (f fastpathDT[T]) DecMapStringIntX(vp *map[string]int, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapStringIntL(v map[string]int, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -4551,7 +4551,7 @@ func (f fastpathDT[T]) DecMapStringInt32X(vp *map[string]int32, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapStringInt32L(v map[string]int32, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -4597,7 +4597,7 @@ func (f fastpathDT[T]) DecMapStringFloat64X(vp *map[string]float64, d *decoder[T
 }
 func (fastpathDT[T]) DecMapStringFloat64L(v map[string]float64, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -4643,7 +4643,7 @@ func (f fastpathDT[T]) DecMapStringBoolX(vp *map[string]bool, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapStringBoolL(v map[string]bool, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[string]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[string]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk string
@@ -4689,7 +4689,7 @@ func (f fastpathDT[T]) DecMapUint8IntfX(vp *map[uint8]interface{}, d *decoder[T]
 }
 func (fastpathDT[T]) DecMapUint8IntfL(v map[uint8]interface{}, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -4741,7 +4741,7 @@ func (f fastpathDT[T]) DecMapUint8StringX(vp *map[uint8]string, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint8StringL(v map[uint8]string, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -4787,7 +4787,7 @@ func (f fastpathDT[T]) DecMapUint8BytesX(vp *map[uint8][]byte, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint8BytesL(v map[uint8][]byte, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -4839,7 +4839,7 @@ func (f fastpathDT[T]) DecMapUint8Uint8X(vp *map[uint8]uint8, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint8Uint8L(v map[uint8]uint8, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -4885,7 +4885,7 @@ func (f fastpathDT[T]) DecMapUint8Uint64X(vp *map[uint8]uint64, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint8Uint64L(v map[uint8]uint64, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -4931,7 +4931,7 @@ func (f fastpathDT[T]) DecMapUint8IntX(vp *map[uint8]int, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint8IntL(v map[uint8]int, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -4977,7 +4977,7 @@ func (f fastpathDT[T]) DecMapUint8Int32X(vp *map[uint8]int32, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint8Int32L(v map[uint8]int32, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -5023,7 +5023,7 @@ func (f fastpathDT[T]) DecMapUint8Float64X(vp *map[uint8]float64, d *decoder[T])
 }
 func (fastpathDT[T]) DecMapUint8Float64L(v map[uint8]float64, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -5069,7 +5069,7 @@ func (f fastpathDT[T]) DecMapUint8BoolX(vp *map[uint8]bool, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint8BoolL(v map[uint8]bool, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint8]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint8]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint8
@@ -5115,7 +5115,7 @@ func (f fastpathDT[T]) DecMapUint64IntfX(vp *map[uint64]interface{}, d *decoder[
 }
 func (fastpathDT[T]) DecMapUint64IntfL(v map[uint64]interface{}, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -5167,7 +5167,7 @@ func (f fastpathDT[T]) DecMapUint64StringX(vp *map[uint64]string, d *decoder[T])
 }
 func (fastpathDT[T]) DecMapUint64StringL(v map[uint64]string, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -5213,7 +5213,7 @@ func (f fastpathDT[T]) DecMapUint64BytesX(vp *map[uint64][]byte, d *decoder[T]) 
 }
 func (fastpathDT[T]) DecMapUint64BytesL(v map[uint64][]byte, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -5265,7 +5265,7 @@ func (f fastpathDT[T]) DecMapUint64Uint8X(vp *map[uint64]uint8, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint64Uint8L(v map[uint64]uint8, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -5311,7 +5311,7 @@ func (f fastpathDT[T]) DecMapUint64Uint64X(vp *map[uint64]uint64, d *decoder[T])
 }
 func (fastpathDT[T]) DecMapUint64Uint64L(v map[uint64]uint64, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -5357,7 +5357,7 @@ func (f fastpathDT[T]) DecMapUint64IntX(vp *map[uint64]int, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint64IntL(v map[uint64]int, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -5403,7 +5403,7 @@ func (f fastpathDT[T]) DecMapUint64Int32X(vp *map[uint64]int32, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint64Int32L(v map[uint64]int32, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -5449,7 +5449,7 @@ func (f fastpathDT[T]) DecMapUint64Float64X(vp *map[uint64]float64, d *decoder[T
 }
 func (fastpathDT[T]) DecMapUint64Float64L(v map[uint64]float64, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -5495,7 +5495,7 @@ func (f fastpathDT[T]) DecMapUint64BoolX(vp *map[uint64]bool, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapUint64BoolL(v map[uint64]bool, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[uint64]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[uint64]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk uint64
@@ -5541,7 +5541,7 @@ func (f fastpathDT[T]) DecMapIntIntfX(vp *map[int]interface{}, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapIntIntfL(v map[int]interface{}, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -5593,7 +5593,7 @@ func (f fastpathDT[T]) DecMapIntStringX(vp *map[int]string, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapIntStringL(v map[int]string, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -5639,7 +5639,7 @@ func (f fastpathDT[T]) DecMapIntBytesX(vp *map[int][]byte, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapIntBytesL(v map[int][]byte, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -5691,7 +5691,7 @@ func (f fastpathDT[T]) DecMapIntUint8X(vp *map[int]uint8, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapIntUint8L(v map[int]uint8, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -5737,7 +5737,7 @@ func (f fastpathDT[T]) DecMapIntUint64X(vp *map[int]uint64, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapIntUint64L(v map[int]uint64, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -5783,7 +5783,7 @@ func (f fastpathDT[T]) DecMapIntIntX(vp *map[int]int, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapIntIntL(v map[int]int, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -5829,7 +5829,7 @@ func (f fastpathDT[T]) DecMapIntInt32X(vp *map[int]int32, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapIntInt32L(v map[int]int32, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -5875,7 +5875,7 @@ func (f fastpathDT[T]) DecMapIntFloat64X(vp *map[int]float64, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapIntFloat64L(v map[int]float64, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -5921,7 +5921,7 @@ func (f fastpathDT[T]) DecMapIntBoolX(vp *map[int]bool, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapIntBoolL(v map[int]bool, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int
@@ -5967,7 +5967,7 @@ func (f fastpathDT[T]) DecMapInt32IntfX(vp *map[int32]interface{}, d *decoder[T]
 }
 func (fastpathDT[T]) DecMapInt32IntfL(v map[int32]interface{}, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]interface{} given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset && !d.h.InterfaceReset
@@ -6019,7 +6019,7 @@ func (f fastpathDT[T]) DecMapInt32StringX(vp *map[int32]string, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapInt32StringL(v map[int32]string, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]string given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]string given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -6065,7 +6065,7 @@ func (f fastpathDT[T]) DecMapInt32BytesX(vp *map[int32][]byte, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapInt32BytesL(v map[int32][]byte, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32][]byte given stream length: ", int64(containerLen))
 		return
 	}
 	mapGet := !d.h.MapValueReset
@@ -6117,7 +6117,7 @@ func (f fastpathDT[T]) DecMapInt32Uint8X(vp *map[int32]uint8, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapInt32Uint8L(v map[int32]uint8, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]uint8 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]uint8 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -6163,7 +6163,7 @@ func (f fastpathDT[T]) DecMapInt32Uint64X(vp *map[int32]uint64, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapInt32Uint64L(v map[int32]uint64, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]uint64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]uint64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -6209,7 +6209,7 @@ func (f fastpathDT[T]) DecMapInt32IntX(vp *map[int32]int, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapInt32IntL(v map[int32]int, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]int given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]int given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -6255,7 +6255,7 @@ func (f fastpathDT[T]) DecMapInt32Int32X(vp *map[int32]int32, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapInt32Int32L(v map[int32]int32, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]int32 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]int32 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -6301,7 +6301,7 @@ func (f fastpathDT[T]) DecMapInt32Float64X(vp *map[int32]float64, d *decoder[T])
 }
 func (fastpathDT[T]) DecMapInt32Float64L(v map[int32]float64, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]float64 given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]float64 given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32
@@ -6347,7 +6347,7 @@ func (f fastpathDT[T]) DecMapInt32BoolX(vp *map[int32]bool, d *decoder[T]) {
 }
 func (fastpathDT[T]) DecMapInt32BoolL(v map[int32]bool, containerLen int, d *decoder[T]) {
 	if v == nil {
-		d.errorInt("cannot decode into nil map[int32]bool given stream length: ", int64(containerLen))
+		halt.errorInt("cannot decode into nil map[int32]bool given stream length: ", int64(containerLen))
 		return
 	}
 	var mk int32

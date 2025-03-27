@@ -289,8 +289,7 @@ var jsonEncBoolStrs = [2][2]string{
 }
 
 func (e *jsonEncDriver[T]) EncodeBool(b bool) {
-	e.w.writestr(
-		jsonEncBoolStrs[bool2int(e.ks && e.e.c == containerMapKey)%2][bool2int(b)%2])
+	e.w.writestr(jsonEncBoolStrs[bool2int(e.ks && e.e.c == containerMapKey)%2][bool2int(b)%2])
 }
 
 // func (e *jsonEncDriver[T]) EncodeBool(b bool) {
@@ -340,7 +339,7 @@ func (e *jsonEncDriver[T]) EncodeFloat32(f float32) {
 	e.encodeFloat(float64(f), 32, fmt, prec)
 }
 
-func (e *jsonEncDriver[T]) encodeUint(neg bool, quotes bool, u uint64) {
+func jsonEncodeUint(neg, quotes bool, u uint64, b *[48]byte) []byte {
 	// copied mostly from std library: strconv
 	// this should only be called on 64bit OS.
 
@@ -349,7 +348,8 @@ func (e *jsonEncDriver[T]) encodeUint(neg bool, quotes bool, u uint64) {
 
 	// typically, 19 or 20 bytes sufficient for decimal encoding a uint64
 	// var a [24]byte
-	var a = e.b[0:24]
+	var a = b[0:24]
+	// var a = (*[24]byte)(e.b[0:24])
 	var i = uint(len(a))
 
 	if quotes {
@@ -390,7 +390,11 @@ func (e *jsonEncDriver[T]) encodeUint(neg bool, quotes bool, u uint64) {
 		setByteAt(a, i, '"')
 		// a[i] = '"'
 	}
-	e.w.writeb(a[i:])
+	return a[i:]
+}
+
+func (e *jsonEncDriver[T]) encodeUint(neg bool, quotes bool, u uint64) {
+	e.w.writeb(jsonEncodeUint(neg, quotes, u, &e.b))
 }
 
 func (e *jsonEncDriver[T]) EncodeInt(v int64) {
