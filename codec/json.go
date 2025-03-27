@@ -58,7 +58,7 @@ const jsonEncodeUintSmallsString = "" +
 	"80818283848586878889" +
 	"90919293949596979899"
 
-var jsonEncodeUintSmallsStringBytes = []byte(jsonEncodeUintSmallsString)
+var jsonEncodeUintSmallsStringBytes = (*[len(jsonEncodeUintSmallsString)]byte)([]byte(jsonEncodeUintSmallsString))
 
 const (
 	jsonU4Chk2 = '0'
@@ -343,13 +343,13 @@ func jsonEncodeUint(neg, quotes bool, u uint64, b *[48]byte) []byte {
 	// copied mostly from std library: strconv
 	// this should only be called on 64bit OS.
 
-	// const smallsString = jsonEncodeUintSmallsString
-	var ss = jsonEncodeUintSmallsStringBytes
+	// const ss = jsonEncodeUintSmallsString
+	var ss = jsonEncodeUintSmallsStringBytes[:]
 
 	// typically, 19 or 20 bytes sufficient for decimal encoding a uint64
 	// var a [24]byte
-	var a = b[0:24]
-	// var a = (*[24]byte)(e.b[0:24])
+	// var a = (*[24]byte)(b[0:24])
+	var a = b[:24]
 	var i = uint(len(a))
 
 	if quotes {
@@ -366,19 +366,19 @@ func jsonEncodeUint(neg, quotes bool, u uint64, b *[48]byte) []byte {
 		i -= 2
 		setByteAt(a, i+1, byteAt(ss, is+1))
 		setByteAt(a, i, byteAt(ss, is))
-		// a[i+1] = smallsString[is+1]
-		// a[i+0] = smallsString[is+0]
+		// a[i+1] = ss[is+1]
+		// a[i] = ss[is]
 	}
 
 	// us < 100
 	is = us * 2
 	i--
 	setByteAt(a, i, byteAt(ss, is+1))
-	// a[i] = smallsString[is+1]
+	// a[i] = ss[is+1]
 	if us >= 10 {
 		i--
 		setByteAt(a, i, byteAt(ss, is))
-		// a[i] = smallsString[is]
+		// a[i] = ss[is]
 	}
 	if neg {
 		i--
