@@ -1,17 +1,7 @@
 #!/bin/bash
 
-# Run all the different permutations of all the tests and other things
-# This helps ensure that nothing gets broken.
-
-# # is a generation needed?
-# _ng() {
-#     local a="$1"
-#     if [[ ! -e "$a" ]]; then echo 1; return; fi 
-#     for i in `ls -1 *.go.tmpl gen.go gen_mono.go values_test.go`
-#     do
-#         if [[ "$a" -ot "$i" ]]; then echo 1; return; fi 
-#     done
-# }
+# Build and Run the different test permutations.
+# This helps validate that nothing gets broken.
 
 _build_proceed() {
     # return success (0) if we should, and 1 (fail) if not
@@ -35,8 +25,11 @@ _build() {
         _gg=".generated.go"
         [ -e "fast-path${_gg}" ] && mv fast-path${_gg} fast-path${_gg}__${_zts}.bak
         [ -e "gen${_gg}" ] && mv gen${_gg} gen${_gg}__${_zts}.bak
-    fi 
+    fi
+    
     rm -f fast*path.generated.go *mono*generated.go *_generated_test.go gen-from-tmpl*.generated.go
+
+    local btags="codec.gen codec.notmono codec.safe codec.notfastpath"
 
     cat > gen-from-tmpl.codec.generated.go <<EOF
 package codec
@@ -44,10 +37,6 @@ func GenTmplRun2Go(in, out string) { genTmplRun2Go(in, out) }
 func GenMonoAll() { genMonoAll() }
 EOF
 
-    # explicitly return 0 if this passes, else return 1
-    local btags="codec.gen codec.notmono codec.safe codec.notfastpath"
-    rm -f fastpath.generated.go mammoth_generated_test.go
-    
     cat > gen-from-tmpl.generated.go <<EOF
 //go:build ignore
 package main
@@ -55,21 +44,11 @@ import "${zpkg}"
 func main() {
 codec.GenTmplRun2Go("fast-path.go.tmpl", "fastpath.generated.go")
 codec.GenTmplRun2Go("mammoth-test.go.tmpl", "mammoth_generated_test.go")
-}
-EOF
-
-    ${gocmd} run -tags "$btags" gen-from-tmpl.generated.go || return 1
-    rm -f gen-from-tmpl.generated.go
-
-    cat > gen-from-tmpl.generated.go <<EOF
-//go:build ignore
-package main
-import "${zpkg}"
-func main() {
 codec.GenMonoAll()
 }
 EOF
-    # btags="codec.safe codec.gen codec.notmono"
+
+    # explicitly return 0 if this passes, else return 1
     ${gocmd} run -tags "$btags" gen-from-tmpl.generated.go || return 1
     rm -f gen-from-tmpl*.generated.go
     return 0
@@ -97,13 +76,6 @@ _prebuild() {
     return $returncode
     # unset zfin zfin2 zpkg
 }
-
-# _make() {
-#     local makeforce=${zforce}
-#     zforce=1
-#     _prebuild && ${gocmd} install ${zargs[*]} .
-#     zforce=${makeforce}
-# }
 
 _make() {
     _prebuild && ${gocmd} install ${zargs[*]} .
@@ -166,43 +138,6 @@ _tests() {
         command -v gocovmerge &&
         gocovmerge "${b[@]}" > __merge.cov.out &&
         ${gocmd} tool cover -html=__merge.cov.out
-}
-
-_release() {
-    local reply
-    read -p "Pre-release validation takes a few minutes and MUST be run from within GOPATH/src. Confirm y/n? " -n 1 -r reply
-    echo
-    if [[ ! $reply =~ ^[Yy]$ ]]; then return 1; fi
-
-    # expects GOROOT, GOROOT_BOOTSTRAP to have been set.
-    if [[ -z "${GOROOT// }" || -z "${GOROOT_BOOTSTRAP// }" ]]; then return 1; fi
-    # (cd $GOROOT && git checkout -f master && git pull && git reset --hard)
-    (cd $GOROOT && git pull)
-    local f=`pwd`/make.release.out
-    cat > $f <<EOF
-========== `date` ===========
-EOF
-    # go 1.6 and below kept giving memory errors on Mac OS X during SDK build or go run execution,
-    # that is fine, as we only explicitly test the last 3 releases and tip (2 years).
-    local makeforce=${zforce}
-    zforce=1
-    for i in 1.10 1.11 1.12 master
-    do
-        echo "*********** $i ***********" >>$f
-        if [[ "$i" != "master" ]]; then i="release-branch.go$i"; fi
-        (false ||
-             (echo "===== BUILDING GO SDK for branch: $i ... =====" &&
-                  cd $GOROOT &&
-                  git checkout -f $i && git reset --hard && git clean -f . &&
-                  cd src && ./make.bash >>$f 2>&1 && sleep 1 ) ) &&
-            echo "===== GO SDK BUILD DONE =====" &&
-            _prebuild &&
-            echo "===== PREBUILD DONE with exit: $? =====" &&
-            _tests "$@"
-        if [[ "$?" != 0 ]]; then return 1; fi
-    done
-    zforce=${makeforce}
-    echo "++++++++ RELEASE TEST SUITES ALL PASSED ++++++++"
 }
 
 _usage() {
