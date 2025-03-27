@@ -311,4 +311,3 @@ type SimpleHandle struct{ ... }
 type TypeInfos struct{ ... }
     func NewTypeInfos(tags []string) *TypeInfos
 ```
-
