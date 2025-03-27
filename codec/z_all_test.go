@@ -23,9 +23,50 @@ package codec
 // This suite of tests requires support for subtests and suites,
 // and conseqneutly will only run on go1.7 and above.
 
-// find . -name "codec_test.go" | xargs grep -e '^func Test' | \
-//     cut -d '(' -f 1 | cut -d ' ' -f 2 | \
-//     while read f; do echo "t.Run(\"$f\", $f)"; done
+// Easy script to re-generate the calls below:
+// -------------------------------------------
+/*
+# Old model when all tests were in codec_test.go
+find . -name "codec_test.go" | xargs grep -e '^func Test' | \
+    cut -d '(' -f 1 | cut -d ' ' -f 2 | \
+    while read f; do echo "t.Run(\"$f\", $f)"; done
+
+# New model when all tests are in format specific test files e.g. json_test.go
+for a in binc cbor json msgpack simple; do
+  echo "============ $a ============"
+  grep "func Test" ${a}_test.go  | while IFS= read -r line; do
+    if [[ "$line" =~ func\ ([A-Za-z0-9_]+).* ]]; then
+      a="${BASH_REMATCH[1]}"
+      echo -e "\tt.Run(\"${a}\", ${a})"
+    fi
+  done
+done
+
+# For breaking up the testJsonGroup vs testJsonGroupV style:
+for a in binc cbor json msgpack simple; do
+  echo "============ $a ============"
+  grep "func Test" ${a}_test.go | grep -v -E '(CodecsTable|CodecsMisc|SwallowAndZero|NextValueBytes|StrucEncDec)' | while IFS= read -r line; do
+    if [[ "$line" =~ func\ ([A-Za-z0-9_]+).* ]]; then
+      a="${BASH_REMATCH[1]}"
+      echo -e "\tt.Run(\"${a}\", ${a})"
+    fi
+  done
+done
+
+for a in binc cbor json msgpack simple; do
+  echo "============ $a ============"
+  grep -E 'func Test.*(CodecsTable|CodecsMisc|SwallowAndZero|NextValueBytes|StrucEncDec)' ${a}_test.go | while IFS= read -r line; do
+    if [[ "$line" =~ func\ ([A-Za-z0-9_]+).* ]]; then
+      a="${BASH_REMATCH[1]}"
+      echo -e "\tt.Run(\"${a}\", ${a})"
+    fi
+  done
+done
+
+# testNonHandlesGroup
+grep "func Test" codec_test.go | grep -v -E '(Cbor|Json|Simple|Msgpack|Binc)'
+
+*/
 
 import (
 	"testing"
@@ -107,19 +148,14 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonCodecsEmbeddedPointer", TestJsonCodecsEmbeddedPointer)
 	t.Run("TestJsonCodecChan", TestJsonCodecChan)
 	t.Run("TestJsonStdEncIntf", TestJsonStdEncIntf)
-	t.Run("TestJsonMammoth", TestJsonMammoth)
 	t.Run("TestJsonRaw", TestJsonRaw)
 	t.Run("TestJsonRpcGo", TestJsonRpcGo)
-	t.Run("TestJsonLargeInteger", TestJsonLargeInteger)
-	t.Run("TestJsonDecodeNonStringScalarInStringContext", TestJsonDecodeNonStringScalarInStringContext)
-	t.Run("TestJsonEncodeIndent", TestJsonEncodeIndent)
-
+	t.Run("TestJsonMapEncodeForCanonical", TestJsonMapEncodeForCanonical)
 	t.Run("TestJsonRawExt", TestJsonRawExt)
 	t.Run("TestJsonMapStructKey", TestJsonMapStructKey)
 	t.Run("TestJsonDecodeNilMapValue", TestJsonDecodeNilMapValue)
 	t.Run("TestJsonEmbeddedFieldPrecedence", TestJsonEmbeddedFieldPrecedence)
 	t.Run("TestJsonLargeContainerLen", TestJsonLargeContainerLen)
-	t.Run("TestJsonMammothMapsAndSlices", TestJsonMammothMapsAndSlices)
 	t.Run("TestJsonTime", TestJsonTime)
 	t.Run("TestJsonUintToInt", TestJsonUintToInt)
 	t.Run("TestJsonDifferentMapOrSliceType", TestJsonDifferentMapOrSliceType)
@@ -130,7 +166,6 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonMaxDepth", TestJsonMaxDepth)
 	t.Run("TestJsonSelfExt", TestJsonSelfExt)
 	t.Run("TestJsonBytesEncodedAsArray", TestJsonBytesEncodedAsArray)
-	t.Run("TestJsonMapEncodeForCanonical", TestJsonMapEncodeForCanonical)
 	t.Run("TestJsonRawToStringToRawEtc", TestJsonRawToStringToRawEtc)
 	t.Run("TestJsonStructKeyType", TestJsonStructKeyType)
 	t.Run("TestJsonPreferArrayOverSlice", TestJsonPreferArrayOverSlice)
@@ -138,9 +173,13 @@ func testJsonGroup(t *testing.T) {
 	t.Run("TestJsonNumbers", TestJsonNumbers)
 	t.Run("TestJsonDesc", TestJsonDesc)
 	t.Run("TestJsonStructFieldInfoToArray", TestJsonStructFieldInfoToArray)
-
+	t.Run("TestJsonEncodeIndent", TestJsonEncodeIndent)
+	t.Run("TestJsonDecodeNonStringScalarInStringContext", TestJsonDecodeNonStringScalarInStringContext)
+	t.Run("TestJsonLargeInteger", TestJsonLargeInteger)
 	t.Run("TestJsonInvalidUnicode", TestJsonInvalidUnicode)
 	t.Run("TestJsonNumberParsing", TestJsonNumberParsing)
+	t.Run("TestJsonMultipleEncDec", TestJsonMultipleEncDec)
+	t.Run("TestJsonAllErrWriter", TestJsonAllErrWriter)
 }
 
 func testJsonGroupV(t *testing.T) {
@@ -154,17 +193,15 @@ func testJsonGroupV(t *testing.T) {
 func testBincGroup(t *testing.T) {
 	t.Run("TestBincCodecsEmbeddedPointer", TestBincCodecsEmbeddedPointer)
 	t.Run("TestBincStdEncIntf", TestBincStdEncIntf)
-	t.Run("TestBincMammoth", TestBincMammoth)
 	t.Run("TestBincRaw", TestBincRaw)
 	t.Run("TestBincRpcGo", TestBincRpcGo)
+	t.Run("TestBincMapEncodeForCanonical", TestBincMapEncodeForCanonical)
 	t.Run("TestBincUnderlyingType", TestBincUnderlyingType)
-
 	t.Run("TestBincRawExt", TestBincRawExt)
 	t.Run("TestBincMapStructKey", TestBincMapStructKey)
 	t.Run("TestBincDecodeNilMapValue", TestBincDecodeNilMapValue)
 	t.Run("TestBincEmbeddedFieldPrecedence", TestBincEmbeddedFieldPrecedence)
 	t.Run("TestBincLargeContainerLen", TestBincLargeContainerLen)
-	t.Run("TestBincMammothMapsAndSlices", TestBincMammothMapsAndSlices)
 	t.Run("TestBincTime", TestBincTime)
 	t.Run("TestBincUintToInt", TestBincUintToInt)
 	t.Run("TestBincDifferentMapOrSliceType", TestBincDifferentMapOrSliceType)
@@ -175,7 +212,6 @@ func testBincGroup(t *testing.T) {
 	t.Run("TestBincMaxDepth", TestBincMaxDepth)
 	t.Run("TestBincSelfExt", TestBincSelfExt)
 	t.Run("TestBincBytesEncodedAsArray", TestBincBytesEncodedAsArray)
-	t.Run("TestBincMapEncodeForCanonical", TestBincMapEncodeForCanonical)
 	t.Run("TestBincRawToStringToRawEtc", TestBincRawToStringToRawEtc)
 	t.Run("TestBincStructKeyType", TestBincStructKeyType)
 	t.Run("TestBincPreferArrayOverSlice", TestBincPreferArrayOverSlice)
@@ -194,19 +230,24 @@ func testBincGroupV(t *testing.T) {
 }
 
 func testCborGroup(t *testing.T) {
+	t.Run("TestCborIndefiniteLength", TestCborIndefiniteLength)
+	t.Run("TestCborIndefiniteLengthStringChunksCannotMixTypes", TestCborIndefiniteLengthStringChunksCannotMixTypes)
+	t.Run("TestCborIndefiniteLengthTextStringChunksAreUTF8", TestCborIndefiniteLengthTextStringChunksAreUTF8)
+	t.Run("TestCborGoldens", TestCborGoldens)
+	t.Run("TestCborHalfFloat", TestCborHalfFloat)
+	t.Run("TestCborSkipTags", TestCborSkipTags)
+	t.Run("TestCborMalformed", TestCborMalformed)
 	t.Run("TestCborCodecsEmbeddedPointer", TestCborCodecsEmbeddedPointer)
 	t.Run("TestCborCodecChan", TestCborCodecChan)
 	t.Run("TestCborStdEncIntf", TestCborStdEncIntf)
-	t.Run("TestCborMammoth", TestCborMammoth)
 	t.Run("TestCborRaw", TestCborRaw)
 	t.Run("TestCborRpcGo", TestCborRpcGo)
-
+	t.Run("TestCborMapEncodeForCanonical", TestCborMapEncodeForCanonical)
 	t.Run("TestCborRawExt", TestCborRawExt)
 	t.Run("TestCborMapStructKey", TestCborMapStructKey)
 	t.Run("TestCborDecodeNilMapValue", TestCborDecodeNilMapValue)
 	t.Run("TestCborEmbeddedFieldPrecedence", TestCborEmbeddedFieldPrecedence)
 	t.Run("TestCborLargeContainerLen", TestCborLargeContainerLen)
-	t.Run("TestCborMammothMapsAndSlices", TestCborMammothMapsAndSlices)
 	t.Run("TestCborTime", TestCborTime)
 	t.Run("TestCborUintToInt", TestCborUintToInt)
 	t.Run("TestCborDifferentMapOrSliceType", TestCborDifferentMapOrSliceType)
@@ -217,7 +258,6 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborMaxDepth", TestCborMaxDepth)
 	t.Run("TestCborSelfExt", TestCborSelfExt)
 	t.Run("TestCborBytesEncodedAsArray", TestCborBytesEncodedAsArray)
-	t.Run("TestCborMapEncodeForCanonical", TestCborMapEncodeForCanonical)
 	t.Run("TestCborRawToStringToRawEtc", TestCborRawToStringToRawEtc)
 	t.Run("TestCborStructKeyType", TestCborStructKeyType)
 	t.Run("TestCborPreferArrayOverSlice", TestCborPreferArrayOverSlice)
@@ -225,9 +265,9 @@ func testCborGroup(t *testing.T) {
 	t.Run("TestCborNumbers", TestCborNumbers)
 	t.Run("TestCborDesc", TestCborDesc)
 	t.Run("TestCborStructFieldInfoToArray", TestCborStructFieldInfoToArray)
-
-	t.Run("TestCborHalfFloat", TestCborHalfFloat)
-	t.Run("TestCborSkipTags", TestCborSkipTags)
+	t.Run("TestCborAllErrWriter", TestCborAllErrWriter)
+	t.Run("TestCborAllEncCircularRef", TestCborAllEncCircularRef)
+	t.Run("TestCborAllAnonCycle", TestCborAllAnonCycle)
 }
 
 func testCborGroupV(t *testing.T) {
@@ -241,17 +281,15 @@ func testCborGroupV(t *testing.T) {
 func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackCodecsEmbeddedPointer", TestMsgpackCodecsEmbeddedPointer)
 	t.Run("TestMsgpackStdEncIntf", TestMsgpackStdEncIntf)
-	t.Run("TestMsgpackMammoth", TestMsgpackMammoth)
 	t.Run("TestMsgpackRaw", TestMsgpackRaw)
-	t.Run("TestMsgpackRpcGo", TestMsgpackRpcGo)
 	t.Run("TestMsgpackRpcSpec", TestMsgpackRpcSpec)
-
+	t.Run("TestMsgpackRpcGo", TestMsgpackRpcGo)
+	t.Run("TestMsgpackMapEncodeForCanonical", TestMsgpackMapEncodeForCanonical)
 	t.Run("TestMsgpackRawExt", TestMsgpackRawExt)
 	t.Run("TestMsgpackMapStructKey", TestMsgpackMapStructKey)
 	t.Run("TestMsgpackDecodeNilMapValue", TestMsgpackDecodeNilMapValue)
 	t.Run("TestMsgpackEmbeddedFieldPrecedence", TestMsgpackEmbeddedFieldPrecedence)
 	t.Run("TestMsgpackLargeContainerLen", TestMsgpackLargeContainerLen)
-	t.Run("TestMsgpackMammothMapsAndSlices", TestMsgpackMammothMapsAndSlices)
 	t.Run("TestMsgpackTime", TestMsgpackTime)
 	t.Run("TestMsgpackUintToInt", TestMsgpackUintToInt)
 	t.Run("TestMsgpackDifferentMapOrSliceType", TestMsgpackDifferentMapOrSliceType)
@@ -262,7 +300,6 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackMaxDepth", TestMsgpackMaxDepth)
 	t.Run("TestMsgpackSelfExt", TestMsgpackSelfExt)
 	t.Run("TestMsgpackBytesEncodedAsArray", TestMsgpackBytesEncodedAsArray)
-	t.Run("TestMsgpackMapEncodeForCanonical", TestMsgpackMapEncodeForCanonical)
 	t.Run("TestMsgpackRawToStringToRawEtc", TestMsgpackRawToStringToRawEtc)
 	t.Run("TestMsgpackStructKeyType", TestMsgpackStructKeyType)
 	t.Run("TestMsgpackPreferArrayOverSlice", TestMsgpackPreferArrayOverSlice)
@@ -270,7 +307,6 @@ func testMsgpackGroup(t *testing.T) {
 	t.Run("TestMsgpackNumbers", TestMsgpackNumbers)
 	t.Run("TestMsgpackDesc", TestMsgpackDesc)
 	t.Run("TestMsgpackStructFieldInfoToArray", TestMsgpackStructFieldInfoToArray)
-
 	t.Run("TestMsgpackDecodeMapAndExtSizeMismatch", TestMsgpackDecodeMapAndExtSizeMismatch)
 }
 
@@ -285,16 +321,14 @@ func testMsgpackGroupV(t *testing.T) {
 func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleCodecsEmbeddedPointer", TestSimpleCodecsEmbeddedPointer)
 	t.Run("TestSimpleStdEncIntf", TestSimpleStdEncIntf)
-	t.Run("TestSimpleMammoth", TestSimpleMammoth)
 	t.Run("TestSimpleRaw", TestSimpleRaw)
 	t.Run("TestSimpleRpcGo", TestSimpleRpcGo)
-
+	t.Run("TestSimpleMapEncodeForCanonical", TestSimpleMapEncodeForCanonical)
 	t.Run("TestSimpleRawExt", TestSimpleRawExt)
 	t.Run("TestSimpleMapStructKey", TestSimpleMapStructKey)
 	t.Run("TestSimpleDecodeNilMapValue", TestSimpleDecodeNilMapValue)
 	t.Run("TestSimpleEmbeddedFieldPrecedence", TestSimpleEmbeddedFieldPrecedence)
 	t.Run("TestSimpleLargeContainerLen", TestSimpleLargeContainerLen)
-	t.Run("TestSimpleMammothMapsAndSlices", TestSimpleMammothMapsAndSlices)
 	t.Run("TestSimpleTime", TestSimpleTime)
 	t.Run("TestSimpleUintToInt", TestSimpleUintToInt)
 	t.Run("TestSimpleDifferentMapOrSliceType", TestSimpleDifferentMapOrSliceType)
@@ -305,7 +339,6 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleMaxDepth", TestSimpleMaxDepth)
 	t.Run("TestSimpleSelfExt", TestSimpleSelfExt)
 	t.Run("TestSimpleBytesEncodedAsArray", TestSimpleBytesEncodedAsArray)
-	t.Run("TestSimpleMapEncodeForCanonical", TestSimpleMapEncodeForCanonical)
 	t.Run("TestSimpleRawToStringToRawEtc", TestSimpleRawToStringToRawEtc)
 	t.Run("TestSimpleStructKeyType", TestSimpleStructKeyType)
 	t.Run("TestSimplePreferArrayOverSlice", TestSimplePreferArrayOverSlice)
@@ -313,6 +346,8 @@ func testSimpleGroup(t *testing.T) {
 	t.Run("TestSimpleNumbers", TestSimpleNumbers)
 	t.Run("TestSimpleDesc", TestSimpleDesc)
 	t.Run("TestSimpleStructFieldInfoToArray", TestSimpleStructFieldInfoToArray)
+	t.Run("TestSimpleMultipleEncDec", TestSimpleMultipleEncDec)
+	t.Run("TestSimpleAllErrWriter", TestSimpleAllErrWriter)
 }
 
 func testSimpleGroupV(t *testing.T) {
@@ -338,12 +373,6 @@ func testRpcGroup(t *testing.T) {
 
 func testNonHandlesGroup(t *testing.T) {
 	// grep "func Test" codec_test.go | grep -v -E '(Cbor|Json|Simple|Msgpack|Binc)'
-	// t.Run("TestBufioDecReader", TestBufioDecReader)
-	t.Run("TestAtomic", TestAtomic)
-	t.Run("TestAllEncCircularRef", TestAllEncCircularRef)
-	t.Run("TestAllAnonCycle", TestAllAnonCycle)
-	t.Run("TestMultipleEncDec", TestMultipleEncDec)
-	t.Run("TestAllErrWriter", TestAllErrWriter)
 	t.Run("TestMapRangeIndex", TestMapRangeIndex)
 }
 
