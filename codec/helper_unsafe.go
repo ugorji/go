@@ -174,6 +174,10 @@ func (encPerType) AddressableRO(v reflect.Value) reflect.Value {
 	return rvAddressableReadonly(v)
 }
 
+func str4byte(b byte) string {
+	return unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), b)), 1)
+}
+
 // byteAt returns the byte given an index which is guaranteed
 // to be within the bounds of the slice i.e. we defensively
 // already verified that the index is less than the length of the slice.
@@ -1203,7 +1207,8 @@ func (d *decoderBase) stringZC(v []byte) (s string) {
 	// if len(v) == 0 {
 	// } else if len(v) == 1 {
 	if len(v) == 1 {
-		s = str256[v[0]:][:1] // str256[v[0] : v[0]+1]
+		// s = str4byte(v[0]) // str256[v[0]:][:1] // str256[v[0] : v[0]+1]
+		s = unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), v[0])), 1)
 	} else if d.decByteState == decByteStateZerocopy && d.zeroCopy {
 		s = stringView(v)
 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {

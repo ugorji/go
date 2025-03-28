@@ -461,7 +461,7 @@ func init() {
 	for i := range len(bstr256) {
 		bstr256[i] = byte(i)
 	}
-	str256 = stringView(bstr256[:])
+	str256 = string(bstr256[:])
 }
 
 // // driverStateManager supports the runtime state of an (enc|dec)Driver.

@@ -715,8 +715,7 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 		hasLen := containerLen >= 0
 		var name2 []byte
 		if mf != nil {
-			var namearr2 [16]byte
-			name2 = namearr2[:0]
+			name2 = make([]byte, 0, 16)
 		}
 		var rvkencname []byte
 		tkt := ti.keyType
@@ -1221,7 +1220,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		switch len(kstr2bs) {
 		case 0:
 		case 1:
-			s = str256[kstr2bs[0] : kstr2bs[0]+1]
+			s = str4byte(kstr2bs[0])
 		default:
 			s = d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
 		}
@@ -1447,7 +1446,7 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 func (d *decoderBase) string(v []byte) (s string) {
 	if len(v) == 0 {
 	} else if len(v) == 1 {
-		s = str256[v[0] : v[0]+1]
+		s = str4byte(v[0])
 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
 		s = string(v)
 	} else {
@@ -1975,7 +1974,7 @@ func (d *decoder[T]) structFieldNotFound(index int, rvkencname string) {
 		if index >= 0 {
 			halt.errorInt("no matching struct field found when decoding stream array at index ", int64(index))
 		} else if rvkencname != "" {
-			halt.errorStr("no matching struct field found when decoding stream map with key " + rvkencname)
+			halt.errorStr2("no matching struct field found when decoding stream map with key ", rvkencname)
 		}
 	}
 	d.swallow()

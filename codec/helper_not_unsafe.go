@@ -21,6 +21,11 @@ const safeMode = true
 const transientSizeMax = 0
 const transientValueHasStringSlice = true
 
+func str4byte(b byte) string {
+	// return str256[b:][:1]
+	return str256[b : b+1]
+}
+
 func byteAt(b []byte, index uint) byte {
 	return b[index]
 }
