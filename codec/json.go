@@ -1207,13 +1207,13 @@ func jsonSlashURune(cs [4]byte) (rr uint32) {
 	return
 }
 
-func (d *jsonDecDriver[T]) nakedNum(z *fauxUnion, bs []byte) (err error) {
-	// Note: nakedNum is NEVER called with a zero-length []byte
-	if d.h.PreferFloat {
+func jsonNakedNum(z *fauxUnion, bs []byte, preferFloat, signedInt bool) (err error) {
+	// Note: jsonNakedNum is NEVER called with a zero-length []byte
+	if preferFloat {
 		z.v = valueTypeFloat
 		z.f, err = parseFloat64(bs)
 	} else {
-		err = parseNumber(bs, z, d.h.SignedInteger)
+		err = parseNumber(bs, z, signedInt)
 	}
 	return
 }
@@ -1255,7 +1255,7 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 				z.b = false
 			default:
 				// check if a number: float, int or uint
-				if err := d.nakedNum(z, bs); err != nil {
+				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
 					z.s = d.d.stringZC(bs)
 				}
@@ -1270,7 +1270,7 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 		if len(bs) == 0 {
 			halt.errorStr("decode number from empty string")
 		}
-		if err := d.nakedNum(z, bs); err != nil {
+		if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 			halt.errorf("decode number from %s: %v", any(bs), err)
 		}
 	}
@@ -1402,12 +1402,13 @@ func (h *JsonHandle) SetInterfaceExt(rt reflect.Type, tag uint64, ext InterfaceE
 // 	return d
 // }
 
-func (e *jsonEncDriver[T]) resetState() {
-	e.dl = 0
-}
+// func (e *jsonEncDriver[T]) resetState() {
+// 	e.dl = 0
+// }
 
 func (e *jsonEncDriver[T]) reset() {
-	e.resetState()
+	e.dl = 0
+	// e.resetState()
 	// (htmlasis && jsonCharSafeSet.isset(b)) || jsonCharHtmlSafeSet.isset(b)
 	// cache values from the handle
 	e.typical = e.h.typical()
@@ -1423,13 +1424,15 @@ func (e *jsonEncDriver[T]) reset() {
 	e.is = e.h.IntegerAsString
 }
 
-func (d *jsonDecDriver[T]) resetState() {
-	*d.buf = d.d.blist.check(*d.buf, 256)
-	d.tok = 0
-}
+// func (d *jsonDecDriver[T]) resetState() {
+// 	*d.buf = d.d.blist.check(*d.buf, 256)
+// 	d.tok = 0
+// }
 
 func (d *jsonDecDriver[T]) reset() {
-	d.resetState()
+	*d.buf = d.d.blist.check(*d.buf, 256)
+	d.tok = 0
+	// d.resetState()
 	d.rawext = d.h.RawBytesExt != nil
 }
 
