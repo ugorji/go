@@ -454,21 +454,16 @@ func (d *simpleDecDriver[T]) DecodeStringAsBytes() (s []byte) {
 }
 
 func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
-	d.d.decByteState = decByteStateNone
 	if d.advanceNil() {
 		return
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
 	if d.bd >= simpleVdArray && d.bd <= simpleVdMap+4 {
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:]
 		}
 		slen := d.ReadArrayStart()
-		var changed bool
-		if bs, changed = usableByteSlice(bs, slen); changed {
-			d.d.decByteState = decByteStateNone
-		}
+		bs, _ = usableByteSlice(bs, slen)
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
@@ -482,11 +477,9 @@ func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	d.bdRead = false
 	// if d.d.zerocopy() {
 	if d.bytes && d.h.ZeroCopy {
-		d.d.decByteState = decByteStateZerocopy
 		return d.r.readx(uint(clen))
 	}
 	if bs == nil {
-		d.d.decByteState = decByteStateReuseBuf
 		bs = d.d.b[:]
 	}
 	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)

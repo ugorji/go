@@ -1185,9 +1185,9 @@ func makeMapReflect(typ reflect.Type, size int) (rv reflect.Value) {
 
 // ---------- DECODER optimized ---------------
 
-func (d *decoderBase) zerocopystate() bool {
-	return d.decByteState == decByteStateZerocopy && d.zeroCopy
-}
+// func (d *decoderBase) zerocopystate() bool {
+// 	return d.bytes && d.zeroCopy
+// }
 
 // func (d *decoderBase) stringZC(v []byte) (s string) {
 // 	if d.zerocopystate() {
@@ -1209,7 +1209,7 @@ func (d *decoderBase) stringZC(v []byte) (s string) {
 	if len(v) == 1 {
 		// s = str4byte(v[0]) // str256[v[0]:][:1] // str256[v[0] : v[0]+1]
 		s = unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), v[0])), 1)
-	} else if d.decByteState == decByteStateZerocopy && d.zeroCopy {
+	} else if d.bytes && d.zeroCopy { // MARKER 2025
 		s = stringView(v)
 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
 		s = string(v)
@@ -1220,12 +1220,12 @@ func (d *decoderBase) stringZC(v []byte) (s string) {
 }
 
 func (d *decoderBase) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
-	if !d.zerocopystate() {
+	// MARKER 2025 - think through this.
+	// should we always use kstr2bs, or always append it first?
+	if !(d.bytes && d.zeroCopy) {
 		*callFnRvk = true
-		if d.decByteState == decByteStateReuseBuf {
-			*kstrbs = append((*kstrbs)[:0], (*kstr2bs)...)
-			*kstr2bs = *kstrbs
-		}
+		*kstrbs = append((*kstrbs)[:0], (*kstr2bs)...)
+		*kstr2bs = *kstrbs
 	}
 	return stringView(*kstr2bs)
 }

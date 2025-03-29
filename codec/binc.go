@@ -744,7 +744,6 @@ func (d *bincDecDriver[T]) decLenNumber() (v uint64) {
 
 // func (d *bincDecDriver[T]) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
 func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs2 []byte) {
-	d.d.decByteState = decByteStateNone
 	if d.advanceNil() {
 		return
 	}
@@ -753,10 +752,8 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs2 []byte) {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
 		if d.d.bytes {
-			d.d.decByteState = decByteStateZerocopy
 			bs2 = d.r.readx(uint(slen))
 		} else {
-			d.d.decByteState = decByteStateReuseBuf
 			bs2 = decByteSlice(d.r, slen, d.h.MaxInitLen, d.d.b[:])
 		}
 	case bincVdSymbol:
@@ -804,20 +801,15 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs2 []byte) {
 }
 
 func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
-	d.d.decByteState = decByteStateNone
 	if d.advanceNil() {
 		return
 	}
 	if d.vd == bincVdArray {
 		if bs == nil {
 			bs = d.d.b[:]
-			d.d.decByteState = decByteStateReuseBuf
 		}
 		slen := d.ReadArrayStart()
-		var changed bool
-		if bs, changed = usableByteSlice(bs, slen); changed {
-			d.d.decByteState = decByteStateNone
-		}
+		bs, _ = usableByteSlice(bs, slen)
 		for i := 0; i < slen; i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
@@ -834,12 +826,10 @@ func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	}
 	d.bdRead = false
 	if d.bytes && d.h.ZeroCopy {
-		d.d.decByteState = decByteStateZerocopy
 		return d.r.readx(uint(clen))
 	}
 	if bs == nil {
 		bs = d.d.b[:]
-		d.d.decByteState = decByteStateReuseBuf
 	}
 	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
 }

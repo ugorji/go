@@ -59,16 +59,16 @@ var (
 	errMaxDepthExceeded             = errors.New("maximum decoding depth exceeded")
 )
 
-// decByteState tracks where the []byte returned by the last call
-// to DecodeBytes or DecodeStringAsByte came from
-type decByteState uint8
+// // decByteState tracks where the []byte returned by the last call
+// // to DecodeBytes or DecodeStringAsByte came from
+// type decByteState uint8
 
-const (
-	decByteStateNone     decByteState = iota
-	decByteStateZerocopy              // view into []byte that we are decoding from
-	decByteStateReuseBuf              // view into transient buffer used internally by decDriver
-	// decByteStateNewAlloc
-)
+// const (
+// 	decByteStateNone     decByteState = iota
+// 	decByteStateZerocopy              // view into []byte that we are decoding from
+// 	decByteStateReuseBuf              // view into transient buffer used internally by decDriver
+// 	// decByteStateNewAlloc
+// )
 
 type decNotDecodeableReason uint8
 
@@ -130,8 +130,8 @@ type decDriverI interface {
 	// It will return a view into scratch buffer or input []byte (if applicable).
 	//
 	// All implementations must honor the contract below:
-	//    if ZeroCopy and applicable, return a view into input []byte we are decoding from
-	//    else if in == nil,          return a view into scratch buffer
+	//    if ZeroCopy && bytes,       return a view into input []byte we are decoding from
+	//    else if in == nil,          return a view into buffer (or input byte)
 	//    else                        append decoded value to in[:0] and return that
 	//                                (this can be simulated by passing []byte{} as in parameter)
 	//
@@ -1264,7 +1264,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 			kstr2bs = d.d.DecodeStringAsBytes()
 			rvSetString(rvk, fnRvk2())
 		} else {
-			d.decByteState = decByteStateNone
 			d.decodeValue(rvk, keyFn)
 			// special case if interface wrapping a byte slice
 			if ktypeIsIntf {
@@ -1406,7 +1405,7 @@ type decoderBase struct {
 
 	c containerState
 
-	decByteState
+	// decByteState
 
 	n fauxUnion
 
@@ -1549,7 +1548,6 @@ func (d *decoder[T]) reset() {
 	d.d.reset()
 	d.err = nil
 	d.c = 0
-	d.decByteState = decByteStateNone
 	d.depth = 0
 	d.calls = 0
 	// reset all things which were cached from the Handle, but could change

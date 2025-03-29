@@ -575,25 +575,30 @@ func (d *cborDecDriver[T]) ReadArrayStart() (length int) {
 }
 
 func (d *cborDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
-	d.d.decByteState = decByteStateNone
 	if d.advanceNil() {
 		return
 	}
 	if d.st {
 		d.skipTags()
 	}
+	// MARKER don't use scratch buffer for indefinite bytes.
+	// always use the buffer passed.
+	// Main reason is that IndefiniteBytes cannot use the input []byte as
+	// some bytes in there are not part of the output.
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 		d.bdRead = false
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			return d.decAppendIndefiniteBytes(d.d.b[:0], d.bd>>5)
 		}
 		return d.decAppendIndefiniteBytes(bs[:0], d.bd>>5)
+		// if bs != nil {
+		// 	bs = bs[:0]
+		// }
+		// return d.decAppendIndefiniteBytes(bs, d.bd>>5)
 	}
 	if d.bd == cborBdIndefiniteArray {
 		d.bdRead = false
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:0]
 		} else {
 			bs = bs[:0]
@@ -606,14 +611,10 @@ func (d *cborDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	if d.bd>>5 == cborMajorArray {
 		d.bdRead = false
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:]
 		}
 		slen := d.decLen()
-		var changed bool
-		if bs, changed = usableByteSlice(bs, slen); changed {
-			d.d.decByteState = decByteStateNone
-		}
+		bs, _ = usableByteSlice(bs, slen)
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
@@ -625,11 +626,9 @@ func (d *cborDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	clen := d.decLen()
 	d.bdRead = false
 	if d.bytes && d.h.ZeroCopy {
-		d.d.decByteState = decByteStateZerocopy
 		return d.r.readx(uint(clen))
 	}
 	if bs == nil {
-		d.d.decByteState = decByteStateReuseBuf
 		bs = d.d.b[:]
 	}
 	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)

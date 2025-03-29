@@ -993,7 +993,6 @@ func (d *jsonDecDriver[T]) decBytesFromArray(bs []byte) []byte {
 }
 
 func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
-	d.d.decByteState = decByteStateNone
 	d.advance()
 	if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
@@ -1009,7 +1008,6 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	if d.tok == '[' {
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:]
 		}
 		return d.decBytesFromArray(bs)
@@ -1026,7 +1024,6 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	} else if slen <= cap(bs) {
 		bsOut = bs[:slen]
 	} else if bs == nil {
-		d.d.decByteState = decByteStateReuseBuf
 		bsOut = d.d.blist.check(*d.buf, slen)
 		bsOut = bsOut[:slen]
 		*d.buf = bsOut
@@ -1044,7 +1041,6 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 }
 
 func (d *jsonDecDriver[T]) DecodeStringAsBytes() (s []byte) {
-	d.d.decByteState = decByteStateNone
 	d.advance()
 
 	// common case - hoist outside the switch statement
@@ -1085,7 +1081,6 @@ func (d *jsonDecDriver[T]) readUnescapedString() (bs []byte) {
 
 func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte) {
 	checkUtf8 := d.h.ValidateUnicode
-	d.d.decByteState = decByteStateNone
 	// use a local buf variable, so we don't do pointer chasing within loop
 	buf = (*d.buf)[:0]
 	d.tok = 0
@@ -1095,22 +1090,15 @@ func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte) {
 	var firstTime bool = true
 
 	for {
+		bs = d.r.jsonReadAsisChars()
+		_ = bs[0] // bounds check hint - slice must be > 0 elements
 		if firstTime {
 			firstTime = false
-			if d.bytes {
-				bs = d.r.jsonReadAsisChars()
-				if bs[len(bs)-1] == '"' {
-					d.d.decByteState = decByteStateZerocopy
-					return bs[:len(bs)-1]
-				}
-				goto APPEND
+			if bs[len(bs)-1] == '"' {
+				return bs[:len(bs)-1]
 			}
 		}
 
-		bs = d.r.jsonReadAsisChars()
-
-	APPEND:
-		_ = bs[0] // bounds check hint - slice must be > 0 elements
 		buf = append(buf, bs[:len(bs)-1]...)
 		c = bs[len(bs)-1]
 
@@ -1146,7 +1134,6 @@ func (d *jsonDecDriver[T]) dblQuoteStringAsBytes() (buf []byte) {
 		}
 	}
 	*d.buf = buf
-	d.d.decByteState = decByteStateReuseBuf
 	return
 }
 
