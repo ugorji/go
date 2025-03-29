@@ -5,7 +5,9 @@
 
 package codec
 
-import "io"
+import (
+	"io"
+)
 
 // This contains all the iniatializations of generics.
 // Putting it into one file, ensures that we can go generics or not.
@@ -23,12 +25,46 @@ type encWriter interface {
 	encWriterI
 }
 
+type bytesEncAppenderM struct {
+	*bytesEncAppender
+}
+
+func (z *bytesEncAppenderM) Make() {
+	z.bytesEncAppender = new(bytesEncAppender)
+	z.out = &bytesEncAppenderDefOut
+}
+
+type bufioEncWriterM struct {
+	*bufioEncWriter
+}
+
+func (z *bufioEncWriterM) Make() {
+	z.bufioEncWriter = new(bufioEncWriter)
+	z.w = io.Discard
+}
+
 // ---- reader.go
 
 type decReader interface {
 	bytesDecReaderM | ioDecReaderM
 
 	decReaderI
+}
+
+type bytesDecReaderM struct {
+	*bytesDecReader
+}
+
+func (z *bytesDecReaderM) Make() {
+	z.bytesDecReader = new(bytesDecReader)
+}
+
+type ioDecReaderM struct {
+	*ioDecReader
+}
+
+func (z *ioDecReaderM) Make() {
+	z.ioDecReader = new(ioDecReader)
 }
 
 // type helperEncWriter[T encWriter] struct{}

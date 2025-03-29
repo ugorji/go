@@ -2254,33 +2254,34 @@ func (x decSliceHelper[T]) arrayCannotExpand(hasLen bool, lenv, j, containerLenS
 	x.End()
 }
 
-// decNextValueBytesHelper helps with NextValueBytes calls.
-//
-// Typical usage:
-//   - each Handle's decDriver will implement a high level nextValueBytes,
-//     which will track the current cursor, delegate to a nextValueBytesR
-//     method, and then potentially call bytesRdV at the end.
-//
-// See simple.go for typical usage model.
-type decNextValueBytesHelper struct{}
+// MARKER 2025
+// // decNextValueBytesHelper helps with NextValueBytes calls.
+// //
+// // Typical usage:
+// //   - each Handle's decDriver will implement a high level nextValueBytes,
+// //     which will track the current cursor, delegate to a nextValueBytesR
+// //     method, and then potentially call bytesRdV at the end.
+// //
+// // See simple.go for typical usage model.
+// type decNextValueBytesHelper struct{}
 
-func (decNextValueBytesHelper) append1(v *[]byte, isBytes bool, b byte) {
-	if *v != nil && !isBytes {
-		*v = append(*v, b)
-	}
-}
+// func (decNextValueBytesHelper) append1(v *[]byte, isBytes bool, b byte) {
+// 	if *v != nil && !isBytes {
+// 		*v = append(*v, b)
+// 	}
+// }
 
-func (decNextValueBytesHelper) appendN(v *[]byte, isBytes bool, b ...byte) {
-	if *v != nil && !isBytes {
-		*v = append(*v, b...)
-	}
-}
+// func (decNextValueBytesHelper) appendN(v *[]byte, isBytes bool, b ...byte) {
+// 	if *v != nil && !isBytes {
+// 		*v = append(*v, b...)
+// 	}
+// }
 
-func (decNextValueBytesHelper) appendS(v *[]byte, isBytes bool, b string) {
-	if *v != nil && !isBytes {
-		*v = append(*v, b...)
-	}
-}
+// func (decNextValueBytesHelper) appendS(v *[]byte, isBytes bool, b string) {
+// 	if *v != nil && !isBytes {
+// 		*v = append(*v, b...)
+// 	}
+// }
 
 // instead, use:
 // 	if d.bytes {

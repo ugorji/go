@@ -3338,47 +3338,30 @@ func (d *jsonDecDriverBytes) advance() {
 }
 
 func (d *jsonDecDriverBytes) nextValueBytes(v []byte) []byte {
-	v, cursor := d.nextValueBytesR(v)
-	if d.bytes {
-		v = d.r.bytesReadFrom(cursor)
-	}
-	return v
-}
-
-func (d *jsonDecDriverBytes) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
-	v = v0
-	var h decNextValueBytesHelper
-
 	consumeString := func() {
 	TOP:
 		bs := d.r.jsonReadAsisChars()
-		h.appendN(&v, d.bytes, bs...)
 		if bs[len(bs)-1] != '"' {
 
-			h.append1(&v, d.bytes, d.r.readn1())
+			d.r.readn1()
 			goto TOP
 		}
 	}
 
 	d.advance()
+	v = append(v, d.tok)
+	d.r.startRecording(v)
 
-	if d.bytes {
-		cursor = d.r.numread() - 1
-	}
 	switch d.tok {
 	default:
-		h.appendN(&v, d.bytes, d.r.jsonReadNum()...)
+		d.r.jsonReadNum()
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
-		h.appendS(&v, d.bytes, jsonLits[jsonLitN:jsonLitN+4])
 	case 'f':
 		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.r.readn4())
-		h.appendS(&v, d.bytes, jsonLits[jsonLitF:jsonLitF+5])
 	case 't':
 		d.checkLit3([3]byte{'r', 'u', 'e'}, d.r.readn3())
-		h.appendS(&v, d.bytes, jsonLits[jsonLitT:jsonLitT+4])
 	case '"':
-		h.append1(&v, d.bytes, '"')
 		consumeString()
 	case '{', '[':
 		var elem struct{}
@@ -3386,11 +3369,8 @@ func (d *jsonDecDriverBytes) nextValueBytesR(v0 []byte) (v []byte, cursor uint) 
 
 		stack = append(stack, elem)
 
-		h.append1(&v, d.bytes, d.tok)
-
 		for len(stack) != 0 {
 			c := d.r.readn1()
-			h.append1(&v, d.bytes, c)
 			switch c {
 			case '"':
 				consumeString()
@@ -3402,7 +3382,8 @@ func (d *jsonDecDriverBytes) nextValueBytesR(v0 []byte) (v []byte, cursor uint) 
 		}
 	}
 	d.tok = 0
-	return
+
+	return d.r.stopRecording()
 }
 
 func (d *jsonDecDriverBytes) TryNil() bool {
@@ -3747,17 +3728,6 @@ func (d *jsonDecDriverBytes) appendStringAsBytesSlashU() (r rune) {
 	return
 }
 
-func (d *jsonDecDriverBytes) nakedNum(z *fauxUnion, bs []byte) (err error) {
-
-	if d.h.PreferFloat {
-		z.v = valueTypeFloat
-		z.f, err = parseFloat64(bs)
-	} else {
-		err = parseNumber(bs, z, d.h.SignedInteger)
-	}
-	return
-}
-
 func (d *jsonDecDriverBytes) DecodeNaked() {
 	z := d.d.naked()
 
@@ -3794,7 +3764,7 @@ func (d *jsonDecDriverBytes) DecodeNaked() {
 				z.b = false
 			default:
 
-				if err := d.nakedNum(z, bs); err != nil {
+				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
 					z.s = d.d.stringZC(bs)
 				}
@@ -3809,18 +3779,14 @@ func (d *jsonDecDriverBytes) DecodeNaked() {
 		if len(bs) == 0 {
 			halt.errorStr("decode number from empty string")
 		}
-		if err := d.nakedNum(z, bs); err != nil {
+		if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 			halt.errorf("decode number from %s: %v", any(bs), err)
 		}
 	}
 }
 
-func (e *jsonEncDriverBytes) resetState() {
-	e.dl = 0
-}
-
 func (e *jsonEncDriverBytes) reset() {
-	e.resetState()
+	e.dl = 0
 
 	e.typical = e.h.typical()
 	if e.h.HTMLCharsAsIs {
@@ -3835,13 +3801,10 @@ func (e *jsonEncDriverBytes) reset() {
 	e.is = e.h.IntegerAsString
 }
 
-func (d *jsonDecDriverBytes) resetState() {
+func (d *jsonDecDriverBytes) reset() {
 	*d.buf = d.d.blist.check(*d.buf, 256)
 	d.tok = 0
-}
 
-func (d *jsonDecDriverBytes) reset() {
-	d.resetState()
 	d.rawext = d.h.RawBytesExt != nil
 }
 
@@ -7231,47 +7194,30 @@ func (d *jsonDecDriverIO) advance() {
 }
 
 func (d *jsonDecDriverIO) nextValueBytes(v []byte) []byte {
-	v, cursor := d.nextValueBytesR(v)
-	if d.bytes {
-		v = d.r.bytesReadFrom(cursor)
-	}
-	return v
-}
-
-func (d *jsonDecDriverIO) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
-	v = v0
-	var h decNextValueBytesHelper
-
 	consumeString := func() {
 	TOP:
 		bs := d.r.jsonReadAsisChars()
-		h.appendN(&v, d.bytes, bs...)
 		if bs[len(bs)-1] != '"' {
 
-			h.append1(&v, d.bytes, d.r.readn1())
+			d.r.readn1()
 			goto TOP
 		}
 	}
 
 	d.advance()
+	v = append(v, d.tok)
+	d.r.startRecording(v)
 
-	if d.bytes {
-		cursor = d.r.numread() - 1
-	}
 	switch d.tok {
 	default:
-		h.appendN(&v, d.bytes, d.r.jsonReadNum()...)
+		d.r.jsonReadNum()
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
-		h.appendS(&v, d.bytes, jsonLits[jsonLitN:jsonLitN+4])
 	case 'f':
 		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.r.readn4())
-		h.appendS(&v, d.bytes, jsonLits[jsonLitF:jsonLitF+5])
 	case 't':
 		d.checkLit3([3]byte{'r', 'u', 'e'}, d.r.readn3())
-		h.appendS(&v, d.bytes, jsonLits[jsonLitT:jsonLitT+4])
 	case '"':
-		h.append1(&v, d.bytes, '"')
 		consumeString()
 	case '{', '[':
 		var elem struct{}
@@ -7279,11 +7225,8 @@ func (d *jsonDecDriverIO) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
 
 		stack = append(stack, elem)
 
-		h.append1(&v, d.bytes, d.tok)
-
 		for len(stack) != 0 {
 			c := d.r.readn1()
-			h.append1(&v, d.bytes, c)
 			switch c {
 			case '"':
 				consumeString()
@@ -7295,7 +7238,8 @@ func (d *jsonDecDriverIO) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
 		}
 	}
 	d.tok = 0
-	return
+
+	return d.r.stopRecording()
 }
 
 func (d *jsonDecDriverIO) TryNil() bool {
@@ -7640,17 +7584,6 @@ func (d *jsonDecDriverIO) appendStringAsBytesSlashU() (r rune) {
 	return
 }
 
-func (d *jsonDecDriverIO) nakedNum(z *fauxUnion, bs []byte) (err error) {
-
-	if d.h.PreferFloat {
-		z.v = valueTypeFloat
-		z.f, err = parseFloat64(bs)
-	} else {
-		err = parseNumber(bs, z, d.h.SignedInteger)
-	}
-	return
-}
-
 func (d *jsonDecDriverIO) DecodeNaked() {
 	z := d.d.naked()
 
@@ -7687,7 +7620,7 @@ func (d *jsonDecDriverIO) DecodeNaked() {
 				z.b = false
 			default:
 
-				if err := d.nakedNum(z, bs); err != nil {
+				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
 					z.s = d.d.stringZC(bs)
 				}
@@ -7702,18 +7635,14 @@ func (d *jsonDecDriverIO) DecodeNaked() {
 		if len(bs) == 0 {
 			halt.errorStr("decode number from empty string")
 		}
-		if err := d.nakedNum(z, bs); err != nil {
+		if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 			halt.errorf("decode number from %s: %v", any(bs), err)
 		}
 	}
 }
 
-func (e *jsonEncDriverIO) resetState() {
-	e.dl = 0
-}
-
 func (e *jsonEncDriverIO) reset() {
-	e.resetState()
+	e.dl = 0
 
 	e.typical = e.h.typical()
 	if e.h.HTMLCharsAsIs {
@@ -7728,13 +7657,10 @@ func (e *jsonEncDriverIO) reset() {
 	e.is = e.h.IntegerAsString
 }
 
-func (d *jsonDecDriverIO) resetState() {
+func (d *jsonDecDriverIO) reset() {
 	*d.buf = d.d.blist.check(*d.buf, 256)
 	d.tok = 0
-}
 
-func (d *jsonDecDriverIO) reset() {
-	d.resetState()
 	d.rawext = d.h.RawBytesExt != nil
 }
 

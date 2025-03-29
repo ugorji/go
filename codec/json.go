@@ -769,47 +769,31 @@ func (d *jsonDecDriver[T]) advance() {
 }
 
 func (d *jsonDecDriver[T]) nextValueBytes(v []byte) []byte {
-	v, cursor := d.nextValueBytesR(v)
-	if d.bytes {
-		v = d.r.bytesReadFrom(cursor)
-	}
-	return v
-}
-
-func (d *jsonDecDriver[T]) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
-	v = v0
-	var h decNextValueBytesHelper
-
 	consumeString := func() {
 	TOP:
 		bs := d.r.jsonReadAsisChars()
-		h.appendN(&v, d.bytes, bs...)
 		if bs[len(bs)-1] != '"' {
 			// last char is '\', so consume next one and try again
-			h.append1(&v, d.bytes, d.r.readn1())
+			d.r.readn1()
 			goto TOP
 		}
 	}
 
 	d.advance() // ignore leading whitespace
+	v = append(v, d.tok)
+	d.r.startRecording(v)
+
 	// cursor = d.d.rb.c - 1 // cursor starts just before non-whitespace token
-	if d.bytes {
-		cursor = d.r.numread() - 1
-	}
 	switch d.tok {
 	default:
-		h.appendN(&v, d.bytes, d.r.jsonReadNum()...)
+		d.r.jsonReadNum()
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
-		h.appendS(&v, d.bytes, jsonLits[jsonLitN:jsonLitN+4])
 	case 'f':
 		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.r.readn4())
-		h.appendS(&v, d.bytes, jsonLits[jsonLitF:jsonLitF+5])
 	case 't':
 		d.checkLit3([3]byte{'r', 'u', 'e'}, d.r.readn3())
-		h.appendS(&v, d.bytes, jsonLits[jsonLitT:jsonLitT+4])
 	case '"':
-		h.append1(&v, d.bytes, '"')
 		consumeString()
 	case '{', '[':
 		var elem struct{}
@@ -817,11 +801,8 @@ func (d *jsonDecDriver[T]) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
 
 		stack = append(stack, elem)
 
-		h.append1(&v, d.bytes, d.tok)
-
 		for len(stack) != 0 {
 			c := d.r.readn1()
-			h.append1(&v, d.bytes, c)
 			switch c {
 			case '"':
 				consumeString()
@@ -833,7 +814,8 @@ func (d *jsonDecDriver[T]) nextValueBytesR(v0 []byte) (v []byte, cursor uint) {
 		}
 	}
 	d.tok = 0
-	return
+
+	return d.r.stopRecording()
 }
 
 func (d *jsonDecDriver[T]) TryNil() bool {

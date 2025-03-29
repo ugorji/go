@@ -9480,36 +9480,15 @@ func (d *simpleDecDriverBytes) nextValueBytes(v0 []byte) (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v = v0
-	var h decNextValueBytesHelper
-
-	var cursor uint
-	if d.bytes {
-		cursor = d.r.numread() - 1
-	}
-	h.append1(&v, d.bytes, d.bd)
-	v = d.nextValueBytesBdReadR(v)
+	v0 = append(v0, d.bd)
+	d.r.startRecording(v0)
+	d.nextValueBytesBdReadR()
+	v = d.r.stopRecording()
 	d.bdRead = false
-
-	if d.bytes {
-		v = d.r.bytesReadFrom(cursor)
-	}
 	return
 }
 
-func (d *simpleDecDriverBytes) nextValueBytesR(v0 []byte) (v []byte) {
-	d.readNextBd()
-	v = v0
-	var h decNextValueBytesHelper
-
-	h.append1(&v, d.bytes, d.bd)
-	return d.nextValueBytesBdReadR(v)
-}
-
-func (d *simpleDecDriverBytes) nextValueBytesBdReadR(v0 []byte) (v []byte) {
-	v = v0
-	var h decNextValueBytesHelper
-
+func (d *simpleDecDriverBytes) nextValueBytesBdReadR() {
 	c := d.bd
 
 	var length uint
@@ -9518,17 +9497,16 @@ func (d *simpleDecDriverBytes) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	case simpleVdNil, simpleVdFalse, simpleVdTrue, simpleVdString, simpleVdByteArray:
 
 	case simpleVdPosInt, simpleVdNegInt:
-		h.append1(&v, d.bytes, d.r.readn1())
+		d.r.readn1()
 	case simpleVdPosInt + 1, simpleVdNegInt + 1:
-		h.appendN(&v, d.bytes, d.r.readx(2)...)
+		d.r.readx(2)
 	case simpleVdPosInt + 2, simpleVdNegInt + 2, simpleVdFloat32:
-		h.appendN(&v, d.bytes, d.r.readx(4)...)
+		d.r.readx(4)
 	case simpleVdPosInt + 3, simpleVdNegInt + 3, simpleVdFloat64:
-		h.appendN(&v, d.bytes, d.r.readx(8)...)
+		d.r.readx(8)
 	case simpleVdTime:
 		c = d.r.readn1()
-		h.append1(&v, d.bytes, c)
-		h.appendN(&v, d.bytes, d.r.readx(uint(c))...)
+		d.r.readx(uint(c))
 
 	default:
 		switch c & 7 {
@@ -9537,19 +9515,15 @@ func (d *simpleDecDriverBytes) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		case 1:
 			b := d.r.readn1()
 			length = uint(b)
-			h.append1(&v, d.bytes, b)
 		case 2:
 			x := d.r.readn2()
 			length = uint(bigen.Uint16(x))
-			h.appendN(&v, d.bytes, x[:]...)
 		case 3:
 			x := d.r.readn4()
 			length = uint(bigen.Uint32(x))
-			h.appendN(&v, d.bytes, x[:]...)
 		case 4:
 			x := d.r.readn8()
 			length = uint(bigen.Uint64(x))
-			h.appendN(&v, d.bytes, x[:]...)
 		}
 
 		bExt := c >= simpleVdExt && c <= simpleVdExt+7
@@ -9563,7 +9537,7 @@ func (d *simpleDecDriverBytes) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		}
 
 		if bExt {
-			h.append1(&v, d.bytes, d.r.readn1())
+			d.r.readn1()
 		}
 
 		if length == 0 {
@@ -9572,15 +9546,18 @@ func (d *simpleDecDriverBytes) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 
 		if bArray {
 			for i := uint(0); i < length; i++ {
-				v = d.nextValueBytesR(v)
+				d.readNextBd()
+				d.nextValueBytesBdReadR()
 			}
 		} else if bMap {
 			for i := uint(0); i < length; i++ {
-				v = d.nextValueBytesR(v)
-				v = d.nextValueBytesR(v)
+				d.readNextBd()
+				d.nextValueBytesBdReadR()
+				d.readNextBd()
+				d.nextValueBytesBdReadR()
 			}
 		} else {
-			h.appendN(&v, d.bytes, d.r.readx(length)...)
+			d.r.readx(length)
 		}
 	}
 	return
@@ -19109,36 +19086,15 @@ func (d *simpleDecDriverIO) nextValueBytes(v0 []byte) (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v = v0
-	var h decNextValueBytesHelper
-
-	var cursor uint
-	if d.bytes {
-		cursor = d.r.numread() - 1
-	}
-	h.append1(&v, d.bytes, d.bd)
-	v = d.nextValueBytesBdReadR(v)
+	v0 = append(v0, d.bd)
+	d.r.startRecording(v0)
+	d.nextValueBytesBdReadR()
+	v = d.r.stopRecording()
 	d.bdRead = false
-
-	if d.bytes {
-		v = d.r.bytesReadFrom(cursor)
-	}
 	return
 }
 
-func (d *simpleDecDriverIO) nextValueBytesR(v0 []byte) (v []byte) {
-	d.readNextBd()
-	v = v0
-	var h decNextValueBytesHelper
-
-	h.append1(&v, d.bytes, d.bd)
-	return d.nextValueBytesBdReadR(v)
-}
-
-func (d *simpleDecDriverIO) nextValueBytesBdReadR(v0 []byte) (v []byte) {
-	v = v0
-	var h decNextValueBytesHelper
-
+func (d *simpleDecDriverIO) nextValueBytesBdReadR() {
 	c := d.bd
 
 	var length uint
@@ -19147,17 +19103,16 @@ func (d *simpleDecDriverIO) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 	case simpleVdNil, simpleVdFalse, simpleVdTrue, simpleVdString, simpleVdByteArray:
 
 	case simpleVdPosInt, simpleVdNegInt:
-		h.append1(&v, d.bytes, d.r.readn1())
+		d.r.readn1()
 	case simpleVdPosInt + 1, simpleVdNegInt + 1:
-		h.appendN(&v, d.bytes, d.r.readx(2)...)
+		d.r.readx(2)
 	case simpleVdPosInt + 2, simpleVdNegInt + 2, simpleVdFloat32:
-		h.appendN(&v, d.bytes, d.r.readx(4)...)
+		d.r.readx(4)
 	case simpleVdPosInt + 3, simpleVdNegInt + 3, simpleVdFloat64:
-		h.appendN(&v, d.bytes, d.r.readx(8)...)
+		d.r.readx(8)
 	case simpleVdTime:
 		c = d.r.readn1()
-		h.append1(&v, d.bytes, c)
-		h.appendN(&v, d.bytes, d.r.readx(uint(c))...)
+		d.r.readx(uint(c))
 
 	default:
 		switch c & 7 {
@@ -19166,19 +19121,15 @@ func (d *simpleDecDriverIO) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		case 1:
 			b := d.r.readn1()
 			length = uint(b)
-			h.append1(&v, d.bytes, b)
 		case 2:
 			x := d.r.readn2()
 			length = uint(bigen.Uint16(x))
-			h.appendN(&v, d.bytes, x[:]...)
 		case 3:
 			x := d.r.readn4()
 			length = uint(bigen.Uint32(x))
-			h.appendN(&v, d.bytes, x[:]...)
 		case 4:
 			x := d.r.readn8()
 			length = uint(bigen.Uint64(x))
-			h.appendN(&v, d.bytes, x[:]...)
 		}
 
 		bExt := c >= simpleVdExt && c <= simpleVdExt+7
@@ -19192,7 +19143,7 @@ func (d *simpleDecDriverIO) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 		}
 
 		if bExt {
-			h.append1(&v, d.bytes, d.r.readn1())
+			d.r.readn1()
 		}
 
 		if length == 0 {
@@ -19201,15 +19152,18 @@ func (d *simpleDecDriverIO) nextValueBytesBdReadR(v0 []byte) (v []byte) {
 
 		if bArray {
 			for i := uint(0); i < length; i++ {
-				v = d.nextValueBytesR(v)
+				d.readNextBd()
+				d.nextValueBytesBdReadR()
 			}
 		} else if bMap {
 			for i := uint(0); i < length; i++ {
-				v = d.nextValueBytesR(v)
-				v = d.nextValueBytesR(v)
+				d.readNextBd()
+				d.nextValueBytesBdReadR()
+				d.readNextBd()
+				d.nextValueBytesBdReadR()
 			}
 		} else {
-			h.appendN(&v, d.bytes, d.r.readx(length)...)
+			d.r.readx(length)
 		}
 	}
 	return

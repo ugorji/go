@@ -38,15 +38,6 @@ type bufioEncWriter struct {
 	b [16]byte // scratch buffer and padding (cache-aligned)
 }
 
-type bufioEncWriterM struct {
-	*bufioEncWriter
-}
-
-func (z *bufioEncWriterM) Make() {
-	z.bufioEncWriter = new(bufioEncWriter)
-	z.w = io.Discard
-}
-
 // // flesh out these writes, to hopefully force full stenciling/monomorphization
 // // unfortunately, even with this, the go generics implementation
 // // still used a dynamic dispatch, and not static (calling stenciled method)
@@ -212,15 +203,6 @@ var bytesEncAppenderDefOut = []byte{}
 type bytesEncAppender struct {
 	b   []byte
 	out *[]byte
-}
-
-type bytesEncAppenderM struct {
-	*bytesEncAppender
-}
-
-func (z *bytesEncAppenderM) Make() {
-	z.bytesEncAppender = new(bytesEncAppender)
-	z.out = &bytesEncAppenderDefOut
 }
 
 // // flesh out these writes, to hopefully force full stenciling/monomorphization

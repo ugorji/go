@@ -6,7 +6,6 @@ package codec
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"io"
 	"strings"
 )
@@ -55,12 +54,15 @@ type decReaderI interface {
 	readUntil(stop byte) (out []byte)
 
 	// only supported when reading from bytes
-	bytesReadFrom(startpos uint) []byte
+	// bytesReadFrom(startpos uint) []byte
 
 	// isBytes() bool
 	resetIO(r io.Reader, bufsize int, blist *bytesFreelist)
 
 	resetBytes(in []byte)
+
+	startRecording(v []byte)
+	stopRecording() []byte
 }
 
 // ------------------------------------------------
@@ -173,26 +175,21 @@ type ioDecReader struct {
 	bufr []byte // buffer for readTo/readUntil
 
 	x [64 + 40]byte // for: get struct field name, swallow valueTypeBytes, etc
+
+	rec       []byte
+	recording bool
 }
 
-type ioDecReaderM struct {
-	*ioDecReader
-}
-
-var errNoBytesReadFromSupport = errors.New("bytesReadFrom() is not supported")
-
-func (z *ioDecReaderM) Make() {
-	z.ioDecReader = new(ioDecReader)
-}
+// var errNoBytesReadFromSupport = errors.New("bytesReadFrom() is not supported")
 
 // func (z *ioDecReader) isBytes() bool {
 // 	return false
 // }
 
-func (z *ioDecReader) bytesReadFrom(startpos uint) []byte {
-	halt.onerror(errNoBytesReadFromSupport)
-	return nil
-}
+// func (z *ioDecReader) bytesReadFrom(startpos uint) []byte {
+// 	halt.onerror(errNoBytesReadFromSupport)
+// 	return nil
+// }
 
 func (z *ioDecReader) resetBytes(in []byte) {
 	halt.errorStr("resetBytes unsupported by ioDecReader")
@@ -254,6 +251,9 @@ func (z *ioDecReader) numread() uint {
 func (z *ioDecReader) readn1() (b uint8) {
 	b, err := z.br.ReadByte()
 	halt.onerror(err)
+	if z.recording {
+		z.rec = append(z.rec, b)
+	}
 	z.n++
 	return
 }
@@ -288,6 +288,9 @@ func (z *ioDecReader) readx(n uint) (bs []byte) {
 		bs = make([]byte, n)
 	}
 	nn, err := readFull(z.br, bs)
+	if z.recording {
+		z.rec = append(z.rec, bs[:nn]...)
+	}
 	z.n += nn
 	halt.onerror(err)
 	return
@@ -298,6 +301,9 @@ func (z *ioDecReader) readb(bs []byte) {
 		return
 	}
 	nn, err := readFull(z.br, bs)
+	if z.recording {
+		z.rec = append(z.rec, bs[:nn]...)
+	}
 	z.n += nn
 	halt.onerror(err)
 }
@@ -325,6 +331,9 @@ LOOP:
 	}
 	if err != nil {
 		halt.onerror(err)
+	}
+	if z.recording {
+		z.rec = append(z.rec, i)
 	}
 	z.n++
 	if isNumberChar(i) {
@@ -380,7 +389,22 @@ LOOP:
 func (z *ioDecReader) unreadn1() {
 	err := z.br.UnreadByte()
 	halt.onerror(err)
+	if z.recording && len(z.rec) > 0 {
+		z.rec = z.rec[:len(z.rec)-1]
+	}
 	z.n--
+}
+
+func (z *ioDecReader) startRecording(v []byte) {
+	z.rec = v
+	z.recording = true
+}
+
+func (z *ioDecReader) stopRecording() (v []byte) {
+	v = z.rec
+	z.rec = nil
+	z.recording = false
+	return
 }
 
 // ------------------------------------
@@ -398,14 +422,7 @@ func (z *ioDecReader) unreadn1() {
 type bytesDecReader struct {
 	b []byte // data
 	c uint   // cursor
-}
-
-type bytesDecReaderM struct {
-	*bytesDecReader
-}
-
-func (z *bytesDecReaderM) Make() {
-	z.bytesDecReader = new(bytesDecReader)
+	r uint   // recording cursor
 }
 
 // func (z *bytesDecReader) isBytes() bool {
@@ -426,9 +443,9 @@ func (z *bytesDecReader) numread() uint {
 	return z.c
 }
 
-func (z *bytesDecReader) bytesReadFrom(startpos uint) []byte {
-	return z.b[startpos:z.c]
-}
+// func (z *bytesDecReader) bytesReadFrom(startpos uint) []byte {
+// 	return z.b[startpos:z.c]
+// }
 
 // Note: slicing from a non-constant start position is more expensive,
 // as more computation is required to decipher the pointer start position.
@@ -557,6 +574,18 @@ LOOP:
 	}
 	i++
 	goto LOOP
+}
+
+func (z *bytesDecReader) startRecording(v []byte) {
+	if z.c > 0 {
+		z.r = z.c - 1
+	}
+}
+
+func (z *bytesDecReader) stopRecording() (v []byte) {
+	v = z.b[z.r:z.c]
+	z.r = 0
+	return
 }
 
 // --------------

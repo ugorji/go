@@ -792,108 +792,93 @@ func (d *cborDecDriver[T]) nextValueBytes(v0 []byte) (v []byte) {
 	if !d.bdRead {
 		d.readNextBd()
 	}
-	v = v0
-	var h decNextValueBytesHelper
-	// var h = decNextValueBytesHelper[T]{d}
-	var cursor uint
-	if d.bytes {
-		cursor = d.r.numread() - 1
-	}
-	h.append1(&v, d.bytes, d.bd)
-	v = d.nextValueBytesBdReadR(v)
+	v0 = append(v0, d.bd)
+	d.r.startRecording(v0)
+	d.nextValueBytesBdReadR()
+	v = d.r.stopRecording()
 	d.bdRead = false
-	// h.bytesRdV(&v, d.bytes, cursor)
-	if d.bytes {
-		v = d.r.bytesReadFrom(cursor)
-	}
 	return
 }
 
-func (d *cborDecDriver[T]) nextValueBytesR(v0 []byte) (v []byte) {
-	d.readNextBd()
-	v = v0
-	var h decNextValueBytesHelper
-	h.append1(&v, d.bytes, d.bd)
-	return d.nextValueBytesBdReadR(v)
-}
+// func (d *cborDecDriver[T]) nextValueBytesR(v0 []byte) (v []byte) {
+// 	d.readNextBd()
+// 	v0 = append(v0, d.bd)
+// 	d.r.startRecording(v0)
+// 	d.nextValueBytesBdReadR()
+// 	v = d.r.stopRecording()
+// 	return
+// }
 
-func (d *cborDecDriver[T]) nextValueBytesBdReadR(v0 []byte) (v []byte) {
-	v = v0
-	var h decNextValueBytesHelper
-
-	var bs []byte
+func (d *cborDecDriver[T]) nextValueBytesBdReadR() {
+	// var bs []byte
 	var ui uint64
 
 	switch d.bd >> 5 {
 	case cborMajorUint, cborMajorNegInt:
-		bs, _ = d.uintBytes()
-		h.appendN(&v, d.bytes, bs...)
+		d.uintBytes()
 	case cborMajorString, cborMajorBytes:
 		if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 			for {
 				d.readNextBd()
-				h.append1(&v, d.bytes, d.bd)
 				if d.bd == cborBdBreak {
 					break
 				}
-				bs, ui = d.uintBytes()
-				h.appendN(&v, d.bytes, bs...)
-				h.appendN(&v, d.bytes, d.r.readx(uint(ui))...)
+				_, ui = d.uintBytes()
+				d.r.readx(uint(ui))
 			}
 		} else {
-			bs, ui = d.uintBytes()
-			h.appendN(&v, d.bytes, bs...)
-			h.appendN(&v, d.bytes, d.r.readx(uint(ui))...)
+			_, ui = d.uintBytes()
+			d.r.readx(uint(ui))
 		}
 	case cborMajorArray:
 		if d.bd == cborBdIndefiniteArray {
 			for {
 				d.readNextBd()
-				h.append1(&v, d.bytes, d.bd)
 				if d.bd == cborBdBreak {
 					break
 				}
-				v = d.nextValueBytesBdReadR(v)
+				d.nextValueBytesBdReadR()
 			}
 		} else {
-			bs, ui = d.uintBytes()
-			h.appendN(&v, d.bytes, bs...)
+			_, ui = d.uintBytes()
 			for i := uint64(0); i < ui; i++ {
-				v = d.nextValueBytesR(v)
+				d.readNextBd()
+				d.nextValueBytesBdReadR()
 			}
 		}
 	case cborMajorMap:
 		if d.bd == cborBdIndefiniteMap {
 			for {
 				d.readNextBd()
-				h.append1(&v, d.bytes, d.bd)
 				if d.bd == cborBdBreak {
 					break
 				}
-				v = d.nextValueBytesBdReadR(v)
-				v = d.nextValueBytesR(v)
+				d.nextValueBytesBdReadR()
+				d.readNextBd()
+				d.nextValueBytesBdReadR()
 			}
 		} else {
-			bs, ui = d.uintBytes()
-			h.appendN(&v, d.bytes, bs...)
+			_, ui = d.uintBytes()
 			for i := uint64(0); i < ui; i++ {
-				v = d.nextValueBytesR(v)
-				v = d.nextValueBytesR(v)
+				d.readNextBd()
+				d.nextValueBytesBdReadR()
+				d.readNextBd()
+				d.nextValueBytesBdReadR()
 			}
 		}
 	case cborMajorTag:
-		bs, _ = d.uintBytes()
-		h.appendN(&v, d.bytes, bs...)
-		v = d.nextValueBytesR(v)
+		d.uintBytes()
+		d.readNextBd()
+		d.nextValueBytesBdReadR()
 	case cborMajorSimpleOrFloat:
 		switch d.bd {
 		case cborBdNil, cborBdUndefined, cborBdFalse, cborBdTrue: // pass
 		case cborBdFloat16:
-			h.appendN(&v, d.bytes, d.r.readx(2)...)
+			d.r.readx(2)
 		case cborBdFloat32:
-			h.appendN(&v, d.bytes, d.r.readx(4)...)
+			d.r.readx(4)
 		case cborBdFloat64:
-			h.appendN(&v, d.bytes, d.r.readx(8)...)
+			d.r.readx(8)
 		default:
 			halt.errorf("nextValueBytes: Unrecognized d.bd: 0x%x", d.bd)
 		}

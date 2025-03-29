@@ -3545,6 +3545,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 	d, oldReadBufferSize := testSharedCodecDecoder(out, h, testBasicHandle(h))
 	for i := 0; i < len(inputs)*2; i++ {
 		valueBytes[i] = d.nextValueBytes([]byte{})
+		// fmt.Printf("nextValueBytes: >>>>%s<<<<\n", valueBytes[i]) // MARKER 2025
 		// bs := d.d.nextValueBytes([]byte{})
 		// valueBytes[i] = make([]byte, len(bs))
 		// copy(valueBytes[i], bs)
@@ -3563,6 +3564,7 @@ func doTestNextValueBytes(t *testing.T, h Handle) {
 		testUnmarshalErr(&result, valueBytes[i*2], h, t, "nextvaluebytes")
 		testDeepEqualErr(inputs[i], result, t, "nextvaluebytes-1")
 		result = nil
+		// fmt.Printf("decoding: >>>>%s<<<<\n", valueBytes[(i*2)+1]) // MARKER 2025
 		testUnmarshalErr(&result, valueBytes[(i*2)+1], h, t, "nextvaluebytes")
 		testDeepEqualErr(nil, result, t, "nextvaluebytes-2")
 	}
