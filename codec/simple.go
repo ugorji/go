@@ -449,17 +449,18 @@ func (d *simpleDecDriver[T]) decLen() int {
 	return -1
 }
 
-func (d *simpleDecDriver[T]) DecodeStringAsBytes() (s []byte) {
-	return d.DecodeBytes(nil)
+func (d *simpleDecDriver[T]) DecodeStringAsBytes(bs []byte) (s []byte, scratchBuf bool) {
+	return d.DecodeBytes(bs)
 }
 
-func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
+func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 	if d.advanceNil() {
 		return
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
 	if d.bd >= simpleVdArray && d.bd <= simpleVdMap+4 {
 		if bs == nil {
+			scratchBuf = true
 			bs = d.d.b[:]
 		}
 		slen := d.ReadArrayStart()
@@ -470,19 +471,22 @@ func (d *simpleDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		return bs
+		out = bs
+		return
 	}
 
 	clen := d.decLen()
 	d.bdRead = false
 	// if d.d.zerocopy() {
 	if d.bytes && d.h.ZeroCopy {
-		return d.r.readx(uint(clen))
+		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
+		scratchBuf = true
 		bs = d.d.b[:]
 	}
-	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	out = decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	return
 }
 
 func (d *simpleDecDriver[T]) DecodeTime() (t time.Time) {
@@ -535,7 +539,7 @@ func (d *simpleDecDriver[T]) decodeExtV(verifyTag bool, tag byte) (xbs []byte, x
 		}
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
-		xbs = d.DecodeBytes(nil)
+		xbs, _ = d.DecodeBytes(nil)
 	default:
 		halt.errorf("ext - %s - expecting extensions/bytearray, got: 0x%x", msgBadDesc, d.bd)
 	}
@@ -583,7 +587,7 @@ func (d *simpleDecDriver[T]) DecodeNaked() {
 	case simpleVdString, simpleVdString + 1,
 		simpleVdString + 2, simpleVdString + 3, simpleVdString + 4:
 		n.v = valueTypeString
-		n.s = d.d.stringZC(d.DecodeStringAsBytes())
+		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
 	case simpleVdByteArray, simpleVdByteArray + 1,
 		simpleVdByteArray + 2, simpleVdByteArray + 3, simpleVdByteArray + 4:
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)

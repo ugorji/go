@@ -124,13 +124,13 @@ type decDriverI interface {
 	// Note: This can also decode symbols, if supported.
 	//
 	// Users should consume it right away and not store it for later use.
-	DecodeStringAsBytes() (v []byte)
+	DecodeStringAsBytes(in []byte) (v []byte, scratchBuf bool)
 
 	// DecodeBytes returns the bytes representing a binary value.
 	// It will return a view into scratch buffer or input []byte (if applicable).
 	//
 	// All implementations must honor the contract below:
-	//    if ZeroCopy && bytes,       return a view into input []byte we are decoding from
+	//    if ZeroCopy/bytes/possible, return a view into input []byte we are decoding from
 	//    else if in == nil,          return a view into buffer (or input byte)
 	//    else                        append decoded value to in[:0] and return that
 	//                                (this can be simulated by passing []byte{} as in parameter)
@@ -141,7 +141,7 @@ type decDriverI interface {
 	// Note: DecodeBytes may decode past the length of the passed byte slice, up to the cap.
 	// Consequently, it is ok to pass a zero-len slice to DecodeBytes, as the returned
 	// byte slice will have the appropriate length.
-	DecodeBytes(in []byte) (out []byte)
+	DecodeBytes(in []byte) (out []byte, scratchBuf bool)
 	// DecodeBytes(bs []byte, isstring, zerocopy bool) (bsOut []byte)
 
 	// DecodeExt will decode into a *RawExt or into an extension.
@@ -379,14 +379,14 @@ func (d *decoder[T]) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoder[T]) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
-	xbs := d.d.DecodeBytes(nil)
+	xbs, _ := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
 	halt.onerror(fnerr)
 }
 
 func (d *decoder[T]) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
+	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes(nil)))
 	halt.onerror(fnerr)
 }
 
@@ -421,7 +421,7 @@ func (d *decoder[T]) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoder[T]) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes()))
+	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes(zeroByteSlice)))
 }
 
 func (d *decoder[T]) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -723,7 +723,7 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			d.mapElemKey()
 			// use if-else since <8 branches and we need good branch prediction for string
 			if tkt == valueTypeString {
-				rvkencname = d.d.DecodeStringAsBytes()
+				rvkencname, _ = d.d.DecodeStringAsBytes(nil)
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -1042,7 +1042,7 @@ func (d *decoder[T]) kChan(f *decFnInfo, rv reflect.Value) {
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
-		bs2 := d.d.DecodeBytes(nil)
+		bs2, _ := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
 		ch, ok := irv.(chan<- byte)
 		if !ok {
@@ -1208,6 +1208,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	var s string
 
 	var callFnRvk bool
+	var scratchBuf bool
 
 	fnRvk2 := func() (s string) {
 		callFnRvk = false
@@ -1220,7 +1221,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 		if len(kstr2bs) == 1 {
 			s = str4byte(kstr2bs[0])
 		} else if len(kstr2bs) != 0 {
-			s = d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
+			s, callFnRvk = d.mapKeyString(&kstrbs, &kstr2bs, scratchBuf)
 		}
 		return
 	}
@@ -1261,7 +1262,7 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 
 		d.mapElemKey()
 		if ktypeIsString {
-			kstr2bs = d.d.DecodeStringAsBytes()
+			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
 			rvSetString(rvk, fnRvk2())
 		} else {
 			d.decodeValue(rvk, keyFn)
@@ -1428,11 +1429,12 @@ func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString
 	if asString || rawToString {
 		d.n.v = valueTypeString
 		// fauxUnion is only used within DecodeNaked calls; consequently, we should try to intern.
-		d.n.l = dr.DecodeBytes(nil)
-		d.n.s = d.stringZC(d.n.l)
+		// reuse asString instead of declaring another bool
+		d.n.l, asString = dr.DecodeBytes(nil)
+		d.n.s = d.stringZC(d.n.l, asString)
 	} else {
 		d.n.v = valueTypeBytes
-		d.n.l = dr.DecodeBytes(zeroByteSlice)
+		d.n.l, _ = dr.DecodeBytes(zeroByteSlice)
 	}
 }
 
@@ -1848,7 +1850,7 @@ func (d *decoder[T]) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.stringZC(d.d.DecodeStringAsBytes())
+		*v = d.stringZC(d.d.DecodeStringAsBytes(nil))
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -2016,7 +2018,8 @@ func (d *decoder[T]) decodeBytesInto(in []byte) (v []byte) {
 	if in == nil {
 		in = zeroByteSlice
 	}
-	return d.d.DecodeBytes(in)
+	v, _ = d.d.DecodeBytes(in)
+	return
 }
 
 func (d *decoder[T]) rawBytes() (v []byte) {

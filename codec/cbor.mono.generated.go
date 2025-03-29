@@ -1319,14 +1319,14 @@ func (d *decoderCborBytes) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderCborBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
-	xbs := d.d.DecodeBytes(nil)
+	xbs, _ := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
 	halt.onerror(fnerr)
 }
 
 func (d *decoderCborBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
+	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes(nil)))
 	halt.onerror(fnerr)
 }
 
@@ -1361,7 +1361,7 @@ func (d *decoderCborBytes) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderCborBytes) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes()))
+	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes(zeroByteSlice)))
 }
 
 func (d *decoderCborBytes) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -1625,7 +1625,7 @@ func (d *decoderCborBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			d.mapElemKey()
 
 			if tkt == valueTypeString {
-				rvkencname = d.d.DecodeStringAsBytes()
+				rvkencname, _ = d.d.DecodeStringAsBytes(nil)
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -1909,7 +1909,7 @@ func (d *decoderCborBytes) kChan(f *decFnInfo, rv reflect.Value) {
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
-		bs2 := d.d.DecodeBytes(nil)
+		bs2, _ := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
 		ch, ok := irv.(chan<- byte)
 		if !ok {
@@ -2057,16 +2057,15 @@ func (d *decoderCborBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	var s string
 
 	var callFnRvk bool
+	var scratchBuf bool
 
 	fnRvk2 := func() (s string) {
 		callFnRvk = false
 
-		switch len(kstr2bs) {
-		case 0:
-		case 1:
+		if len(kstr2bs) == 1 {
 			s = str4byte(kstr2bs[0])
-		default:
-			s = d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
+		} else if len(kstr2bs) != 0 {
+			s, callFnRvk = d.mapKeyString(&kstrbs, &kstr2bs, scratchBuf)
 		}
 		return
 	}
@@ -2104,10 +2103,9 @@ func (d *decoderCborBytes) kMap(f *decFnInfo, rv reflect.Value) {
 
 		d.mapElemKey()
 		if ktypeIsString {
-			kstr2bs = d.d.DecodeStringAsBytes()
+			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
 			rvSetString(rvk, fnRvk2())
 		} else {
-			d.decByteState = decByteStateNone
 			d.decodeValue(rvk, keyFn)
 
 			if ktypeIsIntf {
@@ -2244,7 +2242,6 @@ func (d *decoderCborBytes) reset() {
 	d.d.reset()
 	d.err = nil
 	d.c = 0
-	d.decByteState = decByteStateNone
 	d.depth = 0
 	d.calls = 0
 
@@ -2347,7 +2344,7 @@ func (d *decoderCborBytes) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.stringZC(d.d.DecodeStringAsBytes())
+		*v = d.stringZC(d.d.DecodeStringAsBytes(nil))
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -2468,7 +2465,8 @@ func (d *decoderCborBytes) decodeBytesInto(in []byte) (v []byte) {
 	if in == nil {
 		in = zeroByteSlice
 	}
-	return d.d.DecodeBytes(in)
+	v, _ = d.d.DecodeBytes(in)
+	return
 }
 
 func (d *decoderCborBytes) rawBytes() (v []byte) {
@@ -3325,71 +3323,71 @@ func (d *cborDecDriverBytes) ReadArrayStart() (length int) {
 	return d.decLen()
 }
 
-func (d *cborDecDriverBytes) DecodeBytes(bs []byte) (bsOut []byte) {
-	d.d.decByteState = decByteStateNone
+func (d *cborDecDriverBytes) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 	if d.advanceNil() {
 		return
 	}
 	if d.st {
 		d.skipTags()
 	}
+
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 		d.bdRead = false
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
-			return d.decAppendIndefiniteBytes(d.d.b[:0], d.bd>>5)
+			bs = d.d.b[:]
+			scratchBuf = true
 		}
-		return d.decAppendIndefiniteBytes(bs[:0], d.bd>>5)
+		out = d.decAppendIndefiniteBytes(bs[:0], d.bd>>5)
+		return
 	}
 	if d.bd == cborBdIndefiniteArray {
 		d.bdRead = false
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:0]
+			scratchBuf = true
 		} else {
 			bs = bs[:0]
 		}
 		for !d.CheckBreak() {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		return bs
+		out = bs
+		return
 	}
 	if d.bd>>5 == cborMajorArray {
 		d.bdRead = false
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:]
+			scratchBuf = true
 		}
 		slen := d.decLen()
-		var changed bool
-		if bs, changed = usableByteSlice(bs, slen); changed {
-			d.d.decByteState = decByteStateNone
-		}
+		bs, _ = usableByteSlice(bs, slen)
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		return bs
+		out = bs
+		return
 	}
 	clen := d.decLen()
 	d.bdRead = false
 	if d.bytes && d.h.ZeroCopy {
-		d.d.decByteState = decByteStateZerocopy
-		return d.r.readx(uint(clen))
+		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
-		d.d.decByteState = decByteStateReuseBuf
 		bs = d.d.b[:]
+		scratchBuf = true
 	}
-	return decByteSlice(&d.r, clen, d.h.MaxInitLen, bs)
+	out = decByteSlice(&d.r, clen, d.h.MaxInitLen, bs)
+	return
 }
 
-func (d *cborDecDriverBytes) DecodeStringAsBytes() (s []byte) {
-	s = d.DecodeBytes(nil)
-	if d.h.ValidateUnicode && !utf8.Valid(s) {
-		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", s)
+func (d *cborDecDriverBytes) DecodeStringAsBytes(in []byte) (out []byte, scratchBuf bool) {
+	out, scratchBuf = d.DecodeBytes(in)
+	if d.h.ValidateUnicode && !utf8.Valid(out) {
+		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", out)
 	}
 	return
 }
@@ -3410,7 +3408,7 @@ func (d *cborDecDriverBytes) decodeTime(xtag uint64) (t time.Time) {
 	switch xtag {
 	case 0:
 		var err error
-		t, err = time.Parse(time.RFC3339, stringView(d.DecodeStringAsBytes()))
+		t, err = time.Parse(time.RFC3339, stringView(bytesOk(d.DecodeStringAsBytes(nil))))
 		halt.onerror(err)
 	case 1:
 		f1, f2 := math.Modf(d.DecodeFloat64())
@@ -3469,7 +3467,7 @@ func (d *cborDecDriverBytes) DecodeNaked() {
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString)
 	case cborMajorString:
 		n.v = valueTypeString
-		n.s = d.d.stringZC(d.DecodeStringAsBytes())
+		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
 	case cborMajorArray:
 		n.v = valueTypeArray
 		decodeFurther = true
@@ -5004,14 +5002,14 @@ func (d *decoderCborIO) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderCborIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
-	xbs := d.d.DecodeBytes(nil)
+	xbs, _ := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
 	halt.onerror(fnerr)
 }
 
 func (d *decoderCborIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
+	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes(nil)))
 	halt.onerror(fnerr)
 }
 
@@ -5046,7 +5044,7 @@ func (d *decoderCborIO) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderCborIO) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes()))
+	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes(zeroByteSlice)))
 }
 
 func (d *decoderCborIO) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -5310,7 +5308,7 @@ func (d *decoderCborIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			d.mapElemKey()
 
 			if tkt == valueTypeString {
-				rvkencname = d.d.DecodeStringAsBytes()
+				rvkencname, _ = d.d.DecodeStringAsBytes(nil)
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -5594,7 +5592,7 @@ func (d *decoderCborIO) kChan(f *decFnInfo, rv reflect.Value) {
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
-		bs2 := d.d.DecodeBytes(nil)
+		bs2, _ := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
 		ch, ok := irv.(chan<- byte)
 		if !ok {
@@ -5742,16 +5740,15 @@ func (d *decoderCborIO) kMap(f *decFnInfo, rv reflect.Value) {
 	var s string
 
 	var callFnRvk bool
+	var scratchBuf bool
 
 	fnRvk2 := func() (s string) {
 		callFnRvk = false
 
-		switch len(kstr2bs) {
-		case 0:
-		case 1:
+		if len(kstr2bs) == 1 {
 			s = str4byte(kstr2bs[0])
-		default:
-			s = d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
+		} else if len(kstr2bs) != 0 {
+			s, callFnRvk = d.mapKeyString(&kstrbs, &kstr2bs, scratchBuf)
 		}
 		return
 	}
@@ -5789,10 +5786,9 @@ func (d *decoderCborIO) kMap(f *decFnInfo, rv reflect.Value) {
 
 		d.mapElemKey()
 		if ktypeIsString {
-			kstr2bs = d.d.DecodeStringAsBytes()
+			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
 			rvSetString(rvk, fnRvk2())
 		} else {
-			d.decByteState = decByteStateNone
 			d.decodeValue(rvk, keyFn)
 
 			if ktypeIsIntf {
@@ -5929,7 +5925,6 @@ func (d *decoderCborIO) reset() {
 	d.d.reset()
 	d.err = nil
 	d.c = 0
-	d.decByteState = decByteStateNone
 	d.depth = 0
 	d.calls = 0
 
@@ -6032,7 +6027,7 @@ func (d *decoderCborIO) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.stringZC(d.d.DecodeStringAsBytes())
+		*v = d.stringZC(d.d.DecodeStringAsBytes(nil))
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -6153,7 +6148,8 @@ func (d *decoderCborIO) decodeBytesInto(in []byte) (v []byte) {
 	if in == nil {
 		in = zeroByteSlice
 	}
-	return d.d.DecodeBytes(in)
+	v, _ = d.d.DecodeBytes(in)
+	return
 }
 
 func (d *decoderCborIO) rawBytes() (v []byte) {
@@ -7010,71 +7006,71 @@ func (d *cborDecDriverIO) ReadArrayStart() (length int) {
 	return d.decLen()
 }
 
-func (d *cborDecDriverIO) DecodeBytes(bs []byte) (bsOut []byte) {
-	d.d.decByteState = decByteStateNone
+func (d *cborDecDriverIO) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 	if d.advanceNil() {
 		return
 	}
 	if d.st {
 		d.skipTags()
 	}
+
 	if d.bd == cborBdIndefiniteBytes || d.bd == cborBdIndefiniteString {
 		d.bdRead = false
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
-			return d.decAppendIndefiniteBytes(d.d.b[:0], d.bd>>5)
+			bs = d.d.b[:]
+			scratchBuf = true
 		}
-		return d.decAppendIndefiniteBytes(bs[:0], d.bd>>5)
+		out = d.decAppendIndefiniteBytes(bs[:0], d.bd>>5)
+		return
 	}
 	if d.bd == cborBdIndefiniteArray {
 		d.bdRead = false
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:0]
+			scratchBuf = true
 		} else {
 			bs = bs[:0]
 		}
 		for !d.CheckBreak() {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		return bs
+		out = bs
+		return
 	}
 	if d.bd>>5 == cborMajorArray {
 		d.bdRead = false
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:]
+			scratchBuf = true
 		}
 		slen := d.decLen()
-		var changed bool
-		if bs, changed = usableByteSlice(bs, slen); changed {
-			d.d.decByteState = decByteStateNone
-		}
+		bs, _ = usableByteSlice(bs, slen)
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		return bs
+		out = bs
+		return
 	}
 	clen := d.decLen()
 	d.bdRead = false
 	if d.bytes && d.h.ZeroCopy {
-		d.d.decByteState = decByteStateZerocopy
-		return d.r.readx(uint(clen))
+		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
-		d.d.decByteState = decByteStateReuseBuf
 		bs = d.d.b[:]
+		scratchBuf = true
 	}
-	return decByteSlice(&d.r, clen, d.h.MaxInitLen, bs)
+	out = decByteSlice(&d.r, clen, d.h.MaxInitLen, bs)
+	return
 }
 
-func (d *cborDecDriverIO) DecodeStringAsBytes() (s []byte) {
-	s = d.DecodeBytes(nil)
-	if d.h.ValidateUnicode && !utf8.Valid(s) {
-		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", s)
+func (d *cborDecDriverIO) DecodeStringAsBytes(in []byte) (out []byte, scratchBuf bool) {
+	out, scratchBuf = d.DecodeBytes(in)
+	if d.h.ValidateUnicode && !utf8.Valid(out) {
+		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", out)
 	}
 	return
 }
@@ -7095,7 +7091,7 @@ func (d *cborDecDriverIO) decodeTime(xtag uint64) (t time.Time) {
 	switch xtag {
 	case 0:
 		var err error
-		t, err = time.Parse(time.RFC3339, stringView(d.DecodeStringAsBytes()))
+		t, err = time.Parse(time.RFC3339, stringView(bytesOk(d.DecodeStringAsBytes(nil))))
 		halt.onerror(err)
 	case 1:
 		f1, f2 := math.Modf(d.DecodeFloat64())
@@ -7154,7 +7150,7 @@ func (d *cborDecDriverIO) DecodeNaked() {
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString)
 	case cborMajorString:
 		n.v = valueTypeString
-		n.s = d.d.stringZC(d.DecodeStringAsBytes())
+		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
 	case cborMajorArray:
 		n.v = valueTypeArray
 		decodeFurther = true

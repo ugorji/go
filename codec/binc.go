@@ -743,7 +743,7 @@ func (d *bincDecDriver[T]) decLenNumber() (v uint64) {
 }
 
 // func (d *bincDecDriver[T]) decStringBytes(bs []byte, zerocopy bool) (bs2 []byte) {
-func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs2 []byte) {
+func (d *bincDecDriver[T]) DecodeStringAsBytes(in []byte) (bs2 []byte, scratchBuf bool) {
 	if d.advanceNil() {
 		return
 	}
@@ -751,10 +751,14 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs2 []byte) {
 	switch d.vd {
 	case bincVdString, bincVdByteArray:
 		slen = d.decLen()
-		if d.d.bytes {
+		if d.bytes {
 			bs2 = d.r.readx(uint(slen))
 		} else {
-			bs2 = decByteSlice(d.r, slen, d.h.MaxInitLen, d.d.b[:])
+			if in == nil {
+				in = d.d.b[:]
+				scratchBuf = true
+			}
+			bs2 = decByteSlice(d.r, slen, d.h.MaxInitLen, in)
 		}
 	case bincVdSymbol:
 		// zerocopy doesn't apply for symbols,
@@ -786,6 +790,7 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs2 []byte) {
 			// As we are using symbols, do not store any part of
 			// the parameter bs in the map, as it might be a shared buffer.
 			bs2 = decByteSlice(d.r, slen, d.h.MaxInitLen, nil)
+			scratchBuf = true
 			d.s[symbol] = bs2
 		}
 	default:
@@ -800,13 +805,14 @@ func (d *bincDecDriver[T]) DecodeStringAsBytes() (bs2 []byte) {
 	return
 }
 
-func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
+func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 	if d.advanceNil() {
 		return
 	}
 	if d.vd == bincVdArray {
 		if bs == nil {
 			bs = d.d.b[:]
+			scratchBuf = true
 		}
 		slen := d.ReadArrayStart()
 		bs, _ = usableByteSlice(bs, slen)
@@ -816,7 +822,8 @@ func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		return bs
+		out = bs
+		return
 	}
 	var clen int
 	if d.vd == bincVdString || d.vd == bincVdByteArray {
@@ -826,12 +833,14 @@ func (d *bincDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	}
 	d.bdRead = false
 	if d.bytes && d.h.ZeroCopy {
-		return d.r.readx(uint(clen))
+		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
 		bs = d.d.b[:]
+		scratchBuf = true
 	}
-	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	out = decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	return
 }
 
 func (d *bincDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, xtag uint64, ext Ext) {
@@ -868,7 +877,7 @@ func (d *bincDecDriver[T]) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xta
 			xbs = decByteSlice(d.r, l, d.h.MaxInitLen, d.d.b[:])
 		}
 	} else if d.vd == bincVdByteArray {
-		xbs = d.DecodeBytes(nil)
+		xbs, _ = d.DecodeBytes(nil)
 	} else {
 		halt.errorf("ext expects extensions or byte array - %s %x-%x/%s", msgBadDesc, d.vd, d.vs, bincdesc(d.vd, d.vs))
 	}
@@ -930,12 +939,12 @@ func (d *bincDecDriver[T]) DecodeNaked() {
 		n.f = d.decFloatVal()
 	case bincVdString:
 		n.v = valueTypeString
-		n.s = d.d.stringZC(d.DecodeStringAsBytes())
+		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
 	case bincVdByteArray:
 		d.d.fauxUnionReadRawBytes(d, false, d.h.RawToString) //, d.h.ZeroCopy)
 	case bincVdSymbol:
 		n.v = valueTypeSymbol
-		n.s = d.d.stringZC(d.DecodeStringAsBytes())
+		n.s = d.d.stringZC(d.DecodeStringAsBytes(zeroByteSlice))
 	case bincVdTimestamp:
 		n.v = valueTypeTime
 		tt, err := bincDecodeTime(d.r.readx(uint(d.vs)))

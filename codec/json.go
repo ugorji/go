@@ -992,16 +992,16 @@ func (d *jsonDecDriver[T]) decBytesFromArray(bs []byte) []byte {
 	return bs
 }
 
-func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
+func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 	d.advance()
 	if d.tok == 'n' {
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
-		return nil
+		return
 	}
 	// if decoding into raw bytes, and the RawBytesExt is configured, use it to decode.
 	if d.rawext {
-		bsOut = bs
-		d.dec.interfaceExtConvertAndDecode(&bsOut, d.h.RawBytesExt)
+		out = bs
+		d.dec.interfaceExtConvertAndDecode(&out, d.h.RawBytesExt)
 		return
 	}
 	// check if an "array" of uint8's (see ContainerType for how to infer if an array)
@@ -1009,8 +1009,10 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		if bs == nil {
 			bs = d.d.b[:]
+			scratchBuf = true
 		}
-		return d.decBytesFromArray(bs)
+		out = d.decBytesFromArray(bs)
+		return
 	}
 
 	// base64 encodes []byte{} as "", and we encode nil []byte as null.
@@ -1020,50 +1022,52 @@ func (d *jsonDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 	bs1 := d.readUnescapedString()
 	slen := base64.StdEncoding.DecodedLen(len(bs1))
 	if slen == 0 {
-		bsOut = zeroByteSlice
+		out = zeroByteSlice
 	} else if slen <= cap(bs) {
-		bsOut = bs[:slen]
+		out = bs[:slen]
 	} else if bs == nil {
-		bsOut = d.d.blist.check(*d.buf, slen)
-		bsOut = bsOut[:slen]
-		*d.buf = bsOut
+		scratchBuf = true
+		out = d.d.blist.check(*d.buf, slen)
+		out = out[:slen]
+		*d.buf = out
 	} else {
-		bsOut = make([]byte, slen)
+		out = make([]byte, slen)
 	}
-	slen2, err := base64.StdEncoding.Decode(bsOut, bs1)
+	slen2, err := base64.StdEncoding.Decode(out, bs1)
 	if err != nil {
 		halt.errorf("error decoding base64 binary '%s': %v", any(bs1), err)
 	}
 	if slen != slen2 {
-		bsOut = bsOut[:slen2]
+		out = out[:slen2]
 	}
 	return
 }
 
-func (d *jsonDecDriver[T]) DecodeStringAsBytes() (s []byte) {
+func (d *jsonDecDriver[T]) DecodeStringAsBytes(bs []byte) (out []byte, scratchBuf bool) {
 	d.advance()
 
 	// common case - hoist outside the switch statement
 	if d.tok == '"' {
-		return d.dblQuoteStringAsBytes()
+		return d.dblQuoteStringAsBytes(), false
 	}
 
 	// handle non-string scalar: null, true, false or a number
 	switch d.tok {
 	case 'n':
 		d.checkLit3([3]byte{'u', 'l', 'l'}, d.r.readn3())
-		return nil // []byte{}
+		// out = nil // []byte{}
 	case 'f':
 		d.checkLit4([4]byte{'a', 'l', 's', 'e'}, d.r.readn4())
-		return jsonLitb[jsonLitF : jsonLitF+5]
+		out = jsonLitb[jsonLitF : jsonLitF+5]
 	case 't':
 		d.checkLit3([3]byte{'r', 'u', 'e'}, d.r.readn3())
-		return jsonLitb[jsonLitT : jsonLitT+4]
+		out = jsonLitb[jsonLitT : jsonLitT+4]
 	default:
 		// try to parse a valid number
 		d.tok = 0
-		return d.r.jsonReadNum()
+		out = d.r.jsonReadNum()
 	}
+	return
 }
 
 func (d *jsonDecDriver[T]) ensureReadingString() {
@@ -1226,12 +1230,12 @@ func (d *jsonDecDriver[T]) DecodeNaked() {
 				// check if a number: float, int or uint
 				if err := jsonNakedNum(z, bs, d.h.PreferFloat, d.h.SignedInteger); err != nil {
 					z.v = valueTypeString
-					z.s = d.d.stringZC(bs)
+					z.s = d.d.stringZC(bs, true)
 				}
 			}
 		} else {
 			z.v = valueTypeString
-			z.s = d.d.stringZC(bs)
+			z.s = d.d.stringZC(bs, true)
 		}
 	default: // number
 		bs = d.r.jsonReadNum()

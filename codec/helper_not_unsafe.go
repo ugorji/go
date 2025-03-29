@@ -680,12 +680,13 @@ func mapAddrLoopvarRV(t reflect.Type, k reflect.Kind) (r reflect.Value) {
 
 // ---------- ENCODER optimized ---------------
 
-func (d *decoderBase) stringZC(v []byte) (s string) {
+func (d *decoderBase) stringZC(v []byte, _ bool) (s string) {
 	return d.string(v)
 }
 
-func (d *decoderBase) mapKeyString(callFnRvk *bool, kstrbs, kstr2bs *[]byte) string {
-	return d.string(*kstr2bs)
+func (d *decoderBase) mapKeyString(kstrbs, kstr2bs *[]byte, _ bool) (string, bool) {
+	// *kstr2bs was not changed
+	return d.string(*kstr2bs), false
 }
 
 // ---------- structFieldInfo optimized ---------------

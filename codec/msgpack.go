@@ -817,7 +817,7 @@ func (d *msgpackDecDriver[T]) DecodeBool() (b bool) {
 	return
 }
 
-func (d *msgpackDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
+func (d *msgpackDecDriver[T]) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 	if d.advanceNil() {
 		return
 	}
@@ -834,6 +834,7 @@ func (d *msgpackDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 		// check if an "array" of uint8's
 		if bs == nil {
 			bs = d.d.b[:]
+			scratchBuf = true
 		}
 		// bsOut, _ = fastpathTV.DecSliceUint8V(bs, true, d.d)
 		slen := d.ReadArrayStart()
@@ -844,23 +845,26 @@ func (d *msgpackDecDriver[T]) DecodeBytes(bs []byte) (bsOut []byte) {
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		return bs
+		out = bs
+		return
 	} else {
 		halt.errorf("invalid byte descriptor for decoding bytes, got: 0x%x", d.bd)
 	}
 
 	d.bdRead = false
 	if d.bytes && d.h.ZeroCopy {
-		return d.r.readx(uint(clen))
+		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
+		scratchBuf = false
 		bs = d.d.b[:]
 	}
-	return decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	out = decByteSlice(d.r, clen, d.h.MaxInitLen, bs)
+	return
 }
 
-func (d *msgpackDecDriver[T]) DecodeStringAsBytes() (s []byte) {
-	s = d.DecodeBytes(nil)
+func (d *msgpackDecDriver[T]) DecodeStringAsBytes(bs []byte) (s []byte, scratchBuf bool) {
+	s, scratchBuf = d.DecodeBytes(bs)
 	if d.h.ValidateUnicode && !utf8.Valid(s) {
 		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", s)
 	}
@@ -1036,10 +1040,10 @@ func (d *msgpackDecDriver[T]) DecodeExt(rv interface{}, basetype reflect.Type, x
 func (d *msgpackDecDriver[T]) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xtag byte, zerocopy bool) {
 	xbd := d.bd
 	if xbd == mpBin8 || xbd == mpBin16 || xbd == mpBin32 {
-		xbs = d.DecodeBytes(nil)
+		xbs, _ = d.DecodeBytes(nil)
 	} else if xbd == mpStr8 || xbd == mpStr16 || xbd == mpStr32 ||
 		(xbd >= mpFixStrMin && xbd <= mpFixStrMax) {
-		xbs = d.DecodeStringAsBytes()
+		xbs, _ = d.DecodeStringAsBytes(nil)
 	} else {
 		clen := d.readExtLen()
 		xtag = d.r.readn1()

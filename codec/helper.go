@@ -2282,6 +2282,10 @@ func implIntf(rt, iTyp reflect.Type) (base bool, indir bool) {
 	return
 }
 
+func bytesOk(bs []byte, b bool) []byte {
+	return bs
+}
+
 func bool2int(b bool) (v uint8) {
 	// MARKER: optimized to be a single instruction
 	if b {

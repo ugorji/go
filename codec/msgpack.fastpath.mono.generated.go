@@ -1319,14 +1319,14 @@ func (d *decoderMsgpackBytes) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderMsgpackBytes) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
-	xbs := d.d.DecodeBytes(nil)
+	xbs, _ := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
 	halt.onerror(fnerr)
 }
 
 func (d *decoderMsgpackBytes) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
+	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes(nil)))
 	halt.onerror(fnerr)
 }
 
@@ -1361,7 +1361,7 @@ func (d *decoderMsgpackBytes) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderMsgpackBytes) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes()))
+	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes(zeroByteSlice)))
 }
 
 func (d *decoderMsgpackBytes) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -1625,7 +1625,7 @@ func (d *decoderMsgpackBytes) kStruct(f *decFnInfo, rv reflect.Value) {
 			d.mapElemKey()
 
 			if tkt == valueTypeString {
-				rvkencname = d.d.DecodeStringAsBytes()
+				rvkencname, _ = d.d.DecodeStringAsBytes(nil)
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -1909,7 +1909,7 @@ func (d *decoderMsgpackBytes) kChan(f *decFnInfo, rv reflect.Value) {
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
-		bs2 := d.d.DecodeBytes(nil)
+		bs2, _ := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
 		ch, ok := irv.(chan<- byte)
 		if !ok {
@@ -2057,16 +2057,15 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	var s string
 
 	var callFnRvk bool
+	var scratchBuf bool
 
 	fnRvk2 := func() (s string) {
 		callFnRvk = false
 
-		switch len(kstr2bs) {
-		case 0:
-		case 1:
+		if len(kstr2bs) == 1 {
 			s = str4byte(kstr2bs[0])
-		default:
-			s = d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
+		} else if len(kstr2bs) != 0 {
+			s, callFnRvk = d.mapKeyString(&kstrbs, &kstr2bs, scratchBuf)
 		}
 		return
 	}
@@ -2104,10 +2103,9 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 
 		d.mapElemKey()
 		if ktypeIsString {
-			kstr2bs = d.d.DecodeStringAsBytes()
+			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
 			rvSetString(rvk, fnRvk2())
 		} else {
-			d.decByteState = decByteStateNone
 			d.decodeValue(rvk, keyFn)
 
 			if ktypeIsIntf {
@@ -2244,7 +2242,6 @@ func (d *decoderMsgpackBytes) reset() {
 	d.d.reset()
 	d.err = nil
 	d.c = 0
-	d.decByteState = decByteStateNone
 	d.depth = 0
 	d.calls = 0
 
@@ -2347,7 +2344,7 @@ func (d *decoderMsgpackBytes) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.stringZC(d.d.DecodeStringAsBytes())
+		*v = d.stringZC(d.d.DecodeStringAsBytes(nil))
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -2468,7 +2465,8 @@ func (d *decoderMsgpackBytes) decodeBytesInto(in []byte) (v []byte) {
 	if in == nil {
 		in = zeroByteSlice
 	}
-	return d.d.DecodeBytes(in)
+	v, _ = d.d.DecodeBytes(in)
+	return
 }
 
 func (d *decoderMsgpackBytes) rawBytes() (v []byte) {
@@ -5868,7 +5866,7 @@ func (fastpathDTMsgpackBytes) DecSliceStringY(v []string, d *decoderMsgpackBytes
 			changed = true
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes())
+		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes(nil))
 	}
 	if j < len(v) {
 		v = v[:uint(j)]
@@ -5896,7 +5894,7 @@ func (fastpathDTMsgpackBytes) DecSliceStringN(v []string, d *decoderMsgpackBytes
 			return
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes())
+		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes(nil))
 	}
 	slh.End()
 }
@@ -5968,7 +5966,7 @@ func (fastpathDTMsgpackBytes) DecSliceBytesY(v [][]byte, d *decoderMsgpackBytes)
 			changed = true
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.d.DecodeBytes(zeroByteSlice)
+		v[uint(j)] = bytesOk(d.d.DecodeBytes(zeroByteSlice))
 	}
 	if j < len(v) {
 		v = v[:uint(j)]
@@ -5996,7 +5994,7 @@ func (fastpathDTMsgpackBytes) DecSliceBytesN(v [][]byte, d *decoderMsgpackBytes)
 			return
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.d.DecodeBytes(zeroByteSlice)
+		v[uint(j)] = bytesOk(d.d.DecodeBytes(zeroByteSlice))
 	}
 	slh.End()
 }
@@ -6859,7 +6857,7 @@ func (fastpathDTMsgpackBytes) DecMapStringIntfL(v map[string]interface{}, contai
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		if mapGet {
 			mv = v[mk]
@@ -6910,9 +6908,9 @@ func (fastpathDTMsgpackBytes) DecMapStringStringL(v map[string]string, container
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes())
+		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		v[mk] = mv
 	}
 }
@@ -6957,7 +6955,7 @@ func (fastpathDTMsgpackBytes) DecMapStringBytesL(v map[string][]byte, containerL
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		if mapGet {
 			mv = v[mk]
@@ -7008,7 +7006,7 @@ func (fastpathDTMsgpackBytes) DecMapStringUint8L(v map[string]uint8, containerLe
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		v[mk] = mv
@@ -7054,7 +7052,7 @@ func (fastpathDTMsgpackBytes) DecMapStringUint64L(v map[string]uint64, container
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
 		v[mk] = mv
@@ -7100,7 +7098,7 @@ func (fastpathDTMsgpackBytes) DecMapStringIntL(v map[string]int, containerLen in
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		v[mk] = mv
@@ -7146,7 +7144,7 @@ func (fastpathDTMsgpackBytes) DecMapStringInt32L(v map[string]int32, containerLe
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		v[mk] = mv
@@ -7192,7 +7190,7 @@ func (fastpathDTMsgpackBytes) DecMapStringFloat64L(v map[string]float64, contain
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
 		v[mk] = mv
@@ -7238,7 +7236,7 @@ func (fastpathDTMsgpackBytes) DecMapStringBoolL(v map[string]bool, containerLen 
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
 		v[mk] = mv
@@ -7338,7 +7336,7 @@ func (fastpathDTMsgpackBytes) DecMapUint8StringL(v map[uint8]string, containerLe
 		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes())
+		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		v[mk] = mv
 	}
 }
@@ -7764,7 +7762,7 @@ func (fastpathDTMsgpackBytes) DecMapUint64StringL(v map[uint64]string, container
 		d.mapElemKey()
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes())
+		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		v[mk] = mv
 	}
 }
@@ -8190,7 +8188,7 @@ func (fastpathDTMsgpackBytes) DecMapIntStringL(v map[int]string, containerLen in
 		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes())
+		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		v[mk] = mv
 	}
 }
@@ -8616,7 +8614,7 @@ func (fastpathDTMsgpackBytes) DecMapInt32StringL(v map[int32]string, containerLe
 		d.mapElemKey()
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes())
+		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		v[mk] = mv
 	}
 }
@@ -9572,8 +9570,7 @@ func (d *msgpackDecDriverBytes) DecodeBool() (b bool) {
 	return
 }
 
-func (d *msgpackDecDriverBytes) DecodeBytes(bs []byte) (bsOut []byte) {
-	d.d.decByteState = decByteStateNone
+func (d *msgpackDecDriverBytes) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 	if d.advanceNil() {
 		return
 	}
@@ -9589,40 +9586,38 @@ func (d *msgpackDecDriverBytes) DecodeBytes(bs []byte) (bsOut []byte) {
 		(bd >= mpFixArrayMin && bd <= mpFixArrayMax) {
 
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:]
+			scratchBuf = true
 		}
 
 		slen := d.ReadArrayStart()
-		var changed bool
-		if bs, changed = usableByteSlice(bs, slen); changed {
-			d.d.decByteState = decByteStateNone
-		}
+		bs, _ = usableByteSlice(bs, slen)
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		return bs
+		out = bs
+		return
 	} else {
 		halt.errorf("invalid byte descriptor for decoding bytes, got: 0x%x", d.bd)
 	}
 
 	d.bdRead = false
 	if d.bytes && d.h.ZeroCopy {
-		d.d.decByteState = decByteStateZerocopy
-		return d.r.readx(uint(clen))
+		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
-		d.d.decByteState = decByteStateReuseBuf
+		scratchBuf = false
 		bs = d.d.b[:]
 	}
-	return decByteSlice(&d.r, clen, d.h.MaxInitLen, bs)
+	out = decByteSlice(&d.r, clen, d.h.MaxInitLen, bs)
+	return
 }
 
-func (d *msgpackDecDriverBytes) DecodeStringAsBytes() (s []byte) {
-	s = d.DecodeBytes(nil)
+func (d *msgpackDecDriverBytes) DecodeStringAsBytes(bs []byte) (s []byte, scratchBuf bool) {
+	s, scratchBuf = d.DecodeBytes(bs)
 	if d.h.ValidateUnicode && !utf8.Valid(s) {
 		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", s)
 	}
@@ -9798,10 +9793,10 @@ func (d *msgpackDecDriverBytes) DecodeExt(rv interface{}, basetype reflect.Type,
 func (d *msgpackDecDriverBytes) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xtag byte, zerocopy bool) {
 	xbd := d.bd
 	if xbd == mpBin8 || xbd == mpBin16 || xbd == mpBin32 {
-		xbs = d.DecodeBytes(nil)
+		xbs, _ = d.DecodeBytes(nil)
 	} else if xbd == mpStr8 || xbd == mpStr16 || xbd == mpStr32 ||
 		(xbd >= mpFixStrMin && xbd <= mpFixStrMax) {
-		xbs = d.DecodeStringAsBytes()
+		xbs, _ = d.DecodeStringAsBytes(nil)
 	} else {
 		clen := d.readExtLen()
 		xtag = d.r.readn1()
@@ -11180,14 +11175,14 @@ func (d *decoderMsgpackIO) selferUnmarshal(_ *decFnInfo, rv reflect.Value) {
 
 func (d *decoderMsgpackIO) binaryUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	bm := rv2i(rv).(encoding.BinaryUnmarshaler)
-	xbs := d.d.DecodeBytes(nil)
+	xbs, _ := d.d.DecodeBytes(nil)
 	fnerr := bm.UnmarshalBinary(xbs)
 	halt.onerror(fnerr)
 }
 
 func (d *decoderMsgpackIO) textUnmarshal(_ *decFnInfo, rv reflect.Value) {
 	tm := rv2i(rv).(encoding.TextUnmarshaler)
-	fnerr := tm.UnmarshalText(d.d.DecodeStringAsBytes())
+	fnerr := tm.UnmarshalText(bytesOk(d.d.DecodeStringAsBytes(nil)))
 	halt.onerror(fnerr)
 }
 
@@ -11222,7 +11217,7 @@ func (d *decoderMsgpackIO) raw(_ *decFnInfo, rv reflect.Value) {
 }
 
 func (d *decoderMsgpackIO) kString(_ *decFnInfo, rv reflect.Value) {
-	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes()))
+	rvSetString(rv, d.stringZC(d.d.DecodeStringAsBytes(zeroByteSlice)))
 }
 
 func (d *decoderMsgpackIO) kBool(_ *decFnInfo, rv reflect.Value) {
@@ -11486,7 +11481,7 @@ func (d *decoderMsgpackIO) kStruct(f *decFnInfo, rv reflect.Value) {
 			d.mapElemKey()
 
 			if tkt == valueTypeString {
-				rvkencname = d.d.DecodeStringAsBytes()
+				rvkencname, _ = d.d.DecodeStringAsBytes(nil)
 			} else if tkt == valueTypeInt {
 				rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
 			} else if tkt == valueTypeUint {
@@ -11770,7 +11765,7 @@ func (d *decoderMsgpackIO) kChan(f *decFnInfo, rv reflect.Value) {
 		if !(ti.rtid == uint8SliceTypId || ti.elemkind == uint8(reflect.Uint8)) {
 			halt.errorf("bytes/string in stream must decode into slice/array of bytes, not %v", ti.rt)
 		}
-		bs2 := d.d.DecodeBytes(nil)
+		bs2, _ := d.d.DecodeBytes(nil)
 		irv := rv2i(rv)
 		ch, ok := irv.(chan<- byte)
 		if !ok {
@@ -11918,16 +11913,15 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 	var s string
 
 	var callFnRvk bool
+	var scratchBuf bool
 
 	fnRvk2 := func() (s string) {
 		callFnRvk = false
 
-		switch len(kstr2bs) {
-		case 0:
-		case 1:
+		if len(kstr2bs) == 1 {
 			s = str4byte(kstr2bs[0])
-		default:
-			s = d.mapKeyString(&callFnRvk, &kstrbs, &kstr2bs)
+		} else if len(kstr2bs) != 0 {
+			s, callFnRvk = d.mapKeyString(&kstrbs, &kstr2bs, scratchBuf)
 		}
 		return
 	}
@@ -11965,10 +11959,9 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 
 		d.mapElemKey()
 		if ktypeIsString {
-			kstr2bs = d.d.DecodeStringAsBytes()
+			kstr2bs, scratchBuf = d.d.DecodeStringAsBytes(nil)
 			rvSetString(rvk, fnRvk2())
 		} else {
-			d.decByteState = decByteStateNone
 			d.decodeValue(rvk, keyFn)
 
 			if ktypeIsIntf {
@@ -12105,7 +12098,6 @@ func (d *decoderMsgpackIO) reset() {
 	d.d.reset()
 	d.err = nil
 	d.c = 0
-	d.decByteState = decByteStateNone
 	d.depth = 0
 	d.calls = 0
 
@@ -12208,7 +12200,7 @@ func (d *decoderMsgpackIO) decode(iv interface{}) {
 		}
 		d.decodeValue(v, nil)
 	case *string:
-		*v = d.stringZC(d.d.DecodeStringAsBytes())
+		*v = d.stringZC(d.d.DecodeStringAsBytes(nil))
 	case *bool:
 		*v = d.d.DecodeBool()
 	case *int:
@@ -12329,7 +12321,8 @@ func (d *decoderMsgpackIO) decodeBytesInto(in []byte) (v []byte) {
 	if in == nil {
 		in = zeroByteSlice
 	}
-	return d.d.DecodeBytes(in)
+	v, _ = d.d.DecodeBytes(in)
+	return
 }
 
 func (d *decoderMsgpackIO) rawBytes() (v []byte) {
@@ -15729,7 +15722,7 @@ func (fastpathDTMsgpackIO) DecSliceStringY(v []string, d *decoderMsgpackIO) (v2 
 			changed = true
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes())
+		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes(nil))
 	}
 	if j < len(v) {
 		v = v[:uint(j)]
@@ -15757,7 +15750,7 @@ func (fastpathDTMsgpackIO) DecSliceStringN(v []string, d *decoderMsgpackIO) {
 			return
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes())
+		v[uint(j)] = d.stringZC(d.d.DecodeStringAsBytes(nil))
 	}
 	slh.End()
 }
@@ -15829,7 +15822,7 @@ func (fastpathDTMsgpackIO) DecSliceBytesY(v [][]byte, d *decoderMsgpackIO) (v2 [
 			changed = true
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.d.DecodeBytes(zeroByteSlice)
+		v[uint(j)] = bytesOk(d.d.DecodeBytes(zeroByteSlice))
 	}
 	if j < len(v) {
 		v = v[:uint(j)]
@@ -15857,7 +15850,7 @@ func (fastpathDTMsgpackIO) DecSliceBytesN(v [][]byte, d *decoderMsgpackIO) {
 			return
 		}
 		slh.ElemContainerState(j)
-		v[uint(j)] = d.d.DecodeBytes(zeroByteSlice)
+		v[uint(j)] = bytesOk(d.d.DecodeBytes(zeroByteSlice))
 	}
 	slh.End()
 }
@@ -16720,7 +16713,7 @@ func (fastpathDTMsgpackIO) DecMapStringIntfL(v map[string]interface{}, container
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		if mapGet {
 			mv = v[mk]
@@ -16771,9 +16764,9 @@ func (fastpathDTMsgpackIO) DecMapStringStringL(v map[string]string, containerLen
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes())
+		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		v[mk] = mv
 	}
 }
@@ -16818,7 +16811,7 @@ func (fastpathDTMsgpackIO) DecMapStringBytesL(v map[string][]byte, containerLen 
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		if mapGet {
 			mv = v[mk]
@@ -16869,7 +16862,7 @@ func (fastpathDTMsgpackIO) DecMapStringUint8L(v map[string]uint8, containerLen i
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		v[mk] = mv
@@ -16915,7 +16908,7 @@ func (fastpathDTMsgpackIO) DecMapStringUint64L(v map[string]uint64, containerLen
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = d.d.DecodeUint64()
 		v[mk] = mv
@@ -16961,7 +16954,7 @@ func (fastpathDTMsgpackIO) DecMapStringIntL(v map[string]int, containerLen int, 
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		v[mk] = mv
@@ -17007,7 +17000,7 @@ func (fastpathDTMsgpackIO) DecMapStringInt32L(v map[string]int32, containerLen i
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		v[mk] = mv
@@ -17053,7 +17046,7 @@ func (fastpathDTMsgpackIO) DecMapStringFloat64L(v map[string]float64, containerL
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = d.d.DecodeFloat64()
 		v[mk] = mv
@@ -17099,7 +17092,7 @@ func (fastpathDTMsgpackIO) DecMapStringBoolL(v map[string]bool, containerLen int
 	hasLen := containerLen > 0
 	for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
 		d.mapElemKey()
-		mk = d.stringZC(d.d.DecodeStringAsBytes())
+		mk = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		d.mapElemValue()
 		mv = d.d.DecodeBool()
 		v[mk] = mv
@@ -17199,7 +17192,7 @@ func (fastpathDTMsgpackIO) DecMapUint8StringL(v map[uint8]string, containerLen i
 		d.mapElemKey()
 		mk = uint8(chkOvf.UintV(d.d.DecodeUint64(), 8))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes())
+		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		v[mk] = mv
 	}
 }
@@ -17625,7 +17618,7 @@ func (fastpathDTMsgpackIO) DecMapUint64StringL(v map[uint64]string, containerLen
 		d.mapElemKey()
 		mk = d.d.DecodeUint64()
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes())
+		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		v[mk] = mv
 	}
 }
@@ -18051,7 +18044,7 @@ func (fastpathDTMsgpackIO) DecMapIntStringL(v map[int]string, containerLen int, 
 		d.mapElemKey()
 		mk = int(chkOvf.IntV(d.d.DecodeInt64(), intBitsize))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes())
+		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		v[mk] = mv
 	}
 }
@@ -18477,7 +18470,7 @@ func (fastpathDTMsgpackIO) DecMapInt32StringL(v map[int32]string, containerLen i
 		d.mapElemKey()
 		mk = int32(chkOvf.IntV(d.d.DecodeInt64(), 32))
 		d.mapElemValue()
-		mv = d.stringZC(d.d.DecodeStringAsBytes())
+		mv = d.stringZC(d.d.DecodeStringAsBytes(nil))
 		v[mk] = mv
 	}
 }
@@ -19433,8 +19426,7 @@ func (d *msgpackDecDriverIO) DecodeBool() (b bool) {
 	return
 }
 
-func (d *msgpackDecDriverIO) DecodeBytes(bs []byte) (bsOut []byte) {
-	d.d.decByteState = decByteStateNone
+func (d *msgpackDecDriverIO) DecodeBytes(bs []byte) (out []byte, scratchBuf bool) {
 	if d.advanceNil() {
 		return
 	}
@@ -19450,40 +19442,38 @@ func (d *msgpackDecDriverIO) DecodeBytes(bs []byte) (bsOut []byte) {
 		(bd >= mpFixArrayMin && bd <= mpFixArrayMax) {
 
 		if bs == nil {
-			d.d.decByteState = decByteStateReuseBuf
 			bs = d.d.b[:]
+			scratchBuf = true
 		}
 
 		slen := d.ReadArrayStart()
-		var changed bool
-		if bs, changed = usableByteSlice(bs, slen); changed {
-			d.d.decByteState = decByteStateNone
-		}
+		bs, _ = usableByteSlice(bs, slen)
 		for i := 0; i < len(bs); i++ {
 			bs[i] = uint8(chkOvf.UintV(d.DecodeUint64(), 8))
 		}
 		for i := len(bs); i < slen; i++ {
 			bs = append(bs, uint8(chkOvf.UintV(d.DecodeUint64(), 8)))
 		}
-		return bs
+		out = bs
+		return
 	} else {
 		halt.errorf("invalid byte descriptor for decoding bytes, got: 0x%x", d.bd)
 	}
 
 	d.bdRead = false
 	if d.bytes && d.h.ZeroCopy {
-		d.d.decByteState = decByteStateZerocopy
-		return d.r.readx(uint(clen))
+		return d.r.readx(uint(clen)), false
 	}
 	if bs == nil {
-		d.d.decByteState = decByteStateReuseBuf
+		scratchBuf = false
 		bs = d.d.b[:]
 	}
-	return decByteSlice(&d.r, clen, d.h.MaxInitLen, bs)
+	out = decByteSlice(&d.r, clen, d.h.MaxInitLen, bs)
+	return
 }
 
-func (d *msgpackDecDriverIO) DecodeStringAsBytes() (s []byte) {
-	s = d.DecodeBytes(nil)
+func (d *msgpackDecDriverIO) DecodeStringAsBytes(bs []byte) (s []byte, scratchBuf bool) {
+	s, scratchBuf = d.DecodeBytes(bs)
 	if d.h.ValidateUnicode && !utf8.Valid(s) {
 		halt.errorf("DecodeStringAsBytes: invalid UTF-8: %s", s)
 	}
@@ -19659,10 +19649,10 @@ func (d *msgpackDecDriverIO) DecodeExt(rv interface{}, basetype reflect.Type, xt
 func (d *msgpackDecDriverIO) decodeExtV(verifyTag bool, tag byte) (xbs []byte, xtag byte, zerocopy bool) {
 	xbd := d.bd
 	if xbd == mpBin8 || xbd == mpBin16 || xbd == mpBin32 {
-		xbs = d.DecodeBytes(nil)
+		xbs, _ = d.DecodeBytes(nil)
 	} else if xbd == mpStr8 || xbd == mpStr16 || xbd == mpStr32 ||
 		(xbd >= mpFixStrMin && xbd <= mpFixStrMax) {
-		xbs = d.DecodeStringAsBytes()
+		xbs, _ = d.DecodeStringAsBytes(nil)
 	} else {
 		clen := d.readExtLen()
 		xtag = d.r.readn1()
