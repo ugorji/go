@@ -561,12 +561,16 @@ func (d *bincDecDriver[T]) decUint() (v uint64) {
 	case 3:
 		v = uint64(bigen.Uint32(d.r.readn4()))
 	case 4, 5, 6:
-		var b [8]byte
-		lim := 7 - d.vs
-		bs := d.d.b[lim:8]
-		d.r.readb(bs)
-		copy(b[lim:], bs)
-		v = bigen.Uint64(b)
+		// lim := 7 - d.vs
+		// bs := d.d.b[lim:8]
+		// d.r.readb(bs)
+		// var b [8]byte
+		// copy(b[lim:], bs)
+		// v = bigen.Uint64(b)
+		bs := d.d.b[:8]
+		clear(bs)
+		d.r.readb(bs[(7 - d.vs):])
+		v = bigen.Uint64(*(*[8]byte)(bs))
 	case 7:
 		v = bigen.Uint64(d.r.readn8())
 	default:
@@ -580,25 +584,22 @@ func (d *bincDecDriver[T]) uintBytes() (bs []byte) {
 	case 0:
 		bs = d.d.b[:1]
 		bs[0] = d.r.readn1()
+		return
 	case 1:
 		bs = d.d.b[:2]
-		d.r.readb(bs)
 	case 2:
 		bs = d.d.b[:3]
-		d.r.readb(bs)
 	case 3:
 		bs = d.d.b[:4]
-		d.r.readb(bs)
 	case 4, 5, 6:
 		lim := 7 - d.vs
 		bs = d.d.b[lim:8]
-		d.r.readb(bs)
 	case 7:
 		bs = d.d.b[:8]
-		d.r.readb(bs)
 	default:
 		halt.errorf("unsigned integers with greater than 64 bits of precision not supported: d.vs: %v %x", d.vs, d.vs)
 	}
+	d.r.readb(bs)
 	return
 }
 
