@@ -10,10 +10,10 @@
 This repository contains the `go-codec` library, the `codecgen` tool and
 benchmarks for comparing against other libraries.
 
-This is a High Performance, Feature-Rich Idiomatic Go 1.4+ codec/encoding library
+This is a High Performance, Feature-Rich Idiomatic Go 1.20+ codec/encoding library
 for binary and text formats: binc, msgpack, cbor, json and simple.
 
-It fully supports the legacy `GOPATH` and the new `go modules` modes.
+It supports generics and monomorphization, based on build tags set.
 
 ## Code Organization and Module Support
 
