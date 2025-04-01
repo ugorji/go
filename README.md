@@ -17,23 +17,12 @@ It fully supports the legacy `GOPATH` and the new `go modules` modes.
 
 ## Code Organization and Module Support
 
-This repository consists of 4 modules:
+This repository consists of 1 module:
 
 - `github.com/ugorji/go/codec` [README](codec/README.md)
-- `github.com/ugorji/go/codec/codecgen` (requires `github.com/ugorji/go/codec`) [README](codec/codecgen/README.md)
-- `github.com/ugorji/go/codec/bench` (requires `github.com/ugorji/go/codec`) [README](codec/bench/README.md)
-- `github.com/ugorji/go` (requires `github.com/ugorji/go/codec`)
-
-For encoding and decoding, the `github.com/ugorji/go/codec` module is sufficient.
 
 To install:
 
 ```
 go get github.com/ugorji/go/codec
 ```
-
-The other modules exist for specific uses, and all require `github.com/ugorji/go/codec`
-
-- `github.com/ugorji/go/codec/codecgen` generates high performance static encoders/decoders for given types
-- `github.com/ugorji/go/codec/bench` benchmarks codec against other popular go libraries
-- `github.com/ugorji/go` is here for [historical compatibility reasons, as modules was initially introduced only at repo root](https://github.com/ugorji/go/issues/299)
