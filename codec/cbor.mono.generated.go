@@ -325,7 +325,12 @@ func (e *encoderCborBytes) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
 		keytyp := f.ti.keyType
 		for _, si := range tisfi {
 			e.mapElemKey()
-			e.kStructFieldKey(keytyp, si.path.encNameAsciiAlphaNum, si.encName)
+
+			if keytyp == valueTypeString && e.js && si.path.encNameAsciiAlphaNum {
+				e.e.writeStringAsisDblQuoted(si.encName)
+			} else {
+				e.kStructFieldKey_Slow(keytyp, si.encName)
+			}
 			e.mapElemValue()
 			e.encodeValue(si.path.field(rv), nil)
 		}
@@ -334,12 +339,17 @@ func (e *encoderCborBytes) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
 }
 
 func (e *encoderCborBytes) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
+	if keyType == valueTypeString && e.js && encNameAsciiAlphaNum {
+		e.e.writeStringAsisDblQuoted(encName)
+	} else {
+		e.kStructFieldKey_Slow(keyType, encName)
+	}
+}
+
+func (e *encoderCborBytes) kStructFieldKey_Slow(keyType valueType, encName string) {
+
 	if keyType == valueTypeString {
-		if e.js && encNameAsciiAlphaNum {
-			e.e.writeStringAsisDblQuoted(encName)
-		} else {
-			e.e.EncodeString(encName)
-		}
+		e.e.EncodeString(encName)
 	} else if keyType == valueTypeInt {
 		e.e.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
 	} else if keyType == valueTypeUint {
@@ -3985,7 +3995,12 @@ func (e *encoderCborIO) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
 		keytyp := f.ti.keyType
 		for _, si := range tisfi {
 			e.mapElemKey()
-			e.kStructFieldKey(keytyp, si.path.encNameAsciiAlphaNum, si.encName)
+
+			if keytyp == valueTypeString && e.js && si.path.encNameAsciiAlphaNum {
+				e.e.writeStringAsisDblQuoted(si.encName)
+			} else {
+				e.kStructFieldKey_Slow(keytyp, si.encName)
+			}
 			e.mapElemValue()
 			e.encodeValue(si.path.field(rv), nil)
 		}
@@ -3994,12 +4009,17 @@ func (e *encoderCborIO) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
 }
 
 func (e *encoderCborIO) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
+	if keyType == valueTypeString && e.js && encNameAsciiAlphaNum {
+		e.e.writeStringAsisDblQuoted(encName)
+	} else {
+		e.kStructFieldKey_Slow(keyType, encName)
+	}
+}
+
+func (e *encoderCborIO) kStructFieldKey_Slow(keyType valueType, encName string) {
+
 	if keyType == valueTypeString {
-		if e.js && encNameAsciiAlphaNum {
-			e.e.writeStringAsisDblQuoted(encName)
-		} else {
-			e.e.EncodeString(encName)
-		}
+		e.e.EncodeString(encName)
 	} else if keyType == valueTypeInt {
 		e.e.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
 	} else if keyType == valueTypeUint {
