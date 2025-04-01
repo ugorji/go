@@ -641,7 +641,13 @@ func (e *encoder[T]) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
 		keytyp := f.ti.keyType
 		for _, si := range tisfi {
 			e.mapElemKey()
-			e.kStructFieldKey(keytyp, si.path.encNameAsciiAlphaNum, si.encName)
+			// MARKER inline kStructFieldKey in common case (ascii struct fields)
+			// e.kStructFieldKey(keytyp, si.path.encNameAsciiAlphaNum, si.encName)
+			if keytyp == valueTypeString && e.js && si.path.encNameAsciiAlphaNum {
+				e.e.writeStringAsisDblQuoted(si.encName)
+			} else {
+				e.kStructFieldKey_Slow(keytyp, si.encName)
+			}
 			e.mapElemValue()
 			e.encodeValue(si.path.field(rv), nil)
 		}
@@ -650,12 +656,18 @@ func (e *encoder[T]) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
 }
 
 func (e *encoder[T]) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-	if keyType == valueTypeString {
-		if e.js && encNameAsciiAlphaNum { // keyType == valueTypeString
-			e.e.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
-		} else { // keyType == valueTypeString
-			e.e.EncodeString(encName)
-		}
+	if keyType == valueTypeString && e.js && encNameAsciiAlphaNum { // keyType == valueTypeString
+		e.e.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
+	} else {
+		e.kStructFieldKey_Slow(keyType, encName)
+	}
+}
+
+//go:noinline
+func (e *encoder[T]) kStructFieldKey_Slow(keyType valueType, encName string) {
+	// print(">>>> calling kStructFieldKey_Slow: js: %v, keyType: %v, encName: >>>>%s<<<<\n", e.js, keyType, encName)
+	if keyType == valueTypeString { // keyType == valueTypeString
+		e.e.EncodeString(encName)
 	} else if keyType == valueTypeInt {
 		e.e.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
 	} else if keyType == valueTypeUint {
@@ -667,6 +679,25 @@ func (e *encoder[T]) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum boo
 	}
 	// e.dh.encStructFieldKey(e.e, encName, keyType, encNameAsciiAlphaNum, e.js)
 }
+
+// func (e *encoder[T]) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
+// 	if keyType == valueTypeString {
+// 		if e.js && encNameAsciiAlphaNum { // keyType == valueTypeString
+// 			e.e.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
+// 		} else { // keyType == valueTypeString
+// 			e.e.EncodeString(encName)
+// 		}
+// 	} else if keyType == valueTypeInt {
+// 		e.e.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
+// 	} else if keyType == valueTypeUint {
+// 		e.e.EncodeUint(must.Uint(strconv.ParseUint(encName, 10, 64)))
+// 	} else if keyType == valueTypeFloat {
+// 		e.e.EncodeFloat64(must.Float(strconv.ParseFloat(encName, 64)))
+// 	} else {
+// 		halt.errorStr2("invalid struct key type: ", keyType.String())
+// 	}
+// 	// e.dh.encStructFieldKey(e.e, encName, keyType, encNameAsciiAlphaNum, e.js)
+// }
 
 func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 	var newlen int
