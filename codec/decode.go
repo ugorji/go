@@ -193,6 +193,8 @@ type decDriverI interface {
 	decNegintPosintFloatNumber
 }
 
+type helperDecDriver[T decDriver] struct{}
+
 type decInit2er struct{}
 
 func (decInit2er) init2(dec decoderI) {}
@@ -227,6 +229,33 @@ func (x decDriverNoopContainerReader) ReadArrayElem()          {}
 func (x decDriverNoopContainerReader) ReadMapElemKey()         {}
 func (x decDriverNoopContainerReader) ReadMapElemValue()       {}
 func (x decDriverNoopContainerReader) CheckBreak() (v bool)    { return }
+
+// ----
+
+type decFnInfo struct {
+	ti     *typeInfo
+	xfFn   Ext
+	xfTag  uint64
+	addrD  bool
+	addrDf bool // force: if addrD, then decode function MUST take a ptr
+}
+
+// decFn encapsulates the captured variables and the encode function.
+// This way, we only do some calculations one times, and pass to the
+// code block that should be called (encapsulated in a function)
+// instead of executing the checks every time.
+type decFn[T decDriver] struct {
+	i  decFnInfo
+	fd func(*decoder[T], *decFnInfo, reflect.Value)
+	// _  [1]uint64 // padding (cache-aligned)
+}
+
+type decRtidFn[T decDriver] struct {
+	rtid uintptr
+	fn   *decFn[T]
+}
+
+// ----
 
 // DecodeOptions captures configuration options during decode.
 type DecodeOptions struct {
@@ -364,6 +393,117 @@ type DecodeOptions struct {
 }
 
 // ----------------------------------------
+
+type decoderBase struct {
+	perType decPerType
+
+	h *BasicHandle
+
+	rtidFn, rtidFnNoExt *atomicRtidFnSlice
+
+	// used for interning strings
+	is internerMap
+
+	err error
+
+	// sd decoderI
+
+	blist bytesFreelist
+
+	mtr bool // is maptype a known type?
+	str bool // is slicetype a known type?
+
+	be   bool // is binary encoding
+	js   bool // is json handle
+	jsms bool // is json handle, and MapKeyAsString
+	cbor bool // is cbor handle
+
+	cbreak bool // is a check breaker
+	bytes  bool // uses a bytes reader
+
+	zeroCopy bool
+
+	// ---- cpu cache line boundary?
+	// ---- writable fields during execution --- *try* to keep in sep cache line
+	maxdepth int16
+	depth    int16
+
+	// Extensions can call Decode() within a current Decode() call.
+	// We need to know when the top level Decode() call returns,
+	// so we can decide whether to Release() or not.
+	calls uint16 // what depth in mustDecode are we in now.
+
+	c containerState
+
+	// decByteState
+
+	n fauxUnion
+
+	// b is an always-available scratch buffer used by Decoder and decDrivers.
+	// By being always-available, it can be used for one-off things without
+	// having to get from freelist, use, and return back to freelist.
+	b [decScratchByteArrayLen]byte
+
+	hh Handle
+	// cache the mapTypeId and sliceTypeId for faster comparisons
+	mtid uintptr
+	stid uintptr
+}
+
+func (d *decoderBase) naked() *fauxUnion {
+	return &d.n
+}
+
+func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString bool) { //, handleZeroCopy bool) {
+	if asString || rawToString {
+		d.n.v = valueTypeString
+		// fauxUnion is only used within DecodeNaked calls; consequently, we should try to intern.
+		// reuse asString instead of declaring another bool
+		d.n.l, asString = dr.DecodeBytes(nil)
+		d.n.s = d.stringZC(d.n.l, asString)
+	} else {
+		d.n.v = valueTypeBytes
+		d.n.l, _ = dr.DecodeBytes(zeroByteSlice)
+	}
+}
+
+// Possibly get an interned version of a string, iff InternString=true and decoding a map key.
+//
+// This should mostly be used for map keys, where the key type is string.
+// This is because keys of a map/struct are typically reused across many objects.
+func (d *decoderBase) string(v []byte) (s string) {
+	if len(v) == 0 {
+	} else if len(v) == 1 {
+		s = str4byte(v[0])
+	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
+		s = string(v)
+	} else {
+		s = d.is.string(v)
+	}
+	return
+}
+
+// func (d *decoderBase) string(v []byte) (s string) {
+// 	if d.is == nil || d.c != containerMapKey || len(v) < 2 || len(v) > internMaxStrLen {
+// 		return string(v)
+// 	}
+// 	return d.is.string(v)
+// }
+
+// Decoder reads and decodes an object from an input stream in a supported format.
+//
+// Decoder is NOT safe for concurrent use i.e. a Decoder cannot be used
+// concurrently in multiple goroutines.
+//
+// However, as Decoder could be allocation heavy to initialize, a Reset method is provided
+// so its state can be reused to decode new input streams repeatedly.
+// This is the idiomatic way to use.
+type decoder[T decDriver] struct {
+	dh helperDecDriver[T]
+	fp *fastpathDs[T]
+	d  T
+	decoderBase
+}
 
 func (d *decoder[T]) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
@@ -1365,117 +1505,6 @@ func (d *decoder[T]) kMap(f *decFnInfo, rv reflect.Value) {
 	d.mapEnd()
 }
 
-type decoderBase struct {
-	perType decPerType
-
-	h *BasicHandle
-
-	rtidFn, rtidFnNoExt *atomicRtidFnSlice
-
-	// used for interning strings
-	is internerMap
-
-	err error
-
-	// sd decoderI
-
-	blist bytesFreelist
-
-	mtr bool // is maptype a known type?
-	str bool // is slicetype a known type?
-
-	be   bool // is binary encoding
-	js   bool // is json handle
-	jsms bool // is json handle, and MapKeyAsString
-	cbor bool // is cbor handle
-
-	cbreak bool // is a check breaker
-	bytes  bool // uses a bytes reader
-
-	zeroCopy bool
-
-	// ---- cpu cache line boundary?
-	// ---- writable fields during execution --- *try* to keep in sep cache line
-	maxdepth int16
-	depth    int16
-
-	// Extensions can call Decode() within a current Decode() call.
-	// We need to know when the top level Decode() call returns,
-	// so we can decide whether to Release() or not.
-	calls uint16 // what depth in mustDecode are we in now.
-
-	c containerState
-
-	// decByteState
-
-	n fauxUnion
-
-	// b is an always-available scratch buffer used by Decoder and decDrivers.
-	// By being always-available, it can be used for one-off things without
-	// having to get from freelist, use, and return back to freelist.
-	b [decScratchByteArrayLen]byte
-
-	hh Handle
-	// cache the mapTypeId and sliceTypeId for faster comparisons
-	mtid uintptr
-	stid uintptr
-}
-
-func (d *decoderBase) naked() *fauxUnion {
-	return &d.n
-}
-
-func (d *decoderBase) fauxUnionReadRawBytes(dr decDriverI, asString, rawToString bool) { //, handleZeroCopy bool) {
-	if asString || rawToString {
-		d.n.v = valueTypeString
-		// fauxUnion is only used within DecodeNaked calls; consequently, we should try to intern.
-		// reuse asString instead of declaring another bool
-		d.n.l, asString = dr.DecodeBytes(nil)
-		d.n.s = d.stringZC(d.n.l, asString)
-	} else {
-		d.n.v = valueTypeBytes
-		d.n.l, _ = dr.DecodeBytes(zeroByteSlice)
-	}
-}
-
-// Possibly get an interned version of a string, iff InternString=true and decoding a map key.
-//
-// This should mostly be used for map keys, where the key type is string.
-// This is because keys of a map/struct are typically reused across many objects.
-func (d *decoderBase) string(v []byte) (s string) {
-	if len(v) == 0 {
-	} else if len(v) == 1 {
-		s = str4byte(v[0])
-	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
-		s = string(v)
-	} else {
-		s = d.is.string(v)
-	}
-	return
-}
-
-// func (d *decoderBase) string(v []byte) (s string) {
-// 	if d.is == nil || d.c != containerMapKey || len(v) < 2 || len(v) > internMaxStrLen {
-// 		return string(v)
-// 	}
-// 	return d.is.string(v)
-// }
-
-// Decoder reads and decodes an object from an input stream in a supported format.
-//
-// Decoder is NOT safe for concurrent use i.e. a Decoder cannot be used
-// concurrently in multiple goroutines.
-//
-// However, as Decoder could be allocation heavy to initialize, a Reset method is provided
-// so its state can be reused to decode new input streams repeatedly.
-// This is the idiomatic way to use.
-type decoder[T decDriver] struct {
-	dh helperDecDriver[T]
-	fp *fastpathDs[T]
-	d  T
-	decoderBase
-}
-
 type decoderI interface {
 	Decode(v interface{}) (err error)
 	HandleName() string
@@ -2451,29 +2480,6 @@ func NewDecoderString(s string, h Handle) *Decoder {
 
 // ----
 
-type decFnInfo struct {
-	ti     *typeInfo
-	xfFn   Ext
-	xfTag  uint64
-	addrD  bool
-	addrDf bool // force: if addrD, then decode function MUST take a ptr
-}
-
-// decFn encapsulates the captured variables and the encode function.
-// This way, we only do some calculations one times, and pass to the
-// code block that should be called (encapsulated in a function)
-// instead of executing the checks every time.
-type decFn[T decDriver] struct {
-	i  decFnInfo
-	fd func(*decoder[T], *decFnInfo, reflect.Value)
-	// _  [1]uint64 // padding (cache-aligned)
-}
-
-type decRtidFn[T decDriver] struct {
-	rtid uintptr
-	fn   *decFn[T]
-}
-
 // ----
 
 func (helperDecDriver[T]) newDecoderBytes(in []byte, h Handle) *decoder[T] {
@@ -2760,5 +2766,3 @@ func decByteSlice(r decReaderI, clen, maxInitLen int, bs []byte) (bsOut []byte) 
 	}
 	return
 }
-
-type helperDecDriver[T decDriver] struct{}

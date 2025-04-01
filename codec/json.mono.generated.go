@@ -1,4 +1,4 @@
-//go:build !codec.notmono && (notfastpath || codec.notfastpath)
+//go:build !codec.notmono 
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -21,6 +21,22 @@ import (
 
 	"unicode/utf8"
 )
+
+type helperEncDriverJsonBytes struct{}
+type encFnJsonBytes struct {
+	i  encFnInfo
+	fe func(*encoderJsonBytes, *encFnInfo, reflect.Value)
+}
+type encRtidFnJsonBytes struct {
+	rtid uintptr
+	fn   *encFnJsonBytes
+}
+type encoderJsonBytes struct {
+	dh helperEncDriverJsonBytes
+	fp *fastpathEsJsonBytes
+	e  jsonEncDriverBytes
+	encoderBase
+}
 
 func (e *encoderJsonBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
@@ -689,13 +705,6 @@ func (e *encoderJsonBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 	}
 }
 
-type encoderJsonBytes struct {
-	dh helperEncDriverJsonBytes
-	fp *fastpathEsJsonBytes
-	e  jsonEncDriverBytes
-	encoderBase
-}
-
 func (e *encoderJsonBytes) init(h Handle) {
 	initHandle(h)
 	callMake(&e.e)
@@ -1063,15 +1072,6 @@ func (e *encoderJsonBytes) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
-type encFnJsonBytes struct {
-	i  encFnInfo
-	fe func(*encoderJsonBytes, *encFnInfo, reflect.Value)
-}
-type encRtidFnJsonBytes struct {
-	rtid uintptr
-	fn   *encFnJsonBytes
-}
-
 func (helperEncDriverJsonBytes) newEncoderBytes(out *[]byte, h Handle) *encoderJsonBytes {
 	var c1 encoderJsonBytes
 	c1.bytes = true
@@ -1307,7 +1307,21 @@ func (dh helperEncDriverJsonBytes) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 	return
 }
 
-type helperEncDriverJsonBytes struct{}
+type helperDecDriverJsonBytes struct{}
+type decFnJsonBytes struct {
+	i  decFnInfo
+	fd func(*decoderJsonBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnJsonBytes struct {
+	rtid uintptr
+	fn   *decFnJsonBytes
+}
+type decoderJsonBytes struct {
+	dh helperDecDriverJsonBytes
+	fp *fastpathDsJsonBytes
+	d  jsonDecDriverBytes
+	decoderBase
+}
 
 func (d *decoderJsonBytes) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
@@ -2206,13 +2220,6 @@ func (d *decoderJsonBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	d.mapEnd()
 }
 
-type decoderJsonBytes struct {
-	dh helperDecDriverJsonBytes
-	fp *fastpathDsJsonBytes
-	d  jsonDecDriverBytes
-	decoderBase
-}
-
 func (d *decoderJsonBytes) init(h Handle) {
 	initHandle(h)
 	callMake(&d.d)
@@ -2606,15 +2613,6 @@ func (x decSliceHelperJsonBytes) arrayCannotExpand(hasLen bool, lenv, j, contain
 	x.End()
 }
 
-type decFnJsonBytes struct {
-	i  decFnInfo
-	fd func(*decoderJsonBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnJsonBytes struct {
-	rtid uintptr
-	fn   *decFnJsonBytes
-}
-
 func (helperDecDriverJsonBytes) newDecoderBytes(in []byte, h Handle) *decoderJsonBytes {
 	var c1 decoderJsonBytes
 	c1.bytes = true
@@ -2861,28 +2859,6 @@ func (dh helperDecDriverJsonBytes) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type helperDecDriverJsonBytes struct{}
-type fastpathEJsonBytes struct {
-	rt    reflect.Type
-	encfn func(*encoderJsonBytes, *encFnInfo, reflect.Value)
-}
-type fastpathDJsonBytes struct {
-	rt    reflect.Type
-	decfn func(*decoderJsonBytes, *decFnInfo, reflect.Value)
-}
-type fastpathEsJsonBytes [0]fastpathEJsonBytes
-type fastpathDsJsonBytes [0]fastpathDJsonBytes
-
-func (helperEncDriverJsonBytes) fastpathEncodeTypeSwitch(iv interface{}, e *encoderJsonBytes) bool {
-	return false
-}
-func (helperDecDriverJsonBytes) fastpathDecodeTypeSwitch(iv interface{}, d *decoderJsonBytes) bool {
-	return false
-}
-
-func (helperEncDriverJsonBytes) fastpathEList() (v *fastpathEsJsonBytes) { return }
-func (helperDecDriverJsonBytes) fastpathDList() (v *fastpathDsJsonBytes) { return }
 
 type jsonEncDriverBytes struct {
 	noBuiltInTypes
@@ -3867,6 +3843,23 @@ func (d *jsonDecDriverBytes) init2(dec decoderI) {
 	d.d.js = true
 	d.d.jsms = d.h.MapKeyAsString
 }
+
+type helperEncDriverJsonIO struct{}
+type encFnJsonIO struct {
+	i  encFnInfo
+	fe func(*encoderJsonIO, *encFnInfo, reflect.Value)
+}
+type encRtidFnJsonIO struct {
+	rtid uintptr
+	fn   *encFnJsonIO
+}
+type encoderJsonIO struct {
+	dh helperEncDriverJsonIO
+	fp *fastpathEsJsonIO
+	e  jsonEncDriverIO
+	encoderBase
+}
+
 func (e *encoderJsonIO) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -4534,13 +4527,6 @@ func (e *encoderJsonIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 	}
 }
 
-type encoderJsonIO struct {
-	dh helperEncDriverJsonIO
-	fp *fastpathEsJsonIO
-	e  jsonEncDriverIO
-	encoderBase
-}
-
 func (e *encoderJsonIO) init(h Handle) {
 	initHandle(h)
 	callMake(&e.e)
@@ -4908,15 +4894,6 @@ func (e *encoderJsonIO) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
-type encFnJsonIO struct {
-	i  encFnInfo
-	fe func(*encoderJsonIO, *encFnInfo, reflect.Value)
-}
-type encRtidFnJsonIO struct {
-	rtid uintptr
-	fn   *encFnJsonIO
-}
-
 func (helperEncDriverJsonIO) newEncoderBytes(out *[]byte, h Handle) *encoderJsonIO {
 	var c1 encoderJsonIO
 	c1.bytes = true
@@ -5152,7 +5129,21 @@ func (dh helperEncDriverJsonIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	return
 }
 
-type helperEncDriverJsonIO struct{}
+type helperDecDriverJsonIO struct{}
+type decFnJsonIO struct {
+	i  decFnInfo
+	fd func(*decoderJsonIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnJsonIO struct {
+	rtid uintptr
+	fn   *decFnJsonIO
+}
+type decoderJsonIO struct {
+	dh helperDecDriverJsonIO
+	fp *fastpathDsJsonIO
+	d  jsonDecDriverIO
+	decoderBase
+}
 
 func (d *decoderJsonIO) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
@@ -6051,13 +6042,6 @@ func (d *decoderJsonIO) kMap(f *decFnInfo, rv reflect.Value) {
 	d.mapEnd()
 }
 
-type decoderJsonIO struct {
-	dh helperDecDriverJsonIO
-	fp *fastpathDsJsonIO
-	d  jsonDecDriverIO
-	decoderBase
-}
-
 func (d *decoderJsonIO) init(h Handle) {
 	initHandle(h)
 	callMake(&d.d)
@@ -6451,15 +6435,6 @@ func (x decSliceHelperJsonIO) arrayCannotExpand(hasLen bool, lenv, j, containerL
 	x.End()
 }
 
-type decFnJsonIO struct {
-	i  decFnInfo
-	fd func(*decoderJsonIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnJsonIO struct {
-	rtid uintptr
-	fn   *decFnJsonIO
-}
-
 func (helperDecDriverJsonIO) newDecoderBytes(in []byte, h Handle) *decoderJsonIO {
 	var c1 decoderJsonIO
 	c1.bytes = true
@@ -6706,28 +6681,6 @@ func (dh helperDecDriverJsonIO) decFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	}
 	return
 }
-
-type helperDecDriverJsonIO struct{}
-type fastpathEJsonIO struct {
-	rt    reflect.Type
-	encfn func(*encoderJsonIO, *encFnInfo, reflect.Value)
-}
-type fastpathDJsonIO struct {
-	rt    reflect.Type
-	decfn func(*decoderJsonIO, *decFnInfo, reflect.Value)
-}
-type fastpathEsJsonIO [0]fastpathEJsonIO
-type fastpathDsJsonIO [0]fastpathDJsonIO
-
-func (helperEncDriverJsonIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoderJsonIO) bool {
-	return false
-}
-func (helperDecDriverJsonIO) fastpathDecodeTypeSwitch(iv interface{}, d *decoderJsonIO) bool {
-	return false
-}
-
-func (helperEncDriverJsonIO) fastpathEList() (v *fastpathEsJsonIO) { return }
-func (helperDecDriverJsonIO) fastpathDList() (v *fastpathDsJsonIO) { return }
 
 type jsonEncDriverIO struct {
 	noBuiltInTypes

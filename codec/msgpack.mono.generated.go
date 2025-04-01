@@ -1,4 +1,4 @@
-//go:build !codec.notmono && (notfastpath || codec.notfastpath)
+//go:build !codec.notmono 
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -17,6 +17,22 @@ import (
 	"time"
 	"unicode/utf8"
 )
+
+type helperEncDriverMsgpackBytes struct{}
+type encFnMsgpackBytes struct {
+	i  encFnInfo
+	fe func(*encoderMsgpackBytes, *encFnInfo, reflect.Value)
+}
+type encRtidFnMsgpackBytes struct {
+	rtid uintptr
+	fn   *encFnMsgpackBytes
+}
+type encoderMsgpackBytes struct {
+	dh helperEncDriverMsgpackBytes
+	fp *fastpathEsMsgpackBytes
+	e  msgpackEncDriverBytes
+	encoderBase
+}
 
 func (e *encoderMsgpackBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
@@ -685,13 +701,6 @@ func (e *encoderMsgpackBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value,
 	}
 }
 
-type encoderMsgpackBytes struct {
-	dh helperEncDriverMsgpackBytes
-	fp *fastpathEsMsgpackBytes
-	e  msgpackEncDriverBytes
-	encoderBase
-}
-
 func (e *encoderMsgpackBytes) init(h Handle) {
 	initHandle(h)
 	callMake(&e.e)
@@ -1059,15 +1068,6 @@ func (e *encoderMsgpackBytes) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
-type encFnMsgpackBytes struct {
-	i  encFnInfo
-	fe func(*encoderMsgpackBytes, *encFnInfo, reflect.Value)
-}
-type encRtidFnMsgpackBytes struct {
-	rtid uintptr
-	fn   *encFnMsgpackBytes
-}
-
 func (helperEncDriverMsgpackBytes) newEncoderBytes(out *[]byte, h Handle) *encoderMsgpackBytes {
 	var c1 encoderMsgpackBytes
 	c1.bytes = true
@@ -1303,7 +1303,21 @@ func (dh helperEncDriverMsgpackBytes) encFnLoad(rt reflect.Type, rtid uintptr, t
 	return
 }
 
-type helperEncDriverMsgpackBytes struct{}
+type helperDecDriverMsgpackBytes struct{}
+type decFnMsgpackBytes struct {
+	i  decFnInfo
+	fd func(*decoderMsgpackBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnMsgpackBytes struct {
+	rtid uintptr
+	fn   *decFnMsgpackBytes
+}
+type decoderMsgpackBytes struct {
+	dh helperDecDriverMsgpackBytes
+	fp *fastpathDsMsgpackBytes
+	d  msgpackDecDriverBytes
+	decoderBase
+}
 
 func (d *decoderMsgpackBytes) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
@@ -2202,13 +2216,6 @@ func (d *decoderMsgpackBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	d.mapEnd()
 }
 
-type decoderMsgpackBytes struct {
-	dh helperDecDriverMsgpackBytes
-	fp *fastpathDsMsgpackBytes
-	d  msgpackDecDriverBytes
-	decoderBase
-}
-
 func (d *decoderMsgpackBytes) init(h Handle) {
 	initHandle(h)
 	callMake(&d.d)
@@ -2602,15 +2609,6 @@ func (x decSliceHelperMsgpackBytes) arrayCannotExpand(hasLen bool, lenv, j, cont
 	x.End()
 }
 
-type decFnMsgpackBytes struct {
-	i  decFnInfo
-	fd func(*decoderMsgpackBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnMsgpackBytes struct {
-	rtid uintptr
-	fn   *decFnMsgpackBytes
-}
-
 func (helperDecDriverMsgpackBytes) newDecoderBytes(in []byte, h Handle) *decoderMsgpackBytes {
 	var c1 decoderMsgpackBytes
 	c1.bytes = true
@@ -2857,28 +2855,6 @@ func (dh helperDecDriverMsgpackBytes) decFnLoad(rt reflect.Type, rtid uintptr, t
 	}
 	return
 }
-
-type helperDecDriverMsgpackBytes struct{}
-type fastpathEMsgpackBytes struct {
-	rt    reflect.Type
-	encfn func(*encoderMsgpackBytes, *encFnInfo, reflect.Value)
-}
-type fastpathDMsgpackBytes struct {
-	rt    reflect.Type
-	decfn func(*decoderMsgpackBytes, *decFnInfo, reflect.Value)
-}
-type fastpathEsMsgpackBytes [0]fastpathEMsgpackBytes
-type fastpathDsMsgpackBytes [0]fastpathDMsgpackBytes
-
-func (helperEncDriverMsgpackBytes) fastpathEncodeTypeSwitch(iv interface{}, e *encoderMsgpackBytes) bool {
-	return false
-}
-func (helperDecDriverMsgpackBytes) fastpathDecodeTypeSwitch(iv interface{}, d *decoderMsgpackBytes) bool {
-	return false
-}
-
-func (helperEncDriverMsgpackBytes) fastpathEList() (v *fastpathEsMsgpackBytes) { return }
-func (helperDecDriverMsgpackBytes) fastpathDList() (v *fastpathDsMsgpackBytes) { return }
 
 type msgpackEncDriverBytes struct {
 	noBuiltInTypes
@@ -3807,6 +3783,23 @@ func (d *msgpackDecDriverBytes) descBd() string {
 func (d *msgpackDecDriverBytes) DecodeFloat32() (f float32) {
 	return float32(chkOvf.Float32V(d.DecodeFloat64()))
 }
+
+type helperEncDriverMsgpackIO struct{}
+type encFnMsgpackIO struct {
+	i  encFnInfo
+	fe func(*encoderMsgpackIO, *encFnInfo, reflect.Value)
+}
+type encRtidFnMsgpackIO struct {
+	rtid uintptr
+	fn   *encFnMsgpackIO
+}
+type encoderMsgpackIO struct {
+	dh helperEncDriverMsgpackIO
+	fp *fastpathEsMsgpackIO
+	e  msgpackEncDriverIO
+	encoderBase
+}
+
 func (e *encoderMsgpackIO) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -4474,13 +4467,6 @@ func (e *encoderMsgpackIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 	}
 }
 
-type encoderMsgpackIO struct {
-	dh helperEncDriverMsgpackIO
-	fp *fastpathEsMsgpackIO
-	e  msgpackEncDriverIO
-	encoderBase
-}
-
 func (e *encoderMsgpackIO) init(h Handle) {
 	initHandle(h)
 	callMake(&e.e)
@@ -4848,15 +4834,6 @@ func (e *encoderMsgpackIO) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
-type encFnMsgpackIO struct {
-	i  encFnInfo
-	fe func(*encoderMsgpackIO, *encFnInfo, reflect.Value)
-}
-type encRtidFnMsgpackIO struct {
-	rtid uintptr
-	fn   *encFnMsgpackIO
-}
-
 func (helperEncDriverMsgpackIO) newEncoderBytes(out *[]byte, h Handle) *encoderMsgpackIO {
 	var c1 encoderMsgpackIO
 	c1.bytes = true
@@ -5092,7 +5069,21 @@ func (dh helperEncDriverMsgpackIO) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 	return
 }
 
-type helperEncDriverMsgpackIO struct{}
+type helperDecDriverMsgpackIO struct{}
+type decFnMsgpackIO struct {
+	i  decFnInfo
+	fd func(*decoderMsgpackIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnMsgpackIO struct {
+	rtid uintptr
+	fn   *decFnMsgpackIO
+}
+type decoderMsgpackIO struct {
+	dh helperDecDriverMsgpackIO
+	fp *fastpathDsMsgpackIO
+	d  msgpackDecDriverIO
+	decoderBase
+}
 
 func (d *decoderMsgpackIO) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
@@ -5991,13 +5982,6 @@ func (d *decoderMsgpackIO) kMap(f *decFnInfo, rv reflect.Value) {
 	d.mapEnd()
 }
 
-type decoderMsgpackIO struct {
-	dh helperDecDriverMsgpackIO
-	fp *fastpathDsMsgpackIO
-	d  msgpackDecDriverIO
-	decoderBase
-}
-
 func (d *decoderMsgpackIO) init(h Handle) {
 	initHandle(h)
 	callMake(&d.d)
@@ -6391,15 +6375,6 @@ func (x decSliceHelperMsgpackIO) arrayCannotExpand(hasLen bool, lenv, j, contain
 	x.End()
 }
 
-type decFnMsgpackIO struct {
-	i  decFnInfo
-	fd func(*decoderMsgpackIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnMsgpackIO struct {
-	rtid uintptr
-	fn   *decFnMsgpackIO
-}
-
 func (helperDecDriverMsgpackIO) newDecoderBytes(in []byte, h Handle) *decoderMsgpackIO {
 	var c1 decoderMsgpackIO
 	c1.bytes = true
@@ -6646,28 +6621,6 @@ func (dh helperDecDriverMsgpackIO) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type helperDecDriverMsgpackIO struct{}
-type fastpathEMsgpackIO struct {
-	rt    reflect.Type
-	encfn func(*encoderMsgpackIO, *encFnInfo, reflect.Value)
-}
-type fastpathDMsgpackIO struct {
-	rt    reflect.Type
-	decfn func(*decoderMsgpackIO, *decFnInfo, reflect.Value)
-}
-type fastpathEsMsgpackIO [0]fastpathEMsgpackIO
-type fastpathDsMsgpackIO [0]fastpathDMsgpackIO
-
-func (helperEncDriverMsgpackIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoderMsgpackIO) bool {
-	return false
-}
-func (helperDecDriverMsgpackIO) fastpathDecodeTypeSwitch(iv interface{}, d *decoderMsgpackIO) bool {
-	return false
-}
-
-func (helperEncDriverMsgpackIO) fastpathEList() (v *fastpathEsMsgpackIO) { return }
-func (helperDecDriverMsgpackIO) fastpathDList() (v *fastpathDsMsgpackIO) { return }
 
 type msgpackEncDriverIO struct {
 	noBuiltInTypes

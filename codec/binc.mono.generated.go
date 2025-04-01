@@ -1,4 +1,4 @@
-//go:build !codec.notmono && (notfastpath || codec.notfastpath)
+//go:build !codec.notmono 
 
 // Copyright (c) 2012-2020 Ugorji Nwoke. All rights reserved.
 // Use of this source code is governed by a MIT license found in the LICENSE file.
@@ -17,6 +17,22 @@ import (
 	"time"
 	"unicode/utf8"
 )
+
+type helperEncDriverBincBytes struct{}
+type encFnBincBytes struct {
+	i  encFnInfo
+	fe func(*encoderBincBytes, *encFnInfo, reflect.Value)
+}
+type encRtidFnBincBytes struct {
+	rtid uintptr
+	fn   *encFnBincBytes
+}
+type encoderBincBytes struct {
+	dh helperEncDriverBincBytes
+	fp *fastpathEsBincBytes
+	e  bincEncDriverBytes
+	encoderBase
+}
 
 func (e *encoderBincBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
@@ -685,13 +701,6 @@ func (e *encoderBincBytes) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, ke
 	}
 }
 
-type encoderBincBytes struct {
-	dh helperEncDriverBincBytes
-	fp *fastpathEsBincBytes
-	e  bincEncDriverBytes
-	encoderBase
-}
-
 func (e *encoderBincBytes) init(h Handle) {
 	initHandle(h)
 	callMake(&e.e)
@@ -1059,15 +1068,6 @@ func (e *encoderBincBytes) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
-type encFnBincBytes struct {
-	i  encFnInfo
-	fe func(*encoderBincBytes, *encFnInfo, reflect.Value)
-}
-type encRtidFnBincBytes struct {
-	rtid uintptr
-	fn   *encFnBincBytes
-}
-
 func (helperEncDriverBincBytes) newEncoderBytes(out *[]byte, h Handle) *encoderBincBytes {
 	var c1 encoderBincBytes
 	c1.bytes = true
@@ -1303,7 +1303,21 @@ func (dh helperEncDriverBincBytes) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 	return
 }
 
-type helperEncDriverBincBytes struct{}
+type helperDecDriverBincBytes struct{}
+type decFnBincBytes struct {
+	i  decFnInfo
+	fd func(*decoderBincBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnBincBytes struct {
+	rtid uintptr
+	fn   *decFnBincBytes
+}
+type decoderBincBytes struct {
+	dh helperDecDriverBincBytes
+	fp *fastpathDsBincBytes
+	d  bincDecDriverBytes
+	decoderBase
+}
 
 func (d *decoderBincBytes) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
@@ -2202,13 +2216,6 @@ func (d *decoderBincBytes) kMap(f *decFnInfo, rv reflect.Value) {
 	d.mapEnd()
 }
 
-type decoderBincBytes struct {
-	dh helperDecDriverBincBytes
-	fp *fastpathDsBincBytes
-	d  bincDecDriverBytes
-	decoderBase
-}
-
 func (d *decoderBincBytes) init(h Handle) {
 	initHandle(h)
 	callMake(&d.d)
@@ -2602,15 +2609,6 @@ func (x decSliceHelperBincBytes) arrayCannotExpand(hasLen bool, lenv, j, contain
 	x.End()
 }
 
-type decFnBincBytes struct {
-	i  decFnInfo
-	fd func(*decoderBincBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnBincBytes struct {
-	rtid uintptr
-	fn   *decFnBincBytes
-}
-
 func (helperDecDriverBincBytes) newDecoderBytes(in []byte, h Handle) *decoderBincBytes {
 	var c1 decoderBincBytes
 	c1.bytes = true
@@ -2857,28 +2855,6 @@ func (dh helperDecDriverBincBytes) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type helperDecDriverBincBytes struct{}
-type fastpathEBincBytes struct {
-	rt    reflect.Type
-	encfn func(*encoderBincBytes, *encFnInfo, reflect.Value)
-}
-type fastpathDBincBytes struct {
-	rt    reflect.Type
-	decfn func(*decoderBincBytes, *decFnInfo, reflect.Value)
-}
-type fastpathEsBincBytes [0]fastpathEBincBytes
-type fastpathDsBincBytes [0]fastpathDBincBytes
-
-func (helperEncDriverBincBytes) fastpathEncodeTypeSwitch(iv interface{}, e *encoderBincBytes) bool {
-	return false
-}
-func (helperDecDriverBincBytes) fastpathDecodeTypeSwitch(iv interface{}, d *decoderBincBytes) bool {
-	return false
-}
-
-func (helperEncDriverBincBytes) fastpathEList() (v *fastpathEsBincBytes) { return }
-func (helperDecDriverBincBytes) fastpathDList() (v *fastpathDsBincBytes) { return }
 
 type bincEncDriverBytes struct {
 	noBuiltInTypes
@@ -3872,6 +3848,23 @@ func (d *bincDecDriverBytes) descBd() string {
 func (d *bincDecDriverBytes) DecodeFloat32() (f float32) {
 	return float32(chkOvf.Float32V(d.DecodeFloat64()))
 }
+
+type helperEncDriverBincIO struct{}
+type encFnBincIO struct {
+	i  encFnInfo
+	fe func(*encoderBincIO, *encFnInfo, reflect.Value)
+}
+type encRtidFnBincIO struct {
+	rtid uintptr
+	fn   *encFnBincIO
+}
+type encoderBincIO struct {
+	dh helperEncDriverBincIO
+	fp *fastpathEsBincIO
+	e  bincEncDriverIO
+	encoderBase
+}
+
 func (e *encoderBincIO) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
 }
@@ -4539,13 +4532,6 @@ func (e *encoderBincIO) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn
 	}
 }
 
-type encoderBincIO struct {
-	dh helperEncDriverBincIO
-	fp *fastpathEsBincIO
-	e  bincEncDriverIO
-	encoderBase
-}
-
 func (e *encoderBincIO) init(h Handle) {
 	initHandle(h)
 	callMake(&e.e)
@@ -4913,15 +4899,6 @@ func (e *encoderBincIO) resetBytes(out *[]byte) {
 	e.e.resetOutBytes(out)
 }
 
-type encFnBincIO struct {
-	i  encFnInfo
-	fe func(*encoderBincIO, *encFnInfo, reflect.Value)
-}
-type encRtidFnBincIO struct {
-	rtid uintptr
-	fn   *encFnBincIO
-}
-
 func (helperEncDriverBincIO) newEncoderBytes(out *[]byte, h Handle) *encoderBincIO {
 	var c1 encoderBincIO
 	c1.bytes = true
@@ -5157,7 +5134,21 @@ func (dh helperEncDriverBincIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	return
 }
 
-type helperEncDriverBincIO struct{}
+type helperDecDriverBincIO struct{}
+type decFnBincIO struct {
+	i  decFnInfo
+	fd func(*decoderBincIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnBincIO struct {
+	rtid uintptr
+	fn   *decFnBincIO
+}
+type decoderBincIO struct {
+	dh helperDecDriverBincIO
+	fp *fastpathDsBincIO
+	d  bincDecDriverIO
+	decoderBase
+}
 
 func (d *decoderBincIO) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
@@ -6056,13 +6047,6 @@ func (d *decoderBincIO) kMap(f *decFnInfo, rv reflect.Value) {
 	d.mapEnd()
 }
 
-type decoderBincIO struct {
-	dh helperDecDriverBincIO
-	fp *fastpathDsBincIO
-	d  bincDecDriverIO
-	decoderBase
-}
-
 func (d *decoderBincIO) init(h Handle) {
 	initHandle(h)
 	callMake(&d.d)
@@ -6456,15 +6440,6 @@ func (x decSliceHelperBincIO) arrayCannotExpand(hasLen bool, lenv, j, containerL
 	x.End()
 }
 
-type decFnBincIO struct {
-	i  decFnInfo
-	fd func(*decoderBincIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnBincIO struct {
-	rtid uintptr
-	fn   *decFnBincIO
-}
-
 func (helperDecDriverBincIO) newDecoderBytes(in []byte, h Handle) *decoderBincIO {
 	var c1 decoderBincIO
 	c1.bytes = true
@@ -6711,28 +6686,6 @@ func (dh helperDecDriverBincIO) decFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	}
 	return
 }
-
-type helperDecDriverBincIO struct{}
-type fastpathEBincIO struct {
-	rt    reflect.Type
-	encfn func(*encoderBincIO, *encFnInfo, reflect.Value)
-}
-type fastpathDBincIO struct {
-	rt    reflect.Type
-	decfn func(*decoderBincIO, *decFnInfo, reflect.Value)
-}
-type fastpathEsBincIO [0]fastpathEBincIO
-type fastpathDsBincIO [0]fastpathDBincIO
-
-func (helperEncDriverBincIO) fastpathEncodeTypeSwitch(iv interface{}, e *encoderBincIO) bool {
-	return false
-}
-func (helperDecDriverBincIO) fastpathDecodeTypeSwitch(iv interface{}, d *decoderBincIO) bool {
-	return false
-}
-
-func (helperEncDriverBincIO) fastpathEList() (v *fastpathEsBincIO) { return }
-func (helperDecDriverBincIO) fastpathDList() (v *fastpathDsBincIO) { return }
 
 type bincEncDriverIO struct {
 	noBuiltInTypes

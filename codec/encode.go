@@ -60,6 +60,8 @@ type encDriverI interface {
 	// driverStateManager
 }
 
+type helperEncDriver[T encDriver] struct{}
+
 type encInit2er struct{}
 
 func (encInit2er) init2(enc encoderI) {}
@@ -101,6 +103,33 @@ func (p encStructFieldObjSlice) Swap(i, j int) { p[uint(i)], p[uint(j)] = p[uint
 func (p encStructFieldObjSlice) Less(i, j int) bool {
 	return p[uint(i)].key < p[uint(j)].key
 }
+
+// ----
+
+type encFnInfo struct {
+	ti    *typeInfo
+	xfFn  Ext
+	xfTag uint64
+	addrE bool
+	// addrEf bool // force: if addrE, then encode function MUST take a ptr
+}
+
+// encFn encapsulates the captured variables and the encode function.
+// This way, we only do some calculations one times, and pass to the
+// code block that should be called (encapsulated in a function)
+// instead of executing the checks every time.
+type encFn[T encDriver] struct {
+	i  encFnInfo
+	fe func(*encoder[T], *encFnInfo, reflect.Value)
+	// _  [1]uint64 // padding (cache-aligned)
+}
+
+type encRtidFn[T encDriver] struct {
+	rtid uintptr
+	fn   *encFn[T]
+}
+
+// ----
 
 // EncodeOptions captures configuration options during encode.
 type EncodeOptions struct {
@@ -198,10 +227,83 @@ type EncodeOptions struct {
 
 // ---------------------------------------------
 
+// encoderBase is shared as a field between Encoder and its encDrivers.
+// This way, encDrivers need not hold a referece to the Encoder itself.
+type encoderBase struct {
+	perType encPerType
+
+	h *BasicHandle
+
+	// MARKER: these fields below should belong directly in Encoder.
+	// There should not be any pointers here - just values.
+	// we pack them here for space efficiency and cache-line optimization.
+
+	rtidFn, rtidFnNoExt *atomicRtidFnSlice
+
+	// se  encoderI
+	err error
+
+	blist bytesFreelist
+
+	js bool // is json encoder?
+	be bool // is binary encoder?
+
+	bytes bool
+
+	c containerState
+
+	calls uint16
+	seq   uint16 // sequencer (e.g. used by binc for symbols, etc)
+
+	// ---- cpu cache line boundary
+	hh Handle
+
+	// ---- cpu cache line boundary
+
+	// ---- writable fields during execution --- *try* to keep in sep cache line
+
+	// ci holds interfaces during an encoding (if CheckCircularRef=true)
+	//
+	// We considered using a []uintptr (slice of pointer addresses) retrievable via rv.UnsafeAddr.
+	// However, it is possible for the same pointer to point to 2 different types e.g.
+	//    type T struct { tHelper }
+	//    Here, for var v T; &v and &v.tHelper are the same pointer.
+	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
+	ci []interface{} // []uintptr
+
+	slist sfiRvFreelist
+}
+
+func (e *encoderBase) HandleName() string {
+	return e.hh.Name()
+}
+
+// Release is a no-op.
+//
+// Deprecated: Pooled resources are not used with an Encoder.
+// This method is kept for compatibility reasons only.
+func (e *encoderBase) Release() {
+}
+
 func (e *encoderBase) setContainerState(cs containerState) {
 	if cs != 0 {
 		e.c = cs
 	}
+}
+
+// Encoder writes an object to an output stream in a supported format.
+//
+// Encoder is NOT safe for concurrent use i.e. a Encoder cannot be used
+// concurrently in multiple goroutines.
+//
+// However, as Encoder could be allocation heavy to initialize, a Reset method is provided
+// so its state can be reused to decode new input streams repeatedly.
+// This is the idiomatic way to use.
+type encoder[T encDriver] struct {
+	dh helperEncDriver[T]
+	fp *fastpathEs[T]
+	e  T
+	encoderBase
 }
 
 func (e *encoder[T]) rawExt(_ *encFnInfo, rv reflect.Value) {
@@ -965,79 +1067,6 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 	}
 }
 
-// encoderBase is shared as a field between Encoder and its encDrivers.
-// This way, encDrivers need not hold a referece to the Encoder itself.
-type encoderBase struct {
-	perType encPerType
-
-	h *BasicHandle
-
-	// MARKER: these fields below should belong directly in Encoder.
-	// There should not be any pointers here - just values.
-	// we pack them here for space efficiency and cache-line optimization.
-
-	rtidFn, rtidFnNoExt *atomicRtidFnSlice
-
-	// se  encoderI
-	err error
-
-	blist bytesFreelist
-
-	js bool // is json encoder?
-	be bool // is binary encoder?
-
-	bytes bool
-
-	c containerState
-
-	calls uint16
-	seq   uint16 // sequencer (e.g. used by binc for symbols, etc)
-
-	// ---- cpu cache line boundary
-	hh Handle
-
-	// ---- cpu cache line boundary
-
-	// ---- writable fields during execution --- *try* to keep in sep cache line
-
-	// ci holds interfaces during an encoding (if CheckCircularRef=true)
-	//
-	// We considered using a []uintptr (slice of pointer addresses) retrievable via rv.UnsafeAddr.
-	// However, it is possible for the same pointer to point to 2 different types e.g.
-	//    type T struct { tHelper }
-	//    Here, for var v T; &v and &v.tHelper are the same pointer.
-	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
-	ci []interface{} // []uintptr
-
-	slist sfiRvFreelist
-}
-
-// Encoder writes an object to an output stream in a supported format.
-//
-// Encoder is NOT safe for concurrent use i.e. a Encoder cannot be used
-// concurrently in multiple goroutines.
-//
-// However, as Encoder could be allocation heavy to initialize, a Reset method is provided
-// so its state can be reused to decode new input streams repeatedly.
-// This is the idiomatic way to use.
-type encoder[T encDriver] struct {
-	dh helperEncDriver[T]
-	fp *fastpathEs[T]
-	e  T
-	encoderBase
-}
-
-func (e *encoderBase) HandleName() string {
-	return e.hh.Name()
-}
-
-// Release is a no-op.
-//
-// Deprecated: Pooled resources are not used with an Encoder.
-// This method is kept for compatibility reasons only.
-func (e *encoderBase) Release() {
-}
-
 func (e *encoder[T]) init(h Handle) {
 	initHandle(h)
 	callMake(&e.e)
@@ -1617,31 +1646,6 @@ type Encoder struct {
 
 // ----
 
-type encFnInfo struct {
-	ti    *typeInfo
-	xfFn  Ext
-	xfTag uint64
-	addrE bool
-	// addrEf bool // force: if addrE, then encode function MUST take a ptr
-}
-
-// encFn encapsulates the captured variables and the encode function.
-// This way, we only do some calculations one times, and pass to the
-// code block that should be called (encapsulated in a function)
-// instead of executing the checks every time.
-type encFn[T encDriver] struct {
-	i  encFnInfo
-	fe func(*encoder[T], *encFnInfo, reflect.Value)
-	// _  [1]uint64 // padding (cache-aligned)
-}
-
-type encRtidFn[T encDriver] struct {
-	rtid uintptr
-	fn   *encFn[T]
-}
-
-// ----
-
 func (helperEncDriver[T]) newEncoderBytes(out *[]byte, h Handle) *encoder[T] {
 	var c1 encoder[T]
 	c1.bytes = true
@@ -1917,5 +1921,3 @@ func sideEncode(h *BasicHandle, v interface{}, out *[]byte, basetype reflect.Typ
 	// e.sideEncoder(&bs)
 	// e.sideEncode(v, basetype, 0)
 }
-
-type helperEncDriver[T encDriver] struct{}
