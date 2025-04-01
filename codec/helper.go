@@ -441,7 +441,7 @@ func init() {
 	// 	set(byte(reflect.String))
 
 	for i := byte(0); i <= utf8.RuneSelf; i++ {
-		if (i >= '0' && i <= '9') || (i >= 'a' && i <= 'z') || (i >= 'A' && i <= 'Z') {
+		if (i >= '0' && i <= '9') || (i >= 'a' && i <= 'z') || (i >= 'A' && i <= 'Z') || i == '_' {
 			asciiAlphaNumBitset.set(i)
 		}
 		switch i {
@@ -2886,6 +2886,17 @@ func (x internerMap) string(v []byte) (s string) {
 		x[s] = s
 	}
 	return
+}
+
+//go:noinline
+func print(s string, a ...any) {
+	if len(s) == 0 {
+		return
+	}
+	if s[len(s)-1] != '\n' {
+		s = s + "\n"
+	}
+	fmt.Printf(s, a...)
 }
 
 // func initSoloField(v interface{}) {
