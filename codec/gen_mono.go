@@ -15,35 +15,16 @@ import (
 	"strings"
 )
 
-// ----
-
-// - [fn:monoBase] for each file of fastpath.generated.go, encode.go, decode.go:
-//   - ignore init() and imports (go imports will fix it later - or we just grab all imports and let go-imports fix later)
-//   - parse encode.go, decode.go, fastpath.generated.go into an AST
-//     - for each function, if a generic function/method, add it into the AST
-// - [fn:monoAll] for each handle
-//   - [fn:monoHandle] clone prior AST
-//   - add <format>.go into it
-//   - transform the node names to monomorphize them
-//   - transform the method/func calls in each method to monomorphize them
-// - output AST into a file <format>.mono.generated.go
+// This tool will monomorphize types scoped to a specific format.
+//
+// This tool only monomorphized the type Name, and not a function Name.
+// Explicitly, generic functions are not supported, as they cannot be monomorphized
+// to a specific format without a corresponding name change.
+//
+// However, for types constrained to encWriter or decReader,
+// which are shared across formats, there's no place to put them without duplication.
 
 const genMonoParserMode = parser.AllErrors | parser.SkipObjectResolution
-
-// This code works very well for things that are monomorphizing things scoped to a specific format.
-// As you see, we monomorphize code for each format.
-//
-// However, for types bound to encWriter or decReader, which are shared across formats,
-// there's no place to put them without duplication.
-
-// Consequently, since there is only one function ie decByteSlice, we handle it manually.
-// This method is in the type helperDecReader.
-
-// Key constraints
-//   - Every generic types MUST be defined in each file before the methods/functions
-//     that reference them in the signature (receiver, parameters or results signature)
-//   - No generic top level functions. Only generic methods
-//     (so that things can be scoped to the driver)
 
 var genMonoSpecialFieldTypes = []string{"helperDecReader"}
 
