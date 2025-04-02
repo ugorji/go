@@ -72,39 +72,41 @@ type genMonoImports struct {
 }
 
 type genMono struct {
-	files    map[string][]byte
-	typParam map[string]*ast.Field
+	files             map[string][]byte
+	typParam          map[string]*ast.Field
+	typParamTransient map[string]*ast.Field
 }
 
 func (x *genMono) init() {
 	x.files = make(map[string][]byte)
 	x.typParam = make(map[string]*ast.Field)
+	x.typParamTransient = make(map[string]*ast.Field)
 }
 
 func (x *genMono) reset() {
 	clear(x.typParam)
+	clear(x.typParamTransient)
 }
 
-func (m *genMono) do(h Handle) {
+func (m *genMono) hdl(h Handle) {
 	m.reset()
 	hdlFname := h.Name() + ".go"
-	m.do4(h, "", []string{"encode.go", "decode.go", "fastpath.not.go", hdlFname}, ``, "fastpath")
-	// any type defined in above file, should not be re-defined below
-	m.do4(h, ".notfastpath", []string{"fastpath.not.go"}, ` && (notfastpath || codec.notfastpath)`, "--")
-	m.do4(h, ".fastpath", []string{"fastpath.generated.go"}, ` && !notfastpath && !codec.notfastpath`, "--")
+	m.do(h, []string{"encode.go", "decode.go", hdlFname}, []string{"fastpath.not.go"}, "", "")
+	m.do(h, []string{"fastpath.not.go"}, nil, ".notfastpath", ` && (notfastpath || codec.notfastpath)`)
+	m.do(h, []string{"fastpath.generated.go"}, nil, ".fastpath", ` && !notfastpath && !codec.notfastpath`)
 }
 
-func (m *genMono) do4(h Handle, fnameInfx string, fnames []string, buildTagsSfx string, skipPfx string) {
+func (m *genMono) do(h Handle, fnames, tnames []string, fnameInfx string, buildTagsSfx string) {
 	// keep m.typParams across whole call, as all others use it
 
 	const fnameSfx = ".mono.generated.go"
 
 	var imports = genMonoImports{set: make(map[string]struct{})}
 
-	r1, fset := m.base(fnames, &imports, skipPfx)
+	r1, fset := m.merge(fnames, tnames, &imports)
 	m.trFile(r1, h, true)
 
-	r2, fset := m.base(fnames, &imports, skipPfx)
+	r2, fset := m.merge(fnames, tnames, &imports)
 	m.trFile(r2, h, false)
 
 	fname := h.Name() + fnameInfx + fnameSfx
@@ -130,8 +132,6 @@ func (m *genMono) do4(h Handle, fnameInfx string, fnames []string, buildTagsSfx 
 	halt.onerror(err)
 	err = format.Node(f, fset, r0)
 	halt.onerror(err)
-
-	// m.reset()
 }
 
 func (x *genMono) file(fname string) (b []byte) {
@@ -145,21 +145,32 @@ func (x *genMono) file(fname string) (b []byte) {
 	return
 }
 
-func (x *genMono) base(fnames []string, imports *genMonoImports, skipPfx string) (r *ast.File, fset *token.FileSet) {
-	fset = token.NewFileSet()
-	r = &ast.File{
-		Name: &ast.Ident{Name: "codec"},
+func (x *genMono) merge(fNames, tNames []string, imports *genMonoImports) (dst *ast.File, fset *token.FileSet) {
+	// typParams used in fnLoadTyps
+	var typParams map[string]*ast.Field
+	var loadTyps bool
+	fnLoadTyps := func(node ast.Node) bool {
+		var ok bool
+		switch n := node.(type) {
+		case *ast.GenDecl:
+			if n.Tok == token.TYPE {
+				for _, v := range n.Specs {
+					nn := v.(*ast.TypeSpec)
+					ok = genMonoTypeParamsOk(nn.TypeParams)
+					if ok {
+						// each decl will have only 1 var/type
+						typParams[nn.Name.Name] = nn.TypeParams.List[0]
+						if loadTyps {
+							dst.Decls = append(dst.Decls, &ast.GenDecl{Tok: n.Tok, Specs: []ast.Spec{v}})
+						}
+					}
+				}
+			}
+			return false
+		}
+		return true
 	}
-	for _, fname := range fnames {
-		fsrc := x.file(fname)
-		f, err := parser.ParseFile(fset, fname, fsrc, genMonoParserMode)
-		halt.onerror(err)
-		x.merge(r, f, imports, skipPfx)
-	}
-	return
-}
 
-func (x *genMono) merge(dst, src *ast.File, imports *genMonoImports, skipPfx string) {
 	// we only merge top-level methods and types
 	fnIdX := func(n *ast.FuncDecl, n2 *ast.IndexExpr) (ok bool) {
 		n9, ok9 := n2.Index.(*ast.Ident)
@@ -168,16 +179,10 @@ func (x *genMono) merge(dst, src *ast.File, imports *genMonoImports, skipPfx str
 		if ok {
 			_, ok = x.typParam[n3.Name]
 		}
-		if ok {
-			ok = !strings.HasPrefix(n.Name.Name, skipPfx)
-		}
-		if ok {
-			ok = !strings.HasPrefix(n3.Name, skipPfx)
-		}
 		return
 	}
 
-	fn := func(node ast.Node) bool {
+	fnLoadMethodsAndImports := func(node ast.Node) bool {
 		var ok bool
 		switch n := node.(type) {
 		case *ast.FuncDecl:
@@ -203,23 +208,7 @@ func (x *genMono) merge(dst, src *ast.File, imports *genMonoImports, skipPfx str
 			}
 			return false
 		case *ast.GenDecl:
-			if n.Tok == token.TYPE {
-				for _, v := range n.Specs {
-					nn := v.(*ast.TypeSpec)
-					ok = genMonoTypeParamsOk(nn.TypeParams)
-					// always keep the typ param (since it is used, even if type is skipped
-					if ok {
-						// each decl will have only 1 var/type
-						x.typParam[nn.Name.Name] = nn.TypeParams.List[0]
-					}
-					if ok {
-						ok = !strings.HasPrefix(nn.Name.Name, skipPfx)
-					}
-					if ok {
-						dst.Decls = append(dst.Decls, &ast.GenDecl{Tok: n.Tok, Specs: []ast.Spec{v}})
-					}
-				}
-			} else if n.Tok == token.IMPORT {
+			if n.Tok == token.IMPORT {
 				for _, v := range n.Specs {
 					nn := v.(*ast.ImportSpec)
 					if slices.Contains(genMonoImportsToSkip, nn.Path.Value) {
@@ -235,7 +224,43 @@ func (x *genMono) merge(dst, src *ast.File, imports *genMonoImports, skipPfx str
 		}
 		return true
 	}
-	ast.Inspect(src, fn)
+
+	fset = token.NewFileSet()
+	fnLoadAsts := func(names []string) (asts []*ast.File) {
+		for _, fname := range names {
+			fsrc := x.file(fname)
+			f, err := parser.ParseFile(fset, fname, fsrc, genMonoParserMode)
+			halt.onerror(err)
+			asts = append(asts, f)
+		}
+		return
+	}
+
+	clear(x.typParamTransient)
+
+	dst = &ast.File{
+		Name: &ast.Ident{Name: "codec"},
+	}
+
+	fs := fnLoadAsts(fNames)
+	ts := fnLoadAsts(tNames)
+
+	loadTyps = true
+	typParams = x.typParam
+	for _, v := range fs {
+		ast.Inspect(v, fnLoadTyps)
+	}
+	loadTyps = false
+	typParams = x.typParamTransient
+	for _, v := range ts {
+		ast.Inspect(v, fnLoadTyps)
+	}
+	typParams = nil
+	for _, v := range fs {
+		ast.Inspect(v, fnLoadMethodsAndImports)
+	}
+
+	return
 }
 
 func (x *genMono) trFile(r *ast.File, h Handle, isbytes bool) {
@@ -345,7 +370,6 @@ func (x *genMono) trArray(n *ast.ArrayType, tp *ast.Field, h Handle, isbytes boo
 }
 
 func (x *genMono) trMethodBody(r *ast.BlockStmt, tp *ast.Field, h Handle, isbytes bool) {
-	// sfx, writer, reader, hnameUp := genMonoIsBytesVals(h.Name(), isbytes)
 	// find the parent node for an indexExpr, or a T/*T, and set the value back in there
 
 	fn := func(pnode ast.Node) bool {
@@ -411,7 +435,6 @@ func (x *genMono) trMethodBody(r *ast.BlockStmt, tp *ast.Field, h Handle, isbyte
 }
 
 func (x *genMono) trField(f *ast.Field, tpt *ast.Field, h Handle, isbytes bool, state genMonoFieldState) (tp *ast.Field) {
-	// sfx, writer, reader, hnameUp := genMonoIsBytesVals(h.Name(), isbytes)
 	var pn *ast.Ident
 	switch nn := f.Type.(type) {
 	case *ast.IndexExpr:
@@ -457,6 +480,9 @@ func (x *genMono) updateIdentForT(pn *ast.Ident, h Handle, tp *ast.Field,
 
 	if pn.Name != "T" && lookupTP {
 		tp = x.typParam[pn.Name]
+		if tp == nil {
+			tp = x.typParamTransient[pn.Name]
+		}
 	}
 
 	paramtyp := tp.Type.(*ast.Ident).Name
@@ -569,11 +595,10 @@ func genMonoAll() {
 		(*BincHandle)(nil),
 		(*MsgpackHandle)(nil),
 	}
-	// hdls = []Handle{(*SimpleHandle)(nil)} // MARKER 2025 uncomment
 	var m genMono
 	m.init()
 	for _, v := range hdls {
-		m.do(v)
+		m.hdl(v)
 	}
 }
 
