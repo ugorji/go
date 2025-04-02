@@ -33,6 +33,51 @@ type encoderMsgpackBytes struct {
 	e  msgpackEncDriverBytes
 	encoderBase
 }
+type helperDecDriverMsgpackBytes struct{}
+type decFnMsgpackBytes struct {
+	i  decFnInfo
+	fd func(*decoderMsgpackBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnMsgpackBytes struct {
+	rtid uintptr
+	fn   *decFnMsgpackBytes
+}
+type decoderMsgpackBytes struct {
+	dh helperDecDriverMsgpackBytes
+	fp *fastpathDsMsgpackBytes
+	d  msgpackDecDriverBytes
+	decoderBase
+}
+type decSliceHelperMsgpackBytes struct {
+	d     *decoderMsgpackBytes
+	ct    valueType
+	Array bool
+	IsNil bool
+}
+type msgpackEncDriverBytes struct {
+	noBuiltInTypes
+	encDriverNoopContainerWriter
+	encDriverNoState
+	encDriverContainerNoTrackerT
+	encInit2er
+
+	h *MsgpackHandle
+	e *encoderBase
+	w bytesEncAppender
+}
+type msgpackDecDriverBytes struct {
+	decDriverNoopContainerReader
+	decDriverNoopNumberHelper
+	decInit2er
+
+	h *MsgpackHandle
+	d *decoderBase
+	r bytesDecReader
+
+	bdAndBdread
+	bytes bool
+	noBuiltInTypes
+}
 
 func (e *encoderMsgpackBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
@@ -1312,23 +1357,6 @@ func (dh helperEncDriverMsgpackBytes) encFnLoad(rt reflect.Type, rtid uintptr, t
 	}
 	return
 }
-
-type helperDecDriverMsgpackBytes struct{}
-type decFnMsgpackBytes struct {
-	i  decFnInfo
-	fd func(*decoderMsgpackBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnMsgpackBytes struct {
-	rtid uintptr
-	fn   *decFnMsgpackBytes
-}
-type decoderMsgpackBytes struct {
-	dh helperDecDriverMsgpackBytes
-	fp *fastpathDsMsgpackBytes
-	d  msgpackDecDriverBytes
-	decoderBase
-}
-
 func (d *decoderMsgpackBytes) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
@@ -2561,13 +2589,6 @@ func (d *decoderMsgpackBytes) fnNoExt(t reflect.Type) *decFnMsgpackBytes {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-type decSliceHelperMsgpackBytes struct {
-	d     *decoderMsgpackBytes
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
 func (d *decoderMsgpackBytes) decSliceHelperStart() (x decSliceHelperMsgpackBytes, clen int) {
 	x.ct = d.d.ContainerType()
 	x.d = d
@@ -2865,19 +2886,6 @@ func (dh helperDecDriverMsgpackBytes) decFnLoad(rt reflect.Type, rtid uintptr, t
 	}
 	return
 }
-
-type msgpackEncDriverBytes struct {
-	noBuiltInTypes
-	encDriverNoopContainerWriter
-	encDriverNoState
-	encDriverContainerNoTrackerT
-	encInit2er
-
-	h *MsgpackHandle
-	e *encoderBase
-	w bytesEncAppender
-}
-
 func (e *msgpackEncDriverBytes) EncodeNil() {
 	e.w.writen1(mpNil)
 }
@@ -3098,20 +3106,6 @@ func (e *msgpackEncDriverBytes) writeContainerLen(ct msgpackContainerType, l int
 		e.w.writen1(ct.b32)
 		e.w.writen4(bigen.PutUint32(uint32(l)))
 	}
-}
-
-type msgpackDecDriverBytes struct {
-	decDriverNoopContainerReader
-	decDriverNoopNumberHelper
-	decInit2er
-
-	h *MsgpackHandle
-	d *decoderBase
-	r bytesDecReader
-
-	bdAndBdread
-	bytes bool
-	noBuiltInTypes
 }
 
 func (d *msgpackDecDriverBytes) DecodeNaked() {
@@ -3808,6 +3802,51 @@ type encoderMsgpackIO struct {
 	fp *fastpathEsMsgpackIO
 	e  msgpackEncDriverIO
 	encoderBase
+}
+type helperDecDriverMsgpackIO struct{}
+type decFnMsgpackIO struct {
+	i  decFnInfo
+	fd func(*decoderMsgpackIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnMsgpackIO struct {
+	rtid uintptr
+	fn   *decFnMsgpackIO
+}
+type decoderMsgpackIO struct {
+	dh helperDecDriverMsgpackIO
+	fp *fastpathDsMsgpackIO
+	d  msgpackDecDriverIO
+	decoderBase
+}
+type decSliceHelperMsgpackIO struct {
+	d     *decoderMsgpackIO
+	ct    valueType
+	Array bool
+	IsNil bool
+}
+type msgpackEncDriverIO struct {
+	noBuiltInTypes
+	encDriverNoopContainerWriter
+	encDriverNoState
+	encDriverContainerNoTrackerT
+	encInit2er
+
+	h *MsgpackHandle
+	e *encoderBase
+	w bufioEncWriter
+}
+type msgpackDecDriverIO struct {
+	decDriverNoopContainerReader
+	decDriverNoopNumberHelper
+	decInit2er
+
+	h *MsgpackHandle
+	d *decoderBase
+	r ioDecReader
+
+	bdAndBdread
+	bytes bool
+	noBuiltInTypes
 }
 
 func (e *encoderMsgpackIO) rawExt(_ *encFnInfo, rv reflect.Value) {
@@ -5088,23 +5127,6 @@ func (dh helperEncDriverMsgpackIO) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type helperDecDriverMsgpackIO struct{}
-type decFnMsgpackIO struct {
-	i  decFnInfo
-	fd func(*decoderMsgpackIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnMsgpackIO struct {
-	rtid uintptr
-	fn   *decFnMsgpackIO
-}
-type decoderMsgpackIO struct {
-	dh helperDecDriverMsgpackIO
-	fp *fastpathDsMsgpackIO
-	d  msgpackDecDriverIO
-	decoderBase
-}
-
 func (d *decoderMsgpackIO) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
@@ -6337,13 +6359,6 @@ func (d *decoderMsgpackIO) fnNoExt(t reflect.Type) *decFnMsgpackIO {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-type decSliceHelperMsgpackIO struct {
-	d     *decoderMsgpackIO
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
 func (d *decoderMsgpackIO) decSliceHelperStart() (x decSliceHelperMsgpackIO, clen int) {
 	x.ct = d.d.ContainerType()
 	x.d = d
@@ -6641,19 +6656,6 @@ func (dh helperDecDriverMsgpackIO) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type msgpackEncDriverIO struct {
-	noBuiltInTypes
-	encDriverNoopContainerWriter
-	encDriverNoState
-	encDriverContainerNoTrackerT
-	encInit2er
-
-	h *MsgpackHandle
-	e *encoderBase
-	w bufioEncWriter
-}
-
 func (e *msgpackEncDriverIO) EncodeNil() {
 	e.w.writen1(mpNil)
 }
@@ -6874,20 +6876,6 @@ func (e *msgpackEncDriverIO) writeContainerLen(ct msgpackContainerType, l int) {
 		e.w.writen1(ct.b32)
 		e.w.writen4(bigen.PutUint32(uint32(l)))
 	}
-}
-
-type msgpackDecDriverIO struct {
-	decDriverNoopContainerReader
-	decDriverNoopNumberHelper
-	decInit2er
-
-	h *MsgpackHandle
-	d *decoderBase
-	r ioDecReader
-
-	bdAndBdread
-	bytes bool
-	noBuiltInTypes
 }
 
 func (d *msgpackDecDriverIO) DecodeNaked() {

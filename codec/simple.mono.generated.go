@@ -32,6 +32,52 @@ type encoderSimpleBytes struct {
 	e  simpleEncDriverBytes
 	encoderBase
 }
+type helperDecDriverSimpleBytes struct{}
+type decFnSimpleBytes struct {
+	i  decFnInfo
+	fd func(*decoderSimpleBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnSimpleBytes struct {
+	rtid uintptr
+	fn   *decFnSimpleBytes
+}
+type decoderSimpleBytes struct {
+	dh helperDecDriverSimpleBytes
+	fp *fastpathDsSimpleBytes
+	d  simpleDecDriverBytes
+	decoderBase
+}
+type decSliceHelperSimpleBytes struct {
+	d     *decoderSimpleBytes
+	ct    valueType
+	Array bool
+	IsNil bool
+}
+type simpleEncDriverBytes struct {
+	noBuiltInTypes
+	encDriverNoopContainerWriter
+	encDriverNoState
+	encDriverContainerNoTrackerT
+	encInit2er
+
+	h *SimpleHandle
+	e *encoderBase
+
+	w bytesEncAppender
+}
+type simpleDecDriverBytes struct {
+	h *SimpleHandle
+	d *decoderBase
+	r bytesDecReader
+
+	bdAndBdread
+	bytes bool
+
+	noBuiltInTypes
+
+	decDriverNoopContainerReader
+	decInit2er
+}
 
 func (e *encoderSimpleBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
@@ -1311,23 +1357,6 @@ func (dh helperEncDriverSimpleBytes) encFnLoad(rt reflect.Type, rtid uintptr, ti
 	}
 	return
 }
-
-type helperDecDriverSimpleBytes struct{}
-type decFnSimpleBytes struct {
-	i  decFnInfo
-	fd func(*decoderSimpleBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnSimpleBytes struct {
-	rtid uintptr
-	fn   *decFnSimpleBytes
-}
-type decoderSimpleBytes struct {
-	dh helperDecDriverSimpleBytes
-	fp *fastpathDsSimpleBytes
-	d  simpleDecDriverBytes
-	decoderBase
-}
-
 func (d *decoderSimpleBytes) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
@@ -2560,13 +2589,6 @@ func (d *decoderSimpleBytes) fnNoExt(t reflect.Type) *decFnSimpleBytes {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-type decSliceHelperSimpleBytes struct {
-	d     *decoderSimpleBytes
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
 func (d *decoderSimpleBytes) decSliceHelperStart() (x decSliceHelperSimpleBytes, clen int) {
 	x.ct = d.d.ContainerType()
 	x.d = d
@@ -2864,20 +2886,6 @@ func (dh helperDecDriverSimpleBytes) decFnLoad(rt reflect.Type, rtid uintptr, ti
 	}
 	return
 }
-
-type simpleEncDriverBytes struct {
-	noBuiltInTypes
-	encDriverNoopContainerWriter
-	encDriverNoState
-	encDriverContainerNoTrackerT
-	encInit2er
-
-	h *SimpleHandle
-	e *encoderBase
-
-	w bytesEncAppender
-}
-
 func (e *simpleEncDriverBytes) EncodeNil() {
 	e.w.writen1(simpleVdNil)
 }
@@ -3036,20 +3044,6 @@ func (e *simpleEncDriverBytes) EncodeTime(t time.Time) {
 	halt.onerror(err)
 	e.w.writen2(simpleVdTime, uint8(len(v)))
 	e.w.writeb(v)
-}
-
-type simpleDecDriverBytes struct {
-	h *SimpleHandle
-	d *decoderBase
-	r bytesDecReader
-
-	bdAndBdread
-	bytes bool
-
-	noBuiltInTypes
-
-	decDriverNoopContainerReader
-	decInit2er
 }
 
 func (d *simpleDecDriverBytes) readNextBd() {
@@ -3552,6 +3546,52 @@ type encoderSimpleIO struct {
 	fp *fastpathEsSimpleIO
 	e  simpleEncDriverIO
 	encoderBase
+}
+type helperDecDriverSimpleIO struct{}
+type decFnSimpleIO struct {
+	i  decFnInfo
+	fd func(*decoderSimpleIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnSimpleIO struct {
+	rtid uintptr
+	fn   *decFnSimpleIO
+}
+type decoderSimpleIO struct {
+	dh helperDecDriverSimpleIO
+	fp *fastpathDsSimpleIO
+	d  simpleDecDriverIO
+	decoderBase
+}
+type decSliceHelperSimpleIO struct {
+	d     *decoderSimpleIO
+	ct    valueType
+	Array bool
+	IsNil bool
+}
+type simpleEncDriverIO struct {
+	noBuiltInTypes
+	encDriverNoopContainerWriter
+	encDriverNoState
+	encDriverContainerNoTrackerT
+	encInit2er
+
+	h *SimpleHandle
+	e *encoderBase
+
+	w bufioEncWriter
+}
+type simpleDecDriverIO struct {
+	h *SimpleHandle
+	d *decoderBase
+	r ioDecReader
+
+	bdAndBdread
+	bytes bool
+
+	noBuiltInTypes
+
+	decDriverNoopContainerReader
+	decInit2er
 }
 
 func (e *encoderSimpleIO) rawExt(_ *encFnInfo, rv reflect.Value) {
@@ -4832,23 +4872,6 @@ func (dh helperEncDriverSimpleIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfo
 	}
 	return
 }
-
-type helperDecDriverSimpleIO struct{}
-type decFnSimpleIO struct {
-	i  decFnInfo
-	fd func(*decoderSimpleIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnSimpleIO struct {
-	rtid uintptr
-	fn   *decFnSimpleIO
-}
-type decoderSimpleIO struct {
-	dh helperDecDriverSimpleIO
-	fp *fastpathDsSimpleIO
-	d  simpleDecDriverIO
-	decoderBase
-}
-
 func (d *decoderSimpleIO) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
@@ -6081,13 +6104,6 @@ func (d *decoderSimpleIO) fnNoExt(t reflect.Type) *decFnSimpleIO {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-type decSliceHelperSimpleIO struct {
-	d     *decoderSimpleIO
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
 func (d *decoderSimpleIO) decSliceHelperStart() (x decSliceHelperSimpleIO, clen int) {
 	x.ct = d.d.ContainerType()
 	x.d = d
@@ -6385,20 +6401,6 @@ func (dh helperDecDriverSimpleIO) decFnLoad(rt reflect.Type, rtid uintptr, tinfo
 	}
 	return
 }
-
-type simpleEncDriverIO struct {
-	noBuiltInTypes
-	encDriverNoopContainerWriter
-	encDriverNoState
-	encDriverContainerNoTrackerT
-	encInit2er
-
-	h *SimpleHandle
-	e *encoderBase
-
-	w bufioEncWriter
-}
-
 func (e *simpleEncDriverIO) EncodeNil() {
 	e.w.writen1(simpleVdNil)
 }
@@ -6557,20 +6559,6 @@ func (e *simpleEncDriverIO) EncodeTime(t time.Time) {
 	halt.onerror(err)
 	e.w.writen2(simpleVdTime, uint8(len(v)))
 	e.w.writeb(v)
-}
-
-type simpleDecDriverIO struct {
-	h *SimpleHandle
-	d *decoderBase
-	r ioDecReader
-
-	bdAndBdread
-	bytes bool
-
-	noBuiltInTypes
-
-	decDriverNoopContainerReader
-	decInit2er
 }
 
 func (d *simpleDecDriverIO) readNextBd() {

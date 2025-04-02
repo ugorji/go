@@ -33,6 +33,52 @@ type encoderBincBytes struct {
 	e  bincEncDriverBytes
 	encoderBase
 }
+type helperDecDriverBincBytes struct{}
+type decFnBincBytes struct {
+	i  decFnInfo
+	fd func(*decoderBincBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnBincBytes struct {
+	rtid uintptr
+	fn   *decFnBincBytes
+}
+type decoderBincBytes struct {
+	dh helperDecDriverBincBytes
+	fp *fastpathDsBincBytes
+	d  bincDecDriverBytes
+	decoderBase
+}
+type decSliceHelperBincBytes struct {
+	d     *decoderBincBytes
+	ct    valueType
+	Array bool
+	IsNil bool
+}
+type bincEncDriverBytes struct {
+	noBuiltInTypes
+	encDriverNoopContainerWriter
+	encDriverContainerNoTrackerT
+	encInit2er
+
+	h *BincHandle
+	e *encoderBase
+	w bytesEncAppender
+	bincEncState
+}
+type bincDecDriverBytes struct {
+	decDriverNoopContainerReader
+
+	decInit2er
+	noBuiltInTypes
+
+	h *BincHandle
+	d *decoderBase
+	r bytesDecReader
+
+	bincDecState
+
+	bytes bool
+}
 
 func (e *encoderBincBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
@@ -1312,23 +1358,6 @@ func (dh helperEncDriverBincBytes) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type helperDecDriverBincBytes struct{}
-type decFnBincBytes struct {
-	i  decFnInfo
-	fd func(*decoderBincBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnBincBytes struct {
-	rtid uintptr
-	fn   *decFnBincBytes
-}
-type decoderBincBytes struct {
-	dh helperDecDriverBincBytes
-	fp *fastpathDsBincBytes
-	d  bincDecDriverBytes
-	decoderBase
-}
-
 func (d *decoderBincBytes) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
@@ -2561,13 +2590,6 @@ func (d *decoderBincBytes) fnNoExt(t reflect.Type) *decFnBincBytes {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-type decSliceHelperBincBytes struct {
-	d     *decoderBincBytes
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
 func (d *decoderBincBytes) decSliceHelperStart() (x decSliceHelperBincBytes, clen int) {
 	x.ct = d.d.ContainerType()
 	x.d = d
@@ -2865,19 +2887,6 @@ func (dh helperDecDriverBincBytes) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type bincEncDriverBytes struct {
-	noBuiltInTypes
-	encDriverNoopContainerWriter
-	encDriverContainerNoTrackerT
-	encInit2er
-
-	h *BincHandle
-	e *encoderBase
-	w bytesEncAppender
-	bincEncState
-}
-
 func (e *bincEncDriverBytes) EncodeNil() {
 	e.w.writen1(bincBdNil)
 }
@@ -3158,21 +3167,6 @@ func (e *bincEncDriverBytes) encLenNumber(bd byte, v uint64) {
 		e.w.writen1(bd | 0x03)
 		e.w.writen8(bigen.PutUint64(uint64(v)))
 	}
-}
-
-type bincDecDriverBytes struct {
-	decDriverNoopContainerReader
-
-	decInit2er
-	noBuiltInTypes
-
-	h *BincHandle
-	d *decoderBase
-	r bytesDecReader
-
-	bincDecState
-
-	bytes bool
 }
 
 func (d *bincDecDriverBytes) readNextBd() {
@@ -3873,6 +3867,52 @@ type encoderBincIO struct {
 	fp *fastpathEsBincIO
 	e  bincEncDriverIO
 	encoderBase
+}
+type helperDecDriverBincIO struct{}
+type decFnBincIO struct {
+	i  decFnInfo
+	fd func(*decoderBincIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnBincIO struct {
+	rtid uintptr
+	fn   *decFnBincIO
+}
+type decoderBincIO struct {
+	dh helperDecDriverBincIO
+	fp *fastpathDsBincIO
+	d  bincDecDriverIO
+	decoderBase
+}
+type decSliceHelperBincIO struct {
+	d     *decoderBincIO
+	ct    valueType
+	Array bool
+	IsNil bool
+}
+type bincEncDriverIO struct {
+	noBuiltInTypes
+	encDriverNoopContainerWriter
+	encDriverContainerNoTrackerT
+	encInit2er
+
+	h *BincHandle
+	e *encoderBase
+	w bufioEncWriter
+	bincEncState
+}
+type bincDecDriverIO struct {
+	decDriverNoopContainerReader
+
+	decInit2er
+	noBuiltInTypes
+
+	h *BincHandle
+	d *decoderBase
+	r ioDecReader
+
+	bincDecState
+
+	bytes bool
 }
 
 func (e *encoderBincIO) rawExt(_ *encFnInfo, rv reflect.Value) {
@@ -5153,23 +5193,6 @@ func (dh helperEncDriverBincIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	}
 	return
 }
-
-type helperDecDriverBincIO struct{}
-type decFnBincIO struct {
-	i  decFnInfo
-	fd func(*decoderBincIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnBincIO struct {
-	rtid uintptr
-	fn   *decFnBincIO
-}
-type decoderBincIO struct {
-	dh helperDecDriverBincIO
-	fp *fastpathDsBincIO
-	d  bincDecDriverIO
-	decoderBase
-}
-
 func (d *decoderBincIO) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
@@ -6402,13 +6425,6 @@ func (d *decoderBincIO) fnNoExt(t reflect.Type) *decFnBincIO {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-type decSliceHelperBincIO struct {
-	d     *decoderBincIO
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
 func (d *decoderBincIO) decSliceHelperStart() (x decSliceHelperBincIO, clen int) {
 	x.ct = d.d.ContainerType()
 	x.d = d
@@ -6706,19 +6722,6 @@ func (dh helperDecDriverBincIO) decFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	}
 	return
 }
-
-type bincEncDriverIO struct {
-	noBuiltInTypes
-	encDriverNoopContainerWriter
-	encDriverContainerNoTrackerT
-	encInit2er
-
-	h *BincHandle
-	e *encoderBase
-	w bufioEncWriter
-	bincEncState
-}
-
 func (e *bincEncDriverIO) EncodeNil() {
 	e.w.writen1(bincBdNil)
 }
@@ -6999,21 +7002,6 @@ func (e *bincEncDriverIO) encLenNumber(bd byte, v uint64) {
 		e.w.writen1(bd | 0x03)
 		e.w.writen8(bigen.PutUint64(uint64(v)))
 	}
-}
-
-type bincDecDriverIO struct {
-	decDriverNoopContainerReader
-
-	decInit2er
-	noBuiltInTypes
-
-	h *BincHandle
-	d *decoderBase
-	r ioDecReader
-
-	bincDecState
-
-	bytes bool
 }
 
 func (d *bincDecDriverIO) readNextBd() {

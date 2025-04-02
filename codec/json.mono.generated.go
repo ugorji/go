@@ -37,6 +37,60 @@ type encoderJsonBytes struct {
 	e  jsonEncDriverBytes
 	encoderBase
 }
+type helperDecDriverJsonBytes struct{}
+type decFnJsonBytes struct {
+	i  decFnInfo
+	fd func(*decoderJsonBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnJsonBytes struct {
+	rtid uintptr
+	fn   *decFnJsonBytes
+}
+type decoderJsonBytes struct {
+	dh helperDecDriverJsonBytes
+	fp *fastpathDsJsonBytes
+	d  jsonDecDriverBytes
+	decoderBase
+}
+type decSliceHelperJsonBytes struct {
+	d     *decoderJsonBytes
+	ct    valueType
+	Array bool
+	IsNil bool
+}
+type jsonEncDriverBytes struct {
+	noBuiltInTypes
+	h *JsonHandle
+	e *encoderBase
+	s *bitset256
+
+	w bytesEncAppender
+
+	enc encoderI
+
+	jsonEncState
+
+	ks bool
+	is byte
+
+	typical bool
+	rawext  bool
+
+	b [48]byte
+}
+type jsonDecDriverBytes struct {
+	noBuiltInTypes
+	decDriverNoopNumberHelper
+	h *JsonHandle
+	d *decoderBase
+
+	r bytesDecReader
+	jsonDecState
+
+	bytes bool
+
+	dec decoderI
+}
 
 func (e *encoderJsonBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
@@ -1316,23 +1370,6 @@ func (dh helperEncDriverJsonBytes) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type helperDecDriverJsonBytes struct{}
-type decFnJsonBytes struct {
-	i  decFnInfo
-	fd func(*decoderJsonBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnJsonBytes struct {
-	rtid uintptr
-	fn   *decFnJsonBytes
-}
-type decoderJsonBytes struct {
-	dh helperDecDriverJsonBytes
-	fp *fastpathDsJsonBytes
-	d  jsonDecDriverBytes
-	decoderBase
-}
-
 func (d *decoderJsonBytes) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
@@ -2565,13 +2602,6 @@ func (d *decoderJsonBytes) fnNoExt(t reflect.Type) *decFnJsonBytes {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-type decSliceHelperJsonBytes struct {
-	d     *decoderJsonBytes
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
 func (d *decoderJsonBytes) decSliceHelperStart() (x decSliceHelperJsonBytes, clen int) {
 	x.ct = d.d.ContainerType()
 	x.d = d
@@ -2869,28 +2899,6 @@ func (dh helperDecDriverJsonBytes) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type jsonEncDriverBytes struct {
-	noBuiltInTypes
-	h *JsonHandle
-	e *encoderBase
-	s *bitset256
-
-	w bytesEncAppender
-
-	enc encoderI
-
-	jsonEncState
-
-	ks bool
-	is byte
-
-	typical bool
-	rawext  bool
-
-	b [48]byte
-}
-
 func (e *jsonEncDriverBytes) writeIndent() {
 	e.w.writen1('\n')
 	x := int(e.di) * int(e.dl)
@@ -3197,20 +3205,6 @@ func (e *jsonEncDriverBytes) atEndOfEncode() {
 		}
 		e.w.writen1(c)
 	}
-}
-
-type jsonDecDriverBytes struct {
-	noBuiltInTypes
-	decDriverNoopNumberHelper
-	h *JsonHandle
-	d *decoderBase
-
-	r bytesDecReader
-	jsonDecState
-
-	bytes bool
-
-	dec decoderI
 }
 
 func (d *jsonDecDriverBytes) ReadMapStart() int {
@@ -3868,6 +3862,60 @@ type encoderJsonIO struct {
 	fp *fastpathEsJsonIO
 	e  jsonEncDriverIO
 	encoderBase
+}
+type helperDecDriverJsonIO struct{}
+type decFnJsonIO struct {
+	i  decFnInfo
+	fd func(*decoderJsonIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnJsonIO struct {
+	rtid uintptr
+	fn   *decFnJsonIO
+}
+type decoderJsonIO struct {
+	dh helperDecDriverJsonIO
+	fp *fastpathDsJsonIO
+	d  jsonDecDriverIO
+	decoderBase
+}
+type decSliceHelperJsonIO struct {
+	d     *decoderJsonIO
+	ct    valueType
+	Array bool
+	IsNil bool
+}
+type jsonEncDriverIO struct {
+	noBuiltInTypes
+	h *JsonHandle
+	e *encoderBase
+	s *bitset256
+
+	w bufioEncWriter
+
+	enc encoderI
+
+	jsonEncState
+
+	ks bool
+	is byte
+
+	typical bool
+	rawext  bool
+
+	b [48]byte
+}
+type jsonDecDriverIO struct {
+	noBuiltInTypes
+	decDriverNoopNumberHelper
+	h *JsonHandle
+	d *decoderBase
+
+	r ioDecReader
+	jsonDecState
+
+	bytes bool
+
+	dec decoderI
 }
 
 func (e *encoderJsonIO) rawExt(_ *encFnInfo, rv reflect.Value) {
@@ -5148,23 +5196,6 @@ func (dh helperEncDriverJsonIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	}
 	return
 }
-
-type helperDecDriverJsonIO struct{}
-type decFnJsonIO struct {
-	i  decFnInfo
-	fd func(*decoderJsonIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnJsonIO struct {
-	rtid uintptr
-	fn   *decFnJsonIO
-}
-type decoderJsonIO struct {
-	dh helperDecDriverJsonIO
-	fp *fastpathDsJsonIO
-	d  jsonDecDriverIO
-	decoderBase
-}
-
 func (d *decoderJsonIO) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
@@ -6397,13 +6428,6 @@ func (d *decoderJsonIO) fnNoExt(t reflect.Type) *decFnJsonIO {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-type decSliceHelperJsonIO struct {
-	d     *decoderJsonIO
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
 func (d *decoderJsonIO) decSliceHelperStart() (x decSliceHelperJsonIO, clen int) {
 	x.ct = d.d.ContainerType()
 	x.d = d
@@ -6701,28 +6725,6 @@ func (dh helperDecDriverJsonIO) decFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	}
 	return
 }
-
-type jsonEncDriverIO struct {
-	noBuiltInTypes
-	h *JsonHandle
-	e *encoderBase
-	s *bitset256
-
-	w bufioEncWriter
-
-	enc encoderI
-
-	jsonEncState
-
-	ks bool
-	is byte
-
-	typical bool
-	rawext  bool
-
-	b [48]byte
-}
-
 func (e *jsonEncDriverIO) writeIndent() {
 	e.w.writen1('\n')
 	x := int(e.di) * int(e.dl)
@@ -7029,20 +7031,6 @@ func (e *jsonEncDriverIO) atEndOfEncode() {
 		}
 		e.w.writen1(c)
 	}
-}
-
-type jsonDecDriverIO struct {
-	noBuiltInTypes
-	decDriverNoopNumberHelper
-	h *JsonHandle
-	d *decoderBase
-
-	r ioDecReader
-	jsonDecState
-
-	bytes bool
-
-	dec decoderI
 }
 
 func (d *jsonDecDriverIO) ReadMapStart() int {

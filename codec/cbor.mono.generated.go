@@ -33,6 +33,53 @@ type encoderCborBytes struct {
 	e  cborEncDriverBytes
 	encoderBase
 }
+type helperDecDriverCborBytes struct{}
+type decFnCborBytes struct {
+	i  decFnInfo
+	fd func(*decoderCborBytes, *decFnInfo, reflect.Value)
+}
+type decRtidFnCborBytes struct {
+	rtid uintptr
+	fn   *decFnCborBytes
+}
+type decoderCborBytes struct {
+	dh helperDecDriverCborBytes
+	fp *fastpathDsCborBytes
+	d  cborDecDriverBytes
+	decoderBase
+}
+type decSliceHelperCborBytes struct {
+	d     *decoderCborBytes
+	ct    valueType
+	Array bool
+	IsNil bool
+}
+type cborEncDriverBytes struct {
+	noBuiltInTypes
+	encDriverNoState
+	encDriverNoopContainerWriter
+	encDriverContainerNoTrackerT
+
+	h   *CborHandle
+	e   *encoderBase
+	w   bytesEncAppender
+	enc encoderI
+
+	b [40]byte
+}
+type cborDecDriverBytes struct {
+	decDriverNoopContainerReader
+
+	noBuiltInTypes
+
+	h   *CborHandle
+	d   *decoderBase
+	r   bytesDecReader
+	dec decoderI
+	bdAndBdread
+	st    bool
+	bytes bool
+}
 
 func (e *encoderCborBytes) rawExt(_ *encFnInfo, rv reflect.Value) {
 	e.e.EncodeRawExt(rv2i(rv).(*RawExt))
@@ -1312,23 +1359,6 @@ func (dh helperEncDriverCborBytes) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type helperDecDriverCborBytes struct{}
-type decFnCborBytes struct {
-	i  decFnInfo
-	fd func(*decoderCborBytes, *decFnInfo, reflect.Value)
-}
-type decRtidFnCborBytes struct {
-	rtid uintptr
-	fn   *decFnCborBytes
-}
-type decoderCborBytes struct {
-	dh helperDecDriverCborBytes
-	fp *fastpathDsCborBytes
-	d  cborDecDriverBytes
-	decoderBase
-}
-
 func (d *decoderCborBytes) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
@@ -2561,13 +2591,6 @@ func (d *decoderCborBytes) fnNoExt(t reflect.Type) *decFnCborBytes {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-type decSliceHelperCborBytes struct {
-	d     *decoderCborBytes
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
 func (d *decoderCborBytes) decSliceHelperStart() (x decSliceHelperCborBytes, clen int) {
 	x.ct = d.d.ContainerType()
 	x.d = d
@@ -2865,21 +2888,6 @@ func (dh helperDecDriverCborBytes) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 	}
 	return
 }
-
-type cborEncDriverBytes struct {
-	noBuiltInTypes
-	encDriverNoState
-	encDriverNoopContainerWriter
-	encDriverContainerNoTrackerT
-
-	h   *CborHandle
-	e   *encoderBase
-	w   bytesEncAppender
-	enc encoderI
-
-	b [40]byte
-}
-
 func (e *cborEncDriverBytes) EncodeNil() {
 	e.w.writen1(cborBdNil)
 }
@@ -3063,20 +3071,6 @@ func (e *cborEncDriverBytes) encStringBytesS(bb byte, v string) {
 		e.encLen(bb, len(v))
 		e.w.writestr(v)
 	}
-}
-
-type cborDecDriverBytes struct {
-	decDriverNoopContainerReader
-
-	noBuiltInTypes
-
-	h   *CborHandle
-	d   *decoderBase
-	r   bytesDecReader
-	dec decoderI
-	bdAndBdread
-	st    bool
-	bytes bool
 }
 
 func (d *cborDecDriverBytes) readNextBd() {
@@ -3702,6 +3696,53 @@ type encoderCborIO struct {
 	fp *fastpathEsCborIO
 	e  cborEncDriverIO
 	encoderBase
+}
+type helperDecDriverCborIO struct{}
+type decFnCborIO struct {
+	i  decFnInfo
+	fd func(*decoderCborIO, *decFnInfo, reflect.Value)
+}
+type decRtidFnCborIO struct {
+	rtid uintptr
+	fn   *decFnCborIO
+}
+type decoderCborIO struct {
+	dh helperDecDriverCborIO
+	fp *fastpathDsCborIO
+	d  cborDecDriverIO
+	decoderBase
+}
+type decSliceHelperCborIO struct {
+	d     *decoderCborIO
+	ct    valueType
+	Array bool
+	IsNil bool
+}
+type cborEncDriverIO struct {
+	noBuiltInTypes
+	encDriverNoState
+	encDriverNoopContainerWriter
+	encDriverContainerNoTrackerT
+
+	h   *CborHandle
+	e   *encoderBase
+	w   bufioEncWriter
+	enc encoderI
+
+	b [40]byte
+}
+type cborDecDriverIO struct {
+	decDriverNoopContainerReader
+
+	noBuiltInTypes
+
+	h   *CborHandle
+	d   *decoderBase
+	r   ioDecReader
+	dec decoderI
+	bdAndBdread
+	st    bool
+	bytes bool
 }
 
 func (e *encoderCborIO) rawExt(_ *encFnInfo, rv reflect.Value) {
@@ -4982,23 +5023,6 @@ func (dh helperEncDriverCborIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	}
 	return
 }
-
-type helperDecDriverCborIO struct{}
-type decFnCborIO struct {
-	i  decFnInfo
-	fd func(*decoderCborIO, *decFnInfo, reflect.Value)
-}
-type decRtidFnCborIO struct {
-	rtid uintptr
-	fn   *decFnCborIO
-}
-type decoderCborIO struct {
-	dh helperDecDriverCborIO
-	fp *fastpathDsCborIO
-	d  cborDecDriverIO
-	decoderBase
-}
-
 func (d *decoderCborIO) rawExt(f *decFnInfo, rv reflect.Value) {
 	d.d.DecodeExt(rv2i(rv), f.ti.rt, 0, nil)
 }
@@ -6231,13 +6255,6 @@ func (d *decoderCborIO) fnNoExt(t reflect.Type) *decFnCborIO {
 	return d.dh.decFnViaBH(t, d.rtidFnNoExt, d.h, d.fp, true)
 }
 
-type decSliceHelperCborIO struct {
-	d     *decoderCborIO
-	ct    valueType
-	Array bool
-	IsNil bool
-}
-
 func (d *decoderCborIO) decSliceHelperStart() (x decSliceHelperCborIO, clen int) {
 	x.ct = d.d.ContainerType()
 	x.d = d
@@ -6535,21 +6552,6 @@ func (dh helperDecDriverCborIO) decFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 	}
 	return
 }
-
-type cborEncDriverIO struct {
-	noBuiltInTypes
-	encDriverNoState
-	encDriverNoopContainerWriter
-	encDriverContainerNoTrackerT
-
-	h   *CborHandle
-	e   *encoderBase
-	w   bufioEncWriter
-	enc encoderI
-
-	b [40]byte
-}
-
 func (e *cborEncDriverIO) EncodeNil() {
 	e.w.writen1(cborBdNil)
 }
@@ -6733,20 +6735,6 @@ func (e *cborEncDriverIO) encStringBytesS(bb byte, v string) {
 		e.encLen(bb, len(v))
 		e.w.writestr(v)
 	}
-}
-
-type cborDecDriverIO struct {
-	decDriverNoopContainerReader
-
-	noBuiltInTypes
-
-	h   *CborHandle
-	d   *decoderBase
-	r   ioDecReader
-	dec decoderI
-	bdAndBdread
-	st    bool
-	bytes bool
 }
 
 func (d *cborDecDriverIO) readNextBd() {
