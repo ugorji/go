@@ -125,31 +125,14 @@ const (
 var (
 	// jsonTabs and jsonSpaces are used as caches for indents
 	jsonTabs, jsonSpaces [jsonSpacesOrTabsLen]byte
-
-	jsonCharHtmlSafeSet bitset256
-	jsonCharSafeSet     bitset256
 )
 
 func init() {
-	var i byte
-	for i = 0; i < jsonSpacesOrTabsLen; i++ {
+	for i := byte(0); i < jsonSpacesOrTabsLen; i++ {
 		jsonSpaces[i] = ' '
 		jsonTabs[i] = '\t'
 	}
 
-	// populate the safe values as true: note: ASCII control characters are (0-31)
-	// jsonCharSafeSet:     all true except (0-31) " \
-	// jsonCharHtmlSafeSet: all true except (0-31) " \ < > &
-	for i = 32; i < utf8.RuneSelf; i++ {
-		switch i {
-		case '"', '\\':
-		case '<', '>', '&':
-			jsonCharSafeSet.set(i) // = true
-		default:
-			jsonCharSafeSet.set(i)
-			jsonCharHtmlSafeSet.set(i)
-		}
-	}
 }
 
 // ----------------
@@ -447,6 +430,8 @@ func (e *jsonEncDriver[T]) EncodeString(v string) {
 	}
 	e.quoteStr(v)
 }
+
+func (e *jsonEncDriver[T]) EncodeStringNoEscape4Json(v string) { e.w.writeqstr(v) }
 
 func (e *jsonEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 	// if encoding raw bytes and RawBytesExt is configured, use it to encode
@@ -1386,9 +1371,9 @@ func (e *jsonEncDriver[T]) reset() {
 	// cache values from the handle
 	e.typical = e.h.typical()
 	if e.h.HTMLCharsAsIs {
-		e.s = &jsonCharSafeSet
+		e.s = &jsonCharSafeBitset
 	} else {
-		e.s = &jsonCharHtmlSafeSet
+		e.s = &jsonCharHtmlSafeBitset
 	}
 	e.rawext = e.h.RawBytesExt != nil
 	e.di = int8(e.h.Indent)
@@ -1467,9 +1452,10 @@ func (d *jsonEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI) (f
 	return
 }
 
-func (e *jsonEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
-func (e *jsonEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
-func (e *jsonEncDriver[T]) writerEnd()                        { e.w.end() }
+func (e *jsonEncDriver[T]) writeBytesAsis(b []byte) { e.w.writeb(b) }
+
+// func (e *jsonEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
+func (e *jsonEncDriver[T]) writerEnd() { e.w.end() }
 
 func (e *jsonEncDriver[T]) resetOutBytes(out *[]byte) {
 	e.w.resetBytes(*out, out)
@@ -1519,7 +1505,7 @@ func (d *jsonDecDriver[T]) descBd() (s string) {
 
 func (d *jsonEncDriver[T]) init2(enc encoderI) {
 	d.enc = enc
-	d.e.js = true
+	// d.e.js = true
 }
 
 func (d *jsonDecDriver[T]) init2(dec decoderI) {
@@ -1527,6 +1513,6 @@ func (d *jsonDecDriver[T]) init2(dec decoderI) {
 	// var x []byte
 	// d.buf = &x
 	d.buf = new([]byte)
-	d.d.js = true
+	// d.d.js = true
 	d.d.jsms = d.h.MapKeyAsString
 }

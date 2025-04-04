@@ -1240,11 +1240,21 @@ func (d *decoderBase) mapKeyString(kstrbs, kstr2bs *[]byte, scratchBuf bool) (s 
 func (n *structFieldInfoPathNode) rvField(v reflect.Value) (rv reflect.Value) {
 	// we already know this is exported, and maybe embedded (based on what si says)
 	uv := (*unsafeReflectValue)(unsafe.Pointer(&v))
+
 	urv := (*unsafeReflectValue)(unsafe.Pointer(&rv))
 	// clear flagEmbedRO if necessary, and inherit permission bits from v
 	urv.flag = uv.flag&(unsafeFlagStickyRO|unsafeFlagIndir|unsafeFlagAddr) | uintptr(n.kind)
 	urv.typ = ((*unsafeIntf)(unsafe.Pointer(&n.typ))).ptr
 	urv.ptr = unsafe.Pointer(uintptr(uv.ptr) + uintptr(n.offset))
+
+	// *(*unsafeReflectValue)(unsafe.Pointer(&rv)) = unsafeReflectValue{
+	// 	unsafeIntf: unsafeIntf{
+	// 		typ: ((*unsafeIntf)(unsafe.Pointer(&n.typ))).ptr,
+	// 		ptr: unsafe.Pointer(uintptr(uv.ptr) + uintptr(n.offset)),
+	// 	},
+	// 	flag: uv.flag&(unsafeFlagStickyRO|unsafeFlagIndir|unsafeFlagAddr) | uintptr(n.kind),
+	// }
+
 	return
 }
 

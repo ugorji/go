@@ -33,6 +33,7 @@ type encDriverI interface {
 	EncodeExt(v interface{}, basetype reflect.Type, xtag uint64, ext Ext)
 	// EncodeString using cUTF8, honor'ing StringToRaw flag
 	EncodeString(v string)
+	EncodeStringNoEscape4Json(v string)
 	EncodeStringBytesRaw(v []byte)
 	EncodeTime(time.Time)
 	WriteArrayStart(length int)
@@ -50,7 +51,7 @@ type encDriverI interface {
 	writerEnd()
 
 	writeBytesAsis(b []byte)
-	writeStringAsisDblQuoted(v string)
+	// writeStringAsisDblQuoted(v string)
 
 	resetOutBytes(out *[]byte)
 	resetOutIO(out io.Writer)
@@ -89,11 +90,11 @@ func (encDriverNoopContainerWriter) atEndOfEncode()             {}
 
 // encStructFieldObj[Slice] is used for sorting when there are missing fields and canonical flag is set
 type encStructFieldObj struct {
-	key   string
-	rv    reflect.Value
-	intf  interface{}
-	ascii bool
-	isRv  bool
+	key        string
+	rv         reflect.Value
+	intf       interface{}
+	isRv       bool
+	noEsc4json bool
 }
 
 type encStructFieldObjSlice []encStructFieldObj
@@ -245,8 +246,8 @@ type encoderBase struct {
 
 	blist bytesFreelist
 
-	js bool // is json encoder?
-	be bool // is binary encoder?
+	// js bool // is json encoder?
+	// be bool // is binary encoder?
 
 	bytes bool
 
@@ -625,115 +626,9 @@ L1:
 // 	return f.ti.sfi.source()
 // }
 
-func (e *encoder[T]) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
-	tisfi := f.ti.sfi.source()
-	if f.ti.toArray || e.h.StructToArray { // toArray
-		e.arrayStart(len(tisfi))
-		for _, si := range tisfi {
-			e.arrayElem()
-			e.encodeValue(si.path.field(rv), nil)
-		}
-		e.arrayEnd()
-	} else {
-		if e.h.Canonical {
-			tisfi = f.ti.sfi.sorted()
-		}
-		e.mapStart(len(tisfi))
-		keytyp := f.ti.keyType
-		for _, si := range tisfi {
-			e.mapElemKey()
-			// MARKER inline kStructFieldKey in common case (ascii struct fields)
-			//   e.kStructFieldKey(keytyp, si.path.encNameAsciiAlphaNum, si.encName)
-			//
-			if keytyp == valueTypeString && e.js && si.path.encNameAsciiAlphaNum { // keytyp == valueTypeString
-				e.e.writeStringAsisDblQuoted(si.encName) // w.writeqstr(si.encName)
-			} else if keytyp == valueTypeString { // keytyp == valueTypeString
-				e.e.EncodeString(si.encName)
-			} else if keytyp == valueTypeInt {
-				e.e.EncodeInt(must.Int(strconv.ParseInt(si.encName, 10, 64)))
-			} else if keytyp == valueTypeUint {
-				e.e.EncodeUint(must.Uint(strconv.ParseUint(si.encName, 10, 64)))
-			} else if keytyp == valueTypeFloat {
-				e.e.EncodeFloat64(must.Float(strconv.ParseFloat(si.encName, 64)))
-			} else {
-				halt.errorStr2("invalid struct key type: ", keytyp.String())
-			}
-			// if keytyp == valueTypeString && e.js && si.path.encNameAsciiAlphaNum {
-			// 	e.e.writeStringAsisDblQuoted(si.encName)
-			// } else if keytyp == valueTypeString { // keyType == valueTypeString
-			// 	e.e.EncodeString(si.encName)
-			//
-			// Note: This conditional was 5% slower on micro-benchmarks. Maybe due to branch prediction.
-			// if keytyp == valueTypeString {
-			// 	if e.js && si.path.encNameAsciiAlphaNum {
-			// 		e.e.writeStringAsisDblQuoted(si.encName)
-			// 	} else {
-			// 		e.e.EncodeString(si.encName)
-			// 	}
-			//
-			// if keytyp == valueTypeString && e.js && si.path.encNameAsciiAlphaNum {
-			// 	e.e.writeStringAsisDblQuoted(si.encName)
-			// } else if keytyp == valueTypeString { // keyType == valueTypeString
-			// 	e.e.EncodeString(si.encName)
-			// } else {
-			// 	e.kStructFieldKey_Slow(keytyp, si.encName)
-			// }
-			//
-			e.mapElemValue()
-			e.encodeValue(si.path.field(rv), nil)
-		}
-		e.mapEnd()
-	}
-}
-
-// func (e *encoder[T]) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-// 	if keyType == valueTypeString && e.js && encNameAsciiAlphaNum { // keyType == valueTypeString
-// 		e.e.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
-// 	} else {
-// 		e.kStructFieldKey_Slow(keyType, encName)
-// 	}
-// }
-
-// //go:noinline
-// func (e *encoder[T]) kStructFieldKey_Slow(keyType valueType, encName string) {
-// 	// print(">>>> calling kStructFieldKey_Slow: js: %v, keyType: %v, encName: >>>>%s<<<<\n", e.js, keyType, encName)
-// 	if keyType == valueTypeString { // keyType == valueTypeString
-// 		e.e.EncodeString(encName)
-// 	} else if keyType == valueTypeInt {
-// 		e.e.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
-// 	} else if keyType == valueTypeUint {
-// 		e.e.EncodeUint(must.Uint(strconv.ParseUint(encName, 10, 64)))
-// 	} else if keyType == valueTypeFloat {
-// 		e.e.EncodeFloat64(must.Float(strconv.ParseFloat(encName, 64)))
-// 	} else {
-// 		halt.errorStr2("invalid struct key type: ", keyType.String())
-// 	}
-// 	// e.dh.encStructFieldKey(e.e, encName, keyType, encNameAsciiAlphaNum, e.js)
-// }
-
-// func (e *encoder[T]) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-// 	if keyType == valueTypeString {
-// 		if e.js && encNameAsciiAlphaNum { // keyType == valueTypeString
-// 			e.e.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
-// 		} else { // keyType == valueTypeString
-// 			e.e.EncodeString(encName)
-// 		}
-// 	} else if keyType == valueTypeInt {
-// 		e.e.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
-// 	} else if keyType == valueTypeUint {
-// 		e.e.EncodeUint(must.Uint(strconv.ParseUint(encName, 10, 64)))
-// 	} else if keyType == valueTypeFloat {
-// 		e.e.EncodeFloat64(must.Float(strconv.ParseFloat(encName, 64)))
-// 	} else {
-// 		halt.errorStr2("invalid struct key type: ", keyType.String())
-// 	}
-// 	// e.dh.encStructFieldKey(e.e, encName, keyType, encNameAsciiAlphaNum, e.js)
-// }
-
-func (e *encoder[T]) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-	if keyType == valueTypeString && e.js && encNameAsciiAlphaNum { // keyType == valueTypeString
-		e.e.writeStringAsisDblQuoted(encName) // w.writeqstr(encName)
-	} else if keyType == valueTypeString { // keyType == valueTypeString
+func (e *encoder[T]) kStructFieldKey(keyType valueType, encName string) {
+	// use if (not switch) block, so that branch prediction picks valueTypeString first
+	if keyType == valueTypeString {
 		e.e.EncodeString(encName)
 	} else if keyType == valueTypeInt {
 		e.e.EncodeInt(must.Int(strconv.ParseInt(encName, 10, 64)))
@@ -747,21 +642,43 @@ func (e *encoder[T]) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum boo
 	// e.dh.encStructFieldKey(e.e, encName, keyType, encNameAsciiAlphaNum, e.js)
 }
 
+func (e *encoder[T]) kStructSimple(f *encFnInfo, rv reflect.Value) {
+	tisfi := f.ti.sfi.source()
+	if f.ti.toArray || e.h.StructToArray { // toArray
+		e.arrayStart(len(tisfi))
+		for _, si := range tisfi {
+			e.arrayElem()
+			e.encodeValue(si.path.field(rv), nil)
+		}
+		e.arrayEnd()
+	} else {
+		if e.h.Canonical {
+			tisfi = f.ti.sfi.sorted()
+		}
+		e.mapStart(len(tisfi))
+		for _, si := range tisfi {
+			e.mapElemKey()
+			e.e.EncodeStringNoEscape4Json(si.encName)
+			e.mapElemValue()
+			e.encodeValue(si.path.field(rv), nil)
+		}
+		e.mapEnd()
+	}
+}
+
 func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
-	var newlen int
 	ti := f.ti
 	toMap := !(ti.toArray || e.h.StructToArray)
 	var mf map[string]interface{}
 	if ti.flagMissingFielder {
 		mf = rv2i(rv).(MissingFielder).CodecMissingFields()
 		toMap = true
-		newlen += len(mf)
 	} else if ti.flagMissingFielderPtr {
 		rv2 := e.addrRV(rv, ti.rt, ti.ptr)
 		mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
 		toMap = true
-		newlen += len(mf)
 	}
+	newlen := len(mf)
 	tisfi := ti.sfi.source()
 	newlen += len(tisfi)
 
@@ -787,7 +704,7 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 		}
 
 		var mf2s []stringIntf
-		if len(mf) > 0 {
+		if len(mf) != 0 {
 			mf2s = make([]stringIntf, 0, len(mf))
 			for k, v := range mf {
 				if k == "" {
@@ -806,11 +723,11 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 		// we cannot have the missing fields and struct fields sorted independently.
 		// We have to capture them together and sort as a unit.
 
-		if len(mf2s) > 0 && e.h.Canonical {
+		if len(mf2s) != 0 && e.h.Canonical {
 			mf2w := make([]encStructFieldObj, newlen+len(mf2s))
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
-				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, kv.v.path.encNameAsciiAlphaNum, true}
+				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, !kv.v.path.encNameEscape4Json, true}
 			}
 			for _, v := range mf2s {
 				mf2w[j] = encStructFieldObj{v.v, reflect.Value{}, v.i, false, false}
@@ -819,7 +736,11 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			sort.Sort((encStructFieldObjSlice)(mf2w))
 			for _, v := range mf2w {
 				e.mapElemKey()
-				e.kStructFieldKey(ti.keyType, v.ascii, v.key)
+				if ti.keyType == valueTypeString && v.noEsc4json {
+					e.e.EncodeStringNoEscape4Json(v.key)
+				} else {
+					e.kStructFieldKey(ti.keyType, v.key)
+				}
 				e.mapElemValue()
 				if v.isRv {
 					e.encodeValue(v.rv, nil)
@@ -832,13 +753,17 @@ func (e *encoder[T]) kStruct(f *encFnInfo, rv reflect.Value) {
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
 				e.mapElemKey()
-				e.kStructFieldKey(keytyp, kv.v.path.encNameAsciiAlphaNum, kv.v.encName)
+				if ti.keyType == valueTypeString && !kv.v.path.encNameEscape4Json {
+					e.e.EncodeStringNoEscape4Json(kv.v.encName)
+				} else {
+					e.kStructFieldKey(keytyp, kv.v.encName)
+				}
 				e.mapElemValue()
 				e.encodeValue(kv.r, nil)
 			}
 			for _, v := range mf2s {
 				e.mapElemKey()
-				e.kStructFieldKey(keytyp, false, v.v)
+				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
 				e.encode(v.i)
 			}
@@ -1970,12 +1895,10 @@ func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 			case reflect.Array:
 				fn.fe = (*encoder[T]).kArray
 			case reflect.Struct:
-				if ti.anyOmitEmpty ||
-					ti.flagMissingFielder ||
-					ti.flagMissingFielderPtr {
-					fn.fe = (*encoder[T]).kStruct
+				if ti.simple() {
+					fn.fe = (*encoder[T]).kStructSimple
 				} else {
-					fn.fe = (*encoder[T]).kStructNoOmitempty
+					fn.fe = (*encoder[T]).kStruct
 				}
 			case reflect.Map:
 				fn.fe = (*encoder[T]).kMap

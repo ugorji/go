@@ -359,6 +359,8 @@ func (e *bincEncDriver[T]) EncodeString(v string) {
 	e.EncodeStringEnc(cUTF8, v)
 }
 
+func (e *bincEncDriver[T]) EncodeStringNoEscape4Json(v string) { e.EncodeString(v) }
+
 func (e *bincEncDriver[T]) EncodeStringEnc(c charEncoding, v string) {
 	if e.e.c == containerMapKey && c == cUTF8 && (e.h.AsSymbols == 1) {
 		e.EncodeSymbol(v)
@@ -1172,9 +1174,11 @@ func (d *bincEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI) (f
 	return
 }
 
-func (e *bincEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
-func (e *bincEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
-func (e *bincEncDriver[T]) writerEnd()                        { e.w.end() }
+func (e *bincEncDriver[T]) writeBytesAsis(b []byte) { e.w.writeb(b) }
+
+// func (e *bincEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
+
+func (e *bincEncDriver[T]) writerEnd() { e.w.end() }
 
 func (e *bincEncDriver[T]) resetOutBytes(out *[]byte) {
 	e.w.resetBytes(*out, out)

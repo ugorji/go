@@ -299,7 +299,10 @@ var (
 	digitCharBitset      bitset256
 	numCharBitset        bitset256
 	whitespaceCharBitset bitset256
-	asciiAlphaNumBitset  bitset256
+	// asciiAlphaNumBitset  bitset256
+
+	jsonCharHtmlSafeBitset bitset256
+	jsonCharSafeBitset     bitset256
 
 	// numCharWithExpBitset64 bitset64
 	// numCharNoExpBitset64   bitset64
@@ -441,9 +444,9 @@ func init() {
 	// 	set(byte(reflect.String))
 
 	for i := byte(0); i <= utf8.RuneSelf; i++ {
-		if (i >= '0' && i <= '9') || (i >= 'a' && i <= 'z') || (i >= 'A' && i <= 'Z') || i == '_' {
-			asciiAlphaNumBitset.set(i)
-		}
+		// if (i >= '0' && i <= '9') || (i >= 'a' && i <= 'z') || (i >= 'A' && i <= 'Z') || i == '_' {
+		// 	asciiAlphaNumBitset.set(i)
+		// }
 		switch i {
 		case ' ', '\t', '\r', '\n':
 			whitespaceCharBitset.set(i)
@@ -454,6 +457,20 @@ func init() {
 			numCharBitset.set(i)
 		case 'e', 'E':
 			numCharBitset.set(i)
+		}
+	}
+
+	// populate the safe values as true: note: ASCII control characters are (0-31)
+	// jsonCharSafeBitset:     all true except (0-31) " \
+	// jsonCharHtmlSafeBitset: all true except (0-31) " \ < > &
+	for i := byte(32); i < utf8.RuneSelf; i++ {
+		switch i {
+		case '"', '\\':
+		case '<', '>', '&':
+			jsonCharSafeBitset.set(i) // = true
+		default:
+			jsonCharSafeBitset.set(i)
+			jsonCharHtmlSafeBitset.set(i)
 		}
 	}
 
@@ -1465,11 +1482,8 @@ type structFieldInfoPathNode struct {
 	kind     uint8
 	numderef uint8
 
-	// encNameAsciiAlphaNum and omitEmpty should be in structFieldInfo,
-	// but are kept here for tighter packaging.
-
-	encNameAsciiAlphaNum bool // the encName only contains ascii alphabet and numbers
-	omitEmpty            bool
+	encNameEscape4Json bool
+	omitEmpty          bool
 
 	typ reflect.Type
 }
@@ -1521,7 +1535,7 @@ type structFieldInfo struct {
 
 	// fieldName string // currently unused
 
-	// encNameAsciiAlphaNum and omitEmpty should be here,
+	// encNameEscape4Json and omitEmpty should be here,
 	// but are stored in structFieldInfoPathNode for tighter packaging.
 
 	path structFieldInfoPathNode
@@ -1678,6 +1692,25 @@ type typeInfo struct {
 	infoFieldOmitempty bool
 
 	sfi structFieldInfos
+}
+
+// A typeInfo is simple iff
+//   - no omitEmpty
+//   - no missingFielder
+//   - keyType is always string
+//   - noEsc4Json on any fields
+func (ti *typeInfo) simple() bool {
+	if ti.anyOmitEmpty ||
+		ti.flagMissingFielder || ti.flagMissingFielderPtr ||
+		ti.keyType != valueTypeString {
+		return false
+	}
+	for _, si := range ti.sfi.source() {
+		if si.path.encNameEscape4Json {
+			return false
+		}
+	}
+	return true
 }
 
 func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
@@ -2178,8 +2211,6 @@ LOOP:
 			index:    j,
 			kind:     uint8(fkind),
 			numderef: numderef,
-			// set asciiAlphaNum to true (default); checked and may be set to false below
-			encNameAsciiAlphaNum: true,
 			// note: omitEmpty might have been set in an earlier parseTag call, etc - so carry it forward
 			omitEmpty: si.path.omitEmpty,
 		}
@@ -2199,8 +2230,8 @@ LOOP:
 		}
 
 		for i := len(si.encName) - 1; i >= 0; i-- { // bounds-check elimination
-			if !asciiAlphaNumBitset.isset(si.encName[i]) {
-				si.path.encNameAsciiAlphaNum = false
+			if !jsonCharSafeBitset.isset(si.encName[i]) {
+				si.path.encNameEscape4Json = true
 				break
 			}
 		}

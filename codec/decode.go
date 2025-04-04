@@ -413,13 +413,14 @@ type decoderBase struct {
 	mtr bool // is maptype a known type?
 	str bool // is slicetype a known type?
 
-	be   bool // is binary encoding
-	js   bool // is json handle
-	jsms bool // is json handle, and MapKeyAsString
-	cbor bool // is cbor handle
+	// be   bool // is binary encoding
+	// js   bool // is json handle
+	// cbor bool // is cbor handle
+	// cbreak bool // is a check breaker
 
-	cbreak bool // is a check breaker
-	bytes  bool // uses a bytes reader
+	jsms bool // is json handle, and MapKeyAsString
+
+	bytes bool // uses a bytes reader
 
 	zeroCopy bool
 
@@ -1551,7 +1552,7 @@ func (d *decoder[T]) init(h Handle) {
 	d.hh = h
 	d.h = h.getBasicHandle()
 	d.zeroCopy = d.h.ZeroCopy
-	d.be = h.isBinary()
+	// d.be = h.isBinary()
 	d.err = errDecoderNotInitialized
 
 	if d.h.InternString && d.is == nil {
@@ -1561,7 +1562,7 @@ func (d *decoder[T]) init(h Handle) {
 	// d.fp = fastpathDList[T]()
 	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDs[T]) // should set js, cbor, bytes, etc
 
-	d.cbreak = d.js || d.cbor
+	// d.cbreak = d.js || d.cbor
 
 	if d.bytes {
 		d.rtidFn = &d.h.rtidFnsDecBytes
@@ -2095,9 +2096,10 @@ func (d *decoder[T]) NumBytesRead() int {
 // Honor these in the code, to reduce the number of interface calls (even if empty).
 
 func (d *decoder[T]) checkBreak() (v bool) {
-	if d.cbreak {
-		v = d.d.CheckBreak()
-	}
+	// if d.cbreak {
+	// 	v = d.d.CheckBreak()
+	// }
+	v = d.d.CheckBreak()
 	return
 }
 

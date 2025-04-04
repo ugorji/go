@@ -279,6 +279,8 @@ func (e *cborEncDriver[T]) EncodeString(v string) {
 	e.encStringBytesS(bb, v)
 }
 
+func (e *cborEncDriver[T]) EncodeStringNoEscape4Json(v string) { e.EncodeString(v) }
+
 func (e *cborEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 	if v == nil {
 		e.EncodeNil()
@@ -964,9 +966,11 @@ func (d *cborEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI) (f
 	return
 }
 
-func (e *cborEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
-func (e *cborEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
-func (e *cborEncDriver[T]) writerEnd()                        { e.w.end() }
+func (e *cborEncDriver[T]) writeBytesAsis(b []byte) { e.w.writeb(b) }
+
+// func (e *cborEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
+
+func (e *cborEncDriver[T]) writerEnd() { e.w.end() }
 
 func (e *cborEncDriver[T]) resetOutBytes(out *[]byte) {
 	e.w.resetBytes(*out, out)
@@ -1021,5 +1025,5 @@ func (d *cborEncDriver[T]) init2(enc encoderI) {
 
 func (d *cborDecDriver[T]) init2(dec decoderI) {
 	d.dec = dec
-	d.d.cbor = true
+	// d.d.cbor = true
 }

@@ -354,44 +354,7 @@ L1:
 	}
 }
 
-func (e *encoderMsgpackBytes) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
-	var tisfi []*structFieldInfo
-	if f.ti.toArray || e.h.StructToArray {
-		tisfi = f.ti.sfi.source()
-		e.arrayStart(len(tisfi))
-		for _, si := range tisfi {
-			e.arrayElem()
-			e.encodeValue(si.path.field(rv), nil)
-		}
-		e.arrayEnd()
-	} else {
-		tisfi = e.kStructSfi(f)
-		e.mapStart(len(tisfi))
-		keytyp := f.ti.keyType
-		for _, si := range tisfi {
-			e.mapElemKey()
-
-			if keytyp == valueTypeString && e.js && si.path.encNameAsciiAlphaNum {
-				e.e.writeStringAsisDblQuoted(si.encName)
-			} else {
-				e.kStructFieldKey_Slow(keytyp, si.encName)
-			}
-			e.mapElemValue()
-			e.encodeValue(si.path.field(rv), nil)
-		}
-		e.mapEnd()
-	}
-}
-
-func (e *encoderMsgpackBytes) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-	if keyType == valueTypeString && e.js && encNameAsciiAlphaNum {
-		e.e.writeStringAsisDblQuoted(encName)
-	} else {
-		e.kStructFieldKey_Slow(keyType, encName)
-	}
-}
-
-func (e *encoderMsgpackBytes) kStructFieldKey_Slow(keyType valueType, encName string) {
+func (e *encoderMsgpackBytes) kStructFieldKey(keyType valueType, encName string) {
 
 	if keyType == valueTypeString {
 		e.e.EncodeString(encName)
@@ -407,21 +370,43 @@ func (e *encoderMsgpackBytes) kStructFieldKey_Slow(keyType valueType, encName st
 
 }
 
+func (e *encoderMsgpackBytes) kStructSimple(f *encFnInfo, rv reflect.Value) {
+	tisfi := f.ti.sfi.source()
+	if f.ti.toArray || e.h.StructToArray {
+		e.arrayStart(len(tisfi))
+		for _, si := range tisfi {
+			e.arrayElem()
+			e.encodeValue(si.path.field(rv), nil)
+		}
+		e.arrayEnd()
+	} else {
+		if e.h.Canonical {
+			tisfi = f.ti.sfi.sorted()
+		}
+		e.mapStart(len(tisfi))
+		for _, si := range tisfi {
+			e.mapElemKey()
+			e.e.EncodeStringNoEscape4Json(si.encName)
+			e.mapElemValue()
+			e.encodeValue(si.path.field(rv), nil)
+		}
+		e.mapEnd()
+	}
+}
+
 func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
-	var newlen int
 	ti := f.ti
 	toMap := !(ti.toArray || e.h.StructToArray)
 	var mf map[string]interface{}
 	if ti.flagMissingFielder {
 		mf = rv2i(rv).(MissingFielder).CodecMissingFields()
 		toMap = true
-		newlen += len(mf)
 	} else if ti.flagMissingFielderPtr {
 		rv2 := e.addrRV(rv, ti.rt, ti.ptr)
 		mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
 		toMap = true
-		newlen += len(mf)
 	}
+	newlen := len(mf)
 	tisfi := ti.sfi.source()
 	newlen += len(tisfi)
 
@@ -433,7 +418,10 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 	var j int
 	if toMap {
 		newlen = 0
-		for _, si := range e.kStructSfi(f) {
+		if e.h.Canonical {
+			tisfi = f.ti.sfi.sorted()
+		}
+		for _, si := range tisfi {
 			kv.r = si.path.field(rv)
 			if si.path.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
@@ -444,7 +432,7 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 		}
 
 		var mf2s []stringIntf
-		if len(mf) > 0 {
+		if len(mf) != 0 {
 			mf2s = make([]stringIntf, 0, len(mf))
 			for k, v := range mf {
 				if k == "" {
@@ -459,11 +447,11 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 
 		e.mapStart(newlen + len(mf2s))
 
-		if len(mf2s) > 0 && e.h.Canonical {
+		if len(mf2s) != 0 && e.h.Canonical {
 			mf2w := make([]encStructFieldObj, newlen+len(mf2s))
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
-				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, kv.v.path.encNameAsciiAlphaNum, true}
+				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, !kv.v.path.encNameEscape4Json, true}
 			}
 			for _, v := range mf2s {
 				mf2w[j] = encStructFieldObj{v.v, reflect.Value{}, v.i, false, false}
@@ -472,7 +460,11 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 			sort.Sort((encStructFieldObjSlice)(mf2w))
 			for _, v := range mf2w {
 				e.mapElemKey()
-				e.kStructFieldKey(ti.keyType, v.ascii, v.key)
+				if ti.keyType == valueTypeString && v.noEsc4json {
+					e.e.EncodeStringNoEscape4Json(v.key)
+				} else {
+					e.kStructFieldKey(ti.keyType, v.key)
+				}
 				e.mapElemValue()
 				if v.isRv {
 					e.encodeValue(v.rv, nil)
@@ -485,13 +477,17 @@ func (e *encoderMsgpackBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
 				e.mapElemKey()
-				e.kStructFieldKey(keytyp, kv.v.path.encNameAsciiAlphaNum, kv.v.encName)
+				if ti.keyType == valueTypeString && !kv.v.path.encNameEscape4Json {
+					e.e.EncodeStringNoEscape4Json(kv.v.encName)
+				} else {
+					e.kStructFieldKey(keytyp, kv.v.encName)
+				}
 				e.mapElemValue()
 				e.encodeValue(kv.r, nil)
 			}
 			for _, v := range mf2s {
 				e.mapElemKey()
-				e.kStructFieldKey(keytyp, false, v.v)
+				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
 				e.encode(v.i)
 			}
@@ -761,7 +757,7 @@ func (e *encoderMsgpackBytes) init(h Handle) {
 	callMake(&e.e)
 	e.hh = h
 	e.h = h.getBasicHandle()
-	e.be = e.hh.isBinary()
+
 	e.err = errEncoderNotInitialized
 
 	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsMsgpackBytes)
@@ -1337,12 +1333,10 @@ func (dh helperEncDriverMsgpackBytes) encFnLoad(rt reflect.Type, rtid uintptr, t
 			case reflect.Array:
 				fn.fe = (*encoderMsgpackBytes).kArray
 			case reflect.Struct:
-				if ti.anyOmitEmpty ||
-					ti.flagMissingFielder ||
-					ti.flagMissingFielderPtr {
-					fn.fe = (*encoderMsgpackBytes).kStruct
+				if ti.simple() {
+					fn.fe = (*encoderMsgpackBytes).kStructSimple
 				} else {
-					fn.fe = (*encoderMsgpackBytes).kStructNoOmitempty
+					fn.fe = (*encoderMsgpackBytes).kStruct
 				}
 			case reflect.Map:
 				fn.fe = (*encoderMsgpackBytes).kMap
@@ -2260,7 +2254,7 @@ func (d *decoderMsgpackBytes) init(h Handle) {
 	d.hh = h
 	d.h = h.getBasicHandle()
 	d.zeroCopy = d.h.ZeroCopy
-	d.be = h.isBinary()
+
 	d.err = errDecoderNotInitialized
 
 	if d.h.InternString && d.is == nil {
@@ -2268,8 +2262,6 @@ func (d *decoderMsgpackBytes) init(h Handle) {
 	}
 
 	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsMsgpackBytes)
-
-	d.cbreak = d.js || d.cbor
 
 	if d.bytes {
 		d.rtidFn = &d.h.rtidFnsDecBytes
@@ -2534,9 +2526,8 @@ func (d *decoderMsgpackBytes) NumBytesRead() int {
 }
 
 func (d *decoderMsgpackBytes) checkBreak() (v bool) {
-	if d.cbreak {
-		v = d.d.CheckBreak()
-	}
+
+	v = d.d.CheckBreak()
 	return
 }
 
@@ -3078,6 +3069,8 @@ func (e *msgpackEncDriverBytes) EncodeString(s string) {
 		e.w.writestr(s)
 	}
 }
+
+func (e *msgpackEncDriverBytes) EncodeStringNoEscape4Json(v string) { e.EncodeString(v) }
 
 func (e *msgpackEncDriverBytes) EncodeStringBytesRaw(bs []byte) {
 	if bs == nil {
@@ -3741,9 +3734,9 @@ func (d *msgpackEncDriverBytes) init(hh Handle, shared *encoderBase, enc encoder
 	return
 }
 
-func (e *msgpackEncDriverBytes) writeBytesAsis(b []byte)           { e.w.writeb(b) }
-func (e *msgpackEncDriverBytes) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
-func (e *msgpackEncDriverBytes) writerEnd()                        { e.w.end() }
+func (e *msgpackEncDriverBytes) writeBytesAsis(b []byte) { e.w.writeb(b) }
+
+func (e *msgpackEncDriverBytes) writerEnd() { e.w.end() }
 
 func (e *msgpackEncDriverBytes) resetOutBytes(out *[]byte) {
 	e.w.resetBytes(*out, out)
@@ -4124,44 +4117,7 @@ L1:
 	}
 }
 
-func (e *encoderMsgpackIO) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
-	var tisfi []*structFieldInfo
-	if f.ti.toArray || e.h.StructToArray {
-		tisfi = f.ti.sfi.source()
-		e.arrayStart(len(tisfi))
-		for _, si := range tisfi {
-			e.arrayElem()
-			e.encodeValue(si.path.field(rv), nil)
-		}
-		e.arrayEnd()
-	} else {
-		tisfi = e.kStructSfi(f)
-		e.mapStart(len(tisfi))
-		keytyp := f.ti.keyType
-		for _, si := range tisfi {
-			e.mapElemKey()
-
-			if keytyp == valueTypeString && e.js && si.path.encNameAsciiAlphaNum {
-				e.e.writeStringAsisDblQuoted(si.encName)
-			} else {
-				e.kStructFieldKey_Slow(keytyp, si.encName)
-			}
-			e.mapElemValue()
-			e.encodeValue(si.path.field(rv), nil)
-		}
-		e.mapEnd()
-	}
-}
-
-func (e *encoderMsgpackIO) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-	if keyType == valueTypeString && e.js && encNameAsciiAlphaNum {
-		e.e.writeStringAsisDblQuoted(encName)
-	} else {
-		e.kStructFieldKey_Slow(keyType, encName)
-	}
-}
-
-func (e *encoderMsgpackIO) kStructFieldKey_Slow(keyType valueType, encName string) {
+func (e *encoderMsgpackIO) kStructFieldKey(keyType valueType, encName string) {
 
 	if keyType == valueTypeString {
 		e.e.EncodeString(encName)
@@ -4177,21 +4133,43 @@ func (e *encoderMsgpackIO) kStructFieldKey_Slow(keyType valueType, encName strin
 
 }
 
+func (e *encoderMsgpackIO) kStructSimple(f *encFnInfo, rv reflect.Value) {
+	tisfi := f.ti.sfi.source()
+	if f.ti.toArray || e.h.StructToArray {
+		e.arrayStart(len(tisfi))
+		for _, si := range tisfi {
+			e.arrayElem()
+			e.encodeValue(si.path.field(rv), nil)
+		}
+		e.arrayEnd()
+	} else {
+		if e.h.Canonical {
+			tisfi = f.ti.sfi.sorted()
+		}
+		e.mapStart(len(tisfi))
+		for _, si := range tisfi {
+			e.mapElemKey()
+			e.e.EncodeStringNoEscape4Json(si.encName)
+			e.mapElemValue()
+			e.encodeValue(si.path.field(rv), nil)
+		}
+		e.mapEnd()
+	}
+}
+
 func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
-	var newlen int
 	ti := f.ti
 	toMap := !(ti.toArray || e.h.StructToArray)
 	var mf map[string]interface{}
 	if ti.flagMissingFielder {
 		mf = rv2i(rv).(MissingFielder).CodecMissingFields()
 		toMap = true
-		newlen += len(mf)
 	} else if ti.flagMissingFielderPtr {
 		rv2 := e.addrRV(rv, ti.rt, ti.ptr)
 		mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
 		toMap = true
-		newlen += len(mf)
 	}
+	newlen := len(mf)
 	tisfi := ti.sfi.source()
 	newlen += len(tisfi)
 
@@ -4203,7 +4181,10 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 	var j int
 	if toMap {
 		newlen = 0
-		for _, si := range e.kStructSfi(f) {
+		if e.h.Canonical {
+			tisfi = f.ti.sfi.sorted()
+		}
+		for _, si := range tisfi {
 			kv.r = si.path.field(rv)
 			if si.path.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
@@ -4214,7 +4195,7 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 		}
 
 		var mf2s []stringIntf
-		if len(mf) > 0 {
+		if len(mf) != 0 {
 			mf2s = make([]stringIntf, 0, len(mf))
 			for k, v := range mf {
 				if k == "" {
@@ -4229,11 +4210,11 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 
 		e.mapStart(newlen + len(mf2s))
 
-		if len(mf2s) > 0 && e.h.Canonical {
+		if len(mf2s) != 0 && e.h.Canonical {
 			mf2w := make([]encStructFieldObj, newlen+len(mf2s))
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
-				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, kv.v.path.encNameAsciiAlphaNum, true}
+				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, !kv.v.path.encNameEscape4Json, true}
 			}
 			for _, v := range mf2s {
 				mf2w[j] = encStructFieldObj{v.v, reflect.Value{}, v.i, false, false}
@@ -4242,7 +4223,11 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 			sort.Sort((encStructFieldObjSlice)(mf2w))
 			for _, v := range mf2w {
 				e.mapElemKey()
-				e.kStructFieldKey(ti.keyType, v.ascii, v.key)
+				if ti.keyType == valueTypeString && v.noEsc4json {
+					e.e.EncodeStringNoEscape4Json(v.key)
+				} else {
+					e.kStructFieldKey(ti.keyType, v.key)
+				}
 				e.mapElemValue()
 				if v.isRv {
 					e.encodeValue(v.rv, nil)
@@ -4255,13 +4240,17 @@ func (e *encoderMsgpackIO) kStruct(f *encFnInfo, rv reflect.Value) {
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
 				e.mapElemKey()
-				e.kStructFieldKey(keytyp, kv.v.path.encNameAsciiAlphaNum, kv.v.encName)
+				if ti.keyType == valueTypeString && !kv.v.path.encNameEscape4Json {
+					e.e.EncodeStringNoEscape4Json(kv.v.encName)
+				} else {
+					e.kStructFieldKey(keytyp, kv.v.encName)
+				}
 				e.mapElemValue()
 				e.encodeValue(kv.r, nil)
 			}
 			for _, v := range mf2s {
 				e.mapElemKey()
-				e.kStructFieldKey(keytyp, false, v.v)
+				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
 				e.encode(v.i)
 			}
@@ -4531,7 +4520,7 @@ func (e *encoderMsgpackIO) init(h Handle) {
 	callMake(&e.e)
 	e.hh = h
 	e.h = h.getBasicHandle()
-	e.be = e.hh.isBinary()
+
 	e.err = errEncoderNotInitialized
 
 	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsMsgpackIO)
@@ -5107,12 +5096,10 @@ func (dh helperEncDriverMsgpackIO) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 			case reflect.Array:
 				fn.fe = (*encoderMsgpackIO).kArray
 			case reflect.Struct:
-				if ti.anyOmitEmpty ||
-					ti.flagMissingFielder ||
-					ti.flagMissingFielderPtr {
-					fn.fe = (*encoderMsgpackIO).kStruct
+				if ti.simple() {
+					fn.fe = (*encoderMsgpackIO).kStructSimple
 				} else {
-					fn.fe = (*encoderMsgpackIO).kStructNoOmitempty
+					fn.fe = (*encoderMsgpackIO).kStruct
 				}
 			case reflect.Map:
 				fn.fe = (*encoderMsgpackIO).kMap
@@ -6030,7 +6017,7 @@ func (d *decoderMsgpackIO) init(h Handle) {
 	d.hh = h
 	d.h = h.getBasicHandle()
 	d.zeroCopy = d.h.ZeroCopy
-	d.be = h.isBinary()
+
 	d.err = errDecoderNotInitialized
 
 	if d.h.InternString && d.is == nil {
@@ -6038,8 +6025,6 @@ func (d *decoderMsgpackIO) init(h Handle) {
 	}
 
 	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsMsgpackIO)
-
-	d.cbreak = d.js || d.cbor
 
 	if d.bytes {
 		d.rtidFn = &d.h.rtidFnsDecBytes
@@ -6304,9 +6289,8 @@ func (d *decoderMsgpackIO) NumBytesRead() int {
 }
 
 func (d *decoderMsgpackIO) checkBreak() (v bool) {
-	if d.cbreak {
-		v = d.d.CheckBreak()
-	}
+
+	v = d.d.CheckBreak()
 	return
 }
 
@@ -6848,6 +6832,8 @@ func (e *msgpackEncDriverIO) EncodeString(s string) {
 		e.w.writestr(s)
 	}
 }
+
+func (e *msgpackEncDriverIO) EncodeStringNoEscape4Json(v string) { e.EncodeString(v) }
 
 func (e *msgpackEncDriverIO) EncodeStringBytesRaw(bs []byte) {
 	if bs == nil {
@@ -7511,9 +7497,9 @@ func (d *msgpackEncDriverIO) init(hh Handle, shared *encoderBase, enc encoderI) 
 	return
 }
 
-func (e *msgpackEncDriverIO) writeBytesAsis(b []byte)           { e.w.writeb(b) }
-func (e *msgpackEncDriverIO) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
-func (e *msgpackEncDriverIO) writerEnd()                        { e.w.end() }
+func (e *msgpackEncDriverIO) writeBytesAsis(b []byte) { e.w.writeb(b) }
+
+func (e *msgpackEncDriverIO) writerEnd() { e.w.end() }
 
 func (e *msgpackEncDriverIO) resetOutBytes(out *[]byte) {
 	e.w.resetBytes(*out, out)

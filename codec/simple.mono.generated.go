@@ -354,44 +354,7 @@ L1:
 	}
 }
 
-func (e *encoderSimpleBytes) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
-	var tisfi []*structFieldInfo
-	if f.ti.toArray || e.h.StructToArray {
-		tisfi = f.ti.sfi.source()
-		e.arrayStart(len(tisfi))
-		for _, si := range tisfi {
-			e.arrayElem()
-			e.encodeValue(si.path.field(rv), nil)
-		}
-		e.arrayEnd()
-	} else {
-		tisfi = e.kStructSfi(f)
-		e.mapStart(len(tisfi))
-		keytyp := f.ti.keyType
-		for _, si := range tisfi {
-			e.mapElemKey()
-
-			if keytyp == valueTypeString && e.js && si.path.encNameAsciiAlphaNum {
-				e.e.writeStringAsisDblQuoted(si.encName)
-			} else {
-				e.kStructFieldKey_Slow(keytyp, si.encName)
-			}
-			e.mapElemValue()
-			e.encodeValue(si.path.field(rv), nil)
-		}
-		e.mapEnd()
-	}
-}
-
-func (e *encoderSimpleBytes) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-	if keyType == valueTypeString && e.js && encNameAsciiAlphaNum {
-		e.e.writeStringAsisDblQuoted(encName)
-	} else {
-		e.kStructFieldKey_Slow(keyType, encName)
-	}
-}
-
-func (e *encoderSimpleBytes) kStructFieldKey_Slow(keyType valueType, encName string) {
+func (e *encoderSimpleBytes) kStructFieldKey(keyType valueType, encName string) {
 
 	if keyType == valueTypeString {
 		e.e.EncodeString(encName)
@@ -407,21 +370,43 @@ func (e *encoderSimpleBytes) kStructFieldKey_Slow(keyType valueType, encName str
 
 }
 
+func (e *encoderSimpleBytes) kStructSimple(f *encFnInfo, rv reflect.Value) {
+	tisfi := f.ti.sfi.source()
+	if f.ti.toArray || e.h.StructToArray {
+		e.arrayStart(len(tisfi))
+		for _, si := range tisfi {
+			e.arrayElem()
+			e.encodeValue(si.path.field(rv), nil)
+		}
+		e.arrayEnd()
+	} else {
+		if e.h.Canonical {
+			tisfi = f.ti.sfi.sorted()
+		}
+		e.mapStart(len(tisfi))
+		for _, si := range tisfi {
+			e.mapElemKey()
+			e.e.EncodeStringNoEscape4Json(si.encName)
+			e.mapElemValue()
+			e.encodeValue(si.path.field(rv), nil)
+		}
+		e.mapEnd()
+	}
+}
+
 func (e *encoderSimpleBytes) kStruct(f *encFnInfo, rv reflect.Value) {
-	var newlen int
 	ti := f.ti
 	toMap := !(ti.toArray || e.h.StructToArray)
 	var mf map[string]interface{}
 	if ti.flagMissingFielder {
 		mf = rv2i(rv).(MissingFielder).CodecMissingFields()
 		toMap = true
-		newlen += len(mf)
 	} else if ti.flagMissingFielderPtr {
 		rv2 := e.addrRV(rv, ti.rt, ti.ptr)
 		mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
 		toMap = true
-		newlen += len(mf)
 	}
+	newlen := len(mf)
 	tisfi := ti.sfi.source()
 	newlen += len(tisfi)
 
@@ -433,7 +418,10 @@ func (e *encoderSimpleBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 	var j int
 	if toMap {
 		newlen = 0
-		for _, si := range e.kStructSfi(f) {
+		if e.h.Canonical {
+			tisfi = f.ti.sfi.sorted()
+		}
+		for _, si := range tisfi {
 			kv.r = si.path.field(rv)
 			if si.path.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
@@ -444,7 +432,7 @@ func (e *encoderSimpleBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 		}
 
 		var mf2s []stringIntf
-		if len(mf) > 0 {
+		if len(mf) != 0 {
 			mf2s = make([]stringIntf, 0, len(mf))
 			for k, v := range mf {
 				if k == "" {
@@ -459,11 +447,11 @@ func (e *encoderSimpleBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 
 		e.mapStart(newlen + len(mf2s))
 
-		if len(mf2s) > 0 && e.h.Canonical {
+		if len(mf2s) != 0 && e.h.Canonical {
 			mf2w := make([]encStructFieldObj, newlen+len(mf2s))
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
-				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, kv.v.path.encNameAsciiAlphaNum, true}
+				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, !kv.v.path.encNameEscape4Json, true}
 			}
 			for _, v := range mf2s {
 				mf2w[j] = encStructFieldObj{v.v, reflect.Value{}, v.i, false, false}
@@ -472,7 +460,11 @@ func (e *encoderSimpleBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 			sort.Sort((encStructFieldObjSlice)(mf2w))
 			for _, v := range mf2w {
 				e.mapElemKey()
-				e.kStructFieldKey(ti.keyType, v.ascii, v.key)
+				if ti.keyType == valueTypeString && v.noEsc4json {
+					e.e.EncodeStringNoEscape4Json(v.key)
+				} else {
+					e.kStructFieldKey(ti.keyType, v.key)
+				}
 				e.mapElemValue()
 				if v.isRv {
 					e.encodeValue(v.rv, nil)
@@ -485,13 +477,17 @@ func (e *encoderSimpleBytes) kStruct(f *encFnInfo, rv reflect.Value) {
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
 				e.mapElemKey()
-				e.kStructFieldKey(keytyp, kv.v.path.encNameAsciiAlphaNum, kv.v.encName)
+				if ti.keyType == valueTypeString && !kv.v.path.encNameEscape4Json {
+					e.e.EncodeStringNoEscape4Json(kv.v.encName)
+				} else {
+					e.kStructFieldKey(keytyp, kv.v.encName)
+				}
 				e.mapElemValue()
 				e.encodeValue(kv.r, nil)
 			}
 			for _, v := range mf2s {
 				e.mapElemKey()
-				e.kStructFieldKey(keytyp, false, v.v)
+				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
 				e.encode(v.i)
 			}
@@ -761,7 +757,7 @@ func (e *encoderSimpleBytes) init(h Handle) {
 	callMake(&e.e)
 	e.hh = h
 	e.h = h.getBasicHandle()
-	e.be = e.hh.isBinary()
+
 	e.err = errEncoderNotInitialized
 
 	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsSimpleBytes)
@@ -1337,12 +1333,10 @@ func (dh helperEncDriverSimpleBytes) encFnLoad(rt reflect.Type, rtid uintptr, ti
 			case reflect.Array:
 				fn.fe = (*encoderSimpleBytes).kArray
 			case reflect.Struct:
-				if ti.anyOmitEmpty ||
-					ti.flagMissingFielder ||
-					ti.flagMissingFielderPtr {
-					fn.fe = (*encoderSimpleBytes).kStruct
+				if ti.simple() {
+					fn.fe = (*encoderSimpleBytes).kStructSimple
 				} else {
-					fn.fe = (*encoderSimpleBytes).kStructNoOmitempty
+					fn.fe = (*encoderSimpleBytes).kStruct
 				}
 			case reflect.Map:
 				fn.fe = (*encoderSimpleBytes).kMap
@@ -2260,7 +2254,7 @@ func (d *decoderSimpleBytes) init(h Handle) {
 	d.hh = h
 	d.h = h.getBasicHandle()
 	d.zeroCopy = d.h.ZeroCopy
-	d.be = h.isBinary()
+
 	d.err = errDecoderNotInitialized
 
 	if d.h.InternString && d.is == nil {
@@ -2268,8 +2262,6 @@ func (d *decoderSimpleBytes) init(h Handle) {
 	}
 
 	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsSimpleBytes)
-
-	d.cbreak = d.js || d.cbor
 
 	if d.bytes {
 		d.rtidFn = &d.h.rtidFnsDecBytes
@@ -2534,9 +2526,8 @@ func (d *decoderSimpleBytes) NumBytesRead() int {
 }
 
 func (d *decoderSimpleBytes) checkBreak() (v bool) {
-	if d.cbreak {
-		v = d.d.CheckBreak()
-	}
+
+	v = d.d.CheckBreak()
 	return
 }
 
@@ -3024,6 +3015,8 @@ func (e *simpleEncDriverBytes) EncodeString(v string) {
 	e.w.writestr(v)
 }
 
+func (e *simpleEncDriverBytes) EncodeStringNoEscape4Json(v string) { e.EncodeString(v) }
+
 func (e *simpleEncDriverBytes) EncodeStringBytesRaw(v []byte) {
 
 	if v == nil {
@@ -3485,9 +3478,9 @@ func (d *simpleEncDriverBytes) init(hh Handle, shared *encoderBase, enc encoderI
 	return
 }
 
-func (e *simpleEncDriverBytes) writeBytesAsis(b []byte)           { e.w.writeb(b) }
-func (e *simpleEncDriverBytes) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
-func (e *simpleEncDriverBytes) writerEnd()                        { e.w.end() }
+func (e *simpleEncDriverBytes) writeBytesAsis(b []byte) { e.w.writeb(b) }
+
+func (e *simpleEncDriverBytes) writerEnd() { e.w.end() }
 
 func (e *simpleEncDriverBytes) resetOutBytes(out *[]byte) {
 	e.w.resetBytes(*out, out)
@@ -3869,44 +3862,7 @@ L1:
 	}
 }
 
-func (e *encoderSimpleIO) kStructNoOmitempty(f *encFnInfo, rv reflect.Value) {
-	var tisfi []*structFieldInfo
-	if f.ti.toArray || e.h.StructToArray {
-		tisfi = f.ti.sfi.source()
-		e.arrayStart(len(tisfi))
-		for _, si := range tisfi {
-			e.arrayElem()
-			e.encodeValue(si.path.field(rv), nil)
-		}
-		e.arrayEnd()
-	} else {
-		tisfi = e.kStructSfi(f)
-		e.mapStart(len(tisfi))
-		keytyp := f.ti.keyType
-		for _, si := range tisfi {
-			e.mapElemKey()
-
-			if keytyp == valueTypeString && e.js && si.path.encNameAsciiAlphaNum {
-				e.e.writeStringAsisDblQuoted(si.encName)
-			} else {
-				e.kStructFieldKey_Slow(keytyp, si.encName)
-			}
-			e.mapElemValue()
-			e.encodeValue(si.path.field(rv), nil)
-		}
-		e.mapEnd()
-	}
-}
-
-func (e *encoderSimpleIO) kStructFieldKey(keyType valueType, encNameAsciiAlphaNum bool, encName string) {
-	if keyType == valueTypeString && e.js && encNameAsciiAlphaNum {
-		e.e.writeStringAsisDblQuoted(encName)
-	} else {
-		e.kStructFieldKey_Slow(keyType, encName)
-	}
-}
-
-func (e *encoderSimpleIO) kStructFieldKey_Slow(keyType valueType, encName string) {
+func (e *encoderSimpleIO) kStructFieldKey(keyType valueType, encName string) {
 
 	if keyType == valueTypeString {
 		e.e.EncodeString(encName)
@@ -3922,21 +3878,43 @@ func (e *encoderSimpleIO) kStructFieldKey_Slow(keyType valueType, encName string
 
 }
 
+func (e *encoderSimpleIO) kStructSimple(f *encFnInfo, rv reflect.Value) {
+	tisfi := f.ti.sfi.source()
+	if f.ti.toArray || e.h.StructToArray {
+		e.arrayStart(len(tisfi))
+		for _, si := range tisfi {
+			e.arrayElem()
+			e.encodeValue(si.path.field(rv), nil)
+		}
+		e.arrayEnd()
+	} else {
+		if e.h.Canonical {
+			tisfi = f.ti.sfi.sorted()
+		}
+		e.mapStart(len(tisfi))
+		for _, si := range tisfi {
+			e.mapElemKey()
+			e.e.EncodeStringNoEscape4Json(si.encName)
+			e.mapElemValue()
+			e.encodeValue(si.path.field(rv), nil)
+		}
+		e.mapEnd()
+	}
+}
+
 func (e *encoderSimpleIO) kStruct(f *encFnInfo, rv reflect.Value) {
-	var newlen int
 	ti := f.ti
 	toMap := !(ti.toArray || e.h.StructToArray)
 	var mf map[string]interface{}
 	if ti.flagMissingFielder {
 		mf = rv2i(rv).(MissingFielder).CodecMissingFields()
 		toMap = true
-		newlen += len(mf)
 	} else if ti.flagMissingFielderPtr {
 		rv2 := e.addrRV(rv, ti.rt, ti.ptr)
 		mf = rv2i(rv2).(MissingFielder).CodecMissingFields()
 		toMap = true
-		newlen += len(mf)
 	}
+	newlen := len(mf)
 	tisfi := ti.sfi.source()
 	newlen += len(tisfi)
 
@@ -3948,7 +3926,10 @@ func (e *encoderSimpleIO) kStruct(f *encFnInfo, rv reflect.Value) {
 	var j int
 	if toMap {
 		newlen = 0
-		for _, si := range e.kStructSfi(f) {
+		if e.h.Canonical {
+			tisfi = f.ti.sfi.sorted()
+		}
+		for _, si := range tisfi {
 			kv.r = si.path.field(rv)
 			if si.path.omitEmpty && isEmptyValue(kv.r, e.h.TypeInfos, recur) {
 				continue
@@ -3959,7 +3940,7 @@ func (e *encoderSimpleIO) kStruct(f *encFnInfo, rv reflect.Value) {
 		}
 
 		var mf2s []stringIntf
-		if len(mf) > 0 {
+		if len(mf) != 0 {
 			mf2s = make([]stringIntf, 0, len(mf))
 			for k, v := range mf {
 				if k == "" {
@@ -3974,11 +3955,11 @@ func (e *encoderSimpleIO) kStruct(f *encFnInfo, rv reflect.Value) {
 
 		e.mapStart(newlen + len(mf2s))
 
-		if len(mf2s) > 0 && e.h.Canonical {
+		if len(mf2s) != 0 && e.h.Canonical {
 			mf2w := make([]encStructFieldObj, newlen+len(mf2s))
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
-				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, kv.v.path.encNameAsciiAlphaNum, true}
+				mf2w[j] = encStructFieldObj{kv.v.encName, kv.r, nil, !kv.v.path.encNameEscape4Json, true}
 			}
 			for _, v := range mf2s {
 				mf2w[j] = encStructFieldObj{v.v, reflect.Value{}, v.i, false, false}
@@ -3987,7 +3968,11 @@ func (e *encoderSimpleIO) kStruct(f *encFnInfo, rv reflect.Value) {
 			sort.Sort((encStructFieldObjSlice)(mf2w))
 			for _, v := range mf2w {
 				e.mapElemKey()
-				e.kStructFieldKey(ti.keyType, v.ascii, v.key)
+				if ti.keyType == valueTypeString && v.noEsc4json {
+					e.e.EncodeStringNoEscape4Json(v.key)
+				} else {
+					e.kStructFieldKey(ti.keyType, v.key)
+				}
 				e.mapElemValue()
 				if v.isRv {
 					e.encodeValue(v.rv, nil)
@@ -4000,13 +3985,17 @@ func (e *encoderSimpleIO) kStruct(f *encFnInfo, rv reflect.Value) {
 			for j = 0; j < newlen; j++ {
 				kv = fkvs[j]
 				e.mapElemKey()
-				e.kStructFieldKey(keytyp, kv.v.path.encNameAsciiAlphaNum, kv.v.encName)
+				if ti.keyType == valueTypeString && !kv.v.path.encNameEscape4Json {
+					e.e.EncodeStringNoEscape4Json(kv.v.encName)
+				} else {
+					e.kStructFieldKey(keytyp, kv.v.encName)
+				}
 				e.mapElemValue()
 				e.encodeValue(kv.r, nil)
 			}
 			for _, v := range mf2s {
 				e.mapElemKey()
-				e.kStructFieldKey(keytyp, false, v.v)
+				e.kStructFieldKey(keytyp, v.v)
 				e.mapElemValue()
 				e.encode(v.i)
 			}
@@ -4276,7 +4265,7 @@ func (e *encoderSimpleIO) init(h Handle) {
 	callMake(&e.e)
 	e.hh = h
 	e.h = h.getBasicHandle()
-	e.be = e.hh.isBinary()
+
 	e.err = errEncoderNotInitialized
 
 	e.fp = e.e.init(h, &e.encoderBase, e).(*fastpathEsSimpleIO)
@@ -4852,12 +4841,10 @@ func (dh helperEncDriverSimpleIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfo
 			case reflect.Array:
 				fn.fe = (*encoderSimpleIO).kArray
 			case reflect.Struct:
-				if ti.anyOmitEmpty ||
-					ti.flagMissingFielder ||
-					ti.flagMissingFielderPtr {
-					fn.fe = (*encoderSimpleIO).kStruct
+				if ti.simple() {
+					fn.fe = (*encoderSimpleIO).kStructSimple
 				} else {
-					fn.fe = (*encoderSimpleIO).kStructNoOmitempty
+					fn.fe = (*encoderSimpleIO).kStruct
 				}
 			case reflect.Map:
 				fn.fe = (*encoderSimpleIO).kMap
@@ -5775,7 +5762,7 @@ func (d *decoderSimpleIO) init(h Handle) {
 	d.hh = h
 	d.h = h.getBasicHandle()
 	d.zeroCopy = d.h.ZeroCopy
-	d.be = h.isBinary()
+
 	d.err = errDecoderNotInitialized
 
 	if d.h.InternString && d.is == nil {
@@ -5783,8 +5770,6 @@ func (d *decoderSimpleIO) init(h Handle) {
 	}
 
 	d.fp = d.d.init(h, &d.decoderBase, d).(*fastpathDsSimpleIO)
-
-	d.cbreak = d.js || d.cbor
 
 	if d.bytes {
 		d.rtidFn = &d.h.rtidFnsDecBytes
@@ -6049,9 +6034,8 @@ func (d *decoderSimpleIO) NumBytesRead() int {
 }
 
 func (d *decoderSimpleIO) checkBreak() (v bool) {
-	if d.cbreak {
-		v = d.d.CheckBreak()
-	}
+
+	v = d.d.CheckBreak()
 	return
 }
 
@@ -6539,6 +6523,8 @@ func (e *simpleEncDriverIO) EncodeString(v string) {
 	e.w.writestr(v)
 }
 
+func (e *simpleEncDriverIO) EncodeStringNoEscape4Json(v string) { e.EncodeString(v) }
+
 func (e *simpleEncDriverIO) EncodeStringBytesRaw(v []byte) {
 
 	if v == nil {
@@ -7000,9 +6986,9 @@ func (d *simpleEncDriverIO) init(hh Handle, shared *encoderBase, enc encoderI) (
 	return
 }
 
-func (e *simpleEncDriverIO) writeBytesAsis(b []byte)           { e.w.writeb(b) }
-func (e *simpleEncDriverIO) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
-func (e *simpleEncDriverIO) writerEnd()                        { e.w.end() }
+func (e *simpleEncDriverIO) writeBytesAsis(b []byte) { e.w.writeb(b) }
+
+func (e *simpleEncDriverIO) writerEnd() { e.w.end() }
 
 func (e *simpleEncDriverIO) resetOutBytes(out *[]byte) {
 	e.w.resetBytes(*out, out)

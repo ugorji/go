@@ -232,6 +232,8 @@ func (e *simpleEncDriver[T]) EncodeString(v string) {
 	e.w.writestr(v)
 }
 
+func (e *simpleEncDriver[T]) EncodeStringNoEscape4Json(v string) { e.EncodeString(v) }
+
 func (e *simpleEncDriver[T]) EncodeStringBytesRaw(v []byte) {
 	// if e.h.EncZeroValuesAsNil && e.c != containerMapKey && v == nil {
 	if v == nil {
@@ -782,9 +784,11 @@ func (d *simpleEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI) 
 	return
 }
 
-func (e *simpleEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
-func (e *simpleEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
-func (e *simpleEncDriver[T]) writerEnd()                        { e.w.end() }
+func (e *simpleEncDriver[T]) writeBytesAsis(b []byte) { e.w.writeb(b) }
+
+// func (e *simpleEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
+
+func (e *simpleEncDriver[T]) writerEnd() { e.w.end() }
 
 func (e *simpleEncDriver[T]) resetOutBytes(out *[]byte) {
 	e.w.resetBytes(*out, out)

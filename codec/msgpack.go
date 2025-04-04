@@ -374,6 +374,8 @@ func (e *msgpackEncDriver[T]) EncodeString(s string) {
 	}
 }
 
+func (e *msgpackEncDriver[T]) EncodeStringNoEscape4Json(v string) { e.EncodeString(v) }
+
 func (e *msgpackEncDriver[T]) EncodeStringBytesRaw(bs []byte) {
 	if bs == nil {
 		e.EncodeNil()
@@ -1231,9 +1233,11 @@ func (d *msgpackEncDriver[T]) init(hh Handle, shared *encoderBase, enc encoderI)
 	return
 }
 
-func (e *msgpackEncDriver[T]) writeBytesAsis(b []byte)           { e.w.writeb(b) }
-func (e *msgpackEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
-func (e *msgpackEncDriver[T]) writerEnd()                        { e.w.end() }
+func (e *msgpackEncDriver[T]) writeBytesAsis(b []byte) { e.w.writeb(b) }
+
+// func (e *msgpackEncDriver[T]) writeStringAsisDblQuoted(v string) { e.w.writeqstr(v) }
+
+func (e *msgpackEncDriver[T]) writerEnd() { e.w.end() }
 
 func (e *msgpackEncDriver[T]) resetOutBytes(out *[]byte) {
 	e.w.resetBytes(*out, out)
