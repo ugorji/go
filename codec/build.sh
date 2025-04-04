@@ -64,12 +64,12 @@ _prebuild() {
     # zpkg=${d##*/src/}
     # zgobase=${d%%/src/*}
     # rm -f *_generated_test.go 
+    # if [[ $zforce ]]; then ${gocmd} install ${zargs[*]} .; fi &&
     true &&
         _build &&
         cp $d/values_test.go $d/$zfin &&
         cp $d/values_flex_test.go $d/$zfin2 &&
         if [[ "$(type -t _codegenerators_external )" = "function" ]]; then _codegenerators_external ; fi &&
-        if [[ $zforce ]]; then ${gocmd} install ${zargs[*]} .; fi &&
         returncode=0 &&
         echo "prebuild done successfully"
     rm -f $d/$zfin $d/$zfin2
