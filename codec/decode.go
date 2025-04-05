@@ -911,7 +911,6 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			}
 
 			d.mapElemValue()
-
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
 			} else if mf != nil {

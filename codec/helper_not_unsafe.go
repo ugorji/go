@@ -347,6 +347,8 @@ func mapRange(t *mapIter, m, k, v reflect.Value, values bool) {
 type structFieldInfos struct {
 	c []*structFieldInfo
 	s []*structFieldInfo
+	t uint8To32TrieNode
+	// byName map[string]*structFieldInfo // find sfi given a name
 }
 
 func (x *structFieldInfos) load(source, sorted []*structFieldInfo) {
@@ -354,8 +356,24 @@ func (x *structFieldInfos) load(source, sorted []*structFieldInfo) {
 	x.s = sorted
 }
 
-func (x *structFieldInfos) sorted() (v []*structFieldInfo) { return x.s }
+func (x *structFieldInfos) count() int                     { return len(x.c) }
 func (x *structFieldInfos) source() (v []*structFieldInfo) { return x.c }
+func (x *structFieldInfos) sorted() (v []*structFieldInfo) { return x.s }
+
+// --------------------------
+
+type uint8To32TrieNodeNoKids struct {
+	key   uint8
+	valid bool    // the value marks the end of a full stored string
+	_     [2]byte // padding
+	value uint32
+}
+
+type uint8To32TrieNodeKids = []uint8To32TrieNode
+
+func (x *uint8To32TrieNode) setKids(kids []uint8To32TrieNode) { x.kids = kids }
+func (x *uint8To32TrieNode) getKids() []uint8To32TrieNode     { return x.kids }
+func (x *uint8To32TrieNode) truncKids()                       { x.kids = x.kids[:0] } // set len to 0
 
 // --------------------------
 func (n *fauxUnion) ru() reflect.Value {

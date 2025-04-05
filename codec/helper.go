@@ -1589,6 +1589,155 @@ func (si *structFieldInfo) parseTag(stag string) {
 	}
 }
 
+// ----
+
+type uint8To32TrieNode struct {
+	uint8To32TrieNodeNoKids
+	kids uint8To32TrieNodeKids
+}
+
+func (x *uint8To32TrieNode) reset(v uint8) {
+	x.key = v
+	x.value = 0
+	x.valid = false
+	x.truncKids()
+}
+
+func (x *uint8To32TrieNode) expandKids() (r *uint8To32TrieNode) {
+	// since we want to reuse the slices, let's not use append as it will
+	// always overwrite the value. Only append if we're expanding
+	kids := x.getKids()
+	if cap(kids) > len(kids) {
+		kids = kids[:len(kids)+1]
+	} else {
+		kids = append(kids, uint8To32TrieNode{})
+	}
+	x.setKids(kids)
+	r = &kids[len(kids)-1]
+	return
+}
+
+func (x *uint8To32TrieNode) put(v uint8) (r *uint8To32TrieNode) {
+	kids := x.getKids()
+	for i := range kids {
+		if kids[i].key == v {
+			return &kids[i]
+		}
+	}
+
+	r = x.expandKids()
+	r.reset(v)
+	return r
+}
+
+func (x *uint8To32TrieNode) puts(s string, v uint32) (r *uint8To32TrieNode) {
+	for i := 0; i < len(s); i++ {
+		x = x.put(s[i])
+	}
+	x.value = v
+	x.valid = true
+	return x
+}
+
+func (x *uint8To32TrieNode) gets(s []byte) (v uint32, ok bool) {
+TOP:
+	for _, b := range s {
+		kids := x.getKids()
+		for i := range kids {
+			if kids[i].key == b {
+				x = &kids[i]
+				continue TOP
+			}
+		}
+		return 0, false
+	}
+	return x.value, x.valid
+}
+
+func (x *uint8To32TrieNode) deepNumKids() (n int) {
+	kids := x.getKids()
+	n = len(kids)
+	for i := range kids {
+		n += kids[i].deepNumKids()
+	}
+	return
+}
+
+// arena just helps all the nodes stay close for better cache-line performance.
+// It basically tries to load up all the nodes within a contiguous space of memory.
+type uint8To32TrieNodeArena struct {
+	arena  []uint8To32TrieNode
+	cursor int
+}
+
+func (x *uint8To32TrieNodeArena) init(v *uint8To32TrieNode) (r *uint8To32TrieNode) {
+	x.arena = make([]uint8To32TrieNode, v.deepNumKids()+1) // incl one for the node, and one buffer
+	r = &x.arena[0]
+	x.cursor++
+	x.clone(r, v)
+	return
+}
+
+func (x *uint8To32TrieNodeArena) clone(dst, src *uint8To32TrieNode) {
+	dst.uint8To32TrieNodeNoKids = src.uint8To32TrieNodeNoKids
+	// dst.kids = nil
+	srckids := src.getKids()
+	c := len(srckids)
+	if c == 0 {
+		return
+	}
+	dstkids := x.arena[x.cursor:][:c:c]
+	dst.setKids(dstkids)
+	x.cursor += c
+	for i := range srckids {
+		x.clone(&dstkids[i], &srckids[i])
+	}
+}
+
+// ----
+
+var pool4SFIs = sync.Pool{
+	New: func() interface{} {
+		return &uint8To32TrieNode{}
+	},
+}
+
+const usePoolForSFIs = true
+const useArenaForSFIs = true
+
+func (x *structFieldInfos) finish() {
+	var src *uint8To32TrieNode
+	if usePoolForSFIs {
+		src = pool4SFIs.Get().(*uint8To32TrieNode)
+	} else {
+		src = &x.t
+	}
+	x.loadSearchTrie(src)
+	if useArenaForSFIs {
+		var ar uint8To32TrieNodeArena
+		x.t = *(ar.init(src))
+	}
+	if usePoolForSFIs {
+		src.reset(0)
+		pool4SFIs.Put(src)
+	}
+}
+
+func (x *structFieldInfos) loadSearchTrie(src *uint8To32TrieNode) {
+	// load the search trie
+	for i, v := range x.source() {
+		src.puts(v.encName, uint32(i))
+	}
+}
+
+func (x *structFieldInfos) search(name []byte) (sfi *structFieldInfo) {
+	n, ok := x.t.gets(name)
+	if ok {
+		sfi = x.source()[n]
+	}
+	return
+}
+
 type sfiSortedByEncName []*structFieldInfo
 
 func (p sfiSortedByEncName) Len() int           { return len(p) }
@@ -1646,8 +1795,6 @@ type typeInfo struct {
 	keyType valueType // if struct, how is the field name stored in a stream? default is string
 	mbs     bool      // base type (T or *T) is a MapBySlice
 
-	sfi4Name map[string]*structFieldInfo // map. used for finding sfi given a name
-
 	*typeInfo4Container
 
 	// ---- cpu cache line boundary?
@@ -1700,7 +1847,7 @@ type typeInfo struct {
 }
 
 func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
-	return ti.sfi4Name[string(name)]
+	return ti.sfi.search(name)
 }
 
 func (ti *typeInfo) resolve(x []structFieldInfo, ss map[string]uint16) (n int) {
@@ -1737,7 +1884,7 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	}
 
 	// remove all the nils (non-ready)
-	m := make(map[string]*structFieldInfo, n)
+	// m := make(map[string]*structFieldInfo, n)
 	w := make([]structFieldInfo, n)
 	y := make([]*structFieldInfo, n+n)
 	z := y[n:]
@@ -1754,7 +1901,7 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 		w[n] = *sfi
 		sfi = &w[n]
 		y[n] = sfi
-		m[sfi.encName] = sfi
+		// m[sfi.encName] = sfi
 		n++
 	}
 	if n != len(y) {
@@ -1767,7 +1914,8 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	sort.Sort(sfiSortedByEncName(z))
 
 	ti.sfi.load(y, z)
-	ti.sfi4Name = m
+	ti.sfi.finish()
+	// ti.sfi.byName = m
 }
 
 // Handling flagCanTransient

@@ -513,32 +513,66 @@ func isEmptyValueFallbackRecur(urv *unsafeReflectValue, v reflect.Value, tinfos 
 // --------------------------
 
 type structFieldInfos struct {
-	c      unsafe.Pointer // source
-	s      unsafe.Pointer // sorted
+	c unsafe.Pointer // source
+	s unsafe.Pointer // sorted
+	t uint8To32TrieNode
+
 	length int
+
+	// byName map[string]*structFieldInfo // find sfi given a name
 }
 
+// func (x *structFieldInfos) load(source, sorted []*structFieldInfo, sourceNames, sortedNames []string) {
 func (x *structFieldInfos) load(source, sorted []*structFieldInfo) {
-	s := (*unsafeSlice)(unsafe.Pointer(&sorted))
-	x.s = s.Data
-	x.length = s.Len
+	var s *unsafeSlice
 	s = (*unsafeSlice)(unsafe.Pointer(&source))
 	x.c = s.Data
+	x.length = s.Len
+	s = (*unsafeSlice)(unsafe.Pointer(&sorted))
+	x.s = s.Data
 }
 
-func (x *structFieldInfos) sorted() (v []*structFieldInfo) {
-	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{x.s, x.length, x.length}
-	// s := (*unsafeSlice)(unsafe.Pointer(&v))
-	// s.Data = x.sorted0
-	// s.Len = x.length
-	// s.Cap = s.Len
-	return
-}
+func (x *structFieldInfos) count() int { return x.length }
+
+// func (x *structFieldInfos) sorted() (v []*structFieldInfo) {
+// 	s := (*unsafeSlice)(unsafe.Pointer(&v))
+// 	s.Data = x.sorted0
+// 	s.Len = x.length
+// 	s.Cap = s.Len
+// 	return
+// }
 
 func (x *structFieldInfos) source() (v []*structFieldInfo) {
 	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{x.c, x.length, x.length}
 	return
 }
+
+func (x *structFieldInfos) sorted() (v []*structFieldInfo) {
+	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{x.s, x.length, x.length}
+	return
+}
+
+// --------------------------
+
+type uint8To32TrieNodeNoKids struct {
+	key     uint8
+	valid   bool // the value marks the end of a full stored string
+	numkids uint8
+	_       byte // padding
+	value   uint32
+}
+
+type uint8To32TrieNodeKids = *uint8To32TrieNode
+
+func (x *uint8To32TrieNode) setKids(kids []uint8To32TrieNode) {
+	x.numkids = uint8(len(kids))
+	x.kids = &kids[0]
+}
+func (x *uint8To32TrieNode) getKids() (v []uint8To32TrieNode) {
+	*(*unsafeSlice)(unsafe.Pointer(&v)) = unsafeSlice{unsafe.Pointer(x.kids), int(x.numkids), int(x.numkids)}
+	return
+}
+func (x *uint8To32TrieNode) truncKids() { x.numkids = 0 }
 
 // --------------------------
 
