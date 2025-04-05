@@ -1895,7 +1895,7 @@ func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 			case reflect.Array:
 				fn.fe = (*encoder[T]).kArray
 			case reflect.Struct:
-				if ti.simple() {
+				if ti.simple {
 					fn.fe = (*encoder[T]).kStructSimple
 				} else {
 					fn.fe = (*encoder[T]).kStruct

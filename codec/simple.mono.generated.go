@@ -1333,7 +1333,7 @@ func (dh helperEncDriverSimpleBytes) encFnLoad(rt reflect.Type, rtid uintptr, ti
 			case reflect.Array:
 				fn.fe = (*encoderSimpleBytes).kArray
 			case reflect.Struct:
-				if ti.simple() {
+				if ti.simple {
 					fn.fe = (*encoderSimpleBytes).kStructSimple
 				} else {
 					fn.fe = (*encoderSimpleBytes).kStruct
@@ -1643,6 +1643,51 @@ func (d *decoderSimpleBytes) kStructField(si *structFieldInfo, rv reflect.Value)
 		return
 	}
 	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+}
+
+func (d *decoderSimpleBytes) kStructSimple(f *decFnInfo, rv reflect.Value) {
+	ctyp := d.d.ContainerType()
+	ti := f.ti
+	if ctyp == valueTypeMap {
+		containerLen := d.mapStart(d.d.ReadMapStart())
+		if containerLen == 0 {
+			d.mapEnd()
+			return
+		}
+		hasLen := containerLen >= 0
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.mapElemKey()
+			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			d.mapElemValue()
+			if si := ti.siForEncName(rvkencname); si != nil {
+				d.kStructField(si, rv)
+			} else {
+				d.structFieldNotFound(-1, stringView(rvkencname))
+			}
+		}
+		d.mapEnd()
+	} else if ctyp == valueTypeArray {
+		containerLen := d.arrayStart(d.d.ReadArrayStart())
+		if containerLen == 0 {
+			d.arrayEnd()
+			return
+		}
+
+		tisfi := ti.sfi.source()
+		hasLen := containerLen >= 0
+
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.arrayElem()
+			if j < len(tisfi) {
+				d.kStructField(tisfi[j], rv)
+			} else {
+				d.structFieldNotFound(j, "")
+			}
+		}
+		d.arrayEnd()
+	} else {
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
+	}
 }
 
 func (d *decoderSimpleBytes) kStruct(f *decFnInfo, rv reflect.Value) {
@@ -2863,7 +2908,11 @@ func (dh helperDecDriverSimpleBytes) decFnLoad(rt reflect.Type, rtid uintptr, ti
 				fi.addrD = false
 				fn.fd = (*decoderSimpleBytes).kArray
 			case reflect.Struct:
-				fn.fd = (*decoderSimpleBytes).kStruct
+				if ti.simple {
+					fn.fd = (*decoderSimpleBytes).kStructSimple
+				} else {
+					fn.fd = (*decoderSimpleBytes).kStruct
+				}
 			case reflect.Map:
 				fn.fd = (*decoderSimpleBytes).kMap
 			case reflect.Interface:
@@ -4841,7 +4890,7 @@ func (dh helperEncDriverSimpleIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfo
 			case reflect.Array:
 				fn.fe = (*encoderSimpleIO).kArray
 			case reflect.Struct:
-				if ti.simple() {
+				if ti.simple {
 					fn.fe = (*encoderSimpleIO).kStructSimple
 				} else {
 					fn.fe = (*encoderSimpleIO).kStruct
@@ -5151,6 +5200,51 @@ func (d *decoderSimpleIO) kStructField(si *structFieldInfo, rv reflect.Value) {
 		return
 	}
 	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+}
+
+func (d *decoderSimpleIO) kStructSimple(f *decFnInfo, rv reflect.Value) {
+	ctyp := d.d.ContainerType()
+	ti := f.ti
+	if ctyp == valueTypeMap {
+		containerLen := d.mapStart(d.d.ReadMapStart())
+		if containerLen == 0 {
+			d.mapEnd()
+			return
+		}
+		hasLen := containerLen >= 0
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.mapElemKey()
+			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			d.mapElemValue()
+			if si := ti.siForEncName(rvkencname); si != nil {
+				d.kStructField(si, rv)
+			} else {
+				d.structFieldNotFound(-1, stringView(rvkencname))
+			}
+		}
+		d.mapEnd()
+	} else if ctyp == valueTypeArray {
+		containerLen := d.arrayStart(d.d.ReadArrayStart())
+		if containerLen == 0 {
+			d.arrayEnd()
+			return
+		}
+
+		tisfi := ti.sfi.source()
+		hasLen := containerLen >= 0
+
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.arrayElem()
+			if j < len(tisfi) {
+				d.kStructField(tisfi[j], rv)
+			} else {
+				d.structFieldNotFound(j, "")
+			}
+		}
+		d.arrayEnd()
+	} else {
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
+	}
 }
 
 func (d *decoderSimpleIO) kStruct(f *decFnInfo, rv reflect.Value) {
@@ -6371,7 +6465,11 @@ func (dh helperDecDriverSimpleIO) decFnLoad(rt reflect.Type, rtid uintptr, tinfo
 				fi.addrD = false
 				fn.fd = (*decoderSimpleIO).kArray
 			case reflect.Struct:
-				fn.fd = (*decoderSimpleIO).kStruct
+				if ti.simple {
+					fn.fd = (*decoderSimpleIO).kStructSimple
+				} else {
+					fn.fd = (*decoderSimpleIO).kStruct
+				}
 			case reflect.Map:
 				fn.fd = (*decoderSimpleIO).kMap
 			case reflect.Interface:

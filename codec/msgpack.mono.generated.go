@@ -1333,7 +1333,7 @@ func (dh helperEncDriverMsgpackBytes) encFnLoad(rt reflect.Type, rtid uintptr, t
 			case reflect.Array:
 				fn.fe = (*encoderMsgpackBytes).kArray
 			case reflect.Struct:
-				if ti.simple() {
+				if ti.simple {
 					fn.fe = (*encoderMsgpackBytes).kStructSimple
 				} else {
 					fn.fe = (*encoderMsgpackBytes).kStruct
@@ -1643,6 +1643,51 @@ func (d *decoderMsgpackBytes) kStructField(si *structFieldInfo, rv reflect.Value
 		return
 	}
 	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+}
+
+func (d *decoderMsgpackBytes) kStructSimple(f *decFnInfo, rv reflect.Value) {
+	ctyp := d.d.ContainerType()
+	ti := f.ti
+	if ctyp == valueTypeMap {
+		containerLen := d.mapStart(d.d.ReadMapStart())
+		if containerLen == 0 {
+			d.mapEnd()
+			return
+		}
+		hasLen := containerLen >= 0
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.mapElemKey()
+			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			d.mapElemValue()
+			if si := ti.siForEncName(rvkencname); si != nil {
+				d.kStructField(si, rv)
+			} else {
+				d.structFieldNotFound(-1, stringView(rvkencname))
+			}
+		}
+		d.mapEnd()
+	} else if ctyp == valueTypeArray {
+		containerLen := d.arrayStart(d.d.ReadArrayStart())
+		if containerLen == 0 {
+			d.arrayEnd()
+			return
+		}
+
+		tisfi := ti.sfi.source()
+		hasLen := containerLen >= 0
+
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.arrayElem()
+			if j < len(tisfi) {
+				d.kStructField(tisfi[j], rv)
+			} else {
+				d.structFieldNotFound(j, "")
+			}
+		}
+		d.arrayEnd()
+	} else {
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
+	}
 }
 
 func (d *decoderMsgpackBytes) kStruct(f *decFnInfo, rv reflect.Value) {
@@ -2863,7 +2908,11 @@ func (dh helperDecDriverMsgpackBytes) decFnLoad(rt reflect.Type, rtid uintptr, t
 				fi.addrD = false
 				fn.fd = (*decoderMsgpackBytes).kArray
 			case reflect.Struct:
-				fn.fd = (*decoderMsgpackBytes).kStruct
+				if ti.simple {
+					fn.fd = (*decoderMsgpackBytes).kStructSimple
+				} else {
+					fn.fd = (*decoderMsgpackBytes).kStruct
+				}
 			case reflect.Map:
 				fn.fd = (*decoderMsgpackBytes).kMap
 			case reflect.Interface:
@@ -5096,7 +5145,7 @@ func (dh helperEncDriverMsgpackIO) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 			case reflect.Array:
 				fn.fe = (*encoderMsgpackIO).kArray
 			case reflect.Struct:
-				if ti.simple() {
+				if ti.simple {
 					fn.fe = (*encoderMsgpackIO).kStructSimple
 				} else {
 					fn.fe = (*encoderMsgpackIO).kStruct
@@ -5406,6 +5455,51 @@ func (d *decoderMsgpackIO) kStructField(si *structFieldInfo, rv reflect.Value) {
 		return
 	}
 	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+}
+
+func (d *decoderMsgpackIO) kStructSimple(f *decFnInfo, rv reflect.Value) {
+	ctyp := d.d.ContainerType()
+	ti := f.ti
+	if ctyp == valueTypeMap {
+		containerLen := d.mapStart(d.d.ReadMapStart())
+		if containerLen == 0 {
+			d.mapEnd()
+			return
+		}
+		hasLen := containerLen >= 0
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.mapElemKey()
+			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			d.mapElemValue()
+			if si := ti.siForEncName(rvkencname); si != nil {
+				d.kStructField(si, rv)
+			} else {
+				d.structFieldNotFound(-1, stringView(rvkencname))
+			}
+		}
+		d.mapEnd()
+	} else if ctyp == valueTypeArray {
+		containerLen := d.arrayStart(d.d.ReadArrayStart())
+		if containerLen == 0 {
+			d.arrayEnd()
+			return
+		}
+
+		tisfi := ti.sfi.source()
+		hasLen := containerLen >= 0
+
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.arrayElem()
+			if j < len(tisfi) {
+				d.kStructField(tisfi[j], rv)
+			} else {
+				d.structFieldNotFound(j, "")
+			}
+		}
+		d.arrayEnd()
+	} else {
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
+	}
 }
 
 func (d *decoderMsgpackIO) kStruct(f *decFnInfo, rv reflect.Value) {
@@ -6626,7 +6720,11 @@ func (dh helperDecDriverMsgpackIO) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 				fi.addrD = false
 				fn.fd = (*decoderMsgpackIO).kArray
 			case reflect.Struct:
-				fn.fd = (*decoderMsgpackIO).kStruct
+				if ti.simple {
+					fn.fd = (*decoderMsgpackIO).kStructSimple
+				} else {
+					fn.fd = (*decoderMsgpackIO).kStruct
+				}
 			case reflect.Map:
 				fn.fd = (*decoderMsgpackIO).kMap
 			case reflect.Interface:

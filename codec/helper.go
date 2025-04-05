@@ -218,7 +218,7 @@ import (
 //
 // Note: RPC tests depend on getting the error from an Encode/Decode call.
 // Consequently, they will always fail if debugging = true.
-const debugging = false // MARKER 2025
+const debugging = false
 
 const (
 	// containerLenUnknown is length returned from Read(Map|Array)Len
@@ -1636,10 +1636,15 @@ type typeInfo struct {
 	kind    uint8
 	chandir uint8
 
-	anyOmitEmpty bool      // true if a struct, and any of the fields are tagged "omitempty"
-	toArray      bool      // whether this (struct) type should be encoded as an array
-	keyType      valueType // if struct, how is the field name stored in a stream? default is string
-	mbs          bool      // base type (T or *T) is a MapBySlice
+	// simple=true if a struct, AND
+	//   - none of the fields are tagged "omitempty"
+	//   - no missingFielder
+	//   - keyType is always string
+	//   - noEsc4Json on any fields
+	simple  bool
+	toArray bool      // whether this (struct) type should be encoded as an array
+	keyType valueType // if struct, how is the field name stored in a stream? default is string
+	mbs     bool      // base type (T or *T) is a MapBySlice
 
 	sfi4Name map[string]*structFieldInfo // map. used for finding sfi given a name
 
@@ -1694,25 +1699,6 @@ type typeInfo struct {
 	sfi structFieldInfos
 }
 
-// A typeInfo is simple iff
-//   - no omitEmpty
-//   - no missingFielder
-//   - keyType is always string
-//   - noEsc4Json on any fields
-func (ti *typeInfo) simple() bool {
-	if ti.anyOmitEmpty ||
-		ti.flagMissingFielder || ti.flagMissingFielderPtr ||
-		ti.keyType != valueTypeString {
-		return false
-	}
-	for _, si := range ti.sfi.source() {
-		if si.path.encNameEscape4Json {
-			return false
-		}
-	}
-	return true
-}
-
 func (ti *typeInfo) siForEncName(name []byte) (si *structFieldInfo) {
 	return ti.sfi4Name[string(name)]
 }
@@ -1743,7 +1729,12 @@ func (ti *typeInfo) resolve(x []structFieldInfo, ss map[string]uint16) (n int) {
 }
 
 func (ti *typeInfo) init(x []structFieldInfo, n int) {
-	var anyOmitEmpty bool
+	simple := true
+
+	if ti.flagMissingFielder || ti.flagMissingFielderPtr ||
+		ti.keyType != valueTypeString {
+		simple = false
+	}
 
 	// remove all the nils (non-ready)
 	m := make(map[string]*structFieldInfo, n)
@@ -1753,25 +1744,28 @@ func (ti *typeInfo) init(x []structFieldInfo, n int) {
 	y = y[:n]
 	n = 0
 	for i := range x {
-		if x[i].encName == "" {
+		sfi := &x[i]
+		if sfi.encName == "" {
 			continue
 		}
-		if !anyOmitEmpty && x[i].path.omitEmpty {
-			anyOmitEmpty = true
+		if simple && (sfi.path.omitEmpty || sfi.path.encNameEscape4Json) {
+			simple = false
 		}
-		w[n] = x[i]
-		y[n] = &w[n]
-		m[x[i].encName] = &w[n]
+		w[n] = *sfi
+		sfi = &w[n]
+		y[n] = sfi
+		m[sfi.encName] = sfi
 		n++
 	}
 	if n != len(y) {
 		halt.errorf("failure reading struct %v - expecting %d of %d valid fields, got %d", ti.rt, len(y), len(x), any(n))
 	}
 
+	ti.simple = simple
+
 	copy(z, y)
 	sort.Sort(sfiSortedByEncName(z))
 
-	ti.anyOmitEmpty = anyOmitEmpty
 	ti.sfi.load(y, z)
 	ti.sfi4Name = m
 }
@@ -2354,10 +2348,12 @@ func panicValToErr(h errDecorator, v interface{}, err *error) {
 	switch xerr := v.(type) {
 	case nil:
 	case runtime.Error:
-		d, dok := h.(decoderI)
-		if dok && d.isBytes() && isSliceBoundsError(xerr.Error()) {
-			*err = io.ErrUnexpectedEOF
-		} else {
+		switch d := h.(type) {
+		case decoderI:
+			if d.isBytes() && isSliceBoundsError(xerr.Error()) {
+				*err = io.ErrUnexpectedEOF
+			}
+		default:
 			h.wrapErr(xerr, err)
 		}
 	case error:

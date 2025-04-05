@@ -815,19 +815,6 @@ func (d *decoder[T]) kInterface(f *decFnInfo, rv reflect.Value) {
 	rvSetIntf(rv, rvn)
 }
 
-// func (helperDecDriver[T]) decStructFieldKeyNotString(dd T, keyType valueType, b *[decScratchByteArrayLen]byte) (rvkencname []byte) {
-// 	if keyType == valueTypeInt {
-// 		rvkencname = strconv.AppendInt(b[:0], dd.DecodeInt64(), 10)
-// 	} else if keyType == valueTypeUint {
-// 		rvkencname = strconv.AppendUint(b[:0], dd.DecodeUint64(), 10)
-// 	} else if keyType == valueTypeFloat {
-// 		rvkencname = strconv.AppendFloat(b[:0], dd.DecodeFloat64(), 'f', -1, 64)
-// 	} else {
-// 		halt.errorStr2("invalid struct key type: ", keyType.String())
-// 	}
-// 	return
-// }
-
 func (d *decoder[T]) kStructField(si *structFieldInfo, rv reflect.Value) {
 	if d.d.TryNil() {
 		if rv = si.path.field(rv); rv.IsValid() {
@@ -836,6 +823,54 @@ func (d *decoder[T]) kStructField(si *structFieldInfo, rv reflect.Value) {
 		return
 	}
 	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+}
+
+func (d *decoder[T]) kStructSimple(f *decFnInfo, rv reflect.Value) {
+	ctyp := d.d.ContainerType()
+	ti := f.ti
+	if ctyp == valueTypeMap {
+		containerLen := d.mapStart(d.d.ReadMapStart())
+		if containerLen == 0 {
+			d.mapEnd()
+			return
+		}
+		hasLen := containerLen >= 0
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.mapElemKey()
+			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			d.mapElemValue()
+			if si := ti.siForEncName(rvkencname); si != nil {
+				d.kStructField(si, rv)
+			} else {
+				d.structFieldNotFound(-1, stringView(rvkencname))
+			}
+		}
+		d.mapEnd()
+	} else if ctyp == valueTypeArray {
+		containerLen := d.arrayStart(d.d.ReadArrayStart())
+		if containerLen == 0 {
+			d.arrayEnd()
+			return
+		}
+		// Not much gain from doing it two ways for array (used less frequently than structs).
+		tisfi := ti.sfi.source()
+		hasLen := containerLen >= 0
+
+		// iterate all the items in the stream.
+		//   - if mapped elem-wise to a field, handle it
+		//   - if more stream items than can be mapped, error it
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.arrayElem()
+			if j < len(tisfi) {
+				d.kStructField(tisfi[j], rv)
+			} else {
+				d.structFieldNotFound(j, "")
+			}
+		}
+		d.arrayEnd()
+	} else {
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
+	}
 }
 
 func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
@@ -874,25 +909,9 @@ func (d *decoder[T]) kStruct(f *decFnInfo, rv reflect.Value) {
 			} else {
 				halt.errorStr2("invalid struct key type: ", ti.keyType.String())
 			}
-			// switch tkt {
-			// case valueTypeString:
-			// 	rvkencname = d.d.DecodeStringAsBytes()
-			// case valueTypeInt:
-			// 	rvkencname = strconv.AppendInt(d.b[:0], d.d.DecodeInt64(), 10)
-			// case valueTypeUint:
-			// 	rvkencname = strconv.AppendUint(d.b[:0], d.d.DecodeUint64(), 10)
-			// case valueTypeFloat:
-			// 	rvkencname = strconv.AppendFloat(d.b[:0], d.d.DecodeFloat64(), 'f', -1, 64)
-			// default:
-			// 	halt.errorStr2("invalid struct key type: ", ti.keyType.String())
-			// }
-			//
-			// if ti.keyType == valueTypeString {
-			// 	rvkencname = d.d.DecodeStringAsBytes()
-			// } else {
-			// 	rvkencname = d.dh.decStructFieldKeyNotString(d.d, ti.keyType, &d.b)
-			// }
+
 			d.mapElemValue()
+
 			if si := ti.siForEncName(rvkencname); si != nil {
 				d.kStructField(si, rv)
 			} else if mf != nil {
@@ -2284,46 +2303,6 @@ func (x decSliceHelper[T]) arrayCannotExpand(hasLen bool, lenv, j, containerLenS
 	x.End()
 }
 
-// MARKER 2025
-// // decNextValueBytesHelper helps with NextValueBytes calls.
-// //
-// // Typical usage:
-// //   - each Handle's decDriver will implement a high level nextValueBytes,
-// //     which will track the current cursor, delegate to a nextValueBytesR
-// //     method, and then potentially call bytesRdV at the end.
-// //
-// // See simple.go for typical usage model.
-// type decNextValueBytesHelper struct{}
-
-// func (decNextValueBytesHelper) append1(v *[]byte, isBytes bool, b byte) {
-// 	if *v != nil && !isBytes {
-// 		*v = append(*v, b)
-// 	}
-// }
-
-// func (decNextValueBytesHelper) appendN(v *[]byte, isBytes bool, b ...byte) {
-// 	if *v != nil && !isBytes {
-// 		*v = append(*v, b...)
-// 	}
-// }
-
-// func (decNextValueBytesHelper) appendS(v *[]byte, isBytes bool, b string) {
-// 	if *v != nil && !isBytes {
-// 		*v = append(*v, b...)
-// 	}
-// }
-
-// instead, use:
-// 	if d.bytes {
-// 		v = r.bytesReadFrom(cursor)
-// 	}
-//
-// func (decNextValueBytesHelper) bytesRdV(v *[]byte, isBytes bool, startpos uint) {
-// 	if isBytes {
-// 		*v = x.d.bytesReadFrom(startpos)
-// 	}
-// }
-
 // decNegintPosintFloatNumberHelper is used for formats that are binary
 // and have distinct ways of storing positive integers vs negative integers
 // vs floats, which are uniquely identified by the byte descriptor.
@@ -2723,7 +2702,11 @@ func (dh helperDecDriver[T]) decFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 				fi.addrD = false // decode directly into array value (slice made from it)
 				fn.fd = (*decoder[T]).kArray
 			case reflect.Struct:
-				fn.fd = (*decoder[T]).kStruct
+				if ti.simple {
+					fn.fd = (*decoder[T]).kStructSimple
+				} else {
+					fn.fd = (*decoder[T]).kStruct
+				}
 			case reflect.Map:
 				fn.fd = (*decoder[T]).kMap
 			case reflect.Interface:

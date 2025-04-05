@@ -1335,7 +1335,7 @@ func (dh helperEncDriverCborBytes) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 			case reflect.Array:
 				fn.fe = (*encoderCborBytes).kArray
 			case reflect.Struct:
-				if ti.simple() {
+				if ti.simple {
 					fn.fe = (*encoderCborBytes).kStructSimple
 				} else {
 					fn.fe = (*encoderCborBytes).kStruct
@@ -1645,6 +1645,51 @@ func (d *decoderCborBytes) kStructField(si *structFieldInfo, rv reflect.Value) {
 		return
 	}
 	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+}
+
+func (d *decoderCborBytes) kStructSimple(f *decFnInfo, rv reflect.Value) {
+	ctyp := d.d.ContainerType()
+	ti := f.ti
+	if ctyp == valueTypeMap {
+		containerLen := d.mapStart(d.d.ReadMapStart())
+		if containerLen == 0 {
+			d.mapEnd()
+			return
+		}
+		hasLen := containerLen >= 0
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.mapElemKey()
+			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			d.mapElemValue()
+			if si := ti.siForEncName(rvkencname); si != nil {
+				d.kStructField(si, rv)
+			} else {
+				d.structFieldNotFound(-1, stringView(rvkencname))
+			}
+		}
+		d.mapEnd()
+	} else if ctyp == valueTypeArray {
+		containerLen := d.arrayStart(d.d.ReadArrayStart())
+		if containerLen == 0 {
+			d.arrayEnd()
+			return
+		}
+
+		tisfi := ti.sfi.source()
+		hasLen := containerLen >= 0
+
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.arrayElem()
+			if j < len(tisfi) {
+				d.kStructField(tisfi[j], rv)
+			} else {
+				d.structFieldNotFound(j, "")
+			}
+		}
+		d.arrayEnd()
+	} else {
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
+	}
 }
 
 func (d *decoderCborBytes) kStruct(f *decFnInfo, rv reflect.Value) {
@@ -2865,7 +2910,11 @@ func (dh helperDecDriverCborBytes) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 				fi.addrD = false
 				fn.fd = (*decoderCborBytes).kArray
 			case reflect.Struct:
-				fn.fd = (*decoderCborBytes).kStruct
+				if ti.simple {
+					fn.fd = (*decoderCborBytes).kStructSimple
+				} else {
+					fn.fd = (*decoderCborBytes).kStruct
+				}
 			case reflect.Map:
 				fn.fd = (*decoderCborBytes).kMap
 			case reflect.Interface:
@@ -4992,7 +5041,7 @@ func (dh helperEncDriverCborIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 			case reflect.Array:
 				fn.fe = (*encoderCborIO).kArray
 			case reflect.Struct:
-				if ti.simple() {
+				if ti.simple {
 					fn.fe = (*encoderCborIO).kStructSimple
 				} else {
 					fn.fe = (*encoderCborIO).kStruct
@@ -5302,6 +5351,51 @@ func (d *decoderCborIO) kStructField(si *structFieldInfo, rv reflect.Value) {
 		return
 	}
 	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+}
+
+func (d *decoderCborIO) kStructSimple(f *decFnInfo, rv reflect.Value) {
+	ctyp := d.d.ContainerType()
+	ti := f.ti
+	if ctyp == valueTypeMap {
+		containerLen := d.mapStart(d.d.ReadMapStart())
+		if containerLen == 0 {
+			d.mapEnd()
+			return
+		}
+		hasLen := containerLen >= 0
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.mapElemKey()
+			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			d.mapElemValue()
+			if si := ti.siForEncName(rvkencname); si != nil {
+				d.kStructField(si, rv)
+			} else {
+				d.structFieldNotFound(-1, stringView(rvkencname))
+			}
+		}
+		d.mapEnd()
+	} else if ctyp == valueTypeArray {
+		containerLen := d.arrayStart(d.d.ReadArrayStart())
+		if containerLen == 0 {
+			d.arrayEnd()
+			return
+		}
+
+		tisfi := ti.sfi.source()
+		hasLen := containerLen >= 0
+
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.arrayElem()
+			if j < len(tisfi) {
+				d.kStructField(tisfi[j], rv)
+			} else {
+				d.structFieldNotFound(j, "")
+			}
+		}
+		d.arrayEnd()
+	} else {
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
+	}
 }
 
 func (d *decoderCborIO) kStruct(f *decFnInfo, rv reflect.Value) {
@@ -6522,7 +6616,11 @@ func (dh helperDecDriverCborIO) decFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 				fi.addrD = false
 				fn.fd = (*decoderCborIO).kArray
 			case reflect.Struct:
-				fn.fd = (*decoderCborIO).kStruct
+				if ti.simple {
+					fn.fd = (*decoderCborIO).kStructSimple
+				} else {
+					fn.fd = (*decoderCborIO).kStruct
+				}
 			case reflect.Map:
 				fn.fd = (*decoderCborIO).kMap
 			case reflect.Interface:

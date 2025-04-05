@@ -1346,7 +1346,7 @@ func (dh helperEncDriverJsonBytes) encFnLoad(rt reflect.Type, rtid uintptr, tinf
 			case reflect.Array:
 				fn.fe = (*encoderJsonBytes).kArray
 			case reflect.Struct:
-				if ti.simple() {
+				if ti.simple {
 					fn.fe = (*encoderJsonBytes).kStructSimple
 				} else {
 					fn.fe = (*encoderJsonBytes).kStruct
@@ -1656,6 +1656,51 @@ func (d *decoderJsonBytes) kStructField(si *structFieldInfo, rv reflect.Value) {
 		return
 	}
 	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+}
+
+func (d *decoderJsonBytes) kStructSimple(f *decFnInfo, rv reflect.Value) {
+	ctyp := d.d.ContainerType()
+	ti := f.ti
+	if ctyp == valueTypeMap {
+		containerLen := d.mapStart(d.d.ReadMapStart())
+		if containerLen == 0 {
+			d.mapEnd()
+			return
+		}
+		hasLen := containerLen >= 0
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.mapElemKey()
+			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			d.mapElemValue()
+			if si := ti.siForEncName(rvkencname); si != nil {
+				d.kStructField(si, rv)
+			} else {
+				d.structFieldNotFound(-1, stringView(rvkencname))
+			}
+		}
+		d.mapEnd()
+	} else if ctyp == valueTypeArray {
+		containerLen := d.arrayStart(d.d.ReadArrayStart())
+		if containerLen == 0 {
+			d.arrayEnd()
+			return
+		}
+
+		tisfi := ti.sfi.source()
+		hasLen := containerLen >= 0
+
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.arrayElem()
+			if j < len(tisfi) {
+				d.kStructField(tisfi[j], rv)
+			} else {
+				d.structFieldNotFound(j, "")
+			}
+		}
+		d.arrayEnd()
+	} else {
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
+	}
 }
 
 func (d *decoderJsonBytes) kStruct(f *decFnInfo, rv reflect.Value) {
@@ -2876,7 +2921,11 @@ func (dh helperDecDriverJsonBytes) decFnLoad(rt reflect.Type, rtid uintptr, tinf
 				fi.addrD = false
 				fn.fd = (*decoderJsonBytes).kArray
 			case reflect.Struct:
-				fn.fd = (*decoderJsonBytes).kStruct
+				if ti.simple {
+					fn.fd = (*decoderJsonBytes).kStructSimple
+				} else {
+					fn.fd = (*decoderJsonBytes).kStruct
+				}
 			case reflect.Map:
 				fn.fd = (*decoderJsonBytes).kMap
 			case reflect.Interface:
@@ -5165,7 +5214,7 @@ func (dh helperEncDriverJsonIO) encFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 			case reflect.Array:
 				fn.fe = (*encoderJsonIO).kArray
 			case reflect.Struct:
-				if ti.simple() {
+				if ti.simple {
 					fn.fe = (*encoderJsonIO).kStructSimple
 				} else {
 					fn.fe = (*encoderJsonIO).kStruct
@@ -5475,6 +5524,51 @@ func (d *decoderJsonIO) kStructField(si *structFieldInfo, rv reflect.Value) {
 		return
 	}
 	d.decodeValueNoCheckNil(si.path.fieldAlloc(rv), nil)
+}
+
+func (d *decoderJsonIO) kStructSimple(f *decFnInfo, rv reflect.Value) {
+	ctyp := d.d.ContainerType()
+	ti := f.ti
+	if ctyp == valueTypeMap {
+		containerLen := d.mapStart(d.d.ReadMapStart())
+		if containerLen == 0 {
+			d.mapEnd()
+			return
+		}
+		hasLen := containerLen >= 0
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.mapElemKey()
+			rvkencname, _ := d.d.DecodeStringAsBytes(nil)
+			d.mapElemValue()
+			if si := ti.siForEncName(rvkencname); si != nil {
+				d.kStructField(si, rv)
+			} else {
+				d.structFieldNotFound(-1, stringView(rvkencname))
+			}
+		}
+		d.mapEnd()
+	} else if ctyp == valueTypeArray {
+		containerLen := d.arrayStart(d.d.ReadArrayStart())
+		if containerLen == 0 {
+			d.arrayEnd()
+			return
+		}
+
+		tisfi := ti.sfi.source()
+		hasLen := containerLen >= 0
+
+		for j := 0; d.containerNext(j, containerLen, hasLen); j++ {
+			d.arrayElem()
+			if j < len(tisfi) {
+				d.kStructField(tisfi[j], rv)
+			} else {
+				d.structFieldNotFound(j, "")
+			}
+		}
+		d.arrayEnd()
+	} else {
+		halt.onerror(errNeedMapOrArrayDecodeToStruct)
+	}
 }
 
 func (d *decoderJsonIO) kStruct(f *decFnInfo, rv reflect.Value) {
@@ -6695,7 +6789,11 @@ func (dh helperDecDriverJsonIO) decFnLoad(rt reflect.Type, rtid uintptr, tinfos 
 				fi.addrD = false
 				fn.fd = (*decoderJsonIO).kArray
 			case reflect.Struct:
-				fn.fd = (*decoderJsonIO).kStruct
+				if ti.simple {
+					fn.fd = (*decoderJsonIO).kStructSimple
+				} else {
+					fn.fd = (*decoderJsonIO).kStruct
+				}
 			case reflect.Map:
 				fn.fd = (*decoderJsonIO).kMap
 			case reflect.Interface:

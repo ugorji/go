@@ -1209,7 +1209,7 @@ func (d *decoderBase) stringZC(v []byte, scratchBuf bool) (s string) {
 	if len(v) == 1 {
 		// s = str4byte(v[0]) // str256[v[0]:][:1] // str256[v[0] : v[0]+1]
 		s = unsafe.String((*byte)(unsafe.Add(unsafe.Pointer(unsafe.StringData(str256)), v[0])), 1)
-	} else if !scratchBuf && d.bytes && d.zeroCopy { // MARKER 2025
+	} else if !scratchBuf && d.bytes && d.zeroCopy {
 		s = stringView(v)
 	} else if d.is == nil || d.c != containerMapKey || len(v) > internMaxStrLen {
 		s = string(v)
@@ -1220,8 +1220,6 @@ func (d *decoderBase) stringZC(v []byte, scratchBuf bool) (s string) {
 }
 
 func (d *decoderBase) mapKeyString(kstrbs, kstr2bs *[]byte, scratchBuf bool) (s string, changed bool) {
-	// MARKER 2025 - think through this.
-	// should we always use kstr2bs, or always append it first?
 	if scratchBuf || !(d.bytes && d.zeroCopy) {
 		changed = true
 		*kstrbs = append((*kstrbs)[:0], (*kstr2bs)...)
