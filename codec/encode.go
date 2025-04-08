@@ -1896,7 +1896,9 @@ func sideEncode(h Handle, p *sync.Pool, fn func(encoderI)) {
 		s = p.Get().(encoderI)
 		defer p.Put(s)
 	} else {
-		s = NewEncoderBytes(nil, h).encoderI
+		// initialization cycle error
+		// s = NewEncoderBytes(nil, h).encoderI
+		s = p.New().(encoderI)
 	}
 	fn(s)
 }

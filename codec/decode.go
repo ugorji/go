@@ -2728,7 +2728,9 @@ func sideDecode(h Handle, p *sync.Pool, fn func(decoderI)) {
 		s = p.Get().(decoderI)
 		defer p.Put(s)
 	} else {
-		s = NewDecoderBytes(nil, h).decoderI
+		// initialization cycle error
+		// s = NewDecoderBytes(nil, h).decoderI
+		s = p.New().(decoderI)
 	}
 	fn(s)
 }
