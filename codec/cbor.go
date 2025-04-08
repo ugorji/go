@@ -235,8 +235,9 @@ func (e *cborEncDriver[T]) EncodeExt(rv interface{}, basetype reflect.Type, xtag
 
 func (e *cborEncDriver[T]) EncodeRawExt(re *RawExt) {
 	e.encUint(uint64(re.Tag), cborBaseTag)
-	// only encodes re.Value (never re.Data)
-	if re.Value != nil {
+	if re.Data != nil {
+		e.w.writeb(re.Data)
+	} else if re.Value != nil {
 		e.enc.encode(re.Value)
 	} else {
 		e.EncodeNil()

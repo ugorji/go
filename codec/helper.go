@@ -1137,11 +1137,13 @@ type Handle interface {
 type Raw []byte
 
 // RawExt represents raw unprocessed extension data.
+//
 // Some codecs will decode extension data as a *RawExt
 // if there is no registered extension for the tag.
 //
-// Only one of Data or Value is nil.
-// If Data is nil, then the content of the RawExt is in the Value.
+// On encode, encode the Data. If nil, then try to encode the Value.
+//
+// On decode: store tag, then store bytes and/or decode into Value.
 type RawExt struct {
 	Tag uint64
 	// Data is the []byte which represents the raw ext. If nil, ext is exposed in Value.

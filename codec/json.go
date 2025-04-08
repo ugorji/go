@@ -258,11 +258,12 @@ func (e *jsonEncDriver[T]) EncodeExt(rv interface{}, basetype reflect.Type, xtag
 }
 
 func (e *jsonEncDriver[T]) EncodeRawExt(re *RawExt) {
-	// only encodes re.Value (never re.Data)
-	if re.Value == nil {
-		e.EncodeNil()
-	} else {
+	if re.Data != nil {
+		e.w.writeb(re.Data)
+	} else if re.Value != nil {
 		e.enc.encode(re.Value)
+	} else {
+		e.EncodeNil()
 	}
 }
 

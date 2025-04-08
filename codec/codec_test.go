@@ -2029,7 +2029,9 @@ func doTestRawExt(t *testing.T, h Handle) {
 	for _, r := range []RawExt{
 		{Tag: 99, Value: "9999", Data: []byte("9999")},
 	} {
-		e := NewEncoderBytes(&b, h)
+		e := NewEncoderBytes(nil, h)
+		oneOffEncode(e, r.Value, &r.Data, stringTyp, false)
+		e.ResetBytes(&b)
 		e.MustEncode(&r)
 		d := NewDecoderBytes(b, h)
 		d.MustDecode(&v)
