@@ -720,7 +720,7 @@ func (d *decoder[T]) kInterfaceNaked(f *decFnInfo) (rvn reflect.Value) {
 			} else {
 				rvn = reflect.New(bfn.rt)
 				if bfn.ext == SelfExt {
-					sideDecode(d.h, rv2i(rvn), bytes, bfn.rt, true)
+					sideDecode(d.hh, &d.h.sideDecPool, func(sd decoderI) { oneOffDecode(sd, rv2i(rvn), bytes, bfn.rt, true) })
 				} else {
 					bfn.ext.ReadExt(rv2i(rvn), bytes)
 				}
@@ -2722,9 +2722,18 @@ func (dh helperDecDriver[T]) decFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 
 // ----
 
-func sideDecode(h *BasicHandle, v interface{}, in []byte, basetype reflect.Type, ext bool) {
-	sd := h.sideDecPool.Get().(decoderI)
-	defer h.sideDecPool.Put(sd)
+func sideDecode(h Handle, p *sync.Pool, fn func(decoderI)) {
+	var s decoderI
+	if usePoolForSideDecode {
+		s = p.Get().(decoderI)
+		defer p.Put(s)
+	} else {
+		s = NewDecoderBytes(nil, h).decoderI
+	}
+	fn(s)
+}
+
+func oneOffDecode(sd decoderI, v interface{}, in []byte, basetype reflect.Type, ext bool) {
 	sd.ResetBytes(in)
 	sd.decodeAs(v, basetype, ext)
 	// d.sideDecoder(xbs)

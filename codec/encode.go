@@ -1020,33 +1020,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 		mksv := bs0
 		mksbv := make([]bytesRv, len(mks))
 
-		// func() {
-		// 	// replicate sideEncode logic
-		// 	// defer func(wb bytesEncAppender, bytes bool, c containerState, state interface{}) {
-		// 	// 	e.wb = wb
-		// 	// 	e.bytes = bytes
-		// 	// 	e.c = c
-		// 	// 	e.e.restoreState(state)
-		// 	// }(e.wb, e.bytes, e.c, e.e.captureState())
-
-		// 	// // e2 := NewEncoderBytes(&mksv, e.hh)
-		// 	// e.wb = bytesEncAppender{mksv[:0], &mksv}
-		// 	// e.bytes = true
-		// 	// e.c = 0
-		// 	// e.e.resetState()
-		// 	e.e.sideEncoder(&mksv)
-		// 	for i, k := range mks {
-		// 		v := &mksbv[i]
-		// 		l := len(mksv)
-		// 		e.e.sideEncode(k, nil, containerMapKey)
-		// 		v.r = k
-		// 		v.v = mksv[l:]
-		// 	}
-		// }()
-
-		func() {
-			se := e.h.sideEncPool.Get().(encoderI)
-			defer e.h.sideEncPool.Put(se)
+		sideEncode(e.hh, &e.h.sideEncPool, func(se encoderI) {
 			se.ResetBytes(&mksv)
 			for i, k := range mks {
 				v := &mksbv[i]
@@ -1058,7 +1032,7 @@ func (e *encoder[T]) kMapCanonical(ti *typeInfo, rv, rvv reflect.Value, keyFn, v
 				v.r = k
 				v.v = mksv[l:]
 			}
-		}()
+		})
 
 		slices.SortFunc(mksbv, cmpBytesRv)
 		for j := range mksbv {
@@ -1916,9 +1890,18 @@ func (dh helperEncDriver[T]) encFnLoad(rt reflect.Type, rtid uintptr, tinfos *Ty
 
 // ----
 
-func sideEncode(h *BasicHandle, v interface{}, out *[]byte, basetype reflect.Type, ext bool) {
-	se := h.sideEncPool.Get().(encoderI)
-	defer h.sideEncPool.Put(se)
+func sideEncode(h Handle, p *sync.Pool, fn func(encoderI)) {
+	var s encoderI
+	if usePoolForSideEncode {
+		s = p.Get().(encoderI)
+		defer p.Put(s)
+	} else {
+		s = NewEncoderBytes(nil, h).encoderI
+	}
+	fn(s)
+}
+
+func oneOffEncode(se encoderI, v interface{}, out *[]byte, basetype reflect.Type, ext bool) {
 	se.ResetBytes(out)
 	se.encodeAs(v, basetype, ext)
 	se.atEndOfEncode()

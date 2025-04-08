@@ -258,9 +258,14 @@ const (
 	// to determine the function to use for values of that type.
 	skipFastpathTypeSwitchInDirectCall = false
 
-	usePoolForSFIs         = true
-	useArenaForSFIs        = true
+	usePoolForSFIs  = true
+	useArenaForSFIs = true
+
 	usePoolForTypeInfoLoad = true
+
+	usePoolForSideEncode = true
+
+	usePoolForSideDecode = true
 )
 
 const cpu32Bit = ^uint(0)>>32 == 0
@@ -984,7 +989,6 @@ func initHandle2(x *BasicHandle, hh Handle) {
 	hh.init()
 
 	atomic.StoreUint32(&x.inited, 1)
-
 }
 
 func (x *BasicHandle) basicInit() {
