@@ -120,7 +120,7 @@ func (x testFieldIntrospect) set(v interface{}, name string, value interface{}) 
 	x.getr(v, name).Set(reflect.ValueOf(value))
 }
 
-var testBytesFreeList bytesFreelist
+var testBytesFreeList bytesFreeList
 
 type testCustomStringT string
 

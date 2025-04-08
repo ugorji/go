@@ -408,7 +408,7 @@ type decoderBase struct {
 
 	// sd decoderI
 
-	blist bytesFreelist
+	blist bytesFreeList
 
 	mtr bool // is maptype a known type?
 	str bool // is slicetype a known type?

@@ -57,7 +57,7 @@ type decReaderI interface {
 	// bytesReadFrom(startpos uint) []byte
 
 	// isBytes() bool
-	resetIO(r io.Reader, bufsize int, blist *bytesFreelist)
+	resetIO(r io.Reader, bufsize int, blist *bytesFreeList)
 
 	resetBytes(in []byte)
 
@@ -164,8 +164,7 @@ func (z *ioReaderByteScannerT) reset(r io.Reader) {
 
 // ioDecReader is a decReader that reads off an io.Reader.
 type ioDecReader struct {
-	blist *bytesFreelist
-	bb    *bufio.Reader // created internally, and reused on reset if needed
+	bb *bufio.Reader // created internally, and reused on reset if needed
 
 	rr ioReaderByteScannerT // the reader passed in, wrapped into a reader+bytescanner
 	br ioReaderByteScanner  // main reader used for Read|ReadByte|UnreadByte
@@ -195,10 +194,9 @@ func (z *ioDecReader) resetBytes(in []byte) {
 	halt.errorStr("resetBytes unsupported by ioDecReader")
 }
 
-func (z *ioDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreelist) {
-	z.blist = blist
+func (z *ioDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreeList) {
 	z.n = 0
-	z.bufr = z.blist.check(z.bufr, 256)
+	z.bufr = blist.check(z.bufr, 256)
 	z.br = nil
 
 	if r == nil {
@@ -429,7 +427,7 @@ type bytesDecReader struct {
 // 	return true
 // }
 
-func (z *bytesDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreelist) {
+func (z *bytesDecReader) resetIO(r io.Reader, bufsize int, blist *bytesFreeList) {
 	halt.errorStr("resetIO unsupported by bytesDecReader")
 }
 

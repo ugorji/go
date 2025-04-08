@@ -242,9 +242,6 @@ const (
 	// This constant flag will enable or disable it.
 	supportMarshalInterfaces = true
 
-	// bytesFreeListNoCache is used for debugging, when we want to skip using a cache of []byte.
-	bytesFreeListNoCache = false
-
 	// size of the cacheline: defaulting to value for archs: amd64, arm64, 386
 	// should use "runtime/internal/sys".CacheLineSize, but that is not exposed.
 	cacheLineSize = 64
@@ -266,6 +263,10 @@ const (
 	usePoolForSideEncode = true
 
 	usePoolForSideDecode = true
+
+	useBytesFreeList = true
+
+	useSfiRvFreeList = true
 )
 
 const cpu32Bit = ^uint(0)>>32 == 0
@@ -2856,7 +2857,7 @@ func freelistCapacity(length int) (capacity int) {
 	return
 }
 
-// bytesFreelist is a list of byte buffers, sorted by cap.
+// bytesFreeList is a list of byte buffers, sorted by cap.
 //
 // In anecdotal testing (running go test -tsd 1..6), we couldn't get
 // the length of the list > 4 at any time. So we believe a linear search
@@ -2880,12 +2881,12 @@ func freelistCapacity(length int) (capacity int) {
 //	if !byteSliceSameData(v0, v1) {
 //	  blist.put(v0)
 //	}
-type bytesFreelist [][]byte
+type bytesFreeList [][]byte
 
 // peek returns a slice of possibly non-zero'ed bytes, with len=0,
 // and with the largest capacity from the list.
-func (x *bytesFreelist) peek(length int, pop bool) (out []byte) {
-	if bytesFreeListNoCache {
+func (x *bytesFreeList) peek(length int, pop bool) (out []byte) {
+	if !useBytesFreeList {
 		return make([]byte, 0, freelistCapacity(length))
 	}
 	y := *x
@@ -2911,8 +2912,8 @@ func (x *bytesFreelist) peek(length int, pop bool) (out []byte) {
 
 // get returns a slice of possibly non-zero'ed bytes, with len=0,
 // and with cap >= length requested.
-func (x *bytesFreelist) get(length int) (out []byte) {
-	if bytesFreeListNoCache {
+func (x *bytesFreeList) get(length int) (out []byte) {
+	if !useBytesFreeList {
 		return make([]byte, 0, freelistCapacity(length))
 	}
 	y := *x
@@ -2930,8 +2931,8 @@ func (x *bytesFreelist) get(length int) (out []byte) {
 	return make([]byte, 0, freelistCapacity(length))
 }
 
-func (x *bytesFreelist) put(v []byte) {
-	if bytesFreeListNoCache || cap(v) == 0 {
+func (x *bytesFreeList) put(v []byte) {
+	if !useBytesFreeList || cap(v) == 0 {
 		return
 	}
 	if len(v) != 0 {
@@ -2952,24 +2953,24 @@ func (x *bytesFreelist) put(v []byte) {
 	}
 }
 
-func (x *bytesFreelist) check(v []byte, length int) (out []byte) {
+func (x *bytesFreeList) check(v []byte, length int) (out []byte) {
 	// ensure inlineable, by moving slow-path out to its own function
 	if cap(v) >= length {
 		return v[:0]
 	}
-	return x.checkPutGet(v, length)
+	return x.putGet(v, length)
 }
 
-func (x *bytesFreelist) checkPutGet(v []byte, length int) []byte {
+func (x *bytesFreeList) putGet(v []byte, length int) []byte {
 	// checkPutGet broken out into its own function, so check is inlineable in general case
-	const useSeparateCalls = false
 
-	if useSeparateCalls {
-		x.put(v)
-		return x.get(length)
-	}
+	// const useSeparateCalls = false
+	// if useSeparateCalls {
+	// 	x.put(v)
+	// 	return x.get(length)
+	// }
 
-	if bytesFreeListNoCache {
+	if !useBytesFreeList {
 		return make([]byte, 0, freelistCapacity(length))
 	}
 
@@ -3002,7 +3003,7 @@ func (x *bytesFreelist) checkPutGet(v []byte, length int) []byte {
 
 // -------------------------
 
-// sfiRvFreelist is used by Encoder for encoding structs,
+// sfiRvFreeList is used by Encoder for encoding structs,
 // where we have to gather the fields first and then
 // analyze them for omitEmpty, before knowing the length of the array/map to encode.
 //
@@ -3011,9 +3012,12 @@ func (x *bytesFreelist) checkPutGet(v []byte, length int) []byte {
 //
 // In the general case, the length of this list at most times is 1,
 // so linear search is fine.
-type sfiRvFreelist [][]sfiRv
+type sfiRvFreeList [][]sfiRv
 
-func (x *sfiRvFreelist) get(length int) (out []sfiRv) {
+func (x *sfiRvFreeList) get(length int) (out []sfiRv) {
+	if !useSfiRvFreeList {
+		return make([]sfiRv, 0, freelistCapacity(length))
+	}
 	y := *x
 
 	// MARKER: do not use range, as range is not currently inlineable as of go 1.16-beta
@@ -3030,7 +3034,10 @@ func (x *sfiRvFreelist) get(length int) (out []sfiRv) {
 	return make([]sfiRv, 0, freelistCapacity(length))
 }
 
-func (x *sfiRvFreelist) put(v []sfiRv) {
+func (x *sfiRvFreeList) put(v []sfiRv) {
+	if !useSfiRvFreeList {
+		return
+	}
 	if len(v) != 0 {
 		v = v[:0]
 	}

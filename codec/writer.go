@@ -22,7 +22,7 @@ type encWriterI interface {
 	// isBytes() bool
 	end()
 
-	resetIO(w io.Writer, bufsize int, blist *bytesFreelist)
+	resetIO(w io.Writer, bufsize int, blist *bytesFreeList)
 	resetBytes(in []byte, out *[]byte)
 }
 
@@ -54,7 +54,7 @@ func (z *bufioEncWriter) resetBytes(in []byte, out *[]byte) {
 	halt.errorStr("resetBytes is unsupported by bufioEncWriter")
 }
 
-func (z *bufioEncWriter) resetIO(w io.Writer, bufsize int, blist *bytesFreelist) {
+func (z *bufioEncWriter) resetIO(w io.Writer, bufsize int, blist *bytesFreeList) {
 	z.w = w
 	z.n = 0
 	if bufsize <= 0 {
@@ -260,7 +260,7 @@ func (z *bytesEncAppender) resetBytes(in []byte, out *[]byte) {
 	z.out = out
 }
 
-func (z *bytesEncAppender) resetIO(w io.Writer, bufsize int, blist *bytesFreelist) {
+func (z *bytesEncAppender) resetIO(w io.Writer, bufsize int, blist *bytesFreeList) {
 	halt.errorStr("resetIO is unsupported by bytesEncAppender")
 }
 

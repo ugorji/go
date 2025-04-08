@@ -244,7 +244,7 @@ type encoderBase struct {
 	// se  encoderI
 	err error
 
-	blist bytesFreelist
+	blist bytesFreeList
 
 	// js bool // is json encoder?
 	// be bool // is binary encoder?
@@ -272,7 +272,7 @@ type encoderBase struct {
 	// Consequently, we need a tuple of type and pointer, which interface{} natively provides.
 	ci []interface{} // []uintptr
 
-	slist sfiRvFreelist
+	slist sfiRvFreeList
 }
 
 func (e *encoderBase) HandleName() string {
