@@ -209,18 +209,18 @@ import (
 	"unicode/utf8"
 )
 
-// if debugging is true, then
-//   - within Encode/Decode, do not recover from panic's
-//   - etc
-//
-// Note: Negative tests that check for errors will fail, so only use this
-// when debugging, and run only one test at a time preferably.
-//
-// Note: RPC tests depend on getting the error from an Encode/Decode call.
-// Consequently, they will always fail if debugging = true.
-const debugging = false
-
 const (
+	// if debugging is true, then
+	//   - within Encode/Decode, do not recover from panic's
+	//   - etc
+	//
+	// Note: Negative tests that check for errors will fail, so only use this
+	// when debugging, and run only one test at a time preferably.
+	//
+	// Note: RPC tests depend on getting the error from an Encode/Decode call.
+	// Consequently, they will always fail if debugging = true.
+	debugging = false
+
 	// containerLenUnknown is length returned from Read(Map|Array)Len
 	// when a format doesn't know apiori.
 	// For example, json doesn't pre-determine the length of a container (sequence/map).
@@ -257,6 +257,10 @@ const (
 	// as we still have to introspect it again within fnLoad
 	// to determine the function to use for values of that type.
 	skipFastpathTypeSwitchInDirectCall = false
+
+	usePoolForSFIs         = true
+	useArenaForSFIs        = true
+	usePoolForTypeInfoLoad = true
 )
 
 const cpu32Bit = ^uint(0)>>32 == 0
@@ -359,7 +363,7 @@ var (
 	errNoFormatHandle = errors.New("no handle (cannot identify format)")
 )
 
-var pool4tiload = sync.Pool{
+var poolForTypeInfoLoad = sync.Pool{
 	New: func() interface{} {
 		return &typeInfoLoad{
 			etypes:   make([]uintptr, 0, 4),
@@ -1702,9 +1706,6 @@ var pool4SFIs = sync.Pool{
 	},
 }
 
-const usePoolForSFIs = true
-const useArenaForSFIs = true
-
 func (x *structFieldInfos) finish() {
 	var src *uint8To32TrieNode
 	if usePoolForSFIs {
@@ -2142,14 +2143,22 @@ func (x *TypeInfos) load(rt reflect.Type) (pti *typeInfo) {
 		} else {
 			ti.keyType = valueTypeString
 		}
-		pp, pi := &pool4tiload, pool4tiload.Get()
-		pv := pi.(*typeInfoLoad)
-		pv.reset()
+		var pi interface{}
+		var pv *typeInfoLoad
+		if usePoolForTypeInfoLoad {
+			pi = poolForTypeInfoLoad.Get()
+			pv = pi.(*typeInfoLoad)
+			pv.reset()
+		} else {
+			pv = new(typeInfoLoad)
+		}
 		pv.etypes = append(pv.etypes, ti.rtid)
 		x.rget(rt, nil, pv, omitEmpty)
 		n := ti.resolve(pv.sfis, pv.sfiNames)
 		ti.init(pv.sfis, n)
-		pp.Put(pi)
+		if usePoolForTypeInfoLoad {
+			poolForTypeInfoLoad.Put(pi)
+		}
 	case reflect.Map:
 		ti.typeInfo4Container = new(typeInfo4Container)
 		ti.elem = rt.Elem()
